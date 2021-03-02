@@ -1452,7 +1452,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				} else {
 					$vb_read_only = ($pa_bundle_settings['readonly'] || ($pa_options['request']->user->getBundleAccessLevel($this->tableName(), $ps_bundle_name) == __CA_BUNDLE_ACCESS_READONLY__)) ? true : false;
 
-					$va_additional_field_options = array();
+					$va_additional_field_options = [];
 					if($vn_width = caGetOption('width', $pa_bundle_settings)){
 						$va_additional_field_options['width'] = $vn_width;
 					}
@@ -1462,7 +1462,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					
 					$o_view->setVar('form_element', $this->htmlFormElement($ps_bundle_name, ($this->getProperty('ID_NUMBERING_ID_FIELD') == $ps_bundle_name) ? $o_config->get('idno_element_display_format_without_label') : $o_config->get('bundle_element_display_format_without_label'), 
 						array_merge(
-							array(	
+							[	
 								'readonly' 					=> $vb_read_only,						
 								'error_icon' 				=> caNavIcon(__CA_NAV_ICON_ALERT__, 1),
 								'progress_indicator'		=> caNavIcon(__CA_NAV_ICON_SPINNER__, 1),
@@ -1470,7 +1470,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 								
 								'name'						=> $ps_placement_code.$pa_options['formName'].$ps_bundle_name,
 								'usewysiwygeditor' 			=> $pa_bundle_settings['usewysiwygeditor']
-							),
+							],
 							$pa_options,
 							$va_additional_field_options
 						)
@@ -6741,6 +6741,7 @@ if (!$vb_batch) {
 												'context_id'				=> isset($pa_options['context_id']) ? $pa_options['context_id'] : null,
 												'table' 					=> $this->tableName(),
 												'row_id' 					=> $this->getPrimaryKey(),
+												'type_id' 					=> $this->getTypeID(),
 												'check_for_dupes'			=> true,
 												'search_url'				=> caSearchUrl($pa_options['request'], $this->tableName(), '')
 											)

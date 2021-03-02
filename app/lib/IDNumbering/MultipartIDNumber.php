@@ -47,12 +47,6 @@ class MultipartIDNumber extends IDNumber {
 	 * @type Configuration
 	 */
 	private $search_config;
-	
-	/**
-	 * The list of valid formats, related types and elements
-	 * @type array
-	 */
-	private $formats;
 
 	/**
 	 * The current database connection object
@@ -69,44 +63,23 @@ class MultipartIDNumber extends IDNumber {
 	 * @param string $ps_value A value to set as current [Default is null]
 	 * @param Db $po_db A database connection to use for all queries. If omitted a new connection (may be pooled) is allocated. [Default is null]
 	 */
-	public function __construct($ps_format=null, $pm_type=null, $ps_value=null, $po_db=null) {
-		if (!$pm_type) { $pm_type = array('__default__'); }
+	public function __construct($format=null, $type=null, $value=null, $db=null) {
+		if (!$type) { $type = ['__default__']; }
 
 		parent::__construct();
 		$this->idnumber_config = Configuration::load(__CA_APP_DIR__."/conf/multipart_id_numbering.conf");
 		$this->search_config = Configuration::load(__CA_APP_DIR__."/conf/search.conf");
 		$this->formats = $this->idnumber_config->getAssoc('formats');
 
-		if ($ps_format) { $this->setFormat($ps_format); }
-		if ($pm_type) { $this->setType($pm_type); }
-		if ($ps_value) { $this->setValue($ps_value); }
+		if ($format) { $this->setFormat($format); }
+		if ($type) { $this->setType($type); }
+		if ($value) { $this->setValue($value); }
 
-		if ((!$po_db) || !is_object($po_db)) {
+		if ((!$db) || !is_object($db)) {
 			$this->db = new Db();
 		} else {
-			$this->db = $po_db;
+			$this->db = $db;
 		}
-	}
-	# -------------------------------------------------------
-	# Formats
-	# -------------------------------------------------------
-	/**
-	 * Return list of formats configured in multipart_id_numbering.conf
-	 *
-	 * @return array
-	 */
-	public function getFormats() {
-		return array_keys($this->formats);
-	}
-	# -------------------------------------------------------
-	/**
-	 * Check if format is present in configuration 
-	 *
-	 * @param string $ps_format The format to check
-	 * @return bool
-	 */
-	public function isValidFormat($ps_format) {
-		return in_array($ps_format, $this->getFormats());
 	}
 	# -------------------------------------------------------
 	/**
@@ -115,89 +88,7 @@ class MultipartIDNumber extends IDNumber {
 	 * @return string Separator, or "." if no separator setting is present
 	 */
 	public function getSeparator() {
-		return $this->getFormatProperty('separator', array('default' => '.'));
-	}
-	# -------------------------------------------------------
-	/**
-	 * Return property for current format
-	 *
-	 * @param string $ps_property A format property name (eg. "separator")
-	 * @param array $pa_options Options include:
-	 *		default = Value to return if property does not exist [Default is null]
-	 * @return string
-	 */
-	public function getFormatProperty($ps_property, $pa_options=null) {
-		if (($vs_format = $this->getFormat()) && ($vs_type = $this->getType()) && isset($this->formats[$vs_format][$vs_type][$ps_property])) {
-			return $this->formats[$vs_format][$vs_type][$ps_property] ? $this->formats[$vs_format][$vs_type][$ps_property] : '';
-		}
-		return caGetOption('default', $pa_options, null);
-	}
-	# -------------------------------------------------------
-	/**
-	 * Return list of elements for current format and type using order specified in optional "sort_order" setting. Returns null
-	 * if option is not set
-	 *
-	 * @return array List of elements as specified in "sort_order" setting, or null if there is no setting value
-	 */
-	public function getElementOrderForSort() {
-		if (($vs_format = $this->getFormat()) && ($vs_type = $this->getType()) && isset($this->formats[$vs_format][$vs_type]['sort_order'])) {
-			return (is_array($this->formats[$vs_format][$vs_type]['sort_order']) && sizeof($this->formats[$vs_format][$vs_type]['sort_order'])) ? $this->formats[$vs_format][$vs_type]['sort_order'] : null;
-		}
-		return null;
-	}
-	# -------------------------------------------------------
-	/**
-	 * Determine if the specified format and type contains an element of a given type. A specific element position may be specified. If 
-	 * omitted all elements will be examined.
-	 *
-	 * @param string $ps_element_type The type of element to look for (Eg. SERIAL, YEAR, LIST)
-	 * @param int $pn_index The zero-based position in the element list to examine. If omitted all elements are examined. [Default is null]
-	 * @param string $ps_format A format to test. If omitted the current format is used. [Default is null]
-	 * @param string $ps_type A type to test. If omitted the current type is used. [Default is null]
-	 * @param array $pa_options Options include:
-	 *		checkLastElementOnly = check only the last element in the element list. This is the same as setting $pn_index to the last element, but saves you having to calculate what that index is. [Default is null]
-	 * @return bool
-	 */
-	public function formatHas($ps_element_type, $pn_index=null, $ps_format=null, $ps_type=null, $pa_options=null) {
-		if ($ps_format) {
-			if (!$this->isValidFormat($ps_format)) {
-				return false;
-			}
-			$vs_format = $ps_format;
-		} else {
-			if(!($vs_format = $this->getFormat())) {
-				return false;
-			}
-		}
-		if ($ps_type) {
-			if (!$this->isValidType($ps_type)) {
-				return false;
-			}
-			$vs_type = $ps_type;
-		} else {
-			if(!($vs_type = $this->getType())) {
-				return false;
-			}
-		}
-
-		$va_elements = $this->formats[$vs_format][$vs_type]['elements'];
-		
-		if (!is_null($pn_index) && isset($va_elements[$pn_index])) { $va_elements = array($va_elements[$pn_index]); }
-
-		if(!is_array($va_elements)) { return false; }
-		
-		if (caGetOption('checkLastElementOnly', $pa_options, false)) { 
-			$va_last_element = array_pop($va_elements);
-			return ($va_last_element['type'] == $ps_element_type) ? true : false;
-		} 
-		
-		
-		foreach($va_elements as $va_element) {
-			if ($va_element['type'] == $ps_element_type) {
-				return true;
-			}
-		}
-		return false;
+		return $this->getFormatProperty('separator', ['default' => '.']);
 	}
 	# -------------------------------------------------------
 	/**
@@ -208,9 +99,11 @@ class MultipartIDNumber extends IDNumber {
 	 * @param string $ps_type A type to test. If omitted the current type is used. [Default is null]
 	 * @return bool
 	 */
-	public function isSerialFormat($ps_format=null, $ps_type=null) {
-		return $this->formatHas('SERIAL', null, $ps_format, $ps_type, array('checkLastElementOnly' => true));
+	public function isSerialFormat($format=null, $type=null) {
+		if (!$this->isValidType($type, $format)) { $type = '__default__'; }
+		return $this->formatHas('SERIAL', null, $format, $type, ['checkLastElementOnly' => true]);
 	}
+	
 	# -------------------------------------------------------
 	/**
 	 * Returns true if the current format is an extension of $ps_format
@@ -279,88 +172,23 @@ class MultipartIDNumber extends IDNumber {
 		}
 
 		return true;
-
-	}
-	# -------------------------------------------------------
-	# Types
-	# -------------------------------------------------------
-	/**
-	 * Return a list of valid types for the current format
-	 *
-	 * @return array An array or types, or an emtpy array if the format is not set
-	 */
-	public function getTypes() {
-		if (!($vs_format = $this->getFormat())) { return array(); }
-		$va_types = array();
-		if (is_array($this->formats[$vs_format])) {
-			foreach($this->formats[$vs_format] as $vs_type => $va_info) {
-				$va_types[$vs_type] = true;
-			}
-		}
-
-		return array_keys($va_types);
-	}
-	# -------------------------------------------------------
-	/**
-	 * Determines if specified type is valid for the current format
-	 *
-	 * @param string $ps_type A type code
-	 * @return bool
-	 */
-	public function isValidType($ps_type) {
-		return ($ps_type) && in_array($ps_type, $this->getTypes());
-	}
-	# -------------------------------------------------------
-	# Elements
-	# -------------------------------------------------------
-	/**
-	 * Return list of elements configured in multipart_id_numbering.conf for the current format and type
-	 *
-	 * @return array An array of element information arrays, of the same format as returned by getElementInfo(), or null if the format and type are not set
-	 */
-	public function getElements() {
-		if (($vs_format = $this->getFormat()) && ($vs_type = $this->getType())) {
-			if (is_array($this->formats[$vs_format][$vs_type]['elements'])) {
-				$vb_is_child = $this->isChild();
-				$va_elements = array();
-				foreach($this->formats[$vs_format][$vs_type]['elements'] as $vs_k => $va_element_info) {
-					if (!$vb_is_child && isset($va_element_info['child_only']) && (bool)$va_element_info['child_only']) { continue; }
-					$va_elements[$vs_k] = $va_element_info;
-				}
-			}
-			return $va_elements;
-		}
-		return null;
-	}
-	# -------------------------------------------------------
-	/**
-	 * Return array of configuration from multipart_id_numbering.conf for the specified element in the current format and type
-	 *
-	 * @param string $ps_element_name The element to return information for
-	 * @return array An array of information with the same keys as in multipart_id_numbering.conf, or null if the element does not exist
-	 */
-	public function getElementInfo($ps_element_name) {
-		if (($vs_format = $this->getFormat()) && ($vs_type = $this->getType())) {
-			return $this->formats[$vs_format][$vs_type]['elements'][$ps_element_name];
-		}
-		return null;
 	}
 	# -------------------------------------------------------
 	/**
 	 * Breaks apart value using configuration of current format and type. When a format type specifies a separator this is generally
-	 * equivalent to explode()'ing the value on the separator, except when PARENT elements (which may container the separator) are configured.
+	 * equivalent to explode()'ing the value on the separator, except when PARENT elements (which may contain the separator) are configured.
 	 * explodeValue() can also split values when no separator is configured, using configured element widths to determine boundaries.
 	 *
 	 * @param string $ps_value
 	 * @return array List of values
 	 */
 	protected function explodeValue($ps_value) {
-		$vs_separator = $this->getSeparator();
+		$separator = $this->getSeparator();
 		
-		if ($vs_separator && $this->formatHas('PARENT', 0)) {
+		if ($separator && $this->formatHas('PARENT', 0)) {
 			// starts with PARENT element so explode in reverse since parent value may include separators
 				
-			$va_element_vals_in_reverse = array_reverse(explode($vs_separator, $ps_value));
+			$va_element_vals_in_reverse = array_reverse(explode($separator, $ps_value));
 			$vn_num_elements = sizeof($va_elements = $this->getElements());
 			
 			$va_element_vals = array();
@@ -371,21 +199,21 @@ class MultipartIDNumber extends IDNumber {
 				$vn_num_elements--;
 			}
 			
-			$va_element_vals[] = join($vs_separator, array_reverse($va_element_vals_in_reverse));
+			$va_element_vals[] = join($separator, array_reverse($va_element_vals_in_reverse));
 			$va_element_vals = array_reverse($va_element_vals);
-		} elseif ($vs_separator) {
+		} elseif ($separator) {
 			// Standard operation, use specified non-empty separator to split value
-			$va_element_vals = explode($vs_separator, $ps_value);
+			$va_element_vals = explode($separator, $ps_value);
 		} else {
 			// Separator is explicitly set to empty string, so use element widths to split value
 			$va_element_vals = array();
 			$vn_strpos = 0;
-			foreach ($this->getElements() as $va_element_info) {
-				switch ($va_element_info['type']) {
+			foreach ($this->getElements() as $element_info) {
+				switch ($element_info['type']) {
 					case 'LIST':
 						// The element has an implicit width depending on the selected value in a list
 						$vs_matching_value = null;
-						foreach ($va_element_info['values'] as $vs_value) {
+						foreach ($element_info['values'] as $vs_value) {
 							if (substr($ps_value, $vn_strpos, mb_strlen($vs_value)) === $vs_value && (is_null($vs_matching_value) || mb_strlen($vs_matching_value) < mb_strlen($vs_value))) {
 								// We have a match, and it is either the first match or the longest match so far
 								$vs_matching_value = $vs_value;
@@ -395,7 +223,7 @@ class MultipartIDNumber extends IDNumber {
 						break;
 					case 'CONSTANT':
 						// The element has an implicit width because it is a constant, so read the width of the constant
-						$vn_width = mb_strlen($va_element_info['value']);
+						$vn_width = mb_strlen($element_info['value']);
 						break;
 					case 'SERIAL':
 					case 'YEAR':
@@ -415,9 +243,9 @@ class MultipartIDNumber extends IDNumber {
 						// Match free text
 						$vn_width = null;
 				}
-				if (isset($va_element_info['width'])) {
+				if (isset($element_info['width'])) {
 					// Use the configured width as either a fallback or a maximum
-					$vn_width = is_null($vn_width) ? intval($va_element_info['width']) : min($vn_width, intval($va_element_info['width']));
+					$vn_width = is_null($vn_width) ? intval($element_info['width']) : min($vn_width, intval($element_info['width']));
 				}
 				// Take the calculated width from the input value as the element value; if $vn_width is null, use the remainder
 				// of the input string
@@ -442,111 +270,111 @@ class MultipartIDNumber extends IDNumber {
 		$va_element_vals = $this->explodeValue($ps_value);
 		$vn_i = 0;
 		$va_element_errors = array();
-		foreach($va_elements as $vs_element_name => $va_element_info) {
+		foreach($va_elements as $vs_element_name => $element_info) {
 			$vs_value = $va_element_vals[$vn_i];
 			$vn_value_len = mb_strlen($vs_value);
 
-			switch($va_element_info['type']) {
+			switch($element_info['type']) {
 				case 'LIST':
-					if (!in_array($vs_value, $va_element_info['values'])) {
-						$va_element_errors[$vs_element_name] = _t("'%1' is not valid for %2", $vs_value, $va_element_info['description']);
+					if (!in_array($vs_value, $element_info['values'])) {
+						$va_element_errors[$vs_element_name] = _t("'%1' is not valid for %2", $vs_value, $element_info['description']);
 					}
 					break;
 				case 'SERIAL':
 					if ($vs_value) {
 						if (!preg_match("/^[A-Za-z0-9]+$/", $vs_value)) {
-							$va_element_errors[$vs_element_name] = _t("'%1' is not valid for %2; only letters and numbers are allowed", $vs_value, $va_element_info['description']);
+							$va_element_errors[$vs_element_name] = _t("'%1' is not valid for %2; only letters and numbers are allowed", $vs_value, $element_info['description']);
 						}
 					}
 					break;
 				case 'CONSTANT':
-					if ($vs_value && ($vs_value != $va_element_info['value'])) {
-						$va_element_errors[$vs_element_name] = _t("%1 must be set to %2; was %3", $va_element_info['description'], $va_element_info['value'], $vs_value);
+					if ($vs_value && ($vs_value != $element_info['value'])) {
+						$va_element_errors[$vs_element_name] = _t("%1 must be set to %2; was %3", $element_info['description'], $element_info['value'], $vs_value);
 					}
 					break;
 				case 'FREE':
-					if (isset($va_element_info['minimum_length']) && ($vn_value_len < $va_element_info['minimum_length'])) {
-						if($va_element_info['minimum_length'] == 1) {
-							$va_element_errors[$vs_element_name] = _t("%1 must not be shorter than %2 character", $va_element_info['description'], $va_element_info['minimum_length']);
+					if (isset($element_info['minimum_length']) && ($vn_value_len < $element_info['minimum_length'])) {
+						if($element_info['minimum_length'] == 1) {
+							$va_element_errors[$vs_element_name] = _t("%1 must not be shorter than %2 character", $element_info['description'], $element_info['minimum_length']);
 						} else {
-							$va_element_errors[$vs_element_name] = _t("%1 must not be shorter than %2 characters", $va_element_info['description'], $va_element_info['minimum_length']);
+							$va_element_errors[$vs_element_name] = _t("%1 must not be shorter than %2 characters", $element_info['description'], $element_info['minimum_length']);
 						}
 					}
-					if (isset($va_element_info['maximum_length']) && ($vn_value_len > $va_element_info['maximum_length'])) {
-						if($va_element_info['minimum_length'] == 1) {
-							$va_element_errors[$vs_element_name] = _t("%1 must not be longer than %2 character", $va_element_info['description'], $va_element_info['maximum_length']);
+					if (isset($element_info['maximum_length']) && ($vn_value_len > $element_info['maximum_length'])) {
+						if($element_info['minimum_length'] == 1) {
+							$va_element_errors[$vs_element_name] = _t("%1 must not be longer than %2 character", $element_info['description'], $element_info['maximum_length']);
 						} else {
-							$va_element_errors[$vs_element_name] = _t("%1 must not be longer than %2 characters", $va_element_info['description'], $va_element_info['maximum_length']);
+							$va_element_errors[$vs_element_name] = _t("%1 must not be longer than %2 characters", $element_info['description'], $element_info['maximum_length']);
 						}
 					}
 					break;
 				case 'NUMERIC':
 					if (!preg_match("/^[\d]+[a-zA-Z]{0,1}$/", $vs_value)) {
-						$va_element_errors[$vs_element_name] = _t("%1 must be a number", $va_element_info['description']);
+						$va_element_errors[$vs_element_name] = _t("%1 must be a number", $element_info['description']);
 					}
-					if (isset($va_element_info['minimum_value']) && ($vs_value < $va_element_info['minimum_value'])) {
-						$va_element_errors[$vs_element_name] = _t("%1 must not be less than %2", $va_element_info['description'], $va_element_info['minimum_value']);
+					if (isset($element_info['minimum_value']) && ($vs_value < $element_info['minimum_value'])) {
+						$va_element_errors[$vs_element_name] = _t("%1 must not be less than %2", $element_info['description'], $element_info['minimum_value']);
 					}
-					if (isset($va_element_info['maximum_value']) && ($vs_value > $va_element_info['maximum_value'])) {
-						$va_element_errors[$vs_element_name] = _t("%1 must not be more than %2", $va_element_info['description'], $va_element_info['maximum_value']);
+					if (isset($element_info['maximum_value']) && ($vs_value > $element_info['maximum_value'])) {
+						$va_element_errors[$vs_element_name] = _t("%1 must not be more than %2", $element_info['description'], $element_info['maximum_value']);
 					}
-					if (isset($va_element_info['minimum_length']) && ($vn_value_len < $va_element_info['minimum_length'])) {
-						if ($va_element_info['minimum_length'] == 1) {
-							$va_element_errors[$vs_element_name] = _t("%1 must not be shorter than %2 character", $va_element_info['description'], $va_element_info['minimum_length']);
+					if (isset($element_info['minimum_length']) && ($vn_value_len < $element_info['minimum_length'])) {
+						if ($element_info['minimum_length'] == 1) {
+							$va_element_errors[$vs_element_name] = _t("%1 must not be shorter than %2 character", $element_info['description'], $element_info['minimum_length']);
 						} else {
-							$va_element_errors[$vs_element_name] = _t("%1 must not be shorter than %2 characters", $va_element_info['description'], $va_element_info['minimum_length']);
+							$va_element_errors[$vs_element_name] = _t("%1 must not be shorter than %2 characters", $element_info['description'], $element_info['minimum_length']);
 						}
 					}
-					if (isset($va_element_info['maximum_length']) && ($vn_value_len > $va_element_info['maximum_length'])) {
-						if ($va_element_info['maximum_length'] == 1) {
-							$va_element_errors[$vs_element_name] = _t("%1 must not be longer than %2 character", $va_element_info['description'], $va_element_info['maximum_length']);
+					if (isset($element_info['maximum_length']) && ($vn_value_len > $element_info['maximum_length'])) {
+						if ($element_info['maximum_length'] == 1) {
+							$va_element_errors[$vs_element_name] = _t("%1 must not be longer than %2 character", $element_info['description'], $element_info['maximum_length']);
 						} else {
-							$va_element_errors[$vs_element_name] = _t("%1 must not be longer than %2 characters", $va_element_info['description'], $va_element_info['maximum_length']);
+							$va_element_errors[$vs_element_name] = _t("%1 must not be longer than %2 characters", $element_info['description'], $element_info['maximum_length']);
 						}
 					}
 					break;
 				case 'ALPHANUMERIC':
 					if ($vs_value != '' && !preg_match("/^[A-Za-z0-9]+$/", $vs_value)) {
-						$va_element_errors[$vs_element_name] = _t("%1 must consist only letters and numbers", $va_element_info['description']);
+						$va_element_errors[$vs_element_name] = _t("%1 must consist only letters and numbers", $element_info['description']);
 					}
-					if (isset($va_element_info['minimum_length']) && ($vn_value_len < $va_element_info['minimum_length'])) {
-						if ($va_element_info['minimum_length'] == 1) {
-							$va_element_errors[$vs_element_name] = _t("%1 must not be shorter than %2 character", $va_element_info['description'], $va_element_info['minimum_length']);
+					if (isset($element_info['minimum_length']) && ($vn_value_len < $element_info['minimum_length'])) {
+						if ($element_info['minimum_length'] == 1) {
+							$va_element_errors[$vs_element_name] = _t("%1 must not be shorter than %2 character", $element_info['description'], $element_info['minimum_length']);
 						} else {
-							$va_element_errors[$vs_element_name] = _t("%1 must not be shorter than %2 characters", $va_element_info['description'], $va_element_info['minimum_length']);
+							$va_element_errors[$vs_element_name] = _t("%1 must not be shorter than %2 characters", $element_info['description'], $element_info['minimum_length']);
 						}
 					}
-					if (isset($va_element_info['maximum_length']) && ($vn_value_len > $va_element_info['maximum_length'])) {
-						if ($va_element_info['maximum_length'] == 1) {
-							$va_element_errors[$vs_element_name] = _t("%1 must not be longer than %2 character", $va_element_info['description'], $va_element_info['maximum_length']);
+					if (isset($element_info['maximum_length']) && ($vn_value_len > $element_info['maximum_length'])) {
+						if ($element_info['maximum_length'] == 1) {
+							$va_element_errors[$vs_element_name] = _t("%1 must not be longer than %2 character", $element_info['description'], $element_info['maximum_length']);
 						} else {
-							$va_element_errors[$vs_element_name] = _t("%1 must not be longer than %2 characters", $va_element_info['description'], $va_element_info['maximum_length']);
+							$va_element_errors[$vs_element_name] = _t("%1 must not be longer than %2 characters", $element_info['description'], $element_info['maximum_length']);
 						}
 					}
 					break;
 				case 'YEAR':
 					$va_tmp = getdate();
 					if ($vs_value != '') {
-						if ($va_element_info['width'] == 2) {
+						if ($element_info['width'] == 2) {
 							if(($vs_value < 0) || ($vs_value > 99)){
-								$va_element_errors[$vs_element_name] = _t("%1 must be a valid two-digit year", $va_element_info['description']);
+								$va_element_errors[$vs_element_name] = _t("%1 must be a valid two-digit year", $element_info['description']);
 							}
 						} elseif ((($vs_value < 1000) || ($vs_value > ($va_tmp['year'] + 10))) || ($vs_value != intval($vs_value))) {
-							$va_element_errors[$vs_element_name] = _t("%1 must be a valid year", $va_element_info['description']);
+							$va_element_errors[$vs_element_name] = _t("%1 must be a valid year", $element_info['description']);
 						}
 					}
 					break;
 				case 'MONTH':
 					if ($vs_value != '') {
 						if ((($vs_value < 1) || ($vs_value > 12)) || ($vs_value != intval($vs_value))) {
-							$va_element_errors[$vs_element_name] = _t("%1 must be a valid numeric month (between 1 and 12)", $va_element_info['description']);
+							$va_element_errors[$vs_element_name] = _t("%1 must be a valid numeric month (between 1 and 12)", $element_info['description']);
 						}
 					}
 					break;
 				case 'DAY':
 					if ($vs_value != '') {
 						if ((($vs_value < 1) || ($vs_value > 31)) || ($vs_value != intval($vs_value))) {
-							$va_element_errors[$vs_element_name] = _t("%1 must be a valid numeric day (between 1 and 31)", $va_element_info['description']);
+							$va_element_errors[$vs_element_name] = _t("%1 must be a valid numeric day (between 1 and 31)", $element_info['description']);
 						}
 					}
 					break;
@@ -575,10 +403,9 @@ class MultipartIDNumber extends IDNumber {
 	 *
 	 * @param string $ps_element_name
 	 * @param mixed $pm_value [Default is null]
-	 * @param bool  $pb_dont_mark_value_as_used [Default is false]
 	 * @return int Next value for SERIAL element or the string "ERR" on error
 	 */
-	public function getNextValue($ps_element_name, $pm_value=null, $pb_dont_mark_value_as_used=false) {
+	public function getNextValue($ps_element_name, $pm_value=null) {
 		if (!$pm_value) { $pm_value = $this->getValue(); }
 		$element_info = $this->getElementInfo($ps_element_name);
 
@@ -754,7 +581,7 @@ class MultipartIDNumber extends IDNumber {
 	 * @return string The sortable value
 	 */
 	public function getSortableValue($ps_value=null) {
-		$vs_separator = $this->getSeparator();
+		$separator = $this->getSeparator();
 		if (!is_array($va_elements_normal_order = $this->getElements())) { $va_elements_normal_order = array(); }
 		$va_element_names_normal_order = array_keys($va_elements_normal_order);
 
@@ -763,18 +590,18 @@ class MultipartIDNumber extends IDNumber {
 		$va_output = array();
 
 		foreach ($va_elements as $vs_element) {
-			$va_element_info = $va_elements_normal_order[$vs_element];
+			$element_info = $va_elements_normal_order[$vs_element];
 			$vn_i = array_search($vs_element, $va_element_names_normal_order);
 			$vn_padding = 20;
 
-			switch($va_element_info['type']) {
+			switch($element_info['type']) {
 				case 'LIST':
 					$vn_w = $vn_padding - mb_strlen($va_element_vals[$vn_i]);
 					if ($vn_w < 0) { $vn_w = 0; }
 					$va_output[] = str_repeat(' ', $vn_w).$va_element_vals[$vn_i];
 					break;
 				case 'CONSTANT':
-					$vn_len = mb_strlen($va_element_info['value']);
+					$vn_len = mb_strlen($element_info['value']);
 					if ($vn_padding < $vn_len) { $vn_padding = $vn_len; }
 					$vn_repeat_len = ($vn_padding - mb_strlen($va_element_vals[$vn_i]));
 					$va_output[] = (($vn_repeat_len > 0) ? str_repeat(' ', $vn_padding - mb_strlen($va_element_vals[$vn_i])) : '').$va_element_vals[$vn_i];
@@ -815,11 +642,11 @@ class MultipartIDNumber extends IDNumber {
 					break;
 				case 'SERIAL':
 				case 'NUMERIC':
-					if ($vn_padding < $va_element_info['width']) { $vn_padding = $va_element_info['width']; }
+					if ($vn_padding < $element_info['width']) { $vn_padding = $element_info['width']; }
 					$va_output[] = str_repeat(' ', $vn_padding - strlen(intval($va_element_vals[$vn_i]))).intval($va_element_vals[$vn_i]);
 					break;
 				case 'YEAR':
-					$vn_p = (($va_element_info['width'] == 2) ? 2 : 4) - mb_strlen($va_element_vals[$vn_i]);
+					$vn_p = (($element_info['width'] == 2) ? 2 : 4) - mb_strlen($va_element_vals[$vn_i]);
 					if ($vn_p < 0) { $vn_p = 0; }
 					$va_output[] = str_repeat(' ', $vn_p).$va_element_vals[$vn_i];
 					break;
@@ -838,7 +665,7 @@ class MultipartIDNumber extends IDNumber {
 
 			}
 		}
-		return join($vs_separator, $va_output);
+		return join($separator, $va_output);
 	}
 	# -------------------------------------------------------
 	/**
@@ -846,25 +673,25 @@ class MultipartIDNumber extends IDNumber {
 	 * Modifications include removal of leading zeros, stemming and more.
 	 *
 	 * @param string $ps_value Value from which to derive the index values. If omitted the current value is used. [Default is null]
-	 * @return array Array of string for indexing
+	 * @return array Array of strings for indexing
 	 */
-	public function getIndexValues($ps_value=null, $pa_options=null) {
-		$vs_separator = $this->getSeparator();
+	public function getIndexValues($ps_value=null, $options=null) {
+		$separator = $this->getSeparator();
 		if (!is_array($va_elements_normal_order = $this->getElements())) { $va_elements_normal_order = array(); }
 		$va_element_names_normal_order = array_keys($va_elements_normal_order);
 
 		if (!($va_elements = $this->getElementOrderForSort())) { $va_elements = $va_element_names_normal_order; }
 		$va_element_vals = $this->explodeValue($ps_value ?: $this->getValue());
 		$vn_i = 0;
-		$va_output = array(join($vs_separator, $va_element_vals));
+		$va_output = array(join($separator, $va_element_vals));
 		$vn_max_value_count = 0;
 
 		// element-specific processing
 		foreach($va_elements as $vs_element) {
-			$va_element_info = $va_elements_normal_order[$vs_element];
+			$element_info = $va_elements_normal_order[$vs_element];
 			$vn_i = array_search($vs_element, $va_element_names_normal_order);
             if(!is_array($va_output[$vn_i])) { $va_output[$vn_i] = []; }
-			switch($va_element_info['type']) {
+			switch($element_info['type']) {
 				case 'LIST':
 					$va_output[$vn_i] = array($va_element_vals[$vn_i]);
 					break;
@@ -917,7 +744,7 @@ class MultipartIDNumber extends IDNumber {
 				}
 			}
 
-			$va_output_values[] = join($vs_separator, $va_output_values_buf);
+			$va_output_values[] = join($separator, $va_output_values_buf);
 		}
 
 		// generate incremental "stems" of identifier by exploding on punctuation
@@ -959,8 +786,8 @@ class MultipartIDNumber extends IDNumber {
 			$va_output_values = array_merge($va_output_values, $va_tokens);
 		}
 		
-		if (isset($pa_options['INDEX_IDNO_PARTS']) || (is_array($pa_options) && (in_array('INDEX_IDNO_PARTS', $pa_options)))) {
-		    if (is_array($va_delimiters = caGetOption('IDNO_DELIMITERS', $pa_options, $this->getSeparator() ? [$this->getSeparator()]: null)) && sizeof($va_delimiters)) {
+		if (isset($options['INDEX_IDNO_PARTS']) || (is_array($options) && (in_array('INDEX_IDNO_PARTS', $options)))) {
+		    if (is_array($va_delimiters = caGetOption('IDNO_DELIMITERS', $options, $this->getSeparator() ? [$this->getSeparator()]: null)) && sizeof($va_delimiters)) {
 		        $va_output_values = array_merge($va_output_values, preg_split("![".preg_quote(join('', $va_delimiters), "!")."]!", $ps_value));
 		    }
 		}
@@ -974,7 +801,7 @@ class MultipartIDNumber extends IDNumber {
 	 *
 	 * @param string $ps_name Name of form element. Is used as a prefix for each form element. The number element name will be used as a suffix for each.
 	 * @param array $pa_errors Passed-by-reference array. Will contain any validation errors for the value, indexed by element.
-	 * @param array $pa_options Options include:
+	 * @param array $options Options include:
 	 *		id_prefix = Prefix to add to element ID attributes. [Default is null]
 	 *		for_search_form = Generate a blank form for search. [Default is false]
 	 *		show_errors = Include error messages next to form elements. [Default is false]
@@ -989,19 +816,19 @@ class MultipartIDNumber extends IDNumber {
 	 *		context_id = context ID of row to exclude from duplicate number check (typically the current record context). [Default is null]
 	 * @return string HTML output
 	 */
-	public function htmlFormElement($ps_name, &$pa_errors=null, $pa_options=null) {
+	public function htmlFormElement($ps_name, &$pa_errors=null, $options=null) {
 		$o_config = Configuration::load();
 		
-		if (!is_array($pa_options)) { $pa_options = array(); }
-		$vs_id_prefix = isset($pa_options['id_prefix']) ? $pa_options['id_prefix'] : null;
-		$vb_generate_for_search_form = isset($pa_options['for_search_form']) ? true : false;
+		if (!is_array($options)) { $options = array(); }
+		$vs_id_prefix = isset($options['id_prefix']) ? $options['id_prefix'] : null;
+		$vb_generate_for_search_form = isset($options['for_search_form']) ? true : false;
 
 		$pa_errors = $this->validateValue($this->getValue());
-		$vs_separator = $this->getSeparator();
+		$separator = $this->getSeparator();
 		$va_element_vals = $this->explodeValue($this->getValue());
 		
-		$vb_dont_allow_editing = isset($pa_options['row_id']) && ($pa_options['row_id'] > 0) && $o_config->exists($this->getFormat().'_dont_allow_editing_of_codes_when_in_use') && (bool)$o_config->get($this->getFormat().'_dont_allow_editing_of_codes_when_in_use');
-		if ($vb_dont_allow_editing) { $pa_options['readonly'] = true; }
+		$vb_dont_allow_editing = isset($options['row_id']) && ($options['row_id'] > 0) && $o_config->exists($this->getFormat().'_dont_allow_editing_of_codes_when_in_use') && (bool)$o_config->get($this->getFormat().'_dont_allow_editing_of_codes_when_in_use');
+		if ($vb_dont_allow_editing) { $options['readonly'] = true; }
 
 		if (!is_array($va_elements = $this->getElements())) { $va_elements = array(); }
 
@@ -1009,17 +836,17 @@ class MultipartIDNumber extends IDNumber {
 		$vn_i=0;
 
 		$vb_next_in_seq_is_present = false;
-		foreach($va_elements as $vs_element_name => $va_element_info) {
-			if (($va_element_info['type'] == 'SERIAL') && ($va_element_vals[$vn_i] == '')) {
+		foreach($va_elements as $vs_element_name => $element_info) {
+			if (($element_info['type'] == 'SERIAL') && ($va_element_vals[$vn_i] == '')) {
 				$vb_next_in_seq_is_present = true;
 			}
-			$vs_tmp = $this->genNumberElement($vs_element_name, $ps_name, $va_element_vals[$vn_i], $vs_id_prefix, $vb_generate_for_search_form, $pa_options);
+			$vs_tmp = $this->genNumberElement($vs_element_name, $ps_name, $va_element_vals[$vn_i], $vs_id_prefix, $vb_generate_for_search_form, $options);
 			$va_element_control_names[] = $ps_name.'_'.$vs_element_name;
 
-			if (($pa_options['show_errors']) && (isset($pa_errors[$vs_element_name]))) {
+			if (($options['show_errors']) && (isset($pa_errors[$vs_element_name]))) {
 				$vs_error_message = preg_replace("/[\"\']+/", "", $pa_errors[$vs_element_name]);
-				if ($pa_options['error_icon']) {
-					$vs_tmp .= "<a href='#' id='caIdno_{$vs_id_prefix}_{$ps_name}'>".$pa_options['error_icon']."</a>";
+				if ($options['error_icon']) {
+					$vs_tmp .= "<a href='#' id='caIdno_{$vs_id_prefix}_{$ps_name}'>".$options['error_icon']."</a>";
 				} else {
 					$vs_tmp .= "<a href='#' id='caIdno_{$vs_id_prefix}_{$ps_name}'>["._t('Error')."]</a>";
 				}
@@ -1035,13 +862,13 @@ class MultipartIDNumber extends IDNumber {
 				$vn_extra_size = 10;
 			}
 			foreach($va_extra_vals as $vn_i => $vs_extra_val) {
-				$va_element_controls[] = "<input type='text' name='{$ps_name}_extra_{$vn_i}' id='{$ps_name}_extra_{$vn_i}' value='".htmlspecialchars($vs_extra_val, ENT_QUOTES, 'UTF-8')."' size='{$vn_extra_size}'".($pa_options['readonly'] ? ' disabled="1" ' : '').">";
+				$va_element_controls[] = "<input type='text' name='{$ps_name}_extra_{$vn_i}' id='{$ps_name}_extra_{$vn_i}' value='".htmlspecialchars($vs_extra_val, ENT_QUOTES, 'UTF-8')."' size='{$vn_extra_size}'".($options['readonly'] ? ' disabled="1" ' : '').">";
 				$va_element_control_names[] = $ps_name.'_extra_'.$vn_i;
 			}
 		}
 		
 		if ($o_config->exists($this->getFormat().'_dont_allow_editing_of_codes_when_in_use')) {
-			if (isset($pa_options['row_id']) && ($pa_options['row_id'] > 0)) {
+			if (isset($options['row_id']) && ($options['row_id'] > 0)) {
 				if ($vb_dont_allow_editing) {
 					$va_element_controls[] =  '<span class="formLabelWarning"><i class="caIcon fa fa-info-circle fa-1x"></i> '._t('Value cannot be edited because it is in use').'</span>';	
 				} else {
@@ -1051,35 +878,40 @@ class MultipartIDNumber extends IDNumber {
 		}
 
 		$vs_js = '';
-		if (($pa_options['check_for_dupes']) && !$vb_next_in_seq_is_present){
+		if ($options['check_for_dupes'] || $vb_next_in_seq_is_present){
 			$va_ids = array();
 			foreach($va_element_control_names as $vs_element_control_name) {
 				$va_ids[] = "'#".$vs_id_prefix.$vs_element_control_name."'";
 			}
 
 			$vs_js = '<script type="text/javascript" language="javascript">'."\n// <![CDATA[\n";
-			$va_lookup_url_info = caJSONLookupServiceUrl($pa_options['request'], $pa_options['table']);
+			$va_lookup_url_info = caJSONLookupServiceUrl($options['request'], $options['table']);
 			$vs_js .= "
 				caUI.initIDNoChecker({
-					errorIcon: \"".$pa_options['error_icon']."\",
-					processIndicator: \"".$pa_options['progress_indicator']."\",
+					errorIcon: \"".$options['error_icon']."\",
+					processIndicator: \"".$options['progress_indicator']."\",
 					idnoStatusID: 'idnoStatus',
 					lookupUrl: '".$va_lookup_url_info['idno']."',
-					searchUrl: '".$pa_options['search_url']."',
+					searchUrl: '".$options['search_url']."',
 					idnoFormElementIDs: [".join(',', $va_ids)."],
 					separator: '".$this->getSeparator()."',
-					row_id: ".intval($pa_options['row_id']).",
-					context_id: ".intval($pa_options['context_id']).",
+					row_id: ".intval($options['row_id']).",
+					type_id: ".intval($options['type_id']).",
+					context_id: ".intval($options['context_id']).",
+					checkDupes: ".(($options['check_for_dupes'] && !$vb_next_in_seq_is_present) ? '1' : '0').",
+					includesSequence: ".($vb_next_in_seq_is_present ? '1' : '0').",
 
 					singularAlreadyInUseMessage: '".addslashes(_t('Identifier is already in use'))."',
-					pluralAlreadyInUseMessage: '".addslashes(_t('Identifier is already in use %1 times'))."'
+					pluralAlreadyInUseMessage: '".addslashes(_t('Identifier is already in use %1 times'))."',
+					
+					sequenceMessage: '&lt;".addslashes(_t('Will be assigned %1 when saved'))."&gt;'
 				});
 			";
 
 			$vs_js .= "// ]]>\n</script>\n";
 		}
 
-		return join($vs_separator, $va_element_controls).$vs_js;
+		return join($separator, $va_element_controls).$vs_js;
 	}
 	# -------------------------------------------------------
 	/**
@@ -1097,9 +929,9 @@ class MultipartIDNumber extends IDNumber {
 	 */
 	public function htmlFormValue($ps_name, $ps_value=null, $pb_dont_mark_serial_value_as_used=false, $pb_generate_for_search_form=false, $pb_always_generate_serial_values=false) {
 		$va_tmp = $this->htmlFormValuesAsArray($ps_name, $ps_value, $pb_dont_mark_serial_value_as_used, $pb_generate_for_search_form, $pb_always_generate_serial_values);
-		if (!($vs_separator = $this->getSeparator())) { $vs_separator = ''; }
+		if (!($separator = $this->getSeparator())) { $separator = ''; }
 
-		return (is_array($va_tmp)) ? join($vs_separator, $va_tmp) : null;
+		return (is_array($va_tmp)) ? join($separator, $va_tmp) : null;
 	}
 	# -------------------------------------------------------
 	/**
@@ -1120,21 +952,21 @@ class MultipartIDNumber extends IDNumber {
 	 * @return string A template
 	 */
 	public function makeTemplateFromValue($ps_value, $pn_max_num_replacements=0, $pb_no_placeholders=false) {
-		$vs_separator = $this->getSeparator();
+		$separator = $this->getSeparator();
 		$va_values = $this->explodeValue($ps_value);
 		if (!is_array($va_elements = $this->getElements())) { $va_elements = []; }
 		
 		$vn_num_serial_elements = 0;
-		foreach ($va_elements as $va_element_info) {
-			if ($va_element_info['type'] == 'SERIAL') { $vn_num_serial_elements++; }
+		foreach ($va_elements as $element_info) {
+			if ($element_info['type'] == 'SERIAL') { $vn_num_serial_elements++; }
 		}
 
 		$vn_i = 0;
 		$vn_num_serial_elements_seen = 0;
-		foreach ($va_elements as $va_element_info) {
+		foreach ($va_elements as $element_info) {
 			//if ($vn_i >= sizeof($va_values)) { break; }
 
-			switch($va_element_info['type']) {
+			switch($element_info['type']) {
 				case 'SERIAL':
 					$vn_num_serial_elements_seen++;
 
@@ -1149,22 +981,22 @@ class MultipartIDNumber extends IDNumber {
 					}
 					break;
 				case 'CONSTANT':
-					$va_values[$vn_i] = $va_element_info['value'];
+					$va_values[$vn_i] = $element_info['value'];
 					break;
 				case 'YEAR':
-					if (caGetOption('force_derived_values_to_current_year', $va_element_info, false)) {
+					if (caGetOption('force_derived_values_to_current_year', $element_info, false)) {
 						$va_tmp = getdate();
 						$va_values[$vn_i] = $va_tmp['year'];
 					}
 					break;
 				case 'MONTH':
-					if (caGetOption('force_derived_values_to_current_month', $va_element_info, false)) {
+					if (caGetOption('force_derived_values_to_current_month', $element_info, false)) {
 						$va_tmp = getdate();
 						$va_values[$vn_i] = $va_tmp['mon'];
 					}
 					break;
 				case 'DAY':
-					if (caGetOption('force_derived_values_to_current_day', $va_element_info, false)) {
+					if (caGetOption('force_derived_values_to_current_day', $element_info, false)) {
 						$va_tmp = getdate();
 						$va_values[$vn_i] = $va_tmp['mday'];
 					}
@@ -1174,7 +1006,7 @@ class MultipartIDNumber extends IDNumber {
 			$vn_i++;
 		}
 
-		return join($vs_separator, $va_values);
+		return join($separator, $va_values);
 	}
 	# -------------------------------------------------------
 	/**
@@ -1199,7 +1031,7 @@ class MultipartIDNumber extends IDNumber {
 		}
 
 		$va_element_names = array_keys($va_elements);
-		$vs_separator = $this->getSeparator();
+		$separator = $this->getSeparator();
 		$va_element_values = array();
 		if ($ps_value) {
 			$va_tmp = $this->explodeValue($ps_value);
@@ -1237,8 +1069,8 @@ class MultipartIDNumber extends IDNumber {
 		$vb_isset = false;
 		$vb_is_not_empty = false;
 		$va_tmp = array();
-		foreach($va_elements as $vs_element_name => $va_element_info) {
-			if ($va_element_info['type'] == 'SERIAL') {
+		foreach($va_elements as $vs_element_name => $element_info) {
+			if ($element_info['type'] == 'SERIAL') {
 				if ($pb_generate_for_search_form) {
 					$va_tmp[$vs_element_name] = $va_element_values[$ps_name.'_'.$vs_element_name];
 					continue;
@@ -1250,20 +1082,20 @@ class MultipartIDNumber extends IDNumber {
 					$vb_isset = $vb_is_not_empty = true;
 					continue;
 				}
-			} elseif(($va_element_info['type'] == 'YEAR') && !$va_element_values[$ps_name.'_'.$vs_element_name]) {  // set constant
+			} elseif(($element_info['type'] == 'YEAR') && !$va_element_values[$ps_name.'_'.$vs_element_name]) {  // set constant
 			    $va_date = getdate();
 			    $va_element_values[$ps_name.'_'.$vs_element_name] = $va_date['year'];
-			} elseif(($va_element_info['type'] == 'MONTH') && !$va_element_values[$ps_name.'_'.$vs_element_name]) {
+			} elseif(($element_info['type'] == 'MONTH') && !$va_element_values[$ps_name.'_'.$vs_element_name]) {
 			    $va_date = getdate();
 			    $va_element_values[$ps_name.'_'.$vs_element_name] = $va_date['mon'];
-			} elseif(($va_element_info['type'] == 'DAY') && !$va_element_values[$ps_name.'_'.$vs_element_name]) {
+			} elseif(($element_info['type'] == 'DAY') && !$va_element_values[$ps_name.'_'.$vs_element_name]) {
 			    $va_date = getdate();
 			    $va_element_values[$ps_name.'_'.$vs_element_name] = $va_date['mday'];
-			} elseif($va_element_info['type'] == 'CONSTANT') {
-			    $va_element_values[$ps_name.'_'.$vs_element_name] = $va_element_info['value'];
-			} elseif(($va_element_info['type'] == 'LIST') && (!isset($va_element_values[$ps_name.'_'.$vs_element_name]) || !$va_element_values[$ps_name.'_'.$vs_element_name])) {
-				if (!is_array($va_element_info['values'])) { $va_element_info['values'] = []; }
-			    $va_element_values[$ps_name.'_'.$vs_element_name] = $va_element_info['values'][0];
+			} elseif($element_info['type'] == 'CONSTANT') {
+			    $va_element_values[$ps_name.'_'.$vs_element_name] = $element_info['value'];
+			} elseif(($element_info['type'] == 'LIST') && (!isset($va_element_values[$ps_name.'_'.$vs_element_name]) || !$va_element_values[$ps_name.'_'.$vs_element_name])) {
+				if (!is_array($element_info['values'])) { $element_info['values'] = []; }
+			    $va_element_values[$ps_name.'_'.$vs_element_name] = $element_info['values'][0];
 			}
 
 			if ($pb_generate_for_search_form) {
@@ -1274,7 +1106,7 @@ class MultipartIDNumber extends IDNumber {
 			}
 			$va_tmp[$vs_element_name] = $va_element_values[$ps_name.'_'.$vs_element_name];
 
-			if ($vn_zeropad_to_length = caGetOption('zeropad_to_length', $va_element_info, null)) {
+			if ($vn_zeropad_to_length = caGetOption('zeropad_to_length', $element_info, null)) {
 				$va_tmp[$vs_element_name] = str_pad($va_tmp[$vs_element_name], $vn_zeropad_to_length, "0", STR_PAD_LEFT);
 			}
 
@@ -1306,12 +1138,12 @@ class MultipartIDNumber extends IDNumber {
 	/**
 	 * Return width of specified element
 	 *
-	 * @param array $pa_element_info Array of information about the specified element, as returned by getElements()
+	 * @param array $element_info Array of information about the specified element, as returned by getElements()
 	 * @param int $pn_default Default width, in characters, to use when width is not set in element info [Default is 3]
 	 * @return int Width, in characters
 	 */
-	private function getElementWidth($pa_element_info, $pn_default=3) {
-		$vn_width = isset($pa_element_info['width']) ? $pa_element_info['width'] : 0;
+	private function getElementWidth($element_info, $pn_default=3) {
+		$vn_width = isset($element_info['width']) ? $element_info['width'] : 0;
 		if ($vn_width <= 0) { $vn_width = $pn_default; }
 
 		return $vn_width;
@@ -1325,11 +1157,11 @@ class MultipartIDNumber extends IDNumber {
 	 * @param string $ps_value An optional value to extract form values from. If null, values are pulled from the current request. [Default is null]
 	 * @param string $ps_id_prefix Prefix to add to element ID attributes. [Default is null]
 	 * @param bool $pb_generate_for_search_form Return array of empty values suitable for use in a search (not editing) form. [Default is false]
-	 * @param array $pa_options Options include:
+	 * @param array $options Options include:
 	 *		readonly = Make form element read-only. [Default is false]
 	 * @return string HTML output
 	 */
-	private function genNumberElement($ps_element_name, $ps_name, $ps_value, $ps_id_prefix=null, $pb_generate_for_search_form=false, $pa_options=null) {
+	private function genNumberElement($ps_element_name, $ps_name, $ps_value, $ps_id_prefix=null, $pb_generate_for_search_form=false, $options=null) {
 		if (!($vs_format = $this->getFormat())) {
 			return null;
 		}
@@ -1338,51 +1170,51 @@ class MultipartIDNumber extends IDNumber {
 		}
 		$vs_element = '';
 
-		$va_element_info = $this->formats[$vs_format][$vs_type]['elements'][$ps_element_name];
+		$element_info = $this->formats[$vs_format][$vs_type]['elements'][$ps_element_name];
 		$vs_element_form_name = $ps_name.'_'.$ps_element_name;
 
 		$vs_element_value = $ps_value;
-		switch($va_element_info['type']) {
+		switch($element_info['type']) {
 			# ----------------------------------------------------
 			case 'LIST':
-				if (!is_array($va_element_info['values'])) { $va_element_info['values'] = []; }
-				if (!$vs_element_value || $va_element_info['editable'] || $pb_generate_for_search_form) {
-					if (!$vs_element_value && !$pb_generate_for_search_form) { $vs_element_value = $va_element_info['default']; }
+				if (!is_array($element_info['values'])) { $element_info['values'] = []; }
+				if (!$vs_element_value || $element_info['editable'] || $pb_generate_for_search_form) {
+					if (!$vs_element_value && !$pb_generate_for_search_form) { $vs_element_value = $element_info['default']; }
 					$vs_element = '<select name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'">';
 					if ($pb_generate_for_search_form) {
 						$vs_element .= "<option value='' selected='selected'>-</option>";
 					}
-					foreach ($va_element_info['values'] as $ps_value) {
+					foreach ($element_info['values'] as $ps_value) {
 						if (trim($ps_value) === trim($vs_element_value)) { $vs_selected = ' selected="selected"'; } else { $vs_selected = ''; }
 						$vs_element .= '<option value="'.$ps_value.'"'.$vs_selected.'>'.$ps_value.'</option>';
 					}
 
 					if (!$pb_generate_for_search_form) {
-						if (!in_array($vs_element_value, $va_element_info['values']) && strlen($vs_element_value) > 0) {
+						if (!in_array($vs_element_value, $element_info['values']) && strlen($vs_element_value) > 0) {
 							$vs_element .= '<option value="'.$vs_element_value.'" selected="selected">'.$vs_element_value.'</option>';
 						}
 					}
 
 					$vs_element .= '</select>';
 				} else {
-					$vs_element_val_proc = (in_array($vs_element_value, $va_element_info['values']) ? $vs_element_value : $va_element_info['values'][0]);
+					$vs_element_val_proc = (in_array($vs_element_value, $element_info['values']) ? $vs_element_value : $element_info['values'][0]);
 					$vs_element .= '<input type="hidden" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_val_proc, ENT_QUOTES, 'UTF-8').'"/>'.$vs_element_val_proc;
 				}
 
 				break;
 			# ----------------------------------------------------
 			case 'SERIAL':
-				$vn_width = $this->getElementWidth($va_element_info, 3);
+				$vn_width = $this->getElementWidth($element_info, 3);
 
 				if ($pb_generate_for_search_form) {
-					$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="" maxlength="'.$vn_width.'" size="'.$vn_width.'"'.($pa_options['readonly'] ? ' disabled="1" ' : '').'/>';
+					$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="" maxlength="'.$vn_width.'" size="'.$vn_width.'"'.($options['readonly'] ? ' disabled="1" ' : '').'/>';
 				} else {
 					if ($vs_element_value == '') {
 						$vs_next_num = $this->getNextValue($ps_element_name, null, true);
-						$vs_element .= '&lt;'._t('Will be assigned %1 when saved', $vs_next_num).'&gt;';
+						$vs_element .= "<span id='".$ps_id_prefix.$vs_element_form_name."'>&lt;"._t('Will be assigned %1 when saved', $vs_next_num)."&gt;</span>";
 					} else {
-						if ($va_element_info['editable']) {
-							$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_value, ENT_QUOTES, 'UTF-8').'" size="'.$vn_width.'" maxlength="'.$vn_width.'"'.($pa_options['readonly'] ? ' disabled="1" ' : '').'/>';
+						if ($element_info['editable']) {
+							$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_value, ENT_QUOTES, 'UTF-8').'" size="'.$vn_width.'" maxlength="'.$vn_width.'"'.($options['readonly'] ? ' disabled="1" ' : '').'/>';
 						} else {
 							$vs_element .= '<input type="hidden" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_value, ENT_QUOTES, 'UTF-8').'"/>'.$vs_element_value;
 						}
@@ -1391,11 +1223,11 @@ class MultipartIDNumber extends IDNumber {
 				break;
 			# ----------------------------------------------------
 			case 'CONSTANT':
-				$vn_width = $this->getElementWidth($va_element_info, 3);
+				$vn_width = $this->getElementWidth($element_info, 3);
 
-				if (!$vs_element_value) { $vs_element_value = $va_element_info['value']; }
-				if ($va_element_info['editable'] || $pb_generate_for_search_form) {
-					$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_value, ENT_QUOTES, 'UTF-8').'" size="'.$vn_width.'"'.($pa_options['readonly'] ? ' disabled="1" ' : '').'/>';
+				if (!$vs_element_value) { $vs_element_value = $element_info['value']; }
+				if ($element_info['editable'] || $pb_generate_for_search_form) {
+					$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_value, ENT_QUOTES, 'UTF-8').'" size="'.$vn_width.'"'.($options['readonly'] ? ' disabled="1" ' : '').'/>';
 				} else {
 					$vs_element .= '<input type="hidden" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_value, ENT_QUOTES, 'UTF-8').'"/>'.$vs_element_value;
 				}
@@ -1404,10 +1236,10 @@ class MultipartIDNumber extends IDNumber {
 			case 'FREE':
 			case 'NUMERIC':
 			case 'ALPHANUMERIC':
-				if (!$vs_element_value && !$pb_generate_for_search_form) { $vs_element_value = $va_element_info['default']; }
-				$vn_width = $this->getElementWidth($va_element_info, 3);
-				if (!$vs_element_value || $va_element_info['editable'] || $pb_generate_for_search_form) {
-					$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_value, ENT_QUOTES, 'UTF-8').'" size="'.$vn_width.'" maxlength="'.$vn_width.'"'.($pa_options['readonly'] ? ' disabled="1" ' : '').'/>';
+				if (!$vs_element_value && !$pb_generate_for_search_form) { $vs_element_value = $element_info['default']; }
+				$vn_width = $this->getElementWidth($element_info, 3);
+				if (!$vs_element_value || $element_info['editable'] || $pb_generate_for_search_form) {
+					$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_value, ENT_QUOTES, 'UTF-8').'" size="'.$vn_width.'" maxlength="'.$vn_width.'"'.($options['readonly'] ? ' disabled="1" ' : '').'/>';
 				} else {
 					$vs_element .= '<input type="hidden" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_value, ENT_QUOTES, 'UTF-8').'"/>'.$vs_element_value;
 				}
@@ -1416,24 +1248,24 @@ class MultipartIDNumber extends IDNumber {
 			case 'YEAR':
 			case 'MONTH':
 			case 'DAY':
-				$vn_width = $this->getElementWidth($va_element_info, 5);
+				$vn_width = $this->getElementWidth($element_info, 5);
 				$va_date = getdate();
 				if ($vs_element_value == '') {
 					$vn_value = '';
 					if (!$pb_generate_for_search_form) {
-						if ($va_element_info['type'] == 'YEAR') { $vn_value = ($va_element_info['width'] == 2) ? substr($va_date['year'], 2, 2) : $va_date['year']; }
-						if ($va_element_info['type'] == 'MONTH') { $vn_value = $va_date['mon']; }
-						if ($va_element_info['type'] == 'DAY') { $vn_value = $va_date['mday']; }
+						if ($element_info['type'] == 'YEAR') { $vn_value = ($element_info['width'] == 2) ? substr($va_date['year'], 2, 2) : $va_date['year']; }
+						if ($element_info['type'] == 'MONTH') { $vn_value = $va_date['mon']; }
+						if ($element_info['type'] == 'DAY') { $vn_value = $va_date['mday']; }
 					}
 
-					if ($va_element_info['editable'] || $pb_generate_for_search_form) {
-						$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vn_value, ENT_QUOTES, 'UTF-8').'" size="'.$vn_width.'"'.($pa_options['readonly'] ? ' disabled="1" ' : '').'/>';
+					if ($element_info['editable'] || $pb_generate_for_search_form) {
+						$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vn_value, ENT_QUOTES, 'UTF-8').'" size="'.$vn_width.'"'.($options['readonly'] ? ' disabled="1" ' : '').'/>';
 					} else {
 						$vs_element .= '<input type="hidden" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vn_value, ENT_QUOTES, 'UTF-8').'"/>'.$vn_value;
 					}
 				} else {
-					if ($va_element_info['editable'] || $pb_generate_for_search_form) {
-						$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_value, ENT_QUOTES, 'UTF-8').'" size="'.$vn_width.'"'.($pa_options['readonly'] ? ' disabled="1" ' : '').'/>';
+					if ($element_info['editable'] || $pb_generate_for_search_form) {
+						$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_value, ENT_QUOTES, 'UTF-8').'" size="'.$vn_width.'"'.($options['readonly'] ? ' disabled="1" ' : '').'/>';
 					} else {
 						$vs_element .= '<input type="hidden" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_value, ENT_QUOTES, 'UTF-8').'"/>'.$vs_element_value;
 					}
@@ -1442,17 +1274,17 @@ class MultipartIDNumber extends IDNumber {
 				break;
 			# ----------------------------------------------------
 				case 'PARENT':
-				$vn_width = $this->getElementWidth($va_element_info, 3);
+				$vn_width = $this->getElementWidth($element_info, 3);
 
 				if ($pb_generate_for_search_form) {
-					$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="" maxlength="'.$vn_width.'" size="'.$vn_width.'"'.($pa_options['readonly'] ? ' disabled="1" ' : '').'/>';
+					$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="" maxlength="'.$vn_width.'" size="'.$vn_width.'"'.($options['readonly'] ? ' disabled="1" ' : '').'/>';
 				} else {
 					if ($vs_element_value == '') {
 						$vs_next_num = $this->getParentValue();
 						$vs_element .= '&lt;'._t('%1', $vs_next_num).'&gt;'.'<input type="hidden" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_next_num, ENT_QUOTES, 'UTF-8').'"/>';
 					} else {
-						if ($va_element_info['editable']) {
-							$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_value, ENT_QUOTES, 'UTF-8').'" size="'.$vn_width.'" maxlength="'.$vn_width.'"'.($pa_options['readonly'] ? ' disabled="1" ' : '').'/>';
+						if ($element_info['editable']) {
+							$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_value, ENT_QUOTES, 'UTF-8').'" size="'.$vn_width.'" maxlength="'.$vn_width.'"'.($options['readonly'] ? ' disabled="1" ' : '').'/>';
 						} else {
 							$vs_element .= '<input type="hidden" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_value, ENT_QUOTES, 'UTF-8').'"/>'.$vs_element_value;
 						}
@@ -1476,27 +1308,6 @@ class MultipartIDNumber extends IDNumber {
 	 */
 	public function setDb($db) {
 		$this->db = $db;
-	}
-	# -------------------------------------------------------
-	/**
-	 * Returns true if editable is set to 1 for the identifier, otherwise returns false
-	 * Also, if the identifier consists of multiple elements, false will be returned.
-	 *
-	 * @param string $ps_format_name Name of format
-	 * @param array $pa_options Options include:
-	 *		singleElementsOnly = Only consider formats with a single editable element to be editable. [Default is false]
-	 * @return bool
-	 */
-	public function isFormatEditable($ps_format_name, $pa_options=null) {
-		if (!is_array($va_elements = $this->getElements())) { return false; }
-		
-		$vb_single_elements_only = caGetOption('singleElementsOnly', $pa_options, false);
-		
-		foreach($va_elements as $vs_element => $va_element_info) {
-			if (isset($va_element_info['editable']) && (bool)$va_element_info['editable']) { return true; }
-			if ($vb_single_elements_only) { return false; }
-		}
-		return false;
 	}
 	# -------------------------------------------------------
 }
