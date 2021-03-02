@@ -38,7 +38,19 @@ abstract class IDNumber implements IIDNumbering {
 	 * Instance of application configuration
 	 * @type Configuration
 	 */
-	protected $opo_config;
+	protected $config;
+	
+	/**
+	 * A configuration object loaded with multipart_id_numbering.conf
+	 * @type Configuration
+	 */
+	protected $idnumber_config;
+	
+	/**
+	 * A configuration object loaded with search.conf
+	 * @type Configuration
+	 */
+	protected $search_config;
 	
 	/**
 	 * The list of valid formats, related types and elements
@@ -50,38 +62,65 @@ abstract class IDNumber implements IIDNumbering {
 	 * The current format
 	 * @type string
 	 */
-	protected $ops_format;
+	protected $format;
 	
 	/**
 	 * The current type
 	 * @type string
 	 */
-	protected $ops_type = '__default__';
+	protected $type = '__default__';
 	
 	/**
 	 * The current value
 	 * @type string
 	 */
-	protected $ops_value = null;
+	protected $value = null;
 	
 	/**
 	 * Flag indicating whether record has a parent
 	 * @type bool
 	 */
-	protected $opb_is_child = false;
+	protected $is_child = false;
 	
 	/**
 	 * Identifier value for parent, if present
 	 * @type string
 	 */
-	protected $ops_parent_value = null;
+	protected $parent_value = null;
+	
+	/**
+	 * The current database connection object
+	 * @type Db
+	 */
+	protected $db;
 	
 	# -------------------------------------------------------
 	/**
-	 * Initialize and load configuration files
+	 * Initialize the plugin
+	 *
+	 * @param string $format A format to set as current [Default is null]
+	 * @param mixed $type A type to set a current [Default is __default__] 
+	 * @param string $value A value to set as current [Default is null]
+	 * @param Db $db A database connection to use for all queries. If omitted a new connection (may be pooled) is allocated. [Default is null]
 	 */
-	public function __construct() {
-		$this->opo_config = Configuration::load();
+	public function __construct($format=null, $type=null, $value=null, $db=null) {
+		$this->config = Configuration::load();
+		$this->idnumber_config = Configuration::load(__CA_APP_DIR__."/conf/multipart_id_numbering.conf");
+		$this->search_config = Configuration::load(__CA_APP_DIR__."/conf/search.conf");
+		$this->formats = $this->idnumber_config->getAssoc('formats');
+		
+		if (!$type) { $type = ['__default__']; }
+		
+		if ($format) { $this->setFormat($format); }
+		if ($type) { $this->setType($type); }
+		if ($value) { $this->setValue($value); }
+		
+		
+		if ((!$db) || !is_object($db)) {
+			$this->db = new Db();
+		} else {
+			$this->db = $db;
+		}
 	}
 	# -------------------------------------------------------
 	# Formats
@@ -89,12 +128,12 @@ abstract class IDNumber implements IIDNumbering {
 	/**
 	 * Set the current format
 	 *
-	 * @param string $ps_format A valid format
+	 * @param string $format A valid format
 	 * @return bool True on success, false if format was invalid
 	 */
-	public function setFormat($ps_format) {
-		if ($this->isValidFormat($ps_format)) {
-			$this->ops_format = $ps_format;
+	public function setFormat($format) {
+		if ($this->isValidFormat($format)) {
+			$this->format = $format;
 			return true;
 		}
 		return false;
@@ -106,7 +145,7 @@ abstract class IDNumber implements IIDNumbering {
 	 * @return string
 	 */
 	public function getFormat() {
-		return $this->ops_format;
+		return $this->format;
 	}
 	# -------------------------------------------------------
 	# Child number generation
@@ -114,17 +153,17 @@ abstract class IDNumber implements IIDNumbering {
 	/**
 	 * Get or set is_child flag indicating if the current record value is for a record with a parent
 	 *
-	 * @param bool $pb_is_child Set the is_child flag.  [Default is null]
-	 * @param string $ps_parent_value Optional parent identifier value, used to populate PARENT elements in multipart id numbers (and perhaps in other plugins as well) [Default is null]
+	 * @param bool $is_child Set the is_child flag.  [Default is null]
+	 * @param string $parent_value Optional parent identifier value, used to populate PARENT elements in multipart id numbers (and perhaps in other plugins as well) [Default is null]
 	 * @return bool Current state is is_child flag
 	 */
-	public function isChild($pb_is_child=null, $ps_parent_value=null) {
-		if (!is_null($pb_is_child)) {
+	public function isChild($is_child=null, $parent_value=null) {
+		if (!is_null($is_child)) {
 			
-			$this->opb_is_child = (bool)$pb_is_child;
-			$this->ops_parent_value = $pb_is_child ? $ps_parent_value : null;
+			$this->is_child = (bool)$is_child;
+			$this->parent_value = $is_child ? $parent_value : null;
 		}
-		return $this->opb_is_child;
+		return $this->is_child;
 	}
 	# -------------------------------------------------------
 	/**
@@ -133,7 +172,7 @@ abstract class IDNumber implements IIDNumbering {
 	 * @return string
 	 */
 	public function getParentValue() {
-		return $this->ops_parent_value;
+		return $this->parent_value;
 	}
 	# -------------------------------------------------------
 	# Types
@@ -145,17 +184,17 @@ abstract class IDNumber implements IIDNumbering {
 	 * 				valid type is found. If no valid types are found the type will be set to '__default__'
 	 * @return bool True if a valid type is found and set, false if no valid type is found.
 	 */
-	public function setType($pm_type) {
-		if (!is_array($pm_type)) { $pm_type = array($pm_type); }
+	public function setType($types) {
+		if (!is_array($types)) { $types = [$types]; }
 		
-		foreach($pm_type as $ps_type) {
-			if (!$ps_type) { continue; }
-			if ($this->isValidType($ps_type)) {
-				$this->ops_type = $ps_type;
+		foreach($types as $type) {
+			if (!$type) { continue; }
+			if ($this->isValidType($type)) {
+				$this->type = $type;
 				return true;
 			}
 		}
-		$this->ops_type = '__default__';
+		$this->type = '__default__';
 		return false;
 	}
 	# -------------------------------------------------------
@@ -165,7 +204,7 @@ abstract class IDNumber implements IIDNumbering {
 	 * @return string 
 	 */
 	public function getType() {
-		return $this->ops_type;
+		return $this->type;
 	}
 	# -------------------------------------------------------
 	# Formats
@@ -182,24 +221,24 @@ abstract class IDNumber implements IIDNumbering {
 	/**
 	 * Check if format is present in configuration 
 	 *
-	 * @param string $ps_format The format to check
+	 * @param string $format The format to check
 	 * @return bool
 	 */
-	public function isValidFormat($ps_format) {
-		return in_array($ps_format, $this->getFormats());
+	public function isValidFormat($format) {
+		return in_array($format, $this->getFormats());
 	}
 	# -------------------------------------------------------
 	/**
 	 * Return property for current format
 	 *
-	 * @param string $ps_property A format property name (eg. "separator")
+	 * @param string $property A format property name (eg. "separator")
 	 * @param array $options Options include:
 	 *		default = Value to return if property does not exist [Default is null]
 	 * @return string
 	 */
-	public function getFormatProperty($ps_property, $options=null) {
-		if (($vs_format = $this->getFormat()) && ($vs_type = $this->getType()) && isset($this->formats[$vs_format][$vs_type][$ps_property])) {
-			return $this->formats[$vs_format][$vs_type][$ps_property] ? $this->formats[$vs_format][$vs_type][$ps_property] : '';
+	public function getFormatProperty($property, $options=null) {
+		if (($format = $this->getFormat()) && ($type = $this->getType()) && isset($this->formats[$format][$type][$property])) {
+			return $this->formats[$format][$type][$property] ? $this->formats[$format][$type][$property] : '';
 		}
 		return caGetOption('default', $options, null);
 	}
@@ -211,8 +250,8 @@ abstract class IDNumber implements IIDNumbering {
 	 * @return array List of elements as specified in "sort_order" setting, or null if there is no setting value
 	 */
 	public function getElementOrderForSort() {
-		if (($vs_format = $this->getFormat()) && ($vs_type = $this->getType()) && isset($this->formats[$vs_format][$vs_type]['sort_order'])) {
-			return (is_array($this->formats[$vs_format][$vs_type]['sort_order']) && sizeof($this->formats[$vs_format][$vs_type]['sort_order'])) ? $this->formats[$vs_format][$vs_type]['sort_order'] : null;
+		if (($format = $this->getFormat()) && ($type = $this->getType()) && isset($this->formats[$format][$type]['sort_order'])) {
+			return (is_array($this->formats[$format][$type]['sort_order']) && sizeof($this->formats[$format][$type]['sort_order'])) ? $this->formats[$format][$type]['sort_order'] : null;
 		}
 		return null;
 	}
@@ -221,50 +260,50 @@ abstract class IDNumber implements IIDNumbering {
 	 * Determine if the specified format and type contains an element of a given type. A specific element position may be specified. If 
 	 * omitted all elements will be examined.
 	 *
-	 * @param string $ps_element_type The type of element to look for (Eg. SERIAL, YEAR, LIST)
-	 * @param int $pn_index The zero-based position in the element list to examine. If omitted all elements are examined. [Default is null]
-	 * @param string $ps_format A format to test. If omitted the current format is used. [Default is null]
-	 * @param string $ps_type A type to test. If omitted the current type is used. [Default is null]
+	 * @param string $element_type The type of element to look for (Eg. SERIAL, YEAR, LIST)
+	 * @param int $index The zero-based position in the element list to examine. If omitted all elements are examined. [Default is null]
+	 * @param string $format A format to test. If omitted the current format is used. [Default is null]
+	 * @param string $type A type to test. If omitted the current type is used. [Default is null]
 	 * @param array $options Options include:
 	 *		checkLastElementOnly = check only the last element in the element list. This is the same as setting $pn_index to the last element, but saves you having to calculate what that index is. [Default is null]
 	 * @return bool
 	 */
-	public function formatHas($ps_element_type, $pn_index=null, $ps_format=null, $ps_type=null, $options=null) {
-		if ($ps_format) {
-			if (!$this->isValidFormat($ps_format)) {
+	public function formatHas($element_type, $index=null, $format=null, $type=null, $options=null) {
+		if ($format) {
+			if (!$this->isValidFormat($format)) {
 				return false;
 			}
-			$vs_format = $ps_format;
+			$format = $format;
 		} else {
 			if(!($vs_format = $this->getFormat())) {
 				return false;
 			}
 		}
-		if ($ps_type) {
-			if (!$this->isValidType($ps_type)) {
+		if ($type) {
+			if (!$this->isValidType($type)) {
 				return false;
 			}
-			$vs_type = $ps_type;
+			$t = $type;
 		} else {
-			if(!($vs_type = $this->getType())) {
+			if(!($t = $this->getType())) {
 				return false;
 			}
 		}
 
-		$va_elements = $this->formats[$vs_format][$vs_type]['elements'];
+		$elements = $this->formats[$format][$t]['elements'];
 		
-		if (!is_null($pn_index) && isset($va_elements[$pn_index])) { $va_elements = array($va_elements[$pn_index]); }
+		if (!is_null($index) && isset($va_elements[$index])) { $elements = [$elements[$index]]; }
 
-		if(!is_array($va_elements)) { return false; }
+		if(!is_array($elements)) { return false; }
 		
 		if (caGetOption('checkLastElementOnly', $options, false)) { 
-			$va_last_element = array_pop($va_elements);
-			return ($va_last_element['type'] == $ps_element_type) ? true : false;
+			$last_element = array_pop($elements);
+			return ($last_element['type'] == $element_type) ? true : false;
 		} 
 		
 		
-		foreach($va_elements as $va_element) {
-			if ($va_element['type'] == $ps_element_type) {
+		foreach($elements as $element) {
+			if ($element['type'] == $element_type) {
 				return true;
 			}
 		}
@@ -310,19 +349,23 @@ abstract class IDNumber implements IIDNumbering {
 	/**
 	 * Return list of elements configured in multipart_id_numbering.conf for the current format and type
 	 *
+	 * @param string $format Format to get elements for. If omitted currently loaded format is used. [Default is null]
+	 * @param string $type Type to get elements for. If omitted currently loaded type is used. [Default is null]
 	 * @return array An array of element information arrays, of the same format as returned by getElementInfo(), or null if the format and type are not set
 	 */
-	public function getElements() {
-		if (($vs_format = $this->getFormat()) && ($vs_type = $this->getType())) {
-			if (is_array($this->formats[$vs_format][$vs_type]['elements'])) {
-				$vb_is_child = $this->isChild();
-				$va_elements = array();
-				foreach($this->formats[$vs_format][$vs_type]['elements'] as $vs_k => $element_info) {
-					if (!$vb_is_child && isset($element_info['child_only']) && (bool)$element_info['child_only']) { continue; }
-					$va_elements[$vs_k] = $element_info;
+	public function getElements($format=null, $type=null) {
+		if(is_null($format)) { $format = $this->getFormat(); }
+		if(is_null($type)) { $type = $this->getType(); }
+		if ($format && $type) {
+			if (is_array($this->formats[$format][$type]['elements'])) {
+				$is_child = $this->isChild();
+				$elements = [];
+				foreach($this->formats[$format][$type]['elements'] as $k => $element_info) {
+					if (!$is_child && isset($element_info['child_only']) && (bool)$element_info['child_only']) { continue; }
+					$elements[$k] = $element_info;
 				}
 			}
-			return $va_elements;
+			return $elements;
 		}
 		return null;
 	}
@@ -330,12 +373,12 @@ abstract class IDNumber implements IIDNumbering {
 	/**
 	 * Return array of configuration from multipart_id_numbering.conf for the specified element in the current format and type
 	 *
-	 * @param string $ps_element_name The element to return information for
+	 * @param string $element_name The element to return information for
 	 * @return array An array of information with the same keys as in multipart_id_numbering.conf, or null if the element does not exist
 	 */
-	public function getElementInfo($ps_element_name) {
-		if (($vs_format = $this->getFormat()) && ($vs_type = $this->getType())) {
-			return $this->formats[$vs_format][$vs_type]['elements'][$ps_element_name];
+	public function getElementInfo($element_name) {
+		if (($format = $this->getFormat()) && ($type = $this->getType())) {
+			return $this->formats[$format][$type]['elements'][$element_name];
 		}
 		return null;
 	}
@@ -344,19 +387,21 @@ abstract class IDNumber implements IIDNumbering {
 	 * Returns true if editable is set to 1 for the identifier, otherwise returns false
 	 * Also, if the identifier consists of multiple elements, false will be returned.
 	 *
-	 * @param string $ps_format_name Name of format
+	 * @param string $format Name of format
 	 * @param array $options Options include:
 	 *		singleElementsOnly = Only consider formats with a single editable element to be editable. [Default is false]
 	 * @return bool
 	 */
-	public function isFormatEditable($ps_format_name, $options=null) {
-		if (!is_array($va_elements = $this->getElements())) { return false; }
+	public function isFormatEditable($format, $options=null) {
+		$types = $this->getTypes($format);
+		$single_elements_only = caGetOption('singleElementsOnly', $options, false);
+		foreach($types as $type) {
+			if (!is_array($elements = $this->getElements($format))) { continue; }
 		
-		$vb_single_elements_only = caGetOption('singleElementsOnly', $options, false);
-		
-		foreach($va_elements as $vs_element => $element_info) {
-			if (isset($element_info['editable']) && (bool)$element_info['editable']) { return true; }
-			if ($vb_single_elements_only) { return false; }
+			foreach($elements as $ename => $info) {
+				if (isset($info['editable']) && (bool)$info['editable']) { return true; }
+				if ($single_elements_only) { break; }
+			}
 		}
 		return false;
 	}
@@ -369,8 +414,8 @@ abstract class IDNumber implements IIDNumbering {
 	 * @param string $ps_value The value of the current identifier
 	 * @return void 
 	 */
-	public function setValue($ps_value) {
-		$this->ops_value = $ps_value;
+	public function setValue($value) {
+		$this->value = $value;
 	}
 	# -------------------------------------------------------
 	/**
@@ -379,8 +424,18 @@ abstract class IDNumber implements IIDNumbering {
 	 * @param array $pa_options No options are defined.
 	 * @return string
 	 */
-	public function getValue($pa_options=null) {
-		return $this->ops_value;
+	public function getValue($options=null) {
+		return $this->value;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Set database connection to use for queries
+	 *
+	 * @param Db $po_db A database connection instance
+	 * @return void
+	 */
+	public function setDb($db) {
+		$this->db = $db;
 	}
 	# -------------------------------------------------------
 }

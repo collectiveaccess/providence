@@ -28,49 +28,20 @@
  */
 
 require_once(__CA_LIB_DIR__ . "/IDNumbering/IDNumber.php");
-require_once(__CA_LIB_DIR__ . "/IDNumbering/IIDNumbering.php");
 require_once(__CA_APP_DIR__ . "/helpers/navigationHelpers.php");
 
 class UUIDNumber extends IDNumber implements IIDNumbering {
 	# -------------------------------------------------------
 	/**
-	 * A configuration object loaded with multipart_id_numbering.conf
-	 * @type Configuration
-	 */
-	private $idnumber_config;
-
-	/**
-	 * A configuration object loaded with search.conf
-	 * @type Configuration
-	 */
-	private $search_config;
-
-	/**
-	 * The current database connection object
-	 * @type Db
-	 */
-	private $db;
-
-	# -------------------------------------------------------
-	/**
+	 * Initialize the plugin
 	 *
+	 * @param string $format A format to set as current [Default is null]
+	 * @param mixed $type A type to set a current [Default is __default__] 
+	 * @param string $value A value to set as current [Default is null]
+	 * @param Db $db A database connection to use for all queries. If omitted a new connection (may be pooled) is allocated. [Default is null]
 	 */
 	public function __construct($format=null, $type=null, $value=null, $db=null) {
-		if (!$type) { $type = array('__default__'); }
-
-		parent::__construct();
-		$this->idnumber_config = Configuration::load($this->opo_config->get('multipart_id_numbering_config'));
-		$this->formats = $this->idnumber_config->getAssoc('formats');
-
-		if ($format) { $this->setFormat($format); }
-		if ($type) { $this->setType($type); }
-		if ($value) { $this->setValue($value); }
-
-		if ((!$db) || !is_object($db)) {
-			$this->db = new Db();
-		} else {
-			$this->db = $db;
-		}
+		parent::__construct($format, $type, $value, $db);
 	}
 	# -------------------------------------------------------
 	/**
@@ -275,7 +246,7 @@ class UUIDNumber extends IDNumber implements IIDNumbering {
 
 		$element_form_name = $name.'_'.$element_name;
 		$width = $this->getElementWidth($element_info, 3);
-		if(preg_match("/^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$/", $value) == true){
+		if(caIsGUID($value)) {
 			if ($element_info['editable'] || $generate_for_search_form) {
 				$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'" maxlength="'.$width.'"'.($options['readonly'] ? ' readonly="readonly" ' : '').'/>';
 			} else {
@@ -295,13 +266,6 @@ class UUIDNumber extends IDNumber implements IIDNumbering {
 		}
 		
 		return $element;
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	public function setDb($db) {
-		$this->db = $db;
 	}
 	# -------------------------------------------------------
 	/**
