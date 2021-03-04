@@ -115,6 +115,7 @@ class SearchIndexer extends SearchBase {
 	 * Returns a list of tables the require indexing
 	 */
 	public function getIndexedTables() {
+		if(ExternalCache::contains('getIndexedTables')) {  return ExternalCache::fetch('getIndexedTables'); };
 		$va_table_names = Datamodel::getTableNames();
 
 		$o_db = $this->opo_db;
@@ -127,7 +128,7 @@ class SearchIndexer extends SearchBase {
 				continue;
 			}
 
-			$qr_all = $o_db->query("SELECT count(*) c FROM $vs_table");
+			$qr_all = $o_db->query("SELECT count(*) c FROM {$vs_table}".($t_instance->hasField('delete') ? "WHERE deleted = 0" : ""));
 			$qr_all->nextRow();
 			$vn_num_rows = (int)$qr_all->get('c');
 
@@ -143,6 +144,7 @@ class SearchIndexer extends SearchBase {
 			$va_sorted_tables[$va_tables_to_index[$vs_table]['num']] = $va_tables_to_index[$vs_table];
 		}
 
+		ExternalCache::save('getIndexedTables', $va_sorted_tables, 'SearchIndexer', 3600);
 		return $va_sorted_tables;
 	}
 	# -------------------------------------------------------
