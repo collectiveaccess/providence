@@ -115,7 +115,7 @@ class SearchIndexer extends SearchBase {
 	 * Returns a list of tables the require indexing
 	 */
 	public function getIndexedTables() {
-		if(ExternalCache::contains('getIndexedTables')) {  return ExternalCache::fetch('getIndexedTables'); };
+		if(ExternalCache::contains('getIndexedTables', 'SearchIndexer')) {  return ExternalCache::fetch('getIndexedTables', 'SearchIndexer'); };
 		$va_table_names = Datamodel::getTableNames();
 
 		$o_db = $this->opo_db;
