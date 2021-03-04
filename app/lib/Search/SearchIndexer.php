@@ -371,14 +371,14 @@ class SearchIndexer extends SearchBase {
 	 */
 	public function getDependencies($ps_subject_table) {
 		/* handle total cache miss (completely new cache has been generated) */
-		if(ExternalCache::contains('ca_table_dependency_array')) {
-			$va_cache_data = ExternalCache::fetch('ca_table_dependency_array');
+		if(ExternalCache::contains('ca_table_dependency_array', 'SearchIndexer')) {
+			$va_cache_data = ExternalCache::fetch('ca_table_dependency_array', 'SearchIndexer');
 		}
 
 		/* cache outdated? (i.e. changes to search_indexing.conf) */
 		$va_configfile_stat = stat(__CA_CONF_DIR__.'/search_indexing.conf');
-		if($va_configfile_stat['mtime'] != ExternalCache::fetch('ca_table_dependency_array_mtime')) {
-			ExternalCache::save('ca_table_dependency_array_mtime', $va_configfile_stat['mtime']);
+		if($va_configfile_stat['mtime'] != ExternalCache::fetch('ca_table_dependency_array_mtime', 'SearchIndexer')) {
+			ExternalCache::save('ca_table_dependency_array_mtime', $va_configfile_stat['mtime'], 'SearchIndexer');
 			$va_cache_data = array();
 		}
 
@@ -391,7 +391,7 @@ class SearchIndexer extends SearchBase {
 			/* build dependency graph, store it in cache and return it */
 			$va_deps = $this->_getDependencies($ps_subject_table);
 			$va_cache_data[$ps_subject_table] = $va_deps;
-			ExternalCache::save('ca_table_dependency_array', $va_cache_data);
+			ExternalCache::save('ca_table_dependency_array', $va_cache_data, 'SearchIndexer');
 			return $va_deps;
 		}
 	}
