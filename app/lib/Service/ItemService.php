@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2020 Whirl-i-Gig
+ * Copyright 2012-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -776,7 +776,11 @@ class ItemService extends BaseJSONService {
 		// intrinsic fields
 		if(is_array($pa_data["intrinsic_fields"]) && sizeof($pa_data["intrinsic_fields"])) {
 			foreach($pa_data["intrinsic_fields"] as $vs_field_name => $vs_value) {
-				$t_instance->set($vs_field_name,$vs_value);
+				if (($vs_field_name === $t_instance->getProperty('ID_NUMBERING_ID_FIELD')) && (strpos($vs_value, '%') !== false)) {
+					$t_instance->setIdnoWithTemplate($vs_value);
+				} else {
+					$t_instance->set($vs_field_name,$vs_value);
+				}
 			}
 		} else {
 			$this->addError(_t("No intrinsic fields specified"));

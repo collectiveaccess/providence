@@ -606,7 +606,7 @@ class Installer {
 			$va_lists = $this->opo_profile->lists->children();
 		}
 
-		$o_trans = new Transaction();
+		//$o_trans = new Transaction();
 
 		$vn_i = 0;
 		$vn_num_lists = sizeof($va_lists);
@@ -616,7 +616,7 @@ class Installer {
 			if(!($t_list = ca_lists::find(array('list_code' => $vs_list_code), array('returnAs' => 'firstModelInstance')))) {
 				$t_list = new ca_lists();
 			}
-			$t_list->setTransaction($o_trans);
+			//$t_list->setTransaction($o_trans);
 
 			if($t_list->getPrimaryKey()) {
 				$this->logStatus(_t('List %1 already exists', $vs_list_code));
@@ -629,7 +629,7 @@ class Installer {
 			if(self::getAttribute($vo_list, "deleted") && $t_list->getPrimaryKey()) {
 				$this->logStatus(_t('Deleting list %1', $vs_list_code));
 				$t_list->delete(true);
-				$o_trans->commit();
+				//$o_trans->commit();
 				continue;
 			}
 
@@ -665,10 +665,10 @@ class Installer {
 				}
 				if($vo_list->items) {
 					if(!$this->processListItems($t_list, $vo_list->items, null)) {
-						$o_trans->rollback();
+						//$o_trans->rollback();
 						return false;
 					}
-					$o_trans->commit();
+					//$o_trans->commit();
 				}
 			}
 		}
