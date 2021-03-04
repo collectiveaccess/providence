@@ -65,6 +65,8 @@ class MultipartIDNumber extends IDNumber {
 	 * @return bool
 	 */
 	public function isSerialFormat($format=null, $type=null) {
+		if(!$format) { $format = $this->getFormat(); }
+		if(!$type) { $type = $this->getType(); }
 		if (!$this->isValidType($type, $format)) { $type = '__default__'; }
 		return $this->formatHas('SERIAL', null, $format, $type, ['checkLastElementOnly' => true]);
 	}
@@ -245,8 +247,8 @@ class MultipartIDNumber extends IDNumber {
 					break;
 				case 'SERIAL':
 					if ($v) {
-						if (!preg_match("/^[A-Za-z0-9]+$/", $v)) {
-							$element_errors[$ename] = _t("'%1' is not valid for %2; only letters and numbers are allowed", $v, $info['description']);
+						if (!preg_match("/^[0-9]+$/", $v)) {
+							$element_errors[$ename] = _t("'%1' is not valid for %2; only numbers are allowed", $v, $info['description']);
 						}
 					}
 					break;
@@ -473,18 +475,16 @@ class MultipartIDNumber extends IDNumber {
 		
 		$deleted_limit_sql = ($t_instance->hasField('deleted') ? " AND (deleted = 0)" : '');
 		
-		$field_limit_sql = ($stub === '') ? "{$field} <> ''" : "{$field} LIKE ?";
-		
 		if($stub === '') {
 			$field_limit_sql = "{$field} <> ''";
-			$params = ['%'];
+			$params = [];
 		} else {
 			$field_limit_sql = "{$field} LIKE ?";
 			$params = [$stub.$separator.'%'];
-		}
+		} 
 		
 		
-		if ($qr_res = $this->db->query("
+		if ($qr_res = $this->db->query($s="
 			SELECT {$field} FROM {$table}
 			WHERE
 				{$field_limit_sql}
@@ -548,7 +548,10 @@ class MultipartIDNumber extends IDNumber {
 		if (!is_array($elements_normal_order = $this->getElements())) { $elements_normal_order = []; }
 		$element_names_normal_order = array_keys($elements_normal_order);
 
-		if (!($elements = $this->getElementOrderForSort())) { $elements = $element_names_normal_order; }
+		if (
+			!($elements = $this->getElementOrderForSort()) || 
+			(sizeof(array_intersect($elements, $element_names_normal_order)) !== sizeof($element_names_normal_order))
+		) { $elements = $element_names_normal_order; }
 		$element_values = $this->explodeValue($value ?: $this->getValue());
 		$output = [];
 
@@ -641,9 +644,7 @@ class MultipartIDNumber extends IDNumber {
 	public function getIndexValues($value=null, $options=null) {
 		$separator = $this->getSeparator();
 		if (!is_array($elements_normal_order = $this->getElements())) { $elements_normal_order = []; }
-		$element_names_normal_order = array_keys($elements_normal_order);
-
-		if (!($elements = $this->getElementOrderForSort())) { $elements = $element_names_normal_order; }
+		$elements = array_keys($elements_normal_order);
 		$element_values = $this->explodeValue($value ?: $this->getValue());
 		
 		$output = [join($separator, $element_values)];
@@ -652,7 +653,7 @@ class MultipartIDNumber extends IDNumber {
 		// element-specific processing
 		foreach($elements as $element) {
 			$element_info = $elements_normal_order[$element];
-			$i = array_search($element, $element_names_normal_order);
+			$i = array_search($element, $elements);
             if(!is_array($output[$i])) { $output[$i] = []; }
 			switch($element_info['type']) {
 				case 'LIST':
@@ -699,7 +700,7 @@ class MultipartIDNumber extends IDNumber {
 			foreach($elements as $element) {
 				if (!isset($output[$i][0])) { continue; }
 
-				$i = array_search($element, $element_names_normal_order);
+				$i = array_search($element, $elements);
 				if (isset($output[$i][$c])) {
 					$output_values_buf[] = $output[$i][$c];
 				} else {
@@ -754,7 +755,7 @@ class MultipartIDNumber extends IDNumber {
 		        $output_values = array_merge($output_values, preg_split("![".preg_quote(join('', $delimiters), "!")."]!", $value));
 		    }
 		}
-		return $output_values;
+		return array_values(array_unique(array_filter($output_values, 'strlen')));
 	}
 	# -------------------------------------------------------
 	# User interace (HTML)
