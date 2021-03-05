@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -557,9 +557,11 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 					// force all images to true color (takes care of GIF transparency for one thing...)
 					$this->handle->setImageType(imagick::IMGTYPE_TRUECOLOR);
 
-					if (!$this->handle->setImageColorspace(imagick::COLORSPACE_RGB)) {
-						$this->postError(1610, _t("Error during RGB colorspace transformation operation"), "WLPlugImagick->read()");
-						return false;
+					if($this->handle->getImageColorspace() === imagick::COLORSPACE_CMYK) {
+						if (!$this->handle->setImageColorspace(imagick::COLORSPACE_RGB)) {
+							$this->postError(1610, _t("Error during RGB colorspace transformation operation"), "WLPlugImagick->read()");
+							return false;
+						}
 					}
 					
 					$this->properties["mimetype"] = $this->_getMagickImageMimeType($this->handle);
@@ -963,7 +965,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			
 			$background = caGetOption('background', $this->properties, "#FFFFFF");
 			$this->handle->setImageBackgroundColor(new ImagickPixel($background));
-			$this->handle->setImageMatteColor(new ImagickPixel($background));
+			if(method_exists($this->handle, 'setImageMatteColor')) { $this->handle->setImageMatteColor(new ImagickPixel($background)); }
 		
 			if ($this->properties['gamma']) {
 				if (!$this->properties['reference-black']) { $this->properties['reference-black'] = 0; }
@@ -982,9 +984,6 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 					case 'color':
 						$vn_colorspace = imagick::COLORSPACE_RGB;
 						break;
-					case 'sRGB':
-						$vn_colorspace = imagick::COLORSPACE_SRGB;
-						break;
 					case 'CMYK':
 						$vn_colorspace = imagick::COLORSPACE_CMYK;
 						break;
@@ -992,11 +991,15 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 						$vn_colorspace = imagick::COLORSPACE_GRAY;
 						$this->handle->setimagedepth(1);
 						break;
+					default:
+					case 'sRGB':
+						$vn_colorspace = imagick::COLORSPACE_SRGB;
+						break;
 				}
-				if ($vn_colorspace) { $this->handle->setimagecolorspace($vn_colorspace); }
+				if (!is_null($vn_colorspace) && ($vn_colorspace !== $this->handle->getImageColorspace())) { $this->handle->setimagecolorspace($vn_colorspace); }
 			}
 			
-			$this->handle->stripImage();	// remove all lingering metadata
+			//$this->handle->stripImage();	// remove all lingering metadata
 			
 			# write the file
 			try {

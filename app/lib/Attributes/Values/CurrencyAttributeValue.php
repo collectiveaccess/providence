@@ -227,6 +227,9 @@
  			return $vs_val;
 		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
 			$o_config = Configuration::load();
 			

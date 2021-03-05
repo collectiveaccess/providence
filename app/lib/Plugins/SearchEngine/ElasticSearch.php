@@ -111,7 +111,12 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @throws \Exception
 	 */
 	public function refreshMapping($pb_force=false) {
-		$o_mapping = new ElasticSearch\Mapping();
+
+		static $o_mapping;
+		if (!$o_mapping) {
+			$o_mapping= new ElasticSearch\Mapping();
+		}
+
 		if($o_mapping->needsRefresh() || $pb_force) {
 			foreach ($o_mapping->get() as $table => $va_config) {
 				$index_name = $this->getIndexName($table);

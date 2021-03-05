@@ -2767,15 +2767,15 @@ function caFileIsIncludable($ps_file) {
 
 		// either
 		if (preg_match("!^([^\d]+)([\d\.\,]+)$!", trim($ps_value), $va_matches)) {
-			$vs_decimal_value = round((float)$va_matches[2], 2);
+			$vs_decimal_value = round((float)str_replace(',', '', $va_matches[2]), 2);
 			$vs_currency_specifier = trim($va_matches[1]);
 		// or 1
 		} else if (preg_match("!^([\d\.\,]+)([^\d]+)$!", trim($ps_value), $va_matches)) {
-			$vs_decimal_value = round((float)$va_matches[1], 2);
+			$vs_decimal_value = round((float)str_replace(',', '', $va_matches[1]), 2);
 			$vs_currency_specifier = trim($va_matches[2]);
 		// or 2
 		} else if (preg_match("!(^[\d\,\.]+$)!", trim($ps_value), $va_matches)) {
-			$vs_decimal_value = round((float)$va_matches[1], 2);
+			$vs_decimal_value = round((float)str_replace(',', '', $va_matches[1]), 2);
 			$vs_currency_specifier = null;
 		}
 

@@ -699,6 +699,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 
 		$vs_buf = "<div style='width: 100%; overflow: auto;'><table style='margin-left: ".($pn_level * 10)."px;'>";
 		foreach($pa_array as $vs_key => $vs_val) {
+			if (preg_match("!^Undefined!i", $vs_key)) { continue; }
 			$vs_val = preg_replace('![^A-Za-z0-9 \-_\+\!\@\#\$\%\^\&\*\(\)\[\]\{\}\?\<\>\,\.\"\'\=]+!', '', $vs_val);
 			switch($vs_key) {
 				case 'MakerNote':	// EXIF tags to skip output of
