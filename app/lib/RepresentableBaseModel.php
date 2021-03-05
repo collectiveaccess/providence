@@ -1230,7 +1230,23 @@
             		$d = [];
             		foreach($bundles_to_save as $b) {
             			$f = array_pop(explode('.', $b));
-            			$d[$f] = $qr_reps->get("ca_object_representations.{$f}");
+            			$v = $qr_reps->get("ca_object_representations.{$f}");
+            			
+            			// Set default for null values if 'useDefaultWhenNull' is set
+            			$e = ca_metadata_elements::getInstance($f);
+            			if(is_null($v) && $e) {
+            				if($e->get('datatype') === __CA_ATTRIBUTE_VALUE_LIST__) {
+								if ($e->getSetting('useDefaultWhenNull')) {
+									$d[$f] = caGetDefaultItemID($e->get('list_id'));
+									continue;
+								}
+							}
+							if($dt = $e->getSetting('default_text')) {
+								$d[$f] = $dt;	
+								continue;
+							}
+            			}
+            			$d[$f] = $v;
             		}
             	
             		$bundle_data[$qr_reps->get('ca_object_representations.representation_id')] = $d;
