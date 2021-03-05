@@ -989,6 +989,10 @@ class BaseModel extends BaseObject {
 					$vs_prop = htmlentities(html_entity_decode($vs_prop));
 				}
 				
+				if(($ps_field_type == FT_NUMBER) && isset($vs_prop) && is_numeric($vs_prop)) {
+					$vs_prop = (strpos('.', $vs_prop) !== false) ? (float)$vs_prop : (int)$vs_prop;
+				}
+				
 				//
 				// Convert foreign keys and choice list values to display text is needed
 				//
