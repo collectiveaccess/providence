@@ -425,6 +425,13 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	$terms = $query->getTerms();
 	 	$private_sql = ($this->getOption('omitPrivateIndexing') ? ' AND swi.access = 0' : '');
 	 	
+	 	$term = $terms[0];
+	 	$field = $term->field;
+	 	$field_lc = mb_strtolower($field);
+	 	$field_elements = explode('.', $field_lc);
+	 	if (in_array($field_elements[0], [_t('created'), _t('modified')])) {
+	 		return $this->_processQueryChangeLog($subject_tablenum, $query);
+	 	}
 	 	if ($this->getOption('strictPhraseSearching')) {
 	 		$words = [];
 	 		$temp_tables = [];
@@ -512,9 +519,17 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	/**
 	 *
 	 */
-	private function _processQueryChangeLog(int $subject_tablenum, Zend_Search_Lucene_Index_Term $term) {
-		$field = $term->field;
-	 	$text = $term->text;
+	private function _processQueryChangeLog(int $subject_tablenum, Object $term) {
+		switch(get_class($term)) {
+			case 'Zend_Search_Lucene_Search_Query_Term':
+	 			$text = $term->text;
+				$field = $term->field;
+	 			break;
+	 		case 'Zend_Search_Lucene_Search_Query_Phrase':
+	 			$text = join(' ', array_map(function($t) { return $t->text; }, $terms = $term->getTerms()));
+				$field = $terms[0]->field;
+	 			break;
+	 	}
 	 	
 	 	$field_lc = mb_strtolower($field);
 	 	$field_elements = explode('.', $field_lc);
@@ -555,7 +570,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					break;
 				case _t('modified'):
 					$qr_res = $this->db->query("
-							SELECT ccl.logged_row_id row_id
+							SELECT ccl.logged_row_id row_id, 1 boost
 							FROM ca_change_log ccl
 							WHERE
 								(ccl.log_datetime BETWEEN ? AND ?)
@@ -565,7 +580,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 								(ccl.changetype = 'U')
 								{$user_sql}
 						UNION
-							SELECT ccls.subject_row_id row_id
+							SELECT ccls.subject_row_id row_id, 1 boost
 							FROM ca_change_log ccl
 							INNER JOIN ca_change_log_subjects AS ccls ON ccls.log_id = ccl.log_id
 							WHERE
@@ -1473,6 +1488,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 *
 	 */
 	private function _queryForNumericAttribute($attrval, $ap, $text, $text_upper, $attr_field) {
+		list($text, $modifier) = $this->parseModifier($text);
 		if (!is_array($parsed_value = $attrval->parseValue($text, $ap['element_info']))) {
 			return null;
 		}
@@ -1480,7 +1496,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		if (!in_array($attr_field, ['value_integer1', 'value_decimal1'])) { 
 			throw new ApplicationException(_t('Invalid attribute field'));
 		}
-		
+		$parsed_value_end = $text_upper ? $attrval->parseValue($text_upper, $ap['element_info']) : null;
+				
 		if($ap['type'] === 'INTRINSIC') {
 			$tmp = explode('.', $ap['access_point']);
 			if (!($t_table = Datamodel::getInstance($tmp[0], true))) {
@@ -1489,37 +1506,53 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			
 			$pk = $t_table->primaryKey(true);
 			$table = $t_table->tableName();
-			$field_name = $tmp[1];
+			$field = $tmp[1];
 			
-			if(!$t_table->hasField($field_name)) { 
-				throw new ApplicationException(_t('Invalid field %1 in bundle %2', $tmp[1], $access_point));
+			if(!$t_table->hasField($field)) { 
+				throw new ApplicationException(_t('Invalid field %1 in bundle %2', $field, $access_point));
 			}
-			
-			if ($text_upper && (is_array($parsed_value_end = $attrval->parseValue($text_upper, $ap['element_info'])))) {
-				$where_sql = "({$table}.{$field_name} >= ? AND {$table}.{$field_name} <= ?)";
-				$params = [$parsed_value['value_decimal1'], $parsed_value_end['value_decimal1']];
-			} else {
-				$where_sql = "({$table}.{$field_name} = ?)";
+		} else {
+			$field = 'cav.'.$attr_field;
+		}
+		
+		$sql_where = null;
+		switch($modifier) {
+			case '#gt#':
+				$sql_where = "({$field} > ?)"; 
 				$params = [$parsed_value['value_decimal1']];
-			}
-			
+				break;
+			case '#gt=':
+				$sql_where = "({$field} >= ?)"; 
+				$params = [$parsed_value['value_decimal1']];
+				break;
+			case '#lt#':
+				$sql_where = "({$field} < ?)"; 
+				$params = [$parsed_value['value_decimal1']];
+				break;
+			case '#lt=':
+				$sql_where = "({$field} <= ?)"; 
+				$params = [$parsed_value['value_decimal1']];
+				break;
+			case '#eq#':
+			default:
+				if($parsed_value_end) {
+					$sql_where = "({$field} >= ? AND {$field} <= ?)";
+					$params = [$parsed_value['value_decimal1'], $parsed_value_end['value_decimal1']];
+				} else {
+					$sql_where = "({$field} = ?)";
+					$params = [$parsed_value['value_decimal1']];
+				}
+				break;
+		}
+		
+		if($ap['type'] === 'INTRINSIC') {
 			$sql = "
 				SELECT {$pk} row_id, 1 boost
 				FROM {$table}
 				WHERE
-					{$where_sql}
+					{$sql_where}
 			";
 		} else {
-			$params = [$parsed_value[$attr_field]];
-			$where_sql = '';
-		
-			if ($text_upper && (is_array($parsed_value_end = $attrval->parseValue($text_upper, $ap['element_info'])))) {
-				$where_sql = "(cav.{$attr_field} >= ? AND cav.{$attr_field} <= ?)";
-				$params[] = $parsed_value_end['value_decimal1'];
-			} else {
-				$where_sql = "(cav.{$attr_field} = ?)";
-			}
-		
 			$sql = "
 				SELECT ca.row_id, 1 boost
 				FROM ca_attribute_values cav
@@ -1527,7 +1560,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				WHERE
 					(cav.element_id = {$ap['element_info']['element_id']}) AND (ca.table_num = ?)
 					AND
-					({$where_sql})
+					{$sql_where}
 			";
 		}
 		
@@ -1538,6 +1571,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 *
 	 */
 	private function _queryForCurrencyAttribute($attrval, $ap, $text, $text_upper) {
+		list($text, $modifier) = $this->parseModifier($text);
 		if (!is_array($parsed_value = $attrval->parseValue($text, $ap['element_info']))) {
 			return null;
 		}
@@ -1546,16 +1580,38 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		if (!$currency) { 
 			return null;	// no currency
 		}
-		$params = [$parsed_value['value_decimal1']];
-		$where_sql = '';
 		
-		if ($text_upper && (is_array($parsed_value_end = $attrval->parseValue($text_upper, $ap['element_info'])))) {
-			$where_sql = "((cav.value_decimal1 >= ? AND cav.value_decimal1 <= ?) AND (cav.value_longtext1 = ?))";
-			$params[] = $parsed_value_end['value_decimal1'];
-		} else {
-			$where_sql = "((cav.value_decimal1 = ?) AND (cav.value_longtext1 = ?))";
+		$parsed_value_end = $text_upper ? $attrval->parseValue($text_upper, $ap['element_info']) : null;
+		
+		$sql_where = null;
+		switch($modifier) {
+			case '#gt#':
+				$sql_where = "(cav.value_decimal1 > ? AND cav.value_longtext1 = ?)";
+				$params = [$parsed_value['value_decimal1'], $currency];
+				break;
+			case '#gt=':
+				$sql_where = "(cav.value_decimal1 >= ? AND cav.value_longtext1 = ?)";
+				$params = [$parsed_value['value_decimal1'], $currency];
+				break;
+			case '#lt#':
+				$sql_where = "(cav.value_decimal1 < ? AND cav.value_longtext1 = ?)";
+				$params = [$parsed_value['value_decimal1'], $currency];
+				break;
+			case '#lt=':
+				$sql_where = "(cav.value_decimal1 <= ? AND cav.value_longtext1 = ?)";
+				$params = [$parsed_value['value_decimal1'], $currency];
+				break;
+			case '#eq#':
+			default:
+				if($parsed_value_end) {
+					$sql_where = "((cav.value_decimal1 >= ? AND cav.value_decimal1 <= ?) AND (cav.value_longtext1 = ?))";
+					$params = [$parsed_value['value_decimal1'], $parsed_value_end['value_decimal1'], $currency];
+				} else {
+					$sql_where = "(cav.value_decimal1 = ? AND cav.value_longtext1 = ?)";
+					$params = [$parsed_value['value_decimal1'], $currency];
+				}
+				break;
 		}
-		$params[] = $currency;
 
 		$sql = "
 			SELECT ca.row_id, 1 boost
@@ -1564,7 +1620,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			WHERE
 				(cav.element_id = {$ap['element_info']['element_id']}) AND (ca.table_num = ?)
 				AND
-				({$where_sql})
+				{$sql_where}
 		";
 		
 		return ['sql' => $sql, 'params' => $params];
@@ -1634,6 +1690,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 *
 	 */
 	private function _queryForDateRangeAttribute($attrval, $ap, $text, $text_upper) {
+		list($text, $modifier) = $this->parseModifier($text);
+		
 		if ($text_upper) { $text = "{$text} - {$text_upper}"; }
 		if (!is_array($parsed_value = $attrval->parseValue($text, $ap['element_info']))) {
 			return null;
@@ -1652,6 +1710,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		
 		$dates['start'] = (float)$dates['start'];
 		$dates['end'] = (float)$dates['end'];
+
+		$sfield = $efield = $params = null;
 		
 		if($ap['type'] === 'INTRINSIC') {
 			$tmp = explode('.', $ap['access_point']);
@@ -1664,20 +1724,55 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			
 			$fi = $t_table->getFieldInfo($tmp[1]);
 			
+			$sfield = $table.'.'.$fi['START'];
+			$efield = $table.'.'.$fi['END'];
+		} else {
+			$sfield = 'cav.value_decimal1';
+			$efield = 'cav.value_decimal2';
+			
+			$params = [$dates['start'], $dates['end'], $dates['start'], $dates['end'], $dates['start'], $dates['end']];
+		}	
+		
+		switch($modifier) {
+			case '#gt#':
+				$sql_where = "({$sfield} > ?)"; 
+				$params = [$dates['start']];
+				break;
+			case '#gt=':
+				$sql_where = "({$sfield} >= ?)"; 
+				$params = [$dates['start']];
+				break;
+			case '#lt#':
+				$sql_where = "({$efield} < ?)"; 
+				$params = [$dates['end']];
+				break;
+			case '#lt=':
+				$sql_where = "({$efield} <= ?)"; 
+				$params = [$dates['end']];
+				break;
+			case '#eq#':
+				$sql_where = "(({$sfield} BETWEEN ? AND ?) AND ({$efield} BETWEEN ? AND ?))"; 
+				$params = [$dates['start'], $dates['end'], $dates['start'], $dates['end']];
+				break;
+			default:
+				$sql_where = "(
+						({$sfield} BETWEEN ? AND ?)
+						OR
+						({$efield} BETWEEN ? AND ?)
+						OR
+						({$sfield} <= ? AND {$efield} >= ?)	
+					)";
+				$params = [$dates['start'], $dates['end'], $dates['start'], $dates['end'], $dates['start'], $dates['end']];
+				break;
+		}
+		
+		if($ap['type'] === 'INTRINSIC') {
 			$sql = "
 				SELECT {$pk} row_id, 1 boost
 				FROM {$table}
 				WHERE
-					(
-						({$table}.{$fi['START']} BETWEEN ? AND ?)
-						OR
-						({$table}.{$fi['END']} BETWEEN ? AND ?)
-						OR
-						({$table}.{$fi['START']} <= ? AND {$table}.{$fi['END']} >= ?)	
-					)
-	
+					{$sql_where}
 			";
-			$params = [$dates['start'], $dates['end'], $dates['start'], $dates['end'], $dates['start'], $dates['end']];
 		} else {
 			$sql = "
 				SELECT ca.row_id, 1 boost
@@ -1686,18 +1781,23 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				WHERE
 					(cav.element_id = {$ap['element_info']['element_id']}) AND (ca.table_num = ?)
 					AND
-					(
-						(cav.value_decimal1 BETWEEN ? AND ?)
-						OR
-						(cav.value_decimal2 BETWEEN ? AND ?)
-						OR
-						(cav.value_decimal1 <= ? AND cav.value_decimal2 >= ?)	
-					)
-	
+					{$sql_where}
 			";
-			$params = [$dates['start'], $dates['end'], $dates['start'], $dates['end'], $dates['start'], $dates['end']];
-		}	
+		}
+		
 		return ['sql' => $sql, 'params' => $params];
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	private function parseModifier($text) {
+		$modifier = null;
+		if(preg_match("!^(#[gtleq]+[#=]{1})!i", $text, $m)) {
+			$modifier = strtolower($m[1]);
+			$text = preg_replace("!^(#[gtleq]+[#=]{1})!i", '', $text);
+		}
+		return [$text, $modifier];
 	}
 	# -------------------------------------------------------
 }

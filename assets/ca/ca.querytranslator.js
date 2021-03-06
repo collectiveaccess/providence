@@ -63,10 +63,8 @@ var caUI = caUI || {};
      *
      */
     fieldToLabel = function(labels, field) {
-        console.log("labels are", labels);
         for(var i in labels) {
             if(field === labels[i].field) {
-                console.log("got", labels[i], i);
                 return labels[i].label;
             }
         }
@@ -80,7 +78,6 @@ var caUI = caUI || {};
 	 * @returns {String}
 	 */
 	caUI.convertQueryBuilderRuleSetToSearchQuery = function (ruleSet, useNegationSign=false, useLabels=null) {
-	    console.log("labels", useLabels);
 		var negation, prefix;
 		if (ruleSet.condition && ruleSet.rules) {
 		    switch(ruleSet.condition) {
@@ -133,6 +130,14 @@ var caUI = caUI || {};
 					return prefix + '*' + escapeValue(ruleSet.value) + '*';
 				case 'ends_with':
 					return prefix + '*' + escapeValue(ruleSet.value) + '';
+				case 'less':
+					return prefix + '#lt#' + escapeValue(ruleSet.value) + '';
+				case 'less_or_equal':
+					return prefix + '#lt=' + escapeValue(ruleSet.value) + '';
+				case 'greater':
+					return prefix + '#gt#' + escapeValue(ruleSet.value) + '';
+				case 'greater_or_equal':
+					return prefix + '#gt=' + escapeValue(ruleSet.value) + '';
 				case 'is_empty':
 				case 'is_null':
 					// "is_not_empty" is a double negative, so the negation prefix is applied in reverse.
@@ -243,7 +248,8 @@ var caUI = caUI || {};
 				}
 			} else {
 				// In plain word mode, the next non-word, non-dot character ends the token.
-				if (/[\w\/.]/.test(character)) {
+				// (Exceptions are "#" and "=" which are used to #lt#, #lt=, #gt#, #gt= and #eq# modifiers
+				if (/[\w\/.#=]/.test(character)) {
 					token.value += character;
 					queryArray.shift();
 				} else {
@@ -362,6 +368,21 @@ var caUI = caUI || {};
 		     rule.operator = 'is_empty';
 		} else if(queryValue === '[SET]') {
 		    rule.operator = 'is_not_empty';
+		} else if (queryValue.match(/^#gt#/)) {
+	        rule.operator = 'greater';
+	        rule.value = queryValue.replace(/^#gt#/, '');
+		} else if (queryValue.match(/^#gt=/)) {
+	        rule.operator = 'greater_or_equal';
+	        rule.value = queryValue.replace(/^#gt=/, '');
+		} else if (queryValue.match(/^#lt#/)) {
+	        rule.operator = 'less';
+	        rule.value = queryValue.replace(/^#lt#/, '');
+		} else if (queryValue.match(/^#lt=/)) {
+	        rule.operator = 'less_or_equal';
+	        rule.value = queryValue.replace(/^#lt=/, '');
+		} else if (queryValue.match(/^#eq#/)) {
+	        rule.operator = 'equal';
+	        rule.value = queryValue.replace(/^#eq#/, '');
 		} else {
 			rule.value = queryValue;
 			if (wildcardPrefix && wildcardSuffix) {

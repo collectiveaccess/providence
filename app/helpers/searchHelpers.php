@@ -1700,40 +1700,6 @@
 			    $config_sorts = array_filter($config_sorts, function($v) { return is_string($v); });
 		        $va_base_fields = array_merge($va_base_fields, $config_sorts);
 			}
-
-			// if(caGetOption('distinguishNonUniqueNames', $options, true)) {
-// 				foreach(array_count_values(array_filter($va_base_fields, function($v) { return !is_null($v); })) as $vn_v => $vn_c) {
-// 					if($vn_c > 1) {
-// 						foreach(array_keys($va_base_fields, $vn_v) as $vs_k) {
-// 
-// 							$vs_code = explode('.', $vs_k)[1];
-// 
-// 
-// 							if(is_array($va_sortable_elements[$vs_code]['typeRestrictions'])) {
-// 								$va_restrictions = [];
-// 								foreach($va_sortable_elements[$vs_code]['typeRestrictions'] as $vs_table => $va_type_list) {
-// 									foreach($va_type_list as $vn_type_id => $vs_type_name) {
-// 										$va_restrictions[] = ucfirst($vs_table)." [{$vs_type_name}]";
-// 									}
-// 								}
-// 
-// 								$va_base_fields[$vs_k] .= ' (' . join('; ', $va_restrictions) . ')';
-// 							} elseif($vn_parent_id = $va_sortable_elements[$vs_code]['parent_id']) {
-// 
-// 								$t_parent = new ca_metadata_elements();
-// 								while($vn_parent_id) {
-// 									$t_parent->load($vn_parent_id);
-// 									$vn_parent_id = $t_parent->get('parent_id');
-// 								}
-// 
-// 								if($t_parent->getPrimaryKey()) {
-// 									$va_base_fields[$vs_k] .= ' (' . $t_parent->getLabelForDisplay() . ')';
-// 								}
-// 							}
-// 						}
-// 					}
-// 				}
-// 			}
 		}
 		
 		if (($pa_allowed_sorts = caGetOption('allowedSorts', $options, null)) && !is_array($pa_allowed_sorts)) { $pa_allowed_sorts = [$pa_allowed_sorts]; }
@@ -1897,7 +1863,7 @@
 	function caFlattenContainers(ca_search_forms $t_search_form, string $table) {
 		$bundles = $t_search_form->getAvailableBundles($table, ['omitGeneric' => true, 'omitBundles' => ['deleted']]);
 		foreach ($bundles as $id => $bundle_info) {
-			$element_code = caGetBundleNameForSearchSearchBuilder($bundle_info['bundle']);
+			$element_code = caGetBundleNameForSearchSearchBuilder($b=$bundle_info['bundle']);
 			
 			if (ca_metadata_elements::getElementDatatype($element_code) === __CA_ATTRIBUTE_VALUE_CONTAINER__) {
 				if(is_array($sub_elements = ca_metadata_elements::getElementsForSet($element_code))) {
@@ -1907,14 +1873,14 @@
 						$sub_element_code = $sub_element['element_code'];
 						
 						if ($sub_element['parent_id'] != $sub_element['hier_element_id']) {	// is root
-							if(!is_array($bundles[$element_code])) { $bundles[$element_code] = []; }
-							$bundles[$element_code] = array_merge($bundles[$element_code], [
+							if(!is_array($b)) { $bundles[$b] = []; }
+							$bundles[$b] = array_merge($bundles[$b], [
 								'id' => "{$bundle_info['bundle']}",
 								'bundle' => "{$bundle_info['bundle']}",
 								'label' => $sub_element['display_label']
 							]);
 						} else {
-							$bundles[$element_code]['bundles'][] = [
+							$bundles[$b]['bundles'][] = [
 								'id' => "{$bundle_info['bundle']}.{$sub_element_code}",
 								'bundle' => "{$bundle_info['bundle']}.{$sub_element_code}",
 								'label' => $sub_element['display_label']
@@ -1922,7 +1888,7 @@
 						}
 						
 					}
-					unset($bundles[$id]);
+					if($b !== $id) { unset($bundles[$id]); }
 				}
 			}
 		}
@@ -1940,7 +1906,8 @@
 	 *
 	 */
 	function caGetSearchBuilderFilters(BaseModel $t_subject, Configuration $po_query_builder_config) {
-		if (CompositeCache::contains($key = 'filters_'.$t_subject->tableName(), 'SearchBuilder') && is_array($cached_data = CompositeCache::fetch($key, 'SearchBuilder'))) { return $cached_data; }
+		$key = 'filters_'.$t_subject->tableName();
+		if (CompositeCache::contains($key, 'SearchBuilder') && is_array($cached_data = CompositeCache::fetch($key, 'SearchBuilder'))) { return $cached_data; }
 		
 		$vs_table = $t_subject->tableName();
 		$t_search_form = new ca_search_forms();
@@ -1997,8 +1964,6 @@
 		});
 		
 		// rewrite nested containers as indented items
-		//$va_seen = [];
-		
 		$filters_proc = [];
 		foreach($filters as $vn_i => $filter) {
 			$bundles = $filter['bundles'];
@@ -2007,9 +1972,8 @@
 			
 			if(is_array($bundles)) { 
 				foreach($bundles as $b) {
-					$b['label'] = str_repeat("&nbsp;", 5).'↳ '.$b['label'];
-					$b['optgroup'] = $filter['optgroup'];
-					$filters_proc[] = $b;
+					$b['label'] = str_repeat("&nbsp;", 5).'↳ '.$b['label'];	// add sub-field indent
+					$filters_proc[] = caMapBundleToSearchBuilderFilterDefinition($t_subject, $b, $po_query_builder_config);
 				}
 			}
 		}
