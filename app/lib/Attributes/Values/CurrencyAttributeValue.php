@@ -231,6 +231,8 @@
  		 *
  		 */
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
+			$o_config = Configuration::load();
+			
  			$ps_value = trim($ps_value);
  			$va_settings = $this->getSettingValuesFromElementArray(
  				$pa_element_info, 
@@ -256,6 +258,9 @@
  				return false;
  			}
 
+			if(!$vs_currency_specifier){
+				$vs_currency_specifier = $o_config->get('default_dollar_currency');
+			}
  			if(!$vs_currency_specifier){
  				// this respects the global UI locale which is set using Zend_Locale
  				$o_currency = new Zend_Currency();
@@ -278,7 +283,6 @@
 			
 			switch($vs_currency_specifier) {
 				case '$':
-					$o_config = Configuration::load();
 					$vs_dollars_are_this = caGetOption('dollarCurrency', $va_settings, $o_config->get('default_dollar_currency'), ['defaultOnEmptyString' => true]);
 					$vs_currency_specifier = $vs_dollars_are_this ? $vs_dollars_are_this : 'USD';
 					break;

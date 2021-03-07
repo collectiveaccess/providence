@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -55,6 +55,7 @@
 	
 	$t_subject = $this->getVar('t_subject'); 
 	$vs_entity_class = $t_subject->getTypeSetting('entity_class');
+	$use_suffix_for_orgs = $t_subject->getTypeSetting('use_suffix_for_orgs');
 ?>
 <div id="<?php print $vs_id_prefix; ?>Labels" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
@@ -78,11 +79,17 @@
 						<table>
 							<tr>
 								<td>
-									<?php print $t_label->htmlFormElement('surname', null, array('label' => _t('Name'), 'description' => _t('The full name of the organization, excluding for suffixes.'), 'width' => '500px', 'name' => "{fieldNamePrefix}surname_{n}", 'id' => "{fieldNamePrefix}surname_{n}", "value" => "{{surname}}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_entity_labels_preferred')); ?>
+									<?php print $t_label->htmlFormElement('surname', null, array('label' => _t('Organization'), 'description' => _t('The full name of the organization.'), 'width' => '500px', 'name' => "{fieldNamePrefix}surname_{n}", 'id' => "{fieldNamePrefix}surname_{n}", "value" => "{{surname}}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_entity_labels_preferred')); ?>
 								</td>
+<?php
+	if($use_suffix_for_orgs) {
+?>
 								<td>
 									<?php print $t_label->htmlFormElement('suffix', null, array('name' => "{fieldNamePrefix}suffix_{n}", 'id' => "{fieldNamePrefix}suffix_{n}", "value" => "{{suffix}}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_entity_labels_preferred')); ?>
 								</td>
+<?php
+	}
+?>
 							</tr>
 							<tr>
 								<td colspan="2">

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2020 Whirl-i-Gig
+ * Copyright 2015-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -72,17 +72,17 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		if(defined('__CA_ELASTICSEARCH_BASE_URL__') && (strlen(__CA_ELASTICSEARCH_BASE_URL__)>0)) {
 			$this->elasticsearch_base_url = __CA_ELASTICSEARCH_BASE_URL__;
 		} else {
-			$this->elasticsearch_base_url = $this->opo_search_config->get('search_elasticsearch_base_url');
+			$this->elasticsearch_base_url = $this->search_config->get('search_elasticsearch_base_url');
 		}
 		$this->elasticsearch_base_url = trim($this->elasticsearch_base_url, "/");   // strip trailing slashes as they cause errors with ElasticSearch 5.x
 
 		if(defined('__CA_ELASTICSEARCH_INDEX_NAME__') && (strlen(__CA_ELASTICSEARCH_INDEX_NAME__)>0)) {
 			$this->elasticsearch_index_name = __CA_ELASTICSEARCH_INDEX_NAME__;
 		} else {
-			$this->elasticsearch_index_name = $this->opo_search_config->get('search_elasticsearch_index_name');
+			$this->elasticsearch_index_name = $this->search_config->get('search_elasticsearch_index_name');
 		}
 		
-		$this->version = (int)$this->opo_search_config->get('elasticsearch_version');
+		$this->version = (int)$this->search_config->get('elasticsearch_version');
 		if (!in_array($this->version, [2, 5, 6, 7], true)) { $this->version = 5; }
 	}
 	# -------------------------------------------------------
@@ -257,17 +257,17 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	}
 	# -------------------------------------------------------
 	public function init() {
-		if(($vn_max_indexing_buffer_size = (int)$this->opo_search_config->get('elasticsearch_indexing_buffer_size')) < 1) {
+		if(($vn_max_indexing_buffer_size = (int)$this->search_config->get('elasticsearch_indexing_buffer_size')) < 1) {
 			$vn_max_indexing_buffer_size = 250;
 		}
 
-		$this->opa_options = array(
+		$this->options = array(
 			'start' => 0,
 			'limit' => 100000,												// maximum number of hits to return [default=100000],
 			'maxIndexingBufferSize' => $vn_max_indexing_buffer_size			// maximum number of indexed content items to accumulate before writing to the index
 		);
 
-		$this->opa_capabilities = array(
+		$this->capabilities = array(
 			'incremental_reindexing' => true
 		);
 	}
@@ -372,7 +372,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @param null|Zend_Search_Lucene_Search_Query_Boolean $po_rewritten_query
 	 * @return WLPlugSearchEngineElasticSearchResult
 	 */
-	public function search($pn_subject_tablenum, $ps_search_expression, $pa_filters=[], $po_rewritten_query=null) {
+	public function search(int $pn_subject_tablenum, string $ps_search_expression, array $pa_filters=[], $po_rewritten_query) {
 		Debug::msg("[ElasticSearch] incoming search query is: {$ps_search_expression}");
 		Debug::msg("[ElasticSearch] incoming query filters are: " . print_r($pa_filters, true));
 
@@ -623,7 +623,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$va_doc_content_buffer = array_merge(
 				$va_doc_content_buffer,
 				caGetChangeLogForElasticSearch(
-					$this->opo_db,
+					$this->db,
 					Datamodel::getTableNum($table),
 					$vn_primary_key
 				)
@@ -650,7 +650,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 				$va_fragment = array_merge(
 					$va_fragment,
 					caGetChangeLogForElasticSearch(
-						$this->opo_db,
+						$this->db,
 						Datamodel::getTableNum($table),
 						$vn_row_id
 					)

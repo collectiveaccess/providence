@@ -197,7 +197,8 @@ BaseModel::$s_ca_models_definitions['ca_list_items'] = array(
  				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
  				'IS_NULL' => false, 
  				'DEFAULT' => 0,
- 				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if list item is deleted or not.')
+ 				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if list item is deleted or not.'),
+				'DONT_INCLUDE_IN_SEARCH_FORM' => true
 		),
 		'source_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
@@ -236,6 +237,19 @@ $_ca_list_items_settings = array(
 			'default' => 'IND',
 			'label' => _t('Entity class'),
 			'description' => _t('The class of entity the type represents. Use <em>Individual person</em> for entities that require a fully articulated personal name. Use <em>organization</em> for group entities such as corporations, clubs and families.')
+		),
+		'use_suffix_for_orgs' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('Yes') => 1,
+				_t('No') => 0
+			),
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 1,
+			'label' => _t('Use suffix for organizations?'),
+			'description' => _t('Show suffix entry field for organization labels?.')
 		),
 		'render_in_new_menu' => array(
 			'formatType' => FT_BIT,

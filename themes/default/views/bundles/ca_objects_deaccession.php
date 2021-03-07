@@ -61,13 +61,13 @@
 	if ($this->request->config->get('deaccession_use_disposal_date')) {
 	    print $t_subject->htmlFormElement('deaccession_disposal_date', "<div class='formLabel' style='float: left;'>^EXTRA^LABEL<br/>^ELEMENT</div>", array('name' => "{$vs_id_prefix}deaccession_disposal_date", 'id' => "{$vs_id_prefix}DeaccessionDisposalDate", 'classname' => 'dateBg', 'readonly' => $vb_read_only, 'timeOmit' => true));
     }
-	print $t_subject->htmlFormElement('deaccession_type_id', "<div class='formLabel' style='float: left;'>^EXTRA"._t('Disposal type')."<br/>^ELEMENT</div>", array('name' => "{$vs_id_prefix}deaccession_type_id", 'id' => "{$vs_id_prefix}DeaccessionTypeID", 'readonly' => $vb_read_only));
+	print $t_subject->htmlFormElement('deaccession_type_id', "<div class='formLabel' style='float: left;'>^EXTRA^LABEL<br/>^ELEMENT</div>", array('name' => "{$vs_id_prefix}deaccession_type_id", 'id' => "{$vs_id_prefix}DeaccessionTypeID", 'readonly' => $vb_read_only));
 ?>
 	<br class="clear"/>
 <?php
-	print $t_subject->htmlFormElement('deaccession_authorized_by', "<div class='formLabel'>^EXTRA"._t('Authorized by')."<br/>^ELEMENT</div>", array('name' => "{$vs_id_prefix}deaccession_authorized_by", 'id' => "{$vs_id_prefix}DeaccessionAuthorizedBy", 'readonly' => $vb_read_only));
+	print $t_subject->htmlFormElement('deaccession_authorized_by', "<div class='formLabel'>^EXTRA^LABEL<br/>^ELEMENT</div>", array('name' => "{$vs_id_prefix}deaccession_authorized_by", 'id' => "{$vs_id_prefix}DeaccessionAuthorizedBy", 'readonly' => $vb_read_only));
 
-	print $t_subject->htmlFormElement('deaccession_notes', "<div class='formLabel'>^EXTRA"._t('Notes')."<br/>^ELEMENT</div>", array('name' => "{$vs_id_prefix}deaccession_notes", 'id' => "{$vs_id_prefix}DeaccessionNotes", 'readonly' => $vb_read_only));
+	print $t_subject->htmlFormElement('deaccession_notes', "<div class='formLabel'>^EXTRA^LABEL<br/>^ELEMENT</div>", array('name' => "{$vs_id_prefix}deaccession_notes", 'id' => "{$vs_id_prefix}DeaccessionNotes", 'readonly' => $vb_read_only));
 ?>
 				</div>
 			</div>
