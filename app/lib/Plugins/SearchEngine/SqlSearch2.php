@@ -100,7 +100,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		}
 		
 		if (!is_array($this->opa_asis_regexes = $this->search_config->getList('asis_regexes'))) {
-			$this->opa_asis_regexes = array();
+			$this->opa_asis_regexes = [];
 		}
 		
 		//
@@ -404,9 +404,30 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 		}
 	 	}
 	 	
+	 	if($restrictions = $this->_getFieldRestrictions($subject_tablenum)) {
+	 		$res = [];
+	 		foreach($restrictions['restrict'] as $r) {
+	 			$res[] = "(swi.field_table_num = ? AND swi.field_num = ?)";
+	 			$params[] = $r['table_num'];
+	 			$params[] = $r['field_num'];
+	 		}
+	 		
+	 		$flds = [];
+	 		foreach($restrictions['exclude'] as $r) {
+	 			$flds[] = "'".$r['table_num'].'/'.$r['field_num']."'";
+	 		}
+	 		if(sizeof($flds)) {
+	 			$res[] = "(CONCAT(swi.field_table_num, '/', swi.field_num) NOT IN (?))";
+	 			$params[] = join(',', $flds);
+	 		}
+	 		if(sizeof($res)) {
+	 			$field_sql .= " AND (".join(' AND ', $res).")";
+	 		}
+	 	}
+	 	
 	 	$private_sql = ($this->getOption('omitPrivateIndexing') ? ' AND swi.access = 0' : '');
 	 	
-		$qr_res = $this->db->query("
+		$qr_res = $this->db->query($x="
 			SELECT swi.row_id, swi.boost
 			FROM ca_sql_search_word_index swi
 			".(!$is_blank ? 'INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id' : '')."
@@ -492,11 +513,33 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 							
 			$this->db->query("UPDATE {$results_temp_table} SET row_id = row_id - 1");
 			
+			$params = [];
+			if($restrictions = $this->_getFieldRestrictions($subject_tablenum)) {
+				$res = [];
+				foreach($restrictions['restrict'] as $r) {
+					$res[] = "(swi.field_table_num = ? AND swi.field_num = ?)";
+					$params[] = $r['table_num'];
+					$params[] = $r['field_num'];
+				}
+			
+				$flds = [];
+				foreach($restrictions['exclude'] as $r) {
+					$flds[] = "'".$r['table_num'].'/'.$r['field_num']."'";
+				}
+				if(sizeof($flds)) {
+					$res[] = "(CONCAT(swi.field_table_num, '/', swi.field_num) NOT IN (?))";
+					$params[] = join(',', $flds);
+				}
+				if(sizeof($res)) {
+					$field_sql .= " AND (".join(' AND ', $res).")";
+				}
+			}
+			
 			$qr_res = $this->db->query("
 				SELECT swi.row_id, ca.boost, ca.field_container_id
 				FROM {$results_temp_table} ca
-				INNER JOIN ca_sql_search_word_index AS swi ON swi.index_id = ca.row_id
-			");
+				INNER JOIN ca_sql_search_word_index AS swi ON swi.index_id = ca.row_id {$field_sql}
+			", $params);
 			
 	 		$hits = $this->_arrayFromDbResult($qr_res);
 	 		
@@ -783,6 +826,24 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		}
 		
 		return $hits;
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getFieldRestrictions(int $table_num) {
+		$restrict_to_fields = $exclude_fields_from_search = [];
+		if(is_array($this->getOption('restrictSearchToFields'))) {
+			foreach($this->getOption('restrictSearchToFields') as $f) {
+				$restrict_to_fields[] = $this->_getElementIDForAccessPoint($table_num, $f);
+			}
+		}
+		if(is_array($this->getOption('excludeFieldsFromSearch'))) {
+			foreach($this->getOption('excludeFieldsFromSearch') as $f) {
+				$exclude_fields_from_search[] = $this->_getElementIDForAccessPoint($table_num, $f);
+			}
+		}
+		return ['restrict' => $restrict_to_fields, 'exclude' => $exclude_fields_from_search];
 	}
 	# -------------------------------------------------------
 	# Indexing
@@ -1367,10 +1428,11 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				'relationship_type' => $vn_rel_type,
 				'table_num' => $vs_table_num,
 				'element_id' => null,
-				'field_num' => "CV{$vs_subfield}_{$vs_fld_num}",
+				'field_num' => $vs_fld_num ? "CV{$vs_subfield}_{$vs_fld_num}" : "CV{$vs_subfield}",
 				'datatype' => 'CV',
 				'element_info' => null,
 				'relationship_type_ids' => $va_rel_type_ids,
+				'policy' => $vs_subfield,
 				'type' => 'CV'
 			);
 		
