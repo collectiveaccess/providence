@@ -1796,6 +1796,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					# -------------------------------
 					// This bundle is only available when editing objects of type ca_object_representations
 					case 'ca_object_representations_media_display':
+						AssetLoadManager::register('3dmodels');
 						if ($vb_batch) { return null; } // not supported in batch mode
 						$vs_element .= $this->getMediaDisplayHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
 						break;
@@ -1809,6 +1810,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					# -------------------------------
 					// This bundle is only available when editing objects of type ca_object_representations
 					case 'ca_object_representation_sidecars':
+						AssetLoadManager::register('3dmodels');
 						if ($vb_batch) { return null; } // not supported in batch mode
 						$vs_element .= $this->getSidecarHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
 						break;

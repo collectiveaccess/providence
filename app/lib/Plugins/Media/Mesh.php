@@ -496,7 +496,7 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 	}
 ?>
 				function postLoad ( file ) {
-					var geometry = file.children[0].geometry;
+					var geometry = file.children ? file.children[0].geometry : file;
 					geometry.center();
 					
  					var material;
