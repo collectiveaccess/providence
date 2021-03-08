@@ -91,8 +91,6 @@
 		 * @see DataMigrationUtils::_getID()
 		 */
 		static function getEntityID($pa_entity_name, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
-			unset($pa_entity_name['middlename']);
-			unset($pa_entity_name['other_forenames']);
 			return DataMigrationUtils::_getID('ca_entities', $pa_entity_name, null, $pn_type_id, $pn_locale_id, $pa_values, $pa_options);
 		}
 		# -------------------------------------------------------
@@ -693,6 +691,9 @@
 				case 'forenamesurname':
 					$va_name['displayname'] = trim($va_name['forename'].' '.$va_name['surname']);
 					break;
+				case 'forenamemiddlenamesurname':
+					$va_name['displayname'] = trim($va_name['forename'].($va_name['middlename'] ? ' '.$va_name['middlename'].' ' : '').' '.$va_name['surname']);
+					break;
 				case 'surnameforename':
 					$va_name['displayname'] = trim($va_name['surname'].' '.$va_name['forename']);
 					break;
@@ -877,7 +878,7 @@
 		 * @param array $pa_options An optional array of options, which include:
 		 *                outputErrors - if true, errors will be printed to console [default=false]
 		 *                dontCreate - if true then new entities will not be created [default=false]
-		 *                matchOn = optional list indicating sequence of checks for an existing record; values of array can be "label", "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails. For entities only you may also specifiy "displayname", "surname" and "forename" to match on the text of the those label fields exclusively. If "none" is specified alone no matching is performed.
+		 *                matchOn = optional list indicating sequence of checks for an existing record; values of array can be "label", "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails. For entities only you may also specify "displayname", "surname" and "forename" to match on the text of the those label fields exclusively. If "none" is specified alone no matching is performed.
 		 *                matchOnDisplayName  if true then entities are looked up exclusively using displayname, otherwise forename and surname fields are used [default=false]
 		 *                transaction - if Transaction instance is passed, use it for all Db-related tasks [default=null]
 		 *                returnInstance = return ca_entities instance rather than entity_id. Default is false.

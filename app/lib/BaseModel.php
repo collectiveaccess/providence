@@ -4767,7 +4767,6 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 							$magic = rand(0,99999);
 							$filepath = $vi["absolutePath"]."/".$dirhash."/".$magic."_".$this->_genMediaName($ps_field)."_".$v;
 
-                            $m->set('colorspace', 'RGB');
 							if (!($vs_output_file = $m->write($filepath, $output_mimetype, $va_media_write_options))) {
 								$this->postError(1600,_t("Couldn't write file: %1", join("; ", $m->getErrors())),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
 								$m->cleanup();
@@ -11816,7 +11815,18 @@ $pa_options["display_form_field_tips"] = true;
 		if ($vs_deleted_sql) { $va_sql[] = $vs_deleted_sql;}
 		$va_sql = array_filter($va_sql, function($v) { return strlen($v) > 0; });
 
-		$vs_sql = "SELECT * FROM {$vs_table} ".((sizeof($va_sql) > 0) ? " WHERE (".join(" AND ", $va_sql).")" : "");
+		$vs_pk = $t_instance->primaryKey();
+		
+		switch($ps_return_as) {
+			case 'queryresult':		
+			case 'arrays':
+				$select_flds = '*';
+				break;
+			default:
+				$select_flds = $vs_pk;
+				break;
+		}
+		$vs_sql = "SELECT {$select_flds} FROM {$vs_table} ".((sizeof($va_sql) > 0) ? " WHERE (".join(" AND ", $va_sql).")" : "");
 
 		$vs_orderby = '';
 		if ($vs_sort = caGetOption('sort', $pa_options, null)) {
@@ -11864,7 +11874,6 @@ $pa_options["display_form_field_tips"] = true;
 		
 		$vn_c = 0;
 	
-		$vs_pk = $t_instance->primaryKey();
 		
 		switch($ps_return_as) {
 			case 'queryresult':

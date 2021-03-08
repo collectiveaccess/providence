@@ -97,7 +97,7 @@ spl_autoload_register(function ($class) {
     }
     
     // search common locations for class
-    $paths = [__CA_LIB_DIR__, __CA_LIB_DIR__.'/Utils', __CA_LIB_DIR__.'/Parsers', __CA_LIB_DIR__.'/Media', __CA_LIB_DIR__.'/Exceptions'];
+    $paths = [__CA_LIB_DIR__, __CA_LIB_DIR__.'/Utils', __CA_LIB_DIR__.'/Parsers', __CA_LIB_DIR__.'/Media', __CA_LIB_DIR__.'/Exceptions', __CA_LIB_DIR__.'/Search', __CA_LIB_DIR__.'/Browse'];
     foreach($paths as $path) {
         if(file_exists("{$path}/{$class}.php")) {
             if(require("{$path}/{$class}.php")) { return true; }   

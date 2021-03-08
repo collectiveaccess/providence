@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2020 Whirl-i-Gig
+ * Copyright 2012-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -905,7 +905,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 						$this->handle->setimagedepth(1);
 						break;
 				}
-				if ($vn_colorspace) { $this->handle->setimagecolorspace($vn_colorspace); }
+				if (!is_null($vn_colorspace)) { $this->handle->setimagecolorspace($vn_colorspace); }
 			}
 			
 			# write the file
@@ -1229,9 +1229,12 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$this->filepath = $ps_filepath;
 			
 			$background = caGetOption('background', $this->properties, "#FFFFFF");
-			if (!$this->handle->setimagecolorspace(Gmagick::COLORSPACE_RGB)) {
-				$this->postError(1610, _t("Error during RGB colorspace transformation operation"), "WLPlugGmagick->read()");
-				return false;
+			
+			if ($this->handle->getimagecolorspace() === Gmagick::COLORSPACE_CMYK) { 
+				if (!$this->handle->setimagecolorspace(Gmagick::COLORSPACE_RGB)) {
+					$this->postError(1610, _t("Error during RGB colorspace transformation operation"), "WLPlugGmagick->read()");
+					return false;
+				}
 			}
 		
 			// force all images to true color (takes care of GIF transparency for one thing...)

@@ -1452,7 +1452,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				} else {
 					$vb_read_only = ($pa_bundle_settings['readonly'] || ($pa_options['request']->user->getBundleAccessLevel($this->tableName(), $ps_bundle_name) == __CA_BUNDLE_ACCESS_READONLY__)) ? true : false;
 
-					$va_additional_field_options = array();
+					$va_additional_field_options = [];
 					if($vn_width = caGetOption('width', $pa_bundle_settings)){
 						$va_additional_field_options['width'] = $vn_width;
 					}
@@ -1462,7 +1462,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					
 					$o_view->setVar('form_element', $this->htmlFormElement($ps_bundle_name, ($this->getProperty('ID_NUMBERING_ID_FIELD') == $ps_bundle_name) ? $o_config->get('idno_element_display_format_without_label') : $o_config->get('bundle_element_display_format_without_label'), 
 						array_merge(
-							array(	
+							[	
 								'readonly' 					=> $vb_read_only,						
 								'error_icon' 				=> caNavIcon(__CA_NAV_ICON_ALERT__, 1),
 								'progress_indicator'		=> caNavIcon(__CA_NAV_ICON_SPINNER__, 1),
@@ -1470,7 +1470,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 								
 								'name'						=> $ps_placement_code.$pa_options['formName'].$ps_bundle_name,
 								'usewysiwygeditor' 			=> $pa_bundle_settings['usewysiwygeditor']
-							),
+							],
 							$pa_options,
 							$va_additional_field_options
 						)
@@ -2025,8 +2025,14 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  	# --------------------------------------------------------------------------------------------
 	/**
 	  * Returns display label for element specified by standard "get" bundle code (eg. <table_name>.<bundle_name> format)
+	  *
+	  * @param string $ps_field
+	  * @param array $options Optipns include:
+	  *		includeSourceSuffix = Include "(from <table>)" suffix on returned labels. [Default is true]
+	  *
+	  * @return string
 	  */
-	public function getDisplayLabel($ps_field) {
+	public function getDisplayLabel($ps_field, $options=null) {
 		$va_tmp = explode('.', $ps_field);
 		if ((sizeof($va_tmp) == 2) && ($va_tmp[0] == $this->getLabelTableName()) && ($va_tmp[1] == $this->getLabelDisplayField())) {
 			$va_tmp[0] = $this->tableName();
@@ -2046,7 +2052,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			case 3:		// table_name.field_name.sub_element	
 				if (!($t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true))) { break; }
 				$vs_prefix = $vs_suffix = '';
-				$vs_suffix_string = ' ('._t('from related %1', $t_instance->getProperty('NAME_PLURAL')).')';
+				if (caGetOption('includeSourceSuffix', $options, true)) { $vs_suffix_string = ' ('._t('from %1', $t_instance->getProperty('NAME_PLURAL')).')'; }
 				if ($va_tmp[0] !== $this->tableName()) {
 					$vs_suffix = $vs_suffix_string;
 				}
@@ -2058,7 +2064,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					# --------------------
 					case 'related':
 						unset($va_tmp[1]);
-						$vs_label = $this->getDisplayLabel(join('.', $va_tmp));
+						$vs_label = $this->getDisplayLabel(join('.', $va_tmp), $options);
 						if ($va_tmp[0] != $this->tableName()) {
 							return $vs_label.$vs_suffix_string;
 						} 
@@ -2070,7 +2076,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							if (!isset($va_tmp[2])) {
 								return caUcFirstUTF8Safe($t_label_instance->getProperty('NAME_PLURAL')).$vs_suffix;
 							} else {
-								return caUcFirstUTF8Safe($t_label_instance->getDisplayLabel($t_label_instance->tableName().'.'.$va_tmp[2])).$vs_suffix;
+								return caUcFirstUTF8Safe($t_label_instance->getDisplayLabel($t_label_instance->tableName().'.'.$va_tmp[2], $options)).$vs_suffix;
 							}
 						}
 						break;
@@ -2078,14 +2084,14 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					case 'nonpreferred_labels':
 						if (method_exists($t_instance, 'getLabelTableInstance') && ($t_label_instance = $t_instance->getLabelTableInstance())) {
 							if ($va_tmp[0] !== $this->tableName()) {
-								$vs_suffix = ' ('._t('alternates from related %1', $t_instance->getProperty('NAME_PLURAL')).')';
+								$vs_suffix = ' ('._t('alternates from %1', $t_instance->getProperty('NAME_PLURAL')).')';
 							} else {
 								$vs_suffix = ' ('._t('alternates').')';
 							}
 							if (!isset($va_tmp[2])) {
 								return caUcFirstUTF8Safe($t_label_instance->getProperty('NAME_PLURAL')).$vs_suffix;
 							} else {
-								return caUcFirstUTF8Safe($t_label_instance->getDisplayLabel($t_label_instance->tableName().'.'.$va_tmp[2])).$vs_suffix;
+								return caUcFirstUTF8Safe($t_label_instance->getDisplayLabel($t_label_instance->tableName().'.'.$va_tmp[2], $options)).$vs_suffix;
 							}
 						}
 						break;
@@ -2102,7 +2108,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					# --------------------
 					default:
 						if ($va_tmp[0] !== $this->tableName()) {
-							return caUcFirstUTF8Safe($t_instance->getDisplayLabel($ps_field)).$vs_suffix;
+							return caUcFirstUTF8Safe($t_instance->getDisplayLabel($ps_field, $options)).$vs_suffix;
 						}
 						break;
 					# --------------------
@@ -2117,13 +2123,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			return $this->BUNDLES[$va_tmp[1]]['label'];
 		}
 		
-		return parent::getDisplayLabel($ps_field);
+		return parent::getDisplayLabel($ps_field, $options);
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
 	  * Returns display description for element specified by standard "get" bundle code (eg. <table_name>.<bundle_name> format)
 	  */
-	public function getDisplayDescription($ps_field) {
+	public function getDisplayDescription($ps_field, $options=null) {
 		$va_tmp = explode('.', $ps_field);
 		if ((sizeof($va_tmp) == 2) && ($va_tmp[0] == $this->getLabelTableName()) && ($va_tmp[1] == $this->getLabelDisplayField())) {
 			$va_tmp[0] = $this->tableName();
@@ -2145,7 +2151,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				
 				$vs_suffix = '';
 				if ($va_tmp[0] !== $this->tableName()) {
-					$vs_suffix = ' '._t('from related %1', $t_instance->getProperty('NAME_PLURAL'));
+					$vs_suffix = ' '._t('from %1', $t_instance->getProperty('NAME_PLURAL'));
 				}
 				switch($va_tmp[1]) {
 					# --------------------
@@ -2159,7 +2165,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							if (!isset($va_tmp[2])) {
 								return _t('A list of %1 %2', $t_label_instance->getProperty('NAME_PLURAL'), $vs_suffix);
 							} else {
-								return _t('A list of %1 %2', $t_label_instance->getDisplayLabel($t_label_instance->tableName().'.'.$va_tmp[2]), $vs_suffix);
+								return _t('A list of %1 %2', $t_label_instance->getDisplayLabel($t_label_instance->tableName().'.'.$va_tmp[2], $options), $vs_suffix);
 							}
 						}
 						break;
@@ -2169,7 +2175,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							if (!isset($va_tmp[2])) {
 								return _t('A list of alternate %1 %2', $t_label_instance->getProperty('NAME_PLURAL'), $vs_suffix);
 							} else {
-								return _t('A list of alternate %1 %2', $t_label_instance->getDisplayLabel($t_label_instance->tableName().'.'.$va_tmp[2]), $vs_suffix);
+								return _t('A list of alternate %1 %2', $t_label_instance->getDisplayLabel($t_label_instance->tableName().'.'.$va_tmp[2], $options), $vs_suffix);
 							}
 						}
 						break;
@@ -2186,7 +2192,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					# --------------------
 					default:
 						if ($va_tmp[0] !== $this->tableName()) {
-							return _t('A list of %1 %2', $t_instance->getDisplayLabel($ps_field), $vs_suffix);
+							return _t('A list of %1 %2', $t_instance->getDisplayLabel($ps_field, $options), $vs_suffix);
 						}
 						break;
 					# --------------------
@@ -2196,7 +2202,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			# -------------------------------------
 		}
 		
-		return parent::getDisplayDescription($ps_field);
+		return parent::getDisplayDescription($ps_field, $options);
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
@@ -6767,6 +6773,7 @@ if (!$vb_batch) {
 												'context_id'				=> isset($pa_options['context_id']) ? $pa_options['context_id'] : null,
 												'table' 					=> $this->tableName(),
 												'row_id' 					=> $this->getPrimaryKey(),
+												'type_id' 					=> $this->getTypeID(),
 												'check_for_dupes'			=> true,
 												'search_url'				=> caSearchUrl($pa_options['request'], $this->tableName(), '')
 											)
