@@ -35,7 +35,7 @@ require_once(__CA_LIB_DIR__.'/Parsers/ExpressionParser/ExpressionVisitor.php');
 class ExpressionParser {
 
 	/**
-	 * @var Hoa\Compiler\Llk
+	 * @var Hoa\Compiler\Llk\Llk
 	 */
 	static $s_compiler = null;
 
@@ -57,7 +57,7 @@ class ExpressionParser {
 		// init compiler/visitor if necessary
 
 		if(!self::$s_compiler) {
-			self::$s_compiler = Hoa\Compiler\Llk::load(
+			self::$s_compiler = Hoa\Compiler\Llk\Llk::load(
 				new Hoa\File\Read(__CA_LIB_DIR__.'/Parsers/ExpressionParser/ExpressionGrammar.pp')
 			);
 		}
