@@ -1230,7 +1230,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			
 			$background = caGetOption('background', $this->properties, "#FFFFFF");
 			
-			if ($this->handle->getimagecolorspace(Gmagick::COLORSPACE_CMYK)) { 
+			if ($this->handle->getimagecolorspace() === Gmagick::COLORSPACE_CMYK) { 
 				if (!$this->handle->setimagecolorspace(Gmagick::COLORSPACE_RGB)) {
 					$this->postError(1610, _t("Error during RGB colorspace transformation operation"), "WLPlugGmagick->read()");
 					return false;
