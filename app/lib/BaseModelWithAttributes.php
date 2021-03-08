@@ -1456,28 +1456,28 @@
 		/**
 		  * Returns field label text for element specified by standard "get" bundle code (eg. <table_name>.<element_code> format)
 		  */
-		public function getDisplayLabel($ps_field) {
+		public function getDisplayLabel($ps_field, $options=null) {
 			$va_tmp = explode('.', $ps_field);
 			if ($va_tmp[0] == $this->tableName()) {
 				if (!$this->hasField($va_tmp[1]) && !in_array($va_tmp[1], array('created', 'modified', 'lastModified')) && !in_array($va_tmp[0], array('created', 'modified', 'lastModified'))) {
 					$va_tmp[1] = preg_replace('!^ca_attribute_!', '', $va_tmp[1]);	// if field space is a bundle placement-style bundlename (eg. ca_attribute_<element_code>) then strip it before trying to pull label
-					return $this->getAttributeLabel($va_tmp[1]);	
+					return $this->getAttributeLabel($va_tmp[1], $options);	
 				}
 			}
-			return parent::getDisplayLabel($ps_field);
+			return parent::getDisplayLabel($ps_field, $options);
 		}
 		# --------------------------------------------------------------------------------------------
 		/**
 		  * Returns display description for element specified by standard "get" bundle code (eg. <table_name>.<bundle_name> format)
 		  */
-		public function getDisplayDescription($ps_field) {
+		public function getDisplayDescription($ps_field, $options=null) {
 			$va_tmp = explode('.', $ps_field);
 			if (($va_tmp[0] != $this->tableName()) && !in_array($va_tmp[0], array('created', 'modified', 'lastModified'))) { return null; }
 			if (!$this->hasField($va_tmp[1]) && !in_array($va_tmp[1], array('created', 'modified', 'lastModified')) && !in_array($va_tmp[0], array('created', 'modified', 'lastModified'))) {
 				$va_tmp[1] = preg_replace('!^ca_attribute_!', '', $va_tmp[1]);	// if field space is a bundle placement-style bundlename (eg. ca_attribute_<element_code>) then strip it before trying to pull label
-				return $this->getAttributeDescription($va_tmp[1]);	
+				return $this->getAttributeDescription($va_tmp[1], $options);	
 			}
-			return parent::getDisplayDescription($ps_field);
+			return parent::getDisplayDescription($ps_field, $options);
 		}
 		# --------------------------------------------------------------------------------------------
 		/**
@@ -1606,8 +1606,14 @@
 		# ------------------------------------------------------------------
 		/**
 		  * Get HTML form element bundle for metadata element
+		  *
+		  * @param mixed $pm_element_code_or_id
+		  * @param array $options Options include:
+		  *		useDisambiguationLabels = Use non-preferred (alternate) metadata element labels if available rather that preferred labels. Non-preferred labels may be added to some elements with additional description in order to disambiguate identically labeled elements when presented together in a list. [Default is false]
+		  *
+		  * @return string
 		  */
-		public function getAttributeLabel($pm_element_code_or_id) {
+		public function getAttributeLabel($pm_element_code_or_id, array $options=null) {
 			if (isset(BaseModelWithAttributes::$s_element_label_cache[$pm_element_code_or_id])) {
 				$va_cached_labels = (BaseModelWithAttributes::$s_element_label_cache);
 				return $va_cached_labels[$pm_element_code_or_id]['name'];
@@ -1615,7 +1621,12 @@
 			if (!($t_element = ca_metadata_elements::getInstance($pm_element_code_or_id))) {
 				return false;
 			}
-			return $t_element->getLabelForDisplay(false);
+			
+			$label = null;
+			if (caGetOption('useDisambiguationLabels', $options, false)) {
+				$label = $t_element->getLabelForDisplay(false,  null, ['labelType' => __CA_LABEL_TYPE_NONPREFERRED__]);	
+			}
+			return $label ? $label : $t_element->getLabelForDisplay(false);
 		}
 		# ------------------------------------------------------------------
 		// get HTML form element bundle for metadata element

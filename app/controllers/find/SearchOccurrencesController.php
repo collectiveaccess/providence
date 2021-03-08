@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/controllers/find/FindOccurrencesController.php : controller for object search request handling
+ * app/controllers/find/SearchOccurrencesController.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -101,31 +101,63 @@
  		public function _getSubTypeActionNav($pa_item) {
  			return [
 				[
-					'displayName' => _t('Search'),
+					'displayName' => _t('Basic search'),
 					"default" => ['module' => 'find', 'controller' => 'SearchOccurrences', 'action' => 'Index'],
-					'parameters' => array(
+					'parameters' => [
 						'type_id' => $pa_item['item_id'],
 						'reset' => $this->request->getUser()->getPreference('persistent_search')
-					),
-					'is_enabled' => true,
+					],
+					'is_enabled' => !$this->request->config->get('ca_occurrences_disable_basic_search'),
+					'requires' => [
+						'action:can_search_ca_occurrences' => 'AND',
+						'checktypelimitinconfig:!ca_occurrences_no_search_for_types:ca_occurrences' => 'AND',
+						'configuration:!ca_occurrences_disable_basic_search' => 'AND'
+					]
 				],
 				[
 					'displayName' => _t('Advanced search'),
 					"default" => ['module' => 'find', 'controller' => 'SearchOccurrencesAdvanced', 'action' => 'Index'],
 					'useActionInPath' => 1,
-					'parameters' => array(
+					'parameters' => [
 						'type_id' => $pa_item['item_id'],
 						'reset' => $this->request->getUser()->getPreference('persistent_search')
-					),
-					'is_enabled' => true,
+					],
+					'is_enabled' => !$this->request->config->get('ca_occurrences_disable_advanced_search'),
+					'requires' => [
+						'action:can_search_ca_occurrences' => 'AND',
+						'action:can_use_adv_search_forms' => 'AND',
+						'checktypelimitinconfig:!ca_occurrences_no_advanced_search_for_types:ca_occurrences' => 'AND',
+						'configuration:!ca_occurrences_disable_advanced_search' => 'AND'
+					]
+				],
+				[
+					'displayName' => _t('Search builder'),
+					"default" => ['module' => 'find', 'controller' => 'SearchOccurrencesBuilder', 'action' => 'Index'],
+					'useActionInPath' => 1,
+					'parameters' => [
+						'type_id' => $pa_item['item_id'],
+						'reset' => $this->request->getUser()->getPreference('persistent_search')
+					],
+					'is_enabled' => !$this->request->config->get('ca_occurrences_disable_search_builder'),
+					'requires' => [
+						'action:can_search_ca_occurrences' => 'AND',
+						'action:can_use_searchbuilder' => 'AND',
+						'checktypelimitinconfig:!ca_occurrences_no_search_builder_for_types:ca_occurrences' => 'AND',
+						'configuration:!ca_occurrences_disable_searchbuilder' => 'AND'
+					]
 				],
 				[
 					'displayName' => _t('Browse'),
 					"default" => ['module' => 'find', 'controller' => 'BrowseOccurrences', 'action' => 'Index'],
-					'parameters' => array(
+					'parameters' => [
 						'type_id' => $pa_item['item_id']
-					),
-					'is_enabled' => true,
+					],
+					'is_enabled' => !$this->request->config->get('ca_occurrences_disable_browse'),
+					'requires' => [
+						'action:can_browse_ca_occurrences' => 'AND',
+						'checktypelimitinconfig:!ca_occurrences_no_browse_for_types:ca_occurrences' => 'AND',
+						'configuration:!ca_occurrences_disable_browse' => 'AND'
+					]
 				]
 			];
  		}

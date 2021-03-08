@@ -209,7 +209,8 @@ BaseModel::$s_ca_models_definitions['ca_object_representations'] = array(
 			'IS_NULL' => false, 
 			'DEFAULT' => 0,
 			'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if the object is deleted or not.'),
-			'BOUNDS_VALUE' => array(0,1)
+			'BOUNDS_VALUE' => array(0,1),
+			'DONT_INCLUDE_IN_SEARCH_FORM' => true
 		),
 		'rank' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -454,6 +455,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		
 		$this->BUNDLES['ca_object_representations_media_display'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media and preview images'));
 		$this->BUNDLES['ca_object_representation_captions'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Captions/subtitles'));
+		$this->BUNDLES['ca_object_representation_sidecars'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Sidecar files'));
 		
 		$this->BUNDLES['authority_references_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('References'));
 		
@@ -1425,18 +1427,30 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  	 * @param int $pn_representation_id The representation_id of the representation to return files for. If omitted the currently loaded representation is used. If no representation_id is specified and no row is loaded null will be returned.
  	 * @param int $pn_start The index of the first file to return. Files are numbered from zero. If omitted the first file found is returned.
  	 * @param int $pn_num_files The maximum number of files to return. If omitted all files are returned.
- 	 * @param array $pa_versions A list of file versions to return. If omitted only the "preview" version is returned.
+ 	 * @param array $options Options include:
+ 	 *			versions = A list of versions to return. If omitted only the "preview" version is returned. [Default is null]
+ 	 *			returnAllVersions = Return data for all versions. [Default is false]
+ 	 *
+ 	 *			Note: The fourth parameter to this method was originally a list of versions to return. To maintain compatibility with 
+ 	 *			older code, if an indexed array is passed in place of $options, it will be used a a list of versions to return.
+ 	 *
  	 * @return array A list of files attached to the representations. If no files are associated an empty array is returned.
  	 */
- 	public function getFileList($pn_representation_id=null, $pn_start=null, $pn_num_files=null, $pa_versions=null) {
+ 	public function getFileList($pn_representation_id=null, $pn_start=null, $pn_num_files=null, $options=null) {
  		if(!($vn_representation_id = $pn_representation_id)) { 
  			if (!($vn_representation_id = $this->getPrimaryKey())) {
  				return null; 
  			}
  		}
  		
- 		if (!is_array($pa_versions)) {
- 			$pa_versions = array('preview');
+ 		$return_all_versions = false;
+ 		$versions = null;
+ 		if(caIsIndexedArray($options)) {
+ 			$versions = $options;
+ 		} elseif(caGetOption('returnAllVersions', $options, false)) {
+ 			$return_all_versions = true;
+ 		} else {
+ 			$versions = caGetOption('versions', $options, ['preview']);
  		}
  		
  		$vs_limit_sql = '';
@@ -1461,7 +1475,9 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  			$va_files[$vn_multifile_id] = $qr_res->getRow();
  			unset($va_files[$vn_multifile_id]['media']);
  			
- 			foreach($pa_versions as $vn_i => $vs_version) {
+ 			if ($return_all_versions) { $versions = $qr_res->getMediaVersions('media'); }
+ 			
+ 			foreach($versions as $vn_i => $vs_version) {
  				$va_files[$vn_multifile_id][$vs_version.'_path'] = $qr_res->getMediaPath('media', $vs_version);
  				$va_files[$vn_multifile_id][$vs_version.'_tag'] = $qr_res->getMediaTag('media', $vs_version);
  				$va_files[$vn_multifile_id][$vs_version.'_url'] = $qr_res->getMediaUrl('media', $vs_version);
@@ -1587,6 +1603,76 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		return true;
  	}
  	# ------------------------------------------------------
+ 	# Sidecar files
+ 	# ------------------------------------------------------
+ 	/**
+ 	 *
+ 	 */
+ 	public function addSidecarFile($filepath, $notes=null, $options=null) {
+ 		if(!$this->getPrimaryKey()) { return null; }
+ 		
+ 		$t_sidecar = new ca_object_representation_sidecars();
+ 		if($this->inTransaction()) { $t_sidecar->setTransaction($this->getTransaction()); }
+ 		
+ 		
+ 		$t_sidecar->setMode(ACCESS_WRITE);
+ 		$t_sidecar->set('representation_id', $this->getPrimaryKey());
+ 		$tmp = explode("/", $filepath);
+ 		$t_sidecar->set('sidecar_file', $filepath, ['original_filename' => caGetOption('originalFilename', $options, array_pop($tmp))]);
+ 		$t_sidecar->set('notes', $notes);
+ 		$t_sidecar->insert();
+ 		
+ 		if ($t_sidecar->numErrors()) {
+ 			$this->errors = array_merge($this->errors, $t_sidecar->errors);
+ 			return false;
+ 		}
+ 		
+ 		return $t_sidecar;
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 *
+ 	 */
+ 	public function removeSidecarFile($sidecar_id) {
+ 		if(!$this->getPrimaryKey()) { return null; }
+ 		
+ 		$t_sidecar = new ca_object_representation_sidecars($sidecar_id);
+ 		if($this->inTransaction()) { $t_sidecar->setTransaction($this->getTransaction()); }
+ 		
+ 		if ($t_sidecar->get('representation_id') == $this->getPrimaryKey()) {
+ 			$t_sidecar->setMode(ACCESS_WRITE);
+ 			$t_sidecar->delete();
+ 			
+			if ($t_sidecar->numErrors()) {
+				$this->errors = array_merge($this->errors, $t_sidecar->errors);
+				return false;
+			}
+		} else {
+			$this->postError(2720, _t('Sidecar file is not part of this representation'), 'ca_object_representations->removeSidecarFile()');
+			return false;
+		}
+		return true;
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 *
+ 	 */
+ 	public function removeAllSidecarFiles() {
+ 		if(!$this->getPrimaryKey()) { return null; }
+ 		
+ 		$file_ids = array_keys($this->getSidecarFileList());
+ 		
+ 		foreach($file_ids as $id) {
+ 			$this->removeSidecarFile($id);
+ 			
+ 			if($this->numErrors()) {
+ 				return false;
+ 			}
+ 		}
+ 		
+ 		return true;
+ 	}
+ 	# ------------------------------------------------------
  	/**
  	 * Returns list of caption/subtitle files attached to a representation
  	 * The return value is an array key'ed on the caption_id; array values are arrays
@@ -1598,7 +1684,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  	 * @param int $pn_representation_id The representation_id of the representation to return files for. If omitted the currently loaded representation is used. If no representation_id is specified and no row is loaded null will be returned.
  	 * @param array $pa_locale_ids 
  	 * @param array $options
- 	 * @return array A list of caption files attached to the representations. If no files are associated an empty array is returned.
+ 	 * @return array A list of caption files attached to the representation. If no files are associated an empty array is returned.
  	 */
  	public function getCaptionFileList($pn_representation_id=null, $pa_locale_ids=null, $options=null) {
  		if(!($vn_representation_id = $pn_representation_id)) { 
@@ -1692,6 +1778,109 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  			WHERE
  				representation_id = ?
  		", (int)$vn_representation_id);
+ 		
+ 		if($qr_res->nextRow()) {
+ 			return intval($qr_res->get('c'));
+ 		}
+ 		return 0;
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 * Returns list of sidecar files attached to a representation
+ 	 * The return value is an array key'ed on the sidecar_id; array values are arrays
+ 	 * with keys set to values for each file returned. They keys are:
+ 	 *		path = The absolute file path to the file
+ 	 *		url = The URL for the file
+ 	 *		sidecar_id = a unique identifier for each attached sidecar file
+ 	 *
+ 	 * @param int $representation_id The representation_id of the representation to return files for. If omitted the currently loaded representation is used. 
+ 	 * 				If no representation_id is specified and no row is loaded null will be returned.
+ 	 * @param array $mimetypes 
+ 	 * @param array $options
+ 	 * @return array A list of sidecar files attached to the representation. If no files are associated an empty array is returned.
+ 	 */
+ 	public function getSidecarFileList($representation_id=null, $mimetypes=null, $options=null) {
+ 		if(!($vn_representation_id = $representation_id)) { 
+ 			if (!($vn_representation_id = $this->getPrimaryKey())) {
+ 				return null; 
+ 			}
+ 		}
+ 		
+ 		if(!is_array($mimetypes) && strlen($mimetypes)) {
+ 			$mimetypes = [$mimetypes];
+ 		}
+ 		
+ 		$mimetype_sql = '';
+ 		$params = array((int)$vn_representation_id);
+ 		if (is_array($mimetypes) && (sizeof($mimetypes) > 0)) {
+ 			$mimetype_sql = " AND mimetype IN (?)";
+ 			$params[] = $mimetypes;
+ 		}
+ 		
+ 		$o_db= $this->getDb();
+ 		$qr_res = $o_db->query("
+ 			SELECT *
+ 			FROM ca_object_representation_sidecars
+ 			WHERE
+ 				representation_id = ?
+ 			{$mimetype_sql}
+ 		", $params);
+ 		
+ 		$files = [];
+ 		while($qr_res->nextRow()) {
+ 			$file_info = $qr_res->getFileInfo('sidecar_file');
+ 			$sidecar_id = $qr_res->get('sidecar_id');
+ 			
+ 			$files[$sidecar_id] = $qr_res->getRow();
+ 			unset($files[$sidecar_id]['sidecar_file']);
+ 			$files[$sidecar_id]['path'] = $qr_res->getFilePath('sidecar_file');
+ 			$files[$sidecar_id]['url'] = $qr_res->getFileUrl('sidecar_file');
+			if(file_exists($files[$sidecar_id]['path'])) {
+				$files[$sidecar_id]['filesize'] = caFormatFileSize(filesize($files[$sidecar_id]['path']));
+			}
+ 			$files[$sidecar_id]['sidecar_id'] = $sidecar_id;
+ 			$files[$sidecar_id]['mimetype'] = $m = $qr_res->get('mimetype');
+ 			
+ 			if (!($typename = Media::getTypenameForMimetype($m))) {
+ 				$typename = $file_info['PROPERTIES']['format_name'];
+ 			}
+ 			$files[$sidecar_id]['typename'] = $typename ? $typename : $m;
+ 		}
+ 		return $files;
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 *
+ 	 */
+ 	public function getSidecarFileInstance($pn_sidecar_id) {
+ 		if(!$this->getPrimaryKey()) { return null; }
+ 	
+ 		$t_sidecar = new ca_object_representation_sidecars($pn_sidecar_id);
+ 		if($this->inTransaction()) { $t_sidecar->setTransaction($this->getTransaction()); }
+ 		
+ 		if ($t_sidecar->get('representation_id') == $this->getPrimaryKey()) {
+ 			return $t_sidecar;
+ 		}
+ 		return null;
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 *
+ 	 */
+ 	public function numSidecarFiles($representation_id=null) { 		
+ 		if(!($vn_representation_id = $representation_id)) { 
+ 			if (!($vn_representation_id = $this->getPrimaryKey())) {
+ 				return null; 
+ 			}
+ 		}
+ 		
+ 		$o_db= $this->getDb();
+ 		$qr_res = $o_db->query("
+ 			SELECT count(*) c
+ 			FROM ca_object_representation_sidecars
+ 			WHERE
+ 				representation_id = ?
+ 		", [(int)$vn_representation_id]);
  		
  		if($qr_res->nextRow()) {
  			return intval($qr_res->get('c'));
@@ -1963,13 +2152,44 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		$o_view->setVar('t_subject', $this);
 		$o_view->setVar('t_caption', new ca_object_representation_captions());
 		
-		//$va_media_info = $this->getMediaInfo('media');
-		//if (!is_array($va_media_info)) { $va_media_info = array('original' => array('PROPERTIES' => array('typename' => null))); }
-		//$o_view->setVar('representation_typename', $va_media_info['original']['PROPERTIES']['typename']);
 		$o_view->setVar('representation_num_caption_files', $this->numCaptionFiles());
 		$o_view->setVar('initialValues', $this->getCaptionFileList());
 		
 		return $o_view->render('ca_object_representation_captions.php');
+	}
+	
+	# ------------------------------------------------------
+	/** 
+	 * Returns HTML form bundle (for use in a ca_object_representations editor form) for sidecar files
+	 *
+	 * @param HTTPRequest $po_request The current request
+	 * @param string $ps_form_name
+	 * @param string $ps_placement_code
+	 * @param array $pa_bundle_settings
+	 * @param array $options Array of options. Supported options are 
+	 *			noCache = If set to true then label cache is bypassed; default is true
+	 *
+	 * @return string Rendered HTML bundle
+	 */
+	public function getSidecarHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $options=null) {
+		global $g_ui_locale;
+		
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+		
+		if(!is_array($options)) { $options = array(); }
+		
+		$o_view->setVar('id_prefix', $ps_form_name);
+		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
+		
+		$o_view->setVar('settings', $pa_bundle_settings);
+		
+		$o_view->setVar('t_subject', $this);
+		$o_view->setVar('t_sidecar', new ca_object_representation_sidecars());
+		
+		$o_view->setVar('representation_num_sidecar_files', $this->numSidecarFiles());
+		$o_view->setVar('initialValues', $this->getSidecarFileList());
+		
+		return $o_view->render('ca_object_representation_sidecars.php');
 	}
 	# ------------------------------------------------------
 	/** 

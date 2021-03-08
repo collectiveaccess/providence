@@ -341,7 +341,7 @@ function caFileIsIncludable($ps_file) {
 			$dir = substr($dir, 0, strlen($dir) - 1);
 		}
 		if(!file_exists($dir)) { return []; }
-		if($va_paths = scandir($dir, 0)) {
+		if($va_paths = @scandir($dir, 0)) {
 			foreach($va_paths as $item) {
 				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
 					$va_stat = @stat("{$dir}/{$item}");
@@ -2767,15 +2767,15 @@ function caFileIsIncludable($ps_file) {
 
 		// either
 		if (preg_match("!^([^\d]+)([\d\.\,]+)$!", trim($ps_value), $va_matches)) {
-			$vs_decimal_value = round((float)$va_matches[2], 2);
+			$vs_decimal_value = round((float)str_replace(',', '', $va_matches[2]), 2);
 			$vs_currency_specifier = trim($va_matches[1]);
 		// or 1
 		} else if (preg_match("!^([\d\.\,]+)([^\d]+)$!", trim($ps_value), $va_matches)) {
-			$vs_decimal_value = round((float)$va_matches[1], 2);
+			$vs_decimal_value = round((float)str_replace(',', '', $va_matches[1]), 2);
 			$vs_currency_specifier = trim($va_matches[2]);
 		// or 2
 		} else if (preg_match("!(^[\d\,\.]+$)!", trim($ps_value), $va_matches)) {
-			$vs_decimal_value = round((float)$va_matches[1], 2);
+			$vs_decimal_value = round((float)str_replace(',', '', $va_matches[1]), 2);
 			$vs_currency_specifier = null;
 		}
 

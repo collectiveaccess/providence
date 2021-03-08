@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/Controller/ApplicationException.php :
+ * app/lib/Exceptions/ApplicationException.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -35,6 +35,4 @@
  */
 
 
-class ApplicationException extends Exception {
-
-}
+class ApplicationException extends Exception {}

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -162,6 +162,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"image/x-sony-srf"	=> "srf",
 			"image/x-sigma-x3f"	=> "x3f",
 			"application/dicom" => "dcm",
+			'image/heic'		=> 'heic'
 		),
 		"EXPORT" => array(
 			"image/jpeg" 		=> "jpg",
@@ -186,6 +187,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"image/x-sony-srf"	=> "srf",
 			"image/x-sigma-x3f"	=> "x3f",
 			"application/dicom" => "dcm",
+			'image/heic'		=> 'heic'
 		),
 		"TRANSFORMATIONS" => array(
 			"SCALE" 			=> array("width", "height", "mode", "antialiasing", "trim_edges", "crop_from"),
@@ -229,53 +231,55 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	);
 	
 	var $typenames = array(
-		"image/jpeg" 		=> "JPEG",
-		"image/gif" 		=> "GIF",
-		"image/tiff" 		=> "TIFF",
-		"image/png" 		=> "PNG",
-		"image/x-bmp" 		=> "Windows Bitmap (BMP)",
-		"image/x-psd" 		=> "Photoshop",
-		"image/tilepic" 	=> "Tilepic",
-		"image/x-dpx"		=> "DPX",
-		"image/x-exr"		=> "OpenEXR",
-		"image/jp2"		=> "JPEG-2000",
-		"image/x-adobe-dng"	=> "Adobe DNG",
-		"image/x-canon-cr2"	=> "Canon CR2 RAW Image",
-		"image/x-canon-crw"	=> "Canon CRW RAW Image",
-		"image/x-sony-arw"	=> "Sony ARW RAW Image",
-		"image/x-olympus-orf"	=> "Olympus ORF Raw Image",
-		"image/x-pentax-pef"	=> "Pentax Electronic File Image",
-		"image/x-epson-erf"	=> "Epson ERF RAW Image",
-		"image/x-nikon-nef"	=> "Nikon NEF RAW Image",
-		"image/x-sony-sr2"	=> "Sony SR2 RAW Image",
-		"image/x-sony-srf"	=> "Sony SRF RAW Image",
-		"image/x-sigma-x3f"	=> "Sigma X3F RAW Image",
-		"application/dicom" => "DICOM medical imaging data",
+		'image/jpeg' 		=> 'JPEG',
+		'image/gif' 		=> 'GIF',
+		'image/tiff' 		=> 'TIFF',
+		'image/png' 		=> 'PNG',
+		'image/x-bmp' 		=> 'Windows Bitmap (BMP)',
+		'image/x-psd' 		=> 'Photoshop',
+		'image/tilepic' 	=> 'Tilepic',
+		'image/x-dpx'		=> 'DPX',
+		'image/x-exr'		=> 'OpenEXR',
+		'image/jp2'		=> 'JPEG-2000',
+		'image/x-adobe-dng'	=> 'Adobe DNG',
+		'image/x-canon-cr2'	=> 'Canon CR2 RAW Image',
+		'image/x-canon-crw'	=> 'Canon CRW RAW Image',
+		'image/x-sony-arw'	=> 'Sony ARW RAW Image',
+		'image/x-olympus-orf'	=> 'Olympus ORF Raw Image',
+		'image/x-pentax-pef'	=> 'Pentax Electronic File Image',
+		'image/x-epson-erf'	=> 'Epson ERF RAW Image',
+		'image/x-nikon-nef'	=> 'Nikon NEF RAW Image',
+		'image/x-sony-sr2'	=> 'Sony SR2 RAW Image',
+		'image/x-sony-srf'	=> 'Sony SRF RAW Image',
+		'image/x-sigma-x3f'	=> 'Sigma X3F RAW Image',
+		'application/dicom' => 'DICOM medical imaging data',
+		'image/heic' 		=> 'HEIC'
 	);
 	
 	var $magick_names = array(
-		"image/jpeg" 		=> "JPEG",
-		"image/gif" 		=> "GIF",
-		"image/tiff" 		=> "TIFF",
-		"image/png" 		=> "PNG",
-		"image/x-bmp" 		=> "BMP",
-		"image/x-psd" 		=> "PSD",
-		"image/tilepic" 	=> "TPC",
-		"image/x-dpx"		=> "DPX",
-		"image/x-exr"		=> "EXR",
-		"image/jp2"		=> "JP2",
-		"image/x-adobe-dng"	=> "DNG",
-		"image/x-canon-cr2"	=> "CR2",
-		"image/x-canon-crw"	=> "CRW",
-		"image/x-sony-arw"	=> "ARW",
-		"image/x-olympus-orf"	=> "ORF",
-		"image/x-pentax-pef"	=> "PEF",
-		"image/x-epson-erf"	=> "ERF",
-		"image/x-nikon-nef"	=> "NEF",
-		"image/x-sony-sr2"	=> "SR2",
-		"image/x-sony-srf"	=> "SRF",
-		"image/x-sigma-x3f"	=> "X3F",
-		"application/dicom" => "DCM",
+		'image/jpeg' 		=> 'JPEG',
+		'image/gif' 		=> 'GIF',
+		'image/tiff' 		=> 'TIFF',
+		'image/png' 		=> 'PNG',
+		'image/x-bmp' 		=> 'BMP',
+		'image/x-psd' 		=> 'PSD',
+		'image/tilepic' 	=> 'TPC',
+		'image/x-dpx'		=> 'DPX',
+		'image/x-exr'		=> 'EXR',
+		'image/jp2'		=> 'JP2',
+		'image/x-adobe-dng'	=> 'DNG',
+		'image/x-canon-cr2'	=> 'CR2',
+		'image/x-canon-crw'	=> 'CRW',
+		'image/x-sony-arw'	=> 'ARW',
+		'image/x-olympus-orf'	=> 'ORF',
+		'image/x-pentax-pef'	=> 'PEF',
+		'image/x-epson-erf'	=> 'ERF',
+		'image/x-nikon-nef'	=> 'NEF',
+		'image/x-sony-sr2'	=> 'SR2',
+		'image/x-sony-srf'	=> 'SRF',
+		'image/x-sigma-x3f'	=> 'X3F',
+		'application/dicom' => 'DCM',
+		'image/heic' 		=> 'HEIC'
 	);
 	
 	#
@@ -1388,7 +1392,10 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				if (!is_null($pn_quality)) {
 					array_unshift($va_ops['convert'], '-quality '.intval($pn_quality));
 				}
-				array_unshift($va_ops['convert'], '-colorspace RGB');
+				
+				if($this->properties["colorspace"] === 'CMYK') {
+					array_unshift($va_ops['convert'], '-colorspace RGB');
+				}
 				caExec( join( ' ', array(
 					$this->commandWithDefaultArgs( 'convert' ),
 					caEscapeShellArg( $vs_input_file . '[0]' ),

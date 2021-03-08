@@ -2742,6 +2742,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							if ( $va_item['settings']['skipIfDataPresent'] ) {
 								$va_group_buf[ $vn_c ]['_skipIfDataPresent'] = true;
 							}
+							
+
+							if ( $displaynameFormat_setting = $va_item['settings']['displaynameFormat'] ) {
+								$va_group_buf[ $vn_c ]['_displaynameFormat'] = $displaynameFormat_setting;
+							}
 
 
 							// Is it a constant value?

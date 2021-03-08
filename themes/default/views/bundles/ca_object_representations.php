@@ -27,6 +27,7 @@
  */
 	AssetLoadManager::register('fileupload');
 	AssetLoadManager::register('sortableUI');
+	AssetLoadManager::register('3dmodels');
 	
 	$upload_max_filesize = caFormatFileSize(caReturnValueInBytes(ini_get( 'upload_max_filesize' )));
 	

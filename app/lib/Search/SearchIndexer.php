@@ -115,6 +115,7 @@ class SearchIndexer extends SearchBase {
 	 * Returns a list of tables the require indexing
 	 */
 	public function getIndexedTables() {
+		if(ExternalCache::contains('getIndexedTables', 'SearchIndexer')) {  return ExternalCache::fetch('getIndexedTables', 'SearchIndexer'); };
 		$va_table_names = Datamodel::getTableNames();
 
 		$o_db = $this->opo_db;
@@ -127,7 +128,7 @@ class SearchIndexer extends SearchBase {
 				continue;
 			}
 
-			$qr_all = $o_db->query("SELECT count(*) c FROM $vs_table");
+			$qr_all = $o_db->query("SELECT count(*) c FROM {$vs_table}".($t_instance->hasField('delete') ? "WHERE deleted = 0" : ""));
 			$qr_all->nextRow();
 			$vn_num_rows = (int)$qr_all->get('c');
 
@@ -143,6 +144,7 @@ class SearchIndexer extends SearchBase {
 			$va_sorted_tables[$va_tables_to_index[$vs_table]['num']] = $va_tables_to_index[$vs_table];
 		}
 
+		ExternalCache::save('getIndexedTables', $va_sorted_tables, 'SearchIndexer', 3600);
 		return $va_sorted_tables;
 	}
 	# -------------------------------------------------------
@@ -369,14 +371,14 @@ class SearchIndexer extends SearchBase {
 	 */
 	public function getDependencies($ps_subject_table) {
 		/* handle total cache miss (completely new cache has been generated) */
-		if(ExternalCache::contains('ca_table_dependency_array')) {
-			$va_cache_data = ExternalCache::fetch('ca_table_dependency_array');
+		if(ExternalCache::contains('ca_table_dependency_array', 'SearchIndexer')) {
+			$va_cache_data = ExternalCache::fetch('ca_table_dependency_array', 'SearchIndexer');
 		}
 
 		/* cache outdated? (i.e. changes to search_indexing.conf) */
 		$va_configfile_stat = stat(__CA_CONF_DIR__.'/search_indexing.conf');
-		if($va_configfile_stat['mtime'] != ExternalCache::fetch('ca_table_dependency_array_mtime')) {
-			ExternalCache::save('ca_table_dependency_array_mtime', $va_configfile_stat['mtime']);
+		if($va_configfile_stat['mtime'] != ExternalCache::fetch('ca_table_dependency_array_mtime', 'SearchIndexer')) {
+			ExternalCache::save('ca_table_dependency_array_mtime', $va_configfile_stat['mtime'], 'SearchIndexer');
 			$va_cache_data = array();
 		}
 
@@ -389,7 +391,7 @@ class SearchIndexer extends SearchBase {
 			/* build dependency graph, store it in cache and return it */
 			$va_deps = $this->_getDependencies($ps_subject_table);
 			$va_cache_data[$ps_subject_table] = $va_deps;
-			ExternalCache::save('ca_table_dependency_array', $va_cache_data);
+			ExternalCache::save('ca_table_dependency_array', $va_cache_data, 'SearchIndexer');
 			return $va_deps;
 		}
 	}
@@ -784,6 +786,7 @@ if (!$for_current_value_reindex) {
 								}
 							}
 							$va_content[$t_item->get('idno')] = true;
+							$va_content[$t_item->get('item_value')] = true;
 						}  else {
 							// is this field related to something?
 							if (is_array($va_rels = Datamodel::getManyToOneRelations($vs_subject_tablename)) && ($va_rels[$vs_field])) {
@@ -1071,7 +1074,7 @@ if (!$for_current_value_reindex) {
                                                         $this->_genIndexInheritance($t_subject, $t_rel, $field_num, $pn_subject_row_id, $vn_id, $va_values, array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private, 'isGeneric' => $is_generic)));
                                                     } else {
                                                         // regular intrinsic
-                                                        $this->opo_engine->indexField($z = ($is_generic ? $pn_subject_table_num : $vn_related_table_num), $field_num, $vn_rid = $is_generic ? $pn_subject_row_id : $qr_res->get($vs_related_pk), [$vs_fld_data], array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private)));
+                                                        $this->opo_engine->indexField(($is_generic ? $pn_subject_table_num : $vn_related_table_num), $field_num, $vn_rid = $is_generic ? $pn_subject_row_id : $qr_res->get($vs_related_pk), [$vs_fld_data], array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private)));
                                                         $this->_genIndexInheritance($t_subject, $t_rel, $field_num, $pn_subject_row_id, $vn_rid, [$vs_fld_data], array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private, 'isGeneric' => $is_generic)));
                                                     }
                                                 }
