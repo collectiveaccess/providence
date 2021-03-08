@@ -357,7 +357,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	//	2. Search for is blank values
 	 	//	3. Search is not non-blank values
 	 	//	4. Search includes non-letter characters
-	 	if ($this->do_stemming && !$is_blank && !$is_not_blank && !preg_match("![^\L]+!u", $text)) {
+	 	if ($this->do_stemming && !$is_blank && !$is_not_blank && !preg_match("![^A-Za-z]+!u", $text)) {
 	 		$text_stem = $this->stemmer->stem($text);
 	 		if (($text !== $text_stem) && ($text_stem[strlen($text_stem)-1] !== '*')) { 
 	 			$text = $text_stem.'*';
