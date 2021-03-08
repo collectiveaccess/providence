@@ -1957,11 +1957,15 @@
 					'value' => $vm_values,
 					'forSearch' => true,
 					'textAreaTagName' => caGetOption('textAreaTagName', $pa_options, null),
-					'render' => $va_element['settings']['render']//(isset($va_element['settings']['render']) && ($va_element['settings']['render'] == 'lookup')) ? $va_element['settings']['render'] : isset($pa_options['render']) ? $pa_options['render'] : 'select'
+					'render' => $va_element['settings']['render']
 				), array_merge($pa_options, $va_override_options));
 				
 				if (caGetOption('forSimpleForm', $pa_options, false)) { 
 					unset($va_element_opts['nullOption']);
+					
+					if (!strlen($vm_values) && is_array($va_element['settings']) && isset($va_element['settings']['default_text'])) {
+						$vm_values = $va_element['settings']['default_text'];
+					}
 				}
 				
 				// We don't want to pass the entire set of values to ca_attributes::attributeHtmlFormElement() since it'll treat it as a simple list
@@ -3230,7 +3234,9 @@
  			if (sizeof(BaseModelWithAttributes::$s_element_label_cache) > 256) { 
  				array_splice(BaseModelWithAttributes::$s_element_label_cache, 0, 128);
  			}
- 			BaseModelWithAttributes::$s_element_label_cache = array_merge(BaseModelWithAttributes::$s_element_label_cache, caExtractValuesByUserLocale($va_element_labels_by_locale));
+ 			
+ 			// TODO: fix this - currently caching incorrect values
+ 			//BaseModelWithAttributes::$s_element_label_cache = array_merge(BaseModelWithAttributes::$s_element_label_cache, caExtractValuesByUserLocale($va_element_labels_by_locale));
  			
  			if ($pb_include_sub_element_codes && sizeof($va_codes)) {
  				$qr_res = $o_db->query("
