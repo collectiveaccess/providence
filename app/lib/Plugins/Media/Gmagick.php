@@ -323,10 +323,10 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			if ($tp->isTilepic($ps_filepath)) {
 				return 'image/tilepic';
 			} elseif ($this->imagemagick_path) {	// Is it HEIC?
-				caExec($x=$this->imagemagick_path." ".caEscapeShellArg($ps_filepath)." 2> /dev/null", $output, $return);
-				if(is_array($output) && preg_match("!HEIC [\d]+x[\d]+!", $output[0])) {
+				caExec($this->imagemagick_path." ".caEscapeShellArg($ps_filepath)." 2> /dev/null", $output, $return);
+				if(is_array($output) && preg_match("!(HEIC|PSD) [\d]+x[\d]+!", $output[0], $m)) {
 					$this->opa_heic_list[$ps_filepath] = true;
-					return 'image/heic';
+					return ($m[1] === 'HEIC') ? 'image/heic' : 'image/x-psd';
 				}
 			}
 				
@@ -1324,6 +1324,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	 *
 	 */
 	private function _imConvertHEICToTiff($ps_filepath) {
+		global $file_cleanup_list;
 		if (!$this->imagemagick_path) {
 			$this->postError(1610, _t("Could not convert HEIC format file because conversion tool (ImageMagick) is not installed"), "WLPlugGmagick->read()");
 			return false;
@@ -1336,6 +1337,9 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		}
         $this->tmpfiles_to_delete[$vs_tmp_name] = 1;
         $this->tmpfiles_to_delete[$vs_tmp_name.'.tiff'] = 1;
+        $file_cleanup_list[] = $vs_tmp_name;
+    	$file_cleanup_list[] = $vs_tmp_name.'.tiff';
+        
 		caExec(str_replace("identify", "convert", $this->imagemagick_path)." ".caEscapeShellArg($vs_tmp_name)." ".caEscapeShellArg($vs_tmp_name.'.tiff'), $va_output, $vn_return);
 		
 		if ($vn_return != 0) {
