@@ -1796,6 +1796,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					# -------------------------------
 					// This bundle is only available when editing objects of type ca_object_representations
 					case 'ca_object_representations_media_display':
+						AssetLoadManager::register('3dmodels');
 						if ($vb_batch) { return null; } // not supported in batch mode
 						$vs_element .= $this->getMediaDisplayHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
 						break;
@@ -1805,6 +1806,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						if ($vb_batch) { return null; } // not supported in batch mode
 						if (!$this->representationIsOfClass("video")) { return ''; }
 						$vs_element .= $this->getCaptionHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						break;
+					# -------------------------------
+					// This bundle is only available when editing objects of type ca_object_representations
+					case 'ca_object_representation_sidecars':
+						AssetLoadManager::register('3dmodels');
+						if ($vb_batch) { return null; } // not supported in batch mode
+						$vs_element .= $this->getSidecarHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
 						break;
 					# -------------------------------
 					// This bundle is only available for objects
@@ -4734,7 +4742,6 @@ if (!$vb_batch) {
 					case 'ca_object_representation_captions':
 						if ($vb_batch) { return null; } // not supported in batch mode
 				
-						$va_users_to_set = array();
 						foreach($_REQUEST as $vs_key => $vs_val) { 
 							// any to delete?
 							if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}_([\d]+)_delete$!", $vs_key, $va_matches)) {
@@ -4743,6 +4750,27 @@ if (!$vb_batch) {
 							if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}_locale_id(.*)$!", $vs_key, $va_matches)) {
 								$vn_locale_id = (int)$po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_locale_id".$va_matches[1], pInteger);
 								$this->addCaptionFile($_FILES["{$vs_placement_code}{$vs_form_prefix}_caption_file".$va_matches[1]]['tmp_name'], $vn_locale_id, array('originalFilename' => $_FILES["{$vs_placement_code}{$vs_form_prefix}_caption_file".$va_matches[1]]['name']));
+							} 
+						}
+						
+						break;
+						
+					# -------------------------------
+					// This bundle is only available when editing objects of type ca_object_representations
+					case 'ca_object_representation_sidecars':
+						if ($vb_batch) { return null; } // not supported in batch mode
+			
+						foreach($_REQUEST as $vs_key => $vs_val) { 
+							// any to delete?
+							if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}_([\d]+)_delete$!", $vs_key, $va_matches)) {
+								$this->removeSidecarFile((int)$va_matches[1]);
+							}
+							if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}_id(.*)$!", $vs_key, $va_matches)) {
+								$this->addSidecarFile(
+									$_FILES["{$vs_placement_code}{$vs_form_prefix}_sidecar_file".$va_matches[1]]['tmp_name'], 			
+									$_REQUEST["{$vs_placement_code}{$vs_form_prefix}_notes".$va_matches[1]], 
+									['originalFilename' => $_FILES["{$vs_placement_code}{$vs_form_prefix}_sidecar_file".$va_matches[1]]['name']]
+								);
 							} 
 						}
 						

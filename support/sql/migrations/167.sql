@@ -6,6 +6,7 @@
 
 /*==========================================================================*/
 
+
 /* Allow non-preferred labels for metadata elements - used to disambiguate fields */
 ALTER TABLE ca_metadata_element_labels ADD COLUMN is_preferred tinyint unsigned not null default 0;
 UPDATE ca_metadata_element_labels SET is_preferred = 1;
@@ -18,7 +19,6 @@ ALTER TABLE ca_media_upload_sessions ADD COLUMN `submitted_on` int unsigned null
 ALTER TABLE ca_media_upload_sessions DROP COLUMN `cancelled`;
 
 CREATE INDEX i_status ON ca_media_upload_sessions(status);
-
 
 /*==========================================================================*/
 
