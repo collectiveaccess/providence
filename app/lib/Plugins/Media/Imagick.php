@@ -432,6 +432,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ----------------------------------------------------------
 	public function read($ps_filepath, $mimetype="", $options=null) {
+		global $file_cleanup_list;
 		if (!(($this->handle) && ($$ps_filepath === $this->filepath))) {
 			
 			if ($mimetype == 'image/tilepic') {
@@ -481,6 +482,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 						return false;
 					}
 					$ps_filepath = $this->filepath_conv = $vs_tmp_name.'.tiff';
+					$file_cleanup_list[] = $ps_filepath;
 
 					@unlink($vs_tmp_name);
 				}
@@ -511,7 +513,6 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 							//
 							if (isset($va_exif['IFD0']['Orientation'])) {
 								$vn_orientation = $va_exif['IFD0']['Orientation'];
-								$vs_tmp_basename = tempnam(caGetTempDirPath(), 'ca_image_tmp');
 								
 								$vb_is_rotated = false;
 								switch($vn_orientation) {
@@ -1028,6 +1029,8 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	 */
 	# This method must be implemented for plug-ins that can output preview frames for videos or pages for documents
 	public function &writePreviews($ps_filepath, $pa_options) {
+		global $file_cleanup_list;
+		
 		if(!$this->handle) { return false; }
 		if($this->handle->getNumberImages() < 2) { return false; } // don't generate previews for single images
 
@@ -1047,7 +1050,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 		foreach($this->handle as $image){
 			$image->writeImage($vs_output_file_prefix.sprintf("_%05d", $vn_i).".jpg");
-			$va_files[$vn_i] = $vs_output_file_prefix.sprintf("_%05d", $vn_i).'.jpg';
+			$file_cleanup_list[] = $va_files[$vn_i] = $vs_output_file_prefix.sprintf("_%05d", $vn_i).'.jpg';
 			$vn_i++;
 		}
 
@@ -1056,11 +1059,13 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 	public function joinArchiveContents($pa_files, $pa_options = array()) {
+		global $file_cleanup_list;
+		
 		if(!is_array($pa_files)) { return false; }
 
 		$vs_archive_original = tempnam(caGetTempDirPath(), "caArchiveOriginal");
 		@rename($vs_archive_original, $vs_archive_original.".tif");
-		$vs_archive_original = $vs_archive_original.".tif";
+		$file_cleanup_list[] = $vs_archive_original = $vs_archive_original.".tif";
 
 		$vo_orig = new Imagick();
 		$vo_orig->setResourceLimits($r_handle);

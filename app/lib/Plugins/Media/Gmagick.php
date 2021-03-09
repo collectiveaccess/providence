@@ -323,10 +323,10 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			if ($tp->isTilepic($ps_filepath)) {
 				return 'image/tilepic';
 			} elseif ($this->imagemagick_path) {	// Is it HEIC?
-				caExec($x=$this->imagemagick_path." ".caEscapeShellArg($ps_filepath)." 2> /dev/null", $output, $return);
-				if(is_array($output) && preg_match("!HEIC [\d]+x[\d]+!", $output[0])) {
+				caExec($this->imagemagick_path." ".caEscapeShellArg($ps_filepath)." 2> /dev/null", $output, $return);
+				if(is_array($output) && preg_match("!(HEIC|PSD) [\d]+x[\d]+!", $output[0], $m)) {
 					$this->opa_heic_list[$ps_filepath] = true;
-					return 'image/heic';
+					return ($m[1] === 'HEIC') ? 'image/heic' : 'image/x-psd';
 				}
 			}
 				
@@ -1007,6 +1007,8 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	 * This method must be implemented for plug-ins that can output preview frames for videos or pages for documents
 	 */
 	public function &writePreviews($ps_filepath, $pa_options) {
+		global $file_cleanup_list;
+		
 		if (!isset($pa_options['outputDirectory']) || !$pa_options['outputDirectory'] || !file_exists($pa_options['outputDirectory'])) {
 			if (!($tmp_dir = $this->opo_config->get("taskqueue_tmp_directory"))) {
 				// no dir
@@ -1038,7 +1040,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				if ($i > 1) { $this->handle->nextImage(); }
 			
 				$this->handle->writeImage($output_file_prefix.sprintf("_%05d", $i).".jpg");
-				$files[$i] = $output_file_prefix.sprintf("_%05d", $i).'.jpg';
+				$file_cleanup_list[] = $files[$i] = $output_file_prefix.sprintf("_%05d", $i).'.jpg';
 			
 				$i++;
 			} while($this->handle->hasnextimage());
@@ -1052,12 +1054,14 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	 *
 	 */
 	public function joinArchiveContents($pa_files, $pa_options = array()) {
+		global $file_cleanup_list;
+		
 		if(!is_array($pa_files)) { return false; }
 
 		$vs_archive_original = tempnam(caGetTempDirPath(), "caArchiveOriginal");
 		@rename($vs_archive_original, $vs_archive_original.".tif");
-		$vs_archive_original = $vs_archive_original.".tif";
-
+		$file_cleanup_list[] = $vs_archive_original = $vs_archive_original.".tif";
+		
 		$vo_orig = new Gmagick();
 		$this->setResourceLimits($vo_orig);
 
@@ -1286,6 +1290,8 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	 *
 	 */
 	private function _dcrawConvertToTiff($ps_filepath) {
+		global $file_cleanup_list;
+		
 		if (!$this->ops_dcraw_path) {
 			$this->postError(1610, _t("Could not convert Camera RAW format file because conversion tool (dcraw) is not installed"), "WLPlugGmagick->read()");
 			return false;
@@ -1298,6 +1304,9 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		}
         $this->tmpfiles_to_delete[$vs_tmp_name] = 1;
         $this->tmpfiles_to_delete[$vs_tmp_name.'.tiff'] = 1;
+        $file_cleanup_list[] = $vs_tmp_name;
+    	$file_cleanup_list[] = $vs_tmp_name.'.tiff';
+         
 		caExec($this->ops_dcraw_path." -T ".caEscapeShellArg($vs_tmp_name), $va_output, $vn_return);
 		if ($vn_return != 0) {
 			$this->postError(1610, _t("Camera RAW file conversion failed: %1", $vn_return), "WLPlugGmagick->read()");
@@ -1315,6 +1324,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	 *
 	 */
 	private function _imConvertHEICToTiff($ps_filepath) {
+		global $file_cleanup_list;
 		if (!$this->imagemagick_path) {
 			$this->postError(1610, _t("Could not convert HEIC format file because conversion tool (ImageMagick) is not installed"), "WLPlugGmagick->read()");
 			return false;
@@ -1327,6 +1337,9 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		}
         $this->tmpfiles_to_delete[$vs_tmp_name] = 1;
         $this->tmpfiles_to_delete[$vs_tmp_name.'.tiff'] = 1;
+        $file_cleanup_list[] = $vs_tmp_name;
+    	$file_cleanup_list[] = $vs_tmp_name.'.tiff';
+        
 		caExec(str_replace("identify", "convert", $this->imagemagick_path)." ".caEscapeShellArg($vs_tmp_name)." ".caEscapeShellArg($vs_tmp_name.'.tiff'), $va_output, $vn_return);
 		
 		if ($vn_return != 0) {
