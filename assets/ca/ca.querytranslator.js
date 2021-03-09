@@ -257,6 +257,12 @@ var caUI = caUI || {};
 				}
 			}
 		}
+		
+		if (token.type === TOKEN_WORD) {
+		    if((token.value.toLowerCase() === 'and') || (token.value.toLowerCase() === 'or')) {
+		        token.isCondition = true;
+		    }
+		}
 		return token;
 	};
 
@@ -444,7 +450,6 @@ var caUI = caUI || {};
 					rule = {};
 					
 					negation = false;
-					
 					// Look for NOT
 					poss_not = peekToken(tokens, 0);
 					if(poss_not.value === 'NOT') {
@@ -471,9 +476,16 @@ var caUI = caUI || {};
 						// Other types can be a (quoted or unquoted) word, with optional wildcard prefix and/or suffix.
 						// Alternatively the word itself can be omitted, i.e. just a wildcard (`is_empty`/`is_not_empty`).
 						wildcardPrefix = isNextToken(tokens, TOKEN_WILDCARD);
-						word = isNextToken(tokens, TOKEN_WORD);
+						
+						var t1, t2, acc = [];
+						skipWhitespace(tokens);
+						while((t1 = peekToken(tokens, 0)) && (t1.type === TOKEN_WORD) && (!t1.isCondition) && (((t2 = peekToken(tokens, 1)) && (t2.type !== TOKEN_COLON)) || !t2)) {
+						    acc.push(isNextToken(tokens, TOKEN_WORD));
+						    skipWhitespace(tokens);
+						}
 						wildcardSuffix = isNextToken(tokens, TOKEN_WILDCARD);
-						assignOperatorAndValue(rule, word ? word.value : undefined, negation, wildcardPrefix, wildcardSuffix);
+						
+						assignOperatorAndValue(rule, acc.length > 0 ? acc.reduce((a, v) => a + (a ? ' ' : '') + v.value, '') : undefined, negation, wildcardPrefix, wildcardSuffix);
 					}
 				}
 				skipWhitespace(tokens);
