@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -229,6 +229,24 @@
 				),
 				'label' => _t('Operating mode'),
 				'description' => _t('Set to "returnData" to return the id of lowest item in the hierarchy to the importer; set to "processOnly" to create the list items in the hierarchy but not return values to the importer. Default is to process only.')
+			),			
+			'listItemIndentedHierarchyBuilder_ignoreParent' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Ignore parent when trying to match row'),
+				'description' => _t('Ignore parent when trying to match row.')
+			),
+			'listItemIndentedHierarchyBuilder_ignoreType' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Ignore type when trying to match row'),
+				'description' => _t('Ignore type when trying to match row.')
 			)
 		);
 ?>

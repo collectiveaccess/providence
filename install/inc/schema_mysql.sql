@@ -7358,7 +7358,6 @@ create table if not exists ca_media_upload_sessions (
    index i_created_on			    (created_on),
    index i_completed_on			    (completed_on),
    index i_last_activity_on			(last_activity_on),
-   index i_cancelled      	        (cancelled),
    index i_error_code      	        (error_code),
    index i_status   	            (status),
    unique index i_session_key      	(session_key)
