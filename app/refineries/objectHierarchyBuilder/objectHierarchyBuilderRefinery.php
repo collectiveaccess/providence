@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2016 Whirl-i-Gig
+ * Copyright 2013-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -134,5 +134,23 @@
 			'default' => '',
 			'label' => _t('Do not match on label'),
 			'description' => _t('set to prohibit matching using label')
+		),
+		'objectHierarchyBuilder_ignoreParent' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Ignore parent when trying to match row'),
+			'description' => _t('Ignore parent when trying to match row.')
+		),
+		'objectHierarchyBuilder_ignoreType' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Ignore type when trying to match row'),
+			'description' => _t('Ignore type when trying to match row.')
 		)
 	);

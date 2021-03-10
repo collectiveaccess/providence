@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2019-2020 Whirl-i-Gig
+ * Copyright 2019-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -259,5 +259,23 @@
 				'default' => '',
 				'label' => _t('Relationships'),
 				'description' => _t('List of relationships to process.')
+			),			
+			'collectionIndentedHierarchyBuilder_ignoreParent' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Ignore parent when trying to match row'),
+				'description' => _t('Ignore parent when trying to match row.')
 			),
+			'collectionIndentedHierarchyBuilder_ignoreType' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Ignore type when trying to match row'),
+				'description' => _t('Ignore type when trying to match row.')
+			)
 		);

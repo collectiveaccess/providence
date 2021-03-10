@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2020 Whirl-i-Gig
+ * Copyright 2010-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,18 +33,6 @@
  /**
   *
   */
-
- 	require_once(__CA_MODELS_DIR__.'/ca_objects.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_entities.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_places.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_occurrences.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_collections.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_lists.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_loans.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_movements.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_storage_locations.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_data_import_events.php');
  	require_once(__CA_APP_DIR__.'/helpers/batchHelpers.php');
  	
 	define("__CA_DATA_IMPORT_ERROR__", 0);
@@ -173,8 +161,12 @@
 
 			if(!isset($pa_options['cache'])) { $pa_options['cache'] = true; }
 			
+			
+			$va_restrict_to_types 			= ($pn_type_id && !caGetOption('ignoreType', $pa_options, false)) ? [$pn_type_id] : null;
+			$pb_ignore_parent			 	= caGetOption('ignoreParent', $pa_options, false);
+			
 			$log_reference 					= caGetOption('logReference', $pa_options, null);
-			$log_reference_str = 			($log_reference ? _t('[%1] ', $log_reference) : '');
+			$log_reference_str 				= ($log_reference ? _t('[%1] ', $log_reference) : '');
 			
 			// Create cache key
 			$vs_cache_key = md5($pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id.'/'.$vs_singular_label.'/'.$vs_plural_label . '/' . json_encode($pa_match_on));
@@ -210,7 +202,9 @@
 				if ($o_log) { $o_log->logError(_t("%2Could not find list with list code %1", $pm_list_code_or_id, $log_reference_str)); }
 				return DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key] = null;
 			}
+			if ($pb_ignore_parent) { $vn_parent_id = false; }
 			if (!$vn_parent_id && ($vn_parent_id !== false)) { $vn_parent_id = caGetListRootID($pm_list_code_or_id); }
+			
 
 			$t_list = new ca_lists();
 			$t_item = new ca_list_items();
@@ -232,7 +226,7 @@
 						if (trim($vs_singular_label) || trim($vs_plural_label)) {
 							$va_criteria = array($vs_label_spec => array('name_singular' => $vs_singular_label), 'list_id' => $vn_list_id);
 							if ($vn_parent_id !== false) { $va_criteria['parent_id'] = $vn_parent_id; }
-							if ($vn_item_id = (ca_list_items::find($va_criteria, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'])))) {
+							if ($vn_item_id = (ca_list_items::find($va_criteria, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types)))) {
 								if ($o_log) { $o_log->logDebug(_t("%4Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using singular label %3", $ps_item_idno, $pm_list_code_or_id, $vs_singular_label, $log_reference_str)); }
 								break(2);
 							} else {
@@ -248,7 +242,7 @@
 						if ($ps_item_idno == '%') { break; }	// don't try to match on an unreplaced idno placeholder
 						$va_criteria = array('idno' => $ps_item_idno ? $ps_item_idno : $vs_plural_label, 'list_id' => $vn_list_id);
 						if ($vn_parent_id !== false) { $va_criteria['parent_id'] = $vn_parent_id; }
-						if ($vn_item_id = (ca_list_items::find($va_criteria, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'])))) {
+						if ($vn_item_id = (ca_list_items::find($va_criteria, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types)))) {
 							if ($o_log) { $o_log->logDebug(_t("%4Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using idno with %3", $ps_item_idno, $pm_list_code_or_id, $ps_item_idno, $log_reference_str)); }
 							break(2);
 						}
@@ -263,7 +257,7 @@
 						$t_instance = new ca_list_items();
 						if ($t_instance->hasField($vs_element) || $t_instance->hasElement($vs_element)) {
 							$va_params = array($vs_element => $ps_item_idno, 'list_id' => $vn_list_id);
-							$vn_id = ca_list_items::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction']));
+							$vn_id = ca_list_items::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types));
 							if ($vn_id) { break(2); }
 						}
 						break;
@@ -975,7 +969,7 @@
 				$va_replacements_list = caBatchGetMediaFilenameReplacementRegexList(array('log' => $o_log));
 			}
 
-			$va_restrict_to_types = ($pn_type_id && !caGetOption('ignoreType', $pa_options, false)) ? [$pn_type_id] : null;
+			$va_restrict_to_types = ($pn_type_id && !caGetOption('ignoreType', $pa_options, true)) ? [$pn_type_id] : null;
 
 			$vn_id = null;
 			foreach($pa_match_on as $vs_match_on) {
