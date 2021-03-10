@@ -42,10 +42,10 @@
 	 */
 	function validateLocale($ps_locale) {
    		$va_locale_paths = [];
-   		if (file_exists($vs_locale_path = __CA_THEME_DIR__.'/locale/'.$ps_locale.'/messages.mo')) { $va_locale_paths[] = $vs_locale_path; }
-   		if (file_exists($vs_locale_path = __CA_THEMES_DIR__.'/default/locale/'.$ps_locale.'/messages.mo')) { $va_locale_paths[] = $vs_locale_path; }
-   		if (file_exists($vs_locale_path = __CA_APP_DIR__.'/locale/user/'.$ps_locale.'/messages.mo')) { $va_locale_paths[] = $vs_locale_path; }
-   		if (file_exists($vs_locale_path = __CA_APP_DIR__.'/locale/'.$ps_locale.'/messages.mo')) { $va_locale_paths[] = $vs_locale_path; }	
+   		if (file_exists($vs_locale_path = realpath(__CA_THEME_DIR__.'/locale/'.$ps_locale.'/messages.mo'))) { $va_locale_paths[] = $vs_locale_path; }
+   		if (file_exists($vs_locale_path = realpath(__CA_THEMES_DIR__.'/default/locale/'.$ps_locale.'/messages.mo'))) { $va_locale_paths[] = $vs_locale_path; }
+   		if (file_exists($vs_locale_path = realpath(__CA_APP_DIR__.'/locale/user/'.$ps_locale.'/messages.mo'))) { $va_locale_paths[] = $vs_locale_path; }
+   		if (file_exists($vs_locale_path = realpath(__CA_APP_DIR__.'/locale/'.$ps_locale.'/messages.mo'))) { $va_locale_paths[] = $vs_locale_path; }	
    		
    		return (sizeof($va_locale_paths) > 0) ? $va_locale_paths : false;
 	}	
