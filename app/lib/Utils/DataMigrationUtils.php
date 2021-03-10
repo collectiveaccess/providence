@@ -137,7 +137,7 @@
 		 * @param string/int $pn_type_id
 		 * @param int $pn_locale_id
 		 * @param null/array $pa_values
-		 * @param array $pa_options An optional array of options. See DataMigrationUtils::_getID() for a list.
+		 * @param array $pa_options An optional array of options. See DataMigrationUtils::_getID() for a list. Note that the default for ignoreType for list items is true.
 		 * @return bool|ca_list_items|mixed|null
 		 *
 		 * @see DataMigrationUtils::_getID()
@@ -162,7 +162,7 @@
 			if(!isset($pa_options['cache'])) { $pa_options['cache'] = true; }
 			
 			
-			$va_restrict_to_types 			= ($pn_type_id && !caGetOption('ignoreType', $pa_options, false)) ? [$pn_type_id] : null;
+			$va_restrict_to_types 			= ($pn_type_id && !caGetOption('ignoreType', $pa_options, true)) ? [$pn_type_id] : null;
 			$pb_ignore_parent			 	= caGetOption('ignoreParent', $pa_options, false);
 			
 			$log_reference 					= caGetOption('logReference', $pa_options, null);
