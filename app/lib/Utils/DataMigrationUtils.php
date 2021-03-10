@@ -202,7 +202,6 @@
 				if ($o_log) { $o_log->logError(_t("%2Could not find list with list code %1", $pm_list_code_or_id, $log_reference_str)); }
 				return DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key] = null;
 			}
-			if ($pb_ignore_parent) { $vn_parent_id = false; }
 			if (!$vn_parent_id && ($vn_parent_id !== false)) { $vn_parent_id = caGetListRootID($pm_list_code_or_id); }
 			
 
@@ -225,7 +224,7 @@
 						$vs_label_spec = ($vs_match_on == 'nonpreferred_labels') ? 'nonpreferred_labels' : 'preferred_labels';
 						if (trim($vs_singular_label) || trim($vs_plural_label)) {
 							$va_criteria = array($vs_label_spec => array('name_singular' => $vs_singular_label), 'list_id' => $vn_list_id);
-							if ($vn_parent_id !== false) { $va_criteria['parent_id'] = $vn_parent_id; }
+							if (($vn_parent_id !== false) && !$pb_ignore_parent) { $va_criteria['parent_id'] = $vn_parent_id; }
 							if ($vn_item_id = (ca_list_items::find($va_criteria, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types)))) {
 								if ($o_log) { $o_log->logDebug(_t("%4Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using singular label %3", $ps_item_idno, $pm_list_code_or_id, $vs_singular_label, $log_reference_str)); }
 								break(2);
@@ -241,7 +240,7 @@
 					case 'idno':
 						if ($ps_item_idno == '%') { break; }	// don't try to match on an unreplaced idno placeholder
 						$va_criteria = array('idno' => $ps_item_idno ? $ps_item_idno : $vs_plural_label, 'list_id' => $vn_list_id);
-						if ($vn_parent_id !== false) { $va_criteria['parent_id'] = $vn_parent_id; }
+						if (($vn_parent_id !== false) && !$pb_ignore_parent) { $va_criteria['parent_id'] = $vn_parent_id; }
 						if ($vn_item_id = (ca_list_items::find($va_criteria, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types)))) {
 							if ($o_log) { $o_log->logDebug(_t("%4Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using idno with %3", $ps_item_idno, $pm_list_code_or_id, $ps_item_idno, $log_reference_str)); }
 							break(2);
