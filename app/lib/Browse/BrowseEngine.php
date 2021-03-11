@@ -1165,6 +1165,7 @@
 						
 						$va_row_ids = array_keys($va_row_ids);
                             
+                    	$va_wheres = [];
                         $va_sql_params = [];
 							$vs_relative_to_join = '';
 							switch($va_facet_info['type']) {
@@ -1177,6 +1178,7 @@
 									if ($va_facet_info['relative_to']) {
 										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 											$va_joins = array_merge($va_joins, $va_relative_execute_sql_data['relative_joins']);
+											$va_wheres = array_merge($va_wheres, $va_relative_execute_sql_data['wheres']);
 
 											$vs_target_browse_table_name = $va_relative_execute_sql_data['target_table_name'];
 											$vs_target_browse_table_num = $va_relative_execute_sql_data['target_table_num'];
@@ -1254,7 +1256,6 @@
 											}
 
 
-											$va_wheres = array();
 											if (is_array($va_restrict_to_relationship_types) && (sizeof($va_restrict_to_relationship_types) > 0) && is_object($t_item_rel) && (bool)$vn_state) {
 												$va_wheres[] = "(".$t_item_rel->tableName().".type_id IN (".join(',', $va_restrict_to_relationship_types)."))";
 											}
@@ -1376,6 +1377,8 @@
 											$vs_target_browse_table_name = $va_relative_execute_sql_data['target_table_name'];
 											$vs_target_browse_table_num = $va_relative_execute_sql_data['target_table_num'];
 											$vs_target_browse_table_pk = $va_relative_execute_sql_data['target_table_pk'];
+											
+											$wheres = array_merge($wheres, $va_relative_execute_sql_data['wheres']);
 
 											$t_target = Datamodel::getInstanceByTableName($va_facet_info['relative_to'], true);
 											$t_target_label = $t_target->getLabelTableInstance();
@@ -1495,10 +1498,12 @@
 									if ($t_user->getBundleAccessLevel($this->ops_browse_table_name, $va_facet_info['element_code']) < __CA_BUNDLE_ACCESS_READONLY__) { break; }
 									$vn_datatype = $t_element->get('datatype');
 
+									$va_wheres = [];
 									if ($va_facet_info['relative_to']) {
 										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 											$va_relative_to_join = $va_relative_execute_sql_data['relative_joins'];
 											$vs_relative_to_join = join("\n", $va_relative_to_join);
+											$va_wheres = array_merge($va_wheres, $va_relative_execute_sql_data['wheres']);
 											$vs_target_browse_table_name = $va_relative_execute_sql_data['target_table_name'];
 											$vs_target_browse_table_num = $va_relative_execute_sql_data['target_table_num'];
 											$vs_target_browse_table_pk = $va_relative_execute_sql_data['target_table_pk'];
@@ -1602,6 +1607,12 @@
 										    $vs_container_sql = " AND ca_attributes.attribute_id IN (?)";
 										    $va_attr_values[] = $va_container_ids[$va_element_code[0]];
 										}
+										
+										$vs_where_sql = '';
+										if (is_array($va_wheres) && sizeof($va_wheres) > 0) {
+											$vs_where_sql = ' AND '.join(' AND ', $va_wheres);
+										}
+										
 										$vs_sql = "
 											SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey().", ca_attributes.attribute_id
 											FROM ".$this->ops_browse_table_name."
@@ -1609,7 +1620,7 @@
 											INNER JOIN ca_attributes ON ca_attributes.row_id = ".((!$vb_is_relative_to_parent ? "{$vs_target_browse_table_name}.{$vs_target_browse_table_pk}" : "parent.{$vs_target_browse_table_pk}"))." AND ca_attributes.table_num = ?
 											INNER JOIN ca_attribute_values ON ca_attribute_values.attribute_id = ca_attributes.attribute_id
 											WHERE
-												(ca_attribute_values.element_id = ?) {$vs_attr_sql} {$vs_container_sql}";
+												(ca_attribute_values.element_id = ?) {$vs_attr_sql} {$vs_container_sql} {$vs_where_sql}";
 
 										$qr_res = $this->opo_db->query($vs_sql, $va_attr_values);
 										
@@ -2503,6 +2514,7 @@
 									if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 										$va_relative_to_join = $va_relative_execute_sql_data['relative_joins'];
 										$vs_relative_to_join = join("\n", $va_relative_to_join);
+										$va_wheres = array_merge($va_wheres, $va_relative_execute_sql_data['wheres']);
 										$vs_table_name = $vs_target_browse_table_name = $va_relative_execute_sql_data['target_table_name'];
 										$vs_target_browse_table_num = $va_relative_execute_sql_data['target_table_num'];
 										$vs_target_browse_table_pk = $va_relative_execute_sql_data['target_table_pk'];
@@ -7487,12 +7499,12 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 				return array('joins' => $va_joins, 'wheres' => $va_wheres);
 			} 
 			switch(sizeof($va_path = array_keys(Datamodel::getPath($ps_relative_to_table, $this->ops_browse_table_name)))) {
-				case __CA_ATTRIBUTE_VALUE_LIST__:
+				case 3:
 					$t_item_rel = Datamodel::getInstanceByTableName($va_path[1], true);
 					$t_rel_item = Datamodel::getInstanceByTableName($va_path[2], true);
 					$vs_key = 'relation_id';
 					break;
-				case __CA_ATTRIBUTE_VALUE_DATERANGE__:
+				case 2:
 					$t_item_rel = null;
 					$t_rel_item = Datamodel::getInstanceByTableName($va_path[1], true);
 					$vs_key = $t_rel_item->primaryKey();
@@ -7548,12 +7560,12 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 			$t_item = Datamodel::getInstanceByTableName($this->ops_browse_table_name, true);
 
 			switch(sizeof($va_path = array_keys(Datamodel::getPath($ps_relative_to_table, $this->ops_browse_table_name)))) {
-				case __CA_ATTRIBUTE_VALUE_LIST__:
+				case 3:
 					$t_item_rel = Datamodel::getInstanceByTableName($va_path[1], true);
 					$t_rel_item = Datamodel::getInstanceByTableName($va_path[2], true);
 					$vs_key = 'relation_id';
 					break;
-				case __CA_ATTRIBUTE_VALUE_DATERANGE__:
+				case 2:
 					$t_item_rel = null;
 					$t_rel_item = Datamodel::getInstanceByTableName($va_path[1], true);
 					$vs_key = $t_rel_item->primaryKey();

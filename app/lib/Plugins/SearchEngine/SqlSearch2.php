@@ -568,6 +568,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	private function _processQueryChangeLog(int $subject_tablenum, Object $term) {
 		switch(get_class($term)) {
 			case 'Zend_Search_Lucene_Search_Query_Term':
+			case 'Zend_Search_Lucene_Index_Term':
 	 			$text = $term->text;
 				$field = $term->field;
 	 			break;
@@ -603,7 +604,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			switch($field_elements[0]) { 
 				case _t('created'):
 					$qr_res = $this->db->query("
-							SELECT ccl.logged_row_id row_id
+							SELECT ccl.logged_row_id row_id, 1 boost
 							FROM ca_change_log ccl
 							WHERE
 								(ccl.log_datetime BETWEEN ? AND ?)
