@@ -290,7 +290,7 @@ use Zend\Stdlib\Glob;
 				$ps_value_in_points = $va_matches[1] * ($vn_dpi/2.54);
 				break;
 			case 'mm':
-				$ps_value_in_points = $va_matches[1] * ($vn_dpi/24.4);
+				$ps_value_in_points = $va_matches[1] * ($vn_dpi/25.4);
 				break;
 			case '':
 			case 'px':
@@ -327,10 +327,10 @@ use Zend\Stdlib\Glob;
 				return $vn_in_points/72;
 				break;
 			case 'cm':
-				return $vn_in_points/28.346;
+				return $vn_in_points/28.3465;
 				break;
 			case 'mm':
-				return $vn_in_points/2.8346;
+				return $vn_in_points/2.83465;
 				break;
 			default:
 			case 'px':
