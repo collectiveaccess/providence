@@ -33,11 +33,10 @@
  /**
   *
   */
-  use Dompdf\Dompdf;
- 	
- 	class PDFRenderer {
+class PDFRenderer {
  		# --------------------------------------------------------------------------------
- 		/**
+	    public const CUSTOM_REGEX = '/Custom\((.+),(.+)\)/i';
+	    /**
  		 * 
  		 */
  		private $renderer = null;
@@ -139,7 +138,17 @@
  			}
  		}
  		# --------------------------------------------------------------------------------
- 		/**
+	    /**
+	    * @param string $ps_size
+	    *
+	    * @return false|int
+	    */
+	    public static function isCustomPageSize( string $ps_size ) {
+		    return preg_match( self::CUSTOM_REGEX, $ps_size );
+	    }
+	    # --------------------------------------------------------------------------------
+
+	    /**
  		 * Set page size, orientation and margins
  		 *
  		 * @param string $ps_size A valid page size (eg. A4, letter, legal)
@@ -285,11 +294,16 @@
 		static public function getPageSize($ps_size, $ps_units='mm', $ps_orientation='portrait') {
 			$ps_orientation = strtolower($ps_orientation);
 			if (!PDFRenderer::isValidOrientation($ps_orientation)) { $ps_orientation='portrait'; }
-			
-			$va_page_size =	self::$PAPER_SIZES[$ps_size];
-			$vn_page_width = caConvertMeasurement(($va_page_size[2] - $va_page_size[0]).'px', $ps_units);
-			$vn_page_height = caConvertMeasurement(($va_page_size[3] - $va_page_size[1]).'px', $ps_units);
-			
+
+			if (preg_match(self::CUSTOM_REGEX, $ps_size, $matches)){
+				$vn_page_width = caConvertMeasurement($matches[1], 'mm') . $ps_units;
+				$vn_page_height = caConvertMeasurement($matches[2], 'mm') . $ps_units;
+
+			} else {
+				$va_page_size =	self::$PAPER_SIZES[$ps_size];
+				$vn_page_width = caConvertMeasurement(($va_page_size[2] - $va_page_size[0]).'px', $ps_units);
+				$vn_page_height = caConvertMeasurement(($va_page_size[3] - $va_page_size[1]).'px', $ps_units);
+			}
 			return ($ps_orientation == 'portrait') ? array('width' => $vn_page_width, 'height' => $vn_page_height) : array('width' => $vn_page_height, 'height' => $vn_page_width);
 		}
 		# --------------------------------------------------------------------------------
@@ -301,7 +315,7 @@
 		 * @return bool True if page size is valid and has associated measurements
 		 */
 		static public function isValidPageSize($ps_size) {
-			return array_key_exists(strtolower($ps_size), self::$PAPER_SIZES);
+			return self::isCustomPageSize( $ps_size) || array_key_exists(strtolower($ps_size), self::$PAPER_SIZES);
 		}
 		# --------------------------------------------------------------------------------
 		/** 
