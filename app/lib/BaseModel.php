@@ -2771,6 +2771,9 @@ class BaseModel extends BaseObject {
 	public function update($pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		
+		// Clear any cached display template values for this record
+		MemoryCache::delete($this->tableName()."/".$this->getPrimaryKey(), 'DisplayTemplateParserValues');
+		
 		$we_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
 		
 		$this->field_conflicts = array();
@@ -3333,6 +3336,9 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	 */
 	public function delete ($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
 		if(!is_array($pa_options)) { $pa_options = array(); }
+		
+		// Clear any cached display template values for this record
+		MemoryCache::delete($this->tableName()."/".$this->getPrimaryKey(), 'DisplayTemplateParserValues');
 		
 		$we_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
 		
