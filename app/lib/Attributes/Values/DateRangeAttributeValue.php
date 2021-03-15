@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -244,11 +244,6 @@
 		 * 
 		 */
  		static private $locale;
- 		
-		/**
-		 * @var array
-		 */
- 		static private $s_date_cache = array();
  		# ------------------------------------------------------------------
  		public function __construct($pa_value_array=null) {
  			global $g_request;
@@ -283,24 +278,41 @@
  		 */
 		public function getDisplayValue($pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
+			$key = caMakeCacheKeyFromOptions($pa_options, $this->opn_start_date.'/'.$this->opn_end_date.'/'.$this->ops_text_value);
+
+			// pull from cache
+			if(MemoryCache::contains($key, 'AttributeValues')) {
+				return MemoryCache::fetch($key, 'AttributeValues');
+			}
+			
 			if (isset($pa_options['rawDate']) && $pa_options['rawDate']) {
-				return array(
+				$ret = [
 					0 => $this->opn_start_date,
 					1 => $this->opn_end_date,
 					'start' => $this->opn_start_date,
 					'end' =>$this->opn_end_date
-				);
+				];
+				MemoryCache::save($key, $ret, 'AttributeValues');
+				return $ret;
 			}
 			if (caGetOption('GET_DIRECT_DATE', $pa_options, false) || caGetOption('getDirectDate', $pa_options, false)) {
+				MemoryCache::save($key, $this->opn_start_date, 'AttributeValues');
 				return $this->opn_start_date;
 			}
 			if (caGetOption('getUnixTimestamp', $pa_options, false)) {
-				return caHistoricTimestampToUnixTimestamp($this->opn_start_date);
+				$ret = caHistoricTimestampToUnixTimestamp($this->opn_start_date);
+				MemoryCache::save($key, $ret, 'AttributeValues');
+				return $ret;
 			}
 			
 			if (isset($pa_options['sortable']) && $pa_options['sortable']) {
-				if (!$this->opn_start_date || !$this->opn_end_date) { return null; }
-				return $this->opn_start_date.'/'.$this->opn_end_date;
+				if (!$this->opn_start_date || !$this->opn_end_date) { 
+					MemoryCache::save($key, null, 'AttributeValues');
+					return null; 
+				}
+				$ret = $this->opn_start_date.'/'.$this->opn_end_date;
+				MemoryCache::save($key, $ret, 'AttributeValues');
+				return $ret;
 			}
 			
 			if (!is_array($va_settings = ca_metadata_elements::getElementSettingsForId($this->getElementID()))) {
@@ -314,23 +326,19 @@
 				}
 			}
 			
-			$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $vs_date_format.$this->opn_start_date.$this->opn_end_date);
-
-			// pull from cache
-			if(isset(DateRangeAttributeValue::$s_date_cache[$vs_cache_key])) {
-				return DateRangeAttributeValue::$s_date_cache[$vs_cache_key];
-			}
-
 			// if neither start nor end date are set, the setHistoricTimestamps() call below will
 			// fail and the TEP will return the text for whatever happened to be parsed previously 
 			// so we have to init() before trying
 			DateRangeAttributeValue::$o_tep->init();
 			
 			if ($vs_date_format == 'original') {
-				return DateRangeAttributeValue::$s_date_cache[$vs_cache_key] = $this->ops_text_value;
+				MemoryCache::save($key, $this->ops_text_value, 'AttributeValues');
+				return $this->ops_text_value;
 			} else {
 				DateRangeAttributeValue::$o_tep->setHistoricTimestamps($this->opn_start_date, $this->opn_end_date);
-				return DateRangeAttributeValue::$s_date_cache[$vs_cache_key] = DateRangeAttributeValue::$o_tep->getText(array_merge(array('dateFormat' => $vs_date_format, 'isLifespan' => $va_settings['isLifespan']), $pa_options)); //$this->ops_text_value;
+				$ret = DateRangeAttributeValue::$o_tep->getText(array_merge(array('dateFormat' => $vs_date_format, 'isLifespan' => $va_settings['isLifespan']), $pa_options));
+				MemoryCache::save($key, $ret, 'AttributeValues');
+				return $ret;
 			}
 		}
  		# ------------------------------------------------------------------
