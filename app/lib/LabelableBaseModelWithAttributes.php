@@ -979,7 +979,20 @@
                 $va_sql[] = "({$vs_table}.{$vs_table_pk} IN (?))";
                 $va_sql_params[] = $va_ids;
 			} 
-            $vs_sql = "SELECT DISTINCT {$vs_table}.*".($vs_sort_proc ? ", {$vs_sort_proc}" : "")." FROM {$vs_table}";
+			
+			$vs_pk = $t_instance->primaryKey();
+		
+			switch($ps_return_as) {
+				case 'queryresult':		
+				case 'arrays':
+					$select_flds = '*';
+					break;
+				default:
+					$select_flds = $vs_pk;
+					break;
+			}
+		
+            $vs_sql = "SELECT DISTINCT {$vs_table}.{$select_flds}".($vs_sort_proc ? ", {$vs_sort_proc}" : "")." FROM {$vs_table}";
             $vs_sql .= join("\n", $va_joins);
             $vs_sql .= ((sizeof($va_sql) > 0) ? " WHERE (".join(" AND ", $va_sql).")" : "");
 			
@@ -1017,8 +1030,6 @@
 			}
 			
 			$vn_c = 0;
-		
-			$vs_pk = $t_instance->primaryKey();
 		
 			$dont_filter_by_acl = caGetOption('dontFilterByACL', $pa_options, false);
 			
@@ -1658,7 +1669,7 @@
 				$va_preferred_locales = array($pm_locale);
 			}
 			
-			$va_tmp = caExtractValuesByUserLocale($this->getLabels(null, __CA_LABEL_TYPE_PREFERRED__, $pb_dont_cache, $pa_options), null, $va_preferred_locales, array());
+			$va_tmp = caExtractValuesByUserLocale($this->getLabels(null, caGetOption('labelType', $pa_options, __CA_LABEL_TYPE_PREFERRED__), $pb_dont_cache, $pa_options), null, $va_preferred_locales, array());
 			$va_label = array_shift($va_tmp);
 			return $va_label[0][$t_label->getDisplayField()];
  			
@@ -2459,7 +2470,7 @@
 			// make sure it's in same order the ids were passed in
 			$va_sorted_labels = array();
 			foreach($va_ids as $vn_id) {
-				$va_sorted_labels[$vn_id] = $va_labels[$vn_id];
+				$va_sorted_labels[$vn_id] = is_array($va_labels[$vn_id]) ? $va_labels[$vn_id] : [];
 			}
 			
 			if (sizeof(LabelableBaseModelWithAttributes::$s_labels_by_id_cache) > LabelableBaseModelWithAttributes::$s_labels_by_id_cache_size) {

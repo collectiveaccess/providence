@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2020 Whirl-i-Gig
+ * Copyright 2011-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -142,21 +142,54 @@ class Installer {
 	 * @return array
 	 */
 	static public function getProfileInfo($ps_profile_dir, $ps_profile_name) {
-		$o_installer = new Installer($ps_profile_dir,$ps_profile_name);
-		$o_installer->loadProfile($ps_profile_dir, $ps_profile_name);
+		$path = $ps_profile_dir.'/'.$ps_profile_name.'.xml';
+		$reader = new XMLReader();
+		
+		if (!@$reader->open($path)) {
+			return null;
+		}
 
-		return array(
-			'useForConfiguration' => $o_installer->getAttribute($o_installer->opo_profile, 'useForConfiguration'),
-			'display' => (string)$o_installer->opo_profile->{'profileName'},
-			'description' => (string)$o_installer->opo_profile->{'profileDescription'},
-			'locales' => (string)$o_installer->opo_profile->{'locales'},
-		);
+		$name = $description = $useForConfiguration = $locales = null;
+		while(@$reader->read()) {
+			if ($reader->nodeType === XMLReader::ELEMENT) {
+				switch($reader->name) {
+					case 'profile':
+						$useForConfiguration = $reader->getAttribute('useForConfiguration');
+						break;
+					case 'profileName':
+						$name = $reader->readOuterXML();
+						break;
+					case 'profileDescription':
+						$description = $reader->readOuterXML();
+						break;
+					case 'locale':
+						$locale = $reader->getAttribute('lang').'_'.$reader->getAttribute('country');
+						$locales[$locale] = [
+							'lang' => $reader->getAttribute('lang'),
+							'country' => $reader->getAttribute('country'),
+							'locale' => $locale,
+							'display' => $reader->readOuterXML()
+						];
+						break;
+					case 'lists':
+						break(2);
+				}
+			}
+		}
+		$reader->close();		
+
+		return [
+			'useForConfiguration' => $useForConfiguration,
+			'display' => $name,
+			'description' => $description,
+			'locales' => $locales,
+		];
 	}
 	# --------------------------------------------------
 	private function validateProfile() {
 		// simplexml doesn't support validation -> use DOMDocument
 		$vo_profile = new DOMDocument();
-		$vo_profile->load($this->ops_profile_dir."/".$this->ops_profile_name.".xml");
+		@$vo_profile->load($this->ops_profile_dir."/".$this->ops_profile_name.".xml");
 
 		if($this->opo_base) {
 			$vo_base = new DOMDocument();
@@ -192,7 +225,7 @@ class Installer {
 		$vs_file = $ps_profile_dir."/".$ps_profile_name.".xml";
 
 		if(is_readable($vs_file)) {
-			$this->opo_profile = simplexml_load_file($vs_file);
+			$this->opo_profile = @simplexml_load_file($vs_file);
 			return true;
 		} else {
 			return false;
@@ -573,7 +606,7 @@ class Installer {
 			$va_lists = $this->opo_profile->lists->children();
 		}
 
-		$o_trans = new Transaction();
+		//$o_trans = new Transaction();
 
 		$vn_i = 0;
 		$vn_num_lists = sizeof($va_lists);
@@ -583,7 +616,7 @@ class Installer {
 			if(!($t_list = ca_lists::find(array('list_code' => $vs_list_code), array('returnAs' => 'firstModelInstance')))) {
 				$t_list = new ca_lists();
 			}
-			$t_list->setTransaction($o_trans);
+			//$t_list->setTransaction($o_trans);
 
 			if($t_list->getPrimaryKey()) {
 				$this->logStatus(_t('List %1 already exists', $vs_list_code));
@@ -596,7 +629,7 @@ class Installer {
 			if(self::getAttribute($vo_list, "deleted") && $t_list->getPrimaryKey()) {
 				$this->logStatus(_t('Deleting list %1', $vs_list_code));
 				$t_list->delete(true);
-				$o_trans->commit();
+				//$o_trans->commit();
 				continue;
 			}
 
@@ -632,10 +665,10 @@ class Installer {
 				}
 				if($vo_list->items) {
 					if(!$this->processListItems($t_list, $vo_list->items, null)) {
-						$o_trans->rollback();
+						//$o_trans->rollback();
 						return false;
 					}
-					$o_trans->commit();
+					//$o_trans->commit();
 				}
 			}
 		}

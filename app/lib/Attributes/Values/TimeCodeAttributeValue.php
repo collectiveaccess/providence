@@ -169,7 +169,7 @@
 			if (caGetOption('returnAsDecimal', $pa_options, false)) {
 				return (float)$this->opn_duration;
 			}
-			if (!strlen($this->opn_duration)) { return ''; }
+			if (!strlen($this->opn_duration) || ((float)$this->opn_duration === 0.0)) { return ''; }
 			$o_tcp = new TimecodeParser();
 			$o_tcp->setParsedValueInSeconds($this->opn_duration);
 			

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2016 Whirl-i-Gig
+ * Copyright 2013-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -124,5 +124,23 @@
 			'default' => '',
 			'label' => _t('Do not parse name'),
 			'description' => _t('Take the entity name as is from the data source and insert it without intervention in the surname and display name fields. This is often useful for organization names, especially when using the entity class "org" setting.')
+		),
+		'entityHierarchyBuilder_ignoreParent' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Ignore parent when trying to match row'),
+			'description' => _t('Ignore parent when trying to match row.')
+		),
+		'entityHierarchyBuilder_ignoreType' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Ignore type when trying to match row'),
+			'description' => _t('Ignore type when trying to match row.')
 		)
 	);

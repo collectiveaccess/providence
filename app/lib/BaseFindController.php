@@ -354,7 +354,7 @@
  			
  			$this->view->setVar('ca_object_representation_download_versions', $this->request->config->getList('ca_object_representation_download_versions'));
  		
- 			$media_elements = ca_metadata_elements::getElementsAsList(false, $this->ops_tablename, $this->opn_type_restriction_id, false, false, true, [__CA_ATTRIBUTE_VALUE_MEDIA__]);
+ 			$media_elements = ca_metadata_elements::getElementsAsList(false, $this->ops_tablename, $this->opn_type_restriction_id, false, false, true, [__CA_ATTRIBUTE_VALUE_MEDIA__], ['useDisambiguationLabels' => true]);
  			$this->view->setVar('media_metadata_elements', (is_array($media_elements) && sizeof($media_elements)) ? $media_elements : []); 
  		}
  		# -------------------------------------------------------

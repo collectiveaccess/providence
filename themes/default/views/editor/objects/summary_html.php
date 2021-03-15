@@ -77,7 +77,7 @@
 		foreach($va_placements as $vn_placement_id => $va_info) {
 			$vs_class="";
 			$va_tmp = explode('.', $va_info['bundle_name']);
-			if ((in_array($va_tmp[0], array('ca_object_representations')) && (!$va_tmp[1] || ($va_tmp[1] === 'media')))) { continue; } // skip object representations because we always output it above
+			if ((in_array($va_tmp[0], array('ca_object_representations')) && ($va_tmp[1] === 'media'))) { continue; } // skip object representations because we always output it above
 			
 			if (!strlen($vs_display_value = $t_display->getDisplayValue($t_item, $vn_placement_id, array_merge(array('request' => $this->request), is_array($va_info['settings']) ? $va_info['settings'] : array())))) {
 				if (!(bool)$t_display->getSetting('show_empty_values')) { continue; }

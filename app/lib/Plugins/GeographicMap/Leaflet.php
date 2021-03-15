@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018 Whirl-i-Gig
+ * Copyright 2018-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -318,6 +318,16 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 		$va_element_height = caParseFormElementDimension($pa_element_info['settings']['fieldHeight']);
 		$vn_element_height = $va_element_height['dimension'];
 		
+		
+		$min_zoom_level = (int)caGetOption('minZoomLevel', $pa_element_info['settings'], 0);
+		$max_zoom_level = (int)caGetOption('maxZoomLevel', $pa_element_info['settings'], 18);
+		$default_zoom = (int)caGetOption('defaultZoomLevel', $pa_element_info['settings'], -1);
+		$default_zoom_level = ($default_zoom === -1) ? 0 : $default_zoom;
+		
+		if($default_location = caGetOption('defaultLocation', $pa_element_info['settings'], null)) {
+			if(!caParseGISSearch($default_location)) { $default_location = null; }
+		}
+		
 		$points_are_directional = (bool)$pa_element_info['settings']['pointsAreDirectional'] ? 1 : 0;
 		$autoDropPin = (bool)$pa_element_info['settings']['autoDropPin'] ? 1 : 0;
  		
@@ -356,7 +366,7 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 
 		var map_{$vs_id}_loc_label = jQuery.trim(map_{$vs_id}_loc_str.match(/^[^\[]+/));
 		
-		var map = L.map('mapholder_{$element_id}_{n}', { attributionControl: false, maxZoom: 18 }).setView([0, 0], 8);
+		var map = L.map('mapholder_{$element_id}_{n}', { attributionControl: false, minZoom: {$min_zoom_level}, maxZoom: {$max_zoom_level} }).setView([0, 0], 8);
 		jQuery('#mapholder_{$element_id}_{n}').data('map', map); // stash map reference in <div> to allow redraw by bundle visibility manager
 		var b = L.tileLayer('{$base_map_url}').addTo(map);	
 		map.addControl(new L.Control.OSMGeocoder({ text: '"._t('Go')."', 'collapsed': false, callback: function(results) {
@@ -545,18 +555,17 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 				}
 			});
 		} else {
-			var c = localStorage.getItem('leafletLastPos');
+			var c = ".($default_location ? "'{$default_location}'" : "localStorage.getItem('leafletLastPos')").";
 			if (c) {
 				var coord = c.split(/,/);
-				map.setView(coord, 16, {animate: false});
-			} else {
-				map.setZoom(2, {animate: false});
+				map.setView(coord, {$default_zoom_level}, {animate: false});
 			}
 		}
 		
 		g.addTo(map);
 		var bounds = g.getBounds();
-		if (bounds.isValid()) { map.fitBounds(bounds); }
+		if (bounds.isValid()) { map.fitBounds(bounds); };
+		".(($default_zoom >= 0) ? "map.setZoom({$default_zoom_level}, {animate: false});" : '')."
 	});
 </script>
 	<input class='coordinates mapCoordinateDisplay' type='text' name='{fieldNamePrefix}{$element_id}_{n}' id='{fieldNamePrefix}{$element_id}_{n}' size='80' value='{{$element_id}}'/>

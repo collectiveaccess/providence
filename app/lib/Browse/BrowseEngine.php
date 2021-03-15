@@ -1154,6 +1154,7 @@
 						
 						$va_row_ids = array_keys($va_row_ids);
                             
+                    	$va_wheres = [];
                         $va_sql_params = [];
 							$vs_relative_to_join = '';
 							switch($va_facet_info['type']) {
@@ -1164,8 +1165,9 @@
 									$va_joins = array();
 
 									if ($va_facet_info['relative_to']) {
-										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], $pa_options)) {
+										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 											$va_joins = array_merge($va_joins, $va_relative_execute_sql_data['relative_joins']);
+											$va_wheres = array_merge($va_wheres, $va_relative_execute_sql_data['wheres']);
 
 											$vs_target_browse_table_name = $va_relative_execute_sql_data['target_table_name'];
 											$vs_target_browse_table_num = $va_relative_execute_sql_data['target_table_num'];
@@ -1243,7 +1245,6 @@
 											}
 
 
-											$va_wheres = array();
 											if (is_array($va_restrict_to_relationship_types) && (sizeof($va_restrict_to_relationship_types) > 0) && is_object($t_item_rel) && (bool)$vn_state) {
 												$va_wheres[] = "(".$t_item_rel->tableName().".type_id IN (".join(',', $va_restrict_to_relationship_types)."))";
 											}
@@ -1361,10 +1362,12 @@
 										$t_item->getLabelSortField();
 									}
 									if ($va_facet_info['relative_to']) {
-										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], $pa_options)) {
+										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 											$vs_target_browse_table_name = $va_relative_execute_sql_data['target_table_name'];
 											$vs_target_browse_table_num = $va_relative_execute_sql_data['target_table_num'];
 											$vs_target_browse_table_pk = $va_relative_execute_sql_data['target_table_pk'];
+											
+											$wheres = array_merge($wheres, $va_relative_execute_sql_data['wheres']);
 
 											$t_target = Datamodel::getInstanceByTableName($va_facet_info['relative_to'], true);
 											$t_target_label = $t_target->getLabelTableInstance();
@@ -1434,7 +1437,7 @@
                     
 
 									if ($va_facet_info['relative_to']) {
-										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], $pa_options)) {
+										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 											$va_relative_to_join = $va_relative_execute_sql_data['relative_joins'];
 											$vs_relative_to_join = join("\n", $va_relative_to_join);
 											$vs_table_name = $vs_target_browse_table_name = $va_relative_execute_sql_data['target_table_name'];
@@ -1484,10 +1487,12 @@
 									if ($t_user->getBundleAccessLevel($this->ops_browse_table_name, $va_facet_info['element_code']) < __CA_BUNDLE_ACCESS_READONLY__) { break; }
 									$vn_datatype = $t_element->get('datatype');
 
+									$va_wheres = [];
 									if ($va_facet_info['relative_to']) {
-										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], $pa_options)) {
+										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 											$va_relative_to_join = $va_relative_execute_sql_data['relative_joins'];
 											$vs_relative_to_join = join("\n", $va_relative_to_join);
+											$va_wheres = array_merge($va_wheres, $va_relative_execute_sql_data['wheres']);
 											$vs_target_browse_table_name = $va_relative_execute_sql_data['target_table_name'];
 											$vs_target_browse_table_num = $va_relative_execute_sql_data['target_table_num'];
 											$vs_target_browse_table_pk = $va_relative_execute_sql_data['target_table_pk'];
@@ -1531,14 +1536,20 @@
 												switch($vn_datatype) {			
 													case __CA_ATTRIBUTE_VALUE_LIST__:
 														if ($vs_f != 'item_id') { continue(2); }
+														
+														if((!isset($va_facet_info['dont_expand_hierarchically']) || !$va_facet_info['dont_expand_hierarchically']) ) {
 
-														// Include sub-items
-														$t_list_item = new ca_list_items();
-														$va_item_ids = $t_list_item->getHierarchy((int)$vs_v, array('idsOnly' => true, 'includeSelf' => true));
+															// Include sub-items
+															$t_list_item = new ca_list_items();
+															$va_item_ids = $t_list_item->getHierarchy((int)$vs_v, array('idsOnly' => true, 'includeSelf' => true));
 
-														$va_item_ids[] = (int)$vs_v;
-														$va_attr_sql[] = "(ca_attribute_values.{$vs_f} IN (?))";
-														$va_attr_values[] = array_map(function($v) { return (int)$v; }, array_unique($va_item_ids));
+															$va_item_ids[] = (int)$vs_v;
+															$va_attr_sql[] = "(ca_attribute_values.{$vs_f} IN (?))";
+															$va_attr_values[] = array_map(function($v) { return (int)$v; }, array_unique($va_item_ids));
+														} else {
+															$va_attr_sql[] = "(ca_attribute_values.{$vs_f} ".(is_null($vs_v) ? " IS " : " = ")." ?)";
+															$va_attr_values[] = $vs_v;
+														}
 														break;
 													case __CA_ATTRIBUTE_VALUE_OBJECTS__:
                                                     case __CA_ATTRIBUTE_VALUE_ENTITIES__:
@@ -1585,6 +1596,12 @@
 										    $vs_container_sql = " AND ca_attributes.attribute_id IN (?)";
 										    $va_attr_values[] = $va_container_ids[$va_element_code[0]];
 										}
+										
+										$vs_where_sql = '';
+										if (is_array($va_wheres) && sizeof($va_wheres) > 0) {
+											$vs_where_sql = ' AND '.join(' AND ', $va_wheres);
+										}
+										
 										$vs_sql = "
 											SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey().", ca_attributes.attribute_id
 											FROM ".$this->ops_browse_table_name."
@@ -1592,7 +1609,7 @@
 											INNER JOIN ca_attributes ON ca_attributes.row_id = ".((!$vb_is_relative_to_parent ? "{$vs_target_browse_table_name}.{$vs_target_browse_table_pk}" : "parent.{$vs_target_browse_table_pk}"))." AND ca_attributes.table_num = ?
 											INNER JOIN ca_attribute_values ON ca_attribute_values.attribute_id = ca_attributes.attribute_id
 											WHERE
-												(ca_attribute_values.element_id = ?) {$vs_attr_sql} {$vs_container_sql}";
+												(ca_attribute_values.element_id = ?) {$vs_attr_sql} {$vs_container_sql} {$vs_where_sql}";
 
 										$qr_res = $this->db->query($vs_sql, $va_attr_values);
 										
@@ -1628,7 +1645,7 @@
 									$o_tep = new TimeExpressionParser();
 
 									if ($va_facet_info['relative_to']) {
-										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], $pa_options)) {
+										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 											$va_relative_to_join = $va_relative_execute_sql_data['relative_joins'];
 											$vs_relative_to_join = join("\n", $va_relative_to_join);
 											$vs_target_browse_table_name = $va_relative_execute_sql_data['target_table_name'];
@@ -1790,7 +1807,7 @@
 									$o_tep = new TimeExpressionParser();
 
 									if ($va_facet_info['relative_to']) {
-										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], $pa_options)) {
+										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 											$va_relative_to_join = $va_relative_execute_sql_data['relative_joins'];
 											$vs_relative_to_join = join("\n", $va_relative_to_join);
 											$vs_target_browse_table_name = $va_relative_execute_sql_data['target_table_name'];
@@ -1880,7 +1897,7 @@
 									$o_tep = new TimeExpressionParser();
 
 									if ($va_facet_info['relative_to']) {
-										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], $pa_options)) {
+										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 											$va_relative_to_join = $va_relative_execute_sql_data['relative_joins'];
 											$vs_relative_to_join = join("\n", $va_relative_to_join);
 											$vs_target_browse_table_name = $va_relative_execute_sql_data['target_table_name'];
@@ -1969,7 +1986,7 @@
 									$vs_rel_table_pk = Datamodel::primaryKey($vn_table_num);
 
 									if ($va_facet_info['relative_to']) {
-										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], $pa_options)) {
+										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 											$va_relative_to_join = $va_relative_execute_sql_data['relative_joins'];
 											$vs_relative_to_join = join("\n", $va_relative_to_join);
 											$vs_target_browse_table_name = $va_relative_execute_sql_data['target_table_name'];
@@ -2250,7 +2267,7 @@
                     
 
 									if ($va_facet_info['relative_to']) {
-										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], $pa_options)) {
+										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 											$va_relative_to_join = $va_relative_execute_sql_data['relative_joins'];
 											$vs_relative_to_join = join("\n", $va_relative_to_join);
 											$vs_table_name = $vs_target_browse_table_name = $va_relative_execute_sql_data['target_table_name'];
@@ -2306,7 +2323,7 @@
 								$vs_table_name = $this->ops_browse_table_name;
 
 								if ($va_facet_info['relative_to']) {
-									if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], $pa_options)) {
+									if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 										$va_relative_to_join = $va_relative_execute_sql_data['relative_joins'];
 										$vs_relative_to_join = join("\n", $va_relative_to_join);
 										$vs_table_name = $vs_target_browse_table_name = $va_relative_execute_sql_data['target_table_name'];
@@ -2355,7 +2372,7 @@
 								$vs_table_name = $this->ops_browse_table_name;
 
 								if ($va_facet_info['relative_to']) {
-									if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], $pa_options)) {
+									if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 										$va_relative_to_join = $va_relative_execute_sql_data['relative_joins'];
 										$vs_relative_to_join = join("\n", $va_relative_to_join);
 										$vs_table_name = $vs_target_browse_table_name = $va_relative_execute_sql_data['target_table_name'];
@@ -2404,7 +2421,7 @@
 								$vs_table_name = $this->ops_browse_table_name;
 
 								if ($va_facet_info['relative_to']) {
-									if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], $pa_options)) {
+									if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 										$va_relative_to_join = $va_relative_execute_sql_data['relative_joins'];
 										$vs_relative_to_join = join("\n", $va_relative_to_join);
 										$vs_table_name = $vs_target_browse_table_name = $va_relative_execute_sql_data['target_table_name'];
@@ -2483,9 +2500,10 @@
 								$va_wheres = [];
 								
 								if ($va_facet_info['relative_to']) {
-									if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], $pa_options)) {
+									if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 										$va_relative_to_join = $va_relative_execute_sql_data['relative_joins'];
 										$vs_relative_to_join = join("\n", $va_relative_to_join);
+										$va_wheres = array_merge($va_wheres, $va_relative_execute_sql_data['wheres']);
 										$vs_table_name = $vs_target_browse_table_name = $va_relative_execute_sql_data['target_table_name'];
 										$vs_target_browse_table_num = $va_relative_execute_sql_data['target_table_num'];
 										$vs_target_browse_table_pk = $va_relative_execute_sql_data['target_table_pk'];
@@ -3308,7 +3326,7 @@
 								if ($t_subject->hasField('deleted')) {
 									$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
 								}
-								if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], $pa_options)) {
+								if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 									$va_joins = array_merge($va_joins, $va_relative_sql_data['joins']);
 									$va_wheres = array_merge($va_wheres, $va_relative_sql_data['wheres']);
 								}
@@ -3471,7 +3489,7 @@
 								if ($t_subject->hasField('deleted')) {
 									$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
 								}
-								if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], $pa_options)) {
+								if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 									$va_joins = array_merge($va_joins, $va_relative_sql_data['joins']);
 									$va_wheres = array_merge($va_wheres, $va_relative_sql_data['wheres']);
 								}
@@ -3652,7 +3670,7 @@
 						if ($t_subject->hasField('deleted')) {
 							$va_where_sql[] = "(".$t_subject->tableName().".deleted = 0)";
 						}
-						if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], $pa_options)) {
+						if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 							$va_joins = array_merge($va_joins, $va_relative_sql_data['joins']);
 							$va_where_sql = array_merge($va_where_sql, $va_relative_sql_data['wheres']);
 						}
@@ -3874,7 +3892,7 @@
 						if ($t_subject->hasField('deleted')) {
 							$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
 						}
-						if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], $pa_options)) {
+						if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 							$va_joins = array_merge($va_joins, $va_relative_sql_data['joins']);
 							$va_wheres = array_merge($va_wheres, $va_relative_sql_data['wheres']);
 						}
@@ -4544,7 +4562,7 @@
 						}
 
 						if ($va_facet_info['relative_to']) {
-							if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], $pa_options)) {
+							if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 								$va_joins = array_merge($va_joins, $va_relative_sql_data['joins']);
 								$va_wheres = array_merge($va_wheres, $va_relative_sql_data['wheres']);
 							}
@@ -4728,7 +4746,7 @@
 							}
 							if ($va_facet_info['relative_to']) {
 
-								if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], $pa_options)) {
+								if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 									$va_joins = array_merge($va_joins, $va_relative_sql_data['joins']);
 									$va_wheres = array_merge($va_wheres, $va_relative_sql_data['wheres']);
 								}
@@ -4837,7 +4855,7 @@
 									if ($t_subject->hasField('deleted')) {
 										$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
 									}
-									if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], $pa_options)) {
+									if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 										$va_joins = array_merge($va_joins, $va_relative_sql_data['joins']);
 										$va_wheres = array_merge($va_wheres, $va_relative_sql_data['wheres']);
 									}
@@ -4993,7 +5011,7 @@
 						if ($t_subject->hasField('deleted')) {
 							$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
 						}
-						if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], $pa_options)) {
+						if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 							$va_joins = array_merge($va_joins, $va_relative_sql_data['joins']);
 							$va_wheres = array_merge($va_wheres, $va_relative_sql_data['wheres']);
 						}
@@ -5114,7 +5132,7 @@
 						if ($t_subject->hasField('deleted')) {
 							$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
 						}
-						if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], $pa_options)) {
+						if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 							$va_joins = array_merge($va_joins, $va_relative_sql_data['joins']);
 							$va_wheres = array_merge($va_wheres, $va_relative_sql_data['wheres']);
 						}
@@ -5240,7 +5258,7 @@
 						if ($t_subject->hasField('deleted')) {
 							$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
 						}
-						if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], $pa_options)) {
+						if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 							$va_joins = array_merge($va_joins, $va_relative_sql_data['joins']);
 							$va_wheres = array_merge($va_wheres, $va_relative_sql_data['wheres']);
 						}
@@ -5366,7 +5384,7 @@
 						if ($t_subject->hasField('deleted')) {
 							$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
 						}
-						if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], $pa_options)) {
+						if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 							$va_joins = array_merge($va_joins, $va_relative_sql_data['joins']);
 							$va_wheres = array_merge($va_wheres, $va_relative_sql_data['wheres']);
 						}
@@ -5598,7 +5616,7 @@
 						if ($t_subject->hasField('deleted')) {
 							$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
 						}
-						if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], $pa_options)) {
+						if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 							$va_joins = array_merge($va_joins, $va_relative_sql_data['joins']);
 							$va_wheres = array_merge($va_wheres, $va_relative_sql_data['wheres']);
 						}
@@ -5963,7 +5981,7 @@
 						if ($t_subject->hasField('deleted')) {
 							$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
 						}
-						if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], $pa_options)) {
+						if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 							$va_joins = array_merge($va_joins, $va_relative_sql_data['joins']);
 							$va_wheres = array_merge($va_wheres, $va_relative_sql_data['wheres']);
 						}
@@ -6152,7 +6170,7 @@
 						if ($t_subject->hasField('deleted')) {
 							$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
 						}
-						if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], $pa_options)) {
+						if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 							$va_joins = array_merge($va_joins, $va_relative_sql_data['joins']);
 							$va_wheres = array_merge($va_wheres, $va_relative_sql_data['wheres']);
 						}
@@ -6530,7 +6548,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 						if ($t_subject->hasField('deleted')) {
 							$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
 						}
-						if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], $pa_options)) {
+						if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 							$va_joins = array_merge($va_joins, $va_relative_sql_data['joins']);
 							$va_wheres = array_merge($va_wheres, $va_relative_sql_data['wheres']);
 						}
@@ -6792,7 +6810,9 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 										$va_orderbys[] = $va_label_selects[] = $vs_rel_item_table_name.'.'.$vs_sort_by_field;
 									}
 								}
-
+								if ($va_facet_info['include_idno'] && ($idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD'))) {
+									$va_label_selects[] = $t_rel_item->tableName().'.'.$idno_fld;
+								}
 								// get labels
 								$vs_sql = "
 									SELECT ".join(', ', $va_label_selects)."
@@ -6806,7 +6826,9 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 								while($qr_labels->nextRow()) {
 									$va_fetched_row = $qr_labels->getRow();
 									
-									$label_values = ['label' => $va_fetched_row[$vs_label_display_field]];
+									$l = $va_fetched_row[$vs_label_display_field];
+									if($idno_fld && $va_facet_info['include_idno'] && $va_fetched_row[$idno_fld]) { $l .= " (".$va_fetched_row[$idno_fld].")"; }
+									$label_values = ['label' => $l];
 									if ($natural_sort) { $label_values['label_sort_'] = caSortableValue($va_fetched_row[$vs_label_display_field]); }
 									
 									$va_facet_item = array_merge($va_facet_items[$va_fetched_row[$vs_rel_pk]], $label_values);
@@ -6894,7 +6916,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 						if ($t_subject->hasField('deleted')) {
 							$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
 						}
-						if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], $pa_options)) {
+						if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 							$va_joins = array_merge($va_joins, $va_relative_sql_data['joins']);
 							$va_wheres = array_merge($va_wheres, $va_relative_sql_data['wheres']);
 						}
@@ -7509,12 +7531,12 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 				return array('joins' => $va_joins, 'wheres' => $va_wheres);
 			} 
 			switch(sizeof($va_path = array_keys(Datamodel::getPath($ps_relative_to_table, $this->ops_browse_table_name)))) {
-				case __CA_ATTRIBUTE_VALUE_LIST__:
+				case 3:
 					$t_item_rel = Datamodel::getInstanceByTableName($va_path[1], true);
 					$t_rel_item = Datamodel::getInstanceByTableName($va_path[2], true);
 					$vs_key = 'relation_id';
 					break;
-				case __CA_ATTRIBUTE_VALUE_DATERANGE__:
+				case 2:
 					$t_item_rel = null;
 					$t_rel_item = Datamodel::getInstanceByTableName($va_path[1], true);
 					$vs_key = $t_rel_item->primaryKey();
@@ -7533,6 +7555,9 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 			}
 			if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_item->hasField('access')) {
 				$va_wheres[] = "(".$this->ops_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
+			}
+			if (isset($pa_options['restrict_to_relationship_types']) && is_array($pa_options['restrict_to_relationship_types']) && sizeof($pa_options['restrict_to_relationship_types']) && $t_item_rel && $t_item_rel->hasField('type_id')) {
+				$va_wheres[] = "(".$t_item_rel->tableName().".type_id IN (".join(",", caMakeRelationshipTypeIDList($t_item_rel->tableName(), $pa_options['restrict_to_relationship_types']))."))";
 			}
 
 			return array('joins' => $va_joins, 'wheres' => $va_wheres);
@@ -7567,12 +7592,12 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 			$t_item = Datamodel::getInstanceByTableName($this->ops_browse_table_name, true);
 
 			switch(sizeof($va_path = array_keys(Datamodel::getPath($ps_relative_to_table, $this->ops_browse_table_name)))) {
-				case __CA_ATTRIBUTE_VALUE_LIST__:
+				case 3:
 					$t_item_rel = Datamodel::getInstanceByTableName($va_path[1], true);
 					$t_rel_item = Datamodel::getInstanceByTableName($va_path[2], true);
 					$vs_key = 'relation_id';
 					break;
-				case __CA_ATTRIBUTE_VALUE_DATERANGE__:
+				case 2:
 					$t_item_rel = null;
 					$t_rel_item = Datamodel::getInstanceByTableName($va_path[1], true);
 					$vs_key = $t_rel_item->primaryKey();
@@ -7594,6 +7619,10 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 
 			if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_item->hasField('access')) {
 				$va_wheres[] = "(".$this->ops_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
+			}
+			
+			if (isset($pa_options['restrict_to_relationship_types']) && is_array($pa_options['restrict_to_relationship_types']) && sizeof($pa_options['restrict_to_relationship_types']) && $t_item_rel && $t_item_rel->hasField('type_id')) {
+				$va_wheres[] = "(".$t_item_rel->tableName().".type_id IN (".join(",", caMakeRelationshipTypeIDList($t_item_rel->tableName(), $pa_options['restrict_to_relationship_types']))."))";
 			}
 
 			$va_relative_to_join = array();

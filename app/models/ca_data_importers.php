@@ -1875,7 +1875,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				
 				$va_base_criteria = ($vs_type && !(bool)$t_mapping->getSetting('ignoreTypeForExistingRecordPolicy')) ? ['type_id' => $vs_type] : [];
 				if($vn_list_mapping_list_id !== null ) {
-				    $va_base_criteria['list_id'] = $vn_list_mapping_list_id;
+				    $va_base_criteria['list_id'] = caGetListID(ca_data_importers::getValueFromSource($va_mapping_items[$vn_list_mapping_list_id], $o_reader, array('otherValues' => $va_rule_set_values, 'environment' => $va_environment, 'log' => $o_log, 'logReference' => $vs_idno)));
 				}  
 				
 				if (is_array($pa_force_import_for_primary_keys) && sizeof($pa_force_import_for_primary_keys) > 0) {
@@ -2743,6 +2743,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 
 							if ( $va_item['settings']['skipIfDataPresent'] ) {
 								$va_group_buf[ $vn_c ]['_skipIfDataPresent'] = true;
+							}
+							
+
+							if ( $displaynameFormat_setting = $va_item['settings']['displaynameFormat'] ) {
+								$va_group_buf[ $vn_c ]['_displaynameFormat'] = $displaynameFormat_setting;
 							}
 
 

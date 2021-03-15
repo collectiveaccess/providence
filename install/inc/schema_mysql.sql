@@ -407,6 +407,7 @@ create table ca_metadata_element_labels
    locale_id                      smallint unsigned              not null,
    name                           varchar(255)                   not null,
    description                    text                           not null,
+   is_preferred                   tinyint unsigned               not null,
    primary key (label_id),
    
    constraint fk_ca_metadata_element_labels_element_id foreign key (element_id)
@@ -743,8 +744,22 @@ create table ca_object_representation_captions (
       
     index i_representation_id	(representation_id),
     index i_locale_id			(locale_id),
-   constraint fk_ca_object_rep_captiopns_locale_id foreign key (locale_id)
+   constraint fk_ca_object_rep_captions_locale_id foreign key (locale_id)
       references ca_locales (locale_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
+create table ca_object_representation_sidecars (
+	sidecar_id			int unsigned not null auto_increment,
+	representation_id	int unsigned not null references ca_object_representations(representation_id),
+	sidecar_file		longblob not null,
+	sidecar_content		longtext not null,
+	notes               text not null,
+    mimetype            varchar(255) null,
+	primary key (sidecar_id),
+      
+    index i_representation_id	(representation_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
@@ -7401,15 +7416,17 @@ create table if not exists ca_media_upload_sessions (
    user_id                   int unsigned                   not null references ca_users(user_id),
    session_key               char(36)                       not null,
    created_on                int unsigned                   not null,
+   submitted_on              int unsigned                   null,
    completed_on              int unsigned                   null,
    last_activity_on          int unsigned                   null,
-   cancelled                 tinyint unsigned               not null default 0,
-
    error_code                smallint unsigned              not null default 0,
+   source                    varchar(30)                    not null default 'UPLOADER',
+   status                    varchar(30)                    not null default 'IN_PROGRESS',
    
    num_files		         int unsigned                   not null,
    total_bytes		         bigint unsigned                not null default 0,
    progress		             longtext                       null,
+   metadata		             longtext                       null,
    
    primary key (session_id),
 
@@ -7417,8 +7434,8 @@ create table if not exists ca_media_upload_sessions (
    index i_created_on			    (created_on),
    index i_completed_on			    (completed_on),
    index i_last_activity_on			(last_activity_on),
-   index i_cancelled      	        (cancelled),
    index i_error_code      	        (error_code),
+   index i_status   	            (status),
    unique index i_session_key      	(session_key)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -7434,4 +7451,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (167, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (168, unix_timestamp());

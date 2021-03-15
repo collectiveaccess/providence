@@ -82,7 +82,7 @@
 		
 		$va_disabled_options =  isset($pa_options['disabledOptions']) ? $pa_options['disabledOptions'] : array();
 		
-		$vb_content_is_list = (array_key_exists(0, $pa_content)) ? true : false;
+		$vb_content_is_list = caIsIndexedArray($pa_content);
 		
 		$va_colors = array();
 		if (isset($pa_options['colors']) && is_array($pa_options['colors'])) {

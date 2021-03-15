@@ -64,9 +64,9 @@ class BaseEditorController extends ActionController {
 
 		AssetLoadManager::register('bundleListEditorUI');
 		AssetLoadManager::register('panel');
-		AssetLoadManager::register('maps');
-		AssetLoadManager::register('leaflet');
-		AssetLoadManager::register('3dmodels');
+// 		AssetLoadManager::register('maps');
+// 		AssetLoadManager::register('leaflet');
+// 		AssetLoadManager::register('3dmodels');
 
 		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 		$this->opo_result_context = new ResultContext($po_request, $this->ops_table_name, ResultContext::getLastFind($po_request, $this->ops_table_name));

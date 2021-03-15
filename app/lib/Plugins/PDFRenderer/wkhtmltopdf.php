@@ -113,11 +113,18 @@ class WLPlugPDFRendererwkhtmltopdf Extends BasePDFRendererPlugIn Implements IWLP
 		
 		file_put_contents($vs_content_path = caMakeGetFilePath("wkhtmltopdf", "html"), $content); 
 		file_put_contents($vs_header_path = caMakeGetFilePath("wkhtmltopdf", "html"), $vs_header); 
-		file_put_contents($vs_footer_path = caMakeGetFilePath("wkhtmltopdf", "html"), $vs_footer); 
+		file_put_contents($vs_footer_path = caMakeGetFilePath("wkhtmltopdf", "html"), $vs_footer);
 		$vs_output_path = caMakeGetFilePath("wkhtmltopdf", "pdf", ['useAppTmpDir' => true]);
-		
-		caExec($this->ops_wkhtmltopdf_path." --enable-local-file-access  --disable-smart-shrinking --dpi 96 --encoding UTF-8 --margin-top {$this->ops_margin_top} --margin-bottom {$this->ops_margin_bottom} --margin-left {$this->ops_margin_left} --margin-right {$this->ops_margin_right} --page-size {$this->ops_page_size} --orientation {$this->ops_page_orientation} page ".caEscapeShellArg($vs_content_path)." --header-html {$vs_header_path} --footer-html {$vs_footer_path} {$vs_output_path}", $va_output, $vn_return);	
-		
+		if (PDFRenderer::isCustomPageSize($this->ops_page_size)){
+			$vs_page_size_arg = '';
+			$va_size = PDFRenderer::getPageSize($this->ops_page_size, null, $this->ops_page_orientation);
+			foreach($va_size as $vs_name => $vs_value) {
+				$vs_page_size_arg .= "--page-$vs_name $vs_value ";
+			}
+		} else {
+			$vs_page_size_arg = "--page-size {$this->ops_page_size}";
+		}
+		caExec($this->ops_wkhtmltopdf_path." --enable-local-file-access  --disable-smart-shrinking --print-media-type --dpi 96 --encoding UTF-8 --margin-top {$this->ops_margin_top} --margin-bottom {$this->ops_margin_bottom} --margin-left {$this->ops_margin_left} --margin-right {$this->ops_margin_right} {$vs_page_size_arg} --orientation {$this->ops_page_orientation} page ".caEscapeShellArg($vs_content_path)." --header-html {$vs_header_path} --footer-html {$vs_footer_path} {$vs_output_path}", $va_output, $vn_return);
 		$vs_pdf_content = file_get_contents($vs_output_path);
 		if (caGetOption('stream', $options, false)) {
 			header("Cache-Control: private");
