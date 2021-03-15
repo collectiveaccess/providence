@@ -1634,7 +1634,13 @@ class BaseEditorController extends ActionController {
 					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
 					return;
 				}
-
+				
+				if (!is_array($bundle_sort_defaults = $this->request->user->getVar('bundleSortDefaults'))) { 
+					$bundle_sort_defaults = [];
+				}
+				$bundle_sort_defaults["P{$pn_placement_id}"] = ['sort' => $ps_sort, 'sortDirection' => $ps_sort_direction];
+				$this->request->user->setVar('bundleSortDefaults', $bundle_sort_defaults);
+				
 				$this->response->addContent($t_subject->getBundleFormHTML($ps_bundle, "P{$pn_placement_id}", array_merge($t_placement->get('settings'), ['placement_id' => $pn_placement_id]), ['request' => $this->request, 'contentOnly' => true, 'sort' => $ps_sort, 'sortDirection' => $ps_sort_direction], $vs_label));
 				break;
 		}

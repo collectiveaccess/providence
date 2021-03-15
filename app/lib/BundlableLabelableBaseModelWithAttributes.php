@@ -3052,9 +3052,17 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$o_view->setVar('t_item_rel', $t_item_rel);
 		$o_view->setVar('bundle_name', $ps_related_table);
 		
+		$default_sort = $default_sort_direction = null;
+		if (is_array($bundle_sort_defaults = $po_request->user->getVar('bundleSortDefaults')) && isset($bundle_sort_defaults[$ps_placement_code])) { 
+			$default_sort = $bundle_sort_defaults[$ps_placement_code]['sort'];
+			$default_sort_direction = $bundle_sort_defaults[$ps_placement_code]['sortDirection'];
+		}
 		
-		$o_view->setVar('sort', caGetOption('sort', $pa_options, caGetOption('sort', $pa_bundle_settings, null)));
-		$o_view->setVar('sortDirection', caGetOption('sortDirection', $pa_options, caGetOption('sortDirection', $pa_bundle_settings, null)));
+		$o_view->setVar('sort', $sort = caGetOption('sort', $pa_options, $default_sort ? $default_sort : caGetOption('sort', $pa_bundle_settings, null)));
+		$o_view->setVar('sortDirection', $sort_direction = caGetOption('sortDirection', $pa_options, $default_sort_direction ? $default_sort_direction : caGetOption('sortDirection', $pa_bundle_settings, null)));
+		
+		$pa_options['sort'] = $sort;
+		$pa_options['sortDirection'] = $sort_direction;
 		
 		$o_view->setVar('ui', caGetOption('ui', $pa_options, null));
 		$o_view->setVar('screen', caGetOption('screen', $pa_options, null));
