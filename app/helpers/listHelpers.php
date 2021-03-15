@@ -87,6 +87,11 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 * @return array A list of list_ids
 	 */
 	function caMakeListIDList($pa_lists, $pa_options=null) {
+		global $g_list_cache_size;
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, join(';',$pa_lists));
+		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
+			if(MemoryCache::contains($vs_cache_key, 'listIDLists')) { return MemoryCache::fetch($vs_cache_key, 'listIDLists'); }
+		}
 		$va_list_codes = array_flip($va_list_ids = ca_lists::getListCodes($pa_options));
 		
 		$va_ids = [];
@@ -97,7 +102,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 				$va_ids[] = (int)$va_list_codes[$pm_list];
 			}
 		}
-		
+		MemoryCache::save($vs_cache_key, $va_ids, 'listIDLists', $g_list_cache_size);
 		return $va_ids;
 	}
 	# ---------------------------------------
@@ -119,7 +124,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	    $vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$ps_list_code}/{$ps_idno}");
 		
 		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
-			if(MemoryCache::contains($vs_cache_key, 'listItemIDs')) { MemoryCache::fetch($vs_cache_key, 'listItemIDs'); }
+			if(MemoryCache::contains($vs_cache_key, 'listItemIDs')) { return MemoryCache::fetch($vs_cache_key, 'listItemIDs'); }
 		}
 		$t_list = new ca_lists();
 		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
@@ -144,7 +149,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $pn_list_id);
 		
 		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
-			if(MemoryCache::contains($vs_cache_key, 'listCodes')) { MemoryCache::fetch($vs_cache_key, 'listCodes'); }
+			if(MemoryCache::contains($vs_cache_key, 'listCodes')) { return MemoryCache::fetch($vs_cache_key, 'listCodes'); }
 		}
 		
 		$t_list = new ca_lists();
@@ -174,7 +179,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $pm_list_code_or_id);
 		
 		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
-			if(MemoryCache::contains($vs_cache_key, 'listNames')) { MemoryCache::fetch($vs_cache_key, 'listNames'); }
+			if(MemoryCache::contains($vs_cache_key, 'listNames')) { return MemoryCache::fetch($vs_cache_key, 'listNames'); }
 		}
 		
 		$t_list = new ca_lists();
@@ -213,7 +218,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $pn_item_id);
 		
 		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
-			if(MemoryCache::contains($vs_cache_key, 'listItemIdnos')) { MemoryCache::fetch($vs_cache_key, 'listItemIdnos'); }
+			if(MemoryCache::contains($vs_cache_key, 'listItemIdnos')) { return MemoryCache::fetch($vs_cache_key, 'listItemIdnos'); }
 		}
 		
 		$t_item = new ca_list_items();
@@ -250,7 +255,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$ps_list_code}/{$ps_idno}");
 		
 		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
-			if(MemoryCache::contains($vs_cache_key, 'listItemNames')) { MemoryCache::fetch($vs_cache_key, 'listItemNames'); }
+			if(MemoryCache::contains($vs_cache_key, 'listItemNames')) { return MemoryCache::fetch($vs_cache_key, 'listItemNames'); }
 		}
 		
 		$t_list = new ca_lists();
@@ -322,7 +327,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$ps_list_code}/{$ps_value}");
 		
 		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
-			if(MemoryCache::contains($vs_cache_key, 'listItemIDs')) { MemoryCache::fetch($vs_cache_key, 'listItemIDs'); }
+			if(MemoryCache::contains($vs_cache_key, 'listItemIDs')) { return MemoryCache::fetch($vs_cache_key, 'listItemIDs'); }
         }
         
 		$t_list = new ca_lists();
@@ -353,7 +358,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $pn_id);
 		
 		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
-			if(MemoryCache::contains($vs_cache_key, 'listItemValues')) { MemoryCache::fetch($vs_cache_key, 'listItemValues'); }
+			if(MemoryCache::contains($vs_cache_key, 'listItemValues')) { return MemoryCache::fetch($vs_cache_key, 'listItemValues'); }
         }
         
 		$t_item = new ca_list_items();
@@ -400,7 +405,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$ps_list_code}/{$ps_label}");
 		
 		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
-			if(MemoryCache::contains($vs_cache_key, 'listItemIDs')) { MemoryCache::fetch($vs_cache_key, 'listItemIDs'); }
+			if(MemoryCache::contains($vs_cache_key, 'listItemIDs')) { return MemoryCache::fetch($vs_cache_key, 'listItemIDs'); }
 		}
 		
 		$t_list = new ca_lists();
@@ -430,7 +435,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $ps_list_code);
 		
 		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
-			if(MemoryCache::contains($vs_cache_key, 'listItems')) { MemoryCache::fetch($vs_cache_key, 'listItems'); }
+			if(MemoryCache::contains($vs_cache_key, 'listItems')) { return MemoryCache::fetch($vs_cache_key, 'listItems'); }
 		}
 		
 		$t_list = new ca_lists();
@@ -470,7 +475,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "default/{$ps_list_code}");
 		
 		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
-			if(MemoryCache::contains($vs_cache_key, 'listItemIDs')) { MemoryCache::fetch($vs_cache_key, 'listItemIDs'); }
+			if(MemoryCache::contains($vs_cache_key, 'listItemIDs')) { return MemoryCache::fetch($vs_cache_key, 'listItemIDs'); }
 		}
 		
 		$t_list = new ca_lists();
@@ -491,6 +496,14 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 * @return array List of numeric item_ids
 	 */
 	function caMakeListItemIDList($pm_list, $pa_list_items, $pa_options=null) {
+		global $g_list_cache_size;
+		if(!$pm_list) { return null; }
+		$vs_cache_key = caMakeCacheKeyFromOptions(['options' => $pa_options, 'items' => $pa_list_items], $pm_list);
+		
+		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
+			if(MemoryCache::contains($vs_cache_key, 'itemIDLists')) { return MemoryCache::fetch($vs_cache_key, 'itemIDLists'); }
+		}
+		
 		if (!($vn_list_id = caGetListID($pm_list))) return [];
 		$t_item = new ca_list_items();
 		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_item->setTransaction($o_trans); }
@@ -507,7 +520,8 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 			}
 		}
 		
-		return array_keys($va_ids);
+		MemoryCache::save($vs_cache_key, $ret = array_keys($va_ids), 'itemIDLists', $g_list_cache_size);
+		return $ret;
 	}
 	# ---------------------------------------
 	/**
@@ -530,7 +544,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $pm_item_id);
 		
 		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
-			if(MemoryCache::contains($vs_cache_key, 'listAncestorIDs')) { MemoryCache::fetch($vs_cache_key, 'listAncestorIDs'); }
+			if(MemoryCache::contains($vs_cache_key, 'listAncestorIDs')) { return MemoryCache::fetch($vs_cache_key, 'listAncestorIDs'); }
 		}
 		
 		$t_item = new ca_list_items();
