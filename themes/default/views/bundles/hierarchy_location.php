@@ -376,7 +376,7 @@
 		</div>
 <?php
 	}
-		if ($show_add_object) {
+	if ($show_add_object) {
 ?>
 			<div id="<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-addObject"  class="hierarchyBrowseTab">
 				<div class="hierarchyBrowserMessageContainer">
@@ -582,7 +582,7 @@
 <?php
 	}
 	
-	if (!$vb_batch && (!$vb_read_only && $vb_has_privs) && (!$strict_type_hierarchy || ($strict_type_hierarchy && $vs_type_selector))) {
+	if ($show_add) {
 ?>
 	// Set up "add" hierarchy browser
 	var o<?php print $vs_id_prefix; ?>AddHierarchyBrowser = null;
@@ -608,7 +608,7 @@
 <?php
 	}
 	
-	if ((!$vb_batch && !$vb_read_only && $vb_has_privs) && $vb_objects_x_collections_hierarchy_enabled && ($t_subject->tableName() == 'ca_collections')) {
+	if ($show_add_object) {
 ?>
 	// Set up "add object" hierarchy browser
 	var o<?php print $vs_id_prefix; ?>AddObjectHierarchyBrowser = null;
