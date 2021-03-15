@@ -1673,17 +1673,23 @@ function caFileIsIncludable($ps_file) {
 	function caMakeCacheKeyFromOptions($options, $additional_text=null, array $keys=null) {
 		if (!is_array($options)) { return md5($options.$additional_text); }
 		
+		// Remove values that should never be considered part of the options signature
+		foreach(['dontCache', 'noCache', 'request', 'transaction'] as $k) { unset($options[$k]); }
+		
 		$unused_keys = null;
 		if (is_array($keys)) {
 			$unused_keys = array_flip(array_diff(array_keys($options), $keys));
 		}
-		foreach($options as $key => $value) {
-			if(is_object($value) || ($unused_keys && array_key_exists($key, $unused_keys))) { 
-				unset($options[$key]);
+		
+		if(is_array($unused_keys) && sizeof($unused_keys)) {
+			foreach($options as $key => $value) {
+				if(is_object($value) || ($unused_keys && array_key_exists($key, $unused_keys))) { 
+					unset($options[$key]);
+				}
 			}
 		}
 
-		return md5(print_R($options, true).$additional_text);
+		return md5(json_encode($options).$additional_text);
 	}
 	# ---------------------------------------
 	/**
@@ -2819,6 +2825,9 @@ function caFileIsIncludable($ps_file) {
 	 * @return array
 	 */
 	function caParseTagOptions($ps_tag, $pa_options=null) {
+		$key = md5($ps_tag);
+		if(MemoryCache::contains($key, 'DisplayTemplateParserUtils')) { return MemoryCache::fetch($key, 'DisplayTemplateParserUtils'); }
+		
 		$vs_tag_proc = $ps_tag;
 		$va_opts = array();
 		if (sizeof($va_tmp = explode('%', $ps_tag)) > 1) {
@@ -2831,7 +2840,10 @@ function caFileIsIncludable($ps_file) {
 			}
 		}
 
-		return array('tag' => $vs_tag_proc, 'options' => $va_opts);
+		$ret =['tag' => $vs_tag_proc, 'options' => $va_opts];
+		MemoryCache::save($key, $ret, 'DisplayTemplateParserUtils');
+		
+		return $ret;
 	}
 	# ----------------------------------------
 	/**
@@ -4188,6 +4200,9 @@ function caFileIsIncludable($ps_file) {
 	 * @return array A list of identified tags
 	 */
 	function caExtractTagsFromTemplate($ps_template, $pa_options=null) {
+		$key = caMakeCacheKeyFromOptions($pa_options, $ps_template);
+		if(MemoryCache::contains($key, 'DisplayTemplateParserUtils')) { return MemoryCache::fetch($key, 'DisplayTemplateParserUtils'); }
+		
 		$va_tags = [];
 		$vb_ignore_quotes = caGetOption('ignoreQuotes', $pa_options, false);
 
@@ -4296,7 +4311,11 @@ function caFileIsIncludable($ps_file) {
 
 			$va_tags[$vn_i] = rtrim($vs_tag, ")/.,%");	// remove trailing slashes, periods and percent signs as they're potentially valid tag characters that are never meant to be at the end
 		}
-		return array_filter($va_tags, "strlen");
+		
+		$ret = array_filter($va_tags, "strlen");
+		MemoryCache::save($key, $ret, 'DisplayTemplateParserUtils');
+		
+		return $ret;
 	}
 	# ----------------------------------------
 	/**

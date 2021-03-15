@@ -86,6 +86,13 @@ BaseModel::$s_ca_models_definitions['ca_attributes'] = array(
 class ca_attributes extends BaseModel {
 	# ---------------------------------
 	use SyncableBaseModel;
+	
+	
+	/**
+	 *
+	 */
+	static $elements_to_prefetch = [];
+	
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -576,6 +583,18 @@ class ca_attributes extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
+	 *
+	 */
+	static public function elementIDsToPrefetch($table, $elements, $options=null) {
+		$tn = Datamodel::getTableNum($table);
+		if(!is_array(self::$elements_to_prefetch[$tn])) { self::$elements_to_prefetch[$tn] = []; }
+		
+		$element_ids = array_filter(array_map(function($v) { return ca_metadata_elements::getElementID($v); }, $elements), 'strlen');
+		self::$elements_to_prefetch[$tn] = $element_ids;
+		return true;
+	}
+	# ------------------------------------------------------
+	/**
 	 * Retrieve attributes attached to specified row_id in specified table
 	 * Returns a list (indexed array) of Attribute objects.
 	 *
@@ -588,7 +607,13 @@ class ca_attributes extends BaseModel {
 	 * @return boolean Always return true
 	 */
 	static public function prefetchAttributes($po_db, $pn_table_num, $pa_row_ids, $pa_element_ids, $pa_options=null) {
-		if(!sizeof($pa_row_ids)) { return true; }
+		if(!is_array($pa_row_ids) || !sizeof($pa_row_ids)) { return true; }
+		
+		if(is_array(self::$elements_to_prefetch[$pn_table_num])) { 
+			$pa_element_ids = array_merge($pa_element_ids, self::$elements_to_prefetch[$pn_table_num]);
+			self::$elements_to_prefetch[$pn_table_num] = [];
+		}
+		
 		if(!is_array($pa_element_ids) || !sizeof($pa_element_ids)) { return true; }
 		
 		if (caGetOption('resetCache', $pa_options, false)) {
@@ -712,7 +737,7 @@ class ca_attributes extends BaseModel {
 		$pb_no_cache = (isset($pa_options['noCache']) && $pa_options['noCache']);
 		if ($pb_no_cache) { $pa_options['resetCache'] = true; }
 		
-		$va_element_ids = array();
+		$va_element_ids = [];
 		foreach($pa_element_ids as $vn_element_id) {
 			if (!isset(ca_attributes::$s_get_attributes_cache[$pn_table_num.'/'.$pn_row_id][$vn_element_id]) || $pb_no_cache) {
 				$va_element_ids[] = $vn_element_id;
@@ -721,7 +746,7 @@ class ca_attributes extends BaseModel {
 		
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		if (sizeof($va_element_ids)) {
-			if (!(ca_attributes::prefetchAttributes($po_db, $pn_table_num, array($pn_row_id), $va_element_ids, $pa_options))) {
+			if (!(ca_attributes::prefetchAttributes($po_db, $pn_table_num, [$pn_row_id], $va_element_ids, $pa_options))) {
 				return null;
 			}
 		}

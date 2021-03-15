@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,19 +38,16 @@
 # --- Import classes
 # ----------------------------------------------------------------------
 include_once(__CA_LIB_DIR__."/BaseObject.php");
-include_once(__CA_LIB_DIR__."/Datamodel.php");
 include_once(__CA_LIB_DIR__."/Media/MediaInfoCoder.php");
 include_once(__CA_LIB_DIR__."/File/FileInfoCoder.php");
 include_once(__CA_LIB_DIR__."/Parsers/TimeExpressionParser.php");
 include_once(__CA_LIB_DIR__."/Parsers/TimecodeParser.php");
 include_once(__CA_LIB_DIR__."/ApplicationChangeLog.php");
-include_once(__CA_MODELS_DIR__."/ca_locales.php");
 
 
 # ----------------------------------------------------------------------
 class SearchResult extends BaseObject {
 	
-	private static $opo_datamodel;
 	private $opo_search_config;
 	private $opo_db;
 	private $opn_table_num;
@@ -276,7 +273,7 @@ class SearchResult extends BaseObject {
 	/**
 	 * 
 	 *
-	 * @param IWLPlugSearchEngineResult $po_engine_result
+	 * @param IWLPlugSearchEngineResult|String $po_engine_result
 	 * @param array $pa_tables
 	 * @param array $pa_options Options include:
 	 *		db = optional Db instance to use for database connectivity. If omitted a new database connection is used. If you need to have your result set access the database within a specific transaction you should pass the Db object used by the transaction here.
@@ -288,7 +285,7 @@ class SearchResult extends BaseObject {
 		$this->ops_table_pk = $this->opo_subject_instance->primaryKey();
 		$this->opa_cached_result_counts = array();
 		
-		$this->opo_engine_result = $po_engine_result;
+		$this->opo_engine_result = is_object($po_engine_result) ? $po_engine_result : null;
 		$this->opa_tables = $pa_tables;
 		
 		if ($o_db = caGetOption('db', $pa_options, null)) { 
@@ -1183,6 +1180,8 @@ class SearchResult extends BaseObject {
 		if (!$t_instance) { return null; }	// Bad table
 		
 		$vn_row_id = $this->opo_engine_result->get($this->ops_table_pk);
+		if (!$vn_row_id) { return null; } // No row loaded
+		
 		$va_val_opts['primaryKey'] = $t_instance->primaryKey();
 		
 		if ($va_path_components['hierarchical_modifier']) {
@@ -1548,6 +1547,7 @@ class SearchResult extends BaseObject {
 			if (!is_array($va_related_items)) { return ($vb_return_with_structure || $vb_return_as_array) ? array() : null; }
 		
 			$vm_val = $this->_getRelatedValue($va_related_items, $va_val_opts);
+		
 			if ($vb_return_as_count) { return $vm_val; }
 			goto filter;
 		} else {
@@ -1713,7 +1713,6 @@ class SearchResult extends BaseObject {
 						}
 						ca_attributes::prefetchAttributes($this->opo_subject_instance->getDb(), $this->opn_table_num, $this->getRowIDsToPrefetch($this->opo_engine_result->currentRow(), $this->getOption('prefetch')), $va_element_ids, array('dontFetchAlreadyCachedValues' => true));
 					}
-					
 					$va_attributes = ca_attributes::getAttributes($this->opo_subject_instance->getDb(), $this->opn_table_num, $vn_row_id, array($vn_element_id), array());
 
 					$vm_val = $this->_getAttributeValue($va_attributes[$vn_element_id], $t_instance, $va_val_opts);
@@ -1913,12 +1912,13 @@ class SearchResult extends BaseObject {
 		
 		$pa_check_access		= $pa_options['checkAccess'];
 		$pb_primary_only		= $pa_options['primaryOnly'];
-		if (!is_array($pa_exclude_idnos	= $pa_options['excludeIdnos'])) { $pa_exclude_idnos = []; }
+		
+		$pa_exclude_idnos = caGetOption('excludeIdnos', $pa_options, null);
+		if (!is_array($pa_exclude_idnos) && $pa_exclude_idnos) { $pa_exclude_idnos = [$pa_exclude_idnos]; } 
 		
 		if (!($t_rel_instance = SearchResult::$s_instance_cache[$va_path_components['table_name']])) {
 			$t_rel_instance = SearchResult::$s_instance_cache[$va_path_components['table_name']] = Datamodel::getInstanceByTableName($va_path_components['table_name'], true);
 		}
-		
 		if (!($t_rel_instance instanceof BaseModel)) { return null; }
 		
 		// Handle table-only case...
@@ -1932,7 +1932,6 @@ class SearchResult extends BaseObject {
 				$va_path_components['num_components'] = sizeof($va_path_components['components']);
 			}	
 		}
-		
 		if ($vb_assume_display_field && in_array($va_path_components['field_name'], array('preferred_labels', 'nonpreferred_labels')) && !$va_path_components['subfield_name']) {
 			$va_path_components['subfield_name'] = $va_path_components['components'][2] = $t_rel_instance->getLabelDisplayField();
 			$va_path_components['num_components'] = sizeof($va_path_components['components']);
@@ -1944,12 +1943,19 @@ class SearchResult extends BaseObject {
 		    if ($pb_primary_only && isset($va_rel_item['is_primary']) && !$va_rel_item['is_primary']) { continue; }
 			$va_ids[] = $va_rel_item[$vs_pk];
 		}
-		if (!sizeof($va_ids)) { return $pa_options['returnAsArray'] ? array() : null; }
+		if (!sizeof($va_ids)) { return $pa_options['returnAsArray'] ? [] : null; }
 
+		$key = caMakeCacheKeyFromOptions($va_ids, $va_path_components['table_name']);
 		
-		if (!($qr_rel = caMakeSearchResult($va_path_components['table_name'], $va_ids, array('instance' => $t_rel_instance)))) { return null; }
+		if (MemoryCache::contains($key,'SeachResultRelCache')) {
+			$qr_rel = MemoryCache::fetch($key,'SeachResultRelCache');
+			$qr_rel->seek(0);	// TODO: won't work with PDO?
+		} else {
+			if (!($qr_rel = caMakeSearchResult($va_path_components['table_name'], $va_ids, ['instance' => $t_rel_instance]))) { return null; }
+			MemoryCache::save($key, $qr_rel, 'SeachResultRelCache');
+		}
 
-		$va_return_values = array();
+		$va_return_values = [];
 		$va_spec = array();
 		foreach($va_path_components['components'] as $vs_v) {
 			if ($vs_v) { $va_spec[] = $vs_v; }
@@ -1959,7 +1965,7 @@ class SearchResult extends BaseObject {
 		$vs_rel_table_name = $t_rel_instance->tableName();
 		
 		$pa_restrict_to_lists = caGetOption('list', $pa_options, null, ['castTo' => 'array']);
-		if (is_array($pa_restrict_to_lists)) { $pa_restrict_to_lists = caMakeListIDList($pa_restrict_to_lists); }
+		if (is_array($pa_restrict_to_lists) && sizeof($pa_restrict_to_lists)) { $pa_restrict_to_lists = caMakeListIDList($pa_restrict_to_lists); }
 		
 		// Make sure spec has a table name, otherwise we can get caught in an infinite loop when we pull using the spec
 		if ((substr($va_spec[0], 0, 3) !== 'ca_') || !Datamodel::tableExists($va_spec[0])) { array_unshift($va_spec, $va_path_components['table_name']); }
@@ -1970,7 +1976,7 @@ class SearchResult extends BaseObject {
 				continue;
 			}
 			
-			if (in_array($qr_rel->get("{$vs_rel_table_name}.{$vs_idno_fld}"), $pa_exclude_idnos)) {
+			if (is_array($pa_exclude_idnos) && sizeof($pa_exclude_idnos) && in_array($qr_rel->get("{$vs_rel_table_name}.{$vs_idno_fld}"), $pa_exclude_idnos)) {
 				continue;
 			}
 			
@@ -1993,6 +1999,7 @@ class SearchResult extends BaseObject {
 				$va_return_values[] = $vm_val;
 			}
 		}
+		
 		if ($va_path_components['is_count']) {
 			return $pa_options['returnAsArray'] ? [sizeof($va_return_values)] : sizeof($va_return_values); 
 		}
@@ -2158,7 +2165,7 @@ class SearchResult extends BaseObject {
 		$va_return_values = [];
 		
 		$include_value_ids = caGetOption('includeValueIDs', $pa_options, false);
-		$pa_exclude_idnos = caGetOption('excludeIdnos', $pa_options, []);
+		$pa_exclude_idnos = caGetOption('excludeIdnos', $pa_options, null);
 		if (!is_array($pa_exclude_idnos) && $pa_exclude_idnos) { $pa_exclude_idnos = [$pa_exclude_idnos]; } 
 		
 		$vn_id = $this->get($pt_instance->primaryKey(true));
@@ -2246,7 +2253,7 @@ class SearchResult extends BaseObject {
 							
 							if ($qr_res->nextHit()) {
 								if (($t_instance = $o_value->elementTypeToInstance($o_value->getType())) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
-									if (in_array($qr_res->get($vs_auth_table_name.'.'.$vs_idno_fld), $pa_exclude_idnos)) {
+									if (is_array($pa_exclude_idnos) && sizeof($pa_exclude_idnos) && in_array($qr_res->get($vs_auth_table_name.'.'.$vs_idno_fld), $pa_exclude_idnos)) {
 										continue;
 									}
 								}
@@ -2320,7 +2327,7 @@ class SearchResult extends BaseObject {
 							case __CA_ATTRIBUTE_VALUE_LIST__:
 								$t_element = ca_metadata_elements::getInstance($o_value->getElementID());
 								$vn_list_id = $t_element->get('list_id');
-								if (in_array($o_value->getDisplayValue(array('output' => 'idno', 'list_id' => $vn_list_id)), $pa_exclude_idnos)) {
+								if (is_array($pa_exclude_idnos) && sizeof($pa_exclude_idnos) && in_array($o_value->getDisplayValue(array('output' => 'idno', 'list_id' => $vn_list_id)), $pa_exclude_idnos)) {
 									continue(2);
 								}
 						
@@ -2384,7 +2391,7 @@ class SearchResult extends BaseObject {
 								}
 								continue(2);
 							default:
-								if (in_array($o_value->getDisplayValue(array('output' => 'idno')), $pa_exclude_idnos)) {
+								if (is_array($pa_exclude_idnos) && sizeof($pa_exclude_idnos) && in_array($o_value->getDisplayValue(array('output' => 'idno')), $pa_exclude_idnos)) {
 									continue(2);
 								}
 								$vs_val_proc = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'])));

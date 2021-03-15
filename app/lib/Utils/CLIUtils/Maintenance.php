@@ -2418,7 +2418,7 @@
 		public static function reload_attribute_sortable_values($po_opts=null) {
 			$o_db = new Db();
 			
-			$qr_res = $o_db->query("SELECT count(*) c FROM ca_attribute_values WHERE value_longtext1 <> ''");
+			$qr_res = $o_db->query("SELECT count(*) c FROM ca_attribute_values WHERE (value_longtext1 <> '' OR value_decimal1 IS NOT NULL)");
 			$qr_res->nextRow();
 			$count = $qr_res->get('c');
 			
@@ -2426,7 +2426,7 @@
 			
 			print CLIProgressBar::start($count, _t('Processing'));
 			do {
-				$qr_res = $o_db->query("SELECT value_id, value_longtext1, element_id FROM ca_attribute_values WHERE value_id > ? and value_longtext1 <> '' LIMIT 10000", [$last_value_id]);
+				$qr_res = $o_db->query("SELECT value_id, value_longtext1, element_id FROM ca_attribute_values WHERE value_id > ? and (value_longtext1 <> '' OR value_decimal1 IS NOT NULL) ORDER BY value_id LIMIT 10000", [$last_value_id]);
 			
 				$c = 0;
 				while($qr_res->nextRow()) {

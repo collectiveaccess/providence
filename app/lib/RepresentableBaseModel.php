@@ -54,6 +54,8 @@
 		 *		limit = 
 		 *		restrict_to_types = An array of type_ids or type codes to restrict count to specified types of representations to
 		 *		restrict_to_relationship_types = An array of relationship type_ids or relationship codes to restrict count to
+		 *		sort = 
+		 *		sortDirection = 
 		 *		.. and options supported by getMediaTag() .. [they are passed through]
 		 *	
 		 * @return array An array of information about the linked representations
@@ -66,6 +68,8 @@
 			$pn_start = caGetOption('start', $pa_options, 0);
 			$pn_limit = caGetOption('limit', $pa_options, null);
 		
+			$sort = caGetOption('sort', $pa_options, null);
+			$sort_direction = caGetOption('sortDirection', $pa_options, null);
 		
 			if (caGetBundleAccessLevel($this->tableName(), 'ca_object_representations') == __CA_BUNDLE_ACCESS_NONE__) {
 				return null;
@@ -194,6 +198,16 @@
 			$va_labels = $t_rep->getPreferredDisplayLabelsForIDs(array_keys($va_reps));
 			foreach($va_labels as $vn_rep_id => $vs_label) {
 				$va_reps[$vn_rep_id]['label'] = $vs_label;
+			}
+			
+			if ($sort && sizeof($va_reps)) {
+				$sorted_reps = [];
+				if ($qr_sort = caMakeSearchResult('ca_object_representations', array_keys($va_reps), ['sort' => $sort, 'sortDirection' => $sort_direction])) {
+					while($qr_sort->nextHit()) {
+						$sorted_reps[$rep_id = $qr_sort->get('ca_object_representations.representation_id')] = $va_reps[$rep_id];
+					}
+					return $sorted_reps;
+				}
 			}
 			
 			return $va_reps;
@@ -1228,8 +1242,10 @@
             	$qr_reps = caMakeSearchResult('ca_object_representations', $representation_ids);
             	while($qr_reps->nextHit()) {
             		$d = [];
-            		foreach($bundles_to_save as $b) {
-            			$f = array_pop(explode('.', $b));
+            		$elements = array_map(function($v) { return array_pop(explode('.', $v)); }, $bundles_to_save);
+            		
+            		ca_attributes::elementIDsToPrefetch('ca_object_representations', $elements);
+            		foreach($elements as $f) {
             			$v = $qr_reps->get("ca_object_representations.{$f}");
             			
             			// Set default for null values if 'useDefaultWhenNull' is set
@@ -1268,8 +1284,7 @@
 				// Get display template values
                 $va_display_template_values = [];
                 if($vs_bundle_template && ($vs_linking_table = RepresentableBaseModel::getRepresentationRelationshipTableName($this->tableName()))) {
-                    $va_display_template_values = caProcessTemplateForIDs($vs_bundle_template, $vs_linking_table, $va_relation_ids, array_merge($pa_options, array('start' => null, 'limit' => null, 'returnAsArray' => true, 'returnAllLocales' => false, 'includeBlankValuesInArray' => true, 'indexWithIDs' => true)));
-                    $va_relation_ids = array_keys($va_display_template_values);
+                    $va_display_template_values = caProcessTemplateForIDs($vs_bundle_template, $vs_linking_table, $va_relation_ids, array_merge($pa_options, array('start' => null, 'limit' => null, 'returnAsArray' => true, 'returnAllLocales' => false, 'includeBlankValuesInArray' => true, 'indexWithIDs' => true, 'sort' => null, 'sortDirection' => null)));
                 }
 				
 				if($limit > 0) {

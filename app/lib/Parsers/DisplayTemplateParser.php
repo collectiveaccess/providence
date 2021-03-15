@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2020 Whirl-i-Gig
+ * Copyright 2015-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,21 +35,6 @@ require_once(__CA_LIB_DIR__.'/Parsers/ganon.php');
  
 class DisplayTemplateParser {
 	# -------------------------------------------------------------------
-	/**
-	 *
-	 */
-	static $template_cache = null; 
-	
-	/**
-	 *
-	 */
-	static $value_cache = null;
-	
-	/**
-	 *
-	 */
-	static $value_count_cache = null;
-	
 	/**
 	 *
 	 */
@@ -182,10 +167,28 @@ class DisplayTemplateParser {
 		// Parse template
 		if(!is_array($va_template = DisplayTemplateParser::parse($ps_template, $pa_options))) { return null; }
 		
-		$ps_tablename = is_numeric($pm_tablename_or_num) ? Datamodel::getTableName($pm_tablename_or_num) : $pm_tablename_or_num;
+		$orig_table = $ps_tablename = is_numeric($pm_tablename_or_num) ? Datamodel::getTableName($pm_tablename_or_num) : $pm_tablename_or_num;
 		$t_instance = Datamodel::getInstanceByTableName($ps_tablename, true);
-		$vs_pk = $t_instance->primaryKey();
+		$orig_pk = $vs_pk = $t_instance->primaryKey();
 		
+		
+		// If all tags are from a single table, related table, then we transform here the current result set into a set of records
+		// in the related table. This saves us having to do a separate, and relatively costly, related value call for each tag.
+		// 
+		// We could also do this sort of transformation when there are tags present from multiple related tables, or mixed with "local" tags
+		// but to keep it simple (for now) we only perform this optimization when the template references a single related table
+		$tables = array_unique(array_map(function($v) { return array_shift(explode('.', $v)); }, array_keys($va_template['tags'])));
+		if ((sizeof($tables) == 1) && ($tables[0] !== $t_instance->tableName()) &&  ($t = Datamodel::getInstance($tables[0], true))) {
+			$trans_rel_ids = $t_instance->getRelatedItems($tables[0], ['row_ids' => $pa_row_ids, 'returnAs' => 'ids']);
+			if(is_array($trans_rel_ids) && sizeof($trans_rel_ids)) { 
+				$t_instance = $t;
+				
+				$pm_tablename_or_num = $t->tableNum();
+				$ps_tablename = $t->tableName();
+				$vs_pk = $t->primaryKey();
+				$pa_row_ids = $trans_rel_ids;
+			}
+		}
 		
 		// Prefetch related items for <units>
 		if (!$pa_options['isUnit'] && !caGetOption('dontPrefetchRelated', $pa_options, false)) {
@@ -251,7 +254,7 @@ class DisplayTemplateParser {
 					
 					$v = is_array($va_val_list) ? DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, array_merge($pa_options, ['index' => $vn_index, 'returnAsArray' => $pa_options['aggregateUnique']])) : '';
 					if ($pb_index_with_ids) {
-				        $va_proc_templates[$qr_res->get($vs_pk)] = $v;
+				        $va_proc_templates[$qr_res->get("{$orig_table}.{$orig_pk}")] = $v;
 				    } else {
 				        $va_proc_templates[] = $v;
 				    }
@@ -264,9 +267,10 @@ class DisplayTemplateParser {
 			    } catch (Exception $e) {
 			        // noop
 			    }
+			    
 				$v = DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, array_merge($pa_options, ['returnAsArray' => $pa_options['aggregateUnique']]));
 				if ($pb_index_with_ids) {
-					$va_proc_templates[$qr_res->get($vs_pk)] = $v;
+					$va_proc_templates[$qr_res->get("{$orig_table}.{$orig_pk}")] = $v;
 				} else {
 					$va_proc_templates[] = $v;
 				}
@@ -303,6 +307,7 @@ class DisplayTemplateParser {
 		if (!$pb_return_as_array) {
 			return join($ps_delimiter, $va_proc_templates);
 		}
+		
 		return $va_proc_templates;
 	}
 	# -------------------------------------------------------------------
@@ -310,9 +315,8 @@ class DisplayTemplateParser {
 	 *
 	 */
 	static public function parse($ps_template, $pa_options=null) {
-		$vs_cache_key = md5($ps_template);
-		//if(isset(DisplayTemplateParser::$template_cache[$vs_cache_key])) { return DisplayTemplateParser::$template_cache[$vs_cache_key]; }
-		
+		$key = md5('PARSE:'.$ps_template);
+		if(CompositeCache::contains($key, 'DisplayTemplateParserUtils')) { return CompositeCache::fetch($key, 'DisplayTemplateParserUtils'); }
 		$ps_template_original = $ps_template;
 		
 		// Parse template
@@ -322,15 +326,16 @@ class DisplayTemplateParser {
 		$va_tags = DisplayTemplateParser::_getTags($o_doc->children, array_merge($pa_options, []));
 		$va_units = DisplayTemplateParser::_parseUnits($o_doc->children, [], []);
 		
-		//if (!is_array(DisplayTemplateParser::$template_cache)) { DisplayTemplateParser::$template_cache = []; }
-		//return DisplayTemplateParser::$template_cache[$vs_cache_key] = [
-		return [
+		$ret = [
 			'original_template' => $ps_template_original, 	// template as passed by caller
 			'template' => $ps_template, 					// full template with compatibility transformations performed and units replaced with placeholders
 			'tags' => $va_tags, 							// all placeholder tags used in template, both replaceable (eg. ^ca_objects.idno) and directive codes (eg. <ifdef code="ca_objects.idno">...</ifdef>
 			'tree' => $o_doc,								// ganon instance containing parsed template HTML
 			'units' => $va_units							// map of nested units in template 
 		];	
+		CompositeCache::save($key, $ret, 'DisplayTemplateParserUtils');
+		
+		return $ret;
 	}
 	# -------------------------------------------------------------------
 	/**
@@ -346,11 +351,9 @@ class DisplayTemplateParser {
 						'relativeTo' => $o_node->relativeTo,
 						'unitTemplate' => $o_node->html(),
 						'subUnits' => DisplayTemplateParser::_parseUnits($o_node->children, $u)
-					];
-					
+					];		
 					break;	
 			}
-			
 		}
 		
 		return $pa_units;
@@ -952,42 +955,77 @@ class DisplayTemplateParser {
 	/**
 	 *
 	 */
-	static private function _getValues(SearchResult $pr_res, array $pa_tags, array $pa_options=null) {
-		unset($pa_options['returnAsArray']);
-		unset($pa_options['returnWithStructure']);
+	static private function _getValues(SearchResult $qr_res, array $tags, array $options=null) {
+		unset($options['returnAsArray']);
+		unset($options['returnWithStructure']);
 		
-		$vn_start = caGetOption('unitStart', $pa_options, 0, ['castTo' => 'int']);
-		$vn_length = caGetOption('unitLength', $pa_options, 0, ['castTo' => 'int']);
-		$vn_full_value_count = caGetOption('fullValueCount', $pa_options, $pr_res->numHits(), ['castTo' => 'int']);
+		$orig_table = $table = $qr_res->tableName();
+		$orig_row_id = $row_id = $qr_res->getPrimaryKey();
 		
-		$va_relationship_type_ids = caGetOption('relationshipTypeIDs', $pa_options, array(), ['castTo' => 'array']);
+		$orig_cvc = $cvc = MemoryCache::contains($orig_table.'/'.$orig_row_id, 'DisplayTemplateParserValues') ? MemoryCache::fetch($orig_table.'/'.$orig_row_id, 'DisplayTemplateParserValues') : [];
 		
+		$is_fully_cached = true;
+		$acc = [];
 		
+		foreach(array_keys($tags) as $t) {
+			if(!($cv = $cvc[$t])) {
+				$is_fully_cached = false;
+				break;
+			}
+			$acc[$t] = $cv;
+		}
+		if($is_fully_cached) {
+			return $acc;
+		} else {
+			$acc = null;
+		}
 		
-		$pb_include_blanks = caGetOption('includeBlankValuesInArray', $pa_options, false);
-		$ps_prefix = caGetOption(['placeholderPrefix', 'relativeTo', 'prefix'], $pa_options, null);
-		$pn_index = caGetOption('index', $pa_options, null);
+		$start = caGetOption('unitStart', $options, 0, ['castTo' => 'int']);
+		$length = caGetOption('unitLength', $options, 0, ['castTo' => 'int']);
+		$vn_full_value_count = caGetOption('fullValueCount', $options, $qr_res->numHits(), ['castTo' => 'int']);
 		
-		$vs_table = $pr_res->tableName();
+		$va_relationship_type_ids = caGetOption('relationshipTypeIDs', $options, array(), ['castTo' => 'array']);
 		
-		$vs_cache_key = md5($vs_table."/".$pr_res->getPrimaryKey()."/".print_r($pa_tags, true)."/".print_r($pa_options, true));
+		$include_blanks = caGetOption('includeBlankValuesInArray', $options, false);
+		$prefix = caGetOption(['placeholderPrefix', 'relativeTo', 'prefix'], $options, null);
+		$index = caGetOption('index', $options, null);
 		
 		$va_remove_opts_for_related = ['restrictToTypes' => null, 'restrictToRelationshipTypes' => null];
 		
+		// If all tags are from a single table, related table, then we transform here the current result set into a set of records
+		// in the related table. This saves us having to do a separate, and relatively costly, related value call for each tag.
+		// 
+		// We could also do this sort of transformation when there are tags present from multiple related tables, or mixed with "local" tags
+		// but to keep it simple (for now) we only perform this optimization when the template references a single related table
+		$tables = array_unique(array_map(function($v) { return array_shift(explode('.', $v)); }, array_keys($tags)));
+	
+		if ((sizeof($tables) == 1) && ($tables[0] !== $table) && ($t = Datamodel::getInstance($tables[0], true))) {
+			$trans_rel_ids = $qr_res->get($t->primaryKey(true), ['returnAsArray' => true]);
+			if(is_array($trans_rel_ids) && sizeof($trans_rel_ids)) { 
+				$table = $t->tableName();	// Reassign table
+				$qr_res = caMakeSearchResult($table, $trans_rel_ids);	// Create new, mapped result set.
+				$qr_res->nextHit();	// increment to first row (rest of method expects it to the cue'd up)
+				$row_id = $qr_res->getPrimaryKey();
+				
+				// Reload current values cache using mapped table and row_id
+				$cvc = MemoryCache::contains($table.'/'.$row_id, 'DisplayTemplateParserValues') ? MemoryCache::fetch($table.'/'.$row_id, 'DisplayTemplateParserValues') : [];
+			}
+		}
+		
 		$va_get_specs = [];
-		foreach(array_keys($pa_tags) as $vs_tag) {
+		foreach(array_keys($tags) as $tag) {
 		    // Apply placeholder prefix to any tag except the "specials"
-			if (!in_array(strtolower($vs_tag), ['relationship_typename', 'relationship_type_id', 'relationship_typecode', 'relationship_type_code', 'date', 'primary', 'count', 'index', 'omitcount'])) {
-				$va_tag = explode(".", $vs_tag);
-				$vs_get_spec = $vs_tag;
-				if ($ps_prefix && (!Datamodel::tableExists($va_tag[0])) &&  (!preg_match("!^".preg_quote($ps_prefix, "!")."\.!", $vs_tag)) && (sizeof($va_tag) > 0)) {
-					$vs_get_spec = "{$ps_prefix}.".array_shift($va_tag);
+			if (!in_array(strtolower($tag), ['relationship_typename', 'relationship_type_id', 'relationship_typecode', 'relationship_type_code', 'date', 'primary', 'count', 'index', 'omitcount'])) {
+				$va_tag = explode(".", $tag);
+				$vs_get_spec = $tag;
+				if ($prefix && (!Datamodel::tableExists($va_tag[0])) &&  (!preg_match("!^".preg_quote($prefix, "!")."\.!", $tag)) && (sizeof($va_tag) > 0)) {
+					$vs_get_spec = "{$prefix}.".array_shift($va_tag);
 					if(sizeof($va_tag) > 0) {
 						$vs_get_spec .= ".".join(".", $va_tag);
 					}
 				}
 			} else {
-				$vs_get_spec = $vs_tag;
+				$vs_get_spec = $tag;
 			}
 
 			// Get trailing options (eg. ca_entities.preferred_labels.displayname%delimiter=;_)
@@ -1001,213 +1039,208 @@ class DisplayTemplateParser {
 				}
 			}
 			$vs_spec_table = array_shift(explode('.', $vs_get_spec));
-			$va_get_specs[$vs_tag] = [
+			$va_get_specs[$tag] = [
 				'spec' => $vs_get_spec,
 				'parsed' => $va_parsed_tag_opts,
-				'isRelated' => $vs_table !== $vs_spec_table,
+				'isRelated' => $table !== $vs_spec_table,
 				'modifiers' => $va_parsed_tag_opts['modifiers']
 			];
 		}
 		
 		$vn_count = 1;
 		$va_tag_vals = null;
-		if ($vs_relative_to_container = caGetOption('relativeToContainer', $pa_options, null)) {
-			if (DisplayTemplateParser::$value_cache[$vs_cache_key]) {
-				$va_tag_vals = DisplayTemplateParser::$value_cache[$vs_cache_key];
-				$vn_count = DisplayTemplateParser::$value_count_cache[$vs_cache_key];
-			} else {
-			    $vs_sort_direction = caGetOption('sortDirection', $pa_options, null, ['forceLowercase' => true]);
-				    
-				$va_tag_vals = [];
-                foreach(array_keys($pa_tags) as $vs_tag) {	         
-                    $va_parsed_tag_opts = $va_get_specs[$vs_tag]['parsed'];
-                    if (substr($vs_tag, 0, 5) === '^join') { 
-                        // Set get spec to generate dummy placeholder value (we'll calculate the real value later)
-                        // This placeholder ensures we get an accurate count of values we'll need to generate
-                        $vs_get_spec = array_shift(explode("~", array_shift(explode(";", $va_parsed_tag_opts['options']['elements']))));
-                    } else {
-                        $vs_get_spec = $va_get_specs[$vs_tag]['spec'];
-                    }
-                    if (!preg_match("!^{$vs_relative_to_container}!", $vs_get_spec)) { $vs_get_spec = $vs_relative_to_container.".".$vs_get_spec; }
-
-                    $va_vals = $pr_res->get($vs_get_spec, array_merge($pa_options, $va_parsed_tag_opts['options'], ['sort' => '', 'filters' => $va_parsed_tag_opts['filters'], 'returnAsArray' => true, 'returnBlankValues' => true], $va_get_specs[$vs_tag]['isRelated'] ? $va_remove_opts_for_related : []));
-        
-                    if (is_array($va_vals)) {
-                        foreach($va_vals as $vn_index => $vs_val) {
-                            $va_tag_vals[$vn_index][$vs_tag] = $vs_val;
-                        }
-                    }
-                }
-            
-                if (isset($pa_options['sort']) && is_array($pa_options['sort']) && sizeof($pa_options['sort'])) {
-                    $va_sortables = array();
-                    if (!is_array($va_parsed_tag_opts['options'])) { $va_parsed_tag_opts['options'] = []; }
-                    foreach($pa_options['sort'] as $vs_sort_spec) {
-                        $va_sortables[] = $pr_res->get($vs_sort_spec, array_merge($pa_options, $va_parsed_tag_opts['options'], ['sort' => '', 'filters' => $va_parsed_tag_opts['filters'], 'sortable' => true, 'returnAsArray' => true, 'returnBlankValues' => true], $va_get_specs[$vs_tag]['isRelated'] ? $va_remove_opts_for_related : []));
-                    }
-                
-                    if(is_array($va_sortables)) {
-                        foreach($va_sortables as $i => $va_sort_values) {
-                            if (!is_array($va_sort_values)) { continue; }
-                            foreach($va_sort_values as $vn_index => $vs_sort_value) {
-                                $va_tag_vals[$vn_index]['__sort__'] .= $vs_sort_value;
-                            }
-                        }
-                    }
-                }
-			    
-			    $va_tag_vals = caSortArrayByKeyInValue($va_tag_vals, ['__sort__'], $vs_sort_direction);
-			    
-			    if (!caGetOption('skipWhen', $pa_options, false)) { 
-                    if ((($vn_start > 0) || ($vn_length > 0)) && ($vn_start < sizeof($va_tag_vals)) && (!$vn_length || ($vn_start + $vn_length <= sizeof($va_tag_vals)))) {
-                         $va_tag_vals = array_slice($va_tag_vals, $vn_start, ($vn_length > 0) ? $vn_length : null);
-                    }
-                }
-				DisplayTemplateParser::$value_cache[$vs_cache_key] = $va_tag_vals;
-				DisplayTemplateParser::$value_count_cache[$vs_cache_key] = $vn_count = sizeof($va_tag_vals);
+		if ($vs_relative_to_container = caGetOption('relativeToContainer', $options, null)) {
+			$vs_sort_direction = caGetOption('sortDirection', $options, null, ['forceLowercase' => true]);
 				
-				if (sizeof(DisplayTemplateParser::$value_cache) > 1024) {
-					DisplayTemplateParser::$value_cache = [];
-					DisplayTemplateParser::$value_count_cache = [];
+			$va_tag_vals = [];
+			foreach(array_keys($tags) as $tag) {	         
+				$va_parsed_tag_opts = $va_get_specs[$tag]['parsed'];
+				if (substr($tag, 0, 5) === '^join') { 
+					// Set get spec to generate dummy placeholder value (we'll calculate the real value later)
+					// This placeholder ensures we get an accurate count of values we'll need to generate
+					$vs_get_spec = array_shift(explode("~", array_shift(explode(";", $va_parsed_tag_opts['options']['elements']))));
+				} else {
+					$vs_get_spec = $va_get_specs[$tag]['spec'];
+				}
+				if (!preg_match("!^{$vs_relative_to_container}!", $vs_get_spec)) { $vs_get_spec = $vs_relative_to_container.".".$vs_get_spec; }
+
+				$vals = $qr_res->get($vs_get_spec, array_merge($options, $va_parsed_tag_opts['options'], ['sort' => null, 'sortDirection' => null, 'filters' => $va_parsed_tag_opts['filters'], 'returnAsArray' => true, 'returnBlankValues' => true], $va_get_specs[$tag]['isRelated'] ? $va_remove_opts_for_related : []));
+	
+				if (is_array($vals)) {
+					foreach($vals as $vn_index => $vs_val) {
+						$va_tag_vals[$vn_index][$tag] = $vs_val;
+					}
+				}
+			}
+		
+			if (isset($options['sort']) && is_array($options['sort']) && sizeof($options['sort'])) {
+				$va_sortables = array();
+				if (!is_array($va_parsed_tag_opts['options'])) { $va_parsed_tag_opts['options'] = []; }
+				foreach($options['sort'] as $vs_sort_spec) {
+					$va_sortables[] = $qr_res->get($vs_sort_spec, array_merge($options, $va_parsed_tag_opts['options'], ['sort' => '', 'filters' => $va_parsed_tag_opts['filters'], 'sortable' => true, 'returnAsArray' => true, 'returnBlankValues' => true], $va_get_specs[$tag]['isRelated'] ? $va_remove_opts_for_related : []));
+				}
+			
+				if(is_array($va_sortables)) {
+					foreach($va_sortables as $i => $va_sort_values) {
+						if (!is_array($va_sort_values)) { continue; }
+						foreach($va_sort_values as $vn_index => $vs_sort_value) {
+							$va_tag_vals[$vn_index]['__sort__'] .= $vs_sort_value;
+						}
+					}
 				}
 			}
 			
-			if(strlen($pn_index)) {
-				$va_tag_vals = $va_tag_vals[$pn_index];	
+			$va_tag_vals = caSortArrayByKeyInValue($va_tag_vals, ['__sort__'], $vs_sort_direction);
+			
+			if (!caGetOption('skipWhen', $options, false)) { 
+				if ((($start > 0) || ($length > 0)) && ($start < sizeof($va_tag_vals)) && (!$length || ($start + $length <= sizeof($va_tag_vals)))) {
+					 $va_tag_vals = array_slice($va_tag_vals, $start, ($length > 0) ? $length : null);
+				}
+			}
+			
+			if(strlen($index)) {
+				$va_tag_vals = $va_tag_vals[$index];	
 				$vs_relative_to_container = null;
 			}
 		}
 		
-		$va_vals = [];
+		$vals = [];
 		$vb_val_is_referenced = $vb_val_is_set = $vb_rel_type_is_set = false;
 		
 		for($vn_c = 0; $vn_c < $vn_count; $vn_c++) {
-			foreach(array_keys($pa_tags) as $vs_tag) {
-				$vs_get_spec = $va_get_specs[$vs_tag]['spec'];
-				$va_parsed_tag_opts = $va_get_specs[$vs_tag]['parsed'];
-				
-				if ((substr($vs_tag, 0, 5) === '^join')) {
-                        $va_val_list = $va_acc = [];
-                        if ($vs_relative_to_container) {
-                            $va_rel_vs = $pr_res->get($vs_relative_to_container, array_merge($pa_options, $va_parsed_tag_opts['options'], ['filters' => $va_parsed_tag_opts['filters'], 'returnAsArray' => true, 'returnWithStructure' => true]));
-                            foreach($va_rel_vs as $va_rel_v) {
-                                $va_rel_v = array_values($va_rel_v);
-                                $va_val_list[] = DisplayTemplateParser::processJoinTag($va_rel_v[$vn_c], $va_parsed_tag_opts);
-                            }
-                            $vb_val_is_set = true;
-                        } else {
-                            $va_elements = explode(";", caGetOption('elements', $va_parsed_tag_opts['options'], '')); 
-                            $va_labels = explode(";", caGetOption('labels', $va_parsed_tag_opts['options'], '')); 
-                            $vn_max_values_to_show_labels = caGetOption('maxValuesToShowLabels', $va_parsed_tag_opts['options'], null);
-                       
-                            foreach($va_elements as $vs_element) {
-                                $va_directives = explode('~', $vs_element);
-                                $vs_spec = array_shift($va_directives);
-                                if (strlen($vs_v = caProcessTemplateTagDirectives($pr_res->get($vs_spec), $va_directives))) {
-                                    $va_acc[] = $vs_v;
-                                }
-                            }
-                            $va_val_list[] = join(caGetOption('delimiter', $va_parsed_tag_opts['options'], '; '), $va_acc);
-                            $vb_val_is_set = true;
-                        }
-				} else {				
-                    switch(strtolower($vs_get_spec)) {
-                        case 'relationship_typename':
-                            $va_val_list = array();
-                            
-                            if (is_array($va_relationship_type_ids) && is_array($va_relationship_type_ids = array_slice($va_relationship_type_ids, $vn_start)) && ($vn_type_id = $va_relationship_type_ids[$pr_res->currentIndex()])) {
-                                $qr_rels = caMakeSearchResult('ca_relationship_types', array($vn_type_id));
-                                if ($qr_rels->nextHit()) {
-                                    $va_val_list = $qr_rels->get('ca_relationship_types.preferred_labels.'.((caGetOption('orientation', $pa_options, 'LTOR') == 'LTOR') ? 'typename' : 'typename_reverse'), $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
-                                }
-                            } else {
-                                $va_val_list = $pr_res->get('ca_relationship_types.preferred_labels.'.((caGetOption('orientation', $pa_options, 'LTOR') == 'LTOR') ? 'typename' : 'typename_reverse'), $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
-                            }
-                            $vb_rel_type_is_set = true;
-                            break;
-                        case 'relationship_type_id':
-                            if (is_array($va_relationship_type_ids) && is_array($va_relationship_type_ids = array_slice($va_relationship_type_ids, $vn_start)) &&($vn_type_id = $va_relationship_type_ids[$pr_res->currentIndex()])) {
-                                $va_val_list = [$va_relationship_type_ids[$pr_res->currentIndex()]];
-                            } else {
-                                $va_val_list = $pr_res->get('ca_relationship_types.type_id', $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
-                            }
-                            $vb_rel_type_is_set = true;
-                            break;
-                        case 'relationship_typecode':
-                        case 'relationship_type_code':
-                            $va_val_list = array();
-                            if (is_array($va_relationship_type_ids) && is_array($va_relationship_type_ids = array_slice($va_relationship_type_ids, $vn_start)) &&($vn_type_id = $va_relationship_type_ids[$pr_res->currentIndex()])) {
-                                $qr_rels = caMakeSearchResult('ca_relationship_types', array($vn_type_id));
-                                if ($qr_rels->nextHit()) {
-                                    $va_val_list = $qr_rels->get('ca_relationship_types.type_code', $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
-                                }
-                            } else {
-                                $va_val_list = $pr_res->get('ca_relationship_types.type_code', $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
-                            }
-                            $vb_rel_type_is_set = true;
-                            break;
-                        case 'date':		// allows embedding of current date
-                            $va_val_list = [date(caGetOption('format', $va_parsed_tag_opts['options'], 'd M Y'))];
-                            break;
-                        case 'primary':
-                            $va_val_list = [$pr_res->tableName()];
-                            break;
-                        case 'count':
-                            $va_val_list = [$vn_full_value_count];
-                            break;
-                        case 'omitcount':
-                            $va_val_list = [$vn_full_value_count - ($vn_length - $vn_start)];
-                            break;
-                        case 'index':
-                            $va_val_list = [(int)$vn_start + $pr_res->currentIndex() + 1];
-                            break;
-                        default:
-                            if(isset($pa_options['forceValues'][$vs_get_spec][$pr_res->getPrimaryKey()])) { 
-                                $va_val_list = [$pa_options['forceValues'][$vs_get_spec][$pr_res->getPrimaryKey()]];
-                            } elseif ($vs_relative_to_container) {
-                                $va_val_list = [$va_tag_vals[$vn_c][$vs_tag]];
-                            } elseif(strlen($pn_index)) {
-                                $va_val_list = [$va_tag_vals[$vs_tag]];
-                            } else {
-                                $va_val_list = $pr_res->get($vs_get_spec, $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['filters' => $va_parsed_tag_opts['filters'], 'returnAsArray' => true, 'returnWithStructure' => false], $va_get_specs[$vs_tag]['isRelated'] ? $va_remove_opts_for_related : []));
-                                if (!is_array($va_val_list)) { $va_val_list = array(); }
-                            
-                                if (!caGetOption('skipWhen', $pa_options, false)) { 
-                                    if ((($vn_start > 0) || ($vn_length > 0)) && ($vn_start < sizeof($va_val_list)) && (!$vn_length || ($vn_start + $vn_length <= sizeof($va_val_list)))) {
-                                        $va_val_list = array_slice($va_val_list, $vn_start, ($vn_length > 0) ? $vn_length : null);
-                                    }
-                                }
-                            }
-
-                                if (is_array($va_parsed_tag_opts['modifiers']) && (sizeof($va_parsed_tag_opts['modifiers']) > 0)) {
-                                $va_val_list = array_map(function($v) use ($va_parsed_tag_opts) { return caProcessTemplateTagDirectives($v, $va_parsed_tag_opts['modifiers']); }, $va_val_list);
-                            }
-                        
-                            $vb_val_is_referenced = true;														// Flag that a data value is in the template 
-                            if(!$pb_include_blanks) { $va_val_list = array_filter($va_val_list, 'strlen'); }
-                            if(sizeof($va_val_list)) { $vb_val_is_set = true; }									// Flag that the data value was set to something
-                            break;
-                    }
-                }
-				$ps_delimiter = caGetOption('delimiter', $va_opts, ';');
-				
-				if ($vs_relative_to_container) {
-					$va_vals[$vn_c][$vs_tag] = join($ps_delimiter, $va_val_list);
-					if (isset($va_tag_vals[$vn_c]['__sort__'])) {
-						$va_vals[$vn_c]['__sort__'] = $va_tag_vals[$vn_c]['__sort__'];
-					}
+			foreach(array_keys($tags) as $tag) {
+				if ($cv = $orig_cvc[$tag]) {
+					$vals[$tag] = $cv;
 				} else {
-					$va_vals[$vs_tag] = join($ps_delimiter, $va_val_list);
-					if (isset($va_tag_vals[$vn_c]['__sort__'])) {
-						$va_vals['__sort__'] = $va_tag_vals[$vn_c]['__sort__'];
+					$vs_get_spec = $va_get_specs[$tag]['spec'];
+					$va_parsed_tag_opts = $va_get_specs[$tag]['parsed'];
+				
+					if ((substr($tag, 0, 5) === '^join')) {
+							$val_list = $va_acc = [];
+							if ($vs_relative_to_container) {
+								$va_rel_vs = $qr_res->get($vs_relative_to_container, array_merge($options, $va_parsed_tag_opts['options'], ['filters' => $va_parsed_tag_opts['filters'], 'returnAsArray' => true, 'returnWithStructure' => true]));
+								foreach($va_rel_vs as $va_rel_v) {
+									$va_rel_v = array_values($va_rel_v);
+									$val_list[] = DisplayTemplateParser::processJoinTag($va_rel_v[$vn_c], $va_parsed_tag_opts);
+								}
+								$vb_val_is_set = true;
+							} else {
+								$va_elements = explode(";", caGetOption('elements', $va_parsed_tag_opts['options'], '')); 
+								$va_labels = explode(";", caGetOption('labels', $va_parsed_tag_opts['options'], '')); 
+								$vn_max_values_to_show_labels = caGetOption('maxValuesToShowLabels', $va_parsed_tag_opts['options'], null);
+					   
+								foreach($va_elements as $vs_element) {
+									$va_directives = explode('~', $vs_element);
+									$vs_spec = array_shift($va_directives);
+									if (strlen($vs_v = caProcessTemplateTagDirectives($qr_res->get($vs_spec), $va_directives))) {
+										$va_acc[] = $vs_v;
+									}
+								}
+								$val_list[] = join(caGetOption('delimiter', $va_parsed_tag_opts['options'], '; '), $va_acc);
+								$vb_val_is_set = true;
+							}
+					} else {				
+						switch(strtolower($vs_get_spec)) {
+							case 'relationship_typename':
+								$val_list = array();
+							
+								if (is_array($va_relationship_type_ids) && is_array($va_relationship_type_ids = array_slice($va_relationship_type_ids, $start)) && ($vn_type_id = $va_relationship_type_ids[$qr_res->currentIndex()])) {
+									$qr_rels = caMakeSearchResult('ca_relationship_types', array($vn_type_id));
+									if ($qr_rels->nextHit()) {
+										$val_list = $qr_rels->get('ca_relationship_types.preferred_labels.'.((caGetOption('orientation', $options, 'LTOR') == 'LTOR') ? 'typename' : 'typename_reverse'), $va_opts = array_merge($options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
+									}
+								} else {
+									$val_list = $qr_res->get('ca_relationship_types.preferred_labels.'.((caGetOption('orientation', $options, 'LTOR') == 'LTOR') ? 'typename' : 'typename_reverse'), $va_opts = array_merge($options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
+								}
+								$vb_rel_type_is_set = true;
+								break;
+							case 'relationship_type_id':
+								if (is_array($va_relationship_type_ids) && is_array($va_relationship_type_ids = array_slice($va_relationship_type_ids, $start)) &&($vn_type_id = $va_relationship_type_ids[$qr_res->currentIndex()])) {
+									$val_list = [$va_relationship_type_ids[$qr_res->currentIndex()]];
+								} else {
+									$val_list = $qr_res->get('ca_relationship_types.type_id', $va_opts = array_merge($options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
+								}
+								$vb_rel_type_is_set = true;
+								break;
+							case 'relationship_typecode':
+							case 'relationship_type_code':
+								$val_list = array();
+								if (is_array($va_relationship_type_ids) && is_array($va_relationship_type_ids = array_slice($va_relationship_type_ids, $start)) &&($vn_type_id = $va_relationship_type_ids[$qr_res->currentIndex()])) {
+									$qr_rels = caMakeSearchResult('ca_relationship_types', array($vn_type_id));
+									if ($qr_rels->nextHit()) {
+										$val_list = $qr_rels->get('ca_relationship_types.type_code', $va_opts = array_merge($options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
+									}
+								} else {
+									$val_list = $qr_res->get('ca_relationship_types.type_code', $va_opts = array_merge($options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
+								}
+								$vb_rel_type_is_set = true;
+								break;
+							case 'date':		// allows embedding of current date
+								$val_list = [date(caGetOption('format', $va_parsed_tag_opts['options'], 'd M Y'))];
+								break;
+							case 'primary':
+								$val_list = [$qr_res->tableName()];
+								break;
+							case 'count':
+								$val_list = [$vn_full_value_count];
+								break;
+							case 'omitcount':
+								$val_list = [$vn_full_value_count - ($length - $start)];
+								break;
+							case 'index':
+								$val_list = [(int)$start + $qr_res->currentIndex() + 1];
+								break;
+							default:
+								if(isset($options['forceValues'][$vs_get_spec][$qr_res->getPrimaryKey()])) { 
+									$val_list = [$options['forceValues'][$vs_get_spec][$qr_res->getPrimaryKey()]];
+								} elseif ($vs_relative_to_container) {
+									$val_list = [$va_tag_vals[$vn_c][$tag]];
+								} elseif(strlen($index)) {
+									$val_list = [$va_tag_vals[$tag]];
+								} else {
+									$val_list = $qr_res->get($vs_get_spec, $va_opts = array_merge($options, $va_parsed_tag_opts['options'], ['filters' => $va_parsed_tag_opts['filters'], 'returnAsArray' => true, 'returnWithStructure' => false], $va_get_specs[$tag]['isRelated'] ? $va_remove_opts_for_related : []));
+									if (!is_array($val_list)) { $val_list = array(); }
+							
+									if (!caGetOption('skipWhen', $options, false)) { 
+										if ((($start > 0) || ($length > 0)) && ($start < sizeof($val_list)) && (!$length || ($start + $length <= sizeof($val_list)))) {
+											$val_list = array_slice($val_list, $start, ($length > 0) ? $length : null);
+										}
+									}
+								}
+
+								if (is_array($va_parsed_tag_opts['modifiers']) && (sizeof($va_parsed_tag_opts['modifiers']) > 0)) {
+									$val_list = array_map(function($v) use ($va_parsed_tag_opts) { return caProcessTemplateTagDirectives($v, $va_parsed_tag_opts['modifiers']); }, $val_list);
+								}
+						
+								$vb_val_is_referenced = true;														// Flag that a data value is in the template 
+								if(!$include_blanks) { $val_list = array_filter($val_list, 'strlen'); }
+								if(sizeof($val_list)) { $vb_val_is_set = true; }									// Flag that the data value was set to something
+								break;
+						}
 					}
+					$ps_delimiter = caGetOption('delimiter', $va_opts, ';');
+				
+					if ($vs_relative_to_container) {
+						$orig_cvc[$tag][$vn_c] = $cvc[$tag][$vn_c] = $vals[$vn_c][$tag] = join($ps_delimiter, $val_list);
+						if (isset($va_tag_vals[$vn_c]['__sort__'])) {
+							$orig_cvc['__sort__'][$vn_c] = $cvc['__sort__'][$vn_c] = $vals[$vn_c]['__sort__'] = $va_tag_vals[$vn_c]['__sort__'];
+						}
+					} else {
+						$orig_cvc[$tag] = $cvc[$tag] = $vals[$tag] = join($ps_delimiter, $val_list);
+						if (isset($va_tag_vals[$vn_c]['__sort__'])) {
+							$orig_cvc['__sort__'] = $cvc['__sort__'] = $vals['__sort__'] = $va_tag_vals[$vn_c]['__sort__'];
+						}
+					}
+					
+					MemoryCache::save($table."/".$row_id, $cvc, 'DisplayTemplateParserValues');
+					MemoryCache::save($orig_table."/".$orig_row_id, $orig_cvc, 'DisplayTemplateParserValues');
 				}
 			}
 		}
-		
-		if ($vb_rel_type_is_set && $vb_val_is_referenced && !$vb_val_is_set) { return []; }					// Return nothing when relationship type is set and a value is referenced but not set
-
-		return $va_vals;
+	
+		// Return nothing when relationship type is set and a value is referenced but not set
+		if ($vb_rel_type_is_set && $vb_val_is_referenced && !$vb_val_is_set) { return []; }					
+		return $vals;
 	}
 	# -------------------------------------------------------------------
 	/**
@@ -1304,7 +1337,6 @@ class DisplayTemplateParser {
 				$va_codes[$vs_code] = ($va_matches[$vn_i-1] == '|') ? 'OR' : 'AND';
 			}
 		}
-		
 		return $va_codes;
 	}
 	# -------------------------------------------------------------------
