@@ -118,9 +118,11 @@
 					$o_log->logDebug( _t( "[reprocess-media] Running query for '$vs_sql_joins' and '$vs_sql_where' with params '"
 					                      . str_replace(array("\r", "\n"), '',var_export( $va_params, true ) . "'" )) );
 				}
+				
+				$vs_sql_where = ($vs_sql_where) ? " AND deleted = 0" : "WHERE deleted = 0";
 
 				$qr_reps = $o_db->query("
-					SELECT *
+					SELECT representation_id, media
 					FROM ca_object_representations
 					{$vs_sql_joins}
 					{$vs_sql_where}
@@ -154,7 +156,7 @@
 					$t_rep->set('media', $qr_reps->getMediaPath('media', 'original'), array('original_filename' => $vs_original_filename));
 
 					if (is_array($pa_versions) && sizeof($pa_versions)) {
-						$t_rep->update(array('updateOnlyMediaVersions' =>$pa_versions));
+						$t_rep->update(array('updateOnlyMediaVersions' => $pa_versions));
 					} else {
 						$t_rep->update();
 					}
