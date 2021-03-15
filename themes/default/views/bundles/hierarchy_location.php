@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -376,7 +376,7 @@
 		</div>
 <?php
 	}
-		if ((!$vb_read_only && $vb_has_privs && !$vb_batch) && $vb_objects_x_collections_hierarchy_enabled && ($t_subject->tableName() == 'ca_collections')) {
+		if ($show_add_object) {
 ?>
 			<div id="<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-addObject"  class="hierarchyBrowseTab">
 				<div class="hierarchyBrowserMessageContainer">
