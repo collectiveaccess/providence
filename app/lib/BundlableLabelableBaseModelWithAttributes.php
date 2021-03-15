@@ -1334,7 +1334,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		
 		// Bundle names for attributes are element codes. They may be prefixed with 'ca_attribute_' in older installations.
-		// Since various functions tak straight element codes we have to strip the prefix here
+		// Since various functions take straight element codes we have to strip the prefix here
 		$ps_bundle_name_proc = str_replace("ca_attribute_", "", $ps_bundle_name);
 		$va_violations = null;
 		
@@ -2928,9 +2928,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$va_get_related_opts['restrict_to_relationship_types'] = $pa_bundle_settings['restrictToTermsOnCollectionUseRelationshipType'];
 		}
 			
-		if ($s = caGetOption('sort', $pa_options, caGetOption('sort', $pa_bundle_settings, null))) {
-			$va_get_related_opts['sort'] = $s;
-			$va_get_related_opts['sortDirection'] = caGetOption('sortDirection', $pa_options, caGetOption('sortDirection', $pa_bundle_settings, null));
+		if ($sort) {
+			$va_get_related_opts['sort'] = $sort;
+			$va_get_related_opts['sortDirection'] = $sort_direction;
 		}
 		
 		$t_rel = Datamodel::getInstanceByTableName($ps_related_table, true);
@@ -3094,6 +3094,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$o_view->setVar('relationship_types', $t_item_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
 			$o_view->setVar('relationship_types_by_sub_type', $t_item_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
 		}
+
 		$o_view->setVar('t_subject', $this);
 		$va_initial_values = $this->getRelatedBundleFormValues($po_request, $ps_form_name, $ps_related_table, $ps_placement_code, $pa_bundle_settings, $pa_options);
 
@@ -6845,16 +6846,17 @@ $pa_options["display_form_field_tips"] = true;
 	 *		sort = field or attribute to sort on in <table name>.<field or attribute name> format (eg. ca_objects.idno); default is to sort on relevance (aka. sort='_natural')
 	 *		sortDirection = direction to sort results by, either 'asc' for ascending order or 'desc' for descending order; default is 'asc'
 	 *		instance = An instance of the model for $pm_rel_table_name_or_num; if passed makeSearchResult can use it to directly extract model information potentially saving time [Default is null]
+	 *		returnIndex = Return array with result instance (key "result") and list of sorted primary key values (key "index"). [Default is false]
+	 *
 	 * @return SearchResult A search result of for the specified table
 	 */
 	public function makeSearchResult($pm_rel_table_name_or_num, $pa_ids, $pa_options=null) {
 		if (!is_array($pa_ids)) { return null; }
 		
 		if (!isset($pa_options['instance']) || !($t_instance = $pa_options['instance'])) {
-			$pn_table_num = Datamodel::getTableNum($pm_rel_table_name_or_num);
-			if (!($t_instance = Datamodel::getInstanceByTableNum($pn_table_num, true))) { return null; }
+			if (!($t_instance = Datamodel::getInstance($pm_rel_table_name_or_num, true))) { return null; }
 		}
-		$va_ids = array();
+		$va_ids = [];
 		foreach($pa_ids as $vn_k => $vn_id) {
 			if (is_numeric($vn_id)) { 
 				$va_ids[$vn_k] = $vn_id;
@@ -6862,20 +6864,19 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		// sort?
 		if ($pa_sort = caGetOption('sort', $pa_options, null)) {
-			if (!is_array($pa_sort)) { $pa_sort = array($pa_sort); }
+			if (!is_array($pa_sort)) { $pa_sort = [$pa_sort]; }
 			
 			$vo_sort = new BaseFindEngine($this->getDb());
 			$va_ids = $vo_sort->sortHits($va_ids, $t_instance->tableName(), join(';', $pa_sort), caGetOption('sortDirection', $pa_options, 'asc'), $pa_options);
 		}
 		if (!($vs_search_result_class = $t_instance->getProperty('SEARCH_RESULT_CLASSNAME'))) { return null; }
-		if (!class_exists($vs_search_result_class)) { include(__CA_LIB_DIR__.'/Search/'.$vs_search_result_class.'.php'); }
 		$o_data = new WLPlugSearchEngineCachedResult($va_ids, $t_instance->tableNum());
 		/** @var BaseSearchResult $o_res */
 		$o_res = new $vs_search_result_class($t_instance->tableName());	// we pass the table name here so generic multi-table search classes such as InterstitialSearch know what table they're operating over
-		$o_res->init($o_data, array(), $pa_options);
+		$o_res->init($o_data, [], $pa_options);
 
 		if(caGetOption('returnIndex', $pa_options, false)) {
-			return array('result' => $o_res, 'index' => $va_ids);
+			return ['result' => $o_res, 'index' => $va_ids];
 		}
 
 		return $o_res;
