@@ -11508,12 +11508,13 @@ $pa_options["display_form_field_tips"] = true;
 	public static function getIdnoForID($pn_id, $pa_options=null) {
 		$o_trans = caGetOption('transaction', $pa_options, null);
 		if (($t_instance = Datamodel::getInstance(static::class, true)) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
+			$has_access = $t_instance->hasField('access');
 			$o_db = $o_trans ? $o_trans->getDb() : new Db();
-			$qr_res = $o_db->query("SELECT {$vs_idno_fld} FROM ".$t_instance->tableName()." WHERE ".$t_instance->primaryKey()." = ?", [(int)$pn_id]);
+			$qr_res = $o_db->query("SELECT {$vs_idno_fld} ".($has_access ? ', access' : '')." FROM ".$t_instance->tableName()." WHERE ".$t_instance->primaryKey()." = ?", [(int)$pn_id]);
 			
 			$pa_check_access = caGetOption('checkAccess', $pa_options, null);
 			if ($qr_res->nextRow()) {
-			    if ((is_array($pa_check_access) && (sizeof($pa_check_access) > 0) ) && $t_instance->hasField('access') &&  !in_array($qr_res->get('access'), $pa_check_access)) { return false; }
+			    if ($has_access && (is_array($pa_check_access) && (sizeof($pa_check_access) > 0) ) && $t_instance->hasField('access') &&  !in_array($qr_res->get('access'), $pa_check_access)) { return false; }
 				return $qr_res->get($vs_idno_fld);
 			}
 		}
