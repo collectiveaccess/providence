@@ -352,6 +352,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	$is_blank = ((mb_strtolower("[{$blank_val}]") === mb_strtolower($text)) || (mb_strtolower("[BLANK]") === mb_strtolower($text)));
 	 	$is_not_blank = (mb_strtolower("["._t('SET')."]") === mb_strtolower($text));
 	 	
+	 	$word_field = 'sw.word';
+	 	
 	 	// Don't stem if:
 	 	//	1. Stemming is disabled
 	 	//	2. Search for is blank values
@@ -364,6 +366,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 		$text_stem = $this->stemmer->stem($text);
 	 		if (($text !== $text_stem) && ($text_stem[strlen($text_stem)-1] !== '*')) { 
 	 			$text = $text_stem.'*';
+	 			$word_field = 'sw.stem';
 	 		}
 	 	}
 	 	
@@ -378,7 +381,6 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 
 	 	$params = [$subject_tablenum];
 	 	$word_op = '=';
-	 	$word_field = 'sw.word';
 	 	if (is_array($ap) && $is_blank) {
 	 		$params[] = 0;
 	 		$word_field = 'swi.word_id';
