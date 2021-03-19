@@ -3542,7 +3542,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 									caBundleUpdateManager.reloadBundle('history_tracking_current_contents'); 
 									caBundleUpdateManager.reloadBundle('ca_storage_locations_current_contents'); 
 									caBundleUpdateManager.reloadBundle('{$target}'); 
-								}, 3000);
+								}, 2000);
 							}
 					}, 'json');
 				}
