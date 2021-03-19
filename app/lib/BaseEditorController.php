@@ -2730,77 +2730,78 @@ class BaseEditorController extends ActionController {
 					if (!$primary->isReadable($this->request)) {
 						throw new ApplicationException(_t('Access denied'));
 					}
-					$t_pk = Datamodel::primaryKey($target);
-					
-					$is_fk = false;
-					if ($primary->hasField($t_pk)) {
-						if ($id = $primary->get($t_pk)) {
-							$is_fk = true;
-							$t_ids = [$id];
-						} else {
-							$t_ids = [];
-						}
-					} else {
-						$t_ids = $primary->get("{$target}.related.{$t_pk}", ['returnAsArray' => true]);
+					if (!($t_pk = Datamodel::primaryKey($target))) { 
+						throw new ApplicationException(_t('Invalid target'));
 					}
-		
-					if(is_array($t_ids) && sizeof($t_ids)) {
-						$qr_t = caMakeSearchResult($target, $t_ids);
-				
-						while($qr_t->nextHit()) {
-							$t_id = $qr_t->getPrimaryKey();
-							$t_instance = $qr_t->getInstance();
-		
+					
+ 					$is_fk = false;
+ 					$target_id = null;
+ 					if ($primary->hasField($t_pk) && ($target_id = $primary->get($t_pk))) {
+						$is_fk = true;
+					}
+					foreach($policies as $n => $p) {
+						if(!isset($p['elements']) || !isset($p['elements']['ca_storage_locations'])) { continue; }
+						
+						
+						if($is_fk) {
+							$qr_res = caMakeSearchResult($target, [$target_id]);
+						} else {
+							if(!($qr_res = $primary->getContents($n))) { continue; }
+						}
+						while($qr_res->nextHit()) {
+							$t_id = $qr_res->getPrimaryKey();
+							
+							$t_instance = $qr_res->getInstance();
 							if (!($location_id = $t_instance->get('home_location_id'))) { continue; }
 							if (!$t_instance->isSaveable($this->request)) { continue; }
-	
-							foreach($policies as $n => $p) {
-								if(!isset($p['elements']) || !isset($p['elements']['ca_storage_locations'])) { continue; }
-						
-								$pe = $p['elements']['ca_storage_locations'];
-								$d = isset($pe[$t_instance->getTypeCode()]) ? $pe[$t_instance->getTypeCode()] : $pe['__default__'];
-								if (!$is_fk && (!is_array($d) || !isset($d['trackingRelationshipType']))) { $errors[] = $t_id; continue; }
-						
-								// Interstitials?
-								$effective_date = null;
-								$interstitial_values = [];
-								if (is_array($interstitial_elements = caGetOption("setInterstitialElementsOnAdd", $d, null))) {
-									foreach($interstitial_elements as $e) {
-										switch($e) {
-											case 'effective_date':
-												$effective_date = _t('today');
-												break;
-										}
+							
+							$pe = $p['elements']['ca_storage_locations'];
+							$d = isset($pe[$t_instance->getTypeCode()]) ? $pe[$t_instance->getTypeCode()] : $pe['__default__'];
+							if (!$is_fk && (!is_array($d) || !isset($d['trackingRelationshipType']))) { $errors[] = $t_id; continue; }
+				
+							// Interstitials?
+							$effective_date = null;
+							$interstitial_values = [];
+							if (is_array($interstitial_elements = caGetOption("setInterstitialElementsOnAdd", $d, null))) {
+								foreach($interstitial_elements as $e) {
+									switch($e) {
+										case 'effective_date':
+											$effective_date = _t('today');
+											break;
 									}
 								}
-						
-								if (is_array($cv = $t_instance->getCurrentValue($n)) && (($cv['type'] == 'ca_storage_locations') && ($cv['id'] == $location_id))) {
-									$already_home[] = $t_id;
-									continue;
-								}
-						
-								$t_item_rel = $t_instance->addRelationship('ca_storage_locations', $location_id, $d['trackingRelationshipType'], $effective_date);
-								$target::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($this->request, null, null, $t_item_rel, null, $interstitial_elements, ['noTemplate' => true]);
-		
-								if($t_instance->numErrors() > 0) {
-									$errors[] = $t_id;
-								} else {
-									$updated[] = $t_id;
-								}
 							}
-						}	
-						$n = sizeof($updated);
-						$h = sizeof($already_home);
+							if (is_array($cv = $t_instance->getCurrentValue($n)) && (($cv['type'] == 'ca_storage_locations') && ($cv['id'] == $location_id))) {
+								$already_home[] = $t_id;
+								continue;
+							}
 				
-						if($h > 0) {
-							$msg = ($n == 1) ? _t('%1 %2 returned to home location; %3 already home', $n, Datamodel::getTableProperty($target, 'NAME_SINGULAR'), $h) : _t('%1 %2 returned to home locations; %3 already home', $n, Datamodel::getTableProperty($target, 'NAME_PLURAL'), $h);
-						} else {
-							$msg = ($n == 1) ? _t('%1 %2 returned to home location', $n, Datamodel::getTableProperty($target, 'NAME_SINGULAR')) : _t('%1 %2 returned to home locations', $n, Datamodel::getTableProperty($target, 'NAME_PLURAL'));
-						}
-						if (sizeof($errors)) {
-							$msg .= '; '._t('%1 errors', sizeof($errors));
+							if (!($t_item_rel = $t_instance->addRelationship('ca_storage_locations', $location_id, $d['trackingRelationshipType'], $effective_date, null, null, null, ['allowDuplicates' => true]))) {
+								$errors[] = $t_id;
+								continue;
+							}
+							$target::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($this->request, null, null, $t_item_rel, null, $interstitial_elements, ['noTemplate' => true]);
+
+							if($t_instance->numErrors() > 0) {
+								$errors[] = $t_id;
+							} else {
+								$updated[] = $t_id;
+							}
 						}
 					}
+					
+					$n = sizeof($updated);
+					$h = sizeof($already_home);
+			
+					if($h > 0) {
+						$msg =  _t('%1 %2 returned to home location; %3 already home', $n, Datamodel::getTableProperty($target, ($n == 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL'), $h);
+					} else {
+						$msg = _t('%1 %2 returned to home location', $n, Datamodel::getTableProperty($target, ($n == 1)  ? 'NAME_SINGULAR' : 'NAME_PLURAL'));
+					}
+					if (sizeof($errors)) {
+						$msg .= '; '._t('%1 errors', sizeof($errors));
+					}
+					
 					$resp = ['ok' => 1, 'message' => $msg, 'updated' => array_unique($updated), 'errors' => array_unique($errors), 'timestamp' => time()];
 				} else {
 					$resp = ['ok' => 0, 'message' => _t('No policies available'), 'updated' => [], 'errors' => [], 'timestamp' => time()];	

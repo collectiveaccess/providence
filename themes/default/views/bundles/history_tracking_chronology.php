@@ -712,7 +712,7 @@ if($show_entity_controls) {
 		if($show_return_home_controls) {
 ?>			
 			if (!_currentHomeLocation) {
-				_currentHomeLocation = '<?php print addslashes($home_location_idno); ?>';
+				_currentHomeLocation = <?= json_encode($home_location_idno); ?>;
 			}
 			caRelationBundle<?php print $vs_id_prefix; ?>_ca_storage_locations_return_home = caUI.initRelationBundle('#<?php print $vs_id_prefix; ?>', {
 				fieldNamePrefix: '<?php print $vs_id_prefix; ?>_ca_storage_locations_return_home_',
@@ -738,7 +738,7 @@ if($show_entity_controls) {
 					jQuery("#<?php print $vs_id_prefix; ?>").find(".caHistoryTrackingButtonBar").slideUp(250);
 					jQuery("#<?php print $vs_id_prefix; ?>_ca_storage_locations_return_homenew_0").val(1);
 					
-					var msg = '<?php print addslashes(_t('Return to home location ')); ?>';
+					var msg = <?= json_encode(_t('Return to home location ')); ?>;
 					jQuery("#<?php print $vs_id_prefix; ?>_ca_storage_locations_return_home_heading").html(msg + "<em>" + _currentHomeLocation + "</em>");
 				
 				},
