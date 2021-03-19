@@ -108,6 +108,21 @@
 		}
 		# ------------------------------------------------------
 		/**
+		 * Return configuration information for a history tracking policy
+		 *
+		 * @param string $policy The policy code
+		 * 
+		 * @return array Configuration array or null if policy is not available.
+		 */
+		static public function getPolicyConfig($policy) {
+			$history_tracking_policies = self::getHistoryTrackingCurrentValuePolicyConfig();
+			if(isset($history_tracking_policies['policies'][$policy]) && is_array($history_tracking_policies['policies'][$policy])) {
+				return $history_tracking_policies['policies'][$policy];
+			}
+			return null;
+		}
+		# ------------------------------------------------------
+		/**
 		 * Convert policy configuration to bundle config HistoryTrackingCurrentValueTrait::getHistory() can use.
 		 *
 		 * @param array $options Options include:

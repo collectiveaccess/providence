@@ -3478,11 +3478,22 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	/** 
 	 * Used by ca_objects, ca_collections and ca_object_lots bundles
 	 */
-	function caReturnToHomeLocationControlForRelatedBundle($ps_id_prefix, $po_request, $pt_primary, $pt_related, $pt_relation, $pa_initial_values, $ps_policy=null) {
+	function caReturnToHomeLocationControlForRelatedBundle($po_request, $ps_id_prefix, $pt_primary, $ps_policy, $initial_values) {
+		if(!is_array($pconfig = ca_objects::getPolicyConfig($ps_policy))) { return null; }
+		if (!($pt_related = Datamodel::getInstance($pconfig['table'], true))) {  return null; }
+
 		$target = $pt_related->tableName();
 		$policies = array_filter(ca_objects::getHistoryTrackingCurrentValuePoliciesForTable($target), function($v) { return array_key_exists('ca_storage_locations', $v['elements']); });
 		if(!is_array($policies) || !sizeof($policies)) { return ''; }
 		if (!$ps_policy) { $ps_policy = $target::getDefaultHistoryTrackingCurrentValuePolicy(); }
+		if(is_object($initial_values)) {
+			$iv = [];
+			while($initial_values->nextHit()) {
+				$iv[] = ['object_id' => $initial_values->get('ca_objects.object_id')];
+			}
+			$initial_values->seek(0);
+			$initial_values = $iv;
+		}
 
 		$settings = $target::policy2bundleconfig(['policy' => $ps_policy]);
 		$interstitials = caGetOption('ca_storage_locations_setInterstitialElementsOnAdd', $settings, null);
@@ -3498,7 +3509,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 
 		$vs_buf .= "<div id='{$ps_id_prefix}_editor_bundle_return_to_home_controls' class='editorBundleReturnToHomeControls'>".
 			ca_storage_locations::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($po_request, $ps_id_prefix, $pt_related->tableName(), $settings, ['placement_code' => $ps_id_prefix, 'noTemplate' => true]).
-			caJSButton($po_request, __CA_NAV_ICON_GO__, _t("Apply"), "{$ps_id_prefix}_return_to_home_locations_execute", ['onclick' => "caReturnToHomeLocation{$ps_id_prefix}(); return false;"], ['size' => '15px']).
+			caJSButton($po_request, __CA_NAV_ICON_GO__, _t("Apply"), "{$ps_id_prefix}_return_to_home_locations_execute", ['onclick' => "caReturnToHomeLocation{$ps_id_prefix}(); return false;"], ['size' => '15px']).caJSButton($po_request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), "{$ps_id_prefix}_return_to_home_locations_execute", ['onclick' => "caReturnToHomeLocationToggleForm{$ps_id_prefix}(); return false;"], ['size' => '15px']).
 			"</div>\n"; 
 		$vs_buf .= "
 			<script type='text/javascript'>

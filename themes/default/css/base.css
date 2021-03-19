@@ -1242,11 +1242,12 @@ div.formLabelUploadSizeNote {
 .bundleSubLabel{
 	clear:both;
 	background-color:#fbfbfb;
-	padding:8px 8px 0px 10px;
+	padding:12px 7px 0px 7px;
 	position:relative;
 	font-weight:normal;
 	font-size:11px;
 	line-height:1em;
+	margin-top: 0px;
 }
 .bundleSubLabel select, .bundleSubLabel .editorBundlePrintControl select, .bundleSubLabel .editorBundleSortControl select{
 	position:relative;
@@ -1283,7 +1284,8 @@ div.formLabelUploadSizeNote {
 	border: 1px dotted #cccccc;
 	background: #fff;
 	padding: 5px 5px 5px 10px;
-	width: 692px;
+	width: 694px;
+	margin-bottom: 10px;
 }
 
 .editorBundleReturnToHomeControlsMessage {
