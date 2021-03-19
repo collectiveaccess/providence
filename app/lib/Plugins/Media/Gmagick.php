@@ -1519,7 +1519,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 					break;
 			}
 			
-			$this->handle->rotateImage(caGetOption('background', $this->properties, "#FFFFFF"), $rotation);
+			if ($rotation) { $this->handle->rotateImage(caGetOption('background', $this->properties, "#FFFFFF"), $rotation); }
 						
 			if (($rotation) && (abs($rotation) === 90)) {
 				$w = $this->properties["width"]; $h = $this->properties["height"];
