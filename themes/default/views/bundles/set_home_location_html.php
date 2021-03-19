@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020 Whirl-i-Gig
+ * Copyright 2020-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -113,8 +113,8 @@
 				}
 			).click(function() { this.select() });
 			
-			_currentHomeLocation = '<?php print addslashes($home_location_idno); ?>';
-			jQuery("#SetHomeLocationHierarchyBrowserSelectionMessage").html('<?php print addslashes($home_location_idno ? str_replace('%', $home_location_idno, $home_location_message) : _t('Home location is not set')); ?>');
+			_currentHomeLocation = <?= json_encode($home_location_idno); ?>;
+			jQuery("#SetHomeLocationHierarchyBrowserSelectionMessage").html(<?=json_encode($home_location_idno ? str_replace('%', $home_location_idno, $home_location_message) : _t('Home location is not set')); ?>);
 		}
 	}
 	
@@ -125,7 +125,7 @@
 			{ 'location_id': new_home_location_id, '<?= $t_item->primaryKey(); ?>': <?php print $t_item->getPrimaryKey(); ?> },
 			function(data, textStatus, jqXHR) {
 				if(data && data['ok'] && (parseInt(data['ok']) == 1)) {
-					var home_location_message = '<?php print addslashes($home_location_message); ?>';
+					var home_location_message = <?= json_encode($home_location_message); ?>;
 					caSetHomeLocationPanel.hidePanel();
 					
 					_currentHomeLocation = data.label;
