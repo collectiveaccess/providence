@@ -52,7 +52,7 @@
 		displayFiles: true,
 		allowFileSelection: true,
 	
-		initItemID: null,
+		initItemID: <?= json_encode($this->getVar('lastPath')); ?>,
 		indicator: <?= json_encode(caNavIcon(__CA_NAV_ICON_SPINNER__, 1)); ?>
 	});
 </script>

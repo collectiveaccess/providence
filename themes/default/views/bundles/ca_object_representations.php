@@ -317,7 +317,7 @@
 ?>
 				</div>
 			</div>
-			<input type="text" id="<?= $id_prefix; ?>MediaRefs{n}" name="<?= $id_prefix; ?>_mediarefs{n}" size="100"/>
+			<input type="hidden" id="<?= $id_prefix; ?>MediaRefs{n}" name="<?= $id_prefix; ?>_mediarefs{n}"/>
 			<br class="clear"/>
 		</div>
 		

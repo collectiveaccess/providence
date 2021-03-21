@@ -4246,6 +4246,7 @@ if (!$vb_batch) {
                             $va_file_list = $_FILES;
                             foreach($_REQUEST as $vs_key => $vs_value) {
                                 if (preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) {
+                                	if(!isURL($vs_value, ['strict' => true, 'schemes' => ['http', 'https']])) { continue; }
                                     $va_file_list[$vs_key] = array(
                                         'url' => $vs_value,
                                         'index' => (int)$va_matches[1]
@@ -4253,13 +4254,13 @@ if (!$vb_batch) {
                                     );
                                 } elseif(preg_match('/^'.$vs_prefix_stub.'media_new_([\d]+)$/', $vs_key, $va_matches)) {
                                     $va_file_list[$vs_key] = array(
-                                        'tmp_name' => $vs_value,
+                                        'tmp_name' => escapeshellcmd($vs_value),
                                         'name' => $vs_value,
                                         'index' => (int)$va_matches[1]
                                     );
                                 } elseif(preg_match('/^'.$vs_prefix_stub.'autocompletenew_([\d]+)$/', $vs_key, $va_matches)){
 									$va_file_list[$vs_key] = array(
-										'tmp_name' => $vs_value,
+										'tmp_name' => escapeshellcmd($vs_value),
 										'name' => $vs_value,
                                         'index' => (int)$va_matches[1]
 									);
@@ -4267,7 +4268,7 @@ if (!$vb_batch) {
 									$files = explode(";", $vs_value);
 									foreach($files as $f) {
 										$va_file_list["{$vs_key}_{$file_index}"] = [		// Add numeric suffix to allow for multiple uploads in a single request
-											'tmp_name' => $f,
+											'tmp_name' => escapeshellcmd($f),
 											'name' => $f,
                                         	'index' => (int)$va_matches[1]
 										];
@@ -4312,19 +4313,23 @@ if (!$vb_batch) {
                                     $this->addRelationship('ca_object_representations', $vn_existing_rep_id, $vn_type_id);
                                 } else {
                                     if ($vb_allow_fetching_of_urls && ($vs_path = $va_values['url'])) {
+                                    	// Is remote URL
                                         $va_tmp = explode('/', $vs_path);
                                         $vs_original_name = array_pop($va_tmp);
                                     } elseif(preg_match("!^userMedia".$po_request->getUserID()."!", $va_values['tmp_name'])) {
+                                    	// Is user-uploaded media
                                     	if (!is_writeable($vs_tmp_directory = $po_request->config->get('ajax_media_upload_tmp_directory'))) {
 											$vs_tmp_directory = caGetTempDirPath();
 										}
                                     	$vs_path = $vs_tmp_directory.'/'.$va_values['tmp_name'];
                                     	$md = json_decode(@file_get_contents("{$vs_path}_metadata"), true);
                                         $vs_original_name = $md['original_filename'];
-                                    } elseif(($vs_key !== 'empty') && ($vs_tmp_directory = $po_request->config->get('batch_media_import_root_directory'))) {
+                                    } elseif(($vs_key !== 'empty') && ($vs_tmp_directory = $po_request->config->get('batch_media_import_root_directory')) && file_exists("{$vs_tmp_directory}/{$va_values['tmp_name']}")) {
+                                    	// Is user-selected file from batch media import directory
                                         $vs_path = "{$vs_tmp_directory}/{$va_values['tmp_name']}";
                                         $vs_original_name = pathinfo($va_values['name'], PATHINFO_BASENAME);
                                     } else {
+                                    	// Path is not valid
                                     	$vs_path = $vs_original_name = null;
                                     }
                                     
