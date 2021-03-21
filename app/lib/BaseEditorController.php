@@ -2670,7 +2670,7 @@ class BaseEditorController extends ActionController {
 	 * 
 	 */
 	public function MediaBrowser($options=null) {
-		
+		$this->view->setVar('lastPath', Session::getVar('lastMediaImportDirectoryPath'));
 		$this->render('../generic/representation_media_browser_html.php');
 	}
 	# -------------------------------------------------------
