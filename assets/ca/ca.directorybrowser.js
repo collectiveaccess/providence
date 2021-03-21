@@ -83,6 +83,7 @@ var caUI = caUI || {};
 			
 			levelLists: [],
 			selectedItemIDs: [],
+			itemInfoByLevel: [],
 			
 			_numOpenLoads: 0,					// number of AJAX loads pending
 			_openLoadsForLevel:[],				// counts of loads pending per-level
@@ -177,9 +178,7 @@ var caUI = caUI || {};
 			var newLevelList = "<ul class='" + that.className + "' id='" + newLevelListID + "'></ul>";
 			
 			jQuery('#' + that.container + '_scrolling_container').append(newLevelDiv);
-			jQuery('#' + newLevelDivID).data('level', level);
-			jQuery('#' + newLevelDivID).data('parent_id', item_id);
-			jQuery('#' + newLevelDivID).append(newLevelList);
+			jQuery('#' + newLevelDivID).data('level', level).data('parent_id', item_id).append(newLevelList);
 			
 			that.showIndicator(newLevelDivID);
 
@@ -312,6 +311,8 @@ var caUI = caUI || {};
 					
 					var foundSelected = false;
 					jQuery('#' + newLevelDivID).data('itemCount', data['_itemCount']);
+					console.log("d", data);
+					that.itemInfoByLevel[level] = data;
 					jQuery.each(data, function(i, item) {
 						if (!item) { return; }
 						if (item['item_id']) {
@@ -623,10 +624,28 @@ var caUI = caUI || {};
 			return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
 		}
 		// --------------------------------------------------------------------------------
-		// Returns database id (the primary key in the database, *NOT* the DOM ID) of currently selected item
+		// Returns currently selected item
 		//
 		that.getSelectedItemID = function() {
 			return that.selectedItemIDs[that.selectedItemIDs.length - 1];
+		}
+		// --------------------------------------------------------------------------------
+		// Returns path of selected item (parents + current selection as array
+	    //
+		that.getSelectedPath = function() {
+			return that.selectedItemIDs;
+		}
+		// --------------------------------------------------------------------------------
+		// Returns path of selected item (parents + current selection as array
+	    //
+		that.getSelectedPath = function() {
+			return that.selectedItemIDs;
+		}
+		// --------------------------------------------------------------------------------
+		// Returns path of selected item (parents + current selection as array
+	    //
+		that.getInfoForSelectedItem = function() {
+			return that.itemInfoByLevel[that.selectedItemIDs.length - 1][that.getSelectedItemID()];
 		}
 		// --------------------------------------------------------------------------------
 		// Returns the number of levels that are currently displayed

@@ -4321,9 +4321,9 @@ if (!$vb_batch) {
                                     	$vs_path = $vs_tmp_directory.'/'.$va_values['tmp_name'];
                                     	$md = json_decode(@file_get_contents("{$vs_path}_metadata"), true);
                                         $vs_original_name = $md['original_filename'];
-                                    } elseif($vs_key !== 'empty') {
-                                        $vs_path = $va_values['tmp_name'];
-                                        $vs_original_name = $va_values['name'];
+                                    } elseif(($vs_key !== 'empty') && ($vs_tmp_directory = $po_request->config->get('batch_media_import_root_directory'))) {
+                                        $vs_path = "{$vs_tmp_directory}/{$va_values['tmp_name']}";
+                                        $vs_original_name = pathinfo($va_values['name'], PATHINFO_BASENAME);
                                     } else {
                                     	$vs_path = $vs_original_name = null;
                                     }
@@ -4360,8 +4360,12 @@ if (!$vb_batch) {
                                     // Get user-specified center point (images only)
                                     $vn_center_x = $po_request->getParameter($vs_prefix_stub.'center_x_new_'.$va_matches[1], pString);
                                     $vn_center_y = $po_request->getParameter($vs_prefix_stub.'center_y_new_'.$va_matches[1], pString);
-                        
-                                    $t_rep = $this->addRepresentation($vs_path, $vn_rep_type_id, $vals['locale_id'], $vals['status'], $vals['access'], $vn_is_primary, array_merge($vals, ['name' => $vals['rep_label']]), array('original_filename' => $vs_original_name, 'returnRepresentation' => true, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vn_type_id, 'mapping_id' => $vn_object_representation_mapping_id));	// $vn_type_id = *relationship* type_id (as opposed to representation type)
+                        			
+                        			
+                        			$files = is_dir($vs_path) ? caGetDirectoryContentsAsList($vs_path) : [$vs_path];
+                        			foreach($files as $f) {
+                                   		$t_rep = $this->addRepresentation($f, $vn_rep_type_id, $vals['locale_id'], $vals['status'], $vals['access'], $vn_is_primary, array_merge($vals, ['name' => $vals['rep_label']]), array('original_filename' => $vs_original_name, 'returnRepresentation' => true, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vn_type_id, 'mapping_id' => $vn_object_representation_mapping_id));	// $vn_type_id = *relationship* type_id (as opposed to representation type)
+                                   	}
                                     
                                     if ($this->numErrors()) {
                                         $po_request->addActionErrors($this->errors(), $vs_f, 'new_'.$va_matches[1]);
@@ -6027,11 +6031,6 @@ if (!$vb_batch) {
 						if (in_array($qr_res->get($vs_key), $pa_primary_ids[$vs_related_table])) { continue; }
 					}
 					
-					// if ($ps_return_as !== 'data') {
-// 						$va_rels[] = $qr_res->get($t_rel_item->primaryKey());
-// 						continue;
-// 					}
-					
 					$va_row = $qr_res->getRow();
 					$vn_id = $va_row[$vs_key].'/'.$va_row['row_id'];
 					$vs_sort_key = $qr_res->get($vs_sort_fld);
@@ -6392,7 +6391,6 @@ if (!$vb_batch) {
 			
 			if (!is_null($pn_count)) { $pn_count = $qr_res->numRows(); }
 			
-			$total = $qr_res->numRows();
 			if ($vb_uses_relationship_types)  {
 				$va_rel_types = $t_rel->getRelationshipInfo($t_tmp->tableName());
 				if(method_exists($t_tmp, 'getLeftTableName')) {
@@ -6410,7 +6408,7 @@ if (!$vb_batch) {
 			$va_relation_ids = $va_rels_for_id_by_date = [];
 			while($qr_res->nextRow()) {
 				$va_rels_for_id = [];
-				if (($vn_c >= $pn_limit) && (($total > 1000) || !is_array($pa_sort_fields))) { break; }
+				if (($vn_c >= $pn_limit) && !is_array($pa_sort_fields)) { break; }
 				
 				if (is_array($pa_primary_ids) && is_array($pa_primary_ids[$vs_related_table])) {
 					if (in_array($qr_res->get($vs_key), $pa_primary_ids[$vs_related_table])) { continue; }

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020 Whirl-i-Gig
+ * Copyright 2020-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,6 +28,7 @@
 	AssetLoadManager::register('fileupload');
 	AssetLoadManager::register('sortableUI');
 	AssetLoadManager::register('3dmodels');
+	AssetLoadManager::register('directoryBrowser');
 	
 	$upload_max_filesize = caFormatFileSize(caReturnValueInBytes(ini_get( 'upload_max_filesize' )));
 	
@@ -270,6 +271,8 @@
 						<input type="file" style="display: none;" id="<?= $id_prefix; ?>UploadFileControl{n}" multiple/>
 						<div id="<?= $id_prefix; ?>UploadAreaMessage{n}" class="mediaUploadAreaMessage"> </div>
 					</div>
+					
+					<a href="#" onclick='<?= $id_prefix; ?>showMediaBrowser{n}(); return false;'>Choose media</a>
 				</div>
 				<div class="mediaUploadEditArea">
 	
@@ -314,12 +317,13 @@
 ?>
 				</div>
 			</div>
-			<input type="hidden" id="<?= $id_prefix; ?>MediaRefs{n}" name="<?= $id_prefix; ?>_mediarefs{n}"/>
+			<input type="text" id="<?= $id_prefix; ?>MediaRefs{n}" name="<?= $id_prefix; ?>_mediarefs{n}" size="100"/>
 			<br class="clear"/>
 		</div>
 		
 		<script type="text/javascript">
 			var <?= $id_prefix; ?>MUM{n}; 
+			var <?= $id_prefix; ?>MediaBrowserPanel;
 			jQuery(document).ready(function() {
 				<?= $id_prefix; ?>MUM{n} = caUI.initMediaUploadManager({
 					fieldNamePrefix: '<?= $id_prefix; ?>',
@@ -340,6 +344,12 @@
 					}
 				});
 			});
+
+			function <?= $id_prefix;?>showMediaBrowser{n}() {
+				<?= $id_prefix; ?>MediaBrowserPanel.showPanel('<?= caNavUrl($this->request, '*', '*', 'MediaBrowser'); ?>', function(d) { 
+					<?= $id_prefix; ?>MUM{n}.addFiles(oDirBrowser.getSelectedPath().join('/'));
+				}, true, null, {n: '{n}'});
+			}
 		</script>
 	</textarea>
 	
@@ -420,5 +430,31 @@
 			}
 		
 		});
+		if (caUI.initPanel) {
+			<?= $id_prefix; ?>MediaBrowserPanel = caUI.initPanel({ 
+				panelID: "caMediaBrowserPanel",						/* DOM ID of the <div> enclosing the panel */
+				panelContentID: "caMediaBrowserPanelContentArea",		/* DOM ID of the content area <div> in the panel */
+				exposeBackgroundColor: "#000000",				
+				exposeBackgroundOpacity: 0.7,					
+				panelTransitionSpeed: 400,						
+				closeButtonSelector: ".close",
+				center: true,
+				onOpenCallback: function() {
+					jQuery("#topNavContainer").hide(250);
+				},
+				onCloseCallback: function() {
+					jQuery("#topNavContainer").show(250);
+				}
+			});
+		}
 	});
 </script>
+
+<div id="caMediaBrowserPanel" class="caMediaBrowserPanel"> 
+	
+	<div class='dialogHeader'><?php print _t('Choose media'); ?></div>
+	<div id="caMediaBrowserPanelContentArea">
+	
+	</div>
+	
+</div>

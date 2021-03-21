@@ -114,8 +114,9 @@ caUI.panelCount = 0;
 		}
 		
 		that.hidePanel = function(opts) {
+		    if(!opts) { opts = {}; }
 			caUI.panelCount--;
-			if (that.onCloseCallback) {
+			if (that.onCloseCallback && !opts['dontUseCallback']) {
 				that.onCloseCallback(that.callbackData);
 			}
 			that.setZoom(false);

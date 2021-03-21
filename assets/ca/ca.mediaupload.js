@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020 Whirl-i-Gig
+ * Copyright 2020-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -88,15 +88,7 @@ var caUI = caUI || {};
 					}, 1500);
 				}
 				
-				var existing_files = jQuery('#' + that.fieldNamePrefix + 'MediaRefs' + that.index).val();
-				var files = (existing_files && existing_files.length > 0) ? existing_files.split(";") : [];
-				files = files.concat(data.result.files).filter((v, i, a) => a.indexOf(v) === i);	// unique files only
-				
-				var m = "<div class='" + that.uploadTotalMessageClass + "'>" + that.uploadTotalMessage.replace("%count", files.length) + "</div>";
-				jQuery('#' + that.fieldNamePrefix + 'UploadAreaMessage' + that.index).html(that.uploadAreaMessage + ((files.length > 0) ? m : ''));
-				jQuery('#' + that.fieldNamePrefix + 'MediaRefs' + that.index).val(files.join(";"));
-				
-				jQuery('#' + that.fieldNamePrefix + 'UploadCount' + that.index).data('count', files.length);
+				that.addFiles(data.result.files);
 			},
 			progressall: function (e, data) {
 				var m = "<div class='" + that.uploadTotalMessageClass + "'>" + that.uploadAreaIndicator.replace("%percent", parseInt(data.loaded / data.total * 100, 10) + "%") + "</div>";
@@ -107,6 +99,18 @@ var caUI = caUI || {};
 		// --------------------------------------------------------------------------------
 		// Methods
 		// --------------------------------------------------------------------------------
+		that.addFiles = function(newFiles) {
+		    var existing_files = jQuery('#' + that.fieldNamePrefix + 'MediaRefs' + that.index).val();
+            var files = (existing_files && existing_files.length > 0) ? existing_files.split(";") : [];
+            files = files.concat(newFiles).filter((v, i, a) => a.indexOf(v) === i);	// unique files only
+            
+            var m = "<div class='" + that.uploadTotalMessageClass + "'>" + that.uploadTotalMessage.replace("%count", files.length) + "</div>";
+            jQuery('#' + that.fieldNamePrefix + 'UploadAreaMessage' + that.index).html(that.uploadAreaMessage + ((files.length > 0) ? m : ''));
+            jQuery('#' + that.fieldNamePrefix + 'MediaRefs' + that.index).val(files.join(";"));
+            
+            jQuery('#' + that.fieldNamePrefix + 'UploadCount' + that.index).data('count', files.length);
+		};
+		
 		that.openEditor = function() {
 			jQuery('#' + that.fieldNamePrefix + '_rep_info_ro' + that.index).hide();
 			jQuery('#' + that.fieldNamePrefix + '_MediaMetadataEditButton' + that.index).hide();

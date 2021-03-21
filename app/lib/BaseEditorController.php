@@ -2669,6 +2669,14 @@ class BaseEditorController extends ActionController {
 	/**
 	 * 
 	 */
+	public function MediaBrowser($options=null) {
+		
+		$this->render('../generic/representation_media_browser_html.php');
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 */
 	public function SetHomeLocation($options=null) {
 		list($vn_subject_id, $t_subject) = $this->_initView();
 		if (!$t_subject->isLoaded()) { 
