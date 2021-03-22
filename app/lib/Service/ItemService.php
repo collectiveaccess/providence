@@ -903,29 +903,11 @@ class ItemService extends BaseJSONService {
 					}
 				}
 			}
-
-			if(($t_instance instanceof RepresentableBaseModel) && isset($pa_data['representations']) && is_array($pa_data['representations'])) {
-				foreach($pa_data['representations'] as $va_rep) {
-					if(!isset($va_rep['media']) || (!file_exists($va_rep['media']) && !isURL($va_rep['media']))) { continue; }
-
-					if(!($vn_rep_locale_id = $t_locales->localeCodeToID($va_rep['locale']))) {
-						$vn_rep_locale_id = ca_locales::getDefaultCataloguingLocaleID();
-					}
-
-					$t_instance->addRepresentation(
-						$va_rep['media'],
-						caGetOption('type', $va_rep, 'front'), // this might be retarded but most people don't change the representation type list
-						$vn_rep_locale_id,
-						caGetOption('status', $va_rep, 0),
-						caGetOption('access', $va_rep, 0),
-						(bool)$va_rep['primary'],
-						is_array($va_rep['values']) ? $va_rep['values'] : null
-					);
-				}
-			}
 		}
-		
-        if(($ps_table == 'ca_sets') && is_array($pa_data["set_content"]) && sizeof($pa_data["set_content"])>0) {
+
+		$this->processRepresentations( $t_instance, $pa_data, $t_locales );
+
+		if(($ps_table == 'ca_sets') && is_array($pa_data["set_content"]) && sizeof($pa_data["set_content"])>0) {
             $vn_table_num = $t_instance->get('table_num');
             if($t_set_table =  Datamodel::getInstance($vn_table_num)) {
                 $vs_set_table = $t_set_table->tableName();
@@ -1097,6 +1079,11 @@ class ItemService extends BaseJSONService {
 				}
 			}
 		}
+
+		if ($va_post['remove_all_representations'] && $t_instance instanceof RepresentableBaseModel) {
+			$t_instance->removeAllRepresentations();
+		}
+		$this->processRepresentations($t_instance, $va_post, $t_locales);
 		
 		if(($ps_table == 'ca_sets') && is_array($va_post["set_content"]) && sizeof($va_post["set_content"])>0) {
             $vn_table_num = $t_instance->get('table_num');
@@ -1156,4 +1143,38 @@ class ItemService extends BaseJSONService {
 		}
 	}
 	# -------------------------------------------------------
+
+	/**
+	 * Wrapper for the addRepresentation method.
+	 * @param BaseModel  $t_instance
+	 * @param array|null $pa_data
+	 * @param ca_locales $t_locales
+	 *
+	 */
+	protected function processRepresentations( BaseModel $t_instance, ?array $pa_data, ca_locales $t_locales ) {
+		if ( ( $t_instance instanceof RepresentableBaseModel ) && isset( $pa_data['representations'] )
+		     && is_array( $pa_data['representations'] )
+		) {
+			foreach ( $pa_data['representations'] as $va_rep ) {
+				if ( ! isset( $va_rep['media'] ) || ( ! file_exists( $va_rep['media'] ) && ! isURL( $va_rep['media'] ) ) ) {
+					continue;
+				}
+
+				if ( ! ( $vn_rep_locale_id = $t_locales->localeCodeToID( $va_rep['locale'] ) ) ) {
+					$vn_rep_locale_id = ca_locales::getDefaultCataloguingLocaleID();
+				}
+
+				$t_instance->addRepresentation(
+					$va_rep['media'],
+					caGetOption( 'type', $va_rep, 'front' ),
+					// this might be retarded but most people don't change the representation type list
+					$vn_rep_locale_id,
+					caGetOption( 'status', $va_rep, 0 ),
+					caGetOption( 'access', $va_rep, 0 ),
+					(bool) $va_rep['primary'],
+					is_array( $va_rep['values'] ) ? $va_rep['values'] : null
+				);
+			}
+		}
+	}
 }
