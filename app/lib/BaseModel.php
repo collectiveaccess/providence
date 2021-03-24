@@ -9147,7 +9147,7 @@ $pa_options["display_form_field_tips"] = true;
 				$t_item_rel->set($t_item_rel->getLeftTableFieldName(), $this->getPrimaryKey());
 				$t_item_rel->set($t_item_rel->getRightTableFieldName(), $pn_rel_id);
 			}
-			$t_item_rel->set($t_item_rel->getTypeFieldName(), $pn_type_id);		// TODO: verify type_id based upon type_id's of each end of the relationship
+			if($t_item_rel->hasField($f = $t_item_rel->getTypeFieldName())) { $t_item_rel->set($f, $pn_type_id); }		// TODO: verify type_id based upon type_id's of each end of the relationship
 			if(!is_null($ps_effective_date)){ $t_item_rel->set('effective_date', $ps_effective_date); }
 			if(!is_null($ps_source_info)){ $t_item_rel->set("source_info",$ps_source_info); }
 			$t_item_rel->insert();
@@ -9174,7 +9174,7 @@ $pa_options["display_form_field_tips"] = true;
 					}
 					
 					$t_item_rel->set('rank', $pn_rank);	
-					$t_item_rel->set($t_item_rel->getTypeFieldName(), $pn_type_id);		// TODO: verify type_id based upon type_id's of each end of the relationship
+					if($t_item_rel->hasField($f = $t_item_rel->getTypeFieldName())) { $t_item_rel->set($f, $pn_type_id); }		// TODO: verify type_id based upon type_id's of each end of the relationship
 					if(!is_null($ps_effective_date)){ $t_item_rel->set('effective_date', $ps_effective_date); }
 					if(!is_null($ps_source_info)){ $t_item_rel->set("source_info",$ps_source_info); }
 					$t_item_rel->insert();
@@ -9199,7 +9199,7 @@ $pa_options["display_form_field_tips"] = true;
 						} else {
 							$t_item_rel->set($t_item_rel->getLeftTableFieldName(), $this->getPrimaryKey());
 							$t_item_rel->set($t_item_rel->getRightTableFieldName(), $pn_rel_id);
-							$t_item_rel->set($t_item_rel->getTypeFieldName(), $pn_type_id);	
+							if($t_item_rel->hasField($f = $t_item_rel->getTypeFieldName())) { $t_item_rel->set($f, $pn_type_id); }
 							$t_item_rel->insert();
 							
 							if ($t_item_rel->numErrors() > 0) {
@@ -9291,7 +9291,8 @@ $pa_options["display_form_field_tips"] = true;
 					$t_item_rel->set($t_item_rel->getRightTableFieldName(), $pn_rel_id);
 				}
 				if (!is_null($pn_rank)) { $t_item_rel->set('rank', $pn_rank);	}
-				if (!is_null($pn_type_id)) { $t_item_rel->set($t_item_rel->getTypeFieldName(), $pn_type_id);}	// TODO: verify type_id based upon type_id's of each end of the relationship
+
+				if (!is_null($pn_type_id) && $t_item_rel->hasField($f = $t_item_rel->getTypeFieldName())) { $t_item_rel->set($f, $pn_type_id);}	// TODO: verify type_id based upon type_id's of each end of the relationship
 				if(!is_null($ps_effective_date)){ $t_item_rel->set('effective_date', $ps_effective_date); }
 				if(!is_null($pa_source_info)){ $t_item_rel->set("source_info",$pa_source_info); }
 				
@@ -9321,7 +9322,7 @@ $pa_options["display_form_field_tips"] = true;
 						}
 						
 						if (!is_null($pn_rank)) { $t_item_rel->set('rank', $pn_rank);	}
-						if (!is_null($pn_type_id)) { $t_item_rel->set($t_item_rel->getTypeFieldName(), $pn_type_id); }		// TODO: verify type_id based upon type_id's of each end of the relationship
+						if (!is_null($pn_type_id) && ($f = $t_item_rel->getTypeFieldName())) { $t_item_rel->set($f, $pn_type_id); }		// TODO: verify type_id based upon type_id's of each end of the relationship
 						if(!is_null($ps_effective_date)){ $t_item_rel->set('effective_date', $ps_effective_date); }
 						if(!is_null($pa_source_info)){ $t_item_rel->set("source_info",$pa_source_info); }
 						
