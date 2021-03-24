@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,17 +29,10 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
- 
+
 require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 require_once(__CA_LIB_DIR__.'/RepresentableBaseModel.php');
 require_once(__CA_LIB_DIR__.'/IHierarchy.php');
-require_once(__CA_MODELS_DIR__.'/ca_lists.php');
-require_once(__CA_MODELS_DIR__.'/ca_locales.php');
-
 
 BaseModel::$s_ca_models_definitions['ca_list_items'] = array(
  	'NAME_SINGULAR' 	=> _t('list item'),
@@ -403,6 +396,8 @@ $_ca_list_items_settings = array(
 );
 
 class ca_list_items extends RepresentableBaseModel implements IHierarchy {
+	use ModelSettings;
+	
 	# ------------------------------------------------------
 	# --- Object attribute properties
 	# ------------------------------------------------------
@@ -530,12 +525,6 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 
 	protected $FIELDS;
 	
-	
-	/**
-	 * Settings delegate - implements methods for setting, getting and using 'settings' var field
-	 */
-	public $SETTINGS;
-	
 	# ------------------------------------------------------
 	# --- Constructor
 	#
@@ -548,7 +537,6 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	#
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
-		$this->SETTINGS = new ModelSettings($this, 'settings', array());
 		parent::__construct($pn_id);	# call superclass constructor
 	}
 	# ------------------------------------------------------
@@ -600,7 +588,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	private function _setSettingsForList() {
 		global $_ca_list_items_settings;
 		if (isset($_ca_list_items_settings[$vs_list_code = caGetListCode($this->get('list_id'))])) {
-			$this->SETTINGS = new ModelSettings($this, 'settings', $_ca_list_items_settings[$vs_list_code]);
+			$this->setAvailableSettings($_ca_list_items_settings[$vs_list_code]);
 		}
 	}
  	# ------------------------------------------------------
@@ -931,19 +919,4 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 
 		return false;
 	}
-	
-	# ------------------------------------------------------
-	# Settings
-	# ------------------------------------------------------
-	/**
-	 * Reroutes calls to method implemented by settings delegate to the delegate class
-	 */
-	public function __call($ps_name, $pa_arguments) {
-		if (method_exists($this->SETTINGS, $ps_name)) {
-			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
-		}
-		die($this->tableName()." does not implement method {$ps_name}");
-	}
-	# ------------------------------------------------------
 }
-?>

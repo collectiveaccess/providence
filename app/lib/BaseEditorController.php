@@ -1395,7 +1395,7 @@ class BaseEditorController extends ActionController {
 						// If in strict mode and a top-level type is disabled, then show sub-types so user can select an enabled type
 				) {
 					if (isset($va_item['item_id']) && isset($va_types_by_parent_id[$va_item['item_id']]) && is_array($va_types_by_parent_id[$va_item['item_id']])) {
-						$va_subtypes = $this->_getSubTypes($va_types_by_parent_id[$va_item['item_id']], $va_types_by_parent_id, $vn_sort_type, $va_restrict_to_types, ['firstEnabled' => !(bool)$va_item['is_enabled']]);
+						$va_subtypes = $this->_getSubTypes($va_types_by_parent_id[$va_item['item_id']], $va_types_by_parent_id, $vn_sort_type, $va_restrict_to_types, ['firstEnabled' => !$show_top_level_types_only && (bool)$enforce_strict_type_hierarchy && !(bool)$va_item['is_enabled']]);
 					}
 				}
 
