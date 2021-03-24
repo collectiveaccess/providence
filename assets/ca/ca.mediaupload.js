@@ -41,7 +41,7 @@ var caUI = caUI || {};
 			uploadAreaMessage: 'Upload here',
 			uploadAreaIndicator: 'Uploading...',
 			progressMessage: "Progress: ",
-			uploadTotalMessage: "%count uploaded",
+			uploadTotalMessage: "%count selected",
 			uploadTotalMessageClass: "mediaUploadAreaMessageCount",
 			isPrimaryLabel: "Is primary",
 			index: 0,

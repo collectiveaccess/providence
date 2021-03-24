@@ -4267,6 +4267,7 @@ if (!$vb_batch) {
 								} elseif(preg_match('/^'.$vs_prefix_stub.'mediarefsnew_([\d]+)$/', $vs_key, $va_matches)) {
 									$files = explode(";", $vs_value);
 									foreach($files as $f) {
+										if(!$f) { continue; }
 										$va_file_list["{$vs_key}_{$file_index}"] = [		// Add numeric suffix to allow for multiple uploads in a single request
 											'tmp_name' => escapeshellcmd($f),
 											'name' => $f,
@@ -4365,7 +4366,6 @@ if (!$vb_batch) {
                                     // Get user-specified center point (images only)
                                     $vn_center_x = $po_request->getParameter($vs_prefix_stub.'center_x_new_'.$va_matches[1], pString);
                                     $vn_center_y = $po_request->getParameter($vs_prefix_stub.'center_y_new_'.$va_matches[1], pString);
-                        			
                         			
                         			$files = is_dir($vs_path) ? caGetDirectoryContentsAsList($vs_path) : [$vs_path];
                         			foreach($files as $f) {

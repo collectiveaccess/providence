@@ -26,16 +26,14 @@
  * ----------------------------------------------------------------------
  */
 ?>
-<div id="caMediaBrowserPanelContentArea">
-		<div id='caMediaBrowserPanelDirectoryBrowser' style="width: 100%; height: 200px;"> </div>
-		<div id="caSetHomeLocationPanelControlButtons">
-			<table>
-				<tr>
-					<td align="right"><?= caFormJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Save'), 'caMediaBrowserPanelForm', ['onclick' => 'jQuery("#caMediaBrowserPanelContentArea").parent().data("panel").hidePanel(); return false;']); ?></td>
-					<td align="left"><?= caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caMediaBrowserPanelCancelButton', array('onclick' => 'jQuery("#caMediaBrowserPanelContentArea").parent().data("panel").hidePanel({dontUseCallback: true}); return false;'), array('size' => '30px')); ?></td>
-				</tr>
-			</table>
-		</div>
+<div id='caMediaBrowserPanelDirectoryBrowser' class='hierarchyBrowserSmall'> </div>
+<div id="caMediaBrowserPanelControlButtons">
+	<table>
+		<tr>
+			<td align="right" width="50%"><?= caFormJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Save'), 'caMediaBrowserPanelForm', ['onclick' => 'jQuery("#caMediaBrowserPanelContentArea").parent().data("panel").hidePanel(); return false;']); ?></td>
+			<td align="left" width="50%"><?= caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caMediaBrowserPanelCancelButton', array('onclick' => 'jQuery("#caMediaBrowserPanelContentArea").parent().data("panel").hidePanel({dontUseCallback: true}); return false;'), array('size' => '30px')); ?></td>
+		</tr>
+	</table>
 </div>
 
 <script type="text/javascript">

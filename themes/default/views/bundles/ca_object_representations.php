@@ -238,7 +238,7 @@
 					index: '{n}',
 					primaryID: <?= $primary_id ? $primary_id : 'null'; ?>,
 					representationID: {representation_id},
-					uploadAreaMessage: <?= json_encode(caNavIcon(__CA_NAV_ICON_ADD__, '30px').'<br/>'._t("Add media")); ?>,
+					uploadAreaMessage: <?= json_encode(caNavIcon(__CA_NAV_ICON_ADD__, '30px').'<div style=\'margin-top: 5px;\'>'._t("Upload media").'</div>'); ?>,
 					uploadAreaIndicator: <?= json_encode(caNavIcon(__CA_NAV_ICON_SPINNER__, '30px').'<br/>'._t("Uploading... %percent")); ?>,
 					isPrimaryLabel: <?= json_encode(caNavIcon(__CA_NAV_ICON_IS_PRIMARY__, 1).' '._t('Is primary')); ?>
 				});	
@@ -272,7 +272,7 @@
 						<div id="<?= $id_prefix; ?>UploadAreaMessage{n}" class="mediaUploadAreaMessage"> </div>
 					</div>
 					
-					<a href="#" onclick='<?= $id_prefix; ?>showMediaBrowser{n}(); return false;'>Choose media</a>
+					<div class='mediaMetadataActionButton'><a href="#" onclick='<?= $id_prefix; ?>showMediaBrowser{n}(); return false;'><?= caNavIcon(__CA_NAV_ICON_FOLDER_OPEN__, 1).' '._t('Choose media'); ?></a></div>
 				</div>
 				<div class="mediaUploadEditArea">
 	
@@ -332,7 +332,7 @@
 					maxFilesize: <?= caReturnValueInBytes(ini_get('upload_max_filesize')); ?>,
 					maxFilesizeTxt: "<?= $upload_max_filesize; ?>",
 					primaryID: <?= $primary_id ? $primary_id : 'null'; ?>,
-					uploadAreaMessage: <?= json_encode(caNavIcon(__CA_NAV_ICON_ADD__, '30px').'<br/>'._t("Add media")); ?>,
+					uploadAreaMessage: <?= json_encode(caNavIcon(__CA_NAV_ICON_ADD__, '30px').'<div style=\'margin-top: 5px;\'>'._t("Upload media").'</div>'); ?>,
 					uploadAreaIndicator: <?= json_encode(caNavIcon(__CA_NAV_ICON_SPINNER__, '30px').'<br/>'._t("Uploading... %percent")); ?>,
 				});	
 				
