@@ -91,7 +91,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
         $tool->setSettings($pa_params[1]);
         $tool->setMode($pa_params[2]);
         
-        $pa_params[]['tool'] = $tool;
+        $pa_params['tool'] = $tool;
         return $pa_params;
     }
 	# --------------------------------------------------------------------------------------------

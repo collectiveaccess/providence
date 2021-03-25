@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,97 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
- 
 require_once(__CA_LIB_DIR__.'/ModelSettings.php');
-
-global $_ca_editor_ui_bundle_placement_settings;
-$_ca_editor_ui_bundle_placement_settings = array(		// global
-	'label' => array(
-		'formatType' => FT_TEXT,
-		'displayType' => DT_FIELD,
-		'width' => "475px", 'height' => 1,
-		'takesLocale' => true,
-		'label' => _t('Alternate label to place on bundle'),
-		'description' => _t('Custom label text to use for this placement of this bundle.')
-	),
-	'add_label' => array(
-		'formatType' => FT_TEXT,
-		'displayType' => DT_FIELD,
-		'width' => "475px", 'height' => 1,
-		'takesLocale' => true,
-		'label' => _t('Alternate label to place on bundle add button'),
-		'description' => _t('Custom text to use for the add button for this placement of this bundle.')
-	),
-	'description' => array(
-		'formatType' => FT_TEXT,
-		'displayType' => DT_FIELD,
-		'width' => "475px", 'height' => "50px",
-		'takesLocale' => true,
-		'label' => _t('Descriptive text for bundle.'),
-		'description' => _t('Descriptive text to use for help for bundle. Will override descriptive text set for underlying metadata element, if set.')
-	),
-	'width' => array(
-		'formatType' => FT_TEXT,
-		'displayType' => DT_FIELD,
-		'width' => 4, 'height' => 1,
-		'takesLocale' => false,
-		'default' => "",
-		'label' => _t('Width'),
-		'description' => _t('Width, in characters or pixels.')
-	),
-	'height' => array(
-		'formatType' => FT_TEXT,
-		'displayType' => DT_FIELD,
-		'width' => 4, 'height' => 1,
-		'takesLocale' => false,
-		'default' => "",
-		'label' => _t('Height'),
-		'description' => _t('Width, in characters or pixels.')
-	),
-	'readonly' => array(
-		'formatType' => FT_NUMBER,
-		'displayType' => DT_CHECKBOXES,
-		'width' => 30, 'height' => 1,
-		'takesLocale' => false,
-		'default' => 0,
-		'label' => _t('Read only?'),
-		'description' => _t('If checked, field will not be editable.')
-	),
-	'expand_collapse_value' => array(
-		'formatType' => FT_TEXT,
-		'displayType' => DT_SELECT,
-		'options' => array(
-			_t("Don't force (default)") => 'dont_force', // current default mode
-			_t('Collapse') => 'collapse',
-			_t('Expand') => 'expand',
-
-		),
-		'takesLocale' => false,
-		'default' => 'bubbles',
-		'width' => "200px", 'height' => 1,
-		'label' => _t('Expand/collapse if value exists'),
-		'description' => _t('Controls the expand/collapse behavior when there is at least one value present.')
-	),
-	'expand_collapse_no_value' => array(
-		'formatType' => FT_TEXT,
-		'displayType' => DT_SELECT,
-		'options' => array(
-			_t("Don't force (default)") => 'dont_force', // current default mode
-			_t('Collapse') => 'collapse',
-			_t('Expand') => 'expand',
-
-		),
-		'takesLocale' => false,
-		'default' => 'bubbles',
-		'width' => "200px", 'height' => 1,
-		'label' => _t('Expand/collapse if no value is present'),
-		'description' => _t('Controls the expand/collapse behavior when there is no value present.')
-	),
-);
 
 BaseModel::$s_ca_models_definitions['ca_editor_ui_bundle_placements'] = array(
  	'NAME_SINGULAR' 	=> _t('UI bundle placement'),
@@ -175,6 +85,8 @@ BaseModel::$s_ca_models_definitions['ca_editor_ui_bundle_placements'] = array(
 
 
 class ca_editor_ui_bundle_placements extends BaseModel {
+	use ModelSettings;
+	
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -256,11 +168,6 @@ class ca_editor_ui_bundle_placements extends BaseModel {
 
 	protected $FIELDS;
 	
-	/**
-	 * Settings delegate - implements methods for setting, getting and using 'settings' var field
-	 */
-	public $SETTINGS;
-	
 	# ------------------------------------------------------
 	function __construct($pn_id=null, $pa_additional_settings=null, $pa_setting_values=null) {
 		parent::__construct($pn_id);
@@ -282,17 +189,92 @@ class ca_editor_ui_bundle_placements extends BaseModel {
 	  * @return bool Always returns true
 	  */
 	public function setSettingDefinitionsForPlacement($pa_additional_settings) {
-		if (!is_array($pa_additional_settings)) { $pa_additional_settings = array(); }
-		global $_ca_editor_ui_bundle_placement_settings;
+		if (!is_array($pa_additional_settings)) { $pa_additional_settings = []; }
 
-		$va_settings = array_merge($_ca_editor_ui_bundle_placement_settings, $pa_additional_settings);
-		// don't add settings that are set to false - they would be rendered anyway :-(
-		foreach($va_settings as $vs_setting => $va_val) {
-			if(!$va_val) {
-				unset($va_settings[$vs_setting]);
-			}
-		}
-		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
+		$settings = array_filter(array_merge([
+			'label' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => "475px", 'height' => 1,
+				'takesLocale' => true,
+				'label' => _t('Alternate label to place on bundle'),
+				'description' => _t('Custom label text to use for this placement of this bundle.')
+			),
+			'add_label' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => "475px", 'height' => 1,
+				'takesLocale' => true,
+				'label' => _t('Alternate label to place on bundle add button'),
+				'description' => _t('Custom text to use for the add button for this placement of this bundle.')
+			),
+			'description' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => "475px", 'height' => "50px",
+				'takesLocale' => true,
+				'label' => _t('Descriptive text for bundle.'),
+				'description' => _t('Descriptive text to use for help for bundle. Will override descriptive text set for underlying metadata element, if set.')
+			),
+			'width' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 4, 'height' => 1,
+				'takesLocale' => false,
+				'default' => "",
+				'label' => _t('Width'),
+				'description' => _t('Width, in characters or pixels.')
+			),
+			'height' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 4, 'height' => 1,
+				'takesLocale' => false,
+				'default' => "",
+				'label' => _t('Height'),
+				'description' => _t('Width, in characters or pixels.')
+			),
+			'readonly' => array(
+				'formatType' => FT_NUMBER,
+				'displayType' => DT_CHECKBOXES,
+				'width' => 30, 'height' => 1,
+				'takesLocale' => false,
+				'default' => 0,
+				'label' => _t('Read only?'),
+				'description' => _t('If checked, field will not be editable.')
+			),
+			'expand_collapse_value' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'options' => array(
+					_t("Don't force (default)") => 'dont_force', // current default mode
+					_t('Collapse') => 'collapse',
+					_t('Expand') => 'expand',
+
+				),
+				'takesLocale' => false,
+				'default' => 'bubbles',
+				'width' => "200px", 'height' => 1,
+				'label' => _t('Expand/collapse if value exists'),
+				'description' => _t('Controls the expand/collapse behavior when there is at least one value present.')
+			),
+			'expand_collapse_no_value' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'options' => array(
+					_t("Don't force (default)") => 'dont_force', // current default mode
+					_t('Collapse') => 'collapse',
+					_t('Expand') => 'expand',
+
+				),
+				'takesLocale' => false,
+				'default' => 'bubbles',
+				'width' => "200px", 'height' => 1,
+				'label' => _t('Expand/collapse if no value is present'),
+				'description' => _t('Controls the expand/collapse behavior when there is no value present.')
+			)], $pa_additional_settings), function($v) { return (bool)$v; });
+		
+		$this->setAvailableSettings($settings);
 		
 		return true;
 	}
@@ -318,20 +300,6 @@ class ca_editor_ui_bundle_placements extends BaseModel {
 			return Datamodel::getTableName($vn_table_num);
 		}
 		return null;	
-	}
-	# ----------------------------------------
-	public function __destruct() {
-		unset($this->SETTINGS);
-	}
-	# ------------------------------------------------------
-	/**
-	 * Reroutes calls to method implemented by settings delegate to the delegate class
-	 */
-	public function __call($ps_name, $pa_arguments) {
-		if (method_exists($this->SETTINGS, $ps_name)) {
-			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
-		}
-		die($this->tableName()." does not implement method {$ps_name}");
 	}
 	# ----------------------------------------
 }

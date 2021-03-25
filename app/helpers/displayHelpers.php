@@ -4944,7 +4944,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 * "blank_label_text" option. If the option is not set the default value of
 	 * "[BLANK]" will be returned.
 	 *
-	 * @param mixed $table Table name of number blank label is to be applied to. If set 
+	 * @param mixed $table Table name (or number) blank label is to be applied to. If set 
 	 *						table-specific text is set with fallback to general "blank_label_text"
 	 *
 	 * @return string
@@ -4953,9 +4953,13 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		if (MemoryCache::contains('blank_label_text_'.$table)) { return MemoryCache::fetch('blank_label_text_'.$table); }
 		$config = Configuration::load();
 
+		$table_orig = $table;
 		$d = [];
 		if (($table) && ($t = Datamodel::getInstance($table, true))) {
-			$d[] = $t->tableName().'_blank_label_text';
+			if(is_a($t, 'BaseLabel')) {
+				$table = $t->getSubjectTableName();
+			}
+			$d[] = $table.'_blank_label_text';
 		}
 
 		$d[] = 'blank_label_text';
@@ -4963,6 +4967,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		if ($label_text = $config->get($d)) {
 		    if(is_array($label_text)) { $label_text = join(' ', $label_text); }
 		    MemoryCache::save('blank_label_text_'.$table, $l = _t($label_text));
+		    if($table !== $table_orig) { MemoryCache::save('blank_label_text_'.$table_orig, $l); }
 			return $l;
 		}
 		return $g_blank_label_text = _t('BLANK');
