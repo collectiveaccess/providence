@@ -107,7 +107,7 @@ class applyPrepopulateRulesTool extends BaseApplicationTool {
 		switch($ps_command) {
 			case 'Apply_Prepopulate_Rules':
 			default:
-			return _t('xxx.');
+			return _t('Applies rules defined in prepopulate.conf to all relevant records.');
 		}
 		return _t('No help available for %1', $ps_command);
 	}
