@@ -170,7 +170,7 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		$vn_entity_id = $this->addTestRecord('ca_entities', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'ind',
-				'idno' => 'hjs',
+				'idno' => '101',
 				'lifespan' => '12/17/1989 -'
 			),
 			'preferred_labels' => array(
@@ -223,7 +223,7 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		$vn_entity_id = $this->addTestRecord('ca_entities', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'ind',
-				'idno' => 'bs',
+				'idno' => '102',
 			),
 			'preferred_labels' => array(
 				array(
@@ -703,8 +703,8 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		$this->assertIsString($vm_ret[0]);
 		$this->assertIsString($vm_ret[1]);
 
-		$this->assertStringContainsString("editor/entities/EntityEditor/Summary/entity_id/".$this->opn_entity_id1."/rel/1\">Homer J. Simpson</a> (hjs)</li></ul>", $vm_ret[0]);
-		$this->assertStringContainsString("editor/entities/EntityEditor/Summary/entity_id/".$this->opn_entity_id2."/rel/1\">Bart Simpson</a> (bs)</li></ul>", $vm_ret[1]);
+		$this->assertStringContainsString("editor/entities/EntityEditor/Summary/entity_id/".$this->opn_entity_id1."/rel/1\">Homer J. Simpson</a> (101)</li></ul>", $vm_ret[0]);
+		$this->assertStringContainsString("editor/entities/EntityEditor/Summary/entity_id/".$this->opn_entity_id2."/rel/1\">Bart Simpson</a> (102)</li></ul>", $vm_ret[1]);
 	}
 	# -------------------------------------------------------
 	public function testStringFormattingTagOpts() {
