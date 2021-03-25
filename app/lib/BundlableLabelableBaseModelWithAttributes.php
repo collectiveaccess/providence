@@ -593,6 +593,22 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		
+		// duplicate sets
+		if (in_array('ca_sets', $va_duplicate_relationships) || (isset($va_duplicate_element_settings['ca_sets_checklist']) && $va_duplicate_element_settings['ca_sets_checklist'])) {
+			global $g_request;
+			$user_id = $g_request ? $g_request->user->getUserID() : null;
+			
+			$t_set = new ca_sets();
+			$set_ids = $t_set->getSets(['setIDsOnly' => true, 'table' => $this->tableName(), 'row_id' => $this->getPrimaryKey(), 'user_id' => $user_id, 'access' => __CA_SET_EDIT_ACCESS__]);
+			if(is_array($set_ids)) {
+				foreach($set_ids as $set_id) {
+					if($t_set->load($set_id)) {
+						$t_set->addItem($t_dupe->getPrimaryKey(), null, $user_id);
+					}
+				}
+			}
+		}
+		
 		// Set rank of duplicated record such that it immediately follows its original
 		if($t_dupe->getProperty('RANK') && $this->isHierarchical() && ($vn_parent_id = $this->get($vs_parent_id_fld) > 0)) {
 			$t_dupe->setRankAfter($this->getPrimaryKey());
