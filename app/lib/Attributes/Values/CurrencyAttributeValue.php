@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -259,7 +259,7 @@
  			}
 
 			if(!$vs_currency_specifier){
-				$vs_currency_specifier = $o_config->get('default_dollar_currency');
+				$vs_currency_specifier = $o_config->get('default_currency');
 			}
  			if(!$vs_currency_specifier){
  				// this respects the global UI locale which is set using Zend_Locale

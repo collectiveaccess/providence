@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2018 Whirl-i-Gig
+ * Copyright 2016-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,8 +33,8 @@
 /**
  *
  */
+require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 require_once(__CA_LIB_DIR__.'/MetadataAlerts/TriggerTypes/Base.php');
-require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rules.php');
 
 BaseModel::$s_ca_models_definitions['ca_metadata_alert_triggers'] = array(
 	'NAME_SINGULAR' 	=> _t('metadata alert triggers'),
@@ -88,6 +88,8 @@ BaseModel::$s_ca_models_definitions['ca_metadata_alert_triggers'] = array(
 );
 
 class ca_metadata_alert_triggers extends BaseModel {
+	use ModelSettings;
+	
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -178,11 +180,6 @@ class ca_metadata_alert_triggers extends BaseModel {
 	 */
 	static $s_lock_resource = null;
 
-	/**
-	 * Settings delegate - implements methods for setting, getting and using 'settings' var field
-	 */
-	public $SETTINGS;
-
 	# ------------------------------------------------------
 	# --- Constructor
 	#
@@ -210,7 +207,7 @@ class ca_metadata_alert_triggers extends BaseModel {
 		if($vs_trigger_type = $this->get('trigger_type')) {
 			/** @var CA\MetadataAlerts\TriggerTypes\Base $o_trigger_type */
 			$o_trigger_type = CA\MetadataAlerts\TriggerTypes\Base::getInstance($vs_trigger_type, []);
-			$this->SETTINGS = new ModelSettings($this, 'settings', $o_trigger_type->getAvailableSettings());
+			$this->setAvailableSettings($o_trigger_type->getAvailableSettings());
 		}
 	}
 	# ------------------------------------------------------
@@ -258,18 +255,6 @@ class ca_metadata_alert_triggers extends BaseModel {
 
 		$this->loadAvailableSettingsForTriggerType();
 		return $vm_ret;
-	}
-	# ------------------------------------------------------
-	# Settings
-	# ------------------------------------------------------
-	/**
-	 * Reroutes calls to method implemented by settings delegate to the delegate class
-	 */
-	public function __call($ps_name, $pa_arguments) {
-		if (method_exists($this->SETTINGS, $ps_name)) {
-			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
-		}
-		die($this->tableName()." does not implement method {$ps_name}");
 	}
 	# ------------------------------------------------------
 	/**

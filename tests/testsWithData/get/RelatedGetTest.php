@@ -68,7 +68,7 @@ class RelatedGetTest extends BaseTestWithData {
 		$vn_entity_id = $this->addTestRecord('ca_entities', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'ind',
-				'idno' => 'hjs',
+				'idno' => '101',
 			),
 			'preferred_labels' => array(
 				array(
@@ -104,7 +104,7 @@ class RelatedGetTest extends BaseTestWithData {
 		$vn_entity_id = $this->addTestRecord('ca_entities', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'ind',
-				'idno' => 'bs',
+				'idno' => '102',
 			),
 			'preferred_labels' => array(
 				array(
@@ -131,7 +131,7 @@ class RelatedGetTest extends BaseTestWithData {
 		$vn_entity_id = $this->addTestRecord('ca_entities', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'org',
-				'idno' => 'hjs',
+				'idno' => '101',
 			),
 			'preferred_labels' => array(
 				array(

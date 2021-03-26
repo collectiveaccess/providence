@@ -593,6 +593,22 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		
+		// duplicate sets
+		if (in_array('ca_sets', $va_duplicate_relationships) || (isset($va_duplicate_element_settings['ca_sets_checklist']) && $va_duplicate_element_settings['ca_sets_checklist'])) {
+			global $g_request;
+			$user_id = $g_request ? $g_request->user->getUserID() : null;
+			
+			$t_set = new ca_sets();
+			$set_ids = $t_set->getSets(['setIDsOnly' => true, 'table' => $this->tableName(), 'row_id' => $this->getPrimaryKey(), 'user_id' => $user_id, 'access' => __CA_SET_EDIT_ACCESS__]);
+			if(is_array($set_ids)) {
+				foreach($set_ids as $set_id) {
+					if($t_set->load($set_id)) {
+						$t_set->addItem($t_dupe->getPrimaryKey(), null, $user_id);
+					}
+				}
+			}
+		}
+		
 		// Set rank of duplicated record such that it immediately follows its original
 		if($t_dupe->getProperty('RANK') && $this->isHierarchical() && ($vn_parent_id = $this->get($vs_parent_id_fld) > 0)) {
 			$t_dupe->setRankAfter($this->getPrimaryKey());
@@ -798,13 +814,26 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$vs_remove_self_sql = ' AND ('.$this->primaryKey().' <> '.intval($this->getPrimaryKey()).')';
 			}
 			
+			$idno_context_fields = $this->getProperty('ID_NUMBERING_CONTEXT_FIELD') ? [$this->getProperty('ID_NUMBERING_CONTEXT_FIELD')] : [];
+			
+			if ($o_idno = $this->getIDNoPlugInInstance()) {
+				if(is_array($elements = $o_idno->getElements($this->tableName(), ($t = $this->getTypeName()) ? $t : '__default__'))) {
+			
+					$seq_by_type = array_filter($elements, function($v) { return isset($v['sequence_by_type']) && (bool)$v['sequence_by_type']; });
+					if(sizeof($seq_by_type) > 0) {
+						$idno_context_fields[] = $this->getTypeFieldName();
+					}
+				}
+				
+			}
+			
 			$vs_idno_context_sql = '';
-			if ($vs_idno_context_field = $this->getProperty('ID_NUMBERING_CONTEXT_FIELD')) {
-				if ($vn_context_id = $this->get($vs_idno_context_field)) {
-					$vs_idno_context_sql = ' AND ('.$vs_idno_context_field.' = '.$this->quote($vs_idno_context_field, $vn_context_id).')';
-				} else {
-					if ($this->getFieldInfo($vs_idno_context_field, 'IS_NULL')) {
-						$vs_idno_context_sql = ' AND ('.$vs_idno_context_field.' IS NULL)';
+			if (sizeof($idno_context_fields) > 0) {
+				foreach($idno_context_fields as $f) {
+					if ($vn_context_id = $this->get($f)) {
+						$vs_idno_context_sql .= ' AND ('.$f.' = '.$this->quote($f, $vn_context_id).')';
+					} elseif ($this->getFieldInfo($f, 'IS_NULL')) {
+						$vs_idno_context_sql .= ' AND ('.$f.' IS NULL)';
 					}
 				}
 			}

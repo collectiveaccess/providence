@@ -1137,8 +1137,8 @@
 				}
 				
 				$t_instance->setMode(ACCESS_WRITE);
-				$t_instance->set('locale_id', $pn_locale_id);
-				$t_instance->set('type_id', $pn_type_id);
+				if($t_instance->hasField('locale_id')) { $t_instance->set('locale_id', $pn_locale_id); }
+				if($t_instance->hasField('type_id')) { $t_instance->set('type_id', $pn_type_id); }
 				
 				$va_intrinsics = array(
 					'source_id' => null, 'access' => 0, 'status' => 0, 'lifespan' => null, 'parent_id' => $vn_parent_id, 'lot_status_id' => null, '_interstitial' => null

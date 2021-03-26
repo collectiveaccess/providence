@@ -154,6 +154,10 @@
 			                $vn_element_id = $o_value->getElementID();
 			                $vs_element_code = ca_metadata_elements::getElementCodeForId($vn_element_id);
 			                
+			                if(isset($pa_values[$vn_element_id]) || isset($pa_values[$vs_element_code])) {
+			                	$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_element_id] = true;
+			                }
+			                
 			                $pv = $o_value->getDisplayValue(['dateFormat' => 'original']); // need to compare dates as-entered
 			                if (
 			                	(strlen($pa_values[$vn_element_id] && ($pa_values[$vn_element_id] != $pv)))
@@ -311,6 +315,7 @@
 						)
 					) {
 						$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_attr_element_id] = true;
+						$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_element_id] = true;
 						break;
 					}
 				}
@@ -318,7 +323,7 @@
 				if(sizeof($element_codes) > 0) {
 					foreach($element_codes as $element_code => $element_id) {
 						if(isset($pa_values[$element_code]) && $pa_values[$element_code]) {
-							$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_attr_element_id] = true;
+							$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$element_id] = true;
 							break;
 						}
 					}
@@ -3360,7 +3365,7 @@
 			$vn_id = ca_metadata_elements::getElementID($pm_element_code_or_id);
 
 			// not an element?
-			if(!$vs_code || (!$this->hasElement($vs_code))) { return false; }
+			if(!$vs_code || (!$this->hasElement($vs_code, null, true))) { return false; }
 
 			return isset($this->_FIELD_VALUE_DID_CHANGE['_ca_attribute_'.$vn_id]) ? $this->_FIELD_VALUE_DID_CHANGE['_ca_attribute_'.$vn_id] : false;
 		}

@@ -4517,7 +4517,9 @@ function caFileIsIncludable($ps_file) {
 			);
 	}
 	# ----------------------------------------
-
+	/**
+	 *
+	 */
 	function caReturnValueInBytes($vs_val) {
 		$vs_val = trim($vs_val);
 		$vs_last = strtolower($vs_val[strlen($vs_val)-1]);
@@ -4533,3 +4535,14 @@ function caFileIsIncludable($ps_file) {
 		}
 		return $vs_val;
 	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caChangeArrayKeyCase($array, $case = CASE_LOWER) {
+		foreach ($array as $k => $v) {
+			$ret[mb_convert_case($k, (($case === CASE_LOWER) ? MB_CASE_LOWER : MB_CASE_UPPER), "UTF-8")] = (is_array($v) ? caChangeArrayKeyCase($v, $case) : $v );
+		}
+		return $ret;
+	}
+    # ----------------------------------------
