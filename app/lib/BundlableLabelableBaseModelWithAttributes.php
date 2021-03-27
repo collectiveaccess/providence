@@ -4152,7 +4152,13 @@ if (!$vb_batch) {
 						// check for existing representations to update (or delete)
 						$vs_prefix_stub = $vs_placement_code.$vs_form_prefix.'_';
 						$vb_allow_fetching_of_urls = (bool)$this->_CONFIG->get('allow_fetching_of_media_from_remote_urls');
-						$vb_allow_existing_rep = (bool)$this->_CONFIG->get('ca_objects_allow_relationships_to_existing_representations');
+						$vb_allow_existing_rep = (bool)$this->_CONFIG->get('ca_objects_allow_relationships_to_existing_representations') && !(bool)caGetOption('dontAllowRelationshipsToExistingRepresentations', $va_bundle_settings, false);
+						$dont_allow_access_to_import_directory = caGetOption('dontAllowAccessToImportDirectory', $va_bundle_settings, false);
+	
+						$import_directory_path = $po_request->config->get('batch_media_import_root_directory');
+						$ajax_import_directory_path = $po_request->config->get('ajax_media_upload_tmp_directory');
+						
+						
 						$va_rep_ids_sorted = $va_rep_sort_order = explode(';',$po_request->getParameter($vs_prefix_stub.'ObjectRepresentationBundleList', pString));
 						sort($va_rep_ids_sorted, SORT_NUMERIC);
 						
@@ -4348,13 +4354,13 @@ if (!$vb_batch) {
                                         $vs_original_name = array_pop($va_tmp);
                                     } elseif(preg_match("!^userMedia".$po_request->getUserID()."!", $va_values['tmp_name'])) {
                                     	// Is user-uploaded media
-                                    	if (!is_writeable($vs_tmp_directory = $po_request->config->get('ajax_media_upload_tmp_directory'))) {
+                                    	if (!is_writeable($vs_tmp_directory = $ajax_import_directory_path)) {
 											$vs_tmp_directory = caGetTempDirPath();
 										}
                                     	$vs_path = $vs_tmp_directory.'/'.$va_values['tmp_name'];
                                     	$md = json_decode(@file_get_contents("{$vs_path}_metadata"), true);
                                         $vs_original_name = $md['original_filename'];
-                                    } elseif(($vs_key !== 'empty') && ($vs_tmp_directory = $po_request->config->get('batch_media_import_root_directory')) && file_exists("{$vs_tmp_directory}/{$va_values['tmp_name']}")) {
+                                    } elseif(!$dont_allow_access_to_import_directory && ($vs_key !== 'empty') && ($vs_tmp_directory = $import_directory_path) && file_exists("{$vs_tmp_directory}/{$va_values['tmp_name']}") && strlen($va_values['tmp_name'])) {
                                     	// Is user-selected file from batch media import directory
                                         $vs_path = "{$vs_tmp_directory}/{$va_values['tmp_name']}";
                                         $vs_original_name = pathinfo($va_values['name'], PATHINFO_BASENAME);
@@ -4367,7 +4373,6 @@ if (!$vb_batch) {
                             
                                     $vn_rep_type_id = $po_request->getParameter([$vs_prefix_stub.'rep_type_id_new_'.$va_matches[1], $vs_prefix_stub.'type_id_new_'.$va_matches[1]], pInteger);
                                     if(!$vn_rep_type_id && !($vn_rep_type_id = caGetDefaultItemID('object_representation_types'))) {
-                                        require_once(__CA_MODELS_DIR__.'/ca_lists.php');
                                         $t_list = new ca_lists();
                                         if (is_array($va_rep_type_ids = $t_list->getItemsForList('object_representation_types', array('idsOnly' => true, 'enabledOnly' => true)))) {
                                             $vn_rep_type_id = array_shift($va_rep_type_ids);
@@ -4396,10 +4401,21 @@ if (!$vb_batch) {
                                     $vn_center_x = $po_request->getParameter($vs_prefix_stub.'center_x_new_'.$va_matches[1], pString);
                                     $vn_center_y = $po_request->getParameter($vs_prefix_stub.'center_y_new_'.$va_matches[1], pString);
                         			
-                        			$files = is_dir($vs_path) ? caGetDirectoryContentsAsList($vs_path) : [$vs_path];
-                        			foreach($files as $f) {
-                                   		$t_rep = $this->addRepresentation($f, $vn_rep_type_id, $vals['locale_id'], $vals['status'], $vals['access'], $vn_is_primary, array_merge($vals, ['name' => $vals['rep_label']]), array('original_filename' => $vs_original_name, 'returnRepresentation' => true, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vn_type_id, 'mapping_id' => $vn_object_representation_mapping_id));	// $vn_type_id = *relationship* type_id (as opposed to representation type)
-                                   	}
+                        			if ($vs_path = trim($vs_path)) {
+                        				
+										$files = is_dir($vs_path) ? caGetDirectoryContentsAsList($vs_path) : [$vs_path];
+										foreach($files as $f) {
+											// Final check of path before import attempt
+											if (
+												(isUrl($f) && !$vb_allow_fetching_of_urls)
+												||
+												(!preg_match("!^{$ajax_import_directory_path}!", $f) && !preg_match("!^{$import_directory_path}!", $f))
+											) {
+												continue;
+											}
+											$t_rep = $this->addRepresentation($f, $vn_rep_type_id, $vals['locale_id'], $vals['status'], $vals['access'], $vn_is_primary, array_merge($vals, ['name' => $vals['rep_label']]), array('original_filename' => $vs_original_name, 'returnRepresentation' => true, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vn_type_id, 'mapping_id' => $vn_object_representation_mapping_id));	// $vn_type_id = *relationship* type_id (as opposed to representation type)
+										}
+									}
                                     
                                     if ($this->numErrors()) {
                                         $po_request->addActionErrors($this->errors(), $vs_f, 'new_'.$va_matches[1]);

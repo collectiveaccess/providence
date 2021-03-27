@@ -57,6 +57,7 @@ var caUI = caUI || {};
 			currentSelectionDisplayFormat: '%1',
 			currentSelectionIDID: '',
 			allowSelection: true,
+			allowMultipleSelection: false,
 			
 			selectOnLoad: false,
 			onSelection: null,		/* function to call whenever an item is selected; passed item_id, parent_id, name, formatted display string and type ("FILE" or "DIR") */
@@ -82,7 +83,8 @@ var caUI = caUI || {};
 			hasChildrenIndicator: 'children',	/* name of key in data to use to determine if an item has children */
 			
 			levelLists: [],
-			selectedItemIDs: [],
+			selectedDirectories: [],
+			selectedFiles: [],
 			itemInfoByLevel: [],
 			
 			_numOpenLoads: 0,					// number of AJAX loads pending
@@ -112,10 +114,10 @@ var caUI = caUI || {};
 		that.setUpHierarchy = function(item_id) {
 			if (!item_id) { that.setUpHierarchyLevel(0, '/', 1, null, true); return; }
 			that.levelLists = [];
-			that.selectedItemIDs = [];
+			that.selectedDirectories = [];
 			jQuery.getJSON(that.initDataUrl, { id: item_id}, function(data) {
 				if (data.length) {
-					that.selectedItemIDs = data.join(';').split(';');
+					that.selectedDirectories = data.join(';').split(';');
 					data.unshift("/");
 				} else {
 					data = ["/"];
@@ -188,7 +190,7 @@ var caUI = caUI || {};
 			
 			that.levelLists[level] = newLevelDivID;
 			
-			var cpath = that.selectedItemIDs.slice(0,level);
+			var cpath = that.selectedDirectories.slice(0,level);
 			
 			if (that.allowDragAndDropUpload && that.dragAndDropUploadUrl) {
 				jQuery('#' + newLevelDivID).fileupload({
@@ -274,7 +276,7 @@ var caUI = caUI || {};
 			var path = [];
 			for(var l = 0; l < that._queuedLoadsForLevel.length; l++) {
 				for(var i = 0; i < that._queuedLoadsForLevel[l].length; i++) {
-					var p = that.selectedItemIDs.slice(0, (l > 0) ? l-1 : 0).join("/");
+					var p = that.selectedDirectories.slice(0, (l > 0) ? l-1 : 0).join("/");
 					
 					var item_id = that._queuedLoadsForLevel[l][i]['item_id'];
 					id_list.push(p + '/' + ((item_id != '/') ? item_id : '') +'@@'+that._queuedLoadsForLevel[l][i]['start']);
@@ -311,16 +313,16 @@ var caUI = caUI || {};
 					
 					var foundSelected = false;
 					jQuery('#' + newLevelDivID).data('itemCount', data['_itemCount']);
-					console.log("d", data);
+					
 					that.itemInfoByLevel[level] = data;
 					jQuery.each(data, function(i, item) {
 						if (!item) { return; }
 						if (item['item_id']) {
 							
-							if (that.selectedItemIDs[level] == item['item_id']) {
+							if (that.selectedDirectories[level] == item['item_id']) {
 								foundSelected = true;
-								if (level >= (that.selectedItemIDs.length - 1)) {
-									that.selectItem(level, that.selectedItemIDs[level], jQuery('#' + newLevelDivID).data('parent_id'), item[that.hasChildrenIndicator], item);
+								if (level >= (that.selectedDirectories.length - 1)) {
+									that.selectItem(level, that.selectedDirectories[level], jQuery('#' + newLevelDivID).data('parent_id'), item[that.hasChildrenIndicator], item);
 								}
 							}
 						
@@ -351,7 +353,7 @@ var caUI = caUI || {};
 								);
 							} else {
 								jQuery('#' + newLevelListID).append(
-									"<li class='" + that.className + "'>" + moreButton +"<a href='#' id='directoryBrowser_" + that.name + '_level_' + level + '_item_' + item_id_for_css + "' class='" + that.className + "' title='" + item.fullname + "'>" + icon + "&nbsp;&nbsp;" + item.name + countText + "</a></li>"
+									"<li class='" + that.className + "'>" + moreButton +"<a href='#' id='directoryBrowser_" + that.name + '_level_' + level + '_item_' + item_id_for_css + "' class='directoryBrowser" + item.type + ' ' + that.className + "' title='" + item.fullname + "'>" + icon + "&nbsp;&nbsp;" + item.name + countText + "</a></li>"
 								);
 							}
 							
@@ -379,7 +381,7 @@ var caUI = caUI || {};
 								});
 							} else if(item.type == 'FILE') {
 								jQuery('#' + newLevelListID + " li:last a:last").click(function() { 
-									that.deselectItem();
+									that.deselectItem(level);
 									return false;
 								});
 							}
@@ -409,15 +411,15 @@ var caUI = caUI || {};
 							// Pass item_id to caller if required
 							if (is_init && that.selectOnLoad && that.onSelection && is_init && item['item_id'] == selected_item_id) {
 								var formattedDisplayString = that.currentSelectionDisplayFormat.replace('%1', item.name);
-								that.onSelection(item['item_id'], that.selectedItemIDs.join("/"), item.name, item.type);
+								that.onSelection(item['item_id'], that.selectedDirectories.join("/"), item.name, item.type);
 							}
 						} else {
-							if (item.parent_id && (that.selectedItemIDs.length == 0)) { that.selectedItemIDs[0] = item.parent_id; }
+							if (item.parent_id && (that.selectedDirectories.length == 0)) { that.selectedDirectories[0] = item.parent_id; }
 						}
 					});
 					
 					var dontDoSelectAndScroll = false;
-					if (!foundSelected && that.selectedItemIDs[level]) {
+					if (!foundSelected && that.selectedDirectories[level]) {
 						var p = jQuery('#' + newLevelDivID).data("page");
 						if (!p || (p < 0)) { p = 0; }
 						p++;
@@ -438,13 +440,13 @@ var caUI = caUI || {};
 					}
 					
 					if (!is_init) {
-						that.selectedItemIDs[level-1] = item_id;
+						that.selectedDirectories[level-1] = item_id;
 						var item_id_for_css = item_id.replace(/[^A-Za-z0-9_\-]+/g, '_');
 						jQuery('#directoryBrowser_' + that.name + '_' + (level - 1) + ' a').removeClass(that.classNameSelected).addClass(that.className);
 						jQuery('#directoryBrowser_' + that.name + '_level_' + (level - 1) + '_item_' + item_id_for_css).addClass(that.classNameSelected).parent().find('div a').addClass(that.classNameSelected);
 					} else {
-						if ((that.selectedItemIDs[level] !== undefined) && !dontDoSelectAndScroll) {
-							var item_id_for_css = that.selectedItemIDs[level].replace(/[^A-Za-z0-9_\-]+/g, '_');
+						if ((that.selectedDirectories[level] !== undefined) && !dontDoSelectAndScroll) {
+							var item_id_for_css = that.selectedDirectories[level].replace(/[^A-Za-z0-9_\-]+/g, '_');
 							jQuery('#directoryBrowser_' + that.name + '_level_' + (level) + '_item_' + item_id_for_css).addClass(that.classNameSelected).parent().find('div a').addClass(that.classNameSelected);
 							jQuery('#directoryBrowser_' + that.name + '_' + level).scrollTo('#directoryBrowser_' + that.name + '_level_' + level + '_item_' + item_id_for_css);
 						}
@@ -507,23 +509,51 @@ var caUI = caUI || {};
 				jQuery('#' + that.currentSelectionIDID).attr('value', item_id);
 			}
 			
-			while(that.selectedItemIDs.length > level) {
-				that.selectedItemIDs.pop();
+			while(that.selectedDirectories.length > level) {
+				that.selectedDirectories.pop();
+			    that.selectedFiles = [];
 			}
-			that.selectedItemIDs.push(item_id);
 			
-			var item_id_for_css = item_id.replace(/[^A-Za-z0-9_\-]+/g, '_');
-			jQuery('#directoryBrowser_' + that.name + '_' + level + ' a').removeClass(that.classNameSelected).addClass(that.className);
-			jQuery('#directoryBrowser_' + that.name + '_level_' + level + '_item_' + item_id_for_css).addClass(that.classNameSelected).parent().find('div a').addClass(that.classNameSelected);
+			var item_id_selector = '#directoryBrowser_' + that.name + '_level_' + level + '_item_' + item_id.replace(/[^A-Za-z0-9_\-]+/g, '_')
+			
+			if(that.allowMultipleSelection) {
+                if (item['type'] === 'FILE') {
+                    if(jQuery(item_id_selector).hasClass(that.classNameSelected)) {
+                        that.selectedFiles = that.selectedFiles.filter(e => e != item_id );
+                        jQuery(item_id_selector).removeClass(that.classNameSelected).parent().find('div a').removeClass(that.classNameSelected);
+                    } else {
+                        that.selectedFiles.push(item_id);
+                        jQuery(item_id_selector).addClass(that.classNameSelected);
+                    }
+                } else {
+                    that.selectedFiles = [];
+                    that.selectedDirectories.push(item_id);
+                    jQuery('#directoryBrowser_' + that.name + '_' + level + ' a').removeClass(that.classNameSelected).addClass(that.className);
+                    jQuery(item_id_selector).addClass(that.classNameSelected).addClass(that.classNameSelected);
+                }
+            } else {
+                jQuery('#directoryBrowser_' + that.name + '_' + level + ' a').removeClass(that.classNameSelected).addClass(that.className);
+			    jQuery(item_id_selector).addClass(that.classNameSelected).parent().find('div a').addClass(that.classNameSelected);
+			    
+			    if (item['type'] === 'FILE') {
+			        that.selectedFiles = [item_id];
+			    } else {
+                    that.selectedDirectories.push(item_id);
+			    }
+            }
 		
 			if (that.onSelection) {
-				that.onSelection(item_id, that.selectedItemIDs.join("/"), item.name, item.type);
+			    if(that.allowMultipleSelection) {
+			        that.onSelection(item_id, that.selectedDirectories.join("/"), that.selectedFiles)
+			    } else {
+				    that.onSelection(item_id, that.selectedDirectories.join("/"), item.name, item.type);
+				}
 			}
 		}
 		// --------------------------------------------------------------------------------
 		// Clear user item selection
 		//
-		that.deselectItem = function() {
+		that.deselectItem = function(level=null) {
 			if (!that.allowSelection) return false;
 			
 			// set current selection display
@@ -535,9 +565,14 @@ var caUI = caUI || {};
 				jQuery('#' + that.currentSelectionIDID).attr('value', null);
 			}
 			
-			that.selectedItemIDs = [];
-			jQuery('#' + that.container + '_scrolling_container').find('a').removeClass(that.classNameSelected).addClass(that.className);
-		
+			that.selectedDirectories = [];
+			
+			if(level !== null) {
+			    jQuery('#directoryBrowser_' + that.name + '_' + level + ' a').removeClass(that.classNameSelected).addClass(that.className);
+			} else {
+			    jQuery('#' + that.container + '_scrolling_container').find('a').removeClass(that.classNameSelected).addClass(that.className);
+		    }
+		    
 			if (that.onSelection) {
 				that.onSelection(null, '', null, 'DESELECT');
 			}
@@ -627,25 +662,29 @@ var caUI = caUI || {};
 		// Returns currently selected item
 		//
 		that.getSelectedItemID = function() {
-			return that.selectedItemIDs[that.selectedItemIDs.length - 1];
+		    if(that.allowMultipleSelection) {
+		        return that.selectedFiles[that.selectedDirectories.length - 1];
+		    } else {
+			    return that.selectedFiles[that.selectedDirectories.length - 1][0];
+			}
 		}
 		// --------------------------------------------------------------------------------
-		// Returns path of selected item (parents + current selection as array
+		// Returns path of selected directories as array
 	    //
 		that.getSelectedPath = function() {
-			return that.selectedItemIDs;
+			return that.selectedDirectories;
 		}
 		// --------------------------------------------------------------------------------
-		// Returns path of selected item (parents + current selection as array
+		// Returns list of selected files as array
 	    //
-		that.getSelectedPath = function() {
-			return that.selectedItemIDs;
+		that.getSelectedFles = function() {
+			return that.selectedFiles;
 		}
 		// --------------------------------------------------------------------------------
-		// Returns path of selected item (parents + current selection as array
+		// Returns info for selected directory
 	    //
 		that.getInfoForSelectedItem = function() {
-			return that.itemInfoByLevel[that.selectedItemIDs.length - 1][that.getSelectedItemID()];
+			return that.itemInfoByLevel[that.selectedDirectories.length - 1][that.getSelectedItemID()];
 		}
 		// --------------------------------------------------------------------------------
 		// Returns the number of levels that are currently displayed

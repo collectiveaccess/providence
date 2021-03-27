@@ -7758,6 +7758,14 @@ div.objectRepresentationMetadataEditorDoneButton {
 	padding-right:5px;
 }
 
+.objectRepresentationAddForm {
+
+}
+
+.objectRepresentationRelateForm {
+    display: none;
+}
+
 .mediaMetadataDisplay {
 	font-weight: normal;
 	font-size: 12px;

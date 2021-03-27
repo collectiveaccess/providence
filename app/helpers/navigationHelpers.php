@@ -107,6 +107,7 @@
  	define('__CA_NAV_ICON_EDIT_TEXT__', 66);
  	define('__CA_NAV_ICON_IS_PRIMARY__', 67);
  	define('__CA_NAV_ICON_CROSSHAIRS__', 68);
+ 	define('__CA_NAV_ICON_UPLOAD__', 69);
  	
  	/**
  	 * Icon position constants
@@ -885,6 +886,9 @@
 				break;	
 			case __CA_NAV_ICON_CROSSHAIRS__:
 				$vs_fa_class = 'fas fa-crosshairs';
+				break;	
+			case __CA_NAV_ICON_UPLOAD__:
+				$vs_fa_class = 'fas fa-upload';
 				break;																					
 			default:
 				print "INVALID CONSTANT $pn_type<br>\n";

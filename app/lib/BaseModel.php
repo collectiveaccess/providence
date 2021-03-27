@@ -1353,7 +1353,7 @@ class BaseModel extends BaseObject {
 								$vm_value = array_shift($va_ids);
 							}
 						}
-						if (($vm_value !== "") || ($this->getFieldInfo($vs_field, "IS_NULL") && ($vm_value == ""))) {
+						if (($vm_value !== "") || (($this->getFieldInfo($vs_field, "IS_NULL") && ($vm_value == "")))) {
 							if ($vm_value) {
 								if (($vs_list_code = $this->getFieldInfo($vs_field, "LIST_CODE")) && (!is_numeric($vm_value))) {	// translate ca_list_item idno's into item_ids if necessary
 									if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) {
