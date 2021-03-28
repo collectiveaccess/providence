@@ -458,8 +458,11 @@ class MultipartIDNumber extends IDNumber {
 		$type_id = null;
 		$type_limit_sql = '';
 		
+		$params = [];
 		if (!($t_instance = Datamodel::getInstanceByTableName($table, true))) { return 'ERR'; }
 		if ((bool)$element_info['sequence_by_type']) {
+			$stypes = is_array($element_info['sequence_by_type']) ? $element_info['sequence_by_type'] : [$element_info['sequence_by_type']];
+			$sequence_by_types = caMakeTypeIDList($table, $stypes, ['dontIncludeSubtypesInTypeRestriction' => (bool)$element_info['dont_include_subtypes']]);
 			$type = $this->getType();
 			if ($type == '__default__') {
 			    $types = $this->getTypes(); 
@@ -472,10 +475,15 @@ class MultipartIDNumber extends IDNumber {
 			        }
 			    }
 			    if (sizeof($exclude_type_ids) > 0) {
-			        $type_limit_sql = " AND type_id NOT IN (".join(", ", $exclude_type_ids).")";
+			        $type_limit_sql = " AND type_id NOT IN (?)";
+			        $params[] = $exclude_type_ids;
 			    }
+			} elseif(is_array($sequence_by_types) && sizeof($sequence_by_types)) {
+				$type_limit_sql = " AND type_id IN (?)";
+				$params[] = $sequence_by_types;
 			} elseif($type_id = (int)$t_instance->getTypeIDForCode($type)) {
-		        $type_limit_sql = " AND type_id = {$type_id}";
+		        $type_limit_sql = " AND type_id = ?";
+		        $params[] = $type_id;
 		    }
 		}
 		
@@ -483,14 +491,13 @@ class MultipartIDNumber extends IDNumber {
 		
 		if($stub === '') {
 			$field_limit_sql = "{$field} <> ''";
-			$params = [];
 		} else {
 			$field_limit_sql = "{$field} LIKE ?";
 			$params = [$stub.$separator.'%'];
 		} 
 		
 		
-		if ($qr_res = $this->db->query($s="
+		if ($qr_res = $this->db->query("
 			SELECT {$field} FROM {$table}
 			WHERE
 				{$field_limit_sql}
