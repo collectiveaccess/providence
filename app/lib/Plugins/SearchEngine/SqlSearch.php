@@ -1437,7 +1437,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								
 									$vs_raw_term = join(' ', $va_raw_terms);
 									
-									switch($vs_raw_term{0}) {
+									switch($vs_raw_term[0]) {
 										case '#eq#':
 											$vs_raw_term = substr($vs_raw_term, 4);
 											if ($this->opo_tep->parse($vs_raw_term)) {
@@ -1533,7 +1533,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								
 									$vs_raw_term = join(' ', $va_raw_terms);
 									
-									switch($vs_raw_term{0}) {
+									switch($vs_raw_term[0]) {
 										case '#eq#':
 											$vs_raw_term = substr($vs_raw_term, 4);
 											if ($vs_raw_term == '0') {

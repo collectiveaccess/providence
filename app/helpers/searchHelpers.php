@@ -787,7 +787,7 @@
 			foreach($va_values as $vs_element => $va_value_list) {
 				foreach($va_value_list as $vn_i => $vs_value) {
 					if (!strlen(trim($vs_value))) { continue; }
-					if ((strpos($vs_value, ' ') !== false) && ($vs_value{0} != '[')) {
+					if ((strpos($vs_value, ' ') !== false) && ($vs_value[0] != '[')) {
 						$vs_query_element = '"'.str_replace('"', '', $vs_value).'"';
 					} else {
 						$vs_query_element = $vs_value;

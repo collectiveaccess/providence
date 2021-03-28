@@ -490,7 +490,7 @@ class XMPParser extends BaseMediaMetadataParser {
 		$data = $this->networkSafeFread($filehnd, 2);
 
 		// Check that the third character is 0xFF (Start of first segment header)
-		if ($data{0} != "\xFF") {
+		if ($data[0] != "\xFF") {
 			// NO FF found - close file and return - JPEG is probably corrupted
 			fclose($filehnd);
 			return false;
@@ -539,7 +539,7 @@ class XMPParser extends BaseMediaMetadataParser {
 				$data = $this->networkSafeFread($filehnd, 2);
 
 				// Check that the first byte of the two is 0xFF as it should be for a marker
-				if ($data{0} != "\xFF") {
+				if ($data[0] != "\xFF") {
 					// NO FF found - close file and return - JPEG is probably corrupted
 					fclose($filehnd);
 					return false;
@@ -675,7 +675,7 @@ class XMPParser extends BaseMediaMetadataParser {
 		$data = $this->networkSafeFread($filehnd, 2);
 
 		// Check that the third character is 0xFF (Start of first segment header)
-		if ($data{0} != "\xFF") {
+		if ($data[0] != "\xFF") {
 			// NO FF found - close file and return
 			fclose($filehnd);
 			return;
@@ -727,7 +727,7 @@ class XMPParser extends BaseMediaMetadataParser {
 				$data = $this->networkSafeFread($filehnd, 2);
 
 				// Check that the first byte of the two is 0xFF as it should be for a marker
-				if ($data{0} != "\xFF")
+				if ($data[0] != "\xFF")
 				{
 					// Problem - NO FF foundclose file and return";
 					fclose($filehnd);

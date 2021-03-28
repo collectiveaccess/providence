@@ -1312,7 +1312,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 				if (!is_array($va_values)) { $va_values = array($va_values); }
 				foreach($va_values as $vs_value) {
 					if (!strlen(trim($vs_value))) { continue; }
-					if (preg_match('![^A-Za-z0-9]+!', $vs_value) && !preg_match('![\*]+!', $vs_value) && ($vs_value{0} != '[')) {
+					if (preg_match('![^A-Za-z0-9]+!', $vs_value) && !preg_match('![\*]+!', $vs_value) && ($vs_value[0] != '[')) {
 						$vs_query_element = '"'.str_replace('"', '', $vs_value).'"';
 					} else {
 						$vs_query_element = $vs_value;
