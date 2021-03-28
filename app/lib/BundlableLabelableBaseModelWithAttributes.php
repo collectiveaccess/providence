@@ -809,19 +809,34 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			
 			if (!$ps_idno) { $ps_idno = $this->get($vs_idno_field); }
 			
+			$params = [$ps_idno];
 			$vs_remove_self_sql = '';
 			if (!$pb_dont_remove_self) {
-				$vs_remove_self_sql = ' AND ('.$this->primaryKey().' <> '.intval($this->getPrimaryKey()).')';
+				$vs_remove_self_sql = ' AND ('.$this->primaryKey().' <> ?)';
+				$params[] = (int)$this->getPrimaryKey();
 			}
 			
 			$idno_context_fields = $this->getProperty('ID_NUMBERING_CONTEXT_FIELD') ? [$this->getProperty('ID_NUMBERING_CONTEXT_FIELD')] : [];
+			$idno_context_values = [];
 			
 			if ($o_idno = $this->getIDNoPlugInInstance()) {
 				if(is_array($elements = $o_idno->getElements($this->tableName(), ($t = $this->getTypeName()) ? $t : '__default__'))) {
 			
 					$seq_by_type = array_filter($elements, function($v) { return isset($v['sequence_by_type']) && (bool)$v['sequence_by_type']; });
 					if(sizeof($seq_by_type) > 0) {
-						$idno_context_fields[] = $this->getTypeFieldName();
+						$idno_context_fields[] = $type_fld_name = $this->getTypeFieldName();
+						
+						$sequence_by_type_ids = [];
+						foreach($seq_by_type as $e) {
+							$stypes = is_array($e['sequence_by_type']) ? $e['sequence_by_type'] : [$e['sequence_by_type']];
+							if(is_array($t = caMakeTypeIDList($this->tableName(), $stypes, ['dontIncludeSubtypesInTypeRestriction' => (bool)$e['dont_include_subtypes']]))) {
+								$sequence_by_type_ids = array_merge($sequence_by_type_ids, $t);
+							}
+						}
+						
+						if(sizeof($sequence_by_type_ids) > 0) {
+							$idno_context_values[$type_fld_name] = $sequence_by_type_ids;
+						}
 					}
 				}
 				
@@ -830,10 +845,19 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$vs_idno_context_sql = '';
 			if (sizeof($idno_context_fields) > 0) {
 				foreach($idno_context_fields as $f) {
-					if ($vn_context_id = $this->get($f)) {
-						$vs_idno_context_sql .= ' AND ('.$f.' = '.$this->quote($f, $vn_context_id).')';
+					if(isset($idno_context_values[$f])) {
+						if(is_array($idno_context_values[$f]) && sizeof($idno_context_values[$f])) {
+							$vs_idno_context_sql .= " AND ({$f} IN (?))";
+						} else {
+							$vs_idno_context_sql .= " AND ({$f} = ?)";
+						}
+						$params[] = $idno_context_values[$f];
+					} elseif ($vn_context_id = $this->get($f)) {
+						$vs_idno_context_sql .= " AND ({$f} = ?)";
+						$params[] = $vn_context_id;
 					} elseif ($this->getFieldInfo($f, 'IS_NULL')) {
-						$vs_idno_context_sql .= ' AND ('.$f.' IS NULL)';
+						$vs_idno_context_sql .= " AND ({$f} IS ?)";
+						$params[] = null;
 					}
 				}
 			}
@@ -847,7 +871,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				SELECT ".$this->primaryKey()." 
 				FROM ".$this->tableName()." 
 				WHERE {$vs_idno_field} = ? {$vs_remove_self_sql} {$vs_idno_context_sql} {$vs_deleted_sql}
-			", $ps_idno);
+			", $params);
 			
 			$va_ids = array();
 			while($qr_idno->nextRow()) {
