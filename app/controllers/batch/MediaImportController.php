@@ -410,7 +410,7 @@
  			$pn_max = $this->request->getParameter('max', pString);
  			$vs_root_directory = $this->request->config->get('batch_media_import_root_directory');
  			
- 			$va_level_data = array();
+ 			$va_level_data = [];
  			
  			if ($this->request->getParameter('init', pInteger)) { 
  				//
@@ -437,6 +437,8 @@
  				}
  			} else {
  				list($ps_directory, $pn_start) = explode("@@", $ps_id);
+ 				
+ 				Session::setVar('lastMediaImportDirectoryPath', $ps_directory);
  				
 				$va_tmp = explode('/', $ps_directory);
 				$vn_level = sizeof($va_tmp);

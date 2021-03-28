@@ -6327,12 +6327,12 @@ table.caConfirmBatchExecutionPanelAlertControls {
     padding:10px;
 }
 
-#caTypeChangePanelControlButtons, #caCreateChildPanelControlButtons, #caSetHomeLocationPanelControlButtons {
+#caTypeChangePanelControlButtons, #caCreateChildPanelControlButtons, #caSetHomeLocationPanelControlButtons, #caMediaBrowserPanelControlButtons {
     width: 100%;
     text-align: center;
 }
 
-#caTypeChangePanelControlButtons table, #caCreateChildPanelControlButtons table, #caSetHomeLocationPanelControlButtons table {
+#caTypeChangePanelControlButtons table, #caCreateChildPanelControlButtons table, #caSetHomeLocationPanelControlButtons table, #caMediaBrowserPanelControlButtons table {
     width: 100%;
 }
 #caTypeChangePanelControlButtons img.form-button-left, #caCreateChildPanelControlButtons img.form-button-left, #caSetHomeLocationPanelControlButtons img.form-button-left {
@@ -6371,6 +6371,34 @@ div.dialogHeader {
     border-radius:4px;
     -moz-border-radius:4px;
     -webkit-border-radius:4px;
+    
+    min-height: 300px;
+}
+
+/* Media chooser */
+#caMediaBrowserPanel {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 800px;
+    display: none;
+    margin: 0px;
+    padding:0px !important;
+    z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
+    background-color: #FFFFFF;
+    border-radius:4px;
+    -moz-border-radius:4px;
+    -webkit-border-radius:4px;
+    
+    min-height: 300px;
+}
+
+#caMediaBrowserPanelContentArea {
+    padding: 10px;
+}
+
+#caMediaBrowserPanelDirectoryBrowser {
+    height: 225px;
 }
 
 
@@ -7677,7 +7705,7 @@ a.currentSet {
 }
 
 .mediaUploadAreaMessage {
-	font-size: 16px; 
+	font-size: 15px; 
 	color: #333;
 	margin-top: 40px;
 }
@@ -7728,6 +7756,14 @@ div.objectRepresentationMetadataEditorDoneButton {
 .objectRepresentationMetadataEditorMediaRightCol .fa {
 	font-size:18px;
 	padding-right:5px;
+}
+
+.objectRepresentationAddForm {
+
+}
+
+.objectRepresentationRelateForm {
+    display: none;
 }
 
 .mediaMetadataDisplay {

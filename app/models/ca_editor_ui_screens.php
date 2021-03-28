@@ -1139,6 +1139,37 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
                         unset($va_additional_settings['colorItem']);
                         unset($va_additional_settings['list_format']);
                         
+                        $va_additional_settings['autocompletePlaceholderText'] = array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_FIELD,
+							'takesLocale' => true,
+							'default' => null,
+							'multiple' => false,
+							'width' => "475px", 'height' => "1",
+							'label' => _t('Representation auto-complete lookup placeholder text'),
+							'description' => _t('Placeholder text to display in representation autocomplete search box when linking n existing representation to a record. (New UI only)')
+						);
+						
+						$va_additional_settings['dontAllowRelationshipsToExistingRepresentations'] = array(
+							'formatType' => FT_NUMBER,
+							'displayType' => DT_CHECKBOXES,
+							'takesLocale' => false,
+							'default' => 0,
+							'multiple' => false,
+							'label' => _t('Do not allow linking to existing representations? (New UI only)'),
+							'description' => _t('Do not provide option to create relationships to existing representations. (New UI only)')
+						);
+						
+						$va_additional_settings['dontAllowAccessToImportDirectory'] = array(
+							'formatType' => FT_NUMBER,
+							'displayType' => DT_CHECKBOXES,
+							'takesLocale' => false,
+							'default' => 0,
+							'multiple' => false,
+							'label' => _t('Do not allow selection of media in the import directory? (New UI only)'),
+							'description' => _t('Do not provide option to upload media from the import directory as representations. (New UI only)')
+						);
+						
 						$va_additional_settings['dontShowPreferredLabel'] = array(
 							'formatType' => FT_NUMBER,
 							'displayType' => DT_CHECKBOXES,

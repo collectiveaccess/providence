@@ -202,13 +202,14 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 */
 	function caExtractSettingsValueByUserLocale($setting, array $setting_values, $options=null) {
 		global $g_ui_locale;
-		if(!isset($setting_values[$setting])) { return null; }
-		if (!is_array($v = $setting_values[$setting])) { return null; }
+		if(!isset($setting_values[$setting])) { return caGetOption('default', $options, null); }
+		if (!is_array($v = $setting_values[$setting])) { return caGetOption('default', $options, null); }
 
 		if (isset($v[$g_ui_locale])) {
 			return $v[$g_ui_locale];
 		}
-		return array_shift($v);
+		if (!is_null($val = array_shift($v))) { return $v; }
+		return caGetOption('default', $options, null);
 	}
 	# ------------------------------------------------------------------------------------------------
 	function caExtractValuesByUserLocaleFromHierarchyChildList($pa_list, $ps_primary_key_name, $ps_label_display_field, $ps_use_if_no_label_field, $ps_default_text='???') {
