@@ -34,7 +34,7 @@
  
 	if($this->request->config->get('summary_header_enabled')) {
 		switch($this->getVar('PDFRenderer')) {
-			case 'domPDF'
+			case 'domPDF':
 ?>
 <div id='header'>
 <?php
