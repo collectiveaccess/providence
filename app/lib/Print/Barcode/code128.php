@@ -202,7 +202,7 @@ class Barcode_code128 extends Barcode
     * the $code array, containing the bar and space pattern
     * for the Code128 B character set.
     */
-    function Barcode_code128()
+    function __construct()
     {
         $this->code[0] = "212222";  // " "
         $this->code[1] = "222122";  // "!"
