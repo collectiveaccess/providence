@@ -106,7 +106,7 @@ spl_autoload_register(function ($class) {
     
     //
     return false;
-});
+  });
 
 /** 
  * Global list of temporary file paths to delete at request end
@@ -119,5 +119,5 @@ register_shutdown_function(function() {
 			@unlink($f);
 		}
 	}
-});
+  });
 
