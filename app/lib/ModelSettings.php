@@ -441,8 +441,8 @@ trait ModelSettings {
 						ckEditor.on('instanceReady', function(){ 
 							 ckEditor.document.on( 'keydown', function(e) {if (caUI && caUI.utils) { caUI.utils.showUnsavedChangesWarning(true); } });
 						});
-});									
-</script>";
+	});									
+	</script>";
 					}
 				}
 				break;
@@ -473,10 +473,10 @@ trait ModelSettings {
 					
 					if (!$va_attributes['checked']) {
 						$vs_return .= "<script type='text/javascript'>
-jQuery(document).ready(function() {
-	jQuery('".join(",", $va_ids)."').hide();
-});
-</script>\n";
+	jQuery(document).ready(function() {
+		jQuery('".join(",", $va_ids)."').hide();
+	});
+	</script>\n";
 					}
 				}
 				$vs_return .= caHTMLCheckboxInput($vs_input_name, $va_attributes, array());

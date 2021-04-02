@@ -343,7 +343,7 @@ function caFileIsIncludable($ps_file) {
 		if(!file_exists($dir)) { return []; }
 		if($va_paths = @scandir($dir, 0)) {
 			foreach($va_paths as $item) {
-				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
+				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item[0] !== '.'))) {
 					$va_stat = @stat("{$dir}/{$item}");
 					if (
 						(isset($pa_options['modifiedSince']) && ($pa_options['modifiedSince'] > 0))
@@ -401,7 +401,7 @@ function caFileIsIncludable($ps_file) {
 		);
 		if ($handle = @opendir($dir)) {
 			while (false !== ($item = readdir($handle))) {
-				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
+				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item[0] !== '.'))) {
 					$vb_is_dir = is_dir("{$dir}/{$item}");
 					if ($vb_is_dir) {
 						$va_counts['directories']++;
@@ -442,7 +442,7 @@ function caFileIsIncludable($ps_file) {
 		$vn_file_count = 0;
 		if ($handle = @opendir($dir)) {
 			while (false !== ($item = readdir($handle))) {
-				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
+				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item[0] !== '.'))) {
 					if (is_dir("{$dir}/{$item}")) {
 						$va_dir_list = array_merge($va_dir_list, caGetSubDirectoryList("{$dir}/{$item}", true, $pb_include_hidden_files));
 					}  else {
