@@ -34,7 +34,6 @@
 	class recordsByStatusWidget extends BaseWidget implements IWidget {
 		# -------------------------------------------------------
 		private $opo_config;
-		private $opo_datamodel;
 
 		private $opa_table_display_names;
 		private $opa_status_display_names;

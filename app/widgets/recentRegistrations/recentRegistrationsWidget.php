@@ -35,7 +35,6 @@
 	class recentRegistrationsWidget extends BaseWidget implements IWidget {
 		# -------------------------------------------------------
 		private $opo_config;
-		private $opo_datamodel;
 		
 		static $s_widget_settings = [];
 		# -------------------------------------------------------

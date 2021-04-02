@@ -33,7 +33,6 @@
 	class recentlyCreatedWidget extends BaseWidget implements IWidget {
 		# -------------------------------------------------------
 		private $opo_config;
-		private $opo_datamodel;
 
 		private $opa_table_display_names;
 
