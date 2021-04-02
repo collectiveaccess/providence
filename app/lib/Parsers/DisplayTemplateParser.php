@@ -892,7 +892,7 @@ class DisplayTemplateParser {
 						$va_linking_ids = [$pr_res->getPrimaryKey()];
 						
 						if ($t_instance->isRelationship() && (is_array($va_tmp = caGetTemplateTags($o_node->html(), ['firstPartOnly' => true])) && sizeof($va_tmp))) {
-							$vs_linking_context = array_shift($va_tmp);
+							$vs_linking_context = array_shift(explode('.', array_shift($va_tmp)));
 							if (in_array($vs_linking_context, [$t_instance->getLeftTableName(), $t_instance->getRightTableName()])) {
 								$va_linking_ids = $pr_res->get("{$vs_linking_context}.".Datamodel::primaryKey($vs_linking_context), ['returnAsArray' => true, 'primaryIDs' => $pa_options['primaryIDs']]);
 							}
@@ -959,10 +959,11 @@ class DisplayTemplateParser {
 		unset($options['returnAsArray']);
 		unset($options['returnWithStructure']);
 		
+		$relative_to_container = caGetOption('relativeToContainer', $options, null);
 		$orig_table = $table = $qr_res->tableName();
 		$orig_row_id = $row_id = $qr_res->getPrimaryKey();
 		
-		$orig_cvc = $cvc = MemoryCache::contains($orig_table.'/'.$orig_row_id, 'DisplayTemplateParserValues') ? MemoryCache::fetch($orig_table.'/'.$orig_row_id, 'DisplayTemplateParserValues') : [];
+		$orig_cvc = $cvc = MemoryCache::contains($orig_table.'/'.$orig_row_id.'/'.$relative_to_container, 'DisplayTemplateParserValues') ? MemoryCache::fetch($orig_table.'/'.$orig_row_id.'/'.$relative_to_container, 'DisplayTemplateParserValues') : [];
 		
 		$is_fully_cached = true;
 		$acc = [];
@@ -976,9 +977,8 @@ class DisplayTemplateParser {
 		}
 		if($is_fully_cached) {
 			return $acc;
-		} else {
-			$acc = null;
 		}
+		$acc = null;
 		
 		$start = caGetOption('unitStart', $options, 0, ['castTo' => 'int']);
 		$length = caGetOption('unitLength', $options, 0, ['castTo' => 'int']);
@@ -1008,7 +1008,7 @@ class DisplayTemplateParser {
 				$row_id = $qr_res->getPrimaryKey();
 				
 				// Reload current values cache using mapped table and row_id
-				$cvc = MemoryCache::contains($table.'/'.$row_id, 'DisplayTemplateParserValues') ? MemoryCache::fetch($table.'/'.$row_id, 'DisplayTemplateParserValues') : [];
+				$cvc = MemoryCache::contains($table.'/'.$row_id.'/'.$relative_to_container, 'DisplayTemplateParserValues') ? MemoryCache::fetch($table.'/'.$row_id.'/'.$relative_to_container, 'DisplayTemplateParserValues') : [];
 			}
 		}
 		
@@ -1049,7 +1049,7 @@ class DisplayTemplateParser {
 		
 		$vn_count = 1;
 		$va_tag_vals = null;
-		if ($vs_relative_to_container = caGetOption('relativeToContainer', $options, null)) {
+		if ($relative_to_container) {
 			$vs_sort_direction = caGetOption('sortDirection', $options, null, ['forceLowercase' => true]);
 				
 			$va_tag_vals = [];
@@ -1062,7 +1062,7 @@ class DisplayTemplateParser {
 				} else {
 					$vs_get_spec = $va_get_specs[$tag]['spec'];
 				}
-				if (!preg_match("!^{$vs_relative_to_container}!", $vs_get_spec)) { $vs_get_spec = $vs_relative_to_container.".".$vs_get_spec; }
+				if (!preg_match("!^{$relative_to_container}!", $vs_get_spec)) { $vs_get_spec = $relative_to_container.".".$vs_get_spec; }
 
 				$vals = $qr_res->get($vs_get_spec, array_merge($options, $va_parsed_tag_opts['options'], ['sort' => null, 'sortDirection' => null, 'filters' => $va_parsed_tag_opts['filters'], 'returnAsArray' => true, 'returnBlankValues' => true], $va_get_specs[$tag]['isRelated'] ? $va_remove_opts_for_related : []));
 	
@@ -1100,7 +1100,9 @@ class DisplayTemplateParser {
 			
 			if(strlen($index)) {
 				$va_tag_vals = $va_tag_vals[$index];	
-				$vs_relative_to_container = null;
+				$relative_to_container = null;
+			} else {
+				$vn_count = sizeof($va_tag_vals);
 			}
 		}
 		
@@ -1109,7 +1111,9 @@ class DisplayTemplateParser {
 		
 		for($vn_c = 0; $vn_c < $vn_count; $vn_c++) {
 			foreach(array_keys($tags) as $tag) {
-				if ($cv = $orig_cvc[$tag]) {
+				if($relative_to_container) {
+					$vals[$vn_c][$tag] = $cv;
+				} elseif ($cv = $orig_cvc[$tag]) {
 					$vals[$tag] = $cv;
 				} else {
 					$vs_get_spec = $va_get_specs[$tag]['spec'];
@@ -1117,8 +1121,8 @@ class DisplayTemplateParser {
 				
 					if ((substr($tag, 0, 5) === '^join')) {
 							$val_list = $va_acc = [];
-							if ($vs_relative_to_container) {
-								$va_rel_vs = $qr_res->get($vs_relative_to_container, array_merge($options, $va_parsed_tag_opts['options'], ['filters' => $va_parsed_tag_opts['filters'], 'returnAsArray' => true, 'returnWithStructure' => true]));
+							if ($relative_to_container) {
+								$va_rel_vs = $qr_res->get($relative_to_container, array_merge($options, $va_parsed_tag_opts['options'], ['filters' => $va_parsed_tag_opts['filters'], 'returnAsArray' => true, 'returnWithStructure' => true]));
 								foreach($va_rel_vs as $va_rel_v) {
 									$va_rel_v = array_values($va_rel_v);
 									$val_list[] = DisplayTemplateParser::processJoinTag($va_rel_v[$vn_c], $va_parsed_tag_opts);
@@ -1193,7 +1197,7 @@ class DisplayTemplateParser {
 							default:
 								if(isset($options['forceValues'][$vs_get_spec][$qr_res->getPrimaryKey()])) { 
 									$val_list = [$options['forceValues'][$vs_get_spec][$qr_res->getPrimaryKey()]];
-								} elseif ($vs_relative_to_container) {
+								} elseif ($relative_to_container) {
 									$val_list = [$va_tag_vals[$vn_c][$tag]];
 								} elseif(strlen($index)) {
 									$val_list = [$va_tag_vals[$tag]];
@@ -1220,7 +1224,7 @@ class DisplayTemplateParser {
 					}
 					$ps_delimiter = caGetOption('delimiter', $va_opts, ';');
 				
-					if ($vs_relative_to_container) {
+					if ($relative_to_container) {
 						$orig_cvc[$tag][$vn_c] = $cvc[$tag][$vn_c] = $vals[$vn_c][$tag] = join($ps_delimiter, $val_list);
 						if (isset($va_tag_vals[$vn_c]['__sort__'])) {
 							$orig_cvc['__sort__'][$vn_c] = $cvc['__sort__'][$vn_c] = $vals[$vn_c]['__sort__'] = $va_tag_vals[$vn_c]['__sort__'];
@@ -1232,8 +1236,10 @@ class DisplayTemplateParser {
 						}
 					}
 					
-					MemoryCache::save($table."/".$row_id, $cvc, 'DisplayTemplateParserValues');
-					MemoryCache::save($orig_table."/".$orig_row_id, $orig_cvc, 'DisplayTemplateParserValues');
+					MemoryCache::save($table."/".$row_id.'/'.$relative_to_container, $cvc, 'DisplayTemplateParserValues');
+					if(($orig_table !== $table) && ($orig_row_id !== $row_id)) {
+						MemoryCache::save($orig_table."/".$orig_row_id.'/'.$relative_to_container, $orig_cvc, 'DisplayTemplateParserValues');
+					}
 				}
 			}
 		}
