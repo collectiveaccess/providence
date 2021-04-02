@@ -90,11 +90,6 @@
 		private $opb_dont_expand_source_restrictions = false;
 
 		/**
-		 * @var Instance of Datamodel class
-		 */
-		protected $opo_datamodel;
-
-		/**
 		 * @var Instance of Db database client
 		 */
 		protected $opo_db;

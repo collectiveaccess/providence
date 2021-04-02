@@ -39,7 +39,6 @@
  	require_once(__CA_APP_DIR__."/helpers/configurationHelpers.php");
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
  	require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
- 	require_once(__CA_LIB_DIR__."/Datamodel.php");
  	require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
  	require_once(__CA_LIB_DIR__."/ResultContext.php");
  	require_once(__CA_LIB_DIR__."/BatchProcessor.php");
@@ -47,7 +46,6 @@
  
  	class EditorController extends ActionController {
  		# -------------------------------------------------------
- 		protected $opo_datamodel;
  		protected $opo_app_plugin_manager;
  		protected $opo_result_context;
  		# -------------------------------------------------------
@@ -302,7 +300,7 @@
  			MetaTagManager::setWindowTitle(_t("Batch editing %1 %2 with set %3", $vn_item_count, $vs_item_name, $t_set->getLabelForDisplay(true)));
  			
  			
- 			return array($vn_set_id, $t_set, $t_subject, $t_ui);
+ 			return [$vn_set_id, $t_set, $t_subject, $t_ui];
  		}
 		# ------------------------------------------------------------------
 		/** 

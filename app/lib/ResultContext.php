@@ -788,7 +788,6 @@
 			if (!($table_name = Datamodel::getTableName($table_name_or_num))) { return null; }
 			$o_find_navigation = Configuration::load(((defined('__CA_THEME_DIR__') && (__CA_APP_TYPE__ == 'PAWTUCKET')) ? __CA_THEME_DIR__ : __CA_APP_DIR__).'/conf/find_navigation.conf');
 			$find_nav = $o_find_navigation->getAssoc($table_name);
-			print_R($find_nav);
 			if(is_null($nav = caGetOption($find_type, $find_nav, null))) { return null; }
 			
 			return caNavUrl($request, trim($nav['module_path']), trim($nav['controller']), trim($nav['action']), []);

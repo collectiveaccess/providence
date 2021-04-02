@@ -40,7 +40,6 @@ require_once(__CA_MODELS_DIR__."/ca_metadata_elements.php");
 require_once(__CA_MODELS_DIR__."/ca_attributes.php");
 require_once(__CA_MODELS_DIR__."/ca_attribute_values.php");
 require_once(__CA_MODELS_DIR__."/ca_bundle_displays.php");
-require_once(__CA_LIB_DIR__."/Datamodel.php");
 require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__."/ResultContext.php");
 require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
@@ -53,7 +52,6 @@ define('__CA_SAVE_AND_RETURN_STACK_SIZE__', 30);
 
 class BaseEditorController extends ActionController {
 	# -------------------------------------------------------
-	protected $opo_datamodel;
 	protected $opo_app_plugin_manager;
 	protected $opo_result_context;
 	# -------------------------------------------------------

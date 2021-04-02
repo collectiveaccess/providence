@@ -259,7 +259,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		}
 		unset($this->opo_config);
 		unset($this->search_config);
-		unset($this->opo_datamodel);
 		unset($this->db);
 		unset($this->opo_tep);
 	}
