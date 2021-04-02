@@ -2641,15 +2641,7 @@ class TimeExpressionParser {
 			
 			
 			if (isset($pa_options['dateFormat']) && ($pa_options['dateFormat'] == 'iso8601')) {
-				// $vs_start = $this->getISODateTime($va_start_pieces, 'START', $pa_options);
-// 				$vs_end = $this->getISODateTime($va_end_pieces, 'END', $pa_options);
-// 				
 				return $this->getISODateRange($va_start_pieces, $va_end_pieces, $pa_options);
-				// if ($vs_start != $vs_end) {
-// 					return "{$vs_start}/{$vs_end}";
-// 				} else {
-// 					return $vs_start;
-// 				}
 			}
 
 			// special treatment for HSP
