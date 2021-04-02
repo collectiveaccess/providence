@@ -112,6 +112,7 @@
 	if ($vb_objects_x_collections_hierarchy_enabled && is_array($va_object_collection_collection_ancestors)) {
 		$pa_ancestors = $va_object_collection_collection_ancestors + $pa_ancestors;
 		$vb_do_objects_x_collections_hierarchy = true;
+		$show_move = true;
 	}
 
 	if (is_array($pa_ancestors) && sizeof($pa_ancestors) > 0) {
