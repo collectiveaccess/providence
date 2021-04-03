@@ -992,7 +992,7 @@
 					break;
 			}
 		
-            $vs_sql = "SELECT DISTINCT {$vs_table}.{$select_flds}".($vs_sort_proc ? ", {$vs_sort_proc}" : "")." FROM {$vs_table}";
+            $vs_sql = "SELECT DISTINCT `{$vs_table}.{$select_flds}".($vs_sort_proc ? ", `{$vs_sort_proc}`" : "")." FROM {$vs_table}";
             $vs_sql .= join("\n", $va_joins);
             $vs_sql .= ((sizeof($va_sql) > 0) ? " WHERE (".join(" AND ", $va_sql).")" : "");
 			
@@ -1003,12 +1003,12 @@
 					switch($va_tmp[0]) {
 						case $vs_table:
 							if ($t_instance->hasField($va_tmp[1])) {
-								$vs_orderby = " ORDER BY {$vs_sort_proc} {$ps_sort_direction}";
+								$vs_orderby = " ORDER BY `{$vs_sort_proc}` {$ps_sort_direction}";
 							}
 							break;
 						case $vs_label_table:
 							if ($t_label->hasField($va_tmp[1])) {
-								$vs_orderby = " ORDER BY {$vs_sort_proc} {$ps_sort_direction}";
+								$vs_orderby = " ORDER BY `{$vs_sort_proc}` {$ps_sort_direction}";
 							}
 							break;
 					}
