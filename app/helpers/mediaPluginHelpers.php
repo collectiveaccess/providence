@@ -150,7 +150,7 @@
 		
 		$vb_ret = (($vn_return >= 0) && ($vn_return < 127));
 		
-		CompositeCache::save("mediahelper_dcraw_installed", $vb_ret, "mediaPluginInfo");
+		CompositeCache::save("mediahelper_dcraw_installed", $ps_path_to_dcraw, "mediaPluginInfo");
 		
 		return $vb_ret ? $ps_path_to_dcraw : false;
 	}
