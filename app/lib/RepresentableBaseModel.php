@@ -522,7 +522,7 @@
 		 *		centerX = Horizontal position of image center used when cropping as a percentage expressed as a decimal between 0 and 1. If omitted existing value is maintained. Note that both centerX and centerY must be specified for the center to be changed.
 		 *		centerY = Vertical position of image center used when cropping as a percentage expressed as a decimal between 0 and 1. If omitted existing value is maintained. Note that both centerX and centerY must be specified for the center to be changed.
 		 *
-		 * @return mixed Returns primary key (link_id) of the relatipnship row linking the newly created representation to the item; if the 'returnRepresentation' is set then an instance for the newly created ca_object_representations is returned instead; boolean false is returned on error
+		 * @return mixed Returns primary key (link_id) of the relationship row linking the newly created representation to the item; if the 'returnRepresentation' is set then an instance for the newly created ca_object_representations is returned instead; boolean false is returned on error
 		 */
 		public function addRepresentation($ps_media_path, $pn_type_id, $pn_locale_id, $pn_status, $pn_access, $pb_is_primary, $pa_values=null, $pa_options=null) {
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
