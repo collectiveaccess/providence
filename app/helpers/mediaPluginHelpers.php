@@ -67,7 +67,10 @@
 	/**
 	 * Detects if ImageMagick executables is available within specified directory path
 	 *
-	 * @param $ps_imagemagick_path - path to directory containing ImageMagick executables
+	 * @param string $ps_imagemagick_path - path to directory containing ImageMagick executables
+	 * @param array $options Options include:
+	 *		noCache = Don't cached path value. [Default is false]
+	 *
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
 	function caMediaPluginImageMagickInstalled($ps_imagemagick_path=null, $options=null) {
@@ -96,7 +99,10 @@
 	/**
 	 * Detects if GraphicsMagick is available in specified directory path
 	 *
-	 * @param $ps_graphicsmagick_path - path to directory containing GraphicsMagick executables
+	 * @param string $ps_graphicsmagick_path - path to directory containing GraphicsMagick executables
+	 * @param array $options Options include:
+	 *		noCache = Don't cached path value. [Default is false]
+	 *
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
 	function caMediaPluginGraphicsMagickInstalled($ps_graphicsmagick_path=null, $options=null) {
@@ -125,7 +131,10 @@
 	/**
 	 * Detects if dcraw executable is available at specified path
 	 *
-	 * @param $ps_path_to_dcraw - full path to dcraw including executable name
+	 * @param string $ps_path_to_dcraw - full path to dcraw including executable name
+	 * @param array $options Options include:
+	 *		noCache = Don't cached path value. [Default is false]
+	 *
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
 	function caMediaPluginDcrawInstalled($ps_path_to_dcraw=null, $options=null) {
@@ -149,7 +158,10 @@
 	/**
 	 * Detects if ffmpeg executable is available at specified path
 	 *
-	 * @param $ps_path_to_ffmpeg - full path to ffmpeg including executable name
+	 * @param string $ps_path_to_ffmpeg - full path to ffmpeg including executable name
+	 * @param array $options Options include:
+	 *		noCache = Don't cached path value. [Default is false]
+	 *
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
 	function caMediaPluginFFmpegInstalled($ps_path_to_ffmpeg=null, $options=null) {
@@ -178,7 +190,10 @@
 	/**
 	 * Detects if Ghostscript (gs) executable is available at specified path
 	 *
-	 * @param $ps_path_to_ghostscript - full path to Ghostscript including executable name
+	 * @param string $ps_path_to_ghostscript - full path to Ghostscript including executable name
+	 * @param array $options Options include:
+	 *		noCache = Don't cached path value. [Default is false]
+	 *
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
 	function caMediaPluginGhostscriptInstalled($ps_path_to_ghostscript=null, $options=null) {
@@ -207,7 +222,10 @@
 	/**
 	 * Detects if PdfToText executable is available at specified path
 	 *
-	 * @param $ps_path_to_pdf_to_text - full path to PdfToText including executable name
+	 * @param string $ps_path_to_pdf_to_text - full path to PdfToText including executable name
+	 * @param array $options Options include:
+	 *		noCache = Don't cached path value. [Default is false]
+	 *
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
 	function caMediaPluginPdftotextInstalled($ps_path_to_pdf_to_text=null, $options=null) {
@@ -231,7 +249,10 @@
 	/**
 	 * Detects if LibreOffice executable is available at specified path
 	 *
-	 * @param $ps_path_to_libreoffice - full path to LibreOffice including executable name
+	 * @param string $ps_path_to_libreoffice - full path to LibreOffice including executable name
+	 * @param array $options Options include:
+	 *		noCache = Don't cached path value. [Default is false]
+	 *
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
 	function caMediaPluginLibreOfficeInstalled($ps_path_to_libreoffice=null, $options=null) {
@@ -259,6 +280,8 @@
 	/**
 	 * Detects if Imagick PHP extension is available
 	 *
+	 * @param array $options No option are currently available.
+	 *
 	 * @return boolean - true if available, false if not
 	 */
 	function caMediaPluginImagickInstalled($options=null) {
@@ -270,6 +293,8 @@
 	/**
 	 * Detects if Gmagick PHP extension is available
 	 *
+	 * @param array $options No option are currently available.
+	 *
 	 * @return boolean - true if available, false if not
 	 */
 	function caMediaPluginGmagickInstalled($options=null) {
@@ -280,7 +305,9 @@
 	 * Detects if GD PHP extension is available. Return false if GD is installed but lacks JPEG support unless "don't worry about JPEGs" parameter is set to true.
 	 *
 	 * @param boolean $pb_dont_worry_about_jpegs If set will return true if GD is installed without JPEG support; default is to consider JPEG-less GD worthless.
-	 * @return boolean - true if available, false if not
+	 * @param array $options No option are currently available.
+	 *
+	 * @return boolean true if available, false if not
 	 */
 	function caMediaPluginGDInstalled($pb_dont_worry_about_jpegs=false, $options=null) {
 		if ($pb_dont_worry_about_jpegs) {
@@ -293,7 +320,10 @@
 	/**
 	 * Detects if mediainfo is installed in the given path.
 	 *
-	 * @param $ps_mediainfo_path - full path to MediaInfo executable 
+	 * @param string $ps_mediainfo_path - full path to MediaInfo executable 
+	 * @param array $options Options include:
+	 *		noCache = Don't cached path value. [Default is false]
+	 *
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
 	function caMediaInfoInstalled($ps_mediainfo_path=null, $options=null) {
@@ -319,6 +349,9 @@
 	 * Detects if OpenCTM (http://openctm.sourceforge.net) is installed in the given path.
 	 *
 	 * @param string $ps_openctm_path path to OpenCTM ctmconv binary
+	 * @param array $options Options include:
+	 *		noCache = Don't cached path value. [Default is false]
+	 *
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
 	function caOpenCTMInstalled($ps_openctm_ctmconv_path=null, $options=null) {
@@ -345,6 +378,9 @@
 	 * Detects if Meshlab (http://meshlab.sourceforge.net), and specifically the meshlabserver command line tool, is installed in the given path.
 	 *
 	 * @param string $ps_meshlabserver_path path to the meshlabserver binary
+	 * @param array $options Options include:
+	 *		noCache = Don't cached path value. [Default is false]
+	 *
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
 	function caMeshlabServerInstalled($ps_meshlabserver_path=null, $options=null) {
@@ -375,6 +411,9 @@
 	 * Detects if PDFMiner (http://www.unixuser.org/~euske/python/pdfminer/index.html) is installed in the given path.
 	 *
 	 * @param string $ps_pdfminer_path path to PDFMiner
+	 * @param array $options Options include:
+	 *		noCache = Don't cached path value. [Default is false]
+	 *
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
 	function caPDFMinerInstalled($ps_pdfminer_path=null, $options=null) {
@@ -408,6 +447,9 @@
 	 * Detects if wkhtmltopdf (http://www.wkhtmltopdf.org) is installed in the given path.
 	 *
 	 * @param string $ps_wkhtmltopdf_path path to wkhtmltopdf executable
+	 * @param array $options Options include:
+	 *		noCache = Don't cached path value. [Default is false]
+	 *
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
 	function caWkhtmltopdfInstalled($ps_wkhtmltopdf_path=null, $options=null) {
@@ -441,6 +483,9 @@
 	 * Detects if youtube-dl (http://www.youtube-dl.org) is installed in the given path.
 	 *
 	 * @param string $youtube_dl_path path to youtube-dl executable
+	 * @param array $options Options include:
+	 *		noCache = Don't cached path value. [Default is false]
+	 *
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
 	function caYouTubeDlInstalled($youtube_dl_path=null, $options=null) {
@@ -473,6 +518,9 @@
 	 * Detects if ExifTool (http://www.sno.phy.queensu.ca/~phil/exiftool/) is installed in the given path.
 	 *
 	 * @param string $ps_exiftool_path path to ExifTool
+	 * @param array $options Options include:
+	 *		noCache = Don't cached path value. [Default is false]
+	 *
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
 	function caExifToolInstalled($ps_exiftool_path=null, $options=null) {
