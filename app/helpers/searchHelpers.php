@@ -1465,7 +1465,7 @@
 
 		$cache_key = caMakeCacheKeyFromOptions($options, "{$ps_table}/{$pn_type_id}");
 		
-		if (CompositeCache::contains("available_sorts") && is_array($cached_data = CompositeCache::fetch("available_sorts")) && isset($cached_data[$cache_key])) { return $cached_data[$cache_key]; }
+		if (CompositeCache::contains('available_sorts', 'SearchBuilder') && is_array($cached_data = CompositeCache::fetch('available_sorts', 'SearchBuilder')) && isset($cached_data[$cache_key])) { return $cached_data[$cache_key]; }
 
 		$o_config = Configuration::load();
 		$pn_display_id = caGetOption('restrictToDisplay', $options, null);
@@ -1730,7 +1730,7 @@
 		$ret = array_merge(['_natural' => $natural_sort_label], $va_base_fields);
 		
 		$cached_data[$cache_key] = $ret;
-		CompositeCache::save("available_sorts", $cached_data);
+		CompositeCache::save('available_sorts', $cached_data, 'SearchBuilder');
 		return $ret;
 	}
 	# ---------------------------------------
