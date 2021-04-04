@@ -70,8 +70,8 @@
 	 * @param $ps_imagemagick_path - path to directory containing ImageMagick executables
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
-	function caMediaPluginImageMagickInstalled($ps_imagemagick_path=null) {
-		if (CompositeCache::contains("mediahelper_imagemagick_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_imagemagick_installed", "mediaPluginInfo"); }
+	function caMediaPluginImageMagickInstalled($ps_imagemagick_path=null, $options=null) {
+		if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_imagemagick_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_imagemagick_installed", "mediaPluginInfo"); }
 		if(!$ps_imagemagick_path) { $ps_imagemagick_path = caGetExternalApplicationPath('imagemagick', ['executableName' => 'identify']); }
 
 		if (!caIsValidFilePath($ps_imagemagick_path)) { 
@@ -99,8 +99,8 @@
 	 * @param $ps_graphicsmagick_path - path to directory containing GraphicsMagick executables
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
-	function caMediaPluginGraphicsMagickInstalled($ps_graphicsmagick_path=null) {
-		if (CompositeCache::contains("mediahelper_graphicsmagick_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_graphicsmagick_installed", "mediaPluginInfo"); }
+	function caMediaPluginGraphicsMagickInstalled($ps_graphicsmagick_path=null, $options=null) {
+		if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_graphicsmagick_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_graphicsmagick_installed", "mediaPluginInfo"); }
 		if(!$ps_graphicsmagick_path) { $ps_graphicsmagick_path = caGetExternalApplicationPath('graphicsmagick'); }
 
 		if (!caIsValidFilePath($ps_graphicsmagick_path)) { 
@@ -128,8 +128,8 @@
 	 * @param $ps_path_to_dcraw - full path to dcraw including executable name
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
-	function caMediaPluginDcrawInstalled($ps_path_to_dcraw=null) {
-		if (CompositeCache::contains("mediahelper_dcraw_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_dcraw_installed", "mediaPluginInfo"); }
+	function caMediaPluginDcrawInstalled($ps_path_to_dcraw=null, $options=null) {
+		if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_dcraw_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_dcraw_installed", "mediaPluginInfo"); }
 		if(!$ps_path_to_dcraw) { $ps_path_to_dcraw = caGetExternalApplicationPath('dcraw'); }
 
 		if (!caIsValidFilePath($ps_path_to_dcraw)) { 
@@ -152,8 +152,8 @@
 	 * @param $ps_path_to_ffmpeg - full path to ffmpeg including executable name
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
-	function caMediaPluginFFmpegInstalled($ps_path_to_ffmpeg=null) {
-		if (CompositeCache::contains("mediahelper_ffmpeg_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_ffmpeg_installed", "mediaPluginInfo"); }
+	function caMediaPluginFFmpegInstalled($ps_path_to_ffmpeg=null, $options=null) {
+		if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_ffmpeg_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_ffmpeg_installed", "mediaPluginInfo"); }
 		if(!$ps_path_to_ffmpeg) { $ps_path_to_ffmpeg = caGetExternalApplicationPath('ffmpeg'); }
 
 		if (!caIsValidFilePath($ps_path_to_ffmpeg)) { 
@@ -181,8 +181,8 @@
 	 * @param $ps_path_to_ghostscript - full path to Ghostscript including executable name
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
-	function caMediaPluginGhostscriptInstalled($ps_path_to_ghostscript=null) {
-		if (CompositeCache::contains("mediahelper_ghostscript_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_ghostscript_installed", "mediaPluginInfo"); }
+	function caMediaPluginGhostscriptInstalled($ps_path_to_ghostscript=null, $options=null) {
+		if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_ghostscript_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_ghostscript_installed", "mediaPluginInfo"); }
 		if(!$ps_path_to_ghostscript) { $ps_path_to_ghostscript = caGetExternalApplicationPath('ghostscript'); }
 
 		if (!caIsValidFilePath($ps_path_to_ghostscript)) { 
@@ -210,8 +210,8 @@
 	 * @param $ps_path_to_pdf_to_text - full path to PdfToText including executable name
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
-	function caMediaPluginPdftotextInstalled($ps_path_to_pdf_to_text=null) {
-		if (CompositeCache::contains("mediahelper_pdftotext_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_pdftotext_installed", "mediaPluginInfo"); }
+	function caMediaPluginPdftotextInstalled($ps_path_to_pdf_to_text=null, $options=null) {
+		if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_pdftotext_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_pdftotext_installed", "mediaPluginInfo"); }
 		if(!$ps_path_to_pdf_to_text) { $ps_path_to_pdf_to_text = caGetExternalApplicationPath('pdftotext'); }
 		
 		if (!caIsValidFilePath($ps_path_to_pdf_to_text)) { 
@@ -234,8 +234,8 @@
 	 * @param $ps_path_to_libreoffice - full path to LibreOffice including executable name
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
-	function caMediaPluginLibreOfficeInstalled($ps_path_to_libreoffice=null) {
-		if (CompositeCache::contains("mediahelper_libreoffice_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_libreoffice_installed", "mediaPluginInfo"); }
+	function caMediaPluginLibreOfficeInstalled($ps_path_to_libreoffice=null, $options=null) {
+		if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_libreoffice_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_libreoffice_installed", "mediaPluginInfo"); }
 		if(!$ps_path_to_libreoffice) { $ps_path_to_libreoffice = caGetExternalApplicationPath('libreoffice'); }
 		if (!caIsValidFilePath($ps_path_to_libreoffice)) { 
 			CompositeCache::save("mediahelper_libreoffice_installed", false, "mediaPluginInfo");
@@ -261,7 +261,7 @@
 	 *
 	 * @return boolean - true if available, false if not
 	 */
-	function caMediaPluginImagickInstalled() {
+	function caMediaPluginImagickInstalled($options=null) {
 		$o_config = Configuration::load();
 		if ($o_config->get('dont_use_imagick')) { return false; }
 		return class_exists('Imagick') ? true : false;
@@ -272,7 +272,7 @@
 	 *
 	 * @return boolean - true if available, false if not
 	 */
-	function caMediaPluginGmagickInstalled() {
+	function caMediaPluginGmagickInstalled($options=null) {
 		return class_exists('Gmagick') ? true : false;
 	}
 	# ------------------------------------------------------------------------------------------------
@@ -282,7 +282,7 @@
 	 * @param boolean $pb_dont_worry_about_jpegs If set will return true if GD is installed without JPEG support; default is to consider JPEG-less GD worthless.
 	 * @return boolean - true if available, false if not
 	 */
-	function caMediaPluginGDInstalled($pb_dont_worry_about_jpegs=false) {
+	function caMediaPluginGDInstalled($pb_dont_worry_about_jpegs=false, $options=null) {
 		if ($pb_dont_worry_about_jpegs) {
 			return function_exists('imagecreatefromgif') ? true : false;
 		} else {
@@ -296,8 +296,8 @@
 	 * @param $ps_mediainfo_path - full path to MediaInfo executable 
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
-	function caMediaInfoInstalled($ps_mediainfo_path=null) {
-		if (CompositeCache::contains("mediahelper_mediainfo_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_mediainfo_installed", "mediaPluginInfo"); }
+	function caMediaInfoInstalled($ps_mediainfo_path=null, $options=null) {
+		if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_mediainfo_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_mediainfo_installed", "mediaPluginInfo"); }
 		if(!$ps_mediainfo_path) { $ps_mediainfo_path = caGetExternalApplicationPath('mediainfo'); }
 		if (!caIsValidFilePath($ps_mediainfo_path)) { 
 			CompositeCache::save("mediahelper_mediainfo_installed", false, "mediaPluginInfo");
@@ -321,8 +321,8 @@
 	 * @param string $ps_openctm_path path to OpenCTM ctmconv binary
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
-	function caOpenCTMInstalled($ps_openctm_ctmconv_path=null) {
-		if (CompositeCache::contains("mediahelper_openctm_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_openctm_installed", "mediaPluginInfo"); }
+	function caOpenCTMInstalled($ps_openctm_ctmconv_path=null, $options=null) {
+		if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_openctm_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_openctm_installed", "mediaPluginInfo"); }
 		if(!$ps_openctm_ctmconv_path) { $ps_openctm_ctmconv_path = caGetExternalApplicationPath('openctm'); }
 
 		if (!caIsValidFilePath($ps_openctm_ctmconv_path)) { 
@@ -347,8 +347,8 @@
 	 * @param string $ps_meshlabserver_path path to the meshlabserver binary
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
-	function caMeshlabServerInstalled($ps_meshlabserver_path=null) {
-		if (CompositeCache::contains("mediahelper_meshlabserver_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_meshlabserver_installed", "mediaPluginInfo"); }
+	function caMeshlabServerInstalled($ps_meshlabserver_path=null, $options=null) {
+		if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_meshlabserver_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_meshlabserver_installed", "mediaPluginInfo"); }
 		if(!$ps_meshlabserver_path) { $ps_meshlabserver_path = caGetExternalApplicationPath('meshlabserver'); }
 
 		if (!caIsValidFilePath($ps_meshlabserver_path)) { 
@@ -377,8 +377,8 @@
 	 * @param string $ps_pdfminer_path path to PDFMiner
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
-	function caPDFMinerInstalled($ps_pdfminer_path=null) {
-		if (CompositeCache::contains("mediahelper_pdfminer_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_pdfminer_installed", "mediaPluginInfo"); }
+	function caPDFMinerInstalled($ps_pdfminer_path=null, $options=null) {
+		if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_pdfminer_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_pdfminer_installed", "mediaPluginInfo"); }
 		if(!$ps_pdfminer_path) { $ps_pdfminer_path = caGetExternalApplicationPath('pdfminer'); }
 
 		if (!caIsValidFilePath($ps_pdfminer_path)) { 
@@ -410,8 +410,8 @@
 	 * @param string $ps_wkhtmltopdf_path path to wkhtmltopdf executable
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
-	function caWkhtmltopdfInstalled($ps_wkhtmltopdf_path=null) {
-		if (CompositeCache::contains("mediahelper_wkhtmltopdf_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_wkhtmltopdf_installed", "mediaPluginInfo"); }
+	function caWkhtmltopdfInstalled($ps_wkhtmltopdf_path=null, $options=null) {
+		if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_wkhtmltopdf_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_wkhtmltopdf_installed", "mediaPluginInfo"); }
 		if(!$ps_wkhtmltopdf_path) { $ps_wkhtmltopdf_path = caGetExternalApplicationPath('wkhtmltopdf'); }
 		
 		if (!trim($ps_wkhtmltopdf_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_wkhtmltopdf_path)) || !@is_readable($ps_wkhtmltopdf_path)) { 
@@ -443,8 +443,8 @@
 	 * @param string $youtube_dl_path path to youtube-dl executable
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
-	function caYouTubeDlInstalled($youtube_dl_path=null) {
-		if (CompositeCache::contains("mediahelper_youtube_dl_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_youtube_dl_installed", "mediaPluginInfo"); }
+	function caYouTubeDlInstalled($youtube_dl_path=null, $options=null) {
+		if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_youtube_dl_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_youtube_dl_installed", "mediaPluginInfo"); }
 		if(!$youtube_dl_path) { $youtube_dl_path = caGetExternalApplicationPath('youtube-dl'); }
 		
 		if (!trim($youtube_dl_path) || (preg_match("/[^\/A-Za-z0-9\.:\-]+/", $youtube_dl_path)) || !@is_readable($youtube_dl_path)) { 
@@ -475,8 +475,8 @@
 	 * @param string $ps_exiftool_path path to ExifTool
 	 * @return mixed Path to executable if installed, false if not installed
 	 */
-	function caExifToolInstalled($ps_exiftool_path=null) {
-		if (CompositeCache::contains("mediahelper_exiftool_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_exiftool_installed", "mediaPluginInfo"); }
+	function caExifToolInstalled($ps_exiftool_path=null, $options=null) {
+		if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_exiftool_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_exiftool_installed", "mediaPluginInfo"); }
 		if(!$ps_exiftool_path) { $ps_exiftool_path = caGetExternalApplicationPath('exiftool'); }
 		
 		if (!trim($ps_exiftool_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_exiftool_path)) || !@is_readable($ps_exiftool_path)) { 
