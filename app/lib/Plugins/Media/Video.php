@@ -68,6 +68,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"video/x-flv"						=> "flv",
 			"video/mpeg" 						=> "mpeg",
 			"video/mp4" 						=> "m4v",
+			"video/MP2T"						=> "mts",
 			"video/ogg"							=> "ogg",
 			"video/x-matroska"					=> "mkv",
 			"video/x-dv"						=> "dv",
@@ -80,6 +81,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"video/avi" 						=> "avi",
 			"video/x-flv"						=> "flv",
 			"video/mpeg" 						=> "mp4",
+			"video/MP2T"						=> "mts",
 			"audio/mpeg"						=> "mp3",
 			"image/jpeg"						=> "jpg",
 			"image/png"							=> "png",
@@ -148,6 +150,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 		"image/jpeg"						=> "JPEG",
 		"image/png"							=> "PNG",
 		"video/mp4" 						=> "MPEG-4",
+		"video/MP2T"						=> "MTS",
 		"video/ogg"							=> "Ogg Theora",
 		"video/x-matroska"					=> "Matroska",
 		"video/x-dv"						=> "DIF (DV)"
@@ -420,6 +423,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 					break;
 				case 'video/quicktime':
 				case 'video/mp4':
+				case 'video/MP2T':
 					$this->properties["has_video"] = (isset($this->opa_media_metadata["video"]["bitrate"]) && ($this->opa_media_metadata["video"]["bitrate"]) ? 1 : 0);
 					$this->properties["has_audio"] = (isset($this->opa_media_metadata["audio"]["bitrate"]) && ($this->opa_media_metadata["audio"]["bitrate"]) ? 1 : 0);
 
@@ -1082,6 +1086,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			case 'video/mpeg':
 			case 'audio/mpeg':
 			case 'video/mp4':
+			case 'video/MP2T':
 				$vs_id = 				$pa_options["id"] ? $pa_options["id"] : "mp4_player";
 
 				$vs_poster_frame_url =	$pa_options["poster_frame_url"];
