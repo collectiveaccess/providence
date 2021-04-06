@@ -3966,13 +3966,15 @@ function caFileIsIncludable($ps_file) {
 	 * @param array $pa_options Options include:
 	 *		locale = Locale settings to use. If omitted current default locale is used. [Default is current locale]
 	 *		omitArticle = Omit leading definite and indefinited articles, rather than moving them to the end of the text [Default is true]
+	 *		maxLength = Maximum length of returned value. [Default is 255]
 	 *
-	 * @return string Converted text. If locale cannot be found $ps_text is returned unchanged.
+	 * @return string Converted text. If locale cannot be found $ps_text is returned truncated to "maxLength" value, but otherwise unchanged.
 	 */
 	function caSortableValue($ps_text, $pa_options=null) {
 		global $g_ui_locale;
 		$ps_locale = caGetOption('locale', $pa_options, $g_ui_locale);
-		if (!$ps_locale) { return $ps_text; }
+		$max_length = caGetOption('maxLength', $pa_options, 255, ['castTo' => 'int']);
+		if (!$ps_locale) { return mb_substr($ps_text, 0, $max_length); }
 
 		$pb_omit_article = caGetOption('omitArticle', $pa_options, true);
 
@@ -3997,7 +3999,7 @@ function caFileIsIncludable($ps_file) {
 				$vs_display_value = str_replace($va_matches[$i], $vs_padded, $vs_display_value);
 			}
 		}
-		return $vs_display_value;
+		return mb_substr($vs_display_value, 0, $max_length);
 	}
 	# ----------------------------------------
 	/**
