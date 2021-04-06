@@ -12,7 +12,7 @@ ALTER TABLE ca_occurrence_labels MODIFY COLUMN name_sort varchar(255) NOT NULL;
 
 DROP INDEX u_all on ca_collection_labels;
 ALTER TABLE ca_collection_labels MODIFY COLUMN name varchar(16384) NOT NULL;
-UPDATE ca_occurrence_labels SET name_sort = substr(name_sort, 0, 255);
+UPDATE ca_collection_labels SET name_sort = substr(name_sort, 0, 255);
 ALTER TABLE ca_collection_labels MODIFY COLUMN name_sort varchar(255) NOT NULL;
 create unique index u_all on ca_collection_labels
 (
