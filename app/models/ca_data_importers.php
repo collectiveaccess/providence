@@ -41,6 +41,7 @@ require_once(__CA_LIB_DIR__.'/ProgressBar.php');
 require_once(__CA_LIB_DIR__.'/Logging/KLogger/KLogger.php');
 require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__.'/Db/Transaction.php');
+require_once(__CA_LIB_DIR__.'/Import/RefineryManager.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_data_importers'] = array(

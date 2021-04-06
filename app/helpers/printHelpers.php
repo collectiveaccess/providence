@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2020 Whirl-i-Gig
+ * Copyright 2014-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,15 +29,14 @@
  *
  * ----------------------------------------------------------------------
  */
-
+use CodeItNow\BarcodeBundle\Utils\QrCode;
+use CodeItNow\BarcodeBundle\Utils\BarcodeGenerator;
 use Zend\Stdlib\Glob;
 
 /**
    *
    */
 	require_once(__CA_LIB_DIR__."/Print/PDFRenderer.php");
-	#require_once(__CA_LIB_DIR__."/Print/Barcode.php");
-	#require_once(__CA_LIB_DIR__."/Print/phpqrcode/qrlib.php");
 
 	global $g_print_measurement_cache;
 	$g_print_measurement_cache = array();
@@ -379,20 +378,25 @@ use Zend\Stdlib\Glob;
 		$ps_barcode_type = caGetOption('type', $pa_options, 'code128', array('forceLowercase' => true));
 		$pn_barcode_height = caConvertMeasurementToPoints(caGetOption('height', $pa_options, '9px'));
 
+		if ($pn_barcode_height < 10) { $pn_barcode_height *= 3; }
+
 		$vs_tmp = null;
 		switch($ps_barcode_type) {
 			case 'qr':
 			case 'qrcode':
-				$vs_tmp = tempnam(caGetTempDirPath(), 'caQRCode');
-				$vs_tmp2 = tempnam(caGetTempDirPath(), 'caQRCodeResize');
-
-				if (!defined('QR_LOG_DIR')) { define('QR_LOG_DIR', false); }
-
-				if (($pn_barcode_height < 1) || ($pn_barcode_height > 8)) {
-					$pn_barcode_height = 1;
-				}
-				QRcode::png($ps_value, "{$vs_tmp}.png", QR_ECLEVEL_H, $pn_barcode_height);
-				return $vs_tmp;
+				$qrCode = new QrCode();
+				$qrCode
+					->setText($ps_value)
+					->setSize($pn_barcode_height)
+					->setPadding(10)
+					->setErrorCorrection('high')
+					->setForegroundColor(array('r' => 0, 'g' => 0, 'b' => 0, 'a' => 0))
+					->setBackgroundColor(array('r' => 255, 'g' => 255, 'b' => 255, 'a' => 0))
+					->setLabel('')
+					->setLabelFontSize(10)
+					->setImageType(QrCode::IMAGE_TYPE_PNG);
+					
+				return '<img src="data:'.$qrCode->getContentType().';base64,'.$qrCode->generate().'" />';
 				break;
 			case 'code128':
 			case 'code39':
@@ -400,10 +404,24 @@ use Zend\Stdlib\Glob;
 			case 'int25':
 			case 'postnet':
 			case 'upca':
-				$o_barcode = new Barcode();
-				$vs_tmp = tempnam(caGetTempDirPath(), 'caBarCode');
-				if(!($va_dimensions = $o_barcode->draw($ps_value, "{$vs_tmp}.png", $ps_barcode_type, 'png', $pn_barcode_height))) { return null; }
-				return $vs_tmp;
+				$map = [
+					'code128' => BarcodeGenerator::Code128,
+					'code39' => BarcodeGenerator::Code39,
+					'ean13' => BarcodeGenerator::Ean128,
+					'ean128' => BarcodeGenerator::Ean128,
+					'int25' => BarcodeGenerator::I25,
+					'postnet' => BarcodeGenerator::Postnet,
+					'upca' => BarcodeGenerator::Upca,
+				];
+			
+				$barcode = new BarcodeGenerator();
+				$barcode->setText($ps_value);
+				$barcode->setLabel('');
+				$barcode->setType($map[$ps_barcode_type]);
+				$barcode->setThickness($pn_barcode_height);
+				$barcode->setFontSize(10);
+				
+				return  '<img src="data:image/png;base64,'.$barcode->generate().'" />';
 				break;
 			default:
 				// invalid barcode
@@ -417,27 +435,25 @@ use Zend\Stdlib\Glob;
 	 *
 	 */
 	function caParseBarcodeViewTag($ps_tag, $po_view, $po_result, $pa_options=null) {
-		$vs_tmp = null;
+		$tag = null;
 		if (substr($ps_tag, 0, 7) == 'barcode') {
-			$o_barcode = new Barcode();
-
 			// got a barcode
 			$va_bits = explode(":", $ps_tag);
 			array_shift($va_bits); // remove "barcode" identifier
 			$vs_type = array_shift($va_bits);
-			if (is_numeric($va_bits[0])) {
-				$vn_size = (int)array_shift($va_bits);
+			if (is_numeric($va_bits[0]) || caParseMeasurement($va_bits[0])) {
+				$vn_size = array_shift($va_bits);
 				$vs_template = join(":", $va_bits);
 			} else {
 				$vn_size = 16;
 				$vs_template = join(":", $va_bits);
 			}
 
-			$vs_tmp = caGenerateBarcode($po_result->getWithTemplate($vs_template, $pa_options), array('type' => $vs_type, 'height' => $vn_size));
+			$tag = caGenerateBarcode($po_result->getWithTemplate($vs_template, $pa_options), array('type' => $vs_type, 'height' => $vn_size));
 
-			$po_view->setVar($ps_tag, "<img src='{$vs_tmp}.png'/>");
+			$po_view->setVar($ps_tag, $tag);
 		}
-		return $vs_tmp;
+		return $tag;
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -480,11 +496,8 @@ use Zend\Stdlib\Glob;
 			$va_defined_vars = array_keys($po_view->getAllVars());		// get list defined vars (we don't want to copy over them)
 			$va_tag_list = $this->getTagListForView($va_template_info['path']);				// get list of tags in view
 			
-			$va_barcode_files_to_delete = [];
-			
 			$vn_page_count = 0;
 			while($po_result->nextHit()) {
-				$va_barcode_files_to_delete = array_merge($va_barcode_files_to_delete, caDoPrintViewTagSubstitution($po_view, $po_result, $va_template_info['path'], array('checkAccess' => $this->opa_access_values)));
 				
 				$vs_content .= "<div style=\"{$vs_border} position: absolute; width: {$vn_width}mm; height: {$vn_height}mm; left: {$vn_left}mm; top: {$vn_top}mm; overflow: hidden; padding: 0; margin: 0;\">";
 				$vs_content .= $this->render($va_template_info['path']);
@@ -526,11 +539,7 @@ use Zend\Stdlib\Glob;
 			caExportAsPDF($po_view, $vs_template_identifier, caGetOption('filename', $va_template_info, 'labels.pdf'), []);
 
 			$vb_printed_properly = true;
-			
-			foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp); @unlink("{$vs_tmp}.png");}
-			
 		} catch (Exception $e) {
-			foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp); @unlink("{$vs_tmp}.png");}
 			
 			$vb_printed_properly = false;
 			$this->postError(3100, _t("Could not generate PDF"),"BaseFindController->PrintSummary()");
