@@ -527,7 +527,10 @@
 		public function addRepresentation($ps_media_path, $pn_type_id, $pn_locale_id, $pn_status, $pn_access, $pb_is_primary, $pa_values=null, $pa_options=null) {
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
 			if (!$pn_locale_id) { $pn_locale_id = ca_locales::getDefaultCataloguingLocaleID(); }
-		
+			if(!file_exists($ps_media_path) || !is_readable($ps_media_path)) { 
+				$this->postError(1670, _t("Media does not exist or is not readable"), "RepresentableBaseModel->addRepresentation()");
+				return false; 
+			}
 		
 			$t_rep = new ca_object_representations();
 		
@@ -706,6 +709,10 @@
 		 */
 		public function editRepresentation($pn_representation_id, $ps_media_path, $pn_locale_id, $pn_status, $pn_access, $pb_is_primary=null, $pa_values=null, $pa_options=null) {
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
+			if(!file_exists($ps_media_path) || !is_readable($ps_media_path)) { 
+				$this->postError(1670, _t("Media does not exist or is not readable"), "RepresentableBaseModel->editRepresentation()");
+				return false; 
+			}
 			
 			$t_rep = new ca_object_representations();
 			if ($this->inTransaction()) { $t_rep->setTransaction($this->getTransaction());}
