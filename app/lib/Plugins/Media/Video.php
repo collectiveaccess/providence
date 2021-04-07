@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2020 Whirl-i-Gig
+ * Copyright 2004-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -596,9 +596,12 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$vs_grab_at = $this->opo_app_config->get('video_poster_frame_grab_at');
         if(preg_match("!([\d]+)%!", $vs_grab_at, $va_matches)) {
             $vn_start_secs = ceil((float)$this->get('duration') * ($va_matches[1]/100));
-        } elseif (!($vn_start_secs = ($o_tc->parse($this->opo_app_config->get('video_poster_frame_grab_at'))) ? $o_tc->getSeconds() : 5)) {
-            $vn_start_secs = 5;
+        } elseif (!($vn_start_secs = ($o_tc->parse($this->opo_app_config->get('video_poster_frame_grab_at'))) ? $o_tc->getSeconds() : 0)) {
+            $vn_start_secs = 0;
         }
+        
+        // If start is past end of video force to beginning
+        if($vn_start_secs > (float)$this->get('duration')) { $vn_start_secs = 0; }
 
 		# is mimetype valid?
 		switch($mimetype) {
@@ -901,7 +904,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$vn_preview_height= (isset($pa_options['height']) && ((int)$pa_options['height'] > 0)) ? (int)$pa_options['height'] : 320;
 		
 		$vn_s = $vn_start_at;
-		$vn_num_frames = ($vn_previewed_duration)/$vn_frame_interval;
+		$vn_num_frames = ($vn_frame_interval > 0) ? ceil($vn_previewed_duration/$vn_frame_interval) : 1;
 		
 		if ($vn_num_frames < $vn_min_number_of_frames) {
 			$vn_frame_interval = ($vn_previewed_duration)/$vn_min_number_of_frames;
