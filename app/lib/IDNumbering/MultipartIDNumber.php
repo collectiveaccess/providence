@@ -459,6 +459,14 @@ class MultipartIDNumber extends IDNumber {
 		$type_limit_sql = '';
 		
 		$params = [];
+		
+		if($stub === '') {
+			$field_limit_sql = "{$field} <> ''";
+		} else {
+			$field_limit_sql = "{$field} LIKE ?";
+			$params = [$stub.$separator.'%'];
+		} 
+		
 		if (!($t_instance = Datamodel::getInstanceByTableName($table, true))) { return 'ERR'; }
 		if ((bool)$element_info['sequence_by_type']) {
 			$stypes = is_array($element_info['sequence_by_type']) ? $element_info['sequence_by_type'] : [$element_info['sequence_by_type']];
@@ -488,14 +496,6 @@ class MultipartIDNumber extends IDNumber {
 		}
 		
 		$deleted_limit_sql = ($t_instance->hasField('deleted') ? " AND (deleted = 0)" : '');
-		
-		if($stub === '') {
-			$field_limit_sql = "{$field} <> ''";
-		} else {
-			$field_limit_sql = "{$field} LIKE ?";
-			$params = [$stub.$separator.'%'];
-		} 
-		
 		
 		if ($qr_res = $this->db->query("
 			SELECT {$field} FROM {$table}
