@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -58,54 +58,56 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	
 	var $info = array(
 		"IMPORT" => array(
-			"image/jpeg" 		=> "jpg",
-			"image/gif" 		=> "gif",
-			"image/tiff" 		=> "tiff",
-			"image/png" 		=> "png",
-			"image/x-bmp" 		=> "bmp",
-			"image/x-psd" 		=> "psd",
-			"image/tilepic" 	=> "tpc",
-			"image/x-dpx"		=> "dpx",
-			"image/x-exr"		=> "exr",
-			"image/jp2"		=> "jp2",
-			"image/x-adobe-dng"	=> "dng",
-			"image/x-canon-cr2"	=> "cr2",
-			"image/x-canon-crw"	=> "crw",
-			"image/x-sony-arw"	=> "arw",
-			"image/x-olympus-orf"	=> "orf",
-			"image/x-pentax-pef"	=> "pef",
-			"image/x-epson-erf"	=> "erf",
-			"image/x-nikon-nef"	=> "nef",
-			"image/x-sony-sr2"	=> "sr2",
-			"image/x-sony-srf"	=> "srf",
-			"image/x-sigma-x3f"	=> "x3f",
-			"image/x-dcraw"	=> "raw",
-			"application/dicom" => "dcm",
+			'image/jpeg' 		=> 'jpg',
+			'image/gif' 		=> 'gif',
+			'image/tiff' 		=> 'tiff',
+			'image/png' 		=> 'png',
+			'image/x-bmp' 		=> 'bmp',
+			'image/x-psd' 		=> 'psd',
+			'image/tilepic' 	=> 'tpc',
+			'image/x-dpx'		=> 'dpx',
+			'image/x-exr'		=> 'exr',
+			'image/jp2'		=> 'jp2',
+			'image/x-adobe-dng'	=> 'dng',
+			'image/x-canon-cr2'	=> 'cr2',
+			'image/x-canon-crw'	=> 'crw',
+			'image/x-sony-arw'	=> 'arw',
+			'image/x-olympus-orf'	=> 'orf',
+			'image/x-pentax-pef'	=> 'pef',
+			'image/x-epson-erf'	=> 'erf',
+			'image/x-nikon-nef'	=> 'nef',
+			'image/x-sony-sr2'	=> 'sr2',
+			'image/x-sony-srf'	=> 'srf',
+			'image/x-sigma-x3f'	=> 'x3f',
+			'image/x-dcraw'	=> 'raw',
+			'application/dicom' => 'dcm',
+			'image/heic'		=> 'heic'
 		),
 		"EXPORT" => array(
-			"image/jpeg" 		=> "jpg",
-			"image/gif" 		=> "gif",
-			"image/tiff" 		=> "tiff",
-			"image/png" 		=> "png",
-			"image/x-bmp" 		=> "bmp",
-			"image/x-psd" 		=> "psd",
-			"image/tilepic" 	=> "tpc",
-			"image/x-dpx"		=> "dpx",
-			"image/x-exr"		=> "exr",
-			"image/jp2"		=> "jp2",
-			"image/x-adobe-dng"	=> "dng",
-			"image/x-canon-cr2"	=> "cr2",
-			"image/x-canon-crw"	=> "crw",
-			"image/x-sony-arw"	=> "arw",
-			"image/x-olympus-orf"	=> "orf",
-			"image/x-pentax-pef"	=> "pef",
-			"image/x-epson-erf"	=> "erf",
-			"image/x-nikon-nef"	=> "nef",
-			"image/x-sony-sr2"	=> "sr2",
-			"image/x-sony-srf"	=> "srf",
-			"image/x-sigma-x3f"	=> "x3f",
-			"image/x-dcraw"	=> "raw",
-			"application/dicom" => "dcm",
+			'image/jpeg' 		=> 'jpg',
+			'image/gif' 		=> 'gif',
+			'image/tiff' 		=> 'tiff',
+			'image/png' 		=> 'png',
+			'image/x-bmp' 		=> 'bmp',
+			'image/x-psd' 		=> 'psd',
+			'image/tilepic' 	=> 'tpc',
+			'image/x-dpx'		=> 'dpx',
+			'image/x-exr'		=> 'exr',
+			'image/jp2'		=> 'jp2',
+			'image/x-adobe-dng'	=> 'dng',
+			'image/x-canon-cr2'	=> 'cr2',
+			'image/x-canon-crw'	=> 'crw',
+			'image/x-sony-arw'	=> 'arw',
+			'image/x-olympus-orf'	=> 'orf',
+			'image/x-pentax-pef'	=> 'pef',
+			'image/x-epson-erf'	=> 'erf',
+			'image/x-nikon-nef'	=> 'nef',
+			'image/x-sony-sr2'	=> 'sr2',
+			'image/x-sony-srf'	=> 'srf',
+			'image/x-sigma-x3f'	=> 'x3f',
+			'image/x-dcraw'	=> 'raw',
+			'application/dicom' => 'dcm',
+			'image/heic'		=> 'heic'
 		),
 		"TRANSFORMATIONS" => array(
 			"SCALE" 			=> array("width", "height", "mode", "antialiasing"),
@@ -131,6 +133,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			'layers'			=> 'W',
 			"quality" 			=> 'W',
 			'colorspace'		=> 'W',
+			'background'		=> 'W',
 			'tile_width'		=> 'W',
 			'tile_height'		=> 'W',
 			'antialiasing'		=> 'W',
@@ -148,55 +151,57 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	);
 	
 	var $typenames = array(
-		"image/jpeg" 		=> "JPEG",
-		"image/gif" 		=> "GIF",
-		"image/tiff" 		=> "TIFF",
-		"image/png" 		=> "PNG",
-		"image/x-bmp" 		=> "Windows Bitmap (BMP)",
-		"image/x-psd" 		=> "Photoshop",
-		"image/tilepic" 	=> "Tilepic",
-		"image/x-dpx"		=> "DPX",
-		"image/x-exr"		=> "OpenEXR",
-		"image/jp2"		=> "JPEG-2000",
-		"image/x-adobe-dng"	=> "Adobe DNG",
-		"image/x-canon-cr2"	=> "Canon CR2 RAW Image",
-		"image/x-canon-crw"	=> "Canon CRW RAW Image",
-		"image/x-sony-arw"	=> "Sony ARW RAW Image",
-		"image/x-olympus-orf"	=> "Olympus ORF Raw Image",
-		"image/x-pentax-pef"	=> "Pentax Electronic File Image",
-		"image/x-epson-erf"	=> "Epson ERF RAW Image",
-		"image/x-nikon-nef"	=> "Nikon NEF RAW Image",
-		"image/x-sony-sr2"	=> "Sony SR2 RAW Image",
-		"image/x-sony-srf"	=> "Sony SRF RAW Image",
-		"image/x-sigma-x3f"	=> "Sigma X3F RAW Image",
-		"image/x-dcraw"	=> "RAW Image",
-		"application/dicom" => "DICOM medical imaging data",
+		'image/jpeg' 		=> 'JPEG',
+		'image/gif' 		=> 'GIF',
+		'image/tiff' 		=> 'TIFF',
+		'image/png' 		=> 'PNG',
+		'image/x-bmp' 		=> 'Windows Bitmap (BMP)',
+		'image/x-psd' 		=> 'Photoshop',
+		'image/tilepic' 	=> 'Tilepic',
+		'image/x-dpx'		=> 'DPX',
+		'image/x-exr'		=> 'OpenEXR',
+		'image/jp2'		=> 'JPEG-2000',
+		'image/x-adobe-dng'	=> 'Adobe DNG',
+		'image/x-canon-cr2'	=> 'Canon CR2 RAW Image',
+		'image/x-canon-crw'	=> 'Canon CRW RAW Image',
+		'image/x-sony-arw'	=> 'Sony ARW RAW Image',
+		'image/x-olympus-orf'	=> 'Olympus ORF Raw Image',
+		'image/x-pentax-pef'	=> 'Pentax Electronic File Image',
+		'image/x-epson-erf'	=> 'Epson ERF RAW Image',
+		'image/x-nikon-nef'	=> 'Nikon NEF RAW Image',
+		'image/x-sony-sr2'	=> 'Sony SR2 RAW Image',
+		'image/x-sony-srf'	=> 'Sony SRF RAW Image',
+		'image/x-sigma-x3f'	=> 'Sigma X3F RAW Image',
+		'image/x-dcraw'	=> 'RAW Image',
+		'application/dicom' => 'DICOM medical imaging data',
+		'image/heic' 		=> 'HEIC'
 	);
 	
 	var $magick_names = array(
-		"image/jpeg" 		=> "JPEG",
-		"image/gif" 		=> "GIF",
-		"image/tiff" 		=> "TIFF",
-		"image/png" 		=> "PNG",
-		"image/x-bmp" 		=> "BMP",
-		"image/x-psd" 		=> "PSD",
-		"image/tilepic" 	=> "TPC",
-		"image/x-dpx"		=> "DPX",
-		"image/x-exr"		=> "EXR",
-		"image/jp2"		=> "JP2",
-		"image/x-adobe-dng"	=> "DNG",
-		"image/x-canon-cr2"	=> "CR2",
-		"image/x-canon-crw"	=> "CRW",
-		"image/x-sony-arw"	=> "ARW",
-		"image/x-olympus-orf"	=> "ORF",
-		"image/x-pentax-pef"	=> "PEF",
-		"image/x-epson-erf"	=> "ERF",
-		"image/x-nikon-nef"	=> "NEF",
-		"image/x-sony-sr2"	=> "SR2",
-		"image/x-sony-srf"	=> "SRF",
-		"image/x-sigma-x3f"	=> "X3F",
-		"image/x-dcraw"	=> "RAW",
-		"application/dicom" => "DCM",
+		'image/jpeg' 		=> 'JPEG',
+		'image/gif' 		=> 'GIF',
+		'image/tiff' 		=> 'TIFF',
+		'image/png' 		=> 'PNG',
+		'image/x-bmp' 		=> 'BMP',
+		'image/x-psd' 		=> 'PSD',
+		'image/tilepic' 	=> 'TPC',
+		'image/x-dpx'		=> 'DPX',
+		'image/x-exr'		=> 'EXR',
+		'image/jp2'		=> 'JP2',
+		'image/x-adobe-dng'	=> 'DNG',
+		'image/x-canon-cr2'	=> 'CR2',
+		'image/x-canon-crw'	=> 'CRW',
+		'image/x-sony-arw'	=> 'ARW',
+		'image/x-olympus-orf'	=> 'ORF',
+		'image/x-pentax-pef'	=> 'PEF',
+		'image/x-epson-erf'	=> 'ERF',
+		'image/x-nikon-nef'	=> 'NEF',
+		'image/x-sony-sr2'	=> 'SR2',
+		'image/x-sony-srf'	=> 'SRF',
+		'image/x-sigma-x3f'	=> 'X3F',
+		'image/x-dcraw'	=> 'RAW',
+		'application/dicom' => 'DCM',
+		'image/heic' 		=> 'HEIC'
 	);
 	
 	#
@@ -427,6 +432,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ----------------------------------------------------------
 	public function read($ps_filepath, $mimetype="", $options=null) {
+		global $file_cleanup_list;
 		if (!(($this->handle) && ($$ps_filepath === $this->filepath))) {
 			
 			if ($mimetype == 'image/tilepic') {
@@ -476,6 +482,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 						return false;
 					}
 					$ps_filepath = $this->filepath_conv = $vs_tmp_name.'.tiff';
+					$file_cleanup_list[] = $ps_filepath;
 
 					@unlink($vs_tmp_name);
 				}
@@ -506,22 +513,21 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 							//
 							if (isset($va_exif['IFD0']['Orientation'])) {
 								$vn_orientation = $va_exif['IFD0']['Orientation'];
-								$vs_tmp_basename = tempnam(caGetTempDirPath(), 'ca_image_tmp');
 								
 								$vb_is_rotated = false;
 								switch($vn_orientation) {
 									case 3:
-										$this->handle->rotateImage("#FFFFFF", 180);
+										$this->handle->rotateImage(caGetOption('background', $this->properties, "#FFFFFF"), 180);
 										unset($va_exif['IFD0']['Orientation']);
 										$vb_is_rotated = true;
 										break;
 									case 6:
-										$this->handle->rotateImage("#FFFFFF", 90);
+										$this->handle->rotateImage(caGetOption('background', $this->properties, "#FFFFFF"), 90);
 										unset($va_exif['IFD0']['Orientation']);
 										$vb_is_rotated = true;
 										break;
 									case 8:
-										$this->handle->rotateImage("#FFFFFF", -90);
+										$this->handle->rotateImage(caGetOption('background', $this->properties, "#FFFFFF"), -90);
 										unset($va_exif['IFD0']['Orientation']);
 										$vb_is_rotated = true;
 										break;
@@ -556,9 +562,11 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 					// force all images to true color (takes care of GIF transparency for one thing...)
 					$this->handle->setImageType(imagick::IMGTYPE_TRUECOLOR);
 
-					if (!$this->handle->setImageColorspace(imagick::COLORSPACE_RGB)) {
-						$this->postError(1610, _t("Error during RGB colorspace transformation operation"), "WLPlugImagick->read()");
-						return false;
+					if($this->handle->getImageColorspace() === imagick::COLORSPACE_CMYK) {
+						if (!$this->handle->setImageColorspace(imagick::COLORSPACE_RGB)) {
+							$this->postError(1610, _t("Error during RGB colorspace transformation operation"), "WLPlugImagick->read()");
+							return false;
+						}
 					}
 					
 					$this->properties["mimetype"] = $this->_getMagickImageMimeType($this->handle);
@@ -821,7 +829,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			case "ROTATE":
 				$angle = $parameters["angle"];
 				if (($angle > -360) && ($angle < 360)) {
-					if ( !$this->handle->rotateImage("#FFFFFF", $angle ) ) {
+					if ( !$this->handle->rotateImage(caGetOption('background', $this->properties, "#FFFFFF"), $angle ) ) {
 						$this->postError(1610, _t("Error during image rotate"), "WLPlugImagick->transform()");
 						return false;
 					}
@@ -960,8 +968,8 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$this->handle->setCompressionQuality($this->properties["quality"]);
 			}
 			
-			$this->handle->setImageBackgroundColor(new ImagickPixel("#CC0000"));
-			$this->handle->setImageMatteColor(new ImagickPixel("#CC0000"));
+			$background = caGetOption('background', $this->properties, "#FFFFFF");
+			$this->handle->setImageBackgroundColor(new ImagickPixel($background));
 		
 			if ($this->properties['gamma']) {
 				if (!$this->properties['reference-black']) { $this->properties['reference-black'] = 0; }
@@ -980,9 +988,6 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 					case 'color':
 						$vn_colorspace = imagick::COLORSPACE_RGB;
 						break;
-					case 'sRGB':
-						$vn_colorspace = imagick::COLORSPACE_SRGB;
-						break;
 					case 'CMYK':
 						$vn_colorspace = imagick::COLORSPACE_CMYK;
 						break;
@@ -990,11 +995,15 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 						$vn_colorspace = imagick::COLORSPACE_GRAY;
 						$this->handle->setimagedepth(1);
 						break;
+					default:
+					case 'sRGB':
+						$vn_colorspace = imagick::COLORSPACE_SRGB;
+						break;
 				}
-				if ($vn_colorspace) { $this->handle->setimagecolorspace($vn_colorspace); }
+				if (!is_null($vn_colorspace) && ($vn_colorspace !== $this->handle->getImageColorspace())) { $this->handle->setimagecolorspace($vn_colorspace); }
 			}
 			
-			$this->handle->stripImage();	// remove all lingering metadata
+			//$this->handle->stripImage();	// remove all lingering metadata
 			
 			# write the file
 			try {
@@ -1020,6 +1029,8 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	 */
 	# This method must be implemented for plug-ins that can output preview frames for videos or pages for documents
 	public function &writePreviews($ps_filepath, $pa_options) {
+		global $file_cleanup_list;
+		
 		if(!$this->handle) { return false; }
 		if($this->handle->getNumberImages() < 2) { return false; } // don't generate previews for single images
 
@@ -1039,7 +1050,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 		foreach($this->handle as $image){
 			$image->writeImage($vs_output_file_prefix.sprintf("_%05d", $vn_i).".jpg");
-			$va_files[$vn_i] = $vs_output_file_prefix.sprintf("_%05d", $vn_i).'.jpg';
+			$file_cleanup_list[] = $va_files[$vn_i] = $vs_output_file_prefix.sprintf("_%05d", $vn_i).'.jpg';
 			$vn_i++;
 		}
 
@@ -1048,11 +1059,13 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 	public function joinArchiveContents($pa_files, $pa_options = array()) {
+		global $file_cleanup_list;
+		
 		if(!is_array($pa_files)) { return false; }
 
 		$vs_archive_original = tempnam(caGetTempDirPath(), "caArchiveOriginal");
 		@rename($vs_archive_original, $vs_archive_original.".tif");
-		$vs_archive_original = $vs_archive_original.".tif";
+		$file_cleanup_list[] = $vs_archive_original = $vs_archive_original.".tif";
 
 		$vo_orig = new Imagick();
 		$vo_orig->setResourceLimits($r_handle);

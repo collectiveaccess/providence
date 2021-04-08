@@ -391,7 +391,7 @@
  <script>
  	// Set viewer config vars
  	window.pdfjsPath = '<?= $this->request->getBaseUrlPath(); ?>/assets';
- 	window.pdfjsContentURL = '<?= $this->getVar('original_media_url'); ?>';
+ 	window.pdfjsContentURL = '<?= $this->getVar('display_media_url') ? $this->getVar('display_media_url') : $this->getVar('original_media_url'); ?>';
  	window.pdfjsContainerID = 'caMediaOverlayContent';
  </script>
  <script src="<?= $this->request->getBaseUrlPath(); ?>/assets/pdfjs/viewer/viewer.js"></script>

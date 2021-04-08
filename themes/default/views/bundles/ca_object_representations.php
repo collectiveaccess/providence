@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020 Whirl-i-Gig
+ * Copyright 2020-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,6 +27,10 @@
  */
 	AssetLoadManager::register('fileupload');
 	AssetLoadManager::register('sortableUI');
+	AssetLoadManager::register('3dmodels');
+	AssetLoadManager::register('directoryBrowser');
+	
+	$upload_max_filesize = caFormatFileSize(caReturnValueInBytes(ini_get( 'upload_max_filesize' )));
 	
 	$settings 			= $this->getVar('settings');
 	
@@ -63,6 +67,8 @@
 	
 	$rep_count = $t_subject->getRepresentationCount($settings);
 	$allow_fetching_from_urls = $this->request->getAppConfig()->get('allow_fetching_of_media_from_remote_urls');
+	$allow_relationships_to_existing_representations = (bool)$this->request->getAppConfig()->get($t_subject->tableName().'_allow_relationships_to_existing_representations') && !(bool)caGetOption('dontAllowRelationshipsToExistingRepresentations', $settings, false);
+	$dont_allow_access_to_import_directory = caGetOption('dontAllowAccessToImportDirectory', $settings, false);
 	
 	$errors = $failed_inserts = [];
 	
@@ -234,7 +240,7 @@
 					index: '{n}',
 					primaryID: <?= $primary_id ? $primary_id : 'null'; ?>,
 					representationID: {representation_id},
-					uploadAreaMessage: <?= json_encode(caNavIcon(__CA_NAV_ICON_ADD__, '30px').'<br/>'._t("Add media")); ?>,
+					uploadAreaMessage: <?= json_encode(caNavIcon(__CA_NAV_ICON_ADD__, '30px').'<div style=\'margin-top: 5px;\'>'._t("Upload media").'</div>'); ?>,
 					uploadAreaIndicator: <?= json_encode(caNavIcon(__CA_NAV_ICON_SPINNER__, '30px').'<br/>'._t("Uploading... %percent")); ?>,
 					isPrimaryLabel: <?= json_encode(caNavIcon(__CA_NAV_ICON_IS_PRIMARY__, 1).' '._t('Is primary')); ?>
 				});	
@@ -248,75 +254,111 @@
 		
 	<textarea class='caNewItemTemplate' style='display: none;'>
 		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo">
-			<span class="formLabelError">{error}</span>
-<?php if (!$read_only) { ?>
-			<div style="float: right;">
-				<div style="margin: 0 0 10px 5px;"><a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
-			</div>
-<?php } ?>	
-			<div class="mediaUploadContainer">
-				<div style="float: left;">
-					<div id="<?= $id_prefix; ?>UploadArea{n}" class="mediaUploadArea">
-						<input type="file" style="display: none;" id="<?= $id_prefix; ?>UploadFileControl{n}" multiple/>
-						<div id="<?= $id_prefix; ?>UploadAreaMessage{n}" class="mediaUploadAreaMessage"> </div>
-					</div>
+			<div id="<?= $id_prefix; ?>objectRepresentationAddForm{n}" class="objectRepresentationAddForm">
+				<span class="formLabelError">{error}</span>
+				<div style="float: right;">
+					<div style="margin: 0 0 10px 5px;"><a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
 				</div>
-				<div class="mediaUploadEditArea">
-	
-<?php if ($allow_fetching_from_urls) { ?>
-				<div class='formLabel'><?= _t('Fetch media from URL'); ?><br/><?php print caHTMLTextInput("{fieldNamePrefix}media_url_{n}", array('id' => '{fieldNamePrefix}media_url_{n}', 'class' => 'urlBg uploadInput'), array('width' => '500px')); ?></div>
-				
-<?php } ?>				
-<?php
-    if($t_item_rel->hasField('type_id') && (sizeof($rel_types) > 1)) {
-?>
-				<div class='formLabel'><?= _t('Relationship type: %1', $t_item_rel->getRelationshipTypesAsHTMLSelect($rel_dir, $left_sub_type_id, $right_sub_type_id, array('name' => '{fieldNamePrefix}rel_type_id_{n}'), $settings)); ?></div>
-<?php
-	} else {
-				// Embed type when only a single type is available
-				print caHTMLHiddenInput('{fieldNamePrefix}rel_type_id_{n}', ['value' => array_shift(array_keys($rel_types))]);
-	}
-    
-				foreach($bundles_to_edit_proc as $f) {
-					if(in_array($f, ['media'])) { continue; }
-					
-					if($f === 'type_id') { // type
-						print "<div class='formLabel'>".$t_item->getDisplayLabel("ca_object_representations.{$f}")."<br/>".$t_item->getTypeListAsHTMLFormElement("{$id_prefix}_{$f}_{n}", ['id' => "{$id_prefix}_{$f}_{n}", 'value' => '{'.$f.'}'], ['restrictToTypes' => caGetOption(['restrict_to_types', 'restrictToTypes'], $settings, null), 'width' => '500px', 'height' => null, 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."</div>\n";
-					} elseif($t_item->hasField($f)) { // intrinsic
-						print $t_item->htmlFormElement($f, null, ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'width' => '500px', 'height' => null, 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."\n";
-					} elseif($t_item->hasElement($f)) {
-						$form_element_info = $t_item->htmlFormElementForSimpleForm($this->request, "ca_object_representations.{$f}", ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'removeTemplateNumberPlaceholders' => false, 'width' => '500px', 'height' => null, 'elementsOnly' => true, 'textAreaTagName' => 'textentry']);
-						print "<div class='formLabel'>".$t_item->getDisplayLabel("ca_object_representations.{$f}")."<br/>".array_shift(array_shift($form_element_info['elements']))."</div>\n"; 
-					} elseif($f === 'preferred_labels.name') {
-						print "<div class='formLabel'>".$t_item->getDisplayLabel("ca_object_representations.{$f}")."<br/>".caHTMLTextInput("{$id_prefix}_rep_label_{n}", ['width' => '500px', 'id' => "{$id_prefix}_rep_label_{n}", 'value' => ''])."</div>\n"; 
-					}
+				<div class="mediaUploadContainer">
+					<div style="float: left;">
+	<?php					
+				if($this->request->getAppConfig()->get('allow_representations_without_media')) {
+	?>
+					<div class="formLabelPlain"><?= caHTMLCheckBoxInput("{$id_prefix}_no_media_{n}", ['value' => 1, 'id' => $id_prefix.'NoMedia{n}'])._t('No media'); ?></div>
+	<?php
 				}
-				
-				if(is_array($embedded_import_opts) && sizeof($embedded_import_opts)) {
+	?>
+						<div id="<?= $id_prefix; ?>UploadArea{n}" class="mediaUploadArea">
+							<input type="file" style="display: none;" id="<?= $id_prefix; ?>UploadFileControl{n}" multiple/>
+							<div id="<?= $id_prefix; ?>UploadAreaMessage{n}" class="mediaUploadAreaMessage"> </div>
+						</div>
+<?php 
+	if(!$dont_allow_access_to_import_directory) { 
 ?>
-					<div class="formLabel">
+						<div class='mediaMetadataActionButton'><a href="#" onclick='<?= $id_prefix; ?>showMediaBrowser{n}(); return false;'><?= caNavIcon(__CA_NAV_ICON_FOLDER_OPEN__, 1).' '._t('Media on server'); ?></a></div>
 <?php
-					print _t('Import embedded metadata using').' '.caHTMLSelect('{fieldNamePrefix}importer_id_{n}', $embedded_import_opts);
-?>
-					</div>
+	}
+	if ($allow_relationships_to_existing_representations) {
+?>					
+						<div class='mediaMetadataActionButton'><a href="#" onclick='<?= $id_prefix; ?>switchMode{n}("REL"); return false;'><?= caNavIcon(__CA_NAV_ICON_ADD__, 1).' '._t('Search media'); ?></a></div>
 <?php
 	}
 ?>
+					</div>
+					<div class="mediaUploadEditArea">
+	
+	<?php if ($allow_fetching_from_urls) { ?>
+					<div class='formLabel'><?= _t('Fetch media from URL'); ?><br/><?php print caHTMLTextInput("{fieldNamePrefix}media_url_{n}", array('id' => '{fieldNamePrefix}media_url_{n}', 'class' => 'urlBg uploadInput'), array('width' => '500px')); ?></div>
+				
+	<?php } ?>				
+	<?php
+		if($t_item_rel->hasField('type_id') && (sizeof($rel_types) > 1)) {
+	?>
+					<div class='formLabel'><?= _t('Relationship type: %1', $t_item_rel->getRelationshipTypesAsHTMLSelect($rel_dir, $left_sub_type_id, $right_sub_type_id, array('name' => '{fieldNamePrefix}rel_type_id_{n}'), $settings)); ?></div>
+	<?php
+		} else {
+					// Embed type when only a single type is available
+					print caHTMLHiddenInput('{fieldNamePrefix}rel_type_id_{n}', ['value' => array_shift(array_keys($rel_types))]);
+		}
+	
+					foreach($bundles_to_edit_proc as $f) {
+						if(in_array($f, ['media'])) { continue; }
+					
+						if($f === 'type_id') { // type
+							print "<div class='formLabel'>".$t_item->getDisplayLabel("ca_object_representations.{$f}")."<br/>".$t_item->getTypeListAsHTMLFormElement("{$id_prefix}_{$f}_{n}", ['id' => "{$id_prefix}_{$f}_{n}", 'value' => '{'.$f.'}'], ['restrictToTypes' => caGetOption(['restrict_to_types', 'restrictToTypes'], $settings, null), 'width' => '500px', 'height' => null, 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."</div>\n";
+						} elseif($t_item->hasField($f)) { // intrinsic
+							print $t_item->htmlFormElement($f, null, ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'width' => '500px', 'height' => null, 'textAreaTagName' => 'textentry', 'no_tooltips' => true])."\n";
+						} elseif($t_item->hasElement($f)) {
+							$form_element_info = $t_item->htmlFormElementForSimpleForm($this->request, "ca_object_representations.{$f}", ['id' => "{$id_prefix}_{$f}_{n}", 'name' => "{$id_prefix}_{$f}_{n}", 'removeTemplateNumberPlaceholders' => false, 'width' => '500px', 'height' => null, 'elementsOnly' => true, 'textAreaTagName' => 'textentry']);
+							print "<div class='formLabel'>".$t_item->getDisplayLabel("ca_object_representations.{$f}")."<br/>".array_shift(array_shift($form_element_info['elements']))."</div>\n"; 
+						} elseif($f === 'preferred_labels.name') {
+							print "<div class='formLabel'>".$t_item->getDisplayLabel("ca_object_representations.{$f}")."<br/>".caHTMLTextInput("{$id_prefix}_rep_label_{n}", ['width' => '500px', 'id' => "{$id_prefix}_rep_label_{n}", 'value' => ''])."</div>\n"; 
+						}
+					}
+				
+					if(is_array($embedded_import_opts) && sizeof($embedded_import_opts)) {
+?>
+						<div class="formLabel">
+<?php
+							print _t('Import embedded metadata using').' '.caHTMLSelect('{fieldNamePrefix}importer_id_{n}', $embedded_import_opts);
+?>
+						</div>
+<?php
+		}
+?>
+					</div>
 				</div>
+				<input type="hidden" id="<?= $id_prefix; ?>MediaRefs{n}" name="<?= $id_prefix; ?>_mediarefs{n}"/>
+				<br class="clear"/>
 			</div>
-			<input type="hidden" id="<?= $id_prefix; ?>MediaRefs{n}" name="<?= $id_prefix; ?>_mediarefs{n}"/>
-			<br class="clear"/>
-			<?php
-			$post_max_size = caFormatFileSize(caReturnValueInBytes(ini_get( 'post_max_size' )));
-			$upload_max_filesize = caFormatFileSize(caReturnValueInBytes(ini_get( 'upload_max_filesize' )));
-
-			$vs_element = _t("Maximum upload size is ${upload_max_filesize}");
-			print $vs_element;
-			?>
+<?php
+	if ($allow_relationships_to_existing_representations) {
+?>
+			<div id="<?= $id_prefix; ?>objectRepresentationRelateForm{n}" class="objectRepresentationRelateForm">
+				<span class="formLabelError">{error}</span>
+				<div style="float: right;">
+					<div style="margin: 0 0 10px 5px;"><a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
+				</div>
+				
+				<div class='mediaMetadataActionButton'><a href="#" onclick='<?= $id_prefix; ?>switchMode{n}("UPLOAD"); return false;'><?= caNavIcon(__CA_NAV_ICON_UPLOAD__, 1).' '._t('Upload media'); ?></a></div>
+			
+				<?php print caHTMLTextInput('{fieldNamePrefix}autocomplete{n}', array('placeholder' => caExtractSettingsValueByUserLocale('autocompletePlaceholderText', $settings, ['default' => _t('Search for representation')]), 'value' => '{{label}}', 'id' => '{fieldNamePrefix}autocomplete{n}', 'class' => 'lookupBg uploadInput'), array('width' => '425px')); ?>
+<?php
+		if ($t_item_rel && $t_item_rel->hasField('type_id')) {
+?>
+				<select name="<?= $id_prefix; ?>_type_id{n}" id="<?= $id_prefix; ?>_type_id{n}" style="display: none; width: 72px;"></select>
+<?php
+		}
+?>
+				<input type="hidden" name="<?= $id_prefix; ?>_id{n}" id="<?= $id_prefix; ?>_id{n}" value="{id}"/>
+			</div>
+<?php
+	}
+?>	
 		</div>
-		
 		<script type="text/javascript">
 			var <?= $id_prefix; ?>MUM{n}; 
+			var <?= $id_prefix; ?>MediaBrowserPanel;
 			jQuery(document).ready(function() {
 				<?= $id_prefix; ?>MUM{n} = caUI.initMediaUploadManager({
 					fieldNamePrefix: '<?= $id_prefix; ?>',
@@ -325,17 +367,49 @@
 					maxFilesize: <?= caReturnValueInBytes(ini_get('upload_max_filesize')); ?>,
 					maxFilesizeTxt: "<?= $upload_max_filesize; ?>",
 					primaryID: <?= $primary_id ? $primary_id : 'null'; ?>,
-					uploadAreaMessage: <?= json_encode(caNavIcon(__CA_NAV_ICON_ADD__, '30px').'<br/>'._t("Add media")); ?>,
+					uploadAreaMessage: <?= json_encode(caNavIcon(__CA_NAV_ICON_ADD__, '30px').'<div style=\'margin-top: 5px;\'>'._t("Upload media").'</div>'); ?>,
 					uploadAreaIndicator: <?= json_encode(caNavIcon(__CA_NAV_ICON_SPINNER__, '30px').'<br/>'._t("Uploading... %percent")); ?>,
 				});	
+				
+				jQuery('#<?= $id_prefix; ?>NoMedia{n}').on('click', function(e) {
+					if(jQuery(this).attr('checked')) {
+						jQuery('#<?= $id_prefix; ?>UploadArea{n}').slideUp(250);
+					} else {
+						jQuery('#<?= $id_prefix; ?>UploadArea{n}').slideDown(250);
+					}
+				});
 			});
+
+			function <?= $id_prefix;?>showMediaBrowser{n}() {
+				<?= $id_prefix; ?>MediaBrowserPanel.showPanel('<?= caNavUrl($this->request, '*', '*', 'MediaBrowser'); ?>', function(d) { 
+					let path = oDirBrowser.getSelectedPath().join('/');
+					let files = oDirBrowser.getSelectedFles();
+					
+					for(let i in files) {
+						<?= $id_prefix; ?>MUM{n}.addFiles(path + '/' + files[i]);
+					}
+				}, true, null, {n: '{n}'});
+			}
+			
+			function <?= $id_prefix;?>switchMode{n}(mode) {
+				if(mode === 'REL') {
+					jQuery('#<?= $id_prefix; ?>objectRepresentationAddForm{n}').slideUp(250);
+					jQuery('#<?= $id_prefix; ?>objectRepresentationRelateForm{n}').slideDown(250);
+				} else {
+					jQuery('#<?= $id_prefix; ?>objectRepresentationAddForm{n}').slideDown(250);
+					jQuery('#<?= $id_prefix; ?>objectRepresentationRelateForm{n}').slideUp(250);
+				}
+			}
 		</script>
 	</textarea>
 	
 	<div class="bundleContainer">
+<?php
+	if($sort_controls = caEditorBundleSortControls($this->request, $id_prefix, $t_item->tableName(), $t_instance->tableName(), array_merge($settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]))) {
+?>
 	    <div class='bundleSubLabel'>
 <?php
-            print caEditorBundleSortControls($this->request, $id_prefix, $t_item->tableName(), array_merge($settings, ['includeInterstitialSortsFor' => $t_subject->tableName(), 'sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
+            print $sort_controls;
 
 		    if (($rep_count > 1) && $this->request->getUser()->canDoAction('can_download_ca_object_representations')) {
 			    print "<div class='mediaMetadataActionButton' style='float: right'>".caNavLink($this->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1)." "._t('Download all'), 'button', '*', '*', 'DownloadMedia', [$t_subject->primaryKey() => $t_subject->getPrimaryKey()])."</div>";
@@ -343,6 +417,9 @@
 ?>
 		</div>
 		<br class="clear"/>
+<?php
+	}
+?>
 		<div class="caItemList">
 			
 		</div>
@@ -361,7 +438,7 @@
  	jQuery(document).ready(function() {
 		caRelationBundle<?= $id_prefix; ?> = caUI.initRelationBundle('#<?= "{$id_prefix}"; ?>', {
 			fieldNamePrefix: '<?= $id_prefix; ?>_',
-			templateValues: ['_display', 'status', 'access', 'access_display', 'is_primary', 'is_primary_display', 'media', 'locale_id', 'icon', 'type', 'metadata', 'rep_type_id', 'type_id', 'typename', 'center_x', 'center_y', 'idno' <?= (is_array($bundles_to_edit_proc) && sizeof($bundles_to_edit_proc)) ? ", ".join(", ", array_map(function($v) { return "'{$v}'"; }, $bundles_to_edit_proc)) : ''; ?>],
+			templateValues: ['label', 'id', '_display', 'status', 'access', 'access_display', 'is_primary', 'is_primary_display', 'media', 'locale_id', 'icon', 'type', 'metadata', 'rep_type_id', 'type_id', 'typename', 'center_x', 'center_y', 'idno' <?= (is_array($bundles_to_edit_proc) && sizeof($bundles_to_edit_proc)) ? ", ".join(", ", array_map(function($v) { return "'{$v}'"; }, $bundles_to_edit_proc)) : ''; ?>],
 			initialValues: <?= json_encode($initial_values); ?>,
 			initialValueOrder: <?= json_encode(array_keys($initial_values)); ?>,
 			errors: <?= json_encode($errors); ?>,
@@ -409,5 +486,30 @@
 			}
 		
 		});
+		if (caUI.initPanel) {
+			<?= $id_prefix; ?>MediaBrowserPanel = caUI.initPanel({ 
+				panelID: "caMediaBrowserPanel",						/* DOM ID of the <div> enclosing the panel */
+				panelContentID: "caMediaBrowserPanelContentArea",		/* DOM ID of the content area <div> in the panel */
+				exposeBackgroundColor: "#000000",				
+				exposeBackgroundOpacity: 0.7,					
+				panelTransitionSpeed: 400,						
+				closeButtonSelector: ".close",
+				center: true,
+				onOpenCallback: function() {
+					jQuery("#topNavContainer").hide(250);
+				},
+				finallyCallback: function() {
+					jQuery("#topNavContainer").show(250);
+				}
+			});
+		}
 	});
 </script>
+
+<div id="caMediaBrowserPanel" class="caMediaBrowserPanel"> 
+	<div class='dialogHeader'><?php print _t('Choose media from server'); ?></div>
+	<div id="caMediaBrowserPanelContentArea">
+	
+	</div>
+	
+</div>

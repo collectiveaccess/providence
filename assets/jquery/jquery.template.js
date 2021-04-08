@@ -43,37 +43,48 @@ jQuery.fn.template = function( objValues ){
  			// There are two ways to delimit placeholders in a template
  			// {n} replaces "n" with the value for n with the value straight from objValues
  			// {{n}} replaces "n" with the value from objValues where all double quotes are replaced with &quot; (this is useful for putting values in <input> form elements)
- 			var objValueEscaped = objValues[ strKey ] + "";
+ 			var val = objValues[ strKey ];
+ 			if ((val === null) || (val === false) || (val === undefined)) { val = ''; }
+ 			val = val + '';
+ 			
+ 			var objValueEscaped = val;
  			objValueEscaped = objValueEscaped.replace(/["]/g, '&quot;');
  			objValueEscaped = objValueEscaped.replace(/[\']/g, '&apos;')
  			
- 			var objValueSlashed = objValues[ strKey ] + "";
+ 			var objValueSlashed = val;
  			objValueSlashed = objValueSlashed.replace(/["]/g, '\\"');
  			objValueSlashed = objValueSlashed.replace(/[\']/g, "\\'");
  			objValueSlashed = objValueSlashed.replace(/[\n]/g, "\\\n");
  			
  			// Replace the value with version where entities are converted to text  {{{{n}}}}
-			strHTML = strHTML.replace(
-				new RegExp( "\\{\\{\\{\\{" + strSafeKey + "\\}\\}\\}\\}", "gi" ),
-				jQuery("<div>" + objValues[ strKey ] + "</div>").text()
-				);
+ 			if(val === '') {
+ 				// For empty values strip and surrounding parens or square brackets
+ 				strHTML = strHTML.replace(
+					new RegExp( "[\\(\\[]{0,1}[\\{]{1,4}" + strSafeKey + "[\\}]{1,4}[\\)\\]]{0,1}", "gi" ),
+					''
+					);
+ 			} else {
+				strHTML = strHTML.replace(
+					new RegExp( "\\{\\{\\{\\{" + strSafeKey + "\\}\\}\\}\\}", "gi" ),
+					jQuery("<div>" + val + "</div>").text()
+					);
 				
- 			// Replace the value with quotes converted to entities {{{n}}}
-			strHTML = strHTML.replace(
-				new RegExp( "\\{\\{\\{" + strSafeKey + "\\}\\}\\}", "gi" ),
-				objValueSlashed
-				);
-			// Replace the value with quotes converted to entities {{n}}
-			strHTML = strHTML.replace(
-				new RegExp( "\\{\\{" + strSafeKey + "\\}\\}", "gi" ),
-				objValueEscaped
-				);
-			// Replace the value without escaping {n}
-			strHTML = strHTML.replace(
-				new RegExp( "\\{" + strSafeKey + "\\}", "gi" ),
-				objValues[ strKey ]
-				);
- 
+				// Replace the value with quotes converted to entities {{{n}}}
+				strHTML = strHTML.replace(
+					new RegExp( "\\{\\{\\{" + strSafeKey + "\\}\\}\\}", "gi" ),
+					objValueSlashed
+					);
+				// Replace the value with quotes converted to entities {{n}}
+				strHTML = strHTML.replace(
+					new RegExp( "\\{\\{" + strSafeKey + "\\}\\}", "gi" ),
+					objValueEscaped
+					);
+				// Replace the value without escaping {n}
+				strHTML = strHTML.replace(
+					new RegExp( "\\{" + strSafeKey + "\\}", "gi" ),
+					val
+					);
+ 			}
 		}
  
 		// At this point, our HTML will have fully replaced

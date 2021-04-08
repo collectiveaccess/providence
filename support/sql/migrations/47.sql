@@ -32,7 +32,7 @@ create table ca_entities_x_storage_locations
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   `rank`                           int unsigned                   not null,
    primary key (relation_id),
    constraint fk_ca_entities_x_storage_locations_type_id foreign key (type_id)
       references ca_relationship_types (type_id) on delete restrict on update restrict,

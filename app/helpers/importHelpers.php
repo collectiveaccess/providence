@@ -195,7 +195,14 @@
 					$va_attributes['preferred_labels']['name'] = $va_attributes['_preferred_labels'] = $vs_name;
 					break;
 				case 'ca_entities':
-					$vn_id = DataMigrationUtils::getEntityID($va_entity_label = DataMigrationUtils::splitEntityName($vs_name, array_merge($pa_options, ['doNotParse' => $pa_item['settings']["{$ps_refinery_name}_doNotParse"]])), $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
+					// Try to match on display name alone, then parsed name
+					$va_entity_label = DataMigrationUtils::splitEntityName($vs_name, array_merge($pa_options, ['doNotParse' => $pa_item['settings']["{$ps_refinery_name}_doNotParse"]]));
+					
+					foreach([['displayname' => $vs_name], $va_entity_label] as $e) {
+						if($vn_id = DataMigrationUtils::getEntityID($e, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options)) {
+							break;
+						}
+					}
 					$va_attributes['preferred_labels'] = $va_entity_label;
 					$va_attributes['_preferred_labels'] = $vs_name;
 					break;
@@ -1255,6 +1262,29 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	if (is_array($va_relationships = $pa_item['settings'][$vs_relationship_settings_key])) {
 		foreach ($va_relationships as $va_relationship_settings) {
 			if ($vs_table_name = caGetOption('relatedTable', $va_relationship_settings)) {
+				if($skip_if_all_empty = caGetOption('skipIfAllEmpty', $va_relationship_settings, null, [])) {
+					if(!is_array($skip_if_all_empty)) { $skip_if_all_empty = [$skip_if_all_empty]; }
+					$skip_if_all_empty = array_map(function($v) { return preg_replace('!^\^!', '', $v); }, $skip_if_all_empty);
+					$is_empty = true;
+					foreach($skip_if_all_empty as $source) {
+						if($o_reader->get($source)) {
+							$is_empty = false;
+							break;
+						}
+					}
+					if($is_empty) { continue; }
+				}
+				if($skip_if_any_empty = caGetOption('skipIfAnyEmpty', $va_relationship_settings, null)) {
+					$skip_if_any_empty = array_map(function($v) { return preg_replace('!^\^!', '', $v); }, $skip_if_any_empty);
+					$is_empty = false;
+					foreach($skip_if_any_empty as $source) {
+						if(!$o_reader->get($source)) {
+							$is_empty = true;
+							break;
+						}
+					}
+					if($is_empty) { continue; }
+				}
 				if (is_array($va_rels = caProcessRefineryRelated($po_refinery_instance, $vs_table_name, array($va_relationship_settings), $pa_source_data, $pa_item, $pn_value_index, array_merge($pa_options, ['dontCreate' => caGetOption('dontCreate', $va_relationship_settings, false), 'list_id' => caGetOption('list', $va_relationship_settings, null)])))) {
 					$va_rel_rels = $va_rels['_related_related'];
 					unset($va_rels['_related_related']);
@@ -1552,5 +1582,21 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	 */
 	function caGetIdnoNameKeyList() { 
 		return ['idno','idno_stub'];
+	}
+	# ---------------------------------------------------------------------
+	/**
+	 *
+	 */
+	function caValidateGoogleSheetsUrl($url) {
+		if (!is_array($parsed_url = parse_url(urldecode($url)))) { return null; }
+ 			
+		$tmp = explode('/', $parsed_url['path']);
+		array_pop($tmp); $tmp[] = 'export';
+		$path = join("/", $tmp);
+		$transformed_url = $parsed_url['scheme']."://".$parsed_url['host'].$path."?format=xlsx";
+		if (!isUrl($transformed_url) || !preg_match('!^https://(docs|drive).google.com/(spreadsheets|file)/d/!', $transformed_url)) {
+			return null;
+		}
+		return $transformed_url;
 	}
 	# ---------------------------------------------------------------------

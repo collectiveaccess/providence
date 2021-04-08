@@ -110,7 +110,7 @@ class ExcelDataReader extends BaseDataReader {
 				$o_cells = $o_row->getCellIterator();
 				$o_cells->setIterateOnlyExistingCells(false); 
 			
-				date_default_timezone_set('Europe/London');
+				date_default_timezone_set('UTC');
 				$vn_col = 1;
 				foreach ($o_cells as $o_cell) {
 					if (\PhpOffice\PhpSpreadsheet\Shared\Date::isDateTime($o_cell)) {

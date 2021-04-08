@@ -83,10 +83,13 @@
 				$this->opo_result_context = new ResultContext($po_request, $this->ops_tablename, $this->ops_find_type);
 
                 if($this->request->config->get($this->ops_tablename.'_breakout_find_by_type_in_submenu') || $this->request->config->get($this->ops_tablename.'_breakout_find_by_type_in_menu')) {                 
-                    if ($this->opn_type_restriction_id = $this->opo_result_context->getTypeRestriction($pb_type_restriction_has_changed)) {
-                    
-                        if ($pb_type_restriction_has_changed) {
-                            Session::setVar($this->ops_tablename.'_type_id', $this->opn_type_restriction_id);
+                    if ($res_type_id = $this->opo_result_context->getTypeRestriction($pb_type_restriction_has_changed)) {
+                    	$t_instance = Datamodel::getInstance($this->ops_tablename, true);
+                    	$type_ids = array_map(function($v) { return (int)$v; }, $t_instance->getTypeList(['idsOnly' => true]));
+                  		
+                        if ($pb_type_restriction_has_changed && in_array((int)$res_type_id, $type_ids, true)) {
+                        	$this->opn_type_restriction_id = $res_type_id;
+                            Session::setVar($this->ops_tablename.'_type_id', $res_type_id);
                         } elseif($vn_type_id = Session::getVar($this->ops_tablename.'_type_id')) {
                             $this->opn_type_restriction_id = $vn_type_id;
                         }
@@ -309,11 +312,11 @@
 			$this->view->setVar('result_context', $this->opo_result_context);
 			$this->view->setVar('access_restrictions',AccessRestrictions::load());
 			
-			#
-			#
-			#				
+			// 
+			// Handle children display mode
+			//			
 			$this->view->setVar('children_display_mode_default', ($vs_children_display_mode_default = $this->request->config->get($this->ops_tablename."_children_display_mode_in_results")) ? $vs_children_display_mode_default : "alwaysShow");
-
+			
 			$ps_children_display_mode = $this->opo_result_context->getCurrentChildrenDisplayMode();
 			
 			// force mode when "always" is set
@@ -322,14 +325,44 @@
 			} elseif(strtolower($vs_children_display_mode_default) == 'alwayshide') {
 				$ps_children_display_mode = 'hide';
 			}
+			
 			$this->view->setVar('children_display_mode', $ps_children_display_mode);				
 			$this->view->setVar('hide_children', $pb_hide_children = in_array(strtolower($ps_children_display_mode), ['hide', 'alwayshide']));			
 			$this->view->setVar('show_children_display_mode_control', !in_array(strtolower($vs_children_display_mode_default), ['alwaysshow', 'alwayshide']));
- 		
+			
+			$this->opo_result_context->setCurrentChildrenDisplayMode($ps_children_display_mode);
+	
+			//
+			// Handle deaccession display mode
+			//
+			$this->view->setVar('deaccession_display_mode_default', ($vs_deaccession_display_mode_default = $this->request->config->get($this->ops_tablename."_deaccession_display_mode_in_results")) ? $vs_deaccession_display_mode_default : "alwaysShow");
+
+			$ps_deaccession_display_mode = $this->opo_result_context->getCurrentDeaccessionDisplayMode();
+			
+			// force mode when "always" is set
+			if (strtolower($vs_deaccession_display_mode_default) == 'alwaysshow') {
+				$ps_deaccession_display_mode = 'show';
+			} elseif(strtolower($vs_deaccession_display_mode_default) == 'alwayshide') {
+				$ps_deaccession_display_mode = 'hide';
+			}
+			
+			if (!$this->request->user->canDoAction('can_access_deaccessioned_'.$this->ops_tablename)) {
+				$this->view->setVar('deaccession_display_mode', 'alwayshide');				
+				$this->view->setVar('hide_deaccession', true);			
+				$this->view->setVar('show_deaccession_display_mode_control', false);
+			} else {
+				$this->view->setVar('deaccession_display_mode', $ps_deaccession_display_mode);				
+				$this->view->setVar('hide_deaccession', $pb_hide_deaccessioned = in_array(strtolower($ps_deaccession_display_mode), ['hide', 'alwayshide']));			
+				$this->view->setVar('show_deaccession_display_mode_control', !in_array(strtolower($vs_deaccession_display_mode_default), ['alwaysshow', 'alwayshide']));
+			}
+ 			$this->opo_result_context->setCurrentDeaccessionDisplayMode($ps_deaccession_display_mode);
+ 			
+ 			$this->opo_result_context->saveContext();
+ 			// -----
  			
  			$this->view->setVar('ca_object_representation_download_versions', $this->request->config->getList('ca_object_representation_download_versions'));
  		
- 			$media_elements = ca_metadata_elements::getElementsAsList(false, $this->ops_tablename, $this->opn_type_restriction_id, false, false, true, [__CA_ATTRIBUTE_VALUE_MEDIA__]);
+ 			$media_elements = ca_metadata_elements::getElementsAsList(false, $this->ops_tablename, $this->opn_type_restriction_id, false, false, true, [__CA_ATTRIBUTE_VALUE_MEDIA__], ['useDisambiguationLabels' => true]);
  			$this->view->setVar('media_metadata_elements', (is_array($media_elements) && sizeof($media_elements)) ? $media_elements : []); 
  		}
  		# -------------------------------------------------------

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -64,6 +64,11 @@
 			$va_force_new_values[$vn_i]['idno_stub'] = '['.$va_force_new_values[$vn_i]['idno_stub'].'] ';
 		}
 	}
+	
+	$va_errors = [];
+	foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
+		$va_errors[] = $o_error->getErrorDescription();
+	}
 
 	// params to pass during lookup
 	$va_lookup_params = array(
@@ -74,28 +79,32 @@
 	);
 
 	$count = $this->getVar('relationship_count');
-	if(caGetOption('showCount', $va_settings, false)) { print $count ? "({$count})" : ''; }
+	$num_per_page = caGetOption('numPerPage', $va_settings, 10);
 	
-	if ($vb_batch) {
-		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
-	} else {
-		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix, $this->getVar('initialValues')));
-	}
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
-		
-	$va_errors = array();
-	foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
-		$va_errors[] = $o_error->getErrorDescription();
+	if (!RequestHTTP::isAjax()) {
+		if(caGetOption('showCount', $va_settings, false)) { print $count ? "({$count})" : ''; }
+	
+		if ($vb_batch) {
+			print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
+		} else {
+			print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix, $this->getVar('initialValues')));
+		}
+		print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 	}
 ?>
 <div id="<?php print $vs_id_prefix; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	print "<div class='bundleSubLabel'>";	
-	if(sizeof($this->getVar('initialValues'))) {
+	if(is_array($this->getVar('initialValues')) && sizeof($this->getVar('initialValues'))) {
 		print caGetPrintFormatsListAsHTMLForRelatedBundles($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $vn_placement_id);
-	}
-	if(sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort && ($va_settings['list_format'] != 'list')) {
-		print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $va_settings);
+		
+		if(caGetOption('showReturnToHomeLocations', $va_settings, false) && caHomeLocationsEnabled('ca_object_lots', null, ['enableIfAnyTypeSet' => true])) {
+			print caReturnToHomeLocationControlForRelatedBundle($this->request, $vs_id_prefix, $t_instance, $this->getVar('history_tracking_policy'), $this->getVar('initialValues'));
+		}
+	
+		if(!$vb_read_only) {
+			print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $t_instance->tableName(), array_merge($va_settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
+		}
 	}
 	print "<div style='clear:both;'></div></div><!-- end bundleSubLabel -->";
 
@@ -396,7 +405,12 @@
 			listSortItems: 'div.roundedRel,div.listRel',
 <?php if($vb_quick_add_enabled) { ?>
 			quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,
-			quickaddUrl: '<?php print caNavUrl($this->request, 'editor/object_lots', 'ObjectLotQuickAdd', 'Form', array('lot_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$va_settings['dont_include_subtypes_in_type_restriction'], 'prepopulate_fields' => join(";", $va_settings['prepopulateQuickaddFields']))); ?>'
+			quickaddUrl: '<?php print caNavUrl($this->request, 'editor/object_lots', 'ObjectLotQuickAdd', 'Form', array('lot_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$va_settings['dont_include_subtypes_in_type_restriction'], 'prepopulate_fields' => join(";", $va_settings['prepopulateQuickaddFields']))); ?>',
+			
+			totalValueCount: <?php print (int)$count; ?>,
+			partialLoadUrl: '<?php print caNavUrl($this->request, '*', '*', 'loadBundleValues', array($t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $vn_placement_id, 'bundle' => 'ca_object_lots')); ?>',
+			partialLoadIndicator: '<?php print addslashes(caBusyIndicatorIcon($this->request)); ?>',
+			loadSize: <?php print $num_per_page; ?>,
 <?php } ?>
 		});
 	});

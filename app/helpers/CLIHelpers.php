@@ -144,6 +144,6 @@ function caFormatCmdOptionsForDisplay($vs_opt_format, $vs_opt_desc): string {
     $vs_alias = sizeof($va_tmp)>1 ? $va_tmp[1]: "";
 
     $vn_padding = 25;
-    return "\t" . CLIUtils::textWithColor(str_pad("--" . $va_tmp[0] . " " . ($vs_alias ? "(-{$vs_alias})":""), $vn_padding), "red") . \
+    return "\t" . CLIUtils::textWithColor(str_pad("--" . $va_tmp[0] . " " . ($vs_alias ? "(-{$vs_alias})":""), $vn_padding), "red") . 
                     wordwrap($vs_opt_desc, 75, "\n\t" . str_repeat(" ", $vn_padding)) . "\n\n";
 }

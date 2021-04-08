@@ -45,6 +45,7 @@ require_once(__CA_MODELS_DIR__."/ca_object_checkouts.php");
 require_once(__CA_MODELS_DIR__."/ca_object_lots.php");
 require_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueTrait.php");
+require_once(__CA_LIB_DIR__."/DeaccessionTrait.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_objects'] = array(
@@ -70,6 +71,7 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 			'IS_NULL' => false, 
 			'DEFAULT' => '',
+			'DONT_INCLUDE_IN_SEARCH_FORM' => true,
 			'LABEL' => 'Object hierarchy', 'DESCRIPTION' => 'Identifier of object that is root of the object hierarchy.'
 		),
 		'lot_id' => array(
@@ -284,7 +286,8 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 			'IS_NULL' => false, 
 			'DEFAULT' => 0,
 			'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if the object is deleted or not.'),
-			'BOUNDS_VALUE' => array(0,1)
+			'BOUNDS_VALUE' => array(0,1),
+			'DONT_INCLUDE_IN_SEARCH_FORM' => true
 		),
 		'rank' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -384,6 +387,7 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 
 class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 	use HistoryTrackingCurrentValueTrait;
+	use DeaccessionTrait;
 
 	# ------------------------------------------------------
 	# --- Object attribute properties
@@ -747,36 +751,6 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 	}
  	# ------------------------------------------------------
  	# HTML form bundles
-	# ------------------------------------------------------
-	/** 
-	 * Returns HTML form bundle for object deaccession information
-	 *
-	 * @param HTTPRequest $po_request The current request
-	 * @param string $ps_form_name
-	 * @param string $ps_placement_code
-	 * @param array $pa_bundle_settings
-	 * @param array $pa_options Array of options. Supported options are 
-	 *			noCache = If set to true then label cache is bypassed; default is true
-	 *
-	 * @return string Rendered HTML bundle
-	 */
-	public function getObjectDeaccessionHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
-		global $g_ui_locale;
-		
-		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
-		
-		if(!is_array($pa_options)) { $pa_options = array(); }
-		
-		$o_view->setVar('id_prefix', $ps_form_name);
-		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
-		
-		$o_view->setVar('settings', $pa_bundle_settings);
-		
-		$o_view->setVar('t_subject', $this);
-		
-		
-		return $o_view->render('ca_objects_deaccession.php');
-	}
 	# ------------------------------------------------------
 	/** 
 	 * Returns HTML form bundle for object checkout information

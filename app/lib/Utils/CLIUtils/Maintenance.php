@@ -130,7 +130,7 @@
 			$t_rep = new ca_object_representations();
 			$t_rep->setMode(ACCESS_WRITE);
 
-			$qr_reps = $o_db->query("SELECT * FROM ca_object_representations");
+			$qr_reps = $o_db->query("SELECT representation_id, media FROM ca_object_representations");
 			print CLIProgressBar::start($qr_reps->numRows(), _t('Loading valid file paths from database'))."\n";
 
 			$va_paths = array();
@@ -138,8 +138,19 @@
 				print CLIProgressBar::next();
 				$va_versions = $qr_reps->getMediaVersions('media');
 				if (!is_array($va_versions)) { continue; }
+				
+				$multifiles = $t_rep->getFileList($qr_reps->get('ca_object_representations.representation_id'), null, null, ['returnAllVersions' => true]);
 				foreach($va_versions as $vs_version) {
 					$va_paths[$qr_reps->getMediaPath('media', $vs_version)] = true;
+					
+					if(is_array($multifiles)) {
+						foreach($multifiles as $mfinfo) {
+							foreach($mfinfo as $mfk => $mf) {
+								if(!preg_match("!_path$!", $mfk)) { continue; }
+								$va_paths[$mf] = true;
+							}
+						}
+					}
 				}
 			}
 			print CLIProgressBar::finish();
@@ -152,16 +163,15 @@
 			$vn_delete_count = 0;
 
 			print CLIProgressBar::start(sizeof($va_contents), _t('Finding unused files'));
-			$va_report = array();
+	
 			foreach($va_contents as $vs_path) {
 				print CLIProgressBar::next();
 				if (!preg_match('!_ca_object_representation!', $vs_path)) { continue; } // skip non object representation files
 				if (!$va_paths[$vs_path]) {
 					$vn_delete_count++;
 					if ($vb_delete_opt) {
-						unlink($vs_path);
+						@unlink($vs_path);
 					}
-					$va_report[] = $vs_path;
 				}
 			}
 			print CLIProgressBar::finish()."\n";

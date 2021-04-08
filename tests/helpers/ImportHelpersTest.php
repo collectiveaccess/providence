@@ -169,7 +169,8 @@ class ImportHelpersTest extends TestCase {
                 4 => 'Somme',
                 5 => 'Popperinge',
                 6 => 'Ypres;Somme;Cambrai;Ypres;Popperinge',
-                7 => ['Antwerp', 'Dieppe|Charleois|Paschendale', 'Bruges']
+                7 => ['Antwerp', 'Dieppe|Charleois|Paschendale', 'Bruges'],
+                8 => 100
         ];
         $this->item = [
                 'settings' => [
@@ -189,7 +190,7 @@ class ImportHelpersTest extends TestCase {
         );
 
         $this->parents = array(
-                array('idno' => '^1',
+                array('idno' => '^8',
                         'name' => '^3',
                         'attributes' => array(
                                 'description' => '^5'
@@ -468,18 +469,6 @@ class ImportHelpersTest extends TestCase {
 
         $result = caProcessImportItemSettingsForValue($ps_value, $pa_item_settings);
         $this->assertSame('7:30', $result);
-    }
-
-    public function testCaValidateGoogleSheetsUrlReturnsNullForBadUrl() {
-        $url = "http://collectiveaccess.org";
-        $result = caValidateGoogleSheetsUrl($url);
-        $this->assertNull($result);
-    }
-
-    public function testCaValidateGoogleSheetsUrlReturnsValidatedUrl() {
-        $url = "https://docs.google.com/file/d/";
-        $result = caValidateGoogleSheetsUrl($url);
-        $this->assertSame('https://docs.google.com/file/d/export?format=xlsx', $result);
     }
 
     public function testCaProcessRefineryAttributesEmptyIsNotNull() {

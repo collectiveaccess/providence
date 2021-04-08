@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
  
-		$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
+	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$va_labels 			= $this->getVar('labels');
 	$t_label 			= $this->getVar('t_label');
 	/** @var BundlableLabelableBaseModelWithAttributes $t_subject */

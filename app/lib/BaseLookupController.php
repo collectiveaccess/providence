@@ -34,10 +34,6 @@
   *
   */
  	
- 	require_once(__CA_MODELS_DIR__.'/ca_lists.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_user_roles.php');
- 	
  	class BaseLookupController extends ActionController {
  		# -------------------------------------------------------
  		protected $opb_uses_hierarchy_browser = false;
@@ -411,22 +407,44 @@
 		public function IDNo() {
 			header("Content-type: application/json");
 			
-			$va_ids = array();
-			if ($vs_idno_field = $this->opo_item_instance->getProperty('ID_NUMBERING_ID_FIELD')) {
-				$pn_id =  $this->request->getParameter('id', pInteger);
+			$ids = $sequences = [];
+			if ($idno_field = $this->opo_item_instance->getProperty('ID_NUMBERING_ID_FIELD')) {
+				$row_id =  $this->request->getParameter('id', pInteger);
+				$type_id =  $this->request->getParameter('type_id', pInteger);
 				
-				if ($vs_idno_context_field = $this->opo_item_instance->getProperty('ID_NUMBERING_CONTEXT_FIELD')) {		// want to set context before doing identifier lookup, if the table supports contexts (ca_list_items and ca_place do, others don't)
-					if($pn_context_id =  $this->request->getParameter('_context_id', pInteger)) {
-						$this->opo_item_instance->load(array($vs_idno_context_field => $pn_context_id));
+				if ($idno_context_field = $this->opo_item_instance->getProperty('ID_NUMBERING_CONTEXT_FIELD')) {		// want to set context before doing identifier lookup, if the table supports contexts (ca_list_items and ca_place do, others don't)
+					if($context_id =  $this->request->getParameter('_context_id', pInteger)) {
+						$this->opo_item_instance->load(array($idno_context_field => $context_id));
 					} else {
-						$this->opo_item_instance->load($pn_id);
+						$this->opo_item_instance->load($row_id);
 					}
 				}
-				if ($ps_idno = $this->request->getParameter('n', pString)) {
-					$va_ids = $this->opo_item_instance->checkForDupeAdminIdnos($ps_idno, false, $pn_id);
+				if ($idno = $this->request->getParameter('n', pString)) {
+					$ids = $this->opo_item_instance->checkForDupeAdminIdnos($idno, false, $row_id);
+				}
+				
+				$type = $this->opo_item_instance->getTypeCode($type_id);
+				if (
+					method_exists($this->opo_item_instance, "getIDNoPlugInInstance") && 
+					($o_numbering_plugin = $this->opo_item_instance->getIDNoPlugInInstance()) &&
+					method_exists($o_numbering_plugin, 'isSerialFormat') &&
+					$o_numbering_plugin->isSerialFormat($this->opo_item_instance->tableName(), $type)
+				) {
+					$o_numbering_plugin->setFormat($this->opo_item_instance->tableName());
+					$o_numbering_plugin->setType($type);
+					$elements = $o_numbering_plugin->getElements();
+					
+					foreach($elements as $ename => $e) {
+						if ($e['type'] === 'SERIAL') {
+							$sequences[$ename] = $o_numbering_plugin->getNextValue($ename, $idno);
+						}
+					}
+					
 				}
 			}
-			$this->view->setVar('id_list', $va_ids);
+			$this->view->setVar('id_list', $ids);
+			$this->view->setVar('sequences', $sequences);
+		
 			return $this->render('idno_json.php');
 		}
 		# -------------------------------------------------------

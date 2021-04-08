@@ -64,9 +64,9 @@ class BaseEditorController extends ActionController {
 
 		AssetLoadManager::register('bundleListEditorUI');
 		AssetLoadManager::register('panel');
-		AssetLoadManager::register('maps');
-		AssetLoadManager::register('leaflet');
-		AssetLoadManager::register('3dmodels');
+// 		AssetLoadManager::register('maps');
+// 		AssetLoadManager::register('leaflet');
+// 		AssetLoadManager::register('3dmodels');
 
 		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 		$this->opo_result_context = new ResultContext($po_request, $this->ops_table_name, ResultContext::getLastFind($po_request, $this->ops_table_name));
@@ -669,7 +669,7 @@ class BaseEditorController extends ActionController {
 		$this->getRequest()->close();
 		
 		$redirect_url = $this->opo_result_context->getResultsUrlForLastFind($this->getRequest(), $t_subject->tableName());
-		if (($parent_id = $t_subject->get('parent_id')) > 0) {
+		if (($t_subject->getHierarchyType() === __CA_HIER_TYPE_ADHOC_MONO__) && ($parent_id = $t_subject->get('parent_id')) > 0) {
 			$redirect_url = caEditorUrl($this->request, $t_subject->tableName(), $parent_id);
 		} elseif(!$redirect_url) {
 			$redirect_url = ResultContext::getResultsUrl($this->request, $t_subject->tableName(), 'basic_search');
@@ -1395,7 +1395,7 @@ class BaseEditorController extends ActionController {
 						// If in strict mode and a top-level type is disabled, then show sub-types so user can select an enabled type
 				) {
 					if (isset($va_item['item_id']) && isset($va_types_by_parent_id[$va_item['item_id']]) && is_array($va_types_by_parent_id[$va_item['item_id']])) {
-						$va_subtypes = $this->_getSubTypes($va_types_by_parent_id[$va_item['item_id']], $va_types_by_parent_id, $vn_sort_type, $va_restrict_to_types, ['firstEnabled' => !(bool)$va_item['is_enabled']]);
+						$va_subtypes = $this->_getSubTypes($va_types_by_parent_id[$va_item['item_id']], $va_types_by_parent_id, $vn_sort_type, $va_restrict_to_types, ['firstEnabled' => !$show_top_level_types_only && (bool)$enforce_strict_type_hierarchy && !(bool)$va_item['is_enabled']]);
 					}
 				}
 
@@ -2669,168 +2669,157 @@ class BaseEditorController extends ActionController {
 	/**
 	 * 
 	 */
+	public function MediaBrowser($options=null) {
+		$this->view->setVar('lastPath', Session::getVar('lastMediaImportDirectoryPath'));
+		$this->render('../generic/representation_media_browser_html.php');
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 */
 	public function SetHomeLocation($options=null) {
-		$object_id = $this->request->getParameter('object_id', pInteger);
-		if (!($t_subject = ca_objects::find($object_id, ['returnAs' => 'firstModelInstance']))) { 
-			throw new ApplicationException(_t('Invalid id'));
+		list($vn_subject_id, $t_subject) = $this->_initView();
+		if (!$t_subject->isLoaded()) { 
+			throw new ApplicationException(_t('Invalid id '.$vn_su));
 		}
 		if (!$this->_checkAccess($t_subject)) { 
-			throw new ApplicationException(_t('Access denied to object'));
+			throw new ApplicationException(_t('Access denied'));
 		}
+		$table = $t_subject->tableName();
 		$location_id = $this->request->getParameter('location_id', pInteger);
 		if (!($t_location = ca_storage_locations::find($location_id, ['returnAs' => 'firstModelInstance']))) { 
-			throw new ApplicationException(_t('Invalid id'));
-		}
-		$t_subject->set('home_location_id', $location_id);
-		$t_subject->update();
-		
-		if ($t_subject->numErrors() > 0) {
-			$resp = ['ok' => 0, 'errors' => $t_subject->getErrors()];
+			$resp = ['ok' => 0, 'errors' => _t('No location set')];
 		} else {
-			$resp = ['ok' => 1, 'label' => $t_location->getWithTemplate($this->request->config->get('ca_storage_locations_hierarchy_browser_display_settings')), 'timestamp' => time()];
+			if (!caHomeLocationsEnabled($table, $t_subject->getTypeCode())) { 
+				throw new ApplicationException(_t('Home locations are not enabled'));
+			}
+			if (!$this->request->user->canDoAction("can_set_home_location_{$table}")) {
+				throw new ApplicationException(_t('Access denied'));
+			}
+			$t_subject->set('home_location_id', $location_id);
+			$t_subject->update();
+		
+			if ($t_subject->numErrors() > 0) {
+				$resp = ['ok' => 0, 'errors' => $t_subject->getErrors()];
+			} else {
+				$resp = ['ok' => 1, 'label' => $t_location->getWithTemplate($this->request->config->get('ca_storage_locations_hierarchy_browser_display_settings')), 'timestamp' => time()];
+			}
 		}
 		
 		$this->view->setVar('response', $resp);
-		$this->render('set_home_location_json.php');
+		$this->render('../generic/set_home_location_json.php');
 	}
 	# -------------------------------------------------------
 	/**
 	 * 
 	 */
 	public function ReturnToHomeLocations($options=null) {
-		global $g_ui_locale_id;
+		$target = $this->request->getParameter('target', pString);
+		if(in_array($target, ['ca_objects', 'ca_collections', 'ca_object_lots', 'ca_object_representations'], true)) {
+			if(!$this->request->user->canDoAction("can_edit_{$target}")) {
+				$resp = ['ok' => 0, 'message' => _t('Access denied'), 'updated' => [], 'errors' => [], 'timestamp' => time()];	
+			} elseif(!is_array($policies = $target::getHistoryTrackingCurrentValuePoliciesForTable($target))) {
+				$resp = ['ok' => 0, 'message' => _t('No policies available'), 'updated' => [], 'errors' => [], 'timestamp' => time()];	
+			} else {
+				$policies = array_filter($policies, function($v) use ($table) { return array_key_exists('ca_storage_locations', $v['elements']); });
 		
-		if(!$this->request->user->canDoAction("can_edit_ca_objects")) {
-			$resp = ['ok' => 0, 'message' => _t('Access denied'), 'updated' => [], 'errors' => [], 'timestamp' => time()];
-		} elseif(!is_array($policies = ca_objects::getHistoryTrackingCurrentValuePoliciesForTable('ca_objects'))) {
-			$resp = ['ok' => 0, 'message' => _t('No policies configured'), 'updated' => [], 'errors' => [], 'timestamp' => time()];
-		} else {
-			$policies = array_filter($policies, function($v) use ($table) { 
-				if(array_key_exists('ca_storage_locations', $v['elements'])) { return true; }
-				if(is_array($v['elements'])) {
-					foreach($v['elements'] as $e) {
-						if (isset($e['useRelated']) && ($e['useRelated'] === 'ca_storage_locations')) { 
-							return true;
-						}
+				$updated = $already_home = $errors = [];
+				$msg = '';
+				if(is_array($policies) && sizeof($policies)) {
+					$primary_table = $this->request->getParameter('table', pString);
+					$primary_id = $this->request->getParameter('id', pString);
+		
+					if (!($primary = Datamodel::getInstance($primary_table))) {
+						throw new ApplicationException(_t('Invalid table'));
 					}
-				}
-				
-				return false;
-			});
-		
-			$updated = $already_home = $errors = [];
-			$msg = '';
-			if(is_array($policies) && sizeof($policies)) {
-				$primary_table = $this->request->getParameter('table', pString);
-				$primary_id = $this->request->getParameter('id', pString);
-				$primary_policy = $this->request->getParameter('policy', pString);
-		
-				if (!($primary = Datamodel::getInstance($primary_table))) {
-					throw new ApplicationException(_t('Invalid table'));
-				}
-				if (!$primary->load($primary_id)) {
-					throw new ApplicationException(_t('Invalid id'));
-				}
-				if (!$primary->isReadable($this->request)) {
-					throw new ApplicationException(_t('Access denied'));
-				}
-				
-				if ($primary_policy) {
-					$object_ids = $primary->getContents($primary_policy, ['idsOnly' => true]);
-				} else {
-					$object_ids = $primary->get('ca_objects.related.object_id', ['returnAsArray' => true]);
-				}
-				
-				if(is_array($object_ids) && sizeof($object_ids)) {
-					$qr_objects = caMakeSearchResult('ca_objects', $object_ids);
-				
-					while($qr_objects->nextHit()) {
-						$object_id = $qr_objects->getPrimaryKey();
-						$t_object = $qr_objects->getInstance();
-		
-						if (!($location_id = $t_object->get('home_location_id'))) { continue; }
-						if (!$t_object->isSaveable($this->request)) { continue; }
-	
-						if(!($t_home_loc = ca_storage_locations::findAsInstance($location_id))) { continue; }
-						$home_loc_type = $t_home_loc->getTypeCode();
-						foreach($policies as $n => $p) {
-							//if(!isset($p['elements']) || !isset($p['elements']['ca_storage_locations'])) { continue; }
+					if (!$primary->load($primary_id)) {
+						throw new ApplicationException(_t('Invalid id'));
+					}
+					if (!$primary->isReadable($this->request)) {
+						throw new ApplicationException(_t('Access denied'));
+					}
+					if (!($t_pk = Datamodel::primaryKey($target))) { 
+						throw new ApplicationException(_t('Invalid target'));
+					}
+					
+ 					$is_fk = false;
+ 					$target_id = null;
+ 					if ($primary->hasField($t_pk) && ($target_id = $primary->get($t_pk))) {
+						$is_fk = true;
+					}
+					foreach($policies as $n => $p) {
+						if(!isset($p['elements']) || !isset($p['elements']['ca_storage_locations'])) { continue; }
 						
-							foreach($p['elements'] as $pt => $pe) {
-								if ($pt === 'ca_storage_locations') {
-									$d = isset($pe[$home_loc_type]) ? $pe[$home_loc_type] : $pe['__default__'];
-									if (!is_array($d) || !isset($d['trackingRelationshipType'])) { $errors[] = $object_id; continue; }
 						
-									// Interstitials?
-									$effective_date = null;
-									$interstitial_values = [];
-									if (is_array($interstitial_elements = caGetOption("setInterstitialElementsOnAdd", $d, null))) {
-										foreach($interstitial_elements as $e) {
-											switch($e) {
-												case 'effective_date':
-													$effective_date = _t('today');
-													break;
-											}
-										}
+						if($is_fk) {
+							$qr_res = caMakeSearchResult($target, [$target_id]);
+						} else {
+							if(!($qr_res = $primary->getContents($n))) { continue; }
+						}
+						while($qr_res->nextHit()) {
+							$t_id = $qr_res->getPrimaryKey();
+							
+							$t_instance = $qr_res->getInstance();
+							if (!($location_id = $t_instance->get('home_location_id'))) { continue; }
+							if (!$t_instance->isSaveable($this->request)) { continue; }
+							
+							$pe = $p['elements']['ca_storage_locations'];
+							$d = isset($pe[$t_instance->getTypeCode()]) ? $pe[$t_instance->getTypeCode()] : $pe['__default__'];
+							if (!$is_fk && (!is_array($d) || !isset($d['trackingRelationshipType']))) { $errors[] = $t_id; continue; }
+				
+							// Interstitials?
+							$effective_date = null;
+							$interstitial_values = [];
+							if (is_array($interstitial_elements = caGetOption("setInterstitialElementsOnAdd", $d, null))) {
+								foreach($interstitial_elements as $e) {
+									switch($e) {
+										case 'effective_date':
+											$effective_date = _t('today');
+											break;
 									}
-						
-									if (is_array($cv = $t_object->getCurrentValue($n)) && (($cv['type'] == 'ca_storage_locations') && ($cv['id'] == $location_id))) {
-										$already_home[] = $object_id;
-										continue;
-									}
-								
-						
-									$t_item_rel = $t_object->addRelationship('ca_storage_locations', $location_id, $d['trackingRelationshipType'], $effective_date);
-									ca_objects::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($this->request, null, null, $t_item_rel, null, $interstitial_elements, ['noTemplate' => true]);
-								} elseif($pt === 'ca_movements') {
-									continue;
-									foreach($pe as $ptype => $ptypeinfo) {
-										if (isset($ptypeinfo['useRelated']) && ($ptypeinfo['useRelated'] === 'ca_storage_locations')) {
-											
-											// create movement
-											$t_movement = new ca_movements();
-											if (!$ptype || !$t_movement->getTypeIDForCode($ptype)) { $ptype = $t_movement->getDefaultTypeID(); }	
-											
-											$t_movement->set('type_id', $ptype);
-											$t_movement->insert();
-											$t_movement->addLabel(['name' => _t('')], null, $g_ui_locale_id, true);
-											
-											$t_movement->addRelationship('ca_storage_locations', $location_id, $ptypeinfo['useRelatedRelationshipType']);
-											$t_movement->addRelationship('ca_objects', $object_id, $ptypeinfo['trackingRelationshipType']);
-										}
-									}
-								} else {
-									// noop
-								}
-		
-								if($t_object->numErrors() > 0) {
-									$errors[] = $object_id;
-								} else {
-									$updated[] = $object_id;
 								}
 							}
+							if (is_array($cv = $t_instance->getCurrentValue($n)) && (($cv['type'] == 'ca_storage_locations') && ($cv['id'] == $location_id))) {
+								$already_home[] = $t_id;
+								continue;
+							}
+				
+							if (!($t_item_rel = $t_instance->addRelationship('ca_storage_locations', $location_id, $d['trackingRelationshipType'], $effective_date, null, null, null, ['allowDuplicates' => true]))) {
+								$errors[] = $t_id;
+								continue;
+							}
+							$target::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($this->request, null, null, $t_item_rel, null, $interstitial_elements, ['noTemplate' => true]);
+
+							if($t_instance->numErrors() > 0) {
+								$errors[] = $t_id;
+							} else {
+								$updated[] = $t_id;
+							}
 						}
-					}	
+					}
+					
 					$n = sizeof($updated);
 					$h = sizeof($already_home);
-				
+			
 					if($h > 0) {
-						$msg = ($n == 1) ? _t('%1 %2 returned to home location; %3 already home', $n, Datamodel::getTableProperty('ca_objects', 'NAME_SINGULAR'), $h) : _t('%1 %2 returned to home locations; %3 already home', $n, Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $h);
+						$msg =  _t('%1 %2 returned to home location; %3 already home', $n, Datamodel::getTableProperty($target, ($n == 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL'), $h);
 					} else {
-						$msg = ($n == 1) ? _t('%1 %2 returned to home location', $n, Datamodel::getTableProperty('ca_objects', 'NAME_SINGULAR')) : _t('%1 %2 returned to home locations', $n, Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'));
+						$msg = _t('%1 %2 returned to home location', $n, Datamodel::getTableProperty($target, ($n == 1)  ? 'NAME_SINGULAR' : 'NAME_PLURAL'));
 					}
 					if (sizeof($errors)) {
 						$msg .= '; '._t('%1 errors', sizeof($errors));
 					}
+					
+					$resp = ['ok' => 1, 'message' => $msg, 'updated' => array_unique($updated), 'errors' => array_unique($errors), 'timestamp' => time()];
+				} else {
+					$resp = ['ok' => 0, 'message' => _t('No policies available'), 'updated' => [], 'errors' => [], 'timestamp' => time()];	
 				}
-				$resp = ['ok' => 1, 'message' => $msg, 'updated' => array_unique($updated), 'errors' => array_unique($errors), 'timestamp' => time()];
-			} else {
-				$resp = ['ok' => 0, 'message' => _t('No policies available'), 'updated' => [], 'errors' => [], 'timestamp' => time()];	
 			}
-			
+		} else {
+			$resp = ['ok' => 0, 'message' => _t('Invalid target'), 'updated' => [], 'errors' => [], 'timestamp' => time()];	
 		}
 		$this->view->setVar('response', $resp);
-		$this->render('../objects/return_to_home_locations.php');
+		$this->render('../generic/return_to_home_locations.php');
 	}
 	# -------------------------------------------------------
 	/**

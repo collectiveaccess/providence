@@ -1960,7 +1960,7 @@ class ca_users extends BaseModel {
 							$va_locales = array();
 							if ($r_dir = opendir(__CA_APP_DIR__.'/locale/')) {
 								while (($vs_locale_dir = readdir($r_dir)) !== false) {
-									if ($vs_locale_dir{0} == '.') { continue; }
+									if ($vs_locale_dir[0] == '.') { continue; }
 									if (sizeof($va_tmp = explode('_', $vs_locale_dir)) == 2) {
 										$va_locales[$vs_locale_dir] = $va_tmp;
 									}
@@ -1999,7 +1999,7 @@ class ca_users extends BaseModel {
 							if ($r_dir = opendir($this->_CONFIG->get('themes_directory'))) {
 								$va_opts = array();
 								while (($vs_theme_dir = readdir($r_dir)) !== false) {
-									if ($vs_theme_dir{0} == '.') { continue; }
+									if ($vs_theme_dir[0] == '.') { continue; }
 										$o_theme_info = Configuration::load($this->_CONFIG->get('themes_directory').'/'.$vs_theme_dir.'/themeInfo.conf');
 										$va_opts[$o_theme_info->get('name')] = $vs_theme_dir;
 								}
@@ -3273,7 +3273,7 @@ class ca_users extends BaseModel {
 		
 		// is user administrator?
 		if ($this->getPrimaryKey() == $this->_CONFIG->get('administrator_user_id')) { return ca_users::$s_user_action_access_cache[$vs_cache_key] = true; }	// access restrictions don't apply to user with user_id = admin id
-		
+	
 		// get user roles
 		$va_roles = $this->getUserRoles();
 		foreach($this->getGroupRoles() as $vn_role_id => $va_role_info) {
@@ -3281,8 +3281,22 @@ class ca_users extends BaseModel {
 		}
 		
 		$va_actions = ca_user_roles::getActionsForRoleIDs(array_keys($va_roles));
-		if (in_array('is_administrator', $va_actions)) { return ca_users::$s_user_action_access_cache[$vs_cache_key] = true; }		// access restrictions don't apply to users with is_administrator role
-		return ca_users::$s_user_action_access_cache[$vs_cache_key] = in_array($ps_action, $va_actions);
+		if(in_array('is_administrator', $va_actions)) { return ca_users::$s_user_action_access_cache[$vs_cache_key] = true; }		// access restrictions don't apply to users with is_administrator role
+
+		if(in_array($ps_action, $va_actions)) {
+			return ca_users::$s_user_action_access_cache[$vs_cache_key] = in_array($ps_action, $va_actions);
+		}
+		// is default set in user_action.conf?
+		$user_actions = Configuration::load(__CA_CONF_DIR__.'/user_actions.conf');
+		if($user_actions && is_array($actions = $user_actions->getAssoc('user_actions'))) {
+			foreach($actions as $categories) {
+				if(isset($categories['actions'][$ps_action]) && isset($categories['actions'][$ps_action]['default'])) {
+					return ca_users::$s_user_action_access_cache[$vs_cache_key] = (bool)$categories['actions'][$ps_action]['default'];
+				}
+			}
+		}
+		
+		return ca_users::$s_user_action_access_cache[$vs_cache_key] = false;
 	}
 	# ----------------------------------------
 	/**

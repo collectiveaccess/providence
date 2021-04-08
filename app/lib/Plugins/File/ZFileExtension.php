@@ -118,6 +118,7 @@ class WLPlugFileZFileExtension Extends WLPlug Implements IWLPlugFileFormat {
 		"zip"	=>	array("mimetype" => "application/windows-media", "format_name" => "ZIP", "long_format_name" => "PKZIP archive"),
 		"gz"	=>	array("mimetype" => "application/windows-media", "format_name" => "Gzip", "long_format_name" => "GNU Zip"),
 		"Z"	=>	array("mimetype" => "application/windows-media", "format_name" => "Unix Compress", "long_format_name" => "Unix Compress"),
+		"mtl"	=>	array("mimetype" => "text/prs.wavefront-mtl", "format_name" => "MTL", "long_format_name" => "Wavefront Material Library"),
 	);
 
 	
@@ -184,4 +185,3 @@ class WLPlugFileZFileExtension Extends WLPlug Implements IWLPlugFileFormat {
 	}
 	# ------------------------------------------------
 }
-?>

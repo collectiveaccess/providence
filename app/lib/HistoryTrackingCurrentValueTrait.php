@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2020 Whirl-i-Gig
+ * Copyright 2018-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -105,6 +105,21 @@
 				 }
 			}
 			return $history_tracking_policies;
+		}
+		# ------------------------------------------------------
+		/**
+		 * Return configuration information for a history tracking policy
+		 *
+		 * @param string $policy The policy code
+		 * 
+		 * @return array Configuration array or null if policy is not available.
+		 */
+		static public function getPolicyConfig($policy) {
+			$history_tracking_policies = self::getHistoryTrackingCurrentValuePolicyConfig();
+			if(isset($history_tracking_policies['policies'][$policy]) && is_array($history_tracking_policies['policies'][$policy])) {
+				return $history_tracking_policies['policies'][$policy];
+			}
+			return null;
 		}
 		# ------------------------------------------------------
 		/**
@@ -971,7 +986,7 @@
 						$relation_id = $linking_table ? $qr_lots->get("{$linking_table}.relation_id") : $vn_lot_id;
 		
 						foreach($va_dates as $va_date) {
-							if (!$va_date['sortable']) { continue; }
+							if (!$va_date['sortable']) { $va_date['sortable'] = 0; }
 							if (!in_array($vn_type_id, $va_lot_types)) { continue; }
 							if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date))) { continue; }
 							
@@ -1069,7 +1084,7 @@
                         }
 				
 						foreach($va_dates as $va_date) {
-							if (!$va_date['sortable']) { continue; }
+							if (!$va_date['sortable']) { $va_date['sortable'] = 0; }
 							if (!in_array($vn_type_id, $va_loan_types)) { continue; }
 							if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date))) { continue; }
 							
@@ -1177,7 +1192,7 @@
 						}
 						
 						foreach($va_dates as $va_date) {
-							if (!$va_date['sortable']) { continue; }
+							if (!$va_date['sortable']) { $va_date['sortable'] = 0; }
 							if (!in_array($vn_type_id, $va_movement_types)) { continue; }
 							if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date))) { continue; }
 							
@@ -1293,9 +1308,9 @@
                         }
 				
 						foreach($va_dates as $va_date) {
-							if (!$va_date['sortable']) { continue; }
+							if (!$va_date['sortable']) { $va_date['sortable'] = 0; }
 							if (!in_array($vn_type_id, $va_occurrence_types)) { continue; }
-							if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date) || ($va_date['bounds'][1] < $vn_current_date))) { continue; }
+							if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date))){ continue; }
 					
 					
 							$status = ($va_date['bounds'][0] > $vn_current_date) ? 'FUTURE' : 'PAST';
@@ -1409,7 +1424,7 @@
                         }
 				
 						foreach($va_dates as $va_date) {
-							if (!$va_date['sortable']) { continue; }
+							if (!$va_date['sortable']) { $va_date['sortable'] = 0; }
 							if (!in_array($vn_type_id, $va_entity_types)) { continue; }
 							if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date) || ($va_date['bounds'][1] < $vn_current_date))) { continue; }
 					
@@ -1518,7 +1533,7 @@
                         }
 				
 						foreach($va_dates as $va_date) {
-							if (!$va_date['sortable']) { continue; }
+							if (!$va_date['sortable']) { $va_date['sortable'] = 0; }
 							if (!in_array($vn_type_id, $va_collection_types)) { continue; }
 							if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date) || ($va_date['bounds'][1] < $vn_current_date))) { continue; }
 					
@@ -1627,7 +1642,7 @@
                         }
 				
 						foreach($va_dates as $va_date) {
-							if (!$va_date['sortable']) { continue; }
+							if (!$va_date['sortable']) { $va_date['sortable'] = 0; }
 							if (!in_array($vn_type_id, $va_object_types)) { continue; }
 							if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date) || ($va_date['bounds'][1] < $vn_current_date))) { continue; }
 					
@@ -1698,6 +1713,7 @@
 					$loc_table_num = Datamodel::getTableNum('ca_storage_locations');
 					$rel_table_num = Datamodel::getTableNum($linking_table);
 				
+					$unsortable = [];
 					while($qr_locations->nextHit()) {
 						if ((string)$qr_locations->get('ca_storage_locations.deleted') !== '0') { continue; }	// filter out deleted
 					    
@@ -1720,7 +1736,7 @@
 							);
 						}
 
-						if (!$va_date['sortable']) { continue; }
+						if (!$va_date['sortable']) { $va_date['sortable'] = 0; }
 						if (sizeof($va_location_types) && sizeof($va_location_types) && !in_array($vn_rel_type_id = $qr_locations->get("{$linking_table}.type_id"), $va_location_types)) { continue; }
 						
 						if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date))) { continue; }
@@ -1970,6 +1986,9 @@
 		
 			$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
 			$o_view->setVar('t_subject', $this);
+			
+			$bundle_config = self::policy2bundleconfig(array_merge($pa_options, $pa_bundle_settings));
+			
 		
 			//
 			// Occurrence update
@@ -1986,9 +2005,12 @@
                         foreach($va_occ_types as $vn_type_id => $va_type_info) {
                             if (!in_array($vn_type_id, $va_occ_types_to_show) && !in_array($va_type_info['idno'], $va_occ_types_to_show)) { unset($va_occ_types[$vn_type_id]); }
                         }
+                		
                         $o_view->setVar('occurrence_types', $va_occ_types);
                         $o_view->setVar('occurrence_relationship_types', $t_occ_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
-                        $o_view->setVar('occurrence_relationship_types_by_sub_type', $t_occ_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
+                        
+                        if(!is_array($bundle_config['ca_occurrences_showRelationshipTypes'])) { $bundle_config['ca_occurrences_showRelationshipTypes'] = []; }
+                        $o_view->setVar('occurrence_relationship_types_by_sub_type', $t_occ_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($bundle_config, ['restrictToRelationshipTypes' => $bundle_config['ca_occurrences_showRelationshipTypes']])));
                     }
 				}
 			}
@@ -2009,7 +2031,9 @@
 					}
 					$o_view->setVar('collection_types', $va_coll_types);
 					$o_view->setVar('collection_relationship_types', $t_coll_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
-					$o_view->setVar('collection_relationship_types_by_sub_type', $t_coll_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
+					
+					if(!is_array($bundle_config['ca_collections_showRelationshipTypes'])) { $bundle_config['ca_collections_showRelationshipTypes'] = []; }
+					$o_view->setVar('collection_relationship_types_by_sub_type', $t_coll_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  $bundle_config, ['restrictToRelationshipTypes' => $bundle_config['ca_collections_showRelationshipTypes']]));
 				}
 			}
 			
@@ -2029,7 +2053,9 @@
 					}
 					$o_view->setVar('entity_types', $va_entity_types);
 					$o_view->setVar('entity_relationship_types', $t_entity_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
-					$o_view->setVar('entity_relationship_types_by_sub_type', $t_entity_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
+					
+					if(!is_array($bundle_config['ca_entities_showRelationshipTypes'])) { $bundle_config['ca_entities_showRelationshipTypes'] = []; }
+					$o_view->setVar('entity_relationship_types_by_sub_type', $t_entity_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($bundle_config, ['restrictToRelationshipTypes' => $bundle_config['ca_entities_showRelationshipTypes']])));
 				}
 			}
 			
@@ -2042,7 +2068,9 @@
 				$linking_table = $path[1];
 				if ($t_loan_rel = Datamodel::getInstance($linking_table, true)) {
 					$o_view->setVar('loan_relationship_types', $t_loan_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
-					$o_view->setVar('loan_relationship_types_by_sub_type', $t_loan_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
+					
+					if(!is_array($bundle_config['ca_loans_showRelationshipTypes'])) { $bundle_config['ca_loans_showRelationshipTypes'] = []; }
+					$o_view->setVar('loan_relationship_types_by_sub_type', $t_loan_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($bundle_config, ['restrictToRelationshipTypes' => $bundle_config['ca_loans_showRelationshipTypes']])));
 				}
 			}
 			
@@ -2055,7 +2083,9 @@
 				$linking_table = $path[1];
 				if ($t_movement_rel = Datamodel::getInstance($linking_table, true)) {
 					$o_view->setVar('movement_relationship_types', $t_movement_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
-					$o_view->setVar('movement_relationship_types_by_sub_type', $t_movement_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
+					
+					if(!is_array($bundle_config['ca_movements_showRelationshipTypes'])) { $bundle_config['ca_movements_showRelationshipTypes'] = []; }
+					$o_view->setVar('movement_relationship_types_by_sub_type', $t_movement_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($bundle_config, ['restrictToRelationshipTypes' => $bundle_config['ca_movements_showRelationshipTypes']])));
 				}
 			}
 			
@@ -2068,7 +2098,9 @@
 				$linking_table = $path[1];
 				if ($t_object_rel = Datamodel::getInstance($linking_table, true)) {
 					$o_view->setVar('object_relationship_types', $t_object_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
-					$o_view->setVar('object_relationship_types_by_sub_type', $t_object_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
+					
+					if(!is_array($bundle_config['ca_objects_showRelationshipTypes'])) { $bundle_config['ca_objects_showRelationshipTypes'] = []; }
+					$o_view->setVar('object_relationship_types_by_sub_type', $t_object_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($bundle_config, ['restrictToRelationshipTypes' => $bundle_config['ca_objects_showRelationshipTypes']])));
 				}
 			}
 			
@@ -2081,7 +2113,9 @@
 				$linking_table = $path[1];
 				if ($t_location_rel = Datamodel::getInstance($linking_table, true)) {
 					$o_view->setVar('location_relationship_types', $t_location_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
-					$o_view->setVar('location_relationship_types_by_sub_type', $t_location_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
+					
+					if(!is_array($bundle_config['ca_storage_locations_showRelationshipTypes'])) { $bundle_config['ca_storage_locations_showRelationshipTypes'] = []; }
+					$o_view->setVar('location_relationship_types_by_sub_type', $t_location_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($bundle_config, ['restrictToRelationshipTypes' => $bundle_config['ca_storage_locations_showRelationshipTypes']])));
 				}
 			}
 			
@@ -2246,7 +2280,7 @@
 								$field_class = '';
 								break;
 						}
-						$buf .= "<td><div class='formLabel'>{$label}<br/>".$t_rel->htmlFormElement($element_code, '', ['name' => "{$id_prefix}_{$rel_table}_{$type_idno}_{$element_code}".($no_template ? '' : '{n}'), 'id' => "{$id_prefix}_{$rel_table}_{$type_idno}_{$element_code}".($no_template ? '' : '{n}'), 'value' => _t('today'), 'classname' => $field_class])."</td>";
+						$buf .= "<td><div class='formLabel'>{$label}<br/>".$t_rel->htmlFormElement($element_code, '', ['name' => "{$id_prefix}_{$rel_table}_{$type_idno}_{$element_code}".($no_template ? '' : '{n}'), 'id' => "{$id_prefix}_{$rel_table}_{$type_idno}_{$element_code}".($no_template ? '' : '{n}'), 'value' => _t('now'), 'classname' => $field_class])."</td>";
 					} else {
 						$buf .= "<td class='formLabel'>{$label}<br/>".$t_rel->getAttributeHTMLFormBundle($request, null, $element_code, $placement_code, $settings, ['elementsOnly' => true])."</td>";
 					}	

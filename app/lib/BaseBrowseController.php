@@ -53,6 +53,10 @@
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			
+ 			if ($po_request->config->get($this->ops_tablename.'_disable_browse')) {
+				throw new ApplicationException(_t('Browse interface is disabled'));
+			}
+			
  			if ($this->ops_tablename) {
 				if ($va_items_per_page_config = $po_request->config->get('items_per_page_options_for_'.$this->ops_tablename.'_browse')) {
 					$this->opa_items_per_page = $va_items_per_page_config;
@@ -156,20 +160,6 @@
  				
  				if ($this->request->config->get('redirect_to_'.$va_facet_info['table'].'_detail_if_is_first_facet')) {
  					$t_table = Datamodel::getInstanceByTableName($va_facet_info['table'], true);
- 					
- 					$va_newmuseum_hack_occurrence_type_ids = $this->request->config->getList('newmuseum_hack_browse_should_redirect_occurrence_types_to_object_details');
- 					if (is_array($va_newmuseum_hack_occurrence_type_ids) && sizeof($va_newmuseum_hack_occurrence_type_ids) && ($va_facet_info['table'] == 'ca_occurrences')) {
- 						if ($t_table->load($va_tmp1[0])) {
- 							if (in_array($t_table->getTypeID(), $va_newmuseum_hack_occurrence_type_ids)) {
- 								if (sizeof($va_objects = $t_table->getRelatedItems('ca_objects'))) {
- 									$va_object = array_shift($va_objects);
- 									$vn_object_id = $va_object['object_id'];
- 									$this->response->setRedirect(caNavUrl($this->request, 'Detail', 'Object', 'Show', array('object_id' => $vn_object_id)));
- 									return;
- 								}
- 							}
- 						}
- 					}
  					$this->response->setRedirect(caNavUrl($this->request, 'Detail', ucfirst($t_table->getProperty('NAME_SINGULAR')), 'Show', array($t_table->primaryKey() => $va_tmp1[0])));
  					return;
  				}
@@ -189,7 +179,11 @@
 			if ($vs_facet_group = $this->request->config->get($this->ops_tablename.(($this->opo_browse->numCriteria() < 1) ? '_browse_facet_group' : '_browse_refine_facet_group'))) {
 				$this->opo_browse->setFacetGroup($vs_facet_group);
 			}
- 			$this->opo_browse->execute(array('checkAccess' => $va_access_values, 'no_cache' => !$this->opo_result_context->cacheIsValid(), 'rootRecordsOnly' => $this->view->getVar('hide_children')));
+ 			$this->opo_browse->execute([
+ 				'checkAccess' => $va_access_values, 
+ 				'no_cache' => !$this->opo_result_context->cacheIsValid(), 
+ 				'rootRecordsOnly' => $this->view->getVar('hide_children'), 
+ 				'filterDeaccessionedRecords' => $this->view->getVar('hide_deaccession')]);
  			$this->opo_result_context->validateCache();
  			
 			$this->opo_result_context->setSearchExpression($this->opo_browse->getBrowseID());
@@ -210,7 +204,7 @@
 			$this->view->setVar('result_context', $this->opo_result_context);
 			
  			$this->view->setVar('criteria', $va_criteria = $this->opo_browse->getCriteriaWithLabels());
- 			$this->view->setVar('available_facets', $this->opo_browse->getInfoForAvailableFacets());
+ 			$this->view->setVar('available_facets', $va_facets_with_info);
  			
  			$this->view->setVar('facets_with_content', $this->opo_browse->getInfoForFacetsWithContent());
  			$this->view->setVar('facet_info', $va_facet_info = $this->opo_browse->getInfoForFacets());

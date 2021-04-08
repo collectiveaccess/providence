@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2018 Whirl-i-Gig
+ * Copyright 2010-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -72,7 +72,7 @@
 					$va_access = array_unique(array_merge($va_access, $va_user_access));
 				}
 			}
-			return $va_access;
+			return array_map('intval', $va_access);
 		}
 		return array();
 	}
@@ -87,6 +87,7 @@
 	  * @return boolean True if user is privileged, false if not
 	  */
 	function caUserIsPrivileged($po_request, $pa_options=null) {
+		if($po_request->isLoggedIn()) { return true; }
 		$va_privileged_networks = isset($pa_options['privileged_networks']) && is_array($pa_options['privileged_networks']) ? $pa_options['privileged_networks'] : (array)$po_request->config->getList('privileged_networks');
 		
 		if (!($va_priv_ips = $va_privileged_networks)) {
@@ -311,6 +312,7 @@
 		}
 		$t_instance = Datamodel::getInstanceByTableName($vs_table_name, true);
 		if (!$t_instance) { return null; }	// bad table
+		if(is_a($t_instance, 'BaseLabel')) { $t_instance = $t_instance->getSubjectTableInstance(); }
 		if (!($vs_type_list_code = $t_instance->getTypeListCode())) { return null; }	// table doesn't use types
 		
 		$va_ret = caMakeItemIDList($vs_type_list_code, $pa_types, $pa_options);

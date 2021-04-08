@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2020 Whirl-i-Gig
+ * Copyright 2013-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -236,37 +236,52 @@
 		 *
 		 * @param array $pa_options Array of criteria options to use when selecting representations. Options include: 
 		 *		mimetypes = array of mimetypes to return
+		 *		class = class of media to return
 		 *		sortby = if set, representations are return sorted using the criteria in ascending order. Valid values are 'filesize' (sort by file size), 'duration' (sort by length of time-based media)
+		 *		version = 
 		 *
 		 * @return array List of representations. Each entry in the list is an associative array of the same format as returned by getRepresentations() and includes properties, tags and urls for the representation.
 		 */
 		public function findRepresentations($pa_options) {
-			$va_mimetypes = array();
+			$va_mimetypes = [];
+			$vs_mimetypes_regex = null;
 			if (isset($pa_options['mimetypes']) && (is_array($pa_options['mimetypes'])) && (sizeof($pa_options['mimetypes']))) {
 				$va_mimetypes = array_flip($pa_options['mimetypes']);
+			} elseif(isset($pa_options['class'])) {
+				if (!($vs_mimetypes_regex = caGetMimetypesForClass($pa_options['class'], array('returnAsRegex' => true)))) { return []; }
 			}
-		
 			$vs_sortby = null;
 			if (isset($pa_options['sortby']) && $pa_options['sortby'] && in_array($pa_options['sortby'], array('filesize', 'duration'))) {
 				$vs_sortby = $pa_options['sortby'];
 			}
+			
+			$version = caGetOption('version', $pa_options, 'original');
 		
-			$va_reps = $this->getRepresentations(array('original'));
+			$va_reps = $this->getRepresentations([$version, 'original'], null, $pa_options);
 			$va_found_reps = array();
 			foreach($va_reps as $vn_i => $va_rep) {
-				if(is_array($va_mimetypes) && (sizeof($va_mimetypes)) && isset($va_mimetypes[$va_rep['info']['original']['MIMETYPE']])) {
-					switch($vs_sortby) {
-						case 'filesize':
-							$va_found_reps[$va_rep['info']['original']['FILESIZE']][] = $va_rep;
-							break;
-						case 'duration':
-							$vn_duration = $va_rep['info']['original']['PROPERTIES']['duration'];
-							$va_found_reps[$vn_duration][] = $va_rep;
-							break;
-						default:
-							$va_found_reps[] = $va_rep;
-							break;
-					}
+				$mimetype = $va_rep['info']['original']['MIMETYPE'];
+				if(
+					is_array($va_mimetypes) && sizeof($va_mimetypes)
+					&&
+					!(isset($va_mimetypes[$mimetype]))
+					&&
+					!($vs_mimetypes_regex && preg_matcH("!{$vs_mimetypes_regex}!", $mimetype))
+				) {
+					continue;	
+				}
+				
+				switch($vs_sortby) {
+					case 'filesize':
+						$va_found_reps[$va_rep['info'][$version]['FILESIZE']][] = $va_rep;
+						break;
+					case 'duration':
+						$vn_duration = $va_rep['info'][$version]['PROPERTIES']['duration'];
+						$va_found_reps[$vn_duration][] = $va_rep;
+						break;
+					default:
+						$va_found_reps[] = $va_rep;
+						break;
 				}
 			}
 		
@@ -507,12 +522,16 @@
 		 *		centerX = Horizontal position of image center used when cropping as a percentage expressed as a decimal between 0 and 1. If omitted existing value is maintained. Note that both centerX and centerY must be specified for the center to be changed.
 		 *		centerY = Vertical position of image center used when cropping as a percentage expressed as a decimal between 0 and 1. If omitted existing value is maintained. Note that both centerX and centerY must be specified for the center to be changed.
 		 *
-		 * @return mixed Returns primary key (link_id) of the relatipnship row linking the newly created representation to the item; if the 'returnRepresentation' is set then an instance for the newly created ca_object_representations is returned instead; boolean false is returned on error
+		 * @return mixed Returns primary key (link_id) of the relationship row linking the newly created representation to the item; if the 'returnRepresentation' is set then an instance for the newly created ca_object_representations is returned instead; boolean false is returned on error
 		 */
 		public function addRepresentation($ps_media_path, $pn_type_id, $pn_locale_id, $pn_status, $pn_access, $pb_is_primary, $pa_values=null, $pa_options=null) {
+			if (!$ps_media_path) { return null; }
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
 			if (!$pn_locale_id) { $pn_locale_id = ca_locales::getDefaultCataloguingLocaleID(); }
-		
+			if(!isUrl($ps_media_path) && (!file_exists($ps_media_path) || !is_readable($ps_media_path))) { 
+				$this->postError(1670, _t("Media does not exist or is not readable"), "RepresentableBaseModel->addRepresentation()");
+				return false; 
+			}
 		
 			$t_rep = new ca_object_representations();
 		
@@ -690,7 +709,12 @@
 		 * @return bool ca_object_representations model instance on success, false on failure, null if no row has been loaded into the object model 
 		 */
 		public function editRepresentation($pn_representation_id, $ps_media_path, $pn_locale_id, $pn_status, $pn_access, $pb_is_primary=null, $pa_values=null, $pa_options=null) {
+			if (!$ps_media_path) { return null; }
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
+			if(!file_exists($ps_media_path) || !is_readable($ps_media_path)) { 
+				$this->postError(1670, _t("Media does not exist or is not readable"), "RepresentableBaseModel->editRepresentation()");
+				return false; 
+			}
 			
 			$t_rep = new ca_object_representations();
 			if ($this->inTransaction()) { $t_rep->setTransaction($this->getTransaction());}
@@ -1283,7 +1307,7 @@
 							'is_primary' => (int)$va_rep['is_primary'],
 							'is_primary_display' => ($va_rep['is_primary'] == 1) ? _t('PRIMARY') : '', 
 							'locale_id' => $va_rep['locale_id'], 
-							'icon' => $va_rep['tags']['thumbnail'], 
+							'icon' => isset($va_rep['tags']['thumbnail']) ? $va_rep['tags']['thumbnail'] : null, 
 							'mimetype' => $va_rep['info']['original']['PROPERTIES']['mimetype'], 
 							'annotation_type' => isset($va_annotation_type_mappings[$va_rep['info']['original']['PROPERTIES']['mimetype']]) ? $va_annotation_type_mappings[$va_rep['info']['original']['PROPERTIES']['mimetype']] : null,
 							'type' => $va_rep['info']['original']['PROPERTIES']['typename'], 
