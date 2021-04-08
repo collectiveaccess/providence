@@ -241,7 +241,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			if ($this->info["PROPERTIES"][$property]) {
 				return $this->properties[$property];
 			} else {
-				//print "Invalid property";
 				return '';
 			}
 		} else {
@@ -383,7 +382,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$this->properties["duration"] = $this->opa_media_metadata["playtime_seconds"];
 
 			// getID3 sometimes messes up the duration. mediainfo seems a little more reliable so use it if it's available
-			if($this->opb_mediainfo_available && ($vn_mediainfo_duration = caExtractVideoFileDurationWithMediaInfo($filepath))) {
+			if($this->ops_path_to_mediainfo && ($vn_mediainfo_duration = caExtractVideoFileDurationWithMediaInfo($filepath))) {
 				$this->properties['duration'] = $this->opa_media_metadata["playtime_seconds"] = $vn_mediainfo_duration;
 			}
 
@@ -602,7 +601,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
         
         // If start is past end of video force to beginning
         if($vn_start_secs > (float)$this->get('duration')) { $vn_start_secs = 0; }
-
 		# is mimetype valid?
 		switch($mimetype) {
 			# ------------------------------------

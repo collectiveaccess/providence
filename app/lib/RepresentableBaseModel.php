@@ -525,9 +525,10 @@
 		 * @return mixed Returns primary key (link_id) of the relationship row linking the newly created representation to the item; if the 'returnRepresentation' is set then an instance for the newly created ca_object_representations is returned instead; boolean false is returned on error
 		 */
 		public function addRepresentation($ps_media_path, $pn_type_id, $pn_locale_id, $pn_status, $pn_access, $pb_is_primary, $pa_values=null, $pa_options=null) {
+			if (!$ps_media_path) { return null; }
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
 			if (!$pn_locale_id) { $pn_locale_id = ca_locales::getDefaultCataloguingLocaleID(); }
-			if(!file_exists($ps_media_path) || !is_readable($ps_media_path)) { 
+			if(!isUrl($ps_media_path) && (!file_exists($ps_media_path) || !is_readable($ps_media_path))) { 
 				$this->postError(1670, _t("Media does not exist or is not readable"), "RepresentableBaseModel->addRepresentation()");
 				return false; 
 			}
@@ -708,6 +709,7 @@
 		 * @return bool ca_object_representations model instance on success, false on failure, null if no row has been loaded into the object model 
 		 */
 		public function editRepresentation($pn_representation_id, $ps_media_path, $pn_locale_id, $pn_status, $pn_access, $pb_is_primary=null, $pa_values=null, $pa_options=null) {
+			if (!$ps_media_path) { return null; }
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
 			if(!file_exists($ps_media_path) || !is_readable($ps_media_path)) { 
 				$this->postError(1670, _t("Media does not exist or is not readable"), "RepresentableBaseModel->editRepresentation()");

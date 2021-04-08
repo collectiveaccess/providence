@@ -696,11 +696,8 @@ function caFileIsIncludable($ps_file) {
 	 * @return string
 	 */
 	function caGetTempDirPath($options=null) {
-		if(caGetOption('useAppTmpDir', $options, false)) { return __CA_APP_DIR__."/tmp"; }
-		if (function_exists('sys_get_temp_dir')) {
-			return sys_get_temp_dir();
-		}
-
+		if(caGetOption('useAppTmpDir', $options, true)) { return __CA_APP_DIR__."/tmp"; }
+	
 		if (!empty($_ENV['TMP'])) {
 			return realpath($_ENV['TMP']);
 		} else {
@@ -715,6 +712,8 @@ function caFileIsIncludable($ps_file) {
 						$vs_tmp_dir = realpath(dirname($vs_tmp));
 						unlink($vs_tmp);
 						return $vs_tmp_dir;
+					} elseif (function_exists('sys_get_temp_dir')) {
+						return sys_get_temp_dir();
 					} else {
 						return "/tmp";
 					}
