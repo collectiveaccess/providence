@@ -6439,7 +6439,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 					    $va_selects[] = "ca_relationship_type_labels.typename";
 					    $va_joins[] = "INNER JOIN ca_relationship_types ON ".$t_item_rel->tableName().".type_id = ca_relationship_types.type_id";
 					    $va_joins[] = "INNER JOIN ca_relationship_type_labels ON ca_relationship_type_labels.type_id = ca_relationship_types.type_id";
-					    $va_orderbys[] = "ca_relationship_types.typename";
+					    $va_orderbys[] = "ca_relationship_type_labels.typename";
 					}
 
 					if (is_array($va_exclude_types) && (sizeof($va_exclude_types) > 0) && method_exists($t_rel_item, "getTypeList")) {
@@ -6620,17 +6620,17 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 							SELECT COUNT(DISTINCT ".$t_item->primaryKey(true).") _count, ".join(', ', $va_selects)."
 							FROM {$vs_browse_table_name}
 							{$vs_join_sql}
-								".(sizeof($va_wheres) ? ' WHERE ' : '').join(" AND ", $va_wheres)."
-								".(sizeof($va_orderbys) ? "ORDER BY ".join(', ', $va_orderbys) : '');
+								".(sizeof($va_wheres) ? ' WHERE ' : '').join(" AND ", $va_wheres);
 	} else {
 						$vs_sql = "
 							SELECT COUNT(DISTINCT ".$t_item->primaryKey(true).") _count, ".join(', ', $va_selects)."
 							FROM ".$vs_rel_item_table_name."
 							{$vs_join_sql}
-								".(sizeof($va_wheres) ? ' WHERE ' : '').join(" AND ", $va_wheres)."
-								".(sizeof($va_orderbys) ? "ORDER BY ".join(', ', $va_orderbys) : '');
+								".(sizeof($va_wheres) ? ' WHERE ' : '').join(" AND ", $va_wheres);
 	}                  
 	                    $vs_sql .= " GROUP BY ".join(', ', array_map(function($v) { return str_replace(' rel_type_id', '', $v); }, $va_select_flds));
+	                    
+	                    $vs_sql .= sizeof($va_orderbys) ? " ORDER BY ".join(', ', $va_orderbys) : '';
 					    
 					    //print "<hr>$vs_sql<hr>\n"; print_R($va_sql_params);
 						$qr_res = $this->opo_db->query($vs_sql, $va_sql_params);
