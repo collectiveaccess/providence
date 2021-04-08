@@ -4278,7 +4278,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			$vs_sql =  "{$ps_field} = ".$this->quote(caSerializeForDatabase($this->_FILES[$ps_field], true)).",";
 		} else {
 			// Don't try to process files when no file is actually set
-			if(isset($this->_SET_FILES[$ps_field]['tmp_name']) && is_readable($this->_SET_FILES[$ps_field]['tmp_name'])) { 
+			if(isset($this->_SET_FILES[$ps_field]['tmp_name']) && (isUrl($this->_SET_FILES[$ps_field]['tmp_name']) || is_readable($this->_SET_FILES[$ps_field]['tmp_name']))) { 
 				$o_tq = new TaskQueue();
 				$o_media_proc_settings = new MediaProcessingSettings($this, $ps_field);
 		

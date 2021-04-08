@@ -127,8 +127,8 @@ class YouTubeDL Extends BaseMediaUrlPlugin {
 				$dest .= '.'.caGetOption('extension', $options, '.bin');
 			}
 			
-			$tmp_file = tempnam('/tmp', 'YOUTUBEDL_TMP').'.'.$p['format'];
-			caExec($this->youtube_dl_path.' '.caEscapeShellArg($url).' -f '.$p['format'].' -q -o '.caEscapeShellArg($tmp_file).' '.(caIsPOSIX() ? " 2> /dev/null" : ""));
+			$tmp_file = caGetTempDirPath().'/YOUTUBEDL_TMP'.uniqid(rand(), true).'.'.$p['format'];
+			caExec($z=$this->youtube_dl_path.' '.caEscapeShellArg($url).' -f '.$p['format'].' -q -o '.caEscapeShellArg($tmp_file).' '.(caIsPOSIX() ? " 2> /dev/null" : ""));
 
 			if(!file_exists($tmp_file) || (filesize($tmp_file) === 0)) {
 				return false;
