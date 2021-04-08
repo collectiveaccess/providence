@@ -230,11 +230,31 @@
 					
 					$policy_info = $subject_table::getHistoryTrackingCurrentValuePolicy($policy);
 				
-					if (is_array($policy_info['elements']) && (sizeof($policy_info['elements']) == 1) && isset($policy_info['elements']['ca_storage_locations'])) {
-				    	$va_facet_info['table'] = 'ca_storage_locations';
-				    } else {
-				    	$va_facet_info['group_mode'] = 'none';
-				    }
+				
+					if (is_array($policy_info['elements'])) {
+						$location_elements = [];
+					
+						foreach($policy_info['elements'] as $t => $e) {
+							if ($t === 'ca_storage_locations') {
+								$location_elements[] = $e;
+								continue;
+							}
+							foreach($e as $t => $c) {
+								if($c['useRelated'] !== 'ca_storage_locations') {
+									break(2);
+								}
+							}
+							$location_elements[] = $e;
+						}
+						
+						$n = sizeof($location_elements);
+				
+						if (($n > 0) && ($n === sizeof($policy_info['elements']))) {
+							$va_facet_info['table'] = 'ca_storage_locations';
+						} else {
+							$va_facet_info['group_mode'] = 'none';
+						}
+					}
 				}
 
 				// generate_facets_for_types config directive triggers auto-generation of facet config for each type of an authority item

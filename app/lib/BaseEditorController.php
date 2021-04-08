@@ -2698,18 +2698,32 @@ class BaseEditorController extends ActionController {
 	 * 
 	 */
 	public function ReturnToHomeLocations($options=null) {
+		global $g_ui_locale_id;
+		
 		if(!$this->request->user->canDoAction("can_edit_ca_objects")) {
 			$resp = ['ok' => 0, 'message' => _t('Access denied'), 'updated' => [], 'errors' => [], 'timestamp' => time()];
 		} elseif(!is_array($policies = ca_objects::getHistoryTrackingCurrentValuePoliciesForTable('ca_objects'))) {
 			$resp = ['ok' => 0, 'message' => _t('No policies configured'), 'updated' => [], 'errors' => [], 'timestamp' => time()];
 		} else {
-			$policies = array_filter($policies, function($v) use ($table) { return array_key_exists('ca_storage_locations', $v['elements']); });
+			$policies = array_filter($policies, function($v) use ($table) { 
+				if(array_key_exists('ca_storage_locations', $v['elements'])) { return true; }
+				if(is_array($v['elements'])) {
+					foreach($v['elements'] as $e) {
+						if (isset($e['useRelated']) && ($e['useRelated'] === 'ca_storage_locations')) { 
+							return true;
+						}
+					}
+				}
+				
+				return false;
+			});
 		
 			$updated = $already_home = $errors = [];
 			$msg = '';
 			if(is_array($policies) && sizeof($policies)) {
 				$primary_table = $this->request->getParameter('table', pString);
 				$primary_id = $this->request->getParameter('id', pString);
+				$primary_policy = $this->request->getParameter('policy', pString);
 		
 				if (!($primary = Datamodel::getInstance($primary_table))) {
 					throw new ApplicationException(_t('Invalid table'));
@@ -2720,8 +2734,13 @@ class BaseEditorController extends ActionController {
 				if (!$primary->isReadable($this->request)) {
 					throw new ApplicationException(_t('Access denied'));
 				}
-				$object_ids = $primary->get('ca_objects.related.object_id', ['returnAsArray' => true]);
-		
+				
+				if ($primary_policy) {
+					$object_ids = $primary->getContents($primary_policy, ['idsOnly' => true]);
+				} else {
+					$object_ids = $primary->get('ca_objects.related.object_id', ['returnAsArray' => true]);
+				}
+				
 				if(is_array($object_ids) && sizeof($object_ids)) {
 					$qr_objects = caMakeSearchResult('ca_objects', $object_ids);
 				
@@ -2732,38 +2751,63 @@ class BaseEditorController extends ActionController {
 						if (!($location_id = $t_object->get('home_location_id'))) { continue; }
 						if (!$t_object->isSaveable($this->request)) { continue; }
 	
+						if(!($t_home_loc = ca_storage_locations::findAsInstance($location_id))) { continue; }
+						$home_loc_type = $t_home_loc->getTypeCode();
 						foreach($policies as $n => $p) {
-							if(!isset($p['elements']) || !isset($p['elements']['ca_storage_locations'])) { continue; }
+							//if(!isset($p['elements']) || !isset($p['elements']['ca_storage_locations'])) { continue; }
 						
-							$pe = $p['elements']['ca_storage_locations'];
-							$d = isset($pe[$t_object->getTypeCode()]) ? $pe[$t_object->getTypeCode()] : $pe['__default__'];
-							if (!is_array($d) || !isset($d['trackingRelationshipType'])) { $errors[] = $object_id; continue; }
+							foreach($p['elements'] as $pt => $pe) {
+								if ($pt === 'ca_storage_locations') {
+									$d = isset($pe[$home_loc_type]) ? $pe[$home_loc_type] : $pe['__default__'];
+									if (!is_array($d) || !isset($d['trackingRelationshipType'])) { $errors[] = $object_id; continue; }
 						
-							// Interstitials?
-							$effective_date = null;
-							$interstitial_values = [];
-							if (is_array($interstitial_elements = caGetOption("setInterstitialElementsOnAdd", $d, null))) {
-								foreach($interstitial_elements as $e) {
-									switch($e) {
-										case 'effective_date':
-											$effective_date = _t('today');
-											break;
+									// Interstitials?
+									$effective_date = null;
+									$interstitial_values = [];
+									if (is_array($interstitial_elements = caGetOption("setInterstitialElementsOnAdd", $d, null))) {
+										foreach($interstitial_elements as $e) {
+											switch($e) {
+												case 'effective_date':
+													$effective_date = _t('today');
+													break;
+											}
+										}
 									}
+						
+									if (is_array($cv = $t_object->getCurrentValue($n)) && (($cv['type'] == 'ca_storage_locations') && ($cv['id'] == $location_id))) {
+										$already_home[] = $object_id;
+										continue;
+									}
+								
+						
+									$t_item_rel = $t_object->addRelationship('ca_storage_locations', $location_id, $d['trackingRelationshipType'], $effective_date);
+									ca_objects::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($this->request, null, null, $t_item_rel, null, $interstitial_elements, ['noTemplate' => true]);
+								} elseif($pt === 'ca_movements') {
+									continue;
+									foreach($pe as $ptype => $ptypeinfo) {
+										if (isset($ptypeinfo['useRelated']) && ($ptypeinfo['useRelated'] === 'ca_storage_locations')) {
+											
+											// create movement
+											$t_movement = new ca_movements();
+											if (!$ptype || !$t_movement->getTypeIDForCode($ptype)) { $ptype = $t_movement->getDefaultTypeID(); }	
+											
+											$t_movement->set('type_id', $ptype);
+											$t_movement->insert();
+											$t_movement->addLabel(['name' => _t('')], null, $g_ui_locale_id, true);
+											
+											$t_movement->addRelationship('ca_storage_locations', $location_id, $ptypeinfo['useRelatedRelationshipType']);
+											$t_movement->addRelationship('ca_objects', $object_id, $ptypeinfo['trackingRelationshipType']);
+										}
+									}
+								} else {
+									// noop
 								}
-							}
-						
-							if (is_array($cv = $t_object->getCurrentValue($n)) && (($cv['type'] == 'ca_storage_locations') && ($cv['id'] == $location_id))) {
-								$already_home[] = $object_id;
-								continue;
-							}
-						
-							$t_item_rel = $t_object->addRelationship('ca_storage_locations', $location_id, $d['trackingRelationshipType'], $effective_date);
-							ca_objects::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($this->request, null, null, $t_item_rel, null, $interstitial_elements, ['noTemplate' => true]);
 		
-							if($t_object->numErrors() > 0) {
-								$errors[] = $object_id;
-							} else {
-								$updated[] = $object_id;
+								if($t_object->numErrors() > 0) {
+									$errors[] = $object_id;
+								} else {
+									$updated[] = $object_id;
+								}
 							}
 						}
 					}	

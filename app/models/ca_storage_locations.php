@@ -449,47 +449,117 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 	 * Override BundleableLabelableBaseModelWithAttributes::saveBundlesForScreen() to create
 	 * related movement record when storage location is moved
 	 */
-	public function saveBundlesForScreen($pm_screen, $po_request, &$pa_options) {
-		$vb_parent_changed = (parent::saveBundlesForScreenWillChangeParent($pm_screen, $po_request, $pa_options) == __CA_PARENT_CHANGED__); 
+	public function saveBundlesForScreen($screen, $request, &$options) {
+		$parent_changed = (parent::saveBundlesForScreenWillChangeParent($screen, $request, $options) == __CA_PARENT_CHANGED__); 
 		
-		if (!$this->getPrimaryKey() && ($this->get('ca_storage_locations.parent_id') <= 0)) {   // For new records zero or negative parent_id means root
-		    $po_request->setParameter('parent_id', $this->getHierarchyRootID());
+		$old_parent_id = (int)$this->get('ca_storage_locations.parent_id');
+		if (!$this->getPrimaryKey() && ($old_parent_id <= 0)) {   // For new records zero or negative parent_id means root
+		    $request->setParameter('parent_id', $this->getHierarchyRootID());
 		}
-		if (($vn_rc = parent::saveBundlesForScreen($pm_screen, $po_request, $pa_options)) && $vb_parent_changed) {
-			unset($pa_options['ui_instance']);
+		if (($rc = parent::saveBundlesForScreen($screen, $request, $options)) && $parent_changed) {
+			$new_parent_id = (int)$this->get('ca_storage_locations.parent_id');
+			
+			if ($old_parent_id === $new_parent_id) { return $rc; }	// don't track if there's no actual movement
+				
+			unset($options['ui_instance']);
 	
-			// get list of objects currently associated with this storage location
-			// $va_object_ids = $this->getCurrentObjectIDs();
-// 
-// 			$vs_movement_storage_location_relationship_type = $this->getAppConfig()->get('movement_storage_location_tracking_relationship_type');
-// 			$vs_movement_object_relationship_type = $this->getAppConfig()->get('movement_object_tracking_relationship_type');
-// 			
-// 			foreach($_REQUEST as $vs_key => $vs_val) {
-// 				if (preg_match('!^(.*)_movement_form_name$!', $vs_key, $va_matches)) {
-// 					$vs_form_name = $po_request->getParameter($va_matches[1].'_movement_form_name', pString);
-// 					$vs_screen = $po_request->getParameter($va_matches[1].'_movement_screen', pString);
-// 					
-// 					if (is_array($va_object_ids) && sizeof($va_object_ids)) {
-// 						$t_movement = new ca_movements();
-// 						
-// 						if($this->inTransaction()) { $t_movement->setTransaction($this->getTransaction()); }
-// 						$t_movement->set('type_id', $t_movement->getDefaultTypeID());
-// 						
-// 						$va_movement_opts = array_merge($pa_options, array('formName' => $vs_form_name));
-// 						$t_movement->saveBundlesForScreen($vs_screen, $po_request, $va_movement_opts);
-// 		
-// 						if ($vs_movement_storage_location_relationship_type) {
-// 							$t_movement->addRelationship('ca_storage_locations', $this->getPrimaryKey(), $vs_movement_storage_location_relationship_type);
-// 						}
-// 						
-// 						if ($vs_movement_object_relationship_type) {
-// 							foreach($va_object_ids as $vn_object_id) {
-// 								$t_movement->addRelationship('ca_objects', $vn_object_id, $vs_movement_object_relationship_type);
-// 							}
-// 						}
-// 					}
-// 				}
-// 			}
+			// Get list of policies that involve movements – we'll  need to generate movement records for these policies if they are so configured.
+			if (!is_array($policies = ca_movements::getDependentHistoryTrackingCurrentValuePolicies('ca_movements'))) { return $rc; }
+			
+			// Look for incoming movement form attached to hierarcy_location bundle
+			$movement_form_name = $movemenr_form_screen = null;
+			foreach($_REQUEST as $key => $val) {
+				if (preg_match('!^(.*)_movement_form_name$!', $key, $matches)) {
+					$movement_form_name = $request->getParameter($matches[1].'_movement_form_name', pString);
+					$movement_form_screen = $request->getParameter($matches[1].'_movement_screen', pString); 					
+				
+					break;
+				}
+			}
+			
+			if ($movement_form_name && $movement_form_screen) {
+				foreach($policies as $policy_code => $policy) {
+					if (!is_array($policy_elements = caGetOption('elements', $policy, null))) { continue; }
+				
+					if(isset($policy_elements['ca_movements'])) {
+						// Get movement config for this policy
+						$policy_config = null;
+						foreach($policy_elements['ca_movements'] as $mt => $mi) {
+							if($mi['useRelatedRelationshipType'] && $mi['useRelated']) {
+								$movement_type = ($mt === '__default__') ? null : $mt;
+								$policy_config = $mi;
+								break;
+							}	
+						}
+						if(!$policy_config) { continue; }	// movements are not configured for storage location tracking 
+															// (useRelated and useRelatedRelationshipType options must be set)
+															
+					
+						// Create new movement record for changing in parent of this location
+						$t_movement = new ca_movements();
+						
+						// Check movement type
+						if (!$movement_type || !$t_movement->getTypeIDForCode($movement_type)) { $movement_type = $t_movement->getDefaultTypeID(); }	
+						
+						if($this->inTransaction()) { $t_movement->setTransaction($this->getTransaction()); }
+						$t_movement->set('type_id', $movement_type);
+					
+						// Save movement
+						$movement_opts = array_merge($options, ['formName' => $movement_form_name]);
+						$t_movement->saveBundlesForScreen($movement_form_screen, $request, $movement_opts);
+						
+						// Link movement to storage location
+						if (!$t_movement->addRelationship('ca_storage_locations', $this->getPrimaryKey(), $policy_config['useRelatedRelationshipType'])) {
+							throw new ApplicationException(
+								_t('Could not create storage location - movement relationship for history tracking: %1', join($t_movement->getErrors()))
+							);
+						}
+						
+						// Link movement to old parent location and new parent location
+						if(isset($policy_config['originalLocationTrackingRelationshipType'])) {
+							if (!$t_movement->addRelationship('ca_storage_locations', $old_parent_id, $policy_config['originalLocationTrackingRelationshipType'])) {
+								throw new ApplicationException(
+									_t('Could not create storage location - movement original parent relationship for history tracking: %1', join($t_movement->getErrors()))
+								);
+							}
+						}
+						if(isset($policy_config['newLocationTrackingRelationshipType'])) {
+							if (!$t_movement->addRelationship('ca_storage_locations', $new_parent_id, $policy_config['newLocationTrackingRelationshipType'])) {
+								throw new ApplicationException(
+									_t('Could not create storage location - movement new parent relationship for history tracking: %1', join($t_movement->getErrors()))
+								);
+							}
+						}
+						
+						// Link movement to all sub-locations of the current location, if sublocation rel type is configured
+						if(!is_array($sub_location_ids = $this->getHierarchyIDs($this->getPrimaryKey()))) { $sub_location_ids = []; }
+						
+						if($policy_config['subLocationTrackingRelationshipType']) {
+							foreach($sub_location_ids as $sub_location_id) {
+								if (!$t_movement->addRelationship('ca_storage_locations', $sub_location_id, $policy_config['subLocationTrackingRelationshipType'])) {
+									throw new ApplicationException(
+										_t('Could not create storage location - movement new sub-location relationship for history tracking: %1', join($t_movement->getErrors()))
+									);
+								}
+							}
+						}
+						
+						// Link movement to objects currently linked to this location, or any sub-location, via the current policy 
+						$location_ids = array_merge([$this->getPrimaryKey()], $sub_location_ids);
+						
+						$content_ids = $this->getContentsForIDs($policy_code, $location_ids, ['idsOnly' => true]);
+				
+						foreach($content_ids as $content_id) {
+							if(!$t_movement->addRelationship($policy['table'], $content_id, $policy_config['trackingRelationshipType'])) {
+								throw new ApplicationException(
+									_t('Could not create movement - %1 relationship for history tracking: %2', $policy['table'], join($t_movement->getErrors()))
+								);
+							}
+						}
+					}
+			
+				}
+			}
 		}
 		return $vn_rc;
 	}
