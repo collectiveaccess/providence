@@ -1971,7 +1971,7 @@ class ca_users extends BaseModel {
 							$va_locales = array();
 							if ($r_dir = opendir(__CA_APP_DIR__.'/locale/')) {
 								while (($vs_locale_dir = readdir($r_dir)) !== false) {
-									if ($vs_locale_dir{0} == '.') { continue; }
+									if ($vs_locale_dir[0] == '.') { continue; }
 									if (sizeof($va_tmp = explode('_', $vs_locale_dir)) == 2) {
 										$va_locales[$vs_locale_dir] = $va_tmp;
 									}
@@ -2010,7 +2010,7 @@ class ca_users extends BaseModel {
 							if ($r_dir = opendir($this->_CONFIG->get('themes_directory'))) {
 								$va_opts = array();
 								while (($vs_theme_dir = readdir($r_dir)) !== false) {
-									if ($vs_theme_dir{0} == '.') { continue; }
+									if ($vs_theme_dir[0] == '.') { continue; }
 										$o_theme_info = Configuration::load($this->_CONFIG->get('themes_directory').'/'.$vs_theme_dir.'/themeInfo.conf');
 										$va_opts[$o_theme_info->get('name')] = $vs_theme_dir;
 								}

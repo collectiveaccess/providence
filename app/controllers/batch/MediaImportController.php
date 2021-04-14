@@ -322,7 +322,7 @@
 			if($va_paths = @scandir($dir, 0)) {
 				$vn_i = $vn_c = 0;
 				foreach($va_paths as $item) {
-					if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
+					if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item[0] !== '.'))) {
 						$vb_is_dir = is_dir("{$dir}/{$item}");
 						$vs_k = preg_replace('![@@]+!', '|', $item);
 						if ($vb_is_dir) { 
@@ -410,7 +410,7 @@
  			$pn_max = $this->request->getParameter('max', pString);
  			$vs_root_directory = $this->request->config->get('batch_media_import_root_directory');
  			
- 			$va_level_data = array();
+ 			$va_level_data = [];
  			
  			if ($this->request->getParameter('init', pInteger)) { 
  				//
@@ -437,6 +437,8 @@
  				}
  			} else {
  				list($ps_directory, $pn_start) = explode("@@", $ps_id);
+ 				
+ 				Session::setVar('lastMediaImportDirectoryPath', $ps_directory);
  				
 				$va_tmp = explode('/', $ps_directory);
 				$vn_level = sizeof($va_tmp);

@@ -589,13 +589,14 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 			if($this->ops_ghostscript_path && ($compress = strtolower($this->get("compress")))) {
 				if (!in_array($compress, ['screen', 'ebook', 'printer', 'prepress', 'default'], true)) { $compress = 'default'; }
 				
-				caExec($this->ops_ghostscript_path." -dPDFSETTINGS=/{$compress} -dNumRenderingThreads=6 -dNOPAUSE -dBATCH -sDEVICE=pdfwrite {$vs_antialiasing} -dMaxPatternBitmap=1000000 -dBandBufferSpace=500000000 -sBandListStorage=memory -dBufferSpace=1000000000 -dBandHeight=100 -sOutputFile=".caEscapeShellArg($ps_filepath.".".$vs_ext)." -c \"30000000 setvmthreshold\" -f ".caEscapeShellArg($this->handle["filepath"]).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
-				if($vn_return == 0) {
-					$va_files[] = "{$ps_filepath}.{$vs_ext}";
-				} else {
-					$this->postError(1610, _t("Couldn't write compressed PDF file to '%1'", $ps_filepath), "WLPlugPDFWand->write()");
-					return false;
+				caExec($this->ops_ghostscript_path." -dPDFSETTINGS=/{$compress} -dAutoRotatePages=/None -dNumRenderingThreads=6 -dNOPAUSE -dBATCH -sDEVICE=pdfwrite {$vs_antialiasing} -dMaxPatternBitmap=1000000 -dBandBufferSpace=500000000 -sBandListStorage=memory -dBufferSpace=1000000000 -dBandHeight=100 -sOutputFile=".caEscapeShellArg($ps_filepath.".".$vs_ext)." -c \"30000000 setvmthreshold\" -f ".caEscapeShellArg($this->handle["filepath"]).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+				if($vn_return != 0) {
+					if (!copy($this->filepath, $ps_filepath.".pdf")) {
+						$this->postError(1610, _t("Couldn't write file to '%1'", $ps_filepath), "WLPlugPDFWand->write()");
+						return false;
+					}
 				}
+				$va_files[] = "{$ps_filepath}.{$vs_ext}";
 			} elseif (!copy($this->filepath, $ps_filepath.".pdf")) {
 				$this->postError(1610, _t("Couldn't write file to '%1'", $ps_filepath), "WLPlugPDFWand->write()");
 				return false;

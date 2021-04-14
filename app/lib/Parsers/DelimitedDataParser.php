@@ -118,7 +118,8 @@
 		 * @return DelimitedDataParser
 		 */
 		static public function load($ps_filepath, $pa_options=null) {
-			return new DelimitedDataParser(caGetOption('delimiter', $pa_options, "\t"), caGetOption('textMarker', $pa_options, '"'), $ps_filepath, $pa_options);
+			$default_delimiter = preg_match("!.csv$!i", $ps_filepath) ? "," : "\t";
+			return new DelimitedDataParser(caGetOption('delimiter', $pa_options, $default_delimiter), caGetOption('textMarker', $pa_options, '"'), $ps_filepath, $pa_options);
 		}
 		# ----------------------------------------
 		/**

@@ -53,7 +53,7 @@ if (isset($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
 	if (!initializeLocale($g_ui_locale)) { $g_ui_locale = null; }
 }
 
-setlocale(LC_CTYPE, $g_ui_locale ? "{$g_ui_locale}.UTF-8" : "en_US.UTF-8");
+setlocale(LC_CTYPE, !empty($g_ui_locale) ? "{$g_ui_locale}.UTF-8" : "en_US.UTF-8");
 
 require_once(__CA_LIB_DIR__.'/ResultContext.php');
 require_once(__CA_APP_DIR__.'/helpers/navigationHelpers.php');
@@ -97,7 +97,7 @@ spl_autoload_register(function ($class) {
     }
     
     // search common locations for class
-    $paths = [__CA_LIB_DIR__, __CA_LIB_DIR__.'/Utils', __CA_LIB_DIR__.'/Parsers',  __CA_LIB_DIR__.'/Exceptions', __CA_LIB_DIR__.'/Search', __CA_LIB_DIR__.'/Browse'];
+    $paths = [__CA_LIB_DIR__, __CA_LIB_DIR__.'/Utils', __CA_LIB_DIR__.'/Parsers', __CA_LIB_DIR__.'/Media', __CA_LIB_DIR__.'/Exceptions', __CA_LIB_DIR__.'/Search', __CA_LIB_DIR__.'/Browse'];
     foreach($paths as $path) {
         if(file_exists("{$path}/{$class}.php")) {
             if(require("{$path}/{$class}.php")) { return true; }   
@@ -106,4 +106,18 @@ spl_autoload_register(function ($class) {
     
     //
     return false;
-});
+  });
+
+/** 
+ * Global list of temporary file paths to delete at request end
+ */
+$file_cleanup_list = [];
+register_shutdown_function(function() {
+	global $file_cleanup_list;
+	if(is_array($file_cleanup_list)) {
+		foreach($file_cleanup_list as $f) {
+			@unlink($f);
+		}
+	}
+  });
+

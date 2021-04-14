@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -304,6 +304,12 @@
 						<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
 					</div><!-- end hierbrowser -->				
 <?php
+
+		// TODO:
+		//	
+		//	1. Make this form conditional on current location policy
+		//  √2. Force omit ca_objects relationship bundle.
+		//
 		if (($t_subject->tableName() == 'ca_storage_locations') && (bool)$t_subject->getAppConfig()->get('record_movement_information_when_moving_storage_location')) {
 			if ($t_ui = ca_editor_uis::loadDefaultUI('ca_movements', $this->request, null, array('editorPref' => 'quickadd'))) {
 				//
@@ -322,7 +328,7 @@
 				$va_form_elements = $t_movement->getBundleFormHTMLForScreen($va_nav['defaultScreen'], array(
 						'request' => $this->request, 
 						'formName' => $vs_id_prefix.'StorageLocationMovementForm',
-						'omit' => array('ca_storage_locations')
+						'omit' => ['ca_storage_locations', 'ca_objects']
 				));
 				print caHTMLHiddenInput($vs_id_prefix.'_movement_screen', array('value' => $va_nav['defaultScreen']));
 				print caHTMLHiddenInput($vs_id_prefix.'_movement_form_name', array('value' => $vs_id_prefix.'StorageLocationMovementForm'));
@@ -377,7 +383,7 @@
 		</div>
 <?php
 	}
-		if ((!$vb_read_only && $vb_has_privs && !$vb_batch) && $vb_objects_x_collections_hierarchy_enabled && ($t_subject->tableName() == 'ca_collections')) {
+	if ($show_add_object) {
 ?>
 			<div id="<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-addObject"  class="hierarchyBrowseTab">
 				<div class="hierarchyBrowserMessageContainer">
@@ -583,7 +589,7 @@
 <?php
 	}
 	
-	if (!$vb_batch && (!$vb_read_only && $vb_has_privs) && (!$strict_type_hierarchy || ($strict_type_hierarchy && $vs_type_selector))) {
+	if ($show_add) {
 ?>
 	// Set up "add" hierarchy browser
 	var o<?php print $vs_id_prefix; ?>AddHierarchyBrowser = null;
@@ -609,7 +615,7 @@
 <?php
 	}
 	
-	if ((!$vb_batch && !$vb_read_only && $vb_has_privs) && $vb_objects_x_collections_hierarchy_enabled && ($t_subject->tableName() == 'ca_collections')) {
+	if ($show_add_object) {
 ?>
 	// Set up "add object" hierarchy browser
 	var o<?php print $vs_id_prefix; ?>AddObjectHierarchyBrowser = null;

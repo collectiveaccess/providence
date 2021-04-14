@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -99,7 +99,7 @@
 		print caGetPrintFormatsListAsHTMLForRelatedBundles($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $vn_placement_id);
 		
 		if(caGetOption('showReturnToHomeLocations', $va_settings, false) && caHomeLocationsEnabled('ca_object_lots', null, ['enableIfAnyTypeSet' => true])) {
-			print caReturnToHomeLocationControlForRelatedBundle($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $this->getVar('initialValues'), $this->getVar('history_tracking_policy'));
+			print caReturnToHomeLocationControlForRelatedBundle($this->request, $vs_id_prefix, $t_instance, $this->getVar('history_tracking_policy'), $this->getVar('initialValues'));
 		}
 	
 		if(!$vb_read_only) {

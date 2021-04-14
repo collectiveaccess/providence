@@ -75,7 +75,7 @@ class WLPlugInformationServiceULAN extends BaseGettyLODServicePlugin implements 
     gvp:prefLabelGVP [xl:literalForm ?TermPrefLabel].
     {?ID foaf:focus/gvp:biographyPreferred/schema:description ?Bio}
     {?ID gvp:parentStringAbbrev ?Parents}
-} OFFSET '.$pa_params['start'].' LIMIT '.$pa_params['limit']);
+	} OFFSET '.$pa_params['start'].' LIMIT '.$pa_params['limit']);
 		return $vs_query;
 
 	}

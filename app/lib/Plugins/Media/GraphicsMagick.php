@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -860,6 +860,8 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 	 * This method must be implemented for plug-ins that can output preview frames for videos or pages for documents
 	 */
 	public function &writePreviews($ps_filepath, $pa_options) {
+		global $file_cleanup_list;
+		
 		if(!$this->ops_graphicsmagick_path) { return false; }
 
 		if (!isset($pa_options['outputDirectory']) || !$pa_options['outputDirectory'] || !file_exists($pa_options['outputDirectory'])) {
@@ -886,7 +888,7 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 		$va_files = array();
 		while(file_exists($vs_output_file_prefix.sprintf("_%05d", $vn_i).'.jpg')) {
 			// add image to list
-			$va_files[$vn_i] = $vs_output_file_prefix.sprintf("_%05d", $vn_i).'.jpg';
+			$file_cleanup_list[] = $va_files[$vn_i] = $vs_output_file_prefix.sprintf("_%05d", $vn_i).'.jpg';
 			$vn_i++;
 		}
 
@@ -895,13 +897,15 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 	}
 	# ------------------------------------------------
 	public function joinArchiveContents($pa_files, $pa_options = array()) {
+		global $file_cleanup_list;
+		
 		if(!is_array($pa_files)) { return false; }
 
 		if (!$this->ops_graphicsmagick_path) { return false; }
 
 		$vs_archive_original = tempnam(caGetTempDirPath(), "caArchiveOriginal");
 		@rename($vs_archive_original, $vs_archive_original.".tif");
-		$vs_archive_original = $vs_archive_original.".tif";
+		$file_cleanup_list[] = $vs_archive_original = $vs_archive_original.".tif";
 
 		$va_acceptable_files = array();
 		foreach($pa_files as $vs_file){
@@ -1275,7 +1279,9 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 				if (!is_null($pn_quality)) {
 					array_unshift($va_ops['convert'], '-quality '.intval($pn_quality));
 				}
-				array_unshift($va_ops['convert'], '-colorspace RGB');
+				if($this->properties["colorspace"] === 'CMYK') {
+					array_unshift($va_ops['convert'], '-colorspace RGB');
+				}
 				caExec($this->ops_graphicsmagick_path.' convert '.caEscapeShellArg($vs_input_file.'[0]').' '.join(' ', $va_ops['convert']).' '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""));
 				$vs_input_file = $ps_filepath;
 			}

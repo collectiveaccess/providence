@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -98,7 +98,9 @@
 		jQuery.getJSON('<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), "addSavedSearch"); ?>', vals, function(data, status) {
 			if ((data) && (data.md5)) {
 				jQuery('.savedSearchSelect').prepend(jQuery("<option></option>").attr("value", data.md5).text(data.label)).attr('selectedIndex', 0);
-					
+				jQuery.jGrowl("<?= addslashes(_t('Saved search')); ?>" + ' <em>' + data.label + '</em>'); 
+			} else {
+				jQuery.jGrowl("<?= addslashes(_t('Could not save search')); ?>"); 
 			}
 		});
 	}

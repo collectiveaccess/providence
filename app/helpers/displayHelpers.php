@@ -202,13 +202,14 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 */
 	function caExtractSettingsValueByUserLocale($setting, array $setting_values, $options=null) {
 		global $g_ui_locale;
-		if(!isset($setting_values[$setting])) { return null; }
-		if (!is_array($v = $setting_values[$setting])) { return null; }
+		if(!isset($setting_values[$setting])) { return caGetOption('default', $options, null); }
+		if (!is_array($v = $setting_values[$setting])) { return caGetOption('default', $options, null); }
 
 		if (isset($v[$g_ui_locale])) {
 			return $v[$g_ui_locale];
 		}
-		return array_shift($v);
+		if (!is_null($val = array_shift($v))) { return $v; }
+		return caGetOption('default', $options, null);
 	}
 	# ------------------------------------------------------------------------------------------------
 	function caExtractValuesByUserLocaleFromHierarchyChildList($pa_list, $ps_primary_key_name, $ps_label_display_field, $ps_use_if_no_label_field, $ps_default_text='???') {
@@ -699,6 +700,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 
 		$vs_buf = "<div style='width: 100%; overflow: auto;'><table style='margin-left: ".($pn_level * 10)."px;'>";
 		foreach($pa_array as $vs_key => $vs_val) {
+			if (preg_match("!^Undefined!i", $vs_key)) { continue; }
 			$vs_val = preg_replace('![^A-Za-z0-9 \-_\+\!\@\#\$\%\^\&\*\(\)\[\]\{\}\?\<\>\,\.\"\'\=]+!', '', $vs_val);
 			switch($vs_key) {
 				case 'MakerNote':	// EXIF tags to skip output of
@@ -1251,7 +1253,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				TooltipManager::add("#caDuplicateItemButton", _t('Duplicate this %1', mb_strtolower($vs_type_name, 'UTF-8')));
 			}
 
-			if (caHomeLocationsEnabled($t_item->tableName(), $t_item->getTypeCode()) && $po_view->request->user->canDoAction("can_set_home_location_".$vs_table_name)) {	
+			if (method_exists($t_item, 'getTypeCode') && caHomeLocationsEnabled($t_item->tableName(), $t_item->getTypeCode()) && $po_view->request->user->canDoAction("can_set_home_location_".$vs_table_name)) {	
 				$vs_buf .= "<div id='inspectorSetHomeLocation' class='inspectorActionButton'><div id='inspectorSetHomeLocationButton'><a href='#' onclick='_initSetHomeLocationHierarchyBrowser(); return false;'>".caNavIcon(__CA_NAV_ICON_HOME__, '20px', array('title' => _t('Set home location')))."</a></div></div>\n";
 
 				$vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
@@ -3491,11 +3493,22 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	/** 
 	 * Used by ca_objects, ca_collections and ca_object_lots bundles
 	 */
-	function caReturnToHomeLocationControlForRelatedBundle($ps_id_prefix, $po_request, $pt_primary, $pt_related, $pt_relation, $pa_initial_values, $ps_policy=null) {
+	function caReturnToHomeLocationControlForRelatedBundle($po_request, $ps_id_prefix, $pt_primary, $ps_policy, $initial_values) {
+		if(!is_array($pconfig = ca_objects::getPolicyConfig($ps_policy))) { return null; }
+		if (!($pt_related = Datamodel::getInstance($pconfig['table'], true))) {  return null; }
+
 		$target = $pt_related->tableName();
 		$policies = array_filter(ca_objects::getHistoryTrackingCurrentValuePoliciesForTable($target), function($v) { return array_key_exists('ca_storage_locations', $v['elements']); });
 		if(!is_array($policies) || !sizeof($policies)) { return ''; }
 		if (!$ps_policy) { $ps_policy = $target::getDefaultHistoryTrackingCurrentValuePolicy(); }
+		if(is_object($initial_values)) {
+			$iv = [];
+			while($initial_values->nextHit()) {
+				$iv[] = ['object_id' => $initial_values->get('ca_objects.object_id')];
+			}
+			$initial_values->seek(0);
+			$initial_values = $iv;
+		}
 
 		$settings = $target::policy2bundleconfig(['policy' => $ps_policy]);
 		$interstitials = caGetOption('ca_storage_locations_setInterstitialElementsOnAdd', $settings, null);
@@ -3511,7 +3524,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 
 		$vs_buf .= "<div id='{$ps_id_prefix}_editor_bundle_return_to_home_controls' class='editorBundleReturnToHomeControls'>".
 			ca_storage_locations::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($po_request, $ps_id_prefix, $pt_related->tableName(), $settings, ['placement_code' => $ps_id_prefix, 'noTemplate' => true]).
-			caJSButton($po_request, __CA_NAV_ICON_GO__, _t("Apply"), "{$ps_id_prefix}_return_to_home_locations_execute", ['onclick' => "caReturnToHomeLocation{$ps_id_prefix}(); return false;"], ['size' => '15px']).
+			caJSButton($po_request, __CA_NAV_ICON_GO__, _t("Apply"), "{$ps_id_prefix}_return_to_home_locations_execute", ['onclick' => "caReturnToHomeLocation{$ps_id_prefix}(); return false;"], ['size' => '15px']).caJSButton($po_request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), "{$ps_id_prefix}_return_to_home_locations_execute", ['onclick' => "caReturnToHomeLocationToggleForm{$ps_id_prefix}(); return false;"], ['size' => '15px']).
 			"</div>\n"; 
 		$vs_buf .= "
 			<script type='text/javascript'>
@@ -3544,7 +3557,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 									caBundleUpdateManager.reloadBundle('history_tracking_current_contents'); 
 									caBundleUpdateManager.reloadBundle('ca_storage_locations_current_contents'); 
 									caBundleUpdateManager.reloadBundle('{$target}'); 
-								}, 3000);
+								}, 2000);
 							}
 					}, 'json');
 				}
@@ -3954,7 +3967,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		$o_view->setVar('context', ($vs_context = $po_request->getParameter('context', pString)) ? $vs_context : $vs_context = $po_request->getAction());
  	
 		$va_rep_ids = array();
-		$vo_data->filterNonPrimaryRepresentations(false);
+		if (method_exists($vo_data, 'filterNonPrimaryRepresentations')) { $vo_data->filterNonPrimaryRepresentations(false); }
  		while($vo_data->nextHit()) {
  			if (!($vn_representation_id = $vo_data->get('ca_object_representations.representation_id', ['checkAccess' => $va_access_values, 'limit' => 1]))) { continue; }
  			$t_instance->load($vo_data->getPrimaryKey());
@@ -4176,7 +4189,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 *
 	 */
 	function caGetMediaAnnotationList($po_data, $pa_options=null) {
-		$va_detail_config = caGetDetailConfig();
+		$va_detail_config = caGetDetailConfig()->get($po_data->tableName());
 		$ps_annotation_display_template 	= caGetOption('displayAnnotationTemplate', $pa_options, caGetOption('displayAnnotationTemplate', $va_detail_config['options'], '^ca_representation_annotations.preferred_labels.name'));
 		$ps_display_type		 			= caGetOption('display', $pa_options, false);
 
@@ -4223,7 +4236,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			throw new ApplicationException(_t('Invalid identifier %1', $ps_identifier));
 		}
 
-		$va_detail_config = caGetDetailConfig();
+		$va_detail_config = caGetDetailConfig()->get($pt_subject->tableName());
 
 		$ps_display_type 					= caGetOption('display', $pa_options, 'media_overlay');
 		$pb_inline 							= (bool)caGetOption('inline', $pa_options, false);
@@ -4946,7 +4959,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 * "blank_label_text" option. If the option is not set the default value of
 	 * "[BLANK]" will be returned.
 	 *
-	 * @param mixed $table Table name of number blank label is to be applied to. If set 
+	 * @param mixed $table Table name (or number) blank label is to be applied to. If set 
 	 *						table-specific text is set with fallback to general "blank_label_text"
 	 *
 	 * @return string
@@ -4955,9 +4968,13 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		if (MemoryCache::contains('blank_label_text_'.$table)) { return MemoryCache::fetch('blank_label_text_'.$table); }
 		$config = Configuration::load();
 
+		$table_orig = $table;
 		$d = [];
 		if (($table) && ($t = Datamodel::getInstance($table, true))) {
-			$d[] = $t->tableName().'_blank_label_text';
+			if(is_a($t, 'BaseLabel')) {
+				$table = $t->getSubjectTableName();
+			}
+			$d[] = $table.'_blank_label_text';
 		}
 
 		$d[] = 'blank_label_text';
@@ -4965,6 +4982,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		if ($label_text = $config->get($d)) {
 		    if(is_array($label_text)) { $label_text = join(' ', $label_text); }
 		    MemoryCache::save('blank_label_text_'.$table, $l = _t($label_text));
+		    if($table !== $table_orig) { MemoryCache::save('blank_label_text_'.$table_orig, $l); }
 			return $l;
 		}
 		return $g_blank_label_text = _t('BLANK');

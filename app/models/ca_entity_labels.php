@@ -111,7 +111,7 @@ BaseModel::$s_ca_models_definitions['ca_entity_labels'] = array(
 				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Surname/organization'), 'DESCRIPTION' => _t('A surname is a name added to a given name and is part of a personal name. In many cases a surname is a family name. For organizations this should be set to the full name.'),
+				'LABEL' => _t('Surname'), 'DESCRIPTION' => _t('A surname is a name added to a given name and is part of a personal name. In many cases a surname is a family name. For organizations this should be set to the full name.'),
 				'BOUNDS_LENGTH' => array(0,512)
 		),
 		'prefix' => array(

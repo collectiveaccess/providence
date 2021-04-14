@@ -1,10 +1,10 @@
- # *** use ONLY lowercase letters in lists: input will be forced to lowercase for comparison ***
+# *** use ONLY lowercase letters in lists: input will be forced to lowercase for comparison ***
 
 # List month names; used whenever name of month needs to be displayed
 monthList = [enero, febrero, Marzo, abril, mayo, junio, julio, agosto, septiembre, octubre, noviembre, diciembre]
 
 # *** the following list of months is for display and *SHOULD* be capitalized where appropriate
-monthListDisplay = [Enero, Febrero, Marzo, Abril, Mayo, Julio, July, Agosto, Septiembre, Octubre, Noviembre, Diciembre]
+monthListDisplay = [Enero, Febrero, Marzo, Abril, Mayo, Junio, Julio, Agosto, Septiembre, Octubre, Noviembre, Diciembre]
 
 # Hash table mapping acceptable month names to the display names defined in 'monthList'
 monthTable = {

@@ -107,6 +107,7 @@
  	define('__CA_NAV_ICON_EDIT_TEXT__', 66);
  	define('__CA_NAV_ICON_IS_PRIMARY__', 67);
  	define('__CA_NAV_ICON_CROSSHAIRS__', 68);
+ 	define('__CA_NAV_ICON_UPLOAD__', 69);
  	
  	/**
  	 * Icon position constants
@@ -136,7 +137,8 @@
 		if(caUseCleanUrls()) {
 			$vs_url = $po_request->getBaseUrlPath();
 		} else {
-			$vs_url = $po_request->getBaseUrlPath().'/'.$po_request->getScriptName();
+			$s = $po_request->getScriptName();
+			$vs_url = $po_request->getBaseUrlPath().'/'.(($s === 'service.php') ? 'index.php' : $s);
 		}
 		if ($ps_module_path == '*') { $ps_module_path = $po_request->getModulePath(); }
 		if ($ps_controller == '*') { $ps_controller = $po_request->getController(); }
@@ -885,6 +887,9 @@
 				break;	
 			case __CA_NAV_ICON_CROSSHAIRS__:
 				$vs_fa_class = 'fas fa-crosshairs';
+				break;	
+			case __CA_NAV_ICON_UPLOAD__:
+				$vs_fa_class = 'fas fa-upload';
 				break;																					
 			default:
 				print "INVALID CONSTANT $pn_type<br>\n";

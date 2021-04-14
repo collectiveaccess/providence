@@ -308,7 +308,7 @@ div.clear {
 	font-size: 13px;
 	line-height: 1.4em;
 }
-#leftNav div.visualize, #leftNav div.setTools {
+#leftNav div.visualize, #leftNav div.setTools, #leftNav div.batchTools {
 	background-color:#f7f7f7;
 	border-radius: 4px;
 	-webkit-border-radius: 4px;
@@ -319,10 +319,10 @@ div.clear {
 	text-transform:capitalize;
 	font-size:14px;
 }
-#leftNav div.setTools img {
+#leftNav div.setTools img, #leftNav div.batchTools img {
 	padding-right:5px;
 }
-#leftNav div.visualize a, #leftNav div.setTools a {
+#leftNav div.visualize a, #leftNav div.setTools a, #leftNav div.batchTools a {
 	text-decoration:none;
 }
 #caColorbox {
@@ -437,7 +437,7 @@ div.inspectorLotObjectTypeControls {
 #leftNav #toolIcons .button {
 	text-align:left;
 }
-#leftNav #searchSetTools .button {
+#leftNav #searchSetTools .button, #leftNav #batchTools .button {
 	text-align: right;
 }
 #leftNav .button.info img{
@@ -786,7 +786,7 @@ ul.sf-menu li li li.sfHover ul {
 }
 
 li.sfHover > a:link, li.sfHover > a:visited {
-    color: #333 !important;
+    color: #aaa !important;
 }
 
 .sf-menu li li:hover, .sf-menu li li li:hover{
@@ -1242,11 +1242,12 @@ div.formLabelUploadSizeNote {
 .bundleSubLabel{
 	clear:both;
 	background-color:#fbfbfb;
-	padding:8px 8px 0px 10px;
+	padding:12px 7px 0px 7px;
 	position:relative;
 	font-weight:normal;
 	font-size:11px;
 	line-height:1em;
+	margin-top: 0px;
 }
 .bundleSubLabel select, .bundleSubLabel .editorBundlePrintControl select, .bundleSubLabel .editorBundleSortControl select{
 	position:relative;
@@ -1257,6 +1258,7 @@ div.formLabelUploadSizeNote {
 	font-weight: normal;
 	height: 17px;
 	vertical-align: top;
+	max-width: 120px;
 }
 .bundleSubLabel .editorBundlePrintControl {
 	float:right;
@@ -1283,7 +1285,8 @@ div.formLabelUploadSizeNote {
 	border: 1px dotted #cccccc;
 	background: #fff;
 	padding: 5px 5px 5px 10px;
-	width: 692px;
+	width: 694px;
+	margin-bottom: 10px;
 }
 
 .editorBundleReturnToHomeControlsMessage {
@@ -1542,6 +1545,16 @@ a.button:hover{
     color: #1ab3c8;
 }
 
+a.inline-button-small {
+    font-size: 10px;
+    text-decoration: none;
+    color: #000;
+}
+a.inline-button-small:hover {
+    text-decoration: none;
+    color: #1ab3c8;
+}
+
 a.form-button, span.form-button, del.form-button{
     display:-moz-inline-box;
     display:inline-block;
@@ -1720,7 +1733,7 @@ a.form-button:focus,
 a.dom-button-focus,
 span.form-button-behavior-hover{
     background-position:0 -60px;
-    color:#222;
+    color: #1ab3c8;
     text-decoration:none;
 }
 
@@ -2015,11 +2028,9 @@ a.deleteButton span{
 	color: red;
 	font-weight:bold;
 }
-a.deleteButton span .caIcon:hover{
-	color:red;
-}
+
 a.deleteButton span.form-button:hover {
-	color:red;
+	color: #1ab3c8;
 }
 div.control-box-right-content select {
     width: 150px;
@@ -2257,7 +2268,7 @@ select.searchSetSelect {
 	position: absolute;
 	top: 100px;
 	left: 25%;
-	width: 400px;
+	width: 500px;
 	z-index:20000;
 }
 
@@ -2444,11 +2455,8 @@ select.searchToolsSelect {
 }
 /* Set Tools */
 
-#searchSetTools {
+#searchSetTools, #batchTools {
 	display:none;
-}
-
-#searchSetTools {
 	background-color: #f7f7f7;
 	border-radius: 4px;
 	-moz-border-radius: 4px;
@@ -2456,19 +2464,19 @@ select.searchToolsSelect {
 	margin: 10px;
 	padding: 10px;
 }
-#searchSetTools .col{
+#searchSetTools .col, #batchTools .col {
 	margin-bottom:15px;
 }
-#searchSetTools .header {
+#searchSetTools .header, #batchTools .header {
 	font-family: 'din-regular', helvetica, sans-serif;
 	font-weight:bold;
 }
-#searchSetTools a{
+#searchSetTools a, #batchTools a {
 	float: right;
 	clear: left;
 	text-align: right;
 }
-#searchSetTools .searchSetsToggle a{
+#searchSetTools .searchSetsToggle a {
 	float: left;
 	clear: right;
 	text-align: left;
@@ -3727,7 +3735,6 @@ a.hierarchyBrowserLevelEditButton {
 
 div.hierarchyBrowseTab {
     width: 712px;
-    overflow: hidden;
     font-weight: normal;
     margin-left:-10px;
 }
@@ -6317,12 +6324,12 @@ table.caConfirmBatchExecutionPanelAlertControls {
     padding:10px;
 }
 
-#caTypeChangePanelControlButtons, #caCreateChildPanelControlButtons, #caSetHomeLocationPanelControlButtons {
+#caTypeChangePanelControlButtons, #caCreateChildPanelControlButtons, #caSetHomeLocationPanelControlButtons, #caMediaBrowserPanelControlButtons {
     width: 100%;
     text-align: center;
 }
 
-#caTypeChangePanelControlButtons table, #caCreateChildPanelControlButtons table, #caSetHomeLocationPanelControlButtons table {
+#caTypeChangePanelControlButtons table, #caCreateChildPanelControlButtons table, #caSetHomeLocationPanelControlButtons table, #caMediaBrowserPanelControlButtons table {
     width: 100%;
 }
 #caTypeChangePanelControlButtons img.form-button-left, #caCreateChildPanelControlButtons img.form-button-left, #caSetHomeLocationPanelControlButtons img.form-button-left {
@@ -6361,6 +6368,34 @@ div.dialogHeader {
     border-radius:4px;
     -moz-border-radius:4px;
     -webkit-border-radius:4px;
+    
+    min-height: 300px;
+}
+
+/* Media chooser */
+#caMediaBrowserPanel {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 800px;
+    display: none;
+    margin: 0px;
+    padding:0px !important;
+    z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
+    background-color: #FFFFFF;
+    border-radius:4px;
+    -moz-border-radius:4px;
+    -webkit-border-radius:4px;
+    
+    min-height: 300px;
+}
+
+#caMediaBrowserPanelContentArea {
+    padding: 10px;
+}
+
+#caMediaBrowserPanelDirectoryBrowser {
+    height: 225px;
 }
 
 
@@ -7584,8 +7619,8 @@ div.checklist {
 div.checklistItem {
     font-weight: normal;
     margin: 2px 2px 2px 5px;
-    min-width: 100px;
-    max-width: 160px;
+    min-width: 130px;
+    max-width: 260px;
     white-space: nowrap
     
 }
@@ -7667,7 +7702,7 @@ a.currentSet {
 }
 
 .mediaUploadAreaMessage {
-	font-size: 16px; 
+	font-size: 15px; 
 	color: #333;
 	margin-top: 40px;
 }
@@ -7720,6 +7755,14 @@ div.objectRepresentationMetadataEditorDoneButton {
 	padding-right:5px;
 }
 
+.objectRepresentationAddForm {
+
+}
+
+.objectRepresentationRelateForm {
+    display: none;
+}
+
 .mediaMetadataDisplay {
 	font-weight: normal;
 	font-size: 12px;
@@ -7753,4 +7796,172 @@ p.abbreviatedPath, div.abbreviatedPath, span.abbreviatedPath {
     background-color: #f8f8f8;
     border-radius: 3px;
     white-space: nowrap;
+}
+
+/* Query builder */
+
+.query-builder .rules-group-container {
+    background: #f7f7f7 !important;
+    border: none !important;
+}
+
+.btn btn-xs btn-primary active {
+    font-weight: bold;;
+}
+
+
+.query-builder, .query-builder * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.query-builder {
+  font-family: sans-serif;
+}
+
+.query-builder .hide {
+  display: none;
+}
+
+.query-builder .pull-right {
+  float: right !important;
+}
+
+.query-builder .btn {
+  text-transform: none;
+  display: inline-block;
+  padding: 6px 12px;
+  margin-bottom: 0px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.42857;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  touch-action: manipulation;
+  cursor: pointer;
+  user-select: none;
+  background-image: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+}
+
+.query-builder .btn.focus, .query-builder .btn:focus, .query-builder .btn:hover {
+  color: #333;
+  text-decoration: none;
+}
+
+.query-builder .btn.active, .query-builder .btn:active {
+  background-image: none;
+  outline: 0px none;
+  box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.125) inset;
+}
+
+.query-builder .btn-success {
+  color: #000;
+  background-color: #f7f7f7;
+  border-color: #f7f7f7;
+}
+
+.query-builder .btn-primary {
+  color: #FFF;
+  background-color: #337AB7;
+  border-color: #2E6DA4;
+}
+
+.query-builder .btn-danger {
+  color: #FFF;
+  background-color: #000;
+  border-color: #000;
+}
+
+.query-builder .btn-success.active, .query-builder .btn-success.focus,
+.query-builder .btn-success:active, .query-builder .btn-success:focus,
+.query-builder .btn-success:hover {
+  color: #FFF;
+  background-color: #000;
+  border-color: #000;
+}
+
+.query-builder .btn-primary.active, .query-builder .btn-primary.focus,
+.query-builder .btn-primary:active, .query-builder .btn-primary:focus,
+.query-builder .btn-primary:hover {
+  color: #FFF;
+  background-color: #286090;
+  border-color: #204D74;
+}
+
+.query-builder .btn-danger.active, .query-builder .btn-danger.focus,
+.query-builder .btn-danger:active, .query-builder .btn-danger:focus,
+.query-builder .btn-danger:hover {
+  color: #000;
+  background-color: #f7f7f7;
+  border-color: #000;
+}
+
+.query-builder .btn-group {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.query-builder .btn-group > .btn {
+  position: relative;
+  float: left;
+}
+
+.query-builder .btn-group > .btn:first-child {
+  margin-left: 0px;
+}
+
+.query-builder .btn-group > .btn:first-child:not(:last-child) {
+  border-top-right-radius: 0px;
+  border-bottom-right-radius: 0px;
+}
+
+.query-builder .btn-group > .btn:last-child:not(:first-child) {
+  border-top-left-radius: 0px;
+  border-bottom-left-radius: 0px;
+}
+
+.query-builder .btn-group .btn + .btn, .query-builder .btn-group .btn + .btn-group,
+.query-builder .btn-group .btn-group + .btn, .query-builder .btn-group .btn-group + .btn-group {
+  margin-left: -1px;
+}
+
+.query-builder .btn-xs, .query-builder .btn-group-xs > .btn {
+  padding: 1px 5px;
+  font-size: 12px;
+  line-height: 1.5;
+  border-radius: 3px;
+}
+
+.query-builder .rule-filter-container select{
+    max-width: 180px;
+}
+.query-builder .rule-operator-container select {
+    max-width: 100px;
+}
+.query-builder .rule-value-container input {
+    width: 240px;
+}
+
+.searchBuilderContainer {
+    position: relative;
+    background-color: #f7f7f7;
+}
+.searchBuilderSubmit {
+    text-align: right;
+    padding: 0 5px 10px 0;
+}
+
+.searchBuilderSave {
+    position: absolute;
+    left: 5px;
+    bottom: 5px;
+}  
+
+#searchBuilderInput {
+    width: 100%;
 }

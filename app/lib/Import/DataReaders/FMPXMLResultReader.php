@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2019 Whirl-i-Gig
+ * Copyright 2014-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -184,8 +184,8 @@ class FMPXMLResultReader extends BaseXMLDataReader {
 			$row = $this->opa_row_buf['/COL'];
 			$row_with_labels = [];
 			foreach($this->opa_metadata as $i => $l) {
-				$row_with_labels[$l] = $row[$i];
-				$row_with_labels[strtolower($l)] = $row[$i];
+				$row_with_labels[$l][] = $row[$i];
+				$row_with_labels[strtolower($l)][] = $row[$i];
 			}
 			$this->opa_row_buf = $row_with_labels;
 		}
