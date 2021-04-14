@@ -52,7 +52,7 @@
  </div>
  
  <div class="barcode" style="position: absolute; left: 0.125in; top: 2.5in; width: 1.5in; height: 0.75in;">
- 	{{{barcode:code128:5:^ca_objects.idno}}}
+ 	{{{barcode:code128:0.5in:^ca_objects.idno}}}
  </div>
  
  <div class="thumbnail" style="position: absolute; left: 2in; top: 0.125in; width: 1.875in; overflow: hidden;">

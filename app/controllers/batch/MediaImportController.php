@@ -320,7 +320,7 @@
 			if($va_paths = @scandir($dir, 0)) {
 				$vn_i = $vn_c = 0;
 				foreach($va_paths as $item) {
-					if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
+					if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item[0] !== '.'))) {
 						$vb_is_dir = is_dir("{$dir}/{$item}");
 						$vs_k = preg_replace('![@@]+!', '|', $item);
 						if ($vb_is_dir) { 

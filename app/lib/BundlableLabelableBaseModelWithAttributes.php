@@ -4346,6 +4346,7 @@ if (!$vb_batch) {
                             }
                             
                             foreach($va_file_list as $vs_key => $va_values) {
+                            	$va_values['tmp_name'] = stripslashes($va_values['tmp_name']);
                                 $this->clearErrors();
                             
 								if (
@@ -4431,9 +4432,9 @@ if (!$vb_batch) {
 										foreach($files as $f) {
 											// Final check of path before import attempt
 											if (
-												(isUrl($f) && !$vb_allow_fetching_of_urls)
+												(($is_url = isUrl($f)) && !$vb_allow_fetching_of_urls)
 												||
-												(!preg_match("!^{$ajax_import_directory_path}!", $f) && !preg_match("!^{$import_directory_path}!", $f))
+												(!$is_url && !preg_match("!^{$ajax_import_directory_path}!", $f) && !preg_match("!^{$import_directory_path}!", $f))
 											) {
 												continue;
 											}

@@ -343,7 +343,7 @@ function caFileIsIncludable($ps_file) {
 		if(!file_exists($dir)) { return []; }
 		if($va_paths = @scandir($dir, 0)) {
 			foreach($va_paths as $item) {
-				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
+				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item[0] !== '.'))) {
 					$va_stat = @stat("{$dir}/{$item}");
 					if (
 						(isset($pa_options['modifiedSince']) && ($pa_options['modifiedSince'] > 0))
@@ -401,7 +401,7 @@ function caFileIsIncludable($ps_file) {
 		);
 		if ($handle = @opendir($dir)) {
 			while (false !== ($item = readdir($handle))) {
-				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
+				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item[0] !== '.'))) {
 					$vb_is_dir = is_dir("{$dir}/{$item}");
 					if ($vb_is_dir) {
 						$va_counts['directories']++;
@@ -442,7 +442,7 @@ function caFileIsIncludable($ps_file) {
 		$vn_file_count = 0;
 		if ($handle = @opendir($dir)) {
 			while (false !== ($item = readdir($handle))) {
-				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
+				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item[0] !== '.'))) {
 					if (is_dir("{$dir}/{$item}")) {
 						$va_dir_list = array_merge($va_dir_list, caGetSubDirectoryList("{$dir}/{$item}", true, $pb_include_hidden_files));
 					}  else {
@@ -696,11 +696,8 @@ function caFileIsIncludable($ps_file) {
 	 * @return string
 	 */
 	function caGetTempDirPath($options=null) {
-		if(caGetOption('useAppTmpDir', $options, false)) { return __CA_APP_DIR__."/tmp"; }
-		if (function_exists('sys_get_temp_dir')) {
-			return sys_get_temp_dir();
-		}
-
+		if(caGetOption('useAppTmpDir', $options, true)) { return __CA_APP_DIR__."/tmp"; }
+	
 		if (!empty($_ENV['TMP'])) {
 			return realpath($_ENV['TMP']);
 		} else {
@@ -715,6 +712,8 @@ function caFileIsIncludable($ps_file) {
 						$vs_tmp_dir = realpath(dirname($vs_tmp));
 						unlink($vs_tmp);
 						return $vs_tmp_dir;
+					} elseif (function_exists('sys_get_temp_dir')) {
+						return sys_get_temp_dir();
 					} else {
 						return "/tmp";
 					}
@@ -3966,13 +3965,15 @@ function caFileIsIncludable($ps_file) {
 	 * @param array $pa_options Options include:
 	 *		locale = Locale settings to use. If omitted current default locale is used. [Default is current locale]
 	 *		omitArticle = Omit leading definite and indefinited articles, rather than moving them to the end of the text [Default is true]
+	 *		maxLength = Maximum length of returned value. [Default is 255]
 	 *
-	 * @return string Converted text. If locale cannot be found $ps_text is returned unchanged.
+	 * @return string Converted text. If locale cannot be found $ps_text is returned truncated to "maxLength" value, but otherwise unchanged.
 	 */
 	function caSortableValue($ps_text, $pa_options=null) {
 		global $g_ui_locale;
 		$ps_locale = caGetOption('locale', $pa_options, $g_ui_locale);
-		if (!$ps_locale) { return $ps_text; }
+		$max_length = caGetOption('maxLength', $pa_options, 255, ['castTo' => 'int']);
+		if (!$ps_locale) { return mb_substr($ps_text, 0, $max_length); }
 
 		$pb_omit_article = caGetOption('omitArticle', $pa_options, true);
 
@@ -3997,7 +3998,7 @@ function caFileIsIncludable($ps_file) {
 				$vs_display_value = str_replace($va_matches[$i], $vs_padded, $vs_display_value);
 			}
 		}
-		return $vs_display_value;
+		return mb_substr($vs_display_value, 0, $max_length);
 	}
 	# ----------------------------------------
 	/**

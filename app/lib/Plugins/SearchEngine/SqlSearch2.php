@@ -435,13 +435,14 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	$private_sql = ($this->getOption('omitPrivateIndexing') ? ' AND swi.access = 0' : '');
 	 	
 		$qr_res = $this->db->query($x="
-			SELECT swi.row_id, swi.boost
+			SELECT swi.row_id, SUM(swi.boost) boost
 			FROM ca_sql_search_word_index swi
 			".(!$is_blank ? 'INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id' : '')."
 			WHERE
 				swi.table_num = ? AND {$word_field} {$word_op} ?
 				{$field_sql}
 				{$private_sql}
+			GROUP BY swi.row_id
 		", $params);
 	 	return $this->_arrayFromDbResult($qr_res);
 	}
@@ -668,11 +669,12 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				$subject_tablenum, (int)$lower_text, (int)$upper_text
 			];
 			$qr_res = $this->db->query($x="
-				SELECT swi.row_id, swi.boost
+				SELECT swi.row_id, SUM(swi.boost) boost
 				FROM ca_sql_search_word_index swi
 				INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id
 				WHERE
 					swi.table_num = ? AND swi.field_num = 'COUNT' AND sw.word BETWEEN ? AND ?
+				GROUP BY swi.row_id
 			", $params);
 			return $this->_arrayFromDbResult($qr_res);
 		}

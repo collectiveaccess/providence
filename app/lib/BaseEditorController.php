@@ -667,7 +667,7 @@ class BaseEditorController extends ActionController {
 		$this->getRequest()->close();
 		
 		$redirect_url = $this->opo_result_context->getResultsUrlForLastFind($this->getRequest(), $t_subject->tableName());
-		if (($parent_id = $t_subject->get('parent_id')) > 0) {
+		if (($t_subject->getHierarchyType() === __CA_HIER_TYPE_ADHOC_MONO__) && ($parent_id = $t_subject->get('parent_id')) > 0) {
 			$redirect_url = caEditorUrl($this->request, $t_subject->tableName(), $parent_id);
 		} elseif(!$redirect_url) {
 			$redirect_url = ResultContext::getResultsUrl($this->request, $t_subject->tableName(), 'basic_search');

@@ -369,7 +369,7 @@ class BaseSettings {
 						ckEditor.on('instanceReady', function(){ 
 							 ckEditor.document.on( 'keydown', function(e) {if (caUI && caUI.utils) { caUI.utils.showUnsavedChangesWarning(true); } });
 						});
-});									
+  });									
 </script>";
 					}
 				}
@@ -403,7 +403,7 @@ class BaseSettings {
 						$vs_return .= "<script type='text/javascript'>
 jQuery(document).ready(function() {
 	jQuery('".join(",", $va_ids)."').hide();
-});
+  });
 </script>\n";
 					}
 				}

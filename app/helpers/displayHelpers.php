@@ -1253,7 +1253,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				TooltipManager::add("#caDuplicateItemButton", _t('Duplicate this %1', mb_strtolower($vs_type_name, 'UTF-8')));
 			}
 
-			if (caHomeLocationsEnabled($t_item->tableName(), $t_item->getTypeCode()) && $po_view->request->user->canDoAction("can_set_home_location_".$vs_table_name)) {	
+			if (method_exists($t_item, 'getTypeCode') && caHomeLocationsEnabled($t_item->tableName(), $t_item->getTypeCode()) && $po_view->request->user->canDoAction("can_set_home_location_".$vs_table_name)) {	
 				$vs_buf .= "<div id='inspectorSetHomeLocation' class='inspectorActionButton'><div id='inspectorSetHomeLocationButton'><a href='#' onclick='_initSetHomeLocationHierarchyBrowser(); return false;'>".caNavIcon(__CA_NAV_ICON_HOME__, '20px', array('title' => _t('Set home location')))."</a></div></div>\n";
 
 				$vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");

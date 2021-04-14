@@ -47,8 +47,9 @@ function caMediaInfoGuessFileFormat($ps_path) {
 		case 'DV':
 			return 'video/x-dv';
 		case 'MPEG-4':
-		case 'AVC':
 			return 'video/mp4';
+		case 'AVC':
+			return 'video/MP2T';
 		case 'AVI':
 			return 'video/avi';
 		case 'Matroska':

@@ -137,7 +137,8 @@
 		if(caUseCleanUrls()) {
 			$vs_url = $po_request->getBaseUrlPath();
 		} else {
-			$vs_url = $po_request->getBaseUrlPath().'/'.$po_request->getScriptName();
+			$s = $po_request->getScriptName();
+			$vs_url = $po_request->getBaseUrlPath().'/'.(($s === 'service.php') ? 'index.php' : $s);
 		}
 		if ($ps_module_path == '*') { $ps_module_path = $po_request->getModulePath(); }
 		if ($ps_controller == '*') { $ps_controller = $po_request->getController(); }

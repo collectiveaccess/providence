@@ -1024,6 +1024,8 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$files = [];
 		$i = 0;
 		
+		$dont_import_pages_for_tiffs = $this->opo_config->get("dont_import_additional_pages_for_tiffs");
+		
 		$this->handle->setimageindex(0);
 		$num_previews = 0;
 		do {
@@ -1041,6 +1043,8 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			
 				$this->handle->writeImage($output_file_prefix.sprintf("_%05d", $i).".jpg");
 				$file_cleanup_list[] = $files[$i] = $output_file_prefix.sprintf("_%05d", $i).'.jpg';
+				
+				if($dont_import_pages_for_tiffs && ($this->get('mimetype') === 'image/tiff')) { break; }
 			
 				$i++;
 			} while($this->handle->hasnextimage());

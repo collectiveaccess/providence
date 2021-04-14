@@ -4277,7 +4277,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			$vs_sql =  "{$ps_field} = ".$this->quote(caSerializeForDatabase($this->_FILES[$ps_field], true)).",";
 		} else {
 			// Don't try to process files when no file is actually set
-			if(isset($this->_SET_FILES[$ps_field]['tmp_name'])) { 
+			if(isset($this->_SET_FILES[$ps_field]['tmp_name']) && (isUrl($this->_SET_FILES[$ps_field]['tmp_name']) || is_readable($this->_SET_FILES[$ps_field]['tmp_name']))) { 
 				$o_tq = new TaskQueue();
 				$o_media_proc_settings = new MediaProcessingSettings($this, $ps_field);
 		
@@ -4641,8 +4641,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 								$magic = rand(0,99999);
 								$filepath = $vi["absolutePath"]."/".$dirhash."/".$magic."_".$this->_genMediaName($ps_field)."_".$v.".".$ext;
 							
-								if (!copy($this->_SET_FILES[$ps_field]['tmp_name'], $filepath)) {
-									$this->postError(1600, _t("File could not be copied. Ask your administrator to check permissions and file space for %1",$vi["absolutePath"]),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
+								if (!is_readable($this->_SET_FILES[$ps_field]['tmp_name']) || !is_writeable(pathinfo($filepath, PATHINFO_DIRNAME)) || !copy($this->_SET_FILES[$ps_field]['tmp_name'], $filepath)) {
+									$this->postError(1670, _t("File could not be copied. Ask your administrator to check permissions and file space for %1",$vi["absolutePath"]),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
 									$m->cleanup();
 									set_time_limit($vn_max_execution_time);
 									if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
@@ -5544,8 +5544,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					"FILE_LAST_MODIFIED" => filemtime($this->_SET_FILES[$field]['tmp_name'])
 				);
 
-				if (!@copy($this->_SET_FILES[$field]['tmp_name'], $filepath)) {
-					$this->postError(1600, _t("File could not be copied. Ask your administrator to check permissions and file space for %1",$vi["absolutePath"]),"BaseModel->_processFiles()", $this->tableName().'.'.$field);
+				if (!is_readable($this->_SET_FILES[$field]['tmp_name']) || !is_writeable(pathinfo($filepath, PATHINFO_DIRNAME)) || !copy($this->_SET_FILES[$field]['tmp_name'], $filepath)) {
+					$this->postError(1670, _t("File could not be copied. Ask your administrator to check permissions and file space for %1",$vi["absolutePath"]),"BaseModel->_processFiles()", $this->tableName().'.'.$field);
 					return false;
 				}
 				@touch($filepath, filemtime($this->_SET_FILES[$field]['tmp_name']));
@@ -11837,13 +11837,13 @@ $pa_options["display_form_field_tips"] = true;
 				switch($va_tmp[0]) {
 					case $vs_table:
 						if ($t_instance->hasField($va_tmp[1])) {
-							$vs_orderby = " ORDER BY {$vs_sort} {$vs_sort_direction}";
+							$vs_orderby = " ORDER BY `{$vs_sort}` {$vs_sort_direction}";
 						}
 						break;
 					default:
 						if (sizeof($va_tmp) == 1) {
 							if ($t_instance->hasField($va_tmp[0])) {
-								$vs_orderby = " ORDER BY {$vs_sort} {$vs_sort_direction}";
+								$vs_orderby = " ORDER BY `{$vs_sort}` {$vs_sort_direction}";
 							}
 						}
 						break;

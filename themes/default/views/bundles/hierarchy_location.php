@@ -303,6 +303,12 @@
 						<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
 					</div><!-- end hierbrowser -->				
 <?php
+
+		// TODO:
+		//	
+		//	1. Make this form conditional on current location policy
+		//  √2. Force omit ca_objects relationship bundle.
+		//
 		if (($t_subject->tableName() == 'ca_storage_locations') && (bool)$t_subject->getAppConfig()->get('record_movement_information_when_moving_storage_location')) {
 			if ($t_ui = ca_editor_uis::loadDefaultUI('ca_movements', $this->request, null, array('editorPref' => 'quickadd'))) {
 				//
@@ -321,7 +327,7 @@
 				$va_form_elements = $t_movement->getBundleFormHTMLForScreen($va_nav['defaultScreen'], array(
 						'request' => $this->request, 
 						'formName' => $vs_id_prefix.'StorageLocationMovementForm',
-						'omit' => array('ca_storage_locations')
+						'omit' => ['ca_storage_locations', 'ca_objects']
 				));
 				print caHTMLHiddenInput($vs_id_prefix.'_movement_screen', array('value' => $va_nav['defaultScreen']));
 				print caHTMLHiddenInput($vs_id_prefix.'_movement_form_name', array('value' => $vs_id_prefix.'StorageLocationMovementForm'));
