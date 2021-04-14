@@ -333,6 +333,7 @@ function caFileIsIncludable($ps_file) {
 	 * @param array $pa_options Additional options, including:
 	 *		modifiedSince = Only return files and directories modified after a Unix timestamp [Default=null]
 	 *		notModifiedSince = Only return files and directories not modified after a Unix timestamp [Default=null]
+	 *		limit = Maximum number of files to return [Default=null; no limit]
 	 * @return array An array of file paths.
 	 */
 	function &caGetDirectoryContentsAsList($dir, $pb_recursive=true, $pb_include_hidden_files=false, $pb_sort=false, $pb_include_directories=false, $pa_options=null) {
@@ -340,8 +341,10 @@ function caFileIsIncludable($ps_file) {
 		if(substr($dir, -1, 1) == "/"){
 			$dir = substr($dir, 0, strlen($dir) - 1);
 		}
+		$limit = caGetOption('limit', $pa_options, null);
+		
 		if(!file_exists($dir)) { return []; }
-		if($va_paths = scandir($dir, 0)) {
+		if($va_paths = @scandir($dir, 0)) {
 			foreach($va_paths as $item) {
 				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
 					$va_stat = @stat("{$dir}/{$item}");
@@ -373,6 +376,7 @@ function caFileIsIncludable($ps_file) {
 						}
 					}
 				}
+				if (($limit > 0) && (sizeof($va_file_list) >= $limit)) { break; }
 			}
 		}
 
