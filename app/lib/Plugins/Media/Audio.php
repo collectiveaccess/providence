@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2018 Whirl-i-Gig
+ * Copyright 2006-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -73,6 +73,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		"IMPORT" => array(
 			"audio/mpeg"						=> "mp3",
 			"audio/x-aiff"						=> "aiff",
+			"audio/wav"							=> "wav",
 			"audio/x-wav"						=> "wav",
 			"audio/x-wave"						=> "wav",
 			"audio/mp4"							=> "aac",
@@ -83,7 +84,9 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		"EXPORT" => array(
 			"audio/mpeg"						=> "mp3",
 			"audio/x-aiff"						=> "aiff",
+			"audio/wav"							=> "wav",
 			"audio/x-wav"						=> "wav",
+			"audio/x-wave"						=> "wav",
 			"audio/mp4"							=> "aac",
 			"video/x-flv"						=> "flv",
 			"image/png"							=> "png",
@@ -118,6 +121,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"duration" 			=> 'R',
 			"filesize" 			=> 'R',
 			"getID3_tags"		=> 'W',
+			'colorspace'		=> 'W',
 			"quality"			=> "W",		// required for JPEG compatibility
 			"bitrate"			=> 'W', 	// in kbps (ex. 64)
 			"channels"			=> 'W',		// 1 or 2, typically
@@ -133,6 +137,8 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		"audio/mpeg"						=> "MPEG-3",
 		"audio/x-aiff"						=> "AIFF",
 		"audio/x-wav"						=> "WAV",
+		"audio/x-wave"						=> "WAV",
+		"audio/wav"							=> "WAV",
 		"audio/mp4"							=> "AAC",
 		"image/png"							=> "PNG",
 		"image/jpeg"						=> "JPEG",
@@ -202,10 +208,10 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		    // Quicktime-wrapped MP3
 			$info['mime_type'] = 'audio/mpeg';
 		}
+		if (in_array(strtolower(trim($info["mime_type"])), ['audio/wave', 'audio/wav', 'audio/x-wave'], true)) {
+			$info["mime_type"] = 'audio/x-wav';
+		}
 		if (($info["mime_type"]) && isset($this->info["IMPORT"][$info["mime_type"]]) && $this->info["IMPORT"][$info["mime_type"]]) {
-			if ($info["mime_type"] === 'audio/x-wave') {
-				$info["mime_type"] = 'audio/x-wav';
-			}
 			$this->handle = $this->ohandle = $info;
 			$this->metadata = $info;	// populate with getID3 data because it's handy
 			return $info["mime_type"];
@@ -268,7 +274,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		return $this->metadata;
 	}
 	# ------------------------------------------------
-	public function read ($filepath) {
+	public function read ($filepath, $mimetype="", $options=null) {
 		if (!file_exists($filepath)) {
 			$this->postError(1650, _t("File %1 does not exist", $filepath), "WLPlugAudio->read()");
 			$this->handle = "";
@@ -782,8 +788,8 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 95;
 				ob_start();
 ?>
-			<div class="<?php print (isset($pa_options["class"])) ? $pa_options["class"] : "caAudioPlayer"; ?>">
-				<audio id="<?php print $vs_id; ?>" src="<?php print $ps_url; ?>" <?php print ($vs_poster_url = caGetOption('posterURL', $pa_options, null)) ? "poster='{$vs_poster_url}'" : ''; ?> type="audio/mp3" controls="controls"></audio>
+			<div class="<?php print (isset($pa_options["class"]) ? $pa_options["class"] : "caAudioPlayer"); ?>">
+				<audio id="<?php print $vs_id; ?>" src="<?php print $ps_url; ?>" <?php print ($vs_poster_url = caGetOption('posterURL', $pa_options, null) ? "poster='{$vs_poster_url}'" : ''); ?> type="audio/mp3" controls="controls"></audio>
 			</div>	
 			<script type="text/javascript">
 				jQuery(document).ready(function() {
