@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2013 Whirl-i-Gig
+ * Copyright 2012-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,17 +36,11 @@
 require_once(__CA_APP_DIR__."/helpers/batchHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/printHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/configurationHelpers.php");
-require_once(__CA_MODELS_DIR__."/ca_sets.php");
-require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
-require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
-require_once(__CA_LIB_DIR__."/ResultContext.php");
-require_once(__CA_LIB_DIR__."/BatchProcessor.php");
-require_once(__CA_LIB_DIR__."/BatchEditorProgress.php");
 
 class EditorController extends ActionController {
 	# -------------------------------------------------------
-	protected $opo_app_plugin_manager;
-	protected $opo_result_context;
+	protected $app_plugin_manager;
+	protected $result_context;
 	# -------------------------------------------------------
 	#
 	# -------------------------------------------------------
@@ -58,8 +52,8 @@ class EditorController extends ActionController {
 		AssetLoadManager::register('bundleListEditorUI');
 		AssetLoadManager::register('panel');
 		
-		$this->opo_app_plugin_manager = new ApplicationPluginManager();
-		$this->opo_result_context = new ResultContext($po_request, $this->ops_table_name, ResultContext::getLastFind($po_request, $this->ops_table_name));
+		$this->app_plugin_manager = new ApplicationPluginManager();
+		$this->result_context = new ResultContext($po_request, $this->ops_table_name, ResultContext::getLastFind($po_request, $this->ops_table_name));
 	}
 	# -------------------------------------------------------
 	/**
@@ -71,21 +65,6 @@ class EditorController extends ActionController {
 	 */
 	public function Edit($pa_values=null, $options=null) {
 		list($rs, $t_subject, $t_ui) = $this->_initView($options);
-		
-		// if (!$vn_set_id) { 
-//  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3200?r='.urlencode($this->request->getFullUrlPath()));
-//  				return;
-//  			}
-		
-		// Can user batch edit this table?
-		// if (!$this->request->user->canDoAction('can_batch_edit_'.Datamodel::getTableName($t_set->get('table_num')))) {
-//  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3210?r='.urlencode($this->request->getFullUrlPath()));
-//  				return;
-//  			}
-//  			if ($t_set->getItemCount(array('user_id' => $this->request->getUserID())) <= 0) { 
-//  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3220?r='.urlencode($this->request->getFullUrlPath()));
-//  				return;
-//  			}
 		
 		$this->view->setVar('batch_editor_last_settings', $va_last_settings = is_array($va_last_settings = $this->request->user->getVar('batch_editor_last_settings')) ? $va_last_settings : []);
 		
@@ -112,19 +91,8 @@ class EditorController extends ActionController {
 		if (!is_array($options)) { $options = []; }
 		list($rs, $t_subject, $t_ui) = $this->_initView($options);
 		
-		// if (!$vn_set_id) { 
-//  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3200?r='.urlencode($this->request->getFullUrlPath()));
-//  				return;
-//  			}
-		
-		// Can user batch edit this table?
-		// if (!$this->request->user->canDoAction('can_batch_edit_'.Datamodel::getTableName($t_set->get('table_num')))) {
-//  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3210?r='.urlencode($this->request->getFullUrlPath()));
-//  				return;
-//  			}
-		
 		$va_last_settings = array(
-			'set_id' => $vn_set_id,
+			'id' => $rs->ID(),
 			'ui_id' => $t_ui->getPrimaryKey(),
 			'screen' => $this->request->getActionExtra(),
 			'user_id' => $this->request->getUserID(),
@@ -140,7 +108,7 @@ class EditorController extends ActionController {
 			if (!$o_tq->addTask(
 				'batchEditor',
 				$va_last_settings,
-				array("priority" => 100, "entity_key" => $vs_entity_key, "row_key" => $vs_row_key, 'user_id' => $this->request->getUserID())))
+				["priority" => 100, "entity_key" => $vs_entity_key, "row_key" => $vs_row_key, 'user_id' => $this->request->getUserID()]))
 			{
 				//$this->postError(100, _t("Couldn't queue batch processing for"),"EditorContro->_processMedia()");
 				
@@ -154,20 +122,13 @@ class EditorController extends ActionController {
 		}
 		
 		$this->request->user->setVar('batch_editor_last_settings', $va_last_settings);
-
 	}
 	# -------------------------------------------------------
 	public function Delete($options=null) {
 		list($rs, $t_subject, $t_ui) = $this->_initView($options);
 
 		if (!$this->request->user->canDoAction('can_batch_delete_'.Datamodel::getTableName($rs->tableNum()))) {
-			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3230?r='.urlencode($this->request->getFullUrlPath()));
-			return;
-		}
-
-		if ($rs->getItemCount(['user_id' => $this->request->getUserID()]) <= 0) { 
-			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3220?r='.urlencode($this->request->getFullUrlPath()));
-			return;
+			throw new ApplicationException(_t('Cannot delete selection'));
 		}
 
 		if ($vb_confirm = ($this->request->getParameter('confirm', pInteger) == 1) ? true : false) {
@@ -190,31 +151,18 @@ class EditorController extends ActionController {
 		if (!is_array($options)) { $options = []; }
 		list($rs, $t_subject, $t_ui) = $this->_initView($options);
 		
-		// if (!$vn_set_id) { 
-// 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3200?r='.urlencode($this->request->getFullUrlPath()));
-// 			return;
-// 		}
-// 		
-// 		// Can user batch edit this table?
-// 		if (!$this->request->user->canDoAction('can_batch_edit_'.Datamodel::getTableName($t_set->get('table_num')))) {
-// 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3210?r='.urlencode($this->request->getFullUrlPath()));
-// 			return;
-// 		}
-// 		
-// 		if (!$this->request->user->canDoAction("can_change_type_".$t_subject->tableName()) || !method_exists($t_subject, "getTypeList")) {
-// 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3260?r='.urlencode($this->request->getFullUrlPath()));
-// 			return;
-// 		}
+		if (!$this->request->user->canDoAction("can_change_type_".$t_subject->tableName()) || !method_exists($t_subject, "getTypeList")) {
+			throw new ApplicationException(_t('Cannot change type for selection'));
+		}
 		
 		$vn_new_type_id = $this->request->getParameter('new_type_id', pInteger);
 		$va_type_list = $t_subject->getTypeList();
 		if (!isset($va_type_list[$vn_new_type_id])) {
-			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3260?r='.urlencode($this->request->getFullUrlPath()));
-			return;
+			throw new ApplicationException(_t('Invalid type_id %1', $vn_new_type_id));	
 		}
 		
 		$va_last_settings = array(
-			'set_id' => $vn_set_id,
+			'id' => $id,
 			'screen' => $this->request->getActionExtra(),
 			'user_id' => $this->request->getUserID(),
 			'values' => $_REQUEST,
@@ -257,23 +205,43 @@ class EditorController extends ActionController {
 		AssetLoadManager::register('imageScroller');
 		AssetLoadManager::register('datePickerUI');
 		
-		$vn_set_id = $this->request->getParameter('set_id', pInteger);
-		$t_set = new ca_sets();
+		$id_parts = explode(':', $this->request->getParameter('id', pString));
+			
+		if ($id_parts[0] === 'ca_sets') {
+			$set_id = (int)$id_parts[1];
+			$t_set = new ca_sets();
 		
-		if (!$vn_set_id || !$t_set->load($vn_set_id)) {
-			// Bad set id
-			return [null, null, null, null];
+			if (!$set_id || !$t_set->load($set_id)) {
+				// Bad set id
+				return [null, null, null, null];
+			}
+		
+			// Does user have access to set?
+			if (!$t_set->haveAccessToSet($this->request->getUserID(), __CA_SET_READ_ACCESS__)) {
+				return [null, null, null, null];
+			}
+		
+			$rs = new RecordSelection($t_set);
+		} elseif(($id_parts[0] === 'BatchEdit') && ($t_instance = Datamodel::getInstance($table = $id_parts[1], true)) && is_a($t_instance, 'BundlableLabelableBaseModelWithAttributes')) {
+			$rc = new ResultContext($this->request, $table, 'BatchEdit');
+			$rs = new RecordSelection($rc);
+		} else {
+			throw new ApplicationException(_t('Invalid target'));
 		}
 		
-		// Does user have access to set?
-		if (!$t_set->haveAccessToSet($this->request->getUserID(), __CA_SET_READ_ACCESS__)) {
-			return [null, null, null, null];
+		// Can user batch edit this table?
+		if(!$this->request->user->canDoAction('can_batch_edit_'.$rs->tableName())) {
+			throw new ApplicationException(_t('Cannot batch edit %1', $rs->tableName()));
 		}
 		
-		$rs = new RecordSet($t_set);
+		if(!($t_subject = Datamodel::getInstance($rs->tableName(), true))) {
+			throw new ApplicationException(_t('Invalid table %1', $rs->tableName()));
+		}
 		
+		if ($rs->getItemCount(['user_id' => $this->request->getUserID()]) <= 0) { 
+			throw new ApplicationException(_t('Empty selection'));
+		}
 		
-		$t_subject = Datamodel::getInstanceByTableNum($t_set->get('table_num'));
 		$t_ui = new ca_editor_uis();
 		if (!isset($options['ui']) && !$options['ui']) {
 			$t_ui->load($this->request->user->getPreference("batch_".$t_subject->tableName()."_editor_ui"));
@@ -291,14 +259,14 @@ class EditorController extends ActionController {
 			$t_ui = ca_editor_uis::loadDefaultUI($t_subject->tableName(), $this->request, $t_subject->getTypeID());
 		}
 		
-		$this->view->setVar('set_id', $vn_set_id);
-		$this->view->setVar('t_set', $t_set);
+		$this->view->setVar('id', $rs->ID());
+		$this->view->setVar('record_selection', $rs);
 		$this->view->setVar('t_subject', $t_subject);
 		
-		$vn_item_count = $t_set->getItemCount(array('user_id' => $this->request->getUserID()));
+		$vn_item_count = $rs->getItemCount(array('user_id' => $this->request->getUserID()));
 		$vs_item_name = ($vn_item_count == 1) ? $t_subject->getProperty("NAME_SINGULAR"): $t_subject->getProperty("NAME_PLURAL");
 		
-		MetaTagManager::setWindowTitle(_t("Batch editing %1 %2 with set %3", $vn_item_count, $vs_item_name, $t_set->getLabelForDisplay(true)));
+		MetaTagManager::setWindowTitle(_t("Batch editing %1 %2 with set %3", $vn_item_count, $vs_item_name, $rs->name()));
 		
 		
 		return [$rs, $t_subject, $t_ui];
@@ -310,7 +278,7 @@ class EditorController extends ActionController {
 	 * @return ResultContext ResultContext instance.
 	 */
 	public function getResultContext() {
-		return $this->opo_result_context;
+		return $this->result_context;
 	}
 	# -------------------------------------------------------
 	# Dynamic navigation generation
@@ -333,7 +301,10 @@ class EditorController extends ActionController {
 			isset($pa_params['parameters']) ? $pa_params['parameters'] : null,
 			isset($pa_params['requires']) ? $pa_params['requires'] : null,
 			false,
-			['hideIfNoAccess' => isset($pa_params['hideIfNoAccess']) ? $pa_params['hideIfNoAccess'] : false, 'returnTypeRestrictions' => true, 'restrictToTypes' => array_keys($rs->getTypesForItems())]
+			[
+				'hideIfNoAccess' => isset($pa_params['hideIfNoAccess']) ? $pa_params['hideIfNoAccess'] : false, 
+				'returnTypeRestrictions' => true, 'restrictToTypes' => array_keys($rs->getTypesForItems())
+			]
 		);
 		
 		if (!$this->request->getActionExtra()) {
@@ -351,23 +322,18 @@ class EditorController extends ActionController {
 	 * @param array $pa_parameters Array of parameters as specified in navigation.conf, including primary key value and type_id
 	 */
 	public function info($pa_parameters) {
-		$vn_set_id = $this->request->getParameter('set_id', pInteger);
-	
-		$t_set				= new ca_sets($vn_set_id);
-		
-		if (!$t_set->getPrimaryKey()) { 
-			die("Invalid set");
-		}
+		list($rs, $t_subject, $t_ui) = $this->_initView();
 		
 		// Does user have access to set?
-		if (!$t_set->haveAccessToSet($this->request->getUserID(), __CA_SET_READ_ACCESS__)) {
-			die("You don't have access to the set");
-		}
+		// if (!$t_set->haveAccessToSet($this->request->getUserID(), __CA_SET_READ_ACCESS__)) {
+// 			die("You don't have access to the set");
+// 		}
 		
-		$t_item 			= Datamodel::getInstance($t_set->get('table_num'), true);
+		$t_item 			= Datamodel::getInstance($rs->tableNum(), true);
 		
 	
-		$this->view->setVar('t_set', $t_set);
+		$this->view->setVar('record_selection', $rs);
+		$this->view->setVar('id', $rs->ID());
 		$this->view->setVar('t_item', $t_item);
 		
 		$this->view->setVar('screen', $this->request->getActionExtra());						// name of screen

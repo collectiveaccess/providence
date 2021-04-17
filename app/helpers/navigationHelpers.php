@@ -979,6 +979,7 @@
 	 * @param array $pa_options Optional array of options. Supported options are:
 	 * 		verifyLink - if true and $pn_id is set, then existence of record with specified id is verified before link is returned. If the id does not exist then null is returned. Default is false - no verification performed.
 	 *		action - if set, action of returned link will be set to the supplied value
+	 *		actionExtra - if set, action extra of returned link will be set to the supplied value
 	 *      quick_add - if set to true, returned link will point to the QuickAdd controller instead
 	 *
 	 * @return array|string
@@ -1100,6 +1101,8 @@
 				return null;
 				break;
 		}
+		
+		$action_extra = caGetOption('actionExtra', $pa_options, null);
 
 		switch($vs_table) {
 			case 'ca_relationship_types':
@@ -1129,11 +1132,12 @@
 			}
 		}
 		
+		
 		if ($pb_return_url_as_pieces) {
 			return array(
 				'module' => $vs_module,
 				'controller' => $vs_controller,
-				'action' => $vs_action,
+				'action' => $action_extra ? "{$vs_action}/{$action_extra}" : $vs_action,
 				$vs_pk => $pn_id,
 				'id' => $pn_id,
 				'_pk' => $vs_pk		// tells you what the name of the primary key is
@@ -1141,7 +1145,7 @@
 		} else {
 			if (!is_array($pa_additional_parameters)) { $pa_additional_parameters = array(); }
 			$pa_additional_parameters = array_merge(array($vs_pk => $pn_id), $pa_additional_parameters);
-			return caNavUrl($po_request, $vs_module, $vs_controller, $vs_action, $pa_additional_parameters, $pa_options);
+			return caNavUrl($po_request, $vs_module, $vs_controller, $action_extra ? "{$vs_action}/{$action_extra}" : $vs_action, $pa_additional_parameters, $pa_options);
 		}
 	}
 	# ------------------------------------------------------------------------------------------------

@@ -877,6 +877,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'useHistoryTrackingReferringPolicyList' => true,
 								'label' => _t('Use history tracking policy'),
 								'description' => ''
+							),
+							'showBatchEditorButton' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_CHECKBOXES,
+								'width' => 10, 'height' => 1,
+								'takesLocale' => false,
+								'default' => false,
+								'label' => _t('Show batch editing button?'),
+								'description' => _t('If checked an option to batch edit related records will be displaye.')
 							)
 						);	
 						
@@ -1123,6 +1132,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'width' => "5", 'height' => 1,
 								'label' => _t('Number of items to load per page'),
 								'description' => _t('Maximum number of items to render on initial load.')
+							),
+							'showBatchEditorButton' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_CHECKBOXES,
+								'width' => 10, 'height' => 1,
+								'takesLocale' => false,
+								'default' => false,
+								'label' => _t('Show batch editing button?'),
+								'description' => _t('If checked an option to batch edit related records will be displaye.')
 							)
 						);
 					}

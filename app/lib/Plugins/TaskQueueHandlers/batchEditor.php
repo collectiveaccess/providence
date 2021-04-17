@@ -104,7 +104,7 @@ class WLPlugTaskQueueHandlerbatchEditor Extends WLPlug Implements IWLPlugTaskQue
 		$o_app = AppController::getInstance($o_request, $o_response);
 		
 		// TODO: generalize to support ResultContexts
-		$record_set = new RecordSet(new ca_sets($pa_parameters['set_id']));
+		$record_set = new RecordSelection(new ca_sets($pa_parameters['set_id']));
 		$t_subject = Datamodel::getInstanceBy($record_set->tableNum());
 		
 		if (isset($pa_parameters['isBatchTypeChange']) && $pa_parameters['isBatchTypeChange']) {

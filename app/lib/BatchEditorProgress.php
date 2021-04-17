@@ -45,7 +45,7 @@ class BatchEditorProgress extends AppControllerPlugin {
 	private $t_subject;
 	private $options;
 	# -------------------------------------------------------
-	public function __construct(RequestHTTP $request, RecordSet $record_set, $t_subject, array $options=null) {
+	public function __construct(RequestHTTP $request, RecordSelection $record_set, $t_subject, array $options=null) {
 		$this->request = $request;
 		$this->record_set = $record_set;
 		$this->t_subject = $t_subject;

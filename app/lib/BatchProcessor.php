@@ -63,8 +63,8 @@ class BatchProcessor {
 	 *		reportCallback =
 	 *		sendMail =
 	 */
-	public static function saveBatchEditorForm(RequestHTTP $po_request, RecordSet $record_set, $t_subject, array $pa_options=null) {
-		$row_ids = $record_set->getItemRowIDs();
+	public static function saveBatchEditorForm(RequestHTTP $po_request, RecordSelection $rs, $t_subject, array $pa_options=null) {
+		$row_ids = $rs->getItemRowIDs();
 		$num_items = sizeof($row_ids);
 
 		$notices = $errors = [];
@@ -88,7 +88,7 @@ class BatchProcessor {
 		$o_log = new Batchlog(array(
 			'user_id' => $po_request->getUserID(),
 			'batch_type' => 'BE',
-			'table_num' => (int)$record_set->tableNum(),
+			'table_num' => (int)$rs->tableNum(),
 			'notes' => '',
 			//'transaction' => $o_trans
 		));
@@ -104,7 +104,7 @@ class BatchProcessor {
 
 		$c = 0;
 		$start_time = time();
-		foreach(array_keys($row_ids) as $vn_row_id) {
+		foreach($row_ids as $vn_row_id) {
 			//$t_subject->setTransaction($o_trans);
 			if ($t_subject->load($vn_row_id)) {
 				$po_request->clearActionErrors();
@@ -161,8 +161,8 @@ class BatchProcessor {
 			$ps_callback($po_request, $num_items, $num_items, _t("Processing completed"), time() - $start_time, memory_get_usage(true), sizeof($notices), sizeof($errors));
 		}
 
-		$id = $record_set->ID();
-		$name = $record_set->name();
+		$id = $rs->ID();
+		$name = $rs->name();
 
 		$vn_elapsed_time = time() - $start_time;
 		if (isset($pa_options['reportCallback']) && ($ps_callback = $pa_options['reportCallback'])) {
@@ -219,8 +219,8 @@ class BatchProcessor {
 	 *		progressCallback =
 	 *		reportCallback =
 	 */
-	public static function deleteBatch(RequestHTTP$po_request, RecordSet $record_set, $t_subject, array $pa_options=null) {
-		$va_row_ids = $record_set->getItemRowIDs();
+	public static function deleteBatch(RequestHTTP$po_request, RecordSelection $rs, $t_subject, array $pa_options=null) {
+		$va_row_ids = $rs->getItemRowIDs();
 		$vn_num_items = sizeof($va_row_ids);
 
 		$va_notices = $va_errors = array();
@@ -244,14 +244,14 @@ class BatchProcessor {
 		$o_log = new Batchlog(array(
 			'user_id' => $po_request->getUserID(),
 			'batch_type' => 'BD',
-			'table_num' => (int)$record_set->tableNum(),
+			'table_num' => (int)$rs->tableNum(),
 			'notes' => '',
 			'transaction' => $o_tx
 		));
 
 		$vn_c = 0;
 		$vn_start_time = time();
-		foreach(array_keys($va_row_ids) as $vn_row_id) {
+		foreach($va_row_ids as $vn_row_id) {
 			if ($t_subject->load($vn_row_id)) {
 
 				// Is record deleted?
@@ -312,8 +312,8 @@ class BatchProcessor {
 				'numProcessed' => sizeof($va_notices),
 				'batchSize' => $vn_num_items,
 				'table' => $t_subject->tableName(),
-				'set_id' => $record_set->ID(),
-				'set_name' => $record_set->name()
+				'set_id' => $rs->ID(),
+				'set_name' => $rs->name()
 			);
 			$ps_callback($po_request, $va_general, $va_notices, $va_errors);
 		}
@@ -335,8 +335,8 @@ class BatchProcessor {
 	 *		progressCallback =
 	 *		reportCallback =
 	 */
-	public static function changeTypeBatch(RequestHTTP $po_request, int $pn_type_id, RecordSet $record_set, $t_subject, array $pa_options=null) {
-		$va_row_ids = $record_set->getItemRowIDs();
+	public static function changeTypeBatch(RequestHTTP $po_request, int $pn_type_id, RecordSelection $rs, $t_subject, array $pa_options=null) {
+		$va_row_ids = $rs->getItemRowIDs();
 		$vn_num_items = sizeof($va_row_ids);
 
 		if (!method_exists($t_subject, 'getTypeList')) {
@@ -365,17 +365,17 @@ class BatchProcessor {
 
 		$t_subject->setTransaction($o_tx);
 
-		$o_log = new Batchlog(array(
+		$o_log = new Batchlog([
 			'user_id' => $po_request->getUserID(),
 			'batch_type' => 'TC',
-			'table_num' => (int)$record_set->tableNum(),
+			'table_num' => (int)$rs->tableNum(),
 			'notes' => '',
 			'transaction' => $o_tx
-		));
+		]);
 
 		$vn_c = 0;
 		$vn_start_time = time();
-		foreach(array_keys($va_row_ids) as $vn_row_id) {
+		foreach($va_row_ids as $vn_row_id) {
 			if ($t_subject->load($vn_row_id)) {
 
 				// Is record deleted?
@@ -437,8 +437,8 @@ class BatchProcessor {
 				'numProcessed' => sizeof($va_notices),
 				'batchSize' => $vn_num_items,
 				'table' => $t_subject->tableName(),
-				'set_id' => $record_set->ID(),
-				'set_name' => $record_set->name()
+				'set_id' => $rs->ID(),
+				'set_name' => $rs->name()
 			);
 			$ps_callback($po_request, $va_general, $va_notices, $va_errors);
 		}
