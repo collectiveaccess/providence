@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2020 Whirl-i-Gig
+ * Copyright 2007-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,7 +34,6 @@
   *
   */
 	require_once(__CA_LIB_DIR__."/BaseObject.php");
-	require_once(__CA_LIB_DIR__."/Datamodel.php");
 	require_once(__CA_LIB_DIR__."/Configuration.php");
  	require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 	
@@ -960,7 +959,7 @@
 		# -------------------------------------------------------
 		static function clearMenuBarCache($po_request) {
 			Session::setVar('ca_nav_menubar_cache', null);
-			Session::getVar('ca_nav_sidebar_cache', null);
+			Session::setVar('ca_nav_sidebar_cache', null);
 		}
 		# -------------------------------------------------------
 	}
