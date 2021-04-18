@@ -31,7 +31,7 @@
  */
  
  /**
-  * Implements batch modification of recordsnvoked via the web UI
+  * Implements batch modification of records invoked via the web UI
   * This application dispatcher plugin ensures that the indexing starts
   * after the web UI page has been sent to the client
   */ 
