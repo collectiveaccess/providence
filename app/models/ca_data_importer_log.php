@@ -189,7 +189,6 @@ class ca_data_importer_log extends BaseModel {
 
 	protected $FIELDS;
 	
-	protected $opo_datamodel;
 	protected $opo_data_import_item;
 	
 	/** 

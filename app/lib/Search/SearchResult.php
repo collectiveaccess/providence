@@ -49,8 +49,6 @@ include_once(__CA_MODELS_DIR__."/ca_locales.php");
 
 # ----------------------------------------------------------------------
 class SearchResult extends BaseObject {
-	
-	private static $opo_datamodel;
 	private $opo_search_config;
 	private $opo_db;
 	private $opn_table_num;

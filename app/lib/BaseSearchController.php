@@ -35,7 +35,6 @@
   */
 	require_once(__CA_LIB_DIR__."/BaseRefineableSearchController.php");
 	require_once(__CA_LIB_DIR__."/Browse/ObjectBrowse.php");
-	require_once(__CA_LIB_DIR__."/Datamodel.php");
 	require_once(__CA_MODELS_DIR__."/ca_search_forms.php");
  	require_once(__CA_APP_DIR__.'/helpers/accessHelpers.php');
 	require_once(__CA_LIB_DIR__.'/Media/MediaViewerManager.php');

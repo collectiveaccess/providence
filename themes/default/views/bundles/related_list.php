@@ -77,7 +77,7 @@
 		'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction'],
 		'noInline' => (bool) preg_match("/QuickAdd$/", $this->request->getController()) ? 1 : 0
 	);
-
+		
 	if ($vb_batch) {
 		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
 	} else {
@@ -129,6 +129,10 @@
 ?>
 </script>
 <div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
+	<div class='bundleSubLabel'>
+		<?= caEditorBundleBatchEditorControls($this->request, $vn_placement_id, $t_subject, $t_instance->tableName(), $va_settings); ?>
+		<div style='clear:both;'></div>
+	</div>
 	<div id="tableContent<?php print $vs_id_prefix; ?>" class="labelInfo"></div>
 <?php
 	//
