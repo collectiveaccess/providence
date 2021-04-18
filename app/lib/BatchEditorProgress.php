@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,54 +31,52 @@
  */
  
  /**
-  * Implements reindexing of search indices invoked via the web UI
+  * Implements batch modification of records invoked via the web UI
   * This application dispatcher plugin ensures that the indexing starts
   * after the web UI page has been sent to the client
-  */
- 
- 	require_once(__CA_LIB_DIR__.'/Controller/AppController/AppControllerPlugin.php');
- 	require_once(__CA_LIB_DIR__.'/BatchProcessor.php');
- 
-	class BatchEditorProgress extends AppControllerPlugin {
-		# -------------------------------------------------------
-		private $request;
-		private $ot_set;
-		private $ot_subject;
-		private $opa_options;
-		# -------------------------------------------------------
-		public function __construct($po_request, $t_set, $t_subject, $pa_options=null) {
-			$this->request = $po_request;
-			$this->ot_set = $t_set;
-			$this->ot_subject = $t_subject;
-			$this->opa_options = is_array($pa_options) ? $pa_options : array();
-		}
-		# -------------------------------------------------------
-		public function dispatchLoopShutdown() {	
-			//
-			// Force output to be sent - we need the client to have the page before
-			// we start flushing progress bar updates
-			//	
-			$app = AppController::getInstance();
-			$req = $app->getRequest();
-			$resp = $app->getResponse();
-			$resp->sendResponse();
-			$resp->clearContent();
-			
-			//
-			// Do batch processing
-			//
-			if ($req->isLoggedIn()) {
-				set_time_limit(3600*24); // if it takes more than 24 hours we're in trouble
+  */ 
+require_once(__CA_LIB_DIR__.'/Controller/AppController/AppControllerPlugin.php');
+require_once(__CA_LIB_DIR__.'/BatchProcessor.php');
 
-				if(isset($this->opa_options['isBatchDelete']) && $this->opa_options['isBatchDelete']) {
-					$va_errors = BatchProcessor::deleteBatchForSet($this->request, $this->ot_set, $this->ot_subject, array_merge($this->opa_options, array('progressCallback' => 'caIncrementBatchEditorProgress', 'reportCallback' => 'caCreateBatchEditorResultsReport')));	
-				} elseif(isset($this->opa_options['isBatchTypeChange']) && $this->opa_options['isBatchTypeChange']) {
-					$va_errors = BatchProcessor::changeTypeBatchForSet($this->request, $this->opa_options['type_id'], $this->ot_set, $this->ot_subject, array_merge($this->opa_options, array('progressCallback' => 'caIncrementBatchEditorProgress', 'reportCallback' => 'caCreateBatchEditorResultsReport')));	
-				} else {
-					$va_errors = BatchProcessor::saveBatchEditorFormForSet($this->request, $this->ot_set, $this->ot_subject, array_merge($this->opa_options, array('progressCallback' => 'caIncrementBatchEditorProgress', 'reportCallback' => 'caCreateBatchEditorResultsReport')));	
-				}
-			}
-		}	
-		# -------------------------------------------------------
+class BatchEditorProgress extends AppControllerPlugin {
+	# -------------------------------------------------------
+	private $request;
+	private $record_set;
+	private $t_subject;
+	private $options;
+	# -------------------------------------------------------
+	public function __construct(RequestHTTP $request, RecordSelection $record_set, $t_subject, array $options=null) {
+		$this->request = $request;
+		$this->record_set = $record_set;
+		$this->t_subject = $t_subject;
+		$this->options = is_array($options) ? $options : array();
 	}
-?>
+	# -------------------------------------------------------
+	public function dispatchLoopShutdown() {	
+		//
+		// Force output to be sent - we need the client to have the page before
+		// we start flushing progress bar updates
+		//	
+		$app = AppController::getInstance();
+		$req = $app->getRequest();
+		$resp = $app->getResponse();
+		$resp->sendResponse();
+		$resp->clearContent();
+		
+		//
+		// Do batch processing
+		//
+		if ($req->isLoggedIn()) {
+			set_time_limit(3600*24); // if it takes more than 24 hours we're in trouble
+
+			if(isset($this->options['isBatchDelete']) && $this->options['isBatchDelete']) {
+				$errors = BatchProcessor::deleteBatch($this->request, $this->record_set, $this->t_subject, array_merge($this->options, array('progressCallback' => 'caIncrementBatchEditorProgress', 'reportCallback' => 'caCreateBatchEditorResultsReport')));	
+			} elseif(isset($this->options['isBatchTypeChange']) && $this->options['isBatchTypeChange']) {
+				$errors = BatchProcessor::changeTypeBatch($this->request, $this->options['type_id'], $this->record_set, $this->t_subject, array_merge($this->options, array('progressCallback' => 'caIncrementBatchEditorProgress', 'reportCallback' => 'caCreateBatchEditorResultsReport')));	
+			} else {
+				$errors = BatchProcessor::saveBatchEditorForm($this->request, $this->record_set, $this->t_subject, array_merge($this->options, array('progressCallback' => 'caIncrementBatchEditorProgress', 'reportCallback' => 'caCreateBatchEditorResultsReport')));	
+			}
+		}
+	}	
+	# -------------------------------------------------------
+}

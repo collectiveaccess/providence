@@ -36,7 +36,6 @@
 
 require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__."/WidgetManager.php");
-require_once(__CA_LIB_DIR__."/Datamodel.php");
 require_once(__CA_LIB_DIR__."/SyncableBaseModel.php");
  	
 

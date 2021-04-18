@@ -77,6 +77,15 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * Returns table number of result context (eg. what kind of item is the find result composed of?)
+		 *
+		 * @return string
+		 */
+		public function tableNum() {
+			return Datamodel::getTableNum($this->ops_table_name);
+		}
+		# ------------------------------------------------------------------
+		/**
 		 * Returns type result context
 		 *
 		 * @return string
@@ -270,6 +279,38 @@
 		public function setResultList($pa_result_list) {
 			$this->setSearchHistory(is_array($pa_result_list) ? sizeof($pa_result_list) : 0);
 			return $this->setContextValue('result_list', $pa_result_list);
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns number of items in the result list from the context's operation. 
+		 *
+		 * @return int
+		 */
+		public function getResultCount() {
+			if ($va_context = $this->getContext()) {
+				return sizeof($va_context['result_list']);
+			}
+			return 0;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns list of type_ids used by items in result list
+		 *
+		 * @return array
+		 */
+		public function getResultListTypes($options=null) {
+			$ids = $this->getResultList();
+		
+			if (!is_array($ids) || !sizeof($ids)) { return null; }
+			
+			$qr = caMakeSearchResult($t = $this->tableName(), $ids);
+			$type_ids = [];
+			while($qr->nextHit()) {
+				if($type_id = $qr->get("{$t}.type_id", $options)) {
+					$type_ids[$type_id] = $qr->get("{$t}.type_id", ['convertCodesToDisplayText' => true]);
+				}
+			}
+			return $type_ids;
 		}
 		# ------------------------------------------------------------------
 		/**
@@ -788,7 +829,6 @@
 			if (!($table_name = Datamodel::getTableName($table_name_or_num))) { return null; }
 			$o_find_navigation = Configuration::load(((defined('__CA_THEME_DIR__') && (__CA_APP_TYPE__ == 'PAWTUCKET')) ? __CA_THEME_DIR__ : __CA_APP_DIR__).'/conf/find_navigation.conf');
 			$find_nav = $o_find_navigation->getAssoc($table_name);
-			print_R($find_nav);
 			if(is_null($nav = caGetOption($find_type, $find_nav, null))) { return null; }
 			
 			return caNavUrl($request, trim($nav['module_path']), trim($nav['controller']), trim($nav['action']), []);
@@ -1079,6 +1119,7 @@
 			$va_semi_context = array_merge($va_existing_semi_context, $va_semi_context);
 			ResultContextStorage::setVar('result_context_'.$this->ops_table_name.'_'.$vs_find_type.($vs_find_subtype ? "_{$vs_find_subtype}" : ""), $va_semi_context);
 			
+			ResultContextStorage::save();
 			return true;
 		}
 		# ------------------------------------------------------------------
@@ -1254,6 +1295,18 @@
 			} else {
 				if (!($s = self::$storage)) { $s = 'Session'; }
 				return$s::getVar($key, $value, $options);
+			}
+		}
+		
+		/**
+		 *
+		 */
+		static public function save() {
+			if (is_object(self::$storage)) {
+				return self::$storage->update();
+			} else {
+				if (!($s = self::$storage)) { $s = 'Session'; }
+				return$s::save();
 			}
 		}
 	}

@@ -37,7 +37,6 @@
 require_once(__CA_APP_DIR__."/helpers/printHelpers.php");
 require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
 require_once(__CA_MODELS_DIR__."/ca_editor_ui_bundle_placements.php");
-require_once(__CA_LIB_DIR__."/Datamodel.php");
 require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__."/ResultContext.php");
 require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2020 Whirl-i-Gig
+ * Copyright 2012-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -54,9 +54,7 @@
 	}
 
 	$va_jump_to_params 			= array();
-?>
-	<br/><div class='divide'><!-- empty --></div>
-<?php
+
 	if ($vn_type_id = intval($this->getVar('type_id'))) {
 		$va_previous_link_params['type_id'] = $vn_type_id;
 		$va_next_link_params['type_id'] = $vn_type_id;

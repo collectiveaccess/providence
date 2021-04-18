@@ -41,7 +41,6 @@
 class WLPlugSearchEngineCachedResult extends WLPlug implements IWLPlugSearchEngineResult {
 	# -------------------------------------------------------
 	private $opo_config;
-	private $opo_datamodel;
 	
 	private $opa_hits;
 	private $opn_current_row;
