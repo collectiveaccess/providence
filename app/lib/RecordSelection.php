@@ -81,7 +81,7 @@ class RecordSelection {
 	/**
 	 *
 	 */
-	public function name() {
+	public function name() : ?string {
 		switch($this->type) {
 			case 'ca_sets':
 				return $this->source->get('ca_sets.preferred_labels.name');
@@ -96,7 +96,7 @@ class RecordSelection {
 	/**
 	 *
 	 */
-	public function tableName() {
+	public function tableName() : ?string {
 		switch($this->type) {
 			case 'ca_sets':
 				return Datamodel::getTableName($this->source->get('table_num'));
@@ -111,7 +111,7 @@ class RecordSelection {
 	/**
 	 *
 	 */
-	public function tableNum() {
+	public function tableNum() : ?int {
 		switch($this->type) {
 			case 'ca_sets':
 				return (int)$this->source->get('table_num');
@@ -126,7 +126,7 @@ class RecordSelection {
 	/**
 	 * 
 	 */
-	public function getTypesForItems(array $options=null) {
+	public function getTypesForItems(array $options=null) : ?array {
 		switch($this->type) {
 			case 'ca_sets':
 				return $this->source->getTypesForItems($options);
@@ -141,7 +141,7 @@ class RecordSelection {
 	/**
 	 * 
 	 */
-	public function getItemCount(array $options=null) {
+	public function getItemCount(array $options=null) : ?int {
 		switch($this->type) {
 			case 'ca_sets':
 				return $this->source->getItemCount($options);
@@ -156,7 +156,7 @@ class RecordSelection {
 	/**
 	 * 
 	 */
-	public function getItemRowIDs(array $options=null) {
+	public function getItemRowIDs(array $options=null) : ?array {
 		switch($this->type) {
 			case 'ca_sets':
 				return array_keys($this->source->getItemRowIDs($options));
@@ -169,9 +169,46 @@ class RecordSelection {
 	}
 	
 	/**
+	 * 
+	 */
+	public function serialize(array $options=null) : array {
+		return [
+			'id' => $this->ID(),
+			'name' => $this->name(),
+			'table' => $this->tableName(),
+			'items' => $this->getItemRowIDs(),
+			'types' => $this->getTypesForItems()
+		];
+	}
+	
+	/**
+	 * Reconstitute serialized RecordSelection. If reconstituting a "BatchEdit" result context-based record selection
+	 * then a request object must be passed as the 'request' option 
+	 */
+	static public function restore(array $serialized_data, array $options=null) : ?RecordSelection {
+		if(empty($serialized_data['id'])) { return null; }
+		list($type, $id) = explode(':', $serialized_data['id']);
+		
+		switch($type) {
+			case 'ca_sets':
+				return new RecordSelection(ca_sets::findAsInstance(['set_id' => (int)$id]));
+				break;
+			case 'BatchEdit':
+				if(!($ids = caGetOption('items', $serialized_data, null))) { return null; }
+				if(!($request = caGetOption('request', $options, null))) { return null; }
+				
+				$rc = new ResultContext($request, $id, 'BatchEdit');
+				$rc->setResultList($ids);
+				return new RecordSelection($rc);
+				break;
+		}
+		return null;
+	}
+	
+	/**
 	 *
 	 */
-	public function getEditorLink(RequestHTTP $request, string $content, string $classname='') {
+	public function getEditorLink(RequestHTTP $request, string $content, string $classname='') : ?string {
 		switch($this->type) {
 			case 'ca_sets':
 				if($this->source->haveAccessToSet($request->getUserID(), __CA_SET_EDIT_ACCESS__)) {
@@ -185,7 +222,7 @@ class RecordSelection {
 	/**
 	 *
 	 */
-	 public function getResultsLink(RequestHTTP $request) {
+	 public function getResultsLink(RequestHTTP $request) : ?string {
 		switch($this->type) {
 			case 'ca_sets':
 				return caNavLink($request, _t('Back to Sets'), '', 'manage', 'Set', 'ListSets');
@@ -198,6 +235,5 @@ class RecordSelection {
 				break;	
 		}
 		return null;
-	}
-	
+	}	
 }

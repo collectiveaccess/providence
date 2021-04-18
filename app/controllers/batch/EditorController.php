@@ -93,6 +93,7 @@ class EditorController extends ActionController {
 		
 		$va_last_settings = array(
 			'id' => $rs->ID(),
+			'record_selection' => $rs->serialize(),
 			'ui_id' => $t_ui->getPrimaryKey(),
 			'screen' => $this->request->getActionExtra(),
 			'user_id' => $this->request->getUserID(),
@@ -104,7 +105,7 @@ class EditorController extends ActionController {
 		if ((bool)$this->request->config->get('queue_enabled') && (bool)$this->request->getParameter('run_in_background', pInteger)) { // queue for background processing
 			$o_tq = new TaskQueue();
 			
-			$vs_row_key = $vs_entity_key = join("/", array($this->request->getUserID(), $rs->getID(), time(), rand(1,999999)));
+			$vs_row_key = $vs_entity_key = join("/", array($this->request->getUserID(), $rs->ID(), time(), rand(1,999999)));
 			if (!$o_tq->addTask(
 				'batchEditor',
 				$va_last_settings,
@@ -162,7 +163,7 @@ class EditorController extends ActionController {
 		}
 		
 		$va_last_settings = array(
-			'id' => $id,
+			'record_selection' => $rs->serialize(),
 			'screen' => $this->request->getActionExtra(),
 			'user_id' => $this->request->getUserID(),
 			'values' => $_REQUEST,
