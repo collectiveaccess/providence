@@ -56,6 +56,19 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 		);
 	}
 	# --------------------------------------------------------------------------------------------
+	public function hookInsertItem(&$pa_params) {
+		if($this->opo_plugin_config->get('enabled')) {
+			$this->prepopulateFields($pa_params['instance'], ['hook' => 'save']);
+		}
+		return true;
+	}
+	public function hookUpdateItem(&$pa_params) {
+		if($this->opo_plugin_config->get('enabled')) {
+			$this->prepopulateFields($pa_params['instance'], ['hook' => 'save']);
+		}
+		return true;
+	}
+	# --------------------------------------------------------------------------------------------
 	public function hookSaveItem(&$pa_params) {
 		if($this->opo_plugin_config->get('enabled')) {
 			$this->prepopulateFields($pa_params['instance'], ['hook' => 'save']);
@@ -318,7 +331,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 							
 							$i = 0;
 							$t_instance->removeAttributes($va_parts[1]);
-							$t_instance->update(['force' => true]);
+							$t_instance->update(['force' => true, 'hooks' => false]);
 							
 							if($t_instance->numErrors()) { 
 								Debug::msg(_t("[prepopulateFields()] error while removing old values during copy of containers: %1", join("; ", $t_instance->getErrors())));
@@ -513,7 +526,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 
 
 		if(isset($_REQUEST['form_timestamp']) && ($_REQUEST['form_timestamp'] > 0)) { $_REQUEST['form_timestamp'] = time(); }
-		$t_instance->update(['force' => true]);
+		$t_instance->update(['force' => true, 'hooks' => false]);
 
 		if($t_instance->numErrors() > 0) {
 			foreach($t_instance->getErrors() as $vs_error) {

@@ -285,6 +285,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		
+		if(caGetOption('hooks', $pa_options, true)) {
+			$this->opo_app_plugin_manager->hookInsertItem(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'is_insert' => true));
+		}
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
@@ -351,6 +354,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						
 		SearchResult::clearResultCacheForRow($this->tableName(), $this->getPrimaryKey());
 
+		if(caGetOption('hooks', $pa_options, true)) {
+			$this->opo_app_plugin_manager->hookUpdateItem(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'is_insert' => false));
+		}
 		return $vn_rc;
 	}	
 	# ------------------------------------------------------------------
@@ -4874,7 +4880,7 @@ if (!$vb_batch) {
 					        Session::setVar("{$vs_f}_showChildHistory", (bool)$pb_show_child_history);
 					    }
 					    
-					    $policy = caGetOption('policy', $va_bundle_settings, null);
+					    $policy = caGetOption('policy', $va_bundle_settings, $this::getDefaultHistoryTrackingCurrentValuePolicyForTable());
 					    
 					    $change_has_been_made = false;
 					    
