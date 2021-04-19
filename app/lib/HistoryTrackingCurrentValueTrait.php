@@ -329,7 +329,8 @@
 		 *
 		 * @return string Policy name
 		 */
-		static public function getDefaultHistoryTrackingCurrentValuePolicyForTable($table) {
+		static public function getDefaultHistoryTrackingCurrentValuePolicyForTable(string $table=null) : ?string {
+			if(is_null($table)) { $table = get_called_class(); }
 			if (is_array($history_tracking_policies = self::getHistoryTrackingCurrentValuePolicyConfig()) && is_array($history_tracking_policies['defaults']) && isset($history_tracking_policies['defaults'][$table])) {
 				return $history_tracking_policies['defaults'][$table];
 			}
