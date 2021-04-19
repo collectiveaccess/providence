@@ -178,7 +178,7 @@ class DisplayTemplateParser {
 		// We could also do this sort of transformation when there are tags present from multiple related tables, or mixed with "local" tags
 		// but to keep it simple (for now) we only perform this optimization when the template references a single related table
 		$tables = array_unique(array_map(function($v) { return array_shift(explode('.', $v)); }, array_keys($va_template['tags'])));
-		if ((sizeof($tables) == 1) && ($tables[0] !== $t_instance->tableName()) &&  ($t = Datamodel::getInstance($tables[0], true))) {
+		if ((sizeof($tables) == 1) && (sizeof($va_template['tags']) === 0) && ($tables[0] !== $t_instance->tableName()) &&  ($t = Datamodel::getInstance($tables[0], true))) {
 			$trans_rel_ids = $t_instance->getRelatedItems($tables[0], ['row_ids' => $pa_row_ids, 'returnAs' => 'ids']);
 			if(is_array($trans_rel_ids) && sizeof($trans_rel_ids)) { 
 				$t_instance = $t;
@@ -501,7 +501,7 @@ class DisplayTemplateParser {
 							}	
 						}
 						if ($vb_all_have_count) {
-							$vs_acc .= $content = DisplayTemplateParser::_processChildren($pr_res, $o_node->children, $pa_vals, $pa_options);
+							$vs_acc .= $content = 'ccc'.DisplayTemplateParser::_processChildren($pr_res, $o_node->children, $pa_vals, $pa_options);
 							if ($pb_is_case && $content) { break(2); }
 						}
 					}
@@ -889,10 +889,11 @@ class DisplayTemplateParser {
 					
 					if ($vs_tag === 'l') {
 						$vs_linking_context = $ps_tablename;
+						$relative_to = (string)$o_node->relativeTo;
 						$va_linking_ids = [$pr_res->getPrimaryKey()];
 						
-						if ($t_instance->isRelationship() && (is_array($va_tmp = caGetTemplateTags($o_node->html(), ['firstPartOnly' => true])) && sizeof($va_tmp))) {
-							$vs_linking_context = array_shift(explode('.', array_shift($va_tmp)));
+						if ($t_instance->isRelationship() && ($relative_to || (is_array($va_tmp = caGetTemplateTags($o_node->html(), ['firstPartOnly' => true])) && sizeof($va_tmp)))) {
+							$vs_linking_context = $relative_to ? $relative_to : array_shift(explode('.', array_shift($va_tmp)));
 							if (in_array($vs_linking_context, [$t_instance->getLeftTableName(), $t_instance->getRightTableName()])) {
 								$va_linking_ids = $pr_res->get("{$vs_linking_context}.".Datamodel::primaryKey($vs_linking_context), ['returnAsArray' => true, 'primaryIDs' => $pa_options['primaryIDs']]);
 							}
