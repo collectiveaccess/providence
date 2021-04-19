@@ -990,7 +990,7 @@ class BaseModel extends BaseObject {
 				}
 				
 				if(($ps_field_type == FT_NUMBER) && isset($vs_prop) && is_numeric($vs_prop)) {
-					$vs_prop = (strpos('.', $vs_prop) !== false) ? (float)$vs_prop : (int)$vs_prop;
+					$vs_prop = ((float)$vs_prop != (int)$vs_prop) ? (float)$vs_prop : (int)$vs_prop;
 				}
 				
 				//
