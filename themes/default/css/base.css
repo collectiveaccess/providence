@@ -1333,6 +1333,10 @@ div.formLabelUploadSizeNote {
     max-height: 700px;
 }
 
+.bundleSubLabel .batchEdit { 
+    float: right;
+}
+
 .caDupeLabelMessageBox {
     margin: 0 auto;
     width: 200px;

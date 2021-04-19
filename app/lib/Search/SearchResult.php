@@ -47,7 +47,6 @@ include_once(__CA_LIB_DIR__."/ApplicationChangeLog.php");
 
 # ----------------------------------------------------------------------
 class SearchResult extends BaseObject {
-	
 	private $opo_search_config;
 	private $opo_db;
 	private $opn_table_num;

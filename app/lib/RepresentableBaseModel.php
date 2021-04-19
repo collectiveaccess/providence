@@ -723,9 +723,8 @@
 		 * @return bool ca_object_representations model instance on success, false on failure, null if no row has been loaded into the object model 
 		 */
 		public function editRepresentation($pn_representation_id, $ps_media_path, $pn_locale_id, $pn_status, $pn_access, $pb_is_primary=null, $pa_values=null, $pa_options=null) {
-			if (!$ps_media_path) { return null; }
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
-			if(!file_exists($ps_media_path) || !is_readable($ps_media_path)) { 
+			if($ps_media_path && (!file_exists($ps_media_path) || !is_readable($ps_media_path))) { 
 				$this->postError(1670, _t("Media does not exist or is not readable"), "RepresentableBaseModel->editRepresentation()");
 				return false; 
 			}

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -128,7 +128,7 @@
 				</table>
 			</div>
 			
-			<?php print caHTMLHiddenInput('set_id', array('value' => $this->getVar('set_id'))); ?>
+			<?= caHTMLHiddenInput('id', ['value' => $this->getVar('id')]); ?>
 		</form>
 	</div>
 </div>

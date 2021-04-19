@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,9 +29,9 @@
 	AssetLoadManager::register("panel");
 	
 	$t_subject 			= $this->getVar('t_subject');
-	$t_set	 			= $this->getVar('t_set');
+	$rs	 				= $this->getVar('record_selection');
 	
-	$vn_num_items_in_set = $t_set->getItemCount(array('user_id' => $this->request->getUserID()));
+	$vn_num_items_in_set = $rs->getItemCount(array('user_id' => $this->request->getUserID()));
 	$vb_queue_enabled = (bool)$this->request->config->get('queue_enabled');
  	$va_last_settings = $this->getVar('batch_editor_last_settings');
 ?>
