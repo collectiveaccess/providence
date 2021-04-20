@@ -33,7 +33,6 @@
  /**
    *
    */
-require_once(__CA_LIB_DIR__.'/BaseRelationshipModel.php');
 require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueTrait.php");
 
 
@@ -248,14 +247,16 @@ class ca_movements_x_storage_locations extends BaseRelationshipModel {
 	 *
 	 */
 	private function _getMovementDate() {
-	 	$vs_date = null;
-	 	if ($vs_movement_storage_element = $this->getAppConfig()->get('movement_storage_location_date_element')) {
-			$t_movement = new ca_movements($this->get('movement_id'));
-			if ($t_movement->getPrimaryKey()) {
-				$vs_date = $t_movement->get("ca_movements.{$vs_movement_storage_element}");
+	 	$date = null;
+	 	if ($movement_storage_element = $this->getAppConfig()->get('movement_storage_location_date_element')) {
+	 		$f = explode('.', $movement_storage_element);
+	 		if ((sizeof($f) > 1) && ($f[0] === 'ca_movements')) { array_shift($f); }
+	 		$movement_storage_element = join('.', $f);
+			if ($t_movement = ca_movements::findAsInstance(['movement_id' => $this->get('movement_id')])) {
+				$date = $t_movement->get("ca_movements.{$movement_storage_element}");
 			}
 		}
-		return ($vs_date) ? $vs_date : _t('now');
+		return ($date) ? $date : _t('now');
 	}
 	# ------------------------------------------------------
 	/**
