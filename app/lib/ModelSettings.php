@@ -230,20 +230,36 @@ trait ModelSettings {
 	# ------------------------------------------------------
 	/**
 	 * Return setting value
+	 *
+	 * @param string $setting
+	 * @param array $options Options include:
+	 *		flatten = Return locale-aware settings as a string in the current user locale (or as close as possible to it). If not set, an array will be returned for locale-aware settings with keys for each supported locale. [Default is false]
+	 *
+	 * @return string|array
 	 */
-	public function getSetting($ps_setting) {
-		$va_settings = $this->getSettings();
+	public function getSetting(string $setting, ?array $options=null) {
+		$settings = $this->getSettings();
 		
-		$vs_default = isset($this->SETTINGS_DEFS[$ps_setting]['default']) ? $this->SETTINGS_DEFS[$ps_setting]['default'] : null;
-		return isset($va_settings[$ps_setting]) ? $va_settings[$ps_setting] : $vs_default;
+		$default = isset($this->SETTINGS_DEFS[$setting]['default']) ? $this->SETTINGS_DEFS[$setting]['default'] : null;
+		$v = isset($settings[$setting]) ? $settings[$setting] : $default;
+		
+		$i = $this->getSettingInfo($setting);
+		if(!empty($i['takesLocale']) && $i['takesLocale'] && caGetOption('flatten', $options, false)) {
+			$v = caExtractSettingsValueByUserLocale($setting, $settings);
+		}
+		return $v;
 	}
 	# ------------------------------------------------------
 	/**
 	 * Returns true if setting code exists for the current element's datatype
+	 *
+	 * @param string $setting
+	 *
+	 * @return bool
 	 */ 
-	public function isValidSetting($ps_setting) {
-		$va_settings = $this->getAvailableSettings();
-		return (isset($va_settings[$ps_setting])) ? true : false;
+	public function isValidSetting(string $setting) : bool {
+		$settings = $this->getAvailableSettings();
+		return (isset($settings[$setting])) ? true : false;
 	}
 	# ------------------------------------------------------
 	/**
