@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2019 Whirl-i-Gig
+ * Copyright 2018-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -46,6 +46,7 @@
 
 			$quiet = $po_opts->getOption('quiet');
 			$pa_mimetypes = caGetOption('mimetypes', $po_opts, null, ['delimiter' => [',', ';']]);
+			$skip_mimetypes = caGetOption('skip-mimetypes', $po_opts, null, ['delimiter' => [',', ';']]);
 			$pa_versions = caGetOption('versions', $po_opts, null, ['delimiter' => [',', ';']]);
 			$pa_kinds = caGetOption('kinds', $po_opts, 'all', ['forceLowercase' => true, 'validValues' => ['all', 'ca_object_representations', 'ca_attributes', 'icons'], 'delimiter' => [',', ';']]);
 			
@@ -152,15 +153,10 @@
 					}
 					$vs_mimetype = $qr_reps->getMediaInfo('media', 'original', 'MIMETYPE');
 					if(is_array($pa_mimetypes) && sizeof($pa_mimetypes)) {
-						$vb_mimetype_match = false;
-						foreach($pa_mimetypes as $vs_mimetype_pattern) {
-							if(!preg_match("!^".preg_quote($vs_mimetype_pattern)."!", $vs_mimetype)) {
-								continue;
-							}
-							$vb_mimetype_match = true;
-							break;
-						}
-						if (!$vb_mimetype_match) { continue; }
+						if(!caMimetypeIsValid($vs_mimetype, $pa_mimetypes)) { continue; }
+					}
+					if(is_array($skip_mimetypes) && sizeof($skip_mimetypes)) {
+						if(caMimetypeIsValid($vs_mimetype, $skip_mimetypes)) { continue; }
 					}
 
 					$t_rep->load($qr_reps->get('representation_id'));
@@ -279,6 +275,7 @@
 		public static function reprocess_mediaParamList() {
 			return array(
 				"mimetypes|m-s" => _t("Limit re-processing to specified mimetype(s) or mimetype stubs. Separate multiple mimetypes with commas."),
+				"skip-mimetypes|x-s" => _t("Do not reprocess specified mimetype(s) or mimetype stubs. Separate multiple mimetypes with commas."),
 				"versions|v-s" => _t("Limit re-processing to specified versions. Separate multiple versions with commas."),
 				"log|L-s" => _t('Path to directory in which to log import details. If not set no logs will be recorded.'),
 				"log_level|d-s" => _t('Logging threshold. Possible values are, in ascending order of important: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
