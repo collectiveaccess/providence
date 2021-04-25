@@ -96,8 +96,8 @@ class ExternalCache {
 			throw new ExternalCacheInvalidParameterException('Namespace has to be a string');
 		}
 
-		if(!preg_match("/^[A-Za-z0-9_]+$/", $ps_namespace)) {
-			throw new ExternalCacheInvalidParameterException('Caching namespace must only contain alphanumeric characters, dashes and underscores');
+		if(!preg_match("/^[A-Za-z0-9_\/]+$/", $ps_namespace)) {
+			throw new ExternalCacheInvalidParameterException('Caching namespace must only contain alphanumeric characters, dashes, underscores and forward slashes');
 		}
 
 		if(!$ps_key) {

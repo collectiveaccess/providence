@@ -311,24 +311,18 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		if(!$this->getPrimaryKey()) { return; }
 
 		if($vn_parent_id = $this->get('parent_id')) {
-			CompositeCache::delete($vn_parent_id, 'ElementSets');
+			CompositeCache::delete($vn_parent_id, 'MetadataElements/ElementSets');
 		}
 
 		if($vn_hier_element_id = $this->get('hier_element_id')) {
-			CompositeCache::delete($vn_hier_element_id, 'ElementSets');
+			CompositeCache::delete($vn_hier_element_id, 'MetadataElements/ElementSets');
 		}
 
-		CompositeCache::delete($this->getPrimaryKey(), 'ElementSets');
+		CompositeCache::delete($this->getPrimaryKey(), 'MetadataElements/ElementSets');
 		$vs_key = caMakeCacheKeyFromOptions(['table_num' => null, 'type_id' => null, 'element_id' => $this->getPrimaryKey()]);
-		CompositeCache::delete($vs_key, 'ElementTypeRestrictions');
+		CompositeCache::delete($vs_key, 'MetadataElements/ElementTypeRestrictions');
 
-		// flush getElementsAsList() cache too
-		if(CompositeCache::contains('cacheKeys', 'ElementList')) {
-			$va_cache_keys = CompositeCache::fetch('cacheKeys', 'ElementList');
-			foreach($va_cache_keys as $vs_cache_key) {
-				CompositeCache::delete($vs_cache_key, 'ElementList');
-			}
-		}
+		CompositeCache::flush('MetadataElements/ElementList');
 		CompositeCache::flush('SearchBuilder');
 		$this->resetElasticSearchMappingRefresh();
 	}
@@ -362,8 +356,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		if (!$element_id) { return null; }
 		$use_disambiguation_labels = caGetOption('useDisambiguationLabels', $options, false);
 
-		if($use_cache && CompositeCache::contains($cache_key = "{$element_id}/".($use_disambiguation_labels ? "1" : "0"), 'ElementSets')) {
-			$set = CompositeCache::fetch($cache_key, 'ElementSets');
+		if($use_cache && CompositeCache::contains($cache_key = "{$element_id}/".($use_disambiguation_labels ? "1" : "0"), 'MetadataElements/ElementSets')) {
+			$set = CompositeCache::fetch($cache_key, 'MetadataElements/ElementSets');
 			return (caGetOption('idsOnly', $options, false) ?  caExtractArrayValuesFromArrayOfArrays($set, 'element_id') : $set);
 		}
 
@@ -402,7 +396,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$tmp[$root['element_id']] = $root;
 		$tmp = array_merge($tmp, $this->_getSortedElementsForParent($element_set, $root['element_id']));
 
-		CompositeCache::save($element_id, $tmp, 'ElementSets');
+		CompositeCache::save($element_id, $tmp, 'MetadataElements/ElementSets');
 
 		if (caGetOption('idsOnly', $options, false)) { return $element_ids; }
 		return $tmp;
@@ -479,7 +473,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		if (!$this->isValidSetting($ps_setting)) { return null; }
 		
 		if ($ps_setting == 'canBeUsedInSort') {
-			CompositeCache::delete('ElementsSortable');
+			CompositeCache::delete('MetadataElements/ElementsSortable');
 			CompositeCache::delete('available_sorts');
 		}
 
@@ -755,12 +749,12 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$vn_table_num = Datamodel::getTableNum($pm_table_name_or_num);
 		$vs_cache_key = md5($vn_table_num.'/'.$pm_type_name_or_id.'/'.($pb_root_elements_only ? '1' : '0').'/'.($pb_index_by_element_code ? '1' : '0').serialize($pa_data_types));
 
-		// if($pb_use_cache && CompositeCache::contains($vs_cache_key, 'ElementList')) {
-// 			$va_element_list = CompositeCache::fetch($vs_cache_key, 'ElementList');
-// 			if (!$pb_return_stats || isset($va_element_list['ui_counts'])) {
-// 				return $va_element_list;
-// 			}
-// 		}
+		if($pb_use_cache && CompositeCache::contains($vs_cache_key, 'MetadataElements/ElementList')) {
+			$va_element_list = CompositeCache::fetch($vs_cache_key, 'MetadataElements/ElementList');
+			if (!$pb_return_stats || isset($va_element_list['ui_counts'])) {
+				return $va_element_list;
+			}
+		}
 
 		if ($pb_return_stats) {
 			$va_counts_by_attribute = ca_metadata_elements::getUIUsageCounts();
@@ -873,15 +867,9 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$va_return = $va_return_proc;
 		}
 
-		$vm_return = sizeof($va_return) > 0 ? $va_return : false;;
-
-		// keep track of cache keys so we can flush them when necessary
-		$va_element_list_cache_keys = CompositeCache::fetch('cacheKeys', 'ElementList');
-		if(!is_array($va_element_list_cache_keys)) { $va_element_list_cache_keys = array(); }
-		$va_element_list_cache_keys[] = $vs_cache_key;
-
-		CompositeCache::save('cacheKeys', $va_element_list_cache_keys, 'ElementList');
-		CompositeCache::save($vs_cache_key, $vm_return, 'ElementList');
+		$vm_return = sizeof($va_return) > 0 ? $va_return : false;
+		
+		CompositeCache::save($vs_cache_key, $vm_return, 'MetadataElements/ElementList');
 
 		return $vm_return;
 	}
@@ -968,9 +956,9 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 */
 	public static function getSortableElements($pm_table_name_or_num, $pm_type_name_or_id=null, $options=null){
 		$cache_key = caMakeCacheKeyFromOptions($options, $pm_table_name_or_num.'/'.$pm_type_name_or_id);
-		// if(!($no_cache = caGetOption('noCache', $options, false)) && CompositeCache::contains('ElementsSortable') && is_array($cached_data = CompositeCache::fetch('ElementsSortable')) && isset($cached_data[$cache_key])) {
-// 			return $cached_data[$cache_key];
-// 		}
+		if(!($no_cache = caGetOption('noCache', $options, false)) && CompositeCache::contains('MetadataElements/ElementsSortable') && is_array($cached_data = CompositeCache::fetch('MetadataElements/ElementsSortable')) && isset($cached_data[$cache_key])) {
+			return $cached_data[$cache_key];
+		}
 		
 		$elements = ca_metadata_elements::getElementsAsList(true, $pm_table_name_or_num, $pm_type_name_or_id, true, false, false, null, $options);
 		if (!is_array($elements) || !sizeof($elements)) { return []; }
@@ -999,7 +987,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			}
 		}
 		$cached_data[$cache_key] = $sortable_elements;
-		CompositeCache::save('ElementsSortable', $cached_data);
+		CompositeCache::save('MetadataElements/ElementsSortable', $cached_data);
 		return $sortable_elements;
 	}
 	# ------------------------------------------------------
@@ -1176,8 +1164,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		if(!$pm_element_code_or_id) { return null; }
 		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
 
-		if(CompositeCache::contains($pm_element_code_or_id, 'ElementDataTypes')) {
-			return CompositeCache::fetch($pm_element_code_or_id, 'ElementDataTypes');
+		if(CompositeCache::contains($pm_element_code_or_id, 'MetadataElements/ElementDataTypes')) {
+			return CompositeCache::fetch($pm_element_code_or_id, 'MetadataElements/ElementDataTypes');
 		}
 
 		$vm_return = null;
@@ -1185,7 +1173,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$vm_return = (int) $t_element->get('datatype');
 		}
 
-		CompositeCache::save($pm_element_code_or_id, $vm_return, 'ElementDataTypes');
+		CompositeCache::save($pm_element_code_or_id, $vm_return, 'MetadataElements/ElementDataTypes');
 		return $vm_return;
 	}
 	# ------------------------------------------------------
@@ -1195,27 +1183,24 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 *
 	 * @param string|int $pm_element_code_or_id
 	 * @return string
-	 * @throws MemoryCacheInvalidParameterException
+	 * @throws CompositeCacheInvalidParameterException
 	 */
 	static public function getElementSortField($pm_element_code_or_id) {
 		if(!$pm_element_code_or_id) { return null; }
 		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
 
-		if(CompositeCache::contains($pm_element_code_or_id, 'ElementSortFields')) {
-			return CompositeCache::fetch($pm_element_code_or_id, 'ElementSortFields');
+		if(CompositeCache::contains($pm_element_code_or_id, 'MetadataElements/ElementSortFields')) {
+			return CompositeCache::fetch($pm_element_code_or_id, 'MetadataElements/ElementSortFields');
 		}
 		$datatype = self::getElementDatatype($pm_element_code_or_id);
-		
-		
-		$o_attribute_types = Configuration::load(__CA_CONF_DIR__.'/attribute_types.conf');
-		$types = $o_attribute_types->getList('types');
+		$types = self::getAttributeTypes();
 	
 		if (isset($types[$datatype]) && ($value = Attribute::getValueInstance($datatype, [], true))) {
 			$s = $value->sortField();
-			CompositeCache::save($pm_element_code_or_id, $s, 'ElementSortFields');
+			CompositeCache::save($pm_element_code_or_id, $s, 'MetadataElements/ElementSortFields');
 			return $s;
 		}
-		CompositeCache::save($pm_element_code_or_id, null, 'ElementSortFields');
+		CompositeCache::save($pm_element_code_or_id, null, 'MetadataElements/ElementSortFields');
 		return null;
 	}
 	# ------------------------------------------------------
@@ -1247,8 +1232,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		if(!$pm_element_id) { return null; }
 		if(is_numeric($pm_element_id)) { $pm_element_id = (int) $pm_element_id; }
 
-		if(CompositeCache::contains($pm_element_id, 'ElementCodes')) {
-			return CompositeCache::fetch($pm_element_id, 'ElementCodes');
+		if(CompositeCache::contains($pm_element_id, 'MetadataElements/ElementCodes')) {
+			return CompositeCache::fetch($pm_element_id, 'MetadataElements/ElementCodes');
 		}
 
 		$vm_return = null;
@@ -1258,7 +1243,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$vm_return = $t_element->get('element_code');
 		}
 
-		CompositeCache::save($pm_element_id, $vm_return, 'ElementCodes');
+		CompositeCache::save($pm_element_id, $vm_return, 'MetadataElements/ElementCodes');
 		return $vm_return;
 	}
 	# ------------------------------------------------------
@@ -1272,8 +1257,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		if(!$pm_element_id) { return null; }
 		if(is_numeric($pm_element_id)) { $pm_element_id = (int) $pm_element_id; }
 
-		if(CompositeCache::contains($pm_element_id, 'ElementLabels')) {
-			return CompositeCache::fetch($pm_element_id, 'ElementLabels');
+		if(CompositeCache::contains($pm_element_id, 'MetadataElements/ElementLabels')) {
+			return CompositeCache::fetch($pm_element_id, 'MetadataElements/ElementLabels');
 		}
 
 		$vm_return = null;
@@ -1283,7 +1268,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$vm_return = $t_element->get('ca_metadata_elements.preferred_labels.name');
 		}
 
-		CompositeCache::save($pm_element_id, $vm_return, 'ElementLabels');
+		CompositeCache::save($pm_element_id, $vm_return, 'MetadataElements/ElementLabels');
 		return $vm_return;
 	}
 	# ------------------------------------------------------
@@ -1297,8 +1282,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		if(!$pm_element_id) { return null; }
 		if(is_numeric($pm_element_id)) { $pm_element_id = (int) $pm_element_id; }
 
-		if(CompositeCache::contains($pm_element_id, 'ElementParentCodes')) {
-			return CompositeCache::fetch($pm_element_id, 'ElementParentCodes');
+		if(CompositeCache::contains($pm_element_id, 'MetadataElements/ElementParentCodes')) {
+			return CompositeCache::fetch($pm_element_id, 'MetadataElements/ElementParentCodes');
 		}
 
 		$vm_return = null;
@@ -1309,7 +1294,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$vm_return = $t_parent->get('element_code');
 		}
 
-		CompositeCache::save($pm_element_id, $vm_return, 'ElementParentCodes');
+		CompositeCache::save($pm_element_id, $vm_return, 'MetadataElements/ElementParentCodes');
 		return $vm_return;
 	}
 	# ------------------------------------------------------
@@ -1325,8 +1310,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		if(!$pm_element_code_or_id) { return null; }
 		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
 
-		if(!caGetOption('noCache', $pa_options, false) && CompositeCache::contains($pm_element_code_or_id, 'ElementIDs')) {
-			return CompositeCache::fetch($pm_element_code_or_id, 'ElementIDs');
+		if(!caGetOption('noCache', $pa_options, false) && CompositeCache::contains($pm_element_code_or_id, 'MetadataElements/ElementIDs')) {
+			return CompositeCache::fetch($pm_element_code_or_id, 'MetadataElements/ElementIDs');
 		}
 
 		$vm_return = null;
@@ -1336,7 +1321,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$vm_return = (int) $t_element->getPrimaryKey();
 		}
 
-		CompositeCache::save($pm_element_code_or_id, $vm_return, 'ElementIDs');
+		CompositeCache::save($pm_element_code_or_id, $vm_return, 'MetadataElements/ElementIDs');
 		return $vm_return;
 	}
 	# ------------------------------------------------------
@@ -1350,8 +1335,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		if(!$pm_element_code_or_id) { return null; }
 		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
 
-		if(CompositeCache::contains($pm_element_code_or_id, 'ElementHierarchyIDs')) {
-			return CompositeCache::fetch($pm_element_code_or_id, 'ElementHierarchyIDs');
+		if(CompositeCache::contains($pm_element_code_or_id, 'MetadataElements/ElementHierarchyIDs')) {
+			return CompositeCache::fetch($pm_element_code_or_id, 'MetadataElements/ElementHierarchyIDs');
 		}
 
 		$vm_return = null;
@@ -1361,7 +1346,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$vm_return = (int) $t_element->get('hier_element_id');
 		}
 
-		CompositeCache::save($pm_element_code_or_id, $vm_return, 'ElementHierarchyIDs');
+		CompositeCache::save($pm_element_code_or_id, $vm_return, 'MetadataElements/ElementHierarchyIDs');
 		return $vm_return;
 	}
 	# ------------------------------------------------------
@@ -1395,8 +1380,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		if(!$pm_element_id) { return null; }
 		if(is_numeric($pm_element_id)) { $pm_element_id = (int) $pm_element_id; }
 
-		if(CompositeCache::contains($pm_element_id, 'ElementSettings')) {
-			return CompositeCache::fetch($pm_element_id, 'ElementSettings');
+		if(CompositeCache::contains($pm_element_id, 'MetadataElements/ElementSettings')) {
+			return CompositeCache::fetch($pm_element_id, 'MetadataElements/ElementSettings');
 		}
 
 		$vm_return = null;
@@ -1406,7 +1391,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$vm_return = $t_element->getSettings();
 		}
 
-		CompositeCache::save($pm_element_id, $vm_return, 'ElementSettings');
+		CompositeCache::save($pm_element_id, $vm_return, 'MetadataElements/ElementSettings');
 		return $vm_return;
 	}
 	# ------------------------------------------------------
@@ -1421,8 +1406,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		if(!$pm_element_code_or_id) { return null; }
 		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
 
-		if(CompositeCache::contains($pm_element_code_or_id, 'ElementDefaultValues')) {
-			return CompositeCache::fetch($pm_element_code_or_id, 'ElementDefaultValues');
+		if(CompositeCache::contains($pm_element_code_or_id, 'MetadataElements/ElementDefaultValues')) {
+			return CompositeCache::fetch($pm_element_code_or_id, 'MetadataElements/ElementDefaultValues');
 		}
 
 		$vm_return = null;
@@ -1433,7 +1418,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		    $vm_return = isset($settings[$default_setting_name]) ? $settings[$default_setting_name] : null;
 		}
 
-		CompositeCache::save($pm_element_code_or_id, $vm_return, 'ElementDefaultValues');
+		CompositeCache::save($pm_element_code_or_id, $vm_return, 'MetadataElements/ElementDefaultValues');
 		return $vm_return;
 	}
 	# ------------------------------------------------------
@@ -1441,27 +1426,27 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * Get ca_metadata_elements instance for given code or ID
 	 * @param $pm_element_code_or_id
 	 * @return ca_metadata_elements|mixed|null
-	 * @throws CompositeCacheInvalidParameterException
+	 * @throws MemoryCacheInvalidParameterException
 	 */
 	static public function getInstance($pm_element_code_or_id) {
 		if(!$pm_element_code_or_id) { return null; }
 		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
 
-		if(MemoryCache::contains($pm_element_code_or_id, 'ElementInstances')) {
-			return MemoryCache::fetch($pm_element_code_or_id, 'ElementInstances');
+		if(MemoryCache::contains($pm_element_code_or_id, 'MetadataElements/ElementInstances')) {
+			return MemoryCache::fetch($pm_element_code_or_id, 'MetadataElements/ElementInstances');
 		}
 
 		$t_element = new ca_metadata_elements(is_numeric($pm_element_code_or_id) ? $pm_element_code_or_id : null);
 
 		if (!($vn_element_id = $t_element->getPrimaryKey())) {
 			if ($t_element->load(array('element_code' => $pm_element_code_or_id))) {
-				MemoryCache::save((int) $t_element->getPrimaryKey(), $t_element, 'ElementInstances');
-				MemoryCache::save($t_element->get('element_code'), $t_element, 'ElementInstances');
+				MemoryCache::save((int) $t_element->getPrimaryKey(), $t_element, 'MetadataElements/ElementInstances');
+				MemoryCache::save($t_element->get('element_code'), $t_element, 'MetadataElements/ElementInstances');
 				return $t_element;
 			}
 		} else {
-			MemoryCache::save((int) $t_element->getPrimaryKey(), $t_element, 'ElementInstances');
-			MemoryCache::save($t_element->get('element_code'), $t_element, 'ElementInstances');
+			MemoryCache::save((int) $t_element->getPrimaryKey(), $t_element, 'MetadataElements/ElementInstances');
+			MemoryCache::save($t_element->get('element_code'), $t_element, 'MetadataElements/ElementInstances');
 			return $t_element;
 		}
 		return null;
@@ -1567,8 +1552,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		
 		$vs_key = caMakeCacheKeyFromOptions(['table_num' => $pn_table_num, 'type_id' => $pn_type_id, 'element_id' => $vn_element_id]);
 		
-		if (CompositeCache::contains($vs_key, 'ElementTypeRestrictions')) { 
-			return CompositeCache::fetch($vs_key, 'ElementTypeRestrictions');
+		if (CompositeCache::contains($vs_key, 'MetadataElements/ElementTypeRestrictions')) { 
+			return CompositeCache::fetch($vs_key, 'MetadataElements/ElementTypeRestrictions');
 		}
 		
 		$o_db = $this->getDb();
@@ -1596,7 +1581,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		while($qr_res->nextRow()) {
 			$va_restrictions[] = $qr_res->getRow();
 		}
-		CompositeCache::save($vs_key, $va_restrictions, 'ElementTypeRestrictions');
+		CompositeCache::save($vs_key, $va_restrictions, 'MetadataElements/ElementTypeRestrictions');
 		return $va_restrictions;
 	}
 	# ------------------------------------------------------
