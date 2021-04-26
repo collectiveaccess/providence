@@ -72,7 +72,7 @@ class TimestampSearchQueryTest extends AbstractSearchQueryTest {
 			'created.administrator:' . date('Y') => 1,
 			'created.cataloguer:' . date('Y') => 0,
 			'created:"1985-1986"' => 0,
-			'created:"2000-2020"' => 1,
+			'created:"2010-2030"' => 1,
 		));
 	}
 	# -------------------------------------------------------

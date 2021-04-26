@@ -43,7 +43,7 @@ abstract class AttributeValue extends BaseObject {
 	private $opn_element_id;
 	private $ops_element_code;
 	private $opn_datatype;
-	private $opn_value_id;
+	protected $opn_value_id;
 	private $opa_source_info;
 	private $ops_sort_value;
 

@@ -35,7 +35,6 @@
   */
  
 	require_once(__CA_LIB_DIR__."/BaseFindController.php");
-	require_once(__CA_LIB_DIR__."/Datamodel.php");
 	require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
  	require_once(__CA_APP_DIR__.'/helpers/browseHelpers.php');
  	require_once(__CA_APP_DIR__.'/helpers/accessHelpers.php');
@@ -53,6 +52,10 @@
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			
+ 			if ($po_request->config->get($this->ops_tablename.'_disable_browse')) {
+				throw new ApplicationException(_t('Browse interface is disabled'));
+			}
+			
  			if ($this->ops_tablename) {
 				if ($va_items_per_page_config = $po_request->config->get('items_per_page_options_for_'.$this->ops_tablename.'_browse')) {
 					$this->opa_items_per_page = $va_items_per_page_config;

@@ -48,7 +48,6 @@
 		 */
 		private $ops_tmp_table_name;
 		# ------------------------------------------------
-		protected $opo_datamodel;
 		protected $opo_db;
 		
 		# ------------------------------------------------

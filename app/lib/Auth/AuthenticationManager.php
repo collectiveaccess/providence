@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2019 Whirl-i-Gig
+ * Copyright 2014-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -241,7 +241,8 @@ class AuthenticationManager {
 	private static function isFree() {
 		global $g_request;
 		if($g_request) {
-			$free_controllers = array_map("strtolower", AuthenticationManager::$g_authentication_conf->get('auth_not_required_for_controllers'));
+			if (!is_array($free_controllers = AuthenticationManager::$g_authentication_conf->get('auth_not_required_for_controllers'))) { return false; }
+			$free_controllers = array_map("strtolower", $free_controllers);
 			if (in_array(strtolower($g_request->getController()), $free_controllers)) { return true; }
 		}
 		return false;

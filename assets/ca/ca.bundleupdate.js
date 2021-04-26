@@ -47,9 +47,9 @@ var caBundleUpdateManager = null;
 		// Methods
 		// --------------------------------------------------------------------------------
 		that.registerBundle = function(id, bundle, placement_id) {
-			that.byID[id] = that.byPlacementID[placement_id] = [{
+			that.byID[id] = that.byPlacementID[placement_id] = {
 				id: id, bundle: bundle, placement_id: placement_id
-			}];
+			};
 			if(!that.byBundle[bundle]) { that.byBundle[bundle] = []; }
 			that.byBundle[bundle].push(that.byID[id]);
 		}
@@ -80,7 +80,6 @@ var caBundleUpdateManager = null;
 				jQuery.each(b, function(k, v) {
 					for(var i in v) {
 						var loadURL = that.url + "/" + that.key + "/" + that.id + "/bundle/" + v.bundle + "/placement_id/" + v.placement_id;
-					
 						if (options) { 
 							for(var k in options) {
 								loadURL += "/" + k + "/" + options[k];

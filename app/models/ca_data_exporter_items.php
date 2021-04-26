@@ -29,13 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
-
 require_once(__CA_LIB_DIR__.'/ModelSettings.php');
-require_once(__CA_MODELS_DIR__."/ca_data_exporters.php");
 
 BaseModel::$s_ca_models_definitions['ca_data_exporter_items'] = array(
  	'NAME_SINGULAR' 	=> _t('data exporter item'),
@@ -126,6 +120,8 @@ BaseModel::$s_ca_models_definitions['ca_data_exporter_items'] = array(
 );
 	
 class ca_data_exporter_items extends BaseModel {
+	use ModelSettings;
+	
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -202,11 +198,6 @@ class ca_data_exporter_items extends BaseModel {
 	# are listed here is the order in which they will be returned using getFields()
 
 	protected $FIELDS;
-	
-	/**
-	 * Settings delegate - implements methods for setting, getting and using 'settings' var field
-	 */
-	public $SETTINGS;
 	
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {		
@@ -594,7 +585,7 @@ class ca_data_exporter_items extends BaseModel {
 			'description' => _t('ID of item as set in mapping.')
 		);
 		
-		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
+		$this->setAvailableSettings($va_settings);
 	}
 	# ------------------------------------------------------
 	/**
@@ -612,26 +603,12 @@ class ca_data_exporter_items extends BaseModel {
 			if (!sizeof($va_fields_proc)) { $va_fields_proc = null; }
 			$vn_rc = parent::set($va_fields_proc, null, $pa_options);	
 			
-			$this->initSettings();
 			return $vn_rc;
 		}
 		
 		$vn_rc = parent::set($pa_fields, $pm_value, $pa_options);
 		
-		$this->initSettings();
 		return $vn_rc;
-	}
-	# ------------------------------------------------------
-	# Settings
-	# ------------------------------------------------------
-	/**
-	 * Reroutes calls to method implemented by settings delegate to the delegate class
-	 */
-	public function __call($ps_name, $pa_arguments) {
-		if (method_exists($this->SETTINGS, $ps_name)) {
-			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
-		}
-		die($this->tableName()." does not implement method {$ps_name}");
 	}
 	# ------------------------------------------------------
 	static public function getReplacementArray($ps_searches,$ps_replacements) {

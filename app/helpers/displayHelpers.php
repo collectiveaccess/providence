@@ -198,17 +198,39 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Return string value from locale-indexed array of values for a locale-aware setting
 	 *
+	 * @param string $setting
+	 * @param array $setting_values
+	 * @param array $options Options include:
+	 *		default = Default value to return if no setting value is available. [Default is null]
+	 *	
+	 * @return string
 	 */
-	function caExtractSettingsValueByUserLocale($setting, array $setting_values, $options=null) {
+	function caExtractSettingsValueByUserLocale(string $setting, array $setting_values, ?array $options=null) {
 		global $g_ui_locale;
-		if(!isset($setting_values[$setting])) { return null; }
-		if (!is_array($v = $setting_values[$setting])) { return null; }
+		if(!isset($setting_values[$setting])) { return caGetOption('default', $options, null); }
+		if (!is_array($v = $setting_values[$setting])) { return strlen($v) ? $v : caGetOption('default', $options, null); }
 
 		if (isset($v[$g_ui_locale])) {
 			return $v[$g_ui_locale];
 		}
-		return array_shift($v);
+		
+		// Try to find setting with same language
+		$l = explode('_', $g_ui_locale);
+		$l = $l[0];
+		
+		foreach($setting_values[$setting] as $locale => $val) {
+			if(preg_match("!^{$l}_!", $locale)) {
+				return $val;
+			}
+		}
+		
+		// No language match, so just return the first value
+		if (!is_null($val = array_shift($v))) { return $val; }
+		
+		// If all else fails, try to return the default
+		return caGetOption('default', $options, null);
 	}
 	# ------------------------------------------------------------------------------------------------
 	function caExtractValuesByUserLocaleFromHierarchyChildList($pa_list, $ps_primary_key_name, $ps_label_display_field, $ps_use_if_no_label_field, $ps_default_text='???') {
@@ -699,6 +721,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 
 		$vs_buf = "<div style='width: 100%; overflow: auto;'><table style='margin-left: ".($pn_level * 10)."px;'>";
 		foreach($pa_array as $vs_key => $vs_val) {
+			if (preg_match("!^Undefined!i", $vs_key)) { continue; }
 			$vs_val = preg_replace('![^A-Za-z0-9 \-_\+\!\@\#\$\%\^\&\*\(\)\[\]\{\}\?\<\>\,\.\"\'\=]+!', '', $vs_val);
 			switch($vs_key) {
 				case 'MakerNote':	// EXIF tags to skip output of
@@ -1251,7 +1274,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				TooltipManager::add("#caDuplicateItemButton", _t('Duplicate this %1', mb_strtolower($vs_type_name, 'UTF-8')));
 			}
 
-			if (caHomeLocationsEnabled($t_item->tableName(), $t_item->getTypeCode()) && $po_view->request->user->canDoAction("can_set_home_location_".$vs_table_name)) {	
+			if (method_exists($t_item, 'getTypeCode') && caHomeLocationsEnabled($t_item->tableName(), $t_item->getTypeCode()) && $po_view->request->user->canDoAction("can_set_home_location_".$vs_table_name)) {	
 				$vs_buf .= "<div id='inspectorSetHomeLocation' class='inspectorActionButton'><div id='inspectorSetHomeLocationButton'><a href='#' onclick='_initSetHomeLocationHierarchyBrowser(); return false;'>".caNavIcon(__CA_NAV_ICON_HOME__, '20px', array('title' => _t('Set home location')))."</a></div></div>\n";
 
 				$vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
@@ -1583,7 +1606,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				$vn_set_item_count = $t_item->getItemCount(array('user_id' => $po_view->request->getUserID()));
 
 				if (($vn_set_item_count > 0) && ($po_view->request->user->canDoAction('can_batch_edit_'.Datamodel::getTableName($t_item->get('table_num'))))) {
-					$vs_buf .= caNavButton($po_view->request, __CA_NAV_ICON_BATCH_EDIT__, _t('Batch edit'), 'editorBatchSetEditorLink', 'batch', 'Editor', 'Edit', array('set_id' => $t_item->getPrimaryKey()), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'no_background' => true, 'dont_show_content' => true));
+					$vs_buf .= caNavButton($po_view->request, __CA_NAV_ICON_BATCH_EDIT__, _t('Batch edit'), 'editorBatchSetEditorLink', 'batch', 'Editor', 'Edit', array('id' => 'ca_sets:'.$t_item->getPrimaryKey()), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'no_background' => true, 'dont_show_content' => true));
 				}
 				TooltipManager::add(".editorBatchSetEditorLink", _t('Batch Edit'));
 
@@ -2014,9 +2037,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 * @return string HTML implementing the inspector
 	 */
 	function caBatchEditorInspector($po_view, $pa_options=null) {
-		require_once(__CA_MODELS_DIR__.'/ca_sets.php');
-
-		$t_set 					= $po_view->getVar('t_set');
+		$rs 					= $po_view->getVar('record_selection');
 		$t_item 				= $po_view->getVar('t_item');
 		$vs_table_name = $t_item->tableName();
 		if (($vs_priv_table_name = $vs_table_name) == 'ca_list_items') {
@@ -2027,7 +2048,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		$t_ui 					= $po_view->getVar('t_ui');
 
 
-		$vs_buf = '<h3 class="nextPrevious"><span class="resultCount" style="padding-top:10px;">'.caNavLink($po_view->request, 'Back to Sets', '', 'manage', 'Set', 'ListSets')."</span></h3>\n";
+		$vs_buf = '<h3 class="nextPrevious"><span class="resultCount" style="padding-top:10px;">'.$rs->getResultsLink($po_view->request)."</span></h3>\n";
 
 		$vs_color = $vs_type_name = null;
 
@@ -2040,39 +2061,19 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		if (!$vs_color) { $vs_color = "444444"; }
 
 		$vs_buf .= "<h4><div id='caColorbox' style='border: 6px solid #{$vs_color}; padding-bottom:15px;'>\n";
-
-		if($po_view->request->user->canDoAction("can_edit_".$vs_priv_table_name) && (sizeof($t_item->getTypeList()) > 1)){
-			if ($po_view->request->user->canDoAction("can_change_type_{$vs_table_name}")) {
-
-				$vs_buf .= "<div id='inspectorChangeType'><div id='inspectorChangeTypeButton'><a href='#' onclick='caTypeChangePanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_CHANGE__, '18px', array('title' => _t('Change type')))."</a></div></div>\n";
-				TooltipManager::add("#inspectorChangeType", _t('Change Record Type'));
-
-				$vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
-				$vo_change_type_view->setVar('t_item', $t_item);
-				$vo_change_type_view->setVar('t_set', $t_set);
-				$vo_change_type_view->setVar('set_id', $t_set->getPrimaryKey());
-
-				FooterManager::add($vo_change_type_view->render("batch_change_type_html.php"));
-			}
-			$vs_buf .= "<strong>"._t("Editing %1", $vs_type_name).": </strong>\n";
-		}else{
-			$vs_buf .= "<strong>"._t("Viewing %1", $vs_type_name).": </strong>\n";
-		}
-
-		$vn_item_count = $t_set->getItemCount(array('user_id' => $po_view->request->getUserID()));
+		
+		$vn_item_count = $rs->getItemCount(['user_id' => $po_view->request->getUserID()]);
 		$vs_item_name = ($vn_item_count == 1) ? $t_item->getProperty("NAME_SINGULAR"): $t_item->getProperty("NAME_PLURAL");
 
-		$vs_buf .= "<strong>"._t("Batch editing %1 %2 in set", $vn_item_count, $vs_item_name).": </strong>\n";
+		$vs_buf .= "<strong>"._t("Batch editing %1 %2", $vn_item_count, $vs_item_name).": </strong>\n";
 
 
-		if (!($vs_label = $t_set->getLabelForDisplay())) {
-			if (!($vs_label = $t_set->get('set_code'))) {
-				$vs_label = '['.caGetBlankLabelText('ca_sets').']';
-			}
+		if (!($vs_label = $rs->name())) {
+			$vs_label = '['.caGetBlankLabelText('ca_sets').']';
 		}
 
-		if($t_set->haveAccessToSet($po_view->request->getUserID(), __CA_SET_EDIT_ACCESS__)) {
-			$vs_label = caEditorLink($po_view->request, $vs_label, '', 'ca_sets', $t_set->getPrimaryKey());
+		if($editor_link = $rs->getEditorLink($po_view->request, $vs_label)) {
+			$vs_label = $editor_link;
 		}
 
 		$vs_buf .= " {$vs_label}\n";
@@ -2080,19 +2081,19 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 
 		// -------------------------------------------------------------------------------------
 
-		$vs_buf .= "<div>"._t('Set contains <em>%1</em>', join(", ", $t_set->getTypesForItems()))."</div>\n";
+		$vs_buf .= "<div>"._t('Batch contains <em>%1</em>', join(", ", $rs->getTypesForItems()))."</div>\n";
 
 		// -------------------------------------------------------------------------------------
 		// Nav link for batch delete
 		// -------------------------------------------------------------------------------------
 
-		if (($vn_item_count > 0) && ($po_view->request->user->canDoAction('can_batch_delete_'.Datamodel::getTableName($t_set->get('table_num'))))) {
+		if (($vn_item_count > 0) && ($po_view->request->user->canDoAction('can_batch_delete_'.Datamodel::getTableName($rs->tableNum())))) {
 
 			$vs_buf .= "<div class='button' style='text-align:right;'><a href='#' id='inspectorMoreInfo'>"._t("More options")."</a> &rsaquo;</div>
 				<div id='inspectorInfo' class='setDelete'>";
 			$vs_buf .= caNavLink($po_view->request, 
 				caNavIcon(__CA_NAV_ICON_NUKE__, '24px', array('style' => 'margin-top:7px; vertical-align: text-bottom;'))." "._t("Delete <strong><em>all</em></strong> records in set")
-				, null, 'batch', 'Editor', 'Delete', array('set_id' => $t_set->getPrimaryKey())
+				, null, 'batch', 'Editor', 'Delete', array('id' => $rs->ID())
 			);
 			if ($po_view->request->user->canDoAction("can_change_type_{$vs_table_name}")) {
 
@@ -2100,8 +2101,10 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 
                 $vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
                 $vo_change_type_view->setVar('t_item', $t_item);
+                $vo_change_type_view->setVar('record_selection', $rs);
+                $vo_change_type_view->setVar('id', $rs->ID());
 
-                FooterManager::add($vo_change_type_view->render("change_type_html.php"));
+                FooterManager::add($vo_change_type_view->render("batch_change_type_html.php"));
                 TooltipManager::add("#inspectorChangeType", _t('Change Record Type'));
             }
 
@@ -3444,6 +3447,27 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		)."</div>";
 	}
 	# ---------------------------------------
+	/**
+	 * Generates batch editing control HTML for relation bundles (Eg. ca_entities, ca_occurrences)
+	 *
+	 * @param RequestHTTP $request
+	 * @param int $placement_id
+	 * @param BaseModel $t_instance
+	 * @param string $related_table
+	 * @param array $options
+	 * 
+	 * @return string HTML implementing the control
+	 */
+	function caEditorBundleBatchEditorControls($request, $placement_id, $t_instance, $related_table, $options=null) {
+		if (!is_array($options)) { $options = []; }
+		
+		$buf = '';
+		if(caGetOption('showBatchEditorButton', $options, false)) {
+			$buf = '<div class="button batchEdit">'.caNavLink($request, caNavIcon(__CA_NAV_ICON_BATCH_EDIT__, '15px')._t(' Batch edit'), '', '*', '*', 'BatchEdit', ['placement_id' => $placement_id, 'primary_id' => $t_instance->getPrimaryKey(), 'screen' => $request->getActionExtra()]).'</div>';
+		}
+		return $buf;
+	}
+	# ---------------------------------------
 	/** 
 	 * Check if home location functionality is enabled for a given table and, optionally, type
 	 *
@@ -3477,11 +3501,22 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	/** 
 	 * Used by ca_objects, ca_collections and ca_object_lots bundles
 	 */
-	function caReturnToHomeLocationControlForRelatedBundle($ps_id_prefix, $po_request, $pt_primary, $pt_related, $pt_relation, $pa_initial_values, $ps_policy=null) {
+	function caReturnToHomeLocationControlForRelatedBundle($po_request, $ps_id_prefix, $pt_primary, $ps_policy, $initial_values) {
+		if(!is_array($pconfig = ca_objects::getPolicyConfig($ps_policy))) { return null; }
+		if (!($pt_related = Datamodel::getInstance($pconfig['table'], true))) {  return null; }
+
 		$target = $pt_related->tableName();
 		$policies = array_filter(ca_objects::getHistoryTrackingCurrentValuePoliciesForTable($target), function($v) { return array_key_exists('ca_storage_locations', $v['elements']); });
 		if(!is_array($policies) || !sizeof($policies)) { return ''; }
 		if (!$ps_policy) { $ps_policy = $target::getDefaultHistoryTrackingCurrentValuePolicy(); }
+		if(is_object($initial_values)) {
+			$iv = [];
+			while($initial_values->nextHit()) {
+				$iv[] = ['object_id' => $initial_values->get('ca_objects.object_id')];
+			}
+			$initial_values->seek(0);
+			$initial_values = $iv;
+		}
 
 		$settings = $target::policy2bundleconfig(['policy' => $ps_policy]);
 		$interstitials = caGetOption('ca_storage_locations_setInterstitialElementsOnAdd', $settings, null);
@@ -3497,7 +3532,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 
 		$vs_buf .= "<div id='{$ps_id_prefix}_editor_bundle_return_to_home_controls' class='editorBundleReturnToHomeControls'>".
 			ca_storage_locations::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($po_request, $ps_id_prefix, $pt_related->tableName(), $settings, ['placement_code' => $ps_id_prefix, 'noTemplate' => true]).
-			caJSButton($po_request, __CA_NAV_ICON_GO__, _t("Apply"), "{$ps_id_prefix}_return_to_home_locations_execute", ['onclick' => "caReturnToHomeLocation{$ps_id_prefix}(); return false;"], ['size' => '15px']).
+			caJSButton($po_request, __CA_NAV_ICON_GO__, _t("Apply"), "{$ps_id_prefix}_return_to_home_locations_execute", ['onclick' => "caReturnToHomeLocation{$ps_id_prefix}(); return false;"], ['size' => '15px']).caJSButton($po_request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), "{$ps_id_prefix}_return_to_home_locations_execute", ['onclick' => "caReturnToHomeLocationToggleForm{$ps_id_prefix}(); return false;"], ['size' => '15px']).
 			"</div>\n"; 
 		$vs_buf .= "
 			<script type='text/javascript'>
@@ -3530,7 +3565,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 									caBundleUpdateManager.reloadBundle('history_tracking_current_contents'); 
 									caBundleUpdateManager.reloadBundle('ca_storage_locations_current_contents'); 
 									caBundleUpdateManager.reloadBundle('{$target}'); 
-								}, 3000);
+								}, 2000);
 							}
 					}, 'json');
 				}
@@ -3940,7 +3975,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		$o_view->setVar('context', ($vs_context = $po_request->getParameter('context', pString)) ? $vs_context : $vs_context = $po_request->getAction());
  	
 		$va_rep_ids = array();
-		$vo_data->filterNonPrimaryRepresentations(false);
+		if (method_exists($vo_data, 'filterNonPrimaryRepresentations')) { $vo_data->filterNonPrimaryRepresentations(false); }
  		while($vo_data->nextHit()) {
  			if (!($vn_representation_id = $vo_data->get('ca_object_representations.representation_id', ['checkAccess' => $va_access_values, 'limit' => 1]))) { continue; }
  			$t_instance->load($vo_data->getPrimaryKey());
@@ -4162,7 +4197,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 *
 	 */
 	function caGetMediaAnnotationList($po_data, $pa_options=null) {
-		$va_detail_config = caGetDetailConfig();
+		$va_detail_config = caGetDetailConfig()->get($po_data->tableName());
 		$ps_annotation_display_template 	= caGetOption('displayAnnotationTemplate', $pa_options, caGetOption('displayAnnotationTemplate', $va_detail_config['options'], '^ca_representation_annotations.preferred_labels.name'));
 		$ps_display_type		 			= caGetOption('display', $pa_options, false);
 
@@ -4209,7 +4244,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			throw new ApplicationException(_t('Invalid identifier %1', $ps_identifier));
 		}
 
-		$va_detail_config = caGetDetailConfig();
+		$va_detail_config = caGetDetailConfig()->get($pt_subject->tableName());
 
 		$ps_display_type 					= caGetOption('display', $pa_options, 'media_overlay');
 		$pb_inline 							= (bool)caGetOption('inline', $pa_options, false);
@@ -4932,7 +4967,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 * "blank_label_text" option. If the option is not set the default value of
 	 * "[BLANK]" will be returned.
 	 *
-	 * @param mixed $table Table name of number blank label is to be applied to. If set 
+	 * @param mixed $table Table name (or number) blank label is to be applied to. If set 
 	 *						table-specific text is set with fallback to general "blank_label_text"
 	 *
 	 * @return string
@@ -4941,9 +4976,13 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		if (MemoryCache::contains('blank_label_text_'.$table)) { return MemoryCache::fetch('blank_label_text_'.$table); }
 		$config = Configuration::load();
 
+		$table_orig = $table;
 		$d = [];
 		if (($table) && ($t = Datamodel::getInstance($table, true))) {
-			$d[] = $t->tableName().'_blank_label_text';
+			if(is_a($t, 'BaseLabel')) {
+				$table = $t->getSubjectTableName();
+			}
+			$d[] = $table.'_blank_label_text';
 		}
 
 		$d[] = 'blank_label_text';
@@ -4951,6 +4990,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		if ($label_text = $config->get($d)) {
 		    if(is_array($label_text)) { $label_text = join(' ', $label_text); }
 		    MemoryCache::save('blank_label_text_'.$table, $l = _t($label_text));
+		    if($table !== $table_orig) { MemoryCache::save('blank_label_text_'.$table_orig, $l); }
 			return $l;
 		}
 		return $g_blank_label_text = _t('BLANK');

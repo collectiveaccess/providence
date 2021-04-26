@@ -141,7 +141,10 @@ class SearchEngine extends SearchBase {
 		}
 		
 		$ps_search = preg_replace('![\|]([A-Za-z0-9_,;]+[:]{1})!', "/$1", $ps_search);	// allow | to be used in lieu of / as the relationship type separator, as "/" is problematic to encode in GET requests
-		$ps_search = preg_replace('/(?!")\['.caGetBlankLabelText($this->ops_tablename).'\](?!")/i', '"['.caGetBlankLabelText($this->ops_tablename).']"', $ps_search); // the special [BLANK] search term, which returns records that have *no* content in a specific fields, has to be quoted in order to protect the square brackets from the parser.
+		// the special [BLANK] search term, which returns records that have *no* content in a specific fields, has to be quoted in order to protect the square brackets from the parser.
+		$ps_search = preg_replace('/(?!")\['.caGetBlankLabelText($this->ops_tablename).'\](?!")/i', '"['.caGetBlankLabelText($this->ops_tablename).']"', $ps_search); 
+		$ps_search = preg_replace('/(?!")\[BLANK\](?!")/i', '"[BLANK]"', $ps_search); 
+		
 		$ps_search = preg_replace('/(?!")\['._t('SET').'\](?!")/i', '"['._t('SET').']"', $ps_search); // the special [SET] search term, which returns records that have *any* content in a specific fields, has to be quoted in order to protect the square brackets from the parser.
 		
 		if(!is_array($pa_options)) { $pa_options = array(); }
@@ -225,25 +228,26 @@ class SearchEngine extends SearchBase {
 
 		if(!$vb_from_cache) {
 			Debug::msg('SEARCH cache miss for '.$vs_cache_key);
-			$vs_char_set = $this->opo_app_config->get('character_set');
 			
 			$o_query_parser = new LuceneSyntaxParser();
-			$o_query_parser->setEncoding($vs_char_set);
+			$o_query_parser->setEncoding('UTF-8');
 			$o_query_parser->setDefaultOperator(LuceneSyntaxParser::B_AND);
 			
 			$ps_search = preg_replace('![\']+!', '', $ps_search);	
-			$ps_search = preg_replace("/\[((?!SET|BLANK)[A-Za-z0-9\-]+[ ]+(?!to)[^\]]*)\]/", "$1", $ps_search);		// remove search strings (but not range expressions) from square brackets so they may be searched
 		
 			try {
-				$o_parsed_query = $o_query_parser->parse($ps_search, $vs_char_set);
+				$o_parsed_query = $o_query_parser->parse($ps_search, 'UTF-8');
 			} catch (Exception $e) {
 				// Retry search with all non-alphanumeric characters removed
+				if (caGetOption('throwExceptions', $pa_options, false)) {
+					throw new SearchException(_t('Search failed: %1', $e->getMessage()));
+				}
 				try {
-					$vs_search_proc = preg_replace("!^(AND|OR)!i", "", $ps_search);
+					$vs_search_proc = preg_replace("![ ]+(AND)[ ]+!i", " ", $ps_search);
 					$vs_search_proc = preg_replace("![^A-Za-z0-9 ]+!", " ", $vs_search_proc);
-					$o_parsed_query = $o_query_parser->parse($vs_search_proc, $vs_char_set);
+					$o_parsed_query = $o_query_parser->parse($vs_search_proc, 'UTF-8');
 				} catch (Exception $e) {
-					$o_parsed_query = $o_query_parser->parse("", $vs_char_set);
+					$o_parsed_query = $o_query_parser->parse("", 'UTF-8');
 				}
 			}
 			$va_rewrite_results = $this->_rewriteQuery($o_parsed_query);
@@ -456,7 +460,7 @@ class SearchEngine extends SearchBase {
 		if (method_exists($po_query, 'getSigns')) {
 			$va_old_signs = $po_query->getSigns();
 		} else {
-			$va_old_signs = array();
+			$va_old_signs = [];
 		}
 
 		$vn_i = 0;
@@ -512,12 +516,12 @@ class SearchEngine extends SearchBase {
 					break;
 				case 'Zend_Search_Lucene_Search_Query_Boolean':
 					$va_tmp = $this->_rewriteQuery($o_term);
-					// don't wrap 1-term query in unnecessary extra boolean subquery. apparently the engines can't handle the extra parentheses
-					if(sizeof($va_tmp['terms']) == 1) {
-						$va_terms[] = array_shift($va_tmp['terms']);
-					} else {
+					// don't wrap 1-term query in unnecessary extra boolean subquery as some engines can't handle the extra parentheses
+					// if(sizeof($va_tmp['terms']) == 1) {
+// 						$va_terms[] = array_shift($va_tmp['terms']);
+// 					} else {
 						$va_terms[] = new Zend_Search_Lucene_Search_Query_Boolean($va_tmp['terms'], $va_tmp['signs']);
-					}
+					//}
 
 					$va_signs[] = $va_old_signs[$vn_i];
 					break;
@@ -1146,21 +1150,20 @@ class SearchEngine extends SearchBase {
 		$o_config = Configuration::load();
 		
 		if ($t_instance = Datamodel::getInstanceByTableName($ps_table, true)) {
-			$vs_char_set = $o_config->get('character_set');
 			
 			$o_query_parser = new LuceneSyntaxParser();
-			$o_query_parser->setEncoding($vs_char_set);
+			$o_query_parser->setEncoding('UTF-8');
 			$o_query_parser->setDefaultOperator(LuceneSyntaxParser::B_AND);
 	
 			$ps_search = preg_replace('![\']+!', '', $ps_search);
 			try {
-				$o_parsed_query = $o_query_parser->parse($ps_search, $vs_char_set);
+				$o_parsed_query = $o_query_parser->parse($ps_search, 'UTF-8');
 			} catch (Exception $e) {
 				// Retry search with all non-alphanumeric characters removed
 				try {
-					$o_parsed_query = $o_query_parser->parse(preg_replace("![^A-Za-z0-9 ]+!", " ", $ps_search), $vs_char_set);
+					$o_parsed_query = $o_query_parser->parse(preg_replace("![^A-Za-z0-9 ]+!", " ", $ps_search), 'UTF-8');
 				} catch (Exception $e) {
-					$o_parsed_query = $o_query_parser->parse("", $vs_char_set);
+					$o_parsed_query = $o_query_parser->parse("", 'UTF-8');
 				}
 			}
 			

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -78,6 +78,13 @@ BaseModel::$s_ca_models_definitions['ca_metadata_element_labels'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Description'), 'DESCRIPTION' => _t('Use for a description of how the element should be used.'),
 				'BOUNDS_LENGTH' => array(0,65535)
+		),
+		'is_preferred' => array(
+				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Is preferred'), 'DESCRIPTION' => _t('Is preferred')
 		)
  	)
 );
@@ -198,4 +205,3 @@ class ca_metadata_element_labels extends BaseLabel {
 	}
 	# ------------------------------------------------------
 }
-?>

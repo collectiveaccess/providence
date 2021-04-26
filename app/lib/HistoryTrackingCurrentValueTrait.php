@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2020 Whirl-i-Gig
+ * Copyright 2018-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -108,6 +108,21 @@
 		}
 		# ------------------------------------------------------
 		/**
+		 * Return configuration information for a history tracking policy
+		 *
+		 * @param string $policy The policy code
+		 * 
+		 * @return array Configuration array or null if policy is not available.
+		 */
+		static public function getPolicyConfig($policy) {
+			$history_tracking_policies = self::getHistoryTrackingCurrentValuePolicyConfig();
+			if(isset($history_tracking_policies['policies'][$policy]) && is_array($history_tracking_policies['policies'][$policy])) {
+				return $history_tracking_policies['policies'][$policy];
+			}
+			return null;
+		}
+		# ------------------------------------------------------
+		/**
 		 * Convert policy configuration to bundle config HistoryTrackingCurrentValueTrait::getHistory() can use.
 		 *
 		 * @param array $options Options include:
@@ -174,6 +189,9 @@
 							$bundle_settings["{$table}_{$type}_displayTemplate"] = $config['template'];
 							$bundle_settings["{$table}_{$type}_color"] = $config['color'];
 							$bundle_settings["{$table}_showTypes"][] = array_shift(caMakeTypeIDList($table, [$type]));
+							
+							$bundle_settings["{$table}_{$type}_useRelated"] = $config['useRelated'];
+							$bundle_settings["{$table}_{$type}_useRelatedRelationshipType"] = $config['useRelatedRelationshipType'];
 						
 							$bundle_settings["{$table}_{$type}_dateElement"] = $config['date'];
 						
@@ -424,7 +442,6 @@
 					    self::$s_history_tracking_deleted_current_values[$l->get('current_table_num')][$l->get('current_row_id')][$policy] = 
 					        ['table_num' => $l->get('table_num'), 'row_id' => $l->get('row_id')];
 					
-					$l->setMode(ACCESS_WRITE);
 				    if (!($rc = $l->delete())) {
                         $this->errors = $l->errors;
                         return false;
@@ -478,7 +495,6 @@
 					$t_l = new ca_history_tracking_current_values();
 					$t_l->setDb($this->getDb());	
 					$t_l->load($l['tracking_id']);
-					$t_l->setMode(ACCESS_WRITE);
 				    if (!($rc = $t_l->delete())) {
                         $this->errors = $t_l->errors;
                         return false;
@@ -488,7 +504,6 @@
 		
 			$e = new ca_history_tracking_current_values();
 			$e->setDb($this->getDb());	
-			$e->setMode(ACCESS_WRITE);
 			$e->set([
 				'policy' => $policy,
 				'table_num' => $subject_table_num, 
@@ -662,12 +677,34 @@
 								if (($entry['status'] === 'CURRENT') || ($omit_table)) {
 									$current_entry = $entry;
 									$current_entry['status'] = 'CURRENT';
+									 
+									 if ($current_entry['useRelated']) {
+									 	if (!($t_related = Datamodel::getInstance($current_entry['useRelated'], true))) {
+									 		throw new ApplicationException(_t("Invalid table specification for 'useRelated' in history tracking policy"));
+									 	}
+									 	if(!($t_primary = Datamodel::getInstance($current_entry['type'], true, $current_entry['id']))) {
+									 		throw new ApplicationException(_t("Invalid table specification for entry in history tracking policy"));
+									 	}
+									 	if (!$t_primary->isLoaded()) { continue; }
+									 	
+									 	// rewrite current entry to use related record
+									 	$rel_item = $t_primary->getRelatedItems($current_entry['useRelated'], ['restrictToRelationshipTypes' => [$current_entry['useRelatedRelationshipType']], 'returnAs' => 'firstModelInstance']);
+									 	if ($rel_item) {
+									 			$current_entry = array_merge($current_entry, [
+									 				'tracked_table_num' => $current_entry['current_table_num'],
+									 				'tracked_row_id' => $current_entry['current_row_id'],
+									 				'tracked_type_id' => $current_entry['current_type_id'],
+									 				'current_table_num' => $t_related->tableNum(),
+									 				'current_row_id' => $rel_item->getPrimaryKey(),
+									 				'current_type_id' => $rel_item->get('type_id'),
+									 			]);
+									 	}
+									 }
 									break(2);
 								}
 							}
 						}
 					}
-					
 					if ($current_entry) {
 						if (!($this->setHistoryTrackingCurrentValue($policy, $current_entry, ['row_id' => $row_id, 'isFuture' => $is_future]))) {
 						    return false;
@@ -1116,7 +1153,7 @@
 					
 					$movement_table_num = Datamodel::getTableNum('ca_movements');
 					$rel_table_num = Datamodel::getTableNum($linking_table);
-			
+		
 					while($qr_movements->nextHit()) {
 						if ((string)$qr_movements->get('ca_movements.deleted') !== '0') { continue; }	// filter out deleted
 						
@@ -1125,6 +1162,8 @@
 						$relation_id = $qr_movements->get("{$linking_table}.relation_id");
 						$vn_type_id = $qr_movements->get('ca_movements.type_id');
 						$vn_rel_type_id = $qr_movements->get("{$linking_table}.type_id");
+						
+						$type_code = $va_movement_type_info[$vn_type_id]['idno'];
 						
 						$vs_display_template = $pb_display_label_only ? $vs_default_display_template : caGetOption(["ca_movements_{$va_movement_type_info[$vn_type_id]['idno']}_displayTemplate", "ca_movements_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);			
 					
@@ -1151,7 +1190,7 @@
 								'display' => caGetLocalizedDate($vn_date)
 							);
 						}
-		
+						
 						foreach($va_dates as $va_date) {
 							if (!$va_date['sortable']) { $va_date['sortable'] = 0; }
 							if (!in_array($vn_type_id, $va_movement_types)) { continue; }
@@ -1187,6 +1226,9 @@
 								'tracked_table_num' => $rel_table_num,
 								'tracked_row_id' => $relation_id,
 								'tracked_type_id' => $vn_rel_type_id,
+								
+								'useRelated' => $pa_bundle_settings["ca_movements_{$type_code}_useRelated"],
+								'useRelatedRelationshipType' => $pa_bundle_settings["ca_movements_{$type_code}_useRelatedRelationshipType"],
 								
 								'status' => $status
 							);
@@ -1268,7 +1310,7 @@
 						foreach($va_dates as $va_date) {
 							if (!$va_date['sortable']) { $va_date['sortable'] = 0; }
 							if (!in_array($vn_type_id, $va_occurrence_types)) { continue; }
-							if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date) || ($va_date['bounds'][1] < $vn_current_date))) { continue; }
+							if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date))){ continue; }
 					
 					
 							$status = ($va_date['bounds'][0] > $vn_current_date) ? 'FUTURE' : 'PAST';
@@ -1872,14 +1914,30 @@
 		 *
 		 * @return SearchResult 
 		 */
-		public function getContents($policy, $options=null) {
+		public function getContents(string $policy, array $options=null) {
+			if(!($row_id = caGetOption('row_id', $options, $this->getPrimaryKey()))) { return null; }
+			return $this->getContentsForIDs($policy, [$row_id], $options);
+		}
+		# ------------------------------------------------------
+		/**
+		 * Return array with list of current contents for all specified ids
+		 *
+		 * @param string $policy 
+		 * @param array $options Array of options. Options include:
+		 *		returnHistoryTrackingData = Return arrray with internal history tracking data. [Default is false]
+		 *		idsOnly = 
+		 *
+		 * @return SearchResult 
+		 */
+		public function getContentsForIDs(string $policy, array $ids, $options=null) {
 			if(!($row_id = caGetOption('row_id', $options, $this->getPrimaryKey()))) { return null; }
 			if (!$policy) { if (!($policy = $this->getDefaultHistoryTrackingCurrentValuePolicy())) { return null; } }
 		
-			$values = ca_history_tracking_current_values::find(['policy' => $policy, 'current_table_num' => $this->tableNum(), 'current_row_id' => $row_id], ['returnAs' => 'arrays', 'transaction' => $this->getTransaction()]);
+			$values = ca_history_tracking_current_values::find(['policy' => $policy, 'current_table_num' => $this->tableNum(), 'current_row_id' => ['IN', $ids]], ['returnAs' => 'arrays', 'transaction' => $this->getTransaction()]);
 			if(caGetOption('returnHistoryTrackingData', $options, false)) { return $values; }
 			
 			$ids = array_map(function($v) { return $v['row_id']; }, $values);
+			if(caGetOption('idsOnly', $options, false)) { return $ids; }
 			$row = array_shift($values);
 	
 			if(!($table_name = Datamodel::getTableName($row['table_num']))) { return null; }
@@ -1928,6 +1986,9 @@
 		
 			$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
 			$o_view->setVar('t_subject', $this);
+			
+			$bundle_config = self::policy2bundleconfig(array_merge($pa_options, $pa_bundle_settings));
+			
 		
 			//
 			// Occurrence update
@@ -1944,9 +2005,12 @@
                         foreach($va_occ_types as $vn_type_id => $va_type_info) {
                             if (!in_array($vn_type_id, $va_occ_types_to_show) && !in_array($va_type_info['idno'], $va_occ_types_to_show)) { unset($va_occ_types[$vn_type_id]); }
                         }
+                		
                         $o_view->setVar('occurrence_types', $va_occ_types);
                         $o_view->setVar('occurrence_relationship_types', $t_occ_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
-                        $o_view->setVar('occurrence_relationship_types_by_sub_type', $t_occ_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
+                        
+                        if(!is_array($bundle_config['ca_occurrences_showRelationshipTypes'])) { $bundle_config['ca_occurrences_showRelationshipTypes'] = []; }
+                        $o_view->setVar('occurrence_relationship_types_by_sub_type', $t_occ_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($bundle_config, ['restrictToRelationshipTypes' => $bundle_config['ca_occurrences_showRelationshipTypes']])));
                     }
 				}
 			}
@@ -1967,7 +2031,9 @@
 					}
 					$o_view->setVar('collection_types', $va_coll_types);
 					$o_view->setVar('collection_relationship_types', $t_coll_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
-					$o_view->setVar('collection_relationship_types_by_sub_type', $t_coll_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
+					
+					if(!is_array($bundle_config['ca_collections_showRelationshipTypes'])) { $bundle_config['ca_collections_showRelationshipTypes'] = []; }
+					$o_view->setVar('collection_relationship_types_by_sub_type', $t_coll_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  $bundle_config, ['restrictToRelationshipTypes' => $bundle_config['ca_collections_showRelationshipTypes']]));
 				}
 			}
 			
@@ -1987,7 +2053,9 @@
 					}
 					$o_view->setVar('entity_types', $va_entity_types);
 					$o_view->setVar('entity_relationship_types', $t_entity_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
-					$o_view->setVar('entity_relationship_types_by_sub_type', $t_entity_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
+					
+					if(!is_array($bundle_config['ca_entities_showRelationshipTypes'])) { $bundle_config['ca_entities_showRelationshipTypes'] = []; }
+					$o_view->setVar('entity_relationship_types_by_sub_type', $t_entity_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($bundle_config, ['restrictToRelationshipTypes' => $bundle_config['ca_entities_showRelationshipTypes']])));
 				}
 			}
 			
@@ -2000,7 +2068,9 @@
 				$linking_table = $path[1];
 				if ($t_loan_rel = Datamodel::getInstance($linking_table, true)) {
 					$o_view->setVar('loan_relationship_types', $t_loan_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
-					$o_view->setVar('loan_relationship_types_by_sub_type', $t_loan_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
+					
+					if(!is_array($bundle_config['ca_loans_showRelationshipTypes'])) { $bundle_config['ca_loans_showRelationshipTypes'] = []; }
+					$o_view->setVar('loan_relationship_types_by_sub_type', $t_loan_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($bundle_config, ['restrictToRelationshipTypes' => $bundle_config['ca_loans_showRelationshipTypes']])));
 				}
 			}
 			
@@ -2013,7 +2083,9 @@
 				$linking_table = $path[1];
 				if ($t_movement_rel = Datamodel::getInstance($linking_table, true)) {
 					$o_view->setVar('movement_relationship_types', $t_movement_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
-					$o_view->setVar('movement_relationship_types_by_sub_type', $t_movement_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
+					
+					if(!is_array($bundle_config['ca_movements_showRelationshipTypes'])) { $bundle_config['ca_movements_showRelationshipTypes'] = []; }
+					$o_view->setVar('movement_relationship_types_by_sub_type', $t_movement_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($bundle_config, ['restrictToRelationshipTypes' => $bundle_config['ca_movements_showRelationshipTypes']])));
 				}
 			}
 			
@@ -2026,7 +2098,9 @@
 				$linking_table = $path[1];
 				if ($t_object_rel = Datamodel::getInstance($linking_table, true)) {
 					$o_view->setVar('object_relationship_types', $t_object_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
-					$o_view->setVar('object_relationship_types_by_sub_type', $t_object_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
+					
+					if(!is_array($bundle_config['ca_objects_showRelationshipTypes'])) { $bundle_config['ca_objects_showRelationshipTypes'] = []; }
+					$o_view->setVar('object_relationship_types_by_sub_type', $t_object_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($bundle_config, ['restrictToRelationshipTypes' => $bundle_config['ca_objects_showRelationshipTypes']])));
 				}
 			}
 			
@@ -2039,7 +2113,9 @@
 				$linking_table = $path[1];
 				if ($t_location_rel = Datamodel::getInstance($linking_table, true)) {
 					$o_view->setVar('location_relationship_types', $t_location_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
-					$o_view->setVar('location_relationship_types_by_sub_type', $t_location_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
+					
+					if(!is_array($bundle_config['ca_storage_locations_showRelationshipTypes'])) { $bundle_config['ca_storage_locations_showRelationshipTypes'] = []; }
+					$o_view->setVar('location_relationship_types_by_sub_type', $t_location_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($bundle_config, ['restrictToRelationshipTypes' => $bundle_config['ca_storage_locations_showRelationshipTypes']])));
 				}
 			}
 			
@@ -2204,7 +2280,7 @@
 								$field_class = '';
 								break;
 						}
-						$buf .= "<td><div class='formLabel'>{$label}<br/>".$t_rel->htmlFormElement($element_code, '', ['name' => "{$id_prefix}_{$rel_table}_{$type_idno}_{$element_code}".($no_template ? '' : '{n}'), 'id' => "{$id_prefix}_{$rel_table}_{$type_idno}_{$element_code}".($no_template ? '' : '{n}'), 'value' => _t('today'), 'classname' => $field_class])."</td>";
+						$buf .= "<td><div class='formLabel'>{$label}<br/>".$t_rel->htmlFormElement($element_code, '', ['name' => "{$id_prefix}_{$rel_table}_{$type_idno}_{$element_code}".($no_template ? '' : '{n}'), 'id' => "{$id_prefix}_{$rel_table}_{$type_idno}_{$element_code}".($no_template ? '' : '{n}'), 'value' => _t('now'), 'classname' => $field_class])."</td>";
 					} else {
 						$buf .= "<td class='formLabel'>{$label}<br/>".$t_rel->getAttributeHTMLFormBundle($request, null, $element_code, $placement_code, $settings, ['elementsOnly' => true])."</td>";
 					}	

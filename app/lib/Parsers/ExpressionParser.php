@@ -57,7 +57,7 @@ class ExpressionParser {
 		// init compiler/visitor if necessary
 
 		if(!self::$s_compiler) {
-			self::$s_compiler = Hoa\Compiler\Llk::load(
+			self::$s_compiler = Hoa\Compiler\Llk\Llk::load(
 				new Hoa\File\Read(__CA_LIB_DIR__.'/Parsers/ExpressionParser/ExpressionGrammar.pp')
 			);
 		}

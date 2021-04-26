@@ -101,7 +101,7 @@ class RequestDispatcher extends BaseObject {
 			$vs_path = $this->ops_default_action;
 		}
 		
-		if ($vs_path{0} === '/') { $vs_path = substr($vs_path, 1); }	// trim leading forward slash...
+		if ($vs_path[0] === '/') { $vs_path = substr($vs_path, 1); }	// trim leading forward slash...
 		$va_tmp = explode('/', $vs_path);								// break path into parts
 		
 		if (is_dir($this->ops_theme_plugins_path.'/'.$va_tmp[0].'/controllers')) {
