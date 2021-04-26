@@ -41,6 +41,8 @@
 	$vn_items_in_hier 	= $t_subject->getHierarchySize();
 	$vs_bundle_preview	= '('.$vn_items_in_hier. ') '. caProcessTemplateForIDs("^preferred_labels", $t_subject->tableName(), array($t_subject->getPrimaryKey()));
 	
+	if(!($min_autocomplete_search_length = (int)$t_subject->getAppConfig()->get(["{$vs_priv_table}_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]))) { $min_autocomplete_search_length = 3; }
+	
 	switch($vs_priv_table) {
 		case 'ca_relationship_types':
 			$vb_has_privs = $this->request->user->canDoAction('can_configure_relationship_types');
@@ -413,7 +415,7 @@
 		// Set up "move" hierarchy browse search
 		jQuery('#<?php print $vs_id_prefix; ?>MoveHierarchyBrowserSearch').autocomplete(
 			{ 
-				source: '<?php print $va_lookup_urls_for_move['search']; ?>', minLength: 3, delay: 800, html: true,
+				source: '<?php print $va_lookup_urls_for_move['search']; ?>', minLength: <?= $min_autocomplete_search_length; ?>, delay: 800, html: true,
 				select: function( event, ui ) {
 					if (ui.item.id) {
 						jQuery("#<?php print $vs_id_prefix; ?>HierarchyBrowserContainer").slideDown(350);
@@ -443,7 +445,7 @@
 		// Set up "explore" hierarchy browse search
 		jQuery('#<?php print $vs_id_prefix; ?>ExploreHierarchyBrowserSearch').autocomplete(
 			{
-				source: '<?php print $va_lookup_urls['search']; ?>', minLength: 3, delay: 800, html: true,
+				source: '<?php print $va_lookup_urls['search']; ?>', minLength: <?= $min_autocomplete_search_length; ?>, delay: 800, html: true,
 				select: function( event, ui ) {
 					if (ui.item.id) {
 						jQuery("#<?php print $vs_id_prefix; ?>HierarchyBrowserContainer").slideDown(350);

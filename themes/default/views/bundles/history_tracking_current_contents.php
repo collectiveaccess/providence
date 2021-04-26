@@ -59,7 +59,9 @@ if (!$this->request->isAjax()) {
 				$initial_values[] = ['object_id' => $qr_result->get('ca_objects.object_id')];
 			}
 			$qr_result->seek(0);
-			print caReturnToHomeLocationControlForRelatedObjectBundle($vs_id_prefix, $this->request, $t_subject, $t_subject, null, $initial_values, $this->getVar('policy'));
+			
+			// TODO: fix
+			//print caReturnToHomeLocationControlForRelatedObjectBundle($vs_id_prefix, $this->request, $t_subject, $t_subject, null, $initial_values, $this->getVar('policy'));
 ?>
 	</div>
 	<br style='clear: both;'/>
