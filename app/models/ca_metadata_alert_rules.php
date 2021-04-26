@@ -617,6 +617,9 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 		if ((bool)$t_rule->get('is_system') && ($pn_access == __CA_ALERT_RULE_ACCESS_NOTIFICATION__)) {	// system forms are readable by all
 			return ca_metadata_alert_rules::$s_have_access_to_rule_cache[$vn_rule_id.'/'.$pn_user_id.'/'.$pn_access] = true;
 		}
+		$u = new ca_users($vn_form_user_id);
+		if(!$u->isLoaded()) { return false; }
+		if($u->canDoAction('is_administrator')) { return true; }
 
 		$o_db =  $this->getDb();
 		$qr_res = $o_db->query("

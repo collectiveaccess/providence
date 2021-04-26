@@ -4151,6 +4151,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	private static function _processAppliedRegexes($o_reader, $item, $index, $regexes, $val, &$row, &$row_with_replacements) {
 		if(is_array($regexes)) {
+			if(!caIsIndexedArray($regexes)) { 
+				if(caIsAssociativeArray($regexes)) {
+					$regexes = [$regexes];
+				} else {
+					return $val;
+				}
+			}
 			foreach($regexes as $regex_index => $regex_info) {
 				if (!strlen($regex_info['match'])) { continue; }
 				$regex = "!".str_replace("!", "\\!", $regex_info['match'])."!u".((isset($regex_info['caseSensitive']) && (bool)$regex_info['caseSensitive']) ? '' : 'i');

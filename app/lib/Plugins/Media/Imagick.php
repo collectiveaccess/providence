@@ -144,6 +144,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			'reference-black'	=> 'W',
 			'reference-white'	=> 'W',
 			'no_upsampling'		=> 'W',
+			'exif_orientation' 	=> 'R',
 			'version'			=> 'W'	// required of all plug-ins
 		),
 		
@@ -508,31 +509,6 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 					// exif
 					if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
 						if (is_array($va_exif = caSanitizeArray(@exif_read_data($ps_filepath, 'EXIF', true, false)))) { 							
-							//
-							// Rotate incoming image as needed
-							//
-							if (isset($va_exif['IFD0']['Orientation'])) {
-								$vn_orientation = $va_exif['IFD0']['Orientation'];
-								
-								$vb_is_rotated = false;
-								switch($vn_orientation) {
-									case 3:
-										$this->handle->rotateImage(caGetOption('background', $this->properties, "#FFFFFF"), 180);
-										unset($va_exif['IFD0']['Orientation']);
-										$vb_is_rotated = true;
-										break;
-									case 6:
-										$this->handle->rotateImage(caGetOption('background', $this->properties, "#FFFFFF"), 90);
-										unset($va_exif['IFD0']['Orientation']);
-										$vb_is_rotated = true;
-										break;
-									case 8:
-										$this->handle->rotateImage(caGetOption('background', $this->properties, "#FFFFFF"), -90);
-										unset($va_exif['IFD0']['Orientation']);
-										$vb_is_rotated = true;
-										break;
-								}
-							}
 							$this->metadata['EXIF'] = $va_exif;
 						}
 					}
@@ -558,9 +534,12 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$this->properties["bitdepth"] = $this->handle->getImageDepth();
 					$this->properties["resolution"] = $this->handle->getImageResolution();
 					$this->properties["colorspace"] = $this->_getColorspaceAsString($this->handle->getImageColorspace());
+					$this->properties["exif_orientation"] = (in_array($orientation = (int)$this->metadata['EXIF']['IFD0']['Orientation'], [6, 8], true)) ? $orientation : null;
 					
 					// force all images to true color (takes care of GIF transparency for one thing...)
 					$this->handle->setImageType(imagick::IMGTYPE_TRUECOLOR);
+					
+					$this->_imagickOrient();
 
 					if($this->handle->getImageColorspace() === imagick::COLORSPACE_CMYK) {
 						if (!$this->handle->setImageColorspace(imagick::COLORSPACE_RGB)) {
@@ -1003,13 +982,42 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				if (!is_null($vn_colorspace) && ($vn_colorspace !== $this->handle->getImageColorspace())) { $this->handle->setimagecolorspace($vn_colorspace); }
 			}
 			
-			//$this->handle->stripImage();	// remove all lingering metadata
+			// If the EXIF Orientation tag is set we must remove it from derivatives, as 
+			// they're written out rotated into the correct orientation. The continued presence of
+			// the tag will result in consumers of the image rotating it again into an 
+			// incorrect orientation (very confusing...). Gmagick provides for either passing
+			// through all metadata or stripping all metadata, including color profiles. There's
+			// no way to selectively remove data, or even just preserve color profiles. Thus,
+			// we are left with two options:
+			//
+			// 1. Kill all metadata using Gmagick::stripImage(). This will address orientation issues
+			//    but also remove color profiles. Many users won't notice the difference. Those who do
+			//    will be very unhappy.
+			//
+			// 2. Use Exiftool to rewrite the image without the EXIF Orientation tag. This works 
+			//    well, but is relatively slow and requires ExifTool to be installed, which is often 
+			//    not the case.
+			//
+			// So... what we do is use stripImage() when EXIF orientation is set and ExifTool is not
+			// installed. stripImage() must be called before the image is written. If ExifTool is 
+			// present and orientation is set then we call it later, after the image is written.
+			$use_exif_tool_to_strip = (bool)$this->opo_config->get('dont_use_exiftool_to_strip_exif_orientation_tags');
+			if (($this->properties['exif_orientation'] > 0) && (!caExifToolInstalled() || $use_exif_tool_to_strip)) {
+				$this->handle->stripImage();
+			}
 			
 			# write the file
 			try {
 				if ( !$this->handle->writeImage($ps_filepath.".".$ext ) ) {
 					$this->postError(1610, _t("Error writing file"), "WLPlugImagick->write()");
 					return false;
+				}
+				// Call ExifTool to strip EXIF orientation tag from written file (see above for 
+				// a discussion of the problem). caExtractRemoveOrientationTagWithExifTool() tests
+				// for presence of ExifTool so we don't bother here. We don't care if it succeeds of
+				// not in any event as there's nothing else we can do.
+				if (($this->properties['exif_orientation'] > 0) && !$use_exif_tool_to_strip) {
+					caExtractRemoveOrientationTagWithExifTool($ps_filepath.".".$ext);
 				}
 			} catch (Exception $e) {
 				$this->postError(1610, _t("Error writing file: %1", $e->getMessage()), "WLPlugImagick->write()");
@@ -1196,6 +1204,8 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$this->properties["quality"] = "";
 			$this->properties["mimetype"] = $this->_getMagickImageMimeType($this->handle);
 			$this->properties["typename"] = $this->handle->getImageFormat();
+			
+			$this->_imagickOrient();
 			return 1;
 		}
 		return false;
@@ -1212,12 +1222,12 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 	private function setResourceLimits($po_handle) {
-		$po_handle->setResourceLimit(imagick::RESOURCETYPE_MEMORY, 1024*1024*1024);		// Set maximum amount of memory in bytes to allocate for the pixel cache from the heap.
-		$po_handle->setResourceLimit(imagick::RESOURCETYPE_MAP, 1024*1024*1024);		// Set maximum amount of memory map in bytes to allocate for the pixel cache.
-		$po_handle->setResourceLimit(imagick::RESOURCETYPE_AREA, 6144*6144);			// Set the maximum width * height of an image that can reside in the pixel cache memory.
-		$po_handle->setResourceLimit(imagick::RESOURCETYPE_FILE, 1024);					// Set maximum number of open pixel cache files.
-		$po_handle->setResourceLimit(imagick::RESOURCETYPE_DISK, 64*1024*1024*1024);					// Set maximum amount of disk space in bytes permitted for use by the pixel cache.	
-		
+		$po_handle->setResourceLimit(Imagick::RESOURCETYPE_MEMORY, 1024*1024*1024);		// Set maximum amount of memory in bytes to allocate for the pixel cache from the heap.
+		$po_handle->setResourceLimit(Imagick::RESOURCETYPE_MAP, 1024*1024*1024);		// Set maximum amount of memory map in bytes to allocate for the pixel cache.
+		$po_handle->setResourceLimit(Imagick::RESOURCETYPE_AREA, 6144*6144);			// Set the maximum width * height of an image that can reside in the pixel cache memory.
+		$po_handle->setResourceLimit(Imagick::RESOURCETYPE_FILE, 1024);					// Set maximum number of open pixel cache files.
+		$po_handle->setResourceLimit(Imagick::RESOURCETYPE_DISK, 64*1024*1024*1024);	// Set maximum amount of disk space in bytes permitted for use by the pixel cache.	
+		$po_handle->setResourceLimit(Imagick::RESOURCETYPE_TIME, 86400);				// Set maximum time allowed
 		return true;
 	}
 	# ------------------------------------------------
@@ -1238,6 +1248,43 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		if (!is_array($pa_properties)) { $pa_properties = array(); }
 		return caHTMLImage($ps_url, array_merge($pa_options, $pa_properties));
-	}	
+	}
+	# ----------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _imagickOrient() {
+		// Rotate incoming image as needed
+		
+		if (isset($this->metadata['EXIF']['IFD0']['Orientation'])) {
+			$orientation = $this->metadata['EXIF']['IFD0']['Orientation'];
+
+			$rotation = null;
+			switch ($orientation) {
+				case 3:
+					$rotation = 180;
+					break;
+				case 6:
+					$rotation = 90;
+					break;
+				case 8:
+					$rotation = -90;
+					break;
+			}
+			
+			if ($rotation) { $this->handle->rotateImage(caGetOption('background', $this->properties, "#FFFFFF"), $rotation); }
+						
+			if (($rotation) && (abs($rotation) === 90)) {
+				$w = $this->properties["width"]; $h = $this->properties["height"];
+				
+				$this->properties["width"] = $h;
+				$this->properties["height"] = $w;
+					
+				unset($this->metadata['EXIF']['IFD0']['Orientation']);
+			}
+			return true;
+		}
+		return false;
+	}
 	# ------------------------------------------------
 }

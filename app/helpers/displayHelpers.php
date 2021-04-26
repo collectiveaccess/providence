@@ -198,17 +198,38 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Return string value from locale-indexed array of values for a locale-aware setting
 	 *
+	 * @param string $setting
+	 * @param array $setting_values
+	 * @param array $options Options include:
+	 *		default = Default value to return if no setting value is available. [Default is null]
+	 *	
+	 * @return string
 	 */
-	function caExtractSettingsValueByUserLocale($setting, array $setting_values, $options=null) {
+	function caExtractSettingsValueByUserLocale(string $setting, array $setting_values, ?array $options=null) {
 		global $g_ui_locale;
 		if(!isset($setting_values[$setting])) { return caGetOption('default', $options, null); }
-		if (!is_array($v = $setting_values[$setting])) { return caGetOption('default', $options, null); }
+		if (!is_array($v = $setting_values[$setting])) { return strlen($v) ? $v : caGetOption('default', $options, null); }
 
 		if (isset($v[$g_ui_locale])) {
 			return $v[$g_ui_locale];
 		}
-		if (!is_null($val = array_shift($v))) { return $v; }
+		
+		// Try to find setting with same language
+		$l = explode('_', $g_ui_locale);
+		$l = $l[0];
+		
+		foreach($setting_values[$setting] as $locale => $val) {
+			if(preg_match("!^{$l}_!", $locale)) {
+				return $val;
+			}
+		}
+		
+		// No language match, so just return the first value
+		if (!is_null($val = array_shift($v))) { return $val; }
+		
+		// If all else fails, try to return the default
 		return caGetOption('default', $options, null);
 	}
 	# ------------------------------------------------------------------------------------------------

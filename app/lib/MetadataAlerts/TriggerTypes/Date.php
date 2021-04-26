@@ -208,7 +208,7 @@ class Date extends Base {
 		
 		$vs_date_range = caGetLocalizedDateRange($vn_start, $vn_end, ['timeOmit' => false]);
 		
-		if ($vs_parent_code) {
+		if ($vs_parent_code && ($vs_parent_code !== $vs_element_code)) {
 			$va_criteria[$vs_parent_code] = [$vs_element_code => $vs_date_range];
 		} else {
 			$va_criteria[$vs_element_code] = $vs_date_range;

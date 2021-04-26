@@ -273,22 +273,26 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
-	 * @param array $options
-	 *		duplicate_subitems
+	 * Implement display-specific behavior to support duplication of sub-items.
+	 *
+	 * @param array $options Options include:
+	 *		duplicateSubitems = Duplicate placements within display. [Default is false]
+	 *
+	 * @return ca_bundle_displays An instance containing the newly created display
 	 */
 	public function duplicate($options=null) {
-		$vb_we_set_transaction = false;
+		$we_set_transaction = false;
 		if (!$this->inTransaction()) {
 			$this->setTransaction($o_t = new Transaction($this->getDb()));
-			$vb_we_set_transaction = true;
+			$we_set_transaction = true;
 		} else {
 			$o_t = $this->getTransaction();
 		}
 		
 		if ($t_dupe = parent::duplicate($options)) {
-			$vb_duplicate_subitems = caGetOption('duplicate_subitems', $options, false);
+			$duplicate_subitems = caGetOption(['duplicateSubitems', 'duplicate_subitems'], $options, false);
 		
-			if ($vb_duplicate_subitems) { 
+			if ($duplicate_subitems) { 
 				// Try to dupe related ca_bundle_display_placements rows
 				$o_db = $this->getDb();
 				
@@ -298,24 +302,24 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 					WHERE display_id = ?
 				", (int)$this->getPrimaryKey());
 				
-				$va_items = [];
+				$items = [];
 				while($qr_res->nextRow()) {
-					$va_row = $qr_res->getRow();
-					$va_row['settings'] = caUnserializeForDatabase($va_row['settings']);
-					$va_items[$qr_res->get('placement_id')] = $va_row;
+					$row = $qr_res->getRow();
+					$row['settings'] = caUnserializeForDatabase($row['settings']);
+					$items[$qr_res->get('placement_id')] = $row;
 				}
 				
-				foreach($va_items as $item_id => $va_item) {
+				foreach($items as $item_id => $item) {
 					$t_item = new ca_bundle_display_placements();
 					if ($this->inTransaction()) { $t_item->setTransaction($this->getTransaction()); }
 					$t_item->setMode(ACCESS_WRITE);
-					$va_item['display_id'] = $t_dupe->getPrimaryKey();
-					$t_item->set($va_item);
+					$item['display_id'] = $t_dupe->getPrimaryKey();
+					$t_item->set($item);
 					$t_item->insert();
 					
 					if ($t_item->numErrors()) {
 						$this->errors = $t_item->errors;
-						if ($vb_we_set_transaction) { $this->removeTransaction(false);}
+						if ($we_set_transaction) { $this->removeTransaction(false);}
 						return false;
 					}
 				}
@@ -323,7 +327,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		
-		if ($vb_we_set_transaction) { $this->removeTransaction(true);}
+		if ($we_set_transaction) { $this->removeTransaction(true);}
 		return $t_dupe;
 	}
 	# ------------------------------------------------------
@@ -2777,8 +2781,8 @@ if (!$pb_omit_editing_info) {
 			if (method_exists($t_model, 'getLabelTableInstance') && ($t_label = $t_model->getLabelTableInstance()) && !(($table === 'ca_objects') && ($this->getAppConfig()->get('ca_objects_dont_use_labels')))) {
 				$display_list['-2'] = array(
 					'placement_id' => 				'-2',
-					'bundle_name' => 				"{$table}.preferred_labels.name_plural",
-					'display' => 					$t_label->getDisplayLabel($t_label->tableName().'.'.$t_label->getDisplayField()),
+					'bundle_name' => 				$l = $t_label->tableName().'.'.$t_label->getDisplayField(),
+					'display' => 					$t_label->getDisplayLabel($l),
 					'settings' => 					[],
 					'allowEditing' =>				true,
 					'allowInlineEditing' => 		true,

@@ -1186,7 +1186,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		$o_view->setVar('settings', $pa_bundle_settings);
 		
 		$va_inital_values = array();
-		if (sizeof($va_items = $this->getAnnotations())) {
+		if (is_array($va_items = $this->getAnnotations()) && sizeof($va_items)) {
 			$t_rel = Datamodel::getInstanceByTableName("{$vs_annotation_table}", true);
 			$vs_rel_pk = $t_rel->primaryKey();
 			foreach ($va_items as $vn_id => $va_item) {

@@ -69,7 +69,7 @@ BaseModel::$s_ca_models_definitions['ca_metadata_alert_rules_x_user_groups'] = a
 			'BOUNDS_CHOICE_LIST' => array(
 				_t('no access') => __CA_ALERT_RULE_NO_ACCESS__,
 				_t('receives notifications') => __CA_ALERT_RULE_ACCESS_NOTIFICATION__,
-				_t('can edit and receives notifications') => __CA_ALERT_RULE_ACCESS_ACCESS_EDIT__
+				_t('can edit and receive notifications') => __CA_ALERT_RULE_ACCESS_ACCESS_EDIT__
 			),
 			'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates group&apos;s level of access to the display. ')
 		)
