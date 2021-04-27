@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,8 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_set = $this->getVar('t_set');
+ 	$rs = $this->getVar('record_selection');
+ 	$id = $this->getVar('id');
 ?>
 <div class="sectionBox">
 <?php
@@ -33,21 +34,20 @@
 		// show delete confirmation notice
 		print caFormTag($this->request, 'Delete', 'caDeleteForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
 		print "<div class='delete-control-box'>".caFormControlBox(
-			"<div class='delete_warning_box'>"._t('Really delete ALL records in "%1"?', $t_set->getLabelForDisplay())."</div>",
+			"<div class='delete_warning_box'>"._t('Really delete ALL records in "%1"?', $rs->name())."</div>",
 			"",
 			caFormSubmitButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), 'caDeleteForm', array()).
-			caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', "batch", "Editor", "Edit", array('set_id' => $this->getVar('set_id')))
+			caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', "batch", "Editor", "Edit", array('id' => $id))
 		)."</div>\n";
 		
 		print caHTMLHiddenInput('confirm', array('value' => 1));
-
-		print caHTMLHiddenInput($t_set->primaryKey(), array('value' => $t_set->getPrimaryKey()));
+		print caHTMLHiddenInput('id', ['value' => $id]);
 		print "</form>\n";
 	} else {
 
 		AssetLoadManager::register("sortableUI");
 ?>
-<h1><?php print _t('Batch processing status'); ?></h1>
+<h1><?= _t('Batch processing status'); ?></h1>
 
 
 <div class="batchProcessingTableProgressGroup">
@@ -64,7 +64,7 @@
 <div class="editorBottomPadding"><!-- empty --></div>
 
 <div id="batchProcessingMore">
-	<?php print caNavLink($this->request, _t('Leave batch editor and delete this set'), '', 'manage/sets', 'SetEditor', 'Delete', array('set_id' => $this->getVar('set_id'))); ?>
+	<?= caNavLink($this->request, _t('Leave batch editor and delete this set'), '', 'manage/sets', 'SetEditor', 'Delete', ['id' => $id]); ?>
 </div>
 	
 <script type="text/javascript">

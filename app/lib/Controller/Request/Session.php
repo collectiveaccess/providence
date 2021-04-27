@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2020 Whirl-i-Gig
+ * Copyright 2000-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -110,17 +110,18 @@ class Session {
 			Session::$lifetime = 3600 * 24 * 7;
 		}
 		
+		$session_id = self::getSessionID();
 		if (!$pb_dont_create_new_session) {
 			// try to get session ID from cookie. if that doesn't work, generate a new one
-			if (!($session_id = self::getSessionID())) {
+			if (!$session_id) {
 				$vs_cookiepath = ((__CA_URL_ROOT__== '') ? '/' : __CA_URL_ROOT__);
 				$secure = (__CA_SITE_PROTOCOL__ === 'https');
 				if (!caIsRunFromCLI()) { setcookie(Session::$name, $_COOKIE[Session::$name] = $session_id = caGenerateGUID(), Session::$lifetime ? time() + Session::$lifetime : null, $vs_cookiepath, null, $secure, true); }
 		 	}
 
 			// initialize in-memory session var storage, either restored from external cache or newly initialized
-			if($session_id && ExternalCache::contains($session_id, 'SessionVars')) {
-				if(!is_array(Session::$s_session_vars = unserialize(gzuncompress(ExternalCache::fetch($session_id, 'SessionVars'))))) {
+			if($session_id && is_array(Session::$s_session_vars = ExternalCache::fetch($session_id, 'SessionVars'))) {
+				if(!is_array(Session::$s_session_vars = ExternalCache::fetch($session_id, 'SessionVars'))) {
 					Session::$s_session_vars = [];
 				}
 			} else {
@@ -176,7 +177,7 @@ class Session {
 
 		return $vs_token;
 	}
-
+	# ----------------------------------------
 	/**
 	 * Restore session form a temporary service auth token
 	 * @param string $ps_token
@@ -301,6 +302,9 @@ class Session {
 	 * Save changes to session variables to persistent storage
 	 */
 	public static function save() {
+		global $g_errored;
+		if($g_errored) { return; }	// don't save session on routing errors
+		
 		if(!($session_id = self::getSessionID())) { return false; }
 		if(isset(Session::$s_session_vars['session_end_timestamp'])) {
 			$vn_session_lifetime = abs(((int) Session::$s_session_vars['session_end_timestamp']) - time());
@@ -312,13 +316,16 @@ class Session {
 		}
 		
 		// Get old vars
-		if (!is_array($va_current_values = @unserialize(@gzuncompress(ExternalCache::fetch($session_id, 'SessionVars'))))) {
+		if (!ExternalCache::fetch($session_id, 'SessionVars') || !is_array($va_current_values = ExternalCache::fetch($session_id, 'SessionVars'))) {
 			$va_current_values = [];
 		}
 		
-		$va_current_values = array_merge($va_current_values, Session::$s_session_vars);
-		
-		ExternalCache::save($session_id, @gzcompress(@serialize($va_current_values)), 'SessionVars', $vn_session_lifetime);
+		// Only set changed vars
+		$vars = [];
+		foreach(Session::$s_changed_vars as $k => $v) {
+			$vars[$k] = Session::$s_session_vars[$k];
+		}
+		ExternalCache::save($session_id, array_merge($va_current_values, $vars), 'SessionVars', $vn_session_lifetime);
 	}
 	# ----------------------------------------
 	# --- Page performance

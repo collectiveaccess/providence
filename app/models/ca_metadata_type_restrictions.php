@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,41 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
-
 require_once(__CA_LIB_DIR__.'/ModelSettings.php');
-
-global $_ca_metadata_type_restriction_settings;
-$_ca_metadata_type_restriction_settings = array(		// global
-	'minAttributesPerRow' => array(
-		'formatType' => FT_NUMBER,
-		'displayType' => DT_FIELD,
-		'width' => 5, 'height' => 1,
-		'default' => 0,
-		'label' => _t('Minimum number of attributes of this kind that must be associated with an item'),
-		'description' => _t('If set to 0 a delete button will allow a cataloguer to quickly clear the data contents of the element by collapsing the placement on the user interface screen.  If set to 1, the element will be fixed in place and data will need to be deleted manually.  If set to more than 1, the element placement will be duplicated (up to the number entered here) when a new record or screen is opened.')
-	),
-	'maxAttributesPerRow' => array(
-		'formatType' => FT_NUMBER,
-		'displayType' => DT_FIELD,
-		'width' => 5, 'height' => 1,
-		'default' => 65535,
-		'label' => _t('Maximum number of attributes of this kind that can be associated with an item'),
-		'description' => _t('If set to more than 1 the element will be repeated to capture additional data values during cataloging.  The extent of the repeatability will match the number entered here.')
-	),
-	'minimumAttributeBundlesToDisplay' => array(
-		'formatType' => FT_NUMBER,
-		'displayType' => DT_FIELD,
-		'width' => 5, 'height' => 1,
-		'default' => 0,
-		'label' => _t('Minimum number of attribute bundles to show in an editing form.'),
-		'description' => _t('If 0 is entered here, sets an element to the collapsed position when a new record or screen is opened.  This is useful for list elements in leu of a null value, because no data selection will be saved when the element is collapsed.  Note: "Minimum number of attributes of this kind that must be associated with an item" must also be saved as 0 to set the element to the collapsed position.')
-	)
-);
- 
 	
 
 BaseModel::$s_ca_models_definitions['ca_metadata_type_restrictions'] = array(
@@ -146,6 +112,8 @@ BaseModel::$s_ca_models_definitions['ca_metadata_type_restrictions'] = array(
 );
 
 class ca_metadata_type_restrictions extends BaseModel {
+	use ModelSettings;
+	
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -231,11 +199,6 @@ class ca_metadata_type_restrictions extends BaseModel {
 
 	protected $FIELDS;
 	
-	/**
-	 * Settings delegate - implements methods for setting, getting and using 'settings' var field
-	 */
-	public $SETTINGS;
-	
 	
 	static $s_loaded_relationship_tables = false;
 	
@@ -258,7 +221,32 @@ class ca_metadata_type_restrictions extends BaseModel {
 		parent::__construct($pn_id);	# call superclass constructor
 		
 		//
-		$this->SETTINGS = new ModelSettings($this, 'settings', $_ca_metadata_type_restriction_settings);
+		$this->setAvailableSettings([
+			'minAttributesPerRow' => array(
+				'formatType' => FT_NUMBER,
+				'displayType' => DT_FIELD,
+				'width' => 5, 'height' => 1,
+				'default' => 0,
+				'label' => _t('Minimum number of attributes of this kind that must be associated with an item'),
+				'description' => _t('If set to 0 a delete button will allow a cataloguer to quickly clear the data contents of the element by collapsing the placement on the user interface screen.  If set to 1, the element will be fixed in place and data will need to be deleted manually.  If set to more than 1, the element placement will be duplicated (up to the number entered here) when a new record or screen is opened.')
+			),
+			'maxAttributesPerRow' => array(
+				'formatType' => FT_NUMBER,
+				'displayType' => DT_FIELD,
+				'width' => 5, 'height' => 1,
+				'default' => 65535,
+				'label' => _t('Maximum number of attributes of this kind that can be associated with an item'),
+				'description' => _t('If set to more than 1 the element will be repeated to capture additional data values during cataloging.  The extent of the repeatability will match the number entered here.')
+			),
+			'minimumAttributeBundlesToDisplay' => array(
+				'formatType' => FT_NUMBER,
+				'displayType' => DT_FIELD,
+				'width' => 5, 'height' => 1,
+				'default' => 0,
+				'label' => _t('Minimum number of attribute bundles to show in an editing form.'),
+				'description' => _t('If 0 is entered here, sets an element to the collapsed position when a new record or screen is opened.  This is useful for list elements in leu of a null value, because no data selection will be saved when the element is collapsed.  Note: "Minimum number of attributes of this kind that must be associated with an item" must also be saved as 0 to set the element to the collapsed position.')
+			)
+		]);
 		
 		if (!ca_metadata_type_restrictions::$s_loaded_relationship_tables) {
 			require_once(__CA_MODELS_DIR__.'/ca_relationship_types.php');
@@ -273,20 +261,6 @@ class ca_metadata_type_restrictions extends BaseModel {
 			}
 			ca_metadata_type_restrictions::$s_loaded_relationship_tables = true;
 		}
-	}
-	# ------------------------------------------------------
-	public function __destruct() {
-		unset($this->SETTINGS);
-	}
-	# ------------------------------------------------------
-	/**
-	 * Reroutes calls to method implemented by settings delegate to the delegate class
-	 */
-	public function __call($ps_name, $pa_arguments) {
-		if (method_exists($this->SETTINGS, $ps_name)) {
-			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
-		}
-		die($this->tableName()." does not implement method {$ps_name}");
 	}
 	# ------------------------------------------------------
 	/**
@@ -319,4 +293,3 @@ class ca_metadata_type_restrictions extends BaseModel {
 	}
 	# ------------------------------------------------------
 }
-?>

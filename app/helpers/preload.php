@@ -53,7 +53,7 @@ if (isset($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
 	if (!initializeLocale($g_ui_locale)) { $g_ui_locale = null; }
 }
 
-setlocale(LC_CTYPE, $g_ui_locale ? "{$g_ui_locale}.UTF-8" : "en_US.UTF-8");
+setlocale(LC_CTYPE, !empty($g_ui_locale) ? "{$g_ui_locale}.UTF-8" : "en_US.UTF-8");
 
 require_once(__CA_LIB_DIR__.'/ResultContext.php');
 require_once(__CA_APP_DIR__.'/helpers/navigationHelpers.php');
@@ -106,7 +106,7 @@ spl_autoload_register(function ($class) {
     
     //
     return false;
-});
+  });
 
 /** 
  * Global list of temporary file paths to delete at request end
@@ -119,5 +119,5 @@ register_shutdown_function(function() {
 			@unlink($f);
 		}
 	}
-});
+  });
 

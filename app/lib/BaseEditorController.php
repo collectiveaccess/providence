@@ -35,13 +35,6 @@
  */
 
 require_once(__CA_APP_DIR__."/helpers/printHelpers.php");
-require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
-require_once(__CA_MODELS_DIR__."/ca_metadata_elements.php");
-require_once(__CA_MODELS_DIR__."/ca_attributes.php");
-require_once(__CA_MODELS_DIR__."/ca_attribute_values.php");
-require_once(__CA_MODELS_DIR__."/ca_bundle_displays.php");
-require_once(__CA_LIB_DIR__."/Datamodel.php");
-require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__."/ResultContext.php");
 require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 require_once(__CA_LIB_DIR__.'/Print/PDFRenderer.php');
@@ -53,7 +46,6 @@ define('__CA_SAVE_AND_RETURN_STACK_SIZE__', 30);
 
 class BaseEditorController extends ActionController {
 	# -------------------------------------------------------
-	protected $opo_datamodel;
 	protected $opo_app_plugin_manager;
 	protected $opo_result_context;
 	# -------------------------------------------------------
@@ -669,7 +661,7 @@ class BaseEditorController extends ActionController {
 		$this->getRequest()->close();
 		
 		$redirect_url = $this->opo_result_context->getResultsUrlForLastFind($this->getRequest(), $t_subject->tableName());
-		if (($parent_id = $t_subject->get('parent_id')) > 0) {
+		if (($t_subject->getHierarchyType() === __CA_HIER_TYPE_ADHOC_MONO__) && ($parent_id = $t_subject->get('parent_id')) > 0) {
 			$redirect_url = caEditorUrl($this->request, $t_subject->tableName(), $parent_id);
 		} elseif(!$redirect_url) {
 			$redirect_url = ResultContext::getResultsUrl($this->request, $t_subject->tableName(), 'basic_search');
@@ -1395,7 +1387,7 @@ class BaseEditorController extends ActionController {
 						// If in strict mode and a top-level type is disabled, then show sub-types so user can select an enabled type
 				) {
 					if (isset($va_item['item_id']) && isset($va_types_by_parent_id[$va_item['item_id']]) && is_array($va_types_by_parent_id[$va_item['item_id']])) {
-						$va_subtypes = $this->_getSubTypes($va_types_by_parent_id[$va_item['item_id']], $va_types_by_parent_id, $vn_sort_type, $va_restrict_to_types, ['firstEnabled' => !(bool)$va_item['is_enabled']]);
+						$va_subtypes = $this->_getSubTypes($va_types_by_parent_id[$va_item['item_id']], $va_types_by_parent_id, $vn_sort_type, $va_restrict_to_types, ['firstEnabled' => !$show_top_level_types_only && (bool)$enforce_strict_type_hierarchy && !(bool)$va_item['is_enabled']]);
 					}
 				}
 
@@ -2669,6 +2661,14 @@ class BaseEditorController extends ActionController {
 	/**
 	 * 
 	 */
+	public function MediaBrowser($options=null) {
+		$this->view->setVar('lastPath', Session::getVar('lastMediaImportDirectoryPath'));
+		$this->render('../generic/representation_media_browser_html.php');
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 */
 	public function SetHomeLocation($options=null) {
 		list($vn_subject_id, $t_subject) = $this->_initView();
 		if (!$t_subject->isLoaded()) { 
@@ -2700,6 +2700,39 @@ class BaseEditorController extends ActionController {
 		
 		$this->view->setVar('response', $resp);
 		$this->render('../generic/set_home_location_json.php');
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function BatchEdit($options=null) {
+		if (!($placement_id = $this->getRequest()->getParameter('placement_id', pInteger))) {
+			throw new ApplicationException(_t('Invalid placement_id'));
+		}
+		$placement = new ca_editor_ui_bundle_placements($placement_id);
+		if (!$placement->isLoaded()) {
+			throw new ApplicationException(_('Invalid placement_id'));
+		}
+		$t_instance = Datamodel::getInstance($placement->getEditorType(), true);
+		$vn_primary_id = $this->getRequest()->getParameter('primary_id', pInteger);
+		if (!($t_instance->load($vn_primary_id))) { 
+			throw new ApplicationException(_('Invalid id'));
+		}
+		
+		$table = preg_replace("!_related_list$!", "", $placement->get('bundle_name'));
+		$ids = $t_instance->getRelatedItems($table, ['returnAs' => 'ids', 'restrictToTypes' => $placement->getSetting('restrict_to_types'), 'restrictToRelationshipTypes' => $placement->getSetting('restrict_to_relationship_types'), ]);
+		if(!$ids || !sizeof($ids)) { 
+			throw new ApplicationException(_('No related items'));
+		}
+		$rc = new ResultContext($this->request, $table, 'BatchEdit');
+		$rc->setResultList($ids);
+		$rc->setParameter('primary_table', $this->ops_table_name);
+		$rc->setParameter('primary_id', $this->getRequest()->getParameter('primary_id', pInteger));
+		$rc->setParameter('screen', $this->getRequest()->getParameter('screen', pString));
+		$rc->saveContext();
+		$rc->invalidateCache();
+		$this->getResponse()->setRedirect(caNavUrl($this->request, 'batch', 'Editor', 'Edit', ['id' => 'BatchEdit:'.$table]));
+		return;
 	}
 	# -------------------------------------------------------
 	/**

@@ -308,7 +308,7 @@ div.clear {
 	font-size: 13px;
 	line-height: 1.4em;
 }
-#leftNav div.visualize, #leftNav div.setTools {
+#leftNav div.visualize, #leftNav div.setTools, #leftNav div.batchTools {
 	background-color:#f7f7f7;
 	border-radius: 4px;
 	-webkit-border-radius: 4px;
@@ -319,10 +319,10 @@ div.clear {
 	text-transform:capitalize;
 	font-size:14px;
 }
-#leftNav div.setTools img {
+#leftNav div.setTools img, #leftNav div.batchTools img {
 	padding-right:5px;
 }
-#leftNav div.visualize a, #leftNav div.setTools a {
+#leftNav div.visualize a, #leftNav div.setTools a, #leftNav div.batchTools a {
 	text-decoration:none;
 }
 #caColorbox {
@@ -437,7 +437,7 @@ div.inspectorLotObjectTypeControls {
 #leftNav #toolIcons .button {
 	text-align:left;
 }
-#leftNav #searchSetTools .button {
+#leftNav #searchSetTools .button, #leftNav #batchTools .button {
 	text-align: right;
 }
 #leftNav .button.info img{
@@ -1258,6 +1258,7 @@ div.formLabelUploadSizeNote {
 	font-weight: normal;
 	height: 17px;
 	vertical-align: top;
+	max-width: 120px;
 }
 .bundleSubLabel .editorBundlePrintControl {
 	float:right;
@@ -1330,6 +1331,10 @@ div.formLabelUploadSizeNote {
 .settingsBundle {
     padding: 10px;
     max-height: 700px;
+}
+
+.bundleSubLabel .batchEdit { 
+    float: right;
 }
 
 .caDupeLabelMessageBox {
@@ -2454,11 +2459,8 @@ select.searchToolsSelect {
 }
 /* Set Tools */
 
-#searchSetTools {
+#searchSetTools, #batchTools {
 	display:none;
-}
-
-#searchSetTools {
 	background-color: #f7f7f7;
 	border-radius: 4px;
 	-moz-border-radius: 4px;
@@ -2466,19 +2468,19 @@ select.searchToolsSelect {
 	margin: 10px;
 	padding: 10px;
 }
-#searchSetTools .col{
+#searchSetTools .col, #batchTools .col {
 	margin-bottom:15px;
 }
-#searchSetTools .header {
+#searchSetTools .header, #batchTools .header {
 	font-family: 'din-regular', helvetica, sans-serif;
 	font-weight:bold;
 }
-#searchSetTools a{
+#searchSetTools a, #batchTools a {
 	float: right;
 	clear: left;
 	text-align: right;
 }
-#searchSetTools .searchSetsToggle a{
+#searchSetTools .searchSetsToggle a {
 	float: left;
 	clear: right;
 	text-align: left;
@@ -3737,7 +3739,6 @@ a.hierarchyBrowserLevelEditButton {
 
 div.hierarchyBrowseTab {
     width: 712px;
-    overflow: hidden;
     font-weight: normal;
     margin-left:-10px;
 }
@@ -6327,12 +6328,12 @@ table.caConfirmBatchExecutionPanelAlertControls {
     padding:10px;
 }
 
-#caTypeChangePanelControlButtons, #caCreateChildPanelControlButtons, #caSetHomeLocationPanelControlButtons {
+#caTypeChangePanelControlButtons, #caCreateChildPanelControlButtons, #caSetHomeLocationPanelControlButtons, #caMediaBrowserPanelControlButtons {
     width: 100%;
     text-align: center;
 }
 
-#caTypeChangePanelControlButtons table, #caCreateChildPanelControlButtons table, #caSetHomeLocationPanelControlButtons table {
+#caTypeChangePanelControlButtons table, #caCreateChildPanelControlButtons table, #caSetHomeLocationPanelControlButtons table, #caMediaBrowserPanelControlButtons table {
     width: 100%;
 }
 #caTypeChangePanelControlButtons img.form-button-left, #caCreateChildPanelControlButtons img.form-button-left, #caSetHomeLocationPanelControlButtons img.form-button-left {
@@ -6371,6 +6372,34 @@ div.dialogHeader {
     border-radius:4px;
     -moz-border-radius:4px;
     -webkit-border-radius:4px;
+    
+    min-height: 300px;
+}
+
+/* Media chooser */
+#caMediaBrowserPanel {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 800px;
+    display: none;
+    margin: 0px;
+    padding:0px !important;
+    z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
+    background-color: #FFFFFF;
+    border-radius:4px;
+    -moz-border-radius:4px;
+    -webkit-border-radius:4px;
+    
+    min-height: 300px;
+}
+
+#caMediaBrowserPanelContentArea {
+    padding: 10px;
+}
+
+#caMediaBrowserPanelDirectoryBrowser {
+    height: 225px;
 }
 
 
@@ -7677,7 +7706,7 @@ a.currentSet {
 }
 
 .mediaUploadAreaMessage {
-	font-size: 16px; 
+	font-size: 15px; 
 	color: #333;
 	margin-top: 40px;
 }
@@ -7728,6 +7757,14 @@ div.objectRepresentationMetadataEditorDoneButton {
 .objectRepresentationMetadataEditorMediaRightCol .fa {
 	font-size:18px;
 	padding-right:5px;
+}
+
+.objectRepresentationAddForm {
+
+}
+
+.objectRepresentationRelateForm {
+    display: none;
 }
 
 .mediaMetadataDisplay {

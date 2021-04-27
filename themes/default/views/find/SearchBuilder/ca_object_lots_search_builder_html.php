@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * themes/default/views/find/ca_collections_search_builder_html.php 
+ * themes/default/views/find/ca_object_lots_search_builder_html.php 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -50,17 +50,11 @@
 	<div class="sectionBox">
 <?php
 		switch($vs_view) {
-			case 'full':
-				print $this->render('Results/ca_collections_results_full_html.php');
-				break;
-			case 'list':
-				print $this->render('Results/ca_collections_results_list_html.php');
-				break;
 			case 'no_results':
 				print $this->render('Results/no_results_html.php');
 				break;
 			default:
-				print $this->render('Results/ca_collections_results_thumbnail_html.php');
+				print $this->render('Results/ca_object_lots_results_list_html.php');
 				break;
 		}
 ?>		

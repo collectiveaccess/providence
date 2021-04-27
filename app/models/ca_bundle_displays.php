@@ -30,20 +30,7 @@
  * ----------------------------------------------------------------------
  */
  
- /**
-   *
-   */
-
 require_once(__CA_LIB_DIR__.'/ModelSettings.php');
-require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php'); 
-require_once(__CA_LIB_DIR__.'/SetUniqueIdnoTrait.php'); 
-require_once(__CA_MODELS_DIR__.'/ca_bundle_displays.php'); 
-require_once(__CA_MODELS_DIR__.'/ca_bundle_display_placements.php'); 
-require_once(__CA_MODELS_DIR__.'/ca_bundle_displays_x_user_groups.php'); 
-require_once(__CA_MODELS_DIR__.'/ca_bundle_display_type_restrictions.php'); 
-require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php'); 
-require_once(__CA_MODELS_DIR__.'/ca_lists.php');
-require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 
 define('__CA_BUNDLE_DISPLAY_NO_ACCESS__', 0);
 define('__CA_BUNDLE_DISPLAY_READ_ACCESS__', 1);
@@ -132,47 +119,8 @@ BaseModel::$s_ca_models_definitions['ca_bundle_displays'] = array(
 	)
 );
 
-global $_ca_bundle_displays_settings;
-$_ca_bundle_displays_settings = array(		// global
-	'show_empty_values' => array(
-		'formatType' => FT_NUMBER,
-		'displayType' => DT_CHECKBOXES,
-		'width' => 4, 'height' => 1,
-		'takesLocale' => false,
-		'default' => '1',
-		'label' => _t('Display empty values?'),
-		'description' => _t('If checked all values will be displayed, whether there is content for them or not.')
-	),
-	'bottom_line' => array(
-		'formatType' => FT_TEXT,
-		'displayType' => DT_FIELD,
-		'width' => 100, 'height' => 4,
-		'takesLocale' => false,
-		'default' => '',
-		'label' => _t('Bottom line format'),
-		'description' => _t('Format per-page and per-report summary information.')
-	),
-	'show_only_in' => array(
-		'formatType' => FT_TEXT,
-		'displayType' => DT_SELECT,
-		'multiple' => 1,
-		'width' => 100, 'height' => 4,
-		'takesLocale' => false,
-		'options' => [
-		    _t('Search/browse (thumbnail view)') => 'search_browse_thumbnail',
-		    _t('Search/browse (full view)') => 'search_browse_full',
-		    _t('Search/browse (list view)') => 'search_browse_list',
-		    _t('Editor summaries') => 'editor_summary',
-		    _t('Editor relationship bundles') => 'editor_relationship_bundle',
-		    _t('Set items bundles') => 'set_item_bundle'
-		],
-		'default' => '',
-		'label' => _t('Show display in'),
-		'description' => _t('Restrict display to use in specific contexts. If no contexts are selected the display will be shown in all contexts.')
-	)
-);
-
 class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
+	use ModelSettings;
 	use SetUniqueIdnoTrait;
 	
 	# ---------------------------------
@@ -274,12 +222,6 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 	# cache for haveAccessToDisplay()
 	static $s_have_access_to_display_cache = [];
 	
-	/**
-	 * Settings delegate - implements methods for setting, getting and using 'settings' var field
-	 */
-	public $SETTINGS;
-	
-	
 	static $s_placement_list_cache;		// cache for getPlacements()
 	
 	# ------------------------------------------------------
@@ -287,31 +229,70 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		// Filter list of tables display can be used for to those enabled in current config
 		BaseModel::$s_ca_models_definitions['ca_bundle_displays']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = caFilterTableList(BaseModel::$s_ca_models_definitions['ca_bundle_displays']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST']);
 		
-		global $_ca_bundle_displays_settings;
 		parent::__construct($pn_id);
 		
 		//
-		$this->SETTINGS = new ModelSettings($this, 'settings', $_ca_bundle_displays_settings);
-		
+		$this->setAvailableSettings([
+			'show_empty_values' => [
+				'formatType' => FT_NUMBER,
+				'displayType' => DT_CHECKBOXES,
+				'width' => 4, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '1',
+				'label' => _t('Display empty values?'),
+				'description' => _t('If checked all values will be displayed, whether there is content for them or not.')
+			],
+			'bottom_line' => [
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 100, 'height' => 4,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Bottom line format'),
+				'description' => _t('Format per-page and per-report summary information.')
+			],
+			'show_only_in' => [
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'multiple' => 1,
+				'width' => 100, 'height' => 4,
+				'takesLocale' => false,
+				'options' => [
+					_t('Search/browse (thumbnail view)') => 'search_browse_thumbnail',
+					_t('Search/browse (full view)') => 'search_browse_full',
+					_t('Search/browse (list view)') => 'search_browse_list',
+					_t('Editor summaries') => 'editor_summary',
+					_t('Editor relationship bundles') => 'editor_relationship_bundle',
+					_t('Set items bundles') => 'set_item_bundle'
+				],
+				'default' => '',
+				'label' => _t('Show display in'),
+				'description' => _t('Restrict display to use in specific contexts. If no contexts are selected the display will be shown in all contexts.')
+			]
+		]);
 	}
 	# ------------------------------------------------------
 	/**
-	 * @param array $options
-	 *		duplicate_subitems
+	 * Implement display-specific behavior to support duplication of sub-items.
+	 *
+	 * @param array $options Options include:
+	 *		duplicateSubitems = Duplicate placements within display. [Default is false]
+	 *
+	 * @return ca_bundle_displays An instance containing the newly created display
 	 */
 	public function duplicate($options=null) {
-		$vb_we_set_transaction = false;
+		$we_set_transaction = false;
 		if (!$this->inTransaction()) {
 			$this->setTransaction($o_t = new Transaction($this->getDb()));
-			$vb_we_set_transaction = true;
+			$we_set_transaction = true;
 		} else {
 			$o_t = $this->getTransaction();
 		}
 		
 		if ($t_dupe = parent::duplicate($options)) {
-			$vb_duplicate_subitems = caGetOption('duplicate_subitems', $options, false);
+			$duplicate_subitems = caGetOption(['duplicateSubitems', 'duplicate_subitems'], $options, false);
 		
-			if ($vb_duplicate_subitems) { 
+			if ($duplicate_subitems) { 
 				// Try to dupe related ca_bundle_display_placements rows
 				$o_db = $this->getDb();
 				
@@ -321,24 +302,24 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 					WHERE display_id = ?
 				", (int)$this->getPrimaryKey());
 				
-				$va_items = [];
+				$items = [];
 				while($qr_res->nextRow()) {
-					$va_row = $qr_res->getRow();
-					$va_row['settings'] = caUnserializeForDatabase($va_row['settings']);
-					$va_items[$qr_res->get('placement_id')] = $va_row;
+					$row = $qr_res->getRow();
+					$row['settings'] = caUnserializeForDatabase($row['settings']);
+					$items[$qr_res->get('placement_id')] = $row;
 				}
 				
-				foreach($va_items as $item_id => $va_item) {
+				foreach($items as $item_id => $item) {
 					$t_item = new ca_bundle_display_placements();
 					if ($this->inTransaction()) { $t_item->setTransaction($this->getTransaction()); }
 					$t_item->setMode(ACCESS_WRITE);
-					$va_item['display_id'] = $t_dupe->getPrimaryKey();
-					$t_item->set($va_item);
+					$item['display_id'] = $t_dupe->getPrimaryKey();
+					$t_item->set($item);
 					$t_item->insert();
 					
 					if ($t_item->numErrors()) {
 						$this->errors = $t_item->errors;
-						if ($vb_we_set_transaction) { $this->removeTransaction(false);}
+						if ($we_set_transaction) { $this->removeTransaction(false);}
 						return false;
 					}
 				}
@@ -346,7 +327,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		
-		if ($vb_we_set_transaction) { $this->removeTransaction(true);}
+		if ($we_set_transaction) { $this->removeTransaction(true);}
 		return $t_dupe;
 	}
 	# ------------------------------------------------------
@@ -938,18 +919,6 @@ if (!$pb_omit_editing_info) {
 		if ($qr_res->numRows() > 0) { return ca_bundle_displays::$s_have_access_to_display_cache[$vn_display_id.'/'.$pn_user_id.'/'.$pn_user_access] = true; }
 		
 		return ca_bundle_displays::$s_have_access_to_display_cache[$vn_display_id.'/'.$pn_user_id.'/'.$pn_user_access] = false;
-	}
-	# ------------------------------------------------------
-	# Settings
-	# ------------------------------------------------------
-	/**
-	 * Reroutes calls to method implemented by settings delegate to the delegate class
-	 */
-	public function __call($ps_name, $pa_arguments) {
-		if (method_exists($this->SETTINGS, $ps_name)) {
-			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
-		}
-		die($this->tableName()." does not implement method {$ps_name}");
 	}
 	# ------------------------------------------------------
 	# Bundles
@@ -2812,8 +2781,8 @@ if (!$pb_omit_editing_info) {
 			if (method_exists($t_model, 'getLabelTableInstance') && ($t_label = $t_model->getLabelTableInstance()) && !(($table === 'ca_objects') && ($this->getAppConfig()->get('ca_objects_dont_use_labels')))) {
 				$display_list['-2'] = array(
 					'placement_id' => 				'-2',
-					'bundle_name' => 				"{$table}.preferred_labels.name_plural",
-					'display' => 					$t_label->getDisplayLabel($t_label->tableName().'.'.$t_label->getDisplayField()),
+					'bundle_name' => 				$l = $t_label->tableName().'.'.$t_label->getDisplayField(),
+					'display' => 					$t_label->getDisplayLabel($l),
 					'settings' => 					[],
 					'allowEditing' =>				true,
 					'allowInlineEditing' => 		true,

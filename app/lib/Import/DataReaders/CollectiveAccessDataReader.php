@@ -49,7 +49,6 @@ class CollectiveAccessDataReader extends BaseDataReader {
 	private $opn_current_row = 0;
 	
 	private $opo_client = null;
-	private $opo_datamodel = null;
 	
 	private $ops_table = null;
 	private $ops_path = null;

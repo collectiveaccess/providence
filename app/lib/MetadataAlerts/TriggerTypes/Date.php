@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2018 Whirl-i-Gig
+ * Copyright 2016-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,8 +31,6 @@
  */
 
 namespace CA\MetadataAlerts\TriggerTypes;
-
-require_once(__CA_MODELS_DIR__ . '/ca_metadata_elements.php');
 
 class Date extends Base {
 
@@ -210,7 +208,7 @@ class Date extends Base {
 		
 		$vs_date_range = caGetLocalizedDateRange($vn_start, $vn_end, ['timeOmit' => false]);
 		
-		if ($vs_parent_code) {
+		if ($vs_parent_code && ($vs_parent_code !== $vs_element_code)) {
 			$va_criteria[$vs_parent_code] = [$vs_element_code => $vs_date_range];
 		} else {
 			$va_criteria[$vs_element_code] = $vs_date_range;

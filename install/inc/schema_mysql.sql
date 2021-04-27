@@ -685,8 +685,8 @@ create table ca_object_representation_labels
    representation_id              int unsigned                   not null,
    locale_id                      smallint unsigned              not null,
    type_id                        int unsigned                   null,
-   name                           varchar(1024)                  not null,
-   name_sort                      varchar(1024)                  not null,
+   name                           varchar(16384)                 not null,
+   name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
    primary key (label_id),
@@ -835,8 +835,8 @@ create table ca_occurrence_labels
    occurrence_id                  int unsigned                   not null,
    locale_id                      smallint unsigned              not null,
    type_id                        int unsigned                   null,
-   name                           varchar(1024)                   not null,
-   name_sort                      varchar(1024)                   not null,
+   name                           varchar(16384)                 not null,
+   name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
    primary key (label_id),
@@ -965,7 +965,7 @@ create table ca_collection_labels
    collection_id                  int unsigned                   not null,
    locale_id                      smallint unsigned              not null,
    type_id                        int unsigned                   null,
-   name                           varchar(255)                   not null,
+   name                           varchar(16384)                 not null,
    name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
@@ -983,7 +983,7 @@ create index i_name on ca_collection_labels(name(128));
 create unique index u_all on ca_collection_labels
 (
    collection_id,
-   name,
+   name(255),
    type_id,
    locale_id
 );
@@ -1207,8 +1207,8 @@ create table ca_loan_labels (
    loan_id                        int unsigned                   not null,
    locale_id                      smallint unsigned              not null,
    type_id                        int unsigned                   null,
-   name                           varchar(1024)                  not null,
-   name_sort                      varchar(1024)                  not null,
+   name                           varchar(16384)                 not null,
+   name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
    primary key (label_id),
@@ -1290,8 +1290,8 @@ create table ca_movement_labels (
    movement_id                    int unsigned                   not null,
    locale_id                      smallint unsigned              not null,
    type_id                        int unsigned                   null,
-   name                           varchar(1024)                  not null,
-   name_sort                      varchar(1024)                  not null,
+   name                           varchar(16384)                 not null,
+   name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
    primary key (label_id),
@@ -1659,8 +1659,8 @@ create table ca_object_lot_labels
    lot_id                         int unsigned               not null,
    locale_id                      smallint unsigned              not null,
    type_id                        int unsigned                   null,
-   name                           varchar(1024)                  not null,
-   name_sort                      varchar(1024)                  not null,
+   name                           varchar(16384)                 not null,
+   name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
    primary key (label_id),
@@ -1917,11 +1917,11 @@ create index i_submission_via_form on ca_objects(submission_via_form);
 create table ca_object_labels
 (
    label_id                       int unsigned                   not null AUTO_INCREMENT,
-   object_id                      int unsigned               not null,
+   object_id                      int unsigned                   not null,
    locale_id                      smallint unsigned              not null,
    type_id                        int unsigned                   null,
-   name                           varchar(1024)                  not null,
-   name_sort                      varchar(1024)                  not null,
+   name                           varchar(16384)                 not null,
+   name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
    primary key (label_id),
@@ -4459,7 +4459,7 @@ create table ca_editor_ui_labels (
 	ui_id int unsigned not null references ca_editor_uis(ui_id),
 	name varchar(255) not null,
 	description text not null,
-	locale_id smallint not null references ca_locales(locale_id),
+	locale_id smallint unsigned not null references ca_locales(locale_id),
 	
 	primary key 				(label_id),
 	index i_ui_id				(ui_id),
@@ -4497,7 +4497,7 @@ create table ca_editor_uis_x_users (
 create table ca_editor_uis_x_roles (
 	relation_id int unsigned not null auto_increment,
 	ui_id int unsigned not null references ca_editor_uis(ui_id),
-	role_id int unsigned not null references ca_user_roles(role_id),
+	role_id smallint unsigned not null references ca_user_roles(role_id),
 	access 			tinyint unsigned not null default 0,
 	
 	primary key 				(relation_id),
@@ -4537,7 +4537,7 @@ create table ca_editor_ui_screen_labels (
 	screen_id int unsigned not null references ca_editor_ui_screens(screen_id),
 	name varchar(255) not null,
 	description text not null,
-	locale_id smallint not null references ca_locales(locale_id),
+	locale_id smallint unsigned not null references ca_locales(locale_id),
 	
 	primary key 				(label_id),
 	index i_screen_id			(screen_id),
@@ -4575,7 +4575,7 @@ create table ca_editor_ui_screens_x_users (
 create table ca_editor_ui_screens_x_roles (
 	relation_id int unsigned not null auto_increment,
 	screen_id int unsigned not null references ca_editor_ui_screens(screen_id),
-	role_id int unsigned not null references ca_user_roles(role_id),
+	role_id smallint unsigned not null references ca_user_roles(role_id),
 	access 			tinyint unsigned not null default 0,
 	
 	primary key 				(relation_id),
@@ -4739,7 +4739,7 @@ create table ca_sets_x_user_groups (
 create table ca_sets_x_users (
 	relation_id int unsigned not null auto_increment,
 	set_id int unsigned not null references ca_sets(set_id),
-	user_id int unsigned not null references ca_user(user_id),
+	user_id int unsigned not null references ca_users(user_id),
 	access tinyint unsigned not null default 0,
 	sdatetime int unsigned null,
 	edatetime int unsigned null,
@@ -4804,7 +4804,7 @@ create table ca_items_x_tags (
 	table_num	tinyint unsigned not null,
 	row_id		int unsigned not null,
 	
-	tag_id		int unsigned not null references ca_tags(tag_id),
+	tag_id		int unsigned not null references ca_item_tags(tag_id),
 	
 	user_id		int unsigned null references ca_users(user_id),
 	access		tinyint unsigned not null default 0,
@@ -5175,7 +5175,7 @@ create table ca_tour_stop_labels
    label_id                       int unsigned              not null AUTO_INCREMENT,
    stop_id                        int unsigned              not null,
    locale_id                      smallint unsigned              not null,
-   name                           varchar(255)                   not null,
+   name                           varchar(16384)                 not null,
    name_sort                      varchar(255)                   not null,
    primary key (label_id),
    
@@ -7375,4 +7375,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (168, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (169, unix_timestamp());

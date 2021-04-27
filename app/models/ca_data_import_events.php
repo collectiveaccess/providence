@@ -183,7 +183,6 @@ class ca_data_import_events extends BaseModel {
 
 	protected $FIELDS;
 	
-	protected $opo_datamodel;
 	protected $opo_data_import_item;
 	
 	/** 

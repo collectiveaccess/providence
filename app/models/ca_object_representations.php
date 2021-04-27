@@ -1220,7 +1220,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		$o_view->setVar('settings', $pa_bundle_settings);
 		
 		$va_inital_values = array();
-		if (sizeof($va_items = $this->getAnnotations())) {
+		if (is_array($va_items = $this->getAnnotations()) && sizeof($va_items)) {
 			$t_rel = Datamodel::getInstanceByTableName("{$vs_annotation_table}", true);
 			$vs_rel_pk = $t_rel->primaryKey();
 			foreach ($va_items as $vn_id => $va_item) {
@@ -2242,7 +2242,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	 * @return mixed ca_object_representations instance representing the first representation that contains the file, if representation exists with this file, false if the file does not yet exist
 	 */
 	static function mediaExists($ps_filepath) {
-		if (!file_exists($ps_filepath)) { return null; }
+		if (!file_exists($ps_filepath) || !is_readable($ps_filepath)) { return null; }
 		$vs_md5 = md5_file($ps_filepath);
 		$t_rep = new ca_object_representations();
 		if ($t_rep->load(array('md5' => $vs_md5, 'deleted' => 0))) { 

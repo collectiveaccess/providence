@@ -462,11 +462,9 @@
 				$va_defined_vars = array_keys($this->view->getAllVars());		// get list defined vars (we don't want to copy over them)
 				$va_tag_list = $this->getTagListForView($va_template_info['path']);				// get list of tags in view
 				
-				$va_barcode_files_to_delete = array();
-				
 				$vn_page_count = 0;
 				while($po_result->nextHit()) {
-					$va_barcode_files_to_delete = array_merge($va_barcode_files_to_delete, caDoPrintViewTagSubstitution($this->view, $po_result, $va_template_info['path'], array('checkAccess' => $this->opa_access_values)));
+					caDoPrintViewTagSubstitution($this->view, $po_result, $va_template_info['path'], array('checkAccess' => $this->opa_access_values));
 					
 					$vs_content .= "<div style=\"{$vs_border} position: absolute; width: {$vn_width}mm; height: {$vn_height}mm; left: {$vn_left}mm; top: {$vn_top}mm; overflow: hidden; padding: 0; margin: 0;\">";
 					$vs_content .= $this->render($va_template_info['path']);
@@ -502,17 +500,12 @@
 				}
 				
 				$vs_content .= $this->render("pdfEnd.php");
-				
 				$o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'));
 				$o_pdf->render($vs_content, array('stream'=> true, 'filename' => ($filename = $this->view->getVar('filename')) ? $filename : caGetOption('filename', $va_template_info, 'labels.pdf')));
 
 				$vb_printed_properly = true;
-				
-				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp); @unlink("{$vs_tmp}.png");}
 				exit;
 			} catch (Exception $e) {
-				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp); @unlink("{$vs_tmp}.png");}
-				
 				$vb_printed_properly = false;
 				$this->postError(3100, _t("Could not generate PDF"),"BaseFindController->PrintSummary()");
 			}

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2020 Whirl-i-Gig
+ * Copyright 2012-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,16 +38,10 @@ require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
 require_once(__CA_LIB_DIR__.'/Import/DataReaderManager.php');
 require_once(__CA_LIB_DIR__.'/Utils/DataMigrationUtils.php');
 require_once(__CA_LIB_DIR__.'/ProgressBar.php');
-require_once(__CA_MODELS_DIR__."/ca_data_importer_labels.php");
-require_once(__CA_MODELS_DIR__."/ca_data_importer_groups.php");
-require_once(__CA_MODELS_DIR__."/ca_data_importer_items.php");
-require_once(__CA_MODELS_DIR__."/ca_data_import_events.php");
-require_once(__CA_MODELS_DIR__."/ca_locales.php");
-require_once(__CA_MODELS_DIR__."/ca_sets.php");
 require_once(__CA_LIB_DIR__.'/Logging/KLogger/KLogger.php');
-require_once(__CA_LIB_DIR__.'/Parsers/ExpressionParser.php');
 require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__.'/Db/Transaction.php');
+require_once(__CA_LIB_DIR__.'/Import/RefineryManager.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_data_importers'] = array(
@@ -129,6 +123,8 @@ BaseModel::$s_ca_models_definitions['ca_data_importers'] = array(
 );
 	
 class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
+	use ModelSettings;
+	
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -219,11 +215,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 
 	protected $FIELDS;
 	
-	/**
-	 * Settings delegate - implements methods for setting, getting and using 'settings' var field
-	 */
-	public $SETTINGS;
-	
 	
 	/**
 	 * Number of errors for current import
@@ -278,9 +269,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	protected function initSettings() {
-		$va_settings = array();
+		$settings = [];
 		
-		$va_settings['inputFormats'] = array(
+		$settings['inputFormats'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_SELECT,
 			'width' => 40, 'height' => 5,
@@ -290,7 +281,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'label' => _t('Importer data types'),
 			'description' => _t('Set data types for which this importer is usable.  Ex. XLSX, XLS, MYSQL')
 		);
-		$va_settings['type'] = array(
+		$settings['type'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_SELECT,
 			'width' => 40, 'height' => 1,
@@ -299,7 +290,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'label' => _t('Record type'),
 			'description' => _t('Type to set all imported records to. If import includes a mapping to type_id, that will be privileged and the type setting will be ignored.')
 		);
-		$va_settings['numInitialRowsToSkip'] = array(
+		$settings['numInitialRowsToSkip'] = array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_FIELD,
 			'width' => 4, 'height' => 1,
@@ -308,7 +299,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'label' => _t('Initial rows to skip'),
 			'description' => _t('The number of rows at the top of the data set to skip. Use this setting to skip over column headers in spreadsheets and similar data.')
 		);
-		$va_settings['name'] = array(
+		$settings['name'] = array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_FIELD,
 			'width' => 40, 'height' => 1,
@@ -317,7 +308,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'label' => _t('Mapping name'),
 			'description' => _t('Human readable name of the import mapping.  Pending implementation.')
 		);
-		$va_settings['code'] = array(
+		$settings['code'] = array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_FIELD,
 			'width' => 40, 'height' => 1,
@@ -326,7 +317,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'label' => _t('Mapping identifier'),
 			'description' => _t('Arbitrary alphanumeric code for the import mapping (no special characters or spaces).  Pending implementation.')
 		);
-		$va_settings['table'] = array(
+		$settings['table'] = array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_FIELD,
 			'width' => 40, 'height' => 1,
@@ -335,7 +326,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'label' => _t('Map to table'),
 			'description' => _t('Sets the CollectiveAccess table for the imported data.')
 		);
-		$va_settings['existingRecordPolicy'] = array(
+		$settings['existingRecordPolicy'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
 			'width' => 40, 'height' => 1,
@@ -364,7 +355,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'label' => _t('Existing record policy'),
 			'description' => _t('Determines how existing records are checked for and handled by the import mapping.  Pending implementation.')
 		);
-		$va_settings['ignoreTypeForExistingRecordPolicy'] = array(
+		$settings['ignoreTypeForExistingRecordPolicy'] = array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_FIELD,
 			'width' => 40, 'height' => 1,
@@ -373,7 +364,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'label' => _t('Ignore record type when looking for existing records as specified by the existing records policy.'),
 			'description' => _t('.')
 		);
-		$va_settings['mergeOnly'] = array(
+		$settings['mergeOnly'] = array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_FIELD,
 			'width' => 40, 'height' => 1,
@@ -382,7 +373,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'label' => _t('If set data will only be merged with existing records using the existing records policy. No new records will be created.'),
 			'description' => _t('.')
 		);
-		$va_settings['dontDoImport'] = array(
+		$settings['dontDoImport'] = array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_FIELD,
 			'width' => 4, 'height' => 1,
@@ -391,7 +382,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'label' => _t('Do not do import'),
 			'description' => _t('If set then the mapping will be evaluated but no rows actually imported. This can be useful when you want to run a refinery over the rows of a data set but not actually perform the primary import.')
 		);
-		$va_settings['archiveDataSets'] = array(
+		$settings['archiveDataSets'] = array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_FIELD,
 			'width' => 40, 'height' => 1,
@@ -404,7 +395,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'label' => _t('Archive data sets?'),
 			'description' => _t('Set to yes to save the data spreadsheet or no to delete it from the server after import.  Pending implementation.')
 		);
-		$va_settings['errorPolicy'] = array(
+		$settings['errorPolicy'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
 			'width' => 40, 'height' => 1,
@@ -418,7 +409,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'description' => _t('Determines how errors are handled for the import.  Options are to ignore the error, stop the import when an error is encountered and to receive a prompt when the error is encountered.')
 		);
 		
-		$va_settings['basePath'] = array(
+		$settings['basePath'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
 			'width' => 60, 'height' => 2,
@@ -428,7 +419,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'description' => _t('For XML data formats, an XPath expression selecting nodes to be treated as individual records. If left blank, each XML document will be treated as a single record.')
 		);
 		
-		$va_settings['locale'] = array(
+		$settings['locale'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
 			'width' => 10, 'height' => 1,
@@ -438,7 +429,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'description' => _t('Set the locale used for all imported data. Leave on "DEFAULT" to use the system default locale. Otherwise set it to a valid locale code (Ex. en_US, es_MX, fr_CA).')
 		);
 		
-		$va_settings['sourceUrl'] = array(
+		$settings['sourceUrl'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
 			'width' => 100, 'height' => 1,
@@ -448,7 +439,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'description' => _t('URL importer worksheet was fetched from. Will be null if importer was directly uploaded.')
 		);
 		
-		$va_settings['skipDuplicateValues'] = array(
+		$settings['skipDuplicateValues'] = array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_FIELD,
 			'width' => 40, 'height' => 1,
@@ -458,7 +449,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'description' => _t('If set duplicate values in fields will be ignored.')
 		);
 		
-		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
+		$this->setAvailableSettings($settings);
 	}
 	# ------------------------------------------------------
 	/**
@@ -4158,6 +4149,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	private static function _processAppliedRegexes($o_reader, $item, $index, $regexes, $val, &$row, &$row_with_replacements) {
 		if(is_array($regexes)) {
+			if(!caIsIndexedArray($regexes)) { 
+				if(caIsAssociativeArray($regexes)) {
+					$regexes = [$regexes];
+				} else {
+					return $val;
+				}
+			}
 			foreach($regexes as $regex_index => $regex_info) {
 				if (!strlen($regex_info['match'])) { continue; }
 				$regex = "!".str_replace("!", "\\!", $regex_info['match'])."!u".((isset($regex_info['caseSensitive']) && (bool)$regex_info['caseSensitive']) ? '' : 'i');
