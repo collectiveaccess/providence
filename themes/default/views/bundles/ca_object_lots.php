@@ -380,6 +380,7 @@
 <?php
 	} else {
 ?>
+			minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_object_lots_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
 			relationshipTypes: <?php print json_encode($this->getVar('relationship_types_by_sub_type')); ?>,
 			templateValues: ['label', 'idno_stub', 'id', 'type_id'],
 			firstItemColor: '<?php print $vs_first_color; ?>',

@@ -93,7 +93,8 @@
 			deleteButtonClassName: 'caDeleteItemButton',
 			showEmptyFormsOnLoad: 0,
 			readonly: <?= $vb_read_only ? "true" : "false"; ?>,
-			autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'User', 'Get', array()); ?>'
+			autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'User', 'Get', array()); ?>',
+			minChars: <?= (int)$t_item->getAppConfig()->get(["ca_users_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
 		});
 	});
 </script>
