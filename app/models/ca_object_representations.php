@@ -493,7 +493,19 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		if ($vn_rc = parent::insert($options)) {
 			if (is_array($va_media_info = $this->getMediaInfo('media', 'original'))) {
 				$this->set('md5', $va_media_info['MD5']);
-				$this->set('mimetype', $va_media_info['MIMETYPE']);
+				$this->set('mimetype', $media_mimetype = $va_media_info['MIMETYPE']);
+				
+				if(is_array($type_defaults = $this->getAppConfig()->get('object_representation_media_based_type_defaults')) && sizeof($type_defaults)) {
+					foreach($type_defaults as $m => $default_type) {
+						if(caCompareMimetypes($media_mimetype, $m)) {
+							$this->set('type_id', $default_type, ['allowSettingOfTypeID' => true]);
+							if (!($vn_rc = parent::update($options))) {
+								$this->postError(2710, _t('Could not update representation type using media-based default'), 'ca_object_representations->insert()');
+							}
+							break;
+						}
+					}	
+				}
 			
 				if(is_array($va_media_info = $this->getMediaInfo('media')) && isset($va_media_info['ORIGINAL_FILENAME']) && strlen($va_media_info['ORIGINAL_FILENAME'])) {
 					$this->set('original_filename', $va_media_info['ORIGINAL_FILENAME']);
@@ -521,6 +533,19 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			if(is_array($va_media_info = $this->getMediaInfo('media', 'original'))) {
 				$this->set('md5', $va_media_info['MD5']);
 				$this->set('mimetype', $va_media_info['MIMETYPE']);
+				
+				if(is_array($type_defaults = $this->getAppConfig()->get('object_representation_media_based_type_defaults')) && sizeof($type_defaults)) {
+					foreach($type_defaults as $m => $default_type) {
+						if(caCompareMimetypes($media_mimetype, $m)) {
+							$this->set('type_id', $default_type, ['allowSettingOfTypeID' => true]);
+							if (!($vn_rc = parent::update($options))) {
+								$this->postError(2710, _t('Could not update representation type using media-based default'), 'ca_object_representations->insert()');
+							}
+							break;
+						}
+					}	
+				}
+				
 				if (is_array($va_media_info = $this->getMediaInfo('media')) && isset($va_media_info['ORIGINAL_FILENAME']) && strlen($va_media_info['ORIGINAL_FILENAME'])) {
 					$this->set('original_filename', $va_media_info['ORIGINAL_FILENAME']);
 				}
