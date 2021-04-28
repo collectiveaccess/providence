@@ -405,7 +405,7 @@ class Installer {
 			}
 		}
 
-		if ($o_config->get('search_engine_plugin') == 'ElasticSearch') {
+		if (($o_config->get('search_engine_plugin') == 'ElasticSearch') && (!$this->isAlreadyInstalled() || (defined('__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__') && __CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__ && $this->opb_overwrite))) {
 			$o_es = new WLPlugSearchEngineElasticSearch();
 			try {
 				$o_es->truncateIndex();
@@ -423,7 +423,6 @@ class Installer {
 	    if (sizeof($this->opa_metadata_element_deferred_settings_processing)) {
 	        foreach($this->opa_metadata_element_deferred_settings_processing as $vs_element_code => $va_settings) {
 	            if (!($t_element = ca_metadata_elements::getInstance($vs_element_code))) { continue; }
-	            $t_element->setMode(ACCESS_WRITE);
 	            $va_available_settings = $t_element->getAvailableSettings();
 	            foreach($va_settings as $vs_setting_name => $va_setting_values) {
 	                if (!isset($va_available_settings[$vs_setting_name])) { continue; }
@@ -453,6 +452,25 @@ class Installer {
 	}
 	# --------------------------------------------------
 	/**
+	 * Checks if ColletiveAccess tables already exist in the database
+	 *
+	 * @return boolean Returns true if CA is already installed
+	 */
+	public function isAlreadyInstalled() {
+		$ca_tables = Datamodel::getTableNames();
+
+		$qr = $this->opo_db->query("SHOW TABLES");
+
+		while($qr->nextRow()) {
+			$table = $qr->getFieldAtIndex(0);
+			if (in_array($table, $ca_tables)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	# --------------------------------------------------
+	/**
 	 * Loads CollectiveAccess schema into an empty database
 	 *
 	 * @param callable $f_callback Function to be called for each SQL statement in the schema. Function is passed four parameters: the SQL code of the statement, the table name, the number of the table being loaded and the total number of tables.
@@ -466,24 +484,14 @@ class Installer {
 			$this->opo_db->query('CREATE DATABASE `'.__CA_DB_DATABASE__.'`');
 			$this->opo_db->query('USE `'.__CA_DB_DATABASE__.'`');
 		}
-
-		$va_ca_tables = Datamodel::getTableNames();
-
-		$qr_tables = $this->opo_db->query("SHOW TABLES");
-
-		while($qr_tables->nextRow()) {
-			$vs_table = $qr_tables->getFieldAtIndex(0);
-			if (in_array($vs_table, $va_ca_tables)) {
-				$this->addError("Table ".$vs_table." already exists; have you already installed CollectiveAccess?");
-				return false;
-			}
+		
+		if($this->isAlreadyInstalled()) {
+			throw new Exception("Cannot install because an existing CollectiveAccess installation has been detected.");
 		}
-
+		
 		// load schema
-
 		if (!($vs_schema = file_get_contents(__CA_BASE_DIR__."/install/inc/schema_mysql.sql"))) {
-			$this->addError("Could not open schema definition file");
-			return false;
+			throw new Exception("Could not open schema definition file");
 		}
 		$va_schema_statements = explode(';', $vs_schema);
 
@@ -511,8 +519,7 @@ class Installer {
 			}
 			$this->opo_db->query($vs_statement);
 			if ($this->opo_db->numErrors()) {
-				$this->addError("Error while loading the database schema: ".join("; ",$this->opo_db->getErrors()));
-				return false;
+				throw new Exception("Error while loading the database schema: ".join("; ",$this->opo_db->getErrors()));
 			}
 		}
 	}
