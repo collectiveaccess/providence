@@ -328,5 +328,24 @@ class ca_entity_labels extends BaseLabel {
 		}
 		return parent::update($pa_options);
 	}
+	# -------------------------------------------------------
+	/**
+	 * Returns version of label 'display' field value suitable for sorting
+	 * The sortable value is the same as the display value except when the display value
+	 * starts with a definite article ('the' in English) or indefinite article ('a' or 'an' in English)
+	 * in the locale of the label, in which case the article is moved to the end of the sortable value.
+	 * 
+	 * What constitutes an article is defined in the TimeExpressionParser localization files. So if the
+	 * locale of the label doesn't correspond to an existing TimeExpressionParser localization, then
+	 * the users' current locale setting is used.
+	 */
+	protected function _generateSortableValue() {
+		if ($vs_sort_field = $this->getProperty('LABEL_SORT_FIELD')) {
+			$vs_display_field = $this->getProperty('LABEL_DISPLAY_FIELD');
+			
+			$n = DataMigrationUtils::splitEntityName($this->get($vs_display_field), ['displaynameFormat' => 'surnamecommaforename']);
+			$this->set($vs_sort_field, $n['displayname']);
+		}
+	}
 	# ------------------------------------------------------
 }
