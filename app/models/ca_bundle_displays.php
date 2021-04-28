@@ -960,9 +960,14 @@ if (!$pb_omit_editing_info) {
 	 * Will return null if table name or number is invalid.
 	 */
 	public function getAvailableBundles($pm_table_name_or_num=null, $options=null) {
+		global $g_request;
 		if (!$pm_table_name_or_num) { $pm_table_name_or_num = $this->get('table_num'); }
 		$pm_table_name_or_num = Datamodel::getTableNum($pm_table_name_or_num);
 		if (!$pm_table_name_or_num) { return null; }
+		$cache_key = caMakeCacheKeyFromOptions($options, $pm_table_name_or_num.'|'.(($g_request && $g_request->user) ? 'USER:'.$g_request->user->getPrimaryKey() : ''));
+		if(CompositeCache::contains($cache_key)) {
+			return CompositeCache::fetch($cache_key);
+		}
 		
 		$vb_show_tooltips = (isset($options['no_tooltips']) && (bool)$options['no_tooltips']) ? false : true;
 		$vs_format = (isset($options['format']) && in_array($options['format'], array('simple', 'full'))) ? $options['format'] : 'full';
@@ -1877,6 +1882,7 @@ if (!$pb_omit_editing_info) {
 				$va_sorted_bundles[$vs_real_key] = $info;
 			}
 		}
+		CompositeCache::save($cache_key, $va_sorted_bundles);
 		return $va_sorted_bundles;
 	}
 	# ------------------------------------------------------
@@ -1901,12 +1907,11 @@ if (!$pb_omit_editing_info) {
 			return [];
 		}
 		
-		$vb_show_tooltips = !caGetOption('no_tooltips', $options, false);
+		$vb_show_tooltips = !caGetOption(['no_tooltips', 'noToolTips'], $options, false);
 		$vs_format = caGetOption('format', $options, 'full', array('validValues' => array('simple', 'full')));
 		
 		if (!($pn_table_num = Datamodel::getTableNum($this->get('table_num')))) { return null; }
-		
-		if (!($t_instance = Datamodel::getInstanceByTableNum($pn_table_num, true))) { return null; }
+		if (!($t_instance = Datamodel::getInstance($pn_table_num, true))) { return null; }
 		
 		if(!is_array($placements = $this->getPlacements($options))) { $placements = []; }
 		
