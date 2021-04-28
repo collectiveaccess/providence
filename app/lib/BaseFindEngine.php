@@ -286,6 +286,7 @@ class BaseFindEngine extends BaseObject {
 	 * @return array
 	 */
 	public function sortHits(array $hits, string $table, $sort_list, $sort_directions='asc', array $options=null) {
+		if(!is_array($options)) { $options = []; }
 		
 		// Expand field list into array
 		$sort_fields = is_array($sort_list) ? $sort_list : explode(';', $sort_list); 
@@ -313,7 +314,7 @@ class BaseFindEngine extends BaseObject {
 		$sorted_hits = $this->doSort($hits, $table, $primary_sort_field, $primary_sort_direction, array_merge($options, ['relationshipTypes' => array_shift($rel_types)]));
 		
 		// secondary sorts?
-		if(sizeof($sort_fields) > 0) {
+		if(is_array($sort_fields) && (sizeof($sort_fields) > 0)) {
 			$sorted_hits = $this->_secondarySortHits($hits, $sorted_hits, $table, $primary_sort_field, $primary_sort_direction, $sort_fields, $sort_directions, array_merge($options, ['relationshipTypes' => $rel_types]));
 		}
 		
