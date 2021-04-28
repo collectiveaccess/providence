@@ -11837,7 +11837,7 @@ $pa_options["display_form_field_tips"] = true;
 				switch($va_tmp[0]) {
 					case $vs_table:
 						if ($t_instance->hasField($va_tmp[1])) {
-							$vs_orderby = " ORDER BY `{$vs_sort}` {$vs_sort_direction}";
+							$vs_orderby = " ORDER BY `{$va_tmp[1]}` {$vs_sort_direction}";
 						}
 						break;
 					default:
