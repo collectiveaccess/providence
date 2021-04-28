@@ -1000,6 +1000,7 @@ class SearchResult extends BaseObject {
 	 *			maxLevelsFromBottom = Restrict the number of levels returned to the bottom-most starting with the lowest leaf node. [Default is null]
 	 *			maxLevels = synonym for maxLevelsFromBottom. [Default is null]
 	 *			removeFirstItems = Number of levels from top of hierarchy before returning. [Default is null]
+	 *			removeLastItems = Number of levels from bottom of hierarchy before returning. [Default is null]
 	 *			hierarchyDirection = Order in which to return hierarchical levels. Set to either "asc" or "desc". "Asc"ending returns hierarchy beginning with the root; "desc"ending begins with the child furthest from the root. [Default is asc]
  	 *			allDescendants = Return all items from the full depth of the hierarchy when fetching children. By default only immediate children are returned. [Default is false]
 	 * 			hierarchyDelimiter = Characters to place in between separate hiearchy levels. Defaults to the 'delimiter' option.
@@ -1096,6 +1097,7 @@ class SearchResult extends BaseObject {
 		$vn_max_levels_from_top 			= isset($pa_options['maxLevelsFromTop']) ? (int)$pa_options['maxLevelsFromTop'] : null;
 		$vn_max_levels_from_bottom 			= caGetOption(array('maxLevelsFromBottom', 'maxLevels', 'level_limit', 'hierarchy_limit'), $pa_options, null);
 		$vn_remove_first_items 				= isset($pa_options['removeFirstItems']) ? (int)$pa_options['removeFirstItems'] : 0;
+		$vn_remove_last_items 				= isset($pa_options['removeLastItems']) ? (int)$pa_options['removeLastItems'] : 0;
 
 		$va_check_access 					= isset($pa_options['checkAccess']) ? (is_array($pa_options['checkAccess']) ? $pa_options['checkAccess'] : array($pa_options['checkAccess'])) : null;
 		$vs_template 						= isset($pa_options['template']) ? (string)$pa_options['template'] : null;
@@ -1339,6 +1341,9 @@ class SearchResult extends BaseObject {
 							foreach($va_ancestor_id_list as $va_ancestor_ids) {
 								if($vn_remove_first_items > 0) {
 									$va_ancestor_ids = array_slice($va_ancestor_ids, $vn_remove_first_items);
+								}
+								if($vn_remove_last_items > 0) {
+									$va_ancestor_ids = array_slice($va_ancestor_ids, 0, sizeof($va_ancestor_ids) - $vn_remove_last_items);
 								}
 						
 								$va_hier_item = [];

@@ -1264,7 +1264,7 @@ if (!$for_current_value_reindex) {
 							$va_children_ids[] = $vn_row_id;
 							
 							
-                            if (is_array($va_row_to_reindex['indexing_info'])) {
+                            if (is_array($va_row_to_reindex['indexing_info']) && is_array($va_children_ids) && is_array($va_content['values'])) {
                             	foreach($va_children_ids as $id) {		// Apply indexing to each child
                             		foreach($va_content['values'] as $v_id => $v) {		// Apply each hierarchical value with correct field row_id
 							    		$this->opo_engine->updateIndexingInPlace($va_row_to_reindex['table_num'], [$id], $va_row_to_reindex['field_table_num'], $va_row_to_reindex['field_num'], null, $v_id, $v, array_merge($va_row_to_reindex['indexing_info'], ['PRIVATE' => $vn_private, 'relationship_type_id' => $vn_rel_type_id]));
