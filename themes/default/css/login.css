@@ -37,10 +37,11 @@ a:hover{
 }
 
 #systemTitle{
-	padding:30px 0px 10px 60px;
+	padding: 20px 0px 10px 0px;
 	font-weight:normal;
-	font-size:22px;
-	font-family: 'DIN-Regular';
+	font-size:20px;
+	font-family: "Helvetica Neue", Arial, Helvetica, Sans-serif;
+	text-align: center
 }
 
 .smallContent {

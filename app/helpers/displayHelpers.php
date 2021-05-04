@@ -41,6 +41,7 @@ require_once(__CA_LIB_DIR__.'/Parsers/ExpressionParser.php');
 require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__.'/Parsers/DisplayTemplateParser.php');
 require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
+require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -3403,6 +3404,27 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	}
 	# ---------------------------------------
 	/**
+	 *
+	 */
+	function caGetDefaultEditorBundleSortConfiguration(string $table, string $related_table, array $settings) : array {
+		$config = Configuration::load();
+		$default_sorts = $config->getAssoc("{$related_table}_default_bundle_display_sorts");
+	
+		if(!is_array($default_sorts) || !is_array($default_sort_options = caGetOption('options', $default_sorts, null))) { $default_sort_options = []; }
+		if(is_array($rel_types = caGetOption(['restrict_to_relationship_types', 'restrictToRelationshipTypes'], $settings, null)) && sizeof($rel_types)) {
+			$path = array_keys(Datamodel::getPath($table, $related_table));
+			if(is_array($type_codes = caMakeRelationshipTypeCodeList($path[1], $rel_types))) {
+				foreach($type_codes as $t) {
+					if(is_array($type_specific_sorts = $config->get("{$ps_table}_{$t}_bundle_display_sorts")) && is_array($type_specific_sort_options = caGetOption('options', $type_specific_sorts, null))) {
+						$default_sort_options = array_merge($default_sort_options, $type_specific_sort_options);
+					}
+				}
+			}
+		}
+		return ['defaultSorts' => $default_sorts, 'typeSpecificSorts' => $type_specific_sorts, 'sortOptions' => $default_sort_options];
+	}
+	# ---------------------------------------
+	/**
 	 * Generates sort control HTML for relation bundles (Eg. ca_entities, ca_occurrences)
 	 *
 	 * @param RequestHTTP $po_request
@@ -3417,13 +3439,80 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 */
 	function caEditorBundleSortControls($po_request, $ps_id_prefix, $ps_table, $ps_related_table, $pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = []; }
-		require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 
 		if(!$ps_table) { return '???'; }
-		if (!is_array($va_sort_fields = caGetAvailableSortFields($ps_table, null, array_merge(['request' => $po_request], $pa_options, ['naturalSortLabel' => _t('default'), 'includeInterstitialSortsFor' => $ps_related_table]))) || !sizeof($va_sort_fields)) { return ''; }
-
+	
 		$sort = caGetOption('sort', $pa_options, null);
 		$sort_direction = caGetOption('sortDirection', $pa_options, null);
+		
+		if (!is_array($va_sort_fields = caGetAvailableSortFields($ps_table, null, array_merge(['request' => $po_request], $pa_options, ['naturalSortLabel' => _t('default'), 'includeInterstitialSortsFor' => $ps_related_table]))) || !sizeof($va_sort_fields)) { return ''; }
+	
+		$allowed_sorts = caGetOption('allowedSorts', $pa_options, null);
+		
+		if(!is_array($allowed_sorts) || !sizeof($allowed_sorts)) {
+			// apply global settings
+			$default_sort_config = caGetDefaultEditorBundleSortConfiguration($ps_related_table, $ps_table, $pa_options);
+			$default_sorts = $default_sort_config['defaultSorts'];
+			$type_specific_sorts = $default_sort_config['typeSpecificSorts'];
+			$default_sort_options = $default_sort_config['sortOptions'];
+			
+			if(!$sort) {
+				$sort = caGetOption('sort', $type_specific_sorts ? $type_specific_sorts : $default_sorts, null);
+				$sort_direction = caGetOption('direction', $type_specific_sorts ? $type_specific_sorts : $default_sorts, null);
+			}
+			
+			
+			// Translate truncated sorts to their standard multi-field equivalents
+			// (Eg. ca_entities.type_id => ca_entities.type_id;ca_entities.preferred_labels.surname;ca_entities.preferred_labels.forename)
+			$sort_field_trans = [];
+			foreach($va_sort_fields as $sf => $n) {
+				$t = explode(';', $sf);
+				if(sizeof($t) > 1) {
+					for($i=1; $i < sizeof($t); $i++) {
+						$sort_field_trans[join(';', array_slice($t, 0, $i))] = $sf;
+					}
+				}
+			}
+			
+			// Expand global sort list to include parents when sort is on container field
+			$default_sort_options = array_merge(['_natural' => false], array_reduce($default_sort_options, function($carry, $item) use ($sort_field_trans) { 
+				if(array_key_exists($item, $sort_field_trans)) { $item = $sort_field_trans[$item]; }	// rewrite truncated fields 
+				
+				$tmp = explode('.', $item);
+				if(sizeof($tmp) > 2) {
+					$carry[join('.', array_slice($tmp, 0, 2))] =  true;
+				}
+				$carry[$item] = false;
+				
+			
+				return $carry;
+			}, []));
+		
+			if(is_array($default_sort_options) && sizeof($default_sort_options)) {
+				$va_sort_fields = array_filter(
+					$va_sort_fields,
+					function ($v) use ($default_sort_options, $sort_field_trans) {
+						return array_key_exists($v, $default_sort_options);
+					},
+					ARRAY_FILTER_USE_KEY
+				);
+			}
+		} else {
+			$sort_fields_proc = $default_sort_options = [];
+			
+			foreach($va_sort_fields as $sf => $n) {
+				$tmp = explode('.', $sf);
+				if(sizeof($tmp) > 2) {
+					$sort_fields_proc[$k=join('.', array_slice($tmp, 0, 2))] = ca_metadata_elements::getElementLabel($tmp[1]);
+					$default_sort_options[$k] = true;
+				}
+				$sort_fields_proc[$sf] = $n;
+					
+			}
+			$va_sort_fields = $sort_fields_proc;
+		}
+		
+		if ($sort) { unset($va_sort_fields['_natural']); }
 
 		$va_sort_fields = array_map(function($v) { return mb_strtolower($v); }, $va_sort_fields);
 		return "<div class='editorBundleSortControl'>"._t('Sort using %1 %2', caHTMLSelect("{$ps_id_prefix}_RelationBundleSortControl", 
@@ -3432,7 +3521,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 					'onChange' => "caRelationBundle{$ps_id_prefix}.sort(jQuery(this).val())", 
 					'id' => "{$ps_id_prefix}_RelationBundleSortControl", 
 					'class' => 'caItemListSortControlTrigger dontTriggerUnsavedChangeWarning'], 
-				['value' => $sort]
+				['value' => $sort, 'disabledOptions' => $default_sort_options]
 			), 
 			caHTMLSelect(
 				"{$ps_id_prefix}_RelationBundleSortDirectionControl", 
@@ -5121,5 +5210,74 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		} 
 
 		return preg_replace("![^A-Za-z0-9_\-\.]+!", "_", $filename);
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Return logo for specified UI context
+	 *
+	 * @param string $content Content where logo will be used. Possible values are: "menuBar" (application menu bar); "login" (application login screen), "report" (report headers)
+	 *
+	 * @return string
+	 */
+	function caGetBrandingLogo(string $type, array $options=null) : ?string {
+		if(!in_array($type, ['menuBar', 'login', 'report'], true)) { return null; }
+		
+		$abs = caGetOption('absolute', $options, false);
+		
+		global $g_request;
+		$config = Configuration::load();
+		
+		if(is_array($branding = $config->getAssoc('branding')) && is_array($logo = caGetOption($type, $branding, null)) && !empty($logo['src'])) {
+			return caHTMLImage(($abs ? __CA_BASE_DIR__ : __CA_URL_ROOT__).'/'.caGetOption('src', $logo), ['alt' => caGetOption('alt', $logo), 'class' => caGetOption('class', $logo), 'id' => caGetOption('id', $logo), 'scaleCSSWidthTo' => caGetOption('width', $logo), 'scaleCSSHeightTo' => caGetOption('height', $logo)]);
+		}
+		
+		if(!$g_request) { return null; }
+		
+		// Return header defined by old app.conf directive
+		switch($type) {
+			case 'menuBar':
+				$img = $config->get('header_img');
+				break;
+			case 'login':
+				$img = $config->get('login_img');
+				break;
+			case 'report':
+				$img = $config->get('header_img');
+				break;
+			default:
+				return null;
+				
+		}
+		if ($img) {
+			return caHTMLImage($g_request->getUrlPathForThemeFile("graphics/logos/{$img}"), ['alt' => _t("CollectiveAccess Logo"), 'class' => 'headerImg']);
+		}
+		return null;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Return currently configured logo graphic for menu bar
+	 *
+	 * @return string
+	 */
+	function caGetMenuBarLogo() {
+		return caGetBrandingLogo('menuBar');
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Return currently configured logo graphic for login screen
+	 *
+	 * @return string
+	 */
+	function caGetLoginLogo() {
+		return caGetBrandingLogo('login');
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Return currently configured logo graphic for report headers
+	 *
+	 * @return string
+	 */
+	function caGetReportLogo() {
+		return caGetBrandingLogo('report', ['absolute' => true]);
 	}
 	# ------------------------------------------------------------------
