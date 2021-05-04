@@ -283,7 +283,7 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 	 * 
 	 * @return string
 	 */
-	public function sortableValue(string $value) {
+	public function sortableValue(?string $value) {
 		$name = caProcessTemplateForIDs(join(Configuration::load()->getList($this->ops_table_name.'_lookup_delimiter'), Configuration::load()->getList($this->ops_table_name.'_lookup_settings')), $this->ops_table_name, [(int)$value], []);
 		
 		return mb_strtolower(substr(trim($name), 0, 100));
