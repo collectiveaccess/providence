@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1678,7 +1678,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						if (($this->tableName() != 'ca_object_lots') && ($vn_lot_id = $pa_options['request']->getParameter('lot_id', pInteger))) {
 							$pa_lot_options['force'][] = $vn_lot_id;
 						}
-						$vs_element = $this->getRelatedHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_lot_options);	
+						$vs_element = $this->getRelatedHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_bundle_name, $ps_placement_code, $pa_bundle_settings, array_merge($pa_options, $pa_lot_options));	
 						break;
 					# -------------------------------
 					case 'ca_representation_annotations':
@@ -2996,8 +2996,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		$start = caGetOption('start', $pa_options, 0);
 		$limit = caGetOption('limit', $pa_options, caGetOption('numPerPage', $pa_bundle_settings, null));
-		$sort = caGetOption('sort', $pa_options, caGetOption('sort', $pa_bundle_settings, null));	
-		$sort_direction = caGetOption('sortDirection', $pa_options, caGetOption('sortDirection', $pa_bundle_settings, null));
 		
 		$va_path = array_keys(Datamodel::getPath($this->tableName(), $ps_related_table));
 		if ($this->tableName() == $ps_related_table) {
@@ -3025,13 +3023,20 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if (isset($pa_bundle_settings['restrictToTermsRelatedToCollection']) && $pa_bundle_settings['restrictToTermsRelatedToCollection']) {
 			$va_get_related_opts['restrict_to_relationship_types'] = $pa_bundle_settings['restrictToTermsOnCollectionUseRelationshipType'];
 		}
-			
-		if ($s = caGetOption('sort', $pa_options, caGetOption('sort', $pa_bundle_settings, null))) {
-			$va_get_related_opts['sort'] = $s;
-			$va_get_related_opts['sortDirection'] = caGetOption('sortDirection', $pa_options, caGetOption('sortDirection', $pa_bundle_settings, null));
+		
+		$sort_direction = caGetOption('sortDirection', $pa_options, caGetOption('sortDirection', $pa_bundle_settings, null));	
+		if(!($sort = caGetOption('sort', $pa_options, caGetOption('sort', $pa_bundle_settings, null)))) {
+		 	$default_sorts = $this->getAppConfig()->get("{$ps_related_table}_default_bundle_display_sorts");
+ 			$sort = is_array($default_sorts) ? caGetOption('sort', $default_sorts, null) : null;
+ 			$sort_direction = is_array($default_sorts) ? caGetOption('direction', $default_sorts, 'ASC') : 'ASC';
 		}
 		
-		$t_rel = Datamodel::getInstanceByTableName($ps_related_table, true);
+		if ($sort) {
+			$va_get_related_opts['sort'] = $sort;
+			$va_get_related_opts['sortDirection'] = $sort_direction;
+		}
+		
+		$t_rel = Datamodel::getInstance($ps_related_table, true);
 		$va_opts = [
 			'table' => $vb_is_many_many ? $t_rel->tableName() : null,
 			'primaryKey' => $vb_is_many_many ? $t_rel->primaryKey() : null,
@@ -3150,9 +3155,24 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$o_view->setVar('t_item_rel', $t_item_rel);
 		$o_view->setVar('bundle_name', $ps_related_table);
 		
+		list('defaultSorts' => $default_sorts, 'typeSpecificSorts' => $type_specific_sorts, 'sortOptions' => $sort_options) = caGetDefaultEditorBundleSortConfiguration($this->tableName(), $ps_related_table, $pa_bundle_settings);
+
 		
-		$o_view->setVar('sort', caGetOption('sort', $pa_options, caGetOption('sort', $pa_bundle_settings, null)));
-		$o_view->setVar('sortDirection', caGetOption('sortDirection', $pa_options, caGetOption('sortDirection', $pa_bundle_settings, null)));
+		// Look for sort settings in parameter options, bundle settings and then app.conf defaults
+		foreach([$pa_options, $pa_bundle_settings, $type_specific_sorts, $default_sorts] as $i => $opts) {
+			if($sort = caGetOption('sort', $opts, null)) {
+				$sort_direction = caGetOption(['sortDirection', 'direction'], $opts, 'ASC');
+				break;
+			}
+		}
+		
+		$o_view->setVar('sort', $sort);
+		$o_view->setVar('sortDirection', $sort_direction, null);
+		
+		// Copy sort settings over bundle defaults in case we're using app.conf defaults, as we'll
+		// want the bunde to reflect the settings actually used
+		$pa_bundle_settings['sort'] = $sort;
+		$pa_bundle_settings['sortDirection'] = $sort_direction;
 		
 		$o_view->setVar('ui', caGetOption('ui', $pa_options, null));
 		$o_view->setVar('screen', caGetOption('screen', $pa_options, null));

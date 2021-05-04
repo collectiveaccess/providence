@@ -524,8 +524,6 @@ trait ModelSettings {
 				break;
 			# --------------------------------------------
 			case DT_SELECT:
-				include_once(__CA_MODELS_DIR__.'/ca_relationship_types.php');
-				
 				$vn_width = (isset($va_properties['width']) && (strlen($va_properties['width']) > 0)) ? $va_properties['width'] : "100px";
 				$vn_height = (isset($va_properties['height']) && (strlen($va_properties['height']) > 0)) ? $va_properties['height'] : "50px";
 				
@@ -603,21 +601,17 @@ trait ModelSettings {
 						}
 					} else {
 						if ($vb_locale_list) {
-							include_once(__CA_MODELS_DIR__.'/ca_locales.php');
 							$va_rel_opts = array_flip(ca_locales::getLocaleList(array('return_display_values' => true)));
 						} elseif($vb_policy_list) {
-							include_once(__CA_MODELS_DIR__.'/ca_objects.php');
 							$va_rel_opts = array_flip(array_map(function($v) {
 								return $v['name'];
 							}, ca_objects::getHistoryTrackingCurrentValuePolicies(caGetOption('table', $pa_options, null))));
 						} elseif($vb_referring_policy_list) {
-							include_once(__CA_MODELS_DIR__.'/ca_objects.php');
 							$va_rel_opts = array_flip(array_map(function($v) {
 								return $v['name'];
 							}, ca_objects::getDependentHistoryTrackingCurrentValuePolicies(caGetOption('table', $pa_options, null))));
 						} else {
 							if ($vb_show_lists) {
-								include_once(__CA_MODELS_DIR__.'/ca_lists.php');
 								$t_list = new ca_lists();
 								$va_lists = caExtractValuesByUserLocale($t_list->getListOfLists());
 								
@@ -683,12 +677,14 @@ trait ModelSettings {
 								$vs_input_name .= '[]'; 
 								$va_select_attr = ['multiple' => 1];
 							}
-							$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'value' => is_array($vs_value) ? $vs_value[0] : $vs_value, 'multiple' => 1, 'values' => is_array($vs_value) ? $vs_value : array($vs_value));
-							$vs_select_element = caHTMLSelect($vs_input_name, $va_select_opts,  $va_select_attr, $va_opts);
+							$va_opts = ['id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'multiple' => 1];
+							if(is_array($vs_value) || (strlen($vs_value) > 0)) {
+								$va_opts['value'] = is_array($vs_value) ? $vs_value[0] : $vs_value;
+								$va_opts['values'] = is_array($vs_value) ? $vs_value : [$vs_value];
+							}
+							$vs_select_element = caHTMLSelect($vs_input_name, $va_select_opts, $va_select_attr, $va_opts);
 						}
 					} elseif ($va_properties['showMetadataElementsWithDataType']) {
-						require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
-						
 						if (!is_array($va_properties['table'])) { $va_properties['table'] = [$va_properties['table']]; }
 						
 						$va_select_opts = [];
@@ -702,7 +698,7 @@ trait ModelSettings {
 							}
 						
 							if($va_properties['includeIntrinsics']) {
-								if (!($t_rep = Datamodel::getInstanceByTableName($vs_table, true))) { continue; }
+								if (!($t_rep = Datamodel::getInstance($vs_table, true))) { continue; }
 						
 								foreach($t_rep->getFormFields() as $vs_f => $va_field_info) {
 									if (is_array($va_properties['includeIntrinsics']) && !in_array($vs_f, $va_properties['includeIntrinsics'])) { continue; }
@@ -713,7 +709,7 @@ trait ModelSettings {
 									}	
 								}
 								if($va_properties['includePreferredLabels']) {
-									if (!($t_rep = Datamodel::getInstanceByTableName($vs_table, true))) { continue; }
+									if (!($t_rep = Datamodel::getInstance($vs_table, true))) { continue; }
 									foreach($t_rep->getLabelUIFields() as $vs_f) {
 										$va_select_opts[$t_rep->getDisplayLabel("{$vs_table}.preferred_labels.{$vs_f}")] = "{$vs_table}.preferred_labels.{$vs_f}";
 									}	
