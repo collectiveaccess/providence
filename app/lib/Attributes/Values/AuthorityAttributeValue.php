@@ -199,7 +199,7 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 		return array(
 			'value_longtext1' => (int)$vn_id,
 			'value_integer1' => (int)$vn_id,
-			'value_sortable' => $this->sortableValue($name)
+			'value_sortable' => $this->sortableValue((string)$vn_id)
 		);
 	}
 	# ------------------------------------------------------------------

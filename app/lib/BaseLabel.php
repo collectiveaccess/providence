@@ -161,7 +161,7 @@
 		 * locale of the label doesn't correspond to an existing TimeExpressionParser localization, then
 		 * the users' current locale setting is used.
 		 */
-		private function _generateSortableValue() {
+		protected function _generateSortableValue() {
 			if ($vs_sort_field = $this->getProperty('LABEL_SORT_FIELD')) {
 				$vs_display_field = $this->getProperty('LABEL_DISPLAY_FIELD');
 				
