@@ -146,6 +146,16 @@
  		 *
  		 * 
  		 */
+ 		public function Configure() {
+ 			AssetLoadManager::register('react');
+ 			$this->render('metadataimport/data_importer_config_html.php');
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 * 
+ 		 *
+ 		 * 
+ 		 */
  		public function ImportData() {
  			global $g_ui_locale_id;
  			$t_importer = $this->getImporterInstance();

@@ -1,6 +1,15 @@
 @font-face {font-family: 'DIN-Regular';src: url('fonts/28EC2C_0_0.eot');src: url('fonts/28EC2C_0_0.eot?#iefix') format('embedded-opentype'),url('fonts/28EC2C_0_0.woff') format('woff'),url('fonts/28EC2C_0_0.ttf') format('truetype');}
 
 /*  dark gray #4b4a4a - teal #134959 - turquoise #1FAA99 - med gray #DDDDDD - light gray #EEEEEE */
+
+html {
+	box-sizing: content-box !important;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit !important;
+}
+
 html {
     font: 12px "Helvetica Neue", Arial, Helvetica, Sans-serif;
 }

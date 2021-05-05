@@ -84,7 +84,8 @@
 			caUI.initUtils({unsavedChangesWarningMessage: '<?php _p('You have made changes in this form that you have not yet saved. If you navigate away from this form you will lose your unsaved changes.'); ?>'});
 
 			var caPromptManager = caUI.initPromptManager();
+			let providenceUIApps = {};
 		</script>
 	</head>	
-	<body>
+	<body id="providenceApp">
 		<div align="center">
