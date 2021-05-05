@@ -26,6 +26,7 @@
  * ----------------------------------------------------------------------
  */
 
+	define("__CA_APP_TYPE__", "PROVIDENCE");
 	define("__CA_IS_SERVICE_REQUEST__", true);
 	if (!file_exists('./setup.php')) { print "No setup.php file found!"; exit; }
 	require('./setup.php');
@@ -35,11 +36,14 @@
 
 	$app = AppController::getInstance();
 
-	$req = $app->getRequest();
+	$g_request = $req = $app->getRequest();
 	$resp = $app->getResponse();
 
 	// Prevent caching
 	$resp->addHeader('Access-Control-Allow-Origin', '*');
+	$resp->addHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, DELETE, PUT');
+	$resp->addHeader('Access-Control-Max-Age', 1000);
+	$resp->addHeader('Access-Control-Allow-Headers', 'x-requested-with, Content-Type, origin, authorization, accept, client-security-token');
 	$resp->addHeader("Cache-Control", "no-cache, must-revalidate");
 	$resp->addHeader("Expires", "Mon, 26 Jul 1997 05:00:00 GMT");
 	
