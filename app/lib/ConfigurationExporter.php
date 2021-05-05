@@ -198,7 +198,7 @@ final class ConfigurationExporter {
 	}
 	# -------------------------------------------------------
 	public function getListsAsDOM() {
-		$qr_lists = $this->opo_db->query("SELECT * FROM ca_lists ORDER BY list_id");
+		$qr_lists = $this->opo_db->query("SELECT * FROM ca_lists WHERE deleted = 0 ORDER BY list_id");
 
 		$vo_lists = $this->opo_dom->createElement("lists");
 
