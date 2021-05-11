@@ -206,8 +206,7 @@ class EditorController extends ActionController {
 		AssetLoadManager::register('imageScroller');
 		AssetLoadManager::register('datePickerUI');
 		
-		$id_parts = explode(':', $this->request->getParameter('id', pString));
-			
+		$id_parts = explode(':', $this->request->getParameter(['id', 'set_id'], pString));
 		if(($id_parts[0] === 'BatchEdit') && ($t_instance = Datamodel::getInstance($table = $id_parts[1], true)) && is_a($t_instance, 'BundlableLabelableBaseModelWithAttributes')) {
 			$rc = new ResultContext($this->request, $table, 'BatchEdit');
 			$rs = new RecordSelection($rc);
