@@ -4322,7 +4322,7 @@ if (!$vb_batch) {
                             // check for new representations to add 
                             
 							$file_index = 0;
-                            $va_file_list = $_FILES;
+                            $va_file_list = array_map(function($v) { $v['is_form_upload'] = 1; return $v; }, $_FILES);
                             foreach($_REQUEST as $vs_key => $vs_value) {
                                 if (preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) {
                                 	if(!isURL($vs_value, ['strict' => true, 'schemes' => ['http', 'https']])) { continue; }
@@ -4366,6 +4366,7 @@ if (!$vb_batch) {
                             }
                             
                             foreach($va_file_list as $vs_key => $va_values) {
+                            	$is_form_upload = caGetOption('is_form_upload', $va_values, false, ['castTo' => 'boolean']);
                             	$va_values['tmp_name'] = stripslashes($va_values['tmp_name']);
                                 $this->clearErrors();
                             
@@ -4409,6 +4410,9 @@ if (!$vb_batch) {
                                     	// Is user-selected file from batch media import directory
                                         $vs_path = "{$vs_tmp_directory}/{$va_values['tmp_name']}";
                                         $vs_original_name = pathinfo($va_values['name'], PATHINFO_BASENAME);
+                                    } elseif(isset($va_values['tmp_name']) && $is_form_upload && file_exists($va_values['tmp_name'])) {
+                                    	$vs_path = $va_values['tmp_name'];
+                                        $vs_original_name = $va_values['name'];
                                     } else {
                                     	// Path is not valid
                                     	$vs_path = $vs_original_name = null;
@@ -4452,9 +4456,11 @@ if (!$vb_batch) {
 										foreach($files as $f) {
 											// Final check of path before import attempt
 											if (
-												(($is_url = isUrl($f)) && !$vb_allow_fetching_of_urls)
+												!$is_form_upload
+												&&
+												((($is_url = isUrl($f)) && !$vb_allow_fetching_of_urls)
 												||
-												(!$is_url && !preg_match("!^{$ajax_import_directory_path}!", $f) && !preg_match("!^{$import_directory_path}!", $f))
+												(!$is_url && !preg_match("!^{$ajax_import_directory_path}!", $f) && !preg_match("!^{$import_directory_path}!", $f)))
 											) {
 												continue;
 											}
