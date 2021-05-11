@@ -623,7 +623,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			}
 		}
 
-		if(sizeof($va_bulk_params['body'])) {
+		if(isset($va_bulk_params['body']) && sizeof($va_bulk_params['body'])) {
 			$this->getClient()->bulk($va_bulk_params);
 
 			// we usually don't need indexing to be available *immediately* unless we're running automated tests of course :-)
