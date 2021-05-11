@@ -814,7 +814,9 @@ class SearchResult extends BaseObject {
 		$va_criteria = is_array($this->opa_tables[$ps_tablename]) ? $this->opa_tables[$ps_tablename]['criteria'] : null;
 		
 		$va_opts = array_merge($pa_options, array('row_ids' => $va_row_ids, 'criteria' => $va_criteria));
-		if (!isset($va_opts['limit'])) { $va_opts['limit'] = 100000; }
+		if (!isset($va_opts['limit'])) { 
+			if(!($va_opts['limit'] = (int)Configuration::load()->get('maximum_related_prefetch_values'))) { $va_opts['limit'] = 100000; }
+		}
 	
 		$va_rel_items = $this->opo_subject_instance->getRelatedItems($ps_tablename, $va_opts);		// if there are more than 100,000 then we have a problem
 		
