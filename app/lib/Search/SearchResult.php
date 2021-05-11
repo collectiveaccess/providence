@@ -988,6 +988,8 @@ class SearchResult extends BaseObject {
  	 *			toUpper = Force all values to upper case. [Default is false]
 	 *			toLower = Force all values to lower case. [Default is false]
 	 *			makeFirstUpper = Force first character of all values to upper case. [Default is false]
+	 *			stripReturns = Converts any string of newline characters into a single space. [Default is false]
+	 *			stripTags = Removes HTML tags from value. [Default is false]
 	 *			trim = Trim white space from beginning and end of string. [Default is false]
 	 *			start = Return all values trimmed to start at the specified character. [Default is null]
 	 *			length = Return all values truncated to a maximum length. [Default is null]
@@ -2752,6 +2754,8 @@ class SearchResult extends BaseObject {
 	 *		toUpper = Force all values to upper case. [Default is false]
 	 *		toLower = Force all values to lower case. [Default is false]
 	 *		makeFirstUpper = Force first character of all values to upper case. [Default is false]
+	 *		stripReturns = Converts any string of newline characters into a single space. [Default is false]
+	 *		stripTags = Removes HTML tags from value. [Default is false]
 	 *		trim = Trim white space from beginning and end of string. [Default is false]
 	 *		start = Return all values trimmed to start at the specified character. [Default is null]
 	 *		length = Return all values truncated to a maximum length. [Default is null]
@@ -2784,6 +2788,12 @@ class SearchResult extends BaseObject {
 					}
 					if($pa_options['makeFirstUpper'] || $pa_options['makefirstupper']) {
 						$vs_val = ucfirst($vs_val);
+					}
+					if($pa_options['stripreturns'] || $pa_options['stripreturns']) {
+						$vs_val = preg_replace("![\n\r]+!", " ", $vs_val);
+					}
+					if($pa_options['striptags'] || $pa_options['striptags']) {
+						$vs_val = strip_tags($vs_val);
 					}
 					if ($pa_options['truncate'] && ($pa_options['truncate'] > 0)) { 
 						$pa_options['start'] = 0;
@@ -2828,6 +2838,12 @@ class SearchResult extends BaseObject {
 					}
 					if($pa_options['makeFirstUpper'] || $pa_options['makefirstupper']) {
 						$vs_val = ucfirst($vs_val);
+					}
+					if($pa_options['stripreturns'] || $pa_options['stripreturns']) {
+						$vs_val = preg_replace("![\n\r]+!", " ", $vs_val);
+					}
+					if($pa_options['striptags'] || $pa_options['striptags']) {
+						$vs_val = strip_tags($vs_val);
 					}
 					if ($pa_options['truncate'] && ($pa_options['truncate'] > 0)) { 
 						$pa_options['start'] = 0;
