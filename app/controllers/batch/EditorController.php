@@ -208,8 +208,15 @@ class EditorController extends ActionController {
 		
 		$id_parts = explode(':', $this->request->getParameter('id', pString));
 			
-		if ($id_parts[0] === 'ca_sets') {
-			$set_id = (int)$id_parts[1];
+		if(($id_parts[0] === 'BatchEdit') && ($t_instance = Datamodel::getInstance($table = $id_parts[1], true)) && is_a($t_instance, 'BundlableLabelableBaseModelWithAttributes')) {
+			$rc = new ResultContext($this->request, $table, 'BatchEdit');
+			$rs = new RecordSelection($rc);
+		} elseif (
+			(($id_parts[0] === 'ca_sets') && ((int)$id_parts[1] > 0))
+			||
+			((sizeof($id_parts) === 1) && (int)$id_parts[0] > 0)
+		) {
+			$set_id = (sizeof($id_parts) === 1) ? (int)$id_parts[0] : (int)$id_parts[1];
 			$t_set = new ca_sets();
 		
 			if (!$set_id || !$t_set->load($set_id)) {
@@ -223,9 +230,6 @@ class EditorController extends ActionController {
 			}
 		
 			$rs = new RecordSelection($t_set);
-		} elseif(($id_parts[0] === 'BatchEdit') && ($t_instance = Datamodel::getInstance($table = $id_parts[1], true)) && is_a($t_instance, 'BundlableLabelableBaseModelWithAttributes')) {
-			$rc = new ResultContext($this->request, $table, 'BatchEdit');
-			$rs = new RecordSelection($rc);
 		} else {
 			throw new ApplicationException(_t('Invalid target'));
 		}
