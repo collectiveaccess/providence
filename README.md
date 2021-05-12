@@ -19,6 +19,8 @@ Version 1.7.11 is a maintenance release with these bug fixes and minor improveme
 
 You should rebuild the search indices for your database after updating. This can be accomplished using the "Rebuild search indices" option in the "Manage" menu under "Administrate" > "Maintenance", or by running <code>caUtils rebuild-search-indices</code> on the command line.
 
+Note that this version is not yet compatible with PHP version 8. Please use versions 7.2, 7.3 or 7.4.
+
 
 ### Installation
 
