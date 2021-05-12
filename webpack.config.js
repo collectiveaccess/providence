@@ -21,7 +21,7 @@ module.exports = {
     		path.resolve(__dirname, 'js'),
     		path.resolve('themes/default/js'),	// include JS from default theme
     		path.resolve('themes/default/css'),	// include CSS from default theme
-    		path.resolve('./node_modules'),
+    		'node_modules',
     	],
 		alias: {
 			themeJS: path.resolve(__dirname, "js"),			// path to theme JS
