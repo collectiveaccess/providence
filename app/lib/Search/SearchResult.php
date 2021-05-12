@@ -814,7 +814,9 @@ class SearchResult extends BaseObject {
 		$va_criteria = is_array($this->opa_tables[$ps_tablename]) ? $this->opa_tables[$ps_tablename]['criteria'] : null;
 		
 		$va_opts = array_merge($pa_options, array('row_ids' => $va_row_ids, 'criteria' => $va_criteria));
-		if (!isset($va_opts['limit'])) { $va_opts['limit'] = 100000; }
+		if (!isset($va_opts['limit'])) { 
+			if(!($va_opts['limit'] = (int)Configuration::load()->get('maximum_related_prefetch_values'))) { $va_opts['limit'] = 100000; }
+		}
 	
 		$va_rel_items = $this->opo_subject_instance->getRelatedItems($ps_tablename, $va_opts);		// if there are more than 100,000 then we have a problem
 		
@@ -988,6 +990,8 @@ class SearchResult extends BaseObject {
  	 *			toUpper = Force all values to upper case. [Default is false]
 	 *			toLower = Force all values to lower case. [Default is false]
 	 *			makeFirstUpper = Force first character of all values to upper case. [Default is false]
+	 *			stripReturns = Converts any string of newline characters into a single space. [Default is false]
+	 *			stripTags = Removes HTML tags from value. [Default is false]
 	 *			trim = Trim white space from beginning and end of string. [Default is false]
 	 *			start = Return all values trimmed to start at the specified character. [Default is null]
 	 *			length = Return all values truncated to a maximum length. [Default is null]
@@ -2752,6 +2756,8 @@ class SearchResult extends BaseObject {
 	 *		toUpper = Force all values to upper case. [Default is false]
 	 *		toLower = Force all values to lower case. [Default is false]
 	 *		makeFirstUpper = Force first character of all values to upper case. [Default is false]
+	 *		stripReturns = Converts any string of newline characters into a single space. [Default is false]
+	 *		stripTags = Removes HTML tags from value. [Default is false]
 	 *		trim = Trim white space from beginning and end of string. [Default is false]
 	 *		start = Return all values trimmed to start at the specified character. [Default is null]
 	 *		length = Return all values truncated to a maximum length. [Default is null]
@@ -2784,6 +2790,12 @@ class SearchResult extends BaseObject {
 					}
 					if($pa_options['makeFirstUpper'] || $pa_options['makefirstupper']) {
 						$vs_val = ucfirst($vs_val);
+					}
+					if($pa_options['stripreturns'] || $pa_options['stripreturns']) {
+						$vs_val = preg_replace("![\n\r]+!", " ", $vs_val);
+					}
+					if($pa_options['striptags'] || $pa_options['striptags']) {
+						$vs_val = strip_tags($vs_val);
 					}
 					if ($pa_options['truncate'] && ($pa_options['truncate'] > 0)) { 
 						$pa_options['start'] = 0;
@@ -2828,6 +2840,12 @@ class SearchResult extends BaseObject {
 					}
 					if($pa_options['makeFirstUpper'] || $pa_options['makefirstupper']) {
 						$vs_val = ucfirst($vs_val);
+					}
+					if($pa_options['stripreturns'] || $pa_options['stripreturns']) {
+						$vs_val = preg_replace("![\n\r]+!", " ", $vs_val);
+					}
+					if($pa_options['striptags'] || $pa_options['striptags']) {
+						$vs_val = strip_tags($vs_val);
 					}
 					if ($pa_options['truncate'] && ($pa_options['truncate'] > 0)) { 
 						$pa_options['start'] = 0;

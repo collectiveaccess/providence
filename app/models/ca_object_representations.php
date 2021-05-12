@@ -2243,9 +2243,9 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	 */
 	static function mediaExists($ps_filepath) {
 		if (!file_exists($ps_filepath) || !is_readable($ps_filepath)) { return null; }
-		$vs_md5 = md5_file($ps_filepath);
+		$vs_md5 = @md5_file($ps_filepath);
 		$t_rep = new ca_object_representations();
-		if ($t_rep->load(array('md5' => $vs_md5, 'deleted' => 0))) { 
+		if ($vs_md5 && ($t_rep->load(array('md5' => $vs_md5, 'deleted' => 0)))) { 
 			return $t_rep;
 		}
 		
