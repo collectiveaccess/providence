@@ -77,7 +77,7 @@ class DataImporterConfigurationSchema extends \GraphQLServices\GraphQLSchema {
 						'description' => 'Type of importer (Eg. ca_objects)'
 					],
 					'displayType' => [
-						'type' => Type::float(),
+						'type' => Type::string(),
 						'description' => 'Type of importer for display (Eg. objects)'
 					],
 					'dataFormats' => [
