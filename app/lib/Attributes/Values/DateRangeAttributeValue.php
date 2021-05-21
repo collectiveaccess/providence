@@ -459,10 +459,19 @@
  				// locale, the LoadManager simply ignores it and the default settings (en_US) apply
  				AssetLoadManager::register("datepicker_i18n_{self::$locale}"); 
 
+				$vs_date_format = isset($va_settings['datePickerDateFormat']) ? $va_settings['datePickerDateFormat'] : 'yy-mm-dd';
+
+				$o_date_config = Configuration::load(__CA_CONF_DIR__.'/datetime.conf');
+				if ((bool)$o_date_config->get('useDateRangePicker')) {
+					$vs_date_picker = "daterangepicker({dateFormat: '{$vs_date_format}' , datepickerOptions: { minDate: null, maxDate: null}});";
+				}
+				else {
+					$vs_date_picker = "datepicker({dateFormat: '{$vs_date_format}', constrainInput: false});";
+				}
+
  				$vs_element .= "<script type='text/javascript'>
  					jQuery(document).ready(function() {
- 						jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').datepicker({dateFormat: '".(isset($va_settings['datePickerDateFormat']) ? $va_settings['datePickerDateFormat'] : 'yy-mm-dd')."', constrainInput: false});
- 					});
+						jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').{$vs_date_picker}});
  				</script>\n";
 
 				// load localization for datepicker. we can't use the asset manager here
