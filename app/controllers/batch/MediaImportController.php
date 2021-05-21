@@ -255,6 +255,8 @@
  				'setCreateName' => $this->request->getParameter('set_create_name', pString),
  				'set_id' => $this->request->getParameter('set_id', pInteger),
  				'idnoMode' => $this->request->getParameter('idno_mode', pString),
+ 				'labelMode' => $this->request->getParameter('label_mode', pString),
+ 				'labelText' => $this->request->getParameter('label_text', pString),
  				'idno' => $this->request->getParameter('idno', pString),
 				'representationIdnoMode' => $this->request->getParameter('representation_idno_mode', pString),
 				'representation_idno' => $this->request->getParameter('idno_representation_number', pString),

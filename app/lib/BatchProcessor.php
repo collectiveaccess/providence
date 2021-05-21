@@ -590,6 +590,8 @@ class BatchProcessor {
 		$vn_object_representation_mapping_id= $pa_options['ca_object_representations_mapping_id'];
 
 		$vs_idno_mode 						= $pa_options['idnoMode'];
+		$vs_label_mode 						= $pa_options['labelMode'];
+		$label_text		 					= $pa_options['labelText'];
 		$vs_idno 							= $pa_options['idno'];
 
 		$vs_representation_idno_mode		= $pa_options['representationIdnoMode'];
@@ -1048,14 +1050,41 @@ class BatchProcessor {
 						//$o_trans->rollback();
 						continue;
 					}
+					
+					switch(strtolower($vs_label_mode)) {
+						case 'idno':
+							$vs_label_value = $vs_idno_value;
+							break;
+						case 'blank':
+							// Use blank placeholder text
+							$vs_label_value = '['.caGetBlankLabelText($vs_import_target).']';
+							break;
+						case 'filename_no_ext':
+							// use filename without extension as identifier
+							$f_no_ext = preg_replace(self::REGEXP_FILENAME_NO_EXT, '', $f);
+							$vs_label_value = $f_no_ext;
+							break;
+						case 'directory_and_filename':
+							// use the directory + filename as identifier
+							$vs_label_value = $d.'/'.$f;
+							break;
+						case 'user':
+							$vs_label_value = $label_text;
+							break;
+						case 'filename':
+						default:
+							// use the filename as label
+							$vs_label_value = $f;
+							break;
+					}
 
 					if($t_instance->tableName() == 'ca_entities') { // entity labels deserve special treatment
 						$t_instance->addLabel(
-							array('surname' => $f), $vn_locale_id, null, true
+							array('surname' => $vs_label_value), $vn_locale_id, null, true
 						);
 					} else {
 						$t_instance->addLabel(
-							array($t_instance->getLabelDisplayField() => $f), $vn_locale_id, null, true
+							array($t_instance->getLabelDisplayField() => $vs_label_value), $vn_locale_id, null, true
 						);
 					}
 
