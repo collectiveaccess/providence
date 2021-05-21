@@ -488,7 +488,6 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			} else {
 				$this->handle = "";
 				$this->filepath = "";
-
 				$this->metadata = array();
 
 				// convert RAW to tiff with dcraw if necessary
@@ -1234,9 +1233,6 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$this->properties["quality"] = "";
 			$this->properties["mimetype"] = $this->_getMagickImageMimeType($this->handle);
 			$this->properties["typename"] = $this->handle->getimageformat();
-			
-			
-			$this->_gmagickOrient();
 			return 1;
 		}
 		return false;
@@ -1530,10 +1526,13 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$rotation = -90;
 					break;
 			}
+			
+			if($rotation) { 
+				$this->handle->rotateImage('#ffffff', $rotation);
+			}
 						
 			if (($rotation) && (abs($rotation) === 90)) {
 				$w = $this->properties["width"]; $h = $this->properties["height"];
-				
 				$this->properties["width"] = $h;
  				$this->properties["height"] = $w;
 			}
