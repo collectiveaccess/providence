@@ -187,7 +187,7 @@
  					
 					$vo_result = $po_search->getResults($va_search_opts);
 					
-					if (($vn_page_num * $vn_items_per_page) > $vo_result->numHits()) { 
+					if ($vn_page_num > ceil($vo_result->numHits() / $vn_items_per_page)) { 
 						$this->opo_result_context->setCurrentResultsPageNumber($vn_page_num = 1);	// reset page count if out of bounds
 					}
 					
