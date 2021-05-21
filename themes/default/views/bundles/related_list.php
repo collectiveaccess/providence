@@ -79,7 +79,7 @@
 	);
 		
 	if ($vb_batch) {
-		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
+		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix.$t_item->tableNum().'_rel');
 	} else {
 		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings, caInitialValuesArrayHasValue($vs_id_prefix.$t_item->tableNum().'_rel', $this->getVar('initialValues')));
 	}
