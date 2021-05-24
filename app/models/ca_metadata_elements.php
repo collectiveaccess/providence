@@ -1167,24 +1167,48 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * Get datatype for given element
 	 *
 	 * @param string|int $pm_element_code_or_id
-	 * @return int
+	 * @param array $options Options include:
+	 *		returnAsString = Return string representation of type. [Default is false]
+	 * @return int|string
 	 * @throws MemoryCacheInvalidParameterException
 	 */
-	static public function getElementDatatype($pm_element_code_or_id) {
+	static public function getElementDatatype($pm_element_code_or_id, array $options=null) {
 		if(!$pm_element_code_or_id) { return null; }
 		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
 
+		$return_string = $options['returnAsString'] ?? false;
+
 		if(MemoryCache::contains($pm_element_code_or_id, 'ElementDataTypes')) {
-			return MemoryCache::fetch($pm_element_code_or_id, 'ElementDataTypes');
+			$vm_return = (int)MemoryCache::fetch($pm_element_code_or_id, 'ElementDataTypes');
+			return $return_string ? self::dataTypeAsString($vm_return) : $vm_return;
 		}
 
 		$vm_return = null;
 		if ($t_element = ca_metadata_elements::getInstance($pm_element_code_or_id)) {
-			$vm_return = (int) $t_element->get('datatype');
+			$vm_return = (int)$t_element->get('datatype');
 		}
 
 		MemoryCache::save($pm_element_code_or_id, $vm_return, 'ElementDataTypes');
-		return $vm_return;
+		return $return_string && !is_null($vm_return) ? self::dataTypeAsString($vm_return) : $vm_return;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return string representation for integer data type code
+	 *
+	 * @param int $data_type
+	 * @return string
+	 * @throws MemoryCacheInvalidParameterException
+	 */
+	static public function dataTypeAsString(int $data_type) {
+		if(MemoryCache::contains($data_type, 'ElementDataTypeStrings')) {
+			return MemoryCache::fetch($data_type, 'ElementDataTypeStrings');
+		}
+		
+		$attr_types = Configuration::load(__CA_CONF_DIR__."/attribute_types.conf")->get('types');
+
+		$attr_string = $attr_types[$data_type] ?? null;
+		MemoryCache::save($data_type, $attr_string, 'ElementDataTypeStrings');
+		return $attr_string;
 	}
 	# ------------------------------------------------------
 	/**

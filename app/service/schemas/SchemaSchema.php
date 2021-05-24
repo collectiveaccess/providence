@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/service/schemas/AuthSchema.php :
+ * app/service/schemas/SchemaSchema.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020-2021 Whirl-i-Gig
+ * Copyright 2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,78 +30,66 @@ namespace GraphQLServices\Schemas;
 use GraphQL\GraphQL;
 use GraphQL\Type\Schema;
 use GraphQL\Type\Definition\ObjectType;
+use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
-use GraphQLServices\Schemas\AuthSchema;
 
 require_once(__CA_LIB_DIR__.'/Service/GraphQLSchema.php'); 
 
-class AuthSchema extends \GraphQLServices\GraphQLSchema {
+class SchemaSchema extends \GraphQLServices\GraphQLSchema {
 	# -------------------------------------------------------
 	/**
 	 * 
 	 */
-	public static function load() {
+	protected static function load() {
 		return [
-			$userType = new ObjectType([
-					'name' => 'UserInfo',
-					'description' => 'Service user login',
-					'fields' => [
-						'id' => [
-							'type' => Type::int(),
-							'description' => 'Unique user identifier'
-						],
-						'username' => [
-							'type' => Type::string(),
-							'description' => 'User name'
-						],
-						'email' => [
-							'type' => Type::string(),
-							'description' => 'User mail'
-						],
-						'fname' => [
-							'type' => Type::string(),
-							'description' => 'User first name'
-						],
-						'lname' => [
-							'type' => Type::string(),
-							'description' => 'User last name'
-						],
-						'userclass' => [
-							'type' => Type::string(),
-							'description' => 'User class'
-						]
-					]
-			]),
-			new ObjectType([
-				'name' => 'User',
-				'description' => 'Service user login',
+			$tableTypeType = new ObjectType([
+				'name' => 'Type',
+				'description' => 'A table type',
 				'fields' => [
 					'id' => [
 						'type' => Type::int(),
-						'description' => 'Unique user identifier'
+						'description' => 'ID of type'
 					],
-					'user' => [
-						'type' => $userType,
-						'description' => 'User information'
-					],
-					'jwt' => [
+					'name' => [
 						'type' => Type::string(),
-						'description' => 'JSON Web Token (JWT) for access'
+						'description' => 'Name of type'
 					],
-					'refresh' => [
+					'code' => [
 						'type' => Type::string(),
-						'description' => 'JSON Web Token (JWT) for refresh'
+						'description' => 'Code for type'
+					],
+					'parent' => [
+						'type' => Type::string(),
+						'description' => 'Code for parent type'
 					]
 				]
 			]),
-			new ObjectType([
-				'name' => 'Refresh',
-				'description' => 'Refresh JWT token',
+			$tableType = new ObjectType([
+				'name' => 'Table',
+				'description' => 'A table',
 				'fields' => [
-					'jwt' => [
+					'name' => [
 						'type' => Type::string(),
-						'description' => 'JSON Web Token (JWT) for access'
-					]
+						'description' => 'Name of table'
+					],
+					'code' => [
+						'type' => Type::string(),
+						'description' => 'Code for table'
+					],
+					'types' => [
+						'type' => Type::listOf($tableTypeType),
+						'description' => 'Types defined for table'
+					],
+				]
+			]),
+			$tableListType = new ObjectType([
+				'name' => 'TableList',
+				'description' => 'List of available tables',
+				'fields' => [
+					'tables' => [
+						'type' => Type::listOf($tableType),
+						'description' => 'Available tables'
+					],
 				]
 			])
 		];

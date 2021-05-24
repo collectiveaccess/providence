@@ -97,7 +97,7 @@ class GraphQLServiceController extends \BaseServiceController {
 			$output = [
 				'errors' => [
 					[
-						'message' => _t('An invalid parameter type error occurred. Are your arguments correct?')
+						'message' => _t('An invalid parameter type error occurred. Are your arguments correct? [%1]', $e->getMessage())
 					]
 				]
 			];
@@ -146,32 +146,70 @@ class GraphQLServiceController extends \BaseServiceController {
 	}
 	# -------------------------------------------------------
 	/**
+	 * Decode JWT and return contents
 	 *
+	 * @param string $jwt
+	 *
+	 * @return array
 	 */
-	public static function decodeJWT(string $jwt) {
+	public static function decodeJWT(?string $jwt) {
+		if(!$jwt) { return false; }
 		$key = \Configuration::load()->get('graphql_services_jwt_token_key');
 		
 		return \Session::decodeJWT($jwt, $key);
 	}
 	# -------------------------------------------------------
 	/**
+	 * Authenticate user using JWT. User must have can_use_graphql_services user action privilege to authenticate.
 	 *
+	 * @param string $jwt 
+	 * @param array $options Options include:
+	 *		returnAs = Format of return value. If set to 'array' an array with user information will be returned on success. Default is boolean signalling successful authentication. 
+	 *		actions = List of actions user must have to authenticate. [Default is null]
+	 *		requireActions = Determine whether user requires all specified actions (set to 'all') or any action (set to 'any') to authenticate. Only used is the 'actions' option is set. [Default is 'all']
+	 *		throw = Throw exception on authentication failure. [Default is true]
+	 *
+	 * @return mixed Boolean unless returnAs option is set to 'array'
+	 *
+	 * @throws ServiceException
 	 */
-	public static function authenticate(string $jwt, array $options=null) {
+	public static function authenticate(?string $jwt, array $options=null) {
 		if ($d = self::decodeJWT($jwt)) {
 			if ($u = \ca_users::find(['user_id' => (int)$d->id, 'active' => 1, 'userclass' => ['<>', 255]], ['returnAs' => 'firstModelInstance'])) {
-				if (caGetOption('returnAs', $options, null) === 'array') {
-					return [
-						'id' => $u->getPrimaryKey(),
-						'username' => $u->get('ca_users.user_name'),
-						'email' => $u->get('ca_users.email'),
-						'fname' => $u->get('ca_users.fname'),
-						'lname' => $u->get('ca_users.lname'),
-						'userclass' => $u->get('ca_users.userclass')
-					];
+				// User must have can_use_graphql_services permission to authenticate
+				if($u->canDoAction('can_use_graphql_services')) {
+					if(is_array($actions = caGetOption('actions', $options, null)) && (sizeof($actions) > 0)) {
+						$require = strtolower(caGetOption('requireActions', $options, 'all'));
+						$success = false;
+						foreach($actions as $a) {
+							if ($u->canDoAction($a)) {
+								if($require === 'any') { $success = true; break; }
+							} else {
+								if($require !== 'any') { return false; }
+							}
+						}
+					
+						if(!$success && ($require === 'any')) {	// if we're here when require = any then we've failed
+							return false;
+						}
+					}
+			
+					if (caGetOption('returnAs', $options, null) === 'array') {
+						return [
+							'id' => $u->getPrimaryKey(),
+							'username' => $u->get('ca_users.user_name'),
+							'email' => $u->get('ca_users.email'),
+							'fname' => $u->get('ca_users.fname'),
+							'lname' => $u->get('ca_users.lname'),
+							'userclass' => $u->get('ca_users.userclass')
+						];
+					}
+					return $u;
 				}
-				return $u;
 			}
+		}
+		if(caGetOption('throw', $options, true)) {
+			throw new \ServiceException(_t('Authentication failed'));
 		}
 		return false;
 	}
@@ -209,6 +247,29 @@ class GraphQLServiceController extends \BaseServiceController {
 			}
 		}
 		return null;
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	protected static function resolveIdentifier(string $table, string $identifier)  {
+		if(!($t_instance = \Datamodel::getInstance($table, true))) {
+			throw new \ServiceException(_t('Invalid table %1', $table));
+		}
+		
+		$rec = null;
+		if(is_numeric($identifier) && ((int)$identifier > 0)) {
+			$rec = $table::findAsInstance((int)$identifier);
+		} 
+		$idno_fld = \Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD');
+		if(is_null($rec) && $idno_fld) {
+			$rec = $table::findAsInstance([$idno_fld => $identifier]);
+		}
+		if(is_null($rec)) {
+			throw new \ServiceException(_t('Invalid identifier %1 for table %2', $identifier, $table));
+		}
+		
+		return $rec;
 	}
 	# -------------------------------------------------------
 }

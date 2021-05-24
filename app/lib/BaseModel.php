@@ -1688,23 +1688,25 @@ class BaseModel extends BaseObject {
 	/**
 	 *
 	 */
-	public function getValuesForExport($pa_options=null) {
-		$va_fields = $this->getFields();
+	public function getValuesForExport($options=null) {
+		$va_data = [];
+		if(caGetOption('includeIntrinsics', $options, true)) {
+			$va_fields = $this->getFields();
 		
-		$va_data = array();
 		
-		$t_list = new ca_lists();
+			$t_list = new ca_lists();
 		
-		// get field values
-		foreach($va_fields as $vs_field) {
-			$vs_value = $this->get($this->tableName().'.'.$vs_field);
+			// get field values
+			foreach($va_fields as $vs_field) {
+				$vs_value = $this->get($this->tableName().'.'.$vs_field);
 			
-			// Convert list item_id's to idnos for export
-			if ($vs_list_code = $this->getFieldInfo($vs_field, 'LIST_CODE')) {
-				$va_item = $t_list->getItemFromListByItemID($vs_list_code, $vs_value);
-				$vs_value = $va_item['idno'];
+				// Convert list item_id's to idnos for export
+				if ($vs_list_code = $this->getFieldInfo($vs_field, 'LIST_CODE')) {
+					$va_item = $t_list->getItemFromListByItemID($vs_list_code, $vs_value);
+					$vs_value = $va_item['idno'];
+				}
+				$va_data[$vs_field] = $vs_value;
 			}
-			$va_data[$vs_field] = $vs_value;
 		}
 		return $va_data;	
 	}
@@ -6050,6 +6052,54 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		} else {
 			//$this->postError(710,_t("'%1' does not exist in this object", $field),"BaseModel->getFieldInfo()", $this->tableName().'.'.$field);
 			return false;
+		}
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Return text representation for intrinsic field type (FT_TYPE) in a model
+	 *
+	 * @param int $field_type 
+	 *
+	 * @return string or null if type is not defined.
+	 */
+	public static function intrinsicTypeToString(int $field_type) : ?string {
+		switch($field_type) {
+			case FT_NUMBER:
+				return 'Numeric';
+			case FT_TEXT:
+				return 'Text';
+			case FT_TIMESTAMP:
+				return 'Timestamp';
+			case FT_DATETIME:
+				return 'UnixTimestamp';
+			case FT_HISTORIC_DATETIME:
+				return 'HistoricTimestamp';
+			case FT_DATERANGE:
+				return 'UnixDateRange';
+			case FT_HISTORIC_DATERANGE:
+				return 'DateRange';
+			case FT_BIT:
+				return 'Bit';
+			case FT_FILE:
+				return 'File';
+			case FT_MEDIA:
+				return 'Media';
+			case FT_PASSWORD:
+				return 'Password';
+			case FT_VARS:
+				return 'Variables';
+			case FT_TIMECODE:
+				return 'Timecode';
+			case FT_DATE:
+				return 'Date';
+			case FT_HISTORIC_DATE:
+				return 'HistoricDate';
+			case FT_TIME:
+				return 'Time';
+			case FT_TIMERANGE:
+				return 'TimeRange';
+			default:
+				return null;
 		}
 	}
 	# --------------------------------------------------------------------------------------------

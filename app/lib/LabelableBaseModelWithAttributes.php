@@ -1605,46 +1605,47 @@
 		/**
 		  *
 		  */
-		public function getValuesForExport($pa_options=null) {
-			$va_data = parent::getValuesForExport($pa_options);		// get intrinsics and attributes
+		public function getValuesForExport($options=null) {
+			$va_data = parent::getValuesForExport($options);		// get intrinsics and attributes
 			
-			$t_locale = new ca_locales();
-			$t_list = new ca_lists();
+			if(caGetOption('includeLabels', $options, true)) {
+				$t_locale = new ca_locales();
+				$t_list = new ca_lists();
 			
-			// get labels
-			$va_preferred_labels = $this->get($this->tableName().".preferred_labels", array('returnWithStructure' => true, 'returnAsArray' => true, 'returnAllLocales' => true, 'assumeDisplayField' => false));
+				// get labels
+				$va_preferred_labels = $this->get($this->tableName().".preferred_labels", array('returnWithStructure' => true, 'returnAsArray' => true, 'returnAllLocales' => true, 'assumeDisplayField' => false));
 			
-			if(is_array($va_preferred_labels) && sizeof($va_preferred_labels)) {
-				$va_preferred_labels_for_export = array();
-				foreach($va_preferred_labels as $vn_id => $va_labels_by_locale) {
-					foreach($va_labels_by_locale as $vn_locale_id => $va_labels) {
-						if (!($vs_locale = $t_locale->localeIDToCode($vn_locale_id))) {
-							$vs_locale = 'NONE';
-						}
-						$va_preferred_labels_for_export[$vs_locale] = array_shift($va_labels);
-						unset($va_preferred_labels_for_export[$vs_locale]['form_element']);
-					}
-				}
-				$va_data['preferred_labels'] = $va_preferred_labels_for_export;
-			}
-			
-			$va_nonpreferred_labels = $this->get($this->tableName().".nonpreferred_labels", array('returnWithStructure' => true, 'returnAsArray' => true, 'returnAllLocales' => true, 'assumeDisplayField' => false));
-			if(is_array($va_nonpreferred_labels) && sizeof($va_nonpreferred_labels)) {
-				$va_nonpreferred_labels_for_export = array();
-				foreach($va_nonpreferred_labels as $vn_id => $va_labels_by_locale) {
-					foreach($va_labels_by_locale as $vn_locale_id => $va_labels) {
-						if (!($vs_locale = $t_locale->localeIDToCode($vn_locale_id))) {
-							$vs_locale = 'NONE';
-						}
-						$va_nonpreferred_labels_for_export[$vs_locale] = $va_labels;
-						foreach($va_nonpreferred_labels_for_export[$vs_locale] as $vn_i => $va_label) {
-							unset($va_nonpreferred_labels_for_export[$vs_locale][$vn_i]['form_element']);
+				if(is_array($va_preferred_labels) && sizeof($va_preferred_labels)) {
+					$va_preferred_labels_for_export = array();
+					foreach($va_preferred_labels as $vn_id => $va_labels_by_locale) {
+						foreach($va_labels_by_locale as $vn_locale_id => $va_labels) {
+							if (!($vs_locale = $t_locale->localeIDToCode($vn_locale_id))) {
+								$vs_locale = 'NONE';
+							}
+							$va_preferred_labels_for_export[$vs_locale] = array_shift($va_labels);
+							unset($va_preferred_labels_for_export[$vs_locale]['form_element']);
 						}
 					}
+					$va_data['preferred_labels'] = $va_preferred_labels_for_export;
 				}
-				$va_data['nonpreferred_labels'] = $va_nonpreferred_labels_for_export;
-			}
 			
+				$va_nonpreferred_labels = $this->get($this->tableName().".nonpreferred_labels", array('returnWithStructure' => true, 'returnAsArray' => true, 'returnAllLocales' => true, 'assumeDisplayField' => false));
+				if(is_array($va_nonpreferred_labels) && sizeof($va_nonpreferred_labels)) {
+					$va_nonpreferred_labels_for_export = array();
+					foreach($va_nonpreferred_labels as $vn_id => $va_labels_by_locale) {
+						foreach($va_labels_by_locale as $vn_locale_id => $va_labels) {
+							if (!($vs_locale = $t_locale->localeIDToCode($vn_locale_id))) {
+								$vs_locale = 'NONE';
+							}
+							$va_nonpreferred_labels_for_export[$vs_locale] = $va_labels;
+							foreach($va_nonpreferred_labels_for_export[$vs_locale] as $vn_i => $va_label) {
+								unset($va_nonpreferred_labels_for_export[$vs_locale][$vn_i]['form_element']);
+							}
+						}
+					}
+					$va_data['nonpreferred_labels'] = $va_nonpreferred_labels_for_export;
+				}
+			}
 			return $va_data;
 		}
 		# ------------------------------------------------------------------
