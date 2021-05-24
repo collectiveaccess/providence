@@ -1948,9 +1948,6 @@ class BaseEditorController extends ActionController {
 	 */
 	public function GetMediaOverlay() {
 		list($vn_subject_id, $t_subject) = $this->_initView();
-		if(!$t_subject) { 
-			throw new ApplicationException(_t('Invalid id'));
-		}
 		if ($pn_value_id = $this->request->getParameter('value_id', pInteger)) {
 			//
 			// View FT_MEDIA attribute media 
@@ -1981,7 +1978,10 @@ class BaseEditorController extends ActionController {
 				"attribute:{$pn_value_id}", 
 				['context' => 'media_overlay', 't_instance' => $t_instance, 't_subject' => $t_subject, 'display' => $va_display_info])
 			);
-		} elseif ($pn_representation_id = $this->request->getParameter('representation_id', pInteger)) {		
+		} elseif ($pn_representation_id = $this->request->getParameter('representation_id', pInteger)) {				
+			if(!$t_subject) { 
+				throw new ApplicationException(_t('Invalid id'));
+			}	
 			if (!$t_subject->isReadable($this->request)) { 
 				throw new ApplicationException(_t('Cannot view media'));
 			}
@@ -2037,7 +2037,10 @@ class BaseEditorController extends ActionController {
 				"representation:{$pn_representation_id}", 
 				['context' => 'media_overlay', 't_instance' => $t_instance, 't_subject' => $t_subject, 't_media' => $t_media, 'display' => $va_display_info])
 			);
-		} elseif ($pn_media_id = $this->request->getParameter('media_id', pInteger)) {
+		} elseif ($pn_media_id = $this->request->getParameter('media_id', pInteger)) {			
+			if(!$t_subject) { 
+				throw new ApplicationException(_t('Invalid id'));
+			}
 		    //
 			// View site page media
 			//
