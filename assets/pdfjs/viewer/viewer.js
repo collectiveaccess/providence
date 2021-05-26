@@ -1788,13 +1788,13 @@ function webViewerInitialized() {
   if(window.pdfjsSearch) {
 	  webViewerFind({
 		query: window.pdfjsSearch,
-		phraseSearch: false,
+		phraseSearch: true,
 		caseSensitive: false,
-		entireWord: false,
+		entireWord: true,
 		highlightAll: true,
 		findPrevious: false
 	  });
-}
+  }
 
   fileInput.addEventListener("change", function (evt) {
     const files = evt.target.files;
@@ -2723,7 +2723,7 @@ exports.moveToEndOfArray = moveToEndOfArray;
 exports.WaitOnType = exports.animationStarted = exports.ProgressBar = exports.EventBus = exports.NullL10n = exports.SpreadMode = exports.ScrollMode = exports.TextLayerMode = exports.RendererType = exports.PresentationModeState = exports.VERTICAL_PADDING = exports.SCROLLBAR_PADDING = exports.MAX_AUTO_SCALE = exports.UNKNOWN_SCALE = exports.MAX_SCALE = exports.MIN_SCALE = exports.DEFAULT_SCALE = exports.DEFAULT_SCALE_VALUE = exports.CSS_UNITS = exports.AutoPrintRegExp = void 0;
 const CSS_UNITS = 96.0 / 72.0;
 exports.CSS_UNITS = CSS_UNITS;
-const DEFAULT_SCALE_VALUE = "auto";
+const DEFAULT_SCALE_VALUE = "page-fit";
 exports.DEFAULT_SCALE_VALUE = DEFAULT_SCALE_VALUE;
 const DEFAULT_SCALE = 1.0;
 exports.DEFAULT_SCALE = DEFAULT_SCALE;
