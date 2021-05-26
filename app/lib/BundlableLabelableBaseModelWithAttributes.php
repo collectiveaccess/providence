@@ -775,24 +775,26 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	/**
 	  *
 	  */
-	public function getValuesForExport($pa_options=null) {
-		$va_data = parent::getValuesForExport($pa_options);		// get intrinsics, attributes and labels
+	public function getValuesForExport($options=null) {
+		$va_data = parent::getValuesForExport($options);		// get intrinsics, attributes and labels
 		
-		$t_locale = new ca_locales();
-		$t_list = new ca_lists();
+		if(caGetOption('includeRelationships', $options, true)) {
+			$t_locale = new ca_locales();
+			$t_list = new ca_lists();
 		
-		// get related items
-		foreach(array('ca_objects', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations',  'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops',  'ca_list_items') as $vs_table) {
-			$va_related_items = $this->getRelatedItems($vs_table, array('returnAsArray' => true, 'returnAllLocales' => true));
-			if(is_array($va_related_items) && sizeof($va_related_items)) {
-				$va_related_for_export = array();
-				$vn_i = 0;
-				foreach($va_related_items as $vs_key => $va_related_item) {
-					$va_related_for_export['related_'.$vn_i] = $va_related_item;
-					$vn_i++;
-				}
+			// get related items
+			foreach(array('ca_objects', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations',  'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops',  'ca_list_items') as $vs_table) {
+				$va_related_items = $this->getRelatedItems($vs_table, array('returnAsArray' => true, 'returnAllLocales' => true));
+				if(is_array($va_related_items) && sizeof($va_related_items)) {
+					$va_related_for_export = array();
+					$vn_i = 0;
+					foreach($va_related_items as $vs_key => $va_related_item) {
+						$va_related_for_export['related_'.$vn_i] = $va_related_item;
+						$vn_i++;
+					}
 				
-				$va_data['related_'.$vs_table] = $va_related_for_export;
+					$va_data['related_'.$vs_table] = $va_related_for_export;
+				}
 			}
 		}
 		

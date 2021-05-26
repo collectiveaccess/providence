@@ -360,8 +360,8 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		}
 		if (!$vn_type_id || !(is_array($va_uis_by_type) && ($vn_rc = $t_ui->load($va_uis_by_type[$vn_type_id])))) {
 			$va_ui_ids = ca_editor_uis::getAvailableUIs($vn_table_num, $po_request, $vn_type_id, true);
-
-			if (sizeof($va_ui_ids) == 0) { return ca_editor_uis::$s_default_ui_cache[$pm_table_name_or_num.'/'.$pn_type_id] = false; }
+			
+			if (!is_array($va_ui_ids) || (sizeof($va_ui_ids) == 0)) { return ca_editor_uis::$s_default_ui_cache[$pm_table_name_or_num.'/'.$pn_type_id] = false; }
 			$va_tmp = array_keys($va_ui_ids);
 			if ($t_ui->load($va_tmp[0])) {
 				return ca_editor_uis::$s_default_ui_cache[$pm_table_name_or_num.'/'.$pn_type_id] = $t_ui;
