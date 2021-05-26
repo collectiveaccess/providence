@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2020 Whirl-i-Gig
+ * Copyright 2010-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -60,30 +60,35 @@
 		'self' => $t_instance->tableName().':'.$t_instance->getPrimaryKey()
 	);	
 	
-	$count = $this->getVar('relationship_count');
-	if(caGetOption('showCount', $va_settings, false)) { print $count ? "({$count})" : ''; }
-	$num_per_page = caGetOption('numPerPage', $va_settings, 10);
-
-	if ($vb_batch) {
-		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
-	} else {
-		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix, $this->getVar('initialValues')));
-	}
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
-		
-	$va_errors = array();
+	$va_errors = [];
 	foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
 		$va_errors[] = $o_error->getErrorDescription();
+	}
+	
+	$count = $this->getVar('relationship_count');
+	$num_per_page = caGetOption('numPerPage', $va_settings, 10);
+	
+	if (!RequestHTTP::isAjax()) {
+		if(caGetOption('showCount', $va_settings, false)) { print $count ? "({$count})" : ''; }
+
+		if ($vb_batch) {
+			print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
+		} else {
+			print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix, $this->getVar('initialValues')));
+		}
+		print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 	}
 ?>
 <div id="<?php print $vs_id_prefix; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	print "<div class='bundleSubLabel'>";	
-	if(sizeof($this->getVar('initialValues'))) {
+	if(is_array($this->getVar('initialValues')) && sizeof($this->getVar('initialValues'))) {
+		print caEditorBundleBatchEditorControls($this->request, $vn_placement_id, $t_subject, $t_instance->tableName(), $va_settings);
 		print caGetPrintFormatsListAsHTMLForRelatedBundles($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $vn_placement_id);
-	}
-	if(sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort && ($va_settings['list_format'] != 'list')) {
-		print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $va_settings);
+	
+		if(!$vb_read_only) {
+			print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $t_instance->tableName(), array_merge($va_settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
+		}
 	}
 	print "<div style='clear:both;'></div></div><!-- end bundleSubLabel -->";
 	
@@ -271,6 +276,7 @@
 			deleteButtonClassName: 'caDeleteItemButton',
 			hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_edit_related_'],
 			showEmptyFormsOnLoad: 1,
+			minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_loans_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
 			relationshipTypes: <?php print json_encode($this->getVar('relationship_types_by_sub_type')); ?>,
 			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'Movement', 'Get', $va_lookup_params); ?>',
 			types: <?php print json_encode($va_settings['restrict_to_types']); ?>,

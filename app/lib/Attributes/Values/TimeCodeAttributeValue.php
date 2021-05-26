@@ -169,7 +169,7 @@
 			if (caGetOption('returnAsDecimal', $pa_options, false)) {
 				return (float)$this->opn_duration;
 			}
-			if (!strlen($this->opn_duration)) { return ''; }
+			if (!strlen($this->opn_duration) || ((float)$this->opn_duration === 0.0)) { return ''; }
 			$o_tcp = new TimecodeParser();
 			$o_tcp->setParsedValueInSeconds($this->opn_duration);
 			
@@ -227,13 +227,18 @@
  		 * @return string
  		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
- 			$vn_width = (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : 30;
+ 			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight'));
+ 			
+ 			$vs_width = trim((isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth']);
+ 			$vs_height = trim((isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight']);
+ 			
  			$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : 'timecodeBg');
  			$vn_max_length = 255;
  			return caHTMLTextInput(
 				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
 				array('id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
-					'size' => $vn_width,
+					'size' => $vs_width,
+					'height' => $vs_height,
 					'value' => '{{'.$pa_element_info['element_id'].'}}',
 					'maxlength' => $vn_max_length,
 					'class' => $vs_class

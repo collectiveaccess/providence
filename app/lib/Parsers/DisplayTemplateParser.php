@@ -676,12 +676,6 @@ class DisplayTemplateParser {
 						}
 						
 						$vn_num_vals = sizeof($va_relative_ids);
-						if ((($vn_start > 0) || ($vn_length > 0)) && sizeof($va_relative_ids)) {
-							// Only evaluate units that fall within the start/length window to save time
-							// We pass the full count of units as 'fullValueCount' to ensure that ^count, ^index and friends 
-							// are accurate.
-							$va_relative_ids = array_slice($va_relative_ids, $vn_start, ($vn_length > 0) ? $vn_length : null); // trim to start/length
-						}
 						
 						// process template for all records selected by unit tag
 						$va_tmpl_val = DisplayTemplateParser::evaluate(
@@ -1710,13 +1704,19 @@ class DisplayTemplateParser {
 		foreach($va_codes as $vs_code => $vs_bool) {
 		    if (isset(self::$join_tag_vals[$vs_code]) && strlen(self::$join_tag_vals[$vs_code])) { return true; }
 			$vm_val = isset($pa_values[$vs_code]) ? $pa_values[$vs_code] : null;
-			$vb_value_present = (bool)$vm_val;
+			if(!is_array($vm_val)) { $vm_val = [$vm_val]; }
 			
-			if ($pb_mode !== 'present') { $vb_value_present = !$vb_value_present; }
+			foreach($vm_val as $v) {
+				$vb_value_present = (bool)trim($v);
+				if ($pb_mode !== 'present') { $vb_value_present = !$vb_value_present; }
 			
-			if (is_null($vb_has_value)) { $vb_has_value = $vb_value_present; }
+				if (is_null($vb_has_value)) { $vb_has_value = $vb_value_present; }
 			
-			$vb_has_value = ($vs_bool == 'OR') ? ($vb_has_value || $vb_value_present) : ($vb_has_value && $vb_value_present);
+				$vb_has_value = ($vs_bool == 'OR') ? ($vb_has_value || $vb_value_present) : ($vb_has_value && $vb_value_present);
+				
+				if(($vs_bool == 'OR') && $vb_has_value) { return $vb_has_value; }
+				if(($vs_bool == 'AND') && !$vb_has_value) { return $vb_has_value; }
+			}
 		}
 		return $vb_has_value;
 	}

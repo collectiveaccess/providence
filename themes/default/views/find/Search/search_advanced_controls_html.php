@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,12 +38,12 @@
 		$vs_form_list_select = $t_form->getFormsAsHTMLSelect('form_id', array('onchange' => 'caLoadAdvancedSearchForm(this.options[this.selectedIndex].value)', 'class' => 'searchFormSelector'), array('value' => $this->getVar('form_id'), 'access' => __CA_SEARCH_FORM_READ_ACCESS__, 'user_id' => $this->request->getUserID(), 'table' => $t_subject->tableNum(), 'restrictToTypes' => [$vn_type_id]));
 		if ($vs_form_list_select) {
 ?>
-		<a href='#' class='button' id='advancedSearchFormContainerToggle'><?php print _t('Hide search form'); ?> &rsaquo;</a>
+		<a href='#' class='button' id='advancedSearchFormContainerToggle'><?= _t('Hide search form'); ?> &rsaquo;</a>
 <?php
 		}
 ?>
 		<div class='searchFormSelector' style='float:right;' >
-			<form action='#' id='advancedSearchFormContainerFormSelector'><?php print ($vs_form_list_select) ? _t('Form').': '.$vs_form_list_select : ''; ?></form>
+			<form action='#' id='advancedSearchFormContainerFormSelector'><?= ($vs_form_list_select) ? _t('Form').': '.$vs_form_list_select : ''; ?></form>
 		</div>
 		<div style="clear: both;"><!-- empty --></div>
 		<div id="advancedSearchFormContainer">
@@ -57,20 +57,20 @@
 ?>
 <script type='text/javascript'>
 	function caLoadAdvancedSearchForm(form_id) {
-		jQuery('#advancedSearchFormContainer').load('<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getAdvancedSearchForm'); ?>', {form_id: form_id});
+		jQuery('#advancedSearchFormContainer').load('<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getAdvancedSearchForm'); ?>', {form_id: form_id});
 	}
 	
 	var caCookieJar = jQuery.cookieJar('caCookieJar');
-	if (caCookieJar.get('<?php print $this->getVar('table_name'); ?>_hide_adv_search_form') == 1) {
+	if (caCookieJar.get('<?= $this->getVar('table_name'); ?>_hide_adv_search_form') == 1) {
 		jQuery("#advancedSearchFormContainer").toggle(0);
 		jQuery("#advancedSearchFormContainerFormSelector").hide();
-		jQuery("#advancedSearchFormContainerToggle").html('<?php print addslashes(_t('Show search form'));?> &rsaquo;');
+		jQuery("#advancedSearchFormContainerToggle").html('<?= addslashes(_t('Show search form'));?> &rsaquo;');
 	}
 	
 	jQuery("#advancedSearchFormContainerToggle").click(function() {
 		jQuery("#advancedSearchFormContainer").slideToggle(350, function() { 
-			caCookieJar.set('<?php print $this->getVar('table_name'); ?>_hide_adv_search_form', (this.style.display == 'block') ? 0 : 1); 
-			jQuery("#advancedSearchFormContainerToggle").html((this.style.display == 'block') ? '<?php print addslashes(_t('Hide search form'));?> &rsaquo;' : '<?php print addslashes(_t('Show search form'));?> &rsaquo;');
+			caCookieJar.set('<?= $this->getVar('table_name'); ?>_hide_adv_search_form', (this.style.display == 'block') ? 0 : 1); 
+			jQuery("#advancedSearchFormContainerToggle").html((this.style.display == 'block') ? '<?= addslashes(_t('Hide search form'));?> &rsaquo;' : '<?= addslashes(_t('Show search form'));?> &rsaquo;');
 			
 			if (this.style.display == 'block') {
 				jQuery("#advancedSearchFormContainerFormSelector").show();
@@ -92,13 +92,14 @@
 			var field_name_with_no_period = field_name.replace('.', '_');	// we need a bundle name without periods for compatibility
 			vals[field_name] = jQuery('#' + form_id + ' [id=' + field_name_with_no_period + ']').val();	
 		});
-		console.log("v", vals);
 		vals['_label'] = label;								// special "display" title, used if all else fails
 		vals['_field_list'] = field_names					// an array for form fields to expect
-		jQuery.getJSON('<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), "addSavedSearch"); ?>', vals, function(data, status) {
+		jQuery.getJSON('<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), "addSavedSearch"); ?>', vals, function(data, status) {
 			if ((data) && (data.md5)) {
 				jQuery('.savedSearchSelect').prepend(jQuery("<option></option>").attr("value", data.md5).text(data.label)).attr('selectedIndex', 0);
-					
+				jQuery.jGrowl("<?= addslashes(_t('Saved search')); ?>" + ' <em>' + data.label + '</em>'); 
+			} else {
+				jQuery.jGrowl("<?= addslashes(_t('Could not save search')); ?>"); 
 			}
 		});
 	}

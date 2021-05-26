@@ -39,7 +39,6 @@ require_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
 require_once(__CA_LIB_DIR__."/Plugins/IWLPlugTaskQueueHandler.php");
 require_once(__CA_LIB_DIR__.'/Db.php');
 require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
-require_once(__CA_LIB_DIR__."/Datamodel.php");
 require_once(__CA_LIB_DIR__.'/BatchProcessor.php');
 require_once(__CA_MODELS_DIR__.'/ca_sets.php');
 require_once(__CA_MODELS_DIR__.'/ca_editor_uis.php');
@@ -120,4 +119,3 @@ require_once(__CA_MODELS_DIR__.'/ca_users.php');
 		}
 		# --------------------------------------------------------------------------------
 	}
-?>

@@ -41,7 +41,6 @@
 	class BaseSearchResult extends SearchResult {
 		# -------------------------------------------------------
 		private $opo_list = null;
-		private $opo_datamodel = null;
 		private $opa_locales = null;
 		
 		/**

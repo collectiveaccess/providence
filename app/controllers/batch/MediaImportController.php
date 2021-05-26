@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2020 Whirl-i-Gig
+ * Copyright 2012-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,7 +39,6 @@
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
  	require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
  	require_once(__CA_MODELS_DIR__."/ca_data_importers.php");
- 	require_once(__CA_LIB_DIR__."/Datamodel.php");
  	require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
  	require_once(__CA_LIB_DIR__."/ResultContext.php");
  	require_once(__CA_LIB_DIR__."/BatchProcessor.php");
@@ -49,7 +48,6 @@
  
  	class MediaImportController extends ActionController {
  		# -------------------------------------------------------
- 		protected $opo_datamodel;
  		protected $opo_app_plugin_manager;
  		protected $opo_result_context;
 
@@ -257,11 +255,14 @@
  				'setCreateName' => $this->request->getParameter('set_create_name', pString),
  				'set_id' => $this->request->getParameter('set_id', pInteger),
  				'idnoMode' => $this->request->getParameter('idno_mode', pString),
+ 				'labelMode' => $this->request->getParameter('label_mode', pString),
+ 				'labelText' => $this->request->getParameter('label_text', pString),
  				'idno' => $this->request->getParameter('idno', pString),
 				'representationIdnoMode' => $this->request->getParameter('representation_idno_mode', pString),
 				'representation_idno' => $this->request->getParameter('idno_representation_number', pString),
  				'logLevel' => $this->request->getParameter('log_level', pString),
  				'allowDuplicateMedia' => $this->request->getParameter('allow_duplicate_media', pInteger),
+ 				'replaceExistingMedia' => $this->request->getParameter('replace_existing_media', pInteger),
  				'locale_id' => $g_ui_locale_id,
  				'user_id' => $this->request->getUserID(),
  				'skipFileList' => $this->request->getParameter('skip_file_list', pString),
@@ -321,7 +322,7 @@
 			if($va_paths = @scandir($dir, 0)) {
 				$vn_i = $vn_c = 0;
 				foreach($va_paths as $item) {
-					if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
+					if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item[0] !== '.'))) {
 						$vb_is_dir = is_dir("{$dir}/{$item}");
 						$vs_k = preg_replace('![@@]+!', '|', $item);
 						if ($vb_is_dir) { 
@@ -409,7 +410,7 @@
  			$pn_max = $this->request->getParameter('max', pString);
  			$vs_root_directory = $this->request->config->get('batch_media_import_root_directory');
  			
- 			$va_level_data = array();
+ 			$va_level_data = [];
  			
  			if ($this->request->getParameter('init', pInteger)) { 
  				//
@@ -436,6 +437,8 @@
  				}
  			} else {
  				list($ps_directory, $pn_start) = explode("@@", $ps_id);
+ 				
+ 				Session::setVar('lastMediaImportDirectoryPath', $ps_directory);
  				
 				$va_tmp = explode('/', $ps_directory);
 				$vn_level = sizeof($va_tmp);

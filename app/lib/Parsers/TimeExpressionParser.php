@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2020 Whirl-i-Gig
+ * Copyright 2006-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -634,6 +634,12 @@ class TimeExpressionParser {
 			# -------------------------------------------------------
 			case TEP_STATE_AFTER_GET_DATE:
 				if ($va_date = $this->_parseDateExpression()) {
+					if(!$va_date['month']) { $va_date['month'] = 1; }
+					if (!$va_date['day']) { $va_date['day'] = 1; }
+					$va_date['hours'] = 0;
+					$va_date['minutes'] = 0;
+					$va_date['seconds'] = 0;
+					
 					$va_dates['start'] = $va_date;
 					$va_dates['end'] = array(
 						'month' => null, 'day' => null, 
@@ -2237,6 +2243,8 @@ class TimeExpressionParser {
 			
 			if (($pa_dates['start']['day'] === null) && ($pa_dates['end']['day'] === null) && ($pa_dates['start']['year'] != TEP_START_OF_UNIVERSE) && $pa_dates['end']['year'] != TEP_END_OF_UNIVERSE) { 
 				$pa_dates['start']['day'] = 1; 
+				if(!$pa_dates['start']['month']) { $pa_dates['start']['month'] = 1; }
+				if(!$pa_dates['end']['month']) { $pa_dates['end']['month'] = 12; }
 				$pa_dates['end']['day'] = $this->daysInMonth($pa_dates['end']['month'], $pa_dates['end']['year'] ? $pa_dates['end']['year'] : 2004); // use leap year if no year is defined
 			} elseif (($pa_dates['end']['day'] === null) && ($pa_dates['end']['year'] != TEP_END_OF_UNIVERSE) && ($pa_dates['start']['year'] != TEP_START_OF_UNIVERSE)) { 
 				$pa_dates['end']['day'] = $this->daysInMonth($pa_dates['end']['month'], $pa_dates['end']['year']);
@@ -2633,14 +2641,7 @@ class TimeExpressionParser {
 			
 			
 			if (isset($pa_options['dateFormat']) && ($pa_options['dateFormat'] == 'iso8601')) {
-				$vs_start = $this->getISODateTime($va_start_pieces, 'START', $pa_options);
-				$vs_end = $this->getISODateTime($va_end_pieces, 'END', $pa_options);
-				
-				if ($vs_start != $vs_end) {
-					return "{$vs_start}/{$vs_end}";
-				} else {
-					return $vs_start;
-				}
+				return $this->getISODateRange($va_start_pieces, $va_end_pieces, $pa_options);
 			}
 
 			// special treatment for HSP
@@ -2836,6 +2837,7 @@ class TimeExpressionParser {
 							'uncertainty_units' => $va_end_pieces['uncertainty_units']
 						), $pa_options);
 					} else {
+						if ($va_end_pieces['day'] == $this->daysInMonth($va_end_pieces['month'], $va_end_pieces['year'])) { unset($va_end_pieces['day']); }
 						return $vs_before_qualifier.' '. $this->_dateToText($va_end_pieces, $pa_options);
 					}
 				} else {
@@ -2854,6 +2856,7 @@ class TimeExpressionParser {
 							'uncertainty_units' => $va_start_pieces['uncertainty_units']
 						), $pa_options);
 					} else {
+						if ($va_start_pieces['day'] == 1) { unset($va_start_pieces['day']); }
 						$vs_date = $this->_dateToText($va_start_pieces, $pa_options);
 					}
 				} else {
@@ -3505,6 +3508,90 @@ class TimeExpressionParser {
 	# -------------------------------------------------------------------
 	public function setDebug($pn_debug) {
 		$this->opb_debug = ($pn_debug) ? true: false;
+	}
+	# -------------------------------------------------------------------
+	/**
+	 * Test whether a date range (passed as arrays of date pieces) is a century, decade, year, month or day interval
+	 *
+	 * @param array $pa_start_pieces
+	 * @param array $pa_end_pieces
+	 *
+	 * @return string CENTURY|DECADE|YEAR|MONTH|DAY if interval; false is not interval
+	 */
+	public function isDMYRange($pa_start_pieces, $pa_end_pieces) {
+		if (
+			($pa_start_pieces['year'] % 100) == 0 && ($pa_end_pieces['year'] == ($pa_start_pieces['year'] + 99))  &&
+			$pa_start_pieces['day'] == 1 && $pa_start_pieces['month'] == 1 &&
+			$pa_start_pieces['hours'] == 0 && $pa_start_pieces['minutes'] == 0 && $pa_start_pieces['seconds'] == 0 &&
+			$pa_end_pieces['day'] == 31 && $pa_end_pieces['month'] == 12 &&
+			$pa_end_pieces['hours'] == 23 && $pa_end_pieces['minutes'] == 59 && $pa_end_pieces['seconds'] == 59
+		) {
+			return 'CENTURY';
+		}
+		if (
+			($pa_start_pieces['year'] % 10) == 0 && ($pa_end_pieces['year'] == ($pa_start_pieces['year'] + 9))  &&
+			$pa_start_pieces['day'] == 1 && $pa_start_pieces['month'] == 1 &&
+			$pa_start_pieces['hours'] == 0 && $pa_start_pieces['minutes'] == 0 && $pa_start_pieces['seconds'] == 0 &&
+			$pa_end_pieces['day'] == 31 && $pa_end_pieces['month'] == 12 &&
+			$pa_end_pieces['hours'] == 23 && $pa_end_pieces['minutes'] == 59 && $pa_end_pieces['seconds'] == 59
+		) {
+			return 'DECADE';
+		}
+		if (
+			$pa_start_pieces['year'] == $pa_end_pieces['year']  &&
+			$pa_start_pieces['day'] == 1 && $pa_start_pieces['month'] == 1 &&
+			$pa_start_pieces['hours'] == 0 && $pa_start_pieces['minutes'] == 0 && $pa_start_pieces['seconds'] == 0 &&
+			$pa_end_pieces['day'] == 31 && $pa_end_pieces['month'] == 12 &&
+			$pa_end_pieces['hours'] == 23 && $pa_end_pieces['minutes'] == 59 && $pa_end_pieces['seconds'] == 59
+		) {
+			return 'YEAR';
+		}
+		
+		if (
+			$pa_start_pieces['year'] == $pa_end_pieces['year']  &&
+			$pa_start_pieces['month'] == $pa_end_pieces['month']  &&
+			$pa_start_pieces['day'] == 1 && ($pa_end_pieces['day'] == $this->daysInMonth($pa_end_pieces['month'], $pa_end_pieces['year'])) &&
+			$pa_start_pieces['hours'] == 0 && $pa_start_pieces['minutes'] == 0 && $pa_start_pieces['seconds'] == 0 &&
+			$pa_end_pieces['hours'] == 23 && $pa_end_pieces['minutes'] == 59 && $pa_end_pieces['seconds'] == 59
+		) {
+			return 'MONTH';
+		}
+		
+		if (
+			$pa_start_pieces['year'] == $pa_end_pieces['year']  &&
+			$pa_start_pieces['month'] == $pa_end_pieces['month']  &&
+			$pa_start_pieces['day'] == $pa_end_pieces['day'] &&
+			$pa_start_pieces['hours'] == 0 && $pa_start_pieces['minutes'] == 0 && $pa_start_pieces['seconds'] == 0 &&
+			$pa_end_pieces['hours'] == 23 && $pa_end_pieces['minutes'] == 59 && $pa_end_pieces['seconds'] == 59
+		) {
+			return 'DAY';
+		}
+		
+		return false;
+	}
+	# -------------------------------------------------------------------
+	/**
+	 * Convert date value arrays (array with keys "month", "day", "year", "hours", "minutes", "seconds" used internally by parser) to ISO 8601 date/time range.
+	 *
+	 * @param array $pa_start_date
+	 * @param array $pa_end_date
+	 * @param array $pa_options Options include:
+	 *		timeOmit = Omit time from returned ISO 8601 date. [Default is false]
+	 *		returnUnbounded = Return extreme value for unbounded dates. For "before" dates the start date would be equal to -9999; for "after" dates the end date would equal "9999". [Default is false]
+	 *		dateFormat = If set to "yearOnly" will return bare year. [Default is null]
+	 * @return string
+	 */
+	public function getISODateRange($pa_start_date, $pa_end_date, $pa_options=null) {
+		$start = $this->getISODateTime($pa_start_date, 'START', $pa_options);
+		$end = $this->getISODateTime($pa_end_date, 'END', $pa_options);
+		
+		switch($x=$this->isDMYRange($pa_start_date, $pa_end_date)) {
+			case 'DAY':
+				return $this->getISODateTime($pa_start_date, 'FULL', array_merge($pa_options, ['timeOmit' => true]));
+			case 'MONTH':
+				return $this->getISODateTime($pa_start_date, 'FULL', array_merge($pa_options, ['timeOmit' => true])).'/'.$this->getISODateTime($pa_end_date, 'FULL', array_merge($pa_options, ['timeOmit' => true]));
+		}
+		return "{$start}/{$end}";
 	}
 	# -------------------------------------------------------------------
 	/**

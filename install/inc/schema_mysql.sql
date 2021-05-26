@@ -406,6 +406,7 @@ create table ca_metadata_element_labels
    locale_id                      smallint unsigned              not null,
    name                           varchar(255)                   not null,
    description                    text                           not null,
+   is_preferred                   tinyint unsigned               not null,
    primary key (label_id),
    
    constraint fk_ca_metadata_element_labels_element_id foreign key (element_id)
@@ -456,6 +457,67 @@ create table ca_multipart_idno_sequences
 
 
 /*==========================================================================*/
+create table ca_storage_locations
+(
+   location_id                    int unsigned                   not null AUTO_INCREMENT,
+   parent_id                      int unsigned,
+   type_id                        int unsigned,
+   idno                           varchar(255)                   not null,
+   idno_sort                      varchar(255)                   not null,
+   is_template                    tinyint unsigned               not null default 0,
+   view_count                     int unsigned                   not null default 0,
+   source_id                      int unsigned,
+   source_info                    longtext                       not null,
+   color                          char(6)                        null,
+   icon                           longblob                       not null,
+   hier_left                      decimal(30,20)                 not null,
+   hier_right                     decimal(30,20)                 not null,
+   access                         tinyint unsigned               not null default 0,
+   status                         tinyint unsigned               not null default 0,
+   deleted                        tinyint unsigned               not null default 0,
+   `rank`                           int unsigned                   not null default 0,
+   is_enabled                     tinyint unsigned               not null default 1,
+   submission_user_id               int unsigned                   null,
+   submission_group_id            int unsigned                   null,
+   submission_status_id              int unsigned                   null,
+   submission_via_form            varchar(100)                   null,
+   
+   primary key (location_id),
+   constraint fk_ca_storage_locations_type_id foreign key (type_id)
+      references ca_list_items (item_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_storage_locations_source_id foreign key (source_id)
+      references ca_list_items (item_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_storage_locations_parent_id foreign key (parent_id)
+      references ca_storage_locations (location_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_storage_locations_submission_user_id foreign key (submission_user_id)
+      references ca_users (user_id) on delete restrict on update restrict,
+
+   constraint fk_ca_storage_locations_submission_group_id foreign key (submission_group_id)
+      references ca_user_groups (group_id) on delete restrict on update restrict,
+
+   constraint fk_ca_storage_locations_submission_status_id foreign key (submission_status_id)
+      references ca_list_items (item_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+create index i_parent_id on ca_storage_locations(parent_id);
+create index i_source_id on ca_storage_locations(source_id);
+create index idno on ca_storage_locations(idno);
+create index idno_sort on ca_storage_locations(idno_sort);
+create index i_type_id on ca_storage_locations(type_id);
+create index i_hier_left on ca_storage_locations(hier_left);
+create index i_hier_right on ca_storage_locations(hier_right);
+create index i_view_count on ca_storage_locations(view_count);
+create index i_loc_filter on ca_storage_locations(location_id, deleted, access); 
+create index i_submission_user_id on ca_storage_locations(submission_user_id);
+create index i_submission_group_id on ca_storage_locations(submission_group_id);
+create index i_submission_status_id on ca_storage_locations(submission_status_id);
+create index i_submission_via_form on ca_storage_locations(submission_via_form);
+
+
+/*==========================================================================*/
 create table ca_object_lots
 (
    lot_id                         int unsigned                   not null AUTO_INCREMENT,
@@ -472,6 +534,17 @@ create table ca_object_lots
    extent_units                   varchar(255)                   not null,
    access                         tinyint                        not null default 0,
    status                         tinyint unsigned               not null default 0,
+   home_location_id               int unsigned null,
+   accession_sdatetime            decimal(30,20),
+   accession_edatetime            decimal(30,20),
+   deaccession_sdatetime          decimal(30,20),
+   deaccession_edatetime          decimal(30,20),
+   deaccession_disposal_sdatetime decimal(30,20),
+   deaccession_disposal_edatetime decimal(30,20),
+   is_deaccessioned               tinyint                        not null default 0,
+   deaccession_notes              text                           not null,
+   deaccession_authorized_by      varchar(255)                   not null default '',
+   deaccession_type_id            int unsigned                   null,
    source_id                      int unsigned,
    source_info                    longtext                       not null,
    deleted                        tinyint unsigned               not null default 0,
@@ -490,6 +563,12 @@ create table ca_object_lots
       
    constraint fk_ca_object_lots_lot_status_id foreign key (lot_status_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
+   
+   constraint fk_ca_object_lots_deaccession_type_id foreign key (deaccession_type_id)
+      references ca_list_items (item_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_object_lots_home_location_id foreign key (home_location_id)
+      references ca_storage_locations (location_id) on delete restrict on update restrict,
       
    constraint fk_ca_object_lots_submission_user_id foreign key (submission_user_id)
       references ca_users (user_id) on delete restrict on update restrict,
@@ -508,6 +587,16 @@ create index i_admin_idno_stub_sort on ca_object_lots(idno_stub_sort);
 create index i_lot_status_id on ca_object_lots(lot_status_id);
 create index i_view_count on ca_object_lots(view_count);
 create index i_lot_filter on ca_object_lots(lot_id, deleted, access); 
+create index i_home_location_id on ca_object_lots(home_location_id);
+create index i_accession_sdatetime on ca_object_lots(accession_sdatetime);
+create index i_accession_edatetime on ca_object_lots(accession_edatetime);
+create index i_deaccession_sdatetime on ca_object_lots(deaccession_sdatetime);
+create index i_deaccession_edatetime on ca_object_lots(deaccession_edatetime);
+create index i_deaccession_disposal_sdatetime on ca_object_lots(deaccession_disposal_sdatetime);
+create index i_deaccession_disposal_edatetime on ca_object_lots(deaccession_disposal_edatetime);
+create index i_deaccession_auth_by on ca_object_lots(deaccession_authorized_by);
+create index i_deaccession_type_id on ca_object_lots(deaccession_type_id);
+create index i_is_deaccessioned on ca_object_lots(is_deaccessioned);
 create index i_submission_user_id on ca_object_lots(submission_user_id);
 create index i_submission_group_id on ca_object_lots(submission_group_id);
 create index i_submission_status_id on ca_object_lots(submission_status_id);
@@ -534,6 +623,7 @@ create table ca_object_representations
    tagging_status                 tinyint unsigned               not null default 0,
    rating_status                  tinyint unsigned               not null default 0,
    view_count                     int unsigned                   not null default 0,
+   home_location_id               int unsigned null,
    access                         tinyint unsigned               not null default 0,
    status                         tinyint unsigned               not null default 0,
    `rank`                           int unsigned                   not null default 0,
@@ -551,6 +641,9 @@ create table ca_object_representations
    
    constraint fk_ca_object_representations_source_id foreign key (source_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_object_representations_home_location_id foreign key (home_location_id)
+      references ca_storage_locations (location_id) on delete restrict on update restrict,
       
    constraint fk_ca_object_representations_locale_id foreign key (locale_id)
       references ca_locales (locale_id) on delete restrict on update restrict,
@@ -582,6 +675,7 @@ create index i_submission_group_id on ca_object_representations(submission_group
 create index i_submission_status_id on ca_object_representations(submission_status_id);
 create index i_submission_via_form on ca_object_representations(submission_via_form);
 create index i_is_transcribable on ca_object_representations(is_transcribable);
+create index i_home_location_id on ca_object_representations(home_location_id);
 
 
 /*==========================================================================*/
@@ -591,8 +685,8 @@ create table ca_object_representation_labels
    representation_id              int unsigned                   not null,
    locale_id                      smallint unsigned              not null,
    type_id                        int unsigned                   null,
-   name                           varchar(1024)                  not null,
-   name_sort                      varchar(1024)                  not null,
+   name                           varchar(16384)                 not null,
+   name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
    primary key (label_id),
@@ -636,8 +730,22 @@ create table ca_object_representation_captions (
       
     index i_representation_id	(representation_id),
     index i_locale_id			(locale_id),
-   constraint fk_ca_object_rep_captiopns_locale_id foreign key (locale_id)
+   constraint fk_ca_object_rep_captions_locale_id foreign key (locale_id)
       references ca_locales (locale_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
+create table ca_object_representation_sidecars (
+	sidecar_id			int unsigned not null auto_increment,
+	representation_id	int unsigned not null references ca_object_representations(representation_id),
+	sidecar_file		longblob not null,
+	sidecar_content		longtext not null,
+	notes               text not null,
+    mimetype            varchar(255) null,
+	primary key (sidecar_id),
+      
+    index i_representation_id	(representation_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
@@ -727,8 +835,8 @@ create table ca_occurrence_labels
    occurrence_id                  int unsigned                   not null,
    locale_id                      smallint unsigned              not null,
    type_id                        int unsigned                   null,
-   name                           varchar(1024)                   not null,
-   name_sort                      varchar(1024)                   not null,
+   name                           varchar(16384)                 not null,
+   name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
    primary key (label_id),
@@ -767,6 +875,17 @@ create table ca_collections
    tagging_status                 tinyint unsigned               not null default 0,
    rating_status                  tinyint unsigned               not null default 0,
    view_count                     int unsigned                   not null default 0,
+   home_location_id               int unsigned null,
+   accession_sdatetime            decimal(30,20),
+   accession_edatetime            decimal(30,20),
+   deaccession_sdatetime          decimal(30,20),
+   deaccession_edatetime          decimal(30,20),
+   deaccession_disposal_sdatetime decimal(30,20),
+   deaccession_disposal_edatetime decimal(30,20),
+   is_deaccessioned               tinyint                        not null default 0,
+   deaccession_notes              text                           not null,
+   deaccession_authorized_by      varchar(255)                   not null default '',
+   deaccession_type_id            int unsigned                   null,
    source_id                      int unsigned,
    source_info                    longtext                       not null,
    hier_collection_id             int unsigned                   not null,
@@ -794,7 +913,13 @@ create table ca_collections
       
    constraint fk_ca_collections_parent_id foreign key (parent_id)
       references ca_collections (collection_id) on delete restrict on update restrict,
+
+   constraint fk_ca_collections_deaccession_type_id foreign key (deaccession_type_id)
+      references ca_list_items (item_id) on delete restrict on update restrict,
       
+   constraint fk_ca_collections_home_location_id foreign key (home_location_id)
+      references ca_storage_locations (location_id) on delete restrict on update restrict,
+
    constraint fk_ca_collections_submission_user_id foreign key (submission_user_id)
       references ca_users (user_id) on delete restrict on update restrict,
 
@@ -816,6 +941,16 @@ create index i_hier_left on ca_collections(hier_left);
 create index i_hier_right on ca_collections(hier_right);
 create index i_acl_inherit_from_parent on ca_collections(acl_inherit_from_parent);
 create index i_view_count on ca_collections(view_count);
+create index i_home_location_id on ca_collections(home_location_id);
+create index i_accession_sdatetime on ca_collections(accession_sdatetime);
+create index i_accession_edatetime on ca_collections(accession_edatetime);
+create index i_deaccession_sdatetime on ca_collections(deaccession_sdatetime);
+create index i_deaccession_edatetime on ca_collections(deaccession_edatetime);
+create index i_deaccession_disposal_sdatetime on ca_collections(deaccession_disposal_sdatetime);
+create index i_deaccession_disposal_edatetime on ca_collections(deaccession_disposal_edatetime);
+create index i_deaccession_auth_by on ca_collections(deaccession_authorized_by);
+create index i_deaccession_type_id on ca_collections(deaccession_type_id);
+create index i_is_deaccessioned on ca_collections(is_deaccessioned);
 create index i_collection_filter on ca_collections(collection_id, deleted, access); 
 create index i_submission_user_id on ca_collections(submission_user_id);
 create index i_submission_group_id on ca_collections(submission_group_id);
@@ -830,7 +965,7 @@ create table ca_collection_labels
    collection_id                  int unsigned                   not null,
    locale_id                      smallint unsigned              not null,
    type_id                        int unsigned                   null,
-   name                           varchar(255)                   not null,
+   name                           varchar(16384)                 not null,
    name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
@@ -848,7 +983,7 @@ create index i_name on ca_collection_labels(name(128));
 create unique index u_all on ca_collection_labels
 (
    collection_id,
-   name,
+   name(255),
    type_id,
    locale_id
 );
@@ -968,67 +1103,6 @@ create index i_type_id on ca_place_labels(type_id);
 
 
 /*==========================================================================*/
-create table ca_storage_locations
-(
-   location_id                    int unsigned                   not null AUTO_INCREMENT,
-   parent_id                      int unsigned,
-   type_id                        int unsigned,
-   idno                           varchar(255)                   not null,
-   idno_sort                      varchar(255)                   not null,
-   is_template                    tinyint unsigned               not null default 0,
-   view_count                     int unsigned                   not null default 0,
-   source_id                      int unsigned,
-   source_info                    longtext                       not null,
-   color                          char(6)                        null,
-   icon                           longblob                       not null,
-   hier_left                      decimal(30,20)                 not null,
-   hier_right                     decimal(30,20)                 not null,
-   access                         tinyint unsigned               not null default 0,
-   status                         tinyint unsigned               not null default 0,
-   deleted                        tinyint unsigned               not null default 0,
-   `rank`                           int unsigned                   not null default 0,
-   is_enabled                     tinyint unsigned               not null default 1,
-   submission_user_id               int unsigned                   null,
-   submission_group_id            int unsigned                   null,
-   submission_status_id              int unsigned                   null,
-   submission_via_form            varchar(100)                   null,
-   
-   primary key (location_id),
-   constraint fk_ca_storage_locations_type_id foreign key (type_id)
-      references ca_list_items (item_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_storage_locations_source_id foreign key (source_id)
-      references ca_list_items (item_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_storage_locations_parent_id foreign key (parent_id)
-      references ca_storage_locations (location_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_storage_locations_submission_user_id foreign key (submission_user_id)
-      references ca_users (user_id) on delete restrict on update restrict,
-
-   constraint fk_ca_storage_locations_submission_group_id foreign key (submission_group_id)
-      references ca_user_groups (group_id) on delete restrict on update restrict,
-
-   constraint fk_ca_storage_locations_submission_status_id foreign key (submission_status_id)
-      references ca_list_items (item_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create index i_parent_id on ca_storage_locations(parent_id);
-create index i_source_id on ca_storage_locations(source_id);
-create index idno on ca_storage_locations(idno);
-create index idno_sort on ca_storage_locations(idno_sort);
-create index i_type_id on ca_storage_locations(type_id);
-create index i_hier_left on ca_storage_locations(hier_left);
-create index i_hier_right on ca_storage_locations(hier_right);
-create index i_view_count on ca_storage_locations(view_count);
-create index i_loc_filter on ca_storage_locations(location_id, deleted, access); 
-create index i_submission_user_id on ca_storage_locations(submission_user_id);
-create index i_submission_group_id on ca_storage_locations(submission_group_id);
-create index i_submission_status_id on ca_storage_locations(submission_status_id);
-create index i_submission_via_form on ca_storage_locations(submission_via_form);
-
-
-/*==========================================================================*/
 create table ca_storage_location_labels
 (
    label_id                       int unsigned                   not null AUTO_INCREMENT,
@@ -1133,8 +1207,8 @@ create table ca_loan_labels (
    loan_id                        int unsigned                   not null,
    locale_id                      smallint unsigned              not null,
    type_id                        int unsigned                   null,
-   name                           varchar(1024)                  not null,
-   name_sort                      varchar(1024)                  not null,
+   name                           varchar(16384)                 not null,
+   name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
    primary key (label_id),
@@ -1216,8 +1290,8 @@ create table ca_movement_labels (
    movement_id                    int unsigned                   not null,
    locale_id                      smallint unsigned              not null,
    type_id                        int unsigned                   null,
-   name                           varchar(1024)                  not null,
-   name_sort                      varchar(1024)                  not null,
+   name                           varchar(16384)                 not null,
+   name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
    primary key (label_id),
@@ -1585,8 +1659,8 @@ create table ca_object_lot_labels
    lot_id                         int unsigned               not null,
    locale_id                      smallint unsigned              not null,
    type_id                        int unsigned                   null,
-   name                           varchar(1024)                  not null,
-   name_sort                      varchar(1024)                  not null,
+   name                           varchar(16384)                 not null,
+   name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
    primary key (label_id),
@@ -1843,11 +1917,11 @@ create index i_submission_via_form on ca_objects(submission_via_form);
 create table ca_object_labels
 (
    label_id                       int unsigned                   not null AUTO_INCREMENT,
-   object_id                      int unsigned               not null,
+   object_id                      int unsigned                   not null,
    locale_id                      smallint unsigned              not null,
    type_id                        int unsigned                   null,
-   name                           varchar(1024)                  not null,
-   name_sort                      varchar(1024)                  not null,
+   name                           varchar(16384)                 not null,
+   name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
    primary key (label_id),
@@ -4385,7 +4459,7 @@ create table ca_editor_ui_labels (
 	ui_id int unsigned not null references ca_editor_uis(ui_id),
 	name varchar(255) not null,
 	description text not null,
-	locale_id smallint not null references ca_locales(locale_id),
+	locale_id smallint unsigned not null references ca_locales(locale_id),
 	
 	primary key 				(label_id),
 	index i_ui_id				(ui_id),
@@ -4423,7 +4497,7 @@ create table ca_editor_uis_x_users (
 create table ca_editor_uis_x_roles (
 	relation_id int unsigned not null auto_increment,
 	ui_id int unsigned not null references ca_editor_uis(ui_id),
-	role_id int unsigned not null references ca_user_roles(role_id),
+	role_id smallint unsigned not null references ca_user_roles(role_id),
 	access 			tinyint unsigned not null default 0,
 	
 	primary key 				(relation_id),
@@ -4463,7 +4537,7 @@ create table ca_editor_ui_screen_labels (
 	screen_id int unsigned not null references ca_editor_ui_screens(screen_id),
 	name varchar(255) not null,
 	description text not null,
-	locale_id smallint not null references ca_locales(locale_id),
+	locale_id smallint unsigned not null references ca_locales(locale_id),
 	
 	primary key 				(label_id),
 	index i_screen_id			(screen_id),
@@ -4501,7 +4575,7 @@ create table ca_editor_ui_screens_x_users (
 create table ca_editor_ui_screens_x_roles (
 	relation_id int unsigned not null auto_increment,
 	screen_id int unsigned not null references ca_editor_ui_screens(screen_id),
-	role_id int unsigned not null references ca_user_roles(role_id),
+	role_id smallint unsigned not null references ca_user_roles(role_id),
 	access 			tinyint unsigned not null default 0,
 	
 	primary key 				(relation_id),
@@ -4665,7 +4739,7 @@ create table ca_sets_x_user_groups (
 create table ca_sets_x_users (
 	relation_id int unsigned not null auto_increment,
 	set_id int unsigned not null references ca_sets(set_id),
-	user_id int unsigned not null references ca_user(user_id),
+	user_id int unsigned not null references ca_users(user_id),
 	access tinyint unsigned not null default 0,
 	sdatetime int unsigned null,
 	edatetime int unsigned null,
@@ -4730,7 +4804,7 @@ create table ca_items_x_tags (
 	table_num	tinyint unsigned not null,
 	row_id		int unsigned not null,
 	
-	tag_id		int unsigned not null references ca_tags(tag_id),
+	tag_id		int unsigned not null references ca_item_tags(tag_id),
 	
 	user_id		int unsigned null references ca_users(user_id),
 	access		tinyint unsigned not null default 0,
@@ -5101,7 +5175,7 @@ create table ca_tour_stop_labels
    label_id                       int unsigned              not null AUTO_INCREMENT,
    stop_id                        int unsigned              not null,
    locale_id                      smallint unsigned              not null,
-   name                           varchar(255)                   not null,
+   name                           varchar(16384)                 not null,
    name_sort                      varchar(255)                   not null,
    primary key (label_id),
    
@@ -7266,14 +7340,17 @@ create table if not exists ca_media_upload_sessions (
    user_id                   int unsigned                   not null references ca_users(user_id),
    session_key               char(36)                       not null,
    created_on                int unsigned                   not null,
+   submitted_on              int unsigned                   null,
    completed_on              int unsigned                   null,
    last_activity_on          int unsigned                   null,
-   cancelled                 tinyint unsigned               not null default 0,
    error_code                smallint unsigned              not null default 0,
+   source                    varchar(30)                    not null default 'UPLOADER',
+   status                    varchar(30)                    not null default 'IN_PROGRESS',
    
    num_files		         int unsigned                   not null,
    total_bytes		         bigint unsigned                not null default 0,
    progress		             longtext                       null,
+   metadata		             longtext                       null,
    
    primary key (session_id),
 
@@ -7281,8 +7358,8 @@ create table if not exists ca_media_upload_sessions (
    index i_created_on			    (created_on),
    index i_completed_on			    (completed_on),
    index i_last_activity_on			(last_activity_on),
-   index i_cancelled      	        (cancelled),
    index i_error_code      	        (error_code),
+   index i_status   	            (status),
    unique index i_session_key      	(session_key)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -7298,4 +7375,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (165, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (169, unix_timestamp());

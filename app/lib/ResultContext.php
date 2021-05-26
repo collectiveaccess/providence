@@ -77,6 +77,15 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * Returns table number of result context (eg. what kind of item is the find result composed of?)
+		 *
+		 * @return string
+		 */
+		public function tableNum() {
+			return Datamodel::getTableNum($this->ops_table_name);
+		}
+		# ------------------------------------------------------------------
+		/**
 		 * Returns type result context
 		 *
 		 * @return string
@@ -270,6 +279,38 @@
 		public function setResultList($pa_result_list) {
 			$this->setSearchHistory(is_array($pa_result_list) ? sizeof($pa_result_list) : 0);
 			return $this->setContextValue('result_list', $pa_result_list);
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns number of items in the result list from the context's operation. 
+		 *
+		 * @return int
+		 */
+		public function getResultCount() {
+			if ($va_context = $this->getContext()) {
+				return sizeof($va_context['result_list']);
+			}
+			return 0;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns list of type_ids used by items in result list
+		 *
+		 * @return array
+		 */
+		public function getResultListTypes($options=null) {
+			$ids = $this->getResultList();
+		
+			if (!is_array($ids) || !sizeof($ids)) { return null; }
+			
+			$qr = caMakeSearchResult($t = $this->tableName(), $ids);
+			$type_ids = [];
+			while($qr->nextHit()) {
+				if($type_id = $qr->get("{$t}.type_id", $options)) {
+					$type_ids[$type_id] = $qr->get("{$t}.type_id", ['convertCodesToDisplayText' => true]);
+				}
+			}
+			return $type_ids;
 		}
 		# ------------------------------------------------------------------
 		/**
@@ -626,6 +667,43 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * Sets the currently selected deaccession display mode. The value can be one of the following:
+		 * 		"show", "hide", "alwaysShow", "alwaysHide"
+		 *
+		 * The deaccesion display mode determines whether all records in a result set are displayed 
+		 * or just non-deaccessioned records.
+		 *
+		 * @param string $deaccession_display_mode 
+		 * 
+		 * @return string Display mode (one of: "show", "hide", "alwaysShow", "alwaysHide")
+		 */
+		public function setCurrentDeaccessionDisplayMode($deaccession_display_mode) {
+			if (!in_array($deaccession_display_mode, ['show', 'hide', 'alwaysShow', 'alwaysHide'])) { 
+				$o_config = Configuration::load();
+				$deaccession_display_mode = $o_config->get($this->ops_table_name."_deaccession_display_mode_in_results"); 
+			}
+			return $this->setContextValue('deaccession_display_mode', $deaccession_display_mode);
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Gets the currently selected deaccession display mode.
+		 *
+		 * @return string Display mode (one of: "show", "hide", "alwaysShow", "alwaysHide")
+		 */
+		public function getCurrentDeaccessionDisplayMode() {
+			if (!($deaccession_display_mode = $this->opo_request->getParameter('deaccession', pString, ['forcePurify' => true]))) {
+ 				if ($context = $this->getContext()) {
+					$o_config = Configuration::load();
+					return (in_array(strtolower($context['deaccession_display_mode']), ['show', 'hide', 'alwaysshow', 'alwayshide']) ? $context['deaccession_display_mode'] : (($vs_deaccession_display_mode_default = $o_config->get($this->ops_table_name."_deaccession_display_mode_in_results")) ? $vs_deaccession_display_mode_default : "alwaysShow"));
+				}
+			} else {
+				$this->setContextValue('deaccesion_display_mode', $deaccession_display_mode);
+				return $deaccession_display_mode;
+			}
+			return null;
+		}
+		# ------------------------------------------------------------------
+		/**
 		 * Returns the named parameter, either from the current request, or if it is not present in the
 		 * request, then from the current context. Returns null if the parameter is not set in either.
 		 * The value passed in the request will be used in preference to the context value, and if the 
@@ -751,7 +829,6 @@
 			if (!($table_name = Datamodel::getTableName($table_name_or_num))) { return null; }
 			$o_find_navigation = Configuration::load(((defined('__CA_THEME_DIR__') && (__CA_APP_TYPE__ == 'PAWTUCKET')) ? __CA_THEME_DIR__ : __CA_APP_DIR__).'/conf/find_navigation.conf');
 			$find_nav = $o_find_navigation->getAssoc($table_name);
-			print_R($find_nav);
 			if(is_null($nav = caGetOption($find_type, $find_nav, null))) { return null; }
 			
 			return caNavUrl($request, trim($nav['module_path']), trim($nav['controller']), trim($nav['action']), []);
@@ -1042,6 +1119,7 @@
 			$va_semi_context = array_merge($va_existing_semi_context, $va_semi_context);
 			ResultContextStorage::setVar('result_context_'.$this->ops_table_name.'_'.$vs_find_type.($vs_find_subtype ? "_{$vs_find_subtype}" : ""), $va_semi_context);
 			
+			ResultContextStorage::save();
 			return true;
 		}
 		# ------------------------------------------------------------------
@@ -1217,6 +1295,18 @@
 			} else {
 				if (!($s = self::$storage)) { $s = 'Session'; }
 				return$s::getVar($key, $value, $options);
+			}
+		}
+		
+		/**
+		 *
+		 */
+		static public function save() {
+			if (is_object(self::$storage)) {
+				return self::$storage->update();
+			} else {
+				if (!($s = self::$storage)) { $s = 'Session'; }
+				return$s::save();
 			}
 		}
 	}

@@ -252,19 +252,19 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 	 */
 	private function isWord972000doc($ps_filepath) {
 		if ($r_fp = @fopen($ps_filepath, "r")) {
-			$vs_sig = fgets($r_fp, 9);
+			$ps_sig = fgets($r_fp, 9);
 			// Testing on the first 8 bytes of the file isn't great... 
-			// any Microsoft Compound Document formated
+			// any Microsoft Compound Document formatted
 			// file will be accepted by this test.
 			if (
-				(ord($ps_sig{0}) == 0xD0) &&
-				(ord($ps_sig{1}) == 0xCF) &&
-				(ord($ps_sig{2}) == 0x11) &&
-				(ord($ps_sig{3}) == 0xE0) &&
-				(ord($ps_sig{4}) == 0xA1) &&
-				(ord($ps_sig{5}) == 0xB1) &&
-				(ord($ps_sig{6}) == 0x1A) &&
-				(ord($ps_sig{7}) == 0xE1)
+				(ord($ps_sig[0]) == 0xD0) &&
+				(ord($ps_sig[1]) == 0xCF) &&
+				(ord($ps_sig[2]) == 0x11) &&
+				(ord($ps_sig[3]) == 0xE0) &&
+				(ord($ps_sig[4]) == 0xA1) &&
+				(ord($ps_sig[5]) == 0xB1) &&
+				(ord($ps_sig[6]) == 0x1A) &&
+				(ord($ps_sig[7]) == 0xE1)
 			) {
 				// Look for Word string in doc... this is hacky but seems to work well
 				// If it has both the file sig above and this string it's pretty likely
@@ -295,9 +295,13 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$va_ppt_types = ['PowerPoint2007' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation', 'PowerPoint97' => 'application/vnd.ms-powerpoint'];
 		
 			foreach ($va_ppt_types as $vs_type => $vs_mimetype) {
-				$o_reader = \PhpOffice\PhpPresentation\IOFactory::createReader($vs_type);
-				if ($o_reader->canRead($ps_filepath)) {
-					return $vs_mimetype;
+				try {
+					$o_reader = \PhpOffice\PhpPresentation\IOFactory::createReader($vs_type);
+					if ($o_reader->canRead($ps_filepath)) {
+						return $vs_mimetype;
+					}
+				} catch(\PhpOffice\PhpPresentation\Reader\Exception $e) {
+					// noop
 				}
 			}
 		}
@@ -312,9 +316,13 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$va_word_types = ['Word2007' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
 		
 			foreach ($va_word_types as $vs_type => $vs_mimetype) {
-				$o_reader = \PhpOffice\PhpWord\IOFactory::createReader($vs_type);
-				if ($o_reader->canRead($ps_filepath)) {
-					return $vs_mimetype;
+				try {
+					$o_reader = \PhpOffice\PhpWord\IOFactory::createReader($vs_type);
+					if ($o_reader->canRead($ps_filepath)) {
+						return $vs_mimetype;
+					}
+				} catch(\PhpOffice\PhpWord\Reader\Exception $e) {
+					// noop
 				}
 			}
 		}
@@ -324,19 +332,23 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 		if (in_array(pathinfo(strtolower($ps_filepath), PATHINFO_EXTENSION), ['xls', 'xlsx'])) {
 			$va_excel_types = ['Excel2007' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'Excel5' => 'application/vnd.ms-excel', 'Excel2003XML' => 'application/vnd.ms-excel'];
 			foreach ($va_excel_types as $vs_type => $vs_mimetype) {
-				switch($vs_type) {
-					case 'Excel2007':
-						$o_reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
-						break;
-					case 'Excel5':
-						$o_reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
-						break;
-					case 'Excel2003XML':
-						$o_reader = new \PhpOffice\PhpSpreadsheet\Reader\Xml();
-						break;
-				}
-				if ($o_reader->canRead($ps_filepath)) {
-					return $vs_mimetype;
+				try {
+					switch($vs_type) {
+						case 'Excel2007':
+							$o_reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+							break;
+						case 'Excel5':
+							$o_reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
+							break;
+						case 'Excel2003XML':
+							$o_reader = new \PhpOffice\PhpSpreadsheet\Reader\Xml();
+							break;
+					}
+					if ($o_reader->canRead($ps_filepath)) {
+						return $vs_mimetype;
+					}
+				} catch(\PhpOffice\PhpSpreadsheet\Reader\Exception $e) {
+					// noop
 				}
 			}
 		}

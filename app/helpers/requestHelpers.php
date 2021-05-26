@@ -79,7 +79,7 @@ function caDeviceIsMobile() {
   * @return bool
   */
 function caRequestIsHealthCheck() {
-	if (preg_match('!GoogleHC!i', $_SERVER['HTTP_USER_AGENT'])) {
+	if (!empty($_SERVER['HTTP_USER_AGENT']) && preg_match('!GoogleHC!i', $_SERVER['HTTP_USER_AGENT'])) {
 		return true;
 	}
 			

@@ -170,7 +170,7 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		$vn_entity_id = $this->addTestRecord('ca_entities', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'ind',
-				'idno' => 'hjs',
+				'idno' => '101',
 				'lifespan' => '12/17/1989 -'
 			),
 			'preferred_labels' => array(
@@ -223,7 +223,7 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		$vn_entity_id = $this->addTestRecord('ca_entities', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'ind',
-				'idno' => 'bs',
+				'idno' => '102',
 			),
 			'preferred_labels' => array(
 				array(
@@ -703,8 +703,8 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		$this->assertIsString($vm_ret[0]);
 		$this->assertIsString($vm_ret[1]);
 
-		$this->assertStringContainsString("editor/entities/EntityEditor/Summary/entity_id/".$this->opn_entity_id1."/rel/1\">Homer J. Simpson</a> (hjs)</li></ul>", $vm_ret[0]);
-		$this->assertStringContainsString("editor/entities/EntityEditor/Summary/entity_id/".$this->opn_entity_id2."/rel/1\">Bart Simpson</a> (bs)</li></ul>", $vm_ret[1]);
+		$this->assertStringContainsString("editor/entities/EntityEditor/Summary/entity_id/".$this->opn_entity_id1."/rel/1\">Homer J. Simpson</a> (101)</li></ul>", $vm_ret[0]);
+		$this->assertStringContainsString("editor/entities/EntityEditor/Summary/entity_id/".$this->opn_entity_id2."/rel/1\">Bart Simpson</a> (102)</li></ul>", $vm_ret[1]);
 	}
 	# -------------------------------------------------------
 	public function testStringFormattingTagOpts() {
@@ -924,10 +924,11 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 	}
 	# -------------------------------------------------------
 	public function testStartLength() {
-		$this->assertEquals('5 in x 3 lb', trim(DisplayTemplateParser::evaluate("
+        $display_dimension = trim(DisplayTemplateParser::evaluate("
 		<unit relativeTo='ca_objects.dimensions' start='1' length='1'>
 			^ca_objects.dimensions.dimensions_length x ^ca_objects.dimensions.dimensions_weight
-		</unit>", 'ca_objects', array($this->opn_object_id))));
+		</unit>", 'ca_objects', array($this->opn_object_id)));
+        $this->assertEquals('5 in x 3 lb', $display_dimension);
 	}
 	# -------------------------------------------------------
 	public function testNonpreferredLabelsRestrictToTypes() {

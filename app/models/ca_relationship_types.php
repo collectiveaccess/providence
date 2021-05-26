@@ -653,7 +653,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 	while($qr_res->nextRow()) {
 	 		$va_type_ids_to_codes[$qr_res->get('type_id')] = $qr_res->get('type_code');
 	 	}
-	 	return ca_relationship_types::$s_relationship_type_id_to_code_cache[$vs_key] = $va_type_ids_to_codes + $va_non_numerics;
+	 	return ca_relationship_types::$s_relationship_type_id_to_code_cache[$vs_key] = array_merge($va_type_ids_to_codes, $va_non_numerics);
 	}
 	# ------------------------------------------------------
 	 public function getHierarchyList($pb_vocabularies=false) {

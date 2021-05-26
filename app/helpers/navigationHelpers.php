@@ -107,6 +107,7 @@
  	define('__CA_NAV_ICON_EDIT_TEXT__', 66);
  	define('__CA_NAV_ICON_IS_PRIMARY__', 67);
  	define('__CA_NAV_ICON_CROSSHAIRS__', 68);
+ 	define('__CA_NAV_ICON_UPLOAD__', 69);
  	
  	/**
  	 * Icon position constants
@@ -136,7 +137,8 @@
 		if(caUseCleanUrls()) {
 			$vs_url = $po_request->getBaseUrlPath();
 		} else {
-			$vs_url = $po_request->getBaseUrlPath().'/'.$po_request->getScriptName();
+			$s = $po_request->getScriptName();
+			$vs_url = $po_request->getBaseUrlPath().'/'.(($s === 'service.php') ? 'index.php' : $s);
 		}
 		if ($ps_module_path == '*') { $ps_module_path = $po_request->getModulePath(); }
 		if ($ps_controller == '*') { $ps_controller = $po_request->getController(); }
@@ -689,18 +691,18 @@
 				$vs_ca_class = 'editIcon'; 
 				break;		
 			case __CA_NAV_ICON_EDIT_TEXT__:
-				$vs_fa_class = 'far fa-edit';
+				$vs_fa_class = 'fas fa-edit';
 				$vs_ca_class = 'editTextIcon'; 
 				break;
 			case __CA_NAV_ICON_BATCH_EDIT__:
-				$vs_fa_class = 'far fa-magic';
+				$vs_fa_class = 'fas fa-magic';
 				$vs_ca_class = 'batchIcon'; 
 				break;
 			case __CA_NAV_ICON_ALERT__:
-				$vs_fa_class = 'far fa-exclamation-triangle';
+				$vs_fa_class = 'fas fa-exclamation-triangle';
 				break;
 			case __CA_NAV_ICON_SEARCH__:
-				$vs_fa_class = 'far fa-search';
+				$vs_fa_class = 'fas fa-search';
 				break;
 			case __CA_NAV_ICON_INFO__:
 				$vs_fa_class = 'fas fa-info-circle';
@@ -710,20 +712,20 @@
 				$vs_fa_class = 'fas fa-download';
 				break;
 			case __CA_NAV_ICON_MAKE_PRIMARY__:
-				$vs_fa_class = 'far far fa-check-circle';
+				$vs_fa_class = 'far fa-check-circle';
 				break;
 			case __CA_NAV_ICON_IS_PRIMARY__:
 				$vs_fa_class = 'far fa-check-square';
 				break;
 			case __CA_NAV_ICON_APPROVE__:
-				$vs_fa_class = 'far fa-thumbs-o-up';
+				$vs_fa_class = 'far fa-thumbs-up';
 				break;	
 			case __CA_NAV_ICON_UPDATE__:
-				$vs_fa_class = 'far fa-refresh';
+				$vs_fa_class = 'fas fa-redo';
 				$vs_ca_class = 'updateIcon'; 
 				break;
 			case __CA_NAV_ICON_LOGIN__:
-				$vs_fa_class = 'far far fa-check-circle';
+				$vs_fa_class = 'far fa-check-circle';
 				$vs_ca_class = 'loginButton';
 				break;
 			case __CA_NAV_ICON_SAVE__:
@@ -749,25 +751,25 @@
 				$vs_fa_class = 'far fa-eye caIconRed';
 				break;
 			case __CA_NAV_ICON_ZOOM_IN__:
-				$vs_fa_class = 'far fa-search-plus';
+				$vs_fa_class = 'fas fa-search-plus';
 				break;
 			case __CA_NAV_ICON_ZOOM_OUT__:
-				$vs_fa_class = 'far fa-search-minus';
+				$vs_fa_class = 'fas fa-search-minus';
 				break;
 			case __CA_NAV_ICON_MAGNIFY__:
-				$vs_fa_class = 'far fa-search';
+				$vs_fa_class = 'fas fa-search';
 				break;
 			case __CA_NAV_ICON_OVERVIEW__:
-				$vs_fa_class = 'far fa-picture-o';
+				$vs_fa_class = 'far fa-image';
 				break;
 			case __CA_NAV_ICON_PAN__:
-				$vs_fa_class = 'far fa-arrows';
+				$vs_fa_class = 'fas fa-arrows-alt';
 				break;
 			case __CA_NAV_ICON_CHANGE__:
-				$vs_fa_class = 'fas far fa-retweet';
+				$vs_fa_class = 'fas fa-retweet';
 				break;
 			case __CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__:
-				$vs_fa_class = 'far fa-paperclip';
+				$vs_fa_class = 'fas fa-paperclip';
 				break;
 			case __CA_NAV_ICON_COLLAPSE__:
 				$vs_fa_class = 'fas fa-minus-circle';
@@ -776,34 +778,34 @@
 				$vs_fa_class = 'fas fa-plus-circle';
 				break;					
 			case __CA_NAV_ICON_COMMIT__:
-				$vs_fa_class = 'far fa-check-circle';
+				$vs_fa_class = 'fas fa-check-circle';
 				break;	
 			case __CA_NAV_ICON_SETTINGS__:
-				$vs_fa_class = 'far fa-cog';
+				$vs_fa_class = 'fas fa-cog';
 				break;
 			case __CA_NAV_ICON_FILTER__:
-				$vs_fa_class = 'far fa-sliders';
+				$vs_fa_class = 'fas fa-sliders';
 				break;	
 			case __CA_NAV_ICON_EXPORT__:
 				$vs_fa_class = 'fas fa-download';
 				break;
 			case __CA_NAV_ICON_EXPORT_SMALL__:
-				$vs_fa_class = 'far fa-external-link-square';
+				$vs_fa_class = 'fas fa-external-link-square-alt';
 				break;	
 			case __CA_NAV_ICON_SETS__:
-				$vs_fa_class = 'far far fa-clone';
+				$vs_fa_class = 'far fa-clone';
 				break;	
 			case __CA_NAV_ICON_RIGHT_ARROW__:
 				$vs_fa_class = 'fas fa-chevron-right';
 				break;	
 			case __CA_NAV_ICON_VISUALIZE__:
-				$vs_fa_class = 'far fa-line-chart';
+				$vs_fa_class = 'fas fa-chart-line';
 				break;	
 			case __CA_NAV_ICON_ADD_WIDGET__:
 				$vs_fa_class = 'fas fa-plus-circle';
 				break;	
 			case __CA_NAV_ICON_DUPLICATE__:
-				$vs_fa_class = 'far fa-files-o';
+				$vs_fa_class = 'far fa-copy';
 				break;	
 			case __CA_NAV_ICON_CHILD__:
 				$vs_fa_class = 'fas far fa-child';
@@ -815,19 +817,19 @@
 				$vs_fa_class = 'fas fa-chevron-left';
 				break;	
 			case __CA_NAV_ICON_MOVE__:
-				$vs_fa_class = 'far fa-truck';
+				$vs_fa_class = 'fas fa-truck';
 				break;	
 			case __CA_NAV_ICON_IMAGE__:
-				$vs_fa_class = 'far fa-file-image-o';
+				$vs_fa_class = 'far fa-file-image';
 				break;	
 			case __CA_NAV_ICON_DOT__:
-				$vs_fa_class = 'far fa-dot-circle-o';
+				$vs_fa_class = 'far fa-dot-circle';
 				break;	
 			case __CA_NAV_ICON_PDF__:
-				$vs_fa_class = 'far fa-file-pdf-o';
+				$vs_fa_class = 'far fa-file-pdf';
 				break;	
 			case __CA_NAV_ICON_SET_CENTER__:
-				$vs_fa_class = 'far fa-bullseye';
+				$vs_fa_class = 'fas fa-bullseye';
 				break;	
 			case __CA_NAV_ICON_VISIBILITY_TOGGLE__:
  				$vs_fa_class = 'fas fa-arrow-circle-up';
@@ -848,43 +850,46 @@
  				$vs_fa_class = 'far fa-file';	
  				break;		
  			case __CA_NAV_ICON_CLOCK__:
- 				$vs_fa_class = 'far fa-clock-o';	
+ 				$vs_fa_class = 'far fa-clock';	
  				break;				
  			case __CA_NAV_ICON_SPINNER__:
- 				$vs_fa_class = 'far fa-cog far fa-spin';	
+ 				$vs_fa_class = 'fas fa-cog far fa-spin';	
  				break;								
  			case __CA_NAV_ICON_HIER__:
- 				$vs_fa_class = 'far fa-sitemap';
+ 				$vs_fa_class = 'fas fa-sitemap';
  				break;	
 			case __CA_NAV_ICON_SPREADSHEET__:
-				$vs_fa_class = 'far fa-table';
+				$vs_fa_class = 'fas fa-table';
 				break;	
 			case __CA_NAV_ICON_VERTICAL_ARROWS__:
-				$vs_fa_class = 'far fa-arrows-v';
+				$vs_fa_class = 'fas fa-arrows-v';
 				break;
 			case __CA_NAV_ICON_MEDIA_METADATA__:
-				$vs_fa_class = 'far fa-file-audio-o';
+				$vs_fa_class = 'far fa-file-audio';
 				break;					
 			case __CA_NAV_ICON_EXTRACT__:
-				$vs_fa_class = 'far fa-scissors';
+				$vs_fa_class = 'fas fa-cut';
 				break;					
 			case __CA_NAV_ICON_ROTATE__:
-				$vs_fa_class = 'far fa-undo';
+				$vs_fa_class = 'fas fa-undo';
 				break;
 			case __CA_NAV_ICON_NUKE__:
-				$vs_fa_class = 'far fa-bomb';
+				$vs_fa_class = 'fas fa-bomb';
 				break;
 			case __CA_NAV_ICON_FULL_RESULTS__:
-				$vs_fa_class = 'far fa-bars';
+				$vs_fa_class = 'fas fa-bars';
 				break;
 			case __CA_NAV_ICON_EXPORT_SMALL__:
-				$vs_fa_class = 'far fa-external-link-square';
+				$vs_fa_class = 'fas fa-external-link-square-alt';
 				break;
 			case __CA_NAV_ICON_HOME__:
 				$vs_fa_class = 'fas fa-home';
 				break;	
 			case __CA_NAV_ICON_CROSSHAIRS__:
-				$vs_fa_class = 'far fa-crosshairs';
+				$vs_fa_class = 'fas fa-crosshairs';
+				break;	
+			case __CA_NAV_ICON_UPLOAD__:
+				$vs_fa_class = 'fas fa-upload';
 				break;																					
 			default:
 				print "INVALID CONSTANT $pn_type<br>\n";
@@ -974,6 +979,7 @@
 	 * @param array $pa_options Optional array of options. Supported options are:
 	 * 		verifyLink - if true and $pn_id is set, then existence of record with specified id is verified before link is returned. If the id does not exist then null is returned. Default is false - no verification performed.
 	 *		action - if set, action of returned link will be set to the supplied value
+	 *		actionExtra - if set, action extra of returned link will be set to the supplied value
 	 *      quick_add - if set to true, returned link will point to the QuickAdd controller instead
 	 *
 	 * @return array|string
@@ -1095,6 +1101,8 @@
 				return null;
 				break;
 		}
+		
+		$action_extra = caGetOption('actionExtra', $pa_options, null);
 
 		switch($vs_table) {
 			case 'ca_relationship_types':
@@ -1124,11 +1132,12 @@
 			}
 		}
 		
+		
 		if ($pb_return_url_as_pieces) {
 			return array(
 				'module' => $vs_module,
 				'controller' => $vs_controller,
-				'action' => $vs_action,
+				'action' => $action_extra ? "{$vs_action}/{$action_extra}" : $vs_action,
 				$vs_pk => $pn_id,
 				'id' => $pn_id,
 				'_pk' => $vs_pk		// tells you what the name of the primary key is
@@ -1136,7 +1145,7 @@
 		} else {
 			if (!is_array($pa_additional_parameters)) { $pa_additional_parameters = array(); }
 			$pa_additional_parameters = array_merge(array($vs_pk => $pn_id), $pa_additional_parameters);
-			return caNavUrl($po_request, $vs_module, $vs_controller, $vs_action, $pa_additional_parameters, $pa_options);
+			return caNavUrl($po_request, $vs_module, $vs_controller, $action_extra ? "{$vs_action}/{$action_extra}" : $vs_action, $pa_additional_parameters, $pa_options);
 		}
 	}
 	# ------------------------------------------------------------------------------------------------

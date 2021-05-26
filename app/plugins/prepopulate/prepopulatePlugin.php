@@ -73,17 +73,14 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 	/**
 	 *
 	 */
-	public function hookCLICaUtilsGetCommands() {
-	    return [
-	        'Maintenance' => [
-	            'apply_prepopulate_rules' => [
-	                'Command' => 'apply-prepopulate-rules',
-	                'Options' => [],
-	                'Help' => _t('Help to come'),
-	                'ShortHelp' => _t('Short help to come'),
-	            ]
-	        ]
+	public function hookCLICaUtilsGetCommands(&$pa_params) {
+	    $pa_params['Maintenance']['apply_prepopulate_rules'] = [
+	    	'Command' => 'apply-prepopulate-rules',
+	        'Options' => [],
+	        'Help' => _t('Applies rules defined in prepopulate.conf to all relevant records.'),
+	        'ShortHelp' => _t('Applies rules defined in prepopulate.conf to all relevant records.'),
 	    ];
+	    return $pa_params;
 	}
 	# -------------------------------------------------------
     /**
@@ -490,6 +487,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 										}
 
 										if($vb_update) {
+											unset($va_label['source_info']);
 											$t_instance->editLabel(
 												$va_label['label_id'], $va_label, $g_ui_locale_id, null, $vb_preferred
 											);

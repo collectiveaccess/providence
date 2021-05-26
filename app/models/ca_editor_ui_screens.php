@@ -877,6 +877,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'useHistoryTrackingReferringPolicyList' => true,
 								'label' => _t('Use history tracking policy'),
 								'description' => ''
+							),
+							'showBatchEditorButton' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_CHECKBOXES,
+								'width' => 10, 'height' => 1,
+								'takesLocale' => false,
+								'default' => false,
+								'label' => _t('Show batch editing button?'),
+								'description' => _t('If checked an option to batch edit related records will be displaye.')
 							)
 						);	
 						
@@ -946,29 +955,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'width' => "200px", 'height' => 1,
 								'label' => _t('Format of relationship list'),
 								'description' => _t('.')
-							),
-							'sort' => array(
-								'formatType' => FT_TEXT,
-								'displayType' => DT_SELECT,
-								'width' => "475px", 'height' => 1,
-								'takesLocale' => false,
-								'default' => '',
-								'label' => _t('Sort using'),
-								'showSortableBundlesFor' => $t_rel->tableName(),
-								'description' => _t('Method used to sort related items.')
-							),
-							'sortDirection' => array(
-								'formatType' => FT_TEXT,
-								'displayType' => DT_SELECT,
-								'width' => "200px", 'height' => 1,
-								'takesLocale' => false,
-								'default' => 'ASC',
-								'options' => array(
-									_t('Ascending') => 'ASC',
-									_t('Descending') => 'DESC'
-								),
-								'label' => _t('Sort direction'),
-								'description' => _t('Direction of sort, when not in a user-specified order.')
 							),
 							'colorFirstItem' => array(
 								'formatType' => FT_TEXT,
@@ -1079,25 +1065,48 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'label' => _t('Prepopulate quick add fields with search text'),
 								'description' => _t('Select quickadd form fields to be pre-filled with the user-entered search value. If no fields are selected then the preferred label will be prepopulated by default.')
 							),
+							'sort' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_SELECT,
+								'width' => "475px", 'height' => 1,
+								'takesLocale' => false,
+								'default' => '',
+								'label' => _t('Initially sort using'),
+								'showSortableBundlesFor' => ['table' => $t_rel->tableName(), 'relationship' => $vs_table],
+								'description' => _t('Method used to sort related items.')
+							),
+							'sortDirection' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_SELECT,
+								'width' => "200px", 'height' => "1",
+								'takesLocale' => false,
+								'default' => 'ASC',
+								'options' => array(
+									_t('Ascending') => 'ASC',
+									_t('Descending') => 'DESC'
+								),
+								'label' => _t('Initial sort direction'),
+								'description' => _t('Direction of sort, when not in a user-specified order.')
+							),
 							'disableSorts' => array(
 								'formatType' => FT_TEXT,
 								'displayType' => DT_CHECKBOXES,
 								'width' => 10, 'height' => 1,
 								'takesLocale' => false,
 								'default' => '0',
-								'label' => _t('Disable sorting?'),
+								'label' => _t('Disable user-selectable sorting options?'),
 								'hideOnSelect' => ['allowedSorts'],
 								'description' => _t('If checked sorting of related items will be disabled.')
 							),
 							'allowedSorts' => array(
 								'formatType' => FT_TEXT,
 								'displayType' => DT_SELECT,
-								'options' => array_flip(caGetAvailableSortFields($vs_bundle, null, ['includeInterstitialSortsFor' => $vs_table, 'distinguishInterstitials' => true])),
+								'showSortableBundlesFor' => ['table' => $t_rel->tableName(), 'relationship' => $vs_table],
 								'default' => null,
 								'multiple' => true,
 								'width' => "475px", 'height' => 5,
-								'label' => _t('Sort options'),
-								'description' => _t('Limits sort options on this bundle.')
+								'label' => _t('User-selectable sort options'),
+								'description' => _t('Limits user-selectable sort options on this bundle.')
 							),
 							'showCount' => array(
 								'formatType' => FT_NUMBER,
@@ -1123,6 +1132,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'width' => "5", 'height' => 1,
 								'label' => _t('Number of items to load per page'),
 								'description' => _t('Maximum number of items to render on initial load.')
+							),
+							'showBatchEditorButton' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_CHECKBOXES,
+								'width' => 10, 'height' => 1,
+								'takesLocale' => false,
+								'default' => false,
+								'label' => _t('Show batch editing button?'),
+								'description' => _t('If checked an option to batch edit related records will be displaye.')
 							)
 						);
 					}
@@ -1139,6 +1157,37 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
                         unset($va_additional_settings['colorItem']);
                         unset($va_additional_settings['list_format']);
                         
+                        $va_additional_settings['autocompletePlaceholderText'] = array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_FIELD,
+							'takesLocale' => true,
+							'default' => null,
+							'multiple' => false,
+							'width' => "475px", 'height' => "1",
+							'label' => _t('Representation auto-complete lookup placeholder text'),
+							'description' => _t('Placeholder text to display in representation autocomplete search box when linking n existing representation to a record. (New UI only)')
+						);
+						
+						$va_additional_settings['dontAllowRelationshipsToExistingRepresentations'] = array(
+							'formatType' => FT_NUMBER,
+							'displayType' => DT_CHECKBOXES,
+							'takesLocale' => false,
+							'default' => 0,
+							'multiple' => false,
+							'label' => _t('Do not allow linking to existing representations? (New UI only)'),
+							'description' => _t('Do not provide option to create relationships to existing representations. (New UI only)')
+						);
+						
+						$va_additional_settings['dontAllowAccessToImportDirectory'] = array(
+							'formatType' => FT_NUMBER,
+							'displayType' => DT_CHECKBOXES,
+							'takesLocale' => false,
+							'default' => 0,
+							'multiple' => false,
+							'label' => _t('Do not allow selection of media in the import directory? (New UI only)'),
+							'description' => _t('Do not provide option to upload media from the import directory as representations. (New UI only)')
+						);
+						
 						$va_additional_settings['dontShowPreferredLabel'] = array(
 							'formatType' => FT_NUMBER,
 							'displayType' => DT_CHECKBOXES,
@@ -1248,7 +1297,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 						);
 					}
 
-					if ($vs_bundle == 'ca_objects') {
+					if (in_array($vs_bundle, ['ca_objects', 'ca_collections', 'ca_object_lots', 'ca_object_representations'], true)) {
 						$va_additional_settings['showReturnToHomeLocations'] = array(
 							'formatType' => FT_TEXT,
 							'displayType' => DT_CHECKBOXES,

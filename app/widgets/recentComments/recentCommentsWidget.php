@@ -34,7 +34,6 @@
 	class recentCommentsWidget extends BaseWidget implements IWidget {
 		# -------------------------------------------------------
 		private $opo_config;
-		private $opo_datamodel;
 		static $s_widget_settings = array();
 		# -------------------------------------------------------
 		public function __construct($ps_widget_path, $pa_settings) {

@@ -91,11 +91,6 @@ require_once(__CA_LIB_DIR__.'/ProgressBar.php');
 		 * Tool Configuration object
 		 */
 		protected $opo_config;
-		
-		/**
-		 * Application datamodel object
-		 */
-		protected $opo_datamodel;
 			
 		/**
 		 * Tool run mode. Either CLI (command line) or WebUI (via web-based user interface)

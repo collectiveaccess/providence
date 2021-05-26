@@ -1523,6 +1523,135 @@ class TimeExpressionParserTest extends TestCase {
 		$this->assertEquals($o_tep->getText(['dateFormat' => 'yearOnly']), '1984');
 		$this->assertEquals($o_tep->getText(), '8. Juni 1984');
 	}
+	
+	public function testDateTextOutputFormatsEdge() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+
+		$vb_res = $o_tep->parse('1/1/1979');
+		$this->assertEquals($vb_res, true);
+	
+		$this->assertEquals($o_tep->getText(), 'January 1 1979');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'ymd']), '1979/01/01');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'ymd', 'dateDelimiter' => '.']), '1979.01.01');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'delimited']), '01/01/1979');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'iso8601']), '1979-01-01');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'yearOnly']), '1979');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'text']), 'January 1 1979');
+		
+		$vb_res = $o_tep->parse('12/31/1979');
+		$this->assertEquals($vb_res, true);
+	
+		$this->assertEquals($o_tep->getText(), 'December 31 1979');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'ymd']), '1979/12/31');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'ymd', 'dateDelimiter' => '.']), '1979.12.31');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'delimited']), '12/31/1979');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'iso8601']), '1979-12-31');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'yearOnly']), '1979');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'text']), 'December 31 1979');
+		
+		$vb_res = $o_tep->parse('1/1979');
+		$this->assertEquals($vb_res, true);
+	
+		$this->assertEquals($o_tep->getText(), 'January 1979');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'ymd']), '1979/01');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'ymd', 'dateDelimiter' => '.']), '1979.01');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'delimited']), '01/1979');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'iso8601']), '1979-01-01/1979-01-31');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'yearOnly']), '1979');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'text']), 'January 1979');
+		
+		$vb_res = $o_tep->parse('12/1979');
+		$this->assertEquals($vb_res, true);
+	
+		$this->assertEquals($o_tep->getText(), 'December 1979');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'ymd']), '1979/12');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'ymd', 'dateDelimiter' => '.']), '1979.12');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'delimited']), '12/1979');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'iso8601']), '1979-12-01/1979-12-31');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'yearOnly']), '1979');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'text']), 'December 1979');
+	}
+	
+	
+	public function testDateTextOutputISOFormat() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+
+		$vb_res = $o_tep->parse('2/1979');
+		$this->assertEquals($vb_res, true);
+	
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'iso8601']), '1979-02-01/1979-02-28');
+		
+		$vb_res = $o_tep->parse('1/1979');
+		$this->assertEquals($vb_res, true);
+	
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'iso8601']), '1979-01-01/1979-01-31');
+		
+		$vb_res = $o_tep->parse('12/1979');
+		$this->assertEquals($vb_res, true);
+	
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'iso8601']), '1979-12-01/1979-12-31');
+		
+		$vb_res = $o_tep->parse('7/3/1979');
+		$this->assertEquals($vb_res, true);
+	
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'iso8601']), '1979-07-03');
+		
+		$vb_res = $o_tep->parse('7/3/1979 @ 5pm');
+		$this->assertEquals($vb_res, true);
+	
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'iso8601']), '1979-07-03T17:00:00Z');
+	}
+	
+	public function testIsDMYRange() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+		
+		$o_tep->parse('1/2021');
+		$dates = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($o_tep->isDMYRange($o_tep->getHistoricDateParts($dates['start']), $o_tep->getHistoricDateParts($dates['end'])), 'MONTH');
+		
+		$o_tep->parse('1/10/2021');
+		$dates = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($o_tep->isDMYRange($o_tep->getHistoricDateParts($dates['start']), $o_tep->getHistoricDateParts($dates['end'])), 'DAY');
+		
+		$o_tep->parse('2/1/2021 - 2/28/2021');
+		$dates = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($o_tep->isDMYRange($o_tep->getHistoricDateParts($dates['start']), $o_tep->getHistoricDateParts($dates['end'])), 'MONTH');
+	
+		$o_tep->parse('2021');
+		$dates = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($o_tep->isDMYRange($o_tep->getHistoricDateParts($dates['start']), $o_tep->getHistoricDateParts($dates['end'])), 'YEAR');
+		
+		$o_tep->parse('1900-1999');
+		$dates = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($o_tep->isDMYRange($o_tep->getHistoricDateParts($dates['start']), $o_tep->getHistoricDateParts($dates['end'])), 'CENTURY');
+		
+		$o_tep->parse('1920s');
+		$dates = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($o_tep->isDMYRange($o_tep->getHistoricDateParts($dates['start']), $o_tep->getHistoricDateParts($dates['end'])), 'DECADE');
+		
+		$o_tep->parse('19th century');
+		$dates = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($o_tep->isDMYRange($o_tep->getHistoricDateParts($dates['start']), $o_tep->getHistoricDateParts($dates['end'])), 'CENTURY');
+		
+		$o_tep->parse('1901-2000');
+		$dates = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($o_tep->isDMYRange($o_tep->getHistoricDateParts($dates['start']), $o_tep->getHistoricDateParts($dates['end'])), false);
+		
+		$o_tep->parse('5/3/2020 @ 5pm');
+		$dates = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($o_tep->isDMYRange($o_tep->getHistoricDateParts($dates['start']), $o_tep->getHistoricDateParts($dates['end'])), false);
+		
+		$o_tep->parse('5/3/2020 - 10/1/2020');
+		$dates = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($o_tep->isDMYRange($o_tep->getHistoricDateParts($dates['start']), $o_tep->getHistoricDateParts($dates['end'])), false);
+		
+		$o_tep->parse('5/1/2020 - 5/30/2020');
+		$dates = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($o_tep->isDMYRange($o_tep->getHistoricDateParts($dates['start']), $o_tep->getHistoricDateParts($dates['end'])), false);
+	}
 
 	public function testMYADate() {
 		$o_tep = new TimeExpressionParser();
@@ -1685,5 +1814,89 @@ class TimeExpressionParserTest extends TestCase {
 
 		$this->assertEquals($va_historic['start'], '2001.032300000000');
 		$this->assertEquals($va_historic['end'], '2001.032723595900');
+	}
+	
+	// https://collectiveaccess.org/support/index.php?p=/discussion/300669/date-format-1947-06-1947-june-31st
+	function testMonthToYearRange() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage("en_US");
+		$this->assertEquals($o_tep->parse("1947-06 - 1947"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		
+		$this->assertEquals($va_historic['start'], '1947.060100000000');
+		$this->assertEquals($va_historic['end'], '1947.123123595900');
+	}
+	
+	// https://collectiveaccess.org/support/index.php?p=/discussion/300668/date-format-after-xxxx-mm-with-unknown-day-is-replaced-by-mm-1st
+	function testAfterDatesToMonth() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage("en_US");
+		$this->assertEquals($o_tep->parse("AFTER 1970-03"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		
+		$this->assertEquals($va_historic['start'], '1970.030100000000');
+		$this->assertEquals($va_historic['end'], '2000000000.123123595900');
+		
+		$this->assertEquals($o_tep->getText(), 'after March 1970');
+	}
+	
+	function testAfterDatesToYear() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage("en_US");
+		$this->assertEquals($o_tep->parse("AFTER 1970"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		
+		$this->assertEquals($va_historic['start'], '1970.010100000000');
+		$this->assertEquals($va_historic['end'], '2000000000.123123595900');
+		
+		$this->assertEquals($o_tep->getText(), 'after 1970');
+	}
+	
+	function testAfterDatesToDay() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage("en_US");
+		$this->assertEquals($o_tep->parse("AFTER 1970-03-10"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		
+		$this->assertEquals($va_historic['start'], '1970.031000000000');
+		$this->assertEquals($va_historic['end'], '2000000000.123123595900');
+		
+		$this->assertEquals($o_tep->getText(), 'after March 10 1970');
+	}
+	
+	function testBeforeDatesToMonth() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage("en_US");
+		$this->assertEquals($o_tep->parse("BEFORE 1970-03"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		
+		$this->assertEquals($va_historic['start'], '-2000000000.000000000000');
+		$this->assertEquals($va_historic['end'], '1970.033123595900');
+		
+		$this->assertEquals($o_tep->getText(), 'before March 1970');
+	}
+	
+	function testBeforeDatesToYear() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage("en_US");
+		$this->assertEquals($o_tep->parse("BEFORE 1970"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		
+		$this->assertEquals($va_historic['start'], '-2000000000.000000000000');
+		$this->assertEquals($va_historic['end'], '1970.123123595900');
+		
+		$this->assertEquals($o_tep->getText(), 'before 1970');
+	}
+	
+	function testBeforeDatesToDay() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage("en_US");
+		$this->assertEquals($o_tep->parse("BEFORE 1970-03-10"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		
+		$this->assertEquals($va_historic['start'], '-2000000000.000000000000');
+		$this->assertEquals($va_historic['end'], '1970.031023595900');
+		
+		$this->assertEquals($o_tep->getText(), 'before March 10 1970');
 	}
 }

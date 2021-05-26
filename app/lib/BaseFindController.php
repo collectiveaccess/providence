@@ -83,10 +83,13 @@
 				$this->opo_result_context = new ResultContext($po_request, $this->ops_tablename, $this->ops_find_type);
 
                 if($this->request->config->get($this->ops_tablename.'_breakout_find_by_type_in_submenu') || $this->request->config->get($this->ops_tablename.'_breakout_find_by_type_in_menu')) {                 
-                    if ($this->opn_type_restriction_id = $this->opo_result_context->getTypeRestriction($pb_type_restriction_has_changed)) {
-                    
-                        if ($pb_type_restriction_has_changed) {
-                            Session::setVar($this->ops_tablename.'_type_id', $this->opn_type_restriction_id);
+                    if ($res_type_id = $this->opo_result_context->getTypeRestriction($pb_type_restriction_has_changed)) {
+                    	$t_instance = Datamodel::getInstance($this->ops_tablename, true);
+                    	$type_ids = array_map(function($v) { return (int)$v; }, $t_instance->getTypeList(['idsOnly' => true]));
+                  		
+                        if ($pb_type_restriction_has_changed && in_array((int)$res_type_id, $type_ids, true)) {
+                        	$this->opn_type_restriction_id = $res_type_id;
+                            Session::setVar($this->ops_tablename.'_type_id', $res_type_id);
                         } elseif($vn_type_id = Session::getVar($this->ops_tablename.'_type_id')) {
                             $this->opn_type_restriction_id = $vn_type_id;
                         }
@@ -237,6 +240,17 @@
                         $display_list[$i]['is_sortable'] = true;
                         $display_list[$i]['bundle_sort'] = $va_display_item['bundle_name'];
 					    if(ca_metadata_elements::getElementDatatype($tmp[1]) === __CA_ATTRIBUTE_VALUE_CONTAINER__) {
+					    	// Try to sort on tag in display template, if template is set
+					    	if(!($template = caGetOption('format', $va_display_item['settings'], null))) {					// template set in display
+								$settings = ca_metadata_elements::getElementSettingsForId($va_attribute_list[$tmp[1]]);		// template set in metadata element
+								$template = caGetOption('displayTemplate', $settings, null);
+							}
+							
+							if ($template && (is_array($tags = caGetTemplateTags($template)) && sizeof($tags))) {			// extract tag
+								$display_list[$i]['bundle_sort'] = str_replace('^', '', $tags[0]);
+								continue;
+							}
+					    	
 					        // If container includes a field type this is typically "preferred" for sorting use that in place of the container aggregate
 					        $elements = ca_metadata_elements::getElementsForSet($tmp[1]);
 					        foreach($elements as $e) {
@@ -244,9 +258,7 @@
 					                case __CA_ATTRIBUTE_VALUE_DATERANGE__:
 					                case __CA_ATTRIBUTE_VALUE_CURRENCY__:
 					                case __CA_ATTRIBUTE_VALUE_NUMERIC__:
-					                case __CA_ATTRIBUTE_VALUE_NUMERIC__:
 					                case __CA_ATTRIBUTE_VALUE_INTEGER__:
-					                case __CA_ATTRIBUTE_VALUE_TIMECODE__:
 					                case __CA_ATTRIBUTE_VALUE_TIMECODE__:
 					                case __CA_ATTRIBUTE_VALUE_LENGTH__:
 					                    $display_list[$i]['bundle_sort'] = "{$va_display_item['bundle_name']}.{$e['element_code']}";
@@ -309,11 +321,11 @@
 			$this->view->setVar('result_context', $this->opo_result_context);
 			$this->view->setVar('access_restrictions',AccessRestrictions::load());
 			
-			#
-			#
-			#				
+			// 
+			// Handle children display mode
+			//			
 			$this->view->setVar('children_display_mode_default', ($vs_children_display_mode_default = $this->request->config->get($this->ops_tablename."_children_display_mode_in_results")) ? $vs_children_display_mode_default : "alwaysShow");
-
+			
 			$ps_children_display_mode = $this->opo_result_context->getCurrentChildrenDisplayMode();
 			
 			// force mode when "always" is set
@@ -322,14 +334,44 @@
 			} elseif(strtolower($vs_children_display_mode_default) == 'alwayshide') {
 				$ps_children_display_mode = 'hide';
 			}
+			
 			$this->view->setVar('children_display_mode', $ps_children_display_mode);				
 			$this->view->setVar('hide_children', $pb_hide_children = in_array(strtolower($ps_children_display_mode), ['hide', 'alwayshide']));			
 			$this->view->setVar('show_children_display_mode_control', !in_array(strtolower($vs_children_display_mode_default), ['alwaysshow', 'alwayshide']));
- 		
+			
+			$this->opo_result_context->setCurrentChildrenDisplayMode($ps_children_display_mode);
+	
+			//
+			// Handle deaccession display mode
+			//
+			$this->view->setVar('deaccession_display_mode_default', ($vs_deaccession_display_mode_default = $this->request->config->get($this->ops_tablename."_deaccession_display_mode_in_results")) ? $vs_deaccession_display_mode_default : "alwaysShow");
+
+			$ps_deaccession_display_mode = $this->opo_result_context->getCurrentDeaccessionDisplayMode();
+			
+			// force mode when "always" is set
+			if (strtolower($vs_deaccession_display_mode_default) == 'alwaysshow') {
+				$ps_deaccession_display_mode = 'show';
+			} elseif(strtolower($vs_deaccession_display_mode_default) == 'alwayshide') {
+				$ps_deaccession_display_mode = 'hide';
+			}
+			
+			if (!$this->request->user->canDoAction('can_access_deaccessioned_'.$this->ops_tablename)) {
+				$this->view->setVar('deaccession_display_mode', 'alwayshide');				
+				$this->view->setVar('hide_deaccession', true);			
+				$this->view->setVar('show_deaccession_display_mode_control', false);
+			} else {
+				$this->view->setVar('deaccession_display_mode', $ps_deaccession_display_mode);				
+				$this->view->setVar('hide_deaccession', $pb_hide_deaccessioned = in_array(strtolower($ps_deaccession_display_mode), ['hide', 'alwayshide']));			
+				$this->view->setVar('show_deaccession_display_mode_control', !in_array(strtolower($vs_deaccession_display_mode_default), ['alwaysshow', 'alwayshide']));
+			}
+ 			$this->opo_result_context->setCurrentDeaccessionDisplayMode($ps_deaccession_display_mode);
+ 			
+ 			$this->opo_result_context->saveContext();
+ 			// -----
  			
  			$this->view->setVar('ca_object_representation_download_versions', $this->request->config->getList('ca_object_representation_download_versions'));
  		
- 			$media_elements = ca_metadata_elements::getElementsAsList(false, $this->ops_tablename, $this->opn_type_restriction_id, false, false, true, [__CA_ATTRIBUTE_VALUE_MEDIA__]);
+ 			$media_elements = ca_metadata_elements::getElementsAsList(false, $this->ops_tablename, $this->opn_type_restriction_id, false, false, true, [__CA_ATTRIBUTE_VALUE_MEDIA__], ['useDisambiguationLabels' => true]);
  			$this->view->setVar('media_metadata_elements', (is_array($media_elements) && sizeof($media_elements)) ? $media_elements : []); 
  		}
  		# -------------------------------------------------------
@@ -429,11 +471,9 @@
 				$va_defined_vars = array_keys($this->view->getAllVars());		// get list defined vars (we don't want to copy over them)
 				$va_tag_list = $this->getTagListForView($va_template_info['path']);				// get list of tags in view
 				
-				$va_barcode_files_to_delete = array();
-				
 				$vn_page_count = 0;
 				while($po_result->nextHit()) {
-					$va_barcode_files_to_delete = array_merge($va_barcode_files_to_delete, caDoPrintViewTagSubstitution($this->view, $po_result, $va_template_info['path'], array('checkAccess' => $this->opa_access_values)));
+					caDoPrintViewTagSubstitution($this->view, $po_result, $va_template_info['path'], array('checkAccess' => $this->opa_access_values));
 					
 					$vs_content .= "<div style=\"{$vs_border} position: absolute; width: {$vn_width}mm; height: {$vn_height}mm; left: {$vn_left}mm; top: {$vn_top}mm; overflow: hidden; padding: 0; margin: 0;\">";
 					$vs_content .= $this->render($va_template_info['path']);
@@ -469,17 +509,12 @@
 				}
 				
 				$vs_content .= $this->render("pdfEnd.php");
-				
 				$o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'));
 				$o_pdf->render($vs_content, array('stream'=> true, 'filename' => ($filename = $this->view->getVar('filename')) ? $filename : caGetOption('filename', $va_template_info, 'labels.pdf')));
 
 				$vb_printed_properly = true;
-				
-				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp); @unlink("{$vs_tmp}.png");}
 				exit;
 			} catch (Exception $e) {
-				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp); @unlink("{$vs_tmp}.png");}
-				
 				$vb_printed_properly = false;
 				$this->postError(3100, _t("Could not generate PDF"),"BaseFindController->PrintSummary()");
 			}
@@ -856,7 +891,7 @@
 						while($qr_res->nextHit()) {
 							if(!$element_code) {
 								// representation
-								$version = (is_array($version_list = $qr_res->getMediaVersions('ca_object_representations.media')) || !in_array($preferred_version, $version_list)) ? $preferred_version : 'original';
+								$version = (!is_array($version_list = $qr_res->getMediaVersions('ca_object_representations.media')) || !in_array($preferred_version, $version_list)) ? 'original' : $preferred_version;
 							
 								$paths = $qr_res->getMediaPaths('ca_object_representations.media', $version);
 								$infos = $qr_res->getMediaInfos('ca_object_representations.media');
@@ -969,11 +1004,11 @@
  			//
  			$t_set = new ca_sets();
  			
- 			$set_list = caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => !(bool)$this->request->config->get('ca_sets_all_users_see_all_sets') ? $this->request->getUserID() : null, 'access' => __CA_SET_READ_ACCESS__)));
+ 			$set_list = caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => !(bool)$this->request->config->get('ca_sets_all_users_see_all_sets') ? $this->request->getUserID() : null, 'access' => __CA_SET_READ_ACCESS__, 'omitCounts' => true)));
             
             // other users' public sets
             if ($this->request->user->getPreference('list_public_sets') === 'show') {
-				$all_users_public_sets = caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => !(bool)$this->request->config->get('ca_sets_all_users_see_all_sets') ? $this->request->getUserID() : null, 'allUsers' => true, 'checkAccess' => 1)));
+				$all_users_public_sets = caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => !(bool)$this->request->config->get('ca_sets_all_users_see_all_sets') ? $this->request->getUserID() : null, 'allUsers' => true, 'checkAccess' => 1, 'omitCounts' => true)));
 				foreach ($all_users_public_sets as $key => $value){
 					if(key_exists($key, $set_list))
 						continue;
@@ -982,7 +1017,7 @@
 			}
             $this->view->setVar('available_sets', $set_list); // show own sets and other users's public sets
  			
- 			$this->view->setVar('available_editable_sets', caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => !(bool)$this->request->config->get('ca_sets_all_users_see_all_sets') ? $this->request->getUserID() : null, 'access' => __CA_SET_EDIT_ACCESS__))));
+ 			$this->view->setVar('available_editable_sets', caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => !(bool)$this->request->config->get('ca_sets_all_users_see_all_sets') ? $this->request->getUserID() : null, 'access' => __CA_SET_EDIT_ACCESS__, 'omitCounts' => true))));
 
 			$this->view->setVar('last_search', $this->opo_result_context->getSearchExpression());
  			

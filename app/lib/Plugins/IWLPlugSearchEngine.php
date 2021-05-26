@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2009 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -55,7 +55,7 @@
 		# -------------------------------------------------------
 		# Search
 		# -------------------------------------------------------
-		public function search($pn_subject_tablenum, $ps_search_expression, $pa_filters=array(), $po_rewritten_query=null);
+		public function search(int $subject_tablenum, string $search_expression, array $filters=[], $rewritten_query);
 		public function addFilter($ps_access_point, $ps_operator, $pm_value);
 		public function clearFilters();
 		public function quickSearch($pn_table_num, $ps_search, $pa_options=null);

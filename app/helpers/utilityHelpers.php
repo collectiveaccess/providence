@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2020 Whirl-i-Gig
+ * Copyright 2007-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -189,7 +189,7 @@ function caMakeProperUTF8ForXML($ps_text){
 
 	$vn_length = strlen($ps_text);
 	for ($i=0; $i < $vn_length; $i++) {
-		$vn_current = ord($ps_text{$i});
+		$vn_current = ord($ps_text[$i]);
 		if (($vn_current == 0x9) ||
 			($vn_current == 0xA) ||
 			($vn_current == 0xD) ||
@@ -333,6 +333,7 @@ function caFileIsIncludable($ps_file) {
 	 * @param array $pa_options Additional options, including:
 	 *		modifiedSince = Only return files and directories modified after a Unix timestamp [Default=null]
 	 *		notModifiedSince = Only return files and directories not modified after a Unix timestamp [Default=null]
+	 *		limit = Maximum number of files to return [Default=null; no limit]
 	 * @return array An array of file paths.
 	 */
 	function &caGetDirectoryContentsAsList($dir, $pb_recursive=true, $pb_include_hidden_files=false, $pb_sort=false, $pb_include_directories=false, $pa_options=null) {
@@ -340,10 +341,12 @@ function caFileIsIncludable($ps_file) {
 		if(substr($dir, -1, 1) == "/"){
 			$dir = substr($dir, 0, strlen($dir) - 1);
 		}
+		$limit = caGetOption('limit', $pa_options, null);
+		
 		if(!file_exists($dir)) { return []; }
-		if($va_paths = scandir($dir, 0)) {
+		if($va_paths = @scandir($dir, 0)) {
 			foreach($va_paths as $item) {
-				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
+				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item[0] !== '.'))) {
 					$va_stat = @stat("{$dir}/{$item}");
 					if (
 						(isset($pa_options['modifiedSince']) && ($pa_options['modifiedSince'] > 0))
@@ -373,6 +376,7 @@ function caFileIsIncludable($ps_file) {
 						}
 					}
 				}
+				if (($limit > 0) && (sizeof($va_file_list) >= $limit)) { break; }
 			}
 		}
 
@@ -401,7 +405,7 @@ function caFileIsIncludable($ps_file) {
 		);
 		if ($handle = @opendir($dir)) {
 			while (false !== ($item = readdir($handle))) {
-				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
+				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item[0] !== '.'))) {
 					$vb_is_dir = is_dir("{$dir}/{$item}");
 					if ($vb_is_dir) {
 						$va_counts['directories']++;
@@ -442,7 +446,7 @@ function caFileIsIncludable($ps_file) {
 		$vn_file_count = 0;
 		if ($handle = @opendir($dir)) {
 			while (false !== ($item = readdir($handle))) {
-				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
+				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item[0] !== '.'))) {
 					if (is_dir("{$dir}/{$item}")) {
 						$va_dir_list = array_merge($va_dir_list, caGetSubDirectoryList("{$dir}/{$item}", true, $pb_include_hidden_files));
 					}  else {
@@ -696,11 +700,8 @@ function caFileIsIncludable($ps_file) {
 	 * @return string
 	 */
 	function caGetTempDirPath($options=null) {
-		if(caGetOption('useAppTmpDir', $options, false)) { return __CA_APP_DIR__."/tmp"; }
-		if (function_exists('sys_get_temp_dir')) {
-			return sys_get_temp_dir();
-		}
-
+		if(caGetOption('useAppTmpDir', $options, true)) { return __CA_APP_DIR__."/tmp"; }
+	
 		if (!empty($_ENV['TMP'])) {
 			return realpath($_ENV['TMP']);
 		} else {
@@ -715,6 +716,8 @@ function caFileIsIncludable($ps_file) {
 						$vs_tmp_dir = realpath(dirname($vs_tmp));
 						unlink($vs_tmp);
 						return $vs_tmp_dir;
+					} elseif (function_exists('sys_get_temp_dir')) {
+						return sys_get_temp_dir();
 					} else {
 						return "/tmp";
 					}
@@ -746,7 +749,7 @@ function caFileIsIncludable($ps_file) {
 	 * @param int $user_id
 	 * @param array $options Options include:
 	 *		dontCreateDirectory = don't create user directory if it does not exist. [Default is false]
-	 * @return string pa 
+	 * @return string 
 	 */
 	function caGetUserMediaDirectoryPath(int $user_id, array $options=null) {
 	    $config = Configuration::load();
@@ -998,17 +1001,18 @@ function caFileIsIncludable($ps_file) {
 	 * @param string $ps_url The URL to check
 	 * @param array $pa_options Options include:
 	 *		strict = only consider text a valid url if text contains only the url [Default is false]
+	 *		schemes = array of url schemes to allow. If omitted defaults to [http, https, ftp, rtmp, rtsp, mysql]
 	 *
 	 * @return array|boolean Return array with protocol and url keys if valid URL, false if invalid.
 	 */
 	function isURL($ps_url, $pa_options=null) {
-
+		$schemes = caGetOption('schemes', $pa_options, ['http', 'https', 'ftp', 'rtmp', 'rtsp', 'mysql']);
 		if (
 			caGetOption('strict', $pa_options, false)
 			?
-				preg_match("!^(http|ftp|https|rtmp|rtsp|mysql):\/\/[\w\-_]+(\.[\w\-_]+)*([\w\-\.,@?^=%&;:/~\+#]*[\w\-\@?^=%&/~\+#])?$!", $ps_url, $va_matches)
+				preg_match("!^(".join('|', $schemes)."):\/\/[\w\-_]+(\.[\w\-_]+)*([\w\-\.,@?^=%&;:/~\+#]*[\w\-\@?^=%&/~\+#])?$!", $ps_url, $va_matches)
 				:
-				preg_match("!(http|ftp|https|rtmp|rtsp|mysql):\/\/[\w\-_]+(\.[\w\-_]+)*([\w\-\.,@?^=%&;:/~\+#]*[\w\-\@?^=%&/~\+#])?!", $ps_url, $va_matches)
+				preg_match("!(".join('|', $schemes)."):\/\/[\w\-_]+(\.[\w\-_]+)*([\w\-\.,@?^=%&;:/~\+#]*[\w\-\@?^=%&/~\+#])?!", $ps_url, $va_matches)
 			) {
 			return array(
 				'protocol' => $va_matches[1],
@@ -1602,6 +1606,42 @@ function caFileIsIncludable($ps_file) {
 		
 		if ($t1[0] !== $t2[0]) { return false; }
 		if (($t1[1] === $t2[1]) || ($t1[1] === '*') || ($t2[1] === '*')) { return true; }
+		
+		return false;
+	}
+	# ---------------------------------------
+	/**
+	  * Determine if a mimetype is valid using a list of specific mimetypes, wildcard mimetypes and/or classes.
+	  * The mimetype to be tested may be a specified mimetype (Ex. image/jpeg), a wildcard mimetype (Ex. image/*) or a class (Ex. image)
+	  *
+	  * @param string $mimetype A specific or wildcard mimetype or a class. Ex. image/jpeg, image/*, audio, image, video
+	  * @param array $valid_mimetypes A list of specific or wildcard mimetypes or classes to compare $mimetype against.
+	  * @return bool True if $mimetype is in $valid_mimetypes
+	  */
+	function caMimetypeIsValid(string $mimetype, array $valid_mimetypes) {
+		if(strpos($mimetype, '/') === false) {
+			$mimetypes = caGetMimetypesForClass($mimetype);
+		} else {
+			$mimetypes = [$mimetype];
+		}
+		
+		$valid_mimetypes_exp = [];
+		foreach($valid_mimetypes as $m) {
+			if(strpos($m, '/') === false) {
+				$valid_mimetypes_exp = array_merge($valid_mimetypes_exp, caGetMimetypesForClass($m));
+			} else {
+				$valid_mimetypes_exp[] = $m;
+			}	
+		}
+		
+		foreach($mimetypes as $m1) {
+			foreach($valid_mimetypes_exp as $m2) {
+				if(caCompareMimetypes($m1, $m2)) {
+					return true;
+				}
+			}
+		}
+		
 		
 		return false;
 	}
@@ -2731,15 +2771,15 @@ function caFileIsIncludable($ps_file) {
 
 		// either
 		if (preg_match("!^([^\d]+)([\d\.\,]+)$!", trim($ps_value), $va_matches)) {
-			$vs_decimal_value = $va_matches[2];
+			$vs_decimal_value = round((float)str_replace(',', '', $va_matches[2]), 2);
 			$vs_currency_specifier = trim($va_matches[1]);
 		// or 1
 		} else if (preg_match("!^([\d\.\,]+)([^\d]+)$!", trim($ps_value), $va_matches)) {
-			$vs_decimal_value = $va_matches[1];
+			$vs_decimal_value = round((float)str_replace(',', '', $va_matches[1]), 2);
 			$vs_currency_specifier = trim($va_matches[2]);
 		// or 2
 		} else if (preg_match("!(^[\d\,\.]+$)!", trim($ps_value), $va_matches)) {
-			$vs_decimal_value = $va_matches[1];
+			$vs_decimal_value = round((float)str_replace(',', '', $va_matches[1]), 2);
 			$vs_currency_specifier = null;
 		}
 
@@ -2782,16 +2822,21 @@ function caFileIsIncludable($ps_file) {
 	 * @return array Array with "width" and "height" keys for scaled dimensions
 	 */
 	function caFitImageDimensions($pn_original_width, $pn_original_height, $pn_target_width, $pn_target_height, $pa_options=null) {
-		$pn_original_width = preg_replace('![^\d]+!', '', $pn_original_width);
-		$pn_original_height = preg_replace('![^\d]+!', '', $pn_original_height);
-		if ($pn_original_width > $pn_original_height) {
+		$pn_original_width = (float)preg_replace('![^\d]+!', '', $pn_original_width);
+		$pn_original_height = (float)preg_replace('![^\d]+!', '', $pn_original_height);
+		
+		if(($pn_original_width === 0.0) || ($pn_original_height === 0.0)) { 
+			return ['width' => (int)$pn_target_width, 'height' => (int)$pn_target_height];
+		}
+		
+		if ($$pn_original_width > $pn_original_height) {
 			$vn_scale_factor = $pn_target_width/$pn_original_width;
 			$pn_target_height = $vn_scale_factor * $pn_original_height;
 		} else {
 			$vn_scale_factor = $pn_target_height/$pn_original_height;
 			$pn_target_width = $vn_scale_factor * $pn_original_width;
 		}
-		return array('width' => (int)$pn_target_width, 'height' => (int)$pn_target_height);
+		return ['width' => (int)$pn_target_width, 'height' => (int)$pn_target_height];
 	}
 	# ----------------------------------------
 	/**
@@ -3929,13 +3974,15 @@ function caFileIsIncludable($ps_file) {
 	 * @param array $pa_options Options include:
 	 *		locale = Locale settings to use. If omitted current default locale is used. [Default is current locale]
 	 *		omitArticle = Omit leading definite and indefinited articles, rather than moving them to the end of the text [Default is true]
+	 *		maxLength = Maximum length of returned value. [Default is 255]
 	 *
-	 * @return string Converted text. If locale cannot be found $ps_text is returned unchanged.
+	 * @return string Converted text. If locale cannot be found $ps_text is returned truncated to "maxLength" value, but otherwise unchanged.
 	 */
 	function caSortableValue($ps_text, $pa_options=null) {
 		global $g_ui_locale;
 		$ps_locale = caGetOption('locale', $pa_options, $g_ui_locale);
-		if (!$ps_locale) { return $ps_text; }
+		$max_length = caGetOption('maxLength', $pa_options, 255, ['castTo' => 'int']);
+		if (!$ps_locale) { return mb_substr($ps_text, 0, $max_length); }
 
 		$pb_omit_article = caGetOption('omitArticle', $pa_options, true);
 
@@ -3960,7 +4007,7 @@ function caFileIsIncludable($ps_file) {
 				$vs_display_value = str_replace($va_matches[$i], $vs_padded, $vs_display_value);
 			}
 		}
-		return $vs_display_value;
+		return mb_substr($vs_display_value, 0, $max_length);
 	}
 	# ----------------------------------------
 	/**
@@ -4480,7 +4527,9 @@ function caFileIsIncludable($ps_file) {
 			);
 	}
 	# ----------------------------------------
-
+	/**
+	 *
+	 */
 	function caReturnValueInBytes($vs_val) {
 		$vs_val = trim($vs_val);
 		$vs_last = strtolower($vs_val[strlen($vs_val)-1]);
@@ -4496,3 +4545,14 @@ function caFileIsIncludable($ps_file) {
 		}
 		return $vs_val;
 	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caChangeArrayKeyCase($array, $case = CASE_LOWER) {
+		foreach ($array as $k => $v) {
+			$ret[mb_convert_case($k, (($case === CASE_LOWER) ? MB_CASE_LOWER : MB_CASE_UPPER), "UTF-8")] = (is_array($v) ? caChangeArrayKeyCase($v, $case) : $v );
+		}
+		return $ret;
+	}
+    # ----------------------------------------

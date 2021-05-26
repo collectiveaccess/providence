@@ -93,6 +93,7 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 			'layers'			=> 'W',
 			"quality" 			=> 'W',
 			'colorspace'		=> 'W',
+			'background'		=> 'W',
 			'tile_width'		=> 'W',
 			'tile_height'		=> 'W',
 			'antialiasing'		=> 'W',
@@ -346,7 +347,11 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$this->metadata = array();
 			
 			$va_info = @getimagesize($filepath);
-			switch($va_info[2]) {
+			
+			$w = (int)$va_info[0];
+			$h = (int)$va_info[1];
+			$format = $va_info[2];
+			switch($format) {
 				case IMAGETYPE_GIF:
 					$this->handle = imagecreatefromgif($filepath);
 					$vs_mimetype = "image/gif";
@@ -376,15 +381,14 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 										$this->handle = imagecreatefromjpeg($filepath);
 										$this->handle = $this->rotateImage($this->handle, -90);
 										$va_tmp = $va_info;
-										$va_info[0] = $va_tmp[1];
-										$va_info[1] = $va_tmp[0];
+										$w = $h;
+										$h = $va_info[0];
 										break;
 									case 8:
 										$this->handle = imagecreatefromjpeg($filepath);
 										$this->handle = $this->rotateImage($this->handle, 90);
-										$va_tmp = $va_info;
-										$va_info[0] = $va_tmp[1];
-										$va_info[1] = $va_tmp[0];
+										$w = $h;
+										$h = $va_info[0];
 										break;
 								}
 							}
@@ -407,6 +411,7 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 					break;
 				case IMAGETYPE_PNG:
 					$this->handle = imagecreatefrompng($filepath);
+					
 					$vs_mimetype = "image/png";
 					$vs_typename = "PNG";
 					break;
@@ -415,12 +420,33 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 					break;
 			}
 			
+			imageAlphaBlending($this->handle, true);
+			imageSaveAlpha($this->handle, true);
+			
+			if (in_array($format, [IMAGETYPE_PNG, IMAGETYPE_GIF]) && ($background = caGetOption('background', $this->properties, null))) {
+				// Setting a background color in GD entails creating a new image
+				// with the color and then overlaying the PNG on it.
+				list($r, $g, $b) = sscanf($background, "#%02x%02x%02x");
+				$r_new_image = imagecreatetruecolor($w, $h);
+				
+				imagealphablending($r_new_image, true);
+				imagesavealpha($r_new_image, true);
+				
+				$r_color = ImageColorAllocate($r_new_image, $r, $g, $b);
+				
+				imagefilledrectangle($r_new_image, 0,0,$w-1, $h-1, $r_color);
+				imagecopyresampled($r_new_image, $this->handle, 0, 0, 0, 0, $w, $h, $w, $h);
+		
+				imagedestroy($this->handle);
+				$this->handle = $r_new_image;		
+			}
+			
 			if ($this->handle) {
 				$this->filepath = $filepath;
 				
 				# load image properties
-				$this->properties["width"] = $va_info[0];
-				$this->properties["height"] = $va_info[1];
+				$this->properties["width"] = $w;
+				$this->properties["height"] = $h;
 				$this->properties["mimetype"] = $vs_mimetype;
 				$this->properties["typename"] = $vs_typename;
 				$this->properties["filesize"] = @filesize($filepath);
@@ -684,7 +710,6 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 			}
 			
 			if (($this->properties["colorspace"]) && ($this->properties["colorspace"] != "default")){ 
-				$vn_colorspace = null;
 				switch($this->properties["colorspace"]) {
 					case 'greyscale':
 					case 'grey':
@@ -705,7 +730,6 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 						imagefilter($this->handle, IMG_FILTER_CONTRAST, -1000);
 						break;
 				}
-				if ($vn_colorspace) { $this->handle->setimagecolorspace($vn_colorspace); }
 			}
 			
 			$vn_res = 0;

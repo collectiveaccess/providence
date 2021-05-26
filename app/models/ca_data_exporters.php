@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2020 Whirl-i-Gig
+ * Copyright 2012-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,16 +33,8 @@
 /**
  *
  */
-
 require_once(__CA_LIB_DIR__.'/ModelSettings.php');
-require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
-
 require_once(__CA_LIB_DIR__.'/Export/BaseExportFormat.php');
-
-require_once(__CA_MODELS_DIR__."/ca_data_exporter_labels.php");
-require_once(__CA_MODELS_DIR__."/ca_data_exporter_items.php");
-require_once(__CA_MODELS_DIR__."/ca_sets.php");
-
 require_once(__CA_LIB_DIR__.'/ApplicationPluginManager.php');
 require_once(__CA_LIB_DIR__.'/Logging/KLogger/KLogger.php');
 
@@ -103,6 +95,10 @@ BaseModel::$s_ca_models_definitions['ca_data_exporters'] = array(
 );
 
 class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
+	use ModelSettings {
+		setSetting as traitSetSetting;
+	}
+	
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -194,11 +190,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	protected $FIELDS;
 
 	/**
-	 * Settings delegate - implements methods for setting, getting and using 'settings' var field
-	 */
-	public $SETTINGS;
-
-	/**
 	 * Caches
 	 */
 	public static $s_exporter_cache = array();
@@ -230,11 +221,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	protected function initSettings() {
-		$va_settings = array();
-
-		if (!($vn_table_num = $this->get('table_num'))) {
-			$this->SETTINGS = new ModelSettings($this, 'settings', array());
-		}
+		$va_settings = [];
 
 		$va_settings['exporter_format'] = array(
 			'formatType' => FT_TEXT,
@@ -274,7 +261,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			'takesLocale' => false,
 			'default' => '',
 			'label' => _t('Wrapping text before record export'),
-			'description' => _t('The text set here will be inserted before earch record-level export.')
+			'description' => _t('The text set here will be inserted before each record-level export.')
 		);
 
 		$va_settings['wrap_after_record'] = array(
@@ -284,7 +271,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			'takesLocale' => false,
 			'default' => '',
 			'label' => _t('Wrapping text after record export'),
-			'description' => _t('The text set here will be inserted after earch record-level export.')
+			'description' => _t('The text set here will be inserted after each record-level export.')
 		);
 
 		$va_settings['typeRestrictions'] = array(
@@ -297,16 +284,14 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			'description' => _t('If set, this mapping will only be available for these types. Multiple types are separated by commas or semicolons.')
 		);
 
-		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
-
 		// if exporter_format is set, pull in format-specific settings
 		if($vs_format = $this->getSetting('exporter_format')) {
 			if (is_array($va_format_settings = ca_data_exporters::getFormatSettings($vs_format))) {
 				$va_settings += $va_format_settings;
 			}
-
-			$this->SETTINGS->setAvailableSettings($va_settings);
 		}
+		
+		$this->setAvailableSettings($va_settings);
 	}
 	# ------------------------------------------------------
 	public function getAvailableExporterFormats() {
@@ -678,27 +663,20 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		return $o_export->getContentType($this->getSettings());
 	}
 	# ------------------------------------------------------
-	# Settings
-	# ------------------------------------------------------
 	/**
-	 * Reroutes calls to method implemented by settings delegate to the delegate class
+	 * Set setting values
+	 * (you must call insert() or update() to write the settings to the database)
 	 */
-	public function __call($ps_name, $pa_arguments) {
-		if (($ps_name == 'setSetting') && ($pa_arguments[0] == 'exporter_format')) {
-			// Load format-specific settings as it is selected
-			if($vs_format = $pa_arguments[1]) {
-				$va_current_settings = $this->SETTINGS->getAvailableSettings();
-				if (is_array($va_format_settings = ca_data_exporters::getFormatSettings($vs_format))) {
-					$va_current_settings += $va_format_settings;
-				}
-
-				$this->SETTINGS->setAvailableSettings($va_current_settings);
+	public function setSetting($setting, $value) {
+		$current_settings = $this->getAvailableSettings();
+		
+		if(($setting === 'exporter_format') && $value) {
+			if (is_array($format_settings = ca_data_exporters::getFormatSettings($value))) {
+				$current_settings += $format_settings;
 			}
+			$this->setAvailableSettings($current_settings);
 		}
-		if (method_exists($this->SETTINGS, $ps_name)) {
-			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
-		}
-		die($this->tableName()." does not implement method {$ps_name}");
+		return $this->traitSetSetting($setting, $value);
 	}
 	# ------------------------------------------------------
 	/**
@@ -783,14 +761,14 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
                     $va_replacement_values = preg_split("![\n\r]{1}!", (string)$o_replacement_values->getValue());
                     array_walk($va_replacement_values, function(&$v) { $v = trim($v); });
 
-					if ($vs_mode == 'Constant') {
+					if ($vs_mode === 'constant') {
 						if(strlen($vs_source)<1) { // ignore constant rows without value
 							continue(2);
 						}
 						$vs_source = "_CONSTANT_:{$vs_source}";
 					}
 
-					if ($vs_mode == 'Variable') {
+					if ($vs_mode === 'variable') {
 						if(preg_match("/^[A-Za-z0-9\_\-]+$/",$vs_element)) {
 							$vs_element = "_VARIABLE_:{$vs_element}";
 						} else {

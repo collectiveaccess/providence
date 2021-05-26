@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2020 Whirl-i-Gig
+ * Copyright 2011-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -142,21 +142,54 @@ class Installer {
 	 * @return array
 	 */
 	static public function getProfileInfo($ps_profile_dir, $ps_profile_name) {
-		$o_installer = new Installer($ps_profile_dir,$ps_profile_name);
-		$o_installer->loadProfile($ps_profile_dir, $ps_profile_name);
+		$path = $ps_profile_dir.'/'.$ps_profile_name.'.xml';
+		$reader = new XMLReader();
+		
+		if (!@$reader->open($path)) {
+			return null;
+		}
 
-		return array(
-			'useForConfiguration' => $o_installer->getAttribute($o_installer->opo_profile, 'useForConfiguration'),
-			'display' => (string)$o_installer->opo_profile->{'profileName'},
-			'description' => (string)$o_installer->opo_profile->{'profileDescription'},
-			'locales' => (string)$o_installer->opo_profile->{'locales'},
-		);
+		$name = $description = $useForConfiguration = $locales = null;
+		while(@$reader->read()) {
+			if ($reader->nodeType === XMLReader::ELEMENT) {
+				switch($reader->name) {
+					case 'profile':
+						$useForConfiguration = $reader->getAttribute('useForConfiguration');
+						break;
+					case 'profileName':
+						$name = $reader->readOuterXML();
+						break;
+					case 'profileDescription':
+						$description = $reader->readOuterXML();
+						break;
+					case 'locale':
+						$locale = $reader->getAttribute('lang').'_'.$reader->getAttribute('country');
+						$locales[$locale] = [
+							'lang' => $reader->getAttribute('lang'),
+							'country' => $reader->getAttribute('country'),
+							'locale' => $locale,
+							'display' => $reader->readOuterXML()
+						];
+						break;
+					case 'lists':
+						break(2);
+				}
+			}
+		}
+		$reader->close();		
+
+		return [
+			'useForConfiguration' => $useForConfiguration,
+			'display' => $name,
+			'description' => $description,
+			'locales' => $locales,
+		];
 	}
 	# --------------------------------------------------
 	private function validateProfile() {
 		// simplexml doesn't support validation -> use DOMDocument
 		$vo_profile = new DOMDocument();
-		$vo_profile->load($this->ops_profile_dir."/".$this->ops_profile_name.".xml");
+		@$vo_profile->load($this->ops_profile_dir."/".$this->ops_profile_name.".xml");
 
 		if($this->opo_base) {
 			$vo_base = new DOMDocument();
@@ -192,7 +225,7 @@ class Installer {
 		$vs_file = $ps_profile_dir."/".$ps_profile_name.".xml";
 
 		if(is_readable($vs_file)) {
-			$this->opo_profile = simplexml_load_file($vs_file);
+			$this->opo_profile = @simplexml_load_file($vs_file);
 			return true;
 		} else {
 			return false;
@@ -372,7 +405,7 @@ class Installer {
 			}
 		}
 
-		if ($o_config->get('search_engine_plugin') == 'ElasticSearch') {
+		if (($o_config->get('search_engine_plugin') == 'ElasticSearch') && (!$this->isAlreadyInstalled() || (defined('__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__') && __CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__ && $this->opb_overwrite))) {
 			$o_es = new WLPlugSearchEngineElasticSearch();
 			try {
 				$o_es->truncateIndex();
@@ -390,7 +423,6 @@ class Installer {
 	    if (sizeof($this->opa_metadata_element_deferred_settings_processing)) {
 	        foreach($this->opa_metadata_element_deferred_settings_processing as $vs_element_code => $va_settings) {
 	            if (!($t_element = ca_metadata_elements::getInstance($vs_element_code))) { continue; }
-	            $t_element->setMode(ACCESS_WRITE);
 	            $va_available_settings = $t_element->getAvailableSettings();
 	            foreach($va_settings as $vs_setting_name => $va_setting_values) {
 	                if (!isset($va_available_settings[$vs_setting_name])) { continue; }
@@ -420,6 +452,25 @@ class Installer {
 	}
 	# --------------------------------------------------
 	/**
+	 * Checks if ColletiveAccess tables already exist in the database
+	 *
+	 * @return boolean Returns true if CA is already installed
+	 */
+	public function isAlreadyInstalled() {
+		$ca_tables = Datamodel::getTableNames();
+
+		$qr = $this->opo_db->query("SHOW TABLES");
+
+		while($qr->nextRow()) {
+			$table = $qr->getFieldAtIndex(0);
+			if (in_array($table, $ca_tables)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	# --------------------------------------------------
+	/**
 	 * Loads CollectiveAccess schema into an empty database
 	 *
 	 * @param callable $f_callback Function to be called for each SQL statement in the schema. Function is passed four parameters: the SQL code of the statement, the table name, the number of the table being loaded and the total number of tables.
@@ -433,24 +484,14 @@ class Installer {
 			$this->opo_db->query('CREATE DATABASE `'.__CA_DB_DATABASE__.'`');
 			$this->opo_db->query('USE `'.__CA_DB_DATABASE__.'`');
 		}
-
-		$va_ca_tables = Datamodel::getTableNames();
-
-		$qr_tables = $this->opo_db->query("SHOW TABLES");
-
-		while($qr_tables->nextRow()) {
-			$vs_table = $qr_tables->getFieldAtIndex(0);
-			if (in_array($vs_table, $va_ca_tables)) {
-				$this->addError("Table ".$vs_table." already exists; have you already installed CollectiveAccess?");
-				return false;
-			}
+		
+		if($this->isAlreadyInstalled()) {
+			throw new Exception("Cannot install because an existing CollectiveAccess installation has been detected.");
 		}
-
+		
 		// load schema
-
 		if (!($vs_schema = file_get_contents(__CA_BASE_DIR__."/install/inc/schema_mysql.sql"))) {
-			$this->addError("Could not open schema definition file");
-			return false;
+			throw new Exception("Could not open schema definition file");
 		}
 		$va_schema_statements = explode(';', $vs_schema);
 
@@ -478,8 +519,7 @@ class Installer {
 			}
 			$this->opo_db->query($vs_statement);
 			if ($this->opo_db->numErrors()) {
-				$this->addError("Error while loading the database schema: ".join("; ",$this->opo_db->getErrors()));
-				return false;
+				throw new Exception("Error while loading the database schema: ".join("; ",$this->opo_db->getErrors()));
 			}
 		}
 	}
@@ -573,7 +613,7 @@ class Installer {
 			$va_lists = $this->opo_profile->lists->children();
 		}
 
-		$o_trans = new Transaction();
+		//$o_trans = new Transaction();
 
 		$vn_i = 0;
 		$vn_num_lists = sizeof($va_lists);
@@ -583,7 +623,7 @@ class Installer {
 			if(!($t_list = ca_lists::find(array('list_code' => $vs_list_code), array('returnAs' => 'firstModelInstance')))) {
 				$t_list = new ca_lists();
 			}
-			$t_list->setTransaction($o_trans);
+			//$t_list->setTransaction($o_trans);
 
 			if($t_list->getPrimaryKey()) {
 				$this->logStatus(_t('List %1 already exists', $vs_list_code));
@@ -596,7 +636,7 @@ class Installer {
 			if(self::getAttribute($vo_list, "deleted") && $t_list->getPrimaryKey()) {
 				$this->logStatus(_t('Deleting list %1', $vs_list_code));
 				$t_list->delete(true);
-				$o_trans->commit();
+				//$o_trans->commit();
 				continue;
 			}
 
@@ -632,10 +672,10 @@ class Installer {
 				}
 				if($vo_list->items) {
 					if(!$this->processListItems($t_list, $vo_list->items, null)) {
-						$o_trans->rollback();
+						//$o_trans->rollback();
 						return false;
 					}
-					$o_trans->commit();
+					//$o_trans->commit();
 				}
 			}
 		}

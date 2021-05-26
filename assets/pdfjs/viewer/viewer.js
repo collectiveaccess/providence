@@ -1783,6 +1783,18 @@ function webViewerInitialized() {
   // Mod: always disable "open file" button – not relevant 
   appConfig.toolbar.openFile.setAttribute("hidden", "true");
   appConfig.secondaryToolbar.openFileButton.setAttribute("hidden", "true");
+  
+  // Mod: do initial search when specified in window.pdfjsSearch
+  if(window.pdfjsSearch) {
+	  webViewerFind({
+		query: window.pdfjsSearch,
+		phraseSearch: false,
+		caseSensitive: false,
+		entireWord: false,
+		highlightAll: true,
+		findPrevious: false
+	  });
+}
 
   fileInput.addEventListener("change", function (evt) {
     const files = evt.target.files;
