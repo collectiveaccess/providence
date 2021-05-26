@@ -341,6 +341,8 @@
 					'options' => $pa_options
 				);
 			}
+			
+			return true;
 		}
 		# ------------------------------------------------------------------
 		// edit attribute from current row
@@ -783,46 +785,49 @@
 		/**
 		 *
 		 */
-		public function getValuesForExport($pa_options=null) {
-			$va_codes = $this->getApplicableElementCodes();
+		public function getValuesForExport($options=null) {
+			$va_data = parent::getValuesForExport($options);		// get intrinsics
 			
-			$va_data = parent::getValuesForExport($pa_options);		// get intrinsics
+			if(caGetOption('includeAttributes', $options, true)) {
+				$va_codes = $this->getApplicableElementCodes();
 			
-			$t_locale = new ca_locales();
-			$t_list = new ca_lists();
 			
-			// get attributes
-			foreach($va_codes as $vs_code) {
-				if ($va_v = $this->get($this->tableName().'.'.$vs_code, array('returnWithStructure' => true, 'returnAllLocales' => true, 'returnAsArray' => true, 'return' => 'url', 'version' => 'original'))) {
-					foreach($va_v as $vn_id => $va_v_by_locale) {
-						foreach($va_v_by_locale as $vn_locale_id => $va_v_list) {
-							if(!is_array($va_v_list)) { continue; }
+				$t_locale = new ca_locales();
+				$t_list = new ca_lists();
+			
+				// get attributes
+				foreach($va_codes as $vs_code) {
+					if ($va_v = $this->get($this->tableName().'.'.$vs_code, array('returnWithStructure' => true, 'returnAllLocales' => true, 'returnAsArray' => true, 'return' => 'url', 'version' => 'original'))) {
+						foreach($va_v as $vn_id => $va_v_by_locale) {
+							foreach($va_v_by_locale as $vn_locale_id => $va_v_list) {
+								if(!is_array($va_v_list)) { continue; }
 							
-							if (!($vs_locale = $t_locale->localeIDToCode($vn_locale_id))) {
-								$vs_locale = 'NONE';
-							}
-							$vn_i = 0;
-							foreach($va_v_list as $vn_index => $va_values) {	
-								if (is_array($va_values)) {
-									foreach($va_values as $vs_sub_code => $vs_value) {
-										if(!$vs_sub_code) { continue; }
-										if (!$t_element = ca_metadata_elements::getInstance($vs_sub_code)) { continue; }
-										
-										switch((int)$t_element->get('datatype')) {
-											case 3:		// list
-												$va_list_item = $t_list->getItemFromListByItemID($t_element->get('list_id'), $vs_value);
-												$vs_value = $vs_value.":".$va_list_item['idno'];
-												break;
-										}
-										$va_data['ca_attribute_'.$vs_code][$vs_locale]['value_'.$vn_i][$vs_sub_code] = $vs_value;
-									}
-									$vn_i++;
-															
-								} else {
-									$va_data['ca_attribute_'.$vs_code][$vs_locale]['value_'.$vn_i][$vs_code] = $va_values;
+								if (!($vs_locale = $t_locale->localeIDToCode($vn_locale_id))) {
+									$vs_locale = 'NONE';
 								}
-							}
-						}	
+								$vn_i = 0;
+								foreach($va_v_list as $vn_index => $va_values) {	
+									if (is_array($va_values)) {
+										foreach($va_values as $vs_sub_code => $vs_value) {
+											if(!$vs_sub_code) { continue; }
+											if (!$t_element = ca_metadata_elements::getInstance($vs_sub_code)) { continue; }
+										
+											switch((int)$t_element->get('datatype')) {
+												case 3:		// list
+													$va_list_item = $t_list->getItemFromListByItemID($t_element->get('list_id'), $vs_value);
+													$vs_value = $vs_value.":".$va_list_item['idno'];
+													break;
+											}
+											$va_data['ca_attribute_'.$vs_code][$vs_locale]['value_'.$vn_i][$vs_sub_code] = $vs_value;
+										}
+										$vn_i++;
+															
+									} else {
+										$va_data['ca_attribute_'.$vs_code][$vs_locale]['value_'.$vn_i][$vs_code] = $va_values;
+									}
+								}
+							}	
+						}
 					}
 				}
 			}
