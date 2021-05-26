@@ -388,6 +388,7 @@
     <div id="printContainer"></div>
 </div>
 
+<link rel="resource" type="application/l10n" href="<?= $this->request->getBaseUrlPath(); ?>/assets/pdfjs/viewer/locale/locale.properties">
  <script>
  	// Set viewer config vars
  	window.pdfjsPath = '<?= $this->request->getBaseUrlPath(); ?>/assets';
