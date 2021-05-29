@@ -2346,6 +2346,9 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				case 'UPPER':
 					$ps_value = strtoupper($ps_value);
 					break;
+				case 'NL2BR':
+					$ps_value = nl2br($ps_value);
+					break;
 			}
 		}
 		
