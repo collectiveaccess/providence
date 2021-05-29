@@ -559,6 +559,35 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Collapse multiple spaces'),
 			'description' => _t('Convert multiple spaces to a single space.')
 		);
+		
+		$settings['upperCaseFirst'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Force first to uppercase'),
+			'description' => _t('Force first letter of value to uppercase.')
+		);
+		$settings['toUpperCase'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Force to uppercase'),
+			'description' => _t('Force value to uppercase.')
+		);
+		$settings['toLowerCase'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Force to lowercase'),
+			'description' => _t('Force value to lowercase.')
+		);
+		
 		$settings['useAsSingleValue'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
