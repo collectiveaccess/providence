@@ -6747,7 +6747,7 @@ if (!$vb_batch) {
 				return null;
 				break;
 			case 'count':
-				return sizeof($va_rels);
+				return sizeof(array_unique($va_rels));
 				break;
 			case 'searchresult':
 				if (sizeof($va_rels) > 0) {
