@@ -6088,6 +6088,7 @@ if (!$vb_batch) {
 		if ($pb_show_current_only) {
 		    $va_tmp = [];
 		    foreach(array_reverse($va_rels) as $rel) {
+		    	if(!is_array($rel)) { continue; }
 		        if(isset($va_tmp[$rel['row_id']])) { continue; }
 		        $va_tmp[$rel['row_id']] = $rel;
 		    }
