@@ -1671,8 +1671,28 @@ class TimeExpressionParser {
 	# Lexical analysis
 	# -------------------------------------------------------------------
 	private function tokenize($ps_expression) {
+
+		$arr_tokens = $this->multiwordADBCtokens($ps_expression);
+		$ps_expression = $arr_tokens['expression'];
+
 		$this->opa_tokens = preg_split("/[\s]+/u", $ps_expression);
+		if($arr_tokens['tokens']) $this->opa_tokens = array_merge($this->opa_tokens,$arr_tokens['tokens']);
 		return sizeof($this->opa_tokens);
+	}
+
+	private function multiwordADBCtokens($ps_expression){
+		$va_era_lookup = $this->opo_language_settings->getAssoc("ADBCTable");
+		$arr_tokens=array();
+
+		foreach ($va_era_lookup as $token=>$indicator){
+			if (stristr($ps_expression,$token)){
+				$arr_tokens[]=$token;
+				$regex = '/'.$token.'/i';
+				$ps_expression = preg_replace($regex,"",$ps_expression);
+			}
+		}
+
+		return array("tokens"=>$arr_tokens,"expression"=>trim($ps_expression));
 	}
 	# -------------------------------------------------------------------
 	private function tokens() {
