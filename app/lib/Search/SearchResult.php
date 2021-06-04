@@ -2690,7 +2690,7 @@ class SearchResult extends BaseObject {
 								}
 							}
 						
-							if(!$pa_options['returnAsArray']) {
+							if(!$pa_options['returnAsArray'] && is_array($d)) {
 								$d = join("; ", $d);
 							}
 						}
