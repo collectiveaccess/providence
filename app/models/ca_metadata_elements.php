@@ -321,7 +321,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		CompositeCache::delete($this->getPrimaryKey(), 'MetadataElements/ElementSets');
 		$vs_key = caMakeCacheKeyFromOptions(['table_num' => null, 'type_id' => null, 'element_id' => $this->getPrimaryKey()]);
 		CompositeCache::delete($vs_key, 'MetadataElements/ElementTypeRestrictions');
-
+		
+		CompositeCache::flush('MetadataElements/ElementSettings');
 		CompositeCache::flush('MetadataElements/ElementList');
 		CompositeCache::flush('SearchBuilder');
 		$this->resetElasticSearchMappingRefresh();
