@@ -329,6 +329,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 				CompositeCache::delete($vs_cache_key, 'ElementList');
 			}
 		}
+		CompositeCache::flush('ElementSettings');
 		CompositeCache::flush('SearchBuilder');
 		$this->resetElasticSearchMappingRefresh();
 	}
