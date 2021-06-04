@@ -520,7 +520,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	/**
 	 * Settings delegate - implements methods for setting, getting and using 'settings' var field
 	 */
-	public $SETTINGS;
+	static public $SETTINGS;
 	
 	# ------------------------------------------------------
 	# --- Constructor
@@ -534,7 +534,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	#
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
-		$this->SETTINGS = new ModelSettings($this, 'settings', array());
+		if (!ca_list_items::$SETTINGS) { ca_list_items::$SETTINGS = new ModelSettings($this, 'settings', array()); }
 		parent::__construct($pn_id);	# call superclass constructor
 	}
 	# ------------------------------------------------------
@@ -586,7 +586,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	private function _setSettingsForList() {
 		global $_ca_list_items_settings;
 		if (isset($_ca_list_items_settings[$vs_list_code = caGetListCode($this->get('list_id'))])) {
-			$this->SETTINGS = new ModelSettings($this, 'settings', $_ca_list_items_settings[$vs_list_code]);
+			ca_list_items::$SETTINGS = new ModelSettings($this, 'settings', $_ca_list_items_settings[$vs_list_code]);
 		}
 	}
  	# ------------------------------------------------------
@@ -922,11 +922,10 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	 * Reroutes calls to method implemented by settings delegate to the delegate class
 	 */
 	public function __call($ps_name, $pa_arguments) {
-		if (method_exists($this->SETTINGS, $ps_name)) {
-			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
+		if (method_exists(ca_list_items::$SETTINGS, $ps_name)) {
+			return call_user_func_array(array(ca_list_items::$SETTINGS, $ps_name), $pa_arguments);
 		}
 		die($this->tableName()." does not implement method {$ps_name}");
 	}
 	# ------------------------------------------------------
 }
-?>

@@ -1362,7 +1362,7 @@ class BaseModel extends BaseObject {
 								$vm_value = array_shift($va_ids);
 							}
 						}
-						if (($vm_value !== "") || ($this->getFieldInfo($vs_field, "IS_NULL") && ($vm_value == ""))) {
+						if (($vm_value !== "") || (($this->getFieldInfo($vs_field, "IS_NULL") && ($vm_value == "")))) {
 							if ($vm_value) {
 								if (($vs_list_code = $this->getFieldInfo($vs_field, "LIST_CODE")) && (!is_numeric($vm_value))) {	// translate ca_list_item idno's into item_ids if necessary
 									if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) {
@@ -4770,7 +4770,6 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 							$magic = rand(0,99999);
 							$filepath = $vi["absolutePath"]."/".$dirhash."/".$magic."_".$this->_genMediaName($ps_field)."_".$v;
 
-                            $m->set('colorspace', 'RGB');
 							if (!($vs_output_file = $m->write($filepath, $output_mimetype, $va_media_write_options))) {
 								$this->postError(1600,_t("Couldn't write file: %1", join("; ", $m->getErrors())),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
 								$m->cleanup();

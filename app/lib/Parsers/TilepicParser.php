@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2019 Whirl-i-Gig
+ * Copyright 2004-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -383,7 +383,7 @@ class TilepicParser {
 	}
 	# ------------------------------------------------
 	private function _imageMagickProcess($ps_source_filepath, $ps_dest_filepath, $pa_ops, $pn_quality=null) {
-		$va_ops = array('-colorspace RGB');
+		$va_ops = [];
 		if (!is_null($pn_quality)) {
 			$va_ops[] = '-quality '.intval($pn_quality);
 		}
@@ -437,7 +437,7 @@ class TilepicParser {
 	}
 	# ------------------------------------------------
 	private function _graphicsMagickProcess($ps_source_filepath, $ps_dest_filepath, $pa_ops, $pn_quality=null) {
-		$va_ops = array('-colorspace RGB');
+		$va_ops = [];
 		if (!is_null($pn_quality)) {
 			$va_ops[] = '-quality '.intval($pn_quality);
 		}
@@ -1100,9 +1100,11 @@ class TilepicParser {
         
         $h->setImageType(imagick::IMGTYPE_TRUECOLOR);
 
-		if (!$h->setImageColorspace(imagick::COLORSPACE_RGB)) {
-			$this->error = "Error during RGB colorspace transformation operation";
-			return false;
+		if ($h->getImageColorspace() === imagick::COLORSPACE_CMYK) {
+			if (!$h->setImageColorspace(imagick::COLORSPACE_RGB)) {
+				$this->error = "Error during RGB colorspace transformation operation";
+				return false;
+			}
 		}
 		
 		$va_tmp = $h->getImageGeometry();
@@ -1293,7 +1295,6 @@ class TilepicParser {
 		#
 		try {
 			$h = new Gmagick($ps_filepath);
-			$h->stripimage();
 			$this->setResourceLimits_gmagick($h);
 			$h->setimageindex(0);	// force use of first image in multi-page TIFF
 		} catch (Exception $e){
@@ -1322,9 +1323,11 @@ class TilepicParser {
         
 		$h->setimagetype(Gmagick::IMGTYPE_TRUECOLOR);
 
-		if (!$h->setimagecolorspace(Gmagick::COLORSPACE_RGB)) {
-			$this->error = "Error during RGB colorspace transformation operation";
-			return false;
+		if ($h->getimagecolorspace() === Gmagick::COLORSPACE_CMYK) {
+			if (!$h->setimagecolorspace(Gmagick::COLORSPACE_RGB)) {
+				$this->error = "Error during RGB colorspace transformation operation";
+				return false;
+			}
 		}
 		
 		$va_tmp = $h->getimagegeometry();

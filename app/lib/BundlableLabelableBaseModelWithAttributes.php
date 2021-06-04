@@ -3195,9 +3195,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$va_locales = array();
 				foreach($_REQUEST as $vs_key => $vs_val) {
 					$vs_element_set_code = preg_replace("/^ca_attribute_/", "", $vs_f);
+					$vs_element_set_code = preg_replace("/^{$table_name}\./", "", $vs_element_set_code);
 					
-					$t_element = ca_metadata_elements::getInstance($vs_element_set_code);
-					$vn_element_id = $t_element->getPrimaryKey();
+					if (!($vn_element_id = ca_metadata_elements::getElementID($vs_element_set_code))) { continue; }
 					
 					if (
 						preg_match('/'.$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_([\w\-_]+)_new_([\d]+)/', $vs_key, $va_matches)

@@ -2226,6 +2226,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * @return BundlableLabelableBaseModelWithAttributes|bool|null
 	 */
 	static public function loadInstanceByID($pn_record_id,$pn_table_num, $pa_options=null) {
+		if(!is_array($pa_options)) { $pa_options = []; }
 		if(sizeof(ca_data_exporters::$s_instance_cache)>10) {
 			array_shift(ca_data_exporters::$s_instance_cache);
 		}

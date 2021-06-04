@@ -1302,18 +1302,30 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  	 * @param int $pn_representation_id The representation_id of the representation to return files for. If omitted the currently loaded representation is used. If no representation_id is specified and no row is loaded null will be returned.
  	 * @param int $pn_start The index of the first file to return. Files are numbered from zero. If omitted the first file found is returned.
  	 * @param int $pn_num_files The maximum number of files to return. If omitted all files are returned.
- 	 * @param array $pa_versions A list of file versions to return. If omitted only the "preview" version is returned.
+ 	 * @param array $options Options include:
+ 	 *			versions = A list of versions to return. If omitted only the "preview" version is returned. [Default is null]
+ 	 *			returnAllVersions = Return data for all versions. [Default is false]
+ 	 *
+ 	 *			Note: The fourth parameter to this method was originally a list of versions to return. To maintain compatibility with 
+ 	 *			older code, if an indexed array is passed in place of $options, it will be used a a list of versions to return.
+ 	 *
  	 * @return array A list of files attached to the representations. If no files are associated an empty array is returned.
  	 */
- 	public function getFileList($pn_representation_id=null, $pn_start=null, $pn_num_files=null, $pa_versions=null) {
+ 	public function getFileList($pn_representation_id=null, $pn_start=null, $pn_num_files=null, $options=null) {
  		if(!($vn_representation_id = $pn_representation_id)) { 
  			if (!($vn_representation_id = $this->getPrimaryKey())) {
  				return null; 
  			}
  		}
  		
- 		if (!is_array($pa_versions)) {
- 			$pa_versions = array('preview');
+ 		$return_all_versions = false;
+ 		$versions = null;
+ 		if(caIsIndexedArray($options)) {
+ 			$versions = $options;
+ 		} elseif(caGetOption('returnAllVersions', $options, false)) {
+ 			$return_all_versions = true;
+ 		} else {
+ 			$versions = caGetOption('versions', $options, ['preview']);
  		}
  		
  		$vs_limit_sql = '';
@@ -1338,7 +1350,9 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  			$va_files[$vn_multifile_id] = $qr_res->getRow();
  			unset($va_files[$vn_multifile_id]['media']);
  			
- 			foreach($pa_versions as $vn_i => $vs_version) {
+ 			if ($return_all_versions) { $versions = $qr_res->getMediaVersions('media'); }
+ 			
+ 			foreach($versions as $vn_i => $vs_version) {
  				$va_files[$vn_multifile_id][$vs_version.'_path'] = $qr_res->getMediaPath('media', $vs_version);
  				$va_files[$vn_multifile_id][$vs_version.'_tag'] = $qr_res->getMediaTag('media', $vs_version);
  				$va_files[$vn_multifile_id][$vs_version.'_url'] = $qr_res->getMediaUrl('media', $vs_version);

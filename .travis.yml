@@ -21,8 +21,8 @@ env:
 
 install:
   # Initialise the database instance for the test
-  - mysql -uroot -e 'create database ca_test;'
-  - mysql -uroot -e "grant all on ca_test.* to 'ca_test'@'localhost' identified by 'password';"
+  - sudo mysql -uroot -e 'create database ca_test;'
+  - sudo mysql -uroot -e "grant all on ca_test.* to 'ca_test'@'localhost' identified by 'password';"
   # Set environment variables
   - export COLLECTIVEACCESS_HOME="$(pwd)"
   - export PATH="$PATH:$COLLECTIVEACCESS_HOME/support/bin"
