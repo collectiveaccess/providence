@@ -103,7 +103,7 @@
 			print caReturnToHomeLocationControlForRelatedBundle($this->request, $vs_id_prefix, $t_instance, $this->getVar('history_tracking_policy'), $this->getVar('initialValues'));
 		}
 	
-		if(!$vb_read_only) {
+		if(!$vb_read_only && ($t_subject->tableName() !== 'ca_objects')) {
 			print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $t_instance->tableName(), array_merge($va_settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
 		}
 	}
