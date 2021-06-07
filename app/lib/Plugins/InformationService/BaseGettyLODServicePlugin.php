@@ -74,6 +74,9 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 
 		$va_service_conf = $this->opo_linked_data_conf->get( $this->getConfigName() );
 		$va_params = $this->_getParams( $pa_options, $va_service_conf );
+		if ($pa_settings) {
+			$pa_options['settings'] = $pa_settings;
+		}
 		$vs_search = $this->_rewriteSearch($ps_search, $pa_options, $va_params);
 		$vs_query = $this->_buildQuery($vs_search, $pa_options, $va_params);
 
