@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/service/schemas/ItemSchema.php :
+ * app/service/schemas/SearchSchema.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -36,13 +36,38 @@ use GraphQL\Type\Definition\Type;
 require_once(__CA_LIB_DIR__.'/Service/GraphQLSchema.php'); 
 require_once(__CA_APP_DIR__.'/service/helpers/ServiceHelpers.php');
 
-class ItemSchema extends \GraphQLServices\GraphQLSchema {
+class SearchSchema extends \GraphQLServices\GraphQLSchema {
 	# -------------------------------------------------------
 	/**
 	 * 
 	 */
 	protected static function load() {
-		return \GraphQLServices\Helpers\itemSchemaDefinitions();
+		$schema = \GraphQLServices\Helpers\itemSchemaDefinitions();
+		
+		$schema[] = $tableTypeType = new ObjectType([
+			'name' => 'Result',
+			'description' => 'Search result',
+			'fields' => [
+				'table' => [
+					'type' => Type::string(),
+					'description' => 'Table searched'
+				],
+				'search' => [
+					'type' => Type::string(),
+					'description' => 'Search expression'
+				],
+				'count' => [
+					'type' => Type::int(),
+					'description' => 'Number of items found'
+				],
+				'results' => [
+					'type' => Type::listOf($schema[sizeof($schema)-1]),
+					'description' => 'Items found'
+				]
+			]
+		]);
+		
+		return $schema;
 	}
 	# -------------------------------------------------------
 }

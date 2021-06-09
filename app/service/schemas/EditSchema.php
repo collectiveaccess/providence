@@ -86,7 +86,7 @@ class EditSchema extends \GraphQLServices\GraphQLSchema {
 						'type' => Type::string(),
 						'description' => 'Table of Edit'
 					],
-					'identifier' => [
+					'idno' => [
 						'type' => Type::string(),
 						'description' => 'Edit identifier'
 					],
@@ -136,8 +136,12 @@ class EditSchema extends \GraphQLServices\GraphQLSchema {
 						'description' => 'ID for existing bundle value to edit or delete. Omitted for newly created bundles.'
 					],
 					'delete' => [
-						'type' => Type::int(),
-						'description' => 'Set to 1 to indicate value referenced by id parameter should be removed.'
+						'type' => Type::boolean(),
+						'description' => 'Set to 1 to indicate value referenced by id parameter is to be removed.'
+					],
+					'replace' => [
+						'type' => Type::boolean(),
+						'description' => 'Set to 1 to indicate value is to replace the first existing value, or else added.'
 					],
 					'value' => [
 						'type' => Type::string(),
@@ -146,7 +150,11 @@ class EditSchema extends \GraphQLServices\GraphQLSchema {
 					'values' => [
 						'type' => Type::listOf($EditBundleValueType),
 						'description' => 'Bundle values to set.'
-					]
+					],
+					'type_id' => [
+						'type' => Type::string(),
+						'description' => 'Optional type code for non-preferred labels'
+					],
 				]
 			]),
 		];

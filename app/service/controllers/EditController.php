@@ -118,7 +118,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						
 						$ret = self::processBundles($instance, $bundles);
 						
-						return ['table' => $table, 'id' => $instance->getPrimaryKey(), 'identifier' => $instance->get('idno'), 'errors' => $ret['errors'], 'warnings' => $ret['warnings']];
+						return ['table' => $table, 'id' => $instance->getPrimaryKey(), 'idno' => $instance->get('idno'), 'errors' => $ret['errors'], 'warnings' => $ret['warnings']];
 					}
 				],
 				'edit' => [
@@ -171,7 +171,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							$ret = self::processBundles($instance, $bundles);
 						}
 						
-						return ['table' => $table, 'id' => $instance->getPrimaryKey(), 'identifier' => $instance->get('idno'), 'errors' => $ret['errors'], 'warnings' => $ret['warnings']];
+						return ['table' => $table, 'id' => $instance->getPrimaryKey(), 'idno' => $instance->get('idno'), 'errors' => $ret['errors'], 'warnings' => $ret['warnings']];
 					}
 				],
 				'delete' => [
@@ -192,7 +192,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						[
 							'name' => 'identifier',
 							'type' => Type::string(),
-							'description' => _t('Alphanumeric idno value of numeric database id of record to delete.')
+							'description' => _t('Alphanumeric idno value or numeric database id of record to delete.')
 						]
 					],
 					'resolve' => function ($rootValue, $args) {
@@ -219,7 +219,279 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							}
 						}
 						
-						return ['table' => $table, 'id' => null, 'identifier' => null, 'errors' => $ret['errors'], 'warnings' => $ret['warnings']];
+						return ['table' => $table, 'id' => null, 'idno' => null, 'errors' => $ret['errors'], 'warnings' => $ret['warnings']];
+					}
+				],
+				//
+				// Relationships
+				//
+				'addRelationship' => [
+					'type' => EditSchema::get('EditResult'),
+					'description' => _t('Add a relationship between two records'),
+					'args' => [
+						[
+							'name' => 'jwt',
+							'type' => Type::string(),
+							'description' => _t('JWT'),
+							'defaultValue' => self::getBearerToken()
+						],
+						[
+							'name' => 'subject',
+							'type' => Type::string(),
+							'description' => _t('Subject table name. (Eg. ca_objects)')
+						],
+						[
+							'name' => 'subjectIdentifier',
+							'type' => Type::string(),
+							'description' => _t('Alphanumeric idno value or numeric database id of record to use as relationship subject.')
+						],
+						[
+							'name' => 'target',
+							'type' => Type::string(),
+							'description' => _t('Target table name. (Eg. ca_objects)')
+						],
+						[
+							'name' => 'targetIdentifier',
+							'type' => Type::string(),
+							'description' => _t('Alphanumeric idno value or numeric database id of record to use as relationship target.')
+						],
+						[
+							'name' => 'relationshipType',
+							'type' => Type::string(),
+							'description' => _t('Relationship type code.')
+						],
+						[
+							'name' => 'bundles',
+							'type' => Type::listOf(EditSchema::get('Bundle')),
+							'description' => _t('Bundles to add')
+						]
+					],
+					'resolve' => function ($rootValue, $args) {
+						$u = self::authenticate($args['jwt']);
+						
+						$errors = $warnings = [];
+						
+						$subject = $args['subject'];
+						$target = $args['target'];
+						
+						$reltype = $args['relationshipType'];
+						$bundles = caGetOption('bundles', $args, [], ['castTo' => 'array']);
+						
+						if(!($subject = self::resolveIdentifier($subject, $args['subjectIdentifier']))) {
+							throw new \ServiceException(_t('Invalid subject identifier'));
+						}
+						
+						// Check privs
+						if (!$subject->isSaveable($u)) {
+							throw new \ServiceException(_t('Cannot access subject'));
+						}
+						
+						// effective_date set?
+						$effective_date = \GraphQLServices\Helpers\Edit\extractValueFromBundles($bundles, ['effective_date']);
+						
+						if(!($rel = $subject->addRelationship($target, $args['targetIdentifier'], $reltype, $effective_date))) {
+							$errors[] = [
+								'code' => 100,	// TODO: real number?
+								'message' => _t('Could not create relationship: %1', join('; ', $subject->getErrors())),
+								'bundle' => 'GENERAL'
+							];
+						} elseif(sizeof($bundles) > 0) {
+							//  Add interstitial data
+							if (is_array($ret = self::processBundles($rel, $bundles))) {
+								$errors += $ret['errors'];
+								$warnings += $ret['warnings'];
+							}
+						}
+						
+						return ['table' => is_object($rel) ? $rel->tableName() : null, 'id' => is_object($rel) ?  $rel->getPrimaryKey() : null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings];
+					}
+				],
+				'editRelationship' => [
+					'type' => EditSchema::get('EditResult'),
+					'description' => _t('Edit a relationship between two records'),
+					'args' => [
+						[
+							'name' => 'jwt',
+							'type' => Type::string(),
+							'description' => _t('JWT'),
+							'defaultValue' => self::getBearerToken()
+						],
+						[
+							'name' => 'id',
+							'type' => Type::int(),
+							'defaultValue' => null,
+							'description' => _t('Relationship id')
+						],
+						[
+							'name' => 'subject',
+							'type' => Type::string(),
+							'description' => _t('Subject table name. (Eg. ca_objects)')
+						],
+						[
+							'name' => 'subjectIdentifier',
+							'type' => Type::string(),
+							'description' => _t('Alphanumeric idno value or numeric database id of record to use as relationship subject.')
+						],
+						[
+							'name' => 'target',
+							'type' => Type::string(),
+							'description' => _t('Target table name. (Eg. ca_objects)')
+						],
+						[
+							'name' => 'targetIdentifier',
+							'type' => Type::string(),
+							'description' => _t('Alphanumeric idno value or numeric database id of record to use as relationship target.')
+						],
+						[
+							'name' => 'relationshipType',
+							'type' => Type::string(),
+							'description' => _t('Relationship type code.')
+						],
+						[
+							'name' => 'bundles',
+							'type' => Type::listOf(EditSchema::get('Bundle')),
+							'description' => _t('Bundles to edit')
+						]
+					],
+					'resolve' => function ($rootValue, $args) {
+						$u = self::authenticate($args['jwt']);
+						
+						$errors = $warnings = [];
+						
+						$s = $t = null;				
+						$subject = $args['subject'];
+						$target = $args['target'];
+						$target_identifier = $args['targetIdentifier'];
+						$rel_type = $args['relationshipType'];
+						$bundles = caGetOption('bundles', $args, [], ['castTo' => 'array']);
+						
+						// effective_date set?
+						$effective_date = \GraphQLServices\Helpers\Edit\extractValueFromBundles($bundles, ['effective_date']);
+						
+						// rel type set?
+						$new_rel_type = \GraphQLServices\Helpers\Edit\extractValueFromBundles($bundles, ['relationship_type']);
+						
+						if(!($s = self::resolveIdentifier($subject, $args['subjectIdentifier']))) {
+							throw new \ServiceException(_t('Subject does not exist'));
+						}
+						if (!$s->isSaveable($u)) {
+							throw new \ServiceException(_t('Subject is not accessible'));
+						}
+						
+						if(!($rel_id = $args['id'])) {		
+							if(!($t = self::resolveIdentifier($target, $args['targetIdentifier']))) {
+								throw new \ServiceException(_t('Target does not exist'));
+							}
+							
+							if ($rel = \GraphQLServices\Helpers\Edit\getRelationship($u, $s, $t, $rel_type)) {
+								$rel_id = $rel->getPrimaryKey();
+							}
+						} 
+						if(!$rel_id) {
+							throw new \ServiceException(_t('Relationship does not exist'));
+						}
+						
+						if(!($rel = $s->editRelationship($target, $rel_id, $target_identifier, $new_rel_type, $effective_date))) {
+							$errors[] = [
+								'code' => 100,	// TODO: real number?
+								'message' => _t('Could not edit relationship: %1', join('; ', $s->getErrors())),
+								'bundle' => 'GENERAL'
+							];		
+						} elseif(sizeof($bundles) > 0) {
+							//  Edit interstitial data
+							if (is_array($ret = self::processBundles($rel, $bundles))) {
+								$errors += $ret['errors'];
+								$warnings += $ret['warnings'];
+							}
+						}
+						
+						return ['table' => is_object($rel) ? $rel->tableName() : null, 'id' => is_object($rel) ?  $rel->getPrimaryKey() : null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings];
+					}
+				],
+				'deleteRelationship' => [
+					'type' => EditSchema::get('EditResult'),
+					'description' => _t('Delete relationship'),
+					'args' => [
+						[
+							'name' => 'jwt',
+							'type' => Type::string(),
+							'description' => _t('JWT'),
+							'defaultValue' => self::getBearerToken()
+						],
+						[
+							'name' => 'id',
+							'type' => Type::int(),
+							'defaultValue' => null,
+							'description' => _t('Relationship id')
+						],
+						[
+							'name' => 'subject',
+							'type' => Type::string(),
+							'description' => _t('Subject table name. (Eg. ca_objects)')
+						],
+						[
+							'name' => 'subjectIdentifier',
+							'type' => Type::string(),
+							'description' => _t('Alphanumeric idno value or numeric database id of record to use as relationship subject.')
+						],
+						[
+							'name' => 'target',
+							'type' => Type::string(),
+							'description' => _t('Target table name. (Eg. ca_objects)')
+						],
+						[
+							'name' => 'targetIdentifier',
+							'type' => Type::string(),
+							'description' => _t('Alphanumeric idno value or numeric database id of record to use as relationship target.')
+						],
+						[
+							'name' => 'relationshipType',
+							'type' => Type::string(),
+							'description' => _t('Relationship type code.')
+						]
+					],
+					'resolve' => function ($rootValue, $args) {
+						$u = self::authenticate($args['jwt']);
+						
+						$errors = $warnings = [];
+						
+						$rel_type = $s = $t = null;				
+						$subject = $args['subject'];
+						$target = $args['target'];
+						
+						
+						if(!($s = self::resolveIdentifier($subject, $args['subjectIdentifier']))) {
+							throw new \ServiceException(_t('Invalid subject identifier'));
+						}
+						if (!$s->isSaveable($u)) {
+							throw new \ServiceException(_t('Subject is not accessible'));
+						}
+						
+						if(!($rel_id = $args['id'])) {		
+							$rel_type = $args['relationshipType'];
+							
+							if(!($t = self::resolveIdentifier($target, $args['targetIdentifier']))) {
+								throw new \ServiceException(_t('Invalid target identifier'));
+							}
+							
+							if($rel = \GraphQLServices\Helpers\Edit\getRelationship($u, $s, $t, $rel_type)) {
+								$rel_id = $rel->getPrimaryKey();
+							}
+						} 
+						
+						if (!$rel_id) {
+							throw new \ServiceException(_t('Relationship does not exist'));
+						}
+						
+						if(!$s->removeRelationship($target, $rel_id)) {							
+							$errors[] = [
+								'code' => 100,	// TODO: real number?
+								'message' => _t('Could not delete relationship: %1', join('; ', $s->getErrors())),
+								'bundle' => 'GENERAL'
+							];
+						}
+						
+						return ['table' => is_object($s) ? $s->tableName() : null, 'id' => is_object($s) ?  $s->getPrimaryKey() : null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings];
 					}
 				]
 			]
@@ -238,8 +510,17 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 		foreach($bundles as $b) {
 			$id = $b['id'] ?? null;
 			$delete = isset($b['delete']) ? (bool)$b['delete'] : false;
+			$replace = isset($b['replace']) ? (bool)$b['replace'] : false;
+			$bundle_name = $b['name'];
 			
-			switch($bundle_name = $b['name']) {
+			if(!strlen($bundle_name)) { continue; }
+			
+			switch($bundle_name) {
+				# -----------------------------------
+				case 'effective_date':
+				case 'relationship_type':
+					// noop - handled by services
+					break;
 				# -----------------------------------
 				case 'preferred_labels':
 				case 'nonpreferred_labels':
@@ -254,17 +535,25 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 					} elseif(isset($b['value'])) {
 						$label_values[$label_instance->getDisplayField()] = $b['value'];
 					}
-					$locale = caGetOption('locale', $b, ca_locales::getDefaultCataloguingLocaleID());
+					$locale = caGetOption('locale', $b, ca_locales::getDefaultCataloguingLocale());
+					$locale_id = caGetOption('locale', $b, ca_locales::codeToID($locale));
+					
+					$type_id = caGetOption('type_id', $b, null);
 					
 					if(!$delete && $id) {
 						// Edit
-						$rc = $instance->editLabel($id, $label_values, ca_locales::codeToID($locale), null, ($bundle_name === 'preferred_labels'));
+						$rc = $instance->editLabel($id, $label_values, $locale_id, $type_id, ($bundle_name === 'preferred_labels'));
+					} elseif($replace && !$id) {
+						$rc = $instance->replaceLabel($label_values, $locale_id, $type_id, ($bundle_name === 'preferred_labels'));
 					} elseif(!$delete && !$id) {
 						// Add
-						$rc = $instance->addLabel($label_values, ca_locales::codeToID($locale), null, ($bundle_name === 'preferred_labels'));
+						$rc = $instance->addLabel($label_values, $locale_id, $type_id, ($bundle_name === 'preferred_labels'));
 					} elseif($delete && $id) {
 						// Delete
 						$rc = $instance->removeLabel($id);
+					} elseif($delete && !$id) {
+						// Delete all
+						$rc = $instance->removeAllLabels(($bundle_name === 'preferred_labels') ? __CA_LABEL_TYPE_PREFERRED__ : __CA_LABEL_TYPE_NONPREFERRED__);
 					} else {
 						// invalid operation
 						$warnings[] = warning($bundle_name, _t('Invalid operation %1 on %2', ($delete ? _t('delete') : $id ? 'edit' : 'add')));	
@@ -293,12 +582,19 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						} elseif(isset($b['value'])) {
 							$attr_values[$bundle_name] = $b['value'];
 						}
-						$locale = caGetOption('locale', $b, ca_locales::getDefaultCataloguingLocaleID());
-						$attr_values['locale_id'] = $locale;
+						
+						$locale = caGetOption('locale', $b, ca_locales::getDefaultCataloguingLocale());
+						$locale_id = caGetOption('locale', $b, ca_locales::codeToID($locale));
+						
+						$attr_values['locale_id'] = $locale_id;
 				
 						if(!$delete && $id) {
 							// Edit
 							if($rc = $instance->editAttribute($id, $bundle_name, $attr_values)) {
+								$rc = $instance->update();
+							}
+						} elseif($replace && !$id) {
+							if($rc = $instance->replaceAttribute($attr_values, $bundle_name)) {
 								$rc = $instance->update();
 							}
 						} elseif(!$delete && !$id) {
@@ -309,6 +605,11 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						} elseif($delete && $id) {
 							// Delete
 							if($rc = $instance->removeAttribute($id)) {
+								$rc = $instance->update();
+							}
+						} elseif($delete && !$id) {
+							// Delete all
+							if($rc = $instance->removeAttributes($bundle_name)) {
 								$rc = $instance->update();
 							}
 						} else {
