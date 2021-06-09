@@ -360,7 +360,7 @@ class Session {
 			'nbf' => $t,
 			'exp' => ($exp_offset > 0) ? $t + $exp_offset : null
 		], $data);
-		return JWT::encode($payload, $key);
+		return JWT::encode($payload, $key, 'HS256');
 	}
 	# ----------------------------------------
 	/**
