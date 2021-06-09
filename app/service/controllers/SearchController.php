@@ -27,6 +27,7 @@
  */
 require_once(__CA_LIB_DIR__.'/Service/GraphQLServiceController.php');
 require_once(__CA_APP_DIR__.'/service/schemas/SearchSchema.php');
+require_once(__CA_APP_DIR__.'/service/helpers/SearchHelpers.php');
 
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
@@ -151,28 +152,69 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 							'type' => Type::string(),
 							'description' => _t('JWT'),
 							'defaultValue' => self::getBearerToken()
-						]
+						],
+						[
+							'name' => 'table',
+							'type' => Type::string(),
+							'description' => _t('Table to search')
+						],
+						[
+							'name' => 'criteria',
+							'type' => Type::listOf(SearchSchema::get('Criterion')),
+							'description' => _t('Search criteria')
+						],
+						[
+							'name' => 'bundles',
+							'type' => Type::listOf(Type::string()),
+							'description' => _t('Bundles to return')
+						],
+						[
+							'name' => 'start',
+							'type' => Type::int(),
+							'description' => _t('Start index'),
+							'defaultValue' => 0
+						],
+						[
+							'name' => 'limit',
+							'type' => Type::int(),
+							'description' => _t('Maximum number of records to return'),
+							'defaultValue' => null
+						],
+						[
+							'name' => 'restrictToTypes',
+							'type' => Type::listOf(Type::string()),
+							'description' => _t('Type restrictions')
+						],
 					],
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
+						$table = trim($args['table']);
 						
 						$tables = caFilterTableList(['ca_objects', 'ca_collections', 'ca_entities', 'ca_occurrences', 'ca_places', 'ca_list_items', 'ca_storage_locations', 'ca_loans', 'ca_object_lots', 'ca_movements', 'ca_object_representations']);
 						
-						$ret = array_map(function($v) {
-							$t = Datamodel::getInstance($v, true);
-							return [
-								'name' => $t->getProperty('NAME_PLURAL'),
-								'code' => $v,
-								'types' => array_map(function($x) {
-									return [
-										'name' => $x['name_plural'],
-										'code' => $x['idno']
-									];
-								}, $t->getTypeList())
-							];
-						}, $tables);
+						if(!in_array($table, $tables, true)) { 
+							throw new \ServiceException(_t('Invalid table: %1', $table));
+						}
 						
-						return ['tables' => $ret];
+						// Check user privs
+						// TODO: add GraphQL-specific access check?
+						if(!$u->canDoAction("can_search_{$table}")) {
+							throw new \ServiceException(_t('Access denied for table: %1', $table));
+						}
+						
+						if($args['restrictToTypes'] && !is_array($args['restrictToTypes'])) {
+							$args['restrictToTypes'] = [$args['restrictToTypes']];
+						}
+						
+						$qr = $table::find($z=\GraphQLServices\Helpers\Search\convertCriteriaToFindSpec($args['criteria']), ['returnAs' => 'searchResult', 'allowWildcards' => true, 'restrictToTypes' => $args['restrictToTypes']]);
+					
+						$rec = \Datamodel::getInstance($table, true);
+						
+						$bundles = \GraphQLServices\Helpers\extractBundleNames($rec, $args, []);
+
+						$data = \GraphQLServices\Helpers\fetchDataForBundles($qr, $bundles, ['start' => $args['start'], 'limit' => $args['limit']]);
+						
+						return ['table' => $table, 'search' => $search, 'count' => sizeof($data), 'results' => $data];
 					}
 				]
 			]

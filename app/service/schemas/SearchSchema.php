@@ -32,6 +32,7 @@ use GraphQL\Type\Schema;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
+use GraphQL\Type\Definition\EnumType;
 
 require_once(__CA_LIB_DIR__.'/Service/GraphQLSchema.php'); 
 require_once(__CA_APP_DIR__.'/service/helpers/ServiceHelpers.php');
@@ -66,6 +67,111 @@ class SearchSchema extends \GraphQLServices\GraphQLSchema {
 				]
 			]
 		]);
+		
+		$schema[] = $bundleSearchOperatorType = new EnumType([
+			'name' => 'BundleSearchOperator',
+			'description' => 'Search operators',
+			'values' => [
+				'LT' => [
+					'value' => '<',
+					'description' => 'Less than'
+				],
+				'LTE' => [
+					'value' => '<=',
+					'description' => 'Less than or equal'
+				],
+				'GT' => [
+					'value' => '>',
+					'description' => 'Greater than'
+				],
+				'GTE' => [
+					'value' => '>=',
+					'description' => 'Greater than or equal'
+				],
+				'EQ' => [
+					'value' => '=',
+					'description' => 'Equal'
+				],
+				'LIKE' => [
+					'value' => 'LIKE',
+					'description' => 'LIKE wildcard expression'
+				],
+				'IN' => [
+					'value' => 'IN',
+					'description' => 'IN list'
+				],
+				'NOT_IN' => [
+					'value' => 'NOT IN',
+					'description' => 'NOT IN list'
+				],
+				'BETWEEN' => [
+					'value' => 'BETWEEN',
+					'description' => 'BETWEEN values in list'
+				]
+			]
+		]);
+		
+		$schema[] = $bundleSearchValueType = new InputObjectType([
+			'name' => 'BundleSearchValue',
+			'description' => '.',
+			'fields' => [
+				'name' => [
+					'type' => Type::string(),
+					'description' => 'Name of bundle value'
+				],
+				'operator' => [
+					'type' => $bundleSearchOperatorType,
+					'description' => 'Search operator',
+					'defaultValue' => '='
+				],
+				'value' => [
+					'type' => Type::string(),
+					'description' => 'Search value'
+				],
+				'valueList' => [
+					'type' => Type::listOf(Type::string()),
+					'description' => 'List of search values'
+				]
+			]
+		]);
+		
+		$schema[] = $criterionType = new InputObjectType([
+			'name' => 'Criterion',
+			'description' => 'Search criterion',
+			'fields' => [
+				'name' => [
+					'type' => Type::string(),
+					'description' => 'Bundle to search'
+				],
+				'operator' => [
+					'type' => $bundleSearchOperatorType,
+					'description' => 'Search operator',
+					'defaultValue' => '='
+				],
+				'value' => [
+					'type' => Type::string(),
+					'description' => 'Value to search for'
+				],
+				'valueList' => [
+					'type' => Type::listOf(Type::string()),
+					'description' => 'List of search values'
+				],
+				'values' => [
+					'type' => Type::listOf($bundleSearchValueType),
+					'description' => 'Container sub-values'
+				]
+			]
+		]);
+		//{name: "idno", value: "test.1"}
+		//["date" => ["=", "6/1954"], "valuation" => [">", "€200"], "description" => ["LIKE", "%Suez Canal%"]]
+		// {name: "description", operator: "=", value: "foo"}
+// 		
+// 		{name: "address", operator: "=", values: [
+// 			{name: "city", operator: "=", value: "Brooklyn"},
+// 			{name: "zipcode", operator: "IN", value: ["11224", "11212"]}
+// 		]}
+// 		
+// 		{name: "description", operator: "IN", valueList: ["foo", "arf", "meow"]}
 		
 		return $schema;
 	}
