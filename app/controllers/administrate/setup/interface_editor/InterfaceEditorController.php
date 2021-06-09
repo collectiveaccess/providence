@@ -28,6 +28,7 @@
  
  	require_once(__CA_MODELS_DIR__."/ca_editor_uis.php"); 
  	require_once(__CA_MODELS_DIR__."/ca_editor_ui_screens.php");
+ 	require_once(__CA_MODELS_DIR__."/ca_bundle_displays.php");
  	require_once(__CA_LIB_DIR__."/BaseEditorController.php");
  	
  
