@@ -2036,13 +2036,17 @@ class SearchResult extends BaseObject {
 		
 		
 		// Set subfield to display field if not specified and *NOT* returning as array
+		$display_field_is_assumed = false;
 		if ($vb_assume_display_field && !$va_path_components['subfield_name']) { 
 			$va_path_components['components'][2] = $va_path_components['subfield_name'] = $pt_instance->getLabelDisplayField(); 
 			$va_path_components['num_components'] = sizeof($va_path_components['components']);
+			$display_field_is_assumed = true;
 		}
 		
 		$vs_table_name = $pt_instance->tableName();
 		$vs_pk = $pt_instance->primaryKey();
+		
+		$label_instance = $pt_instance->getLabelTableInstance();
 		
 		$va_return_values = array();
 		if (is_array($pa_value_list)) {
@@ -2074,10 +2078,10 @@ class SearchResult extends BaseObject {
 					
 					switch($pa_options['output']) {
 						case 'text':
-							$vs_val_proc = $this->_convertCodeToDisplayText($vs_val_proc, $va_path_components, $pt_instance->getLabelTableInstance(), $pa_options);
+							$vs_val_proc = $this->_convertCodeToDisplayText($vs_val_proc, $va_path_components, $label_instance, $pa_options);
 							break;
 						case 'idno':
-							$vs_val_proc = $this->_convertCodeToIdno($vs_val_proc, $va_path_components, $pt_instance->getLabelTableInstance(), $pa_options);
+							$vs_val_proc = $this->_convertCodeToIdno($vs_val_proc, $va_path_components, $label_instance, $pa_options);
 							break;
 					}
 					
@@ -2086,19 +2090,20 @@ class SearchResult extends BaseObject {
 					}
 					
 					if ($pa_options['returnWithStructure']) {
-						if (!$va_path_components['subfield_name'] && isset($va_label['type_id'])) {
+						if ((!$va_path_components['subfield_name'] || $display_field_is_assumed) && isset($va_label['type_id'])) {
 							$va_mod_path_components = array_merge($va_path_components, ['subfield_name' => 'type_id', 'num_components' => 3]);
 							$va_mod_path_components['components'][2] = 'type_id';
 							switch($pa_options['output']) {
 								case 'text':
-									$va_label['type_id'] = $this->_convertCodeToDisplayText($va_label['type_id'], $va_mod_path_components, $pt_instance->getLabelTableInstance(), $pa_options);
+									$va_label['type_id'] = $this->_convertCodeToDisplayText($va_label['type_id'], $va_mod_path_components, $label_instance, $pa_options);
 									break;
+								default:
 								case 'idno':
-									$va_label['type_id'] = $this->_convertCodeToIdno($va_label['type_id'], $va_mod_path_components, $pt_instance->getLabelTableInstance(), $pa_options);
+									$va_label['type_id'] = $this->_convertCodeToIdno($va_label['type_id'], $va_mod_path_components, $label_instance, $pa_options);
 									break;
 							}
 						}
-						$va_return_values[$vn_id][$vm_locale_id][$va_label['label_id']] = $va_path_components['subfield_name'] ? array($va_path_components['subfield_name'] => $vs_val_proc) : $va_label;
+						$va_return_values[$vn_id][$vm_locale_id][$va_label['label_id']] = $va_path_components['subfield_name'] && !$display_field_is_assumed ? array($va_path_components['subfield_name'] => $vs_val_proc) : $va_label;
 					} else {
 						$va_return_values[$vn_id][$vm_locale_id][$va_label['label_id']] = $va_path_components['subfield_name'] ? $vs_val_proc : $va_label;
 					}
@@ -2685,7 +2690,7 @@ class SearchResult extends BaseObject {
 								}
 							}
 						
-							if(!$pa_options['returnAsArray']) {
+							if(!$pa_options['returnAsArray'] && is_array($d)) {
 								$d = join("; ", $d);
 							}
 						}

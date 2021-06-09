@@ -162,6 +162,7 @@
 1972 = Can't delete attribute
 1980 = Can't add element to restriction list
 1981 = Can't remove element from restriction list
+1985 = Value already exists
 
 # --- Hierarchical processing errors
 2010 = Circular reference

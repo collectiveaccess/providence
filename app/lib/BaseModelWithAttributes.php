@@ -103,7 +103,6 @@
 		 * @return bool True on success, false on error or null if attribute was skipped.
 		 */
 		public function addAttribute($pa_values, $pm_element_code_or_id, $ps_error_source=null, $pa_options=null) {
-			require_once(__CA_APP_DIR__.'/models/ca_metadata_elements.php');
 			if(!is_array($pa_options)) { $pa_options = []; }
 			if (!($t_element = ca_metadata_elements::getInstance($pm_element_code_or_id))) { return false; }
 			if ($t_element->get('parent_id') > 0) { return false; }
@@ -145,10 +144,28 @@
 				}	// # attributes is at upper limit
 			}
 			
+			$element_info = ca_metadata_elements::getElementSettingsForId($pm_element_code_or_id);
 			if (caGetOption('skipExistingValues', $pa_options, false) || !caGetOption('allowDuplicateValues', $element_info, false)) {
-				 // filter out any values that already exist on this row
+				// filter out any values that already exist on this row or duplicate a value queued for addition
+				 
+				// queued values 
+				foreach(($this->opa_attributes_to_add + $this->opa_attributes_to_edit) as $a) {
+					foreach($pa_values as $k => $v) {
+						if(!array_key_exists($k, $a['values']) || ($a['values'][$k] !== $v)) {
+							continue(2);
+						}
+					}
+					// is dupe
+					if (caGetOption('raiseErrorOnDuplicateValue', $element_info, false)) {
+						$this->postError(1985, _t('Value already exists'), 'BaseModelWithAttributes->addAttribute()', $ps_error_source);
+					}
+					return null;
+				}
+				 
+				// existing values
 			    if(is_array($va_attrs = $this->getAttributesByElement($pm_element_code_or_id))) {
 			        $vb_already_exists = false;
+			        $vals = [];
 			        foreach($va_attrs as $o_attr) {
 			            foreach($o_attr->getValues() as $o_value) {
 			                $vn_element_id = $o_value->getElementID();
@@ -159,6 +176,7 @@
 			                }
 			                
 			                $pv = $o_value->getDisplayValue(['dateFormat' => 'original']); // need to compare dates as-entered
+			                $vals[] = $o_value->getDisplayValue(['output' => 'text', 'dateFormat' => 'original']);
 			                if (
 			                	(strlen($pa_values[$vn_element_id] && ($pa_values[$vn_element_id] != $pv)))
 			            		||
@@ -171,6 +189,9 @@
 			            break;
 			        }
 			        if ($vb_already_exists) {
+			        	if (caGetOption('raiseErrorOnDuplicateValue', $element_info, false)) {
+							$this->postError(1985, _t('Value <code>%1</code> already exists', join('/', array_filter($vals, 'strlen'))), 'BaseModelWithAttributes->addAttribute()', $ps_error_source.'/'.$o_attr->getAttributeID());
+						}
 			            return null;
 			        }
 			    }
@@ -209,10 +230,13 @@
 		public function editAttribute($pn_attribute_id, $pm_element_code_or_id, $pa_values, $ps_error_source=null, $pa_options=null) {
 			$t_attr = new ca_attributes($pn_attribute_id);
 			$t_attr->purify($this->purify());
+			if (!($t_element = ca_metadata_elements::getInstance($pm_element_code_or_id))) { return false; }
 			if (!$t_attr->getPrimaryKey()) { return false; }
 			$vn_attr_element_id = $t_attr->get('element_id');
 			
 			$element_info = ca_metadata_elements::getElementSettingsForId($pm_element_code_or_id);
+			
+			if (!$ps_error_source) { $ps_error_source = $this->tableName().'.'.$t_element->get('element_code'); }
 			
 			$va_attr_values = $t_attr->getAttributeValues();
 			$element = null;
@@ -222,17 +246,34 @@
 			if(array_key_exists('locale_id', $pa_values)) { $num_values--; }
 			
 			if (caGetOption('skipExistingValues', $pa_options, false) || !caGetOption('allowDuplicateValues', $element_info, false)) {
-			    // filter out any values that already exist on this row
+			    // filter out any values that already exist on this row or match a value already queued for change
+			    
+			    // queued values 
+				foreach(($this->opa_attributes_to_add + $this->opa_attributes_to_edit) as $a) {
+					foreach($pa_values as $k => $v) {
+						if(!array_key_exists($k, $a['values']) || ($a['values'][$k] !== $v)) {
+							continue(2);
+						}
+					}
+					// is dupe
+					if (caGetOption('raiseErrorOnDuplicateValue', $element_info, false)) {
+						$this->postError(1985, _t('Value already exists'), 'BaseModelWithAttributes->editAttribute()', $ps_error_source.'/'.$pn_attribute_id);
+					}
+					return null;
+				}
+				 
+			    // existing values
 			    if(is_array($va_attrs = $this->getAttributesByElement($pm_element_code_or_id))) {
 			        $vb_already_exists = false;
-			        
+			        $vals = [];
 			        foreach($va_attrs as $o_attr) {
 			            if ($o_attr->getAttributeID() == $pn_attribute_id) { continue; }
 			            foreach($o_attr->getValues() as $o_value) {
 			                $vn_element_id = $o_value->getElementID();
 			                $vs_element_code = ca_metadata_elements::getElementCodeForId($vn_element_id);
 			                
-			                $pv = $o_value->getDisplayValue();
+			                $pv = $o_value->getDisplayValue(['dateFormat' => 'original']);
+			                $vals[] = $o_value->getDisplayValue(['output' => 'text', 'dateFormat' => 'original']);
 			                if (
 			                	(
 			                		array_key_exists($vn_element_id, $pa_values)
@@ -253,6 +294,9 @@
 			            break;
 			        }
 			        if ($vb_already_exists) {
+			        	if (caGetOption('raiseErrorOnDuplicateValue', $element_info, false)) {
+							$this->postError(1985, _t('Value <code>%1</code> already exists', join('/', array_filter($vals, 'strlen'))), 'BaseModelWithAttributes->editAttribute()', $ps_error_source.'/'.$pn_attribute_id);
+						}
 			            return null;
 			        }
 			    }
@@ -341,6 +385,8 @@
 					'options' => $pa_options
 				);
 			}
+			
+			return true;
 		}
 		# ------------------------------------------------------------------
 		// edit attribute from current row
@@ -580,7 +626,7 @@
 		# ------------------------------------------------------------------
 		public function load($pm_id=null, $pb_use_cache=true) {
 			$this->init();
-			$this->setFieldValuesArray(array());
+			$this->setFieldValuesArray([]);
 			if ($vn_c = parent::load($pm_id, $pb_use_cache)) {
 				// Copy attributes into field values array in BaseModel
 				//$this->setFieldValuesArray($this->addAttributesToFieldValuesArray());
@@ -783,46 +829,49 @@
 		/**
 		 *
 		 */
-		public function getValuesForExport($pa_options=null) {
-			$va_codes = $this->getApplicableElementCodes();
+		public function getValuesForExport($options=null) {
+			$va_data = parent::getValuesForExport($options);		// get intrinsics
 			
-			$va_data = parent::getValuesForExport($pa_options);		// get intrinsics
+			if(caGetOption('includeAttributes', $options, true)) {
+				$va_codes = $this->getApplicableElementCodes();
 			
-			$t_locale = new ca_locales();
-			$t_list = new ca_lists();
 			
-			// get attributes
-			foreach($va_codes as $vs_code) {
-				if ($va_v = $this->get($this->tableName().'.'.$vs_code, array('returnWithStructure' => true, 'returnAllLocales' => true, 'returnAsArray' => true, 'return' => 'url', 'version' => 'original'))) {
-					foreach($va_v as $vn_id => $va_v_by_locale) {
-						foreach($va_v_by_locale as $vn_locale_id => $va_v_list) {
-							if(!is_array($va_v_list)) { continue; }
+				$t_locale = new ca_locales();
+				$t_list = new ca_lists();
+			
+				// get attributes
+				foreach($va_codes as $vs_code) {
+					if ($va_v = $this->get($this->tableName().'.'.$vs_code, array('returnWithStructure' => true, 'returnAllLocales' => true, 'returnAsArray' => true, 'return' => 'url', 'version' => 'original'))) {
+						foreach($va_v as $vn_id => $va_v_by_locale) {
+							foreach($va_v_by_locale as $vn_locale_id => $va_v_list) {
+								if(!is_array($va_v_list)) { continue; }
 							
-							if (!($vs_locale = $t_locale->localeIDToCode($vn_locale_id))) {
-								$vs_locale = 'NONE';
-							}
-							$vn_i = 0;
-							foreach($va_v_list as $vn_index => $va_values) {	
-								if (is_array($va_values)) {
-									foreach($va_values as $vs_sub_code => $vs_value) {
-										if(!$vs_sub_code) { continue; }
-										if (!$t_element = ca_metadata_elements::getInstance($vs_sub_code)) { continue; }
-										
-										switch((int)$t_element->get('datatype')) {
-											case 3:		// list
-												$va_list_item = $t_list->getItemFromListByItemID($t_element->get('list_id'), $vs_value);
-												$vs_value = $vs_value.":".$va_list_item['idno'];
-												break;
-										}
-										$va_data['ca_attribute_'.$vs_code][$vs_locale]['value_'.$vn_i][$vs_sub_code] = $vs_value;
-									}
-									$vn_i++;
-															
-								} else {
-									$va_data['ca_attribute_'.$vs_code][$vs_locale]['value_'.$vn_i][$vs_code] = $va_values;
+								if (!($vs_locale = $t_locale->localeIDToCode($vn_locale_id))) {
+									$vs_locale = 'NONE';
 								}
-							}
-						}	
+								$vn_i = 0;
+								foreach($va_v_list as $vn_index => $va_values) {	
+									if (is_array($va_values)) {
+										foreach($va_values as $vs_sub_code => $vs_value) {
+											if(!$vs_sub_code) { continue; }
+											if (!$t_element = ca_metadata_elements::getInstance($vs_sub_code)) { continue; }
+										
+											switch((int)$t_element->get('datatype')) {
+												case 3:		// list
+													$va_list_item = $t_list->getItemFromListByItemID($t_element->get('list_id'), $vs_value);
+													$vs_value = $vs_value.":".$va_list_item['idno'];
+													break;
+											}
+											$va_data['ca_attribute_'.$vs_code][$vs_locale]['value_'.$vn_i][$vs_sub_code] = $vs_value;
+										}
+										$vn_i++;
+															
+									} else {
+										$va_data['ca_attribute_'.$vs_code][$vs_locale]['value_'.$vn_i][$vs_code] = $va_values;
+									}
+								}
+							}	
+						}
 					}
 				}
 			}
@@ -907,7 +956,7 @@
 			$t_instance = $this;
 			if ((sizeof($va_tmp) >= 2) && (!$this->hasField($va_tmp[2]))) {
 				if (($va_tmp[1] == 'parent') && ($this->isHierarchical()) && ($vn_parent_id = $this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD')))) {
-					$t_instance = Datamodel::getInstanceByTableNum($this->tableNum());
+					$t_instance = Datamodel::getInstanceByTableNum($this->tableNum(), true);
 					if (!$t_instance->load($vn_parent_id)) {
 						$t_instance = $this;
 					} else {
@@ -923,7 +972,7 @@
 						$va_data = array();
 						$va_children_ids = $this->getHierarchyChildren(null, array('idsOnly' => true));
 						
-						$t_instance = Datamodel::getInstanceByTableNum($this->tableNum());
+						$t_instance = Datamodel::getInstanceByTableNum($this->tableNum(), true);
 						
 						foreach($va_children_ids as $vn_child_id) {
 							if ($t_instance->load($vn_child_id)) {
@@ -1296,8 +1345,15 @@
 		 * @return string - idno (aka "item code") for current row's type or null if no row is loaded or model does not support types
 		 */
 		public function getTypeCode($pn_type_id=null) {
+			if (!$pn_type_id) { $pn_type_id = $this->get($this->ATTRIBUTE_TYPE_ID_FLD); }
+			if (!$pn_type_id) { return null; }
+			if (MemoryCache::contains($pn_type_id, 'baseModelTypeCodes')) {
+				return MemoryCache::fetch($pn_type_id, 'baseModelTypeCodes');
+			}
 			if ($t_list_item = $this->getTypeInstance($pn_type_id)) {
-				return $t_list_item->get('idno');
+				$v = $t_list_item->get('idno');
+				MemoryCache::save($pn_type_id, $v, 'baseModelTypeCodes');
+				return $v;
 			}
 			return null;
 		}
@@ -1371,14 +1427,26 @@
 		 * @return array List of types
 		 */ 
 		public function getTypeList($pa_options=null) {
-			$t_list = new ca_lists();
+			$ids_only = $pa_options['idsOnly'];
 			if (isset($pa_options['childrenOfCurrentTypeOnly']) && $pa_options['childrenOfCurrentTypeOnly']) {
 				$pa_options['item_id'] = $this->get('type_id');
 			}
+			$type_list_code = $this->getTypeListCode();
+			$key = caMakeCacheKeyFromOptions($pa_options, $type_list_code);
 			
-			$va_list = $t_list->getItemsForList($this->getTypeListCode(), $pa_options);
-			if (caGetOption('idsOnly', $pa_options, false)) { return $va_list; }
-			return is_array($va_list) ? caExtractValuesByUserLocale($va_list): array();
+			if (CompositeCache::contains($key, 'typeListCodes')) {
+				return CompositeCache::fetch($key, 'typeListCodes');
+			}
+			$t_list = new ca_lists();
+			
+			$va_list = $t_list->getItemsForList($type_list_code, $pa_options);
+			if ($ids_only) { 
+				CompositeCache::save($key, $va_list, 'typeListCodes');
+				return $va_list; 
+			}
+			$va_list = is_array($va_list) ? caExtractValuesByUserLocale($va_list) : [];
+			CompositeCache::save($key, $va_list, 'typeListCodes');
+			return $va_list;
 		}
 		# ------------------------------------------------------------------
 		/**
@@ -1391,8 +1459,11 @@
 			} else {
 				if (!($vn_type_id = $this->get($this->ATTRIBUTE_TYPE_ID_FLD))) { return null; }
 			}
+			if (MemoryCache::contains($vn_type_id, 'baseModelTypeInstances')) {
+				return MemoryCache::fetch($vn_type_id, 'baseModelTypeInstances');
+			}
 			
-			$t_list_item = new ca_list_items($vn_type_id);
+			MemoryCache::save($vn_type_id, $t_list_item = new ca_list_items($vn_type_id), 'baseModelTypeInstances');
 			return ($t_list_item->getPrimaryKey()) ? $t_list_item : null;
 		}
 		# ------------------------------------------------------------------
@@ -1825,7 +1896,7 @@
 			$o_view->setVar('request', $po_request);
 			$o_view->setVar('id_prefix', $ps_form_name.'_attribute_'.$t_element->get('element_id'));
 			$o_view->setVar('elements', $va_elements_by_container);
-			$o_view->setVar('error_source_code', 'ca_attribute_'.$t_element->get('element_code'));
+			$o_view->setVar('error_source_code', $this->tableName().'.'.$t_element->get('element_code'));
 			$o_view->setVar('element_ids', $va_element_ids);
 			$o_view->setVar('element_info', $va_element_info);
 			$o_view->setVar('element_set_label', $this->getAttributeLabel($t_element->get('element_id')));
@@ -1956,6 +2027,10 @@
 				
 				if (caGetOption('forSimpleForm', $pa_options, false)) { 
 					unset($va_element_opts['nullOption']);
+					
+					if (!strlen($vm_values) && is_array($va_element['settings']) && isset($va_element['settings']['default_text'])) {
+						$vm_values = $va_element['settings']['default_text'];
+					}
 				}
 				
 				// We don't want to pass the entire set of values to ca_attributes::attributeHtmlFormElement() since it'll treat it as a simple list

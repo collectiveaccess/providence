@@ -357,10 +357,11 @@ class BaseEditorController extends ActionController {
 			}
 		}
 		if(sizeof($va_errors) - sizeof($va_general_errors) > 0) {
-			$va_error_list = array();
+			$va_error_list = [];
 			$vb_no_save_error = false;
 			foreach($va_errors as $o_e) {
-				$va_error_list[$o_e->getErrorDescription()] = "<li>".$o_e->getErrorDescription()."</li>\n";
+				$bundle = array_shift(explode('/', $o_e->getErrorSource()));
+				$va_error_list[] = "<li><u>".$t_subject->getDisplayLabel($bundle).'</u>: '.$o_e->getErrorDescription()."</li>\n";
 
 				switch($o_e->getErrorNumber()) {
 					case 1100:	// duplicate/invalid idno
@@ -371,10 +372,10 @@ class BaseEditorController extends ActionController {
 				}
 			}
 			if ($vb_no_save_error) {
-				$this->notification->addNotification(_t("There are errors preventing <strong>ALL</strong> information from being saved. Correct the problems and click \"save\" again.\n<ul>").join("\n", $va_error_list)."</ul>", __NOTIFICATION_TYPE_ERROR__);
+				$this->notification->addNotification("<span class='heading'>"._t("There are errors preventing <strong>ALL</strong> information from being saved. Correct the problems and click \"save\" again:")."</span><ul class='errorList'>".join("\n", $va_error_list)."</span></ul>", __NOTIFICATION_TYPE_ERROR__);
 			} else {
 				$this->notification->addNotification($vs_message, __NOTIFICATION_TYPE_INFO__);
-				$this->notification->addNotification(_t("There are errors preventing information in specific fields from being saved as noted below.\n<ul>").join("\n", $va_error_list)."</ul>", __NOTIFICATION_TYPE_ERROR__);
+				$this->notification->addNotification("<span class='heading'>"._t("There are errors preventing information in specific fields from being saved:")."</span><ul class='errorList'>".join("\n", $va_error_list)."</ul>", __NOTIFICATION_TYPE_ERROR__);
 			}
 		} else {
 			$this->notification->addNotification($vs_message, __NOTIFICATION_TYPE_INFO__);
@@ -1948,9 +1949,6 @@ class BaseEditorController extends ActionController {
 	 */
 	public function GetMediaOverlay() {
 		list($vn_subject_id, $t_subject) = $this->_initView();
-		if(!$t_subject) { 
-			throw new ApplicationException(_t('Invalid id'));
-		}
 		if ($pn_value_id = $this->request->getParameter('value_id', pInteger)) {
 			//
 			// View FT_MEDIA attribute media 
@@ -1981,7 +1979,10 @@ class BaseEditorController extends ActionController {
 				"attribute:{$pn_value_id}", 
 				['context' => 'media_overlay', 't_instance' => $t_instance, 't_subject' => $t_subject, 'display' => $va_display_info])
 			);
-		} elseif ($pn_representation_id = $this->request->getParameter('representation_id', pInteger)) {		
+		} elseif ($pn_representation_id = $this->request->getParameter('representation_id', pInteger)) {				
+			if(!$t_subject) { 
+				throw new ApplicationException(_t('Invalid id'));
+			}	
 			if (!$t_subject->isReadable($this->request)) { 
 				throw new ApplicationException(_t('Cannot view media'));
 			}
@@ -2037,7 +2038,10 @@ class BaseEditorController extends ActionController {
 				"representation:{$pn_representation_id}", 
 				['context' => 'media_overlay', 't_instance' => $t_instance, 't_subject' => $t_subject, 't_media' => $t_media, 'display' => $va_display_info])
 			);
-		} elseif ($pn_media_id = $this->request->getParameter('media_id', pInteger)) {
+		} elseif ($pn_media_id = $this->request->getParameter('media_id', pInteger)) {			
+			if(!$t_subject) { 
+				throw new ApplicationException(_t('Invalid id'));
+			}
 		    //
 			// View site page media
 			//

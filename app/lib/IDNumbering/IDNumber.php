@@ -277,7 +277,7 @@ abstract class IDNumber implements IIDNumbering {
 				return false;
 			}
 			$format = $format;
-		} elseif(!($vs_format = $this->getFormat())) {
+		} elseif(!($format = $this->getFormat())) {
 			return false;
 		}
 		if ($type = mb_strtolower($type)) {

@@ -329,6 +329,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 				CompositeCache::delete($vs_cache_key, 'ElementList');
 			}
 		}
+		CompositeCache::flush('ElementSettings');
 		CompositeCache::flush('SearchBuilder');
 		$this->resetElasticSearchMappingRefresh();
 	}
@@ -1185,6 +1186,31 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 
 		MemoryCache::save($pm_element_code_or_id, $vm_return, 'ElementDataTypes');
 		return $vm_return;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Determine if element is of an authority type
+	 *
+	 * @param string|int $pm_element_code_or_id
+	 * @return bool
+	 * @throws MemoryCacheInvalidParameterException
+	 */
+	static public function isAuthorityDatatype($pm_element_code_or_id) {
+		if($datatype = (int)self::getElementDatatype($pm_element_code_or_id)) {
+			return (in_array($datatype, [
+				__CA_ATTRIBUTE_VALUE_OBJECTREPRESENTATIONS__,
+				__CA_ATTRIBUTE_VALUE_PLACES__,
+				__CA_ATTRIBUTE_VALUE_ENTITIES__,
+				__CA_ATTRIBUTE_VALUE_OCCURRENCES__,
+				__CA_ATTRIBUTE_VALUE_STORAGELOCATIONS__,
+				__CA_ATTRIBUTE_VALUE_COLLECTIONS__,
+				__CA_ATTRIBUTE_VALUE_LOANS__,
+				__CA_ATTRIBUTE_VALUE_MOVEMENTS__,
+				__CA_ATTRIBUTE_VALUE_OBJECTS__,
+				__CA_ATTRIBUTE_VALUE_OBJECTLOTS__
+			], true));
+		}
+		return false;
 	}
 	# ------------------------------------------------------
 	/**

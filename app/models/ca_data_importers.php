@@ -1774,6 +1774,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				if ($vs_idno && isset($va_mapping_items[$vn_idno_mapping_item_id]['settings']['suffix']) && strlen($va_mapping_items[$vn_idno_mapping_item_id]['settings']['suffix'])) {
 					$vs_idno .= DisplayTemplateParser::processTemplate($va_mapping_items[$vn_idno_mapping_item_id]['settings']['suffix'], $va_row_with_replacements, ['getFrom' => $o_reader]);
 				}
+				
+				$vs_idno = self::_applyCaseTransforms($vs_idno, $va_mapping_items[$vn_idno_mapping_item_id]);
+				
 										
 				if (isset($va_mapping_items[$vn_idno_mapping_item_id]['settings']['applyRegularExpressions']) && is_array($va_mapping_items[$vn_idno_mapping_item_id]['settings']['applyRegularExpressions'])) {
 					$vs_idno = self::_processAppliedRegexes($o_reader, $va_mapping_items[$vn_idno_mapping_item_id], 0, $va_mapping_items[$vn_idno_mapping_item_id]['settings']['applyRegularExpressions'], $vs_idno, $va_row, $va_row_with_replacements);
@@ -1852,6 +1855,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										$va_mapping_items[$vn_preferred_label_mapping_id]['settings']['applyRegularExpressions'], $vs_label_val, $va_row,
 										$va_row_with_replacements );
 					}
+				
+					$vs_label_val = self::_applyCaseTransforms($vs_label_val, $va_mapping_items[$vn_preferred_label_mapping_id]);
+				
 					$va_pref_label_values[$vs_preferred_label_mapping_fld] = $vs_label_val;
 				}
 				$vs_display_label = isset($va_pref_label_values[$vs_label_display_fld]) ? $va_pref_label_values[$vs_label_display_fld] : $vs_idno;
@@ -2466,6 +2472,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											$va_item, [ 'log' => $o_log, 'logReference' => $vs_idno ] )
 									) ), array( 'getFrom' => $o_reader ) );
 							}
+							
+							$vm_val = self::_applyCaseTransforms($vm_val, $va_item);
 
 							$va_vals[ $vn_i ] = $vm_val;
 							if ( $o_reader->valuesCanRepeat() ) {
@@ -4178,6 +4186,24 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		return $val;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 */
+	private static function _applyCaseTransforms($value, array $mapping) {
+		if (strlen($value)) {
+			if(isset($mapping['settings']['toUpperCase']) && (bool)$mapping['settings']['toUpperCase']) {
+				$value = mb_strtoupper($value);
+			}
+			if (isset($mapping['settings']['toLowerCase']) && (bool)$mapping['settings']['toLowerCase']) {
+				$value = mb_strtolower($value);
+			}
+			if (isset($mapping['settings']['upperCaseFirst']) && (bool)$mapping['settings']['upperCaseFirst']) {
+				$value = caUcFirstUTF8Safe($value);
+			}
+		}
+		return $value;
 	}
 	# ------------------------------------------------------
 	/**

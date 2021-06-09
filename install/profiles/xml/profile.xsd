@@ -138,6 +138,7 @@
       <xs:enumeration value="Taxonomy"/>
       <xs:enumeration value="InformationService"/>
       <xs:enumeration value="Objects"/>
+      <xs:enumeration value="ObjectLots"/>
       <xs:enumeration value="Entities"/>
       <xs:enumeration value="Places"/>
       <xs:enumeration value="Occurrences"/>
@@ -148,6 +149,7 @@
       <xs:enumeration value="ObjectRepresentations"/>
       <xs:enumeration value="Color"/>
       <xs:enumeration value="Filesize"/>
+      <xs:enumeration value="FloorPlan"/>
     </xs:restriction>
   </xs:simpleType>
 

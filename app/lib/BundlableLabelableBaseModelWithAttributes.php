@@ -775,24 +775,26 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	/**
 	  *
 	  */
-	public function getValuesForExport($pa_options=null) {
-		$va_data = parent::getValuesForExport($pa_options);		// get intrinsics, attributes and labels
+	public function getValuesForExport($options=null) {
+		$va_data = parent::getValuesForExport($options);		// get intrinsics, attributes and labels
 		
-		$t_locale = new ca_locales();
-		$t_list = new ca_lists();
+		if(caGetOption('includeRelationships', $options, true)) {
+			$t_locale = new ca_locales();
+			$t_list = new ca_lists();
 		
-		// get related items
-		foreach(array('ca_objects', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations',  'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops',  'ca_list_items') as $vs_table) {
-			$va_related_items = $this->getRelatedItems($vs_table, array('returnAsArray' => true, 'returnAllLocales' => true));
-			if(is_array($va_related_items) && sizeof($va_related_items)) {
-				$va_related_for_export = array();
-				$vn_i = 0;
-				foreach($va_related_items as $vs_key => $va_related_item) {
-					$va_related_for_export['related_'.$vn_i] = $va_related_item;
-					$vn_i++;
-				}
+			// get related items
+			foreach(array('ca_objects', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations',  'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops',  'ca_list_items') as $vs_table) {
+				$va_related_items = $this->getRelatedItems($vs_table, array('returnAsArray' => true, 'returnAllLocales' => true));
+				if(is_array($va_related_items) && sizeof($va_related_items)) {
+					$va_related_for_export = array();
+					$vn_i = 0;
+					foreach($va_related_items as $vs_key => $va_related_item) {
+						$va_related_for_export['related_'.$vn_i] = $va_related_item;
+						$vn_i++;
+					}
 				
-				$va_data['related_'.$vs_table] = $va_related_for_export;
+					$va_data['related_'.$vs_table] = $va_related_for_export;
+				}
 			}
 		}
 		
@@ -3543,6 +3545,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		
+		$va_errors = [];
+			
 		$vb_read_only_because_deaccessioned = ($this->hasField('is_deaccessioned') && (bool)$this->getAppConfig()->get('deaccession_dont_allow_editing') && (bool)$this->get('is_deaccessioned'));
 
 		BaseModel::setChangeLogUnitID();
@@ -3747,7 +3751,9 @@ if (!$vb_batch) {
 				// do inserts
 				foreach($va_attributes_to_insert as $va_attribute_to_insert) {
 					$this->clearErrors();
-					$this->addAttribute($va_attribute_to_insert, $vn_element_id, $vs_f, ['batch' => $vb_batch]);
+					if(!$this->addAttribute($va_attribute_to_insert, $vn_element_id, null, ['batch' => $vb_batch])) {
+						$po_request->addActionErrors($this->errors);
+					}
 				}
 				
 if (!$vb_batch) {					
@@ -3805,7 +3811,9 @@ if (!$vb_batch) {
 						if (!$isset) { continue; }
 						
 						$this->clearErrors();
-						$this->editAttribute($vn_attribute_id, $vn_element_set_id, $va_attr_update, $vs_f, ['batch' => $vb_batch]);
+						if(!$this->editAttribute($vn_attribute_id, $vn_element_set_id, $va_attr_update, null, ['batch' => $vb_batch])) {
+							$po_request->addActionErrors($this->errors);
+						}
 					}
 				}
 			}
@@ -3879,7 +3887,6 @@ if (!$vb_batch) {
 			$vb_is_insert = true;
 		}
 		if ($this->numErrors() > 0) {
-			$va_errors = array();
 			foreach($this->errors() as $o_e) {
 				switch($o_e->getErrorNumber()) {
 					case 2010:
@@ -6745,7 +6752,7 @@ if (!$vb_batch) {
 				return null;
 				break;
 			case 'count':
-				return sizeof($va_rels);
+				return sizeof(array_unique($va_rels));
 				break;
 			case 'searchresult':
 				if (sizeof($va_rels) > 0) {

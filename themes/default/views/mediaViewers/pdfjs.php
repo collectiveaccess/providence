@@ -388,12 +388,13 @@
     <div id="printContainer"></div>
 </div>
 
+<link rel="resource" type="application/l10n" href="<?= $this->request->getBaseUrlPath(); ?>/assets/pdfjs/viewer/locale/locale.properties">
  <script>
  	// Set viewer config vars
  	window.pdfjsPath = '<?= $this->request->getBaseUrlPath(); ?>/assets';
  	window.pdfjsContentURL = '<?= $this->getVar('display_media_url') ? $this->getVar('display_media_url') : $this->getVar('original_media_url'); ?>';
  	window.pdfjsContainerID = 'caMediaOverlayContent';
- 	window.pdfjsSearch = <?= json_encode($this->getVar('search')); ?>;
+ 	window.pdfjsSearch = <?= json_encode(preg_replace("![+\-\*\?]+!", "", $this->getVar('search'))); ?>;
  </script>
  <script src="<?= $this->request->getBaseUrlPath(); ?>/assets/pdfjs/viewer/viewer.js"></script>
  
