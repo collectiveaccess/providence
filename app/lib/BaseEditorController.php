@@ -357,10 +357,11 @@ class BaseEditorController extends ActionController {
 			}
 		}
 		if(sizeof($va_errors) - sizeof($va_general_errors) > 0) {
-			$va_error_list = array();
+			$va_error_list = [];
 			$vb_no_save_error = false;
 			foreach($va_errors as $o_e) {
-				$va_error_list[$o_e->getErrorDescription()] = "<li>".$o_e->getErrorDescription()."</li>\n";
+				$bundle = array_shift(explode('/', $o_e->getErrorSource()));
+				$va_error_list[] = "<li><u>".$t_subject->getDisplayLabel($bundle).'</u>: '.$o_e->getErrorDescription()."</li>\n";
 
 				switch($o_e->getErrorNumber()) {
 					case 1100:	// duplicate/invalid idno
@@ -371,10 +372,10 @@ class BaseEditorController extends ActionController {
 				}
 			}
 			if ($vb_no_save_error) {
-				$this->notification->addNotification(_t("There are errors preventing <strong>ALL</strong> information from being saved. Correct the problems and click \"save\" again.\n<ul>").join("\n", $va_error_list)."</ul>", __NOTIFICATION_TYPE_ERROR__);
+				$this->notification->addNotification("<span class='heading'>"._t("There are errors preventing <strong>ALL</strong> information from being saved. Correct the problems and click \"save\" again:")."</span><ul class='errorList'>".join("\n", $va_error_list)."</span></ul>", __NOTIFICATION_TYPE_ERROR__);
 			} else {
 				$this->notification->addNotification($vs_message, __NOTIFICATION_TYPE_INFO__);
-				$this->notification->addNotification(_t("There are errors preventing information in specific fields from being saved as noted below.\n<ul>").join("\n", $va_error_list)."</ul>", __NOTIFICATION_TYPE_ERROR__);
+				$this->notification->addNotification("<span class='heading'>"._t("There are errors preventing information in specific fields from being saved:")."</span><ul class='errorList'>".join("\n", $va_error_list)."</ul>", __NOTIFICATION_TYPE_ERROR__);
 			}
 		} else {
 			$this->notification->addNotification($vs_message, __NOTIFICATION_TYPE_INFO__);

@@ -6,7 +6,7 @@
 // ----------------------------------------------------------------------
 //
 // Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
-// Copyright 2015-2020 Whirl-i-Gig
+// Copyright 2015-2021 Whirl-i-Gig
 //
 // For more information visit http://www.CollectiveAccess.org
 //
@@ -98,6 +98,7 @@ expression:
 
 expr:
     factor() (::bool_and:: expr() #bool_and )?
+  | factor() (::bool_or:: expr() #bool_or )?
   | ( ::bracket_:: expr() ::_bracket:: #group )
 
 factor:

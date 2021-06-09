@@ -2150,7 +2150,7 @@
 		} else {
 			$parsed = $search;
 		}
-			
+		if(!is_object($parsed)) { return []; }
 		$terms = [];
 		switch(get_class($parsed)) {
 			case 'Zend_Search_Lucene_Search_Query_Boolean':

@@ -63,7 +63,7 @@
 		/**
 		 * @int $s_labels_by_id_cache_size
 		 *
-		 * Maximum numbers of cached labels per id
+		 * Maximum number of cached labels per id
 		 */
 		static $s_labels_by_id_cache_size = 1024;
 		

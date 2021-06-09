@@ -286,22 +286,24 @@ trait ModelSettings {
 		$vs_placement_code = 	caGetOption('placement_code', $pa_options, null);
 		
 		$va_options = array('request' => $po_request, 'id_prefix' => $vs_id, 'table' => caGetOption('table', $pa_options, null));
-		foreach($va_settings as $vs_setting => $va_setting_info) {
-			if ($format) {
-				$va_options['id'] = str_replace("^setting_name", $vs_setting, $format);
-			} else {
-				$va_options['id'] = "{$vs_id}_{$vs_setting}";
-			}
-			$va_options['label_id'] = $va_options['id'].'_label';
-			if (!$vs_name) { $vs_name = $vs_id; }
-			$va_options['name'] = $format ? $va_options['id'] : "{$vs_placement_code}{$vs_name}_{$vs_setting}";
-			
-			$va_options['value'] = caGetOption($vs_setting, $va_setting_values, $this->getSetting($vs_setting));
-			$va_options['helpText'] = caGetOption('helpText', $va_setting_info, '');
-			
-			$va_form_elements[] = $this->settingHTMLFormElement($vs_setting, $va_options);
-		}
 		
+		if (is_array($va_settings)) { 
+			foreach($va_settings as $vs_setting => $va_setting_info) {
+				if ($format) {
+					$va_options['id'] = str_replace("^setting_name", $vs_setting, $format);
+				} else {
+					$va_options['id'] = "{$vs_id}_{$vs_setting}";
+				}
+				$va_options['label_id'] = $va_options['id'].'_label';
+				if (!$vs_name) { $vs_name = $vs_id; }
+				$va_options['name'] = $format ? $va_options['id'] : "{$vs_placement_code}{$vs_name}_{$vs_setting}";
+			
+				$va_options['value'] = caGetOption($vs_setting, $va_setting_values, $this->getSetting($vs_setting));
+				$va_options['helpText'] = caGetOption('helpText', $va_setting_info, '');
+			
+				$va_form_elements[] = $this->settingHTMLFormElement($vs_setting, $va_options);
+			}
+		}
 		return join("\n", $va_form_elements);
 	}
 	# ------------------------------------------------------
