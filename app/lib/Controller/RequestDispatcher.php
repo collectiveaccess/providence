@@ -74,16 +74,12 @@ class RequestDispatcher extends BaseObject {
 	public function setRequest(&$request) {
 		$this->request = $request;
 		
-		switch($request->getScriptName()){
-			case "service.php":
-				$this->ops_controller_path = $this->request->config->get('service_controllers_directory');
-				$this->ops_default_action = $this->request->config->get('service_default_action');
-				break;
-			case "index.php":
-			default:
-				$this->ops_controller_path = $this->request->config->get('controllers_directory');
-				$this->ops_default_action = $this->request->config->get('default_action');
-				break;
+		if(defined('__CA_IS_SERVICE_REQUEST__') && __CA_IS_SERVICE_REQUEST__) {
+			$this->ops_controller_path = $this->request->config->get('service_controllers_directory');
+			$this->ops_default_action = $this->request->config->get('service_default_action');
+		} else {
+			$this->ops_controller_path = $this->request->config->get('controllers_directory');
+			$this->ops_default_action = $this->request->config->get('default_action');
 		}
 
 		$this->ops_application_plugins_path = $this->request->config->get('application_plugins');
@@ -100,9 +96,15 @@ class RequestDispatcher extends BaseObject {
 		if (!($vs_path = $this->request->getPathInfo()) || ($vs_path == '/')) {
 			$vs_path = $this->ops_default_action;
 		}
-		
 		if ($vs_path[0] === '/') { $vs_path = substr($vs_path, 1); }	// trim leading forward slash...
-		$va_tmp = explode('/', $vs_path);								// break path into parts
+		$va_tmp = explode('/', $vs_path);		// break path into parts
+		
+		// Rewrite path for /service/index.php style service call
+		if(($this->request->getScriptName() === 'index.php') && defined('__CA_IS_SERVICE_REQUEST__') && __CA_IS_SERVICE_REQUEST__) {
+			array_shift($va_tmp);
+			array_pop($va_tmp);
+			$vs_path = join('/', $va_tmp);
+		}
 		
 		if (is_dir($this->ops_theme_plugins_path.'/'.$va_tmp[0].'/controllers')) {
 			// is theme plugin
