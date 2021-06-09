@@ -341,6 +341,8 @@
 					'options' => $pa_options
 				);
 			}
+			
+			return true;
 		}
 		# ------------------------------------------------------------------
 		// edit attribute from current row
