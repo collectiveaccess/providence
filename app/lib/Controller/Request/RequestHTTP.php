@@ -144,6 +144,8 @@ class RequestHTTP extends Request {
 		# create session
 		$vs_app_name = $this->config->get("app_name");
 
+		// @todo: REMOVE IN FUTURE VERSION
+		// JSON API (deprecated)
 		// restore session from token for service requests
 		if(($this->ops_script_name=="service.php") && isset($_GET['authToken']) && (strlen($_GET['authToken']) > 0)) {
 			$vs_token = preg_replace("/[^a-f0-9]/", "", $_GET['authToken']); // sanitize
@@ -175,6 +177,8 @@ class RequestHTTP extends Request {
 		
 		$this->ops_request_method = (isset($_SERVER["REQUEST_METHOD"]) ? $_SERVER["REQUEST_METHOD"] : null);
 		
+		// @todo: REMOVE IN FUTURE VERSION
+		// JSON API (deprecated)
 		/* allow authentication via URL for web service API like so: http://user:pw@example.com/ */
 		if($this->ops_script_name=="service.php") {
 			$this->ops_raw_post_data = file_get_contents("php://input");
@@ -346,15 +350,11 @@ class RequestHTTP extends Request {
 	 */
 	public function getViewsDirectoryPath($pb_use_default=false) {
 		if ($this->config->get('always_use_default_theme')) { $pb_use_default = true; }
-		switch($this->getScriptName()){
-			case "service.php":
-				return $this->getServiceViewPath();
-				break;
-			case "index.php":
-			default:
-				return $this->getThemeDirectoryPath($pb_use_default).'/views';
-				break;
-		}
+		
+		if(defined('__CA_IS_SERVICE_REQUEST__') && __CA_IS_SERVICE_REQUEST__) {
+			return $this->getServiceViewPath();
+		} 
+		return $this->getThemeDirectoryPath($pb_use_default).'/views';
 	}
 	# -------------------------------------------------------
 	/**
