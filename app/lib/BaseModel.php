@@ -5850,13 +5850,13 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				$max_length = $va_attr["BOUNDS_LENGTH"][1];
 			}
 
-			if ((isset($min_length)) && (strlen($value) < $min_length)) {
+			if ((isset($min_length)) && (mb_strlen($value) < $min_length)) {
 				$this->postError(1102, _t("%1 must be at least %2 characters", $va_attr["LABEL"], $min_length),"BaseModel->verifyFieldValue()", $this->tableName().'.'.$field);
 				return false;
 			}
 
 
-			if ((isset($max_length)) && (strlen($value) > $max_length)) {
+			if ((isset($max_length)) && (mb_strlen($value) > $max_length)) {
 				$this->postError(1102,_t("%1 must not be more than %2 characters long", $va_attr["LABEL"], $max_length),"BaseModel->verifyFieldValue()", $this->tableName().'.'.$field);
 				return false;
 			}
