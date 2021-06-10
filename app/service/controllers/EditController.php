@@ -114,11 +114,13 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 									'bundle' => 'GENERAL'
 								];
 							}	
+						} else {
+							$ret = self::processBundles($instance, $bundles);
+							$errors += $ret['errors'];
+							$warnings += $ret['warnings'];
 						}
 						
-						$ret = self::processBundles($instance, $bundles);
-						
-						return ['table' => $table, 'id' => $instance->getPrimaryKey(), 'idno' => $instance->get('idno'), 'errors' => $ret['errors'], 'warnings' => $ret['warnings']];
+						return ['table' => $table, 'id' => $instance->getPrimaryKey(), 'idno' => $instance->get('idno'), 'errors' => $errors, 'warnings' => $warnings];
 					}
 				],
 				'edit' => [
