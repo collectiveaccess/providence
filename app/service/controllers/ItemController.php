@@ -77,7 +77,7 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 						[
 							'name' => 'bundles',
 							'type' => Type::listOf(Type::string()),
-							'description' => _t('Bundles to return')
+							'description' => _t('Bundles to return.')
 						]
 					],
 					'resolve' => function ($rootValue, $args) {
@@ -89,7 +89,85 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 						$bundles = \GraphQLServices\Helpers\extractBundleNames($rec, $args);
 						$data = \GraphQLServices\Helpers\fetchDataForBundles($rec, $bundles, []);
 						
-						return ['table' => $rec->tableName(), 'identifier' => $args['identifier'], 'id' => $rec->getPrimaryKey(), 'bundles' => $data];
+						return ['table' => $rec->tableName(), 'idno'=> $rec->get($rec->getProperty('ID_NUMBERING_ID_FIELD')), 'identifier' => $args['identifier'], 'id' => $rec->getPrimaryKey(), 'bundles' => $data];
+					}
+				],
+				// ------------------------------------------------------------
+				'getRelationships' => [
+					'type' => ItemSchema::get('RelationshipList'),
+					'description' => _t('Get data for an item'),
+					'args' => [
+						[
+							'name' => 'jwt',
+							'type' => Type::string(),
+							'description' => _t('JWT'),
+							'defaultValue' => self::getBearerToken()
+						],
+						[
+							'name' => 'table',
+							'type' => Type::string(),
+							'description' => _t('Table name. (Eg. ca_objects)')
+						],
+						[
+							'name' => 'identifier',
+							'type' => Type::string(),
+							'description' => _t('Record identifier. Either a integer primary key or alphanumeric idno value.')
+						],
+						[
+							'name' => 'target',
+							'type' => Type::string(),
+							'description' => _t('Related table name. (Eg. ca_entities)')
+						],
+						[
+							'name' => 'restrictToTypes',
+							'type' => Type::listOf(Type::string()),
+							'description' => _t('Restrict returned records to specified types.')
+						],
+						[
+							'name' => 'restrictToRelationshipTypes',
+							'type' => Type::listOf(Type::string()),
+							'description' => _t('Restrict returned records to specified relationship types.')
+						],
+						[
+							'name' => 'bundles',
+							'type' => Type::listOf(Type::string()),
+							'description' => _t('Bundles to return.')
+						]
+					],
+					'resolve' => function ($rootValue, $args) {
+						$u = self::authenticate($args['jwt']);
+						
+						$rec = self::resolveIdentifier($table = $args['table'], $args['identifier']);
+						$rec_pk = $rec->primaryKey();
+						
+						$target = $args['target'];
+						if(!Datamodel::tableExists($target)) { 
+							throw new \ServiceException(_t('Invalid target'));
+						}
+						if(!($linking_table = Datamodel::getLinkingTableName($table, $target))) {
+							throw new \ServiceException(_t('Cannot resolve relationship'));
+						}
+						
+						$rels = $rec->getRelatedItems($target, ['restrictToTypes' => $args['restrictToTypes'], 'restrictToRelationshipTypes' => $args['restrictToRelationshipTypes']]);
+						
+						$rel_list = [];
+						if (sizeof($rel_ids = array_map(function($v) { return $v['relation_id']; }, $rels)) > 0) {
+							
+							$qr = caMakeSearchResult($linking_table, $rel_ids);
+							while($qr->nextHit()) {
+								$r = $qr->getInstance();
+							
+								$bundles = \GraphQLServices\Helpers\extractBundleNames($r, $args);
+								$data = \GraphQLServices\Helpers\fetchDataForBundles($r, $bundles, []);
+								
+								$rel_list[] = [
+									'id' => $r->getPrimaryKey(),
+									'table' => $linking_table,
+									'bundles' => $data
+								];
+							}
+						}
+						return ['table' => $rec->tableName(), 'idno'=> $rec->get($rec->getProperty('ID_NUMBERING_ID_FIELD')), 'identifier' => $args['identifier'], 'id' => $rec->getPrimaryKey(), 'relationships' => $rel_list];
 					}
 				]
 			]

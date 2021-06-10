@@ -106,6 +106,8 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						$instance = new $table();
 						$instance->set('idno', $args['idno']);
 						$instance->set('type_id', $args['type']);
+						
+						$c = 0;
 						if(!$instance->insert()) {
 							foreach($instance->errors() as $e) {
 								$errors[] = [
@@ -118,9 +120,11 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							$ret = self::processBundles($instance, $bundles);
 							$errors += $ret['errors'];
 							$warnings += $ret['warnings'];
+							
+							$c++;
 						}
 						
-						return ['table' => $table, 'id' => $instance->getPrimaryKey(), 'idno' => $instance->get('idno'), 'errors' => $errors, 'warnings' => $warnings];
+						return ['table' => $table, 'id' => $instance->getPrimaryKey(), 'idno' => $instance->get('idno'), 'errors' => $errors, 'warnings' => $warnings, 'changed' => $c];
 					}
 				],
 				'edit' => [
@@ -163,6 +167,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						$bundles = $args['bundles'];
 						
 						// Load record
+						$c = 0;
 						if(!($instance = self::resolveIdentifier($table, $args['identifier']))) {
 							$errors[] = [
 								'code' => 100,	// TODO: real number?
@@ -171,9 +176,10 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							];
 						} else {
 							$ret = self::processBundles($instance, $bundles);
+							$c++;
 						}
 						
-						return ['table' => $table, 'id' => $instance->getPrimaryKey(), 'idno' => $instance->get('idno'), 'errors' => $ret['errors'], 'warnings' => $ret['warnings']];
+						return ['table' => $table, 'id' => $instance->getPrimaryKey(), 'idno' => $instance->get('idno'), 'errors' => $ret['errors'], 'warnings' => $ret['warnings'], 'changed' => $c];
 					}
 				],
 				'delete' => [
@@ -205,6 +211,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						$table = $args['table'];
 						
 						// Delete record
+						$c = 0;
 						if(!($instance = self::resolveIdentifier($table, $args['identifier']))) {
 							$errors[] = [
 								'code' => 100,	// TODO: real number?
@@ -219,9 +226,11 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 									'bundle' => $bundle_name
 								];
 							}
+						} else {
+							$c++;
 						}
 						
-						return ['table' => $table, 'id' => null, 'idno' => null, 'errors' => $ret['errors'], 'warnings' => $ret['warnings']];
+						return ['table' => $table, 'id' => null, 'idno' => null, 'errors' => $ret['errors'], 'warnings' => $ret['warnings'], 'changed' => $c];
 					}
 				],
 				//
@@ -291,6 +300,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						// effective_date set?
 						$effective_date = \GraphQLServices\Helpers\Edit\extractValueFromBundles($bundles, ['effective_date']);
 						
+						$c = 0;
 						if(!($rel = $subject->addRelationship($target, $args['targetIdentifier'], $reltype, $effective_date))) {
 							$errors[] = [
 								'code' => 100,	// TODO: real number?
@@ -303,9 +313,10 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 								$errors += $ret['errors'];
 								$warnings += $ret['warnings'];
 							}
+							$c++;
 						}
 						
-						return ['table' => is_object($rel) ? $rel->tableName() : null, 'id' => is_object($rel) ?  $rel->getPrimaryKey() : null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings];
+						return ['table' => is_object($rel) ? $rel->tableName() : null, 'id' => is_object($rel) ?  $rel->getPrimaryKey() : null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings, 'changed' => $c];
 					}
 				],
 				'editRelationship' => [
@@ -393,6 +404,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							throw new \ServiceException(_t('Relationship does not exist'));
 						}
 						
+						$c = 0;
 						if(!($rel = $s->editRelationship($target, $rel_id, $target_identifier, $new_rel_type, $effective_date))) {
 							$errors[] = [
 								'code' => 100,	// TODO: real number?
@@ -405,9 +417,10 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 								$errors += $ret['errors'];
 								$warnings += $ret['warnings'];
 							}
+							$c++;
 						}
 						
-						return ['table' => is_object($rel) ? $rel->tableName() : null, 'id' => is_object($rel) ?  $rel->getPrimaryKey() : null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings];
+						return ['table' => is_object($rel) ? $rel->tableName() : null, 'id' => is_object($rel) ?  $rel->getPrimaryKey() : null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings, 'changed' => $c];
 					}
 				],
 				'deleteRelationship' => [
@@ -485,15 +498,107 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							throw new \ServiceException(_t('Relationship does not exist'));
 						}
 						
+						$c = 0;
 						if(!$s->removeRelationship($target, $rel_id)) {							
 							$errors[] = [
 								'code' => 100,	// TODO: real number?
 								'message' => _t('Could not delete relationship: %1', join('; ', $s->getErrors())),
 								'bundle' => 'GENERAL'
 							];
+						} else {
+							$c++;
 						}
 						
-						return ['table' => is_object($s) ? $s->tableName() : null, 'id' => is_object($s) ?  $s->getPrimaryKey() : null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings];
+						return ['table' => is_object($s) ? $s->tableName() : null, 'id' => is_object($s) ?  $s->getPrimaryKey() : null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings, 'changed' => $c];
+					}
+				],
+				'deleteAllRelationships' => [
+					'type' => EditSchema::get('EditResult'),
+					'description' => _t('Delete all relationships on record to a target table. If one or more relationship types are specified then only relationships with those types will be removed.'),
+					'args' => [
+						[
+							'name' => 'jwt',
+							'type' => Type::string(),
+							'description' => _t('JWT'),
+							'defaultValue' => self::getBearerToken()
+						],
+						[
+							'name' => 'subject',
+							'type' => Type::string(),
+							'description' => _t('Subject table name. (Eg. ca_objects)')
+						],
+						[
+							'name' => 'subjectIdentifier',
+							'type' => Type::string(),
+							'description' => _t('Alphanumeric idno value or numeric database id of record to use as relationship subject.')
+						],
+						[
+							'name' => 'target',
+							'type' => Type::string(),
+							'description' => _t('Target table name. (Eg. ca_objects)')
+						],
+						[
+							'name' => 'relationshipType',
+							'type' => Type::string(),
+							'description' => _t('Relationship type code.')
+						],
+						[
+							'name' => 'relationshipTypes',
+							'type' => Type::listOf(Type::string()),
+							'description' => _t('List of relationship type codes.')
+						]
+					],
+					'resolve' => function ($rootValue, $args) {
+						$u = self::authenticate($args['jwt']);
+						
+						$errors = $warnings = [];
+						
+						$rel_types = $s = $t = null;				
+						$subject = $args['subject'];
+						$target = $args['target'];
+						
+						
+						if(!($s = self::resolveIdentifier($subject, $args['subjectIdentifier']))) {
+							throw new \ServiceException(_t('Invalid subject identifier'));
+						}
+						if (!$s->isSaveable($u)) {
+							throw new \ServiceException(_t('Subject is not accessible'));
+						}
+						
+						if(isset($args['relationshipTypes']) && is_array($args['relationshipTypes']) && sizeof($$args['relationshipTypes'])) {
+							$rel_types = $args['relationshipTypes'];
+						} elseif(isset($args['relationshipType']) && $args['relationshipType']) {
+							$rel_types = [$args['relationshipType']];
+						} else {
+							$rel_types = null;
+						}
+							
+						$c = 0;
+						if(is_array($rel_types) && sizeof($rel_types)) {
+							foreach($rel_types as $rel_type) {
+								if(!$s->removeRelationships($target, $rel_type)) {
+									$errors[] = [
+										'code' => 100,	// TODO: real number?
+										'message' => _t('Could not delete relationships for relationship type %1: %2', $rel_type, join('; ', $s->getErrors())),
+										'bundle' => 'GENERAL'
+									];
+									continue;
+								} 
+								$c++;
+							}
+						} else {
+							if(!$s->removeRelationships($target)) {
+								$errors[] = [
+									'code' => 100,	// TODO: real number?
+									'message' => _t('Could not delete relationships: %1', join('; ', $s->getErrors())),
+									'bundle' => 'GENERAL'
+								];
+							} else {
+								$c++;
+							}
+						}
+						
+						return ['table' => is_object($s) ? $s->tableName() : null, 'id' => is_object($s) ?  $s->getPrimaryKey() : null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings, 'changed' => $c];
 					}
 				]
 			]

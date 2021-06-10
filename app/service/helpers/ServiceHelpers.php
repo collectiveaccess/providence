@@ -63,96 +63,167 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 		while($sresult->nextHit()) {
 			$row = [];
 			foreach($bundles as $f) {
-				$fbits = explode('.', $f);
+				$p = \SearchResult::parseFieldPathComponents($table, $f);
+				
 				$values = [];
-				$d = $sresult->get($f, ['returnWithStructure' => true, 'useLocaleCodes' => true, 'convertCodesToIdno' => true]);
+				$d = $sresult->get($f, ['returnWithStructure' => true, 'useLocaleCodes' => true, 'returnAllLocales' => true, 'convertCodesToIdno' => true, 'includeValueIDs' => true]);
 	
 				if(!is_array($d) || (sizeof($d) === 0)) { continue; }
 		
-				if($is_intrinsic = $rec->hasField($fbits[1])) {
+				if($is_intrinsic = $rec->hasField($p['field_name'])) {
+					// Intrinics
 					if(strlen($v = $sresult->get($f, ['convertCodesToIdno' => true]))) {
 						$row[] = [
 							'name' => $rec->getDisplayLabel($f), 
 							'code' => $f,
 							'locale' => null,
-							'dataType' => $table::intrinsicTypeToString((int)$sresult->getFieldInfo($fbits[1], 'FIELD_TYPE')),
+							'dataType' => $table::intrinsicTypeToString((int)$sresult->getFieldInfo($p['field_name'], 'FIELD_TYPE')),
 							'values' => [
-								['locale' => null,
-								'value' => $v,
-								'subvalues' => null]
+								[
+									'value' => $v,
+									'locale' => null,
+									'subvalues' => null,
+									'id' => null,
+									'value_id' => null
+								]
 							]
 						];
 					}
-				} elseif($is_label = (in_array($fbits[1], ['preferred_labels', 'nonpreferred_labels'], true))) {
+				} elseif(!$p['related'] && ($is_label = (in_array($p['field_name'], ['preferred_labels', 'nonpreferred_labels'], true)))) {
 					$label = $rec->getLabelTableInstance();
-					foreach($d as $locale_id => $by_locale) {
+					if(!$label) { continue; }
+					foreach($d as $index => $by_locale) {
 						$sub_values = [];
 			
 						$is_set = false;
-						foreach($by_locale as $bundle_index => $sub_field_values) {
-							foreach($sub_field_values as $sub_field => $sub_field_value) {
-								if(in_array($sub_field, [$sresult_pk, 'locale_id', 'is_preferred', 'item_type_id', 'source_info'])) { continue; }
-								if(strlen($sub_field_value)) { $is_set = true; }
-				
-								$sub_values[] = [
-									'name' => $rec->getDisplayLabel("{$table}.{$f}.{$sub_field}"),
-									'code' => $sub_field,
-									'value' => $sub_field_value,
-									'dataType' => $label->getFieldInfo($sub_field, 'LIST_CODE') ? 'String' : $label::intrinsicTypeToString($label->getFieldInfo($sub_field, 'FIELD_TYPE'))
+						foreach($by_locale as $locale => $by_id) {
+							foreach($by_id as $id => $sub_field_values) {
+								foreach($sub_field_values as $sub_field => $sub_field_value) {
+									if(in_array($sub_field, [$sresult_pk, 'locale_id', 'is_preferred', 'item_type_id', 'source_info'])) { continue; }
+									if(strlen($sub_field_value)) { $is_set = true; }
+		
+									$sub_values[] = [
+										'name' => $rec->getDisplayLabel("{$p['table_name']}.{$p['field_name']}.{$p['subfield_name']}"),
+										'code' => $sub_field,
+										'value' => $sub_field_value,
+										'dataType' => $label->getFieldInfo($sub_field, 'LIST_CODE') ? 'String' : $label::intrinsicTypeToString($label->getFieldInfo($sub_field, 'FIELD_TYPE')),
+										'id' => null
+									];
+								}
+							}
+							if($is_set) {
+								$values[] = [
+									'locale' => $locale,
+									'value' => $sresult->get($f, ['convertCodesToIdno' => true]),
+									'subvalues' => $sub_values,
+									'id' => $id		// label_id
 								];
 							}
-						}
-			
-						if($is_set) {
-							$values[] = [
-								'locale' => \ca_locales::localeIDToCode($locale_id),
-								'value' => $sresult->get($f, ['convertCodesToIdno' => true]),
-								'subvalues' => $sub_values
-							];
 						}
 					}
 					if(sizeof($values) > 0) {
 						$row[] = [
 							'name' => $rec->getDisplayLabel($f), 
 							'code' => $f,
-							'locale' => \ca_locales::localeIDToCode($locale_id),
-							'dataType' => \ca_metadata_elements::getElementDatatype($fbits[1], ['returnAsString' => true]),
+							'dataType' => $p['subfield_name'] ? $table::intrinsicTypeToString((int)$label->getFieldInfo($p['subfield_name'], 'FIELD_TYPE')) : 'Container',
 							'values' => $values
 						];
 					}
-				} else {
-					foreach($d as $locale_id => $by_locale) {
+				} elseif($rel = \Datamodel::getInstance($f, true)) {	// straight table name
+					
+					// relationships
+					$map = [
+						'row_id' => ['name' => $rel->primaryKey(), 'datatype' => 'Numeric'],
+						'relation_id' => ['name' => _t('Relationship id'), 'datatype' => 'Numeric'], 
+						'idno' => ['name' => $rel->getDisplayLabel("{$f}.".$rel->getProperty('ID_NUMBERING_ID_FIELD')), 'datatype' => 'String'], 
+						'displayname' => ['name' => _t('Name'), 'datatype' => 'String'], 
+						'relationship_type_code' => ['name' => _t('Relationship type code'), 'datatype' => 'String'], 
+						'relationship_typename' => ['name' => _t('Relationship type name'), 'datatype' => 'String'],
+						'rank' => ['name' => _t('Relationship rank'), 'datatype' => 'Numeric'],
+						'table' => ['name' => _t('Relationshop table'), 'datatype' => 'String']
+					];
+					$linking_table = \Datamodel::getLinkingTableName($table, $f);
+					foreach($d as $index => $rel) {
+						$rel['table'] = $linking_table;
 						$sub_values = [];
-			
-						$is_set = false;
-						foreach($by_locale as $bundle_index => $sub_field_values) {
-							foreach($sub_field_values as $sub_field => $sub_field_value) {
-								if(strlen($sub_field_value)) { $is_set = true; }
-				
-								$sub_values[] = [
-									'name' => $rec->getDisplayLabel("{$table}.{$f}.{$sub_field}"),
-									'code' => $sub_field,
-									'value' => $sub_field_value,
-									'dataType' => \ca_metadata_elements::getElementDatatype($sub_field, ['returnAsString' => true]),
-								];
-							}
-						}
-			
-						if($is_set) {
-							$values[] = [
-								'locale' => \ca_locales::localeIDToCode($locale_id),
-								'value' => $sresult->get($f, ['convertCodesToIdno' => true]),
-								'subvalues' => $sub_values
+						foreach($map as $n => $rinfo) {
+							$sub_values[] = [
+								'id' => $rel['relation_id'],
+								'name' => $rinfo['name'],
+								'code' => $n,
+								'value' => $rel[$n],
+								'dataType' => is_numeric($rel[$n]) ? 'Numeric' : 'String'
 							];
 						}
+						
+						// Relationship level
+						$values[] = [
+							'id' => $rel['relation_id'],	// relation_id
+							'value_id' => null,
+							'locale' => \ca_locales::getDefaultCataloguingLocale(),
+							'value' => $rel['displayname'],
+							'subvalues' => $sub_values
+						];
+						
 					}
+					
 					if(sizeof($values) > 0) {
+						// Relationship list level
 						$row[] = [
 							'name' => $rec->getDisplayLabel($f), 
 							'code' => $f,
-							'locale' => \ca_locales::localeIDToCode($locale_id),
-							'dataType' => \ca_metadata_elements::getElementDatatype($fbits[1], ['returnAsString' => true]),
-							'values' => $values
+							'dataType' => "Container",
+							'values' => $values,
+							'id' => $id
+						];
+					}
+				
+				} else {
+					// Metadata elements
+					foreach($d as $index => $by_locale) {
+						foreach($by_locale as $locale => $by_id) {
+							$sub_values = [];
+			
+							$is_set = false;
+							foreach($by_id as $id => $sub_field_values) {
+								$v = $sf =  null;
+								foreach($sub_field_values as $sub_field => $sub_field_value) {
+									if(preg_match("!^(.*)_value_id$!", $sub_field, $m) && isset($sub_field_values[$m[1]])) { continue; }
+									if(strlen($sub_field_value)) { $is_set = true; }
+				
+									$sf = $sub_field;
+									
+									// Sub-value level
+									$sub_values[] = [
+										'name' => $rec->getDisplayLabel("{$p['table_name']}.{$p['field_name']}.{$p['subfield_name']}"),
+										'code' => $sub_field,
+										'value' => $v = $sub_field_value,
+										'dataType' => \ca_metadata_elements::getElementDatatype($sub_field, ['returnAsString' => true]),
+										'id' => $sub_field_values[$sub_field.'_value_id']
+									];
+								}
+						
+								if($is_set) {
+									// Attribute level
+									$values[] = [
+										'id' => $id,	// attribute_id
+										'value_id' => $sub_field_values[$sf.'_value_id'],
+										'locale' => $locale,
+										'value' => $v,
+										'subvalues' => $sub_values
+									];
+								}
+							}
+						}
+					}
+					if(sizeof($values) > 0) {
+						// Metadata element level
+						$row[] = [
+							'name' => $rec->getDisplayLabel("{$p['table_name']}.{$p['field_name']}.{$p['subfield_name']}"), 
+							'code' => $f,
+							'dataType' => \ca_metadata_elements::getElementDatatype("{$p['field_name']}", ['returnAsString' => true]),
+							'values' => $values,
+							'id' => $id
 						];
 					}
 				}
@@ -162,7 +233,7 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 				$row = [
 					'id' => $sresult->getPrimaryKey(),
 					'table' => $table,
-					'idno' => $sresult->get('idno'),
+					'idno' => \Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD'). $sresult->get(Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD')),
 					'bundles' => $row
 				];
 			}
@@ -201,6 +272,10 @@ function itemSchemaDefinitions() {
 				'value' => [
 					'type' => Type::string(),
 					'description' => 'Sub-value'
+				],
+				'id' => [
+					'type' => Type::int(),
+					'description' => 'Internal value_id'
 				]
 			]
 		]),
@@ -219,6 +294,14 @@ function itemSchemaDefinitions() {
 				'subvalues' => [
 					'type' => Type::listOf($bundleSubValueType),
 					'description' => 'Value list for values with dataType=Container'
+				],
+				'id' => [
+					'type' => Type::int(),
+					'description' => 'Internal attribute_id'
+				],
+				'value_id' => [
+					'type' => Type::int(),
+					'description' => 'Internal value_id'
 				]
 			]
 		]),
@@ -265,6 +348,29 @@ function itemSchemaDefinitions() {
 					'description' => ''
 				]
 			]
+		]),
+		$relationshipList = new ObjectType([
+			'name' => 'RelationshipList',
+			'description' => 'A list of relationships',
+			'fields' => [
+				'id' => [
+					'type' => Type::int(),
+					'description' => 'ID of item'
+				],
+				'table' => [
+					'type' => Type::string(),
+					'description' => 'Table of item'
+				],
+				'idno' => [
+					'type' => Type::string(),
+					'description' => 'Item identifier'
+				],
+				'relationships' => [
+					'type' => Type::listOf($itemType),
+					'description' => ''
+				]
+			]
 		])
+		
 	];
 }

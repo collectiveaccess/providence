@@ -101,6 +101,10 @@ class EditSchema extends \GraphQLServices\GraphQLSchema {
 					'warnings' => [	
 						'type' => Type::listOf($EditWarningType),
 						'description' => 'List of warnings'
+					],
+					'changed' => [
+						'type' => Type::int(),
+						'description' => 'Number of records affected by edit'
 					]
 				]
 			]),
