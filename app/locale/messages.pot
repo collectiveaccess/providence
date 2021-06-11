@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Providence\n"
 "Report-Msgid-Bugs-To: info@collectiveaccess.org\n"
-"POT-Creation-Date: 2020-12-08 16:34+0100\n"
+"POT-Creation-Date: 2021-06-09 12:02+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -260,8 +260,8 @@ msgstr ""
 #: ../../themes/default/views/manage/export/exporter_list_html.php:100
 #: ../../themes/default/views/manage/set_list_html.php:178
 #: ../../themes/default/views/manage/set_list_html.php:194
-#: ../../themes/default/views/manage/set_list_by_user_html.php:178
-#: ../../themes/default/views/manage/set_list_by_user_html.php:195
+#: ../../themes/default/views/manage/set_list_by_user_html.php:180
+#: ../../themes/default/views/manage/set_list_by_user_html.php:197
 #: ../../themes/default/views/manage/search_form_list_html.php:95
 #: ../../themes/default/views/manage/search_form_list_html.php:100
 #: ../../themes/default/views/manage/group_list_html.php:86
@@ -313,7 +313,7 @@ msgstr ""
 #: ../../themes/default/views/manage/comment_list_html.php:94
 #: ../../themes/default/views/manage/Results/ca_item_comments_list_html.php:102
 #: ../../themes/default/views/batch/metadataimport/importer_list_html.php:106
-#: ../../app/helpers/displayHelpers.php:3814
+#: ../../app/helpers/displayHelpers.php:3821
 msgid "Download"
 msgstr ""
 
@@ -382,12 +382,12 @@ msgstr ""
 #: ../../themes/default/views/bundles/ca_object_representations.php:146
 #: ../../themes/default/views/manage/export/exporter_list_html.php:74
 #: ../../themes/default/views/manage/set_list_html.php:111
-#: ../../themes/default/views/manage/set_list_by_user_html.php:106
+#: ../../themes/default/views/manage/set_list_by_user_html.php:108
 #: ../../themes/default/views/batch/metadataimport/importer_list_html.php:71
 #: ../../themes/default/views/batch/mediaimport/import_options_html.php:142
 #: ../../app/helpers/displayHelpers.php:1755
 #: ../../app/helpers/displayHelpers.php:1767
-#: ../../app/lib/Utils/CLIUtils.php:2337
+#: ../../app/lib/Utils/CLIUtils.php:2346
 #: ../../app/models/ca_collection_labels.php:73
 #: ../../app/models/ca_list_item_labels.php:72
 #: ../../app/models/ca_entity_labels.php:75
@@ -545,9 +545,9 @@ msgstr ""
 #: ../../themes/default/views/manage/user_sort_list_html.php:53
 #: ../../themes/default/views/manage/export/exporter_list_html.php:68
 #: ../../themes/default/views/manage/set_list_html.php:102
-#: ../../themes/default/views/manage/set_list_by_user_html.php:97
+#: ../../themes/default/views/manage/set_list_by_user_html.php:99
 #: ../../themes/default/views/batch/metadataimport/importer_list_html.php:65
-#: ../../app/lib/Utils/CLIUtils.php:2337
+#: ../../app/lib/Utils/CLIUtils.php:2346
 #: ../../app/models/ca_collection_labels.php:80
 #: ../../app/models/ca_tour_labels.php:70
 #: ../../app/models/ca_loan_labels.php:79
@@ -770,8 +770,8 @@ msgstr ""
 #: ../../themes/default/views/manage/user_sort_list_html.php:58
 #: ../../themes/default/views/manage/set_list_html.php:177
 #: ../../themes/default/views/manage/set_list_html.php:195
-#: ../../themes/default/views/manage/set_list_by_user_html.php:177
-#: ../../themes/default/views/manage/set_list_by_user_html.php:196
+#: ../../themes/default/views/manage/set_list_by_user_html.php:179
+#: ../../themes/default/views/manage/set_list_by_user_html.php:198
 #: ../../themes/default/views/manage/search_form_list_html.php:94
 #: ../../themes/default/views/manage/search_form_list_html.php:101
 #: ../../themes/default/views/manage/group_list_html.php:84
@@ -821,8 +821,8 @@ msgstr ""
 #: ../../app/models/ca_user_roles.php:75
 #: ../../app/models/ca_search_form_labels.php:86
 #: ../../app/models/ca_metadata_alert_rule_labels.php:86
-#: ../../app/models/ca_editor_ui_screens.php:1933
-#: ../../app/models/ca_editor_ui_screens.php:2188
+#: ../../app/models/ca_editor_ui_screens.php:1934
+#: ../../app/models/ca_editor_ui_screens.php:2189
 #: ../../app/models/ca_metadata_element_labels.php:79
 #: ../../app/models/ca_data_importer_labels.php:79
 #: ../../app/models/ca_data_exporter_labels.php:79
@@ -1008,7 +1008,7 @@ msgid "Component"
 msgstr ""
 
 #: ../../themes/default/views/administrate/setup/config_check_html.php:50
-#: ../../app/lib/Utils/CLIUtils.php:2337
+#: ../../app/lib/Utils/CLIUtils.php:2346
 msgid "Version"
 msgstr ""
 
@@ -1048,7 +1048,7 @@ msgstr ""
 #: ../../themes/default/views/editor/objects/object_representation_media_replication_controls_html.php:41
 #: ../../themes/default/views/bundles/ca_object_representations.php:148
 #: ../../themes/default/views/manage/set_list_html.php:126
-#: ../../themes/default/views/manage/set_list_by_user_html.php:121
+#: ../../themes/default/views/manage/set_list_by_user_html.php:123
 #: ../../themes/default/views/manage/Results/ca_item_comments_list_html.php:66
 #: ../../app/models/ca_tour_stops.php:163
 #: ../../app/models/ca_user_representation_annotations.php:135
@@ -1070,7 +1070,7 @@ msgid "ok"
 msgstr ""
 
 #: ../../themes/default/views/administrate/setup/config_check_html.php:112
-#: ../../app/lib/Utils/CLIUtils.php:1458
+#: ../../app/lib/Utils/CLIUtils.php:1467
 #: ../../app/models/ca_data_importer_log_items.php:77
 #: ../../app/models/ca_metadata_dictionary_rules.php:112
 #: ../../app/models/ca_data_import_event_log.php:77
@@ -1398,8 +1398,8 @@ msgstr ""
 #: ../../themes/default/views/manage/set_list_html.php:79
 #: ../../themes/default/views/manage/set_list_by_user_html.php:79
 #: ../../themes/default/views/pageFormat/menuBar.php:7
-#: ../../app/lib/Utils/CLIUtils.php:286 ../../app/lib/Utils/CLIUtils.php:2800
-#: ../../app/lib/Utils/CLIUtils.php:2840
+#: ../../app/lib/Utils/CLIUtils.php:286 ../../app/lib/Utils/CLIUtils.php:2809
+#: ../../app/lib/Utils/CLIUtils.php:2849
 #: ../../app/lib/Browse/BrowseEngine.php:160 ../../app/models/ca_lists.php:1863
 #: ../../app/widgets/searchBySet/views/main_html.php:87
 #: ../../app/widgets/savedSearches/views/main_html.php:89
@@ -1696,20 +1696,6 @@ msgstr ""
 #: ../../themes/default/views/manage/Results/ca_item_comments_no_results_html.php:33
 #: ../../themes/default/views/manage/Results/ca_item_tags_no_results_html.php:33
 msgid "Please enter a search"
-msgstr ""
-
-#: ../../themes/default/views/administrate/setup/Results/no_results_html.php:38
-#: ../../themes/default/views/find/Results/no_results_html.php:40
-#: ../../themes/default/views/manage/Results/ca_item_comments_no_results_html.php:38
-#: ../../themes/default/views/manage/Results/ca_item_tags_no_results_html.php:38
-msgid "Did you mean one of these: %1 ?"
-msgstr ""
-
-#: ../../themes/default/views/administrate/setup/Results/no_results_html.php:40
-#: ../../themes/default/views/find/Results/no_results_html.php:42
-#: ../../themes/default/views/manage/Results/ca_item_comments_no_results_html.php:40
-#: ../../themes/default/views/manage/Results/ca_item_tags_no_results_html.php:40
-msgid "Did you mean %1 ?"
 msgstr ""
 
 #: ../../themes/default/views/administrate/setup/Results/paging_controls_html.php:49
@@ -2086,7 +2072,7 @@ msgid "Settings for %1"
 msgstr ""
 
 #: ../../themes/default/views/system/preferences_duplication_html.php:78
-#: ../../app/models/ca_editor_ui_screens.php:1176
+#: ../../app/models/ca_editor_ui_screens.php:1177
 msgid "Metadata element"
 msgstr ""
 
@@ -2374,11 +2360,11 @@ msgstr ""
 msgid "No user interface defined"
 msgstr ""
 
-#: ../../themes/default/views/editor/interstitial/interstitial_html.php:100
+#: ../../themes/default/views/editor/interstitial/interstitial_html.php:108
 msgid "Saved changes to"
 msgstr ""
 
-#: ../../themes/default/views/editor/interstitial/interstitial_html.php:100
+#: ../../themes/default/views/editor/interstitial/interstitial_html.php:108
 #: ../../themes/default/views/find/Results/ajax_results_editable_complex_data_form_html.php:87
 msgid "Edit %1"
 msgstr ""
@@ -2857,48 +2843,48 @@ msgstr ""
 
 #: ../../themes/default/views/bundles/ca_tour_stops.php:146
 #: ../../themes/default/views/bundles/ca_storage_locations.php:249
-#: ../../themes/default/views/bundles/ca_entities.php:182
+#: ../../themes/default/views/bundles/ca_entities.php:183
 #: ../../themes/default/views/bundles/related_list.php:180
 #: ../../themes/default/views/bundles/ca_movements.php:176
 #: ../../themes/default/views/bundles/ca_places.php:263
-#: ../../themes/default/views/bundles/ca_occurrences.php:178
+#: ../../themes/default/views/bundles/ca_occurrences.php:179
 #: ../../themes/default/views/bundles/ca_list_items.php:300
 #: ../../themes/default/views/bundles/ca_loans.php:176
 #: ../../themes/default/views/bundles/ca_objects.php:242
 #: ../../themes/default/views/bundles/ca_sets.php:175
-#: ../../themes/default/views/bundles/ca_collections.php:176
+#: ../../themes/default/views/bundles/ca_collections.php:177
 msgid "Add relationship"
 msgstr ""
 
 #: ../../themes/default/views/bundles/ca_tour_stops.php:155
 #: ../../themes/default/views/bundles/ca_storage_locations.php:259
 #: ../../themes/default/views/bundles/ca_objects_history.php:296
-#: ../../themes/default/views/bundles/ca_entities.php:192
+#: ../../themes/default/views/bundles/ca_entities.php:193
 #: ../../themes/default/views/bundles/ca_object_lots.php:276
 #: ../../themes/default/views/bundles/related_list.php:189
 #: ../../themes/default/views/bundles/ca_movements.php:186
 #: ../../themes/default/views/bundles/ca_places.php:273
-#: ../../themes/default/views/bundles/ca_occurrences.php:188
+#: ../../themes/default/views/bundles/ca_occurrences.php:189
 #: ../../themes/default/views/bundles/authority_attribute.php:63
 #: ../../themes/default/views/bundles/ca_loans.php:186
 #: ../../themes/default/views/bundles/ca_objects.php:252
 #: ../../themes/default/views/bundles/ca_sets.php:185
-#: ../../themes/default/views/bundles/ca_collections.php:186
+#: ../../themes/default/views/bundles/ca_collections.php:187
 msgid "Quick Add"
 msgstr ""
 
 #: ../../themes/default/views/bundles/ca_tour_stops.php:161
 #: ../../themes/default/views/bundles/ca_storage_locations.php:267
-#: ../../themes/default/views/bundles/ca_entities.php:200
+#: ../../themes/default/views/bundles/ca_entities.php:201
 #: ../../themes/default/views/bundles/ca_object_lots.php:283
 #: ../../themes/default/views/bundles/related_list.php:195
 #: ../../themes/default/views/bundles/ca_movements.php:194
 #: ../../themes/default/views/bundles/ca_places.php:280
-#: ../../themes/default/views/bundles/ca_occurrences.php:195
+#: ../../themes/default/views/bundles/ca_occurrences.php:196
 #: ../../themes/default/views/bundles/ca_list_items.php:309
 #: ../../themes/default/views/bundles/ca_loans.php:194
 #: ../../themes/default/views/bundles/ca_objects.php:260
-#: ../../themes/default/views/bundles/ca_collections.php:194
+#: ../../themes/default/views/bundles/ca_collections.php:195
 msgid "Relation editor"
 msgstr ""
 
@@ -3106,9 +3092,9 @@ msgstr ""
 #: ../../app/helpers/utilityHelpers.php:2799
 #: ../../app/helpers/utilityHelpers.php:2820
 #: ../../app/helpers/displayHelpers.php:912
-#: ../../app/lib/BaseEditorController.php:249 ../../app/lib/BaseModel.php:10235
-#: ../../app/lib/BaseModel.php:10237 ../../app/lib/BaseModel.php:11993
-#: ../../app/lib/BaseModel.php:12029 ../../app/lib/BaseModel.php:12063
+#: ../../app/lib/BaseEditorController.php:249 ../../app/lib/BaseModel.php:10234
+#: ../../app/lib/BaseModel.php:10236 ../../app/lib/BaseModel.php:11992
+#: ../../app/lib/BaseModel.php:12028 ../../app/lib/BaseModel.php:12062
 #: ../../app/models/ca_movements_x_objects.php:240
 #: ../../app/models/ca_notification_subjects.php:219
 #: ../../app/models/ca_notification_subjects.php:229
@@ -3350,7 +3336,7 @@ msgid "Number of media: %1"
 msgstr ""
 
 #: ../../themes/default/views/bundles/ca_site_page_media.php:105
-#: ../../app/models/ca_editor_ui_screens.php:902
+#: ../../app/models/ca_editor_ui_screens.php:879
 #: ../../app/models/ca_occurrences.php:82 ../../app/models/ca_list_items.php:84
 msgid "Identifier"
 msgstr ""
@@ -3365,7 +3351,7 @@ msgstr ""
 #: ../../themes/default/views/bundles/ca_object_representations.php:147
 #: ../../themes/default/views/manage/Pawtucket/page_list_html.php:75
 #: ../../themes/default/views/manage/set_list_html.php:123
-#: ../../themes/default/views/manage/set_list_by_user_html.php:118
+#: ../../themes/default/views/manage/set_list_by_user_html.php:120
 #: ../../app/models/ca_acl.php:88
 #: ../../app/models/ca_editor_uis_x_user_groups.php:73
 #: ../../app/models/ca_tour_stops.php:148
@@ -3964,8 +3950,8 @@ msgstr ""
 #: ../../themes/default/views/find/Results/xlsx_results.php:96
 #: ../../themes/default/views/manage/comment_list_html.php:63
 #: ../../themes/default/views/manage/Results/ca_item_comments_list_html.php:54
-#: ../../app/lib/Utils/CLIUtils.php:979 ../../app/lib/Utils/CLIUtils.php:1171
-#: ../../app/lib/Utils/CLIUtils.php:1668
+#: ../../app/lib/Utils/CLIUtils.php:988 ../../app/lib/Utils/CLIUtils.php:1180
+#: ../../app/lib/Utils/CLIUtils.php:1677
 #: ../../app/models/ca_bundle_displays.php:1385
 #: ../../app/plugins/ArtefactsCanada/controllers/ExportController.php:166
 #: ../../app/conf/navigation.conf:4558
@@ -4405,7 +4391,7 @@ msgid "Create new set %1 from the %2 of %3 selected sets"
 msgstr ""
 
 #: ../../themes/default/views/manage/set_list_html.php:105
-#: ../../themes/default/views/manage/set_list_by_user_html.php:100
+#: ../../themes/default/views/manage/set_list_by_user_html.php:102
 #: ../../themes/default/views/manage/search_form_list_html.php:73
 #: ../../themes/default/views/manage/metadata_alert_list_html.php:67
 #: ../../themes/default/views/manage/bundle_display_list_html.php:69
@@ -4413,12 +4399,12 @@ msgid "Content type"
 msgstr ""
 
 #: ../../themes/default/views/manage/set_list_html.php:117
-#: ../../themes/default/views/manage/set_list_by_user_html.php:112
+#: ../../themes/default/views/manage/set_list_by_user_html.php:114
 msgid "# Items"
 msgstr ""
 
 #: ../../themes/default/views/manage/set_list_html.php:120
-#: ../../themes/default/views/manage/set_list_by_user_html.php:115
+#: ../../themes/default/views/manage/set_list_by_user_html.php:117
 #: ../../themes/default/views/manage/search_form_list_html.php:70
 #: ../../themes/default/views/manage/metadata_alert_list_html.php:70
 #: ../../themes/default/views/manage/bundle_display_list_html.php:66
@@ -4429,19 +4415,19 @@ msgid "Owner"
 msgstr ""
 
 #: ../../themes/default/views/manage/set_list_html.php:159
-#: ../../themes/default/views/manage/set_list_by_user_html.php:159
+#: ../../themes/default/views/manage/set_list_by_user_html.php:161
 #: ../../themes/default/views/batch/mediaimport/batch_results_html.php:109
 #: ../../app/helpers/displayHelpers.php:1498
 msgid "Batch edit"
 msgstr ""
 
 #: ../../themes/default/views/manage/set_list_html.php:188
-#: ../../themes/default/views/manage/set_list_by_user_html.php:189
+#: ../../themes/default/views/manage/set_list_by_user_html.php:191
 msgid "No sets have been created"
 msgstr ""
 
 #: ../../themes/default/views/manage/set_list_html.php:196
-#: ../../themes/default/views/manage/set_list_by_user_html.php:197
+#: ../../themes/default/views/manage/set_list_by_user_html.php:199
 msgid "Batch"
 msgstr ""
 
@@ -4497,11 +4483,22 @@ msgstr ""
 msgid "%1 saved searches"
 msgstr ""
 
-#: ../../themes/default/views/manage/set_list_by_user_html.php:134
+#: ../../themes/default/views/manage/set_list_by_user_html.php:90
+#: ../../app/helpers/searchHelpers.php:1551
+#: ../../app/helpers/searchHelpers.php:1559 ../../app/models/ca_users.php:48
+msgid "user"
+msgstr ""
+
+#: ../../themes/default/views/manage/set_list_by_user_html.php:91
+#: ../../app/models/ca_users.php:49
+msgid "users"
+msgstr ""
+
+#: ../../themes/default/views/manage/set_list_by_user_html.php:136
 msgid "%1 set"
 msgstr ""
 
-#: ../../themes/default/views/manage/set_list_by_user_html.php:134
+#: ../../themes/default/views/manage/set_list_by_user_html.php:136
 msgid "%1 sets"
 msgstr ""
 
@@ -4804,7 +4801,7 @@ msgid "Approved"
 msgstr ""
 
 #: ../../themes/default/views/manage/Results/ca_item_comments_list_html.php:127
-#: ../../app/lib/BaseModel.php:10447 ../../app/lib/BaseModel.php:10831
+#: ../../app/lib/BaseModel.php:10446 ../../app/lib/BaseModel.php:10830
 msgid "Needs moderation"
 msgstr ""
 
@@ -5501,7 +5498,7 @@ msgstr ""
 msgid "day"
 msgstr ""
 
-#: ../../app/helpers/utilityHelpers.php:1235 ../../app/lib/BaseSettings.php:636
+#: ../../app/helpers/utilityHelpers.php:1235 ../../app/lib/BaseSettings.php:572
 msgid "days"
 msgstr ""
 
@@ -5509,7 +5506,7 @@ msgstr ""
 msgid "hour"
 msgstr ""
 
-#: ../../app/helpers/utilityHelpers.php:1236 ../../app/lib/BaseSettings.php:636
+#: ../../app/helpers/utilityHelpers.php:1236 ../../app/lib/BaseSettings.php:572
 msgid "hours"
 msgstr ""
 
@@ -5595,7 +5592,7 @@ msgstr ""
 
 #: ../../app/helpers/searchHelpers.php:1083
 #: ../../app/models/ca_search_forms.php:825
-#: ../../app/models/ca_search_forms.php:1140
+#: ../../app/models/ca_search_forms.php:1141
 msgid "Full text"
 msgstr ""
 
@@ -5651,12 +5648,6 @@ msgstr ""
 #: ../../app/helpers/searchHelpers.php:1558
 #: ../../app/lib/MetadataAlerts/TriggerTypes/Date.php:52
 msgid "date"
-msgstr ""
-
-#: ../../app/helpers/searchHelpers.php:1551
-#: ../../app/helpers/searchHelpers.php:1559 ../../app/models/ca_users.php:48
-#: ../../app/controllers/manage/SetController.php:243
-msgid "user"
 msgstr ""
 
 #: ../../app/helpers/searchHelpers.php:1557
@@ -5984,7 +5975,7 @@ msgstr ""
 #: ../../app/models/ca_user_representation_annotations.php:619
 #: ../../app/models/ca_set_items.php:385
 #: ../../app/models/ca_representation_annotations.php:641
-#: ../../app/models/ca_object_representations.php:1668
+#: ../../app/models/ca_object_representations.php:1682
 msgid "page"
 msgstr ""
 
@@ -5994,7 +5985,7 @@ msgstr ""
 #: ../../app/models/ca_user_representation_annotations.php:619
 #: ../../app/models/ca_set_items.php:385
 #: ../../app/models/ca_representation_annotations.php:641
-#: ../../app/models/ca_object_representations.php:1668
+#: ../../app/models/ca_object_representations.php:1682
 msgid "pages"
 msgstr ""
 
@@ -6386,38 +6377,43 @@ msgstr ""
 msgid "Back to record"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:3277
+#: ../../app/helpers/displayHelpers.php:3282 ../../app/lib/BaseSettings.php:535
+#: ../../app/lib/BaseSettings.php:541
+msgid "User defined sort order"
+msgstr ""
+
+#: ../../app/helpers/displayHelpers.php:3284
 msgid "↑"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:3277
+#: ../../app/helpers/displayHelpers.php:3284
 msgid "↓"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:3277
+#: ../../app/helpers/displayHelpers.php:3284
 msgid "Sort by %1 %2"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:3663
+#: ../../app/helpers/displayHelpers.php:3670
 msgid "No media"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:3748
+#: ../../app/helpers/displayHelpers.php:3755
 msgid "Add item to %1"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:3750
+#: ../../app/helpers/displayHelpers.php:3757
 msgid "Login to add item to %1"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:3796
+#: ../../app/helpers/displayHelpers.php:3803
 msgid "Zoom"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:3888
-#: ../../app/helpers/displayHelpers.php:4025
-#: ../../app/helpers/displayHelpers.php:4090
-#: ../../app/helpers/displayHelpers.php:4139
+#: ../../app/helpers/displayHelpers.php:3895
+#: ../../app/helpers/displayHelpers.php:4032
+#: ../../app/helpers/displayHelpers.php:4097
+#: ../../app/helpers/displayHelpers.php:4146
 #: ../../app/lib/Media/MediaViewers/Spin360.php:102
 #: ../../app/lib/BaseEditorController.php:2000
 #: ../../app/lib/BaseEditorController.php:2073
@@ -6425,8 +6421,8 @@ msgstr ""
 msgid "Invalid identifier %1"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:3914
-#: ../../app/helpers/displayHelpers.php:3986
+#: ../../app/helpers/displayHelpers.php:3921
+#: ../../app/helpers/displayHelpers.php:3993
 #: ../../app/lib/BaseEditorController.php:1894
 #: ../../app/lib/BaseEditorController.php:1908
 #: ../../app/lib/BaseEditorController.php:1995
@@ -6435,22 +6431,22 @@ msgstr ""
 msgid "Cannot view media"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:3921
+#: ../../app/helpers/displayHelpers.php:3928
 msgid "Invalid viewer: %1/%2"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:3949
+#: ../../app/helpers/displayHelpers.php:3956
 #: ../../app/lib/BatchProcessor.php:343
 msgid "Invalid subject"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:3989
-#: ../../app/helpers/displayHelpers.php:4035
-#: ../../app/helpers/displayHelpers.php:4066
-#: ../../app/helpers/displayHelpers.php:4100
-#: ../../app/helpers/displayHelpers.php:4115
-#: ../../app/helpers/displayHelpers.php:4149
-#: ../../app/helpers/displayHelpers.php:4164
+#: ../../app/helpers/displayHelpers.php:3996
+#: ../../app/helpers/displayHelpers.php:4042
+#: ../../app/helpers/displayHelpers.php:4073
+#: ../../app/helpers/displayHelpers.php:4107
+#: ../../app/helpers/displayHelpers.php:4122
+#: ../../app/helpers/displayHelpers.php:4156
+#: ../../app/helpers/displayHelpers.php:4171
 #: ../../app/lib/BaseEditorController.php:1898
 #: ../../app/lib/BaseEditorController.php:1920
 #: ../../app/lib/BaseEditorController.php:1964
@@ -6463,29 +6459,29 @@ msgstr ""
 msgid "Invalid viewer"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:4008
-#: ../../app/helpers/displayHelpers.php:4073
-#: ../../app/helpers/displayHelpers.php:4122
-#: ../../app/helpers/displayHelpers.php:4171
+#: ../../app/helpers/displayHelpers.php:4015
+#: ../../app/helpers/displayHelpers.php:4080
+#: ../../app/helpers/displayHelpers.php:4129
+#: ../../app/helpers/displayHelpers.php:4178
 #: ../../app/lib/Service/IIIFService.php:127
 #: ../../app/lib/Service/IIIFService.php:132
 #: ../../app/lib/Service/IIIFService.php:150
 msgid "Invalid identifier"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:4201
+#: ../../app/helpers/displayHelpers.php:4208
 msgid "Invalid viewer %1/%2"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:4219
+#: ../../app/helpers/displayHelpers.php:4226
 #: ../../app/lib/BaseEditorController.php:1984
-#: ../../app/lib/BaseModel.php:12533
+#: ../../app/lib/BaseModel.php:12532
 msgid "Invalid id"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:4616
+#: ../../app/helpers/displayHelpers.php:4623
 #: ../../app/lib/ApplicationChangeLog.php:1109
-#: ../../app/models/ca_sets.php:1261
+#: ../../app/models/ca_sets.php:1288
 #: ../../app/widgets/recentlyCreated/views/main_html.php:45
 #: ../../app/widgets/recordsByStatus/views/main_html.php:43
 msgid "BLANK"
@@ -8054,29 +8050,23 @@ msgstr ""
 msgid ""
 "Your database is extremely out-of-date. Please install all database "
 "migrations starting with migration #1 or contact support@collectiveaccess."
-"org for assistance. See the <a href=\"http://docs.collectiveaccess.org/wiki/"
-"Applying_Database_Updates\">update HOW-TO</a> for instructions on applying "
-"database updates manually."
+"org for assistance."
 msgstr ""
 
 #: ../../app/lib/ConfigurationCheck.php:249
 msgid ""
 "Your database is out-of-date. Please install all schema migrations starting "
 "with migration #%1. <a href='index.php?updateSchema=1'><strong>Click here</"
-"strong></a> to automatically apply the required updates, or see the <a href="
-"\"http://docs.collectiveaccess.org/wiki/Applying_Database_Updates\">update "
-"HOW-TO</a> for instructions on applying database updates manually.<br/><br/"
-"><div align='center'><strong>NOTE: you should back-up your database before "
+"strong></a> to automatically apply the required updates.<br/><br/><div "
+"align='center'><strong>NOTE: you should back-up your database before "
 "applying updates!</strong></div>"
 msgstr ""
 
 #: ../../app/lib/ConfigurationCheck.php:251
 msgid ""
 "Your database is out-of-date. Please install all schema migrations starting "
-"with migration #%1. See the <a href=\"http://docs.collectiveaccess.org/wiki/"
-"Applying_Database_Updates\">update HOW-TO</a> for instructions on applying "
-"database updates manually.<br/><br/><div align='center'><strong>NOTE: you "
-"should back-up your database before applying updates!</strong></div>"
+"with migration #%1.<br/><br/><div align='center'><strong>NOTE: you should "
+"back-up your database before applying updates!</strong></div>"
 msgstr ""
 
 #: ../../app/lib/ConfigurationCheck.php:256
@@ -8680,7 +8670,7 @@ msgstr ""
 
 #: ../../app/lib/IDNumbering/MultipartIDNumber.php:491
 #: ../../app/lib/IDNumbering/SMFMultipartIDNumber.php:292
-#: ../../app/lib/BaseModel.php:5838
+#: ../../app/lib/BaseModel.php:5837
 msgid "%1 must not be less than %2"
 msgstr ""
 
@@ -8719,7 +8709,7 @@ msgstr ""
 #: ../../app/lib/IDNumbering/SMFMultipartIDNumber.php:739
 #: ../../app/lib/IDNumbering/UUIDNumber.php:208
 #: ../../app/lib/IDNumbering/UUIDNumber.php:210
-#: ../../app/lib/Utils/CLIUtils.php:2337
+#: ../../app/lib/Utils/CLIUtils.php:2346
 #: ../../app/models/ca_data_importer_log_items.php:76
 #: ../../app/models/ca_metadata_dictionary_rules.php:111
 #: ../../app/models/ca_data_import_event_log.php:76
@@ -8862,13 +8852,13 @@ msgid "Invalid number of arguments. Number of arguments passed: %1"
 msgstr ""
 
 #: ../../app/lib/Search/SearchEngine.php:148
-#: ../../app/lib/BaseModelWithAttributes.php:1362
+#: ../../app/lib/BaseModelWithAttributes.php:1409
 #: ../../app/lib/Plugins/SearchEngine/SqlSearch.php:945
 #: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2263
 msgid "SET"
 msgstr ""
 
-#: ../../app/lib/Search/SearchEngine.php:1195
+#: ../../app/lib/Search/SearchEngine.php:1177
 msgid "%1 [as %2]"
 msgstr ""
 
@@ -9104,7 +9094,7 @@ msgid "Added relationship"
 msgstr ""
 
 #: ../../app/lib/BaseEditorController.php:286
-#: ../../app/lib/BaseEditorController.php:481 ../../app/lib/BaseModel.php:5818
+#: ../../app/lib/BaseEditorController.php:481 ../../app/lib/BaseModel.php:5817
 msgid "%1 does not exist"
 msgstr ""
 
@@ -9373,13 +9363,13 @@ msgid ""
 "_getID(): %4"
 msgstr ""
 
-#: ../../app/lib/Utils/CLITools.php:50 ../../app/lib/Utils/CLIUtils.php:1254
-#: ../../app/lib/Utils/CLIUtils.php:1692 ../../app/lib/Utils/CLIUtils.php:2031
-#: ../../app/lib/Utils/CLIUtils.php:3514
+#: ../../app/lib/Utils/CLITools.php:50 ../../app/lib/Utils/CLIUtils.php:1263
+#: ../../app/lib/Utils/CLIUtils.php:1701 ../../app/lib/Utils/CLIUtils.php:2040
+#: ../../app/lib/Utils/CLIUtils.php:3523
 msgid "You must specify a file"
 msgstr ""
 
-#: ../../app/lib/Utils/CLITools.php:54 ../../app/lib/Utils/CLIUtils.php:1258
+#: ../../app/lib/Utils/CLITools.php:54 ../../app/lib/Utils/CLIUtils.php:1267
 msgid "File '%1' does not exist"
 msgstr ""
 
@@ -9613,8 +9603,8 @@ msgstr ""
 msgid "Debug flag for installer."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:190 ../../app/lib/Utils/CLIUtils.php:965
-#: ../../app/lib/Utils/CLIUtils.php:2684
+#: ../../app/lib/Utils/CLIUtils.php:190 ../../app/lib/Utils/CLIUtils.php:974
+#: ../../app/lib/Utils/CLIUtils.php:2693
 msgid "Suppress progress messages."
 msgstr ""
 
@@ -9625,7 +9615,7 @@ msgid ""
 msgstr ""
 
 #: ../../app/lib/Utils/CLIUtils.php:199 ../../app/lib/Utils/CLIUtils.php:224
-#: ../../app/lib/Utils/CLIUtils.php:701 ../../app/lib/Utils/CLIUtils.php:4031
+#: ../../app/lib/Utils/CLIUtils.php:710 ../../app/lib/Utils/CLIUtils.php:4040
 msgid "Configuration"
 msgstr ""
 
@@ -9707,8 +9697,8 @@ msgid ""
 "with the database."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:330 ../../app/lib/Utils/CLIUtils.php:2755
-#: ../../app/lib/Utils/CLIUtils.php:2876
+#: ../../app/lib/Utils/CLIUtils.php:330 ../../app/lib/Utils/CLIUtils.php:2764
+#: ../../app/lib/Utils/CLIUtils.php:2885
 #: ../../app/plugins/ArtefactsCanada/controllers/ExportController.php:215
 msgid "Processing %1"
 msgstr ""
@@ -9717,19 +9707,19 @@ msgstr ""
 msgid "Processing %1 identifiers"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:369 ../../app/lib/Utils/CLIUtils.php:469
-#: ../../app/lib/Utils/CLIUtils.php:549 ../../app/lib/Utils/CLIUtils.php:632
-#: ../../app/lib/Utils/CLIUtils.php:1230 ../../app/lib/Utils/CLIUtils.php:1888
-#: ../../app/lib/Utils/CLIUtils.php:2000 ../../app/lib/Utils/CLIUtils.php:2164
-#: ../../app/lib/Utils/CLIUtils.php:2277 ../../app/lib/Utils/CLIUtils.php:2698
-#: ../../app/lib/Utils/CLIUtils.php:2901 ../../app/lib/Utils/CLIUtils.php:2970
-#: ../../app/lib/Utils/CLIUtils.php:3058 ../../app/lib/Utils/CLIUtils.php:3125
-#: ../../app/lib/Utils/CLIUtils.php:3203 ../../app/lib/Utils/CLIUtils.php:3309
-#: ../../app/lib/Utils/CLIUtils.php:3358 ../../app/lib/Utils/CLIUtils.php:3483
-#: ../../app/lib/Utils/CLIUtils.php:3796 ../../app/lib/Utils/CLIUtils.php:3878
-#: ../../app/lib/Utils/CLIUtils.php:4069 ../../app/lib/Utils/CLIUtils.php:4119
-#: ../../app/lib/Utils/CLIUtils.php:4198 ../../app/lib/Utils/CLIUtils.php:4666
-#: ../../app/lib/Utils/CLIUtils.php:4784 ../../app/lib/Utils/CLIUtils.php:4828
+#: ../../app/lib/Utils/CLIUtils.php:369 ../../app/lib/Utils/CLIUtils.php:478
+#: ../../app/lib/Utils/CLIUtils.php:558 ../../app/lib/Utils/CLIUtils.php:641
+#: ../../app/lib/Utils/CLIUtils.php:1239 ../../app/lib/Utils/CLIUtils.php:1897
+#: ../../app/lib/Utils/CLIUtils.php:2009 ../../app/lib/Utils/CLIUtils.php:2173
+#: ../../app/lib/Utils/CLIUtils.php:2286 ../../app/lib/Utils/CLIUtils.php:2707
+#: ../../app/lib/Utils/CLIUtils.php:2910 ../../app/lib/Utils/CLIUtils.php:2979
+#: ../../app/lib/Utils/CLIUtils.php:3067 ../../app/lib/Utils/CLIUtils.php:3134
+#: ../../app/lib/Utils/CLIUtils.php:3212 ../../app/lib/Utils/CLIUtils.php:3318
+#: ../../app/lib/Utils/CLIUtils.php:3367 ../../app/lib/Utils/CLIUtils.php:3492
+#: ../../app/lib/Utils/CLIUtils.php:3805 ../../app/lib/Utils/CLIUtils.php:3887
+#: ../../app/lib/Utils/CLIUtils.php:4078 ../../app/lib/Utils/CLIUtils.php:4128
+#: ../../app/lib/Utils/CLIUtils.php:4207 ../../app/lib/Utils/CLIUtils.php:4675
+#: ../../app/lib/Utils/CLIUtils.php:4793 ../../app/lib/Utils/CLIUtils.php:4837
 #: ../../app/conf/navigation.conf:4338
 msgid "Maintenance"
 msgstr ""
@@ -9762,89 +9752,89 @@ msgstr ""
 msgid "Loading valid file paths from database"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:418
+#: ../../app/lib/Utils/CLIUtils.php:429
 msgid "Reading file list"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:425
+#: ../../app/lib/Utils/CLIUtils.php:436
 msgid "Finding unused files"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:440
+#: ../../app/lib/Utils/CLIUtils.php:449
 msgid "There are %1 files total"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:449
+#: ../../app/lib/Utils/CLIUtils.php:458
 msgid "%1 file (%2) was deleted"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:449
+#: ../../app/lib/Utils/CLIUtils.php:458
 msgid "%1 file (%2) is unused"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:451
+#: ../../app/lib/Utils/CLIUtils.php:460
 msgid "%1 files (%2) were deleted"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:451
+#: ../../app/lib/Utils/CLIUtils.php:460
 msgid "%1 files (%2) are unused"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:461
+#: ../../app/lib/Utils/CLIUtils.php:470
 msgid "Delete unused files. Default is false."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:476
+#: ../../app/lib/Utils/CLIUtils.php:485
 msgid ""
 "Detects and, optionally, removes media present in the media directories but "
 "not referenced in the database."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:483
+#: ../../app/lib/Utils/CLIUtils.php:492
 msgid "Help text to come"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:503
+#: ../../app/lib/Utils/CLIUtils.php:512
 msgid "Removing deleted representations from database"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:505
+#: ../../app/lib/Utils/CLIUtils.php:514
 msgid "Loading deleted representations from database"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:527 ../../app/lib/Utils/CLIUtils.php:613
+#: ../../app/lib/Utils/CLIUtils.php:536 ../../app/lib/Utils/CLIUtils.php:622
 msgid "Done!"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:529
+#: ../../app/lib/Utils/CLIUtils.php:538
 msgid "There are no deleted representations to process!"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:531
+#: ../../app/lib/Utils/CLIUtils.php:540
 msgid ""
 "%1 files are referenced by %2 deleted records. Both the records and the "
 "files will be deleted if you re-run the script with the -d (--delete) option "
 "and the correct permissions."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:532
+#: ../../app/lib/Utils/CLIUtils.php:541
 msgid "It is highly recommended to create a full backup before you do this!"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:541
+#: ../../app/lib/Utils/CLIUtils.php:550
 msgid ""
 "Removes representations marked as deleted. Default is false. Note that the "
 "system user that runs this script has to be able to write/delete the "
 "referenced media files if you want them to be removed."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:556
+#: ../../app/lib/Utils/CLIUtils.php:565
 msgid ""
 "Detects and, optionally, completely removes object representations marked as "
 "deleted in the database. Files referenced by these records are also removed."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:563
+#: ../../app/lib/Utils/CLIUtils.php:572
 msgid ""
 "Detects and, optionally, completely removes object representations marked as "
 "deleted in the database. Files referenced by these records are also removed. "
@@ -9852,7 +9842,7 @@ msgid ""
 "representation stock and you want to free up disk space."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:570
+#: ../../app/lib/Utils/CLIUtils.php:579
 msgid ""
 "Are you sure you want to PERMANENTLY remove all deleted records? This cannot "
 "be undone.\n"
@@ -9860,102 +9850,102 @@ msgid ""
 "Type 'y' to proceed or 'N' to cancel, then hit return "
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:593
+#: ../../app/lib/Utils/CLIUtils.php:602
 msgid "Removing deleted %1 from database"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:605
+#: ../../app/lib/Utils/CLIUtils.php:614
 msgid "Removed %1 %2"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:615
+#: ../../app/lib/Utils/CLIUtils.php:624
 msgid "Nothing to delete!"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:624
+#: ../../app/lib/Utils/CLIUtils.php:633
 msgid ""
 "List of tables for which to purge deleted records. List multiple tables "
 "names separated by commas. If no table list is provided all tables are "
 "purged."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:639
+#: ../../app/lib/Utils/CLIUtils.php:648
 msgid ""
 "Completely and permanently removes records marked as deleted in the database."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:646
+#: ../../app/lib/Utils/CLIUtils.php:655
 msgid ""
 "Completely and permanently removes records marked as deleted in the "
 "database. Files referenced by these records are also removed. Note that this "
 "cannot be undone."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:656
+#: ../../app/lib/Utils/CLIUtils.php:665
 msgid "The PHP DOM extension is required to export profiles"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:664
+#: ../../app/lib/Utils/CLIUtils.php:673
 msgid "Cannot write profile to '%1'"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:688
+#: ../../app/lib/Utils/CLIUtils.php:697
 msgid ""
 "File name of profile to use as base profile. Omit if you do not want to use "
 "a base profile. (Optional)"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:689
+#: ../../app/lib/Utils/CLIUtils.php:698
 msgid "Name of the profile, used for \"profileName\" element."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:690
+#: ../../app/lib/Utils/CLIUtils.php:699
 msgid "URL pointing to more information about the profile. (Optional)"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:691
+#: ../../app/lib/Utils/CLIUtils.php:700
 msgid ""
 "Description of the profile, used for \"profileDescription\" element. "
 "(Optional)"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:692
+#: ../../app/lib/Utils/CLIUtils.php:701
 msgid ""
 "File to output profile to. If omitted profile is printed to standard output. "
 "(Optional)"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:693
+#: ../../app/lib/Utils/CLIUtils.php:702
 msgid ""
 "Limit output to configuration changes made after this UNIX timestamp. "
 "(Optional)"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:708
+#: ../../app/lib/Utils/CLIUtils.php:717
 msgid "Export current system configuration as an XML installation profile."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:715 ../../app/lib/Utils/CLIUtils.php:766
+#: ../../app/lib/Utils/CLIUtils.php:724 ../../app/lib/Utils/CLIUtils.php:775
 msgid "Help text to come."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:728
+#: ../../app/lib/Utils/CLIUtils.php:737
 msgid "Processing queued tasks..."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:731
+#: ../../app/lib/Utils/CLIUtils.php:740
 msgid "Processing recurring tasks..."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:733
+#: ../../app/lib/Utils/CLIUtils.php:742
 msgid "Processing complete."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:743 ../../app/lib/Utils/CLIUtils.php:1880
+#: ../../app/lib/Utils/CLIUtils.php:752 ../../app/lib/Utils/CLIUtils.php:1889
 msgid "Run without outputting progress information."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:744
+#: ../../app/lib/Utils/CLIUtils.php:753
 msgid ""
 "Restart/reset unfinished tasks before queue processing. This option can be "
 "useful when the task queue script (or the whole machine) crashed and you "
@@ -9963,79 +9953,79 @@ msgid ""
 "with any existing task queue processes that are actually running."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:752
+#: ../../app/lib/Utils/CLIUtils.php:761
 msgid "Cron"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:759
+#: ../../app/lib/Utils/CLIUtils.php:768
 msgid "Process queued tasks."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:846
+#: ../../app/lib/Utils/CLIUtils.php:855
 msgid "Re-processing representation media"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:851 ../../app/lib/Utils/CLIUtils.php:908
+#: ../../app/lib/Utils/CLIUtils.php:860 ../../app/lib/Utils/CLIUtils.php:917
 msgid "Re-processing %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:875
+#: ../../app/lib/Utils/CLIUtils.php:884
 msgid "Error processing representation media: %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:895
+#: ../../app/lib/Utils/CLIUtils.php:904
 msgid "Re-processing attribute media"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:915
+#: ../../app/lib/Utils/CLIUtils.php:924
 msgid "Error processing attribute media: %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:930
+#: ../../app/lib/Utils/CLIUtils.php:939
 msgid "Re-processing icons"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:939
+#: ../../app/lib/Utils/CLIUtils.php:948
 msgid "Re-processing %1 from %2"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:946
+#: ../../app/lib/Utils/CLIUtils.php:955
 msgid "Error processing icon media: %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:963
+#: ../../app/lib/Utils/CLIUtils.php:972
 msgid ""
 "Limit re-processing to specified mimetype(s) or mimetype stubs. Separate "
 "multiple mimetypes with commas."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:964
+#: ../../app/lib/Utils/CLIUtils.php:973
 msgid ""
 "Limit re-processing to specified versions. Separate multiple versions with "
 "commas."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:966
+#: ../../app/lib/Utils/CLIUtils.php:975
 msgid "Representation id to start reloading at"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:967
+#: ../../app/lib/Utils/CLIUtils.php:976
 msgid "Representation id to end reloading at"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:968
+#: ../../app/lib/Utils/CLIUtils.php:977
 msgid "Representation id to reload"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:969
+#: ../../app/lib/Utils/CLIUtils.php:978
 msgid "Comma separated list of representation ids to reload"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:970
+#: ../../app/lib/Utils/CLIUtils.php:979
 msgid "Comma separated list of object ids to reload"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:971
+#: ../../app/lib/Utils/CLIUtils.php:980
 msgid ""
 "Comma separated list of kind of media to reprocess. Valid kinds are "
 "ca_object_representations (object representations), ca_attributes (metadata "
@@ -10044,51 +10034,51 @@ msgid ""
 "to reprocess all kinds of media. Default is \"all\""
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:986
+#: ../../app/lib/Utils/CLIUtils.php:995
 msgid "Re-process existing media using current media processing configuration."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:993
+#: ../../app/lib/Utils/CLIUtils.php:1002
 msgid "CollectiveAccess generates derivatives for all uploaded media."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1004
+#: ../../app/lib/Utils/CLIUtils.php:1013
 msgid "Can't reindex PDFs: PDFMiner is not installed."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1070
+#: ../../app/lib/Utils/CLIUtils.php:1079
 msgid "Reindexing PDF representations"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1077
+#: ../../app/lib/Utils/CLIUtils.php:1086
 msgid "Reindexing PDF %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1115
+#: ../../app/lib/Utils/CLIUtils.php:1124
 msgid "Reindexing metadata attribute media"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1130
+#: ../../app/lib/Utils/CLIUtils.php:1139
 msgid "Reindexing %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1159
+#: ../../app/lib/Utils/CLIUtils.php:1168
 msgid "Representation id to start reindexing at"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1160
+#: ../../app/lib/Utils/CLIUtils.php:1169
 msgid "Representation id to end reindexing at"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1161
+#: ../../app/lib/Utils/CLIUtils.php:1170
 msgid "Representation id to reindex"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1162
+#: ../../app/lib/Utils/CLIUtils.php:1171
 msgid "Comma separated list of representation ids to reindex"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1163
+#: ../../app/lib/Utils/CLIUtils.php:1172
 msgid ""
 "Comma separated list of kind of media to reindex. Valid kinds are "
 "ca_object_representations (object representations), and ca_attributes "
@@ -10096,11 +10086,11 @@ msgid ""
 "media. Default is \"all\""
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1178
+#: ../../app/lib/Utils/CLIUtils.php:1187
 msgid "Reindex PDF media for in-viewer content search."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1185
+#: ../../app/lib/Utils/CLIUtils.php:1194
 msgid ""
 "The CollectiveAccess document viewer can search text within PDFs and "
 "highlight matches. To enable this feature PDF content must be analyzed and "
@@ -10109,7 +10099,7 @@ msgid ""
 "you can use this command to analyze and index PDFs in the database."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1196
+#: ../../app/lib/Utils/CLIUtils.php:1205
 msgid ""
 "Are you sure you want to update your CollectiveAccess database from revision "
 "%1 to %2?\n"
@@ -10118,128 +10108,128 @@ msgid ""
 "Type 'y' to proceed or 'N' to cancel, then hit return "
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1206
+#: ../../app/lib/Utils/CLIUtils.php:1215
 msgid "Updating database"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1213
+#: ../../app/lib/Utils/CLIUtils.php:1222
 msgid "Database already at revision %1. No update is required."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1237
+#: ../../app/lib/Utils/CLIUtils.php:1246
 msgid "Update database schema to the current version."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1244
+#: ../../app/lib/Utils/CLIUtils.php:1253
 msgid "Updates database schema to current version."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1265
+#: ../../app/lib/Utils/CLIUtils.php:1274
 msgid "Could not import '%1': %2"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1269
+#: ../../app/lib/Utils/CLIUtils.php:1278
 msgid "There were warnings when adding mapping from file '%1': %2"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1272 ../../app/lib/Utils/CLIUtils.php:1461
+#: ../../app/lib/Utils/CLIUtils.php:1281 ../../app/lib/Utils/CLIUtils.php:1470
 msgid "Created mapping %1 from %2"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1282 ../../app/lib/Utils/CLIUtils.php:1471
-#: ../../app/lib/Utils/CLIUtils.php:2156
+#: ../../app/lib/Utils/CLIUtils.php:1291 ../../app/lib/Utils/CLIUtils.php:1480
+#: ../../app/lib/Utils/CLIUtils.php:2165
 msgid "Excel XLSX file to load."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1283 ../../app/lib/Utils/CLIUtils.php:1398
-#: ../../app/lib/Utils/CLIUtils.php:3194 ../../app/lib/Utils/CLIUtils.php:4020
-#: ../../app/lib/Utils/CLIUtils.php:4155 ../../app/lib/Utils/CLIUtils.php:4556
+#: ../../app/lib/Utils/CLIUtils.php:1292 ../../app/lib/Utils/CLIUtils.php:1407
+#: ../../app/lib/Utils/CLIUtils.php:3203 ../../app/lib/Utils/CLIUtils.php:4029
+#: ../../app/lib/Utils/CLIUtils.php:4164 ../../app/lib/Utils/CLIUtils.php:4565
 msgid ""
 "Path to directory in which to log import details. If not set no logs will be "
 "recorded."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1284 ../../app/lib/Utils/CLIUtils.php:1399
-#: ../../app/lib/Utils/CLIUtils.php:3195 ../../app/lib/Utils/CLIUtils.php:4021
-#: ../../app/lib/Utils/CLIUtils.php:4156 ../../app/lib/Utils/CLIUtils.php:4557
+#: ../../app/lib/Utils/CLIUtils.php:1293 ../../app/lib/Utils/CLIUtils.php:1408
+#: ../../app/lib/Utils/CLIUtils.php:3204 ../../app/lib/Utils/CLIUtils.php:4030
+#: ../../app/lib/Utils/CLIUtils.php:4165 ../../app/lib/Utils/CLIUtils.php:4566
 msgid ""
 "Logging threshold. Possible values are, in ascending order of important: "
 "DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1292 ../../app/lib/Utils/CLIUtils.php:1413
-#: ../../app/lib/Utils/CLIUtils.php:1479 ../../app/lib/Utils/CLIUtils.php:1595
-#: ../../app/lib/Utils/CLIUtils.php:1711 ../../app/lib/Utils/CLIUtils.php:1759
-#: ../../app/lib/Utils/CLIUtils.php:1797 ../../app/lib/Utils/CLIUtils.php:3735
-#: ../../app/lib/Utils/CLIUtils.php:4585 ../../app/lib/Utils/CLIUtils.php:4704
+#: ../../app/lib/Utils/CLIUtils.php:1301 ../../app/lib/Utils/CLIUtils.php:1422
+#: ../../app/lib/Utils/CLIUtils.php:1488 ../../app/lib/Utils/CLIUtils.php:1604
+#: ../../app/lib/Utils/CLIUtils.php:1720 ../../app/lib/Utils/CLIUtils.php:1768
+#: ../../app/lib/Utils/CLIUtils.php:1806 ../../app/lib/Utils/CLIUtils.php:3744
+#: ../../app/lib/Utils/CLIUtils.php:4594 ../../app/lib/Utils/CLIUtils.php:4713
 msgid "Import/Export"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1299
+#: ../../app/lib/Utils/CLIUtils.php:1308
 msgid "Load import mapping from Excel XLSX format file."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1306
+#: ../../app/lib/Utils/CLIUtils.php:1315
 msgid "Loads import mapping from Excel XLSX format file."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1316
+#: ../../app/lib/Utils/CLIUtils.php:1325
 msgid "You must specify a data source for import"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1320
+#: ../../app/lib/Utils/CLIUtils.php:1329
 msgid "You must specify a mapping"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1324 ../../app/lib/Utils/CLIUtils.php:1551
-#: ../../app/lib/Utils/CLIUtils.php:4459
+#: ../../app/lib/Utils/CLIUtils.php:1333 ../../app/lib/Utils/CLIUtils.php:1560
+#: ../../app/lib/Utils/CLIUtils.php:4468
 msgid "Mapping %1 does not exist"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1329 ../../app/lib/Utils/CLIUtils.php:4337
+#: ../../app/lib/Utils/CLIUtils.php:1338 ../../app/lib/Utils/CLIUtils.php:4346
 msgid "Set %1 does not exist"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1333
+#: ../../app/lib/Utils/CLIUtils.php:1342
 msgid "Set %1 does take items imported by mapping"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1351
+#: ../../app/lib/Utils/CLIUtils.php:1360
 msgid "Could not import source %1: %2"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1354 ../../app/lib/BatchProcessor.php:1247
+#: ../../app/lib/Utils/CLIUtils.php:1363 ../../app/lib/BatchProcessor.php:1247
 msgid "Imported data from source %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1395 ../../app/lib/Utils/CLIUtils.php:4554
+#: ../../app/lib/Utils/CLIUtils.php:1404 ../../app/lib/Utils/CLIUtils.php:4563
 msgid ""
 "Data to import. For files provide the path; for database, OAI and other non-"
 "file sources provide a URL."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1396
+#: ../../app/lib/Utils/CLIUtils.php:1405
 msgid "Mapping to import data with."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1397
+#: ../../app/lib/Utils/CLIUtils.php:1406
 msgid ""
 "The format of the data to import. (Ex. XLSX, tab, CSV, mysql, OAI, Filemaker "
 "XML, ExcelXML, MARC). If omitted an attempt will be made to automatically "
 "identify the data format."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1400 ../../app/lib/Utils/CLIUtils.php:4558
+#: ../../app/lib/Utils/CLIUtils.php:1409 ../../app/lib/Utils/CLIUtils.php:4567
 msgid "Optional identifier of set to add all imported items to."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1401
+#: ../../app/lib/Utils/CLIUtils.php:1410
 msgid ""
 "If set import is performed without data actually being saved to the "
 "database. This is useful for previewing an import for errors."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1402
+#: ../../app/lib/Utils/CLIUtils.php:1411
 msgid ""
 "If set import is performed without a transaction. This allows viewing of "
 "imported data during the import, which may be useful during debugging/"
@@ -10247,263 +10237,263 @@ msgid ""
 "testing."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1403
+#: ../../app/lib/Utils/CLIUtils.php:1412
 msgid ""
 "When importing an Excel .xslx file, if set import will be performed on all "
 "worksheets in the file. By default, only the first worksheet is imported."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1404
+#: ../../app/lib/Utils/CLIUtils.php:1413
 msgid ""
 "If set indexing of changes made during import is not done. This may "
 "significantly reduce import time, but will neccessitate a reindex of the "
 "entire database after the import."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1405 ../../app/lib/Utils/CLIUtils.php:4559
+#: ../../app/lib/Utils/CLIUtils.php:1414 ../../app/lib/Utils/CLIUtils.php:4568
 msgid ""
 "Use the system temporary directory for the import log if the application "
 "logging directory is not writable. Default report an error if the "
 "application log directory is not writeable."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1420
+#: ../../app/lib/Utils/CLIUtils.php:1429
 msgid "Import data from many types of data sources."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1427
+#: ../../app/lib/Utils/CLIUtils.php:1436
 msgid ""
 "Import data from many types of data sources including other CollectiveAccess "
 "systems, MySQL databases and Excel, delimited text, XML and MARC files."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1437
+#: ../../app/lib/Utils/CLIUtils.php:1446
 msgid "You must specify a file!"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1441
+#: ../../app/lib/Utils/CLIUtils.php:1450
 msgid "File '%1' does not exist!"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1451
+#: ../../app/lib/Utils/CLIUtils.php:1460
 msgid "Could not import '%1'"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1486
+#: ../../app/lib/Utils/CLIUtils.php:1495
 msgid "Load export mapping from Excel XLSX format file."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1493
+#: ../../app/lib/Utils/CLIUtils.php:1502
 msgid "Loads export mapping from Excel XLSX format file."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1504
+#: ../../app/lib/Utils/CLIUtils.php:1513
 msgid ""
 "You must specify either an idno or a search expression to select a record or "
 "record set for export or activate RDF mode."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1508
+#: ../../app/lib/Utils/CLIUtils.php:1517
 msgid "You must specify a file to write export output to."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1514
+#: ../../app/lib/Utils/CLIUtils.php:1523
 msgid "Can't write to file %1. Check the permissions."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1524
+#: ../../app/lib/Utils/CLIUtils.php:1533
 msgid ""
 "You must specify a configuration file that contains the export definition "
 "for the RDF mode."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1530
+#: ../../app/lib/Utils/CLIUtils.php:1539
 #, php-format
 msgid "Syntax error in configuration file %s."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1535 ../../app/lib/Utils/CLIUtils.php:1565
-#: ../../app/lib/Utils/CLIUtils.php:1570
+#: ../../app/lib/Utils/CLIUtils.php:1544 ../../app/lib/Utils/CLIUtils.php:1574
+#: ../../app/lib/Utils/CLIUtils.php:1579
 msgid "Exported data to %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1538
+#: ../../app/lib/Utils/CLIUtils.php:1547
 msgid "Could not run RDF mode export"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1546
+#: ../../app/lib/Utils/CLIUtils.php:1555
 msgid "You must specify a mapping for export."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1556
+#: ../../app/lib/Utils/CLIUtils.php:1565
 msgid "Mapping %1 has errors: %2"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1562 ../../app/lib/Utils/CLIUtils.php:1572
+#: ../../app/lib/Utils/CLIUtils.php:1571 ../../app/lib/Utils/CLIUtils.php:1581
 msgid "Could not export mapping %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1580
+#: ../../app/lib/Utils/CLIUtils.php:1589
 msgid "Search expression that selects records to export."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1581
+#: ../../app/lib/Utils/CLIUtils.php:1590
 msgid "Primary key identifier of single item to export."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1582
+#: ../../app/lib/Utils/CLIUtils.php:1591
 msgid "Required. File to save export to."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1583
+#: ../../app/lib/Utils/CLIUtils.php:1592
 msgid "Mapping to export data with."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1584
+#: ../../app/lib/Utils/CLIUtils.php:1593
 msgid ""
 "Path to directory in which to log export details. If not set no logs will be "
 "recorded."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1585
+#: ../../app/lib/Utils/CLIUtils.php:1594
 msgid ""
 "Optional logging threshold. Possible values are, in ascending order of "
 "important: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1586
+#: ../../app/lib/Utils/CLIUtils.php:1595
 msgid ""
 "Switches to RDF export mode. You can use this to assemble record-level "
 "exports across authorities with multiple mappings in a single export "
 "(usually an RDF graph). -s, -i and -m are ignored and -c is required."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1587
+#: ../../app/lib/Utils/CLIUtils.php:1596
 msgid "Configuration file for RDF export mode."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1599 ../../app/lib/Utils/CLIUtils.php:1603
+#: ../../app/lib/Utils/CLIUtils.php:1608 ../../app/lib/Utils/CLIUtils.php:1612
 msgid "Export data to a CSV, MARC or XML file."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1641
+#: ../../app/lib/Utils/CLIUtils.php:1650
 msgid "Finding annotations"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1645
+#: ../../app/lib/Utils/CLIUtils.php:1654
 msgid "Annotation %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1659
+#: ../../app/lib/Utils/CLIUtils.php:1668
 msgid "Annotation id to start reloading at"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1660
+#: ../../app/lib/Utils/CLIUtils.php:1669
 msgid "Annotation id to end reloading at"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1675 ../../app/lib/Utils/CLIUtils.php:1682
+#: ../../app/lib/Utils/CLIUtils.php:1684 ../../app/lib/Utils/CLIUtils.php:1691
 msgid ""
 "Regenerates annotation preview media for some or all object representation "
 "annotations."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1703
+#: ../../app/lib/Utils/CLIUtils.php:1712
 msgid "Path to AAT XML file."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1718 ../../app/lib/Utils/CLIUtils.php:1766
+#: ../../app/lib/Utils/CLIUtils.php:1727 ../../app/lib/Utils/CLIUtils.php:1775
 msgid "Load Getty Art & Architecture Thesaurus (AAT) into CollectiveAccess."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1725 ../../app/lib/Utils/CLIUtils.php:1773
+#: ../../app/lib/Utils/CLIUtils.php:1734 ../../app/lib/Utils/CLIUtils.php:1782
 msgid "Loads the AAT from a Getty-provided XML file."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1735
+#: ../../app/lib/Utils/CLIUtils.php:1744
 msgid "You must specify a data directory"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1739
+#: ../../app/lib/Utils/CLIUtils.php:1748
 msgid "You must specify a ULAN import configuration file"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1750
+#: ../../app/lib/Utils/CLIUtils.php:1759
 msgid "Path to directory containing ULAN XML files."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1751
+#: ../../app/lib/Utils/CLIUtils.php:1760
 msgid "Path to ULAN import configuration file."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1804
+#: ../../app/lib/Utils/CLIUtils.php:1813
 msgid "Replicate data from one CollectiveAccess system to another."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1811
+#: ../../app/lib/Utils/CLIUtils.php:1820
 msgid ""
 "Replicates data in one CollectiveAccess instance based upon data in another "
 "instance, subject to configuration in replication.conf."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1821
+#: ../../app/lib/Utils/CLIUtils.php:1830
 msgid "Determined web server user to be \"%1\""
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1826
+#: ../../app/lib/Utils/CLIUtils.php:1835
 msgid "Cannot determine web server user. Using %1 instead."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1830
+#: ../../app/lib/Utils/CLIUtils.php:1839
 msgid "Cannot determine the user. Please specify one with the --user option."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1836
+#: ../../app/lib/Utils/CLIUtils.php:1845
 msgid "Determined web server group to be \"%1\""
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1840
+#: ../../app/lib/Utils/CLIUtils.php:1849
 msgid "Cannot determine the group. Please specify one with the --group option."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1844
+#: ../../app/lib/Utils/CLIUtils.php:1853
 msgid ""
 "Fixing permissions for the temporary directory (app/tmp) for ownership by "
 "\"%1\"..."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1852
+#: ../../app/lib/Utils/CLIUtils.php:1861
 msgid ""
 "Fixing permissions for the media directory (media) for ownership by \"%1\"..."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1861
+#: ../../app/lib/Utils/CLIUtils.php:1870
 msgid ""
 "Fixing permissions for the HTMLPurifier definition cache directory (vendor/"
 "ezyang/htmlpurifier/library/HTMLPurifier/DefinitionCache/Serializer) for "
 "ownership by \"%1\"..."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1878
+#: ../../app/lib/Utils/CLIUtils.php:1887
 msgid ""
 "Set ownership of directories to specifed user. If not set, an attempt will "
 "be made to determine the name of the web server user automatically. If the "
 "web server user cannot be determined the current user will be used."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1879
+#: ../../app/lib/Utils/CLIUtils.php:1888
 msgid ""
 "Set ownership of directories to specifed group. If not set, the current "
 "group will be used."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1895
+#: ../../app/lib/Utils/CLIUtils.php:1904
 msgid ""
 "Fix folder permissions. MUST BE RUN WHILE LOGGED IN WITH ADMINSTRATIVE/ROOT "
 "PERMISSIONS. You are currently logged in as %1 (uid %2)"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1902
+#: ../../app/lib/Utils/CLIUtils.php:1911
 msgid ""
 "CollectiveAccess must have both read and write access to the temporary "
 "storage directory (app/tmp), media directory (media) and HTMLPurifier "
@@ -10517,258 +10507,258 @@ msgid ""
 "for your server will be automatically determined and used."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1913 ../../app/lib/Utils/CLIUtils.php:1942
+#: ../../app/lib/Utils/CLIUtils.php:1922 ../../app/lib/Utils/CLIUtils.php:1951
 msgid "You must specify a user"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1919
+#: ../../app/lib/Utils/CLIUtils.php:1928
 msgid "User name %1 does not exist"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1924 ../../app/lib/Utils/CLIUtils.php:3913
+#: ../../app/lib/Utils/CLIUtils.php:1933 ../../app/lib/Utils/CLIUtils.php:3922
 msgid "Password: "
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1928
+#: ../../app/lib/Utils/CLIUtils.php:1937
 msgid "You must specify a password"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1936
+#: ../../app/lib/Utils/CLIUtils.php:1945
 msgid "Password change for user %1 failed: %2"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1939
+#: ../../app/lib/Utils/CLIUtils.php:1948
 msgid "Changed password for user %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1990 ../../app/lib/Utils/CLIUtils.php:1991
+#: ../../app/lib/Utils/CLIUtils.php:1999 ../../app/lib/Utils/CLIUtils.php:2000
 msgid "User name to reset password for."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:1992
+#: ../../app/lib/Utils/CLIUtils.php:2001
 msgid "New password for user"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2008
+#: ../../app/lib/Utils/CLIUtils.php:2017
 msgid "Reset a user's password"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2015
+#: ../../app/lib/Utils/CLIUtils.php:2024
 msgid "Reset a user's password."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2035 ../../app/lib/Utils/CLIUtils.php:3518
+#: ../../app/lib/Utils/CLIUtils.php:2044 ../../app/lib/Utils/CLIUtils.php:3527
 msgid "You must specify a valid file"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2042 ../../app/lib/Utils/CLIUtils.php:3533
+#: ../../app/lib/Utils/CLIUtils.php:2051 ../../app/lib/Utils/CLIUtils.php:3542
 msgid "You must specify a valid Excel .xls or .xlsx file: %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2116
+#: ../../app/lib/Utils/CLIUtils.php:2125
 msgid "Error while adding definition for %1: %2"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2122
+#: ../../app/lib/Utils/CLIUtils.php:2131
 msgid "Could not decode rules for %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2138
+#: ../../app/lib/Utils/CLIUtils.php:2147
 msgid "Error while adding rule for %1: %2"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2147
+#: ../../app/lib/Utils/CLIUtils.php:2156
 msgid "Added %1 entries and %2 rules"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2172
+#: ../../app/lib/Utils/CLIUtils.php:2181
 msgid "Load metadata dictionary entries from an Excel file"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2179
+#: ../../app/lib/Utils/CLIUtils.php:2188
 msgid ""
 "Load metadata dictionary entries from an Excel file using the format "
 "described at http://docs.collectiveaccess.org/metadata_dictionary"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2193
+#: ../../app/lib/Utils/CLIUtils.php:2202
 msgid "Evaluating"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2203
+#: ../../app/lib/Utils/CLIUtils.php:2212
 msgid "Table for bundle %1 is not valid"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2223
+#: ../../app/lib/Utils/CLIUtils.php:2232
 msgid "Rule %1 [%2/%3]: record %4"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2285
+#: ../../app/lib/Utils/CLIUtils.php:2294
 msgid "Validate all records against metadata dictionary"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2292
+#: ../../app/lib/Utils/CLIUtils.php:2301
 msgid "Validate all records against rules in metadata dictionary."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2307
+#: ../../app/lib/Utils/CLIUtils.php:2316
 msgid "Email address is invalid"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2311
+#: ../../app/lib/Utils/CLIUtils.php:2320
 msgid "You must specify an output file or email address"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2337
+#: ../../app/lib/Utils/CLIUtils.php:2346
 #: ../../app/models/ca_data_exporter_items.php:559
 msgid "ID"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2337
+#: ../../app/lib/Utils/CLIUtils.php:2346
 msgid "File path"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2337
+#: ../../app/lib/Utils/CLIUtils.php:2346
 msgid "Expected MD5"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2337
+#: ../../app/lib/Utils/CLIUtils.php:2346
 msgid "Actual MD5"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2403
+#: ../../app/lib/Utils/CLIUtils.php:2412
 msgid "Checking object representations"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2407
+#: ../../app/lib/Utils/CLIUtils.php:2416
 msgid "%1 media representations"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2410
+#: ../../app/lib/Utils/CLIUtils.php:2419
 msgid "Checking representation media %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2421
+#: ../../app/lib/Utils/CLIUtils.php:2430
 msgid "[Object representation][MD5 mismatch] %1; version %2 [%3]"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2429
+#: ../../app/lib/Utils/CLIUtils.php:2438
 msgid "Object representation"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2444
+#: ../../app/lib/Utils/CLIUtils.php:2453
 msgid "%1 error for %2 representations"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2446
+#: ../../app/lib/Utils/CLIUtils.php:2455
 msgid "%1 errors for %2 representations"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2466
+#: ../../app/lib/Utils/CLIUtils.php:2475
 msgid "Checking attribute media"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2481
+#: ../../app/lib/Utils/CLIUtils.php:2490
 msgid "Checking attribute media %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2503
+#: ../../app/lib/Utils/CLIUtils.php:2512
 msgid "[Media attribute][MD5 mismatch] %1; value_id=%2; version %3 [%4]"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2512
+#: ../../app/lib/Utils/CLIUtils.php:2521
 msgid "Media attribute"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2512 ../../app/lib/Utils/CLIUtils.php:2598
+#: ../../app/lib/Utils/CLIUtils.php:2521 ../../app/lib/Utils/CLIUtils.php:2607
 msgid "MD5 mismatch"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2527
+#: ../../app/lib/Utils/CLIUtils.php:2536
 msgid "%1 media in %2 metadata elements"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2532 ../../app/lib/Utils/CLIUtils.php:2617
+#: ../../app/lib/Utils/CLIUtils.php:2541 ../../app/lib/Utils/CLIUtils.php:2626
 msgid "%1 error for %2 attributes"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2534 ../../app/lib/Utils/CLIUtils.php:2619
+#: ../../app/lib/Utils/CLIUtils.php:2543 ../../app/lib/Utils/CLIUtils.php:2628
 msgid "%1 errors for %2 attributes"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2553
+#: ../../app/lib/Utils/CLIUtils.php:2562
 msgid "Checking attribute files"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2569
+#: ../../app/lib/Utils/CLIUtils.php:2578
 msgid "Checking attribute file %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2589
+#: ../../app/lib/Utils/CLIUtils.php:2598
 msgid "[File attribute][MD5 mismatch] %1; value_id=%2; version %3 [%4]"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2598
+#: ../../app/lib/Utils/CLIUtils.php:2607
 msgid "File attribute"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2612
+#: ../../app/lib/Utils/CLIUtils.php:2621
 msgid "%1 files in %2 metadata elements"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2650
+#: ../../app/lib/Utils/CLIUtils.php:2659
 msgid "%1_fixity_report_%2.%3"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2660
+#: ../../app/lib/Utils/CLIUtils.php:2669
 msgid "[%1] Media fixity report for %2"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2667
+#: ../../app/lib/Utils/CLIUtils.php:2676
 msgid "Could not send email to %1: %2"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2680
+#: ../../app/lib/Utils/CLIUtils.php:2689
 msgid ""
 "Limit checking to specified versions. Separate multiple versions with commas."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2681
+#: ../../app/lib/Utils/CLIUtils.php:2690
 #, php-format
 msgid ""
 "Location to write report to. The placeholder %date may be included to date/"
 "time stamp the report."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2682
+#: ../../app/lib/Utils/CLIUtils.php:2691
 msgid "Output format. (text|tab|csv)"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2683
+#: ../../app/lib/Utils/CLIUtils.php:2692
 msgid "Email address to send report to."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2685
+#: ../../app/lib/Utils/CLIUtils.php:2694
 msgid "Representation id to start checking at"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2686
+#: ../../app/lib/Utils/CLIUtils.php:2695
 msgid "Representation id to end checking at"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2687
+#: ../../app/lib/Utils/CLIUtils.php:2696
 msgid "Representation id to check"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2688
+#: ../../app/lib/Utils/CLIUtils.php:2697
 msgid "Comma separated list of representation ids to check"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2689
+#: ../../app/lib/Utils/CLIUtils.php:2698
 msgid "Comma separated list of object ids to check"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2690
+#: ../../app/lib/Utils/CLIUtils.php:2699
 msgid ""
 "Comma separated list of kind of media to check. Valid kinds are "
 "ca_object_representations (object representations), and ca_attributes "
@@ -10776,59 +10766,59 @@ msgid ""
 "media. Default is \"all\""
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2706
+#: ../../app/lib/Utils/CLIUtils.php:2715
 msgid "Verify media fixity using database file signatures"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2713
+#: ../../app/lib/Utils/CLIUtils.php:2722
 msgid ""
 "Verifies that media files on disk are consistent with file signatures "
 "recorded in the database at time of upload."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2747 ../../app/lib/Utils/CLIUtils.php:2870
+#: ../../app/lib/Utils/CLIUtils.php:2756 ../../app/lib/Utils/CLIUtils.php:2879
 msgid "Starting..."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2782
+#: ../../app/lib/Utils/CLIUtils.php:2791
 msgid "Processed %1 words and created %2 ngrams"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2791
+#: ../../app/lib/Utils/CLIUtils.php:2800
 msgid "Clear all existing ngrams. Default is false."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2792
+#: ../../app/lib/Utils/CLIUtils.php:2801
 msgid "Comma-delimited list of ngram sizes to generate. Default is 4."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2808
+#: ../../app/lib/Utils/CLIUtils.php:2817
 msgid ""
 "Create ngrams from search indices to support spell correction of search "
 "terms."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2815
+#: ../../app/lib/Utils/CLIUtils.php:2824
 msgid "Ngrams."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2848 ../../app/lib/Utils/CLIUtils.php:2855
+#: ../../app/lib/Utils/CLIUtils.php:2857 ../../app/lib/Utils/CLIUtils.php:2864
 msgid "Process search indexing queue."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2879
+#: ../../app/lib/Utils/CLIUtils.php:2888
 msgid "Cannot load object %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2884
+#: ../../app/lib/Utils/CLIUtils.php:2893
 msgid "Processed %1 objects"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2909
+#: ../../app/lib/Utils/CLIUtils.php:2918
 msgid "Reloads current location values for all object records."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2916
+#: ../../app/lib/Utils/CLIUtils.php:2925
 msgid ""
 "CollectiveAccess supports browse on current locations of collection objects "
 "using values cached in the object records. From time to time these values "
@@ -10836,95 +10826,95 @@ msgid ""
 "based upon the current state of the database."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2930
+#: ../../app/lib/Utils/CLIUtils.php:2939
 msgid "Clearing application caches..."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2934
+#: ../../app/lib/Utils/CLIUtils.php:2943
 msgid "Skipping clearing of application cache because it is not writable"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2940
+#: ../../app/lib/Utils/CLIUtils.php:2949
 msgid "Clearing user media cache in %1..."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2943
+#: ../../app/lib/Utils/CLIUtils.php:2952
 msgid "Skipping clearing of user media cache because it is not writable"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2947
+#: ../../app/lib/Utils/CLIUtils.php:2956
 msgid ""
 "Skipping clearing of user media cache because no cache directory is "
 "configured"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2949
+#: ../../app/lib/Utils/CLIUtils.php:2958
 msgid ""
 "Skipping clearing of user media cache because the configured directory at %1 "
 "does not exist"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2962
+#: ../../app/lib/Utils/CLIUtils.php:2971
 msgid ""
 "Which cache to clear. Use \"app\" for the application cache (include all "
 "user sessions); use \"userMedia\" for user-uploaded media; use \"all\" for "
 "all cached. Default is all."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2978
+#: ../../app/lib/Utils/CLIUtils.php:2987
 msgid "Clear application caches and tmp directories."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:2985
+#: ../../app/lib/Utils/CLIUtils.php:2994
 msgid ""
 "CollectiveAccess stores often used values, processed configuration files, "
 "user-uploaded media and other types of data in application caches. You can "
 "clear these caches using this command."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3004
+#: ../../app/lib/Utils/CLIUtils.php:3013
 msgid "Checking media processing plugins..."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3007 ../../app/lib/Utils/CLIUtils.php:3018
+#: ../../app/lib/Utils/CLIUtils.php:3016 ../../app/lib/Utils/CLIUtils.php:3027
 msgid "Found %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3013
+#: ../../app/lib/Utils/CLIUtils.php:3022
 msgid "Checking application plugins..."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3024
+#: ../../app/lib/Utils/CLIUtils.php:3033
 msgid "Checking for barcode dependencies..."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3026
+#: ../../app/lib/Utils/CLIUtils.php:3035
 #: ../../app/controllers/administrate/setup/ConfigurationCheckController.php:86
 msgid ""
 "GD is a graphics processing library required for all barcode generation."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3028
+#: ../../app/lib/Utils/CLIUtils.php:3037
 msgid "GD is not installed; barcode printing will not be possible."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3030
+#: ../../app/lib/Utils/CLIUtils.php:3039
 msgid "GD is installed; barcode printing will be available."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3035
+#: ../../app/lib/Utils/CLIUtils.php:3044
 msgid "Checking system configuration... this may take a while."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3038
+#: ../../app/lib/Utils/CLIUtils.php:3047
 msgid "Errors were found:"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3066
+#: ../../app/lib/Utils/CLIUtils.php:3075
 msgid "Performs configuration check on CollectiveAccess installation."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3073
+#: ../../app/lib/Utils/CLIUtils.php:3082
 msgid ""
 "CollectiveAccess requires certain PHP configuration options to be set and "
 "for file permissions in several directories to be web-server writable. This "
@@ -10932,15 +10922,15 @@ msgid ""
 "if configuration appears to be incorrect."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3104
+#: ../../app/lib/Utils/CLIUtils.php:3113
 msgid "There were errors updating an attribute row: "
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3133
+#: ../../app/lib/Utils/CLIUtils.php:3142
 msgid "Reload InformationService attribute values from referenced URLs."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3140
+#: ../../app/lib/Utils/CLIUtils.php:3149
 msgid ""
 "InformationService attribute values store all the data CollectiveAccess "
 "needs to operate locally while keeping a reference to the referenced record "
@@ -10950,15 +10940,15 @@ msgid ""
 "the local copy of the data with the latest values."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3193
+#: ../../app/lib/Utils/CLIUtils.php:3202
 msgid "Which mapping to use to re-import the ULAN records."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3211
+#: ../../app/lib/Utils/CLIUtils.php:3220
 msgid "Reload records imported from ULAN with the specified mapping."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3218
+#: ../../app/lib/Utils/CLIUtils.php:3227
 msgid ""
 "Reload records imported from ULAN with the specified mapping. This utility "
 "assumes that the mapping is set up with an existingRecordPolicy that ensures "
@@ -10966,32 +10956,32 @@ msgid ""
 "does not match existing records so be sure to test your mapping first!"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3317 ../../app/lib/Utils/CLIUtils.php:3324
+#: ../../app/lib/Utils/CLIUtils.php:3326 ../../app/lib/Utils/CLIUtils.php:3333
 msgid ""
 "Regenerate date/time stamps for movement and object-based location tracking."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3334
+#: ../../app/lib/Utils/CLIUtils.php:3343
 msgid "Preloading primary search index..."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3336
+#: ../../app/lib/Utils/CLIUtils.php:3345
 msgid "Preloading index i_index_table_num..."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3338
+#: ../../app/lib/Utils/CLIUtils.php:3347
 msgid "Preloading index i_index_field_table_num..."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3340
+#: ../../app/lib/Utils/CLIUtils.php:3349
 msgid "Preloading index i_index_field_num..."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3366
+#: ../../app/lib/Utils/CLIUtils.php:3375
 msgid "Preload SQLSearch index into MySQL in-memory cache."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3373
+#: ../../app/lib/Utils/CLIUtils.php:3382
 msgid ""
 "Preload SQLSearch index into MySQL in-memory cache. This is only relevant if "
 "you are using the MySQL-based SQLSearch engine. Preloading can significantly "
@@ -11000,137 +10990,137 @@ msgid ""
 "the index. Loading may take several minutes."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3384
+#: ../../app/lib/Utils/CLIUtils.php:3393
 msgid "Content caching is not enabled"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3392
+#: ../../app/lib/Utils/CLIUtils.php:3401
 msgid "No actions are configured for caching"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3415
+#: ../../app/lib/Utils/CLIUtils.php:3424
 msgid "Preloading from %1 is not supported"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3438
+#: ../../app/lib/Utils/CLIUtils.php:3447
 msgid "Preloading from %1::%2 (%3)"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3444
+#: ../../app/lib/Utils/CLIUtils.php:3453
 msgid ""
 "Preloading from %1::%2 failed because there is no detail configured for %2"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3457
+#: ../../app/lib/Utils/CLIUtils.php:3466
 msgid "Preloading from %1::%2"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3491
+#: ../../app/lib/Utils/CLIUtils.php:3500
 msgid "Pre-generate content cache."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3498
+#: ../../app/lib/Utils/CLIUtils.php:3507
 msgid ""
 "Pre-loads content cache by loading each cached page url. Pre-caching may "
 "take a while depending upon the quantity of content configured for caching."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3523
+#: ../../app/lib/Utils/CLIUtils.php:3532
 msgid "You must specify a list"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3537
+#: ../../app/lib/Utils/CLIUtils.php:3546
 msgid "Loading non-preferred terms"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3570
+#: ../../app/lib/Utils/CLIUtils.php:3579
 msgid "Creating list"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3582
+#: ../../app/lib/Utils/CLIUtils.php:3591
 msgid "Could not create list %1: %2"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3588
+#: ../../app/lib/Utils/CLIUtils.php:3597
 msgid "Could not label list %1: %2"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3596
+#: ../../app/lib/Utils/CLIUtils.php:3605
 msgid ""
 "List %1 is not empty. The Chenhall Nomenclature may only be imported into an "
 "empty list."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3612
+#: ../../app/lib/Utils/CLIUtils.php:3621
 msgid "Loading preferred terms"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3670
+#: ../../app/lib/Utils/CLIUtils.php:3679
 msgid "Could not update term %1: %2"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3676
+#: ../../app/lib/Utils/CLIUtils.php:3685
 msgid "Could not remove nonpreferred labels for update for term %1: %2"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3683
+#: ../../app/lib/Utils/CLIUtils.php:3692
 msgid "Could not update parent for term %1: %2"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3691
+#: ../../app/lib/Utils/CLIUtils.php:3700
 msgid "Could not add term %1: %2"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3697
+#: ../../app/lib/Utils/CLIUtils.php:3706
 msgid "Could not add term label %1: %2"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3701
+#: ../../app/lib/Utils/CLIUtils.php:3710
 msgid "Updated preferred term %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3707
+#: ../../app/lib/Utils/CLIUtils.php:3716
 msgid "Could not add non-preferred term %1 to %2: %3"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3716
+#: ../../app/lib/Utils/CLIUtils.php:3725
 msgid "Added %1 terms"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3725
+#: ../../app/lib/Utils/CLIUtils.php:3734
 msgid "Excel XLSX-format AASLH Chenhall Nomenclature file to load."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3726
+#: ../../app/lib/Utils/CLIUtils.php:3735
 msgid ""
 "Code for list to load Chenhall Nomenclature into. If list with code does not "
 "exist it will be created."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3727
+#: ../../app/lib/Utils/CLIUtils.php:3736
 msgid "Update an existing Chenhall installation."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3742
+#: ../../app/lib/Utils/CLIUtils.php:3751
 msgid "Load AASLH Chenhall Nomenclature from an Excel file"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3749
+#: ../../app/lib/Utils/CLIUtils.php:3758
 msgid ""
 "Loads Chenhall Nomenclature from Excel XLSX format file into the specified "
 "list. You can obtain a copy of the Nomenclature from the American "
 "Association of State and Local History (AASLH)."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3770
+#: ../../app/lib/Utils/CLIUtils.php:3779
 msgid "Generating/verifying GUIDs for table %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3804
+#: ../../app/lib/Utils/CLIUtils.php:3813
 msgid "Generate missing guids"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3811
+#: ../../app/lib/Utils/CLIUtils.php:3820
 msgid ""
 "Generates guids for all records that don't have one yet. This can be useful "
 "if you plan on using the data synchronization/replication feature in the "
@@ -11138,162 +11128,162 @@ msgid ""
 "Replication"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3823
+#: ../../app/lib/Utils/CLIUtils.php:3832
 msgid "The -t|--tables parameter is mandatory."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3833
+#: ../../app/lib/Utils/CLIUtils.php:3842
 msgid "Table %1 has %2 records that have potential duplicates."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3839
+#: ../../app/lib/Utils/CLIUtils.php:3848
 msgid "%1 records have the checksum %2"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3848
+#: ../../app/lib/Utils/CLIUtils.php:3857
 msgid "Successfully consolidated them under id %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3850
+#: ../../app/lib/Utils/CLIUtils.php:3859
 msgid "It seems like there was an error while deduplicating those records"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3856
+#: ../../app/lib/Utils/CLIUtils.php:3865
 msgid "Table %1 does not seem to have any duplicates!"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3869
+#: ../../app/lib/Utils/CLIUtils.php:3878
 msgid ""
 "Specific tables to deduplicate, separated by commas or semicolons. Mandatory."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3870
+#: ../../app/lib/Utils/CLIUtils.php:3879
 msgid "Delete duplicate records. Default is false."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3885
+#: ../../app/lib/Utils/CLIUtils.php:3894
 msgid "Show and, optionally, remove duplicate records"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3892
+#: ../../app/lib/Utils/CLIUtils.php:3901
 msgid ""
 "Lists and optionally removed duplicate records. For more info on how the "
 "algorithm works see here: http://docs.collectiveaccess.org/wiki/Deduplication"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3903
+#: ../../app/lib/Utils/CLIUtils.php:3912
 msgid ""
 "Missing required parameter: targets. Try checking the help for this "
 "subcommand."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3908
+#: ../../app/lib/Utils/CLIUtils.php:3917
 msgid ""
 "Missing required parameter: username. Try checking the help for this "
 "subcommand."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3926
+#: ../../app/lib/Utils/CLIUtils.php:3935
 msgid "[push-config-changes] Start preparing to push config changes"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3938
+#: ../../app/lib/Utils/CLIUtils.php:3947
 msgid "Processing target %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3939
+#: ../../app/lib/Utils/CLIUtils.php:3948
 msgid "[push-config-changes] Processing target %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3942
+#: ../../app/lib/Utils/CLIUtils.php:3951
 msgid "The target '%1' doesn't seem to be in URL format"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3943
+#: ../../app/lib/Utils/CLIUtils.php:3952
 msgid "[push-config-changes] The target '%1' doesn't seem to be in URL format"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3955
+#: ../../app/lib/Utils/CLIUtils.php:3964
 msgid ""
 "[push-config-changes] Service endpoint is '%1'. Timestamp for diff config is "
 "%2"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3959
+#: ../../app/lib/Utils/CLIUtils.php:3968
 msgid "Finished partial configuration export for target %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3961
+#: ../../app/lib/Utils/CLIUtils.php:3970
 msgid ""
 "[push-config-changes] Configuration fragment for target '%1' is \n"
 " %2"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3985
+#: ../../app/lib/Utils/CLIUtils.php:3994
 msgid "Pushing to target '%1' seems to have failed. HTTP response code was %2."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3986
+#: ../../app/lib/Utils/CLIUtils.php:3995
 msgid ""
 "[push-config-changes] Pushing to target '%1' seems to have failed. HTTP "
 "response code was %2. Enable debug logging mode to get more info below."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3989
+#: ../../app/lib/Utils/CLIUtils.php:3998
 msgid "[push-config-changes] Target '%1' responded with 200 OK"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3993
+#: ../../app/lib/Utils/CLIUtils.php:4002
 msgid "[push-config-changes] Decoded response from target '%1' is '%2'"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3997
+#: ../../app/lib/Utils/CLIUtils.php:4006
 msgid ""
 "Pushing to target '%1' seems to have failed. Response was not marked as "
 "okay. Errors were: %2"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:3999
+#: ../../app/lib/Utils/CLIUtils.php:4008
 msgid ""
 "Pushing to target '%1' seems to have failed. Response was not marked as "
 "okay. Raw response was: %2"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4003
+#: ../../app/lib/Utils/CLIUtils.php:4012
 msgid "[push-config-changes] Finished processing target '%1'"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4008
+#: ../../app/lib/Utils/CLIUtils.php:4017
 msgid "[push-config-changes] Saved sync timestamps are: %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4010
+#: ../../app/lib/Utils/CLIUtils.php:4019
 msgid "All done"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4011
+#: ../../app/lib/Utils/CLIUtils.php:4020
 msgid "[push-config-changes] Finished ..."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4016
+#: ../../app/lib/Utils/CLIUtils.php:4025
 msgid ""
 "Comma- or semicolon separated list of target systems to push changes to. We "
 "assume the same service account exists on all of these systems"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4017
+#: ../../app/lib/Utils/CLIUtils.php:4026
 msgid ""
 "User name to use to log into the targets. We assume the same credentials can "
 "be used to log into all target systems."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4018
+#: ../../app/lib/Utils/CLIUtils.php:4027
 msgid ""
 "Password to use to log into the targets. We assume the same credentials can "
 "be used to log into all target systems."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4019
+#: ../../app/lib/Utils/CLIUtils.php:4028
 msgid ""
 "Timestamp to use to filter the configuration changes that should be exported/"
 "pushed. Optional. The timestamp is only used for the very first push to that "
@@ -11302,21 +11292,21 @@ msgid ""
 "sorts."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4038 ../../app/lib/Utils/CLIUtils.php:4045
+#: ../../app/lib/Utils/CLIUtils.php:4047 ../../app/lib/Utils/CLIUtils.php:4054
 msgid "Pushes configuration changes from this system out to other systems."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4058
+#: ../../app/lib/Utils/CLIUtils.php:4067
 msgid "New system GUID is %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4076
+#: ../../app/lib/Utils/CLIUtils.php:4085
 msgid ""
 "Generates a new system GUID for this setup. Useful if you're using the sync/"
 "replication feature."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4083
+#: ../../app/lib/Utils/CLIUtils.php:4092
 msgid ""
 "This utility generates a new system GUID for the current system. This can be "
 "useful is you used a copy of another system to set it up and are now trying "
@@ -11324,213 +11314,213 @@ msgid ""
 "GUID for one of them in that case."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4110
+#: ../../app/lib/Utils/CLIUtils.php:4119
 msgid ""
 "User names to notify if there are errors. Multiple entries are delimited by "
 "comma or semicolon. Invalid or non-existing user named will be ignored. "
 "[Optional]"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4111
+#: ../../app/lib/Utils/CLIUtils.php:4120
 msgid ""
 "Groups to notify if there are errors. They're identified by group code. "
 "Multiple entries are delimited by comma or semicolon. Invalid or non-"
 "existing groups will be ignored. [Optional]"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4126
+#: ../../app/lib/Utils/CLIUtils.php:4135
 msgid "Checks integrity for all URL references in the database."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4133
+#: ../../app/lib/Utils/CLIUtils.php:4142
 msgid ""
 "This utility checks the integrity for all URL attribute references in the "
 "database. It does so by trying to hit each URL and reading a few bytes. It "
 "does not download the whole file."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4143
+#: ../../app/lib/Utils/CLIUtils.php:4152
 msgid "Scanning templates for tags"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4146 ../../app/lib/Utils/CLIUtils.php:4284
+#: ../../app/lib/Utils/CLIUtils.php:4155 ../../app/lib/Utils/CLIUtils.php:4293
 msgid "Added %1 templates; updated %2 templates"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4149
+#: ../../app/lib/Utils/CLIUtils.php:4158
 msgid "Templates with errors: %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4164
+#: ../../app/lib/Utils/CLIUtils.php:4173
 msgid "Content management"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4171
+#: ../../app/lib/Utils/CLIUtils.php:4180
 msgid "Scan site page templates for tags."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4178
+#: ../../app/lib/Utils/CLIUtils.php:4187
 msgid ""
 "Scan site page template for tags to build the content management editing "
 "user interface."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4205
+#: ../../app/lib/Utils/CLIUtils.php:4214
 msgid "Checks periodic metadata alert triggers"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4212
+#: ../../app/lib/Utils/CLIUtils.php:4221
 msgid ""
 "This utility checks all periodic metadatadata alert triggers users have set "
 "up and, if they triggered, sends notifications to the recipients of these "
 "rules."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4260 ../../app/lib/Utils/CLIUtils.php:4265
-#: ../../app/lib/Utils/CLIUtils.php:4275
+#: ../../app/lib/Utils/CLIUtils.php:4269 ../../app/lib/Utils/CLIUtils.php:4274
+#: ../../app/lib/Utils/CLIUtils.php:4284
 msgid "["
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4289
+#: ../../app/lib/Utils/CLIUtils.php:4298
 msgid "Optional username to authenticate with."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4290
+#: ../../app/lib/Utils/CLIUtils.php:4299
 msgid "Optional password to authenticate with."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4298
+#: ../../app/lib/Utils/CLIUtils.php:4307
 msgid "Performance"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4305
+#: ../../app/lib/Utils/CLIUtils.php:4314
 msgid "Pre-cache simple service responses."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4312
+#: ../../app/lib/Utils/CLIUtils.php:4321
 msgid ""
 "Pre-cache responses for appropriately configurated simple services. Caching "
 "can dramatically improve performance for services providing infrequently "
 "changing data."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4323
+#: ../../app/lib/Utils/CLIUtils.php:4332
 msgid ""
 "The media directory is not writeable by the current user. Try again, running "
 "the import as the web server user."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4328
+#: ../../app/lib/Utils/CLIUtils.php:4337
 msgid "You must specify a directory to import media from"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4332
+#: ../../app/lib/Utils/CLIUtils.php:4341
 msgid "You must specify a source"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4346
+#: ../../app/lib/Utils/CLIUtils.php:4355
 msgid "User name %1 is not valid"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4350
+#: ../../app/lib/Utils/CLIUtils.php:4359
 msgid "A user name to attribute the import to must be specified"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4356
+#: ../../app/lib/Utils/CLIUtils.php:4365
 msgid "Setting import mode to default value TRY_TO_MATCH"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4361
+#: ../../app/lib/Utils/CLIUtils.php:4370
 msgid "Setting match mode to default value FILE_NAME"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4366
+#: ../../app/lib/Utils/CLIUtils.php:4375
 msgid "Setting match type to default value EXACT"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4372
+#: ../../app/lib/Utils/CLIUtils.php:4381
 msgid "Setting import target to default %1."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4376
+#: ../../app/lib/Utils/CLIUtils.php:4385
 msgid "Import target %1 is invalid. Defaulting to ca_objects."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4380
+#: ../../app/lib/Utils/CLIUtils.php:4389
 msgid "Import target %1 is invalid."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4385
+#: ../../app/lib/Utils/CLIUtils.php:4394
 msgid "Setting target identifier type to default value AUTO"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4390
+#: ../../app/lib/Utils/CLIUtils.php:4399
 msgid "Setting representation identifier type to default value AUTO"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4400
+#: ../../app/lib/Utils/CLIUtils.php:4409
 msgid "Setting target type to default %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4410
+#: ../../app/lib/Utils/CLIUtils.php:4419
 msgid "Setting representation type to default %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4420
+#: ../../app/lib/Utils/CLIUtils.php:4429
 msgid "Setting target access to default %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4430
+#: ../../app/lib/Utils/CLIUtils.php:4439
 msgid "Setting representation access to default %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4440
+#: ../../app/lib/Utils/CLIUtils.php:4449
 msgid "Setting target status to default %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4450
+#: ../../app/lib/Utils/CLIUtils.php:4459
 msgid "Setting representation status to default %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4462
+#: ../../app/lib/Utils/CLIUtils.php:4471
 msgid "Mapping %1 is not for target %2"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4510
+#: ../../app/lib/Utils/CLIUtils.php:4519
 msgid "Found %1 files in %2 directories"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4512
+#: ../../app/lib/Utils/CLIUtils.php:4521
 msgid "Found %1 files"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4514
+#: ../../app/lib/Utils/CLIUtils.php:4523
 msgid "Processing media"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4516
+#: ../../app/lib/Utils/CLIUtils.php:4525
 msgid "Could not import media from %1: %2"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4519
+#: ../../app/lib/Utils/CLIUtils.php:4528
 msgid "Imported media from source %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4555
+#: ../../app/lib/Utils/CLIUtils.php:4564
 msgid "User name of user to log import against."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4560
+#: ../../app/lib/Utils/CLIUtils.php:4569
 msgid "Process media in sub-directories. Default is false."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4561
+#: ../../app/lib/Utils/CLIUtils.php:4570
 msgid ""
 "Sets how match between media and target record identifier is made. Valid "
 "values are: STARTS, ENDS, CONTAINS, EXACT. Default is EXACT."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4562
+#: ../../app/lib/Utils/CLIUtils.php:4571
 msgid ""
 "Determines how matches are made between media and records. Valid values are "
 "DIRECTORY_NAME, FILE_AND_DIRECTORY_NAMES, FILE_NAME. Set to DIRECTORY_NAME "
@@ -11539,7 +11529,7 @@ msgid ""
 "FILE_NAME to match only on file names. Default is FILE_NAME."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4563
+#: ../../app/lib/Utils/CLIUtils.php:4572
 msgid ""
 "Determines if target records are created for media that do not match "
 "existing target records. Set to TRY_TO_MATCH to create new target records "
@@ -11547,30 +11537,30 @@ msgid ""
 "existing records. Default is TRY_TO_MATCH."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4564
+#: ../../app/lib/Utils/CLIUtils.php:4573
 msgid ""
 "Import media even if it already exists in CollectiveAccess. Default is false "
 "– skip import of duplicate media."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4565
+#: ../../app/lib/Utils/CLIUtils.php:4574
 msgid ""
 "Table name of record to import media into. Should be a valid representation-"
 "taking table such as ca_objects, ca_entities, ca_occurrences, ca_places, "
 "etc. Default is ca_objects."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4566
+#: ../../app/lib/Utils/CLIUtils.php:4575
 msgid ""
 "Type to use for all newly created target records. Default is the first type "
 "in the target's type list."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4567
+#: ../../app/lib/Utils/CLIUtils.php:4576
 msgid "Identifier to use for all newly created target records."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4568
+#: ../../app/lib/Utils/CLIUtils.php:4577
 msgid ""
 "Sets how identifiers of newly created target records are set. Valid values "
 "are AUTO, FILENAME, FILENAME_NO_EXT, DIRECTORY_AND_FILENAME. Set to AUTO to "
@@ -11581,29 +11571,29 @@ msgid ""
 "name with extension. Default is AUTO."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4569
+#: ../../app/lib/Utils/CLIUtils.php:4578
 msgid ""
 "Set access for newly created target records. Possible values are %1. Default "
 "is %2."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4570
+#: ../../app/lib/Utils/CLIUtils.php:4579
 msgid ""
 "Set status for newly created target records. Possible values are %1. Default "
 "is %2."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4571
+#: ../../app/lib/Utils/CLIUtils.php:4580
 msgid ""
 "Type to use for all newly created representations. Possible values are %1. "
 "Default is %2."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4572
+#: ../../app/lib/Utils/CLIUtils.php:4581
 msgid "Identifier to use for all newly created representation records."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4573
+#: ../../app/lib/Utils/CLIUtils.php:4582
 msgid ""
 "Sets how identifiers of newly created representations are set. Valid values "
 "are AUTO, FILENAME, FILENAME_NO_EXT, DIRECTORY_AND_FILENAME. Set to AUTO to "
@@ -11614,58 +11604,58 @@ msgid ""
 "name with extension. Default is AUTO."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4574
+#: ../../app/lib/Utils/CLIUtils.php:4583
 msgid ""
 "Set access for newly created representations. Possible values are %1. "
 "Default is %2."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4575
+#: ../../app/lib/Utils/CLIUtils.php:4584
 msgid ""
 "Set status for newly created representations. Possible values are %1. "
 "Default is %2."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4576
+#: ../../app/lib/Utils/CLIUtils.php:4585
 msgid "Code for mapping to apply when importing media."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4577
+#: ../../app/lib/Utils/CLIUtils.php:4586
 msgid ""
 "Remove media from directory after it has been successfully imported. Default "
 "is false."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4592
+#: ../../app/lib/Utils/CLIUtils.php:4601
 msgid "Import media."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4599
+#: ../../app/lib/Utils/CLIUtils.php:4608
 msgid "Import media from a directory or directory tree."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4618
+#: ../../app/lib/Utils/CLIUtils.php:4627
 msgid "Processing %1.%2"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4634
+#: ../../app/lib/Utils/CLIUtils.php:4643
 msgid "Processing row %1 for %2.%3"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4647
+#: ../../app/lib/Utils/CLIUtils.php:4656
 msgid "Could not update dependent value: %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4655
+#: ../../app/lib/Utils/CLIUtils.php:4664
 msgid "Regenerated %1 values"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4673
+#: ../../app/lib/Utils/CLIUtils.php:4682
 msgid ""
 "Regenerate template-generated values for fields that are dependent values."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4680
+#: ../../app/lib/Utils/CLIUtils.php:4689
 msgid ""
 "Text fields that are dependent upon other fields are only refreshed on save "
 "and import. For dependent display templates using dimensions (length, width) "
@@ -11674,51 +11664,51 @@ msgid ""
 "dependent values using the current system configuration."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4689
+#: ../../app/lib/Utils/CLIUtils.php:4698
 msgid "System GUID is %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4691
+#: ../../app/lib/Utils/CLIUtils.php:4700
 msgid "No system GUID is defined"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4711
+#: ../../app/lib/Utils/CLIUtils.php:4720
 msgid "Print system GUID value used for replication."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4718
+#: ../../app/lib/Utils/CLIUtils.php:4727
 msgid ""
 "Print the system GUID value used for replication operations to the console. "
 "The system GUID uniquely identifies a CollectiveAccess installation."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4755
+#: ../../app/lib/Utils/CLIUtils.php:4764
 #: ../../support/sql/migrations/VersionUpdate49.php:129
 msgid "Could not create root for relationship %1: %2"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4765
+#: ../../app/lib/Utils/CLIUtils.php:4774
 #: ../../support/sql/migrations/VersionUpdate49.php:139
 msgid "Could not add label to root for relationship %1: %2"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4768
+#: ../../app/lib/Utils/CLIUtils.php:4777
 msgid "Added root for %1"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4773
+#: ../../app/lib/Utils/CLIUtils.php:4782
 msgid "Recreated %1 root record"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4773
+#: ../../app/lib/Utils/CLIUtils.php:4782
 msgid "Recreated %1 root records"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4791
+#: ../../app/lib/Utils/CLIUtils.php:4800
 msgid "Check for and repair missing relationship type root records."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4798
+#: ../../app/lib/Utils/CLIUtils.php:4807
 msgid ""
 "Each relationship has a hierarchy of relationship types defined. Each type "
 "hierarchy must have a root record. Root records are normally created during "
@@ -11727,25 +11717,25 @@ msgid ""
 "presence of require root records and recreate missing roots as required."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4811
+#: ../../app/lib/Utils/CLIUtils.php:4820
 msgid "Removed search indexing queue lock"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4813
+#: ../../app/lib/Utils/CLIUtils.php:4822
 msgid ""
 "Insufficient privileges to remove search indexing queue. Try running caUtils "
 "under a user with privileges"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4816
+#: ../../app/lib/Utils/CLIUtils.php:4825
 msgid "Search indexing queue lock is not present"
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4835
+#: ../../app/lib/Utils/CLIUtils.php:4844
 msgid "Remove search indexing queue lock file if present."
 msgstr ""
 
-#: ../../app/lib/Utils/CLIUtils.php:4842
+#: ../../app/lib/Utils/CLIUtils.php:4851
 msgid ""
 "The search indexing queue is a task run periodically, usually via cron, to "
 "process pending indexing tasks. Simultaneous instances of the queue "
@@ -11811,44 +11801,44 @@ msgstr ""
 msgid "Media representation chooser"
 msgstr ""
 
-#: ../../app/lib/BaseModelWithAttributes.php:141
+#: ../../app/lib/BaseModelWithAttributes.php:142
 msgid "Cannot add another value; only %1 value is allowed"
 msgstr ""
 
-#: ../../app/lib/BaseModelWithAttributes.php:141
+#: ../../app/lib/BaseModelWithAttributes.php:142
 msgid "Cannot add another value; only %1 values are allowed"
 msgstr ""
 
-#: ../../app/lib/BaseModelWithAttributes.php:254
-#: ../../app/lib/BaseModelWithAttributes.php:358
+#: ../../app/lib/BaseModelWithAttributes.php:255
+#: ../../app/lib/BaseModelWithAttributes.php:360
 msgid "Can't edit invalid attribute"
 msgstr ""
 
-#: ../../app/lib/BaseModelWithAttributes.php:333
+#: ../../app/lib/BaseModelWithAttributes.php:334
 msgid "Cannot remove value; at least %1 value is required"
 msgstr ""
 
-#: ../../app/lib/BaseModelWithAttributes.php:333
+#: ../../app/lib/BaseModelWithAttributes.php:334
 msgid "Cannot remove value; at least %1 values are required"
 msgstr ""
 
-#: ../../app/lib/BaseModelWithAttributes.php:1531
+#: ../../app/lib/BaseModelWithAttributes.php:1578
 msgid "Element is not the root of the element set"
 msgstr ""
 
-#: ../../app/lib/BaseModelWithAttributes.php:2388
+#: ../../app/lib/BaseModelWithAttributes.php:2435
 msgid "Couldn't add element to restriction list: %1"
 msgstr ""
 
-#: ../../app/lib/BaseModelWithAttributes.php:2407
+#: ../../app/lib/BaseModelWithAttributes.php:2454
 msgid "Couldn't remove element from restriction list: %1"
 msgstr ""
 
-#: ../../app/lib/BaseModelWithAttributes.php:2431
+#: ../../app/lib/BaseModelWithAttributes.php:2478
 msgid "Cannot be used as a reference"
 msgstr ""
 
-#: ../../app/lib/BaseModelWithAttributes.php:2816
+#: ../../app/lib/BaseModelWithAttributes.php:2863
 msgid "Invalid target ID"
 msgstr ""
 
@@ -11872,7 +11862,7 @@ msgid "Representation id=%1 is not related to %3 id=%2"
 msgstr ""
 
 #: ../../app/lib/RepresentableBaseModel.php:916
-#: ../../app/lib/BaseModel.php:9113
+#: ../../app/lib/BaseModel.php:9112
 msgid "Type id \"%1\" is not valid"
 msgstr ""
 
@@ -12172,7 +12162,7 @@ msgid "Invalid field %2 for table %1"
 msgstr ""
 
 #: ../../app/lib/BaseModel.php:1142 ../../app/lib/BaseModel.php:1691
-#: ../../app/lib/BaseModel.php:8991
+#: ../../app/lib/BaseModel.php:8990
 msgid "'%1' does not exist in this object"
 msgstr ""
 
@@ -12331,9 +12321,9 @@ msgid "Can't delete item because it is in use (%1)"
 msgstr ""
 
 #: ../../app/lib/BaseModel.php:3683 ../../app/lib/BaseModel.php:4231
-#: ../../app/lib/BaseModel.php:4711 ../../app/lib/BaseModel.php:4850
+#: ../../app/lib/BaseModel.php:4711 ../../app/lib/BaseModel.php:4849
 #: ../../app/lib/Plugins/TaskQueueHandlers/mediaproc.php:299
-#: ../../app/lib/Plugins/TaskQueueHandlers/mediaproc.php:408
+#: ../../app/lib/Plugins/TaskQueueHandlers/mediaproc.php:415
 msgid "Couldn't queue mirror using '%1' for version '%2' (handler '%3')"
 msgstr ""
 
@@ -12367,13 +12357,13 @@ msgid ""
 msgstr ""
 
 #: ../../app/lib/BaseModel.php:4600 ../../app/lib/BaseModel.php:4764
-#: ../../app/lib/BaseModel.php:5518
+#: ../../app/lib/BaseModel.php:5517
 msgid ""
 "Could not create subdirectory for uploaded file in %1. Please ask your "
 "administrator to check the permissions of your media directory."
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:4649 ../../app/lib/BaseModel.php:5553
+#: ../../app/lib/BaseModel.php:4649 ../../app/lib/BaseModel.php:5552
 msgid ""
 "File could not be copied. Ask your administrator to check permissions and "
 "file space for %1"
@@ -12384,150 +12374,154 @@ msgid ""
 "File could not be processed for %1; can't convert mimetype '%2' to extension"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:4775
+#: ../../app/lib/BaseModel.php:4774
 msgid "Couldn't write file: %1"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:4921
+#: ../../app/lib/BaseModel.php:4920
 msgid "Couldn't queue processing for version '%1' using handler '%2'"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:5009
+#: ../../app/lib/BaseModel.php:5008
 msgid "File could not be processed for %1: %2"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:5495
+#: ../../app/lib/BaseModel.php:5494
 msgid "File is not a valid format"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:5827
+#: ../../app/lib/BaseModel.php:5826
 #: ../../app/lib/Attributes/Values/TimeCodeAttributeValue.php:191
 #: ../../app/lib/Attributes/Values/DateRangeAttributeValue.php:308
 msgid "%1 is invalid"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:5842
+#: ../../app/lib/BaseModel.php:5841
 msgid "%1 must not be greater than %2"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:5857
+#: ../../app/lib/BaseModel.php:5856
 msgid "%1 must be at least %2 characters"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:5863
+#: ../../app/lib/BaseModel.php:5862
 msgid "%1 must not be more than %2 characters long"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:5900 ../../app/lib/BaseModel.php:5906
+#: ../../app/lib/BaseModel.php:5899 ../../app/lib/BaseModel.php:5905
 msgid "'%1' is not valid choice for %2"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:6073 ../../app/lib/BaseModel.php:6087
+#: ../../app/lib/BaseModel.php:6072 ../../app/lib/BaseModel.php:6086
 msgid "Creation date/time"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:6076
+#: ../../app/lib/BaseModel.php:6075
 msgid "Modification date/time"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:6090
+#: ../../app/lib/BaseModel.php:6089
 msgid "Last modification date/time"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:6108 ../../app/lib/BaseModel.php:6122
+#: ../../app/lib/BaseModel.php:6107 ../../app/lib/BaseModel.php:6121
 msgid "Date and time %1 was created"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:6111
+#: ../../app/lib/BaseModel.php:6110
 msgid "Date and time %1 was modified"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:6125
+#: ../../app/lib/BaseModel.php:6124
 msgid "Date and time %1 was last modified"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:6989
+#: ../../app/lib/BaseModel.php:6988
 msgid "Hierarchy ID must be specified"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:7521
+#: ../../app/lib/BaseModel.php:7520
 msgid "Could not get parent_id to load siblings by: %1"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:7525
+#: ../../app/lib/BaseModel.php:7524
 msgid "Could not get hierarchy siblings: %1"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:8353 ../../app/lib/BaseModel.php:8449
-#: ../../app/lib/BaseModel.php:8544 ../../app/lib/BaseModel.php:8637
+#: ../../app/lib/BaseModel.php:8352 ../../app/lib/BaseModel.php:8448
+#: ../../app/lib/BaseModel.php:8543 ../../app/lib/BaseModel.php:8636
 msgid "- NONE -"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:8710
+#: ../../app/lib/BaseModel.php:8709
 msgid "Value must be unique. Please try another."
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:9101 ../../app/lib/BaseModel.php:9250
-#: ../../app/lib/BaseModel.php:9403 ../../app/lib/BaseModel.php:9871
+#: ../../app/lib/BaseModel.php:8870
+msgid "Maximum upload size is %1"
+msgstr ""
+
+#: ../../app/lib/BaseModel.php:9100 ../../app/lib/BaseModel.php:9249
+#: ../../app/lib/BaseModel.php:9402 ../../app/lib/BaseModel.php:9870
 msgid "Related table specification \"%1\" is not valid"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:9133 ../../app/lib/BaseModel.php:9276
+#: ../../app/lib/BaseModel.php:9132 ../../app/lib/BaseModel.php:9275
 msgid "Relationship already exists"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:9141 ../../app/lib/BaseModel.php:9284
+#: ../../app/lib/BaseModel.php:9140 ../../app/lib/BaseModel.php:9283
 msgid "Cannot relate a record to itself"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:9227
+#: ../../app/lib/BaseModel.php:9226
 msgid "Could not find a path to the specified related table"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:10195
+#: ../../app/lib/BaseModel.php:10194
 msgid "No locale was set for tag"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:10273 ../../app/lib/BaseModel.php:10323
-#: ../../app/lib/BaseModel.php:10368
+#: ../../app/lib/BaseModel.php:10272 ../../app/lib/BaseModel.php:10322
+#: ../../app/lib/BaseModel.php:10367
 msgid "Tag relation id is invalid"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:10280 ../../app/lib/BaseModel.php:10330
-#: ../../app/lib/BaseModel.php:10375
+#: ../../app/lib/BaseModel.php:10279 ../../app/lib/BaseModel.php:10329
+#: ../../app/lib/BaseModel.php:10374
 msgid "Tag is not part of the current row"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:10286 ../../app/lib/BaseModel.php:10336
-#: ../../app/lib/BaseModel.php:10381
+#: ../../app/lib/BaseModel.php:10285 ../../app/lib/BaseModel.php:10335
+#: ../../app/lib/BaseModel.php:10380
 msgid "Tag was not created by specified user"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:10558 ../../app/lib/BaseModel.php:10624
+#: ../../app/lib/BaseModel.php:10557 ../../app/lib/BaseModel.php:10623
 #: ../../app/lib/SiteComments.php:119 ../../app/lib/SiteComments.php:158
 msgid "Comment id is invalid"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:10565 ../../app/lib/BaseModel.php:10633
+#: ../../app/lib/BaseModel.php:10564 ../../app/lib/BaseModel.php:10632
 msgid "Comment is not part of the current row"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:10639 ../../app/lib/SiteComments.php:164
+#: ../../app/lib/BaseModel.php:10638 ../../app/lib/SiteComments.php:164
 msgid "Comment was not created by specified user"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:10825
+#: ../../app/lib/BaseModel.php:10824
 msgid "Comment made in set %1"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:11673 ../../app/lib/BaseModel.php:11682
-#: ../../app/lib/BaseModel.php:11729 ../../app/lib/BaseModel.php:11764
+#: ../../app/lib/BaseModel.php:11672 ../../app/lib/BaseModel.php:11681
+#: ../../app/lib/BaseModel.php:11728 ../../app/lib/BaseModel.php:11763
 #: ../../app/lib/LabelableBaseModelWithAttributes.php:716
 #: ../../app/lib/LabelableBaseModelWithAttributes.php:767
 msgid "Invalid numeric operator: %1"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:11772
+#: ../../app/lib/BaseModel.php:11771
 #: ../../app/lib/LabelableBaseModelWithAttributes.php:723
 #: ../../app/lib/LabelableBaseModelWithAttributes.php:769
 msgid "Invalid string operator: %1"
@@ -12782,12 +12776,12 @@ msgid "Didn't load because Gmagick is not available"
 msgstr ""
 
 #: ../../app/lib/Plugins/Media/Gmagick.php:277
-#: ../../app/lib/Plugins/Media/Imagick.php:271
+#: ../../app/lib/Plugins/Media/Imagick.php:270
 msgid "RAW image support is not enabled because DCRAW cannot be found"
 msgstr ""
 
 #: ../../app/lib/Plugins/Media/Gmagick.php:344
-#: ../../app/lib/Plugins/Media/Imagick.php:343
+#: ../../app/lib/Plugins/Media/Imagick.php:342
 #: ../../app/lib/Plugins/Media/GraphicsMagick.php:312
 #: ../../app/lib/Plugins/Media/GD.php:232
 #: ../../app/lib/Plugins/Media/ImageMagick.php:322
@@ -12795,7 +12789,7 @@ msgid "Tile size property must be between 10 and 10000"
 msgstr ""
 
 #: ../../app/lib/Plugins/Media/Gmagick.php:354
-#: ../../app/lib/Plugins/Media/Imagick.php:353
+#: ../../app/lib/Plugins/Media/Imagick.php:352
 #: ../../app/lib/Plugins/Media/PDFWand.php:263
 #: ../../app/lib/Plugins/Media/GraphicsMagick.php:322
 #: ../../app/lib/Plugins/Media/GD.php:242
@@ -12804,7 +12798,7 @@ msgid "Quality property must be between 1 and 100"
 msgstr ""
 
 #: ../../app/lib/Plugins/Media/Gmagick.php:361
-#: ../../app/lib/Plugins/Media/Imagick.php:360
+#: ../../app/lib/Plugins/Media/Imagick.php:359
 #: ../../app/lib/Plugins/Media/GraphicsMagick.php:329
 #: ../../app/lib/Plugins/Media/GD.php:249
 #: ../../app/lib/Plugins/Media/ImageMagick.php:339
@@ -12812,7 +12806,7 @@ msgid "Tile width property must be between 10 and 10000"
 msgstr ""
 
 #: ../../app/lib/Plugins/Media/Gmagick.php:368
-#: ../../app/lib/Plugins/Media/Imagick.php:367
+#: ../../app/lib/Plugins/Media/Imagick.php:366
 #: ../../app/lib/Plugins/Media/GraphicsMagick.php:336
 #: ../../app/lib/Plugins/Media/GD.php:256
 #: ../../app/lib/Plugins/Media/ImageMagick.php:346
@@ -12820,7 +12814,7 @@ msgid "Tile height property must be between 10 and 10000"
 msgstr ""
 
 #: ../../app/lib/Plugins/Media/Gmagick.php:375
-#: ../../app/lib/Plugins/Media/Imagick.php:374
+#: ../../app/lib/Plugins/Media/Imagick.php:373
 #: ../../app/lib/Plugins/Media/PDFWand.php:270
 #: ../../app/lib/Plugins/Media/GraphicsMagick.php:343
 #: ../../app/lib/Plugins/Media/GD.php:263
@@ -12829,7 +12823,7 @@ msgid "Antialiasing property must be between 0 and 100"
 msgstr ""
 
 #: ../../app/lib/Plugins/Media/Gmagick.php:382
-#: ../../app/lib/Plugins/Media/Imagick.php:381
+#: ../../app/lib/Plugins/Media/Imagick.php:380
 #: ../../app/lib/Plugins/Media/GraphicsMagick.php:350
 #: ../../app/lib/Plugins/Media/GD.php:270
 #: ../../app/lib/Plugins/Media/ImageMagick.php:360
@@ -12837,7 +12831,7 @@ msgid "Layer ratio property must be between 0.1 and 10"
 msgstr ""
 
 #: ../../app/lib/Plugins/Media/Gmagick.php:389
-#: ../../app/lib/Plugins/Media/Imagick.php:388
+#: ../../app/lib/Plugins/Media/Imagick.php:387
 #: ../../app/lib/Plugins/Media/GraphicsMagick.php:357
 #: ../../app/lib/Plugins/Media/GD.php:277
 #: ../../app/lib/Plugins/Media/ImageMagick.php:367
@@ -12845,7 +12839,7 @@ msgid "Layer property must be between 1 and 25"
 msgstr ""
 
 #: ../../app/lib/Plugins/Media/Gmagick.php:396
-#: ../../app/lib/Plugins/Media/Imagick.php:395
+#: ../../app/lib/Plugins/Media/Imagick.php:394
 #: ../../app/lib/Plugins/Media/GraphicsMagick.php:364
 #: ../../app/lib/Plugins/Media/GD.php:284
 #: ../../app/lib/Plugins/Media/ImageMagick.php:374
@@ -12855,14 +12849,14 @@ msgstr ""
 #: ../../app/lib/Plugins/Media/Gmagick.php:415
 #: ../../app/lib/Plugins/Media/Office.php:369
 #: ../../app/lib/Plugins/Media/BaseMediaPlugin.php:102
-#: ../../app/lib/Plugins/Media/Imagick.php:414
+#: ../../app/lib/Plugins/Media/Imagick.php:413
 #: ../../app/lib/Plugins/Media/PDFWand.php:286
-#: ../../app/lib/Plugins/Media/Audio.php:256
+#: ../../app/lib/Plugins/Media/Audio.php:260
 #: ../../app/lib/Plugins/Media/GraphicsMagick.php:383
 #: ../../app/lib/Plugins/Media/Mesh.php:244
 #: ../../app/lib/Plugins/Media/GD.php:309
 #: ../../app/lib/Plugins/Media/ImageMagick.php:393
-#: ../../app/lib/Plugins/Media/QuicktimeVR.php:192
+#: ../../app/lib/Plugins/Media/QuicktimeVR.php:191
 #: ../../app/lib/Plugins/Media/XMLDoc.php:181
 #: ../../app/lib/Plugins/Media/Video.php:262
 #: ../../app/lib/Plugins/GeographicMap/BaseGeographicMapPlugin.php:138
@@ -12879,14 +12873,14 @@ msgstr ""
 
 #: ../../app/lib/Plugins/Media/Gmagick.php:507
 #: ../../app/lib/Plugins/Media/Office.php:431
-#: ../../app/lib/Plugins/Media/Imagick.php:586
+#: ../../app/lib/Plugins/Media/Imagick.php:587
 #: ../../app/lib/Plugins/Media/PDFWand.php:467
-#: ../../app/lib/Plugins/Media/Audio.php:440
+#: ../../app/lib/Plugins/Media/Audio.php:444
 #: ../../app/lib/Plugins/Media/GraphicsMagick.php:469
 #: ../../app/lib/Plugins/Media/Mesh.php:295
 #: ../../app/lib/Plugins/Media/GD.php:499
 #: ../../app/lib/Plugins/Media/ImageMagick.php:480
-#: ../../app/lib/Plugins/Media/QuicktimeVR.php:282
+#: ../../app/lib/Plugins/Media/QuicktimeVR.php:281
 #: ../../app/lib/Plugins/Media/XMLDoc.php:291
 #: ../../app/lib/Plugins/Media/Video.php:505
 msgid "Invalid transformation %1"
@@ -12897,55 +12891,55 @@ msgid "Couldn't set font to %1. Gmagick error message: %2"
 msgstr ""
 
 #: ../../app/lib/Plugins/Media/Gmagick.php:606
-#: ../../app/lib/Plugins/Media/Imagick.php:697
+#: ../../app/lib/Plugins/Media/Imagick.php:698
 msgid "Couldn't load watermark image at %1"
 msgstr ""
 
 #: ../../app/lib/Plugins/Media/Gmagick.php:663
-#: ../../app/lib/Plugins/Media/Imagick.php:758
+#: ../../app/lib/Plugins/Media/Imagick.php:759
 msgid "Error during resize operation"
 msgstr ""
 
 #: ../../app/lib/Plugins/Media/Gmagick.php:709
 #: ../../app/lib/Plugins/Media/Gmagick.php:717
-#: ../../app/lib/Plugins/Media/Imagick.php:803
-#: ../../app/lib/Plugins/Media/Imagick.php:811
+#: ../../app/lib/Plugins/Media/Imagick.php:804
+#: ../../app/lib/Plugins/Media/Imagick.php:812
 msgid "Error during crop operation"
 msgstr ""
 
 #: ../../app/lib/Plugins/Media/Gmagick.php:731
-#: ../../app/lib/Plugins/Media/Imagick.php:825
+#: ../../app/lib/Plugins/Media/Imagick.php:826
 msgid "Error during image rotate"
 msgstr ""
 
 #: ../../app/lib/Plugins/Media/Gmagick.php:739
-#: ../../app/lib/Plugins/Media/Imagick.php:834
+#: ../../app/lib/Plugins/Media/Imagick.php:835
 msgid "Error during image despeckle"
 msgstr ""
 
 #: ../../app/lib/Plugins/Media/Gmagick.php:748
-#: ../../app/lib/Plugins/Media/Imagick.php:843
+#: ../../app/lib/Plugins/Media/Imagick.php:844
 msgid "Error during image median filter"
 msgstr ""
 
 #: ../../app/lib/Plugins/Media/Gmagick.php:759
-#: ../../app/lib/Plugins/Media/Imagick.php:854
+#: ../../app/lib/Plugins/Media/Imagick.php:855
 msgid "Error during image sharpen"
 msgstr ""
 
 #: ../../app/lib/Plugins/Media/Gmagick.php:771
-#: ../../app/lib/Plugins/Media/Imagick.php:866
+#: ../../app/lib/Plugins/Media/Imagick.php:867
 #: ../../app/lib/Plugins/Media/GD.php:607
 msgid "Error during image crop"
 msgstr ""
 
 #: ../../app/lib/Plugins/Media/Gmagick.php:781
-#: ../../app/lib/Plugins/Media/Imagick.php:876
+#: ../../app/lib/Plugins/Media/Imagick.php:877
 msgid "Error during vertical image flip"
 msgstr ""
 
 #: ../../app/lib/Plugins/Media/Gmagick.php:786
-#: ../../app/lib/Plugins/Media/Imagick.php:881
+#: ../../app/lib/Plugins/Media/Imagick.php:882
 msgid "Error during horizontal image flip"
 msgstr ""
 
@@ -12954,7 +12948,7 @@ msgid "Gmagick exception"
 msgstr ""
 
 #: ../../app/lib/Plugins/Media/Gmagick.php:814
-#: ../../app/lib/Plugins/Media/Imagick.php:920
+#: ../../app/lib/Plugins/Media/Imagick.php:921
 #: ../../app/lib/Plugins/Media/GraphicsMagick.php:281
 #: ../../app/lib/Plugins/Media/GraphicsMagick.php:406
 #: ../../app/lib/Plugins/Media/GraphicsMagick.php:814
@@ -12964,40 +12958,40 @@ msgstr ""
 msgid "Filenames with colons (:) are not allowed"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:895
-#: ../../app/lib/Plugins/Media/Gmagick.php:917
-#: ../../app/lib/Plugins/Media/Imagick.php:1002
+#: ../../app/lib/Plugins/Media/Gmagick.php:893
+#: ../../app/lib/Plugins/Media/Gmagick.php:915
+#: ../../app/lib/Plugins/Media/Imagick.php:1003
 msgid "Error writing file"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:921
-#: ../../app/lib/Plugins/Media/Imagick.php:1006
+#: ../../app/lib/Plugins/Media/Gmagick.php:919
+#: ../../app/lib/Plugins/Media/Imagick.php:1007
 msgid "Error writing file: %1"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:1138
-#: ../../app/lib/Plugins/Media/Imagick.php:464
+#: ../../app/lib/Plugins/Media/Gmagick.php:1136
+#: ../../app/lib/Plugins/Media/Imagick.php:463
 msgid ""
 "Could not convert Camera RAW format file because conversion tool (dcraw) is "
 "not installed"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:1144
-#: ../../app/lib/Plugins/Media/Imagick.php:470
+#: ../../app/lib/Plugins/Media/Gmagick.php:1142
+#: ../../app/lib/Plugins/Media/Imagick.php:469
 msgid "Could not copy Camera RAW file to temporary directory"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:1149
-#: ../../app/lib/Plugins/Media/Imagick.php:475
+#: ../../app/lib/Plugins/Media/Gmagick.php:1147
+#: ../../app/lib/Plugins/Media/Imagick.php:474
 msgid "Camera RAW file conversion failed: %1"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:1153
-#: ../../app/lib/Plugins/Media/Imagick.php:479
+#: ../../app/lib/Plugins/Media/Gmagick.php:1151
+#: ../../app/lib/Plugins/Media/Imagick.php:478
 msgid "Translation from Camera RAW to TIFF failed"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:1289
+#: ../../app/lib/Plugins/Media/Gmagick.php:1287
 msgid "Could not read image file: "
 msgstr ""
 
@@ -13014,10 +13008,10 @@ msgstr ""
 #: ../../app/lib/Plugins/Media/BinaryFile.php:141
 #: ../../app/lib/Plugins/Media/Office.php:401
 #: ../../app/lib/Plugins/Media/PDFWand.php:327
-#: ../../app/lib/Plugins/Media/Audio.php:275
+#: ../../app/lib/Plugins/Media/Audio.php:279
 #: ../../app/lib/Plugins/Media/Mesh.php:276
 #: ../../app/lib/Plugins/Media/Spin360.php:216
-#: ../../app/lib/Plugins/Media/QuicktimeVR.php:211
+#: ../../app/lib/Plugins/Media/QuicktimeVR.php:210
 #: ../../app/lib/Plugins/Media/XMLDoc.php:224
 #: ../../app/lib/Plugins/Media/Video.php:290
 msgid "File %1 does not exist"
@@ -13053,8 +13047,8 @@ msgstr ""
 
 #: ../../app/lib/Plugins/Media/Office.php:525
 #: ../../app/lib/Plugins/Media/PDFWand.php:573
-#: ../../app/lib/Plugins/Media/Audio.php:560
-#: ../../app/lib/Plugins/Media/QuicktimeVR.php:411
+#: ../../app/lib/Plugins/Media/Audio.php:564
+#: ../../app/lib/Plugins/Media/QuicktimeVR.php:410
 #: ../../app/lib/Plugins/Media/Video.php:824
 msgid "Couldn't write file to '%1'"
 msgstr ""
@@ -13079,26 +13073,26 @@ msgid ""
 "PECL Imagick PHP extension"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Imagick.php:263
+#: ../../app/lib/Plugins/Media/Imagick.php:262
 #: ../../app/lib/Plugins/Media/GraphicsMagick.php:265
 #: ../../app/lib/Plugins/Media/GD.php:174
 #: ../../app/lib/Plugins/Media/ImageMagick.php:274
 msgid "Didn't load because Gmagick is available and preferred"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Imagick.php:266
+#: ../../app/lib/Plugins/Media/Imagick.php:265
 msgid "Didn't load because Imagick is not available"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Imagick.php:570
+#: ../../app/lib/Plugins/Media/Imagick.php:571
 msgid "Could not read image file"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Imagick.php:898
+#: ../../app/lib/Plugins/Media/Imagick.php:899
 msgid "Error during image unsharp mask"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Imagick.php:912
+#: ../../app/lib/Plugins/Media/Imagick.php:913
 msgid "Imagick exception"
 msgstr ""
 
@@ -13134,42 +13128,42 @@ msgstr ""
 msgid "Couldn't not write document preview frames to tmp directory (%1)"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Audio.php:156
+#: ../../app/lib/Plugins/Media/Audio.php:160
 msgid "Provides audio processing and conversion using ffmpeg"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Audio.php:181
+#: ../../app/lib/Plugins/Media/Audio.php:185
 msgid ""
 "Incoming audio files will not be transcoded because ffmpeg is not installed."
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Audio.php:185
+#: ../../app/lib/Plugins/Media/Audio.php:189
 msgid "MediaInfo will be used to extract metadata from audio files."
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Audio.php:503
-#: ../../app/lib/Plugins/Media/QuicktimeVR.php:340
+#: ../../app/lib/Plugins/Media/Audio.php:507
+#: ../../app/lib/Plugins/Media/QuicktimeVR.php:339
 #: ../../app/lib/Plugins/Media/Video.php:563
 msgid "Width or height was zero"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Audio.php:531
+#: ../../app/lib/Plugins/Media/Audio.php:535
 msgid "Can't convert '%1' to '%2': unsupported format"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Audio.php:576
+#: ../../app/lib/Plugins/Media/Audio.php:580
 msgid "Error converting file to %1 [%2]: %3"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Audio.php:588
+#: ../../app/lib/Plugins/Media/Audio.php:592
 msgid "Error converting intro to %1 [%2]: %3"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Audio.php:604
+#: ../../app/lib/Plugins/Media/Audio.php:608
 msgid "Error converting outro to %1 [%2]: %3"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Audio.php:700
+#: ../../app/lib/Plugins/Media/Audio.php:704
 #: ../../app/lib/Plugins/Media/Video.php:958
 msgid "Error extracting clip from %1 to %2: %3"
 msgstr ""
@@ -13264,20 +13258,20 @@ msgstr ""
 msgid "Didn't load because ImageMagick executables cannot be found"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/QuicktimeVR.php:116
+#: ../../app/lib/Plugins/Media/QuicktimeVR.php:115
 msgid "Provides services for processing of QuicktimeVR files"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/QuicktimeVR.php:139
+#: ../../app/lib/Plugins/Media/QuicktimeVR.php:138
 msgid "Didn't load because ffmpeg is not installed"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/QuicktimeVR.php:406
+#: ../../app/lib/Plugins/Media/QuicktimeVR.php:405
 #: ../../app/lib/Plugins/Media/Video.php:819
 msgid "Can't convert '%1' to %2"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/QuicktimeVR.php:508
+#: ../../app/lib/Plugins/Media/QuicktimeVR.php:507
 #: ../../app/lib/Plugins/Media/Video.php:933
 msgid "Couldn't not write video preview frames to tmp directory (%1)"
 msgstr ""
@@ -13551,7 +13545,7 @@ msgid "File could not be copied for %1; can't convert mimetype %2 to extension"
 msgstr ""
 
 #: ../../app/lib/Plugins/TaskQueueHandlers/mediaproc.php:249
-#: ../../app/lib/Plugins/TaskQueueHandlers/mediaproc.php:346
+#: ../../app/lib/Plugins/TaskQueueHandlers/mediaproc.php:353
 msgid "Couldn't create subdirectory for file for %1"
 msgstr ""
 
@@ -13560,20 +13554,20 @@ msgid "File could not be copied for %1"
 msgstr ""
 
 #: ../../app/lib/Plugins/TaskQueueHandlers/mediaproc.php:270
-#: ../../app/lib/Plugins/TaskQueueHandlers/mediaproc.php:379
+#: ../../app/lib/Plugins/TaskQueueHandlers/mediaproc.php:386
 msgid "Could not cancel pending tasks"
 msgstr ""
 
-#: ../../app/lib/Plugins/TaskQueueHandlers/mediaproc.php:340
+#: ../../app/lib/Plugins/TaskQueueHandlers/mediaproc.php:347
 msgid ""
 "File could not be processed for %1; can't convert mimetype %2 to extension"
 msgstr ""
 
-#: ../../app/lib/Plugins/TaskQueueHandlers/mediaproc.php:467
+#: ../../app/lib/Plugins/TaskQueueHandlers/mediaproc.php:474
 msgid "Could not update %1.%2: %3"
 msgstr ""
 
-#: ../../app/lib/Plugins/TaskQueueHandlers/mediaproc.php:472
+#: ../../app/lib/Plugins/TaskQueueHandlers/mediaproc.php:479
 msgid "Processed file %1"
 msgstr ""
 
@@ -13647,37 +13641,37 @@ msgstr ""
 msgid "Sends SMS text messages using the SendHub API"
 msgstr ""
 
-#: ../../app/lib/Plugins/MediaReplication/YouTube.php:79
+#: ../../app/lib/Plugins/MediaReplication/YouTube.php:78
 msgid "Replicates media to YouTube using the YouTube API"
 msgstr ""
 
-#: ../../app/lib/Plugins/MediaReplication/YouTube.php:111
-#: ../../app/lib/Plugins/MediaReplication/YouTube.php:159
-#: ../../app/lib/Plugins/MediaReplication/YouTube.php:214
-#: ../../app/lib/Plugins/MediaReplication/YouTube.php:236
+#: ../../app/lib/Plugins/MediaReplication/YouTube.php:110
+#: ../../app/lib/Plugins/MediaReplication/YouTube.php:158
+#: ../../app/lib/Plugins/MediaReplication/YouTube.php:213
+#: ../../app/lib/Plugins/MediaReplication/YouTube.php:235
 msgid "Could not connect to YouTube"
 msgstr ""
 
-#: ../../app/lib/Plugins/MediaReplication/YouTube.php:184
+#: ../../app/lib/Plugins/MediaReplication/YouTube.php:183
 msgid "Unknown error"
 msgstr ""
 
-#: ../../app/lib/Plugins/MediaReplication/Vimeo.php:74
+#: ../../app/lib/Plugins/MediaReplication/Vimeo.php:73
 msgid "Replicates media to Vimeo using the Advanced API"
 msgstr ""
 
-#: ../../app/lib/Plugins/MediaReplication/Vimeo.php:97
+#: ../../app/lib/Plugins/MediaReplication/Vimeo.php:96
 msgid ""
 "Initial connection to Vimeo failed. Did you authorize CollectiveAccess to "
 "use your Vimeo account? Enable the 'vimeo' application plugin and navigate "
 "to Manage > Vimeo integration to do so."
 msgstr ""
 
-#: ../../app/lib/Plugins/MediaReplication/Vimeo.php:134
+#: ../../app/lib/Plugins/MediaReplication/Vimeo.php:133
 msgid "File for replication doesn't exist"
 msgstr ""
 
-#: ../../app/lib/Plugins/MediaReplication/Vimeo.php:141
+#: ../../app/lib/Plugins/MediaReplication/Vimeo.php:140
 msgid "Upload to Vimeo failed. Code: %1, Message: %2"
 msgstr ""
 
@@ -14110,9 +14104,9 @@ msgstr ""
 
 #: ../../app/lib/Plugins/InformationService/CollectiveAccess.php:66
 #: ../../app/models/ca_editor_ui_screens.php:700
-#: ../../app/models/ca_editor_ui_screens.php:1204
-#: ../../app/models/ca_editor_ui_screens.php:1288
-#: ../../app/models/ca_editor_ui_screens.php:1833
+#: ../../app/models/ca_editor_ui_screens.php:1205
+#: ../../app/models/ca_editor_ui_screens.php:1289
+#: ../../app/models/ca_editor_ui_screens.php:1834
 #: ../../app/models/ca_editor_uis.php:92 ../../app/models/ca_movements.php:44
 #: ../../app/models/ca_data_exporters.php:85
 #: ../../app/models/ca_bundle_displays.php:94
@@ -15032,7 +15026,7 @@ msgstr ""
 #: ../../app/lib/Attributes/Values/CurrencyAttributeValue.php:144
 #: ../../app/models/ca_editor_ui_screens.php:523
 #: ../../app/models/ca_editor_ui_screens.php:609
-#: ../../app/models/ca_editor_ui_screens.php:1855
+#: ../../app/models/ca_editor_ui_screens.php:1856
 #: ../../app/models/ca_data_exporter_items.php:266
 msgid "Display template"
 msgstr ""
@@ -16870,42 +16864,29 @@ msgstr ""
 msgid "Couldn't apply bind RDN filter for directory. LDAP search failed"
 msgstr ""
 
-#: ../../app/lib/BaseSettings.php:295
+#: ../../app/lib/BaseSettings.php:294
 #: ../../app/refineries/ATSubjectGetter/ATSubjectGetterRefinery.php:216
 #: ../../app/refineries/ATEntityGetter/ATEntityGetterRefinery.php:198
 msgid "Key"
 msgstr ""
 
-#: ../../app/lib/BaseSettings.php:494
+#: ../../app/lib/BaseSettings.php:493
 msgid "All lists"
 msgstr ""
 
-#: ../../app/lib/BaseSettings.php:543 ../../app/lib/BaseSettings.php:548
-msgid "User defined sort order"
-msgstr ""
-
-#: ../../app/lib/BaseSettings.php:544 ../../app/lib/BaseSettings.php:569
+#: ../../app/lib/BaseSettings.php:536
 msgid "Order created"
 msgstr ""
 
-#: ../../app/lib/BaseSettings.php:545
-#: ../../app/models/ca_editor_ui_screens.php:902
-msgid "Preferred label"
-msgstr ""
-
-#: ../../app/lib/BaseSettings.php:556 ../../app/lib/BaseSettings.php:574
-msgid "Element: %1"
-msgstr ""
-
-#: ../../app/lib/BaseSettings.php:636
+#: ../../app/lib/BaseSettings.php:572
 msgid "weeks"
 msgstr ""
 
-#: ../../app/lib/BaseSettings.php:637
+#: ../../app/lib/BaseSettings.php:573
 msgid "before"
 msgstr ""
 
-#: ../../app/lib/BaseSettings.php:637
+#: ../../app/lib/BaseSettings.php:573
 msgid "after"
 msgstr ""
 
@@ -17093,7 +17074,7 @@ msgstr ""
 msgid "There must be no more than %1 relationships for %2"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:6414
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:6415
 msgid "Identifier %1 already exists and duplicates are not permitted"
 msgstr ""
 
@@ -19310,8 +19291,8 @@ msgstr ""
 #: ../../app/models/ca_editor_ui_bundle_placements.php:147
 #: ../../app/models/ca_user_notes.php:71
 #: ../../app/models/ca_search_form_placements.php:76
-#: ../../app/models/ca_editor_ui_screens.php:1932
-#: ../../app/models/ca_editor_ui_screens.php:2187
+#: ../../app/models/ca_editor_ui_screens.php:1933
+#: ../../app/models/ca_editor_ui_screens.php:2188
 msgid "Bundle name"
 msgstr ""
 
@@ -19599,22 +19580,22 @@ msgstr ""
 
 #: ../../app/models/ca_editor_ui_bundle_placements.php:96
 #: ../../app/models/ca_editor_ui_bundle_placements.php:111
-#: ../../app/models/ca_editor_ui_screens.php:1035
-#: ../../app/models/ca_editor_ui_screens.php:1313
+#: ../../app/models/ca_editor_ui_screens.php:1036
+#: ../../app/models/ca_editor_ui_screens.php:1314
 msgid "Don't force (default)"
 msgstr ""
 
 #: ../../app/models/ca_editor_ui_bundle_placements.php:97
 #: ../../app/models/ca_editor_ui_bundle_placements.php:112
-#: ../../app/models/ca_editor_ui_screens.php:1036
-#: ../../app/models/ca_editor_ui_screens.php:1314
+#: ../../app/models/ca_editor_ui_screens.php:1037
+#: ../../app/models/ca_editor_ui_screens.php:1315
 msgid "Collapse"
 msgstr ""
 
 #: ../../app/models/ca_editor_ui_bundle_placements.php:98
 #: ../../app/models/ca_editor_ui_bundle_placements.php:113
-#: ../../app/models/ca_editor_ui_screens.php:1037
-#: ../../app/models/ca_editor_ui_screens.php:1315
+#: ../../app/models/ca_editor_ui_screens.php:1038
+#: ../../app/models/ca_editor_ui_screens.php:1316
 msgid "Expand"
 msgstr ""
 
@@ -20760,9 +20741,9 @@ msgstr ""
 #: ../../app/models/ca_editor_ui_screens.php:474
 #: ../../app/models/ca_editor_ui_screens.php:515
 #: ../../app/models/ca_editor_ui_screens.php:617
-#: ../../app/models/ca_editor_ui_screens.php:846
-#: ../../app/models/ca_editor_ui_screens.php:1069
-#: ../../app/models/ca_editor_ui_screens.php:1886
+#: ../../app/models/ca_editor_ui_screens.php:823
+#: ../../app/models/ca_editor_ui_screens.php:1070
+#: ../../app/models/ca_editor_ui_screens.php:1887
 #: ../../app/models/ca_metadata_elements.php:84
 msgid "Documentation URL"
 msgstr ""
@@ -20803,7 +20784,6 @@ msgid ""
 msgstr ""
 
 #: ../../app/models/ca_editor_ui_screens.php:569
-#: ../../app/models/ca_editor_ui_screens.php:780
 #: ../../app/models/ca_bundle_displays.php:1503
 msgid "Sort using"
 msgstr ""
@@ -20813,20 +20793,19 @@ msgid "Method used to sort repeating values."
 msgstr ""
 
 #: ../../app/models/ca_editor_ui_screens.php:580
-#: ../../app/models/ca_editor_ui_screens.php:791
-#: ../../app/models/ca_editor_ui_screens.php:1299
+#: ../../app/models/ca_editor_ui_screens.php:900
+#: ../../app/models/ca_editor_ui_screens.php:1300
 msgid "Ascending"
 msgstr ""
 
 #: ../../app/models/ca_editor_ui_screens.php:581
-#: ../../app/models/ca_editor_ui_screens.php:792
-#: ../../app/models/ca_editor_ui_screens.php:1299
+#: ../../app/models/ca_editor_ui_screens.php:901
+#: ../../app/models/ca_editor_ui_screens.php:1300
 msgid "Descending"
 msgstr ""
 
 #: ../../app/models/ca_editor_ui_screens.php:583
-#: ../../app/models/ca_editor_ui_screens.php:794
-#: ../../app/models/ca_editor_ui_screens.php:1302
+#: ../../app/models/ca_editor_ui_screens.php:1303
 msgid "Sort direction"
 msgstr ""
 
@@ -20894,24 +20873,24 @@ msgid ""
 msgstr ""
 
 #: ../../app/models/ca_editor_ui_screens.php:681
-#: ../../app/models/ca_editor_ui_screens.php:830
+#: ../../app/models/ca_editor_ui_screens.php:807
 msgid "Do not show delete button"
 msgstr ""
 
 #: ../../app/models/ca_editor_ui_screens.php:682
-#: ../../app/models/ca_editor_ui_screens.php:831
+#: ../../app/models/ca_editor_ui_screens.php:808
 msgid "If checked the delete relationship control will not be provided."
 msgstr ""
 
 #: ../../app/models/ca_editor_ui_screens.php:689
-#: ../../app/models/ca_editor_ui_screens.php:838
-#: ../../app/models/ca_editor_ui_screens.php:954
+#: ../../app/models/ca_editor_ui_screens.php:815
+#: ../../app/models/ca_editor_ui_screens.php:955
 msgid "Relationship display template"
 msgstr ""
 
 #: ../../app/models/ca_editor_ui_screens.php:690
-#: ../../app/models/ca_editor_ui_screens.php:839
-#: ../../app/models/ca_editor_ui_screens.php:955
+#: ../../app/models/ca_editor_ui_screens.php:816
+#: ../../app/models/ca_editor_ui_screens.php:956
 msgid ""
 "Layout for relationship when displayed in list (can include HTML). Element "
 "code tags prefixed with the ^ character can be used to represent the value "
@@ -20924,7 +20903,7 @@ msgid "none"
 msgstr ""
 
 #: ../../app/models/ca_editor_ui_screens.php:701
-#: ../../app/models/ca_editor_ui_screens.php:1834
+#: ../../app/models/ca_editor_ui_screens.php:1835
 msgid "object-location relationships"
 msgstr ""
 
@@ -20954,12 +20933,12 @@ msgid ""
 msgstr ""
 
 #: ../../app/models/ca_editor_ui_screens.php:766
-#: ../../app/models/ca_editor_ui_screens.php:1821
+#: ../../app/models/ca_editor_ui_screens.php:1822
 msgid "bubbles"
 msgstr ""
 
 #: ../../app/models/ca_editor_ui_screens.php:767
-#: ../../app/models/ca_editor_ui_screens.php:1822
+#: ../../app/models/ca_editor_ui_screens.php:1823
 #: ../../app/models/ca_lists.php:51
 #: ../../app/controllers/administrate/setup/RelationshipTypesController.php:55
 #: ../../app/controllers/administrate/setup/BrowseListItemsController.php:62
@@ -21022,55 +21001,47 @@ msgid "Format of relationship list"
 msgstr ""
 
 #: ../../app/models/ca_editor_ui_screens.php:772
-#: ../../app/models/ca_editor_ui_screens.php:1827
+#: ../../app/models/ca_editor_ui_screens.php:1828
 msgid "."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:782
-msgid "Method used to sort related items."
-msgstr ""
-
-#: ../../app/models/ca_editor_ui_screens.php:795
-msgid "Direction of sort, when not in a user-specified order."
-msgstr ""
-
-#: ../../app/models/ca_editor_ui_screens.php:803
+#: ../../app/models/ca_editor_ui_screens.php:780
 msgid "First item color"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:804
+#: ../../app/models/ca_editor_ui_screens.php:781
 msgid "If set first item in list will use this color."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:812
+#: ../../app/models/ca_editor_ui_screens.php:789
 #: ../../app/models/ca_list_items.php:108
 msgid "Item color"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:813
+#: ../../app/models/ca_editor_ui_screens.php:790
 msgid "If set item that are not first or last in list will use this color."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:821
+#: ../../app/models/ca_editor_ui_screens.php:798
 msgid "Last item color"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:822
+#: ../../app/models/ca_editor_ui_screens.php:799
 msgid "If set last item in list will use this color."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:847
+#: ../../app/models/ca_editor_ui_screens.php:824
 msgid ""
 "URL pointing to documentation for this relationship bundle. Leave blank if "
 "no documentation URL exists."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:854
+#: ../../app/models/ca_editor_ui_screens.php:831
 msgid ""
 "Minimum number of relationships of this kind to be associated with an item. "
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:855
+#: ../../app/models/ca_editor_ui_screens.php:832
 msgid ""
 "If set to 0 a delete button will allow a cataloguer to clear all "
 "relationships.  If set to 1 or more, it will not be possible to delete all "
@@ -21078,309 +21049,329 @@ msgid ""
 "interface limitations rather than constraints on the underlying data model."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:862
+#: ../../app/models/ca_editor_ui_screens.php:839
 msgid ""
 "Maximum number of relationships of this kind that can be associated with an "
 "item"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:863
+#: ../../app/models/ca_editor_ui_screens.php:840
 msgid ""
 "The extent of repeatability for the relationship will match the number "
 "entered here. Note that this is only a user interface limitations rather "
 "than constraints on the underlying data model."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:872
+#: ../../app/models/ca_editor_ui_screens.php:849
 #: ../../app/models/ca_bundle_displays.php:1597
 msgid "Show current only?"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:873
+#: ../../app/models/ca_editor_ui_screens.php:850
 msgid "If checked only the most recently dated relationship displayed."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:884
+#: ../../app/models/ca_editor_ui_screens.php:861
 msgid "Base current status on date"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:893
+#: ../../app/models/ca_editor_ui_screens.php:870
 msgid "Disable quick add?"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:894
+#: ../../app/models/ca_editor_ui_screens.php:871
 msgid "If checked quickadd will be disabled regardless of user privileges."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:903
+#: ../../app/models/ca_editor_ui_screens.php:879
+msgid "Preferred label"
+msgstr ""
+
+#: ../../app/models/ca_editor_ui_screens.php:880
 msgid "Prepopulate quick add fields with search text"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:904
+#: ../../app/models/ca_editor_ui_screens.php:881
 msgid ""
 "Select quickadd form fields to be pre-filled with the user-entered search "
 "value. If no fields are selected then the preferred label will be "
 "prepopulated by default."
 msgstr ""
 
+#: ../../app/models/ca_editor_ui_screens.php:889
+msgid "Initially sort using"
+msgstr ""
+
+#: ../../app/models/ca_editor_ui_screens.php:891
+msgid "Method used to sort related items."
+msgstr ""
+
+#: ../../app/models/ca_editor_ui_screens.php:903
+msgid "Initial sort direction"
+msgstr ""
+
+#: ../../app/models/ca_editor_ui_screens.php:904
+msgid "Direction of sort, when not in a user-specified order."
+msgstr ""
+
 #: ../../app/models/ca_editor_ui_screens.php:912
-msgid "Disable sorting?"
+msgid "Disable user-selectable sorting options?"
 msgstr ""
 
 #: ../../app/models/ca_editor_ui_screens.php:914
 msgid "If checked sorting of related items will be disabled."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:923
-msgid "Sort options"
-msgstr ""
-
 #: ../../app/models/ca_editor_ui_screens.php:924
-msgid "Limits sort options on this bundle."
+msgid "User-selectable sort options"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:943
+#: ../../app/models/ca_editor_ui_screens.php:925
+msgid "Limits user-selectable sort options on this bundle."
+msgstr ""
+
+#: ../../app/models/ca_editor_ui_screens.php:944
 #: ../../app/models/ca_bundle_displays.php:1518
 msgid "Restrict to list"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:944
+#: ../../app/models/ca_editor_ui_screens.php:945
 msgid ""
 "Restricts display to items from the specified list(s). Leave all unselected "
 "for no restriction."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:966
+#: ../../app/models/ca_editor_ui_screens.php:967
 msgid "Use hierarchy browser?"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:967
+#: ../../app/models/ca_editor_ui_screens.php:968
 msgid ""
 "If checked a hierarchical browser will be used to select related items "
 "instead of an auto-complete lookup."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:976
+#: ../../app/models/ca_editor_ui_screens.php:977
 msgid "Height of hierarchical browser"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:977
+#: ../../app/models/ca_editor_ui_screens.php:978
 msgid "Height of hierarchical browser."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:989
+#: ../../app/models/ca_editor_ui_screens.php:990
 msgid "Restrict to checklist of terms from related collections?"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:990
+#: ../../app/models/ca_editor_ui_screens.php:991
 msgid "Will restrict checklist to those terms applied to related collections."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1000
+#: ../../app/models/ca_editor_ui_screens.php:1001
 msgid "Restrict checklist to terms related to collection as"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1001
+#: ../../app/models/ca_editor_ui_screens.php:1002
 msgid ""
 "Will restrict checklist to terms related to collections with the specified "
 "relationship type. Leave all unselected for no restriction."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1010
+#: ../../app/models/ca_editor_ui_screens.php:1011
 msgid "Checked collection term relationship type"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1011
+#: ../../app/models/ca_editor_ui_screens.php:1012
 msgid ""
 "Specified the relationship used to relate collection-restricted terms to "
 "this object."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1043
-#: ../../app/models/ca_editor_ui_screens.php:1320
+#: ../../app/models/ca_editor_ui_screens.php:1044
+#: ../../app/models/ca_editor_ui_screens.php:1321
 msgid "Always Expand/collapse"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1044
-#: ../../app/models/ca_editor_ui_screens.php:1321
+#: ../../app/models/ca_editor_ui_screens.php:1045
+#: ../../app/models/ca_editor_ui_screens.php:1322
 msgid "Controls the expand/collapse behavior"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1052
+#: ../../app/models/ca_editor_ui_screens.php:1053
 msgid "Open hierarchy browser by default"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1053
+#: ../../app/models/ca_editor_ui_screens.php:1054
 msgid "If checked hierarchy browser will be open when form loads."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1061
+#: ../../app/models/ca_editor_ui_screens.php:1062
 msgid "Automatically shrink browser"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1062
+#: ../../app/models/ca_editor_ui_screens.php:1063
 msgid ""
 "Check this option if you want the hierarchy browser to automatically shrink "
 "or expand based on the height of the column with the most data."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1070
+#: ../../app/models/ca_editor_ui_screens.php:1071
 msgid ""
 "URL pointing to documentation for this hierarchy browser. Leave blank if no "
 "documentation URL exists."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1082
+#: ../../app/models/ca_editor_ui_screens.php:1083
 msgid "Maximum number of references to display"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1083
+#: ../../app/models/ca_editor_ui_screens.php:1084
 msgid "Maximum number of references to display per item."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1090
+#: ../../app/models/ca_editor_ui_screens.php:1091
 msgid "Object display template"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1091
+#: ../../app/models/ca_editor_ui_screens.php:1092
 msgid ""
 "Layout for referencing objects. Element code tags prefixed with the ^ "
 "character can be used to represent the value in the template. For example: "
 "<i>^ca_objects.idno</i>."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1098
+#: ../../app/models/ca_editor_ui_screens.php:1099
 msgid "Lot display template"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1099
+#: ../../app/models/ca_editor_ui_screens.php:1100
 msgid ""
 "Layout for referencing lots. Element code tags prefixed with the ^ character "
 "can be used to represent the value in the template. For example: "
 "<i>^ca_object_lots.idno_stub</i>."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1106
+#: ../../app/models/ca_editor_ui_screens.php:1107
 msgid "Entity display template"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1107
+#: ../../app/models/ca_editor_ui_screens.php:1108
 msgid ""
 "Layout for referencing entities. Element code tags prefixed with the ^ "
 "character can be used to represent the value in the template. For example: "
 "<i>^ca_entities.idno</i>."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1114
+#: ../../app/models/ca_editor_ui_screens.php:1115
 msgid "Place display template"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1115
+#: ../../app/models/ca_editor_ui_screens.php:1116
 msgid ""
 "Layout for referencing places. Element code tags prefixed with the ^ "
 "character can be used to represent the value in the template. For example: "
 "<i>^ca_places.idno</i>."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1122
+#: ../../app/models/ca_editor_ui_screens.php:1123
 msgid "Occurrence display template"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1123
+#: ../../app/models/ca_editor_ui_screens.php:1124
 msgid ""
 "Layout for referencing occurrences. Element code tags prefixed with the ^ "
 "character can be used to represent the value in the template. For example: "
 "<i>^ca_occurrences.idno</i>."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1130
+#: ../../app/models/ca_editor_ui_screens.php:1131
 msgid "Collection display template"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1131
+#: ../../app/models/ca_editor_ui_screens.php:1132
 msgid ""
 "Layout for referencing collections. Element code tags prefixed with the ^ "
 "character can be used to represent the value in the template. For example: "
 "<i>^ca_collections.idno</i>."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1138
+#: ../../app/models/ca_editor_ui_screens.php:1139
 msgid "Loan display template"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1139
+#: ../../app/models/ca_editor_ui_screens.php:1140
 msgid ""
 "Layout for referencing loans. Element code tags prefixed with the ^ "
 "character can be used to represent the value in the template. For example: "
 "<i>^ca_loans.idno</i>."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1146
+#: ../../app/models/ca_editor_ui_screens.php:1147
 msgid "Movement display template"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1147
+#: ../../app/models/ca_editor_ui_screens.php:1148
 msgid ""
 "Layout for referencing movements. Element code tags prefixed with the ^ "
 "character can be used to represent the value in the template. For example: "
 "<i>^ca_movements.idno</i>."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1154
+#: ../../app/models/ca_editor_ui_screens.php:1155
 msgid "Object representation display template"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1155
+#: ../../app/models/ca_editor_ui_screens.php:1156
 msgid ""
 "Layout for referencing object representations. Element code tags prefixed "
 "with the ^ character can be used to represent the value in the template. For "
 "example: <i>^ca_object_representations.idno</i>."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1162
+#: ../../app/models/ca_editor_ui_screens.php:1163
 msgid "List item display template"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1163
+#: ../../app/models/ca_editor_ui_screens.php:1164
 msgid ""
 "Layout for referencing list items. Element code tags prefixed with the ^ "
 "character can be used to represent the value in the template. For example: "
 "<i>^ca_list_items.idno</i>."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1177
+#: ../../app/models/ca_editor_ui_screens.php:1178
 msgid ""
 "Metadata element to store representation selection in. Must be of type "
 "ObjectRepresentation."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1188
+#: ../../app/models/ca_editor_ui_screens.php:1189
 msgid "Component display template"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1189
+#: ../../app/models/ca_editor_ui_screens.php:1190
 msgid ""
 "Layout for component when displayed in list (can include HTML). Element code "
 "tags prefixed with the ^ character can be used to represent the value in the "
 "template. For example: <i>^ca_objects.idno</i>."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1205
-#: ../../app/models/ca_editor_ui_screens.php:1289
+#: ../../app/models/ca_editor_ui_screens.php:1206
+#: ../../app/models/ca_editor_ui_screens.php:1290
 msgid "storage location relationships"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1209
-#: ../../app/models/ca_editor_ui_screens.php:1293
-#: ../../app/models/ca_editor_ui_screens.php:1838
+#: ../../app/models/ca_editor_ui_screens.php:1210
+#: ../../app/models/ca_editor_ui_screens.php:1294
+#: ../../app/models/ca_editor_ui_screens.php:1839
 msgid "Track location using"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1218
+#: ../../app/models/ca_editor_ui_screens.php:1219
 msgid "Object location display template"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1219
+#: ../../app/models/ca_editor_ui_screens.php:1220
 msgid ""
 "Layout for current location of object when displayed in list (can include "
 "HTML). The template is evaluated relative to the object-movement or object-"
@@ -21389,11 +21380,11 @@ msgid ""
 "example: <i>^ca_movements.idno</i>."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1227
+#: ../../app/models/ca_editor_ui_screens.php:1228
 msgid "Object location history template"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1228
+#: ../../app/models/ca_editor_ui_screens.php:1229
 msgid ""
 "Layout for each previous location of object when displayed in history list "
 "(can include HTML). The template is evaluated relative to the object-"
@@ -21402,116 +21393,108 @@ msgid ""
 "example: <i>^ca_movements.idno</i>."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1236
+#: ../../app/models/ca_editor_ui_screens.php:1237
 msgid "Color for current location"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1237
+#: ../../app/models/ca_editor_ui_screens.php:1238
 msgid ""
 "Color to use as highlight for the current location in the location history."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1245
+#: ../../app/models/ca_editor_ui_screens.php:1246
 msgid "Color for future locations"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1246
+#: ../../app/models/ca_editor_ui_screens.php:1247
 msgid "Color to use as highlight for future locations in the location history."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1254
+#: ../../app/models/ca_editor_ui_screens.php:1255
 msgid "Color for past locations"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1255
+#: ../../app/models/ca_editor_ui_screens.php:1256
 msgid ""
 "Color to use as highlight for the previous locations in the location history."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1263
-#: ../../app/models/ca_editor_ui_screens.php:1377
+#: ../../app/models/ca_editor_ui_screens.php:1264
+#: ../../app/models/ca_editor_ui_screens.php:1378
 msgid "Use hierarchy browser for storage locations?"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1264
-#: ../../app/models/ca_editor_ui_screens.php:1378
+#: ../../app/models/ca_editor_ui_screens.php:1265
+#: ../../app/models/ca_editor_ui_screens.php:1379
 msgid ""
 "If checked a hierarchical browser will be used to select storage location "
 "items rather than an auto-complete lookup."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1281
+#: ../../app/models/ca_editor_ui_screens.php:1282
 msgid "Use defaults from application configuration (app.conf)?"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1282
+#: ../../app/models/ca_editor_ui_screens.php:1283
 msgid ""
 "If checked all settings are taken from the main application configuration "
 "file (app.conf)."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1303
+#: ../../app/models/ca_editor_ui_screens.php:1304
 msgid "Set ascending or descending order for list."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1329
+#: ../../app/models/ca_editor_ui_screens.php:1330
 msgid "Hide \"Include child history\" controls"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1330
+#: ../../app/models/ca_editor_ui_screens.php:1331
 msgid ""
 "Check this option if you want to to hide the \"Include child history\" "
 "controls in this bundle placement."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1338
+#: ../../app/models/ca_editor_ui_screens.php:1339
 msgid "Hide \"Add to loan\" controls"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1339
+#: ../../app/models/ca_editor_ui_screens.php:1340
 msgid ""
 "Check this option if you want to to hide the \"Add to loan\" controls in "
 "this bundle placement."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1347
+#: ../../app/models/ca_editor_ui_screens.php:1348
 msgid "Hide \"Update Location\" controls"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1348
+#: ../../app/models/ca_editor_ui_screens.php:1349
 msgid ""
 "Check this option if you want to to hide the \"Update Location\" controls in "
 "this bundle placement."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1356
+#: ../../app/models/ca_editor_ui_screens.php:1357
 msgid "Hide \"Add to\" occurrence controls"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1357
+#: ../../app/models/ca_editor_ui_screens.php:1358
 msgid ""
 "Check this option if you want to to hide the \"Add to\" occurrence controls "
 "in this bundle placement."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1368
+#: ../../app/models/ca_editor_ui_screens.php:1369
 msgid "Show \"Add to\" occurrence controls for"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1388
+#: ../../app/models/ca_editor_ui_screens.php:1389
 msgid "Show lots"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1404
+#: ../../app/models/ca_editor_ui_screens.php:1405
 msgid "Lot (%1) date"
-msgstr ""
-
-#: ../../app/models/ca_editor_ui_screens.php:1413
-#: ../../app/models/ca_editor_ui_screens.php:1478
-#: ../../app/models/ca_editor_ui_screens.php:1544
-#: ../../app/models/ca_editor_ui_screens.php:1609
-#: ../../app/models/ca_editor_ui_screens.php:1676
-msgid "Color for %1"
 msgstr ""
 
 #: ../../app/models/ca_editor_ui_screens.php:1414
@@ -21519,14 +21502,22 @@ msgstr ""
 #: ../../app/models/ca_editor_ui_screens.php:1545
 #: ../../app/models/ca_editor_ui_screens.php:1610
 #: ../../app/models/ca_editor_ui_screens.php:1677
+msgid "Color for %1"
+msgstr ""
+
+#: ../../app/models/ca_editor_ui_screens.php:1415
+#: ../../app/models/ca_editor_ui_screens.php:1480
+#: ../../app/models/ca_editor_ui_screens.php:1546
+#: ../../app/models/ca_editor_ui_screens.php:1611
+#: ../../app/models/ca_editor_ui_screens.php:1678
 msgid "Color to use as highlight %1."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1421
+#: ../../app/models/ca_editor_ui_screens.php:1422
 msgid "Lot (%1) display template"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1422
+#: ../../app/models/ca_editor_ui_screens.php:1423
 msgid ""
 "Layout for lot when displayed in history list (can include HTML). The "
 "template is evaluated relative to the lot. Element code tags prefixed with "
@@ -21534,21 +21525,21 @@ msgid ""
 "example: <i>^ca_object_lots.idno_stub</i>."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1429
+#: ../../app/models/ca_editor_ui_screens.php:1430
 msgid "Include history from lots (%1) related to child objects"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1430
+#: ../../app/models/ca_editor_ui_screens.php:1431
 msgid ""
 "If checked history from lots that are related to sub-objects (children) is "
 "included."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1437
+#: ../../app/models/ca_editor_ui_screens.php:1438
 msgid "Lot (%1) display template when related to child objects"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1438
+#: ../../app/models/ca_editor_ui_screens.php:1439
 msgid ""
 "Layout for lot related to child objects, when displayed in history list (can "
 "include HTML). The template is evaluated relative to the lot. Element code "
@@ -21556,25 +21547,25 @@ msgid ""
 "template. For example: <i>^ca_object_lots.idno_stub</i>."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1455
+#: ../../app/models/ca_editor_ui_screens.php:1456
 msgid "Show occurrences"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1469
-#: ../../app/models/ca_editor_ui_screens.php:1535
-#: ../../app/models/ca_editor_ui_screens.php:1600
-#: ../../app/models/ca_editor_ui_screens.php:1667
+#: ../../app/models/ca_editor_ui_screens.php:1470
+#: ../../app/models/ca_editor_ui_screens.php:1536
+#: ../../app/models/ca_editor_ui_screens.php:1601
+#: ../../app/models/ca_editor_ui_screens.php:1668
 msgid "%1 date"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1486
-#: ../../app/models/ca_editor_ui_screens.php:1552
-#: ../../app/models/ca_editor_ui_screens.php:1617
-#: ../../app/models/ca_editor_ui_screens.php:1684
+#: ../../app/models/ca_editor_ui_screens.php:1487
+#: ../../app/models/ca_editor_ui_screens.php:1553
+#: ../../app/models/ca_editor_ui_screens.php:1618
+#: ../../app/models/ca_editor_ui_screens.php:1685
 msgid "%1 display template"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1487
+#: ../../app/models/ca_editor_ui_screens.php:1488
 msgid ""
 "Layout for %1 when displayed in history list (can include HTML). The "
 "template is evaluated relative to the %1. Element code tags prefixed with "
@@ -21582,33 +21573,33 @@ msgid ""
 "example: <i>^ca_occurrences.idno</i>."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1494
-#: ../../app/models/ca_editor_ui_screens.php:1560
-#: ../../app/models/ca_editor_ui_screens.php:1625
-#: ../../app/models/ca_editor_ui_screens.php:1692
-msgid "Include history from %1 related to child objects"
-msgstr ""
-
 #: ../../app/models/ca_editor_ui_screens.php:1495
 #: ../../app/models/ca_editor_ui_screens.php:1561
 #: ../../app/models/ca_editor_ui_screens.php:1626
 #: ../../app/models/ca_editor_ui_screens.php:1693
+msgid "Include history from %1 related to child objects"
+msgstr ""
+
+#: ../../app/models/ca_editor_ui_screens.php:1496
+#: ../../app/models/ca_editor_ui_screens.php:1562
+#: ../../app/models/ca_editor_ui_screens.php:1627
+#: ../../app/models/ca_editor_ui_screens.php:1694
 msgid ""
 "If checked history from %1 that are related to sub-objects (children) is "
 "included."
-msgstr ""
-
-#: ../../app/models/ca_editor_ui_screens.php:1502
-#: ../../app/models/ca_editor_ui_screens.php:1568
-#: ../../app/models/ca_editor_ui_screens.php:1633
-#: ../../app/models/ca_editor_ui_screens.php:1700
-msgid "Display template for %1 when related to child objects"
 msgstr ""
 
 #: ../../app/models/ca_editor_ui_screens.php:1503
 #: ../../app/models/ca_editor_ui_screens.php:1569
 #: ../../app/models/ca_editor_ui_screens.php:1634
 #: ../../app/models/ca_editor_ui_screens.php:1701
+msgid "Display template for %1 when related to child objects"
+msgstr ""
+
+#: ../../app/models/ca_editor_ui_screens.php:1504
+#: ../../app/models/ca_editor_ui_screens.php:1570
+#: ../../app/models/ca_editor_ui_screens.php:1635
+#: ../../app/models/ca_editor_ui_screens.php:1702
 msgid ""
 "Layout for %1 related to child objects, when displayed in history list (can "
 "include HTML). The template is evaluated relative to the lot. Element code "
@@ -21616,11 +21607,11 @@ msgid ""
 "template. For example: <i>^ca_object_lots.idno_stub</i>."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1521
+#: ../../app/models/ca_editor_ui_screens.php:1522
 msgid "Show collections"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1553
+#: ../../app/models/ca_editor_ui_screens.php:1554
 msgid ""
 "Layout for %1 when displayed in history list (can include HTML). The "
 "template is evaluated relative to the %1. Element code tags prefixed with "
@@ -21628,11 +21619,11 @@ msgid ""
 "example: <i>^ca_collections.idno</i>."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1586
+#: ../../app/models/ca_editor_ui_screens.php:1587
 msgid "Show movements"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1618
+#: ../../app/models/ca_editor_ui_screens.php:1619
 msgid ""
 "Layout for %1 when displayed in history list (can include HTML). The "
 "template is evaluated relative to the %1. Element code tags prefixed with "
@@ -21640,11 +21631,11 @@ msgid ""
 "example: <i>^ca_movements.idno</i>."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1652
+#: ../../app/models/ca_editor_ui_screens.php:1653
 msgid "Show loans"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1685
+#: ../../app/models/ca_editor_ui_screens.php:1686
 msgid ""
 "Layout for %1 when displayed in history list (can include HTML). The "
 "template is evaluated relative to the %1. Element code tags prefixed with "
@@ -21652,32 +21643,32 @@ msgid ""
 "example: <i>^ca_loans.idno</i>."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1720
+#: ../../app/models/ca_editor_ui_screens.php:1721
 msgid "Show storage locations"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1721
+#: ../../app/models/ca_editor_ui_screens.php:1722
 msgid "Show storage locations with selected relationship types."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1729
+#: ../../app/models/ca_editor_ui_screens.php:1730
 msgid "Color for storage location"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1730
+#: ../../app/models/ca_editor_ui_screens.php:1731
 msgid "Color to use as highlight storage location."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1742
 #: ../../app/models/ca_editor_ui_screens.php:1743
+#: ../../app/models/ca_editor_ui_screens.php:1744
 msgid "Interstitial storage location elements to set"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1750
+#: ../../app/models/ca_editor_ui_screens.php:1751
 msgid "Storage location display template"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1751
+#: ../../app/models/ca_editor_ui_screens.php:1752
 msgid ""
 "Layout for storage location when displayed in history list (can include "
 "HTML). The template is evaluated relative to the object-storage location "
@@ -21686,21 +21677,21 @@ msgid ""
 "idno_stub</i>."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1758
+#: ../../app/models/ca_editor_ui_screens.php:1759
 msgid "Include history from storage locations related to child objects"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1759
+#: ../../app/models/ca_editor_ui_screens.php:1760
 msgid ""
 "If checked history from storage locations that are related to sub-objects "
 "(children) is included."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1766
+#: ../../app/models/ca_editor_ui_screens.php:1767
 msgid "Display template for storage locations when related to child objects"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1767
+#: ../../app/models/ca_editor_ui_screens.php:1768
 msgid ""
 "Layout for storage location related to child objects, when displayed in "
 "history list (can include HTML). The template is evaluated relative to the "
@@ -21709,27 +21700,27 @@ msgid ""
 "<i>^ca_object_lots.idno_stub</i>."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1775
+#: ../../app/models/ca_editor_ui_screens.php:1776
 msgid "Show deaccession information"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1776
+#: ../../app/models/ca_editor_ui_screens.php:1777
 msgid "If clicked deaccession information will be shown in the history."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1784
+#: ../../app/models/ca_editor_ui_screens.php:1785
 msgid "Color for deaccession"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1785
+#: ../../app/models/ca_editor_ui_screens.php:1786
 msgid "Color to use as highlight deaccession."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1792
+#: ../../app/models/ca_editor_ui_screens.php:1793
 msgid "Deaccession display template"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1793
+#: ../../app/models/ca_editor_ui_screens.php:1794
 msgid ""
 "Layout for deaccession information when displayed in history list (can "
 "include HTML). The template is evaluated relative to the object. Element "
@@ -21737,21 +21728,21 @@ msgid ""
 "in the template. For example: <i>^ca_objects.deaccession_notes</i>."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1800
+#: ../../app/models/ca_editor_ui_screens.php:1801
 msgid "Include history from deaccession information related to child objects"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1801
+#: ../../app/models/ca_editor_ui_screens.php:1802
 msgid ""
 "If checked history from deaccession information that are related to sub-"
 "objects (children) is included."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1808
+#: ../../app/models/ca_editor_ui_screens.php:1809
 msgid "Display template for deaccessions related to child objects"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1809
+#: ../../app/models/ca_editor_ui_screens.php:1810
 msgid ""
 "Layout for deaccession information related to child objects when displayed "
 "in history list (can include HTML). The template is evaluated relative to "
@@ -21760,19 +21751,19 @@ msgid ""
 "deaccession_notes</i>."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1826
+#: ../../app/models/ca_editor_ui_screens.php:1827
 msgid "Format of contents list"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1847
+#: ../../app/models/ca_editor_ui_screens.php:1848
 msgid "Object color"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1848
+#: ../../app/models/ca_editor_ui_screens.php:1849
 msgid "If set object in list will use this color."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1856
+#: ../../app/models/ca_editor_ui_screens.php:1857
 msgid ""
 "Layout for each object in the storage location (can include HTML). The "
 "template is evaluated relative to each object-movement or object-location "
@@ -21780,43 +21771,43 @@ msgid ""
 "represent the value in the template. For example: <i>^ca_objects.idno</i>."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1872
+#: ../../app/models/ca_editor_ui_screens.php:1873
 msgid "Display template (%1)"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1873
+#: ../../app/models/ca_editor_ui_screens.php:1874
 msgid ""
 "Layout for %1 set item information when used in a display list. For example: "
 "<i>^ca_objects.deaccession_notes</i>."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1887
+#: ../../app/models/ca_editor_ui_screens.php:1888
 msgid ""
 "URL pointing to documentation. Leave blank if no documentation URL exists."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1908
+#: ../../app/models/ca_editor_ui_screens.php:1909
 msgid "Display bundle for types: %1"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1909
+#: ../../app/models/ca_editor_ui_screens.php:1910
 msgid ""
 "Restrict which types this bundle is displayed for. If no types are selected "
 "the bundle will be displayed for <strong>all</strong> types."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1916
+#: ../../app/models/ca_editor_ui_screens.php:1917
 msgid "Include sub-types"
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:1917
+#: ../../app/models/ca_editor_ui_screens.php:1918
 msgid "Automatically include sub-types of selected types in type restriction."
 msgstr ""
 
-#: ../../app/models/ca_editor_ui_screens.php:2354
+#: ../../app/models/ca_editor_ui_screens.php:2355
 #: ../../app/models/ca_editor_uis.php:1380
 #: ../../app/models/ca_bundle_displays.php:2455
-#: ../../app/models/ca_search_forms.php:1635
+#: ../../app/models/ca_search_forms.php:1636
 msgid "Include subtypes?"
 msgstr ""
 
@@ -22844,6 +22835,30 @@ msgstr ""
 
 #: ../../app/models/ca_bundle_displays.php:153
 msgid "Format per-page and per-report summary information."
+msgstr ""
+
+#: ../../app/models/ca_bundle_displays.php:162
+msgid "Search/browse (thumbnail view)"
+msgstr ""
+
+#: ../../app/models/ca_bundle_displays.php:163
+msgid "Search/browse (full view)"
+msgstr ""
+
+#: ../../app/models/ca_bundle_displays.php:164
+msgid "Search/browse (list view)"
+msgstr ""
+
+#: ../../app/models/ca_bundle_displays.php:165
+msgid "Editor summaries"
+msgstr ""
+
+#: ../../app/models/ca_bundle_displays.php:166
+msgid "Editor relationship bundles"
+msgstr ""
+
+#: ../../app/models/ca_bundle_displays.php:167
+msgid "Set items bundles"
 msgstr ""
 
 #: ../../app/models/ca_bundle_displays.php:170
@@ -24572,7 +24587,7 @@ msgstr ""
 msgid "File is not part of this representation"
 msgstr ""
 
-#: ../../app/models/ca_object_representations.php:1442
+#: ../../app/models/ca_object_representations.php:1456
 msgid "Caption file is not part of this representation"
 msgstr ""
 
@@ -25105,23 +25120,23 @@ msgstr ""
 msgid "Set items"
 msgstr ""
 
-#: ../../app/models/ca_sets.php:1151
+#: ../../app/models/ca_sets.php:1178
 msgid "Item does not exist"
 msgstr ""
 
-#: ../../app/models/ca_sets.php:1539
+#: ../../app/models/ca_sets.php:1569
 msgid "Could not reorder item %1: %2"
 msgstr ""
 
-#: ../../app/models/ca_sets.php:2714
+#: ../../app/models/ca_sets.php:2803
 msgid "dupes"
 msgstr ""
 
-#: ../../app/models/ca_sets.php:2722
+#: ../../app/models/ca_sets.php:2811
 msgid "[Duplicates]"
 msgstr ""
 
-#: ../../app/models/ca_sets.php:2732
+#: ../../app/models/ca_sets.php:2821
 msgid "You do not have permission to duplicate these items"
 msgstr ""
 
@@ -26587,11 +26602,6 @@ msgstr ""
 #: ../../app/models/ca_data_importers.php:3211
 msgid ""
 "Replaced value \"%1\" (%2) with \"%3\" (%4) for %5 using replacement values"
-msgstr ""
-
-#: ../../app/models/ca_users.php:49
-#: ../../app/controllers/manage/SetController.php:244
-msgid "users"
 msgstr ""
 
 #: ../../app/models/ca_users.php:56
@@ -28973,43 +28983,43 @@ msgstr ""
 msgid "Deleted importer"
 msgstr ""
 
-#: ../../app/controllers/manage/SetController.php:307
+#: ../../app/controllers/manage/SetController.php:305
 msgid "Invalid operation"
 msgstr ""
 
-#: ../../app/controllers/manage/SetController.php:313
+#: ../../app/controllers/manage/SetController.php:311
 msgid "%1 et. al."
 msgstr ""
 
-#: ../../app/controllers/manage/SetController.php:326
+#: ../../app/controllers/manage/SetController.php:324
 msgid "Could not create new set: %1"
 msgstr ""
 
-#: ../../app/controllers/manage/SetController.php:330
+#: ../../app/controllers/manage/SetController.php:328
 msgid "Could not add label to new set: %1"
 msgstr ""
 
-#: ../../app/controllers/manage/SetController.php:332
+#: ../../app/controllers/manage/SetController.php:330
 msgid "Could not add items to new set: %1"
 msgstr ""
 
-#: ../../app/controllers/manage/SetController.php:334
+#: ../../app/controllers/manage/SetController.php:332
 msgid "Created new set <em>%1</em>"
 msgstr ""
 
-#: ../../app/controllers/manage/SetController.php:338
+#: ../../app/controllers/manage/SetController.php:336
 msgid "Set was not created because it has no contents"
 msgstr ""
 
-#: ../../app/controllers/manage/SetController.php:341
+#: ../../app/controllers/manage/SetController.php:339
 msgid "At least two sets must be selected"
 msgstr ""
 
-#: ../../app/controllers/manage/SetController.php:477
+#: ../../app/controllers/manage/SetController.php:475
 msgid "All sets"
 msgstr ""
 
-#: ../../app/controllers/manage/SetController.php:495
+#: ../../app/controllers/manage/SetController.php:493
 msgid "Sets by user"
 msgstr ""
 
