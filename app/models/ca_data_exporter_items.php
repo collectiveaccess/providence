@@ -543,7 +543,7 @@ class ca_data_exporter_items extends BaseModel {
 				_t('no') => 0
 			),
 			'label' => _t('Do not return value if on the same day as start'),
-			'description' => _t('If set, the exporter will not insert a value for this mapping if the end day of the DateRange in question is on the same day as the start. Only applias to exports of DateRange attributes and only in conjunction with end_as_iso8601.'),
+			'description' => _t('If set, the exporter will not insert a value for this mapping if the end day of the DateRange in question is on the same day as the start. Only applies to exports of DateRange attributes and only in conjunction with end_as_iso8601.'),
 		);
 
 		$va_settings['dateFormat'] = array(
