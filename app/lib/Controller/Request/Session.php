@@ -347,9 +347,9 @@ class Session {
 		$config = Configuration::load();
 		if(!$key) { $key = $config->get('jwt_token_key'); }
 		$exp_offset = caGetOption('refresh', $options, false) ? 
-			caGetOption('lifetime', $options, (int)$config->get('jwt_access_token_lifetime'))
+			caGetOption('lifetime', $options, (int)$config->get('jwt_refresh_token_lifetime'))
 			: 
-			caGetOption('lifetime', $options, (int)$config->get('jwt_refresh_token_lifetime'));
+			caGetOption('lifetime', $options, (int)$config->get('jwt_access_token_lifetime'));
 			
 		if ($exp_offset <= 0) { $exp_offset = 900; }
 		

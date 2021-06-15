@@ -233,7 +233,7 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 				$row = [
 					'id' => $sresult->getPrimaryKey(),
 					'table' => $table,
-					'idno' => \Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD'). $sresult->get(Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD')),
+					'idno' => \Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD'). $sresult->get(\Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD')),
 					'bundles' => $row
 				];
 			}

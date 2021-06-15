@@ -92,39 +92,125 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'bundles',
 							'type' => Type::listOf(EditSchema::get('Bundle')),
 							'description' => _t('Bundles to add')
-						]
+						],
+						[
+							'name' => 'records',
+							'type' => Type::listOf(EditSchema::get('Record')),
+							'default' => null,
+							'description' => _t('List of records to insert')
+						],
+						[
+							'name' => 'insertMode',
+							'type' => Type::string(),
+							'default' => 'FLAT',
+							'description' => _t('Insert mode: "FLAT" inserts each record separated; "HIERARCHICAL" creates a hierarchy from the list (if the specified table support hierarchies).')
+						],
+						[
+							'name' => 'existingRecordPolicy',
+							'type' => Type::string(),
+							'default' => 'IGNORE',
+							'description' => _t('Policy if record with same identifier already exists. Values are: NONE (ignore existing records, REPLACE (delete existing and create new), MERGE (execute as edit), SKIP (do not perform add).')
+						],
+						[
+							'name' => 'ignoreType',
+							'type' => Type::boolean(),
+							'default' => false,
+							'description' => _t('Ignore record type when looking for existing records.')
+						],
 					],
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
 						
-						$errors = $warnings = [];
+						$errors = $warnings = $ids = $idnos = [];
 						
 						$table = $args['table'];
-						$bundles = $args['bundles'];
+						$insert_mode = strtoupper($args['insertMode']);
+						$erp = strtoupper($args['existingRecordPolicy']);
+						$ignoreType = $args['ignoreType'];
 						
-						// Create new record
-						$instance = new $table();
-						$instance->set('idno', $args['idno']);
-						$instance->set('type_id', $args['type']);
+						$idno_fld = \Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD');
+						
+						if(!$args['idno'] && $args['identifier']) { $args['idno'] = $args['identifier']; }
+						
+						$records = (is_array($args['records']) && sizeof($args['records'])) ? $args['records'] : [
+							'idno' => $args['idno'],
+							'type' => $args['type'],
+							'bundles' => $args['bundles']
+						];
 						
 						$c = 0;
-						if(!$instance->insert()) {
-							foreach($instance->errors() as $e) {
-								$errors[] = [
-									'code' => $e->getErrorNumber(),
-									'message' => $e->getErrorDescription(),
-									'bundle' => 'GENERAL'
-								];
-							}	
-						} else {
-							$ret = self::processBundles($instance, $bundles);
-							$errors += $ret['errors'];
-							$warnings += $ret['warnings'];
+						$last_id = null;
+						foreach($records as $record) {
+							if(!$record['idno'] && $record['identifier']) { $record['idno'] = $record['identifier']; }
+							// Does record already exist?
+							try {
+								$instance = (in_array($erp, ['SKIP', 'REPLACE', 'MERGE'])) ? self::resolveIdentifier($table, $record['idno'], $ignoreType ? null : $record['type']) : null;
+							} catch(\ServiceException $e) {
+								$instance = null;	// No matching record
+							}
 							
-							$c++;
+							switch($erp) {
+								case 'SKIP':
+									if($instance) { 
+										$last_id = $instance->getPrimaryKey(); 
+										print "SKIP $last_id\n";
+										continue(2);
+									}
+									break;
+								case 'REPLACE':
+									if($instance && !$instance->delete(true)) {
+										foreach($instance->errors() as $e) {
+											$errors[] = [
+												'code' => $e->getErrorNumber(),
+												'message' => $e->getErrorDescription(),
+												'bundle' => 'GENERAL'
+											];
+										}		
+									}
+									$instance = null;
+									break;
+								case 'MERGE':
+									// NOOP
+									break;
+								case 'IGNORE':
+									// NOOP
+									break;
+							}
+							
+							if ($instance) {
+								$ret = true;
+							} else {
+								// Create new record
+								$instance = new $table();
+								$instance->set($idno_fld, $record['idno']);
+								$instance->set('type_id', $record['type']);
+							
+								if($insert_mode === 'HIERARCHICAL') {
+									$instance->set('parent_id', $last_id);
+								}
+								$ret = $instance->insert();
+							}
+							if(!$ret) {
+								foreach($instance->errors() as $e) {
+									$errors[] = [
+										'code' => $e->getErrorNumber(),
+										'message' => $e->getErrorDescription(),
+										'bundle' => 'GENERAL'
+									];
+								}	
+							} else {
+								$ids[] = $last_id = $instance->getPrimaryKey();
+								$idnos[] = $instance->get($idno_fld);
+								
+								$ret = self::processBundles($instance, $record['bundles']);
+								$errors += $ret['errors'];
+								$warnings += $ret['warnings'];
+							
+								$c++;
+							}
 						}
 						
-						return ['table' => $table, 'id' => $instance->getPrimaryKey(), 'idno' => $instance->get('idno'), 'errors' => $errors, 'warnings' => $warnings, 'changed' => $c];
+						return ['table' => $table, 'id' => $ids, 'idno' => $idnos, 'errors' => $errors, 'warnings' => $warnings, 'changed' => $c];
 					}
 				],
 				'edit' => [
@@ -156,30 +242,50 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'bundles',
 							'type' => Type::listOf(EditSchema::get('Bundle')),
 							'description' => _t('Bundles to add')
-						]
+						],
+						[
+							'name' => 'records',
+							'type' => Type::listOf(EditSchema::get('Record')),
+							'description' => _t('List of records to edit')
+						],
 					],
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
 						
-						$errors = $warnings = [];
+						$errors = $warnings = $ids = $idnos = [];
 						
 						$table = $args['table'];
-						$bundles = $args['bundles'];
+						$idno_fld = \Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD');
 						
-						// Load record
+						if(!$args['identifier'] && $args['idno']) { $args['identifier'] = $args['idno']; }
+						
+						$records = (is_array($args['records']) && sizeof($args['records'])) ? $args['records'] : [
+							'identifier' => $args['identifier'],
+							'type' => $args['type'],
+							'bundles' => $args['bundles']
+						];
+						
 						$c = 0;
-						if(!($instance = self::resolveIdentifier($table, $args['identifier']))) {
-							$errors[] = [
-								'code' => 100,	// TODO: real number?
-								'message' => _t('Invalid identifier'),
-								'bundle' => 'GENERAL'
-							];
-						} else {
-							$ret = self::processBundles($instance, $bundles);
-							$c++;
+						foreach($records as $record) {
+							if(!$record['identifier'] && $record['idno']) { $record['identifier'] = $record['idno']; }
+							if(!($instance = self::resolveIdentifier($table, $record['identifier'], $record['type']))) {
+								$errors[] = [
+									'code' => 100,	// TODO: real number?
+									'message' => _t('Invalid identifier'),
+									'bundle' => 'GENERAL'
+								];
+							} else {
+								$ids[] = $instance->getPrimaryKey();
+								$idnos[] = $instance->get($idno_fld);
+								
+								$ret = self::processBundles($instance, $record['bundles']);
+								$errors += $ret['errors'];
+								$warnings += $ret['warnings'];
+								$c++;
+							}
 						}
 						
-						return ['table' => $table, 'id' => $instance->getPrimaryKey(), 'idno' => $instance->get('idno'), 'errors' => $ret['errors'], 'warnings' => $ret['warnings'], 'changed' => $c];
+						return ['table' => $table, 'id' => $ids, 'idno' => $idnos, 'errors' => $errors, 'warnings' => $warnings, 'changed' => $c];
 					}
 				],
 				'delete' => [
@@ -210,7 +316,6 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						
 						$table = $args['table'];
 						
-						// Delete record
 						$c = 0;
 						if(!($instance = self::resolveIdentifier($table, $args['identifier']))) {
 							$errors[] = [
@@ -316,7 +421,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							$c++;
 						}
 						
-						return ['table' => is_object($rel) ? $rel->tableName() : null, 'id' => is_object($rel) ?  $rel->getPrimaryKey() : null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings, 'changed' => $c];
+						return ['table' => is_object($rel) ? $rel->tableName() : null, 'id' => is_object($rel) ?  [$rel->getPrimaryKey()] : null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings, 'changed' => $c];
 					}
 				],
 				'editRelationship' => [
@@ -420,7 +525,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							$c++;
 						}
 						
-						return ['table' => is_object($rel) ? $rel->tableName() : null, 'id' => is_object($rel) ?  $rel->getPrimaryKey() : null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings, 'changed' => $c];
+						return ['table' => is_object($rel) ? $rel->tableName() : null, 'id' => is_object($rel) ?  [$rel->getPrimaryKey()] : null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings, 'changed' => $c];
 					}
 				],
 				'deleteRelationship' => [
@@ -509,7 +614,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							$c++;
 						}
 						
-						return ['table' => is_object($s) ? $s->tableName() : null, 'id' => is_object($s) ?  $s->getPrimaryKey() : null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings, 'changed' => $c];
+						return ['table' => is_object($s) ? $s->tableName() : null, 'id' => is_object($s) ?  [$s->getPrimaryKey()] : null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings, 'changed' => $c];
 					}
 				],
 				'deleteAllRelationships' => [
@@ -598,7 +703,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							}
 						}
 						
-						return ['table' => is_object($s) ? $s->tableName() : null, 'id' => is_object($s) ?  $s->getPrimaryKey() : null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings, 'changed' => $c];
+						return ['table' => is_object($s) ? $s->tableName() : null, 'id' => is_object($s) ?  [$s->getPrimaryKey()] : null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings, 'changed' => $c];
 					}
 				]
 			]

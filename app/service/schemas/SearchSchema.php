@@ -45,6 +45,8 @@ class SearchSchema extends \GraphQLServices\GraphQLSchema {
 	protected static function load() {
 		$schema = \GraphQLServices\Helpers\itemSchemaDefinitions();
 		
+		$item = array_shift(array_filter($schema, function($v) { return $v->name === 'Item';}));
+		
 		$schema[] = $tableTypeType = new ObjectType([
 			'name' => 'Result',
 			'description' => 'Search result',
@@ -62,7 +64,7 @@ class SearchSchema extends \GraphQLServices\GraphQLSchema {
 					'description' => 'Number of items found'
 				],
 				'results' => [
-					'type' => Type::listOf($schema[sizeof($schema)-1]),
+					'type' => Type::listOf($item),
 					'description' => 'Items found'
 				]
 			]

@@ -252,7 +252,7 @@ class GraphQLServiceController extends \BaseServiceController {
 	/**
 	 *
 	 */
-	protected static function resolveIdentifier(string $table, string $identifier)  {
+	protected static function resolveIdentifier(string $table, string $identifier, $type=null)  {
 		if(!($t_instance = \Datamodel::getInstance($table, true))) {
 			throw new \ServiceException(_t('Invalid table %1', $table));
 		}
@@ -263,7 +263,9 @@ class GraphQLServiceController extends \BaseServiceController {
 		} 
 		$idno_fld = \Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD');
 		if(is_null($rec) && $idno_fld) {
-			$rec = $table::findAsInstance([$idno_fld => $identifier]);
+			$criteria = [$idno_fld => $identifier];
+			if($type) { $criteria['type_id'] = $type; }
+			$rec = $table::findAsInstance($criteria);
 		}
 		if(is_null($rec)) {
 			throw new \ServiceException(_t('Invalid identifier %1 for table %2', $identifier, $table));

@@ -76,23 +76,23 @@ class EditSchema extends \GraphQLServices\GraphQLSchema {
 			]),
 			$EditResultType = new ObjectType([
 				'name' => 'EditResult',
-				'description' => 'Result of record add or edit',
+				'description' => 'Result of multiple record add or edit',
 				'fields' => [
 					'id' => [
-						'type' => Type::int(),
-						'description' => 'ID of Edit'
+						'type' => Type::listOf(Type::int()),
+						'description' => 'IDs of added/edited records'
 					],
 					'table' => [
 						'type' => Type::string(),
 						'description' => 'Table of Edit'
 					],
 					'idno' => [
-						'type' => Type::string(),
-						'description' => 'Edit identifier'
+						'type' => Type::listOf(Type::string()),
+						'description' => 'Identifiers of added/edited records'
 					],
 					'labels' => [
-						'type' => Type::listOf($EditErrorType),
-						'description' => 'Preferred labels for new record'
+						'type' => Type::listOf(Type::string()),
+						'description' => 'Preferred labels for new records'
 					],
 					'errors' => [	
 						'type' => Type::listOf($EditErrorType),
@@ -159,6 +159,32 @@ class EditSchema extends \GraphQLServices\GraphQLSchema {
 						'type' => Type::string(),
 						'description' => 'Optional type code for non-preferred labels'
 					],
+				]
+			]),
+			$RecordType = new InputObjectType([
+				'name' => 'Record',
+				'description' => '.',
+				'fields' => [
+					[
+						'name' => 'type',
+						'type' => Type::string(),
+						'description' => _t('Type code for new record. (Eg. ca_objects)')
+					],
+					[
+						'name' => 'idno',
+						'type' => Type::string(),
+						'description' => _t('Alphanumeric idno value for new record.')
+					],
+					[
+						'name' => 'identifier',
+						'type' => Type::string(),
+						'description' => _t('Alphanumeric idno or integer id value for existing record.')
+					],
+					[
+						'name' => 'bundles',
+						'type' => Type::listOf($EditBundleType),
+						'description' => _t('Bundles to add')
+					]
 				]
 			]),
 		];
