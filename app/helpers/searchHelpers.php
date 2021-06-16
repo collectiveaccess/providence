@@ -583,7 +583,7 @@
 			$o_view->setVar('sort', $ps_sort);
 			$o_view->setVar('accessValues', $va_access_values);
 			
-			$o_view->setVar('sortDirectionControl', '<a href="#" id="'.$vs_block.'_sort_direction"><span class="glyphicon glyphicon-sort-by-alphabet'.(($ps_sort_direction == 'desc') ? '-alt' : '').'"></span></a>');
+			$o_view->setVar('sortDirectionControl', '<a href="#" id="'.$vs_block.'_sort_direction"><span class="glyphicon glyphicon-sort-by-alphabet'.(($ps_sort_direction == 'desc') ? '-alt' : '').'" aria-label="Sort direction"></span></a>');
 			$o_view->setVar('sortDirection', $ps_sort_direction);
 			
 			
@@ -1465,9 +1465,9 @@
 
 		$cache_key = caMakeCacheKeyFromOptions($options, "{$ps_table}/{$pn_type_id}");
 		
-		if (CompositeCache::contains('available_sorts', 'SearchBuilder') && is_array($cached_data = CompositeCache::fetch('available_sorts', 'SearchBuilder')) && isset($cached_data[$cache_key])) { return $cached_data[$cache_key]; }
-
 		$o_config = Configuration::load();
+		if ((bool)$o_config->get('do_available_sort_list_caching') && CompositeCache::contains('available_sorts', 'SearchBuilder') && is_array($cached_data = CompositeCache::fetch('available_sorts', 'SearchBuilder')) && isset($cached_data[$cache_key])) { return $cached_data[$cache_key]; }
+
 		$pn_display_id = caGetOption('restrictToDisplay', $options, null);
 	
 		global $g_ui_locale_id;
@@ -1529,7 +1529,9 @@
 					'_natural' => $natural_sort_label,
 					'ca_collections.preferred_labels.name_sort' => _t('Name'),
 					'ca_collections.type_id' => _t('type'),
-					'ca_collections.idno_sort' => _t('Identifier')
+					'ca_collections.idno_sort' => _t('Identifier'),
+					'ca_collections.access' => _t('Access'),
+					'ca_collections.status' => _t('Status')
 				);
 				break;
 			case 'ca_loans':
@@ -1537,7 +1539,9 @@
 					'_natural' => $natural_sort_label,
 					'ca_loans.preferred_labels.name_sort' => _t('Short description'),
 					'ca_loans.type_id' => _t('Type'),
-					'ca_loans.idno_sort' => _t('Identifier')
+					'ca_loans.idno_sort' => _t('Identifier'),
+					'ca_loans.access' => _t('Access'),
+					'ca_loans.status' => _t('Status')
 				);
 				break;
 			case 'ca_movements':
@@ -1545,7 +1549,9 @@
 					'_natural' => $natural_sort_label,
 					'ca_movements.preferred_labels.name' => _t('Short description'),
 					'ca_movements.type_id;ca_movement_labels.name' => _t('Type'),
-					'ca_movements.idno_sort' => _t('Identifier')
+					'ca_movements.idno_sort' => _t('Identifier'),
+					'ca_movements.access' => _t('Access'),
+					'ca_movements.status' => _t('Status')
 				);
 				break;
 			case 'ca_entities':
@@ -1555,7 +1561,9 @@
 					'ca_entities.preferred_labels.surname;ca_entity_labels.forename' => _t('Surname, forename'),
 					'ca_entities.preferred_labels.forename' => _t('Forename'),
 					'ca_entities.type_id;ca_entities.preferred_labels.surname;ca_entities.preferred_labels.forename' => _t('Type'),
-					'ca_entities.idno_sort' => _t('Identifier')
+					'ca_entities.idno_sort' => _t('Identifier'),
+					'ca_entities.access' => _t('Access'),
+					'ca_entities.status' => _t('Status')
 				);
 				break;
 			case 'ca_object_lots':
@@ -1563,7 +1571,9 @@
 					'_natural' => $natural_sort_label,
 					'ca_object_lots.preferred_labels.name_sort' => _t('Name'),
 					'ca_object_lots.type_id' => _t('Type'),
-					'ca_object_lots.idno_stub_sort' => _t('Identifier')
+					'ca_object_lots.idno_stub_sort' => _t('Identifier'),
+					'ca_object_lots.access' => _t('Access'),
+					'ca_object_lots.status' => _t('Status')
 				);
 				break;
 			case 'ca_object_representations':
@@ -1572,7 +1582,9 @@
 					'ca_object_representations.preferred_labels.name_sort' => _t('Name'),
 					'ca_object_representations.type_id' => _t('Type'),
 					'ca_object_representations.idno_sort' => _t('Identifier'),
-					'ca_object_representations.original_filename' => _t('File name')
+					'ca_object_representations.original_filename' => _t('File name'),
+					'ca_object_representations.access' => _t('Access'),
+					'ca_object_representations.status' => _t('Status')
 				);
 				break;
 			case 'ca_objects':
@@ -1580,7 +1592,10 @@
 					'_natural' => $natural_sort_label,
 					'ca_objects.preferred_labels.name_sort' => _t('Title'),
 					'ca_objects.type_id' => _t('Type'),
-					'ca_objects.idno_sort' => _t('Identifier')
+					'ca_objects.idno_sort' => _t('Identifier'),
+					'ca_objects.access' => _t('Access'),
+					'ca_objects.status' => _t('Status'),
+					"ca_entities.preferred_labels.surname" => "Surname"
 				);
 				break;
 			case 'ca_occurrences':
@@ -1588,7 +1603,9 @@
 					'_natural' => $natural_sort_label,
 					'ca_occurrences.preferred_labels.name_sort' => _t('Name'),
 					'ca_occurrences.type_id' => _t('Type'),
-					'ca_occurrences.idno_sort' => _t('Identifier')
+					'ca_occurrences.idno_sort' => _t('Identifier'),
+					'ca_occurrences.access' => _t('Access'),
+					'ca_occurrences.status' => _t('Status')
 				);
 				break;
 			case 'ca_places':
@@ -1596,7 +1613,9 @@
 					'_natural' => $natural_sort_label,
 					'ca_places.preferred_labels.name_sort' => _t('Name'),
 					'ca_places.type_id' => _t('Type'),
-					'ca_places.idno_sort' => _t('Identifier')
+					'ca_places.idno_sort' => _t('Identifier'),
+					'ca_places.access' => _t('Access'),
+					'ca_places.status' => _t('Status')
 				);
 				break;
 			case 'ca_storage_locations':
@@ -1604,19 +1623,23 @@
 					'_natural' => $natural_sort_label,
 					'ca_storage_locations.preferred_labels.name_sort' => _t('Name'),
 					'ca_storage_locations.type_id' => _t('Type'),
-					'ca_storage_locations.idno_sort' => _t('Identifier')
+					'ca_storage_locations.idno_sort' => _t('Identifier'),
+					'ca_places.access' => _t('Access'),
+					'ca_places.status' => _t('Status')
 				);
 				break;
 			case 'ca_tours':
 				$va_base_fields = array(
 					'_natural' => $natural_sort_label,
-					'ca_tours.preferred_labels.name' => _t('Name')
+					'ca_tours.preferred_labels.name' => _t('Name'),
+					'ca_tours.access' => _t('Access')
 				);
 				break;
 			case 'ca_tour_stops':
 				$va_base_fields = array(
 					'_natural' => $natural_sort_label,
-					'ca_tour_stops.preferred_labels.name' => _t('Name')
+					'ca_tour_stops.preferred_labels.name' => _t('Name'),
+					'ca_tour_stops.access' => _t('Access')
 				);
 				break;
 			case 'ca_item_comments':
@@ -1637,6 +1660,12 @@
 				$va_base_fields = array();
 				break;
 		}
+		
+		// Additional sorts configured?
+		if($additional_sorts = $o_config->getAssoc("{$ps_table}_additional_sorts")) {
+			$va_base_fields = array_merge($va_base_fields, $additional_sorts);
+		}
+		
 
 		if($ps_table) {
 			// Add user sorts
@@ -1724,8 +1753,6 @@
         } 
 		
 		$va_base_fields = array_map(function($v) { return caUcFirstUTF8Safe($v); }, $va_base_fields);
-		
-		//natcasesort($va_base_fields);
 		
 		$ret = array_merge(['_natural' => $natural_sort_label], $va_base_fields);
 		
@@ -2100,5 +2127,81 @@
 			}
 		}
 		return $va_result;
+	}
+	# ---------------------------------------
+	/**
+	 * Get list of terms in search expression
+	 * (Ex. "Berlin Alexanderplatz" and date:1970s will return [Berlin, Alexanderplatz, 1970s])
+	 *
+	 * @param mixed $search A search expression or Lucene Parser element containing the search
+	 *
+	 * @return array A list of terms
+	 */
+	function caExtractTermsForSearch($search) {
+		if(is_string($search)) {
+			$qp = new LuceneSyntaxParser();
+			$qp->setEncoding('UTF-8');
+			$qp->setDefaultOperator(LuceneSyntaxParser::B_AND);
+			try {
+				$parsed = $qp->parse($search, 'UTF-8');
+			} catch (Exception $e) {
+				return [$search];
+			}
+		} else {
+			$parsed = $search;
+		}
+		if(!is_object($parsed)) { return []; }
+		$terms = [];
+		switch(get_class($parsed)) {
+			case 'Zend_Search_Lucene_Search_Query_Boolean':
+				foreach($parsed->getSubqueries() as $sq) {
+					$terms = array_merge($terms, caExtractTermsForSearch($sq));
+				}
+				break;
+			case 'Zend_Search_Lucene_Search_Query_MultiTerm':
+				$terms = $parsed->getTerms();
+				break;
+			case 'Zend_Search_Lucene_Search_Query_Phrase':
+			case 'Zend_Search_Lucene_Search_Query_Range':
+				foreach($parsed->getQueryTerms() as $t) {
+					$terms[] = $t->text;
+				}
+				break;
+			case 'Zend_Search_Lucene_Index_Term':
+				$terms[] = caConvertSearchTermsToText($parsed->field, $parsed->text);
+				break;
+			case 'Zend_Search_Lucene_Search_Query_Term':
+				$terms[] = caConvertSearchTermsToText($parsed->getTerm()->field, $parsed->getTerm()->text);
+				break;	
+			case 'Zend_Search_Lucene_Search_Query_Wildcard':
+			case 'Zend_Search_Lucene_Search_Query_Fuzzy':
+			case 'Zend_Search_Lucene_Search_Query_Insignificant':
+			case 'Zend_Search_Lucene_Search_Query_Empty':
+				// noop
+				break;
+			default:
+				return [];
+				break;
+		}
+		return $terms;
+	}
+	# ---------------------------------------
+	/**
+	 * Transform code terms into display text. If term is already text it will be returned as-is.
+	 *
+	 * @param string $field The field the term is restricted to
+	 * @param string $term Term text
+	 *
+	 * @return string
+	 */
+	function caConvertSearchTermsToText($field, $term) : string {
+		$tmp = explode('.', $field);
+		
+		if($t_instance = Datamodel::getInstance($tmp[0], true)) {
+			if ($tmp[1] === $t_instance->getProperty('ATTRIBUTE_TYPE_ID_FLD')) {
+				return $t_instance->getTypeName($term);
+			}
+		}
+		return $term;
 	}
 	# ---------------------------------------

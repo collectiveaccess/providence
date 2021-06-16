@@ -123,7 +123,7 @@ BaseModel::$s_ca_models_definitions['ca_search_indexing_queue'] = array(
             'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
             'IS_NULL' => true, 
             'DEFAULT' => '',
-            'LABEL' => _t('Stared on'), 'DESCRIPTION' => _t('Started on')
+            'LABEL' => _t('Started on'), 'DESCRIPTION' => _t('Started on')
 		)
 	)
 );

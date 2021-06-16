@@ -356,7 +356,6 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			if ($this->info["PROPERTIES"][$property]) {
 				return $this->properties[$property];
 			} else {
-				//print "Invalid property";
 				return "";
 			}
 		} else {
@@ -489,7 +488,6 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			} else {
 				$this->handle = "";
 				$this->filepath = "";
-
 				$this->metadata = array();
 
 				// convert RAW to tiff with dcraw if necessary
@@ -548,10 +546,19 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		# get parameters for this operation
 		$sparams = $this->info["TRANSFORMATIONS"][$operation];
 		
+		if($this->properties['exif_orientation'] > 0) {
+			// flip to reflect EXIF orientation
+			$tw = $parameters["width"];
+			$th = $parameters["height"];
+			$parameters["width"] = $th;
+			$parameters["height"] = $tw;
+		} 
+		
 		$w = $parameters["width"];
 		$h = $parameters["height"];
-		$cw = $this->get("width");
+		$cw = $this->get("width");	// already flipped if EXIF orientation requires it
 		$ch = $this->get("height");
+		
 		
 		if((bool)$this->properties['no_upsampling']) {
 			$w = min($cw, round($w)); 
@@ -700,6 +707,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 								$crop_w_edge = $crop_h_edge = intval($parameters["trim_edges"]);
 							}
 						}
+						
 						if (!$this->handle->resizeimage($w + ($crop_w_edge * 2), $h + ($crop_h_edge * 2), Gmagick::FILTER_CUBIC, $aa)) {
 								$this->postError(1610, _t("Error during resize operation"), "WLPlugGmagick->transform()");
 								return false;
@@ -745,7 +753,6 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 									}
 									break;
 							}
-							
 							if (!$this->handle->cropimage($parameters["width"], $parameters["height"], $crop_w_edge + $crop_from_offset_x, $crop_h_edge + $crop_from_offset_y )) {
 								$this->postError(1610, _t("Error during crop operation"), "WLPlugGmagick->transform()");
 								return false;
@@ -1226,9 +1233,6 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$this->properties["quality"] = "";
 			$this->properties["mimetype"] = $this->_getMagickImageMimeType($this->handle);
 			$this->properties["typename"] = $this->handle->getimageformat();
-			
-			
-			$this->_gmagickOrient();
 			return 1;
 		}
 		return false;
@@ -1523,15 +1527,14 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 					break;
 			}
 			
-			if ($rotation) { $this->handle->rotateImage(caGetOption('background', $this->properties, "#FFFFFF"), $rotation); }
+			if($rotation) { 
+				$this->handle->rotateImage('#ffffff', $rotation);
+			}
 						
 			if (($rotation) && (abs($rotation) === 90)) {
 				$w = $this->properties["width"]; $h = $this->properties["height"];
-				
 				$this->properties["width"] = $h;
-				$this->properties["height"] = $w;
-					
-				unset($this->metadata['EXIF']['IFD0']['Orientation']);
+ 				$this->properties["height"] = $w;
 			}
 			return true;
 		}

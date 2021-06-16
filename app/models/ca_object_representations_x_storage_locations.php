@@ -211,4 +211,3 @@ class ca_object_representations_x_storage_locations extends BaseRepresentationRe
 	}
 	# ------------------------------------------------------
 }
-?>

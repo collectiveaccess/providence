@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -781,24 +781,26 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	/**
 	  *
 	  */
-	public function getValuesForExport($pa_options=null) {
-		$va_data = parent::getValuesForExport($pa_options);		// get intrinsics, attributes and labels
+	public function getValuesForExport($options=null) {
+		$va_data = parent::getValuesForExport($options);		// get intrinsics, attributes and labels
 		
-		$t_locale = new ca_locales();
-		$t_list = new ca_lists();
+		if(caGetOption('includeRelationships', $options, true)) {
+			$t_locale = new ca_locales();
+			$t_list = new ca_lists();
 		
-		// get related items
-		foreach(array('ca_objects', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations',  'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops',  'ca_list_items') as $vs_table) {
-			$va_related_items = $this->getRelatedItems($vs_table, array('returnAsArray' => true, 'returnAllLocales' => true));
-			if(is_array($va_related_items) && sizeof($va_related_items)) {
-				$va_related_for_export = array();
-				$vn_i = 0;
-				foreach($va_related_items as $vs_key => $va_related_item) {
-					$va_related_for_export['related_'.$vn_i] = $va_related_item;
-					$vn_i++;
-				}
+			// get related items
+			foreach(array('ca_objects', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations',  'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops',  'ca_list_items') as $vs_table) {
+				$va_related_items = $this->getRelatedItems($vs_table, array('returnAsArray' => true, 'returnAllLocales' => true));
+				if(is_array($va_related_items) && sizeof($va_related_items)) {
+					$va_related_for_export = array();
+					$vn_i = 0;
+					foreach($va_related_items as $vs_key => $va_related_item) {
+						$va_related_for_export['related_'.$vn_i] = $va_related_item;
+						$vn_i++;
+					}
 				
-				$va_data['related_'.$vs_table] = $va_related_for_export;
+					$va_data['related_'.$vs_table] = $va_related_for_export;
+				}
 			}
 		}
 		
@@ -1653,7 +1655,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						if (($this->tableName() != 'ca_object_lots') && ($vn_lot_id = $pa_options['request']->getParameter('lot_id', pInteger))) {
 							$pa_lot_options['force'][] = $vn_lot_id;
 						}
-						$vs_element = $this->getRelatedHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_lot_options);	
+						$vs_element = $this->getRelatedHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_bundle_name, $ps_placement_code, $pa_bundle_settings, array_merge($pa_options, $pa_lot_options));	
 						break;
 					# -------------------------------
 					case 'ca_representation_annotations':
@@ -2971,8 +2973,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		$start = caGetOption('start', $pa_options, 0);
 		$limit = caGetOption('limit', $pa_options, caGetOption('numPerPage', $pa_bundle_settings, null));
-		$sort = caGetOption('sort', $pa_options, caGetOption('sort', $pa_bundle_settings, null));	
-		$sort_direction = caGetOption('sortDirection', $pa_options, caGetOption('sortDirection', $pa_bundle_settings, null));
 		
 		$va_path = array_keys(Datamodel::getPath($this->tableName(), $ps_related_table));
 		if ($this->tableName() == $ps_related_table) {
@@ -2999,14 +2999,21 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$va_get_related_opts = array_merge($pa_options, $pa_bundle_settings);
 		if (isset($pa_bundle_settings['restrictToTermsRelatedToCollection']) && $pa_bundle_settings['restrictToTermsRelatedToCollection']) {
 			$va_get_related_opts['restrict_to_relationship_types'] = $pa_bundle_settings['restrictToTermsOnCollectionUseRelationshipType'];
+		} 
+		
+		$sort_direction = caGetOption('sortDirection', $pa_options, caGetOption('sortDirection', $pa_bundle_settings, null));	
+		if(!($sort = caGetOption('sort', $pa_options, caGetOption('sort', $pa_bundle_settings, null)))) {
+		 	$default_sorts = $this->getAppConfig()->get("{$ps_related_table}_default_bundle_display_sorts");
+ 			$sort = is_array($default_sorts) ? caGetOption('sort', $default_sorts, null) : null;
+ 			$sort_direction = is_array($default_sorts) ? caGetOption('direction', $default_sorts, 'ASC') : 'ASC';
 		}
-			
+		
 		if ($sort) {
 			$va_get_related_opts['sort'] = $sort;
 			$va_get_related_opts['sortDirection'] = $sort_direction;
 		}
 		
-		$t_rel = Datamodel::getInstanceByTableName($ps_related_table, true);
+		$t_rel = Datamodel::getInstance($ps_related_table, true);
 		$va_opts = [
 			'table' => $vb_is_many_many ? $t_rel->tableName() : null,
 			'primaryKey' => $vb_is_many_many ? $t_rel->primaryKey() : null,
@@ -3125,17 +3132,24 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$o_view->setVar('t_item_rel', $t_item_rel);
 		$o_view->setVar('bundle_name', $ps_related_table);
 		
-		$default_sort = $default_sort_direction = null;
-		if (is_array($bundle_sort_defaults = $po_request->user->getVar('bundleSortDefaults')) && isset($bundle_sort_defaults[$ps_placement_code])) { 
-			$default_sort = $bundle_sort_defaults[$ps_placement_code]['sort'];
-			$default_sort_direction = $bundle_sort_defaults[$ps_placement_code]['sortDirection'];
+		list('defaultSorts' => $default_sorts, 'typeSpecificSorts' => $type_specific_sorts, 'sortOptions' => $sort_options) = caGetDefaultEditorBundleSortConfiguration($this->tableName(), $ps_related_table, $pa_bundle_settings);
+
+		
+		// Look for sort settings in parameter options, bundle settings and then app.conf defaults
+		foreach([$pa_options, $pa_bundle_settings, $type_specific_sorts, $default_sorts] as $i => $opts) {
+			if($sort = caGetOption('sort', $opts, null)) {
+				$sort_direction = caGetOption(['sortDirection', 'direction'], $opts, 'ASC');
+				break;
+			}
 		}
 		
-		$o_view->setVar('sort', $sort = caGetOption('sort', $pa_options, $default_sort ? $default_sort : caGetOption('sort', $pa_bundle_settings, null)));
-		$o_view->setVar('sortDirection', $sort_direction = caGetOption('sortDirection', $pa_options, $default_sort_direction ? $default_sort_direction : caGetOption('sortDirection', $pa_bundle_settings, null)));
+		$o_view->setVar('sort', $sort);
+		$o_view->setVar('sortDirection', $sort_direction, null);
 		
-		$pa_options['sort'] = $sort;
-		$pa_options['sortDirection'] = $sort_direction;
+		// Copy sort settings over bundle defaults in case we're using app.conf defaults, as we'll
+		// want the bunde to reflect the settings actually used
+		$pa_bundle_settings['sort'] = $sort;
+		$pa_bundle_settings['sortDirection'] = $sort_direction;
 		
 		$o_view->setVar('ui', caGetOption('ui', $pa_options, null));
 		$o_view->setVar('screen', caGetOption('screen', $pa_options, null));
@@ -3507,6 +3521,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		
+		$va_errors = [];
+			
 		$vb_read_only_because_deaccessioned = ($this->hasField('is_deaccessioned') && (bool)$this->getAppConfig()->get('deaccession_dont_allow_editing') && (bool)$this->get('is_deaccessioned'));
 
 		BaseModel::setChangeLogUnitID();
@@ -3711,7 +3727,9 @@ if (!$vb_batch) {
 				// do inserts
 				foreach($va_attributes_to_insert as $va_attribute_to_insert) {
 					$this->clearErrors();
-					$this->addAttribute($va_attribute_to_insert, $vn_element_id, $vs_f, ['batch' => $vb_batch]);
+					if(!$this->addAttribute($va_attribute_to_insert, $vn_element_id, null, ['batch' => $vb_batch])) {
+						$po_request->addActionErrors($this->errors);
+					}
 				}
 				
 if (!$vb_batch) {					
@@ -3769,7 +3787,9 @@ if (!$vb_batch) {
 						if (!$isset) { continue; }
 						
 						$this->clearErrors();
-						$this->editAttribute($vn_attribute_id, $vn_element_set_id, $va_attr_update, $vs_f, ['batch' => $vb_batch]);
+						if(!$this->editAttribute($vn_attribute_id, $vn_element_set_id, $va_attr_update, null, ['batch' => $vb_batch])) {
+							$po_request->addActionErrors($this->errors);
+						}
 					}
 				}
 			}
@@ -3843,7 +3863,6 @@ if (!$vb_batch) {
 			$vb_is_insert = true;
 		}
 		if ($this->numErrors() > 0) {
-			$va_errors = array();
 			foreach($this->errors() as $o_e) {
 				switch($o_e->getErrorNumber()) {
 					case 2010:
@@ -4286,7 +4305,7 @@ if (!$vb_batch) {
                             // check for new representations to add 
                             
 							$file_index = 0;
-                            $va_file_list = $_FILES;
+                            $va_file_list = array_map(function($v) { $v['is_form_upload'] = 1; return $v; }, $_FILES);
                             foreach($_REQUEST as $vs_key => $vs_value) {
                                 if (preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) {
                                 	if(!isURL($vs_value, ['strict' => true, 'schemes' => ['http', 'https']])) { continue; }
@@ -4330,6 +4349,7 @@ if (!$vb_batch) {
                             }
                             
                             foreach($va_file_list as $vs_key => $va_values) {
+                            	$is_form_upload = caGetOption('is_form_upload', $va_values, false, ['castTo' => 'boolean']);
                             	$va_values['tmp_name'] = stripslashes($va_values['tmp_name']);
                                 $this->clearErrors();
                             
@@ -4373,6 +4393,9 @@ if (!$vb_batch) {
                                     	// Is user-selected file from batch media import directory
                                         $vs_path = "{$vs_tmp_directory}/{$va_values['tmp_name']}";
                                         $vs_original_name = pathinfo($va_values['name'], PATHINFO_BASENAME);
+                                    } elseif(isset($va_values['tmp_name']) && $is_form_upload && file_exists($va_values['tmp_name'])) {
+                                    	$vs_path = $va_values['tmp_name'];
+                                        $vs_original_name = $va_values['name'];
                                     } else {
                                     	// Path is not valid
                                     	$vs_path = $vs_original_name = null;
@@ -4416,9 +4439,11 @@ if (!$vb_batch) {
 										foreach($files as $f) {
 											// Final check of path before import attempt
 											if (
-												(($is_url = isUrl($f)) && !$vb_allow_fetching_of_urls)
+												!$is_form_upload
+												&&
+												((($is_url = isUrl($f)) && !$vb_allow_fetching_of_urls)
 												||
-												(!$is_url && !preg_match("!^{$ajax_import_directory_path}!", $f) && !preg_match("!^{$import_directory_path}!", $f))
+												(!$is_url && !preg_match("!^{$ajax_import_directory_path}!", $f) && !preg_match("!^{$import_directory_path}!", $f)))
 											) {
 												continue;
 											}
@@ -6704,7 +6729,7 @@ if (!$vb_batch) {
 				return null;
 				break;
 			case 'count':
-				return sizeof($va_rels);
+				return sizeof(array_unique($va_rels));
 				break;
 			case 'searchresult':
 				if (sizeof($va_rels) > 0) {

@@ -82,6 +82,14 @@ $_ca_attribute_settings['ListAttributeValue'] = array(		// global
 		'label' => _t('Allow duplicate values?'),
 		'description' => _t('Check this option if you want to allow duplicate values to be set when element is not in a container and is repeating.')
 	),
+	'raiseErrorOnDuplicateValue' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Show error message for duplicate values?'),
+		'description' => _t('Check this option to show an error message when value is duplicate and <em>allow duplicate values</em> is not set.')
+	),
 	'implicitNullOption' => array(
 		'formatType' => FT_NUMBER,
 		'displayType' => DT_CHECKBOXES,
