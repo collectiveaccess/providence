@@ -518,7 +518,7 @@
 		 * 
 		 * @return string
 		 */
-		public function sortableValue(string $value) {
+		public function sortableValue(?string $value) {
 			if(DateRangeAttributeValue::$o_tep->parse($value)) { 
 				$dates = DateRangeAttributeValue::$o_tep->getHistoricTimestamps();
 				return $dates[0].'/'.$dates[1];

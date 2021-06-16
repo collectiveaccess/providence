@@ -470,7 +470,7 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 	 * 
 	 * @return string
 	 */
-	public function sortableValue(string $value) {
+	public function sortableValue(?string $value) {
 		return mb_strtolower(substr(trim($value), 0, 100));
 	}
 	# ------------------------------------------------------------------

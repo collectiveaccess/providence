@@ -503,7 +503,7 @@
 		 * 
 		 * @return string
 		 */
-		public function sortableValue(string $value) {
+		public function sortableValue(?string $value) {
 			return mb_strtolower(substr(trim(preg_replace('![^A-Za-z0-9 ]+!', '', $value)), 0, 100));
 		}
  		# ------------------------------------------------------------------
