@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2020 Whirl-i-Gig
+ * Copyright 2015-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,13 +35,13 @@
 	$vs_color 			= ((isset($va_settings['colorItem']) && $va_settings['colorItem'])) ? $va_settings['colorItem'] : '';
 	
 	$qr_result			= $this->getVar('qr_result');
+	$va_errors 			= [];
 	
 	
 if (!$this->request->isAjax()) {
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_subject->tableNum().'_rel', $va_settings, caInitialValuesArrayHasValue($vs_id_prefix.$t_subject->tableNum().'_rel', $this->getVar('initialValues')));
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix.$t_subject->tableNum().'_rel', $this->getVar('initialValues')));
 	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_subject->tableNum().'_rel', $va_settings);
 }	
-	$va_errors = array();
 	foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
 		$va_errors[] = $o_error->getErrorDescription();
 	}
@@ -49,25 +49,15 @@ if (!$this->request->isAjax()) {
 <div id="<?php print $vs_id_prefix; ?>">
 	<div class="bundleContainer">
 <?php
-	if ($qr_result && $qr_result->numHits() > 0) {
-		if($qr_result->tableName() == 'ca_objects') {
+	if ($qr_result && ($qr_result->tableName() == 'ca_objects') && $qr_result->numHits() > 0) {
 ?>
-	<div class="bundleSubLabel">
+		<div class="bundleSubLabel">
+			<?= caReturnToHomeLocationControlForRelatedBundle($this->request, $vs_id_prefix, $t_subject, $this->getVar('policy'), $qr_result); ?>
+		</div>
 <?php
-			$initial_values = [];
-			while($qr_result->nextHit()) {
-				$initial_values[] = ['object_id' => $qr_result->get('ca_objects.object_id')];
-			}
-			$qr_result->seek(0);
-			print caReturnToHomeLocationControlForRelatedObjectBundle($vs_id_prefix, $this->request, $t_subject, $t_subject, null, $initial_values, $this->getVar('policy'));
-?>
-	</div>
-	<br style='clear: both;'/>
-<?php
-		}
 	}
 ?>
-		<div class="caItemList">
+	<div class="caItemList">
 <?php
 	if ($qr_result && $qr_result->numHits() > 0) {
 		

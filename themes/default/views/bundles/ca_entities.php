@@ -84,11 +84,13 @@
 <?php
 	print "<div class='bundleSubLabel'>";	
 	if(is_array($this->getVar('initialValues')) && sizeof($this->getVar('initialValues'))) {
+		print caEditorBundleBatchEditorControls($this->request, $vn_placement_id, $t_subject, $t_instance->tableName(), $va_settings);
 		print caGetPrintFormatsListAsHTMLForRelatedBundles($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $vn_placement_id);
 	
 		if(!$vb_read_only) {
 			print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $t_instance->tableName(), array_merge($va_settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
 		}
+		
 	}
 	print "<div style='clear:both;'></div></div><!-- end bundleSubLabel -->";
 
@@ -279,6 +281,7 @@
 			deleteButtonClassName: 'caDeleteItemButton',
 			hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_edit_related_'],
 			showEmptyFormsOnLoad: 1,
+			minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_entities_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
 			relationshipTypes: <?php print json_encode($this->getVar('relationship_types_by_sub_type')); ?>,
 			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'Entity', 'Get', $va_lookup_params); ?>',
 			types: <?php print json_encode($va_settings['restrict_to_types']); ?>,

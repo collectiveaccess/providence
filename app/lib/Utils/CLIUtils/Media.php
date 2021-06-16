@@ -48,6 +48,8 @@
 			$pa_mimetypes = caGetOption('mimetypes', $po_opts, null, ['delimiter' => [',', ';']]);
 			$pa_versions = caGetOption('versions', $po_opts, null, ['delimiter' => [',', ';']]);
 			$pa_kinds = caGetOption('kinds', $po_opts, 'all', ['forceLowercase' => true, 'validValues' => ['all', 'ca_object_representations', 'ca_attributes', 'icons'], 'delimiter' => [',', ';']]);
+			
+			$unprocessed = (bool)$po_opts->getOption('unprocessed');
 
 			$va_log_options = array();
 			$vs_log_dir = $po_opts->getOption('log');
@@ -122,7 +124,7 @@
 				$vs_sql_where = ($vs_sql_where) ? " AND deleted = 0" : "WHERE deleted = 0";
 
 				$qr_reps = $o_db->query("
-					SELECT representation_id, media
+					SELECT ca_object_representations.representation_id, ca_object_representations.media
 					FROM ca_object_representations
 					{$vs_sql_joins}
 					{$vs_sql_where}
@@ -132,7 +134,18 @@
 				if (!$quiet) { print CLIProgressBar::start($qr_reps->numRows(), _t('Re-processing representation media')); }
 				while($qr_reps->nextRow()) {
 					$va_media_info = $qr_reps->getMediaInfo('media');
+					if(!is_array($va_media_info)) { continue; }
 					$vs_original_filename = $va_media_info['ORIGINAL_FILENAME'];
+
+					if($unprocessed) {
+						if(!sizeof(array_filter($va_media_info, function($v) {
+							return isset($v['QUEUED']);
+						}))) {
+							if (!$quiet) { print CLIProgressBar::next(1, $vs_message); }
+							continue;
+						}
+					}
+
 
 					if (!$quiet) {
 						$vs_message = _t("Re-processing %1", ($vs_original_filename ? $vs_original_filename." (".$qr_reps->get('representation_id').")" : $qr_reps->get('representation_id')));
@@ -276,7 +289,8 @@
 				"id|i-n" => _t('Representation id to reload'),
 				"ids|l-s" => _t('Comma separated list of representation ids to reload'),
 				"object_ids|o-s" => _t('Comma separated list of object ids to reload'),
-				"kinds|k-s" => _t('Comma separated list of kind of media to reprocess. Valid kinds are ca_object_representations (object representations), ca_attributes (metadata elements) and icons (icon graphics on list items, storage locations, editors, editor screens, tours and tour stops). You may also specify "all" to reprocess all kinds of media. Default is "all"')
+				"kinds|k-s" => _t('Comma separated list of kind of media to reprocess. Valid kinds are ca_object_representations (object representations), ca_attributes (metadata elements) and icons (icon graphics on list items, storage locations, editors, editor screens, tours and tour stops). You may also specify "all" to reprocess all kinds of media. Default is "all"'),
+				"unprocessed|u" => _t('Reprocess all unprocessed media'),
 			);
 		}
 		# -------------------------------------------------------

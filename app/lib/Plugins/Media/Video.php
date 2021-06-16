@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2020 Whirl-i-Gig
+ * Copyright 2004-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -68,6 +68,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"video/x-flv"						=> "flv",
 			"video/mpeg" 						=> "mpeg",
 			"video/mp4" 						=> "m4v",
+			"video/MP2T"						=> "mts",
 			"video/ogg"							=> "ogg",
 			"video/x-matroska"					=> "mkv",
 			"video/x-dv"						=> "dv",
@@ -80,6 +81,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"video/avi" 						=> "avi",
 			"video/x-flv"						=> "flv",
 			"video/mpeg" 						=> "mp4",
+			"video/MP2T"						=> "mts",
 			"audio/mpeg"						=> "mp3",
 			"image/jpeg"						=> "jpg",
 			"image/png"							=> "png",
@@ -148,6 +150,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 		"image/jpeg"						=> "JPEG",
 		"image/png"							=> "PNG",
 		"video/mp4" 						=> "MPEG-4",
+		"video/MP2T"						=> "MTS",
 		"video/ogg"							=> "Ogg Theora",
 		"video/x-matroska"					=> "Matroska",
 		"video/x-dv"						=> "DIF (DV)"
@@ -238,7 +241,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			if ($this->info["PROPERTIES"][$property]) {
 				return $this->properties[$property];
 			} else {
-				//print "Invalid property";
 				return '';
 			}
 		} else {
@@ -380,7 +382,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$this->properties["duration"] = $this->opa_media_metadata["playtime_seconds"];
 
 			// getID3 sometimes messes up the duration. mediainfo seems a little more reliable so use it if it's available
-			if($this->opb_mediainfo_available && ($vn_mediainfo_duration = caExtractVideoFileDurationWithMediaInfo($filepath))) {
+			if($this->ops_path_to_mediainfo && ($vn_mediainfo_duration = caExtractVideoFileDurationWithMediaInfo($filepath))) {
 				$this->properties['duration'] = $this->opa_media_metadata["playtime_seconds"] = $vn_mediainfo_duration;
 			}
 
@@ -420,6 +422,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 					break;
 				case 'video/quicktime':
 				case 'video/mp4':
+				case 'video/MP2T':
 					$this->properties["has_video"] = (isset($this->opa_media_metadata["video"]["bitrate"]) && ($this->opa_media_metadata["video"]["bitrate"]) ? 1 : 0);
 					$this->properties["has_audio"] = (isset($this->opa_media_metadata["audio"]["bitrate"]) && ($this->opa_media_metadata["audio"]["bitrate"]) ? 1 : 0);
 
@@ -592,10 +595,12 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$vs_grab_at = $this->opo_app_config->get('video_poster_frame_grab_at');
         if(preg_match("!([\d]+)%!", $vs_grab_at, $va_matches)) {
             $vn_start_secs = ceil((float)$this->get('duration') * ($va_matches[1]/100));
-        } elseif (!($vn_start_secs = ($o_tc->parse($this->opo_app_config->get('video_poster_frame_grab_at'))) ? $o_tc->getSeconds() : 5)) {
-            $vn_start_secs = 5;
+        } elseif (!($vn_start_secs = ($o_tc->parse($this->opo_app_config->get('video_poster_frame_grab_at'))) ? $o_tc->getSeconds() : 0)) {
+            $vn_start_secs = 0;
         }
-
+        
+        // If start is past end of video force to beginning
+        if($vn_start_secs > (float)$this->get('duration')) { $vn_start_secs = 0; }
 		# is mimetype valid?
 		switch($mimetype) {
 			# ------------------------------------
@@ -897,7 +902,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$vn_preview_height= (isset($pa_options['height']) && ((int)$pa_options['height'] > 0)) ? (int)$pa_options['height'] : 320;
 		
 		$vn_s = $vn_start_at;
-		$vn_num_frames = ($vn_previewed_duration)/$vn_frame_interval;
+		$vn_num_frames = ($vn_frame_interval > 0) ? ceil($vn_previewed_duration/$vn_frame_interval) : 1;
 		
 		if ($vn_num_frames < $vn_min_number_of_frames) {
 			$vn_frame_interval = ($vn_previewed_duration)/$vn_min_number_of_frames;
@@ -1082,6 +1087,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			case 'video/mpeg':
 			case 'audio/mpeg':
 			case 'video/mp4':
+			case 'video/MP2T':
 				$vs_id = 				$pa_options["id"] ? $pa_options["id"] : "mp4_player";
 
 				$vs_poster_frame_url =	$pa_options["poster_frame_url"];

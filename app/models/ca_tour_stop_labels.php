@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2012 Whirl-i-Gig
+ * Copyright 2011-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -68,7 +68,7 @@ BaseModel::$s_ca_models_definitions['ca_tour_stop_labels'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Name'), 'DESCRIPTION' => _t('Name of tour'),
-				'BOUNDS_LENGTH' => array(1,1024)
+				'BOUNDS_LENGTH' => array(1,16384)
 		),
 		'name_sort' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT, 
@@ -198,4 +198,8 @@ class ca_tour_stop_labels extends BaseLabel {
 		parent::__construct($pn_id);	# call superclass constructor
 	}
 	# ------------------------------------------------------
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> develop

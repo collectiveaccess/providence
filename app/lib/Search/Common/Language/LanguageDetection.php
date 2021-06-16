@@ -49,7 +49,7 @@ class LanguageDetection {
 	var	$opn_max_delta = 140000;					// difference limit after which evaluation is halted
 	
 	# ------------------------------------------------------------------
-	function LanguageDetection(){
+	function __construct(){
 		$this->loadFingerprints();
 	}
 	# ------------------------------------------------------------------

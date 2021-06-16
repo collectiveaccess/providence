@@ -1,4 +1,4 @@
-# README: Providence version 1.7.8
+# README: Providence version 1.8
 
 [![Build Status](https://secure.travis-ci.org/collectiveaccess/providence.png?branch=master)](http://travis-ci.org/collectiveaccess/providence)
 
@@ -8,9 +8,9 @@ CollectiveAccess is a web-based suite of applications providing a framework for 
 
 CollectiveAccess is freely available under the open source GNU Public License version 3.
 
-### About CollectiveAccess 1.7.8
+### About CollectiveAccess 1.8
 
-Version 1.7.8 is a maintenance release with a handful of bug fixes. It is the first release compatible with PHP 7.2. Note that it has not been fully tested with PHP 7.3 or MySQL 8.0.
+Note that this version is not yet compatible with PHP version 8. Please use versions 7.2, 7.3 or 7.4.
 
 
 ### Installation

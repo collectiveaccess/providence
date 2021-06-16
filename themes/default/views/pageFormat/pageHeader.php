@@ -85,14 +85,6 @@
 
 			var caPromptManager = caUI.initPromptManager();
 		</script>
-		<!--[if lte IE 6]>
-			<style type="text/css">
-			#container {
-			height: 100%;
-			}
-			</style>
-			<![endif]-->
-		<!-- super fish end menus -->	
 	</head>	
 	<body>
 		<div align="center">

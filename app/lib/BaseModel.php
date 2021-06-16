@@ -101,7 +101,6 @@ define("__CA_MEDIA_QUEUED_ICON__", 'queued');
 require_once(__CA_LIB_DIR__."/BaseObject.php");
 require_once(__CA_LIB_DIR__."/ApplicationError.php");
 require_once(__CA_LIB_DIR__."/Configuration.php");
-require_once(__CA_LIB_DIR__."/Datamodel.php");
 require_once(__CA_LIB_DIR__."/ApplicationChangeLog.php");
 require_once(__CA_LIB_DIR__."/Parsers/TimeExpressionParser.php");
 require_once(__CA_LIB_DIR__."/Parsers/TimecodeParser.php");
@@ -1372,7 +1371,7 @@ class BaseModel extends BaseObject {
 								$vm_value = array_shift($va_ids);
 							}
 						}
-						if (($vm_value !== "") || ($this->getFieldInfo($vs_field, "IS_NULL") && ($vm_value == ""))) {
+						if (($vm_value !== "") || (($this->getFieldInfo($vs_field, "IS_NULL") && ($vm_value == "")))) {
 							if ($vm_value) {
 								if (($vs_list_code = $this->getFieldInfo($vs_field, "LIST_CODE")) && (!is_numeric($vm_value))) {	// translate ca_list_item idno's into item_ids if necessary
 									if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) {
@@ -4306,7 +4305,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			$vs_sql =  "{$ps_field} = ".$this->quote(caSerializeForDatabase($this->_FILES[$ps_field], true)).",";
 		} else {
 			// Don't try to process files when no file is actually set
-			if(isset($this->_SET_FILES[$ps_field]['tmp_name'])) { 
+			if(isset($this->_SET_FILES[$ps_field]['tmp_name']) && (isUrl($this->_SET_FILES[$ps_field]['tmp_name']) || is_readable($this->_SET_FILES[$ps_field]['tmp_name']))) { 
 				$o_tq = new TaskQueue();
 				$o_media_proc_settings = new MediaProcessingSettings($this, $ps_field);
 		
@@ -4670,8 +4669,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 								$magic = rand(0,99999);
 								$filepath = $vi["absolutePath"]."/".$dirhash."/".$magic."_".$this->_genMediaName($ps_field)."_".$v.".".$ext;
 							
-								if (!copy($this->_SET_FILES[$ps_field]['tmp_name'], $filepath)) {
-									$this->postError(1600, _t("File could not be copied. Ask your administrator to check permissions and file space for %1",$vi["absolutePath"]),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
+								if (!is_readable($this->_SET_FILES[$ps_field]['tmp_name']) || !is_writeable(pathinfo($filepath, PATHINFO_DIRNAME)) || !copy($this->_SET_FILES[$ps_field]['tmp_name'], $filepath)) {
+									$this->postError(1670, _t("File could not be copied. Ask your administrator to check permissions and file space for %1",$vi["absolutePath"]),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
 									$m->cleanup();
 									set_time_limit($vn_max_execution_time);
 									if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
@@ -5573,8 +5572,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					"FILE_LAST_MODIFIED" => filemtime($this->_SET_FILES[$field]['tmp_name'])
 				);
 
-				if (!@copy($this->_SET_FILES[$field]['tmp_name'], $filepath)) {
-					$this->postError(1600, _t("File could not be copied. Ask your administrator to check permissions and file space for %1",$vi["absolutePath"]),"BaseModel->_processFiles()", $this->tableName().'.'.$field);
+				if (!is_readable($this->_SET_FILES[$field]['tmp_name']) || !is_writeable(pathinfo($filepath, PATHINFO_DIRNAME)) || !copy($this->_SET_FILES[$field]['tmp_name'], $filepath)) {
+					$this->postError(1670, _t("File could not be copied. Ask your administrator to check permissions and file space for %1",$vi["absolutePath"]),"BaseModel->_processFiles()", $this->tableName().'.'.$field);
 					return false;
 				}
 				@touch($filepath, filemtime($this->_SET_FILES[$field]['tmp_name']));
@@ -9173,7 +9172,7 @@ $pa_options["display_form_field_tips"] = true;
 				$t_item_rel->set($t_item_rel->getLeftTableFieldName(), $this->getPrimaryKey());
 				$t_item_rel->set($t_item_rel->getRightTableFieldName(), $pn_rel_id);
 			}
-			$t_item_rel->set($t_item_rel->getTypeFieldName(), $pn_type_id);		// TODO: verify type_id based upon type_id's of each end of the relationship
+			if($t_item_rel->hasField($f = $t_item_rel->getTypeFieldName())) { $t_item_rel->set($f, $pn_type_id); }		// TODO: verify type_id based upon type_id's of each end of the relationship
 			if(!is_null($ps_effective_date)){ $t_item_rel->set('effective_date', $ps_effective_date); }
 			if(!is_null($ps_source_info)){ $t_item_rel->set("source_info",$ps_source_info); }
 			$t_item_rel->insert();
@@ -9200,7 +9199,7 @@ $pa_options["display_form_field_tips"] = true;
 					}
 					
 					$t_item_rel->set('rank', $pn_rank);	
-					$t_item_rel->set($t_item_rel->getTypeFieldName(), $pn_type_id);		// TODO: verify type_id based upon type_id's of each end of the relationship
+					if($t_item_rel->hasField($f = $t_item_rel->getTypeFieldName())) { $t_item_rel->set($f, $pn_type_id); }		// TODO: verify type_id based upon type_id's of each end of the relationship
 					if(!is_null($ps_effective_date)){ $t_item_rel->set('effective_date', $ps_effective_date); }
 					if(!is_null($ps_source_info)){ $t_item_rel->set("source_info",$ps_source_info); }
 					$t_item_rel->insert();
@@ -9225,7 +9224,7 @@ $pa_options["display_form_field_tips"] = true;
 						} else {
 							$t_item_rel->set($t_item_rel->getLeftTableFieldName(), $this->getPrimaryKey());
 							$t_item_rel->set($t_item_rel->getRightTableFieldName(), $pn_rel_id);
-							$t_item_rel->set($t_item_rel->getTypeFieldName(), $pn_type_id);	
+							if($t_item_rel->hasField($f = $t_item_rel->getTypeFieldName())) { $t_item_rel->set($f, $pn_type_id); }
 							$t_item_rel->insert();
 							
 							if ($t_item_rel->numErrors() > 0) {
@@ -9317,7 +9316,8 @@ $pa_options["display_form_field_tips"] = true;
 					$t_item_rel->set($t_item_rel->getRightTableFieldName(), $pn_rel_id);
 				}
 				if (!is_null($pn_rank)) { $t_item_rel->set('rank', $pn_rank);	}
-				if (!is_null($pn_type_id)) { $t_item_rel->set($t_item_rel->getTypeFieldName(), $pn_type_id);}	// TODO: verify type_id based upon type_id's of each end of the relationship
+
+				if (!is_null($pn_type_id) && $t_item_rel->hasField($f = $t_item_rel->getTypeFieldName())) { $t_item_rel->set($f, $pn_type_id);}	// TODO: verify type_id based upon type_id's of each end of the relationship
 				if(!is_null($ps_effective_date)){ $t_item_rel->set('effective_date', $ps_effective_date); }
 				if(!is_null($pa_source_info)){ $t_item_rel->set("source_info",$pa_source_info); }
 				
@@ -9347,7 +9347,7 @@ $pa_options["display_form_field_tips"] = true;
 						}
 						
 						if (!is_null($pn_rank)) { $t_item_rel->set('rank', $pn_rank);	}
-						if (!is_null($pn_type_id)) { $t_item_rel->set($t_item_rel->getTypeFieldName(), $pn_type_id); }		// TODO: verify type_id based upon type_id's of each end of the relationship
+						if (!is_null($pn_type_id) && ($f = $t_item_rel->getTypeFieldName())) { $t_item_rel->set($f, $pn_type_id); }		// TODO: verify type_id based upon type_id's of each end of the relationship
 						if(!is_null($ps_effective_date)){ $t_item_rel->set('effective_date', $ps_effective_date); }
 						if(!is_null($pa_source_info)){ $t_item_rel->set("source_info",$pa_source_info); }
 						
@@ -11534,12 +11534,13 @@ $pa_options["display_form_field_tips"] = true;
 	public static function getIdnoForID($pn_id, $pa_options=null) {
 		$o_trans = caGetOption('transaction', $pa_options, null);
 		if (($t_instance = Datamodel::getInstance(static::class, true)) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
+			$has_access = $t_instance->hasField('access');
 			$o_db = $o_trans ? $o_trans->getDb() : new Db();
-			$qr_res = $o_db->query("SELECT {$vs_idno_fld} FROM ".$t_instance->tableName()." WHERE ".$t_instance->primaryKey()." = ?", [(int)$pn_id]);
+			$qr_res = $o_db->query("SELECT {$vs_idno_fld} ".($has_access ? ', access' : '')." FROM ".$t_instance->tableName()." WHERE ".$t_instance->primaryKey()." = ?", [(int)$pn_id]);
 			
 			$pa_check_access = caGetOption('checkAccess', $pa_options, null);
 			if ($qr_res->nextRow()) {
-			    if ((is_array($pa_check_access) && (sizeof($pa_check_access) > 0) ) && $t_instance->hasField('access') &&  !in_array($qr_res->get('access'), $pa_check_access)) { return false; }
+			    if ($has_access && (is_array($pa_check_access) && (sizeof($pa_check_access) > 0) ) && $t_instance->hasField('access') &&  !in_array($qr_res->get('access'), $pa_check_access)) { return false; }
 				return $qr_res->get($vs_idno_fld);
 			}
 		}
@@ -11862,13 +11863,13 @@ $pa_options["display_form_field_tips"] = true;
 				switch($va_tmp[0]) {
 					case $vs_table:
 						if ($t_instance->hasField($va_tmp[1])) {
-							$vs_orderby = " ORDER BY {$vs_sort} {$vs_sort_direction}";
+							$vs_orderby = " ORDER BY `{$va_tmp[1]}` {$vs_sort_direction}";
 						}
 						break;
 					default:
 						if (sizeof($va_tmp) == 1) {
 							if ($t_instance->hasField($va_tmp[0])) {
-								$vs_orderby = " ORDER BY {$vs_sort} {$vs_sort_direction}";
+								$vs_orderby = " ORDER BY `{$vs_sort}` {$vs_sort_direction}";
 							}
 						}
 						break;

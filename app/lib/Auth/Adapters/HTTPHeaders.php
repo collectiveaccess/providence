@@ -77,7 +77,7 @@ class HTTPHeaderAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 
 
 	# --------------------------------------------------------------------------------
-	public function getUserInfo($ps_username, $ps_password) {
+	public function getUserInfo($ps_username, $ps_password, $options=null) {
 		
 		$o_auth_config = Configuration::load(__CA_CONF_DIR__.'/authentication.conf');
 		

@@ -1617,9 +1617,11 @@ class ca_users extends BaseModel {
 					$va_uis = $this->_getUIListByType($vn_table_num);
 					
 					$va_defaults = array();
-					foreach($va_uis as $vn_type_id => $va_editor_info) {
-						foreach($va_editor_info as $vn_ui_id => $va_editor_labels) {
-							$va_defaults[$vn_type_id] = $vn_ui_id;
+					if(is_array($va_uis)) {
+						foreach($va_uis as $vn_type_id => $va_editor_info) {
+							foreach($va_editor_info as $vn_ui_id => $va_editor_labels) {
+								$va_defaults[$vn_type_id] = $vn_ui_id;
+							}
 						}
 					}
 					return $va_defaults;
@@ -1971,7 +1973,7 @@ class ca_users extends BaseModel {
 							$va_locales = array();
 							if ($r_dir = opendir(__CA_APP_DIR__.'/locale/')) {
 								while (($vs_locale_dir = readdir($r_dir)) !== false) {
-									if ($vs_locale_dir{0} == '.') { continue; }
+									if ($vs_locale_dir[0] == '.') { continue; }
 									if (sizeof($va_tmp = explode('_', $vs_locale_dir)) == 2) {
 										$va_locales[$vs_locale_dir] = $va_tmp;
 									}
@@ -2010,7 +2012,7 @@ class ca_users extends BaseModel {
 							if ($r_dir = opendir($this->_CONFIG->get('themes_directory'))) {
 								$va_opts = array();
 								while (($vs_theme_dir = readdir($r_dir)) !== false) {
-									if ($vs_theme_dir{0} == '.') { continue; }
+									if ($vs_theme_dir[0] == '.') { continue; }
 										$o_theme_info = Configuration::load($this->_CONFIG->get('themes_directory').'/'.$vs_theme_dir.'/themeInfo.conf');
 										$va_opts[$o_theme_info->get('name')] = $vs_theme_dir;
 								}

@@ -308,7 +308,7 @@ div.clear {
 	font-size: 13px;
 	line-height: 1.4em;
 }
-#leftNav div.visualize, #leftNav div.setTools {
+#leftNav div.visualize, #leftNav div.setTools, #leftNav div.batchTools {
 	background-color:#f7f7f7;
 	border-radius: 4px;
 	-webkit-border-radius: 4px;
@@ -319,10 +319,10 @@ div.clear {
 	text-transform:capitalize;
 	font-size:14px;
 }
-#leftNav div.setTools img {
+#leftNav div.setTools img, #leftNav div.batchTools img {
 	padding-right:5px;
 }
-#leftNav div.visualize a, #leftNav div.setTools a {
+#leftNav div.visualize a, #leftNav div.setTools a, #leftNav div.batchTools a {
 	text-decoration:none;
 }
 #caColorbox {
@@ -437,7 +437,7 @@ div.inspectorLotObjectTypeControls {
 #leftNav #toolIcons .button {
 	text-align:left;
 }
-#leftNav #searchSetTools .button {
+#leftNav #searchSetTools .button, #leftNav #batchTools .button {
 	text-align: right;
 }
 #leftNav .button.info img{
@@ -1109,7 +1109,7 @@ div.notification-info-box {
 }
 
 div.notification-error-box {
-    background:	url('../graphics/icons/warning_sign.png') no-repeat 10px 5px;
+    background:	url('../graphics/icons/warning_sign.png') no-repeat 10px 15px;
     text-indent: 32px;
     background-color: #eeeeee;
     padding: 5px;
@@ -1139,7 +1139,7 @@ ul.notification-error-box, ul.notification-warning-box, ul.notification-info-box
 li.notification-info-box {
     font-weight: bold;
     color: #1ab3c8;
-    font-size: 12px;
+    font-size: 13px;
     text-indent: 10px;
     font-family: 'din-regular';
 	padding-top: 2px;
@@ -1150,13 +1150,23 @@ li.notification-warning-box {
     color: #333;
     font-size: 13px;
     text-indent: 10px;
+    font-family: 'din-regular';
 }
 
 li.notification-error-box {
-    font-weight: bold;
+    font-weight: normal;
     color: #cc0000;
-    font-size: 12px;
+    font-size: 13px;
     text-indent: 10px;
+    font-family: 'din-regular';
+}
+
+li.notification-error-box .heading {
+    font-weight: bold;
+}
+
+li.notification-error-box ul.errorList {
+    margin-top: 8px;
 }
 
 div.hint {
@@ -1242,11 +1252,12 @@ div.formLabelUploadSizeNote {
 .bundleSubLabel{
 	clear:both;
 	background-color:#fbfbfb;
-	padding:8px 8px 0px 10px;
+	padding:12px 7px 0px 7px;
 	position:relative;
 	font-weight:normal;
 	font-size:11px;
 	line-height:1em;
+	margin-top: 0px;
 }
 .bundleSubLabel select, .bundleSubLabel .editorBundlePrintControl select, .bundleSubLabel .editorBundleSortControl select{
 	position:relative;
@@ -1257,6 +1268,7 @@ div.formLabelUploadSizeNote {
 	font-weight: normal;
 	height: 17px;
 	vertical-align: top;
+	max-width: 120px;
 }
 .bundleSubLabel .editorBundlePrintControl {
 	float:right;
@@ -1283,7 +1295,8 @@ div.formLabelUploadSizeNote {
 	border: 1px dotted #cccccc;
 	background: #fff;
 	padding: 5px 5px 5px 10px;
-	width: 692px;
+	width: 694px;
+	margin-bottom: 10px;
 }
 
 .editorBundleReturnToHomeControlsMessage {
@@ -1328,6 +1341,10 @@ div.formLabelUploadSizeNote {
 .settingsBundle {
     padding: 10px;
     max-height: 700px;
+}
+
+.bundleSubLabel .batchEdit { 
+    float: right;
 }
 
 .caDupeLabelMessageBox {
@@ -2452,11 +2469,8 @@ select.searchToolsSelect {
 }
 /* Set Tools */
 
-#searchSetTools {
+#searchSetTools, #batchTools {
 	display:none;
-}
-
-#searchSetTools {
 	background-color: #f7f7f7;
 	border-radius: 4px;
 	-moz-border-radius: 4px;
@@ -2464,19 +2478,19 @@ select.searchToolsSelect {
 	margin: 10px;
 	padding: 10px;
 }
-#searchSetTools .col{
+#searchSetTools .col, #batchTools .col {
 	margin-bottom:15px;
 }
-#searchSetTools .header {
+#searchSetTools .header, #batchTools .header {
 	font-family: 'din-regular', helvetica, sans-serif;
 	font-weight:bold;
 }
-#searchSetTools a{
+#searchSetTools a, #batchTools a {
 	float: right;
 	clear: left;
 	text-align: right;
 }
-#searchSetTools .searchSetsToggle a{
+#searchSetTools .searchSetsToggle a {
 	float: left;
 	clear: right;
 	text-align: left;
@@ -3735,7 +3749,6 @@ a.hierarchyBrowserLevelEditButton {
 
 div.hierarchyBrowseTab {
     width: 712px;
-    overflow: hidden;
     font-weight: normal;
     margin-left:-10px;
 }
@@ -6325,12 +6338,12 @@ table.caConfirmBatchExecutionPanelAlertControls {
     padding:10px;
 }
 
-#caTypeChangePanelControlButtons, #caCreateChildPanelControlButtons, #caSetHomeLocationPanelControlButtons {
+#caTypeChangePanelControlButtons, #caCreateChildPanelControlButtons, #caSetHomeLocationPanelControlButtons, #caMediaBrowserPanelControlButtons {
     width: 100%;
     text-align: center;
 }
 
-#caTypeChangePanelControlButtons table, #caCreateChildPanelControlButtons table, #caSetHomeLocationPanelControlButtons table {
+#caTypeChangePanelControlButtons table, #caCreateChildPanelControlButtons table, #caSetHomeLocationPanelControlButtons table, #caMediaBrowserPanelControlButtons table {
     width: 100%;
 }
 #caTypeChangePanelControlButtons img.form-button-left, #caCreateChildPanelControlButtons img.form-button-left, #caSetHomeLocationPanelControlButtons img.form-button-left {
@@ -6369,6 +6382,34 @@ div.dialogHeader {
     border-radius:4px;
     -moz-border-radius:4px;
     -webkit-border-radius:4px;
+    
+    min-height: 300px;
+}
+
+/* Media chooser */
+#caMediaBrowserPanel {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 800px;
+    display: none;
+    margin: 0px;
+    padding:0px !important;
+    z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
+    background-color: #FFFFFF;
+    border-radius:4px;
+    -moz-border-radius:4px;
+    -webkit-border-radius:4px;
+    
+    min-height: 300px;
+}
+
+#caMediaBrowserPanelContentArea {
+    padding: 10px;
+}
+
+#caMediaBrowserPanelDirectoryBrowser {
+    height: 225px;
 }
 
 
@@ -7675,7 +7716,7 @@ a.currentSet {
 }
 
 .mediaUploadAreaMessage {
-	font-size: 16px; 
+	font-size: 15px; 
 	color: #333;
 	margin-top: 40px;
 }
@@ -7726,6 +7767,14 @@ div.objectRepresentationMetadataEditorDoneButton {
 .objectRepresentationMetadataEditorMediaRightCol .fa {
 	font-size:18px;
 	padding-right:5px;
+}
+
+.objectRepresentationAddForm {
+
+}
+
+.objectRepresentationRelateForm {
+    display: none;
 }
 
 .mediaMetadataDisplay {

@@ -107,7 +107,7 @@ class TilepicParser {
 	var $ops_graphicsmagick_path;
 	
 	# ------------------------------------------------------------------------------------
-	function TilepicParser($filename="") {
+	function __construct($filename="") {
 		$this->opo_config = Configuration::load();
 		$vs_external_app_config_path = $this->opo_config->get('external_applications');
 		

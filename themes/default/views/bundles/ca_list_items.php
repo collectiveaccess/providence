@@ -275,7 +275,7 @@
 						jQuery('#<?php print $vs_id_prefix; ?>_hierarchyBrowserSearch{n}').autocomplete(
 							{
 								source: '<?php print caNavUrl($this->request, 'lookup', 'ListItem', 'Get', array('noInline' => 1, 'noSymbols' => 1, 'lists' => is_array($va_settings['restrict_to_lists']) ? join(';', $va_settings['restrict_to_lists']) : "")); ?>', 
-								minLength: 3, delay: 800, html: true,
+								minLength: <?= (int)$t_subject->getAppConfig()->get(["ca_list_items_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>, delay: 800, html: true,
 								select: function(event, ui) {
 									if (parseInt(ui.item.id) > 0) {
 										<?php print $vs_id_prefix; ?>oHierBrowser{n}.setUpHierarchy(ui.item.id);	// jump browser to selected item
@@ -369,6 +369,7 @@
 			addButtonClassName: 'caAddItemButton',
 			deleteButtonClassName: 'caDeleteItemButton',
 			showEmptyFormsOnLoad: 1,
+			minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_list_items_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
 			relationshipTypes: <?php print json_encode($this->getVar('relationship_types_by_sub_type')); ?>,
 			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'Vocabulary', 'Get', $va_lookup_params); ?>',
 			lists: <?php print json_encode($va_settings['restrict_to_lists']); ?>,

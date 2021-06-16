@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2020 Whirl-i-Gig
+ * Copyright 2007-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -96,6 +96,7 @@ class AppController {
 	}
 	# -------------------------------------------------------
 	public function dispatch($pb_dont_send_response=false) {
+		global $g_errored;
 	
 		foreach($this->getPlugins() as $vo_plugin) {
 			$vo_plugin->routeStartup();
@@ -114,14 +115,15 @@ class AppController {
 			// error dispatching
 			$va_errors = array();
 			foreach($this->opo_dispatcher->errors as $o_error) {
-				$va_errors[] = $o_error->getErrorNumber();
+				$va_errors[] = $o_error->getErrorMessage();
 			}
-			$this->opo_response->setRedirect($this->opo_request->config->get('error_display_url').'/n/'.join(';', $va_errors).'?r='.urlencode($this->opo_request->getFullUrlPath()));
+			
+			$g_errored = true;	// routing error occurred
+			throw new ApplicationException(join(';', $va_errors));
 		}
 		foreach($this->getPlugins() as $vo_plugin) {
 			$vo_plugin->dispatchLoopShutdown();
 		}
-		
 		
 		if(!$pb_dont_send_response) {
 			$this->opo_response->sendResponse();

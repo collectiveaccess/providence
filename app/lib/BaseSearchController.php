@@ -354,11 +354,7 @@
  			$t_subject = Datamodel::getInstanceByTableName($this->ops_tablename, true);
  			
  			$t_list = new ca_lists();
- 			$t_list->load(array('list_code' => $t_subject->getTypeListCode()));
- 			
- 			$t_list_item = new ca_list_items();
- 			$t_list_item->load(array('list_id' => $t_list->getPrimaryKey(), 'parent_id' => null));
- 			$va_hier = caExtractValuesByUserLocale($t_list_item->getHierarchyWithLabels());
+ 			$va_hier = caExtractValuesByUserLocale($t_list->getItemsForList($t_subject->getTypeListCode()));
  			
  			$va_restrict_to_types = null;
  			if ($t_subject->getAppConfig()->get('perform_type_access_checking')) {
@@ -366,9 +362,9 @@
  			}
  			
 			$limit_to_types = $this->getRequest()->config->getList($this->ops_tablename.'_navigation_find_menu_limit_types_to');
-			$exclude_types = $this->getRequest()->config->getList($z=$this->ops_tablename.'_navigation_find_menu_exclude_types');
+			$exclude_types = $this->getRequest()->config->getList($this->ops_tablename.'_navigation_find_menu_exclude_types');
  	
- 			$va_types = array();
+ 			$va_types = [];
  			if (is_array($va_hier)) {
  				
  				$va_types_by_parent_id = array();

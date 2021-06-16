@@ -54,11 +54,10 @@
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
 			$this->opa_views = array(
-				'full' => _t('full'),
 				'list' => _t('list')
 			 );
 
-			 $this->opo_browse = new ObjectLotsBrowse($this->opo_result_context->getParameter('browse_id'), 'providence'); 
+			 $this->opo_browse = new ObjectLotBrowse($this->opo_result_context->getParameter('browse_id'), 'providence'); 
 		}
  		# -------------------------------------------------------
  		/**

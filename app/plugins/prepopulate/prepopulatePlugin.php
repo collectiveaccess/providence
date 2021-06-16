@@ -77,8 +77,8 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 	    $pa_params['Maintenance']['apply_prepopulate_rules'] = [
 	    	'Command' => 'apply-prepopulate-rules',
 	        'Options' => [],
-	        'Help' => _t('Help to come'),
-	        'ShortHelp' => _t('Short help to come'),
+	        'Help' => _t('Applies rules defined in prepopulate.conf to all relevant records.'),
+	        'ShortHelp' => _t('Applies rules defined in prepopulate.conf to all relevant records.'),
 	    ];
 	    return $pa_params;
 	}
@@ -91,7 +91,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
         $tool->setSettings($pa_params[1]);
         $tool->setMode($pa_params[2]);
         
-        $pa_params[]['tool'] = $tool;
+        $pa_params['tool'] = $tool;
         return $pa_params;
     }
 	# --------------------------------------------------------------------------------------------

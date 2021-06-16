@@ -133,7 +133,7 @@ class Configuration {
 		$va_config_file_list = [];
 		
 		// cache key for on-disk caching
-		$vs_path_as_md5 = md5($_SERVER['HTTP_HOST'].$this->ops_config_file_path.'/'.$g_ui_locale.(isset($g_configuration_cache_suffix) ? '/'.$g_configuration_cache_suffix : ''));
+		$vs_path_as_md5 = md5(($_SERVER['HTTP_HOST'] ?? '') . $this->ops_config_file_path.'/'.$g_ui_locale.(isset($g_configuration_cache_suffix) ? '/'.$g_configuration_cache_suffix : ''));
 
 		#
 		# Is configuration file already cached?
