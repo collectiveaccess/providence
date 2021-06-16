@@ -367,7 +367,7 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 					$va_tmp['children'] = sizeof($qr_children->get("{$vs_table}.children.{$vs_pk}", ['returnAsArray' => true]));
 
 					if ($t_item->tableName() == 'ca_collections') {
-						$va_tmp['children'] += sizeof($qr_children->get('ca_objects.object_id', ['limit' => 2, 'returnAsArray' => true, 'restrictToRelationshipTypes' => [$vs_object_collection_rel_type]]));
+						$va_tmp['children'] += $qr_children->get('ca_objects.object_id', ['returnAsCount' => true, 'restrictToRelationshipTypes' => [$vs_object_collection_rel_type]]);
 					}
 
 					if (is_array($va_sorts)) {
@@ -422,7 +422,7 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 							'sortDirection' => $vs_object_sort_dir,
 							'restrictToRelationshipTypes' => array($vs_object_collection_rel_type),
 							'start' => $vn_start,
-							'limit' => 2
+							'limit' => $vn_max_items_per_page
 						), $vn_count
 					);
 

@@ -1652,19 +1652,6 @@ if (!$for_current_value_reindex) {
 						foreach($vo_attribute->getValues() as $vo_value) {
 							$vs_value_to_index = $vo_value->getDisplayValue(['idsOnly' => true]);
 
-							$va_additional_indexing = $vo_value->getDataForSearchIndexing();
-							if(is_array($va_additional_indexing) && (sizeof($va_additional_indexing) > 0)) {
-								foreach($va_additional_indexing as $vs_additional_value) {
-									$vs_value_to_index .= " ; ".$vs_additional_value;
-								}
-							}
-							
-							$va_values_to_index = [$vs_value_to_index];
-							
-							if (!in_array($vs_raw_display_value = $vo_value->getDisplayValue(), $va_values_to_index)) {
-								$va_values_to_index[] = $vs_raw_display_value;
-							}
-							
 							if ($vn_datatype == __CA_ATTRIBUTE_VALUE_LIST__) {
 								$this->opo_engine->indexField($pn_subject_table_num, $field_num_prefix.$vn_element_id, $pn_row_id, [$vs_v = $vo_value->getDisplayValue(['output' => 'idno'])], array_merge($pa_data, ['DONT_TOKENIZE' => 1]));
 								$this->_genIndexInheritance($t_inheritance_subject ? $t_inheritance_subject : $pt_subject,
@@ -1703,7 +1690,7 @@ if (!$for_current_value_reindex) {
 							$this->opo_engine->indexField($pn_subject_table_num, $field_num_prefix.$vn_element_id, $pn_row_id, [$vs_v], $pa_data);
 							$this->_genIndexInheritance($t_inheritance_subject ? $t_inheritance_subject : $pt_subject, $t_inheritance_subject ? $pt_subject : null, $field_num_prefix.$vn_element_id, $pn_inheritance_subject_id ? $pn_inheritance_subject_id : $pn_row_id, $pn_row_id, [$vs_v], $pa_data, $pa_options);
 							
-							foreach(["preferred_labels.".$t_item->getLabelDisplayField(), $t_item->primaryKey()] as $vs_f) {
+							foreach(["preferred_labels.".$t_item->getLabelDisplayField(), "nonpreferred_labels.".$t_item->getLabelDisplayField(), $t_item->primaryKey()] as $vs_f) {
 								if ($va_hier_values = $this->_genHierarchicalPath($vn_item_id, $vs_f, $t_item, $pa_data)) {
 
 									$this->opo_engine->indexField($pn_subject_table_num, $field_num_prefix.$vn_element_id, $pn_row_id, array_merge([$vs_v], $va_hier_values['values']), $pa_data);

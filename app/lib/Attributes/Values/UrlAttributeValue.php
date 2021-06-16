@@ -365,7 +365,7 @@
 		 * @return string
 		 */
 		public function sortableValue(?string $value) {
-			return mb_strtolower(trim(preg_replace('!^[A-Za-z]+://!', '', $value)), 0, 100);
+			return mb_strtolower(substr(trim(preg_replace('!^[A-Za-z]+://!', '', $value)), 0, 100));
 		}
  		# ------------------------------------------------------------------
 		/**
