@@ -526,6 +526,28 @@
 	}
 	# ------------------------------------------------------
 	/**
+	 * Converts the given list of relationship type ids or relationship type names into an expanded list of alphanumeric type codes. Processing
+	 * includes expansion of types to include subtypes and conversion of any type_ids to type codes.
+	 *
+	 * @param mixed $pm_table_name_or_num Table name or number to which types apply
+	 * @param array $pa_type_ids List of type_ids that are the basis of the list
+	 * @param array $pa_options Array of options:
+	 * 		dont_include_subtypes_in_type_restriction = if set, returned list is not expanded to include subtypes
+	 *		dontIncludeSubtypesInTypeRestriction = synonym for dont_include_subtypes_in_type_restriction
+	 *
+	 * @return array List of alphanumeric type codes
+	 */
+	function caMakeRelationshipTypeCodeList($table_name_or_num, $type_ids, $options=null) {
+		if (!$type_ids) { return []; }
+		if (!is_array($type_ids)) { $type_ids = [$type_ids]; }
+		if(isset($options['dontIncludeSubtypesInTypeRestriction']) && (!isset($options['dont_include_subtypes_in_type_restriction']) || !$options['dont_include_subtypes_in_type_restriction'])) { $options['dont_include_subtypes_in_type_restriction'] = $options['dontIncludeSubtypesInTypeRestriction']; }
+	 	
+		$options['includeChildren'] = (isset($options['dont_include_subtypes_in_type_restriction']) && $options['dont_include_subtypes_in_type_restriction']) ? false : true;
+		
+		return ca_relationship_types::relationshipTypeIDsToTypeCodes($type_ids, $options);
+	}
+	# ------------------------------------------------------
+	/**
 	 * 
 	 */
 	function caGetRelationshipTableName($pm_table_name_or_num_left, $pm_table_name_or_num_right, $pa_options=null) {

@@ -2166,7 +2166,7 @@
 											if(!$t_loc->load($vn_row_id)) { break; }
 											$va_row_tmp = [$t_loc->tableNum(), $t_loc->get('ca_storage_locations.type_id'), $vn_row_id];
 										}
-										$va_row_tmp = array_filter($va_row_tmp, function($v) { return (bool)$v; });
+									//	$va_row_tmp = array_filter($va_row_tmp, function($v) { return (bool)$v; });
 										if ($va_row_tmp[0] == 89) { // ca_storage_locations
 											$t_loc = new ca_storage_locations();
 											if (!is_array($va_loc_ids = $t_loc->getHierarchy($va_row_tmp[2], ['returnAsArray' => true, 'includeSelf' => true, 'idsOnly' => true])) || !sizeof($va_loc_ids)) { continue; }

@@ -261,7 +261,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			'takesLocale' => false,
 			'default' => '',
 			'label' => _t('Wrapping text before record export'),
-			'description' => _t('The text set here will be inserted before earch record-level export.')
+			'description' => _t('The text set here will be inserted before each record-level export.')
 		);
 
 		$va_settings['wrap_after_record'] = array(
@@ -271,7 +271,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			'takesLocale' => false,
 			'default' => '',
 			'label' => _t('Wrapping text after record export'),
-			'description' => _t('The text set here will be inserted after earch record-level export.')
+			'description' => _t('The text set here will be inserted after each record-level export.')
 		);
 
 		$va_settings['typeRestrictions'] = array(

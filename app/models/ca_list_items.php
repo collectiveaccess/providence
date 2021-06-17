@@ -242,7 +242,7 @@ $_ca_list_items_settings = array(
 			'takesLocale' => false,
 			'default' => 1,
 			'label' => _t('Use suffix for organizations?'),
-			'description' => _t('Show suffix entry field for organization labels?.')
+			'description' => _t('Show suffix entry field for organization labels?')
 		),
 		'render_in_new_menu' => array(
 			'formatType' => FT_BIT,

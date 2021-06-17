@@ -198,7 +198,7 @@ final class ConfigurationExporter {
 	}
 	# -------------------------------------------------------
 	public function getListsAsDOM() {
-		$qr_lists = $this->opo_db->query("SELECT * FROM ca_lists ORDER BY list_id");
+		$qr_lists = $this->opo_db->query("SELECT * FROM ca_lists WHERE deleted = 0 ORDER BY list_id");
 
 		$vo_lists = $this->opo_dom->createElement("lists");
 
@@ -503,10 +503,15 @@ final class ConfigurationExporter {
 				if($t_restriction->get("type_id")) {
 					/** @var BaseRelationshipModel $t_instance */
 					$t_instance = Datamodel::getInstanceByTableNum($t_restriction->get("table_num"));
-					$vs_type_code = $t_instance->getTypeListCode();
-
-					$va_item = $t_list->getItemFromListByItemID($vs_type_code, $t_restriction->get("type_id"));
-					$vo_type = $this->opo_dom->createElement("type",$va_item["idno"]);
+					if ($t_instance instanceof BaseRelationshipModel) {
+						$vo_relationship_type = new ca_relationship_types($t_restriction->get('type_id'));
+						$vs_type = $vo_relationship_type->get('type_code');
+					} else {
+						$vs_type_code = $t_instance->getTypeListCode();
+						$va_item = $t_list->getItemFromListByItemID($vs_type_code, $t_restriction->get("type_id"));
+						$vs_type = $va_item['idno'];
+					}
+					$vo_type = $this->opo_dom->createElement("type",$vs_type);
 
 					$vo_restriction->appendChild($vo_type);
 				}

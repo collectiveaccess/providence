@@ -799,7 +799,7 @@
 				$vs_fa_class = 'fas fa-chevron-right';
 				break;	
 			case __CA_NAV_ICON_VISUALIZE__:
-				$vs_fa_class = 'fas fa-line-chart';
+				$vs_fa_class = 'fas fa-chart-line';
 				break;	
 			case __CA_NAV_ICON_ADD_WIDGET__:
 				$vs_fa_class = 'fas fa-plus-circle';

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2016 Whirl-i-Gig
+ * Copyright 2011-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,7 +40,7 @@
 </head>
 <body>
 	<div id='box'>
-	<div id="logo"><img src="<?php print __CA_THEME_URL__ ?>/graphics/logos/ca_logo.png"/></div><!-- end logo -->
+	<div id="logo"><?= caGetLoginLogo(); ?></div><!-- end logo -->
 	<div id="content">
 		<div class='error'><?php print _t("Updating your database..."); ?></div>
 <?php

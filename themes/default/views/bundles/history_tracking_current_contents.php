@@ -39,7 +39,7 @@
 	
 	
 if (!$this->request->isAjax()) {
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_subject->tableNum().'_rel', $va_settings, caInitialValuesArrayHasValue($vs_id_prefix.$t_subject->tableNum().'_rel', $this->getVar('initialValues')));
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix.$t_subject->tableNum().'_rel', $this->getVar('initialValues')));
 	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_subject->tableNum().'_rel', $va_settings);
 }	
 	foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {

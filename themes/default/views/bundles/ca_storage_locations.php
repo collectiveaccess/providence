@@ -227,7 +227,7 @@
 					jQuery('#<?php print $vs_id_prefix; ?>_hierarchyBrowserSearch{n}').autocomplete(
 						{
 							source: '<?php print caNavUrl($this->request, 'lookup', 'StorageLocation', 'Get', array('noInline' => 1)); ?>',
-							minLength: 3, delay: 800, html: true,
+							minLength: <?= (int)$t_subject->getAppConfig()->get(["ca_storage_locations_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>, delay: 800, html: true,
 							select: function(event, ui) {
 								if (parseInt(ui.item.id) > 0) {
 									<?php print $vs_id_prefix; ?>oHierBrowser{n}.setUpHierarchy(ui.item.id);	// jump browser to selected item
@@ -347,7 +347,7 @@
 			showEmptyFormsOnLoad: 1,
 			relationshipTypes: <?php print json_encode($this->getVar('relationship_types_by_sub_type')); ?>,
 			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'StorageLocation', 'Get', $va_lookup_params); ?>',
-			minChars:1,
+			minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_storage_locations_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
 			bundlePreview: <?php print caGetBundlePreviewForRelationshipBundle($this->getVar('initialValues')); ?>,
 			readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
 			isSortable: <?php print ($vb_read_only || $vs_sort) ? "false" : "true"; ?>,

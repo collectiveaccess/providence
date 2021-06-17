@@ -41,6 +41,9 @@
 	$vn_items_in_hier 	= $t_subject->getHierarchySize();
 	$vs_bundle_preview	= '('.$vn_items_in_hier. ') '. caProcessTemplateForIDs("^preferred_labels", $t_subject->tableName(), array($t_subject->getPrimaryKey()));
 	
+
+	if(!($min_autocomplete_search_length = (int)$t_subject->getAppConfig()->get(["{$vs_priv_table}_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]))) { $min_autocomplete_search_length = 3; }
+
 	if (!$pn_id && $vb_batch && ($t_subject->getProperty('HIERARCHY_TYPE') === __CA_HIER_TYPE_ADHOC_MONO__)) {
 		// For batching on ad-hoc hierarchies we need to load something, so we pick the first record we can find
 		$table = $t_subject->tableName();
@@ -428,7 +431,7 @@
 		// Set up "move" hierarchy browse search
 		jQuery('#<?= $id_prefix; ?>MoveHierarchyBrowserSearch').autocomplete(
 			{ 
-				source: '<?= $va_lookup_urls_for_move['search']; ?>', minLength: 3, delay: 800, html: true,
+				source: '<?= $va_lookup_urls_for_move['search']; ?>', minLength: <?= $min_autocomplete_search_length; ?>, delay: 800, html: true,
 				select: function( event, ui ) {
 					if (ui.item.id) {
 						jQuery("#<?= $id_prefix; ?>HierarchyBrowserContainer").slideDown(350);
@@ -458,7 +461,7 @@
 		// Set up "explore" hierarchy browse search
 		jQuery('#<?= $id_prefix; ?>ExploreHierarchyBrowserSearch').autocomplete(
 			{
-				source: '<?= $va_lookup_urls['search']; ?>', minLength: 3, delay: 800, html: true,
+				source: '<?= $va_lookup_urls['search']; ?>', minLength: <?= $min_autocomplete_search_length; ?>, delay: 800, html: true,
 				select: function( event, ui ) {
 					if (ui.item.id) {
 						jQuery("#<?= $id_prefix; ?>HierarchyBrowserContainer").slideDown(350);

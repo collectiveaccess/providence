@@ -292,6 +292,84 @@
 		</div>
 
 		<div class='bundleLabel'>
+			<span class="formLabelText"><?= _t('%1 title', ucfirst(caGetTableDisplayName($t_instance->tableName(), false))); ?></span>
+			<div class="bundleContainer">
+				<div class="caLabelList" id="caMediaImportLabelControls">
+					<div style='padding:10px 0px 10px 10px;'>
+						<table>
+							<tr>
+								<td><?php
+									$va_attrs = array('value' => 'blank', 'checked' => 1, 'id' => 'caLabelBlankMode');
+									if (isset($va_last_settings['labelMode']) && ($va_last_settings['labelMode'] == 'blank')) { $va_attrs['checked'] = 1; }
+									print caHTMLRadioButtonInput('label_mode', $va_attrs);
+								?></td>
+								<td class='formLabel'><?= _t('Set %1 title to %2', caGetTableDisplayName($t_instance->tableName(), false), '['.caGetBlankLabelText($t_instance->tableName()).']'); ?></td>
+							</tr>
+							<tr>
+								<td><?php
+									$va_attrs = array('value' => 'user', 'id' => 'caLabelUserMode');
+									if (isset($va_last_settings['labelMode']) && ($va_last_settings['labelMode'] == 'user')) { $va_attrs['checked'] = 1; }
+									print caHTMLRadioButtonInput('label_mode', $va_attrs);
+								?></td>
+								<td class='formLabel'><?= _t('Set %1 title to %2', caGetTableDisplayName($t_instance->tableName(), false), caHTMLTextInput('label_text', ['id' => 'caLabelUserModeText', 'value' => $va_last_settings['labelText']], ['width' => '400px'])); ?></td>
+							</tr>
+							<tr>
+								<td><?php
+									$va_attrs = array('value' => 'form', 'id' => 'caLabelIdnoMode');
+									if (isset($va_last_settings['labelMode']) && ($va_last_settings['labelMode'] == 'idno')) { $va_attrs['checked'] = 1; }
+									print caHTMLRadioButtonInput('label_mode', $va_attrs);
+								?></td>
+								<td class='formLabel' id='caIdnoFormModeForm'><?= _t('Set %1 title to identifier', caGetTableDisplayName($t_instance->tableName(), false)); ?></td>
+							</tr>
+							<tr>
+								<td><?php
+									$va_attrs = array('value' => 'filename', 'id' => 'caLabelFilenameMode');
+									if (isset($va_last_settings['labelMode']) && ($va_last_settings['labelMode'] == 'filename')) { $va_attrs['checked'] = 1; }
+									print caHTMLRadioButtonInput('label_mode', $va_attrs);
+								?></td>
+								<td class='formLabel'><?= _t('Set %1 title to file name', caGetTableDisplayName($t_instance->tableName(), false)); ?></td>
+							</tr>
+							<tr>
+								<td><?php
+									$va_attrs = array('value' => 'filename_no_ext', 'id' => 'caLabelFilenameNoExtMode');
+									if (isset($va_last_settings['labelMode']) && ($va_last_settings['labelMode'] == 'filename_no_ext')) { $va_attrs['checked'] = 1; }
+									print caHTMLRadioButtonInput('label_mode', $va_attrs);
+									?></td>
+								<td class='formLabel'><?= _t('Set %1 title to file name without extension', caGetTableDisplayName($t_instance->tableName(), false)); ?></td>
+							</tr>
+							<tr>
+								<td><?php
+									$va_attrs = array('value' => 'directory_and_filename', 'id' => 'caLabelDirectoryAndFilenameMode');
+									if (isset($va_last_settings['labelMode']) && ($va_last_settings['labelMode'] == 'directory_and_filename')) { $va_attrs['checked'] = 1; }
+									print caHTMLRadioButtonInput('label_mode', $va_attrs);
+								?></td>
+								<td class='formLabel'><?= _t('Set %1 title to directory and file name', caGetTableDisplayName($t_instance->tableName(), false)); ?></td>
+							</tr>
+						</table>
+						<script type="text/javascript">
+							jQuery(document).ready(function() {
+								jQuery("#caIdnoFormMode").click(function() {
+									jQuery("#caIdnoFormModeForm input").prop('disabled', false);
+								});
+								jQuery("#caIdnoFilenameMode").click(function() {
+									jQuery("#caIdnoFormModeForm input").prop('disabled', true);
+								});
+								jQuery("#caIdnoFilenameNoExtMode").click(function() {
+									jQuery("#caIdnoFormModeForm input").prop('disabled', true);
+								});
+								jQuery("#caIdnoDirectoryAndFilenameMode").click(function() {
+									jQuery("#caIdnoFormModeForm input").prop('disabled', true);
+								});
+
+								jQuery("#caMediaImportIdnoControls").find("input:checked").click();
+							});
+
+						</script>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class='bundleLabel'>
 			<span class="formLabelText"><?= (($this->getVar('ca_object_representations_mapping_list_count') > 0) || ($this->getVar($t_instance->tableName().'_mapping_list_count') > 0)) ? _t('Status, access &amp; metadata extraction') : _t('Status &amp; access'); ?></span>
 				<div class="bundleContainer">
 					<div class="caLabelList" >

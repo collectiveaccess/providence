@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2020 Whirl-i-Gig
+ * Copyright 2014-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -71,7 +71,7 @@ var caBundleUpdateManager = null;
 		that.reloadBundleByPlacementID = function(placement_id, options) {
 			var b = that.byPlacementID[placement_id];
 
-			return that._reload(b, options);
+			return that._reload([b], options);
 		}		
 		
 		// --------------------------------------------------------------------------------
@@ -79,13 +79,15 @@ var caBundleUpdateManager = null;
 			if (b) {
 				jQuery.each(b, function(k, v) {
 					for(var i in v) {
-						var loadURL = that.url + "/" + that.key + "/" + that.id + "/bundle/" + v.bundle + "/placement_id/" + v.placement_id;
+						var loadURL = that.url + "/" + that.key + "/" + that.id;
+						var data = { "bundle": v.bundle, "placement_id": v.placement_id };
 						if (options) { 
 							for(var k in options) {
-								loadURL += "/" + k + "/" + options[k];
+								//loadURL += "/" + k + "/" + options[k];
+								data[k] = options[k];
 							}
 						}
-						jQuery("#" + v['id']).load(loadURL);
+						jQuery("#" + v['id']).load(loadURL, data);
 					}
 				});
 			}
