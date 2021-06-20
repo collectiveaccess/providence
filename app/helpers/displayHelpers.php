@@ -3414,11 +3414,11 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 		$default_sorts = $config->getAssoc("{$related_table}_default_bundle_display_sorts");
 	
 		if(!is_array($default_sorts) || !is_array($default_sort_options = caGetOption('options', $default_sorts, null))) { $default_sort_options = []; }
-		if(is_array($rel_types = caGetOption(['restrict_to_relationship_types', 'restrictToRelationshipTypes'], $settings, null)) && sizeof($rel_types)) {
+		if(is_array($rel_types = caGetOption(['restrict_to_types', 'restrictToTypes'], $settings, null)) && sizeof($rel_types)) {
 			$path = array_keys(Datamodel::getPath($table, $related_table));
-			if(is_array($type_codes = caMakeRelationshipTypeCodeList($path[1], $rel_types))) {
+			if(is_array($type_codes = caMakeTypeList($related_table, $rel_types))) {
 				foreach($type_codes as $t) {
-					if(is_array($type_specific_sorts = $config->get("{$ps_table}_{$t}_bundle_display_sorts")) && is_array($type_specific_sort_options = caGetOption('options', $type_specific_sorts, null))) {
+					if(is_array($type_specific_sorts = $config->get("{$related_table}_{$t}_bundle_display_sorts")) && is_array($type_specific_sort_options = caGetOption('options', $type_specific_sorts, null))) {
 						$default_sort_options = array_merge($default_sort_options, $type_specific_sort_options);
 					}
 				}
@@ -3448,7 +3448,12 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 		$sort = caGetOption('sort', $pa_options, null);
 		$sort_direction = caGetOption('sortDirection', $pa_options, null);
 		
-		if (!is_array($va_sort_fields = caGetAvailableSortFields($ps_table, null, array_merge(['request' => $po_request], $pa_options, ['naturalSortLabel' => _t('default'), 'includeInterstitialSortsFor' => $ps_related_table]))) || !sizeof($va_sort_fields)) { return ''; }
+		$type_id = null;
+		if($type_ids = caGetOption(['restrict_to_types', 'restrictToTypes'], $pa_options, null)) {
+			$type_id = is_array($type_ids) ? array_shift($type_ids) : $type_ids;
+		}
+		
+		if (!is_array($va_sort_fields = caGetAvailableSortFields($ps_table, $type_id, array_merge(['request' => $po_request], $pa_options, ['naturalSortLabel' => _t('default'), 'includeInterstitialSortsFor' => $ps_related_table]))) || !sizeof($va_sort_fields)) { return ''; }
 	
 		$allowed_sorts = caGetOption('allowedSorts', $pa_options, null);
 		
@@ -3477,6 +3482,10 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 				}
 			}
 			
+			if(is_array($type_specific_sorts) ) {
+				$default_sort_options = $type_specific_sorts['options'];
+			}
+			
 			// Expand global sort list to include parents when sort is on container field
 			$default_sort_options = array_merge(['_natural' => false], array_reduce($default_sort_options, function($carry, $item) use ($sort_field_trans) { 
 				if(array_key_exists($item, $sort_field_trans)) { $item = $sort_field_trans[$item]; }	// rewrite truncated fields 
@@ -3494,7 +3503,7 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 			if(is_array($default_sort_options) && sizeof($default_sort_options)) {
 				$va_sort_fields = array_filter(
 					$va_sort_fields,
-					function ($v) use ($default_sort_options, $sort_field_trans) {
+					function ($v) use ($default_sort_options) {
 						return array_key_exists($v, $default_sort_options);
 					},
 					ARRAY_FILTER_USE_KEY
@@ -3598,6 +3607,7 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 		if (!($pt_related = Datamodel::getInstance($pconfig['table'], true))) {  return null; }
 
 		$target = $pt_related->tableName();
+		if(!$pt_related->getAppConfig()->get("{$target}_enable_home_location")) { return null; }
 		$policies = array_filter(ca_objects::getHistoryTrackingCurrentValuePoliciesForTable($target), function($v) { return array_key_exists('ca_storage_locations', $v['elements']); });
 		if(!is_array($policies) || !sizeof($policies)) { return ''; }
 		if (!$ps_policy) { $ps_policy = $target::getDefaultHistoryTrackingCurrentValuePolicy(); }

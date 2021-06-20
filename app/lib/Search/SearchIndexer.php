@@ -944,7 +944,7 @@ if (!$for_current_value_reindex) {
 							
 							$vn_private = ((!is_array($va_private_rel_types) || !sizeof($va_private_rel_types) || !in_array($vn_rel_type_id, $va_private_rel_types))) ? 0 : 1;
 							
-							if(!$vn_private && $t_rel->hasField('access') && (!in_array((int)$qr_res->get('access'), $public_access, true))) {
+							if(!$vn_private && $t_rel->hasField('access') && (!in_array($t_rel->tableName(), ['ca_sets', 'ca_set_items'], true)) && (!in_array((int)$qr_res->get('access'), $public_access, true))) {
 								$vn_private = 1;
 							}
 				
@@ -1281,6 +1281,8 @@ if (!$for_current_value_reindex) {
 							        }
 						        }
 						    }
+						    
+							$this->_genIndexInheritance(Datamodel::getInstance($va_row_to_reindex['table_num'], true), Datamodel::getInstance($va_row_to_reindex['field_table_num'], true), $va_row_to_reindex['field_num'], $vn_row_id, $va_row_to_reindex['field_row_id'], $va_row_to_reindex['field_values'][$va_row_to_reindex['field_name']], array_merge($va_row_to_reindex['indexing_info'], ['PRIVATE' => $vn_private, 'relationship_type_id' => $vn_rel_type_id]));
 						}
 					} elseif (((isset($va_row_to_reindex['indexing_info']['INDEX_AS_IDNO']) && $va_row_to_reindex['indexing_info']['INDEX_AS_IDNO']) || in_array('INDEX_AS_IDNO', $va_row_to_reindex['indexing_info'], true)) && method_exists($t_rel, "getIDNoPlugInInstance") && ($o_idno = $t_rel->getIDNoPlugInInstance())) {
 						foreach($va_row_to_reindex['row_ids'] as $vn_row_id) {
@@ -1703,7 +1705,7 @@ if (!$for_current_value_reindex) {
 							$this->opo_engine->indexField($pn_subject_table_num, $field_num_prefix.$vn_element_id, $pn_row_id, [$vs_v], $pa_data);
 							$this->_genIndexInheritance($t_inheritance_subject ? $t_inheritance_subject : $pt_subject, $t_inheritance_subject ? $pt_subject : null, $field_num_prefix.$vn_element_id, $pn_inheritance_subject_id ? $pn_inheritance_subject_id : $pn_row_id, $pn_row_id, [$vs_v], $pa_data, $pa_options);
 							
-							foreach(["preferred_labels.".$t_item->getLabelDisplayField(), "nonpreferred_labels.".$t_item->getLabelDisplayField(), $t_item->primaryKey()] as $vs_f) {
+							foreach(["preferred_labels.".$t_item->getLabelDisplayField(), $t_item->primaryKey()] as $vs_f) {
 								if ($va_hier_values = $this->_genHierarchicalPath($vn_item_id, $vs_f, $t_item, $pa_data)) {
 
 									$this->opo_engine->indexField($pn_subject_table_num, $field_num_prefix.$vn_element_id, $pn_row_id, array_merge([$vs_v], $va_hier_values['values']), $pa_data);

@@ -293,7 +293,7 @@ var caUI = caUI || {};
 					if (typeof(this.initialValues[id][info[1]]) == 'boolean') {
 						this.initialValues[id][info[1]] = (this.initialValues[id][info[1]]) ? '1' : '0';
 					}
-					jQuery(this.container + " #" + element_id + " option[value=" + this.initialValues[id][info[1]] +"]").prop('selected', true);
+					jQuery(this.container + " #" + element_id + " option[value='" + this.initialValues[id][info[1]] +"']").prop('selected', true);
 				}
 			}
 

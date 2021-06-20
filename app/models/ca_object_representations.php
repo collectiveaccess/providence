@@ -2691,6 +2691,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	 *
 	 */
 	public function renderBundleForDisplay($bundle_name, $row_id, $values, $options=null) {
+		die("X");
 		switch($bundle_name) {
 			case 'transcription_count':
 				return $this->numTranscriptions($row_id);
