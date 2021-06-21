@@ -2329,6 +2329,9 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 	 * @return array An array of tags, or an array of arrays when parseOptions option is set.
 	 */
 	function caGetTemplateTags($ps_template, $pa_options=null) {
+		$key = caMakeCacheKeyFromOptions($pa_options, $ps_template);
+		if(MemoryCache::contains($key, 'DisplayTemplateParserUtils')) { return MemoryCache::fetch($key, 'DisplayTemplateParserUtils'); }
+		
 		$va_tags = caExtractTagsFromTemplate($ps_template, $pa_options);
 
 		if (caGetOption('firstPartOnly', $pa_options, false)) {
@@ -2351,6 +2354,7 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 			}
 		}
 
+		MemoryCache::save($key, $va_tags, 'DisplayTemplateParserUtils');
 		return $va_tags;
 	}
 	# ------------------------------------------------------------------------------------------------
@@ -2368,7 +2372,13 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 	 * @return string Output of processed template
 	 */
 	function caProcessTemplate($ps_template, $pa_values, $pa_options=null) {
-		return DisplayTemplateParser::processTemplate($ps_template, $pa_values, $pa_options);
+		$key = caMakeCacheKeyFromOptions(['options' => $pa_options, 'values' => $pa_values], $ps_template);
+		if(MemoryCache::contains($key, 'DisplayTemplateParserUtils')) { return MemoryCache::fetch($key, 'DisplayTemplateParserUtils'); }
+		
+		$ret = DisplayTemplateParser::processTemplate($ps_template, $pa_values, $pa_options);
+		MemoryCache::save($key, $ret, 'DisplayTemplateParserUtils');
+		
+		return $ret;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -2392,6 +2402,9 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 	function caProcessTemplateTagDirectives($ps_value, $pa_directives, $pa_options=null) {
 	    global $g_ui_locale;
 		if (!is_array($pa_directives) || !sizeof($pa_directives)) { return $ps_value; }
+		
+		$key = caMakeCacheKeyFromOptions(['options' => $pa_options, 'directives' => $pa_directives], $ps_value);
+		if(MemoryCache::contains($key, 'DisplayTemplateParserUtils')) { return MemoryCache::fetch($key, 'DisplayTemplateParserUtils'); }
 
 		$pb_omit_units = caGetOption('omitUnits', $pa_options, false);
 		$force_english_units = caGetOption('forceEnglishUnits', $pa_options, null, ['validValues' => ['ft', 'in']]);
@@ -2530,6 +2543,7 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 		}
 
 		ini_set('precision', $vn_precision);
+		MemoryCache::save($key, $ps_value, 'DisplayTemplateParserUtils');
 		return $ps_value;
 	}
 	# ------------------------------------------------------------------------------------------------
