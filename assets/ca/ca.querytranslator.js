@@ -55,6 +55,7 @@ var caUI = caUI || {};
 	 * @returns {String}
 	 */
 	escapeValue = function (value) {
+		if(typeof value !== 'string') return value;
 		return value.replaceAll(/([\-\+&\|!\(\)\{}\[\]\^"'~\*\?:\\])/g, '\\$1');
 	};
 
@@ -214,6 +215,7 @@ var caUI = caUI || {};
 				break;
 			case '*':
 				token = { type: TOKEN_WILDCARD };
+				end = true;
 				break;
 			// Beginning of a quoted phrase, which ends after the next unescaped quote.
 			case '"':
