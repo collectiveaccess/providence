@@ -998,7 +998,7 @@ if($show_entity_controls) {
 				}
 			});
 	<?php
-		}s
+		}
 	}
 	?>
 		jQuery('#<?= $vs_id_prefix; ?>SetChildView').on('click', function(e) {
