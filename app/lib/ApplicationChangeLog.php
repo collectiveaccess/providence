@@ -61,8 +61,9 @@ require_once(__CA_LIB_DIR__."/Db.php");
  	/**
  	 *
  	 */
-	public function getChangeLogForRowForDisplay($t_item, $ps_css_id=null, $pn_user_id=null) {
-		return $this->_getLogDisplayOutputForRow($this->getChangeLogForRow($t_item, array('user_id' => $pn_user_id)), array('id' => $ps_css_id));
+	public function getChangeLogForRowForDisplay($t_item, $ps_css_id=null, $pn_user_id=null, $options=null) {
+		if(!is_array($options)) { $options = []; }
+		return $this->_getLogDisplayOutputForRow($this->getChangeLogForRow($t_item, array_merge($options, ['user_id' => $pn_user_id])), ['id' => $ps_css_id]);
 	}
 	# ----------------------------------------
 	/**
