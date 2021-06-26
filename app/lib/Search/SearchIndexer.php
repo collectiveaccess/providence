@@ -2287,8 +2287,8 @@ if (!$for_current_value_reindex) {
 													$va_dependent_rows[$vs_key] = [
 														'table_num' => $vn_element_table_num,
 														'row_id' => $vn_element_row_id,
-														'field_table_num' => $vn_element_table_num, //$t_dep->tableNum(),
-														'field_row_id' => $vn_element_row_id, //$vn_row_id,
+														'field_table_num' => $vn_element_table_num, 
+														'field_row_id' => $vn_element_row_id, 
 														'field_values' => $va_field_data[$vn_element_row_id],
 														'field_nums' => [],
 														'field_names' => []
