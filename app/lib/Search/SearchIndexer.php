@@ -1371,7 +1371,7 @@ if (!$for_current_value_reindex) {
 
 								$va_new_values = [];
 								$t_item = new ca_list_items();
-								$va_labels = $t_item->getPreferredDisplayLabelsForIDs($va_tmp, array('returnAllLocales' => true));
+								$va_labels = $t_item->getPreferredDisplayLabelsForIDs($va_tmp, ['returnAllTypes' => true, 'returnAllLocales' => true]);
 
 								foreach($va_labels as $vn_label_row_id => $va_labels_per_row) {
 									foreach($va_labels_per_row as $vn_locale_id => $va_label_list) {
@@ -2264,7 +2264,7 @@ if (!$for_current_value_reindex) {
 									// reindex any rows that have authority metadata elements that reference this
 									if (method_exists($t_dep, "getAuthorityElementReferences") && is_array($va_element_references = $t_dep->getAuthorityElementReferences(array('row_id' => $vn_row_id)))) {
 										foreach($va_element_references as $vn_element_table_num => $va_references) {
-											if(!is_array($va_references) || (sizeof($va_references) == 0)) { continue; }
+											if(!is_array($va_references) || (sizeof($va_references) === 0)) { continue; }
 
 											$va_element_fields_to_index = $this->getFieldsToIndex($vn_element_table_num, $vn_element_table_num);
 											$vs_element_table_name = Datamodel::getTableName($vn_element_table_num);
@@ -2287,8 +2287,8 @@ if (!$for_current_value_reindex) {
 													$va_dependent_rows[$vs_key] = [
 														'table_num' => $vn_element_table_num,
 														'row_id' => $vn_element_row_id,
-														'field_table_num' => $t_dep->tableNum(),
-														'field_row_id' => $vn_row_id,
+														'field_table_num' => $vn_element_table_num, //$t_dep->tableNum(),
+														'field_row_id' => $vn_element_row_id, //$vn_row_id,
 														'field_values' => $va_field_data[$vn_element_row_id],
 														'field_nums' => [],
 														'field_names' => []
@@ -2296,8 +2296,7 @@ if (!$for_current_value_reindex) {
 												}
 												foreach($va_element_ids as $vn_element_id) {
 													$va_dependent_rows[$vs_key]['field_nums']['_ca_attribute_'.$vn_element_id] = 'A'.$vn_element_id;
-													// TODO: Undefined variable '$field_num_prefix'
-													$va_dependent_rows[$vs_key]['field_names'][$field_num_prefix.$vn_element_id] = '_ca_attribute_'.$vn_element_id;
+													$va_dependent_rows[$vs_key]['field_names']['A'.$vn_element_id] = '_ca_attribute_'.$vn_element_id;
 													$va_dependent_rows[$vs_key]['indexing_info']['_ca_attribute_'.$vn_element_id] = $va_element_fields_to_index['_ca_attribute_'.$vn_element_id];
 												}
 											}
@@ -2901,6 +2900,9 @@ if (!$for_current_value_reindex) {
 				$vs_deleted_sql = '';
 				if ($pt_subject->hasField('deleted')) {
 					$vs_deleted_sql = "(t0.deleted = 0) AND ";
+				}
+				if($pt_rel->hasField('access') && ($rt = $pt_rel->tableName()) && isset($va_aliases[$rt][0])) {
+					$va_proc_field_list[] = $va_aliases[$rt][0].'.access';
 				}
 				for($i=0; $i < $vn_num_queries_required; $i++) {
 					$vs_joins = '';
