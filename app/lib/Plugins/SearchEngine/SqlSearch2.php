@@ -381,6 +381,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 
 	 	$params = [$subject_tablenum];
 	 	$word_op = '=';
+	 	
+	 	$use_boost = true;
 	 	if (is_array($ap) && $is_blank) {
 	 		$params[] = 0;
 	 		$word_field = 'swi.word_id';
@@ -395,6 +397,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 		$text = str_replace('*', '%', $text);
 	 		$text = str_replace('?', '_', $text);
 	 		$params[] = $text;
+	 		$use_boost = false;
 	 	} else{
 	 		$params[] = $text;
 	 	}
@@ -434,16 +437,28 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	
 	 	$private_sql = ($this->getOption('omitPrivateIndexing') ? ' AND swi.access = 0' : '');
 	 	
-		$qr_res = $this->db->query($x="
-			SELECT swi.row_id, SUM(swi.boost) boost
-			FROM ca_sql_search_word_index swi
-			".(!$is_blank ? 'INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id' : '')."
-			WHERE
-				swi.table_num = ? AND {$word_field} {$word_op} ?
-				{$field_sql}
-				{$private_sql}
-			GROUP BY swi.row_id
-		", $params);
+	 	if($use_boost) {
+			$qr_res = $this->db->query("
+				SELECT swi.row_id, SUM(swi.boost) boost
+				FROM ca_sql_search_word_index swi
+				".(!$is_blank ? 'INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id' : '')."
+				WHERE
+					swi.table_num = ? AND {$word_field} {$word_op} ?
+					{$field_sql}
+					{$private_sql}
+				GROUP BY swi.row_id
+			", $params);
+		} else {
+			$qr_res = $this->db->query("
+				SELECT swi.row_id, 100 boost
+				FROM ca_sql_search_word_index swi
+				".(!$is_blank ? 'INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id' : '')."
+				WHERE
+					swi.table_num = ? AND {$word_field} {$word_op} ?
+					{$field_sql}
+					{$private_sql}
+			", $params);
+		}
 	 	return $this->_arrayFromDbResult($qr_res);
 	}
 	# -------------------------------------------------------
