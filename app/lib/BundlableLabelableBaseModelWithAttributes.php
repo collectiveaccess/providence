@@ -220,7 +220,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		
 			// If validateAllIdnos is set we validate idnos for all records, including hierarchy roots
-			// Default is to let roots have arbitrary idnos
+			// Default is to force root idno's to conform to validation requirements
 			if (!$this->_validateIncomingAdminIDNo(true, !caGetOption('validateAllIdnos', $pa_options, false))) { $vb_error =  true; }
 		
 			if ($vb_error) {			
