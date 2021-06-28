@@ -111,6 +111,7 @@ final class ConfigurationCheck {
 		self::permissionInstallCheck();
 		self::DBLoginQuickCheck();
 		self::tmpDirQuickCheck();
+		self::uploadTmpDirQuickCheck();
 	}
 	# -------------------------------------------------------
 	private static function addError($ps_error) {
@@ -280,6 +281,17 @@ final class ConfigurationCheck {
 			self::addError(_t("Your setup.php file does not include a setting for __CA_SITE_PROTOCOL__. Please update it using the current setup.php-dist as a template."));
 		}
 		
+		return true;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Does a temporary upload dir exist and is it writable?
+	 */
+	public static function uploadTmpDirQuickCheck() {
+		$tmp_dir = ini_get('upload_tmp_dir') ? ini_get('upload_tmp_dir') : sys_get_temp_dir();
+		if (!file_exists($tmp_dir) || !is_writable($tmp_dir)){
+			self::addError(_t("It looks like the directory for temporary upload files is not writable by the webserver. Please change the permissions of %1 and enable the user which runs the webserver to write to this directory.",$tmp_dir));
+		}
 		return true;
 	}
 	# -------------------------------------------------------
