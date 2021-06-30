@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2009 Whirl-i-Gig
+ * Copyright 2007-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -122,6 +122,15 @@
 				$o_notification->addNotification("[{$pn_num}] {$ps_message} ({$ps_context}".($ps_source ? "; {$ps_source}" : '').$vs_stacktrace);
 			}
 			return true;
+		}
+		# ------------------------------------------------------------------
+		public function hasErrorNum(int $error_num, ?string $source=null) : bool {
+			$errors = $this->errors($source);
+			
+			foreach($errors as $e) {
+				if($e->getErrorNumber() == $error_num) { return true; }
+			}
+			return false;
 		}
 		# ------------------------------------------------------------------
 		public function __destruct() {

@@ -2605,9 +2605,12 @@ class ca_users extends BaseModel {
 	 */
 	public function getSavedSearches($pm_table_name_or_num, $ps_type) {
 		if (!($vn_table_num = Datamodel::getTableNum($pm_table_name_or_num))) { return false; }
-		if(!is_array($va_searches = $this->getVar('saved_searches'))) { $va_searches = array(); }
+		if(!is_array($va_searches = $this->getVar('saved_searches'))) { $va_searches = []; }
 	
-		return is_array($va_searches[$vn_table_num][strtolower($ps_type)]) ? $va_searches[$vn_table_num][strtolower($ps_type)] : array();
+		return is_array($va_searches[$vn_table_num][strtolower($ps_type)]) ? array_map(function($v) { 
+			$v['label'] = html_entity_decode($v['label']);
+			return $v;
+		}, $va_searches[$vn_table_num][strtolower($ps_type)]) : array();
 	}
 	# ----------------------------------------
 	# Utils

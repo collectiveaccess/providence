@@ -138,7 +138,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 		//$vn_timestamp = $_REQUEST['form_timestamp'];
 		//unset($_REQUEST['form_timestamp']);
 
-		$vb_we_set_transaction = true;
+		$vb_we_set_transaction = false;
 		if (!$t_instance->inTransaction()) {
 			$t_instance->setTransaction(new Transaction($t_instance->getDb()));
 			$vb_we_set_transaction = true;

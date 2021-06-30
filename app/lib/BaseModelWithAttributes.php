@@ -1844,11 +1844,19 @@
 					unset($pa_bundle_settings['usewysiwygeditor']);	// let null usewysiwygeditor bundle option fall back to metadata element setting
 				}
 				if(!is_array($va_label)) { 
-					$va_label = array('name' => '???', 'description' => '');
+					$va_label = ['name' => '???', 'description' => ''];
 				}
+				
+				$label = (sizeof($va_element_set) > 1) ? $va_label['name'] : '';
+				
+				$show_bundle_codes = $po_request->user->getPreference('show_bundle_codes_in_editor');
+				$bundle_code = $this->tableName().'.'.$t_element->get('element_code').'.'.$va_element['element_code'];
+			
+				$label = ($show_bundle_codes !== 'hide') ? "{$label} <span class='developerBundleCode'>(<a href='#' class='developerBundleCode'>{$bundle_code}</a>)</span>" : $label;
+				
 				$va_elements_by_container[$va_element['parent_id']][] = ($va_element['datatype'] == 0) ? '' : 
 					$vs_br.ca_attributes::attributeHtmlFormElement($va_element, array_merge($pa_bundle_settings, array_merge($pa_options, [
-						'label' => (sizeof($va_element_set) > 1) ? $va_label['name'] : '',
+						'label' => $label,
 						'description' => $va_label['description'],
 						't_subject' => $this,
 						'request' => $po_request,

@@ -4384,7 +4384,7 @@
 						while($qr_res->nextRow()) {
 							if (!($current_table_num = trim($qr_res->get('current_table_num')))) { continue; }
 							if (!($current_row_id = trim($qr_res->get('current_row_id')))) { continue; }
-							if (!($current_type_id = trim($qr_res->get('current_type_id')))) { continue; }
+							//if (!($current_type_id = trim($qr_res->get('current_type_id')))) { continue; }
 							$vs_val = "{$current_table_num}:{$current_type_id}:{$current_row_id}";
 							if ($va_criteria[$vs_val]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
 
