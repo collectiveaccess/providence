@@ -27,6 +27,8 @@
  */ 
 	$vo_result 				= $this->getVar('result');
  	$vo_result_context 		= $this->getVar('result_context');
+ 	
+ 	if(!$this->request->isAjax()) {
  ?>
 	<div class="searchBuilderContainer">
 		<?= $this->render('SearchBuilder/search_controls_html.php'); ?>
@@ -62,7 +64,11 @@
 <?php
 		print $this->render('Results/paging_controls_minimal_html.php');
 	}
+	
+	if(!$this->request->isAjax()) {
 ?>
 </div><!-- end resultbox -->
 	
 <div class="editorBottomPadding"><!-- empty --></div>
+<?php
+	}
