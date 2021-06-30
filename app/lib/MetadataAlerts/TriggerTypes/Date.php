@@ -50,7 +50,7 @@ class Date extends Base {
 				'suffix' => _t('date'),
 				'description' => _t('Set an interval before or after an event in which to trigger a notification. Note that if the event is a date range, the trigger will fire before the beginning of the range or after the end of the range.')
 			],
-			'date_part' => array(
+			'datePart' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,
 				'height' => 1,
