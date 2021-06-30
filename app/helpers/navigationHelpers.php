@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2020 Whirl-i-Gig
+ * Copyright 2007-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -108,6 +108,7 @@
  	define('__CA_NAV_ICON_IS_PRIMARY__', 67);
  	define('__CA_NAV_ICON_CROSSHAIRS__', 68);
  	define('__CA_NAV_ICON_UPLOAD__', 69);
+ 	define('__CA_NAV_ICON_COPY__', 70);
  	
  	/**
  	 * Icon position constants
@@ -890,6 +891,9 @@
 				break;	
 			case __CA_NAV_ICON_UPLOAD__:
 				$vs_fa_class = 'fas fa-upload';
+				break;	
+			case __CA_NAV_ICON_COPY__:
+				$vs_fa_class = 'fa fa-clipboard';
 				break;																					
 			default:
 				print "INVALID CONSTANT $pn_type<br>\n";
