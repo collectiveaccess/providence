@@ -1707,23 +1707,25 @@ class BaseModel extends BaseObject {
 	/**
 	 *
 	 */
-	public function getValuesForExport($pa_options=null) {
-		$va_fields = $this->getFields();
+	public function getValuesForExport($options=null) {
+		$va_data = [];
+		if(caGetOption('includeIntrinsics', $options, true)) {
+			$va_fields = $this->getFields();
 		
-		$va_data = array();
 		
-		$t_list = new ca_lists();
+			$t_list = new ca_lists();
 		
-		// get field values
-		foreach($va_fields as $vs_field) {
-			$vs_value = $this->get($this->tableName().'.'.$vs_field);
+			// get field values
+			foreach($va_fields as $vs_field) {
+				$vs_value = $this->get($this->tableName().'.'.$vs_field);
 			
-			// Convert list item_id's to idnos for export
-			if ($vs_list_code = $this->getFieldInfo($vs_field, 'LIST_CODE')) {
-				$va_item = $t_list->getItemFromListByItemID($vs_list_code, $vs_value);
-				$vs_value = $va_item['idno'];
+				// Convert list item_id's to idnos for export
+				if ($vs_list_code = $this->getFieldInfo($vs_field, 'LIST_CODE')) {
+					$va_item = $t_list->getItemFromListByItemID($vs_list_code, $vs_value);
+					$vs_value = $va_item['idno'];
+				}
+				$va_data[$vs_field] = $vs_value;
 			}
-			$va_data[$vs_field] = $vs_value;
 		}
 		return $va_data;	
 	}
@@ -6080,6 +6082,54 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 * Return text representation for intrinsic field type (FT_TYPE) in a model
+	 *
+	 * @param int $field_type 
+	 *
+	 * @return string or null if type is not defined.
+	 */
+	public static function intrinsicTypeToString(int $field_type) : ?string {
+		switch($field_type) {
+			case FT_NUMBER:
+				return 'Numeric';
+			case FT_TEXT:
+				return 'Text';
+			case FT_TIMESTAMP:
+				return 'Timestamp';
+			case FT_DATETIME:
+				return 'UnixTimestamp';
+			case FT_HISTORIC_DATETIME:
+				return 'HistoricTimestamp';
+			case FT_DATERANGE:
+				return 'UnixDateRange';
+			case FT_HISTORIC_DATERANGE:
+				return 'DateRange';
+			case FT_BIT:
+				return 'Bit';
+			case FT_FILE:
+				return 'File';
+			case FT_MEDIA:
+				return 'Media';
+			case FT_PASSWORD:
+				return 'Password';
+			case FT_VARS:
+				return 'Variables';
+			case FT_TIMECODE:
+				return 'Timecode';
+			case FT_DATE:
+				return 'Date';
+			case FT_HISTORIC_DATE:
+				return 'HistoricDate';
+			case FT_TIME:
+				return 'Time';
+			case FT_TIMERANGE:
+				return 'TimeRange';
+			default:
+				return null;
+		}
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
 	  * Returns display label for element specified by standard "get" bundle code (eg. <table_name>.<field_name> format)
 	  */
 	public function getDisplayLabel($ps_field) {
@@ -9115,6 +9165,8 @@ $pa_options["display_form_field_tips"] = true;
 	 * @param array $pa_options Array of additional options:
 	 *		allowDuplicates = if set to true, attempts to add a relationship that already exists will succeed. Default is false - duplicate relationships will not be created.
 	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to add a duplicate relationship. Default is false - don't set error. addRelationship() will always return false when creation of a duplicate relationship fails, no matter how the setErrorOnDuplicate option is set.
+	 *		useAsRelatedIdOnly = 
+	 *		useAsRelatedIdnoOnly = 
 	 * @return BaseRelationshipModel Loaded relationship model instance on success, false on error.
 	 */
 	public function addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
@@ -9138,14 +9190,12 @@ $pa_options["display_form_field_tips"] = true;
 			$pn_type_id = $pm_type_id;
 		}
 		
-		if (!is_numeric($pn_rel_id)) {
+		if ((!is_numeric($pn_rel_id) && !caGetOption('primaryKeyOnly', $pa_options, false)) || caGetOption('idnoOnly', $pa_options, false)) {
 			if ($t_rel_item = Datamodel::getInstanceByTableName($va_rel_info['related_table_name'], true)) {
 				if ($this->inTransaction()) { $t_rel_item->setTransaction($this->getTransaction()); }
 				if (($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) && $t_rel_item->load(array($vs_idno_fld => $pn_rel_id))) {
 					$pn_rel_id = $t_rel_item->getPrimaryKey();
-				} elseif(!is_numeric($pn_rel_id)) {
-					return false;
-				}
+				} 
 			}
 		}
 		
@@ -9264,6 +9314,9 @@ $pa_options["display_form_field_tips"] = true;
 	 * @param array $pa_options Array of additional options:
 	 *		allowDuplicates = if set to true, attempts to edit a relationship to match one that already exists will succeed. Default is false - duplicate relationships will not be created.
 	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to create a duplicate relationship. Default is false - don't set error. editRelationship() will always return false when editing of a relationship fails, no matter how the setErrorOnDuplicate option is set.
+	*		useAsRelatedIdOnly = 
+	 *		useAsRelatedIdnoOnly = 
+	 *
 	 * @return BaseRelationshipModel Loaded relationship model instance on success, false on error.
 	 */
 	public function editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $pa_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
@@ -9283,7 +9336,8 @@ $pa_options["display_form_field_tips"] = true;
 			$pn_type_id = $pm_type_id;
 		}
 		
-		if (!is_numeric($pn_rel_id)) {
+		
+		if ((!is_numeric($pn_rel_id) && !caGetOption('primaryKeyOnly', $pa_options, false)) || caGetOption('idnoOnly', $pa_options, false)) {
 			if ($t_rel_item = Datamodel::getInstanceByTableName($va_rel_info['related_table_name'], true)) {
 				if ($this->inTransaction()) { $t_rel_item->setTransaction($this->getTransaction()); }
 				if (($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) && $t_rel_item->load(array($vs_idno_fld => $pn_rel_id))) {

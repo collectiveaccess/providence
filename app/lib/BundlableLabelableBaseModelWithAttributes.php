@@ -219,7 +219,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 			}
 		
-			if (!$this->_validateIncomingAdminIDNo(true, true)) { $vb_error =  true; }
+			// If validateAllIdnos is set we validate idnos for all records, including hierarchy roots
+			// Default is to force root idno's to conform to validation requirements
+			if (!$this->_validateIncomingAdminIDNo(true, !caGetOption('validateAllIdnos', $pa_options, false))) { $vb_error =  true; }
 		
 			if ($vb_error) {			
 				// push all attributes onto errored list
@@ -675,7 +677,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$this->opo_idno_plugin_instance->isChild(((($vs_parent_id_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD')) && isset($pa_fields[$vs_parent_id_fld]) && ($pa_fields[$vs_parent_id_fld] > 0)) || ($this->get($vs_parent_id_fld))) ? true : false);
 		
 			if (in_array($this->getProperty('ID_NUMBERING_ID_FIELD'), $pa_fields)) {
-				if (!$this->_validateIncomingAdminIDNo(true, true)) { 
+				if (!$this->_validateIncomingAdminIDNo(true, false)) { 
 					if (!$this->get($vs_parent_id_fld) && isset($pa_fields[$vs_parent_id_fld]) && ($pa_fields[$vs_parent_id_fld] > 0)) {
 						// If we failed to set parent_id and there wasn't a parent_id set already then revert child status in id numbering
 						$this->opo_idno_plugin_instance->isChild(false); 
@@ -6954,13 +6956,11 @@ $pa_options["display_form_field_tips"] = true;
 	 *
 	 */
 	public function validateAdminIDNo($ps_admin_idno) {
-		$va_errors = array();
+		$va_errors = [];
 		if ($this->_CONFIG->get('require_valid_id_number_for_'.$this->tableName()) && sizeof($va_admin_idno_errors = $this->opo_idno_plugin_instance->isValidValue($ps_admin_idno))) {
 			$va_errors[] = join('; ', $va_admin_idno_errors);
-		} else {
-			if (!$this->_CONFIG->get('allow_duplicate_id_number_for_'.$this->tableName()) && sizeof($this->checkForDupeAdminIdnos($ps_admin_idno))) {
-				$va_errors[] = _t("Identifier %1 already exists and duplicates are not permitted", $ps_admin_idno);
-			}
+		} elseif (!$this->_CONFIG->get('allow_duplicate_id_number_for_'.$this->tableName()) && sizeof($this->checkForDupeAdminIdnos($ps_admin_idno))) {
+			$va_errors[] = _t("Identifier %1 already exists and duplicates are not permitted", $ps_admin_idno);
 		}
 		
 		return $va_errors;
