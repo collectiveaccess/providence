@@ -250,22 +250,52 @@ class GraphQLServiceController extends \BaseServiceController {
 	}
 	# -------------------------------------------------------
 	/**
+	 * Return instance of record with specified identifier, where identifier is either an integer primary key
+	 * value or an alphanumeric idno value. 
 	 *
+	 * Integer string values are always tested as primary key values first, then as idno values. In cases where idno 
+	 * values are integer strings, this can result in incorrect resolution. Pass  the 'idnoOnly' option to force 
+	 * resolution against idno values only. Pass the 'primaryKeyOnly' option to force resolution again primary
+	 * key values only.
+	 *
+	 * @param string $table
+	 * @param string $identifer
+	 * @param string|integer $type A type code or type_id to constrain idno-based resolution to. If null, type is ignored in resolution. [Default is null]
+	 * @param array $options Options include:
+	 *		idnoOnly = Only resolve $identifier parameter against idno values. [Default is false]
+	 *		primaryKeyOnly = Only resolve $identifier parameter against primary key values. [Default is false]
+	 *		list = 
+	 *
+	 * @return BaseModel
 	 */
-	protected static function resolveIdentifier(string $table, string $identifier, $type=null)  {
+	protected static function resolveIdentifier(string $table, string $identifier, $type=null, array $options=null)  {
+		if(!is_array($options)) { $options = []; }
 		if(!($t_instance = \Datamodel::getInstance($table, true))) {
 			throw new \ServiceException(_t('Invalid table %1', $table));
 		}
 		
+		$idno_only = caGetOption('idnoOnly', $options, false);
+		$primary_key_only = caGetOption('primaryKeyOnly', $options, false);
+		
 		$rec = null;
-		if(is_numeric($identifier) && ((int)$identifier > 0)) {
+		if(ctype_digit($identifier) && ((int)$identifier > 0) && !$idno_only) {
 			$rec = $table::findAsInstance((int)$identifier);
 		} 
-		$idno_fld = \Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD');
-		if(is_null($rec) && $idno_fld) {
-			$criteria = [$idno_fld => $identifier];
-			if($type) { $criteria['type_id'] = $type; }
-			$rec = $table::findAsInstance($criteria);
+		
+		if(!$primary_key_only) {
+			$idno_fld = \Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD');
+			if(is_null($rec) && $idno_fld) {
+				$criteria = [$idno_fld => $identifier];
+				if($type) { $criteria['type_id'] = $type; }
+				if($list = caGetOption('list', $options, null)) {
+					if($list_id = caGetListID($list)) { 
+						$criteria['list_id'] = $list_id;
+					} else {
+						throw new \ServiceException(_t('Invalid list code %1', $list));
+					}
+				}
+				$rec = $table::findAsInstance($criteria);
+			}
 		}
 		if(is_null($rec)) {
 			throw new \ServiceException(_t('Invalid identifier %1 for table %2', $identifier, $table));

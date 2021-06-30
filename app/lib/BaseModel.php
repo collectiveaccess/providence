@@ -9139,6 +9139,8 @@ $pa_options["display_form_field_tips"] = true;
 	 * @param array $pa_options Array of additional options:
 	 *		allowDuplicates = if set to true, attempts to add a relationship that already exists will succeed. Default is false - duplicate relationships will not be created.
 	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to add a duplicate relationship. Default is false - don't set error. addRelationship() will always return false when creation of a duplicate relationship fails, no matter how the setErrorOnDuplicate option is set.
+	 *		useAsRelatedIdOnly = 
+	 *		useAsRelatedIdnoOnly = 
 	 * @return BaseRelationshipModel Loaded relationship model instance on success, false on error.
 	 */
 	public function addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
@@ -9162,14 +9164,12 @@ $pa_options["display_form_field_tips"] = true;
 			$pn_type_id = $pm_type_id;
 		}
 		
-		if (!is_numeric($pn_rel_id)) {
+		if ((!is_numeric($pn_rel_id) && !caGetOption('primaryKeyOnly', $pa_options, false)) || caGetOption('idnoOnly', $pa_options, false)) {
 			if ($t_rel_item = Datamodel::getInstanceByTableName($va_rel_info['related_table_name'], true)) {
 				if ($this->inTransaction()) { $t_rel_item->setTransaction($this->getTransaction()); }
 				if (($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) && $t_rel_item->load(array($vs_idno_fld => $pn_rel_id))) {
 					$pn_rel_id = $t_rel_item->getPrimaryKey();
-				} elseif(!is_numeric($pn_rel_id)) {
-					return false;
-				}
+				} 
 			}
 		}
 		
@@ -9288,6 +9288,9 @@ $pa_options["display_form_field_tips"] = true;
 	 * @param array $pa_options Array of additional options:
 	 *		allowDuplicates = if set to true, attempts to edit a relationship to match one that already exists will succeed. Default is false - duplicate relationships will not be created.
 	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to create a duplicate relationship. Default is false - don't set error. editRelationship() will always return false when editing of a relationship fails, no matter how the setErrorOnDuplicate option is set.
+	*		useAsRelatedIdOnly = 
+	 *		useAsRelatedIdnoOnly = 
+	 *
 	 * @return BaseRelationshipModel Loaded relationship model instance on success, false on error.
 	 */
 	public function editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $pa_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
@@ -9307,7 +9310,8 @@ $pa_options["display_form_field_tips"] = true;
 			$pn_type_id = $pm_type_id;
 		}
 		
-		if (!is_numeric($pn_rel_id)) {
+		
+		if ((!is_numeric($pn_rel_id) && !caGetOption('primaryKeyOnly', $pa_options, false)) || caGetOption('idnoOnly', $pa_options, false)) {
 			if ($t_rel_item = Datamodel::getInstanceByTableName($va_rel_info['related_table_name'], true)) {
 				if ($this->inTransaction()) { $t_rel_item->setTransaction($this->getTransaction()); }
 				if (($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) && $t_rel_item->load(array($vs_idno_fld => $pn_rel_id))) {

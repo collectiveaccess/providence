@@ -29,9 +29,21 @@ function convertCriterionToFindSpec(array $criterion) : array {
 	} else {
 		$v = $criterion['value'];
 	}
-	return [
-		$criterion['name'] => [
-			$op, $v
-		]
-	];
+	
+	$path = explode('.', $criterion['name']);
+	if(\Datamodel::tableExists($path[0])) { array_shift($path); }
+	
+	if(sizeof($path) > 1) {
+		return [
+			$path[0] => [
+				$path[1] => [$op, $v]
+			]
+		];
+	} else {
+		return [
+			$path[0] => [
+				$op, $v
+			]
+		];
+	}
 }

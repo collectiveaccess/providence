@@ -108,14 +108,20 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						[
 							'name' => 'existingRecordPolicy',
 							'type' => Type::string(),
-							'default' => 'IGNORE',
-							'description' => _t('Policy if record with same identifier already exists. Values are: NONE (ignore existing records, REPLACE (delete existing and create new), MERGE (execute as edit), SKIP (do not perform add).')
+							'default' => 'SKIP',
+							'description' => _t('Policy if record with same identifier already exists. Values are: IGNORE (ignore existing records, REPLACE (delete existing and create new), MERGE (execute as edit), SKIP (do not perform add).')
 						],
 						[
 							'name' => 'ignoreType',
 							'type' => Type::boolean(),
 							'default' => false,
 							'description' => _t('Ignore record type when looking for existing records.')
+						],
+						[
+							'name' => 'list',
+							'type' => Type::string(),
+							'default' => false,
+							'description' => _t('List to add records to (when inserting list items.')
 						],
 					],
 					'resolve' => function ($rootValue, $args) {
@@ -132,11 +138,11 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						
 						if(!$args['idno'] && $args['identifier']) { $args['idno'] = $args['identifier']; }
 						
-						$records = (is_array($args['records']) && sizeof($args['records'])) ? $args['records'] : [
+						$records = (is_array($args['records']) && sizeof($args['records'])) ? $args['records'] : [[
 							'idno' => $args['idno'],
 							'type' => $args['type'],
 							'bundles' => $args['bundles']
-						];
+						]];
 						
 						$c = 0;
 						$last_id = null;
@@ -144,7 +150,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							if(!$record['idno'] && $record['identifier']) { $record['idno'] = $record['identifier']; }
 							// Does record already exist?
 							try {
-								$instance = (in_array($erp, ['SKIP', 'REPLACE', 'MERGE'])) ? self::resolveIdentifier($table, $record['idno'], $ignoreType ? null : $record['type']) : null;
+								$instance = (in_array($erp, ['SKIP', 'REPLACE', 'MERGE'])) ? self::resolveIdentifier($table, $record['idno'], $ignoreType ? null : $record['type'], ['idnoOnly' => true, 'list' => $args['list']]) : null;
 							} catch(\ServiceException $e) {
 								$instance = null;	// No matching record
 							}
@@ -153,7 +159,6 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 								case 'SKIP':
 									if($instance) { 
 										$last_id = $instance->getPrimaryKey(); 
-										print "SKIP $last_id\n";
 										continue(2);
 									}
 									break;
@@ -184,11 +189,15 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 								$instance = new $table();
 								$instance->set($idno_fld, $record['idno']);
 								$instance->set('type_id', $record['type']);
+								if($instance->hasField('list_id') && ($instance->primaryKey() !== 'list_id')) { 
+									if(!$args['list']) { throw new \ServiceException(_t('List must be specified')); }
+									$instance->set('list_id', $args['list']); 
+								}
 							
 								if($insert_mode === 'HIERARCHICAL') {
 									$instance->set('parent_id', $last_id);
 								}
-								$ret = $instance->insert();
+								$ret = $instance->insert(['validateAllIdnos' => true]);
 							}
 							if(!$ret) {
 								foreach($instance->errors() as $e) {
@@ -234,6 +243,16 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							'description' => _t('Type code for new record. (Eg. ca_objects)')
 						],
 						[
+							'name' => 'id',
+							'type' => Type::int(),
+							'description' => _t('Numeric database id value of record to edit.')
+						],
+						[
+							'name' => 'idno',
+							'type' => Type::string(),
+							'description' => _t('Alphanumeric idno value of record to edit.')
+						],
+						[
 							'name' => 'identifier',
 							'type' => Type::string(),
 							'description' => _t('Alphanumeric idno value or numeric database id of record to edit.')
@@ -247,7 +266,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'records',
 							'type' => Type::listOf(EditSchema::get('Record')),
 							'description' => _t('List of records to edit')
-						],
+						]
 					],
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
@@ -257,18 +276,20 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						$table = $args['table'];
 						$idno_fld = \Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD');
 						
-						if(!$args['identifier'] && $args['idno']) { $args['identifier'] = $args['idno']; }
-						
 						$records = (is_array($args['records']) && sizeof($args['records'])) ? $args['records'] : [
 							'identifier' => $args['identifier'],
+							'id' => $args['id'],
+							'idno' => $args['idno'],
 							'type' => $args['type'],
-							'bundles' => $args['bundles']
+							'bundles' => $args['bundles'],
+							'options' => $opts
 						];
 						
 						$c = 0;
+						$opts = [];
 						foreach($records as $record) {
-							if(!$record['identifier'] && $record['idno']) { $record['identifier'] = $record['idno']; }
-							if(!($instance = self::resolveIdentifier($table, $record['identifier'], $record['type']))) {
+							list($identifier, $opts) = \GraphQLServices\Helpers\Edit\resolveParams($record);
+							if(!($instance = self::resolveIdentifier($table, $identifier, $record['type'], $opts))) {
 								$errors[] = [
 									'code' => 100,	// TODO: real number?
 									'message' => _t('Invalid identifier'),
@@ -304,6 +325,16 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							'description' => _t('Table name. (Eg. ca_objects)')
 						],
 						[
+							'name' => 'id',
+							'type' => Type::int(),
+							'description' => _t('Numeric database id value of record to edit.')
+						],
+						[
+							'name' => 'idno',
+							'type' => Type::string(),
+							'description' => _t('Alphanumeric idno value of record to edit.')
+						],
+						[
 							'name' => 'identifier',
 							'type' => Type::string(),
 							'description' => _t('Alphanumeric idno value or numeric database id of record to delete.')
@@ -316,8 +347,17 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						
 						$table = $args['table'];
 						
+						$opts = [];
+						if(isset($args['id']) && ($args['id'] > 0)) {
+							$args['identifier'] = $args['id'];
+							$opts['primaryKeyOnly'] = true;
+						} elseif(isset($args['idno']) && (strlen($args['idno']) > 0)) {
+							$args['identifier'] = $args['idno'];
+							$opts['idnoOnly'] = true;
+						}
+						
 						$c = 0;
-						if(!($instance = self::resolveIdentifier($table, $args['identifier']))) {
+						if(!($instance = self::resolveIdentifier($table, $args['identifier'], null, $opts))) {
 							$errors[] = [
 								'code' => 100,	// TODO: real number?
 								'message' => _t('Invalid identifier'),
@@ -357,6 +397,16 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							'description' => _t('Subject table name. (Eg. ca_objects)')
 						],
 						[
+							'name' => 'subjectId',
+							'type' => Type::int(),
+							'description' => _t('Numeric database id of record to use as relationship subject.')
+						],
+						[
+							'name' => 'subjectIdno',
+							'type' => Type::string(),
+							'description' => _t('Alphanumeric idno value to use as relationship subject.')
+						],
+						[
 							'name' => 'subjectIdentifier',
 							'type' => Type::string(),
 							'description' => _t('Alphanumeric idno value or numeric database id of record to use as relationship subject.')
@@ -365,6 +415,16 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'target',
 							'type' => Type::string(),
 							'description' => _t('Target table name. (Eg. ca_objects)')
+						],
+						[
+							'name' => 'targetId',
+							'type' => Type::int(),
+							'description' => _t('Numeric database id of record to use as relationship target.')
+						],
+						[
+							'name' => 'targetIdno',
+							'type' => Type::string(),
+							'description' => _t('Alphanumeric idno value of record to use as relationship target.')
 						],
 						[
 							'name' => 'targetIdentifier',
@@ -393,7 +453,8 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						$reltype = $args['relationshipType'];
 						$bundles = caGetOption('bundles', $args, [], ['castTo' => 'array']);
 						
-						if(!($subject = self::resolveIdentifier($subject, $args['subjectIdentifier']))) {
+						list($subject_identifier, $opts) = \GraphQLServices\Helpers\Edit\resolveParams($args, 'subject');
+						if(!($subject = self::resolveIdentifier($subject, $subject_identifier, null, $opts))) {
 							throw new \ServiceException(_t('Invalid subject identifier'));
 						}
 						
@@ -406,7 +467,8 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						$effective_date = \GraphQLServices\Helpers\Edit\extractValueFromBundles($bundles, ['effective_date']);
 						
 						$c = 0;
-						if(!($rel = $subject->addRelationship($target, $args['targetIdentifier'], $reltype, $effective_date))) {
+						list($target_identifier, $opts) = \GraphQLServices\Helpers\Edit\resolveParams($args, 'target');
+						if(!($rel = $subject->addRelationship($target, $target_identifier, $reltype, $effective_date, null, null, null, $opts))) {
 							$errors[] = [
 								'code' => 100,	// TODO: real number?
 								'message' => _t('Could not create relationship: %1', join('; ', $subject->getErrors())),
@@ -446,6 +508,16 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							'description' => _t('Subject table name. (Eg. ca_objects)')
 						],
 						[
+							'name' => 'subjectId',
+							'type' => Type::int(),
+							'description' => _t('Numeric database id of record to use as relationship subject.')
+						],
+						[
+							'name' => 'subjectIdno',
+							'type' => Type::string(),
+							'description' => _t('Alphanumeric idno value to use as relationship subject.')
+						],
+						[
 							'name' => 'subjectIdentifier',
 							'type' => Type::string(),
 							'description' => _t('Alphanumeric idno value or numeric database id of record to use as relationship subject.')
@@ -454,6 +526,16 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'target',
 							'type' => Type::string(),
 							'description' => _t('Target table name. (Eg. ca_objects)')
+						],
+						[
+							'name' => 'targetId',
+							'type' => Type::int(),
+							'description' => _t('Numeric database id of record to use as relationship target.')
+						],
+						[
+							'name' => 'targetIdno',
+							'type' => Type::string(),
+							'description' => _t('Alphanumeric idno value of record to use as relationship target.')
 						],
 						[
 							'name' => 'targetIdentifier',
@@ -489,7 +571,8 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						// rel type set?
 						$new_rel_type = \GraphQLServices\Helpers\Edit\extractValueFromBundles($bundles, ['relationship_type']);
 						
-						if(!($s = self::resolveIdentifier($subject, $args['subjectIdentifier']))) {
+						list($subject_identifier, $opts) = \GraphQLServices\Helpers\Edit\resolveParams($args, 'subject');
+						if(!($s = self::resolveIdentifier($subject, $subject_identifier, $opts))) {
 							throw new \ServiceException(_t('Subject does not exist'));
 						}
 						if (!$s->isSaveable($u)) {
@@ -497,7 +580,8 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						}
 						
 						if(!($rel_id = $args['id'])) {		
-							if(!($t = self::resolveIdentifier($target, $args['targetIdentifier']))) {
+							list($target_identifier, $opts) = \GraphQLServices\Helpers\Edit\resolveParams($args, 'target');
+							if(!($t = self::resolveIdentifier($target, $target_identifier, $opts))) {
 								throw new \ServiceException(_t('Target does not exist'));
 							}
 							
@@ -550,6 +634,16 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							'description' => _t('Subject table name. (Eg. ca_objects)')
 						],
 						[
+							'name' => 'subjectId',
+							'type' => Type::int(),
+							'description' => _t('Numeric database id of record to use as relationship subject.')
+						],
+						[
+							'name' => 'subjectIdno',
+							'type' => Type::string(),
+							'description' => _t('Alphanumeric idno value to use as relationship subject.')
+						],
+						[
 							'name' => 'subjectIdentifier',
 							'type' => Type::string(),
 							'description' => _t('Alphanumeric idno value or numeric database id of record to use as relationship subject.')
@@ -558,6 +652,16 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'target',
 							'type' => Type::string(),
 							'description' => _t('Target table name. (Eg. ca_objects)')
+						],
+						[
+							'name' => 'targetId',
+							'type' => Type::int(),
+							'description' => _t('Numeric database id of record to use as relationship target.')
+						],
+						[
+							'name' => 'targetIdno',
+							'type' => Type::string(),
+							'description' => _t('Alphanumeric idno value of record to use as relationship target.')
 						],
 						[
 							'name' => 'targetIdentifier',
@@ -579,8 +683,8 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						$subject = $args['subject'];
 						$target = $args['target'];
 						
-						
-						if(!($s = self::resolveIdentifier($subject, $args['subjectIdentifier']))) {
+						list($subject_identifier, $opts) = \GraphQLServices\Helpers\Edit\resolveParams($args, 'subject');
+						if(!($s = self::resolveIdentifier($subject, $subject_identifier, $opts))) {
 							throw new \ServiceException(_t('Invalid subject identifier'));
 						}
 						if (!$s->isSaveable($u)) {
@@ -590,7 +694,8 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						if(!($rel_id = $args['id'])) {		
 							$rel_type = $args['relationshipType'];
 							
-							if(!($t = self::resolveIdentifier($target, $args['targetIdentifier']))) {
+							list($target_identifier, $opts) = \GraphQLServices\Helpers\Edit\resolveParams($args, 'target');
+							if(!($t = self::resolveIdentifier($target, $target_identifier, $opts))) {
 								throw new \ServiceException(_t('Invalid target identifier'));
 							}
 							
@@ -633,6 +738,16 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							'description' => _t('Subject table name. (Eg. ca_objects)')
 						],
 						[
+							'name' => 'subjectId',
+							'type' => Type::int(),
+							'description' => _t('Numeric database id of record to use as relationship subject.')
+						],
+						[
+							'name' => 'subjectIdno',
+							'type' => Type::string(),
+							'description' => _t('Alphanumeric idno value to use as relationship subject.')
+						],
+						[
 							'name' => 'subjectIdentifier',
 							'type' => Type::string(),
 							'description' => _t('Alphanumeric idno value or numeric database id of record to use as relationship subject.')
@@ -663,7 +778,8 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						$target = $args['target'];
 						
 						
-						if(!($s = self::resolveIdentifier($subject, $args['subjectIdentifier']))) {
+						list($subject_identifier, $opts) = \GraphQLServices\Helpers\Edit\resolveParams($args, 'subject');
+						if(!($s = self::resolveIdentifier($subject, $subject_identifier, $opts))) {
 							throw new \ServiceException(_t('Invalid subject identifier'));
 						}
 						if (!$s->isSaveable($u)) {
@@ -745,6 +861,9 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							if(in_array($val['name'], $label_fields)) { $label_values[$val['name']] = $val['value']; }
 						}
 					} elseif(isset($b['value'])) {
+						if($label_instance->tableName() === 'ca_list_item_labels') {
+							$label_values['name_plural'] = $b['value'];
+						}
 						$label_values[$label_instance->getDisplayField()] = $b['value'];
 					}
 					$locale = caGetOption('locale', $b, ca_locales::getDefaultCataloguingLocale());

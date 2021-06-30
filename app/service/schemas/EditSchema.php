@@ -171,6 +171,11 @@ class EditSchema extends \GraphQLServices\GraphQLSchema {
 						'description' => _t('Type code for new record. (Eg. ca_objects)')
 					],
 					[
+						'name' => 'id',
+						'type' => Type::int(),
+						'description' => _t('Integer id value for existing record.')
+					],
+					[
 						'name' => 'idno',
 						'type' => Type::string(),
 						'description' => _t('Alphanumeric idno value for new record.')

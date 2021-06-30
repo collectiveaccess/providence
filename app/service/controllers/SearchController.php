@@ -117,7 +117,7 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 						
 						// Check user privs
 						// TODO: add GraphQL-specific access check?
-						if(!$u->canDoAction("can_search_{$table}")) {
+						if(!in_array($table, ['ca_list_items', 'ca_lists'], true) && !$u->canDoAction("can_search_{$table}")) {
 							throw new \ServiceException(_t('Access denied for table: %1', $table));
 						}
 						
@@ -198,7 +198,7 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 						
 						// Check user privs
 						// TODO: add GraphQL-specific access check?
-						if(!$u->canDoAction("can_search_{$table}")) {
+						if(!in_array($table, ['ca_list_items', 'ca_lists'], true) && !$u->canDoAction("can_search_{$table}")) {
 							throw new \ServiceException(_t('Access denied for table: %1', $table));
 						}
 						
@@ -206,7 +206,9 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 							$args['restrictToTypes'] = [$args['restrictToTypes']];
 						}
 						
-						$qr = $table::find($z=\GraphQLServices\Helpers\Search\convertCriteriaToFindSpec($args['criteria']), ['returnAs' => 'searchResult', 'allowWildcards' => true, 'restrictToTypes' => $args['restrictToTypes']]);
+						if(!($qr = $table::find($z=\GraphQLServices\Helpers\Search\convertCriteriaToFindSpec($args['criteria']), ['returnAs' => 'searchResult', 'allowWildcards' => true, 'restrictToTypes' => $args['restrictToTypes']]))) {
+							throw new \ServiceException(_t('No results for table: %1', $table));
+						}
 					
 						$rec = \Datamodel::getInstance($table, true);
 						
