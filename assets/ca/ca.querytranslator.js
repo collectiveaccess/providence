@@ -55,7 +55,8 @@ var caUI = caUI || {};
 	 * @returns {String}
 	 */
 	escapeValue = function (value) {
-		return value.replace(/([\-\+&\|!\(\)\{}\[\]\^"'~\*\?:\\])/, '\\$1');
+		if(typeof value !== 'string') return value;
+		return value.replaceAll(/([\-\+&\|!\(\)\{}\[\]\^"'~\*\?:\\])/g, '\\$1');
 	};
 
 
@@ -75,22 +76,14 @@ var caUI = caUI || {};
 	 * Convert a set of rules from the jQuery query builder into a CA search query.  Performs the inverse operation to
 	 * `convertSearchQueryToQueryBuilderRules`.
 	 * @param {Object} ruleSet
+	 * @param ueNegationSign
+	 * @param useLabels
+	 *
 	 * @returns {String}
 	 */
 	caUI.convertQueryBuilderRuleSetToSearchQuery = function (ruleSet, useNegationSign=false, useLabels=null) {
 		var negation, prefix;
 		if (ruleSet.condition && ruleSet.rules) {
-		    switch(ruleSet.condition) {
-		        case 'AND':
-		            condition = 'AND';
-		            break;
-		        case 'OR':
-		            condition = 'OR';
-		            break;
-		        default:
-		            condition = '';
-		    }
-		    
 		    // The CA Lucene parser does not allow signs (+/-) and booleans (AND/OR/NOT) in the same subquery. We handle this
 		    // by using booleans exclusively. However standalone NOT subqueries (Ex. NOT ca_objects.idno:1975.001) will only
 		    // work with signs, so we test for standalone NOTs here and force use of signs.
@@ -102,8 +95,7 @@ var caUI = caUI || {};
 		    for(var i in  ruleSet.rules) {
 		        acc.push(caUI.convertQueryBuilderRuleSetToSearchQuery(ruleSet.rules[i], useNegationSign, useLabels));
 		    }
-		    
-			return '(' + acc.join(' ' + condition + ' ') + ')';
+			return '(' + acc.join(' ' + ruleSet.condition + ' ') + ')';
 		}
 		if (ruleSet.operator && ruleSet.field) {
 		    var f = useLabels ? fieldToLabel(useLabels, ruleSet.field) : ruleSet.field;
@@ -214,6 +206,7 @@ var caUI = caUI || {};
 				break;
 			case '*':
 				token = { type: TOKEN_WILDCARD };
+				end = true;
 				break;
 			// Beginning of a quoted phrase, which ends after the next unescaped quote.
 			case '"':

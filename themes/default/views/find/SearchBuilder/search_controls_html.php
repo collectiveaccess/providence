@@ -218,7 +218,15 @@
 		// Set up query builder UI
 		var opts = <?= json_encode($this->getVar('options')); ?>;
 		opts['rules'] = caUI.convertSearchQueryToQueryBuilderRuleSet(jQuery('#SearchBuilderInput').val().replace(/\\(.)/mg, "\\$1"));
-	  	jQuery('#searchBuilder').queryBuilder(opts)
-			.on(caGetSearchQueryBuilderUpdateEvents(), caSetSearchInputQueryFromQueryBuilder);
+		
+		try {
+			jQuery('#searchBuilder').queryBuilder(opts)
+				.on(caGetSearchQueryBuilderUpdateEvents(), caSetSearchInputQueryFromQueryBuilder);
+		} catch (e) {
+			// Reset with no rules after initialization exception (caused by now-invalid config)
+			jQuery('#searchBuilder').queryBuilder('destroy');
+			jQuery('#searchBuilder').queryBuilder(jQuery.extend(opts, {'rules': null }))
+				.on(caGetSearchQueryBuilderUpdateEvents(), caSetSearchInputQueryFromQueryBuilder);
+		}
 	});
 </script>
