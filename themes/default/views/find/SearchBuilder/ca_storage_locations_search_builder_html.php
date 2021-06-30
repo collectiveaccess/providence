@@ -42,6 +42,7 @@
 	</div>
  	<div id="resultBox">
 <?php
+	}
 	if($vo_result) {
 		$vs_view = $this->getVar('current_view');
 		if ($vo_result->numHits() == 0) { $vs_view = 'no_results'; }
