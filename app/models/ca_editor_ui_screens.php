@@ -1675,7 +1675,16 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => '0',
 										'label' => _t('Hide "Add to loan" controls'),
+										'hideOnSelect' => ['loan_control_label'],
 										'description' => _t('Check this option if you want to hide the "Add to loan" controls in this bundle placement.')
+									),
+									'loan_control_label' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 1,
+										'label' => _t('"Add to loan" control label text'),
+										'description' => _t('Text to label "Add to loan" control with. If omitted a default label will be used.')
 									),
 									'hide_add_to_movement_controls' => array(
 										'formatType' => FT_NUMBER,
@@ -1684,7 +1693,25 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => '0',
 										'label' => _t('Hide "Add to movement" controls'),
+										'hideOnSelect' => ['movement_control_label', 'always_create_new_movement'],
 										'description' => _t('Check this option if you want to hide the "Add to movement" controls in this bundle placement.')
+									),
+									'always_create_new_movement' => array(
+										'formatType' => FT_NUMBER,
+										'displayType' => DT_CHECKBOXES,
+										'width' => 10, 'height' => 1,
+										'takesLocale' => false,
+										'default' => '0',
+										'label' => _t('Always create new movement?'),
+										'description' => _t('Check this option if you want to only create new movements when recording location. When this option is set linking to existing movements is not possible.')
+									),
+									'movement_control_label' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 1,
+										'label' => _t('"Add to movement" control label text'),
+										'description' => _t('Text to label "Add to movement" control with. If omitted a default label will be used.')
 									),
 									'hide_update_location_controls' => array(
 										'formatType' => FT_NUMBER,
@@ -1693,7 +1720,16 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => '0',
 										'label' => _t('Hide "Update Location" controls'),
+										'hideOnSelect' => ['update_location_control_label'],
 										'description' => _t('Check this option if you want to hide the "Update Location" controls in this bundle placement.')
+									),
+									'update_location_control_label' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 1,
+										'label' => _t('"Update location" control label text'),
+										'description' => _t('Text to label "Update location" control with. If omitted a default label will be used.')
 									),
 									'hide_return_to_home_location_controls' => array(
 										'formatType' => FT_NUMBER,
@@ -1702,7 +1738,16 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => '0',
 										'label' => _t('Hide "Return to Home Location" controls'),
+										'hideOnSelect' => ['return_to_home_location_control_label'],
 										'description' => _t('Check this option if you want to hide the "Return to Home Location" controls in this bundle placement.')
+									),
+									'return_to_home_location_control_label' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 1,
+										'label' => _t('"Return to home location" control label text'),
+										'description' => _t('Text to label "Return to home location" control with. If omitted a default label will be used.')
 									),
 									'hide_add_to_occurrence_controls' => array(
 										'formatType' => FT_NUMBER,
@@ -1711,8 +1756,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => '0',
 										'label' => _t('Hide "Add to" occurrence controls'),
-										'description' => _t('Check this option if you want to hide the "Add to" occurrence controls in this bundle placement.'),
-										'hideOnSelect' => ['add_to_occurrence_types']
+										'description' => _t('Check this option if you want to hide the "Add to occurrence" controls in this bundle placement.'),
+										'hideOnSelect' => ['add_to_occurrence_types', 'occurrence_control_label']
 									),
 									'add_to_occurrence_types' => array(
 										'formatType' => FT_TEXT,
@@ -1722,8 +1767,16 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'default' => '',
 										'multiple' => true,
 										'width' => "475px", 'height' => "75px",
-										'label' => _t('Show "Add to" occurrence controls for'),
+										'label' => _t('Show "Add to occurrence" controls for'),
 										'description' => ''
+									),
+									'occurrence_control_label' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 1,
+										'label' => _t('"Add to occurrence" control label text'),
+										'description' => _t('Text to label "Add to occurrence" control with. If omitted a default label will be used.')
 									),
 									'hide_add_to_collection_controls' => array(
 										'formatType' => FT_NUMBER,
@@ -1732,6 +1785,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => '0',
 										'label' => _t('Hide "Add to collection" controls'),
+										'hideOnSelect' => ['add_to_collection_types', 'collection_control_label'],
 										'description' => _t('Check this option if you want to hide the "Add to collection" controls in this bundle placement.')
 									),
 									'add_to_collection_types' => array(
@@ -1745,6 +1799,14 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Show "Add to" collection controls for'),
 										'description' => ''
 									),
+									'collection_control_label' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 1,
+										'label' => _t('"Add to collection" control label text'),
+										'description' => _t('Text to label "Add to collection" control with. If omitted a default label will be used.')
+									),
 									'hide_add_to_entity_controls' => array(
 										'formatType' => FT_NUMBER,
 										'displayType' => DT_CHECKBOXES,
@@ -1752,6 +1814,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => '0',
 										'label' => _t('Hide "Add to entity" controls'),
+										'hideOnSelect' => ['add_to_entity_types', 'entity_control_label'],
 										'description' => _t('Check this option if you want to hide the "Add to entity" controls in this bundle placement.')
 									),
 									'add_to_entity_types' => array(
@@ -1762,8 +1825,16 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'default' => '',
 										'multiple' => true,
 										'width' => "475px", 'height' => "75px",
-										'label' => _t('Show "Add to" entity controls for'),
+										'label' => _t('Show "Add to entity" controls for'),
 										'description' => ''
+									),
+									'entity_control_label' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 1,
+										'label' => _t('"Add to entity" control label text'),
+										'description' => _t('Text to label "Add to entity" control with. If omitted a default label will be used.')
 									),
 									'hide_add_to_object_controls' => array(
 										'formatType' => FT_NUMBER,
@@ -1772,7 +1843,16 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => '0',
 										'label' => _t('Hide "Add to object" controls'),
+										'hideOnSelect' => ['object_control_label'],
 										'description' => _t('Check this option if you want to hide the "Add to object" controls in this bundle placement.')
+									),
+									'object_control_label' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 1,
+										'label' => _t('"Add to object" control label text'),
+										'description' => _t('Text to label "Add to object" control with. If omitted a default label will be used.')
 									),
 									'useHierarchicalBrowser' => array(
 										'formatType' => FT_TEXT,

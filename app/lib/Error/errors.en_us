@@ -257,3 +257,6 @@
 3500 = Access denied
 3510 = Plugin does not exist
 3520 = Command does not exist
+
+# --- Location tracking errors
+3600 = Cannot create movement

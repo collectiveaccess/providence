@@ -287,6 +287,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		
+		if(caGetOption('hooks', $pa_options, true)) {
+			$this->opo_app_plugin_manager->hookInsertItem(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'is_insert' => true));
+		}
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
@@ -353,6 +356,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						
 		SearchResult::clearResultCacheForRow($this->tableName(), $this->getPrimaryKey());
 
+		if(caGetOption('hooks', $pa_options, true)) {
+			$this->opo_app_plugin_manager->hookUpdateItem(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'is_insert' => false));
+		}
 		return $vn_rc;
 	}	
 	# ------------------------------------------------------------------
@@ -1015,39 +1021,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		// Create instance of idno numbering plugin (if table supports it)
 		if ($vs_field = $this->getProperty('ID_NUMBERING_ID_FIELD')) {
 			if (!$vn_type_id) { $vn_type_id = null; }
-			$va_types = array();
-			$o_db = $this->getDb();		// have to do direct query here... if we use ca_list_items model we'll just endlessly recurse
-			
-			if ($vn_type_id) {
-				
-				$qr_res = $o_db->query("
-					SELECT idno, list_id, hier_left, hier_right 
-					FROM ca_list_items 
-					WHERE 
-						item_id = ?"
-					, (int)$vn_type_id);
-					
-				if ($qr_res->nextRow()) {
-					if ($vn_list_id = $qr_res->get('list_id')) {
-						$vn_hier_left 		= $qr_res->get('hier_left');
-						$vn_hier_right 		= $qr_res->get('hier_right');
-						$vs_idno 			= $qr_res->get('idno');
-						$qr_res = $o_db->query("
-							SELECT idno, parent_id
-							FROM ca_list_items 
-							WHERE 
-								(list_id = ? AND hier_left < ? AND hier_right > ?)", 
-						(int)$vn_list_id, (int)$vn_hier_left, (int)$vn_hier_right);
-						
-						while($qr_res->nextRow()) {
-							if (!$qr_res->get('parent_id')) { continue; }
-							$va_types[] = $qr_res->get('idno');
-						}
-						$va_types[] = $vs_idno;
-						$va_types = array_reverse($va_types);
-					}
-				}
-			}
+			//$va_types = array();
+			$va_types = $vn_type_id ? caMakeTypeList($this->tableName(), [$vn_type_id]) : null;
 			$this->opo_idno_plugin_instance = IDNumbering::newIDNumberer($this->tableName(), $va_types, null, $o_db);
 		} else {
 			$this->opo_idno_plugin_instance = null;
@@ -1169,24 +1144,30 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  		// Is row loaded?
  		if (!$this->getPrimaryKey()) { return false; }
  		
+ 		$table = $this->tableName();
+ 		$config = $this->getAppConfig();
+ 		
+ 		if($config->get("{$table}_disable_delete")) { return false; }
+ 		if($config->get("{$table}_".$this->getTypeCode()."_disable_delete")) { return false; }
+ 		
  		// Check type restrictions
- 		if ((bool)$this->getAppConfig()->get('perform_type_access_checking')) {
-			$vn_type_access = $t_user->getTypeAccessLevel($this->tableName(), $this->getTypeID());
+ 		if ((bool)$config->get('perform_type_access_checking')) {
+			$vn_type_access = $t_user->getTypeAccessLevel($table, $this->getTypeID());
 			if ($vn_type_access != __CA_BUNDLE_ACCESS_EDIT__) {
 				return false;
 			}
 		}
 		
 		// Check source restrictions
- 		if ((bool)$this->getAppConfig()->get('perform_source_access_checking')) {
-			$vn_source_access = $t_user->getSourceAccessLevel($this->tableName(), $this->getSourceID());
+ 		if ((bool)$config->get('perform_source_access_checking')) {
+			$vn_source_access = $t_user->getSourceAccessLevel($table, $this->getSourceID());
 			if ($vn_source_access < __CA_BUNDLE_ACCESS_EDIT__) {
 				return false;
 			}
 		}
 		
 		// Check item level restrictions
-		if ((bool)$this->getAppConfig()->get('perform_item_level_access_checking') && $this->getPrimaryKey()) {
+		if ((bool)$config->get('perform_item_level_access_checking') && $this->getPrimaryKey()) {
 			$vn_item_access = $this->checkACLAccessForUser($t_user);
 			if ($vn_item_access < __CA_ACL_EDIT_DELETE_ACCESS__) {
 				return false;
@@ -1194,7 +1175,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
  		// Check actions
- 		if (!$this->getPrimaryKey() || !$t_user->canDoAction('can_delete_'.$this->tableName())) {
+ 		if (!$this->getPrimaryKey() || !$t_user->canDoAction("can_delete_{$table}")) {
  			return false;
  		}
  		
@@ -1424,7 +1405,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		
 		// Bundle names for attributes are element codes. They may be prefixed with 'ca_attribute_' in older installations.
-		// Since various functions tak straight element codes we have to strip the prefix here
+		// Since various functions take straight element codes we have to strip the prefix here
 		$ps_bundle_name_proc = str_replace("ca_attribute_", "", $ps_bundle_name);
 		$va_violations = null;
 		
@@ -3236,6 +3217,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$o_view->setVar('relationship_types', $t_item_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
 			$o_view->setVar('relationship_types_by_sub_type', $t_item_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
 		}
+
 		$o_view->setVar('t_subject', $this);
 		$va_initial_values = $this->getRelatedBundleFormValues($po_request, $ps_form_name, $ps_related_table, $ps_placement_code, $pa_bundle_settings, $pa_options);
 
@@ -4951,7 +4933,7 @@ if (!$vb_batch) {
 					        Session::setVar("{$vs_f}_showChildHistory", (bool)$pb_show_child_history);
 					    }
 					    
-					    $policy = caGetOption('policy', $va_bundle_settings, null);
+					    $policy = caGetOption('policy', $va_bundle_settings, $this::getDefaultHistoryTrackingCurrentValuePolicyForTable());
 					    
 					    $change_has_been_made = false;
 					    
@@ -5759,8 +5741,7 @@ if (!$vb_batch) {
  	 * @return array List of related items
  	 */
 	public function getRelatedItems($pm_rel_table_name_or_num, $pa_options=null, &$pn_count=null) {
-		global $AUTH_CURRENT_USER_ID;
-				        
+		global $AUTH_CURRENT_USER_ID;    
 		$vn_user_id = (isset($pa_options['user_id']) && $pa_options['user_id']) ? $pa_options['user_id'] : (int)$AUTH_CURRENT_USER_ID;
 		$vb_show_if_no_acl = (bool)($this->getAppConfig()->get('default_item_access_level') > __CA_ACL_NO_ACCESS__);
 
@@ -5790,7 +5771,6 @@ if (!$vb_batch) {
 		if (($pa_options['restrictToLists'] = caGetOption(array('restrictToLists', 'restrict_to_lists'), $pa_options, null)) && !is_array($pa_options['restrictToLists'])) {
 			$pa_options['restrictToLists'] = preg_split("![;,]{1}!", $pa_options['restrictToLists']);
 		}
-		
 		$pb_group_fields = isset($pa_options['groupFields']) ? $pa_options['groupFields'] : false;
 		$pa_primary_ids = (isset($pa_options['primaryIDs']) && is_array($pa_options['primaryIDs'])) ? $pa_options['primaryIDs'] : null;
 		$pb_show_current_only = caGetOption('showCurrentOnly', $pa_options, caGetOption('currentOnly', $pa_options, false));
@@ -5842,22 +5822,25 @@ if (!$vb_batch) {
 		
 		$vs_subject_table_name = $this->tableName();
 		$vs_item_rel_table_name = $vs_rel_item_table_name = null;
+		
 		switch(sizeof($va_path = array_keys(Datamodel::getPath($vs_subject_table_name, $vs_related_table_name)))) {
 			case 3:
-				$t_item_rel = Datamodel::getInstance($va_path[1]);
-				$vs_item_rel_table_name = $t_item_rel->tableName();
+			
+				$t_item_rel = Datamodel::getInstance($va_path[1], true);
+				$vs_item_rel_table_name = $va_path[1];
 				
-				$t_rel_item = Datamodel::getInstance($va_path[2]);
-				$vs_rel_item_table_name = $t_rel_item->tableName();
+				$t_rel_item = Datamodel::getInstance($va_path[2], true);
+				$vs_rel_item_table_name = $va_path[2];
 				
 				$vs_key = $t_item_rel->primaryKey(); //'relation_id';
+				
 				break;
 			case 2:
 				$t_item_rel = $this->isRelationship() ? $this : null;
 				$vs_item_rel_table_name = $t_item_rel ? $t_item_rel->tableName() : null;
 				
-				if (!($t_rel_item = Datamodel::getInstance($va_path[1]))) { return null; }
-				$vs_rel_item_table_name = $t_rel_item->tableName();
+				if (!($t_rel_item = Datamodel::getInstance($va_path[1], true))) { return null; }
+				$vs_rel_item_table_name = $va_path[1];
 				
 				$vs_key = $t_rel_item->primaryKey();
 				break;
@@ -5867,17 +5850,17 @@ if (!$vb_batch) {
 					$va_path = [$this->tableName(), 'ca_items_x_tags', 'ca_item_tags'];
 					$vb_is_combo_key_relation = true;
 					
-					$t_item_rel = Datamodel::getInstance($va_path[1]);
-					$vs_item_rel_table_name = $t_item_rel->tableName();
-					$t_rel_item = Datamodel::getInstance($va_path[2]);
-					$vs_rel_item_table_name = $t_rel_item->tableName();
+					$t_item_rel = Datamodel::getInstance($va_path[1], true);
+					$vs_item_rel_table_name = $va_path[1];
+					$t_rel_item = Datamodel::getInstance($va_path[2], true);
+					$vs_rel_item_table_name = $va_path[2];
 					$vs_key = $t_item_rel->primaryKey();
 					break;
 				}
 				
 				
 				if (
-					($t_rel_item = Datamodel::getInstance($vs_related_table_name))
+					($t_rel_item = Datamodel::getInstance($vs_related_table_name, true))
 					&&
 					$t_rel_item->hasField('table_num') && $t_rel_item->hasField('row_id')
 				) {
@@ -5897,16 +5880,16 @@ if (!$vb_batch) {
 		$vb_self_relationship = false;
 		if($vs_subject_table_name == $vs_related_table_name) {
 			$vb_self_relationship = true;
-			$t_item_rel = Datamodel::getInstance($va_path[1]);
-			$vs_item_rel_table_name = $t_item_rel->tableName();
+			$t_item_rel = Datamodel::getInstance($va_path[1], true);
+			$vs_item_rel_table_name = $va_path[1];
 			
-			$t_rel_item = Datamodel::getInstance($va_path[0]);
-			$vs_rel_item_table_name = $t_rel_item->tableName();
+			$t_rel_item = Datamodel::getInstance($va_path[0], true);
+			$vs_rel_item_table_name = $va_path[0];
 		}
 
-		$va_wheres = array();
-		$va_selects = array();
-		$va_joins_post_add = array();
+		$va_wheres = [];
+		$va_selects = [];
+		$va_joins_post_add = [];
 
 		$vs_related_table = $vs_rel_item_table_name;
 		if ($t_rel_item->hasField('type_id')) { $va_selects[] = "{$vs_related_table}.type_id item_type_id"; }
@@ -5914,7 +5897,7 @@ if (!$vb_batch) {
 
 		// TODO: get these field names from models
 		if (($t_tmp = $t_item_rel) || ($t_rel_item->isRelationship() && ($t_tmp = $t_rel_item))) {
-			//define table names
+			// define table names
 			$vs_linking_table = $t_tmp->tableName();
 
 			$va_selects[] = "{$vs_related_table}.".$t_rel_item->primaryKey();
@@ -7037,16 +7020,17 @@ $pa_options["display_form_field_tips"] = true;
 	 *		sort = field or attribute to sort on in <table name>.<field or attribute name> format (eg. ca_objects.idno); default is to sort on relevance (aka. sort='_natural')
 	 *		sortDirection = direction to sort results by, either 'asc' for ascending order or 'desc' for descending order; default is 'asc'
 	 *		instance = An instance of the model for $pm_rel_table_name_or_num; if passed makeSearchResult can use it to directly extract model information potentially saving time [Default is null]
+	 *		returnIndex = Return array with result instance (key "result") and list of sorted primary key values (key "index"). [Default is false]
+	 *
 	 * @return SearchResult A search result of for the specified table
 	 */
 	public function makeSearchResult($pm_rel_table_name_or_num, $pa_ids, $pa_options=null) {
 		if (!is_array($pa_ids)) { return null; }
 		
 		if (!isset($pa_options['instance']) || !($t_instance = $pa_options['instance'])) {
-			$pn_table_num = Datamodel::getTableNum($pm_rel_table_name_or_num);
-			if (!($t_instance = Datamodel::getInstanceByTableNum($pn_table_num, true))) { return null; }
+			if (!($t_instance = Datamodel::getInstance($pm_rel_table_name_or_num, true))) { return null; }
 		}
-		$va_ids = array();
+		$va_ids = [];
 		foreach($pa_ids as $vn_k => $vn_id) {
 			if (is_numeric($vn_id)) { 
 				$va_ids[$vn_k] = $vn_id;
@@ -7054,20 +7038,19 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		// sort?
 		if ($pa_sort = caGetOption('sort', $pa_options, null)) {
-			if (!is_array($pa_sort)) { $pa_sort = array($pa_sort); }
+			if (!is_array($pa_sort)) { $pa_sort = [$pa_sort]; }
 			
 			$vo_sort = new BaseFindEngine($this->getDb());
 			$va_ids = $vo_sort->sortHits($va_ids, $t_instance->tableName(), join(';', $pa_sort), caGetOption('sortDirection', $pa_options, 'asc'), $pa_options);
 		}
 		if (!($vs_search_result_class = $t_instance->getProperty('SEARCH_RESULT_CLASSNAME'))) { return null; }
-		if (!class_exists($vs_search_result_class)) { include(__CA_LIB_DIR__.'/Search/'.$vs_search_result_class.'.php'); }
 		$o_data = new WLPlugSearchEngineCachedResult($va_ids, $t_instance->tableNum());
 		/** @var BaseSearchResult $o_res */
 		$o_res = new $vs_search_result_class($t_instance->tableName());	// we pass the table name here so generic multi-table search classes such as InterstitialSearch know what table they're operating over
-		$o_res->init($o_data, array(), $pa_options);
+		$o_res->init($o_data, [], $pa_options);
 
 		if(caGetOption('returnIndex', $pa_options, false)) {
-			return array('result' => $o_res, 'index' => $va_ids);
+			return ['result' => $o_res, 'index' => $va_ids];
 		}
 
 		return $o_res;
