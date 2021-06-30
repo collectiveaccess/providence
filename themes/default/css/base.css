@@ -7979,3 +7979,10 @@ p.abbreviatedPath, div.abbreviatedPath, span.abbreviatedPath {
 #searchBuilderInput {
     width: 100%;
 }
+
+span.developerBundleCode, a.developerBundleCode {
+    font-size: 10px;
+    text-decoration: none;
+    cursor: pointer;
+    color: #333;
+}

@@ -1360,6 +1360,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			return;
 		}
 		
+		$bundle_code = $ps_bundle_name;
+		
 		$vb_read_only_because_deaccessioned = ($this->hasField('is_deaccessioned') && (bool)$this->getAppConfig()->get('deaccession_dont_allow_editing') && (bool)$this->get('is_deaccessioned'));
 		if($vb_read_only_because_deaccessioned && ($ps_bundle_name != 'ca_objects_deaccession')) {
 			$pa_bundle_settings['readonly'] = true;
@@ -1489,6 +1491,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				if (($vs_label) && ($vs_description)) { 
 					TooltipManager::add('#'.$vs_field_id, "<h3>{$vs_label_text}</h3>{$vs_description}");
 				}
+				
+				$bundle_code = $this->tableName().".{$bundle_code}";
 				break;
 			# -------------------------------------------------
 			case 'intrinsic':
@@ -1496,6 +1500,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					$pa_options['label'] = $this->getFieldInfo($ps_bundle_name, 'LABEL');
 				}
 				
+				$bundle_code = $this->tableName().".{$bundle_code}";
+						
 				$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $pa_options['request']->getViewsDirectoryPath();
 				$o_view = new View($pa_options['request'], "{$vs_view_path}/bundles/");
 			
@@ -1607,6 +1613,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$vs_attr_element_code = str_replace('ca_attribute_', '', $ps_bundle_name);
 				$vs_display_format = $o_config->get('bundle_element_display_format');
 				
+				$bundle_code = $this->tableName().".{$vs_attr_element_code}";
+				
 				$vs_element = $this->getAttributeHTMLFormBundle($pa_options['request'], $pa_options['formName'], $vs_attr_element_code, $ps_placement_code, $pa_bundle_settings, $pa_options);
 				
 				$vs_field_id = 'ca_attribute_'.$pa_options['formName'].'_'.$vs_attr_element_code;
@@ -1655,6 +1663,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				} else {
 					$vs_display_format = $o_config->get('bundle_element_display_format');
 				}
+				
+				$bundle_code = $ps_bundle_name;
 				
 				switch($ps_bundle_name) {
 					# -------------------------------
@@ -2032,11 +2042,15 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if (is_array($va_violations) && sizeof($va_violations)) {
 			$vs_label .= caNavIcon(__CA_NAV_ICON_ALERT__, "12px", ['style' => 'margin: 0 0 5px 5px;', 'onclick' => 'jQuery(this).parent().find(\'.caMetadataDictionaryDefinitionToggle\').click();  return false;']);
 		} 
+		
+		$show_bundle_codes = $pa_options['request']->user->getPreference('show_bundle_codes_in_editor');
+		$bundle_code_control = ($show_bundle_codes !== 'hide') ? "<span class='developerBundleCode'>(<a href='#' class='developerBundleCode'>{$bundle_code}</a>)</span>" : "";
 
 		$vs_output = str_replace("^ELEMENT", $vs_element, $vs_display_format);
 		$vs_output = str_replace("^ERRORS", join('; ', $va_errors), $vs_output);
 		$vs_output = str_replace("^LABEL", $vs_label, $vs_output);
 		$vs_output = str_replace("^DOCUMENTATIONLINK", $vs_documentation_link, $vs_output);
+		$vs_output = str_replace("^BUNDLECODE", $bundle_code_control, $vs_output);
 
 		$ps_bundle_label = $vs_label_text;
 		
