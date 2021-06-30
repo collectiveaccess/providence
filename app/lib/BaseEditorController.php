@@ -685,7 +685,7 @@ class BaseEditorController extends ActionController {
 		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
 
 		if((defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) || (bool)$this->request->config->get('display_template_debugger')) {
-			$this->render(__CA_THEME_DIR__.'/views/editor/template_test_html.php');
+			$this->render('../template_test_html.php');
 		}
 		
 

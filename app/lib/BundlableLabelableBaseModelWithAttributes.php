@@ -220,7 +220,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		
 			// If validateAllIdnos is set we validate idnos for all records, including hierarchy roots
-			// Default is to let roots have arbitrary idnos
+			// Default is to force root idno's to conform to validation requirements
 			if (!$this->_validateIncomingAdminIDNo(true, !caGetOption('validateAllIdnos', $pa_options, false))) { $vb_error =  true; }
 		
 			if ($vb_error) {			
@@ -2780,9 +2780,15 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 			}
 		}
-		
-		
- 		return $va_bundle_html;
+
+		$va_plugin_data = $this->opo_app_plugin_manager->hookBundleFormHTML(
+			[
+				'bundles' => $va_bundle_html,
+				'subject' => $this,
+				'options' => $pa_options
+			]
+		);
+		return $va_plugin_data['bundles'] ?? $va_bundle_html;
  	}
  	# ------------------------------------------------------
  	/**
