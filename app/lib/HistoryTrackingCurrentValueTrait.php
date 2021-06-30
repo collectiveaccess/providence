@@ -2241,30 +2241,28 @@
 			global $g_ui_locale;
 			
 			$buf = '';
-			
 			$rel_table = get_called_class();
 			$type_idno = caGetOption('type', $options, null);
 			$placement_code = caGetOption('placement_code', $options, null);
 			
 			$no_template = caGetOption('noTemplate', $options, false);
-		
 			if((is_array($interstitial_elements = $settings["{$rel_table}_".($type_idno ? "{$type_idno}_" : "")."setInterstitialElementsOnAdd"])|| is_array($interstitial_elements = $settings["setInterstitialElementsOnAdd"])) && sizeof($interstitial_elements) && ($linking_table = Datamodel::getLinkingTableName($subject_table, $rel_table))) {
 				$buf .= "<table class='caHistoryTrackingUpdateLocationMetadata'>\n";
+				/** @var BaseRelationshipModel $t_rel */
 				if (!($t_rel = Datamodel::getInstance($linking_table, true))) { return null; }	
 				
-				Datamodel::getInstance('ca_editor_uis', true);
-				$t_ui = ca_editor_uis::find(['editor_type' => Datamodel::getTableNum($linking_table)], ['returnAs' => 'firstModelInstance', 'transaction' => caGetOption('transaction', $options, null)]);
+				$type_id = $t_rel->getTypeIDForCode($type_idno);
+				$t_ui = ca_editor_uis::loadDefaultUI($linking_table, $request, $type_id, array('editorPref' => 'interstitial'));
 				foreach($interstitial_elements as $element_code) {
 					$buf .= "<tr>";
 					
 					$label = null;
-					if (($t_ui) && is_array($p = $t_ui->getPlacementsForBundle($element_code))) {
+					if (($t_ui) && is_array($p = $t_ui->getPlacementsForBundle("$linking_table.$element_code", $request))) {
 						$l = array_shift($p);
-						
 						if (!($label = caGetOption($g_ui_locale, $l['settings']['label'], null))) {
 							if (is_string($l['settings']['label'])) { $label = $l['settings']['label']; }
 						}
-					} 
+					}
 					if (!$label) {
 						$label = $t_rel->getDisplayLabel($t_rel->tableName().".".$element_code);
 					}
@@ -2322,7 +2320,7 @@
 							$vals = [];
 
 							foreach($sub_element_ids as $sub_element_id) {
-								$vals[ca_metadata_elements::getElementCodeForID($sub_element_id)] = $po_request->getParameter($no_template ? $element_code : ["{$placement_code}{$form_prefix}_{$type}_{$sub_element_id}_new_0", "{$placement_code}{$form_prefix}_{$type_id}_{$sub_element_id}_new_0", "{$placement_code}{$form_prefix}__{$sub_element_id}_new_0"], pString);
+								$vals[ca_metadata_elements::getElementCodeForID($sub_element_id)] = $po_request->getParameter($no_template ? $element_code : ["{$placement_code}{$form_prefix}_{$type}_{$sub_element_id}_new_0", "{$placement_code}{$form_prefix}_{$type_id}_{$sub_element_id}_new_0", "{$placement_code}{$form_prefix}__{$sub_element_id}_new_0", "{$placement_code}{$form_prefix}_{$sub_element_id}_new_0"], pString);
 							}
 							$t_item_rel->addAttribute($vals, $element_code);
 						}
