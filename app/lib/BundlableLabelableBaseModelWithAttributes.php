@@ -2794,8 +2794,15 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 			}
 		}
-		
- 		return $va_bundle_html;
+
+		$va_plugin_data = $this->opo_app_plugin_manager->hookBundleFormHTML(
+			[
+				'bundles' => $va_bundle_html,
+				'subject' => $this,
+				'options' => $pa_options
+			]
+		);
+		return $va_plugin_data['bundles'] ?? $va_bundle_html;
  	}
  	# ------------------------------------------------------
  	/**
