@@ -61,9 +61,7 @@ class Modification extends Base {
 		
 		if(!$va_values['element_id'] && !$vs_non_element_filter) {
 			// Trigger on any change
-			$changed =  $t_instance->hasChangedSinceLoad();
-			dump(['hasChangedSinceLoad' => $changed]);
-			return $changed;
+			return $t_instance->hasChangedSinceLoad();
 		}
 		
 		if ($vs_non_element_filter) {
