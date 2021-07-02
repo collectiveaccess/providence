@@ -89,7 +89,7 @@
  	if (is_array($bundles_to_edit_order) && sizeof($bundles_to_edit_order)) {
  		$bundles_to_edit_sorted = [];
  		foreach($bundles_to_edit_order as $o) {
- 			if (!($t = array_pop(explode('.', $o)))) { continue; }
+ 			if (!($t = join('.', array_slice(explode('.', $o), 1)))) { continue; }
  			if (in_array($t, $bundles_to_edit_proc)) { $bundles_to_edit_sorted[] = $t; }
  		}
  		foreach($bundles_to_edit_proc as $t) {

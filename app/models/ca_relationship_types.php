@@ -60,7 +60,7 @@ BaseModel::$s_ca_models_definitions['ca_relationship_types'] = array(
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '0',
-				'LABEL' => _t('Include subtypes in "left" side restriction?'), 'DESCRIPTION' => _t('Automatically nclude subtypes of selected left-side restriction.')
+				'LABEL' => _t('Include subtypes in "left" side restriction?'), 'DESCRIPTION' => _t('Automatically include subtypes of selected left-side restriction.')
 		),
 		'sub_type_right_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -74,7 +74,7 @@ BaseModel::$s_ca_models_definitions['ca_relationship_types'] = array(
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '0',
-				'LABEL' => _t('Include subtypes in "right" side restriction?'), 'DESCRIPTION' => _t('Automatically nclude subtypes of selected left-side restriction.')
+				'LABEL' => _t('Include subtypes in "right" side restriction?'), 'DESCRIPTION' => _t('Automatically include subtypes of selected left-side restriction.')
 		),
 		'parent_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
@@ -653,7 +653,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 	while($qr_res->nextRow()) {
 	 		$va_type_ids_to_codes[$qr_res->get('type_id')] = $qr_res->get('type_code');
 	 	}
-	 	return ca_relationship_types::$s_relationship_type_id_to_code_cache[$vs_key] = $va_type_ids_to_codes + $va_non_numerics;
+	 	return ca_relationship_types::$s_relationship_type_id_to_code_cache[$vs_key] = array_merge($va_type_ids_to_codes, $va_non_numerics);
 	}
 	# ------------------------------------------------------
 	 public function getHierarchyList($pb_vocabularies=false) {

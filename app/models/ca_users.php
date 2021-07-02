@@ -1617,9 +1617,11 @@ class ca_users extends BaseModel {
 					$va_uis = $this->_getUIListByType($vn_table_num);
 					
 					$va_defaults = array();
-					foreach($va_uis as $vn_type_id => $va_editor_info) {
-						foreach($va_editor_info as $vn_ui_id => $va_editor_labels) {
-							$va_defaults[$vn_type_id] = $vn_ui_id;
+					if(is_array($va_uis)) {
+						foreach($va_uis as $vn_type_id => $va_editor_info) {
+							foreach($va_editor_info as $vn_ui_id => $va_editor_labels) {
+								$va_defaults[$vn_type_id] = $vn_ui_id;
+							}
 						}
 					}
 					return $va_defaults;

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2018 Whirl-i-Gig
+ * Copyright 2014-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -252,6 +252,8 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 		$o_view->setVar('element_info', $pa_element_info);
 		$o_view->setVar('class', $vs_class);
 		$o_view->setVar('forSearch', caGetOption('forSearch', $pa_options, false));
+		$o_view->setVar('class', $vs_class);
+		$o_view->setVar('table', $t_instance->tableName());
 		
 		$o_view->setVar('allowQuickadd', (strpos($pa_options['request']->getController(), 'Interstitial') === false));
 
@@ -283,7 +285,7 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 	 * 
 	 * @return string
 	 */
-	public function sortableValue(string $value) {
+	public function sortableValue(?string $value) {
 		$name = caProcessTemplateForIDs(join(Configuration::load()->getList($this->ops_table_name.'_lookup_delimiter'), Configuration::load()->getList($this->ops_table_name.'_lookup_settings')), $this->ops_table_name, [(int)$value], []);
 		
 		return mb_strtolower(substr(trim($name), 0, 100));

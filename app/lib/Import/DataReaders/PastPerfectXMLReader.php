@@ -95,4 +95,3 @@ class PastPerfectXMLReader extends BaseXMLDataReader {
 	}
 	# -------------------------------------------------------
 }
-?>

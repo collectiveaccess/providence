@@ -1109,7 +1109,7 @@ div.notification-info-box {
 }
 
 div.notification-error-box {
-    background:	url('../graphics/icons/warning_sign.png') no-repeat 10px 5px;
+    background:	url('../graphics/icons/warning_sign.png') no-repeat 10px 15px;
     text-indent: 32px;
     background-color: #eeeeee;
     padding: 5px;
@@ -1139,7 +1139,7 @@ ul.notification-error-box, ul.notification-warning-box, ul.notification-info-box
 li.notification-info-box {
     font-weight: bold;
     color: #1ab3c8;
-    font-size: 12px;
+    font-size: 13px;
     text-indent: 10px;
     font-family: 'din-regular';
 	padding-top: 2px;
@@ -1150,13 +1150,23 @@ li.notification-warning-box {
     color: #333;
     font-size: 13px;
     text-indent: 10px;
+    font-family: 'din-regular';
 }
 
 li.notification-error-box {
-    font-weight: bold;
+    font-weight: normal;
     color: #cc0000;
-    font-size: 12px;
+    font-size: 13px;
     text-indent: 10px;
+    font-family: 'din-regular';
+}
+
+li.notification-error-box .heading {
+    font-weight: bold;
+}
+
+li.notification-error-box ul.errorList {
+    margin-top: 8px;
 }
 
 div.hint {

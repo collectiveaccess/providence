@@ -507,7 +507,7 @@ class ca_data_importer_items extends BaseModel {
 			'width' => 40, 'height' => 4,
 			'takesLocale' => false,
 			'default' => '',
-			'label' => _t('Apply one or more regular expression-based substitutions to a soruce value prior to import.'),
+			'label' => _t('Apply one or more regular expression-based substitutions to a source value prior to import.'),
 			'description' => _t('A list of Perl-compatible regular expressions. Each expression has two parts, a matching expression and a substitution expression, and is expressed as a JSON object with <em>match</em> and <em>replaceWith</em> keys. Ex. [{"match": "([\\d]+)\\.([\\d]+)", "replaceWith": "\\1:\\2"}, {"match": "[^\\d:]+", "replaceWith": ""}] ')
 		);
 		$settings['maxLength'] = array(
@@ -559,6 +559,35 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Collapse multiple spaces'),
 			'description' => _t('Convert multiple spaces to a single space.')
 		);
+		
+		$settings['upperCaseFirst'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Force first to uppercase'),
+			'description' => _t('Force first letter of value to uppercase.')
+		);
+		$settings['toUpperCase'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Force to uppercase'),
+			'description' => _t('Force value to uppercase.')
+		);
+		$settings['toLowerCase'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Force to lowercase'),
+			'description' => _t('Force value to lowercase.')
+		);
+		
 		$settings['useAsSingleValue'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
