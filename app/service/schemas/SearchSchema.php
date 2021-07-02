@@ -94,6 +94,10 @@ class SearchSchema extends \GraphQLServices\GraphQLSchema {
 					'value' => '=',
 					'description' => 'Equal'
 				],
+				'NOT_EQ' => [
+					'value' => '<>',
+					'description' => 'Not equal'
+				],
 				'LIKE' => [
 					'value' => 'LIKE',
 					'description' => 'LIKE wildcard expression'
@@ -164,16 +168,17 @@ class SearchSchema extends \GraphQLServices\GraphQLSchema {
 				]
 			]
 		]);
-		//{name: "idno", value: "test.1"}
-		//["date" => ["=", "6/1954"], "valuation" => [">", "€200"], "description" => ["LIKE", "%Suez Canal%"]]
-		// {name: "description", operator: "=", value: "foo"}
-// 		
-// 		{name: "address", operator: "=", values: [
-// 			{name: "city", operator: "=", value: "Brooklyn"},
-// 			{name: "zipcode", operator: "IN", value: ["11224", "11212"]}
-// 		]}
-// 		
-// 		{name: "description", operator: "IN", valueList: ["foo", "arf", "meow"]}
+		
+		$schema[] = $ancestorCriteriaList = new InputObjectType([
+			'name' => 'AncestorCriteriaList',
+			'description' => 'Hierarchical filter criteria',
+			'fields' => [
+				'criteria' => [
+					'type' => Type::listOf($criterionType),
+					'description' => 'List of criteria'
+				]
+			]
+		]);
 		
 		return $schema;
 	}

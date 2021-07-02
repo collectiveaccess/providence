@@ -276,14 +276,14 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						$table = $args['table'];
 						$idno_fld = \Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD');
 						
-						$records = (is_array($args['records']) && sizeof($args['records'])) ? $args['records'] : [
+						$records = (is_array($args['records']) && sizeof($args['records'])) ? $args['records'] : [[
 							'identifier' => $args['identifier'],
 							'id' => $args['id'],
 							'idno' => $args['idno'],
 							'type' => $args['type'],
 							'bundles' => $args['bundles'],
 							'options' => $opts
-						];
+						]];
 						
 						$c = 0;
 						$opts = [];
@@ -925,12 +925,12 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 								$rc = $instance->update();
 							}
 						} elseif($replace && !$id) {
-							if($rc = $instance->replaceAttribute($attr_values, $bundle_name)) {
+							if($rc = $instance->replaceAttribute($attr_values, $bundle_name, null, ['showRepeatCountErrors' => true])) {
 								$rc = $instance->update();
 							}
 						} elseif(!$delete && !$id) {
 							// Add
-							if($rc = $instance->addAttribute($attr_values, $bundle_name)) {
+							if($rc = $instance->addAttribute($attr_values, $bundle_name, null, ['showRepeatCountErrors' => true])) {
 								$rc = $instance->update();
 							}
 						} elseif($delete && $id) {

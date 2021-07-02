@@ -78,6 +78,11 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 							'description' => _t('Search expression')
 						],
 						[
+							'name' => 'filterByAncestors',
+							'type' => Type::listOf(SearchSchema::get('AncestorCriteriaList')),
+							'description' => _t('Filter results by ancestors')
+						],
+						[
 							'name' => 'bundles',
 							'type' => Type::listOf(Type::string()),
 							'description' => _t('Bundles to return')
@@ -135,7 +140,7 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 						
 						$bundles = \GraphQLServices\Helpers\extractBundleNames($rec, $args, []);
 
-						$data = \GraphQLServices\Helpers\fetchDataForBundles($qr, $bundles, ['start' => $args['start'], 'limit' => $args['limit']]);
+						$data = \GraphQLServices\Helpers\fetchDataForBundles($qr, $bundles, ['start' => $args['start'], 'limit' => $args['limit'], 'filterByAncestors' => $args['filterByAncestors']]);
 						
 						return ['table' => $table, 'search' => $search, 'count' => sizeof($data), 'results' => $data];
 					}
@@ -162,6 +167,11 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'criteria',
 							'type' => Type::listOf(SearchSchema::get('Criterion')),
 							'description' => _t('Search criteria')
+						],
+						[
+							'name' => 'filterByAncestors',
+							'type' => Type::listOf(SearchSchema::get('AncestorCriteriaList')),
+							'description' => _t('Filter results by ancestors')
 						],
 						[
 							'name' => 'bundles',
@@ -206,7 +216,7 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 							$args['restrictToTypes'] = [$args['restrictToTypes']];
 						}
 						
-						if(!($qr = $table::find($z=\GraphQLServices\Helpers\Search\convertCriteriaToFindSpec($args['criteria']), ['returnAs' => 'searchResult', 'allowWildcards' => true, 'restrictToTypes' => $args['restrictToTypes']]))) {
+						if(!($qr = $table::find(\GraphQLServices\Helpers\Search\convertCriteriaToFindSpec($args['criteria']), ['returnAs' => 'searchResult', 'allowWildcards' => true, 'restrictToTypes' => $args['restrictToTypes']]))) {
 							throw new \ServiceException(_t('No results for table: %1', $table));
 						}
 					
@@ -214,7 +224,7 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 						
 						$bundles = \GraphQLServices\Helpers\extractBundleNames($rec, $args, []);
 
-						$data = \GraphQLServices\Helpers\fetchDataForBundles($qr, $bundles, ['start' => $args['start'], 'limit' => $args['limit']]);
+						$data = \GraphQLServices\Helpers\fetchDataForBundles($qr, $bundles, ['start' => $args['start'], 'limit' => $args['limit'], 'filterByAncestors' => $args['filterByAncestors']]);
 						
 						return ['table' => $table, 'search' => $search, 'count' => sizeof($data), 'results' => $data];
 					}
