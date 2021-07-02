@@ -1268,7 +1268,11 @@ class BaseFindEngine extends BaseObject {
 		}
 		
 		foreach(array_keys($this->temporary_tables) as $t) {
-			$this->_dropTempTable($t);	
+			try {
+				$this->_dropTempTable($t);	
+			} catch(Exception $e) {
+				// noop - is unrecoverable
+			}
 		}
 	}	
 	# -------------------------------------------------------
