@@ -280,3 +280,16 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 		return $vs_buf;
 	}
 	# ---------------------------------------
+	/**
+	 * 
+	 *
+	 */
+	function caShowAllForNoCriteriaBrowse(string $table) {
+		$o_browse_config = caGetBrowseConfig();
+		$browse_info = $o_browse_config->getAssoc($table);
+		if(caGetOption(['showAllForNoCriteriaBrowse', 'show_all_for_no_criteria_browse'], $browse_info, false)) {
+			return true;
+		}
+		return false;
+	}
+	# ---------------------------------------
