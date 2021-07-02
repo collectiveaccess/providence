@@ -548,7 +548,7 @@ var caUI = caUI || {};
 													jQuery(this).attr('facet_item_selected', '1');
 												}
 
-												if (jQuery('#' + newLevelListID).find("a." + that.className."[facet_item_selected='1']").length > 0) {
+												if (jQuery('#' + newLevelListID).find("a." + that.className + "[facet_item_selected='1']").length > 0) {
 													jQuery("#facet_apply").show();
 												} else {
 													jQuery("#facet_apply").hide();
