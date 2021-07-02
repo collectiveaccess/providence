@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2019 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,7 +36,6 @@
 
 require_once(__CA_LIB_DIR__."/BaseFindEngine.php");
 require_once(__CA_LIB_DIR__.'/Configuration.php');
-require_once(__CA_LIB_DIR__."/Datamodel.php");
 require_once(__CA_LIB_DIR__."/Db.php");
 	
 	class SearchBase extends BaseFindEngine {
@@ -190,7 +189,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
                         if (
                         	((substr($vs_f, 0, 14) === '_ca_attribute_') && preg_match('!^_ca_attribute_([A-Za-z]+[A-Za-z0-9_]*)$!', $vs_f, $va_matches) && ($element_id = ca_metadata_elements::getElementID($va_matches[1])))
                         	||
-                        	($element_id = ca_metadata_elements::getElementID($vs_f))
+                        	(!$t_subject->hasField($vs_f) && ($element_id = ca_metadata_elements::getElementID($vs_f)))
                         ) {
                             unset($field_list[$vs_f]);
                             

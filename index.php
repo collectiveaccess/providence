@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2018 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -69,6 +69,7 @@
 		// run garbage collector
 		GarbageCollection::gc();
 
+		$g_errored = false;	// routing error?
 		$app = AppController::getInstance();
 
 		$g_request = $req = $app->getRequest();

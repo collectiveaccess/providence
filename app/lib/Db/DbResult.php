@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2017 Whirl-i-Gig
+ * Copyright 2006-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -89,14 +89,6 @@ class DbResult extends DbBase {
 	 */
 	private $opa_media_info_cache;
 
-
-	/**
-	 * Datamodel instance
-	 *
-	 * @access private
-	 */
-	private $opo_datamodel;
-
 	/**
 	 * Cache for fieldInfo() results
 	 *
@@ -140,70 +132,81 @@ class DbResult extends DbBase {
 	}
 
 	/**
-	 * Get the value of a field in the current row.
-	 * Possible keys in the options array:
-	 * binary, unserialize, convertHTMLBreaks, urlEncode, filterHTMLSpecialCharacters, escapeForXML, stripSlashes
+	 * Get the value of field(s) in the current row.
 	 *
-	 * @param string $ps_field field name
-	 * @param array $pa_options associative array of options, keys are names of the options, values are boolean.
+	 * @param string|array $fields Field name, or list of field names
+	 * @param array $options Options include:
+	 *		binary = 
+	 *		unserialize = 
+	 *		convertHTMLBreaks =  
+	 *		urlEncode =
+	 *		filterHTMLSpecialCharacters = 
+	 *		escapeForXML = 
+	 *		stripSlashes = 
 	 * @return mixed
 	 */
-	function get($ps_field, $pa_options=null) {
+	function get($fields, $options=null) {
+		$return_array = is_array($fields); 
+		if (!is_array($fields)) { $fields = [$fields]; }
 
-		$va_field = isset(DbResult::$s_field_info_cache[$ps_field]) ? DbResult::$s_field_info_cache[$ps_field] : $this->getFieldInfo($ps_field);
+		$vals = [];
+		foreach($fields as $field) {
+			$field_info = isset(DbResult::$s_field_info_cache[$field]) ? DbResult::$s_field_info_cache[$field] : $this->getFieldInfo($field);
 
-		if (!isset($this->opa_current_row[$va_field["field"]])) {
-			return null;
-		}
-
-		$vs_val = isset($this->opa_current_row[$va_field["field"]]) ? $this->opa_current_row[$va_field["field"]] : null;
-
-		if (isset($pa_options["binary"]) && $pa_options["binary"]) {
-			return $vs_val;
-		}
-		if (isset($pa_options["unserialize"]) && $pa_options["unserialize"]) {
-			if (!isset($this->opa_unserialized_cache[$va_field["field"]]) || !($vm_data = $this->opa_unserialized_cache[$va_field["field"]])) {
-				$vm_data = caUnserializeForDatabase($vs_val);
-				$this->opa_unserialized_cache[$va_field["field"]] =& $vm_data;
+			if (!isset($this->opa_current_row[$field_info["field"]])) {
+				return null;
 			}
-			return $vm_data;
-		}
 
-		if (isset($pa_options["convertHTMLBreaks"]) && ($pa_options["convertHTMLBreaks"])) {
-			# check for tags before converting breaks
-			preg_match_all("/<[A-Za-z0-9]+/", $vs_val, $va_tags);
-			$va_ok_tags = array("<b", "<i", "<u", "<strong", "<em", "<strike", "<sub", "<sup", "<a", "<img", "<span");
+			$v = isset($this->opa_current_row[$field_info["field"]]) ? $this->opa_current_row[$field_info["field"]] : null;
 
-			$vb_convert_breaks = true;
-			foreach($va_tags[0] as $vs_tag) {
-				if (!in_array($vs_tag, $va_ok_tags)) {
-					$vb_convert_breaks = false;
-					break;
+			if (isset($options["binary"]) && $options["binary"]) {
+				return $v;
+			}
+			if (isset($options["unserialize"]) && $options["unserialize"]) {
+				if (!isset($this->opa_unserialized_cache[$field_info["field"]]) || !($data = $this->opa_unserialized_cache[$field_info["field"]])) {
+					$data = caUnserializeForDatabase($v);
+					$this->opa_unserialized_cache[$field_info["field"]] =& $data;
+				}
+				return $data;
+			}
+
+			if (isset($options["convertHTMLBreaks"]) && ($options["convertHTMLBreaks"])) {
+				# check for tags before converting breaks
+				preg_match_all("/<[A-Za-z0-9]+/", $v, $tags);
+				$ok_tags = array("<b", "<i", "<u", "<strong", "<em", "<strike", "<sub", "<sup", "<a", "<img", "<span");
+
+				$convert_breaks = true;
+				foreach($tags[0] as $tag) {
+					if (!in_array($tag, $ok_tags)) {
+						$convert_breaks = false;
+						break;
+					}
+				}
+
+				if ($convert_breaks) {
+					$v = preg_replace("/(\n|\r\n){2}/","<p/>",$v);
+					$v = ereg_replace("\n","<br/>",$v);
 				}
 			}
-
-			if ($vb_convert_breaks) {
-				$vs_val = preg_replace("/(\n|\r\n){2}/","<p/>",$vs_val);
-				$vs_val = ereg_replace("\n","<br/>",$vs_val);
+			if (isset($options["urlEncode"]) && ($options["urlEncode"])) {
+				$v = urlEncode($v);
 			}
-		}
-		if (isset($pa_options["urlEncode"]) && ($pa_options["urlEncode"])) {
-			$vs_val = urlEncode($vs_val);
+
+			if (isset($options["filterHTMLSpecialCharacters"]) && ($options["filterHTMLSpecialCharacters"])) {
+				$v = htmlentities(html_entity_decode($v));
+			}
+
+			if (isset($options["escapeForXML"]) && $options["escapeForXML"]) {
+				$v = caEscapeForXML($v);
+			}
+
+			if (get_magic_quotes_gpc() || $options["stripSlashes"]) {
+				$v = stripSlashes($v);
+			}
+			$vals[] = $v;
 		}
 
-		if (isset($pa_options["filterHTMLSpecialCharacters"]) && ($pa_options["filterHTMLSpecialCharacters"])) {
-			$vs_val = htmlentities(html_entity_decode($vs_val));
-		}
-
-		if (isset($pa_options["escapeForXML"]) && $pa_options["escapeForXML"]) {
-			$vs_val = caEscapeForXML($vs_val);
-		}
-
-		if (get_magic_quotes_gpc() || $pa_options["stripSlashes"]) {
-			$vs_val = stripSlashes($vs_val);
-		}
-
-		return $vs_val;
+		return $return_array ? $vals : $vals[0];
 	}
 
 	/**
@@ -812,7 +815,6 @@ class DbResult extends DbBase {
 	 * Destructor
 	 */
 	function __destruct() {
-		//print "DESTRUCT Result set\n";
 		$this->free();
 		unset($this->opo_db);
 	}

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2018 Whirl-i-Gig
+ * Copyright 2016-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,8 +31,6 @@
  */
 
 namespace CA\MetadataAlerts\TriggerTypes;
-
-require_once(__CA_MODELS_DIR__ . '/ca_metadata_elements.php');
 
 class Modification extends Base {
 
@@ -84,8 +82,13 @@ class Modification extends Base {
 		} else {
 			// Trigger on specific element
 			$vs_code = \ca_metadata_elements::getElementCodeForId($va_values['element_id']);
+			$vs_parent_code = \ca_metadata_elements::getParentCode($va_values['element_id']);
+			$vs_get_spec = $vs_code;
+			if ($vs_parent_code && $vs_parent_code !== $vs_code){
+				$vs_get_spec = "$vs_parent_code.$vs_get_spec";
+			}
 			if (is_array($va_filter_vals = caGetOption($vs_code, $va_filters, null)) && sizeof($va_filter_vals)) {
-				if(!in_array($t_instance->get($t_instance->tableName().".{$vs_code}"), $va_filter_vals)) { return false; }
+				if(!in_array($t_instance->get($t_instance->tableName().".{$vs_get_spec}"), $va_filter_vals)) { return false; }
 			}
 			return $t_instance->attributeDidChange($vs_code);
 		}

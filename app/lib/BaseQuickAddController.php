@@ -35,7 +35,6 @@
   */
  
  	require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
- 	require_once(__CA_LIB_DIR__."/Datamodel.php");
  	require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
  	require_once(__CA_LIB_DIR__."/ResultContext.php");
 	require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
@@ -43,7 +42,6 @@
  
  	class BaseQuickAddController extends ActionController {
  		# -------------------------------------------------------
- 		protected $opo_datamodel;
  		protected $opo_app_plugin_manager;
  		protected $opo_result_context;
  		# -------------------------------------------------------

@@ -169,7 +169,8 @@ class ImportHelpersTest extends TestCase {
                 4 => 'Somme',
                 5 => 'Popperinge',
                 6 => 'Ypres;Somme;Cambrai;Ypres;Popperinge',
-                7 => ['Antwerp', 'Dieppe|Charleois|Paschendale', 'Bruges']
+                7 => ['Antwerp', 'Dieppe|Charleois|Paschendale', 'Bruges'],
+                8 => 100
         ];
         $this->item = [
                 'settings' => [
@@ -189,7 +190,7 @@ class ImportHelpersTest extends TestCase {
         );
 
         $this->parents = array(
-                array('idno' => '^1',
+                array('idno' => '^8',
                         'name' => '^3',
                         'attributes' => array(
                                 'description' => '^5'

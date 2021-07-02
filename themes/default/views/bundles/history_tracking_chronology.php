@@ -65,7 +65,6 @@
 	$allow_value_delete 		= !caGetOption('hide_value_delete', $settings, false);
 	
 	
-	
 	$home_location_idno = null;
 	if ($t_subject->hasField('home_location_id')) {
 		$t_location = ca_storage_locations::find($t_subject->get('home_location_id'), ['returnAs' => 'firstModelInstance']);
@@ -401,7 +400,7 @@ switch($display_mode) {
 				
 					jQuery('#<?php print $vs_id_prefix; ?>_hierarchyBrowserSearch{n}').autocomplete({
 							source: '<?php print caNavUrl($this->request, 'lookup', 'StorageLocation', 'Get', array('noInline' => 1)); ?>',
-							minLength: 3, delay: 800, html: true,
+							minLength: <?= (int)$t_subject->getAppConfig()->get(["ca_storage_locations_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>, delay: 800, html: true,
 							select: function(event, ui) {
 								if (parseInt(ui.item.id) > 0) {
 									<?php print $vs_id_prefix; ?>oHierBrowser{n}.setUpHierarchy(ui.item.id);	// jump browser to selected item
@@ -690,7 +689,7 @@ if($show_entity_controls) {
 				showEmptyFormsOnLoad: 0,
 				relationshipTypes: <?php print json_encode($this->getVar('location_relationship_types_by_sub_type')); ?>,
 				autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'StorageLocation', 'Get', []); ?>',
-				minChars:1,
+				minChars:<?= (int)$t_subject->getAppConfig()->get(["ca_storage_locations_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
 				readonly: false,
 				isSortable: false,
 				listSortItems: 'div.roundedRel',			
@@ -712,7 +711,7 @@ if($show_entity_controls) {
 		if($show_return_home_controls) {
 ?>			
 			if (!_currentHomeLocation) {
-				_currentHomeLocation = '<?php print addslashes($home_location_idno); ?>';
+				_currentHomeLocation = <?= json_encode($home_location_idno); ?>;
 			}
 			caRelationBundle<?php print $vs_id_prefix; ?>_ca_storage_locations_return_home = caUI.initRelationBundle('#<?php print $vs_id_prefix; ?>', {
 				fieldNamePrefix: '<?php print $vs_id_prefix; ?>_ca_storage_locations_return_home_',
@@ -738,7 +737,7 @@ if($show_entity_controls) {
 					jQuery("#<?php print $vs_id_prefix; ?>").find(".caHistoryTrackingButtonBar").slideUp(250);
 					jQuery("#<?php print $vs_id_prefix; ?>_ca_storage_locations_return_homenew_0").val(1);
 					
-					var msg = '<?php print addslashes(_t('Return to home location ')); ?>';
+					var msg = <?= json_encode(_t('Return to home location ')); ?>;
 					jQuery("#<?php print $vs_id_prefix; ?>_ca_storage_locations_return_home_heading").html(msg + "<em>" + _currentHomeLocation + "</em>");
 				
 				},
@@ -767,6 +766,7 @@ if($show_entity_controls) {
 				deleteButtonClassName: 'caDeleteLoanButton',
 				hideOnNewIDList: [],
 				showEmptyFormsOnLoad: 0,
+				minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_loans_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
 				relationshipTypes: <?php print json_encode($this->getVar('loan_relationship_types_by_sub_type')); ?>,
 				autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'Loan', 'Get', []); ?>',
 				types: <?php print json_encode($settings['restrict_to_types']); ?>,
@@ -806,6 +806,7 @@ if($show_entity_controls) {
 				deleteButtonClassName: 'caDeleteMovementButton',
 				hideOnNewIDList: [],
 				showEmptyFormsOnLoad: 0,
+				minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_movements_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
 				relationshipTypes: <?php print json_encode($this->getVar('movement_relationship_types_by_sub_type')); ?>,
 				autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'Movement', 'Get', []); ?>',
 				types: <?php print json_encode($settings['restrict_to_types']); ?>,
@@ -845,6 +846,7 @@ if($show_entity_controls) {
 				deleteButtonClassName: 'caDeleteObjectButton',
 				hideOnNewIDList: [],
 				showEmptyFormsOnLoad: 0,
+				minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_objects_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
 				relationshipTypes: <?php print json_encode($this->getVar('object_relationship_types_by_sub_type')); ?>,
 				autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'object', 'Get', []); ?>',
 				types: <?php print json_encode($settings['restrict_to_types']); ?>,
@@ -885,6 +887,7 @@ if($show_entity_controls) {
 				deleteButtonClassName: '<?php print $vs_id_prefix; ?>caDeleteOccurrenceButton<?php print $vn_type_id; ?>',
 				hideOnNewIDList: [],
 				showEmptyFormsOnLoad: 0,
+				minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_occurrences_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
 				relationshipTypes: <?php print json_encode($this->getVar('occurrence_relationship_types_by_sub_type')); ?>,
 				autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'Occurrence', 'Get', array_merge($occ_lookup_params, ['types' => $vn_type_id])); ?>',
 				types: <?php print json_encode($settings['restrict_to_types']); ?>,
@@ -926,6 +929,7 @@ if($show_entity_controls) {
 				deleteButtonClassName: 'caDeleteCollectionButton<?php print $vn_type_id; ?>',
 				hideOnNewIDList: [],
 				showEmptyFormsOnLoad: 0,
+				minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_collections_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
 				relationshipTypes: <?php print json_encode($this->getVar('collection_relationship_types_by_sub_type')); ?>,
 				autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'collection', 'Get', array_merge($coll_lookup_params, ['types' => $vn_type_id])); ?>',
 				types: <?php print json_encode($settings['restrict_to_types']); ?>,
@@ -967,6 +971,7 @@ if($show_entity_controls) {
 				deleteButtonClassName: 'caDeleteEntityButton<?php print $vn_type_id; ?>',
 				hideOnNewIDList: [],
 				showEmptyFormsOnLoad: 0,
+				minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_entities_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
 				relationshipTypes: <?php print json_encode($this->getVar('entity_relationship_types_by_sub_type')); ?>,
 				autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'entity', 'Get', array_merge($entity_lookup_params, ['types' => $vn_type_id])); ?>',
 				types: <?php print json_encode($settings['restrict_to_types']); ?>,

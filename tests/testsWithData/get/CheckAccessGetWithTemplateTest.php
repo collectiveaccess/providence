@@ -72,7 +72,7 @@ class CheckAccessGetWithTemplateTest extends BaseTestWithData {
 		$vn_entity_id = $this->addTestRecord('ca_entities', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'ind',
-				'idno' => 'hjs',
+				'idno' => '101',
 				'lifespan' => '12/17/1989 -',
 				'access' => 1,
 			),
@@ -110,7 +110,7 @@ class CheckAccessGetWithTemplateTest extends BaseTestWithData {
 		$vn_entity_id = $this->addTestRecord('ca_entities', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'ind',
-				'idno' => 'bs',
+				'idno' => '102',
 				'access' => 0,
 			),
 			'preferred_labels' => array(

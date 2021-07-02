@@ -107,7 +107,7 @@ abstract class IDNumber implements IIDNumbering {
 		$this->config = Configuration::load();
 		$this->idnumber_config = Configuration::load(__CA_APP_DIR__."/conf/multipart_id_numbering.conf");
 		$this->search_config = Configuration::load(__CA_APP_DIR__."/conf/search.conf");
-		$this->formats = $this->idnumber_config->getAssoc('formats');
+		$this->formats = caChangeArrayKeyCase($this->idnumber_config->getAssoc('formats'));
 		
 		if (!$type) { $type = ['__default__']; }
 		
@@ -132,6 +132,7 @@ abstract class IDNumber implements IIDNumbering {
 	 * @return bool True on success, false if format was invalid
 	 */
 	public function setFormat($format) {
+		$format = mb_strtolower($format);
 		if ($this->isValidFormat($format)) {
 			$this->format = $format;
 			return true;
@@ -189,6 +190,7 @@ abstract class IDNumber implements IIDNumbering {
 		
 		foreach($types as $type) {
 			if (!$type) { continue; }
+			$type = mb_strtolower($type);
 			if ($this->isValidType($type)) {
 				$this->type = $type;
 				return true;
@@ -225,6 +227,7 @@ abstract class IDNumber implements IIDNumbering {
 	 * @return bool
 	 */
 	public function isValidFormat($format) {
+		$format = mb_strtolower($format);
 		return in_array($format, $this->getFormats());
 	}
 	# -------------------------------------------------------
@@ -269,25 +272,21 @@ abstract class IDNumber implements IIDNumbering {
 	 * @return bool
 	 */
 	public function formatHas($element_type, $index=null, $format=null, $type=null, $options=null) {
-		if ($format) {
+		if ($format = mb_strtolower($format)) {
 			if (!$this->isValidFormat($format)) {
 				return false;
 			}
 			$format = $format;
-		} else {
-			if(!($vs_format = $this->getFormat())) {
-				return false;
-			}
+		} elseif(!($format = $this->getFormat())) {
+			return false;
 		}
-		if ($type) {
+		if ($type = mb_strtolower($type)) {
 			if (!$this->isValidType($type)) {
 				return false;
 			}
 			$t = $type;
-		} else {
-			if(!($t = $this->getType())) {
-				return false;
-			}
+		} elseif(!($t = $this->getType())) {
+			return false;
 		}
 
 		$elements = $this->formats[$format][$t]['elements'];
@@ -323,6 +322,7 @@ abstract class IDNumber implements IIDNumbering {
 		if (is_null($format)) { 
 			if (!($format = $this->getFormat())) { return []; }
 		}
+		$format = mb_strtolower($format);
 		$types = [];
 		if (is_array($this->formats[$format])) {
 			foreach($this->formats[$format] as $type => $info) {
@@ -341,6 +341,7 @@ abstract class IDNumber implements IIDNumbering {
 	 * @return bool
 	 */
 	public function isValidType($type, $format=null) {
+		$type = mb_strtolower($type);
 		return ($type) && in_array($type, $this->getTypes($format));
 	}
 	# -------------------------------------------------------
@@ -356,6 +357,9 @@ abstract class IDNumber implements IIDNumbering {
 	public function getElements($format=null, $type=null) {
 		if(is_null($format)) { $format = $this->getFormat(); }
 		if(is_null($type)) { $type = $this->getType(); }
+		
+		$format = mb_strtolower($format);
+		$type = mb_strtolower($type);
 		if ($format && $type) {
 			if (is_array($this->formats[$format][$type]['elements'])) {
 				$is_child = $this->isChild();
@@ -393,6 +397,7 @@ abstract class IDNumber implements IIDNumbering {
 	 * @return bool
 	 */
 	public function isFormatEditable($format, $options=null) {
+		$format = mb_strtolower($format);
 		$types = $this->getTypes($format);
 		$single_elements_only = caGetOption('singleElementsOnly', $options, false);
 		foreach($types as $type) {

@@ -219,11 +219,31 @@
 					
 					$policy_info = $subject_table::getHistoryTrackingCurrentValuePolicy($policy);
 				
-					if (is_array($policy_info['elements']) && (sizeof($policy_info['elements']) == 1) && isset($policy_info['elements']['ca_storage_locations'])) {
-				    	$va_facet_info['table'] = 'ca_storage_locations';
-				    } else {
-				    	$va_facet_info['group_mode'] = 'none';
-				    }
+				
+					if (is_array($policy_info['elements'])) {
+						$location_elements = [];
+					
+						foreach($policy_info['elements'] as $t => $e) {
+							if ($t === 'ca_storage_locations') {
+								$location_elements[] = $e;
+								continue;
+							}
+							foreach($e as $t => $c) {
+								if($c['useRelated'] !== 'ca_storage_locations') {
+									break(2);
+								}
+							}
+							$location_elements[] = $e;
+						}
+						
+						$n = sizeof($location_elements);
+				
+						if (($n > 0) && ($n === sizeof($policy_info['elements']))) {
+							$va_facet_info['table'] = 'ca_storage_locations';
+						} else {
+							$va_facet_info['group_mode'] = 'none';
+						}
+					}
 				}
 
 				// generate_facets_for_types config directive triggers auto-generation of facet config for each type of an authority item
@@ -2146,7 +2166,7 @@
 											if(!$t_loc->load($vn_row_id)) { break; }
 											$va_row_tmp = [$t_loc->tableNum(), $t_loc->get('ca_storage_locations.type_id'), $vn_row_id];
 										}
-										$va_row_tmp = array_filter($va_row_tmp, function($v) { return (bool)$v; });
+									//	$va_row_tmp = array_filter($va_row_tmp, function($v) { return (bool)$v; });
 										if ($va_row_tmp[0] == 89) { // ca_storage_locations
 											$t_loc = new ca_storage_locations();
 											if (!is_array($va_loc_ids = $t_loc->getHierarchy($va_row_tmp[2], ['returnAsArray' => true, 'includeSelf' => true, 'idsOnly' => true])) || !sizeof($va_loc_ids)) { continue; }
@@ -6449,7 +6469,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 					    $va_selects[] = "ca_relationship_type_labels.typename";
 					    $va_joins[] = "INNER JOIN ca_relationship_types ON ".$t_item_rel->tableName().".type_id = ca_relationship_types.type_id";
 					    $va_joins[] = "INNER JOIN ca_relationship_type_labels ON ca_relationship_type_labels.type_id = ca_relationship_types.type_id";
-					    $va_orderbys[] = "ca_relationship_types.typename";
+					    $va_orderbys[] = "ca_relationship_type_labels.typename";
 					}
 
 					if (is_array($va_exclude_types) && (sizeof($va_exclude_types) > 0) && method_exists($t_rel_item, "getTypeList")) {
@@ -6630,17 +6650,17 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 							SELECT COUNT(DISTINCT ".$t_item->primaryKey(true).") _count, ".join(', ', $va_selects)."
 							FROM {$vs_browse_table_name}
 							{$vs_join_sql}
-								".(sizeof($va_wheres) ? ' WHERE ' : '').join(" AND ", $va_wheres)."
-								".(sizeof($va_orderbys) ? "ORDER BY ".join(', ', $va_orderbys) : '');
+								".(sizeof($va_wheres) ? ' WHERE ' : '').join(" AND ", $va_wheres);
 	} else {
 						$vs_sql = "
 							SELECT COUNT(DISTINCT ".$t_item->primaryKey(true).") _count, ".join(', ', $va_selects)."
 							FROM ".$vs_rel_item_table_name."
 							{$vs_join_sql}
-								".(sizeof($va_wheres) ? ' WHERE ' : '').join(" AND ", $va_wheres)."
-								".(sizeof($va_orderbys) ? "ORDER BY ".join(', ', $va_orderbys) : '');
+								".(sizeof($va_wheres) ? ' WHERE ' : '').join(" AND ", $va_wheres);
 	}                  
 	                    $vs_sql .= " GROUP BY ".join(', ', array_map(function($v) { return str_replace(' rel_type_id', '', $v); }, $va_select_flds));
+	                    
+	                    $vs_sql .= sizeof($va_orderbys) ? " ORDER BY ".join(', ', $va_orderbys) : '';
 					    
 					    //print "<hr>$vs_sql<hr>\n"; print_R($va_sql_params);
 						$qr_res = $this->db->query($vs_sql, $va_sql_params);

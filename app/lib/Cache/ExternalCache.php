@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2018 Whirl-i-Gig
+ * Copyright 2014-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,6 +31,7 @@
  */
 
 require_once(__CA_LIB_DIR__."/Cache/MemoryCache.php");
+require_once(__CA_LIB_DIR__."/Cache/JSONEncoder.php");
 
 class ExternalCache {
 	# ------------------------------------------------
@@ -95,8 +96,8 @@ class ExternalCache {
 			throw new ExternalCacheInvalidParameterException('Namespace has to be a string');
 		}
 
-		if(!preg_match("/^[A-Za-z0-9_]+$/", $ps_namespace)) {
-			throw new ExternalCacheInvalidParameterException('Caching namespace must only contain alphanumeric characters, dashes and underscores');
+		if(!preg_match("/^[A-Za-z0-9_\/]+$/", $ps_namespace)) {
+			throw new ExternalCacheInvalidParameterException('Caching namespace must only contain alphanumeric characters, dashes, underscores and forward slashes');
 		}
 
 		if(!$ps_key) {
@@ -201,7 +202,7 @@ class ExternalCache {
 			if(!self::init()) { return false; }
 			
 			if ($ps_namespace) {
-				self::getCache()->deleteItem($z=substr(__CA_APP_TYPE__, 0, 4).'/'.$ps_namespace);
+				self::getCache()->deleteItem(substr(__CA_APP_TYPE__, 0, 4).'/'.$ps_namespace);
 			} else {
 			    self::getCache()->clear();
 			}
@@ -246,7 +247,8 @@ class ExternalCache {
 		try {
 			$driver = new Stash\Driver\FileSystem([
 				'path' => ExternalCache::getCacheDirectory(),
-				'dirSplit' => 2
+				'dirSplit' => 2,
+				'encoder' => 'JSON'
 			]);
 			return new Stash\Pool($driver);
 		} catch (InvalidArgumentException $e) {
@@ -307,5 +309,3 @@ class ExternalCache {
 	}
 	# ------------------------------------------------
 }
-
-class ExternalCacheInvalidParameterException extends Exception {}

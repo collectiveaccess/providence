@@ -40,7 +40,7 @@
 				</div><!-- end mainContent -->
 				<div style="clear:both;"><!-- EMPTY --></div>
 			</div><!-- end main -->
-		<div id="footerContainer" style="background-color:#<?php print $vs_footer_color; ?>;">
+		<div id="footerContainer" style="background-color:#<?= $vs_footer_color; ?>;">
 			<div id="footer" ><div style="position: relative;">
 <?php
 				if ($this->request->isLoggedIn()) {
@@ -49,8 +49,8 @@
 					print caNavLink($this->request, _t('Login'), '', 'system', 'auth', 'login');
 				}
 ?>
-				&nbsp;&nbsp;|&nbsp;&nbsp; &copy; 2021 Whirl-i-Gig, <a href="http://www.collectiveaccess.org" target="_blank">CollectiveAccess</a> <?php _p("is a trademark of"); ?> <a href="http://www.whirl-i-gig.com" target="_blank">Whirl-i-Gig</a>
-				[<?php print Session::elapsedTime(4).'s'; ?>/<?= caGetMemoryUsage(); ?>]
+				&nbsp;&nbsp;|&nbsp;&nbsp; &copy; 2021 Whirl-i-Gig, <a href="https://www.collectiveaccess.org" target="_blank">CollectiveAccess</a> <?php _p("is a trademark of"); ?> <a href="http://www.whirl-i-gig.com" target="_blank">Whirl-i-Gig</a>
+				[<?= Session::elapsedTime(4).'s'; ?>/<?= caGetMemoryUsage(); ?>]
 <?php if(defined('__CA_SHOW_PERFORMANCE_STATS__')) { ?>
 				<?= $cache_stats['full'] ? '[CACHE FULL]' : ''; ?>
 				<?= '[OpCache: '.caHumanFilesize($cache_stats['memory_used']).' ('.sprintf("%3.2f", ($cache_stats['memory_used']/($cache_stats['memory_used'] + $cache_stats['memory_free'])) * 100).'%) used; '.caHumanFilesize($cache_stats['memory_free']).' ('.sprintf("%3.2f", ($cache_stats['memory_free']/($cache_stats['memory_used'] + $cache_stats['memory_free'])) * 100).'%) free; '.$cache_stats['num_scripts'].' files]'; ?>
@@ -82,13 +82,13 @@
 	</div>
 	
 	<div id="editorFieldList">
-		<div id="editorFieldListHeader"><?php print _t('Form table of contents'); ?></div>
+		<div id="editorFieldListHeader"><?= _t('Form table of contents'); ?></div>
 		<div id="editorFieldListContentArea"></div>
 	</div>
 	
 	<div id="caHierarchyOverviewPanel">
 		<div id="caHierarchyOverviewClose" class="close"> </div>
-		<div id="caHierarchyOverviewHeader"><?php print _t('Browse hierarchy'); ?></div>
+		<div id="caHierarchyOverviewHeader"><?= _t('Browse hierarchy'); ?></div>
 		<div id="caHierarchyOverviewContentArea"></div>
 	</div>
 	<div id='caTempExportForm' style='display:none;'></div>

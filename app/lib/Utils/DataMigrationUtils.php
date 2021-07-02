@@ -229,6 +229,7 @@
 						$vs_label_spec = ($vs_match_on == 'nonpreferred_labels') ? 'nonpreferred_labels' : 'preferred_labels';
 						if (trim($vs_singular_label) || trim($vs_plural_label)) {
 							$va_criteria = array($vs_label_spec => array('name_singular' => $vs_singular_label), 'list_id' => $vn_list_id);
+
 							if (($vn_parent_id !== false) && !$pb_ignore_parent) { $va_criteria['parent_id'] = $vn_parent_id; }
 							if ($vn_item_id = (ca_list_items::find($va_criteria, array('returnAs' => 'firstId', 'purifyWithFallback' => $purify_input, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types)))) {
 								if ($o_log) { $o_log->logDebug(_t("%4Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using singular label %3", $ps_item_idno, $pm_list_code_or_id, $vs_singular_label, $log_reference_str)); }
@@ -245,9 +246,9 @@
 					case 'idno':
 						if ($ps_item_idno == '%') { break; }	// don't try to match on an unreplaced idno placeholder
 						$va_criteria = array('idno' => $ps_item_idno ? $ps_item_idno : $vs_plural_label, 'list_id' => $vn_list_id);
+
 						if (($vn_parent_id !== false) && !$pb_ignore_parent) { $va_criteria['parent_id'] = $vn_parent_id; }
 						if ($vn_item_id = (ca_list_items::find($va_criteria, array('returnAs' => 'firstId', 'purifyWithFallback' => $purify_input, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types)))) {
-
 							if ($o_log) { $o_log->logDebug(_t("%4Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using idno with %3", $ps_item_idno, $pm_list_code_or_id, $ps_item_idno, $log_reference_str)); }
 							break(2);
 						}
@@ -262,6 +263,7 @@
 						$t_instance = new ca_list_items();
 						if ($t_instance->hasField($vs_element) || $t_instance->hasElement($vs_element)) {
 							$va_params = array($vs_element => $ps_item_idno, 'list_id' => $vn_list_id);
+
 							$vn_id = ca_list_items::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => $purify_input, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types));
 							if ($vn_id) { break(2); }
 						}
@@ -533,7 +535,7 @@
 		 * @param string $ps_text The name text
 		 * @param array $pa_options Optional array of options. Supported options are:
 		 *		locale = locale code to use when applying rules; if omitted current user locale is employed
-		 *		displaynameFormat = surnameCommaForename, forenameCommaSurname, forenameSurname, original [Default = original]
+		 *		displaynameFormat = surnameCommaForename, forenameCommaSurname, forenameSurname, forenamemiddlenamesurname, original [Default = original]
 		 *		doNotParse = Use name as-is in the surname and display name fields. All other fields are blank. [Default = false]
 		 *
 		 * @return array Array containing parsed name, keyed on ca_entity_labels fields (eg. forename, surname, middlename, etc.)
@@ -690,7 +692,7 @@
 					$va_name['displayname'] = trim($va_name['forename'].' '.$va_name['surname']);
 					break;
 				case 'forenamemiddlenamesurname':
-					$va_name['displayname'] = trim($va_name['forename'].($va_name['middlename'] ? ' '.$va_name['middlename'].' ' : '').' '.$va_name['surname']);
+					$va_name['displayname'] = trim($va_name['forename'].($va_name['middlename'] ? ' '.$va_name['middlename'] : '').' '.$va_name['surname']);
 					break;
 				case 'surnameforename':
 					$va_name['displayname'] = trim($va_name['surname'].' '.$va_name['forename']);
@@ -1154,8 +1156,8 @@
 				}
 				
 				$t_instance->setMode(ACCESS_WRITE);
-				$t_instance->set('locale_id', $pn_locale_id);
-				$t_instance->set('type_id', $pn_type_id);
+				if($t_instance->hasField('locale_id')) { $t_instance->set('locale_id', $pn_locale_id); }
+				if($t_instance->hasField('type_id')) { $t_instance->set('type_id', $pn_type_id); }
 				
 				$va_intrinsics = array(
 					'source_id' => null, 'access' => 0, 'status' => 0, 'lifespan' => null, 'parent_id' => $vn_parent_id, 'lot_status_id' => null, '_interstitial' => null

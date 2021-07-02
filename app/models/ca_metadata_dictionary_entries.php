@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2019 Whirl-i-Gig
+ * Copyright 2014-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,61 +29,8 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
- 
 require_once(__CA_LIB_DIR__.'/ModelSettings.php');
-require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_rules.php');
-require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_entry_labels.php');
-require_once(__CA_MODELS_DIR__.'/ca_lists.php');
-require_once(__CA_MODELS_DIR__.'/ca_relationship_types.php');
-
-global $_ca_metadata_dictionary_entry_settings;
-$_ca_metadata_dictionary_entry_settings = array(		// global
-	'mandatory' => array(
-		'formatType' => FT_TEXT,
-		'displayType' => DT_CHECKBOXES,
-		'width' => "10", 'height' => "1",
-		'takesLocale' => false,
-		'default' => 0,
-		'label' => _t('Is mandatory?'),
-		'description' => _t('If checked data entry bundle is mandatory and a valid value must be set before it can be saved.')
-	),
-	'definition' => array(
-		'formatType' => FT_TEXT,
-		'displayType' => DT_FIELD,
-		'width' => "660px", 'height' => "400px",
-		'takesLocale' => true,
-		'label' => _t('Definition'),
-		'usewysiwygeditor' => true,
-		'description' => _t('Extended text describing standards for entry in this data entry bundle.')
-	),
-	'restrict_to_types' => array(
-		'formatType' => FT_TEXT,
-		'displayType' => DT_SELECT,
-		'useList' => null,
-		'width' => "200px", 'height' => 5,
-		'takesLocale' => false,
-		'multiple' => 1,
-		'default' => '',
-		'label' => _t('Restrict to types'),
-		'description' => _t('Restricts entry to items of the specified type(s). Leave all unchecked for no restriction.')
-	),
-	'restrict_to_relationship_types' => array(
-		'formatType' => FT_TEXT,
-		'displayType' => DT_SELECT,
-		'useRelationshipTypeList' => null,
-		'width' => "200px", 'height' => 5,
-		'takesLocale' => false,
-		'multiple' => 1,
-		'default' => '',
-		'label' => _t('Restrict to relationship types'),
-		'description' => _t('Restricts entry to items related using the specified relationship type(s). Leave all unchecked for no restriction.')
-	)
-);
-
+ 
 BaseModel::$s_ca_models_definitions['ca_metadata_dictionary_entries'] = array(
  	'NAME_SINGULAR' 	=> _t('Data dictionary entry'),
  	'NAME_PLURAL' 		=> _t('Data dictionary entries'),
@@ -145,6 +92,8 @@ BaseModel::$s_ca_models_definitions['ca_metadata_dictionary_entries'] = array(
 
 
 class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttributes {
+	use ModelSettings;
+	
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -225,11 +174,6 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 	# are listed here is the order in which they will be returned using getFields()
 
 	protected $FIELDS;
-	
-	/**
-	 * Settings delegate - implements methods for setting, getting and using 'settings' var field
-	 */
-	public $SETTINGS;
 	
 	/**
 	 * Array of preloaded definitions, indexed by entry_id
@@ -367,9 +311,49 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 	  */
 	public function setSettingDefinitionsForEntry($pa_additional_settings) {
 		if (!is_array($pa_additional_settings)) { $pa_additional_settings = []; }
-		global $_ca_metadata_dictionary_entry_settings;
 		
-		$standard_settings = $_ca_metadata_dictionary_entry_settings;
+		$standard_settings = [	
+			'mandatory' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_CHECKBOXES,
+				'width' => "10", 'height' => "1",
+				'takesLocale' => false,
+				'default' => 0,
+				'label' => _t('Is mandatory?'),
+				'description' => _t('If checked data entry bundle is mandatory and a valid value must be set before it can be saved.')
+			),
+			'definition' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => "660px", 'height' => "400px",
+				'takesLocale' => true,
+				'label' => _t('Definition'),
+				'usewysiwygeditor' => true,
+				'description' => _t('Extended text describing standards for entry in this data entry bundle.')
+			),
+			'restrict_to_types' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'useList' => null,
+				'width' => "200px", 'height' => 5,
+				'takesLocale' => false,
+				'multiple' => 1,
+				'default' => '',
+				'label' => _t('Restrict to types'),
+				'description' => _t('Restricts entry to items of the specified type(s). Leave all unchecked for no restriction.')
+			),
+			'restrict_to_relationship_types' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'useRelationshipTypeList' => null,
+				'width' => "200px", 'height' => 5,
+				'takesLocale' => false,
+				'multiple' => 1,
+				'default' => '',
+				'label' => _t('Restrict to relationship types'),
+				'description' => _t('Restricts entry to items related using the specified relationship type(s). Leave all unchecked for no restriction.')
+			)
+		];
 		
 		if ($bundle = $this->get('bundle_name')) {
 			$tmp = explode('.', $bundle);
@@ -381,7 +365,7 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 				$standard_settings['restrict_to_relationship_types']['useRelationshipTypeList'] = $path[1];
 			}
 		}
-		$this->SETTINGS = new ModelSettings($this, 'settings', array_merge($standard_settings, $pa_additional_settings));
+		$this->setAvailableSettings(array_merge($standard_settings, $pa_additional_settings));
 		
 		return true;
 	}
@@ -724,20 +708,6 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 		
 		MemoryCache::flush('MDDictRuleList');
 		return true;
-	}
-	# ------------------------------------------------------
-	public function __destruct() {
-		unset($this->SETTINGS);
-	}
-	# ------------------------------------------------------
-	/**
-	 * Reroutes calls to method implemented by settings delegate to the delegate class
-	 */
-	public function __call($ps_name, $pa_arguments) {
-		if (method_exists($this->SETTINGS, $ps_name)) {
-			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
-		}
-		die($this->tableName()." does not implement method {$ps_name}");
 	}
 	# ------------------------------------------------------
 }

@@ -135,7 +135,7 @@ abstract class AttributeValue extends BaseObject {
 	 * 
 	 * @return string
 	 */
-	public function sortableValue(string $value) {
+	public function sortableValue(?string $value) {
 		return null;
 	}
 	# ------------------------------------------------------------------

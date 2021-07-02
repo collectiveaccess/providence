@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020 Whirl-i-Gig
+ * Copyright 2020-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -46,13 +46,17 @@ class pdfjs extends BaseMediaViewer implements IMediaViewer {
 			$va_params = ['identifier' => $ps_identifier, 'context' => caGetOption('context', $pa_options, $po_request->getAction())];
 			
 			// Pass subject key when getting viewer data
-			if ($pa_data['t_subject']) { $va_params[$pa_data['t_subject']->primaryKey()] = $pa_data['t_subject']->getPrimaryKey(); }
+			if ($t_subject = caGetOption('t_subject', $pa_data, null)) { $va_params[$pa_data['t_subject']->primaryKey()] = $pa_data['t_subject']->getPrimaryKey(); }
 			
 			$o_view->setVar('viewer', 'pdfjs');
 			$o_view->setVar('width', caGetOption('width', $pa_data['display'], null));
 			$o_view->setVar('height', caGetOption('height', $pa_data['display'], null));
+			
 
 			$t_instance = isset($pa_data['t_instance']) ? $pa_data['t_instance'] : null;
+			
+			$o_context = $t_subject ? ResultContext::getResultContextForLastFind($po_request, $t_subject->tableName()) : null;
+			$o_view->setVar('search', $o_context ? $o_context->getSearchExpression() : null);
 		}
 		
 		return BaseMediaViewer::prepareViewerHTML($po_request, $o_view, $pa_data, $pa_options);

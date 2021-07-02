@@ -131,6 +131,7 @@
 1655 = Invalid transformation
 1660 = External application configuration file could not be loaded
 1665 = External application is not installed
+1670 = File does not exist or is not readable
 
 # --- Search engine errors
 1700 = Specified search index is invalid
@@ -161,6 +162,7 @@
 1972 = Can't delete attribute
 1980 = Can't add element to restriction list
 1981 = Can't remove element from restriction list
+1985 = Value already exists
 
 # --- Hierarchical processing errors
 2010 = Circular reference

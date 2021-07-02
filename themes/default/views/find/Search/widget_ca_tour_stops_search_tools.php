@@ -112,7 +112,7 @@ if(sizeof($this->getVar("available_sets")) > 0){
 ?>
 			<div class='visualize'>
 				<div id='vizLink'>
-					<?php print "<a href='#'  onclick='jQuery(\"#caSearchVizOptsContainer\").slideToggle(250); jQuery(\"#vizLink\").hide();return false;'>".caNavIcon(__CA_NAV_ICON_VISUALIZE__, 1)." "._t("Visualize")."</a>"; ?>
+					<?php print "<a href='#'  onclick='jQuery(\"#caSearchVizOptsContainer\").slideToggle(250); jQuery(\"#vizLink\").hide();return false;'>".caNavIcon(__CA_NAV_ICON_VISUALIZE__, 2)." "._t("Visualize")."</a>"; ?>
 					<div class='clear:both;'></div>
 				</div>
 				<div id='caSearchVizOptsContainer' style="display:none;">
