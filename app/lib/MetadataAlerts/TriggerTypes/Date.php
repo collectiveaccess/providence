@@ -86,7 +86,7 @@ class Date extends Base {
 		$va_spec = $this->_getSpec($t_instance);
 		$vs_element_code = $va_spec['element_code'];
 		$vs_get_spec = $va_spec['spec'];
-		$vs_date_part = $this->getTriggerValues()['settings']['date_part'] ?: 'both';
+		$vs_date_part = $this->getTriggerValues()['settings']['datePart'] ?: 'both';
 
 		if (is_array($va_filters = $va_values['element_filters']) && !sizeof($va_filters)) { $va_filters = null; }
 
