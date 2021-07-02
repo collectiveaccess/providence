@@ -224,6 +224,8 @@ class BaseEditorController extends ActionController {
 	    	return;
 	    }
 	    
+		$vb_no_save_error = false;
+	    
 		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vn_after_id, $vs_rel_table, $vn_rel_type_id, $vn_rel_id) = $this->_initView($pa_options);
 		/** @var $t_subject BundlableLabelableBaseModelWithAttributes */
 		if (!is_array($pa_options)) { $pa_options = array(); }
@@ -294,6 +296,8 @@ class BaseEditorController extends ActionController {
 		if ($this->_beforeSave($t_subject, $vb_is_insert)) {
 			if ($vb_save_rc = $t_subject->saveBundlesForScreen($this->request->getActionExtra(), $this->request, $va_opts)) {
 				$this->_afterSave($t_subject, $vb_is_insert);
+			} elseif($t_subject->hasErrorNum(3600)) {
+				$vb_no_save_error = true;
 			}
 		}
 		$this->view->setVar('t_ui', $t_ui);
@@ -358,7 +362,6 @@ class BaseEditorController extends ActionController {
 		}
 		if(sizeof($va_errors) - sizeof($va_general_errors) > 0) {
 			$va_error_list = [];
-			$vb_no_save_error = false;
 			foreach($va_errors as $o_e) {
 				$bundle = array_shift(explode('/', $o_e->getErrorSource()));
 				$va_error_list[] = "<li><u>".$t_subject->getDisplayLabel($bundle).'</u>: '.$o_e->getErrorDescription()."</li>\n";
@@ -368,6 +371,9 @@ class BaseEditorController extends ActionController {
 						if (!$vn_subject_id) {		// can't save new record if idno is not valid (when updating everything but idno is saved if it is invalid)
 							$vb_no_save_error = true;
 						}
+						break;
+					case 3600:	// failed to create movement for storage location
+						$vb_no_save_error = true;;
 						break;
 				}
 			}

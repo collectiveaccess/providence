@@ -105,12 +105,8 @@ class Session {
 		# --- Read configuration
 		Session::$name = ($vs_app_name = $o_config->get("app_name")) ? $vs_app_name : $ps_app_name;
 		Session::$domain = $o_config->get("session_domain");
-		Session::$lifetime = (int) $o_config->get("session_lifetime");
+		Session::$lifetime = Session::lifetime();
 		Session::$api_session_lifetime = (int) $service_config->get("api_session_lifetime");
-
-		if(!Session::$lifetime) {
-			Session::$lifetime = 3600 * 24 * 7;
-		}
 		
 		$session_id = self::getSessionID();
 		if (!$pb_dont_create_new_session) {
@@ -328,6 +324,18 @@ class Session {
 			$vars[$k] = Session::$s_session_vars[$k];
 		}
 		ExternalCache::save($session_id, array_merge($va_current_values, $vars), 'SessionVars', $vn_session_lifetime);
+	}
+	# ----------------------------------------
+	/**
+	 * Return session lifetime setting
+	 *
+	 * @return int
+	 */
+	public static function lifetime():int {
+ 		$o_config = Configuration::load();
+ 		if($l = (int) $o_config->get("session_lifetime")) { return $l; }
+		
+		return 3600 * 24 * 7;
 	}
 	# ----------------------------------------
 	# --- Page performance

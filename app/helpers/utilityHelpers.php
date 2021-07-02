@@ -4007,7 +4007,7 @@ function caFileIsIncludable($ps_file) {
 				$vs_display_value = str_replace($va_matches[$i], $vs_padded, $vs_display_value);
 			}
 		}
-		return mb_substr($vs_display_value, 0, $max_length);
+		return mb_substr($vs_display_value, 0, $max_length, 'UTF-8');
 	}
 	# ----------------------------------------
 	/**
