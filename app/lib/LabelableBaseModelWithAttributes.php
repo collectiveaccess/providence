@@ -640,7 +640,28 @@
 			//
 			$va_joins = $va_label_sql = [];
 			
-			if ($vb_has_simple_fields) {				
+			if ($vb_has_simple_fields) {	
+				// 
+				// Convert parent id
+				//
+				if($t_instance->hasField('parent_id') && isset($pa_values['parent_id']) && !is_numeric($pa_values['parent_id'])) {
+					$ids = array_reduce($pa_values['parent_id'], function($c, $i) { 
+						if(!is_numeric($i[1])) {
+							$c[] = $i[1];
+						}
+						return $c;
+					}, []);
+					if(is_array($ids) && sizeof($ids)) {
+						$ids = $vs_table::getIDsForIdnos($ids, $pa_options);
+						
+						foreach($pa_values['parent_id'] as $i => $v) {
+							if (isset($ids[$v[1]])) {
+								$pa_values['parent_id'][$i][1] = $ids[$v[1]];
+							}
+						}
+					}
+				}
+							
 				//
 				// Convert type id
 				//
@@ -670,6 +691,11 @@
 						}
 					}
 				}
+				
+				//
+				// Do model-specific conversions
+				//
+				$pa_values = get_called_class()::rewriteFindCriteria($pa_values);
 				
 				if (method_exists($t_instance, "isRelationship") && $t_instance->isRelationship()) {
 					if (isset($pa_values['type_id']) && !is_numeric($pa_values['type_id'])) {

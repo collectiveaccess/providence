@@ -926,4 +926,40 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 
 		return false;
 	}
+	# ------------------------------------------------------
+	/**
+	 * Rewrite criteria passed to BaseModel::find() with model-specific value conversions. Called by BaseModel::find()
+	 *
+	 * @param array $criteria
+	 *
+	 * @return array
+	 */
+	public function rewriteFindCriteria(array $criteria) : array {
+		if (isset($criteria['list_id']) && !is_numeric($criteria['list_id'])) {
+						
+			$list_id_vals = $criteria['list_id'];
+			foreach($list_id_vals as $i => $list_id_val) {
+				$op = strtolower($list_id_val[0]);
+				$value = $list_id_val[1];
+	
+				if (!is_numeric($value)) {
+					if (is_array($value)) {
+						$trans_vals = [];
+						foreach($value as $j => $v) {
+							if (is_numeric($v)) {
+								$trans_vals[] = (int)$v;
+							} elseif ($list_id = caGetListID($v)) {
+								$trans_vals[] = $list_id;
+							}
+							$criteria['list_id'][$i] = [$op, $trans_vals];
+						}
+					} elseif ($list_id = caGetListID($value)) {
+						$criteria['list_id'][$i] = [$op, $list_id];
+					}
+				}
+			}
+		}
+		return $criteria;
+	}
+	# ------------------------------------------------------
 }

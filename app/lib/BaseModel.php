@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2019 Whirl-i-Gig
+ * Copyright 2000-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -11762,6 +11762,28 @@ $pa_options["display_form_field_tips"] = true;
 				}
 			}
 		} 
+		
+		// 
+		// Convert parent id
+		//
+		if($t_instance->hasField('parent_id') && isset($pa_values['parent_id']) && !is_numeric($pa_values['parent_id'])) {
+			$ids = array_reduce($pa_values['parent_id'], function($c, $i) { 
+				if(!is_numeric($i[1])) {
+					$c[] = $i[1];
+				}
+				return $c;
+			}, []);
+			if(is_array($ids) && sizeof($ids)) {
+				$ids = $vs_table::getIDsForIdnos($ids, $pa_options);
+				
+				foreach($pa_values['parent_id'] as $i => $v) {
+					if (isset($ids[$v[1]])) {
+						$pa_values['parent_id'][$i][1] = $ids[$v[1]];
+					}
+				}
+			}
+		}
+		
 		//
 		// Convert other intrinsic list references
 		//
@@ -11787,6 +11809,11 @@ $pa_options["display_form_field_tips"] = true;
 				}
 			}
 		}
+				
+		//
+		// Do model-specific conversions
+		//
+		$pa_values = get_called_class()::rewriteFindCriteria($pa_values);
 		
 		if (!$vb_find_all) {
 			foreach($pa_values as $vs_field => $va_field_values) {
@@ -11991,6 +12018,14 @@ $pa_options["display_form_field_tips"] = true;
 				break;
 		}
 		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Rewrite criteria passed to BaseModel::find() with model-specific value conversions. Called by BaseModel::find();
+	 * This default implementation returns the criteria unchanged. Models may override this to implement their own conversions.
+	 */
+	public function rewriteFindCriteria(array $criteria) : array {
+		return $criteria;
 	}
 	# ------------------------------------------------------
 	/**
