@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2013 Whirl-i-Gig
+ * Copyright 2011-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -278,5 +278,18 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 			$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(function() { jQuery(\".browseMenuFacet\").load(\"".caNavUrl($po_request, '*', 'Browse', $vs_browse_type, array('facet' => $vs_default_facet, 'getFacet' => 1, 'key' => $vs_key, 'isNav' => 1))."\"); });</script>\n";
 		}
 		return $vs_buf;
+	}
+	# ---------------------------------------
+	/**
+	 * 
+	 *
+	 */
+	function caShowAllForNoCriteriaBrowse(string $table) {
+		$o_browse_config = caGetBrowseConfig();
+		$browse_info = $o_browse_config->getAssoc($table);
+		if(caGetOption(['showAllForNoCriteriaBrowse', 'show_all_for_no_criteria_browse'], $browse_info, false)) {
+			return true;
+		}
+		return false;
 	}
 	# ---------------------------------------
