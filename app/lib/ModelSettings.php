@@ -552,34 +552,27 @@ trait ModelSettings {
 							$va_type_opts[$va_type_info['idno']] = $vn_type_id;
 						}
 					} else { // "normal" (list-based) type restriction
-						$va_type_list = $t_show_types_for_table->getTypeList();
-						if (!is_array($va_type_list)) { break; }
-						
-						foreach($va_type_list as $vn_type_id => $va_type_info) {
-							$va_type_opts[$va_type_info['name_plural']] = $va_type_info['item_id'];
-						}
+						$vs_select_element = $t_show_types_for_table->getTypeListAsHTMLFormElement($vs_input_name.(($vn_height > 1) ? '[]' : ''), ['multiple' => ($vn_height > 1), 'width' => $vn_width, 'height' => $vn_height, 'id' => $vs_input_id], ['values' => $vs_value]);
 					}
 					
-					if ($vn_height > 1) { 
-						$va_attr['multiple'] = 1; $vs_input_name .= '[]'; 
-					}
-					
-					$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height);
-					if ($vn_height > 1) {
-						if ($vs_value && !is_array($vs_value)) { $vs_value = array($vs_value); }
-						$va_opts['values'] = $vs_value;
-					} else {
-						if (is_array($vs_value)) {
-							$va_opts['value'] = array_pop($vs_value);
+					if($vs_select_element == '') {
+						$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height);
+						if ($vn_height > 1) {
+							if ($vs_value && !is_array($vs_value)) { $vs_value = array($vs_value); }
+							$va_opts['values'] = $vs_value;
 						} else {
-							if ($vs_value) {
-								$va_opts['value'] = $vs_value;
+							if (is_array($vs_value)) {
+								$va_opts['value'] = array_pop($vs_value);
 							} else {
-								$va_opts['value'] = null;
+								if ($vs_value) {
+									$va_opts['value'] = $vs_value;
+								} else {
+									$va_opts['value'] = null;
+								}
 							}
 						}
+						$vs_select_element = caHTMLSelect($vs_input_name, $va_type_opts, $va_attr, $va_opts);
 					}
-					$vs_select_element = caHTMLSelect($vs_input_name, $va_type_opts, $va_attr, $va_opts);
 				} elseif (
 					($vs_rel_table = $va_properties['useRelationshipTypeList']) || 
 					($vb_locale_list = (bool)$va_properties['useLocaleList']) || 
