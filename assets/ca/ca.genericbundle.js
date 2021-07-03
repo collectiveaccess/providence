@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -228,6 +228,15 @@ var caUI = caUI || {};
 				}
 			}
 
+			// Set default value for new items
+			var is_new = id ? false : true;
+			if (!id) {
+				jQuery.each(this.defaultValues, function(k, v) {
+					if (v && !templateValues[k]) { templateValues[k] = v; }
+				});
+				id = 'new_' + this.getCount();	// set id to ensure sub-fields get painted with unsaved warning handler
+			}
+		
 			// print out any errors
 			var errStrs = [];
 			if (this.errors && this.errors[id]) {
@@ -239,15 +248,6 @@ var caUI = caUI || {};
 
 			templateValues.error = errStrs.join('<br/>');
 			templateValues.fieldNamePrefix = this.fieldNamePrefix; // always pass field name prefix to template
-
-			// Set default value for new items
-			var is_new = id ? false : true;
-			if (!id) {
-				jQuery.each(this.defaultValues, function(k, v) {
-					if (v && !templateValues[k]) { templateValues[k] = v; }
-				});
-				id = 'new_' + this.getCount();	// set id to ensure sub-fields get painted with unsaved warning handler
-			}
 
 			// replace values in template
 			var jElement = jQuery(this.container + ' textarea.' + (isNew ? this.templateClassName : this.initialValueTemplateClassName)).template(templateValues);

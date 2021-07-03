@@ -260,3 +260,8 @@
 
 # --- Location tracking errors
 3600 = Cannot create movement
+3605 = Could not create storage location - movement relationship for history tracking
+3610 = Could not create storage location - movement original parent relationship for history tracking
+3615 = Could not create storage location - movement new parent relationship for history tracking
+3620 = Could not create storage location - movement new sub-location relationship for history tracking
+3625 = Could not create movement to related item relationship for history tracking

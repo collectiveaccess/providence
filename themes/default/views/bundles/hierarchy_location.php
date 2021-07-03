@@ -41,7 +41,6 @@
 	$vn_items_in_hier 	= $t_subject->getHierarchySize();
 	$vs_bundle_preview	= '('.$vn_items_in_hier. ') '. caProcessTemplateForIDs("^preferred_labels", $t_subject->tableName(), array($t_subject->getPrimaryKey()));
 	
-
 	if(!($min_autocomplete_search_length = (int)$t_subject->getAppConfig()->get(["{$vs_priv_table}_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]))) { $min_autocomplete_search_length = 3; }
 
 	if (!$pn_id && $vb_batch && ($t_subject->getProperty('HIERARCHY_TYPE') === __CA_HIER_TYPE_ADHOC_MONO__)) {
@@ -102,6 +101,26 @@
 	
 	$show_add_object = (!$vb_read_only && $vb_has_privs && !$vb_batch) && $vb_objects_x_collections_hierarchy_enabled && ($t_subject->tableName() == 'ca_collections') && (((!$strict_type_hierarchy || ($strict_type_hierarchy === '~'))) || (($strict_type_hierarchy && ($strict_type_hierarchy !== '~')) && (!sizeof($t_subject->getTypeInstance()->get('ca_list_items.children.item_id', ['returnAsArray' => true])))));
 	
+	// Tab to open on load?
+	$default_tab_index = 0;
+	
+	$movement_action_errors = $this->request->getActionErrors();
+	if($t_subject->tableName() === 'ca_storage_locations') {
+		$movement_action_errors = array_filter($movement_action_errors, function($v) {
+			return preg_match("!^ca_movements\.!", $v->getErrorSource());
+		});
+		
+		if((sizeof($movement_action_errors) > 0) && !$vb_batch && $show_move) {
+			$default_tab_index = 1;	
+		}
+		
+		// Set parent to previously selected
+		if($new_parent_id = $this->request->getParameter($id_prefix.'_new_parent_id', pInteger)) {
+			$pn_parent_id = $new_parent_id;
+			$vn_init_id = $new_parent_id;
+		}
+	}
+	
 	$hier_browser_width = ($pdim = caParseElementDimension(caGetOption('width', $pa_bundle_settings, null))) ? $pdim['expression'] : null;
 	$hier_browser_height = ($pdim = caParseElementDimension(caGetOption('height', $pa_bundle_settings, null))) ? $pdim['expression'] : null;
 	
@@ -123,6 +142,7 @@
 	if ($vb_objects_x_collections_hierarchy_enabled && is_array($va_object_collection_collection_ancestors)) {
 		$pa_ancestors = $va_object_collection_collection_ancestors + $pa_ancestors;
 		$vb_do_objects_x_collections_hierarchy = true;
+		$show_move = true;
 	}
 
 	if (is_array($pa_ancestors) && sizeof($pa_ancestors) > 0) {
@@ -478,8 +498,8 @@
 <?php
 	}
 ?>		
-		jQuery("#<?= $id_prefix; ?>HierarchyBrowserTabs").tabs({ selected: 0 });			// Activate tabs
-		jQuery('#<?= $id_prefix; ?>HierarchyBrowserContainer').hide(0);					// Hide extended options
+		jQuery("#<?= $id_prefix; ?>HierarchyBrowserTabs").tabs({ selected: <?= (int)$default_tab_index; ?> });		// Activate tabs
+		jQuery('#<?= $id_prefix; ?>HierarchyBrowserContainer').hide(0);												// Hide extended options
 	});
 
 <?php
@@ -673,6 +693,12 @@
 	} elseif (isset($pa_bundle_settings['open_hierarchy']) && (bool)$pa_bundle_settings['open_hierarchy']) {
 ?>
 		jQuery("#<?= $id_prefix; ?>browseToggle").trigger("click", { "delay" : 0 });
+<?php
+	}
+	if($default_tab_index === 1) {
+		// Send event to move tab to trigger load of hierarchy
+?>
+		_init<?= $id_prefix; ?>MoveHierarchyBrowser();
 <?php
 	}
 ?>

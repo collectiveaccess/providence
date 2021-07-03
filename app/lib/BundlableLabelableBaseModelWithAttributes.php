@@ -2597,11 +2597,19 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  	 *		restrictToTypes = 
  	 *		bundles = 
  	 *		dontAllowBundleShowHide = Do not provide per-bundle show/hide control. [Default is false]
+ 	 *		policy = history tracking policy to apply relationship type restrictions from. Used to auto-restrict relationship bundles to specific relationship types to conform to policy when triggered from the history tracking chronology bundle. [Default is null]
  	 *	@return array List of bundle HTML to display in form, keyed on placement code
  	 */
  	public function getBundleFormHTMLForScreen($pm_screen, $pa_options, &$pa_placements=null) {
  		$va_omit_bundles = (isset($pa_options['omit']) && is_array($pa_options['omit'])) ? $pa_options['omit'] : array();
  		$vb_dont_allow_bundle_show_hide = caGetOption('dontAllowBundleShowHide', $pa_options, false);
+ 		$policy = caGetOption('policy', $pa_options, null);
+ 		
+ 		// Get policy info
+ 		$pinfo = null;
+ 		if($policy && get_called_class()::historyTrackingPolicyUses($policy, $t = $this->tableName())) {
+			$pinfo = get_called_class()::getHistoryTrackingCurrentValuePolicyElement($policy, $t);
+ 		}
  		
  		$vs_table_name = $this->tableName();
  		
@@ -2714,6 +2722,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					// no edit access so bail
 					//$this->postError(2320, _t('Access denied to screen %1', $pm_screen), "BundlableLabelableBaseModelWithAttributes->getBundleFormHTMLForScreen()");				
 					continue;
+				}
+				
+				// Apply policy relationship type restriction for related, if set
+				if(is_array($pinfo) && Datamodel::tableExists($va_bundle['bundle_name'])) {
+					if(($r = caGetOption('useRelated', $pinfo, null)) && ($rt = caGetOption('useRelatedRelationshipType', $pinfo, null))) {
+						$va_bundle['settings']['restrictToRelationshipTypes'] = [$rt];
+					}
 				}
 				
 				if ($vb_dont_allow_bundle_show_hide) {
@@ -3027,7 +3042,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$va_get_related_opts = array_merge($pa_options, $pa_bundle_settings);
 		if (isset($pa_bundle_settings['restrictToTermsRelatedToCollection']) && $pa_bundle_settings['restrictToTermsRelatedToCollection']) {
 			$va_get_related_opts['restrict_to_relationship_types'] = $pa_bundle_settings['restrictToTermsOnCollectionUseRelationshipType'];
-		}
+		} 
 		
 		$sort_direction = caGetOption('sortDirection', $pa_options, caGetOption('sortDirection', $pa_bundle_settings, null));	
 		if(!($sort = caGetOption('sort', $pa_options, caGetOption('sort', $pa_bundle_settings, null)))) {
@@ -5492,7 +5507,7 @@ if (!$vb_batch) {
 				}		
 			}
 		} catch (Exception $e) {
-			// TODO: change to specific exception type to allow use to set the specific bundle where the error occurred
+			// TODO: change to specific exception type to allow user to set the specific bundle where the error occurred
 			$po_request->addActionErrors(array(new ApplicationError(1100, _t('Invalid rule expression: %1', $e->getMessage()), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", 'MetadataDictionary', false,false)), $vs_bundle, 'general');
 		}
 		if ($vb_dryrun) { $this->removeTransaction(false); }
