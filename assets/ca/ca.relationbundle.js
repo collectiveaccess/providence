@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -255,7 +255,7 @@ var caUI = caUI || {};
 		
 		var that = caUI.initBundle(container, options);
 		
-		that.triggerQuickAdd = function(q, id) {
+		that.triggerQuickAdd = function(q, id, params=null) {
 			var autocompleter_id = options.fieldNamePrefix + 'autocomplete' + id;
 			var panelUrl = options.quickaddUrl;
 			if (options && options.types) {
@@ -266,6 +266,13 @@ var caUI = caUI || {};
 					panelUrl += '/types/' + options.types;
 				}
 			}
+			
+			if (params && (typeof params === 'object')) {
+				for(var k in params) {
+					panelUrl += '/' + k + '/' + params[k];
+				}
+			}
+			
 			options.quickaddPanel.showPanel(panelUrl, null, null, {q: q, field_name_prefix: options.fieldNamePrefix});
 			jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteRawID', id);
 			jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteInputID', autocompleter_id);

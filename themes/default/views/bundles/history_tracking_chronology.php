@@ -101,7 +101,7 @@
 <?php
 				} else {
 ?>
-					<div style='float: left;' class='button caAddMovementButton'><a href="#" id="<?= $vs_id_prefix; ?>AddMovement" onclick='caRelationBundle<?= $vs_id_prefix; ?>_ca_movements.triggerQuickAdd("", "new_0"); return false;'><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= caGetOption('movement_control_label', $settings, _t('Add to movement')); ?></a></div>					
+					<div style='float: left;' class='button caAddMovementButton'><a href="#" id="<?= $vs_id_prefix; ?>AddMovement" onclick='caRelationBundle<?= $vs_id_prefix; ?>_ca_movements.triggerQuickAdd("", "new_0", { usePolicy: <?= json_encode($policy); ?> }); return false;'><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= caGetOption('movement_control_label', $settings, _t('Add to movement')); ?></a></div>					
 <?php
 				}
 			}

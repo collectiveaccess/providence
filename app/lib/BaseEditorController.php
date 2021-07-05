@@ -296,7 +296,7 @@ class BaseEditorController extends ActionController {
 		if ($this->_beforeSave($t_subject, $vb_is_insert)) {
 			if ($vb_save_rc = $t_subject->saveBundlesForScreen($this->request->getActionExtra(), $this->request, $va_opts)) {
 				$this->_afterSave($t_subject, $vb_is_insert);
-			} elseif($t_subject->hasErrorNum(3600)) {
+			} elseif($t_subject->hasErrorNumInRange(3600, 3699)) {
 				$vb_no_save_error = true;
 			}
 		}
@@ -366,14 +366,16 @@ class BaseEditorController extends ActionController {
 				$bundle = array_shift(explode('/', $o_e->getErrorSource()));
 				$va_error_list[] = "<li><u>".$t_subject->getDisplayLabel($bundle).'</u>: '.$o_e->getErrorDescription()."</li>\n";
 
-				switch($o_e->getErrorNumber()) {
+				switch($error_num = (int)$o_e->getErrorNumber()) {
 					case 1100:	// duplicate/invalid idno
 						if (!$vn_subject_id) {		// can't save new record if idno is not valid (when updating everything but idno is saved if it is invalid)
 							$vb_no_save_error = true;
 						}
 						break;
-					case 3600:	// failed to create movement for storage location
-						$vb_no_save_error = true;;
+					default:
+						if(($error_num >= 3600) && ($error_num <= 3699)) { 	// failed to create movement for storage location
+							$vb_no_save_error = true;
+						}
 						break;
 				}
 			}
@@ -1633,7 +1635,13 @@ class BaseEditorController extends ActionController {
 					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
 					return;
 				}
-
+				
+				if (!is_array($bundle_sort_defaults = $this->request->user->getVar('bundleSortDefaults'))) { 
+					$bundle_sort_defaults = [];
+				}
+				$bundle_sort_defaults["P{$pn_placement_id}"] = ['sort' => $ps_sort, 'sortDirection' => $ps_sort_direction];
+				$this->request->user->setVar('bundleSortDefaults', $bundle_sort_defaults);
+				
 				$this->response->addContent($t_subject->getBundleFormHTML($ps_bundle, "P{$pn_placement_id}", array_merge($t_placement->get('settings'), ['placement_id' => $pn_placement_id]), ['request' => $this->request, 'contentOnly' => true, 'sort' => $ps_sort, 'sortDirection' => $ps_sort_direction], $vs_label));
 				break;
 		}
