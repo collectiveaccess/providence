@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,13 +38,11 @@
 # --- Import classes
 # ----------------------------------------------------------------------
 include_once(__CA_LIB_DIR__."/BaseObject.php");
-include_once(__CA_LIB_DIR__."/Datamodel.php");
 include_once(__CA_LIB_DIR__."/Media/MediaInfoCoder.php");
 include_once(__CA_LIB_DIR__."/File/FileInfoCoder.php");
 include_once(__CA_LIB_DIR__."/Parsers/TimeExpressionParser.php");
 include_once(__CA_LIB_DIR__."/Parsers/TimecodeParser.php");
 include_once(__CA_LIB_DIR__."/ApplicationChangeLog.php");
-include_once(__CA_MODELS_DIR__."/ca_locales.php");
 
 
 # ----------------------------------------------------------------------
@@ -108,7 +106,7 @@ class SearchResult extends BaseObject {
 	 *		hierarchy_siblings_prefetch_cache_index
 	 *		hierarchy_children_prefetch_cache_index
 	 */
-	static $s_cache_size_limit = 256;
+	static $s_cache_size_limit = 2048;
 
 	# ------------------------------------------------------------------
 	private $opb_disable_get_with_template_prefetch = false;

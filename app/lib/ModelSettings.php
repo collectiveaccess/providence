@@ -552,7 +552,7 @@ trait ModelSettings {
 							$va_type_opts[$va_type_info['idno']] = $vn_type_id;
 						}
 					} else { // "normal" (list-based) type restriction
-						$vs_select_element = $t_show_types_for_table->getTypeListAsHTMLFormElement($vs_input_name.(($vn_height > 1) ? '[]' : ''), ['multiple' => ($vn_height > 1), 'width' => $vn_width, 'height' => $vn_height, 'id' => $vs_input_id], ['values' => $vs_value]);
+						$vs_select_element = $t_show_types_for_table->getTypeListAsHTMLFormElement($vs_input_name.(($vn_height > 1) ? '[]' : ''), ['multiple' => ($vn_height > 1), 'width' => $vn_width, 'height' => $vn_height, 'id' => $vs_input_id], ['values' => $vs_value, 'nullOption' => '', 'useDefaultWhenNull' => false]);
 					}
 					
 					if($vs_select_element == '') {

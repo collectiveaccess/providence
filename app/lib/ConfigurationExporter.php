@@ -449,15 +449,21 @@ final class ConfigurationExporter {
 				foreach($t_element->getSettings() as $vs_setting => $va_values) {
 					if(is_null($va_values)) { continue; }
 					if(!is_array($va_values)) { $va_values = array($va_values); }
+					
+					switch($vs_setting) {
+						case 'restrictToTypes':
+						case 'restrict_to_types':
+							// Convert authority type restriction
+							if ($t = AuthorityAttributeValue::elementTypeToInstance($t_element->get('datatype'))) {
+								$va_values = caMakeTypeList($t->tableName(), $va_values);
+							}
+							break;
+					}
 					foreach($va_values as $vs_value) {
 						if ($t_element->isValidSetting($vs_setting)) {
 							// we export all settings (not just non-default) when we're running diff exports ..
 							// otherwise we only care about non default ones
 							if($this->opn_modified_after || ($vs_value != $va_available_settings[$vs_setting]["default"])) {
-								if ($vs_setting === 'restrictToTypes'){
-									$t_item = new ca_list_items($vs_value);
-									$vs_value = $t_item->get('idno');
-								}
 								$vo_setting = $this->opo_dom->createElement("setting", caEscapeForXML($vs_value));
 								$vo_setting->setAttribute("name", $vs_setting);
 								$vo_settings->appendChild($vo_setting);
