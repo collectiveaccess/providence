@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2018 Whirl-i-Gig
+ * Copyright 2015-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -137,7 +137,7 @@ function caExtractRequestParams() {
 	$o_purifier = new HTMLPurifier();
 	$pa_params = [];
 	foreach($_REQUEST as $vs_k => $vm_val) {
-		if(is_array($vs_k)) { $vs_k = join(',', caFlattenArray($vs_k));}
+		if(is_array($vm_val)) { $vm_val = join(',', caFlattenArray($vm_val));}
 		if($vs_k == 'password') { continue; } // don't dump plain text passwords on screen
 		$pa_params[$o_purifier->purify($vs_k)] = $o_purifier->purify($vm_val);
 	}
