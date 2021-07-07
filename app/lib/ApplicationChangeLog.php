@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -980,6 +980,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
  	 *		tables = Limit returned data to that related to a list of tables. Values may be table names or numbers. [Default is null]
  	 *		daterange = A valid date/time expression to limit returned log entries to. [Default is null]
  	 *		user_id = ID of user to perform access control checks as. If omitted no access control checks are performed. [Default is null]
+ 	 *		changetype = Filter on type of logged change. Valid values are I (insert), U (update), D (delete). [Default is null]
  	 *		start = Index of log entry (or unit if "limitByUnit" option is set) to start result set with. [Default is 0]
  	 *		limit = Maximum number of entries returned. Omit or set to zero for no limit. [Default is null – no limit]
  	 *		transaction = A database transaction to perform log queries within. [Default is null]
@@ -1007,6 +1008,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 		$start = caGetOption('start', $options, 0, ['castTo' => 'int']);
 		$limit = caGetOption('limit', $options, null, ['castTo' => 'int']);
 		$user_id = caGetOption('user_id', $options, null);
+		$changetype = caGetOption('changetype', $options, null, ['forceUppercase' => true, 'validValues' => ['I', 'U', 'D']]);
 		
 		$sql_limit = ($limit > 0) ? "LIMIT {$start},{$limit}" : '';
 		
@@ -1032,6 +1034,12 @@ require_once(__CA_LIB_DIR__."/Db.php");
 				$params[] = $user_id;
 			}
 		}
+
+		$sql_changetype = null;
+		if(in_array($changetype, ['I', 'U', 'D'], true)) {
+			$sql_changetype = "AND (wcl.changetype = ?)";
+			$params[] = $changetype;
+		}
 		
 		if (!$sql_table) { $sql_table = "1"; }
 		
@@ -1044,7 +1052,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 				FROM ca_change_log wcl
 				LEFT JOIN ca_change_log_subjects AS wcls ON wcl.log_id = wcls.log_id
 				WHERE
-					{$sql_table} {$sql_daterange} {$sql_user_id}
+					{$sql_table} {$sql_daterange} {$sql_user_id} {$sql_changetype}
 				GROUP BY wcl.unit_id
 				ORDER BY m
 				{$sql_limit}
@@ -1057,6 +1065,9 @@ require_once(__CA_LIB_DIR__."/Db.php");
 			$sql_user_id = "AND (wcl.unit_id IN (?))";
 			$sql_table = "1";
 			$params = [$units];
+			if($sql_changetype) {
+				$params[] = $changetype;
+			}
 		}
 			
 		$log = [];
@@ -1069,7 +1080,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 			LEFT JOIN ca_change_log_subjects AS wcls ON wcl.log_id = wcls.log_id
 			LEFT JOIN ca_users AS wu ON wcl.user_id = wu.user_id
 			WHERE
-				{$sql_table} {$sql_daterange} {$sql_user_id}
+				{$sql_table} {$sql_daterange} {$sql_user_id} {$sql_changetype}
 			{$sql_limit}
 		", $params);
 		if ($qr) {

@@ -523,26 +523,23 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 						// Link movement to storage location
 						if (!$t_movement->addRelationship('ca_storage_locations', $this->getPrimaryKey(), $policy_config['useRelatedRelationshipType'])) {
 							if($this->inTransaction()) { $this->removeTransaction(false); }
-							throw new ApplicationException(
-								_t('Could not create storage location - movement relationship for history tracking: %1', join($t_movement->getErrors()))
-							);
+							$this->postError(3605, _t('Could not create storage location - movement relationship for history tracking: %1', join($t_movement->getErrors())), 'ca_storage_locations::saveBundlesForScreen()');
+							return false;
 						}
 						
 						// Link movement to old parent location and new parent location
 						if(isset($policy_config['originalLocationTrackingRelationshipType'])) {
 							if (!$t_movement->addRelationship('ca_storage_locations', $old_parent_id, $policy_config['originalLocationTrackingRelationshipType'])) {
 								if($this->inTransaction()) { $this->removeTransaction(false); }
-								throw new ApplicationException(
-									_t('Could not create storage location - movement original parent relationship for history tracking: %1', join($t_movement->getErrors()))
-								);
+								$this->postError(3610, _t('Could not create storage location - movement original parent relationship for history tracking: %1', join($t_movement->getErrors())), 'ca_storage_locations::saveBundlesForScreen()');
+								return false;
 							}
 						}
 						if(isset($policy_config['newLocationTrackingRelationshipType'])) {
 							if (!$t_movement->addRelationship('ca_storage_locations', $new_parent_id, $policy_config['newLocationTrackingRelationshipType'])) {
 								if($this->inTransaction()) { $this->removeTransaction(false); }
-								throw new ApplicationException(
-									_t('Could not create storage location - movement new parent relationship for history tracking: %1', join($t_movement->getErrors()))
-								);
+								$this->postError(3615, _t('Could not create storage location - movement new parent relationship for history tracking: %1', join($t_movement->getErrors())), 'ca_storage_locations::saveBundlesForScreen()');
+								return false;
 							}
 						}
 						
@@ -553,9 +550,8 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 							foreach($sub_location_ids as $sub_location_id) {
 								if (!$t_movement->addRelationship('ca_storage_locations', $sub_location_id, $policy_config['subLocationTrackingRelationshipType'])) {
 									if($this->inTransaction()) { $this->removeTransaction(false); }
-									throw new ApplicationException(
-										_t('Could not create storage location - movement new sub-location relationship for history tracking: %1', join($t_movement->getErrors()))
-									);
+									$this->postError(3620, _t('Could not create storage location - movement new sub-location relationship for history tracking: %1', join($t_movement->getErrors())), 'ca_storage_locations::saveBundlesForScreen()');
+									return false;
 								}
 							}
 						}
@@ -568,9 +564,8 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 						foreach($content_ids as $content_id) {
 							if(!$t_movement->addRelationship($policy['table'], $content_id, $policy_config['trackingRelationshipType'])) {
 								if($this->inTransaction()) { $this->removeTransaction(false); }
-								throw new ApplicationException(
-									_t('Could not create movement - %1 relationship for history tracking: %2', $policy['table'], join($t_movement->getErrors()))
-								);
+								$this->postError(3625, _t('Could not create movement - %1 relationship for history tracking: %2', $policy['table'], join($t_movement->getErrors())), 'ca_storage_locations::saveBundlesForScreen()');
+								return false;
 							}
 						}
 					}

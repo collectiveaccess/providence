@@ -296,7 +296,7 @@ class BaseEditorController extends ActionController {
 		if ($this->_beforeSave($t_subject, $vb_is_insert)) {
 			if ($vb_save_rc = $t_subject->saveBundlesForScreen($this->request->getActionExtra(), $this->request, $va_opts)) {
 				$this->_afterSave($t_subject, $vb_is_insert);
-			} elseif($t_subject->hasErrorNum(3600)) {
+			} elseif($t_subject->hasErrorNumInRange(3600, 3699)) {
 				$vb_no_save_error = true;
 			}
 		}
@@ -366,14 +366,16 @@ class BaseEditorController extends ActionController {
 				$bundle = array_shift(explode('/', $o_e->getErrorSource()));
 				$va_error_list[] = "<li><u>".$t_subject->getDisplayLabel($bundle).'</u>: '.$o_e->getErrorDescription()."</li>\n";
 
-				switch($o_e->getErrorNumber()) {
+				switch($error_num = (int)$o_e->getErrorNumber()) {
 					case 1100:	// duplicate/invalid idno
 						if (!$vn_subject_id) {		// can't save new record if idno is not valid (when updating everything but idno is saved if it is invalid)
 							$vb_no_save_error = true;
 						}
 						break;
-					case 3600:	// failed to create movement for storage location
-						$vb_no_save_error = true;;
+					default:
+						if(($error_num >= 3600) && ($error_num <= 3699)) { 	// failed to create movement for storage location
+							$vb_no_save_error = true;
+						}
 						break;
 				}
 			}
