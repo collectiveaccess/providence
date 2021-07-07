@@ -69,7 +69,7 @@
 	if(!$this->request->isAjax()) {
 ?>
 </div><!-- end resultbox -->
+
+<div class="editorBottomPadding"><!-- empty --></div>
 <?php
 	}
-	
-<div class="editorBottomPadding"><!-- empty --></div>
