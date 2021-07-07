@@ -1063,7 +1063,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	}
 	# ------------------------------------------------------
 	/**
-	 * Returns array of with information about usage of metadata element(s) in user interfaces
+	 * Returns array with information about usage of metadata element(s) in user interfaces
 	 *
 	 * @param $pm_element_code_or_id mixed Optional element_id or code. If set then counts are only returned for the specified element. If omitted then counts are returned for all elements.
 	 * @return array Array of counts. Keys are element_codes, values are arrays keyed on table DISPLAY name (eg. "set items", not "ca_set_items"). Values are the number of times the element is references in a user interface for the table.
@@ -1113,55 +1113,67 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	}
 	# ------------------------------------------------------
 	/**
-	 * Returns array of with information about usage of metadata element(s) in user interfaces
+	 * Returns array with type restrictions for element
 	 *
-	 * @param $pm_element_code_or_id mixed Optional element_id or code. If set then counts are only returned for the specified element. If omitted then counts are returned for all elements.
-	 * @return array Array of counts. Keys are element_codes, values are arrays keyed on table DISPLAY name (eg. "set items", not "ca_set_items"). Values are the number of times the element is references in a user interface for the table.
+	 * @param $pm_element_code_or_id mixed Optional element_id or code. If set then type restrictions are only returned for the specified element. If omitted then restrictions are returned for all elements.
+	 * @param $options array Options include:
+	 *		returnAll = include restriction settings in returned data. [Default is false]
+	 *
+	 * @return array Array of restrictions. Keys are element_codes, values are arrays keyed on table DISPLAY name (eg. "set items", not "ca_set_items"). Values are the number of times the element is references in a user interface for the table.
 	 */
-	static public function getTypeRestrictionsAsList($pm_element_code_or_id=null) {
-		// Get UI usage counts
+	static public function getTypeRestrictionsAsList($element_code_or_id=null, array $options=null) : array {
+		$return_all = caGetOption('returnAll', $options, false);
 		$vo_db = new Db();
 
-		$vn_element_id = null;
+		$element_id = null;
 
-		if ($pm_element_code_or_id) {
-			$t_element = new ca_metadata_elements($pm_element_code_or_id);
+		if ($element_code_or_id) {
+			$t_element = new ca_metadata_elements($element_code_or_id);
 
-			if (!($vn_element_id = $t_element->getPrimaryKey())) {
-				if ($t_element->load(array('element_code' => $pm_element_code_or_id))) {
-					$vn_element_id = $t_element->getPrimaryKey();
+			if (!($element_id = $t_element->getPrimaryKey())) {
+				if ($t_element->load(['element_code' => $element_code_or_id])) {
+					$element_id = $t_element->getPrimaryKey();
 				}
 			}
 		}
 
-		$vs_sql_where = '';
-		if ($vn_element_id) {
-			$vs_sql_where = " WHERE cmtr.element_id = {$vn_element_id}";
+		$sql_where = '';
+		if ($element_id) {
+			$sql_where = " WHERE cmtr.element_id = {$element_id}";
 		}
 
 		$qr_restrictions = $vo_db->query("
 			SELECT cmtr.*, cme.element_code
 			FROM ca_metadata_type_restrictions cmtr 
 			INNER JOIN ca_metadata_elements AS cme ON cme.element_id = cmtr.element_id
-			{$vs_sql_where}
+			{$sql_where}
 		");
 
-		$va_restrictions = array();
+		$restrictions = [];
 		$t_list = new ca_lists();
 		while($qr_restrictions->nextRow()) {
 			if (!($t_table = Datamodel::getInstanceByTableNum($qr_restrictions->get('table_num'), true))) { continue; }
 
 			if($t_table->isRelationship()) {
-				$vs_type_name = $t_table->getRelationshipTypename('ltor', $qr_restrictions->get('type_id'));
-			} elseif ($vn_type_id = $qr_restrictions->get('type_id')) {
-				$vs_type_name = $t_list->getItemForDisplayByItemID($vn_type_id);
+				$type_name = $t_table->getRelationshipTypename('ltor', $qr_restrictions->get('type_id'));
+			} elseif ($type_id = $qr_restrictions->get('type_id')) {
+				$type_name = $t_list->getItemForDisplayByItemID($type_id);
 			} else {
-				$vs_type_name = '*';
+				$type_name = '*';
 			}
-			$va_restrictions[$qr_restrictions->get('element_code')][$t_table->getProperty('NAME_PLURAL')][$vn_type_id] = $vs_type_name;
+			
+			if ($return_all) {
+				if(!is_array($settings = caUnserializeForDatabase($qr_restrictions->get('settings')))) { $settings = []; }
+				$restrictions[$qr_restrictions->get('element_code')][$t_table->tableName()][$type_id] = array_merge([
+					'name' => $type_name,
+					'type' => caGetListItemIdno($type_id),
+				], array_map("intval", $settings));
+			} else {
+				$restrictions[$qr_restrictions->get('element_code')][$t_table->getProperty('NAME_PLURAL')][$type_id] = $type_name;
+			}
 		}
 
-		return $va_restrictions;
+		return $restrictions;
 	}
 	# ------------------------------------------------------
 	/**
@@ -1400,8 +1412,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		}
 
 		$vm_return = null;
-		$t_element = self::getInstance($pm_element_id);
-
+		if(!($t_element = self::getInstance($pm_element_id))) { return null; }
+		
 		if($t_element->getPrimaryKey()) {
 			$vm_return = $t_element->getSettings();
 		}

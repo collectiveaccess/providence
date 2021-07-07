@@ -3542,7 +3542,7 @@ class SearchResult extends BaseObject {
 			array_splice($va_tmp, 1, 1);
 			$vb_is_related = true;
 		} else {
-			if ($va_tmp[0] !== $table) {
+			if (Datamodel::tableExists($va_tmp[0]) && ($va_tmp[0] !== $table)) {
 				$vb_is_related = true;
 			}
 		}

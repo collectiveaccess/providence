@@ -91,6 +91,133 @@ class SchemaSchema extends \GraphQLServices\GraphQLSchema {
 						'description' => 'Available tables'
 					],
 				]
+			]),
+			$typeRestrictionType = new ObjectType([
+				'name' => 'TypeRestriction',
+				'description' => 'A type restriction on a bundle',
+				'fields' => [
+					'name' => [
+						'type' => Type::string(),
+						'description' => 'Name of type bundle is restricted to'
+					],
+					'type' => [
+						'type' => Type::string(),
+						'description' => 'Type code of type bundle is restricted to'
+					],
+					'minAttributesPerRow' => [
+						'type' => Type::int(),
+						'description' => 'Minimum number of values allowed'
+					],
+					'maxAttributesPerRow' => [
+						'type' => Type::int(),
+						'description' => 'Maximum number of values allowed'
+					],
+					'minimumAttributeBundlesToDisplay' => [
+						'type' => Type::int(),
+						'description' => 'Minimum number of bundles to display in editing form'
+					]
+				]
+			]),
+			$settingsType = new ObjectType([
+				'name' => 'Settings',
+				'description' => 'Bundle settings',
+				'fields' => [
+					'name' => [
+						'type' => Type::string(),
+						'description' => 'Name of setting'
+					],
+					'value' => [
+						'type' => Type::string(),
+						'description' => 'Value of setting'
+					]
+				]
+			]),
+			$subelementType = new ObjectType([
+				'name' => 'SubElement',
+				'description' => 'A sub-element in a container bundle',
+				'fields' => [
+					'name' => [
+						'type' => Type::string(),
+						'description' => 'Name of sub-element'
+					],
+					'code' => [
+						'type' => Type::string(),
+						'description' => 'Code for sub-element'
+					],
+					'type' => [
+						'type' => Type::string(),
+						'description' => 'Sub-element type (label, intrinsic, metadata element, special)'
+					],
+					'list' => [
+						'type' => Type::string(),
+						'description' => 'List used (list sub-elements only)'
+					],
+					'dataType' => [
+						'type' => Type::string(),
+						'description' => 'Data type (text, number, url, etc.)'
+					],
+					'description' => [
+						'type' => Type::string(),
+						'description' => 'Sub-element description'
+					],
+					'settings' => [
+						'type' => Type::listOf($settingsType),
+						'description' => 'Sub-elemment settings'
+					]
+				]
+			]),
+			$bundleType = new ObjectType([
+				'name' => 'Bundle',
+				'description' => 'A bundle',
+				'fields' => [
+					'name' => [
+						'type' => Type::string(),
+						'description' => 'Name of bundle'
+					],
+					'code' => [
+						'type' => Type::string(),
+						'description' => 'Code for bundle'
+					],
+					'type' => [
+						'type' => Type::string(),
+						'description' => 'Bundle type (label, intrinsic, metadata element, special)'
+					],
+					'list' => [
+						'type' => Type::string(),
+						'description' => 'List used (list bundles only)'
+					],
+					'dataType' => [
+						'type' => Type::string(),
+						'description' => 'Data type (text, number, url, etc.)'
+					],
+					'description' => [
+						'type' => Type::string(),
+						'description' => 'Bundle description'
+					],
+					'typeRestrictions' => [
+						'type' => Type::listOf($typeRestrictionType),
+						'description' => 'Type restrictions for bundle (metadata elements only)'
+					],
+					'settings' => [
+						'type' => Type::listOf($settingsType),
+						'description' => 'Bundle settings'
+					],
+					'subelements' => [
+						'type' => Type::listOf($subelementType),
+						'description' => 'Sub-elements'
+					]
+					
+				]
+			]),
+			$bundleListType = new ObjectType([
+				'name' => 'BundleList',
+				'description' => 'List of available bundles',
+				'fields' => [
+					'bundles' => [
+						'type' => Type::listOf($bundleType),
+						'description' => 'Available bundles'
+					],
+				]
 			])
 		];
 	}
