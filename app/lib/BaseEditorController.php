@@ -224,6 +224,8 @@ class BaseEditorController extends ActionController {
 	    	return;
 	    }
 	    
+		$vb_no_save_error = false;
+	    
 		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vn_after_id, $vs_rel_table, $vn_rel_type_id, $vn_rel_id) = $this->_initView($pa_options);
 		/** @var $t_subject BundlableLabelableBaseModelWithAttributes */
 		if (!is_array($pa_options)) { $pa_options = array(); }
@@ -294,6 +296,8 @@ class BaseEditorController extends ActionController {
 		if ($this->_beforeSave($t_subject, $vb_is_insert)) {
 			if ($vb_save_rc = $t_subject->saveBundlesForScreen($this->request->getActionExtra(), $this->request, $va_opts)) {
 				$this->_afterSave($t_subject, $vb_is_insert);
+			} elseif($t_subject->hasErrorNumInRange(3600, 3699)) {
+				$vb_no_save_error = true;
 			}
 		}
 		$this->view->setVar('t_ui', $t_ui);
@@ -358,14 +362,18 @@ class BaseEditorController extends ActionController {
 		}
 		if(sizeof($va_errors) - sizeof($va_general_errors) > 0) {
 			$va_error_list = [];
-			$vb_no_save_error = false;
 			foreach($va_errors as $o_e) {
 				$bundle = array_shift(explode('/', $o_e->getErrorSource()));
 				$va_error_list[] = "<li><u>".$t_subject->getDisplayLabel($bundle).'</u>: '.$o_e->getErrorDescription()."</li>\n";
 
-				switch($o_e->getErrorNumber()) {
+				switch($error_num = (int)$o_e->getErrorNumber()) {
 					case 1100:	// duplicate/invalid idno
 						if (!$vn_subject_id) {		// can't save new record if idno is not valid (when updating everything but idno is saved if it is invalid)
+							$vb_no_save_error = true;
+						}
+						break;
+					default:
+						if(($error_num >= 3600) && ($error_num <= 3699)) { 	// failed to create movement for storage location
 							$vb_no_save_error = true;
 						}
 						break;
@@ -684,8 +692,8 @@ class BaseEditorController extends ActionController {
 
 		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
 
-		if((defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) || (bool)$this->request->config->get('display_template_debugger')) {
-			$this->render(__CA_THEME_DIR__.'/views/editor/template_test_html.php');
+		if((defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) || (bool)$this->request->config->get('display_template_debugger') || ($this->request->user->getPreference('show_template_debugger') !== 'hide')) {
+			$this->render('../template_test_html.php');
 		}
 		
 

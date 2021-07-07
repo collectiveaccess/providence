@@ -165,6 +165,11 @@
 			e.stopPropagation();
 			return false;
 		});
+		
+		jQuery('a.developerBundleCode').on('click', function(e) {
+			caUI.utils.copyToClipboard(jQuery(this).text(), <?= json_encode(_t('Copied code to clipboard')); ?>, { header: <?= json_encode(_t('Developer tools')); ?>, life: 1000, openDuration: 'fast', closeDuration: 'fast' });
+			e.preventDefault();
+		});
 	});
 	</script>
 <?php

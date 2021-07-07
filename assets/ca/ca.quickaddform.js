@@ -157,6 +157,7 @@ var caUI = caUI || {};
 				if(formData['relatedID'] && caBundleUpdateManager) { 
 					caBundleUpdateManager.reloadBundle('ca_objects_location'); 
 					caBundleUpdateManager.reloadBundle('ca_objects_history'); 
+					caBundleUpdateManager.reloadBundle('history_tracking_chronology'); 
 					caBundleUpdateManager.reloadInspector(); 
 				}
 			} else {

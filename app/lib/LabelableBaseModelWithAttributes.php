@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2355,7 +2355,8 @@
 		 * 
 		 * @param array $pa_ids indexed array of primary key values to fetch labels for
 		 * @param array $pa_options Optional array of options. Supported options include:
-		 *								returnAllLocales = if set to true, an array indexed by row_id and then locale_id will be returned
+		 *			returnAllLocales = return array indexed by row_id and then locale_id [Default is false]
+		 *			returnAllTypes = include nonpreferred labels in the returned set [Default is false]				
 		 * @return array An array of preferred labels in the current locale indexed by row_id, unless returnAllLocales is set, in which case the array includes preferred labels in all available locales and is indexed by row_id and locale_id
 		 */
 		public function getPreferredDisplayLabelsForIDs($pa_ids, $pa_options=null) {
@@ -2366,6 +2367,7 @@
 			if (!is_array($va_ids) || !sizeof($va_ids)) { return array(); }
 			
 			$vb_return_all_locales = caGetOption('returnAllLocales', $pa_options, false);
+			$vb_return_all_types = caGetOption('returnAllTypes', $pa_options, false);
 			
 			$vs_cache_key = md5($this->tableName()."/".print_r($pa_ids, true).'/'.print_R($pa_options, true));
 			if (!isset($pa_options['noCache']) && !$pa_options['noCache'] && LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key]) {
@@ -2379,7 +2381,7 @@
 			
 			$vs_preferred_sql = '';
 			
-			if (($t_label_instance = $this->getLabelTableInstance()) && ($t_label_instance->hasField('is_preferred'))) {
+			if (!$vb_return_all_types && ($t_label_instance = $this->getLabelTableInstance()) && ($t_label_instance->hasField('is_preferred'))) {
 				$vs_preferred_sql = "AND (is_preferred = 1)";
 			}
 			$va_labels = array();
