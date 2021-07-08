@@ -57,7 +57,7 @@ class ConfigurationController extends \GraphQLServices\GraphQLServiceController 
 				// Tables
 				// ------------------------------------------------------------
 				'configurationFile' => [
-					'type' => ConfigurationSchema::get('ConfigurationValue'),
+					'type' => ConfigurationSchema::get('ConfigurationValueList'),
 					'description' => _t('Get value from configuration file'),
 					'args' => [
 						[
@@ -76,26 +76,47 @@ class ConfigurationController extends \GraphQLServices\GraphQLServiceController 
 							'name' => 'key',
 							'type' => Type::string(),
 							'description' => _t('Configuration file key to return value for')
+						],
+						[
+							'name' => 'keys',
+							'type' => Type::listOf(Type::string()),
+							'description' => _t('Configuration file keys to return value for')
 						]
 					],
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
 						
+						if(!$u->canDoAction('can_access_configuration_files_via_graphql')) {
+							throw new \ServiceException(_t('Access denied'));
+						}
+						
 						if(!($config = Configuration::load(__CA_CONF_DIR__.'/'.$args['file']))) {
 							throw new \ServiceException(_t('Invalid configuration file: %1', $args['file']));
 						}
 						
-						$value = $config->getAssoc($args['key']);
-						$type = 'ASSOC';
-						if(is_null($value)) {
-							$value = $config->getList($args['key']);
-							$type = 'LIST';
+						$keys = is_array($args['keys']) && sizeof($args['keys']) ? $args['keys'] : [$args['key']];
+						
+						$values = [];
+						foreach($keys as $key) {
+							$key = trim($key);
+							if(!strlen($key)) { continue; }
+							$value = $config->getAssoc($key);
+							$type = 'ASSOC';
 							if(is_null($value)) {
-								$value = $config->getScalar($args['key']);
-								$type = 'SCALAR';
+								$value = $config->getList($key);
+								$type = 'LIST';
+								if(is_null($value)) {
+									$value = $config->getScalar($key);
+									$type = 'SCALAR';
+								}
 							}
+							$values[] = [
+								'key' => $key,
+								'type'=> $type,
+								'value' => json_encode($value)
+							];
 						}
-						return ['file' => $args['file'], 'key' => $args['key'], 'type' => $type, 'value' => json_encode($value)];
+						return ['file' => $args['file'], 'values' => $values];
 					}
 				],
 			]

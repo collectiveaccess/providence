@@ -46,13 +46,9 @@ class ConfigurationSchema extends \GraphQLServices\GraphQLSchema {
 				'name' => 'ConfigurationValue',
 				'description' => '',
 				'fields' => [
-					'file' => [
-						'type' => Type::string(),
-						'description' => 'Name of file'
-					],
 					'key' => [
 						'type' => Type::string(),
-						'description' => 'Name of type'
+						'description' => 'Key'
 					],
 					'type' => [
 						'type' => Type::string(),
@@ -61,6 +57,20 @@ class ConfigurationSchema extends \GraphQLServices\GraphQLSchema {
 					'value' => [
 						'type' => Type::string(),
 						'description' => 'JSON-encoded value'
+					]
+				]
+			]),
+			$configurationValueListType = new ObjectType([
+				'name' => 'ConfigurationValueList',
+				'description' => '',
+				'fields' => [
+					'file' => [
+						'type' => Type::string(),
+						'description' => 'Name of file'
+					],
+					'values' => [
+						'type' => Type::listOf($configurationValueType),
+						'description' => 'List of values'
 					]
 				]
 			])
