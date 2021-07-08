@@ -738,7 +738,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			
 			switch($fi['FIELD_TYPE']) {
 				case FT_NUMBER:
-					$ap['element_info']['datatype'] = __CA_ATTRIBUTE_VALUE_NUMERIC__;
+					$ap['element_info']['datatype'] = isset($fi['LIST_CODE']) ? null : __CA_ATTRIBUTE_VALUE_NUMERIC__;
 					break;
 				case FT_HISTORIC_DATERANGE:
 				case FT_DATERANGE:
