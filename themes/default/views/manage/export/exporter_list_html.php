@@ -56,6 +56,7 @@ if (!$this->request->isAjax()) {
 	
 	<div id="exporterUploadArea" >
 		<span class="exporterUploadText"><?php print _t("Drag exporter worksheets here to add or update"); ?></span>
+		<input type="file" id="exporterUpload">
 	</div>
 <?php
 }
@@ -117,7 +118,7 @@ if (!$this->request->isAjax()) {
 	jQuery(document).ready(function() {
 		jQuery('#progressbar').progressbar({ value: 0 });
 		
-		jQuery('#exporterUploadArea').fileupload({
+		jQuery('#exporterUpload').fileupload({
 			dataType: 'json',
 			url: '<?php print caNavUrl($this->request, 'manage', 'MetadataExport', 'UploadExporters'); ?>',
 			dropZone: jQuery('#exporterUploadArea'),
