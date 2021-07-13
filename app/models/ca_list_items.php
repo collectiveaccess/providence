@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
- 
+
 require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 require_once(__CA_LIB_DIR__.'/RepresentableBaseModel.php');
 require_once(__CA_LIB_DIR__.'/IHierarchy.php');
@@ -520,7 +516,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	/**
 	 * Settings delegate - implements methods for setting, getting and using 'settings' var field
 	 */
-	static public $SETTINGS;
+	public $SETTINGS;
 	
 	# ------------------------------------------------------
 	# --- Constructor
@@ -534,7 +530,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	#
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
-		if (!ca_list_items::$SETTINGS) { ca_list_items::$SETTINGS = new ModelSettings($this, 'settings', array()); }
+		$this->SETTINGS = new ModelSettings($this, 'settings', []);
 		parent::__construct($pn_id);	# call superclass constructor
 	}
 	# ------------------------------------------------------
@@ -586,7 +582,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	private function _setSettingsForList() {
 		global $_ca_list_items_settings;
 		if (isset($_ca_list_items_settings[$vs_list_code = caGetListCode($this->get('list_id'))])) {
-			ca_list_items::$SETTINGS = new ModelSettings($this, 'settings', $_ca_list_items_settings[$vs_list_code]);
+			$this->SETTINGS = new ModelSettings($this, 'settings', $_ca_list_items_settings[$vs_list_code]);
 		}
 	}
  	# ------------------------------------------------------
@@ -922,8 +918,8 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	 * Reroutes calls to method implemented by settings delegate to the delegate class
 	 */
 	public function __call($ps_name, $pa_arguments) {
-		if (method_exists(ca_list_items::$SETTINGS, $ps_name)) {
-			return call_user_func_array(array(ca_list_items::$SETTINGS, $ps_name), $pa_arguments);
+		if (method_exists($this->SETTINGS, $ps_name)) {
+			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
 		}
 		die($this->tableName()." does not implement method {$ps_name}");
 	}

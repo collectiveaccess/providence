@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2018 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -111,8 +111,9 @@ BaseModel::$s_ca_models_definitions['ca_lists'] = array(
  				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
  				'IS_NULL' => false, 
  				'DEFAULT' => 0,
- 				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if list item is deleted or not.')
-		)
+ 				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if list item is deleted or not.'),
+ 				'DONT_INCLUDE_IN_SEARCH_FORM' => true
+ 		)	
  	)
 );
 
@@ -553,7 +554,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					$vs_order_by = 'clil.name_plural';
 					break;
 				case __CA_LISTS_SORT_BY_RANK__:	// by rank
-					$vs_order_by = 'cli.rank';
+					$vs_order_by = 'cli.`rank`';
 					break;
 				case __CA_LISTS_SORT_BY_VALUE__:	// by value
 					$vs_order_by = 'cli.item_value';
@@ -783,7 +784,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				$vs_order_by = 'clil.name_plural';
 				break;
 			case __CA_LISTS_SORT_BY_RANK__:	// by rank
-				$vs_order_by = 'cli.rank';
+				$vs_order_by = 'cli.`rank`';
 				break;
 			case __CA_LISTS_SORT_BY_VALUE__:	// by value
 				$vs_order_by = 'cli.item_value';
@@ -1458,6 +1459,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 *  useDefaultWhenNull = if a list has a null value the default value is typically ignored and null used as the initial value; set this option to use the default in all cases [Default=false]
 	 *	checkAccess = Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
 	 *	exclude = array of item idnos to omit from the returned list. [Default is null]
+	 *
+	 *  forceEnabled = enable all list items regardless of the value of the item's is_enabled value [Default is false]
 	 *	 
 	 * @return string - HTML code for the <select> element; empty string if the list is empty
 	 */
@@ -1560,7 +1563,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		if (!isset($pa_options['omitItemsWithID']) || !is_array($pa_options['omitItemsWithID']) || !sizeof($pa_options['omitItemsWithID'])) { $pa_options['omitItemsWithID'] = null; }
 		$pa_exclude_items = caGetOption('exclude', $pa_options, null);
 	
-		if ((isset($pa_options['nullOption']) && $pa_options['nullOption']) && ($vs_render_as !== 'checklist')) {
+		if ((isset($pa_options['nullOption']) && $pa_options['nullOption']) && (($vs_render_as !== 'checklist') && !$pa_options['requireValue'] )) {
 			$va_options[''] = $pa_options['nullOption'];
 		}
 		
@@ -1615,7 +1618,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			if (is_array($pa_exclude_items) && (sizeof($pa_exclude_items) > 0) && in_array($va_item['idno'], $pa_exclude_items)) { continue; }
 			
 			$va_options[$va_item[$pa_options['key']]] = str_repeat('&nbsp;', intval($va_item['LEVEL']) * 3).' '.$va_item['name_singular'];
-			if (!$va_item['is_enabled'] || (is_array($va_disabled_item_ids) && in_array($vn_item_id, $va_disabled_item_ids))) { $va_disabled_options[$va_item[$pa_options['key']]] = true; }
+			if (!caGetOption('forceEnabled', $pa_options, false) && (!$va_item['is_enabled'] || (is_array($va_disabled_item_ids) && in_array($vn_item_id, $va_disabled_item_ids)))) { $va_disabled_options[$va_item[$pa_options['key']]] = true; }
 			$va_colors[$vn_item_id] = $va_item['color'];
 			
 			if ($va_item['is_default']) { $vn_default_val = $va_item[$pa_options['key']]; }		// get default value
@@ -1738,7 +1741,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
  				caHTMLTextInput(
  					$ps_name.'_autocomplete', 
 					array(
-						'width' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width']: 300, 
+						'width' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width']: "300px", 
 						'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : 1, 
 						'value' => $vs_value, 
 						'maxlength' => 512,
@@ -1864,7 +1867,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				}
 				
 				if (!$vb_is_vertical_hier_browser) {
-					$vs_buf .= "<div id='{$ps_name}_browseCurrentSelection{n}' class='hierarchyBrowserCurrentSelection'>"._t("Current selection").": <span id='{$ps_name}_browseCurrentSelectionText{n}' class='hierarchyBrowserCurrentSelectionText'>?</span></div>";
+					$vs_buf .= "<div id='{$ps_name}_browseCurrentSelection{n}' class='hierarchyBrowserCurrentSelection'>"._t("Current selection").": <span id='{$ps_name}_browseCurrentSelectionText{n}' class='hierarchyBrowserCurrentSelectionText'>-</span></div>";
 				}
 				$vs_buf .= caHTMLHiddenInput(
 					$ps_name,
@@ -1971,7 +1974,9 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	static public function getListCodes($pa_options=null) {		
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options);
-		if (ExternalCache::contains($vs_cache_key, 'listCodes')) { return ExternalCache::fetch($vs_cache_key, 'listCodes'); }
+		if (ExternalCache::contains($vs_cache_key, 'listCodes') && is_array($v = ExternalCache::fetch($vs_cache_key, 'listCodes'))) { 
+			return $v; 
+		}
 		
 		$t_list = new ca_lists();
 		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
