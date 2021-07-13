@@ -51,7 +51,6 @@ final class CachePlugin implements Plugin
     private $noCacheFlags = ['no-cache', 'private', 'no-store'];
 
     /**
-     * @param CacheItemPoolInterface               $pool
      * @param StreamFactory|StreamFactoryInterface $streamFactory
      * @param array                                $config        {
      *
@@ -96,7 +95,6 @@ final class CachePlugin implements Plugin
      * This method will setup the cachePlugin in client cache mode. When using the client cache mode the plugin will
      * cache responses with `private` cache directive.
      *
-     * @param CacheItemPoolInterface               $pool
      * @param StreamFactory|StreamFactoryInterface $streamFactory
      * @param array                                $config        For all possible config options see the constructor docs
      *
@@ -120,7 +118,6 @@ final class CachePlugin implements Plugin
      * This method will setup the cachePlugin in server cache mode. This is the default caching behavior it refuses to
      * cache responses with the `private`or `no-cache` directives.
      *
-     * @param CacheItemPoolInterface               $pool
      * @param StreamFactory|StreamFactoryInterface $streamFactory
      * @param array                                $config        For all possible config options see the constructor docs
      *
@@ -251,8 +248,6 @@ final class CachePlugin implements Plugin
     /**
      * Verify that we can cache this response.
      *
-     * @param ResponseInterface $response
-     *
      * @return bool
      */
     protected function isCacheable(ResponseInterface $response)
@@ -274,8 +269,6 @@ final class CachePlugin implements Plugin
     /**
      * Verify that we can cache this request.
      *
-     * @param RequestInterface $request
-     *
      * @return bool
      */
     private function isCacheableRequest(RequestInterface $request)
@@ -293,8 +286,7 @@ final class CachePlugin implements Plugin
     /**
      * Get the value of a parameter in the cache control header.
      *
-     * @param ResponseInterface $response
-     * @param string            $name     The field of Cache-Control to fetch
+     * @param string $name The field of Cache-Control to fetch
      *
      * @return bool|string The value of the directive, true if directive without value, false if directive not present
      */
@@ -316,8 +308,6 @@ final class CachePlugin implements Plugin
     }
 
     /**
-     * @param RequestInterface $request
-     *
      * @return string
      */
     private function createCacheKey(RequestInterface $request)
@@ -329,8 +319,6 @@ final class CachePlugin implements Plugin
 
     /**
      * Get a ttl in seconds. It could return null if we do not respect cache headers and got no defaultTtl.
-     *
-     * @param ResponseInterface $response
      *
      * @return int|null
      */
@@ -362,8 +350,6 @@ final class CachePlugin implements Plugin
 
     /**
      * Configure an options resolver.
-     *
-     * @param OptionsResolver $resolver
      */
     private function configureOptions(OptionsResolver $resolver)
     {
@@ -413,8 +399,6 @@ final class CachePlugin implements Plugin
     }
 
     /**
-     * @param CacheItemInterface $cacheItem
-     *
      * @return ResponseInterface
      */
     private function createResponseFromCacheItem(CacheItemInterface $cacheItem)
@@ -439,8 +423,6 @@ final class CachePlugin implements Plugin
     /**
      * Get the value of the "If-Modified-Since" header.
      *
-     * @param CacheItemInterface $cacheItem
-     *
      * @return string|null
      */
     private function getModifiedSinceHeaderValue(CacheItemInterface $cacheItem)
@@ -459,8 +441,6 @@ final class CachePlugin implements Plugin
 
     /**
      * Get the ETag from the cached response.
-     *
-     * @param CacheItemInterface $cacheItem
      *
      * @return string|null
      */
@@ -482,8 +462,6 @@ final class CachePlugin implements Plugin
     /**
      * Call the cache listeners, if they are set.
      *
-     * @param RequestInterface        $request
-     * @param ResponseInterface       $response
      * @param bool                    $cacheHit
      * @param CacheItemInterface|null $cacheItem
      *

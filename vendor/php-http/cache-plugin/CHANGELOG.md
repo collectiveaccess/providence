@@ -1,5 +1,17 @@
 # Change Log
 
+## 1.7.2 - 2021-04-14
+
+### Added
+
+- Allow installation with psr/cache 2.0 (1.0 still allowed too)
+
+## 1.7.1 - 2020-07-13
+
+### Added
+
+- Support for PHP 8
+
 ## 1.7.0 - 2019-12-17
 
 ### Added

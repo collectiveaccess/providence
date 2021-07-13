@@ -43,6 +43,7 @@ return array(
     'PasswordPolicy\\Tests\\' => array($vendorDir . '/joshralph/password-policy/tests'),
     'PasswordPolicy\\' => array($vendorDir . '/joshralph/password-policy/src/PasswordPolicy'),
     'Monolog\\' => array($vendorDir . '/monolog/monolog/src/Monolog'),
+    'League\\MimeTypeDetection\\' => array($vendorDir . '/league/mime-type-detection/src'),
     'League\\Flysystem\\ZipArchive\\' => array($vendorDir . '/league/flysystem-ziparchive/src'),
     'League\\Flysystem\\WebDAV\\' => array($vendorDir . '/league/flysystem-webdav/src'),
     'League\\Flysystem\\Cached\\' => array($vendorDir . '/league/flysystem-cached-adapter/src'),
