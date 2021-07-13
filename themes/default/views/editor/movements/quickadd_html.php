@@ -75,7 +75,8 @@
 					'request' => $this->request, 
 					'restrictToTypes' => array($t_subject->get('type_id')),
 					'formName' => $vs_form_name.$vs_field_name_prefix.$vs_n,
-					'forceLabelForNew' => $this->getVar('forceLabel')							// force query text to be default in label fields
+					'forceLabelForNew' => $this->getVar('forceLabel'),							// force query text to be default in label fields
+					'policy' => $this->request->getParameter('usePolicy', pString)
 			));
 			
 			print join("\n", $va_form_elements);

@@ -194,7 +194,7 @@
 							$bundle_settings["{$table}_{$type}_useRelatedRelationshipType"] = $config['useRelatedRelationshipType'];
 						
 							$bundle_settings["{$table}_{$type}_dateElement"] = $config['date'];
-						
+
 							if ((sizeof($path) === 3) && ($rel_types = caGetOption(['restrictToRelationshipTypes', 'showRelationshipTypes'], $config, null)) && $path[1]) { 
 								$bundle_settings["{$table}_showRelationshipTypes"] = [];
 								foreach($rel_types as $rel_type) {
@@ -876,7 +876,7 @@
 			if(!is_array($pa_bundle_settings)) { $pa_bundle_settings = []; }
 
 			$pa_bundle_settings = $this->_processHistoryBundleSettings($pa_bundle_settings);
-	
+
 			$vs_cache_key = caMakeCacheKeyFromOptions(array_merge($pa_bundle_settings, $options, ['id' => $row_id]));
 		
 			$pb_no_cache 				= caGetOption('noCache', $options, false);
@@ -924,7 +924,7 @@
 			if (is_array($path = Datamodel::getPath($table, 'ca_object_lots')) && (((sizeof($path) == 2) && ($vn_lot_id = $qr->get("{$table}.lot_id"))) || ((sizeof($path) == 3) && ($path = array_keys($path)) && ($linking_table = $path[1])))) {
 				
 				if ($linking_table) {
-					$va_lots = $qr->get("{$linking_table}.relation_id", array('returnAsArray' => true));
+					$va_lots = $qr->get("{$linking_table}.relation_id", ['returnAsArray' => true, 'restrictToRelationshipTypes' => caGetOption('ca_lots_showRelationshipTypes', $pa_bundle_settings, null)]);
 				} else {
 					$va_lots = [$vn_lot_id];
 				}
@@ -1028,7 +1028,7 @@
 		
 			// Loans
 			if (is_array($path = Datamodel::getPath($table, 'ca_loans')) && (sizeof($path) == 3) && ($path = array_keys($path)) && ($linking_table = $path[1])) {
-				$va_loans = $qr->get("{$linking_table}.relation_id", array('returnAsArray' => true));
+				$va_loans = $qr->get("{$linking_table}.relation_id", ['returnAsArray' => true, 'restrictToRelationshipTypes' => caGetOption('ca_loans_showRelationshipTypes', $pa_bundle_settings, null)]);
 				$va_child_loans = [];
 				if(caGetOption('ca_loans_includeFromChildren', $pa_bundle_settings, false)) {
 					$va_child_loans = array_reduce($qr->getWithTemplate("<unit relativeTo='{$table}.children' delimiter=';'>^{$linking_table}.relation_id</unit>", ['returnAsArray' => true]), function($c, $i) { return array_merge($c, explode(';', $i)); }, []);
@@ -1135,7 +1135,7 @@
 		
 			// Movements
 			if (is_array($path = Datamodel::getPath($table, 'ca_movements')) && (sizeof($path) == 3) && ($path = array_keys($path)) && ($linking_table = $path[1])) {
-				$va_movements = $qr->get("{$linking_table}.relation_id", array('returnAsArray' => true));
+				$va_movements = $qr->get("{$linking_table}.relation_id", ['returnAsArray' => true, 'restrictToRelationshipTypes' => caGetOption('ca_movements_showRelationshipTypes', $pa_bundle_settings, null)]);
 				$va_child_movements = [];
 				if(caGetOption('ca_movements_includeFromChildren', $pa_bundle_settings, false)) {
 					$va_child_movements = array_reduce($qr->getWithTemplate("<unit relativeTo='{$table}.children' delimiter=';'>^{$linking_table}.relation_id</unit>", ['returnAsArray' => true]), function($c, $i) { return array_merge($c, explode(';', $i)); }, []);
@@ -1246,7 +1246,7 @@
 		
 			// Occurrences
 			if (is_array($path = Datamodel::getPath($table, 'ca_occurrences')) && (sizeof($path) == 3) && ($path = array_keys($path)) && ($linking_table = $path[1])) {
-				$va_occurrences = $qr->get("{$linking_table}.relation_id", array('returnAsArray' => true));
+				$va_occurrences = $qr->get("{$linking_table}.relation_id", ['returnAsArray' => true, 'restrictToRelationshipTypes' => caGetOption('ca_occurrences_showRelationshipTypes', $pa_bundle_settings, null)]);
 				$va_child_occurrences = [];
 				if(is_array($va_occurrence_types = caGetOption('ca_occurrences_showTypes', $pa_bundle_settings, null)) && is_array($va_occurrences)) {	
 					require_once(__CA_MODELS_DIR__."/ca_occurrences.php");
@@ -1360,7 +1360,7 @@
 			
 			// entities
 			if (is_array($path = Datamodel::getPath($table, 'ca_entities')) && (sizeof($path) == 3) && ($path = array_keys($path)) && ($linking_table = $path[1])) {
-				$va_entities = $qr->get("{$linking_table}.relation_id", array('returnAsArray' => true));
+				$va_entities = $qr->get("{$linking_table}.relation_id", ['returnAsArray' => true, 'restrictToRelationshipTypes' => caGetOption('ca_entities_showRelationshipTypes', $pa_bundle_settings, null)]);
 				$va_child_entities = [];
 				if(is_array($va_entity_types = caGetOption('ca_entities_showTypes', $pa_bundle_settings, null)) && is_array($va_entities)) {	
 					require_once(__CA_MODELS_DIR__."/ca_entities.php");
@@ -1475,7 +1475,7 @@
 		
 			// Collections
 			if (is_array($path = Datamodel::getPath($table, 'ca_collections')) && (sizeof($path) == 3) && ($path = array_keys($path)) && ($linking_table = $path[1])) {
-				$va_collections = $qr->get("{$linking_table}.relation_id", array('returnAsArray' => true));
+				$va_collections = $qr->get("{$linking_table}.relation_id", ['returnAsArray' => true, 'restrictToRelationshipTypes' => caGetOption('ca_collections_showRelationshipTypes', $pa_bundle_settings, null)]);
 				$va_child_collections = [];
 				if(caGetOption('ca_collections_includeFromChildren', $pa_bundle_settings, false)) {
 					$va_child_collections = array_reduce($qr->getWithTemplate("<unit relativeTo='{$table}.children' delimiter=';'>^{$linking_table}.relation_id</unit>", ['returnAsArray' => true]), function($c, $i) { return array_merge($c, explode(';', $i)); }, []);    
@@ -1584,7 +1584,7 @@
 			
 			// objects
 			if (is_array($path = Datamodel::getPath($table, 'ca_objects')) && (sizeof($path) == 3) && ($path = array_keys($path)) && ($linking_table = $path[1])) {
-				$va_objects = $qr->get("{$linking_table}.relation_id", array('returnAsArray' => true));
+				$va_objects = $qr->get("{$linking_table}.relation_id", ['returnAsArray' => true, 'restrictToRelationshipTypes' => caGetOption('ca_objects_showRelationshipTypes', $pa_bundle_settings, null)]);
 				$va_child_objects = [];
 				if(caGetOption('ca_objects_includeFromChildren', $pa_bundle_settings, false)) {
 					$va_child_objects = array_reduce($qr->getWithTemplate("<unit relativeTo='{$table}.children' delimiter=';'>^{$linking_table}.relation_id</unit>", ['returnAsArray' => true]), function($c, $i) { return array_merge($c, explode(';', $i)); }, []);    
@@ -1693,7 +1693,7 @@
 		
 			// Storage locations
 			if (is_array($path = Datamodel::getPath($table, 'ca_storage_locations')) && (sizeof($path) == 3) && ($path = array_keys($path)) && ($linking_table = $path[1])) {
-				$va_locations = $qr->get("{$linking_table}.relation_id", array('returnAsArray' => true));
+				$va_locations = $qr->get("{$linking_table}.relation_id", ['returnAsArray' => true, 'restrictToRelationshipTypes' => caGetOption('ca_storage_locations_showRelationshipTypes', $pa_bundle_settings, null)]);
 
 				$va_child_locations = [];
 				if(caGetOption('ca_storage_locations_includeFromChildren', $pa_bundle_settings, false)) {

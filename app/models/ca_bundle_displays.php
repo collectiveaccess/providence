@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2020 Whirl-i-Gig
+ * Copyright 2010-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1125,6 +1125,23 @@ if (!$pb_omit_editing_info) {
 			}
 			
 			switch($va_all_elements[$vn_element_id]['datatype']) {
+				case __CA_ATTRIBUTE_VALUE_TEXT__:
+					$va_even_more_settings = array(
+						'newlines' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'width' => 30, 'height' => 1,
+							'takesLocale' => false,
+							'default' => 'HTML',
+							'options' => array(
+								_t('Preserve newlines') => 'NL2BR',
+								_t('Display as HTML') => 'HTML'
+							),
+							'label' => _t('Newlines'),
+							'description' => _t('Determines how newlines in text are processed.')
+						)		
+					);
+					break;
 				case __CA_ATTRIBUTE_VALUE_LIST__:
 					$va_even_more_settings = array(
 						'sense' => array(
@@ -2397,6 +2414,10 @@ if (!$pb_omit_editing_info) {
 			$doc = new DOMDocument();
 			@$doc->loadHTML('<?xml encoding="utf-8" ?>'.mb_substr($vs_val, 0, $options['maximumLength']));
 			return $doc->saveHTML();
+		}
+		
+		if(caGetOption('newlines', $va_settings, null) === 'NL2BR') {
+			$vs_val = nl2br($vs_val);
 		}
 		return $vs_val;
 	}

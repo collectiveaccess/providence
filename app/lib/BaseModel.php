@@ -410,7 +410,7 @@ class BaseModel extends BaseObject {
 			$this->ops_locale = $vs_locale;
 		}
 		
-		$this->opb_purify_input = strlen($this->_CONFIG->get("purify_all_text_input")) ? (bool)$this->_CONFIG->get("purify_all_text_input") : true;
+		$this->opb_purify_input = strlen($this->_CONFIG->get("purify_all_text_input")) ? (bool)$this->_CONFIG->get("purify_all_text_input") : false;
 		
  		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 
@@ -11901,6 +11901,7 @@ $pa_options["display_form_field_tips"] = true;
 						$va_sql_wheres[] = "({$vs_field} LIKE {$vm_value})";
 					} else {
 						if ($vm_value === '') { continue; }
+						if(($vs_op === 'IN') && (!is_array($vm_value) || !sizeof($vm_value))) { continue; }
 						$va_sql_wheres[] = "({$vs_field} {$vs_op} {$vm_value})";
 					}
 				}

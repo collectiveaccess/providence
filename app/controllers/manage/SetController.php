@@ -44,8 +44,8 @@
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			$o_result_context = new ResultContext($this->request, 'ca_sets', 'basic_search');
- 			
- 			$this->opn_items_per_page = 20;
+
+		    $this->opn_items_per_page = ((int) $this->request->config->get('items_per_page_default_for_ca_sets_search') ?: 20);
  			$this->view->setVar('items_per_page', $this->opn_items_per_page);
  			
  			$this->opn_list_set_type_id = $this->request->getParameter('list_set_type_id', pInteger);
