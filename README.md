@@ -19,6 +19,7 @@ Version 1.7.12 is a maintenance release with these bug fixes and minor improveme
 * Improve path handling of TilePic (zooming image) server for certain system configurations
 * Improvements to Czech locale
 * Change handling of settings values to avoid memory management issues on some systems
+* Fix issue where settings on list items in editors would present incorrect values
 
 Note that this version is not yet compatible with PHP version 8. Please use versions 7.3 or 7.4.
 
