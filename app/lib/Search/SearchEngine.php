@@ -860,6 +860,7 @@ class SearchEngine extends SearchBase {
 	 * @param array $pa_type_codes_or_ids List of type_id or code values to filter search by. When set, the search will only consider items of the specified types. Using a hierarchical parent type will automatically include its children in the restriction. 
 	 * @param array $pa_options Options include
 	 *		includeSubtypes = include any child types in the restriction. Default is true.
+	 *		exclude = Exclude specified types rather than filter on types. [Default is false]
 	 * @return boolean True on success, false on failure
 	 */
 	public function setTypeRestrictions($pa_type_codes_or_ids, $pa_options=null) {
@@ -873,6 +874,14 @@ class SearchEngine extends SearchBase {
 		if (!method_exists($t_instance, 'getTypeListCode')) { return false; }
 		if (!($vs_list_name = $t_instance->getTypeListCode())) { return false; }
 		$va_type_list = $t_instance->getTypeList();
+		
+		if($exclude = caGetOption('exclude', $pa_options, false)) {
+			$type_ids_to_exclude = caMakeTypeIDList($this->ops_tablename, $pa_type_codes_or_ids);
+			foreach($type_ids_to_exclude as $type_id) {
+				unset($va_type_list[$type_id]);
+			}
+			$pa_type_codes_or_ids = array_keys($va_type_list);
+		}
 		
 		$this->opa_search_type_ids = array();
 		foreach($pa_type_codes_or_ids as $vs_code_or_id) {
@@ -891,13 +900,31 @@ class SearchEngine extends SearchBase {
 					$t_item = new ca_list_items($vn_type_id);
 					$va_ids = $t_item->getHierarchyChildren(null, array('idsOnly' => true));
 					$va_ids[] = $vn_type_id;
+					
+					if($exclude) { $va_ids = array_filter($va_ids, function($v) use ($pa_type_codes_or_ids) { return in_array($v, $pa_type_codes_or_ids); }); }
 					$this->opa_search_type_ids = array_merge($this->opa_search_type_ids, $va_ids);
 				} else {
 					$this->opa_search_type_ids[] = $vn_type_id;
 				}
 			}
 		}
+		
 		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 * When type exclusions are specified, the search will only consider items that are not of the given types. 
+	 * If you specify a type that has hierarchical children then the children will automatically be included
+	 * in the exclusion. You may pass numeric type_id and alphanumeric type codes interchangeably.
+	 *
+	 * @param array $pa_type_codes_or_ids List of type_id or code values to exclude from search. Using a hierarchical parent type will automatically include its children in the exclusion. 
+	 * @param array $pa_options Options include
+	 *		includeSubtypes = include any child types in the restriction. Default is true.
+	 * @return boolean True on success, false on failure
+	 */
+	public function setTypeExclusions($pa_type_codes_or_ids, $pa_options=null) {
+		if(!is_array($pa_options)) { $pa_options = []; }
+		return $this->setTypeRestrictions($pa_type_codes_or_ids, array_merge($pa_options, ['exclude' => true]));
 	}
 	# ------------------------------------------------------
 	/**
