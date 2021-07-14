@@ -140,7 +140,6 @@ class ElementsController extends BaseEditorController {
 			$t_element->set('parent_id',$vn_parent_id);
 		}
 		
-
 		if (!$t_element->getPrimaryKey()) {
 			$vb_new = true;
 			$vo_db = $t_element->getDb();
@@ -211,7 +210,7 @@ class ElementsController extends BaseEditorController {
 				}
 			}
 			
-			
+		
 			/* insert new labels */
 			foreach([
 				1 => ['new' => $va_new_labels, 'old' => $va_old_labels, 'delete' => $va_delete_labels],
@@ -266,7 +265,7 @@ class ElementsController extends BaseEditorController {
 					}
 				}
 			}
-	
+
 			/* process settings */
 			if (is_array($va_settings = $t_element->getAvailableSettings())) {
 				$vb_need_to_update = false;
@@ -298,12 +297,12 @@ class ElementsController extends BaseEditorController {
 						$this->notification->addNotification(_t("Setting %2 is not valid: %1", $vs_error, $vs_setting_key), __NOTIFICATION_TYPE_ERROR__);
 						continue;
 					}
-					$t_element->update();
 				}
 
+				$t_element->update();
 				$_REQUEST['form_timestamp'] = $vn_timestamp;
 			}
-			
+		
 			/* process type restrictions */
 			$t_restriction = new ca_metadata_type_restrictions(null, true);
 			$va_settings = array_keys($t_restriction->getAvailableSettings());
@@ -340,7 +339,7 @@ class ElementsController extends BaseEditorController {
 					$t_restriction->insert();
 					continue;
 				}
-				
+			
 				if (preg_match('!^type_restrictions_([\d]+)_delete$!', $vs_key, $va_matches)) {
 					// got one to delete
 					if ($t_restriction->load($va_matches[1])) {
@@ -350,6 +349,7 @@ class ElementsController extends BaseEditorController {
 					continue;
 				}
 			}
+			
             $t_element->flushCacheForElement();
 		}
 		

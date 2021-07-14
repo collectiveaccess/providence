@@ -260,7 +260,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	public function insert($pa_options=null) {
 		$this->set('settings', $this->getSettings());
 		if ($vn_rc =  parent::insert($pa_options)) {
-			$this->flushCacheForElement();
+			if(!caGetOption('noFlush', $pa_options, false)) { $this->flushCacheForElement(); }
 			$this->setGUID($pa_options);
 		}
 		return $vn_rc;
@@ -268,12 +268,12 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	# ------------------------------------------------------
 	public function update($pa_options=null) {
 		$this->set('settings', $this->getSettings());
-		$this->flushCacheForElement();
+		if(!caGetOption('noFlush', $pa_options, false)) { $this->flushCacheForElement(); }
 		return parent::update($pa_options);
 	}
 	# ------------------------------------------------------
 	public function delete($pb_delete_related = false, $pa_options = NULL, $pa_fields = NULL, $pa_table_list = NULL) {
-		$this->flushCacheForElement();
+		if(!caGetOption('noFlush', $pa_options, false)) { $this->flushCacheForElement(); }
 		
 		$vn_primary_key = $this->getPrimaryKey();
 		
