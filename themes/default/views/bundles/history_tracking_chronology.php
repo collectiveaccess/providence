@@ -89,7 +89,7 @@
 			if(!$read_only && !caGetOption('hide_add_to_loan_controls', $settings, false) && ($subject_table::historyTrackingPolicyUses($policy, 'ca_loans'))) {
 			    $show_loan_controls = true;
 ?>
-				<div style='float: left;' class='button caAddLoanButton'><a href="#" id="<?= $vs_id_prefix; ?>AddLoan"><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= caGetOption('loan_control_label', $settings, _t('Add to loan')); ?></a></div>
+				<div style='float: left;' class='button caAddLoanButton'><a href="#" id="<?= $vs_id_prefix; ?>AddLoan"><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= caGetOption('loan_control_label', $settings, _t('Add to loan'), ['defaultOnEmptyString' => true]); ?></a></div>
 <?php
 			}
 			if(!$read_only && !caGetOption('hide_add_to_movement_controls', $settings, false) && ($subject_table::historyTrackingPolicyUses($policy, 'ca_movements'))) {
@@ -97,7 +97,7 @@
                 
                 if(!caGetOption('always_create_new_movement', $settings, false)) {
 ?>
-				<div style='float: left;' class='button caAddMovementButton'><a href="#" id="<?= $vs_id_prefix; ?>AddMovement"><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= caGetOption('movement_control_label', $settings, _t('Add to movement')); ?></a></div>
+				<div style='float: left;' class='button caAddMovementButton'><a href="#" id="<?= $vs_id_prefix; ?>AddMovement"><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= caGetOption('movement_control_label', $settings, _t('Add to movement'), ['defaultOnEmptyString' => true]); ?></a></div>
 <?php
 				} else {
 ?>
@@ -108,13 +108,13 @@
 			if(!$read_only && !caGetOption('hide_update_location_controls', $settings, false) && ($subject_table::historyTrackingPolicyUses($policy, 'ca_storage_locations'))) {
                 $show_location_controls = true;
 ?>
-				<div style='float: left;'  class='button caChangeLocationButton <?= $vs_id_prefix; ?>caChangeLocationButton'><a href="#" id="<?= $vs_id_prefix; ?>ChangeLocation"><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= caGetOption('update_location_control_label', $settings, _t('Update location')); ?></a></div>
+				<div style='float: left;'  class='button caChangeLocationButton <?= $vs_id_prefix; ?>caChangeLocationButton'><a href="#" id="<?= $vs_id_prefix; ?>ChangeLocation"><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= caGetOption('update_location_control_label', $settings, _t('Update location'), ['defaultOnEmptyString' => true]); ?></a></div>
 <?php
 			}
 			
 			if(!$read_only && $show_return_home_controls && !caGetOption('hide_return_to_home_location_controls', $settings, false) && ($subject_table::historyTrackingPolicyUses($policy, 'ca_storage_locations'))) {
 ?>
-				<div style='float: left;' class='button caReturnToHomeLocationButton <?= $vs_id_prefix; ?>caReturnToHomeLocationButton'><a href="#" id="<?= $vs_id_prefix; ?>ReturnToHomeLocation"><?= caNavIcon(__CA_NAV_ICON_HOME__, '15px'); ?> <?= caGetOption('return_to_home_location_control_label', $settings, _t('Return to home location')); ?></a></div>
+				<div style='float: left;' class='button caReturnToHomeLocationButton <?= $vs_id_prefix; ?>caReturnToHomeLocationButton'><a href="#" id="<?= $vs_id_prefix; ?>ReturnToHomeLocation"><?= caNavIcon(__CA_NAV_ICON_HOME__, '15px'); ?> <?= caGetOption('return_to_home_location_control_label', $settings, _t('Return to home location'), ['defaultOnEmptyString' => true]); ?></a></div>
 <?php
 			}
 			
@@ -124,7 +124,7 @@
 				foreach($occ_types as $vn_type_id => $va_type_info) {
 					if (!$subject_table::historyTrackingPolicyUses($policy, 'ca_occurrences', $va_type_info['idno'])) { continue; }
 ?>
-				<div style='float: left;'  class='button caAddOccurrenceButton <?= $vs_id_prefix; ?>caAddOccurrenceButton<?= $vn_type_id; ?>'><a href="#" id="<?= $vs_id_prefix; ?>AddOcc<?= $vn_type_id; ?>"><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= _t(caGetOption('occurrence_control_label', $settings, _t('Add to %1')), $va_type_info['name_singular']); ?></a></div>
+				<div style='float: left;'  class='button caAddOccurrenceButton <?= $vs_id_prefix; ?>caAddOccurrenceButton<?= $vn_type_id; ?>'><a href="#" id="<?= $vs_id_prefix; ?>AddOcc<?= $vn_type_id; ?>"><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= _t(caGetOption('occurrence_control_label', $settings, _t('Add to %1'), ['defaultOnEmptyString' => true]), $va_type_info['name_singular']); ?></a></div>
 <?php		
 				}
 			}
@@ -135,7 +135,7 @@
 				foreach($coll_types as $vn_type_id => $va_type_info) {
 					if (!$subject_table::historyTrackingPolicyUses($policy, 'ca_collections', $va_type_info['idno'])) { continue; }
 ?>
-				<div style='float: left;'  class='button caAddCollectionButton caAddCollectionButton<?= $vn_type_id; ?>'><a href="#" id="<?= $vs_id_prefix; ?>AddColl<?= $vn_type_id; ?>"><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= _t(caGetOption('collection_control_label', $settings, _t('Add to %1')), $va_type_info['name_singular']); ?></a></div>
+				<div style='float: left;'  class='button caAddCollectionButton caAddCollectionButton<?= $vn_type_id; ?>'><a href="#" id="<?= $vs_id_prefix; ?>AddColl<?= $vn_type_id; ?>"><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= _t(caGetOption('collection_control_label', $settings, _t('Add to %1'), ['defaultOnEmptyString' => true]), $va_type_info['name_singular']); ?></a></div>
 <?php		
 				}
 			}
@@ -146,7 +146,7 @@
 				foreach($entity_types as $vn_type_id => $va_type_info) {
 					if (!$subject_table::historyTrackingPolicyUses($policy, 'ca_entities', $va_type_info['idno'])) { continue; }
 ?>
-				<div style='float: left;' class='button caAddEntityButton caAddEntityButton<?= $vn_type_id; ?>'><a href="#" id="<?= $vs_id_prefix; ?>AddEntity<?= $vn_type_id; ?>"><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= _t(caGetOption('entity_control_label', $settings, _t('Add to %1')), $va_type_info['name_singular']); ?></a></div>
+				<div style='float: left;' class='button caAddEntityButton caAddEntityButton<?= $vn_type_id; ?>'><a href="#" id="<?= $vs_id_prefix; ?>AddEntity<?= $vn_type_id; ?>"><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= _t(caGetOption('entity_control_label', $settings, _t('Add to %1'), ['defaultOnEmptyString' => true]), $va_type_info['name_singular']); ?></a></div>
 <?php		
 				}
 			}
@@ -154,7 +154,7 @@
 			if(!$read_only && !caGetOption('hide_add_to_object_controls', $settings, false) && ($subject_table::historyTrackingPolicyUses($policy, 'ca_objects'))) {
 			    $show_object_controls = true;
 ?>
-				<div style='float: left;' class='button caAddObjectButton'><a href="#" id="<?= $vs_id_prefix; ?>AddObject"><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= caGetOption('object_control_label', $settings, _t('Add to object')); ?></a></div>
+				<div style='float: left;' class='button caAddObjectButton'><a href="#" id="<?= $vs_id_prefix; ?>AddObject"><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= caGetOption('object_control_label', $settings, _t('Add to object'), ['defaultOnEmptyString' => true]); ?></a></div>
 <?php
 			}
 ?>
