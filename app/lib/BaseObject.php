@@ -124,11 +124,38 @@
 			return true;
 		}
 		# ------------------------------------------------------------------
+		/**
+		 * Check if object has experienced an error with a given numeric code.
+		 *
+		 * @param int $error_num
+		 * @param string $source Optional source to limit errors to. [Default is null; check all errors]
+		 *
+		 * return bool
+		 */
 		public function hasErrorNum(int $error_num, ?string $source=null) : bool {
 			$errors = $this->errors($source);
 			
 			foreach($errors as $e) {
 				if($e->getErrorNumber() == $error_num) { return true; }
+			}
+			return false;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Check if object has experienced an error within a range of codes.
+		 *
+		 * @param int $start Start of error code range.
+		 * @param int $end End of error code range.
+		 * @param string $source Optional source to limit errors to. [Default is null; check all errors]
+		 *
+		 * return bool
+		 */
+		public function hasErrorNumInRange(int $start, int $end, ?string $source=null) : bool {
+			$errors = $this->errors($source);
+			
+			foreach($errors as $e) {
+				$error_num = $e->getErrorNumber();
+				if(($error_num >= $start) && ($error_num <= $end)) { return true; }
 			}
 			return false;
 		}

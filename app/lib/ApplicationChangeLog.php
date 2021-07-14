@@ -1040,6 +1040,12 @@ require_once(__CA_LIB_DIR__."/Db.php");
 				$params[] = $user_id;
 			}
 		}
+
+		$sql_changetype = null;
+		if(in_array($changetype, ['I', 'U', 'D'], true)) {
+			$sql_changetype = "AND (wcl.changetype = ?)";
+			$params[] = $changetype;
+		}
 		
 		if (!$sql_table) { $sql_table = "1"; }
 		
