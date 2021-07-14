@@ -410,7 +410,7 @@ class BaseModel extends BaseObject {
 			$this->ops_locale = $vs_locale;
 		}
 		
-		$this->opb_purify_input = strlen($this->_CONFIG->get("purify_all_text_input")) ? (bool)$this->_CONFIG->get("purify_all_text_input") : true;
+		$this->opb_purify_input = strlen($this->_CONFIG->get("purify_all_text_input")) ? (bool)$this->_CONFIG->get("purify_all_text_input") : false;
 		
  		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 
@@ -1290,7 +1290,9 @@ class BaseModel extends BaseObject {
 	    
 	    $vs_pk = $t_instance->primaryKey();
 	    $vs_table_name = $t_instance->tableName();
-	    $vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD');
+	    if(!($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
+	    	return null;
+	    }
 		$vs_deleted_sql = $t_instance->hasField('deleted') ? " AND deleted = 0" : "";
 		
 		$va_params = array($pa_idnos);
@@ -11794,14 +11796,12 @@ $pa_options["display_form_field_tips"] = true;
 		//
 		if($t_instance->hasField('parent_id') && isset($pa_values['parent_id']) && !is_numeric($pa_values['parent_id'])) {
 			$ids = array_reduce($pa_values['parent_id'], function($c, $i) { 
-				if(!is_numeric($i[1])) {
+				if(!is_numeric($i[1]) && strlen($i[1])) {
 					$c[] = $i[1];
 				}
 				return $c;
 			}, []);
-			if(is_array($ids) && sizeof($ids)) {
-				$ids = $vs_table::getIDsForIdnos($ids, $pa_options);
-				
+			if((is_array($ids) && sizeof($ids)) && is_array($ids = $vs_table::getIDsForIdnos($ids, $pa_options))) {				
 				foreach($pa_values['parent_id'] as $i => $v) {
 					if (isset($ids[$v[1]])) {
 						$pa_values['parent_id'][$i][1] = $ids[$v[1]];
@@ -11901,6 +11901,7 @@ $pa_options["display_form_field_tips"] = true;
 						$va_sql_wheres[] = "({$vs_field} LIKE {$vm_value})";
 					} else {
 						if ($vm_value === '') { continue; }
+						if(($vs_op === 'IN') && (!is_array($vm_value) || !sizeof($vm_value))) { continue; }
 						$va_sql_wheres[] = "({$vs_field} {$vs_op} {$vm_value})";
 					}
 				}
