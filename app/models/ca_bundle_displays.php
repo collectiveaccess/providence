@@ -629,27 +629,29 @@ if (!$pb_omit_editing_info) {
 											case 'horiz_hierbrowser_with_search':
 											case 'vert_hierbrowser':
 											case 'vert_hierbrowser_down':
-											    if ($t_list->numItemsInList($t_element->get("list_id")) > 500) {
-											        // don't send very large lists
-											        $placements[$placement_id]['allowInlineEditing'] = false;
-												    $placements[$placement_id]['inlineEditingType'] = null;
-											    } else {
-                                                    $placements[$placement_id]['allowInlineEditing'] = $vb_user_can_edit;
-                                                    $placements[$placement_id]['inlineEditingType'] = DT_SELECT;
-                                                
-                                                    $va_list_values = $t_list->getItemsForList($t_element->get("list_id"), array('labelsOnly' => true));
-                                                
-                                                    $qr_list_items = caMakeSearchResult('ca_list_items', array_keys($va_list_values));
-                                                    $va_list_item_labels = [];
-                                        
-                                                    while($qr_list_items->nextHit()) {
-                                                    	if(!($v = trim($qr_list_items->get('ca_list_items.hierarchy.preferred_labels.name_plural', ['delimiter' => $ps_hierarchical_delimiter])))) { continue; }
-                                                        $va_list_item_labels[$vb_use_item_values ? $qr_list_items->get('ca_list_items.item_value') : $qr_list_items->get('ca_list_items.item_id')] = $v;
-                                                    }
-                                                    asort($va_list_item_labels);
-                                                    $placements[$placement_id]['inlineEditingListValues'] = array_values($va_list_item_labels);
-                                                    $placements[$placement_id]['inlineEditingListValueMap'] = array_flip($va_list_item_labels);
-                                                }
+												if($t_element->get("list_id") > 0) {
+													if ($t_list->numItemsInList($t_element->get("list_id")) > 500) {
+														// don't send very large lists
+														$placements[$placement_id]['allowInlineEditing'] = false;
+														$placements[$placement_id]['inlineEditingType'] = null;
+													} else {
+														$placements[$placement_id]['allowInlineEditing'] = $vb_user_can_edit;
+														$placements[$placement_id]['inlineEditingType'] = DT_SELECT;
+												
+														$va_list_values = $t_list->getItemsForList($t_element->get("list_id"), array('labelsOnly' => true));
+												
+														$qr_list_items = caMakeSearchResult('ca_list_items', array_keys($va_list_values));
+														$va_list_item_labels = [];
+										
+														while($qr_list_items->nextHit()) {
+															if(!($v = trim($qr_list_items->get('ca_list_items.hierarchy.preferred_labels.name_plural', ['delimiter' => $ps_hierarchical_delimiter])))) { continue; }
+															$va_list_item_labels[$vb_use_item_values ? $qr_list_items->get('ca_list_items.item_value') : $qr_list_items->get('ca_list_items.item_id')] = $v;
+														}
+														asort($va_list_item_labels);
+														$placements[$placement_id]['inlineEditingListValues'] = array_values($va_list_item_labels);
+														$placements[$placement_id]['inlineEditingListValueMap'] = array_flip($va_list_item_labels);
+													}
+												}
 												break;
 											default: // if it's a render setting we don't know about it's not editable
 												$placements[$placement_id]['allowInlineEditing'] = false;
