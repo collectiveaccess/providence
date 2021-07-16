@@ -362,7 +362,9 @@ class BaseFindEngine extends BaseObject {
 		foreach($sorted_rows_by_value as $value => $row_ids) {
 			foreach($page_hits as $index => $row_id) {
 				if (($map_index = array_search($row_id, $row_ids)) !== false) {
-					if ($index > 0) {	// starts after beginning of this page
+					if((sizeof($hits) === sizeof($row_ids)) && (sizeof($sorted_rows_by_value) === 1)) {
+						return $row_ids;
+					} elseif ($index > 0) {	// starts after beginning of this page
 						$lr = sizeof($row_ids);
 						if (($lr + $index) >= sizeof($sorted_page_hits)) { $lr = sizeof($sorted_page_hits) - $index; }
 						array_splice($sorted_page_hits, $index, $lr, array_slice($row_ids, 0, $lr));
