@@ -2307,7 +2307,10 @@ Timer::p("PROCESS", "[$pn_item_id/end context switch] %time<br>\n");
 	 * @return BundlableLabelableBaseModelWithAttributes|bool|null
 	 */
 	static public function loadInstanceByID($pn_record_id,$pn_table_num, $pa_options=null) {
+		unset($pa_options['start']);
+		unset($pa_options['limit']);
 		$cache_key = caMakeCacheKeyFromOptions($pa_options, "{$pn_record_id}/{$pn_table_num}");
+		
 		if(sizeof(ca_data_exporters::$s_instance_cache)>255) {
 			array_shift(ca_data_exporters::$s_instance_cache);
 		}

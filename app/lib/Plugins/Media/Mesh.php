@@ -435,8 +435,8 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		
-		$vn_width = (isset($pa_options["viewer_width"]) && ($pa_options["viewer_width"] > 0)) ? $pa_options["viewer_width"] : 820;
-		$vn_height = (isset($pa_options["viewer_height"]) && ($pa_options["viewer_height"] > 0)) ? $pa_options["viewer_height"] : 520;
+		$vn_width = (isset($pa_options["viewer_width"]) && ($pa_options["viewer_width"] > 0)) ? $pa_options["viewer_width"] : 0;
+		$vn_height = (isset($pa_options["viewer_height"]) && ($pa_options["viewer_height"] > 0)) ? $pa_options["viewer_height"] : 0;
 
 		$vs_id = (isset($pa_options["id"]) && $pa_options["id"]) ? $pa_options["id"] : "mesh_canvas";
 		
@@ -456,14 +456,18 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 			var texture = '<?= $texture ? $texture : ''; ?>';
 			var container, stats;
 			var camera, cameraTarget, scene, renderer;
-			var total_filesize = <?php print $vn_progress_total_filesize; ?>;
+			var total_filesize = <?= $vn_progress_total_filesize; ?>;
+			var viewerWidth = <?= (int)$vn_width; ?>;
+			if(viewerWidth <= 0) { viewerWidth = window.innerWidth; }
+			var viewerHeight = <?= (int)$vn_height; ?>;
+			if(viewerHeight <= 0) { viewerHeight = window.innerHeight; }
 			
 			init();
 			animate();
 			
 			function init() {
 				container = document.getElementById('viewer');
-				camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 150 );
+				camera = new THREE.PerspectiveCamera(35, viewerWidth / viewerHeight, 1, 150 );
 				camera.position.set(0, 0, 10);
 
 				cameraTarget = new THREE.Vector3( 0, 0, 0 );
@@ -561,7 +565,7 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 				} else {
 					renderer = new THREE.CanvasRenderer( { antialias: false, alpha: false } );
 				}
-				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.setSize( viewerWidth, viewerHeight );
 
 				renderer.gammaInput = true;
 				renderer.gammaOutput = true;
@@ -576,7 +580,7 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 
 				container.appendChild( renderer.domElement );
 
-				window.addEventListener( 'resize', onWindowResize, false );
+				//window.addEventListener( 'resize', onWindowResize, false );
 
 			}
 
@@ -641,8 +645,8 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 		$vn_c = 0;
 		while((($vs_line = trim(fgets($r_rp), "\n")) !== false) && ($vn_c < 100)) {
 			if ($vs_line[0] === '#') { continue; }
+			$va_toks = preg_split('![ ]+!', preg_replace("![\n\r\t]+!", "", $vs_line));
 			
-			$va_toks = preg_split('![ ]+!', $vs_line);
 			if (in_array($va_toks[0], ['v', 'vn']) && (sizeof($va_toks) >= 4) && is_numeric($va_toks[1]) && is_numeric($va_toks[2]) && is_numeric($va_toks[3])) {
 				fclose($r_rp);
 				return true;
