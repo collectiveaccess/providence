@@ -430,6 +430,7 @@
 		 * @param array $options Options include:
 		 *		dontCheckRowIDs = Skip verification of row_id values. [Default is false]
 		 *		row_id = Row id to use instead of currently loaded row. [Default is null]
+		 *		isFuture =
 		 *
 		 * @return bool
 		 * @throws ApplicationException
@@ -443,6 +444,7 @@
 			
 			$is_future = caGetOption('isFuture', $options, null);
 			if (is_null($values) && !$is_future) {			
+				// Remove current value
 				if ($l = ca_history_tracking_current_values::find(['policy' => $policy, 'table_num' => $subject_table_num, 'row_id' => $row_id], ['returnAs' => 'firstModelInstance', 'transaction' => $this->getTransaction()])) {
 					$l->setDb($this->getDb());	
 					self::$s_history_tracking_deleted_current_values[$l->get('tracked_table_num')][$l->get('tracked_row_id')][$policy] = 
@@ -477,13 +479,17 @@
 			}
 			
 			if (!($t = $subject_table::find($row_id, ['returnAs' => 'firstModelInstance', 'transaction' => $this->getTransaction()]))) {
-				throw new ApplicationException(_t('Invalid subject row id'));
+				//throw new ApplicationException(_t('Invalid subject row id'));
+				return null; // row no longer exists
 			}
 			$t->setDb($this->getDb());
 			
+			// Look for existing current tracking values
 			if ($ls = ca_history_tracking_current_values::find(['policy' => $policy, 'table_num' => $subject_table_num, 'row_id' => $row_id], ['returnAs' => 'arrays', 'transaction' => $this->getTransaction()])) {
 				foreach($ls as $l) {
-				    if((bool)$l['is_future']) { continue; }
+				    if($l['is_future'] > time()) { 
+				    	continue; 
+				    }
 				    if (
 				        (($l['tracked_table_num']) == $values['tracked_table_num']) && (($l['tracked_row_id']) == $values['tracked_row_id']) && (($l['tracked_type_id']) == $values['tracked_type_id']) &&
 				        (($l['current_table_num']) == $values['current_table_num']) && (($l['current_row_id']) == $values['current_row_id']) && (($l['current_type_id']) == $values['current_type_id'])
@@ -492,9 +498,25 @@
 				        self::$s_history_tracking_newly_added_current_values[$values['tracked_table_num']][$values['tracked_row_id']][$policy] = 
                             self::$s_history_tracking_newly_added_current_values[$values['current_table_num']][$values['current_row_id']][$policy] = 
                                 ['table_num' => $subject_table_num, 'row_id' => $row_id];
-                                
-				        return true;
+                          
+                        if($l['is_future'] > 0) {
+                        	// Delete existing entries
+                        	$this->getDb()->query("DELETE FROM ca_history_tracking_current_values WHERE table_num = ? AND row_id = ? AND is_future IS NULL and tracking_id <> ?", [$subject_table_num, $row_id, $l['tracking_id']]);
+                        	
+                        	// Future location is now current location
+                        	$t_l = new ca_history_tracking_current_values();
+							$t_l->setDb($this->getDb());	
+							$t_l->load($l['tracking_id']);
+							$t_l->set('is_future', null);
+							if (!($rc = $t_l->update())) {
+								$this->errors = $t_l->errors;
+								return false;
+							}
+                        }      
+                        return true;
 				    }
+				    
+				    // Remove old tracking value
 				    self::$s_history_tracking_deleted_current_values[$l['tracked_table_num']][$l['tracked_row_id']][$policy] = 
 					    self::$s_history_tracking_deleted_current_values[$l['current_table_num']][$l['current_row_id']][$policy] = 
 					        ['table_num' => $l['table_num'], 'row_id' => $l['row_id']];
@@ -508,10 +530,8 @@
                     }
 				}
 			}
-		
-			$e = new ca_history_tracking_current_values();
-			$e->setDb($this->getDb());	
-			$e->set([
+			
+			$d = [
 				'policy' => $policy,
 				'table_num' => $subject_table_num, 
 				'type_id' => $t->get("{$subject_table}.type_id"),
@@ -523,7 +543,33 @@
 				'tracked_type_id' => $values['tracked_type_id'], 
 				'tracked_row_id' => $values['tracked_row_id'],
 				'is_future' => $is_future
-			]);
+			];
+			
+			if(
+				($is_future > 0) 
+				&& 
+				($future_entries = ca_history_tracking_current_values::find([
+					'policy' => $policy, 'table_num' => $subject_table_num, 
+					'row_id' => $row_id, 'is_future' => ['>', 0]
+				], ['returnAs' => 'modelInstances']))
+			) {
+				$found = false;
+				foreach($future_entries as $fe) {
+					if(!$found && ($fe->get('is_future') < $is_future)) {
+						// keep
+						$found = true;
+					} else {
+						$fe->delete(true);
+					}
+				}
+			}
+			if($found || (ca_history_tracking_current_values::find($d, ['returnAs' => 'count']) > 0)) {
+				return true;
+			}
+		
+			$e = new ca_history_tracking_current_values();
+			$e->setDb($this->getDb());	
+			$e->set($d);
 			
 			if (!($rc = $e->insert())) {
 				$this->errors = $e->errors;
@@ -679,41 +725,26 @@
 							
 								if ($entry['status'] === 'FUTURE') {
 									$is_future = caHistoricTimestampToUnixTimestamp($d);
+									
+									if (is_array($entry = $this->_rewriteEntryWithRelated($entry))) {
+										$this->setHistoryTrackingCurrentValue($policy, $entry, ['row_id' => $row_id, 'isFuture' => $is_future]);
+									}	
 									continue;
 								}
 								if (($entry['status'] === 'CURRENT') || ($omit_table)) {
 									$current_entry = $entry;
 									$current_entry['status'] = 'CURRENT';
 									 
-									 if ($current_entry['useRelated']) {
-									 	if (!($t_related = Datamodel::getInstance($current_entry['useRelated'], true))) {
-									 		throw new ApplicationException(_t("Invalid table specification for 'useRelated' in history tracking policy"));
-									 	}
-									 	if(!($t_primary = Datamodel::getInstance($current_entry['type'], true, $current_entry['id']))) {
-									 		throw new ApplicationException(_t("Invalid table specification for entry in history tracking policy"));
-									 	}
-									 	if (!$t_primary->isLoaded()) { continue; }
-									 	
-									 	// rewrite current entry to use related record
-									 	$rel_item = $t_primary->getRelatedItems($current_entry['useRelated'], ['restrictToRelationshipTypes' => [$current_entry['useRelatedRelationshipType']], 'returnAs' => 'firstModelInstance']);
-									 	if ($rel_item) {
-									 			$current_entry = array_merge($current_entry, [
-									 				'tracked_table_num' => $current_entry['current_table_num'],
-									 				'tracked_row_id' => $current_entry['current_row_id'],
-									 				'tracked_type_id' => $current_entry['current_type_id'],
-									 				'current_table_num' => $t_related->tableNum(),
-									 				'current_row_id' => $rel_item->getPrimaryKey(),
-									 				'current_type_id' => $rel_item->get('type_id'),
-									 			]);
-									 	}
-									 }
+									if(!is_array($current_entry = $this->_rewriteEntryWithRelated($current_entry))) { 
+										continue;
+									}
 									break(2);
 								}
 							}
 						}
 					}
 					if ($current_entry) {
-						if (!($this->setHistoryTrackingCurrentValue($policy, $current_entry, ['row_id' => $row_id, 'isFuture' => $is_future]))) {
+						if (!($this->setHistoryTrackingCurrentValue($policy, $current_entry, ['row_id' => $row_id, 'isFuture' => null]))) {
 						    return false;
 						}
 					} else {
@@ -723,6 +754,36 @@
 				return true;
 			}
 			return false;
+		}
+		# ------------------------------------------------------
+		/** 
+		 *
+		 */
+		private function _rewriteEntryWithRelated($entry) {
+			if ($entry['useRelated']) {
+				if (!($t_related = Datamodel::getInstance($entry['useRelated'], true))) {
+					throw new ApplicationException(_t("Invalid table specification for 'useRelated' in history tracking policy"));
+				}
+				if(!($t_primary = Datamodel::getInstance($entry['type'], true, $entry['id']))) {
+					throw new ApplicationException(_t("Invalid table specification for entry in history tracking policy"));
+				}
+				if (!$t_primary->isLoaded()) { return null; }
+			
+				// rewrite current entry to use related record
+				$rel_item = $t_primary->getRelatedItems($entry['useRelated'], ['restrictToRelationshipTypes' => [$entry['useRelatedRelationshipType']], 'returnAs' => 'firstModelInstance']);
+			
+				if ($rel_item) {
+					$entry = array_merge($entry, [
+						'tracked_table_num' => $entry['current_table_num'],
+						'tracked_row_id' => $entry['current_row_id'],
+						'tracked_type_id' => $entry['current_type_id'],
+						'current_table_num' => $t_related->tableNum(),
+						'current_row_id' => $rel_item->getPrimaryKey(),
+						'current_type_id' => $rel_item->get('type_id'),
+					]);
+				}
+			};
+			return $entry;
 		}
 		# ------------------------------------------------------
 		/**

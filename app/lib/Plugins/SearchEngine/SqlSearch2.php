@@ -450,7 +450,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			", $params);
 		} else {
 			$qr_res = $this->db->query("
-				SELECT swi.row_id, 100 boost
+				SELECT DISTINCT swi.row_id, 100 boost
 				FROM ca_sql_search_word_index swi
 				".(!$is_blank ? 'INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id' : '')."
 				WHERE
