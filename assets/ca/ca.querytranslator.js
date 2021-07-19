@@ -54,9 +54,17 @@ var caUI = caUI || {};
 	 * @param {String} value
 	 * @returns {String}
 	 */
-	escapeValue = function (value) {
+	escapeValue = function (value, autoquote=true, prefix=null, suffix=null) {
 		if(typeof value !== 'string') return value;
-		return value.replaceAll(/([\-\+&\|!\(\)\{}\[\]\^"'~\*\?:\\])/g, '\\$1');
+		value = value.replaceAll(/([\-\+&\|!\(\)\{}\[\]\^"'~\*\?:\\])/g, '\\$1');
+		
+		if(prefix) value = prefix + value;
+		if(suffix) value = value + suffix;
+		
+		if(autoquote && value.match(/[ \-\+]/)) {
+		    value = '"' + value + '"';
+		}
+		return value;
 	};
 
 
@@ -111,32 +119,32 @@ var caUI = caUI || {};
 			}
 			switch (negation ? ruleSet.operator.replace('not_', '') : ruleSet.operator) {
 				case 'equal':
-					return prefix + '"' + escapeValue(ruleSet.value) + '"';
+					return prefix + '"' + escapeValue(ruleSet.value, false) + '"';
 				case 'in':
 					return prefix + '(' + escapeValue(ruleSet.value) + ')';
 				case 'between':
 					return prefix + '[' + escapeValue(ruleSet.value[0]) + ' TO ' + escapeValue(ruleSet.value[1]) + ']';
 				case 'begins_with':
-					return prefix + '' + escapeValue(ruleSet.value) + '*';
+					return prefix + escapeValue(ruleSet.value, true, '', '*');
 				case 'contains':
-					return prefix + '*' + escapeValue(ruleSet.value) + '*';
+					return prefix + escapeValue(ruleSet.value, true, '*', '*');
 				case 'ends_with':
-					return prefix + '*' + escapeValue(ruleSet.value) + '';
+					return prefix + escapeValue(ruleSet.value, true, '*', null);
 				case 'less':
-					return prefix + '#lt#' + escapeValue(ruleSet.value) + '';
+					return prefix + escapeValue(ruleSet.value, true, '#lt#');
 				case 'less_or_equal':
-					return prefix + '#lt=' + escapeValue(ruleSet.value) + '';
+					return prefix + escapeValue(ruleSet.value, true, '#lt=');
 				case 'greater':
-					return prefix + '#gt#' + escapeValue(ruleSet.value) + '';
+					return prefix + escapeValue(ruleSet.value, true, '#gt#');
 				case 'greater_or_equal':
-					return prefix + '#gt=' + escapeValue(ruleSet.value) + '';
+					return prefix + escapeValue(ruleSet.value, true, '#gt=');
 				case 'is_empty':
 				case 'is_null':
 					// "is_not_empty" is a double negative, so the negation prefix is applied in reverse.
 					return f + (!negation ? ':"[BLANK]"' : ':"[SET]"');
 			}
 			
-			return f + ':' + ruleSet.value;
+			return f + ':' + escapeValue(ruleSet.value, true);
 		}
 		return '';
 	};
