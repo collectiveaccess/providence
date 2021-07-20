@@ -783,14 +783,14 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					$va_mapping[$vs_key] = array(
 						'parent_id' => $vs_parent_id,
 						'element' => $vs_element,
-						'source' => ($vs_mode == "RepeatMappings" ? null : $vs_source),
+						'source' => ($vs_mode == "repeatmappings" ? null : $vs_source),
 						'options' => $va_options,
 						'original_values' => $va_original_values,
 						'replacement_values' => $va_replacement_values
 					);
 
 					// allow mapping repetition
-					if($vs_mode == 'RepeatMappings') {
+					if($vs_mode == 'repeatmappings') {
 						if(strlen($vs_source) < 1) { // ignore repitition rows without value
 							continue(2);
 						}
