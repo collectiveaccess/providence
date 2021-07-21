@@ -433,17 +433,17 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						[
 							'name' => 'date',
 							'type' => Type::string(),
-							'description' => _t('Numeric database id value of record to edit.')
+							'description' => _t('Limit truncation to rows with modification dates within the specified range. Date can be any parseable date expression.')
 						],
 						[
 							'name' => 'type',
 							'type' => Type::string(),
-							'description' => _t('Type code for new record. (Eg. ca_objects)')
+							'description' => _t('Type code to limit truncation of records to.')
 						],
 						[
 							'name' => 'types',
 							'type' => Type::listOf(Type::string()),
-							'description' => _t('Type code for new record. (Eg. ca_objects)')
+							'description' => _t('Type codes to limit truncation of records to.')
 						],
 						[
 							'name' => 'fast',
@@ -462,7 +462,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						
 						$table = $args['table'];
 						
-						$qr = $table::find('*', ['modified' => $args['date'], 'restrictToTypes' => $args['types'], 'returnAs' => 'searchResult']);
+						$qr = $table::find('*', ['modified' => $args['date'], 'restrictToTypes' => (isset($args['types']) && is_array($args['types']) && sizeof($args['types'])) ? $args['types'] : ($args['type'] ?? [$args['type']]), 'returnAs' => 'searchResult']);
 
 						$c = 0;
 						if($qr && ($qr->numHits() > 0)) {
