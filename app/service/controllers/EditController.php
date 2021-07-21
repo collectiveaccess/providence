@@ -330,13 +330,28 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							'description' => _t('Numeric database id value of record to edit.')
 						],
 						[
+							'name' => 'ids',
+							'type' => Type::listOf(Type::int()),
+							'description' => _t('Numeric database id value of record to edit.')
+						],
+						[
 							'name' => 'idno',
 							'type' => Type::string(),
 							'description' => _t('Alphanumeric idno value of record to edit.')
 						],
 						[
+							'name' => 'idnos',
+							'type' => Type::listOf(Type::string()),
+							'description' => _t('Alphanumeric idno value of record to edit.')
+						],
+						[
 							'name' => 'identifier',
 							'type' => Type::string(),
+							'description' => _t('Alphanumeric idno value or numeric database id of record to delete.')
+						],
+						[
+							'name' => 'identifiers',
+							'type' => Type::listOf(Type::string()),
 							'description' => _t('Alphanumeric idno value or numeric database id of record to delete.')
 						]
 					],
@@ -348,34 +363,56 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						$table = $args['table'];
 						
 						$opts = [];
-						if(isset($args['id']) && ($args['id'] > 0)) {
-							$args['identifier'] = $args['id'];
+						$identifiers = [];
+						
+						if(isset($args['identifiers']) && is_array($args['identifiers']) && sizeof($args['identifiers'])) {
+							$identifiers = $args['identifiers'];
+						} elseif(isset($args['identifier']) && (strlen($args['identifier']) > 0)) {
+							$identifiers[] = $args['identifier'];
+						} elseif(isset($args['ids']) && is_array($args['ids']) && sizeof($args['ids'])) {
+							$identifiers = $args['ids'];
+							$opts['primaryKeyOnly'] = true;
+						} elseif(isset($args['idnos']) && is_array($args['idnos']) && sizeof($args['idnos'])) {
+							$identifiers = $args['idnos'];
+							$opts['idnoOnly'] = true;
+						} elseif(isset($args['id']) && ($args['id'] > 0)) {
+							$identifiers[] = $args['id'];
 							$opts['primaryKeyOnly'] = true;
 						} elseif(isset($args['idno']) && (strlen($args['idno']) > 0)) {
-							$args['identifier'] = $args['idno'];
+							$identifiers[] = $args['idno'];
 							$opts['idnoOnly'] = true;
 						}
 						
 						$c = 0;
-						if(!($instance = self::resolveIdentifier($table, $args['identifier'], null, $opts))) {
-							$errors[] = [
-								'code' => 100,	// TODO: real number?
-								'message' => _t('Invalid identifier'),
-								'bundle' => 'GENERAL'
-							];
-						} elseif(!($rc = $instance->delete(true))) {
-							foreach($instance->errors() as $e) {
+						foreach($identifiers as $identifier) {
+							try {
+								if(!($instance = self::resolveIdentifier($table, $identifier, null, $opts))) {
+									$errors[] = [
+										'code' => 100,	// TODO: real number?
+										'message' => _t('Invalid identifier'),
+										'bundle' => 'GENERAL'
+									];
+								} elseif(!($rc = $instance->delete(true))) {
+									foreach($instance->errors() as $e) {
+										$errors[] = [
+											'code' => $e->getErrorNumber(),
+											'message' => $e->getErrorDescription(),
+											'bundle' => $bundle_name
+										];
+									}
+								} else {
+									$c++;
+								}
+							} catch (ServiceException $e) {
 								$errors[] = [
-									'code' => $e->getErrorNumber(),
-									'message' => $e->getErrorDescription(),
+									'code' => 284,
+									'message' => $e->getMessage(),
 									'bundle' => $bundle_name
 								];
 							}
-						} else {
-							$c++;
 						}
 						
-						return ['table' => $table, 'id' => null, 'idno' => null, 'errors' => $ret['errors'], 'warnings' => $ret['warnings'], 'changed' => $c];
+						return ['table' => $table, 'id' => null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings, 'changed' => $c];
 					}
 				],
 				//
