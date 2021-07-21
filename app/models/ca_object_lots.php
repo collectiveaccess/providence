@@ -468,6 +468,17 @@ class ca_object_lots extends RepresentableBaseModel {
 		$this->BUNDLES['history_tracking_current_contents'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current contents'));
 	}
 	# ------------------------------------------------------
+	/**
+	 * Override insert() to check type_id (or whatever the type key is called in the table as returned by getTypeFieldName())
+	 * against the ca_lists list for the table (as defined by getTypeListCode())
+	 */ 
+	public function insert($pa_options=null) {
+		if(!$this->get('lot_status_id')) {
+			$this->set('lot_status_id', caGetDefaultItemID('object_lot_statuses'));
+		}
+		return parent::insert($pa_options);
+	}
+	# ------------------------------------------------------
  	/**
  	 * Unlinks any ca_objects rows related to the currently loaded ca_object_lots record. Note that this does *not*
  	 * delete the related objects. It only removes their link to this lot.  Note that on error, the database maybe left in 
