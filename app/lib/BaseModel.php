@@ -6894,7 +6894,120 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		}
 		return null;
 	}
-
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Get creation dates for one or more rows. Dates are returned in Unixtime format by default 
+	 * in array keyed on row id.
+	 *
+	 * @param array $rows A list of primary key ids for the table
+	 * @param array $options Supported options include:
+	 *		forDisplay = Return date in localized format for display (Eg. July 3, 2020). [Default is false]
+	 *
+	 * @return array An array of dates, one per row id.
+	 */
+	static public function getCreatedOnTimestampsForIDs(array $row_ids, array $options=null) : array {
+		return self::_getTimestampsForIDs('created', $row_ids, $options);
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Get last modified dates for one or more rows. Dates are returned in Unixtime format by default 
+	 * in array keyed on row id.
+	 *
+	 * @param array $rows A list of primary key ids for the table
+	 * @param array $options Supported options include:
+	 *		forDisplay = Return date in localized format for display (Eg. July 3, 2020). [Default is false]
+	 *
+	 * @return array An array of dates, one per row id.
+	 */
+	static public function getLastModifiedTimestampsForIDs(array $row_ids, array $options=null) : array {
+		return self::_getTimestampsForIDs('lastModified', $row_ids, $options);
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Get creation or last modified dates for one or more rows. Dates are returned in Unixtime format by default 
+	 * in array keyed on row id.
+	 *
+	 * @param string $mode Determines whether created ("created") or modified ("modified") dates are returned.
+	 * @param array $rows A list of primary key ids for the table
+	 * @param array $options Supported options include:
+	 *		forDisplay = Return date in localized format for display (Eg. July 3, 2020). [Default is false]
+	 *
+	 * @return array An array of dates, one per row id.
+	 */
+	static private function _getTimestampsForIDs(string $mode, array $row_ids, array $options=null) : array {
+		$o_db = new Db();
+		$t_instance = Datamodel::getInstance(get_called_class(), true);
+		
+		$for_display = caGetOption('forDisplay', $options, false);
+		
+		switch(strtolower($mode)) {
+			case 'modified':
+			case 'lastModified':
+				$change_types = ['I', 'U', 'D'];
+				$op = 'MAX';
+				break;
+			case 'created':
+			default:
+				$change_types = ['I'];
+				$op = 'MIN';
+				break;
+		}
+		
+		
+		$row_ids = array_filter(array_map('intval', $row_ids), function($v) { return ($v > 0); });
+		$qr_res = $o_db->query("
+				SELECT {$op}(wcl.log_datetime) log_datetime, wcls.subject_row_id
+				FROM ca_change_log wcl
+				INNER JOIN ca_change_log_subjects AS wcls ON wcl.log_id = wcls.log_id
+				WHERE
+					(wcls.subject_table_num = ?)
+					AND
+					(wcls.subject_row_id IN (?))
+					AND
+					(wcl.changetype IN (?))
+				GROUP BY wcls.subject_row_id",
+		$t_instance->tableNum(), $row_ids, $change_types);
+		
+		
+		$timestamps = [];
+		while ($qr_res->nextRow()) {
+			$row_id = $qr_res->get('subject_row_id');
+			$ts = $qr_res->get('log_datetime');
+			
+			if($for_display) {
+				$ts = caGetLocalizedDate($ts);
+			}
+			
+			$timestamps[$row_id] =  $ts;
+		}
+		
+		$qr_res = $o_db->query("
+				SELECT {$op}(wcl.log_datetime) log_datetime, wcl.logged_row_id
+				FROM ca_change_log wcl 
+				WHERE
+					(wcl.logged_table_num = ?)
+					AND
+					(wcl.logged_row_id IN (?))
+					AND
+					(wcl.changetype IN (?))
+				GROUP BY wcl.logged_row_id",
+		$t_instance->tableNum(), $row_ids, $change_types);
+		
+		if ($qr_res->nextRow()) {
+			$row_id = $qr_res->get('logged_row_id');
+			$ts = $qr_res->get('log_datetime');
+			
+			if (!isset($timestamps[$row_id]) || ($ts > $timestamps[$row_id])) {			
+				if($for_display) {
+					$ts = caGetLocalizedDate($ts);
+				}
+				$timestamps[$row_id] = $ts;
+			}
+		}
+		
+		return $timestamps;
+	}
+	# --------------------------------------------------------------------------------------------
 	/**
 	 * Get just the actual timestamp of the last change (as opposed to the array returned by getLastChangeTimestamp())
 	 * @param null|int $pn_row_id
@@ -11695,6 +11808,8 @@ $pa_options["display_form_field_tips"] = true;
 	 *		checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for <table_name>.hierarchy.preferred_labels and <table_name>.children.preferred_labels because these returns sets of items. For <table_name>.parent.preferred_labels, which returns a single row at most, you should do access checking yourself. (Everything here applies equally to nonpreferred_labels)
  	 *		restrictToTypes = Restrict returned items to those of the specified types. An array of list item idnos and/or item_ids may be specified. [Default is null]			 
  	 *		dontIncludeSubtypesInTypeRestriction = If restrictToTypes is set, by default the type list is expanded to include subtypes (aka child types). If set, no expansion will be performed. [Default is false] 
+ 	 *		created = A valid date expression to use to limit returned results to those created within a date range. [Default is null]
+ 	 *		modified = A valid date expression to use to limit returned results to those modified within a date range. [Default is null]
  	 *
 	 * @return mixed Depending upon the returnAs option setting, an array, subclass of BaseModel or integer may be returned.
 	 */
@@ -11712,6 +11827,15 @@ $pa_options["display_form_field_tips"] = true;
 		$ps_boolean 			= caGetOption('boolean', $pa_options, 'and', array('forceLowercase' => true, 'validValues' => array('and', 'or')));
 		$o_trans 				= caGetOption('transaction', $pa_options, null);
 		$pa_check_access 		= caGetOption('checkAccess', $pa_options, null);
+		
+		$created_ts = $modified_ts = null;
+		if($created = caGetOption('created', $pa_options, null)) {
+			$created_ts = caDateToUnixTimestamps($created);
+		}
+		
+		if($modified = caGetOption('modified', $pa_options, null)) {
+			$modified_ts = caDateToUnixTimestamps($modified);
+		}
 		
 		if (!$t_instance) { $t_instance = new $vs_table; }
 		if ($o_trans) { $t_instance->setTransaction($o_trans); }
@@ -11982,17 +12106,31 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		$vn_c = 0;
-	
+			
+			
+		$filtered_pks = null;
+		if(($filter_ts = $created_ts) || ($filter_ts = $modified_ts)) {
+			$filtered_pks = array_keys(array_filter($created_ts ? $vs_table::getCreatedOnTimestampsForIDs($qr_res->getAllFieldValues($vs_pk)) : $vs_table::getLastModifiedTimestampsForIDs($qr_res->getAllFieldValues($vs_pk)), function($v) use ($filter_ts) {
+				return (($v >= $filter_ts['start']) && ($v <= $filter_ts['end']));
+			}));
+			$qr_res = null;
+			
+			if(in_array($ps_return_as, ['queryresult', 'arrays'])) { 
+				$qr_res = $o_db->query("SELECT {$select_flds} FROM {$vs_table} WHERE {$vs_pk} IN (?) {$vs_orderby}".($limit_sql ? " LIMIT {$limit_sql}" : ''), [$filtered_pks]);
+			}
+		}
 		
 		switch($ps_return_as) {
 			case 'queryresult':
 				return $qr_res;
 				break;
 			case 'firstmodelinstance':
-				while($qr_res->nextRow()) {
+				while(($qr_res && $qr_res->nextRow()) || (is_array($filtered_pks) && sizeof($filtered_pks))) {
+					$id = $qr_res ? (int)$qr_res->get($vs_pk) : array_shift($filtered_pks);
+					
 					$t_instance = new $vs_table;
 					if ($o_trans) { $t_instance->setTransaction($o_trans); }
-					if ($t_instance->load((int)$qr_res->get($vs_pk))) {
+					if ($t_instance->load($id)) {
 						return $t_instance;
 					}
 				}
@@ -12000,10 +12138,12 @@ $pa_options["display_form_field_tips"] = true;
 				break;
 			case 'modelinstances':
 				$va_instances = array();
-				while($qr_res->nextRow()) {
+				while(($qr_res && $qr_res->nextRow()) || (is_array($filtered_pks) && sizeof($filtered_pks))) {
+					$id = $qr_res ? (int)$qr_res->get($vs_pk) : array_shift($filtered_pks);
+					
 					$t_instance = new $vs_table;
 					if ($o_trans) { $t_instance->setTransaction($o_trans); }
-					if ($t_instance->load($qr_res->get($vs_pk))) {
+					if ($t_instance->load($id)) {
 						$va_instances[] = $t_instance;
 						$vn_c++;
 						if ($limit && ($vn_c >= $limit)) { break; }
@@ -12012,13 +12152,13 @@ $pa_options["display_form_field_tips"] = true;
 				return $va_instances;
 				break;
 			case 'firstid':
-				if($qr_res->nextRow()) {
-					return $qr_res->get($vs_pk);
+				if(($qr_res && $qr_res->nextRow()) || (is_array($filtered_pks) && sizeof($filtered_pks))) {
+					return $qr_res ? (int)$qr_res->get($vs_pk) : array_shift($filtered_pks);
 				}
 				return null;
 				break;
 			case 'count':
-				return $qr_res->numRows();
+				return $qr_res ? $qr_res->numRows() : sizeof($filtered_pks);
 				break;				
 			case 'arrays':
 				$va_rows = [];
@@ -12033,8 +12173,9 @@ $pa_options["display_form_field_tips"] = true;
 			case 'ids':
 			case 'searchresult':
 				$va_ids = array();
-				while($qr_res->nextRow()) {
-					$va_ids[$vn_v = $qr_res->get($vs_pk)] = $vn_v;
+				while(($qr_res && $qr_res->nextRow()) || (is_array($filtered_pks) && sizeof($filtered_pks))) {
+					$id = $qr_res ? (int)$qr_res->get($vs_pk) : array_shift($filtered_pks);
+					$va_ids[$id] = $id;
 					if ($limit && (sizeof($va_ids) >= $limit)) { break; }
 				}
 				if ($ps_return_as == 'searchresult') {

@@ -397,7 +397,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 										$errors[] = [
 											'code' => $e->getErrorNumber(),
 											'message' => $e->getErrorDescription(),
-											'bundle' => $bundle_name
+											'bundle' => null
 										];
 									}
 								} else {
@@ -407,10 +407,102 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 								$errors[] = [
 									'code' => 284,
 									'message' => $e->getMessage(),
-									'bundle' => $bundle_name
+									'bundle' => null
 								];
 							}
 						}
+						
+						return ['table' => $table, 'id' => null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings, 'changed' => $c];
+					}
+				],
+				'truncate' => [
+					'type' => EditSchema::get('EditResult'),
+					'description' => _t('Truncate a table, removing all records or records created from a date range.'),
+					'args' => [
+						[
+							'name' => 'jwt',
+							'type' => Type::string(),
+							'description' => _t('JWT'),
+							'defaultValue' => self::getBearerToken()
+						],
+						[
+							'name' => 'table',
+							'type' => Type::string(),
+							'description' => _t('Table name. (Eg. ca_objects)')
+						],
+						[
+							'name' => 'date',
+							'type' => Type::string(),
+							'description' => _t('Numeric database id value of record to edit.')
+						],
+						[
+							'name' => 'type',
+							'type' => Type::string(),
+							'description' => _t('Type code for new record. (Eg. ca_objects)')
+						],
+						[
+							'name' => 'types',
+							'type' => Type::listOf(Type::string()),
+							'description' => _t('Type code for new record. (Eg. ca_objects)')
+						],
+						[
+							'name' => 'fast',
+							'type' => Type::boolean(),
+							'description' => _t('Delete records quickly, bypassing log and search index updates.')
+						],
+					],
+					'resolve' => function ($rootValue, $args) {
+						$u = self::authenticate($args['jwt']);
+						
+						if(!$u->canDoAction('can_truncate_tables_via_graphql')) {
+							throw new \ServiceException(_t('Access denied'));
+						}
+						
+						$errors = $warnings = [];
+						
+						$table = $args['table'];
+						
+						$qr = $table::find('*', ['modified' => $args['date'], 'restrictToTypes' => $args['types'], 'returnAs' => 'searchResult']);
+
+						$c = 0;
+						if($qr && ($qr->numHits() > 0)) {
+							if((bool)$args['fast'] && Datamodel::getFieldNum($table, 'deleted')) {
+								$db = new Db();
+								$pk = Datamodel::primaryKey($table);
+							
+								try {
+									if($args['date'] || $args['types']) {
+										$db->query("UPDATE {$table} SET deleted = 1 WHERE {$pk} IN (?)", [$qr->getAllFieldValues("{$table}.{$pk}")]);
+									} else {
+										$db->query("UPDATE {$table} SET deleted = 1");
+									}
+									$c = $qr->numHits();
+								} catch (Exception $e) {
+									$errors[] = [
+										'code' => 1000,		// TODO: use real code
+										'message' => $e->getMessage(),
+										'bundle' => null
+									];
+								}						
+							} else {
+								while($qr->nextHit()) {
+									$instance = $qr->getInstance();
+									if(!$instance->delete(true)) {
+										foreach($instance->errors() as $e) {
+											$errors[] = [
+												'code' => $e->getErrorNumber(),
+												'message' => $e->getErrorDescription(),
+												'bundle' => null
+											];
+										}
+									} else {
+										$c++;
+									}
+								}
+							}
+						}
+						
+						
 						
 						return ['table' => $table, 'id' => null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings, 'changed' => $c];
 					}
