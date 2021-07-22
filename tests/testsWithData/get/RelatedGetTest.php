@@ -244,9 +244,9 @@ class RelatedGetTest extends BaseTestWithData {
 
 
 		$vm_ret = $this->opt_object->get('ca_entities', array('template' => '^ca_entities.preferred_labels', 'delimiter' => '; ', 'returnAsLink' => true));
-		$this->assertRegExp("/\<a href=[\"\'](.)+[\"\']>Homer J. Simpson\<\/a\>/", $vm_ret);
-		$this->assertRegExp("/\<a href=[\"\'](.)+[\"\']>Bart Simpson\<\/a\>/", $vm_ret);
-		$this->assertRegExp("/\<a href=[\"\'](.)+[\"\']>ACME Inc.\<\/a\>/", $vm_ret);
+		$this->assertMatchesRegularExpression("/\<a href=[\"\'](.)+[\"\']>Homer J. Simpson\<\/a\>/", $vm_ret);
+		$this->assertMatchesRegularExpression("/\<a href=[\"\'](.)+[\"\']>Bart Simpson\<\/a\>/", $vm_ret);
+		$this->assertMatchesRegularExpression("/\<a href=[\"\'](.)+[\"\']>ACME Inc.\<\/a\>/", $vm_ret);
 
 
 		$va_entity_relationships = $this->opt_object->get('ca_objects_x_entities.relation_id', array('returnAsArray' => true));
