@@ -11960,7 +11960,7 @@ $pa_options["display_form_field_tips"] = true;
 			case 'searchresult':
 				$va_ids = array();
 				while($qr_res->nextRow()) {
-					$va_ids[$vn_v = $qr_res->get($vs_pk)] = $vn_v;
+					$va_ids[$vn_v = (int)$qr_res->get($vs_pk)] = $vn_v;
 					if ($limit && (sizeof($va_ids) >= $limit)) { break; }
 				}
 				if ($ps_return_as == 'searchresult') {
