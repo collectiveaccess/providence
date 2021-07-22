@@ -1672,6 +1672,7 @@ class TimeExpressionParser {
 	# -------------------------------------------------------------------
 	private function tokenize($ps_expression) {
 		$this->opa_tokens = preg_split("/[\s]+/u", $ps_expression);
+		if(!is_array($this->opa_tokens)) { $this->opa_tokens = []; }	// Tokenization can fail if string is invalid UTF-8
 		return sizeof($this->opa_tokens);
 	}
 	# -------------------------------------------------------------------
