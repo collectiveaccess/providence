@@ -52,6 +52,22 @@ class pdfjs extends BaseMediaViewer implements IMediaViewer {
 			$o_view->setVar('width', caGetOption('width', $pa_data['display'], null));
 			$o_view->setVar('height', caGetOption('height', $pa_data['display'], null));
 			
+			switch($scroll_mode = caGetOption('scroll_mode', $pa_data['display'], "DEFAULT", ['forceUppercase' => true])) {
+				case 'VERTICAL':
+					$scroll_mode_num = 0;
+					break;
+				case 'HORIZONTAL':
+					$scroll_mode_num = 1;
+					break;
+				case 'WRAPPED':
+					$scroll_mode_num = 2;
+					break;
+				default:
+					$scroll_mode_num = -1;
+					break;
+			}
+			
+			$o_view->setVar('scroll_mode', $scroll_mode_num);
 
 			$t_instance = isset($pa_data['t_instance']) ? $pa_data['t_instance'] : null;
 			
