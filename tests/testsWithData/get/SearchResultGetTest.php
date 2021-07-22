@@ -87,7 +87,7 @@ class SearchResultGetTest extends BaseTestWithData {
 		while($o_res->nextHit()) {
 			$vs_label = $o_res->getWithTemplate('^ca_objects.preferred_labels');
 			$this->assertGreaterThan(0, strlen($vs_label));
-			$this->assertRegExp("/$i$/", $vs_label);
+			$this->assertMatchesRegularExpression("/$i$/", $vs_label);
 
 			$i++;
 		}

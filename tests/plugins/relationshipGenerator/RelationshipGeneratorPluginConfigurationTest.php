@@ -141,7 +141,7 @@ class RelationshipGeneratorConfigurationPluginTest extends TestCase {
 		$this->assertEquals(sizeof($pa_expectedErrorMessageContents), sizeof($pa_actualErrorMessages), _t($ps_sizeCheckDescription));
 		foreach ($pa_expectedErrorMessageContents as $va_expectedContent) {
 			foreach ($va_expectedContent as $vs_expectedContentSubstring) {
-				$this->assertRegExp('/' . str_replace('/', '\\/', $vs_expectedContentSubstring) . '/', _t($ps_valueCheckDescriptionTemplate, $vs_expectedContentSubstring));
+				$this->assertMatchesRegularExpression('/' . str_replace('/', '\\/', $vs_expectedContentSubstring) . '/', _t($ps_valueCheckDescriptionTemplate, $vs_expectedContentSubstring));
 			}
 		}
 	}

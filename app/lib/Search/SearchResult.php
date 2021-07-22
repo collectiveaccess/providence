@@ -1534,7 +1534,7 @@ class SearchResult extends BaseObject {
 			if (!is_array($va_related_items)) { return ($vb_return_with_structure || $vb_return_as_array) ? array() : null; }
 		
 			$vm_val = $this->_getRelatedValue($va_related_items, $va_val_opts);
-			if ($vb_return_as_count) { return (int)$vm_val; }
+			if ($vb_return_as_count) { return is_array($vm_val) ? array_map('intval', $vm_val) : (int)$vm_val; }
 			goto filter;
 		} else {
 			if (!$va_path_components['hierarchical_modifier']) {
@@ -1647,7 +1647,7 @@ class SearchResult extends BaseObject {
 					}
 					
 					$vm_val = $this->_getLabelValue(self::$s_prefetch_cache[$vs_label_table_name][$vn_row_id][$vs_opt_md5], $t_instance, array_merge($va_val_opts, ['restrictToTypes' => caGetOption('restrictToTypes', $pa_options, null), 'excludeTypes' => caGetOption('excludeTypes', $pa_options, null)]));
-					if ($vb_return_as_count) { return (int)$vm_val; }
+					if ($vb_return_as_count) { return is_array($vm_val) ? array_map('intval', $vm_val) : (int)$vm_val; }
 					goto filter;
 				}
 					
@@ -1703,7 +1703,7 @@ class SearchResult extends BaseObject {
 					$va_attributes = ca_attributes::getAttributes($this->opo_subject_instance->getDb(), $this->opn_table_num, $vn_row_id, array($vn_element_id), array());
 
 					$vm_val = $this->_getAttributeValue($va_attributes[$vn_element_id], $t_instance, $va_val_opts);
-					if ($vb_return_as_count) { return (int)$vm_val; }
+					if ($vb_return_as_count) { return is_array($vm_val) ? array_map('intval', $vm_val) : (int)$vm_val; }
 					goto filter;
 				}
 			}

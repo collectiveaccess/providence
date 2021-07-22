@@ -43,7 +43,7 @@ class MappingTest extends TestCase {
 		$this->assertEquals(122, sizeof($va_fields));
 
 		foreach($va_fields as $vs_fld => $va_options) {
-			$this->assertRegExp("/^ca[\_a-z]+\.(I|A)[0-9]+$/", $vs_fld);
+			$this->assertMatchesRegularExpression("/^ca[\_a-z]+\.(I|A)[0-9]+$/", $vs_fld);
 		}
 	}
 
