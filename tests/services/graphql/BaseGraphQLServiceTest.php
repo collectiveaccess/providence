@@ -32,7 +32,7 @@
 use PHPUnit\Framework\TestCase;
 
 
-class BaseGraphQLServiceTest extends TestCase {
+abstract class BaseGraphQLServiceTest extends TestCase {
 	# -------------------------------------------------------
 	/**
 	 * 
