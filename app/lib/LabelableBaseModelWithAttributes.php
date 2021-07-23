@@ -644,24 +644,38 @@
 				// 
 				// Convert parent id
 				//
-				if($t_instance->hasField('parent_id') && isset($pa_values['parent_id']) && !is_numeric($pa_values['parent_id'])) {
-					$ids = array_reduce($pa_values['parent_id'], function($c, $i) { 
-						if(!is_numeric($i[1])) {
-							$c[] = $i[1];
-						}
-						return $c;
-					}, []);
-					if(is_array($ids) && sizeof($ids)) {
-						$ids = $vs_table::getIDsForIdnos($ids, $pa_options);
+				if($t_instance->hasField('parent_id')) {
+					if (isset($pa_values['parent_id']) && !is_numeric($pa_values['parent_id'])) {
+						$ids = array_reduce($pa_values['parent_id'], function($c, $i) { 
+							if(!is_numeric($i[1])) {
+								$c[] = $i[1];
+							}
+							return $c;
+						}, []);
+						if(is_array($ids) && sizeof($ids)) {
+							$ids = $vs_table::getIDsForIdnos($ids, $pa_options);
 						
-						foreach($pa_values['parent_id'] as $i => $v) {
-							if (isset($ids[$v[1]])) {
-								$pa_values['parent_id'][$i][1] = $ids[$v[1]];
+							if((sizeof($pa_values['parent_id']) === 1) && !$pa_values['parent_id'][0][1]) {
+								$pa_values['parent_id'][0] = [
+									'IN', caGetListRootIDs()
+								];
+							} else {							
+								foreach($pa_values['parent_id'] as $i => $v) {
+									if (isset($ids[$v[1]])) {
+										$pa_values['parent_id'][$i][1] = $ids[$v[1]];
+									}
+								}
 							}
 						}
+					} elseif(array_key_exists('parent_id', $pa_values) && ($vs_table === 'ca_list_items') && is_null($pa_values['parent_id'])) {
+						// convert parent_id=null for list items into root level of list (not list root node)
+						
+						$pa_values['parent_id'] = [
+							'IN', caGetListRootIDs()
+						];
 					}
 				}
-							
+						
 				//
 				// Convert type id
 				//
@@ -810,9 +824,9 @@
 						$vm_value = $va_field_value[1];
 
 						if ($t_instance->_getFieldTypeType($vs_field) == 0) {
-							if (!caIsValidSqlOperator($vs_op, ['type' => 'numeric', 'nullable' => true])) { throw new ApplicationException(_t('Invalid numeric operator: %1', $vs_op)); }
+							if (!caIsValidSqlOperator($vs_op, ['type' => 'numeric', 'nullable' => true, 'isList' => is_array($vm_value)])) { throw new ApplicationException(_t('Invalid numeric operator: %1', $vs_op)); }
 						} else {
-							if (!caIsValidSqlOperator($vs_op, ['type' => 'string', 'nullable' => true])) { throw new ApplicationException(_t('Invalid string operator: %1', $vs_op)); }
+							if (!caIsValidSqlOperator($vs_op, ['type' => 'string', 'nullable' => true, 'isList' => is_array($vm_value)])) { throw new ApplicationException(_t('Invalid string operator: %1', $vs_op)); }
 						}
 
 						if (is_null($vm_value)) {
