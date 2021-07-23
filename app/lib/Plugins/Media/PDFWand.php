@@ -597,7 +597,9 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 					}
 				}
 				$va_files[] = "{$ps_filepath}.{$vs_ext}";
-			} elseif (!copy($this->filepath, $ps_filepath.".pdf")) {
+			} elseif(copy($this->filepath, $ps_filepath.".pdf")) {
+				$va_files[] = $ps_filepath.".pdf";
+			} else {
 				$this->postError(1610, _t("Couldn't write file to '%1'", $ps_filepath), "WLPlugPDFWand->write()");
 				return false;
 			}
