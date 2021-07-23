@@ -30,37 +30,19 @@
  * ----------------------------------------------------------------------
  */
 use PHPUnit\Framework\TestCase;
+require_once(__CA_BASE_DIR__."/tests/services/graphql/BaseGraphQLServiceTest.php");
 
 
-class AuthTest extends TestCase {
-	# -------------------------------------------------------
-	/**
-	 * GraphQL client
-	 */
-	protected $client;
-	
-	/**
-	 *
-	 */
-	protected $jwt;
-	
-	/**
-	 *
-	 */
-	protected $jwt_refresh;
+class AuthTest extends BaseGraphQLServiceTest {
 	# -------------------------------------------------------
 	protected function setUp() : void {
-		// TODO: services URL must be configurable
-		// TODO: add config option to control whether these tests run of not
-		$this->client = \Softonic\GraphQL\ClientBuilder::build('http://develop/service/auth');
+		parent::canRun();
 	}
 	# -------------------------------------------------------
 	/**
-	 * Check if all tables in datamodel.conf have a model file 
+	 * Check JWT generation
 	 */
 	public function testGetJWT(){
-		
-		
 		$query = <<<'QUERY'
 		      query jwtAuth($username: String, $password: String){
 				login(username: $username, password: $password) {
@@ -76,13 +58,12 @@ class AuthTest extends TestCase {
 				}
 		QUERY;
 
-		// TODO: login should be configurable
-		$variables = [
-			'username' => 'administrator',
-			'password' => 'dublincore'
-		];
+		$client = $this->client('auth');
 		
-		$response = $this->client->query($query, $variables);
+		$response = $client->query($query, [
+			'username' => __CA_USERNAME__,	// Login information comes from setup-test.php
+			'password' => __CA_PASSWORD__
+		]);
 		$this->assertIsObject($response, 'Expected response object');
 		
 		$errors = $response->getErrors();
@@ -100,10 +81,38 @@ class AuthTest extends TestCase {
 		$this->assertEquals('CollectiveAccess', $data['login']['user']['fname']);
 		$this->assertEquals('Administrator', $data['login']['user']['lname']);
 		$this->assertEquals('info@collectiveaccess.org', $data['login']['user']['email']);
-
-
 	}
 	# -------------------------------------------------------
-	
+	/**
+	 * Check JWT refresh
+	 */
+	public function testJWTRefresh(){
+		$this->auth();
+		$query = <<<'QUERY'
+		      query($token: String) {
+					refresh(token: $token)
+					{
+						jwt
+					}
+				}
+		QUERY;
+
+		$client = $this->client('auth');
+		
+		$response = $client->query($query, [
+			'token' => $this->jwt
+		]);
+		$this->assertIsObject($response, 'Expected response object');
+		
+		$errors = $response->getErrors();
+		$this->assertIsArray($errors, 'Expected error array');
+		$this->assertCount(0, $errors, 'Expected error array to be empty');
+		
+		$data = $response->getData();
+		$this->assertIsArray($data, 'Expected data array');
+		$this->assertArrayHasKey('refresh', $data, 'Expected data array');
+		$this->assertArrayHasKey('jwt', $data['refresh'], 'Expected jwt key');
+		$this->assertGreaterThan(30, strlen($data['refresh']['jwt']), 'Expected jwt key to be at least 30 characters in length');
+	}
 	# -------------------------------------------------------
 }
