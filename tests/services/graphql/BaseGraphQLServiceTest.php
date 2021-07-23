@@ -35,19 +35,9 @@ use PHPUnit\Framework\TestCase;
 class BaseGraphQLServiceTest extends TestCase {
 	# -------------------------------------------------------
 	/**
-	 * GraphQL client
+	 * 
 	 */
-	protected $client;
-	
-	/**
-	 *
-	 */
-	protected $jwt;
-	
-	/**
-	 *
-	 */
-	protected $jwt_refresh;
+	protected $ids_to_cleanup = [];
 	# -------------------------------------------------------
 	/**
 	 *
@@ -65,13 +55,17 @@ class BaseGraphQLServiceTest extends TestCase {
 	/**
 	 *
 	 */
-	protected function client(string $endpoint) {
+	protected function client(string $endpoint, ?bool $do_auth=true) {
 		if(!defined('__CA_SITE_PROTOCOL__') || !defined('__CA_SITE_HOSTNAME__') || !defined('__CA_URL_ROOT__')) {
 			$this->markTestSkipped(
 				'Skipped GraphQL services tests because required constants __CA_SITE_PROTOCOL__, __CA_SITE_HOSTNAME__ and/or __CA_URL_ROOT__ are not defined.'
 			);
 		}
-		return $this->client = \Softonic\GraphQL\ClientBuilder::build(__CA_SITE_PROTOCOL__.'://'.__CA_SITE_HOSTNAME__.__CA_URL_ROOT__.'/service/'.$endpoint);
+		if(!$this->jwt && $do_auth) { $this->auth(); }
+		
+		return $this->client = \Softonic\GraphQL\ClientBuilder::build(__CA_SITE_PROTOCOL__.'://'.__CA_SITE_HOSTNAME__.__CA_URL_ROOT__.'/service/'.$endpoint, [
+			'headers' => $do_auth ? ['Authorization' => 'Bearer ' . $this->jwt] : null
+		]);
 	}
 	# -------------------------------------------------------
 	/**
@@ -93,7 +87,7 @@ class BaseGraphQLServiceTest extends TestCase {
 			}
 		QUERY;
 		
-		$client = $this->client('auth');
+		$client = $this->client('auth', false);
 		$response = $client->query($query, [
 			'username' => __CA_USERNAME__,	// Login information comes from setup-test.php
 			'password' => __CA_PASSWORD__
@@ -112,5 +106,30 @@ class BaseGraphQLServiceTest extends TestCase {
 		
 		return true;
 	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	protected function cleanupRecords(string $table, $ids) : void {
+		if(!is_array($ids)) {
+			$ids = [$ids];
+		}
+		foreach($ids as $id) {
+			$this->ids_to_cleanup[$table][$id] = true;
+		}
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	protected function tearDown() : void {
+		foreach($this->ids_to_cleanup as $table => $ids) {
+			foreach(array_keys($ids) as $id) {
+				if($t = $table::find($id, ['returnAs' => 'firstModelInstance'])) {
+					$t->delete(true);
+				}
+			}
+		}
+    }
 	# -------------------------------------------------------
 }
