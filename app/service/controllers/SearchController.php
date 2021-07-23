@@ -216,7 +216,7 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 							$args['restrictToTypes'] = [$args['restrictToTypes']];
 						}
 						
-						if(!($qr = $table::find(\GraphQLServices\Helpers\Search\convertCriteriaToFindSpec($args['criteria']), ['returnAs' => 'searchResult', 'allowWildcards' => true, 'restrictToTypes' => $args['restrictToTypes']]))) {
+						if(!($qr = $table::find(\GraphQLServices\Helpers\Search\convertCriteriaToFindSpec($args['criteria'], $table), ['returnAs' => 'searchResult', 'allowWildcards' => true, 'restrictToTypes' => $args['restrictToTypes']]))) {
 							throw new \ServiceException(_t('No results for table: %1', $table));
 						}
 					
