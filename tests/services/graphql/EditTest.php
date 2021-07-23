@@ -87,15 +87,9 @@ class EditTest extends BaseGraphQLServiceTest {
 				}
 		QUERY;
 
-		$response = $this->client->query($query);
-		$this->assertIsObject($response, 'Expected response object');
-		
-		$errors = $response->getErrors();
-		$this->assertIsArray($errors, 'Expected error array');
-		$this->assertCount(0, $errors, 'Expected error array to be empty');
-		
+		$response = $this->query($query);
 		$data = $response->getData();
-		$this->assertIsArray($data, 'Expected data array');
+		
 		$this->assertArrayHasKey('add', $data, 'Expected data array');
 		$this->assertArrayHasKey('id', $data['add'], 'Expected id');
 		$this->assertIsArray($data['add']['id'], 'Expected id array');

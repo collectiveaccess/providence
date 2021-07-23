@@ -110,6 +110,24 @@ abstract class BaseGraphQLServiceTest extends TestCase {
 	/**
 	 *
 	 */
+	protected function query(string $query, ?array $params=null) : ?object {
+		$response = $this->client->query($query, $params);
+		
+		$this->assertIsObject($response, 'Expected response object');
+		
+		$errors = $response->getErrors();
+		$this->assertIsArray($errors, 'Expected error array');
+		$this->assertCount(0, $errors, 'Expected error array to be empty');
+		
+		$data = $response->getData();
+		$this->assertIsArray($data, 'Expected data array');	
+		
+		return $response;
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	protected function cleanupRecords(string $table, $ids) : void {
 		if(!is_array($ids)) {
 			$ids = [$ids];
