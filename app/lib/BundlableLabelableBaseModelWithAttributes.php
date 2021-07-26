@@ -219,7 +219,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 			}
 		
-			if (!$this->_validateIncomingAdminIDNo(true, true)) { $vb_error =  true; }
+			// If validateAllIdnos is set we validate idnos for all records, including hierarchy roots
+			// Default is to force root idno's to conform to validation requirements
+			if (!$this->_validateIncomingAdminIDNo(true, !caGetOption('validateAllIdnos', $pa_options, false))) { $vb_error =  true; }
 		
 			if ($vb_error) {			
 				// push all attributes onto errored list
@@ -675,7 +677,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$this->opo_idno_plugin_instance->isChild(((($vs_parent_id_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD')) && isset($pa_fields[$vs_parent_id_fld]) && ($pa_fields[$vs_parent_id_fld] > 0)) || ($this->get($vs_parent_id_fld))) ? true : false);
 		
 			if (in_array($this->getProperty('ID_NUMBERING_ID_FIELD'), $pa_fields)) {
-				if (!$this->_validateIncomingAdminIDNo(true, true)) { 
+				if (!$this->_validateIncomingAdminIDNo(true, false)) { 
 					if (!$this->get($vs_parent_id_fld) && isset($pa_fields[$vs_parent_id_fld]) && ($pa_fields[$vs_parent_id_fld] > 0)) {
 						// If we failed to set parent_id and there wasn't a parent_id set already then revert child status in id numbering
 						$this->opo_idno_plugin_instance->isChild(false); 
@@ -1142,24 +1144,30 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  		// Is row loaded?
  		if (!$this->getPrimaryKey()) { return false; }
  		
+ 		$table = $this->tableName();
+ 		$config = $this->getAppConfig();
+ 		
+ 		if($config->get("{$table}_disable_delete")) { return false; }
+ 		if($config->get("{$table}_".$this->getTypeCode()."_disable_delete")) { return false; }
+ 		
  		// Check type restrictions
- 		if ((bool)$this->getAppConfig()->get('perform_type_access_checking')) {
-			$vn_type_access = $t_user->getTypeAccessLevel($this->tableName(), $this->getTypeID());
+ 		if ((bool)$config->get('perform_type_access_checking')) {
+			$vn_type_access = $t_user->getTypeAccessLevel($table, $this->getTypeID());
 			if ($vn_type_access != __CA_BUNDLE_ACCESS_EDIT__) {
 				return false;
 			}
 		}
 		
 		// Check source restrictions
- 		if ((bool)$this->getAppConfig()->get('perform_source_access_checking')) {
-			$vn_source_access = $t_user->getSourceAccessLevel($this->tableName(), $this->getSourceID());
+ 		if ((bool)$config->get('perform_source_access_checking')) {
+			$vn_source_access = $t_user->getSourceAccessLevel($table, $this->getSourceID());
 			if ($vn_source_access < __CA_BUNDLE_ACCESS_EDIT__) {
 				return false;
 			}
 		}
 		
 		// Check item level restrictions
-		if ((bool)$this->getAppConfig()->get('perform_item_level_access_checking') && $this->getPrimaryKey()) {
+		if ((bool)$config->get('perform_item_level_access_checking') && $this->getPrimaryKey()) {
 			$vn_item_access = $this->checkACLAccessForUser($t_user);
 			if ($vn_item_access < __CA_ACL_EDIT_DELETE_ACCESS__) {
 				return false;
@@ -1167,7 +1175,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
  		// Check actions
- 		if (!$this->getPrimaryKey() || !$t_user->canDoAction('can_delete_'.$this->tableName())) {
+ 		if (!$this->getPrimaryKey() || !$t_user->canDoAction("can_delete_{$table}")) {
  			return false;
  		}
  		
@@ -1333,6 +1341,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			return;
 		}
 		
+		$bundle_code = $ps_bundle_name;
+		
 		$vb_read_only_because_deaccessioned = ($this->hasField('is_deaccessioned') && (bool)$this->getAppConfig()->get('deaccession_dont_allow_editing') && (bool)$this->get('is_deaccessioned'));
 		if($vb_read_only_because_deaccessioned && ($ps_bundle_name != 'ca_objects_deaccession')) {
 			$pa_bundle_settings['readonly'] = true;
@@ -1462,6 +1472,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				if (($vs_label) && ($vs_description)) { 
 					TooltipManager::add('#'.$vs_field_id, "<h3>{$vs_label_text}</h3>{$vs_description}");
 				}
+				
+				$bundle_code = $this->tableName().".{$bundle_code}";
 				break;
 			# -------------------------------------------------
 			case 'intrinsic':
@@ -1469,6 +1481,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					$pa_options['label'] = $this->getFieldInfo($ps_bundle_name, 'LABEL');
 				}
 				
+				$bundle_code = $this->tableName().".{$bundle_code}";
+						
 				$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $pa_options['request']->getViewsDirectoryPath();
 				$o_view = new View($pa_options['request'], "{$vs_view_path}/bundles/");
 			
@@ -1580,6 +1594,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$vs_attr_element_code = str_replace('ca_attribute_', '', $ps_bundle_name);
 				$vs_display_format = $o_config->get('bundle_element_display_format');
 				
+				$bundle_code = $this->tableName().".{$vs_attr_element_code}";
+				
 				$vs_element = $this->getAttributeHTMLFormBundle($pa_options['request'], $pa_options['formName'], $vs_attr_element_code, $ps_placement_code, $pa_bundle_settings, $pa_options);
 				
 				$vs_field_id = 'ca_attribute_'.$pa_options['formName'].'_'.$vs_attr_element_code;
@@ -1628,6 +1644,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				} else {
 					$vs_display_format = $o_config->get('bundle_element_display_format');
 				}
+				
+				$bundle_code = $ps_bundle_name;
 				
 				switch($ps_bundle_name) {
 					# -------------------------------
@@ -2005,11 +2023,15 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if (is_array($va_violations) && sizeof($va_violations)) {
 			$vs_label .= caNavIcon(__CA_NAV_ICON_ALERT__, "12px", ['style' => 'margin: 0 0 5px 5px;', 'onclick' => 'jQuery(this).parent().find(\'.caMetadataDictionaryDefinitionToggle\').click();  return false;']);
 		} 
+		
+		$show_bundle_codes = $pa_options['request']->user->getPreference('show_bundle_codes_in_editor');
+		$bundle_code_control = ($show_bundle_codes !== 'hide') ? "<span class='developerBundleCode'>(<a href='#' class='developerBundleCode'>{$bundle_code}</a>)</span>" : "";
 
 		$vs_output = str_replace("^ELEMENT", $vs_element, $vs_display_format);
 		$vs_output = str_replace("^ERRORS", join('; ', $va_errors), $vs_output);
 		$vs_output = str_replace("^LABEL", $vs_label, $vs_output);
 		$vs_output = str_replace("^DOCUMENTATIONLINK", $vs_documentation_link, $vs_output);
+		$vs_output = str_replace("^BUNDLECODE", $bundle_code_control, $vs_output);
 
 		$ps_bundle_label = $vs_label_text;
 		
@@ -2575,11 +2597,19 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  	 *		restrictToTypes = 
  	 *		bundles = 
  	 *		dontAllowBundleShowHide = Do not provide per-bundle show/hide control. [Default is false]
+ 	 *		policy = history tracking policy to apply relationship type restrictions from. Used to auto-restrict relationship bundles to specific relationship types to conform to policy when triggered from the history tracking chronology bundle. [Default is null]
  	 *	@return array List of bundle HTML to display in form, keyed on placement code
  	 */
  	public function getBundleFormHTMLForScreen($pm_screen, $pa_options, &$pa_placements=null) {
  		$va_omit_bundles = (isset($pa_options['omit']) && is_array($pa_options['omit'])) ? $pa_options['omit'] : array();
  		$vb_dont_allow_bundle_show_hide = caGetOption('dontAllowBundleShowHide', $pa_options, false);
+ 		$policy = caGetOption('policy', $pa_options, null);
+ 		
+ 		// Get policy info
+ 		$pinfo = null;
+ 		if($policy && get_called_class()::historyTrackingPolicyUses($policy, $t = $this->tableName())) {
+			$pinfo = get_called_class()::getHistoryTrackingCurrentValuePolicyElement($policy, $t);
+ 		}
  		
  		$vs_table_name = $this->tableName();
  		
@@ -2694,6 +2724,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					continue;
 				}
 				
+				// Apply policy relationship type restriction for related, if set
+				if(is_array($pinfo) && Datamodel::tableExists($va_bundle['bundle_name'])) {
+					if(($r = caGetOption('useRelated', $pinfo, null)) && ($rt = caGetOption('useRelatedRelationshipType', $pinfo, null))) {
+						$va_bundle['settings']['restrictToRelationshipTypes'] = [$rt];
+					}
+				}
+				
 				if ($vb_dont_allow_bundle_show_hide) {
 					$va_bundle['settings']['dont_allow_bundle_show_hide'] = true;
 				}
@@ -2753,9 +2790,15 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 			}
 		}
-		
-		
- 		return $va_bundle_html;
+
+		$va_plugin_data = $this->opo_app_plugin_manager->hookBundleFormHTML(
+			[
+				'bundles' => $va_bundle_html,
+				'subject' => $this,
+				'options' => $pa_options
+			]
+		);
+		return $va_plugin_data['bundles'] ?? $va_bundle_html;
  	}
  	# ------------------------------------------------------
  	/**
@@ -5464,7 +5507,7 @@ if (!$vb_batch) {
 				}		
 			}
 		} catch (Exception $e) {
-			// TODO: change to specific exception type to allow use to set the specific bundle where the error occurred
+			// TODO: change to specific exception type to allow user to set the specific bundle where the error occurred
 			$po_request->addActionErrors(array(new ApplicationError(1100, _t('Invalid rule expression: %1', $e->getMessage()), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", 'MetadataDictionary', false,false)), $vs_bundle, 'general');
 		}
 		if ($vb_dryrun) { $this->removeTransaction(false); }
@@ -6948,13 +6991,11 @@ $pa_options["display_form_field_tips"] = true;
 	 *
 	 */
 	public function validateAdminIDNo($ps_admin_idno) {
-		$va_errors = array();
+		$va_errors = [];
 		if ($this->_CONFIG->get('require_valid_id_number_for_'.$this->tableName()) && sizeof($va_admin_idno_errors = $this->opo_idno_plugin_instance->isValidValue($ps_admin_idno))) {
 			$va_errors[] = join('; ', $va_admin_idno_errors);
-		} else {
-			if (!$this->_CONFIG->get('allow_duplicate_id_number_for_'.$this->tableName()) && sizeof($this->checkForDupeAdminIdnos($ps_admin_idno))) {
-				$va_errors[] = _t("Identifier %1 already exists and duplicates are not permitted", $ps_admin_idno);
-			}
+		} elseif (!$this->_CONFIG->get('allow_duplicate_id_number_for_'.$this->tableName()) && sizeof($this->checkForDupeAdminIdnos($ps_admin_idno))) {
+			$va_errors[] = _t("Identifier %1 already exists and duplicates are not permitted", $ps_admin_idno);
 		}
 		
 		return $va_errors;

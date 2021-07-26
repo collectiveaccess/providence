@@ -65,6 +65,7 @@
 			} elseif(is_array($va_public_access_settings)) {
 				$va_access = $va_public_access_settings;
 			}
+			if(!is_array($va_access)) { $va_access = []; }
 			
 			if ($po_request->isLoggedIn()) {
 				$va_user_access = $po_request->user->getAccessStatuses(1);

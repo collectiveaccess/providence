@@ -589,7 +589,7 @@ div.inspectorCheckedOut {
 	margin-bottom: 5px;
 	font-size: 14px;
 }
-.setStats div, .pawtucketStats div, .groupList div, .yourDisplays div, .searchForms div, .comments div, .tags div, .export div, h3.metalist div, h3.relTypes div, .importers div, .savedSearches div, .searchTours div{
+.setStats div, .pawtucketStats div, .groupList div, .yourDisplays div, .watchedItems div, .searchForms div, .comments div, .tags div, .export div, h3.metalist div, h3.relTypes div, .importers div, .savedSearches div, .searchTours div {
 	font-size:12px;
 	line-height:1.7em;
 }
@@ -7978,4 +7978,11 @@ p.abbreviatedPath, div.abbreviatedPath, span.abbreviatedPath {
 
 #searchBuilderInput {
     width: 100%;
+}
+
+span.developerBundleCode, a.developerBundleCode {
+    font-size: 10px;
+    text-decoration: none;
+    cursor: pointer;
+    color: #333;
 }

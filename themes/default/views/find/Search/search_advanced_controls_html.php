@@ -104,6 +104,14 @@
 		});
 	}
 	
+	function caAdvancedSearchFormReset() {
+		jQuery('#AdvancedSearchForm textarea').val('');
+		jQuery('#AdvancedSearchForm input[type=text]').val('');
+		jQuery('#AdvancedSearchForm input[type=hidden]').val('');
+		jQuery('#AdvancedSearchForm select').val('');
+		jQuery('#AdvancedSearchForm input[type=checkbox]').attr('checked', 0);
+	}
+	
 	// Show "add to set" controls if set tools is open
 	jQuery(document).ready(function() {
 		if (jQuery("#searchSetTools").is(":visible")) { jQuery(".addItemToSetControl").show(); }

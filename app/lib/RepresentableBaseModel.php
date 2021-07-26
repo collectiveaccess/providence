@@ -1115,6 +1115,7 @@
 					$va_media_tags['tags'][$vs_version] = $qr_res->getMediaTag('ca_object_representations.media', $vs_version);
 					$va_media_tags['info'][$vs_version] = $qr_res->getMediaInfo('ca_object_representations.media', $vs_version);
 					$va_media_tags['urls'][$vs_version] = $qr_res->getMediaUrl('ca_object_representations.media', $vs_version);
+					$va_media_tags['paths'][$vs_version] = $qr_res->getMediaPath('ca_object_representations.media', $vs_version);
 				}
 				$va_media[$qr_res->get($vs_pk)] = $va_media_tags;
 			}

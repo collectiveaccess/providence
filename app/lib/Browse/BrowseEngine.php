@@ -4384,7 +4384,7 @@
 						while($qr_res->nextRow()) {
 							if (!($current_table_num = trim($qr_res->get('current_table_num')))) { continue; }
 							if (!($current_row_id = trim($qr_res->get('current_row_id')))) { continue; }
-							if (!($current_type_id = trim($qr_res->get('current_type_id')))) { continue; }
+							//if (!($current_type_id = trim($qr_res->get('current_type_id')))) { continue; }
 							$vs_val = "{$current_table_num}:{$current_type_id}:{$current_row_id}";
 							if ($va_criteria[$vs_val]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
 
@@ -7267,6 +7267,26 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 			$this->opa_browse_type_ids = $this->_convertTypeCodesToIDs($pa_type_codes_or_ids, array('dontExpandHierarchically' => caGetOption('dontExpandHierarchically', $pa_options, false)));
 			$this->opo_ca_browse_cache->setTypeRestrictions($this->opa_browse_type_ids);
 			return true;
+		}
+		# ------------------------------------------------------
+		/**
+		 * When type exclusions are specified, the browse will only browse upon items that are not of the specified types.
+		 * If you specify a type that has hierarchical children then the children will automatically be included
+		 * in the exclusion. You may pass numeric type_id and alphanumeric type codes interchangeably.
+		 *
+		 * @param array $pa_type_codes_or_ids List of type_id or code values to exclude from browse.  Using a hierarchical parent type will automatically include its children in the exclusion.
+		 * @param array $pa_options Options include
+		 *		dontExpandHierarchically =
+		 * @return boolean True on success, false on failure
+		 */
+		public function setTypeExclusions($pa_type_codes_or_ids, $pa_options=null) {
+			$t_instance = $this->getSubjectInstance();
+			$type_list = array_keys($t_instance->getTypeList());
+			$types_to_exclude = caMakeTypeIDList($this->ops_browse_table_name, $pa_type_codes_or_ids);
+			
+			$type_list = array_filter($type_list, function($v) use ($types_to_exclude) { return !in_array($v, $types_to_exclude); });
+		
+			return $this->setTypeRestrictions($type_list, $pa_options);
 		}
 		# ------------------------------------------------------
 		/**

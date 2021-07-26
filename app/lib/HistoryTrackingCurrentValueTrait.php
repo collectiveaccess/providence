@@ -194,7 +194,7 @@
 							$bundle_settings["{$table}_{$type}_useRelatedRelationshipType"] = $config['useRelatedRelationshipType'];
 						
 							$bundle_settings["{$table}_{$type}_dateElement"] = $config['date'];
-						
+
 							if ((sizeof($path) === 3) && ($rel_types = caGetOption(['restrictToRelationshipTypes', 'showRelationshipTypes'], $config, null)) && $path[1]) { 
 								$bundle_settings["{$table}_showRelationshipTypes"] = [];
 								foreach($rel_types as $rel_type) {
@@ -269,6 +269,12 @@
 				foreach(array(
 							'policy', 'displayMode', 'dateMode', 'row_id', 'width', 'height', 'readonly', 'documentation_url', 'expand_collapse',
 							'label', 'description', 'useHierarchicalBrowser', 'hide_add_to_loan_controls', 'hide_add_to_movement_controls', 'hide_update_location_controls', 'hide_return_to_home_location_controls',
+							
+							'update_location_control_label', 'movement_control_label', 'loan_control_label', 'object_control_label',
+							'return_to_home_location_control_label', 'occurrence_control_label', 'collection_control_label', 'entity_control_label',
+							
+							'always_create_new_movement',
+							
 							'hide_add_to_occurrence_controls', 'hide_include_child_history_controls', 'add_to_occurrence_types', 
 							'hide_add_to_collection_controls', 'add_to_collection_types', 'hide_add_to_object_controls', 'hide_add_to_entity_controls', 'add_to_entity_types', 
 							'ca_storage_locations_elements', 'sortDirection', 'setInterstitialElementsOnAdd',
@@ -870,7 +876,7 @@
 			if(!is_array($pa_bundle_settings)) { $pa_bundle_settings = []; }
 
 			$pa_bundle_settings = $this->_processHistoryBundleSettings($pa_bundle_settings);
-	
+
 			$vs_cache_key = caMakeCacheKeyFromOptions(array_merge($pa_bundle_settings, $options, ['id' => $row_id]));
 		
 			$pb_no_cache 				= caGetOption('noCache', $options, false);
@@ -918,7 +924,7 @@
 			if (is_array($path = Datamodel::getPath($table, 'ca_object_lots')) && (((sizeof($path) == 2) && ($vn_lot_id = $qr->get("{$table}.lot_id"))) || ((sizeof($path) == 3) && ($path = array_keys($path)) && ($linking_table = $path[1])))) {
 				
 				if ($linking_table) {
-					$va_lots = $qr->get("{$linking_table}.relation_id", array('returnAsArray' => true));
+					$va_lots = $qr->get("{$linking_table}.relation_id", ['returnAsArray' => true, 'restrictToRelationshipTypes' => caGetOption('ca_lots_showRelationshipTypes', $pa_bundle_settings, null)]);
 				} else {
 					$va_lots = [$vn_lot_id];
 				}
@@ -931,9 +937,9 @@
 					}
 					
 					if($linking_table) {
-						$qr_lots = caMakeSearchResult($linking_table, $va_lots, ['transaction' => $this->getTransaction(), 'sort' => $pb_date_mode ? 'ca_object_lots.lot_id' : null, 'sortDirection' => $pb_date_mode ? 'desc' : null]);
+						$qr_lots = caMakeSearchResult($linking_table, $va_lots, ['transaction' => $this->getTransaction(), 'sort' => "{$linking_table}.relation_id", 'sortDirection' => 'desc']);
 					} else {
-						$qr_lots = caMakeSearchResult('ca_object_lots', $va_lots, ['transaction' => $this->getTransaction(), 'sort' => $pb_date_mode ? 'ca_object_lots.lot_id' : null, 'sortDirection' => $pb_date_mode ? 'desc' : null]);
+						$qr_lots = caMakeSearchResult('ca_object_lots', $va_lots, ['transaction' => $this->getTransaction(), 'sort' =>  'ca_object_lots.lot_id', 'sortDirection' => 'desc']);
 					}
 					
 					$t_lot = new ca_object_lots();
@@ -1022,14 +1028,14 @@
 		
 			// Loans
 			if (is_array($path = Datamodel::getPath($table, 'ca_loans')) && (sizeof($path) == 3) && ($path = array_keys($path)) && ($linking_table = $path[1])) {
-				$va_loans = $qr->get("{$linking_table}.relation_id", array('returnAsArray' => true));
+				$va_loans = $qr->get("{$linking_table}.relation_id", ['returnAsArray' => true, 'restrictToRelationshipTypes' => caGetOption('ca_loans_showRelationshipTypes', $pa_bundle_settings, null)]);
 				$va_child_loans = [];
 				if(caGetOption('ca_loans_includeFromChildren', $pa_bundle_settings, false)) {
 					$va_child_loans = array_reduce($qr->getWithTemplate("<unit relativeTo='{$table}.children' delimiter=';'>^{$linking_table}.relation_id</unit>", ['returnAsArray' => true]), function($c, $i) { return array_merge($c, explode(';', $i)); }, []);
 					if ($pb_show_child_history) { $va_loans = array_merge($va_loans, $va_child_loans); }
 				}
 				if(is_array($va_loan_types = caGetOption('ca_loans_showTypes', $pa_bundle_settings, null)) && is_array($va_loans)) {	
-					$qr_loans = caMakeSearchResult($linking_table, $va_loans, ['transaction' => $this->getTransaction(), 'sort' => $pb_date_mode ? 'ca_loans.loan_id' : null, 'sortDirection' => $pb_date_mode ? 'desc' : null]);
+					$qr_loans = caMakeSearchResult($linking_table, $va_loans, ['transaction' => $this->getTransaction(), 'sort' => "{$linking_table}.relation_id", 'sortDirection' => 'desc']);
 					require_once(__CA_MODELS_DIR__."/ca_loans.php");
 					$t_loan = new ca_loans();
 					$va_loan_type_info = $t_loan->getTypeList(); 
@@ -1129,14 +1135,14 @@
 		
 			// Movements
 			if (is_array($path = Datamodel::getPath($table, 'ca_movements')) && (sizeof($path) == 3) && ($path = array_keys($path)) && ($linking_table = $path[1])) {
-				$va_movements = $qr->get("{$linking_table}.relation_id", array('returnAsArray' => true));
+				$va_movements = $qr->get("{$linking_table}.relation_id", ['returnAsArray' => true, 'restrictToRelationshipTypes' => caGetOption('ca_movements_showRelationshipTypes', $pa_bundle_settings, null)]);
 				$va_child_movements = [];
 				if(caGetOption('ca_movements_includeFromChildren', $pa_bundle_settings, false)) {
 					$va_child_movements = array_reduce($qr->getWithTemplate("<unit relativeTo='{$table}.children' delimiter=';'>^{$linking_table}.relation_id</unit>", ['returnAsArray' => true]), function($c, $i) { return array_merge($c, explode(';', $i)); }, []);
 					if ($pb_show_child_history) { $va_movements = array_merge($va_movements, $va_child_movements); }
 				}
 				if(is_array($va_movement_types = caGetOption('ca_movements_showTypes', $pa_bundle_settings, null)) && is_array($va_movements)) {	
-					$qr_movements = caMakeSearchResult($linking_table, $va_movements, ['transaction' => $this->getTransaction(), 'sort' => $pb_date_mode ? 'ca_movements.movement_id' : null, 'sortDirection' => $pb_date_mode ? 'desc' : null]);
+					$qr_movements = caMakeSearchResult($linking_table, $va_movements, ['transaction' => $this->getTransaction(), 'sort' =>  "{$linking_table}.relation_id", 'sortDirection' => 'desc']);
 					require_once(__CA_MODELS_DIR__."/ca_movements.php");
 					$t_movement = new ca_movements();
 					$va_movement_type_info = $t_movement->getTypeList(); 
@@ -1240,7 +1246,7 @@
 		
 			// Occurrences
 			if (is_array($path = Datamodel::getPath($table, 'ca_occurrences')) && (sizeof($path) == 3) && ($path = array_keys($path)) && ($linking_table = $path[1])) {
-				$va_occurrences = $qr->get("{$linking_table}.relation_id", array('returnAsArray' => true));
+				$va_occurrences = $qr->get("{$linking_table}.relation_id", ['returnAsArray' => true, 'restrictToRelationshipTypes' => caGetOption('ca_occurrences_showRelationshipTypes', $pa_bundle_settings, null)]);
 				$va_child_occurrences = [];
 				if(is_array($va_occurrence_types = caGetOption('ca_occurrences_showTypes', $pa_bundle_settings, null)) && is_array($va_occurrences)) {	
 					require_once(__CA_MODELS_DIR__."/ca_occurrences.php");
@@ -1254,7 +1260,7 @@
 						}
 					}
 			
-					$qr_occurrences = caMakeSearchResult($linking_table, $va_occurrences, ['transaction' => $this->getTransaction(), 'sort' => $pb_date_mode ? 'ca_occurrences.occurrence_id' : null, 'sortDirection' => $pb_date_mode ? 'desc' : null]);
+					$qr_occurrences = caMakeSearchResult($linking_table, $va_occurrences, ['transaction' => $this->getTransaction(), 'sort' => "{$linking_table}.relation_id", 'sortDirection' => 'desc']);
 			
 					$va_date_elements_by_type = [];
 					foreach($va_occurrence_types as $vn_type_id) {
@@ -1354,7 +1360,7 @@
 			
 			// entities
 			if (is_array($path = Datamodel::getPath($table, 'ca_entities')) && (sizeof($path) == 3) && ($path = array_keys($path)) && ($linking_table = $path[1])) {
-				$va_entities = $qr->get("{$linking_table}.relation_id", array('returnAsArray' => true));
+				$va_entities = $qr->get("{$linking_table}.relation_id", ['returnAsArray' => true, 'restrictToRelationshipTypes' => caGetOption('ca_entities_showRelationshipTypes', $pa_bundle_settings, null)]);
 				$va_child_entities = [];
 				if(is_array($va_entity_types = caGetOption('ca_entities_showTypes', $pa_bundle_settings, null)) && is_array($va_entities)) {	
 					require_once(__CA_MODELS_DIR__."/ca_entities.php");
@@ -1369,7 +1375,7 @@
 						}
 					}
 			
-					$qr_entities = caMakeSearchResult($linking_table, $va_entities, ['transaction' => $this->getTransaction(), 'sort' => $pb_date_mode ? 'ca_entities.entity_id' : null, 'sortDirection' => $pb_date_mode ? 'desc' : null]);
+					$qr_entities = caMakeSearchResult($linking_table, $va_entities, ['transaction' => $this->getTransaction(), 'sort' => "{$linking_table}.relation_id", 'sortDirection' => 'desc']);
 			
 					$va_date_elements_by_type = [];
 					foreach($va_entity_types as $vn_type_id) {
@@ -1469,14 +1475,14 @@
 		
 			// Collections
 			if (is_array($path = Datamodel::getPath($table, 'ca_collections')) && (sizeof($path) == 3) && ($path = array_keys($path)) && ($linking_table = $path[1])) {
-				$va_collections = $qr->get("{$linking_table}.relation_id", array('returnAsArray' => true));
+				$va_collections = $qr->get("{$linking_table}.relation_id", ['returnAsArray' => true, 'restrictToRelationshipTypes' => caGetOption('ca_collections_showRelationshipTypes', $pa_bundle_settings, null)]);
 				$va_child_collections = [];
 				if(caGetOption('ca_collections_includeFromChildren', $pa_bundle_settings, false)) {
 					$va_child_collections = array_reduce($qr->getWithTemplate("<unit relativeTo='{$table}.children' delimiter=';'>^{$linking_table}.relation_id</unit>", ['returnAsArray' => true]), function($c, $i) { return array_merge($c, explode(';', $i)); }, []);    
 					if($pb_show_child_history) { $va_collections = array_merge($va_collections, $va_child_collections); }
 				}
 				if(is_array($va_collection_types = caGetOption('ca_collections_showTypes', $pa_bundle_settings, null)) && is_array($va_collections)) {	
-					$qr_collections = caMakeSearchResult($linking_table, $va_collections, ['transaction' => $this->getTransaction(), 'sort' => $pb_date_mode ? 'ca_collections.collection_id' : null, 'sortDirection' => $pb_date_mode ? 'desc' : null]);
+					$qr_collections = caMakeSearchResult($linking_table, $va_collections, ['transaction' => $this->getTransaction(), 'sort' => "{$linking_table}.collection_id", 'sortDirection' => 'desc']);
 					require_once(__CA_MODELS_DIR__."/ca_collections.php");
 					$t_collection = new ca_collections();
 					$va_collection_type_info = $t_collection->getTypeList(); 
@@ -1578,14 +1584,14 @@
 			
 			// objects
 			if (is_array($path = Datamodel::getPath($table, 'ca_objects')) && (sizeof($path) == 3) && ($path = array_keys($path)) && ($linking_table = $path[1])) {
-				$va_objects = $qr->get("{$linking_table}.relation_id", array('returnAsArray' => true));
+				$va_objects = $qr->get("{$linking_table}.relation_id", ['returnAsArray' => true, 'restrictToRelationshipTypes' => caGetOption('ca_objects_showRelationshipTypes', $pa_bundle_settings, null)]);
 				$va_child_objects = [];
 				if(caGetOption('ca_objects_includeFromChildren', $pa_bundle_settings, false)) {
 					$va_child_objects = array_reduce($qr->getWithTemplate("<unit relativeTo='{$table}.children' delimiter=';'>^{$linking_table}.relation_id</unit>", ['returnAsArray' => true]), function($c, $i) { return array_merge($c, explode(';', $i)); }, []);    
 					if($pb_show_child_history) { $va_objects = array_merge($va_objects, $va_child_objects); }
 				}
 				if(is_array($va_object_types = caGetOption('ca_objects_showTypes', $pa_bundle_settings, null)) && is_array($va_objects)) {	
-					$qr_objects = caMakeSearchResult($linking_table, $va_objects, ['transaction' => $this->getTransaction(), 'sort' => $pb_date_mode ? 'ca_objects.object_id' : null, 'sortDirection' => $pb_date_mode ? 'desc' : null]);
+					$qr_objects = caMakeSearchResult($linking_table, $va_objects, ['transaction' => $this->getTransaction(), 'sort' => "{$linking_table}.relation_id", 'sortDirection' => 'desc']);
 					require_once(__CA_MODELS_DIR__."/ca_objects.php");
 					$t_object = new ca_objects();
 					$va_object_type_info = $t_object->getTypeList(); 
@@ -1687,7 +1693,7 @@
 		
 			// Storage locations
 			if (is_array($path = Datamodel::getPath($table, 'ca_storage_locations')) && (sizeof($path) == 3) && ($path = array_keys($path)) && ($linking_table = $path[1])) {
-				$va_locations = $qr->get("{$linking_table}.relation_id", array('returnAsArray' => true));
+				$va_locations = $qr->get("{$linking_table}.relation_id", ['returnAsArray' => true, 'restrictToRelationshipTypes' => caGetOption('ca_storage_locations_showRelationshipTypes', $pa_bundle_settings, null)]);
 
 				$va_child_locations = [];
 				if(caGetOption('ca_storage_locations_includeFromChildren', $pa_bundle_settings, false)) {
@@ -1704,7 +1710,7 @@
 					$vs_name_singular = $t_location->getProperty('NAME_SINGULAR');
 					$vs_name_plural = $t_location->getProperty('NAME_PLURAL');
 			
-					$qr_locations = caMakeSearchResult($linking_table, $va_locations, ['transaction' => $this->getTransaction(), 'sort' => $pb_date_mode ? 'ca_storage_locations.location_id' : null, 'sortDirection' => $pb_date_mode ? 'desc' : null]);
+					$qr_locations = caMakeSearchResult($linking_table, $va_locations, ['transaction' => $this->getTransaction(), 'sort' => "{$linking_table}.relation_id", 'sortDirection' => 'desc']);
 			
 					$vs_default_display_template = '^ca_storage_locations.parent.preferred_labels.name ➜ ^ca_storage_locations.preferred_labels.name (^ca_storage_locations.idno)';
 					$vs_default_child_display_template = '^ca_storage_locations.parent.preferred_labels.name ➜ ^ca_storage_locations.preferred_labels.name (^ca_storage_locations.idno)<br/>[<em>^ca_objects.preferred_labels.name (^ca_objects.idno)</em>]';
@@ -1977,7 +1983,7 @@
 				return null;
 			}
 			$o_view->setVar('policy', $policy);
-			$o_view->setVar('policy_info', self::getHistoryTrackingCurrentValuePolicy($policy));
+			$o_view->setVar('policy_info', $policy_info = self::getHistoryTrackingCurrentValuePolicy($policy));
 			
 			$o_view->setVar('id_prefix', $ps_form_name);
 			$o_view->setVar('placement_code', $ps_placement_code);
@@ -2080,10 +2086,23 @@
 			//
 			$o_view->setVar('movement_relationship_types', []);
 			$o_view->setVar('movement_relationship_types_by_sub_type', []);
+		
 			if (is_array($path = Datamodel::getPath($this->tableName(), 'ca_movements')) && ($path = array_keys($path)) && (sizeof($path) === 3)) {
 				$linking_table = $path[1];
 				if ($t_movement_rel = Datamodel::getInstance($linking_table, true)) {
-					$o_view->setVar('movement_relationship_types', $t_movement_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
+					$rel_types = $t_movement_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings));
+					
+					if(caGetOption('always_create_new_movement', $pa_bundle_settings, false)) {
+						if(is_array($policy_info['elements']['ca_movements']['__default__']) && isset($policy_info['elements']['ca_movements']['__default__']['trackingRelationshipType'])) {
+							$tracking_rels = caMakeRelationshipTypeIDList($linking_table, [$policy_info['elements']['ca_movements']['__default__']['trackingRelationshipType']]);
+							
+							if(is_array($tracking_rels) && sizeof($tracking_rels)) {
+								$tracking_rel_id = array_shift($tracking_rels);
+								$rel_types = [$tracking_rel_id => $rel_types[$tracking_rel_id]];
+							}
+						}
+					}
+					$o_view->setVar('movement_relationship_types', $rel_types);
 					
 					if(!is_array($bundle_config['ca_movements_showRelationshipTypes'])) { $bundle_config['ca_movements_showRelationshipTypes'] = []; }
 					$o_view->setVar('movement_relationship_types_by_sub_type', $t_movement_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($bundle_config, ['restrictToRelationshipTypes' => $bundle_config['ca_movements_showRelationshipTypes']])));
@@ -2242,30 +2261,28 @@
 			global $g_ui_locale;
 			
 			$buf = '';
-			
 			$rel_table = get_called_class();
 			$type_idno = caGetOption('type', $options, null);
 			$placement_code = caGetOption('placement_code', $options, null);
 			
 			$no_template = caGetOption('noTemplate', $options, false);
-		
 			if((is_array($interstitial_elements = $settings["{$rel_table}_".($type_idno ? "{$type_idno}_" : "")."setInterstitialElementsOnAdd"])|| is_array($interstitial_elements = $settings["setInterstitialElementsOnAdd"])) && sizeof($interstitial_elements) && ($linking_table = Datamodel::getLinkingTableName($subject_table, $rel_table))) {
 				$buf .= "<table class='caHistoryTrackingUpdateLocationMetadata'>\n";
+				/** @var BaseRelationshipModel $t_rel */
 				if (!($t_rel = Datamodel::getInstance($linking_table, true))) { return null; }	
 				
-				Datamodel::getInstance('ca_editor_uis', true);
-				$t_ui = ca_editor_uis::find(['editor_type' => Datamodel::getTableNum($linking_table)], ['returnAs' => 'firstModelInstance', 'transaction' => caGetOption('transaction', $options, null)]);
+				$type_id = $t_rel->getTypeIDForCode($type_idno);
+				$t_ui = ca_editor_uis::loadDefaultUI($linking_table, $request, $type_id, array('editorPref' => 'interstitial'));
 				foreach($interstitial_elements as $element_code) {
 					$buf .= "<tr>";
 					
 					$label = null;
-					if (($t_ui) && is_array($p = $t_ui->getPlacementsForBundle($element_code))) {
+					if (($t_ui) && is_array($p = $t_ui->getPlacementsForBundle("$linking_table.$element_code", $request))) {
 						$l = array_shift($p);
-						
 						if (!($label = caGetOption($g_ui_locale, $l['settings']['label'], null))) {
 							if (is_string($l['settings']['label'])) { $label = $l['settings']['label']; }
 						}
-					} 
+					}
 					if (!$label) {
 						$label = $t_rel->getDisplayLabel($t_rel->tableName().".".$element_code);
 					}
@@ -2317,13 +2334,13 @@
 				if (is_array($interstitial_elements = $no_template ? $settings : caGetOption(["{$rel_table}_{$type}_setInterstitialElementsOnAdd", "{$rel_table}_setInterstitialElementsOnAdd"], $settings, array()))) {
 					foreach($interstitial_elements as $element_code) {
 						if ($t_item_rel->hasField($element_code)) {
-							$t_item_rel->set($element_code, $vs_val = $po_request->getParameter($no_template ? $element_code : ["{$placement_code}{$form_prefix}_{$type}_{$element_code}new_0", "{$placement_code}{$form_prefix}__{$element_code}new_0"], pString));
+							$t_item_rel->set($element_code, $po_request->getParameter($no_template ? $element_code : ["{$placement_code}{$form_prefix}_{$type}_{$element_code}new_0", "{$placement_code}{$form_prefix}_{$type_id}_{$element_code}new_0", "{$placement_code}{$form_prefix}__{$element_code}new_0"], pString));
 						} elseif ($element_id = ca_metadata_elements::getElementID($element_code)) {
 							$sub_element_ids = ca_metadata_elements::getElementsForSet($element_id, ['idsOnly' => true]);
 							$vals = [];
-							
+
 							foreach($sub_element_ids as $sub_element_id) {
-								$vals[ca_metadata_elements::getElementCodeForID($sub_element_id)] = $po_request->getParameter($no_template ? $element_code : ["{$placement_code}{$form_prefix}_{$type}_{$sub_element_id}_new_0", "{$placement_code}{$form_prefix}__{$sub_element_id}_new_0"], pString);
+								$vals[ca_metadata_elements::getElementCodeForID($sub_element_id)] = $po_request->getParameter($no_template ? $element_code : ["{$placement_code}{$form_prefix}_{$type}_{$sub_element_id}_new_0", "{$placement_code}{$form_prefix}_{$type_id}_{$sub_element_id}_new_0", "{$placement_code}{$form_prefix}__{$sub_element_id}_new_0", "{$placement_code}{$form_prefix}_{$sub_element_id}_new_0"], pString);
 							}
 							$t_item_rel->addAttribute($vals, $element_code);
 						}

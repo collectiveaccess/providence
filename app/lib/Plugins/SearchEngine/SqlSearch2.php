@@ -372,7 +372,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	
 	 	$ap = $field ? $this->_getElementIDForAccessPoint($subject_tablenum, $field) : null;
 	 	
-	 	if (is_array($ap)) {
+	 	if (is_array($ap) && !$this->useSearchIndexForAP($ap)) {
 	 		// Handle datatype-specific queries
 	 		$ret = $this->_processMetadataDataType($subject_tablenum, $ap, $query);
 	 		if(is_array($ret)) { return $ret; }
@@ -381,6 +381,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 
 	 	$params = [$subject_tablenum];
 	 	$word_op = '=';
+	 	
+	 	$use_boost = true;
 	 	if (is_array($ap) && $is_blank) {
 	 		$params[] = 0;
 	 		$word_field = 'swi.word_id';
@@ -395,6 +397,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 		$text = str_replace('*', '%', $text);
 	 		$text = str_replace('?', '_', $text);
 	 		$params[] = $text;
+	 		$use_boost = false;
 	 	} else{
 	 		$params[] = $text;
 	 	}
@@ -434,16 +437,28 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	
 	 	$private_sql = ($this->getOption('omitPrivateIndexing') ? ' AND swi.access = 0' : '');
 	 	
-		$qr_res = $this->db->query($x="
-			SELECT swi.row_id, SUM(swi.boost) boost
-			FROM ca_sql_search_word_index swi
-			".(!$is_blank ? 'INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id' : '')."
-			WHERE
-				swi.table_num = ? AND {$word_field} {$word_op} ?
-				{$field_sql}
-				{$private_sql}
-			GROUP BY swi.row_id
-		", $params);
+	 	if($use_boost) {
+			$qr_res = $this->db->query("
+				SELECT swi.row_id, SUM(swi.boost) boost
+				FROM ca_sql_search_word_index swi
+				".(!$is_blank ? 'INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id' : '')."
+				WHERE
+					swi.table_num = ? AND {$word_field} {$word_op} ?
+					{$field_sql}
+					{$private_sql}
+				GROUP BY swi.row_id
+			", $params);
+		} else {
+			$qr_res = $this->db->query("
+				SELECT swi.row_id, 100 boost
+				FROM ca_sql_search_word_index swi
+				".(!$is_blank ? 'INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id' : '')."
+				WHERE
+					swi.table_num = ? AND {$word_field} {$word_op} ?
+					{$field_sql}
+					{$private_sql}
+			", $params);
+		}
 	 	return $this->_arrayFromDbResult($qr_res);
 	}
 	# -------------------------------------------------------
@@ -723,7 +738,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			
 			switch($fi['FIELD_TYPE']) {
 				case FT_NUMBER:
-					$ap['element_info']['datatype'] = __CA_ATTRIBUTE_VALUE_NUMERIC__;
+					$ap['element_info']['datatype'] = isset($fi['LIST_CODE']) ? null : __CA_ATTRIBUTE_VALUE_NUMERIC__;
 					break;
 				case FT_HISTORIC_DATERANGE:
 				case FT_DATERANGE:
@@ -1468,6 +1483,9 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			$vn_rel_type = (int)$va_rel_type_ids[0];
 		}
 		
+		if(is_array($indexing_info = $this->search_indexing_config->get(Datamodel::getTableName($subject_tablenum)))) {
+			$indexing_info = $indexing_info[$vs_table]['fields'][$vs_field] ?? null;
+		}
 		if (strtolower($vs_field) == 'count') {
 			if (!is_array($va_rel_type_ids) || !sizeof($va_rel_type_ids)) { $va_rel_type_ids = [0]; }	// for counts must pass "0" as relationship type to pull count for all reltypes in aggregate
 			return array(
@@ -1479,7 +1497,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				'datatype' => 'COUNT',
 				'element_info' => null,
 				'relationship_type_ids' => $va_rel_type_ids,
-				'type' => 'COUNT'
+				'type' => 'COUNT',
+				'indexing_options' => $indexing_info
 			);
 		} elseif (strtolower($vs_field) == 'current_value') {
 		    if(!$vs_subfield) { $vs_subfield = '__default__'; }
@@ -1500,7 +1519,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				'element_info' => null,
 				'relationship_type_ids' => $va_rel_type_ids,
 				'policy' => $vs_subfield,
-				'type' => 'CV'
+				'type' => 'CV',
+				'indexing_options' => $indexing_info
 			);
 		
 		} elseif (is_numeric($vs_field)) {
@@ -1529,7 +1549,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 						'datatype' => 'COUNT',
 						'element_info' => $t_element->getFieldValuesArray(),
 						'relationship_type_ids' => $va_rel_type_ids,
-						'type' => 'COUNT'
+						'type' => 'COUNT',
+						'indexing_options' => $indexing_info
 					);
 				} else {
 					return array(
@@ -1541,13 +1562,14 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 						'datatype' => $t_element->get('datatype'),
 						'element_info' => $t_element->getFieldValuesArray(),
 						'relationship_type_ids' => $va_rel_type_ids,
-						'type' => 'METADATA'
+						'type' => 'METADATA',
+						'indexing_options' => $indexing_info
 					);
 				}
 			}
 		} else {
 
-			return array('access_point' => $va_tmp[0], 'relationship_type' => $va_tmp[1], 'table_num' => $vs_table_num, 'field_num' => 'I'.$vs_fld_num, 'field_num_raw' => $vs_fld_num, 'datatype' => null, 'relationship_type_ids' => $va_rel_type_ids, 'type' => 'INTRINSIC');
+			return array('access_point' => $va_tmp[0], 'relationship_type' => $va_tmp[1], 'table_num' => $vs_table_num, 'field_num' => 'I'.$vs_fld_num, 'field_num_raw' => $vs_fld_num, 'datatype' => null, 'relationship_type_ids' => $va_rel_type_ids, 'type' => 'INTRINSIC', 'indexing_options' => $indexing_info);
 		}
 
 		return null;
@@ -1927,6 +1949,18 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			$text = preg_replace("!^(#[gtleq]+[#=]{1})!i", '', $text);
 		}
 		return [$text, $modifier];
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	private function useSearchIndexForAP(array $ap) : bool {
+		if(is_array($ap['indexing_options'])) {
+			foreach(['INDEX_AS_IDNO', 'INDEX_ANCESTORS', 'CHILDREN_INHERIT', 'ANCESTORS_INHERIT', 'INDEX_AS_MIMETYPE'] as $k) {
+				if(in_array($k, $ap['indexing_options'], true) || isset($ap['indexing_options'][$k])) { return true; }
+			}
+		}
+		return false;
 	}
 	# -------------------------------------------------------
 }

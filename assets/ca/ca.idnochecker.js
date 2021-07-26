@@ -94,7 +94,7 @@ var caUI = caUI || {};
                         if(that.includesSequence) {
                             for(var k in data.sequences) {
                                 for(var j in that.idnoFormElementIDs) {
-                                    if(that.idnoFormElementIDs[j].match(k)) {
+                                    if(that.idnoFormElementIDs[j] === ('#idno_' + k)) {
                                         jQuery(that.idnoFormElementIDs[j]).html(that.sequenceMessage.replace('%1', data.sequences[k]));
                                     }
                                 }
