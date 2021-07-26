@@ -1042,12 +1042,13 @@ class ca_users extends BaseModel {
 	 */
 	public function getUserRoles(?array $options=null) {
 		if ($pn_user_id = $this->getPrimaryKey()) {
-			if (isset(ca_users::$s_user_role_cache[$pn_user_id])) {
-				return ca_users::$s_user_role_cache[$pn_user_id];
+			$skip_vars = caGetOption('skipVars', $options, false);
+			$key = "{$pn_user_id}/".($skip_vars ? "_SKIP" : "");
+			if (isset(ca_users::$s_user_role_cache[$key])) {
+				return ca_users::$s_user_role_cache[$key];
 			} else {
 				$o_db = $this->getDb();
 				
-				$skip_vars = caGetOption('skipVars', $options, false);
 				$qr_res = $o_db->query("
 					SELECT wur.role_id, wur.name, wur.code, wur.description, wur.`rank` ".($skip_vars ? '' : ', wur.vars')."
 					FROM ca_user_roles wur
@@ -1062,7 +1063,7 @@ class ca_users extends BaseModel {
 					$va_roles[$va_row['role_id']] = $va_row;
 				}
 				
-				return ca_users::$s_user_role_cache[$pn_user_id] = $va_roles;
+				return ca_users::$s_user_role_cache[$key] = $va_roles;
 			}
 		} else {
 			return [];
