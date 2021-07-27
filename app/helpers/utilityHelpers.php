@@ -4555,4 +4555,17 @@ function caFileIsIncludable($ps_file) {
 		}
 		return $ret;
 	}
+	# ----------------------------------------
+	/**
+	 * Transform comma separated values in the form "Print, Photo" to a serialized version ("Photo Print")
+	 *
+	 * @param string $value Value to transform
+	 *
+	 * @return string Transformed value
+	 */
+	function caSerializeCommaSeparatedName(string $value) {
+		$tmp = array_map("trim", explode(',', $value));
+		$v = array_shift($tmp);
+		return join(" ", $tmp)." {$v}";
+	}
     # ----------------------------------------
