@@ -113,7 +113,7 @@ class ConfigurationController extends \GraphQLServices\GraphQLServiceController 
 							$values[] = [
 								'key' => $key,
 								'type'=> $type,
-								'value' => json_encode($value)
+								'value' => is_array($value) ? json_encode($value) : $value
 							];
 						}
 						return ['file' => $args['file'], 'values' => $values];

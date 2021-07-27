@@ -4757,7 +4757,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 									foreach($parameters as $pp => $pv) {
 										if ($pp == 'format') {
 											$output_mimetype = $pv;
-										} else {
+										} elseif($m->isValidProperty($pp)) {
 											$m->set($pp, $pv);
 										}
 									}
@@ -10917,34 +10917,17 @@ $pa_options["display_form_field_tips"] = true;
 		", array($this->tableNum(), $vn_row_id));
 		
 		$pk = $this->primaryKey();
-		$qr_set_comments = $o_db->query("
-			SELECT 
-			    c.comment_id, c.row_id set_item_id, c.user_id, c.locale_id, c.comment, c.media1, c.media2, c.media3, c.media4, 
-			    c.rating, c.email, c.name, c.created_on, c.access, c.ip_addr, c.moderated_on, c.moderated_by_user_id, c.location,
-			    csi.row_id, csi.table_num, csi.set_id, csi.`rank`,
-			    cs.set_code, csl.name set_name,
-			    u.fname, u.lname, u.email user_email
-			FROM ca_item_comments c
-			INNER JOIN ca_set_items AS csi ON csi.item_id = c.row_id AND csi.table_num = ?
-			INNER JOIN ca_sets AS cs ON cs.set_id = csi.set_id
-			INNER JOIN ca_set_labels AS csl ON csl.set_id = cs.set_id 
-			LEFT JOIN ca_users AS u ON c.user_id = u.user_id
-			WHERE
-				(c.table_num = 105) AND (csi.row_id = ?)
-				
-				{$vs_user_sql} {$vs_moderation_sql}
-		", array($this->tableNum(), $vn_row_id));
 		
         switch($vs_return_as) {
             case 'count':
-                return $qr_comments->numRows() + $qr_set_comments->numRows();
+                return $qr_comments->numRows();
                 break;
             case 'ids':
             case 'firstId':
             case 'searchResult':
             case 'modelInstances':
             case 'firstModelInstance':
-                $va_ids = ($qr_comments->getAllFieldValues('comment_id') + $qr_set_comments->getAllFieldValues('comment_id'));
+                $va_ids = $qr_comments->getAllFieldValues('comment_id');
                 if ($vs_return_as === 'ids') { return $va_ids; }
                 if ($vs_return_as === 'firstId') { return array_shift($va_ids); }
                 if (($vs_return_as === 'modelInstances') || ($vs_return_as === 'firstModelInstance')) {
@@ -10984,36 +10967,6 @@ $pa_options["display_form_field_tips"] = true;
 					if ($va_comments[$comment_id]['user_id']) {
 						$va_comments[$comment_id]['name'] = trim($va_comments[$comment_id]['fname'].' '.$va_comments[$comment_id]['lname']);
 						$va_comments[$comment_id]['email'] =  $va_comments[$comment_id]['user_email'];
-					}
-                }
-                 while ($qr_set_comments->nextRow()) {
-                    $comment_id = $qr_set_comments->get("comment_id");
-                    $va_comments[$comment_id] = $qr_set_comments->getRow();
-                    foreach (array("media1", "media2", "media3", "media4") as $vs_media_field) {
-                        $va_media_versions = array();
-                        $va_media_versions = $qr_set_comments->getMediaVersions($vs_media_field);
-                        $va_media = array();
-                        if (is_array($va_media_versions) && (sizeof($va_media_versions) > 0)) {
-                            foreach ($va_media_versions as $vs_version) {
-                                $va_image_info = array();
-                                $va_image_info = $qr_set_comments->getMediaInfo($vs_media_field, $vs_version);
-                                $va_image_info["TAG"] = $qr_set_comments->getMediaTag($vs_media_field, $vs_version);
-                                $va_image_info["URL"] = $qr_set_comments->getMediaUrl($vs_media_field, $vs_version);
-                                $va_media[$vs_version] = $va_image_info;
-                            }
-                            $va_comments[$comment_id][$vs_media_field] = $va_media;
-                        }
-                    }
-                    
-					$va_comments[$comment_id]['created_on_display'] = caGetLocalizedDate($va_comments[$comment_id]['created_on']);
-					
-					if ($va_comments[$comment_id]['user_id']) {
-						$va_comments[$comment_id]['name'] = trim($va_comments[$comment_id]['fname'].' '.$va_comments[$comment_id]['lname']);
-						$va_comments[$comment_id]['email'] =  $va_comments[$comment_id]['user_email'];
-					}
-					
-					if ($o_request) {
-						$va_comments[$comment_id]['set_message'] = _t("Comment made in set %1", caEditorLink($o_request, $qr_set_comments->get('set_name'), '', 'ca_sets', $va_comments[$comment_id]['set_id']));
 					}
                 }
                 break;
@@ -12176,6 +12129,7 @@ $pa_options["display_form_field_tips"] = true;
 				while(($qr_res && $qr_res->nextRow()) || (is_array($filtered_pks) && sizeof($filtered_pks))) {
 					$id = $qr_res ? (int)$qr_res->get($vs_pk) : array_shift($filtered_pks);
 					$va_ids[$id] = $id;
+
 					if ($limit && (sizeof($va_ids) >= $limit)) { break; }
 				}
 				if ($ps_return_as == 'searchresult') {

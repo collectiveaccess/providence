@@ -149,7 +149,7 @@ class MultipartDNumber extends BaseTestWithData {
 		$this->assertEquals('.', $separator, 'Separator was not expected value');
 
 		$idno = $this->object1->get('ca_objects.idno');
-		$this->assertRegExp('!^2021\.[\d]+$!', $idno, 'Generated identifier does not match expected format');
+		$this->assertMatchesRegularExpression('!^2021\.[\d]+$!', $idno, 'Generated identifier does not match expected format');
 	}
 	
 	// IDNO format: A-2001-XX
@@ -162,7 +162,7 @@ class MultipartDNumber extends BaseTestWithData {
 		$this->assertEquals('-', $separator, 'Separator was not expected value');
 
 		$idno = $this->object2->get('ca_objects.idno');
-		$this->assertRegExp('!^A-2001-XX$!', $idno, 'Generated identifier does not match expected format and value');
+		$this->assertMatchesRegularExpression('!^A-2001-XX$!', $idno, 'Generated identifier does not match expected format and value');
 	}
 	
 	// IDNO format: 2010~%~%
@@ -175,7 +175,7 @@ class MultipartDNumber extends BaseTestWithData {
 		$this->assertEquals('~', $separator, 'Separator was not expected value');
 
 		$idno = $this->object3->get('ca_objects.idno');
-		$this->assertRegExp('!^2010~[\d]+~[\d]+$!', $idno, 'Generated identifier does not match expected format and value');
+		$this->assertMatchesRegularExpression('!^2010~[\d]+~[\d]+$!', $idno, 'Generated identifier does not match expected format and value');
 	}
 	
 	// IDNO format: %
@@ -188,7 +188,7 @@ class MultipartDNumber extends BaseTestWithData {
 		$this->assertEquals('.', $separator, 'Separator was not expected value');
 
 		$idno = $this->entity1->get('ca_entities.idno');
-		$this->assertRegExp('!^[\d]+$!', $idno, 'Generated identifier does not match expected format and value');
+		$this->assertMatchesRegularExpression('!^[\d]+$!', $idno, 'Generated identifier does not match expected format and value');
 	}
 	
 	public function testFormatList() {

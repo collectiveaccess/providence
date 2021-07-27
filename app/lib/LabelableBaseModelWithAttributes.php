@@ -1120,7 +1120,7 @@
 				case 'searchresult':
 					$va_ids = [];
 					while($qr_res->nextRow()) {
-						$va_ids[] = $qr_res->get($vs_pk);
+						$va_ids[] = (int)$qr_res->get($vs_pk);
 						$vn_c++;
 						if ($limit && ($vn_c >= $limit)) { break; }
 					}
