@@ -450,6 +450,11 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							'type' => Type::boolean(),
 							'description' => _t('Delete records quickly, bypassing log and search index updates.')
 						],
+						[
+							'name' => 'list',
+							'type' => Type::string(),
+							'description' => _t('Delete all items from specified list. Implies table = ca_list_items. If set table option is ignored.')
+						],
 					],
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
@@ -460,10 +465,14 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						
 						$errors = $warnings = [];
 						
-						$table = $args['table'];
 						
-						$qr = $table::find('*', ['modified' => $args['date'], 'restrictToTypes' => (isset($args['types']) && is_array($args['types']) && sizeof($args['types'])) ? $args['types'] : ($args['type'] ?? [$args['type']]), 'returnAs' => 'searchResult']);
-
+						if($list = $args['list']) {
+							$table = 'ca_list_items';
+							$qr = $table::find(['list_id' => $list], ['modified' => $args['date'], 'restrictToTypes' => (isset($args['types']) && is_array($args['types']) && sizeof($args['types'])) ? $args['types'] : ($args['type'] ?? [$args['type']]), 'returnAs' => 'searchResult']);
+						} else {
+							$table = $args['table'];
+							$qr = $table::find('*', ['modified' => $args['date'], 'restrictToTypes' => (isset($args['types']) && is_array($args['types']) && sizeof($args['types'])) ? $args['types'] : ($args['type'] ?? [$args['type']]), 'returnAs' => 'searchResult']);
+						}
 						$c = 0;
 						if($qr && ($qr->numHits() > 0)) {
 							if((bool)$args['fast'] && Datamodel::getFieldNum($table, 'deleted')) {
