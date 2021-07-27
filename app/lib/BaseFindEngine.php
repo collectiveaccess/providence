@@ -1032,7 +1032,7 @@ class BaseFindEngine extends BaseObject {
 	 *
 	 */
 	private function _getRowIDsForLabel(array $values, $t_table, string $hit_table, string $label_field) {
-		if (!sizeof($hits)) { return []; }
+		if (!is_array($hits) || !sizeof($hits)) { return []; }
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
