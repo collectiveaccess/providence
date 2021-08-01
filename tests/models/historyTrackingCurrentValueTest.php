@@ -105,9 +105,9 @@ class historyTrackingCurrentValueTest extends BaseTestWithData {
 	/**
 	 * 
 	 */
-	public function testCurrentValueUusingHistory() {
+	public function testDefaultCurrentValuePolicyUsingSimpleHistory() {
 		$object = ca_objects::findAsInstance(['object_id' => $this->image_id]);		
-		$rel1 = $object->addRelationship('ca_storage_locations', $this->shelf1_id, 'related', '5/2020');
+		$rel1 = $this->addTestRelationship($object, 'ca_storage_locations', $this->shelf1_id, 'related', '5/2020');
 		
 		$history = $object->getHistory();
 		$this->assertIsArray($history);
@@ -118,7 +118,7 @@ class historyTrackingCurrentValueTest extends BaseTestWithData {
 		$this->assertArrayHasKey('display', $by_time[0]);
 		$this->assertEquals('Shelf 1', $by_time[0]['display']);
 		
-		$rel2 = $object->addRelationship('ca_storage_locations', $this->shelf2_id, 'related', '10/2002');
+		$rel2 = $this->addTestRelationship($object, 'ca_storage_locations', $this->shelf2_id, 'related', '10/2002');
 		$history = $object->getHistory();
 		
 		$this->assertIsArray($history);
@@ -129,7 +129,7 @@ class historyTrackingCurrentValueTest extends BaseTestWithData {
 		$this->assertArrayHasKey('display', $by_time[0]);
 		$this->assertEquals('Shelf 1', $by_time[0]['display']);
 		
-		$rel3 = $object->addRelationship('ca_storage_locations', $this->shelf3_id, 'related', '7/7/2021');
+		$rel3 = $this->addTestRelationship($object, 'ca_storage_locations', $this->shelf3_id, 'related', '7/7/2021');
 		$history = $object->getHistory();
 		
 		$this->assertIsArray($history);
@@ -139,10 +139,105 @@ class historyTrackingCurrentValueTest extends BaseTestWithData {
 		$this->assertCount(1, $by_time);
 		$this->assertArrayHasKey('display', $by_time[0]);
 		$this->assertEquals('Shelf 3', $by_time[0]['display']);
+	}
+	
+	/**
+	 * 
+	 */
+	public function testCurrentValuePolicyWithMovementsUsingSimpleHistory() {
+		$this->_testCurrentValuePolicyUsingSimpleHistory("current_location");
+	}
+	
+	/**
+	 * 
+	 */
+	public function testAltCurrentValuePolicyUsingSimpleHistory() {
+		$this->_testCurrentValuePolicyUsingSimpleHistory("alt_current_location");
+	}
+	
+	/**
+	 * 
+	 */
+	public function testNonExistentPolicyName() {
+		$object = ca_objects::findAsInstance(['object_id' => $this->image_id]);		
+		$rel1 = $object->addRelationship('ca_storage_locations', $this->shelf1_id, 'related', '5/2020');
 		
-		$rel1->delete();
-		$rel2->delete();
-		$rel3->delete();
+		
+		$history = $object->getHistory(['policy' => 'BAD_POLICY_NAME']);
+		$this->assertIsArray($history, "Expected array returned for non-existent policy name");
+		$this->assertCount(0, $history, "Expected no entries for non-existent policy name");
+		
+		$history = $object->getHistory(['policy' => 'current_location']);
+		$this->assertIsArray($history, "Expected array returned for \"current_location\" policy name");
+		$this->assertCount(1, $history, "Expected 1 entry for \"current_location\" policy");
+	}
+	
+	/**
+	 * 
+	 */
+	public function testFutureCurrentValue() {
+		$object = ca_objects::findAsInstance(['object_id' => $this->image_id]);		
+		$rel1 = $this->addTestRelationship($object, 'ca_storage_locations', $this->shelf1_id, 'related', '5/2020');
+		
+		$history = $object->getHistory(['currentOnly' => true]);
+		$this->assertIsArray($history);
+		$this->assertCount(1, $history);
+		$by_time = array_shift($history);
+		$this->assertIsArray($by_time);
+		$this->assertCount(1, $by_time);
+		$this->assertArrayHasKey('display', $by_time[0]);
+		$this->assertEquals('Shelf 1', $by_time[0]['display']);
+		
+		$rel2 = $this->addTestRelationship($object, 'ca_storage_locations', $this->shelf2_id, 'related', '10/1/2029');
+		$history = $object->getHistory(['currentOnly' => true]);
+		print_R($history);
+		$this->assertIsArray($history);
+		$this->assertCount(1, $history);
+		$by_time = array_shift($history);
+		$this->assertIsArray($by_time);
+		$this->assertCount(1, $by_time);
+		$this->assertArrayHasKey('display', $by_time[0]);
+		$this->assertEquals('Shelf 1', $by_time[0]['display']);
+		
+	}
+	
+	/**
+	 * 
+	 */
+	private function _testCurrentValuePolicyUsingSimpleHistory(string $policy) {
+		$object = ca_objects::findAsInstance(['object_id' => $this->image_id]);		
+		$rel1 = $object->addRelationship('ca_storage_locations', $this->shelf1_id, 'related', '5/2020');
+		
+		$history = $object->getHistory(['policy' => $policy]);
+		$this->assertIsArray($history);
+		$this->assertCount(1, $history);
+		$by_time = array_shift($history);
+		$this->assertIsArray($by_time);
+		$this->assertCount(1, $by_time);
+		$this->assertArrayHasKey('display', $by_time[0]);
+		$this->assertEquals('Shelf 1', $by_time[0]['display']);
+		
+		$rel2 = $this->addTestRelationship($object, 'ca_storage_locations', $this->shelf2_id, 'related', '10/2002');
+		$history = $object->getHistory(['policy' => $policy]);
+		
+		$this->assertIsArray($history);
+		$this->assertCount(2, $history);
+		$by_time = array_shift($history);
+		$this->assertIsArray($by_time);
+		$this->assertCount(1, $by_time);
+		$this->assertArrayHasKey('display', $by_time[0]);
+		$this->assertEquals('Shelf 1', $by_time[0]['display']);
+		
+		$rel3 = $this->addTestRelationship($object, 'ca_storage_locations', $this->shelf3_id, 'related', '7/7/2021');
+		$history = $object->getHistory(['policy' => $policy]);
+		
+		$this->assertIsArray($history);
+		$this->assertCount(3, $history);
+		$by_time = array_shift($history);
+		$this->assertIsArray($by_time);
+		$this->assertCount(1, $by_time);
+		$this->assertArrayHasKey('display', $by_time[0]);
+		$this->assertEquals('Shelf 3', $by_time[0]['display']);
 	}
 	
 	protected function tearDown() : void {
