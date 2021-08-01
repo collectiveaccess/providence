@@ -74,9 +74,15 @@ $g_translation_cache = [];
 
 function _t($ps_key) {
 	if(!$ps_key) { return ''; }
-	global $_, $g_translation_strings, $g_translation_replacements, $g_translation_cache;
+	global $_, $_locale, $g_translation_strings, $g_translation_replacements, $g_translation_cache;
 	
-	if (isset($g_translation_strings[$ps_key])) { return $g_translation_strings[$ps_key]; }
+	if (
+		isset($g_translation_strings[$ps_key]) && 
+		(
+			is_string($g_translation_strings[$ps_key]) || 
+			(is_array($g_translation_strings[$ps_key]) && isset($g_translation_strings[$ps_key][(string)$_locale]))
+		)
+	) { return is_array($g_translation_strings[$ps_key]) ? $g_translation_strings[$ps_key][(string)$_locale] : $g_translation_strings[$ps_key]; }
 	
 	if(!isset($g_translation_cache[$ps_key])) {
 		if (is_array($_)) {
