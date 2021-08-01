@@ -596,11 +596,13 @@
 		 * @param string $table 
 		 * @param array $options Options include:
 		 *		dontCheckRowIDs = Skip verification of row_id values. [Default is false]
+		 *		uses = limit returned policies to those that include at least one of the tables in the provided list. [Default is null]
 		 *
 		 * @return array
 		 * @throws ApplicationException
 		 */ 
 		static public function getHistoryTrackingCurrentValuePolicies($table, $options=null) {
+			$uses = caGetOption('uses', $options, null, ['castTo' => 'array']);
 			$policy_config = self::getHistoryTrackingCurrentValuePolicyConfig();
 			if(!is_array($policy_config) || !isset($policy_config['policies']) || !is_array($policy_config['policies'])) {
 				return []; // No policies are configured
@@ -608,7 +610,12 @@
 			
 			$policies = [];
 			foreach($policy_config['policies'] as $policy => $policy_info) {
-				if ($table !== $policy_info['table']) { continue; }
+				if($table !== $policy_info['table']) { continue; }
+				if(is_array($uses) && sizeof($uses) && is_array($policy_info['elements'])) {
+					if(!sizeof(array_intersect(array_keys($policy_info['elements']), $uses))) {
+						continue;
+					}
+				}
 				// TODO: implement restrictToTypes; restrictToRelationshipTypes
 				$policies[$policy] = $policy_info;
 			}
@@ -620,12 +627,14 @@
 		 *
 		 * @param string $table 
 		 * @param array $options Options include:
-		 *		type_id = 
+		 *		type_id = Limit to specific types. [Default is null]
+		 *		usedBy = limit returned policies to those used by one of the tables in the provided list. [Default is null]
 		 *
 		 * @return array
 		 * @throws ApplicationException
 		 */ 
 		static public function getDependentHistoryTrackingCurrentValuePolicies($table, $options=null) {
+			$usedBy = caGetOption('usedBy', $options, null, ['castTo' => 'array']);
 			$policy_config = self::getHistoryTrackingCurrentValuePolicyConfig();
 			if(!is_array($policy_config) || !isset($policy_config['policies']) || !is_array($policy_config['policies'])) {
 				// No policies are configured
@@ -638,6 +647,10 @@
 			foreach($policy_config['policies'] as $policy => $policy_info) {
 				if ($table === $policy_info['table']) { continue; }
 				if (!is_array($policy_info['elements'])) { continue; }
+				
+				if(is_array($usedBy) && sizeof($usedBy) && !in_array($policy_info['table'], $usedBy, true)) {
+					continue;
+				}
 				
 				foreach($policy_info['elements'] as $dtable => $dinfo) {
 					$path = Datamodel::getPath($policy_info['table'], $dtable);
@@ -670,27 +683,6 @@
 				$tables[$policy_info['table']] = true;
 			}
 			return array_keys($tables);
-		}
-		# ------------------------------------------------------
-		/**
-		 * Return list of policies applied to a table
-		 *
-		 * @param string $table Table to which policies are applied
-		 * @param array $options No options are currently supported
-		 *
-		 * @return array List of policies
-		 */ 
-		static public function getHistoryTrackingCurrentValuePoliciesForTable($table, $options=null) {
-			$policy_config = self::getHistoryTrackingCurrentValuePolicyConfig();
-			if(!is_array($policy_config) || !isset($policy_config['policies']) || !is_array($policy_config['policies'])) {
-				return [];	// No policies are configured
-			}
-			
-			$policies = array_filter($policy_config['policies'], function($v) use ($table) {
-			    return isset($v['table']) && ($v['table'] === $table); 
-			});
-			
-			return is_array($policies) ? $policies : [];
 		}
 		# ------------------------------------------------------
 		/**

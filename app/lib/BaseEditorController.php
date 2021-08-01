@@ -2738,7 +2738,7 @@ class BaseEditorController extends ActionController {
 		}
 		
 		$table = preg_replace("!_related_list$!", "", $placement->get('bundle_name'));
-		$ids = $t_instance->getRelatedItems($table, ['returnAs' => 'ids', 'restrictToTypes' => $placement->getSetting('restrict_to_types'), 'restrictToRelationshipTypes' => $placement->getSetting('restrict_to_relationship_types'), ]);
+		$ids = $t_instance->getRelatedItems($table, ['showCurrentOnly' => $placement->getSetting('showCurrentOnly'), 'returnAs' => 'ids', 'restrictToTypes' => $placement->getSetting('restrict_to_types'), 'restrictToRelationshipTypes' => $placement->getSetting('restrict_to_relationship_types'), ]);
 		if(!$ids || !sizeof($ids)) { 
 			throw new ApplicationException(_('No related items'));
 		}
