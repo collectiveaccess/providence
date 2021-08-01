@@ -1,5 +1,34 @@
 <?php
-
+/** ---------------------------------------------------------------------
+ * app/lib/Search/Common/Parsers/QueryEntry/PhraseQueryEntry.php
+ * ----------------------------------------------------------------------
+ * CollectiveAccess
+ * Open-source collections management software
+ * ----------------------------------------------------------------------
+ *
+ * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
+ * Copyright 2009-2021 Whirl-i-Gig
+ *
+ * For more information visit http://www.CollectiveAccess.org
+ *
+ * This program is free software; you may redistribute it and/or modify it under
+ * the terms of the provided license as published by Whirl-i-Gig
+ *
+ * CollectiveAccess is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * This source code is free and modifiable under the terms of
+ * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
+ * the "license.txt" file for details, or visit the CollectiveAccess web site at
+ * http://www.CollectiveAccess.org
+ *
+ * @package CollectiveAccess
+ * @subpackage Search
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ *
+ * ----------------------------------------------------------------------
+ */
 
 class PhraseQueryEntry extends Zend_Search_Lucene_Search_QueryEntry {
 	/**
@@ -66,9 +95,10 @@ class PhraseQueryEntry extends Zend_Search_Lucene_Search_QueryEntry {
 	 * @throws Zend_Search_Lucene_Search_QueryParserException
 	 */
 	public function getQuery($encoding) {
-		if (strpos($this->_phrase, '?') !== false || strpos($this->_phrase, '*') !== false) {
-		    throw new Zend_Search_Lucene_Search_QueryParserException('Wildcards are only allowed in a single terms.');
-		}
+		// SqlSearch2 supports this now
+		//if (strpos($this->_phrase, '?') !== false || strpos($this->_phrase, '*') !== false) {
+		//    throw new Zend_Search_Lucene_Search_QueryParserException('Wildcards are only allowed in a single terms.');
+		//}
 
 		$tokens = explode(" ",$this->_phrase);
 
