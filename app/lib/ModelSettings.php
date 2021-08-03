@@ -285,7 +285,7 @@ trait ModelSettings {
 		$vs_name = 				caGetOption('name', $pa_options, null);
 		$vs_placement_code = 	caGetOption('placement_code', $pa_options, null);
 		
-		$va_options = array('request' => $po_request, 'id_prefix' => $vs_id, 'table' => caGetOption('table', $pa_options, null));
+		$va_options = array('request' => $po_request, 'id_prefix' => $vs_id, 'table' => caGetOption('table', $pa_options, null), 'relatedTable' => caGetOption('relatedTable', $pa_options, null));
 		
 		if (is_array($va_settings)) { 
 			foreach($va_settings as $vs_setting => $va_setting_info) {
@@ -598,9 +598,16 @@ trait ModelSettings {
 						if ($vb_locale_list) {
 							$va_rel_opts = array_flip(ca_locales::getLocaleList(array('return_display_values' => true)));
 						} elseif($vb_policy_list) {
+							$table = caGetOption('table', $pa_options, null);
+							$rel_table = caGetOption('relatedTable', $pa_options, null);
+							$policies = array_merge(
+								ca_objects::getHistoryTrackingCurrentValuePolicies($table, ['uses' => $rel_table ? [$rel_table] : null]),
+								ca_objects::getDependentHistoryTrackingCurrentValuePolicies($table)
+							);
+							
 							$va_rel_opts = array_flip(array_map(function($v) {
 								return $v['name'];
-							}, ca_objects::getHistoryTrackingCurrentValuePolicies(caGetOption('table', $pa_options, null))));
+							}, $policies));
 						} elseif($vb_referring_policy_list) {
 							$va_rel_opts = array_flip(array_map(function($v) {
 								return $v['name'];
