@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Providence\n"
 "Report-Msgid-Bugs-To: info@collectiveaccess.org\n"
-"POT-Creation-Date: 2021-05-04 11:46+0200\n"
+"POT-Creation-Date: 2021-08-04 12:59+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -93,7 +93,7 @@ msgstr ""
 #: ../../app/models/ca_user_sorts.php:95
 #: ../../app/models/ca_search_forms.php:104
 #: ../../app/models/ca_data_importers.php:97
-#: ../../app/conf/navigation.conf:5426
+#: ../../app/conf/navigation.conf:5427
 msgid "Settings"
 msgstr ""
 
@@ -229,9 +229,9 @@ msgstr ""
 #: ../../themes/default/views/batch/editor/screen_html.php:34
 #: ../../themes/default/views/batch/mediaimport/confirm_html.php:138
 #: ../../themes/default/views/batch/mediaimport/import_options_html.php:39
-#: ../../app/helpers/displayHelpers.php:298
-#: ../../app/helpers/displayHelpers.php:324
-#: ../../app/helpers/displayHelpers.php:3535
+#: ../../app/helpers/displayHelpers.php:299
+#: ../../app/helpers/displayHelpers.php:325
+#: ../../app/helpers/displayHelpers.php:3624
 #: ../../app/plugins/ResourceSpace/themes/default/views/import_settings_html.php:87
 #: ../../app/plugins/WorldCat/themes/default/views/import_settings_html.php:35
 #: ../../app/plugins/ULAN/themes/default/views/import_settings_html.php:35
@@ -299,8 +299,8 @@ msgstr ""
 #: ../../themes/default/views/batch/metadataimport/importer_list_html.php:132
 #: ../../themes/default/views/batch/editor/delete_html.php:39
 #: ../../app/helpers/themeHelpers.php:682
-#: ../../app/helpers/displayHelpers.php:297
-#: ../../app/helpers/displayHelpers.php:323
+#: ../../app/helpers/displayHelpers.php:298
+#: ../../app/helpers/displayHelpers.php:324
 #: ../../app/widgets/recentComments/views/main_html.php:72
 msgid "Delete"
 msgstr ""
@@ -339,7 +339,7 @@ msgstr ""
 #: ../../themes/default/views/manage/comment_list_html.php:109
 #: ../../themes/default/views/manage/Results/ca_item_comments_list_html.php:106
 #: ../../themes/default/views/batch/metadataimport/importer_list_html.php:121
-#: ../../app/helpers/displayHelpers.php:4144
+#: ../../app/helpers/displayHelpers.php:4233
 msgid "Download"
 msgstr ""
 
@@ -413,17 +413,17 @@ msgstr ""
 #: ../../themes/default/views/manage/set_list_by_user_html.php:106
 #: ../../themes/default/views/batch/metadataimport/importer_list_html.php:79
 #: ../../themes/default/views/batch/mediaimport/import_options_html.php:142
-#: ../../app/helpers/searchHelpers.php:1539
-#: ../../app/helpers/searchHelpers.php:1547
-#: ../../app/helpers/searchHelpers.php:1557
-#: ../../app/helpers/searchHelpers.php:1565
+#: ../../app/helpers/searchHelpers.php:1541
+#: ../../app/helpers/searchHelpers.php:1551
+#: ../../app/helpers/searchHelpers.php:1563
 #: ../../app/helpers/searchHelpers.php:1573
-#: ../../app/helpers/searchHelpers.php:1582
-#: ../../app/helpers/searchHelpers.php:1590
-#: ../../app/helpers/searchHelpers.php:1598
-#: ../../app/helpers/searchHelpers.php:1606
-#: ../../app/helpers/displayHelpers.php:1866
-#: ../../app/helpers/displayHelpers.php:1878
+#: ../../app/helpers/searchHelpers.php:1583
+#: ../../app/helpers/searchHelpers.php:1594
+#: ../../app/helpers/searchHelpers.php:1605
+#: ../../app/helpers/searchHelpers.php:1615
+#: ../../app/helpers/searchHelpers.php:1625
+#: ../../app/helpers/displayHelpers.php:1867
+#: ../../app/helpers/displayHelpers.php:1879
 #: ../../app/lib/Utils/CLIUtils/Maintenance.php:824
 #: ../../app/models/ca_collection_labels.php:73
 #: ../../app/models/ca_list_item_labels.php:72
@@ -590,13 +590,13 @@ msgstr ""
 #: ../../themes/default/views/batch/metadataimport/importer_list_html.php:73
 #: ../../app/helpers/searchHelpers.php:1518
 #: ../../app/helpers/searchHelpers.php:1530
-#: ../../app/helpers/searchHelpers.php:1564
 #: ../../app/helpers/searchHelpers.php:1572
-#: ../../app/helpers/searchHelpers.php:1589
-#: ../../app/helpers/searchHelpers.php:1597
-#: ../../app/helpers/searchHelpers.php:1605
-#: ../../app/helpers/searchHelpers.php:1613
-#: ../../app/helpers/searchHelpers.php:1619
+#: ../../app/helpers/searchHelpers.php:1582
+#: ../../app/helpers/searchHelpers.php:1604
+#: ../../app/helpers/searchHelpers.php:1614
+#: ../../app/helpers/searchHelpers.php:1624
+#: ../../app/helpers/searchHelpers.php:1634
+#: ../../app/helpers/searchHelpers.php:1641
 #: ../../app/lib/Utils/CLIUtils/Maintenance.php:824
 #: ../../app/lib/Plugins/InformationService/GlobalNames.php:187
 #: ../../app/models/ca_collection_labels.php:80
@@ -868,12 +868,12 @@ msgstr ""
 #: ../../app/conf/navigation.conf:16 ../../app/conf/navigation.conf:17
 #: ../../app/conf/navigation.conf:18 ../../app/conf/navigation.conf:19
 #: ../../app/conf/navigation.conf:20 ../../app/conf/navigation.conf:21
-#: ../../app/conf/navigation.conf:22 ../../app/conf/navigation.conf:3755
+#: ../../app/conf/navigation.conf:22 ../../app/conf/navigation.conf:3756
 msgid "Edit"
 msgstr ""
 
 #: ../../themes/default/views/administrate/access/user_list_html.php:109
-#: ../../app/conf/navigation.conf:4399
+#: ../../app/conf/navigation.conf:4400
 msgid "Tools"
 msgstr ""
 
@@ -941,8 +941,8 @@ msgid "Confirm password"
 msgstr ""
 
 #: ../../themes/default/views/administrate/access/user_edit_html.php:62
-#: ../../app/helpers/displayHelpers.php:475
-#: ../../app/helpers/displayHelpers.php:587
+#: ../../app/helpers/displayHelpers.php:476
+#: ../../app/helpers/displayHelpers.php:588
 msgid "Clear"
 msgstr ""
 
@@ -1166,6 +1166,16 @@ msgstr ""
 #: ../../themes/default/views/manage/set_list_html.php:132
 #: ../../themes/default/views/manage/set_list_by_user_html.php:121
 #: ../../themes/default/views/manage/Results/ca_item_comments_list_html.php:57
+#: ../../app/helpers/searchHelpers.php:1534
+#: ../../app/helpers/searchHelpers.php:1544
+#: ../../app/helpers/searchHelpers.php:1554
+#: ../../app/helpers/searchHelpers.php:1566
+#: ../../app/helpers/searchHelpers.php:1576
+#: ../../app/helpers/searchHelpers.php:1587
+#: ../../app/helpers/searchHelpers.php:1597
+#: ../../app/helpers/searchHelpers.php:1608
+#: ../../app/helpers/searchHelpers.php:1618
+#: ../../app/helpers/searchHelpers.php:1628
 #: ../../app/models/ca_tour_stops.php:163
 #: ../../app/models/ca_user_representation_annotations.php:135
 #: ../../app/models/ca_representation_annotations.php:135
@@ -1340,7 +1350,7 @@ msgstr ""
 #: ../../themes/default/views/find/Search/search_sets_html.php:96
 #: ../../themes/default/views/manage/set_list_html.php:97
 #: ../../themes/default/views/manage/widget_watched_items_info_html.php:50
-#: ../../app/conf/navigation.conf:3766
+#: ../../app/conf/navigation.conf:3767
 msgid "Create"
 msgstr ""
 
@@ -1433,7 +1443,7 @@ msgstr ""
 #: ../../themes/default/views/find/Search/widget_ca_occurrences_search_tools.php:63
 #: ../../themes/default/views/find/Search/widget_ca_collections_search_tools.php:65
 #: ../../app/widgets/savedSearches/savedSearchesWidget.php:37
-#: ../../app/conf/navigation.conf:4599
+#: ../../app/conf/navigation.conf:4600
 msgid "Saved searches"
 msgstr ""
 
@@ -1539,7 +1549,6 @@ msgstr ""
 #: ../../themes/default/views/manage/Search/ca_item_tags_search_controls_html.php:40
 #: ../../themes/default/views/manage/set_list_html.php:82
 #: ../../themes/default/views/manage/set_list_by_user_html.php:79
-#: ../../themes/default/views/pageFormat/menuBar.php:7
 #: ../../app/lib/Utils/CLIUtils/Search.php:68
 #: ../../app/lib/Utils/CLIUtils/Search.php:175
 #: ../../app/lib/Utils/CLIUtils/Search.php:215
@@ -1558,9 +1567,9 @@ msgstr ""
 #: ../../app/controllers/find/SearchObjectLotsController.php:101
 #: ../../app/controllers/find/SearchObjectsController.php:140
 #: ../../app/controllers/find/SearchMovementsController.php:93
-#: ../../app/conf/navigation.conf:3965 ../../app/conf/navigation.conf:4026
-#: ../../app/conf/navigation.conf:4708 ../../app/conf/navigation.conf:4735
-#: ../../app/conf/navigation.conf:4758
+#: ../../app/conf/navigation.conf:3966 ../../app/conf/navigation.conf:4027
+#: ../../app/conf/navigation.conf:4709 ../../app/conf/navigation.conf:4736
+#: ../../app/conf/navigation.conf:4759
 msgid "Search"
 msgstr ""
 
@@ -1728,7 +1737,7 @@ msgid "You are not allowed to edit items in this list"
 msgstr ""
 
 #: ../../themes/default/views/administrate/setup/widget_data_dictionary_info_html.php:31
-#: ../../app/conf/navigation.conf:5159
+#: ../../app/conf/navigation.conf:5160
 msgid "Data dictionary"
 msgstr ""
 
@@ -1772,7 +1781,7 @@ msgid "Label"
 msgstr ""
 
 #: ../../themes/default/views/administrate/setup/elements_list_html.php:55
-#: ../../app/helpers/displayHelpers.php:1759
+#: ../../app/helpers/displayHelpers.php:1760
 #: ../../app/models/ca_metadata_elements.php:75
 msgid "Element code"
 msgstr ""
@@ -1786,7 +1795,7 @@ msgid "Usage in UI"
 msgstr ""
 
 #: ../../themes/default/views/administrate/setup/widget_element_info_html.php:34
-#: ../../app/conf/navigation.conf:5131
+#: ../../app/conf/navigation.conf:5132
 msgid "Metadata elements"
 msgstr ""
 
@@ -1879,14 +1888,10 @@ msgstr ""
 #: ../../themes/default/views/manage/sets/paging_controls_html.php:51
 #: ../../themes/default/views/manage/Results/ca_item_tags_paging_controls_html.php:48
 #: ../../themes/default/views/manage/Results/ca_item_comments_paging_controls_html.php:49
-#: ../../app/printTemplates/results/header.php:55
-#: ../../app/printTemplates/results/header.php:68
-#: ../../app/printTemplates/summary/header.php:46
-#: ../../app/printTemplates/summary/header.php:60
-#: ../../app/printTemplates/bundles/header.php:44
-#: ../../app/printTemplates/bundles/header.php:57
-#: ../../app/printTemplates/sets/header.php:55
-#: ../../app/printTemplates/sets/header.php:68
+#: ../../app/printTemplates/results/header.php:52
+#: ../../app/printTemplates/summary/header.php:44
+#: ../../app/printTemplates/bundles/header.php:40
+#: ../../app/printTemplates/sets/header.php:52
 #: ../../app/models/ca_site_page_media.php:87
 #: ../../app/conf/annotation_types.conf:60
 msgid "Page"
@@ -1915,7 +1920,7 @@ msgstr ""
 #: ../../app/models/ca_bundle_displays.php:1557
 #: ../../app/models/ca_object_representations.php:105
 #: ../../app/plugins/ArtefactsCanada/controllers/ExportController.php:168
-#: ../../app/conf/navigation.conf:5419
+#: ../../app/conf/navigation.conf:5420
 msgid "Media"
 msgstr ""
 
@@ -2056,7 +2061,7 @@ msgstr ""
 #: ../../themes/default/views/administrate/maintenance/sort_values_reload_landing_html.php:29
 #: ../../themes/default/views/administrate/maintenance/sort_values_reload_landing_html.php:38
 #: ../../themes/default/views/administrate/maintenance/sort_values_reload_status_html.php:30
-#: ../../app/conf/navigation.conf:5183
+#: ../../app/conf/navigation.conf:5184
 msgid "Reload sort values"
 msgstr ""
 
@@ -2136,7 +2141,7 @@ msgstr ""
 #: ../../themes/default/views/administrate/maintenance/search_reindex_status_html.php:30
 #: ../../themes/default/views/administrate/maintenance/search_reindex_landing_html.php:29
 #: ../../themes/default/views/administrate/maintenance/search_reindex_landing_html.php:38
-#: ../../app/conf/navigation.conf:5176
+#: ../../app/conf/navigation.conf:5177
 msgid "Rebuild search indices"
 msgstr ""
 
@@ -2175,7 +2180,7 @@ msgstr ""
 #: ../../themes/default/views/administrate/maintenance/hierarchical_reindex_status_html.php:30
 #: ../../themes/default/views/administrate/maintenance/hierarchical_reindex_landing_html.php:29
 #: ../../themes/default/views/administrate/maintenance/hierarchical_reindex_landing_html.php:37
-#: ../../app/conf/navigation.conf:5190
+#: ../../app/conf/navigation.conf:5191
 msgid "Rebuild hierarchical indices"
 msgstr ""
 
@@ -2790,8 +2795,8 @@ msgstr ""
 #: ../../themes/default/views/bundles/ca_object_checkouts.php:106
 #: ../../themes/default/views/bundles/ca_users.php:56
 #: ../../themes/default/views/pageFormat/pageFooter.php:46
-#: ../../app/helpers/searchHelpers.php:1625
-#: ../../app/helpers/searchHelpers.php:1633
+#: ../../app/helpers/searchHelpers.php:1648
+#: ../../app/helpers/searchHelpers.php:1656
 #: ../../app/lib/ApplicationChangeLog.php:144
 #: ../../app/lib/ApplicationChangeLog.php:214
 #: ../../app/models/ca_user_representation_annotations.php:74
@@ -3458,8 +3463,8 @@ msgstr ""
 #: ../../themes/default/views/bundles/hierarchy_location.php:290
 #: ../../themes/default/views/bundles/hierarchy_location.php:306
 #: ../../themes/default/views/bundles/set_home_location_html.php:156
-#: ../../app/helpers/displayHelpers.php:469 ../../app/conf/navigation.conf:1012
-#: ../../app/conf/navigation.conf:3931
+#: ../../app/helpers/displayHelpers.php:470 ../../app/conf/navigation.conf:1012
+#: ../../app/conf/navigation.conf:3932
 msgid "Find"
 msgstr ""
 
@@ -3532,15 +3537,15 @@ msgstr ""
 #: ../../themes/default/views/bundles/ca_site_page_media.php:105
 #: ../../app/helpers/searchHelpers.php:1519
 #: ../../app/helpers/searchHelpers.php:1532
-#: ../../app/helpers/searchHelpers.php:1540
-#: ../../app/helpers/searchHelpers.php:1548
-#: ../../app/helpers/searchHelpers.php:1558
-#: ../../app/helpers/searchHelpers.php:1566
+#: ../../app/helpers/searchHelpers.php:1542
+#: ../../app/helpers/searchHelpers.php:1552
+#: ../../app/helpers/searchHelpers.php:1564
 #: ../../app/helpers/searchHelpers.php:1574
-#: ../../app/helpers/searchHelpers.php:1583
-#: ../../app/helpers/searchHelpers.php:1591
-#: ../../app/helpers/searchHelpers.php:1599
-#: ../../app/helpers/searchHelpers.php:1607
+#: ../../app/helpers/searchHelpers.php:1584
+#: ../../app/helpers/searchHelpers.php:1595
+#: ../../app/helpers/searchHelpers.php:1606
+#: ../../app/helpers/searchHelpers.php:1616
+#: ../../app/helpers/searchHelpers.php:1626
 #: ../../app/models/ca_editor_ui_screens.php:1064
 #: ../../app/models/ca_occurrences.php:81 ../../app/models/ca_list_items.php:77
 msgid "Identifier"
@@ -3549,7 +3554,7 @@ msgstr ""
 #: ../../themes/default/views/bundles/ca_site_page_media.php:106
 #: ../../themes/default/views/bundles/ca_object_representations_classic.php:165
 #: ../../themes/default/views/manage/export/export_destination_html.php:37
-#: ../../app/helpers/searchHelpers.php:1575
+#: ../../app/helpers/searchHelpers.php:1585
 msgid "File name"
 msgstr ""
 
@@ -3558,7 +3563,18 @@ msgstr ""
 #: ../../themes/default/views/manage/Pawtucket/page_list_html.php:75
 #: ../../themes/default/views/manage/set_list_html.php:129
 #: ../../themes/default/views/manage/set_list_by_user_html.php:118
-#: ../../app/models/ca_acl.php:88
+#: ../../app/helpers/searchHelpers.php:1533
+#: ../../app/helpers/searchHelpers.php:1543
+#: ../../app/helpers/searchHelpers.php:1553
+#: ../../app/helpers/searchHelpers.php:1565
+#: ../../app/helpers/searchHelpers.php:1575
+#: ../../app/helpers/searchHelpers.php:1586
+#: ../../app/helpers/searchHelpers.php:1596
+#: ../../app/helpers/searchHelpers.php:1607
+#: ../../app/helpers/searchHelpers.php:1617
+#: ../../app/helpers/searchHelpers.php:1627
+#: ../../app/helpers/searchHelpers.php:1635
+#: ../../app/helpers/searchHelpers.php:1642 ../../app/models/ca_acl.php:88
 #: ../../app/models/ca_editor_uis_x_user_groups.php:73
 #: ../../app/models/ca_tour_stops.php:148
 #: ../../app/models/ca_editor_ui_screens_x_roles.php:75
@@ -3596,9 +3612,9 @@ msgstr ""
 #: ../../app/conf/navigation.conf:464 ../../app/conf/navigation.conf:540
 #: ../../app/conf/navigation.conf:631 ../../app/conf/navigation.conf:725
 #: ../../app/conf/navigation.conf:801 ../../app/conf/navigation.conf:891
-#: ../../app/conf/navigation.conf:975 ../../app/conf/navigation.conf:3806
-#: ../../app/conf/navigation.conf:3896 ../../app/conf/navigation.conf:4808
-#: ../../app/conf/navigation.conf:4875
+#: ../../app/conf/navigation.conf:975 ../../app/conf/navigation.conf:3807
+#: ../../app/conf/navigation.conf:3897 ../../app/conf/navigation.conf:4809
+#: ../../app/conf/navigation.conf:4876
 msgid "Access"
 msgstr ""
 
@@ -3958,7 +3974,7 @@ msgid "Is primary"
 msgstr ""
 
 #: ../../themes/default/views/bundles/ca_object_representations.php:267
-#: ../../app/helpers/displayHelpers.php:3970
+#: ../../app/helpers/displayHelpers.php:4059
 msgid "No media"
 msgstr ""
 
@@ -4005,8 +4021,8 @@ msgid "Home location is not set"
 msgstr ""
 
 #: ../../themes/default/views/bundles/set_home_location_html.php:151
-#: ../../app/helpers/displayHelpers.php:1278
-#: ../../app/helpers/displayHelpers.php:1284
+#: ../../app/helpers/displayHelpers.php:1279
+#: ../../app/helpers/displayHelpers.php:1285
 msgid "Set home location"
 msgstr ""
 
@@ -4051,7 +4067,7 @@ msgid "by %1 client"
 msgstr ""
 
 #: ../../themes/default/views/bundles/ca_object_checkouts.php:107
-#: ../../app/conf/navigation.conf:5382
+#: ../../app/conf/navigation.conf:5383
 msgid "Check out"
 msgstr ""
 
@@ -4494,7 +4510,7 @@ msgid "New %1 page"
 msgstr ""
 
 #: ../../themes/default/views/manage/Pawtucket/page_list_html.php:63
-#: ../../app/helpers/searchHelpers.php:1581
+#: ../../app/helpers/searchHelpers.php:1593
 #: ../../app/models/ca_user_representation_annotation_labels.php:80
 #: ../../app/models/ca_site_page_media.php:56
 #: ../../app/models/ca_representation_annotation_labels.php:80
@@ -4735,8 +4751,8 @@ msgstr ""
 #: ../../themes/default/views/manage/comment_list_html.php:66
 #: ../../themes/default/views/manage/tag_list_html.php:65
 #: ../../themes/default/views/manage/Results/ca_item_comments_list_html.php:54
-#: ../../app/helpers/searchHelpers.php:1624
-#: ../../app/helpers/searchHelpers.php:1632
+#: ../../app/helpers/searchHelpers.php:1647
+#: ../../app/helpers/searchHelpers.php:1655
 #: ../../app/lib/ApplicationChangeLog.php:141
 #: ../../app/lib/ApplicationChangeLog.php:211
 #: ../../app/lib/MetadataAlerts/TriggerTypes/Base.php:225
@@ -4819,16 +4835,16 @@ msgstr ""
 #: ../../themes/default/views/manage/search_form_list_html.php:70
 #: ../../themes/default/views/manage/metadata_alert_list_html.php:70
 #: ../../themes/default/views/manage/bundle_display_list_html.php:69
-#: ../../app/helpers/displayHelpers.php:1645
-#: ../../app/helpers/displayHelpers.php:1817
-#: ../../app/helpers/displayHelpers.php:1840
+#: ../../app/helpers/displayHelpers.php:1646
+#: ../../app/helpers/displayHelpers.php:1818
+#: ../../app/helpers/displayHelpers.php:1841
 msgid "Owner"
 msgstr ""
 
 #: ../../themes/default/views/manage/set_list_html.php:167
 #: ../../themes/default/views/manage/set_list_by_user_html.php:159
 #: ../../themes/default/views/batch/mediaimport/batch_results_html.php:111
-#: ../../app/helpers/displayHelpers.php:1609
+#: ../../app/helpers/displayHelpers.php:1610
 msgid "Batch edit"
 msgstr ""
 
@@ -4954,7 +4970,7 @@ msgstr ""
 #: ../../app/widgets/recordsByStatus/recordsByStatusWidget.php:64
 #: ../../app/widgets/recordsByStatus/recordsByStatusWidget.php:237
 #: ../../app/conf/navigation.conf:1313 ../../app/conf/navigation.conf:1573
-#: ../../app/conf/navigation.conf:4168 ../../app/conf/user_pref_defs.conf:585
+#: ../../app/conf/navigation.conf:4169 ../../app/conf/user_pref_defs.conf:585
 #: ../../app/conf/user_pref_defs.conf:678
 #: ../../app/conf/user_pref_defs.conf:758
 #: ../../app/conf/user_pref_defs.conf:841
@@ -4978,7 +4994,7 @@ msgstr ""
 #: ../../app/widgets/recordsByStatus/recordsByStatusWidget.php:65
 #: ../../app/widgets/recordsByStatus/recordsByStatusWidget.php:238
 #: ../../app/conf/navigation.conf:1790 ../../app/conf/navigation.conf:2020
-#: ../../app/conf/navigation.conf:4181 ../../app/conf/user_pref_defs.conf:586
+#: ../../app/conf/navigation.conf:4182 ../../app/conf/user_pref_defs.conf:586
 #: ../../app/conf/user_pref_defs.conf:679
 #: ../../app/conf/user_pref_defs.conf:760
 #: ../../app/conf/user_pref_defs.conf:842
@@ -5002,7 +5018,7 @@ msgstr ""
 #: ../../app/widgets/recordsByStatus/recordsByStatusWidget.php:66
 #: ../../app/widgets/recordsByStatus/recordsByStatusWidget.php:239
 #: ../../app/conf/navigation.conf:2044 ../../app/conf/navigation.conf:2302
-#: ../../app/conf/navigation.conf:4194 ../../app/conf/user_pref_defs.conf:587
+#: ../../app/conf/navigation.conf:4195 ../../app/conf/user_pref_defs.conf:587
 #: ../../app/conf/user_pref_defs.conf:680
 #: ../../app/conf/user_pref_defs.conf:761
 #: ../../app/conf/user_pref_defs.conf:843
@@ -5031,7 +5047,7 @@ msgstr ""
 #: ../../app/widgets/recordsByStatus/recordsByStatusWidget.php:69
 #: ../../app/widgets/recordsByStatus/recordsByStatusWidget.php:242
 #: ../../app/conf/navigation.conf:2326 ../../app/conf/navigation.conf:2583
-#: ../../app/conf/navigation.conf:4233 ../../app/conf/user_pref_defs.conf:589
+#: ../../app/conf/navigation.conf:4234 ../../app/conf/user_pref_defs.conf:589
 #: ../../app/conf/user_pref_defs.conf:682
 #: ../../app/conf/user_pref_defs.conf:763
 #: ../../app/conf/user_pref_defs.conf:845
@@ -5053,7 +5069,7 @@ msgstr ""
 #: ../../app/widgets/recordsByStatus/recordsByStatusWidget.php:67
 #: ../../app/widgets/recordsByStatus/recordsByStatusWidget.php:240
 #: ../../app/conf/navigation.conf:589 ../../app/conf/navigation.conf:2607
-#: ../../app/conf/navigation.conf:2860 ../../app/conf/navigation.conf:4207
+#: ../../app/conf/navigation.conf:2860 ../../app/conf/navigation.conf:4208
 #: ../../app/conf/user_pref_defs.conf:588
 #: ../../app/conf/user_pref_defs.conf:681
 #: ../../app/conf/user_pref_defs.conf:762
@@ -5098,7 +5114,7 @@ msgstr ""
 
 #: ../../themes/default/views/manage/tag_list_html.php:59
 #: ../../themes/default/views/manage/Results/ca_item_tags_list_html.php:43
-#: ../../app/helpers/searchHelpers.php:1631
+#: ../../app/helpers/searchHelpers.php:1654
 #: ../../app/models/ca_bundle_displays.php:2110
 #: ../../app/models/ca_item_tags.php:64
 msgid "Tag"
@@ -5238,7 +5254,7 @@ msgid "New display for "
 msgstr ""
 
 #: ../../themes/default/views/manage/bundle_display_list_html.php:63
-#: ../../app/helpers/searchHelpers.php:1554
+#: ../../app/helpers/searchHelpers.php:1560
 #: ../../app/models/ca_entity_labels.php:82
 #: ../../app/refineries/entityJoiner/entityJoinerRefinery.php:247
 msgid "Display name"
@@ -5887,13 +5903,13 @@ msgstr ""
 
 #: ../../themes/default/views/library/checkout/items_html.php:26
 #: ../../themes/default/views/library/checkin/items_html.php:23
-#: ../../app/helpers/displayHelpers.php:770
+#: ../../app/helpers/displayHelpers.php:771
 msgid "Results"
 msgstr ""
 
 #: ../../themes/default/views/library/checkin/items_html.php:1
 #: ../../themes/default/views/library/checkin/items_html.php:19
-#: ../../app/conf/navigation.conf:5394
+#: ../../app/conf/navigation.conf:5395
 msgid "Check in"
 msgstr ""
 
@@ -5961,7 +5977,7 @@ msgid "day"
 msgstr ""
 
 #: ../../app/helpers/utilityHelpers.php:1238
-#: ../../app/lib/ModelSettings.php:753 ../../app/lib/BaseSettings.php:665
+#: ../../app/lib/ModelSettings.php:749 ../../app/lib/BaseSettings.php:665
 msgid "days"
 msgstr ""
 
@@ -5970,7 +5986,7 @@ msgid "hour"
 msgstr ""
 
 #: ../../app/helpers/utilityHelpers.php:1239
-#: ../../app/lib/ModelSettings.php:753 ../../app/lib/BaseSettings.php:665
+#: ../../app/lib/ModelSettings.php:749 ../../app/lib/BaseSettings.php:665
 msgid "hours"
 msgstr ""
 
@@ -5990,9 +6006,9 @@ msgstr ""
 msgid "seconds"
 msgstr ""
 
-#: ../../app/helpers/utilityHelpers.php:2845
-#: ../../app/helpers/utilityHelpers.php:2866
-#: ../../app/helpers/displayHelpers.php:982
+#: ../../app/helpers/utilityHelpers.php:2850
+#: ../../app/helpers/utilityHelpers.php:2871
+#: ../../app/helpers/displayHelpers.php:983
 #: ../../app/lib/BaseEditorController.php:246 ../../app/lib/BaseModel.php:10231
 #: ../../app/lib/BaseModel.php:10233 ../../app/lib/BaseModel.php:12000
 #: ../../app/lib/BaseModel.php:12036 ../../app/lib/BaseModel.php:12070
@@ -6014,62 +6030,62 @@ msgstr ""
 msgid "now"
 msgstr ""
 
-#: ../../app/helpers/utilityHelpers.php:3175
+#: ../../app/helpers/utilityHelpers.php:3180
 #: ../../app/lib/Plugins/InformationService/SparqlEndpoint.php:189
 msgid "An error occurred while querying an external webservice"
 msgstr ""
 
-#: ../../app/helpers/utilityHelpers.php:3175
+#: ../../app/helpers/utilityHelpers.php:3180
 msgid " at %1"
 msgstr ""
 
-#: ../../app/helpers/utilityHelpers.php:3329
+#: ../../app/helpers/utilityHelpers.php:3334
 msgid "%1 is not a valid unit of length [%2]"
 msgstr ""
 
-#: ../../app/helpers/utilityHelpers.php:3335
-#: ../../app/helpers/utilityHelpers.php:3464
+#: ../../app/helpers/utilityHelpers.php:3340
+#: ../../app/helpers/utilityHelpers.php:3469
 msgid "Not a valid measurement"
 msgstr ""
 
-#: ../../app/helpers/utilityHelpers.php:3339
-#: ../../app/helpers/utilityHelpers.php:3468
+#: ../../app/helpers/utilityHelpers.php:3344
+#: ../../app/helpers/utilityHelpers.php:3473
 msgid "Must not be less than zero"
 msgstr ""
 
-#: ../../app/helpers/utilityHelpers.php:3352
-#: ../../app/helpers/utilityHelpers.php:3480
+#: ../../app/helpers/utilityHelpers.php:3357
+#: ../../app/helpers/utilityHelpers.php:3485
 msgid "Not a valid measurement [%1]"
 msgstr ""
 
-#: ../../app/helpers/utilityHelpers.php:3458
+#: ../../app/helpers/utilityHelpers.php:3463
 msgid "Not a valid unit of weight [%2]"
 msgstr ""
 
-#: ../../app/helpers/utilityHelpers.php:3682
-#: ../../app/helpers/utilityHelpers.php:3685
+#: ../../app/helpers/utilityHelpers.php:3687
+#: ../../app/helpers/utilityHelpers.php:3690
 msgid "CSRF token is not valid"
 msgstr ""
 
-#: ../../app/helpers/utilityHelpers.php:4376
+#: ../../app/helpers/utilityHelpers.php:4381
 #: ../../app/lib/Utils/DataMigrationUtils.php:667
 #: ../../app/widgets/count/views/main_html.php:42
 msgid "and"
 msgstr ""
 
-#: ../../app/helpers/utilityHelpers.php:4440
+#: ../../app/helpers/utilityHelpers.php:4445
 msgid "Cannot open temporary file for media fetched from URL [%1]"
 msgstr ""
 
-#: ../../app/helpers/utilityHelpers.php:4450
+#: ../../app/helpers/utilityHelpers.php:4455
 msgid "Media fetch from URL [%1] failed: %2"
 msgstr ""
 
-#: ../../app/helpers/utilityHelpers.php:4460
+#: ../../app/helpers/utilityHelpers.php:4465
 msgid "Media fetched from URL [%1] failed with status code %2"
 msgstr ""
 
-#: ../../app/helpers/utilityHelpers.php:4467
+#: ../../app/helpers/utilityHelpers.php:4472
 msgid "Media fetched from URL [%1] is not in accepted format"
 msgstr ""
 
@@ -6105,37 +6121,37 @@ msgstr ""
 msgid "type"
 msgstr ""
 
-#: ../../app/helpers/searchHelpers.php:1538
-#: ../../app/helpers/searchHelpers.php:1546
+#: ../../app/helpers/searchHelpers.php:1540
+#: ../../app/helpers/searchHelpers.php:1550
 #: ../../app/models/ca_site_templates.php:64
 msgid "Short description"
 msgstr ""
 
-#: ../../app/helpers/searchHelpers.php:1555
+#: ../../app/helpers/searchHelpers.php:1561
 msgid "Surname, forename"
 msgstr ""
 
-#: ../../app/helpers/searchHelpers.php:1556
+#: ../../app/helpers/searchHelpers.php:1562
 #: ../../app/models/ca_entity_labels.php:90
 #: ../../app/refineries/entityJoiner/entityJoinerRefinery.php:211
 msgid "Forename"
 msgstr ""
 
-#: ../../app/helpers/searchHelpers.php:1688
+#: ../../app/helpers/searchHelpers.php:1717
 msgid "Interstitial"
 msgstr ""
 
-#: ../../app/helpers/searchHelpers.php:2086
+#: ../../app/helpers/searchHelpers.php:2113
 msgid "Frequently Used"
 msgstr ""
 
-#: ../../app/helpers/searchHelpers.php:2095
-#: ../../app/helpers/displayHelpers.php:1572
+#: ../../app/helpers/searchHelpers.php:2122
+#: ../../app/helpers/displayHelpers.php:1573
 #: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:2102
 msgid "Related %1"
 msgstr ""
 
-#: ../../app/helpers/searchHelpers.php:2099
+#: ../../app/helpers/searchHelpers.php:2126
 msgid "Miscelleaneous"
 msgstr ""
 
@@ -6147,7 +6163,7 @@ msgstr ""
 #: ../../app/models/ca_object_representations.php:451
 #: ../../app/models/ca_collections.php:488
 #: ../../app/widgets/recentTags/recentTagsWidget.php:42
-#: ../../app/conf/navigation.conf:4719
+#: ../../app/conf/navigation.conf:4720
 msgid "Tags"
 msgstr ""
 
@@ -6176,7 +6192,7 @@ msgstr ""
 #: ../../app/models/ca_object_representations.php:452
 #: ../../app/models/ca_collections.php:489
 #: ../../app/widgets/recentComments/recentCommentsWidget.php:40
-#: ../../app/conf/navigation.conf:4693
+#: ../../app/conf/navigation.conf:4694
 msgid "Comments"
 msgstr ""
 
@@ -6386,107 +6402,107 @@ msgstr ""
 msgid "Couldn't match name %1 on regex %2"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:294
+#: ../../app/helpers/displayHelpers.php:295
 msgid "Really delete \"%1\"?"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:321
+#: ../../app/helpers/displayHelpers.php:322
 msgid "Really delete %1?"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:354
-#: ../../app/helpers/displayHelpers.php:356
+#: ../../app/helpers/displayHelpers.php:355
+#: ../../app/helpers/displayHelpers.php:357
 msgid "Type is used by %1 %2"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:360
+#: ../../app/helpers/displayHelpers.php:361
 #: ../../app/models/ca_relationship_types.php:41
 #: ../../app/controllers/administrate/setup/RelationshipTypesController.php:82
 msgid "relationship type"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:375
+#: ../../app/helpers/displayHelpers.php:376
 msgid "Has %1 relationship to %2"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:377
+#: ../../app/helpers/displayHelpers.php:378
 msgid "Has %1 relationships to %2"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:386
+#: ../../app/helpers/displayHelpers.php:387
 msgid "Is referenced %1 time"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:388
+#: ../../app/helpers/displayHelpers.php:389
 msgid "Is referenced %1 times"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:400
+#: ../../app/helpers/displayHelpers.php:401
 msgid "%1 reference in %2"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:409
+#: ../../app/helpers/displayHelpers.php:410
 msgid "Has %1 child"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:411
+#: ../../app/helpers/displayHelpers.php:412
 msgid "Has %1 children"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:444
+#: ../../app/helpers/displayHelpers.php:445
 msgid "This %1 is referenced %2 time"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:444
-#: ../../app/helpers/displayHelpers.php:446
-#: ../../app/helpers/displayHelpers.php:571
-#: ../../app/helpers/displayHelpers.php:573
+#: ../../app/helpers/displayHelpers.php:445
+#: ../../app/helpers/displayHelpers.php:447
+#: ../../app/helpers/displayHelpers.php:572
+#: ../../app/helpers/displayHelpers.php:574
 msgid "When deleting this %1:"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:446
+#: ../../app/helpers/displayHelpers.php:447
 msgid "This %1 is referenced %2 times"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:458
+#: ../../app/helpers/displayHelpers.php:459
 msgid "remove all references"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:462
-#: ../../app/helpers/displayHelpers.php:473
+#: ../../app/helpers/displayHelpers.php:463
+#: ../../app/helpers/displayHelpers.php:474
 msgid "transfer references to"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:479
+#: ../../app/helpers/displayHelpers.php:480
 msgid "Child records will be deleted"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:565
+#: ../../app/helpers/displayHelpers.php:566
 msgid "References to this %1"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:571
+#: ../../app/helpers/displayHelpers.php:572
 msgid "This %1 references %2 other item in metadata"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:573
+#: ../../app/helpers/displayHelpers.php:574
 msgid "This %1 references %2 other items in metadata"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:585
+#: ../../app/helpers/displayHelpers.php:586
 msgid "remove these references"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:586
+#: ../../app/helpers/displayHelpers.php:587
 msgid "transfer these references and accompanying metadata to"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:614
+#: ../../app/helpers/displayHelpers.php:615
 msgid "References by this %1"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:661
-#: ../../app/helpers/displayHelpers.php:2831
+#: ../../app/helpers/displayHelpers.php:662
+#: ../../app/helpers/displayHelpers.php:2832
 #: ../../app/lib/Attributes/Values/MediaAttributeValue.php:226
 #: ../../app/models/ca_user_representation_annotations.php:619
 #: ../../app/models/ca_set_items.php:385
@@ -6495,8 +6511,8 @@ msgstr ""
 msgid "page"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:661
-#: ../../app/helpers/displayHelpers.php:2831
+#: ../../app/helpers/displayHelpers.php:662
+#: ../../app/helpers/displayHelpers.php:2832
 #: ../../app/lib/Attributes/Values/MediaAttributeValue.php:226
 #: ../../app/models/ca_user_representation_annotations.php:619
 #: ../../app/models/ca_set_items.php:385
@@ -6505,32 +6521,32 @@ msgstr ""
 msgid "pages"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:705
+#: ../../app/helpers/displayHelpers.php:706
 msgid "No embedded metadata was extracted from the media"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:970
+#: ../../app/helpers/displayHelpers.php:971
 #: ../../app/widgets/recentChanges/views/main_html.php:74
 msgid "Deleted %1"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:976
+#: ../../app/helpers/displayHelpers.php:977
 msgid "Editing %1"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:978
+#: ../../app/helpers/displayHelpers.php:979
 msgid "Viewing %1"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:984
+#: ../../app/helpers/displayHelpers.php:985
 msgid "Deaccessioned %1"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:991
+#: ../../app/helpers/displayHelpers.php:992
 msgid "[HOME]"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:996
+#: ../../app/helpers/displayHelpers.php:997
 #: ../../app/models/ca_object_lots.php:108 ../../app/models/ca_objects.php:133
 #: ../../app/models/ca_objects.php:614
 #: ../../app/models/ca_object_representations.php:175
@@ -6538,47 +6554,47 @@ msgstr ""
 msgid "Home location"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1058
+#: ../../app/helpers/displayHelpers.php:1059
 msgid "new screen"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1088
-#: ../../app/helpers/displayHelpers.php:1507
-#: ../../app/helpers/displayHelpers.php:1510
+#: ../../app/helpers/displayHelpers.php:1089
+#: ../../app/helpers/displayHelpers.php:1508
+#: ../../app/helpers/displayHelpers.php:1511
 msgid "Lot contains %1 object"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1088
-#: ../../app/helpers/displayHelpers.php:1507
-#: ../../app/helpers/displayHelpers.php:1510
+#: ../../app/helpers/displayHelpers.php:1089
+#: ../../app/helpers/displayHelpers.php:1508
+#: ../../app/helpers/displayHelpers.php:1511
 msgid "Lot contains %1 objects"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1104
+#: ../../app/helpers/displayHelpers.php:1105
 msgid "Creating new %1"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1104
+#: ../../app/helpers/displayHelpers.php:1105
 msgid "%1 &gt; New %2"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1154
+#: ../../app/helpers/displayHelpers.php:1155
 msgid "Previous Image"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1155
+#: ../../app/helpers/displayHelpers.php:1156
 msgid "Next Image"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1200
+#: ../../app/helpers/displayHelpers.php:1201
 msgid "Add/remove item to/from watch list."
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1218
+#: ../../app/helpers/displayHelpers.php:1219
 msgid "Watch/Unwatch this record"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1222
+#: ../../app/helpers/displayHelpers.php:1223
 #: ../../app/conf/user_actions.conf:249 ../../app/conf/user_actions.conf:311
 #: ../../app/conf/user_actions.conf:379 ../../app/conf/user_actions.conf:485
 #: ../../app/conf/user_actions.conf:557 ../../app/conf/user_actions.conf:616
@@ -6588,62 +6604,62 @@ msgstr ""
 msgid "Change type"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1228
-#: ../../app/helpers/displayHelpers.php:2108
+#: ../../app/helpers/displayHelpers.php:1229
+#: ../../app/helpers/displayHelpers.php:2109
 msgid "Change Record Type"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1249
+#: ../../app/helpers/displayHelpers.php:1250
 msgid "Create Child Record"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1256
+#: ../../app/helpers/displayHelpers.php:1257
 msgid "Create a child record under this one"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1274
+#: ../../app/helpers/displayHelpers.php:1275
 msgid "Duplicate this %1"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1291
+#: ../../app/helpers/displayHelpers.php:1292
 msgid "Download all media associated with objects in this lot"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1299
+#: ../../app/helpers/displayHelpers.php:1300
 msgid "Download all media associated with records in this set"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1314
+#: ../../app/helpers/displayHelpers.php:1315
 msgid "In set"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1314
+#: ../../app/helpers/displayHelpers.php:1315
 msgid "In sets"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1324
+#: ../../app/helpers/displayHelpers.php:1325
 msgid "Export &rsaquo;"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1337
-#: ../../app/helpers/displayHelpers.php:1348
+#: ../../app/helpers/displayHelpers.php:1338
+#: ../../app/helpers/displayHelpers.php:1349
 msgid "Just now"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1337
-#: ../../app/helpers/displayHelpers.php:1348
+#: ../../app/helpers/displayHelpers.php:1338
+#: ../../app/helpers/displayHelpers.php:1349
 msgid "%1 ago"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1340
+#: ../../app/helpers/displayHelpers.php:1341
 msgid "<strong>Created</strong><br/>%1 by %2"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1340
+#: ../../app/helpers/displayHelpers.php:1341
 msgid "<strong>Created</strong><br/>%1"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1343
+#: ../../app/helpers/displayHelpers.php:1344
 #: ../../app/models/ca_task_queue.php:77
 #: ../../app/models/ca_metadata_dictionary_rule_violations.php:75
 #: ../../app/models/ca_object_checkouts.php:87
@@ -6655,406 +6671,407 @@ msgstr ""
 msgid "Created on"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1343
+#: ../../app/helpers/displayHelpers.php:1344
 msgid "Created on %1"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1351
+#: ../../app/helpers/displayHelpers.php:1352
 msgid "<strong>Last changed</strong><br/>%1 by %2"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1351
+#: ../../app/helpers/displayHelpers.php:1352
 msgid "<strong>Last changed</strong><br/>%1"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1354
+#: ../../app/helpers/displayHelpers.php:1355
 msgid "Last changed on"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1354
+#: ../../app/helpers/displayHelpers.php:1355
 msgid "Last changed on %1"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1368
+#: ../../app/helpers/displayHelpers.php:1369
 msgid "(on this tab)"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1383
+#: ../../app/helpers/displayHelpers.php:1384
 msgid "(on tab <em>%1</em>)"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1392
+#: ../../app/helpers/displayHelpers.php:1393
 msgid "%1 problems on this tab require attention (of %2 total)"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1392
+#: ../../app/helpers/displayHelpers.php:1393
 msgid "%1 problem on this tab requires attention (of %2 total)"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1394
+#: ../../app/helpers/displayHelpers.php:1395
 msgid "%1 problems on this tab require attention"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1394
+#: ../../app/helpers/displayHelpers.php:1395
 msgid "%1 problem on this tab requires attention"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1397
+#: ../../app/helpers/displayHelpers.php:1398
 msgid "%1 problems require attention"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1397
+#: ../../app/helpers/displayHelpers.php:1398
 msgid "%1 problem requires attention"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1419
+#: ../../app/helpers/displayHelpers.php:1420
 msgid "See more information about this record"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1440
+#: ../../app/helpers/displayHelpers.php:1441
 msgid "Will be related to %1"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1467
+#: ../../app/helpers/displayHelpers.php:1468
 msgid "Part of lot"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1470
+#: ../../app/helpers/displayHelpers.php:1471
 msgid "Will be part of lot"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1484
-#: ../../app/helpers/displayHelpers.php:1486
+#: ../../app/helpers/displayHelpers.php:1485
+#: ../../app/helpers/displayHelpers.php:1487
 msgid "%1 component"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1484
-#: ../../app/helpers/displayHelpers.php:1486
+#: ../../app/helpers/displayHelpers.php:1485
+#: ../../app/helpers/displayHelpers.php:1487
 msgid "%1 components"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1488
+#: ../../app/helpers/displayHelpers.php:1489
 msgid "Has"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1508
+#: ../../app/helpers/displayHelpers.php:1509
 msgid "Lot contains %1 component"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1508
+#: ../../app/helpers/displayHelpers.php:1509
 msgid "Lot contains %1 components"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1515
+#: ../../app/helpers/displayHelpers.php:1516
 msgid "There is %1 object with non-conforming numbering"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1515
+#: ../../app/helpers/displayHelpers.php:1516
 msgid "There are %1 objects with non-conforming numbering"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1524
+#: ../../app/helpers/displayHelpers.php:1525
 msgid "Re-number objects"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1535
-#: ../../app/helpers/displayHelpers.php:1538
+#: ../../app/helpers/displayHelpers.php:1536
+#: ../../app/helpers/displayHelpers.php:1539
 msgid "Add new %1 to lot"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1561
+#: ../../app/helpers/displayHelpers.php:1562
 msgid "%1 related %2"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1593
+#: ../../app/helpers/displayHelpers.php:1594
 msgid "Applied to representation"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1611
+#: ../../app/helpers/displayHelpers.php:1612
 msgid "Batch Edit"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1613
-#: ../../app/helpers/displayHelpers.php:1712
+#: ../../app/helpers/displayHelpers.php:1614
+#: ../../app/helpers/displayHelpers.php:1713
 msgid "Number of items"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1619
-#: ../../app/helpers/displayHelpers.php:1638
-#: ../../app/helpers/displayHelpers.php:1804
-#: ../../app/helpers/displayHelpers.php:1809
-#: ../../app/helpers/displayHelpers.php:1865
-#: ../../app/helpers/displayHelpers.php:1877
+#: ../../app/helpers/displayHelpers.php:1620
+#: ../../app/helpers/displayHelpers.php:1639
+#: ../../app/helpers/displayHelpers.php:1805
+#: ../../app/helpers/displayHelpers.php:1810
+#: ../../app/helpers/displayHelpers.php:1866
+#: ../../app/helpers/displayHelpers.php:1878
 msgid "Type of content"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1626
+#: ../../app/helpers/displayHelpers.php:1627
 msgid "Duplicate items in this set and add to"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1628
+#: ../../app/helpers/displayHelpers.php:1629
 msgid "current set"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1629
+#: ../../app/helpers/displayHelpers.php:1630
 msgid "new set"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1651
+#: ../../app/helpers/displayHelpers.php:1652
 msgid "Export this set of records"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1658
-#: ../../app/helpers/displayHelpers.php:1914
-#: ../../app/helpers/displayHelpers.php:1937
+#: ../../app/helpers/displayHelpers.php:1659
+#: ../../app/helpers/displayHelpers.php:1915
+#: ../../app/helpers/displayHelpers.php:1938
 #: ../../app/plugins/ArtefactsCanada/themes/default/views/export_settings_html.php:46
 #: ../../app/plugins/ArtefactsCanada/ArtefactsCanadaPlugin.php:95
 msgid "Export"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1679
+#: ../../app/helpers/displayHelpers.php:1680
 msgid "Part of set"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1687
+#: ../../app/helpers/displayHelpers.php:1688
 msgid "Is %1"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1698
-#: ../../app/helpers/displayHelpers.php:1701
+#: ../../app/helpers/displayHelpers.php:1699
+#: ../../app/helpers/displayHelpers.php:1702
 msgid "Rule content type"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1720
+#: ../../app/helpers/displayHelpers.php:1721
 msgid "Add a %1 to this list"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1732
-#: ../../app/helpers/displayHelpers.php:1790
-#: ../../app/helpers/displayHelpers.php:1856
+#: ../../app/helpers/displayHelpers.php:1733
+#: ../../app/helpers/displayHelpers.php:1791
+#: ../../app/helpers/displayHelpers.php:1857
 msgid "Part of"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1734
+#: ../../app/helpers/displayHelpers.php:1735
 msgid "Is default for list"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1751
+#: ../../app/helpers/displayHelpers.php:1752
 msgid "Is a"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1762
+#: ../../app/helpers/displayHelpers.php:1763
 msgid "Referenced by user interfaces"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1775
+#: ../../app/helpers/displayHelpers.php:1776
 msgid "Number of screens"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1778
-#: ../../app/helpers/displayHelpers.php:1780
+#: ../../app/helpers/displayHelpers.php:1779
+#: ../../app/helpers/displayHelpers.php:1781
 msgid "Edits"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1799
-#: ../../app/helpers/displayHelpers.php:1825
+#: ../../app/helpers/displayHelpers.php:1800
+#: ../../app/helpers/displayHelpers.php:1826
 msgid "Number of placements"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1830
-#: ../../app/helpers/displayHelpers.php:1834
+#: ../../app/helpers/displayHelpers.php:1831
+#: ../../app/helpers/displayHelpers.php:1835
 msgid "Searches for"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1848
+#: ../../app/helpers/displayHelpers.php:1849
 msgid "Number of stops"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1867
-#: ../../app/helpers/displayHelpers.php:1879
+#: ../../app/helpers/displayHelpers.php:1868
+#: ../../app/helpers/displayHelpers.php:1880
 msgid "Target format"
-msgstr ""
-
-#: ../../app/helpers/displayHelpers.php:1870
-#: ../../app/helpers/displayHelpers.php:1881
-msgid "Number of groups"
 msgstr ""
 
 #: ../../app/helpers/displayHelpers.php:1871
 #: ../../app/helpers/displayHelpers.php:1882
+msgid "Number of groups"
+msgstr ""
+
+#: ../../app/helpers/displayHelpers.php:1872
+#: ../../app/helpers/displayHelpers.php:1883
 msgid "Number of rules"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1906
+#: ../../app/helpers/displayHelpers.php:1907
 msgid "Export data"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:1930
+#: ../../app/helpers/displayHelpers.php:1931
 msgid "Export to external repository"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:2068
+#: ../../app/helpers/displayHelpers.php:2069
 msgid "Batch editing %1 %2"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:2084
+#: ../../app/helpers/displayHelpers.php:2085
 msgid "Batch contains <em>%1</em>"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:2092
-#: ../../app/helpers/displayHelpers.php:2116
+#: ../../app/helpers/displayHelpers.php:2093
+#: ../../app/helpers/displayHelpers.php:2117
 msgid "More options"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:2095
+#: ../../app/helpers/displayHelpers.php:2096
 msgid "Delete <strong><em>all</em></strong> records in set"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:2100
+#: ../../app/helpers/displayHelpers.php:2101
 msgid "Set type for records in set"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:2116
+#: ../../app/helpers/displayHelpers.php:2117
 msgid "Close options"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:2143
+#: ../../app/helpers/displayHelpers.php:2144
 #: ../../app/controllers/batch/MediaImportController.php:391
 #: ../../app/conf/user_actions.conf:128
 msgid "Batch import media"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:2146
+#: ../../app/helpers/displayHelpers.php:2147
 msgid "<strong>Server directory:</strong> %1"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:2169
+#: ../../app/helpers/displayHelpers.php:2170
 #: ../../app/conf/user_actions.conf:142
 msgid "Batch export metadata"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:2172
+#: ../../app/helpers/displayHelpers.php:2173
 msgid "Selected exporter"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:2175
+#: ../../app/helpers/displayHelpers.php:2176
 msgid "Back to record"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:3423
+#: ../../app/helpers/displayHelpers.php:3448
 msgid "default"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:3439
+#: ../../app/helpers/displayHelpers.php:3528
 msgid "↑"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:3439
+#: ../../app/helpers/displayHelpers.php:3528
 msgid "↓"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:3429
+#: ../../app/helpers/displayHelpers.php:3518
 msgid "Sort using %1 %2"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:3466
+#: ../../app/helpers/displayHelpers.php:3555
 msgid " Batch edit"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:3525
+#: ../../app/helpers/displayHelpers.php:3614
 msgid "Return to home locations"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:3535
+#: ../../app/helpers/displayHelpers.php:3624
 msgid "Apply"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:4072
+#: ../../app/helpers/displayHelpers.php:4161
 msgid "Add item to %1"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:4074
+#: ../../app/helpers/displayHelpers.php:4163
 msgid "Login to add item to %1"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:4126
+#: ../../app/helpers/displayHelpers.php:4215
 msgid "Zoom"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:4244
-#: ../../app/helpers/displayHelpers.php:4383
-#: ../../app/helpers/displayHelpers.php:4448
-#: ../../app/helpers/displayHelpers.php:4497
-#: ../../app/lib/BaseEditorController.php:2084
-#: ../../app/lib/BaseEditorController.php:2170
-#: ../../app/lib/BaseEditorController.php:2208
+#: ../../app/helpers/displayHelpers.php:4333
+#: ../../app/helpers/displayHelpers.php:4472
+#: ../../app/helpers/displayHelpers.php:4537
+#: ../../app/helpers/displayHelpers.php:4586
+#: ../../app/lib/BaseEditorController.php:2087
+#: ../../app/lib/BaseEditorController.php:2173
+#: ../../app/lib/BaseEditorController.php:2211
 msgid "Invalid identifier %1"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:4272
-#: ../../app/helpers/displayHelpers.php:4344
-#: ../../app/lib/BaseEditorController.php:1965
+#: ../../app/helpers/displayHelpers.php:4361
+#: ../../app/helpers/displayHelpers.php:4433
+#: ../../app/lib/BaseEditorController.php:1962
 #: ../../app/lib/BaseEditorController.php:1986
-#: ../../app/lib/BaseEditorController.php:2079
-#: ../../app/lib/BaseEditorController.php:2165
-#: ../../app/lib/BaseEditorController.php:2203
+#: ../../app/lib/BaseEditorController.php:2082
+#: ../../app/lib/BaseEditorController.php:2168
+#: ../../app/lib/BaseEditorController.php:2206
 msgid "Cannot view media"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:4279
-#: ../../app/helpers/displayHelpers.php:4347
+#: ../../app/helpers/displayHelpers.php:4368
+#: ../../app/helpers/displayHelpers.php:4436
 msgid "Invalid viewer: %1/%2"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:4307
+#: ../../app/helpers/displayHelpers.php:4396
 #: ../../app/lib/BatchProcessor.php:343
 msgid "Invalid subject"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:4366
-#: ../../app/helpers/displayHelpers.php:4431
-#: ../../app/helpers/displayHelpers.php:4480
-#: ../../app/helpers/displayHelpers.php:4529
+#: ../../app/helpers/displayHelpers.php:4455
+#: ../../app/helpers/displayHelpers.php:4520
+#: ../../app/helpers/displayHelpers.php:4569
+#: ../../app/helpers/displayHelpers.php:4618
 #: ../../app/lib/Service/IIIFService.php:127
 #: ../../app/lib/Service/IIIFService.php:132
 #: ../../app/lib/Service/IIIFService.php:150
 msgid "Invalid identifier"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:4393
-#: ../../app/helpers/displayHelpers.php:4424
-#: ../../app/helpers/displayHelpers.php:4458
-#: ../../app/helpers/displayHelpers.php:4473
-#: ../../app/helpers/displayHelpers.php:4507
-#: ../../app/helpers/displayHelpers.php:4522
-#: ../../app/lib/BaseEditorController.php:1969
+#: ../../app/helpers/displayHelpers.php:4482
+#: ../../app/helpers/displayHelpers.php:4513
+#: ../../app/helpers/displayHelpers.php:4547
+#: ../../app/helpers/displayHelpers.php:4562
+#: ../../app/helpers/displayHelpers.php:4596
+#: ../../app/helpers/displayHelpers.php:4611
+#: ../../app/lib/BaseEditorController.php:1966
 #: ../../app/lib/BaseEditorController.php:1998
-#: ../../app/lib/BaseEditorController.php:2048
-#: ../../app/lib/BaseEditorController.php:2095
-#: ../../app/lib/BaseEditorController.php:2134
-#: ../../app/lib/BaseEditorController.php:2180
-#: ../../app/lib/BaseEditorController.php:2188
-#: ../../app/lib/BaseEditorController.php:2218
-#: ../../app/lib/BaseEditorController.php:2226
+#: ../../app/lib/BaseEditorController.php:2051
+#: ../../app/lib/BaseEditorController.php:2098
+#: ../../app/lib/BaseEditorController.php:2137
+#: ../../app/lib/BaseEditorController.php:2183
+#: ../../app/lib/BaseEditorController.php:2191
+#: ../../app/lib/BaseEditorController.php:2221
+#: ../../app/lib/BaseEditorController.php:2229
 msgid "Invalid viewer"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:4559
+#: ../../app/helpers/displayHelpers.php:4648
 msgid "Invalid viewer %1/%2"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:4577
-#: ../../app/lib/BaseEditorController.php:1952
-#: ../../app/lib/BaseEditorController.php:2068
-#: ../../app/lib/BaseEditorController.php:2719
-#: ../../app/lib/BaseEditorController.php:2761
-#: ../../app/lib/BaseEditorController.php:2877
+#: ../../app/helpers/displayHelpers.php:4666
+#: ../../app/lib/BaseEditorController.php:1983
+#: ../../app/lib/BaseEditorController.php:2042
+#: ../../app/lib/BaseEditorController.php:2071
+#: ../../app/lib/BaseEditorController.php:2722
+#: ../../app/lib/BaseEditorController.php:2764
+#: ../../app/lib/BaseEditorController.php:2880
 #: ../../app/lib/BaseModel.php:12540
 #: ../../app/controllers/find/RelatedListController.php:108
 msgid "Invalid id"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:4996
+#: ../../app/helpers/displayHelpers.php:5085
 #: ../../app/lib/ApplicationChangeLog.php:1108
 #: ../../app/lib/LabelableBaseModelWithAttributes.php:1993
 #: ../../app/models/ca_sets.php:1289
@@ -7062,6 +7079,10 @@ msgstr ""
 #: ../../app/widgets/recentlyCreated/views/main_html.php:45
 #: ../../app/widgets/recordsByStatus/views/main_html.php:43
 msgid "BLANK"
+msgstr ""
+
+#: ../../app/helpers/displayHelpers.php:5252
+msgid "CollectiveAccess Logo"
 msgstr ""
 
 #: ../../app/helpers/htmlFormHelpers.php:465
@@ -8567,28 +8588,28 @@ msgstr ""
 msgid "Key"
 msgstr ""
 
-#: ../../app/lib/ModelSettings.php:629 ../../app/lib/BaseSettings.php:541
+#: ../../app/lib/ModelSettings.php:623 ../../app/lib/BaseSettings.php:541
 msgid "All lists"
 msgstr ""
 
-#: ../../app/lib/ModelSettings.php:671 ../../app/lib/ModelSettings.php:677
+#: ../../app/lib/ModelSettings.php:665 ../../app/lib/ModelSettings.php:671
 #: ../../app/lib/BaseSettings.php:583 ../../app/lib/BaseSettings.php:589
 msgid "User defined sort order"
 msgstr ""
 
-#: ../../app/lib/ModelSettings.php:672 ../../app/lib/BaseSettings.php:584
+#: ../../app/lib/ModelSettings.php:666 ../../app/lib/BaseSettings.php:584
 msgid "Order created"
 msgstr ""
 
-#: ../../app/lib/ModelSettings.php:753 ../../app/lib/BaseSettings.php:665
+#: ../../app/lib/ModelSettings.php:749 ../../app/lib/BaseSettings.php:665
 msgid "weeks"
 msgstr ""
 
-#: ../../app/lib/ModelSettings.php:754 ../../app/lib/BaseSettings.php:666
+#: ../../app/lib/ModelSettings.php:750 ../../app/lib/BaseSettings.php:666
 msgid "before"
 msgstr ""
 
-#: ../../app/lib/ModelSettings.php:754 ../../app/lib/BaseSettings.php:666
+#: ../../app/lib/ModelSettings.php:750 ../../app/lib/BaseSettings.php:666
 msgid "after"
 msgstr ""
 
@@ -9537,8 +9558,8 @@ msgstr ""
 #: ../../app/models/ca_storage_locations.php:446
 #: ../../app/models/ca_metadata_alert_rules.php:82
 #: ../../app/models/ca_sets.php:97 ../../app/models/ca_user_sorts.php:65
-#: ../../app/conf/navigation.conf:2884 ../../app/conf/navigation.conf:3134
-#: ../../app/conf/navigation.conf:4246 ../../app/conf/user_pref_defs.conf:590
+#: ../../app/conf/navigation.conf:2884 ../../app/conf/navigation.conf:3135
+#: ../../app/conf/navigation.conf:4247 ../../app/conf/user_pref_defs.conf:590
 #: ../../app/conf/user_pref_defs.conf:683
 #: ../../app/conf/user_pref_defs.conf:764
 #: ../../app/conf/user_pref_defs.conf:926
@@ -9549,8 +9570,8 @@ msgstr ""
 #: ../../app/models/ca_metadata_alert_rules.php:84
 #: ../../app/models/ca_sets.php:99 ../../app/models/ca_user_sorts.php:67
 #: ../../app/widgets/recentChanges/recentChangesWidget.php:126
-#: ../../app/conf/navigation.conf:3158 ../../app/conf/navigation.conf:3411
-#: ../../app/conf/navigation.conf:4259 ../../app/conf/user_pref_defs.conf:591
+#: ../../app/conf/navigation.conf:3159 ../../app/conf/navigation.conf:3412
+#: ../../app/conf/navigation.conf:4260 ../../app/conf/user_pref_defs.conf:591
 #: ../../app/conf/user_pref_defs.conf:765
 #: ../../app/conf/user_pref_defs.conf:1234
 msgid "Loans"
@@ -9560,8 +9581,8 @@ msgstr ""
 #: ../../app/models/ca_metadata_alert_rules.php:85
 #: ../../app/models/ca_sets.php:100 ../../app/models/ca_user_sorts.php:68
 #: ../../app/widgets/recentChanges/recentChangesWidget.php:127
-#: ../../app/conf/navigation.conf:3435 ../../app/conf/navigation.conf:3689
-#: ../../app/conf/navigation.conf:4272 ../../app/conf/user_pref_defs.conf:592
+#: ../../app/conf/navigation.conf:3436 ../../app/conf/navigation.conf:3690
+#: ../../app/conf/navigation.conf:4273 ../../app/conf/user_pref_defs.conf:592
 #: ../../app/conf/user_pref_defs.conf:684
 #: ../../app/conf/user_pref_defs.conf:766
 #: ../../app/conf/user_pref_defs.conf:1159
@@ -9581,16 +9602,16 @@ msgstr ""
 #: ../../app/lib/Search/QuickSearch.php:59 ../../app/models/ca_set_items.php:76
 #: ../../app/models/ca_metadata_alert_rules.php:87
 #: ../../app/models/ca_sets.php:102 ../../app/models/ca_user_sorts.php:70
-#: ../../app/conf/navigation.conf:3752 ../../app/conf/navigation.conf:3948
-#: ../../app/conf/navigation.conf:4311
+#: ../../app/conf/navigation.conf:3753 ../../app/conf/navigation.conf:3949
+#: ../../app/conf/navigation.conf:4312
 msgid "Tours"
 msgstr ""
 
 #: ../../app/lib/Search/QuickSearch.php:60 ../../app/models/ca_set_items.php:77
 #: ../../app/models/ca_metadata_alert_rules.php:88
 #: ../../app/models/ca_sets.php:103 ../../app/models/ca_user_sorts.php:71
-#: ../../app/models/ca_tours.php:280 ../../app/conf/navigation.conf:3855
-#: ../../app/conf/navigation.conf:4009 ../../app/conf/navigation.conf:4324
+#: ../../app/models/ca_tours.php:280 ../../app/conf/navigation.conf:3856
+#: ../../app/conf/navigation.conf:4010 ../../app/conf/navigation.conf:4325
 #: ../../app/conf/user_pref_defs.conf:593
 #: ../../app/conf/user_pref_defs.conf:767
 #: ../../app/conf/user_pref_defs.conf:846
@@ -9644,11 +9665,11 @@ msgstr ""
 #: ../../app/lib/BaseEditorController.php:1641
 #: ../../app/lib/BaseEditorController.php:1666
 #: ../../app/lib/BaseEditorController.php:1683
-#: ../../app/lib/BaseEditorController.php:2562
-#: ../../app/lib/BaseEditorController.php:2678
-#: ../../app/lib/BaseEditorController.php:2689
-#: ../../app/lib/BaseEditorController.php:2745
-#: ../../app/lib/BaseEditorController.php:2764
+#: ../../app/lib/BaseEditorController.php:2565
+#: ../../app/lib/BaseEditorController.php:2681
+#: ../../app/lib/BaseEditorController.php:2692
+#: ../../app/lib/BaseEditorController.php:2748
+#: ../../app/lib/BaseEditorController.php:2767
 #: ../../app/lib/BaseLookupController.php:560
 #: ../../app/lib/BaseLookupController.php:569
 #: ../../app/lib/BaseLookupController.php:579
@@ -9835,80 +9856,80 @@ msgid "Editing %1 : %2"
 msgstr ""
 
 #: ../../app/lib/BaseEditorController.php:2030
-#: ../../app/lib/BaseSearchController.php:481
-#: ../../app/lib/BaseSearchBuilderController.php:489
+#: ../../app/lib/BaseSearchController.php:485
+#: ../../app/lib/BaseSearchBuilderController.php:493
 msgid "Invalid object/representation"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:2057
+#: ../../app/lib/BaseEditorController.php:2060
 msgid "Invalid object/media"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:2155
+#: ../../app/lib/BaseEditorController.php:2158
 msgid "Invalid type"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:2360
+#: ../../app/lib/BaseEditorController.php:2363
 msgid "Invalid representation_id"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:2369
+#: ../../app/lib/BaseEditorController.php:2372
 msgid "Transformation failed"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:2459
+#: ../../app/lib/BaseEditorController.php:2462
 msgid "No media to download for this type of record"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:2580
+#: ../../app/lib/BaseEditorController.php:2583
 #: ../../app/lib/BaseInterstitialController.php:385
 msgid "downloaded_file"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:2593
+#: ../../app/lib/BaseEditorController.php:2596
 #: ../../app/lib/BaseInterstitialController.php:398
 msgid "downloaded_file.%1"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:2598
+#: ../../app/lib/BaseEditorController.php:2601
 #: ../../app/lib/BaseInterstitialController.php:403
 msgid "Invalid file"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:2658
+#: ../../app/lib/BaseEditorController.php:2661
 #: ../../app/controllers/batch/MediaImportController.php:535
 msgid "Uploaded %1 files"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:2675
+#: ../../app/lib/BaseEditorController.php:2678
 msgid "Invalid id "
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:2683
+#: ../../app/lib/BaseEditorController.php:2686
 msgid "No location set"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:2686
+#: ../../app/lib/BaseEditorController.php:2689
 msgid "Home locations are not enabled"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:2710
-#: ../../app/lib/BaseEditorController.php:2714
-#: ../../app/lib/BaseEditorController.php:2872
+#: ../../app/lib/BaseEditorController.php:2713
+#: ../../app/lib/BaseEditorController.php:2717
+#: ../../app/lib/BaseEditorController.php:2875
 #: ../../app/controllers/find/RelatedListController.php:103
 msgid "Invalid placement_id"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:2725
+#: ../../app/lib/BaseEditorController.php:2728
 msgid "No related items"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:2747
-#: ../../app/lib/BaseEditorController.php:2840
+#: ../../app/lib/BaseEditorController.php:2750
+#: ../../app/lib/BaseEditorController.php:2843
 msgid "No policies available"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:2758
+#: ../../app/lib/BaseEditorController.php:2761
 #: ../../app/lib/Service/SearchJSONService.php:99
 #: ../../app/lib/HistoryTrackingCurrentValueTrait.php:2175
 #: ../../app/controllers/lookup/IntrinsicController.php:49
@@ -9916,13 +9937,13 @@ msgstr ""
 msgid "Invalid table"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:2767
-#: ../../app/lib/BaseEditorController.php:2844
-#: ../../app/controllers/batch/EditorController.php:230
+#: ../../app/lib/BaseEditorController.php:2770
+#: ../../app/lib/BaseEditorController.php:2847
+#: ../../app/controllers/batch/EditorController.php:233
 msgid "Invalid target"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:2802
+#: ../../app/lib/BaseEditorController.php:2805
 #: ../../app/models/ca_object_checkouts.php:406
 #: ../../app/models/ca_object_checkouts.php:1429
 #: ../../app/controllers/library/DashboardController.php:60
@@ -9931,15 +9952,15 @@ msgstr ""
 msgid "today"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:2830
+#: ../../app/lib/BaseEditorController.php:2833
 msgid "%1 %2 returned to home location; %3 already home"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:2832
+#: ../../app/lib/BaseEditorController.php:2835
 msgid "%1 %2 returned to home location"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:2835
+#: ../../app/lib/BaseEditorController.php:2838
 msgid "%1 errors"
 msgstr ""
 
@@ -11169,7 +11190,7 @@ msgstr ""
 #: ../../app/lib/MediaContentLocationIndexer.php:167
 #: ../../app/lib/BaseInterstitialController.php:72
 #: ../../app/lib/BaseInterstitialController.php:143
-#: ../../app/controllers/batch/EditorController.php:239
+#: ../../app/controllers/batch/EditorController.php:242
 msgid "Invalid table %1"
 msgstr ""
 
@@ -11268,7 +11289,7 @@ msgstr ""
 #: ../../app/lib/Utils/CLIUtils/Maintenance.php:2250
 #: ../../app/lib/Utils/CLIUtils/Maintenance.php:2356
 #: ../../app/lib/Utils/CLIUtils/Maintenance.php:2448
-#: ../../app/conf/navigation.conf:5166
+#: ../../app/conf/navigation.conf:5167
 msgid "Maintenance"
 msgstr ""
 
@@ -12686,7 +12707,7 @@ msgid "Cached statistics for %1 sites: %2"
 msgstr ""
 
 #: ../../app/lib/Utils/CLIUtils/Statistics.php:60
-#: ../../app/conf/navigation.conf:5094
+#: ../../app/conf/navigation.conf:5095
 msgid "Statistics"
 msgstr ""
 
@@ -13323,10 +13344,10 @@ msgstr ""
 
 #: ../../app/lib/BaseAdvancedSearchController.php:211
 #: ../../app/lib/BaseAdvancedSearchController.php:346
-#: ../../app/lib/BaseSearchController.php:260
-#: ../../app/lib/BaseSearchController.php:451
-#: ../../app/lib/BaseSearchBuilderController.php:266
-#: ../../app/lib/BaseSearchBuilderController.php:459
+#: ../../app/lib/BaseSearchController.php:264
+#: ../../app/lib/BaseSearchController.php:455
+#: ../../app/lib/BaseSearchBuilderController.php:270
+#: ../../app/lib/BaseSearchBuilderController.php:463
 msgid "search"
 msgstr ""
 
@@ -13973,7 +13994,7 @@ msgid ""
 "(GraphicsMagick does not provide support for HEIC)"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:374
+#: ../../app/lib/Plugins/Media/Gmagick.php:373
 #: ../../app/lib/Plugins/Media/Imagick.php:345
 #: ../../app/lib/Plugins/Media/GraphicsMagick.php:310
 #: ../../app/lib/Plugins/Media/GD.php:227
@@ -13981,7 +14002,7 @@ msgstr ""
 msgid "Tile size property must be between 10 and 10000"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:384
+#: ../../app/lib/Plugins/Media/Gmagick.php:383
 #: ../../app/lib/Plugins/Media/Imagick.php:355
 #: ../../app/lib/Plugins/Media/PDFWand.php:281
 #: ../../app/lib/Plugins/Media/GraphicsMagick.php:320
@@ -13990,7 +14011,7 @@ msgstr ""
 msgid "Quality property must be between 1 and 100"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:391
+#: ../../app/lib/Plugins/Media/Gmagick.php:390
 #: ../../app/lib/Plugins/Media/Imagick.php:362
 #: ../../app/lib/Plugins/Media/GraphicsMagick.php:327
 #: ../../app/lib/Plugins/Media/GD.php:244
@@ -13998,7 +14019,7 @@ msgstr ""
 msgid "Tile width property must be between 10 and 10000"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:398
+#: ../../app/lib/Plugins/Media/Gmagick.php:397
 #: ../../app/lib/Plugins/Media/Imagick.php:369
 #: ../../app/lib/Plugins/Media/GraphicsMagick.php:334
 #: ../../app/lib/Plugins/Media/GD.php:251
@@ -14006,7 +14027,7 @@ msgstr ""
 msgid "Tile height property must be between 10 and 10000"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:405
+#: ../../app/lib/Plugins/Media/Gmagick.php:404
 #: ../../app/lib/Plugins/Media/Imagick.php:376
 #: ../../app/lib/Plugins/Media/PDFWand.php:288
 #: ../../app/lib/Plugins/Media/GraphicsMagick.php:341
@@ -14015,7 +14036,7 @@ msgstr ""
 msgid "Antialiasing property must be between 0 and 100"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:412
+#: ../../app/lib/Plugins/Media/Gmagick.php:411
 #: ../../app/lib/Plugins/Media/Imagick.php:383
 #: ../../app/lib/Plugins/Media/GraphicsMagick.php:348
 #: ../../app/lib/Plugins/Media/GD.php:265
@@ -14023,7 +14044,7 @@ msgstr ""
 msgid "Layer ratio property must be between 0.1 and 10"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:419
+#: ../../app/lib/Plugins/Media/Gmagick.php:418
 #: ../../app/lib/Plugins/Media/Imagick.php:390
 #: ../../app/lib/Plugins/Media/GraphicsMagick.php:355
 #: ../../app/lib/Plugins/Media/GD.php:272
@@ -14031,7 +14052,7 @@ msgstr ""
 msgid "Layer property must be between 1 and 25"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:426
+#: ../../app/lib/Plugins/Media/Gmagick.php:425
 #: ../../app/lib/Plugins/Media/Imagick.php:397
 #: ../../app/lib/Plugins/Media/GraphicsMagick.php:362
 #: ../../app/lib/Plugins/Media/GD.php:279
@@ -14039,7 +14060,7 @@ msgstr ""
 msgid "Tile output type '%1' is invalid"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:445
+#: ../../app/lib/Plugins/Media/Gmagick.php:444
 #: ../../app/lib/Plugins/Media/Office.php:386
 #: ../../app/lib/Plugins/Media/BaseMediaPlugin.php:102
 #: ../../app/lib/Plugins/Media/Imagick.php:416
@@ -14057,7 +14078,7 @@ msgstr ""
 msgid "Can't set property %1"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:544
+#: ../../app/lib/Plugins/Media/Gmagick.php:543
 #: ../../app/lib/Plugins/Media/Office.php:449
 #: ../../app/lib/Plugins/Media/Imagick.php:573
 #: ../../app/lib/Plugins/Media/PDFWand.php:486
@@ -14070,68 +14091,68 @@ msgstr ""
 msgid "Invalid transformation %1"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:572
+#: ../../app/lib/Plugins/Media/Gmagick.php:580
 msgid "Couldn't set font to %1. Gmagick error message: %2"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:647
+#: ../../app/lib/Plugins/Media/Gmagick.php:655
 #: ../../app/lib/Plugins/Media/Imagick.php:684
 msgid "Couldn't load watermark image at %1"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:704
+#: ../../app/lib/Plugins/Media/Gmagick.php:713
 #: ../../app/lib/Plugins/Media/Imagick.php:745
 msgid "Error during resize operation"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:750
 #: ../../app/lib/Plugins/Media/Gmagick.php:758
+#: ../../app/lib/Plugins/Media/Gmagick.php:766
 #: ../../app/lib/Plugins/Media/Imagick.php:790
 #: ../../app/lib/Plugins/Media/Imagick.php:798
 msgid "Error during crop operation"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:772
+#: ../../app/lib/Plugins/Media/Gmagick.php:780
 #: ../../app/lib/Plugins/Media/Imagick.php:812
 msgid "Error during image rotate"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:780
+#: ../../app/lib/Plugins/Media/Gmagick.php:788
 #: ../../app/lib/Plugins/Media/Imagick.php:821
 msgid "Error during image despeckle"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:789
+#: ../../app/lib/Plugins/Media/Gmagick.php:797
 #: ../../app/lib/Plugins/Media/Imagick.php:830
 msgid "Error during image median filter"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:800
+#: ../../app/lib/Plugins/Media/Gmagick.php:808
 #: ../../app/lib/Plugins/Media/Imagick.php:841
 msgid "Error during image sharpen"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:812
+#: ../../app/lib/Plugins/Media/Gmagick.php:820
 #: ../../app/lib/Plugins/Media/Imagick.php:853
 #: ../../app/lib/Plugins/Media/GD.php:631
 msgid "Error during image crop"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:822
+#: ../../app/lib/Plugins/Media/Gmagick.php:830
 #: ../../app/lib/Plugins/Media/Imagick.php:863
 msgid "Error during vertical image flip"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:827
+#: ../../app/lib/Plugins/Media/Gmagick.php:835
 #: ../../app/lib/Plugins/Media/Imagick.php:868
 msgid "Error during horizontal image flip"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:847
+#: ../../app/lib/Plugins/Media/Gmagick.php:855
 msgid "Gmagick exception"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:858
+#: ../../app/lib/Plugins/Media/Gmagick.php:866
 #: ../../app/lib/Plugins/Media/Imagick.php:907
 #: ../../app/lib/Plugins/Media/GraphicsMagick.php:279
 #: ../../app/lib/Plugins/Media/GraphicsMagick.php:404
@@ -14142,60 +14163,60 @@ msgstr ""
 msgid "Filenames with colons (:) are not allowed"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:960
-#: ../../app/lib/Plugins/Media/Gmagick.php:982
+#: ../../app/lib/Plugins/Media/Gmagick.php:968
+#: ../../app/lib/Plugins/Media/Gmagick.php:990
 #: ../../app/lib/Plugins/Media/Imagick.php:1012
 msgid "Error writing file"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:994
+#: ../../app/lib/Plugins/Media/Gmagick.php:1002
 #: ../../app/lib/Plugins/Media/Imagick.php:1023
 msgid "Error writing file: %1"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:1300
+#: ../../app/lib/Plugins/Media/Gmagick.php:1308
 #: ../../app/lib/Plugins/Media/Imagick.php:467
 msgid ""
 "Could not convert Camera RAW format file because conversion tool (dcraw) is "
 "not installed"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:1306
-#: ../../app/lib/Plugins/Media/Gmagick.php:1339
+#: ../../app/lib/Plugins/Media/Gmagick.php:1314
+#: ../../app/lib/Plugins/Media/Gmagick.php:1347
 #: ../../app/lib/Plugins/Media/Imagick.php:473
 msgid "Could not copy Camera RAW file to temporary directory"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:1316
+#: ../../app/lib/Plugins/Media/Gmagick.php:1324
 #: ../../app/lib/Plugins/Media/Imagick.php:478
 msgid "Camera RAW file conversion failed: %1"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:1320
+#: ../../app/lib/Plugins/Media/Gmagick.php:1328
 #: ../../app/lib/Plugins/Media/Imagick.php:482
 msgid "Translation from Camera RAW to TIFF failed"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:1333
+#: ../../app/lib/Plugins/Media/Gmagick.php:1341
 msgid ""
 "Could not convert HEIC format file because conversion tool (ImageMagick) is "
 "not installed"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:1350
+#: ../../app/lib/Plugins/Media/Gmagick.php:1358
 msgid "HEIC file conversion failed: %1"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:1354
+#: ../../app/lib/Plugins/Media/Gmagick.php:1362
 msgid "Translation from HEIC to TIFF failed"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:1376
+#: ../../app/lib/Plugins/Media/Gmagick.php:1384
 #: ../../app/lib/Plugins/Media/Imagick.php:546
 msgid "Error during RGB colorspace transformation operation"
 msgstr ""
 
-#: ../../app/lib/Plugins/Media/Gmagick.php:1499
+#: ../../app/lib/Plugins/Media/Gmagick.php:1507
 msgid "Could not read image file: "
 msgstr ""
 
@@ -18469,12 +18490,12 @@ msgstr ""
 #: ../../app/conf/navigation.conf:2400 ../../app/conf/navigation.conf:2473
 #: ../../app/conf/navigation.conf:2567 ../../app/conf/navigation.conf:2681
 #: ../../app/conf/navigation.conf:2751 ../../app/conf/navigation.conf:2844
-#: ../../app/conf/navigation.conf:2955 ../../app/conf/navigation.conf:3026
-#: ../../app/conf/navigation.conf:3118 ../../app/conf/navigation.conf:3229
-#: ../../app/conf/navigation.conf:3302 ../../app/conf/navigation.conf:3395
-#: ../../app/conf/navigation.conf:3510 ../../app/conf/navigation.conf:3580
-#: ../../app/conf/navigation.conf:3673 ../../app/conf/navigation.conf:3995
-#: ../../app/conf/navigation.conf:4056 ../../app/conf/navigation.conf:4765
+#: ../../app/conf/navigation.conf:2955 ../../app/conf/navigation.conf:3027
+#: ../../app/conf/navigation.conf:3119 ../../app/conf/navigation.conf:3230
+#: ../../app/conf/navigation.conf:3303 ../../app/conf/navigation.conf:3396
+#: ../../app/conf/navigation.conf:3511 ../../app/conf/navigation.conf:3581
+#: ../../app/conf/navigation.conf:3674 ../../app/conf/navigation.conf:3996
+#: ../../app/conf/navigation.conf:4057 ../../app/conf/navigation.conf:4766
 msgid "Browse"
 msgstr ""
 
@@ -18738,53 +18759,53 @@ msgstr ""
 msgid "Access denied to screen %1"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:3520
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:3540
 msgid ""
 "Cannot do dry run save when in transaction. Try again without setting a "
 "transaction."
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:3818
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:3838
 msgid "Could not move object under collection: %1"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:3933
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:4027
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:3953
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:4047
 msgid "Value <em>%1</em> is already used and duplicates are not allowed"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:3938
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:4033
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:3958
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:4053
 msgid "Value <em>%1</em> is not in <em>%2</em>"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:4019
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:4039
 msgid ""
 "A preferred label for this locale already exists. Only one preferred label "
 "per locale is allowed."
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:5459
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:5485
 msgid "Invalid rule expression: %1"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:5575
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:5601
 msgid "There must be at least %1 relationship for %2"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:5575
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:5601
 msgid "There must be at least %1 relationships for %2"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:5579
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:5605
 msgid "There must be no more than %1 relationship for %2"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:5579
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:5605
 msgid "There must be no more than %1 relationships for %2"
 msgstr ""
 
-#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:6946
+#: ../../app/lib/BundlableLabelableBaseModelWithAttributes.php:6972
 msgid "Identifier %1 already exists and duplicates are not permitted"
 msgstr ""
 
@@ -19166,7 +19187,7 @@ msgstr ""
 
 #: ../../app/lib/Browse/BrowseEngine.php:161
 #: ../../app/models/ca_relationship_types.php:712
-#: ../../app/conf/navigation.conf:5138
+#: ../../app/conf/navigation.conf:5139
 msgid "Relationship types"
 msgstr ""
 
@@ -21567,7 +21588,7 @@ msgstr ""
 #: ../../app/models/ca_set_items.php:75
 #: ../../app/models/ca_metadata_alert_rules.php:86
 #: ../../app/models/ca_sets.php:101 ../../app/models/ca_user_sorts.php:69
-#: ../../app/conf/navigation.conf:4298
+#: ../../app/conf/navigation.conf:4299
 msgid "List items"
 msgstr ""
 
@@ -22409,7 +22430,7 @@ msgstr ""
 #: ../../app/widgets/recentlyCreated/recentlyCreatedWidget.php:258
 #: ../../app/widgets/recordsByStatus/recordsByStatusWidget.php:68
 #: ../../app/widgets/recordsByStatus/recordsByStatusWidget.php:241
-#: ../../app/conf/navigation.conf:4337 ../../app/conf/user_pref_defs.conf:595
+#: ../../app/conf/navigation.conf:4338 ../../app/conf/user_pref_defs.conf:595
 #: ../../app/conf/user_pref_defs.conf:686
 #: ../../app/conf/user_pref_defs.conf:769
 #: ../../app/conf/user_pref_defs.conf:848
@@ -23167,7 +23188,7 @@ msgstr ""
 #: ../../app/plugins/WorldCat/themes/default/views/import_settings_html.php:34
 #: ../../app/plugins/WorldCat/WorldCatPlugin.php:95
 #: ../../app/plugins/ULAN/themes/default/views/import_settings_html.php:34
-#: ../../app/plugins/ULAN/ULANPlugin.php:95 ../../app/conf/navigation.conf:5409
+#: ../../app/plugins/ULAN/ULANPlugin.php:95 ../../app/conf/navigation.conf:5410
 msgid "Import"
 msgstr ""
 
@@ -25697,7 +25718,7 @@ msgstr ""
 #: ../../app/models/ca_search_forms.php:792
 #: ../../app/models/ca_search_forms.php:810
 #: ../../app/models/ca_search_forms.php:1058
-#: ../../app/conf/navigation.conf:4120 ../../app/conf/user_pref_defs.conf:3
+#: ../../app/conf/navigation.conf:4121 ../../app/conf/user_pref_defs.conf:3
 msgid "General"
 msgstr ""
 
@@ -30405,11 +30426,10 @@ msgid ""
 msgstr ""
 
 #: ../../app/plugins/prepopulate/prepopulatePlugin.php:80
-msgid "Help to come"
-msgstr ""
-
 #: ../../app/plugins/prepopulate/prepopulatePlugin.php:81
-msgid "Short help to come"
+#: ../../app/plugins/prepopulate/lib/applyPrepopulateRulesTool.php:110
+#: ../../app/plugins/prepopulate/lib/applyPrepopulateRulesTool.php:124
+msgid "Applies rules defined in prepopulate.conf to all relevant records."
 msgstr ""
 
 #: ../../app/plugins/prepopulate/prepopulatePlugin.php:324
@@ -30420,14 +30440,6 @@ msgstr ""
 
 #: ../../app/plugins/prepopulate/prepopulatePlugin.php:341
 msgid "[prepopulateFields()] error during copy of containers: %1"
-msgstr ""
-
-#: ../../app/plugins/prepopulate/lib/applyPrepopulateRulesTool.php:110
-msgid "Applies rules defined in prepopulate.conf to all relevant records."
-msgstr ""
-
-#: ../../app/plugins/prepopulate/lib/applyPrepopulateRulesTool.php:124
-msgid "yyy."
 msgstr ""
 
 #: ../../app/plugins/notifications/notificationsPlugin.php:38
@@ -31943,11 +31955,11 @@ msgstr ""
 #: ../../app/conf/navigation.conf:2528 ../../app/conf/navigation.conf:2641
 #: ../../app/conf/navigation.conf:2712 ../../app/conf/navigation.conf:2805
 #: ../../app/conf/navigation.conf:2915 ../../app/conf/navigation.conf:2988
-#: ../../app/conf/navigation.conf:3079 ../../app/conf/navigation.conf:3189
-#: ../../app/conf/navigation.conf:3263 ../../app/conf/navigation.conf:3356
-#: ../../app/conf/navigation.conf:3470 ../../app/conf/navigation.conf:3541
-#: ../../app/conf/navigation.conf:3634 ../../app/conf/navigation.conf:3977
-#: ../../app/conf/navigation.conf:4038
+#: ../../app/conf/navigation.conf:3080 ../../app/conf/navigation.conf:3190
+#: ../../app/conf/navigation.conf:3264 ../../app/conf/navigation.conf:3357
+#: ../../app/conf/navigation.conf:3471 ../../app/conf/navigation.conf:3542
+#: ../../app/conf/navigation.conf:3635 ../../app/conf/navigation.conf:3978
+#: ../../app/conf/navigation.conf:4039
 msgid "Advanced search"
 msgstr ""
 
@@ -31971,10 +31983,10 @@ msgstr ""
 #: ../../app/conf/navigation.conf:2453 ../../app/conf/navigation.conf:2547
 #: ../../app/conf/navigation.conf:2661 ../../app/conf/navigation.conf:2731
 #: ../../app/conf/navigation.conf:2824 ../../app/conf/navigation.conf:2935
-#: ../../app/conf/navigation.conf:3006 ../../app/conf/navigation.conf:3098
-#: ../../app/conf/navigation.conf:3209 ../../app/conf/navigation.conf:3282
-#: ../../app/conf/navigation.conf:3375 ../../app/conf/navigation.conf:3490
-#: ../../app/conf/navigation.conf:3560 ../../app/conf/navigation.conf:3653
+#: ../../app/conf/navigation.conf:3007 ../../app/conf/navigation.conf:3099
+#: ../../app/conf/navigation.conf:3210 ../../app/conf/navigation.conf:3283
+#: ../../app/conf/navigation.conf:3376 ../../app/conf/navigation.conf:3491
+#: ../../app/conf/navigation.conf:3561 ../../app/conf/navigation.conf:3654
 msgid "Search builder"
 msgstr ""
 
@@ -31990,15 +32002,15 @@ msgstr ""
 #: ../../app/conf/navigation.conf:2515 ../../app/conf/navigation.conf:2626
 #: ../../app/conf/navigation.conf:2699 ../../app/conf/navigation.conf:2792
 #: ../../app/conf/navigation.conf:2900 ../../app/conf/navigation.conf:2976
-#: ../../app/conf/navigation.conf:3066 ../../app/conf/navigation.conf:3174
-#: ../../app/conf/navigation.conf:3250 ../../app/conf/navigation.conf:3343
-#: ../../app/conf/navigation.conf:3455 ../../app/conf/navigation.conf:3528
-#: ../../app/conf/navigation.conf:3621
+#: ../../app/conf/navigation.conf:3067 ../../app/conf/navigation.conf:3175
+#: ../../app/conf/navigation.conf:3251 ../../app/conf/navigation.conf:3344
+#: ../../app/conf/navigation.conf:3456 ../../app/conf/navigation.conf:3529
+#: ../../app/conf/navigation.conf:3622
 msgid "Basic search"
 msgstr ""
 
 #: ../../app/controllers/find/QuickSearchController.php:70
-#: ../../app/conf/navigation.conf:4365 ../../app/conf/user_pref_defs.conf:97
+#: ../../app/conf/navigation.conf:4366 ../../app/conf/user_pref_defs.conf:97
 msgid "Quick search"
 msgstr ""
 
@@ -32425,15 +32437,15 @@ msgstr ""
 msgid "Invalid type_id %1"
 msgstr ""
 
-#: ../../app/controllers/batch/EditorController.php:235
+#: ../../app/controllers/batch/EditorController.php:238
 msgid "Cannot batch edit %1"
 msgstr ""
 
-#: ../../app/controllers/batch/EditorController.php:243
+#: ../../app/controllers/batch/EditorController.php:246
 msgid "Empty selection"
 msgstr ""
 
-#: ../../app/controllers/batch/EditorController.php:270
+#: ../../app/controllers/batch/EditorController.php:273
 msgid "Batch editing %1 %2 with set %3"
 msgstr ""
 
@@ -35368,9 +35380,9 @@ msgstr ""
 #: ../../app/conf/navigation.conf:453 ../../app/conf/navigation.conf:529
 #: ../../app/conf/navigation.conf:620 ../../app/conf/navigation.conf:714
 #: ../../app/conf/navigation.conf:790 ../../app/conf/navigation.conf:880
-#: ../../app/conf/navigation.conf:964 ../../app/conf/navigation.conf:3795
-#: ../../app/conf/navigation.conf:3885 ../../app/conf/navigation.conf:4797
-#: ../../app/conf/navigation.conf:4864
+#: ../../app/conf/navigation.conf:964 ../../app/conf/navigation.conf:3796
+#: ../../app/conf/navigation.conf:3886 ../../app/conf/navigation.conf:4798
+#: ../../app/conf/navigation.conf:4865
 msgid "Summary"
 msgstr ""
 
@@ -35379,14 +35391,14 @@ msgstr ""
 #: ../../app/conf/navigation.conf:483 ../../app/conf/navigation.conf:559
 #: ../../app/conf/navigation.conf:650 ../../app/conf/navigation.conf:744
 #: ../../app/conf/navigation.conf:820 ../../app/conf/navigation.conf:910
-#: ../../app/conf/navigation.conf:994 ../../app/conf/navigation.conf:3825
-#: ../../app/conf/navigation.conf:3915 ../../app/conf/navigation.conf:4442
-#: ../../app/conf/navigation.conf:4532 ../../app/conf/navigation.conf:4565
-#: ../../app/conf/navigation.conf:4631 ../../app/conf/navigation.conf:4671
-#: ../../app/conf/navigation.conf:4827 ../../app/conf/navigation.conf:4894
-#: ../../app/conf/navigation.conf:5024 ../../app/conf/navigation.conf:5235
-#: ../../app/conf/navigation.conf:5270 ../../app/conf/navigation.conf:5306
-#: ../../app/conf/navigation.conf:5341
+#: ../../app/conf/navigation.conf:994 ../../app/conf/navigation.conf:3826
+#: ../../app/conf/navigation.conf:3916 ../../app/conf/navigation.conf:4443
+#: ../../app/conf/navigation.conf:4533 ../../app/conf/navigation.conf:4566
+#: ../../app/conf/navigation.conf:4632 ../../app/conf/navigation.conf:4672
+#: ../../app/conf/navigation.conf:4828 ../../app/conf/navigation.conf:4895
+#: ../../app/conf/navigation.conf:5025 ../../app/conf/navigation.conf:5236
+#: ../../app/conf/navigation.conf:5271 ../../app/conf/navigation.conf:5307
+#: ../../app/conf/navigation.conf:5342
 msgid "Log"
 msgstr ""
 
@@ -35436,255 +35448,255 @@ msgid "Representation annotations"
 msgstr ""
 
 #: ../../app/conf/navigation.conf:1036 ../../app/conf/navigation.conf:1289
-#: ../../app/conf/navigation.conf:4220
+#: ../../app/conf/navigation.conf:4221
 msgid "Lots"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:3716
+#: ../../app/conf/navigation.conf:3717
 msgid "QuickSearch"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:3727
+#: ../../app/conf/navigation.conf:3728
 msgid "QuickSearch Results"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:3739
+#: ../../app/conf/navigation.conf:3740
 msgid "Last QuickSearch"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4075
+#: ../../app/conf/navigation.conf:4076
 msgid "Manage"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4113
+#: ../../app/conf/navigation.conf:4114
 msgid "My preferences"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4128 ../../app/conf/user_pref_defs.conf:15
+#: ../../app/conf/navigation.conf:4129 ../../app/conf/user_pref_defs.conf:15
 msgid "Editing"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4136 ../../app/conf/user_pref_defs.conf:48
+#: ../../app/conf/navigation.conf:4137 ../../app/conf/user_pref_defs.conf:48
 msgid "Batch editing"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4144 ../../app/conf/user_pref_defs.conf:65
+#: ../../app/conf/navigation.conf:4145 ../../app/conf/user_pref_defs.conf:65
 msgid "Quick add"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4152 ../../app/conf/user_pref_defs.conf:76
+#: ../../app/conf/navigation.conf:4153 ../../app/conf/user_pref_defs.conf:76
 msgid "Units of measurement"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4160
+#: ../../app/conf/navigation.conf:4161
 msgid "Duplication"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4285
+#: ../../app/conf/navigation.conf:4286
 msgid "Lists"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4350
+#: ../../app/conf/navigation.conf:4351
 msgid "Displays"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4376 ../../app/conf/user_pref_defs.conf:108
+#: ../../app/conf/navigation.conf:4377 ../../app/conf/user_pref_defs.conf:108
 msgid "User profile"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4386
+#: ../../app/conf/navigation.conf:4387
 msgid "My watched items"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4406
+#: ../../app/conf/navigation.conf:4407
 msgid "My project teams"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4413
+#: ../../app/conf/navigation.conf:4414
 msgid "My displays"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4423
+#: ../../app/conf/navigation.conf:4424
 msgid "Edit display"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4455 ../../app/conf/navigation.conf:4467
+#: ../../app/conf/navigation.conf:4456 ../../app/conf/navigation.conf:4468
 msgid "My sets"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4513
+#: ../../app/conf/navigation.conf:4514
 msgid "Edit set"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4546
+#: ../../app/conf/navigation.conf:4547
 msgid "Edit set item"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4579
+#: ../../app/conf/navigation.conf:4580
 msgid "My search tools"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4590
+#: ../../app/conf/navigation.conf:4591
 msgid "Search forms"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4603
+#: ../../app/conf/navigation.conf:4604
 msgid "User sorts"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4612
+#: ../../app/conf/navigation.conf:4613
 msgid "Edit search form"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4645
+#: ../../app/conf/navigation.conf:4646
 msgid "My metadata alerts"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4652
+#: ../../app/conf/navigation.conf:4653
 msgid "Edit metadata alert rule"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4684 ../../app/conf/user_actions.conf:256
+#: ../../app/conf/navigation.conf:4685 ../../app/conf/user_actions.conf:256
 msgid "User generated content"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4700 ../../app/conf/navigation.conf:4727
+#: ../../app/conf/navigation.conf:4701 ../../app/conf/navigation.conf:4728
 msgid "Moderate"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4748
+#: ../../app/conf/navigation.conf:4749
 msgid "Lists & vocabularies"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4778
+#: ../../app/conf/navigation.conf:4779
 msgid "Edit list"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4841
+#: ../../app/conf/navigation.conf:4842
 msgid "Edit list item"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4908
+#: ../../app/conf/navigation.conf:4909
 msgid "Exporters"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4915
+#: ../../app/conf/navigation.conf:4916
 msgid "Exporter list"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4924
+#: ../../app/conf/navigation.conf:4925
 msgid "Access control"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4931
+#: ../../app/conf/navigation.conf:4932
 msgid "User logins"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4938
+#: ../../app/conf/navigation.conf:4939
 msgid "User groups"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4945
+#: ../../app/conf/navigation.conf:4946
 msgid "Access roles"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4954
+#: ../../app/conf/navigation.conf:4955
 msgid "Content Management"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4962
+#: ../../app/conf/navigation.conf:4963
 msgid "Site pages"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4970
+#: ../../app/conf/navigation.conf:4971
 msgid "Global values"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:4983
+#: ../../app/conf/navigation.conf:4984
 msgid "Site page editor"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:5013
+#: ../../app/conf/navigation.conf:5014
 msgid "Preview"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:5054
+#: ../../app/conf/navigation.conf:5055
 msgid "Logs"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:5064
+#: ../../app/conf/navigation.conf:5065
 msgid "Change log"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:5071
+#: ../../app/conf/navigation.conf:5072
 msgid "Events log"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:5078
+#: ../../app/conf/navigation.conf:5079
 msgid "Search log"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:5085
+#: ../../app/conf/navigation.conf:5086
 msgid "Download log"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:5101 ../../app/conf/navigation.conf:5366
+#: ../../app/conf/navigation.conf:5102 ../../app/conf/navigation.conf:5367
 msgid "Dashboard"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:5111
+#: ../../app/conf/navigation.conf:5112
 msgid "Administration"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:5124
+#: ../../app/conf/navigation.conf:5125
 msgid "User interfaces"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:5145
+#: ../../app/conf/navigation.conf:5146
 msgid "Locales"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:5152
+#: ../../app/conf/navigation.conf:5153
 msgid "Configuration check"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:5197
+#: ../../app/conf/navigation.conf:5198
 msgid "Export configuration"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:5204
+#: ../../app/conf/navigation.conf:5205
 msgid "Clear search indexing lock file"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:5216
+#: ../../app/conf/navigation.conf:5217
 msgid "Edit data dictionary entry"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:5248
+#: ../../app/conf/navigation.conf:5249
 msgid "Relationship type editor"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:5284
+#: ../../app/conf/navigation.conf:5285
 msgid "User interface editor"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:5319
+#: ../../app/conf/navigation.conf:5320
 msgid "User interface screen editor"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:5356
+#: ../../app/conf/navigation.conf:5357
 msgid "Library"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:5442
+#: ../../app/conf/navigation.conf:5443
 msgid "Data"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:5449
+#: ../../app/conf/navigation.conf:5450
 msgid "Importer list"
 msgstr ""
 
-#: ../../app/conf/navigation.conf:5463
+#: ../../app/conf/navigation.conf:5464
 msgid "Run import"
 msgstr ""
 
