@@ -645,7 +645,7 @@
 				// Convert parent id
 				//
 				if($t_instance->hasField('parent_id')) {
-					if (isset($pa_values['parent_id']) && !is_numeric($pa_values['parent_id'])) {
+					if (isset($pa_values['parent_id']) && !is_numeric($pa_values['parent_id']) && !is_array($pa_values['parent_id'])) {
 						$ids = array_reduce($pa_values['parent_id'], function($c, $i) { 
 							if(!is_numeric($i[1])) {
 								$c[] = $i[1];
@@ -669,7 +669,6 @@
 						}
 					} elseif(array_key_exists('parent_id', $pa_values) && ($vs_table === 'ca_list_items') && is_null($pa_values['parent_id'])) {
 						// convert parent_id=null for list items into root level of list (not list root node)
-						
 						$pa_values['parent_id'] = [
 							'IN', caGetListRootIDs()
 						];
