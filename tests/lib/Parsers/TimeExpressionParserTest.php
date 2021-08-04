@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1898,5 +1898,31 @@ class TimeExpressionParserTest extends TestCase {
 		$this->assertEquals($va_historic['end'], '1970.031023595900');
 		
 		$this->assertEquals($o_tep->getText(), 'before March 10 1970');
+	}
+	
+	function testCompressedRange() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage("en_US");
+		
+		$this->assertEquals($o_tep->parse("4/21/2010-5/3/2012"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_historic['start'], '2010.042100000000');
+		$this->assertEquals($va_historic['end'], '2012.050323595900');
+		
+		$this->assertEquals($o_tep->parse("04/21/2010-05/3/2012"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+	
+		$this->assertEquals($va_historic['start'], '2010.042100000000');
+		$this->assertEquals($va_historic['end'], '2012.050323595900');
+	}
+	
+	function testSingleDigitDayDate() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage("en_US");
+		
+		$this->assertEquals($o_tep->parse("4/21/2010"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_historic['start'], '2010.042100000000');
+		$this->assertEquals($va_historic['end'], '2010.042123595900');
 	}
 }

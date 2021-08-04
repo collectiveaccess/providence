@@ -392,7 +392,11 @@ var caUI = caUI || {};
 	        rule.value = queryValue.replace(/^#eq#/, '');
 		} else {
 			rule.value = queryValue;
-			if (wildcardPrefix && wildcardSuffix) {
+			
+			if(queryValue.match(/^\*/) && queryValue.match(/\*$/)) {
+				rule.value = queryValue.replace(/^\*/, "").replace(/\*$/, "");
+				rule.operator = negation ? 'not_contains' : 'contains';
+			} else if (wildcardPrefix && wildcardSuffix) {
 				rule.operator = negation ? 'not_contains' : 'contains';
 			} else if (wildcardPrefix) {
 				rule.operator = negation ? 'not_ends_with' : 'ends_with';
