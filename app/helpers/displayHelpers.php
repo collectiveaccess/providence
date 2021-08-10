@@ -5295,3 +5295,36 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 		return caGetBrandingLogo('report', ['absolute' => true]);
 	}
 	# ------------------------------------------------------------------
+	/**
+	 * Output sidecar data to browser.
+	 *
+	 * @param int $sidecar_id
+	 * @param ca_users $user
+	 *
+	 * @return void
+	 * 
+	 * @throws ApplicationException
+	 */
+	function caReturnMediaSidecarData(int $sidecar_id, ?ca_users $user=null) : void {
+		if(!$t_sidecar = ca_object_representation_sidecars::find($sidecar_id, ['returnAs' => 'firstModelInstance'])) {
+			throw new ApplicationException(_t('Invalid sidecar'));
+		}
+		$t_rep = ca_object_representations::find($t_sidecar->get('ca_object_representation_sidecars.representation_id'), ['returnAs' => 'firstModelInstance']);
+		if(!$t_rep || ($user && !$t_rep->isReadable($user))) {
+			throw new ApplicationException(_t('Access denied'));
+		}
+		
+		$mimetype = $t_sidecar->get('mimetype');
+		
+		if(caMimetypeIsValid($mimetype, ['image/*', 'text/prs.wavefront-mtl', 'application/octet-stream'])) {
+			AppController::getInstance()->removeAllPlugins();	// prevent header/footer from being rendered
+			header("Content-type: {$mimetype}");
+			
+			$r = fopen($t_sidecar->getFilePath('sidecar_file'), 'r');
+			fpassthru($r);
+			fclose($r);
+			return;
+		} 
+		throw new ApplicationException(_t('Invalid sidecar type'));
+	}
+	# ------------------------------------------------------------------
