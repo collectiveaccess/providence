@@ -7986,3 +7986,15 @@ span.developerBundleCode, a.developerBundleCode {
     cursor: pointer;
     color: #333;
 }
+
+.sidecarFiletype {
+    min-width: 300px;
+}
+.filetype {
+    margin: 0 2px;
+    padding: 0px 5px;
+    border: 1px solid #ddd;
+    background-color: #f8f8f8;
+    border-radius: 3px;
+    white-space: nowrap;
+}

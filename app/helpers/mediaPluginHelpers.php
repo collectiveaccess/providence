@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2020 Whirl-i-Gig
+ * Copyright 2010-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -343,35 +343,6 @@
 		CompositeCache::save("mediahelper_mediainfo_installed", $ps_mediainfo_path, "mediaPluginInfo");
 		
 		return $vb_ret ? $ps_mediainfo_path : false;
-	}
-	# ------------------------------------------------------------------------------------------------
-	/**
-	 * Detects if OpenCTM (http://openctm.sourceforge.net) is installed in the given path.
-	 *
-	 * @param string $ps_openctm_path path to OpenCTM ctmconv binary
-	 * @param array $options Options include:
-	 *		noCache = Don't cached path value. [Default is false]
-	 *
-	 * @return mixed Path to executable if installed, false if not installed
-	 */
-	function caOpenCTMInstalled($ps_openctm_ctmconv_path=null, $options=null) {
-		if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_openctm_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_openctm_installed", "mediaPluginInfo"); }
-		if(!$ps_openctm_ctmconv_path) { $ps_openctm_ctmconv_path = caGetExternalApplicationPath('openctm'); }
-
-		if (!caIsValidFilePath($ps_openctm_ctmconv_path)) { 
-			CompositeCache::save("mediahelper_openctm_installed", false, "mediaPluginInfo");
-			return false; 
-		}
-		if ((caGetOSFamily() == OS_WIN32) && $ps_openctm_ctmconv_path) { 
-			CompositeCache::save("mediahelper_openctm_installed", $ps_openctm_ctmconv_path, "mediaPluginInfo");
-			return $ps_openctm_ctmconv_path; 
-		}	// don't try exec test on Windows
-		caExec($ps_openctm_ctmconv_path." --help > /dev/null",$va_output,$vn_return);
-		$vb_ret = ($vn_return == 0);
-		
-		CompositeCache::save("mediahelper_openctm_installed", $ps_openctm_ctmconv_path, "mediaPluginInfo");
-		
-		return $vb_ret ? $ps_openctm_ctmconv_path : false;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**

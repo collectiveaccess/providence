@@ -1837,10 +1837,6 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		
  		$mimetype_sql = '';
  		$params = array((int)$vn_representation_id);
- 		if (is_array($mimetypes) && (sizeof($mimetypes) > 0)) {
- 			$mimetype_sql = " AND mimetype IN (?)";
- 			$params[] = $mimetypes;
- 		}
  		
  		$o_db= $this->getDb();
  		$qr_res = $o_db->query("
@@ -1853,6 +1849,9 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		
  		$files = [];
  		while($qr_res->nextRow()) {
+ 			$m = $qr_res->get('mimetype');
+ 			if(is_array($mimetypes) && !caMimetypeIsValid($m, $mimetypes)) { continue; }
+ 			
  			$file_info = $qr_res->getFileInfo('sidecar_file');
  			$sidecar_id = $qr_res->get('sidecar_id');
  			
@@ -1864,12 +1863,13 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 				$files[$sidecar_id]['filesize'] = caFormatFileSize(filesize($files[$sidecar_id]['path']));
 			}
  			$files[$sidecar_id]['sidecar_id'] = $sidecar_id;
- 			$files[$sidecar_id]['mimetype'] = $m = $qr_res->get('mimetype');
+ 			$files[$sidecar_id]['mimetype'] = $m;
  			
  			if (!($typename = Media::getTypenameForMimetype($m))) {
  				$typename = $file_info['PROPERTIES']['format_name'];
  			}
  			$files[$sidecar_id]['typename'] = $typename ? $typename : $m;
+ 			$files[$sidecar_id]['original_filename'] = $file_info['ORIGINAL_FILENAME'];
  		}
  		return $files;
  	}

@@ -2010,7 +2010,7 @@ class BaseEditorController extends ActionController {
 			$t_instance = new ca_object_representations($pn_representation_id);
 			
 			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'INPUT', 'MIMETYPE')))) {
-				throw new ApplicationException(_t('Invalid viewer'));
+				throw new ApplicationException(_t('Invalid viewer for '.$vs_mimetype));
 			}
 			
 			$va_display_info = caGetMediaDisplayInfo('media_overlay', $vs_mimetype);
@@ -2171,6 +2171,15 @@ class BaseEditorController extends ActionController {
 		}
 		
 		throw new ApplicationException(_t('Invalid type'));
+	}
+	# -------------------------------------------------------
+	/**
+	 * Access to sidecar data (primarily used by 3d viewer)
+	 * Will only return sidecars that are images (for 3d textures), MTL files (for 3d OBJ-format files) or 
+	 * binary (for GLTF .bin buffer data)
+	 */
+	public function GetMediaSidecarData() {
+		caReturnMediaSidecarData($this->request->getParameter('sidecar_id', pInteger), $this->request->user);
 	}
 	# -------------------------------------------------------
 	/**

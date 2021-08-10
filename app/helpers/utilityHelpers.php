@@ -4575,3 +4575,21 @@ function caFileIsIncludable($ps_file) {
 		return join(" ", $tmp)." {$v}";
 	}
     # ----------------------------------------
+	/**
+	 * Convery hex color value to decimal RGB values
+	 *
+	 * @param string $value Hex color value to convert
+	 *
+	 * @return array Array of RGB decimal values
+	 */
+	function caHexColorToRGB(string $value) {
+		if ($value[0] === '#') { $value = substr($value, 1); }
+		if(strlen($value) !== 6) { return null; }
+		
+		return [
+			hexdec(substr($value, 0, 2)),
+			hexdec(substr($value, 2, 2)),
+			hexdec(substr($value, 4, 2))
+		];
+	}
+    # ----------------------------------------

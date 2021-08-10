@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2003-2009 Whirl-i-Gig
+ * Copyright 2003-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -99,7 +99,7 @@ class File extends BaseObject {
 		if ($mimetype) {
 			return $mimetype;
 		} else {
-			$this->postError(1605, _t("File type is not supported"), "File->divineFile()");
+			//$this->postError(1605, _t("File type is not supported"), "File->divineFile()");
 			return "";
 		}
 	}
@@ -124,4 +124,3 @@ class File extends BaseObject {
 	}
 	# --------------------------------------------------------------------------------------------
 }
-?>

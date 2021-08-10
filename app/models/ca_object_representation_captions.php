@@ -33,7 +33,6 @@
  /**
    *
    */
-
 require_once(__CA_LIB_DIR__."/BaseModel.php");
 
 
@@ -195,4 +194,3 @@ class ca_object_representation_captions extends BaseModel {
 	}
 	# ------------------------------------------------------
 }
-?>
