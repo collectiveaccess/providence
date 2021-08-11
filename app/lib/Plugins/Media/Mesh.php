@@ -445,7 +445,7 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 		
 		$width = 			caGetOption('viewer_width', $options, '100%');		
 		$height = 			caGetOption('viewer_height', $options, '100%');  
-		$id = 				caGetOption('id', $options, 'mesh_canvas');
+		$id = 				caGetOption('id', $options, 'mesh_canvas'.md5(rand(0,99999).time()));
 		$bgcolor = 			caGetOption('background_color', $options, '#00cc00'); 
 		$default_color = 	caGetOption('default_color', $options, '#333333'); 
 		
@@ -465,10 +465,10 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 		<script type='text/javascript'>
 			var viewerRef = null;
 			jQuery(document).ready(function() {
+				jQuery('canvas#os3dv_viewer').remove(); // remove existing viewers
 				OV.Init3DViewerElements (function (viewers) {
 					// noop
 				});
-				dispatchEvent(new Event('load'));
 			});
 		</script>
 <?php
