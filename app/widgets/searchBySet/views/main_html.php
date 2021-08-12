@@ -84,7 +84,7 @@ foreach($va_sets_by_table as $vs_table => $va_sets){
 					print "<option value='set:\"".$va_set['set_code']."\"'>".$va_set["name"]."</option>\n";
 				}
 				print "</select>\n ";
-				print caFormSubmitLink($po_request, _t('Search').' &rsaquo;', 'button', 'caSearchSetsForm'.$vs_table);
+				print caFormSubmitLink($po_request, _t('Search').' &rsaquo;', 'button', 'caSearchSetsForm'.$vs_table, null, ['aria-label' => _t('Search by set')]);
 				print "</form>\n";
 			}
 		}

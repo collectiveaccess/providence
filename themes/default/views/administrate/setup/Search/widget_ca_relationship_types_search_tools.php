@@ -20,7 +20,7 @@
 			print "<option value='".htmlspecialchars($vs_search, ENT_QUOTES, 'UTF-8')."' {$SELECTED}>".$vs_display." (".$va_search_info['hits'].")</option>\n";
 		}
 		print "</select>\n ";
-		print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, '18px'), 'button', 'caSearchHistoryForm');
+		print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, '18px'), 'button', 'caSearchHistoryForm', null, ['aria-label' => _t('Search by history')]);
 		print "</form>\n";
 ?>
 	</div>
@@ -49,7 +49,7 @@
 			print "<option value='' {$SELECTED}>-</option>\n";
 		}
 		print "</select>\n ";
-		print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, '18px'), 'button', 'caSearchSetsForm');
+		print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, '18px'), 'button', 'caSearchSetsForm', null, ['aria-label' => _t('Perform saved search')]);
 		print "</form>\n";
 ?>
 	</div>

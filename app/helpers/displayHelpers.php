@@ -1264,7 +1264,7 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 				$vs_buf .= "<div id='caDuplicateItemButton' class='inspectorActionButton'>";
 
 				$vs_buf .= caFormTag($po_view->request, 'Edit', 'DuplicateItemForm', $po_view->request->getModulePath().'/'.$po_view->request->getController(), 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
-				$vs_buf .= "<div>".caFormSubmitLink($po_view->request, caNavIcon(__CA_NAV_ICON_DUPLICATE__, '20px'), '', 'DuplicateItemForm')."</div>";
+				$vs_buf .= "<div>".caFormSubmitLink($po_view->request, caNavIcon(__CA_NAV_ICON_DUPLICATE__, '20px'), '', 'DuplicateItemForm', null, ['aria-label' => _t('Duplicate item')])."</div>";
 
 				$vs_buf .= caHTMLHiddenInput($t_item->primaryKey(), array('value' => $t_item->getPrimaryKey()));
 				$vs_buf .= caHTMLHiddenInput('mode', array('value' => 'dupe'));
@@ -1617,7 +1617,7 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 							_t('new set') => 'new',
 						));
 						$vs_buf .= caHTMLHiddenInput('set_id', array('value' => $t_item->getPrimaryKey()));
-						$vs_buf .= caFormSubmitLink($po_view->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), "button", "caDupeSetItemsForm");
+						$vs_buf .= caFormSubmitLink($po_view->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), "button", "caDupeSetItemsForm", null, ['aria-label' => _t('Duplicate items')]);
 						$vs_buf .= "</form>";
 						$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" ></div>';
 					}
@@ -1643,7 +1643,7 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 					$vs_buf .= "<div id='exporterFormList'>";
 					$vs_buf .= ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $vn_set_table_num, array('id' => 'caExporterList'),array('width' => '135px'));
 					$vs_buf .= caHTMLHiddenInput('set_id', array('value' => $t_item->getPrimaryKey()));
-					$vs_buf .= caFormSubmitLink($po_view->request, _t('Export')." &rsaquo;", "button", "caExportForm");
+					$vs_buf .= caFormSubmitLink($po_view->request, _t('Export')." &rsaquo;", "button", "caExportForm", null, ['aria-label' => _t('Export')]);
 					$vs_buf .= "</div>\n";
 					$vs_buf .= "</form>";
 
@@ -1706,7 +1706,7 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 						$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px;">';
 						$vs_buf .= caFormTag($po_view->request, 'Edit', 'NewChildForm', 'administrate/setup/list_item_editor/ListItemEditor', 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
 						$vs_buf .= _t('Add a %1 to this list', $vs_type_list).caHTMLHiddenInput($t_list_item->primaryKey(), array('value' => '0')).caHTMLHiddenInput('parent_id', array('value' => $t_list_item->getPrimaryKey()));
-						$vs_buf .= caFormSubmitLink($po_view->request, caNavIcon(__CA_NAV_ICON_ADD__, '18px'), '', 'NewChildForm');
+						$vs_buf .= caFormSubmitLink($po_view->request, caNavIcon(__CA_NAV_ICON_ADD__, '18px'), '', 'NewChildForm', null, ['aria-label' => _t('Add a %1 to this list', $vs_type_list)]);
 						$vs_buf .= "</form></div>\n";
 					}
 			}
@@ -1899,7 +1899,7 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 				$vs_buf .= "<div id='exporterFormList'>";
 				$vs_buf .= ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_item->tableNum(), array('id' => 'caExporterList'), array('width' => '120px', 'recordType' => $t_item->getTypeCode(), 'value' => Session::getVar('exporter_id')));
 				$vs_buf .= caHTMLHiddenInput('item_id', array('value' => $t_item->getPrimaryKey()));
-				$vs_buf .= caFormSubmitLink($po_view->request, _t('Export')." &rsaquo;", "button", "caExportForm");
+				$vs_buf .= caFormSubmitLink($po_view->request, _t('Export')." &rsaquo;", "button", "caExportForm", null, ['aria-label' => _t('Export data')]);
 				$vs_buf .= "</div>\n";
 				$vs_buf .= "</form>";
 
@@ -1922,7 +1922,7 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 				$vs_buf .= "<div id='externalExporterFormList'>";
 				$vs_buf .= ExternalExportManager::getTargetListAsHTMLFormElement('target', $t_item->tableNum(), array('id' => 'caExternalExporterList'), array('width' => '120px', 'restrictToTypes' => [$t_item->getTypeCode()]));
 				$vs_buf .= caHTMLHiddenInput('item_id', array('value' => $t_item->getPrimaryKey()));
-				$vs_buf .= caFormSubmitLink($po_view->request, _t('Export')." &rsaquo;", "button", "caExternalExportForm");
+				$vs_buf .= caFormSubmitLink($po_view->request, _t('Export')." &rsaquo;", "button", "caExternalExportForm", null, ['aria-label' => _t('Export to external repository')]);
 				$vs_buf .= "</div>\n";
 				$vs_buf .= "</form>";
 				$vs_buf .= "</div>";
@@ -3373,7 +3373,7 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 
 		$vs_buf  = "<span class='bundleContentPreview' id='{$ps_preview_id_prefix}_BundleContentPreview'>{$ps_preview_init}</span>";
 		$vs_buf .= "<span class='iconButton'>";
-		$vs_buf .= "<a href='#' onclick='caBundleVisibilityManager.toggle(\"{$ps_id_prefix}\");  return false;'>".caNavIcon(__CA_NAV_ICON_VISIBILITY_TOGGLE__, '18px', array('id' =>"{$ps_id_prefix}VisToggleButton"))."</a>";
+		$vs_buf .= "<a href='#' onclick='caBundleVisibilityManager.toggle(\"{$ps_id_prefix}\");  return false;' aria-label='" . _t('Toggle visibility') . "'>".caNavIcon(__CA_NAV_ICON_VISIBILITY_TOGGLE__, '18px', array('id' =>"{$ps_id_prefix}VisToggleButton"))."</a>";
 		$vs_buf .= "</span>\n";
 		$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(function() { caBundleVisibilityManager.registerBundle('{$ps_id_prefix}', '{$vs_force}'); }); </script>";
 

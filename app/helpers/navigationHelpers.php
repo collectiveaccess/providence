@@ -268,13 +268,14 @@
 		
 		if ($vs_url) {
 			$vs_tag = "<a href='".$vs_url."' class='{$vs_classname}'";
-			
-			if (is_array($pa_attributes)) {
-				foreach($pa_attributes as $vs_attribute => $vs_value) {
-					$vs_tag .= " $vs_attribute='".htmlspecialchars($vs_value, ENT_QUOTES, 'UTF-8')."'";
-				}
+			if (!is_array($pa_attributes)) {
+				$pa_attributes = [];
 			}
-			
+			$pa_attributes['aria-label'] = $ps_content;
+			foreach($pa_attributes as $vs_attribute => $vs_value) {
+				$vs_tag .= " $vs_attribute='".htmlspecialchars($vs_value, ENT_QUOTES, 'UTF-8')."'";
+			}
+
 			$vs_tag .= ">";
 		} else {
 			$vs_tag = '';
@@ -458,8 +459,9 @@
 	/**
 	 *
 	 */
-	function caFormSubmitLink($po_request, $ps_content, $ps_classname, $ps_form_id, $ps_id=null) {
-		return "<a href='#' onclick='document.getElementById(\"{$ps_form_id}\").submit();' class='{$ps_classname}' ".($ps_id ? "id='{$ps_id}'" : '').">".$ps_content."</a>";
+	function caFormSubmitLink($po_request, $ps_content, $ps_classname, $ps_form_id, $ps_id=null, $pa_attributes = []) {
+		$vs_attributes = _caHTMLMakeAttributeString($pa_attributes);
+		return "<a href='#' onclick='document.getElementById(\"{$ps_form_id}\").submit();' class='{$ps_classname}' ".($ps_id ? "id='{$ps_id}'" : '') . $vs_attributes . ">".$ps_content."</a>";
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -490,9 +492,9 @@
 		$css_id = caGetOption('id', $pa_options, null);
 		
 		if ($pb_prevent_duplicate_submits) {
-			$vs_button = "<a href='#' onclick='$vs_extra jQuery(\".caSubmit{$ps_id}\").fadeTo(\"fast\", 0.5).attr(\"onclick\", null); jQuery(\"#{$ps_id}\").submit();' class='{$vs_classname} caSubmit{$ps_id} {$vs_id}' ".($css_id ? "id='{$css_id}'" : "").">";
+			$vs_button = "<a href='#' onclick='$vs_extra jQuery(\".caSubmit{$ps_id}\").fadeTo(\"fast\", 0.5).attr(\"onclick\", null); jQuery(\"#{$ps_id}\").submit();' class='{$vs_classname} caSubmit{$ps_id} {$vs_id}' ".($css_id ? "id='{$css_id}'" : "")." aria-label='" . $ps_content . "'>";
 		} else {
-			$vs_button = "<a href='#' onclick='$vs_extra jQuery(\"#{$ps_id}\").submit();' class='{$vs_classname} {$vs_id}' ".($css_id ? "id='{$css_id}'" : "").">";
+			$vs_button = "<a href='#' onclick='$vs_extra jQuery(\"#{$ps_id}\").submit();' class='{$vs_classname} {$vs_id}' ".($css_id ? "id='{$css_id}'" : "")." aria-label='" . $ps_content . "'>";
 		}
 		
 		if (!$pb_no_background) { 
@@ -559,13 +561,12 @@
 		
 		$va_attr = array();
 		if ($ps_id) { $va_attr[] = "id='{$ps_id}'"; }
-		if (is_array($pa_attributes)) {
-			foreach($pa_attributes as $vs_name => $vs_value) {
-				$va_attr[] = $vs_name."='".($vs_value)."'";
-			}
+		if (!is_array($pa_attributes)) {
+			$pa_attributes = [];
 		}
-		
-		$vs_button = "<a ".join(' ', $va_attr).">";
+		$pa_attributes['aria-label'] = $ps_content;
+
+		$vs_button = "<a "._caHTMLMakeAttributeString($pa_attributes).">";
 		if (!$pb_no_background) { 
 			$vs_button .= "<span class='form-button'>"; 
 			$vn_padding = ($ps_content) ? 5 : 0;

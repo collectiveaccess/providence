@@ -126,7 +126,7 @@
 						// -- provide user with a choice of versions to download
 						$vs_controls .= caFormTag($po_request, 'DownloadMedia', 'caMediaDownloadForm', $vs_download_path, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
 						$vs_controls .= _t('Download as %1', caHTMLSelect('version', array_combine(array_map("_t", $va_versions), $va_versions), array('style' => 'font-size: 8px; height: 16px;')));
-						$vs_controls .= caFormSubmitLink($po_request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1, [], ['color' => 'white']), '', 'caMediaDownloadForm', 'caMediaDownloadFormButton');
+						$vs_controls .= caFormSubmitLink($po_request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1, [], ['color' => 'white']), '', 'caMediaDownloadForm', 'caMediaDownloadFormButton', ['aria-label' => _t('Download media representations')]);
 						$vs_controls .= caHTMLHiddenInput($t_media->primaryKey(), array('value' => $t_media->getPrimaryKey()));
 						if (is_a($t_instance, 'ca_object_representations')) { $vs_controls .= caHTMLHiddenInput("representation_id", array('value' => $t_instance->getPrimaryKey())); }
 						if (is_a($t_instance, 'ca_site_page_media')) { $vs_controls .= caHTMLHiddenInput("media_id", array('value' => $t_instance->getPrimaryKey())); }

@@ -43,7 +43,7 @@
 			print ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_subject->tableNum(), array('id' => 'caExporterList'),array('width' => '150px'));
 			print caHTMLHiddenInput('caIsExportFromSearchOrBrowseResult', array('value' => 1));
 			print caHTMLHiddenInput('find_type', array('value' => $this->getVar('find_type')));
-			print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), 'button', 'caExportWithMappingForm_'.$this->getVar('interstitialPrefix'));
+			print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), 'button', 'caExportWithMappingForm_'.$this->getVar('interstitialPrefix'), null, ['aria-label' => _t('Export')]);
 			
 		print caHTMLHiddenInput('ids', ['value' => $params['ids']]);
 			?>
@@ -66,7 +66,7 @@
 			uksort($va_options, 'strnatcasecmp');
 			
 			print caHTMLSelect('label_form', $va_options, array('class' => 'searchToolsSelect'), array('value' => $this->getVar('current_label_form'), 'width' => '150px'))."\n";
-			print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), 'button', 'caPrintLabelsForm_'.$this->getVar('interstitialPrefix'));
+			print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), 'button', 'caPrintLabelsForm_'.$this->getVar('interstitialPrefix'), null, ['aria-label' => _t('Download labels')]);
 
 		print caHTMLHiddenInput('ids', ['value' => $params['ids']]);
 ?>
@@ -86,7 +86,7 @@
 			$va_options[$va_format_info['name']] = $va_format_info['code'];
 		}
 		print caHTMLSelect('export_format', $va_options, array('class' => 'searchToolsSelect'), array('value' => $this->getVar('current_export_format'), 'width' => '150px'))."\n";
-		print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), 'button', 'caExportForm_'.$this->getVar('interstitialPrefix'));
+		print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), 'button', 'caExportForm_'.$this->getVar('interstitialPrefix'), null, ['aria-label' => _t('Download results')]);
 
 		print caHTMLHiddenInput('ids', ['value' => $params['ids']]);
 ?>
