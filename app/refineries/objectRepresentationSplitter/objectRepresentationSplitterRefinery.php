@@ -150,8 +150,8 @@
 				'width' => 10, 'height' => 1,
 				'takesLocale' => false,
 				'default' => '',
-				'label' => _t('Object type default'),
-				'description' => _t('Sets the default object representation type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list object_types.')
+				'label' => _t('Object representation type default'),
+				'description' => _t('Sets the default object representation type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list object_representation_types.')
 			),
 			'objectRepresentationSplitter_interstitial' => array(
 				'formatType' => FT_TEXT,
