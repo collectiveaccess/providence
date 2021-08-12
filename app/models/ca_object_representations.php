@@ -489,6 +489,14 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			return false;
 		}
 		
+		// does media already exist?
+		if (!($media_path = $this->getMediaPath('media', 'original'))) {
+			$media_path = array_shift($this->get('media', ['returnWithStructure' => true]));
+		}
+		if(!$this->getAppConfig()->get('allow_representations_duplicate_media') && ($t_existing_rep = ca_object_representations::mediaExists($media_path))) {
+			throw new MediaExistsException(_t('Media already exists'), $t_existing_rep);
+		}
+		
 		// do insert
 		if ($vn_rc = parent::insert($options)) {
 			if (is_array($va_media_info = $this->getMediaInfo('media', 'original'))) {
@@ -528,7 +536,15 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	 *
 	 */
 	public function update($options=null) {
-		$vb_media_has_changed = $this->changed('media');
+		if($vb_media_has_changed = $this->changed('media')) {
+			// does media already exist?
+			if (!($media_path = $this->getMediaPath('media', 'original'))) {
+				$media_path = array_shift($this->get('media', ['returnWithStructure' => true]));
+			}
+			if(!$this->getAppConfig()->get('allow_representations_duplicate_media') && ($t_existing_rep = ca_object_representations::mediaExists($media_path))) {
+				throw new MediaExistsException(_t('Media already exists'), $t_existing_rep);
+			}
+		}
 		if ($vn_rc = parent::update($options)) {
 			if(is_array($va_media_info = $this->getMediaInfo('media', 'original'))) {
 				$this->set('md5', $va_media_info['MD5']);
@@ -2238,14 +2254,14 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	/** 
 	 * Check if a file already exists in the database as a representation
 	 *
-	 * @param string $ps_filepath The full path to the file
+	 * @param string $filepath The full path to the file
 	 * @return mixed ca_object_representations instance representing the first representation that contains the file, if representation exists with this file, false if the file does not yet exist
 	 */
-	static function mediaExists($ps_filepath) {
-		if (!file_exists($ps_filepath) || !is_readable($ps_filepath)) { return null; }
-		$vs_md5 = @md5_file($ps_filepath);
-		$t_rep = new ca_object_representations();
-		if ($vs_md5 && ($t_rep->load(array('md5' => $vs_md5, 'deleted' => 0)))) { 
+	static function mediaExists(string $filepath) {
+		if (!file_exists($filepath) || !is_readable($filepath)) { return null; }
+		$md5 = @md5_file($filepath);
+		
+		if ($md5 && ($t_rep = ca_object_representations::find(['md5' => $md5], ['returnAs' => 'firstModelInstance']))) { 
 			return $t_rep;
 		}
 		
