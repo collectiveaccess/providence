@@ -404,11 +404,11 @@
 			CompositeCache::save("mediahelper_pdfminer_installed", $ps_pdfminer_path, "mediaPluginInfo");
 			return $ps_pdfminer_path; 
 		} // don't try exec test on Windows
+
+		caExec($ps_pdfminer_path." --version > /dev/null",$va_output,$vn_return);
 		
-		caExec($ps_pdfminer_path." > /dev/null",$va_output,$vn_return);
-		
-		$vb_ret = ($vn_return == 100);
-		
+		$vb_ret = ($vn_return == 100 || $vn_return == 0);
+
 		CompositeCache::save("mediahelper_pdfminer_installed", $ps_pdfminer_path, "mediaPluginInfo");
 		
 		return $vb_ret ? $ps_pdfminer_path : false;
