@@ -5328,3 +5328,28 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 		throw new ApplicationException(_t('Invalid sidecar type'));
 	}
 	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	function caGetReferenceToExistingRepresentationMedia($t_rep) {
+		global $g_request;
+		$rel = $rec_label = null;
+		foreach(['ca_objects', 'ca_entities', 'ca_occurrences', 'ca_collections'] as $parent_table) {
+			if($rel_list = $t_rep->getRelatedItems($parent_table, ['returnAs' => 'array'])) {
+				$rel = array_shift($rel_list);
+				$rec_label = $rel['label'].($rel['idno']? " (".$rel['idno'].")" : '');
+				break;
+			}
+		}
+	
+		$rec_label = $rec_label ? 
+			_t('Media aleady exists in %1', ($g_request ? 
+				caEditorLink($g_request, $rec_label, '', $parent_table, $rel[Datamodel::primaryKey($parent_table)])
+				: $rec_label))
+			:
+			($g_request ? _t('Media aleady %1', caEditorLink($g_request, _t('exists'), '', 'ca_object_representations', $t_rep->getPrimaryKey())) : _t('Media already exists'))
+		;
+		
+		return $rec_label;
+	}
+	# ------------------------------------------------------------------
