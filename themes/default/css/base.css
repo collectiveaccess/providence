@@ -38,7 +38,7 @@ textarea {
     
 }
 
-a, a:link, a:visited, a font { color: #1ab3c8; text-decoration: underline; }
+a, a:link, a:visited, a font { color:#138290; text-decoration: underline; }
 
 a:hover{
     color: #333;
@@ -210,10 +210,10 @@ div.clear {
 
 #leftNav h2 a, #leftNav h2 span { display: block; padding-left: 15px; padding-top: 7px; padding-bottom: 4px; text-decoration: none; color: #666666; border-right:1px solid #dddddd;} 
 #leftNav h2 a:hover{
-    color: #1ab3c8;
+    color: #138290;
 }
 #leftNav h3 h4 a:hover{
-    color: #1ab3c8;
+    color: #138290;
 }
 #leftNav ul { list-style: none; margin: 0px; padding: 3px 0px 3px 0px; display:none; }
 #leftNav ul.arrow { padding:0px; }
@@ -223,7 +223,7 @@ div.clear {
 #leftNav ul.arrow li a, #leftNav ul.arrow li span { _height: 15px; text-decoration: none; display: block;  padding: 8px 0 5px 0;; padding-left: 30px; padding-right: 5px; margin: 0; color:#666; text-transform:uppercase; font-family:"din-regular", arial, sans-serif;}
 #leftNav ul li a:hover { background-color: #fff; }
 #leftNav ul .sf-menu-selected a:hover { background-color: #eee; }
-#leftNav ul.arrow li a:hover { color: #1ab3c8}
+#leftNav ul.arrow li a:hover { color: #138290}
 
 /* h3 used for non link left side nav - currently editing */
 #leftNav h4 {
@@ -295,10 +295,10 @@ div.clear {
 #leftNav .resultLink  {
 	display: inline-block;
 	width: 110px;
-	color: #1ab3c8;
+	color: #138290;
 }
 #leftNav .resultLink:hover  {
-	color: #1ab3c8;
+	color: #138290;
 	text-decoration:underline;
 }
 #leftNav .creatingNew {
@@ -455,7 +455,7 @@ div.inspectorCheckedOut {
 }
 
 .inspectorDeaccessioned {
-    color: #cc0000;
+    color: #EB0000;
     font-style: italic;
 }
 
@@ -466,7 +466,7 @@ div.inspectorCheckedOut {
 }
 
 .inspectorFlag {
-    color: #FF0000;
+    color: #EB0000;
     font-weight: bold;
 }
 
@@ -481,7 +481,7 @@ div.inspectorCheckedOut {
 #leftNav div.form-button {text-align:right; margin-top: 5px; }
 #leftNav .form-button a {	text-transform:uppercase; text-decoration: underline; }
 #leftNav .form-button a:hover{
-    color: #1ab3c8;
+    color: #138290;
 }
 #leftNav #inspectorMedia, #leftNav #hierarchyInfo { display:none; }
 #leftNav #inspectorMedia {
@@ -1138,7 +1138,7 @@ ul.notification-error-box, ul.notification-warning-box, ul.notification-info-box
 
 li.notification-info-box {
     font-weight: bold;
-    color: #1ab3c8;
+    color: #138290;
     font-size: 13px;
     text-indent: 10px;
     font-family: 'din-regular';
@@ -1155,7 +1155,7 @@ li.notification-warning-box {
 
 li.notification-error-box {
     font-weight: normal;
-    color: #cc0000;
+    color: #EB0000;
     font-size: 13px;
     text-indent: 10px;
     font-family: 'din-regular';
@@ -1351,12 +1351,12 @@ div.formLabelUploadSizeNote {
     margin: 0 auto;
     width: 200px;
     font-family: Helvetica Neue, sans-serif;
-    color: #b32b21;
+    color: #EB0000;
 }
 
 .caDupeAttributeMessageBox {
     font-family: Helvetica Neue, sans-serif;
-    color: #b32b21;
+    color: #EB0000;
 }
 
 /* often times referred to as bundlePreview */
@@ -1381,7 +1381,7 @@ div.formLabelUploadSizeNote {
 .formLabelError {
     font-family: Verdana, Arial, Helvetica, sans-serif;
     font-size:10px;
-    color: #cc0000;
+    color: #EB0000;
     margin-bottom: 5px;
     text-align: left;
 }
@@ -1389,7 +1389,7 @@ div.formLabelUploadSizeNote {
 .bundleLabelError {
     font-family: Verdana, Arial, Helvetica, sans-serif;
     font-size:11px;
-    color: #cc0000;
+    color: #EB0000;
     margin-bottom: 5px;
     text-align: left;
 }
@@ -1534,7 +1534,7 @@ div.button a{
 }
 
 div.button a:hover{
-    color: #1ab3c8;
+    color: #138290;
 }
 
 div.button img{
@@ -1542,7 +1542,7 @@ div.button img{
 	margin-top: -1px;
 }
 a.button{
-    color: #1ab3c8;
+    color: #138290;
     text-decoration: none;
     font-size: 11px;
     font-weight:normal;
@@ -1556,7 +1556,7 @@ a.button{
 	font-weight:bold;
 }
 a.button:hover{
-    color: #1ab3c8;
+    color: #138290;
 }
 
 a.inline-button-small {
@@ -1566,7 +1566,7 @@ a.inline-button-small {
 }
 a.inline-button-small:hover {
     text-decoration: none;
-    color: #1ab3c8;
+    color: #138290;
 }
 
 a.form-button, span.form-button, del.form-button{
@@ -1722,10 +1722,10 @@ del.form-button{
 
 }
 .form-button.delete:hover .fa, .form-button.delete:hover, .form-button.delete .fa:hover {
-	color:red;
+	color:#EB0000;
 }
 .deleteButton a.form-button span {
-	color:red;
+	color:#EB0000;
 }
 del.form-button span{
     cursor:default;
@@ -1747,7 +1747,7 @@ a.form-button:focus,
 a.dom-button-focus,
 span.form-button-behavior-hover{
     background-position:0 -60px;
-    color: #1ab3c8;
+    color: #138290;
     text-decoration:none;
 }
 
@@ -1954,7 +1954,7 @@ td.listtableAggregateTotals {
 	padding:5px;
 }
 .caIcon.deleteIcon:hover {
-	color:red;
+	color:#EB0000;
 }
 
 #caSetList tbody tr td div.caSetListName, #caSetList tbody tr td div.caSetListOwner {
@@ -2039,12 +2039,12 @@ div.control-box-right-content {
     font-family: 'DIN-Regular';
 }
 a.deleteButton span{
-	color: red;
+	color: #EB0000;
 	font-weight:bold;
 }
 
 a.deleteButton span.form-button:hover {
-	color: #1ab3c8;
+	color: #138290;
 }
 div.control-box-right-content select {
     width: 150px;
@@ -2061,7 +2061,7 @@ div.delete-control-box {
 div.delete_warning_box {
     text-indent: 42px;
     font-size: 14px;
-	color: red;
+	color: #EB0000;
     padding-top: 10px;
     width: 400px;
     height: 26px;
@@ -2103,7 +2103,7 @@ div.search-hier-browser-box {
     margin-bottom: 5px;
 }
 .bundleContainer .caDeleteLabelButton .fa:hover, .bundleContainer .caDeleteItemButton .fa:hover{
-	color:red;
+	color:#EB0000;
 }
 
 .labelInfo {
@@ -2192,7 +2192,7 @@ div.searchSuggestion {
 a.searchSuggestion {
     font-family: Verdana, Arial, Helvetica, sans-serif;
     font-size:12px;
-    color: #cc0000;
+    color: #EB0000;
     margin-bottom: 5px;
     font-style: italic;
     text-align: center;
@@ -2377,8 +2377,8 @@ a#hideRefine img {
 #searchRefineParameters{
     float:left;
     color: #666666;
-	border-top: 2px solid #1ab3c8;
-	border-bottom: 2px solid #1ab3c8;
+	border-top: 2px solid #138290;
+	border-bottom: 2px solid #138290;
 	padding: 10px 0px 10px 0px;
 	width: 100%;
 	margin-bottom: 5px;
@@ -2555,7 +2555,7 @@ select.searchToolsSelect {
 	cursor: pointer;
 }
 .qlButtonContainerThumbnail a:hover, .qlButtonContainerFull a:hover{
-    color:#1ab3c8;
+    color:#138290;
 }
 
 .objectThumbnailsImageContainer {
@@ -2661,13 +2661,13 @@ select.searchToolsSelect {
     clear:both;
 }
 #leftNav #inspectorInfo.setDelete, #leftNav #inspectorInfo.setDelete a {
-	color: red;
+	color: #EB0000;
 }
 #leftNav #inspectorInfo.setDelete .fa {
 	color:black;
 }
 #leftNav #inspectorInfo.setDelete a:hover .fa{
-	color: red;
+	color: #EB0000;
 }
 #leftNav #inspectorInfo.setDelete {
 	background-color:#FFCCCB;
@@ -2904,7 +2904,7 @@ img.caRepToolsRotateControlButton {
 }
 
 img.caRepToolsRotateControlButtonSelected {
-    border: 1px solid #CC0000;
+    border: 1px solid #EB0000;
     background: #FFFFFF;
 }
 
@@ -3241,13 +3241,13 @@ div.caObjectRepresentationMetadata {
 }
 
 span.caObjectRepresentationPrimaryDisplay {
-    color: #cc0000;
+    color: #EB0000;
     font-size: 10px;
     font-weight: bold;
 }
 
 div.caObjectRepresentationPrimaryIndicator {
-    color: #cc0000;
+    color: #EB0000;
     font-size: 10px;
     font-weight: bold;
     font-style: italic;
@@ -3258,7 +3258,7 @@ div.caObjectRepresentationPrimaryIndicator {
 	height: 17px;
 }
 div.caObjectRepresentationChangeIndicator {
-    color: #cc0000;
+    color: #EB0000;
     font-size: 10px;
     font-weight: bold;
     font-style: italic;
@@ -3841,13 +3841,13 @@ a.exploreSelected {
     line-height:1.5em;
 }
 .hierNav a {
-    color: #1ab3c8;
+    color: #138290;
     font-weight:normal;
     text-decoration:none;
 
 }
 .hierNav a:hover{
-    color: #1ab3c8;
+    color: #138290;
 }
 .hierNav .buttonPosition{
     float:right;
@@ -3875,7 +3875,7 @@ a.exploreSelected {
     font-weight: normal;
 }
 .hierarchyBrowserNewLocationMessage{ /*** message above browser on editor pages dispaying new location to move record to ***/
-    color: #cc0000;
+    color: #EB0000;
     padding:0px 5px 15px 0px;
     height:1em;
 }
@@ -3910,7 +3910,7 @@ a.exploreSelected {
 .hierarchyPanelHeader a { /*  used in browse and details with browse */
     text-decoration:none;
     font-size:14px;
-    color:#1ab3c8;
+    color:#138290;
     font-weight:normal;
     padding-right:4px;
 }
@@ -4332,7 +4332,7 @@ div.quickSearchNoResults {
     white-space: nowrap;
 }
 #browseCriteria a.startOver:hover{
-    color:#1ab3c8;
+    color:#138290;
     text-decoration:underline;
 }
 .criteriaLink {
@@ -4804,7 +4804,7 @@ ul#displayItemList {
     left: 14px;
     top: 13px;
     position: absolute;
-    background: #f00;
+    background: #EB0000;
     overflow: hidden;
     cursor: crosshair;
 }
@@ -4849,7 +4849,7 @@ ul#displayItemList {
     height: 30px;
     left: 213px;
     top: 13px;
-    background: #f00;
+    background: #EB0000;
 }
 .colorpicker_current_color {
     position: absolute;
@@ -4857,7 +4857,7 @@ ul#displayItemList {
     height: 30px;
     left: 283px;
     top: 13px;
-    background: #f00;
+    background: #EB0000;
 }
 .colorpicker input {
     background-color: transparent;
@@ -5312,7 +5312,7 @@ a.dashboardRemoveWidget {
     line-height:1.3em;
 }
 .dashboardWidgetClock{
-	color: #1ab3c8;
+	color: #138290;
 	font-size: 48px;
 	font-weight: bold;
 	text-align: center;
@@ -6132,7 +6132,7 @@ div.searchlight-results div.searchlight-selected {
     clear:both;
 }
 .overdue {
-    color: red;
+    color: #EB0000;
 }
 
 /* OpenLayers */
@@ -6738,7 +6738,7 @@ div.caRepresentationMediaReplicationControls {
     border-color: #808080;
 }
 .caAnnoEditorTlAnnotationContainerSelected {
-    border: 2px solid #cc0000;
+    border: 2px solid #EB0000;
 }
 .caAnnoEditorTlAnnotationContainer div.title {
     font-size:12px;
@@ -7033,11 +7033,11 @@ div.caMetadataDictionaryViolationsListHeading {
 
 .caMetadataDictionaryViolationCrit {
 	font-weight: bold;
-	color: Red;
+	color: #EB0000;
 }
 
 .caMetadataDictionaryViolationErr {
-	color: Red;
+	color: #EB0000;
 }
 
 .caMetadataDictionaryViolationWarn {
@@ -7184,7 +7184,7 @@ div.caLibraryTransactionListItemDueDateLabel {
 }
 
 div.caLibraryTransactionListItemWillReserve {
-	color: #cc0000;
+	color: #EB0000;
 	font-size: 11px;
 	font-weight: bold;
 }
@@ -7395,7 +7395,7 @@ div.authorityReferenceListContainer {
 }
 
 .caResultsEditorErrorCell {
-	border: 2px dashed #cc0000 !important;
+	border: 2px dashed #EB0000 !important;
 }
 
 .caResultsEditorNonEditableCell {
@@ -7469,11 +7469,11 @@ div.caResultsComplexDataEditorErrorContainer {
 }
 
 .caIcon:hover {
-	color: #1ab3c8;
+	color: #138290;
 }
 
 .caIconRed {
-	color: #cc0000;
+	color: #EB0000;
 }
 
 .infoIcon {
@@ -7677,7 +7677,7 @@ a.currentSet {
 
 .dashboardWidgetContentContainer a.link {
     text-decoration: underline;
-    color: #1ab3c8;
+    color: #138290;
 }
 
 /* "New" ca_object_representations_bundle */
@@ -7985,4 +7985,16 @@ span.developerBundleCode, a.developerBundleCode {
     text-decoration: none;
     cursor: pointer;
     color: #333;
+}
+
+.sidecarFiletype {
+    min-width: 300px;
+}
+.filetype {
+    margin: 0 2px;
+    padding: 0px 5px;
+    border: 1px solid #ddd;
+    background-color: #f8f8f8;
+    border-radius: 3px;
+    white-space: nowrap;
 }

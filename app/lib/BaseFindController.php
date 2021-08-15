@@ -970,6 +970,15 @@
  			// post error
  			$this->postError(3100, _t("Could not generate ZIP file for download"),"BaseFindController->DownloadMedia()");
  		}
+ 		# -------------------------------------------------------
+		/**
+		 * Access to sidecar data (primarily used by 3d viewer)
+		 * Will only return sidecars that are images (for 3d textures), MTL files (for 3d OBJ-format files) or 
+		 * binary (for GLTF .bin buffer data)
+		 */
+		public function GetMediaSidecarData() {
+			caReturnMediaSidecarData($this->request->getParameter('sidecar_id', pInteger), $this->request->user);
+		}
  		# ------------------------------------------------------------------
  		/**
  		 * Set up variables for "tools" widget

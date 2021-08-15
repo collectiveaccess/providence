@@ -86,7 +86,7 @@ foreach($va_searches_by_table as $vs_table => $va_searches){
 					print "<option value='".htmlspecialchars($vs_key, ENT_QUOTES, 'UTF-8')."'>".$vs_search."</option>\n";
 				}
 				print "</select>\n ";
-				print caFormSubmitLink($po_request, _t('Search').' &rsaquo;', 'button', 'caSavedSearchesForm'.$vs_table.$vs_search_type);
+				print caFormSubmitLink($po_request, _t('Search').' &rsaquo;', 'button', 'caSavedSearchesForm'.$vs_table.$vs_search_type, null, ['aria-label' => _t('Save search')]);
 				print "</form></div>\n";
 			}
 		}

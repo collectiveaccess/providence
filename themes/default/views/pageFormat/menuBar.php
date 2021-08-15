@@ -56,7 +56,7 @@ $menu_color = $this->request->config->get('menu_color');
 						<input type="text" name="search" length="15" id="caQuickSearchFormText" value="<?= Session::getVar('quick_search_last_search'); ?>" onfocus="<?= htmlspecialchars(Session::getVar('quick_search_last_search'), ENT_QUOTES, 'UTF-8'); ?>"/>	
 <?php
 						}
-						print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_SEARCH__, 1, array('style' => 'float: right; margin: 5px 3px 0 0; color: #777')), 'caQuickSearchFormSubmit', 'caQuickSearchForm'); 
+						print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_SEARCH__, 1, array('style' => 'float: right; margin: 5px 3px 0 0; color: #777',)), 'caQuickSearchFormSubmit', 'caQuickSearchForm', null, ['aria-label' => _t('Perform a quick search')]);
 ?>
 					</form>
 				</div>
