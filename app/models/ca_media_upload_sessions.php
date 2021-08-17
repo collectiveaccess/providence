@@ -270,4 +270,141 @@ class ca_media_upload_sessions extends BaseModel {
 		return ($error_code = (int)$this->get('error_code')) ? $error_code : false;
 	}
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function processSessions(?array $options=null) : int {
+		$limit = caGetOption('limit', $options, 10);
+		$session_ids = ca_media_upload_sessions::find(['submitted_on' => ['>', 0], 'completed_on' => null], ['returnAs' => 'ids']);
+			
+		$log = caGetImportLogger();
+		
+		$c = 0;
+		while($session_id = array_shift($session_ids)) {
+			$session = new ca_media_upload_sessions($session_id);
+			
+			$d = $session->get('metadata');
+			$data = $d['data'];
+			$config = $d['configuration'];
+			
+			$log->logInfo("Processing session for form ".$config['formTitle']);
+			
+			$table = $config['table'];
+			$type = $config['type'];
+			$idno = $config['idno'];
+			$status = $config['status'];
+			$access = $config['access'];
+			
+			$rep_type = $config['representation_type'];
+			$rep_status = $config['representation_status'];
+			$rep_access = $config['representation_access'];
+			
+			$locale_id = ca_locales::codeToID(caGetOption('alwaysUseLocale', $config, ca_locales::getDefaultCataloguingLocaleID()));
+			
+			$form_values = [];
+			foreach($config['content'] as $k => $info) {
+				$v = $data[$info['bundle']];
+				$form_values[$k] = $v;
+			}
+			$label = caProcessTemplate($config['display'], $form_values);
+			
+			$media = array_filter($z=$session->get('progress'), function($v) {
+				return (bool)$v['complete'];
+			});
+			
+			$mode = caGetOption('importMode', $config['options'], 'media');
+			switch($mode) {
+				case 'hierarchy':
+					// create top-level record
+					$t = Datamodel::getInstance($table);
+					$t->set('type_id', $type);
+					$t->set('status', $status);
+					$t->set('access', $access);
+					$t->setIdnoWithTemplate($idno);
+					$t->insert();
+					
+					$t->addLabel(['name' => $label], $locale_id, null, true);
+					
+					foreach($config['content'] as $k => $info) {
+						$bundle_bits = explode('.', $info['bundle']);
+					
+						if($bundle_bits[0] === $table) {
+							switch(sizeof($bundle_bits)) {
+								case 3:	// container
+								
+									break;
+								case 2:	// attribute or intrinsic
+									if($t->hasField($bundle_bits[1])) {
+										$t->set($bundle_bits[1], $data[$info['bundle']]);
+									} else {
+										$t->addAttribute($z=[
+											$bundle_bits[1] => $data[$info['bundle']]
+										], $bundle_bits[1]);
+									}
+									$t->update();
+									
+									$t->addRepresentation(
+										array_shift(array_keys($media)), $rep_type, $locale_id, $rep_status, $rep_access, $is_primary,
+									);
+									break;
+							}
+							
+						}
+					}
+					$t_pk = $t->getPrimaryKey();
+					
+					
+					// Add media
+					$index = 1;
+					$is_primary = true;
+					foreach($media as $path => $info) {
+						$r = Datamodel::getInstance($table);
+						$r->set('parent_id', $t_pk);
+						$r->set('status', $status);
+						$r->set('access', $access);
+						$r->set('type_id', 'item');			// TODO: make configurable for sub-item
+						$r->setIdnoWithTemplate($idno);		// TODO: make configurable for sub-item
+						$r->insert();
+					
+						$r->addLabel(['name' => $label." [{$index}]"], $locale_id, null, true);
+						$r->addRepresentation(
+							$path, $rep_type, $locale_id, $rep_status, $rep_access, $is_primary,
+						);
+						$index++;
+						$is_primary = false;
+					}
+					break;
+				default:
+					die("Not implemented: $mode\n");
+					break;
+			}
+			
+			
+			
+			$c++;
+			if ($c > $limit) { break; }
+		}
+		
+		return $c;
+	}
+	# ------------------------------------------------------
 }
+
+
+// table = ca_objects,
+// type = album,
+// access = 0,
+// status = 0,
+// 
+// representation_type = front,
+// representation_status = 0,
+// representation_access = 1,
+// 
+// showInUserSubmissionList = 0,
+// 
+// alwaysUseLocale = en_US,
+// 
+// # template for idno; use "%" as placeholder for serial numbers
+// idno = %,
+// 
+// display = "^title <ifdef code='date'>(^date)</ifdef>",
