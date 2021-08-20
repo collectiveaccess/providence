@@ -1245,7 +1245,7 @@ class SearchResult extends BaseObject {
 						}
 						
 						// ids of related items
-						$va_ids = array_values(SearchResult::$opa_hierarchy_parent_prefetch_cache_index[$this->ops_table_name][$vn_row_id][$va_path_components['table_name']][$vs_opt_md5]);
+						$va_ids = array_values(SearchResult::$opa_hierarchy_parent_prefetch_cache_index[$this->ops_table_name][$vn_row_id][$va_path_components['table_name']][$vs_opt_md5] ?? []);
 					
 					} else {
 						// [PRIMARY TABLE HIERARCHY]
