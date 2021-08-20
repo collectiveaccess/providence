@@ -2616,6 +2616,78 @@ class ca_users extends BaseModel {
 		}
 		return false;
 	}
+	# ------------------------------------------------------
+	/**
+	 * Convert user name or email to integer user_id. Will return user_id if a numeric user_id is passed if a user
+	 * with that user_id exists. Will return null if no matching user is found.
+	 *
+	 * @param $user int|string User name, email address or user_id
+	 *
+	 * @return int User_id value, or null if no match was found
+	 */
+	static public function userIDFor($user) {
+		if ($info = self::userInfoFor($user)) {
+			return $info['user_id'];
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Convert user_id or email to user_name value. Will return user_name if a user_name is passed and a user
+	 * with that user_id exists. Will return null if no matching user is found.
+	 *
+	 * @param $user int|string User name, email address or user_id
+	 *
+	 * @return string user_name value, or null if no match was found
+	 */
+	static public function userNameFor($user) {
+		if ($info = self::userInfoFor($user)) {
+			return $info['user_name'];
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Get array of information for  user_id or email.  Will return null if no matching user is found.
+	 *
+	 * @param $user int|string User name, email address or user_id
+	 *
+	 * @return string user_name value, or null if no match was found
+	 */
+	static public function userInfoFor($user) {
+		if (array_key_exists($user, self::$s_user_info_cache)) {
+			return self::$s_user_info_cache[$user];
+		}
+		if(is_numeric($user)) {
+			// $user is valid integer user_id?
+			if ($u = ca_users::find(['user_id' => (int)$user], ['returnAs' => 'firstModelInstance'])) {
+				return self::$s_user_info_cache[$user] = self::_getUserInfoFromInstance($u);
+			}
+		}
+
+		if (!($u = ca_users::findAsInstance(['email' => $user]))) { // $user is email value?
+			$u = ca_users::findAsInstance(['user_name' => $user]);          // $user is user_name value?
+		}
+		if($u && $u->isLoaded()) {
+			return self::$s_user_info_cache[ $user ] = self::_getUserInfoFromInstance($u);
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Get array of information for  user_id or email.  Will return null if no matching user is found.
+	 *
+	 * @param $user int|string User name, email address or user_id
+	 *
+	 * @return string user_name value, or null if no match was found
+	 */
+	static private function _getUserInfoFromInstance($user) {
+		$info = [];
+		foreach(['user_id', 'user_name', 'email', 'fname', 'lname', 'active', 'userclass'] as $f) {
+			$info[$f] = $user->get("ca_users.{$f}");
+		}
+		return $info;
+	}
 	# ----------------------------------------
 	/**
 	 *
@@ -2989,8 +3061,12 @@ class ca_users extends BaseModel {
 		
 		if (!$vs_username && AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__)) { 
 		    if (AuthenticationManager::authenticate($vs_username, $ps_password, $pa_options)) {
-                $va_info = AuthenticationManager::getUserInfo($vs_username, $ps_password, ['minimal' => true]); 
-                $vs_username = $va_info['user_name'];
+                try {
+                	$va_info = AuthenticationManager::getUserInfo($vs_username, $ps_password, ['minimal' => true]); 
+                	$vs_username = $va_info['user_name'];
+                } catch(Exception $e) {
+                	// noop
+                }
             }
         }
         
@@ -3004,7 +3080,7 @@ class ca_users extends BaseModel {
 						'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
 						'MESSAGE' => _t('There was an error while trying to fetch information for a new user from the current authentication backend. The message was %1 : %2', get_class($e), $e->getMessage())
 					));
-					throw($e);
+					return false;
 				}
 
 				if(!is_array($va_values) || sizeof($va_values) < 1) { return false; }
@@ -3020,13 +3096,15 @@ class ca_users extends BaseModel {
 				} else {
 				    $this->set('userclass', 1);
 				}
-
+				if(!$this->get("email")) {
+					$this->set("email", (strpos($vs_username, "@") === false) ? "{$vs_username}@unknown.org" : $vs_username);
+				}
 				$this->insert();
-
+				
 				if (!$this->getPrimaryKey()) {
 					$this->opo_log->log(array(
 						'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
-						'MESSAGE' => $err = _t('User could not be created after getting info from authentication adapter: %1', join(" ", $this->getErrors()))
+						'MESSAGE' => _t('User could not be created after getting info from authentication adapter. API message was: %1', join(" ", $this->getErrors()))
 					));
 					throw new ApplicationException($err);
 				}
