@@ -5331,7 +5331,9 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 	/**
 	 *
 	 */
-	function caGetReferenceToExistingRepresentationMedia($t_rep) {
+	function caGetReferenceToExistingRepresentationMedia(ca_object_representations $t_rep, array $options=null) {
+		$return_as_array = caGetOption('returnAsArray', $options, false);
+		
 		global $g_request;
 		$rel = $rec_label = null;
 		foreach(['ca_objects', 'ca_entities', 'ca_occurrences', 'ca_collections'] as $parent_table) {
@@ -5342,14 +5344,31 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 			}
 		}
 	
-		$rec_label = $rec_label ? 
-			_t('Media aleady exists in %1', ($g_request ? 
-				caEditorLink($g_request, $rec_label, '', $parent_table, $rel[Datamodel::primaryKey($parent_table)])
-				: $rec_label))
-			:
-			($g_request ? _t('Media aleady %1', caEditorLink($g_request, _t('exists'), '', 'ca_object_representations', $t_rep->getPrimaryKey())) : _t('Media already exists'))
-		;
-		
-		return $rec_label;
+		if($return_as_array) {
+			if($rec_label) {
+				return [
+					'table' => $parent_table,
+					'id' => $rel[Datamodel::primaryKey($parent_table)],
+					'label' => $rel['label'],
+					'idno' => $rel['idno']
+				];
+			} else {
+				return [
+					'table' => 'ca_object_representations',
+					'id' => $t_rep->getPrimaryKey(),
+					'label' => $t_rep->get('ca_object_representations.preferred_labels.name'),
+					'idno' => $t_rep->get('ca_object_representations.idno')
+				];
+			}
+		} else {
+			$rec_label = $rec_label ? 
+				_t('Media aleady exists in %1', ($g_request ? 
+					caEditorLink($g_request, $rec_label, '', $parent_table, $rel[Datamodel::primaryKey($parent_table)])
+					: $rec_label))
+				:
+				($g_request ? _t('Media aleady %1', caEditorLink($g_request, _t('exists'), '', 'ca_object_representations', $t_rep->getPrimaryKey())) : _t('Media already exists'))
+			;
+			return $rec_label;
+		}
 	}
 	# ------------------------------------------------------------------
