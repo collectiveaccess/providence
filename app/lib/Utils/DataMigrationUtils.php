@@ -507,17 +507,17 @@
 		 *
 		 * @param string $ps_text 
 		 * @param array $pa_options Options include:
-		 *		replacePunctuation = convert curly apostrophes and quotes, em dashes and … to ascii equivalents in the process to avoid encoding issues with iconv. [Default=true]
+		 *		replacePunctuation = convert curly apostrophes and quotes, em dashes and ‚Ä¶ to ascii equivalents in the process to avoid encoding issues with iconv. [Default=true]
 		 * @return string
 		 */
 		static function transformTextEncoding($ps_text, $pa_options=null) {
 			if (caGetOption('replacePunctuation', $pa_options, true)) {
-				$ps_text = str_replace("‘", "'", $ps_text);
-				$ps_text = str_replace("’", "'", $ps_text);
-				$ps_text = str_replace("“", '"', $ps_text);
-				$ps_text = str_replace("”", '"', $ps_text);
-				$ps_text = str_replace("–", "-", $ps_text);
-				$ps_text = str_replace("…", "...", $ps_text);
+				$ps_text = str_replace("‚Äò", "'", $ps_text);
+				$ps_text = str_replace("‚Äô", "'", $ps_text);
+				$ps_text = str_replace("‚Äú", '"', $ps_text);
+				$ps_text = str_replace("‚Äù", '"', $ps_text);
+				$ps_text = str_replace("‚Äì", "-", $ps_text);
+				$ps_text = str_replace("‚Ä¶", "...", $ps_text);
 			}
 			return iconv(DataMigrationUtils::$s_source_encoding, DataMigrationUtils::$s_target_encoding, $ps_text);
 		}
