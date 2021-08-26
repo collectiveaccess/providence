@@ -4,7 +4,7 @@
 
 # Entity titles
 titles = [
-	Mrs., Ms., Miss., Mr., Mrs, Ms, Miss, Mr, 
+	Mrs, Ms, Miss, Mr, 
 	Professor, Doctor, Dr, Officer, Ofc, 
 	Sister, Monsieur, Congressman, Senator, President, Vice President,
 	Private, PFC, Pvt, CP, CPL, Corporal, Sergeant, Sgt, SSgt, Sapper, Lt, Lieutenant, Colonel,
@@ -13,6 +13,8 @@ titles = [
 	RSM, RQMS, Dispatcher, Lance Corporal
 ]
 
-individual_suffixes = [jr, jr., sr, sr., esq, esq., phd]
+surname_prefixes = [Ab, Af, Ap, Abu, Aït, Al, Ālam, At, Ath, Aust, Bar, Bath, Ben, Bert, Bet, Bint, Da, Das, De, Degli, Del, Dele, Della, Der, Di, Dos, Du, El, Fetch, Fitz, Kil, La, Le, Lille, Lu, Mala, Mellom, Myljom, Na, Ned, Neder, Nic, Ní, Nin, Nord, Norr, Ny, Ó, Ua, Uí, Opp, Upp, Öfver, Ost, Över, Øvste, Öz, Pour, Putra, Putera, Putri, Puteri, Setia, Setya, Stor, Söder, Ter, Ter, Tre, Van, Van, Van, Van, Van, Van, Väst, Väster, Verch, Erch, Vest, Vesle, von, war, zu]
 
-corporation_suffixes = [incorporated, & co ltd, & co. ltd., co ltd, co. ltd., & co, & co., inc., inc, llc, co., co, corp., corp, ltd., ltd]
+individual_suffixes = [jr, sr,  esq, phd]
+
+corporation_suffixes = [incorporated, & co ltd, & co. ltd, & co, inc, llc, co, corp, ltd]
