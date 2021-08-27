@@ -575,25 +575,14 @@
 			// check for suffixes
 			$suffix_for_name = null;
 			$is_corporation = false;
-			if (strpos($text, '_') === false) {
-				foreach($ind_suffixes as $suffix) {
-					if (preg_match("![,]*[ ]*({$suffix}[\.]{0,1})$!i", $text, $matches)) {
-						$suffix_for_name = $matches[1];
-						$text = str_replace($matches[0], '', $text);
-					}
-				}
-				foreach($corp_suffixes as $suffix) {
-					if (preg_match("![,]*[ ]*({$suffix}[\.]{0,1})$!i", $text, $matches)) {
-						$suffix_for_name = $matches[1];
-						$text = str_replace($matches[0], '', $text);
-						$is_corporation = true;
-					}
-				}
+			if ((strpos($text, '_') === false) && ($n = self::_procSurname($text, ['ind_suffixes' => $ind_suffixes, 'corp_suffixes' => $corp_suffixes]))) {
+				$text = $n['surname'];
+				$suffix_for_name = $n['suffix'];
+				$is_corporation = $n['is_corporation'];
 			}
 			
 			$name = ['surname' => '', 'forename' => '', 'middlename' => '', 'displayname' => '', 'prefix' => $prefix_for_name, 'suffix' => $suffix_for_name];
 		
-			
 			if ($suffix_for_name && $is_corporation) {
 				// is corporation
 				$tmp = preg_split('![, ]+!', trim($text));
@@ -605,21 +594,16 @@
 				}
 				$name['prefix'] = $prefix_for_name;
 				$name['suffix'] = $suffix_for_name;
-			} elseif (strpos($text, ',') !== false) {
-				// is comma delimited
+			} elseif (strpos($text, ',') !== false) {	
+				// Test if string stripped of prefix and suffix still has 
+				// commas in it – implies it's comma delimited.
 				$tmp = explode(',', $text);
-				$name['surname'] = $tmp[0];
 				
+				$name = array_merge($name, self::_procSurname($tmp[0], ['ind_suffixes' => $ind_suffixes, 'corp_suffixes' => $corp_suffixes]));
+				unset($_procSurname['is_corporation']);
 				if(sizeof($tmp) > 1) {
 					$tmp2 = array_filter(preg_split("![ ]+!", $tmp[1]), function($v) { return (bool)strlen(trim($v)); });
-					
-					if ((sizeof($tmp2) > 1) && (array_search(_t('and'), $tmp2, true) === false) && (array_search('&', $tmp2, true) === false)) {
-						$name['middlename'] = array_pop($tmp2);
-						$name['forename'] = join(" ", $tmp2);
-					} else {
-						$name['middlename'] = '';
-						$name['forename'] = $tmp[1];
-					}
+					$name = array_merge($name, self::_procForename($tmp2, ['titles' => $titles]));
 				}
 			} elseif (strpos($text, '_') !== false) {
 				// is underscore delimited
@@ -651,8 +635,8 @@
 							$name['surname'] = "{$m[1]} {$s[1]}";
 							
 							$tmp = preg_split('![ ]+!', trim($s[0]));
-							$name['forename'] = array_shift($tmp);
-							$name['middlename'] = sizeof($tmp) ? join(' ', $tmp) : '';
+							$name = array_merge($name, self::_procForename($tmp, ['titles' => $titles]));
+							
 						}
 					}
 				} 
@@ -678,9 +662,9 @@
 								$name['surname'] = array_pop($tmp);
 								$name['forename'] = join(' ', $tmp);
 							} else {
+								$name['surname'] = array_pop($tmp);
 								$name['forename'] = array_shift($tmp);
-								$name['middlename'] = array_shift($tmp);
-								$name['surname'] = join(' ', $tmp);
+								$name['middlename'] = join(' ', $tmp);
 							}
 							break;
 					}
@@ -718,6 +702,51 @@
 				$name[$k] = trim($v);
 			}
 			
+			return $name;
+		}
+		
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		private static function _procForename(array $tokens, array $values) : array {
+			$tokens = array_values($tokens);
+			
+			$name = [];
+			if (in_array(mb_strtolower(preg_replace("!\.$!", "", trim($tokens[0]))), array_map("mb_strtolower", $values['titles']))) {
+				$name['prefix'] = array_shift($tokens);
+			}
+			if ((sizeof($tokens) > 1) && (array_search(_t('and'), $tokens, true) === false) && (array_search('&', $tokens, true) === false)) {
+				$name['forename'] = array_shift($tokens);
+				$name['middlename'] = join(" ", $tokens);
+			} else {
+				$name['middlename'] = '';
+				$name['forename'] = join(' ', $tokens);
+			}
+			return $name;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		private static function _procSurname(string $text, array $values) : array {
+			$name = [];
+			
+			foreach($values['ind_suffixes'] as $suffix) {
+				if (preg_match("![,]*[ ]*({$suffix}[\.]{0,1})$!i", $text, $matches)) {
+					$name['suffix'] = $matches[1];
+					$text = str_replace($matches[0], '', $text);
+				}
+			}
+			foreach($values['corp_suffixes'] as $suffix) {
+				if (preg_match("![,]*[ ]*({$suffix}[\.]{0,1})$!i", $text, $matches)) {
+					$name['suffix'] = $matches[1];
+					$text = str_replace($matches[0], '', $text);
+					$name['is_corporation'] = true;
+				}
+			}
+			
+			$name['surname'] = $text;
 			return $name;
 		}
 		# -------------------------------------------------------

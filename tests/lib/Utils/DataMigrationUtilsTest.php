@@ -143,6 +143,78 @@ class DataMigrationUtilsTest extends TestCase {
 		$r = DataMigrationUtils::splitEntityName("Jane Erin Van Doe", ['displaynameFormat' => '^middlename / ^surname / ^forename']);
 		$this->_checkValue($r, ['surname' => 'Van Doe', 'forename' => 'Jane', 'middlename' => 'Erin', 'displayname' => 'Erin / Van Doe / Jane']);
 	}
+	
+	public function testAmpersandWithSurnamePrefix() {
+		$r = DataMigrationUtils::splitEntityName("Bob and Jane Van Doe", ['displaynameFormat' => 'surnameCommaForename']);
+		$this->_checkValue($r, ['surname' => 'Van Doe', 'forename' => 'Bob and Jane', 'middlename' => '', 'displayname' => 'Van Doe, Bob and Jane']);
+		
+		$r = DataMigrationUtils::splitEntityName("Bob & Jane Van Doe", ['displaynameFormat' => 'surnameCommaForename']);
+		$this->_checkValue($r, ['surname' => 'Van Doe', 'forename' => 'Bob & Jane', 'middlename' => '', 'displayname' => 'Van Doe, Bob & Jane']);	
+	}
+	
+	public function testPrefixInCommaDelimited() {
+		$r = DataMigrationUtils::splitEntityName("Doe, Ms Jane", ['displaynameFormat' => 'surnameCommaForename']);
+		$this->_checkValue($r, ['surname' => 'Doe', 'forename' => 'Jane', 'middlename' => '', 'displayname' => 'Doe, Jane', 'prefix' => 'Ms']);
+		
+		$r = DataMigrationUtils::splitEntityName("Doe, Ms. Jane", ['displaynameFormat' => 'surnameCommaForename']);
+		$this->_checkValue($r, ['surname' => 'Doe', 'forename' => 'Jane', 'middlename' => '', 'displayname' => 'Doe, Jane', 'prefix' => 'Ms.']);
+		
+		$r = DataMigrationUtils::splitEntityName("Van Der Doe, Ms. Jane Alice", ['displaynameFormat' => 'surnameCommaForename']);
+		$this->_checkValue($r, ['surname' => 'Van Der Doe', 'forename' => 'Jane', 'middlename' => 'Alice', 'displayname' => 'Van Der Doe, Jane', 'prefix' => 'Ms.']);
+		
+	}
+	
+	public function testSuffixInCommaDelimited() {
+		$r = DataMigrationUtils::splitEntityName("Doe Phd, Jane", ['displaynameFormat' => 'surnameCommaForename']);
+		$this->_checkValue($r, ['surname' => 'Doe', 'forename' => 'Jane', 'middlename' => '', 'displayname' => 'Doe, Jane', 'prefix' => '', 'suffix' => 'Phd']);
+
+		$r = DataMigrationUtils::splitEntityName("Doe Phd, Jane Alice Erin", ['displaynameFormat' => 'surnameCommaForename']);
+		$this->_checkValue($r, ['surname' => 'Doe', 'forename' => 'Jane', 'middlename' => 'Alice Erin', 'displayname' => 'Doe, Jane', 'prefix' => '', 'suffix' => 'Phd']);
+	
+	}
+	
+	public function testPrefixSuffixInCommaDelimited() {
+		$r = DataMigrationUtils::splitEntityName("Doe Phd, Ms Jane", ['displaynameFormat' => 'surnameCommaForename']);
+		$this->_checkValue($r, ['surname' => 'Doe', 'forename' => 'Jane', 'middlename' => '', 'displayname' => 'Doe, Jane', 'prefix' => 'Ms', 'suffix' => 'Phd']);
+
+		$r = DataMigrationUtils::splitEntityName("Doe Phd, Ms. Jane Alice Erin", ['displaynameFormat' => 'surnameCommaForename']);
+		$this->_checkValue($r, ['surname' => 'Doe', 'forename' => 'Jane', 'middlename' => 'Alice Erin', 'displayname' => 'Doe, Jane', 'prefix' => 'Ms.', 'suffix' => 'Phd']);
+	}
+	
+	public function testOrderOfSuffixinCommaDelimited() {
+		$r = DataMigrationUtils::splitEntityName("Doe Phd, Jane", ['displaynameFormat' => 'surnameCommaForename']);
+		$this->_checkValue($r, ['surname' => 'Doe', 'forename' => 'Jane', 'middlename' => '', 'displayname' => 'Doe, Jane', 'prefix' => '', 'suffix' => 'Phd']);
+
+		$r = DataMigrationUtils::splitEntityName("Doe, Jane Phd", ['displaynameFormat' => 'surnameCommaForename']);
+		$this->_checkValue($r, ['surname' => 'Doe', 'forename' => 'Jane', 'middlename' => '', 'displayname' => 'Doe, Jane', 'prefix' => '', 'suffix' => 'Phd']);
+	}
+	
+	public function testLongNames() {
+		$r = DataMigrationUtils::splitEntityName("Doe, Jane Alice Erin Dalhia", ['displaynameFormat' => 'surnameCommaForename']);
+		$this->_checkValue($r, ['surname' => 'Doe', 'forename' => 'Jane', 'middlename' => 'Alice Erin Dalhia', 'displayname' => 'Doe, Jane', 'prefix' => '', 'suffix' => '']);
+
+		$r = DataMigrationUtils::splitEntityName("Jane Alice Erin Dalhia Doe", ['displaynameFormat' => 'surnameCommaForename']);
+		$this->_checkValue($r, ['surname' => 'Doe', 'forename' => 'Jane', 'middlename' => 'Alice Erin Dalhia', 'displayname' => 'Doe, Jane', 'prefix' => '', 'suffix' => '']);
+
+		$r = DataMigrationUtils::splitEntityName("Van Der Doe, Jane Alice Erin Dalhia", ['displaynameFormat' => 'surnameCommaForename']);
+		$this->_checkValue($r, ['surname' => 'Van Der Doe', 'forename' => 'Jane', 'middlename' => 'Alice Erin Dalhia', 'displayname' => 'Van Der Doe, Jane', 'prefix' => '', 'suffix' => '']);
+
+		$r = DataMigrationUtils::splitEntityName("Jane Alice Erin Dalhia Van Der Doe", ['displaynameFormat' => 'surnameCommaForename']);
+		$this->_checkValue($r, ['surname' => 'Van Der Doe', 'forename' => 'Jane', 'middlename' => 'Alice Erin Dalhia', 'displayname' => 'Van Der Doe, Jane', 'prefix' => '', 'suffix' => '']);
+	
+		$r = DataMigrationUtils::splitEntityName("Van Der Doe Esq, Ms. Jane Alice Erin Dalhia", ['displaynameFormat' => 'surnameCommaForename']);
+		$this->_checkValue($r, ['surname' => 'Van Der Doe', 'forename' => 'Jane', 'middlename' => 'Alice Erin Dalhia', 'displayname' => 'Van Der Doe, Jane', 'prefix' => 'Ms.', 'suffix' => 'Esq']);
+		
+		$r = DataMigrationUtils::splitEntityName("Van Der Doe, Ms. Jane Alice Erin Dalhia, Esq", ['displaynameFormat' => 'surnameCommaForename']);
+		$this->_checkValue($r, ['surname' => 'Van Der Doe', 'forename' => 'Jane', 'middlename' => 'Alice Erin Dalhia', 'displayname' => 'Van Der Doe, Jane', 'prefix' => 'Ms.', 'suffix' => 'Esq']);
+
+		$r = DataMigrationUtils::splitEntityName("Van Der Doe, Ms. Jane Alice Erin Dalhia Esq", ['displaynameFormat' => 'surnameCommaForename']);
+		$this->_checkValue($r, ['surname' => 'Van Der Doe', 'forename' => 'Jane', 'middlename' => 'Alice Erin Dalhia', 'displayname' => 'Van Der Doe, Jane', 'prefix' => 'Ms.', 'suffix' => 'Esq']);
+
+		$r = DataMigrationUtils::splitEntityName("Ms. Jane Alice Erin Dalhia Van Der Doe, Esq", ['displaynameFormat' => 'surnameCommaForename']);
+		$this->_checkValue($r, ['surname' => 'Van Der Doe', 'forename' => 'Jane', 'middlename' => 'Alice Erin Dalhia', 'displayname' => 'Van Der Doe, Jane', 'prefix' => 'Ms.', 'suffix' => 'Esq']);	
+	}
+	
 	/**
 	 * Verify presence of expected keys and test returned values against expected values
 	 */
