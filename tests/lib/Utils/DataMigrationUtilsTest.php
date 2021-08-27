@@ -169,7 +169,7 @@ class DataMigrationUtilsTest extends TestCase {
 		$this->_checkValue($r, ['surname' => 'Doe', 'forename' => 'Jane', 'middlename' => '', 'displayname' => 'Doe, Jane', 'prefix' => '', 'suffix' => 'Phd']);
 
 		$r = DataMigrationUtils::splitEntityName("Doe Phd, Jane Alice Erin", ['displaynameFormat' => 'surnameCommaForename']);
-		$this->_checkValue($r, ['surname' => 'Doe', 'forename' => 'Jane Alice', 'middlename' => 'Erin', 'displayname' => 'Doe, Jane Alice', 'prefix' => '', 'suffix' => 'Phd']);
+		$this->_checkValue($r, ['surname' => 'Doe', 'forename' => 'Jane', 'middlename' => 'Alice Erin', 'displayname' => 'Doe, Jane', 'prefix' => '', 'suffix' => 'Phd']);
 	
 	}
 	
@@ -178,7 +178,7 @@ class DataMigrationUtilsTest extends TestCase {
 		$this->_checkValue($r, ['surname' => 'Doe', 'forename' => 'Jane', 'middlename' => '', 'displayname' => 'Doe, Jane', 'prefix' => 'Ms', 'suffix' => 'Phd']);
 
 		$r = DataMigrationUtils::splitEntityName("Doe Phd, Ms. Jane Alice Erin", ['displaynameFormat' => 'surnameCommaForename']);
-		$this->_checkValue($r, ['surname' => 'Doe', 'forename' => 'Jane Alice', 'middlename' => 'Erin', 'displayname' => 'Doe, Jane Alice', 'prefix' => 'Ms.', 'suffix' => 'Phd']);
+		$this->_checkValue($r, ['surname' => 'Doe', 'forename' => 'Jane', 'middlename' => 'Alice Erin', 'displayname' => 'Doe, Jane', 'prefix' => 'Ms.', 'suffix' => 'Phd']);
 	}
 	
 	public function testOrderOfSuffixinCommaDelimited() {
@@ -203,6 +203,12 @@ class DataMigrationUtilsTest extends TestCase {
 		$this->_checkValue($r, ['surname' => 'Van Der Doe', 'forename' => 'Jane', 'middlename' => 'Alice Erin Dalhia', 'displayname' => 'Van Der Doe, Jane', 'prefix' => '', 'suffix' => '']);
 	
 		$r = DataMigrationUtils::splitEntityName("Van Der Doe Esq, Ms. Jane Alice Erin Dalhia", ['displaynameFormat' => 'surnameCommaForename']);
+		$this->_checkValue($r, ['surname' => 'Van Der Doe', 'forename' => 'Jane', 'middlename' => 'Alice Erin Dalhia', 'displayname' => 'Van Der Doe, Jane', 'prefix' => 'Ms.', 'suffix' => 'Esq']);
+		
+		$r = DataMigrationUtils::splitEntityName("Van Der Doe, Ms. Jane Alice Erin Dalhia, Esq", ['displaynameFormat' => 'surnameCommaForename']);
+		$this->_checkValue($r, ['surname' => 'Van Der Doe', 'forename' => 'Jane', 'middlename' => 'Alice Erin Dalhia', 'displayname' => 'Van Der Doe, Jane', 'prefix' => 'Ms.', 'suffix' => 'Esq']);
+
+		$r = DataMigrationUtils::splitEntityName("Van Der Doe, Ms. Jane Alice Erin Dalhia Esq", ['displaynameFormat' => 'surnameCommaForename']);
 		$this->_checkValue($r, ['surname' => 'Van Der Doe', 'forename' => 'Jane', 'middlename' => 'Alice Erin Dalhia', 'displayname' => 'Van Der Doe, Jane', 'prefix' => 'Ms.', 'suffix' => 'Esq']);
 
 		$r = DataMigrationUtils::splitEntityName("Ms. Jane Alice Erin Dalhia Van Der Doe, Esq", ['displaynameFormat' => 'surnameCommaForename']);
