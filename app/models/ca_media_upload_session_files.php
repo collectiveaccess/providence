@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/models/ca_media_upload_sessions.php
+ * app/models/ca_media_upload_session_files.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020-2021 Whirl-i-Gig
+ * Copyright 2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,23 +34,23 @@
    *
    */
 
-BaseModel::$s_ca_models_definitions['ca_media_upload_sessions'] = array(
- 	'NAME_SINGULAR' 	=> _t('Media upload'),
- 	'NAME_PLURAL' 		=> _t('Media uploads'),
+BaseModel::$s_ca_models_definitions['ca_media_upload_session_files'] = array(
+ 	'NAME_SINGULAR' 	=> _t('Media upload file'),
+ 	'NAME_PLURAL' 		=> _t('Media upload files'),
  	'FIELDS' 			=> array(
- 		'session_id' => array(
+ 		'file_id' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 			'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 			'IS_NULL' => false, 
-			'DEFAULT' => '','LABEL' => _t('CollectiveAccess id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this upload')
+			'DEFAULT' => '','LABEL' => _t('File id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this uploaded file')
 		),
-		'user_id' => array(
+		'session_id' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
 			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 			'IS_NULL' => false, 
 			'DEFAULT' => null,
 			'DONT_ALLOW_IN_UI' => true,
-			'LABEL' => _t('Submitted by user'), 'DESCRIPTION' => _t('User submitting this upload.')
+			'LABEL' => _t('Session id'), 'DESCRIPTION' => _t('Session to which this upload belongs.')
 		),
 		'created_on' => array(
 			'FIELD_TYPE' => FT_TIMESTAMP, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -58,13 +58,6 @@ BaseModel::$s_ca_models_definitions['ca_media_upload_sessions'] = array(
 			'IS_NULL' => false, 
 			'DEFAULT' => null,
 			'LABEL' => _t('Creation date'), 'DESCRIPTION' => _t('The date and time the upload was started on.')
-		),
-		'submitted_on' => array(
-			'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_FIELD, 
-			'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
-			'IS_NULL' => true, 
-			'DEFAULT' => null,
-			'LABEL' => _t('Submission  date'), 'DESCRIPTION' => _t('The date and time the upload was submitted on. An empty value indicates an unsubmitted upload.')
 		),
 		'completed_on' => array(
 			'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -80,52 +73,26 @@ BaseModel::$s_ca_models_definitions['ca_media_upload_sessions'] = array(
 			'DEFAULT' => null,
 			'LABEL' => _t('Date of last upload activity'), 'DESCRIPTION' => _t('The date and time activity was last recorded on the upload.')
 		),
-		'session_key' => array(
+		'filename' => array(
 			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'DISPLAY_WIDTH' => 80, 'DISPLAY_HEIGHT' => 1,
 			'IS_NULL' => false, 
 			'DEFAULT' => '',
-			'LABEL' => _t('Upload key'), 'DESCRIPTION' => _t('Unique key for the upload.'),
-			'BOUNDS_LENGTH' => array(1,36)
+			'LABEL' => _t('File name'), 'DESCRIPTION' => _t('Original name of uploaded file.')
 		),
-		'source' => array(
-			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-			'DISPLAY_WIDTH' => 30, 'DISPLAY_HEIGHT' => 1,
-			'IS_NULL' => false, 
-			'BOUNDS_LENGTH' => [0, 30],
-			'DEFAULT' => '',
-			'LABEL' => _t('Source of session'), 'DESCRIPTION' => _t('Source of session. Use UPLOADER for file uploader; FORM:<form_code> for front-end importer forms.')
-		),
-		'status' => array(
-			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-			'DISPLAY_WIDTH' => 30, 'DISPLAY_HEIGHT' => 1,
-			'IS_NULL' => false, 
-			'BOUNDS_LENGTH' => [0, 30],
-			'DEFAULT' => 'IN_PROGRESS',
-			'BOUNDS_CHOICE_LIST' => array(
-				_t('In progress') => 'IN_PROGRESS',
-				_t('Submitted') => 'SUBMITTED',
-				_t('Processing') => 'PROCESSING',
-				_t('Processed') => 'PROCESSED',
-				_t('In review') => 'IN_REVIEW',
-				_t('Accepted') => 'ACCEPTED',
-				_t('Rejected') => 'REJECTED'
-			),
-			'LABEL' => _t('Status of session'), 'DESCRIPTION' => _t('Status of session. Possible states: IN_PROGRESS, SUBMITTED, PROCESSING, PROCESSED, IN_REVIEW, ACCEPTED, REJECTED.')
-		),
-		'num_files' => array(
+		'bytes_received' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
 			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 			'IS_NULL' => false, 
 			'DEFAULT' => 0,
-			'LABEL' => _t('File count'), 'DESCRIPTION' => _t('Number of files in upload.')
+			'LABEL' => _t('Size of data received'), 'DESCRIPTION' => _t('The size of data received, in bytes.')
 		),
 		'total_bytes' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
 			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 			'IS_NULL' => false, 
 			'DEFAULT' => 0,
-			'LABEL' => _t('Total upload size'), 'DESCRIPTION' => _t('The total size of the upload for all files, in bytes.')
+			'LABEL' => _t('Total upload size'), 'DESCRIPTION' => _t('The total size of the uploaded file, in bytes.')
 		),
 		'error_code' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -133,18 +100,11 @@ BaseModel::$s_ca_models_definitions['ca_media_upload_sessions'] = array(
 			'IS_NULL' => false, 
 			'DEFAULT' => 0,
 			'LABEL' => _t('Error code'), 'DESCRIPTION' => _t('Error code. Zero if no error.')
-		),
-		'metadata' => array(
-			'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
-			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-			'IS_NULL' => false, 
-			'DEFAULT' => 0,
-			'LABEL' => _t('Associated form metadata'), 'DESCRIPTION' => _t('User-entered metadata for upload.')
 		)
  	)
 );
 
-class ca_media_upload_sessions extends BaseModel {
+class ca_media_upload_session_files extends BaseModel {
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -156,10 +116,10 @@ class ca_media_upload_sessions extends BaseModel {
 	# --- Basic object parameters
 	# ------------------------------------------------------
 	# what table does this class represent?
-	protected $TABLE = 'ca_media_upload_sessions';
+	protected $TABLE = 'ca_media_upload_session_files';
 	      
 	# what is the primary key of the table?
-	protected $PRIMARY_KEY = 'session_id';
+	protected $PRIMARY_KEY = 'file_id';
 
 	# ------------------------------------------------------
 	# --- Properties used by standard editing scripts
@@ -170,7 +130,7 @@ class ca_media_upload_sessions extends BaseModel {
 	# ------------------------------------------------------
 
 	# Array of fields to display in a listing of records from this table
-	protected $LIST_FIELDS = array('session_key');
+	protected $LIST_FIELDS = array('session_id');
 
 	# When the list of "list fields" above contains more than one field,
 	# the LIST_DELIMITER text is displayed between fields as a delimiter.
