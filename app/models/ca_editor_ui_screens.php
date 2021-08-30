@@ -1435,6 +1435,26 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'label' => _t('Open hierarchy browser by default'),
 								'description' => _t('If checked hierarchy browser will be open when form loads.')
 							),
+							'restrict_to_types' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_SELECT,
+								'useList' => $t_instance->getTypeListCode(),
+								'width' => "475px", 'height' => "75px",
+								'takesLocale' => false,
+								'default' => '',
+								'multiple' => true,
+								'label' => _t('Restrict to types'),
+								'description' => _t('Restricts addition of child records / lookups to items of the specified type(s). Leave all unselected for no restriction.')
+							),
+							'label_for_count' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_FIELD,
+								'takesLocale' => true,
+								'default' => '',
+								'width' => "475px", 'height' => 1,
+								'label' => _t('Label for hierarchy count'),
+								'description' => _t('Text label for hierarchy count. Defaults to table name.')
+							),
 							'auto_shrink' => array(
 								'formatType' => FT_NUMBER,
 								'displayType' => DT_CHECKBOXES,
@@ -1599,7 +1619,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 											_t('Current value + history') => 'tabs'
 										),
 										'takesLocale' => false,
-										'default' => ($bundle == 'ca_objects_location') ? 'tabs' : 'chronology',
+										'default' => ($vs_bundle == 'ca_objects_location') ? 'tabs' : 'chronology',
 										'width' => "200px", 'height' => 1,
 										'label' => _t('Display'),
 										'description' => _t('Display format for chronology.')
