@@ -47,6 +47,8 @@
 	$hier_browser_dim_style = (sizeof($hier_browser_dims) > 0) ? "style='".join(" ", $hier_browser_dims)."'" : '';
 	
 	$vb_objects_x_collections_hierarchy_enabled = (bool)$t_subject->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled');
+	$vs_disabled_items_mode = $t_subject->getAppConfig()->get($t_subject->tableName() . '_hierarchy_browser_disabled_items_mode');
+	$vs_disabled_items_mode = $vs_disabled_items_mode ?: 'hide';
 	
 	
 	if (in_array($t_subject->tableName(), array('ca_objects', 'ca_collections')) && $vb_objects_x_collections_hierarchy_enabled) {
@@ -64,15 +66,16 @@
 	}
 	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $pa_bundle_settings, false, $vs_bundle_preview);
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $pa_bundle_settings);
 ?>	
 	<div id="<?php print $vs_id_prefix; ?>">
 		<div class="bundleContainer">
 			<div class="hierNav">
 <?php
 	if ($pn_id > 0) {
-?>
-		<div class="hierarchyCountDisplay"><?php if($vn_items_in_hier > 0) { print _t("Number of %1 in hierarchy: %2", caGetTableDisplayName($t_subject->tableName(), true), $vn_items_in_hier); } ?></div>
+		$vs_count_label = $pa_bundle_settings['label_for_count'] ?? caGetTableDisplayName($t_subject->tableName(), true);
+		?>
+		<div class="hierarchyCountDisplay"><?php if($vn_items_in_hier > 0) { print _t("Number of %1 in hierarchy: %2", $vs_count_label, true), $vn_items_in_hier); } ?></div>
 		<div class="buttonPosition" <?php print (isset($pa_bundle_settings['no_close_button']) && $pa_bundle_settings['no_close_button']) ? "style='display: none;'" : ""; ?>><a href="#" id="<?php print $vs_id_prefix; ?>browseToggle" class="form-button"><span class="form-button"><?php print _t('Show in browser'); ?></span></a></div>
 <?php
 	}
