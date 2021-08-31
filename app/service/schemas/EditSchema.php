@@ -34,6 +34,7 @@ use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 
 require_once(__CA_LIB_DIR__.'/Service/GraphQLSchema.php'); 
+require_once(__CA_APP_DIR__.'/service/schemas/SearchSchema.php');
 
 class EditSchema extends \GraphQLServices\GraphQLSchema {
 	# -------------------------------------------------------
@@ -161,6 +162,27 @@ class EditSchema extends \GraphQLServices\GraphQLSchema {
 					],
 				]
 			]),
+			$MatchRecordType = new InputObjectType([
+				'name' => 'MatchRecord',
+				'description' => '.',
+				'fields' => [
+					[
+						'name' => 'search',
+						'type' => Type::string(),
+						'description' => _t('Search expression')
+					],
+					[
+						'name' => 'criteria',
+						'type' => Type::listOf(\GraphQLServices\Schemas\SearchSchema::get('Criterion')),
+						'description' => _t('Search criteria')
+					],
+					[
+						'name' => 'restrictToTypes',
+						'type' => Type::listOf(Type::string()),
+						'description' => _t('Type restrictions for search')
+					],
+				]
+			]),
 			$RecordType = new InputObjectType([
 				'name' => 'Record',
 				'description' => '.',
@@ -189,6 +211,11 @@ class EditSchema extends \GraphQLServices\GraphQLSchema {
 						'name' => 'bundles',
 						'type' => Type::listOf($EditBundleType),
 						'description' => _t('Bundles to add')
+					],
+					[
+						'name' => 'match',
+						'type' => $MatchRecordType,
+						'description' => _t('Match criteria')
 					]
 				]
 			]),

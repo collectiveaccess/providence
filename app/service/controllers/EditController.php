@@ -28,6 +28,7 @@
 require_once(__CA_LIB_DIR__.'/Service/GraphQLServiceController.php');
 require_once(__CA_APP_DIR__.'/service/schemas/EditSchema.php');
 require_once(__CA_APP_DIR__.'/service/helpers/EditHelpers.php');
+require_once(__CA_APP_DIR__.'/service/helpers/SearchHelpers.php');
 
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
@@ -118,6 +119,11 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							'description' => _t('Ignore record type when looking for existing records.')
 						],
 						[
+							'name' => 'match',
+							'type' => EditSchema::get('MatchRecord'),
+							'description' => _t('Find criteria')
+						],
+						[
 							'name' => 'list',
 							'type' => Type::string(),
 							'default' => false,
@@ -141,16 +147,45 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						$records = (is_array($args['records']) && sizeof($args['records'])) ? $args['records'] : [[
 							'idno' => $args['idno'],
 							'type' => $args['type'],
-							'bundles' => $args['bundles']
+							'bundles' => $args['bundles'],
+							'find' => $args['find']
 						]];
 						
 						$c = 0;
 						$last_id = null;
 						foreach($records as $record) {
+							$instance = null;
+							
 							if(!$record['idno'] && $record['identifier']) { $record['idno'] = $record['identifier']; }
+							
 							// Does record already exist?
 							try {
-								$instance = (in_array($erp, ['SKIP', 'REPLACE', 'MERGE'])) ? self::resolveIdentifier($table, $record['idno'], $ignoreType ? null : $record['type'], ['idnoOnly' => true, 'list' => $args['list']]) : null;
+								if(in_array($erp, ['SKIP', 'REPLACE', 'MERGE'])) {
+									if(is_array($f = $record['find'])) {										
+										if($f['restrictToTypes'] && !is_array($f['restrictToTypes'])) {
+											$f['restrictToTypes'] = [$f['restrictToTypes']];
+										}
+										if(isset($f['search'])) {
+											$s = caGetSearchInstance($table);
+						
+											if(is_array($f['restrictToTypes']) && sizeof($f['restrictToTypes'])) {
+												$s->setTypeRestrictions($f['restrictToTypes']);
+											}
+				
+											if(($qr = $s->search($f['search'])) && $qr->nextHit()) {
+												$instance = $qr->getInstance();
+											}
+										} elseif(isset($f['criteria'])) {
+											if(($qr = $table::find($x=\GraphQLServices\Helpers\Search\convertCriteriaToFindSpec($f['criteria'], $table), ['returnAs' => 'searchResult', 'allowWildcards' => true, 'restrictToTypes' => $f['restrictToTypes']])) && $qr->nextHit()) {
+												$instance = $qr->getInstance();
+											}
+										}
+									} 
+									if(!$instance) {
+										$instance = self::resolveIdentifier($table, $record['idno'], $ignoreType ? null : $record['type'], ['idnoOnly' => true, 'list' => $args['list']]);
+									}
+								}
+								
 							} catch(\ServiceException $e) {
 								$instance = null;	// No matching record
 							}
@@ -158,7 +193,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							switch($erp) {
 								case 'SKIP':
 									if($instance) { 
-										$last_id = $instance->getPrimaryKey(); 
+										$ids[] = $last_id = $instance->getPrimaryKey(); 
 										continue(2);
 									}
 									break;
