@@ -515,7 +515,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$this->properties["resolution"] = $this->handle->getimageresolution();
 				$this->properties["colorspace"] = $this->_getColorspaceAsString($this->handle->getimagecolorspace());
 				
-				$this->properties["exif_orientation"] = (in_array($orientation = (int)$this->metadata['EXIF']['IFD0']['Orientation'], [6, 8], true)) ? $orientation : null;
+				$this->properties["exif_orientation"] = (in_array($orientation = (int)$this->metadata['EXIF']['IFD0']['Orientation'], [3, 6, 8], true)) ? $orientation : null;
 
 				$this->properties["mimetype"] = $this->_getMagickImageMimeType($this->handle);
 				$this->properties["typename"] = $this->handle->getimageformat();
