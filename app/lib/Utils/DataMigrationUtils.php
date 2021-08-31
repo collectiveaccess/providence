@@ -533,179 +533,221 @@
 		 *
 		 * @return array Array containing parsed name, keyed on ca_entity_labels fields (eg. forename, surname, middlename, etc.)
 		 */
-		static function splitEntityName($ps_text, $pa_options=null) {
+		static function splitEntityName($text, $options=null) {
 			global $g_ui_locale;
-			$ps_text = $ps_original_text = trim(preg_replace("![ ]+!", " ", $ps_text));
+			$text = $original_text = trim(preg_replace("![ ]+!", " ", $text));
 			
-			if (caGetOption('doNotParse', $pa_options, false)) {
-				return array(
-					'forename' => '', 'middlename' => '', 'surname' => $ps_text,
-					'displayname' => $ps_text, 'prefix' => '', 'suffix' => ''
-				);
+			if (caGetOption('doNotParse', $options, false)) {
+				return [
+					'forename' => '', 'middlename' => '', 'surname' => $text,
+					'displayname' => $text, 'prefix' => '', 'suffix' => ''
+				];
 			}
 			
-			if (isset($pa_options['locale']) && $pa_options['locale']) {
-				$vs_locale = $pa_options['locale'];
+			if (isset($options['locale']) && $options['locale']) {
+				$locale = $options['locale'];
 			} else {
-				$vs_locale = $g_ui_locale;
+				$locale = $g_ui_locale;
 			}
-			if (!$vs_locale && defined('__CA_DEFAULT_LOCALE__')) { $vs_locale = __CA_DEFAULT_LOCALE__; }
+			if (!$locale && defined('__CA_DEFAULT_LOCALE__')) { $locale = __CA_DEFAULT_LOCALE__; }
 		
-			if (file_exists($vs_lang_filepath = __CA_LIB_DIR__.'/Utils/DataMigrationUtils/'.$vs_locale.'.lang')) {
+			if (file_exists($lang_filepath = __CA_LIB_DIR__.'/Utils/DataMigrationUtils/'.$locale.'.lang')) {
 				/** @var Configuration $o_config */
-				$o_config = Configuration::load($vs_lang_filepath);
-				$va_titles = $o_config->getList('titles');
-				$va_ind_suffixes = $o_config->getList('individual_suffixes');
-				$va_corp_suffixes = $o_config->getList('corporation_suffixes');
+				$o_config = Configuration::load($lang_filepath);
+				$titles = $o_config->getList('titles');
+				$ind_suffixes = $o_config->getList('individual_suffixes');
+				$corp_suffixes = $o_config->getList('corporation_suffixes');
+				$surname_prefixes = $o_config->getList('surname_prefixes');
 			} else {
 				$o_config = null;
-				$va_titles = array();
-				$va_ind_suffixes = array();
-				$va_corp_suffixes = array();
+				$titles = $ind_suffixes = $corp_suffixes = $surname_prefixes = [];
 			}
 			
-			$va_name = array();
-		
 			// check for titles
-			//$ps_text = preg_replace('/[^\p{L}\p{N} \-]+/u', ' ', $ps_text);
-			
-			$vs_prefix_for_name = null;
-			foreach($va_titles as $vs_title) {
-				if (preg_match("!^({$vs_title})!i", $ps_text, $va_matches)) {
-					$vs_prefix_for_name = $va_matches[1];
-					$ps_text = str_replace($va_matches[1], '', $ps_text);
+			$prefix_for_name = null;
+			foreach($titles as $title) {
+				if (preg_match("!^({$title}[\.]{0,1})!i", $text, $matches)) {
+					$prefix_for_name = $matches[1];
+					$text = str_replace($matches[1], '', $text);
 				}
 			}
 			
 			// check for suffixes
-			$vs_suffix_for_name = null;
-			if (strpos($ps_text, '_') === false) {
-				foreach(array_merge($va_ind_suffixes, $va_corp_suffixes) as $vs_suffix) {
-					if (preg_match("!({$vs_suffix})$!i", $ps_text, $va_matches)) {
-						$vs_suffix_for_name = $va_matches[1];
-						$ps_text = str_replace($va_matches[1], '', $ps_text);
-					}
-				}
+			$suffix_for_name = null;
+			$is_corporation = false;
+			if ((strpos($text, '_') === false) && ($n = self::_procSurname($text, ['ind_suffixes' => $ind_suffixes, 'corp_suffixes' => $corp_suffixes]))) {
+				$text = $n['surname'];
+				$suffix_for_name = $n['suffix'];
+				$is_corporation = $n['is_corporation'];
 			}
 			
-			if ($vs_suffix_for_name) {
+			$name = ['surname' => '', 'forename' => '', 'middlename' => '', 'displayname' => '', 'prefix' => $prefix_for_name, 'suffix' => $suffix_for_name];
+		
+			if ($suffix_for_name && $is_corporation) {
 				// is corporation
-				$va_tmp = preg_split('![, ]+!', trim($ps_text));
-				if (strpos($va_tmp[0], '.') !== false) {
-					$va_name['forename'] = array_shift($va_tmp);
-					$va_name['surname'] = join(' ', $va_tmp);
+				$tmp = preg_split('![, ]+!', trim($text));
+				if (strpos($tmp[0], '.') !== false) {
+					$name['forename'] = array_shift($tmp);
+					$name['surname'] = join(' ', $tmp);
 				} else {
-					$va_name['surname'] = $ps_text;
+					$name['surname'] = $text;
 				}
-				$va_name['prefix'] = $vs_prefix_for_name;
-				$va_name['suffix'] = $vs_suffix_for_name;
-			} elseif (strpos($ps_text, ',') !== false) {
-				// is comma delimited
-				$va_tmp = explode(',', $ps_text);
-				$va_name['surname'] = $va_tmp[0];
+				$name['prefix'] = $prefix_for_name;
+				$name['suffix'] = $suffix_for_name;
+			} elseif (strpos($text, ',') !== false) {	
+				// Test if string stripped of prefix and suffix still has 
+				// commas in it – implies it's comma delimited.
+				$tmp = explode(',', $text);
 				
-				if(sizeof($va_tmp) > 1) {
-					$va_tmp2 = array_filter(preg_split("![ ]+!", $va_tmp[1]), function($v) { return (bool)strlen(trim($v)); });
-					
-					if (sizeof($va_tmp2) > 1) {
-						$va_name['middlename'] = array_pop($va_tmp2);
-						$va_name['forename'] = join(" ", $va_tmp2);
-					} else {
-						$va_name['forename'] = $va_tmp[1];
-					}
+				$name = array_merge($name, self::_procSurname($tmp[0], ['ind_suffixes' => $ind_suffixes, 'corp_suffixes' => $corp_suffixes]));
+				unset($_procSurname['is_corporation']);
+				if(sizeof($tmp) > 1) {
+					$tmp2 = array_filter(preg_split("![ ]+!", $tmp[1]), function($v) { return (bool)strlen(trim($v)); });
+					$name = array_merge($name, self::_procForename($tmp2, ['titles' => $titles]));
 				}
-			} elseif (strpos($ps_text, '_') !== false) {
+			} elseif (strpos($text, '_') !== false) {
 				// is underscore delimited
-				$va_tmp = explode('_', $ps_text);
-				$va_name['surname'] = $va_tmp[0];
+				$tmp = explode('_', $text);
+				$name['surname'] = $tmp[0];
 				
-				if(sizeof($va_tmp) > 1) {
-					$va_name['forename'] = $va_tmp[1];
-					if(sizeof($va_tmp) > 2) {
-						if (in_array(mb_strtolower($va_tmp[2]), $va_ind_suffixes)) {
-							$va_name['suffix'] = $va_tmp[2];
+				if(sizeof($tmp) > 1) {
+					$name['forename'] = $tmp[1];
+					if(sizeof($tmp) > 2) {
+						if (in_array(mb_strtolower($tmp[2]), $ind_suffixes)) {
+							$name['suffix'] = $tmp[2];
 						} else {
-							$va_name['middlename'] = $va_tmp[2];
+							$name['middlename'] = $tmp[2];
 						}
 					}
 				}
-				$vs_surname = array_shift($va_tmp);
-				$vs_forename = array_shift($va_tmp);
-				$ps_original_text = trim("{$vs_forename} {$vs_surname}".((sizeof($va_tmp) > 0) ? ' '.join(' ', $va_tmp) : ''));
+				$surname = array_shift($tmp);
+				$forename = array_shift($tmp);
+				$original_text = trim("{$forename} {$surname}".((sizeof($tmp) > 0) ? ' '.join(' ', $tmp) : ''));
 			} else {
-				$va_name = array(
-					'surname' => '', 'forename' => '', 'middlename' => '', 'displayname' => '', 'prefix' => $vs_prefix_for_name, 'suffix' => $vs_suffix_for_name
-				);
+				$name = [
+					'surname' => '', 'forename' => '', 'middlename' => '', 'displayname' => '', 'prefix' => $prefix_for_name, 'suffix' => $suffix_for_name
+				];
 				
-				$va_tmp = preg_split('![ ]+!', trim($ps_text));
-				if (($vn_i = array_search("&", $va_tmp)) !== false) {
-					if ((sizeof($va_tmp) - ($vn_i + 1)) > 1) {
-						$va_name['surname'] = array_pop($va_tmp);
-						$va_name['forename'] = join(' ', array_slice($va_tmp, 0, $vn_i));
-						$va_name['middlename'] = join(' ', array_slice($va_tmp, $vn_i));
-					} else {
-						$va_name['surname'] = array_pop($va_tmp);
-						$va_name['forename'] = join(' ', $va_tmp);
+				if(is_array($surname_prefixes)) {
+					foreach($surname_prefixes as $p) {
+						if(preg_match("![ ]+({$p})[ ]+!i", $text, $m)) {
+							$s = array_map('trim', preg_split("!{$m[1]}!i", $text));
+							$name['surname'] = "{$m[1]} {$s[1]}";
+							
+							$tmp = preg_split('![ ]+!', trim($s[0]));
+							$name = array_merge($name, self::_procForename($tmp, ['titles' => $titles]));
+							
+						}
 					}
-				} else {
+				} 
+				if(!$name['surname']) {
+					$tmp = preg_split('![ ]+!', trim($text));
 				
-					switch(sizeof($va_tmp)) {
+					switch(sizeof($tmp)) {
 						case 1:
-							$va_name['surname'] = $ps_text;
+							$name['surname'] = $text;
 							break;
 						case 2:
-							$va_name['forename'] = $va_tmp[0];
-							$va_name['surname'] = $va_tmp[1];
+							$name['forename'] = $tmp[0];
+							$name['surname'] = $tmp[1];
 							break;
 						case 3:
-							$va_name['forename'] = $va_tmp[0];
-							$va_name['middlename'] = $va_tmp[1];
-							$va_name['surname'] = $va_tmp[2];
+							$name['forename'] = $tmp[0];
+							$name['middlename'] = $tmp[1];
+							$name['surname'] = $tmp[2];
 							break;
 						case 4:
 						default:
-							if (strpos($ps_text, ' '._t('and').' ') !== false) {
-								$va_name['surname'] = array_pop($va_tmp);
-								$va_name['forename'] = join(' ', $va_tmp);
+							if ((strpos($text, ' '._t('and').' ') !== false) || (strpos($text, ' & ') !== false)) {
+								$name['surname'] = array_pop($tmp);
+								$name['forename'] = join(' ', $tmp);
 							} else {
-								$va_name['forename'] = array_shift($va_tmp);
-								$va_name['middlename'] = array_shift($va_tmp);
-								$va_name['surname'] = join(' ', $va_tmp);
+								$name['surname'] = array_pop($tmp);
+								$name['forename'] = array_shift($tmp);
+								$name['middlename'] = join(' ', $tmp);
 							}
 							break;
 					}
 				}
 			}
 
-			switch($vs_format = caGetOption('displaynameFormat', $pa_options, 'original', array('forceLowercase' => true))) {
+			switch($format = caGetOption('displaynameFormat', $options, 'original', array('forceLowercase' => true))) {
 				case 'surnamecommaforename':
-					$va_name['displayname'] = ((strlen(trim($va_name['surname']))) ? $va_name['surname'].", " : '').$va_name['forename'];
+					$name['displayname'] = ((strlen(trim($name['surname']))) ? $name['surname'].", " : '').$name['forename'];
+					break;
+				case 'forenamecommasurname':
+					$name['displayname'] = trim($name['forename'].', '.$name['surname']);
 					break;
 				case 'forenamesurname':
-					$va_name['displayname'] = trim($va_name['forename'].' '.$va_name['surname']);
+					$name['displayname'] = trim($name['forename'].' '.$name['surname']);
 					break;
 				case 'forenamemiddlenamesurname':
-					$va_name['displayname'] = trim($va_name['forename'].($va_name['middlename'] ? ' '.$va_name['middlename'] : '').' '.$va_name['surname']);
+					$name['displayname'] = trim($name['forename'].($name['middlename'] ? ' '.$name['middlename'] : '').' '.$name['surname']);
 					break;
 				case 'surnameforename':
-					$va_name['displayname'] = trim($va_name['surname'].' '.$va_name['forename']);
+					$name['displayname'] = trim($name['surname'].' '.$name['forename']);
 					break;
 				case 'original':
-					$va_name['displayname'] = $ps_original_text;
+					$name['displayname'] = $original_text;
 					break;
 				default:
-					if ($vs_format) {
-						$va_name['displayname'] = caProcessTemplate($vs_format, $va_name);
+					if ($format) {
+						$name['displayname'] = caProcessTemplate($format, $name);
 					} else {
-						$va_name['displayname'] = $ps_original_text;
+						$name['displayname'] = $original_text;
 					}
 					break;
 			}
-			foreach($va_name as $vs_k => $vs_v) {
-				$va_name[$vs_k] = trim($vs_v);
+			foreach($name as $k => $v) {
+				$name[$k] = trim($v);
 			}
 			
-			return $va_name;
+			return $name;
+		}
+		
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		private static function _procForename(array $tokens, array $values) : array {
+			$tokens = array_values($tokens);
+			
+			$name = [];
+			if (in_array(mb_strtolower(preg_replace("!\.$!", "", trim($tokens[0]))), array_map("mb_strtolower", $values['titles']))) {
+				$name['prefix'] = array_shift($tokens);
+			}
+			if ((sizeof($tokens) > 1) && (array_search(_t('and'), $tokens, true) === false) && (array_search('&', $tokens, true) === false)) {
+				$name['forename'] = array_shift($tokens);
+				$name['middlename'] = join(" ", $tokens);
+			} else {
+				$name['middlename'] = '';
+				$name['forename'] = join(' ', $tokens);
+			}
+			return $name;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		private static function _procSurname(string $text, array $values) : array {
+			$name = [];
+			
+			foreach($values['ind_suffixes'] as $suffix) {
+				if (preg_match("![,]*[ ]*({$suffix}[\.]{0,1})$!i", $text, $matches)) {
+					$name['suffix'] = $matches[1];
+					$text = str_replace($matches[0], '', $text);
+				}
+			}
+			foreach($values['corp_suffixes'] as $suffix) {
+				if (preg_match("![,]*[ ]*({$suffix}[\.]{0,1})$!i", $text, $matches)) {
+					$name['suffix'] = $matches[1];
+					$text = str_replace($matches[0], '', $text);
+					$name['is_corporation'] = true;
+				}
+			}
+			
+			$name['surname'] = $text;
+			return $name;
 		}
 		# -------------------------------------------------------
 		/**

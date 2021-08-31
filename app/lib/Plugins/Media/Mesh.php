@@ -218,6 +218,8 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 			
 			// GLTF?
 			if(
+				(filesize($filepath) <= 1048576)
+				&&
 				($json = json_decode(file_get_contents($filepath), true))
 				&& 
 				(sizeof(array_intersect(

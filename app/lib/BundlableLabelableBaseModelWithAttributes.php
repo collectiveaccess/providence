@@ -571,7 +571,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		// duplicate relationships
-		$history_tracking_policies = method_exists($table, "getHistoryTrackingCurrentValuePolicies") ? array_keys($table::getHistoryTrackingCurrentValuePoliciesForTable($table)) : [];
+		$history_tracking_policies = method_exists($table, "getHistoryTrackingCurrentValuePolicies") ? array_keys($table::getHistoryTrackingCurrentValuePolicies($table)) : [];
 		foreach(array(
 			'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences', 
 			'ca_collections', 'ca_list_items', 'ca_loans', 'ca_movements', 'ca_storage_locations', 'ca_tour_stops'
@@ -6154,7 +6154,7 @@ if (!$vb_batch) {
 				if($show_current) {
 					$va_wheres[] = "
 						(
-							row_id IN (
+							".$this->primaryKey(true)." IN (
 								SELECT row_id
 								FROM ca_history_tracking_current_values
 								WHERE 
@@ -6514,7 +6514,7 @@ if (!$vb_batch) {
 				}
 			}
 			
-			if($show_current) {
+			if($show_current && $this->getPrimaryKey()) {
 				$policy_info = $this::getPolicyConfig($policy);
 				if(
 					($policy_info['table'] === $this->tableName()) && 

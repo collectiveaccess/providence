@@ -501,8 +501,6 @@
 		public static function reindex_pdfsHelp() {
 			return _t("The CollectiveAccess document viewer can search text within PDFs and highlight matches. To enable this feature PDF content must be analyzed and indexed. If your database predates the introduction of in-viewer PDF search in CollectiveAccess 1.4, or search is otherwise failing to work properly, you can use this command to analyze and index PDFs in the database.");
 		}
-		
-		
 		# -------------------------------------------------------
 		/**
 		 *
@@ -581,6 +579,97 @@
 		 */
 		public static function regenerate_annotation_previewsHelp() {
 			return _t("Regenerates annotation preview media for some or all object representation annotations.");
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function find_duplicate_media($po_opts=null) {
+			// $kinds = caGetOption('kinds', $po_opts, 'all', 
+// 				['forceLowercase' => true, 
+// 				'validValues' => ['all', 'ca_object_representations', 'ca_attributes'], 
+// 				'delimiter' => [',', ';']]
+// 			);
+			
+			if (!($filename = $po_opts->getOption('file'))) {
+				print _t('You must specify a file to write report output to.')."\n";
+				return false;
+			}
+			
+			print CLIProgressBar::start(1, _t('Finding duplicates'));
+			
+			$o_db = new Db();
+			
+			$qr = $o_db->query("
+				SELECT md5, count(*) c
+				FROM ca_object_representations
+				WHERE
+					deleted = 0
+				GROUP BY md5
+				HAVING  c > 1
+			");
+			
+			$dupe_md5s = $qr->getAllFieldValues('md5');
+			
+			print CLIProgressBar::start($n = sizeof($dupe_md5s), _t('Analyzing duplicates'));
+			
+			$fp = fopen($filename, "w");
+			
+			$lines = [];
+			$headers = ['MD5', 'Count', 'Table', 'Idno'];
+			
+			fputcsv($fp, $headers);
+			foreach($dupe_md5s as $md5) {
+				if(is_array($reps = ca_object_representations::find(['md5' => $md5], ['returnAs' => 'modelInstances']))) {
+					$line = [$md5, sizeof($reps)];
+					
+					$list = [];
+					foreach($reps as $r) {
+						$ref = caGetReferenceToExistingRepresentationMedia($r, ['returnAsArray' => true]);
+						$list[] = $ref['idno'];
+					}
+					$line[] = Datamodel::getTableProperty($ref['table'], 'NAME_PLURAL');
+					$line[] = join('; ', $list);
+					
+					fputcsv($fp, $line);
+				}
+				print CLIProgressBar::next(1, $md5);
+			}
+			
+			fclose($fp);
+			print CLIProgressBar::finish();
+			CLIUtils::addMessage(($n == 1) ? _t('Found %1 duplicate', $n) : _t('Found %1 duplicates', $n));
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function find_duplicate_mediaParamList() {
+			return [
+				//"kinds|k-s" => _t('Comma separated list of kind of media to reprocess. Valid kinds are ca_object_representations (object representations) and ca_attributes (metadata elements). You may also specify "all" to reprocess all kinds of media. Default is "all"')
+				"file|f=s" => _t('Required. File to save export to.')
+			];
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function find_duplicate_mediaUtilityClass() {
+			return _t('Media');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function find_duplicate_mediaShortHelp() {
+			return _t("Lists media that have been uploaded more than once.");
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function find_duplicate_mediaHelp() {
+			return _t("Lists media that have been uploaded more than once.");
 		}
 		# -------------------------------------------------------
     }

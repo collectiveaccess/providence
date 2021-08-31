@@ -65,24 +65,7 @@ BaseModel::$s_ca_models_definitions['ca_data_exporters'] = array(
 			'IS_NULL' => false,
 			'DEFAULT' => '',
 			'LABEL' => _t('exporter type'), 'DESCRIPTION' => _t('Indicates type of item exporter is used for.'),
-			'BOUNDS_CHOICE_LIST' => array(
-				_t('objects') => 57,
-				_t('object lots') => 51,
-				_t('entities') => 20,
-				_t('places') => 72,
-				_t('occurrences') => 67,
-				_t('collections') => 13,
-				_t('storage locations') => 89,
-				_t('loans') => 133,
-				_t('movements') => 137,
-				_t('tours') => 153,
-				_t('tour stops') => 155,
-				_t('object representations') => 56,
-				_t('representation annotations') => 82,
-				_t('lists') => 36,
-				_t('list items') => 33,
-				_t('sets') => 103,
-			)
+			'BOUNDS_CHOICE_LIST' => array()
 		),
 		'settings' => array(
 			'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT,
@@ -211,7 +194,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
 		$this->opo_app_plugin_manager = new ApplicationPluginManager();
-
+		BaseModel::$s_ca_models_definitions['ca_data_exporters']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = array_flip(caGetPrimaryTables(true));
 		global $_ca_data_exporters_settings;
 		parent::__construct($pn_id);
 
@@ -1305,13 +1288,20 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			ksort($va_header_sources);
 			foreach($va_header_sources as $vn_element => $vs_source) {
 				$va_tmp = explode(".", $vs_source);
+				$vs_label = null;
 				if ($t_table = Datamodel::getInstanceByTableName($va_tmp[0], true)) {
-					$va_header[] = $t_table->getDisplayLabel($vs_source);
-				} else {
-					$va_header[] = $vs_source;
+					$vs_label = $t_table->getDisplayLabel($vs_source);
 				}
+				if (!$vs_label) {
+					$vs_label = $vs_source;
+				}
+				$va_header[] = $vs_label;
+
 			}
-			file_put_contents($ps_filename, join(",", $va_header)."\n", FILE_APPEND);
+			$vs_delimiter = $t_mapping->getSetting('CSV_delimiter') ?: ",";
+			$vs_enclosure = $t_mapping->getSetting('CSV_enclosure') ?: '"';
+
+			file_put_contents($ps_filename, $vs_enclosure . join($vs_enclosure.$vs_delimiter.$vs_enclosure,$va_header) . $vs_enclosure."\n", FILE_APPEND);
 		}
 
 		$i = 0;

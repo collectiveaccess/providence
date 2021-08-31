@@ -951,9 +951,9 @@
 							$notes = trim((string)$o_cell->getValue());
 							break;
 						default:
-							if(($c > 2) && ($c <= 7) && ($t = trim((string)$o_cell->getValue()))) {
-								$level = $c - 3;
-								$data[$c - 3] = $t;
+							if(($c >= 2) && ($c <= 7) && ($t = trim((string)$o_cell->getValue()))) {
+								$level = $c - 2;
+								$data[$level] = $t;
 							}
 							break;
 					}
