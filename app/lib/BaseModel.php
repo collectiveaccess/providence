@@ -611,17 +611,23 @@ class BaseModel extends BaseObject {
 	 * @return array associative array: field name => field value
 	 */
 	public function getChangedFieldValuesArray() {
-		$va_fieldnames = array_keys($this->_FIELD_VALUES);
-		$va_fieldnames[] = 'preferred_labels';
-		$va_fieldnames[] = 'nonpreferred_labels';
+		$fieldnames = array_keys($this->_FIELD_VALUES);
+		$fieldnames[] = 'preferred_labels';
+		$fieldnames[] = 'nonpreferred_labels';
 		
-		$va_changed_field_values_array = array();
-		foreach($va_fieldnames as $vs_fieldname) {
-			if($this->changed($vs_fieldname)) {
-				$va_changed_field_values_array[$vs_fieldname] = $this->_FIELD_VALUES[$vs_fieldname];
+		foreach($this->FIELDS as $f => $finfo) {
+			if(isset($finfo['START'])) {
+				$fieldnames[] = $f;
 			}
 		}
-		return $va_changed_field_values_array;
+		
+		$changed_field_values_array = [];
+		foreach($fieldnames as $fieldname) {
+			if($this->changed($fieldname)) {
+				$changed_field_values_array[$fieldname] = $this->_FIELD_VALUES[$fieldname];
+			}
+		}
+		return $changed_field_values_array;
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -1275,48 +1281,57 @@ class BaseModel extends BaseObject {
 	 * @param array $pa_options Options include:
 	 *     forceToLowercase = force keys in returned array to lowercase. [Default is false] 
 	 *	   checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for table that have an "access" field.
+	 *	   returnAll = return all matching values. [Default is false; only the first matched value is returned]
 	 *
 	 * @return array Array with keys set to idnos and values set to row_ids. Returns null on error.
 	 */
-	static public function getIDsForIdnos($pa_idnos, $pa_options=null) {
-	    if (!is_array($pa_idnos) && strlen($pa_idnos)) { $pa_idnos = [$pa_idnos]; }
+	static public function getIDsForIdnos($idnos, $options=null) {
+	    if (!is_array($idnos) && strlen($idnos)) { $idnos = [$idnos]; }
 	    
-	    $pa_access_values = caGetOption('checkAccess', $pa_options, null);
+	    $access_values = caGetOption('checkAccess', $options, null);
+		$return_all = caGetOption('returnAll', $options, false);
+		$force_to_lowercase = caGetOption('forceToLowercase', $options, false);
 		
-		$vs_table_name = $ps_table_name ? $ps_table_name : get_called_class();
-		if (!($t_instance = Datamodel::getInstanceByTableName($vs_table_name, true))) { return null; }
+		$table_name = $table_name ? $table_name : get_called_class();
+		if (!($t_instance = Datamodel::getInstanceByTableName($table_name, true))) { return null; }
 		
-	    $pa_idnos = array_map(function($v) { return (string)$v; }, $pa_idnos);
+	    $idnos = array_map(function($v) { return (string)$v; }, $idnos);
 	    
-	    $vs_pk = $t_instance->primaryKey();
-	    $vs_table_name = $t_instance->tableName();
-	    if(!($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
+	    $pk = $t_instance->primaryKey();
+	    $table_name = $t_instance->tableName();
+	    if(!($idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
 	    	return null;
 	    }
-		$vs_deleted_sql = $t_instance->hasField('deleted') ? " AND deleted = 0" : "";
+		$deleted_sql = $t_instance->hasField('deleted') ? " AND deleted = 0" : "";
 		
-		$va_params = array($pa_idnos);
+		$params = array($idnos);
 		
-		$vs_access_sql = '';
-		if (is_array($pa_access_values) && sizeof($pa_access_values)) {
-		    $vs_access_sql = " AND access IN (?)";
-		    $va_params[] = $pa_access_values;
+		$access_sql = '';
+		if (is_array($access_values) && sizeof($access_values)) {
+		    $access_sql = " AND access IN (?)";
+		    $params[] = $access_values;
 		}
 	    
 	    $qr_res = $t_instance->getDb()->query("
-			SELECT {$vs_pk}, {$vs_idno_fld}
-			FROM {$vs_table_name}
+			SELECT {$pk}, {$idno_fld}
+			FROM {$table_name}
 			WHERE
-				{$vs_idno_fld} IN (?) {$vs_deleted_sql} {$vs_access_sql}
-		", $va_params);
+				{$idno_fld} IN (?) {$deleted_sql} {$access_sql}
+		", $params);
 		
-		$pb_force_to_lowercase = caGetOption('forceToLowercase', $pa_options, false);
 		
-		$va_ret = [];
+		$ret = [];
 		while($qr_res->nextRow()) {
-		    $va_ret[$pb_force_to_lowercase ? strtolower($qr_res->get($vs_idno_fld)) : $qr_res->get($vs_idno_fld)] = $qr_res->get($vs_pk);
+			$key = $force_to_lowercase ? strtolower($qr_res->get($idno_fld)) : $qr_res->get($idno_fld);
+		   
+			if($return_all) {
+				$ret[$key][] = $qr_res->get($pk);
+			} else {
+				if(array_key_exists($key, $ret)) { continue; }
+				$ret[$key] = $qr_res->get($pk);
+			}
 		}
-		return $va_ret;
+		return $ret;
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -9308,7 +9323,7 @@ $pa_options["display_form_field_tips"] = true;
 		if ((!is_numeric($pn_rel_id) && !caGetOption('primaryKeyOnly', $pa_options, false)) || caGetOption('idnoOnly', $pa_options, false)) {
 			if ($t_rel_item = Datamodel::getInstanceByTableName($va_rel_info['related_table_name'], true)) {
 				if ($this->inTransaction()) { $t_rel_item->setTransaction($this->getTransaction()); }
-				if (($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) && $t_rel_item->load(array($vs_idno_fld => $pn_rel_id))) {
+				if (($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) && $t_rel_item->load([$vs_idno_fld => $pn_rel_id, 'deleted' => 0])) {
 					$pn_rel_id = $t_rel_item->getPrimaryKey();
 				} 
 			}
@@ -9455,7 +9470,7 @@ $pa_options["display_form_field_tips"] = true;
 		if ((!is_numeric($pn_rel_id) && !caGetOption('primaryKeyOnly', $pa_options, false)) || caGetOption('idnoOnly', $pa_options, false)) {
 			if ($t_rel_item = Datamodel::getInstanceByTableName($va_rel_info['related_table_name'], true)) {
 				if ($this->inTransaction()) { $t_rel_item->setTransaction($this->getTransaction()); }
-				if (($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) && $t_rel_item->load(array($vs_idno_fld => $pn_rel_id))) {
+				if (($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) && $t_rel_item->load([$vs_idno_fld => $pn_rel_id, 'deleted' => 0])) {
 					$pn_rel_id = $t_rel_item->getPrimaryKey();
 				}
 			}
@@ -10080,7 +10095,7 @@ $pa_options["display_form_field_tips"] = true;
 		if (!is_numeric($pn_rel_id)) {
 			if ($t_rel_item = Datamodel::getInstanceByTableName($va_rel_info['related_table_name'], true)) {
 				if ($this->inTransaction()) { $t_rel_item->setTransaction($this->getTransaction()); }
-				if (($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) && $t_rel_item->load(array($vs_idno_fld => $pn_rel_id))) {
+				if (($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) && $t_rel_item->load([$vs_idno_fld => $pn_rel_id, 'deleted' => 0])) {
 					$pn_rel_id = $t_rel_item->getPrimaryKey();
 				}
 			}

@@ -304,4 +304,43 @@ class GraphQLServiceController extends \BaseServiceController {
 		return $rec;
 	}
 	# -------------------------------------------------------
+	/**
+	 * Return instance of record with specified label, where label is either a string display value or array of label sub-values.
+	 *
+	 * @param string $table
+	 * @param string|array $label
+	 * @param string|integer $type A type code or type_id to constrain idno-based resolution to. If null, type is ignored in resolution. [Default is null]
+	 * @param array $options Options include:
+	 *		list = 
+	 *
+	 * @return BaseModel
+	 */
+	protected static function resolveLabel(string $table, $label, $type=null, array $options=null)  {
+		if(!is_array($options)) { $options = []; }
+		if(!($instance = \Datamodel::getInstance($table, true))) {
+			throw new \ServiceException(_t('Invalid table %1', $table));
+		}
+		
+		$label_display_field = $instance->getLabelTableInstance()->getDisplayField();
+		
+		$rec = null;
+		
+		$criteria = is_array($label) ? ['preferred_labels' => $label] : ['preferred_labels' => [$label_display_field => $label]];
+		if($type) { $criteria['type_id'] = $type; }
+		if($list = caGetOption('list', $options, null)) {
+			if($list_id = caGetListID($list)) { 
+				$criteria['list_id'] = $list_id;
+			} else {
+				throw new \ServiceException(_t('Invalid list code %1', $list));
+			}
+		}
+		$rec = $table::findAsInstance($criteria);
+
+		if(is_null($rec)) {
+			throw new \ServiceException(_t('Invalid label %1 for table %2', $identifier, $table));
+		}
+		
+		return $rec;
+	}
+	# -------------------------------------------------------
 }

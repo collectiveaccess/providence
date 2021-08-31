@@ -150,7 +150,7 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 				// ------------------------------------------------------------
 				'find' => [
 					'type' => SearchSchema::get('Result'),
-					'description' => _t('List of available tables'),
+					'description' => _t('Find and return records using field-level values.'),
 					'args' => [
 						[
 							'name' => 'jwt',
@@ -227,6 +227,73 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 						$data = \GraphQLServices\Helpers\fetchDataForBundles($qr, $bundles, ['start' => $args['start'], 'limit' => $args['limit'], 'filterByAncestors' => $args['filterByAncestors']]);
 						
 						return ['table' => $table, 'search' => $search, 'count' => sizeof($data), 'results' => $data];
+					}
+				],
+				// ------------------------------------------------------------
+				// Find
+				// ------------------------------------------------------------
+				'exists' => [
+					'type' => SearchSchema::get('ExistenceMap'),
+					'description' => _t('Determine whether records exist based upon idnos and labels'),
+					'args' => [
+						[
+							'name' => 'jwt',
+							'type' => Type::string(),
+							'description' => _t('JWT'),
+							'defaultValue' => self::getBearerToken()
+						],
+						[
+							'name' => 'table',
+							'type' => Type::string(),
+							'description' => _t('Table to search')
+						],
+						[
+							'name' => 'idnos',
+							'type' => Type::listOf(Type::string()),
+							'description' => _t('List of identifiers')
+						],
+						[
+							'name' => 'labels',
+							'type' => Type::listOf(Type::string()),
+							'description' => _t('List of labels')
+						]
+					],
+					'resolve' => function ($rootValue, $args) {
+						$u = self::authenticate($args['jwt']);
+						$table = trim($args['table']);
+						
+						$tables = caFilterTableList(['ca_objects', 'ca_collections', 'ca_entities', 'ca_occurrences', 'ca_places', 'ca_list_items', 'ca_storage_locations', 'ca_loans', 'ca_object_lots', 'ca_movements', 'ca_object_representations']);
+						
+						if(!in_array($table, $tables, true)) { 
+							throw new \ServiceException(_t('Invalid table: %1', $table));
+						}
+						
+						// Check user privs
+						// TODO: add GraphQL-specific access check?
+						if(!in_array($table, ['ca_list_items', 'ca_lists'], true) && !$u->canDoAction("can_search_{$table}")) {
+							throw new \ServiceException(_t('Access denied for table: %1', $table));
+						}
+						
+						$idno_map = [];
+						if(is_array($args['idnos']) && sizeof($args['idnos'])) {
+							$idno_ids = $table::getIDsForIdnos($args['idnos'], ['returnAll' => true]);
+							foreach($args['idnos'] as $v) {
+								if(!array_key_exists($v, $idno_ids)) { $idno_ids[$v] = null; }
+							}
+							$idno_map = array_map(function($v, $k) {return ['id' => $v[0], 'ids' => $v, 'value' => $k]; }, $idno_ids, array_keys($idno_ids));
+						}
+						
+						$label_map = [];
+						if(is_array($args['labels']) && sizeof($args['labels'])) {
+							$label_ids = $table::getIDsForlabels($args['labels'], ['returnAll' => true]);
+							foreach($args['labels'] as $v) {
+								if(!array_key_exists($v, $label_ids)) { $label_ids[$v] = null; }
+							}
+							$label_map = array_map(function($v, $k) {return ['id' => $v[0], 'ids' => $v,'value' => $k]; }, $label_ids, array_keys($label_ids));
+						}
+						
+						
+						return ['table' => $table, 'idnos' => $idno_map, 'labels' => $label_map];
 					}
 				]
 			]
