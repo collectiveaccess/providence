@@ -3061,8 +3061,12 @@ class ca_users extends BaseModel {
 		
 		if (!$vs_username && AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__)) { 
 		    if (AuthenticationManager::authenticate($vs_username, $ps_password, $pa_options)) {
-                $va_info = AuthenticationManager::getUserInfo($vs_username, $ps_password, ['minimal' => true]); 
-                $vs_username = $va_info['user_name'];
+                try {
+                	$va_info = AuthenticationManager::getUserInfo($vs_username, $ps_password, ['minimal' => true]); 
+                	$vs_username = $va_info['user_name'];
+                } catch(Exception $e) {
+                	// noop
+                }
             }
         }
         
@@ -3076,7 +3080,7 @@ class ca_users extends BaseModel {
 						'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
 						'MESSAGE' => _t('There was an error while trying to fetch information for a new user from the current authentication backend. The message was %1 : %2', get_class($e), $e->getMessage())
 					));
-					throw($e);
+					return false;
 				}
 
 				if(!is_array($va_values) || sizeof($va_values) < 1) { return false; }
@@ -3092,9 +3096,11 @@ class ca_users extends BaseModel {
 				} else {
 				    $this->set('userclass', 1);
 				}
-
+				if(!$this->get("email")) {
+					$this->set("email", (strpos($vs_username, "@") === false) ? "{$vs_username}@unknown.org" : $vs_username);
+				}
 				$this->insert();
-
+				
 				if (!$this->getPrimaryKey()) {
 					$this->opo_log->log(array(
 						'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
