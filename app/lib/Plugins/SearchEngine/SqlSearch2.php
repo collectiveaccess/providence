@@ -820,7 +820,16 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			if(!($qr = caMakeSearchResult($ap['table_num'], array_keys($row_ids)))) { return []; }
 		
 			while($qr->nextHit()) {
-				$a = $qr->get($spk, ['returnAsArray' => true]);
+				switch((int)$ap['table_num']) {
+					case 103:
+						$s = $qr->getInstance();
+						$a = $s->getItems(['idsOnly' => true]);
+						break;
+					default:
+						$a = $qr->get($spk, ['returnAsArray' => true]);
+						break;
+				}
+				
 				foreach($a as $i) {
 					$subject_ids[$i] = 1;
 				}
