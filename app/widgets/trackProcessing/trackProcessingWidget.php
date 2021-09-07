@@ -36,6 +36,11 @@
 		private $opo_config;
 		private $opo_db;
 		# -------------------------------------------------------
+		/**
+		 * @var int
+		 */
+		private $opn_limit;
+
 		public function __construct($ps_widget_path, $pa_settings) {
 			$this->title = _t('Processing status');
 			$this->description = _t('View the current status of queued processing tasks');
@@ -43,6 +48,7 @@
 			
 			$this->opo_config = Configuration::load($ps_widget_path.'/conf/trackProcessing.conf');
 			$this->opo_db = new Db();
+			$this->opn_limit = (int)$this->opo_config->getScalar('display_limit') ?: 100;
 			
 			AssetLoadManager::register('prettyDate');
 		}
@@ -79,9 +85,9 @@
 				ORDER BY tq.completed_on desc
 			", time() - (60*60*$pa_settings['hours']));
 			$va_completed = array();
-			while($qr_completed->nextRow()){
+			$vn_reported = 0;
+			while($qr_completed->nextRow() && $vn_reported < $this->opn_limit){
 				$va_row = $qr_completed->getRow();
-				$va_params = caUnserializeForDatabase($va_row["parameters"]);
 				$va_completed[$va_row["task_id"]]["handler_name"] = $vo_tq->getHandlerName($va_row['handler']);
 				$va_completed[$va_row["task_id"]]["created"] = $va_row["created_on"];
 				$va_completed[$va_row["task_id"]]["by"] = caFormatPersonName( $va_row["fname"], $va_row['lname'], _t('Command line or job'));
@@ -102,7 +108,9 @@
 				
 				
 				$va_completed[$va_row["task_id"]]["status"] = $vo_tq->getParametersForDisplay($va_row);
+				$vn_reported ++;
 			}
+			$this->opo_view->setVar('jobs_done_additional', max($qr_completed->numRows() - $this->opn_limit, 0));
 			$this->opo_view->setVar('jobs_done',$qr_completed->numRows());
 			$this->opo_view->setVar('jobs_done_data',$va_completed);
 
@@ -115,10 +123,10 @@
 			$this->opo_view->setVar('jobs_queued_processing',$qr_qd->numRows());
 			$va_qd_jobs = array();
 			$va_pr_jobs = array();
-			while($qr_qd->nextRow()){
+			$vn_reported = 0;
+			while($qr_qd->nextRow() && $vn_reported < $this->opn_limit){
 				$va_row = $qr_qd->getRow();
-				$va_params = caUnserializeForDatabase($va_row["parameters"]);
-				
+
 				if(!$vo_tq->rowKeyIsBeingProcessed($va_row["row_key"])){
 					$va_qd_jobs[$va_row["task_id"]]["handler_name"] = $vo_tq->getHandlerName($va_row['handler']);
 					$va_qd_jobs[$va_row["task_id"]]["created"] = $va_row["created_on"];
@@ -130,10 +138,11 @@
 					$va_pr_jobs[$va_row["task_id"]]["by"] = caFormatPersonName( $va_row["fname"], $va_row['lname'], _t('Command line or job'));
 					$va_pr_jobs[$va_row["task_id"]]["status"] = $vo_tq->getParametersForDisplay($va_row);
 				}
+				$vn_reported ++;
 			}
 			$this->opo_view->setVar('qd_job_data',$va_qd_jobs);
 			$this->opo_view->setVar('pr_job_data',$va_pr_jobs);
-			
+			$this->opo_view->setVar('qd_job_additional', max($qr_completed->numRows() - $this->opn_limit, 0));
 			$this->opo_view->setVar('update_frequency', ($vn_freq = (int)$this->opo_config->get('update_frequency')) ? $vn_freq : 60);
 
 			return $this->opo_view->render('main_html.php');
