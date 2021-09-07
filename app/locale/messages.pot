@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Providence\n"
 "Report-Msgid-Bugs-To: info@collectiveaccess.org\n"
-"POT-Creation-Date: 2021-09-02 12:15+0200\n"
+"POT-Creation-Date: 2021-09-06 13:44+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -6139,6 +6139,7 @@ msgstr ""
 #: ../../app/lib/HistoryTrackingCurrentValueTrait.php:2354
 #: ../../app/models/ca_notification_subjects.php:219
 #: ../../app/models/ca_notification_subjects.php:229
+#: ../../app/models/ca_media_upload_sessions.php:486
 #: ../../app/models/ca_objects_x_storage_locations.php:225
 #: ../../app/models/ca_objects_x_storage_locations.php:236
 #: ../../app/models/ca_movements_x_storage_locations.php:259
@@ -14807,29 +14808,29 @@ msgstr ""
 msgid "Invalid query passed to _processMetadataDataType: %1"
 msgstr ""
 
-#: ../../app/lib/Plugins/SearchEngine/SqlSearch2.php:840
+#: ../../app/lib/Plugins/SearchEngine/SqlSearch2.php:849
 msgid "Invalid subject table: %1"
 msgstr ""
 
-#: ../../app/lib/Plugins/SearchEngine/SqlSearch2.php:858
-#: ../../app/lib/Plugins/SearchEngine/SqlSearch2.php:876
+#: ../../app/lib/Plugins/SearchEngine/SqlSearch2.php:867
+#: ../../app/lib/Plugins/SearchEngine/SqlSearch2.php:885
 msgid "Invalid path table: %1"
 msgstr ""
 
-#: ../../app/lib/Plugins/SearchEngine/SqlSearch2.php:1655
+#: ../../app/lib/Plugins/SearchEngine/SqlSearch2.php:1664
 msgid "Invalid attribute field"
 msgstr ""
 
-#: ../../app/lib/Plugins/SearchEngine/SqlSearch2.php:1662
-#: ../../app/lib/Plugins/SearchEngine/SqlSearch2.php:1877
+#: ../../app/lib/Plugins/SearchEngine/SqlSearch2.php:1671
+#: ../../app/lib/Plugins/SearchEngine/SqlSearch2.php:1886
 msgid "Invalid table %1 in bundle %2"
 msgstr ""
 
-#: ../../app/lib/Plugins/SearchEngine/SqlSearch2.php:1670
+#: ../../app/lib/Plugins/SearchEngine/SqlSearch2.php:1679
 msgid "Invalid field %1 in bundle %2"
 msgstr ""
 
-#: ../../app/lib/Plugins/SearchEngine/SqlSearch2.php:1831
+#: ../../app/lib/Plugins/SearchEngine/SqlSearch2.php:1840
 msgid "Upper lat/long coordinates must not be empty"
 msgstr ""
 
@@ -30962,6 +30963,10 @@ msgstr ""
 
 #: ../../app/plugins/WorldCat/WorldCatPlugin.php:111
 msgid "User can import WorldCat data."
+msgstr ""
+
+#: ../../app/plugins/pawtucketMediaImport/pawtucketMediaImportPlugin.php:34
+msgid "Pawtucket Media Import Processor"
 msgstr ""
 
 #: ../../app/plugins/helpMenu/helpMenuPlugin.php:37
