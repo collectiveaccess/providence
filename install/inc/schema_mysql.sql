@@ -4258,7 +4258,7 @@ create table ca_attribute_values
    value_decimal1                 decimal(40,20)                 null,
    value_decimal2                 decimal(40,20)                 null,
    value_integer1                 int unsigned                   null,
-   value_sortable                 varchar(100)                   null
+   value_sortable                 varchar(100)                   null,
    source_info                    longtext                       not null,
    primary key (value_id),
    constraint fk_ca_attribute_values_attribute_id foreign key (attribute_id)
