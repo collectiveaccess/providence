@@ -193,7 +193,7 @@
 		<?php
 			endforeach;
 			if ($vn_jobs_done_additional):
-				?>
+		?>
 				<tr>
 					<td><strong><?=_t('%1 more job(s) not displayed due to limit.', $vn_jobs_done_additional)?></strong></td>
 				</tr>
