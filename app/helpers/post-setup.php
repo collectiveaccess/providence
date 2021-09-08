@@ -382,7 +382,7 @@ if (!defined("__CA_APP_TYPE__")) {
 #
 # Override server request memory limit with setup.php defined value
 if (defined("__CA_MEMORY_LIMIT__")) {
-	ini_set('memory_limit', __CA_MEMORY_LIMIT__)
+	ini_set('memory_limit', __CA_MEMORY_LIMIT__);
 }
 
 # __CA_FLOAT_PRECISION__
