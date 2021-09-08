@@ -725,7 +725,7 @@ if (!$for_current_value_reindex) {
 
 					// specialized identifier (idno) processing; uses IDNumbering plugin to generate searchable permutations of identifier
 					if (((isset($va_data['INDEX_AS_IDNO']) && $va_data['INDEX_AS_IDNO']) || in_array('INDEX_AS_IDNO', $va_data, true)) && method_exists($t_subject, "getIDNoPlugInInstance") && ($o_idno = $t_subject->getIDNoPlugInInstance())) {
-						if (strlen($va_data['IDNO_DELIMITERS']) || (is_array($va_data['IDNO_DELIMITERS']) && count($va_data['IDNO_DELIMITERS']))) {
+						if ((is_array($va_data['IDNO_DELIMITERS']) && count($va_data['IDNO_DELIMITERS'])) || strlen($va_data['IDNO_DELIMITERS'])) {
 							if (!is_array($va_data['IDNO_DELIMITERS'])) { $va_data['IDNO_DELIMITERS'] = [$va_data['IDNO_DELIMITERS']]; }
 							$va_values = array_map(function($v) { return trim($v); }, preg_split('!('.join('|', $va_data['IDNO_DELIMITERS']).')!', $pa_field_data[$vs_field]));
 						} else {
