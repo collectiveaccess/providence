@@ -854,7 +854,7 @@ class TimeExpressionParser {
 			if (intval($va_matches[2]) > 12) {
 				$ps_expression = preg_replace("/([\d]{4})-([\d]{2})(\/|$)/", "$1-".substr($va_matches[1], 0, 2)."$2$3", $ps_expression);
 			} else {
-				$ps_expression = preg_replace("/([\d]{4})-([\d]{2})(\/|$)/", "$1#$2$3", $ps_expression);
+				$ps_expression = preg_replace("/(?<![\/#\-])([\d]{4})-([\d]{2})(\/|$)/", "$1#$2$3", $ps_expression);
 			}
 		}
 		
@@ -1672,6 +1672,7 @@ class TimeExpressionParser {
 	# -------------------------------------------------------------------
 	private function tokenize($ps_expression) {
 		$this->opa_tokens = preg_split("/[\s]+/u", $ps_expression);
+		if(!is_array($this->opa_tokens)) { $this->opa_tokens = []; }	// Tokenization can fail if string is invalid UTF-8
 		return sizeof($this->opa_tokens);
 	}
 	# -------------------------------------------------------------------

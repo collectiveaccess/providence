@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2020 Whirl-i-Gig
+ * Copyright 2018-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -289,6 +289,20 @@ if (!defined('__CA_REDIS_DB__')) {
 }
 
 
+#
+# Access control constants - declared here to ensure
+# They are accessible when parsing configuration files that reference them
+#
+define('__CA_BUNDLE_ACCESS_NONE__', 0);
+define('__CA_BUNDLE_ACCESS_READONLY__', 1);
+define('__CA_BUNDLE_ACCESS_EDIT__', 2);
+
+define('__CA_ACL_NO_ACCESS__', 0);
+define('__CA_ACL_READONLY_ACCESS__', 1);
+define('__CA_ACL_EDIT_ACCESS__', 2);
+define('__CA_ACL_EDIT_DELETE_ACCESS__', 3);
+
+
 error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);
 
 # __CA_ALLOW_AUTOMATIC_UPDATE_OF_VENDOR_DIR__
@@ -363,4 +377,12 @@ if (!defined('__CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__')) {
 # Flag indicating application type to code libraries
 if (!defined("__CA_APP_TYPE__")) {
 	define("__CA_APP_TYPE__", "PROVIDENCE");
+}
+
+
+# __CA_MEMORY_LIMIT__
+#
+# Override server request memory limit with setup.php defined value
+if (defined("__CA_MEMORY_LIMIT__")) {
+	ini_set('memory_limit', __CA_MEMORY_LIMIT__);
 }

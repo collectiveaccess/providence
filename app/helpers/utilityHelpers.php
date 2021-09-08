@@ -74,9 +74,15 @@ $g_translation_cache = [];
 
 function _t($ps_key) {
 	if(!$ps_key) { return ''; }
-	global $_, $g_translation_strings, $g_translation_replacements, $g_translation_cache;
+	global $_, $_locale, $g_translation_strings, $g_translation_replacements, $g_translation_cache;
 	
-	if (isset($g_translation_strings[$ps_key])) { return $g_translation_strings[$ps_key]; }
+	if (
+		isset($g_translation_strings[$ps_key]) && 
+		(
+			is_string($g_translation_strings[$ps_key]) || 
+			(is_array($g_translation_strings[$ps_key]) && isset($g_translation_strings[$ps_key][(string)$_locale]))
+		)
+	) { return is_array($g_translation_strings[$ps_key]) ? $g_translation_strings[$ps_key][(string)$_locale] : $g_translation_strings[$ps_key]; }
 	
 	if(!isset($g_translation_cache[$ps_key])) {
 		if (is_array($_)) {
@@ -4554,5 +4560,50 @@ function caFileIsIncludable($ps_file) {
 			$ret[mb_convert_case($k, (($case === CASE_LOWER) ? MB_CASE_LOWER : MB_CASE_UPPER), "UTF-8")] = (is_array($v) ? caChangeArrayKeyCase($v, $case) : $v );
 		}
 		return $ret;
+	}
+	# ----------------------------------------
+	/**
+	 * Transform comma separated values in the form "Print, Photo" to a serialized version ("Photo Print")
+	 *
+	 * @param string $value Value to transform
+	 *
+	 * @return string Transformed value
+	 */
+	function caSerializeCommaSeparatedName(string $value) {
+		$tmp = array_map("trim", explode(',', $value));
+		$v = array_shift($tmp);
+		return join(" ", $tmp)." {$v}";
+	}
+    # ----------------------------------------
+	/**
+	 * Convery hex color value to decimal RGB values
+	 *
+	 * @param string $value Hex color value to convert
+	 *
+	 * @return array Array of RGB decimal values
+	 */
+	function caHexColorToRGB(string $value) {
+		if ($value[0] === '#') { $value = substr($value, 1); }
+		if(strlen($value) !== 6) { return null; }
+		
+		return [
+			hexdec(substr($value, 0, 2)),
+			hexdec(substr($value, 2, 2)),
+			hexdec(substr($value, 4, 2))
+		];
+	}
+    # ----------------------------------------
+	/**
+	 * Escape/quote regex delimiter, leaving other special characters intact
+	 *
+	 * @param string $regex 
+	 * @param string $delimiter
+	 *
+	 * @return string
+	 */
+	function caQuoteRegexDelimiter(string $regex, string $delimiter) : string {
+		$regex = str_replace($delimiter, "\\{$delimiter}", $regex);
+		
+		return $regex;
 	}
     # ----------------------------------------

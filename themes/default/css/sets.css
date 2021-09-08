@@ -58,7 +58,7 @@
 	background-size: 16px 16px;
 }
 .setItems .remove .fa:hover {
-	color:red;
+	color:#EB0000;
 }
 .setItems .remove a{
 	font-size: 9px;

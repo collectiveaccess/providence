@@ -180,6 +180,44 @@ class SearchSchema extends \GraphQLServices\GraphQLSchema {
 			]
 		]);
 		
+		$schema[] = $valueMap  = new ObjectType([
+			'name' => 'ValueMap',
+			'description' => 'Mapping between value and database id',
+			'fields' => [
+				'value' => [
+					'type' => Type::string(),
+					'description' => 'Value'
+				],
+				'id' => [
+					'type' => Type::int(),
+					'description' => 'First matched ID'
+				],
+				'ids' => [
+					'type' => Type::listOf(Type::int()),
+					'description' => 'Full list of matched IDs'
+				]
+			]
+		]);
+		
+		$schema[] = $existenceMap  = new ObjectType([
+			'name' => 'ExistenceMap',
+			'description' => 'Map of existing records',
+			'fields' => [
+				'table' => [
+					'type' => Type::string(),
+					'description' => 'Table searched'
+				],
+				'idnos' => [
+					'type' => Type::listOf($valueMap),
+					'description' => 'Idno value map'
+				],
+				'labels' => [
+					'type' => Type::listOf($valueMap),
+					'description' => 'Label map'
+				]
+			]
+		]);
+		
 		return $schema;
 	}
 	# -------------------------------------------------------

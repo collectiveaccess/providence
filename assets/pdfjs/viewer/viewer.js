@@ -1130,6 +1130,10 @@ const PDFViewerApplication = {
             scrollMode = values.scrollMode | 0;
           }
 
+		  if(window.pdfjsDefaultScrollMode !== null) {
+		  	scrollMode = window.pdfjsDefaultScrollMode;
+		  }
+
           if (spreadMode === _ui_utils.SpreadMode.UNKNOWN) {
             spreadMode = values.spreadMode | 0;
           }

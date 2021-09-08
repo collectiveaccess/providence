@@ -295,7 +295,7 @@ if($vb_multiple_selection_facet){
 			jQuery.each(jQuery("#" + facet + "_facet_container").find("[facet_item_selected=1]"), function(k,v) {
 				var id = jQuery(v).data('facet_item_id');
 				if(!id) { id = jQuery(v).data('item_id'); }
-				if (id > 0) { ids.push(id); }
+				if ((''+id).length > 0) { ids.push(id); }
 			});
 
 			if(ids.length){
@@ -307,9 +307,4 @@ if($vb_multiple_selection_facet){
 <?php
 }
 ?>	
-	
-	
-	
-	
-	
 </script>

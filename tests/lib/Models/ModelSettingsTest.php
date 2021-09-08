@@ -114,7 +114,7 @@ class ModelSettingsTest extends TestCase {
 		
 		$available_settings = $bp->getAvailableSettings();
 		$this->assertIsArray($available_settings);
-		$this->assertCount(5, $available_settings);
+		$this->assertCount(6, $available_settings);
 		
 		$this->assertContains('label', array_keys($available_settings));
 		$this->assertContains('format', array_keys($available_settings));

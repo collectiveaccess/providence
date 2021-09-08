@@ -28,6 +28,7 @@
 require_once(__CA_LIB_DIR__.'/Service/GraphQLServiceController.php');
 require_once(__CA_APP_DIR__.'/service/schemas/EditSchema.php');
 require_once(__CA_APP_DIR__.'/service/helpers/EditHelpers.php');
+require_once(__CA_APP_DIR__.'/service/helpers/SearchHelpers.php');
 
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
@@ -100,10 +101,28 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							'description' => _t('List of records to insert')
 						],
 						[
+							'name' => 'relationships',
+							'type' => Type::listOf(EditSchema::get('Relationship')),
+							'default' => null,
+							'description' => _t('List of relationship to create for new record')
+						],
+						[
+							'name' => 'replaceRelationships',
+							'type' => Type::boolean(),
+							'default' => false,
+							'description' => 'Set to 1 to indicate all relationships are to replaced with those specified in the current request. If not set relationships are merged with existing ones.'
+						],
+						[
 							'name' => 'insertMode',
 							'type' => Type::string(),
 							'default' => 'FLAT',
 							'description' => _t('Insert mode: "FLAT" inserts each record separated; "HIERARCHICAL" creates a hierarchy from the list (if the specified table support hierarchies).')
+						],
+						[
+							'name' => 'matchOn',
+							'type' => Type::listOf(Type::string()),
+							'default' => ['idno'],
+							'description' => _t('List of fields to test for existance of record. Values can be "idno" or "preferred_labels".')
 						],
 						[
 							'name' => 'existingRecordPolicy',
@@ -116,6 +135,11 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							'type' => Type::boolean(),
 							'default' => false,
 							'description' => _t('Ignore record type when looking for existing records.')
+						],
+						[
+							'name' => 'match',
+							'type' => EditSchema::get('MatchRecord'),
+							'description' => _t('Find criteria')
 						],
 						[
 							'name' => 'list',
@@ -132,7 +156,8 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						$table = $args['table'];
 						$insert_mode = strtoupper($args['insertMode']);
 						$erp = strtoupper($args['existingRecordPolicy']);
-						$ignoreType = $args['ignoreType'];
+						$match_on = (is_array($args['matchOn']) && sizeof($args['matchOn'])) ? $args['matchOn'] : ['idno'];
+						$ignore_type = $args['ignoreType'];
 						
 						$idno_fld = \Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD');
 						
@@ -141,16 +166,61 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						$records = (is_array($args['records']) && sizeof($args['records'])) ? $args['records'] : [[
 							'idno' => $args['idno'],
 							'type' => $args['type'],
-							'bundles' => $args['bundles']
+							'bundles' => $args['bundles'],
+							'match' => $args['match'],
+							'relationships' => $args['relationships'],
+							'replaceRelationships' => $args['replaceRelationships']
 						]];
 						
 						$c = 0;
 						$last_id = null;
 						foreach($records as $record) {
+							$instance = null;
+							
 							if(!$record['idno'] && $record['identifier']) { $record['idno'] = $record['identifier']; }
+							
 							// Does record already exist?
 							try {
-								$instance = (in_array($erp, ['SKIP', 'REPLACE', 'MERGE'])) ? self::resolveIdentifier($table, $record['idno'], $ignoreType ? null : $record['type'], ['idnoOnly' => true, 'list' => $args['list']]) : null;
+								if(in_array($erp, ['SKIP', 'REPLACE', 'MERGE'])) {
+									if(is_array($f = $record['match'])) {										
+										if($f['restrictToTypes'] && !is_array($f['restrictToTypes'])) {
+											$f['restrictToTypes'] = [$f['restrictToTypes']];
+										}
+										if(isset($f['search'])) {
+											$s = caGetSearchInstance($table);
+						
+											if(is_array($f['restrictToTypes']) && sizeof($f['restrictToTypes'])) {
+												$s->setTypeRestrictions($f['restrictToTypes']);
+											}
+				
+											if(($qr = $s->search($f['search'])) && $qr->nextHit()) {
+												$instance = $qr->getInstance();
+											}
+										} elseif(isset($f['criteria'])) {
+											if(($qr = $table::find(\GraphQLServices\Helpers\Search\convertCriteriaToFindSpec($f['criteria'], $table), ['returnAs' => 'searchResult', 'allowWildcards' => true, 'restrictToTypes' => $f['restrictToTypes']])) && $qr->nextHit()) {
+												$instance = $qr->getInstance();
+											}
+										}
+									} else {
+										foreach($match_on as $m) {
+											try {
+												switch($m) {
+													case 'idno':
+														$instance = (in_array($erp, ['SKIP', 'REPLACE', 'MERGE'])) ? self::resolveIdentifier($table, $record['idno'], $ignore_type ? null : $record['type'], ['idnoOnly' => true, 'list' => $args['list']]) : null;
+														break;
+													case 'preferred_labels':
+														$label_values = \GraphQLServices\Helpers\Edit\extractLabelValueFromBundles($table, $record['bundles']);
+														$instance = self::resolveLabel($table, $label_values, $ignore_type ? null : $record['type'], ['list' => $args['list']]);
+											
+														break;
+												}
+											} catch(\ServiceException $e) {
+												// No matching record
+											}
+										}
+									}
+								}
+								
 							} catch(\ServiceException $e) {
 								$instance = null;	// No matching record
 							}
@@ -158,7 +228,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							switch($erp) {
 								case 'SKIP':
 									if($instance) { 
-										$last_id = $instance->getPrimaryKey(); 
+										$ids[] = $last_id = $instance->getPrimaryKey(); 
 										continue(2);
 									}
 									break;
@@ -214,6 +284,11 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 								$ret = self::processBundles($instance, $record['bundles']);
 								$errors += $ret['errors'];
 								$warnings += $ret['warnings'];
+								if(isset($record['relationships']) && is_array($record['relationships']) && sizeof($record['relationships'])) {
+									$ret = self::processRelationships($instance, $record['relationships'], ['replace' => $record['replaceRelationships']]);
+									$errors += $ret['errors'];
+									$warnings += $ret['warnings'];
+								}
 							
 								$c++;
 							}
@@ -266,7 +341,19 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'records',
 							'type' => Type::listOf(EditSchema::get('Record')),
 							'description' => _t('List of records to edit')
-						]
+						],
+						[
+							'name' => 'relationships',
+							'type' => Type::listOf(EditSchema::get('Relationship')),
+							'default' => null,
+							'description' => _t('List of relationship to create for new record')
+						],
+						[
+							'name' => 'replaceRelationships',
+							'type' => Type::boolean(),
+							'default' => false,
+							'description' => 'Set to 1 to indicate all relationships are to replaced with those specified in the current request. If not set relationships are merged with existing ones..'
+						],
 					],
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
@@ -282,7 +369,9 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							'idno' => $args['idno'],
 							'type' => $args['type'],
 							'bundles' => $args['bundles'],
-							'options' => $opts
+							'relationships' => $args['relationships'],
+							'replaceRelationships' => $args['replaceRelationships'],
+							'options' => []
 						]];
 						
 						$c = 0;
@@ -302,6 +391,13 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 								$ret = self::processBundles($instance, $record['bundles']);
 								$errors += $ret['errors'];
 								$warnings += $ret['warnings'];
+								
+								if(isset($record['relationships']) && is_array($record['relationships']) && sizeof($record['relationships'])) {
+									$ret = self::processRelationships($instance, $record['relationships'], ['replace' => $record['replaceRelationships']]);
+									$errors += $ret['errors'];
+									$warnings += $ret['warnings'];
+								}
+								
 								$c++;
 							}
 						}
@@ -450,6 +546,11 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							'type' => Type::boolean(),
 							'description' => _t('Delete records quickly, bypassing log and search index updates.')
 						],
+						[
+							'name' => 'list',
+							'type' => Type::string(),
+							'description' => _t('Delete all items from specified list. Implies table = ca_list_items. If set table option is ignored.')
+						],
 					],
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
@@ -460,10 +561,14 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						
 						$errors = $warnings = [];
 						
-						$table = $args['table'];
 						
-						$qr = $table::find('*', ['modified' => $args['date'], 'restrictToTypes' => (isset($args['types']) && is_array($args['types']) && sizeof($args['types'])) ? $args['types'] : ($args['type'] ?? [$args['type']]), 'returnAs' => 'searchResult']);
-
+						if($list = $args['list']) {
+							$table = 'ca_list_items';
+							$qr = $table::find(['list_id' => $list], ['modified' => $args['date'], 'restrictToTypes' => (isset($args['types']) && is_array($args['types']) && sizeof($args['types'])) ? $args['types'] : ($args['type'] ?? [$args['type']]), 'returnAs' => 'searchResult']);
+						} else {
+							$table = $args['table'];
+							$qr = $table::find('*', ['modified' => $args['date'], 'restrictToTypes' => (isset($args['types']) && is_array($args['types']) && sizeof($args['types'])) ? $args['types'] : ($args['type'] ?? [$args['type']]), 'returnAs' => 'searchResult']);
+						}
 						$c = 0;
 						if($qr && ($qr->numHits() > 0)) {
 							if((bool)$args['fast'] && Datamodel::getFieldNum($table, 'deleted')) {
@@ -961,8 +1066,6 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 	 *
 	 */
 	private static function processBundles(\BaseModel $instance, array $bundles) : array {
-		$label_instance = $instance->getLabelTableInstance();
-		
 		$errors = $warnings = [];
 		foreach($bundles as $b) {
 			$id = $b['id'] ?? null;
@@ -983,18 +1086,8 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 				case 'nonpreferred_labels':
 					$label_values = [];
 					
-					if (isset($b['values']) && is_array($b['values']) && sizeof($b['values'])) {
-						$label_fields = $instance->getLabelUIFields();
-						
-						foreach($b['values'] as $val) {
-							if(in_array($val['name'], $label_fields)) { $label_values[$val['name']] = $val['value']; }
-						}
-					} elseif(isset($b['value'])) {
-						if($label_instance->tableName() === 'ca_list_item_labels') {
-							$label_values['name_plural'] = $b['value'];
-						}
-						$label_values[$label_instance->getDisplayField()] = $b['value'];
-					}
+					$label_values = \GraphQLServices\Helpers\Edit\extractLabelValueFromBundles($instance->tableName(), [$b]);
+					
 					$locale = caGetOption('locale', $b, ca_locales::getDefaultCataloguingLocale());
 					$locale_id = caGetOption('locale', $b, ca_locales::codeToID($locale));
 					
@@ -1087,6 +1180,56 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 					}
 					break;
 				# -----------------------------------
+			}
+		}
+		return ['errors' => $errors, 'warnings' => $warnings];
+	}
+	# -------------------------------------------------------
+	/**
+	 * TODO: 
+	 *		1. Special handling for self-relations? (Eg. direction)
+	 *		2. Options to control when relationship is edited vs. recreated
+	 *
+	 */
+	private static function processRelationships(\BaseModel $instance, array $relationships, ?array $options=null) : array {
+		$replace = caGetOption('replace', $options, false);
+		$errors = $warnings = [];
+		
+		if($replace) {
+			foreach(array_unique(array_map(function($v) { return $v['target']; }, $relationships)) as $t) {
+				$instance->removeRelationships($t);
+			}
+		}
+		
+		foreach($relationships as $r) {
+			$effective_date = (isset($r['bundles']) && is_array($r['bundles'])) ? \GraphQLServices\Helpers\Edit\extractValueFromBundles($r['bundles'], ['effective_date']) : null;
+						
+			$c = 0;
+			$target = $r['target'];
+			list($target_identifier, $opts) = \GraphQLServices\Helpers\Edit\resolveParams($r, 'target');
+			
+			if(is_array($rel_ids = $instance->relationshipExists($target, $target_identifier, $r['relationshipType']))) {
+				$rel_id = array_shift($rel_ids);
+				$rel = $instance->editRelationship($target, $rel_id, $target_identifier, $r['relationshipType'], $effective_date, null, null, null, $opts);
+			} else {
+				$rel = $instance->addRelationship($target, $target_identifier, $r['relationshipType'], $effective_date, null, null, null, $opts);
+			}
+			if(!$rel) {
+				$errors[] = [
+					'code' => 100,	// TODO: real number?
+					'message' => is_array($rel_ids) ? 
+						_t('Could not edit relationship: %1', join('; ', $instance->getErrors())) 
+						: 
+						_t('Could not create relationship: %1', join('; ', $instance->getErrors())),
+					'bundle' => 'GENERAL'
+				];
+			} elseif(isset($r['bundles']) && is_array($r['bundles']) && (sizeof($r['bundles']) > 0)) {
+				//  Add interstitial data
+				if (is_array($ret = self::processBundles($rel, $r['bundles']))) {
+					$errors += $ret['errors'];
+					$warnings += $ret['warnings'];
+				}
+				$c++;
 			}
 		}
 		return ['errors' => $errors, 'warnings' => $warnings];

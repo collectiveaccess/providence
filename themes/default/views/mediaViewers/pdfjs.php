@@ -395,6 +395,7 @@
  	window.pdfjsContentURL = '<?= $this->getVar('display_media_url') ? $this->getVar('display_media_url') : $this->getVar('original_media_url'); ?>';
  	window.pdfjsContainerID = 'caMediaOverlayContent';
  	window.pdfjsSearch = <?= json_encode(preg_replace("![+\-\*\?]+!", "", $this->getVar('search'))); ?>;
+ 	window.pdfjsDefaultScrollMode = <?= $this->getVar('scroll_mode'); ?>;
  </script>
  <script src="<?= $this->request->getBaseUrlPath(); ?>/assets/pdfjs/viewer/viewer.js"></script>
  

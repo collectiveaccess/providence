@@ -52,7 +52,7 @@ class GeocodeAttributeValueTest extends TestCase {
 // 		$va_return = $o_val->parseValue('1600 Amphitheatre Parkway, Mountain View, CA',array());
 // 		$this->assertEquals('37.4219951', $va_return['value_decimal1'], 'The correct latitude is returned from an address lookup', 0.001);
 // 		$this->assertEquals('-122.0856086', $va_return['value_decimal2'], 'The correct longitude is returned from an address lookup', 0.001);
-// 		$this->assertRegExp('/^37.42\d*,-122.08\d*$/', $va_return['value_longtext2'], 'The correct latitude,longitude text value is returned from an address lookup');
+// 		$this->assertMatchesRegularExpression('/^37.42\d*,-122.08\d*$/', $va_return['value_longtext2'], 'The correct latitude,longitude text value is returned from an address lookup');
 // 	}
 
 	public function testWithGarbage(){

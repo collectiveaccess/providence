@@ -450,7 +450,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			", $params);
 		} else {
 			$qr_res = $this->db->query("
-				SELECT swi.row_id, 100 boost
+				SELECT DISTINCT swi.row_id, 100 boost
 				FROM ca_sql_search_word_index swi
 				".(!$is_blank ? 'INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id' : '')."
 				WHERE
@@ -483,7 +483,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			foreach($terms as $term) {
 				if (!$ap_spec && ($field = $term->field)) { $ap_spec = $field; }
 				
-				if (strlen($escaped_text = $this->db->escape(join(' ', $this->_tokenize($term->text))))) {
+				if (strlen($escaped_text = $this->db->escape(join(' ', $this->_tokenize($term->text, true))))) {
 					$words[] = $escaped_text;
 				}
 			}
@@ -514,6 +514,13 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			
 			$w = 0;
 	 		foreach($words as $w => $word) {
+	 			$word_op = '=';
+	 			if($has_wildcard = ((strpos($word, '*') !== false) || (strpos($word, '?') !== false))) {
+	 				$word_op = 'LIKE';
+					$word = str_replace('*', '%', $word);
+					$word = str_replace('?', '_', $word);
+	 			}
+	 		
 				$temp_table = 'ca_sql_search_phrase_'.md5("{$subject_tablenum}/{$word}/{$w}");
 				$this->_createTempTable($temp_table);
 			
@@ -525,7 +532,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					INNER JOIN ca_sql_search_word_index AS swi ON sw.word_id = swi.word_id 
 					".(($tc > 0) ? " INNER JOIN ".$temp_tables[$tc - 1]." AS tt ON swi.index_id = tt.row_id" : "")."
 					WHERE 
-						sw.word = ? AND swi.table_num = ? {$fld_limit_sql}
+						sw.word {$word_op} ? AND swi.table_num = ? {$fld_limit_sql}
 						{$private_sql}
 				", $word, (int)$subject_tablenum);
 				$qr_count = $this->db->query("SELECT count(*) c FROM {$temp_table}");
@@ -813,7 +820,16 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			if(!($qr = caMakeSearchResult($ap['table_num'], array_keys($row_ids)))) { return []; }
 		
 			while($qr->nextHit()) {
-				$a = $qr->get($spk, ['returnAsArray' => true]);
+				switch((int)$ap['table_num']) {
+					case 103:
+						$s = $qr->getInstance();
+						$a = $s->getItems(['idsOnly' => true]);
+						break;
+					default:
+						$a = $qr->get($spk, ['returnAsArray' => true]);
+						break;
+				}
+				
 				foreach($a as $i) {
 					$subject_ids[$i] = 1;
 				}
@@ -1886,16 +1902,16 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		
 		switch($modifier) {
 			case '#gt#':
-				$sql_where = "({$efield} > ?)"; 
-				$params = [$dates['end']];
+				$sql_where = "({$sfield} > ?)"; 
+				$params = [$dates['start']];
 				break;
 			case '#gt=':
 				$sql_where = "({$sfield} >= ?)"; 
 				$params = [$dates['start']];
 				break;
 			case '#lt#':
-				$sql_where = "({$sfield} < ?)"; 
-				$params = [$dates['start']];
+				$sql_where = "({$efield} < ?)"; 
+				$params = [$dates['end']];
 				break;
 			case '#lt=':
 				$sql_where = "({$efield} <= ?)"; 

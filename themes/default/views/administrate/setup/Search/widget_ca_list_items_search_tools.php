@@ -51,7 +51,7 @@ $vo_result					= $this->getVar('result');
 			print "<option value='".htmlspecialchars($vs_search, ENT_QUOTES, 'UTF-8')."' {$SELECTED}>".$vs_display." (".$va_search_info['hits'].")</option>\n";
 		}
 		print "</select>\n ";
-		print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, '18px'), 'button', 'caSearchHistoryForm');
+		print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, '18px'), 'button', 'caSearchHistoryForm', null, ['aria-label' => _t('Search from history')]);
 		print "</form>\n";
 ?>
 	</div>
@@ -80,7 +80,7 @@ $vo_result					= $this->getVar('result');
 			print "<option value='' {$SELECTED}>-</option>\n";
 		}
 		print "</select>\n ";
-		print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, '18px'), 'button', 'caSearchSetsForm');
+		print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, '18px'), 'button', 'caSearchSetsForm', null, ['aria-label' => _t('Search by set')]);
 		print "</form>\n";
 ?>
 	</div>
@@ -99,7 +99,7 @@ if(sizeof($this->getVar("available_sets")) > 0){
 				print "<option value='set:\"{$vs_set_identifier}\"' {$SELECTED}>".$va_set["name"]."</option>\n";
 			}
 			print "</select>\n ";
-			print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, '18px'), 'button', 'caSearchSetsForm');
+			print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, '18px'), 'button', 'caSearchSetsForm', null, ['aria-label' => _t('Search by set')]);
 			print "</form>\n";
 			?>
 		</div>

@@ -34,6 +34,7 @@ use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 
 require_once(__CA_LIB_DIR__.'/Service/GraphQLSchema.php'); 
+require_once(__CA_APP_DIR__.'/service/schemas/SearchSchema.php');
 
 class EditSchema extends \GraphQLServices\GraphQLSchema {
 	# -------------------------------------------------------
@@ -161,6 +162,63 @@ class EditSchema extends \GraphQLServices\GraphQLSchema {
 					],
 				]
 			]),
+			$MatchRecordType = new InputObjectType([
+				'name' => 'MatchRecord',
+				'description' => '.',
+				'fields' => [
+					[
+						'name' => 'search',
+						'type' => Type::string(),
+						'description' => _t('Search expression')
+					],
+					[
+						'name' => 'criteria',
+						'type' => Type::listOf(\GraphQLServices\Schemas\SearchSchema::get('Criterion')),
+						'description' => _t('Search criteria')
+					],
+					[
+						'name' => 'restrictToTypes',
+						'type' => Type::listOf(Type::string()),
+						'description' => _t('Type restrictions for search')
+					],
+				]
+			]),
+			$RelationshipType = new InputObjectType([
+				'name' => 'Relationship',
+				'description' => '.',
+				'fields' => [
+					[
+						'name' => 'target',
+						'type' => Type::string(),
+						'description' => _t('Target table name. (Eg. ca_objects)')
+					],
+					[
+						'name' => 'targetId',
+						'type' => Type::int(),
+						'description' => _t('Numeric database id of record to use as relationship target.')
+					],
+					[
+						'name' => 'targetIdno',
+						'type' => Type::string(),
+						'description' => _t('Alphanumeric idno value of record to use as relationship target')
+					],
+					[
+						'name' => 'targetIdentifier',
+						'type' => Type::string(),
+						'description' => _t('Alphanumeric idno value or numeric database id of record to use as relationship target.')
+					],
+					[
+						'name' => 'relationshipType',
+						'type' => Type::string(),
+						'description' => _t('Relationship type code.')
+					],
+					[
+						'name' => 'bundles',
+						'type' => Type::listOf($EditBundleType),
+						'description' => _t('Bundles to add')
+					]
+				]
+			]),
 			$RecordType = new InputObjectType([
 				'name' => 'Record',
 				'description' => '.',
@@ -189,25 +247,25 @@ class EditSchema extends \GraphQLServices\GraphQLSchema {
 						'name' => 'bundles',
 						'type' => Type::listOf($EditBundleType),
 						'description' => _t('Bundles to add')
-					]
+					],
+					[
+						'name' => 'match',
+						'type' => $MatchRecordType,
+						'description' => _t('Match criteria')
+					],
+					[
+						'name' => 'relationships',
+						'type' => Type::listOf($RelationshipType),
+						'description' => _t('List of relationship to create for new record')
+					],
+					[
+						'name' => 'replaceRelationships',
+						'type' => Type::boolean(),
+						'description' => 'Set to 1 to indicate all relationships are to replaced with those specified in the current request. If not set relationships are merged with existing ones..'
+					],
 				]
 			]),
 		];
 	}
 	# -------------------------------------------------------
 }
-
-
-# Bundles:
-// 		name: 'nonpreferred_labels',
-// 		locale: 'en_US',
-// 		id: null,  // only for edits
-// 		delete: false, // only for edits; used to replace or remove value
-// 		value: "This is a desc" // can be used for simple single-value attributes in lieu of values block
-// 		values: [
-// 			{ 'name': 'forename', 'value': 'Seth' },
-// 			{ 'name': 'surname', 'value': 'Kaufman' },
-// 			{ 'name': 'type', 'value': 'UF' }
-// 		]
-
-

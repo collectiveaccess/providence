@@ -645,7 +645,7 @@
 				// Convert parent id
 				//
 				if($t_instance->hasField('parent_id')) {
-					if (isset($pa_values['parent_id']) && !is_numeric($pa_values['parent_id'])) {
+					if (isset($pa_values['parent_id']) && !is_numeric($pa_values['parent_id']) && !is_array($pa_values['parent_id'])) {
 						$ids = array_reduce($pa_values['parent_id'], function($c, $i) { 
 							if(!is_numeric($i[1])) {
 								$c[] = $i[1];
@@ -669,7 +669,6 @@
 						}
 					} elseif(array_key_exists('parent_id', $pa_values) && ($vs_table === 'ca_list_items') && is_null($pa_values['parent_id'])) {
 						// convert parent_id=null for list items into root level of list (not list root node)
-						
 						$pa_values['parent_id'] = [
 							'IN', caGetListRootIDs()
 						];
@@ -1120,7 +1119,7 @@
 				case 'searchresult':
 					$va_ids = [];
 					while($qr_res->nextRow()) {
-						$va_ids[] = $qr_res->get($vs_pk);
+						$va_ids[] = (int)$qr_res->get($vs_pk);
 						$vn_c++;
 						if ($limit && ($vn_c >= $limit)) { break; }
 					}
@@ -1167,6 +1166,66 @@
 		public static function findAsID($pa_values, $pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = []; }
 			return self::find($pa_values, array_merge($pa_options, ['returnAs' => 'firstid']));
+		}
+		# --------------------------------------------------------------------------------
+		/**
+		 * Translate an array of label values into row_ids 
+		 * 
+		 * @param array $labels A list of labels
+		 * @param array $pa_options Options include:
+		 *     forceToLowercase = force keys in returned array to lowercase. [Default is false] 
+		 *	   checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for table that have an "access" field.
+		 *	   returnAll = return all matching values. [Default is false; only the first matched value is returned]
+		 * @return array Array with keys set to labels and values set to row_ids. Returns null on error.
+		 */
+		static public function getIDsForLabels($labels, $options=null) {
+			if (!is_array($labels) && strlen($labels)) { $labels = [$labels]; }
+		
+			$access_values = caGetOption('checkAccess', $options, null);
+			$return_all = caGetOption('returnAll', $options, false);
+			$force_to_lowercase = caGetOption('forceToLowercase', $options, false);
+		
+			$table_name = $table_name ? $table_name : get_called_class();
+			if (!($t_instance = Datamodel::getInstanceByTableName($table_name, true))) { return null; }
+		
+			$labels = array_map(function($v) { return (string)$v; }, $labels);
+		
+			$pk = $t_instance->primaryKey();
+			$table_name = $t_instance->tableName();
+			if(!($label_fld = $t_instance->getLabelDisplayField())) {
+				return null;
+			}
+			$label_table = $t_instance->getLabelTableName();
+			$deleted_sql = $t_instance->hasField('deleted') ? " AND t.deleted = 0" : "";
+		
+			$params = [$labels];
+		
+			$access_sql = '';
+			if (is_array($access_values) && sizeof($access_values)) {
+				$access_sql = " AND t.access IN (?)";
+				$params[] = $access_values;
+			}
+		
+			$qr_res = $t_instance->getDb()->query($z="
+				SELECT t.{$pk}, l.{$label_fld}
+				FROM {$table_name} t
+				INNER JOIN {$label_table} AS l ON l.{$pk} = t.{$pk}
+				WHERE
+					l.{$label_fld} IN (?) {$deleted_sql} {$access_sql}
+			", $params);
+	
+		
+			$ret = [];
+			while($qr_res->nextRow()) {
+				$key = $force_to_lowercase ? strtolower($qr_res->get($label_fld)) : $qr_res->get($label_fld);
+				if ($return_all) {
+					$ret[$key][] = $qr_res->get($pk);
+				} else {
+					if(array_key_exists($key, $ret)) { continue; }
+					$ret[$key] = $qr_res->get($pk);
+				}
+			}
+			return $ret;
 		}
  		# ------------------------------------------------------------------
  		/**

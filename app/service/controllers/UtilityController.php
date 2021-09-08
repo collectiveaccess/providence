@@ -129,7 +129,7 @@ class UtilityController extends \GraphQLServices\GraphQLServiceController {
 						[
 							'name' => 'name',
 							'type' => Type::string(),
-							'description' => _t('Table to search')
+							'description' => _t('Name to split')
 						],
 						[
 							'name' => 'displaynameFormat',
@@ -148,7 +148,7 @@ class UtilityController extends \GraphQLServices\GraphQLServiceController {
 						$u = self::authenticate($args['jwt']);
 						
 						$name = trim($args['name']);
-						if(!strlen($date)) {
+						if(!strlen($name)) {
 							throw new \ServiceException(_t('Must specify name'));
 						}
 						return DataMigrationUtils::splitEntityName($name, ['displaynameFormat' => $args['displaynameFormat'], 'locale' => $args['locale']]);

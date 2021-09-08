@@ -611,17 +611,23 @@ class BaseModel extends BaseObject {
 	 * @return array associative array: field name => field value
 	 */
 	public function getChangedFieldValuesArray() {
-		$va_fieldnames = array_keys($this->_FIELD_VALUES);
-		$va_fieldnames[] = 'preferred_labels';
-		$va_fieldnames[] = 'nonpreferred_labels';
+		$fieldnames = array_keys($this->_FIELD_VALUES);
+		$fieldnames[] = 'preferred_labels';
+		$fieldnames[] = 'nonpreferred_labels';
 		
-		$va_changed_field_values_array = array();
-		foreach($va_fieldnames as $vs_fieldname) {
-			if($this->changed($vs_fieldname)) {
-				$va_changed_field_values_array[$vs_fieldname] = $this->_FIELD_VALUES[$vs_fieldname];
+		foreach($this->FIELDS as $f => $finfo) {
+			if(isset($finfo['START'])) {
+				$fieldnames[] = $f;
 			}
 		}
-		return $va_changed_field_values_array;
+		
+		$changed_field_values_array = [];
+		foreach($fieldnames as $fieldname) {
+			if($this->changed($fieldname)) {
+				$changed_field_values_array[$fieldname] = $this->_FIELD_VALUES[$fieldname];
+			}
+		}
+		return $changed_field_values_array;
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -989,7 +995,7 @@ class BaseModel extends BaseObject {
 				}
 				
 				if(($ps_field_type == FT_NUMBER) && isset($vs_prop) && is_numeric($vs_prop)) {
-					$vs_prop = ((float)$vs_prop != (int)$vs_prop) ? (float)$vs_prop : (int)$vs_prop;
+					$vs_prop = ((float)$vs_prop != (int)$vs_prop) ? (string)$vs_prop : (int)$vs_prop;
 				}
 				
 				//
@@ -1275,48 +1281,57 @@ class BaseModel extends BaseObject {
 	 * @param array $pa_options Options include:
 	 *     forceToLowercase = force keys in returned array to lowercase. [Default is false] 
 	 *	   checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for table that have an "access" field.
+	 *	   returnAll = return all matching values. [Default is false; only the first matched value is returned]
 	 *
 	 * @return array Array with keys set to idnos and values set to row_ids. Returns null on error.
 	 */
-	static public function getIDsForIdnos($pa_idnos, $pa_options=null) {
-	    if (!is_array($pa_idnos) && strlen($pa_idnos)) { $pa_idnos = [$pa_idnos]; }
+	static public function getIDsForIdnos($idnos, $options=null) {
+	    if (!is_array($idnos) && strlen($idnos)) { $idnos = [$idnos]; }
 	    
-	    $pa_access_values = caGetOption('checkAccess', $pa_options, null);
+	    $access_values = caGetOption('checkAccess', $options, null);
+		$return_all = caGetOption('returnAll', $options, false);
+		$force_to_lowercase = caGetOption('forceToLowercase', $options, false);
 		
-		$vs_table_name = $ps_table_name ? $ps_table_name : get_called_class();
-		if (!($t_instance = Datamodel::getInstanceByTableName($vs_table_name, true))) { return null; }
+		$table_name = $table_name ? $table_name : get_called_class();
+		if (!($t_instance = Datamodel::getInstanceByTableName($table_name, true))) { return null; }
 		
-	    $pa_idnos = array_map(function($v) { return (string)$v; }, $pa_idnos);
+	    $idnos = array_map(function($v) { return (string)$v; }, $idnos);
 	    
-	    $vs_pk = $t_instance->primaryKey();
-	    $vs_table_name = $t_instance->tableName();
-	    if(!($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
+	    $pk = $t_instance->primaryKey();
+	    $table_name = $t_instance->tableName();
+	    if(!($idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
 	    	return null;
 	    }
-		$vs_deleted_sql = $t_instance->hasField('deleted') ? " AND deleted = 0" : "";
+		$deleted_sql = $t_instance->hasField('deleted') ? " AND deleted = 0" : "";
 		
-		$va_params = array($pa_idnos);
+		$params = array($idnos);
 		
-		$vs_access_sql = '';
-		if (is_array($pa_access_values) && sizeof($pa_access_values)) {
-		    $vs_access_sql = " AND access IN (?)";
-		    $va_params[] = $pa_access_values;
+		$access_sql = '';
+		if (is_array($access_values) && sizeof($access_values)) {
+		    $access_sql = " AND access IN (?)";
+		    $params[] = $access_values;
 		}
 	    
 	    $qr_res = $t_instance->getDb()->query("
-			SELECT {$vs_pk}, {$vs_idno_fld}
-			FROM {$vs_table_name}
+			SELECT {$pk}, {$idno_fld}
+			FROM {$table_name}
 			WHERE
-				{$vs_idno_fld} IN (?) {$vs_deleted_sql} {$vs_access_sql}
-		", $va_params);
+				{$idno_fld} IN (?) {$deleted_sql} {$access_sql}
+		", $params);
 		
-		$pb_force_to_lowercase = caGetOption('forceToLowercase', $pa_options, false);
 		
-		$va_ret = [];
+		$ret = [];
 		while($qr_res->nextRow()) {
-		    $va_ret[$pb_force_to_lowercase ? strtolower($qr_res->get($vs_idno_fld)) : $qr_res->get($vs_idno_fld)] = $qr_res->get($vs_pk);
+			$key = $force_to_lowercase ? strtolower($qr_res->get($idno_fld)) : $qr_res->get($idno_fld);
+		   
+			if($return_all) {
+				$ret[$key][] = $qr_res->get($pk);
+			} else {
+				if(array_key_exists($key, $ret)) { continue; }
+				$ret[$key] = $qr_res->get($pk);
+			}
 		}
-		return $va_ret;
+		return $ret;
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -4757,7 +4772,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 									foreach($parameters as $pp => $pv) {
 										if ($pp == 'format') {
 											$output_mimetype = $pv;
-										} else {
+										} elseif($m->isValidProperty($pp)) {
 											$m->set($pp, $pv);
 										}
 									}
@@ -9308,7 +9323,7 @@ $pa_options["display_form_field_tips"] = true;
 		if ((!is_numeric($pn_rel_id) && !caGetOption('primaryKeyOnly', $pa_options, false)) || caGetOption('idnoOnly', $pa_options, false)) {
 			if ($t_rel_item = Datamodel::getInstanceByTableName($va_rel_info['related_table_name'], true)) {
 				if ($this->inTransaction()) { $t_rel_item->setTransaction($this->getTransaction()); }
-				if (($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) && $t_rel_item->load(array($vs_idno_fld => $pn_rel_id))) {
+				if (($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) && $t_rel_item->load([$vs_idno_fld => $pn_rel_id, 'deleted' => 0])) {
 					$pn_rel_id = $t_rel_item->getPrimaryKey();
 				} 
 			}
@@ -9455,7 +9470,7 @@ $pa_options["display_form_field_tips"] = true;
 		if ((!is_numeric($pn_rel_id) && !caGetOption('primaryKeyOnly', $pa_options, false)) || caGetOption('idnoOnly', $pa_options, false)) {
 			if ($t_rel_item = Datamodel::getInstanceByTableName($va_rel_info['related_table_name'], true)) {
 				if ($this->inTransaction()) { $t_rel_item->setTransaction($this->getTransaction()); }
-				if (($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) && $t_rel_item->load(array($vs_idno_fld => $pn_rel_id))) {
+				if (($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) && $t_rel_item->load([$vs_idno_fld => $pn_rel_id, 'deleted' => 0])) {
 					$pn_rel_id = $t_rel_item->getPrimaryKey();
 				}
 			}
@@ -10080,7 +10095,7 @@ $pa_options["display_form_field_tips"] = true;
 		if (!is_numeric($pn_rel_id)) {
 			if ($t_rel_item = Datamodel::getInstanceByTableName($va_rel_info['related_table_name'], true)) {
 				if ($this->inTransaction()) { $t_rel_item->setTransaction($this->getTransaction()); }
-				if (($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) && $t_rel_item->load(array($vs_idno_fld => $pn_rel_id))) {
+				if (($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) && $t_rel_item->load([$vs_idno_fld => $pn_rel_id, 'deleted' => 0])) {
 					$pn_rel_id = $t_rel_item->getPrimaryKey();
 				}
 			}
@@ -10917,34 +10932,17 @@ $pa_options["display_form_field_tips"] = true;
 		", array($this->tableNum(), $vn_row_id));
 		
 		$pk = $this->primaryKey();
-		$qr_set_comments = $o_db->query("
-			SELECT 
-			    c.comment_id, c.row_id set_item_id, c.user_id, c.locale_id, c.comment, c.media1, c.media2, c.media3, c.media4, 
-			    c.rating, c.email, c.name, c.created_on, c.access, c.ip_addr, c.moderated_on, c.moderated_by_user_id, c.location,
-			    csi.row_id, csi.table_num, csi.set_id, csi.`rank`,
-			    cs.set_code, csl.name set_name,
-			    u.fname, u.lname, u.email user_email
-			FROM ca_item_comments c
-			INNER JOIN ca_set_items AS csi ON csi.item_id = c.row_id AND csi.table_num = ?
-			INNER JOIN ca_sets AS cs ON cs.set_id = csi.set_id
-			INNER JOIN ca_set_labels AS csl ON csl.set_id = cs.set_id 
-			LEFT JOIN ca_users AS u ON c.user_id = u.user_id
-			WHERE
-				(c.table_num = 105) AND (csi.row_id = ?)
-				
-				{$vs_user_sql} {$vs_moderation_sql}
-		", array($this->tableNum(), $vn_row_id));
 		
         switch($vs_return_as) {
             case 'count':
-                return $qr_comments->numRows() + $qr_set_comments->numRows();
+                return $qr_comments->numRows();
                 break;
             case 'ids':
             case 'firstId':
             case 'searchResult':
             case 'modelInstances':
             case 'firstModelInstance':
-                $va_ids = ($qr_comments->getAllFieldValues('comment_id') + $qr_set_comments->getAllFieldValues('comment_id'));
+                $va_ids = $qr_comments->getAllFieldValues('comment_id');
                 if ($vs_return_as === 'ids') { return $va_ids; }
                 if ($vs_return_as === 'firstId') { return array_shift($va_ids); }
                 if (($vs_return_as === 'modelInstances') || ($vs_return_as === 'firstModelInstance')) {
@@ -10984,36 +10982,6 @@ $pa_options["display_form_field_tips"] = true;
 					if ($va_comments[$comment_id]['user_id']) {
 						$va_comments[$comment_id]['name'] = trim($va_comments[$comment_id]['fname'].' '.$va_comments[$comment_id]['lname']);
 						$va_comments[$comment_id]['email'] =  $va_comments[$comment_id]['user_email'];
-					}
-                }
-                 while ($qr_set_comments->nextRow()) {
-                    $comment_id = $qr_set_comments->get("comment_id");
-                    $va_comments[$comment_id] = $qr_set_comments->getRow();
-                    foreach (array("media1", "media2", "media3", "media4") as $vs_media_field) {
-                        $va_media_versions = array();
-                        $va_media_versions = $qr_set_comments->getMediaVersions($vs_media_field);
-                        $va_media = array();
-                        if (is_array($va_media_versions) && (sizeof($va_media_versions) > 0)) {
-                            foreach ($va_media_versions as $vs_version) {
-                                $va_image_info = array();
-                                $va_image_info = $qr_set_comments->getMediaInfo($vs_media_field, $vs_version);
-                                $va_image_info["TAG"] = $qr_set_comments->getMediaTag($vs_media_field, $vs_version);
-                                $va_image_info["URL"] = $qr_set_comments->getMediaUrl($vs_media_field, $vs_version);
-                                $va_media[$vs_version] = $va_image_info;
-                            }
-                            $va_comments[$comment_id][$vs_media_field] = $va_media;
-                        }
-                    }
-                    
-					$va_comments[$comment_id]['created_on_display'] = caGetLocalizedDate($va_comments[$comment_id]['created_on']);
-					
-					if ($va_comments[$comment_id]['user_id']) {
-						$va_comments[$comment_id]['name'] = trim($va_comments[$comment_id]['fname'].' '.$va_comments[$comment_id]['lname']);
-						$va_comments[$comment_id]['email'] =  $va_comments[$comment_id]['user_email'];
-					}
-					
-					if ($o_request) {
-						$va_comments[$comment_id]['set_message'] = _t("Comment made in set %1", caEditorLink($o_request, $qr_set_comments->get('set_name'), '', 'ca_sets', $va_comments[$comment_id]['set_id']));
 					}
                 }
                 break;
@@ -12176,6 +12144,7 @@ $pa_options["display_form_field_tips"] = true;
 				while(($qr_res && $qr_res->nextRow()) || (is_array($filtered_pks) && sizeof($filtered_pks))) {
 					$id = $qr_res ? (int)$qr_res->get($vs_pk) : array_shift($filtered_pks);
 					$va_ids[$id] = $id;
+
 					if ($limit && (sizeof($va_ids) >= $limit)) { break; }
 				}
 				if ($ps_return_as == 'searchresult') {

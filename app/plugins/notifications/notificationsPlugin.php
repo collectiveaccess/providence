@@ -35,7 +35,7 @@
 		private $opo_config;
 		# -------------------------------------------------------
 		public function __construct($ps_plugin_path) {
-			$this->description = _t('Handles periodic email alert tasks for systen notification features.');
+			$this->description = _t('Handles periodic email alert tasks for system notification features.');
 			parent::__construct();
 			
 			$this->opo_config = Configuration::load();

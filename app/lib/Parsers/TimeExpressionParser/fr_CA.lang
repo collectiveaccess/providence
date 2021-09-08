@@ -15,7 +15,7 @@ monthTable = {
 	mar = mars, mars = mars,
 	avr = avril, avr. = avril,
 	mai = mai,
-	jun = juin, juin = juin
+	jun = juin, juin = juin,
 	jul = juillet, juill. = juillet,
 	aoû = août, 
 	sep = septembre, sept. = septembre,

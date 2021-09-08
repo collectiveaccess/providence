@@ -384,6 +384,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 	 * @param array $pa_options Options are:
 	 *		alwaysTreatValueAsIdno = Always try to convert $ps_value to a list idno value, even if it is numeric
 	 *		matchOn =
+	 *		serializeCommaSeparatedValues = Convert values in the form "Print, Photo" to a serialized version ("Photo Print") if the provided value fails to match. [Default is true]
 	 *
 	 * @return array
 	 */
@@ -392,6 +393,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 
 		if (is_array($ps_value)) { $ps_value = array_pop($ps_value); }
 
+		$serialize_comma_separated_values = caGetOption('serializeCommaSeparatedValues', $pa_options, true);
 		$va_match_on = caGetOption('matchOn', $pa_options, null);
 		if ($va_match_on && !is_array($va_match_on)){ $va_match_on = array($va_match_on); }
 		if (!is_array($va_match_on) && $vb_treat_value_as_idno) { $va_match_on = array('idno', 'label', 'item_id'); }
@@ -417,12 +419,22 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 					if ($vn_id = caGetListItemID($pa_element_info['list_id'], $ps_value, $pa_options)) {
 						break(2);
 					}
+					if($serialize_comma_separated_values && strpos($ps_value, ',')) {
+						if ($vn_id = caGetListItemID($pa_element_info['list_id'], caSerializeCommaSeparatedName($ps_value), $pa_options)) {
+							break(2);
+						}
+					}
 					break;
 				case 'label':
 				case 'labels':
 					// try to convert label to item_id
 					if ($vn_id = caGetListItemIDForLabel($pa_element_info['list_id'], $ps_value, $pa_options)) {
 						break(2);
+					}
+					if($serialize_comma_separated_values && strpos($ps_value, ',')) {
+						if ($vn_id = caGetListItemIDForLabel($pa_element_info['list_id'], caSerializeCommaSeparatedName($ps_value), $pa_options)) {
+							break(2);
+						}
 					}
 					break;
 				case 'item_id':

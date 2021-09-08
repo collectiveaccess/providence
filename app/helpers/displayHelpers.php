@@ -1264,7 +1264,7 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 				$vs_buf .= "<div id='caDuplicateItemButton' class='inspectorActionButton'>";
 
 				$vs_buf .= caFormTag($po_view->request, 'Edit', 'DuplicateItemForm', $po_view->request->getModulePath().'/'.$po_view->request->getController(), 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
-				$vs_buf .= "<div>".caFormSubmitLink($po_view->request, caNavIcon(__CA_NAV_ICON_DUPLICATE__, '20px'), '', 'DuplicateItemForm')."</div>";
+				$vs_buf .= "<div>".caFormSubmitLink($po_view->request, caNavIcon(__CA_NAV_ICON_DUPLICATE__, '20px'), '', 'DuplicateItemForm', null, ['aria-label' => _t('Duplicate item')])."</div>";
 
 				$vs_buf .= caHTMLHiddenInput($t_item->primaryKey(), array('value' => $t_item->getPrimaryKey()));
 				$vs_buf .= caHTMLHiddenInput('mode', array('value' => 'dupe'));
@@ -1314,19 +1314,6 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 				}
 				$vs_more_info .= "<div><strong>".((sizeof($va_links) == 1) ? _t("In set") : _t("In sets"))."</strong> ".join(", ", $va_links)."</div>\n";
 			}
-
-
-			// export options
-			if ($vn_item_id && $vs_select = $po_view->getVar('available_mappings_as_html_select')) {
-				$vs_more_info .= "<div class='inspectorExportControls'>".caFormTag($po_view->request, 'exportItem', 'caExportForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
-				$vs_more_info .= $vs_select;
-				$vs_more_info .= caHTMLHiddenInput($t_item->primaryKey(), array('value' => $t_item->getPrimaryKey()));
-				$vs_more_info .= caHTMLHiddenInput('download', array('value' => 1));
-				$vs_more_info .= caFormSubmitLink($po_view->request,_t('Export &rsaquo;'), 'button', 'caExportForm');
-				$vs_more_info .= "</form></div>";
-			}
-
-
 			$va_creation = $t_item->getCreationTimestamp();
 			$va_last_change = $t_item->getLastChangeTimestamp();
 
@@ -1630,7 +1617,7 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 							_t('new set') => 'new',
 						));
 						$vs_buf .= caHTMLHiddenInput('set_id', array('value' => $t_item->getPrimaryKey()));
-						$vs_buf .= caFormSubmitLink($po_view->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), "button", "caDupeSetItemsForm");
+						$vs_buf .= caFormSubmitLink($po_view->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), "button", "caDupeSetItemsForm", null, ['aria-label' => _t('Duplicate items')]);
 						$vs_buf .= "</form>";
 						$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" ></div>';
 					}
@@ -1656,7 +1643,7 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 					$vs_buf .= "<div id='exporterFormList'>";
 					$vs_buf .= ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $vn_set_table_num, array('id' => 'caExporterList'),array('width' => '135px'));
 					$vs_buf .= caHTMLHiddenInput('set_id', array('value' => $t_item->getPrimaryKey()));
-					$vs_buf .= caFormSubmitLink($po_view->request, _t('Export')." &rsaquo;", "button", "caExportForm");
+					$vs_buf .= caFormSubmitLink($po_view->request, _t('Export')." &rsaquo;", "button", "caExportForm", null, ['aria-label' => _t('Export')]);
 					$vs_buf .= "</div>\n";
 					$vs_buf .= "</form>";
 
@@ -1719,7 +1706,7 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 						$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px;">';
 						$vs_buf .= caFormTag($po_view->request, 'Edit', 'NewChildForm', 'administrate/setup/list_item_editor/ListItemEditor', 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
 						$vs_buf .= _t('Add a %1 to this list', $vs_type_list).caHTMLHiddenInput($t_list_item->primaryKey(), array('value' => '0')).caHTMLHiddenInput('parent_id', array('value' => $t_list_item->getPrimaryKey()));
-						$vs_buf .= caFormSubmitLink($po_view->request, caNavIcon(__CA_NAV_ICON_ADD__, '18px'), '', 'NewChildForm');
+						$vs_buf .= caFormSubmitLink($po_view->request, caNavIcon(__CA_NAV_ICON_ADD__, '18px'), '', 'NewChildForm', null, ['aria-label' => _t('Add a %1 to this list', $vs_type_list)]);
 						$vs_buf .= "</form></div>\n";
 					}
 			}
@@ -1910,9 +1897,9 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 
 				$vs_buf .= caFormTag($po_view->request, 'ExportSingleData', 'caExportForm', 'manage/MetadataExport', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
 				$vs_buf .= "<div id='exporterFormList'>";
-				$vs_buf .= ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_item->tableNum(), array('id' => 'caExporterList'), array('width' => '120px', 'recordType' => $t_item->getTypeCode()));
+				$vs_buf .= ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_item->tableNum(), array('id' => 'caExporterList'), array('width' => '120px', 'recordType' => $t_item->getTypeCode(), 'value' => Session::getVar('exporter_id')));
 				$vs_buf .= caHTMLHiddenInput('item_id', array('value' => $t_item->getPrimaryKey()));
-				$vs_buf .= caFormSubmitLink($po_view->request, _t('Export')." &rsaquo;", "button", "caExportForm");
+				$vs_buf .= caFormSubmitLink($po_view->request, _t('Export')." &rsaquo;", "button", "caExportForm", null, ['aria-label' => _t('Export data')]);
 				$vs_buf .= "</div>\n";
 				$vs_buf .= "</form>";
 
@@ -1935,7 +1922,7 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 				$vs_buf .= "<div id='externalExporterFormList'>";
 				$vs_buf .= ExternalExportManager::getTargetListAsHTMLFormElement('target', $t_item->tableNum(), array('id' => 'caExternalExporterList'), array('width' => '120px', 'restrictToTypes' => [$t_item->getTypeCode()]));
 				$vs_buf .= caHTMLHiddenInput('item_id', array('value' => $t_item->getPrimaryKey()));
-				$vs_buf .= caFormSubmitLink($po_view->request, _t('Export')." &rsaquo;", "button", "caExternalExportForm");
+				$vs_buf .= caFormSubmitLink($po_view->request, _t('Export')." &rsaquo;", "button", "caExternalExportForm", null, ['aria-label' => _t('Export to external repository')]);
 				$vs_buf .= "</div>\n";
 				$vs_buf .= "</form>";
 				$vs_buf .= "</div>";
@@ -3386,7 +3373,7 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 
 		$vs_buf  = "<span class='bundleContentPreview' id='{$ps_preview_id_prefix}_BundleContentPreview'>{$ps_preview_init}</span>";
 		$vs_buf .= "<span class='iconButton'>";
-		$vs_buf .= "<a href='#' onclick='caBundleVisibilityManager.toggle(\"{$ps_id_prefix}\");  return false;'>".caNavIcon(__CA_NAV_ICON_VISIBILITY_TOGGLE__, '18px', array('id' =>"{$ps_id_prefix}VisToggleButton"))."</a>";
+		$vs_buf .= "<a href='#' onclick='caBundleVisibilityManager.toggle(\"{$ps_id_prefix}\");  return false;' aria-label='" . _t('Toggle visibility') . "'>".caNavIcon(__CA_NAV_ICON_VISIBILITY_TOGGLE__, '18px', array('id' =>"{$ps_id_prefix}VisToggleButton"))."</a>";
 		$vs_buf .= "</span>\n";
 		$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(function() { caBundleVisibilityManager.registerBundle('{$ps_id_prefix}', '{$vs_force}'); }); </script>";
 
@@ -3622,7 +3609,7 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 
 		$target = $pt_related->tableName();
 		if(!$pt_related->getAppConfig()->get("{$target}_enable_home_location")) { return null; }
-		$policies = array_filter(ca_objects::getHistoryTrackingCurrentValuePoliciesForTable($target), function($v) { return array_key_exists('ca_storage_locations', $v['elements']); });
+		$policies = array_filter(ca_objects::getHistoryTrackingCurrentValuePolicies($target), function($v) { return array_key_exists('ca_storage_locations', $v['elements']); });
 		if(!is_array($policies) || !sizeof($policies)) { return ''; }
 		if (!$ps_policy) { $ps_policy = $target::getDefaultHistoryTrackingCurrentValuePolicy(); }
 		if(is_object($initial_values)) {
@@ -5306,5 +5293,82 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 	 */
 	function caGetReportLogo() {
 		return caGetBrandingLogo('report', ['absolute' => true]);
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Output sidecar data to browser.
+	 *
+	 * @param int $sidecar_id
+	 * @param ca_users $user
+	 *
+	 * @return void
+	 * 
+	 * @throws ApplicationException
+	 */
+	function caReturnMediaSidecarData(int $sidecar_id, ?ca_users $user=null) : void {
+		if(!$t_sidecar = ca_object_representation_sidecars::find($sidecar_id, ['returnAs' => 'firstModelInstance'])) {
+			throw new ApplicationException(_t('Invalid sidecar'));
+		}
+		$t_rep = ca_object_representations::find($t_sidecar->get('ca_object_representation_sidecars.representation_id'), ['returnAs' => 'firstModelInstance']);
+		if(!$t_rep || ($user && !$t_rep->isReadable($user))) {
+			throw new ApplicationException(_t('Access denied'));
+		}
+		
+		$mimetype = $t_sidecar->get('mimetype');
+		
+		if(caMimetypeIsValid($mimetype, ['image/*', 'text/prs.wavefront-mtl', 'application/octet-stream'])) {
+			AppController::getInstance()->removeAllPlugins();	// prevent header/footer from being rendered
+			header("Content-type: {$mimetype}");
+			
+			$r = fopen($t_sidecar->getFilePath('sidecar_file'), 'r');
+			fpassthru($r);
+			fclose($r);
+			return;
+		} 
+		throw new ApplicationException(_t('Invalid sidecar type'));
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	function caGetReferenceToExistingRepresentationMedia(ca_object_representations $t_rep, array $options=null) {
+		$return_as_array = caGetOption('returnAsArray', $options, false);
+		
+		global $g_request;
+		$rel = $rec_label = null;
+		foreach(['ca_objects', 'ca_entities', 'ca_occurrences', 'ca_collections'] as $parent_table) {
+			if($rel_list = $t_rep->getRelatedItems($parent_table, ['returnAs' => 'array'])) {
+				$rel = array_shift($rel_list);
+				$rec_label = $rel['label'].($rel['idno']? " (".$rel['idno'].")" : '');
+				break;
+			}
+		}
+	
+		if($return_as_array) {
+			if($rec_label) {
+				return [
+					'table' => $parent_table,
+					'id' => $rel[Datamodel::primaryKey($parent_table)],
+					'label' => $rel['label'],
+					'idno' => $rel['idno']
+				];
+			} else {
+				return [
+					'table' => 'ca_object_representations',
+					'id' => $t_rep->getPrimaryKey(),
+					'label' => $t_rep->get('ca_object_representations.preferred_labels.name'),
+					'idno' => $t_rep->get('ca_object_representations.idno')
+				];
+			}
+		} else {
+			$rec_label = $rec_label ? 
+				_t('Media aleady exists in %1', ($g_request ? 
+					caEditorLink($g_request, $rec_label, '', $parent_table, $rel[Datamodel::primaryKey($parent_table)])
+					: $rec_label))
+				:
+				($g_request ? _t('Media aleady %1', caEditorLink($g_request, _t('exists'), '', 'ca_object_representations', $t_rep->getPrimaryKey())) : _t('Media already exists'))
+			;
+			return $rec_label;
+		}
 	}
 	# ------------------------------------------------------------------

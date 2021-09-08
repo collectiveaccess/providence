@@ -599,8 +599,12 @@
 					$t_rep->setIdnoWithTemplate('%', ['serialOnly' => true]);
 				}
 				
-				$t_rep->insert();
-		
+				try {
+					$t_rep->insert();
+				} catch (MediaExistsException $e) {
+					$this->postError(2730, caGetReferenceToExistingRepresentationMedia($e->getRepresentation()), 'ca_object_representations->insert()');
+					return false;
+				}
 				if ($t_rep->numErrors()) {
 					$this->errors = array_merge($this->errors, $t_rep->errors());
 					return false;
@@ -756,7 +760,12 @@
 					}
 				}
 			
-				$t_rep->update();
+				try {
+					$t_rep->update();
+				} catch (MediaExistsException $e) {
+					$this->postError(2730, caGetReferenceToExistingRepresentationMedia($e->getRepresentation()), 'ca_object_representations->insert()');
+					return false;
+				}
 			
 				if ($t_rep->numErrors()) {
 					$this->errors = array_merge($this->errors, $t_rep->errors());

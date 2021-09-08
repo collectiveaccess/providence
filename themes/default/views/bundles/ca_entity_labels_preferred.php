@@ -67,7 +67,7 @@
 		<div id="{fieldNamePrefix}Label_{n}" class="labelInfo">
 			<div id="caDupeLabelMessageBox_{n}" class='caDupeLabelMessageBox'></div>
 			<div style="float: right;">
-				<a href="#" class="caDeleteLabelButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
+				<a href="#" class="caDeleteLabelButton" aria-title="<?=_t('Delete label')?>"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 			</div>
 			<table class="objectRepresentationListItem">
 				<tr valign="middle">

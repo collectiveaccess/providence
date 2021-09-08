@@ -346,6 +346,16 @@ class ca_data_exporter_items extends BaseModel {
 			'label' => _t('Skip if expression'),
 			'description' => _t('The current mapping is skipped if the given expression evaluates to true.')
 		);
+		
+		$va_settings['skipIfEmpty'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Skip if source value is empty'),
+			'description' => _t('The current mapping is skipped if the source value is empty.')
+		);
 
 		$va_settings['filterByRegExp'] = array(
 			'formatType' => FT_TEXT,
@@ -585,6 +595,16 @@ class ca_data_exporter_items extends BaseModel {
 			'description' => _t('ID of item as set in mapping.')
 		);
 		
+		$va_settings['applyRegularExpressions'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 4,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Apply one or more regular expression-based substitutions to a source value prior to import.'),
+			'description' => _t('A list of Perl-compatible regular expressions. Each expression has two parts, a matching expression and a substitution expression, and is expressed as a JSON object with <em>match</em> and <em>replaceWith</em> keys. Ex. [{"match": "([\\d]+)\\.([\\d]+)", "replaceWith": "\\1:\\2"}, {"match": "[^\\d:]+", "replaceWith": ""}] ')
+		);
+		
 		$this->setAvailableSettings($va_settings);
 	}
 	# ------------------------------------------------------
@@ -639,6 +659,30 @@ class ca_data_exporter_items extends BaseModel {
 		}
 
 		return $ps_text;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static function _processAppliedRegexes($value, $regexes) {
+		if(is_array($regexes)) {
+			if(!caIsIndexedArray($regexes)) { 
+				if(caIsAssociativeArray($regexes)) {
+					$regexes = [$regexes];
+				} else {
+					return $value;
+				}
+			}
+			foreach($regexes as $regex_index => $regex_info) {
+				if(!strlen($regex_info['match'])) { continue; }
+				if(!strlen($regex_info['replaceWith'])) { continue; }
+				$regex = "!".str_replace("!", "\\!", $regex_info['match'])."!u".((isset($regex_info['caseSensitive']) && (bool)$regex_info['caseSensitive']) ? '' : 'i');
+				
+				$value = preg_replace($regex , $regex_info['replaceWith'], $value);
+			}
+		}
+		
+		return $value;
 	}
 	# ------------------------------------------------------
 }

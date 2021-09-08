@@ -52,7 +52,7 @@
 			);
 			
 			print caHTMLSelect('mode', $va_options, array('class' => 'searchToolsSelect'), array('value' => $this->getVar('mode'), 'width' => '130px'))."\n";
-			print caFormSubmitLink($this->request, _t('Show'), 'button', 'caSetDisplayMode')." &rsaquo;";
+			print caFormSubmitLink($this->request, _t('Show'), 'button', 'caSetDisplayMode', null, ['aria-label' => _t('Show results')])." &rsaquo;";
 ?>
 			</form>
 <?php
