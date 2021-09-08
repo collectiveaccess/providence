@@ -2564,7 +2564,7 @@ class Installer {
 				return false;
 			}
 
-			$this->logStatus(_t('Added trigger %1 for metadata alert %3', $vs_code, $t_md_alert->get('code')));
+			$this->logStatus(_t('Added trigger %1 for metadata alert %2', $vs_code, $t_md_alert->get('code')));
 			$vn_i++;
 		}
 		return true;

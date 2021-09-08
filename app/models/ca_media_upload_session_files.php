@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/models/ca_collection_labels.php : table access class for table ca_collection_labels
+ * app/models/ca_media_upload_session_files.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,79 +34,77 @@
    *
    */
 
-require_once(__CA_LIB_DIR__.'/BaseLabel.php');
-
-
-BaseModel::$s_ca_models_definitions['ca_collection_labels'] = array(
-	'NAME_SINGULAR' 	=> _t('collection name'),
- 	'NAME_PLURAL' 		=> _t('collection names'),
+BaseModel::$s_ca_models_definitions['ca_media_upload_session_files'] = array(
+ 	'NAME_SINGULAR' 	=> _t('Media upload file'),
+ 	'NAME_PLURAL' 		=> _t('Media upload files'),
  	'FIELDS' 			=> array(
-		'label_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
-				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Label id', 'DESCRIPTION' => 'Identifier for Label'
+ 		'file_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
+			'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '','LABEL' => _t('File id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this uploaded file')
 		),
-		'collection_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Collection id', 'DESCRIPTION' => 'Identifier for Collection'
+		'session_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => null,
+			'DONT_ALLOW_IN_UI' => true,
+			'LABEL' => _t('Session id'), 'DESCRIPTION' => _t('Session to which this upload belongs.')
 		),
-		'locale_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'DISPLAY_FIELD' => array('ca_locales.name'),
-				'LABEL' => _t('Locale'), 'DESCRIPTION' => _t('Locale of label'),
+		'created_on' => array(
+			'FIELD_TYPE' => FT_TIMESTAMP, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => null,
+			'LABEL' => _t('Creation date'), 'DESCRIPTION' => _t('The date and time the upload was started on.')
 		),
-		'type_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
-				'DEFAULT' => '',
-				
-				'LIST_CODE' => 'collection_label_types',
-				'LABEL' => _t('Type'), 'DESCRIPTION' => _t('Indicates the type of label and how it should be employed.')
+		'completed_on' => array(
+			'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => null,
+			'LABEL' => _t('Upload completion date'), 'DESCRIPTION' => _t('The date and time the upload was completed on. An empty value indicates an incomplete upload.')
 		),
-		'name' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 3,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Name'), 'DESCRIPTION' => _t('Name of collection'),
-				'BOUNDS_LENGTH' => array(1,8192)
+		'last_activity_on' => array(
+			'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => null,
+			'LABEL' => _t('Date of last upload activity'), 'DESCRIPTION' => _t('The date and time activity was last recorded on the upload.')
 		),
-		'name_sort' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 255, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Sort order', 'DESCRIPTION' => 'Sortable version of name value',
-				'BOUNDS_LENGTH' => array(0,255)
+		'filename' => array(
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 80, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => _t('File name'), 'DESCRIPTION' => _t('Original name of uploaded file.')
 		),
-		'source_info' => array(
-				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Source information', 'DESCRIPTION' => 'Source information'
+		'bytes_received' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => 0,
+			'LABEL' => _t('Size of data received'), 'DESCRIPTION' => _t('The size of data received, in bytes.')
 		),
-		'is_preferred' => array(
-				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Is preferred'), 'DESCRIPTION' => _t('Is preferred'),
-				'BOUNDS_VALUE' => array(0,1)
+		'total_bytes' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => 0,
+			'LABEL' => _t('Total upload size'), 'DESCRIPTION' => _t('The total size of the uploaded file, in bytes.')
+		),
+		'error_code' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => 0,
+			'LABEL' => _t('Error code'), 'DESCRIPTION' => _t('Error code. Zero if no error.')
 		)
-	)
+ 	)
 );
 
-class ca_collection_labels extends BaseLabel {
+class ca_media_upload_session_files extends BaseModel {
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -118,10 +116,10 @@ class ca_collection_labels extends BaseLabel {
 	# --- Basic object parameters
 	# ------------------------------------------------------
 	# what table does this class represent?
-	protected $TABLE = 'ca_collection_labels';
+	protected $TABLE = 'ca_media_upload_session_files';
 	      
 	# what is the primary key of the table?
-	protected $PRIMARY_KEY = 'label_id';
+	protected $PRIMARY_KEY = 'file_id';
 
 	# ------------------------------------------------------
 	# --- Properties used by standard editing scripts
@@ -132,12 +130,13 @@ class ca_collection_labels extends BaseLabel {
 	# ------------------------------------------------------
 
 	# Array of fields to display in a listing of records from this table
-	protected $LIST_FIELDS = array('name');
+	protected $LIST_FIELDS = array('session_id');
 
 	# When the list of "list fields" above contains more than one field,
 	# the LIST_DELIMITER text is displayed between fields as a delimiter.
 	# This is typically a comma or space, but can be any string you like
 	protected $LIST_DELIMITER = ' ';
+
 
 	# What you'd call a single record from this table (eg. a "person")
 	protected $NAME_SINGULAR;
@@ -147,7 +146,7 @@ class ca_collection_labels extends BaseLabel {
 
 	# List of fields to sort listing of records by; you can use 
 	# SQL 'ASC' and 'DESC' here if you like.
-	protected $ORDER_BY = array('name');
+	protected $ORDER_BY = array('created_on');
 
 	# Maximum number of record to display per page in a listing
 	protected $MAX_RECORDS_PER_PAGE = 20; 
@@ -179,29 +178,9 @@ class ca_collection_labels extends BaseLabel {
 	protected $UNIT_ID_FIELD = null;
 	protected $LOG_CHANGES_TO_SELF = false;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
-		"FOREIGN_KEYS" => array(
-			'collection_id'
-		),
-		"RELATED_TABLES" => array(
-		
-		)
+		"FOREIGN_KEYS" => [],
+		"RELATED_TABLES" => []
 	);
-	
-	# ------------------------------------------------------
-	# Labels
-	# ------------------------------------------------------
-	# --- List of fields used in label user interface
-	protected $LABEL_UI_FIELDS = array(
-		'name'
-	);
-	protected $LABEL_DISPLAY_FIELD = 'name';
-	
-	# --- Name of field used for sorting purposes
-	protected $LABEL_SORT_FIELD = 'name_sort';
-	
-	# --- Name of table this table contains label for
-	protected $LABEL_SUBJECT_TABLE = 'ca_collections';
-	
 	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields
 	# are listed here is the order in which they will be returned using getFields()
@@ -221,6 +200,27 @@ class ca_collection_labels extends BaseLabel {
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
 		parent::__construct($pn_id);	# call superclass constructor
+	}
+	# ------------------------------------------------------
+	/**
+	 * Check if currently loaded upload is marked as complete
+	 *
+	 * @return int Unix timestamp for date/time completed, null if no upload is loaded, or false if the uploaf is not complete.
+	 */
+	public function isComplete() {
+		if(!$this->isLoaded()) { return null; }
+		$completed_on = $this->get('completed_on', ['getDirectDate' => true]);
+		return ($completed_on > 0) ? $completed_on : false;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Check if currently loaded upload is marked as errored
+	 *
+	 * @return int Error code, or false if no error
+	 */
+	public function hasError() {
+		if(!$this->isLoaded()) { return null; }
+		return ($error_code = (int)$this->get('error_code')) ? $error_code : false;
 	}
 	# ------------------------------------------------------
 }

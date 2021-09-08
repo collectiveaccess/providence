@@ -34,7 +34,7 @@
 		# -------------------------------------------------------
 		public function __construct() {
 			$this->ops_name = 'ATSubjectGetter';
-			$this->ops_title = _t('Archivists Toolkit Subkect getting');
+			$this->ops_title = _t('Archivists Toolkit Subject getting');
 			$this->ops_description = _t('Imported related subject from Archivists Toolkit');
 			
 			parent::__construct();
@@ -214,7 +214,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Key'),
-				'description' => _t('Foreign key in ArchDescriptionSubjects to select on (eg. ResourceID, resourceComponentId, accessionId, digitalObjectId.')
+				'description' => _t('Foreign key in ArchDescriptionSubjects to select on (eg. ResourceID, resourceComponentId, accessionId, digitalObjectId).')
 			),
 			'ATSubjectGetter_relationshipType' => array(
 				'formatType' => FT_TEXT,
