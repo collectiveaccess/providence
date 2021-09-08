@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2019 Whirl-i-Gig
+ * Copyright 2007-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -169,8 +169,8 @@ class SearchEngine extends SearchBase {
 		$va_suffixes = $this->opo_search_config->getAssoc('search_suffixes');
 		if (is_array($va_suffixes) && sizeof($va_suffixes) && (!preg_match('!"!', $ps_search))) {		// don't add suffix wildcards when quoting
 			foreach($va_suffixes as $vs_preg => $vs_suffix) {
-				if (preg_match("!{$vs_preg}!", $ps_search)) {
-					$ps_search = preg_replace("!({$vs_preg})[\*]*!", "$1{$vs_suffix}", $ps_search);
+				if (preg_match("!".preg_quote($vs_preg, "!")."!", $ps_search)) {
+					$ps_search = preg_replace("!(".preg_quote($vs_preg, "!").")[\*]*!", "$1{$vs_suffix}", $ps_search);
 				}
 			}
 		}
@@ -187,7 +187,7 @@ class SearchEngine extends SearchBase {
         if ((is_array($va_idno_regexs = $this->opo_search_config->get('idno_regexes'))) && (!preg_match("!".$this->ops_tablename.".{$vs_idno_fld}!", $ps_search))) {
 			if (isset($va_idno_regexs[$this->ops_tablename]) && is_array($va_idno_regexs[$this->ops_tablename])) { 
 				foreach($va_idno_regexs[$this->ops_tablename] as $vs_idno_regex) {
-					if ((preg_match("!{$vs_idno_regex}!", $ps_search, $va_matches)) && ($t_instance = Datamodel::getInstanceByTableName($this->ops_tablename, true)) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
+					if ((preg_match("!".preg_quote($vs_idno_regex, "!")."!", $ps_search, $va_matches)) && ($t_instance = Datamodel::getInstanceByTableName($this->ops_tablename, true)) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
 						$ps_search = str_replace($va_matches[0], $this->ops_tablename.".{$vs_idno_fld}:\"".$va_matches[0]."\"", $ps_search);
 					}
 				}
@@ -609,7 +609,7 @@ class SearchEngine extends SearchBase {
 		if (is_array($va_idno_regexs = $this->opo_search_config->get('idno_regexes'))) {
 			if (isset($va_idno_regexs[$this->ops_tablename]) && is_array($va_idno_regexs[$this->ops_tablename])) {
 				foreach($va_idno_regexs[$this->ops_tablename] as $vs_idno_regex) {
-					if ((preg_match("!{$vs_idno_regex}!", (string)$po_term->getTerm()->text, $va_matches)) && ($t_instance = Datamodel::getInstanceByTableName($this->ops_tablename, true)) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
+					if ((preg_match("!".preg_quote($vs_idno_regex, "!")."!", (string)$po_term->getTerm()->text, $va_matches)) && ($t_instance = Datamodel::getInstanceByTableName($this->ops_tablename, true)) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
 						$vs_table_name = $t_instance->tableName();
 						return array(
 							'terms' => array(new Zend_Search_Lucene_Index_Term((string)((sizeof($va_matches) > 1) ? $va_matches[1] : $va_matches[0]), "{$vs_table_name}.{$vs_idno_fld}")),
