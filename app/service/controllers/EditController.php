@@ -284,7 +284,6 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 								$ret = self::processBundles($instance, $record['bundles']);
 								$errors += $ret['errors'];
 								$warnings += $ret['warnings'];
-								print_R($record);
 								if(isset($record['relationships']) && is_array($record['relationships']) && sizeof($record['relationships'])) {
 									$ret = self::processRelationships($instance, $record['relationships'], ['replace' => $record['replaceRelationships']]);
 									$errors += $ret['errors'];

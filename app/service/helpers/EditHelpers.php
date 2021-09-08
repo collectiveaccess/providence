@@ -100,7 +100,7 @@ function extractLabelValueFromBundles(string $table, array $bundles) {
 	$label_display_field = $instance->getLabelTableInstance()->getDisplayField();
 	
 	foreach($bundles as $b) {
-		if($b['name'] !== 'preferred_labels') { continue; }
+		if(!in_array($b['name'], ['preferred_labels', 'nonpreferred_labels'], true)) { continue; }
 		if (isset($b['values']) && is_array($b['values']) && sizeof($b['values'])) {		
 			foreach($b['values'] as $val) {
 				if(in_array($val['name'], $label_fields)) { $label_values[$val['name']] = $val['value']; }
