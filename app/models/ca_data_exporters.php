@@ -1841,6 +1841,12 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vs_element = $t_exporter_item->get('element');
 		$vb_repeat = $settings['repeat_element_for_multiple_values'];
 
+		if($vs_skip_if_empty = $settings['skipIfEmpty']) {
+			if(!(strlen($t_instance->get($vs_source))>0)) {
+				return array();
+			}
+		}
+		
 		// if omitIfEmpty is set and get() returns nothing, we ignore this exporter item and all children
 		if($vs_omit_if_empty = $settings['omitIfEmpty']) {
 			if(!(strlen($t_instance->get($vs_omit_if_empty))>0)) {
@@ -2153,6 +2159,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vs_original_values = $settings['original_values'];
 		$vs_replacement_values = $settings['replacement_values'];
 		
+		$apply_regular_expressions = $settings['applyRegularExpressions'];
+		
 		$va_replacements = ca_data_exporter_items::getReplacementArray($vs_original_values,$vs_replacement_values);
 
 		foreach($va_item_info as $vn_key => &$va_item) {
@@ -2190,7 +2198,12 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				}
 			}
 
-			// do replacements
+			// do regex replacements
+			if(is_array($apply_regular_expressions) && sizeof($apply_regular_expressions)) {
+				$va_item['text'] = ca_data_exporter_items::_processAppliedRegexes($va_item['text'], $apply_regular_expressions);
+			}
+			
+			// do text replacements
 			$va_item['text'] = ca_data_exporter_items::replaceText($va_item['text'],$va_replacements);
 			
 			// do templates
@@ -2350,7 +2363,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
                                 'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN)));
 
         $o_sheet->getParent()->getDefaultStyle()->applyFromArray($cellstyle);
-        $o_sheet->setTitle(_t("Exporter %1", $exporter_code));
+        $o_sheet->setTitle(substr($exporter_code, 0, 31));
         
         $o_sheet->getRowDimension($vn_line)->setRowHeight(30);
         
