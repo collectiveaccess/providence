@@ -1303,8 +1303,10 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
-	public function getLuceneQueryStringForHTMLFormInput($pa_form_content) {
+	public function getLuceneQueryStringForHTMLFormInput($pa_form_content, array $options=null) {
 		$va_values = $this->extractFormValuesFromArray($pa_form_content);
+
+		$match_on_stem = caGetSearchConfig()->get('match_on_stem');
 
 		$va_query_elements = [];
 		if (is_array($va_values) && sizeof($va_values)) {
@@ -1317,6 +1319,9 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 					} else {
 						$vs_query_element = $vs_value;
 					}
+					
+					$vs_query_element .= ($match_on_stem && caIsSearchStem($vs_query_element)) ? '*' : '';
+					
 					switch($vs_element){
 						case '_fulltext':		// don't qualify special "fulltext" element
 							$va_query_elements[] = $vs_query_element;

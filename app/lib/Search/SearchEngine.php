@@ -140,7 +140,7 @@ class SearchEngine extends SearchBase {
 			$ps_search .= $vs_append_to_search;
 		}
 		
-		$ps_search = preg_replace('![\|]([A-Za-z0-9_,;]+[:]{1})!', "/$1", $ps_search);	// allow | to be used in lieu of / as the relationship type separator, as "/" is problematic to encode in GET requests
+		$ps_search = preg_replace('/[\|]([A-Za-z0-9_,;]+[:]{1})/', "/$1", $ps_search);	// allow | to be used in lieu of / as the relationship type separator, as "/" is problematic to encode in GET requests
 		// the special [BLANK] search term, which returns records that have *no* content in a specific fields, has to be quoted in order to protect the square brackets from the parser.
 		$ps_search = preg_replace('/(?!")\['.caGetBlankLabelText($this->ops_tablename).'\](?!")/i', '"['.caGetBlankLabelText($this->ops_tablename).']"', $ps_search); 
 		$ps_search = preg_replace('/(?!")\[BLANK\](?!")/i', '"[BLANK]"', $ps_search); 
@@ -167,10 +167,10 @@ class SearchEngine extends SearchBase {
 		// This is useful, for example, to allow auto-wildcarding of accession numbers: if the search looks like an accession regex-wise we can append a "*"
 		//
 		$va_suffixes = $this->opo_search_config->getAssoc('search_suffixes');
-		if (is_array($va_suffixes) && sizeof($va_suffixes) && (!preg_match('!"!', $ps_search))) {		// don't add suffix wildcards when quoting
+		if (is_array($va_suffixes) && sizeof($va_suffixes) && (!preg_match('/"/', $ps_search))) {		// don't add suffix wildcards when quoting
 			foreach($va_suffixes as $vs_preg => $vs_suffix) {
-				if (preg_match("!".preg_quote($vs_preg, "!")."!", $ps_search)) {
-					$ps_search = preg_replace("!(".preg_quote($vs_preg, "!").")[\*]*!", "$1{$vs_suffix}", $ps_search);
+				if (@preg_match("/".caQuoteRegexDelimiter($vs_preg, "/")."/", $ps_search)) {
+					$ps_search = preg_replace("/(".caQuoteRegexDelimiter($vs_preg, "/").")[\*]*/", "$1{$vs_suffix}", $ps_search);
 				}
 			}
 		}
@@ -179,15 +179,15 @@ class SearchEngine extends SearchBase {
 		if (is_array($va_rewrite_regexs = $this->opo_search_config->get('rewrite_regexes'))) {
 			if (isset($va_rewrite_regexs[$this->ops_tablename]) && is_array($va_rewrite_regexs[$this->ops_tablename])) { 
 				foreach($va_rewrite_regexs[$this->ops_tablename] as $vs_regex_name => $va_rewrite_regex) {
-					$ps_search = preg_replace("!".trim($va_rewrite_regex[0])."!", trim($va_rewrite_regex[1]), $ps_search);
+					$ps_search = preg_replace("/".caQuoteRegexDelimiter(trim($va_rewrite_regex[0]), '/')."/", trim($va_rewrite_regex[1]), $ps_search);
 				}
 			}
 		}
 		
-        if ((is_array($va_idno_regexs = $this->opo_search_config->get('idno_regexes'))) && (!preg_match("!".$this->ops_tablename.".{$vs_idno_fld}!", $ps_search))) {
+        if ((is_array($va_idno_regexs = $this->opo_search_config->get('idno_regexes'))) && (!preg_match("/".$this->ops_tablename.".{$vs_idno_fld}/", $ps_search))) {
 			if (isset($va_idno_regexs[$this->ops_tablename]) && is_array($va_idno_regexs[$this->ops_tablename])) { 
 				foreach($va_idno_regexs[$this->ops_tablename] as $vs_idno_regex) {
-					if ((preg_match("!".preg_quote($vs_idno_regex, "!")."!", $ps_search, $va_matches)) && ($t_instance = Datamodel::getInstanceByTableName($this->ops_tablename, true)) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
+					if ((@preg_match("/".caQuoteRegexDelimiter($vs_idno_regex, "/")."/", $ps_search, $va_matches)) && ($t_instance = Datamodel::getInstanceByTableName($this->ops_tablename, true)) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
 						$ps_search = str_replace($va_matches[0], $this->ops_tablename.".{$vs_idno_fld}:\"".$va_matches[0]."\"", $ps_search);
 					}
 				}
@@ -233,7 +233,7 @@ class SearchEngine extends SearchBase {
 			$o_query_parser->setEncoding('UTF-8');
 			$o_query_parser->setDefaultOperator(LuceneSyntaxParser::B_AND);
 			
-			$ps_search = preg_replace('![\']+!', '', $ps_search);	
+			$ps_search = preg_replace('/[\']+/', '', $ps_search);	
 		
 			try {
 				$o_parsed_query = $o_query_parser->parse($ps_search, 'UTF-8');
@@ -243,8 +243,8 @@ class SearchEngine extends SearchBase {
 					throw new SearchException(_t('Search failed: %1', $e->getMessage()));
 				}
 				try {
-					$vs_search_proc = preg_replace("![ ]+(AND)[ ]+!i", " ", $ps_search);
-					$vs_search_proc = preg_replace("![^A-Za-z0-9 ]+!", " ", $vs_search_proc);
+					$vs_search_proc = preg_replace("/[ ]+(AND)[ ]+/i", " ", $ps_search);
+					$vs_search_proc = preg_replace("/[^A-Za-z0-9 ]+/", " ", $vs_search_proc);
 					$o_parsed_query = $o_query_parser->parse($vs_search_proc, 'UTF-8');
 				} catch (Exception $e) {
 					$o_parsed_query = $o_query_parser->parse("", 'UTF-8');
@@ -551,7 +551,7 @@ class SearchEngine extends SearchBase {
 		$vs_fld = $po_term->getTerm()->field;
 		if (is_array($va_access_points = $this->getAccessPoints($this->opn_tablenum)) && sizeof($va_access_points)) {
 			// if field is access point then do rewrite
-			$va_fld_tmp = preg_split("![/\|]+!", mb_strtolower($vs_fld));
+			$va_fld_tmp = preg_split("/[\/\|]+/", mb_strtolower($vs_fld));
 			$vs_fld_lc = $va_fld_tmp[0];
 			$vs_rel_types = isset($va_fld_tmp[1]) ? $va_fld_tmp[1] : null;
 			
@@ -609,7 +609,7 @@ class SearchEngine extends SearchBase {
 		if (is_array($va_idno_regexs = $this->opo_search_config->get('idno_regexes'))) {
 			if (isset($va_idno_regexs[$this->ops_tablename]) && is_array($va_idno_regexs[$this->ops_tablename])) {
 				foreach($va_idno_regexs[$this->ops_tablename] as $vs_idno_regex) {
-					if ((preg_match("!".preg_quote($vs_idno_regex, "!")."!", (string)$po_term->getTerm()->text, $va_matches)) && ($t_instance = Datamodel::getInstanceByTableName($this->ops_tablename, true)) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
+					if ((@preg_match("/".caQuoteRegexDelimiter($vs_idno_regex, "/")."/", (string)$po_term->getTerm()->text, $va_matches)) && ($t_instance = Datamodel::getInstanceByTableName($this->ops_tablename, true)) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
 						$vs_table_name = $t_instance->tableName();
 						return array(
 							'terms' => array(new Zend_Search_Lucene_Index_Term((string)((sizeof($va_matches) > 1) ? $va_matches[1] : $va_matches[0]), "{$vs_table_name}.{$vs_idno_fld}")),
@@ -622,7 +622,7 @@ class SearchEngine extends SearchBase {
 		}
 		
 		// is it a label? Rewrite the field for that.
-		$va_tmp = preg_split('![/\|]+!', $vs_fld);
+		$va_tmp = preg_split('/[\/\|]+/', $vs_fld);
 		$va_tmp2 = explode('.', $va_tmp[0]);
 		if (in_array($va_tmp2[1], array('preferred_labels', 'nonpreferred_labels'))) {
 			if ($t_instance = Datamodel::getInstanceByTableName($va_tmp2[0], true)) {
@@ -684,7 +684,7 @@ class SearchEngine extends SearchBase {
 		}
 		
 		// is it a labels? Rewrite the field for that.
-		$va_tmp = preg_split('![/\|]+!', $vs_fld);
+		$va_tmp = preg_split('/[\/\|]+/', $vs_fld);
 		$va_tmp2 = explode('.', $va_tmp[0]);
 		if (in_array($va_tmp2[1], array('preferred_labels', 'nonpreferred_labels'))) {
 			if ($t_instance = Datamodel::getInstanceByTableName($va_tmp2[0], true)) {
@@ -1182,13 +1182,13 @@ class SearchEngine extends SearchBase {
 			$o_query_parser->setEncoding('UTF-8');
 			$o_query_parser->setDefaultOperator(LuceneSyntaxParser::B_AND);
 	
-			$ps_search = preg_replace('![\']+!', '', $ps_search);
+			$ps_search = preg_replace('/[\']+/', '', $ps_search);
 			try {
 				$o_parsed_query = $o_query_parser->parse($ps_search, 'UTF-8');
 			} catch (Exception $e) {
 				// Retry search with all non-alphanumeric characters removed
 				try {
-					$o_parsed_query = $o_query_parser->parse(preg_replace("![^A-Za-z0-9 ]+!", " ", $ps_search), 'UTF-8');
+					$o_parsed_query = $o_query_parser->parse(preg_replace("/[^A-Za-z0-9 ]+/", " ", $ps_search), 'UTF-8');
 				} catch (Exception $e) {
 					$o_parsed_query = $o_query_parser->parse("", 'UTF-8');
 				}
@@ -1197,7 +1197,7 @@ class SearchEngine extends SearchBase {
 			$va_field_list = SearchEngine::_getFieldList($o_parsed_query);
 			
 			foreach($va_field_list as $vs_field) {
-				$va_tmp = preg_split('![/\|]+!', $vs_field);
+				$va_tmp = preg_split('/[\/\|]+/', $vs_field);
 				
 				if (sizeof($va_tmp) > 1) {
 					$vs_rel_type = $va_tmp[1];
