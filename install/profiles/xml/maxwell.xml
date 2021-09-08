@@ -7540,6 +7540,15 @@
             </label>
           </labels>
         </item>
+        <item idno="Flagged_for_NAGPRA" enabled="1" default="0" value="Flagged_for_NAGPRA" rank="5605" type="concept">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Flagged for NAGPRA</name_singular>
+              <name_plural>Flagged for NAGPRA</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
       </items>
     </list>
     <list code="numismatic_types_1563388529" hierarchical="1" system="0" vocabulary="0">
@@ -8662,11 +8671,11 @@
         </label>
       </labels>
       <items>
-        <item idno="open" enabled="1" default="0" value="open" rank="1018">
+        <item idno="active" enabled="1" default="0" value="active" rank="1018">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Open</name_singular>
-              <name_plural>Open</name_plural>
+              <name_singular>Active</name_singular>
+              <name_plural>Active</name_plural>
               <description/>
             </label>
           </labels>
@@ -15919,6 +15928,24 @@ Thessalonica</name_plural>
             <label locale="en_US" preferred="1">
               <name_singular>Old box no.</name_singular>
               <name_plural>Old box nos.</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="mma" enabled="1" default="0" value="mma" rank="20" type="concept">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>MMA number</name_singular>
+              <name_plural>MMA numbers</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="collection_id" enabled="1" default="0" value="collection_id" rank="21" type="concept">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>collection ID</name_singular>
+              <name_plural>collection ID</name_plural>
               <description/>
             </label>
           </labels>
@@ -24932,7 +24959,7 @@ Thessalonica</name_plural>
             <setting name="canMakePDFForValue">1</setting>
           </settings>
         </metadataElement>
-        <metadataElement code="dimensions_rim_diameter" datatype="Weight">
+        <metadataElement code="dimensions_rim_diameter" datatype="Length">
           <labels>
             <label locale="en_US">
               <name>Rim Diameter</name>
@@ -36356,7 +36383,7 @@ Thessalonica</name_plural>
         </label>
       </labels>
       <settings>
-        <setting name="render">yes_no_checkboxes</setting>
+        <setting name="render">select</setting>
         <setting name="restrictToTypes">concept</setting>
       </settings>
       <typeRestrictions>
@@ -37718,6 +37745,14 @@ Thessalonica</name_plural>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
+        <restriction>
+          <table>ca_collections_x_storage_locations</table>
+          <settings>
+            <setting name="minAttributesPerRow"/>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="burial_number" datatype="Text">
@@ -38607,6 +38642,28 @@ Thessalonica</name_plural>
       <typeRestrictions>
         <restriction>
           <table>ca_loans</table>
+          <settings>
+            <setting name="minAttributesPerRow"/>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="restriction_notes" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Restriction Notes</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="maxChars">65535</setting>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">4</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
           <settings>
             <setting name="minAttributesPerRow"/>
             <setting name="maxAttributesPerRow">1</setting>
@@ -41451,6 +41508,16 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
+            <placement code="ca_attribute_txt_verbatim_geography">
+              <bundle>ca_objects.txt_verbatim_geography</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="sort">1</setting>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
             <placement code="ca_occurrences_site">
               <bundle>ca_occurrences</bundle>
               <settings>
@@ -41511,6 +41578,9 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
               </settings>
+            </placement>
+            <placement code="ca_attribute_restriction_notes">
+              <bundle>ca_objects.restriction_notes</bundle>
             </placement>
             <placement code="ca_attribute_dimensions">
               <bundle>ca_objects.dimensions</bundle>
@@ -41702,7 +41772,7 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="list_format">bubbles</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="dontShowDeleteButton">0</setting>
-                <setting name="display_template">^ca_collections.preferred_labels</setting>
+                <setting name="display_template">^ca_collections.hierarchy.preferred_labels%delimiter=_>_</setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow"/>
                 <setting name="showCurrentOnly">0</setting>
@@ -41982,6 +42052,9 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
               </settings>
+            </placement>
+            <placement code="ca_attribute_restriction_notes">
+              <bundle>ca_objects.restriction_notes</bundle>
             </placement>
             <placement code="ca_attribute_cultural_sensitivity">
               <bundle>ca_objects.cultural_sensitivity</bundle>
@@ -42375,6 +42448,9 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
               </settings>
             </placement>
+            <placement code="ca_attribute_restriction_notes">
+              <bundle>ca_objects.restriction_notes</bundle>
+            </placement>
             <placement code="ca_attribute_dimensions">
               <bundle>ca_objects.dimensions</bundle>
               <settings>
@@ -42681,6 +42757,9 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
               </settings>
+            </placement>
+            <placement code="ca_attribute_restriction_notes">
+              <bundle>ca_objects.restriction_notes</bundle>
             </placement>
             <placement code="ca_attribute_cont_researcher_notes">
               <bundle>ca_objects.cont_researcher_notes</bundle>
@@ -43004,6 +43083,9 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
               </settings>
             </placement>
+            <placement code="ca_attribute_restriction_notes">
+              <bundle>ca_objects.restriction_notes</bundle>
+            </placement>
             <placement code="ca_attribute_object_statu">
               <bundle>ca_objects.object_status_cont</bundle>
               <settings>
@@ -43306,6 +43388,16 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
+            <placement code="ca_attribute_txt_verbatim_geography">
+              <bundle>ca_objects.txt_verbatim_geography</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="sort">1</setting>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
             <placement code="ca_occurrences_site">
               <bundle>ca_occurrences</bundle>
               <settings>
@@ -43358,6 +43450,9 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
               </settings>
+            </placement>
+            <placement code="ca_attribute_restriction_notes">
+              <bundle>ca_objects.restriction_notes</bundle>
             </placement>
             <placement code="ca_attribute_common_name">
               <bundle>ca_objects.common_name</bundle>
@@ -43604,6 +43699,9 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
               </settings>
+            </placement>
+            <placement code="ca_attribute_restriction_notes">
+              <bundle>ca_objects.restriction_notes</bundle>
             </placement>
             <placement code="ca_attribute_object_statu">
               <bundle>ca_objects.object_status_cont</bundle>
@@ -46662,7 +46760,8 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="disableQuickadd">0</setting>
                 <setting name="disableSorts">0</setting>
                </settings>
-            </placement><placement code="ca_storage_locations" typeRestrictions="">
+            </placement>
+            <placement code="ca_storage_locations" typeRestrictions="">
               <bundle>ca_storage_locations</bundle>
               <settings>
                 <setting name="expand_collapse_value">dont_force</setting>
@@ -47008,6 +47107,15 @@ A Closed loan is completed and inactive.</setting>
             </label>
           </labels>
           <bundlePlacements>
+            <placement code="hierarchy_location">
+              <bundle>hierarchy_location</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse">dont_force</setting>
+                <setting name="open_hierarchy">1</setting>
+                <setting name="auto_shrink"/>
+              </settings>
+            </placement>
             <placement code="idno">
               <bundle>ca_collections.idno</bundle>
               <settings>
@@ -47254,6 +47362,20 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="prepopulateQuickaddFields">0</setting>
                 <setting name="disableSorts">0</setting>
               </settings>
+            </placement>
+            <placement code="ca_storage_locations" typeRestrictions="">
+              <bundle>ca_storage_locations</bundle>
+              <settings>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="disableSorts">0</setting>
+               </settings>
             </placement>
           </bundlePlacements>
         </screen>
@@ -48491,6 +48613,39 @@ A Closed loan is completed and inactive.</setting>
         </screen>
       </screens>
     </userInterface>
+    <userInterface code="collection_x_storage" type="ca_collections_x_storage_locations"
+      typeRestrictions="current,former" includeSubtypes="0">
+      <labels>
+        <label locale="en_US">
+          <name>Storage Location x Collection</name>
+        </label>
+      </labels>
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
+      <screens>
+        <screen idno="screen_27_0" default="0" color="000000">
+          <labels>
+            <label locale="en_US">
+              <name>Basic</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="effective_date1">
+              <bundle>effective_date</bundle>
+            </placement>
+            <placement code="staff">
+              <bundle>staff</bundle>
+              <settings>
+                <setting name="display_template">^ca_entities.preferred_labels</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow">1</setting>
+              </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
     <userInterface code="occ_x_storage" type="ca_occurrences_x_storage_locations" includeSubtypes="0">
       <labels>
         <label locale="en_US">
@@ -48646,6 +48801,26 @@ A Closed loan is completed and inactive.</setting>
             <label locale="en_US">
               <typename>is related to</typename>
               <typename_reverse>is related to</typename_reverse>
+            </label>
+          </labels>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_collections_x_storage_locations">
+      <types>
+        <type code="current" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>current</typename>
+              <typename_reverse>current</typename_reverse>
+            </label>
+          </labels>
+        </type>
+        <type code="former" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>former</typename>
+              <typename_reverse>former</typename_reverse>
             </label>
           </labels>
         </type>
