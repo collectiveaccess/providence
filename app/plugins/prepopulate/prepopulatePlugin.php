@@ -525,15 +525,16 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 		}
 
 
-		if(isset($_REQUEST['form_timestamp']) && ($_REQUEST['form_timestamp'] > 0)) { $_REQUEST['form_timestamp'] = time(); }
-		$t_instance->update(['force' => true, 'hooks' => false]);
-
-		if($t_instance->numErrors() > 0) {
-			foreach($t_instance->getErrors() as $vs_error) {
-				Debug::msg("[prepopulateFields()] there was an error while updating the record: ".$vs_error);
+		if ($t_instance->getChangedFieldValuesArray()) {
+			if(isset($_REQUEST['form_timestamp']) && ($_REQUEST['form_timestamp'] > 0)) { $_REQUEST['form_timestamp'] = time(); }
+			$t_instance->update(['force' => true, 'hooks' => false]);
+			if($t_instance->numErrors() > 0) {
+				foreach($t_instance->getErrors() as $vs_error) {
+					Debug::msg("[prepopulateFields()] there was an error while updating the record: ".$vs_error);
+				}
+				if ($vb_we_set_transaction) { $t_instance->removeTransaction(false); }
+				return false;
 			}
-			if ($vb_we_set_transaction) { $t_instance->removeTransaction(false); }
-			return false;
 		}
 
 		if ($vb_we_set_transaction) { $t_instance->removeTransaction(true); }
