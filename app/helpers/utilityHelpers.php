@@ -3988,6 +3988,7 @@ function caFileIsIncludable($ps_file) {
 		global $g_ui_locale;
 		$ps_locale = caGetOption('locale', $pa_options, $g_ui_locale);
 		$max_length = caGetOption('maxLength', $pa_options, 255, ['castTo' => 'int']);
+		$ps_text = strip_tags($ps_text);
 		if (!$ps_locale) { return mb_substr($ps_text, 0, $max_length); }
 
 		$pb_omit_article = caGetOption('omitArticle', $pa_options, true);
