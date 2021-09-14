@@ -77,7 +77,7 @@ BaseModel::$s_ca_models_definitions['ca_object_representation_labels'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Representation label'), 'DESCRIPTION' => _t('Label/caption for representation.'),
-				'BOUNDS_LENGTH' => array(1,16384)
+				'BOUNDS_LENGTH' => array(1,8192)
 		),
 		'name_sort' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT, 

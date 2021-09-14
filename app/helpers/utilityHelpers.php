@@ -3988,6 +3988,7 @@ function caFileIsIncludable($ps_file) {
 		global $g_ui_locale;
 		$ps_locale = caGetOption('locale', $pa_options, $g_ui_locale);
 		$max_length = caGetOption('maxLength', $pa_options, 255, ['castTo' => 'int']);
+		$ps_text = strip_tags($ps_text);
 		if (!$ps_locale) { return mb_substr($ps_text, 0, $max_length); }
 
 		$pb_omit_article = caGetOption('omitArticle', $pa_options, true);
@@ -4591,5 +4592,19 @@ function caFileIsIncludable($ps_file) {
 			hexdec(substr($value, 2, 2)),
 			hexdec(substr($value, 4, 2))
 		];
+	}
+    # ----------------------------------------
+	/**
+	 * Escape/quote regex delimiter, leaving other special characters intact
+	 *
+	 * @param string $regex 
+	 * @param string $delimiter
+	 *
+	 * @return string
+	 */
+	function caQuoteRegexDelimiter(string $regex, string $delimiter) : string {
+		$regex = str_replace($delimiter, "\\{$delimiter}", $regex);
+		
+		return $regex;
 	}
     # ----------------------------------------

@@ -78,7 +78,7 @@ BaseModel::$s_ca_models_definitions['ca_object_lot_labels'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Name'), 'DESCRIPTION' => _t('Name of lot'),
-				'BOUNDS_LENGTH' => array(1,16384)
+				'BOUNDS_LENGTH' => array(1,8192)
 		),
 		'name_sort' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT, 

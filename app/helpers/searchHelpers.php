@@ -2205,3 +2205,14 @@
 		return $term;
 	}
 	# ---------------------------------------
+	/**
+	 * Check is string suitable for use as a wildcard-suffixed search stem
+	 *
+	 * @param string $value 
+	 *
+	 * @return bool
+	 */
+	function caIsSearchStem(string $value) : bool {
+		return (!preg_match('![\d]+$!', $value) && !preg_match('!\*$!', $value) && preg_match('![\w]+$!', $value));
+	}
+	# ---------------------------------------

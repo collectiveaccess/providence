@@ -77,7 +77,7 @@ BaseModel::$s_ca_models_definitions['ca_occurrence_labels'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Name'), 'DESCRIPTION' => _t('Name of occurrence'),
-				'BOUNDS_LENGTH' => array(1,16384)
+				'BOUNDS_LENGTH' => array(1,8192)
 		),
 		'name_sort' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT, 

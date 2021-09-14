@@ -62,16 +62,22 @@
 			$vb_has_privs = $this->request->user->canDoAction('can_create_'.$vs_priv_table);
 			break;
 	}
-	
+
 	$vb_objects_x_collections_hierarchy_enabled = (bool)$t_subject->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled');
 	$vs_disabled_items_mode = $t_subject->getAppConfig()->get($t_subject->tableName() . '_hierarchy_browser_disabled_items_mode');
 	$vs_disabled_items_mode = $vs_disabled_items_mode ? $vs_disabled_items_mode : 'hide';
 	$t_object = new ca_objects();
-	
+
+	$pa_bundle_settings = $this->getVar('settings');
+
 	$va_search_lookup_extra_params = array('noInline' => 1);
 	if ($t_subject->getProperty('HIERARCHY_ID_FLD') && ($vn_hier_id = (int)$t_subject->get($t_subject->getProperty('HIERARCHY_ID_FLD')))) {
 		$va_search_lookup_extra_params['currentHierarchyOnly'] = $vn_hier_id;
 	}
+	if (isset($pa_bundle_settings['restrict_to_types'])) {
+		$va_search_lookup_extra_params['types'] = $pa_bundle_settings['restrict_to_types'];
+	}
+
 	if (in_array($t_subject->tableName(), array('ca_objects', 'ca_collections')) && $vb_objects_x_collections_hierarchy_enabled) {
 		$va_lookup_urls_for_move = $va_lookup_urls = array(
 			'search' => caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'Get', $va_search_lookup_extra_params),
@@ -89,11 +95,10 @@
 		$vs_edit_url = caEditorUrl($this->request, $t_subject->tableName());
 		$vn_init_id = $pn_id;
 	}
-	
+
 	$strict_type_hierarchy = $this->request->config->get($t_subject->tableName().'_enforce_strict_type_hierarchy');
-	$vs_type_selector 	= trim($t_subject->getTypeListAsHTMLFormElement("{$id_prefix}type_id", array('id' => "{$id_prefix}typeList"), array('childrenOfCurrentTypeOnly' => (bool)$strict_type_hierarchy, 'includeSelf' => !(bool)$strict_type_hierarchy, 'directChildrenOnly' => ((bool)$strict_type_hierarchy && ($strict_type_hierarchy !== '~')))));
-	
-	$pa_bundle_settings = $this->getVar('settings');
+	$vs_type_selector 	= trim($t_subject->getTypeListAsHTMLFormElement("{$id_prefix}type_id", array('id' => "{$id_prefix}typeList"), array('childrenOfCurrentTypeOnly' => (bool)$strict_type_hierarchy, 'includeSelf' => !(bool)$strict_type_hierarchy, 'directChildrenOnly' => ((bool)$strict_type_hierarchy && ($strict_type_hierarchy !== '~')), 'restrictToTypes' => $pa_bundle_settings['restrict_to_types'])));
+
 	$vb_read_only		=	((isset($pa_bundle_settings['readonly']) && $pa_bundle_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_subject->tableName(), 'hierarchy_location') == __CA_BUNDLE_ACCESS_READONLY__));
 	
 	$show_add = (!$vb_read_only && $vb_has_privs && !$vb_batch) && (!$strict_type_hierarchy || ($strict_type_hierarchy && $vs_type_selector));
@@ -240,7 +245,7 @@
 	} else {
 		print caEditorBundleShowHideControl($this->request, $id_prefix, $pa_bundle_settings, false, $vs_bundle_preview);
 	}
-	print caEditorBundleMetadataDictionary($this->request, $id_prefix, $va_settings);
+	print caEditorBundleMetadataDictionary($this->request, $id_prefix, $pa_bundle_settings);
 ?>
 <div id="<?= $id_prefix; ?>">
 	<div class="bundleContainer">
@@ -254,8 +259,9 @@
 			}
 	
 			if (!$vb_batch && ($pn_id > 0)) {
+				$vs_count_label = $pa_bundle_settings['label_for_count'] ?? caGetTableDisplayName($t_subject->tableName(), true);
 ?>
-				<div class="hierarchyCountDisplay"><?php if($vn_items_in_hier > 0) { print _t("Number of %1 in hierarchy: %2", caGetTableDisplayName($t_subject->tableName(), true), $vn_items_in_hier); } ?></div>
+				<div class="hierarchyCountDisplay"><?php if($vn_items_in_hier > 0) { print _t("Number of %1 in hierarchy: %2", $vs_count_label, $vn_items_in_hier); } ?></div>
 				<div class="buttonPosition">
 					<a href="#" id="<?= $id_prefix; ?>browseToggle" class="form-button"><span class="form-button"><?= _t('Show Hierarchy'); ?></span></a>
 				</div>			

@@ -216,13 +216,18 @@
 				'label' => _t('Relationships'),
 				'description' => _t('List of relationships to process.')
 			),
-			'objectLotSplitter_relatedEntities' => array(
+			'objectLotSplitter_textTransform' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,
 				'width' => 10, 'height' => 1,
 				'takesLocale' => false,
 				'default' => '',
-				'label' => _t('Relationships'),
-				'description' => _t('List of entity relationships to process.')
+				'options' => [
+					'Upper case' => 'toUpperCase',
+					'Lower case' => 'toLowerCase',
+					'Upper case first character only' => 'upperCaseFirst',
+				],
+				'label' => _t('Text transformation'),
+				'description' => _t('Transform text case.')
 			)
 		);
