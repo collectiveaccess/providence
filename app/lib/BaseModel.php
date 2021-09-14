@@ -989,10 +989,7 @@ class BaseModel extends BaseObject {
 				}
 				
 				if(($ps_field_type == FT_NUMBER) && isset($vs_prop) && is_numeric($vs_prop)) {
-					$p = ini_get('precision');
-					ini_set('precision', strlen($vs_prop) + 2);
-					$vs_prop = ((float)$vs_prop != (int)$vs_prop) ? (float)$vs_prop : (int)$vs_prop;
-					ini_set('precision', $p);
+					$vs_prop = ((float)$vs_prop != (int)$vs_prop) ? $vs_prop : (int)$vs_prop;
 				}
 				
 				//

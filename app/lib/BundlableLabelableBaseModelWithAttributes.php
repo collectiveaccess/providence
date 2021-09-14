@@ -1852,7 +1852,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					// This bundle is only available when editing objects of type ca_object_representations
 					case 'ca_object_representation_captions':
 						if ($vb_batch) { return null; } // not supported in batch mode
-						if (!$this->representationIsOfClass("video")) { return ''; }
+						if (!$this->representationIsOfClass("video") && !$this->representationIsOfClass("audio")) { return ''; }
 						$vs_element .= $this->getCaptionHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
 						break;
 					# -------------------------------
