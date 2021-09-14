@@ -274,7 +274,7 @@ class BaseEditorController extends ActionController {
 				}
 			}
 
-			if ($vn_context_id && !$t_subject->get($vs_idno_context_field, $vn_context_id)) { $t_subject->set($vs_idno_context_field, $vn_context_id); }
+			if ($vn_context_id && !$t_subject->get($vs_idno_context_field)) { $t_subject->set($vs_idno_context_field, $vn_context_id); }
 		}
 
 		if (!($vs_type_name = $t_subject->getTypeName())) {
