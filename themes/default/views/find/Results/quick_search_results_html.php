@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,29 +28,40 @@
  
  $o_search_config = caGetSearchConfig();
  
- $ps_search = $this->getVar('search');
+ $search = $this->getVar('search');
+ $searches = $this->getVar('searches');
  
  
- $vs_sort_form = caFormTag($this->request, 'Index', 'QuickSearchSortForm', null , 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
- $vs_sort_form .= _t('Sort by ').caHTMLSelect('sort', array(_t('name') => 'name', _t('relevance') => 'relevance', _t('idno') => 'idno'), array('onchange' => 'jQuery("#QuickSearchSortForm").submit();'), array('value' => $this->getVar('sort')));
- $vs_sort_form .= "</form>";
+ $sort_form = caFormTag($this->request, 'Index', 'QuickSearchSortForm', null , 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
+ $sort_form .= _t('Sort by ').caHTMLSelect('sort', array(_t('name') => 'name', _t('relevance') => 'relevance', _t('idno') => 'idno'), array('onchange' => 'jQuery("#QuickSearchSortForm").submit();'), array('value' => $this->getVar('sort')));
+ $sort_form .= "</form>";
  
- print $vs_control_box = caFormControlBox(
-		'<div class="quickSearchHeader">'._t("Top %1 results for <em>%2</em>", $this->getVar('maxNumberResults'), $this->getVar('search')).'</div>', 
+ $has_results = (bool)array_reduce(array_keys($searches), function($c, $i) {
+ 	if($o_res = $this->getVar("{$i}_results")) {
+ 		$c += (int)$o_res->numHits();
+ 	}
+ 	return $c;
+ }, 0);
+ 
+ print $control_box = caFormControlBox(
+		'<div class="quickSearchHeader">'.($has_results ? 
+			_t("Top %1 results for <em>%2</em>", $this->getVar('maxNumberResults'), $this->getVar('search'))
+			: 
+			_t("No results found for <em>%1</em>", $this->getVar('search'))
+		).'</div>', 
 		'',
-		$vs_sort_form
+		$sort_form
 	);
 	
 	$vn_num_result_lists_to_display = 0;
 	
-	$va_searches = $this->getVar('searches');
 ?>
 
 <div class="quickSearchContentArea">
 
 <?php
-	$vs_visibility = (sizeof($va_searches) == 1) ? 'block' : 'none';
-	foreach($va_searches as $vs_target => $va_info) {
+	$vs_visibility = (sizeof($searches) == 1) ? 'block' : 'none';
+	foreach($searches as $vs_target => $va_info) {
 			$va_table = explode('/', $vs_target);
 			$vs_table = $va_table[0]; $vs_type = (isset($va_table[1])) ? $va_table[1] : null;
 			
@@ -60,11 +71,11 @@
 			if ($o_res->numHits() >= 1) { 
 ?>
 				<div class="quickSearchResultHeader rounded" >
-					<div class="quickSearchFullResultsLink"><?php print caNavLink($this->request, caNavIcon(__CA_NAV_ICON_FULL_RESULTS__, 2)." "._t("Full Results"), null, $va_info['searchModule'], $va_info['searchController'], $va_info['searchAction'], array("search" => caEscapeSearchForURL($ps_search), 'type_id' => $vs_type ? $vs_type : '*')); ?></div>
-					<a href='#' style="text-decoration:none; color:#333;" id='show<?php print $vs_target_id; ?>' onclick='return caQuickSearchShowHideResults("show", "<?php print $vs_target_id; ?>");'><?php print $va_info['displayname']." (".$o_res->numHits().")"; ?> <?php print caNavIcon(__CA_NAV_ICON_EXPAND__, '18px'); ?></a>
-					<a href='#' id='hide<?php print $vs_target_id; ?>' style='display:none; text-decoration:none; color:#333;' onclick='return caQuickSearchShowHideResults("hide", "<?php print $vs_target_id; ?>");'><?php print $va_info['displayname']." (".$o_res->numHits().")"; ?> <?php print caNavIcon(__CA_NAV_ICON_COLLAPSE__, '18px'); ?></a>
+					<div class="quickSearchFullResultsLink"><?= caNavLink($this->request, caNavIcon(__CA_NAV_ICON_FULL_RESULTS__, 2)." "._t("Full Results"), null, $va_info['searchModule'], $va_info['searchController'], $va_info['searchAction'], array("search" => caEscapeSearchForURL($search), 'type_id' => $vs_type ? $vs_type : '*')); ?></div>
+					<a href='#' style="text-decoration:none; color:#333;" id='show<?= $vs_target_id; ?>' onclick='return caQuickSearchShowHideResults("show", "<?= $vs_target_id; ?>");'><?= $va_info['displayname']." (".$o_res->numHits().")"; ?> <?= caNavIcon(__CA_NAV_ICON_EXPAND__, '18px'); ?></a>
+					<a href='#' id='hide<?= $vs_target_id; ?>' style='display:none; text-decoration:none; color:#333;' onclick='return caQuickSearchShowHideResults("hide", "<?= $vs_target_id; ?>");'><?= $va_info['displayname']." (".$o_res->numHits().")"; ?> <?= caNavIcon(__CA_NAV_ICON_COLLAPSE__, '18px'); ?></a>
 				</div>
-				<div class="quickSearchHalfWidthResults" id='<?php print $vs_target_id; ?>_results' style="display:none;">
+				<div class="quickSearchHalfWidthResults" id='<?= $vs_target_id; ?>_results' style="display:none;">
 					<ul class='quickSearchList'>
 <?php
 						$t_instance = Datamodel::getInstanceByTableName($vs_table, true);
@@ -102,7 +113,7 @@
 						}
 	?>
 					</ul>
-					<div class="quickSearchResultHide"><a href='#' id='hide<?php print $vs_target_id; ?>' onclick='jQuery("#<?php print $vs_target_id; ?>_results").slideUp(250); jQuery("#show<?php print $vs_target_id; ?>").slideDown(1); jQuery("#hide<?php print $vs_target_id; ?>").hide(); return false;'> <?php print caNavIcon(__CA_NAV_ICON_COLLAPSE__, 2); ?></a></div>
+					<div class="quickSearchResultHide"><a href='#' id='hide<?= $vs_target_id; ?>' onclick='jQuery("#<?= $vs_target_id; ?>_results").slideUp(250); jQuery("#show<?= $vs_target_id; ?>").slideDown(1); jQuery("#hide<?= $vs_target_id; ?>").hide(); return false;'> <?= caNavIcon(__CA_NAV_ICON_COLLAPSE__, 2); ?></a></div>
 				</div>
 <?php	
 			} else {
@@ -126,10 +137,10 @@
 		return false;
 	}
 <?php
-	if (sizeof($va_searches) > 0) {
+	if (sizeof($searches) > 0) {
 ?>
 		jQuery(document).ready(function() {
-			caQuickSearchShowHideResults('show', '<?php print array_shift(array_keys($va_searches)); ?>');
+			caQuickSearchShowHideResults('show', '<?= str_replace("/", "-", array_shift(array_keys($searches))); ?>');
 		});
 <?php
 	}
