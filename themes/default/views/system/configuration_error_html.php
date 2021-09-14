@@ -44,26 +44,25 @@ if (!is_array($opa_error_messages)) {
 </head>
 <body>
 	<div id='box'>
-	<div id="logo"><?= caGetLoginLogo(); ?></div><!-- end logo -->
-	<div id="content">
-		<?= "<div class='error'>Issues with your system configuration have been detected</div>
-			General installation instructions can be found
-			<a href='https://manual.collectiveaccess.org/setup/Installation.html' target='_blank'>here</a>.
-			For more specific hints on the existing issues please have a look at the messages below."; ?>
-		<br/><br/>
+		<div id="logo"><?= caGetLoginLogo(); ?></div><!-- end logo -->
+		<div id="content">
+			<?= "<div class='error'>There are issues with your configuration</div>
+				<div class='errorDescription'>xxGeneral installation instructions can be found
+				<a href='https://manual.collectiveaccess.org/setup/Installation.html' target='_blank'>here</a>.
+				or more specific information on detected issues review the messages below:</div>"; ?>
 <?php
 foreach ($opa_error_messages as $vs_message) {
 ?>
-	<div class="permissionError">
-		<?php if (function_exists("caNavIcon")) { print caNavIcon(__CA_NAV_ICON_ALERT__ , 2, array('class' => 'permissionErrorIcon')); } ?>
-		<?= $vs_message; ?>
-		<div style='clear:both; height:1px;'><!-- empty --></div>
-	</div>
-	<br/>
+			<div class="permissionError">
+				<?php if (function_exists("caNavIcon")) { print caNavIcon(__CA_NAV_ICON_ALERT__ , 2, array('class' => 'permissionErrorIcon')); } ?>
+				<?= $vs_message; ?>
+				<div style='clear:both; height:1px;'><!-- empty --></div>
+			</div>
+			<br/>
 <?php
 }
 ?>
-	
-</div><!-- end content --></div><!-- end box -->
+		</div><!-- end content -->
+	</div><!-- end box -->
 </body>
 </html>

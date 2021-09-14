@@ -30,10 +30,10 @@
  * ----------------------------------------------------------------------
  */
 ?>
-<?= _t("<div class='error'>An error in your system configuration has been detected</div>
-	    General installation instructions can be found
+<?= _t("<div class='error'>There are issues with your configuration</div>
+	    <div class='errorDescription'>General installation instructions can be found
 	    <a href='https://manual.collectiveaccess.org/setup/Installation.html' target='_blank'>here</a>.
-	    For more specific hints on the existing issues please have a look at the messages below."); ?>
+	    For more specific information on detected issues review the messages below:</div>"); ?>
 	<br/><br/>
 <?php
 foreach (self::$opa_error_messages as $vs_message) {
