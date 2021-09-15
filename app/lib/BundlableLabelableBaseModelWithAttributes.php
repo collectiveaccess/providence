@@ -4861,9 +4861,15 @@ if (!$vb_batch) {
 						}
 						
 						if ($this->changed('media')) {
-							$this->update(($vs_version != '_all') ? array('updateOnlyMediaVersions' => $va_versions_to_process, 'startAtTime' => $vs_timecode, 'startAtPage' => $vn_page) : []);
-							if ($this->numErrors()) {
-								$po_request->addActionErrors($this->errors(), 'ca_object_representations_media_display', 'general');
+							try {
+								$this->update(($vs_version != '_all') ? array('updateOnlyMediaVersions' => $va_versions_to_process, 'startAtTime' => $vs_timecode, 'startAtPage' => $vn_page) : []);
+								if ($this->numErrors()) {
+									$po_request->addActionErrors($this->errors(), 'ca_object_representations_media_display', 'general');
+								}
+							} catch(MediaExistsException $e) {
+								$this->postError(2730, caGetReferenceToExistingRepresentationMedia($e->getRepresentation()), 'ca_object_representations->insert()');
+								$po_request->addActionErrors($this->errors(), $vs_f, 'general');
+								return false;
 							}
 						}
 						
