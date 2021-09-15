@@ -145,4 +145,15 @@ function caExtractRequestParams() {
 	return $pa_params;
 }
 # --------------------------------------------------------------------------------------------
+ /**
+  * Return URL path to themes directory, guessing based upon PHP script name is constants aren't set
+  *
+  * @return string
+  */
+function caGetThemeUrlPath() : string {
+	$tmp = explode("/", str_replace("\\", "/", $_SERVER['SCRIPT_NAME']));
+	array_pop($tmp);
+	return defined('__CA_THEME_URL__') ? __CA_THEME_URL__ : join("/", $tmp).'/themes/default';
+}
+# ---------------------------------------------------------------------------------------------
 		

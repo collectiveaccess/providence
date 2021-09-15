@@ -47,7 +47,7 @@ if (!is_array($opa_error_messages)) {
 		<div id="logo"><?= caGetLoginLogo(); ?></div><!-- end logo -->
 		<div id="content">
 			<?= "<div class='error'>There are issues with your configuration</div>
-				<div class='errorDescription'>xxGeneral installation instructions can be found
+				<div class='errorDescription'>General installation instructions can be found
 				<a href='https://manual.collectiveaccess.org/setup/Installation.html' target='_blank'>here</a>.
 				or more specific information on detected issues review the messages below:</div>"; ?>
 <?php
