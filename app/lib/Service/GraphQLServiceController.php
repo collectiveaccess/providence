@@ -59,6 +59,8 @@ class GraphQLServiceController extends \BaseServiceController {
 			http_response_code(200);
 			return;	
 		}
+		$config = \Configuration::load();
+		
 		$schema = new Schema([
 			'query' => $queryType, 'mutation' => $mutationType
 		]);
@@ -68,12 +70,14 @@ class GraphQLServiceController extends \BaseServiceController {
 		$query = $input['query'];
 		$variableValues = isset($input['variables']) ? $input['variables'] : null;
 
+		$ok = true;
 		try {
 			$rootValue = ['prefix' => ''];
 			
-			// TODO: make debug mode configurable
-			$debug = DebugFlag::INCLUDE_DEBUG_MESSAGE | DebugFlag::INCLUDE_TRACE;
-			
+			$debug = 0;
+			if((bool)$config->get('graphql_services_debug') || (defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__)) {
+				$debug = DebugFlag::INCLUDE_DEBUG_MESSAGE | DebugFlag::INCLUDE_TRACE;
+			}
 			$errorFormatter = function(\GraphQL\Error\Error $error) {
 				$formattedError =  FormattedError::createFromException($error);
 				if($error->getMessage() === 'Expired token') {
@@ -92,6 +96,7 @@ class GraphQLServiceController extends \BaseServiceController {
 					]
 				]
 			];
+			$ok = false;
 			http_response_code(500);
 		} catch (\TypeError $e) {
 			$output = [
@@ -101,6 +106,7 @@ class GraphQLServiceController extends \BaseServiceController {
 					]
 				]
 			];
+			$ok = false;
 			http_response_code(500);
 		}
 		if($result->errors) {
@@ -109,6 +115,7 @@ class GraphQLServiceController extends \BaseServiceController {
 			} else {
 				http_response_code(500);
 			}
+			$ok = false;
 		}
 		
 		if(intval($this->request->getParameter("pretty",pInteger))>0){
@@ -116,7 +123,7 @@ class GraphQLServiceController extends \BaseServiceController {
 		}
 					
 		$this->view->setVar('content', $output);
-		$this->view->setVar('raw', true);	// don't set 'ok' parameter
+		$this->view->setVar('ok', $ok);	// don't set 'ok' parameter
 		$this->render("json.php");
 	}
 	# ------------------------------------------------------
