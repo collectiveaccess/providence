@@ -34,30 +34,38 @@
  * Display exception error screen
  * @param Exception $e
  */
-function caDisplayException(Exception $e) {
+function caDisplayException(Exception $e, ?array $options=null) : void {
     if (defined("__CA_LIB_DIR__")) { require_once(__CA_LIB_DIR__.'/Logging/KLogger/KLogger.php'); }
 	if(!is_a($e, "DatabaseException") && class_exists('AppController')) { AppController::getInstance()->removeAllPlugins(); }
 
-	$pn_errno = 0;
-	$ps_errstr = $e->getMessage();
-	$ps_errfile = $e->getFile();
-	$pn_errline = $e->getLine();
-	$pa_errcontext = $e->getTrace();
-	$pa_errcontext_args = caExtractStackTraceArguments($pa_errcontext);
-	$pa_request_params = caExtractRequestParams();
+	$errno = 0;
+	$errstr = $e->getMessage();
+	$errfile = $e->getFile();
+	$errline = $e->getLine();
+	$errcontext = $e->getTrace();
+	$errcontext_args = caExtractStackTraceArguments($errcontext);
+	$request_params = caExtractRequestParams();
 
-	$o_conf = Configuration::load();
-	$vs_log_dir = $o_conf->get('batch_metadata_import_log_directory');
+	$config = Configuration::load();
+	$log_dir = $config->get('batch_metadata_import_log_directory');
 	if(defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) {
-		$o_log = new KLogger($vs_log_dir, KLogger::DEBUG);
+		$o_log = new KLogger($log_dir, KLogger::DEBUG);
 	} else {
-		$o_log = new KLogger($vs_log_dir, KLogger::ERR);
+		$o_log = new KLogger($log_dir, KLogger::ERR);
 	}
 
 	$o_log->logError(get_class($e) . ': ' . $e->getMessage());
 	$o_log->logDebug(print_r($e->getTrace(), true));
-
-	require_once((defined("__CA_THEME_DIR__") ? __CA_THEME_DIR__ : __DIR__.'/../../themes/default').'/views/system/fatal_error_html.php');
+	
+	if(defined("__CA_IS_SERVICE_REQUEST__")) {
+		$show_debugging = ((defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) || $config->get('graphql_services_debug'));
+		header("Content-type: application/json");
+		print json_encode([
+			'ok' => false, 'errors' => ['message' => $e->getMessage(), 'extensions' => ['category' => caGetOption('category', $options, null)],"locations" => $show_debugging ? ['file' => $errfile, 'line' => $errline] : null]
+		]);
+	} else {
+		require_once((defined("__CA_THEME_DIR__") ? __CA_THEME_DIR__ : __DIR__.'/../../themes/default').'/views/system/fatal_error_html.php');
+	}
 	exit;
 }
 # --------------------------------------------------------------------------------------------

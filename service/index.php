@@ -51,8 +51,13 @@
 	//
 	// Dispatch the request
 	//
-	$app->dispatch(true);
-
+	try {
+		$app->dispatch(true);
+	} catch (ServiceException $e) {
+		caDisplayException($e);
+	} catch (Exception $e) {
+		caDisplayException($e, ['category' => 'routing']);
+	}
 	//
 	// Send output to client
 	//
