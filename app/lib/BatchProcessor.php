@@ -617,7 +617,7 @@
 
  			if (!$vn_locale_id) { $vn_locale_id = $g_ui_locale_id; }
 
- 			$va_files_to_process = caGetDirectoryContentsAsList($pa_options['importFromDirectory'], $vb_include_subdirectories);
+ 			$va_files_to_process = caGetDirectoryContentsAsList($pa_options['importFromDirectory'], $vb_include_subdirectories, false, true);
  			$o_log->logInfo(_t('Found %1 files in directory \'%2\'', sizeof($va_files_to_process), $pa_options['importFromDirectory']));
 
  			if ($vs_set_mode == 'add') {
