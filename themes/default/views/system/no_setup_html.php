@@ -41,7 +41,7 @@
 				<div class="errorDescription">
 						In the main directory of your Providence install there is a file called <code>setup.php-dist</code>. 
 						Make a copy of this file and rename it to <code>setup.php</code>. For your CollectiveAccess system to work you MUST add 
-						values for your database server hostname, user name, password, database, and administrative e-email. More more information see the 
+						values for your database server hostname, user name, password, database, and administrative e-email. For more information see the 
 						<a href="https://manual.collectiveaccess.org/setup/Installation.html">installation instructions</a> and the manual page for <a href="https://manual.collectiveaccess.org/setup/setup.php.html">setup.php</a>.
 				</div>
 			</div>
