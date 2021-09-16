@@ -34,7 +34,7 @@
 </head>
 <body>
 	<div id='errorDetails'>
-		<div id="logo"><img src='/themes/default/graphics/logos/logo.svg' alt='CollectiveAccess logo' width='327px' height='45px' /></div><!-- end logo -->
+		<div id="logo"><img src='<?= caGetThemeUrlPath(); ?>/graphics/logos/logo.svg' alt='CollectiveAccess logo' width='327px' height='45px' /></div><!-- end logo -->
 		<div id="content">
 			<div class='error'>No <code>setup.php</code> file found!</div>
 			<div id="errorLocation" class="errorPanel">
