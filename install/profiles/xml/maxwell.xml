@@ -16724,11 +16724,19 @@ Thessalonica</name_plural>
         </label>
       </labels>
       <items>
-        <item idno="hr" enabled="1" default="0" rank="13618" type="concept">
+        <item idno="hr_affiliated" enabled="1" default="0" rank="13618" type="concept">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>HR</name_singular>
-              <name_plural>HR</name_plural>
+              <name_singular>HR (Affiliated)</name_singular>
+              <name_plural>HR (Affiliated)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="hr_unaffiliated" enabled="1" default="0" rank="13618" type="concept">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>HR (Unaffiliated)</name_singular>
+              <name_plural>HR (Unaffiliated)</name_plural>
             </label>
           </labels>
         </item>
@@ -36086,7 +36094,6 @@ Thessalonica</name_plural>
       <typeRestrictions>
         <restriction>
           <table>ca_collections</table>
-          <type>collection</type>
           <settings>
             <setting name="minAttributesPerRow"/>
             <setting name="maxAttributesPerRow">1</setting>
@@ -36108,7 +36115,6 @@ Thessalonica</name_plural>
       <typeRestrictions>
         <restriction>
           <table>ca_collections</table>
-          <type>collection</type>
           <settings>
             <setting name="minAttributesPerRow"/>
             <setting name="maxAttributesPerRow">1</setting>
@@ -36130,7 +36136,6 @@ Thessalonica</name_plural>
       <typeRestrictions>
         <restriction>
           <table>ca_collections</table>
-          <type>collection</type>
           <settings>
             <setting name="minAttributesPerRow"/>
             <setting name="maxAttributesPerRow">1</setting>
@@ -36152,7 +36157,6 @@ Thessalonica</name_plural>
       <typeRestrictions>
         <restriction>
           <table>ca_collections</table>
-          <type>collection</type>
           <settings>
             <setting name="minAttributesPerRow"/>
             <setting name="maxAttributesPerRow">1</setting>
@@ -36174,7 +36178,6 @@ Thessalonica</name_plural>
       <typeRestrictions>
         <restriction>
           <table>ca_collections</table>
-          <type>collection</type>
           <settings>
             <setting name="minAttributesPerRow"/>
             <setting name="maxAttributesPerRow">1</setting>
@@ -36196,7 +36199,6 @@ Thessalonica</name_plural>
       <typeRestrictions>
         <restriction>
           <table>ca_collections</table>
-          <type>collection</type>
           <settings>
             <setting name="minAttributesPerRow"/>
             <setting name="maxAttributesPerRow">1</setting>
@@ -36240,7 +36242,6 @@ Thessalonica</name_plural>
       <typeRestrictions>
         <restriction>
           <table>ca_collections</table>
-          <type>collection</type>
           <settings>
             <setting name="minAttributesPerRow"/>
             <setting name="maxAttributesPerRow">1</setting>
@@ -41302,7 +41303,7 @@ A Closed loan is completed and inactive.</setting>
               <bundle>ca_object_lots</bundle>
               <settings>
                 <setting name="label" locale="en_US">Accession Number</setting>
-                <setting name="display_template">^ca_object_lots.preferred_labels (^ca_object_lots.idno)</setting>
+                <setting name="display_template">^ca_object_lots.preferred_labels (^ca_object_lots.idno_stub)</setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow">1</setting>
               </settings>
@@ -41795,7 +41796,7 @@ A Closed loan is completed and inactive.</setting>
               <bundle>ca_object_lots</bundle>
               <settings>
                 <setting name="label" locale="en_US">Accession Number</setting>
-                <setting name="display_template">^ca_object_lots.preferred_labels (^ca_object_lots.idno)</setting>
+                <setting name="display_template">^ca_object_lots.preferred_labels (^ca_object_lots.idno_stub)</setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow">1</setting>
               </settings>
@@ -42175,7 +42176,7 @@ A Closed loan is completed and inactive.</setting>
               <bundle>ca_object_lots</bundle>
               <settings>
                 <setting name="label" locale="en_US">Accession Number</setting>
-                <setting name="display_template">^ca_object_lots.preferred_labels (^ca_object_lots.idno)</setting>
+                <setting name="display_template">^ca_object_lots.preferred_labels (^ca_object_lots.idno_stub)</setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow">1</setting>
               </settings>
@@ -42614,7 +42615,7 @@ A Closed loan is completed and inactive.</setting>
               <bundle>ca_object_lots</bundle>
               <settings>
                 <setting name="label" locale="en_US">Accession Number</setting>
-                <setting name="display_template">^ca_object_lots.preferred_labels (^ca_object_lots.idno)</setting>
+                <setting name="display_template">^ca_object_lots.preferred_labels (^ca_object_lots.idno_stub)</setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow">1</setting>
               </settings>
@@ -42939,7 +42940,7 @@ A Closed loan is completed and inactive.</setting>
               <bundle>ca_object_lots</bundle>
               <settings>
                 <setting name="label" locale="en_US">Accession Number</setting>
-                <setting name="display_template">^ca_object_lots.preferred_labels (^ca_object_lots.idno)</setting>
+                <setting name="display_template">^ca_object_lots.preferred_labels (^ca_object_lots.idno_stub)</setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow">1</setting>
               </settings>
@@ -43210,7 +43211,7 @@ A Closed loan is completed and inactive.</setting>
               <bundle>ca_object_lots</bundle>
               <settings>
                 <setting name="label" locale="en_US">Accession Number</setting>
-                <setting name="display_template">^ca_object_lots.preferred_labels (^ca_object_lots.idno)</setting>
+                <setting name="display_template">^ca_object_lots.preferred_labels (^ca_object_lots.idno_stub)</setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow">1</setting>
               </settings>
@@ -43600,7 +43601,7 @@ A Closed loan is completed and inactive.</setting>
               <bundle>ca_object_lots</bundle>
               <settings>
                 <setting name="label" locale="en_US">Accession Number</setting>
-                <setting name="display_template">^ca_object_lots.preferred_labels (^ca_object_lots.idno)</setting>
+                <setting name="display_template">^ca_object_lots.preferred_labels (^ca_object_lots.idno_stub)</setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow">1</setting>
               </settings>
