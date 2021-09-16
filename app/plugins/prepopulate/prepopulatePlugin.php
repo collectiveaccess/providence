@@ -525,7 +525,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 		}
 
 
-		if ($t_instance->getChangedFieldValuesArray()) {
+		if (count($t_instance->getChangedFieldValuesArray()) > 0) {
 			if(isset($_REQUEST['form_timestamp']) && ($_REQUEST['form_timestamp'] > 0)) { $_REQUEST['form_timestamp'] = time(); }
 			$t_instance->update(['force' => true, 'hooks' => false]);
 			if($t_instance->numErrors() > 0) {
