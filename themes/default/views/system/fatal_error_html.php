@@ -26,14 +26,11 @@
  * ----------------------------------------------------------------------
  */
  
-	$va_tmp = explode("/", str_replace("\\", "/", $_SERVER['SCRIPT_NAME']));
-	array_pop($va_tmp);
-	$vs_path = join("/", $va_tmp);
 ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<title>CollectiveAccess error</title>
-	<link href="<?php print $vs_path; ?>/themes/default/css/error.css" rel="stylesheet" type="text/css" />
+	<link href="<?= caGetThemeUrlPath(); ?>/css/error.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
 	<div id='errorDetails'>
