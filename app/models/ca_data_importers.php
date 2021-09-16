@@ -2879,7 +2879,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										break;
 									case 'ca_object_representations':
 										if ($vn_rel_id = DataMigrationUtils::getObjectRepresentationID($vs_name, $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'matchOn' => $va_match_on, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels, 'matchMediaFilesWithoutExtension' => true))) {
-											$t_subject->linkRepresentation($vn_rel_id, ($vn_i == 0), ['type_id' => trim($va_element_data['_relationship_type'])]);
+											$t_subject->linkRepresentation($vn_rel_id, null, ['type_id' => trim($va_element_data['_relationship_type'])]);
 										
 											if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related object representation with:", $vs_idno), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 												ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
