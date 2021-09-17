@@ -64,7 +64,7 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 		];
 		$g_information_service_settings_AAT['orderBy'] = [
 			'formatType' => FT_TEXT,
-			'display_Type' => DT_FIELD,
+			'display_Type' => DT_SELECT,
 			'default' => '',
 			'width' => 90, 'height' => 1,
 			'label' => _t("Order by"),
