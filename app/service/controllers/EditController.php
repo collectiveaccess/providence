@@ -28,6 +28,7 @@
 require_once(__CA_LIB_DIR__.'/Service/GraphQLServiceController.php');
 require_once(__CA_APP_DIR__.'/service/schemas/EditSchema.php');
 require_once(__CA_APP_DIR__.'/service/helpers/EditHelpers.php');
+require_once(__CA_APP_DIR__.'/service/helpers/ErrorHelpers.php');
 require_once(__CA_APP_DIR__.'/service/helpers/SearchHelpers.php');
 
 use GraphQL\GraphQL;
@@ -35,6 +36,7 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use GraphQLServices\Schemas\EditSchema;
 use GraphQLServices\Helpers\Edit;
+use GraphQLServices\Helpers\Error;
 
 
 class EditController extends \GraphQLServices\GraphQLServiceController {
@@ -151,7 +153,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
 						
-						$errors = $warnings = $ids = $idnos = [];
+						$errors = $warnings = $info =  $ids = $idnos = [];
 						
 						$table = $args['table'];
 						$insert_mode = strtoupper($args['insertMode']);
@@ -195,10 +197,16 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 				
 											if(($qr = $s->search($f['search'])) && $qr->nextHit()) {
 												$instance = $qr->getInstance();
+												$info[] = Error\info($record['idno'], 'MATCH', _t('Record found for search on (%1)', $f['search']), 'GENERAL');
+											} else {
+												$info[] = Error\info($record['idno'], 'NO_MATCH', _t('No record found for search on (%1)', $f['search']), 'GENERAL');
 											}
 										} elseif(isset($f['criteria'])) {
 											if(($qr = $table::find(\GraphQLServices\Helpers\Search\convertCriteriaToFindSpec($f['criteria'], $table), ['returnAs' => 'searchResult', 'allowWildcards' => true, 'restrictToTypes' => $f['restrictToTypes']])) && $qr->nextHit()) {
+												$info[] = Error\info($record['idno'], 'MATCH', _t('Record found for search using criteria (%1)', json_encode($f['criteria'])), 'GENERAL');
 												$instance = $qr->getInstance();
+											} else {
+												$info[] = Error\info($record['idno'], 'NO_MATCH', _t('No record found for search using criteria (%1)', json_encode($f['criteria'])), 'GENERAL');
 											}
 										}
 									} else {
@@ -206,17 +214,25 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 											try {
 												switch($m) {
 													case 'idno':
-														$instance = (in_array($erp, ['SKIP', 'REPLACE', 'MERGE'])) ? self::resolveIdentifier($table, $record['idno'], $ignore_type ? null : $record['type'], ['idnoOnly' => true, 'list' => $args['list']]) : null;
+														if($instance = (in_array($erp, ['SKIP', 'REPLACE', 'MERGE'])) ? self::resolveIdentifier($table, $record['idno'], $ignore_type ? null : $record['type'], ['idnoOnly' => true, 'list' => $args['list']]) : null) {
+															$info[] = Error\info($record['idno'], 'MATCH', _t('Record found for match on (%1)', $m), 'GENERAL');
+															break(2);
+														}
 														break;
 													case 'preferred_labels':
-														$label_values = \GraphQLServices\Helpers\Edit\extractLabelValueFromBundles($table, $record['bundles']);
-														$instance = self::resolveLabel($table, $label_values, $ignore_type ? null : $record['type'], ['list' => $args['list']]);
-											
+														$label_values = Edit\extractLabelValueFromBundles($table, $record['bundles']);
+														if($instance = self::resolveLabel($table, $label_values, $ignore_type ? null : $record['type'], ['list' => $args['list']])) {
+															$info[] = Error\info($record['idno'], 'MATCH', _t('Record found for match on (%1)', $m), 'GENERAL');
+															break(2);
+														}
 														break;
 												}
 											} catch(\ServiceException $e) {
 												// No matching record
 											}
+										}
+										if(!$instance) {
+											$info[] = Error\info($record['idno'], 'NO_MATCH', _t('No matching record found for match on (%1)', join(', ', $match_on)), 'GENERAL');
 										}
 									}
 								}
@@ -229,26 +245,33 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 								case 'SKIP':
 									if($instance) { 
 										$ids[] = $last_id = $instance->getPrimaryKey(); 
+										$info[] = Error\info($record['idno'], 'SKIP', _t('Skipped record because it already exists and ERP is set to SKIP'), 'GENERAL');
 										continue(2);
 									}
 									break;
 								case 'REPLACE':
-									if($instance && !$instance->delete(true)) {
-										foreach($instance->errors() as $e) {
-											$errors[] = [
-												'code' => $e->getErrorNumber(),
-												'message' => $e->getErrorDescription(),
-												'bundle' => 'GENERAL'
-											];
-										}		
+									if($instance) {
+										if(!$instance->delete(true)) {
+											foreach($instance->errors() as $e) {
+												$errors[] = Error\error($record['idno'], Error\toGraphQLError($e->getErrorNumber()), $e->getErrorDescription(), 'GENERAL');
+											}		
+										} else {
+											$info[] = Error\info($record['idno'], 'REPLACE', _t('Deleted existing record because ERP is set to REPLACE'), 'GENERAL');
+										}
 									}
 									$instance = null;
 									break;
 								case 'MERGE':
 									// NOOP
+									if($instance) {
+										$info[] = Error\info($record['idno'], 'MERGE', _t('Will merge new data with existing record because ERP is set to MERGE'), 'GENERAL');
+									}
 									break;
 								case 'IGNORE':
 									// NOOP
+									if($instance) {
+										$info[] = Error\info($record['idno'], 'IGNORE', _t('Existing record was found but will be ignored because ERP is set to IGNORE'), 'GENERAL');
+									}
 									break;
 							}
 							
@@ -260,7 +283,11 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 								$instance->set($idno_fld, $record['idno']);
 								$instance->set('type_id', $record['type']);
 								if($instance->hasField('list_id') && ($instance->primaryKey() !== 'list_id')) { 
-									if(!$args['list']) { throw new \ServiceException(_t('List must be specified')); }
+									if(!$args['list']) { 
+										// If it's not set all insert will fail, so return generic (no idno) error and bail
+										$errors[] = Error\error(null, 'PARAMETER_ERROR', _t('List must be specified'), 'GENERAL');
+										break;
+									}
 									$instance->set('list_id', $args['list']); 
 								}
 							
@@ -271,30 +298,28 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							}
 							if(!$ret) {
 								foreach($instance->errors() as $e) {
-									$errors[] = [
-										'code' => $e->getErrorNumber(),
-										'message' => $e->getErrorDescription(),
-										'bundle' => 'GENERAL'
-									];
+									$errors[] = Error\error($record['idno'], Error\toGraphQLError($e->getErrorNumber()), $e->getErrorDescription(), 'GENERAL');
 								}	
 							} else {
 								$ids[] = $last_id = $instance->getPrimaryKey();
 								$idnos[] = $instance->get($idno_fld);
 								
 								$ret = self::processBundles($instance, $record['bundles']);
-								$errors += $ret['errors'];
-								$warnings += $ret['warnings'];
+								$errors = array_merge($errors, $ret['errors']);
+								$warnings = array_merge($warnings, $ret['warnings']);
+								$info = array_merge($info, $ret['info']);
 								if(isset($record['relationships']) && is_array($record['relationships']) && sizeof($record['relationships'])) {
 									$ret = self::processRelationships($instance, $record['relationships'], ['replace' => $record['replaceRelationships']]);
-									$errors += $ret['errors'];
-									$warnings += $ret['warnings'];
+									$errors = array_merge($errors, $ret['errors']);
+									$warnings = array_merge($warnings, $ret['warnings']);
+									$info = array_merge($info, $ret['info']);
 								}
 							
 								$c++;
 							}
 						}
 						
-						return ['table' => $table, 'id' => $ids, 'idno' => $idnos, 'errors' => $errors, 'warnings' => $warnings, 'changed' => $c];
+						return ['table' => $table, 'id' => $ids, 'idno' => $idnos, 'errors' => $errors, 'warnings' => $warnings, 'info' => $info, 'changed' => $c];
 					}
 				],
 				'edit' => [
@@ -358,7 +383,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
 						
-						$errors = $warnings = $ids = $idnos = [];
+						$errors = $warnings = $info = $ids = $idnos = [];
 						
 						$table = $args['table'];
 						$idno_fld = \Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD');
@@ -377,32 +402,30 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						$c = 0;
 						$opts = [];
 						foreach($records as $record) {
-							list($identifier, $opts) = \GraphQLServices\Helpers\Edit\resolveParams($record);
+							list($identifier, $opts) = Edit\resolveParams($record);
 							if(!($instance = self::resolveIdentifier($table, $identifier, $record['type'], $opts))) {
-								$errors[] = [
-									'code' => 100,	// TODO: real number?
-									'message' => _t('Invalid identifier'),
-									'bundle' => 'GENERAL'
-								];
+								$errors[] = Error\error($record['idno'], 'INVALID_IDENTIFIER', _t('Invalid identifier'), 'GENERAL');
 							} else {
 								$ids[] = $instance->getPrimaryKey();
 								$idnos[] = $instance->get($idno_fld);
 								
 								$ret = self::processBundles($instance, $record['bundles']);
-								$errors += $ret['errors'];
-								$warnings += $ret['warnings'];
+								$errors = array_merge($errors, $ret['errors']);
+								$warnings = array_merge($warnings, $ret['warnings']);
+								$info = array_merge($info, $ret['info']);
 								
 								if(isset($record['relationships']) && is_array($record['relationships']) && sizeof($record['relationships'])) {
 									$ret = self::processRelationships($instance, $record['relationships'], ['replace' => $record['replaceRelationships']]);
-									$errors += $ret['errors'];
-									$warnings += $ret['warnings'];
+									$errors = array_merge($errors, $ret['errors']);
+									$warnings = array_merge($warnings, $ret['warnings']);
+									$info = array_merge($info, $ret['info']);
 								}
 								
 								$c++;
 							}
 						}
 						
-						return ['table' => $table, 'id' => $ids, 'idno' => $idnos, 'errors' => $errors, 'warnings' => $warnings, 'changed' => $c];
+						return ['table' => $table, 'id' => $ids, 'idno' => $idnos, 'errors' => $errors, 'warnings' => $warnings, 'info' => $info, 'changed' => $c];
 					}
 				],
 				'delete' => [
@@ -454,7 +477,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
 						
-						$errors = $warnings = [];
+						$errors = $warnings = $info = [];
 						
 						$table = $args['table'];
 						
@@ -483,32 +506,20 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						foreach($identifiers as $identifier) {
 							try {
 								if(!($instance = self::resolveIdentifier($table, $identifier, null, $opts))) {
-									$errors[] = [
-										'code' => 100,	// TODO: real number?
-										'message' => _t('Invalid identifier'),
-										'bundle' => 'GENERAL'
-									];
+									$errors[] = Error\error($identifier, 'INVALID_IDENTIFIER', _t('Invalid identifier'), 'GENERAL'); 
 								} elseif(!($rc = $instance->delete(true))) {
 									foreach($instance->errors() as $e) {
-										$errors[] = [
-											'code' => $e->getErrorNumber(),
-											'message' => $e->getErrorDescription(),
-											'bundle' => null
-										];
+										$errors[] = Error\error($identifier, Error\toGraphQLError($e->getErrorNumber()), $e->getErrorDescription(), null);
 									}
 								} else {
 									$c++;
 								}
 							} catch (ServiceException $e) {
-								$errors[] = [
-									'code' => 284,
-									'message' => $e->getMessage(),
-									'bundle' => null
-								];
+								$errors[] = Error\error($identifier, 'INVALID_IDENTIFIER', $e->getErrorDescription(), 'GENERAL'); 
 							}
 						}
 						
-						return ['table' => $table, 'id' => null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings, 'changed' => $c];
+						return ['table' => $table, 'id' => null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings, 'info' => $info, 'changed' => $c];
 					}
 				],
 				'truncate' => [
@@ -559,7 +570,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							throw new \ServiceException(_t('Access denied'));
 						}
 						
-						$errors = $warnings = [];
+						$errors = $warnings = $info = [];
 						
 						
 						if($list = $args['list']) {
@@ -582,23 +593,15 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 										$db->query("UPDATE {$table} SET deleted = 1");
 									}
 									$c = $qr->numHits();
-								} catch (Exception $e) {
-									$errors[] = [
-										'code' => 1000,		// TODO: use real code
-										'message' => $e->getMessage(),
-										'bundle' => null
-									];
+								} catch (\DatabaseException $e) {
+									$errors[] = Error\error($identifier, Error\toGraphQLError($e->getNumber()), $e->getMessage(), null);
 								}						
 							} else {
 								while($qr->nextHit()) {
 									$instance = $qr->getInstance();
 									if(!$instance->delete(true)) {
 										foreach($instance->errors() as $e) {
-											$errors[] = [
-												'code' => $e->getErrorNumber(),
-												'message' => $e->getErrorDescription(),
-												'bundle' => null
-											];
+											$errors[] = Error\error(null, Error\toGraphQLError($e->getErrorNumber()), $e->getErrorDescription(), null);
 										}
 									} else {
 										$c++;
@@ -607,9 +610,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							}
 						}
 						
-						
-						
-						return ['table' => $table, 'id' => null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings, 'changed' => $c];
+						return ['table' => $table, 'id' => null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings, 'info' => $info, 'changed' => $c];
 					}
 				],
 				//
@@ -679,7 +680,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
 						
-						$errors = $warnings = [];
+						$errors = $warnings = $info = [];
 						
 						$subject = $args['subject'];
 						$target = $args['target'];
@@ -687,37 +688,36 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						$reltype = $args['relationshipType'];
 						$bundles = caGetOption('bundles', $args, [], ['castTo' => 'array']);
 						
-						list($subject_identifier, $opts) = \GraphQLServices\Helpers\Edit\resolveParams($args, 'subject');
+						list($subject_identifier, $opts) = Edit\resolveParams($args, 'subject');
 						if(!($subject = self::resolveIdentifier($subject, $subject_identifier, null, $opts))) {
-							throw new \ServiceException(_t('Invalid subject identifier'));
-						}
-						
-						// Check privs
-						if (!$subject->isSaveable($u)) {
-							throw new \ServiceException(_t('Cannot access subject'));
-						}
-						
-						// effective_date set?
-						$effective_date = \GraphQLServices\Helpers\Edit\extractValueFromBundles($bundles, ['effective_date']);
-						
-						$c = 0;
-						list($target_identifier, $opts) = \GraphQLServices\Helpers\Edit\resolveParams($args, 'target');
-						if(!($rel = $subject->addRelationship($target, $target_identifier, $reltype, $effective_date, null, null, null, $opts))) {
-							$errors[] = [
-								'code' => 100,	// TODO: real number?
-								'message' => _t('Could not create relationship: %1', join('; ', $subject->getErrors())),
-								'bundle' => 'GENERAL'
-							];
-						} elseif(sizeof($bundles) > 0) {
-							//  Add interstitial data
-							if (is_array($ret = self::processBundles($rel, $bundles))) {
-								$errors += $ret['errors'];
-								$warnings += $ret['warnings'];
+							$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", 'INVALID_IDENTIFIER', _t('Invalid subject identifier'), 'GENERAL');
+						} else {
+							// Check privs
+							if (!$subject->isSaveable($u)) {
+								throw new \ServiceException(_t('Subject is not accessible'));
 							}
-							$c++;
+						
+							// effective_date set?
+							$effective_date = Edit\extractValueFromBundles($bundles, ['effective_date']);
+						
+							$c = 0;
+							list($target_identifier, $opts) = Edit\resolveParams($args, 'target');
+							if(!($rel = $subject->addRelationship($target, $target_identifier, $reltype, $effective_date, null, null, null, $opts))) {
+								foreach($subject->errors() as $e) {
+									$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", Errors\toGraphQLError($e->getErrorNumber()), _t('Could not create relationship: %1', $e->getErrorMessage()), 'GENERAL');
+								}
+							} elseif(sizeof($bundles) > 0) {
+								//  Add interstitial data
+								if (is_array($ret = self::processBundles($rel, $bundles))) {
+									$errors = array_merge($errors, $ret['errors']);
+									$warnings = array_merge($warnings, $ret['warnings']);
+									$info = array_merge($info, $ret['info']);
+								}
+								$c++;
+							}
 						}
 						
-						return ['table' => is_object($rel) ? $rel->tableName() : null, 'id' => is_object($rel) ?  [$rel->getPrimaryKey()] : null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings, 'changed' => $c];
+						return ['table' => is_object($rel) ? $rel->tableName() : null, 'id' => is_object($rel) ?  [$rel->getPrimaryKey()] : null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings, 'info' => $info, 'changed' => $c];
 					}
 				],
 				'editRelationship' => [
@@ -790,7 +790,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
 						
-						$errors = $warnings = [];
+						$errors = $warnings = $info = [];
 						
 						$s = $t = null;				
 						$subject = $args['subject'];
@@ -800,50 +800,51 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						$bundles = caGetOption('bundles', $args, [], ['castTo' => 'array']);
 						
 						// effective_date set?
-						$effective_date = \GraphQLServices\Helpers\Edit\extractValueFromBundles($bundles, ['effective_date']);
+						$effective_date = Edit\extractValueFromBundles($bundles, ['effective_date']);
 						
 						// rel type set?
-						$new_rel_type = \GraphQLServices\Helpers\Edit\extractValueFromBundles($bundles, ['relationship_type']);
+						$new_rel_type = Edit\extractValueFromBundles($bundles, ['relationship_type']);
 						
-						list($subject_identifier, $opts) = \GraphQLServices\Helpers\Edit\resolveParams($args, 'subject');
+						list($subject_identifier, $opts) = Edit\resolveParams($args, 'subject');
 						if(!($s = self::resolveIdentifier($subject, $subject_identifier, $opts))) {
-							throw new \ServiceException(_t('Subject does not exist'));
-						}
-						if (!$s->isSaveable($u)) {
-							throw new \ServiceException(_t('Subject is not accessible'));
+							$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", 'INVALID_IDENTIFIER', _t('Invalid subject identifier'), 'GENERAL');
+						} else {
+							if (!$s->isSaveable($u)) {
+								throw new \ServiceException(_t('Subject is not accessible'));
+							}
+						
+							if(!($rel_id = $args['id'])) {		
+								list($target_identifier, $opts) = Edit\resolveParams($args, 'target');
+								if(!($t = self::resolveIdentifier($target, $target_identifier, $opts))) {
+									$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", 'INVALID_IDENTIFIER', _t('Invalid target identifier'), 'GENERAL');
+								} else {
+									if ($rel = Edit\getRelationship($u, $s, $t, $rel_type)) {
+										$rel_id = $rel->getPrimaryKey();
+									}
+								}
+							} 
+							if(!$rel_id) {
+								$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", 'INVALID_IDENTIFIER', _t('Relationship does not exist'), 'GENERAL');
+							} else {
+						
+								$c = 0;
+								if(!($rel = $s->editRelationship($target, $rel_id, $target_identifier, $new_rel_type, $effective_date))) {
+									foreach($s->errors() as $e) {
+										$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", Errors\toGraphQLError($e->getErrorNumber()), _t('Could not edit relationship: %1', $e->getErrorMessage()), 'GENERAL'); 
+									}
+								} elseif(sizeof($bundles) > 0) {
+									//  Edit interstitial data
+									if (is_array($ret = self::processBundles($rel, $bundles))) {
+										$errors = array_merge($errors, $ret['errors']);
+										$warnings = array_merge($warnings, $ret['warnings']);
+										$info = array_merge($info, $ret['info']);
+									}
+									$c++;
+								}
+							}
 						}
 						
-						if(!($rel_id = $args['id'])) {		
-							list($target_identifier, $opts) = \GraphQLServices\Helpers\Edit\resolveParams($args, 'target');
-							if(!($t = self::resolveIdentifier($target, $target_identifier, $opts))) {
-								throw new \ServiceException(_t('Target does not exist'));
-							}
-							
-							if ($rel = \GraphQLServices\Helpers\Edit\getRelationship($u, $s, $t, $rel_type)) {
-								$rel_id = $rel->getPrimaryKey();
-							}
-						} 
-						if(!$rel_id) {
-							throw new \ServiceException(_t('Relationship does not exist'));
-						}
-						
-						$c = 0;
-						if(!($rel = $s->editRelationship($target, $rel_id, $target_identifier, $new_rel_type, $effective_date))) {
-							$errors[] = [
-								'code' => 100,	// TODO: real number?
-								'message' => _t('Could not edit relationship: %1', join('; ', $s->getErrors())),
-								'bundle' => 'GENERAL'
-							];		
-						} elseif(sizeof($bundles) > 0) {
-							//  Edit interstitial data
-							if (is_array($ret = self::processBundles($rel, $bundles))) {
-								$errors += $ret['errors'];
-								$warnings += $ret['warnings'];
-							}
-							$c++;
-						}
-						
-						return ['table' => is_object($rel) ? $rel->tableName() : null, 'id' => is_object($rel) ?  [$rel->getPrimaryKey()] : null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings, 'changed' => $c];
+						return ['table' => is_object($rel) ? $rel->tableName() : null, 'id' => is_object($rel) ?  [$rel->getPrimaryKey()] : null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings, 'info' => $info, 'changed' => $c];
 					}
 				],
 				'deleteRelationship' => [
@@ -911,49 +912,48 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
 						
-						$errors = $warnings = [];
+						$errors = $warnings = $info = [];
 						
 						$rel_type = $s = $t = null;				
 						$subject = $args['subject'];
 						$target = $args['target'];
 						
-						list($subject_identifier, $opts) = \GraphQLServices\Helpers\Edit\resolveParams($args, 'subject');
+						list($subject_identifier, $opts) = Edit\resolveParams($args, 'subject');
 						if(!($s = self::resolveIdentifier($subject, $subject_identifier, $opts))) {
-							throw new \ServiceException(_t('Invalid subject identifier'));
-						}
-						if (!$s->isSaveable($u)) {
-							throw new \ServiceException(_t('Subject is not accessible'));
-						}
-						
-						if(!($rel_id = $args['id'])) {		
-							$rel_type = $args['relationshipType'];
-							
-							list($target_identifier, $opts) = \GraphQLServices\Helpers\Edit\resolveParams($args, 'target');
-							if(!($t = self::resolveIdentifier($target, $target_identifier, $opts))) {
-								throw new \ServiceException(_t('Invalid target identifier'));
-							}
-							
-							if($rel = \GraphQLServices\Helpers\Edit\getRelationship($u, $s, $t, $rel_type)) {
-								$rel_id = $rel->getPrimaryKey();
-							}
-						} 
-						
-						if (!$rel_id) {
-							throw new \ServiceException(_t('Relationship does not exist'));
-						}
-						
-						$c = 0;
-						if(!$s->removeRelationship($target, $rel_id)) {							
-							$errors[] = [
-								'code' => 100,	// TODO: real number?
-								'message' => _t('Could not delete relationship: %1', join('; ', $s->getErrors())),
-								'bundle' => 'GENERAL'
-							];
+							$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", 'INVALID_IDENTIFIER', _t('Invalid subject identifier'), 'GENERAL');
 						} else {
-							$c++;
+							if (!$s->isSaveable($u)) {
+								throw new \ServiceException(_t('Subject is not accessible'));
+							}
+						
+							if(!($rel_id = $args['id'])) {		
+								$rel_type = $args['relationshipType'];
+							
+								list($target_identifier, $opts) = Edit\resolveParams($args, 'target');
+								if(!($t = self::resolveIdentifier($target, $target_identifier, $opts))) {
+									$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", 'INVALID_IDENTIFIER', _t('Invalid target identifier'), 'GENERAL');
+								} else {
+									if($rel = Edit\getRelationship($u, $s, $t, $rel_type)) {
+										$rel_id = $rel->getPrimaryKey();
+									}
+								}
+							} 
+						
+							if (!$rel_id) {
+								$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", 'INVALID_IDENTIFIER', _t('Relationship does not exist'), 'GENERAL');
+							} else {
+								$c = 0;
+								if(!$s->removeRelationship($target, $rel_id)) {			
+									foreach($s->errors() as $e) {				
+										$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", Error\toGraphQLError($e->getErrorNumber()), _t('Could not delete relationship: %1', $s->getErrorMessage()), 'GENERAL');
+									}
+								} else {
+									$c++;
+								}
+							}
 						}
 						
-						return ['table' => is_object($s) ? $s->tableName() : null, 'id' => is_object($s) ?  [$s->getPrimaryKey()] : null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings, 'changed' => $c];
+						return ['table' => is_object($s) ? $s->tableName() : null, 'id' => is_object($s) ?  [$s->getPrimaryKey()] : null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings, 'info' => $info, 'changed' => $c];
 					}
 				],
 				'deleteAllRelationships' => [
@@ -1005,55 +1005,52 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
 						
-						$errors = $warnings = [];
+						$errors = $warnings = $info = [];
 						
 						$rel_types = $s = $t = null;				
 						$subject = $args['subject'];
 						$target = $args['target'];
 						
 						
-						list($subject_identifier, $opts) = \GraphQLServices\Helpers\Edit\resolveParams($args, 'subject');
+						list($subject_identifier, $opts) = Edit\resolveParams($args, 'subject');
 						if(!($s = self::resolveIdentifier($subject, $subject_identifier, $opts))) {
-							throw new \ServiceException(_t('Invalid subject identifier'));
-						}
-						if (!$s->isSaveable($u)) {
-							throw new \ServiceException(_t('Subject is not accessible'));
-						}
-						
-						if(isset($args['relationshipTypes']) && is_array($args['relationshipTypes']) && sizeof($$args['relationshipTypes'])) {
-							$rel_types = $args['relationshipTypes'];
-						} elseif(isset($args['relationshipType']) && $args['relationshipType']) {
-							$rel_types = [$args['relationshipType']];
+							$errors[] = Error\error("{$subject_identifier}", 'INVALID_IDENTIFIER', _t('Invalid subject identifier'), 'GENERAL');
 						} else {
-							$rel_types = null;
-						}
-							
-						$c = 0;
-						if(is_array($rel_types) && sizeof($rel_types)) {
-							foreach($rel_types as $rel_type) {
-								if(!$s->removeRelationships($target, $rel_type)) {
-									$errors[] = [
-										'code' => 100,	// TODO: real number?
-										'message' => _t('Could not delete relationships for relationship type %1: %2', $rel_type, join('; ', $s->getErrors())),
-										'bundle' => 'GENERAL'
-									];
-									continue;
-								} 
-								$c++;
+							if (!$s->isSaveable($u)) {
+								throw new \ServiceException(_t('Subject is not accessible'));
 							}
-						} else {
-							if(!$s->removeRelationships($target)) {
-								$errors[] = [
-									'code' => 100,	// TODO: real number?
-									'message' => _t('Could not delete relationships: %1', join('; ', $s->getErrors())),
-									'bundle' => 'GENERAL'
-								];
+						
+							if(isset($args['relationshipTypes']) && is_array($args['relationshipTypes']) && sizeof($$args['relationshipTypes'])) {
+								$rel_types = $args['relationshipTypes'];
+							} elseif(isset($args['relationshipType']) && $args['relationshipType']) {
+								$rel_types = [$args['relationshipType']];
 							} else {
-								$c++;
+								$rel_types = null;
+							}
+							
+							$c = 0;
+							if(is_array($rel_types) && sizeof($rel_types)) {
+								foreach($rel_types as $rel_type) {
+									if(!$s->removeRelationships($target, $rel_type)) {
+										foreach($s->errors() as $e) {
+											$errors[] = Error\error($subject_identifier, Error\toGraphQLError($e->getErrorNumber()), _t('Could not delete relationships for relationship type %1: %2', $rel_type, $s->getErrorMessage()), 'GENERAL'); 
+										}
+										continue;
+									} 
+									$c++;
+								}
+							} else {
+								if(!$s->removeRelationships($target)) {
+									foreach($s->errors() as $e) {
+										$errors[] = Error\error($subject_identifier, Error\toGraphQLError($e->getErrorNumber()), _t('Could not delete relationships: %1', $s->getErrorMessage()), 'GENERAL'); 
+									}
+								} else {
+									$c++;
+								}
 							}
 						}
 						
-						return ['table' => is_object($s) ? $s->tableName() : null, 'id' => is_object($s) ?  [$s->getPrimaryKey()] : null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings, 'changed' => $c];
+						return ['table' => is_object($s) ? $s->tableName() : null, 'id' => is_object($s) ?  [$s->getPrimaryKey()] : null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings, 'info' => $info, 'changed' => $c];
 					}
 				]
 			]
@@ -1066,7 +1063,9 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 	 *
 	 */
 	private static function processBundles(\BaseModel $instance, array $bundles) : array {
-		$errors = $warnings = [];
+		$errors = $warnings = $info = [];
+		$idno = $instance->get($instance->tableName().'.'.$instance->getProperty('ID_NUMBERING_ID_FIELD'));
+		
 		foreach($bundles as $b) {
 			$id = $b['id'] ?? null;
 			$delete = isset($b['delete']) ? (bool)$b['delete'] : false;
@@ -1086,7 +1085,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 				case 'nonpreferred_labels':
 					$label_values = [];
 					
-					$label_values = \GraphQLServices\Helpers\Edit\extractLabelValueFromBundles($instance->tableName(), [$b]);
+					$label_values = Edit\extractLabelValueFromBundles($instance->tableName(), [$b]);
 					
 					$locale = caGetOption('locale', $b, ca_locales::getDefaultCataloguingLocale());
 					$locale_id = caGetOption('locale', $b, ca_locales::codeToID($locale));
@@ -1113,11 +1112,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 					}
 					
 					foreach($instance->errors() as $e) {
-						$errors[] = [
-							'code' => $e->getErrorNumber(),
-							'message' => $e->getErrorDescription(),
-							'bundle' => $bundle_name
-						];
+						$errors[] = Error\error($idno, Error\toGraphQLError($e->getErrorNumber()), $e->getErrorDescription(), $bundle_name);
 					}
 					break;
 				# -----------------------------------
@@ -1172,17 +1167,13 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 					}
 				
 					foreach($instance->errors() as $e) {
-						$errors[] = [
-							'code' => $e->getErrorNumber(),
-							'message' => $e->getErrorDescription(),
-							'bundle' => $bundle_name
-						];
+						$errors[] = Error\error($idno, Error\toGraphQLError($e->getErrorNumber()), $e->getErrorDescription(), $bundle_name);
 					}
 					break;
 				# -----------------------------------
 			}
 		}
-		return ['errors' => $errors, 'warnings' => $warnings];
+		return ['errors' => $errors, 'warnings' => $warnings, 'info' => $info];
 	}
 	# -------------------------------------------------------
 	/**
@@ -1193,46 +1184,53 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 	 */
 	private static function processRelationships(\BaseModel $instance, array $relationships, ?array $options=null) : array {
 		$replace = caGetOption('replace', $options, false);
-		$errors = $warnings = [];
+		$errors = $warnings = $info = [];
+		
+		$subject_identifier = $instance->get($instance->tableName().'.'.$instance->getProperty('ID_NUMBERING_ID_FIELD'));
 		
 		if($replace) {
 			foreach(array_unique(array_map(function($v) { return $v['target']; }, $relationships)) as $t) {
 				$instance->removeRelationships($t);
+				$info[] = Error\info("{$subject_identifier}", 'RELS_REMOVED', _t('Relationships were removed because REPLACE is set'), 'GENERAL');
 			}
 		}
 		
 		foreach($relationships as $r) {
-			$effective_date = (isset($r['bundles']) && is_array($r['bundles'])) ? \GraphQLServices\Helpers\Edit\extractValueFromBundles($r['bundles'], ['effective_date']) : null;
+			$effective_date = (isset($r['bundles']) && is_array($r['bundles'])) ? Edit\extractValueFromBundles($r['bundles'], ['effective_date']) : null;
 						
 			$c = 0;
 			$target = $r['target'];
-			list($target_identifier, $opts) = \GraphQLServices\Helpers\Edit\resolveParams($r, 'target');
+			list($target_identifier, $opts) = Edit\resolveParams($r, 'target');
 			
-			if(is_array($rel_ids = $instance->relationshipExists($target, $target_identifier, $r['relationshipType']))) {
+			if(is_array($rel_ids = $instance->relationshipExists($target, $target_identifier, $r['relationshipType'])) && sizeof($rel_ids)) {
+				$info[] = Error\info("{$subject_identifier}::{$target_identifier}", 'REL_EXISTS', _t('Existing relationship was found for type (%1) and will be used', $r['relationshipType']), 'GENERAL');
 				$rel_id = array_shift($rel_ids);
 				$rel = $instance->editRelationship($target, $rel_id, $target_identifier, $r['relationshipType'], $effective_date, null, null, null, $opts);
 			} else {
+				$info[] = Error\info("{$subject_identifier}::{$target_identifier}", 'REL_CREATED', _t('New relationship was created for type (%1)', $r['relationshipType']), 'GENERAL');
 				$rel = $instance->addRelationship($target, $target_identifier, $r['relationshipType'], $effective_date, null, null, null, $opts);
 			}
 			if(!$rel) {
-				$errors[] = [
-					'code' => 100,	// TODO: real number?
-					'message' => is_array($rel_ids) ? 
-						_t('Could not edit relationship: %1', join('; ', $instance->getErrors())) 
-						: 
-						_t('Could not create relationship: %1', join('; ', $instance->getErrors())),
-					'bundle' => 'GENERAL'
-				];
+				foreach($instance->errors() as $e) {
+					$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", Error\toGraphQLError($e->getErrorNumber()), 
+						is_array($rel_ids) ? 
+							_t('Could not edit relationship: %1', $e->getErrorMessage()) 
+							: 
+							_t('Could not create relationship: %1', $e->getErrorMessage()),
+						'GENERAL'
+					); 
+				}
 			} elseif(isset($r['bundles']) && is_array($r['bundles']) && (sizeof($r['bundles']) > 0)) {
 				//  Add interstitial data
 				if (is_array($ret = self::processBundles($rel, $r['bundles']))) {
 					$errors += $ret['errors'];
 					$warnings += $ret['warnings'];
+					$info += $ret['info'];
 				}
 				$c++;
 			}
 		}
-		return ['errors' => $errors, 'warnings' => $warnings];
+		return ['errors' => $errors, 'warnings' => $warnings, 'info' => $info];
 	}
 	# -------------------------------------------------------
 }

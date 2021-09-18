@@ -27,15 +27,6 @@
  */
 namespace GraphQLServices\Helpers\Edit;
 
-/**
- *
- */
-function warning(string $bundle, string $message) : array {
-	return [
-		'message' => $message,
-		'bundle' => $bundle
-	];
-}
 
 /**
  *
