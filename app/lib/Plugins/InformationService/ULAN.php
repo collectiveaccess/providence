@@ -45,7 +45,22 @@ class WLPlugInformationServiceULAN extends BaseGettyLODServicePlugin implements 
 	 */
 	public function __construct() {
 		global $g_information_service_settings_ULAN;
-
+		$g_information_service_settings_ULAN['additionalFilter'] = [
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'default' => '',
+			'width' => 90, 'height' => 1,
+			'label' => _t('Additional search filter'),
+			'description' => _t('Additional search filter. For example to limit to children of a particular term enter "gvp:broaderExtended aat:300312238"')
+		];
+		$g_information_service_settings_ULAN['sparqlSuffix'] = [
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'default' => '',
+			'width' => 90, 'height' => 1,
+			'label' => _t('Additional sparql suffix'),
+			'description' => _t('Applied after the initial search. Useful to combine filters. For example to limit to children of particular terms enter "?ID gvp:broaderPreferredExtended ?Extended FILTER (?Extended IN (aat:300261086, aat:300264550))"')
+		];
 		WLPlugInformationServiceULAN::$s_settings = $g_information_service_settings_ULAN;
 		parent::__construct();
 		$this->info['NAME'] = 'ULAN';
@@ -70,11 +85,17 @@ class WLPlugInformationServiceULAN extends BaseGettyLODServicePlugin implements 
 	# ------------------------------------------------
 
 	public function _buildQuery( $ps_search, $pa_options, $pa_params ) {
+		$vs_additional_filter = $pa_options['settings']['additionalFilter'] ?? null;
+		if ($vs_additional_filter){
+			$vs_additional_filter = "$vs_additional_filter ;";
+		}
+		$vs_sparql_suffix = $pa_options['settings']['sparqlSuffix'] ?? null;
 		$vs_query = urlencode('SELECT ?ID ?TermPrefLabel ?Parents ?Bio {
-    ?ID a skos:Concept; '.$pa_params['search_field'].' "'.$ps_search.'"; skos:inScheme ulan: ;
+    ?ID a skos:Concept; '.$pa_params['search_field'].' "'.$ps_search.'"; skos:inScheme ulan: ;' . $vs_additional_filter . '
     gvp:prefLabelGVP [xl:literalForm ?TermPrefLabel].
     {?ID foaf:focus/gvp:biographyPreferred/schema:description ?Bio}
     {?ID gvp:parentStringAbbrev ?Parents}
+	' . $vs_sparql_suffix . '
 	} OFFSET '.$pa_params['start'].' LIMIT '.$pa_params['limit']);
 		return $vs_query;
 
