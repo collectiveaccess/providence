@@ -256,15 +256,18 @@ create table ca_user_groups
    code                           varchar(20)                    not null,
    description                    text                           not null,
    for_public_use                 tinyint unsigned               not null default 0,
-   user_id                        int unsigned                   null references ca_users(user_id),
-   `rank`                           smallint unsigned              not null default 0,
+   user_id                        int unsigned                   null,
+   `rank`                         smallint unsigned              not null default 0,
    vars                           text                           not null,
    hier_left                      decimal(30,20)                 not null,
    hier_right                     decimal(30,20)                 not null,
    primary key (group_id),
       
    constraint fk_ca_user_groups_parent_id foreign key (parent_id)
-      references ca_user_groups (group_id) on delete restrict on update restrict
+      references ca_user_groups (group_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_user_groups_user_id foreign key (user_id)
+      references ca_users (user_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 create index i_hier_left on ca_user_groups(hier_left);
@@ -706,13 +709,16 @@ create table ca_object_representation_labels
 /*==========================================================================*/
 create table ca_object_representation_multifiles (
 	multifile_id		int unsigned not null auto_increment,
-	representation_id	int unsigned not null references ca_object_representations(representation_id),
+	representation_id	int unsigned not null,
 	resource_path		text not null,
 	media				longblob not null,
 	media_metadata		longblob not null,
 	media_content		longtext not null,
 	`rank`				int unsigned not null default 0,	
-	primary key (multifile_id)
+	primary key (multifile_id),
+	
+   constraint fk_ca_object_representation_mf_representation_id foreign key (representation_id)
+      references ca_object_representations (representation_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 create index i_resource_path on ca_object_representation_multifiles(resource_path(255));
@@ -722,7 +728,7 @@ create index i_representation_id on ca_object_representation_multifiles(represen
 /*==========================================================================*/
 create table ca_object_representation_captions (
 	caption_id			int unsigned not null auto_increment,
-	representation_id	int unsigned not null references ca_object_representations(representation_id),
+	representation_id	int unsigned not null,
 	locale_id			smallint unsigned not null,
 	caption_file		longblob not null,
 	caption_content		longtext not null,
@@ -731,21 +737,27 @@ create table ca_object_representation_captions (
     index i_representation_id	(representation_id),
     index i_locale_id			(locale_id),
    constraint fk_ca_object_rep_captions_locale_id foreign key (locale_id)
-      references ca_locales (locale_id) on delete restrict on update restrict
+      references ca_locales (locale_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_object_representation_cap_representation_id foreign key (representation_id)
+      references ca_object_representations (representation_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
 /*==========================================================================*/
 create table ca_object_representation_sidecars (
 	sidecar_id			int unsigned not null auto_increment,
-	representation_id	int unsigned not null references ca_object_representations(representation_id),
+	representation_id	int unsigned not null,
 	sidecar_file		longblob not null,
 	sidecar_content		longtext not null,
 	notes               text not null,
     mimetype            varchar(255) null,
 	primary key (sidecar_id),
       
-    index i_representation_id	(representation_id)
+    index i_representation_id	(representation_id),
+    
+   constraint fk_ca_object_representation_sc_representation_id foreign key (representation_id)
+      references ca_object_representations (representation_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
@@ -4292,13 +4304,16 @@ create index i_sorting on ca_attribute_values(element_id, attribute_id, value_so
 /*==========================================================================*/
 create table ca_attribute_value_multifiles (
 	multifile_id		int unsigned not null auto_increment,
-	value_id	        int unsigned not null references ca_attribute_values(value_id),
+	value_id	        int unsigned not null,
 	resource_path		text not null,
 	media				longblob not null,
 	media_metadata		longblob not null,
 	media_content		longtext not null,
 	`rank`				int unsigned not null default 0,	
-	primary key (multifile_id)
+	primary key (multifile_id),
+	
+   constraint fk_ca_attribute_value_multifiles_value_id foreign key (value_id)
+      references ca_attribute_values (value_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 create index i_resource_path on ca_attribute_value_multifiles(resource_path(255));
@@ -4443,7 +4458,7 @@ create index i_label_right_id on ca_entities_x_vocabulary_terms(label_right_id);
 /*==========================================================================*/
 create table ca_editor_uis (
 	ui_id int unsigned not null auto_increment,
-	user_id int unsigned null references ca_users(user_id),		/* owner of ui */
+	user_id int unsigned null,		/* owner of ui */
 	is_system_ui tinyint unsigned not null,
 	editor_type tinyint unsigned not null,							/* tablenum of editor */
 	editor_code varchar(100) null,
@@ -4451,7 +4466,10 @@ create table ca_editor_uis (
 	icon longblob not null,
 	
 	primary key 				(ui_id),
-	index i_user_id				(user_id)
+	index i_user_id				(user_id),
+	
+   constraint fk_ca_editor_uis_user_id foreign key (user_id)
+      references ca_users (user_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 create unique index u_code on ca_editor_uis(editor_code);
@@ -4459,53 +4477,77 @@ create unique index u_code on ca_editor_uis(editor_code);
 /*==========================================================================*/
 create table ca_editor_ui_labels (
 	label_id int unsigned not null auto_increment,
-	ui_id int unsigned not null references ca_editor_uis(ui_id),
+	ui_id int unsigned not null,
 	name varchar(255) not null,
 	description text not null,
-	locale_id smallint unsigned not null references ca_locales(locale_id),
+	locale_id smallint unsigned not null,
 	
 	primary key 				(label_id),
 	index i_ui_id				(ui_id),
-	index i_locale_id			(locale_id)
+	index i_locale_id			(locale_id),
+	
+   constraint fk_ca_editor_ui_labels_ui_id foreign key (ui_id)
+      references ca_editor_uis (ui_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_editor_ui_labels_ca_locales foreign key (locale_id)
+      references ca_locales (locale_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
 /*==========================================================================*/
 create table ca_editor_uis_x_user_groups (
 	relation_id int unsigned not null auto_increment,
-	ui_id int unsigned not null references ca_editor_uis(ui_id),
-	group_id int unsigned not null references ca_user_groups(group_id),
+	ui_id int unsigned not null,
+	group_id int unsigned not null,
 	access 			tinyint unsigned not null default 0,
 	
 	primary key 				(relation_id),
 	index i_ui_id				(ui_id),
-	index i_group_id			(group_id)
+	index i_group_id			(group_id),
+	
+   constraint fk_ca_editor_uis_x_user_groups_ui_id foreign key (ui_id)
+      references ca_editor_uis (ui_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_editor_uis_x_user_groups_ca_user_groups foreign key (group_id)
+      references ca_user_groups (group_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
 /*==========================================================================*/
 create table ca_editor_uis_x_users (
 	relation_id int unsigned not null auto_increment,
-	ui_id int unsigned not null references ca_editor_uis(ui_id),
-	user_id int unsigned not null references ca_users(user_id),
+	ui_id int unsigned not null,
+	user_id int unsigned not null,
 	access 			tinyint unsigned not null default 0,
 	
 	primary key 				(relation_id),
 	index i_ui_id				(ui_id),
-	index i_user_id			(user_id)
+	index i_user_id			(user_id),
+	
+   constraint fk_ca_editor_uis_x_users_ui_id foreign key (ui_id)
+      references ca_editor_uis (ui_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_editor_uis_x_users_ca_users foreign key (user_id)
+      references ca_users (user_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
 /*==========================================================================*/
 create table ca_editor_uis_x_roles (
 	relation_id int unsigned not null auto_increment,
-	ui_id int unsigned not null references ca_editor_uis(ui_id),
-	role_id smallint unsigned not null references ca_user_roles(role_id),
+	ui_id int unsigned not null,
+	role_id smallint unsigned not null,
 	access 			tinyint unsigned not null default 0,
 	
 	primary key 				(relation_id),
 	index i_ui_id				(ui_id),
-	index i_role_id				(role_id)
+	index i_role_id				(role_id),
+	
+   constraint fk_ca_editor_uis_x_roles_ui_id foreign key (ui_id)
+      references ca_editor_uis (ui_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_editor_uis_x_roles_ca_user_roles foreign key (role_id)
+      references ca_user_roles (role_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
@@ -4513,7 +4555,7 @@ create table ca_editor_uis_x_roles (
 create table ca_editor_ui_screens (
 	screen_id int unsigned not null auto_increment,
 	parent_id int unsigned null,
-	ui_id int unsigned not null references ca_editor_uis(ui_id),
+	ui_id int unsigned not null,
 	idno varchar(255) not null,
 	`rank` smallint unsigned not null default 0,
 	is_default tinyint unsigned not null,
@@ -4530,67 +4572,94 @@ create table ca_editor_ui_screens (
 	index i_hier_right			(hier_right),
       
    constraint fk_ca_editor_ui_screens_parent_id foreign key (parent_id)
-      references ca_editor_ui_screens (screen_id) on delete restrict on update restrict
+      references ca_editor_ui_screens (screen_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_editor_ui_screens_ui_id foreign key (ui_id)
+      references ca_editor_uis (ui_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
 /*==========================================================================*/
 create table ca_editor_ui_screen_labels (
 	label_id int unsigned not null auto_increment,
-	screen_id int unsigned not null references ca_editor_ui_screens(screen_id),
+	screen_id int unsigned not null,
 	name varchar(255) not null,
 	description text not null,
-	locale_id smallint unsigned not null references ca_locales(locale_id),
+	locale_id smallint unsigned not null,
 	
 	primary key 				(label_id),
 	index i_screen_id			(screen_id),
-	index i_locale_id			(locale_id)
+	index i_locale_id			(locale_id),
+	
+   constraint fk_ca_editor_ui_screen_labels_screen_id foreign key (screen_id)
+      references ca_editor_ui_screens (screen_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_editor_ui_screen_labels_ca_locales foreign key (locale_id)
+      references ca_locales (locale_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
 /*==========================================================================*/
 create table ca_editor_ui_screens_x_user_groups (
 	relation_id int unsigned not null auto_increment,
-	screen_id int unsigned not null references ca_editor_ui_screens(screen_id),
-	group_id int unsigned not null references ca_user_groups(group_id),
+	screen_id int unsigned not null,
+	group_id int unsigned not null,
 	access 			tinyint unsigned not null default 0,
 	
 	primary key 				(relation_id),
 	index i_screen_id			(screen_id),
-	index i_group_id			(group_id)
+	index i_group_id			(group_id),
+	
+   constraint fk_ca_editor_ui_screens_x_ug_screen_id foreign key (screen_id)
+      references ca_editor_ui_screens (screen_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_editor_ui_screens_x_ug_group_id foreign key (group_id)
+      references ca_user_groups (group_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
 /*==========================================================================*/
 create table ca_editor_ui_screens_x_users (
 	relation_id int unsigned not null auto_increment,
-	screen_id int unsigned not null references ca_editor_ui_screens(screen_id),
-	user_id int unsigned not null references ca_users(user_id),
+	screen_id int unsigned not null,
+	user_id int unsigned not null,
 	access 			tinyint unsigned not null default 0,
 	
 	primary key 				(relation_id),
 	index i_screen_id			(screen_id),
-	index i_user_id				(user_id)
+	index i_user_id				(user_id),
+	
+   constraint fk_ca_editor_ui_screens_x_u_screen_id foreign key (screen_id)
+      references ca_editor_ui_screens (screen_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_editor_ui_screens_x_u_user_id foreign key (user_id)
+      references ca_users (user_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
 /*==========================================================================*/
 create table ca_editor_ui_screens_x_roles (
 	relation_id int unsigned not null auto_increment,
-	screen_id int unsigned not null references ca_editor_ui_screens(screen_id),
-	role_id smallint unsigned not null references ca_user_roles(role_id),
+	screen_id int unsigned not null,
+	role_id smallint unsigned not null,
 	access 			tinyint unsigned not null default 0,
 	
 	primary key 				(relation_id),
 	index i_screen_id			(screen_id),
-	index i_role_id				(role_id)
+	index i_role_id				(role_id),
+	
+   constraint fk_ca_editor_ui_screens_x_r_screen_id foreign key (screen_id)
+      references ca_editor_ui_screens (screen_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_editor_ui_screens_x_r_role_id foreign key (role_id)
+      references ca_user_roles (role_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
 /*==========================================================================*/
 create table ca_editor_ui_bundle_placements (
 	placement_id int unsigned not null auto_increment,
-	screen_id int unsigned not null references ca_editor_ui_screens(screen_id),
+	screen_id int unsigned not null,
 	placement_code varchar(255) not null,
 	bundle_name varchar(255) not null,
 	
@@ -4599,7 +4668,10 @@ create table ca_editor_ui_bundle_placements (
 	
 	primary key 				(placement_id),
 	index i_screen_id			(screen_id),
-	unique index u_bundle_name	(bundle_name, screen_id, placement_code)
+	unique index u_bundle_name	(bundle_name, screen_id, placement_code),
+	
+   constraint fk_ca_editor_ui_bundle_placements_screen_id foreign key (screen_id)
+      references ca_editor_ui_screens (screen_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
@@ -4644,7 +4716,7 @@ create table ca_sets (
 	set_id		int unsigned not null auto_increment,
 	parent_id	int unsigned,
 	hier_set_id int unsigned not null,
-	user_id		int unsigned null references ca_users(user_id),
+	user_id		int unsigned null,
     type_id     int unsigned not null,
     commenting_status tinyint unsigned not null default 0,
     tagging_status tinyint unsigned not null default 0,
@@ -4670,7 +4742,10 @@ create table ca_sets (
 	key i_table_num (table_num),
       
    constraint fk_ca_sets_parent_id foreign key (parent_id)
-      references ca_sets (set_id) on delete restrict on update restrict
+      references ca_sets (set_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_sets_user_id foreign key (user_id)
+      references ca_users (user_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 create index i_set_filter on ca_sets(set_id, deleted, access); 
 
@@ -4678,21 +4753,27 @@ create index i_set_filter on ca_sets(set_id, deleted, access);
 /*==========================================================================*/
 create table ca_set_labels (
 	label_id	int unsigned not null auto_increment,
-	set_id		int unsigned not null references ca_sets(set_id),
-	locale_id	smallint unsigned not null references ca_locales(locale_id),
+	set_id		int unsigned not null,
+	locale_id	smallint unsigned not null,
 	
 	name		varchar(255) not null,
 	
 	primary key (label_id),
 	key i_set_id (set_id),
-	key i_locale_id (locale_id)
+	key i_locale_id (locale_id),
+	
+   constraint fk_ca_set_labels_set_id foreign key (set_id)
+      references ca_sets (set_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_set_labels_locale_id foreign key (locale_id)
+      references ca_locales (locale_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
 /*==========================================================================*/
 create table ca_set_items (
 	item_id		int unsigned not null auto_increment,
-	set_id		int unsigned not null references ca_sets(set_id),
+	set_id		int unsigned not null,
 	table_num	tinyint unsigned not null,
 	row_id		int unsigned not null,
     type_id     int unsigned not null,
@@ -4704,52 +4785,73 @@ create table ca_set_items (
 	key i_set_id (set_id, deleted),
 	key i_type_id (type_id),
 	key i_row_id (row_id),
-	key i_table_num (table_num)
+	key i_table_num (table_num),
+	
+   constraint fk_ca_set_items_set_id foreign key (set_id)
+      references ca_sets (set_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
 /*==========================================================================*/
 create table ca_set_item_labels (
 	label_id	int unsigned not null auto_increment,
-	item_id		int unsigned not null references ca_set_items(item_id),
+	item_id		int unsigned not null,
 	
-	locale_id	smallint unsigned not null references ca_locales(locale_id),
+	locale_id	smallint unsigned not null,
 	
 	caption		text not null,
 	
 	primary key (label_id),
 	key i_set_id (item_id),
-	key i_locale_id (locale_id)
+	key i_locale_id (locale_id),
+	
+   constraint fk_ca_set_item_labels_item_id foreign key (item_id)
+      references ca_set_items (item_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_set_item_labels_locale_id foreign key (locale_id)
+      references ca_locales (locale_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
 /*==========================================================================*/
 create table ca_sets_x_user_groups (
 	relation_id int unsigned not null auto_increment,
-	set_id int unsigned not null references ca_sets(set_id),
-	group_id int unsigned not null references ca_user_groups(group_id),
+	set_id int unsigned not null,
+	group_id int unsigned not null,
 	access tinyint unsigned not null default 0,
 	sdatetime int unsigned null,
 	edatetime int unsigned null,
 	
 	primary key 				(relation_id),
 	index i_set_id				(set_id),
-	index i_group_id			(group_id)
+	index i_group_id			(group_id),
+	
+   constraint fk_ca_sets_x_ug_set_id foreign key (set_id)
+      references ca_sets (set_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_sets_x_ug_group_id foreign key (group_id)
+      references ca_user_groups (group_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
 /*==========================================================================*/
 create table ca_sets_x_users (
 	relation_id int unsigned not null auto_increment,
-	set_id int unsigned not null references ca_sets(set_id),
-	user_id int unsigned not null references ca_users(user_id),
+	set_id int unsigned not null,
+	user_id int unsigned not null,
 	access tinyint unsigned not null default 0,
 	sdatetime int unsigned null,
 	edatetime int unsigned null,
 	
 	primary key 				(relation_id),
 	index i_set_id				(set_id),
-	index i_user_id			(user_id)
+	index i_user_id			(user_id),
+	
+   constraint fk_ca_sets_x_users_set_id foreign key (set_id)
+      references ca_sets (set_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_sets_x_users_user_id foreign key (user_id)
+      references ca_users (user_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
@@ -4759,8 +4861,8 @@ create table ca_item_comments (
 	table_num	tinyint unsigned not null,
 	row_id		int unsigned not null,
 	
-	user_id		int unsigned null references ca_users(user_id),
-	locale_id	smallint unsigned not null references ca_locales(locale_id),
+	user_id		int unsigned null,
+	locale_id	smallint unsigned not null,
 	
 	media1 longblob not null,
 	media2 longblob not null,
@@ -4776,7 +4878,7 @@ create table ca_item_comments (
 	access		tinyint unsigned not null default 0,
 	ip_addr		varchar(39) null,
 	moderated_on int unsigned null,
-	moderated_by_user_id int unsigned null references ca_users(user_id),
+	moderated_by_user_id int unsigned null,
 	
 	primary key (comment_id),
 	key i_row_id (row_id),
@@ -4785,7 +4887,16 @@ create table ca_item_comments (
 	key i_user_id (user_id),
 	key i_created_on (created_on),
 	key i_access (access),
-	key i_moderated_on (moderated_on)
+	key i_moderated_on (moderated_on),
+	  
+   constraint fk_ca_item_comments_user_id foreign key (user_id)
+      references ca_users (user_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_item_comments_locale_id foreign key (locale_id)
+      references ca_locales (locale_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_item_comments_moderated_by_user_id foreign key (moderated_by_user_id)
+      references ca_users (user_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
@@ -4793,11 +4904,14 @@ create table ca_item_comments (
 create table ca_item_tags (
 	tag_id		int unsigned not null auto_increment,
 
-	locale_id	smallint unsigned not null references ca_locales(locale_id),
+	locale_id	smallint unsigned not null,
 	tag			varchar(255) not null,
 	
 	primary key (tag_id),
-	key u_tag (tag, locale_id)
+	key u_tag (tag, locale_id),
+	
+   constraint fk_ca_item_tags_locale_id foreign key (locale_id)
+      references ca_locales (locale_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
@@ -4807,9 +4921,9 @@ create table ca_items_x_tags (
 	table_num	tinyint unsigned not null,
 	row_id		int unsigned not null,
 	
-	tag_id		int unsigned not null references ca_item_tags(tag_id),
+	tag_id		int unsigned not null,
 	
-	user_id		int unsigned null references ca_users(user_id),
+	user_id		int unsigned,
 	access		tinyint unsigned not null default 0,
 	
 	ip_addr		varchar(39) null,
@@ -4817,7 +4931,7 @@ create table ca_items_x_tags (
 	created_on	int unsigned not null,
 	
 	moderated_on int unsigned null,
-	moderated_by_user_id int unsigned null references ca_users(user_id),
+	moderated_by_user_id int unsigned null,
     `rank` int unsigned not null default 0,
 	
 	primary key (relation_id),
@@ -4828,14 +4942,23 @@ create table ca_items_x_tags (
 	key i_access (access),
 	key i_created_on (created_on),
 	key i_moderated_on (moderated_on),
-	key i_rank (`rank`)
+	key i_rank (`rank`),
+	
+   constraint fk_ca_items_x_tags_tag_id foreign key (tag_id)
+      references ca_item_tags (tag_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_items_x_tags_user_id foreign key (user_id)
+      references ca_users (user_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_items_x_tags_moderated_by_user_id foreign key (moderated_by_user_id)
+      references ca_users (user_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
 /*==========================================================================*/
 create table ca_search_forms (
 	form_id			int unsigned not null primary key auto_increment,
-	user_id			int unsigned null references ca_users(user_id),
+	user_id			int unsigned null,
 	
 	form_code		varchar(100) null,
 	table_num		tinyint unsigned not null,
@@ -4846,15 +4969,18 @@ create table ca_search_forms (
 	
 	UNIQUE KEY u_form_code (form_code),
 	KEY i_user_id (user_id),
-	KEY i_table_num (table_num)
+	KEY i_table_num (table_num),
+	
+   constraint fk_ca_search_forms_user_id foreign key (user_id)
+      references ca_users (user_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
 /*==========================================================================*/
 create table ca_search_form_labels (
 	label_id		int unsigned not null primary key auto_increment,
-	form_id			int unsigned null references ca_search_forms(form_id),
-	locale_id		smallint unsigned not null references ca_locales(locale_id),
+	form_id			int unsigned null,
+	locale_id		smallint unsigned not null,
 	name			varchar(255) not null,
 	name_sort		varchar(255) not null,
 	description		text not null,
@@ -4862,14 +4988,20 @@ create table ca_search_form_labels (
 	is_preferred	tinyint unsigned not null,
 	
 	KEY i_form_id (form_id),
-	KEY i_locale_id (locale_id)
+	KEY i_locale_id (locale_id),
+	
+   constraint fk_ca_search_form_labels_form_id foreign key (form_id)
+      references ca_search_forms (form_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_search_form_labels_locale_id foreign key (locale_id)
+      references ca_locales (locale_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
 /*==========================================================================*/
 create table ca_search_form_placements (
 	placement_id	int unsigned not null primary key auto_increment,
-	form_id		int unsigned not null references ca_search_forms(form_id),
+	form_id		int unsigned not null,
 	
 	bundle_name 	varchar(255) not null,
 	`rank`			int unsigned not null default 0,
@@ -4877,7 +5009,10 @@ create table ca_search_form_placements (
 	
 	KEY i_bundle_name (bundle_name),
 	KEY i_rank (`rank`),
-	KEY i_form_id (form_id)
+	KEY i_form_id (form_id),
+	
+   constraint fk_ca_search_form_placements_form_id foreign key (form_id)
+      references ca_search_forms (form_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
@@ -4902,26 +5037,38 @@ create table ca_search_form_type_restrictions (
 /*==========================================================================*/
 create table ca_search_forms_x_user_groups (
 	relation_id 	int unsigned not null auto_increment,
-	form_id 		int unsigned not null references ca_search_forms(form_id),
-	group_id 		int unsigned not null references ca_user_groups(group_id),
+	form_id 		int unsigned not null,
+	group_id 		int unsigned not null,
 	access 			tinyint unsigned not null default 0,
 	
 	primary key 				(relation_id),
 	index i_form_id				(form_id),
-	index i_group_id			(group_id)
+	index i_group_id			(group_id),
+	
+   constraint fk_ca_search_forms_x_ug_form_id foreign key (form_id)
+      references ca_search_forms (form_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_search_forms_x_ug_group_id foreign key (group_id)
+      references ca_user_groups (group_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
 /*==========================================================================*/
 create table ca_search_forms_x_users (
 	relation_id 	int unsigned not null auto_increment,
-	form_id 		int unsigned not null references ca_search_forms(form_id),
-	user_id 		int unsigned not null references ca_users(user_id),
+	form_id 		int unsigned not null,
+	user_id 		int unsigned not null,
 	access 			tinyint unsigned not null default 0,
 	
 	primary key 				(relation_id),
 	index i_form_id			(form_id),
-	index i_user_id			(user_id)
+	index i_user_id			(user_id),
+	
+   constraint fk_ca_search_forms_x_u_form_id foreign key (form_id)
+      references ca_search_forms (form_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_search_forms_x_u_user_id foreign key (user_id)
+      references ca_users (user_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
@@ -4929,11 +5076,11 @@ create table ca_search_forms_x_users (
 create table ca_search_log (
 	search_id			int unsigned not null primary key auto_increment,
 	log_datetime		int unsigned not null,
-	user_id				int unsigned null references ca_users(user_id),
+	user_id				int unsigned null,
 	table_num			tinyint unsigned not null,
 	search_expression	varchar(1024) not null,
 	num_hits			int unsigned not null,
-	form_id				int unsigned null references ca_search_forms(form_id),
+	form_id				int unsigned null,
 	ip_addr				varchar(39) null,
 	details				text not null,
 	execution_time 		decimal(7,3) not null,
@@ -4941,7 +5088,13 @@ create table ca_search_log (
 	
 	KEY i_log_datetime (log_datetime),
 	KEY i_user_id (user_id),
-	KEY i_form_id (form_id)
+	KEY i_form_id (form_id),
+	
+   constraint fk_ca_search_log_form_id foreign key (form_id)
+      references ca_search_forms (form_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_search_log_user_id foreign key (user_id)
+      references ca_users (user_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
@@ -4983,7 +5136,7 @@ create table ca_batch_log_items
 /*==========================================================================*/
 create table ca_bundle_displays (
 	display_id		int unsigned not null primary key auto_increment,
-	user_id			int unsigned null references ca_users(user_id),
+	user_id			int unsigned null,
 	
 	display_code	varchar(100) null,
 	table_num		tinyint unsigned not null,
@@ -4995,15 +5148,18 @@ create table ca_bundle_displays (
 	
 	UNIQUE KEY u_display_code (display_code),
 	KEY i_user_id (user_id),
-	KEY i_table_num (table_num)
+	KEY i_table_num (table_num),
+      
+   constraint fk_ca_bundle_displays_user_id foreign key (user_id)
+      references ca_users (user_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
 /*==========================================================================*/
 create table ca_bundle_display_labels (
 	label_id		int unsigned not null primary key auto_increment,
-	display_id		int unsigned null references ca_bundle_displays(display_id),
-	locale_id		smallint unsigned not null references ca_locales(locale_id),
+	display_id		int unsigned null,
+	locale_id		smallint unsigned not null,
 	name			varchar(255) not null,
 	name_sort		varchar(255) not null,
 	description		text not null,
@@ -5011,14 +5167,20 @@ create table ca_bundle_display_labels (
 	is_preferred	tinyint unsigned not null,
 	
 	KEY i_display_id (display_id),
-	KEY i_locale_id (locale_id)
+	KEY i_locale_id (locale_id),
+	
+   constraint fk_ca_bundle_display_labels_display_id foreign key (display_id)
+      references ca_bundle_displays (display_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_bundle_display_labels_locale_id foreign key (locale_id)
+      references ca_locales (locale_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
 /*==========================================================================*/
 create table ca_bundle_display_placements (
 	placement_id	int unsigned not null primary key auto_increment,
-	display_id		int unsigned not null references ca_bundle_displays(display_id),
+	display_id		int unsigned not null,
 	
 	bundle_name 	varchar(255) not null,
 	`rank`			int unsigned not null default 0,
@@ -5026,33 +5188,48 @@ create table ca_bundle_display_placements (
 	
 	KEY i_bundle_name (bundle_name),
 	KEY i_rank (`rank`),
-	KEY i_display_id (display_id)
+	KEY i_display_id (display_id),
+	
+   constraint fk_ca_bundle_display_placements_display_id foreign key (display_id)
+      references ca_bundle_displays (display_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
 /*==========================================================================*/
 create table ca_bundle_displays_x_user_groups (
 	relation_id 	int unsigned not null auto_increment,
-	display_id 		int unsigned not null references ca_bundle_displays(display_id),
-	group_id 		int unsigned not null references ca_user_groups(group_id),
+	display_id 		int unsigned not null,
+	group_id 		int unsigned not null,
 	access 			tinyint unsigned not null default 0,
 	
 	primary key 				(relation_id),
 	index i_display_id			(display_id),
-	index i_group_id			(group_id)
+	index i_group_id			(group_id),
+	
+   constraint fk_ca_bundle_displays_x_ug_display_id foreign key (display_id)
+      references ca_bundle_displays (display_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_bundle_displays_x_ug_group_id foreign key (group_id)
+      references ca_user_groups (group_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
 /*==========================================================================*/
 create table ca_bundle_displays_x_users (
 	relation_id 	int unsigned not null auto_increment,
-	display_id 	int unsigned not null references ca_bundle_displays(display_id),
-	user_id 		int unsigned not null references ca_users(user_id),
+	display_id 	int unsigned not null,
+	user_id 		int unsigned not null,
 	access 			tinyint unsigned not null default 0,
 	
 	primary key 				(relation_id),
 	index i_display_id			(display_id),
-	index i_user_id			(user_id)
+	index i_user_id			(user_id),
+	
+   constraint fk_ca_bundle_displays_x_u_display_id foreign key (display_id)
+      references ca_bundle_displays (display_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_bundle_displays_x_u_user_id foreign key (user_id)
+      references ca_users (user_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
@@ -6460,10 +6637,13 @@ create table ca_bookmark_folders
 (
   folder_id int(10) unsigned not null auto_increment,
   name varchar(255) not null,
-  user_id int unsigned not null references ca_users(user_id),
+  user_id int unsigned not null,
   `rank` smallint unsigned not null default 0,
   
-  primary key (folder_id)
+  primary key (folder_id),
+  
+   constraint fk_ca_bookmark_folders_user_id foreign key (user_id)
+      references ca_users (user_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 create index i_user_id on ca_bookmark_folders(user_id);
@@ -6473,14 +6653,17 @@ create index i_user_id on ca_bookmark_folders(user_id);
 create table ca_bookmarks 
 (
   bookmark_id int(10) unsigned not null auto_increment,
-  folder_id int unsigned not null references ca_bookmark_folders(folder_id),
+  folder_id int unsigned not null,
   table_num tinyint unsigned not null,
   row_id int unsigned not null,
   notes text not null,
   `rank` smallint unsigned not null default 0,
   created_on int unsigned not null,
   
-  primary key (bookmark_id)
+  primary key (bookmark_id),
+  
+   constraint fk_ca_bookmarks_folder_id foreign key (folder_id)
+      references ca_bookmark_folders (folder_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 create index i_row_id on ca_bookmarks(row_id);
@@ -6607,8 +6790,8 @@ create table ca_metadata_dictionary_entries (
 /*==========================================================================*/
 create table ca_metadata_dictionary_entry_labels (
 	label_id		  int unsigned not null primary key auto_increment,
-	entry_id			  int unsigned null references ca_metadata_dictionary_entries(entry_id),
-	locale_id		  smallint unsigned not null references ca_locales(locale_id),
+	entry_id			  int unsigned null,
+	locale_id		  smallint unsigned not null,
 	name			    varchar(255) not null,
 	name_sort		  varchar(255) not null,
 	description		text not null,
@@ -6616,7 +6799,13 @@ create table ca_metadata_dictionary_entry_labels (
 	is_preferred	tinyint unsigned not null,
 
 	KEY i_entry_id (entry_id),
-	KEY i_locale_id (locale_id)
+	KEY i_locale_id (locale_id),
+   
+   constraint fk_ca_md_entry_labels_entry_id foreign key (entry_id)
+      references ca_metadata_dictionary_entries (entry_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_md_entry_labels_locale_id foreign key (locale_id)
+      references ca_locales (locale_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
@@ -7034,18 +7223,21 @@ create table ca_metadata_alert_rules (
   table_num       tinyint unsigned  not null,
   code            varchar(20)       not null,
   settings        longtext          not null,
-  user_id			    int unsigned      null references ca_users(user_id),
+  user_id			    int unsigned      null,
 
   primary key (rule_id),
-  index i_table_num (table_num)
+  index i_table_num (table_num),
+   
+   constraint fk_ca_metadata_alert_rules_user_id foreign key (user_id)
+      references ca_users (user_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /*==========================================================================*/
 
 create table ca_metadata_alert_rule_labels (
   label_id		  int unsigned not null primary key auto_increment,
-  rule_id			  int unsigned null references ca_metadata_alert_rules(rule_id),
-  locale_id		  smallint unsigned not null references ca_locales(locale_id),
+  rule_id			  int unsigned null,
+  locale_id		  smallint unsigned not null,
   name			    varchar(255) not null,
   name_sort		  varchar(255) not null,
   description		text not null,
@@ -7053,7 +7245,13 @@ create table ca_metadata_alert_rule_labels (
   is_preferred	tinyint unsigned not null,
 
   KEY i_rule_id (rule_id),
-  KEY i_locale_id (locale_id)
+  KEY i_locale_id (locale_id),
+  
+   constraint fk_ca_metadata_alert_rule_labels_rule_id foreign key (rule_id)
+      references ca_metadata_alert_rules (rule_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_metadata_alert_rule_labels_locale_id foreign key (locale_id)
+      references ca_locales (locale_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /*==========================================================================*/
@@ -7078,26 +7276,38 @@ create table ca_metadata_alert_triggers (
 
 create table ca_metadata_alert_rules_x_user_groups (
   relation_id   int unsigned not null auto_increment,
-  rule_id 		  int unsigned not null references ca_metadata_alert_rules(rule_id),
-  group_id 		  int unsigned not null references ca_user_groups(group_id),
+  rule_id 		  int unsigned not null,
+  group_id 		  int unsigned not null,
   access 			  tinyint unsigned not null default 0,
 
   primary key 				(relation_id),
   index i_rule_id			(rule_id),
-  index i_group_id		(group_id)
+  index i_group_id		(group_id),
+  
+   constraint fk_ca_metadata_alert_rules_x_ug_rule_id foreign key (rule_id)
+      references ca_metadata_alert_rules (rule_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_metadata_alert_rules_x_ug_group_id foreign key (group_id)
+      references ca_user_groups (group_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /*==========================================================================*/
 
 create table ca_metadata_alert_rules_x_users (
   relation_id 	int unsigned not null auto_increment,
-  rule_id 	int unsigned not null references ca_metadata_alert_rules(rule_id),
-  user_id 		int unsigned not null references ca_users(user_id),
+  rule_id 	int unsigned not null,
+  user_id 		int unsigned not null,
   access 			tinyint unsigned not null default 0,
 
   primary key 				(relation_id),
   index i_rule_id			(rule_id),
-  index i_user_id			(user_id)
+  index i_user_id			(user_id),
+  
+   constraint fk_ca_metadata_alert_rules_x_u_rule_id foreign key (rule_id)
+      references ca_metadata_alert_rules (rule_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_metadata_alert_rules_x_u_user_id_id foreign key (user_id)
+      references ca_users (user_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /*==========================================================================*/
@@ -7140,7 +7350,7 @@ create table ca_notifications (
 
 create table ca_notification_subjects (
   subject_id      int unsigned        not null auto_increment,
-  notification_id int unsigned        not null references ca_notifications(notification_id),
+  notification_id int unsigned        not null,
   was_read        tinyint unsigned    not null default 0,
   read_on         int unsigned        null,
   table_num       tinyint unsigned    not null,
@@ -7153,7 +7363,10 @@ create table ca_notification_subjects (
   index i_notification_id (notification_id),
   index i_table_num_row_id (table_num, row_id, read_on),
   index i_delivery_email (delivery_email, delivery_email_sent_on),
-  index i_delivery_inbox (delivery_inbox)
+  index i_delivery_inbox (delivery_inbox),
+  
+   constraint fk_ca_notification_subjects_notification_id foreign key (notification_id)
+      references ca_notifications (notification_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /*==========================================================================*/
@@ -7201,7 +7414,7 @@ create table ca_site_templates (
 
 create table ca_site_pages (
   page_id		      	int unsigned        not null  AUTO_INCREMENT,
-  template_id           int unsigned        not null references ca_site_templates(template_id),
+  template_id           int unsigned        not null,
   title					varchar(255)		not null,
   description			text				not null,
   path        			varchar(255)        not null,
@@ -7213,14 +7426,17 @@ create table ca_site_pages (
 
   primary key (page_id),
   key (template_id),
-  key (path)
+  key (path),
+  
+   constraint fk_ca_site_pages_template_id foreign key (template_id)
+      references ca_site_templates (template_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /*==========================================================================*/
 
 create table ca_site_page_media (
   media_id		      	int unsigned        not null  AUTO_INCREMENT,
-  page_id               int unsigned        not null references ca_site_pages(page_id),
+  page_id               int unsigned        not null,
   title					varchar(255)		not null,
   caption			    text				not null,
   idno                  varchar(255)        not null,
@@ -7241,7 +7457,10 @@ create table ca_site_page_media (
   key (md5),
   key (idno),
   key (idno_sort),
-  unique index u_idno (page_id, idno)
+  unique index u_idno (page_id, idno),
+  
+   constraint fk_ca_site_page_media_page_id foreign key (page_id)
+      references ca_site_pages (page_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
@@ -7316,7 +7535,7 @@ create table if not exists ca_ip_bans (
 /*==========================================================================*/
 create table if not exists ca_representation_transcriptions (
    transcription_id          int unsigned                   not null AUTO_INCREMENT,
-   representation_id         int unsigned                   not null references ca_object_representations(representation_id),
+   representation_id         int unsigned                   not null,
    transcription             longtext                       not null,
    created_on                int unsigned                   not null,
    completed_on              int unsigned                   null,
@@ -7324,7 +7543,7 @@ create table if not exists ca_representation_transcriptions (
    is_primary                tinyint unsigned               not null default 0,
    
    ip_addr		             varchar(39)                    not null,
-   user_id                   int unsigned                   null references ca_users(user_id),
+   user_id                   int unsigned                   null,
    
    primary key (transcription_id),
 
@@ -7333,14 +7552,20 @@ create table if not exists ca_representation_transcriptions (
    index i_validated_on      	    (validated_on),
    index i_ip_addr				    (ip_addr),
    unique index i_user_id           (user_id, representation_id),
-   index i_representation_id        (representation_id)
+   index i_representation_id        (representation_id),
+   
+   constraint fk_ca_representation_transcriptions_representation_id foreign key (representation_id)
+      references ca_object_representations (representation_id) on delete restrict on update restrict,
+  
+   constraint fk_ca_representation_transcriptions_user_id foreign key (user_id)
+      references ca_users (user_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
 /*==========================================================================*/
 create table if not exists ca_media_upload_sessions (
    session_id                int unsigned                   not null AUTO_INCREMENT,
-   user_id                   int unsigned                   not null references ca_users(user_id),
+   user_id                   int unsigned                   not null,
    session_key               char(36)                       not null,
    created_on                int unsigned                   not null,
    submitted_on              int unsigned                   null,
@@ -7362,14 +7587,17 @@ create table if not exists ca_media_upload_sessions (
    index i_last_activity_on			(last_activity_on),
    index i_error_code      	        (error_code),
    index i_status   	            (status),
-   unique index i_session_key      	(session_key)
+   unique index i_session_key      	(session_key),
+  
+   constraint fk_ca_media_upload_sessions_user_id foreign key (user_id)
+      references ca_users (user_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
 /*==========================================================================*/
 create table if not exists ca_media_upload_session_files (
    file_id                   int unsigned                   not null AUTO_INCREMENT,
-   session_id                int unsigned                   not null references ca_media_upload_sessions(session_id),
+   session_id                int unsigned                   not null,
    created_on                int unsigned                   not null,
    completed_on              int unsigned                   null,
    last_activity_on          int unsigned                   null,
@@ -7385,7 +7613,10 @@ create table if not exists ca_media_upload_session_files (
    index i_created_on			    (created_on),
    index i_completed_on			    (completed_on),
    index i_last_activity_on			(last_activity_on),
-   index i_error_code      	        (error_code)
+   index i_error_code      	        (error_code),
+   
+   constraint fk_ca_media_upload_session_files_session_id foreign key (session_id)
+      references ca_media_upload_sessions (session_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
