@@ -46,6 +46,22 @@ class WLPlugInformationServiceTGN extends BaseGettyLODServicePlugin implements I
 	 */
 	public function __construct() {
 		global $g_information_service_settings_TGN;
+		$g_information_service_settings_TGN['additionalFilter'] = [
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'default' => '',
+			'width' => 90, 'height' => 1,
+			'label' => _t('Additional search filter'),
+			'description' => _t('Additional search filter. For example to limit to children of a particular term enter "gvp:broaderExtended aat:300312238"')
+		];
+		$g_information_service_settings_TGN['sparqlSuffix'] = [
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'default' => '',
+			'width' => 90, 'height' => 1,
+			'label' => _t('Additional sparql suffix'),
+			'description' => _t('Applied after the initial search. Useful to combine filters. For example to limit to children of particular terms enter "?ID gvp:broaderPreferredExtended ?Extended FILTER (?Extended IN (aat:300261086, aat:300264550))"')
+		];
 
 		WLPlugInformationServiceTGN::$s_settings = $g_information_service_settings_TGN;
 		parent::__construct();
@@ -111,13 +127,21 @@ class WLPlugInformationServiceTGN extends BaseGettyLODServicePlugin implements I
 	}
 
 	public function _buildQuery( $ps_search, $pa_options, $pa_params ) {
+		$vs_additional_filter = $pa_options['settings']['additionalFilter'] ?? null;
+		if ($vs_additional_filter){
+			$vs_additional_filter = "$vs_additional_filter ;";
+		}
+		$vs_sparql_suffix = $pa_options['settings']['sparqlSuffix'] ?? null;
 		$vs_query = urlencode( 'SELECT ?ID (coalesce(?labEn,?labGVP) as ?TermPrefLabel) ?Parents ?Type {
-			?ID a skos:Concept; ' . $pa_params['search_field'] . ' "' . $ps_search . '"; skos:inScheme tgn: ;
+			?ID a skos:Concept; ' . $pa_params['search_field'] . ' "' . $ps_search . '"; skos:inScheme tgn: ; ' . $vs_additional_filter . '
 			optional {?ID gvp:prefLabelGVP [xl:literalForm ?labGVP]}
 			optional {?ID xl:prefLabel [xl:literalForm ?labEn; dct:language gvp_lang:' . $pa_params['default_lang'] . ']}
 			{?ID gvp:parentStringAbbrev ?Parents}
 			{?ID gvp:displayOrder ?Order}
-			{?ID gvp:placeTypePreferred [gvp:prefLabelGVP [xl:literalForm ?Type]]}
+			{?ID gvp:placeTypePreferred [gvp:prefLabelGVP [xl:literalForm ?Type]]
+			' . $vs_sparql_suffix . '
+
+			}
 		} ORDER BY ASC(?Order)
 		LIMIT ' . $pa_params['limit'] );
 

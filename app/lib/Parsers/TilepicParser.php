@@ -570,7 +570,7 @@ class TilepicParser {
         }
         
          if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
-			if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
+			if (is_array($va_exif = @exif_read_data($ps_filepath, 'IDF0', true, false))) { 
 				if (isset($va_exif['IFD0']['Orientation'])) {
 					$vn_orientation_rotate = null;
 					$vn_orientation = $va_exif['IFD0']['Orientation'];
@@ -835,7 +835,7 @@ class TilepicParser {
 		}
 
 		 if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
-			if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
+			if (is_array($va_exif = @exif_read_data($ps_filepath, 'IFD0', true, false))) { 
 				if (isset($va_exif['IFD0']['Orientation'])) {
 					$vn_orientation_rotate = null;
 					$vn_orientation = $va_exif['IFD0']['Orientation'];
@@ -1079,7 +1079,7 @@ class TilepicParser {
         $h->profileImage('*', null);
         
         if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
-			if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
+			if (is_array($va_exif = @exif_read_data($ps_filepath, 'IFD0', true, false))) { 
 				if (isset($va_exif['IFD0']['Orientation'])) {
 					$vn_orientation = $va_exif['IFD0']['Orientation'];
 					switch($vn_orientation) {
@@ -1305,7 +1305,7 @@ class TilepicParser {
 		
 		$rotation = null;
 		if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
-			if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
+			if (is_array($va_exif = @exif_read_data($ps_filepath, 'IFD0', true, false))) { 
 				if (isset($va_exif['IFD0']['Orientation'])) {
 					$vn_orientation = $va_exif['IFD0']['Orientation'];
 					switch($vn_orientation) {
@@ -1406,9 +1406,6 @@ class TilepicParser {
 					return false;
 				}
 				
-				
-				if($rotation == 180) { $slice->rotateimage("#FFFFFF", $rotation); }
-				
 				if (!$slice->setimageformat($magick)) {
 					$this->error = "Tile conversion failed: $reason; $description";
 					return false;
@@ -1431,9 +1428,6 @@ class TilepicParser {
 					// noop
 				}
 				
-				if(abs($rotation) === 90) {	// flip rotation due to EXIF rotation (Gmagick doesn't set EXIF rotation properly)
-					$slice->rotateimage("#FFFFFF", -1 * $rotation);
-				}
 				$layer_list[sizeof($layer_list)-1][] = $slice->getImageBlob();
 				$slice->destroy();
 				$x += $pa_options["tile_width"];
@@ -1548,7 +1542,7 @@ class TilepicParser {
 				case IMAGETYPE_JPEG:
 					$r_image = imagecreatefromjpeg($ps_filepath);
 					 if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
-						if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
+						if (is_array($va_exif = @exif_read_data($ps_filepath, 'IFD0', true, false))) { 
 							if (isset($va_exif['IFD0']['Orientation'])) {
 								$vn_orientation = $va_exif['IFD0']['Orientation'];
 								$h = new WLPlugMediaGD();

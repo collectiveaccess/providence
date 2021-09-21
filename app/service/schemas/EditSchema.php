@@ -47,8 +47,12 @@ class EditSchema extends \GraphQLServices\GraphQLSchema {
 				'name' => 'EditError',
 				'description' => 'Details of error during edit.',
 				'fields' => [
+					'idno' => [
+						'type' => Type::string(),
+						'description' => 'Identifier of record message pertains to'
+					],
 					'code' => [
-						'type' => Type::int(),
+						'type' => Type::string(),
 						'description' => 'Error code'
 					],
 					'message' => [
@@ -65,6 +69,14 @@ class EditSchema extends \GraphQLServices\GraphQLSchema {
 				'name' => 'EditWarning',
 				'description' => 'Details of warning during edit.',
 				'fields' => [
+					'idno' => [
+						'type' => Type::string(),
+						'description' => 'Identifier of record message pertains to'
+					],
+					'code' => [
+						'type' => Type::int(),
+						'description' => 'Warning code'
+					],
 					'message' => [
 						'type' => Type::string(),
 						'description' => 'Warning message'
@@ -72,6 +84,28 @@ class EditSchema extends \GraphQLServices\GraphQLSchema {
 					'bundle' => [
 						'type' => Type::string(),
 						'description' => 'Bundle where warning occurred'
+					]
+				]
+			]),
+			$EditInfoType = new ObjectType([
+				'name' => 'EditInfo',
+				'description' => 'Informational message during edit.',
+				'fields' => [
+					'idno' => [
+						'type' => Type::string(),
+						'description' => 'Identifier of record message pertains to'
+					],
+					'code' => [
+						'type' => Type::string(),
+						'description' => 'Informational message code'
+					],
+					'message' => [
+						'type' => Type::string(),
+						'description' => 'Informational message'
+					],
+					'bundle' => [
+						'type' => Type::string(),
+						'description' => 'Bundle message pertains to'
 					]
 				]
 			]),
@@ -102,6 +136,10 @@ class EditSchema extends \GraphQLServices\GraphQLSchema {
 					'warnings' => [	
 						'type' => Type::listOf($EditWarningType),
 						'description' => 'List of warnings'
+					],
+					'info' => [	
+						'type' => Type::listOf($EditInfoType),
+						'description' => 'List of informational messages'
 					],
 					'changed' => [
 						'type' => Type::int(),

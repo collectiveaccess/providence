@@ -1,13 +1,13 @@
 <?php
-/** ---------------------------------------------------------------------
- * themes/default/views/system/configuration_error_intstall_html.php : 
+/* ----------------------------------------------------------------------
+ * app/service/helpers/ErrorHelpers.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2021 Whirl-i-Gig
+ * Copyright 2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -23,26 +23,50 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
- * @subpackage Configuration
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
- *
  * ----------------------------------------------------------------------
  */
-?>
-<?= _t("<div class='error'>There are issues with your configuration</div>
-	    <div class='errorDescription'>General installation instructions can be found
-	    <a href='https://manual.collectiveaccess.org/setup/Installation.html' target='_blank'>here</a>.
-	    For more specific information on detected issues review the messages below:</div>"); ?>
-	<br/><br/>
-<?php
-foreach (self::$opa_error_messages as $vs_message) {
-?>
-	<div class="permissionError">
-		<?= caNavIcon(__CA_NAV_ICON_ALERT__ , 2, ['class' => 'permissionErrorIcon']); ?>
-		<?= $vs_message; ?>
-		<div style='clear:both; height:1px;'><!-- empty --></div>
-	</div>
-	<br/>
-<?php
+namespace GraphQLServices\Helpers\Error;
+
+/**
+ *
+ */
+function error(string $idno, string $code, string $message, ?string $bundle) : array {
+	return [
+		'idno' => $idno, 
+		'code' => $code,
+		'message' => $message,
+		'bundle' => $bundle
+	];
+}
+
+/**
+ *
+ */
+function warning(string $idno, string $code, string $message, ?string $bundle) : array {
+	return [
+		'idno' => $idno, 
+		'code' => $code,
+		'message' => $message,
+		'bundle' => $bundle
+	];
+}
+
+/**
+ *
+ */
+function info(string $idno, string $code, string $message, ?string $bundle) : array {
+	return [
+		'idno' => $idno, 
+		'code' => $code,
+		'message' => $message,
+		'bundle' => $bundle
+	];
+}
+
+/**
+ * Convert internal error number to GraphQL error code
+ */
+function toGraphQLError(int $error_number) : string {
+	if($error_number <= 0) { return ''; }
+	return 'ERROR_'.$error_number;
 }

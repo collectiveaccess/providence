@@ -31,7 +31,7 @@
 	require("./app/helpers/errorHelpers.php");
 	
 	if (!file_exists('./setup.php')) {
-		caDisplayException(new ApplicationException("No setup.php found"));
+		require_once("./themes/default/views/system/no_setup_html.php");
 		exit; 
 	}
 	require('./setup.php');
@@ -39,8 +39,9 @@
 
 	try {
 		// connect to database
-		$o_db = new Db(null, null, false);
-		if (!$o_db->connected()) {
+		try {
+			$o_db = new Db(null, null, false);
+		} catch(DatabaseException $e) {
 			$opa_error_messages = array("Could not connect to database. Check your database configuration in <em>setup.php</em>.");
 			require_once(__CA_BASE_DIR__."/themes/default/views/system/configuration_error_html.php");
 			exit();

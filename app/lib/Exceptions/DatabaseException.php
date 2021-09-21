@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * themes/default/views/system/configuration_error_intstall_html.php : 
+ * app/lib/Exceptions/DatabaseException.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2021 Whirl-i-Gig
+ * Copyright 2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,25 +24,27 @@
  * http://www.CollectiveAccess.org
  *
  * @package CollectiveAccess
- * @subpackage Configuration
+ * @subpackage Core
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
-?>
-<?= _t("<div class='error'>There are issues with your configuration</div>
-	    <div class='errorDescription'>General installation instructions can be found
-	    <a href='https://manual.collectiveaccess.org/setup/Installation.html' target='_blank'>here</a>.
-	    For more specific information on detected issues review the messages below:</div>"); ?>
-	<br/><br/>
-<?php
-foreach (self::$opa_error_messages as $vs_message) {
-?>
-	<div class="permissionError">
-		<?= caNavIcon(__CA_NAV_ICON_ALERT__ , 2, ['class' => 'permissionErrorIcon']); ?>
-		<?= $vs_message; ?>
-		<div style='clear:both; height:1px;'><!-- empty --></div>
-	</div>
-	<br/>
-<?php
+ 
+class DatabaseException extends Exception {
+	private $error_number = null;
+	private $error_context = null;
+	
+	public function __construct(string $error_message, int $error_number, ?string $error_context=null) {
+		parent::__construct($error_message);
+		$this->error_number = $error_number;
+		$this->error_context = $error_context;
+	}
+	
+	public function getNumber() : int {
+		return $this->error_number;
+	}
+	
+	public function getContext() : string {
+		return $this->error_context;
+	}
 }

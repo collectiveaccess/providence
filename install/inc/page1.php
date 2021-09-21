@@ -8,7 +8,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,7 +34,7 @@
 ?>
 
 <div id='box'>
-	<div id="logo"><img src="<?php print $vs_url_path; ?>/graphics/ca_logo.png"/></div><!-- end logo -->
+	<div id="logo"><?= caGetLoginLogo(); ?></div><!-- end logo -->
 	<div id="content">
 	<H1>
 		<?php _p('Version %1 installer (XML)', constant('__CollectiveAccess__')); ?>
@@ -63,7 +63,7 @@
 						}
 ?>
 				<?php _p("Administrator's e-mail address"); ?>:<br/>
-				<input type='text' name='email' value='<?php print htmlspecialchars($ps_email, ENT_QUOTES, 'UTF-8'); ?>' size='40' maxlength='100'/>
+				<input type='text' name='email' value='<?= htmlspecialchars($ps_email, ENT_QUOTES, 'UTF-8'); ?>' size='40' maxlength='100'/>
 			</div><!-- end formItem -->
 			<div class='formItem'><?php _p("Installation profile"); ?>:<br/>
 				<div id="profileChooser">
@@ -77,18 +77,18 @@
 					<div id="progressbar"></div>
 				</div>
 				<div id="profileUpload" style="border: 2px dashed #999999; text-align: center; padding: 20px; margin-top: 10px;">
-					<span style="font-size: 20px; color: #aaaaaa; font-weight: bold;"><?php print _t("Drag profiles here to add or update"); ?></span>
+					<span style="font-size: 20px; color: #aaaaaa; font-weight: bold;"><?= _t("Drag profiles here to add or update"); ?></span>
 				</div>
 <?php
 			}
 ?>
 					<div class='profileNotes'>
 <?php
-						_p('More information about standard installation profiles is available on the CollectiveAccess <a href="http://docs.collectiveaccess.org/wiki/Installation_profile" target="_blank">project wiki</a>.');
+						_p('More information about standard installation profiles is available in the CollectiveAccess <a href="https://manual.collectiveaccess.org/dataModelling/Profiles.html" target="_blank">manual</a>.');
 ?>
 						<br/><br/>
 <?php
-						_p('Don\'t see a suitable profile? Browse our <a href="http://www.CollectiveAccess.org/configuration" target="_blank">installation profile library</a> for additional configurations developed by the CollectiveAccess user community. To install a new profile simply copy the file into the <i>install/profiles/xml</i> directory on your server and reload the installer in your web browser.');
+						_p('Don\'t see a suitable profile? Browse our <a href="https://manual.collectiveaccess.org/dataModelling/profiles/ConfigurationLibrary.html" target="_blank">installation profile library</a> for additional configurations developed by the CollectiveAccess user community. To install a new profile simply copy the file into the <i>install/profiles/xml</i> directory on your server and reload the installer in your web browser.');
 ?>
 					</div>
 				</div>
@@ -166,7 +166,7 @@ if (defined('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__') && __CA_AL
 				var progress = parseInt(data.loaded / data.total * 100, 10);
 				jQuery('#progressbar').progressbar("value", progress);
 			
-				var msg = "<?php print _t("Progress: "); ?>%1";
+				var msg = "<?= _t("Progress: "); ?>%1";
 				jQuery("#batchProcessingTableStatus").html(msg.replace("%1", "(" + progress + "%)"));
 				
 			}

@@ -2275,8 +2275,14 @@ if (!$pb_omit_editing_info) {
 					}
 				} else {
 					// resolve template relative to current record
+					$rtc = null;
+					$element_code = $va_bundle_bits[sizeof($va_bundle_bits)-1];
+					if($element_code !== '_generic_bundle_') {
+						$dt = ca_metadata_elements::getElementDatatype($element_code);
+						$rtc = ($dt === 0) ? $vs_bundle_name : null;
+					}
 					$vs_val = $po_result->getWithTemplate($vs_template, [
-						'relativeToContainer' => (ca_metadata_elements::getElementDatatype($va_bundle_bits[sizeof($va_bundle_bits)-1]) === 0) ? $vs_bundle_name : null, 
+						'relativeToContainer' => $rtc, 
 						'filters'=> $options['filters'], 
 						'delimiter' => $options['delimiter'], 
 						'policy' => $va_settings['policy']]		// passed for history tracking current value

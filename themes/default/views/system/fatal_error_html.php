@@ -26,16 +26,11 @@
  * ----------------------------------------------------------------------
  */
  
-if(defined('__CA_THEME_URL__')) { 
-	$path = __CA_THEME_URL__;
-} else {
-	$path = join("/", array_pop(explode("/", str_replace("\\", "/", $_SERVER['SCRIPT_NAME'])))).'/themes/default';
-}
 ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<title>CollectiveAccess error</title>
-	<link href="<?= $path; ?>/css/error.css" rel="stylesheet" type="text/css" />
+	<link href="<?= caGetThemeUrlPath(); ?>/css/error.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
 	<div id='errorDetails'>
