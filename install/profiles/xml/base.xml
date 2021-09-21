@@ -4014,8 +4014,14 @@
             <placement code="idno2">
               <bundle>idno</bundle>
             </placement>
-            <placement code="media3">
-              <bundle>media</bundle>
+            <placement code="media_display">
+              <bundle>ca_object_representations_media_display</bundle>
+            </placement>
+            <placement code="media_captions">
+              <bundle>ca_object_representation_captions</bundle>
+            </placement>
+            <placement code="media_sidecars">
+              <bundle>ca_object_representation_sidecars</bundle>
             </placement>
             <placement code="access4">
               <bundle>access</bundle>

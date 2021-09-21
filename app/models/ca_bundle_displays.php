@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2020 Whirl-i-Gig
+ * Copyright 2010-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -629,27 +629,29 @@ if (!$pb_omit_editing_info) {
 											case 'horiz_hierbrowser_with_search':
 											case 'vert_hierbrowser':
 											case 'vert_hierbrowser_down':
-											    if ($t_list->numItemsInList($t_element->get("list_id")) > 500) {
-											        // don't send very large lists
-											        $placements[$placement_id]['allowInlineEditing'] = false;
-												    $placements[$placement_id]['inlineEditingType'] = null;
-											    } else {
-                                                    $placements[$placement_id]['allowInlineEditing'] = $vb_user_can_edit;
-                                                    $placements[$placement_id]['inlineEditingType'] = DT_SELECT;
-                                                
-                                                    $va_list_values = $t_list->getItemsForList($t_element->get("list_id"), array('labelsOnly' => true));
-                                                
-                                                    $qr_list_items = caMakeSearchResult('ca_list_items', array_keys($va_list_values));
-                                                    $va_list_item_labels = [];
-                                        
-                                                    while($qr_list_items->nextHit()) {
-                                                    	if(!($v = trim($qr_list_items->get('ca_list_items.hierarchy.preferred_labels.name_plural', ['delimiter' => $ps_hierarchical_delimiter])))) { continue; }
-                                                        $va_list_item_labels[$vb_use_item_values ? $qr_list_items->get('ca_list_items.item_value') : $qr_list_items->get('ca_list_items.item_id')] = $v;
-                                                    }
-                                                    asort($va_list_item_labels);
-                                                    $placements[$placement_id]['inlineEditingListValues'] = array_values($va_list_item_labels);
-                                                    $placements[$placement_id]['inlineEditingListValueMap'] = array_flip($va_list_item_labels);
-                                                }
+												if($t_element->get("list_id") > 0) {
+													if ($t_list->numItemsInList($t_element->get("list_id")) > 500) {
+														// don't send very large lists
+														$placements[$placement_id]['allowInlineEditing'] = false;
+														$placements[$placement_id]['inlineEditingType'] = null;
+													} else {
+														$placements[$placement_id]['allowInlineEditing'] = $vb_user_can_edit;
+														$placements[$placement_id]['inlineEditingType'] = DT_SELECT;
+												
+														$va_list_values = $t_list->getItemsForList($t_element->get("list_id"), array('labelsOnly' => true));
+												
+														$qr_list_items = caMakeSearchResult('ca_list_items', array_keys($va_list_values));
+														$va_list_item_labels = [];
+										
+														while($qr_list_items->nextHit()) {
+															if(!($v = trim($qr_list_items->get('ca_list_items.hierarchy.preferred_labels.name_plural', ['delimiter' => $ps_hierarchical_delimiter])))) { continue; }
+															$va_list_item_labels[$vb_use_item_values ? $qr_list_items->get('ca_list_items.item_value') : $qr_list_items->get('ca_list_items.item_id')] = $v;
+														}
+														asort($va_list_item_labels);
+														$placements[$placement_id]['inlineEditingListValues'] = array_values($va_list_item_labels);
+														$placements[$placement_id]['inlineEditingListValueMap'] = array_flip($va_list_item_labels);
+													}
+												}
 												break;
 											default: // if it's a render setting we don't know about it's not editable
 												$placements[$placement_id]['allowInlineEditing'] = false;
@@ -1125,6 +1127,23 @@ if (!$pb_omit_editing_info) {
 			}
 			
 			switch($va_all_elements[$vn_element_id]['datatype']) {
+				case __CA_ATTRIBUTE_VALUE_TEXT__:
+					$va_even_more_settings = array(
+						'newlines' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'width' => 30, 'height' => 1,
+							'takesLocale' => false,
+							'default' => 'HTML',
+							'options' => array(
+								_t('Preserve newlines') => 'NL2BR',
+								_t('Display as HTML') => 'HTML'
+							),
+							'label' => _t('Newlines'),
+							'description' => _t('Determines how newlines in text are processed.')
+						)		
+					);
+					break;
 				case __CA_ATTRIBUTE_VALUE_LIST__:
 					$va_even_more_settings = array(
 						'sense' => array(
@@ -2256,8 +2275,14 @@ if (!$pb_omit_editing_info) {
 					}
 				} else {
 					// resolve template relative to current record
+					$rtc = null;
+					$element_code = $va_bundle_bits[sizeof($va_bundle_bits)-1];
+					if($element_code !== '_generic_bundle_') {
+						$dt = ca_metadata_elements::getElementDatatype($element_code);
+						$rtc = ($dt === 0) ? $vs_bundle_name : null;
+					}
 					$vs_val = $po_result->getWithTemplate($vs_template, [
-						'relativeToContainer' => (ca_metadata_elements::getElementDatatype($va_bundle_bits[sizeof($va_bundle_bits)-1]) === 0) ? $vs_bundle_name : null, 
+						'relativeToContainer' => $rtc, 
 						'filters'=> $options['filters'], 
 						'delimiter' => $options['delimiter'], 
 						'policy' => $va_settings['policy']]		// passed for history tracking current value
@@ -2397,6 +2422,10 @@ if (!$pb_omit_editing_info) {
 			$doc = new DOMDocument();
 			@$doc->loadHTML('<?xml encoding="utf-8" ?>'.mb_substr($vs_val, 0, $options['maximumLength']));
 			return $doc->saveHTML();
+		}
+		
+		if(caGetOption('newlines', $va_settings, null) === 'NL2BR') {
+			$vs_val = nl2br($vs_val);
 		}
 		return $vs_val;
 	}

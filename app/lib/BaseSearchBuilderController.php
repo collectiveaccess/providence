@@ -205,11 +205,6 @@
 			$this->notification->addNotification($e->getMessage(), __NOTIFICATION_TYPE_ERROR__);
 			return $this->Index(['error' => true]);
 		}
-		
-				if (($vn_page_num * $vn_items_per_page) > $vo_result->numHits()) { 
-					$this->opo_result_context->setCurrentResultsPageNumber($vn_page_num = 1);	// reset page count if out of bounds
-				}
-
 				$vo_result = isset($pa_options['result']) ? $pa_options['result'] : $vo_result;
 
 				$this->opo_result_context->validateCache();

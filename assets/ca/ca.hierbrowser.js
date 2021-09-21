@@ -466,9 +466,9 @@ var caUI = caUI || {};
 								var moreButton = '';
 								if (that.editButtonIcon) {
 									if ((item.children > 0) || ((level == 0) && (item.children == null))){
-										moreButton = "<div style='float: right;'><a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "_edit' >" + that.editButtonIcon + "</a></div>";
+										moreButton = "<div style='float: right;'><a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "_edit' aria-label='Expand hierarchy' >" + that.editButtonIcon + "</a></div>";
 									} else {
-										moreButton = "<div style='float: right;'><a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "_edit'  class='noChildren'>" + that.disabledButtonIcon + "</a></div>";
+										moreButton = "<div style='float: right;'><a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "_edit'  class='noChildren' aria-label='No children'>" + that.disabledButtonIcon + "</a></div>";
 									}
 								}
 
@@ -548,7 +548,7 @@ var caUI = caUI || {};
 													jQuery(this).attr('facet_item_selected', '1');
 												}
 
-												if (jQuery(".facetItem[facet_item_selected='1']").length > 0) {
+												if (jQuery('#' + newLevelListID).find("a." + that.className + "[facet_item_selected='1']").length > 0) {
 													jQuery("#facet_apply").show();
 												} else {
 													jQuery("#facet_apply").hide();

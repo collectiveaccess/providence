@@ -1116,7 +1116,7 @@ class Configuration {
 	}
 	/* ---------------------------------------- */
 	/**
-	 * Removes all cached configuration
+	 * Remove all cached configuration
 	 */
 	public static function clearCache() {
 		ExternalCache::flush('ConfigurationCache');

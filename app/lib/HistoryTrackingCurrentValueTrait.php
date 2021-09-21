@@ -194,7 +194,7 @@
 							$bundle_settings["{$table}_{$type}_useRelatedRelationshipType"] = $config['useRelatedRelationshipType'];
 						
 							$bundle_settings["{$table}_{$type}_dateElement"] = $config['date'];
-						
+
 							if ((sizeof($path) === 3) && ($rel_types = caGetOption(['restrictToRelationshipTypes', 'showRelationshipTypes'], $config, null)) && $path[1]) { 
 								$bundle_settings["{$table}_showRelationshipTypes"] = [];
 								foreach($rel_types as $rel_type) {
@@ -269,6 +269,12 @@
 				foreach(array(
 							'policy', 'displayMode', 'dateMode', 'row_id', 'width', 'height', 'readonly', 'documentation_url', 'expand_collapse',
 							'label', 'description', 'useHierarchicalBrowser', 'hide_add_to_loan_controls', 'hide_add_to_movement_controls', 'hide_update_location_controls', 'hide_return_to_home_location_controls',
+							
+							'update_location_control_label', 'movement_control_label', 'loan_control_label', 'object_control_label',
+							'return_to_home_location_control_label', 'occurrence_control_label', 'collection_control_label', 'entity_control_label',
+							
+							'always_create_new_movement',
+							
 							'hide_add_to_occurrence_controls', 'hide_include_child_history_controls', 'add_to_occurrence_types', 
 							'hide_add_to_collection_controls', 'add_to_collection_types', 'hide_add_to_object_controls', 'hide_add_to_entity_controls', 'add_to_entity_types', 
 							'ca_storage_locations_elements', 'sortDirection', 'setInterstitialElementsOnAdd',
@@ -329,7 +335,8 @@
 		 *
 		 * @return string Policy name
 		 */
-		static public function getDefaultHistoryTrackingCurrentValuePolicyForTable($table) {
+		static public function getDefaultHistoryTrackingCurrentValuePolicyForTable(string $table=null) : ?string {
+			if(is_null($table)) { $table = get_called_class(); }
 			if (is_array($history_tracking_policies = self::getHistoryTrackingCurrentValuePolicyConfig()) && is_array($history_tracking_policies['defaults']) && isset($history_tracking_policies['defaults'][$table])) {
 				return $history_tracking_policies['defaults'][$table];
 			}
@@ -423,6 +430,7 @@
 		 * @param array $options Options include:
 		 *		dontCheckRowIDs = Skip verification of row_id values. [Default is false]
 		 *		row_id = Row id to use instead of currently loaded row. [Default is null]
+		 *		isFuture =
 		 *
 		 * @return bool
 		 * @throws ApplicationException
@@ -436,6 +444,7 @@
 			
 			$is_future = caGetOption('isFuture', $options, null);
 			if (is_null($values) && !$is_future) {			
+				// Remove current value
 				if ($l = ca_history_tracking_current_values::find(['policy' => $policy, 'table_num' => $subject_table_num, 'row_id' => $row_id], ['returnAs' => 'firstModelInstance', 'transaction' => $this->getTransaction()])) {
 					$l->setDb($this->getDb());	
 					self::$s_history_tracking_deleted_current_values[$l->get('tracked_table_num')][$l->get('tracked_row_id')][$policy] = 
@@ -470,13 +479,17 @@
 			}
 			
 			if (!($t = $subject_table::find($row_id, ['returnAs' => 'firstModelInstance', 'transaction' => $this->getTransaction()]))) {
-				throw new ApplicationException(_t('Invalid subject row id'));
+				//throw new ApplicationException(_t('Invalid subject row id'));
+				return null; // row no longer exists
 			}
 			$t->setDb($this->getDb());
 			
+			// Look for existing current tracking values
 			if ($ls = ca_history_tracking_current_values::find(['policy' => $policy, 'table_num' => $subject_table_num, 'row_id' => $row_id], ['returnAs' => 'arrays', 'transaction' => $this->getTransaction()])) {
 				foreach($ls as $l) {
-				    if((bool)$l['is_future']) { continue; }
+				    if($l['is_future'] > time()) { 
+				    	continue; 
+				    }
 				    if (
 				        (($l['tracked_table_num']) == $values['tracked_table_num']) && (($l['tracked_row_id']) == $values['tracked_row_id']) && (($l['tracked_type_id']) == $values['tracked_type_id']) &&
 				        (($l['current_table_num']) == $values['current_table_num']) && (($l['current_row_id']) == $values['current_row_id']) && (($l['current_type_id']) == $values['current_type_id'])
@@ -485,9 +498,25 @@
 				        self::$s_history_tracking_newly_added_current_values[$values['tracked_table_num']][$values['tracked_row_id']][$policy] = 
                             self::$s_history_tracking_newly_added_current_values[$values['current_table_num']][$values['current_row_id']][$policy] = 
                                 ['table_num' => $subject_table_num, 'row_id' => $row_id];
-                                
-				        return true;
+                          
+                        if($l['is_future'] > 0) {
+                        	// Delete existing entries
+                        	$this->getDb()->query("DELETE FROM ca_history_tracking_current_values WHERE table_num = ? AND row_id = ? AND is_future IS NULL and tracking_id <> ?", [$subject_table_num, $row_id, $l['tracking_id']]);
+                        	
+                        	// Future location is now current location
+                        	$t_l = new ca_history_tracking_current_values();
+							$t_l->setDb($this->getDb());	
+							$t_l->load($l['tracking_id']);
+							$t_l->set('is_future', null);
+							if (!($rc = $t_l->update())) {
+								$this->errors = $t_l->errors;
+								return false;
+							}
+                        }      
+                        return true;
 				    }
+				    
+				    // Remove old tracking value
 				    self::$s_history_tracking_deleted_current_values[$l['tracked_table_num']][$l['tracked_row_id']][$policy] = 
 					    self::$s_history_tracking_deleted_current_values[$l['current_table_num']][$l['current_row_id']][$policy] = 
 					        ['table_num' => $l['table_num'], 'row_id' => $l['row_id']];
@@ -501,10 +530,8 @@
                     }
 				}
 			}
-		
-			$e = new ca_history_tracking_current_values();
-			$e->setDb($this->getDb());	
-			$e->set([
+			
+			$d = [
 				'policy' => $policy,
 				'table_num' => $subject_table_num, 
 				'type_id' => $t->get("{$subject_table}.type_id"),
@@ -516,7 +543,33 @@
 				'tracked_type_id' => $values['tracked_type_id'], 
 				'tracked_row_id' => $values['tracked_row_id'],
 				'is_future' => $is_future
-			]);
+			];
+			
+			if(
+				($is_future > 0) 
+				&& 
+				($future_entries = ca_history_tracking_current_values::find([
+					'policy' => $policy, 'table_num' => $subject_table_num, 
+					'row_id' => $row_id, 'is_future' => ['>', 0]
+				], ['returnAs' => 'modelInstances']))
+			) {
+				$found = false;
+				foreach($future_entries as $fe) {
+					if(!$found && ($fe->get('is_future') < $is_future)) {
+						// keep
+						$found = true;
+					} else {
+						$fe->delete(true);
+					}
+				}
+			}
+			if($found || (ca_history_tracking_current_values::find($d, ['returnAs' => 'count']) > 0)) {
+				return true;
+			}
+		
+			$e = new ca_history_tracking_current_values();
+			$e->setDb($this->getDb());	
+			$e->set($d);
 			
 			if (!($rc = $e->insert())) {
 				$this->errors = $e->errors;
@@ -543,11 +596,13 @@
 		 * @param string $table 
 		 * @param array $options Options include:
 		 *		dontCheckRowIDs = Skip verification of row_id values. [Default is false]
+		 *		uses = limit returned policies to those that include at least one of the tables in the provided list. [Default is null]
 		 *
 		 * @return array
 		 * @throws ApplicationException
 		 */ 
 		static public function getHistoryTrackingCurrentValuePolicies($table, $options=null) {
+			$uses = caGetOption('uses', $options, null, ['castTo' => 'array']);
 			$policy_config = self::getHistoryTrackingCurrentValuePolicyConfig();
 			if(!is_array($policy_config) || !isset($policy_config['policies']) || !is_array($policy_config['policies'])) {
 				return []; // No policies are configured
@@ -555,7 +610,12 @@
 			
 			$policies = [];
 			foreach($policy_config['policies'] as $policy => $policy_info) {
-				if ($table !== $policy_info['table']) { continue; }
+				if($table !== $policy_info['table']) { continue; }
+				if(is_array($uses) && sizeof($uses) && is_array($policy_info['elements'])) {
+					if(!sizeof(array_intersect(array_keys($policy_info['elements']), $uses))) {
+						continue;
+					}
+				}
 				// TODO: implement restrictToTypes; restrictToRelationshipTypes
 				$policies[$policy] = $policy_info;
 			}
@@ -567,12 +627,14 @@
 		 *
 		 * @param string $table 
 		 * @param array $options Options include:
-		 *		type_id = 
+		 *		type_id = Limit to specific types. [Default is null]
+		 *		usedBy = limit returned policies to those used by one of the tables in the provided list. [Default is null]
 		 *
 		 * @return array
 		 * @throws ApplicationException
 		 */ 
 		static public function getDependentHistoryTrackingCurrentValuePolicies($table, $options=null) {
+			$usedBy = caGetOption('usedBy', $options, null, ['castTo' => 'array']);
 			$policy_config = self::getHistoryTrackingCurrentValuePolicyConfig();
 			if(!is_array($policy_config) || !isset($policy_config['policies']) || !is_array($policy_config['policies'])) {
 				// No policies are configured
@@ -585,6 +647,10 @@
 			foreach($policy_config['policies'] as $policy => $policy_info) {
 				if ($table === $policy_info['table']) { continue; }
 				if (!is_array($policy_info['elements'])) { continue; }
+				
+				if(is_array($usedBy) && sizeof($usedBy) && !in_array($policy_info['table'], $usedBy, true)) {
+					continue;
+				}
 				
 				foreach($policy_info['elements'] as $dtable => $dinfo) {
 					$path = Datamodel::getPath($policy_info['table'], $dtable);
@@ -620,27 +686,6 @@
 		}
 		# ------------------------------------------------------
 		/**
-		 * Return list of policies applied to a table
-		 *
-		 * @param string $table Table to which policies are applied
-		 * @param array $options No options are currently supported
-		 *
-		 * @return array List of policies
-		 */ 
-		static public function getHistoryTrackingCurrentValuePoliciesForTable($table, $options=null) {
-			$policy_config = self::getHistoryTrackingCurrentValuePolicyConfig();
-			if(!is_array($policy_config) || !isset($policy_config['policies']) || !is_array($policy_config['policies'])) {
-				return [];	// No policies are configured
-			}
-			
-			$policies = array_filter($policy_config['policies'], function($v) use ($table) {
-			    return isset($v['table']) && ($v['table'] === $table); 
-			});
-			
-			return is_array($policies) ? $policies : [];
-		}
-		# ------------------------------------------------------
-		/**
 		 * Calculate and set for loaded row current values for all policies
 		 *
 		 * @param array $options Options include:
@@ -672,41 +717,26 @@
 							
 								if ($entry['status'] === 'FUTURE') {
 									$is_future = caHistoricTimestampToUnixTimestamp($d);
+									
+									if (is_array($entry = $this->_rewriteEntryWithRelated($entry))) {
+										$this->setHistoryTrackingCurrentValue($policy, $entry, ['row_id' => $row_id, 'isFuture' => $is_future]);
+									}	
 									continue;
 								}
 								if (($entry['status'] === 'CURRENT') || ($omit_table)) {
 									$current_entry = $entry;
 									$current_entry['status'] = 'CURRENT';
 									 
-									 if ($current_entry['useRelated']) {
-									 	if (!($t_related = Datamodel::getInstance($current_entry['useRelated'], true))) {
-									 		throw new ApplicationException(_t("Invalid table specification for 'useRelated' in history tracking policy"));
-									 	}
-									 	if(!($t_primary = Datamodel::getInstance($current_entry['type'], true, $current_entry['id']))) {
-									 		throw new ApplicationException(_t("Invalid table specification for entry in history tracking policy"));
-									 	}
-									 	if (!$t_primary->isLoaded()) { continue; }
-									 	
-									 	// rewrite current entry to use related record
-									 	$rel_item = $t_primary->getRelatedItems($current_entry['useRelated'], ['restrictToRelationshipTypes' => [$current_entry['useRelatedRelationshipType']], 'returnAs' => 'firstModelInstance']);
-									 	if ($rel_item) {
-									 			$current_entry = array_merge($current_entry, [
-									 				'tracked_table_num' => $current_entry['current_table_num'],
-									 				'tracked_row_id' => $current_entry['current_row_id'],
-									 				'tracked_type_id' => $current_entry['current_type_id'],
-									 				'current_table_num' => $t_related->tableNum(),
-									 				'current_row_id' => $rel_item->getPrimaryKey(),
-									 				'current_type_id' => $rel_item->get('type_id'),
-									 			]);
-									 	}
-									 }
+									if(!is_array($current_entry = $this->_rewriteEntryWithRelated($current_entry))) { 
+										continue;
+									}
 									break(2);
 								}
 							}
 						}
 					}
 					if ($current_entry) {
-						if (!($this->setHistoryTrackingCurrentValue($policy, $current_entry, ['row_id' => $row_id, 'isFuture' => $is_future]))) {
+						if (!($this->setHistoryTrackingCurrentValue($policy, $current_entry, ['row_id' => $row_id, 'isFuture' => null]))) {
 						    return false;
 						}
 					} else {
@@ -716,6 +746,36 @@
 				return true;
 			}
 			return false;
+		}
+		# ------------------------------------------------------
+		/** 
+		 *
+		 */
+		private function _rewriteEntryWithRelated($entry) {
+			if ($entry['useRelated']) {
+				if (!($t_related = Datamodel::getInstance($entry['useRelated'], true))) {
+					throw new ApplicationException(_t("Invalid table specification for 'useRelated' in history tracking policy"));
+				}
+				if(!($t_primary = Datamodel::getInstance($entry['type'], true, $entry['id']))) {
+					throw new ApplicationException(_t("Invalid table specification for entry in history tracking policy"));
+				}
+				if (!$t_primary->isLoaded()) { return null; }
+			
+				// rewrite current entry to use related record
+				$rel_item = $t_primary->getRelatedItems($entry['useRelated'], ['restrictToRelationshipTypes' => [$entry['useRelatedRelationshipType']], 'returnAs' => 'firstModelInstance']);
+			
+				if ($rel_item) {
+					$entry = array_merge($entry, [
+						'tracked_table_num' => $entry['current_table_num'],
+						'tracked_row_id' => $entry['current_row_id'],
+						'tracked_type_id' => $entry['current_type_id'],
+						'current_table_num' => $t_related->tableNum(),
+						'current_row_id' => $rel_item->getPrimaryKey(),
+						'current_type_id' => $rel_item->get('type_id'),
+					]);
+				}
+			};
+			return $entry;
 		}
 		# ------------------------------------------------------
 		/**
@@ -812,7 +872,7 @@
 		 */
 		public function getCurrentValue($policy=null, $options=null) {
 		    if(!$policy) { $policy = $this->getInspectorHistoryTrackingDisplayPolicy('policy'); }
-		    if (is_array($history = $this->getHistory(['policy' => $policy, 'limit' => 1, 'currentOnly' => true, 'row_id' => caGetOption('row_id', $options, null)])) && (sizeof($history) > 0)) {
+		    if (is_array($history = $this->getHistory(['policy' => $policy, 'limit' => 1, 'row_id' => caGetOption('row_id', $options, null)])) && (sizeof($history) > 0)) {
                 $current_value = array_shift(array_shift($history));
                 return is_array($current_value) ? $current_value : null;
             }
@@ -869,7 +929,7 @@
 			if(!is_array($pa_bundle_settings)) { $pa_bundle_settings = []; }
 
 			$pa_bundle_settings = $this->_processHistoryBundleSettings($pa_bundle_settings);
-	
+
 			$vs_cache_key = caMakeCacheKeyFromOptions(array_merge($pa_bundle_settings, $options, ['id' => $row_id]));
 		
 			$pb_no_cache 				= caGetOption('noCache', $options, false);
@@ -917,7 +977,7 @@
 			if (is_array($path = Datamodel::getPath($table, 'ca_object_lots')) && (((sizeof($path) == 2) && ($vn_lot_id = $qr->get("{$table}.lot_id"))) || ((sizeof($path) == 3) && ($path = array_keys($path)) && ($linking_table = $path[1])))) {
 				
 				if ($linking_table) {
-					$va_lots = $qr->get("{$linking_table}.relation_id", array('returnAsArray' => true));
+					$va_lots = $qr->get("{$linking_table}.relation_id", ['returnAsArray' => true, 'restrictToRelationshipTypes' => caGetOption('ca_lots_showRelationshipTypes', $pa_bundle_settings, null)]);
 				} else {
 					$va_lots = [$vn_lot_id];
 				}
@@ -930,9 +990,9 @@
 					}
 					
 					if($linking_table) {
-						$qr_lots = caMakeSearchResult($linking_table, $va_lots, ['transaction' => $this->getTransaction(), 'sort' => $pb_date_mode ? 'ca_object_lots.lot_id' : null, 'sortDirection' => $pb_date_mode ? 'desc' : null]);
+						$qr_lots = caMakeSearchResult($linking_table, $va_lots, ['transaction' => $this->getTransaction(), 'sort' => "{$linking_table}.relation_id", 'sortDirection' => 'desc']);
 					} else {
-						$qr_lots = caMakeSearchResult('ca_object_lots', $va_lots, ['transaction' => $this->getTransaction(), 'sort' => $pb_date_mode ? 'ca_object_lots.lot_id' : null, 'sortDirection' => $pb_date_mode ? 'desc' : null]);
+						$qr_lots = caMakeSearchResult('ca_object_lots', $va_lots, ['transaction' => $this->getTransaction(), 'sort' =>  'ca_object_lots.lot_id', 'sortDirection' => 'desc']);
 					}
 					
 					$t_lot = new ca_object_lots();
@@ -1021,14 +1081,14 @@
 		
 			// Loans
 			if (is_array($path = Datamodel::getPath($table, 'ca_loans')) && (sizeof($path) == 3) && ($path = array_keys($path)) && ($linking_table = $path[1])) {
-				$va_loans = $qr->get("{$linking_table}.relation_id", array('returnAsArray' => true));
+				$va_loans = $qr->get("{$linking_table}.relation_id", ['returnAsArray' => true, 'restrictToRelationshipTypes' => caGetOption('ca_loans_showRelationshipTypes', $pa_bundle_settings, null)]);
 				$va_child_loans = [];
 				if(caGetOption('ca_loans_includeFromChildren', $pa_bundle_settings, false)) {
 					$va_child_loans = array_reduce($qr->getWithTemplate("<unit relativeTo='{$table}.children' delimiter=';'>^{$linking_table}.relation_id</unit>", ['returnAsArray' => true]), function($c, $i) { return array_merge($c, explode(';', $i)); }, []);
 					if ($pb_show_child_history) { $va_loans = array_merge($va_loans, $va_child_loans); }
 				}
 				if(is_array($va_loan_types = caGetOption('ca_loans_showTypes', $pa_bundle_settings, null)) && is_array($va_loans)) {	
-					$qr_loans = caMakeSearchResult($linking_table, $va_loans, ['transaction' => $this->getTransaction(), 'sort' => $pb_date_mode ? 'ca_loans.loan_id' : null, 'sortDirection' => $pb_date_mode ? 'desc' : null]);
+					$qr_loans = caMakeSearchResult($linking_table, $va_loans, ['transaction' => $this->getTransaction(), 'sort' => "{$linking_table}.relation_id", 'sortDirection' => 'desc']);
 					require_once(__CA_MODELS_DIR__."/ca_loans.php");
 					$t_loan = new ca_loans();
 					$va_loan_type_info = $t_loan->getTypeList(); 
@@ -1128,14 +1188,14 @@
 		
 			// Movements
 			if (is_array($path = Datamodel::getPath($table, 'ca_movements')) && (sizeof($path) == 3) && ($path = array_keys($path)) && ($linking_table = $path[1])) {
-				$va_movements = $qr->get("{$linking_table}.relation_id", array('returnAsArray' => true));
+				$va_movements = $qr->get("{$linking_table}.relation_id", ['returnAsArray' => true, 'restrictToRelationshipTypes' => caGetOption('ca_movements_showRelationshipTypes', $pa_bundle_settings, null)]);
 				$va_child_movements = [];
 				if(caGetOption('ca_movements_includeFromChildren', $pa_bundle_settings, false)) {
 					$va_child_movements = array_reduce($qr->getWithTemplate("<unit relativeTo='{$table}.children' delimiter=';'>^{$linking_table}.relation_id</unit>", ['returnAsArray' => true]), function($c, $i) { return array_merge($c, explode(';', $i)); }, []);
 					if ($pb_show_child_history) { $va_movements = array_merge($va_movements, $va_child_movements); }
 				}
 				if(is_array($va_movement_types = caGetOption('ca_movements_showTypes', $pa_bundle_settings, null)) && is_array($va_movements)) {	
-					$qr_movements = caMakeSearchResult($linking_table, $va_movements, ['transaction' => $this->getTransaction(), 'sort' => $pb_date_mode ? 'ca_movements.movement_id' : null, 'sortDirection' => $pb_date_mode ? 'desc' : null]);
+					$qr_movements = caMakeSearchResult($linking_table, $va_movements, ['transaction' => $this->getTransaction(), 'sort' =>  "{$linking_table}.relation_id", 'sortDirection' => 'desc']);
 					require_once(__CA_MODELS_DIR__."/ca_movements.php");
 					$t_movement = new ca_movements();
 					$va_movement_type_info = $t_movement->getTypeList(); 
@@ -1239,7 +1299,7 @@
 		
 			// Occurrences
 			if (is_array($path = Datamodel::getPath($table, 'ca_occurrences')) && (sizeof($path) == 3) && ($path = array_keys($path)) && ($linking_table = $path[1])) {
-				$va_occurrences = $qr->get("{$linking_table}.relation_id", array('returnAsArray' => true));
+				$va_occurrences = $qr->get("{$linking_table}.relation_id", ['returnAsArray' => true, 'restrictToRelationshipTypes' => caGetOption('ca_occurrences_showRelationshipTypes', $pa_bundle_settings, null)]);
 				$va_child_occurrences = [];
 				if(is_array($va_occurrence_types = caGetOption('ca_occurrences_showTypes', $pa_bundle_settings, null)) && is_array($va_occurrences)) {	
 					require_once(__CA_MODELS_DIR__."/ca_occurrences.php");
@@ -1253,7 +1313,7 @@
 						}
 					}
 			
-					$qr_occurrences = caMakeSearchResult($linking_table, $va_occurrences, ['transaction' => $this->getTransaction(), 'sort' => $pb_date_mode ? 'ca_occurrences.occurrence_id' : null, 'sortDirection' => $pb_date_mode ? 'desc' : null]);
+					$qr_occurrences = caMakeSearchResult($linking_table, $va_occurrences, ['transaction' => $this->getTransaction(), 'sort' => "{$linking_table}.relation_id", 'sortDirection' => 'desc']);
 			
 					$va_date_elements_by_type = [];
 					foreach($va_occurrence_types as $vn_type_id) {
@@ -1353,7 +1413,7 @@
 			
 			// entities
 			if (is_array($path = Datamodel::getPath($table, 'ca_entities')) && (sizeof($path) == 3) && ($path = array_keys($path)) && ($linking_table = $path[1])) {
-				$va_entities = $qr->get("{$linking_table}.relation_id", array('returnAsArray' => true));
+				$va_entities = $qr->get("{$linking_table}.relation_id", ['returnAsArray' => true, 'restrictToRelationshipTypes' => caGetOption('ca_entities_showRelationshipTypes', $pa_bundle_settings, null)]);
 				$va_child_entities = [];
 				if(is_array($va_entity_types = caGetOption('ca_entities_showTypes', $pa_bundle_settings, null)) && is_array($va_entities)) {	
 					require_once(__CA_MODELS_DIR__."/ca_entities.php");
@@ -1368,7 +1428,7 @@
 						}
 					}
 			
-					$qr_entities = caMakeSearchResult($linking_table, $va_entities, ['transaction' => $this->getTransaction(), 'sort' => $pb_date_mode ? 'ca_entities.entity_id' : null, 'sortDirection' => $pb_date_mode ? 'desc' : null]);
+					$qr_entities = caMakeSearchResult($linking_table, $va_entities, ['transaction' => $this->getTransaction(), 'sort' => "{$linking_table}.relation_id", 'sortDirection' => 'desc']);
 			
 					$va_date_elements_by_type = [];
 					foreach($va_entity_types as $vn_type_id) {
@@ -1468,14 +1528,14 @@
 		
 			// Collections
 			if (is_array($path = Datamodel::getPath($table, 'ca_collections')) && (sizeof($path) == 3) && ($path = array_keys($path)) && ($linking_table = $path[1])) {
-				$va_collections = $qr->get("{$linking_table}.relation_id", array('returnAsArray' => true));
+				$va_collections = $qr->get("{$linking_table}.relation_id", ['returnAsArray' => true, 'restrictToRelationshipTypes' => caGetOption('ca_collections_showRelationshipTypes', $pa_bundle_settings, null)]);
 				$va_child_collections = [];
 				if(caGetOption('ca_collections_includeFromChildren', $pa_bundle_settings, false)) {
 					$va_child_collections = array_reduce($qr->getWithTemplate("<unit relativeTo='{$table}.children' delimiter=';'>^{$linking_table}.relation_id</unit>", ['returnAsArray' => true]), function($c, $i) { return array_merge($c, explode(';', $i)); }, []);    
 					if($pb_show_child_history) { $va_collections = array_merge($va_collections, $va_child_collections); }
 				}
 				if(is_array($va_collection_types = caGetOption('ca_collections_showTypes', $pa_bundle_settings, null)) && is_array($va_collections)) {	
-					$qr_collections = caMakeSearchResult($linking_table, $va_collections, ['transaction' => $this->getTransaction(), 'sort' => $pb_date_mode ? 'ca_collections.collection_id' : null, 'sortDirection' => $pb_date_mode ? 'desc' : null]);
+					$qr_collections = caMakeSearchResult($linking_table, $va_collections, ['transaction' => $this->getTransaction(), 'sort' => "{$linking_table}.collection_id", 'sortDirection' => 'desc']);
 					require_once(__CA_MODELS_DIR__."/ca_collections.php");
 					$t_collection = new ca_collections();
 					$va_collection_type_info = $t_collection->getTypeList(); 
@@ -1577,14 +1637,14 @@
 			
 			// objects
 			if (is_array($path = Datamodel::getPath($table, 'ca_objects')) && (sizeof($path) == 3) && ($path = array_keys($path)) && ($linking_table = $path[1])) {
-				$va_objects = $qr->get("{$linking_table}.relation_id", array('returnAsArray' => true));
+				$va_objects = $qr->get("{$linking_table}.relation_id", ['returnAsArray' => true, 'restrictToRelationshipTypes' => caGetOption('ca_objects_showRelationshipTypes', $pa_bundle_settings, null)]);
 				$va_child_objects = [];
 				if(caGetOption('ca_objects_includeFromChildren', $pa_bundle_settings, false)) {
 					$va_child_objects = array_reduce($qr->getWithTemplate("<unit relativeTo='{$table}.children' delimiter=';'>^{$linking_table}.relation_id</unit>", ['returnAsArray' => true]), function($c, $i) { return array_merge($c, explode(';', $i)); }, []);    
 					if($pb_show_child_history) { $va_objects = array_merge($va_objects, $va_child_objects); }
 				}
 				if(is_array($va_object_types = caGetOption('ca_objects_showTypes', $pa_bundle_settings, null)) && is_array($va_objects)) {	
-					$qr_objects = caMakeSearchResult($linking_table, $va_objects, ['transaction' => $this->getTransaction(), 'sort' => $pb_date_mode ? 'ca_objects.object_id' : null, 'sortDirection' => $pb_date_mode ? 'desc' : null]);
+					$qr_objects = caMakeSearchResult($linking_table, $va_objects, ['transaction' => $this->getTransaction(), 'sort' => "{$linking_table}.relation_id", 'sortDirection' => 'desc']);
 					require_once(__CA_MODELS_DIR__."/ca_objects.php");
 					$t_object = new ca_objects();
 					$va_object_type_info = $t_object->getTypeList(); 
@@ -1686,7 +1746,7 @@
 		
 			// Storage locations
 			if (is_array($path = Datamodel::getPath($table, 'ca_storage_locations')) && (sizeof($path) == 3) && ($path = array_keys($path)) && ($linking_table = $path[1])) {
-				$va_locations = $qr->get("{$linking_table}.relation_id", array('returnAsArray' => true));
+				$va_locations = $qr->get("{$linking_table}.relation_id", ['returnAsArray' => true, 'restrictToRelationshipTypes' => caGetOption('ca_storage_locations_showRelationshipTypes', $pa_bundle_settings, null)]);
 
 				$va_child_locations = [];
 				if(caGetOption('ca_storage_locations_includeFromChildren', $pa_bundle_settings, false)) {
@@ -1703,7 +1763,7 @@
 					$vs_name_singular = $t_location->getProperty('NAME_SINGULAR');
 					$vs_name_plural = $t_location->getProperty('NAME_PLURAL');
 			
-					$qr_locations = caMakeSearchResult($linking_table, $va_locations, ['transaction' => $this->getTransaction(), 'sort' => $pb_date_mode ? 'ca_storage_locations.location_id' : null, 'sortDirection' => $pb_date_mode ? 'desc' : null]);
+					$qr_locations = caMakeSearchResult($linking_table, $va_locations, ['transaction' => $this->getTransaction(), 'sort' => "{$linking_table}.relation_id", 'sortDirection' => 'desc']);
 			
 					$vs_default_display_template = '^ca_storage_locations.parent.preferred_labels.name ➜ ^ca_storage_locations.preferred_labels.name (^ca_storage_locations.idno)';
 					$vs_default_child_display_template = '^ca_storage_locations.parent.preferred_labels.name ➜ ^ca_storage_locations.preferred_labels.name (^ca_storage_locations.idno)<br/>[<em>^ca_objects.preferred_labels.name (^ca_objects.idno)</em>]';
@@ -1976,7 +2036,7 @@
 				return null;
 			}
 			$o_view->setVar('policy', $policy);
-			$o_view->setVar('policy_info', self::getHistoryTrackingCurrentValuePolicy($policy));
+			$o_view->setVar('policy_info', $policy_info = self::getHistoryTrackingCurrentValuePolicy($policy));
 			
 			$o_view->setVar('id_prefix', $ps_form_name);
 			$o_view->setVar('placement_code', $ps_placement_code);
@@ -2079,10 +2139,23 @@
 			//
 			$o_view->setVar('movement_relationship_types', []);
 			$o_view->setVar('movement_relationship_types_by_sub_type', []);
+		
 			if (is_array($path = Datamodel::getPath($this->tableName(), 'ca_movements')) && ($path = array_keys($path)) && (sizeof($path) === 3)) {
 				$linking_table = $path[1];
 				if ($t_movement_rel = Datamodel::getInstance($linking_table, true)) {
-					$o_view->setVar('movement_relationship_types', $t_movement_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
+					$rel_types = $t_movement_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings));
+					
+					if(caGetOption('always_create_new_movement', $pa_bundle_settings, false)) {
+						if(is_array($policy_info['elements']['ca_movements']['__default__']) && isset($policy_info['elements']['ca_movements']['__default__']['trackingRelationshipType'])) {
+							$tracking_rels = caMakeRelationshipTypeIDList($linking_table, [$policy_info['elements']['ca_movements']['__default__']['trackingRelationshipType']]);
+							
+							if(is_array($tracking_rels) && sizeof($tracking_rels)) {
+								$tracking_rel_id = array_shift($tracking_rels);
+								$rel_types = [$tracking_rel_id => $rel_types[$tracking_rel_id]];
+							}
+						}
+					}
+					$o_view->setVar('movement_relationship_types', $rel_types);
 					
 					if(!is_array($bundle_config['ca_movements_showRelationshipTypes'])) { $bundle_config['ca_movements_showRelationshipTypes'] = []; }
 					$o_view->setVar('movement_relationship_types_by_sub_type', $t_movement_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($bundle_config, ['restrictToRelationshipTypes' => $bundle_config['ca_movements_showRelationshipTypes']])));
@@ -2241,30 +2314,28 @@
 			global $g_ui_locale;
 			
 			$buf = '';
-			
 			$rel_table = get_called_class();
 			$type_idno = caGetOption('type', $options, null);
 			$placement_code = caGetOption('placement_code', $options, null);
 			
 			$no_template = caGetOption('noTemplate', $options, false);
-		
 			if((is_array($interstitial_elements = $settings["{$rel_table}_".($type_idno ? "{$type_idno}_" : "")."setInterstitialElementsOnAdd"])|| is_array($interstitial_elements = $settings["setInterstitialElementsOnAdd"])) && sizeof($interstitial_elements) && ($linking_table = Datamodel::getLinkingTableName($subject_table, $rel_table))) {
 				$buf .= "<table class='caHistoryTrackingUpdateLocationMetadata'>\n";
+				/** @var BaseRelationshipModel $t_rel */
 				if (!($t_rel = Datamodel::getInstance($linking_table, true))) { return null; }	
 				
-				Datamodel::getInstance('ca_editor_uis', true);
-				$t_ui = ca_editor_uis::find(['editor_type' => Datamodel::getTableNum($linking_table)], ['returnAs' => 'firstModelInstance', 'transaction' => caGetOption('transaction', $options, null)]);
+				$type_id = $t_rel->getTypeIDForCode($type_idno);
+				$t_ui = ca_editor_uis::loadDefaultUI($linking_table, $request, $type_id, array('editorPref' => 'interstitial'));
 				foreach($interstitial_elements as $element_code) {
 					$buf .= "<tr>";
 					
 					$label = null;
-					if (($t_ui) && is_array($p = $t_ui->getPlacementsForBundle($element_code))) {
+					if (($t_ui) && is_array($p = $t_ui->getPlacementsForBundle("$linking_table.$element_code", $request))) {
 						$l = array_shift($p);
-						
 						if (!($label = caGetOption($g_ui_locale, $l['settings']['label'], null))) {
 							if (is_string($l['settings']['label'])) { $label = $l['settings']['label']; }
 						}
-					} 
+					}
 					if (!$label) {
 						$label = $t_rel->getDisplayLabel($t_rel->tableName().".".$element_code);
 					}
@@ -2322,7 +2393,7 @@
 							$vals = [];
 
 							foreach($sub_element_ids as $sub_element_id) {
-								$vals[ca_metadata_elements::getElementCodeForID($sub_element_id)] = $po_request->getParameter($no_template ? $element_code : ["{$placement_code}{$form_prefix}_{$type}_{$sub_element_id}_new_0", "{$placement_code}{$form_prefix}_{$type_id}_{$sub_element_id}_new_0", "{$placement_code}{$form_prefix}__{$sub_element_id}_new_0"], pString);
+								$vals[ca_metadata_elements::getElementCodeForID($sub_element_id)] = $po_request->getParameter($no_template ? $element_code : ["{$placement_code}{$form_prefix}_{$type}_{$sub_element_id}_new_0", "{$placement_code}{$form_prefix}_{$type_id}_{$sub_element_id}_new_0", "{$placement_code}{$form_prefix}__{$sub_element_id}_new_0", "{$placement_code}{$form_prefix}_{$sub_element_id}_new_0"], pString);
 							}
 							$t_item_rel->addAttribute($vals, $element_code);
 						}

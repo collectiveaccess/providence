@@ -213,6 +213,7 @@
 2700 = Could not update primary flag for representation
 2710 = No media specified for new representation
 2720 = File is not part of representation
+2730 = Media already exists
 
 # --- User commenting/tagging errors
 2800 = Comment does not exist
@@ -257,3 +258,11 @@
 3500 = Access denied
 3510 = Plugin does not exist
 3520 = Command does not exist
+
+# --- Location tracking errors
+3600 = Cannot create movement
+3605 = Could not create storage location - movement relationship for history tracking
+3610 = Could not create storage location - movement original parent relationship for history tracking
+3615 = Could not create storage location - movement new parent relationship for history tracking
+3620 = Could not create storage location - movement new sub-location relationship for history tracking
+3625 = Could not create movement to related item relationship for history tracking

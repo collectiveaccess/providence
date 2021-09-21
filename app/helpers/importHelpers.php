@@ -740,15 +740,15 @@
 			if (isset($pm_value[$pn_value_index])) {
 				$va_delimited_items = $pm_value[$pn_value_index];	// for input formats that support repeating values
 			} else {
-				$va_delimited_items = array_shift($va_delimited_items);
+				$va_delimited_items = array_shift($pm_value);
 			}
 		} else {
-			$va_delimited_items = array($pm_value);
+			$va_delimited_items = [$pm_value];
 		}
 		
-		if (!is_array($va_delimited_items)) { $va_delimited_items = array($va_delimited_items); }
+		if (!is_array($va_delimited_items)) { $va_delimited_items = [$va_delimited_items]; }
 		$va_delimiter = $pa_item['settings']["{$ps_refinery_name}_delimiter"];
-		if (!is_array($va_delimiter)) { $va_delimiter = array($va_delimiter); }
+		if (!is_array($va_delimiter)) { $va_delimiter = [$va_delimiter]; }
 		if (sizeof($va_delimiter)) {
 			foreach($va_delimiter as $vn_index => $vs_delim) {
 				if (!trim($vs_delim, "\t ")) { unset($va_delimiter[$vn_index]); continue; }
@@ -772,6 +772,8 @@
 			$pa_options['ignoreType'] = $pa_item['settings']["{$ps_refinery_name}_ignoreType"];
 		}
 		
+		$text_transform = $pa_item['settings']["{$ps_refinery_name}_textTransform"] ?? null;
+		
 		$pa_options['dontCreate'] = $pb_dont_create = caGetOption('dontCreate', $pa_options, (bool)$pa_item['settings']["{$ps_refinery_name}_dontCreate"]);
 		
 		$va_vals = [];  // value list for all items
@@ -789,6 +791,12 @@
 				$va_items = sizeof($va_delimiter) ? preg_split("!(".join("|", $va_delimiter).")!", $vs_delimited_item) : array($vs_delimited_item);
 
                 $va_items = array_map("trim", $va_items);
+                
+                if($text_transform) {
+                	$va_items = array_map(function ($v) use ($text_transform) { 
+                		return caApplyTextTransforms($v, $text_transform);
+                	}, $va_items);
+                }
 				foreach($va_items as $vn_i => $vs_item) {
 					$va_parents = $pa_item['settings']["{$ps_refinery_name}_parents"];
 					
@@ -1598,5 +1606,25 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 			return null;
 		}
 		return $transformed_url;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 */
+	function caApplyTextTransforms(?string $value, ?string $transform) : ?string{
+		if (strlen($value)) {
+			switch(strtolower($transform)) {
+				case 'touppercase':
+					$value = mb_strtoupper($value);
+					break;
+				case 'tolowercase':
+					$value = mb_strtolower($value);
+					break;
+				case 'uppercasefirst':
+					$value = caUcFirstUTF8Safe($value);
+					break;
+			}
+		}
+		return $value;
 	}
 	# ---------------------------------------------------------------------

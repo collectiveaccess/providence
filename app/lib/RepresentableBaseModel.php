@@ -599,8 +599,12 @@
 					$t_rep->setIdnoWithTemplate('%', ['serialOnly' => true]);
 				}
 				
-				$t_rep->insert();
-		
+				try {
+					$t_rep->insert();
+				} catch (MediaExistsException $e) {
+					$this->postError(2730, caGetReferenceToExistingRepresentationMedia($e->getRepresentation()), 'ca_object_representations->insert()');
+					return false;
+				}
 				if ($t_rep->numErrors()) {
 					$this->errors = array_merge($this->errors, $t_rep->errors());
 					return false;
@@ -756,7 +760,12 @@
 					}
 				}
 			
-				$t_rep->update();
+				try {
+					$t_rep->update();
+				} catch (MediaExistsException $e) {
+					$this->postError(2730, caGetReferenceToExistingRepresentationMedia($e->getRepresentation()), 'ca_object_representations->insert()');
+					return false;
+				}
 			
 				if ($t_rep->numErrors()) {
 					$this->errors = array_merge($this->errors, $t_rep->errors());
@@ -914,12 +923,12 @@
 		/** 
 		 * Link existing media represention to currently loaded item
 		 *
-		 * @param $pn_representation_id - 
-		 * @param $pb_is_primary - if set to true, representation is designated "primary." Primary representation are used in cases where only one representation is required (such as search results). If a primary representation is already attached to this item, then it will be changed to non-primary as only one representation can be primary at any given time. If no primary representations exist, then the new representation will always be marked primary no matter what the setting of this parameter (there must always be a primary representation, if representations are defined).
-		 * @param $pa_options - an array of options passed through to BaseModel::set() when creating the new representation. Currently supported options:
-		 *		rank - a numeric rank used to order the representations when listed
+		 * @param $pn_representation_id 
+		 * @param $pb_is_primary = if set to true, representation is designated "primary." Primary representation are used in cases where only one representation is required (such as search results). If a primary representation is already attached to this item, then it will be changed to non-primary as only one representation can be primary at any given time. If no primary representations exist, then the new representation will always be marked primary no matter what the setting of this parameter (there must always be a primary representation, if representations are defined). To automatically set primary (eg. first imported is primary, subsequent are not) set this to null.
+		 * @param $pa_options = an array of options passed through to BaseModel::set() when creating the new representation. Currently supported options:
+		 *		rank = a numeric rank used to order the representations when listed
 		 *
-		 * @return mixed Returns primary key (link_id) of the relatipnship row linking the  representation to the item; boolean false is returned on error
+		 * @return mixed Returns primary key (link_id) of the relationship row linking the representation to the item; boolean false is returned on error
 		 */
 		public function linkRepresentation($pn_representation_id, $pb_is_primary, $pa_options=null) {
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
@@ -935,7 +944,10 @@
 			$t_oxor->setMode(ACCESS_WRITE);
 			$t_oxor->set($vs_pk, $vn_id);
 			$t_oxor->set('representation_id', $pn_representation_id);
-			$t_oxor->set('is_primary', $pb_is_primary ? 1 : 0);
+			
+			if(!is_null($pb_is_primary)) {
+				$t_oxor->set('is_primary', $pb_is_primary ? 1 : 0);
+			}
 			$t_oxor->set('rank', isset($pa_options['rank']) ? (int)$pa_options['rank'] : $pn_representation_id);
 			if ($t_oxor->hasField('type_id') && ($pm_type_id = caGetOption('type_id', $pa_options, null))) {
 			    $pn_type_id = null;

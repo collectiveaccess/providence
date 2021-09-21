@@ -147,7 +147,12 @@ class RelatedListController extends BaseSearchController {
 
 		$va_relation_id_typenames = array();
 		while($o_interstitial_res->nextHit()) {
-			$va_relation_id_typenames[$o_interstitial_res->getPrimaryKey()] = $o_interstitial_res->getWithTemplate('^relationship_typename');
+			$va_get_params = [];
+			if ( method_exists($t_related_rel, 'isSelfRelationship') && $t_related_rel->isSelfRelationship()) {
+				$vn_left_id = $o_interstitial_res->get($t_related_rel->getLeftTableFieldName());
+				$va_get_params['orientation'] = ( $t_subject->getPrimaryKey() === $vn_left_id ? 'LTOR' : 'RTOL' );
+			}
+			$va_relation_id_typenames[$o_interstitial_res->getPrimaryKey()] = $o_interstitial_res->getWithTemplate('^relationship_typename', $va_get_params);
 		}
 
 		$this->getView()->setVar('relationIdTypeNames', $va_relation_id_typenames);

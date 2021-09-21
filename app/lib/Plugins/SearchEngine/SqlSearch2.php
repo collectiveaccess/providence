@@ -372,7 +372,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	
 	 	$ap = $field ? $this->_getElementIDForAccessPoint($subject_tablenum, $field) : null;
 	 	
-	 	if (is_array($ap)) {
+	 	if (is_array($ap) && !$this->useSearchIndexForAP($ap)) {
 	 		// Handle datatype-specific queries
 	 		$ret = $this->_processMetadataDataType($subject_tablenum, $ap, $query);
 	 		if(is_array($ret)) { return $ret; }
@@ -450,7 +450,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			", $params);
 		} else {
 			$qr_res = $this->db->query("
-				SELECT swi.row_id, 100 boost
+				SELECT DISTINCT swi.row_id, 100 boost
 				FROM ca_sql_search_word_index swi
 				".(!$is_blank ? 'INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id' : '')."
 				WHERE
@@ -483,7 +483,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			foreach($terms as $term) {
 				if (!$ap_spec && ($field = $term->field)) { $ap_spec = $field; }
 				
-				if (strlen($escaped_text = $this->db->escape(join(' ', $this->_tokenize($term->text))))) {
+				if (strlen($escaped_text = $this->db->escape(join(' ', $this->_tokenize($term->text, true))))) {
 					$words[] = $escaped_text;
 				}
 			}
@@ -514,6 +514,13 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			
 			$w = 0;
 	 		foreach($words as $w => $word) {
+	 			$word_op = '=';
+	 			if($has_wildcard = ((strpos($word, '*') !== false) || (strpos($word, '?') !== false))) {
+	 				$word_op = 'LIKE';
+					$word = str_replace('*', '%', $word);
+					$word = str_replace('?', '_', $word);
+	 			}
+	 		
 				$temp_table = 'ca_sql_search_phrase_'.md5("{$subject_tablenum}/{$word}/{$w}");
 				$this->_createTempTable($temp_table);
 			
@@ -525,7 +532,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					INNER JOIN ca_sql_search_word_index AS swi ON sw.word_id = swi.word_id 
 					".(($tc > 0) ? " INNER JOIN ".$temp_tables[$tc - 1]." AS tt ON swi.index_id = tt.row_id" : "")."
 					WHERE 
-						sw.word = ? AND swi.table_num = ? {$fld_limit_sql}
+						sw.word {$word_op} ? AND swi.table_num = ? {$fld_limit_sql}
 						{$private_sql}
 				", $word, (int)$subject_tablenum);
 				$qr_count = $this->db->query("SELECT count(*) c FROM {$temp_table}");
@@ -738,7 +745,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			
 			switch($fi['FIELD_TYPE']) {
 				case FT_NUMBER:
-					$ap['element_info']['datatype'] = __CA_ATTRIBUTE_VALUE_NUMERIC__;
+					$ap['element_info']['datatype'] = isset($fi['LIST_CODE']) ? null : __CA_ATTRIBUTE_VALUE_NUMERIC__;
 					break;
 				case FT_HISTORIC_DATERANGE:
 				case FT_DATERANGE:
@@ -813,7 +820,16 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			if(!($qr = caMakeSearchResult($ap['table_num'], array_keys($row_ids)))) { return []; }
 		
 			while($qr->nextHit()) {
-				$a = $qr->get($spk, ['returnAsArray' => true]);
+				switch((int)$ap['table_num']) {
+					case 103:
+						$s = $qr->getInstance();
+						$a = $s->getItems(['idsOnly' => true]);
+						break;
+					default:
+						$a = $qr->get($spk, ['returnAsArray' => true]);
+						break;
+				}
+				
 				foreach($a as $i) {
 					$subject_ids[$i] = 1;
 				}
@@ -1483,6 +1499,9 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			$vn_rel_type = (int)$va_rel_type_ids[0];
 		}
 		
+		if(is_array($indexing_info = $this->search_indexing_config->get(Datamodel::getTableName($subject_tablenum)))) {
+			$indexing_info = $indexing_info[$vs_table]['fields'][$vs_field] ?? null;
+		}
 		if (strtolower($vs_field) == 'count') {
 			if (!is_array($va_rel_type_ids) || !sizeof($va_rel_type_ids)) { $va_rel_type_ids = [0]; }	// for counts must pass "0" as relationship type to pull count for all reltypes in aggregate
 			return array(
@@ -1494,7 +1513,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				'datatype' => 'COUNT',
 				'element_info' => null,
 				'relationship_type_ids' => $va_rel_type_ids,
-				'type' => 'COUNT'
+				'type' => 'COUNT',
+				'indexing_options' => $indexing_info
 			);
 		} elseif (strtolower($vs_field) == 'current_value') {
 		    if(!$vs_subfield) { $vs_subfield = '__default__'; }
@@ -1515,7 +1535,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				'element_info' => null,
 				'relationship_type_ids' => $va_rel_type_ids,
 				'policy' => $vs_subfield,
-				'type' => 'CV'
+				'type' => 'CV',
+				'indexing_options' => $indexing_info
 			);
 		
 		} elseif (is_numeric($vs_field)) {
@@ -1544,7 +1565,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 						'datatype' => 'COUNT',
 						'element_info' => $t_element->getFieldValuesArray(),
 						'relationship_type_ids' => $va_rel_type_ids,
-						'type' => 'COUNT'
+						'type' => 'COUNT',
+						'indexing_options' => $indexing_info
 					);
 				} else {
 					return array(
@@ -1556,13 +1578,14 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 						'datatype' => $t_element->get('datatype'),
 						'element_info' => $t_element->getFieldValuesArray(),
 						'relationship_type_ids' => $va_rel_type_ids,
-						'type' => 'METADATA'
+						'type' => 'METADATA',
+						'indexing_options' => $indexing_info
 					);
 				}
 			}
 		} else {
 
-			return array('access_point' => $va_tmp[0], 'relationship_type' => $va_tmp[1], 'table_num' => $vs_table_num, 'field_num' => 'I'.$vs_fld_num, 'field_num_raw' => $vs_fld_num, 'datatype' => null, 'relationship_type_ids' => $va_rel_type_ids, 'type' => 'INTRINSIC');
+			return array('access_point' => $va_tmp[0], 'relationship_type' => $va_tmp[1], 'table_num' => $vs_table_num, 'field_num' => 'I'.$vs_fld_num, 'field_num_raw' => $vs_fld_num, 'datatype' => null, 'relationship_type_ids' => $va_rel_type_ids, 'type' => 'INTRINSIC', 'indexing_options' => $indexing_info);
 		}
 
 		return null;
@@ -1879,16 +1902,16 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		
 		switch($modifier) {
 			case '#gt#':
-				$sql_where = "({$efield} > ?)"; 
-				$params = [$dates['end']];
+				$sql_where = "({$sfield} > ?)"; 
+				$params = [$dates['start']];
 				break;
 			case '#gt=':
 				$sql_where = "({$sfield} >= ?)"; 
 				$params = [$dates['start']];
 				break;
 			case '#lt#':
-				$sql_where = "({$sfield} < ?)"; 
-				$params = [$dates['start']];
+				$sql_where = "({$efield} < ?)"; 
+				$params = [$dates['end']];
 				break;
 			case '#lt=':
 				$sql_where = "({$efield} <= ?)"; 
@@ -1942,6 +1965,18 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			$text = preg_replace("!^(#[gtleq]+[#=]{1})!i", '', $text);
 		}
 		return [$text, $modifier];
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	private function useSearchIndexForAP(array $ap) : bool {
+		if(is_array($ap['indexing_options'])) {
+			foreach(['INDEX_AS_IDNO', 'INDEX_ANCESTORS', 'CHILDREN_INHERIT', 'ANCESTORS_INHERIT', 'INDEX_AS_MIMETYPE'] as $k) {
+				if(in_array($k, $ap['indexing_options'], true) || isset($ap['indexing_options'][$k])) { return true; }
+			}
+		}
+		return false;
 	}
 	# -------------------------------------------------------
 }

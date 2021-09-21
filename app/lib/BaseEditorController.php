@@ -224,6 +224,8 @@ class BaseEditorController extends ActionController {
 	    	return;
 	    }
 	    
+		$vb_no_save_error = false;
+	    
 		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vn_after_id, $vs_rel_table, $vn_rel_type_id, $vn_rel_id) = $this->_initView($pa_options);
 		/** @var $t_subject BundlableLabelableBaseModelWithAttributes */
 		if (!is_array($pa_options)) { $pa_options = array(); }
@@ -272,7 +274,7 @@ class BaseEditorController extends ActionController {
 				}
 			}
 
-			if ($vn_context_id) { $t_subject->set($vs_idno_context_field, $vn_context_id); }
+			if ($vn_context_id && !$t_subject->get($vs_idno_context_field)) { $t_subject->set($vs_idno_context_field, $vn_context_id); }
 		}
 
 		if (!($vs_type_name = $t_subject->getTypeName())) {
@@ -294,6 +296,8 @@ class BaseEditorController extends ActionController {
 		if ($this->_beforeSave($t_subject, $vb_is_insert)) {
 			if ($vb_save_rc = $t_subject->saveBundlesForScreen($this->request->getActionExtra(), $this->request, $va_opts)) {
 				$this->_afterSave($t_subject, $vb_is_insert);
+			} elseif($t_subject->hasErrorNumInRange(3600, 3699)) {
+				$vb_no_save_error = true;
 			}
 		}
 		$this->view->setVar('t_ui', $t_ui);
@@ -358,14 +362,18 @@ class BaseEditorController extends ActionController {
 		}
 		if(sizeof($va_errors) - sizeof($va_general_errors) > 0) {
 			$va_error_list = [];
-			$vb_no_save_error = false;
 			foreach($va_errors as $o_e) {
 				$bundle = array_shift(explode('/', $o_e->getErrorSource()));
 				$va_error_list[] = "<li><u>".$t_subject->getDisplayLabel($bundle).'</u>: '.$o_e->getErrorDescription()."</li>\n";
 
-				switch($o_e->getErrorNumber()) {
+				switch($error_num = (int)$o_e->getErrorNumber()) {
 					case 1100:	// duplicate/invalid idno
 						if (!$vn_subject_id) {		// can't save new record if idno is not valid (when updating everything but idno is saved if it is invalid)
+							$vb_no_save_error = true;
+						}
+						break;
+					default:
+						if(($error_num >= 3600) && ($error_num <= 3699)) { 	// failed to create movement for storage location
 							$vb_no_save_error = true;
 						}
 						break;
@@ -1627,7 +1635,13 @@ class BaseEditorController extends ActionController {
 					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
 					return;
 				}
-
+				
+				if (!is_array($bundle_sort_defaults = $this->request->user->getVar('bundleSortDefaults'))) { 
+					$bundle_sort_defaults = [];
+				}
+				$bundle_sort_defaults["P{$pn_placement_id}"] = ['sort' => $ps_sort, 'sortDirection' => $ps_sort_direction];
+				$this->request->user->setVar('bundleSortDefaults', $bundle_sort_defaults);
+				
 				$this->response->addContent($t_subject->getBundleFormHTML($ps_bundle, "P{$pn_placement_id}", array_merge($t_placement->get('settings'), ['placement_id' => $pn_placement_id]), ['request' => $this->request, 'contentOnly' => true, 'sort' => $ps_sort, 'sortDirection' => $ps_sort_direction], $vs_label));
 				break;
 		}
@@ -1996,7 +2010,7 @@ class BaseEditorController extends ActionController {
 			$t_instance = new ca_object_representations($pn_representation_id);
 			
 			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'INPUT', 'MIMETYPE')))) {
-				throw new ApplicationException(_t('Invalid viewer'));
+				throw new ApplicationException(_t('Invalid viewer for '.$vs_mimetype));
 			}
 			
 			$va_display_info = caGetMediaDisplayInfo('media_overlay', $vs_mimetype);
@@ -2157,6 +2171,15 @@ class BaseEditorController extends ActionController {
 		}
 		
 		throw new ApplicationException(_t('Invalid type'));
+	}
+	# -------------------------------------------------------
+	/**
+	 * Access to sidecar data (primarily used by 3d viewer)
+	 * Will only return sidecars that are images (for 3d textures), MTL files (for 3d OBJ-format files) or 
+	 * binary (for GLTF .bin buffer data)
+	 */
+	public function GetMediaSidecarData() {
+		caReturnMediaSidecarData($this->request->getParameter('sidecar_id', pInteger), $this->request->user);
 	}
 	# -------------------------------------------------------
 	/**
@@ -2724,7 +2747,7 @@ class BaseEditorController extends ActionController {
 		}
 		
 		$table = preg_replace("!_related_list$!", "", $placement->get('bundle_name'));
-		$ids = $t_instance->getRelatedItems($table, ['returnAs' => 'ids', 'restrictToTypes' => $placement->getSetting('restrict_to_types'), 'restrictToRelationshipTypes' => $placement->getSetting('restrict_to_relationship_types'), ]);
+		$ids = $t_instance->getRelatedItems($table, ['showCurrentOnly' => $placement->getSetting('showCurrentOnly'), 'returnAs' => 'ids', 'restrictToTypes' => $placement->getSetting('restrict_to_types'), 'restrictToRelationshipTypes' => $placement->getSetting('restrict_to_relationship_types'), ]);
 		if(!$ids || !sizeof($ids)) { 
 			throw new ApplicationException(_('No related items'));
 		}

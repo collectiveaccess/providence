@@ -196,7 +196,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Key'),
-				'description' => _t('Foreign key in ArchDescriptionNames to select on (eg. ResourceID, resourceComponentId, accessionId, digitalObjectId.')
+				'description' => _t('Foreign key in ArchDescriptionNames to select on (eg. ResourceID, resourceComponentId, accessionId, digitalObjectId).')
 			),
 			'ATEntityGetter_relationshipType' => array(
 				'formatType' => FT_TEXT,

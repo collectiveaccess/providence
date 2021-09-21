@@ -890,9 +890,9 @@ class Installer {
 		$this->_processSettings($t_md_element, $po_element->settings, ['settingsInfo' => $t_md_element->getAvailableSettings()]);
 
 		if($t_md_element->getPrimaryKey()) {
-			$t_md_element->update();
+			$t_md_element->update(['noFlush' => true]);
 		}else{
-			$t_md_element->insert();
+			$t_md_element->insert(['noFlush' => true]);
 		}
 
 		if ($t_md_element->numErrors()) {
@@ -2564,7 +2564,7 @@ class Installer {
 				return false;
 			}
 
-			$this->logStatus(_t('Added trigger %1 for metadata alert %3', $vs_code, $t_md_alert->get('code')));
+			$this->logStatus(_t('Added trigger %1 for metadata alert %2', $vs_code, $t_md_alert->get('code')));
 			$vn_i++;
 		}
 		return true;

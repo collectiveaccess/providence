@@ -277,8 +277,16 @@ class Media extends BaseObject {
 	 *
 	 */
 	public function getProperties() {
-		if (!$this->instance) { return ""; }
+		if (!$this->instance) { return null; }
 		return $this->instance->properties;
+	}
+	# ----------------------------------------------------------
+	/**
+	 *
+	 */
+	public function isValidProperty($property) {
+		if (!$this->instance) { return null; }
+		return isset($this->instance->properties[$property]);
 	}
 	# ----------------------------------------------------------
 	/**

@@ -244,7 +244,7 @@ class ca_metadata_type_restrictions extends BaseModel {
 				'width' => 5, 'height' => 1,
 				'default' => 0,
 				'label' => _t('Minimum number of attribute bundles to show in an editing form.'),
-				'description' => _t('If 0 is entered here, sets an element to the collapsed position when a new record or screen is opened.  This is useful for list elements in leu of a null value, because no data selection will be saved when the element is collapsed.  Note: "Minimum number of attributes of this kind that must be associated with an item" must also be saved as 0 to set the element to the collapsed position.')
+				'description' => _t('If 0 is entered here, sets an element to the collapsed position when a new record or screen is opened.  This is useful for list elements in lieu of a null value, because no data selection will be saved when the element is collapsed.  Note: "Minimum number of attributes of this kind that must be associated with an item" must also be saved as 0 to set the element to the collapsed position.')
 			)
 		]);
 		

@@ -1899,8 +1899,8 @@
 						if (((int)$sub_element['datatype'] === __CA_ATTRIBUTE_VALUE_CONTAINER__) && ($sub_element['parent_id'] > 0)) { continue; }	// skip sub-containers
 						$sub_element_code = $sub_element['element_code'];
 						
-						if ($sub_element['parent_id'] != $sub_element['hier_element_id']) {	// is root
-							if(!is_array($b)) { $bundles[$b] = []; }
+						if ($sub_element['element_id'] == $sub_element['hier_element_id']) {	// is root
+							if(!is_array($b) && !is_array($bundles[$b])) { $bundles[$b] = []; }
 							$bundles[$b] = array_merge($bundles[$b], [
 								'id' => "{$bundle_info['bundle']}",
 								'bundle' => "{$bundle_info['bundle']}",
@@ -2203,5 +2203,16 @@
 			}
 		}
 		return $term;
+	}
+	# ---------------------------------------
+	/**
+	 * Check is string suitable for use as a wildcard-suffixed search stem
+	 *
+	 * @param string $value 
+	 *
+	 * @return bool
+	 */
+	function caIsSearchStem(string $value) : bool {
+		return (!preg_match('![\d]+$!', $value) && !preg_match('!\*$!', $value) && preg_match('![\w]+$!', $value));
 	}
 	# ---------------------------------------
