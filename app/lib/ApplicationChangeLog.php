@@ -1026,12 +1026,6 @@ require_once(__CA_LIB_DIR__."/Db.php");
 			$params[] = $d['start']; $params[] = $d['end'];
 		}
 		
-		$sql_changetype = null;
-		if(!is_null($changetype)) {
-			$sql_changetype = "AND (wcl.changetype = ?)";
-			$params[] = $changetype;
-		}
-		
 		$sql_user_id = null;
 		if($user_id) {
 			if (!is_array($user_id)) { $user_id = [$user_id]; }
