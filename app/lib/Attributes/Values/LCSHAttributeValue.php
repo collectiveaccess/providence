@@ -351,7 +351,7 @@ class LCSHAttributeValue extends AttributeValue implements IAttributeValue {
 							$url_bits = explode("/", $url);
 							$id = array_pop($url_bits);
 						
-							$x=LCSHAttributeValue::$s_term_cache[$value] = array(
+							LCSHAttributeValue::$s_term_cache[$value] = array(
 								'value_longtext1' => "{$title} [{$url}]",			// text
 								'value_longtext2' => $url,							// uri
 								'value_decimal1' => is_numeric($id) ? $id : null	// id
