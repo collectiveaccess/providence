@@ -1819,15 +1819,16 @@
 				}
 			}
 			
-			$container_bundle_code = '';
+			$t_element_datatype = $t_element->get('datatype');
+			$t_element_code = $t_element->get('element_code');
+			$table_name = $this->tableName();
+			$show_bundle_codes = $po_request->user->getPreference('show_bundle_codes_in_editor');
+			
 			foreach($va_element_set as $va_element) {
 				$va_element_info[$va_element['element_id']] = $va_element;
-				if (($va_element['datatype'] == 0) && ($va_element['parent_id'] > 0)) { 
-					// Gather bundle codes for containers within containers.
-					$container_bundle_code = "{$container_bundle_code}.".$va_element['element_code'];
-					continue; }
-
 				
+				if (($va_element['datatype'] == 0) && ($va_element['parent_id'] > 0)) { continue; }
+	
 				$va_label = $this->getAttributeLabelAndDescription($va_element['element_id']);
 
 				if(!isset($va_elements_without_break_by_container[$va_element['parent_id']])){
@@ -1853,10 +1854,8 @@
 				
 				$label = (sizeof($va_element_set) > 1) ? $va_label['name'] : '';
 				
-				if($t_element->get('datatype') == 0){ //Only show field level bundle codes inside containers  
-					$show_bundle_codes = $po_request->user->getPreference('show_bundle_codes_in_editor');
-					$bundle_code = $this->tableName().'.'.$t_element->get('element_code').$container_bundle_code.'.'.$va_element['element_code'];
-			
+				if($t_element_datatype == 0){ //Only show field level bundle codes inside containers    
+					$bundle_code = "{$table_name}.{$t_element_code}.{$va_element['element_code']}";
 					$label = ($show_bundle_codes !== 'hide') ? "{$label} <span class='developerBundleCode'>(<a href='#' class='developerBundleCode'>{$bundle_code}</a>)</span>" : $label;
 				}
 				
