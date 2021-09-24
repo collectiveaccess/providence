@@ -8269,4 +8269,390 @@ side. For many self-relations the direction determines the nature and display te
 		return $o_view->render('ca_item_comments.php');
 	}
 	# -------------------------------------------------------
+	/**
+	 * Merge records into single "most complete" record using heuristic. Given a list of two or more row_ids 
+	 * the record with the most content (by length) will be selected as the merge target, and all other will be merged
+	 * to it. If the useID option is set to one of the ids in the ids list, it will be used as the merge target regardless of 
+	 * content.
+	 *
+	 * @param array $ids
+	 * @param array $options Options include:
+	 *		useID = id of record to use as merge target. If omitted the record with the most content by length will be used. [Default is null]
+	 * 
+	 * @return BundlableLabelableBaseModelWithAttributes Instance of merged record
+	 */
+	static public function merge(array $ids, ?array $options=null) : BundlableLabelableBaseModelWithAttributes {
+		$table = get_called_class();
+		if(sizeof($ids) < 2) { 
+			throw new MergeException(_t('Must specify at least two ids'));
+		}
+		
+		// verify ids exist
+		$instances = [];
+		foreach($ids as $id) {
+			if($t_instance = Datamodel::getInstance($table, false, $id)) {
+				$instances[$id] = $t_instance;
+			}
+		}
+		
+		if(sizeof($instances) < 2) { 
+			throw new MergeException(_t('Must specify at least two valid ids'));
+		}
+		
+		$use_preferred_id = caGetOption('useID', $options, null);
+		$rel_tables = self::_relationshipTablesToMerge($options);
+		
+		
+		$content = [];
+		
+		$use_id = $use_preferred_id;
+		$max_count = 0;
+		foreach($instances as $id => $t_instance) {
+			// Labels
+			$content[$id]['pref_labels'] = $pref_labels = $t_instance->get("{$table}.preferred_labels", ['returnWithStructure' => true]);
+			$content[$id]['npref_labels'] = $npref_labels = $t_instance->get("{$table}.nonpreferred_labels", ['returnWithStructure' => true]);
+			
+			// Intrinsics
+			$intrinsics = [];
+			foreach($t_instance->getFormFields() as $f => $finfo) {
+				if(strlen($v = $t_instance->get("{$table}.{$f}"))) {
+					$intrinsics[$f] = $v;
+				}
+			}
+			$content[$id]['intrinsics'] = $intrinsics;
+			
+			// Metadata elements
+			$attributes = [];
+			foreach($t_instance->getAttributes() as $attr) {
+				$attributes[$attr->getElementID()][] = $attr;
+			}
+			$content[$id]['attributes'] = $attributes;
+			
+			// Relationships
+			$relationships = [];
+			$rel_count = 0;
+			foreach($rel_tables as $rel_table) {
+				$rel_ids = $t_instance->get("{$rel_table}.related.".Datamodel::primaryKey($rel_table), ['returnAsArray' => true]);
+				if(!is_array($rel_ids) || !sizeof($rel_ids)) { continue; }
+				$relationships[$rel_table] = $rel_ids;
+				$rel_count += sizeof($rel_ids);
+			}
+			$content[$id]['relationships'] = $relationships;
+			
+			if(!$use_preferred_id) {
+				// which record has the most fields?
+				$count = sizeof($pref_labels) + sizeof($npref_labels) + sizeof($intrinsics) + sizeof($attributes) + $rel_count;
+				if ($count > $max_count) { 
+					$max_count = $count;
+					$use_id = $id;
+				}	
+			}		
+		}
+		if(!$use_id) {
+			$use_id = array_shift($ids);
+		}
+		if(!($t_base = Datamodel::getInstance($table, false, $use_id))) {
+			throw new MergeException(_t("Could not load base record (id=%1) for merge", $use_id));
+		}
+		$base_content = $content[$use_id];
+		unset($content[$use_id]);
+		
+		
+		// Perform merge
+		
+		// 1. Preferred label?
+		$pref_labels_by_locale = self::_mergePrefLabels($t_base, $base_content['pref_labels'], array_map(function($v) { return $v['pref_labels']; }, $content), $options);
+		
+		// 2. Nonpreferred labels?
+		$npref_labels_by_locale = self::_mergeNPrefLabels($t_base, $base_content['npref_labels'], array_map(function($v) { return $v['npref_labels']; }, $content), $options);
+			
+		// 3. Intrinsics
+		$intrinsics = self::_mergeIntrinsics($t_base, $base_content['intrinsics'], array_map(function($v) { return $v['intrinsics']; }, $content), $options);
+			
+		// 4. Attributes
+		$attributes = self::_mergeAttributes($t_base, $base_content['attributes'], array_map(function($v) { return $v['attributes']; }, $content), $options);
+		
+		// 5. Relationships
+		$relationships = self::_mergeRelationships($t_base, $ids, $options);
+		
+		// Delete now-merged records
+		foreach($ids as $id) {
+			if($id == $use_id) { continue; }
+			$t_instance = Datamodel::getInstance($table, false, $id);
+			if(!$t_instance->delete(true)) {
+				throw new MergeException(_t("Could not delete old record"));
+			}
+		}
+		
+		return $t_base;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Merge preferred labels from several rows
+	 */
+	static private function _mergePrefLabels($t_base, $base, $label_list, $options=null) {
+		$table = $t_base->tableName();
+		$label_fields = $t_base->getLabelUIFields();
+	
+		$mode = caGetOption('mode', $options, null);
+		
+		$labels_by_locale = [];
+		
+		$max_lengths_by_locale_id = [];
+		$use_label_by_locale_id = [];
+		$use_label_id_by_locale_id = [];
+		foreach(array_merge([$base], $label_list) as $labels_by_row) {
+			foreach($labels_by_row as $row_id => $labels) {
+				foreach($labels as $label_id => $label) {
+					$locale_id = $label['locale_id'];
+					switch($mode) {
+						default:		// longer is better
+							$total_length = 0;
+							foreach($label_fields as $f) {
+								$total_length =+ mb_strlen($label[$f]);
+							}
+							if($total_length > (int)$max_lengths_by_locale_id[$locale_id]) { 
+								$max_lengths_by_locale_id[$locale_id] = $total_length;
+								
+								$use_label_by_locale_id[$locale_id] = array_filter($label, function($k) use ($label_fields) { return in_array($k, $label_fields); }, ARRAY_FILTER_USE_KEY);
+							}
+							break;
+					}
+				}
+			}
+		}
+		
+		foreach($use_label_by_locale_id as $locale_id => $label) {
+			foreach($base as $row_id => $blabels) {
+				foreach($blabels as $blabel_id => $blabel) {
+					if($label['label_id'] === $blabel_id) {
+						unset($use_label_by_locale_id[$locale_id]);
+						break(2);
+					}
+					
+					if(
+						($label['locale_id'] === $blabel['locale_id'])
+					) {
+						$labels_are_equal = true;
+						foreach($label_fields as $f) {
+							if($label[$f] !== $blabel[$f]) {
+							    $labels_are_equal = false;
+								break;
+							}
+						}
+						if($labels_are_equal) {
+							unset($use_label_by_locale_id[$locale_id]);
+							break(2);
+						}
+					}
+				}
+			}
+		}
+				
+		if(sizeof($use_label_by_locale_id) > 0) {
+			// rewrite labels
+			$t_base->removeAllLabels(__CA_LABEL_TYPE_PREFERRED__);
+			foreach($use_label_by_locale_id as $locale_id => $label) {
+				$t_base->addLabel($label, $locale_id, null, true);
+			}
+		}
+		return $use_label_by_locale_id;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Merge nonpreferred labels from several rows
+	 */
+	static private function _mergeNPrefLabels($t_base, $base, $label_list, $options=null) {
+		$table = $t_base->tableName();
+		$label_fields = $t_base->getLabelUIFields();
+		
+		$labels_by_locale_id = [];
+		foreach(array_merge([$base], $label_list) as $labels_by_row) {
+			foreach($labels_by_row as $row_id => $labels) {
+				foreach($labels as $label_id => $label) {
+					$locale_id = $label['locale_id'];
+					$label_exists = false;
+					if(!is_array($labels_by_locale_id[$locale_id])) { 
+						$labels_by_locale_id[$locale_id] = []; 
+					} else {
+						foreach($labels_by_locale_id[$locale_id] as $elabel) {
+							$labels_are_equal = true;
+							foreach($label_fields as $f) {
+								if($label[$f] !== $elabel[$f]) {
+									$labels_are_equal = false;
+									break;
+								}
+							}
+							if($labels_are_equal) { $label_exists = true; break; }
+						}
+					}
+					
+					if(!$label_exists) {
+						$labels_by_locale_id[$locale_id][] = array_filter($label, function($k) use ($label_fields) { return (in_array($k, $label_fields) || ($k === 'type_id')); }, ARRAY_FILTER_USE_KEY);
+					}
+				}
+			}
+		}
+		
+		$t_base->removeAllLabels(__CA_LABEL_TYPE_NONPREFERRED__);
+		foreach($labels_by_locale_id as $locale_id => $labels) {
+			foreach($labels as $label) {
+				$t_base->addLabel($label, $locale_id, null, false);
+			}
+		}
+		return $labels_by_locale_id;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Merge intrinsic fields from several rows
+	 */
+	static private function _mergeIntrinsics($t_base, $base, $rows, $options=null) {
+		$ret = $base;
+		foreach($rows as $id => $ivalues) {
+			foreach($ivalues as $f => $v) {
+				if((strlen($v) > 0) && (!array_key_exists($f, $ret) || !strlen($ret[$f]))) {
+					$ret[$f] = $v;
+				}
+			}
+		}
+		
+		// rewrite intrinsics
+		foreach($ret as $f => $v) {
+			$ov = $t_base->get("{$table}.{$f}");
+			if($ov != $v) {
+				$t_base->set($f, $v);
+			}
+		}	
+		$t_base->update();
+		return $ret;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Merge metadata attributes from several rows
+	 */
+	static private function _mergeAttributes($t_base, $base, $rows, $options=null) {
+		
+		$mode = caGetOption('mode', $options, null);
+		
+		foreach($rows as $row_id => $attrs) {
+			foreach($attrs as $attrs_for_element) {
+				foreach($attrs_for_element as $attr) {
+					$element_id = $attr->getElementID();
+					$datatype = ca_metadata_elements::getElementDatatype($element_id);
+					$element_code = ca_metadata_elements::getElementCodeForID($element_id);
+					$t_element = ca_metadata_elements::getInstance($element_id);
+					
+					$values = $attr->getDisplayValues();
+					if(!sizeof(array_filter($values, function($v) {
+						return (bool)strlen($v);
+					}))) {
+						continue;	// all empty
+					}
+					$locale_id = $attr->getLocaleID();
+					
+					$t_restriction = $t_element->getTypeRestrictionInstanceForElement($t_base->tableNum(), $t_base->getTypeID());
+					if (!$t_restriction) { return null; }		// attribute not bound to this type
+					$max = $t_restriction->getSetting('maxAttributesPerRow');
+					
+					switch($mode) {
+						default:
+							$c = $t_base->getAttributeCountByElement($element_id);
+							if($c >= $max) {
+								if($datatype == 1) { // try to append for text fields
+									$existing_vals = $t_base->getAttributesByElement($element_id);
+									$existing_val = $existing_vals[0]->getDisplayValues();
+									
+									if(sizeof(array_diff_assoc($existing_val, $values))) {
+										$values[$element_code] = $existing_val[$element_code]."\n".$values[$element_code];
+										$t_base->replaceAttribute(array_merge($values, ['locale_id' => $locale_id]), $element_code);
+									}
+								} else {
+									// skip
+								}
+							} else {
+								$t_base->addAttribute(array_merge($values, ['locale_id' => $locale_id]), $element_code, null, ['skipExistingValues' => true]);
+							}
+							$t_base->update();
+							break;
+					}
+				}
+			}
+		}
+		return true;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Merge relationships from several rows
+	 */
+	static private function _mergeRelationships(BundlableLabelableBaseModelWithAttributes $t_base, array $row_ids, ?array $options=null) {
+		$base_id = $t_base->getPrimaryKey();
+		$table = $t_base->tableName();
+		
+		$tables = self::_relationshipTablesToMerge($options);
+
+		$c = 0;
+		
+		foreach($row_ids as $row_id) {
+			$t_subject = Datamodel::getInstance($table, false, $row_id);
+			foreach($tables as $table) {
+				$c += $t_subject->moveRelationships($table, $base_id);
+			}
+		
+			if ($t_subject->tableName() == 'ca_object_lots') { 		// move objects to new target
+				$object_ids = $t_subject->get('ca_objects.object_id', ['returnAsArray' => true]);
+				if(is_array($object_ids) && sizeof($object_ids)) {
+					$t_object = Datamodel::getInstance('ca_objects', true);
+					foreach($object_ids as $object_id) {
+						if ($t_object->load($object_id)) {
+							$t_object->setMode(ACCESS_WRITE);
+							$t_object->set('lot_id', $base_id);
+							$t_object->update();
+							if ($t_object->numErrors() > 0) { continue; }
+							$c++;
+						}
+					}
+				}
+			}
+
+			// update existing metadata attributes to use remapped value
+			$t_subject->moveAuthorityElementReferences($base_id);
+		
+			// move children
+			if ($t_subject->isHierarchical() && is_array($children = call_user_func("{$table}::getHierarchyChildrenForIDs", [$t_subject->getPrimaryKey()]))) {
+				$t_child = Datamodel::getInstance($table, true);
+				$child_count = 0;
+				foreach($children as $child_id) {
+					$t_child->load($child_id);
+					$t_child->set('parent_id', $base_id);
+					$t_child->update();
+					if ($t_child->numErrors() > 0) { continue; }
+					$child_count++;
+				}
+			}
+		}
+		return true;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Returns list of related tables for which relationships should be merged. The list is generated subject
+	 * to values in the skipRelationships option.
+	 *
+	 * @param array $options Options include:
+	 *		skipRelationships = A list of related tables to skip relationship merging for. [Default is null]
+	 *
+	 * @return array List of tables
+	 */
+	static private function _relationshipTablesToMerge(?array $options=null) : array {
+		$skip_relationships = caGetOption('skipRelationships', $options, null);
+		$rel_tables = [
+			'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 
+			'ca_storage_locations', 'ca_list_items', 'ca_loans', 'ca_movements', 'ca_tours', 
+			'ca_tour_stops', 'ca_object_representations', 'ca_list_items'
+		];
+		if(is_array($skip_relationships)) {
+			$rel_tables = array_filter($rel_tables, function($v) use ($skip_relationships) { return !in_array($v, $skip_relationships); } );
+		}
+		return $rel_tables;
+	}
+	# -------------------------------------------------------
 }
