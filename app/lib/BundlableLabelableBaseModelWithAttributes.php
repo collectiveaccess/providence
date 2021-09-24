@@ -147,15 +147,16 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	public function insert($pa_options=null) {
 		if (!is_a($this, "BaseRelationshipModel")) {
 			global $AUTH_CURRENT_USER_ID;
+
+			$this->opo_app_plugin_manager->hookBeforeBundleInsert(array('id' => null, 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this));
+
 			$vb_we_set_transaction = false;
-		
+
 			if (!$this->inTransaction()) {
 				$this->setTransaction(new Transaction($this->getDb()));
 				$vb_we_set_transaction = true;
 			}
-		
-			$this->opo_app_plugin_manager->hookBeforeBundleInsert(array('id' => null, 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this));
-		
+
 			$we_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
 		
 			// check that type_id is valid for this table
@@ -304,16 +305,17 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				return false;
 			}
 		}
+
+		$this->opo_app_plugin_manager->hookBeforeBundleUpdate(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this));
+
 		$vb_we_set_transaction = false;
 		if (!$this->inTransaction()) {
 			$this->setTransaction(new Transaction($this->getDb()));
 			$vb_we_set_transaction = true;
 		}
-		
+
 		$we_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
-		
-		$this->opo_app_plugin_manager->hookBeforeBundleUpdate(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this));
-		
+
 		$va_errors = [];
 		if (!$this->_validateIncomingAdminIDNo(true, false)) { 
 			 $va_errors = $this->errors();
