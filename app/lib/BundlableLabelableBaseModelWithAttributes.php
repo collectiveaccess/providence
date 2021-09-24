@@ -8382,7 +8382,7 @@ side. For many self-relations the direction determines the nature and display te
 			if($id == $use_id) { continue; }
 			$t_instance = Datamodel::getInstance($table, false, $id);
 			if(!$t_instance->delete(true)) {
-				throw new MergeException(_t("Could not delete old record"));
+				throw new MergeException(_t("Could not delete old record: %1", join("; ", $t_instance->getErrors())));
 			}
 		}
 		
@@ -8393,6 +8393,7 @@ side. For many self-relations the direction determines the nature and display te
 	 * Merge preferred labels from several rows
 	 */
 	static private function _mergePrefLabels($t_base, $base, $label_list, $options=null) {
+		$notification = caGetOption('notification', $options, null);
 		$table = $t_base->tableName();
 		$label_fields = $t_base->getLabelUIFields();
 	
@@ -8465,6 +8466,7 @@ side. For many self-relations the direction determines the nature and display te
 	 * Merge nonpreferred labels from several rows
 	 */
 	static private function _mergeNPrefLabels($t_base, $base, $label_list, $options=null) {
+		$notification = caGetOption('notification', $options, null);
 		$table = $t_base->tableName();
 		$label_fields = $t_base->getLabelUIFields();
 		
@@ -8509,6 +8511,7 @@ side. For many self-relations the direction determines the nature and display te
 	 * Merge intrinsic fields from several rows
 	 */
 	static private function _mergeIntrinsics($t_base, $base, $rows, $options=null) {
+		$notification = caGetOption('notification', $options, null);
 		$ret = $base;
 		foreach($rows as $id => $ivalues) {
 			foreach($ivalues as $f => $v) {
@@ -8533,7 +8536,7 @@ side. For many self-relations the direction determines the nature and display te
 	 * Merge metadata attributes from several rows
 	 */
 	static private function _mergeAttributes($t_base, $base, $rows, $options=null) {
-		
+		$notification = caGetOption('notification', $options, null);
 		$mode = caGetOption('mode', $options, null);
 		
 		foreach($rows as $row_id => $attrs) {
@@ -8589,6 +8592,7 @@ side. For many self-relations the direction determines the nature and display te
 	static private function _mergeRelationships(BundlableLabelableBaseModelWithAttributes $t_base, array $row_ids, ?array $options=null) {
 		$base_id = $t_base->getPrimaryKey();
 		$table = $t_base->tableName();
+		$notification = caGetOption('notification', $options, null);
 		
 		$tables = self::_relationshipTablesToMerge($options);
 
@@ -8615,9 +8619,22 @@ side. For many self-relations the direction determines the nature and display te
 					}
 				}
 			}
-
+			
+			if($notification) {
+				$notification->addNotification(($c == 1) ? _t("Transferred %1 relationship to <em>%2</em> (%3)", $v, $t_base->getLabelForDisplay(), $t_target->get($t_base->getProperty('ID_NUMBERING_ID_FIELD'))) : _t("Transferred %1 relationships to <em>%2</em> (%3)", $c, $t_base->getLabelForDisplay(), $t_base->get($t_base->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
+			}
+			
 			// update existing metadata attributes to use remapped value
 			$t_subject->moveAuthorityElementReferences($base_id);
+			
+			// Do we need to move references contained in attributes bound to this item?
+			try {
+				$t_subject->moveAttributes($base_id, $t_subject->getAuthorityElementList(['idsOnly' => true]));
+			} catch(ApplicationException $e) {
+				if ($notification) {
+					$notification->addNotification(_t("Could not move references to other items in metadata before delete: %1", $e->getErrorDescription()), __NOTIFICATION_TYPE_ERROR__);
+				}
+			}
 		
 			// move children
 			if ($t_subject->isHierarchical() && is_array($children = call_user_func("{$table}::getHierarchyChildrenForIDs", [$t_subject->getPrimaryKey()]))) {
@@ -8631,6 +8648,10 @@ side. For many self-relations the direction determines the nature and display te
 					$child_count++;
 				}
 			}
+		}
+		
+		if($notification) {
+			$notification->addNotification(($child_count == 1) ? _t("Transferred %1 children to <em>%2</em> (%3)", $child_count, $t_base->getLabelForDisplay(), $t_base->get($t_base->getProperty('ID_NUMBERING_ID_FIELD'))) : _t("Transferred %1 children to <em>%2</em> (%3)", $child_count, $t_base->getLabelForDisplay(), $t_base->get($t_base->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
 		}
 		return true;
 	}
