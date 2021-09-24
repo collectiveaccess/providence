@@ -1023,9 +1023,9 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 							break;
 					}
 				}
-			
-				
-				$vs_buf .= "<div class='recordTitle {$vs_table_name}' style='width:190px; overflow:hidden;'>{$vs_label}".(($vb_show_idno) ? "<a title='$vs_idno'>".($vs_idno ? " ({$vs_idno})" : '') : "")."</a></div>";
+
+				$vs_buf .= "<div class='recordTitle {$vs_table_name}' style='width:190px; overflow:hidden;'>{$vs_label}".(($vb_show_idno) ? ($vs_idno ? " ({$vs_idno})" : '') : '')."</div>";
+
 				if (($vs_table_name === 'ca_object_lots') && $t_item->getPrimaryKey()) {
 					$vs_buf .= "<div id='inspectorLotMediaDownload'><strong>".((($vn_num_objects = $t_item->numObjects(null, ['excludeChildObjects' => $po_view->request->config->get("exclude_child_objects_in_inspector_log_count")])) == 1) ? _t('Lot contains %1 object', $vn_num_objects) : _t('Lot contains %1 objects', $vn_num_objects))."</strong>\n";
 				}
