@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -56,8 +56,8 @@
  		 *
  		 */ 
  		public function Index($pa_options=null) {
- 			$ps_search 		= $this->request->getParameter('search', pString);
- 			$ps_sort 		= $this->request->getParameter('sort', pString);
+ 			$ps_search 		= $this->request->getParameter('search', pString,  null, ['forcePurify' => true]);
+ 			$ps_sort 		= $this->request->getParameter('sort', pString, null, ['forcePurify' => true]);
  			
  			if (!$ps_search) { $ps_search = Session::getVar('quick_search_last_search'); }
  			if (!in_array($ps_sort, array('name', 'idno', 'relevance'))) {
