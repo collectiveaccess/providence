@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2018 Whirl-i-Gig
+ * Copyright 2007-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -623,6 +623,12 @@ class RequestHTTP extends Request {
 		}
 
 		if(defined('__CA_SITE_HOSTNAME__') && strlen(__CA_SITE_HOSTNAME__) > 0) {
+		    $host_without_port = __CA_SITE_HOSTNAME__;
+			$host_port = null;
+		    if(preg_match("/:([\d]+)$/", $host_without_port, $m)) {
+		    	$host_without_port = preg_replace("/:[\d]+$/", '', $host_without_port);
+		    	$host_port = (int)$m[1];
+		    } 
 		    
 			if (
 			    !($vn_port = (int)$this->getAppConfig()->get('out_of_process_search_indexing_port'))
@@ -630,11 +636,11 @@ class RequestHTTP extends Request {
 			    !($vn_port = (int)getenv('CA_OUT_OF_PROCESS_SEARCH_INDEXING_PORT'))
 			) {
                 if(__CA_SITE_PROTOCOL__ == 'https') { 
-                    $vn_port = 443;	
+                    $vn_port = $host_port ?? 443;	
                 } elseif(isset($_SERVER['SERVER_PORT']) &&  $_SERVER['SERVER_PORT']) {
                     $vn_port = $_SERVER['SERVER_PORT'];
                 } else {
-                    $vn_port = 80;
+                    $vn_port = $host_port ?? 80;
                 }
             }
 			
@@ -651,7 +657,7 @@ class RequestHTTP extends Request {
 			    && 
 			    !($vs_indexing_hostname = getenv('CA_OUT_OF_PROCESS_SEARCH_INDEXING_HOSTNAME'))
 			) {
-			    $vs_indexing_hostname = __CA_SITE_HOSTNAME__;
+			    $vs_indexing_hostname = $host_without_port;
 			}
 			// trigger async search indexing
 			if((__CA_APP_TYPE__ === 'PROVIDENCE') && !$this->getAppConfig()->get('disable_out_of_process_search_indexing')) {
