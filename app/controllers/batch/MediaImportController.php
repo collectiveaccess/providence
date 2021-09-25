@@ -208,6 +208,10 @@
  		 * @param array $pa_options Array of options passed through to _initView and saveBundlesForScreen()
  		 */
  		public function Save($pa_options=null) {
+ 			if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+				$this->Index();
+				return;
+			}
 			global $g_ui_locale_id;
 			
  			if (!is_array($pa_options)) { $pa_options = array(); }

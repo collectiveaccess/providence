@@ -147,6 +147,10 @@
  		 * 
  		 */
  		public function ImportData() {
+ 			if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+				$this->Index();
+				return;
+			}
  			global $g_ui_locale_id;
  			$t_importer = $this->getImporterInstance();
  			
