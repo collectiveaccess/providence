@@ -9676,13 +9676,14 @@ $pa_options["display_form_field_tips"] = true;
 		$o_db = $this->getDb();
 		
 		$item_pk = $this->primaryKey();
-		
 		if (!($t_rel_item = Datamodel::getInstance($rel_info['related_table_name']))) {	// related item
 			return null;
 		}
 		
 		$rt = $t_item_rel->tableName();
 		$rel_item_pk = $t_rel_item->primaryKey();
+		
+		$t_to_item = Datamodel::getInstance($this->tableName(), false, $to_id);
 		
 		$to_reindex_relations = [];
 		if ($rt == $this->getSelfRelationTableName()) {
@@ -9699,7 +9700,7 @@ $pa_options["display_form_field_tips"] = true;
 			$skip_relation_ids = [];
 			while($qr_res->nextRow()) {
                 $row = $qr_res->getRow();
-				if($this->relationshipExists($rel_table_name_or_num, ($row_id == $row[$left_table_field_name]) ? $row[$right_table_field_name] : $row[$left_table_field_name], $row['type_id'])){ 
+				if($t_to_item->relationshipExists($rel_table_name_or_num, ($row_id == $row[$left_table_field_name]) ? $row[$right_table_field_name] : $row[$left_table_field_name], $row['type_id'])){ 
 					$skip_relation_ids[] = $row['relation_id'];
 					continue; 
 				}
@@ -9746,12 +9747,13 @@ $pa_options["display_form_field_tips"] = true;
             	$skip_relation_ids = [];
                 while($qr_res->nextRow()) {
                 	$row = $qr_res->getRow();
-                	if($this->relationshipExists($rel_table_name_or_num, $row[$rel_item_pk], $row['type_id'])){ 
+                	if($t_to_item->relationshipExists($rel_table_name_or_num, $row[$rel_item_pk], $row['type_id'] ?? null)){ 
                 		$skip_relation_ids[] = $row['relation_id'];
                 		continue; 
                 	}
                     $to_reindex_relations[(int)$qr_res->get('relation_id')] = $row;
                 }
+                
                 if (!sizeof($to_reindex_relations)) { return 0; }
             
             	if(sizeof($skip_relation_ids)) {
@@ -9790,7 +9792,7 @@ $pa_options["display_form_field_tips"] = true;
                         $o_db->query("
                             UPDATE IGNORE {$rt} 
                             SET is_primary = 0 
-                            WHERE {$vs_rel_pk} <> ? AND {$item_pk} = ?
+                            WHERE {$rel_pk} <> ? AND {$item_pk} = ?
                         ", [$first_primary_relation_id, (int)$to_id]);
                     }
                 }
@@ -10002,7 +10004,7 @@ $pa_options["display_form_field_tips"] = true;
 	/**
 	 * Checks if a relationship exists between the currently loaded row and the specified target
 	 *
-	 * @param mixed $pm_rel_table_name_or_num Table name (eg. "ca_entities") or number as defined in datamodel.conf of table containing row to creation relationship to.
+	 * @param mixed $pm_rel_table_name_or_num Table name (eg. "ca_entities") or number as defined in datamodel.conf of table containing row to create relationship to.
 	 * @param int $pn_rel_id primary key value of row to creation relationship to.
 	 * @param mixed $pm_type_id Relationship type type_code or type_id, as defined in the ca_relationship_types table. This is required for all relationships that use relationship types. This includes all of the most common types of relationships.
 	 * @param string $ps_effective_date Optional date expression to qualify relation with. Any expression that the TimeExpressionParser can handle is supported here.

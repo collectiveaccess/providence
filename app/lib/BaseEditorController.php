@@ -520,8 +520,12 @@ class BaseEditorController extends ActionController {
 						}
 						break;
 					default:
+						$merge_opts = ['relationships'];
+						if($this->request->getParameter('caReferenceHandlingMetadata', pInteger)) {
+							$merge_opts = array_merge($merge_opts, ['preferred_labels', 'nonpreferred_labels', 'intrinsics', 'attributes']);
+						}
 						try {
-							$t_target = $subject_table::merge([$remap_id, $vn_subject_id],['useID' => $remap_id, 'notification' => $this->notification]);
+							$t_target = $subject_table::merge([$remap_id, $vn_subject_id],['useID' => $remap_id, 'notification' => $this->notification, 'merge' => $merge_opts]);
 						} catch(MergeException $e) {
 							$this->notification->addNotification(_t("Could not merge data: %1", $e->getMessage()), __NOTIFICATION_TYPE_ERROR__);
 						}

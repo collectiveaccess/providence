@@ -8280,7 +8280,7 @@ side. For many self-relations the direction determines the nature and display te
 	 * @param array $ids
 	 * @param array $options Options include:
 	 *		useID = id of record to use as merge target. If omitted the record with the most content by length will be used. [Default is null]
-	 * 
+	 * 		merge = list of data categories to merge. Valid values include 'preferred_labels', 'nonpreferred_labels', 'intrinisics', 'attributes', 'relationships'. If omitted all categories are merged. [Default is null]
 	 * @return BundlableLabelableBaseModelWithAttributes Instance of merged record
 	 */
 	static public function merge(array $ids, ?array $options=null) : BundlableLabelableBaseModelWithAttributes {
@@ -8288,6 +8288,13 @@ side. For many self-relations the direction determines the nature and display te
 		if(sizeof($ids) < 2) { 
 			throw new MergeException(_t('Must specify at least two ids'));
 		}
+		
+		$merge_opts = ['preferred_labels', 'nonpreferred_labels', 'intrinisics', 'attributes', 'relationships'];
+		$merge = caGetOption('merge', $options, null);
+		if(is_array($merge)) {
+			$merge = array_filter(array_map(function($v) { return strtolower($v); }, $merge), function($v) use ($merge_opts) { return in_array($v, $merge_opts); });
+		}
+		if(!is_array($merge) || !sizeof($merge)) { $merge = $merge_opts; }
 		
 		// verify ids exist
 		$instances = [];
@@ -8363,19 +8370,28 @@ side. For many self-relations the direction determines the nature and display te
 		// Perform merge
 		
 		// 1. Preferred label?
-		$pref_labels_by_locale = self::_mergePrefLabels($t_base, $base_content['pref_labels'], array_map(function($v) { return $v['pref_labels']; }, $content), $options);
-		
+		if(in_array('preferred_labels', $merge, true)) {
+			$pref_labels_by_locale = self::_mergePrefLabels($t_base, $base_content['pref_labels'], array_map(function($v) { return $v['pref_labels']; }, $content), $options);
+		}
 		// 2. Nonpreferred labels?
-		$npref_labels_by_locale = self::_mergeNPrefLabels($t_base, $base_content['npref_labels'], array_map(function($v) { return $v['npref_labels']; }, $content), $options);
-			
+		if(in_array('nonpreferred_labels', $merge, true)) {
+			$npref_labels_by_locale = self::_mergeNPrefLabels($t_base, $base_content['npref_labels'], array_map(function($v) { return $v['npref_labels']; }, $content), $options);
+		}
+		
 		// 3. Intrinsics
-		$intrinsics = self::_mergeIntrinsics($t_base, $base_content['intrinsics'], array_map(function($v) { return $v['intrinsics']; }, $content), $options);
-			
+		if(in_array('intrinsics', $merge, true)) {
+			$intrinsics = self::_mergeIntrinsics($t_base, $base_content['intrinsics'], array_map(function($v) { return $v['intrinsics']; }, $content), $options);
+		}
+		
 		// 4. Attributes
-		$attributes = self::_mergeAttributes($t_base, $base_content['attributes'], array_map(function($v) { return $v['attributes']; }, $content), $options);
+		if(in_array('attributes', $merge, true)) {
+			$attributes = self::_mergeAttributes($t_base, $base_content['attributes'], array_map(function($v) { return $v['attributes']; }, $content), $options);
+		}
 		
 		// 5. Relationships
-		$relationships = self::_mergeRelationships($t_base, $ids, $options);
+		if(in_array('relationships', $merge, true)) {
+			$relationships = self::_mergeRelationships($t_base, $ids, $options);
+		}
 		
 		// Delete now-merged records
 		foreach($ids as $id) {
@@ -8501,7 +8517,7 @@ side. For many self-relations the direction determines the nature and display te
 		$t_base->removeAllLabels(__CA_LABEL_TYPE_NONPREFERRED__);
 		foreach($labels_by_locale_id as $locale_id => $labels) {
 			foreach($labels as $label) {
-				$t_base->addLabel($label, $locale_id, null, false);
+				$t_base->addLabel($label, $locale_id, $label['type_id'], false);
 			}
 		}
 		return $labels_by_locale_id;
@@ -8597,13 +8613,13 @@ side. For many self-relations the direction determines the nature and display te
 		$tables = self::_relationshipTablesToMerge($options);
 
 		$c = 0;
-		
 		foreach($row_ids as $row_id) {
+			if($row_id == $base_id) { continue; }
 			$t_subject = Datamodel::getInstance($table, false, $row_id);
-			foreach($tables as $table) {
-				$c += $t_subject->moveRelationships($table, $base_id);
+			foreach($tables as $t) {
+				$c += $t_subject->moveRelationships($t, $base_id);
 			}
-		
+
 			if ($t_subject->tableName() == 'ca_object_lots') { 		// move objects to new target
 				$object_ids = $t_subject->get('ca_objects.object_id', ['returnAsArray' => true]);
 				if(is_array($object_ids) && sizeof($object_ids)) {
@@ -8620,8 +8636,8 @@ side. For many self-relations the direction determines the nature and display te
 				}
 			}
 			
-			if($notification) {
-				$notification->addNotification(($c == 1) ? _t("Transferred %1 relationship to <em>%2</em> (%3)", $v, $t_base->getLabelForDisplay(), $t_target->get($t_base->getProperty('ID_NUMBERING_ID_FIELD'))) : _t("Transferred %1 relationships to <em>%2</em> (%3)", $c, $t_base->getLabelForDisplay(), $t_base->get($t_base->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
+			if($notification && ($c > 0)) {
+				$notification->addNotification(($c == 1) ? _t("Transferred %1 relationship to <em>%2</em> (%3)", $v, $t_base->getLabelForDisplay(), $t_base->get($t_base->getProperty('ID_NUMBERING_ID_FIELD'))) : _t("Transferred %1 relationships to <em>%2</em> (%3)", $c, $t_base->getLabelForDisplay(), $t_base->get($t_base->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
 			}
 			
 			// update existing metadata attributes to use remapped value
@@ -8650,7 +8666,7 @@ side. For many self-relations the direction determines the nature and display te
 			}
 		}
 		
-		if($notification) {
+		if($notification && ($child_count > 0)) {
 			$notification->addNotification(($child_count == 1) ? _t("Transferred %1 children to <em>%2</em> (%3)", $child_count, $t_base->getLabelForDisplay(), $t_base->get($t_base->getProperty('ID_NUMBERING_ID_FIELD'))) : _t("Transferred %1 children to <em>%2</em> (%3)", $child_count, $t_base->getLabelForDisplay(), $t_base->get($t_base->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
 		}
 		return true;
