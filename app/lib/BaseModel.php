@@ -551,7 +551,11 @@ class BaseModel extends BaseObject {
 	 * @return HTMLPurifier Returns instance
 	 */
 	static public function getPurifier() {
-		if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
+		if (!BaseModel::$html_purifier) { 
+			$config = HTMLPurifier_Config::createDefault();
+			$config->set('URI.DisableExternalResources', !Configuration::load()->get('purify_allow_external_references'));
+			BaseModel::$html_purifier = new HTMLPurifier($config); 
+		}
 		return BaseModel::$html_purifier;
 	}
 	# --------------------------------------------------------------------------------
