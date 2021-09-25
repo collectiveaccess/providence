@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2013 Whirl-i-Gig
+ * Copyright 2012-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -112,6 +112,10 @@
  		 * @param array $pa_options Array of options passed through to _initView and saveBundlesForScreen()
  		 */
  		public function Save($pa_options=null) {
+ 			if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+				$this->Edit();
+				return;
+			}
  			if (!is_array($pa_options)) { $pa_options = array(); }
  			list($vn_set_id, $t_set, $t_subject, $t_ui) = $this->_initView($pa_options);
  			

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2016 Whirl-i-Gig
+ * Copyright 2012-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -161,6 +161,10 @@
  		 * 
  		 */
  		public function ImportData() {
+ 			if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+				$this->Index();
+				return;
+			}
  			global $g_ui_locale_id;
  			$t_importer = $this->getImporterInstance();
  			
