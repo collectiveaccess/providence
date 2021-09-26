@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -124,6 +124,10 @@
 		 * 
 		 */
  		public function saveGlobalValues() {
+ 			if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+				$this->editGlobalValues();
+				return;
+			}
  			if(!$this->request->getUser()->canDoAction('can_edit_theme_global_values')) { throw new ApplicationException("No access"); }
  			if (caGetGlobalValuesCount() == 0) { throw new ApplicationException("No global values defined"); }
  			

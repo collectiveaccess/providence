@@ -254,6 +254,10 @@
 		 *
 		 */
 		public function DuplicateItems() {
+			if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+				$this->Edit();
+				return;
+			}
 			$t_set = new ca_sets($this->getRequest()->getParameter('set_id', pInteger));
 			if(!$t_set->getPrimaryKey()) { return; }
 
