@@ -122,7 +122,7 @@
 		var new_home_location_id = jQuery("#new_home_location_id").val();
 		jQuery.post(
 			'<?= caNavUrl($this->request, '*', '*', 'SetHomeLocation'); ?>',
-			{ 'location_id': new_home_location_id, '<?= $t_item->primaryKey(); ?>': <?= $t_item->getPrimaryKey(); ?> },
+			{ 'location_id': new_home_location_id, '<?= $t_item->primaryKey(); ?>': <?= $t_item->getPrimaryKey(); ?>, 'csrfToken': <?= json_encode(caGenerateCSRFToken($this->request)); ?> },
 			function(data, textStatus, jqXHR) {
 				if(data && data['ok'] && (parseInt(data['ok']) == 1)) {
 					var home_location_message = <?= json_encode($home_location_message); ?>;
