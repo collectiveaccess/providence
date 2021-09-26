@@ -3668,7 +3668,7 @@ function caFileIsIncludable($ps_file) {
 	 * Validate CSRF token using current session
 	 *
 	 * @param RequestHTTP $po_request Current request
-	 * @param string $ps_token CSRF token to validate. If omitted token in the "crsfToken" parameter is extracted from current request.
+	 * @param string $ps_token CSRF token to validate. If omitted token in the "csrfToken" parameter is extracted from current request.
 	 * @param array $pa_options Options include:
 	 *      remove = remove validated token from active token list. [Default is true]
 	 *      exceptions = throw exception if token is invalid. [Default is true]
@@ -3678,7 +3678,7 @@ function caFileIsIncludable($ps_file) {
 	function caValidateCSRFToken($po_request, $ps_token=null, $pa_options=null){
 		$session_id = $po_request ? $po_request->getSessionID() : 'none';
 		
-	    if(!$ps_token) { $ps_token = $po_request->getParameter('crsfToken', pString); }
+	    if(!$ps_token) { $ps_token = $po_request->getParameter('csrfToken', pString); }
 	    if (!is_array($va_tokens = PersistentCache::fetch("csrf_tokens_{$session_id}", "csrf_tokens"))) { $va_tokens = []; }
 	    
 	    if (isset($va_tokens[$ps_token])) { 
