@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -83,6 +83,10 @@ class BaseEditorController extends ActionController {
 		// Are we duplicating?
 		//
 		if (($vs_mode == 'dupe') && $this->request->user->canDoAction('can_duplicate_'.$t_subject->tableName())) {
+			if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+				throw new ApplicationException(_t('CSRF check failed'));
+				return;
+			}
 			if (!($vs_type_name = $t_subject->getTypeName())) {
 				$vs_type_name = $t_subject->getProperty('NAME_SINGULAR');
 			}
@@ -1067,6 +1071,10 @@ class BaseEditorController extends ActionController {
 	 * @param array $pa_options Array of options passed through to _initView
 	 */
 	public function SetAccess($pa_options=null) {
+		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+	    	throw new ApplicationException(_t('CSRF check failed'));
+	    	return;
+	    }
 		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
 
 
@@ -1158,6 +1166,10 @@ class BaseEditorController extends ActionController {
 	 * @param array $pa_options Array of options passed through to _initView
 	 */
 	public function ChangeType($pa_options=null) {
+		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+	    	throw new ApplicationException(_t('CSRF check failed'));
+	    	return;
+	    }
 		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
 
 		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
@@ -1525,6 +1537,10 @@ class BaseEditorController extends ActionController {
 	 * Export data is rendered into the current view inherited from ActionController
 	 */
 	public function exportItem() {
+		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+	    	throw new ApplicationException(_t('CSRF check failed'));
+	    	return;
+	    }
 		list($vn_subject_id, $t_subject) = $this->_initView();
 
 		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
@@ -1545,6 +1561,10 @@ class BaseEditorController extends ActionController {
 	 * Add item to user's watch list. Intended to be called via ajax, and JSON response is returned in the current view inherited from ActionController
 	 */
 	public function toggleWatch() {
+		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+	    	throw new ApplicationException(_t('CSRF check failed'));
+	    	return;
+	    }
 		list($vn_subject_id, $t_subject) = $this->_initView();
 		require_once(__CA_MODELS_DIR__.'/ca_watch_list.php');
 
@@ -2311,6 +2331,10 @@ class BaseEditorController extends ActionController {
 	 *
 	 */
 	public function SaveAnnotations() {
+		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+	    	throw new ApplicationException(_t('CSRF check failed'));
+	    	return;
+	    }
 		global $g_ui_locale_id;
 		$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
 		$t_rep = new ca_object_representations($pn_representation_id);
@@ -2697,6 +2721,10 @@ class BaseEditorController extends ActionController {
 	 * 
 	 */
 	public function SetHomeLocation($options=null) {
+		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+	    	throw new ApplicationException(_t('CSRF check failed'));
+	    	return;
+	    }
 		list($vn_subject_id, $t_subject) = $this->_initView();
 		if (!$t_subject->isLoaded()) { 
 			throw new ApplicationException(_t('Invalid id '.$vn_su));
