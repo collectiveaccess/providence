@@ -8280,12 +8280,14 @@ side. For many self-relations the direction determines the nature and display te
 	 * @param array $options Options include:
 	 *		useID = id of record to use as merge target. If omitted the record with the most content by length will be used. [Default is null]
 	 * 		merge = list of data categories to merge. Valid values include 'preferred_labels', 'nonpreferred_labels', 'intrinisics', 'attributes', 'relationships'. If omitted all categories are merged. [Default is null]
+	 *		preferredLabelsMode = Merge mode for preferred labels. [Default is "longest"]
+	 *		intrinsicMode = Merge mode for intrinisic values. [Default is "whenNotSet"]
 	 *
 	 * @return BundlableLabelableBaseModelWithAttributes Instance of merged record
 	 *
 	 * @throws MergeException
 	 */
-	static public function merge(array $ids, ?array $options=null) : BundlableLabelableBaseModelWithAttributes {
+	static public function merge(array $ids, ?array $options=null) : ?BundlableLabelableBaseModelWithAttributes {
 		$notification = caGetOption('notification', $options, null);
 		
 		$table = get_called_class();
@@ -8293,7 +8295,7 @@ side. For many self-relations the direction determines the nature and display te
 			throw new MergeException(_t('Must specify at least two ids'));
 		}
 		
-		$merge_opts = ['preferred_labels', 'nonpreferred_labels', 'intrinisics', 'attributes', 'relationships'];
+		$merge_opts = ['preferred_labels', 'nonpreferred_labels', 'intrinsics', 'attributes', 'relationships'];
 		$merge = caGetOption('merge', $options, null);
 		if(is_array($merge)) {
 			$merge = array_filter(array_map(function($v) { return strtolower($v); }, $merge), function($v) use ($merge_opts) { return in_array($v, $merge_opts); });
@@ -8314,7 +8316,6 @@ side. For many self-relations the direction determines the nature and display te
 		
 		$use_preferred_id = caGetOption('useID', $options, null);
 		$rel_tables = self::_relationshipTablesToMerge($options);
-		
 		
 		$content = [];
 		
@@ -8413,7 +8414,7 @@ side. For many self-relations the direction determines the nature and display te
 			}
 		} catch (MergeException $e) {
 			$trans->rollback();
-			return null;
+			throw $e;
 		}
 		$trans->commit();
 		return $t_base;
@@ -8427,6 +8428,8 @@ side. For many self-relations the direction determines the nature and display te
 	 * @param array $label_list An array of arrays, each containing label data from a record to merge
 	 * @param array $options Options include:
 	 *		notification = A NotificationManager instance to post notifications regarding the merge to. [Default is null]
+	 *		mode = Merge mode to use: "merged" to always use labels from a merged record when defined for a locale; "base" to always preserve labels from the base record (the record into which data is being merged); "longest" to use the longest label defined for the locale. [Default is "longest"]
+	 *		preferredLabelsMode = Synonym for "mode" option
 	 *
 	 * @return void
 	 * @throws MergeException
@@ -8436,26 +8439,47 @@ side. For many self-relations the direction determines the nature and display te
 		$table = $t_base->tableName();
 		$label_fields = $t_base->getLabelUIFields();
 	
-		$mode = caGetOption('mode', $options, null);
+		$mode = caGetOption(['mode', 'preferredLabelsMode'], $options, null);
 		
 		$labels_by_locale = [];
 		
 		$max_lengths_by_locale_id = [];
 		$use_label_by_locale_id = [];
 		$use_label_id_by_locale_id = [];
+		
 		foreach(array_merge([$base], $label_list) as $labels_by_row) {
-			foreach($labels_by_row as $row_id => $labels) {
+			foreach($labels_by_row as $labels) {
 				foreach($labels as $label_id => $label) {
 					$locale_id = $label['locale_id'];
-					// longer is better
-					$total_length = 0;
-					foreach($label_fields as $f) {
-						$total_length =+ mb_strlen($label[$f]);
-					}
-					if($total_length > (int)$max_lengths_by_locale_id[$locale_id]) { 
-						$max_lengths_by_locale_id[$locale_id] = $total_length;
-						
-						$use_label_by_locale_id[$locale_id] = array_filter($label, function($k) use ($label_fields) { return in_array($k, $label_fields); }, ARRAY_FILTER_USE_KEY);
+					
+					switch(strtolower($mode)) {
+						case 'merged':
+							// Always use label from base, if set for the locale
+							if(!in_array($label_id, array_keys($base))) {
+								$use_label_by_locale_id[$locale_id] = array_filter($label, function($k) use ($label_fields) { return in_array($k, $label_fields); }, ARRAY_FILTER_USE_KEY);
+								break(2);
+							}
+						case 'base':
+							// Always use label from base, if set for the locale
+							foreach(reset($base) as $blabel) {
+								if($label['locale_id'] == $blabel['locale_id']) {
+									$use_label_by_locale_id[$locale_id] = array_filter($blabel, function($k) use ($label_fields) { return in_array($k, $label_fields); }, ARRAY_FILTER_USE_KEY);
+									break(2);
+								}
+							}
+						case 'longest':
+						default:
+							// Use longest available label 
+							$total_length = 0;
+							foreach($label_fields as $f) {
+								$total_length =+ mb_strlen($label[$f]);
+							}
+							if($total_length > (int)$max_lengths_by_locale_id[$locale_id]) { 
+								$max_lengths_by_locale_id[$locale_id] = $total_length;
+					
+								$use_label_by_locale_id[$locale_id] = array_filter($label, function($k) use ($label_fields) { return in_array($k, $label_fields); }, ARRAY_FILTER_USE_KEY);
+							}
+							break;
 					}
 				}
 			}
@@ -8505,7 +8529,7 @@ side. For many self-relations the direction determines the nature and display te
 	 * @param BundlableLabelableBaseModelWithAttributes $t_base Instance to merge relationships into
 	 * @param array $row_ids A list of record ids to merge into the base record
 	 * @param array $options Options include:
-	 *		notification = A NotificationManager instance to post notifications regarding the merge to. [Default is null]
+	 *		notification = A NotificationManager instance to post notifications regarding the merge to. [Default is null]s
 	 *
 	 * @return void
 	 * @throws MergeException
@@ -8560,17 +8584,37 @@ side. For many self-relations the direction determines the nature and display te
 	 * @param array $row_ids A list of record ids to merge into the base record
 	 * @param array $options Options include:
 	 *		notification = A NotificationManager instance to post notifications regarding the merge to. [Default is null]
-	 *
+	 *		mode = Merge mode to use: "merged" to always use values from a merged record; "base" to always preserve labels from the base record (the record into which data is being merged); "whenNotSet" to use merged value when one isn't already set in the base. [Default is "whenNotSet"]
+	 *		intrinsicMode = Synonym for "mode" option
 	 * @return void
 	 * @throws MergeException
 	 */
 	static private function _mergeIntrinsics($t_base, $base, $rows, $options=null) : void {
 		$notification = caGetOption('notification', $options, null);
 		$ret = $base;
+		
+		$mode = caGetOption(['mode', 'intrinsicMode'], $options, null);
+		
+		$pk = $t_base->primaryKey();
 		foreach($rows as $id => $ivalues) {
+			if($id == $base[$pk]) { continue; }
 			foreach($ivalues as $f => $v) {
-				if((strlen($v) > 0) && (!array_key_exists($f, $ret) || !strlen($ret[$f]))) {
-					$ret[$f] = $v;
+				if(in_array($f, [$pk, 'parent_id', 'type_id', 'source_id', 'locale_id', 'rank', 'access', 'status'])) { continue; }
+				if(preg_match("!^hier_!", $f)) { continue; }
+				
+				switch(strtolower($mode)) {
+					case 'base':
+						// noop
+						break;
+					case 'merged':
+						if(strlen($v) > 0) { $ret[$f] = $v; }
+						break;
+					case 'whennotset':
+					default:
+						if((strlen($v) > 0) && (!array_key_exists($f, $ret) || !strlen($ret[$f]) || !(bool)$ret[$f])) {
+							$ret[$f] = $v;
+						}
+						break;
 				}
 			}
 		}
@@ -8578,7 +8622,7 @@ side. For many self-relations the direction determines the nature and display te
 		// rewrite intrinsics
 		foreach($ret as $f => $v) {
 			$ov = $t_base->get("{$table}.{$f}");
-			if($ov != $v) {
+			if(($ov != $v) && (bool)$v) {
 				$t_base->set($f, $v);
 			}
 		}	
@@ -8600,7 +8644,6 @@ side. For many self-relations the direction determines the nature and display te
 	 */
 	static private function _mergeAttributes($t_base, $base, $rows, $options=null) : void {
 		$notification = caGetOption('notification', $options, null);
-		$mode = caGetOption('mode', $options, null);
 		
 		foreach($rows as $row_id => $attrs) {
 			foreach($attrs as $attrs_for_element) {
