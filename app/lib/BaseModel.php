@@ -9664,7 +9664,9 @@ $pa_options["display_form_field_tips"] = true;
 	/**
 	 * Moves relationships from currently loaded row to another row specified by $pn_row_id. The existing relationship
 	 * rows are simply re-pointed to the new row, so this is a relatively fast operation. Note that this method does not copy 
-	 * relationships, it moves them. After the operation completes no relationships to the specified related table will exist for the current row.
+	 * relationships, it moves them. Relationships that already exist on the destination row are *not* moved. After the 
+	 * operation completes no relationships to the specified related table will exist for the current row, save for those that 
+	 * already existed on the destination row.
 	 *
 	 * @param mixed $pm_rel_table_name_or_num The table name or number of the related table. Only relationships pointing to this table will be moved.
 	 * @param int $pn_to_id The primary key value of the row to move the relationships to.

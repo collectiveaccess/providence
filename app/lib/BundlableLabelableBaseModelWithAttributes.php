@@ -8205,7 +8205,6 @@ side. For many self-relations the direction determines the nature and display te
 		}
 		return BundlableLabelableBaseModelWithAttributes::$s_tep;
 	}
-	
 	# ------------------------------------------------------
 	# Bundles
 	# ------------------------------------------------------
@@ -8281,9 +8280,14 @@ side. For many self-relations the direction determines the nature and display te
 	 * @param array $options Options include:
 	 *		useID = id of record to use as merge target. If omitted the record with the most content by length will be used. [Default is null]
 	 * 		merge = list of data categories to merge. Valid values include 'preferred_labels', 'nonpreferred_labels', 'intrinisics', 'attributes', 'relationships'. If omitted all categories are merged. [Default is null]
+	 *
 	 * @return BundlableLabelableBaseModelWithAttributes Instance of merged record
+	 *
+	 * @throws MergeException
 	 */
 	static public function merge(array $ids, ?array $options=null) : BundlableLabelableBaseModelWithAttributes {
+		$notification = caGetOption('notification', $options, null);
+		
 		$table = get_called_class();
 		if(sizeof($ids) < 2) { 
 			throw new MergeException(_t('Must specify at least two ids'));
@@ -8366,49 +8370,68 @@ side. For many self-relations the direction determines the nature and display te
 		$base_content = $content[$use_id];
 		unset($content[$use_id]);
 		
+		$t_base->setTransaction($trans = new Transaction());
 		
 		// Perform merge
-		
-		// 1. Preferred label?
-		if(in_array('preferred_labels', $merge, true)) {
-			$pref_labels_by_locale = self::_mergePrefLabels($t_base, $base_content['pref_labels'], array_map(function($v) { return $v['pref_labels']; }, $content), $options);
-		}
-		// 2. Nonpreferred labels?
-		if(in_array('nonpreferred_labels', $merge, true)) {
-			$npref_labels_by_locale = self::_mergeNPrefLabels($t_base, $base_content['npref_labels'], array_map(function($v) { return $v['npref_labels']; }, $content), $options);
-		}
-		
-		// 3. Intrinsics
-		if(in_array('intrinsics', $merge, true)) {
-			$intrinsics = self::_mergeIntrinsics($t_base, $base_content['intrinsics'], array_map(function($v) { return $v['intrinsics']; }, $content), $options);
-		}
-		
-		// 4. Attributes
-		if(in_array('attributes', $merge, true)) {
-			$attributes = self::_mergeAttributes($t_base, $base_content['attributes'], array_map(function($v) { return $v['attributes']; }, $content), $options);
-		}
-		
-		// 5. Relationships
-		if(in_array('relationships', $merge, true)) {
-			$relationships = self::_mergeRelationships($t_base, $ids, $options);
-		}
-		
-		// Delete now-merged records
-		foreach($ids as $id) {
-			if($id == $use_id) { continue; }
-			$t_instance = Datamodel::getInstance($table, false, $id);
-			if(!$t_instance->delete(true)) {
-				throw new MergeException(_t("Could not delete old record: %1", join("; ", $t_instance->getErrors())));
+		try {
+			// 1. Preferred label?
+			if(in_array('preferred_labels', $merge, true)) {
+				self::_mergePrefLabels($t_base, $base_content['pref_labels'], array_map(function($v) { return $v['pref_labels']; }, $content), $options);
 			}
-		}
+			// 2. Nonpreferred labels?
+			if(in_array('nonpreferred_labels', $merge, true)) {
+				self::_mergeNPrefLabels($t_base, $base_content['npref_labels'], array_map(function($v) { return $v['npref_labels']; }, $content), $options);
+			}
 		
+			// 3. Intrinsics
+			if(in_array('intrinsics', $merge, true)) {
+				self::_mergeIntrinsics($t_base, $base_content['intrinsics'], array_map(function($v) { return $v['intrinsics']; }, $content), $options);
+			}
+		
+			// 4. Attributes
+			if(in_array('attributes', $merge, true)) {
+				self::_mergeAttributes($t_base, $base_content['attributes'], array_map(function($v) { return $v['attributes']; }, $content), $options);
+			}
+		
+			if($notification && (sizeof(array_intersect($merge, ['perferred_labels', 'nonpreferred_labels', 'intrinsics', 'attributes'])) > 0)) {
+				$notification->addNotification(_t("Merged metadata from %1 %2 to <em>%3</em> (%3)", sizeof($ids), $t_base->getProperty('NAME_PLURAL'), $t_base->getLabelForDisplay()), __NOTIFICATION_TYPE_INFO__);
+			}
+		
+			// 5. Relationships
+			if(in_array('relationships', $merge, true)) {
+				self::_mergeRelationships($t_base, $ids, $options);
+			}
+		
+			// Delete now-merged records
+			foreach($ids as $id) {
+				if($id == $use_id) { continue; }
+				$t_instance = Datamodel::getInstance($table, false, $id);
+				$t_instance->setTransaction($trans);
+				if(!$t_instance->delete(true)) {
+					throw new MergeException(_t("Could not delete old record: %1", join("; ", $t_instance->getErrors())));
+				}
+			}
+		} catch (MergeException $e) {
+			$trans->rollback();
+			return null;
+		}
+		$trans->commit();
 		return $t_base;
 	}
 	# -------------------------------------------------------
 	/**
 	 * Merge preferred labels from several rows
+	 *
+	 * @param BundlableLabelableBaseModelWithAttributes $t_base Instance to merge preferred labels into
+	 * @param array $base An array of preferred label data from the base instance to merge labels into 
+	 * @param array $label_list An array of arrays, each containing label data from a record to merge
+	 * @param array $options Options include:
+	 *		notification = A NotificationManager instance to post notifications regarding the merge to. [Default is null]
+	 *
+	 * @return void
+	 * @throws MergeException
 	 */
-	static private function _mergePrefLabels($t_base, $base, $label_list, $options=null) {
+	static private function _mergePrefLabels($t_base, $base, $label_list, $options=null) : void {
 		$notification = caGetOption('notification', $options, null);
 		$table = $t_base->tableName();
 		$label_fields = $t_base->getLabelUIFields();
@@ -8424,18 +8447,15 @@ side. For many self-relations the direction determines the nature and display te
 			foreach($labels_by_row as $row_id => $labels) {
 				foreach($labels as $label_id => $label) {
 					$locale_id = $label['locale_id'];
-					switch($mode) {
-						default:		// longer is better
-							$total_length = 0;
-							foreach($label_fields as $f) {
-								$total_length =+ mb_strlen($label[$f]);
-							}
-							if($total_length > (int)$max_lengths_by_locale_id[$locale_id]) { 
-								$max_lengths_by_locale_id[$locale_id] = $total_length;
-								
-								$use_label_by_locale_id[$locale_id] = array_filter($label, function($k) use ($label_fields) { return in_array($k, $label_fields); }, ARRAY_FILTER_USE_KEY);
-							}
-							break;
+					// longer is better
+					$total_length = 0;
+					foreach($label_fields as $f) {
+						$total_length =+ mb_strlen($label[$f]);
+					}
+					if($total_length > (int)$max_lengths_by_locale_id[$locale_id]) { 
+						$max_lengths_by_locale_id[$locale_id] = $total_length;
+						
+						$use_label_by_locale_id[$locale_id] = array_filter($label, function($k) use ($label_fields) { return in_array($k, $label_fields); }, ARRAY_FILTER_USE_KEY);
 					}
 				}
 			}
@@ -8472,16 +8492,25 @@ side. For many self-relations the direction determines the nature and display te
 			// rewrite labels
 			$t_base->removeAllLabels(__CA_LABEL_TYPE_PREFERRED__);
 			foreach($use_label_by_locale_id as $locale_id => $label) {
-				$t_base->addLabel($label, $locale_id, null, true);
+				if(!$t_base->addLabel($label, $locale_id, null, true)) {
+					throw new MergeException(_t("Could not add merged preferred label: %1", join('; ', $t_base->getErrors())));
+				}
 			}
 		}
-		return $use_label_by_locale_id;
 	}
 	# -------------------------------------------------------
 	/**
 	 * Merge nonpreferred labels from several rows
+	 *
+	 * @param BundlableLabelableBaseModelWithAttributes $t_base Instance to merge relationships into
+	 * @param array $row_ids A list of record ids to merge into the base record
+	 * @param array $options Options include:
+	 *		notification = A NotificationManager instance to post notifications regarding the merge to. [Default is null]
+	 *
+	 * @return void
+	 * @throws MergeException
 	 */
-	static private function _mergeNPrefLabels($t_base, $base, $label_list, $options=null) {
+	static private function _mergeNPrefLabels($t_base, $base, $label_list, $options=null) : void {
 		$notification = caGetOption('notification', $options, null);
 		$table = $t_base->tableName();
 		$label_fields = $t_base->getLabelUIFields();
@@ -8517,16 +8546,25 @@ side. For many self-relations the direction determines the nature and display te
 		$t_base->removeAllLabels(__CA_LABEL_TYPE_NONPREFERRED__);
 		foreach($labels_by_locale_id as $locale_id => $labels) {
 			foreach($labels as $label) {
-				$t_base->addLabel($label, $locale_id, $label['type_id'], false);
+				if(!$t_base->addLabel($label, $locale_id, $label['type_id'], false)) {
+					throw new MergeException(_t("Could not add merged non-preferred label: %1", join('; ', $t_base->getErrors())));
+				}
 			}
 		}
-		return $labels_by_locale_id;
 	}
 	# -------------------------------------------------------
 	/**
 	 * Merge intrinsic fields from several rows
+	 *
+	 * @param BundlableLabelableBaseModelWithAttributes $t_base Instance to merge relationships into
+	 * @param array $row_ids A list of record ids to merge into the base record
+	 * @param array $options Options include:
+	 *		notification = A NotificationManager instance to post notifications regarding the merge to. [Default is null]
+	 *
+	 * @return void
+	 * @throws MergeException
 	 */
-	static private function _mergeIntrinsics($t_base, $base, $rows, $options=null) {
+	static private function _mergeIntrinsics($t_base, $base, $rows, $options=null) : void {
 		$notification = caGetOption('notification', $options, null);
 		$ret = $base;
 		foreach($rows as $id => $ivalues) {
@@ -8544,14 +8582,23 @@ side. For many self-relations the direction determines the nature and display te
 				$t_base->set($f, $v);
 			}
 		}	
-		$t_base->update();
-		return $ret;
+		if(!$t_base->update()) {
+			throw new MergeException(_t("Could not set merged intrinsic values: %1", join('; ', $t_base->getErrors())));
+		}
 	}
 	# -------------------------------------------------------
 	/**
 	 * Merge metadata attributes from several rows
+	 *
+	 * @param BundlableLabelableBaseModelWithAttributes $t_base Instance to merge relationships into
+	 * @param array $row_ids A list of record ids to merge into the base record
+	 * @param array $options Options include:
+	 *		notification = A NotificationManager instance to post notifications regarding the merge to. [Default is null]
+	 *
+	 * @return void
+	 * @throws MergeException
 	 */
-	static private function _mergeAttributes($t_base, $base, $rows, $options=null) {
+	static private function _mergeAttributes($t_base, $base, $rows, $options=null) : void {
 		$notification = caGetOption('notification', $options, null);
 		$mode = caGetOption('mode', $options, null);
 		
@@ -8572,40 +8619,46 @@ side. For many self-relations the direction determines the nature and display te
 					$locale_id = $attr->getLocaleID();
 					
 					$t_restriction = $t_element->getTypeRestrictionInstanceForElement($t_base->tableNum(), $t_base->getTypeID());
-					if (!$t_restriction) { return null; }		// attribute not bound to this type
+					if (!$t_restriction) { return; }		// attribute not bound to this type
 					$max = $t_restriction->getSetting('maxAttributesPerRow');
 					
-					switch($mode) {
-						default:
-							$c = $t_base->getAttributeCountByElement($element_id);
-							if($c >= $max) {
-								if($datatype == 1) { // try to append for text fields
-									$existing_vals = $t_base->getAttributesByElement($element_id);
-									$existing_val = $existing_vals[0]->getDisplayValues();
-									
-									if(sizeof(array_diff_assoc($existing_val, $values))) {
-										$values[$element_code] = $existing_val[$element_code]."\n".$values[$element_code];
-										$t_base->replaceAttribute(array_merge($values, ['locale_id' => $locale_id]), $element_code);
-									}
-								} else {
-									// skip
-								}
-							} else {
-								$t_base->addAttribute(array_merge($values, ['locale_id' => $locale_id]), $element_code, null, ['skipExistingValues' => true]);
+					$c = $t_base->getAttributeCountByElement($element_id);
+					if($c >= $max) {
+						if($datatype == 1) { // try to append for text fields
+							$existing_vals = $t_base->getAttributesByElement($element_id);
+							$existing_val = $existing_vals[0]->getDisplayValues();
+							
+							if(sizeof(array_diff_assoc($existing_val, $values))) {
+								$values[$element_code] = $existing_val[$element_code]."\n".$values[$element_code];
+								$t_base->replaceAttribute(array_merge($values, ['locale_id' => $locale_id]), $element_code);
 							}
-							$t_base->update();
-							break;
+						} else {
+							// skip
+						}
+					} else {
+						$t_base->addAttribute(array_merge($values, ['locale_id' => $locale_id]), $element_code, null, ['skipExistingValues' => true]);
+					}
+					if(!$t_base->update()) {
+						throw new MergeException(_t("Could not set merged attribute values for %1: %2", $element_code, join('; ', $t_base->getErrors())));
 					}
 				}
 			}
 		}
-		return true;
 	}
 	# -------------------------------------------------------
 	/**
-	 * Merge relationships from several rows
+	 * Merge relationships from several rows into a single record
+	 *
+	 * @param BundlableLabelableBaseModelWithAttributes $t_base Instance to merge relationships into
+	 * @param array $row_ids A list of record ids to merge into the base record
+	 * @param array $options Options include:
+	 *		notification = A NotificationManager instance to post notifications regarding the merge to. [Default is null]
+	 *		skipRelationships = A list of related tables to skip relationship merging for. [Default is null]
+	 *
+	 * @return void
+	 * @throws MergeException
 	 */
-	static private function _mergeRelationships(BundlableLabelableBaseModelWithAttributes $t_base, array $row_ids, ?array $options=null) {
+	static private function _mergeRelationships(BundlableLabelableBaseModelWithAttributes $t_base, array $row_ids, ?array $options=null) : void {
 		$base_id = $t_base->getPrimaryKey();
 		$table = $t_base->tableName();
 		$notification = caGetOption('notification', $options, null);
@@ -8616,6 +8669,7 @@ side. For many self-relations the direction determines the nature and display te
 		foreach($row_ids as $row_id) {
 			if($row_id == $base_id) { continue; }
 			$t_subject = Datamodel::getInstance($table, false, $row_id);
+			$t_subject->setTransaction($t_base->getTransaction());
 			foreach($tables as $t) {
 				$c += $t_subject->moveRelationships($t, $base_id);
 			}
@@ -8624,6 +8678,7 @@ side. For many self-relations the direction determines the nature and display te
 				$object_ids = $t_subject->get('ca_objects.object_id', ['returnAsArray' => true]);
 				if(is_array($object_ids) && sizeof($object_ids)) {
 					$t_object = Datamodel::getInstance('ca_objects', true);
+					$t_object->setTransaction($t_base->getTransaction());
 					foreach($object_ids as $object_id) {
 						if ($t_object->load($object_id)) {
 							$t_object->setMode(ACCESS_WRITE);
@@ -8650,11 +8705,13 @@ side. For many self-relations the direction determines the nature and display te
 				if ($notification) {
 					$notification->addNotification(_t("Could not move references to other items in metadata before delete: %1", $e->getErrorDescription()), __NOTIFICATION_TYPE_ERROR__);
 				}
+				throw new MergeException(_t("Could not move references to other items in metadata: %1", $e->getErrorDescription()));
 			}
 		
 			// move children
 			if ($t_subject->isHierarchical() && is_array($children = call_user_func("{$table}::getHierarchyChildrenForIDs", [$t_subject->getPrimaryKey()]))) {
 				$t_child = Datamodel::getInstance($table, true);
+				$t_child->setTransaction($t_base->getTransaction());
 				$child_count = 0;
 				foreach($children as $child_id) {
 					$t_child->load($child_id);
@@ -8669,7 +8726,6 @@ side. For many self-relations the direction determines the nature and display te
 		if($notification && ($child_count > 0)) {
 			$notification->addNotification(($child_count == 1) ? _t("Transferred %1 children to <em>%2</em> (%3)", $child_count, $t_base->getLabelForDisplay(), $t_base->get($t_base->getProperty('ID_NUMBERING_ID_FIELD'))) : _t("Transferred %1 children to <em>%2</em> (%3)", $child_count, $t_base->getLabelForDisplay(), $t_base->get($t_base->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
 		}
-		return true;
 	}
 	# -------------------------------------------------------
 	/**
