@@ -77,8 +77,9 @@
 		$g_response = $resp = $app->getResponse();
 
 		// Prevent caching
-		$resp->addHeader("Cache-Control", "no-cache, must-revalidate");
+		$resp->addHeader("Cache-Control", "no-cache, , no-store, must-revalidate");
 		$resp->addHeader("Expires", "Mon, 26 Jul 1997 05:00:00 GMT");
+		
 		
 		// Security headers
 		$resp->addHeader("X-XSS-Protection", "1; mode=block");
