@@ -362,9 +362,11 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 				break;
 			default:
 				// Check relationships
-				$va_tables = array(
-					'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations', 'ca_list_items', 'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops', 'ca_object_representations'
-				);
+				$va_tables = [
+					'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 
+					'ca_storage_locations', 'ca_list_items', 'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops', 
+					'ca_object_representations'
+				];
 
 				if (!in_array($t_instance->tableName(), $va_tables)) { return null; }
 
@@ -439,132 +441,146 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 		}
 
 		$vs_output = '';
-		if (sizeof($va_reference_to_buf)) {
-			// add autocompleter for remapping
-			if ($vn_reference_to_count == 1) {
-				$vs_output .= "<h3 id='caReferenceHandlingToCount'>"._t('This %1 is referenced %2 time', $vs_typename, $vn_reference_to_count).". "._t('When deleting this %1:', $vs_typename)."</h3>\n";
-			} else {
-				$vs_output .= "<h3 id='caReferenceHandlingToCount'>"._t('This %1 is referenced %2 times', $vs_typename, $vn_reference_to_count).". "._t('When deleting this %1:', $vs_typename)."</h3>\n";
-			}
+		// add autocompleter for remapping
+		if ($vn_reference_to_count == 1) {
+			$vs_output .= "<h3 id='caReferenceHandlingToCount'>"._t('This %1 is referenced %2 time', $vs_typename, $vn_reference_to_count).". "._t('When deleting this %1:', $vs_typename)."</h3>\n";
+		} elseif($vn_reference_to_count > 1) {
+			$vs_output .= "<h3 id='caReferenceHandlingToCount'>"._t('This %1 is referenced %2 times', $vs_typename, $vn_reference_to_count).". "._t('When deleting this %1:', $vs_typename)."</h3>\n";
+		} else {
+			$vs_output .= "<h3 id='caReferenceHandlingToCount'>"._t('When deleting this %1:', $vs_typename)."</h3>\n";
+		}
 
-			$va_delete_opts = ['value' => 'delete', 'id' => 'caReferenceHandlingToDelete'];
-			$va_remap_opts = ['value' => 'remap', 'id' => 'caReferenceToHandlingRemap'];
-			$va_remap_lookup_opts = ['value' => '', 'size' => 40, 'id' => 'caReferenceHandlingToRemapTo', 'class' => 'lookupBg'];
-			if ($vs_default === 'delete') { 
-				$va_delete_opts['checked'] = 1; 
-				$va_remap_lookup_opts['disabled'] = 1; 
-			} else {
-				$va_remap_opts['checked'] = 1; 
-			}
+		$va_delete_opts = ['value' => 'delete', 'id' => 'caReferenceHandlingToDelete'];
+		$va_remap_opts = ['value' => 'remap', 'id' => 'caReferenceToHandlingRemap'];
+		$va_remap_lookup_opts = ['value' => '', 'size' => 40, 'id' => 'caReferenceHandlingToRemapTo', 'class' => 'lookupBg'];
+		if ($vs_default === 'delete') { 
+			$va_delete_opts['checked'] = 1; 
+			$va_remap_lookup_opts['disabled'] = 1; 
+		} else {
+			$va_remap_opts['checked'] = 1; 
+		}
+		
+		if ($vn_reference_to_count > 0) {
 			$vs_output .= caHTMLRadioButtonInput('caReferenceHandlingTo', $va_delete_opts).' '._t('remove all references')."<br/>\n";
-
-			if ($vs_instance_table === 'ca_storage_locations') {
-				AssetLoadManager::register('hierBrowser');
-				$vs_output .= caHTMLRadioButtonInput('caReferenceHandlingTo', $va_remap_opts).' '._t('transfer references to').' ';
-
-				$vs_output .= "<div id=\"caReferenceHandlingToRemapToHierBrowser\" class=\"hierarchyBrowserSmall\" style=\"width: 700px;\">
-						<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
-					</div><!-- end hierbrowser -->";
-				$vs_output .= "
-					<div class=\"hierarchyBrowserFind\">
-						"._t('Find').": <input type=\"text\" id=\"caReferenceHandlingToRemapToHierBrowserSearch\" name=\"search\" value=\"\" size=\"25\"/>
-					</div>";
-
-			} else {
-				$vs_output .= caHTMLRadioButtonInput('caReferenceHandlingTo', $va_remap_opts).' '._t('transfer references to').' '.caHTMLTextInput('caReferenceHandlingToRemapTo', $va_remap_lookup_opts);
-			}
-			$vs_output .= "<a href='#' class='button' onclick='jQuery(\"#caReferenceHandlingToRemapToID\").val(\"\"); jQuery(\"#caReferenceHandlingToRemapTo\").val(\"\"); jQuery(\"#caReferenceHandlingToClear\").css(\"display\", \"none\"); return false;' style='display: none;' id='caReferenceHandlingToClear'>"._t('Clear').'</a>';
-			$vs_output .= caHTMLHiddenInput('caReferenceHandlingToRemapToID', array('value' => '', 'id' => 'caReferenceHandlingToRemapToID'));
-
-			if ($vn_child_count > 0) {
-				$vs_output .= '<p class="formLabelWarning" id="caChildDeletionWarning"><i class="caIcon fa fa-info-circle fa-1x"></i> '._t('Child records will be deleted')."</p>\n";
-			}
-
-			$vs_output .= "<script type='text/javascript'>";
-
-			$va_service_info = caJSONLookupServiceUrl($po_request, $t_instance->tableName(), array('noSymbols' => 1, 'noInline' => 1, 'exclude' => (int)$t_instance->getPrimaryKey(), 'table_num' => (int)$t_instance->get('table_num')));
-
-			if ($vs_instance_table === 'ca_storage_locations') {
-				$vs_output .= "
-	var caReferenceHandlingToRemapToHierBrowser = null;
-
-	jQuery(document).ready(function() {
-		if (!caReferenceHandlingToRemapToHierBrowser) {
-			caReferenceHandlingToRemapToHierBrowser = caUI.initHierBrowser('caReferenceHandlingToRemapToHierBrowser', {
-				levelDataUrl: '".$va_service_info['levelList']."',
-				initDataUrl: '".$va_service_info['ancestorList']."',
-
-				readOnly: true,
-				editButtonIcon: \"".caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1)."\",
-				disabledButtonIcon: \"".caNavIcon(__CA_NAV_ICON_DOT__, 1)."\",
-
-				allowDragAndDropSorting: false,
-
-				initItemID: '".$t_instance->get("{$vs_instance_table}.parent_id")."',
-
-				excludeItemIDs: [".$t_instance->getPrimaryKey()."],
-				indicator: \"".caNavIcon(__CA_NAV_ICON_SPINNER__, 1)."\",
-				displayCurrentSelectionOnLoad: false,
-
-				onSelection: function(id) {
-					jQuery(\"#caReferenceHandlingToRemapToID\").val(id);
-				}
-			});
+		} else {
+			$vs_output .= caHTMLRadioButtonInput('caReferenceHandlingTo', $va_delete_opts).' '._t('remove all associated metadata')."<br/>\n";
 		}
-		jQuery(\"#caReferenceHandlingToRemapToHierBrowserSearch\").attr(\"disabled\", true);
-		jQuery('#caReferenceToHandlingRemap').click(function() {
-			caReferenceHandlingToRemapToHierBrowser.isReadOnly(false);
-			jQuery(\"#caReferenceHandlingToRemapToHierBrowserSearch\").attr(\"disabled\", false);
-			jQuery('#caChildDeletionWarning').hide();
-		});
-		jQuery('#caReferenceHandlingToDelete').click(function() {
-			caReferenceHandlingToRemapToHierBrowser.isReadOnly(true);
-			jQuery(\"#caReferenceHandlingToRemapToHierBrowserSearch\").attr(\"disabled\", true);
 
-			jQuery('#caChildDeletionWarning').show();
-		});
-		jQuery('#caReferenceHandlingToRemapToHierBrowserSearch').autocomplete(
-			{
-				source: '".$va_service_info['search']."', minLength: 3, delay: 800, html: true,
-				select: function( event, ui ) {
-					if (ui.item.id) {
-						caReferenceHandlingToRemapToHierBrowser.setUpHierarchy(ui.item.id);	// jump browser to selected item
-						jQuery('#caReferenceHandlingToRemapToID').val(ui.item.id);
-					}
-					event.preventDefault();
-					jQuery('#caReferenceHandlingToRemapToHierBrowserSearch').val('');
-				}
-			}
-		).click(function() { this.select() });
-	})";
+		if ($vs_instance_table === 'ca_storage_locations') {
+			AssetLoadManager::register('hierBrowser');
+			$vs_output .= caHTMLRadioButtonInput('caReferenceHandlingTo', $va_remap_opts).' '._t('transfer references to').' ';
+
+			$vs_output .= "<div id=\"caReferenceHandlingToRemapToHierBrowser\" class=\"hierarchyBrowserSmall\" style=\"width: 700px;\">
+					<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
+				</div><!-- end hierbrowser -->";
+			$vs_output .= "
+				<div class=\"hierarchyBrowserFind\">
+					"._t('Find').": <input type=\"text\" id=\"caReferenceHandlingToRemapToHierBrowserSearch\" name=\"search\" value=\"\" size=\"25\"/>
+				</div>";
+
+		} else {
+			if ($vn_reference_to_count > 0) {
+				$vs_output .= caHTMLRadioButtonInput('caReferenceHandlingTo', $va_remap_opts).' '._t('transfer references to').' '.caHTMLTextInput('caReferenceHandlingToRemapTo', $va_remap_lookup_opts)."<br/>\n";
+				$vs_output .= caHTMLCheckboxInput('caReferenceHandlingMetadata', ['id' => 'caReferenceHandlingMetadata', 'value' => 1, 'checked' => 1], []).' '._t('also transfer metadata');
 			} else {
-				$vs_output .= "jQuery(document).ready(function() {";
-				$vs_output .= "jQuery('#caReferenceHandlingToRemapTo').autocomplete(
-						{
-							source: '".$va_service_info['search']."', html: true,
-							minLength: 3, delay: 800,
-							select: function(event, ui) {
-								jQuery('#caReferenceHandlingToRemapToID').val(ui.item.id);
-								jQuery('#caReferenceHandlingClear').css('display', 'inline');
-							}
+				$vs_output .= caHTMLRadioButtonInput('caReferenceHandlingTo', $va_remap_opts).' '._t('transfer metadata to').' '.caHTMLTextInput('caReferenceHandlingToRemapTo', $va_remap_lookup_opts)."<br/>\n";
+				$vs_output .= caHTMLHiddenInput('caReferenceHandlingMetadata', ['id' => 'caReferenceHandlingMetadata', 'value' => 1], []);
+			}
+			
+		}
+		$vs_output .= "<a href='#' class='button' onclick='jQuery(\"#caReferenceHandlingToRemapToID\").val(\"\"); jQuery(\"#caReferenceHandlingToRemapTo\").val(\"\"); jQuery(\"#caReferenceHandlingToClear\").css(\"display\", \"none\"); return false;' style='display: none;' id='caReferenceHandlingToClear'>"._t('Clear').'</a>';
+		$vs_output .= caHTMLHiddenInput('caReferenceHandlingToRemapToID', array('value' => '', 'id' => 'caReferenceHandlingToRemapToID'));
+
+		if ($vn_child_count > 0) {
+			$vs_output .= '<p class="formLabelWarning" id="caChildDeletionWarning"><i class="caIcon fa fa-info-circle fa-1x"></i> '._t('Child records will be deleted')."</p>\n";
+		}
+
+		$vs_output .= "<script type='text/javascript'>";
+
+		$va_service_info = caJSONLookupServiceUrl($po_request, $t_instance->tableName(), array('noSymbols' => 1, 'noInline' => 1, 'exclude' => (int)$t_instance->getPrimaryKey(), 'table_num' => (int)$t_instance->get('table_num')));
+
+		if ($vs_instance_table === 'ca_storage_locations') {
+			$vs_output .= "
+var caReferenceHandlingToRemapToHierBrowser = null;
+
+jQuery(document).ready(function() {
+	if (!caReferenceHandlingToRemapToHierBrowser) {
+		caReferenceHandlingToRemapToHierBrowser = caUI.initHierBrowser('caReferenceHandlingToRemapToHierBrowser', {
+			levelDataUrl: ".json_encode($va_service_info['levelList']).",
+			initDataUrl: ".json_encode($va_service_info['ancestorList']).",
+
+			readOnly: true,
+			editButtonIcon: ".json_encode(caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1)).",
+			disabledButtonIcon: ".json_encode(caNavIcon(__CA_NAV_ICON_DOT__, 1)).",
+
+			allowDragAndDropSorting: false,
+
+			initItemID: ".(int)$t_instance->get("{$vs_instance_table}.parent_id").",
+
+			excludeItemIDs: [".(int)$t_instance->getPrimaryKey()."],
+			indicator: ".json_encode(caNavIcon(__CA_NAV_ICON_SPINNER__, 1)).",
+			displayCurrentSelectionOnLoad: false,
+
+			onSelection: function(id) {
+				jQuery(\"#caReferenceHandlingToRemapToID\").val(id);
+			}
+		});
+	}
+	jQuery(\"#caReferenceHandlingToRemapToHierBrowserSearch, #caReferenceHandlingMetadata\").attr(\"disabled\", true);
+	jQuery('#caReferenceToHandlingRemap').click(function() {
+		caReferenceHandlingToRemapToHierBrowser.isReadOnly(false);
+		jQuery(\"#caReferenceHandlingToRemapToHierBrowserSearch, #caReferenceHandlingMetadata\").attr(\"disabled\", false);
+		jQuery('#caChildDeletionWarning').hide();
+	});
+	jQuery('#caReferenceHandlingToDelete').click(function() {
+		caReferenceHandlingToRemapToHierBrowser.isReadOnly(true);
+		jQuery(\"#caReferenceHandlingToRemapToHierBrowserSearch, #caReferenceHandlingMetadata\").attr(\"disabled\", true);
+
+		jQuery('#caChildDeletionWarning').show();
+	});
+	jQuery('#caReferenceHandlingToRemapToHierBrowserSearch').autocomplete(
+		{
+			source: ".json_encode($va_service_info['search']).", minLength: 3, delay: 800, html: true,
+			select: function( event, ui ) {
+				if (ui.item.id) {
+					caReferenceHandlingToRemapToHierBrowser.setUpHierarchy(ui.item.id);	// jump browser to selected item
+					jQuery('#caReferenceHandlingToRemapToID').val(ui.item.id);
+				}
+				event.preventDefault();
+				jQuery('#caReferenceHandlingToRemapToHierBrowserSearch').val('');
+			}
+		}
+	).click(function() { this.select() });
+})";
+		} else {
+			$vs_output .= "jQuery(document).ready(function() {";
+			$vs_output .= "jQuery(\"#caReferenceHandlingToRemapToHierBrowserSearch, #caReferenceHandlingMetadata\").attr(\"disabled\", true);\n";
+			$vs_output .= "jQuery('#caReferenceHandlingToRemapTo').autocomplete(
+					{
+						source: ".json_encode($va_service_info['search']).", html: true,
+						minLength: 3, delay: 800,
+						select: function(event, ui) {
+							jQuery('#caReferenceHandlingToRemapToID').val(ui.item.id);
+							jQuery('#caReferenceHandlingClear').css('display', 'inline');
 						}
-					);";
+					}
+				);";
 
-				$vs_output .= "jQuery('#caReferenceToHandlingRemap').click(function() {
-					jQuery('#caReferenceHandlingToRemapTo').attr('disabled', false);
-					jQuery('#caChildDeletionWarning').hide();
-				});
-				jQuery('#caReferenceHandlingToDelete').click(function() {
-					jQuery('#caReferenceHandlingToRemapTo').attr('disabled', true);
-					jQuery('#caChildDeletionWarning').show();
-				});
-				";
-				$vs_output .= "});";
-			}
-			$vs_output .= "</script>\n";
-
-			TooltipManager::add('#caReferenceHandlingToCount', "<h2>"._t('References to this %1', $t_instance->getProperty('NAME_SINGULAR'))."</h2>\n".join("\n", $va_reference_to_buf));
+			$vs_output .= "jQuery('#caReferenceToHandlingRemap').click(function() {
+				jQuery('#caReferenceHandlingToRemapTo, #caReferenceHandlingMetadata').attr('disabled', false);
+				jQuery('#caChildDeletionWarning').hide();
+			});
+			jQuery('#caReferenceHandlingToDelete').click(function() {
+				jQuery('#caReferenceHandlingToRemapTo, #caReferenceHandlingMetadata').attr('disabled', true);
+				jQuery('#caChildDeletionWarning').show();
+			});
+			";
+			$vs_output .= "});";
 		}
+		$vs_output .= "</script>\n";
+
+		TooltipManager::add('#caReferenceHandlingToCount', "<h2>"._t('References to this %1', $t_instance->getProperty('NAME_SINGULAR'))."</h2>\n".join("\n", $va_reference_to_buf));
+
 
 		if (sizeof($va_reference_from_buf)) {
 			// add autocompleter for remapping
