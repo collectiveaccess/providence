@@ -1118,7 +1118,7 @@
 				'no_headers' => true,
 				'simulateWith' => [
 					'REQUEST_METHOD' => 'GET',
-					'SCRIPT_NAME' => 'index.php'
+					'SCRIPT_NAME' => __CA_URL_ROOT__.'/index.php'
 				]
 			]);
 			if ($ps_email) {
@@ -1621,7 +1621,7 @@
 				'no_headers' => true,
 				'simulateWith' => [
 					'REQUEST_METHOD' => 'GET',
-					'SCRIPT_NAME' => 'index.php'
+					'SCRIPT_NAME' => __CA_URL_ROOT__.'/index.php'
 				]
 			]);
 			
@@ -1917,7 +1917,7 @@
 				'no_headers' => true,
 				'simulateWith' => [
 					'REQUEST_METHOD' => 'GET',
-					'SCRIPT_NAME' => 'index.php'
+					'SCRIPT_NAME' => __CA_URL_ROOT__.'/index.php'
 				]
 			]);
 

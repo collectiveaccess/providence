@@ -366,12 +366,17 @@ class ca_media_upload_sessions extends BaseModel {
 		$log = caGetImportLogger();
 		
 		$c = 0;
+		
+		$errors = [];
 		while($session_id = array_shift($session_ids)) {
 			$session = new ca_media_upload_sessions($session_id);
 			
 			$d = $session->get('metadata');
 			$data = $d['data'];
 			$config = $d['configuration'];
+			$user_id = $session->get('user_id');
+			
+			$form = preg_replace('!^FORM:!', 'IMPORTER:', $session->get('source'));
 			
 			$log->logInfo("Processing session for form ".$config['formTitle']);
 			
@@ -384,6 +389,8 @@ class ca_media_upload_sessions extends BaseModel {
 			$rep_type = $config['representation_type'];
 			$rep_status = $config['representation_status'];
 			$rep_access = $config['representation_access'];
+			
+			$submission_status = $config['submission_status'];
 			
 			$locale_id = ca_locales::codeToID(caGetOption('alwaysUseLocale', $config, ca_locales::getDefaultCataloguingLocaleID()));
 			
@@ -398,6 +405,8 @@ class ca_media_upload_sessions extends BaseModel {
 				return ($v['completed_on'] > 0);
 			});
 			
+			$dont_moderate = Configuration::load()->get("dont_moderate_tags");
+			
 			$album_rep = null;	// rep used on hierarchy "album"
 			$mode = caGetOption('importMode', $config['options'], 'media');
 			switch($mode) {
@@ -411,6 +420,12 @@ class ca_media_upload_sessions extends BaseModel {
 					$t->insert();
 					
 					$t->addLabel(['name' => $label], $locale_id, null, true);
+					
+					$t->set('submission_user_id', $user_id);
+					$t->set('submission_group_id', null);
+					$t->set('submission_status_id', $submission_status);
+					$t->set('submission_via_form', $form);
+					$t->update();
 					
 					foreach($config['content'] as $k => $info) {
 						$bundle_bits = explode('.', $info['bundle']);
@@ -437,10 +452,29 @@ class ca_media_upload_sessions extends BaseModel {
 									break;
 							}
 						} else {
-							// is relationship
-							foreach($data[$info['bundle']] as $i => $d) {
-								$reltype = $info['relationshipType'];
-								$t->addRelationship($bundle_bits[0], $d, $reltype, null, null, null, null, ['idnoOnly' => true]);
+							if($bundle_bits[0] === 'ca_item_tags') {
+								if(!is_array($data[$info['bundle']])) { $data[$info['bundle']] = [$data[$info['bundle']]]; }
+								foreach($data[$info['bundle']] as $i => $d) {
+									// is tags
+									$tags = $d ? preg_split("![ ]*[,;]+[ ]*!", $d) : [];
+									foreach($tags as $tag) {
+										if($t->addTag(
+											$tag, $user_id, ca_locales::getDefaultCataloguingLocaleID(), 
+											((in_array($table, ["ca_sets", "ca_set_items"])) || $dont_moderate) ? 1 : 0, null
+										)) {
+											$tags_added++;
+										} else {
+											$errors[] = join('; ', $t->getErrors());
+										}
+									}	
+								}
+							} else {
+								// is relationship
+								if(!is_array($data[$info['bundle']])) { $data[$info['bundle']] = [$data[$info['bundle']]]; }
+								foreach($data[$info['bundle']] as $i => $d) {
+									$reltype = $info['relationshipType'];
+									$t->addRelationship($bundle_bits[0], $d, $reltype, null, null, null, null, ['idnoOnly' => true]);
+								}
 							}
 						}
 					}			
@@ -462,21 +496,30 @@ class ca_media_upload_sessions extends BaseModel {
 						$r->set('access', $access);
 						$r->set('type_id', 'item');			// TODO: make configurable for sub-item
 						$r->setIdnoWithTemplate($idno);		// TODO: make configurable for sub-item
+						
 						$r->insert();
 					
 						$r->addLabel(['name' => $label." [{$index}]"], $locale_id, null, true);
 						
+						
+						$r->set('submission_user_id', $user_id);
+						$r->set('submission_group_id', null);
+						$r->set('submission_status_id', $submission_status);
+						$r->set('submission_via_form', $form);
+						
+						$r->update();
 						//
 						if ($is_primary && $album_rep) {
 							$r->addRelationship('ca_object_representations', $album_rep->getPrimaryKey());
 						} else { 
 							$r->addRepresentation(
-								$path, $rep_type, $locale_id, $rep_status, $rep_access, true
+								$path, $rep_type, $locale_id, $rep_status, $rep_access, true,
 							);
 						}
 						$index++;
 						$is_primary = false;
 					}
+					ca_metadata_alert_triggers::fireApplicableTriggers($t, __CA_MD_ALERT_CHECK_TYPE_SUBMISSION__);
 					break;
 				default:
 					die("Not implemented: $mode\n");
