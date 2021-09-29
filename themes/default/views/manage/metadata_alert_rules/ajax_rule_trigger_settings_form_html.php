@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2018 Whirl-i-Gig
+ * Copyright 2016-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -42,6 +42,8 @@
 ?>
 <?php
 	}
+	
+	if($t_trigger->getTriggerInstance()->attachesToMetadataElement()) {
 ?>
 			<div class="formLabel"><?php print _t('Attach to metadata element'); ?><br/>
 		
@@ -72,4 +74,5 @@
 			});
 		</script>
 <?php
+	}
 	print TooltipManager::getLoadHTML();

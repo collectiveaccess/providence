@@ -265,7 +265,6 @@ class ca_metadata_alert_triggers extends BaseModel {
 		$va_triggers = self::getApplicableTriggersForInstance($t_subject);
 		if(!is_array($va_triggers) || !sizeof($va_triggers)) { return; }
 
-
 		foreach($va_triggers as $va_trigger) {
 			$o_trigger = CA\MetadataAlerts\TriggerTypes\Base::getInstance($va_trigger['trigger_type'], $va_trigger);
 			
