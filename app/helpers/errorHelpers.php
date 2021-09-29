@@ -99,7 +99,7 @@ function caExtractStackTraceArguments($pa_errcontext) {
 	
 	$pconfig = HTMLPurifier_Config::createDefault();
 	$pconfig->set('URI.DisableExternalResources', true);		
-	$o_purifier = new HTMLPurifier($pa_argsconfig);
+	$o_purifier = new HTMLPurifier($pconfig);
 	$pa_args = [];
 	
 	foreach($pa_errcontext as $vn_i => $va_trace) {
