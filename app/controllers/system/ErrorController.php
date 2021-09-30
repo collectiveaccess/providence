@@ -33,7 +33,7 @@
 		
  		# -------------------------------------------------------
  		function Show() {
- 			$o_purify = new HTMLPurifier();
+ 			$o_purify = caGetHTMLPurifier();
  			
  			$va_nums = explode(';', $this->request->getParameter('n', pString));
  			
