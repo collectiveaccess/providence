@@ -2389,7 +2389,7 @@ function caFileIsIncludable($ps_file) {
 		if (!is_array($pa_array)) { return array(); }
 
 		if (!(($o_purifier = caGetOption('purifier', $pa_options, null)) instanceof HTMLPurifier)) {
-			$o_purifier = new HTMLPurifier();
+			$o_purifier = caGetHTMLPurifier();
 		}
 
 		if (!is_array($pa_array)) { return $o_purifier->purify($pa_array); }
@@ -4082,7 +4082,7 @@ function caFileIsIncludable($ps_file) {
 		$o_purifier = null;
 		if($pb_purify = caGetOption('purify', $pa_options, false)) {
 			if (!(($o_purifier = caGetOption('purifier', $pa_options, null)) instanceof HTMLPurifier)) {
-				$o_purifier = new HTMLPurifier();
+				$o_purifier = caGetHTMLPurifier();
 			}
 		}
 
@@ -4608,3 +4608,12 @@ function caFileIsIncludable($ps_file) {
 		return $regex;
 	}
     # ----------------------------------------
+	/**
+	 *
+	 */
+	function caGetHTMLPurifier(?array $options=null) : HTMLPurifier {
+		$config = HTMLPurifier_Config::createDefault();
+		$config->set('URI.DisableExternalResources', !Configuration::load()->get('purify_allow_external_references'));
+		return new HTMLPurifier($config); 
+	}
+	# ----------------------------------------

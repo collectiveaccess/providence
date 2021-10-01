@@ -522,7 +522,9 @@ class RequestHTTP extends Request {
 	 * @return HTMLPurifier Returns instance
 	 */
 	static public function getPurifier() {
-		if (!RequestHTTP::$html_purifier) { RequestHTTP::$html_purifier = new HTMLPurifier(); }
+		if (!RequestHTTP::$html_purifier) { 
+			RequestHTTP::$html_purifier = caGetHTMLPurifier(); 
+		}
 		return RequestHTTP::$html_purifier;
 	}
 	# -------------------------------------------------------
