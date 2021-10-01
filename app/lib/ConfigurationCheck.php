@@ -383,7 +383,7 @@ final class ConfigurationCheck {
 	private static function _urlRootGuesses() {
 		return [
 			str_replace("/index.php", "", str_replace("\\", "/", $_SERVER["SCRIPT_NAME"])),
-			str_replace(isset($_SERVER['DOCUMENT_ROOT']) ? $_SERVER['DOCUMENT_ROOT'] : '', '', __CA_BASE_DIR__)
+			str_replace($_SERVER['CONTEXT_DOCUMENT_ROOT'] ?? $_SERVER['DOCUMENT_ROOT'] ?? '', '', __CA_BASE_DIR__)
 		];
 	}
 	# -------------------------------------------------------
