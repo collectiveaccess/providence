@@ -557,9 +557,7 @@ class BaseModel extends BaseObject {
 	 */
 	static public function getPurifier() {
 		if (!BaseModel::$html_purifier) { 
-			$config = HTMLPurifier_Config::createDefault();
-			$config->set('URI.DisableExternalResources', !Configuration::load()->get('purify_allow_external_references'));
-			BaseModel::$html_purifier = new HTMLPurifier($config); 
+			BaseModel::$html_purifier = caGetHTMLPurifier(); 
 		}
 		return BaseModel::$html_purifier;
 	}
