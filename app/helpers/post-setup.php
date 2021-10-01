@@ -54,7 +54,7 @@ if (!defined("__CA_BASE_DIR__")) {
 # 		Example: If CollectiveAccess will be accessed via http://www.mysite.org/apps/ca then __CA_URL_ROOT__ would be set to /apps/ca
 #
 if (!defined("__CA_URL_ROOT__")) {
-	define("__CA_URL_ROOT__", str_replace(isset($_SERVER['DOCUMENT_ROOT']) ? $_SERVER['DOCUMENT_ROOT'] : '', '', __CA_BASE_DIR__));
+	define("__CA_URL_ROOT__", str_replace($_SERVER['CONTEXT_DOCUMENT_ROOT'] ?? $_SERVER['DOCUMENT_ROOT'] ?? '', '', __CA_BASE_DIR__));
 }
 
 
