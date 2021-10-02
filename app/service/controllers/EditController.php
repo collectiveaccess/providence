@@ -280,8 +280,8 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							} else {
 								// Create new record
 								$instance = new $table();
-								$instance->set($idno_fld, $record['idno']);
-								$instance->set('type_id', $record['type']);
+								$instance->set('type_id', $record['type']);	// set type first so idno is interpreted properly
+								$instance->setIdnoWithTemplate($record['idno']);
 								if($instance->hasField('list_id') && ($instance->primaryKey() !== 'list_id')) { 
 									if(!$args['list']) { 
 										// If it's not set all insert will fail, so return generic (no idno) error and bail
@@ -582,15 +582,19 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						}
 						$c = 0;
 						if($qr && ($qr->numHits() > 0)) {
+							$t_instance = Datamodel::getInstance($table, true);
+							$pk = $t_instance->primaryKey();
+							
+							$hier_root_restriction_sql = in_array($t_instance->getHierarchyType(), [__CA_HIER_TYPE_SIMPLE_MONO__, __CA_HIER_TYPE_MULTI_MONO__]);
+							
 							if((bool)$args['fast'] && Datamodel::getFieldNum($table, 'deleted')) {
 								$db = new Db();
-								$pk = Datamodel::primaryKey($table);
-							
+										
 								try {
 									if($args['date'] || $args['types']) {
-										$db->query("UPDATE {$table} SET deleted = 1 WHERE {$pk} IN (?)", [$qr->getAllFieldValues("{$table}.{$pk}")]);
+										$db->query("UPDATE {$table} SET deleted = 1 WHERE {$pk} IN (?)".($hier_root_restriction_sql ? " AND parent_id IS NOT NULL" : ''), [$qr->getAllFieldValues("{$table}.{$pk}")]);
 									} else {
-										$db->query("UPDATE {$table} SET deleted = 1");
+										$db->query("UPDATE {$table} SET deleted = 1".($hier_root_restriction_sql ? " WHERE parent_id IS NOT NULL" : ''));
 									}
 									$c = $qr->numHits();
 								} catch (\DatabaseException $e) {
@@ -599,6 +603,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							} else {
 								while($qr->nextHit()) {
 									$instance = $qr->getInstance();
+									if($hier_root_restriction_sql && !$instance->get('parent_id')) { continue; }
 									if(!$instance->delete(true)) {
 										foreach($instance->errors() as $e) {
 											$errors[] = Error\error(null, Error\toGraphQLError($e->getErrorNumber()), $e->getErrorDescription(), null);
