@@ -513,7 +513,7 @@ class ca_media_upload_sessions extends BaseModel {
 							$r->addRelationship('ca_object_representations', $album_rep->getPrimaryKey());
 						} else { 
 							$r->addRepresentation(
-								$path, $rep_type, $locale_id, $rep_status, $rep_access, true,
+								$path, $rep_type, $locale_id, $rep_status, $rep_access, true
 							);
 						}
 						$index++;
