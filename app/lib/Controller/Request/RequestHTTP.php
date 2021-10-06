@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2020 Whirl-i-Gig
+ * Copyright 2007-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -522,7 +522,9 @@ class RequestHTTP extends Request {
 	 * @return HTMLPurifier Returns instance
 	 */
 	static public function getPurifier() {
-		if (!RequestHTTP::$html_purifier) { RequestHTTP::$html_purifier = new HTMLPurifier(); }
+		if (!RequestHTTP::$html_purifier) { 
+			RequestHTTP::$html_purifier = caGetHTMLPurifier(); 
+		}
 		return RequestHTTP::$html_purifier;
 	}
 	# -------------------------------------------------------
@@ -645,6 +647,12 @@ class RequestHTTP extends Request {
 		}
 
 		if(defined('__CA_SITE_HOSTNAME__') && strlen(__CA_SITE_HOSTNAME__) > 0) {
+			$host_without_port = __CA_SITE_HOSTNAME__;
+			$host_port = null;
+		    if(preg_match("/:([\d]+)$/", $host_without_port, $m)) {
+		    	$host_without_port = preg_replace("/:[\d]+$/", '', $host_without_port);
+		    	$host_port = (int)$m[1];
+		    } 
 		    
 			if (
 			    !($port = (int)$this->getAppConfig()->get('out_of_process_search_indexing_port'))
@@ -652,11 +660,11 @@ class RequestHTTP extends Request {
 			    !($port = (int)getenv('CA_OUT_OF_PROCESS_SEARCH_INDEXING_PORT'))
 			) {
                 if(__CA_SITE_PROTOCOL__ == 'https') { 
-                    $port = 443;	
+                    $port = $host_port ?? 443;	
                 } elseif(isset($_SERVER['SERVER_PORT']) &&  $_SERVER['SERVER_PORT']) {
                     $port = $_SERVER['SERVER_PORT'];
                 } else {
-                    $port = 80;
+                    $port = $host_port ?? 80;
                 }
             }
 			
@@ -673,8 +681,9 @@ class RequestHTTP extends Request {
 			    && 
 			    !($indexing_hostname = getenv('CA_OUT_OF_PROCESS_SEARCH_INDEXING_HOSTNAME'))
 			) {
-			    $indexing_hostname = __CA_SITE_HOSTNAME__;
+			    $indexing_hostname = $host_without_port;
 			}
+			
 			// trigger async search indexing
 			if((__CA_APP_TYPE__ === 'PROVIDENCE') && !$this->getAppConfig()->get('disable_out_of_process_search_indexing')) {
                 require_once(__CA_MODELS_DIR__."/ca_search_indexing_queue.php");

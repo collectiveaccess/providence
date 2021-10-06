@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -83,6 +83,10 @@ class BaseEditorController extends ActionController {
 		// Are we duplicating?
 		//
 		if (($vs_mode == 'dupe') && $this->request->user->canDoAction('can_duplicate_'.$t_subject->tableName())) {
+			if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+				throw new ApplicationException(_t('CSRF check failed'));
+				return;
+			}
 			if (!($vs_type_name = $t_subject->getTypeName())) {
 				$vs_type_name = $t_subject->getProperty('NAME_SINGULAR');
 			}
@@ -510,71 +514,25 @@ class BaseEditorController extends ActionController {
 				$vb_we_set_transaction = true;
 			}
 			
-			// Do we need to move relationships?
-			if (($vn_remap_id =  $this->request->getParameter('caReferenceHandlingToRemapToID', pInteger)) && ($this->request->getParameter('caReferenceHandlingTo', pString) == 'remap')) {
+			// Do we need to merge content to another record?
+			if (($remap_id =  $this->request->getParameter('caReferenceHandlingToRemapToID', pInteger)) && ($this->request->getParameter('caReferenceHandlingTo', pString) == 'remap')) {
 				switch($subject_table) {
 					case 'ca_relationship_types':
-						if ($vn_c = $t_subject->moveRelationshipsToType($vn_remap_id)) {
-							$t_target = new ca_relationship_types($vn_remap_id);
+						if ($vn_c = $t_subject->moveRelationshipsToType($remap_id)) {
+							$t_target = new ca_relationship_types($remap_id);
 							$this->notification->addNotification(($vn_c == 1) ? _t("Transferred %1 relationship to type <em>%2</em>", $vn_c, $t_target->getLabelForDisplay()) : _t("Transferred %1 relationships to type <em>%2</em>", $vn_c, $t_target->getLabelForDisplay()), __NOTIFICATION_TYPE_INFO__);
 						}
 						break;
 					default:
-						// update relationships
-						$va_tables = [
-							'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations', 'ca_list_items', 'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops', 'ca_object_representations', 'ca_list_items'
-						];
-
-						$vn_c = 0;
-						foreach($va_tables as $vs_table) {
-							$vn_c += $t_subject->moveRelationships($vs_table, $vn_remap_id);
+						$merge_opts = ['relationships'];
+						if($this->request->getParameter('caReferenceHandlingMetadata', pInteger)) {
+							$merge_opts = array_merge($merge_opts, ['preferred_labels', 'nonpreferred_labels', 'intrinsics', 'attributes']);
 						}
-						
-						if ($subject_table == 'ca_object_lots') { 		// move objects to new target
-							$object_ids = $t_subject->get('ca_objects.object_id', ['returnAsArray' => true]);
-							if(is_array($object_ids) && sizeof($object_ids)) {
-								$t_object = Datamodel::getInstance('ca_objects', true);
-								foreach($object_ids as $object_id) {
-									if ($t_object->load($object_id)) {
-										$t_object->setMode(ACCESS_WRITE);
-										$t_object->set('lot_id', $vn_remap_id);
-										$t_object->update();
-										if ($t_object->numErrors() > 0) { continue; }
-										$vn_c++;
-									}
-								}
-							}
+						try {
+							$t_target = $subject_table::merge([$remap_id, $vn_subject_id],['useID' => $remap_id, 'preferredLabelsMode' => 'base', 'intrinsicMode' => 'whenNotSet', 'notification' => $this->notification, 'merge' => $merge_opts]);
+						} catch(MergeException $e) {
+							$this->notification->addNotification(_t("Could not merge data: %1", $e->getMessage()), __NOTIFICATION_TYPE_ERROR__);
 						}
-
-						// update existing metadata attributes to use remapped value
-						$t_subject->moveAuthorityElementReferences($vn_remap_id);
-
-						if ($vn_c > 0) {
-							$t_target = Datamodel::getInstance($this->ops_table_name, true);
-							$t_target->load($vn_remap_id);
-							$this->notification->addNotification(($vn_c == 1) ? _t("Transferred %1 relationship to <em>%2</em> (%3)", $vn_c, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))) : _t("Transferred %1 relationships to <em>%2</em> (%3)", $vn_c, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
-						}
-						
-						// move children
-						if ($t_subject->isHierarchical() && is_array($va_children = call_user_func("{$subject_table}::getHierarchyChildrenForIDs", [$t_subject->getPrimaryKey()]))) {
-							if (!$t_target) {
-								$t_target = Datamodel::getInstance($this->ops_table_name, true);
-								$t_target->load($vn_remap_id);
-							}
-							
-							$t_child = Datamodel::getInstance($this->ops_table_name, true);
-							$vn_child_count = 0;
-							foreach($va_children as $vn_child_id) {
-								$t_child->load($vn_child_id);
-								$t_child->setMode(ACCESS_WRITE);
-								$t_child->set('parent_id', $vn_remap_id);
-								$t_child->update();
-								if ($t_child->numErrors() > 0) { continue; }
-								$vn_child_count++;
-							}
-							$this->notification->addNotification(($vn_child_count == 1) ? _t("Transferred %1 children to <em>%2</em> (%3)", $vn_child_count, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))) : _t("Transferred %1 children to <em>%2</em> (%3)", $vn_child_count, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
-						}
-						
 						break;
 				}
 			} else {
@@ -595,18 +553,7 @@ class BaseEditorController extends ActionController {
 					$this->notification->addNotification(($vn_child_count == 1) ? _t("Deleted %1 child", $vn_child_count) : _t("Deleted %1 children", $vn_child_count), __NOTIFICATION_TYPE_INFO__);
 				}
 			}
-			
-			// Do we need to move references contained in attributes bound to this item?
-			if (($vn_remap_id =  $this->request->getParameter('caReferenceHandlingToRemapFromID', pInteger)) && ($this->request->getParameter('caReferenceHandlingFrom', pString) == 'remap')) {
-				try {
-					$t_subject->moveAttributes($vn_remap_id, $t_subject->getAuthorityElementList(['idsOnly' => true]));
-				} catch(ApplicationException $o_e) {
-					$this->notification->addNotification(_t("Could not move references to other items in metadata before delete: %1", $o_e->getErrorDescription()), __NOTIFICATION_TYPE_ERROR__);
-				}
-			}
-			
-			$t_subject->setMode(ACCESS_WRITE);
-
+		
 			$vb_rc = false;
 			if ($this->_beforeDelete($t_subject)) {
 				if ($vb_rc = $t_subject->delete(true)) {
@@ -1067,6 +1014,10 @@ class BaseEditorController extends ActionController {
 	 * @param array $pa_options Array of options passed through to _initView
 	 */
 	public function SetAccess($pa_options=null) {
+		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+	    	throw new ApplicationException(_t('CSRF check failed'));
+	    	return;
+	    }
 		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
 
 
@@ -1158,6 +1109,10 @@ class BaseEditorController extends ActionController {
 	 * @param array $pa_options Array of options passed through to _initView
 	 */
 	public function ChangeType($pa_options=null) {
+		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+	    	throw new ApplicationException(_t('CSRF check failed'));
+	    	return;
+	    }
 		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
 
 		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
@@ -1525,6 +1480,10 @@ class BaseEditorController extends ActionController {
 	 * Export data is rendered into the current view inherited from ActionController
 	 */
 	public function exportItem() {
+		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+	    	throw new ApplicationException(_t('CSRF check failed'));
+	    	return;
+	    }
 		list($vn_subject_id, $t_subject) = $this->_initView();
 
 		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
@@ -1545,6 +1504,10 @@ class BaseEditorController extends ActionController {
 	 * Add item to user's watch list. Intended to be called via ajax, and JSON response is returned in the current view inherited from ActionController
 	 */
 	public function toggleWatch() {
+		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+	    	throw new ApplicationException(_t('CSRF check failed'));
+	    	return;
+	    }
 		list($vn_subject_id, $t_subject) = $this->_initView();
 		require_once(__CA_MODELS_DIR__.'/ca_watch_list.php');
 
@@ -2311,6 +2274,10 @@ class BaseEditorController extends ActionController {
 	 *
 	 */
 	public function SaveAnnotations() {
+		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+	    	throw new ApplicationException(_t('CSRF check failed'));
+	    	return;
+	    }
 		global $g_ui_locale_id;
 		$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
 		$t_rep = new ca_object_representations($pn_representation_id);
@@ -2697,6 +2664,10 @@ class BaseEditorController extends ActionController {
 	 * 
 	 */
 	public function SetHomeLocation($options=null) {
+		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+	    	throw new ApplicationException(_t('CSRF check failed'));
+	    	return;
+	    }
 		list($vn_subject_id, $t_subject) = $this->_initView();
 		if (!$t_subject->isLoaded()) { 
 			throw new ApplicationException(_t('Invalid id '.$vn_su));

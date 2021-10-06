@@ -106,6 +106,12 @@ class ReplicationService {
 
 		$pn_limit = $po_request->getParameter('limit', pInteger);
 		if(!$pn_limit) { $pn_limit = null; }
+		
+		if(($max_retries = (int)$o_replication_conf->get('max_media_upload_retries')) < 0) {
+			$max_retries = 5;
+		}
+		
+		$abort_sync_on_failed_media_upload = (bool)$o_replication_conf->get('abort_sync_on_failed_media_upload');
 
 		$pa_options = array();
 		if($ps_skip_if_expression = $po_request->getParameter('skipIfExpression', pString, null, array('retainBackslashes' => false))) {
@@ -179,7 +185,7 @@ class ReplicationService {
 					$o_curl = curl_init($va_target_conf['url'] . '/service.php/replication/pushMedia');
 					$o_file = new CURLFile(realpath($vs_local_path));
 
-					$vn_retries = 5;
+					$vn_retries = $max_retries;
 					while($vn_retries > 0) {
 						$vn_retries--;
 						
@@ -209,7 +215,11 @@ class ReplicationService {
 						$vn_code = curl_getinfo($o_curl, CURLINFO_HTTP_CODE);
 						if($vn_code != 200) {
 							if ($vn_retries == 0) {
-								throw new Exception(_t("Could not upload file [%1] to target [%2]. HTTP response code was %3.", $vs_local_path, $ps_push_media_to, $vn_code));
+								ReplicationService::$s_logger->log(_t("Could not upload file [%1] to target [%2] after %4 retries. HTTP response code was %3.", $vs_local_path, $ps_push_media_to, $vn_code, $max_retries);
+								if($abort_sync_on_failed_media_upload) {
+									throw new Exception(_t("Could not upload file [%1] to target [%2] after $4 retries. HTTP response code was %3.", $vs_local_path, $ps_push_media_to, $vn_code, $max_retries));
+								}
+								break;
 							}
 							ReplicationService::$s_logger->log(_t("Could not upload file [%1] to target [%2]. HTTP response code was %3. Retrying (%4 remaining)", $vs_local_path, $ps_push_media_to, $vn_code, $vn_retries));
 							sleep(2);

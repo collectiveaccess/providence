@@ -541,7 +541,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			if (!($media_path = $this->getMediaPath('media', 'original'))) {
 				$media_path = array_shift($this->get('media', ['returnWithStructure' => true]));
 			}
-			if(!$this->getAppConfig()->get('allow_representations_duplicate_media') && ($t_existing_rep = ca_object_representations::mediaExists($media_path))) {
+			if(!$this->getAppConfig()->get('allow_representations_duplicate_media') && ($t_existing_rep = ca_object_representations::mediaExists($media_path, $this->getPrimaryKey()))) {
 				throw new MediaExistsException(_t('Media already exists'), $t_existing_rep);
 			}
 		}
@@ -2255,13 +2255,18 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	 * Check if a file already exists in the database as a representation
 	 *
 	 * @param string $filepath The full path to the file
+	 * @param int $representation_id Optional representation_id to ignore when checking for duplicated. [Default is null]
 	 * @return mixed ca_object_representations instance representing the first representation that contains the file, if representation exists with this file, false if the file does not yet exist
 	 */
-	static function mediaExists(string $filepath) {
+	static function mediaExists(string $filepath, ?int $representation_id=null) {
 		if (!file_exists($filepath) || !is_readable($filepath)) { return null; }
 		$md5 = @md5_file($filepath);
 		
-		if ($md5 && ($t_rep = ca_object_representations::find(['md5' => $md5], ['returnAs' => 'firstModelInstance']))) { 
+		$criteria = ['md5' => $md5];
+		if($representation_id > 0) {
+			$criteria['representation_id'] = ['<>', $representation_id];
+		}
+		if ($md5 && ($t_rep = ca_object_representations::find($criteria, ['returnAs' => 'firstModelInstance']))) { 
 			return $t_rep;
 		}
 		

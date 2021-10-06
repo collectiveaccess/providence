@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2018 Whirl-i-Gig
+ * Copyright 2016-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,9 +34,11 @@ namespace CA\MetadataAlerts\TriggerTypes;
 
 require_once(__CA_LIB_DIR__.'/MetadataAlerts/TriggerTypes/Modification.php');
 require_once(__CA_LIB_DIR__.'/MetadataAlerts/TriggerTypes/Date.php');
+require_once(__CA_LIB_DIR__.'/MetadataAlerts/TriggerTypes/Submission.php');
 
 define('__CA_MD_ALERT_CHECK_TYPE_SAVE__', 0);
 define('__CA_MD_ALERT_CHECK_TYPE_PERIODIC__', 1);
+define('__CA_MD_ALERT_CHECK_TYPE_SUBMISSION__', 2);
 
 abstract class Base {
 
@@ -169,7 +171,12 @@ abstract class Base {
         global $g_request;
 
         if(!$g_request) {
-            $g_request = new \RequestHTTP(null, ['no_headers' => true, 'simulateWith' => ['REQUEST_METHOD' => 'GET', 'SCRIPT_NAME' => 'index.php']]);
+            $g_request = new \RequestHTTP(null, ['no_headers' => true, 'simulateWith' => [
+            	'REQUEST_METHOD' => 'GET', 
+            	'SCRIPT_NAME' => __CA_URL_ROOT__.'/index.php',
+            	'REMOTE_ADDR' => '127.0.0.1', 
+            	'HTTP_USER_AGENT' => 'CollectiveAccess/Internal'
+            ]]);
         }
         
 		if(!($vs_template = $this->getTriggerValues()['settings']['notificationTemplate'])) {
@@ -213,6 +220,15 @@ abstract class Base {
 	public function getElementFilters($pn_element_id, $ps_prefix_id) {
 		return null;
 	}
+	
+	/**
+	 * Return true if trigger must be attached to a metadata element
+	 *
+	 * @return bool
+	 */
+	public function attachesToMetadataElement() : bool {
+		return true;
+	}
 
 	/**
 	 * Returns available trigger types as list for HTML select
@@ -223,7 +239,7 @@ abstract class Base {
 		return array(
 			_t('Modification') => 'Modification',
 			_t('Date') => 'Date',
-			//_t('List value chosen') => 'ListValue',
+			_t('Submission') => 'Submission',
 			//_t('Conditions met') => 'Expression',
 		);
 	}
@@ -242,7 +258,8 @@ abstract class Base {
 				return new Modification($pa_values);
 			case 'Date':
 				return new Date($pa_values);
-			case 'ListValue':
+			case 'Submission':
+				return new Submission($pa_values);
 			case 'Expression':
 				// @todo
 			default:
