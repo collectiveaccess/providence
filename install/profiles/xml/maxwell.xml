@@ -1912,9 +1912,9 @@
         <item idno="arch_box" enabled="1" default="0" value="arch_box" rank="5508" type="concept">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Archeology Box</name_singular>
-              <name_plural>Archeology Boxes</name_plural>
-              <description>Archeology Boxes</description>
+              <name_singular>Archaeology Box</name_singular>
+              <name_plural>Archaeology Boxes</name_plural>
+              <description>Archaeology Boxes</description>
             </label>
           </labels>
         </item>
@@ -7817,11 +7817,11 @@
             </label>
           </labels>
         </item>
-        <item idno="Missing" enabled="1" default="0" value="Missing" rank="835">
+        <item idno="Renumbered" enabled="1" default="0" value="Renumbered" rank="835">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Missing</name_singular>
-              <name_plural>Missing</name_plural>
+              <name_singular>Renumbered</name_singular>
+              <name_plural>Renumbered</name_plural>
               <description/>
             </label>
           </labels>
@@ -23856,7 +23856,7 @@ Thessalonica</name_plural>
     <list code="arch_box_types" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
-          <name>Archeology box types</name>
+          <name>Archaeology box types</name>
         </label>
       </labels>
       <items>
@@ -23955,7 +23955,7 @@ Thessalonica</name_plural>
     <list code="list_ab_condition" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
-          <name>Archeology Box Condtion</name>
+          <name>Archaeology Box Condtion</name>
         </label>
       </labels>
       <items>
@@ -24021,7 +24021,7 @@ Thessalonica</name_plural>
     <list code="list_ab_materials" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
-          <name>Archeology Box Materials</name>
+          <name>Archaeology Box Materials</name>
         </label>
       </labels>
       <items>
@@ -34050,6 +34050,7 @@ Thessalonica</name_plural>
       </labels>
       <settings>
         <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">5</setting>
       </settings>
       <typeRestrictions>
         <restriction>
@@ -37353,7 +37354,7 @@ Thessalonica</name_plural>
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="associated_materials" datatype="Text">
+    <metadataElement code="associated_materials" datatype="List" list="yes_no">
       <labels>
         <label locale="en_US">
           <name>Associated Materials</name>
@@ -37367,9 +37368,8 @@ Thessalonica</name_plural>
         <restriction>
           <table>ca_objects</table>
           <settings>
-            <setting name="minAttributesPerRow"/>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+            <setting name="render">yes_no_checkboxes</setting>
+            <setting name="restrictToTypes">concept</setting>
           </settings>
         </restriction>
       </typeRestrictions>
@@ -38554,7 +38554,7 @@ Thessalonica</name_plural>
           <type>arch_box</type>
           <settings>
             <setting name="minAttributesPerRow"/>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">255</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -38681,9 +38681,8 @@ Thessalonica</name_plural>
         </label>
       </labels>
       <settings>
-        <setting name="maxChars">65535</setting>
         <setting name="fieldWidth">70</setting>
-        <setting name="fieldHeight">1</setting>
+        <setting name="fieldHeight">4</setting>
       </settings>
       <typeRestrictions>
         <restriction>
@@ -38707,6 +38706,27 @@ Thessalonica</name_plural>
           <settings>
             <setting name="minAttributesPerRow"/>
             <setting name="maxAttributesPerRow">1000</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="collections_to_sample" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Collection(s) to be Sampled</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">70</setting>
+        <setting name="fieldHeight">4</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_occurrences</table>
+          <settings>
+            <setting name="minAttributesPerRow"/>
+            <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -39545,7 +39565,7 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="list_format">bubbles</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="dontShowDeleteButton">0</setting>
-                <setting name="display_template">^ca_objects.idno</setting>
+                <setting name="display_template">^ca_objects.idno, ^ca_objects.preferred_labels</setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow"/>
                 <setting name="showCurrentOnly">0</setting>
@@ -40670,7 +40690,7 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="list_format">bubbles</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="dontShowDeleteButton">0</setting>
-                <setting name="display_template">^ca_objects.preferred_labels</setting>
+                <setting name="display_template">^ca_objects.idno, ^ca_objects.preferred_labels</setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow"/>
                 <setting name="showCurrentOnly">0</setting>
@@ -41401,6 +41421,29 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
+            <placement code="ca_occurrences3">
+              <bundle>ca_occurrences</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Archaeology Box</setting>
+                <setting name="add_label" locale="en_US">add Archaeology Box</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_relationship_types">includes</setting>
+                <setting name="restrict_to_types">arch_box</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">list</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="display_template">^ca_occurrences.preferred_labels (^ca_occurrences.idno)</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow">1</setting>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="disableSorts">0</setting>
+              </settings>
+            </placement>
             <placement code="ca_attribute_count">
               <bundle>ca_objects.count</bundle>
               <settings>
@@ -41570,6 +41613,7 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
                 <setting name="restrict_to_types">site</setting>
+                <setting name="restrict_to_relationship_types">collected</setting>
                 <setting name="dont_include_subtypes_in_type_restriction">0</setting>
                 <setting name="list_format">list</setting>
                 <setting name="sortDirection">ASC</setting>
@@ -43973,7 +44017,7 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
-                <setting name="restrict_to_relationship_types">used</setting>
+                <setting name="restrict_to_relationship_types">published</setting>
                 <setting name="restrict_to_relationship_types">describes</setting>
                 <setting name="restrict_to_types">event_publication</setting>
                 <setting name="dont_include_subtypes_in_type_restriction">0</setting>
@@ -44069,6 +44113,29 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="disableSorts">0</setting>
                 <setting name="showCount"/>
                 <setting name="numPerPage">100</setting>
+              </settings>
+            </placement>
+            <placement code="ca_occurrences_tour">
+              <bundle>ca_occurrences</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Tour</setting>
+                <setting name="add_label" locale="en_US">add Tour</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_relationship_types">used</setting>
+                <setting name="restrict_to_types">event_tour</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">list</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="display_template">^ca_occurrences.preferred_labels (^ca_occurrences.idno)</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate"></setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="disableSorts">0</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -44366,8 +44433,7 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="list_format">bubbles</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="dontShowDeleteButton">0</setting>
-                <setting name="display_template">^ca_objects.idno&#13;
-^ca_objects.preferred_labels</setting>
+                <setting name="display_template">^ca_objects.idno, ^ca_objects.preferred_labels</setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow"/>
                 <setting name="showCurrentOnly">0</setting>
@@ -44797,7 +44863,7 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="list_format">bubbles</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="dontShowDeleteButton">0</setting>
-                <setting name="display_template">^ca_objects.preferred_labels</setting>
+                <setting name="display_template">^ca_objects.idno, ^ca_objects.preferred_labels</setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow"/>
                 <setting name="showCurrentOnly">0</setting>
@@ -45021,7 +45087,7 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="list_format">bubbles</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="dontShowDeleteButton">0</setting>
-                <setting name="display_template">^ca_objects.preferred_labels</setting>
+                <setting name="display_template">^ca_objects.idno, ^ca_objects.preferred_labels</setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow"/>
                 <setting name="showCurrentOnly">0</setting>
@@ -45181,24 +45247,20 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_objects11">
-              <bundle>ca_objects</bundle>
+            <placement code="ca_objects_table1">
+              <bundle>ca_objects_table</bundle>
               <settings>
                 <setting name="readonly"/>
+                <setting name="restrict_to_relationship_types">exhibition</setting>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
-                <setting name="restrict_to_relationship_types">exhibition</setting>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="list_format">list</setting>
-                <setting name="sortDirection">ASC</setting>
                 <setting name="dontShowDeleteButton">0</setting>
-                <setting name="minRelationshipsPerRow"/>
-                <setting name="maxRelationshipsPerRow"/>
-                <setting name="showCurrentOnly">0</setting>
-                <setting name="showCurrentUsingDate">effective_date</setting>
-                <setting name="disableQuickadd">0</setting>
-                <setting name="disableSorts">0</setting>
+                <setting name="label" locale="en_US">Related Objects List</setting>
+                <setting name="display_template">^ca_objects.idno, ^ca_objects.preferred_labels</setting>
               </settings>
+            </placement>
+            <placement code="ca_attribute_related_obj_cleanup">
+              <bundle>ca_occurrences.related_obj_cleanup</bundle>
             </placement>
             <placement code="ca_attribute_txt_object_commen">
               <bundle>ca_occurrences.txt_object_comments</bundle>
@@ -45374,24 +45436,20 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="description" locale="en_US">Website produced for this instance of the course; or instructor's website for the course</setting>
               </settings>
             </placement>
-            <placement code="ca_objects15">
-              <bundle>ca_objects</bundle>
+            <placement code="ca_objects_table1">
+              <bundle>ca_objects_table</bundle>
               <settings>
                 <setting name="readonly"/>
+                <setting name="restrict_to_relationship_types">used</setting>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
-                <setting name="restrict_to_relationship_types">used</setting>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="list_format">list</setting>
-                <setting name="sortDirection">ASC</setting>
                 <setting name="dontShowDeleteButton">0</setting>
-                <setting name="minRelationshipsPerRow"/>
-                <setting name="maxRelationshipsPerRow"/>
-                <setting name="showCurrentOnly">0</setting>
-                <setting name="showCurrentUsingDate">effective_date</setting>
-                <setting name="disableQuickadd">0</setting>
-                <setting name="disableSorts">0</setting>
+                <setting name="label" locale="en_US">Related Objects List</setting>
+                <setting name="display_template">^ca_objects.idno, ^ca_objects.preferred_labels</setting>
               </settings>
+            </placement>
+            <placement code="ca_attribute_related_obj_cleanup">
+              <bundle>ca_occurrences.related_obj_cleanup</bundle>
             </placement>
             <placement code="ca_attribute_txt_object_commen">
               <bundle>ca_occurrences.txt_object_comments</bundle>
@@ -45462,6 +45520,7 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="disableQuickadd">0</setting>
                 <setting name="prepopulateQuickaddFields">0</setting>
                 <setting name="disableSorts">0</setting>
+                <setting name="display_template">^ca_objects.idno, ^ca_objects.preferred_labels</setting>
               </settings>
             </placement>
             <placement code="ca_object_lots2">
@@ -45654,6 +45713,22 @@ A Closed loan is completed and inactive.</setting>
             <placement code="ca_attribute_txt_object_commen">
               <bundle>ca_occurrences.txt_object_comments</bundle>
             </placement>
+            <placement code="ca_objects_table1">
+              <bundle>ca_objects_table</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="restrict_to_relationship_types">used</setting>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="label" locale="en_US">Related Objects List</setting>
+                <setting name="display_template">^ca_objects.idno, ^ca_objects.preferred_labels</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_related_obj_cleanup">
+              <bundle>ca_occurrences.related_obj_cleanup</bundle>
+            </placement>
+            
           </bundlePlacements>
         </screen>
         <screen idno="basic_info_publication" default="1" typeRestrictions="event_publication" includeSubtypes="0">
@@ -45777,6 +45852,21 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
+            <placement code="ca_objects_table1">
+              <bundle>ca_objects_table</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="restrict_to_relationship_types">published</setting>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="label" locale="en_US">Related Objects List</setting>
+                <setting name="display_template">^ca_objects.idno, ^ca_objects.preferred_labels</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_related_obj_cleanup">
+              <bundle>ca_occurrences.related_obj_cleanup</bundle>
+            </placement>
           </bundlePlacements>
         </screen>
         <screen idno="basic_info_sampling" default="1" typeRestrictions="event_analysis" includeSubtypes="0">
@@ -45894,20 +45984,8 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_collections">
-              <bundle>ca_collections</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Collections to be Sampled</setting>
-                <setting name="expand_collapse_value">dont_force</setting>
-                <setting name="expand_collapse_no_value">dont_force</setting>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="list_format">bubbles</setting>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="dontShowDeleteButton">0</setting>
-                <setting name="display_template">^ca_collections.idno ^ca_collections.preferred_labels</setting>
-                <setting name="minRelationshipsPerRow"/>
-                <setting name="maxRelationshipsPerRow"/>
-              </settings>
+            <placement code="ca_attribute_collections_to_sample">
+              <bundle>collections_to_sample</bundle>
             </placement>
             <placement code="ca_attribute_txt_occur_analysi">
               <bundle>ca_occurrences.txt_occur_analysis_purp</bundle>
@@ -45992,6 +46070,21 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="sort">1</setting>
                 <setting name="sortDirection">ASC</setting>
               </settings>
+            </placement>
+            <placement code="ca_objects_table1">
+              <bundle>ca_objects_table</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="restrict_to_relationship_types">used</setting>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="label" locale="en_US">Related Objects List</setting>
+                <setting name="display_template">^ca_objects.idno, ^ca_objects.preferred_labels</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_related_obj_cleanup">
+              <bundle>ca_occurrences.related_obj_cleanup</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -46122,25 +46215,20 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
               </settings>
             </placement>
-            <placement code="ca_objects11">
-              <bundle>ca_objects</bundle>
+            <placement code="ca_objects_table1">
+              <bundle>ca_objects_table</bundle>
               <settings>
-                <setting name="label" locale="en_US">Objects Included In Request</setting>
                 <setting name="readonly"/>
+                <setting name="restrict_to_relationship_types">includes</setting>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
-                <setting name="restrict_to_relationship_types">includes</setting>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="list_format">list</setting>
-                <setting name="sortDirection">ASC</setting>
                 <setting name="dontShowDeleteButton">0</setting>
-                <setting name="minRelationshipsPerRow"/>
-                <setting name="maxRelationshipsPerRow"/>
-                <setting name="showCurrentOnly">0</setting>
-                <setting name="showCurrentUsingDate">effective_date</setting>
-                <setting name="disableQuickadd">0</setting>
-                <setting name="disableSorts">0</setting>
+                <setting name="label" locale="en_US">Related Objects List</setting>
+                <setting name="display_template">^ca_objects.idno, ^ca_objects.preferred_labels</setting>
               </settings>
+            </placement>
+            <placement code="ca_attribute_related_obj_cleanup">
+              <bundle>ca_occurrences.related_obj_cleanup</bundle>
             </placement>
             <placement code="ca_occurrences12">
               <bundle>ca_occurrences</bundle>
@@ -46524,6 +46612,21 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
               </settings>
             </placement>
+            <placement code="ca_objects_table1">
+              <bundle>ca_objects_table</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="restrict_to_relationship_types">collected</setting>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="label" locale="en_US">Related Objects List</setting>
+                <setting name="display_template">^ca_objects.idno, ^ca_objects.preferred_labels</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_related_obj_cleanup">
+              <bundle>ca_occurrences.related_obj_cleanup</bundle>
+            </placement>
           </bundlePlacements>
         </screen>
         <screen idno="basic_info_tour" default="1" typeRestrictions="event_tour" includeSubtypes="0">
@@ -46643,6 +46746,21 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="sort">1</setting>
                 <setting name="sortDirection">ASC</setting>
                </settings>
+            </placement>
+            <placement code="ca_objects_table1">
+              <bundle>ca_objects_table</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="restrict_to_relationship_types">used</setting>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="label" locale="en_US">Related Objects List</setting>
+                <setting name="display_template">^ca_objects.idno, ^ca_objects.preferred_labels</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_related_obj_cleanup">
+              <bundle>ca_occurrences.related_obj_cleanup</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -46821,6 +46939,21 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="disableSorts">0</setting>
                </settings>
             </placement>
+            <placement code="ca_objects_table1">
+              <bundle>ca_objects_table</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="restrict_to_relationship_types">includes</setting>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="label" locale="en_US">Related Objects List</setting>
+                <setting name="display_template">^ca_objects.idno, ^ca_objects.preferred_labels</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_related_obj_cleanup">
+              <bundle>ca_occurrences.related_obj_cleanup</bundle>
+            </placement>
           </bundlePlacements>
         </screen>
         <screen idno="basic_info_project" default="1" typeRestrictions="project" includeSubtypes="0">
@@ -46881,24 +47014,22 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="usewysiwygeditor"/>
               </settings>
             </placement>
-             <placement code="ca_objects">
-              <bundle>ca_objects</bundle>
+             
+            <placement code="ca_objects_table1">
+              <bundle>ca_objects_table</bundle>
               <settings>
-                <setting name="label" locale="en_US">Related Object</setting>
                 <setting name="readonly"/>
+                <setting name="restrict_to_relationship_types">describes</setting>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
-                <setting name="restrict_to_relationship_types">describes</setting>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="list_format">list</setting>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="display_template"><![CDATA[<ifdef code="ca_objects.idno">^ca_objects.idno</ifdef><ifdef code="ca_objects.preferred_labels">, ^ca_objects.preferred_labels</ifdef><ifdef code="ca_objects.list_materials"><br/><br/><b>Materials:</b> ^ca_objects.list_materials%delimiter=,_</ifdef><ifdef code="ca_objects.description"><br/><br/><b>Description:</b> ^ca_objects.description</ifdef>]]></setting>
-                <setting name="minRelationshipsPerRow"/>
-                <setting name="maxRelationshipsPerRow">1</setting>
-                <setting name="disableQuickadd">1</setting>
-                <setting name="disableSorts">0</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="label" locale="en_US">Related Objects List</setting>
+                <setting name="display_template">^ca_objects.idno, ^ca_objects.preferred_labels</setting>
               </settings>
-            </placement>     
+            </placement>
+            <placement code="ca_attribute_related_obj_cleanup">
+              <bundle>ca_occurrences.related_obj_cleanup</bundle>
+            </placement>    
             <placement code="ca_attribute_description">
               <bundle>ca_occurrences.description</bundle>
             </placement>
@@ -47003,19 +47134,6 @@ A Closed loan is completed and inactive.</setting>
             </label>
           </labels>
           <bundlePlacements>
-            <placement code="ca_objects_table1">
-              <bundle>ca_objects_table</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">dont_force</setting>
-                <setting name="expand_collapse_no_value">dont_force</setting>
-                <setting name="dontShowDeleteButton">0</setting>
-                <setting name="label" locale="en_US">Related Objects List</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_related_obj_cleanup">
-              <bundle>ca_occurrences.related_obj_cleanup</bundle>
-            </placement>
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>
               <settings>
@@ -47344,7 +47462,7 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="list_format">bubbles</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="dontShowDeleteButton">0</setting>
-                <setting name="display_template">^ca_objects.preferred_labels</setting>
+                <setting name="display_template">^ca_objects.idno, ^ca_objects.preferred_labels</setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow"/>
                 <setting name="showCurrentOnly">0</setting>
@@ -47553,7 +47671,7 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="list_format">bubbles</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="dontShowDeleteButton">0</setting>
-                <setting name="display_template">^ca_objects.preferred_labels, ^ca_objects.idno</setting>
+                <setting name="display_template">^ca_objects.idno, ^ca_objects.preferred_labels</setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow"/>
                 <setting name="showCurrentOnly">0</setting>
@@ -48206,6 +48324,7 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="disableQuickadd">0</setting>
                 <setting name="prepopulateQuickaddFields">0</setting>
                 <setting name="disableSorts">0</setting>
+                <setting name="display_template">^ca_objects.idno, ^ca_objects.preferred_labels</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -48235,6 +48354,7 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="disableQuickadd">0</setting>
                 <setting name="prepopulateQuickaddFields">0</setting>
                 <setting name="disableSorts">0</setting>
+                <setting name="display_template">^ca_objects.idno, ^ca_objects.preferred_labels</setting>
               </settings>
             </placement>
             <placement code="ca_objects_table3">
@@ -48377,6 +48497,7 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="disableQuickadd">0</setting>
                 <setting name="prepopulateQuickaddFields">0</setting>
                 <setting name="disableSorts">0</setting>
+                <setting name="display_template">^ca_objects.idno, ^ca_objects.preferred_labels</setting>
               </settings>
             </placement>
             <placement code="ca_entities">
@@ -48727,8 +48848,7 @@ A Closed loan is completed and inactive.</setting>
         </screen>
       </screens>
     </userInterface>
-    <userInterface code="objects_x_occ_publications" type="ca_objects_x_occurrences"
-      typeRestrictions="event_publication" includeSubtypes="0">
+    <userInterface code="objects_x_occ_publications" type="ca_objects_x_occurrences" typeRestrictions="published" includeSubtypes="0">
       <labels>
         <label locale="en_US">
           <name>Objects x publication</name>
@@ -49362,19 +49482,11 @@ A Closed loan is completed and inactive.</setting>
     </relationshipTable>
     <relationshipTable name="ca_objects_x_occurrences">
       <types>
-        <type code="collected" default="0">
+        <type code="collected" default="0" typeRestrictionRight="site">
           <labels>
             <label locale="en_US">
               <typename>was collected from</typename>
               <typename_reverse>collected</typename_reverse>
-            </label>
-          </labels>
-        </type>
-        <type code="depicts" default="1">
-          <labels>
-            <label locale="en_US">
-              <typename>depicts</typename>
-              <typename_reverse>is depicted by</typename_reverse>
             </label>
           </labels>
         </type>
@@ -49386,7 +49498,7 @@ A Closed loan is completed and inactive.</setting>
             </label>
           </labels>
         </type>
-        <type code="exhibition" default="0">
+        <type code="exhibition" default="0" typeRestrictionRight="event_exhibition">
           <labels>
             <label locale="en_US">
               <typename>was exhibited in</typename>
@@ -49394,7 +49506,7 @@ A Closed loan is completed and inactive.</setting>
             </label>
           </labels>
         </type>
-        <type code="describes" default="0">
+        <type code="describes" default="0" typeRestrictionRight="condition_report">
           <labels>
             <label locale="en_US">
               <typename>describes</typename>
@@ -49406,6 +49518,14 @@ A Closed loan is completed and inactive.</setting>
           <labels>
             <label locale="en_US">
               <typename>was included in</typename>
+              <typename_reverse>includes</typename_reverse>
+            </label>
+          </labels>
+        </type>
+        <type code="published" default="0" typeRestrictionRight="event_publication">
+          <labels>
+            <label locale="en_US">
+              <typename>was published in</typename>
               <typename_reverse>includes</typename_reverse>
             </label>
           </labels>
