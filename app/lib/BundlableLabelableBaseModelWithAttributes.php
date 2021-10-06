@@ -889,6 +889,29 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			while($qr_idno->nextRow()) {
 				$va_ids[] = $qr_idno->get($this->primaryKey());
 			}
+			if($o_idno && ($additional_tables = $o_idno->getFormatProperty('compare_against_values_in'))) {
+				// other tables to check?
+				if(is_array($additional_tables)) {
+					foreach($additional_tables as $additional_table) {
+						if(!($t = Datamodel::getInstance($additional_table, true))) { continue; }
+						if(!($idno_field = $t->getProperty('ID_NUMBERING_ID_FIELD'))) { continue; }
+						
+						$deleted_sql = '';
+						if ($t->hasField('deleted')) {
+							$deleted_sql = " AND ({$additional_table}.deleted = 0)";
+						}
+						$qr_idno = $o_db->query("
+							SELECT ".$t->primaryKey()." 
+							FROM {$additional_table}
+							WHERE {$idno_field} = ? {$deleted_sql}
+						", [$ps_idno]);
+			
+						while($qr_idno->nextRow()) {
+							$va_ids[] = "{$additional_table}-".$qr_idno->get($t->primaryKey());
+						}
+					}
+				}
+			}
 			return $va_ids;
 		} 
 		
