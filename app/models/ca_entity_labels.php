@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -343,8 +343,18 @@ class ca_entity_labels extends BaseLabel {
 		if ($vs_sort_field = $this->getProperty('LABEL_SORT_FIELD')) {
 			$vs_display_field = $this->getProperty('LABEL_DISPLAY_FIELD');
 			
-			$n = DataMigrationUtils::splitEntityName($this->get($vs_display_field), ['displaynameFormat' => 'surnamecommaforename']);
-			$this->set($vs_sort_field, $n['displayname']);
+			// is entity org?
+			$is_org = false;
+			if (($entity = $this->getSubjectTableInstance()) && ($et = $entity->getTypeInstance())) {
+				$is_org = ($et->getSetting('entity_class') === 'ORG');
+			}
+			if($is_org) {
+				$n = $this->get('ca_entity_labels.surname');
+			} else {
+				$n = DataMigrationUtils::splitEntityName($this->get($vs_display_field), ['displaynameFormat' => 'surnamecommaforename']);
+				$n = $n['displayname'];
+			}
+			$this->set($vs_sort_field, $n);
 		}
 	}
 	# ------------------------------------------------------
