@@ -2293,7 +2293,7 @@ class SearchResult extends BaseObject {
                                             $vs_return_type = $vs_e;
                                             break;
                                         default:
-                                            if(in_array($vs_e, $va_versions)) {
+                                           	if(is_array($va_versions) && in_array($vs_e, $va_versions, true)) {
                                                 $vs_version = $vs_e;
                                             }
                                             break;
