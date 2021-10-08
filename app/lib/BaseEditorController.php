@@ -2741,7 +2741,7 @@ class BaseEditorController extends ActionController {
 		if(in_array($target, ['ca_objects', 'ca_collections', 'ca_object_lots', 'ca_object_representations'], true)) {
 			if(!$this->request->user->canDoAction("can_edit_{$target}")) {
 				$resp = ['ok' => 0, 'message' => _t('Access denied'), 'updated' => [], 'errors' => [], 'timestamp' => time()];	
-			} elseif(!is_array($policies = $target::getHistoryTrackingCurrentValuePoliciesForTable($target))) {
+			} elseif(!is_array($policies = $target::getHistoryTrackingCurrentValuePolicies($target))) {
 				$resp = ['ok' => 0, 'message' => _t('No policies available'), 'updated' => [], 'errors' => [], 'timestamp' => time()];	
 			} else {
 				$policies = array_filter($policies, function($v) use ($table) { return array_key_exists('ca_storage_locations', $v['elements']); });
