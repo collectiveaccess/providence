@@ -3625,7 +3625,7 @@ jQuery(document).ready(function() {
 
 		$target = $pt_related->tableName();
 		if(!$pt_related->getAppConfig()->get("{$target}_enable_home_location")) { return null; }
-		$policies = array_filter(ca_objects::getHistoryTrackingCurrentValuePoliciesForTable($target), function($v) { return array_key_exists('ca_storage_locations', $v['elements']); });
+		$policies = array_filter(ca_objects::getHistoryTrackingCurrentValuePolicies($target), function($v) { return array_key_exists('ca_storage_locations', $v['elements']); });
 		if(!is_array($policies) || !sizeof($policies)) { return ''; }
 		if (!$ps_policy) { $ps_policy = $target::getDefaultHistoryTrackingCurrentValuePolicy(); }
 		if(is_object($initial_values)) {
