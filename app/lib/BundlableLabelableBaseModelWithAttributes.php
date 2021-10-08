@@ -893,6 +893,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				// other tables to check?
 				if(is_array($additional_tables)) {
 					foreach($additional_tables as $additional_table) {
+						if($additional_table === $this->tableName()) { continue; }
 						if(!($t = Datamodel::getInstance($additional_table, true))) { continue; }
 						if(!($idno_field = $t->getProperty('ID_NUMBERING_ID_FIELD'))) { continue; }
 						
