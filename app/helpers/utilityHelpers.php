@@ -2931,7 +2931,7 @@ function caFileIsIncludable($ps_file) {
 		$size = ['B','KiB','MiB','GiB','TiB'];
 		$factor = intval(floor((strlen((int)$bytes) - 1) / 3), 10);
 
-		return sprintf("%.{$decimals}f", (int)$bytes/pow(1024, $factor)).@$size[$factor];
+		return sprintf("%.{$decimals}f", (int)$bytes/pow(1024, $factor)).' '.@$size[$factor];
 	}
 	# ----------------------------------------
 	/** 
