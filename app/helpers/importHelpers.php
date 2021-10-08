@@ -1627,4 +1627,26 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 		}
 		return $value;
 	}
+	# ------------------------------------------------------
+	/**
+	 * Transform $value using specified transformation. Used by data importer applyTransformations option.
+	 *
+	 * Supported transformations:
+	 *		filesize = Transform integer filesize in bytes to display text with scaled suffix (KiB, MiB, GiB, etc.)
+	 *		           Options: decimal = number of decimal places to display. [Default is 2]
+	 * 
+	 * @param mixed $value Value to transform.
+	 * @param string $transform Code for transform to apply.
+	 * @param array $options Options for selected transform. [Default is null]
+	 *
+	 * @return mixed Transformed value
+	 */
+	function caApplyDataTransforms($value, string $transform, ?array $options){
+		switch(strtolower($transform)) {
+			case 'filesize':
+				$value = caHumanFilesize((int)$value, caGetOption('decimals', $options, 2));
+				break;
+		}
+		return $value;
+	}
 	# ---------------------------------------------------------------------

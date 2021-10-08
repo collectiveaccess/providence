@@ -1776,6 +1776,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				}
 				
 				$vs_idno = self::_applyCaseTransforms($vs_idno, $va_mapping_items[$vn_idno_mapping_item_id]);
+				$vs_idno = self::_applyDataTransforms($vs_idno, $va_mapping_items[$vn_idno_mapping_item_id]);
 				
 										
 				if (isset($va_mapping_items[$vn_idno_mapping_item_id]['settings']['applyRegularExpressions']) && is_array($va_mapping_items[$vn_idno_mapping_item_id]['settings']['applyRegularExpressions'])) {
@@ -1857,6 +1858,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					}
 				
 					$vs_label_val = self::_applyCaseTransforms($vs_label_val, $va_mapping_items[$vn_preferred_label_mapping_id]);
+					$vs_label_val = self::_applyDataTransforms($vs_label_val, $va_mapping_items[$vn_preferred_label_mapping_id]);
 				
 					$va_pref_label_values[$vs_preferred_label_mapping_fld] = $vs_label_val;
 				}
@@ -2474,6 +2476,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							}
 							
 							$vm_val = self::_applyCaseTransforms($vm_val, $va_item);
+							$vm_val = self::_applyDataTransforms($vm_val, $va_item);
 
 							$va_vals[ $vn_i ] = $vm_val;
 							if ( $o_reader->valuesCanRepeat() ) {
@@ -4201,6 +4204,25 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			}
 			if (isset($mapping['settings']['upperCaseFirst']) && (bool)$mapping['settings']['upperCaseFirst']) {
 				$value = caUcFirstUTF8Safe($value);
+			}
+		}
+		return $value;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 */
+	private static function _applyDataTransforms($value, array $mapping) {
+		if (strlen($value)) {
+			$transforms = $mapping['settings']['applyTransformations'];
+			if(is_array($transforms) && sizeof($transforms)) {
+				foreach($transforms as $t) {
+					if(!is_array($t)) { continue; }
+					if(!($transform = caGetOption('transform', $t, null))) { continue; }
+					$opts = $t;
+					unset($t['transform']);
+					$value = caApplyDataTransforms($value,  $transform, $t);
+				}
 			}
 		}
 		return $value;
