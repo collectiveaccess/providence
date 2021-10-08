@@ -2204,17 +2204,14 @@ jQuery(document).ready(function() {
 			if ((int)($o_config->get("{$vs_right_table_name}_disable"))) { return false; }
 		} else {
 			switch($vs_table_name) {
-				case 'ca_object_representations':
-					if (!(int)($o_config->get('ca_objects_disable'))) { return true; }
+				case 'ca_tour_stops':
+					if ((int)($o_config->get('ca_tours_disable'))) { return false; }
+					break;
+				default:
+					if ((int)($o_config->get($vs_table_name.'_disable'))) { return false; }
 					break;
 			}
-			if ((int)($o_config->get($vs_table_name.'_disable'))) { return false; }
-		}
-
-		switch($vs_table_name) {
-			case 'ca_tour_stops':
-				if ((int)($o_config->get('ca_tours_disable'))) { return false; }
-				break;
+			
 		}
 
 		return true;
