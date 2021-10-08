@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2020 Whirl-i-Gig
+ * Copyright 2006-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -73,7 +73,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"audio/wav"							=> "wav",
 			"audio/x-wav"						=> "wav",
 			"audio/x-wave"						=> "wav",
-			"audio/mp4"							=> "aac",
+			"audio/mp4"							=> "mp4",
 			"audio/ogg"							=> "ogg",
 			"audio/x-flac"						=> "flac"
 		),
@@ -84,7 +84,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"audio/wav"							=> "wav",
 			"audio/x-wav"						=> "wav",
 			"audio/x-wave"						=> "wav",
-			"audio/mp4"							=> "aac",
+			"audio/mp4"							=> "mp4",
 			"video/x-flv"						=> "flv",
 			"image/png"							=> "png",
 			"image/jpeg"						=> "jpg",
@@ -565,7 +565,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 				if ($mimetype == 'audio/ogg') {
 					caExec($this->ops_path_to_ffmpeg." -f ".$this->info["IMPORT"][$this->properties["mimetype"]]." -i ".caEscapeShellArg($this->filepath)." -acodec libvorbis -ab ".$vn_output_bitrate." -ar ".$vn_sample_frequency." -ac ".$vn_channels."  -y ".caEscapeShellArg($filepath.".".$ext).(caIsPOSIX() ? " 2>&1" : ""), $va_output, $vn_return);
 				} else {
-					caExec($this->ops_path_to_ffmpeg." -f ".$this->info["IMPORT"][$this->properties["mimetype"]]." -i ".caEscapeShellArg($this->filepath)." -f ".$this->info["EXPORT"][$mimetype]." -ab ".$vn_output_bitrate." -ar ".$vn_sample_frequency." -ac ".$vn_channels."  -y ".caEscapeShellArg($filepath.".".$ext).(caIsPOSIX() ? " 2>&1" : ""), $va_output, $vn_return);
+					caExec($this->ops_path_to_ffmpeg." -f ".$this->info["IMPORT"][$this->properties["mimetype"]]." -i ".caEscapeShellArg($this->filepath)." -f ".$this->info["EXPORT"][$mimetype]." -ab ".$vn_output_bitrate." -ar ".$vn_sample_frequency." -ac ".$vn_channels." -map a -y ".caEscapeShellArg($filepath.".".$ext).(caIsPOSIX() ? " 2>&1" : ""), $va_output, $vn_return);
 				}
 				if ($vn_return != 0) {
 					@unlink($filepath.".".$ext);
@@ -770,6 +770,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 				break;
 			# ------------------------------------------------
 			case 'audio/mpeg':
+			case 'audio/mp4':
 				$viewer_base_url 	= $pa_options["viewer_base_url"];
 				$vs_id 				= $pa_options["id"] ? $pa_options["id"] : "mp3player";
 
@@ -810,7 +811,6 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 				return ob_get_clean();
 				break;
 				# ------------------------------------------------
-			case 'audio/mp4':
 			case 'audio/x-aiff':
 			case 'audio/x-flac':
 			case 'audio/x-wav':
