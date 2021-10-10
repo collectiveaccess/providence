@@ -629,7 +629,7 @@ class ca_attributes extends BaseModel {
 
 		$qr_attrs = $po_db->query("
 			SELECT 
-				caa.attribute_id, caa.locale_id, caa.element_id element_set_id, caa.row_id,
+				caa.attribute_id, caa.locale_id, caa.element_id element_set_id, caa.row_id, caa.value_source,
 				caav.value_id, caav.item_id, caav.value_longtext1, caav.value_longtext2,
 				caav.value_decimal1, caav.value_decimal2, caav.value_integer1, caav.value_blob,
 				caav.element_id
@@ -761,7 +761,7 @@ class ca_attributes extends BaseModel {
 	static public function getRawAttributeValuesForIDs($po_db, $pn_table_num, $pa_row_ids, $pn_element_id, $pa_options=null) {
 		$qr_attrs = $po_db->query("
 			SELECT 
-				caa.attribute_id, caa.locale_id, caa.element_id element_set_id, caa.row_id,
+				caa.attribute_id, caa.locale_id, caa.element_id element_set_id, caa.row_id, caa.value_source,
 				caav.value_id, caav.item_id, caav.value_longtext1, caav.value_longtext2,
 				caav.value_decimal1, caav.value_decimal2, caav.value_integer1, caav.value_blob,
 				cme.element_id, cme.datatype, cme.settings, cme.element_code
