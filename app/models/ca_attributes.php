@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -79,6 +79,13 @@ BaseModel::$s_ca_models_definitions['ca_attributes'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => 'Row id', 'DESCRIPTION' => 'Identifier of row to which this attibute is applied.'
+		),
+		'value_source' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
+				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+				'IS_NULL' => false,
+				'DEFAULT' => '',
+				'LABEL' => 'Value source', 'DESCRIPTION' => 'Source of data value (for scientific citation).'
 		)
 	)
 );
@@ -222,7 +229,16 @@ class ca_attributes extends BaseModel {
 	}
 	# -------------------------------------------------------
 	/**
+	 * Add new attribute value to row.
 	 *
+	 * @param int $pn_table_num
+	 * @param int $pn_row_id
+	 * @param mixed $pm_element_code_or_id
+	 * @param array $pa_values
+	 * @param array $pa_options Options include:
+	 *		source = Attribute source identifier. [Default is null]
+	 *
+	 * @return int Attribute id of newly created attribute, false on error or null if attribute was skipped silently (Eg. empty value).
 	 */
 	public function addAttribute($pn_table_num, $pn_row_id, $pm_element_code_or_id, $pa_values, $pa_options=null) {
 	    if (!is_array($pa_options)) { $pa_options = []; }
@@ -253,7 +269,9 @@ class ca_attributes extends BaseModel {
 		$this->set('table_num', $pn_table_num);
 		$this->set('row_id', $pn_row_id);
 		
-		$this->setMode(ACCESS_WRITE);
+		// Save source value
+		$this->set('value_source', caGetOption('source', $pa_options, null));
+		
 		$this->insert($pa_options);
 		
 		if ($this->numErrors()) {
@@ -269,7 +287,6 @@ class ca_attributes extends BaseModel {
 		$t_attr_val = new ca_attribute_values();
 		$t_attr_val->purify($this->purify());
 		$t_attr_val->setTransaction($o_trans);
-		$t_attr_val->setMode(ACCESS_WRITE);
 		
 		$vn_attribute_id = $this->getPrimaryKey();
 		$va_elements = $t_element->getElementsInSet();
@@ -328,7 +345,13 @@ class ca_attributes extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Edit values for currently loaded attribute.
 	 *
+	 * @param array $pa_values
+	 * @param array $pa_options Options include:
+	 *		source = Attribute source identifier. [Default is null]
+	 *
+	 * @return bool
 	 */
 	public function editAttribute($pa_values, $pa_options=null) {
 	    if (!is_array($pa_options)) { $pa_options = []; }
@@ -348,11 +371,14 @@ class ca_attributes extends BaseModel {
 		
 		unset(ca_attributes::$s_get_attributes_cache[$this->get('table_num').'/'.$this->get('row_id')]);
 		
-		$this->setMode(ACCESS_WRITE);
-		
 		// Force default of locale-less attributes to current user locale if possible
 		if (!isset($pa_values['locale_id']) || !$pa_values['locale_id']) { $pa_values['locale_id'] = $g_ui_locale_id; }
 		if (isset($pa_values['locale_id'])) { $this->set('locale_id', $pa_values['locale_id']); }
+		
+		// Save source value
+		if($source = caGetOption('source', $pa_options, null, ['trim' => true])) {
+			$this->set('value_source', $source);
+		}
 		
 		$this->update();
 
@@ -369,8 +395,6 @@ class ca_attributes extends BaseModel {
 		$t_attr_val = new ca_attribute_values();
 		$t_attr_val->purify($this->purify());
 		$t_attr_val->setTransaction($o_trans);
-		$t_attr_val->setMode(ACCESS_WRITE);
-		
 		
 		$t_element = ca_attributes::getElementInstance($this->get('element_id'));
 		$va_elements = $t_element->getElementsInSet();
@@ -421,7 +445,6 @@ class ca_attributes extends BaseModel {
 			}
 		}
 		
-		
 		if ($this->numErrors()) {
 			if ($vb_web_set_transaction) {
 				$o_trans->rollback();
@@ -434,14 +457,15 @@ class ca_attributes extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Remove currently loaded attribute.
 	 *
+	 * @return bool 
 	 */
 	public function removeAttribute() {
 		if (!$this->getPrimaryKey()) { return null; }
-		$this->setMode(ACCESS_WRITE);
 		
 		unset(ca_attributes::$s_get_attributes_cache[$this->get('table_num').'/'.$this->get('row_id')]);
-		$vn_rc= $this->delete(true);
+		$rc = $this->delete(true);
 		
 		if ($this->numErrors()) {
 			$vs_errors = join('; ', $this->getErrors());
@@ -449,7 +473,7 @@ class ca_attributes extends BaseModel {
 			$this->postError(1974, $vs_errors, 'ca_attributes->removeAttribute()');
 			return false;
 		}
-		return $vn_rc;
+		return (bool)$rc;
 	}
 	# ------------------------------------------------------
 	/**

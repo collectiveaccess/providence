@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2019 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -99,6 +99,7 @@
 		 *      skipExistingValues = Don't add values that already exist on this record. [Default is false]
 		 *      showRepeatCountErrors = Emit visible errors when minimum/maximum repeat counts are exceeded. [Default is false]
 		 *      dontCheckMinMax = Don't do minimum/maximum repeat count checks. [Default is false]
+		 *		source = Source notes for attribute value. [Default is null]
 		 *      
 		 * @return bool True on success, false on error or null if attribute was skipped.
 		 */
@@ -168,17 +169,17 @@
 			        $vals = [];
 			        foreach($va_attrs as $o_attr) {
 			            foreach($o_attr->getValues() as $o_value) {
-			                $vn_element_id = $o_value->getElementID();
-			                $vs_element_code = ca_metadata_elements::getElementCodeForId($vn_element_id);
+			                $vn_sub_element_id = $o_value->getElementID();
+			                $vs_element_code = ca_metadata_elements::getElementCodeForId($vn_sub_element_id);
 			                
-			                if(isset($pa_values[$vn_element_id]) || isset($pa_values[$vs_element_code])) {
-			                	$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_element_id] = true;
+			                if(isset($pa_values[$vn_sub_element_id]) || isset($pa_values[$vs_element_code])) {
+			                	$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_sub_element_id] = true;
 			                }
 			                
 			                $pv = $o_value->getDisplayValue(['dateFormat' => 'original']); // need to compare dates as-entered
 			                $vals[] = $o_value->getDisplayValue(['output' => 'text', 'dateFormat' => 'original']);
 			                if (
-			                	(strlen($pa_values[$vn_element_id] && ($pa_values[$vn_element_id] != $pv)))
+			                	(strlen($pa_values[$vn_sub_element_id] && ($pa_values[$vn_sub_element_id] != $pv)))
 			            		||
 			            		(strlen($pa_values[$vs_element_code] && ($pa_values[$vs_element_code] != $pv)))
 			            	) {
@@ -227,6 +228,10 @@
 			return $vn_attribute_id;
 		}
 		# ------------------------------------------------------------------
+		/**
+		 *
+		 *		source = Source notes for attribute value. [Default is null]
+		 */
 		public function editAttribute($pn_attribute_id, $pm_element_code_or_id, $pa_values, $ps_error_source=null, $pa_options=null) {
 			$t_attr = new ca_attributes($pn_attribute_id);
 			$t_attr->purify($this->purify());
@@ -389,7 +394,9 @@
 			return true;
 		}
 		# ------------------------------------------------------------------
-		// edit attribute from current row
+		/**
+		 * edit attribute from current row
+		 */
 		public function _editAttribute($pn_attribute_id, $pa_values, $po_trans=null, $pa_info=null) {
 			$t_attr = new ca_attributes($pn_attribute_id);
 			$t_attr->purify($this->purify());
@@ -411,6 +418,8 @@
 		/**
 		 * Replaces first attribute value with specified values; will add attribute value if no attributes are defined 
 		 * This is handy for doing editing on non-repeating attributes
+		 *
+		 *		source = Source notes for attribute value. [Default is null]
 		 */
 		public function replaceAttribute($pa_values, $pm_element_code_or_id, $ps_error_source=null, $pa_options=null) {
 			$va_attrs = $this->getAttributesByElement($pm_element_code_or_id);
