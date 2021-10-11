@@ -1692,7 +1692,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				$vs_buf = ($max_columns > 1) ? "<div class='checklist' style='grid-template-columns: ".str_repeat(" {$p}%", $max_columns).";'>\n" : "<div>\n";
 	
 				foreach($va_options as $vm_value => $vs_label) {
-					
+					$vs_label = str_replace("&nbsp;", "", trim($vs_label));
 					$va_attributes = array('value' => $vm_value);
 					if (isset($va_disabled_options[$vm_value]) && $va_disabled_options[$vm_value]) {
 						$va_attributes['disabled'] = 1;
