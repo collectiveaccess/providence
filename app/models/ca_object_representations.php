@@ -550,7 +550,6 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			}
 		}
 		
-		// Do update
 		$reader = $media_path ? $this->_readEmbeddedMetadata($media_path) : null;
 		
 		if ($vn_rc = parent::update($options)) {
