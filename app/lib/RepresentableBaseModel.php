@@ -570,6 +570,42 @@
 				if ($o_idno = $t_rep->getIDNoPlugInInstance()) {
 					$t_rep->setIdnoWithTemplate($o_idno->makeTemplateFromValue(''));
 				}
+				
+				$media_proc_opts = [];
+				if(is_array($skip_config = $this->getAppConfig()->get('skip_object_representation_versions_for_mimetype_when'))) {
+					// process values to use codes for list items
+					$exp_values = $pa_values; 
+					foreach($exp_values as $k => $v) {
+						if($e = ca_metadata_elements::getInstance($k)) {
+							if($e->get('datatype') == 3) { // list
+								$exp_values[$k] = caGetListItemIdno($v);
+							}
+						} elseif($k === 'type_id') {
+							$exp_values[$k] = caGetListItemIdno($v);
+						}
+						$tmp = explode('.', $k);
+						if(sizeof($tmp) === 1) {
+							$exp_values["ca_object_representations.{$k}"] = $exp_values[$k];
+						}
+					}
+					
+					$media = new Media();
+					$media_mimetype = $media->divineFileFormat($ps_media_path);
+					foreach($skip_config as $m => $versions) {
+						if(caCompareMimetypes($media_mimetype, $m)) {
+							foreach($versions as $version => $skip) {
+								if(ExpressionParser::evaluate($skip['when'], $exp_values)) {
+									if(!is_array($media_proc_opts['skipWhen'])) { $media_proc_opts['skipWhen'] = []; }
+									$media_proc_opts['skipWhen'][$version] = [
+										'threshold' => caGetOption('threshold', $skip, 0),
+										'replaceWithVersion' => caGetOption('replaceWithVersion', $skip, 'small')
+									];
+								}
+								break;
+							}
+						}
+					}
+				}
 				if (is_array($pa_values)) {
 					if (isset($pa_values['idno'])) {
 						$t_rep->set('idno', $pa_values['idno']);
@@ -599,8 +635,10 @@
 					$t_rep->setIdnoWithTemplate('%', ['serialOnly' => true]);
 				}
 				
+				
+				
 				try {
-					$t_rep->insert();
+					$t_rep->insert($media_proc_opts);
 				} catch (MediaExistsException $e) {
 					$this->postError(2730, caGetReferenceToExistingRepresentationMedia($e->getRepresentation()), 'ca_object_representations->insert()');
 					return false;
@@ -650,7 +688,7 @@
 						}
 					}
 				}
-				$t_rep->update();
+				$t_rep->update($media_proc_opts);
 				if ($t_rep->numErrors()) {
 					$this->errors = array_merge($this->errors, $t_rep->errors());
 					return false;

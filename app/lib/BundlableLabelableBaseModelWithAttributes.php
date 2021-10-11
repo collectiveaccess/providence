@@ -2080,11 +2080,24 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		return (caGetOption('contentOnly', $pa_options, false) ? $vs_element : $vs_output).$prompt;
 	}
 	# ------------------------------------------------------
-	public function getBundleList($pa_options=null) {
-		if (isset($pa_options['includeBundleInfo']) && $pa_options['includeBundleInfo']) { 
-			return $this->BUNDLES;
+	/**
+	 *
+	 */
+	public function getBundleList($options=null) {
+		$bundles = $this->BUNDLES;
+		if (caGetOption('rewriteKeys', $options, false)) {
+		    $keys = array_keys($bundles);
+			foreach($keys as $k) {
+				if(substr($k, 0, 13) === 'ca_attribute_') {
+					$bundles[substr($k, 13)] = $bundles[$k];
+					unset($bundles[$k]);
+				}		
+			}
 		}
-		return array_keys($this->BUNDLES);
+		if (caGetOption('includeBundleInfo', $options, false)) { 
+			return $bundles;
+		}
+		return array_keys($bundles);
 	}
 	# ------------------------------------------------------
 	public function isValidBundle($ps_bundle_name) {
@@ -3889,6 +3902,7 @@ if (!$vb_batch) {
 						$this->set($this->HIERARCHY_ID_FLD, $this->getPrimaryKey());
 						if (!($this->addRelationship('ca_collections', $vn_parent_id, $vs_coll_rel_type))) {
 							$this->postError(2510, _t('Could not move object under collection: %1', join("; ", $this->getErrors())), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()");
+							$po_request->addActionErrors($this->errors());
 						}
 					}
 				}

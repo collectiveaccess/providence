@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2019 Whirl-i-Gig
+ * Copyright 2000-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2658,7 +2658,7 @@ class BaseModel extends BaseObject {
 					$vs_sql  = "";
 					if (sizeof($va_media_fields) > 0) {
 						foreach($va_media_fields as $f) {
-							if($vs_msql = $this->_processMedia($f, array('delete_old_media' => false, 'batch' => caGetOption('batch', $pa_options, false)))) {
+							if($vs_msql = $this->_processMedia($f, array('delete_old_media' => false, 'batch' => caGetOption('batch', $pa_options, false), 'skipWhen' => caGetOption('skipWhen', $pa_options, null)))) {
 								$vs_sql .= $vs_msql;
 							}
 						}
@@ -3185,7 +3185,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					case (FT_MEDIA):
 						$va_limit_to_versions = caGetOption("updateOnlyMediaVersions", $pa_options, null);
 						
-						if ($vs_media_sql = $this->_processMedia($vs_field, array('processingMediaForReplication' => caGetOption('processingMediaForReplication', $pa_options, false), 'these_versions_only' => $va_limit_to_versions, 'batch' => caGetOption('batch', $pa_options, false)))) {
+						if ($vs_media_sql = $this->_processMedia($vs_field, array('processingMediaForReplication' => caGetOption('processingMediaForReplication', $pa_options, false), 'these_versions_only' => $va_limit_to_versions, 'batch' => caGetOption('batch', $pa_options, false), 'skipWhen' => caGetOption('skipWhen', $pa_options, null)))) {
 							$vs_sql .= $vs_media_sql;
 							$vn_fields_that_have_been_set++; $fields_changed++;
 						} else {
@@ -4291,6 +4291,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	 * 		delete_old_media = set to zero to prevent that old media files are deleted; defaults to 1
 	 *		these_versions_only = if set to an array of valid version names, then only the specified versions are updated with the currently updated file; ignored if no media already exists
 	 *		dont_allow_duplicate_media = if set to true, and the model has a field named "md5" then media will be rejected if a row already exists with the same MD5 signature
+	 *		skipWhen = skip processing of specific versions of media when file size exceeds threshold and use an existing version in its place. An array should be set, indexed by version name. Each skipped version should have an array with two keys, "threshold" (size in bytes) and "replaceWithVersion" (the version to use). [Default is null]
 	 */
 	public function _processMedia($ps_field, $pa_options=null) {
 		global $AUTH_CURRENT_USER_ID;
@@ -4572,7 +4573,13 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 
 						$basis				= isset($version_info[$v]['BASIS']) ? $version_info[$v]['BASIS'] : '';
 						
-						$skip_threshold 	= caGetOption('SKIP_WHEN_FILE_LARGER_THAN', $version_info[$v], null);
+						$skip_when_opt = caGetOption('skipWhen', $pa_options, null);
+						if(is_null($skip_threshold = caGetOption('SKIP_WHEN_FILE_LARGER_THAN', $version_info[$v], null)) && is_array($skip_when_opt)) {
+							$skip_threshold = $skip_when_opt[$v]['threshold'] ?? null;
+						}
+						if(is_null($replace_with_version_opt = caGetOption('REPLACE_WITH_VERSION', $version_info[$v], null))) {
+							$replace_with_version_opt = $skip_when_opt[$v]['replaceWithVersion'] ?? null;
+						}
 
 						if (isset($media_desc[$basis]) && isset($media_desc[$basis]['FILENAME'])) {
 							if (!isset($va_media_objects[$basis])) {
@@ -4662,12 +4669,13 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 							if (
 								(!is_null($skip_threshold) && ((int)$skip_threshold < (int)$media_desc["INPUT"]["FILESIZE"]))
 								||
-								(is_null($skip_threshold) && isset($version_info[$v]['REPLACE_WITH_VERSION']) && in_array($version_info[$v]['REPLACE_WITH_VERSION'], $va_versions, true))
+								(is_null($skip_threshold) && isset($replace_with_version_opt) && in_array($replace_with_version_opt, $va_versions, true))
 							) {
 								$media_desc[$v]['SKIP'] = 1;
 								
 								$alt_version_list = array_filter(array_keys($media_desc), function($x) use ($v) { return ($x !== $v); });
-								$replace_with_version = caGetOption('REPLACE_WITH_VERSION', $version_info[$v], array_pop($alt_version_list), ['validValues' => $va_versions]);
+								$replace_with_version = $replace_with_version_opt ? $replace_with_version_opt : array_pop($alt_version_list);
+								if(!in_array($replace_with_version, $va_versions)) { $replace_with_version = null; }
 								$media_desc[$v]['REPLACE_WITH_VERSION'] = $replace_with_version ? $replace_with_version : $va_versions[0];
 							} else if ((bool)$version_info[$v]["USE_EXTERNAL_URL_WHEN_AVAILABLE"]) { 
 								$filepath = $this->_SET_FILES[$ps_field]['tmp_name'];
