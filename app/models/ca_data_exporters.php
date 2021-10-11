@@ -1840,6 +1840,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vs_source = $t_exporter_item->get('source');
 		$vs_element = $t_exporter_item->get('element');
 		$vb_repeat = $settings['repeat_element_for_multiple_values'];
+		$deduplicate = $settings['deduplicate'];
 
 		if($vs_skip_if_empty = $settings['skipIfEmpty']) {
 			if(!(strlen($t_instance->get($vs_source))>0)) {
@@ -2080,8 +2081,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				}
 			} else {
 				if(!$vb_repeat) {
-					$vs_get = $t_instance->get($vs_source, $va_get_options);
-
+					$va_values = $t_instance->get($vs_source, array_merge($va_get_options, ['returnAsArray' => true]));
+					if($deduplicate) { $va_values = array_unique($va_values); } 
+					
+					$vs_get = join(caGetOption('delimiter', $va_get_opts, ';'), $va_values);
 					$o_log->logDebug(_t("Source is a simple get() for some bundle. Value for this mapping is '%1'", $vs_get));
 					$o_log->logDebug(_t("get() options are: %1", print_r($va_get_options,true)));
 
@@ -2093,6 +2096,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				} else { // user wants current element repeated in case of multiple returned values
 					
 					$va_values = $t_instance->get($vs_source, array_merge($va_get_options, ['returnAsArray' => true]));
+					if($deduplicate) { $va_values = array_unique($va_values); } 
+					
 					if($return_raw_data) { $va_values_raw = $t_instance->get($vs_source, ['returnAsArray' => true]); }
 					$o_log->logDebug(_t("Source is a get() that should be repeated for multiple values. Value for this mapping is '%1'. It includes the custom delimiter ';#;' that is later used to split the value into multiple values.", $vs_values));
 					$o_log->logDebug(_t("get() options are: %1", print_r($va_get_options,true)));
