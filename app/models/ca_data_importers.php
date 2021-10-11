@@ -1340,6 +1340,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 *		importAllDatasets = for data formats (such as Excel/XLSX) that support multiple data sets in a single file (worksheets in Excel), indicated that all data sets should be imported; otherwise only the default data set is imported [Default=false]
 	 *		addToSet = identifier for set to add all imported items to. [Default is null]
 	 *		detailedLogName = [Default is null]
+	 *		reader = Reader instance preloaded with data for import. If set reader content will be used rather than reading the file pointed to by $ps_source. [Default is null]
 	 */
 	public function importDataFromSource($ps_source, $ps_mapping, $pa_options=null) {
 		$this->num_import_errors = 0;
@@ -1466,18 +1467,21 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	
 		// Open file 
 		$ps_format = (isset($pa_options['format']) && $pa_options['format']) ? $pa_options['format'] : null;	
-		if (!($o_reader = $t_mapping->getDataReader($ps_source, $ps_format))) {
-			$this->logImportError(_t("Could not open source %1 (format=%2)", $ps_source, $ps_format), $va_log_import_error_opts);
-			if ($o_trans) { $o_trans->rollback(); }
-			return false;
-		}
+		if(!($o_reader = caGetOption('reader', $pa_options, null))) { 
+			$o_reader = $t_mapping->getDataReader($ps_source, $ps_format); 
+			if (!$o_reader) {
+				$this->logImportError(_t("Could not open source %1 (format=%2)", $ps_source, $ps_format), $va_log_import_error_opts);
+				if ($o_trans) { $o_trans->rollback(); }
+				return false;
+			}
 		
-		$va_reader_opts = array('basePath' => $t_mapping->getSetting('basePath'), 'originalFilename' => caGetOption('originalFilename', $pa_options, null));
+			$va_reader_opts = array('basePath' => $t_mapping->getSetting('basePath'), 'originalFilename' => caGetOption('originalFilename', $pa_options, null));
 		
-		if (!$o_reader->read($ps_source, $va_reader_opts)) {
-			$this->logImportError(_t("Could not read source %1 (format=%2)", $ps_source, $ps_format), $va_log_import_error_opts);
-			if ($o_trans) { $o_trans->rollback(); }
-			return false;
+			if (!$o_reader->read($ps_source, $va_reader_opts)) {
+				$this->logImportError(_t("Could not read source %1 (format=%2)", $ps_source, $ps_format), $va_log_import_error_opts);
+				if ($o_trans) { $o_trans->rollback(); }
+				return false;
+			}
 		}
 		
 		$o_log->logDebug(_t('Finished reading input source at %1 seconds', $t->getTime(4)));
@@ -2492,6 +2496,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 
 							$va_vals[ $vn_i ] = $vm_val;
 							if ( $o_reader->valuesCanRepeat() ) {
+								if(!is_array($va_row_with_replacements[ $va_item['source']])) { 
+									$va_row_with_replacements[ $va_item['source']] = $va_row[ $va_item['source']] =  $va_row[mb_strtolower( $va_item['source'])] = []; 
+								}
 								$va_row_with_replacements[ $va_item['source'] ][ $vn_i ]
 									= $va_row[ $va_item['source'] ][ $vn_i ]
 									= $va_row[ mb_strtolower( $va_item['source'] ) ][ $vn_i ] = $vm_val;
@@ -2758,6 +2765,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							}
 							
 							if($displaynameFormat_setting = $va_item['settings']['displaynameFormat']) {
+
 								$va_group_buf[ $vn_c ]['_displaynameFormat'] = $displaynameFormat_setting;
 							}
 							

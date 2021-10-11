@@ -280,6 +280,20 @@ class ca_data_exporter_items extends BaseModel {
 			'label' => _t('Repeat element for multiple values'),
 			'description' => _t('If the current selector/template returns multiple values, this setting determines if the element is repeated for each value.')
 		);
+		
+		$va_settings['deduplicate'] = array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'label' => _t('Remove duplicate values'),
+			'description' => _t('Remove duplicate values from returned set of values for export.')
+		);
 
 		$va_settings['convertCodesToDisplayText'] = array(
 			'formatType' => FT_BIT,
@@ -675,7 +689,6 @@ class ca_data_exporter_items extends BaseModel {
 			}
 			foreach($regexes as $regex_index => $regex_info) {
 				if(!strlen($regex_info['match'])) { continue; }
-				if(!strlen($regex_info['replaceWith'])) { continue; }
 				$regex = "!".str_replace("!", "\\!", $regex_info['match'])."!u".((isset($regex_info['caseSensitive']) && (bool)$regex_info['caseSensitive']) ? '' : 'i');
 				
 				$value = preg_replace($regex , $regex_info['replaceWith'], $value);
