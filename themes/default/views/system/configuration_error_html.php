@@ -38,13 +38,13 @@ if (!is_array($opa_error_messages)) {
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<title>CollectiveAccess configuration error display</title>
-	<link href="<?= __CA_THEME_URL__; ?>/css/error.css" rel="stylesheet" type="text/css" media='all'/>
+	<link href="<?= caGetThemeUrlPath() ?>/css/error.css" rel="stylesheet" type="text/css" media='all'/>
 	<link href='../assets/fontawesome/css/all.min.css' rel='stylesheet' type='text/css' media='all'/>
 	<link href='../assets/fontawesome/css/v4-shims.min.css' rel='stylesheet' type='text/css' media='all'/>
 </head>
 <body>
 	<div id='box'>
-		<div id="logo"><?= caGetLoginLogo(); ?></div><!-- end logo -->
+		<div id="logo"><?= caGetDefaultLogo(); ?></div><!-- end logo -->
 		<div id="content">
 			<?= "<div class='error'>There are issues with your configuration</div>
 				<div class='errorDescription'>General installation instructions can be found
