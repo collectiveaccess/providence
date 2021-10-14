@@ -137,8 +137,11 @@ class RequestHTTP extends Request {
 		# figure out script name
 		$va_tmp = (isset($_SERVER['SCRIPT_NAME']) && $_SERVER['SCRIPT_NAME']) ? explode('/', $_SERVER['SCRIPT_NAME']) : array();
 		$this->ops_script_name = '';
-		while((!$this->ops_script_name) && (sizeof($va_tmp) > 0)) {
-			$this->ops_script_name = array_pop($va_tmp);
+		
+		// Look for .php element. we can rely upon $_SERVER['SCRIPT_NAME'] to be the actual path to the 
+		// executing script due to a PHP bug present in several 7.x versions (see https://bugs.php.net/bug.php?id=74129) 
+		while((!preg_match('!\.php$!', $this->ops_script_name)) && (sizeof($va_tmp) > 0)) {
+			$this->ops_script_name = trim(array_pop($va_tmp));
 		}
 
 		# create session
@@ -195,7 +198,7 @@ class RequestHTTP extends Request {
 		$this->ops_full_path = $_SERVER['REQUEST_URI'];
 		if (!caUseCleanUrls() && !preg_match("!/index.php!", $this->ops_full_path) && !preg_match("!/service.php!", $this->ops_full_path)) { $this->ops_full_path = rtrim($this->ops_full_path, "/")."/index.php"; }
 		$this->ops_full_path = preg_replace("![/]+!", "/", $this->ops_full_path);
-		$vs_path_info = str_replace($_SERVER['SCRIPT_NAME'], "", str_replace("?".$_SERVER['QUERY_STRING'], "", $this->ops_full_path));
+		$vs_path_info = str_replace($this->ops_script_name, "", str_replace("?".$_SERVER['QUERY_STRING'], "", $this->ops_full_path));
 		
 		$this->ops_path_info = $vs_path_info ? $vs_path_info : (isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '');
 		if (__CA_URL_ROOT__) { $this->ops_path_info = preg_replace("!^".__CA_URL_ROOT__."/!", "", $this->ops_path_info); }
