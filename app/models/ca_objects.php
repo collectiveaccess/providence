@@ -928,68 +928,6 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		return true;
 	}
  	# ------------------------------------------------------
- 	# Current location browse support
- 	# ------------------------------------------------------
- 	/**
- 	 * Override BaseModel::addRelationship() to update current location fields in ca_objects
- 	 *
- 	 * @param mixed $pm_rel_table_name_or_num
- 	 * @param int $pn_rel_id
- 	 * @param mixed $pm_type_id
- 	 * @param string $ps_effective_date
- 	 * @param string $ps_source_info
- 	 * @param string $ps_direction
- 	 * @param int $pn_rank
- 	 * @param array $pa_options
- 	 *
- 	 * @return BaseRelationshipModel
- 	 */
- 	public function addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
- 		return parent::addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_source_info, $ps_direction, $pn_rank, $pa_options);
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Override BaseModel::editRelationship() to update current location fields in ca_objects
- 	 *
- 	 * @param mixed $pm_rel_table_name_or_num
- 	 * @param int $pn_relation_id
- 	 * @param mixed $pm_type_id
- 	 * @param string $ps_effective_date
- 	 * @param string $ps_source_info
- 	 * @param string $ps_direction
- 	 * @param int $pn_rank
- 	 * @param array $pa_array
- 	 *
- 	 * @return int
- 	 */
- 	public function editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
- 	    return parent::editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_source_info, $ps_direction, $pn_rank, $pa_options);
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Override BaseModel::removeRelationship() to update current location fields in ca_objects
- 	 *
- 	 * @param mixed $pm_rel_table_name_or_num
- 	 * @param int $pn_relation_id
- 	 *
- 	 * @return int
- 	 */
- 	public function removeRelationship($pm_rel_table_name_or_num, $pn_relation_id) {
- 		return parent::removeRelationship($pm_rel_table_name_or_num, $pn_relation_id);
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Override BaseModel::removeRelationships() to update current location fields in ca_objects
- 	 *
- 	 * @param mixed $pm_rel_table_name_or_num
- 	 * @param mixed $pm_type_id
- 	 *
- 	 * @return int
- 	 */
- 	public function removeRelationships($pm_rel_table_name_or_num, $pm_type_id=null, $pa_options=null) {
- 		return parent::removeRelationships($pm_rel_table_name_or_num, $pm_type_id, $pa_options);
- 	}
- 	# ------------------------------------------------------
  	# Object checkout 
  	# ------------------------------------------------------
  	/**

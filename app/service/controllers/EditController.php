@@ -708,8 +708,9 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							$c = 0;
 							list($target_identifier, $opts) = Edit\resolveParams($args, 'target');
 							if(!($rel = $subject->addRelationship($target, $target_identifier, $reltype, $effective_date, null, null, null, $opts))) {
+								
 								foreach($subject->errors() as $e) {
-									$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", Errors\toGraphQLError($e->getErrorNumber()), _t('Could not create relationship: %1', $e->getErrorMessage()), 'GENERAL');
+									$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", Error\toGraphQLError($e->getErrorNumber()), _t('Could not create relationship: %1', $e->getErrorMessage()), 'GENERAL');
 								}
 							} elseif(sizeof($bundles) > 0) {
 								//  Add interstitial data
@@ -835,7 +836,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 								$c = 0;
 								if(!($rel = $s->editRelationship($target, $rel_id, $target_identifier, $new_rel_type, $effective_date))) {
 									foreach($s->errors() as $e) {
-										$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", Errors\toGraphQLError($e->getErrorNumber()), _t('Could not edit relationship: %1', $e->getErrorMessage()), 'GENERAL'); 
+										$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", Error\toGraphQLError($e->getErrorNumber()), _t('Could not edit relationship: %1', $e->getErrorMessage()), 'GENERAL'); 
 									}
 								} elseif(sizeof($bundles) > 0) {
 									//  Edit interstitial data

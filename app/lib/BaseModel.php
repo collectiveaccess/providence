@@ -9311,9 +9311,12 @@ $pa_options["display_form_field_tips"] = true;
 		if ($pm_type_id && !is_numeric($pm_type_id)) {
 			$t_rel_type = new ca_relationship_types();
 			if ($vs_linking_table = $t_rel_type->getRelationshipTypeTable($this->tableName(), $t_item_rel->tableName())) {
-				$pn_type_id = $t_rel_type->getRelationshipTypeID($vs_linking_table, $pm_type_id);
+				if(!($pn_type_id = $t_rel_type->getRelationshipTypeID($vs_linking_table, $pm_type_id))) {
+					$this->postError(2510, _t('Type id "%1" is not valid', $pm_type_id), 'BaseModel->addRelationship()');
+					return false;
+				}
 			} else {
-				$this->postError(2510, _t('Type id "%1" is not valid', $pm_type_id), 'BaseModel->addRelationship()');
+				$this->postError(2510, _t('Could not find relationship table'), 'BaseModel->addRelationship()');
 				return false;
 			}
 		} else {
@@ -9358,7 +9361,7 @@ $pa_options["display_form_field_tips"] = true;
 			$t_item_rel->insert();
 			
 			if ($t_item_rel->numErrors() > 0) {
-				$this->errors = array_merge($this->getErrors(), $t_item_rel->getErrors());
+				$this->errors = array_merge($this->errors(), $t_item_rel->errors());
 				return false;
 			}
 			return $t_item_rel;
@@ -9460,12 +9463,17 @@ $pa_options["display_form_field_tips"] = true;
 		if ($pm_type_id && !is_numeric($pm_type_id)) {
 			$t_rel_type = new ca_relationship_types();
 			if ($vs_linking_table = $t_rel_type->getRelationshipTypeTable($this->tableName(), $t_item_rel->tableName())) {
-				$pn_type_id = $t_rel_type->getRelationshipTypeID($vs_linking_table, $pm_type_id);
+				if(!($pn_type_id = $t_rel_type->getRelationshipTypeID($vs_linking_table, $pm_type_id))) {
+					$this->postError(2510, _t('Type id "%1" is not valid', $pm_type_id), 'BaseModel->editRelationship()');
+					return false;
+				}
+			} else {
+				$this->postError(2510, _t('Could not find relationship table'), 'BaseModel->editRelationship()');
+				return false;
 			}
 		} else {
 			$pn_type_id = $pm_type_id;
 		}
-		
 		
 		if ((!is_numeric($pn_rel_id) && !caGetOption('primaryKeyOnly', $pa_options, false)) || caGetOption('idnoOnly', $pa_options, false)) {
 			if ($t_rel_item = Datamodel::getInstanceByTableName($va_rel_info['related_table_name'], true)) {
