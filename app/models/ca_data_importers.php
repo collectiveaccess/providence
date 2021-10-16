@@ -865,7 +865,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					
 					$vs_source = trim((string)$o_source->getValue());
 					
-					if ($vs_mode == 'Constant') {
+					if ($vs_mode == 'constant') {
 						$vs_source = "_CONSTANT_:{$vn_row_num}:{$vs_source}";
 					}
 					$vs_destination = trim((string)$o_dest->getValue());
@@ -1992,8 +1992,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							if (in_array($vs_existing_record_policy, array('merge_on_idno', 'merge_on_idno_with_replace'))) { break; }	// fall through if merge_on_idno_and_preferred_labels
 						case 'merge_on_preferred_labels':
 						case 'merge_on_preferred_labels_with_replace':
+							$lookup_values = $va_pref_label_values;
+							if(isset($lookup_values['displayname'])) { unset($lookup_values['displayname']); }
 							$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
-								array_merge($va_base_criteria, array('preferred_labels' => $va_pref_label_values)),
+								array_merge($va_base_criteria, array('preferred_labels' => $lookup_values)),
 								array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
 							));
 							if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
@@ -2824,6 +2826,20 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											$va_group_buf[ $vn_c ][ $vs_item_terminal ] = $va_refined_values;
 											$vn_c ++;
 										}
+										
+										// Rewrite relationship types using replacement values
+										foreach($va_group_buf as $c => $g) {
+											if(
+												($rel_type_delimiter = caGetOption('_relationship_type_delimiter', $g, null))
+												&&
+												($rel_types = explode($rel_type_delimiter, caGetOption('_relationship_type', $g, null)))
+											) {
+												foreach($rel_types as $i => $rt) {
+													$rel_types[$i] = ca_data_importers::replaceValue(trim($rt), $va_item, $pa_options);
+												}
+												$va_group_buf[$c]['_relationship_type'] = join($rel_type_delimiter, $rel_types);
+											}
+										}
 
 										if ( ( $vs_target_table == $vs_subject_table_name )
 										     && ( ( $vs_k
@@ -3575,6 +3591,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								$va_nonpreferred_labels = isset($va_data_for_rel_table['nonpreferred_labels']) ? $va_data_for_rel_table['nonpreferred_labels'] : null;
 								unset($va_data_for_rel_table['preferred_labels']);
 								unset($va_data_for_rel_table['_relationship_type']);
+								unset($va_data_for_rel_table['_relationship_type_delimiter']);
 								unset($va_data_for_rel_table['_type']);
 								unset($va_data_for_rel_table['_parent_id']);
 								unset($va_data_for_rel_table['_errorPolicy']);
@@ -3616,15 +3633,23 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												break;
 											}
 
-											$t_subject->addRelationship($vs_table_name, $vn_rel_id, trim($va_element_data['_relationship_type']), null, null, null, null, array('interstitialValues' => $va_element_data['_interstitial']));
+											if($rel_type_delimiter = $va_element_data['_relationship_type_delimiter']) {
+												$rel_types = array_map(function($v) { return trim($v); }, explode($rel_type_delimiter, trim($va_element_data['_relationship_type'])));
+											} else {
+												$rel_types = [trim($va_element_data['_relationship_type'])];
+											}
+
+											foreach($rel_types as $rel_type) {
+												$t_subject->addRelationship($vs_table_name, $vn_rel_id, $rel_type, null, null, null, null, array('interstitialValues' => $va_element_data['_interstitial']));
 										
-											if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related object with relationship %2:", $vs_idno, trim($va_element_data['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-												$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_table_name, 'notes' => null]));
-												if ($vs_item_error_policy == 'stop') {
-													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
+												if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related object with relationship %2:", $vs_idno, $rel_type), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+													$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_table_name, 'notes' => null]));
+													if ($vs_item_error_policy == 'stop') {
+														$o_log->logAlert(_t('Import stopped due to mapping error policy'));
 																										
-													$stopped_on_error = true;
-													goto stop_on_error;
+														$stopped_on_error = true;
+														goto stop_on_error;
+													}
 												}
 											}
 										}
