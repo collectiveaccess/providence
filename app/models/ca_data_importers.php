@@ -362,8 +362,19 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'takesLocale' => false,
 			'default' => 0,
 			'label' => _t('Ignore record type when looking for existing records as specified by the existing records policy.'),
-			'description' => _t('.')
+			'description' => _t('If set record type is ignored when looking for existing records as specified by the existing records policy.')
 		);
+		
+		$settings['omitPreferredLabelFieldsForExistingRecordPolicy'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Label fields to omit when searching for existing records using preferred labels.'),
+			'description' => _t('List of preferred label fields to omit when matching for existing records using preferred labels. Typically used with entity labels to remove specific subfields such as display name from consideration.')
+		);
+
 		$settings['mergeOnly'] = array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_FIELD,
@@ -1529,6 +1540,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$vs_import_error_policy = 'ignore';
 		}
 		
+		$pref_label_lookup_fields_to_omit = preg_split('![,;]+!', $t_mapping->getSetting('omitPreferredLabelFieldsForExistingRecordPolicy'));
+		if(is_array($pref_label_lookup_fields_to_omit) && !sizeof($pref_label_lookup_fields_to_omit)) { $pref_label_lookup_fields_to_omit = null; }
 		
 		$existing_record_policy_setting_info = $t_mapping->getSettingInfo('existingRecordPolicy');
 		
@@ -1887,6 +1900,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						continue;	// skip because primary key does not exist
 					}
 				} elseif ($vs_existing_record_policy != 'none') {
+					$pref_label_lookup_values = $va_pref_label_values;
+					if(is_array($pref_label_lookup_fields_to_omit)) {
+						foreach($pref_label_lookup_fields_to_omit as $f2o) {
+							unset($pref_label_lookup_values[trim($f2o)]);
+						}
+					}
+				
 					switch($vs_existing_record_policy) {
 						case 'merge_on_id':
 						case 'merge_on_id_with_replace':
@@ -1956,7 +1976,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							break;
 						case 'skip_on_preferred_labels':
 							$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
-								array_merge($va_base_criteria, array('preferred_labels' => $va_pref_label_values)),
+								array_merge($va_base_criteria, array('preferred_labels' => $pref_label_lookup_values)),
 								array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
 							));
 							if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
@@ -1992,10 +2012,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							if (in_array($vs_existing_record_policy, array('merge_on_idno', 'merge_on_idno_with_replace'))) { break; }	// fall through if merge_on_idno_and_preferred_labels
 						case 'merge_on_preferred_labels':
 						case 'merge_on_preferred_labels_with_replace':
-							$lookup_values = $va_pref_label_values;
-							if(isset($lookup_values['displayname'])) { unset($lookup_values['displayname']); }
 							$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
-								array_merge($va_base_criteria, array('preferred_labels' => $lookup_values)),
+								array_merge($va_base_criteria, array('preferred_labels' => $pref_label_lookup_values)),
 								array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
 							));
 							if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
@@ -2003,7 +2021,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								if ($log_erp) { $o_log->logInfo(_t('[%1] Merged with existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy)); }
 								$vb_was_preferred_label_match = true;
 							} else {
-							    if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on label values %3 by policy %2 using base criteria %4', $vs_idno, $vs_existing_record_policy, print_r($va_pref_label_values, true), print_r($va_base_criteria, true))); }
+							    if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on label values %3 by policy %2 using base criteria %4', $vs_idno, $vs_existing_record_policy, print_r($pref_label_lookup_values, true), print_r($va_base_criteria, true))); }
 							}
 							break;	
 						case 'overwrite_on_idno_and_preferred_labels':
@@ -2032,7 +2050,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							if ($vs_existing_record_policy == 'overwrite_on_idno') { break; }	// fall through if overwrite_on_idno_and_preferred_labels
 						case 'overwrite_on_preferred_labels':
 							$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
-								array_merge($va_base_criteria, array('preferred_labels' => $va_pref_label_values)),
+								array_merge($va_base_criteria, array('preferred_labels' => $pref_label_lookup_values)),
 								array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
 							));
 							if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
@@ -2049,7 +2067,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								}
 								$t_subject->clear();
 							} else {
-							    if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on label values %3 by policy %2 using base criteria %4', $vs_idno, $vs_existing_record_policy, print_r($va_pref_label_values, true), print_r($va_base_criteria, true))); }
+							    if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on label values %3 by policy %2 using base criteria %4', $vs_idno, $vs_existing_record_policy, print_r($pref_label_lookup_values, true), print_r($va_base_criteria, true))); }
 							}
 							break;
 					}
