@@ -200,7 +200,7 @@ class RequestHTTP extends Request {
 		$this->ops_full_path = preg_replace("![/]+!", "/", $this->ops_full_path);
 		$vs_path_info = str_replace($this->ops_script_name, "", str_replace("?".$_SERVER['QUERY_STRING'], "", $this->ops_full_path));
 		
-		$this->ops_path_info = $vs_path_info ? $vs_path_info : (isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '');
+		$this->ops_path_info = preg_replace("![/]+!", "/", $vs_path_info ? $vs_path_info : (isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : ''));
 		if (__CA_URL_ROOT__) { $this->ops_path_info = preg_replace("!^".__CA_URL_ROOT__."/!", "", $this->ops_path_info); }
 	}
 	# -------------------------------------------------------
