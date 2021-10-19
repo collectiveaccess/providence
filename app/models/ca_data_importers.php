@@ -372,7 +372,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'takesLocale' => false,
 			'default' => '',
 			'label' => _t('Label fields to omit when searching for existing records using preferred labels.'),
-			'description' => _t('List of preferred label fields to omit when matching for existing records using preferred labels. Typically used with entity labels to remove specific subfields such as display name from consideration.')
+			'description' => _t('Comma or semi-colon delimited list of preferred label fields to omit when matching for existing records using preferred labels. Typically used with entity labels to remove specific subfields such as display name from consideration.')
 		);
 
 		$settings['mergeOnly'] = array(
