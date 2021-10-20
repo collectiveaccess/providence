@@ -260,8 +260,9 @@ class ca_metadata_alert_triggers extends BaseModel {
 	/**
 	 * @param BundlableLabelableBaseModelWithAttributes $t_subject
 	 * @param int $pn_type
+	 * @oparam array additional data to include in alert
 	 */
-	public static function fireApplicableTriggers(&$t_subject, $pn_type = __CA_MD_ALERT_CHECK_TYPE_SAVE__) {
+	public static function fireApplicableTriggers(&$t_subject, int $pn_type = __CA_MD_ALERT_CHECK_TYPE_SAVE__, ?array $additional_data=null) {
 		$va_triggers = self::getApplicableTriggersForInstance($t_subject);
 		if(!is_array($va_triggers) || !sizeof($va_triggers)) { return; }
 
@@ -271,7 +272,7 @@ class ca_metadata_alert_triggers extends BaseModel {
 			// skip triggers if not specified type
 			if($o_trigger->getTriggerType() != $pn_type) { continue; }
 			
-			self::fireTrigger($o_trigger, $t_subject, $va_trigger);
+			self::fireTrigger($o_trigger, $t_subject, $va_trigger, $additional_data);
 		}
 	}
 	# ------------------------------------------------------
@@ -283,7 +284,7 @@ class ca_metadata_alert_triggers extends BaseModel {
 	 *
 	 * @return false
 	 */
-	public static function fireTrigger($po_trigger, &$t_subject, $pa_trigger) {
+	public static function fireTrigger($po_trigger, &$t_subject, array $pa_trigger, ?array $additional_data=null) {
 		$t_rule = new ca_metadata_alert_rules();
 		$t_user = new ca_users();
 		$t_group = new ca_user_groups();
@@ -292,7 +293,7 @@ class ca_metadata_alert_triggers extends BaseModel {
 		if($po_trigger->check($t_subject)) {
 			if(!$t_rule->load($pa_trigger['rule_id'])) { return false; }
 
-			$vs_notification_key = $po_trigger->getEventKey($t_subject);
+			$vs_notification_key = $po_trigger->getEventKey($t_subject, $additional_data);
 
 
 			if (!is_array($va_delivery_options = caGetOption('notificationDeliveryOptions', $pa_trigger['settings'], null))) {
@@ -309,7 +310,7 @@ class ca_metadata_alert_triggers extends BaseModel {
 					if ($va_user['access'] >= __CA_ALERT_RULE_ACCESS_NOTIFICATION__) {
 						$t_user->load($va_user['user_id']);
 						if ($t_user->notificationExists(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $vs_notification_key)) { continue; }
-						$t_user->addNotification(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $po_trigger->getNotificationMessage($t_subject), false, ['key' => $vs_notification_key, 'data' => $po_trigger->getData($t_subject), 'deliverByEmail' => $vb_email, 'deliverToInbox' => $vb_inbox]);
+						$t_user->addNotification(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $po_trigger->getNotificationMessage($t_subject, $additional_data), false, ['key' => $vs_notification_key, 'data' => $po_trigger->getData($t_subject), 'deliverByEmail' => $vb_email, 'deliverToInbox' => $vb_inbox]);
 					}
 				}
 			}
@@ -325,7 +326,7 @@ class ca_metadata_alert_triggers extends BaseModel {
                             foreach($va_groups as $va_user) {
                                 if(!$t_user->load($va_user['user_id'])) { continue; }
                                 if ($t_user->notificationExists(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $vs_notification_key)) { continue; }
-                                $t_user->addNotification(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $po_trigger->getNotificationMessage($t_subject), false, ['key' => $vs_notification_key, 'data' => $po_trigger->getData($t_subject), 'deliverByEmail' => $vb_email, 'deliverToInbox' => $vb_inbox]);
+                                $t_user->addNotification(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $po_trigger->getNotificationMessage($t_subject, $additional_data), false, ['key' => $vs_notification_key, 'data' => $po_trigger->getData($t_subject), 'deliverByEmail' => $vb_email, 'deliverToInbox' => $vb_inbox]);
                             }
                         }
 					}
@@ -434,7 +435,7 @@ class ca_metadata_alert_triggers extends BaseModel {
 				$qr_records = call_user_func_array("{$vs_table}::find", [$va_criteria, $va_params]);
 				
 				while($qr_records->nextHit()) {
-					self::fireTrigger($o_trigger, $qr_records, $va_trigger['info']);
+					self::fireTrigger($o_trigger, $qr_records, $va_trigger['info'], null);
 				}
 			}
 		}

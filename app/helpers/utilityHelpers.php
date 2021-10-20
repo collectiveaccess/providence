@@ -4021,9 +4021,11 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 * Get list of (enabled) primary tables as table_num => table_name mappings
 	 * @param bool $pb_include_rel_tables Include relationship tables or not. Defaults to false
+	 * @param array $additional_tables Optional array of additional tables to include. [Default is null]
+	 *
 	 * @return array
 	 */
-	function caGetPrimaryTables($pb_include_rel_tables=false) {
+	function caGetPrimaryTables($pb_include_rel_tables=false, ?array $additional_tables=null) {
 		$o_conf = Configuration::load();
 		$va_ret = [];
 		foreach([
@@ -4045,7 +4047,13 @@ function caFileIsIncludable($ps_file) {
 				$va_ret[$vn_table_num] = $vs_table_name;
 			}
 		}
-
+		if(is_array($additional_tables) && sizeof($additional_tables)) {
+			foreach($additional_tables as $table) {
+				if(!($t=Datamodel::getInstance($table, true))) { continue; }
+				$va_ret[$t->tableNum()] = $table;
+			}
+		}
+		
 		if($pb_include_rel_tables) {
 			require_once(__CA_MODELS_DIR__.'/ca_relationship_types.php');
 			$t_rel = new ca_relationship_types();
@@ -4064,8 +4072,8 @@ function caFileIsIncludable($ps_file) {
 	 * @param bool $pb_include_rel_tables Include relationship tables or not. Defaults to false
 	 * @return array
 	 */
-	function caGetPrimaryTablesForHTMLSelect($pb_include_rel_tables=false) {
-		$va_tables = caGetPrimaryTables($pb_include_rel_tables);
+	function caGetPrimaryTablesForHTMLSelect($pb_include_rel_tables=false, ?array $additional_tables=null) {
+		$va_tables = caGetPrimaryTables($pb_include_rel_tables, $additional_tables);
 		$va_ret = [];
 		foreach($va_tables as $vn_table_num => $vs_table) {
 			$va_ret[Datamodel::getInstance($vn_table_num, true)->getProperty('NAME_PLURAL')] = $vn_table_num;
