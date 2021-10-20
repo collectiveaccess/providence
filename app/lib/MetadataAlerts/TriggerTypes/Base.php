@@ -35,10 +35,14 @@ namespace CA\MetadataAlerts\TriggerTypes;
 require_once(__CA_LIB_DIR__.'/MetadataAlerts/TriggerTypes/Modification.php');
 require_once(__CA_LIB_DIR__.'/MetadataAlerts/TriggerTypes/Date.php');
 require_once(__CA_LIB_DIR__.'/MetadataAlerts/TriggerTypes/Submission.php');
+require_once(__CA_LIB_DIR__.'/MetadataAlerts/TriggerTypes/SubmissionError.php');
+require_once(__CA_LIB_DIR__.'/MetadataAlerts/TriggerTypes/SubmissionWarning.php');
 
 define('__CA_MD_ALERT_CHECK_TYPE_SAVE__', 0);
 define('__CA_MD_ALERT_CHECK_TYPE_PERIODIC__', 1);
 define('__CA_MD_ALERT_CHECK_TYPE_SUBMISSION__', 2);
+define('__CA_MD_ALERT_CHECK_TYPE_SUBMISSION_ERROR__', 3);
+define('__CA_MD_ALERT_CHECK_TYPE_SUBMISSION_WARNING__', 4);
 
 abstract class Base {
 
@@ -89,12 +93,12 @@ abstract class Base {
 	 *
 	 * @return string Always returns null
 	 */
-	public function getEventKey($t_instance) {
+	public function getEventKey($t_instance, ?array $additional_data=null) {
 		return null;
 	}
 	
 	/**
-	 * Extra data to attach to notification for triggered event
+	 * Return extra data to attach to notification for triggered event
 	 *
 	 * @param BaseModel $t_instance
 	 *
@@ -167,7 +171,7 @@ abstract class Base {
 	 * @param \BundlableLabelableBaseModelWithAttributes $t_instance
 	 * @return string
 	 */
-	public function getNotificationMessage(&$t_instance) {
+	public function getNotificationMessage(&$t_instance, ?array $additional_data=null) {
         global $g_request;
 
         if(!$g_request) {
@@ -178,17 +182,22 @@ abstract class Base {
             	'HTTP_USER_AGENT' => 'CollectiveAccess/Internal'
             ]]);
         }
-        
+
 		if(!($vs_template = $this->getTriggerValues()['settings']['notificationTemplate'])) {
 			$t_rule = new \ca_metadata_alert_rules($this->getTriggerValues()['rule_id']);
 
+			$table = $t_instance->tableName();
+
 			return _t(
-				"Metadata alert rule '%1' triggered for record %2",
+				"Alert rule '%1' triggered for record %2",
 				$t_rule->getLabelForDisplay(),
-				caEditorLink($g_request, $t_instance->get($t_instance->tableName().".preferred_labels"), '', $t_instance->tableName(), $t_instance->getPrimaryKey(), [], ['absolute' => true])
+				caEditorLink($g_request, $t_instance->get("{$table}.preferred_labels"), '', $table, $t_instance->getPrimaryKey(), [], ['absolute' => true])
 			);
 		} else {
-			return $t_instance->getWithTemplate($vs_template, ['absolute' => true]);
+			if(is_array($additional_data) && sizeof($additional_data)) {
+				$vs_template = caProcessTemplate($vs_template, $additional_data, ['skipTagsWithoutValues' => true]);
+			}
+			return caProcessTemplateForIDs($vs_template, $t_instance->tableName(), [$t_instance->getPrimaryKey()], ['absolute' => true]);
 		}
 	}
 	
@@ -240,6 +249,8 @@ abstract class Base {
 			_t('Modification') => 'Modification',
 			_t('Date') => 'Date',
 			_t('Submission') => 'Submission',
+			_t('Submission error') => 'SubmissionError',
+			_t('Submission warning') => 'SubmissionWarning',
 			//_t('Conditions met') => 'Expression',
 		);
 	}
@@ -260,6 +271,10 @@ abstract class Base {
 				return new Date($pa_values);
 			case 'Submission':
 				return new Submission($pa_values);
+			case 'SubmissionError':
+				return new SubmissionError($pa_values);
+			case 'SubmissionWarning':
+				return new SubmissionWarning($pa_values);
 			case 'Expression':
 				// @todo
 			default:
