@@ -161,7 +161,7 @@ class Date extends Base {
 	 *
 	 * @return string Always returns null
 	 */
-	public function getEventKey($t_instance) {
+	public function getEventKey($t_instance, ?array $additional_data=null) {
 		$va_spec = $this->_getSpec($t_instance);
 		return md5($t_instance->tableName().'/'.$t_instance->getPrimaryKey().'/'.$t_instance->get($va_spec['spec']));
 	}

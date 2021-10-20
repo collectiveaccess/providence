@@ -576,7 +576,7 @@ use Zend\Stdlib\Glob;
 		uksort($va_options, 'strnatcasecmp');
 		
 		$vs_buf = "<div class='editorBundlePrintControl'>"._t("Export as")." ";
-		$vs_buf .= caHTMLSelect('export_format', $va_options, array('id' => "{$ps_id_prefix}_reportList", 'class' => 'dontTriggerUnsavedChangeWarning'), array('value' => null, 'width' => '150px'))."\n";
+		$vs_buf .= caHTMLSelect('export_format', $va_options, array('id' => "{$ps_id_prefix}_reportList", 'class' => 'dontTriggerUnsavedChangeWarning'), array('value' => Session::getVar("P{$placement_id}_last_export_format"), 'width' => '150px'))."\n";
 		
 		$vs_buf .= caJSButton($po_request, __CA_NAV_ICON_GO__, '', "{$ps_id_prefix}_report", ['onclick' => "caGetExport{$ps_id_prefix}(); return false;"], ['size' => '15px']);
 		
@@ -586,7 +586,10 @@ use Zend\Stdlib\Glob;
 			<script type='text/javascript'>
 				function caGetExport{$ps_id_prefix}() {
 					var s = jQuery('#{$ps_id_prefix}_reportList').val();
-					var f = jQuery('<form id=\"caTempExportForm\" action=\"{$vs_url}/export_format/' + s + '\" method=\"post\" style=\"display:none;\"><input type=\"hidden\" name=\"placement_id\" value=\"{$placement_id}\"></form>');
+					var sort =  jQuery('#{$ps_id_prefix}_RelationBundleSortControl').val();
+					var sort_direction =  jQuery('#{$ps_id_prefix}_RelationBundleSortDirectionControl').val();
+					
+					var f = jQuery('<form id=\"caTempExportForm\" action=\"{$vs_url}/export_format/' + s + '/sort/' + sort + '/direction/' + sort_direction + '\" method=\"post\" style=\"display:none;\"><input type=\"hidden\" name=\"placement_id\" value=\"{$placement_id}\"></form>');
 					jQuery('body #caTempExportForm').replaceWith(f).hide();
 					f.submit();
 				}

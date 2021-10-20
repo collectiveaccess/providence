@@ -582,10 +582,10 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						}
 						$c = 0;
 						if($qr && ($qr->numHits() > 0)) {
-							$t_instance = Datamodel::getInstance($table, true);
-							$pk = $t_instance->primaryKey();
+							$instance = Datamodel::getInstance($table, true);
+							$pk = $instance->primaryKey();
 							
-							$hier_root_restriction_sql = in_array($t_instance->getHierarchyType(), [__CA_HIER_TYPE_SIMPLE_MONO__, __CA_HIER_TYPE_MULTI_MONO__]);
+							$hier_root_restriction_sql = in_array($instance->getHierarchyType(), [__CA_HIER_TYPE_SIMPLE_MONO__, __CA_HIER_TYPE_MULTI_MONO__]);
 							
 							if((bool)$args['fast'] && Datamodel::getFieldNum($table, 'deleted')) {
 								$db = new Db();
@@ -1080,6 +1080,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 			
 			if(!strlen($bundle_name)) { continue; }
 			
+			$pref_label_set = false;
 			switch($bundle_name) {
 				# -----------------------------------
 				case 'effective_date':
@@ -1101,11 +1102,14 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 					if(!$delete && $id) {
 						// Edit
 						$rc = $instance->editLabel($id, $label_values, $locale_id, $type_id, ($bundle_name === 'preferred_labels'));
+						if($bundle_name === 'preferred_labels') { $pref_label_set = true; }
 					} elseif($replace && !$id) {
 						$rc = $instance->replaceLabel($label_values, $locale_id, $type_id, ($bundle_name === 'preferred_labels'));
+						if($bundle_name === 'preferred_labels') { $pref_label_set = true; }
 					} elseif(!$delete && !$id) {
 						// Add
 						$rc = $instance->addLabel($label_values, $locale_id, $type_id, ($bundle_name === 'preferred_labels'));
+						if($bundle_name === 'preferred_labels') { $pref_label_set = true; }
 					} elseif($delete && $id) {
 						// Delete
 						$rc = $instance->removeLabel($id);
@@ -1178,6 +1182,11 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 					break;
 				# -----------------------------------
 			}
+		}
+		
+		if(method_exists($instance, 'addLabel') && ($instance->getLabelCount(true) == 0)) {
+			$locale_id = ca_locales::getDefaultCataloguingLocaleID();
+			$rc = $instance->addLabel([$instance->getLabelDisplayField() => "[".caGetBlankLabelText($instance->tableName())."]"], $locale_id, null, true);
 		}
 		return ['errors' => $errors, 'warnings' => $warnings, 'info' => $info];
 	}

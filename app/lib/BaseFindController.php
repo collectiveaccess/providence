@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -564,14 +564,14 @@
                         return;						
 					case '_csv':
 						$vs_delimiter = ",";
-						$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename.'_csv'), 0, 30);
-						$vs_file_extension = 'txt';
+						$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename), 0, 30);
+						$vs_file_extension = 'csv';
 						$vs_mimetype = "text/plain";
 						break;
 					case '_tab':
 						$vs_delimiter = "\t";	
-						$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename.'_tab'), 0, 30);
-						$vs_file_extension = 'txt';
+						$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename), 0, 30);
+						$vs_file_extension = 'tsv';
 						$vs_mimetype = "text/plain";
 					default:
 					    if(substr($ps_output_type, 0, 5) === '_docx') {

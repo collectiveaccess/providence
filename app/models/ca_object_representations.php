@@ -483,6 +483,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	 *
 	 */
 	public function insert($options=null) {
+		if(!is_array($options)) { $options = []; }
 		// reject if media is empty
 		if ($this->mediaIsEmpty() && !(bool)$this->getAppConfig()->get('allow_representations_without_media')) {
 			$this->postError(2710, _t('No media was specified'), 'ca_object_representations->insert()');
@@ -493,11 +494,13 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		if (!($media_path = $this->getMediaPath('media', 'original'))) {
 			$media_path = array_shift($this->get('media', ['returnWithStructure' => true]));
 		}
-		if(!$this->getAppConfig()->get('allow_representations_duplicate_media') && ($t_existing_rep = ca_object_representations::mediaExists($media_path))) {
+		if($media_path && !$this->getAppConfig()->get('allow_representations_duplicate_media') && ($t_existing_rep = ca_object_representations::mediaExists($media_path))) {
 			throw new MediaExistsException(_t('Media already exists'), $t_existing_rep);
 		}
 		
 		// do insert
+		$reader = $media_path ? $this->_readEmbeddedMetadata($media_path) : null;
+		
 		if ($vn_rc = parent::insert($options)) {
 			if (is_array($va_media_info = $this->getMediaInfo('media', 'original'))) {
 				$this->set('md5', $va_media_info['MD5']);
@@ -523,7 +526,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			caExtractEmbeddedMetadata($this, $va_metadata, $this->get('locale_id'));	// TODO: deprecate in favor of import mapping based system below?
 			
 			// Extract metadata mapping with configured mappings
-			$this->_importEmbeddedMetadata($options);
+			$this->_importEmbeddedMetadata(array_merge($options, ['reader' => $reader]));
 			
 			$vn_rc = parent::update($options);
 
@@ -536,15 +539,19 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	 *
 	 */
 	public function update($options=null) {
+		if(!is_array($options)) { $options = []; }
 		if($vb_media_has_changed = $this->changed('media')) {
 			// does media already exist?
 			if (!($media_path = $this->getMediaPath('media', 'original'))) {
 				$media_path = array_shift($this->get('media', ['returnWithStructure' => true]));
 			}
-			if(!$this->getAppConfig()->get('allow_representations_duplicate_media') && ($t_existing_rep = ca_object_representations::mediaExists($media_path))) {
+			if(!$this->getAppConfig()->get('allow_representations_duplicate_media') && ($t_existing_rep = ca_object_representations::mediaExists($media_path, $this->getPrimaryKey()))) {
 				throw new MediaExistsException(_t('Media already exists'), $t_existing_rep);
 			}
 		}
+		
+		$reader = $media_path ? $this->_readEmbeddedMetadata($media_path) : null;
+		
 		if ($vn_rc = parent::update($options)) {
 			if(is_array($va_media_info = $this->getMediaInfo('media', 'original'))) {
 				$this->set('md5', $va_media_info['MD5']);
@@ -571,7 +578,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 				caExtractEmbeddedMetadata($this, $va_metadata, $this->get('locale_id'));	// TODO: deprecate in favor of import mapping based system below?
 								
 				// Extract metadata mapping with configured mappings
-				$this->_importEmbeddedMetadata($options);
+				$this->_importEmbeddedMetadata(array_merge($options, ['reader' => $reader]));
 			}
 			
 			$vn_rc = parent::update($options);
@@ -585,20 +592,33 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	/**
 	 *
 	 */
-	private function _importEmbeddedMetadata($options=null) {
-		$object_representation_mapping_id = caGetOption('mapping_id', $options, null);
-		$log = caGetImportLogger(['logLevel' => $this->_CONFIG->get('embedded_metadata_extraction_mapping_log_level')]);
-		if(!$object_representation_mapping_id && is_array($media_metadata_extraction_defaults = $this->_CONFIG->getAssoc('embedded_metadata_extraction_mapping_defaults'))) {
-			$media_mimetype = $this->get('mimetype');
-			
-			foreach($media_metadata_extraction_defaults as $m => $importer_code) {
-				if(caCompareMimetypes($media_mimetype, $m)) {
-					if (!($object_representation_mapping_id = ca_data_importers::find(['importer_code' => $importer_code], ['returnAs' => 'firstId']))) {
-						if ($log) { $log->logInfo(_t('Could not find embedded metadata importer with code %1', $importer_code)); }
-					}
-					break;
-				}
+	private function _readEmbeddedMetadata(string $media_path, ?array $options=null) {
+		$t_mapping = new ca_data_importers();
+		$m = new Media();
+		$mimetype = $m->divineFileFormat($media_path);
+		
+		$type = 'EXIF';
+		if ($object_representation_mapping_id = $this->_getEmbeddedMetadataMappingID(['mimetype' => $mimetype])) {
+			$t_mapping = ca_data_importers::find(['importer_id' => $object_representation_mapping_id], ['returnAs' => 'firstModelInstance']);
+			$formats = $t_mapping->getSetting('inputFormats');
+			if(is_array($formats) && sizeof($formats)) {
+				$type = array_shift($formats);
 			}
+		}
+		if (!($reader = $t_mapping->getDataReader(null, $type))) { return null; }
+		$reader->read($media_path);
+		
+		return $reader;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _importEmbeddedMetadata($options=null) {
+		$path = caGetOption('path', $options, $this->getMediaPath('media', 'original'));
+		$log = caGetImportLogger(['logLevel' => $this->_CONFIG->get('embedded_metadata_extraction_mapping_log_level')]);
+		if(!($object_representation_mapping_id = caGetOption('mapping_id', $options, null))) {
+			$object_representation_mapping_id = $this->_getEmbeddedMetadataMappingID(['log' => $log]);
 		}
 		
 		if ($object_representation_mapping_id && ($t_mapping = ca_data_importers::find(['importer_id' => $object_representation_mapping_id], ['returnAs' => 'firstModelInstance']))) {
@@ -607,15 +627,38 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			if ($log) { $log->logDebug(_t('Using embedded media mapping %1 (format %2)', $t_mapping->get('importer_code'), $format)); }
 			
 			$va_media_info = $this->getMediaInfo('media');
-			$t_importer = new ca_data_importers();
-			return $t_importer->importDataFromSource($this->getMediaPath('media', 'original'), $object_representation_mapping_id, [
+			return $t_mapping->importDataFromSource($path, $object_representation_mapping_id, [
 				'logLevel' => $this->_CONFIG->get('embedded_metadata_extraction_mapping_log_level'), 
 				'format' => $format, 'forceImportForPrimaryKeys' => [$this->getPrimaryKey(), 
 				'transaction' => $this->getTransaction()],
+				'reader' => caGetOption('reader', $options, null),
 				'environment' => ['original_filename' => $va_media_info['ORIGINAL_FILENAME'], '/original_filename' => $va_media_info['ORIGINAL_FILENAME']]
 			]); 
 		}
 		return false;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getEmbeddedMetadataMappingID(?array $options=null) : ?int {
+		$object_representation_mapping_id = null;
+		
+		$log = caGetOption('log', $options, null);
+		if(is_array($media_metadata_extraction_defaults = $this->_CONFIG->getAssoc('embedded_metadata_extraction_mapping_defaults'))) {
+			$media_mimetype = caGetOption('mimetype', $options, $this->get('mimetype'));
+			
+			foreach($media_metadata_extraction_defaults as $m => $importer_code) {
+				if(!trim($importer_code)) { continue; }
+				if(caCompareMimetypes($media_mimetype, $m)) {
+					if (!($object_representation_mapping_id = ca_data_importers::find(['importer_code' => $importer_code], ['returnAs' => 'firstId']))) {
+						if ($log) { $log->logInfo(_t('Could not find embedded metadata importer with code %1', $importer_code)); }
+					}
+					break;
+				}
+			}
+		}
+		return $object_representation_mapping_id;
 	}
 	# ------------------------------------------------------
 	/**
@@ -2255,13 +2298,18 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	 * Check if a file already exists in the database as a representation
 	 *
 	 * @param string $filepath The full path to the file
+	 * @param int $representation_id Optional representation_id to ignore when checking for duplicated. [Default is null]
 	 * @return mixed ca_object_representations instance representing the first representation that contains the file, if representation exists with this file, false if the file does not yet exist
 	 */
-	static function mediaExists(string $filepath) {
+	static function mediaExists(string $filepath, ?int $representation_id=null) {
 		if (!file_exists($filepath) || !is_readable($filepath)) { return null; }
 		$md5 = @md5_file($filepath);
 		
-		if ($md5 && ($t_rep = ca_object_representations::find(['md5' => $md5], ['returnAs' => 'firstModelInstance']))) { 
+		$criteria = ['md5' => $md5];
+		if($representation_id > 0) {
+			$criteria['representation_id'] = ['<>', $representation_id];
+		}
+		if ($md5 && ($t_rep = ca_object_representations::find($criteria, ['returnAs' => 'firstModelInstance']))) { 
 			return $t_rep;
 		}
 		

@@ -2389,7 +2389,7 @@ function caFileIsIncludable($ps_file) {
 		if (!is_array($pa_array)) { return array(); }
 
 		if (!(($o_purifier = caGetOption('purifier', $pa_options, null)) instanceof HTMLPurifier)) {
-			$o_purifier = new HTMLPurifier();
+			$o_purifier = caGetHTMLPurifier();
 		}
 
 		if (!is_array($pa_array)) { return $o_purifier->purify($pa_array); }
@@ -2931,7 +2931,7 @@ function caFileIsIncludable($ps_file) {
 		$size = ['B','KiB','MiB','GiB','TiB'];
 		$factor = intval(floor((strlen((int)$bytes) - 1) / 3), 10);
 
-		return sprintf("%.{$decimals}f", (int)$bytes/pow(1024, $factor)).@$size[$factor];
+		return sprintf("%.{$decimals}f", (int)$bytes/pow(1024, $factor)).' '.@$size[$factor];
 	}
 	# ----------------------------------------
 	/** 
@@ -3668,17 +3668,18 @@ function caFileIsIncludable($ps_file) {
 	 * Validate CSRF token using current session
 	 *
 	 * @param RequestHTTP $po_request Current request
-	 * @param string $ps_token CSRF token to validate. If omitted token in the "crsfToken" parameter is extracted from current request.
+	 * @param string $ps_token CSRF token to validate. If omitted token in the "csrfToken" parameter is extracted from current request.
 	 * @param array $pa_options Options include:
-	 *      remove = remove validated token from active token list. [Default is true]
-	 *      exceptions = throw exception if token is invalid. [Default is true]
+	 *      remove = remove validated token from active token list. [Default is false]
+	 *      exceptions = throw exception if token is invalid. [Default is false]
+	 *      notifications = post notification if token is invalid. [Default is false]
 	 * @return bool
 	 * @throws ApplicationException
 	 */
 	function caValidateCSRFToken($po_request, $ps_token=null, $pa_options=null){
 		$session_id = $po_request ? $po_request->getSessionID() : 'none';
 		
-	    if(!$ps_token) { $ps_token = $po_request->getParameter('crsfToken', pString); }
+	    if(!$ps_token) { $ps_token = $po_request->getParameter('csrfToken', pString); }
 	    if (!is_array($va_tokens = PersistentCache::fetch("csrf_tokens_{$session_id}", "csrf_tokens"))) { $va_tokens = []; }
 	    
 	    if (isset($va_tokens[$ps_token])) { 
@@ -4020,9 +4021,11 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 * Get list of (enabled) primary tables as table_num => table_name mappings
 	 * @param bool $pb_include_rel_tables Include relationship tables or not. Defaults to false
+	 * @param array $additional_tables Optional array of additional tables to include. [Default is null]
+	 *
 	 * @return array
 	 */
-	function caGetPrimaryTables($pb_include_rel_tables=false) {
+	function caGetPrimaryTables($pb_include_rel_tables=false, ?array $additional_tables=null) {
 		$o_conf = Configuration::load();
 		$va_ret = [];
 		foreach([
@@ -4044,7 +4047,13 @@ function caFileIsIncludable($ps_file) {
 				$va_ret[$vn_table_num] = $vs_table_name;
 			}
 		}
-
+		if(is_array($additional_tables) && sizeof($additional_tables)) {
+			foreach($additional_tables as $table) {
+				if(!($t=Datamodel::getInstance($table, true))) { continue; }
+				$va_ret[$t->tableNum()] = $table;
+			}
+		}
+		
 		if($pb_include_rel_tables) {
 			require_once(__CA_MODELS_DIR__.'/ca_relationship_types.php');
 			$t_rel = new ca_relationship_types();
@@ -4063,8 +4072,8 @@ function caFileIsIncludable($ps_file) {
 	 * @param bool $pb_include_rel_tables Include relationship tables or not. Defaults to false
 	 * @return array
 	 */
-	function caGetPrimaryTablesForHTMLSelect($pb_include_rel_tables=false) {
-		$va_tables = caGetPrimaryTables($pb_include_rel_tables);
+	function caGetPrimaryTablesForHTMLSelect($pb_include_rel_tables=false, ?array $additional_tables=null) {
+		$va_tables = caGetPrimaryTables($pb_include_rel_tables, $additional_tables);
 		$va_ret = [];
 		foreach($va_tables as $vn_table_num => $vs_table) {
 			$va_ret[Datamodel::getInstance($vn_table_num, true)->getProperty('NAME_PLURAL')] = $vn_table_num;
@@ -4082,7 +4091,7 @@ function caFileIsIncludable($ps_file) {
 		$o_purifier = null;
 		if($pb_purify = caGetOption('purify', $pa_options, false)) {
 			if (!(($o_purifier = caGetOption('purifier', $pa_options, null)) instanceof HTMLPurifier)) {
-				$o_purifier = new HTMLPurifier();
+				$o_purifier = caGetHTMLPurifier();
 			}
 		}
 
@@ -4608,3 +4617,12 @@ function caFileIsIncludable($ps_file) {
 		return $regex;
 	}
     # ----------------------------------------
+	/**
+	 *
+	 */
+	function caGetHTMLPurifier(?array $options=null) : HTMLPurifier {
+		$config = HTMLPurifier_Config::createDefault();
+		$config->set('URI.DisableExternalResources', !Configuration::load()->get('purify_allow_external_references'));
+		return new HTMLPurifier($config); 
+	}
+	# ----------------------------------------

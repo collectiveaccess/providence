@@ -2171,6 +2171,7 @@ create table ca_attributes
    locale_id                      smallint unsigned              null,
    table_num                      tinyint unsigned               not null,
    row_id                         int unsigned                   not null,
+   value_source                   varchar(1024)                   null,
    primary key (attribute_id),
    constraint fk_ca_attributes_element_id foreign key (element_id)
       references ca_metadata_elements (element_id) on delete restrict on update restrict,
@@ -2184,6 +2185,7 @@ create index i_table_num on ca_attributes(table_num);
 create index i_element_id on ca_attributes(element_id);
 create index i_row_table_num on ca_attributes(row_id, table_num);
 create index i_prefetch ON ca_attributes(row_id, element_id, table_num);
+create index i_value_source on ca_attribute_values(value_source);
 
 
 /*==========================================================================*/
@@ -7631,4 +7633,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (172, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (173, unix_timestamp());

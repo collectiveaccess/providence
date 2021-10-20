@@ -1109,6 +1109,11 @@
 						if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && $o_log && ($ps_refinery_name !== 'objectRepresentationSplitter')) {
 							$o_log->logWarn(_t("[{$ps_refinery_name}Refinery] No relationship type is set for %2 \"%1\"", $vs_item, $ps_item_prefix));
 						}
+						
+						if($vs_rel_type_delimiter_opt = caGetOption("{$ps_refinery_name}_relationshipTypeDelimiter", $pa_item['settings'], null)) {
+							$va_val['_relationship_type_delimiter'] = $vs_rel_type_delimiter_opt;
+						}
+						
 	
 						switch($ps_table) {
 							case 'ca_entities':
@@ -1624,6 +1629,28 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 					$value = caUcFirstUTF8Safe($value);
 					break;
 			}
+		}
+		return $value;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Transform $value using specified transformation. Used by data importer applyTransformations option.
+	 *
+	 * Supported transformations:
+	 *		filesize = Transform integer filesize in bytes to display text with scaled suffix (KiB, MiB, GiB, etc.)
+	 *		           Options: decimal = number of decimal places to display. [Default is 2]
+	 * 
+	 * @param mixed $value Value to transform.
+	 * @param string $transform Code for transform to apply.
+	 * @param array $options Options for selected transform. [Default is null]
+	 *
+	 * @return mixed Transformed value
+	 */
+	function caApplyDataTransforms($value, string $transform, ?array $options){
+		switch(strtolower($transform)) {
+			case 'filesize':
+				$value = caHumanFilesize((int)$value, caGetOption('decimals', $options, 2));
+				break;
 		}
 		return $value;
 	}

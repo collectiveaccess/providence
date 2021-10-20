@@ -34,7 +34,7 @@
 </head>
 <body>
 	<div id='errorDetails'>
-		<div id="logo"><?= caGetLoginLogo(); ?></div><!-- end logo -->
+		<div id="logo"><?= caGetDefaultLogo(); ?></div><!-- end logo -->
 		<div id="content">
 			<div class='error'><?= _t("Something went wrong"); ?></div>
 <?php if((defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) || (defined('__CA_STACKTRACE_ON_EXCEPTION__') && __CA_STACKTRACE_ON_EXCEPTION__)) { ?>
@@ -45,8 +45,8 @@
 			<div id="stacktace">
 				<ol class="tracelist">
 <?php
-					foreach($errcontext as $i => $trace) {
-						print "<li>".(($i == 0) ? "In " : "At ").$trace['class'].$trace['type'].$trace['function']."(".join(', ', $errcontext_args[$i]).") in <a class='tracelistEntry' title='".$trace['file']."' ondblclick='var f=this.innerHTML;this.innerHTML=this.title;this.title=f;'>".pathinfo($trace['file'], PATHINFO_FILENAME)."</a> line ".$trace['line']."</li>\n";
+					foreach($pa_errcontext as $vn_i => $va_trace) {
+						print "<li>".(($vn_i == 0) ? "In " : "At ").$va_trace['class'].$va_trace['type'].$va_trace['function']."(".join(', ', $pa_errcontext_args[$vn_i] ?? []).") in <a class='tracelistEntry' title='".$va_trace['file']."' ondblclick='var f=this.innerHTML;this.innerHTML=this.title;this.title=f;'>".pathinfo($va_trace['file'], PATHINFO_FILENAME)."</a> line ".$va_trace['line']."</li>\n";
 					}
 ?>
 				</ol>

@@ -340,9 +340,9 @@ class SearchEngine extends SearchBase {
 				$va_hits = $this->filterHitsBySets($va_hits, $pa_options['sets'], array('search' => $vs_search));
 			}
 						
-			$vn_user_id = (isset($pa_options['user_id']) && (int)$pa_options['user_id']) ?  (int)$pa_options['user_id'] : (int)$AUTH_CURRENT_USER_ID;
+			$user_id = (isset($pa_options['user_id']) && (int)$pa_options['user_id']) ?  (int)$pa_options['user_id'] : (int)$AUTH_CURRENT_USER_ID;
 			if ((!isset($pa_options['dontFilterByACL']) || !$pa_options['dontFilterByACL']) && $vb_do_acl) {
-				$va_hits = $this->filterHitsByACL($va_hits, $this->opn_tablenum, $vn_user_id, __CA_ACL_READONLY_ACCESS__);
+				$va_hits = $this->filterHitsByACL($va_hits, $this->opn_tablenum, $user_id, __CA_ACL_READONLY_ACCESS__);
 				if ($vn_limit > 0) { $va_hits = array_slice($va_hits, 0, $vn_limit); }
 			}
 			
@@ -368,7 +368,7 @@ class SearchEngine extends SearchBase {
 				
 			$vn_execution_time = $t->getTime(4);
 			$o_log->log(array(
-				'user_id' => $vn_user_id, 
+				'user_id' => ($user_id > 0) ? $user_id : null, 
 				'table_num' => $this->opn_tablenum, 
 				'search_expression' => $ps_search, 
 				'num_hits' => sizeof($va_hits),
