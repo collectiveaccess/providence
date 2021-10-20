@@ -61,7 +61,7 @@
 	$minimize_existing_values = $t_element->getSetting('minimizeExistingValues');
 	
 	// Show attribute source data (hardcoded text field)
-	$include_source_data = $t_element->getSetting('includeSourceData');
+	$include_source_data = ($t_element->getSetting('includeSourceData') && ($vs_render_mode !== 'checklist'));
 	
 	if(($t_element->get('datatype') == __CA_ATTRIBUTE_VALUE_CONTAINER__) && isset($va_element_settings['readonlyTemplate']) && (strlen($va_element_settings['readonlyTemplate']) > 0)) {
 		$vb_is_read_only_for_existing_vals = true;
@@ -163,6 +163,8 @@
 			}
 		}
 	} else {
+		$va_template_tags[] = 'value_source';
+		
 		// set labels for replacement in blank lookups	
 		if (is_array($va_element_ids)) {
 			foreach($va_element_ids as $vn_element_id) {
