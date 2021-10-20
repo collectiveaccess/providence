@@ -3727,13 +3727,15 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$vs_element_set_code = preg_replace("/^(ca_attribute_|".$this->tableName()."\.)/", "", $vs_f);
 				
 				// does the attribute's datatype have a saveElement method? If so, use that instead
-				$vs_element = ca_metadata_elements::getInstance($vs_element_set_code);
+				$t_element = ca_metadata_elements::getInstance($vs_element_set_code);
 
-				$vn_element_id = $vs_element->getPrimaryKey();
-				$vs_element_datatype = $vs_element->get('datatype');
+				$vn_element_id = $t_element->getPrimaryKey();
+				$vs_element_datatype = $t_element->get('datatype');
+				$include_source_data = $t_element->getSetting('includeSourceData');
+				
 				$vs_datatype = Attribute::getValueInstance($vs_element_datatype);
 				if(method_exists($vs_datatype,'saveElement')) {
-					$reserved_elements[] = $vs_element;
+					$reserved_elements[] = $t_element;
 					continue;
 				}
 				
@@ -3767,10 +3769,16 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						
 						$vn_c = intval($va_matches[2]);
 						// yep - grab the locale and value
-						$vn_locale_id = isset($_REQUEST[$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_locale_id_new_'.$vn_c]) ? $_REQUEST[$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_locale_id_new_'.$vn_c] : null;
+						$vn_locale_id = $_REQUEST[$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_locale_id_new_'.$vn_c] ?? null;
 						
 						$va_inserted_attributes_by_element[$vn_element_id][$vn_c]['locale_id'] = $va_attributes_to_insert[$vn_c]['locale_id'] = $vn_locale_id; 
+						
+						if ($include_source_data) { 
+							$value_source = $_REQUEST[$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_value_source_new_'.$vn_c] ?? null;
+							$va_inserted_attributes_by_element[$vn_element_id][$vn_c]['value_source'] = $va_attributes_to_insert[$vn_c]['value_source'] = $value_source; 
+						}
 						$va_inserted_attributes_by_element[$vn_element_id][$vn_c][$va_matches[1]] = $va_attributes_to_insert[$vn_c][$va_matches[1]] = $vs_val;
+						
 					} else {
 						// is it a delete key?
 						if (preg_match('/'.$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_([\d]+)_delete/', $vs_key, $va_matches)) {
@@ -3833,9 +3841,12 @@ if (!$vb_batch) {
 							continue;
 						}
 						
-						$va_attr_update = array(
-							'locale_id' =>  $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_set_id.'_locale_id_'.$vn_attribute_id, pString)
-						);
+						$va_attr_update = [
+							'locale_id' =>  $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_set_id.'_locale_id_'.$vn_attribute_id, pString),
+						];
+						if ($include_source_data) {
+							$va_attr_update['value_source'] = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_set_id.'_value_source_'.$vn_attribute_id, pString);
+						}
 						
 						//
 						// Check to see if there are any values in the element set that are not in the  attribute we're editing

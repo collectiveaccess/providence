@@ -717,6 +717,16 @@ class ca_data_importer_items extends BaseModel {
 			'description' => _t('Always replace values, removing existing, ones even if existing record policy does not mandate replacement (Eg. is not merge_on_idno_with_replace, Etc.).')
 		);
 		
+		$settings['source'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Source for data'),
+			'description' => _t('Optional text indicating source of data. Will be set for attributes created with this mapping. Only supported for metadata attributes (not labels or intrinsics)')
+		);
+		
 		$this->setAvailableSettings($settings);
 	}
 	# ------------------------------------------------------

@@ -460,6 +460,16 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'description' => _t('If set duplicate values in fields will be ignored.')
 		);
 		
+		$settings['source'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Source for data'),
+			'description' => _t('Optional text indicating source of data. Will be set for attributes created with this mapping. Only supported for metadata attributes (not labels or intrinsics)')
+		);
+		
 		$this->setAvailableSettings($settings);
 	}
 	# ------------------------------------------------------
@@ -1453,6 +1463,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$vn_locale_id = ca_locales::getDefaultCataloguingLocaleID();		// use default
 			}
 		}
+		
+		$default_source_text = $t_mapping->getSetting('source');
 		
 		$merge_only = (bool)$t_mapping->getSetting('mergeOnly');	// If set we only merge; no new records will be created.
 		
@@ -2768,15 +2780,19 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								$va_group_buf[$vn_c]['_replace'] = $va_item['settings']['_replace'];
 							}
 
-							if ($va_item['settings']['skipIfDataPresent']) {
+							if($va_item['settings']['skipIfDataPresent']) {
 								$va_group_buf[ $vn_c ]['_skipIfDataPresent'] = true;
 							}
 							
+							if($displaynameFormat_setting = $va_item['settings']['displaynameFormat']) {
 
-							if ($displaynameFormat_setting = $va_item['settings']['displaynameFormat']) {
 								$va_group_buf[ $vn_c ]['_displaynameFormat'] = $displaynameFormat_setting;
 							}
-
+							
+							if (($source_setting = $va_item['settings']['source']) || ($source_setting = $default_source_text)) { // try source set on this mapping, or try to fall back to mapping source if defined
+								$source_setting = DisplayTemplateParser::processTemplate($source_setting, $va_row_with_replacements, ['getFrom' => $o_reader]);
+								$va_group_buf[ $vn_c ]['_source'] = $source_setting;
+							}
 
 							// Is it a constant value?
 							if ( preg_match( "!^_CONSTANT_:[\d]+:(.*)!", $va_item['source'], $va_matches ) ) {
@@ -3532,7 +3548,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 															'idno' => $vs_idno, 
 															'dataset' => $vn_dataset, 
 															'row' => $vn_row,
-															'skipExistingValues' => $t_mapping->getSetting('skipDuplicateValues')
+															'skipExistingValues' => $t_mapping->getSetting('skipDuplicateValues'),
+															'source' => $va_element_data[$vs_element]['_source']
 														];
 											if ($va_match_on = caGetOption('_matchOn', $va_element_content, null)) {
 												$va_opts['matchOn'] = $va_match_on;
