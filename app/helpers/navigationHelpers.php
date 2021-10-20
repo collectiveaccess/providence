@@ -421,7 +421,7 @@
 			$vs_buf .= caHTMLHiddenInput('form_timestamp', array('value' => time()));
 		}
 		if (!caGetOption('noCSRFToken', $pa_options, false)) {
-			$vs_buf .= caHTMLHiddenInput('crsfToken', array('value' => caGenerateCSRFToken($po_request)));
+			$vs_buf .= caHTMLHiddenInput('csrfToken', array('value' => caGenerateCSRFToken($po_request)));
 		}
 		
 		if (!caGetOption('disableUnsavedChangesWarning', $pa_options, false)) { 

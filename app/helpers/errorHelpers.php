@@ -104,8 +104,8 @@ function caDisplayFatalError($pn_errno, $ps_errstr, $ps_errfile, $pn_errline, $p
  */
 function caExtractStackTraceArguments($pa_errcontext) {
 	if(!is_array($pa_errcontext)) { return []; }
-	
-	$o_purifier = new HTMLPurifier();
+		
+	$o_purifier = caGetHTMLPurifier();
 	$pa_args = [];
 	
 	foreach($pa_errcontext as $vn_i => $va_trace) {
@@ -141,8 +141,8 @@ function caExtractRequestParams() {
 	if(!include_once(pathinfo(__FILE__, PATHINFO_DIRNAME).'/../../vendor/autoload.php')) { return []; }
 
 	if(!is_array($_REQUEST)) { return []; }
-
-	$o_purifier = new HTMLPurifier();
+	
+	$o_purifier = caGetHTMLPurifier();
 	$pa_params = [];
 	foreach($_REQUEST as $vs_k => $vm_val) {
 		if(is_array($vm_val)) { $vm_val = join(',', caFlattenArray($vm_val));}
@@ -162,6 +162,21 @@ function caGetThemeUrlPath() : string {
 	$tmp = explode("/", str_replace("\\", "/", $_SERVER['SCRIPT_NAME']));
 	array_pop($tmp);
 	return defined('__CA_THEME_URL__') ? __CA_THEME_URL__ : join("/", $tmp).'/themes/default';
+}
+# --------------------------------------------------------------------------------------------
+ /**
+  * Return default application logo as HTML tag
+  *
+  * @return string
+  */
+function caGetDefaultLogo() : string {
+	if(function_exists('caGetLoginLogo')) { 
+		return caGetLoginLogo();
+	}
+	$url = caGetThemeUrlPath()."/graphics/logos/logo.svg";
+	$width = 327;
+	$height = 45;
+	return "<img src={$url} alt='CollectiveAccess logo' width='{$width}' height='{$height}'/>";
 }
 # ---------------------------------------------------------------------------------------------
 		

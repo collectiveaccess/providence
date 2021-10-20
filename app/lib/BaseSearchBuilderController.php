@@ -137,9 +137,9 @@
 					}
 					
 					// ... and default the sort to the set
-					if ($vb_is_new_search) {
-						$this->opo_result_context->setCurrentSort($vs_sort = "ca_sets.set_id:{$vn_set_id}");
-					}
+					//if ($vb_is_new_search) {
+					//	$this->opo_result_context->setCurrentSort($vs_sort = "ca_sets.set_id:{$vn_set_id}");
+					//}
 				}
 				
 				$va_search_opts = array(

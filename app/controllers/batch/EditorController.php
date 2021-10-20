@@ -88,6 +88,10 @@ class EditorController extends ActionController {
 	 * @param array $options Array of options passed through to _initView and saveBundlesForScreen()
 	 */
 	public function Save($options=null) {
+		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+	    	$this->Edit();
+	    	return;
+	    }
 		if (!is_array($options)) { $options = []; }
 		list($rs, $t_subject, $t_ui) = $this->_initView($options);
 		

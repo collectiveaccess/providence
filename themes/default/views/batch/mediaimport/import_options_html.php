@@ -49,7 +49,7 @@
 
 	<div class="sectionBox">
 <?php
-		print caFormTag($this->request, 'Save/'.$this->request->getActionExtra(), 'caBatchMediaImportForm', null, 'POST', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
+		print caFormTag($this->request, 'Save/'.$this->request->getActionExtra(), 'caBatchMediaImportForm', null, 'POST', 'multipart/form-data', '_top', array('noCSRFToken' => false, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
 		print caHTMLHiddenInput('import_target', array('value' => $this->getVar('import_target')));
 ?>
 		<div class='bundleLabel'>

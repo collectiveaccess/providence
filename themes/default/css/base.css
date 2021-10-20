@@ -2762,7 +2762,7 @@ table.representationAnnotationListItem {
 #caMediaPanelContentArea {
     width: 100%;
     height: 100%;
-    background-color: #fff;
+    background-color: #000;
 }
 
 #caMediaOverlayTileViewer {
@@ -2999,6 +2999,7 @@ img.caRepToolsRotateControlButton:hover {
 table.attributeListItem {
     padding: 0px;
     margin: 0px;
+    width: 100%;
 }
 .attributeListItem td {
     padding: 0px;
@@ -7628,13 +7629,12 @@ div.changeLogSearchResultsPagination {
 
 div.checklist {
     display: grid;
+    width: 100%;
 }
 
 div.checklistItem {
     font-weight: normal;
     margin: 2px 2px 2px 5px;
-    min-width: 130px;
-    max-width: 260px;
     white-space: nowrap
     
 }

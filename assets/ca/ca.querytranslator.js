@@ -444,77 +444,81 @@ var caUI = caUI || {};
 				}).join('')
 			});
 		} else {
-			// End this recursion when the string is finished, or when we reach a right parenthesis.
-			while (tokens.length > 0 && tokens[0].type !== TOKEN_RPAREN) {
-				if (isNextToken(tokens, TOKEN_LPAREN)) {
-					// Explicitly nested rule set: recursion.
-					rule = tokensToRuleSet(tokens);
-					assertNextToken(tokens, TOKEN_RPAREN);
-				} else if (tokens[0].type !== TOKEN_RPAREN) {
-					// Standard rule, with a field, operator and value.
-					rule = {};
+			try {
+				// End this recursion when the string is finished, or when we reach a right parenthesis.
+				while (tokens.length > 0 && tokens[0].type !== TOKEN_RPAREN) {
+					if (isNextToken(tokens, TOKEN_LPAREN)) {
+						// Explicitly nested rule set: recursion.
+						rule = tokensToRuleSet(tokens);
+						assertNextToken(tokens, TOKEN_RPAREN);
+					} else if (tokens[0].type !== TOKEN_RPAREN) {
+						// Standard rule, with a field, operator and value.
+						rule = {};
 					
-					negation = false;
-					// Look for NOT
-					poss_not = peekToken(tokens, 0);
-					if(poss_not.value === 'NOT') {
-					    assertNextToken(tokens, TOKEN_WORD);
-					    assertNextToken(tokens, TOKEN_WHITESPACE);
-					    negation = !negation;
-					}
-					
-					rule.field = rule.id = assertNextToken(tokens, TOKEN_WORD).value;
-					
-					assertNextToken(tokens, TOKEN_COLON);
-					negation = isNextToken(tokens, TOKEN_NEGATION) ? !negation : negation;
-					
-					if (isNextToken(tokens, TOKEN_LBRACKET)) {
-						// Between filter value (of the form `[minValue TO maxValue]`)
-						min = assertNextToken(tokens, TOKEN_WORD);
-						skipWhitespace(tokens);
-						assertNextToken(tokens, TOKEN_WORD, 'TO');
-						skipWhitespace(tokens);
-						max = assertNextToken(tokens, TOKEN_WORD);
-						assertNextToken(tokens, TOKEN_RBRACKET);
-						assignOperatorAndRange(rule, min.value, max.value, negation);
-					} else {
-						// Other types can be a (quoted or unquoted) word, with optional wildcard prefix and/or suffix.
-						// Alternatively the word itself can be omitted, i.e. just a wildcard (`is_empty`/`is_not_empty`).
-						wildcardPrefix = isNextToken(tokens, TOKEN_WILDCARD);
-						
-						var t1, t2, acc = [];
-						skipWhitespace(tokens);
-						while((t1 = peekToken(tokens, 0)) && (t1.type === TOKEN_WORD) && (!t1.isCondition) && (((t2 = peekToken(tokens, 1)) && (t2.type !== TOKEN_COLON)) || !t2)) {
-						    acc.push(isNextToken(tokens, TOKEN_WORD));
-						    skipWhitespace(tokens);
+						negation = false;
+						// Look for NOT
+						poss_not = peekToken(tokens, 0);
+						if(poss_not.value === 'NOT') {
+							assertNextToken(tokens, TOKEN_WORD);
+							assertNextToken(tokens, TOKEN_WHITESPACE);
+							negation = !negation;
 						}
-						wildcardSuffix = isNextToken(tokens, TOKEN_WILDCARD);
+					
+						rule.field = rule.id = assertNextToken(tokens, TOKEN_WORD).value;
+					
+						assertNextToken(tokens, TOKEN_COLON);
+						negation = isNextToken(tokens, TOKEN_NEGATION) ? !negation : negation;
+					
+						if (isNextToken(tokens, TOKEN_LBRACKET)) {
+							// Between filter value (of the form `[minValue TO maxValue]`)
+							min = assertNextToken(tokens, TOKEN_WORD);
+							skipWhitespace(tokens);
+							assertNextToken(tokens, TOKEN_WORD, 'TO');
+							skipWhitespace(tokens);
+							max = assertNextToken(tokens, TOKEN_WORD);
+							assertNextToken(tokens, TOKEN_RBRACKET);
+							assignOperatorAndRange(rule, min.value, max.value, negation);
+						} else {
+							// Other types can be a (quoted or unquoted) word, with optional wildcard prefix and/or suffix.
+							// Alternatively the word itself can be omitted, i.e. just a wildcard (`is_empty`/`is_not_empty`).
+							wildcardPrefix = isNextToken(tokens, TOKEN_WILDCARD);
 						
-						assignOperatorAndValue(rule, acc.length > 0 ? acc.reduce((a, v) => a + (a ? ' ' : '') + v.value, '') : undefined, negation, wildcardPrefix, wildcardSuffix);
-					}
-				}
-				skipWhitespace(tokens);
-				if (rule) {
-					ruleSet.rules.push(rule);
-					if (tokens.length > 0 && tokens[0].type !== TOKEN_RPAREN) {
-						// Process the next condition ("AND" / "OR").
-						condition = assertCondition(tokens).value;
-						// Assign the first condition to the rule set.
-						ruleSet.condition = ruleSet.condition || condition;
-						if (condition !== ruleSet.condition) {
-							// We have something like "A AND B OR C" in the query.  This is interpreted as "(A AND B) OR C".
-							// The "AND" and "OR" conditions are given equal precedence, so the parentheses are always
-							// around the left-most set of filters with matching condition.  This is implemented by pushing
-							// the existing rule set down a level in the hierarchy, and continuing processing from the new
-							// parent.
-							ruleSet = {
-								condition: condition,
-								rules: [ ruleSet ]
-							};
+							var t1, t2, acc = [];
+							skipWhitespace(tokens);
+							while((t1 = peekToken(tokens, 0)) && (t1.type === TOKEN_WORD) && (!t1.isCondition) && (((t2 = peekToken(tokens, 1)) && (t2.type !== TOKEN_COLON)) || !t2)) {
+								acc.push(isNextToken(tokens, TOKEN_WORD));
+								skipWhitespace(tokens);
+							}
+							wildcardSuffix = isNextToken(tokens, TOKEN_WILDCARD);
+						
+							assignOperatorAndValue(rule, acc.length > 0 ? acc.reduce((a, v) => a + (a ? ' ' : '') + v.value, '') : undefined, negation, wildcardPrefix, wildcardSuffix);
 						}
 					}
+					skipWhitespace(tokens);
+					if (rule) {
+						ruleSet.rules.push(rule);
+						if (tokens.length > 0 && tokens[0].type !== TOKEN_RPAREN) {
+							// Process the next condition ("AND" / "OR").
+							condition = assertCondition(tokens).value;
+							// Assign the first condition to the rule set.
+							ruleSet.condition = ruleSet.condition || condition;
+							if (condition !== ruleSet.condition) {
+								// We have something like "A AND B OR C" in the query.  This is interpreted as "(A AND B) OR C".
+								// The "AND" and "OR" conditions are given equal precedence, so the parentheses are always
+								// around the left-most set of filters with matching condition.  This is implemented by pushing
+								// the existing rule set down a level in the hierarchy, and continuing processing from the new
+								// parent.
+								ruleSet = {
+									condition: condition,
+									rules: [ ruleSet ]
+								};
+							}
+						}
+					}
+					skipWhitespace(tokens);
 				}
-				skipWhitespace(tokens);
+			} catch(error) {
+				console.log("Query translator parse error: " + error);
 			}
 		}
 		return ruleSet;

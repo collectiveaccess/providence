@@ -510,6 +510,15 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Apply one or more regular expression-based substitutions to a source value prior to import.'),
 			'description' => _t('A list of Perl-compatible regular expressions. Each expression has two parts, a matching expression and a substitution expression, and is expressed as a JSON object with <em>match</em> and <em>replaceWith</em> keys. Ex. [{"match": "([\\d]+)\\.([\\d]+)", "replaceWith": "\\1:\\2"}, {"match": "[^\\d:]+", "replaceWith": ""}] ')
 		);
+		$settings['applyTransformations'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 4,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Apply one or more tranformations a source value prior to import.'),
+			'description' => _t('A list of data transformations, each with a list of transformation-specific options.')
+		);
 		$settings['maxLength'] = array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_FIELD,
@@ -706,6 +715,16 @@ class ca_data_importer_items extends BaseModel {
 			'default' => false,
 			'label' => _t('Always replace values?'),
 			'description' => _t('Always replace values, removing existing, ones even if existing record policy does not mandate replacement (Eg. is not merge_on_idno_with_replace, Etc.).')
+		);
+		
+		$settings['source'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Source for data'),
+			'description' => _t('Optional text indicating source of data. Will be set for attributes created with this mapping. Only supported for metadata attributes (not labels or intrinsics)')
 		);
 		
 		$this->setAvailableSettings($settings);

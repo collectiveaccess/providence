@@ -556,7 +556,9 @@ class BaseModel extends BaseObject {
 	 * @return HTMLPurifier Returns instance
 	 */
 	static public function getPurifier() {
-		if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
+		if (!BaseModel::$html_purifier) { 
+			BaseModel::$html_purifier = caGetHTMLPurifier(); 
+		}
 		return BaseModel::$html_purifier;
 	}
 	# --------------------------------------------------------------------------------
@@ -1319,19 +1321,31 @@ class BaseModel extends BaseObject {
 				{$idno_fld} IN (?) {$deleted_sql} {$access_sql}
 		", $params);
 		
+		$force_to_lowercase = caGetOption('forceToLowercase', $options, false);
 		
 		$ret = [];
 		while($qr_res->nextRow()) {
-			$key = $force_to_lowercase ? strtolower($qr_res->get($idno_fld)) : $qr_res->get($idno_fld);
-		   
-			if($return_all) {
-				$ret[$key][] = $qr_res->get($pk);
-			} else {
-				if(array_key_exists($key, $ret)) { continue; }
-				$ret[$key] = $qr_res->get($pk);
-			}
+		    $ret[$force_to_lowercase ? strtolower($qr_res->get($idno_fld)) : $qr_res->get($idno_fld)] = $qr_res->get($pk);
 		}
 		return $ret;
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Translate an array of row_ids into idnos 
+	 * 
+	 * @param array $ids A list of idnos
+	 * @param array $options Options include:
+	 *     forceToLowercase = force keys in returned array to lowercase. [Default is false] 
+	 *	   checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for table that have an "access" field.
+	 *
+	 * @return array Array with keys set to idnos and values set to row_ids. Returns null on error.
+	 */
+	static public function getIdnosForIDs(array $ids, ?array $options=null) {
+	    $t_instance = Datamodel::getInstance(get_called_class(), true);
+	    
+	    $idnos =  $t_instance->getFieldValuesForIDs($ids, [$t_instance->getProperty('ID_NUMBERING_ID_FIELD')], $options);
+	    
+	    return $idnos;
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -2655,7 +2669,7 @@ class BaseModel extends BaseObject {
 					$vs_sql  = "";
 					if (sizeof($va_media_fields) > 0) {
 						foreach($va_media_fields as $f) {
-							if($vs_msql = $this->_processMedia($f, array('delete_old_media' => false, 'batch' => caGetOption('batch', $pa_options, false)))) {
+							if($vs_msql = $this->_processMedia($f, array('delete_old_media' => false, 'batch' => caGetOption('batch', $pa_options, false), 'skipWhen' => caGetOption('skipWhen', $pa_options, null)))) {
 								$vs_sql .= $vs_msql;
 							}
 						}
@@ -3182,7 +3196,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					case (FT_MEDIA):
 						$va_limit_to_versions = caGetOption("updateOnlyMediaVersions", $pa_options, null);
 						
-						if ($vs_media_sql = $this->_processMedia($vs_field, array('processingMediaForReplication' => caGetOption('processingMediaForReplication', $pa_options, false), 'these_versions_only' => $va_limit_to_versions, 'batch' => caGetOption('batch', $pa_options, false)))) {
+						if ($vs_media_sql = $this->_processMedia($vs_field, array('processingMediaForReplication' => caGetOption('processingMediaForReplication', $pa_options, false), 'these_versions_only' => $va_limit_to_versions, 'batch' => caGetOption('batch', $pa_options, false), 'skipWhen' => caGetOption('skipWhen', $pa_options, null)))) {
 							$vs_sql .= $vs_media_sql;
 							$vn_fields_that_have_been_set++; $fields_changed++;
 						} else {
@@ -4288,6 +4302,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	 * 		delete_old_media = set to zero to prevent that old media files are deleted; defaults to 1
 	 *		these_versions_only = if set to an array of valid version names, then only the specified versions are updated with the currently updated file; ignored if no media already exists
 	 *		dont_allow_duplicate_media = if set to true, and the model has a field named "md5" then media will be rejected if a row already exists with the same MD5 signature
+	 *		skipWhen = skip processing of specific versions of media when file size exceeds threshold and use an existing version in its place. An array should be set, indexed by version name. Each skipped version should have an array with two keys, "threshold" (size in bytes) and "replaceWithVersion" (the version to use). [Default is null]
 	 */
 	public function _processMedia($ps_field, $pa_options=null) {
 		global $AUTH_CURRENT_USER_ID;
@@ -4569,7 +4584,13 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 
 						$basis				= isset($version_info[$v]['BASIS']) ? $version_info[$v]['BASIS'] : '';
 						
-						$skip_threshold 	= caGetOption('SKIP_WHEN_FILE_LARGER_THAN', $version_info[$v], null);
+						$skip_when_opt = caGetOption('skipWhen', $pa_options, null);
+						if(is_null($skip_threshold = caGetOption('SKIP_WHEN_FILE_LARGER_THAN', $version_info[$v], null)) && is_array($skip_when_opt)) {
+							$skip_threshold = $skip_when_opt[$v]['threshold'] ?? null;
+						}
+						if(is_null($replace_with_version_opt = caGetOption('REPLACE_WITH_VERSION', $version_info[$v], null))) {
+							$replace_with_version_opt = $skip_when_opt[$v]['replaceWithVersion'] ?? null;
+						}
 
 						if (isset($media_desc[$basis]) && isset($media_desc[$basis]['FILENAME'])) {
 							if (!isset($va_media_objects[$basis])) {
@@ -4659,12 +4680,13 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 							if (
 								(!is_null($skip_threshold) && ((int)$skip_threshold < (int)$media_desc["INPUT"]["FILESIZE"]))
 								||
-								(is_null($skip_threshold) && isset($version_info[$v]['REPLACE_WITH_VERSION']) && in_array($version_info[$v]['REPLACE_WITH_VERSION'], $va_versions, true))
+								(is_null($skip_threshold) && isset($replace_with_version_opt) && in_array($replace_with_version_opt, $va_versions, true))
 							) {
 								$media_desc[$v]['SKIP'] = 1;
 								
 								$alt_version_list = array_filter(array_keys($media_desc), function($x) use ($v) { return ($x !== $v); });
-								$replace_with_version = caGetOption('REPLACE_WITH_VERSION', $version_info[$v], array_pop($alt_version_list), ['validValues' => $va_versions]);
+								$replace_with_version = $replace_with_version_opt ? $replace_with_version_opt : array_pop($alt_version_list);
+								if(!in_array($replace_with_version, $va_versions)) { $replace_with_version = null; }
 								$media_desc[$v]['REPLACE_WITH_VERSION'] = $replace_with_version ? $replace_with_version : $va_versions[0];
 							} else if ((bool)$version_info[$v]["USE_EXTERNAL_URL_WHEN_AVAILABLE"]) { 
 								$filepath = $this->_SET_FILES[$ps_field]['tmp_name'];
@@ -9780,7 +9802,9 @@ $pa_options["display_form_field_tips"] = true;
 	/**
 	 * Moves relationships from currently loaded row to another row specified by $pn_row_id. The existing relationship
 	 * rows are simply re-pointed to the new row, so this is a relatively fast operation. Note that this method does not copy 
-	 * relationships, it moves them. After the operation completes no relationships to the specified related table will exist for the current row.
+	 * relationships, it moves them. Relationships that already exist on the destination row are *not* moved. After the 
+	 * operation completes no relationships to the specified related table will exist for the current row, save for those that 
+	 * already existed on the destination row.
 	 *
 	 * @param mixed $pm_rel_table_name_or_num The table name or number of the related table. Only relationships pointing to this table will be moved.
 	 * @param int $pn_to_id The primary key value of the row to move the relationships to.
@@ -9788,91 +9812,146 @@ $pa_options["display_form_field_tips"] = true;
 	 *
 	 * @return int Number of relationships moved, or null on error. Note that you should carefully test the return value for null-ness rather than false-ness, since zero is a valid return value in cases where no relationships need to be moved. 
 	 */
-	public function moveRelationships($pm_rel_table_name_or_num, $pn_to_id, $pa_options=null) {
-		if (!($vn_row_id = $this->getPrimaryKey())) { return null; }
-		if(!($va_rel_info = $this->_getRelationshipInfo($pm_rel_table_name_or_num))) { return null; }
-		$t_item_rel = $va_rel_info['t_item_rel'];	// linking table
+	public function moveRelationships($rel_table_name_or_num, $to_id, $options=null) {
+		if (!($row_id = $this->getPrimaryKey())) { return null; }
+		if(!($rel_info = $this->_getRelationshipInfo($rel_table_name_or_num))) { return null; }
+		$t_item_rel = $rel_info['t_item_rel'];	// linking table
 		
 		$o_db = $this->getDb();
 		
-		$vs_item_pk = $this->primaryKey();
-		
-		if (!($t_rel_item = Datamodel::getInstance($va_rel_info['related_table_name']))) {	// related item
+		$item_pk = $this->primaryKey();
+		if (!($t_rel_item = Datamodel::getInstance($rel_info['related_table_name']))) {	// related item
 			return null;
 		}
 		
-		$va_to_reindex_relations = array();
-		if ($t_item_rel->tableName() == $this->getSelfRelationTableName()) {
+		$rt = $t_item_rel->tableName();
+		$rel_item_pk = $t_rel_item->primaryKey();
+		
+		$t_to_item = Datamodel::getInstance($this->tableName(), false, $to_id);
+		
+		$to_reindex_relations = [];
+		if ($rt == $this->getSelfRelationTableName()) {
+			$left_table_field_name = $t_item_rel->getLeftTableFieldName();
+			$right_table_field_name = $t_item_rel->getRightTableFieldName();
+			
 			$qr_res = $o_db->query("
-				SELECT * FROM ".$t_item_rel->tableName()." 
-				WHERE ".$t_item_rel->getLeftTableFieldName()." = ? OR ".$t_item_rel->getRightTableFieldName()." = ?
-			", (int)$vn_row_id, (int)$vn_row_id);
+				SELECT * 
+				FROM {$rt} 
+				WHERE {$left_table_field_name} = ? OR {$right_table_field_name} = ?
+			", (int)$row_id, (int)$row_id);
 			if ($o_db->numErrors()) { $this->errors = $o_db->errors; return null; }
 			
+			$skip_relation_ids = [];
 			while($qr_res->nextRow()) {
-				$va_to_reindex_relations[(int)$qr_res->get('relation_id')] = $qr_res->getRow();	
+                $row = $qr_res->getRow();
+				if($t_to_item->relationshipExists($rel_table_name_or_num, ($row_id == $row[$left_table_field_name]) ? $row[$right_table_field_name] : $row[$left_table_field_name], $row['type_id'])){ 
+					$skip_relation_ids[] = $row['relation_id'];
+					continue; 
+				}
+				$to_reindex_relations[(int)$qr_res->get('relation_id')] = $qr_res->getRow();	
 			}
-			if (!sizeof($va_to_reindex_relations)) { return 0; }
+			if (!sizeof($to_reindex_relations)) { return 0; }
 			
-			$o_db->query("
-				UPDATE IGNORE ".$t_item_rel->tableName()." SET ".$t_item_rel->getLeftTableFieldName()." = ? WHERE ".$t_item_rel->getLeftTableFieldName()." = ?
-			", (int)$pn_to_id, (int)$vn_row_id);
-			if ($o_db->numErrors()) { $this->errors = $o_db->errors; return null; }
-			$o_db->query("
-				UPDATE IGNORE ".$t_item_rel->tableName()." SET ".$t_item_rel->getRightTableFieldName()." = ? WHERE ".$t_item_rel->getRightTableFieldName()." = ?
-			", (int)$pn_to_id, (int)$vn_row_id);
-			if ($o_db->numErrors()) { $this->errors = $o_db->errors; return null; }
+			if(sizeof($skip_relation_ids)) {
+				$o_db->query("
+					UPDATE IGNORE {$rt} 
+					SET {$left_table_field_name} = ? 
+					WHERE {$left_table_field_name} = ? AND relation_id NOT IN (?)
+				", [(int)$to_id, (int)$row_id, $skip_relation_ids]);
+				if ($o_db->numErrors()) { $this->errors = $o_db->errors; return null; }
+				$o_db->query("
+					UPDATE IGNORE {$rt} 
+					SET {$right_table_field_name} = ? 
+					WHERE {$right_table_field_name} = ? AND relation_id NOT IN (?)
+				", [(int)$to_id, (int)$row_id, $skip_relation_ids]);
+				if ($o_db->numErrors()) { $this->errors = $o_db->errors; return null; }
+			} else {
+				$o_db->query("
+					UPDATE IGNORE {$rt} 
+					SET {$left_table_field_name} = ? 
+					WHERE {$left_table_field_name} = ?
+				", [(int)$to_id, (int)$row_id]);
+				if ($o_db->numErrors()) { $this->errors = $o_db->errors; return null; }
+				$o_db->query("
+					UPDATE IGNORE {$rt} 
+					SET {$right_table_field_name} = ? 
+					WHERE {$right_table_field_name} = ?
+				", [(int)$to_id, (int)$row_id]);
+				if ($o_db->numErrors()) { $this->errors = $o_db->errors; return null; }
+			}
 		} else {
-		    if (sizeof($va_rel_info['path']) == 3) {
+		    if (sizeof($rel_info['path']) == 3) {
                 $qr_res = $o_db->query("
-                    SELECT * FROM ".$t_item_rel->tableName()." WHERE {$vs_item_pk} = ?
-                ", (int)$vn_row_id);
+                    SELECT * 
+                    FROM {$rt} 
+                    WHERE {$item_pk} = ?
+                ", (int)$row_id);
                 if ($o_db->numErrors()) { $this->errors = $o_db->errors; return null; }
             
+            	$skip_relation_ids = [];
                 while($qr_res->nextRow()) {
-                    $va_to_reindex_relations[(int)$qr_res->get('relation_id')] = $qr_res->getRow();
+                	$row = $qr_res->getRow();
+                	if($t_to_item->relationshipExists($rel_table_name_or_num, $row[$rel_item_pk], $row['type_id'] ?? null)){ 
+                		$skip_relation_ids[] = $row['relation_id'];
+                		continue; 
+                	}
+                    $to_reindex_relations[(int)$qr_res->get('relation_id')] = $row;
                 }
-                if (!sizeof($va_to_reindex_relations)) { return 0; }
+                
+                if (!sizeof($to_reindex_relations)) { return 0; }
             
-                $o_db->query("
-                    UPDATE IGNORE ".$t_item_rel->tableName()." SET {$vs_item_pk} = ? WHERE {$vs_item_pk} = ?
-                ", (int)$pn_to_id, (int)$vn_row_id);
+            	if(sizeof($skip_relation_ids)) {
+            		$o_db->query("
+						UPDATE IGNORE {$rt} 
+						SET {$item_pk} = ? 
+						WHERE {$item_pk} = ? AND relation_id NOT IN (?)
+					", (int)$to_id, (int)$row_id, $skip_relation_ids);
+            	} else {
+					$o_db->query("
+						UPDATE IGNORE {$rt} 
+						SET {$item_pk} = ? 
+						WHERE {$item_pk} = ? 
+					", (int)$to_id, (int)$row_id);
+				}
                 if ($o_db->numErrors()) { $this->errors = $o_db->errors; return null; }
             
                 if ($t_item_rel->hasField('is_primary')) { // make sure there's only one primary
                     $qr_res = $o_db->query("
-                        SELECT * FROM ".$t_item_rel->tableName()." WHERE {$vs_item_pk} = ?
-                    ", (int)$pn_to_id);
+                        SELECT * 
+                        FROM {$rt} 
+                        WHERE {$item_pk} = ?
+                    ", (int)$to_id);
                 
-                    $vn_first_primary_relation_id = null;
+                    $first_primary_relation_id = null;
                 
-                    $vs_rel_pk = $t_item_rel->primaryKey();
+                    $rel_pk = $t_item_rel->primaryKey();
                     while($qr_res->nextRow()) {
                         if ($qr_res->get('is_primary')) {
-                            $vn_first_primary_relation_id = (int)$qr_res->get($vs_rel_pk);
+                            $first_primary_relation_id = (int)$qr_res->get($rel_pk);
                             break;
                         }
                     }
                 
-                    if ($vn_first_primary_relation_id) {
+                    if ($first_primary_relation_id) {
                         $o_db->query("
-                            UPDATE IGNORE ".$t_item_rel->tableName()." SET is_primary = 0 WHERE {$vs_rel_pk} <> ? AND {$vs_item_pk} = ?
-                        ", array($vn_first_primary_relation_id, (int)$pn_to_id));
+                            UPDATE IGNORE {$rt} 
+                            SET is_primary = 0 
+                            WHERE {$rel_pk} <> ? AND {$item_pk} = ?
+                        ", [$first_primary_relation_id, (int)$to_id]);
                     }
                 }
             }
 		}
 		
-		$vn_rel_table_num = $t_item_rel->tableNum();
+		$rel_table_num = $t_item_rel->tableNum();
 		
 		// Reindex modified relationships
-		
 		$o_indexer = $this->getSearchIndexer();
-		foreach($va_to_reindex_relations as $vn_relation_id => $va_row) {
-			$o_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
+		foreach($to_reindex_relations as $relation_id => $row) {
+			$o_indexer->indexRow($rel_table_num, $relation_id, $row, false, null, [$item_pk => true]);
 		}
 		
-		return sizeof($va_to_reindex_relations);
+		return sizeof($to_reindex_relations);
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
@@ -10069,7 +10148,7 @@ $pa_options["display_form_field_tips"] = true;
 	/**
 	 * Checks if a relationship exists between the currently loaded row and the specified target
 	 *
-	 * @param mixed $pm_rel_table_name_or_num Table name (eg. "ca_entities") or number as defined in datamodel.conf of table containing row to creation relationship to.
+	 * @param mixed $pm_rel_table_name_or_num Table name (eg. "ca_entities") or number as defined in datamodel.conf of table containing row to create relationship to.
 	 * @param int $pn_rel_id primary key value of row to creation relationship to.
 	 * @param mixed $pm_type_id Relationship type type_code or type_id, as defined in the ca_relationship_types table. This is required for all relationships that use relationship types. This includes all of the most common types of relationships.
 	 * @param string $ps_effective_date Optional date expression to qualify relation with. Any expression that the TimeExpressionParser can handle is supported here.
@@ -10406,10 +10485,16 @@ $pa_options["display_form_field_tips"] = true;
 		if (!($vn_row_id = $this->getPrimaryKey())) { return null; }
 		if (!$pn_locale_id) { $pn_locale_id = $g_ui_locale_id; }
 		if (!$pn_locale_id) { 
-			$this->postError(2830, _t('No locale was set for tag'), 'BaseModel->addTag()','ca_item_tags');
-			return false;
+			if($locale = Session::getVar('lang')) {
+				if(!($pn_locale_id = ca_locales::codeToID($locale))) {
+					$pn_locale_id = ca_locales::codeToID(__CA_DEFAULT_LOCALE__);	
+				}
+			}
+			if($pn_locale_id) {
+				$this->postError(2830, _t('No locale was set for tag'), 'BaseModel->addTag()','ca_item_tags');
+				return false;
+			}
 		}
-		
 		
 		if(!isset($pa_options['purify'])) { $pa_options['purify'] = true; }
 		
@@ -10420,7 +10505,10 @@ $pa_options["display_form_field_tips"] = true;
 		$t_tag = new ca_item_tags();
 		$t_tag->purify($this->purify() || $pa_options['purify']);
 		
-		if (!$t_tag->load(array('tag' => $ps_tag, 'locale_id' => $pn_locale_id))) {
+		$criteria = ['tag' => $ps_tag];
+		if($pn_locale_id > 0) { $criteria['locale_id'] = $pn_locale_id; }
+		
+		if (!$t_tag->load($criteria)) {
 			// create new new
 			$t_tag->set('tag', $ps_tag);
 			$t_tag->set('locale_id', $pn_locale_id);
@@ -10434,6 +10522,10 @@ $pa_options["display_form_field_tips"] = true;
 			$vn_tag_id = $t_tag->getPrimaryKey();
 		}
 		
+		// already linked?
+		if(ca_items_x_tags::find(['table_num' => $this->tableNum(), 'row_id' => $this->getPrimaryKey(), 'tag_id' => $vn_tag_id])) {
+			return true;
+		}
 		$t_ixt = new ca_items_x_tags();
 		$t_ixt->set('table_num', $this->tableNum());
 		$t_ixt->set('row_id', $this->getPrimaryKey());
@@ -10659,6 +10751,26 @@ $pa_options["display_form_field_tips"] = true;
 		", $this->tableNum(), $vn_row_id);
 		
 		return array_map(function($v) { $v['moderation_message'] = $v['access'] ? '' : _t('Needs moderation'); return $v; }, $qr_comments->getAllRows());
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Get list of suggested tags based upon text
+	 
+	 * @param string $text  A valid ca_users.user_id value. If specified, only tags added by the specified user will be returned. (optional - default is null)
+	 * @param array $options Options include:
+	 *		limit = Maximum number of suggestions to return. [Default is 20]
+	 *
+	 * @return array
+	 */
+	static public function suggestTags(string $text, array $options=null) : array {
+		if(!strlen($text = trim($text))) { return []; }
+		$tags = array_filter(
+			array_map(function($v) {
+				return $v['tag'];
+			}, ca_item_tags::find(['tag' => $text.'%'], ['returnAs' => 'arrays', 'limit' => caGetOption('limit', $options, 20), 'allowWildcards' => true])),
+			function($v) { return (bool) strlen($v); }
+		);
+		return array_unique($tags);
 	}
 	# --------------------------------------------------------------------------------------------
 	# User commenting
@@ -10940,17 +11052,34 @@ $pa_options["display_form_field_tips"] = true;
 		", array($this->tableNum(), $vn_row_id));
 		
 		$pk = $this->primaryKey();
+		$qr_set_comments = $o_db->query("
+			SELECT 
+			    c.comment_id, c.row_id set_item_id, c.user_id, c.locale_id, c.comment, c.media1, c.media2, c.media3, c.media4, 
+			    c.rating, c.email, c.name, c.created_on, c.access, c.ip_addr, c.moderated_on, c.moderated_by_user_id, c.location,
+			    csi.row_id, csi.table_num, csi.set_id, csi.`rank`,
+			    cs.set_code, csl.name set_name,
+			    u.fname, u.lname, u.email user_email
+			FROM ca_item_comments c
+			INNER JOIN ca_set_items AS csi ON csi.item_id = c.row_id AND csi.table_num = ?
+			INNER JOIN ca_sets AS cs ON cs.set_id = csi.set_id
+			INNER JOIN ca_set_labels AS csl ON csl.set_id = cs.set_id 
+			LEFT JOIN ca_users AS u ON c.user_id = u.user_id
+			WHERE
+				(c.table_num = 105) AND (csi.row_id = ?)
+				
+				{$vs_user_sql} {$vs_moderation_sql}
+		", array($this->tableNum(), $vn_row_id));
 		
         switch($vs_return_as) {
             case 'count':
-                return $qr_comments->numRows();
+                return $qr_comments->numRows() + $qr_set_comments->numRows();
                 break;
             case 'ids':
             case 'firstId':
             case 'searchResult':
             case 'modelInstances':
             case 'firstModelInstance':
-                $va_ids = $qr_comments->getAllFieldValues('comment_id');
+                $va_ids = ($qr_comments->getAllFieldValues('comment_id') + $qr_set_comments->getAllFieldValues('comment_id'));
                 if ($vs_return_as === 'ids') { return $va_ids; }
                 if ($vs_return_as === 'firstId') { return array_shift($va_ids); }
                 if (($vs_return_as === 'modelInstances') || ($vs_return_as === 'firstModelInstance')) {
@@ -10990,6 +11119,36 @@ $pa_options["display_form_field_tips"] = true;
 					if ($va_comments[$comment_id]['user_id']) {
 						$va_comments[$comment_id]['name'] = trim($va_comments[$comment_id]['fname'].' '.$va_comments[$comment_id]['lname']);
 						$va_comments[$comment_id]['email'] =  $va_comments[$comment_id]['user_email'];
+					}
+                }
+                 while ($qr_set_comments->nextRow()) {
+                    $comment_id = $qr_set_comments->get("comment_id");
+                    $va_comments[$comment_id] = $qr_set_comments->getRow();
+                    foreach (array("media1", "media2", "media3", "media4") as $vs_media_field) {
+                        $va_media_versions = array();
+                        $va_media_versions = $qr_set_comments->getMediaVersions($vs_media_field);
+                        $va_media = array();
+                        if (is_array($va_media_versions) && (sizeof($va_media_versions) > 0)) {
+                            foreach ($va_media_versions as $vs_version) {
+                                $va_image_info = array();
+                                $va_image_info = $qr_set_comments->getMediaInfo($vs_media_field, $vs_version);
+                                $va_image_info["TAG"] = $qr_set_comments->getMediaTag($vs_media_field, $vs_version);
+                                $va_image_info["URL"] = $qr_set_comments->getMediaUrl($vs_media_field, $vs_version);
+                                $va_media[$vs_version] = $va_image_info;
+                            }
+                            $va_comments[$comment_id][$vs_media_field] = $va_media;
+                        }
+                    }
+                    
+					$va_comments[$comment_id]['created_on_display'] = caGetLocalizedDate($va_comments[$comment_id]['created_on']);
+					
+					if ($va_comments[$comment_id]['user_id']) {
+						$va_comments[$comment_id]['name'] = trim($va_comments[$comment_id]['fname'].' '.$va_comments[$comment_id]['lname']);
+						$va_comments[$comment_id]['email'] =  $va_comments[$comment_id]['user_email'];
+					}
+					
+					if ($o_request) {
+						$va_comments[$comment_id]['set_message'] = _t("Comment made in set %1", caEditorLink($o_request, $qr_set_comments->get('set_name'), '', 'ca_sets', $va_comments[$comment_id]['set_id']));
 					}
                 }
                 break;

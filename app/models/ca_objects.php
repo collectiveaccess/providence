@@ -130,7 +130,7 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 			'IS_NULL' => true, 
 			'DEFAULT' => null,
 			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
-			'LABEL' => _t('Home location'), 'DESCRIPTION' => _t('The customary storage location for this object.')
+			'LABEL' => _t('Home location ID'), 'DESCRIPTION' => _t('The customary storage location for this object.')
 		),
 		'is_deaccessioned' => array(
 			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_CHECKBOXES, 
@@ -611,7 +611,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		$this->BUNDLES['submitted_by_user'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Submitted by'), 'displayOnly' => true);
 		$this->BUNDLES['submission_group'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Submission group'), 'displayOnly' => true);
 		
-		$this->BUNDLES['home_location_value'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Home location'), 'displayOnly' => true);
+		$this->BUNDLES['home_location_value'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Home location display value'), 'displayOnly' => true);
 	}
 	# ------------------------------------------------------
 	/**
