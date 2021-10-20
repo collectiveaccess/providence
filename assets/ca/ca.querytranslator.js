@@ -518,7 +518,7 @@ var caUI = caUI || {};
 					skipWhitespace(tokens);
 				}
 			} catch(error) {
-				console.log("error: " + error);
+				console.log("Query translator parse error: " + error);
 			}
 		}
 		return ruleSet;
