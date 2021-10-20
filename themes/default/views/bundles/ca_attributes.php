@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -54,11 +54,14 @@
 	$vb_read_only				=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($this->getVar('t_instance')->tableName(), $this->getVar('element_code')) == __CA_BUNDLE_ACCESS_READONLY__));
 	$vb_batch					=	$this->getVar('batch');
 	$va_element_settings 		=	$t_element->getSettings();
-
+	
 	$vb_is_read_only_for_existing_vals = false;
 	
 	// If set render existing values in "bubbles" rather than full editing UI
 	$minimize_existing_values = $t_element->getSetting('minimizeExistingValues');
+	
+	// Show attribute source data (hardcoded text field)
+	$include_source_data = $t_element->getSetting('includeSourceData');
 	
 	if(($t_element->get('datatype') == __CA_ATTRIBUTE_VALUE_CONTAINER__) && isset($va_element_settings['readonlyTemplate']) && (strlen($va_element_settings['readonlyTemplate']) > 0)) {
 		$vb_is_read_only_for_existing_vals = true;
@@ -95,7 +98,7 @@
 	if (is_array($va_attribute_list) && sizeof($va_attribute_list)) {
 		$va_item_ids = array();
 		foreach ($va_attribute_list as $o_attr) {
-			$va_initial_values[$o_attr->getAttributeID()] = array();
+			$va_initial_values[$o_attr->getAttributeID()] = [];
 			foreach($o_attr->getValues() as $o_value) {
 				$vn_attr_id = $o_attr->getAttributeID();
 				$vn_element_id = $o_value->getElementID();
@@ -132,6 +135,10 @@
 				
 			}
 			$va_initial_values[$o_attr->getAttributeID()]['locale_id'] = $o_attr->getLocaleID();
+			if($include_source_data) { 
+				$va_template_tags[] = 'value_source';
+				$va_initial_values[$o_attr->getAttributeID()]['value_source'] = $o_attr->getValueSource(); 
+			}
 			
 			// set errors for attribute
 			if(is_array($va_action_errors = $this->request->getActionErrors($vs_error_source_code, $o_attr->getAttributeID()))) {
@@ -239,6 +246,7 @@ if (caGetOption('canMakePDF', $va_element_info[$root_element_id]['settings'], fa
 		
 			foreach($va_elements as $vn_container_id => $va_element_list) {
 				if ($vn_container_id === '_locale_id') { continue; }
+				if ($vn_container_id === '_value_source') { continue; }
 ?>
 				<table class="attributeListItem">
 					<tr>
@@ -252,7 +260,11 @@ if (caGetOption('canMakePDF', $va_element_info[$root_element_id]['settings'], fa
 				</table>
 <?php
 			}	
-
+			
+			if($include_source_data && isset($va_elements['_value_source'])) {
+				print ($va_elements['_value_source']['hidden']) ? str_replace("textarea", "textentry", $va_elements['_value_source']['element']) : '<div class="formLabel">'._t('<em>Source</em>').'<br/>'.str_replace("textarea", "textentry", $va_elements['_value_source']['element']).'</div>';
+			}
+			
 			if (isset($va_elements['_locale_id'])) {
 				print ($va_elements['_locale_id']['hidden']) ? $va_elements['_locale_id']['element'] : '<div class="formLabel">'._t('Locale').' '.$va_elements['_locale_id']['element'].'</div>';
 			}

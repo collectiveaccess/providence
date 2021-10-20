@@ -82,10 +82,10 @@ BaseModel::$s_ca_models_definitions['ca_attributes'] = array(
 		),
 		'value_source' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
-				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 5,
 				'IS_NULL' => false,
 				'DEFAULT' => '',
-				'LABEL' => 'Value source', 'DESCRIPTION' => 'Source of data value (for scientific citation).'
+				'LABEL' => '<em>Source</em>', 'DESCRIPTION' => 'Source of data value (for scientific citation).'
 		)
 	)
 );
@@ -270,7 +270,9 @@ class ca_attributes extends BaseModel {
 		$this->set('row_id', $pn_row_id);
 		
 		// Save source value
-		$this->set('value_source', caGetOption('source', $pa_options, null));
+		if($t_element->getSetting('includeSourceData')) {
+			$this->set('value_source', caGetOption('source', $pa_options, $pa_values['value_source'] ?? null));
+		}
 		
 		$this->insert($pa_options);
 		
@@ -359,6 +361,7 @@ class ca_attributes extends BaseModel {
 		if (!is_array($pa_options)) { $pa_options = []; }
 		
 		if (!$this->getPrimaryKey()) { return null; }
+		$t_element = ca_attributes::getElementInstance($this->get('element_id'));
 		
 		$vb_web_set_transaction = false;
 		if (!$this->inTransaction()) {
@@ -376,10 +379,11 @@ class ca_attributes extends BaseModel {
 		if (isset($pa_values['locale_id'])) { $this->set('locale_id', $pa_values['locale_id']); }
 		
 		// Save source value
-		if($source = caGetOption('source', $pa_options, null, ['trim' => true])) {
-			$this->set('value_source', $source);
+		if($t_element->getSetting('includeSourceData')) {
+			if($source = caGetOption('source', $pa_options, $pa_values['value_source'] ?? null, ['trim' => true])) {
+				$this->set('value_source', $source);
+			}	
 		}
-		
 		$this->update();
 
 		if ($this->numErrors()) {
@@ -396,7 +400,6 @@ class ca_attributes extends BaseModel {
 		$t_attr_val->purify($this->purify());
 		$t_attr_val->setTransaction($o_trans);
 		
-		$t_element = ca_attributes::getElementInstance($this->get('element_id'));
 		$va_elements = $t_element->getElementsInSet();
 
 		$va_attr_vals = $this->getAttributeValues();

@@ -323,7 +323,10 @@
 			} else {
 				if(!$elements) { $elements = array_filter(ca_metadata_elements::getElementsForSet($vn_attr_element_id, ['omitContainers' => true]), function($v) { return (int)$v['datatype'] !== 0; }); }
 				
-				$element_codes = array_flip(array_map(function($v) { return $v['element_code']; }, $elements));
+				$element_codes = [];
+				foreach($elements as $e) {
+					$element_codes[$e['element_code']] = $e['element_id'];
+				}
 				
 				// Have any of the values changed?
 				foreach($va_attr_values as $o_attr_value) {
@@ -371,7 +374,8 @@
 				
 				if(sizeof($element_codes) > 0) {
 					foreach($element_codes as $element_code => $element_id) {
-						if(isset($pa_values[$element_code]) && $pa_values[$element_code]) {
+						if((isset($pa_values[$element_code]) && $pa_values[$element_code]) || (isset($pa_values[$element_id]) && $pa_values[$element_id])) {
+							$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$element_id] = true;
 							$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$element_id] = true;
 							break;
 						}
@@ -1804,7 +1808,8 @@
 			
 			$va_element_codes = array();
 			$va_elements_by_container = array();
-			$vb_should_output_locale_id = ($t_element->getSetting('doesNotTakeLocale')) ? false : true;
+			$vb_should_output_locale_id = (bool)$t_element->getSetting('doesNotTakeLocale');
+			$vb_should_output_value_source = (bool)$t_element->getSetting('includeSourceData');
 			$va_element_value_defaults = array();
 			$va_elements_without_break_by_container = array();
 			$va_elements_break_by_container = array();
@@ -1910,6 +1915,21 @@
 				];
 				if (stripos($va_elements_by_container['_locale_id']['element'], "'hidden'")) {
 					$va_elements_by_container['_locale_id']['hidden'] = true;
+				}
+			}
+			
+			if ($vb_should_output_value_source) {	// output value_source, if necessary
+				$va_elements_by_container['_value_source'] = [
+					'hidden' => false, 
+					'element' => $t_attr->htmlFormElement('value_source', '^ELEMENT', [
+						'width' => '670px', 'height' => 3, 'value' => '{value_source}',
+						'id' => '{fieldNamePrefix}value_source_{n}', 
+						'name' => '{fieldNamePrefix}value_source_{n}',
+						'no_tooltips' => true, 
+					])
+				];
+				if (stripos($va_elements_by_container['_value_source']['element'], "'hidden'")) {
+					$va_elements_by_container['_value_source']['hidden'] = true;
 				}
 			}
 			
