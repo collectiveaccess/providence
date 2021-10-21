@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/controllers/lookup/SetController.php : 
+ * lookup/set_hierarchy_ancestors_json.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,13 +25,5 @@
  *
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__."/BaseLookupController.php");
-
-class SetController extends BaseLookupController {
-	# -------------------------------------------------------
-	protected $opb_uses_hierarchy_browser = false;
-	protected $ops_table_name = 'ca_sets';		// name of "subject" table (what we're editing)
-	protected $ops_name_singular = 'set';
-	protected $ops_search_class = 'SetSearch';
-	# -------------------------------------------------------
-}
+ 
+print json_encode($this->getVar('ancestors'));
