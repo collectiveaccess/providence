@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2019 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -168,17 +168,17 @@
 			        $vals = [];
 			        foreach($va_attrs as $o_attr) {
 			            foreach($o_attr->getValues() as $o_value) {
-			                $vn_element_id = $o_value->getElementID();
-			                $vs_element_code = ca_metadata_elements::getElementCodeForId($vn_element_id);
+			                $vn_sub_element_id = $o_value->getElementID();
+			                $vs_element_code = ca_metadata_elements::getElementCodeForId($vn_sub_element_id);
 			                
-			                if(isset($pa_values[$vn_element_id]) || isset($pa_values[$vs_element_code])) {
-			                	$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_element_id] = true;
+			                if(isset($pa_values[$vn_sub_element_id]) || isset($pa_values[$vs_element_code])) {
+			                	$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_sub_element_id] = true;
 			                }
 			                
 			                $pv = $o_value->getDisplayValue(['dateFormat' => 'original']); // need to compare dates as-entered
 			                $vals[] = $o_value->getDisplayValue(['output' => 'text', 'dateFormat' => 'original']);
 			                if (
-			                	(strlen($pa_values[$vn_element_id] && ($pa_values[$vn_element_id] != $pv)))
+			                	(strlen($pa_values[$vn_sub_element_id] && ($pa_values[$vn_sub_element_id] != $pv)))
 			            		||
 			            		(strlen($pa_values[$vs_element_code] && ($pa_values[$vs_element_code] != $pv)))
 			            	) {
@@ -318,7 +318,10 @@
 			} else {
 				if(!$elements) { $elements = array_filter(ca_metadata_elements::getElementsForSet($vn_attr_element_id, ['omitContainers' => true]), function($v) { return (int)$v['datatype'] !== 0; }); }
 				
-				$element_codes = array_flip(array_map(function($v) { return $v['element_code']; }, $elements));
+				$element_codes = [];
+				foreach($elements as $e) {
+					$element_codes[$e['element_code']] = $e['element_id'];
+				}
 				
 				// Have any of the values changed?
 				foreach($va_attr_values as $o_attr_value) {
@@ -366,7 +369,8 @@
 				
 				if(sizeof($element_codes) > 0) {
 					foreach($element_codes as $element_code => $element_id) {
-						if(isset($pa_values[$element_code]) && $pa_values[$element_code]) {
+						if((isset($pa_values[$element_code]) && $pa_values[$element_code]) || (isset($pa_values[$element_id]) && $pa_values[$element_id])) {
+							$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$element_id] = true;
 							$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$element_id] = true;
 							break;
 						}
@@ -389,7 +393,9 @@
 			return true;
 		}
 		# ------------------------------------------------------------------
-		// edit attribute from current row
+		/**
+		 * edit attribute from current row
+		 */
 		public function _editAttribute($pn_attribute_id, $pa_values, $po_trans=null, $pa_info=null) {
 			$t_attr = new ca_attributes($pn_attribute_id);
 			$t_attr->purify($this->purify());
