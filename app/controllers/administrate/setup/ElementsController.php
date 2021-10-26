@@ -78,7 +78,7 @@ class ElementsController extends BaseEditorController {
 				FROM ca_metadata_elements cme
 				LEFT JOIN ca_metadata_element_labels AS cmel ON cme.element_id = cmel.element_id
 				WHERE
-					cme.parent_id = ?
+					cme.parent_id = ? AND cme.deleted = 0
 				ORDER BY
 					cme.`rank`
 			",(int)$t_element->get('element_id'));
@@ -147,7 +147,7 @@ class ElementsController extends BaseEditorController {
 				$qr_tmp = $vo_db->query("
 					SELECT MAX(`rank`) AS `rank`
 					FROM ca_metadata_elements
-					WHERE parent_id=?
+					WHERE parent_id = ? AND deleted = 0
 				",$vn_parent_id);
 				if(!$qr_tmp->nextRow()){
 					$t_element->set('rank',1);
@@ -393,6 +393,8 @@ class ElementsController extends BaseEditorController {
 				(`rank` < ?)
 				AND
 				(parent_id = ?)
+				AND
+				(deleted = 0)
 			ORDER BY
 				`rank` DESC
 		",$t_element->get('rank'),$t_element->get('parent_id'));
@@ -432,6 +434,8 @@ class ElementsController extends BaseEditorController {
 				(`rank` > ?)
 				AND
 				(parent_id = ?)
+				AND
+				(deletd = 0)
 			ORDER BY
 				`rank`
 		",$t_element->get('rank'),$t_element->get('parent_id'));
@@ -492,7 +496,7 @@ class ElementsController extends BaseEditorController {
 			SELECT * FROM
 				(SELECT `rank`,count(*) as count
 					FROM ca_metadata_elements
-					WHERE parent_id=?
+					WHERE parent_id = ? AND deleted = 0
 					GROUP BY `rank`) as `lambda`
 			WHERE
 				count > 1;
@@ -518,9 +522,11 @@ class ElementsController extends BaseEditorController {
 				SELECT * FROM
 					ca_metadata_elements
 					WHERE
-						(parent_id=?)
+						(parent_id = ?)
 						AND
 						(`rank` > ?)
+						AND
+						(deleted = 0)
 					ORDER BY
 						`rank`
 			",$pn_parent_id,$vn_rank);
@@ -537,6 +543,8 @@ class ElementsController extends BaseEditorController {
 						(parent_id=?)
 						AND
 						(`rank` = ?)
+						AND
+						(deleted = 0)
 					ORDER BY
 						`rank`
 			",$pn_parent_id,$vn_rank);

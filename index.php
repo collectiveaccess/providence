@@ -39,13 +39,8 @@
 
 	try {
 		// connect to database
-		try {
-			$o_db = new Db(null, null, false);
-		} catch(DatabaseException $e) {
-			$opa_error_messages = array("Could not connect to database. Check your database configuration in <em>setup.php</em>.");
-			require_once(__CA_BASE_DIR__."/themes/default/views/system/configuration_error_html.php");
-			exit();
-		}
+		$o_db = new Db(null, null, false);
+		
 		//
 		// do a sanity check on application and server configuration before servicing a request
 		//
@@ -128,6 +123,10 @@
 		//
 		$resp->sendResponse();
 		$req->close();
+	} catch(DatabaseException $e) {
+		$opa_error_messages = ["Could not connect to database. Check your database configuration in <em>setup.php</em>."];
+		require_once(__CA_BASE_DIR__."/themes/default/views/system/configuration_error_html.php");
+		exit();
 	} catch (Exception $e) {
 		caDisplayException($e);
 	}

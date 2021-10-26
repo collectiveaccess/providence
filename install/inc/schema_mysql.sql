@@ -380,6 +380,7 @@ create table ca_metadata_elements
    datatype                       tinyint unsigned               not null,
    settings                       longtext                       not null,
    `rank`                           smallint unsigned              not null default 0,
+   deleted              tinyint unsigned     not null,
    hier_left                      decimal(30,20)                 not null,
    hier_right                     decimal(30,20)                 not null,
    hier_element_id                smallint unsigned              null,
@@ -399,6 +400,7 @@ create index i_parent_id on ca_metadata_elements(parent_id);
 create index i_hier_left on ca_metadata_elements(hier_left);
 create index i_hier_right on ca_metadata_elements(hier_right);
 create index i_list_id on ca_metadata_elements(list_id);
+create index i_deleted on ca_metadata_elements(deleted);
 
 
 /*==========================================================================*/
@@ -7633,4 +7635,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (173, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (174, unix_timestamp());
