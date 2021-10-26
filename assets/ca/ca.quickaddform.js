@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2019 Whirl-i-Gig
+ * Copyright 2014-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -43,6 +43,7 @@ var caUI = caUI || {};
 			
 			fileUploadUrl: null,
 			saveUrl: null,
+			csrfToken: null,
 			
 			headerText: "QuickAdd",
 			saveText: "Saved record: %1",
@@ -73,6 +74,7 @@ var caUI = caUI || {};
 			});
 			
 			formData = jQuery("#" + that.formID).serializeObject();
+			formData['csrfToken'] = that.csrfToken;
 			
 			// Added "forced relationship" settings if available
 			var relatedID = jQuery("#" + that.formID).parent().data('relatedID');

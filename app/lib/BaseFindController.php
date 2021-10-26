@@ -733,6 +733,11 @@
  		public function createSetFromResult() {
  			global $g_ui_locale_id;
  			
+ 			if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+				throw new ApplicationException(_t('CSRF check failed'));
+				return;
+			}
+ 			
  			$vs_set_name = $vs_set_code = null;
  			$vn_added_items_count = 0;
  			
@@ -1150,6 +1155,11 @@
  		 *  (2) "complex" editing from a popup editing window. Data is submitted from a form as standard editor UI form data from a psuedo editor UI screen.
  		 */
  		public function saveResultsEditorData() {
+ 			if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+				throw new ApplicationException(_t('CSRF check failed'));
+				return;
+			}
+			
  			$t_display = new ca_bundle_displays($this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id, $this->_getShowInStr()));
  			$response = $t_display->saveResultsEditorData($this->ops_tablename, [
  													'request' => $this->request, 
