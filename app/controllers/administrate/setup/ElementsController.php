@@ -435,7 +435,7 @@ class ElementsController extends BaseEditorController {
 				AND
 				(parent_id = ?)
 				AND
-				(deletd = 0)
+				(deleted = 0)
 			ORDER BY
 				`rank`
 		",$t_element->get('rank'),$t_element->get('parent_id'));
