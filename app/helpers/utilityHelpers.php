@@ -3613,8 +3613,9 @@ function caFileIsIncludable($ps_file) {
 	 * @param RequestHTTP $po_request Current request
 	 * @param string $ps_token CSRF token to validate. If omitted token in the "csrfToken" parameter is extracted from current request.
 	 * @param array $pa_options Options include:
-	 *      remove = remove validated token from active token list. [Default is true]
-	 *      exceptions = throw exception if token is invalid. [Default is true]
+	 *      remove = remove validated token from active token list. [Default is false]
+	 *      exceptions = throw exception if token is invalid. [Default is false]
+	 *      notifications = post notification if token is invalid. [Default is false]
 	 * @return bool
 	 * @throws ApplicationException
 	 */
