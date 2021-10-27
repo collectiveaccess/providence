@@ -416,16 +416,12 @@ var caUI = caUI || {};
 					}
 				}
 				
-				// Disable locales if "single-value-per-locale" restriction is in placementID
-                if(that.singleValuePerLocale) {
-                    var localeList = jQuery.makeArray(jQuery(this.container + " select." + this.localeClassName + ":first option"));
-                    for(i=0; i < localeList.length; i++) {
-                        if (jQuery(this.container + " select." + this.localeClassName + " option:selected[value=" + localeList[i].value + "]").length > 0) {
-                            jQuery(this.container + " select." + this.localeClassName + " option:not(:selected)[value=" + localeList[i].value + "]").attr('disabled', true);
-                        }
-                    }
-                }
+				
 			}
+			// Disable locales if "single-value-per-locale" restriction is in placementID
+           //  if(that.singleValuePerLocale) {
+//                 this.refreshLocaleAvailability();
+//             }
 
 			// Add bundle preview value text
 			if(this.bundlePreview && (this.bundlePreview.length > 0)) {
@@ -450,6 +446,15 @@ var caUI = caUI || {};
 			}
 
 			return this;
+		};
+		
+		that.refreshLocaleAvailability = function() {
+            var localeList = jQuery.makeArray(jQuery(this.container + " select." + this.localeClassName + ":first option"));
+            for(i=0; i < localeList.length; i++) {
+                if (jQuery(this.container + " select." + this.localeClassName + " option:selected[value=" + localeList[i].value + "]").length > 0) {
+                    jQuery(this.container + " select." + this.localeClassName + " option:not(:selected)[value=" + localeList[i].value + "]").attr('disabled', true);
+                }
+            }
 		};
 
 		that.updateBundleFormState = function() {
@@ -484,6 +489,11 @@ var caUI = caUI || {};
 					jQuery(this.container + " ." + options.listItemClassName + ":odd").css('background-color', '#' + options.evenColor);
 				}	
 			}
+			
+			// Disable locales if "single-value-per-locale" restriction is in placementID
+            if(that.singleValuePerLocale) {
+                this.refreshLocaleAvailability();
+            }
 			return this;
 		};
 
