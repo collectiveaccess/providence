@@ -58,6 +58,8 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 	
 	var $opa_metadata;
 	
+	private $media = null;
+	
 	var $info = array(
 		"IMPORT" => array(
 			"text/rtf" 								=> "rtf",
@@ -613,9 +615,9 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 	 */
 	public function &writePreviews($ps_filepath, $pa_options) {
 		if ($vs_pdf_path = WLPlugMediaOffice::$s_pdf_conv_cache[$this->filepath]) {
-			$o_media = new Media();
-			if ($o_media->read($vs_pdf_path)) {
-				return $o_media->writePreviews(array_merge($pa_options, array('dontUseDefaultIcons' => true)));	
+			$this->media = new Media();
+			if ($this->media->read($vs_pdf_path)) {
+				return $this->media->writePreviews(array_merge($pa_options, array('dontUseDefaultIcons' => true)));	
 			}
 		
 		}
