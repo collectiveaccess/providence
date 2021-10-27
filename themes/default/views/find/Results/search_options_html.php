@@ -43,7 +43,7 @@ if($vo_result->numHits() > 0) {
 <div style="clear: both;"><!-- empty --></div>
 
 <?php
-	if($vo_result->numHits() > 0) {
+	if(($vo_result->numHits() > 0) && $this->request->user->canDoAction('can_use_spreadsheet_editor_'.$vs_table)) {
 ?>
 <a href='#' id='showResultsEditor' onclick='caResultsEditorPanel.showPanel("<?php print caNavUrl($this->request, '*', '*', 'resultsEditor'); ?>"); return false;'><?php print caNavIcon(__CA_NAV_ICON_SPREADSHEET__, "24px"); ?></a> 
 <?php
