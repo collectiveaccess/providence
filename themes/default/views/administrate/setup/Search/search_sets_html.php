@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2014 Whirl-i-Gig
+ * Copyright 2012-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -175,7 +175,8 @@
 			{ 
 				set_name: jQuery('#caCreateSetFromResultsInput').val(),
 				mode: jQuery('#caCreateSetFromResultsMode').val(),
-				item_ids: caGetSelectedItemIDsToAddToSet().join(';')
+				item_ids: caGetSelectedItemIDsToAddToSet().join(';'),
+				csrfToken: <?= json_encode(caGenerateCSRFToken($this->request));?>
 			}, 
 			function(res) {
 				jQuery("#caCreateSetFromResultsIndicator").hide();

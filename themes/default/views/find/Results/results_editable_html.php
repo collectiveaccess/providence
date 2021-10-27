@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2016 Whirl-i-Gig
+ * Copyright 2015-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -57,6 +57,7 @@
 			dataLoadUrl: '<?php print caNavUrl($this->request, '*', '*', 'getResultsEditorData'); ?>',
 			dataSaveUrl: '<?php print caNavUrl($this->request, '*', '*', 'saveResultsEditorData'); ?>',
 			dataEditUrl: '<?php print caNavUrl($this->request, '*', '*', 'resultsComplexDataEditor'); ?>',
+			csrfToken: <?= json_encode(caGenerateCSRFToken($this->request)); ?>,
 			rowHeaders: true,
 			dataEditorID: 'caResultsComplexDataEditorPanel',
 			

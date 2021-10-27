@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -83,7 +83,8 @@
 			formUrl: '<?php print caNavUrl($this->request, '*', '*', 'resultsComplexDataEditor'); ?>',
 			fileUploadUrl: '<?php print caNavUrl($this->request, "*", "*", "saveResultsEditorFiles"); ?>',
 			saveUrl: '<?php print caNavUrl($this->request, "*", "*", "saveResultsEditorData"); ?>',
-		
+			csrfToken: <?= json_encode(caGenerateCSRFToken($this->request)); ?>,
+			
 			headerText: '<?php print addslashes(_t('Edit %1', $t_subject->getTypeName())); ?>',
 			saveText: '<?php print addslashes(_t('Updated %1 ', $t_subject->getTypeName())); ?> <em>%1</em>',
 			busyIndicator: '<?php print addslashes(caBusyIndicatorIcon($this->request)); ?>',

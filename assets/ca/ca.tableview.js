@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2016 Whirl-i-Gig
+ * Copyright 2013-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -44,6 +44,7 @@ var caUI = caUI || {};
 			
 			dataSaveUrl: null,
 			dataEditUrl: null,
+			csrfToken: null,
 			
 			rowHeaders: null,
 			colHeaders: null,
@@ -153,8 +154,7 @@ var caUI = caUI || {};
 		// --------------------------------------------------------------------------------
 		
 		that._runSaveQueue = function() {
-			if (that.saveQueueIsRunning) { 
-				console.log("Queue is already running");	
+			if (that.saveQueueIsRunning) {
 				return false;
 			}
 			
@@ -184,9 +184,8 @@ var caUI = caUI || {};
 			});
 			
 			that.saveQueue = [];
-			jQuery.post(that.dataSaveUrl, { changes: q },
+			jQuery.post(that.dataSaveUrl, { changes: q, csrfToken: that.csrfToken },
 				function(data) {
-					console.log("data", data);
 					if (parseInt(data.status) !== 0) {
 						var errorMessages = [];
 						jQuery.each(data.errors, function(error, bundle) {

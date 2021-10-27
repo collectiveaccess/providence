@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -47,7 +47,6 @@
  	
 	class BaseFindController extends ActionController {
 		# ------------------------------------------------------------------
-		protected $opo_datamodel;
 		protected $opo_result_context;
 		protected $opa_items_per_page;
 		protected $opn_items_per_page_default;
@@ -654,6 +653,11 @@
  		public function createSetFromResult() {
  			global $g_ui_locale_id;
  			
+ 			if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+				throw new ApplicationException(_t('CSRF check failed'));
+				return;
+			}
+ 			
  			$vs_set_name = $vs_set_code = null;
  			$vn_added_items_count = 0;
  			
@@ -1048,6 +1052,10 @@
  		 *  (2) "complex" editing from a popup editing window. Data is submitted from a form as standard editor UI form data from a psuedo editor UI screen.
  		 */
  		public function saveResultsEditorData() {
+ 			if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+				throw new ApplicationException(_t('CSRF check failed'));
+				return;
+			}
  			$t_display = new ca_bundle_displays($vn_display_id = $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id));
  			$va_response = $t_display->saveResultsEditorData($this->ops_tablename, ['request' => $this->request, 'user_id' => $this->request->getUserID(), 'type_id' => $this->opo_result_context->getTypeRestriction($vb_dummy)]);
  			
