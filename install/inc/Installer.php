@@ -2607,6 +2607,11 @@ class Installer {
 			$this->addError("Errors while adding the default administrator account: ".join("; ",$t_user->getErrors()));
 			return false;
 		}
+		
+		if(!$t_user->addRoles(['admin'])) {
+			$this->addError("Could not add the <em>admin</em> role to the default administrator account: ".join("; ",$t_user->getErrors()));
+			return false;
+		}
 
 		return $ps_password;
 	}
