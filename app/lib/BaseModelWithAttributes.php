@@ -1808,14 +1808,13 @@
 			
 			$va_element_codes = array();
 			$va_elements_by_container = array();
-			$vb_should_output_locale_id = (bool)$t_element->getSetting('doesNotTakeLocale');
+			$vb_should_output_locale_id = !(bool)$t_element->getSetting('doesNotTakeLocale');
 			$vb_should_output_value_source = (bool)$t_element->getSetting('includeSourceData');
 			$va_element_value_defaults = array();
 			$va_elements_without_break_by_container = array();
 			$va_elements_break_by_container = array();
 			
 			$va_element_info = array();
-
 			// fine element breaks by container
 			foreach($va_element_set as $va_element) {
 				if ($va_element['datatype'] == 0) {		// containers are not active form elements
