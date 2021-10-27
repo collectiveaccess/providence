@@ -418,10 +418,6 @@ var caUI = caUI || {};
 				
 				
 			}
-			// Disable locales if "single-value-per-locale" restriction is in placementID
-           //  if(that.singleValuePerLocale) {
-//                 this.refreshLocaleAvailability();
-//             }
 
 			// Add bundle preview value text
 			if(this.bundlePreview && (this.bundlePreview.length > 0)) {
