@@ -434,7 +434,7 @@
 				if(sizeof($element_codes) > 0) {
 					foreach($element_codes as $element_code => $element_id) {
 						if((isset($pa_values[$element_code]) && $pa_values[$element_code]) || (isset($pa_values[$element_id]) && $pa_values[$element_id])) {
-							$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$element_id] = true;
+							$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_attr_element_id] = true;
 							$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$element_id] = true;
 							break;
 						}
