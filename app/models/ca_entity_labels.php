@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -111,7 +111,7 @@ BaseModel::$s_ca_models_definitions['ca_entity_labels'] = array(
 				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Surname/organization'), 'DESCRIPTION' => _t('A surname is a name added to a given name and is part of a personal name. In many cases a surname is a family name. For organizations this should be set to the full name.'),
+				'LABEL' => _t('Surname'), 'DESCRIPTION' => _t('A surname is a name added to a given name and is part of a personal name. In many cases a surname is a family name. For organizations this should be set to the full name.'),
 				'BOUNDS_LENGTH' => array(0,512)
 		),
 		'prefix' => array(
@@ -279,6 +279,7 @@ class ca_entity_labels extends BaseLabel {
 	public function insert($pa_options=null) {
 		if (!trim($this->get('surname')) && !trim($this->get('forename'))) {
 			// auto-split entity name if displayname is set
+			$we_set_displayname = false;
 			if($vs_display_name = trim($this->get('displayname'))) {
 			
 				if (($t_entity = caGetOption('subject', $pa_options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG')) {
@@ -288,10 +289,11 @@ class ca_entity_labels extends BaseLabel {
 						'forename' => ''	
 					];
 				} else {
-					$va_label = DataMigrationUtils::splitEntityName($vs_display_name);
+					$va_label = DataMigrationUtils::splitEntityName($vs_display_name, $pa_options);
+					$we_set_displayname = true;
 				}
 				if(is_array($va_label)) {
-					unset($va_label['displayname']); // just make sure we don't mangle the user-entered displayname
+					if (!$we_set_displayname) { unset($va_label['displayname']); } // just make sure we don't mangle the user-entered displayname
 
 					foreach($va_label as $vs_fld => $vs_val) {
 						$this->set($vs_fld, $vs_val);
@@ -305,7 +307,6 @@ class ca_entity_labels extends BaseLabel {
 				return false;
 			}
 		}
-		
 		if (($t_entity = caGetOption('subject', $pa_options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG')) {
 			$this->set('displayname', $this->get('surname'));
 		} elseif (!$this->get('displayname')) {
@@ -326,6 +327,35 @@ class ca_entity_labels extends BaseLabel {
 			$this->set('displayname', trim(preg_replace('![ ]+!', ' ', $this->get('forename').' '.$this->get('middlename').' '.$this->get('surname'))));
 		}
 		return parent::update($pa_options);
+	}
+	# -------------------------------------------------------
+	/**
+	 * Returns version of label 'display' field value suitable for sorting
+	 * The sortable value is the same as the display value except when the display value
+	 * starts with a definite article ('the' in English) or indefinite article ('a' or 'an' in English)
+	 * in the locale of the label, in which case the article is moved to the end of the sortable value.
+	 * 
+	 * What constitutes an article is defined in the TimeExpressionParser localization files. So if the
+	 * locale of the label doesn't correspond to an existing TimeExpressionParser localization, then
+	 * the users' current locale setting is used.
+	 */
+	protected function _generateSortableValue() {
+		if ($vs_sort_field = $this->getProperty('LABEL_SORT_FIELD')) {
+			$vs_display_field = $this->getProperty('LABEL_DISPLAY_FIELD');
+			
+			// is entity org?
+			$is_org = false;
+			if (($entity = $this->getSubjectTableInstance()) && ($et = $entity->getTypeInstance())) {
+				$is_org = ($et->getSetting('entity_class') === 'ORG');
+			}
+			if($is_org) {
+				$n = $this->get('ca_entity_labels.surname');
+			} else {
+				$n = DataMigrationUtils::splitEntityName($this->get($vs_display_field), ['displaynameFormat' => 'surnamecommaforename']);
+				$n = $n['displayname'];
+			}
+			$this->set($vs_sort_field, $n);
+		}
 	}
 	# ------------------------------------------------------
 }

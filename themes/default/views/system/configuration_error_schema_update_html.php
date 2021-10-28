@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2016 Whirl-i-Gig
+ * Copyright 2011-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,17 +34,18 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<title>CollectiveAccess database update</title>
-	<link href="<?php print __CA_THEME_URL__; ?>/css/error.css" rel="stylesheet" type="text/css" media='all'/>
-	<link href='../assets/fontawesome/css/font-awesome.min.css' rel='stylesheet' type='text/css' media='all'/>
+	<link href="<?= caGetThemeUrlPath() ?>/css/error.css" rel="stylesheet" type="text/css" media='all'/>
+	<link href='../assets/fontawesome/css/all.min.css' rel='stylesheet' type='text/css' media='all'/>
+	<link href="../assets/fontawesome/css/v4-shims.min.css" rel='stylesheet' type='text/css' media='all'/>
 </head>
 <body>
 	<div id='box'>
-	<div id="logo"><img src="<?php print __CA_THEME_URL__ ?>/graphics/logos/ca_logo.png"/></div><!-- end logo -->
+	<div id="logo"><?= caGetDefaultLogo(); ?></div><!-- end logo -->
 	<div id="content">
 		<div class='error'><?php print _t("Updating your database..."); ?></div>
 <?php
-flush();
-$va_messages = self::performDatabaseSchemaUpdate();
+	flush();
+	$va_messages = self::performDatabaseSchemaUpdate();
 ?>
 
 <?php
@@ -56,12 +57,12 @@ $va_messages = self::performDatabaseSchemaUpdate();
 		if(preg_match('!^error_!', $vs_key)) {
 			$vb_has_error = true;
 ?>
-			<?php print caNavIcon(__CA_NAV_ICON_ALERT__ , 2, array('class' => 'permissionErrorIcon')); ?>
+			<?= caNavIcon(__CA_NAV_ICON_ALERT__ , 2, array('class' => 'permissionErrorIcon')); ?>
 <?php
 			print "{$vs_message}";
 		} else {
 ?>
-			<?php print caNavIcon(__CA_NAV_ICON_ALERT__ , 2, array('class' => 'permissionErrorIcon')); ?>
+			<?= caNavIcon(__CA_NAV_ICON_ALERT__ , 2, array('class' => 'permissionErrorIcon')); ?>
 <?php
 			print "{$vs_message}";
 		}

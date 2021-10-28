@@ -38,8 +38,7 @@
  	require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
  	require_once(__CA_LIB_DIR__.'/Attributes/Values/AttributeValue.php');
  	require_once(__CA_LIB_DIR__.'/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
- 	require_once(__CA_LIB_DIR__.'/Zend/Measure/Weight.php');	
- 	
+
  	global $_ca_attribute_settings;
  	$_ca_attribute_settings['WeightAttributeValue'] = array(		// global
 		'fieldWidth' => array(
@@ -81,6 +80,14 @@
 			'width' => 1, 'height' => 1,
 			'label' => _t('Allow duplicate values?'),
 			'description' => _t('Check this option if you want to allow duplicate values to be set when element is not in a container and is repeating.')
+		),
+		'raiseErrorOnDuplicateValue' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Show error message for duplicate values?'),
+			'description' => _t('Check this option to show an error message when value is duplicate and <em>allow duplicate values</em> is not set.')
 		),
 		'canBeUsedInSort' => array(
 			'formatType' => FT_NUMBER,

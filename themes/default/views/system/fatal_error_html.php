@@ -26,18 +26,15 @@
  * ----------------------------------------------------------------------
  */
  
-	$va_tmp = explode("/", str_replace("\\", "/", $_SERVER['SCRIPT_NAME']));
-	array_pop($va_tmp);
-	$vs_path = join("/", $va_tmp);
 ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<title>CollectiveAccess error</title>
-	<link href="<?php print $vs_path; ?>/themes/default/css/error.css" rel="stylesheet" type="text/css" />
+	<link href="<?= caGetThemeUrlPath(); ?>/css/error.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
 	<div id='errorDetails'>
-		<div id="logo"><img src="<?php print $vs_path ?>/themes/default/graphics/ca_nav_logo300.png"/></div><!-- end logo -->
+		<div id="logo"><?= caGetDefaultLogo(); ?></div><!-- end logo -->
 		<div id="content">
 			<div class='error'><?php print _t("Something went wrong"); ?></div>
 <?php if((defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) || (defined('__CA_STACKTRACE_ON_EXCEPTION__') && __CA_STACKTRACE_ON_EXCEPTION__)) { ?>
@@ -49,7 +46,7 @@
 					<ol class="tracelist">
 <?php
 						foreach($pa_errcontext as $vn_i => $va_trace) {
-							print "<li>".(($vn_i == 0) ? "In " : "At ").$va_trace['class'].$va_trace['type'].$va_trace['function']."(".join(', ', $pa_errcontext_args[$vn_i]).") in <a class='tracelistEntry' title='".$va_trace['file']."' ondblclick='var f=this.innerHTML;this.innerHTML=this.title;this.title=f;'>".pathinfo($va_trace['file'], PATHINFO_FILENAME)."</a> line ".$va_trace['line']."</li>\n";
+							print "<li>".(($vn_i == 0) ? "In " : "At ").$va_trace['class'].$va_trace['type'].$va_trace['function']."(".join(', ', $pa_errcontext_args[$vn_i] ?? []).") in <a class='tracelistEntry' title='".$va_trace['file']."' ondblclick='var f=this.innerHTML;this.innerHTML=this.title;this.title=f;'>".pathinfo($va_trace['file'], PATHINFO_FILENAME)."</a> line ".$va_trace['line']."</li>\n";
 						}
 ?>
 					</ol>

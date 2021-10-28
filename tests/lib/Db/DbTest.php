@@ -173,7 +173,7 @@ class DbTest extends TestCase {
 		$this->assertContains('foo', $va_tables);
 		$this->assertContains('bar', $va_tables);
 		
-		$this->assertEquals(228, sizeof($va_tables)); // 226 CA tables plus 2 we created!
+		$this->assertEquals(231, sizeof($va_tables)); // 229 CA tables plus 2 we created!
 	}
 
 	public function testQuote() {

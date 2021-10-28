@@ -641,7 +641,7 @@ class MediaUploader extends React.Component {
           </div>
           <div className="row">
 			 <div className="col-md-2">
-				 <span className="mr-2">{showStartControl ? <Button variant="primary" onClick={this.start}><i className="fa fa-play-circle fa-2x" aria-hidden="true"></i></Button> : ''}</span>
+				 <span className="me-2">{showStartControl ? <Button variant="primary" onClick={this.start}><i className="fa fa-play-circle fa-2x" aria-hidden="true"></i></Button> : ''}</span>
 				 <span>{(showStartControl && !this.state.paused) ? <Button variant="outline-secondary" onClick={this.pauseUploads}><i className="fa fa-pause-circle fa-2x" aria-hidden="true"></i></Button> : ''}</span>
 			  </div>
 			 <div className="col-md-9">
@@ -785,7 +785,7 @@ class MediauploaderQueueItem extends React.Component {
 
     render() {
         return <div className="row" style={{breakInside: 'avoid'}}>
-            <div className="col-md-1 mr-2">
+            <div className="col-md-2">
                 <Button variant="outline-secondary" className="mediaUploaderQueueItemDelete" onClick={this.deleteItem}><i className="fa fa-trash"
                                                                              aria-hidden="true"></i></Button>
             </div>

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -63,7 +63,7 @@
 		/**
 		 * @int $s_labels_by_id_cache_size
 		 *
-		 * Maximum numbers of cached labels per id
+		 * Maximum number of cached labels per id
 		 */
 		static $s_labels_by_id_cache_size = 1024;
 		
@@ -90,11 +90,27 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * Check if preferred label for a given locale is defined for the current record
+		 *
+		 * @param int $pn_locale_id 
+		 *
+		 * @return bool True if label exists, false if not, null if no record is loaded.
+		 */
+		public function preferredLabelExistsForLocale($pn_locale_id) {
+			if (!($vn_id = $this->getPrimaryKey())) { return null; }
+			if (!($t_label = Datamodel::getInstanceByTableName($this->getLabelTableName()))) { return null; }
+			
+			$l = $this->getLabelTableName();
+			if (is_array($ld = $l::find([$this->primaryKey() => $vn_id, 'locale_id' => $pn_locale_id, 'is_preferred' => 1], ['returnAs' => 'array', 'transaction' => $this->getTransaction()]))) {
+				return (sizeof($ld) > 0);
+			}
+			return false;
+		}
+		# ------------------------------------------------------------------
+		/**
 		 *	Adds a label to the currently loaded row; the $pa_label_values array an associative array where keys are field names 
 		 *	and values are the field values; some label are defined by more than a single field (people's names for instance) which is why
 		 *	the label value is an array rather than a simple scalar value
-		 *	
-		 *	TODO: do checking when inserting preferred label values that a preferred value is not already defined for the locale.
 		 *
 		 * @param array $pa_label_values
 		 * @param int $pn_locale_id
@@ -106,8 +122,9 @@
 		 * @return int id for newly created label, false on error or null if no row is loaded
 		 */ 
 		public function addLabel($pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=false, $pa_options=null) {
+			if(!is_array($pa_options)) { $pa_options = []; }
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
-			
+			if ($pb_is_preferred && $this->preferredLabelExistsForLocale($pn_locale_id)) { return false; }
 			$vb_truncate_long_labels = caGetOption('truncateLongLabels', $pa_options, false);
 			$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, false);
 			
@@ -147,7 +164,7 @@
 			
 			$this->opo_app_plugin_manager->hookBeforeLabelInsert(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'label_instance' => $t_label));
 		
-			$vn_label_id = $t_label->insert(array('queueIndexing' => $pb_queue_indexing, 'subject' => $this));
+			$vn_label_id = $t_label->insert(array_merge($pa_options, ['queueIndexing' => $pb_queue_indexing, 'subject' => $this]));
 			
 			$this->opo_app_plugin_manager->hookAfterLabelInsert(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'label_instance' => $t_label));
 		
@@ -352,9 +369,8 @@
 		/**
 		 * 
 		 */
- 		public function replaceLabel($pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=true, $pa_options = null) {
+ 		public function replaceLabel($pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=true, $pa_options=null) {
  			if (!($vn_id = $this->getPrimaryKey())) { return null; }
- 			
  			$va_labels = $this->getLabels(array($pn_locale_id), $pb_is_preferred ? __CA_LABEL_TYPE_PREFERRED__ : __CA_LABEL_TYPE_NONPREFERRED__);
  			
  			if (sizeof($va_labels)) {
@@ -594,10 +610,10 @@
 			// ... and in sort list
 			$vs_sort_proc = null;
 			if ((preg_match("!^{$vs_table}.preferred_labels[\.]{0,1}(.*)!", $ps_sort, $va_matches)) || (preg_match("!^{$vs_table}.nonpreferred_labels[\.]{0,1}(.*)!", $ps_sort, $va_matches))) { 
-				$vs_sort_proc = ($va_matches[1] && ($t_label->hasField($va_matches[1]))) ? "{$vs_label_table}.".$va_matches[1] : "{$vs_label_table}.".$t_label->getDisplayField();
+				$vs_sort_proc = ($va_matches[1] && ($t_label->hasField($va_matches[1]))) ? "{$vs_label_table}.`".$va_matches[1].'`' : "{$vs_label_table}.`".$t_label->getDisplayField().'`';
 				$vb_has_label_fields = true; 
 			} elseif(preg_match("!^{$vs_table}\.([A-Za-z0-9_]+)!", $ps_sort, $va_matches) && $t_instance->hasField($va_matches[1])) {
-			    $vs_sort_proc = $ps_sort;
+			    $vs_sort_proc = "{$vs_table}.`{$va_matches[1]}`";
 			}
 			
 			// Check for attributes in value list
@@ -856,8 +872,8 @@
 										break;
 									case __CA_ATTRIBUTE_VALUE_DATERANGE__:
 										if(is_array($va_date = caDateToHistoricTimestamps($vm_value))) {
-											$va_q[] = "((ca_attribute_values.element_id = {$vn_element_id}) AND ((ca_attribute_values.value_decimal1 BETWEEN ? AND ?) OR (ca_attribute_values.value_decimal2 BETWEEN ? AND ?)))";
-											$va_attr_params[] = [$va_date['start'], $va_date['end'], $va_date['start'], $va_date['end']];
+											$va_q[] = "((ca_attribute_values.element_id = {$vn_element_id}) AND ((ca_attribute_values.value_decimal1 BETWEEN ? AND ?) OR (ca_attribute_values.value_decimal2 BETWEEN ? AND ?) OR (ca_attribute_values.value_decimal1 <= ? AND ca_attribute_values.value_decimal2 >= ?)))";
+											$va_attr_params[] = [(float)$va_date['start'], (float)$va_date['end'], (float)$va_date['start'], (float)$va_date['end'], (float)$va_date['start'], (float)$va_date['end']];
 										} else {
 											continue(2);
 										}
@@ -963,7 +979,20 @@
                 $va_sql[] = "({$vs_table}.{$vs_table_pk} IN (?))";
                 $va_sql_params[] = $va_ids;
 			} 
-            $vs_sql = "SELECT DISTINCT {$vs_table}.*".($vs_sort_proc ? ", {$vs_sort_proc}" : "")." FROM {$vs_table}";
+			
+			$vs_pk = $t_instance->primaryKey();
+		
+			switch($ps_return_as) {
+				case 'queryresult':		
+				case 'arrays':
+					$select_flds = '*';
+					break;
+				default:
+					$select_flds = $vs_pk;
+					break;
+			}
+		
+            $vs_sql = "SELECT DISTINCT {$vs_table}.{$select_flds}".($vs_sort_proc ? ", {$vs_sort_proc}" : "")." FROM {$vs_table}";
             $vs_sql .= join("\n", $va_joins);
             $vs_sql .= ((sizeof($va_sql) > 0) ? " WHERE (".join(" AND ", $va_sql).")" : "");
 			
@@ -974,12 +1003,12 @@
 					switch($va_tmp[0]) {
 						case $vs_table:
 							if ($t_instance->hasField($va_tmp[1])) {
-								$vs_orderby = " ORDER BY {$vs_sort_proc} {$ps_sort_direction}";
+								$vs_orderby = " ORDER BY `{$vs_sort_proc}` {$ps_sort_direction}";
 							}
 							break;
 						case $vs_label_table:
 							if ($t_label->hasField($va_tmp[1])) {
-								$vs_orderby = " ORDER BY {$vs_sort_proc} {$ps_sort_direction}";
+								$vs_orderby = " ORDER BY `{$vs_sort_proc}` {$ps_sort_direction}";
 							}
 							break;
 					}
@@ -994,15 +1023,13 @@
 			if ($start > 0) { $limit_sql = "{$start}"; }
 			if ($limit > 0) { $limit_sql .= $limit_sql ? ", {$limit}" : "{$limit}"; }
 		
-			$qr_res = $o_db->query($vs_sql.($limit_sql ? " LIMIT {$limit_sql}" : ''), array_merge($va_sql_params, $va_type_restriction_params));
+			$qr_res = $o_db->query($vs_sql.($limit_sql ? " LIMIT {$limit_sql}" : ''), array_merge($va_type_restriction_params, $va_sql_params));
 
 			if ($vb_purify_with_fallback && ($qr_res->numRows() == 0)) {
 				return self::find($pa_values, array_merge($pa_options, ['purifyWithFallback' => false, 'purify' => false]));
 			}
 			
 			$vn_c = 0;
-		
-			$vs_pk = $t_instance->primaryKey();
 		
 			$dont_filter_by_acl = caGetOption('dontFilterByACL', $pa_options, false);
 			
@@ -1053,7 +1080,7 @@
 				case 'searchresult':
 					$va_ids = [];
 					while($qr_res->nextRow()) {
-						$va_ids[] = $qr_res->get($vs_pk);
+						$va_ids[] = (int)$qr_res->get($vs_pk);
 						$vn_c++;
 						if ($limit && ($vn_c >= $limit)) { break; }
 					}
@@ -1618,7 +1645,7 @@
 				$va_preferred_locales = array($pm_locale);
 			}
 			
-			$va_tmp = caExtractValuesByUserLocale($this->getLabels(null, __CA_LABEL_TYPE_PREFERRED__, $pb_dont_cache, $pa_options), null, $va_preferred_locales, array());
+			$va_tmp = caExtractValuesByUserLocale($this->getLabels(null, caGetOption('labelType', $pa_options, __CA_LABEL_TYPE_PREFERRED__), $pb_dont_cache, $pa_options), null, $va_preferred_locales, array());
 			$va_label = array_shift($va_tmp);
 			return $va_label[0][$t_label->getDisplayField()];
  			
@@ -1986,7 +2013,7 @@
 				
 				if (!(bool)$this->getAppConfig()->get('require_preferred_label_for_'.$this->tableName())) {		// only try to add a default when a label is not mandatory
 					return $this->addLabel(
-						array($this->getLabelDisplayField() => '['.caGetBlankLabelText().']'),
+						array($this->getLabelDisplayField() => '['.caGetBlankLabelText($this->tableName()).']'),
 						$vn_locale_id,
 						null,
 						true
@@ -2303,7 +2330,8 @@
 		 * 
 		 * @param array $pa_ids indexed array of primary key values to fetch labels for
 		 * @param array $pa_options Optional array of options. Supported options include:
-		 *								returnAllLocales = if set to true, an array indexed by row_id and then locale_id will be returned
+		 *			returnAllLocales = return array indexed by row_id and then locale_id [Default is false]
+		 *			returnAllTypes = include nonpreferred labels in the returned set [Default is false]				
 		 * @return array An array of preferred labels in the current locale indexed by row_id, unless returnAllLocales is set, in which case the array includes preferred labels in all available locales and is indexed by row_id and locale_id
 		 */
 		public function getPreferredDisplayLabelsForIDs($pa_ids, $pa_options=null) {
@@ -2314,6 +2342,7 @@
 			if (!is_array($va_ids) || !sizeof($va_ids)) { return array(); }
 			
 			$vb_return_all_locales = caGetOption('returnAllLocales', $pa_options, false);
+			$vb_return_all_types = caGetOption('returnAllTypes', $pa_options, false);
 			
 			$vs_cache_key = md5($this->tableName()."/".print_r($pa_ids, true).'/'.print_R($pa_options, true));
 			if (!isset($pa_options['noCache']) && !$pa_options['noCache'] && LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key]) {
@@ -2327,7 +2356,7 @@
 			
 			$vs_preferred_sql = '';
 			
-			if (($t_label_instance = $this->getLabelTableInstance()) && ($t_label_instance->hasField('is_preferred'))) {
+			if (!$vb_return_all_types && ($t_label_instance = $this->getLabelTableInstance()) && ($t_label_instance->hasField('is_preferred'))) {
 				$vs_preferred_sql = "AND (is_preferred = 1)";
 			}
 			$va_labels = array();
@@ -2418,7 +2447,7 @@
 			// make sure it's in same order the ids were passed in
 			$va_sorted_labels = array();
 			foreach($va_ids as $vn_id) {
-				$va_sorted_labels[$vn_id] = $va_labels[$vn_id];
+				$va_sorted_labels[$vn_id] = is_array($va_labels[$vn_id]) ? $va_labels[$vn_id] : [];
 			}
 			
 			if (sizeof(LabelableBaseModelWithAttributes::$s_labels_by_id_cache) > LabelableBaseModelWithAttributes::$s_labels_by_id_cache_size) {

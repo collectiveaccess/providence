@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -88,6 +88,14 @@
 			'width' => 1, 'height' => 1,
 			'label' => _t('Allow duplicate values?'),
 			'description' => _t('Check this option if you want to allow duplicate values to be set when element is not in a container and is repeating.')
+		),
+		'raiseErrorOnDuplicateValue' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Show error message for duplicate values?'),
+			'description' => _t('Check this option to show an error message when value is duplicate and <em>allow duplicate values</em> is not set.')
 		),
 		'canBeUsedInSort' => array(
 			'formatType' => FT_NUMBER,
@@ -459,10 +467,19 @@
  				// locale, the LoadManager simply ignores it and the default settings (en_US) apply
  				AssetLoadManager::register("datepicker_i18n_{self::$locale}"); 
 
+				$vs_date_format = isset($va_settings['datePickerDateFormat']) ? $va_settings['datePickerDateFormat'] : 'yy-mm-dd';
+
+				$o_date_config = Configuration::load(__CA_CONF_DIR__.'/datetime.conf');
+				if ((bool)$o_date_config->get('useDateRangePicker')) {
+					$vs_date_picker = "daterangepicker({dateFormat: '{$vs_date_format}' , datepickerOptions: { minDate: null, maxDate: null}});";
+				}
+				else {
+					$vs_date_picker = "datepicker({dateFormat: '{$vs_date_format}', constrainInput: false});";
+				}
+
  				$vs_element .= "<script type='text/javascript'>
  					jQuery(document).ready(function() {
- 						jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').datepicker({dateFormat: '".(isset($va_settings['datePickerDateFormat']) ? $va_settings['datePickerDateFormat'] : 'yy-mm-dd')."', constrainInput: false});
- 					});
+						jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').{$vs_date_picker}});
  				</script>\n";
 
 				// load localization for datepicker. we can't use the asset manager here
@@ -526,4 +543,3 @@
         }
  		# ------------------------------------------------------------------
 	}
- ?>

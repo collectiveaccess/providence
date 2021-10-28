@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2020 Whirl-i-Gig
+ * Copyright 2006-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -634,6 +634,12 @@ class TimeExpressionParser {
 			# -------------------------------------------------------
 			case TEP_STATE_AFTER_GET_DATE:
 				if ($va_date = $this->_parseDateExpression()) {
+					if(!$va_date['month']) { $va_date['month'] = 1; }
+					if (!$va_date['day']) { $va_date['day'] = 1; }
+					$va_date['hours'] = 0;
+					$va_date['minutes'] = 0;
+					$va_date['seconds'] = 0;
+					
 					$va_dates['start'] = $va_date;
 					$va_dates['end'] = array(
 						'month' => null, 'day' => null, 
@@ -753,7 +759,14 @@ class TimeExpressionParser {
 		if ($va_hook_result["expression"] != $ps_expression) {
 			$ps_expression = $va_hook_result["expression"];
 		}
-
+		
+		
+		// Convert ISO ranges
+		if (preg_match("!^([\d\-:TZ]{3,20})/([\d\-:TZ]{3,20})$!", trim($ps_expression), $matches)) {
+			$conjunction = array_shift($this->opo_language_settings->getList("rangeConjunctions"));
+			$ps_expression = $matches[1]." {$conjunction} ".$matches[2];
+		}
+	
 		# convert
 		$va_dict = $this->opo_datetime_settings->getAssoc("expressions");
 		$vs_lc_expression = mb_strtolower($ps_expression);
@@ -837,11 +850,11 @@ class TimeExpressionParser {
 		# convert dd-mm-yyyy dates to dd/mm/yyyy to prevent our range conjunction code below doesn't mangle it
 		$ps_expression = preg_replace("/([\d]{2})-([\d]{2})-([\d]{4})/", "$1/$2/$3", $ps_expression);
 		
-		if (preg_match("/([\d]{4})-([\d]{2})$/", $ps_expression, $va_matches)) {
+		if (preg_match("/([\d]{4})-([\d]{2})(\/|$)/", $ps_expression, $va_matches)) {
 			if (intval($va_matches[2]) > 12) {
-				$ps_expression = preg_replace("/([\d]{4})-([\d]{2})$/", "$1-".substr($va_matches[1], 0, 2)."$2", $ps_expression);
+				$ps_expression = preg_replace("/([\d]{4})-([\d]{2})(\/|$)/", "$1-".substr($va_matches[1], 0, 2)."$2$3", $ps_expression);
 			} else {
-				$ps_expression = preg_replace("/([\d]{4})-([\d]{2})$/", "$1#$2", $ps_expression);
+				$ps_expression = preg_replace("/(?<![\/#\-])([\d]{4})-([\d]{2})(\/|$)/", "$1#$2$3", $ps_expression);
 			}
 		}
 		
@@ -1659,6 +1672,7 @@ class TimeExpressionParser {
 	# -------------------------------------------------------------------
 	private function tokenize($ps_expression) {
 		$this->opa_tokens = preg_split("/[\s]+/u", $ps_expression);
+		if(!is_array($this->opa_tokens)) { $this->opa_tokens = []; }	// Tokenization can fail if string is invalid UTF-8
 		return sizeof($this->opa_tokens);
 	}
 	# -------------------------------------------------------------------
@@ -2230,6 +2244,8 @@ class TimeExpressionParser {
 			
 			if (($pa_dates['start']['day'] === null) && ($pa_dates['end']['day'] === null) && ($pa_dates['start']['year'] != TEP_START_OF_UNIVERSE) && $pa_dates['end']['year'] != TEP_END_OF_UNIVERSE) { 
 				$pa_dates['start']['day'] = 1; 
+				if(!$pa_dates['start']['month']) { $pa_dates['start']['month'] = 1; }
+				if(!$pa_dates['end']['month']) { $pa_dates['end']['month'] = 12; }
 				$pa_dates['end']['day'] = $this->daysInMonth($pa_dates['end']['month'], $pa_dates['end']['year'] ? $pa_dates['end']['year'] : 2004); // use leap year if no year is defined
 			} elseif (($pa_dates['end']['day'] === null) && ($pa_dates['end']['year'] != TEP_END_OF_UNIVERSE) && ($pa_dates['start']['year'] != TEP_START_OF_UNIVERSE)) { 
 				$pa_dates['end']['day'] = $this->daysInMonth($pa_dates['end']['month'], $pa_dates['end']['year']);
@@ -2434,7 +2450,7 @@ class TimeExpressionParser {
 	 *		dateTimeConjunction (string) [default is first in lang. config]
 	 *		showADEra (true|false) [default is false]
 	 *		uncertaintyIndicator (string) [default is first in lang. config]
- 	 *		dateFormat		(text|delimited|iso8601|yearOnly)	[default is text]
+ 	 *		dateFormat		(text|delimited|iso8601|yearOnly|ymd)	[default is text]
 	 *		dateDelimiter	(string) [default is first delimiter in language config file]
 	 *		circaIndicator	(string) [default is first indicator in language config file]
 	 *		beforeQualifier	(string) [default is first indicator in language config file]
@@ -2605,7 +2621,7 @@ class TimeExpressionParser {
 				}
 			} elseif ((isset($pa_options['dateFormat']) && ($pa_options['dateFormat'] == 'yearOnly'))) { 
 				$va_range_conjunctions = $this->opo_language_settings->getList('rangeConjunctions');
-				return $va_start_pieces['year']." ".$va_range_conjunctions[0]." ".$va_end_pieces['year'];
+				return ($va_start_pieces['year'] != $va_end_pieces['year']) ? $va_start_pieces['year']." ".$va_range_conjunctions[0]." ".$va_end_pieces['year'] : $va_start_pieces['year'];
 			}
 			
 		
@@ -2626,14 +2642,7 @@ class TimeExpressionParser {
 			
 			
 			if (isset($pa_options['dateFormat']) && ($pa_options['dateFormat'] == 'iso8601')) {
-				$vs_start = $this->getISODateTime($va_start_pieces, 'START', $pa_options);
-				$vs_end = $this->getISODateTime($va_end_pieces, 'END', $pa_options);
-				
-				if ($vs_start != $vs_end) {
-					return "{$vs_start}/{$vs_end}";
-				} else {
-					return $vs_start;
-				}
+				return $this->getISODateRange($va_start_pieces, $va_end_pieces, $pa_options);
 			}
 
 			// special treatment for HSP
@@ -2829,6 +2838,7 @@ class TimeExpressionParser {
 							'uncertainty_units' => $va_end_pieces['uncertainty_units']
 						), $pa_options);
 					} else {
+						if ($va_end_pieces['day'] == $this->daysInMonth($va_end_pieces['month'], $va_end_pieces['year'])) { unset($va_end_pieces['day']); }
 						return $vs_before_qualifier.' '. $this->_dateToText($va_end_pieces, $pa_options);
 					}
 				} else {
@@ -2847,6 +2857,7 @@ class TimeExpressionParser {
 							'uncertainty_units' => $va_start_pieces['uncertainty_units']
 						), $pa_options);
 					} else {
+						if ($va_start_pieces['day'] == 1) { unset($va_start_pieces['day']); }
 						$vs_date = $this->_dateToText($va_start_pieces, $pa_options);
 					}
 				} else {
@@ -3234,7 +3245,7 @@ class TimeExpressionParser {
 		
 		$vs_month = null;
 		if ($pa_date_pieces['month'] > 0) {		// date with month
-			if ($pa_options['dateFormat'] == 'delimited') {
+			if (in_array((string)$pa_options['dateFormat'], ['delimited', 'ymd'], true)) {
 				$vs_month = $pa_date_pieces['month'];
 			} else {
 				$va_months = $this->getMonthList();
@@ -3272,7 +3283,12 @@ class TimeExpressionParser {
 			$vs_day .= $vs_day_suffix;
 		}
 		
-		if ($vb_month_comes_first) {
+		if($pa_options['dateFormat'] === 'ymd') {
+			$va_date[] = $vs_year;
+			if ($vs_month) { $va_date[] = sprintf("%02d", $vs_month); }
+			if ($vs_day) { $va_date[] =  sprintf("%02d", $vs_day); }
+			return join($vs_date_delimiter, $va_date);
+		} elseif ($vb_month_comes_first) {
 			if ($vs_month) { $va_date[] = (($pa_options['dateFormat'] == 'delimited') ? sprintf("%02d", $vs_month) : $vs_month); }
 			if ($vs_day) { 
 				if (
@@ -3496,6 +3512,91 @@ class TimeExpressionParser {
 	}
 	# -------------------------------------------------------------------
 	/**
+	 * Test whether a date range (passed as arrays of date pieces) is a century, decade, year, month or day interval
+	 *
+	 * @param array $pa_start_pieces
+	 * @param array $pa_end_pieces
+	 *
+	 * @return string CENTURY|DECADE|YEAR|MONTH|DAY if interval; false is not interval
+	 */
+	public function isDMYRange($pa_start_pieces, $pa_end_pieces) {
+		if (
+			($pa_start_pieces['year'] % 100) == 0 && ($pa_end_pieces['year'] == ($pa_start_pieces['year'] + 99))  &&
+			$pa_start_pieces['day'] == 1 && $pa_start_pieces['month'] == 1 &&
+			$pa_start_pieces['hours'] == 0 && $pa_start_pieces['minutes'] == 0 && $pa_start_pieces['seconds'] == 0 &&
+			$pa_end_pieces['day'] == 31 && $pa_end_pieces['month'] == 12 &&
+			$pa_end_pieces['hours'] == 23 && $pa_end_pieces['minutes'] == 59 && $pa_end_pieces['seconds'] == 59
+		) {
+			return 'CENTURY';
+		}
+		if (
+			($pa_start_pieces['year'] % 10) == 0 && ($pa_end_pieces['year'] == ($pa_start_pieces['year'] + 9))  &&
+			$pa_start_pieces['day'] == 1 && $pa_start_pieces['month'] == 1 &&
+			$pa_start_pieces['hours'] == 0 && $pa_start_pieces['minutes'] == 0 && $pa_start_pieces['seconds'] == 0 &&
+			$pa_end_pieces['day'] == 31 && $pa_end_pieces['month'] == 12 &&
+			$pa_end_pieces['hours'] == 23 && $pa_end_pieces['minutes'] == 59 && $pa_end_pieces['seconds'] == 59
+		) {
+			return 'DECADE';
+		}
+		if (
+			$pa_start_pieces['year'] == $pa_end_pieces['year']  &&
+			$pa_start_pieces['day'] == 1 && $pa_start_pieces['month'] == 1 &&
+			$pa_start_pieces['hours'] == 0 && $pa_start_pieces['minutes'] == 0 && $pa_start_pieces['seconds'] == 0 &&
+			$pa_end_pieces['day'] == 31 && $pa_end_pieces['month'] == 12 &&
+			$pa_end_pieces['hours'] == 23 && $pa_end_pieces['minutes'] == 59 && $pa_end_pieces['seconds'] == 59
+		) {
+			return 'YEAR';
+		}
+		
+		if (
+			$pa_start_pieces['year'] == $pa_end_pieces['year']  &&
+			$pa_start_pieces['month'] == $pa_end_pieces['month']  &&
+			$pa_start_pieces['day'] == 1 && ($pa_end_pieces['day'] == $this->daysInMonth($pa_end_pieces['month'], $pa_end_pieces['year'])) &&
+			$pa_start_pieces['hours'] == 0 && $pa_start_pieces['minutes'] == 0 && $pa_start_pieces['seconds'] == 0 &&
+			$pa_end_pieces['hours'] == 23 && $pa_end_pieces['minutes'] == 59 && $pa_end_pieces['seconds'] == 59
+		) {
+			return 'MONTH';
+		}
+		
+		if (
+			$pa_start_pieces['year'] == $pa_end_pieces['year']  &&
+			$pa_start_pieces['month'] == $pa_end_pieces['month']  &&
+			$pa_start_pieces['day'] == $pa_end_pieces['day'] &&
+			$pa_start_pieces['hours'] == 0 && $pa_start_pieces['minutes'] == 0 && $pa_start_pieces['seconds'] == 0 &&
+			$pa_end_pieces['hours'] == 23 && $pa_end_pieces['minutes'] == 59 && $pa_end_pieces['seconds'] == 59
+		) {
+			return 'DAY';
+		}
+		
+		return false;
+	}
+	# -------------------------------------------------------------------
+	/**
+	 * Convert date value arrays (array with keys "month", "day", "year", "hours", "minutes", "seconds" used internally by parser) to ISO 8601 date/time range.
+	 *
+	 * @param array $pa_start_date
+	 * @param array $pa_end_date
+	 * @param array $pa_options Options include:
+	 *		timeOmit = Omit time from returned ISO 8601 date. [Default is false]
+	 *		returnUnbounded = Return extreme value for unbounded dates. For "before" dates the start date would be equal to -9999; for "after" dates the end date would equal "9999". [Default is false]
+	 *		dateFormat = If set to "yearOnly" will return bare year. [Default is null]
+	 * @return string
+	 */
+	public function getISODateRange($pa_start_date, $pa_end_date, $pa_options=null) {
+		$start = $this->getISODateTime($pa_start_date, 'START', $pa_options);
+		$end = $this->getISODateTime($pa_end_date, 'END', $pa_options);
+		
+		switch($this->isDMYRange($pa_start_date, $pa_end_date)) {
+			case 'DAY':
+				return $this->getISODateTime($pa_start_date, 'FULL', array_merge($pa_options, ['timeOmit' => true]));
+			case 'MONTH':
+				return $this->getISODateTime($pa_start_date, 'FULL', array_merge($pa_options, ['timeOmit' => true])).'/'.$this->getISODateTime($pa_end_date, 'FULL', array_merge($pa_options, ['timeOmit' => true]));
+		}
+		if ($start == $end) { return $start; }
+		return "{$start}/{$end}";
+	}
+	# -------------------------------------------------------------------
+	/**
 	 * Convert date value array (array with keys "month", "day", "year", "hours", "minutes", "seconds" used internally by parser) to ISO 8601 date/time expression.
 	 *
 	 * @param array $pa_date
@@ -3596,7 +3697,7 @@ class TimeExpressionParser {
 
 					for($vn_y=$vn_s; $vn_y <= $vn_e; $vn_y+= 100) {
 
-						$vn_century_num = abs(floor($vn_y/100)) + 1;
+						$vn_century_num = ($vn_y >= 0) ? abs(floor($vn_y/100)) + 1 : abs(floor($vn_y/100));
 						if ($vn_century_num == 0)  { continue; }
 						$vn_x = substr((string)$vn_century_num, strlen($vn_century_num) - 1, 1);
 

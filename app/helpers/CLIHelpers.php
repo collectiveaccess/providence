@@ -66,11 +66,6 @@ function caCLILogCritError($ps_message) {
  * @return Zend_Console_Getopt
  */
 function caSetupCLIScript($pa_additional_parameters) {
-	require_once(__CA_LIB_DIR__."/Zend/Console/Getopt.php");
-	require_once(__CA_LIB_DIR__."/Zend/Log.php");
-	require_once(__CA_LIB_DIR__."/Zend/Log/Writer/Stream.php");
-	require_once(__CA_LIB_DIR__."/Zend/Log/Writer/Syslog.php");
-	require_once(__CA_LIB_DIR__."/Zend/Log/Formatter/Simple.php");
 
 	$va_available_cli_opts = array_merge(array(
 		"log|l-s" => "Path to log file. If omitted, we log into the system log. Note that we don't log DEBUG messages into the system log, even when the log level is set to DEBUG.",
@@ -149,6 +144,6 @@ function caFormatCmdOptionsForDisplay($vs_opt_format, $vs_opt_desc): string {
     $vs_alias = sizeof($va_tmp)>1 ? $va_tmp[1]: "";
 
     $vn_padding = 25;
-    return "\t" . CLIUtils::textWithColor(str_pad("--" . $va_tmp[0] . " " . ($vs_alias ? "(-{$vs_alias})":""), $vn_padding), "red") . \
+    return "\t" . CLIUtils::textWithColor(str_pad("--" . $va_tmp[0] . " " . ($vs_alias ? "(-{$vs_alias})":""), $vn_padding), "red") . 
                     wordwrap($vs_opt_desc, 75, "\n\t" . str_repeat(" ", $vn_padding)) . "\n\n";
 }

@@ -283,7 +283,7 @@ class ca_guids extends BaseModel {
         } elseif (Datamodel::isLabel($va_info['table_num'])) {
             if (($t_label = Datamodel::getInstanceByTableNum($va_info['table_num'], true)) && $t_label->load($va_info['row_id'])) {
                 if (($t_subject = $t_label->getSubjectTableInstance())) {
-                	if ($t_subject->hasField('delered')) {
+                	if ($t_subject->hasField('deleted')) {
 						if((int)$t_subject->get('deleted') !== 0) {
 							return false;
 						}

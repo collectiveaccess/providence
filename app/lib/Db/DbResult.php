@@ -89,14 +89,6 @@ class DbResult extends DbBase {
 	 */
 	private $opa_media_info_cache;
 
-
-	/**
-	 * Datamodel instance
-	 *
-	 * @access private
-	 */
-	private $opo_datamodel;
-
 	/**
 	 * Cache for fieldInfo() results
 	 *

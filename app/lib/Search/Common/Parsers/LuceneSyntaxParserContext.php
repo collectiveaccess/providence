@@ -1,14 +1,34 @@
 <?php
-
-require_once(__CA_LIB_DIR__.'/Zend/Search/Lucene/FSM.php');
-require_once(__CA_LIB_DIR__.'/Zend/Search/Lucene/Index/Term.php');
-require_once(__CA_LIB_DIR__.'/Zend/Search/Lucene/Search/QueryToken.php');
-require_once(__CA_LIB_DIR__.'/Zend/Search/Lucene/Search/Query/Term.php');
-require_once(__CA_LIB_DIR__.'/Zend/Search/Lucene/Search/Query/MultiTerm.php');
-require_once(__CA_LIB_DIR__.'/Zend/Search/Lucene/Search/Query/Boolean.php');
-require_once(__CA_LIB_DIR__.'/Zend/Search/Lucene/Search/Query/Phrase.php');
-require_once(__CA_LIB_DIR__.'/Zend/Search/Lucene/Search/BooleanExpressionRecognizer.php');
-require_once(__CA_LIB_DIR__.'/Zend/Search/Lucene/Search/QueryEntry.php');
+/** ---------------------------------------------------------------------
+ * app/lib/Search/Common/Parsers/LuceneSyntaxParserContext.php
+ * ----------------------------------------------------------------------
+ * CollectiveAccess
+ * Open-source collections management software
+ * ----------------------------------------------------------------------
+ *
+ * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
+ * Copyright 2009-2021 Whirl-i-Gig
+ *
+ * For more information visit http://www.CollectiveAccess.org
+ *
+ * This program is free software; you may redistribute it and/or modify it under
+ * the terms of the provided license as published by Whirl-i-Gig
+ *
+ * CollectiveAccess is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * This source code is free and modifiable under the terms of
+ * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
+ * the "license.txt" file for details, or visit the CollectiveAccess web site at
+ * http://www.CollectiveAccess.org
+ *
+ * @package CollectiveAccess
+ * @subpackage Search
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ *
+ * ----------------------------------------------------------------------
+ */
 
 class LuceneSyntaxParserContext {
     /**
@@ -122,7 +142,6 @@ class LuceneSyntaxParserContext {
     public function setNextEntrySign($sign)
     {
         if ($this->_mode === self::GM_BOOLEAN) {
-            require_once(__CA_LIB_DIR__.'/Zend/Search/Lucene/Search/QueryParserException.php');
             throw new Zend_Search_Lucene_Search_QueryParserException('It\'s not allowed to mix boolean and signs styles in the same subquery.');
         }
 
@@ -133,7 +152,6 @@ class LuceneSyntaxParserContext {
         } else if ($sign == Zend_Search_Lucene_Search_QueryToken::TT_PROHIBITED) {
             $this->_nextEntrySign = false;
         } else {
-            require_once(__CA_LIB_DIR__.'/Zend/Search/Lucene/Exception.php');
             throw new Zend_Search_Lucene_Exception('Unrecognized sign type.');
         }
     }
@@ -166,7 +184,6 @@ class LuceneSyntaxParserContext {
     {
         // Check, that modifier has came just after word or phrase
         if ($this->_nextEntryField !== null  ||  $this->_nextEntrySign !== null) {
-            require_once(__CA_LIB_DIR__.'/Zend/Search/Lucene/Search/QueryParserException.php');
             throw new Zend_Search_Lucene_Search_QueryParserException('\'~\' modifier must follow word or phrase.');
         }
 
@@ -174,7 +191,6 @@ class LuceneSyntaxParserContext {
 
         if (!$lastEntry instanceof Zend_Search_Lucene_Search_QueryEntry) {
             // there are no entries or last entry is boolean operator
-            require_once(__CA_LIB_DIR__.'/Zend/Search/Lucene/Search/QueryParserException.php');
             throw new Zend_Search_Lucene_Search_QueryParserException('\'~\' modifier must follow word or phrase.');
         }
 
@@ -192,7 +208,6 @@ class LuceneSyntaxParserContext {
     {
         // Check, that modifier has came just after word or phrase
         if ($this->_nextEntryField !== null  ||  $this->_nextEntrySign !== null) {
-            require_once(__CA_LIB_DIR__.'/Zend/Search/Lucene/Search/QueryParserException.php');
             throw new Zend_Search_Lucene_Search_QueryParserException('\'^\' modifier must follow word, phrase or subquery.');
         }
 
@@ -200,7 +215,6 @@ class LuceneSyntaxParserContext {
 
         if (!$lastEntry instanceof Zend_Search_Lucene_Search_QueryEntry) {
             // there are no entries or last entry is boolean operator
-            require_once(__CA_LIB_DIR__.'/Zend/Search/Lucene/Search/QueryParserException.php');
             throw new Zend_Search_Lucene_Search_QueryParserException('\'^\' modifier must follow word, phrase or subquery.');
         }
 
@@ -217,7 +231,6 @@ class LuceneSyntaxParserContext {
     public function addLogicalOperator($operator)
     {
         if ($this->_mode === self::GM_SIGNS) {
-            require_once(__CA_LIB_DIR__.'/Zend/Search/Lucene/Search/QueryParserException.php');
             throw new Zend_Search_Lucene_Search_QueryParserException('It\'s not allowed to mix boolean and signs styles in the same subquery.');
         }
 
@@ -275,7 +288,6 @@ class LuceneSyntaxParserContext {
 
         $expressionRecognizer = new Zend_Search_Lucene_Search_BooleanExpressionRecognizer();
 
-        require_once(__CA_LIB_DIR__.'/Zend/Search/Lucene/Exception.php');
         try {
             foreach ($this->_entries as $entry) {
                 if ($entry instanceof Zend_Search_Lucene_Search_QueryEntry) {
@@ -305,7 +317,6 @@ class LuceneSyntaxParserContext {
             // throw new Zend_Search_Lucene_Search_QueryParserException('Boolean expression error. Error message: \'' .
             //                                                          $e->getMessage() . '\'.' );
             // It's query syntax error message and it should be user friendly. So FSM message is omitted
-            require_once(__CA_LIB_DIR__.'/Zend/Search/Lucene/Search/QueryParserException.php');
             throw new Zend_Search_Lucene_Search_QueryParserException('Boolean expression error.');
         }
 

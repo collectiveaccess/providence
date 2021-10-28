@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020 Whirl-i-Gig
+ * Copyright 2020-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,30 +34,48 @@
  *
  */
  
-	class pdfjs extends BaseMediaViewer implements IMediaViewer {
-		# -------------------------------------------------------
-		/**
-		 *
-		 */
-		public static function getViewerHTML($po_request, $ps_identifier, $pa_data=null, $pa_options=null) {
-			if ($o_view = BaseMediaViewer::getView($po_request)) {
-				$o_view->setVar('identifier', $ps_identifier);
-				
-				$va_params = ['identifier' => $ps_identifier, 'context' => caGetOption('context', $pa_options, $po_request->getAction())];
-				
-				// Pass subject key when getting viewer data
-				if ($pa_data['t_subject']) { $va_params[$pa_data['t_subject']->primaryKey()] = $pa_data['t_subject']->getPrimaryKey(); }
-				
-				$o_view->setVar('viewer', 'pdfjs');
-				$o_view->setVar('width', caGetOption('width', $pa_data['display'], null));
-				$o_view->setVar('height', caGetOption('height', $pa_data['display'], null));
-				
-				
-				$t_instance = isset($pa_data['t_instance']) ? $pa_data['t_instance'] : null;
-				$o_view->setVar('media_url', $pa_data['t_instance']->getMediaUrl('media', 'original', []));
+class pdfjs extends BaseMediaViewer implements IMediaViewer {
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function getViewerHTML($po_request, $ps_identifier, $pa_data=null, $pa_options=null) {
+		if ($o_view = BaseMediaViewer::getView($po_request)) {
+			$o_view->setVar('identifier', $ps_identifier);
+			
+			$va_params = ['identifier' => $ps_identifier, 'context' => caGetOption('context', $pa_options, $po_request->getAction())];
+			
+			// Pass subject key when getting viewer data
+			if ($t_subject = caGetOption('t_subject', $pa_data, null)) { $va_params[$pa_data['t_subject']->primaryKey()] = $pa_data['t_subject']->getPrimaryKey(); }
+			
+			$o_view->setVar('viewer', 'pdfjs');
+			$o_view->setVar('width', caGetOption('width', $pa_data['display'], null));
+			$o_view->setVar('height', caGetOption('height', $pa_data['display'], null));
+			
+			switch($scroll_mode = caGetOption('scroll_mode', $pa_data['display'], "DEFAULT", ['forceUppercase' => true])) {
+				case 'VERTICAL':
+					$scroll_mode_num = 0;
+					break;
+				case 'HORIZONTAL':
+					$scroll_mode_num = 1;
+					break;
+				case 'WRAPPED':
+					$scroll_mode_num = 2;
+					break;
+				default:
+					$scroll_mode_num = -1;
+					break;
 			}
 			
-			return BaseMediaViewer::prepareViewerHTML($po_request, $o_view, $pa_data, $pa_options);
+			$o_view->setVar('scroll_mode', $scroll_mode_num);
+
+			$t_instance = isset($pa_data['t_instance']) ? $pa_data['t_instance'] : null;
+			
+			$o_context = $t_subject ? ResultContext::getResultContextForLastFind($po_request, $t_subject->tableName()) : null;
+			$o_view->setVar('search', $o_context ? $o_context->getSearchExpression() : null);
 		}
-		# -------------------------------------------------------
+		
+		return BaseMediaViewer::prepareViewerHTML($po_request, $o_view, $pa_data, $pa_options);
 	}
+	# -------------------------------------------------------
+}

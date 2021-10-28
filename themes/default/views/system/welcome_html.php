@@ -28,4 +28,3 @@
  
 	// Just print out the dashboard
  	print $this->render('../dashboard/dashboard_html.php');
-?>

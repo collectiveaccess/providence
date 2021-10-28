@@ -195,7 +195,14 @@
 					$va_attributes['preferred_labels']['name'] = $va_attributes['_preferred_labels'] = $vs_name;
 					break;
 				case 'ca_entities':
-					$vn_id = DataMigrationUtils::getEntityID($va_entity_label = DataMigrationUtils::splitEntityName($vs_name, array_merge($pa_options, ['doNotParse' => $pa_item['settings']["{$ps_refinery_name}_doNotParse"]])), $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
+					// Try to match on display name alone, then parsed name
+					$va_entity_label = DataMigrationUtils::splitEntityName($vs_name, array_merge($pa_options, ['doNotParse' => $pa_item['settings']["{$ps_refinery_name}_doNotParse"]]));
+					
+					foreach([['displayname' => $vs_name], $va_entity_label] as $e) {
+						if($vn_id = DataMigrationUtils::getEntityID($e, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options)) {
+							break;
+						}
+					}
 					$va_attributes['preferred_labels'] = $va_entity_label;
 					$va_attributes['_preferred_labels'] = $vs_name;
 					break;
@@ -358,6 +365,7 @@
 										$va_v = array_map(function($v) use ($vs_prefix) { return $vs_prefix.$v; });
 
 										foreach($va_v as $vn_y => $vm_val_to_import) {
+											$vm_val_to_import = preg_replace("![\\]+!", "/", $vm_val_to_import);
 											foreach($media_directories as $d) {
 												if ( ! file_exists( $vs_path = $d . $vm_val_to_import )
 												     && ( $va_candidates = array_filter( $va_prefix_file_list,
@@ -746,15 +754,15 @@
 			if (isset($pm_value[$pn_value_index])) {
 				$va_delimited_items = $pm_value[$pn_value_index];	// for input formats that support repeating values
 			} else {
-				$va_delimited_items = array_shift($va_delimited_items);
+				$va_delimited_items = array_shift($pm_value);
 			}
 		} else {
-			$va_delimited_items = array($pm_value);
+			$va_delimited_items = [$pm_value];
 		}
 		
-		if (!is_array($va_delimited_items)) { $va_delimited_items = array($va_delimited_items); }
+		if (!is_array($va_delimited_items)) { $va_delimited_items = [$va_delimited_items]; }
 		$va_delimiter = $pa_item['settings']["{$ps_refinery_name}_delimiter"];
-		if (!is_array($va_delimiter)) { $va_delimiter = array($va_delimiter); }
+		if (!is_array($va_delimiter)) { $va_delimiter = [$va_delimiter]; }
 		if (sizeof($va_delimiter)) {
 			foreach($va_delimiter as $vn_index => $vs_delim) {
 				if (!trim($vs_delim, "\t ")) { unset($va_delimiter[$vn_index]); continue; }
@@ -778,10 +786,12 @@
 			$pa_options['ignoreType'] = $pa_item['settings']["{$ps_refinery_name}_ignoreType"];
 		}
 		
+		$text_transform = $pa_item['settings']["{$ps_refinery_name}_textTransform"] ?? null;
+		
 		$pa_options['dontCreate'] = $pb_dont_create = caGetOption('dontCreate', $pa_options, (bool)$pa_item['settings']["{$ps_refinery_name}_dontCreate"]);
 		
 		$va_vals = [];  // value list for all items
-		$vn_c = 0;
+	
 		if (!($t_instance = Datamodel::getInstanceByTableName($ps_table, true))) { return array(); }
 		if ($o_trans) { $t_instance->setTransaction($o_trans); }
 		
@@ -795,6 +805,12 @@
 				$va_items = sizeof($va_delimiter) ? preg_split("!(".join("|", $va_delimiter).")!", $vs_delimited_item) : array($vs_delimited_item);
 
                 $va_items = array_map("trim", $va_items);
+                
+                if($text_transform) {
+                	$va_items = array_map(function ($v) use ($text_transform) { 
+                		return caApplyTextTransforms($v, $text_transform);
+                	}, $va_items);
+                }
 				foreach($va_items as $vn_i => $vs_item) {
 					$va_parents = $pa_item['settings']["{$ps_refinery_name}_parents"];
 					
@@ -1107,6 +1123,11 @@
 						if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && $o_log && ($ps_refinery_name !== 'objectRepresentationSplitter')) {
 							$o_log->logWarn(_t("[{$ps_refinery_name}Refinery] No relationship type is set for %2 \"%1\"", $vs_item, $ps_item_prefix));
 						}
+						
+						if($vs_rel_type_delimiter_opt = caGetOption("{$ps_refinery_name}_relationshipTypeDelimiter", $pa_item['settings'], null)) {
+							$va_val['_relationship_type_delimiter'] = $vs_rel_type_delimiter_opt;
+						}
+						
 	
 						switch($ps_table) {
 							case 'ca_entities':
@@ -1146,9 +1167,10 @@
 							        $vs_name = pathinfo($vs_item, PATHINFO_FILENAME);
 							    }
 							    
-								if(!isset($va_val['preferred_labels']) || !strlen($va_val['preferred_labels'])) { $va_val['preferred_labels'] = $vs_name ? $vs_name : '['.caGetBlankLabelText().']'; }
+								if(!isset($va_val['preferred_labels']) || !strlen($va_val['preferred_labels'])) { $va_val['preferred_labels'] = $vs_name ? $vs_name : '['.caGetBlankLabelText('ca_object_representations').']'; }
 					
-								if (isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) && $pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] && ((isset($va_val['media']['media']) && ($va_val['media']['media'])) || $vs_item)) {
+								if ($va_val['media']['media'] || $vs_item) {
+									// Search for files in import directory (or subdirectory of import directory specified by mediaPrefix)
 									$vs_media_dir_prefix = isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) ? '/'.$pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] : '';
 
 									foreach(caGetAvailableMediaUploadPaths() as $d) {
@@ -1161,6 +1183,7 @@
 											'log'       => $o_log
 										] );
 
+										$files_added = 0;
 										foreach ( $va_files as $vs_file ) {
 											if ( preg_match( "!(SynoResource|SynoEA)!", $vs_file ) ) {
 												continue;
@@ -1183,6 +1206,10 @@
 
 											$va_media_val['_matchOn'] = $va_match_on;
 											$va_vals[]                = $va_media_val;
+							            	$files_added++;
+										}
+										if($files_added > 0) {	// if we found matching files we're done
+											continue(2);
 										}
 									}
 							        $vn_c++;
@@ -1197,6 +1224,8 @@
 									    }
 									}
 								}
+								
+								// Default idno for rperesentation is the file name
 								if(!isset($va_val['idno'])) { $va_val['idno'] = pathinfo($vs_item, PATHINFO_FILENAME); }
 								break;
 							default:
@@ -1243,7 +1272,6 @@
 					if ($pb_dont_create) { $va_val['_dontCreate'] = 1; }
 					if (isset($pa_options['ignoreParent']) && $pa_options['ignoreParent']) { $va_val['_ignoreParent'] = 1; }
 					$va_vals[] = $va_val;
-					$vn_c++;
 				}
 			}
 		} else {
@@ -1281,6 +1309,29 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	if (is_array($va_relationships = $pa_item['settings'][$vs_relationship_settings_key])) {
 		foreach ($va_relationships as $va_relationship_settings) {
 			if ($vs_table_name = caGetOption('relatedTable', $va_relationship_settings)) {
+				if($skip_if_all_empty = caGetOption('skipIfAllEmpty', $va_relationship_settings, null, [])) {
+					if(!is_array($skip_if_all_empty)) { $skip_if_all_empty = [$skip_if_all_empty]; }
+					$skip_if_all_empty = array_map(function($v) { return preg_replace('!^\^!', '', $v); }, $skip_if_all_empty);
+					$is_empty = true;
+					foreach($skip_if_all_empty as $source) {
+						if($o_reader->get($source)) {
+							$is_empty = false;
+							break;
+						}
+					}
+					if($is_empty) { continue; }
+				}
+				if($skip_if_any_empty = caGetOption('skipIfAnyEmpty', $va_relationship_settings, null)) {
+					$skip_if_any_empty = array_map(function($v) { return preg_replace('!^\^!', '', $v); }, $skip_if_any_empty);
+					$is_empty = false;
+					foreach($skip_if_any_empty as $source) {
+						if(!$o_reader->get($source)) {
+							$is_empty = true;
+							break;
+						}
+					}
+					if($is_empty) { continue; }
+				}
 				if (is_array($va_rels = caProcessRefineryRelated($po_refinery_instance, $vs_table_name, array($va_relationship_settings), $pa_source_data, $pa_item, $pn_value_index, array_merge($pa_options, ['dontCreate' => caGetOption('dontCreate', $va_relationship_settings, false), 'list_id' => caGetOption('list', $va_relationship_settings, null)])))) {
 					$va_rel_rels = $va_rels['_related_related'];
 					unset($va_rels['_related_related']);
@@ -1481,15 +1532,19 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 		return $po_sheet->getCellByColumnAndRow($pm_col, $pn_row_num);
 	}
 	# ---------------------------------------------------------------------
-	/**
-	 * Try to match given (partial) hierarchy path to a single subject in getty linked data AAT service
-	 * @param array $pa_hierarchy_path
-	 * @param int $pn_threshold
-	 * @param array $pa_options
-	 * 		removeParensFromLabels = Remove parens from labels for search and string comparison. This can improve results in specific cases.
-	 * @return bool|string
-	 */
-	function caMatchAAT($pa_hierarchy_path, $pn_threshold=180, $pa_options = array()) {
+    /**
+     * Try to match given (partial) hierarchy path to a single subject in getty linked data AAT service
+     *
+     * @param array $pa_hierarchy_path
+     * @param int   $pn_threshold
+     * @param array $pa_options
+     *        removeParensFromLabels = Remove parens from labels for search and string comparison. This can improve results in specific cases.
+     * @param null  $o_service
+     *
+     * @return bool|string
+     * @throws MemoryCacheInvalidParameterException
+     */
+	function caMatchAAT($pa_hierarchy_path, $pn_threshold=180, $pa_options = array(), $o_service=null) {
 		$vs_cache_key = md5(print_r($pa_hierarchy_path, true));
 		if(MemoryCache::contains($vs_cache_key, 'AATMatches')) {
 			return MemoryCache::fetch($vs_cache_key, 'AATMatches');
@@ -1508,7 +1563,9 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 			$vs_lookup = $vs_bot;
 		}
 
-		$o_service = new WLPlugInformationServiceAAT();
+		if (is_null($o_service)) {
+		    $o_service = new WLPlugInformationServiceAAT();
+        }
 
 		$va_hits = $o_service->lookup(array(), $vs_lookup, array('phrase' => true, 'raw' => true, 'limit' => 2000));
 		if(!is_array($va_hits)) { return false; }
@@ -1561,6 +1618,20 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	}
 	# ---------------------------------------------------------------------
 	/**
+	 * Return list of key values to try when looking for "preferred labels" option in splitter opts.
+	 */
+	function caGetPreferredLabelNameKeyList() { 
+		return ['preferredLabels','preferred_labels', 'name'];
+	}
+	# ---------------------------------------------------------------------
+	/**
+	 * Return list of key values to try when looking for "identifier" option in splitter opts.
+	 */
+	function caGetIdnoNameKeyList() { 
+		return ['idno','idno_stub'];
+	}
+	# ---------------------------------------------------------------------
+	/**
 	 *
 	 */
 	function caValidateGoogleSheetsUrl($url) {
@@ -1575,18 +1646,46 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 		}
 		return $transformed_url;
 	}
-	# ---------------------------------------------------------------------
+	# ------------------------------------------------------
 	/**
-	 * Return list of key values to try when looking for "preferred labels" option in splitter opts.
+	 * 
 	 */
-	function caGetPreferredLabelNameKeyList() { 
-		return ['preferredLabels','preferred_labels', 'name'];
+	function caApplyTextTransforms(?string $value, ?string $transform) : ?string{
+		if (strlen($value)) {
+			switch(strtolower($transform)) {
+				case 'touppercase':
+					$value = mb_strtoupper($value);
+					break;
+				case 'tolowercase':
+					$value = mb_strtolower($value);
+					break;
+				case 'uppercasefirst':
+					$value = caUcFirstUTF8Safe($value);
+					break;
+			}
+		}
+		return $value;
 	}
-	# ---------------------------------------------------------------------
+	# ------------------------------------------------------
 	/**
-	 * Return list of key values to try when looking for "identifier" option in splitter opts.
+	 * Transform $value using specified transformation. Used by data importer applyTransformations option.
+	 *
+	 * Supported transformations:
+	 *		filesize = Transform integer filesize in bytes to display text with scaled suffix (KiB, MiB, GiB, etc.)
+	 *		           Options: decimal = number of decimal places to display. [Default is 2]
+	 * 
+	 * @param mixed $value Value to transform.
+	 * @param string $transform Code for transform to apply.
+	 * @param array $options Options for selected transform. [Default is null]
+	 *
+	 * @return mixed Transformed value
 	 */
-	function caGetIdnoNameKeyList() { 
-		return ['idno','idno_stub'];
+	function caApplyDataTransforms($value, string $transform, ?array $options){
+		switch(strtolower($transform)) {
+			case 'filesize':
+				$value = caHumanFilesize((int)$value, caGetOption('decimals', $options, 2));
+				break;
+		}
+		return $value;
 	}
 	# ---------------------------------------------------------------------

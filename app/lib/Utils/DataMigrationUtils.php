@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2020 Whirl-i-Gig
+ * Copyright 2010-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,18 +33,6 @@
  /**
   *
   */
-
- 	require_once(__CA_MODELS_DIR__.'/ca_objects.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_entities.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_places.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_occurrences.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_collections.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_lists.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_loans.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_movements.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_storage_locations.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_data_import_events.php');
  	require_once(__CA_APP_DIR__.'/helpers/batchHelpers.php');
  	
 	define("__CA_DATA_IMPORT_ERROR__", 0);
@@ -149,7 +137,7 @@
 		 * @param string/int $pn_type_id
 		 * @param int $pn_locale_id
 		 * @param null/array $pa_values
-		 * @param array $pa_options An optional array of options. See DataMigrationUtils::_getID() for a list.
+		 * @param array $pa_options An optional array of options. See DataMigrationUtils::_getID() for a list. Note that the default for ignoreType for list items is true.
 		 * @return bool|ca_list_items|mixed|null
 		 *
 		 * @see DataMigrationUtils::_getID()
@@ -173,8 +161,12 @@
 
 			if(!isset($pa_options['cache'])) { $pa_options['cache'] = true; }
 			
+			
+			$va_restrict_to_types 			= ($pn_type_id && !caGetOption('ignoreType', $pa_options, true)) ? [$pn_type_id] : null;
+			$pb_ignore_parent			 	= caGetOption('ignoreParent', $pa_options, false);
+			
 			$log_reference 					= caGetOption('logReference', $pa_options, null);
-			$log_reference_str = 			($log_reference ? _t('[%1] ', $log_reference) : '');
+			$log_reference_str 				= ($log_reference ? _t('[%1] ', $log_reference) : '');
 			
 			// Create cache key
 			$vs_cache_key = md5($pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id.'/'.$vs_singular_label.'/'.$vs_plural_label . '/' . json_encode($pa_match_on));
@@ -211,6 +203,7 @@
 				return DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key] = null;
 			}
 			if (!$vn_parent_id && ($vn_parent_id !== false)) { $vn_parent_id = caGetListRootID($pm_list_code_or_id); }
+			
 
 			$t_list = new ca_lists();
 			$t_item = new ca_list_items();
@@ -231,8 +224,8 @@
 						$vs_label_spec = ($vs_match_on == 'nonpreferred_labels') ? 'nonpreferred_labels' : 'preferred_labels';
 						if (trim($vs_singular_label) || trim($vs_plural_label)) {
 							$va_criteria = array($vs_label_spec => array('name_singular' => $vs_singular_label), 'list_id' => $vn_list_id);
-							if ($vn_parent_id !== false) { $va_criteria['parent_id'] = $vn_parent_id; }
-							if ($vn_item_id = (ca_list_items::find($va_criteria, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'])))) {
+							if (($vn_parent_id !== false) && !$pb_ignore_parent) { $va_criteria['parent_id'] = $vn_parent_id; }
+							if ($vn_item_id = (ca_list_items::find($va_criteria, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types)))) {
 								if ($o_log) { $o_log->logDebug(_t("%4Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using singular label %3", $ps_item_idno, $pm_list_code_or_id, $vs_singular_label, $log_reference_str)); }
 								break(2);
 							} else {
@@ -247,8 +240,8 @@
 					case 'idno':
 						if ($ps_item_idno == '%') { break; }	// don't try to match on an unreplaced idno placeholder
 						$va_criteria = array('idno' => $ps_item_idno ? $ps_item_idno : $vs_plural_label, 'list_id' => $vn_list_id);
-						if ($vn_parent_id !== false) { $va_criteria['parent_id'] = $vn_parent_id; }
-						if ($vn_item_id = (ca_list_items::find($va_criteria, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'])))) {
+						if (($vn_parent_id !== false) && !$pb_ignore_parent) { $va_criteria['parent_id'] = $vn_parent_id; }
+						if ($vn_item_id = (ca_list_items::find($va_criteria, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types)))) {
 							if ($o_log) { $o_log->logDebug(_t("%4Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using idno with %3", $ps_item_idno, $pm_list_code_or_id, $ps_item_idno, $log_reference_str)); }
 							break(2);
 						}
@@ -263,7 +256,7 @@
 						$t_instance = new ca_list_items();
 						if ($t_instance->hasField($vs_element) || $t_instance->hasElement($vs_element)) {
 							$va_params = array($vs_element => $ps_item_idno, 'list_id' => $vn_list_id);
-							$vn_id = ca_list_items::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction']));
+							$vn_id = ca_list_items::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types));
 							if ($vn_id) { break(2); }
 						}
 						break;
@@ -535,181 +528,226 @@
 		 * @param string $ps_text The name text
 		 * @param array $pa_options Optional array of options. Supported options are:
 		 *		locale = locale code to use when applying rules; if omitted current user locale is employed
-		 *		displaynameFormat = surnameCommaForename, forenameCommaSurname, forenameSurname, original [Default = original]
+		 *		displaynameFormat = surnameCommaForename, forenameCommaSurname, forenameSurname, forenamemiddlenamesurname, original [Default = original]
 		 *		doNotParse = Use name as-is in the surname and display name fields. All other fields are blank. [Default = false]
 		 *
 		 * @return array Array containing parsed name, keyed on ca_entity_labels fields (eg. forename, surname, middlename, etc.)
 		 */
-		static function splitEntityName($ps_text, $pa_options=null) {
+		static function splitEntityName($text, $options=null) {
 			global $g_ui_locale;
-			$ps_text = $ps_original_text = trim(preg_replace("![ ]+!", " ", $ps_text));
+			$text = $original_text = trim(preg_replace("![ ]+!", " ", $text));
 			
-			if (caGetOption('doNotParse', $pa_options, false)) {
-				return array(
-					'forename' => '', 'middlename' => '', 'surname' => $ps_text,
-					'displayname' => $ps_text, 'prefix' => '', 'suffix' => ''
-				);
+			if (caGetOption('doNotParse', $options, false)) {
+				return [
+					'forename' => '', 'middlename' => '', 'surname' => $text,
+					'displayname' => $text, 'prefix' => '', 'suffix' => ''
+				];
 			}
 			
-			if (isset($pa_options['locale']) && $pa_options['locale']) {
-				$vs_locale = $pa_options['locale'];
+			if (isset($options['locale']) && $options['locale']) {
+				$locale = $options['locale'];
 			} else {
-				$vs_locale = $g_ui_locale;
+				$locale = $g_ui_locale;
 			}
-			if (!$vs_locale && defined('__CA_DEFAULT_LOCALE__')) { $vs_locale = __CA_DEFAULT_LOCALE__; }
+			if (!$locale && defined('__CA_DEFAULT_LOCALE__')) { $locale = __CA_DEFAULT_LOCALE__; }
 		
-			if (file_exists($vs_lang_filepath = __CA_LIB_DIR__.'/Utils/DataMigrationUtils/'.$vs_locale.'.lang')) {
+			if (file_exists($lang_filepath = __CA_LIB_DIR__.'/Utils/DataMigrationUtils/'.$locale.'.lang')) {
 				/** @var Configuration $o_config */
-				$o_config = Configuration::load($vs_lang_filepath);
-				$va_titles = $o_config->getList('titles');
-				$va_ind_suffixes = $o_config->getList('individual_suffixes');
-				$va_corp_suffixes = $o_config->getList('corporation_suffixes');
+				$o_config = Configuration::load($lang_filepath);
+				$titles = $o_config->getList('titles');
+				$ind_suffixes = $o_config->getList('individual_suffixes');
+				$corp_suffixes = $o_config->getList('corporation_suffixes');
+				$surname_prefixes = $o_config->getList('surname_prefixes');
 			} else {
 				$o_config = null;
-				$va_titles = array();
-				$va_ind_suffixes = array();
-				$va_corp_suffixes = array();
+				$titles = $ind_suffixes = $corp_suffixes = $surname_prefixes = [];
 			}
 			
-			$va_name = array();
-		
 			// check for titles
-			//$ps_text = preg_replace('/[^\p{L}\p{N} \-]+/u', ' ', $ps_text);
-			
-			$vs_prefix_for_name = null;
-			foreach($va_titles as $vs_title) {
-				if (preg_match("!^({$vs_title})!i", $ps_text, $va_matches)) {
-					$vs_prefix_for_name = $va_matches[1];
-					$ps_text = str_replace($va_matches[1], '', $ps_text);
+			$prefix_for_name = null;
+			foreach($titles as $title) {
+				if (preg_match("!^({$title}[\.]{0,1})!i", $text, $matches)) {
+					$prefix_for_name = $matches[1];
+					$text = str_replace($matches[1], '', $text);
 				}
 			}
 			
 			// check for suffixes
-			$vs_suffix_for_name = null;
-			if (strpos($ps_text, '_') === false) {
-				foreach(array_merge($va_ind_suffixes, $va_corp_suffixes) as $vs_suffix) {
-					if (preg_match("!({$vs_suffix})$!i", $ps_text, $va_matches)) {
-						$vs_suffix_for_name = $va_matches[1];
-						$ps_text = str_replace($va_matches[1], '', $ps_text);
-					}
-				}
+			$suffix_for_name = null;
+			$is_corporation = false;
+			if ((strpos($text, '_') === false) && ($n = self::_procSurname($text, ['ind_suffixes' => $ind_suffixes, 'corp_suffixes' => $corp_suffixes]))) {
+				$text = $n['surname'];
+				$suffix_for_name = $n['suffix'];
+				$is_corporation = $n['is_corporation'];
 			}
 			
-			if ($vs_suffix_for_name) {
+			$name = ['surname' => '', 'forename' => '', 'middlename' => '', 'displayname' => '', 'prefix' => $prefix_for_name, 'suffix' => $suffix_for_name];
+		
+			if ($suffix_for_name && $is_corporation) {
 				// is corporation
-				$va_tmp = preg_split('![, ]+!', trim($ps_text));
-				if (strpos($va_tmp[0], '.') !== false) {
-					$va_name['forename'] = array_shift($va_tmp);
-					$va_name['surname'] = join(' ', $va_tmp);
+				$tmp = preg_split('![, ]+!', trim($text));
+				if (strpos($tmp[0], '.') !== false) {
+					$name['forename'] = array_shift($tmp);
+					$name['surname'] = join(' ', $tmp);
 				} else {
-					$va_name['surname'] = $ps_text;
+					$name['surname'] = $text;
 				}
-				$va_name['prefix'] = $vs_prefix_for_name;
-				$va_name['suffix'] = $vs_suffix_for_name;
-			} elseif (strpos($ps_text, ',') !== false) {
-				// is comma delimited
-				$va_tmp = explode(',', $ps_text);
-				$va_name['surname'] = $va_tmp[0];
+				$name['prefix'] = $prefix_for_name;
+				$name['suffix'] = $suffix_for_name;
+			} elseif (strpos($text, ',') !== false) {	
+				// Test if string stripped of prefix and suffix still has 
+				// commas in it – implies it's comma delimited.
+				$tmp = explode(',', $text);
 				
-				if(sizeof($va_tmp) > 1) {
-					$va_tmp2 = array_filter(preg_split("![ ]+!", $va_tmp[1]), function($v) { return (bool)strlen(trim($v)); });
-					
-					if (sizeof($va_tmp2) > 1) {
-						$va_name['middlename'] = array_pop($va_tmp2);
-						$va_name['forename'] = join(" ", $va_tmp2);
-					} else {
-						$va_name['forename'] = $va_tmp[1];
-					}
+				$name = array_merge($name, self::_procSurname($tmp[0], ['ind_suffixes' => $ind_suffixes, 'corp_suffixes' => $corp_suffixes]));
+				unset($_procSurname['is_corporation']);
+				if(sizeof($tmp) > 1) {
+					$tmp2 = array_filter(preg_split("![ ]+!", $tmp[1]), function($v) { return (bool)strlen(trim($v)); });
+					$name = array_merge($name, self::_procForename($tmp2, ['titles' => $titles]));
 				}
-			} elseif (strpos($ps_text, '_') !== false) {
+			} elseif (strpos($text, '_') !== false) {
 				// is underscore delimited
-				$va_tmp = explode('_', $ps_text);
-				$va_name['surname'] = $va_tmp[0];
+				$tmp = explode('_', $text);
+				$name['surname'] = $tmp[0];
 				
-				if(sizeof($va_tmp) > 1) {
-					$va_name['forename'] = $va_tmp[1];
-					if(sizeof($va_tmp) > 2) {
-						if (in_array(mb_strtolower($va_tmp[2]), $va_ind_suffixes)) {
-							$va_name['suffix'] = $va_tmp[2];
+				if(sizeof($tmp) > 1) {
+					$name['forename'] = $tmp[1];
+					if(sizeof($tmp) > 2) {
+						if (in_array(mb_strtolower($tmp[2]), $ind_suffixes)) {
+							$name['suffix'] = $tmp[2];
 						} else {
-							$va_name['middlename'] = $va_tmp[2];
+							$name['middlename'] = $tmp[2];
 						}
 					}
 				}
-				$vs_surname = array_shift($va_tmp);
-				$vs_forename = array_shift($va_tmp);
-				$ps_original_text = trim("{$vs_forename} {$vs_surname}".((sizeof($va_tmp) > 0) ? ' '.join(' ', $va_tmp) : ''));
+				$surname = array_shift($tmp);
+				$forename = array_shift($tmp);
+				$original_text = trim("{$forename} {$surname}".((sizeof($tmp) > 0) ? ' '.join(' ', $tmp) : ''));
 			} else {
-				$va_name = array(
-					'surname' => '', 'forename' => '', 'middlename' => '', 'displayname' => '', 'prefix' => $vs_prefix_for_name, 'suffix' => $vs_suffix_for_name
-				);
+				$name = [
+					'surname' => '', 'forename' => '', 'middlename' => '', 'displayname' => '', 'prefix' => $prefix_for_name, 'suffix' => $suffix_for_name
+				];
 				
-				$va_tmp = preg_split('![ ]+!', trim($ps_text));
-				if (($vn_i = array_search("&", $va_tmp)) !== false) {
-					if ((sizeof($va_tmp) - ($vn_i + 1)) > 1) {
-						$va_name['surname'] = array_pop($va_tmp);
-						$va_name['forename'] = join(' ', array_slice($va_tmp, 0, $vn_i));
-						$va_name['middlename'] = join(' ', array_slice($va_tmp, $vn_i));
-					} else {
-						$va_name['surname'] = array_pop($va_tmp);
-						$va_name['forename'] = join(' ', $va_tmp);
+				if(is_array($surname_prefixes)) {
+					foreach($surname_prefixes as $p) {
+						if(preg_match("![ ]+({$p})[ ]+!i", $text, $m)) {
+							$s = array_map('trim', preg_split("!{$m[1]}!i", $text));
+							$name['surname'] = "{$m[1]} {$s[1]}";
+							
+							$tmp = preg_split('![ ]+!', trim($s[0]));
+							$name = array_merge($name, self::_procForename($tmp, ['titles' => $titles]));
+							
+						}
 					}
-				} else {
+				} 
+				if(!$name['surname']) {
+					$tmp = preg_split('![ ]+!', trim($text));
 				
-					switch(sizeof($va_tmp)) {
+					switch(sizeof($tmp)) {
 						case 1:
-							$va_name['surname'] = $ps_text;
+							$name['surname'] = $text;
 							break;
 						case 2:
-							$va_name['forename'] = $va_tmp[0];
-							$va_name['surname'] = $va_tmp[1];
+							$name['forename'] = $tmp[0];
+							$name['surname'] = $tmp[1];
 							break;
 						case 3:
-							$va_name['forename'] = $va_tmp[0];
-							$va_name['middlename'] = $va_tmp[1];
-							$va_name['surname'] = $va_tmp[2];
+							$name['forename'] = $tmp[0];
+							$name['middlename'] = $tmp[1];
+							$name['surname'] = $tmp[2];
 							break;
 						case 4:
 						default:
-							if (strpos($ps_text, ' '._t('and').' ') !== false) {
-								$va_name['surname'] = array_pop($va_tmp);
-								$va_name['forename'] = join(' ', $va_tmp);
+							if ((strpos($text, ' '._t('and').' ') !== false) || (strpos($text, ' & ') !== false)) {
+								$name['surname'] = array_pop($tmp);
+								$name['forename'] = join(' ', $tmp);
 							} else {
-								$va_name['forename'] = array_shift($va_tmp);
-								$va_name['middlename'] = array_shift($va_tmp);
-								$va_name['surname'] = join(' ', $va_tmp);
+								$name['surname'] = array_pop($tmp);
+								$name['forename'] = array_shift($tmp);
+								$name['middlename'] = join(' ', $tmp);
 							}
 							break;
 					}
 				}
 			}
 
-			switch($vs_format = caGetOption('displaynameFormat', $pa_options, 'original', array('forceLowercase' => true))) {
+			switch($format = caGetOption('displaynameFormat', $options, 'original', array('forceLowercase' => true))) {
 				case 'surnamecommaforename':
-					$va_name['displayname'] = ((strlen(trim($va_name['surname']))) ? $va_name['surname'].", " : '').$va_name['forename'];
+					$name['displayname'] = ((strlen(trim($name['surname']))) ? $name['surname'].", " : '').$name['forename'];
+					break;
+				case 'forenamecommasurname':
+					$name['displayname'] = trim($name['forename'].', '.$name['surname']);
 					break;
 				case 'forenamesurname':
-					$va_name['displayname'] = trim($va_name['forename'].' '.$va_name['surname']);
+					$name['displayname'] = trim($name['forename'].' '.$name['surname']);
+					break;
+				case 'forenamemiddlenamesurname':
+					$name['displayname'] = trim($name['forename'].($name['middlename'] ? ' '.$name['middlename'] : '').' '.$name['surname']);
 					break;
 				case 'surnameforename':
-					$va_name['displayname'] = trim($va_name['surname'].' '.$va_name['forename']);
+					$name['displayname'] = trim($name['surname'].' '.$name['forename']);
 					break;
 				case 'original':
-					$va_name['displayname'] = $ps_original_text;
+					$name['displayname'] = $original_text;
 					break;
 				default:
-					if ($vs_format) {
-						$va_name['displayname'] = caProcessTemplate($vs_format, $va_name);
+					if ($format) {
+						$name['displayname'] = caProcessTemplate($format, $name);
 					} else {
-						$va_name['displayname'] = $ps_original_text;
+						$name['displayname'] = $original_text;
 					}
 					break;
 			}
-			foreach($va_name as $vs_k => $vs_v) {
-				$va_name[$vs_k] = trim($vs_v);
+			foreach($name as $k => $v) {
+				$name[$k] = trim($v);
 			}
 			
-			return $va_name;
+			return $name;
+		}
+		
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		private static function _procForename(array $tokens, array $values) : array {
+			$tokens = array_values($tokens);
+			
+			$name = [];
+			if (in_array(mb_strtolower(preg_replace("!\.$!", "", trim($tokens[0]))), array_map("mb_strtolower", $values['titles']))) {
+				$name['prefix'] = array_shift($tokens);
+			}
+			if ((sizeof($tokens) > 1) && (array_search(_t('and'), $tokens, true) === false) && (array_search('&', $tokens, true) === false)) {
+				$name['forename'] = array_shift($tokens);
+				$name['middlename'] = join(" ", $tokens);
+			} else {
+				$name['middlename'] = '';
+				$name['forename'] = join(' ', $tokens);
+			}
+			return $name;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		private static function _procSurname(string $text, array $values) : array {
+			$name = [];
+			
+			foreach($values['ind_suffixes'] as $suffix) {
+				if (preg_match("![,]*[ ]*({$suffix}[\.]{0,1})$!i", $text, $matches)) {
+					$name['suffix'] = $matches[1];
+					$text = str_replace($matches[0], '', $text);
+				}
+			}
+			foreach($values['corp_suffixes'] as $suffix) {
+				if (preg_match("![,]*[ ]*({$suffix}[\.]{0,1})$!i", $text, $matches)) {
+					$name['suffix'] = $matches[1];
+					$text = str_replace($matches[0], '', $text);
+					$name['is_corporation'] = true;
+				}
+			}
+			
+			$name['surname'] = $text;
+			return $name;
 		}
 		# -------------------------------------------------------
 		/**
@@ -875,7 +913,7 @@
 		 * @param array $pa_options An optional array of options, which include:
 		 *                outputErrors - if true, errors will be printed to console [default=false]
 		 *                dontCreate - if true then new entities will not be created [default=false]
-		 *                matchOn = optional list indicating sequence of checks for an existing record; values of array can be "label", "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails. For entities only you may also specifiy "displayname", "surname" and "forename" to match on the text of the those label fields exclusively. If "none" is specified alone no matching is performed.
+		 *                matchOn = optional list indicating sequence of checks for an existing record; values of array can be "label", "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails. For entities only you may also specify "displayname", "surname" and "forename" to match on the text of the those label fields exclusively. If "none" is specified alone no matching is performed.
 		 *                matchOnDisplayName  if true then entities are looked up exclusively using displayname, otherwise forename and surname fields are used [default=false]
 		 *                transaction - if Transaction instance is passed, use it for all Db-related tasks [default=null]
 		 *                returnInstance = return ca_entities instance rather than entity_id. Default is false.
@@ -972,12 +1010,13 @@
 				$va_replacements_list = caBatchGetMediaFilenameReplacementRegexList(array('log' => $o_log));
 			}
 
-			$va_restrict_to_types = ($pn_type_id && !caGetOption('ignoreType', $pa_options, false)) ? [$pn_type_id] : null;
+			$va_restrict_to_types = ($pn_type_id && !caGetOption('ignoreType', $pa_options, true)) ? [$pn_type_id] : null;
 
 			$vn_id = null;
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'idno':
+					case 'idno_stub':
 						if ($vs_idno == '%') { break; }	// don't try to match on an unreplaced idno placeholder
 						
 						switch ($vs_table_class) {
@@ -1140,8 +1179,8 @@
 				}
 				
 				$t_instance->setMode(ACCESS_WRITE);
-				$t_instance->set('locale_id', $pn_locale_id);
-				$t_instance->set('type_id', $pn_type_id);
+				if($t_instance->hasField('locale_id')) { $t_instance->set('locale_id', $pn_locale_id); }
+				if($t_instance->hasField('type_id')) { $t_instance->set('type_id', $pn_type_id); }
 				
 				$va_intrinsics = array(
 					'source_id' => null, 'access' => 0, 'status' => 0, 'lifespan' => null, 'parent_id' => $vn_parent_id, 'lot_status_id' => null, '_interstitial' => null

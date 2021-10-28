@@ -47,7 +47,7 @@ textarea {
     
 }
 
-a, a:link, a:visited, a font { color: #1ab3c8; text-decoration: underline; }
+a, a:link, a:visited, a font { color:#138290; text-decoration: underline; }
 
 a:hover{
     color: #333;
@@ -219,10 +219,10 @@ div.clear {
 
 #leftNav h2 a, #leftNav h2 span { display: block; padding-left: 15px; padding-top: 7px; padding-bottom: 4px; text-decoration: none; color: #666666; border-right:1px solid #dddddd;} 
 #leftNav h2 a:hover{
-    color: #1ab3c8;
+    color: #138290;
 }
 #leftNav h3 h4 a:hover{
-    color: #1ab3c8;
+    color: #138290;
 }
 #leftNav ul { list-style: none; margin: 0px; padding: 3px 0px 3px 0px; display:none; }
 #leftNav ul.arrow { padding:0px; }
@@ -232,7 +232,7 @@ div.clear {
 #leftNav ul.arrow li a, #leftNav ul.arrow li span { _height: 15px; text-decoration: none; display: block;  padding: 8px 0 5px 0;; padding-left: 30px; padding-right: 5px; margin: 0; color:#666; text-transform:uppercase; font-family:"din-regular", arial, sans-serif;}
 #leftNav ul li a:hover { background-color: #fff; }
 #leftNav ul .sf-menu-selected a:hover { background-color: #eee; }
-#leftNav ul.arrow li a:hover { color: #1ab3c8}
+#leftNav ul.arrow li a:hover { color: #138290}
 
 /* h3 used for non link left side nav - currently editing */
 #leftNav h4 {
@@ -304,6 +304,11 @@ div.clear {
 #leftNav .resultLink  {
 	display: inline-block;
 	width: 110px;
+	color: #138290;
+}
+#leftNav .resultLink:hover  {
+	color: #138290;
+	text-decoration:underline;
 }
 #leftNav .creatingNew {
 	font-family: "DIN-Regular", Helvetica, sans-serif;
@@ -312,7 +317,7 @@ div.clear {
 	font-size: 13px;
 	line-height: 1.4em;
 }
-#leftNav div.visualize, #leftNav div.setTools {
+#leftNav div.visualize, #leftNav div.setTools, #leftNav div.batchTools {
 	background-color:#f7f7f7;
 	border-radius: 4px;
 	-webkit-border-radius: 4px;
@@ -323,10 +328,10 @@ div.clear {
 	text-transform:capitalize;
 	font-size:14px;
 }
-#leftNav div.setTools img {
+#leftNav div.setTools img, #leftNav div.batchTools img {
 	padding-right:5px;
 }
-#leftNav div.visualize a, #leftNav div.setTools a {
+#leftNav div.visualize a, #leftNav div.setTools a, #leftNav div.batchTools a {
 	text-decoration:none;
 }
 #caColorbox {
@@ -441,7 +446,7 @@ div.inspectorLotObjectTypeControls {
 #leftNav #toolIcons .button {
 	text-align:left;
 }
-#leftNav #searchSetTools .button {
+#leftNav #searchSetTools .button, #leftNav #batchTools .button {
 	text-align: right;
 }
 #leftNav .button.info img{
@@ -459,7 +464,7 @@ div.inspectorCheckedOut {
 }
 
 .inspectorDeaccessioned {
-    color: #cc0000;
+    color: #EB0000;
     font-style: italic;
 }
 
@@ -470,7 +475,7 @@ div.inspectorCheckedOut {
 }
 
 .inspectorFlag {
-    color: #FF0000;
+    color: #EB0000;
     font-weight: bold;
 }
 
@@ -485,7 +490,7 @@ div.inspectorCheckedOut {
 #leftNav div.form-button {text-align:right; margin-top: 5px; }
 #leftNav .form-button a {	text-transform:uppercase; text-decoration: underline; }
 #leftNav .form-button a:hover{
-    color: #1ab3c8;
+    color: #138290;
 }
 #leftNav #inspectorMedia, #leftNav #hierarchyInfo { display:none; }
 #leftNav #inspectorMedia {
@@ -593,7 +598,7 @@ div.inspectorCheckedOut {
 	margin-bottom: 5px;
 	font-size: 14px;
 }
-.setStats div, .pawtucketStats div, .groupList div, .yourDisplays div, .searchForms div, .comments div, .tags div, .export div, h3.metalist div, h3.relTypes div, .importers div, .savedSearches div, .searchTours div{
+.setStats div, .pawtucketStats div, .groupList div, .yourDisplays div, .watchedItems div, .searchForms div, .comments div, .tags div, .export div, h3.metalist div, h3.relTypes div, .importers div, .savedSearches div, .searchTours div {
 	font-size:12px;
 	line-height:1.7em;
 }
@@ -790,7 +795,7 @@ ul.sf-menu li li li.sfHover ul {
 }
 
 li.sfHover > a:link, li.sfHover > a:visited {
-    color: #333 !important;
+    color: #aaa !important;
 }
 
 .sf-menu li li:hover, .sf-menu li li li:hover{
@@ -1113,7 +1118,7 @@ div.notification-info-box {
 }
 
 div.notification-error-box {
-    background:	url('../graphics/icons/warning_sign.png') no-repeat 10px 5px;
+    background:	url('../graphics/icons/warning_sign.png') no-repeat 10px 15px;
     text-indent: 32px;
     background-color: #eeeeee;
     padding: 5px;
@@ -1142,8 +1147,8 @@ ul.notification-error-box, ul.notification-warning-box, ul.notification-info-box
 
 li.notification-info-box {
     font-weight: bold;
-    color: #1ab3c8;
-    font-size: 12px;
+    color: #138290;
+    font-size: 13px;
     text-indent: 10px;
     font-family: 'din-regular';
 	padding-top: 2px;
@@ -1154,13 +1159,23 @@ li.notification-warning-box {
     color: #333;
     font-size: 13px;
     text-indent: 10px;
+    font-family: 'din-regular';
 }
 
 li.notification-error-box {
-    font-weight: bold;
-    color: #cc0000;
-    font-size: 12px;
+    font-weight: normal;
+    color: #EB0000;
+    font-size: 13px;
     text-indent: 10px;
+    font-family: 'din-regular';
+}
+
+li.notification-error-box .heading {
+    font-weight: bold;
+}
+
+li.notification-error-box ul.errorList {
+    margin-top: 8px;
 }
 
 div.hint {
@@ -1246,11 +1261,12 @@ div.formLabelUploadSizeNote {
 .bundleSubLabel{
 	clear:both;
 	background-color:#fbfbfb;
-	padding:8px 8px 0px 10px;
+	padding:12px 7px 0px 7px;
 	position:relative;
 	font-weight:normal;
 	font-size:11px;
 	line-height:1em;
+	margin-top: 0px;
 }
 .bundleSubLabel select, .bundleSubLabel .editorBundlePrintControl select, .bundleSubLabel .editorBundleSortControl select{
 	position:relative;
@@ -1261,6 +1277,7 @@ div.formLabelUploadSizeNote {
 	font-weight: normal;
 	height: 17px;
 	vertical-align: top;
+	max-width: 120px;
 }
 .bundleSubLabel .editorBundlePrintControl {
 	float:right;
@@ -1287,7 +1304,8 @@ div.formLabelUploadSizeNote {
 	border: 1px dotted #cccccc;
 	background: #fff;
 	padding: 5px 5px 5px 10px;
-	width: 692px;
+	width: 694px;
+	margin-bottom: 10px;
 }
 
 .editorBundleReturnToHomeControlsMessage {
@@ -1334,16 +1352,20 @@ div.formLabelUploadSizeNote {
     max-height: 700px;
 }
 
+.bundleSubLabel .batchEdit { 
+    float: right;
+}
+
 .caDupeLabelMessageBox {
     margin: 0 auto;
     width: 200px;
     font-family: Helvetica Neue, sans-serif;
-    color: #b32b21;
+    color: #EB0000;
 }
 
 .caDupeAttributeMessageBox {
     font-family: Helvetica Neue, sans-serif;
-    color: #b32b21;
+    color: #EB0000;
 }
 
 /* often times referred to as bundlePreview */
@@ -1368,7 +1390,7 @@ div.formLabelUploadSizeNote {
 .formLabelError {
     font-family: Verdana, Arial, Helvetica, sans-serif;
     font-size:10px;
-    color: #cc0000;
+    color: #EB0000;
     margin-bottom: 5px;
     text-align: left;
 }
@@ -1376,7 +1398,7 @@ div.formLabelUploadSizeNote {
 .bundleLabelError {
     font-family: Verdana, Arial, Helvetica, sans-serif;
     font-size:11px;
-    color: #cc0000;
+    color: #EB0000;
     margin-bottom: 5px;
     text-align: left;
 }
@@ -1429,12 +1451,14 @@ div.formLabelUploadSizeNote {
 	display:inline-block;
 	font-weight:bold;
 	color: #666;
+    vertical-align: top;
 }
 #summary .summaryData{
 	width: 70%;
 	display: inline-block;
 	font-family: 'DIN-Regular', Helvetica, sans-serif;
 	color:#333;
+    vertical-align: top;
 }
 #summary .thumbnailsImageContainer{
     border:1px solid #DDDDDD;
@@ -1519,7 +1543,7 @@ div.button a{
 }
 
 div.button a:hover{
-    color: #1ab3c8;
+    color: #138290;
 }
 
 div.button img{
@@ -1527,7 +1551,7 @@ div.button img{
 	margin-top: -1px;
 }
 a.button{
-    color: #1ab3c8;
+    color: #138290;
     text-decoration: none;
     font-size: 11px;
     font-weight:normal;
@@ -1541,7 +1565,17 @@ a.button{
 	font-weight:bold;
 }
 a.button:hover{
-    color: #1ab3c8;
+    color: #138290;
+}
+
+a.inline-button-small {
+    font-size: 10px;
+    text-decoration: none;
+    color: #000;
+}
+a.inline-button-small:hover {
+    text-decoration: none;
+    color: #138290;
 }
 
 a.form-button, span.form-button, del.form-button{
@@ -1697,10 +1731,10 @@ del.form-button{
 
 }
 .form-button.delete:hover .fa, .form-button.delete:hover, .form-button.delete .fa:hover {
-	color:red;
+	color:#EB0000;
 }
 .deleteButton a.form-button span {
-	color:red;
+	color:#EB0000;
 }
 del.form-button span{
     cursor:default;
@@ -1722,7 +1756,7 @@ a.form-button:focus,
 a.dom-button-focus,
 span.form-button-behavior-hover{
     background-position:0 -60px;
-    color:#222;
+    color: #138290;
     text-decoration:none;
 }
 
@@ -1929,7 +1963,7 @@ td.listtableAggregateTotals {
 	padding:5px;
 }
 .caIcon.deleteIcon:hover {
-	color:red;
+	color:#EB0000;
 }
 
 #caSetList tbody tr td div.caSetListName, #caSetList tbody tr td div.caSetListOwner {
@@ -2014,14 +2048,12 @@ div.control-box-right-content {
     font-family: 'DIN-Regular';
 }
 a.deleteButton span{
-	color: red;
+	color: #EB0000;
 	font-weight:bold;
 }
-a.deleteButton span .caIcon:hover{
-	color:red;
-}
+
 a.deleteButton span.form-button:hover {
-	color:red;
+	color: #138290;
 }
 div.control-box-right-content select {
     width: 150px;
@@ -2038,7 +2070,7 @@ div.delete-control-box {
 div.delete_warning_box {
     text-indent: 42px;
     font-size: 14px;
-	color: red;
+	color: #EB0000;
     padding-top: 10px;
     width: 400px;
     height: 26px;
@@ -2080,7 +2112,7 @@ div.search-hier-browser-box {
     margin-bottom: 5px;
 }
 .bundleContainer .caDeleteLabelButton .fa:hover, .bundleContainer .caDeleteItemButton .fa:hover{
-	color:red;
+	color:#EB0000;
 }
 
 .labelInfo {
@@ -2169,7 +2201,7 @@ div.searchSuggestion {
 a.searchSuggestion {
     font-family: Verdana, Arial, Helvetica, sans-serif;
     font-size:12px;
-    color: #cc0000;
+    color: #EB0000;
     margin-bottom: 5px;
     font-style: italic;
     text-align: center;
@@ -2259,7 +2291,7 @@ select.searchSetSelect {
 	position: absolute;
 	top: 100px;
 	left: 25%;
-	width: 400px;
+	width: 500px;
 	z-index:20000;
 }
 
@@ -2354,8 +2386,8 @@ a#hideRefine img {
 #searchRefineParameters{
     float:left;
     color: #666666;
-	border-top: 2px solid #1ab3c8;
-	border-bottom: 2px solid #1ab3c8;
+	border-top: 2px solid #138290;
+	border-bottom: 2px solid #138290;
 	padding: 10px 0px 10px 0px;
 	width: 100%;
 	margin-bottom: 5px;
@@ -2446,11 +2478,8 @@ select.searchToolsSelect {
 }
 /* Set Tools */
 
-#searchSetTools {
+#searchSetTools, #batchTools {
 	display:none;
-}
-
-#searchSetTools {
 	background-color: #f7f7f7;
 	border-radius: 4px;
 	-moz-border-radius: 4px;
@@ -2458,19 +2487,19 @@ select.searchToolsSelect {
 	margin: 10px;
 	padding: 10px;
 }
-#searchSetTools .col{
+#searchSetTools .col, #batchTools .col {
 	margin-bottom:15px;
 }
-#searchSetTools .header {
+#searchSetTools .header, #batchTools .header {
 	font-family: 'din-regular', helvetica, sans-serif;
 	font-weight:bold;
 }
-#searchSetTools a{
+#searchSetTools a, #batchTools a {
 	float: right;
 	clear: left;
 	text-align: right;
 }
-#searchSetTools .searchSetsToggle a{
+#searchSetTools .searchSetsToggle a {
 	float: left;
 	clear: right;
 	text-align: left;
@@ -2535,7 +2564,7 @@ select.searchToolsSelect {
 	cursor: pointer;
 }
 .qlButtonContainerThumbnail a:hover, .qlButtonContainerFull a:hover{
-    color:#1ab3c8;
+    color:#138290;
 }
 
 .objectThumbnailsImageContainer {
@@ -2641,13 +2670,13 @@ select.searchToolsSelect {
     clear:both;
 }
 #leftNav #inspectorInfo.setDelete, #leftNav #inspectorInfo.setDelete a {
-	color: red;
+	color: #EB0000;
 }
 #leftNav #inspectorInfo.setDelete .fa {
 	color:black;
 }
 #leftNav #inspectorInfo.setDelete a:hover .fa{
-	color: red;
+	color: #EB0000;
 }
 #leftNav #inspectorInfo.setDelete {
 	background-color:#FFCCCB;
@@ -2742,7 +2771,7 @@ table.representationAnnotationListItem {
 #caMediaPanelContentArea {
     width: 100%;
     height: 100%;
-    background-color: #fff;
+    background-color: #000;
 }
 
 #caMediaOverlayTileViewer {
@@ -2884,7 +2913,7 @@ img.caRepToolsRotateControlButton {
 }
 
 img.caRepToolsRotateControlButtonSelected {
-    border: 1px solid #CC0000;
+    border: 1px solid #EB0000;
     background: #FFFFFF;
 }
 
@@ -2979,6 +3008,7 @@ img.caRepToolsRotateControlButton:hover {
 table.attributeListItem {
     padding: 0px;
     margin: 0px;
+    width: 100%;
 }
 .attributeListItem td {
     padding: 0px;
@@ -3221,13 +3251,13 @@ div.caObjectRepresentationMetadata {
 }
 
 span.caObjectRepresentationPrimaryDisplay {
-    color: #cc0000;
+    color: #EB0000;
     font-size: 10px;
     font-weight: bold;
 }
 
 div.caObjectRepresentationPrimaryIndicator {
-    color: #cc0000;
+    color: #EB0000;
     font-size: 10px;
     font-weight: bold;
     font-style: italic;
@@ -3238,7 +3268,7 @@ div.caObjectRepresentationPrimaryIndicator {
 	height: 17px;
 }
 div.caObjectRepresentationChangeIndicator {
-    color: #cc0000;
+    color: #EB0000;
     font-size: 10px;
     font-weight: bold;
     font-style: italic;
@@ -3729,7 +3759,6 @@ a.hierarchyBrowserLevelEditButton {
 
 div.hierarchyBrowseTab {
     width: 712px;
-    overflow: hidden;
     font-weight: normal;
     margin-left:-10px;
 }
@@ -3822,13 +3851,13 @@ a.exploreSelected {
     line-height:1.5em;
 }
 .hierNav a {
-    color: #1ab3c8;
+    color: #138290;
     font-weight:normal;
     text-decoration:none;
 
 }
 .hierNav a:hover{
-    color: #1ab3c8;
+    color: #138290;
 }
 .hierNav .buttonPosition{
     float:right;
@@ -3856,7 +3885,7 @@ a.exploreSelected {
     font-weight: normal;
 }
 .hierarchyBrowserNewLocationMessage{ /*** message above browser on editor pages dispaying new location to move record to ***/
-    color: #cc0000;
+    color: #EB0000;
     padding:0px 5px 15px 0px;
     height:1em;
 }
@@ -3891,7 +3920,7 @@ a.exploreSelected {
 .hierarchyPanelHeader a { /*  used in browse and details with browse */
     text-decoration:none;
     font-size:14px;
-    color:#1ab3c8;
+    color:#138290;
     font-weight:normal;
     padding-right:4px;
 }
@@ -4313,7 +4342,7 @@ div.quickSearchNoResults {
     white-space: nowrap;
 }
 #browseCriteria a.startOver:hover{
-    color:#1ab3c8;
+    color:#138290;
     text-decoration:underline;
 }
 .criteriaLink {
@@ -4785,7 +4814,7 @@ ul#displayItemList {
     left: 14px;
     top: 13px;
     position: absolute;
-    background: #f00;
+    background: #EB0000;
     overflow: hidden;
     cursor: crosshair;
 }
@@ -4830,7 +4859,7 @@ ul#displayItemList {
     height: 30px;
     left: 213px;
     top: 13px;
-    background: #f00;
+    background: #EB0000;
 }
 .colorpicker_current_color {
     position: absolute;
@@ -4838,7 +4867,7 @@ ul#displayItemList {
     height: 30px;
     left: 283px;
     top: 13px;
-    background: #f00;
+    background: #EB0000;
 }
 .colorpicker input {
     background-color: transparent;
@@ -5293,7 +5322,7 @@ a.dashboardRemoveWidget {
     line-height:1.3em;
 }
 .dashboardWidgetClock{
-	color: #1ab3c8;
+	color: #138290;
 	font-size: 48px;
 	font-weight: bold;
 	text-align: center;
@@ -6113,7 +6142,7 @@ div.searchlight-results div.searchlight-selected {
     clear:both;
 }
 .overdue {
-    color: red;
+    color: #EB0000;
 }
 
 /* OpenLayers */
@@ -6319,12 +6348,12 @@ table.caConfirmBatchExecutionPanelAlertControls {
     padding:10px;
 }
 
-#caTypeChangePanelControlButtons, #caCreateChildPanelControlButtons, #caSetHomeLocationPanelControlButtons {
+#caTypeChangePanelControlButtons, #caCreateChildPanelControlButtons, #caSetHomeLocationPanelControlButtons, #caMediaBrowserPanelControlButtons {
     width: 100%;
     text-align: center;
 }
 
-#caTypeChangePanelControlButtons table, #caCreateChildPanelControlButtons table, #caSetHomeLocationPanelControlButtons table {
+#caTypeChangePanelControlButtons table, #caCreateChildPanelControlButtons table, #caSetHomeLocationPanelControlButtons table, #caMediaBrowserPanelControlButtons table {
     width: 100%;
 }
 #caTypeChangePanelControlButtons img.form-button-left, #caCreateChildPanelControlButtons img.form-button-left, #caSetHomeLocationPanelControlButtons img.form-button-left {
@@ -6363,6 +6392,34 @@ div.dialogHeader {
     border-radius:4px;
     -moz-border-radius:4px;
     -webkit-border-radius:4px;
+    
+    min-height: 300px;
+}
+
+/* Media chooser */
+#caMediaBrowserPanel {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 800px;
+    display: none;
+    margin: 0px;
+    padding:0px !important;
+    z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
+    background-color: #FFFFFF;
+    border-radius:4px;
+    -moz-border-radius:4px;
+    -webkit-border-radius:4px;
+    
+    min-height: 300px;
+}
+
+#caMediaBrowserPanelContentArea {
+    padding: 10px;
+}
+
+#caMediaBrowserPanelDirectoryBrowser {
+    height: 225px;
 }
 
 
@@ -6691,7 +6748,7 @@ div.caRepresentationMediaReplicationControls {
     border-color: #808080;
 }
 .caAnnoEditorTlAnnotationContainerSelected {
-    border: 2px solid #cc0000;
+    border: 2px solid #EB0000;
 }
 .caAnnoEditorTlAnnotationContainer div.title {
     font-size:12px;
@@ -6986,11 +7043,11 @@ div.caMetadataDictionaryViolationsListHeading {
 
 .caMetadataDictionaryViolationCrit {
 	font-weight: bold;
-	color: Red;
+	color: #EB0000;
 }
 
 .caMetadataDictionaryViolationErr {
-	color: Red;
+	color: #EB0000;
 }
 
 .caMetadataDictionaryViolationWarn {
@@ -7137,7 +7194,7 @@ div.caLibraryTransactionListItemDueDateLabel {
 }
 
 div.caLibraryTransactionListItemWillReserve {
-	color: #cc0000;
+	color: #EB0000;
 	font-size: 11px;
 	font-weight: bold;
 }
@@ -7348,7 +7405,7 @@ div.authorityReferenceListContainer {
 }
 
 .caResultsEditorErrorCell {
-	border: 2px dashed #cc0000 !important;
+	border: 2px dashed #EB0000 !important;
 }
 
 .caResultsEditorNonEditableCell {
@@ -7422,11 +7479,11 @@ div.caResultsComplexDataEditorErrorContainer {
 }
 
 .caIcon:hover {
-	color: #1ab3c8;
+	color: #138290;
 }
 
 .caIconRed {
-	color: #cc0000;
+	color: #EB0000;
 }
 
 .infoIcon {
@@ -7580,8 +7637,18 @@ div.changeLogSearchResultsPagination {
 }
 
 div.checklist {
+    display: grid;
+    width: 100%;
+}
+
+div.checklistItem {
     font-weight: normal;
-    line-height: 2em;
+    margin: 2px 2px 2px 5px;
+    white-space: nowrap
+    
+}
+div.checklistItem input {
+	margin-right: 4px;
 }
 
 /* Statistics dashboard */
@@ -7619,12 +7686,13 @@ a.currentSet {
 
 .dashboardWidgetContentContainer a.link {
     text-decoration: underline;
-    color: #1ab3c8;
+    color: #138290;
 }
 
 /* "New" ca_object_representations_bundle */
 .mediaUploadContainer {
 	width:700px;
+	margin-top: 14px;
 }
 
 .mediaUploadInfoArea {
@@ -7654,11 +7722,10 @@ a.currentSet {
 	display: block;
 	width: 120px;
 	height: 120px;
-	margin-top: 14px;
 }
 
 .mediaUploadAreaMessage {
-	font-size: 16px; 
+	font-size: 15px; 
 	color: #333;
 	margin-top: 40px;
 }
@@ -7711,6 +7778,14 @@ div.objectRepresentationMetadataEditorDoneButton {
 	padding-right:5px;
 }
 
+.objectRepresentationAddForm {
+
+}
+
+.objectRepresentationRelateForm {
+    display: none;
+}
+
 .mediaMetadataDisplay {
 	font-weight: normal;
 	font-size: 12px;
@@ -7733,4 +7808,202 @@ div.mediaMetadataActionButton a, div.mediaMetadataActionButton span a {
 
 p.abbreviatedPath, div.abbreviatedPath, span.abbreviatedPath {
 	cursor: help;
+}
+
+.bundleLabelError code, .notification-error-box code {
+    font-family: monospace, serif;
+    font-size: 1em;
+    padding: 2px;
+    margin: 1px;
+    border: 1px solid #ddd;
+    background-color: #f8f8f8;
+    border-radius: 3px;
+    white-space: nowrap;
+}
+
+/* Query builder */
+
+.query-builder .rules-group-container {
+    background: #f7f7f7 !important;
+    border: none !important;
+}
+
+.btn btn-xs btn-primary active {
+    font-weight: bold;;
+}
+
+
+.query-builder, .query-builder * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.query-builder {
+  font-family: sans-serif;
+}
+
+.query-builder .hide {
+  display: none;
+}
+
+.query-builder .pull-right {
+  float: right !important;
+}
+
+.query-builder .btn {
+  text-transform: none;
+  display: inline-block;
+  padding: 6px 12px;
+  margin-bottom: 0px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.42857;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  touch-action: manipulation;
+  cursor: pointer;
+  user-select: none;
+  background-image: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+}
+
+.query-builder .btn.focus, .query-builder .btn:focus, .query-builder .btn:hover {
+  color: #333;
+  text-decoration: none;
+}
+
+.query-builder .btn.active, .query-builder .btn:active {
+  background-image: none;
+  outline: 0px none;
+  box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.125) inset;
+}
+
+.query-builder .btn-success {
+  color: #000;
+  background-color: #f7f7f7;
+  border-color: #f7f7f7;
+}
+
+.query-builder .btn-primary {
+  color: #FFF;
+  background-color: #337AB7;
+  border-color: #2E6DA4;
+}
+
+.query-builder .btn-danger {
+  color: #FFF;
+  background-color: #000;
+  border-color: #000;
+}
+
+.query-builder .btn-success.active, .query-builder .btn-success.focus,
+.query-builder .btn-success:active, .query-builder .btn-success:focus,
+.query-builder .btn-success:hover {
+  color: #FFF;
+  background-color: #000;
+  border-color: #000;
+}
+
+.query-builder .btn-primary.active, .query-builder .btn-primary.focus,
+.query-builder .btn-primary:active, .query-builder .btn-primary:focus,
+.query-builder .btn-primary:hover {
+  color: #FFF;
+  background-color: #286090;
+  border-color: #204D74;
+}
+
+.query-builder .btn-danger.active, .query-builder .btn-danger.focus,
+.query-builder .btn-danger:active, .query-builder .btn-danger:focus,
+.query-builder .btn-danger:hover {
+  color: #000;
+  background-color: #f7f7f7;
+  border-color: #000;
+}
+
+.query-builder .btn-group {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.query-builder .btn-group > .btn {
+  position: relative;
+  float: left;
+}
+
+.query-builder .btn-group > .btn:first-child {
+  margin-left: 0px;
+}
+
+.query-builder .btn-group > .btn:first-child:not(:last-child) {
+  border-top-right-radius: 0px;
+  border-bottom-right-radius: 0px;
+}
+
+.query-builder .btn-group > .btn:last-child:not(:first-child) {
+  border-top-left-radius: 0px;
+  border-bottom-left-radius: 0px;
+}
+
+.query-builder .btn-group .btn + .btn, .query-builder .btn-group .btn + .btn-group,
+.query-builder .btn-group .btn-group + .btn, .query-builder .btn-group .btn-group + .btn-group {
+  margin-left: -1px;
+}
+
+.query-builder .btn-xs, .query-builder .btn-group-xs > .btn {
+  padding: 1px 5px;
+  font-size: 12px;
+  line-height: 1.5;
+  border-radius: 3px;
+}
+
+.query-builder .rule-filter-container select{
+    max-width: 180px;
+}
+.query-builder .rule-operator-container select {
+    max-width: 100px;
+}
+.query-builder .rule-value-container input {
+    width: 240px;
+}
+
+.searchBuilderContainer {
+    position: relative;
+    background-color: #f7f7f7;
+}
+.searchBuilderSubmit {
+    text-align: right;
+    padding: 0 5px 10px 0;
+}
+
+.searchBuilderSave {
+    position: absolute;
+    left: 5px;
+    bottom: 5px;
+}  
+
+#searchBuilderInput {
+    width: 100%;
+}
+
+span.developerBundleCode, a.developerBundleCode {
+    font-size: 10px;
+    text-decoration: none;
+    cursor: pointer;
+    color: #333;
+}
+
+.sidecarFiletype {
+    min-width: 300px;
+}
+.filetype {
+    margin: 0 2px;
+    padding: 0px 5px;
+    border: 1px solid #ddd;
+    background-color: #f8f8f8;
+    border-radius: 3px;
+    white-space: nowrap;
 }

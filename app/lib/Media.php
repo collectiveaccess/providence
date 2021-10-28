@@ -277,8 +277,16 @@ class Media extends BaseObject {
 	 *
 	 */
 	public function getProperties() {
-		if (!$this->instance) { return ""; }
+		if (!$this->instance) { return null; }
 		return $this->instance->properties;
+	}
+	# ----------------------------------------------------------
+	/**
+	 *
+	 */
+	public function isValidProperty($property) {
+		if (!$this->instance) { return null; }
+		return isset($this->instance->properties[$property]);
 	}
 	# ----------------------------------------------------------
 	/**
@@ -714,8 +722,8 @@ class Media extends BaseObject {
 	 */
 	public function __destruct() {
 		// Clean up tmp files
-		if(is_array($tmp_files)) {
-			foreach($tmp_files as $f) {
+		if(is_array($this->tmp_files)) {
+			foreach($this->tmp_files as $f) {
 				@unlink($f);
 			}
 		}

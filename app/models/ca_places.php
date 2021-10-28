@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2019 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -166,7 +166,8 @@ BaseModel::$s_ca_models_definitions['ca_places'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => 0,
 				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if the place is deleted or not.'),
-				'BOUNDS_VALUE' => array(0,1)
+				'BOUNDS_VALUE' => array(0,1),
+				'DONT_INCLUDE_IN_SEARCH_FORM' => true
 		),
 		'hier_left' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
@@ -493,6 +494,24 @@ class ca_places extends RepresentableBaseModel implements IBundleProvider, IHier
 		}
 		
 		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Override insert() to check parent_id and default to default hierarchy if none is specified.
+	 */ 
+	public function insert($pa_options=null) {
+		if((int)$this->get('parent_id') <= 0) {
+			if ($default_hierarchy_id = caGetDefaultItemID('place_hierarchies')) {
+				$root_id = ca_places::find(['hierarchy_id' => $default_hierarchy_id], ['returnAs' => 'firstId']);
+			} elseif(is_array($hierarchies = $this->getHierarchyList()) && sizeof($hierarchies)) {
+				$first_hierarchy = array_shift($hierarchies);
+				$root_id = $first_hierarchy['place_id'];
+			} else {
+				throw new ApplicationException(_t('No place hierarchies are defined'));
+			}
+			$this->set('parent_id', $root_id);
+		}
+		return parent::insert($pa_options);
 	}
 	# ------------------------------------------------------
 }

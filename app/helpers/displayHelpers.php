@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -41,6 +41,7 @@ require_once(__CA_LIB_DIR__.'/Parsers/ExpressionParser.php');
 require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__.'/Parsers/DisplayTemplateParser.php');
 require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
+require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -51,12 +52,12 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	$g_user_locale_rules = array();
 	function caGetUserLocaleRules($ps_item_locale=null, $pa_preferred_locales=null) {
 		global $g_ui_locale, $g_ui_locale_id, $g_user_locale_rules;
-		
+
 		if (isset($g_user_locale_rules[$ps_item_locale])) { return $g_user_locale_rules[$ps_item_locale]; }
-		
+
 		$o_config = Configuration::load();
 		$va_default_locales = $o_config->getList('locale_defaults');
-		
+
 		$va_preferred_locales = array();
 		$va_similar_locales = [];
 		if ($ps_item_locale) {
@@ -74,13 +75,13 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			}
 			$va_similar_locales = ca_locales::localesForLanguage($ps_item_locale, ['codesOnly' => true]);
 		}
-		
+
 		if (is_array($pa_preferred_locales)) {
 			foreach($pa_preferred_locales as $vs_preferred_locale) {
 				$va_preferred_locales[$vs_preferred_locale] = true;
 			}
 		}
-		
+
 		$va_fallback_locales = array();
 		if (is_array($va_default_locales)) {
 			foreach($va_default_locales as $vs_fallback_locale) {
@@ -94,21 +95,21 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		foreach($va_similar_locales as $vs_similar_locale) {
 		    $va_fallback_locales[$vs_similar_locale] = true;
 		}
-		
+
 		if ($g_ui_locale) {
 			if (!isset($va_preferred_locales[$g_ui_locale]) || !$va_preferred_locales[$g_ui_locale]) {
 				$va_preferred_locales[$g_ui_locale] = true;
 			}
 		}
 		$va_fallback_locales = array_filter($va_fallback_locales, function($v, $k) use ($ps_item_locale, $va_fallback_locales, $va_preferred_locales) { return !isset($va_preferred_locales[$k]) && ($k !== $ps_item_locale); }, ARRAY_FILTER_USE_BOTH);
-		
+
 		$va_rules = array(
 			'preferred' => $va_preferred_locales,	/* all of these locales will display if available */
 			'fallback' => $va_fallback_locales		/* the first of these that is available will display, but only if none of the preferred locales are available */
 		);
 
 		if($ps_item_locale){ $g_user_locale_rules[$ps_item_locale] = $va_rules; }
-		
+
 		return $va_rules;
 	}
 	# ------------------------------------------------------------------------------------------------
@@ -124,10 +125,10 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	function caExtractValuesByLocale($pa_locale_rules, $pa_values, $pa_options=null) {
 		if (!is_array($pa_values)) { return array(); }
 		$va_locales = ca_locales::getLocaleList();
-		
+
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		if (!isset($pa_options['returnList'])) { $pa_options['returnList'] = false; }
-		
+
 		if (!is_array($pa_values)) { return array(); }
 		$va_values = array();
 		foreach($pa_values as $vm_id => $va_value_list_by_locale) {
@@ -143,19 +144,19 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				} else {
 					$vs_locale = $pm_locale;
 				}
-				
+
 				// try to find values for preferred locale
 				if (isset($pa_locale_rules['preferred'][$vs_locale]) && $pa_locale_rules['preferred'][$vs_locale]) {
 					$va_values[$vm_id] = $vm_value;
 					break;
 				}
-				
+
 				// try fallback locales
 				if (isset($pa_locale_rules['fallback'][$vs_locale]) && $pa_locale_rules['fallback'][$vs_locale]) {
 					$va_values[$vm_id] = $vm_value;
 				}
 			}
-			
+
 			if (!isset($va_values[$vm_id])) {
 				// desperation mode: pick an available locale
 				$va_values[$vm_id] = array_pop($va_value_list_by_locale);
@@ -193,22 +194,44 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			}
 			$va_values[$va_item['NODE'][$ps_primary_key_name]][$va_item['NODE']['locale_id']] = $va_item;
 		}
-		
+
 		return caExtractValuesByUserLocale($va_values);
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Return string value from locale-indexed array of values for a locale-aware setting
 	 *
+	 * @param string $setting
+	 * @param array $setting_values
+	 * @param array $options Options include:
+	 *		default = Default value to return if no setting value is available. [Default is null]
+	 *	
+	 * @return string
 	 */
-	function caExtractSettingsValueByUserLocale($setting, array $setting_values, $options=null) {
+	function caExtractSettingsValueByUserLocale(string $setting, array $setting_values, ?array $options=null) {
 		global $g_ui_locale;
-		if(!isset($setting_values[$setting])) { return null; }
-		if (!is_array($v = $setting_values[$setting])) { return null; }
-		
+		if(!isset($setting_values[$setting])) { return caGetOption('default', $options, null); }
+		if (!is_array($v = $setting_values[$setting])) { return strlen($v) ? $v : caGetOption('default', $options, null); }
+
 		if (isset($v[$g_ui_locale])) {
 			return $v[$g_ui_locale];
 		}
-		return array_shift($v);
+		
+		// Try to find setting with same language
+		$l = explode('_', $g_ui_locale);
+		$l = $l[0];
+		
+		foreach($setting_values[$setting] as $locale => $val) {
+			if(preg_match("!^{$l}_!", $locale)) {
+				return $val;
+			}
+		}
+		
+		// No language match, so just return the first value
+		if (!is_null($val = array_shift($v))) { return $val; }
+		
+		// If all else fails, try to return the default
+		return caGetOption('default', $options, null);
 	}
 	# ------------------------------------------------------------------------------------------------
 	function caExtractValuesByUserLocaleFromHierarchyChildList($pa_list, $ps_primary_key_name, $ps_label_display_field, $ps_use_if_no_label_field, $ps_default_text='???') {
@@ -222,39 +245,39 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			}
 			$va_values[$va_item[$ps_primary_key_name]][$va_item['locale_id']] = $va_item;
 		}
-		
+
 		return caExtractValuesByUserLocale($va_values);
 	}
 	# ------------------------------------------------------------------------------------------------
 	function caFormatFieldErrorsAsHTML($pa_errors, $ps_css_class) {
-		
+
 		$vs_output = "<ul class='{$ps_css_class}'>\n";
 		foreach($pa_errors as $o_e) {
 			$vs_output .= '<li class="'.$ps_css_class.'"><img src=""/> ';
 			$vs_output .= $o_e->getErrorMessage()."</li>";
 		}
 		$vs_output .= "</ul>\n";
-		
-		
+
+
 		return $vs_output;
 	}
 	# ------------------------------------------------------------------------------------------------
 	function caFormControlBox($ps_left_content, $ps_middle_content, $ps_right_content, $ps_second_row_content='') {
 		$vs_output = '<div class="control-box rounded">
 		<div class="control-box-left-content">'.$ps_left_content;
-			
+
 		$vs_output .= '</div>
 		<div class="control-box-right-content">'.$ps_right_content;
 
 		$vs_output .= '</div><div class="control-box-middle-content">'.$ps_middle_content.'</div>';
-		
+
 		if ($ps_second_row_content) {
 			$vs_output .= '<div class="clear"><!--empty--></div>'.$ps_second_row_content;
 		}
-		
+
 		$vs_output .= '</div>
 	<div class="clear"><!--empty--></div>'."\n";
-	
+
 		return $vs_output;
 	}
 	# ------------------------------------------------------------------------------------------------
@@ -265,7 +288,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		if ($vs_warning = isset($pa_parameters['warning']) ? $pa_parameters['warning'] : null) {
 			$vs_warning = '<br/>'.$vs_warning;
 		}
-		
+
 		$vs_remapping_controls = caDeleteRemapper($po_request, $t_instance);
 		$vs_output = caFormTag($po_request, 'Delete', 'caDeleteForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => false,'disableUnsavedChangesWarning' => true));
 		$vs_output .= "<div class='delete-control-box'>".caFormControlBox(
@@ -275,14 +298,14 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			caFormSubmitButton($po_request, __CA_NAV_ICON_DELETE__, _t("Delete"), 'caDeleteForm', array()).
 			caFormNavButton($po_request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', $ps_module_path, $ps_controller, $ps_cancel_action, $pa_parameters)
 		)."</div>\n";
-		
-		
+
+
 		foreach(array_merge($pa_parameters, array('confirm' => 1)) as $vs_f => $vs_v) {
 			$vs_output .= caHTMLHiddenInput($vs_f, array('value' => $vs_v));
 		}
 		$vs_output .= caHTMLHiddenInput($t_instance->primaryKey(), array('value' => $t_instance->getPrimaryKey()));
 		$vs_output .= "</form>\n";
-		
+
 		return $vs_output;
 	}
 	# ------------------------------------------------------------------------------------------------
@@ -293,7 +316,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		if ($vs_warning = isset($pa_parameters['warning']) ? $pa_parameters['warning'] : null) {
 			$vs_warning = '<br/>'.$vs_warning;
 		}
-		
+
 		$vs_output = caFormTag($po_request, 'Delete', 'caDeleteForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => false,'disableUnsavedChangesWarning' => true));
 		$vs_output .= "<div class='delete-control-box'>".caFormControlBox(
 			"<div class='delete_warning_box'>"._t('Really delete %1?', $message)."</div>",
@@ -301,8 +324,8 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			caFormSubmitButton($po_request, __CA_NAV_ICON_DELETE__, _t("Delete"), 'caDeleteForm', array()).
 			caFormNavButton($po_request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', $ps_module_path, $ps_controller, $ps_cancel_action, $pa_parameters)
 		)."</div>\n";
-		
-		
+
+
 		foreach(array_merge($pa_parameters, array('confirm' => 1)) as $vs_f => $vs_v) {
 			$vs_output .= caHTMLHiddenInput($vs_f, array('value' => $vs_v));
 		}
@@ -310,7 +333,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			$vs_output .= caHTMLHiddenInput("row_id[]", array('value' => $row_id));
 		}
 		$vs_output .= "</form>\n";
-		
+
 		return $vs_output;
 	}
 	# ------------------------------------------------------------------------------------------------
@@ -319,7 +342,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 */
 	function caDeleteRemapper($po_request, $t_instance) {
 		$vs_instance_table = $t_instance->tableName();
-		
+
 		$vn_reference_to_count = $vn_reference_from_count = $vn_child_count = 0;
 		$va_reference_to_buf = $va_reference_from_buf = array();
 		switch($vs_instance_table) {
@@ -334,20 +357,22 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 					$va_reference_to_buf[] = _t("Type is used by %1 %2", $vn_rel_count, $t_rel_instance->getProperty('NAME_PLURAL'))."<br>\n";
 				}
 				$vn_reference_to_count += $vn_rel_count;
-				
+
 				$vs_typename = _t('relationship type');
 				break;
 			default:
 				// Check relationships
-				$va_tables = array(
-					'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations', 'ca_list_items', 'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops', 'ca_object_representations'
-				);
-				
+				$va_tables = [
+					'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 
+					'ca_storage_locations', 'ca_list_items', 'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops', 
+					'ca_object_representations'
+				];
+
 				if (!in_array($t_instance->tableName(), $va_tables)) { return null; }
-				
+
 				foreach($va_tables as $vs_table) {
 					if (!is_array($va_items = $t_instance->getRelatedItems($vs_table))) { $va_items = []; }
-					
+
 					if (!($vn_c = sizeof($va_items))) { continue; }
 					if ($vn_c == 1) {
 						$va_reference_to_buf[] = _t("Has %1 relationship to %2", $vn_c, caGetTableDisplayName($vs_table, true))."<br>\n";
@@ -356,7 +381,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 					}
 					$vn_reference_to_count += $vn_c;
 				}
-				
+
 				// Check attributes *using* this row
 				if ($vn_datatype = $t_instance->authorityElementDatatype()) {
 					if ($vn_c = $t_instance->getAuthorityElementReferences(array('countOnly' => true))) {
@@ -368,9 +393,9 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 						$vn_reference_to_count += $vn_c;
 					}
 				}
-				
+
 				$vs_typename = $t_instance->getTypeName();
-				
+
 				// Check for authority references that are *part* of this row
 				if (is_array($va_references_from = $t_instance->getAuthorityElementList()) && sizeof($va_references_from)) {
 					foreach($va_references_from as $va_ref) {
@@ -379,7 +404,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 						$vn_reference_from_count += $va_ref['count'];
 					}
 				}
-				
+
 				// Check for child records in hierarchy
 				if ($t_instance->isHierarchical() && is_array($va_children = call_user_func($t_instance->tableName()."::getHierarchyChildrenForIDs", [$t_instance->getPrimaryKey()]))) {
 					$vn_child_count = sizeof($va_children);
@@ -392,7 +417,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				}
 				break;
 		}
-		
+
 		// get default setting
 		$o_config = $po_request->getAppConfig();
 		if (!in_array($vs_default = strtolower($po_request->user->getPreference('cataloguing_delete_reference_handling_default')), ['transfer', 'remap', 'remove', 'delete'])) {
@@ -402,7 +427,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				}
 			}
 		}
-		
+
 		switch($vs_default) {
 			case 'transfer':
 			case 'remap':
@@ -412,137 +437,151 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			case 'delete':
 				$vs_default = 'delete';
 				break;
-			
-		}
-		
-		$vs_output = '';
-		if (sizeof($va_reference_to_buf)) {
-			// add autocompleter for remapping
-			if ($vn_reference_to_count == 1) {
-				$vs_output .= "<h3 id='caReferenceHandlingToCount'>"._t('This %1 is referenced %2 time', $vs_typename, $vn_reference_to_count).". "._t('When deleting this %1:', $vs_typename)."</h3>\n";
-			} else {
-				$vs_output .= "<h3 id='caReferenceHandlingToCount'>"._t('This %1 is referenced %2 times', $vs_typename, $vn_reference_to_count).". "._t('When deleting this %1:', $vs_typename)."</h3>\n";
-			}
-			
-			$va_delete_opts = ['value' => 'delete', 'id' => 'caReferenceHandlingToDelete'];
-			$va_remap_opts = ['value' => 'remap', 'id' => 'caReferenceToHandlingRemap'];
-			$va_remap_lookup_opts = ['value' => '', 'size' => 40, 'id' => 'caReferenceHandlingToRemapTo', 'class' => 'lookupBg'];
-			if ($vs_default === 'delete') { 
-				$va_delete_opts['checked'] = 1; 
-				$va_remap_lookup_opts['disabled'] = 1; 
-			} else {
-				$va_remap_opts['checked'] = 1; 
-			}
-			$vs_output .= caHTMLRadioButtonInput('caReferenceHandlingTo', $va_delete_opts).' '._t('remove all references')."<br/>\n";
-			
-			if ($vs_instance_table === 'ca_storage_locations') {
-				AssetLoadManager::register('hierBrowser');
-				$vs_output .= caHTMLRadioButtonInput('caReferenceHandlingTo', $va_remap_opts).' '._t('transfer references to').' ';
-				
-				$vs_output .= "<div id=\"caReferenceHandlingToRemapToHierBrowser\" class=\"hierarchyBrowserSmall\" style=\"width: 700px;\">
-						<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
-					</div><!-- end hierbrowser -->";
-				$vs_output .= "
-					<div class=\"hierarchyBrowserFind\">
-						"._t('Find').": <input type=\"text\" id=\"caReferenceHandlingToRemapToHierBrowserSearch\" name=\"search\" value=\"\" size=\"25\"/>
-					</div>";
-				
-			} else {
-				$vs_output .= caHTMLRadioButtonInput('caReferenceHandlingTo', $va_remap_opts).' '._t('transfer references to').' '.caHTMLTextInput('caReferenceHandlingToRemapTo', $va_remap_lookup_opts);
-			}
-			$vs_output .= "<a href='#' class='button' onclick='jQuery(\"#caReferenceHandlingToRemapToID\").val(\"\"); jQuery(\"#caReferenceHandlingToRemapTo\").val(\"\"); jQuery(\"#caReferenceHandlingToClear\").css(\"display\", \"none\"); return false;' style='display: none;' id='caReferenceHandlingToClear'>"._t('Clear').'</a>';
-			$vs_output .= caHTMLHiddenInput('caReferenceHandlingToRemapToID', array('value' => '', 'id' => 'caReferenceHandlingToRemapToID'));
-			
-			if ($vn_child_count > 0) {
-				$vs_output .= '<p class="formLabelWarning" id="caChildDeletionWarning"><i class="caIcon fa fa-info-circle fa-1x"></i> '._t('Child records will be deleted')."</p>\n";
-			}
-			
-			$vs_output .= "<script type='text/javascript'>";
-			
-			$va_service_info = caJSONLookupServiceUrl($po_request, $t_instance->tableName(), array('noSymbols' => 1, 'noInline' => 1, 'exclude' => (int)$t_instance->getPrimaryKey(), 'table_num' => (int)$t_instance->get('table_num')));
-				
-			if ($vs_instance_table === 'ca_storage_locations') {
-				$vs_output .= "
-	var caReferenceHandlingToRemapToHierBrowser = null;
-	
-	jQuery(document).ready(function() {
-		if (!caReferenceHandlingToRemapToHierBrowser) {
-			caReferenceHandlingToRemapToHierBrowser = caUI.initHierBrowser('caReferenceHandlingToRemapToHierBrowser', {
-				levelDataUrl: '".$va_service_info['levelList']."',
-				initDataUrl: '".$va_service_info['ancestorList']."',
-	
-				readOnly: true,
-				editButtonIcon: \"".caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1)."\",
-				disabledButtonIcon: \"".caNavIcon(__CA_NAV_ICON_DOT__, 1)."\",
-	
-				allowDragAndDropSorting: false,
-				
-				initItemID: '".$t_instance->get("{$vs_instance_table}.parent_id")."',
 
-				excludeItemIDs: [".$t_instance->getPrimaryKey()."],
-				indicator: \"".caNavIcon(__CA_NAV_ICON_SPINNER__, 1)."\",
-				displayCurrentSelectionOnLoad: false,
-				
-				onSelection: function(id) {
-					jQuery(\"#caReferenceHandlingToRemapToID\").val(id);
-				}
-			});
 		}
-		jQuery(\"#caReferenceHandlingToRemapToHierBrowserSearch\").attr(\"disabled\", true);
-		jQuery('#caReferenceToHandlingRemap').click(function() {
-			caReferenceHandlingToRemapToHierBrowser.isReadOnly(false);
-			jQuery(\"#caReferenceHandlingToRemapToHierBrowserSearch\").attr(\"disabled\", false);
-			jQuery('#caChildDeletionWarning').hide();
-		});
-		jQuery('#caReferenceHandlingToDelete').click(function() {
-			caReferenceHandlingToRemapToHierBrowser.isReadOnly(true);
-			jQuery(\"#caReferenceHandlingToRemapToHierBrowserSearch\").attr(\"disabled\", true);
-			
-			jQuery('#caChildDeletionWarning').show();
-		});
-		jQuery('#caReferenceHandlingToRemapToHierBrowserSearch').autocomplete(
-			{
-				source: '".$va_service_info['search']."', minLength: 3, delay: 800, html: true,
-				select: function( event, ui ) {
-					if (ui.item.id) {
-						caReferenceHandlingToRemapToHierBrowser.setUpHierarchy(ui.item.id);	// jump browser to selected item
-						jQuery('#caReferenceHandlingToRemapToID').val(ui.item.id);
-					}
-					event.preventDefault();
-					jQuery('#caReferenceHandlingToRemapToHierBrowserSearch').val('');
-				}
-			}
-		).click(function() { this.select() });
-	})";
-			} else {
-				$vs_output .= "jQuery(document).ready(function() {";
-				$vs_output .= "jQuery('#caReferenceHandlingToRemapTo').autocomplete(
-						{
-							source: '".$va_service_info['search']."', html: true,
-							minLength: 3, delay: 800,
-							select: function(event, ui) {
-								jQuery('#caReferenceHandlingToRemapToID').val(ui.item.id);
-								jQuery('#caReferenceHandlingClear').css('display', 'inline');
-							}
-						}
-					);";
-				
-				$vs_output .= "jQuery('#caReferenceToHandlingRemap').click(function() {
-					jQuery('#caReferenceHandlingToRemapTo').attr('disabled', false);
-					jQuery('#caChildDeletionWarning').hide();
-				});
-				jQuery('#caReferenceHandlingToDelete').click(function() {
-					jQuery('#caReferenceHandlingToRemapTo').attr('disabled', true);
-					jQuery('#caChildDeletionWarning').show();
-				});
-				";
-				$vs_output .= "});";
-			}
-			$vs_output .= "</script>\n";
-			
-			TooltipManager::add('#caReferenceHandlingToCount', "<h2>"._t('References to this %1', $t_instance->getProperty('NAME_SINGULAR'))."</h2>\n".join("\n", $va_reference_to_buf));
+
+		$vs_output = '';
+		// add autocompleter for remapping
+		if ($vn_reference_to_count == 1) {
+			$vs_output .= "<h3 id='caReferenceHandlingToCount'>"._t('This %1 is referenced %2 time', $vs_typename, $vn_reference_to_count).". "._t('When deleting this %1:', $vs_typename)."</h3>\n";
+		} elseif($vn_reference_to_count > 1) {
+			$vs_output .= "<h3 id='caReferenceHandlingToCount'>"._t('This %1 is referenced %2 times', $vs_typename, $vn_reference_to_count).". "._t('When deleting this %1:', $vs_typename)."</h3>\n";
+		} else {
+			$vs_output .= "<h3 id='caReferenceHandlingToCount'>"._t('When deleting this %1:', $vs_typename)."</h3>\n";
+		}
+
+		$va_delete_opts = ['value' => 'delete', 'id' => 'caReferenceHandlingToDelete'];
+		$va_remap_opts = ['value' => 'remap', 'id' => 'caReferenceToHandlingRemap'];
+		$va_remap_lookup_opts = ['value' => '', 'size' => 40, 'id' => 'caReferenceHandlingToRemapTo', 'class' => 'lookupBg'];
+		if ($vs_default === 'delete') { 
+			$va_delete_opts['checked'] = 1; 
+			$va_remap_lookup_opts['disabled'] = 1; 
+		} else {
+			$va_remap_opts['checked'] = 1; 
 		}
 		
+		if ($vn_reference_to_count > 0) {
+			$vs_output .= caHTMLRadioButtonInput('caReferenceHandlingTo', $va_delete_opts).' '._t('remove all references')."<br/>\n";
+		} else {
+			$vs_output .= caHTMLRadioButtonInput('caReferenceHandlingTo', $va_delete_opts).' '._t('remove all associated metadata')."<br/>\n";
+		}
+
+		if ($vs_instance_table === 'ca_storage_locations') {
+			AssetLoadManager::register('hierBrowser');
+			$vs_output .= caHTMLRadioButtonInput('caReferenceHandlingTo', $va_remap_opts).' '._t('transfer references to').' ';
+
+			$vs_output .= "<div id=\"caReferenceHandlingToRemapToHierBrowser\" class=\"hierarchyBrowserSmall\" style=\"width: 700px;\">
+					<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
+				</div><!-- end hierbrowser -->";
+			$vs_output .= "
+				<div class=\"hierarchyBrowserFind\">
+					"._t('Find').": <input type=\"text\" id=\"caReferenceHandlingToRemapToHierBrowserSearch\" name=\"search\" value=\"\" size=\"25\"/>
+				</div>";
+
+		} else {
+			if ($vn_reference_to_count > 0) {
+				$vs_output .= caHTMLRadioButtonInput('caReferenceHandlingTo', $va_remap_opts).' '._t('transfer references to').' '.caHTMLTextInput('caReferenceHandlingToRemapTo', $va_remap_lookup_opts)."<br/>\n";
+				$vs_output .= caHTMLCheckboxInput('caReferenceHandlingMetadata', ['id' => 'caReferenceHandlingMetadata', 'value' => 1, 'checked' => 1], []).' '._t('also transfer metadata');
+			} else {
+				$vs_output .= caHTMLRadioButtonInput('caReferenceHandlingTo', $va_remap_opts).' '._t('transfer metadata to').' '.caHTMLTextInput('caReferenceHandlingToRemapTo', $va_remap_lookup_opts)."<br/>\n";
+				$vs_output .= caHTMLHiddenInput('caReferenceHandlingMetadata', ['id' => 'caReferenceHandlingMetadata', 'value' => 1], []);
+			}
+			
+		}
+		$vs_output .= "<a href='#' class='button' onclick='jQuery(\"#caReferenceHandlingToRemapToID\").val(\"\"); jQuery(\"#caReferenceHandlingToRemapTo\").val(\"\"); jQuery(\"#caReferenceHandlingToClear\").css(\"display\", \"none\"); return false;' style='display: none;' id='caReferenceHandlingToClear'>"._t('Clear').'</a>';
+		$vs_output .= caHTMLHiddenInput('caReferenceHandlingToRemapToID', array('value' => '', 'id' => 'caReferenceHandlingToRemapToID'));
+
+		if ($vn_child_count > 0) {
+			$vs_output .= '<p class="formLabelWarning" id="caChildDeletionWarning"><i class="caIcon fa fa-info-circle fa-1x"></i> '._t('Child records will be deleted')."</p>\n";
+		}
+
+		$vs_output .= "<script type='text/javascript'>";
+
+		$va_service_info = caJSONLookupServiceUrl($po_request, $t_instance->tableName(), array('noSymbols' => 1, 'noInline' => 1, 'exclude' => (int)$t_instance->getPrimaryKey(), 'table_num' => (int)$t_instance->get('table_num')));
+
+		if ($vs_instance_table === 'ca_storage_locations') {
+			$vs_output .= "
+var caReferenceHandlingToRemapToHierBrowser = null;
+
+jQuery(document).ready(function() {
+	if (!caReferenceHandlingToRemapToHierBrowser) {
+		caReferenceHandlingToRemapToHierBrowser = caUI.initHierBrowser('caReferenceHandlingToRemapToHierBrowser', {
+			levelDataUrl: ".json_encode($va_service_info['levelList']).",
+			initDataUrl: ".json_encode($va_service_info['ancestorList']).",
+
+			readOnly: true,
+			editButtonIcon: ".json_encode(caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1)).",
+			disabledButtonIcon: ".json_encode(caNavIcon(__CA_NAV_ICON_DOT__, 1)).",
+
+			allowDragAndDropSorting: false,
+
+			initItemID: ".(int)$t_instance->get("{$vs_instance_table}.parent_id").",
+
+			excludeItemIDs: [".(int)$t_instance->getPrimaryKey()."],
+			indicator: ".json_encode(caNavIcon(__CA_NAV_ICON_SPINNER__, 1)).",
+			displayCurrentSelectionOnLoad: false,
+
+			onSelection: function(id) {
+				jQuery(\"#caReferenceHandlingToRemapToID\").val(id);
+			}
+		});
+	}
+	jQuery(\"#caReferenceHandlingToRemapToHierBrowserSearch, #caReferenceHandlingMetadata\").attr(\"disabled\", true);
+	jQuery('#caReferenceToHandlingRemap').click(function() {
+		caReferenceHandlingToRemapToHierBrowser.isReadOnly(false);
+		jQuery(\"#caReferenceHandlingToRemapToHierBrowserSearch, #caReferenceHandlingMetadata\").attr(\"disabled\", false);
+		jQuery('#caChildDeletionWarning').hide();
+	});
+	jQuery('#caReferenceHandlingToDelete').click(function() {
+		caReferenceHandlingToRemapToHierBrowser.isReadOnly(true);
+		jQuery(\"#caReferenceHandlingToRemapToHierBrowserSearch, #caReferenceHandlingMetadata\").attr(\"disabled\", true);
+
+		jQuery('#caChildDeletionWarning').show();
+	});
+	jQuery('#caReferenceHandlingToRemapToHierBrowserSearch').autocomplete(
+		{
+			source: ".json_encode($va_service_info['search']).", minLength: 3, delay: 800, html: true,
+			select: function( event, ui ) {
+				if (ui.item.id) {
+					caReferenceHandlingToRemapToHierBrowser.setUpHierarchy(ui.item.id);	// jump browser to selected item
+					jQuery('#caReferenceHandlingToRemapToID').val(ui.item.id);
+				}
+				event.preventDefault();
+				jQuery('#caReferenceHandlingToRemapToHierBrowserSearch').val('');
+			}
+		}
+	).click(function() { this.select() });
+})";
+		} else {
+			$vs_output .= "jQuery(document).ready(function() {";
+			$vs_output .= "jQuery(\"#caReferenceHandlingToRemapToHierBrowserSearch, #caReferenceHandlingMetadata\").attr(\"disabled\", true);\n";
+			$vs_output .= "jQuery('#caReferenceHandlingToRemapTo').autocomplete(
+					{
+						source: ".json_encode($va_service_info['search']).", html: true,
+						minLength: 3, delay: 800,
+						select: function(event, ui) {
+							jQuery('#caReferenceHandlingToRemapToID').val(ui.item.id);
+							jQuery('#caReferenceHandlingClear').css('display', 'inline');
+						}
+					}
+				);";
+
+			$vs_output .= "jQuery('#caReferenceToHandlingRemap').click(function() {
+				jQuery('#caReferenceHandlingToRemapTo, #caReferenceHandlingMetadata').attr('disabled', false);
+				jQuery('#caChildDeletionWarning').hide();
+			});
+			jQuery('#caReferenceHandlingToDelete').click(function() {
+				jQuery('#caReferenceHandlingToRemapTo, #caReferenceHandlingMetadata').attr('disabled', true);
+				jQuery('#caChildDeletionWarning').show();
+			});
+			";
+			$vs_output .= "});";
+		}
+		$vs_output .= "</script>\n";
+
+		TooltipManager::add('#caReferenceHandlingToCount', "<h2>"._t('References to this %1', $t_instance->getProperty('NAME_SINGULAR'))."</h2>\n".join("\n", $va_reference_to_buf));
+
+
 		if (sizeof($va_reference_from_buf)) {
 			// add autocompleter for remapping
 			if ($vn_reference_from_count == 1) {
@@ -550,7 +589,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			} else {
 				$vs_output .= "<h3 id='caReferenceHandlingFromCount'>"._t('This %1 references %2 other items in metadata', $vs_typename, $vn_reference_from_count).". "._t('When deleting this %1:', $vs_typename)."</h3>\n";
 			}
-			
+
 			$va_delete_opts = ['value' => 'delete', 'id' => 'caReferenceHandlingFromDelete'];
 			$va_remap_opts = ['value' => 'remap', 'id' => 'caReferenceHandlingFromRemap'];
 			$va_remap_lookup_opts = ['value' => '', 'size' => 40, 'id' => 'caReferenceHandlingToRemapFrom', 'class' => 'lookupBg'];
@@ -565,7 +604,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			$vs_output .= "<a href='#' class='button' onclick='jQuery(\"#caReferenceHandlingToRemapFromID\").val(\"\"); jQuery(\"#caReferenceHandlingToRemapFrom\").val(\"\"); jQuery(\"#caReferenceHandlingClear\").css(\"display\", \"none\"); return false;' style='display: none;' id='caReferenceHandlingClear'>"._t('Clear').'</a>';
 			$vs_output .= caHTMLHiddenInput('caReferenceHandlingToRemapFromID', array('value' => '', 'id' => 'caReferenceHandlingToRemapFromID'));
 			$vs_output .= "<script type='text/javascript'>";
-			
+
 			$va_service_info = caJSONLookupServiceUrl($po_request, $t_instance->tableName(), array('noSymbols' => 1, 'noInline' => 1, 'exclude' => (int)$t_instance->getPrimaryKey(), 'table_num' => (int)$t_instance->get('table_num')));
 			$vs_output .= "jQuery(document).ready(function() {";
 			$vs_output .= "jQuery('#caReferenceHandlingToRemapFrom').autocomplete(
@@ -578,7 +617,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 						}
 					}
 				);";
-				
+
 			$vs_output .= "jQuery('#caReferenceHandlingFromRemap').click(function() {
 				jQuery('#caReferenceHandlingToRemapFrom').attr('disabled', false);
 			});
@@ -588,10 +627,10 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			";
 			$vs_output .= "});";
 			$vs_output .= "</script>\n";
-			
+
 			TooltipManager::add('#caReferenceHandlingFromCount', "<h2>"._t('References by this %1', $t_instance->getProperty('NAME_SINGULAR'))."</h2>\n".join("<br/>\n", $va_reference_from_buf));
 		}
-		
+
 		return $vs_output;
 	}
 	# ------------------------------------------------------------------------------------------------
@@ -699,6 +738,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 
 		$vs_buf = "<div style='width: 100%; overflow: auto;'><table style='margin-left: ".($pn_level * 10)."px;'>";
 		foreach($pa_array as $vs_key => $vs_val) {
+			if (preg_match("!^Undefined!i", $vs_key)) { continue; }
 			$vs_val = preg_replace('![^A-Za-z0-9 \-_\+\!\@\#\$\%\^\&\*\(\)\[\]\{\}\?\<\>\,\.\"\'\=]+!', '', $vs_val);
 			switch($vs_key) {
 				case 'MakerNote':	// EXIF tags to skip output of
@@ -763,7 +803,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			} else {
 				$vs_buf .=  '<span class="prev disabled">'.caNavIcon(__CA_NAV_ICON_SCROLL_LT__, 2).'</span>';
 			}
-				
+
 			$vs_buf .= "<span class='resultCount'>".ResultContext::getResultsLinkForLastFind($po_request, $vs_table_name,  $vs_back_text, ''). " (".($vn_current_pos)."/".sizeof($va_found_ids).")</span>";
 
 			if (!$vn_next_id && sizeof($va_found_ids)) { $vn_next_id = $va_found_ids[0]; }
@@ -831,7 +871,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			jQuery('#editorFieldListContentArea a').click(function() {
 				caEditorFieldList.hidePanel();
 			});
-			
+
 			if (typeof caBundleVisibilityManager !== 'undefined') { caBundleVisibilityManager.setAll(); }
 			if (typeof caBundleUpdateManager !== 'undefined') { caBundleUpdateManager = caUI.initBundleUpdateManager({url:'".caNavUrl($po_request, '*', '*', 'reload')."', screen:'".$po_request->getActionExtra()."', key:'".$pt_subject->primaryKey()."', id: ".(int)$pt_subject->getPrimaryKey()."}); }
 			caBundleUpdateManager.registerBundles(".json_encode($pa_bundle_list).");
@@ -863,7 +903,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		jQuery(document).on('ready', function() {
 			jQuery(document).on('keydown.ctrl_h', function() {
 				caEditorFieldList.hidePanel({dontCloseMask:1});
-				
+
 				var url;
 				if (jQuery('#caHierarchyOverviewContentArea').html().length == 0) {
 					url = '".caNavUrl($po_request, $po_request->getModulePath(), $po_request->getController(), 'getHierarchyForDisplay', array($t_subject->primaryKey() => $pn_id))."';
@@ -941,7 +981,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		if ($vs_icon){
 			$vs_buf .= "<div id='inspectoricon' style='border-right: 6px solid #{$vs_color}; border-bottom: 6px solid #{$vs_color}; -moz-border-radius-bottomright: 8px; -webkit-border-bottom-right-radius: 8px;'>\n{$vs_icon}</div>\n";
 		}
-		
+
 		if (($po_view->request->getAction() === 'Delete') && ($po_view->request->getParameter('confirm', pInteger))) { 
 
 			$vs_buf .= "<strong>"._t("Deleted %1", $vs_type_name)."</strong>\n";
@@ -967,8 +1007,8 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 						if (method_exists($t_item, "getHistory") && ($inspector_current_value_label = $t_item->getInspectorHistoryTrackingDisplayPolicy('label'))) {
 							if ($inspector_current_value = $t_item->getCurrentValueForDisplay()) { $vs_buf .= "<div class='inspectorCurrentLocation'><strong>{$inspector_current_value_label}:</strong><br/>{$inspector_current_value}".(($is_home) ? ' '._t('[HOME]') : '')."</div>"; }
 						}
-																	
-						if ((!$is_home || !$inspector_current_value) && $t_item->hasField('home_location_id') && ($home_location_id = $t_item->get('home_location_id')) && ($t_home_loc = ca_storage_locations::find($home_location_id, ['returnAs' => 'firstModelInstance']))) {
+
+						if ((!$is_home || !$inspector_current_value) && caHomeLocationsEnabled($t_item->tableName(), $t_item->getTypeCode()) && ($home_location_id = $t_item->get('home_location_id')) && ($t_home_loc = ca_storage_locations::find($home_location_id, ['returnAs' => 'firstModelInstance']))) {
 							if (!($template = $po_view->request->config->get('inspector_home_location_display_template'))) { $template = '^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➜_'; }
 							$vs_buf .= "<div class='inspectorCurrentLocation'><strong>"._t('Home location').":</strong><br/>".$t_home_loc->getWithTemplate($template)."</div>"; 
 						}
@@ -1053,14 +1093,14 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 								$vs_label = $vs_idno;
 								$vb_show_idno = false;
 							} else {
-								$vs_label =  '['.caGetBlankLabelText().']';
+								$vs_label =  '['.caGetBlankLabelText($vs_table_name).']';
 							}
 							break;
 					}
 				}
 
 
-				$vs_buf .= "<div class='recordTitle {$vs_table_name}' style='width:190px; overflow:hidden;'>{$vs_label}".(($vb_show_idno) ? "<a title='$vs_idno'>".($vs_idno ? " ({$vs_idno})" : '') : "")."</a></div>";
+				$vs_buf .= "<div class='recordTitle {$vs_table_name}' style='width:190px; overflow:hidden;'>{$vs_label}".(($vb_show_idno) ? ($vs_idno ? " ({$vs_idno})" : '') : '')."</div>";
 				if (($vs_table_name === 'ca_object_lots') && $t_item->getPrimaryKey()) {
 					$vs_buf .= "<div id='inspectorLotMediaDownload'><strong>".((($vn_num_objects = $t_item->numObjects(null, ['excludeChildObjects' => $po_view->request->config->get("exclude_child_objects_in_inspector_log_count")])) == 1) ? _t('Lot contains %1 object', $vn_num_objects) : _t('Lot contains %1 objects', $vn_num_objects))."</strong>\n";
 				}
@@ -1139,7 +1179,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 							scrollingImageClass: 'inspectorInfoRepScrollerImage',
 							scrollingImagePrefixID: 'inspectorInfoRep',
 							initialIndex: {$vn_primary_index}
-							
+
 					});
 				</script>";
 
@@ -1179,8 +1219,8 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 					$vs_buf .= "\n<script type='text/javascript'>
 		function caToggleItemWatch() {
 			var url = '".caNavUrl($po_view->request, $po_view->request->getModulePath(), $po_view->request->getController(), 'toggleWatch', array($t_item->primaryKey() => $vn_item_id))."';
-			
-			jQuery.getJSON(url, {}, function(data, status) {
+
+			jQuery.getJSON(url, {'csrfToken': ".json_encode(caGenerateCSRFToken($po_view->request))."}, function(data, status) {
 				if (data['status'] == 'ok') {
 					jQuery('#caWatchItemButton').html((data['state'] == 'watched') ? '".addslashes(caNavIcon(__CA_NAV_ICON_UNWATCH__, '20px'))."' : '".addslashes(caNavIcon(__CA_NAV_ICON_WATCH__, '20px'))."');
 				} else {
@@ -1194,7 +1234,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				$vs_buf .= "{$vs_watch}\n";
 				TooltipManager::add("#caWatchItemButton", _t('Watch/Unwatch this record'));
 
-				if ($po_view->request->user->canDoAction("can_change_type_{$vs_table_name}")) {
+				if ($po_view->request->user->canDoAction("can_change_type_{$vs_table_name}") && (sizeof($t_item->getTypeList()) > 1)) {
 
 					$vs_buf .= "<div id='inspectorChangeType' class='inspectorActionButton'><div id='inspectorChangeTypeButton'><a href='#' onclick='caTypeChangePanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_CHANGE__, '20px', array('title' => _t('Change type')))."</a></div></div>\n";
 
@@ -1235,12 +1275,12 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 					}
 				}
 			}
-			
+
 			if($po_view->request->user->canDoAction('can_duplicate_'.$vs_table_name) && $t_item->getPrimaryKey()) {
 				$vs_buf .= "<div id='caDuplicateItemButton' class='inspectorActionButton'>";
 
-				$vs_buf .= caFormTag($po_view->request, 'Edit', 'DuplicateItemForm', $po_view->request->getModulePath().'/'.$po_view->request->getController(), 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
-				$vs_buf .= "<div>".caFormSubmitLink($po_view->request, caNavIcon(__CA_NAV_ICON_DUPLICATE__, '20px'), '', 'DuplicateItemForm')."</div>";
+				$vs_buf .= caFormTag($po_view->request, 'Edit', 'DuplicateItemForm', $po_view->request->getModulePath().'/'.$po_view->request->getController(), 'post', 'multipart/form-data', '_top', array('noCSRFToken' => false, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
+				$vs_buf .= "<div>".caFormSubmitLink($po_view->request, caNavIcon(__CA_NAV_ICON_DUPLICATE__, '20px'), '', 'DuplicateItemForm', null, ['aria-label' => _t('Duplicate item')])."</div>";
 
 				$vs_buf .= caHTMLHiddenInput($t_item->primaryKey(), array('value' => $t_item->getPrimaryKey()));
 				$vs_buf .= caHTMLHiddenInput('mode', array('value' => 'dupe'));
@@ -1250,15 +1290,13 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 
 				TooltipManager::add("#caDuplicateItemButton", _t('Duplicate this %1', mb_strtolower($vs_type_name, 'UTF-8')));
 			}
-			
-			
-					
-			if (($vs_table_name == 'ca_objects') && $po_view->request->user->canDoAction("can_set_home_location")) {	
+
+			if (method_exists($t_item, 'getTypeCode') && caHomeLocationsEnabled($t_item->tableName(), $t_item->getTypeCode()) && $po_view->request->user->canDoAction("can_set_home_location_".$vs_table_name)) {	
 				$vs_buf .= "<div id='inspectorSetHomeLocation' class='inspectorActionButton'><div id='inspectorSetHomeLocationButton'><a href='#' onclick='_initSetHomeLocationHierarchyBrowser(); return false;'>".caNavIcon(__CA_NAV_ICON_HOME__, '20px', array('title' => _t('Set home location')))."</a></div></div>\n";
-				
+
 				$vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
 				$vo_change_type_view->setVar('t_item', $t_item);
-				
+
 				FooterManager::add($vo_change_type_view->render("set_home_location_html.php"));
 				TooltipManager::add("#inspectorSetHomeLocation", _t('Set home location'));
 			}
@@ -1284,7 +1322,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			$t_set = new ca_sets();
 			if (is_array($va_sets = caExtractValuesByUserLocale($t_set->getSetsForItem($t_item->tableNum(), $t_item->getPrimaryKey(), array('user_id' => $po_view->request->getUserID(), 'access' => __CA_SET_READ_ACCESS__)))) && sizeof($va_sets)) {
 				$va_links = array();
-				
+
 				$last_set_id = Session::getVar('last_set_id');
 				foreach($va_sets as $vn_set_id => $va_set) {
 					$class = ($last_set_id == $vn_set_id) ? "class='currentSet'" : "";
@@ -1292,19 +1330,6 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				}
 				$vs_more_info .= "<div><strong>".((sizeof($va_links) == 1) ? _t("In set") : _t("In sets"))."</strong> ".join(", ", $va_links)."</div>\n";
 			}
-
-
-			// export options
-			if ($vn_item_id && $vs_select = $po_view->getVar('available_mappings_as_html_select')) {
-				$vs_more_info .= "<div class='inspectorExportControls'>".caFormTag($po_view->request, 'exportItem', 'caExportForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
-				$vs_more_info .= $vs_select;
-				$vs_more_info .= caHTMLHiddenInput($t_item->primaryKey(), array('value' => $t_item->getPrimaryKey()));
-				$vs_more_info .= caHTMLHiddenInput('download', array('value' => 1));
-				$vs_more_info .= caFormSubmitLink($po_view->request,_t('Export &rsaquo;'), 'button', 'caExportForm');
-				$vs_more_info .= "</form></div>";
-			}
-
-
 			$va_creation = $t_item->getCreationTimestamp();
 			$va_last_change = $t_item->getLastChangeTimestamp();
 
@@ -1364,7 +1389,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 						}
 						$va_violation_messages[] = "<li ".($in_this_tab ? "class='caMetadataDictionaryViolationInCurrentTab'" : "class='caMetadataDictionaryViolationNotInCurrentTab'")."><em><u>{$vs_label}</u></em> ".caExtractSettingsValueByUserLocale('violationMessage', $va_violation)." {$screen}</li>";
 					}
-					
+
 					$vs_num_violations_display = null;
 					if($total_num_violations_for_current_screen > 0) {
 					    if ($total_num_violations_for_current_screen != $total_num_violations) {
@@ -1585,7 +1610,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				$vn_set_item_count = $t_item->getItemCount(array('user_id' => $po_view->request->getUserID()));
 
 				if (($vn_set_item_count > 0) && ($po_view->request->user->canDoAction('can_batch_edit_'.Datamodel::getTableName($t_item->get('table_num'))))) {
-					$vs_buf .= caNavButton($po_view->request, __CA_NAV_ICON_BATCH_EDIT__, _t('Batch edit'), 'editorBatchSetEditorLink', 'batch', 'Editor', 'Edit', array('set_id' => $t_item->getPrimaryKey()), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'no_background' => true, 'dont_show_content' => true));
+					$vs_buf .= caNavButton($po_view->request, __CA_NAV_ICON_BATCH_EDIT__, _t('Batch edit'), 'editorBatchSetEditorLink', 'batch', 'Editor', 'Edit', array('id' => 'ca_sets:'.$t_item->getPrimaryKey()), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'no_background' => true, 'dont_show_content' => true));
 				}
 				TooltipManager::add(".editorBatchSetEditorLink", _t('Batch Edit'));
 
@@ -1601,14 +1626,14 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 
 					if(!(bool)$po_view->request->config->get('ca_sets_disable_duplication_of_items') && $po_view->request->user->canDoAction('can_duplicate_items_in_sets') && $po_view->request->user->canDoAction('can_duplicate_' . $vs_set_table_name)) {
 						$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" ></div>';
-						$vs_buf .= caFormTag($po_view->request, 'DuplicateItems', 'caDupeSetItemsForm', 'manage/sets/SetEditor', 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
+						$vs_buf .= caFormTag($po_view->request, 'DuplicateItems', 'caDupeSetItemsForm', 'manage/sets/SetEditor', 'post', 'multipart/form-data', '_top', array('noCSRFToken' => false, 'disableUnsavedChangesWarning' => true));
 						$vs_buf .= _t("Duplicate items in this set and add to") . " ";
 						$vs_buf .= caHTMLSelect('setForDupes', array(
 							_t('current set') => 'current',
 							_t('new set') => 'new',
 						));
 						$vs_buf .= caHTMLHiddenInput('set_id', array('value' => $t_item->getPrimaryKey()));
-						$vs_buf .= caFormSubmitLink($po_view->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), "button", "caDupeSetItemsForm");
+						$vs_buf .= caFormSubmitLink($po_view->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), "button", "caDupeSetItemsForm", null, ['aria-label' => _t('Duplicate items')]);
 						$vs_buf .= "</form>";
 						$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" ></div>';
 					}
@@ -1634,7 +1659,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 					$vs_buf .= "<div id='exporterFormList'>";
 					$vs_buf .= ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $vn_set_table_num, array('id' => 'caExporterList'),array('width' => '135px'));
 					$vs_buf .= caHTMLHiddenInput('set_id', array('value' => $t_item->getPrimaryKey()));
-					$vs_buf .= caFormSubmitLink($po_view->request, _t('Export')." &rsaquo;", "button", "caExportForm");
+					$vs_buf .= caFormSubmitLink($po_view->request, _t('Export')." &rsaquo;", "button", "caExportForm", null, ['aria-label' => _t('Export')]);
 					$vs_buf .= "</div>\n";
 					$vs_buf .= "</form>";
 
@@ -1656,7 +1681,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				$t_set = new ca_sets();
 				if ($t_set->load($vn_set_id = $t_item->get('set_id'))) {
 					$vs_buf .= "<div><strong>"._t("Part of set")."</strong>: ".caEditorLink($po_view->request, $t_set->getLabelForDisplay(), '', 'ca_sets', $vn_set_id)."<br/>\n";
-					
+
 					$t_content_instance = Datamodel::getInstanceByTableNum($vn_item_table_num = $t_item->get('table_num'));
 					if ($t_content_instance->load($vn_row_id = $t_item->get('row_id'))) {
 						$vs_label = $t_content_instance->getLabelForDisplay();
@@ -1695,9 +1720,9 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 
 					if ($vs_type_list) {
 						$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px;">';
-						$vs_buf .= caFormTag($po_view->request, 'Edit', 'NewChildForm', 'administrate/setup/list_item_editor/ListItemEditor', 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
+						$vs_buf .= caFormTag($po_view->request, 'Edit', 'NewChildForm', 'administrate/setup/list_item_editor/ListItemEditor', 'post', 'multipart/form-data', '_top', array('noCSRFToken' => false, 'disableUnsavedChangesWarning' => true));
 						$vs_buf .= _t('Add a %1 to this list', $vs_type_list).caHTMLHiddenInput($t_list_item->primaryKey(), array('value' => '0')).caHTMLHiddenInput('parent_id', array('value' => $t_list_item->getPrimaryKey()));
-						$vs_buf .= caFormSubmitLink($po_view->request, caNavIcon(__CA_NAV_ICON_ADD__, '18px'), '', 'NewChildForm');
+						$vs_buf .= caFormSubmitLink($po_view->request, caNavIcon(__CA_NAV_ICON_ADD__, '18px'), '', 'NewChildForm', null, ['aria-label' => _t('Add a %1 to this list', $vs_type_list)]);
 						$vs_buf .= "</form></div>\n";
 					}
 			}
@@ -1881,19 +1906,19 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		if($po_view->request->user->canDoAction('can_export_'.$vs_table_name) && $t_item->getPrimaryKey()) {
 			if (ca_data_exporters::getExporters($t_item->tableNum(), ['countOnly' => true]) > 0) {
 				$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" id="caExportItemButton">';
-				
+
 				$vs_buf .= _t('Export data')." ";
 				$vs_buf .= "<a class='button' onclick='jQuery(\"#exporterFormList\").show();' style='text-align:right;' href='#'>".caNavIcon(__CA_NAV_ICON_EXPORT_SMALL__, '16px')."</a>";
 
 
 				$vs_buf .= caFormTag($po_view->request, 'ExportSingleData', 'caExportForm', 'manage/MetadataExport', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
 				$vs_buf .= "<div id='exporterFormList'>";
-				$vs_buf .= ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_item->tableNum(), array('id' => 'caExporterList'), array('width' => '120px', 'recordType' => $t_item->getTypeCode()));
+				$vs_buf .= ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_item->tableNum(), array('id' => 'caExporterList'), array('width' => '120px', 'recordType' => $t_item->getTypeCode(), 'value' => Session::getVar('exporter_id')));
 				$vs_buf .= caHTMLHiddenInput('item_id', array('value' => $t_item->getPrimaryKey()));
-				$vs_buf .= caFormSubmitLink($po_view->request, _t('Export')." &rsaquo;", "button", "caExportForm");
+				$vs_buf .= caFormSubmitLink($po_view->request, _t('Export')." &rsaquo;", "button", "caExportForm", null, ['aria-label' => _t('Export data')]);
 				$vs_buf .= "</div>\n";
 				$vs_buf .= "</form>";
-				
+
 				$vs_buf .= "</div>";
 
 				$vs_buf .= "<script type='text/javascript'>";
@@ -1902,7 +1927,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				$vs_buf .= "});";
 				$vs_buf .= "</script>";
 			}
-			
+
 			require_once(__CA_LIB_DIR__."/ExternalExportManager.php");
 			if (ExternalExportManager::getTargets(['countOnly' => true, 'table' => $t_item->tableNum(), 'restrictToTypes' => [$t_item->getTypeCode()]]) > 0) {
 				$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" id="caExternalExportItemButton">';
@@ -1913,7 +1938,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				$vs_buf .= "<div id='externalExporterFormList'>";
 				$vs_buf .= ExternalExportManager::getTargetListAsHTMLFormElement('target', $t_item->tableNum(), array('id' => 'caExternalExporterList'), array('width' => '120px', 'restrictToTypes' => [$t_item->getTypeCode()]));
 				$vs_buf .= caHTMLHiddenInput('item_id', array('value' => $t_item->getPrimaryKey()));
-				$vs_buf .= caFormSubmitLink($po_view->request, _t('Export')." &rsaquo;", "button", "caExternalExportForm");
+				$vs_buf .= caFormSubmitLink($po_view->request, _t('Export')." &rsaquo;", "button", "caExternalExportForm", null, ['aria-label' => _t('Export to external repository')]);
 				$vs_buf .= "</div>\n";
 				$vs_buf .= "</form>";
 				$vs_buf .= "</div>";
@@ -1925,11 +1950,11 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				$vs_buf .= "</script>";
 			}
 		}
-		
-		
-		
+
+
+
 		$vs_buf .= "</div></h4>\n";
-		
+
 		$vs_buf .= "<script type='text/javascript'>
 			var inspectorCookieJar = jQuery.cookieJar('caCookieJar');";
 			if($t_item->getPrimaryKey()) {
@@ -1942,7 +1967,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				jQuery('#inspectorInfo').toggle(0);
 				jQuery('#inspectorMoreInfoButton').html('".addslashes(caNavIcon(__CA_NAV_ICON_COLLAPSE__, '20px'))."');
 			}
-		
+
 			jQuery('#inspectorMoreInfo').click(function() {
 				jQuery('#inspectorInfo').slideToggle(350, function() { 
 					inspectorCookieJar.set('inspectorMoreInfoIsOpen', (this.style.display == 'block') ? 1 : 0); 
@@ -1953,17 +1978,17 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			});
 		";
 				}
-	
+
 				if (sizeof($va_reps)) {
 					$vs_buf .= "
 		if (inspectorCookieJar.get('inspectorShowMediaIsOpen') == undefined) {		// default is to have media open
 			inspectorCookieJar.set('inspectorShowMediaIsOpen', 1);
 		}
-		
+
 		if (inspectorCookieJar.get('inspectorShowMediaIsOpen') == 1) {
 			jQuery('#inspectorMedia').toggle();
 		}
-	
+
 		jQuery('#caColorbox').on('click', function(e) {
 			if (e.altKey) {
 				jQuery('#inspectorMedia').slideToggle(200, function() { 
@@ -2016,9 +2041,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 * @return string HTML implementing the inspector
 	 */
 	function caBatchEditorInspector($po_view, $pa_options=null) {
-		require_once(__CA_MODELS_DIR__.'/ca_sets.php');
-
-		$t_set 					= $po_view->getVar('t_set');
+		$rs 					= $po_view->getVar('record_selection');
 		$t_item 				= $po_view->getVar('t_item');
 		$vs_table_name = $t_item->tableName();
 		if (($vs_priv_table_name = $vs_table_name) == 'ca_list_items') {
@@ -2029,7 +2052,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		$t_ui 					= $po_view->getVar('t_ui');
 
 
-		$vs_buf = '<h3 class="nextPrevious"><span class="resultCount" style="padding-top:10px;">'.caNavLink($po_view->request, 'Back to Sets', '', 'manage', 'Set', 'ListSets')."</span></h3>\n";
+		$vs_buf = '<h3 class="nextPrevious"><span class="resultCount" style="padding-top:10px;">'.$rs->getResultsLink($po_view->request)."</span></h3>\n";
 
 		$vs_color = $vs_type_name = null;
 
@@ -2042,39 +2065,19 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		if (!$vs_color) { $vs_color = "444444"; }
 
 		$vs_buf .= "<h4><div id='caColorbox' style='border: 6px solid #{$vs_color}; padding-bottom:15px;'>\n";
-
-		if($po_view->request->user->canDoAction("can_edit_".$vs_priv_table_name) && (sizeof($t_item->getTypeList()) > 1)){
-			if ($po_view->request->user->canDoAction("can_change_type_{$vs_table_name}")) {
-
-				$vs_buf .= "<div id='inspectorChangeType'><div id='inspectorChangeTypeButton'><a href='#' onclick='caTypeChangePanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_CHANGE__, '18px', array('title' => _t('Change type')))."</a></div></div>\n";
-				TooltipManager::add("#inspectorChangeType", _t('Change Record Type'));
-
-				$vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
-				$vo_change_type_view->setVar('t_item', $t_item);
-				$vo_change_type_view->setVar('t_set', $t_set);
-				$vo_change_type_view->setVar('set_id', $t_set->getPrimaryKey());
-
-				FooterManager::add($vo_change_type_view->render("batch_change_type_html.php"));
-			}
-			$vs_buf .= "<strong>"._t("Editing %1", $vs_type_name).": </strong>\n";
-		}else{
-			$vs_buf .= "<strong>"._t("Viewing %1", $vs_type_name).": </strong>\n";
-		}
-
-		$vn_item_count = $t_set->getItemCount(array('user_id' => $po_view->request->getUserID()));
+		
+		$vn_item_count = $rs->getItemCount(['user_id' => $po_view->request->getUserID()]);
 		$vs_item_name = ($vn_item_count == 1) ? $t_item->getProperty("NAME_SINGULAR"): $t_item->getProperty("NAME_PLURAL");
 
-		$vs_buf .= "<strong>"._t("Batch editing %1 %2 in set", $vn_item_count, $vs_item_name).": </strong>\n";
+		$vs_buf .= "<strong>"._t("Batch editing %1 %2", $vn_item_count, $vs_item_name).": </strong>\n";
 
 
-		if (!($vs_label = $t_set->getLabelForDisplay())) {
-			if (!($vs_label = $t_set->get('set_code'))) {
-				$vs_label = '['.caGetBlankLabelText().']';
-			}
+		if (!($vs_label = $rs->name())) {
+			$vs_label = '['.caGetBlankLabelText('ca_sets').']';
 		}
 
-		if($t_set->haveAccessToSet($po_view->request->getUserID(), __CA_SET_EDIT_ACCESS__)) {
-			$vs_label = caEditorLink($po_view->request, $vs_label, '', 'ca_sets', $t_set->getPrimaryKey());
+		if($editor_link = $rs->getEditorLink($po_view->request, $vs_label)) {
+			$vs_label = $editor_link;
 		}
 
 		$vs_buf .= " {$vs_label}\n";
@@ -2082,19 +2085,19 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 
 		// -------------------------------------------------------------------------------------
 
-		$vs_buf .= "<div>"._t('Set contains <em>%1</em>', join(", ", $t_set->getTypesForItems()))."</div>\n";
+		$vs_buf .= "<div>"._t('Batch contains <em>%1</em>', join(", ", $rs->getTypesForItems()))."</div>\n";
 
 		// -------------------------------------------------------------------------------------
 		// Nav link for batch delete
 		// -------------------------------------------------------------------------------------
 
-		if (($vn_item_count > 0) && ($po_view->request->user->canDoAction('can_batch_delete_'.Datamodel::getTableName($t_set->get('table_num'))))) {
+		if (($vn_item_count > 0) && ($po_view->request->user->canDoAction('can_batch_delete_'.Datamodel::getTableName($rs->tableNum())))) {
 
 			$vs_buf .= "<div class='button' style='text-align:right;'><a href='#' id='inspectorMoreInfo'>"._t("More options")."</a> &rsaquo;</div>
 				<div id='inspectorInfo' class='setDelete'>";
 			$vs_buf .= caNavLink($po_view->request, 
 				caNavIcon(__CA_NAV_ICON_NUKE__, '24px', array('style' => 'margin-top:7px; vertical-align: text-bottom;'))." "._t("Delete <strong><em>all</em></strong> records in set")
-				, null, 'batch', 'Editor', 'Delete', array('set_id' => $t_set->getPrimaryKey())
+				, null, 'batch', 'Editor', 'Delete', array('id' => $rs->ID())
 			);
 			if ($po_view->request->user->canDoAction("can_change_type_{$vs_table_name}")) {
 
@@ -2102,8 +2105,10 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 
                 $vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
                 $vo_change_type_view->setVar('t_item', $t_item);
+                $vo_change_type_view->setVar('record_selection', $rs);
+                $vo_change_type_view->setVar('id', $rs->ID());
 
-                FooterManager::add($vo_change_type_view->render("change_type_html.php"));
+                FooterManager::add($vo_change_type_view->render("batch_change_type_html.php"));
                 TooltipManager::add("#inspectorChangeType", _t('Change Record Type'));
             }
 
@@ -2196,17 +2201,14 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			if ((int)($o_config->get("{$vs_right_table_name}_disable"))) { return false; }
 		} else {
 			switch($vs_table_name) {
-				case 'ca_object_representations':
-					if (!(int)($o_config->get('ca_objects_disable'))) { return true; }
+				case 'ca_tour_stops':
+					if ((int)($o_config->get('ca_tours_disable'))) { return false; }
+					break;
+				default:
+					if ((int)($o_config->get($vs_table_name.'_disable'))) { return false; }
 					break;
 			}
-			if ((int)($o_config->get($vs_table_name.'_disable'))) { return false; }
-		}
-
-		switch($vs_table_name) {
-			case 'ca_tour_stops':
-				if ((int)($o_config->get('ca_tours_disable'))) { return false; }
-				break;
+			
 		}
 
 		return true;
@@ -2228,11 +2230,11 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			$vs_table_name = Datamodel::getTableName($vn_table_num);
 			$va_filtered_tables[$vs_display_name] = $vn_table_num;
 		}
-		
+
 		if (caGetOption("sort", $pa_options, true)) {
 			ksort($va_filtered_tables);
 		}
-		
+
 		return $va_filtered_tables;
 	}
 	# ------------------------------------------------------------------------------------------------
@@ -2324,6 +2326,9 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 * @return array An array of tags, or an array of arrays when parseOptions option is set.
 	 */
 	function caGetTemplateTags($ps_template, $pa_options=null) {
+		$key = caMakeCacheKeyFromOptions($pa_options, $ps_template);
+		if(MemoryCache::contains($key, 'DisplayTemplateParserUtils')) { return MemoryCache::fetch($key, 'DisplayTemplateParserUtils'); }
+		
 		$va_tags = caExtractTagsFromTemplate($ps_template, $pa_options);
 
 		if (caGetOption('firstPartOnly', $pa_options, false)) {
@@ -2346,6 +2351,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			}
 		}
 
+		MemoryCache::save($key, $va_tags, 'DisplayTemplateParserUtils');
 		return $va_tags;
 	}
 	# ------------------------------------------------------------------------------------------------
@@ -2363,7 +2369,13 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 * @return string Output of processed template
 	 */
 	function caProcessTemplate($ps_template, $pa_values, $pa_options=null) {
-		return DisplayTemplateParser::processTemplate($ps_template, $pa_values, $pa_options);
+		$key = caMakeCacheKeyFromOptions(['options' => $pa_options, 'values' => $pa_values], $ps_template);
+		if(MemoryCache::contains($key, 'DisplayTemplateParserUtils')) { return MemoryCache::fetch($key, 'DisplayTemplateParserUtils'); }
+		
+		$ret = DisplayTemplateParser::processTemplate($ps_template, $pa_values, $pa_options);
+		MemoryCache::save($key, $ret, 'DisplayTemplateParserUtils');
+		
+		return $ret;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -2387,6 +2399,9 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	function caProcessTemplateTagDirectives($ps_value, $pa_directives, $pa_options=null) {
 	    global $g_ui_locale;
 		if (!is_array($pa_directives) || !sizeof($pa_directives)) { return $ps_value; }
+		
+		$key = caMakeCacheKeyFromOptions(['options' => $pa_options, 'directives' => $pa_directives], $ps_value);
+		if(MemoryCache::contains($key, 'DisplayTemplateParserUtils')) { return MemoryCache::fetch($key, 'DisplayTemplateParserUtils'); }
 
 		$pb_omit_units = caGetOption('omitUnits', $pa_options, false);
 		$force_english_units = caGetOption('forceEnglishUnits', $pa_options, null, ['validValues' => ['ft', 'in']]);
@@ -2518,10 +2533,14 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				case 'UPPER':
 					$ps_value = strtoupper($ps_value);
 					break;
+				case 'NL2BR':
+					$ps_value = nl2br($ps_value);
+					break;
 			}
 		}
 
 		ini_set('precision', $vn_precision);
+		MemoryCache::save($key, $ps_value, 'DisplayTemplateParserUtils');
 		return $ps_value;
 	}
 	# ------------------------------------------------------------------------------------------------
@@ -2878,6 +2897,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 *		template =
 	 *		relatedItems = 
 	 *		sortOrder = 
+	 *		self_id = ID of record being related to when relationship is to self (Eg. object-object). This id will be omitted from returned items.
 	 *		primaryIDs = row_ids for primary rows in related table, keyed by table name; when resolving ambiguous relationships the row_ids will be excluded from consideration. This option is rarely used and exists primarily to take care of a single
 	 *						edge case: you are processing a template relative to a self-relationship such as ca_entities_x_entities that includes references to the subject table (ca_entities, in the case of ca_entities_x_entities). There are
 	 *						two possible paths to take in this situations; primaryIDs lets you specify which ones you *don't* want to take by row_id. For interstitial editors, the ids will be set to a single id: that of the subject (Eg. ca_entities) row
@@ -2892,6 +2912,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		$vs_idno_sort_fld 				= $pt_rel->getProperty('ID_NUMBERING_SORT_FIELD');
 		$vs_rel_pk            			= caGetOption('primaryKey', $pa_options, $pt_rel->primaryKey());
  		$vs_rel_table         			= caGetOption('table', $pa_options, $pt_rel->tableName());
+ 		$self_id         				= caGetOption('self_id', $pa_options, null, ['castTo' => 'int']);
 
 		$o_config = (!isset($pa_options['config']) || !is_object($pa_options['config'])) ? Configuration::load() : $pa_options['config'];
 
@@ -2910,6 +2931,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		$po_request = 								caGetOption('request', $pa_options, null);
 		if(!$po_request) { global $g_request; $po_request = $g_request; }
 
+		if($self_id) { $va_exclude[] = $self_id; }
 
 		if (!is_array($va_display_format = $o_config->getList("{$vs_rel_table}_lookup_settings"))) { $va_display_format = ['^label']; }
 		if (!($vs_display_delimiter = $o_config->get("{$vs_rel_table}_lookup_delimiter"))) { $vs_display_delimiter = ''; }
@@ -2917,7 +2939,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 
 		$va_related_item_info = $va_parent_ids = $va_hierarchy_ids = array();
 		$va_items = array();
-		
+
 		$va_primary_ids = (method_exists($pt_rel, "isSelfRelationship") && ($vb_is_self_rel = $pt_rel->isSelfRelationship())) ? caGetOption("primaryIDs", $pa_options, null) : null;
 
 		$t_rel = Datamodel::getInstanceByTableName($vs_rel_table, true);
@@ -3021,7 +3043,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			$va_items = $va_tmp;
 			unset($va_tmp);
 		}
-		
+
 		if(is_array($pa_options['sortOrder'])) {
 			$va_items_sorted = [];
 			foreach($pa_options['sortOrder'] as $id) {
@@ -3220,7 +3242,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		foreach($pa_text as $vn_i => $vs_text) {
 			$vs_text = preg_replace("!([A-Za-z0-9]+)='([^']*)'!", "$1=\"$2\"", $vs_text);
 			$va_l_tags = array();
-			
+
 			$o_doc = str_get_dom($vs_text);
 			$o_links = $o_doc('l');
 
@@ -3361,10 +3383,10 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 
 		$vs_buf  = "<span class='bundleContentPreview' id='{$ps_preview_id_prefix}_BundleContentPreview'>{$ps_preview_init}</span>";
 		$vs_buf .= "<span class='iconButton'>";
-		$vs_buf .= "<a href='#' onclick='caBundleVisibilityManager.toggle(\"{$ps_id_prefix}\");  return false;'>".caNavIcon(__CA_NAV_ICON_VISIBILITY_TOGGLE__, '18px', array('id' =>"{$ps_id_prefix}VisToggleButton"))."</a>";
+		$vs_buf .= "<a href='#' onclick='caBundleVisibilityManager.toggle(\"{$ps_id_prefix}\");  return false;' aria-label='" . _t('Toggle visibility') . "'>".caNavIcon(__CA_NAV_ICON_VISIBILITY_TOGGLE__, '18px', array('id' =>"{$ps_id_prefix}VisToggleButton"))."</a>";
 		$vs_buf .= "</span>\n";
 		$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(function() { caBundleVisibilityManager.registerBundle('{$ps_id_prefix}', '{$vs_force}'); }); </script>";
-		
+
 		return $vs_buf;
 	}
 	# ---------------------------------------
@@ -3379,20 +3401,41 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 */
 	function caEditorBundleMetadataDictionary($po_request, $ps_id_prefix, $pa_settings) {
 		global $g_ui_locale;
-		
+
 		$definition = caGetOption($g_ui_locale, $pa_settings['definition'], null);
 		if(is_array($definition)) { $definition = join ("", $definition); }
 		if (!($vs_definition = trim($definition))) { return ''; }
-		
+
 		$vs_buf = '';
 		$vs_buf .= "<span class='iconButton'>";
 		$vs_buf .= "<a href='#' class='caMetadataDictionaryDefinitionToggle' onclick='caBundleVisibilityManager.toggleDictionaryEntry(\"{$ps_id_prefix}\");  return false;'>".caNavIcon(__CA_NAV_ICON_INFO__, 1, array('id' => "{$ps_id_prefix}MetadataDictionaryToggleButton"))."</a>";
-		
+
 		$vs_buf .= "<div id='{$ps_id_prefix}DictionaryEntry' class='caMetadataDictionaryDefinition'>{$vs_definition}</div>";
 		$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(function() { caBundleVisibilityManager.registerBundle('{$ps_id_prefix}'); }); </script>";	
 		$vs_buf .= "</span>\n";	
-		
+
 		return $vs_buf;
+	}
+	# ---------------------------------------
+	/**
+	 *
+	 */
+	function caGetDefaultEditorBundleSortConfiguration(string $table, string $related_table, array $settings) : array {
+		$config = Configuration::load();
+		$default_sorts = $config->getAssoc("{$related_table}_default_bundle_display_sorts");
+	
+		if(!is_array($default_sorts) || !is_array($default_sort_options = caGetOption('options', $default_sorts, null))) { $default_sort_options = []; }
+		if(is_array($rel_types = caGetOption(['restrict_to_types', 'restrictToTypes'], $settings, null)) && sizeof($rel_types)) {
+			$path = array_keys(Datamodel::getPath($table, $related_table));
+			if(is_array($type_codes = caMakeTypeList($related_table, $rel_types))) {
+				foreach($type_codes as $t) {
+					if(is_array($type_specific_sorts = $config->get("{$related_table}_{$t}_bundle_display_sorts")) && is_array($type_specific_sort_options = caGetOption('options', $type_specific_sorts, null))) {
+						$default_sort_options = array_merge($default_sort_options, $type_specific_sort_options);
+					}
+				}
+			}
+		}
+		return ['defaultSorts' => $default_sorts, 'typeSpecificSorts' => $type_specific_sorts, 'sortOptions' => $default_sort_options];
 	}
 	# ---------------------------------------
 	/**
@@ -3401,22 +3444,99 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 * @param RequestHTTP $po_request
 	 * @param string $ps_id_prefix
 	 * @param string $ps_table
+	 * @param string $ps_related_table
 	 * @param array $pa_options
 	 *		sort = 
 	 *		sortDirection = 
 	 * 
 	 * @return string HTML implementing the control
 	 */
-	function caEditorBundleSortControls($po_request, $ps_id_prefix, $ps_table, $pa_options=null) {
+	function caEditorBundleSortControls($po_request, $ps_id_prefix, $ps_table, $ps_related_table, $pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = []; }
-		require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 
 		if(!$ps_table) { return '???'; }
-		if (!is_array($va_sort_fields = caGetAvailableSortFields($ps_table, null, array_merge(['request' => $po_request], $pa_options, ['naturalSortLabel' => _t('default')]))) || !sizeof($va_sort_fields)) { return ''; }
-		
+	
 		$sort = caGetOption('sort', $pa_options, null);
 		$sort_direction = caGetOption('sortDirection', $pa_options, null);
 		
+		$type_id = null;
+		if($type_ids = caGetOption(['restrict_to_types', 'restrictToTypes'], $pa_options, null)) {
+			$type_id = is_array($type_ids) ? array_shift($type_ids) : $type_ids;
+		}
+		
+		if (!is_array($va_sort_fields = caGetAvailableSortFields($ps_table, $type_id, array_merge(['request' => $po_request], $pa_options, ['naturalSortLabel' => _t('default'), 'includeInterstitialSortsFor' => $ps_related_table]))) || !sizeof($va_sort_fields)) { return ''; }
+	
+		$allowed_sorts = caGetOption('allowedSorts', $pa_options, null);
+		
+		if(!is_array($allowed_sorts) || !sizeof($allowed_sorts)) {
+			// apply global settings
+			$default_sort_config = caGetDefaultEditorBundleSortConfiguration($ps_related_table, $ps_table, $pa_options);
+			$default_sorts = $default_sort_config['defaultSorts'];
+			$type_specific_sorts = $default_sort_config['typeSpecificSorts'];
+			$default_sort_options = $default_sort_config['sortOptions'];
+			
+			if(!$sort) {
+				$sort = caGetOption('sort', $type_specific_sorts ? $type_specific_sorts : $default_sorts, null);
+				$sort_direction = caGetOption('direction', $type_specific_sorts ? $type_specific_sorts : $default_sorts, null);
+			}
+			
+			
+			// Translate truncated sorts to their standard multi-field equivalents
+			// (Eg. ca_entities.type_id => ca_entities.type_id;ca_entities.preferred_labels.surname;ca_entities.preferred_labels.forename)
+			$sort_field_trans = [];
+			foreach($va_sort_fields as $sf => $n) {
+				$t = explode(';', $sf);
+				if(sizeof($t) > 1) {
+					for($i=1; $i < sizeof($t); $i++) {
+						$sort_field_trans[join(';', array_slice($t, 0, $i))] = $sf;
+					}
+				}
+			}
+			
+			if(is_array($type_specific_sorts) ) {
+				$default_sort_options = $type_specific_sorts['options'];
+			}
+			
+			// Expand global sort list to include parents when sort is on container field
+			$default_sort_options = array_merge(['_natural' => false], array_reduce($default_sort_options, function($carry, $item) use ($sort_field_trans) { 
+				if(array_key_exists($item, $sort_field_trans)) { $item = $sort_field_trans[$item]; }	// rewrite truncated fields 
+				
+				$tmp = explode('.', $item);
+				if(sizeof($tmp) > 2) {
+					$carry[join('.', array_slice($tmp, 0, 2))] =  true;
+				}
+				$carry[$item] = false;
+				
+			
+				return $carry;
+			}, []));
+		
+			if(is_array($default_sort_options) && sizeof($default_sort_options)) {
+				$va_sort_fields = array_filter(
+					$va_sort_fields,
+					function ($v) use ($default_sort_options) {
+						return array_key_exists($v, $default_sort_options);
+					},
+					ARRAY_FILTER_USE_KEY
+				);
+			}
+		} else {
+			$sort_fields_proc = $default_sort_options = [];
+			
+			foreach($va_sort_fields as $sf => $n) {
+				$tmp = explode('.', $sf);
+				if(sizeof($tmp) > 2) {
+					$sort_fields_proc[$k=join('.', array_slice($tmp, 0, 2))] = ca_metadata_elements::getElementLabel($tmp[1]);
+					$default_sort_options[$k] = true;
+				}
+				$sort_fields_proc[$sf] = $n;
+					
+			}
+			$va_sort_fields = $sort_fields_proc;
+		}
+		
+		if ($sort) { unset($va_sort_fields['_natural']); }
+
 		$va_sort_fields = array_map(function($v) { return mb_strtolower($v); }, $va_sort_fields);
 		return "<div class='editorBundleSortControl'>"._t('Sort using %1 %2', caHTMLSelect("{$ps_id_prefix}_RelationBundleSortControl", 
 				array_flip($va_sort_fields), 
@@ -3424,7 +3544,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 					'onChange' => "caRelationBundle{$ps_id_prefix}.sort(jQuery(this).val())", 
 					'id' => "{$ps_id_prefix}_RelationBundleSortControl", 
 					'class' => 'caItemListSortControlTrigger dontTriggerUnsavedChangeWarning'], 
-				['value' => $sort]
+				['value' => $sort, 'disabledOptions' => $default_sort_options]
 			), 
 			caHTMLSelect(
 				"{$ps_id_prefix}_RelationBundleSortDirectionControl", 
@@ -3439,29 +3559,93 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		)."</div>";
 	}
 	# ---------------------------------------
-	/** 
-	 * Used by ca_objects bundle
+	/**
+	 * Generates batch editing control HTML for relation bundles (Eg. ca_entities, ca_occurrences)
+	 *
+	 * @param RequestHTTP $request
+	 * @param int $placement_id
+	 * @param BaseModel $t_instance
+	 * @param string $related_table
+	 * @param array $options
+	 * 
+	 * @return string HTML implementing the control
 	 */
-	function caReturnToHomeLocationControlForRelatedObjectBundle($ps_id_prefix, $po_request, $pt_primary, $pt_related, $pt_relation, $pa_initial_values, $ps_policy=null) {
-		$policies = array_filter(ca_objects::getHistoryTrackingCurrentValuePoliciesForTable('ca_objects'), function($v) { return array_key_exists('ca_storage_locations', $v['elements']); });
+	function caEditorBundleBatchEditorControls($request, $placement_id, $t_instance, $related_table, $options=null) {
+		if (!is_array($options)) { $options = []; }
+		
+		$buf = '';
+		if(caGetOption('showBatchEditorButton', $options, false)) {
+			$buf = '<div class="button batchEdit">'.caNavLink($request, caNavIcon(__CA_NAV_ICON_BATCH_EDIT__, '15px')._t(' Batch edit'), '', '*', '*', 'BatchEdit', ['placement_id' => $placement_id, 'primary_id' => $t_instance->getPrimaryKey(), 'screen' => $request->getActionExtra()]).'</div>';
+		}
+		return $buf;
+	}
+	# ---------------------------------------
+	/** 
+	 * Check if home location functionality is enabled for a given table and, optionally, type
+	 *
+	 * @param string $table 
+	 * @param mixed $type Type code or type_id
+	 *
+	 * @return bool
+	 */
+	function caHomeLocationsEnabled(string $table, $type=null, array $options=null) {
+		if(!in_array($table, ['ca_objects', 'ca_object_lots', 'ca_object_representations', 'ca_collections'], true)) { return false; }
+		$o_config = Configuration::load();
+		if($type && (bool)$o_config->get("{$table}_{$type}_enable_home_location")) { return true; }
+		if($type && is_numeric($type) && ($t_instance = Datamodel::getInstance($table, true))) {	
+			// Try converting numeric type to type code
+			$type = $t_instance->getTypeCodeForID((int)$type);
+			if($type && (bool)$o_config->get("{$table}_{$type}_enable_home_location")) { return true; }
+		}
+		if(caGetOption('enableIfAnyTypeSet', $options, false) && ($t_instance = Datamodel::getInstance($table, true))) {
+			if(is_array($types = array_map(function($v) { return $v['idno']; }, $t_instance->getTypeList()))) {
+				foreach($types as $type) {
+					if((bool)$o_config->get("{$table}_{$type}_enable_home_location")) { return true; }
+				}
+			}
+		}
+
+		if((bool)$o_config->get("{$table}_enable_home_location")) { return true; }
+
+		return false;
+	}
+	# ---------------------------------------
+	/** 
+	 * Used by ca_objects, ca_collections and ca_object_lots bundles
+	 */
+	function caReturnToHomeLocationControlForRelatedBundle($po_request, $ps_id_prefix, $pt_primary, $ps_policy, $initial_values) {
+		if(!is_array($pconfig = ca_objects::getPolicyConfig($ps_policy))) { return null; }
+		if (!($pt_related = Datamodel::getInstance($pconfig['table'], true))) {  return null; }
+
+		$target = $pt_related->tableName();
+		if(!$pt_related->getAppConfig()->get("{$target}_enable_home_location")) { return null; }
+		$policies = array_filter(ca_objects::getHistoryTrackingCurrentValuePolicies($target), function($v) { return array_key_exists('ca_storage_locations', $v['elements']); });
 		if(!is_array($policies) || !sizeof($policies)) { return ''; }
-		if (!$ps_policy) { $ps_policy = ca_objects::getDefaultHistoryTrackingCurrentValuePolicy(); }
-		
-		$settings = ca_objects::policy2bundleconfig(['policy' => $ps_policy]);
+		if (!$ps_policy) { $ps_policy = $target::getDefaultHistoryTrackingCurrentValuePolicy(); }
+		if(is_object($initial_values)) {
+			$iv = [];
+			while($initial_values->nextHit()) {
+				$iv[] = ['object_id' => $initial_values->get('ca_objects.object_id')];
+			}
+			$initial_values->seek(0);
+			$initial_values = $iv;
+		}
+
+		$settings = $target::policy2bundleconfig(['policy' => $ps_policy]);
 		$interstitials = caGetOption('ca_storage_locations_setInterstitialElementsOnAdd', $settings, null);
-		
+
 		$vs_buf = "<div id='{$ps_id_prefix}_editor_bundle_return_to_home_button' class='editorBundleReturnToHomeControl'>".
 			caJSButton($po_request, __CA_NAV_ICON_HOME__, _t("Return to home locations"), "{$ps_id_prefix}_return_to_home_locations", ['onclick' => "caReturnToHomeLocationToggleForm{$ps_id_prefix}(); return false;"], ['size' => '15px']).
 			"</div>";
-			
+
 		$vs_buf .= "<div id='{$ps_id_prefix}_editor_bundle_return_to_home_controls_message' class='editorBundleReturnToHomeControlsMessage'></div>\n";
-			
+
 		$primary_table = $pt_primary->tableName();
 		$primary_id = $pt_primary->getPrimaryKey();
-			
+
 		$vs_buf .= "<div id='{$ps_id_prefix}_editor_bundle_return_to_home_controls' class='editorBundleReturnToHomeControls'>".
 			ca_storage_locations::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($po_request, $ps_id_prefix, $pt_related->tableName(), $settings, ['placement_code' => $ps_id_prefix, 'noTemplate' => true]).
-			caJSButton($po_request, __CA_NAV_ICON_GO__, _t("Apply"), "{$ps_id_prefix}_return_to_home_locations_execute", ['onclick' => "caReturnToHomeLocation{$ps_id_prefix}(); return false;"], ['size' => '15px']).
+			caJSButton($po_request, __CA_NAV_ICON_GO__, _t("Apply"), "{$ps_id_prefix}_return_to_home_locations_execute", ['onclick' => "caReturnToHomeLocation{$ps_id_prefix}(); return false;"], ['size' => '15px']).caJSButton($po_request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), "{$ps_id_prefix}_return_to_home_locations_execute", ['onclick' => "caReturnToHomeLocationToggleForm{$ps_id_prefix}(); return false;"], ['size' => '15px']).
 			"</div>\n"; 
 		$vs_buf .= "
 			<script type='text/javascript'>
@@ -3470,11 +3654,11 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				}
 				function caReturnToHomeLocation{$ps_id_prefix}() {
 					var interstitials = ".json_encode($interstitials).";
-					var data = { 'table': '{$primary_table}', 'id': {$primary_id}, 'policy': '{$ps_policy}'};
+					var data = { 'table': '{$primary_table}', 'id': {$primary_id}, 'policy': '{$ps_policy}', 'target': '{$target}'};
 					for(var i in interstitials) {
 						data[interstitials[i]] = jQuery('#{$ps_id_prefix}_ca_storage_locations__' + interstitials[i]).val();
 					}
-					
+
 					jQuery('#{$ps_id_prefix}_editor_bundle_return_to_home_button').hide();
 					jQuery.post('".caNavUrl($po_request, '*', '*', 'ReturnToHomeLocations')."', data, function(data) {
 							jQuery('#{$ps_id_prefix}_editor_bundle_return_to_home_controls').hide();
@@ -3485,7 +3669,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 								jQuery(e).html('Error: ' + data.message).show(250);
 								jQuery('#{$ps_id_prefix}_editor_bundle_return_to_home_button').show();
 							}
-							
+
 							setTimeout(function() { 
 								jQuery(e).fadeOut(250);
 							}, 5000);
@@ -3493,8 +3677,8 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 								setTimeout(function() { 
 									caBundleUpdateManager.reloadBundle('history_tracking_current_contents'); 
 									caBundleUpdateManager.reloadBundle('ca_storage_locations_current_contents'); 
-									caBundleUpdateManager.reloadBundle('ca_objects'); 
-								}, 3000);
+									caBundleUpdateManager.reloadBundle('{$target}'); 
+								}, 2000);
 							}
 					}, 'json');
 				}
@@ -3510,13 +3694,13 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		if (!$pr_res) { return null; }
 		if (!$pt_display) { return null; }
 		$vs_template = $pt_display->getSetting('bottom_line');
-		
+
 		$va_bundles_by_code = [];
 		if (!is_array($va_bundles = $pt_display->getPlacementsInDisplay())) { return null; }
 		foreach($va_bundles as $vn_placement_id => $va_placement) {
 			$va_bundles_by_code[$va_placement['bundle']] = $va_placement;
 		}
-		
+
 		$va_tags = caGetTemplateTags($vs_template, ['parseOptions' => true]);
 		$vb_is_set = false;
 
@@ -3587,7 +3771,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			if (!($vs_user_currency = $po_request->user ? $po_request->user->getPreference('currency') : 'USD')) {
 				$vs_user_currency = 'USD';
 			}
-			$vs_user_currency = caGetCurrencySymbol($vs_user_currency);
+			$vs_user_currency = caGetCurrencySymbol($vs_user_currency, $va_tmp[1]);
 
 			// Parse out tags and optional sub-elements from template
 			//		we have to pull each sub-element separately
@@ -3868,16 +4052,23 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
  		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
  		
 		$va_access_values = caGetUserAccessValues($po_request);
-		$va_detail_config = caGetDetailConfig();
-		
+
  		// options
  		$pb_primary_only 					= caGetOption('primaryOnly', $pa_options, false);
+ 		
+ 		$show_only_media_types 				= caGetOption('representationViewerShowOnlyMediaTypes', $pa_options, null);
+ 		if(($show_only_media_types) && !is_array($show_only_media_types)) { $show_only_media_types = [$show_only_media_types]; }
+ 		
+ 		$show_only_media_types_when_present = caGetOption('representationViewerShowOnlyMediaTypesWhenPresent', $pa_options, null);
+ 		if(($show_only_media_types_when_present) && !is_array($show_only_media_types_when_present)) { $show_only_media_types_when_present = [$show_only_media_types_when_present]; }
+
+ 		
  		$ps_active_representation_class 	= caGetOption('currentRepClass', $pa_options, 'active');
  		$pb_dont_show_placeholder 			= caGetOption('dontShowPlaceholder', $pa_options, false);
  		$ps_display_annotations	 			= caGetOption('displayAnnotations', $pa_options, false);
  		$ps_annotation_display_template 	= caGetOption('displayAnnotationTemplate', $pa_options, caGetOption('displayAnnotationTemplate', $va_detail_config['options'], '^ca_representation_annotations.preferred_labels.name'));
 		$ps_display_type		 			= caGetOption('display', $pa_options, false);
-				
+
  		
  		$t_instance = Datamodel::getInstanceByTableName($po_data->tableName(), true);
  		
@@ -3897,6 +4088,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		$o_view->setVar('context', ($vs_context = $po_request->getParameter('context', pString)) ? $vs_context : $vs_context = $po_request->getAction());
  	
 		$va_rep_ids = array();
+		if (method_exists($vo_data, 'filterNonPrimaryRepresentations')) { $vo_data->filterNonPrimaryRepresentations(false); }
  		while($vo_data->nextHit()) {
  			if (!($vn_representation_id = $vo_data->get('ca_object_representations.representation_id', ['checkAccess' => $va_access_values, 'limit' => 1]))) { continue; }
  			$t_instance->load($vo_data->getPrimaryKey());
@@ -3919,10 +4111,6 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 					$va_rep_ids = array_keys($va_rep_ids);
 				}
 			}
-			
-			$o_view->setVar('representation_id', $vn_representation_id);
-			$o_view->setVar('representation_count', sizeof($va_rep_ids));
-			$o_view->setVar('representation_ids', $va_rep_ids);
  			
  			// Fetch representations for display
 			if(sizeof($va_rep_ids) > 0){
@@ -3930,11 +4118,31 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				$va_rep_tags = $qr_reps->getRepresentationViewerHTMLBundles($po_request, $pt_subject, array_merge($pa_options, ['context' => $vs_context]));
 
 				$va_rep_info = array();
-			
+
 				$qr_reps->seek(0);
-				
+				$mimetypes_present = $show_only_media_types_when_present_reduced = [];
+
+				if ($show_only_media_types_when_present) {
+					while($qr_reps->nextHit()) {
+						$mimetypes_present[$qr_reps->getMediaInfo('ca_object_representations.media', 'original', 'mimetype')] = true;
+					}
+					foreach($show_only_media_types_when_present as $t) {
+						if (caMimetypeIsValid($t, array_keys($mimetypes_present))) {
+							$show_only_media_types_when_present_reduced[] = $t;
+						}
+					}
+				}
+				$qr_reps->seek(0);
+
+				$filtered_rep_ids = [];
 				while($qr_reps->nextHit()) {
-					$vn_rep_id = $qr_reps->get('representation_id');
+					$mimetype = $qr_reps->getMediaInfo('ca_object_representations.media', 'original', 'mimetype');
+					if($show_only_media_types && !caMimetypeIsValid($mimetype, $show_only_media_types)) { continue; }
+
+					if($show_only_media_types_when_present_reduced && !caMimetypeIsValid($mimetype, $show_only_media_types_when_present_reduced)) { continue; }
+
+					$filtered_rep_ids[] =  $vn_rep_id = $qr_reps->get('representation_id');
+
 					$vn_index = null;
 					if($vn_rep_id == $vn_primary_id){
 						$vn_index = 0;
@@ -3943,29 +4151,29 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 					}
 					$va_rep_info[$vn_index] = array("rep_id" => $vn_rep_id, "tag" => $va_rep_tags[$vn_rep_id]);
 				}
-				ksort($va_rep_info);
-				
+				$va_rep_ids = $filtered_rep_ids;
+
 				// reset rep_ids  to ensure same order as slides as order may change if primary is not in first location
 			    $o_view->setVar('representation_ids', array_values(array_map(function($v) { return $v['rep_id']; }, $va_rep_info)));
-			
+
 				$vn_count = 0;
-			
+
 				foreach($va_rep_info as $vn_order => $va_rep){
 					if(sizeof($va_rep_ids) > 1){ 
 						$vs_slides .= "<li id='slide{$va_rep['rep_id']}' class='{$va_rep['rep_id']}'>"; 
 					}
 					$vs_slides .= ($vn_count == 0) ? "<div id='slideContent{$va_rep['rep_id']}'>".$va_rep["tag"]."</div>" : "<div id='slideContent{$va_rep['rep_id']}'></div>";	// initially only load first one
-				
+
 					if(sizeof($va_rep_ids) > 1) { 
 						$vs_slides .= "</li>"; 
 					}
-				
+
 					$vn_count++;
 				}
 			} elseif(!$pb_dont_show_placeholder) {
 				if(!$po_request->config->get("disable_lightbox")){
 					$o_lightbox_config = caGetLightboxConfig();
-				
+
 					if(!($vs_lightbox_icon = $o_lightbox_config->get("addToLightboxIcon"))){
 						$vs_lightbox_icon = "<i class='fa fa-suitcase'></i>";
 					}
@@ -3974,17 +4182,22 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 					$vs_lightbox_displayname_plural = $va_lightboxDisplayName["plural"];
 					$vs_tool_bar = "<div id='detailMediaToolbar'>";
 					if ($po_request->isLoggedIn()) {
-						$vs_tool_bar .= " <a href='#' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'Lightbox', 'addItemForm', array($pt_subject->primaryKey() => $pt_subject->getPrimaryKey()))."\"); return false;' title='"._t("Add item to %1", $vs_lightbox_displayname)."'>".$vs_lightbox_icon."</a>\n";
+						$vs_tool_bar .= " <a href='#' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'Lightbox', 'addItemForm', array($pt_subject->primaryKey() => $pt_subject->getPrimaryKey()))."\"); return false;' aria-label='"._t("Add item to %1", $vs_lightbox_displayname)."'>".$vs_lightbox_icon."</a>\n";
 					}else{
-						$vs_tool_bar .= " <a href='#' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'LoginReg', 'LoginForm')."\"); return false;' title='"._t("Login to add item to %1", $vs_lightbox_displayname)."'>".$vs_lightbox_icon."</a>\n";
+						$vs_tool_bar .= " <a href='#' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'LoginReg', 'LoginForm')."\"); return false;' aria-label='"._t("Login to add item to %1", $vs_lightbox_displayname)."'>".$vs_lightbox_icon."</a>\n";
 					}
 					$vs_tool_bar .= "</div><!-- end detailMediaToolbar -->\n";
 				}
-		
-				$vs_placeholder = "<div class='detailMediaPlaceholder'>".caGetPlaceholder($pt_subject->getTypeCode(), "placeholder_large_media_icon")."</div>".$vs_tool_bar;
+
+				$vs_placeholder = "<div class='detailMediaPlaceholder' aria-label='No media available'>".caGetPlaceholder($pt_object->getTypeCode(), "placeholder_large_media_icon")."</div>".$vs_tool_bar;
 			}
  		}	
  		
+ 		
+
+		$o_view->setVar('representation_id', $vn_representation_id);
+		$o_view->setVar('representation_count', sizeof($va_rep_ids));
+		$o_view->setVar('representation_ids', $va_rep_ids);
 		$o_view->setVar('placeholder', $vs_placeholder);
 		$o_view->setVar('slides', $vs_slides);
 		$o_view->setVar('display_annotations', $ps_display_annotations);
@@ -4001,64 +4214,65 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 * @param $pa_options array includes:
 	 *			display = media_display.conf display version to use. [Default is 'detail']
 	 *			context = viewer context value to pass in toolbar. For Pawtucket details this is the detail name. [Default is null]
+	 *			set_id = ID for set item being display is part of. [Default is null]
 	 *
 	 * @return string HTML toolbar output
 	 */
 	function caRepToolbar($po_request, $pt_representation, $pt_subject, $pa_options=null){
 		$ps_display_type 		= caGetOption('display', $pa_options, 'detail');
 		$ps_context 			= caGetOption('context', $pa_options, null);
-		
+
 		$ps_table = is_object($pt_subject) ? $pt_subject->tablename() : "ca_objects";
 		$pn_subject_id = is_object($pt_subject) ? $pt_subject->getPrimaryKey() : (int)$pt_subject;
-		
+
 		$va_rep_display_info = caGetMediaDisplayInfo($ps_display_type, $pt_representation->getMediaInfo('media', 'INPUT', 'MIMETYPE'));
 		$va_rep_display_info['poster_frame_url'] = $pt_representation->getMediaUrl('media', $va_rep_display_info['poster_frame_version']);
 
 		$va_add_to_set_link_info = caGetAddToSetInfo($po_request);
-		
+
 		$vs_tool_bar = "<div class='detailMediaToolbar'>";
 		$vn_rep_id = $pt_representation->getPrimaryKey();
-		
+
 		$va_detail_type_config = caGetDetailTypeConfig($ps_context);
-		
+
 		if (!caGetOption(['no_overlay'], $va_rep_display_info, false)) {
-			$vs_tool_bar .= "<a href='#' class='zoomButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'Detail', 'GetMediaOverlay', array('context' => $ps_context, 'id' => $pn_subject_id, 'representation_id' => $vn_rep_id, 'overlay' => 1))."\"); return false;' title='"._t("Zoom")."'><span class='glyphicon glyphicon-zoom-in'></span></a>\n";
+			$vs_tool_bar .= "<a href='#' class='zoomButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'Detail', 'GetMediaOverlay', array('context' => $ps_context, 'id' => $pn_subject_id, 'representation_id' => $vn_rep_id, 'set_id' => caGetOption('set_id', $pa_options, 0), 'overlay' => 1))."\", function() { var url = jQuery(\"#\" + caMediaPanel.getPanelID()).data(\"reloadUrl\"); if(url) { window.location = url; } }); return false;' aria-label='"._t("Zoom")."'><span class='glyphicon glyphicon-zoom-in' aria-label='Zoom'></span></a>\n";
 		}
-		
+
 		if (is_null($vb_show_compare = caGetOption('compare', $va_detail_type_config['options'], null))) {
 		    $vb_show_compare = caGetOption('compare', $va_rep_display_info, false);
 		}
 		if ($vb_show_compare) {
-		   $vs_tool_bar .= "<a href='#' class='compare_link' title='Compare' data-id='representation:{$vn_rep_id}'><i class='fa fa-clone' aria-hidden='true'></i></a>";
+		   $vs_tool_bar .= "<a href='#' class='compare_link' aria-label='Compare' data-id='representation:{$vn_rep_id}'><i class='fa fa-clone' aria-hidden='true' aria-label='Compare'></i></a>";
 		}
-		
+
 		if(($ps_table == "ca_objects") && is_array($va_add_to_set_link_info) && sizeof($va_add_to_set_link_info)){
-			$vs_tool_bar .= " <a href='#' class='setsButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', $va_add_to_set_link_info['controller'], 'addItemForm', array('context' => $ps_context, (is_object($pt_subject) && $pt_subject->primaryKey()) ? $pt_subject->primaryKey() : "object_id" => $pn_subject_id))."\"); return false;' title='".$va_add_to_set_link_info['link_text']."'>".$va_add_to_set_link_info['icon']."</a>\n";
+			$vs_tool_bar .= " <a href='#' class='setsButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', $va_add_to_set_link_info['controller'], 'addItemForm', array('context' => $ps_context, (is_object($pt_subject) && $pt_subject->primaryKey()) ? $pt_subject->primaryKey() : "object_id" => $pn_subject_id))."\"); return false;' aria-label='".$va_add_to_set_link_info['link_text']."'>".$va_add_to_set_link_info['icon']."</a>\n";
 		}
 		if(caObjectsDisplayDownloadLink($po_request, $pn_subject_id, $pt_representation)){
 			# -- get version to download configured in media_display.conf
 			$va_download_display_info = caGetMediaDisplayInfo('download', $pt_representation->getMediaInfo('media', 'INPUT', 'MIMETYPE'));
 			$vs_download_version = caGetOption(['download_version', 'display_version'], $va_download_display_info);
 			if($vs_download_version){
-				$vs_tool_bar .= caNavLink($po_request, " <span class='glyphicon glyphicon-download-alt'></span>", 'dlButton', 'Detail', 'DownloadRepresentation', '', array('context' => $ps_context, 'representation_id' => $pt_representation->getPrimaryKey(), "id" => $pn_subject_id, "download" => 1, "version" => $vs_download_version), array("title" => _t("Download")));
+				$vs_tool_bar .= caNavLink($po_request, " <span class='glyphicon glyphicon-download-alt' aria-label='Download'></span>", 'dlButton', 'Detail', 'DownloadRepresentation', '', array('context' => $ps_context, 'representation_id' => $pt_representation->getPrimaryKey(), "id" => $pn_subject_id, "download" => 1, "version" => $vs_download_version), array("aria-label" => _t("Download")));
 			}
 		}
 		$vs_tool_bar .= "</div><!-- end detailMediaToolbar -->\n";
-		
+
 		return $vs_tool_bar;
 	}
 	# ---------------------------------------
 	/**
-	 * Extract and IIIF service-style media identifier from the current request. First checks for a "identifier" parameter, which is
-	 * assumed to be an IIIF service-style media identifier (Ex. representation:114; attribute:29341). If
+	 * Extract an IIIF service-style media identifier from the current request. First checks for a "identifier" parameter, which is
+	 * assumed to be an IIIF service-style media identifier (Ex. representation:114; attribute:29341). If 
 	 * that is not defined the numeric representation_id or value_id parameters are converted into representation and attribute IIIF identifiers respectively.
 	 *
 	 * @param RequestHTTP $po_request The current request
 	 * @return string IIIF service-style media identifier or null if no identifier is found
 	 */
-	function caGetMediaIdentifier($po_request) {
+	function caGetMediaIdentifier($po_request) {		
 		if (!($ps_identifier = $po_request->getParameter('identifier', pString))) {
-			if($pn_representation_id = $po_request->getParameter('representation_id', pInteger)) {
+			if($pn_representation_id = $po_request->getParameter('representation_id', pInteger)) { 
 				$ps_identifier = "representation:{$pn_representation_id}";
 			} elseif($pn_value_id = $po_request->getParameter('value_id', pInteger)) {
 				$ps_identifier = "attribute:{$pn_value_id}";
@@ -4068,13 +4282,38 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	}
 	# ---------------------------------------
 	/**
+	 * Parse IIIF service-style identifier and return instance for underlying media. Instance will be
+	 * either a ca_object_representations model or a ca_attribute_values model instance.
+	 *
+	 * @param string $identifier
+	 * @param array $options Options include:
+	 *		checkAccess = [TODO: IMPLEMENT THIS]
+	 * @return ca_object_representations|ca_attribute_values instance
+	 */
+	function caGetMediaForMediaIdentifier(string $identifier, array $options=null) {		
+		list($type, $id) = explode(':', $identifier);
+
+		switch(strtolower($type)) {
+			case 'representation':
+				$rep = new ca_object_representations($id);
+				return ($rep->isLoaded()) ? $rep : null;
+				break;
+			case 'attribute':
+				$val = new ca_attribute_values($id);
+				return ($val->isLoaded()) ? $val : null;
+				break;
+		}
+		return null;
+	}
+	# ---------------------------------------
+	/**
 	 *
 	 */
 	function caGetMediaAnnotationList($po_data, $pa_options=null) {
-		$va_detail_config = caGetDetailConfig();
+		$va_detail_config = caGetDetailConfig()->get($po_data->tableName());
 		$ps_annotation_display_template 	= caGetOption('displayAnnotationTemplate', $pa_options, caGetOption('displayAnnotationTemplate', $va_detail_config['options'], '^ca_representation_annotations.preferred_labels.name'));
 		$ps_display_type		 			= caGetOption('display', $pa_options, false);
-		
+
 		$va_annotation_list = [];
 		$va_props = $po_data->getMediaInfo('media', 'original', 'PROPERTIES');
 		if (
@@ -4090,7 +4329,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				$va_annotation_list[] = "<a href='#' onclick='caUI.mediaPlayerManager.seek(\"caMediaOverlayTimebased_{$vn_rep_id}_{$ps_display_type}\", ".((float)$qr_annotations->getPropertyValue('startTimecode', true) - (float)$va_props['timecode_offset'])."); return false;'>".$qr_annotations->getWithTemplate($ps_annotation_display_template)."</a>";
 			}
 		}
-		
+
 		return $va_annotation_list;
 	}
 	# ---------------------------------------
@@ -4118,7 +4357,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 			throw new ApplicationException(_t('Invalid identifier %1', $ps_identifier));
 		}
 
-		$va_detail_config = caGetDetailConfig();
+		$va_detail_config = caGetDetailConfig()->get($pt_subject->tableName());
 
 		$ps_display_type 					= caGetOption('display', $pa_options, 'media_overlay');
 		$pb_inline 							= (bool)caGetOption('inline', $pa_options, false);
@@ -4128,9 +4367,9 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		$pb_hide_overlay_controls			= (bool)caGetOption('hideOverlayControls.', $pa_options, false);
 		$pa_check_acccess 					= caGetOption('checkAccess', $pa_options, null);
 		$pb_no_overlay						= (bool)caGetOption('noOverlay', $pa_options, false);
-		
+
 		$vs_caption = $vs_tool_bar = '';
-				
+
 		switch($va_identifier['type']) {
 			case 'representation':
 				//
@@ -4139,21 +4378,21 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				$pn_representation_id = (int)$va_identifier['id'];
 				$t_instance = new ca_object_representations($pn_representation_id);
 
-				if (!$t_instance->isReadable($po_request)) {
+				if ($pb_inline) {
+					$vs_caption = ($vs_template = caGetOption('captionTemplate', $pa_options, caGetOption('captionTemplate', $va_display_info, null))) ? $t_instance->getWithTemplate($vs_template) : '';
+				}
+				if (!$t_instance->isReadable($po_request)) { 
                     throw new ApplicationException(_t('Cannot view media'));
                 }
-				
+
 				if (!($vs_mimetype = $t_instance->getMediaInfo('media', 'original', 'MIMETYPE'))) {
 				    $vs_mimetype = $t_instance->getMediaInfo('media', 'h264_hi', 'MIMETYPE');
 				}
 				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype($ps_display_type, $vs_mimetype))) {
 					throw new ApplicationException(_t('Invalid viewer: %1/%2', $vs_mimetype, $ps_display_type));
 				}
-			
+
 				$va_display_info = caGetMediaDisplayInfo($ps_display_type, $vs_mimetype);
-				if ($pb_inline) {
-					$vs_caption = ($vs_template = caGetOption('captionTemplate', $pa_options, caGetOption('captionTemplate', $va_display_info, null))) ? $t_instance->getWithTemplate($vs_template) : '';
-				}
 
 				if ((($vn_use_universal_viewer_for_image_list_length = caGetOption('use_universal_viewer_for_image_list_length_at_least', $va_display_info, null))
 				||
@@ -4161,7 +4400,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				) {
 					$vn_image_count = $pt_subject->numberOfRepresentationsOfClass('image');
 					$vn_rep_count = $pt_subject->getRepresentationCount();
-				
+
 					// Are there enough representations? Are all representations images? 
 					if ($vn_image_count == $vn_rep_count) {
 						if (!is_null($vn_use_universal_viewer_for_image_list_length) && ($vn_image_count >= $vn_use_universal_viewer_for_image_list_length)) {
@@ -4173,7 +4412,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 						}
 					}
 				}
-			
+
 				if(!$pn_subject_id) {
 					if (is_array($va_subject_ids = $t_instance->get($pt_subject->tableName().'.'.$pt_subject->primaryKey(), array('returnAsArray' => true))) && sizeof($va_subject_ids)) {
 						$pn_subject_id = array_shift($va_subject_ids);
@@ -4182,19 +4421,19 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 						return;
 					}
 				}
-			
+
 				$vs_viewer = $vs_viewer_name::getViewerHTML(
 					$po_request, 
 					"representation:{$pn_representation_id}", 
 					['t_instance' => $t_instance, 't_subject' => $pt_subject, 'display' => $va_display_info, 'display_type' => $ps_display_type],
-					['viewerWrapper' => caGetOption('inline', $pa_options, false) ? 'viewerInline' : null, 'context' => $ps_context, 'hideOverlayControls' => $pb_hide_overlay_controls, 'noOverlay' => $pb_no_overlay, 'checkAccess' => $pa_check_acccess]
+					['viewerWrapper' => caGetOption('inline', $pa_options, false) ? 'viewerInline' : null, 'context' => $ps_context, 'hideOverlayControls' => $pb_hide_overlay_controls, 'noOverlay' => $pb_no_overlay, 'checkAccess' => $pa_check_acccess, 'resultList' => caGetOption('resultList', $pa_options, null)]
 				);
-				
+
 				if ($pb_inline) {	
 					$vs_tool_bar = caRepToolbar($po_request, $t_instance, $pt_subject, array('display' => $ps_display_type, 'context' => $ps_context, 'checkAccess' => $pa_check_acccess));
 					$vs_viewer = "<div class='repViewerContCont'><div id='cont{$pn_representation_id}' class='repViewerCont'>{$vs_viewer}{$vs_tool_bar}{$vs_caption}</div></div>";
 				}
-				
+
 				if (($ps_display_annotations) && (is_array($va_annotation_list = caGetMediaAnnotationList($t_instance, $pa_options)))) {
 					$vs_viewer .= join("<br/>\n", $va_annotation_list);
 				}
@@ -4208,8 +4447,8 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				$t_instance = new ca_attribute_values($pn_value_id);
 				$t_instance->useBlobAsMediaField(true);
 				$t_attr = new ca_attributes($t_instance->get('attribute_id'));
-				
-				
+
+
 				$pt_subject = Datamodel::getInstanceByTableNum($t_attr->get('table_num'), true);
 				$pt_subject->load($t_attr->get('row_id'));
 
@@ -4227,16 +4466,16 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 					['t_instance' => $t_instance, 't_subject' => $pt_subject, 'display' => caGetMediaDisplayInfo($ps_display_type, $vs_mimetype), 'display_type' => $ps_display_type],
 					['viewerWrapper' => caGetOption('inline', $pa_options, false) ? 'viewerInline' : null, 'context' => $ps_context, 'hideOverlayControls' => $pb_hide_overlay_controls, 'checkAccess' => $pa_check_acccess, 'noOverlay' => $pb_no_overlay]
 				);
-				
+
 				if ($pb_inline) {
 					$vs_tool_bar = caRepToolbar($po_request, $t_instance, $pt_subject, array('display' => $ps_display_type, 'context' => $ps_context, 'checkAccess' => $pa_check_acccess));
-					$vs_viewer = "<div data-value_id='{$pn_value_id}' class='repViewerContCont'><div id='cont{$pn_value_id}' class='repViewerCont'>{$vs_viewer}{$vs_tool_bar}{$vs_caption}{$vs_tool_bar}</div></div>";
+					$vs_viewer = "<div data-representation_id='{$pn_representation_id}' data-value_id='{$pn_value_id}' class='repViewerContCont'><div id='cont{$pn_representation_id}' class='repViewerCont'>{$vs_viewer}{$vs_tool_bar}{$vs_caption}</div></div>";
 				}
-				
+
 				return $vs_viewer;
 				break;
 		}
-		
+
 		throw new ApplicationException(_t('Invalid identifier', $ps_identifier));
 	}
 	# ---------------------------------------
@@ -4256,17 +4495,17 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		if (!($va_identifier = caParseMediaIdentifier($ps_identifier))) {
 			throw new ApplicationException(_t('Invalid identifier %1', $ps_identifier));
 		}
-		
+
 		$ps_display_type = caGetOption('display', $pa_options, 'media_overlay');
-		
+
 		switch($va_identifier['type']) {
 			case 'representation':
 				$t_instance = new ca_object_representations($va_identifier['id']);
-			
+
 				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype($ps_display_type, $vs_mimetype = $t_instance->getMediaInfo('media', 'original', 'MIMETYPE')))) {
 					throw new ApplicationException(_t('Invalid viewer'));
 				}
-				
+
 				$va_display_info = caGetMediaDisplayInfo($ps_display_type, $vs_mimetype);
 				if ((($vn_use_universal_viewer_for_image_list_length = caGetOption('use_universal_viewer_for_image_list_length_at_least', $va_display_info, null))
 				||
@@ -4274,7 +4513,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				) {
 					$vn_image_count = $pt_subject->numberOfRepresentationsOfClass('image');
 					$vn_rep_count = $pt_subject->getRepresentationCount();
-				
+
 					// Are there enough representations? Are all representations images? 
 					if ($vn_image_count == $vn_rep_count) {
 						if (!is_null($vn_use_universal_viewer_for_image_list_length) && ($vn_image_count >= $vn_use_universal_viewer_for_image_list_length)) {
@@ -4284,7 +4523,7 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 						}
 					}
 				}
-			
+
 				return $vs_viewer_name::getViewerData($po_request, $ps_identifier, ['t_subject' => $pt_subject, 't_instance' => $t_instance, 'display' => $va_display_info, 'display_type' => $ps_display_type, 'context' => caGetOption('context', $pa_options, null)]);
 				break;
 			case 'attribute':
@@ -4293,15 +4532,15 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				$t_attr = new ca_attributes($t_instance->get('attribute_id'));
 				$pt_subject = Datamodel::getInstanceByTableNum($t_attr->get('table_num'), true);
 				$pt_subject->load($t_attr->get('row_id'));
-			
+
 				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype($ps_display_type, $vs_mimetype = $t_instance->getMediaInfo('value_blob', 'original', 'MIMETYPE')))) {
 					throw new ApplicationException(_t('Invalid viewer'));
 				}
-			
+
 				return $vs_viewer_name::getViewerData($po_request, $ps_identifier, ['t_subject' => $pt_subject, 't_instance' => $t_instance, 'display' => caGetMediaDisplayInfo($ps_display_type, $vs_mimetype), 'display_type' => $ps_display_type, 'context' => caGetOption('context', $pa_options, null)]);
 				break;
 		}
-		
+
 		throw new ApplicationException(_t('Invalid identifier', $ps_identifier));
 	}
 	# ---------------------------------------
@@ -4321,19 +4560,19 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		if (!($va_identifier = caParseMediaIdentifier($ps_identifier))) {
 			throw new ApplicationException(_t('Invalid identifier %1', $ps_identifier));
 		}
-		
+
 		$ps_display_type = caGetOption('display', $pa_options, 'media_overlay');
-		
+
 		switch($va_identifier['type']) {
 			case 'representation':
 				$t_instance = new ca_object_representations($va_identifier['id']);
-			
+
 				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype($ps_display_type, $vs_mimetype = $t_instance->getMediaInfo('media', 'original', 'MIMETYPE')))) {
 					throw new ApplicationException(_t('Invalid viewer'));
 				}
-				
+
 				$va_display_info = caGetMediaDisplayInfo($ps_display_type, $vs_mimetype);
-				
+
 				return $vs_viewer_name::searchViewerData($po_request, $ps_identifier, ['t_subject' => $pt_subject, 't_instance' => $t_instance, 'display' => $va_display_info, 'display_type' => $ps_display_type, 'context' => caGetOption('context', $pa_options, null)]);
 				break;
 			case 'attribute':
@@ -4342,15 +4581,15 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				$t_attr = new ca_attributes($t_instance->get('attribute_id'));
 				$pt_subject = Datamodel::getInstanceByTableNum($t_attr->get('table_num'), true);
 				$pt_subject->load($t_attr->get('row_id'));
-			
+
 				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype($ps_display_type, $vs_mimetype = $t_instance->getMediaInfo('value_blob', 'original', 'MIMETYPE')))) {
 					throw new ApplicationException(_t('Invalid viewer'));
 				}
-			
+
 				return $vs_viewer_name::searchViewerData($po_request, $ps_identifier, ['t_subject' => $pt_subject, 't_instance' => $t_instance, 'display' => caGetMediaDisplayInfo($ps_display_type, $vs_mimetype), 'display_type' => $ps_display_type, 'context' => caGetOption('context', $pa_options, null)]);
 				break;
 		}
-		
+
 		throw new ApplicationException(_t('Invalid identifier', $ps_identifier));
 	}
 	# ---------------------------------------
@@ -4370,19 +4609,19 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 		if (!($va_identifier = caParseMediaIdentifier($ps_identifier))) {
 			throw new ApplicationException(_t('Invalid identifier %1', $ps_identifier));
 		}
-		
+
 		$ps_display_type = caGetOption('display', $pa_options, 'media_overlay');
-		
+
 		switch($va_identifier['type']) {
 			case 'representation':
 				$t_instance = new ca_object_representations($va_identifier['id']);
-			
+
 				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype($ps_display_type, $vs_mimetype = $t_instance->getMediaInfo('media', 'original', 'MIMETYPE')))) {
 					throw new ApplicationException(_t('Invalid viewer'));
 				}
-				
+
 				$va_display_info = caGetMediaDisplayInfo($ps_display_type, $vs_mimetype);
-				
+
 				return $vs_viewer_name::autocomplete($po_request, $ps_identifier, ['t_subject' => $pt_subject, 't_instance' => $t_instance, 'display' => $va_display_info, 'display_type' => $ps_display_type, 'context' => caGetOption('context', $pa_options, null)]);
 				break;
 			case 'attribute':
@@ -4391,15 +4630,15 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				$t_attr = new ca_attributes($t_instance->get('attribute_id'));
 				$pt_subject = Datamodel::getInstanceByTableNum($t_attr->get('table_num'), true);
 				$pt_subject->load($t_attr->get('row_id'));
-			
+
 				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype($ps_display_type, $vs_mimetype = $t_instance->getMediaInfo('value_blob', 'original', 'MIMETYPE')))) {
 					throw new ApplicationException(_t('Invalid viewer'));
 				}
-			
+
 				return $vs_viewer_name::autocomplete($po_request, $ps_identifier, ['t_subject' => $pt_subject, 't_instance' => $t_instance, 'display' => caGetMediaDisplayInfo($ps_display_type, $vs_mimetype), 'display_type' => $ps_display_type, 'context' => caGetOption('context', $pa_options, null)]);
 				break;
 		}
-		
+
 		throw new ApplicationException(_t('Invalid identifier', $ps_identifier));
 	}
 	# ------------------------------------------------------------------
@@ -4425,25 +4664,25 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
  			
  			foreach($va_representation_ids as $vn_representation_id) {
 				$t_instance = new ca_object_representations($vn_representation_id);
-				
+
 				if (!($vs_mimetype = $t_instance->getMediaInfo('media', 'original', 'MIMETYPE'))) {
 				    $vs_mimetype = $t_instance->getMediaInfo('media', 'large', 'MIMETYPE');
 			        $vs_viewer_name = MediaViewerManager::getViewerForMimetype($ps_display_type, $vs_mimetype);
 			    } elseif (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype($ps_display_type, $vs_mimetype))) {
 					throw new ApplicationException(_t('Invalid viewer %1/%2', $ps_display_type, $vs_mimetype));
 				}
-		
+
 				$va_display_info = caGetMediaDisplayInfo($ps_display_type, $vs_mimetype);
 				if ($pt_subject && ($vn_use_universal_viewer_for_image_list_length = caGetOption('use_universal_viewer_for_image_list_length_at_least', $va_display_info, null))) {
 					$vn_image_count = $pt_subject->numberOfRepresentationsOfClass('image');
 					$vn_rep_count = $pt_subject->getRepresentationCount();
-			
+
 					// Are there enough representations? Are all representations images? 
 					if (($vn_image_count == $vn_rep_count) && ($vn_image_count >= $vn_use_universal_viewer_for_image_list_length)) {
 						$va_display_info['viewer'] = $vs_viewer_name = 'UniversalViewer';
 					}
 				}
-			
+
 				if(!$pn_subject_id) {
 					if (is_array($va_subject_ids = $t_instance->get($pt_subject->tableName().'.'.$pt_subject->primaryKey(), array('returnAsArray' => true))) && sizeof($va_subject_ids)) {
 						$vn_subject_id = array_shift($va_subject_ids);
@@ -4452,18 +4691,18 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 						return;
 					}
 				}
-			
+
 				$vs_tool_bar = caGetOption('noToolBar', $pa_options, false) ? "" : caRepToolbar($po_request, $t_instance, $pt_subject, array('display' => $ps_display_type, 'context' => caGetOption('context', $pa_options, null)));
-					
+
 				$vs_caption = (isset($pa_options["captionTemplate"]) && $pa_options["captionTemplate"]) ? $po_data->getWithTemplate($pa_options["captionTemplate"]) : "";
-			
+
 				$va_reps[$vn_rep_id = $po_data->get('ca_object_representations.representation_id')] = "<div data-representation_id='{$vn_rep_id}' class='repViewerContCont'><div id='cont{$vn_rep_id}' class='repViewerCont'>".$vs_viewer_name::getViewerHTML(
 					$po_request, 
 					"representation:{$vn_representation_id}", 
 					['t_instance' => $t_instance, 't_subject' => $pt_subject, 'display' => $va_display_info, 'display_type' => $ps_display_type],
-					['viewerWrapper' => 'viewerInline', 'context' => caGetOption('context', $pa_options, null)]
+					['viewerWrapper' => 'viewerInline', 'context' => caGetOption('context', $pa_options, null), 'checkAccess' => caGetOption('checkAccess', $pa_options, null)]
 				).$vs_tool_bar.$vs_caption."</div></div>";
-				
+
 				if (sizeof($va_reps) > 10) { break(2); }
 			}
  		}
@@ -4841,16 +5080,31 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 * "blank_label_text" option. If the option is not set the default value of
 	 * "[BLANK]" will be returned.
 	 *
+	 * @param mixed $table Table name (or number) blank label is to be applied to. If set 
+	 *						table-specific text is set with fallback to general "blank_label_text"
+	 *
 	 * @return string
 	 */
-	$g_blank_label_text = null;
-	function caGetBlankLabelText() {
-		global $g_blank_label_text;
-		if ($g_blank_label_text) { return $g_blank_label_text; }
+	function caGetBlankLabelText($table=null) {
+		if (MemoryCache::contains('blank_label_text_'.$table)) { return MemoryCache::fetch('blank_label_text_'.$table); }
 		$config = Configuration::load();
-		if ($label_text = $config->get('blank_label_text')) {
+
+		$table_orig = $table;
+		$d = [];
+		if (($table) && ($t = Datamodel::getInstance($table, true))) {
+			if(is_a($t, 'BaseLabel')) {
+				$table = $t->getSubjectTableName();
+			}
+			$d[] = $table.'_blank_label_text';
+		}
+
+		$d[] = 'blank_label_text';
+
+		if ($label_text = $config->get($d)) {
 		    if(is_array($label_text)) { $label_text = join(' ', $label_text); }
-			return $g_blank_label_text = _t($label_text);
+		    MemoryCache::save('blank_label_text_'.$table, $l = _t($label_text));
+		    if($table !== $table_orig) { MemoryCache::save('blank_label_text_'.$table_orig, $l); }
+			return $l;
 		}
 		return $g_blank_label_text = _t('BLANK');
 	}
@@ -4901,12 +5155,14 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 *		extension = file extension of media being downloaded.
 	 *		original_filename = original filename of media being downloaded.
 	 *		representation_id = Representation_id of media being downloaded.
+	 * @param array $options Options include:
+	 *		mode = Naming mode. Can be idno, idno_and_version, idno_and_rep_id_and_version, original_name. If not set defaults to value in <table>_downloaded_file_naming or _downloaded_file_naming app.conf directive.
 	 *
 	 * @return string File name
 	 */
-	function caGetRepresentationDownloadFileName($table, $data, $options=null) {
+	function caGetRepresentationDownloadFileName(string $table, array $data, ?array $options=null) : string {
 		$config = Configuration::load();
-		switch($mode = $config->get(["{$table}_downloaded_file_naming", 'downloaded_file_naming'])) {
+		switch($mode = caGetOption('mode', $options, $config->get(["{$table}_downloaded_file_naming", 'downloaded_file_naming']))) {
 			case 'idno':
 				$filename = $data['idno'].(strlen($data['index']) ? '_'.$data['index'] : '').'.'.$data['extension'];
 				break;
@@ -4932,17 +5188,17 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 				} else {
 					$filename = $data['idno'].'_representation_'.$data['representation_id'].'_'.$data['version'];
 				}
-			
+
 				if (isset($va_file_names[$filename.'.'.$data['extension']])) {
 					$filename.= "_".$data['index'];
 				}
-				
+
 				if(!preg_match("!{$data['extension']}$!i", $filename)) {
 					$filename .= '.'.$data['extension'];
 				}
 				break;
 		} 
-		
+
 		return preg_replace("![^A-Za-z0-9_\-\.]+!", "_", $filename);
 	}
 	# ------------------------------------------------------------------
@@ -4959,23 +5215,170 @@ require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 	 */
 	function caGetMediaDownloadArchiveName($table, $id, $options=null) {
 		$config = Configuration::load();
-		switch($mode = $config->get(["{$table}_downloaded_media_archive_file_naming", "downloaded_media_archive_file_naming","{$table}_downloaded_file_naming", 'downloaded_file_naming'])) {
+		switch($mode = $config->get(["{$table}_downloaded_media_archive_file_naming", 'downloaded_media_archive_file_naming', "{$table}_downloaded_file_naming", 'downloaded_file_naming'])) {
 			case 'idno':
-				$filename = $data['idno'].(strlen($data['index']) ? '_'.$data['index'] : '').'.'.$data['extension'];
-				break;
+				// Noop - fall through	
 			default:
-				if (strpos($mode, "^") == false) { // use default templte
+				if (strpos($mode, "^") === false) { // use default template
 					$mode = "^{$table}.idno";
 				}
-				$filename = caProcessTemplateForIDs($mode, $table, [$id]);
+				if (!($filename = caProcessTemplateForIDs($mode, $table, [$id]))) {
+					$filename = 'export';
+				}
 				$ext = caGetOption('extension', $options, 'zip');
-				
+
 				if(!preg_match("!\.{$ext}$!i", $filename)) {
 					$filename .= ".{$ext}";
 				}
 				break;
 		} 
-		
+
 		return preg_replace("![^A-Za-z0-9_\-\.]+!", "_", $filename);
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Return logo for specified UI context
+	 *
+	 * @param string $content Content where logo will be used. Possible values are: "menuBar" (application menu bar); "login" (application login screen), "report" (report headers)
+	 *
+	 * @return string
+	 */
+	function caGetBrandingLogo(string $type, array $options=null) : ?string {
+		if(!in_array($type, ['menuBar', 'login', 'report'], true)) { return null; }
+		
+		$abs = caGetOption('absolute', $options, false);
+		
+		global $g_request;
+		$config = Configuration::load();
+		
+		if(is_array($branding = $config->getAssoc('branding')) && is_array($logo = caGetOption($type, $branding, null)) && !empty($logo['src'])) {
+			return caHTMLImage(($abs ? __CA_BASE_DIR__ : __CA_URL_ROOT__).'/'.caGetOption('src', $logo), ['alt' => caGetOption('alt', $logo), 'class' => caGetOption('class', $logo), 'id' => caGetOption('id', $logo), 'scaleCSSWidthTo' => caGetOption('width', $logo), 'scaleCSSHeightTo' => caGetOption('height', $logo)]);
+		}
+		
+		if(!$g_request) { return null; }
+		
+		// Return header defined by old app.conf directive
+		switch($type) {
+			case 'menuBar':
+				$img = $config->get('header_img');
+				break;
+			case 'login':
+				$img = $config->get('login_img');
+				break;
+			case 'report':
+				$img = $config->get('header_img');
+				break;
+			default:
+				return null;
+				
+		}
+		if ($img) {
+			return caHTMLImage($g_request->getUrlPathForThemeFile("graphics/logos/{$img}"), ['alt' => _t("CollectiveAccess Logo"), 'class' => 'headerImg']);
+		}
+		return null;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Return currently configured logo graphic for menu bar
+	 *
+	 * @return string
+	 */
+	function caGetMenuBarLogo() {
+		return caGetBrandingLogo('menuBar');
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Return currently configured logo graphic for login screen
+	 *
+	 * @return string
+	 */
+	function caGetLoginLogo() {
+		return caGetBrandingLogo('login');
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Return currently configured logo graphic for report headers
+	 *
+	 * @return string
+	 */
+	function caGetReportLogo() {
+		return caGetBrandingLogo('report', ['absolute' => true]);
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Output sidecar data to browser.
+	 *
+	 * @param int $sidecar_id
+	 * @param ca_users $user
+	 *
+	 * @return void
+	 * 
+	 * @throws ApplicationException
+	 */
+	function caReturnMediaSidecarData(int $sidecar_id, ?ca_users $user=null) : void {
+		if(!$t_sidecar = ca_object_representation_sidecars::find($sidecar_id, ['returnAs' => 'firstModelInstance'])) {
+			throw new ApplicationException(_t('Invalid sidecar'));
+		}
+		$t_rep = ca_object_representations::find($t_sidecar->get('ca_object_representation_sidecars.representation_id'), ['returnAs' => 'firstModelInstance']);
+		if(!$t_rep || ($user && !$t_rep->isReadable($user))) {
+			throw new ApplicationException(_t('Access denied'));
+		}
+		
+		$mimetype = $t_sidecar->get('mimetype');
+		
+		if(caMimetypeIsValid($mimetype, ['image/*', 'text/prs.wavefront-mtl', 'application/octet-stream'])) {
+			AppController::getInstance()->removeAllPlugins();	// prevent header/footer from being rendered
+			header("Content-type: {$mimetype}");
+			
+			$r = fopen($t_sidecar->getFilePath('sidecar_file'), 'r');
+			fpassthru($r);
+			fclose($r);
+			return;
+		} 
+		throw new ApplicationException(_t('Invalid sidecar type'));
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	function caGetReferenceToExistingRepresentationMedia(ca_object_representations $t_rep, array $options=null) {
+		$return_as_array = caGetOption('returnAsArray', $options, false);
+		
+		global $g_request;
+		$rel = $rec_label = null;
+		foreach(['ca_objects', 'ca_entities', 'ca_occurrences', 'ca_collections'] as $parent_table) {
+			if($rel_list = $t_rep->getRelatedItems($parent_table, ['returnAs' => 'array'])) {
+				$rel = array_shift($rel_list);
+				$rec_label = $rel['label'].($rel['idno']? " (".$rel['idno'].")" : '');
+				break;
+			}
+		}
+	
+		if($return_as_array) {
+			if($rec_label) {
+				return [
+					'table' => $parent_table,
+					'id' => $rel[Datamodel::primaryKey($parent_table)],
+					'label' => $rel['label'],
+					'idno' => $rel['idno']
+				];
+			} else {
+				return [
+					'table' => 'ca_object_representations',
+					'id' => $t_rep->getPrimaryKey(),
+					'label' => $t_rep->get('ca_object_representations.preferred_labels.name'),
+					'idno' => $t_rep->get('ca_object_representations.idno')
+				];
+			}
+		} else {
+			$rec_label = $rec_label ? 
+				_t('Media aleady exists in %1', ($g_request ? 
+					caEditorLink($g_request, $rec_label, '', $parent_table, $rel[Datamodel::primaryKey($parent_table)])
+					: $rec_label))
+				:
+				($g_request ? _t('Media aleady %1', caEditorLink($g_request, _t('exists'), '', 'ca_object_representations', $t_rep->getPrimaryKey())) : _t('Media already exists'))
+			;
+			return $rec_label;
+		}
 	}
 	# ------------------------------------------------------------------

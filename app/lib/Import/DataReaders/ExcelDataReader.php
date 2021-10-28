@@ -44,12 +44,15 @@ class ExcelDataReader extends BaseDataReader {
 	private $opa_row_buf = array();
 	private $opn_current_row = 0;
 	private $opn_max_columns = 512;
+	private $current_timezone = null;
 	# -------------------------------------------------------
 	/**
 	 *
 	 */
 	public function __construct($ps_source=null, $pa_options=null){
 		parent::__construct($ps_source, $pa_options);
+		
+		$this->current_timezone = date_default_timezone_get();
 		
 		$this->ops_title = _t('Excel XLSX data reader');
 		$this->ops_display_name = _t('Excel XLS/XLSX');
@@ -102,11 +105,12 @@ class ExcelDataReader extends BaseDataReader {
 			if (!$this->opo_rows->valid()) {return false; }
 		
 			if($o_row = $this->opo_rows->current()) {
-				$this->opa_row_buf = array(null);
+				$this->opa_row_buf = [null];
 		
 				$o_cells = $o_row->getCellIterator();
 				$o_cells->setIterateOnlyExistingCells(false); 
 			
+				date_default_timezone_set('UTC');
 				$vn_col = 1;
 				foreach ($o_cells as $o_cell) {
 					if (\PhpOffice\PhpSpreadsheet\Shared\Date::isDateTime($o_cell)) {
@@ -115,15 +119,19 @@ class ExcelDataReader extends BaseDataReader {
 								$vs_val = trim((string)$o_cell->getValue());
 							}
 						}
-						$this->opa_row_buf[] = $vs_val;
+						// Strip nulls
+						$this->opa_row_buf[] = str_replace("\\0", '/0', $vs_val);
 					} else {
-						$this->opa_row_buf[] = $vs_val = trim((string)self::getCellAsHTML($o_cell));
+						// Strip nulls
+						$this->opa_row_buf[] = $vs_val = str_replace("\\0", '/0', trim((string)self::getCellAsHTML($o_cell)));
 					}
 
 					$vn_col++;
 					// max columns; some Excel files have *thousands* of "phantom" columns
 					if ($vn_col > $this->opn_max_columns) { break; }
 				}
+				
+				date_default_timezone_set($this->current_timezone);
 
 				return $o_row;
 			}

@@ -38,7 +38,6 @@
  	require_once(__CA_APP_DIR__."/helpers/configurationHelpers.php");
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
  	require_once(__CA_MODELS_DIR__."/ca_data_importers.php");
- 	require_once(__CA_LIB_DIR__."/Datamodel.php");
  	require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
  	require_once(__CA_LIB_DIR__."/ResultContext.php");
  	require_once(__CA_LIB_DIR__."/BatchProcessor.php");
@@ -47,9 +46,8 @@
  
  	class MetadataImportController extends ActionController {
  		# -------------------------------------------------------
- 		protected $opo_datamodel;
  		protected $opo_app_plugin_manager;
- 	//	protected $opo_result_context;
+ 		protected $opo_result_context;
  		# -------------------------------------------------------
  		#
  		# -------------------------------------------------------
@@ -149,6 +147,10 @@
  		 * 
  		 */
  		public function ImportData() {
+ 			if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+				$this->Index();
+				return;
+			}
  			global $g_ui_locale_id;
  			$t_importer = $this->getImporterInstance();
  			
@@ -156,64 +158,113 @@
  				return $this->Index();
  			}
  			
- 			$va_options = array(
+ 			$options = [
  				'sendMail' => (bool)$this->request->getParameter('send_email_when_done', pInteger), 
  				'sendSMS' => (bool)$this->request->getParameter('send_sms_when_done', pInteger), 
+ 				'runInBackground' => (bool)$this->request->getParameter('run_in_background', pInteger),
  				
  				'locale_id' => $g_ui_locale_id,
  				'user_id' => $this->request->getUserID(),
  				
  				'logLevel' => $this->request->getParameter("logLevel", pInteger),
+ 				'limitLogTo' => $this->request->getParameter("limitLogTo", pArray),
  				'dryRun' => $this->request->getParameter("dryRun", pInteger),
  				
- 				'fileInput' => $this->request->getParameter("fileInput", pString),
- 				'fileImportPath' => $this->request->getParameter("fileImportPath", pString),
+ 				'fileInput' => $this->request->getParameter("fileInput", pString), // where data is drawn from (uploaded file/import directory/GoogleDrive)
+ 				'fileImportPath' => $this->request->getParameter("fileImportPath", pString), // path relative to import directory when fileInput='import'
  				
  				'importAllDatasets' => (bool)$this->request->getParameter("importAllDatasets", pInteger), 
- 				'originalFilename' => $vs_name
- 			);
- 			
- 			$va_last_settings = $va_options;
- 			$va_last_settings['importer_id'] = $this->request->getParameter("importer_id", pInteger); 
- 			$va_last_settings['inputFormat'] = $this->request->getParameter("inputFormat", pString); 
- 			$va_last_settings['logLevel'] = $this->request->getParameter("logLevel", pInteger); 
- 			$va_last_settings['limitLogTo'] = $this->request->getParameter("limitLogTo", pArray); 
+ 				'originalFilename' => $vs_name,
+ 				
+ 				'importer_id' => $this->request->getParameter("importer_id", pInteger),
+ 				'inputFormat' => $this->request->getParameter("inputFormat", pString),
+ 				
+ 				'sourceUrl' => $this->request->getParameter('sourceUrl', pString),
+ 				'sourceText' => $this->request->getParameter('sourceText', pString)
+ 			];
 
- 			$va_last_settings['dryRun'] = $this->request->getParameter("dryRun", pInteger); 
  			if ($vs_file_input = $this->request->getParameter("fileInput", pString)) {
- 				$va_last_settings['fileInput'] = $vs_file_input; 
+ 				$options['fileInput'] = $vs_file_input; 
  			}
  			if ($vs_file_import_path = $this->request->getParameter("fileImportPath", pString)) {
- 				$va_last_settings['fileImportPath'] = $vs_file_import_path;
+ 				$options['fileImportPath'] = $vs_file_import_path;
  			}
  			if ($vs_file_import_path = $this->request->getParameter("fileImportPath", pString)) {
- 				$va_last_settings['fileImportPath'] = $vs_file_import_path;
+ 				$options['fileImportPath'] = $vs_file_import_path;
  			}
  			
- 			if ($va_last_settings['fileInput'] === 'googledrive') {
- 				if ($google_url = caValidateGoogleSheetsUrl($google_url_orig = $this->request->getParameter('google_drive_url', pString))) {
- 					try {
-						$tmp_file = caFetchFileFromUrl($google_url);
-					} catch (ApplicationException $e) {
-						$this->notification->addNotification($e->getMessage(), __NOTIFICATION_TYPE_ERROR__);
+ 			switch(strtolower($options['fileInput'])) {
+ 				case 'googledrive':
+					if ($google_url = caValidateGoogleSheetsUrl($google_url_orig = $this->request->getParameter('google_drive_url', pString))) {
+						try {
+							$tmp_file = caFetchFileFromUrl($google_url);
+						} catch (ApplicationException $e) {
+							$this->notification->addNotification($e->getMessage(), __NOTIFICATION_TYPE_ERROR__);
+							return $this->Run();
+						}
+						$options['googleDriveUrl'] = $google_url_orig;
+						$options['sourceFile'] = $tmp_file;
+						$options['sourceFileName'] = pathinfo($tmp_file, PATHINFO_FILENAME);
+					} else {
+						$this->notification->addNotification(_t("URL is invalid"), __NOTIFICATION_TYPE_ERROR__);
 						return $this->Run();
 					}
-					$va_last_settings['googleDriveUrl'] = $google_url_orig;
-					$_FILES['sourceFile']['tmp_name'] = $tmp_file;
- 				} else {
- 					$this->notification->addNotification(_t("URL is invalid"), __NOTIFICATION_TYPE_ERROR__);
- 					return $this->Run();
- 				}
+					break;
+				case 'import':	// from import directory
+					$base_import_dir = $req->config->get('batch_media_import_root_directory');
+					
+					$options['sourceFile'] = "{$base_import_dir}/{$options['fileImportPath']}";
+					$options['sourceFileName'] = pathinfo($options['sourceFile'], PATHINFO_FILENAME);
+					break;
+				default:		// directly uploaded file
+					if(isset($_FILES['sourceFile']['tmp_name']) && $_FILES['sourceFile']['tmp_name']) {
+						$options['sourceFile'] = $_FILES['sourceFile']['tmp_name'];
+						$options['sourceFileName'] = $_FILES['sourceFile']['name'] ? $_FILES['sourceFile']['name'] : $_FILES['sourceFile']['tmp_name'];
+					} elseif($options['sourceUrl']) {
+						$options['sourceFile'] = $options['sourceUrl'];
+						$options['sourceFileName'] = null;
+					} elseif($options['sourceText']) {
+						$options['sourceFile'] = $options['sourceText'];
+						$options['sourceFileName'] = null;
+					} else {
+						$this->notification->addNotification(_t("No data specified"), __NOTIFICATION_TYPE_ERROR__);
+						return $this->Run();
+					}
+					break;
  			}
  			
- 			$this->request->user->setVar('batch_metadata_last_settings', $va_last_settings);
- 			
+ 			$this->request->user->setVar('batch_metadata_last_settings', $options);
+
  			$this->view->setVar("t_subject", $t_subject);
  		
-			// run now
-			$app = AppController::getInstance();
-			$app->registerPlugin(new BatchMetadataImportProgress($this->request, $va_options));
-			$this->render('metadataimport/batch_results_html.php');
+ 			if ((bool)$this->request->config->get('queue_enabled') && (bool)$this->request->getParameter('run_in_background', pInteger)) { 
+ 				// queue for background processing
+ 				$o_tq = new TaskQueue();
+ 				
+ 				$entity_key = join('-', array($this->request->getUserID(), $options['importFromDirectory'], time(), rand(1,999999)));
+ 				
+ 				if(file_exists($options['sourceFile'])) {
+ 					// Copy upload tmp file to persistent tmp path
+ 					// TaskQueue handle will delete this file when it's done with it
+ 					if($ext = pathinfo($options['sourceFile'], PATHINFO_EXTENSION)) { $ext = '.'.$ext; }
+ 					@copy($options['sourceFile'], $new_path = __CA_APP_DIR__.'/tmp/caMetadataImportTmp_'.$entity_key.$ext);
+ 					$options['sourceFile'] = $new_path;
+ 				}
+ 				
+				if (!$o_tq->addTask(
+					'metadataImport',
+					$options,
+					["priority" => 100, "entity_key" => $entity_key, "row_key" => $entity_key, 'user_id' => $this->request->getUserID()]
+				)) {
+					//$this->postError(100, _t("Couldn't queue batch processing for"),"EditorContro->_processMedia()");	
+				}
+				$this->render('metadataimport/batch_queued_html.php');
+			} else { 
+				// run now
+				$app = AppController::getInstance();
+				$app->registerPlugin(new BatchMetadataImportProgress($this->request, $options));
+				$this->render('metadataimport/batch_results_html.php');
+			}
  		}
  		# -------------------------------------------------------
  		/**
@@ -247,15 +298,23 @@
  		 * 
  		 */
  		public function Load() {
- 			$google_url = caValidateGoogleSheetsUrl($this->request->getParameter('google_drive_url', pString));
- 			if (!$google_url) {
+ 			if(!($google_url = trim($this->request->getParameter('google_drive_url', pString)))) {
+ 				$this->notification->addNotification(_t('No url specified'), __NOTIFICATION_TYPE_ERROR__);
+				return $this->Index();
+ 			}
+ 			$google_file = new \CA\MediaUrl();
+ 			if (!$google_file->validate($google_url, ['format' => 'xlsx', 'limit' => ['GoogleDrive']])) {
  				$this->notification->addNotification(_t("URL is invalid"), __NOTIFICATION_TYPE_ERROR__);
  				return $this->Index();
  			}
  			
  			try {
- 				$tmp_file = caFetchFileFromUrl($google_url);
- 			} catch (ApplicationException $e) {
+ 				$parsed_data = $google_file->fetch($google_url, ['format' => 'xlsx', 'limit' => ['GoogleDrive']]);
+ 				if (!is_array($parsed_data) || !isset($parsed_data['file']) || !($tmp_file = $parsed_data['file'])) {
+ 					$this->notification->addNotification(_t('Could not download data'), __NOTIFICATION_TYPE_ERROR__);
+					return $this->Index();
+ 				}
+ 			} catch (UrlFetchException $e) {
  				$this->notification->addNotification($e->getMessage(), __NOTIFICATION_TYPE_ERROR__);
 				return $this->Index();
  			}

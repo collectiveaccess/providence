@@ -1,5 +1,3 @@
-@font-face {font-family: 'DIN-Regular';src: url('fonts/28EC2C_0_0.eot');src: url('fonts/28EC2C_0_0.eot?#iefix') format('embedded-opentype'),url('fonts/28EC2C_0_0.woff') format('woff'),url('fonts/28EC2C_0_0.ttf') format('truetype');}
-
 html, body {
     font: 12px Helvetica, Sans-serif;
     margin:0px;
@@ -48,7 +46,7 @@ a:hover{
 }
 
 #content{
-    padding:10px 20px 20px 20px;
+    padding:0px 20px 20px 20px;
 }
 
 .errorPanel {
@@ -89,7 +87,7 @@ H2{
 
 .contentError {
     font-size:14px;
-    color: red;
+    color: #EB0000;
     font-weight: bold;
     text-decoration: none;
     margin: 10px 0px 5px 0px;
@@ -131,13 +129,16 @@ H2{
 
 .error{
     text-align: center;
-    color:red;
+    color:#EB0000;
     padding:10px 0px 5px 0px;
     font-family: 'DIN-Regular', helvetica, sans-serif;
     font-size: 22px;
     line-height: 24px;
 }
 
+.errorDescription {
+    padding-top: 10px;
+}
 
 ol.tracelist {
     display: block;

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2020 Whirl-i-Gig
+ * Copyright 2012-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -49,11 +49,11 @@
 
 	<div class="sectionBox">
 <?php
-		print caFormTag($this->request, 'Save/'.$this->request->getActionExtra(), 'caBatchMediaImportForm', null, 'POST', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
+		print caFormTag($this->request, 'Save/'.$this->request->getActionExtra(), 'caBatchMediaImportForm', null, 'POST', 'multipart/form-data', '_top', array('noCSRFToken' => false, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
 		print caHTMLHiddenInput('import_target', array('value' => $this->getVar('import_target')));
 ?>
 		<div class='bundleLabel'>
-			<span class="formLabelText"><?php print _t('Import target'); ?></span>
+			<span class="formLabelText"><?= _t('Import target'); ?></span>
 			<div class="bundleContainer">
 				<div class="caLabelList" >
 					<p>
@@ -65,7 +65,7 @@
 			</div>
 		</div>
 		<div class='bundleLabel'>
-			<span class="formLabelText"><?php print _t('Directory to import'); ?></span>
+			<span class="formLabelText"><?= _t('Directory to import'); ?></span>
 			<div class="bundleContainer">
 				<div class="caLabelList" >
 						<!--- begin directoryBrowser --->
@@ -76,32 +76,32 @@
 	var oDirBrowser;
 	jQuery(document).ready(function() {
 		oDirBrowser = caUI.initDirectoryBrowser('directoryBrowser', {
-			levelDataUrl: '<?php print caNavUrl($this->request, 'batch', 'MediaImport', 'GetDirectoryLevel'); ?>',
-			initDataUrl: '<?php print caNavUrl($this->request, 'batch', 'MediaImport', 'GetDirectoryAncestorList'); ?>',
+			levelDataUrl: '<?= caNavUrl($this->request, 'batch', 'MediaImport', 'GetDirectoryLevel'); ?>',
+			initDataUrl: '<?= caNavUrl($this->request, 'batch', 'MediaImport', 'GetDirectoryAncestorList'); ?>',
 
-			openDirectoryIcon: "<?php print caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
-			disabledDirectoryIcon: "<?php print caNavIcon(__CA_NAV_ICON_DOT__, 1, array('class' => 'disabled')); ?>",
+			openDirectoryIcon: "<?= caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
+			disabledDirectoryIcon: "<?= caNavIcon(__CA_NAV_ICON_DOT__, 1, array('class' => 'disabled')); ?>",
 
-			folderIcon: "<?php print caNavIcon(__CA_NAV_ICON_FOLDER__, 1); ?>",
-			fileIcon: "<?php print caNavIcon(__CA_NAV_ICON_FILE__, 1); ?>",
+			folderIcon: "<?= caNavIcon(__CA_NAV_ICON_FOLDER__, 1); ?>",
+			fileIcon: "<?= caNavIcon(__CA_NAV_ICON_FILE__, 1); ?>",
 
 			displayFiles: true,
 			allowFileSelection: false,
 
-			uploadProgressMessage: "<?php print addslashes(_t("Upload progress: %1")); ?>",
+			uploadProgressMessage: <?= json_encode(_t("Upload progress: %1")); ?>,
 			uploadProgressID: "batchProcessingTableProgressGroup",
 			uploadProgressBarID: "progressbar",
 			uploadProgressStatusID: "batchProcessingTableStatus",
-			allowDragAndDropUpload: <?php print (sizeof(array_filter(caGetAvailableMediaUploadPaths(), 'is_writable')) > 0) ? "true" : "false"; ?>,
-			dragAndDropUploadUrl: "<?php print caNavUrl($this->request, 'batch', 'MediaImport', 'UploadFiles'); ?>",
+			allowDragAndDropUpload: <?= (sizeof(array_filter(caGetAvailableMediaUploadPaths(), 'is_writable')) > 0) ? "true" : "false"; ?>,
+			dragAndDropUploadUrl: "<?= caNavUrl($this->request, 'batch', 'MediaImport', 'UploadFiles'); ?>",
 
-			initItemID: '<?php print addslashes($va_last_settings['importFromDirectory']); ?>',
-			indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
+			initItemID: <?= json_encode($va_last_settings['importFromDirectory']); ?>,
+			indicator: "<?= caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 
 			currentSelectionDisplayID: 'browseCurrentSelection',
 
 			onSelection: function(item_id, path, name, type) {
-				if (type == 'DIR') { jQuery('#caDirectoryValue').val(path); }
+				if (type == 'DIR') { jQuery('#caDirectoryValue').val(path); } else { jQuery('#caDirectoryValue').val(''); }
 			}
 		});
 
@@ -126,7 +126,7 @@
 			</div>
 		</div>
 		<div class='bundleLabel'>
-			<span class="formLabelText"><?php print _t('Import mode'); ?></span>
+			<span class="formLabelText"><?= _t('Import mode'); ?></span>
 				<div class="bundleContainer">
 					<div class="caLabelList" >
 						<p>
@@ -139,7 +139,7 @@
 		</div>
 
 		<div class='bundleLabel'>
-			<span class="formLabelText"><?php print _t('Type'); ?></span>
+			<span class="formLabelText"><?= _t('Type'); ?></span>
 				<div class="bundleContainer">
 					<div class="caLabelList">
 						<div style='padding:10px 0px 10px 10px;'>
@@ -169,7 +169,7 @@
 				</div>
 		</div>
 		<div class='bundleLabel'>
-			<span class="formLabelText"><?php print _t('Set'); ?></span>
+			<span class="formLabelText"><?= _t('Set'); ?></span>
 			<div class="bundleContainer">
 				<div class="caLabelList" id="caMediaImportSetControls">
 					<div style='padding:10px 0px 10px 10px;'>
@@ -183,7 +183,7 @@
 									if (isset($va_last_settings['setMode']) && ($va_last_settings['setMode'] == 'add')) { $va_attrs['checked'] = 1; }
 									print caHTMLRadioButtonInput('set_mode', $va_attrs);
 								?></td>
-								<td class='formLabel'><?php print _t('Add imported media to set %1', caHTMLSelect('set_id', $this->getVar('available_sets'), array('id' => 'caAddToSetID', 'class' => 'searchSetsSelect', 'width' => '300px'), array('value' => null, 'width' => '170px'))); ?></td>
+								<td class='formLabel'><?= _t('Add imported media to set %1', caHTMLSelect('set_id', $this->getVar('available_sets'), array('id' => 'caAddToSetID', 'class' => 'searchSetsSelect', 'width' => '300px'), array('value' => null, 'width' => '170px'))); ?></td>
 							</tr>
 <?php
 	}
@@ -194,7 +194,7 @@
 									if (isset($va_last_settings['setMode']) && ($va_last_settings['setMode'] == 'create')) { $va_attrs['checked'] = 1; }
 									print caHTMLRadioButtonInput('set_mode', $va_attrs);
 								?></td>
-								<td class='formLabel'><?php print _t('Create set %1 with imported media', caHTMLTextInput('set_create_name', array('value' => '', 'width' => '200px', 'id' => 'caSetCreateName'))); ?></td>
+								<td class='formLabel'><?= _t('Create set %1 with imported media', caHTMLTextInput('set_create_name', array('value' => '', 'width' => '200px', 'id' => 'caSetCreateName'))); ?></td>
 							</tr>
 							<tr>
 								<td><?php
@@ -202,7 +202,7 @@
 									if (!((isset($va_last_settings['setMode']) && (in_array($va_last_settings['setMode'], array('add', 'create')))))) { $va_attrs['checked'] = 1; }
 									print caHTMLRadioButtonInput('set_mode', $va_attrs);
 								?></td>
-								<td class='formLabel'><?php print _t('Do not associate imported media with a set'); ?></td>
+								<td class='formLabel'><?= _t('Do not associate imported media with a set'); ?></td>
 							</tr>
 						</table>
 						<script type="text/javascript">
@@ -229,7 +229,7 @@
 			</div>
 		</div>
 		<div class='bundleLabel'>
-			<span class="formLabelText"><?php print _t('%1 identifier', ucfirst(caGetTableDisplayName($t_instance->tableName(), false))); ?></span>
+			<span class="formLabelText"><?= _t('%1 identifier', ucfirst(caGetTableDisplayName($t_instance->tableName(), false))); ?></span>
 			<div class="bundleContainer">
 				<div class="caLabelList" id="caMediaImportIdnoControls">
 					<div style='padding:10px 0px 10px 10px;'>
@@ -240,7 +240,7 @@
 									if (isset($va_last_settings['idnoMode']) && ($va_last_settings['idnoMode'] == 'form')) { $va_attrs['checked'] = 1; }
 									print caHTMLRadioButtonInput('idno_mode', $va_attrs);
 								?></td>
-								<td class='formLabel' id='caIdnoFormModeForm'><?php print _t('Set %1 identifier to %2', caGetTableDisplayName($t_instance->tableName(), false),  $t_instance->htmlFormElement('idno', '^ELEMENT', array('request' => $this->request))); ?></td>
+								<td class='formLabel' id='caIdnoFormModeForm'><?= _t('Set %1 identifier to %2', caGetTableDisplayName($t_instance->tableName(), false),  $t_instance->htmlFormElement('idno', '^ELEMENT', array('request' => $this->request))); ?></td>
 							</tr>
 							<tr>
 								<td><?php
@@ -248,7 +248,7 @@
 									if (isset($va_last_settings['idnoMode']) && ($va_last_settings['idnoMode'] == 'filename')) { $va_attrs['checked'] = 1; }
 									print caHTMLRadioButtonInput('idno_mode', $va_attrs);
 								?></td>
-								<td class='formLabel'><?php print _t('Set %1 identifier to file name', caGetTableDisplayName($t_instance->tableName(), false)); ?></td>
+								<td class='formLabel'><?= _t('Set %1 identifier to file name', caGetTableDisplayName($t_instance->tableName(), false)); ?></td>
 							</tr>
 							<tr>
 								<td><?php
@@ -256,7 +256,7 @@
 									if (isset($va_last_settings['idnoMode']) && ($va_last_settings['idnoMode'] == 'filename_no_ext')) { $va_attrs['checked'] = 1; }
 									print caHTMLRadioButtonInput('idno_mode', $va_attrs);
 									?></td>
-								<td class='formLabel'><?php print _t('Set %1 identifier to file name without extension', caGetTableDisplayName($t_instance->tableName(), false)); ?></td>
+								<td class='formLabel'><?= _t('Set %1 identifier to file name without extension', caGetTableDisplayName($t_instance->tableName(), false)); ?></td>
 							</tr>
 							<tr>
 								<td><?php
@@ -264,7 +264,7 @@
 									if (isset($va_last_settings['idnoMode']) && ($va_last_settings['idnoMode'] == 'directory_and_filename')) { $va_attrs['checked'] = 1; }
 									print caHTMLRadioButtonInput('idno_mode', $va_attrs);
 								?></td>
-								<td class='formLabel'><?php print _t('Set %1 identifier to directory and file name', caGetTableDisplayName($t_instance->tableName(), false)); ?></td>
+								<td class='formLabel'><?= _t('Set %1 identifier to directory and file name', caGetTableDisplayName($t_instance->tableName(), false)); ?></td>
 							</tr>
 						</table>
 						<script type="text/javascript">
@@ -292,7 +292,85 @@
 		</div>
 
 		<div class='bundleLabel'>
-			<span class="formLabelText"><?php print (($this->getVar('ca_object_representations_mapping_list_count') > 0) || ($this->getVar($t_instance->tableName().'_mapping_list_count') > 0)) ? _t('Status, access &amp; metadata extraction') : _t('Status &amp; access'); ?></span>
+			<span class="formLabelText"><?= _t('%1 title', ucfirst(caGetTableDisplayName($t_instance->tableName(), false))); ?></span>
+			<div class="bundleContainer">
+				<div class="caLabelList" id="caMediaImportLabelControls">
+					<div style='padding:10px 0px 10px 10px;'>
+						<table>
+							<tr>
+								<td><?php
+									$va_attrs = array('value' => 'blank', 'checked' => 1, 'id' => 'caLabelBlankMode');
+									if (isset($va_last_settings['labelMode']) && ($va_last_settings['labelMode'] == 'blank')) { $va_attrs['checked'] = 1; }
+									print caHTMLRadioButtonInput('label_mode', $va_attrs);
+								?></td>
+								<td class='formLabel'><?= _t('Set %1 title to %2', caGetTableDisplayName($t_instance->tableName(), false), '['.caGetBlankLabelText($t_instance->tableName()).']'); ?></td>
+							</tr>
+							<tr>
+								<td><?php
+									$va_attrs = array('value' => 'user', 'id' => 'caLabelUserMode');
+									if (isset($va_last_settings['labelMode']) && ($va_last_settings['labelMode'] == 'user')) { $va_attrs['checked'] = 1; }
+									print caHTMLRadioButtonInput('label_mode', $va_attrs);
+								?></td>
+								<td class='formLabel'><?= _t('Set %1 title to %2', caGetTableDisplayName($t_instance->tableName(), false), caHTMLTextInput('label_text', ['id' => 'caLabelUserModeText', 'value' => $va_last_settings['labelText']], ['width' => '400px'])); ?></td>
+							</tr>
+							<tr>
+								<td><?php
+									$va_attrs = array('value' => 'form', 'id' => 'caLabelIdnoMode');
+									if (isset($va_last_settings['labelMode']) && ($va_last_settings['labelMode'] == 'idno')) { $va_attrs['checked'] = 1; }
+									print caHTMLRadioButtonInput('label_mode', $va_attrs);
+								?></td>
+								<td class='formLabel' id='caIdnoFormModeForm'><?= _t('Set %1 title to identifier', caGetTableDisplayName($t_instance->tableName(), false)); ?></td>
+							</tr>
+							<tr>
+								<td><?php
+									$va_attrs = array('value' => 'filename', 'id' => 'caLabelFilenameMode');
+									if (isset($va_last_settings['labelMode']) && ($va_last_settings['labelMode'] == 'filename')) { $va_attrs['checked'] = 1; }
+									print caHTMLRadioButtonInput('label_mode', $va_attrs);
+								?></td>
+								<td class='formLabel'><?= _t('Set %1 title to file name', caGetTableDisplayName($t_instance->tableName(), false)); ?></td>
+							</tr>
+							<tr>
+								<td><?php
+									$va_attrs = array('value' => 'filename_no_ext', 'id' => 'caLabelFilenameNoExtMode');
+									if (isset($va_last_settings['labelMode']) && ($va_last_settings['labelMode'] == 'filename_no_ext')) { $va_attrs['checked'] = 1; }
+									print caHTMLRadioButtonInput('label_mode', $va_attrs);
+									?></td>
+								<td class='formLabel'><?= _t('Set %1 title to file name without extension', caGetTableDisplayName($t_instance->tableName(), false)); ?></td>
+							</tr>
+							<tr>
+								<td><?php
+									$va_attrs = array('value' => 'directory_and_filename', 'id' => 'caLabelDirectoryAndFilenameMode');
+									if (isset($va_last_settings['labelMode']) && ($va_last_settings['labelMode'] == 'directory_and_filename')) { $va_attrs['checked'] = 1; }
+									print caHTMLRadioButtonInput('label_mode', $va_attrs);
+								?></td>
+								<td class='formLabel'><?= _t('Set %1 title to directory and file name', caGetTableDisplayName($t_instance->tableName(), false)); ?></td>
+							</tr>
+						</table>
+						<script type="text/javascript">
+							jQuery(document).ready(function() {
+								jQuery("#caIdnoFormMode").click(function() {
+									jQuery("#caIdnoFormModeForm input").prop('disabled', false);
+								});
+								jQuery("#caIdnoFilenameMode").click(function() {
+									jQuery("#caIdnoFormModeForm input").prop('disabled', true);
+								});
+								jQuery("#caIdnoFilenameNoExtMode").click(function() {
+									jQuery("#caIdnoFormModeForm input").prop('disabled', true);
+								});
+								jQuery("#caIdnoDirectoryAndFilenameMode").click(function() {
+									jQuery("#caIdnoFormModeForm input").prop('disabled', true);
+								});
+
+								jQuery("#caMediaImportIdnoControls").find("input:checked").click();
+							});
+
+						</script>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class='bundleLabel'>
+			<span class="formLabelText"><?= (($this->getVar('ca_object_representations_mapping_list_count') > 0) || ($this->getVar($t_instance->tableName().'_mapping_list_count') > 0)) ? _t('Status, access &amp; metadata extraction') : _t('Status &amp; access'); ?></span>
 				<div class="bundleContainer">
 					<div class="caLabelList" >
 						<div style='padding:10px 0px 10px 10px;'>
@@ -330,7 +408,7 @@
 		</div>
 
 		<div class='bundleLabel'>
-			<span id="caBatchMediaAdvancedHeader" class="formLabelText"><a href="#" id="caBatchMediaAdvancedHeaderText"><?php print _t("Show advanced options"); ?> &gt;</a></span>
+			<span id="caBatchMediaAdvancedHeader" class="formLabelText"><a href="#" id="caBatchMediaAdvancedHeaderText"><?= _t("Show advanced options"); ?> &gt;</a></span>
 		</div>
 		<script type="text/javascript">
 			jQuery(document).ready(function() {
@@ -339,7 +417,7 @@
 					$content = jQuery("#caBatchMediaAdvancedContent");
 					$content.slideToggle(500, function () {
 						jQuery("#caBatchMediaAdvancedHeaderText").text(function () {
-							return $content.is(":visible") ? "< <?php print _t("Hide advanced options"); ?>" : "<?php print _t("Show advanced options"); ?> >";
+							return $content.is(":visible") ? "< <?= _t("Hide advanced options"); ?>" : "<?= _t("Show advanced options"); ?> >";
 						});
 					});
 					// scroll down so that you can actually see the advanced section after expanding
@@ -352,7 +430,7 @@
 		<div id="caBatchMediaAdvancedContent" style="display: none">
 
 			<div class='bundleLabel'>
-				<span class="formLabelText"><?php print _t('Matching'); ?></span>
+				<span class="formLabelText"><?= _t('Matching'); ?></span>
 				<div class="bundleContainer">
 					<div class="caLabelList" >
 						<table style="width: 100%;">
@@ -376,7 +454,7 @@
 			</div>
 
 			<div class='bundleLabel'>
-				<span class="formLabelText"><?php print _t('%1 identifier', ucfirst(caGetTableDisplayName('ca_object_representations', false))); ?></span>
+				<span class="formLabelText"><?= _t('%1 identifier', ucfirst(caGetTableDisplayName('ca_object_representations', false))); ?></span>
 				<div class="bundleContainer">
 					<div class="caLabelList" id="caMediaImportRepresentationIdnoControls">
 						<div style='padding:10px 0px 10px 10px;'>
@@ -387,7 +465,7 @@
 										if (isset($va_last_settings['representationIdnoMode']) && ($va_last_settings['representationIdnoMode'] == 'form')) { $va_attrs['checked'] = 1; }
 										print caHTMLRadioButtonInput('representation_idno_mode', $va_attrs);
 										?></td>
-									<td class='formLabel' id='caRepresentationIdnoFormModeForm'><?php print _t('Set %1 identifier to %2', caGetTableDisplayName('ca_object_representations', false) , $t_rep->htmlFormElement('idno', '^ELEMENT', array('request' => $this->request))); ?></td>
+									<td class='formLabel' id='caRepresentationIdnoFormModeForm'><?= _t('Set %1 identifier to %2', caGetTableDisplayName('ca_object_representations', false) , $t_rep->htmlFormElement('idno', '^ELEMENT', array('request' => $this->request))); ?></td>
 								</tr>
 								<tr>
 									<td><?php
@@ -395,7 +473,7 @@
 										if (isset($va_last_settings['representationIdnoMode']) && ($va_last_settings['representationIdnoMode'] == 'filename')) { $va_attrs['checked'] = 1; }
 										print caHTMLRadioButtonInput('representation_idno_mode', $va_attrs);
 										?></td>
-									<td class='formLabel'><?php print _t('Set %1 identifier to file name', caGetTableDisplayName('ca_object_representations', false)); ?></td>
+									<td class='formLabel'><?= _t('Set %1 identifier to file name', caGetTableDisplayName('ca_object_representations', false)); ?></td>
 								</tr>
 								<tr>
 									<td><?php
@@ -403,7 +481,7 @@
 										if (isset($va_last_settings['representationIdnoMode']) && ($va_last_settings['representationIdnoMode'] == 'filename_no_ext')) { $va_attrs['checked'] = 1; }
 										print caHTMLRadioButtonInput('representation_idno_mode', $va_attrs);
 										?></td>
-									<td class='formLabel'><?php print _t('Set %1 identifier to file name without extension', caGetTableDisplayName('ca_object_representations', false)); ?></td>
+									<td class='formLabel'><?= _t('Set %1 identifier to file name without extension', caGetTableDisplayName('ca_object_representations', false)); ?></td>
 								</tr>
 								<tr>
 									<td><?php
@@ -411,7 +489,7 @@
 										if (isset($va_last_settings['representationIdnoMode']) && ($va_last_settings['representationIdnoMode'] == 'directory_and_filename')) { $va_attrs['checked'] = 1; }
 										print caHTMLRadioButtonInput('representation_idno_mode', $va_attrs);
 										?></td>
-									<td class='formLabel'><?php print _t('Set %1 identifier to directory and file name', caGetTableDisplayName('ca_object_representations', false)); ?></td>
+									<td class='formLabel'><?= _t('Set %1 identifier to directory and file name', caGetTableDisplayName('ca_object_representations', false)); ?></td>
 								</tr>
 							</table>
 							<script type="text/javascript">
@@ -439,7 +517,7 @@
 			</div>
 
 			<div class='bundleLabel'>
-				<span class="formLabelText"><?php print _t('Relationships'); ?></span>
+				<span class="formLabelText"><?= _t('Relationships'); ?></span>
 					<div class="bundleContainer">
 						<div class="caLabelList" >
 							<p class="bundleDisplayPlacementEditorHelpText">
@@ -482,7 +560,7 @@
 					</div>
 			</div>
 			<div class='bundleLabel'>
-				<span class="formLabelText"><?php print _t('Skip files'); ?></span>
+				<span class="formLabelText"><?= _t('Skip files'); ?></span>
 					<div class="bundleContainer">
 						<div class="caLabelList" >
 							<p class="bundleDisplayPlacementEditorHelpText">
@@ -499,21 +577,37 @@
 					</div>
 			</div>
 			<div class='bundleLabel'>
-				<span class="formLabelText"><?php print _t('Miscellaneous'); ?></span>
+				<span class="formLabelText"><?= _t('Miscellaneous'); ?></span>
 					<div class="bundleContainer">
 						<div class="caLabelList" >
-							<p class='formLabel'>
-	<?php
-				print caHTMLCheckboxInput('allow_duplicate_media', array('value' => 1,  'id' => 'caAllowDuplicateMedia', 'checked' => $va_last_settings['allowDuplicateMedia']), array());
-				print " "._t('Allow duplicate media?');
-	?>
-							</p>
+							<table>
+								<tr valign="top">
+									<td>
 							<p class='formLabel'>
 	<?php
 								print _t('Log level').'<br/>';
 								print caHTMLSelect('log_level', caGetLogLevels(), array('id' => 'caLogLevel'), array('value' => $va_last_settings['logLevel']));
 	?>
 							</p>
+									</td>
+									<td>
+							<p class='formLabel'>
+	<?php
+				print caHTMLCheckboxInput('allow_duplicate_media', array('value' => 1,  'id' => 'caAllowDuplicateMedia', 'checked' => $va_last_settings['allowDuplicateMedia']), []);
+				print " "._t('Allow duplicate media?');
+	?>
+							</p>
+									</td>
+									<td>
+							<p class='formLabel'>
+	<?php
+				print caHTMLCheckboxInput('replace_existing_media', array('value' => 1,  'id' => 'caReplaceExistingMedia', 'checked' => 0), array());
+				print " "._t('Replace existing media?');
+	?>
+							</p>
+									</td>
+								</tr>
+							</table>
 						</div>
 					</div>
 			</div>
@@ -531,8 +625,9 @@
 
 	<script type="text/javascript">
 		function caShowConfirmBatchExecutionPanel() {
-			var msg = '<?php print addslashes(_t("You are about to import files from <em>%1</em>")); ?>';
-			msg = msg.replace("%1", jQuery('#caDirectoryValue').val());
+			var msg = <?= json_encode(_t("You are about to import files from <em>%1</em>")); ?>;
+			var dir = jQuery('#caDirectoryValue').val();
+			msg = msg.replace("%1", dir ? dir : <?= json_encode('the import root'); ?>);
 			caConfirmBatchExecutionPanel.showPanel();
 			jQuery('#caConfirmBatchExecutionPanelAlertText').html(msg);
 		}

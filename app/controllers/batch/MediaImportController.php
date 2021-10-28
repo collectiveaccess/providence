@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2020 Whirl-i-Gig
+ * Copyright 2012-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,7 +39,6 @@
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
  	require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
  	require_once(__CA_MODELS_DIR__."/ca_data_importers.php");
- 	require_once(__CA_LIB_DIR__."/Datamodel.php");
  	require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
  	require_once(__CA_LIB_DIR__."/ResultContext.php");
  	require_once(__CA_LIB_DIR__."/BatchProcessor.php");
@@ -209,6 +208,10 @@
  		 * @param array $pa_options Array of options passed through to _initView and saveBundlesForScreen()
  		 */
  		public function Save($pa_options=null) {
+ 			if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+				$this->Index();
+				return;
+			}
 			global $g_ui_locale_id;
 			
  			if (!is_array($pa_options)) { $pa_options = array(); }
@@ -249,11 +252,14 @@
  				'setCreateName' => $this->request->getParameter('set_create_name', pString),
  				'set_id' => $this->request->getParameter('set_id', pInteger),
  				'idnoMode' => $this->request->getParameter('idno_mode', pString),
+ 				'labelMode' => $this->request->getParameter('label_mode', pString),
+ 				'labelText' => $this->request->getParameter('label_text', pString),
  				'idno' => $this->request->getParameter('idno', pString),
 				'representationIdnoMode' => $this->request->getParameter('representation_idno_mode', pString),
 				'representation_idno' => $this->request->getParameter('idno_representation_number', pString),
  				'logLevel' => $this->request->getParameter('log_level', pString),
  				'allowDuplicateMedia' => $this->request->getParameter('allow_duplicate_media', pInteger),
+ 				'replaceExistingMedia' => $this->request->getParameter('replace_existing_media', pInteger),
  				'locale_id' => $g_ui_locale_id,
  				'user_id' => $this->request->getUserID(),
  				'skipFileList' => $this->request->getParameter('skip_file_list', pString),
@@ -302,23 +308,37 @@
 		 * @param int $pn_max_length_of_name Maximum length in characters of returned file names. Note that the full name is always returned in the 'fullname' value. Only 'name' is truncated.
 		 * @return array An array of file names.
 		 */
-		private function _getDirectoryListing($dirs, $pb_include_hidden_files=false, $pn_max_length_of_name=25, $pn_start_at=0, $pn_max_items_to_return=25) {
-			if (!is_array($dirs)) { $dirs = [$dirs]; }
-
+		private function _getDirectoryListing($dir, $pb_include_hidden_files=false, $pn_max_length_of_name=25, $pn_start_at=0, $pn_max_items_to_return=25) {
 			$va_file_list = [];
 			foreach($dirs as $dir) {
 				if (!is_dir($dir)) { continue; }
 				if(substr($dir, -1, 1) == "/"){
 					$dir = substr($dir, 0, strlen($dir) - 1);
 				}
-
+			
 				if($va_paths = @scandir($dir, 0)) {
 					$vn_i = $vn_c = 0;
 					foreach($va_paths as $item) {
-						if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
+						if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item[0] !== '.'))) {
 							$vb_is_dir = is_dir("{$dir}/{$item}");
 							$vs_k = preg_replace('![@@]+!', '|', $item);
-							if ($vb_is_dir) {
+							if ($vb_is_dir) { 
+								$vn_i++;
+								if (($pn_start_at > 0) && ($vn_i <= $pn_start_at)) { continue; }
+								$va_child_counts = caGetDirectoryContentsCount("{$dir}/{$item}", false, false);
+								$va_file_list[$vs_k] = array(
+									'item_id' => $vs_k, 
+									'name' => caTruncateStringWithEllipsis($item, $pn_max_length_of_name),
+									'fullname' => $item,
+									'type' => 'DIR',
+									'children' => (int)$va_child_counts['files'] + (int)$va_child_counts['directories'],
+									'files' => (int)$va_child_counts['files'],
+									'subdirectories' => (int)$va_child_counts['directories']
+								);
+								$vn_c++;
+							} else { 
+								if (!$vb_is_dir) { 
+
 								$vn_i++;
 								if (($pn_start_at > 0) && ($vn_i <= $pn_start_at)) { continue; }
 								$va_child_counts = caGetDirectoryContentsCount("{$dir}/{$item}", false, false);
@@ -405,7 +425,7 @@
  			$user_import_root_directory = caGetMediaUploadPathForUser($this->request->getUserID());
  			$shared_import_root_directory = caGetSharedMediaUploadPath();
  			
- 			$va_level_data = array();
+ 			$va_level_data = [];
  			
  			if ($this->request->getParameter('init', pInteger)) { 
  				//
@@ -434,6 +454,8 @@
  				}
  			} else {
  				list($ps_directory, $pn_start) = explode("@@", $ps_id);
+ 				
+ 				Session::setVar('lastMediaImportDirectoryPath', $ps_directory);
 
 				$va_tmp = explode('/', $ps_directory);
 				$vn_level = sizeof($va_tmp);

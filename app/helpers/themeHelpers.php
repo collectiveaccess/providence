@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -260,6 +260,15 @@
 	}
 	# ---------------------------------------
 	/**
+	 * Get theme-specific cookies configuration
+	 *
+	 * @return Configuration
+	 */
+	function caGetCookiesConfig() {
+		return Configuration::load(__CA_THEME_DIR__.'/conf/cookies.conf');
+	}
+	# ---------------------------------------
+	/**
 	 * Returns associative array, keyed by primary key value with values being
 	 * the preferred label of the row from a suitable locale, ready for display
 	 *
@@ -425,14 +434,36 @@
 		
 		if(!$pa_options["currentRepClass"]){ $pa_options["currentRepClass"] = "active"; }
 		
+		$show_only_media_types_when_present = caGetOption('representationViewerShowOnlyMediaTypesWhenPresent', $pa_options, null);
+ 		if(($show_only_media_types_when_present) && !is_array($show_only_media_types_when_present)) { $show_only_media_types_when_present = [$show_only_media_types_when_present]; }
+		
 		# --- get reps as thumbnails
-		$va_reps = $pt_object->getRepresentations(array($ps_version), null, array("checkAccess" => caGetUserAccessValues($po_request), 'primaryOnly' => $pb_primary_only));
+		$va_reps = $pt_object->findRepresentations(['version' => $ps_version, "class" => caGetOption('class', $pa_options, null), "checkAccess" => caGetUserAccessValues($po_request), 'primaryOnly' => $pb_primary_only]);
+		
+		if ($show_only_media_types_when_present) {
+			$mimetypes_present = array_reduce($va_reps, function($c, $i) { $c[$i['mimetype']] = true; return $c; }, []);
+			
+			$show_only_media_types_when_present_reduced = [];
+			foreach($show_only_media_types_when_present as $t) {
+				if (caMimetypeIsValid($t, array_keys($mimetypes_present))) {
+					$show_only_media_types_when_present_reduced[] = $t;
+				}
+			}
+			
+			if(sizeof($show_only_media_types_when_present_reduced) > 0) {
+				$va_reps = array_filter($va_reps, function($v) use ($show_only_media_types_when_present_reduced) {
+					return caMimetypeIsValid($v['mimetype'], array_values($show_only_media_types_when_present_reduced));
+				});	
+			}
+		}
+		
 		if(sizeof($va_reps) < 2){
 			return null;
 		}
 		$va_links = array();
 		$vn_primary_id = "";
-		foreach($va_reps as $vn_rep_id => $va_rep){
+		foreach($va_reps as $va_rep){
+			$vn_rep_id = $va_rep["representation_id"];
 			$vs_class = "";
 			if($va_rep["is_primary"]){
 				$vn_primary_id = $vn_rep_id;
@@ -1220,7 +1251,7 @@
                     $.ajax({
                         url: '{$va_json_lookup_info['search']}',
                         dataType: \"json\",
-                        data: { term: '{$ps_field}:' + request.term },
+                        data: { term: ".(caGetOption('restrictToField', $pa_options, false) ? "'{$ps_field}:'" : "''")." + request.term },
                         success: function( data ) {
                             response(data);
                         }
@@ -1234,7 +1265,7 @@
                 select: function( event, ui ) {
                     if(!parseInt(ui.item.id) || (ui.item.id <= 0)) {
                         jQuery('#{$vs_field_proc}_autocomplete{$index}').val('');  // no matches so clear text input
-                        jQuery('#{$vs_field_proc}{$index}').val('xx');
+                        jQuery('#{$vs_field_proc}{$index}').val('');
                         event.preventDefault();
                         return;
                     }

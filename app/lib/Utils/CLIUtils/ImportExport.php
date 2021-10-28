@@ -200,6 +200,7 @@
                 'matchMode' => $vs_match_mode,
                 'matchType' => $vs_match_type,
                 'allowDuplicateMedia' => (bool)$po_opts->getOption('allow-duplicate-media'),
+                'replaceExistingMedia' => (bool)$po_opts->getOption('replace-existing-media'),
                 'includeSubDirectories' => (bool)$po_opts->getOption('include-subdirectories'),
                 'deleteMediaOnImport' => (bool)$po_opts->getOption('delete-media-on-import'),
                 
@@ -284,6 +285,7 @@
 				"match-mode-s" => _t('Determines how matches are made between media and records. Valid values are DIRECTORY_NAME, FILE_AND_DIRECTORY_NAMES, FILE_NAME. Set to DIRECTORY_NAME to match media directory names to target record identifiers; to FILE_AND_DIRECTORY_NAMES to match on both file and directory names; to FILE_NAME to match only on file names. Default is FILE_NAME.'),
 				"import-mode-s" => _t('Determines if target records are created for media that do not match existing target records. Set to TRY_TO_MATCH to create new target records when no match is found. Set to ALWAYS_MATCH to only import media for existing records. Default is TRY_TO_MATCH.'),
 				'allow-duplicate-media' => _t('Import media even if it already exists in CollectiveAccess. Default is false – skip import of duplicate media.'),
+				'replace-existing-media' => _t('Delete existing media on match records before importing new media. This option is destructive. Use with caution! Default is false.'),
 				'import-target-s' => _t('Table name of record to import media into. Should be a valid representation-taking table such as ca_objects, ca_entities, ca_occurrences, ca_places, etc. Default is ca_objects.'),
 				'import-target-type|t-s' => _t('Type to use for all newly created target records. Default is the first type in the target\'s type list.'),
 				'import-target-idno|i-s' => _t('Identifier to use for all newly created target records.'),
@@ -453,6 +455,7 @@
 
 			$vb_direct = (bool)$po_opts->getOption('direct');
 			$vb_no_search_indexing = (bool)$po_opts->getOption('no-search-indexing');
+			$vb_import_all_datasets = (bool)$po_opts->getOption('import-all-datasets');
 			$vb_use_temp_directory_for_logs_as_fallback = (bool)$po_opts->getOption('log-to-tmp-directory-as-fallback');
 			
 			$vs_detailed_log_name = $po_opts->getOption('detailed-log-name');
@@ -475,7 +478,8 @@
 					'limitLogTo' => $po_opts->getOption('limit-log-to'), 
 					'logToTempDirectoryIfLogDirectoryIsNotWritable' => $vb_use_temp_directory_for_logs_as_fallback, 
 					'addToSet' => $vs_add_to_set, 'environment' => $env,
-					'detailedLogName' => $vs_detailed_log_name
+					'detailedLogName' => $vs_detailed_log_name,
+					'importAllDatasets' => $vb_import_all_datasets
 				]
 			)) {
 				CLIUtils::addError(_t("Could not import source %1: %2", $vs_data_source, join("; ", $t_importer->getErrorList())));
@@ -497,6 +501,7 @@
 				"log|l-s" => _t('Path to directory in which to log import details. If not set no logs will be recorded.'),
 				"log-level|d-s" => _t('Logging threshold. Possible values are, in ascending order of importance: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
 				"limit-log-to|g-s" => _t('Limit logging to specific event types when log level is set to INFO. Limit logging to specific event types for log level INFO. Valid values are: GENERAL (general status messages), EXISTING_RECORD_POLICY (messages relating to merging of existing records, SKIP (messages relating to conditional skipping of mappings, groups or records), RELATIONSHIPS (messages relating to creating of relationships. Seprate multiple types with commas or semicolors.'),
+				"import-all-datasets" => _t('When importing an Excel .xslx file, if set import will be performed on all worksheets in the file. By default, only the first worksheet is imported.'),
 				"add-to-set|t-s" => _t('Optional identifier of set to add all imported items to.'),
 				"environment|e-s" => _t('JSON-encoded key value pairs to add to import environment values.'),
 				"dryrun" => _t('If set import is performed without data actually being saved to the database. This is useful for previewing an import for errors.'),
@@ -946,9 +951,9 @@
 							$notes = trim((string)$o_cell->getValue());
 							break;
 						default:
-							if(($c > 2) && ($c <= 7) && ($t = trim((string)$o_cell->getValue()))) {
-								$level = $c - 3;
-								$data[$c - 3] = $t;
+							if(($c >= 2) && ($c <= 7) && ($t = trim((string)$o_cell->getValue()))) {
+								$level = $c - 2;
+								$data[$level] = $t;
 							}
 							break;
 					}

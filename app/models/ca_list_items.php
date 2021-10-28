@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,17 +29,10 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
- 
+
 require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 require_once(__CA_LIB_DIR__.'/RepresentableBaseModel.php');
 require_once(__CA_LIB_DIR__.'/IHierarchy.php');
-require_once(__CA_MODELS_DIR__.'/ca_lists.php');
-require_once(__CA_MODELS_DIR__.'/ca_locales.php');
-
 
 BaseModel::$s_ca_models_definitions['ca_list_items'] = array(
  	'NAME_SINGULAR' 	=> _t('list item'),
@@ -197,7 +190,8 @@ BaseModel::$s_ca_models_definitions['ca_list_items'] = array(
  				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
  				'IS_NULL' => false, 
  				'DEFAULT' => 0,
- 				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if list item is deleted or not.')
+ 				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if list item is deleted or not.'),
+				'DONT_INCLUDE_IN_SEARCH_FORM' => true
 		),
 		'source_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
@@ -236,6 +230,19 @@ $_ca_list_items_settings = array(
 			'default' => 'IND',
 			'label' => _t('Entity class'),
 			'description' => _t('The class of entity the type represents. Use <em>Individual person</em> for entities that require a fully articulated personal name. Use <em>organization</em> for group entities such as corporations, clubs and families.')
+		),
+		'use_suffix_for_orgs' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('Yes') => 1,
+				_t('No') => 0
+			),
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 1,
+			'label' => _t('Use suffix for organizations?'),
+			'description' => _t('Show suffix entry field for organization labels?')
 		),
 		'render_in_new_menu' => array(
 			'formatType' => FT_BIT,
@@ -389,6 +396,8 @@ $_ca_list_items_settings = array(
 );
 
 class ca_list_items extends RepresentableBaseModel implements IHierarchy {
+	use ModelSettings;
+	
 	# ------------------------------------------------------
 	# --- Object attribute properties
 	# ------------------------------------------------------
@@ -516,12 +525,6 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 
 	protected $FIELDS;
 	
-	
-	/**
-	 * Settings delegate - implements methods for setting, getting and using 'settings' var field
-	 */
-	public $SETTINGS;
-	
 	# ------------------------------------------------------
 	# --- Constructor
 	#
@@ -534,7 +537,6 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	#
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
-		$this->SETTINGS = new ModelSettings($this, 'settings', array());
 		parent::__construct($pn_id);	# call superclass constructor
 	}
 	# ------------------------------------------------------
@@ -586,7 +588,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	private function _setSettingsForList() {
 		global $_ca_list_items_settings;
 		if (isset($_ca_list_items_settings[$vs_list_code = caGetListCode($this->get('list_id'))])) {
-			$this->SETTINGS = new ModelSettings($this, 'settings', $_ca_list_items_settings[$vs_list_code]);
+			$this->setAvailableSettings($_ca_list_items_settings[$vs_list_code]);
 		}
 	}
  	# ------------------------------------------------------
@@ -917,19 +919,4 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 
 		return false;
 	}
-	
-	# ------------------------------------------------------
-	# Settings
-	# ------------------------------------------------------
-	/**
-	 * Reroutes calls to method implemented by settings delegate to the delegate class
-	 */
-	public function __call($ps_name, $pa_arguments) {
-		if (method_exists($this->SETTINGS, $ps_name)) {
-			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
-		}
-		die($this->tableName()." does not implement method {$ps_name}");
-	}
-	# ------------------------------------------------------
 }
-?>

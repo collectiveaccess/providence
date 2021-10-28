@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2020 Whirl-i-Gig
+ * Copyright 2007-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -137,8 +137,11 @@ class RequestHTTP extends Request {
 		# figure out script name
 		$va_tmp = (isset($_SERVER['SCRIPT_NAME']) && $_SERVER['SCRIPT_NAME']) ? explode('/', $_SERVER['SCRIPT_NAME']) : array();
 		$this->ops_script_name = '';
-		while((!$this->ops_script_name) && (sizeof($va_tmp) > 0)) {
-			$this->ops_script_name = array_pop($va_tmp);
+		
+		// Look for .php element. we can rely upon $_SERVER['SCRIPT_NAME'] to be the actual path to the 
+		// executing script due to a PHP bug present in several 7.x versions (see https://bugs.php.net/bug.php?id=74129) 
+		while((!preg_match('!\.php$!', $this->ops_script_name)) && (sizeof($va_tmp) > 0)) {
+			$this->ops_script_name = trim(array_pop($va_tmp));
 		}
 
 		# create session
@@ -195,9 +198,9 @@ class RequestHTTP extends Request {
 		$this->ops_full_path = $_SERVER['REQUEST_URI'];
 		if (!caUseCleanUrls() && !preg_match("!/index.php!", $this->ops_full_path) && !preg_match("!/service.php!", $this->ops_full_path)) { $this->ops_full_path = rtrim($this->ops_full_path, "/")."/index.php"; }
 		$this->ops_full_path = preg_replace("![/]+!", "/", $this->ops_full_path);
-		$vs_path_info = str_replace($_SERVER['SCRIPT_NAME'], "", str_replace("?".$_SERVER['QUERY_STRING'], "", $this->ops_full_path));
+		$vs_path_info = str_replace($this->ops_script_name, "", str_replace("?".$_SERVER['QUERY_STRING'], "", $this->ops_full_path));
 		
-		$this->ops_path_info = $vs_path_info ? $vs_path_info : (isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '');
+		$this->ops_path_info = preg_replace("![/]+!", "/", $vs_path_info ? $vs_path_info : (isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : ''));
 		if (__CA_URL_ROOT__) { $this->ops_path_info = preg_replace("!^".__CA_URL_ROOT__."/!", "", $this->ops_path_info); }
 	}
 	# -------------------------------------------------------
@@ -522,7 +525,9 @@ class RequestHTTP extends Request {
 	 * @return HTMLPurifier Returns instance
 	 */
 	static public function getPurifier() {
-		if (!RequestHTTP::$html_purifier) { RequestHTTP::$html_purifier = new HTMLPurifier(); }
+		if (!RequestHTTP::$html_purifier) { 
+			RequestHTTP::$html_purifier = caGetHTMLPurifier(); 
+		}
 		return RequestHTTP::$html_purifier;
 	}
 	# -------------------------------------------------------
@@ -645,6 +650,12 @@ class RequestHTTP extends Request {
 		}
 
 		if(defined('__CA_SITE_HOSTNAME__') && strlen(__CA_SITE_HOSTNAME__) > 0) {
+			$host_without_port = __CA_SITE_HOSTNAME__;
+			$host_port = null;
+		    if(preg_match("/:([\d]+)$/", $host_without_port, $m)) {
+		    	$host_without_port = preg_replace("/:[\d]+$/", '', $host_without_port);
+		    	$host_port = (int)$m[1];
+		    } 
 		    
 			if (
 			    !($port = (int)$this->getAppConfig()->get('out_of_process_search_indexing_port'))
@@ -652,11 +663,11 @@ class RequestHTTP extends Request {
 			    !($port = (int)getenv('CA_OUT_OF_PROCESS_SEARCH_INDEXING_PORT'))
 			) {
                 if(__CA_SITE_PROTOCOL__ == 'https') { 
-                    $port = 443;	
+                    $port = $host_port ?? 443;	
                 } elseif(isset($_SERVER['SERVER_PORT']) &&  $_SERVER['SERVER_PORT']) {
                     $port = $_SERVER['SERVER_PORT'];
                 } else {
-                    $port = 80;
+                    $port = $host_port ?? 80;
                 }
             }
 			
@@ -673,8 +684,9 @@ class RequestHTTP extends Request {
 			    && 
 			    !($indexing_hostname = getenv('CA_OUT_OF_PROCESS_SEARCH_INDEXING_HOSTNAME'))
 			) {
-			    $indexing_hostname = __CA_SITE_HOSTNAME__;
+			    $indexing_hostname = $host_without_port;
 			}
+			
 			// trigger async search indexing
 			if((__CA_APP_TYPE__ === 'PROVIDENCE') && !$this->getAppConfig()->get('disable_out_of_process_search_indexing')) {
                 require_once(__CA_MODELS_DIR__."/ca_search_indexing_queue.php");

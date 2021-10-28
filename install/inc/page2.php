@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2018 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,20 +31,20 @@
 	$va_profile_info = Installer::getProfileInfo("./profiles/xml", $ps_profile)
 ?>
 <div id='box'>
-	<div id="logo"><img src="<?php print $vs_url_path; ?>/graphics/ca_logo.png"/></div><!-- end logo -->
+	<div id="logo"><?= caGetLoginLogo(); ?></div><!-- end logo -->
 	<div id="content">
 	<H1>
-		Installing CollectiveAccess <?php print constant('__CollectiveAccess__'); ?>...
+		Installing CollectiveAccess <?= constant('__CollectiveAccess__'); ?>...
 	</H1>
 	<H2>
-		Loading <?php print $va_profile_info['display']; ?>
+		Loading <?= $va_profile_info['display']; ?>
 	</H2>
 	<div id="progressbar" ></div>
 	
 	<script type="text/javascript">
-			jQuery('#progressbar').progressbar({
-				value: 0
-			});
+		jQuery('#progressbar').progressbar({
+			value: 0
+		});
 	</script>
 	
 	<div id="installerLog" class="installStatus">
@@ -62,102 +62,102 @@
 		caSetMessage("There were errors parsing the profile(s): ".join("; ", $vo_installer->getErrors()));
 	} else {
 		
-		caIncrementProgress($vn_progress, "Performing preinstall tasks");
-		$vo_installer->performPreInstallTasks();
+		try {
+			
+			if($vo_installer->isAlreadyInstalled() && (!defined('__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__') || !__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__ || !$pb_overwrite)) {
+				throw new ApplicationException(_t('Cannot install. Existing CollectiveAccess installation has been detected.'));
+			}
+			
+			caIncrementProgress($vn_progress, "Performing preinstall tasks");
+			$vo_installer->performPreInstallTasks();
 		
-		caIncrementProgress($vn_progress, "Loading schema");
-		$vo_installer->loadSchema('caGetTableToBeLoaded');
+			caIncrementProgress($vn_progress, "Loading schema");
+			$vo_installer->loadSchema('caGetTableToBeLoaded');
 		
-		if($vo_installer->numErrors()){
-			caSetMessage("There were errors loading the database schema: ".join("; ", $vo_installer->getErrors()));
-		} else {
+			$vn_progress += 7;
+			caIncrementProgress($vn_progress, "Processing locales");
+			$vo_installer->processLocales();
 
-			try {
-				$vn_progress += 7;
-				caIncrementProgress($vn_progress, "Processing locales");
-				$vo_installer->processLocales();
+			caIncrementProgress($vn_progress, "Processing lists");
+			$vo_installer->processLists('caGetListToBeLoaded');
 
-				caIncrementProgress($vn_progress, "Processing lists");
-				$vo_installer->processLists('caGetListToBeLoaded');
+			$vn_progress += 7;
+			caIncrementProgress($vn_progress, "Processing relationship types");
+			$vo_installer->processRelationshipTypes();
 
-				$vn_progress += 7;
-				caIncrementProgress($vn_progress, "Processing relationship types");
-				$vo_installer->processRelationshipTypes();
+			$vn_progress += 5;
+			caIncrementProgress($vn_progress, "Processing metadata elements");
+			$vo_installer->processMetadataElements('caGetMetadataElementToBeLoaded');
 
-				$vn_progress += 5;
-				caIncrementProgress($vn_progress, "Processing metadata elements");
-				$vo_installer->processMetadataElements('caGetMetadataElementToBeLoaded');
+			$vn_progress += 2;
+			caIncrementProgress($vn_progress, "Processing metadata dictionary");
+			$vo_installer->processMetadataDictionary();
 
-				$vn_progress += 2;
-				caIncrementProgress($vn_progress, "Processing metadata dictionary");
-				$vo_installer->processMetadataDictionary();
+			$vn_progress += 7;
+			caIncrementProgress($vn_progress, "Processing access roles");
+			$vo_installer->processRoles();
 
-				$vn_progress += 7;
-				caIncrementProgress($vn_progress, "Processing access roles");
-				$vo_installer->processRoles();
+			$vn_progress += 7;
+			caIncrementProgress($vn_progress, "Processing user groups");
+			$vo_installer->processGroups();
 
-				$vn_progress += 7;
-				caIncrementProgress($vn_progress, "Processing user groups");
-				$vo_installer->processGroups();
+			$vn_progress += 2;
+			caIncrementProgress($vn_progress, "Creating logins");
+			$va_login_info = $vo_installer->processLogins();
 
-				$vn_progress += 2;
-				caIncrementProgress($vn_progress, "Creating logins");
-				$va_login_info = $vo_installer->processLogins();
+			$vn_progress += 7;
+			caIncrementProgress($vn_progress, "Processing user interfaces");
+			$vo_installer->processUserInterfaces();
 
-				$vn_progress += 7;
-				caIncrementProgress($vn_progress, "Processing user interfaces");
-				$vo_installer->processUserInterfaces();
+			$vn_progress += 7;
+			caIncrementProgress($vn_progress, "Processing displays");
+			$vo_installer->processDisplays();
 
-				$vn_progress += 7;
-				caIncrementProgress($vn_progress, "Processing displays");
-				$vo_installer->processDisplays();
+			$vn_progress += 7;
+			caIncrementProgress($vn_progress, "Processing search forms");
+			$vo_installer->processSearchForms();
 
-				$vn_progress += 7;
-				caIncrementProgress($vn_progress, "Processing search forms");
-				$vo_installer->processSearchForms();
+			$vn_progress += 7;
+			caIncrementProgress($vn_progress, "Setting up hierarchies");
+			$vo_installer->processMiscHierarchicalSetup();
+			
+			$vn_progress += 2;
+			caIncrementProgress($vn_progress, "Processing metadata alerts");
+			$vo_installer->processMetadataAlerts();
 
-				$vn_progress += 7;
-				caIncrementProgress($vn_progress, "Setting up hierarchies");
-				$vo_installer->processMiscHierarchicalSetup();
-				
-				$vn_progress += 2;
-				caIncrementProgress($vn_progress, "Processing metadata alerts");
-				$vo_installer->processMetadataAlerts();
+			caIncrementProgress($vn_progress, "Performing post install tasks");
+			$vo_installer->performPostInstallTasks();
 
-				caIncrementProgress($vn_progress, "Performing post install tasks");
-				$vo_installer->performPostInstallTasks();
+			caIncrementProgress(100, "Installation complete");
 
-				caIncrementProgress(100, "Installation complete");
+			$vs_time =  "(Installation took ".$t_total->getTime(0)." seconds)";
+			if($vo_installer->numErrors()){
+				$va_errors = array();
+				foreach($vo_installer->getErrors() as $vs_err) {
+					$va_errors[] = "<li>{$vs_err}</li>";
+				}
+				caSetMessage("<div class='contentFailure'><div class='contentFailureHead'>There were errors during installation:</div><ul>".join("", $va_errors)."</ul><br/>{$vs_time}</div>");
+			} else {
+				$vs_message = "<div class='contentSuccess'><span style='font-size:18px;'><b>Installation was successful!</b></span><br/>You can now <a href='../index.php?action=login'>login</a> with ";
 
-				$vs_time =  "(Installation took ".$t_total->getTime(0)." seconds)";
-				if($vo_installer->numErrors()){
-					$va_errors = array();
-					foreach($vo_installer->getErrors() as $vs_err) {
-						$va_errors[] = "<li>{$vs_err}</li>";
+				if (sizeof($va_login_info) == 1) {
+					foreach($va_login_info as $vs_user_name => $vs_password) {
+						$vs_message .= "username <span class='contentHighlight'>{$vs_user_name}</span> and password <span class='contentHighlight'>{$vs_password}</span>.<br/><b>Make a note of this password!</b><br/>";
 					}
-					caSetMessage("<div class='contentFailure'><div class='contentFailureHead'>There were errors during installation:</div><ul>".join("", $va_errors)."</ul><br/>{$vs_time}</div>");
 				} else {
-					$vs_message = "<div class='contentSuccess'><span style='font-size:18px;'><b>Installation was successful!</b></span><br/>You can now <a href='../index.php?action=login'>login</a> with ";
-
-					if (sizeof($va_login_info) == 1) {
-						foreach($va_login_info as $vs_user_name => $vs_password) {
-							$vs_message .= "username <span class='contentHighlight'>{$vs_user_name}</span> and password <span class='contentHighlight'>{$vs_password}</span>.<br/><b>Make a note of this password!</b><br/>";
-						}
-					} else {
-						$vs_message .= " the following logins:<br/>";
-						foreach($va_login_info as $vs_user_name => $vs_password) {
-							$vs_message .= "Username <span class='contentHighlight'>{$vs_user_name}</span> and password <span class='contentHighlight'>{$vs_password}</span><br/>";
-						}
-						$vs_message .= "<br/><b>Make note of these passwords!</b><br/>";
+					$vs_message .= " the following logins:<br/>";
+					foreach($va_login_info as $vs_user_name => $vs_password) {
+						$vs_message .= "Username <span class='contentHighlight'>{$vs_user_name}</span> and password <span class='contentHighlight'>{$vs_password}</span><br/>";
 					}
-
-					$vs_message .= "<span style='font-size:11px;'>{$vs_time}</span></div>";
-					caSetMessage($vs_message, true);
+					$vs_message .= "<br/><b>Make note of these passwords!</b><br/>";
 				}
 
-			} catch(Exception $e) {
-				caSetMessage("<div class='contentFailure'><div class='contentFailureHead'>There were errors during installation:</div>".$e->getMessage()."</div>");
+				$vs_message .= "<span style='font-size:11px;'>{$vs_time}</span></div>";
+				caSetMessage($vs_message, true);
 			}
+
+		} catch(Exception $e) {
+			caSetMessage("<div class='contentFailure'><div class='contentFailureHead'>There were errors during installation:</div><ul><li>".$e->getMessage()."</li></ul></div>");
 		}
 	}
 ?>

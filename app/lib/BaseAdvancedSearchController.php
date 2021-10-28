@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2018 Whirl-i-Gig
+ * Copyright 2010-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,15 +33,22 @@
 require_once(__CA_APP_DIR__.'/helpers/accessHelpers.php');
 require_once(__CA_LIB_DIR__."/BaseRefineableSearchController.php");
 require_once(__CA_LIB_DIR__."/Browse/ObjectBrowse.php");
-require_once(__CA_LIB_DIR__."/Datamodel.php");
 require_once(__CA_MODELS_DIR__."/ca_search_forms.php");
 require_once(__CA_MODELS_DIR__.'/ca_bundle_displays.php');
 
 class BaseAdvancedSearchController extends BaseRefineableSearchController {
 	# -------------------------------------------------------
 	protected $opb_uses_hierarchy_browser = false;
-	protected $opo_datamodel;
 	protected $ops_find_type;
+	
+	# -------------------------------------------------------
+	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
+		parent::__construct($po_request, $po_response, $pa_view_paths);
+	
+		if ($po_request->config->get($this->ops_tablename.'_disable_advanced_search')) {
+			throw new ApplicationException(_t('Advanced search interface is disabled'));
+		}
+	}
 	# -------------------------------------------------------
 	public function Index($pa_options=null) {
 		$po_search = (isset($pa_options['search']) && $pa_options['search']) ? $pa_options['search'] : null;
@@ -136,7 +143,8 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 				'getCountsByField' => 'type_id',
 				'checkAccess' => $va_access_values,
 				'no_cache' => $vb_is_new_search,
-				'rootRecordsOnly' => $this->view->getVar('hide_children')
+				'rootRecordsOnly' => $this->view->getVar('hide_children'),
+				'filterDeaccessionedRecords' => $this->view->getVar('hide_deaccession')
 			);
 
 			if ($vb_is_new_search ||isset($pa_options['saved_search']) || (is_subclass_of($po_search, "BrowseEngine") && !$po_search->numCriteria()) ) {

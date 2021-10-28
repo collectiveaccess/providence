@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2019 Whirl-i-Gig
+ * Copyright 2018-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -127,7 +127,7 @@
 			$t_rep = new ca_object_representations();
 			$t_rep->setMode(ACCESS_WRITE);
 
-			$qr_reps = $o_db->query("SELECT * FROM ca_object_representations");
+			$qr_reps = $o_db->query("SELECT representation_id, media FROM ca_object_representations");
 			print CLIProgressBar::start($qr_reps->numRows(), _t('Loading valid file paths from database'))."\n";
 
 			$va_paths = array();
@@ -135,8 +135,19 @@
 				print CLIProgressBar::next();
 				$va_versions = $qr_reps->getMediaVersions('media');
 				if (!is_array($va_versions)) { continue; }
+				
+				$multifiles = $t_rep->getFileList($qr_reps->get('ca_object_representations.representation_id'), null, null, ['returnAllVersions' => true]);
 				foreach($va_versions as $vs_version) {
 					$va_paths[$qr_reps->getMediaPath('media', $vs_version)] = true;
+					
+					if(is_array($multifiles)) {
+						foreach($multifiles as $mfinfo) {
+							foreach($mfinfo as $mfk => $mf) {
+								if(!preg_match("!_path$!", $mfk)) { continue; }
+								$va_paths[$mf] = true;
+							}
+						}
+					}
 				}
 			}
 			print CLIProgressBar::finish();
@@ -149,16 +160,15 @@
 			$vn_delete_count = 0;
 
 			print CLIProgressBar::start(sizeof($va_contents), _t('Finding unused files'));
-			$va_report = array();
+	
 			foreach($va_contents as $vs_path) {
 				print CLIProgressBar::next();
 				if (!preg_match('!_ca_object_representation!', $vs_path)) { continue; } // skip non object representation files
 				if (!$va_paths[$vs_path]) {
 					$vn_delete_count++;
 					if ($vb_delete_opt) {
-						unlink($vs_path);
+						@unlink($vs_path);
 					}
-					$va_report[] = $vs_path;
 				}
 			}
 			print CLIProgressBar::finish()."\n";
@@ -1113,7 +1123,7 @@
 				'no_headers' => true,
 				'simulateWith' => [
 					'REQUEST_METHOD' => 'GET',
-					'SCRIPT_NAME' => 'index.php'
+					'SCRIPT_NAME' => __CA_URL_ROOT__.'/index.php'
 				]
 			]);
 			if ($ps_email) {
@@ -1193,7 +1203,6 @@
 		public static function check_media_fixityHelp() {
 			return _t('Verifies that media files on disk are consistent with file signatures recorded in the database at time of upload.');
 		}
-		
 		# -------------------------------------------------------
 		/**
 		 *
@@ -1263,7 +1272,49 @@
 		public static function clear_cachesHelp() {
 			return _t('CollectiveAccess stores often used values, processed configuration files, user-uploaded media and other types of data in application caches. You can clear these caches using this command.');
 		}
-		
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function garbage_collection($po_opts=null) {
+			$limit = (int)$po_opts->getOption('limit');
+			$quiet = (bool)$po_opts->getOption('quiet');
+			
+			if(!$quiet) { CLIUtils::addMessage(_t('Performing garbage collection on application caches and temporary directories...')); }
+			GarbageCollection::gc(['force' => true, 'limit' => $limit, 'showCLIProgress' => !$quiet]);
+			
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function garbage_collectionParamList() {
+			return [
+				"limit|l=n" => _t('Maximum number of file cache files to analyze. Large file caches may take a long time to clear. Setting a limit will cap the time spent cleaning the cache and allow cleaning to be done in stages.')
+			];
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function garbage_collectionUtilityClass() {
+			return _t('Maintenance');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function garbage_collectionShortHelp() {
+			return _t('Remove stale files from application caches and temporary file locations.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function garbage_collectionHelp() {
+			return _t('CollectiveAccess stores often used values, processed configuration files, user-uploaded media and other types of data in application caches. You can clean out old expired data from these locations using this command. If you want to completely clear the application caches of all data regardless of expiration date use the "clear-caches" command.');
+		}
 		# -------------------------------------------------------
 		/**
 		 *
@@ -1564,7 +1615,7 @@
 				'no_headers' => true,
 				'simulateWith' => [
 					'REQUEST_METHOD' => 'GET',
-					'SCRIPT_NAME' => 'index.php'
+					'SCRIPT_NAME' => __CA_URL_ROOT__.'/index.php'
 				]
 			]);
 			
@@ -1860,7 +1911,7 @@
 				'no_headers' => true,
 				'simulateWith' => [
 					'REQUEST_METHOD' => 'GET',
-					'SCRIPT_NAME' => 'index.php'
+					'SCRIPT_NAME' => __CA_URL_ROOT__.'/index.php'
 				]
 			]);
 

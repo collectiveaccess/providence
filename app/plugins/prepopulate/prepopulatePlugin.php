@@ -56,16 +56,29 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 		);
 	}
 	# --------------------------------------------------------------------------------------------
+	public function hookInsertItem(&$pa_params) {
+		if($this->opo_plugin_config->get('enabled')) {
+			$this->prepopulateFields($pa_params['instance'], ['hook' => 'save']);
+		}
+		return true;
+	}
+	public function hookUpdateItem(&$pa_params) {
+		if($this->opo_plugin_config->get('enabled')) {
+			$this->prepopulateFields($pa_params['instance'], ['hook' => 'save']);
+		}
+		return true;
+	}
+	# --------------------------------------------------------------------------------------------
 	public function hookSaveItem(&$pa_params) {
-		if($this->opo_plugin_config->get('prepopulate_fields_on_save')) {
-			$this->prepopulateFields($pa_params['instance']);
+		if($this->opo_plugin_config->get('enabled')) {
+			$this->prepopulateFields($pa_params['instance'], ['hook' => 'save']);
 		}
 		return true;
 	}
 	# --------------------------------------------------------------------------------------------
 	public function hookEditItem(&$pa_params) {
-		if($this->opo_plugin_config->get('prepopulate_fields_on_edit')) {
-			$this->prepopulateFields($pa_params['instance']);
+		if ($this->opo_plugin_config->get('enabled')) {
+			$this->prepopulateFields($pa_params['instance'], ['hook' => 'edit']);
 		}
 		return true;
 	}
@@ -73,17 +86,14 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 	/**
 	 *
 	 */
-	public function hookCLICaUtilsGetCommands() {
-	    return [
-	        'Maintenance' => [
-	            'apply_prepopulate_rules' => [
-	                'Command' => 'apply-prepopulate-rules',
-	                'Options' => [],
-	                'Help' => _t('Help to come'),
-	                'ShortHelp' => _t('Short help to come'),
-	            ]
-	        ]
+	public function hookCLICaUtilsGetCommands(&$pa_params) {
+	    $pa_params['Maintenance']['apply_prepopulate_rules'] = [
+	    	'Command' => 'apply-prepopulate-rules',
+	        'Options' => [],
+	        'Help' => _t('Applies rules defined in prepopulate.conf to all relevant records.'),
+	        'ShortHelp' => _t('Applies rules defined in prepopulate.conf to all relevant records.'),
 	    ];
+	    return $pa_params;
 	}
 	# -------------------------------------------------------
     /**
@@ -104,6 +114,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 	 * @param BundlableLabelableBaseModelWithAttributes $t_instance The table instance to prepopulate
 	 * @param array $pa_options Options array. Available options are:
 	 * 		prepopulateConfig = override path to prepopulate.conf, e.g. for testing purposes
+	 *		hook = indicates what triggered application: "save" or "edit"
 	 * @return bool success or not
 	 */
 	public function prepopulateFields(&$t_instance, $pa_options=null) {
@@ -111,10 +122,11 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 		if($vs_prepopulate_cfg = caGetOption('prepopulateConfig', $pa_options, null)) {
 			$this->opo_plugin_config = Configuration::load($vs_prepopulate_cfg);
 		}
+		
+		$hook = caGetOption('hook', $pa_options, null);
 
-		if(!(bool)$this->opo_plugin_config->get('prepopulate_fields_on_save') && !(bool)$this->opo_plugin_config->get('prepopulate_fields_on_load')) {
-			return false;
-		}
+		$default_prepop_on_save  = (bool)$this->opo_plugin_config->get('prepopulate_fields_on_save');
+		$default_prepop_on_edit  = (bool)$this->opo_plugin_config->get('prepopulate_fields_on_edit');
 
 		$va_rules = $this->opo_plugin_config->get('prepopulate_rules');
 		if(!$va_rules || (!is_array($va_rules)) || (sizeof($va_rules)<1)) { return false; }
@@ -126,7 +138,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 		//$vn_timestamp = $_REQUEST['form_timestamp'];
 		//unset($_REQUEST['form_timestamp']);
 
-		$vb_we_set_transaction = true;
+		$vb_we_set_transaction = false;
 		if (!$t_instance->inTransaction()) {
 			$t_instance->setTransaction(new Transaction($t_instance->getDb()));
 			$vb_we_set_transaction = true;
@@ -136,6 +148,16 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 		$va_expression_vars = array(); // we only process those if and when we need them
 		foreach($va_rules as $vs_rule_key => $va_rule) {
 			if($t_instance->tableName() != $va_rule['table']) { continue; }
+			$useFor = caGetOption('useFor', $va_rule, null);
+			if ($useFor && !is_array($useFor)) { $useFor = [$useFor]; }
+			$useFor = is_array($useFor) ? array_map(function($v) { return strtolower($v); }, $useFor) : null;
+			
+			if (is_array($useFor) && !in_array($hook, $useFor, true)) { 
+				continue; 
+			} elseif(!$useFor) {
+				if (($hook === 'edit') && !$default_prepop_on_edit) { continue; }
+				if (($hook === 'save') && !$default_prepop_on_save) { continue; }
+			}
 
 			$vs_mode = strtolower(caGetOption('mode', $va_rule, 'merge'));
 			
@@ -309,7 +331,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 							
 							$i = 0;
 							$t_instance->removeAttributes($va_parts[1]);
-							$t_instance->update(['force' => true]);
+							$t_instance->update(['force' => true, 'hooks' => false]);
 							
 							if($t_instance->numErrors()) { 
 								Debug::msg(_t("[prepopulateFields()] error while removing old values during copy of containers: %1", join("; ", $t_instance->getErrors())));
@@ -335,9 +357,8 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 							}
 						}
 					} else {
-						if(sizeof($va_attributes)>1) {
-							Debug::msg("[prepopulateFields()] partial containers with multiple values are not supported");
-							continue;
+						if((sizeof($va_attributes)>1) && ($vs_mode !== 'addifempty')) {
+							$t_instance->removeAttributes($va_parts[1]);
 						}
 						switch($vs_mode) {
 							case 'overwrite': // always replace first value we find
@@ -479,6 +500,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 										}
 
 										if($vb_update) {
+											unset($va_label['source_info']);
 											$t_instance->editLabel(
 												$va_label['label_id'], $va_label, $g_ui_locale_id, null, $vb_preferred
 											);
@@ -503,15 +525,16 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 		}
 
 
-		if(isset($_REQUEST['form_timestamp']) && ($_REQUEST['form_timestamp'] > 0)) { $_REQUEST['form_timestamp'] = time(); }
-		$t_instance->update(['force' => true]);
-
-		if($t_instance->numErrors() > 0) {
-			foreach($t_instance->getErrors() as $vs_error) {
-				Debug::msg("[prepopulateFields()] there was an error while updating the record: ".$vs_error);
+		if (count($t_instance->getChangedFieldValuesArray()) > 0) {
+			if(isset($_REQUEST['form_timestamp']) && ($_REQUEST['form_timestamp'] > 0)) { $_REQUEST['form_timestamp'] = time(); }
+			$t_instance->update(['force' => true, 'hooks' => false]);
+			if($t_instance->numErrors() > 0) {
+				foreach($t_instance->getErrors() as $vs_error) {
+					Debug::msg("[prepopulateFields()] there was an error while updating the record: ".$vs_error);
+				}
+				if ($vb_we_set_transaction) { $t_instance->removeTransaction(false); }
+				return false;
 			}
-			if ($vb_we_set_transaction) { $t_instance->removeTransaction(false); }
-			return false;
 		}
 
 		if ($vb_we_set_transaction) { $t_instance->removeTransaction(true); }

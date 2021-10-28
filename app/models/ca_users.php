@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,7 +39,6 @@ require_once(__CA_APP_DIR__.'/models/ca_user_roles.php');
 include_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_APP_DIR__.'/models/ca_user_groups.php');
 require_once(__CA_APP_DIR__.'/models/ca_locales.php');
-require_once(__CA_LIB_DIR__.'/Zend/Currency.php');
 require_once(__CA_LIB_DIR__ . '/Auth/AuthenticationManager.php');
 require_once(__CA_LIB_DIR__."/SyncableBaseModel.php");
 
@@ -1622,9 +1621,11 @@ class ca_users extends BaseModel {
 					$va_uis = $this->_getUIListByType($vn_table_num);
 					
 					$va_defaults = array();
-					foreach($va_uis as $vn_type_id => $va_editor_info) {
-						foreach($va_editor_info as $vn_ui_id => $va_editor_labels) {
-							$va_defaults[$vn_type_id] = $vn_ui_id;
+					if(is_array($va_uis)) {
+						foreach($va_uis as $vn_type_id => $va_editor_info) {
+							foreach($va_editor_info as $vn_ui_id => $va_editor_labels) {
+								$va_defaults[$vn_type_id] = $vn_ui_id;
+							}
 						}
 					}
 					return $va_defaults;
@@ -1656,7 +1657,7 @@ class ca_users extends BaseModel {
 	public function setPreference($ps_pref, $ps_val) {
 		if ($this->isValidPreference($ps_pref)) {
 			if ($this->purify()) {
-				if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
+				if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = caGetHTMLPurifier(); }
 				if(!is_array($ps_val)) { $ps_val = BaseModel::$html_purifier->purify($ps_val); }
 			}
 			if ($this->isValidPreferenceValue($ps_pref, $ps_val, 1)) {
@@ -1976,7 +1977,7 @@ class ca_users extends BaseModel {
 							$va_locales = array();
 							if ($r_dir = opendir(__CA_APP_DIR__.'/locale/')) {
 								while (($vs_locale_dir = readdir($r_dir)) !== false) {
-									if ($vs_locale_dir{0} == '.') { continue; }
+									if ($vs_locale_dir[0] == '.') { continue; }
 									if (sizeof($va_tmp = explode('_', $vs_locale_dir)) == 2) {
 										$va_locales[$vs_locale_dir] = $va_tmp;
 									}
@@ -2015,7 +2016,7 @@ class ca_users extends BaseModel {
 							if ($r_dir = opendir($this->_CONFIG->get('themes_directory'))) {
 								$va_opts = array();
 								while (($vs_theme_dir = readdir($r_dir)) !== false) {
-									if ($vs_theme_dir{0} == '.') { continue; }
+									if ($vs_theme_dir[0] == '.') { continue; }
 										$o_theme_info = Configuration::load($this->_CONFIG->get('themes_directory').'/'.$vs_theme_dir.'/themeInfo.conf');
 										$va_opts[$o_theme_info->get('name')] = $vs_theme_dir;
 								}
@@ -2608,9 +2609,12 @@ class ca_users extends BaseModel {
 	 */
 	public function getSavedSearches($pm_table_name_or_num, $ps_type) {
 		if (!($vn_table_num = Datamodel::getTableNum($pm_table_name_or_num))) { return false; }
-		if(!is_array($va_searches = $this->getVar('saved_searches'))) { $va_searches = array(); }
+		if(!is_array($va_searches = $this->getVar('saved_searches'))) { $va_searches = []; }
 	
-		return is_array($va_searches[$vn_table_num][strtolower($ps_type)]) ? $va_searches[$vn_table_num][strtolower($ps_type)] : array();
+		return is_array($va_searches[$vn_table_num][strtolower($ps_type)]) ? array_map(function($v) { 
+			$v['label'] = html_entity_decode($v['label']);
+			return $v;
+		}, $va_searches[$vn_table_num][strtolower($ps_type)]) : array();
 	}
 	# ----------------------------------------
 	# Utils
@@ -2781,7 +2785,6 @@ class ca_users extends BaseModel {
 	 */
 	public function close() {
 		if($this->getPrimaryKey()) {
-			$this->setMode(ACCESS_WRITE);
 			$this->update(['dontLogChange' => true]);
 		}
 	}
@@ -2882,7 +2885,7 @@ class ca_users extends BaseModel {
 				} elseif(function_exists('openssl_random_pseudo_bytes')) {
 					$vs_password_reset_token = hash('sha256', openssl_random_pseudo_bytes(32));
 				} else {
-					throw new Exception('mcrypt or OpenSSL is required for CollectiveAccess to run');
+					throw new ApplicationException('mcrypt or OpenSSL is required for CollectiveAccess to run');
 				}
 
 				$this->setVar("{$vs_app_name}_password_reset_token", $vs_password_reset_token);
@@ -2899,7 +2902,6 @@ class ca_users extends BaseModel {
 			$this->passwordResetDeactivateAccount();
 		}
 
-		$this->setMode(ACCESS_WRITE);
 		$this->update();
 	}
 	# ----------------------------------------
@@ -2928,7 +2930,6 @@ class ca_users extends BaseModel {
 		if(!$vb_return) {
 			// invalid token checks count as completely botched password reset attempt. you can only have so many of those
 			$this->removePendingPasswordReset(false);
-			$this->setMode(ACCESS_WRITE);
 			$this->update();
 		}
 
@@ -2947,7 +2948,6 @@ class ca_users extends BaseModel {
 		// use the reset password feature again. Otherwise he would immediately be locked out again.
 		$this->removePendingPasswordReset(true);
 		$this->set('active', 0);
-		$this->setMode(ACCESS_WRITE);
 		$this->update();
 
 		$this->opo_log->log(array(
@@ -3076,13 +3076,17 @@ class ca_users extends BaseModel {
 		
 		if (!$vs_username && AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__)) { 
 		    if (AuthenticationManager::authenticate($vs_username, $ps_password, $pa_options)) {
-                $va_info = AuthenticationManager::getUserInfo($vs_username, $ps_password, ['minimal' => true]); 
-                $vs_username = $va_info['user_name'];
+                try {
+                	$va_info = AuthenticationManager::getUserInfo($vs_username, $ps_password, ['minimal' => true]); 
+                	$vs_username = $va_info['user_name'];
+                } catch(Exception $e) {
+                	// noop
+                }
             }
         }
-
+        
 		// if user doesn't exist, try creating it through the authentication backend, if the backend supports it
-		if (strlen($vs_username) > 0 && !$this->load($vs_username)) {
+		if ((strlen($vs_username) > 0) && !$this->load(['user_name' => $vs_username])) {
 			if(AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_AUTOCREATE_USERS__)) {
 				try{
 					$va_values = AuthenticationManager::getUserInfo($vs_username, $ps_password);
@@ -3091,7 +3095,7 @@ class ca_users extends BaseModel {
 						'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
 						'MESSAGE' => _t('There was an error while trying to fetch information for a new user from the current authentication backend. The message was %1 : %2', get_class($e), $e->getMessage())
 					));
-					throw($e);
+					return false;
 				}
 
 				if(!is_array($va_values) || sizeof($va_values) < 1) { return false; }
@@ -3107,18 +3111,17 @@ class ca_users extends BaseModel {
 				} else {
 				    $this->set('userclass', 1);
 				}
-
-				$vn_mode = $this->getMode();
-				$this->setMode(ACCESS_WRITE);
+				if(!$this->get("email")) {
+					$this->set("email", (strpos($vs_username, "@") === false) ? "{$vs_username}@unknown.org" : $vs_username);
+				}
 				$this->insert();
-
+				
 				if (!$this->getPrimaryKey()) {
-					$this->setMode($vn_mode);
 					$this->opo_log->log(array(
 						'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
 						'MESSAGE' => _t('User could not be created after getting info from authentication adapter. API message was: %1', join(" ", $this->getErrors()))
 					));
-					throw($e);
+					throw new ApplicationException($err);
 				}
 
 				if(is_array($va_values['groups']) && sizeof($va_values['groups'])>0) {
@@ -3136,16 +3139,13 @@ class ca_users extends BaseModel {
 				}
 
 				$this->update();
-
-				// restore mode
-				$this->setMode($vn_mode);
 			}
 		}
 
         if ($vs_username) {
             try {
                 if(AuthenticationManager::authenticate($vs_username, $ps_password, $pa_options)) {
-                    if ($this->load($vs_username)) {
+                    if ($this->load(['user_name' => $vs_username])) {
                         if (
                             defined('__CA_APP_TYPE__') && (__CA_APP_TYPE__ === 'PAWTUCKET') && 
                             $this->canDoAction('can_not_login') &&
@@ -3178,7 +3178,7 @@ class ca_users extends BaseModel {
 		// check ips
 		if (!isset($pa_options["dont_check_ips"]) || !$pa_options["dont_check_ips"]) {
 			if ($vn_user_id = $this->ipAuthenticate()) {
-				if ($this->load($vn_user_id)) {
+				if ($this->load(['user_id' => $vn_user_id])) {
 					$ps_username = $this->get("user_name");
 					return 2;
 				} 
@@ -3389,21 +3389,31 @@ class ca_users extends BaseModel {
 		}
 		
 		// is user administrator?
-		if ($this->getPrimaryKey() == $this->_CONFIG->get('administrator_user_id')) { return ca_users::$s_user_action_access_cache[$cache_key] = true; }	// access restrictions don't apply to user with user_id = admin id
-		
+		if ($this->getPrimaryKey() == $this->_CONFIG->get('administrator_user_id')) { return ca_users::$s_user_action_access_cache[$vs_cache_key] = true; }	// access restrictions don't apply to user with user_id = admin id
+	
 		// get user roles
 		$roles = $this->getUserRoles();
 		foreach($this->getGroupRoles() as $role_id => $role_info) {
 			$roles[$role_id] = $role_info;
 		}
 		
-		$actions = ca_user_roles::getActionsForRoleIDs(array_keys($roles));
-		if (in_array('is_administrator', $actions)) { return ca_users::$s_user_action_access_cache[$cache_key] = true; }		// access restrictions don't apply to users with is_administrator role
-		$r =  ca_users::$s_user_action_access_cache[$cache_key] = in_array($action, $actions);
-		if ($throw & !$r) {
-			throw new UserActionException(caGetOption('exceptionMessage', $options, _t('Access denied')));
+		$va_actions = ca_user_roles::getActionsForRoleIDs(array_keys($va_roles));
+		if(in_array('is_administrator', $va_actions)) { return ca_users::$s_user_action_access_cache[$vs_cache_key] = true; }		// access restrictions don't apply to users with is_administrator role
+
+		if(in_array($ps_action, $va_actions)) {
+			return ca_users::$s_user_action_access_cache[$vs_cache_key] = in_array($ps_action, $va_actions);
 		}
-		return $r;
+		// is default set in user_action.conf?
+		$user_actions = Configuration::load(__CA_CONF_DIR__.'/user_actions.conf');
+		if($user_actions && is_array($actions = $user_actions->getAssoc('user_actions'))) {
+			foreach($actions as $categories) {
+				if(isset($categories['actions'][$ps_action]) && isset($categories['actions'][$ps_action]['default'])) {
+					return ca_users::$s_user_action_access_cache[$vs_cache_key] = (bool)$categories['actions'][$ps_action]['default'];
+				}
+			}
+		}
+		
+		return ca_users::$s_user_action_access_cache[$vs_cache_key] = false;
 	}
 	# ----------------------------------------
 	/**

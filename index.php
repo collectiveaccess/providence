@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2018 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,7 +31,7 @@
 	require("./app/helpers/errorHelpers.php");
 	
 	if (!file_exists('./setup.php')) {
-		caDisplayException(new ApplicationException("No setup.php found"));
+		require_once("./themes/default/views/system/no_setup_html.php");
 		exit; 
 	}
 	require('./setup.php');
@@ -39,8 +39,9 @@
 
 	try {
 		// connect to database
-		$o_db = new Db(null, null, false);
-		if (!$o_db->connected()) {
+		try {
+			$o_db = new Db(null, null, false);
+		} catch(DatabaseException $e) {
 			$opa_error_messages = array("Could not connect to database. Check your database configuration in <em>setup.php</em>.");
 			require_once(__CA_BASE_DIR__."/themes/default/views/system/configuration_error_html.php");
 			exit();
@@ -69,14 +70,16 @@
 		// run garbage collector
 		GarbageCollection::gc();
 
+		$g_errored = false;	// routing error?
 		$app = AppController::getInstance();
 
 		$g_request = $req = $app->getRequest();
 		$g_response = $resp = $app->getResponse();
 
 		// Prevent caching
-		$resp->addHeader("Cache-Control", "no-cache, must-revalidate");
+		$resp->addHeader("Cache-Control", "no-cache, no-store, must-revalidate");
 		$resp->addHeader("Expires", "Mon, 26 Jul 1997 05:00:00 GMT");
+		
 		
 		// Security headers
 		$resp->addHeader("X-XSS-Protection", "1; mode=block");

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020 Whirl-i-Gig
+ * Copyright 2020-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -66,22 +66,22 @@
 		caSetHomeLocationPanel.showPanel();
 		if (!oSetHomeLocationHierarchyBrowser) {
 			oSetHomeLocationHierarchyBrowser = caUI.initHierBrowser('SetHomeLocationHierarchyBrowser', {
-				levelDataUrl: '<?php print $va_lookup_urls['levelList']; ?>',
-				initDataUrl: '<?php print $va_lookup_urls['ancestorList']; ?>',
+				levelDataUrl: '<?= $va_lookup_urls['levelList']; ?>',
+				initDataUrl: '<?= $va_lookup_urls['ancestorList']; ?>',
 			
 				dontAllowEditForFirstLevel: true,
 			
 				readOnly: false,
 			
 				editUrl: null,
-				editButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
-				disabledButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_DOT__, 1); ?>",
+				editButtonIcon: "<?= caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
+				disabledButtonIcon: "<?= caNavIcon(__CA_NAV_ICON_DOT__, 1); ?>",
 			
 				allowDragAndDropSorting: false,
 
-				initItemID: <?php print (int)$t_item->get('home_location_id'); ?>,
-				indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
-				incrementalLoadIndicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1).' '._t('Loading'); ?>",
+				initItemID: <?= (int)$t_item->get('home_location_id'); ?>,
+				indicator: "<?= caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
+				incrementalLoadIndicator: "<?= caNavIcon(__CA_NAV_ICON_SPINNER__, 1).' '._t('Loading'); ?>",
 				displayCurrentSelectionOnLoad: false,
 				autoShrink: false,
 				
@@ -101,7 +101,7 @@
 			// Set up hierarchy browse search
 			jQuery('#SetHomeLocationHierarchyBrowserSearch').autocomplete(
 				{
-					source: '<?php print $va_lookup_urls['search']; ?>', minLength: 3, delay: 800, html: true,
+					source: '<?= $va_lookup_urls['search']; ?>', minLength: 3, delay: 800, html: true,
 					select: function( event, ui ) {
 						if (ui.item.id) {
 							jQuery("#SetHomeLocationHierarchyBrowser").slideDown(350);
@@ -113,19 +113,19 @@
 				}
 			).click(function() { this.select() });
 			
-			_currentHomeLocation = '<?php print addslashes($home_location_idno); ?>';
-			jQuery("#SetHomeLocationHierarchyBrowserSelectionMessage").html('<?php print addslashes($home_location_idno ? str_replace('%', $home_location_idno, $home_location_message) : _t('Home location is not set')); ?>');
+			_currentHomeLocation = <?= json_encode($home_location_idno); ?>;
+			jQuery("#SetHomeLocationHierarchyBrowserSelectionMessage").html(<?=json_encode($home_location_idno ? str_replace('%', $home_location_idno, $home_location_message) : _t('Home location is not set')); ?>);
 		}
 	}
 	
 	function setHomeLocation() {
 		var new_home_location_id = jQuery("#new_home_location_id").val();
 		jQuery.post(
-			'<?php print caNavUrl($this->request, '*', '*', 'SetHomeLocation'); ?>',
-			{ 'location_id': new_home_location_id, 'object_id': <?php print $t_item->getPrimaryKey(); ?> },
+			'<?= caNavUrl($this->request, '*', '*', 'SetHomeLocation'); ?>',
+			{ 'location_id': new_home_location_id, '<?= $t_item->primaryKey(); ?>': <?= $t_item->getPrimaryKey(); ?>, 'csrfToken': <?= json_encode(caGenerateCSRFToken($this->request)); ?> },
 			function(data, textStatus, jqXHR) {
 				if(data && data['ok'] && (parseInt(data['ok']) == 1)) {
-					var home_location_message = '<?php print addslashes($home_location_message); ?>';
+					var home_location_message = <?= json_encode($home_location_message); ?>;
 					caSetHomeLocationPanel.hidePanel();
 					
 					_currentHomeLocation = data.label;
@@ -148,12 +148,12 @@
 	}
 </script>
 <div id="caSetHomeLocationPanel" class="caSetHomeLocationPanel"> 
-	<div class='dialogHeader'><?php print _t('Set home location'); ?></div>
+	<div class='dialogHeader'><?= _t('Set home location'); ?></div>
 	<div id="caSetHomeLocationPanelContentArea">
-		<?php print caFormTag($this->request, '#', 'caSetHomeLocationForm', null, 'post', 'multipart/form-data', '_top', ['noCSRFToken' => true, 'disableUnsavedChangesWarning' => true]); ?>
+		<?= caFormTag($this->request, '#', 'caSetHomeLocationForm', null, 'post', 'multipart/form-data', '_top', ['noCSRFToken' => true, 'disableUnsavedChangesWarning' => true]); ?>
 			<div>
 				<div class="hierarchyBrowserFind" style="float: right;">
-					<?php print _t('Find'); ?>: <input type="text" id="SetHomeLocationHierarchyBrowserSearch" name="search" value="" size="25"/>
+					<?= _t('Find'); ?>: <input type="text" id="SetHomeLocationHierarchyBrowserSearch" name="search" value="" size="25"/>
 				</div>
 				<div class="hierarchyBrowserMessageContainer">
 					<div id='SetHomeLocationHierarchyBrowserSelectionMessage' class='hierarchyBrowserNewLocationMessage'><!-- Message specifying move destination is dynamically inserted here by ca.hierbrowser --></div>	
@@ -167,13 +167,13 @@
 			<div id="caSetHomeLocationPanelControlButtons">
 				<table>
 					<tr>
-						<td align="right"><?php print caFormJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Save'), 'caSetHomeLocationForm', ['onclick' => 'setHomeLocation(); return false;']); ?></td>
-						<td align="left"><?php print caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caSetHomeLocationFormCancelButton', array('onclick' => 'caSetHomeLocationPanel.hidePanel(); return false;'), array('size' => '30px')); ?></td>
+						<td align="right"><?= caFormJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Save'), 'caSetHomeLocationForm', ['onclick' => 'setHomeLocation(); return false;']); ?></td>
+						<td align="left"><?= caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caSetHomeLocationFormCancelButton', array('onclick' => 'caSetHomeLocationPanel.hidePanel(); return false;'), array('size' => '30px')); ?></td>
 					</tr>
 				</table>
 			</div>
 			
-			<?php print caHTMLHiddenInput($t_item->primaryKey(), array('value' => $t_item->getPrimaryKey())); ?>
+			<?= caHTMLHiddenInput($t_item->primaryKey(), array('value' => $t_item->getPrimaryKey())); ?>
 			<input type='hidden' name='new_home_location_id' id='new_home_location_id' value=''/>
 		</form>
 	</div>

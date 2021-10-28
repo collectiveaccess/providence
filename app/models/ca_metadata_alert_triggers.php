@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2018 Whirl-i-Gig
+ * Copyright 2016-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,8 +33,8 @@
 /**
  *
  */
+require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 require_once(__CA_LIB_DIR__.'/MetadataAlerts/TriggerTypes/Base.php');
-require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rules.php');
 
 BaseModel::$s_ca_models_definitions['ca_metadata_alert_triggers'] = array(
 	'NAME_SINGULAR' 	=> _t('metadata alert triggers'),
@@ -88,6 +88,8 @@ BaseModel::$s_ca_models_definitions['ca_metadata_alert_triggers'] = array(
 );
 
 class ca_metadata_alert_triggers extends BaseModel {
+	use ModelSettings;
+	
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -178,11 +180,6 @@ class ca_metadata_alert_triggers extends BaseModel {
 	 */
 	static $s_lock_resource = null;
 
-	/**
-	 * Settings delegate - implements methods for setting, getting and using 'settings' var field
-	 */
-	public $SETTINGS;
-
 	# ------------------------------------------------------
 	# --- Constructor
 	#
@@ -210,7 +207,7 @@ class ca_metadata_alert_triggers extends BaseModel {
 		if($vs_trigger_type = $this->get('trigger_type')) {
 			/** @var CA\MetadataAlerts\TriggerTypes\Base $o_trigger_type */
 			$o_trigger_type = CA\MetadataAlerts\TriggerTypes\Base::getInstance($vs_trigger_type, []);
-			$this->SETTINGS = new ModelSettings($this, 'settings', $o_trigger_type->getAvailableSettings());
+			$this->setAvailableSettings($o_trigger_type->getAvailableSettings());
 		}
 	}
 	# ------------------------------------------------------
@@ -260,26 +257,14 @@ class ca_metadata_alert_triggers extends BaseModel {
 		return $vm_ret;
 	}
 	# ------------------------------------------------------
-	# Settings
-	# ------------------------------------------------------
-	/**
-	 * Reroutes calls to method implemented by settings delegate to the delegate class
-	 */
-	public function __call($ps_name, $pa_arguments) {
-		if (method_exists($this->SETTINGS, $ps_name)) {
-			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
-		}
-		die($this->tableName()." does not implement method {$ps_name}");
-	}
-	# ------------------------------------------------------
 	/**
 	 * @param BundlableLabelableBaseModelWithAttributes $t_subject
 	 * @param int $pn_type
+	 * @oparam array additional data to include in alert
 	 */
-	public static function fireApplicableTriggers(&$t_subject, $pn_type = __CA_MD_ALERT_CHECK_TYPE_SAVE__) {
+	public static function fireApplicableTriggers(&$t_subject, int $pn_type = __CA_MD_ALERT_CHECK_TYPE_SAVE__, ?array $additional_data=null) {
 		$va_triggers = self::getApplicableTriggersForInstance($t_subject);
 		if(!is_array($va_triggers) || !sizeof($va_triggers)) { return; }
-
 
 		foreach($va_triggers as $va_trigger) {
 			$o_trigger = CA\MetadataAlerts\TriggerTypes\Base::getInstance($va_trigger['trigger_type'], $va_trigger);
@@ -287,33 +272,37 @@ class ca_metadata_alert_triggers extends BaseModel {
 			// skip triggers if not specified type
 			if($o_trigger->getTriggerType() != $pn_type) { continue; }
 			
-			self::fireTrigger($o_trigger, $t_subject, $va_trigger);
+			self::fireTrigger($o_trigger, $t_subject, $va_trigger, $additional_data);
 		}
 	}
 	# ------------------------------------------------------
+
 	/**
-	 * @param Mixed $t_subject
-	 * @param int $pn_type
+	 * @param CA\MetadataAlerts\TriggerTypes\Base      $po_trigger
+	 * @param BundlableLabelableBaseModelWithAttributes $t_subject
+	 * @param       $pa_trigger
+	 *
+	 * @return false
 	 */
-	public static function fireTrigger($po_trigger, &$t_subject, $pa_trigger) {
+	public static function fireTrigger($po_trigger, &$t_subject, array $pa_trigger, ?array $additional_data=null) {
 		$t_rule = new ca_metadata_alert_rules();
 		$t_user = new ca_users();
 		$t_group = new ca_user_groups();
-		
+
 		// is the trigger firing?
 		if($po_trigger->check($t_subject)) {
 			if(!$t_rule->load($pa_trigger['rule_id'])) { return false; }
 
-			$vs_notification_key = $po_trigger->getEventKey($t_subject);
+			$vs_notification_key = $po_trigger->getEventKey($t_subject, $additional_data);
 
-			
+
 			if (!is_array($va_delivery_options = caGetOption('notificationDeliveryOptions', $pa_trigger['settings'], null))) {
 				$va_delivery_options = [];
 			}
 			
 			$vb_email = in_array('EMAIL', $va_delivery_options);
 			$vb_inbox = in_array('INBOX', $va_delivery_options);
-			
+
 			// notify users
 			$va_users = $t_rule->getUsers();
 			if(is_array($va_users)) {
@@ -321,7 +310,7 @@ class ca_metadata_alert_triggers extends BaseModel {
 					if ($va_user['access'] >= __CA_ALERT_RULE_ACCESS_NOTIFICATION__) {
 						$t_user->load($va_user['user_id']);
 						if ($t_user->notificationExists(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $vs_notification_key)) { continue; }
-						$t_user->addNotification(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $po_trigger->getNotificationMessage($t_subject), false, ['key' => $vs_notification_key, 'data' => $po_trigger->getData($t_subject), 'deliverByEmail' => $vb_email, 'deliverToInbox' => $vb_inbox]);
+						$t_user->addNotification(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $po_trigger->getNotificationMessage($t_subject, $additional_data), false, ['key' => $vs_notification_key, 'data' => $po_trigger->getData($t_subject), 'deliverByEmail' => $vb_email, 'deliverToInbox' => $vb_inbox]);
 					}
 				}
 			}
@@ -337,7 +326,7 @@ class ca_metadata_alert_triggers extends BaseModel {
                             foreach($va_groups as $va_user) {
                                 if(!$t_user->load($va_user['user_id'])) { continue; }
                                 if ($t_user->notificationExists(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $vs_notification_key)) { continue; }
-                                $t_user->addNotification(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $po_trigger->getNotificationMessage($t_subject), false, ['key' => $vs_notification_key, 'data' => $po_trigger->getData($t_subject), 'deliverByEmail' => $vb_email, 'deliverToInbox' => $vb_inbox]);
+                                $t_user->addNotification(__CA_NOTIFICATION_TYPE_METADATA_ALERT__, $po_trigger->getNotificationMessage($t_subject, $additional_data), false, ['key' => $vs_notification_key, 'data' => $po_trigger->getData($t_subject), 'deliverByEmail' => $vb_email, 'deliverToInbox' => $vb_inbox]);
                             }
                         }
 					}
@@ -442,10 +431,11 @@ class ca_metadata_alert_triggers extends BaseModel {
 				}
 				
 				require_once(__CA_MODELS_DIR__."/{$vs_table}.php");
+				/** @var SearchResult $qr_records */
 				$qr_records = call_user_func_array("{$vs_table}::find", [$va_criteria, $va_params]);
 				
 				while($qr_records->nextHit()) {
-					self::fireTrigger($o_trigger, $qr_records, $va_trigger['info']);
+					self::fireTrigger($o_trigger, $qr_records, $va_trigger['info'], null);
 				}
 			}
 		}

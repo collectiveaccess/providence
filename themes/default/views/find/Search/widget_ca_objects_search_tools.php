@@ -53,7 +53,7 @@
 			print "<option value='".htmlspecialchars($vs_search, ENT_QUOTES, 'UTF-8')."' {$SELECTED}>".$vs_display." (".$va_search_info['hits'].")</option>\n";
 		}
 		print "</select>\n ";
-		print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, '18px'), 'button', 'caSearchHistoryForm');
+		print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, '18px'), 'button', 'caSearchHistoryForm', null, ['aria-label' => _t('Repeat previous search')]);
 		print "</form>\n";
 ?>
 	</div>
@@ -82,7 +82,7 @@
 			print "<option value='' {$SELECTED}>-</option>\n";
 		}
 		print "</select>\n ";
-		print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, '18px'), 'button', 'caSavedSearchesForm');
+		print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, '18px'), 'button', 'caSavedSearchesForm', null, ['aria-label' => _t('Run saved search')]);
 		print "</form>\n";
 ?>
 	</div>
@@ -115,7 +115,7 @@ if(sizeof($this->getVar("available_sets")) > 0){
 ?>
 			<div class='visualize'>
 				<div id='vizLink'>
-					<?php print "<a href='#'  onclick='jQuery(\"#caSearchVizOptsContainer\").slideToggle(250); jQuery(\"#vizLink\").hide();return false;'>".caNavIcon(__CA_NAV_ICON_VISUALIZE__, 1)." "._t("Visualize")."</a>"; ?>
+					<?php print "<a href='#'  onclick='jQuery(\"#caSearchVizOptsContainer\").slideToggle(250); jQuery(\"#vizLink\").hide();return false;'>".caNavIcon(__CA_NAV_ICON_VISUALIZE__, 2)." "._t("Visualize")."</a>"; ?>
 					<div class='clear:both;'></div>
 				</div>
 				<div id='caSearchVizOptsContainer' style="display:none;">

@@ -110,8 +110,8 @@
 		
 		if ($pa_general['set_id']) {
 			$vs_buf .= 
-				caNavButton($po_request, __CA_NAV_ICON_BATCH_EDIT__, _t('Batch edit'), '', 'batch', 'Editor', 'Edit', array('set_id' => $pa_general['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)).' '.
-				_t('Batch edit set <em>%1</em> containing imported media', caNavLink($po_request, $pa_general['setName'], '', 'batch', 'Editor', 'Edit', array('set_id' => $pa_general['set_id'])));
+				caNavButton($po_request, __CA_NAV_ICON_BATCH_EDIT__, _t('Batch edit'), '', 'batch', 'Editor', 'Edit', array('id' => 'ca_set:'.$pa_general['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)).' '.
+				_t('Batch edit set <em>%1</em> containing imported media', caNavLink($po_request, $pa_general['setName'], '', 'batch', 'Editor', 'Edit', array('id' => 'ca_sets:'.$pa_general['set_id'])));
 		}
 		
 		if ($pa_general['processingLog']) {

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2020 Whirl-i-Gig
+ * Copyright 2004-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -55,9 +55,9 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 	 */
 	var $properties = array();
 	var $oproperties = array();
-	var $opa_media_metadata = array();
+	var $media_metadata = array();
 	
-	var $ops_path_to_ffmeg = null;
+	var $path_to_ffmeg = null;
 
 	var $info = array(
 		"IMPORT" => array(
@@ -68,8 +68,9 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"video/x-flv"						=> "flv",
 			"video/mpeg" 						=> "mpeg",
 			"video/mp4" 						=> "m4v",
+			"video/MP2T"						=> "mts",
 			"video/ogg"							=> "ogg",
-			"video/x-matroska"					=> "webm",
+			"video/x-matroska"					=> "mkv",
 			"video/x-dv"						=> "dv",
 		),
 
@@ -80,12 +81,13 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"video/avi" 						=> "avi",
 			"video/x-flv"						=> "flv",
 			"video/mpeg" 						=> "mp4",
+			"video/MP2T"						=> "mts",
 			"audio/mpeg"						=> "mp3",
 			"image/jpeg"						=> "jpg",
 			"image/png"							=> "png",
 			"video/mp4" 						=> "m4v",
 			"video/ogg"							=> "ogg",
-			"video/x-matroska"					=> "webm",
+			"video/x-matroska"					=> "mkv",
 			"video/x-dv"						=> "dv",
 		),
 
@@ -148,8 +150,9 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 		"image/jpeg"						=> "JPEG",
 		"image/png"							=> "PNG",
 		"video/mp4" 						=> "MPEG-4",
+		"video/MP2T"						=> "MTS",
 		"video/ogg"							=> "Ogg Theora",
-		"video/x-matroska"					=> "WebM",
+		"video/x-matroska"					=> "Matroska",
 		"video/x-dv"						=> "DIF (DV)"
 	);
 	
@@ -185,19 +188,19 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 	 *
 	 */
 	public function checkStatus() {
-		$va_status = parent::checkStatus();
+		$status = parent::checkStatus();
 		
 		$this->register();
-		$va_status['available'] = true;
+		$status['available'] = true;
 		
 		if(!$this->ops_path_to_ffmeg){
-			$va_status['errors'][] = _t("Incoming video files will not be transcoded because ffmpeg is not installed.");
+			$status['errors'][] = _t("Incoming video files will not be transcoded because ffmpeg is not installed.");
 		}
 		
 		if ($this->ops_path_to_mediainfo) {
-			$va_status['notices'][] = _t("MediaInfo will be used to extract metadata from video files.");
+			$status['notices'][] = _t("MediaInfo will be used to extract metadata from video files.");
 		}
-		return $va_status;
+		return $status;
 	}
 	# ------------------------------------------------
 	/**
@@ -206,23 +209,23 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 	public function divineFileFormat($filepath) {
 
 		// first try mediainfo
-		if($vs_mimetype = caMediaInfoGuessFileFormat($filepath)) {
-			if($this->info["IMPORT"][$vs_mimetype]) {
-				return $vs_mimetype;
+		if($mimetype = caMediaInfoGuessFileFormat($filepath)) {
+			if($this->info["IMPORT"][$mimetype]) {
+				return $mimetype;
 			}
 		}
 
 		// then getID3
-		if($vs_mimetype = caGetID3GuessFileFormat($filepath)) {
-			if($this->info["IMPORT"][$vs_mimetype]) {
-				return $vs_mimetype;
+		if($mimetype = caGetID3GuessFileFormat($filepath)) {
+			if($this->info["IMPORT"][$mimetype]) {
+				return $mimetype;
 			}
 		}
 
 		// lastly, OggParser
-		if($vs_mimetype = caOggParserGuessFileFormat($filepath)) {
-			if($this->info["IMPORT"][$vs_mimetype]) {
-				return $vs_mimetype;
+		if($mimetype = caOggParserGuessFileFormat($filepath)) {
+			if($this->info["IMPORT"][$mimetype]) {
+				return $mimetype;
 			}
 		}
 
@@ -234,11 +237,10 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 	 *
 	 */
 	public function get($property) {
-		if ($this->opa_media_metadata) {
+		if ($this->media_metadata) {
 			if ($this->info["PROPERTIES"][$property]) {
 				return $this->properties[$property];
 			} else {
-				//print "Invalid property";
 				return '';
 			}
 		} else {
@@ -250,7 +252,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 	 *
 	 */
 	public function set($property, $value) {
-		if ($this->opa_media_metadata) {
+		if ($this->media_metadata) {
 			if ($this->info["PROPERTIES"][$property]) {
 				switch($property) {
 					default:
@@ -277,12 +279,12 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 	 * @return Array Extracted metadata
 	 */
 	public function getExtractedMetadata() {
-		// $this->opa_media_metadata might be extracted by mediainfo at this point or it might not
+		// $this->media_metadata might be extracted by mediainfo at this point or it might not
 		// so we do it again. all calls are cached anyway so this should be too bad as far as performance
 		if($this->ops_path_to_mediainfo) {
 			return caExtractMetadataWithMediaInfo($this->filepath);
 		} else {
-			return $this->opa_media_metadata;
+			return $this->media_metadata;
 		}
 	}
 	# ------------------------------------------------
@@ -292,68 +294,68 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 	public function read ($filepath, $mimetype="", $options=null) {
 		if (!file_exists($filepath)) {
 			$this->postError(1650, _t("File %1 does not exist", $filepath), "WLPlugVideo->read()");
-			$this->opa_media_metadata = array();
+			$this->media_metadata = array();
 			$this->filepath = null;
 			return false;
 		}
-		if (!(($this->opa_media_metadata) && ($this->opa_media_metadata["filepath"] == $filepath))) {
+		if (!(($this->media_metadata) && ($this->media_metadata["filepath"] == $filepath))) {
 
 			// first try mediainfo
-			if($vs_mimetype = caMediaInfoGuessFileFormat($filepath)) {
-				$va_media_metadata = caExtractMetadataWithMediaInfo($filepath);
+			if($mimetype = caMediaInfoGuessFileFormat($filepath)) {
+				$media_metadata = caExtractMetadataWithMediaInfo($filepath);
 
-				$va_media_metadata['filepath'] = $filepath;
-				$va_media_metadata['mime_type'] = $vs_mimetype;
+				$media_metadata['filepath'] = $filepath;
+				$media_metadata['mime_type'] = $mimetype;
 				
 				// Set properties for framerate and starting timecode
 				$o_tc = new TimecodeParser();
-				$o_tc->setTimebase($vn_framerate = trim(str_replace("fps", "", $va_media_metadata['VIDEO']['Frame rate'])));
-				$o_tc->parse($va_media_metadata['OTHER']['Time code of first frame']);
+				$o_tc->setTimebase($framerate = trim(str_replace("fps", "", $media_metadata['VIDEO']['Frame rate'])));
+				$o_tc->parse($media_metadata['OTHER']['Time code of first frame']);
 				$this->properties['timecode_offset'] = (int)$o_tc->getSeconds();
-				$this->properties['framerate'] = $vn_framerate;
+				$this->properties['framerate'] = $framerate;
 
-				$this->opa_media_metadata = $va_media_metadata;
-			} elseif($vs_mimetype = caGetID3GuessFileFormat($filepath)) {
+				$this->media_metadata = $media_metadata;
+			} elseif($mimetype = caGetID3GuessFileFormat($filepath)) {
 				// then try getid3
-				$this->opa_media_metadata = caExtractMetadataWithGetID3($filepath);
+				$this->media_metadata = caExtractMetadataWithGetID3($filepath);
 				$this->properties['timecode_offset'] = 0; // getID3 doesn't return offsets 
-				$this->properties['framerate'] = (float)$this->opa_media_metadata['video']['frame_rate'];
+				$this->properties['framerate'] = (float)$this->media_metadata['video']['frame_rate'];
 			} else {
 				// lastly, try ogg/ogv
-				$this->opa_media_metadata = caExtractMediaMetadataWithOggParser($filepath);
+				$this->media_metadata = caExtractMediaMetadataWithOggParser($filepath);
 				$this->properties['timecode_offset'] = 0; // OggParser doesn't return offsets 
-				$this->properties['framerate'] = ((float)$this->opa_media_metadata['duration'] > 0) ? (float)$this->opa_media_metadata['framecount']/(float)$this->opa_media_metadata['duration'] : 0;
+				$this->properties['framerate'] = ((float)$this->media_metadata['duration'] > 0) ? (float)$this->media_metadata['framecount']/(float)$this->media_metadata['duration'] : 0;
 			}
 		}
 
-		if(!$this->opa_media_metadata['mime_type']) { return false; } // divineFileFormat() should prevent that, but you never know
+		if(!$this->media_metadata['mime_type']) { return false; } // divineFileFormat() should prevent that, but you never know
 
 		$w = $h = null;
 		
-		if (!((isset($this->opa_media_metadata["error"])) && (is_array($this->opa_media_metadata["error"])) && (sizeof($this->opa_media_metadata["error"]) > 0))) {
+		if (!((isset($this->media_metadata["error"])) && (is_array($this->media_metadata["error"])) && (sizeof($this->media_metadata["error"]) > 0))) {
 			$this->filepath = $filepath;
 
 			// getID3 sometimes reports the wrong width and height in the resolution_x and resolution_y indices for FLV files, but does
 			// report correct values in the 'meta' block. So for FLV only we try to take values from the 'meta' block first.
-			if (($this->opa_media_metadata["mime_type"] == 'video/x-flv') && is_array($this->opa_media_metadata['meta']) && is_array($this->opa_media_metadata['meta']['onMetaData'])) {
-				$w = $this->opa_media_metadata['meta']['onMetaData']['width'];
-				$h = $this->opa_media_metadata['meta']['onMetaData']['height'];
+			if (($this->media_metadata["mime_type"] == 'video/x-flv') && is_array($this->media_metadata['meta']) && is_array($this->media_metadata['meta']['onMetaData'])) {
+				$w = $this->media_metadata['meta']['onMetaData']['width'];
+				$h = $this->media_metadata['meta']['onMetaData']['height'];
 			} else {
-				if ($this->opa_media_metadata['mime_type'] == 'video/ogg') {
-					$w = $this->opa_media_metadata['theora']['width'];
-					$h = $this->opa_media_metadata['theora']['height'];
+				if ($this->media_metadata['mime_type'] == 'video/ogg') {
+					$w = $this->media_metadata['theora']['width'];
+					$h = $this->media_metadata['theora']['height'];
 				}
 			}
 			if (!$w || !$h) {
-				$w = $this->opa_media_metadata["video"]["resolution_x"];
-				$h = $this->opa_media_metadata["video"]["resolution_y"];
+				$w = $this->media_metadata["video"]["resolution_x"];
+				$h = $this->media_metadata["video"]["resolution_y"];
 			}
 			if (!$w || !$h) {
 				// maybe it's stuck in a stream?
-				if (is_array($this->opa_media_metadata["video"]["streams"])) {
-					foreach($this->opa_media_metadata["video"]["streams"] as $vs_key => $va_stream_info) {
-						$w = $this->opa_media_metadata["video"]["streams"][$vs_key]["resolution_x"];
-						$h = $this->opa_media_metadata["video"]["streams"][$vs_key]["resolution_y"];
+				if (is_array($this->media_metadata["video"]["streams"])) {
+					foreach($this->media_metadata["video"]["streams"] as $key => $stream_info) {
+						$w = $this->media_metadata["video"]["streams"][$key]["resolution_x"];
+						$h = $this->media_metadata["video"]["streams"][$key]["resolution_y"];
 
 						if ($w > 0 && $h > 0) {
 							break;
@@ -363,65 +365,66 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			}
 			// maybe it came from mediainfo?
 			if (!$w || !$h) {
-				if(isset($this->opa_media_metadata['VIDEO']['Width'])) {
-					$w = preg_replace("/[\D]/", '', $this->opa_media_metadata['VIDEO']['Width']);
+				if(isset($this->media_metadata['VIDEO']['Width'])) {
+					$w = preg_replace("/[\D]/", '', $this->media_metadata['VIDEO']['Width']);
 				}
-				if(isset($this->opa_media_metadata['VIDEO']['Height'])) {
-					$h = preg_replace("/[\D]/", '', $this->opa_media_metadata['VIDEO']['Height']);
+				if(isset($this->media_metadata['VIDEO']['Height'])) {
+					$h = preg_replace("/[\D]/", '', $this->media_metadata['VIDEO']['Height']);
 				}
 			}
 
 			$this->properties["width"] = $w;
 			$this->properties["height"] = $h;
 
-			$this->properties["mimetype"] = $this->opa_media_metadata["mime_type"];
+			$this->properties["mimetype"] = $this->media_metadata["mime_type"];
 			$this->properties["typename"] = $this->typenames[$this->properties["mimetype"]] ? $this->typenames[$this->properties["mimetype"]] : "Unknown";
 
-			$this->properties["duration"] = $this->opa_media_metadata["playtime_seconds"];
+			$this->properties["duration"] = $this->media_metadata["playtime_seconds"];
 
 			// getID3 sometimes messes up the duration. mediainfo seems a little more reliable so use it if it's available
-			if($this->opb_mediainfo_available && ($vn_mediainfo_duration = caExtractVideoFileDurationWithMediaInfo($filepath))) {
-				$this->properties['duration'] = $this->opa_media_metadata["playtime_seconds"] = $vn_mediainfo_duration;
+			if($this->ops_path_to_mediainfo && ($mediainfo_duration = caExtractVideoFileDurationWithMediaInfo($filepath))) {
+				$this->properties['duration'] = $this->media_metadata["playtime_seconds"] = $mediainfo_duration;
 			}
 
 			$this->properties["filesize"] = filesize($filepath);
 
 			# -- get bandwidth
 			switch($this->properties["mimetype"]) {
-				// in this case $this->opa_media_metadata definitely came from mediainfo
+				// in this case $this->media_metadata definitely came from mediainfo
 				// so the array structure is a little different than getID3
 				case 'video/x-dv':
-					$this->properties["has_video"] = isset($this->opa_media_metadata["VIDEO"]["Duration"]) ? 1 : 0;
-					$this->properties["has_audio"] = isset($this->opa_media_metadata["AUDIO"]["Duration"]) ? 1 : 0;
+					$this->properties["has_video"] = isset($this->media_metadata["VIDEO"]["Duration"]) ? 1 : 0;
+					$this->properties["has_audio"] = isset($this->media_metadata["AUDIO"]["Duration"]) ? 1 : 0;
 
 					$this->properties["type_specific"] = array();
 
-					$this->properties["title"] = 		$this->opa_media_metadata["GENERAL"]["Complete name"];
+					$this->properties["title"] = 		$this->media_metadata["GENERAL"]["Complete name"];
 					$this->properties["author"] = 		"";
 					$this->properties["copyright"] = 	"";
 					$this->properties["description"] = 	"";
 
-					$vn_bitrate = preg_replace("/[\D]/", '', $this->opa_media_metadata['VIDEO']['Bit rate']);
-					$this->properties["bandwidth"] = array("min" => 0, "max" => $vn_bitrate);
+					$bitrate = preg_replace("/[\D]/", '', $this->media_metadata['VIDEO']['Bit rate']);
+					$this->properties["bandwidth"] = array("min" => 0, "max" => $bitrate);
 					break;
 				case 'video/x-ms-asf':
 				case 'video/x-ms-wmv':
-					$this->properties["has_video"] = (($this->opa_media_metadata["asf"]["video_media"]) ? 1 : 0);
-					$this->properties["has_audio"] = (($this->opa_media_metadata["asf"]["audio_media"]) ? 1 : 0);
+					$this->properties["has_video"] = (($this->media_metadata["asf"]["video_media"]) ? 1 : 0);
+					$this->properties["has_audio"] = (($this->media_metadata["asf"]["audio_media"]) ? 1 : 0);
 
-					$this->properties["type_specific"] = array("asf" => $this->opa_media_metadata["asf"]);
+					$this->properties["type_specific"] = array("asf" => $this->media_metadata["asf"]);
 
-					$this->properties["title"] = 		$this->opa_media_metadata["asf"]["comments"]["title"];
-					$this->properties["author"] = 		$this->opa_media_metadata["asf"]["comments"]["artist"];
-					$this->properties["copyright"] = 	$this->opa_media_metadata["asf"]["comments"]["copyright"];
-					$this->properties["description"] = 	$this->opa_media_metadata["asf"]["comments"]["comment"];
+					$this->properties["title"] = 		$this->media_metadata["asf"]["comments"]["title"];
+					$this->properties["author"] = 		$this->media_metadata["asf"]["comments"]["artist"];
+					$this->properties["copyright"] = 	$this->media_metadata["asf"]["comments"]["copyright"];
+					$this->properties["description"] = 	$this->media_metadata["asf"]["comments"]["comment"];
 
-					$this->properties["bandwidth"] = array("min" => 0, "max" => $this->opa_media_metadata["bitrate"]);
+					$this->properties["bandwidth"] = array("min" => 0, "max" => $this->media_metadata["bitrate"]);
 					break;
 				case 'video/quicktime':
 				case 'video/mp4':
-					$this->properties["has_video"] = (isset($this->opa_media_metadata["video"]["bitrate"]) && ($this->opa_media_metadata["video"]["bitrate"]) ? 1 : 0);
-					$this->properties["has_audio"] = (isset($this->opa_media_metadata["audio"]["bitrate"]) && ($this->opa_media_metadata["audio"]["bitrate"]) ? 1 : 0);
+				case 'video/MP2T':
+					$this->properties["has_video"] = (isset($this->media_metadata["video"]["bitrate"]) && ($this->media_metadata["video"]["bitrate"]) ? 1 : 0);
+					$this->properties["has_audio"] = (isset($this->media_metadata["audio"]["bitrate"]) && ($this->media_metadata["audio"]["bitrate"]) ? 1 : 0);
 
 					$this->properties["type_specific"] = array();
 
@@ -430,11 +433,11 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$this->properties["copyright"] = 	"";
 					$this->properties["description"] = 	"";
 
-					$this->properties["bandwidth"] = array("min" => (int)$this->opa_media_metadata["theora"]['nombitrate'] + (int)$this->opa_media_metadata["vorbis"]['bitrate'], "max" => (int)$this->opa_media_metadata["theora"]['nombitrate'] + (int)$this->opa_media_metadata["vorbis"]['bitrate']);
+					$this->properties["bandwidth"] = array("min" => (int)$this->media_metadata["theora"]['nombitrate'] + (int)$this->media_metadata["vorbis"]['bitrate'], "max" => (int)$this->media_metadata["theora"]['nombitrate'] + (int)$this->media_metadata["vorbis"]['bitrate']);
 					break;
 				case 'video/ogg':
-					$this->properties["has_video"] = (isset($this->opa_media_metadata["theora"]) ? 1 : 0);
-					$this->properties["has_audio"] = (isset($this->opa_media_metadata["vorbis"]) ? 1 : 0);
+					$this->properties["has_video"] = (isset($this->media_metadata["theora"]) ? 1 : 0);
+					$this->properties["has_audio"] = (isset($this->media_metadata["vorbis"]) ? 1 : 0);
 
 					$this->properties["type_specific"] = array();
 
@@ -443,24 +446,24 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$this->properties["copyright"] = 	"";
 					$this->properties["description"] = 	"";
 
-					$this->properties["bandwidth"] = array("min" => $this->opa_media_metadata["bitrate"], "max" => $this->opa_media_metadata["bitrate"]);
+					$this->properties["bandwidth"] = array("min" => $this->media_metadata["bitrate"], "max" => $this->media_metadata["bitrate"]);
 					break;
 				case 'application/x-shockwave-flash':
-					$this->properties["has_video"] = (($this->opa_media_metadata["header"]["frame_width"] > 0) ? 1 : 0);
+					$this->properties["has_video"] = (($this->media_metadata["header"]["frame_width"] > 0) ? 1 : 0);
 					$this->properties["has_audio"] = 1;
 
-					$this->properties["type_specific"] = array("header" => $this->opa_media_metadata["header"]);
+					$this->properties["type_specific"] = array("header" => $this->media_metadata["header"]);
 
 					$this->properties["title"] = 		"";
 					$this->properties["author"] = 		"";
 					$this->properties["copyright"] = 	"";
 					$this->properties["description"] = 	"";
 
-					$this->properties["bandwidth"] = array("min" => $this->opa_media_metadata["filesize"]/$this->opa_media_metadata["playtime_seconds"], "max" => $this->opa_media_metadata["filesize"]/$this->opa_media_metadata["playtime_seconds"]);
+					$this->properties["bandwidth"] = array("min" => $this->media_metadata["filesize"]/$this->media_metadata["playtime_seconds"], "max" => $this->media_metadata["filesize"]/$this->media_metadata["playtime_seconds"]);
 					break;
 				case 'video/mpeg':
-					$this->properties["has_video"] = (isset($this->opa_media_metadata["video"]["bitrate"]) && ($this->opa_media_metadata["video"]["bitrate"]) ? 1 : 0);
-					$this->properties["has_audio"] = (isset($this->opa_media_metadata["audio"]["bitrate"]) && ($this->opa_media_metadata["audio"]["bitrate"]) ? 1 : 0);
+					$this->properties["has_video"] = (isset($this->media_metadata["video"]["bitrate"]) && ($this->media_metadata["video"]["bitrate"]) ? 1 : 0);
+					$this->properties["has_audio"] = (isset($this->media_metadata["audio"]["bitrate"]) && ($this->media_metadata["audio"]["bitrate"]) ? 1 : 0);
 
 					$this->properties["type_specific"] = array();
 
@@ -469,22 +472,22 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$this->properties["copyright"] = 	"";
 					$this->properties["description"] = 	"";
 
-					$this->properties["bandwidth"] = array("min" => $this->opa_media_metadata["bitrate"], "max" => $this->opa_media_metadata["bitrate"]);
+					$this->properties["bandwidth"] = array("min" => $this->media_metadata["bitrate"], "max" => $this->media_metadata["bitrate"]);
 					break;
 				case 'video/x-flv':
-					$this->properties["has_video"] = (($this->opa_media_metadata["header"]["hasVideo"]) ? 1 : 0);
-					$this->properties["has_audio"] = (($this->opa_media_metadata["header"]["hasAudio"]) ? 1 : 0);
+					$this->properties["has_video"] = (($this->media_metadata["header"]["hasVideo"]) ? 1 : 0);
+					$this->properties["has_audio"] = (($this->media_metadata["header"]["hasAudio"]) ? 1 : 0);
 
-					$this->properties["type_specific"] = array("header" => $this->opa_media_metadata["header"]);
+					$this->properties["type_specific"] = array("header" => $this->media_metadata["header"]);
 
 					$this->properties["title"] = 		"";
 					$this->properties["author"] = 		"";
 					$this->properties["copyright"] = 	"";
 					$this->properties["description"] = 	"";
 
-					$vn_bitrate = $this->opa_media_metadata["filesize"]/$this->opa_media_metadata["playtime_seconds"];
+					$bitrate = $this->media_metadata["filesize"]/$this->media_metadata["playtime_seconds"];
 
-					$this->properties["bandwidth"] = array("min" => $vn_bitrate, "max" => $vn_bitrate);
+					$this->properties["bandwidth"] = array("min" => $bitrate, "max" => $bitrate);
 					break;
 			}
 
@@ -492,8 +495,8 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 			return 1;
 		} else {
-			$this->postError(1650, join("; ", $this->opa_media_metadata["error"]), "WLPlugVideo->read()");
-			$this->opa_media_metadata = "";
+			$this->postError(1650, join("; ", $this->media_metadata["error"]), "WLPlugVideo->read()");
+			$this->media_metadata = "";
 			$this->filepath = "";
 			return false;
 		}
@@ -503,7 +506,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 	 *
 	 */
 	public function transform($operation, $parameters) {
-		if (!$this->opa_media_metadata) { return false; }
+		if (!$this->media_metadata) { return false; }
 		if (!($this->info["TRANSFORMATIONS"][$operation])) {
 			# invalid transformation
 			$this->postError(1655, _t("Invalid transformation %1", $operation), "WLPlugVideo->transform()");
@@ -581,37 +584,39 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 	/**
 	 *
 	 */
-	public function write($filepath, $mimetype, $pa_options=null) {
-		if (!$this->opa_media_metadata) { return false; }
+	public function write($filepath, $mimetype, $options=null) {
+		if (!$this->media_metadata) { return false; }
 		if (!($ext = $this->info["EXPORT"][$mimetype])) {
 			# this plugin can't write this mimetype
 			return false;
 		}
 		$o_tc = new TimecodeParser();
 		
-		$vs_grab_at = $this->opo_app_config->get('video_poster_frame_grab_at');
-        if(preg_match("!([\d]+)%!", $vs_grab_at, $va_matches)) {
-            $vn_start_secs = ceil((float)$this->get('duration') * ($va_matches[1]/100));
-        } elseif (!($vn_start_secs = ($o_tc->parse($this->opo_app_config->get('video_poster_frame_grab_at'))) ? $o_tc->getSeconds() : 5)) {
-            $vn_start_secs = 5;
+		$grab_at = $this->opo_app_config->get('video_poster_frame_grab_at');
+        if(preg_match("!([\d]+)%!", $grab_at, $matches)) {
+            $start_secs = ceil((float)$this->get('duration') * ($matches[1]/100));
+        } elseif (!($start_secs = ($o_tc->parse($this->opo_app_config->get('video_poster_frame_grab_at'))) ? $o_tc->getSeconds() : 0)) {
+            $start_secs = 0;
         }
-
+        
+        // If start is past end of video force to beginning
+        if($start_secs > (float)$this->get('duration')) { $start_secs = 0; }
 		# is mimetype valid?
 		switch($mimetype) {
 			# ------------------------------------
 			case 'image/jpeg':
-				$vn_preview_width = $this->properties["width"];
-				$vn_preview_height = $this->properties["height"];
+				$preview_width = $this->properties["width"];
+				$preview_height = $this->properties["height"];
 
-				if (caMediaPluginFFmpegInstalled() && ($this->opa_media_metadata["mime_type"] != 'application/x-shockwave-flash')) {
-					caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f image2 -ss ".($vn_start_secs)." -t 0.04 -vf \"scale=w={$vn_preview_width}:h={$vn_preview_height}:force_original_aspect_ratio=decrease,pad={$vn_preview_width}:{$vn_preview_height}:(ow-iw)/2:(oh-ih)/2\"  -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
-					if (($vn_return < 0) || ($vn_return > 1) || (!@filesize($filepath.".".$ext))) {
+				if (caMediaPluginFFmpegInstalled() && ($this->media_metadata["mime_type"] != 'application/x-shockwave-flash')) {
+					caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f image2 -ss ".($start_secs)." -t 0.04 -vf \"scale=w={$preview_width}:h={$preview_height}:force_original_aspect_ratio=decrease,pad={$preview_width}:{$preview_height}:(ow-iw)/2:(oh-ih)/2\"  -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
+					if (($return < 0) || ($return > 1) || (!@filesize($filepath.".".$ext))) {
 						@unlink($filepath.".".$ext);
 						// try again, without attempting to force aspect ratio, as this seems to cause ffmpeg to barf at specific frame sizes and input aspect ratios
-						caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f image2 -ss ".($vn_start_secs)." -t 0.04 -vf \"scale=w={$vn_preview_width}:h={$vn_preview_height}\"  -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+						caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f image2 -ss ".($start_secs)." -t 0.04 -vf \"scale=w={$preview_width}:h={$preview_height}\"  -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
 					}
 
-					if (($vn_return < 0) || ($vn_return > 1) || (!@filesize($filepath.".".$ext))) {
+					if (($return < 0) || ($return > 1) || (!@filesize($filepath.".".$ext))) {
 						@unlink($filepath.".".$ext);
 						// don't throw error as ffmpeg cannot generate frame still from all file
 					}
@@ -623,18 +628,18 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				break;
 			# ------------------------------------
 			case 'image/png':
-				$vn_preview_width = $this->properties["width"];
-				$vn_preview_height = $this->properties["height"];
+				$preview_width = $this->properties["width"];
+				$preview_height = $this->properties["height"];
 
-				if (caMediaPluginFFmpegInstalled() && ($this->opa_media_metadata["mime_type"] != "application/x-shockwave-flash")) {
-					caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -vcodec png -ss ".($vn_start_secs)." -t 0.04 -s {$vn_preview_width}x{$vn_preview_height} -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
-					if (($vn_return < 0) || ($vn_return > 1) || (!@filesize($filepath.".".$ext))) {
+				if (caMediaPluginFFmpegInstalled() && ($this->media_metadata["mime_type"] != "application/x-shockwave-flash")) {
+					caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -vcodec png -ss ".($start_secs)." -t 0.04 -s {$preview_width}x{$preview_height} -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
+					if (($return < 0) || ($return > 1) || (!@filesize($filepath.".".$ext))) {
 						@unlink($filepath.".".$ext);
 						// try again, with -ss 1 (seems to work consistently on some files where other -ss values won't work)
-						caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -vcodec png -ss ".($vn_start_secs)." -t 0.04  -vf \"scale=w={$vn_preview_width}:h={$vn_preview_height}:force_original_aspect_ratio=decrease,pad={$vn_preview_width}:{$vn_preview_height}:(ow-iw)/2:(oh-ih)/2\"   -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+						caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -vcodec png -ss ".($start_secs)." -t 0.04  -vf \"scale=w={$preview_width}:h={$preview_height}:force_original_aspect_ratio=decrease,pad={$preview_width}:{$preview_height}:(ow-iw)/2:(oh-ih)/2\"   -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
 					}
 
-					if (($vn_return < 0) || ($vn_return > 1) || (!@filesize($filepath.".".$ext))) {
+					if (($return < 0) || ($return > 1) || (!@filesize($filepath.".".$ext))) {
 						@unlink($filepath.".".$ext);
 						// don't throw error as ffmpeg cannot generate frame still from all file
 					}
@@ -647,16 +652,16 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			# ------------------------------------
 			case 'video/x-flv':
 				if (caMediaPluginFFmpegInstalled()) {
-					$vn_video_bitrate = $this->get('video_bitrate');
-					if ($vn_video_bitrate < 20000) { $vn_video_bitrate = 256000; }
-					$vn_audio_bitrate = $this->get('audio_bitrate');
-					if ($vn_audio_bitrate < 8000) { $vn_audio_bitrate = 32000; }
-					$vn_audio_sample_freq = $this->get('audio_sample_freq');
-					if (($vn_audio_sample_freq != 44100) && ($vn_audio_sample_freq != 22050) && ($vn_audio_sample_freq != 11025)) {
-						$vn_audio_sample_freq = 44100;
+					$video_bitrate = $this->get('video_bitrate');
+					if ($video_bitrate < 20000) { $video_bitrate = 256000; }
+					$audio_bitrate = $this->get('audio_bitrate');
+					if ($audio_bitrate < 8000) { $audio_bitrate = 32000; }
+					$audio_sample_freq = $this->get('audio_sample_freq');
+					if (($audio_sample_freq != 44100) && ($audio_sample_freq != 22050) && ($audio_sample_freq != 11025)) {
+						$audio_sample_freq = 44100;
 					}
-					caExec($vs_cmd = caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f flv -b ".intval($vn_video_bitrate)." -ab ".intval($vn_audio_bitrate)." -ar ".intval($vn_audio_sample_freq)." -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
-					if (($vn_return < 0) || ($vn_return > 1) || (filesize($filepath.".".$ext) == 0)) {
+					caExec($cmd = caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f flv -b ".intval($video_bitrate)." -ab ".intval($audio_bitrate)." -ar ".intval($audio_sample_freq)." -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
+					if (($return < 0) || ($return > 1) || (filesize($filepath.".".$ext) == 0)) {
 						@unlink($filepath.".".$ext);
 						$this->postError(1610, _t("Couldn't convert file to FLV format"), "WLPlugVideo->write()");
 						return false;
@@ -671,60 +676,60 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			case 'video/ogg':
 			case 'video/x-dv':
 				if (caMediaPluginFFmpegInstalled()) {
-					$va_ffmpeg_params = array();
+					$ffmpeg_params = array();
 
-					if (!($vs_ffmpeg_command = $this->get('command'))) {
+					if (!($ffmpeg_command = $this->get('command'))) {
 						// Video bitrate
-						$vn_video_bitrate = $this->get('video_bitrate');
-						if($vn_video_bitrate!='') {
-							if ($vn_video_bitrate < 20000) {
-								$vn_video_bitrate = 256000;
+						$video_bitrate = $this->get('video_bitrate');
+						if($video_bitrate!='') {
+							if ($video_bitrate < 20000) {
+								$video_bitrate = 256000;
 							}
-							$va_ffmpeg_params["video_bitrate"] = "-b ".intval($vn_video_bitrate);
+							$ffmpeg_params["video_bitrate"] = "-b ".intval($video_bitrate);
 						}
 						
 						// Audio bitrate
-						$vn_audio_bitrate = $this->get('audio_bitrate');
-						if ($vn_audio_bitrate < 8000) { $vn_audio_bitrate = 32000; }
-						$va_ffmpeg_params["audio_bitrate"] = "-ab ".intval($vn_audio_bitrate);
+						$audio_bitrate = $this->get('audio_bitrate');
+						if ($audio_bitrate < 8000) { $audio_bitrate = 32000; }
+						$ffmpeg_params["audio_bitrate"] = "-ab ".intval($audio_bitrate);
 	
 						// Audio sample frequency
-						$vn_audio_sample_freq = $this->get('audio_sample_freq');
-						if (($vn_audio_sample_freq != 44100) && ($vn_audio_sample_freq != 22050) && ($vn_audio_sample_freq != 11025)) {
-							$vn_audio_sample_freq = 44100;
+						$audio_sample_freq = $this->get('audio_sample_freq');
+						if (($audio_sample_freq != 44100) && ($audio_sample_freq != 22050) && ($audio_sample_freq != 11025)) {
+							$audio_sample_freq = 44100;
 						}
-						$va_ffmpeg_params["audio_sample_freq"] = "-ar ".intval($vn_audio_sample_freq);
+						$ffmpeg_params["audio_sample_freq"] = "-ar ".intval($audio_sample_freq);
 	
 						// Multithreading
-						$vn_threads = $this->get('threads');
-						if ($vn_threads < 1 || $vn_threads == '') {
-							$vn_threads = 1;
+						$threads = $this->get('threads');
+						if ($threads < 1 || $threads == '') {
+							$threads = 1;
 						}
-						$va_ffmpeg_params["threads"] = "-threads ".$vn_threads;
+						$ffmpeg_params["threads"] = "-threads ".$threads;
 	
 						// Quantitizers
-						$vn_qmin = $this->get('qmin');
-						if ($vn_qmin != '') {
-							$va_ffmpeg_params["qmin"] = "-qmin ".$vn_qmin;
+						$qmin = $this->get('qmin');
+						if ($qmin != '') {
+							$ffmpeg_params["qmin"] = "-qmin ".$qmin;
 						}
-						$vn_qmax = $this->get('qmax');
-						if ($vn_qmax != '') {
-							$va_ffmpeg_params["qmax"] = "-qmax ".$vn_qmax;
+						$qmax = $this->get('qmax');
+						if ($qmax != '') {
+							$ffmpeg_params["qmax"] = "-qmax ".$qmax;
 						}
 	
 						// Flags
-						if(($vs_flags = $this->get('flags'))!=''){
-							$va_ffmpeg_params["flags"] = "-flags ".$vs_flags;
+						if(($flags = $this->get('flags'))!=''){
+							$ffmpeg_params["flags"] = "-flags ".$flags;
 						}
 	
 						// Resolution
-						if(($vs_res = $this->get('resolution'))!=''){
-							$va_ffmpeg_params["resolution"] = "-s ".$vs_res;
+						if(($res = $this->get('resolution'))!=''){
+							$ffmpeg_params["resolution"] = "-s ".$res;
 						}
 	
 						// Coder
-						if(($vn_coder = $this->get('coder'))!=''){
-							$va_ffmpeg_params["coder"] = "-coder ".$vn_coder;
+						if(($coder = $this->get('coder'))!=''){
+							$ffmpeg_params["coder"] = "-coder ".$coder;
 						}
 	
 						// 2-pass encoding
@@ -735,71 +740,71 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 						}
 						
 						// qdiff
-						if(($vs_qdiff = $this->get('qdiff'))!=''){
-							$va_ffmpeg_params["qdiff"] = "-qdiff ".$vs_qdiff;
+						if(($qdiff = $this->get('qdiff'))!=''){
+							$ffmpeg_params["qdiff"] = "-qdiff ".$qdiff;
 						}
 						
 						// partitions
-						if(($vs_partitions = $this->get('partitions'))!=''){
-							$va_ffmpeg_params["partitions"] = "-partitions ".$vs_partitions;
+						if(($partitions = $this->get('partitions'))!=''){
+							$ffmpeg_params["partitions"] = "-partitions ".$partitions;
 						}
 						
 						// cmp
-						if(($vs_cmp = $this->get('cmp'))!=''){
-							$va_ffmpeg_params["cmp"] = "-cmp ".$vs_cmp;
+						if(($cmp = $this->get('cmp'))!=''){
+							$ffmpeg_params["cmp"] = "-cmp ".$cmp;
 						}
 						
 						// qdiff
-						if(($vs_sc_threshold = $this->get('sc_threshold'))!=''){
-							$va_ffmpeg_params["sc_threshold"] = "-sc_threshold ".$vs_sc_threshold;
+						if(($sc_threshold = $this->get('sc_threshold'))!=''){
+							$ffmpeg_params["sc_threshold"] = "-sc_threshold ".$sc_threshold;
 						}
 						
 						// vpre
-						if(!($vs_vpreset = $this->get('vpre'))!=''){
-							$vs_vpreset = null;
+						if(!($vpreset = $this->get('vpre'))!=''){
+							$vpreset = null;
 						}
 					}
 
 					// put it all together
 
 					// we need to be in a directory where we can write (libx264 logfiles)
-					$vs_cwd = getcwd();
+					$cwd = getcwd();
 					chdir(__CA_APP_DIR__."/tmp/");
 					
-					$vs_cmd = '';
-					if ($vs_ffmpeg_command) {
-						caExec($vs_cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." {$vs_ffmpeg_command} ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+					$cmd = '';
+					if ($ffmpeg_command) {
+						caExec($cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." {$ffmpeg_command} ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
 					} else {
-						if ($vs_vpreset) {
-							$vs_other_params = "";
-							if($vn_audio_bitrate){
-								$vs_other_params.="-ab {$vn_audio_bitrate} ";
+						if ($vpreset) {
+							$other_params = "";
+							if($audio_bitrate){
+								$other_params.="-ab {$audio_bitrate} ";
 							}
-							if($vn_audio_sample_freq){
-								$vs_other_params.="-ar {$vn_audio_sample_freq} ";
+							if($audio_sample_freq){
+								$other_params.="-ar {$audio_sample_freq} ";
 							}
-							if($vs_res && $vs_res!=''){
-								$vs_other_params.="-s ".$vs_res;
+							if($res && $res!=''){
+								$other_params.="-s ".$res;
 							}
-							caExec($vs_cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -acodec libfaac {$vs_other_params} -vpre {$vs_vpreset} -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+							caExec($cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -acodec libfaac {$other_params} -vpre {$vpreset} -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
 						} else {
 							if(!$vb_twopass) {
-								caExec($vs_cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -acodec libfaac ".join(" ",$va_ffmpeg_params)." -y ".caEscapeShellArg($filepath.".".$ext). ((caGetOSFamily() == OS_POSIX) ? " 2> /dev/null" : ""), $va_output, $vn_return);
+								caExec($cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -acodec libfaac ".join(" ",$ffmpeg_params)." -y ".caEscapeShellArg($filepath.".".$ext). ((caGetOSFamily() == OS_POSIX) ? " 2> /dev/null" : ""), $output, $return);
 							} else {
-								caExec($vs_cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -pass 1 -acodec libfaac ".join(" ",$va_ffmpeg_params)." -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
-								caExec($vs_cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -pass 2 -acodec libfaac ".join(" ",$va_ffmpeg_params)." -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+								caExec($cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -pass 1 -acodec libfaac ".join(" ",$ffmpeg_params)." -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
+								caExec($cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -pass 2 -acodec libfaac ".join(" ",$ffmpeg_params)." -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
 								// probably cleanup logfiles here
 							}
 						}
 					}
 					
-					chdir($vs_cwd); // avoid fun side-effects
+					chdir($cwd); // avoid fun side-effects
 					if (@filesize($filepath.".".$ext) == 0) {
 						@unlink($filepath.".".$ext);
-						if ($vs_vpreset) {
-							$this->postError(1610, _t("Couldn't convert file to MPEG4 format [%1]; does the ffmpeg preset '%2' exist? (command was %3)", $vn_return, $vs_vpreset, $vs_cmd), "WLPlugVideo->write()");
+						if ($vpreset) {
+							$this->postError(1610, _t("Couldn't convert file to MPEG4 format [%1]; does the ffmpeg preset '%2' exist? (command was %3)", $return, $vpreset, $cmd), "WLPlugVideo->write()");
 						} else {
-							$this->postError(1610, _t("Couldn't convert file to MPEG4 format [%1] (command was %2)", $vn_return, $vs_cmd), "WLPlugVideo->write()");
+							$this->postError(1610, _t("Couldn't convert file to MPEG4 format [%1] (command was %2)", $return, $cmd), "WLPlugVideo->write()");
 						}
 						return false;
 					}
@@ -810,9 +815,9 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				break;
 			# ------------------------------------
 			default:
-				if (($mimetype != $this->opa_media_metadata["mime_type"])) {
+				if (($mimetype != $this->media_metadata["mime_type"])) {
 					# this plugin can't write this mimetype (no conversions allowed)
-					$this->postError(1610, _t("Can't convert '%1' to %2", $this->opa_media_metadata["mime_type"], $mimetype), "WLPlugVideo->write()");
+					$this->postError(1610, _t("Can't convert '%1' to %2", $this->media_metadata["mime_type"], $mimetype), "WLPlugVideo->write()");
 					return false;
 				}
 				# write the file
@@ -847,110 +852,110 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 	 *		force = ignore setting of "video_preview_generate_frames" app.conf directive and generate previews no matter what
 	 */
 	# This method must be implemented for plug-ins that can output preview frames for videos or pages for documents
-	public function &writePreviews($ps_filepath, $pa_options) {
-		if (!(bool)$this->getAppConfig()->get("video_preview_generate_frames") && (!isset($pa_options['force']) || !$pa_options['force'])) { return false; }
+	public function &writePreviews($filepath, $options) {
+		if (!(bool)$this->getAppConfig()->get("video_preview_generate_frames") && (!isset($options['force']) || !$options['force'])) { return false; }
 		if (!caMediaPluginFFmpegInstalled()) return false;
 		
-		if (!isset($pa_options['outputDirectory']) || !$pa_options['outputDirectory'] || !file_exists($pa_options['outputDirectory'])) {
-			if (!($vs_tmp_dir = $this->getAppConfig()->get("taskqueue_tmp_directory"))) {
+		if (!isset($options['outputDirectory']) || !$options['outputDirectory'] || !file_exists($options['outputDirectory'])) {
+			if (!($tmp_dir = $this->getAppConfig()->get("taskqueue_tmp_directory"))) {
 				// no dir
 				return false;
 			}
 		} else {
-			$vs_tmp_dir = $pa_options['outputDirectory'];
+			$tmp_dir = $options['outputDirectory'];
 		}
 		
 		$o_tc = new TimecodeParser();
 		
-		if (($vn_min_number_of_frames = $pa_options['minNumberOfFrames']) < 1) {
-			$vn_min_number_of_frames = 0;
+		if (($min_number_of_frames = $options['minNumberOfFrames']) < 1) {
+			$min_number_of_frames = 0;
 		}
 		
-		if (($vn_max_number_of_frames = $pa_options['maxNumberOfFrames']) < 1) {
-			$vn_max_number_of_frames = 100;
+		if (($max_number_of_frames = $options['maxNumberOfFrames']) < 1) {
+			$max_number_of_frames = 100;
 		}
 		
-		$vn_duration = $this->properties["duration"];
-		if (!($vn_frame_interval = ($o_tc->parse($pa_options['frameInterval'])) ? $o_tc->getSeconds() : 0)) {
-			$vn_frame_interval = 30;
+		$duration = $this->properties["duration"];
+		if (!($frame_interval = ($o_tc->parse($options['frameInterval'])) ? $o_tc->getSeconds() : 0)) {
+			$frame_interval = 30;
 		}
-		if (!($vn_start_at = ($o_tc->parse($pa_options['startAtTime'])) ? $o_tc->getSeconds() : 0)) {
-			$vn_start_at = 0;
+		if (!($start_at = ($o_tc->parse($options['startAtTime'])) ? $o_tc->getSeconds() : 0)) {
+			$start_at = 0;
 		}
-		if (!($vn_end_at = ($o_tc->parse($pa_options['endAtTime'])) ? $o_tc->getSeconds() : 0)) {
-			$vn_end_at = 0;
+		if (!($end_at = ($o_tc->parse($options['endAtTime'])) ? $o_tc->getSeconds() : 0)) {
+			$end_at = 0;
 		}
 		
-		if (($vn_previewed_duration = ($vn_start_at - $vn_end_at)) < 0) {
-			$vn_previewed_duration = $vn_duration;
-			$vn_start_at = $vn_end_at = 0;
+		if (($previewed_duration = ($start_at - $end_at)) < 0) {
+			$previewed_duration = $duration;
+			$start_at = $end_at = 0;
 		} else {
 			// if start and end times are the same assume single frame mode and set duration to a sliver of time
-			if ($vn_previewed_duration == 0) { $vn_previewed_duration = 0.1; }
+			if ($previewed_duration == 0) { $previewed_duration = 0.1; }
 		}
 			
-		if ($vn_frame_interval > $vn_previewed_duration) {
-			$vn_frame_interval = $vn_previewed_duration;
+		if ($frame_interval > $previewed_duration) {
+			$frame_interval = $previewed_duration;
 		}
 		
-		$vn_preview_width = (isset($pa_options['width']) && ((int)$pa_options['width'] > 0)) ? (int)$pa_options['width'] : 320;
-		$vn_preview_height= (isset($pa_options['height']) && ((int)$pa_options['height'] > 0)) ? (int)$pa_options['height'] : 320;
+		$preview_width = (isset($options['width']) && ((int)$options['width'] > 0)) ? (int)$options['width'] : 320;
+		$preview_height= (isset($options['height']) && ((int)$options['height'] > 0)) ? (int)$options['height'] : 320;
 		
-		$vn_s = $vn_start_at;
-		$vn_num_frames = ($vn_previewed_duration)/$vn_frame_interval;
+		$s = $start_at;
+		$num_frames = ($frame_interval > 0) ? ceil($previewed_duration/$frame_interval) : 1;
 		
-		if ($vn_num_frames < $vn_min_number_of_frames) {
-			$vn_frame_interval = ($vn_previewed_duration)/$vn_min_number_of_frames;
-			$vn_num_frames = $vn_min_number_of_frames;
-			$vn_previewed_duration = ($vn_num_frames * $vn_frame_interval);
+		if ($num_frames < $min_number_of_frames) {
+			$frame_interval = ($previewed_duration)/$min_number_of_frames;
+			$num_frames = $min_number_of_frames;
+			$previewed_duration = ($num_frames * $frame_interval);
 		}
-		if ($vn_num_frames > $vn_max_number_of_frames) {
-			$vn_frame_interval = ($vn_previewed_duration)/$vn_max_number_of_frames;
-			$vn_num_frames = $vn_max_number_of_frames;
-			$vn_previewed_duration = ($vn_num_frames * $vn_frame_interval);
+		if ($num_frames > $max_number_of_frames) {
+			$frame_interval = ($previewed_duration)/$max_number_of_frames;
+			$num_frames = $max_number_of_frames;
+			$previewed_duration = ($num_frames * $frame_interval);
 		}
-		$vs_freq = 1/$vn_frame_interval;
+		$freq = 1/$frame_interval;
 		
-		$vs_output_file_prefix = tempnam($vs_tmp_dir, 'caVideoPreview');
-		$vs_output_file = $vs_output_file_prefix.'%05d.jpg';
+		$output_file_prefix = tempnam($tmp_dir, 'caVideoPreview');
+		$output_file = $output_file_prefix.'%05d.jpg';
 		
-		caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f image2 -r ".$vs_freq." -ss {$vn_s} -t {$vn_previewed_duration} -vf \"scale=w={$vn_preview_width}:h={$vn_preview_height}:force_original_aspect_ratio=decrease,pad={$vn_preview_width}:{$vn_preview_height}:(ow-iw)/2:(oh-ih)/2\"  -y ".caEscapeShellArg($vs_output_file). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
-		$vn_i = 1;
-		$va_files = array();
-		while(file_exists($vs_output_file_prefix.sprintf("%05d", $vn_i).'.jpg')) {
+		caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f image2 -r ".$freq." -ss {$s} -t {$previewed_duration} -vf \"scale=w={$preview_width}:h={$preview_height}:force_original_aspect_ratio=decrease,pad={$preview_width}:{$preview_height}:(ow-iw)/2:(oh-ih)/2\"  -y ".caEscapeShellArg($output_file). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
+		$i = 1;
+		$files = array();
+		while(file_exists($output_file_prefix.sprintf("%05d", $i).'.jpg')) {
 			// add frame to list
-			$va_files[''.sprintf("%4.2f", ((($vn_i - 1) * $vn_frame_interval) + $vn_s)).'s'] = $vs_output_file_prefix.sprintf("%05d", $vn_i).'.jpg';
+			$files[''.sprintf("%4.2f", ((($i - 1) * $frame_interval) + $s)).'s'] = $output_file_prefix.sprintf("%05d", $i).'.jpg';
 		
-			$vn_i++;
+			$i++;
 		}
 		
-		if (!sizeof($va_files)) {
-			$this->postError(1610, _t("Couldn't not write video preview frames to tmp directory (%1)", $vs_tmp_dir), "WLPlugVideo->write()");
+		if (!sizeof($files)) {
+			$this->postError(1610, _t("Couldn't not write video preview frames to tmp directory (%1)", $tmp_dir), "WLPlugVideo->write()");
 		}
-		@unlink($vs_output_file_prefix);
-		return $va_files;
+		@unlink($output_file_prefix);
+		return $files;
 	}
 	# ------------------------------------------------
 	/** 
 	 *
 	 */
-	public function writeClip($ps_filepath, $ps_start, $ps_end, $pa_options=null) {
+	public function writeClip($filepath, $start, $end, $options=null) {
 		if (!caMediaPluginFFmpegInstalled()) return false;
 		$o_tc = new TimecodeParser();
 		
-		$vn_start = $vn_end = null;
-		if ($o_tc->parse($ps_start)) { $vn_start = $o_tc->getSeconds(); }
-		if ($o_tc->parse($ps_end)) { $vn_end = $o_tc->getSeconds(); }
+		$start = $end = null;
+		if ($o_tc->parse($start)) { $start = $o_tc->getSeconds(); }
+		if ($o_tc->parse($end)) { $end = $o_tc->getSeconds(); }
 		
-		if (!$vn_start || !$vn_end) { return null; }
-		if ($vn_start >= $vn_end) { return null; }
+		if (!$start || !$end) { return null; }
+		if ($start >= $end) { return null; }
 		
-		$vn_duration = $vn_end - $vn_start;
+		$duration = $end - $start;
 		
-		caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -acodec mp3 -t {$vn_duration}  -y -ss {$vn_start} ".caEscapeShellArg($ps_filepath). (caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
-		if ($vn_return != 0) {
-			@unlink($ps_filepath);
-			$this->postError(1610, _t("Error extracting clip from %1 to %2: %3", $ps_start, $ps_end, join("; ", $va_output)), "WLPlugVideo->writeClip()");
+		caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -acodec mp3 -t {$duration}  -y -ss {$start} ".caEscapeShellArg($filepath). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
+		if ($return != 0) {
+			@unlink($filepath);
+			$this->postError(1610, _t("Error extracting clip from %1 to %2: %3", $start, $end, join("; ", $output)), "WLPlugVideo->writeClip()");
 			return false;
 		}
 		
@@ -1011,7 +1016,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 	public function reset() {
 		$this->errors = array();
 		$this->properties = $this->oproperties;
-		return $this->opa_media_metadata;
+		return $this->media_metadata;
 	}
 	# ------------------------------------------------
 	/**
@@ -1021,49 +1026,49 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$this->errors = array();
 		$this->filepath = null;
 		$this->properties = array();
-		$this->opa_media_metadata = array();
+		$this->media_metadata = array();
 	}
 	# ------------------------------------------------
 	/**
 	 *
 	 */
-	public function htmlTag($ps_url, $pa_properties, $pa_options=null, $pa_volume_info=null) {
-		if (!is_array($pa_options)) { $pa_options = array(); }
+	public function htmlTag($url, $properties, $options=null, $volume_info=null) {
+		if (!is_array($options)) { $options = array(); }
 		
 		foreach(array(
 			'name', 'show_controls', 'url', 'text_only', 'viewer_width', 'viewer_height', 'id',
 			'poster_frame_url', 'viewer_parameters', 'viewer_base_url', 'width', 'height',
 			'vspace', 'hspace', 'alt', 'title', 'usemap', 'align', 'border', 'class', 'style'
-		) as $vs_k) {
-			if (!isset($pa_options[$vs_k])) { $pa_options[$vs_k] = null; }
+		) as $k) {
+			if (!isset($options[$k])) { $options[$k] = null; }
 		}
 		
-		switch($pa_properties["mimetype"]) {
+		switch($properties["mimetype"]) {
 			# ------------------------------------------------
 			case 'video/quicktime':
-				$vs_name = $pa_options["name"] ? $pa_options["name"] : "qplayer";
+				$name = $options["name"] ? $options["name"] : "qplayer";
 
-				$vn_width =				$pa_options["viewer_width"] ? $pa_options["viewer_width"] : $pa_properties["width"];
-				$vn_height =			$pa_options["viewer_height"] ? $pa_options["viewer_height"] : $pa_properties["height"];
+				$width =				$options["viewer_width"] ? $options["viewer_width"] : $properties["width"];
+				$height =			$options["viewer_height"] ? $options["viewer_height"] : $properties["height"];
 				ob_start();
 
-				if ($pa_options["text_only"]) {
-					return "<a href='$ps_url'>".(($pa_options["text_only"]) ? $pa_options["text_only"] : "View QuickTime")."</a>";
+				if ($options["text_only"]) {
+					return "<a href='$url'>".(($options["text_only"]) ? $options["text_only"] : "View QuickTime")."</a>";
 				} else {
 ?>
 					<table>
 						<tr>
 							<td>
 								<object classid="clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B"
-									width="<?php print $vn_width; ?>" height="<?php print $vn_height + 16; ?>"
+									width="<?php print $width; ?>" height="<?php print $height + 16; ?>"
  									codebase="http://www.apple.com/qtactivex/qtplugin.cab">
-									<param name="src" VALUE="<?php print $ps_url; ?>">
+									<param name="src" VALUE="<?php print $url; ?>">
 									<param name="autoplay" VALUE="true">
 									<param name="controller" VALUE="true">
 
-									<embed  src="<?php print $ps_url; ?>"
-										name="id_<?php print $vs_name; ?>"
-										width="<?php print $vn_width; ?>" height="<?php print $vn_height + 16; ?>"
+									<embed  src="<?php print $url; ?>"
+										name="id_<?php print $name; ?>"
+										width="<?php print $width; ?>" height="<?php print $height + 16; ?>"
 										autoplay="true" controller="true" kioskmode="true"
 										pluginspage="http://www.apple.com/quicktime/download/"
 										type="video/quicktime"
@@ -1082,46 +1087,38 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			case 'video/mpeg':
 			case 'audio/mpeg':
 			case 'video/mp4':
-				$vs_id = 				$pa_options["id"] ? $pa_options["id"] : "mp4_player";
+			case 'video/MP2T':
+				$id = 				$options["id"] ? $options["id"] : "mp4_player";
 
-				$vs_poster_frame_url =	$pa_options["poster_frame_url"];
+				$poster_frame_url =	$options["poster_frame_url"];
 
-				$vn_width =				$pa_options["viewer_width"] ? $pa_options["viewer_width"] : $pa_properties["width"];
-				$vn_height =			$pa_options["viewer_height"] ? $pa_options["viewer_height"] : $pa_properties["height"];
+				$width =			$options["viewer_width"] ? $options["viewer_width"] : $properties["width"];
+				$height =			$options["viewer_height"] ? $options["viewer_height"] : $properties["height"];
 				
-				$va_captions = 			caGetOption("captions", $pa_options, array(), array('castTo' => 'array'));
+				$captions = 		caGetOption("captions", $options, array(), array('castTo' => 'array'));
 				
 				ob_start();
 ?>
-			<!-- Begin VideoJS -->
-			 <video id="<?php print $vs_id; ?>" class="video-js vjs-default-skin"  
-				  controls preload="auto" width="<?php print $vn_width; ?>" height="<?php print $vn_height; ?>"  
-				  poster="<?php print $vs_poster_frame_url; ?>"  
-				  data-setup='{}'>  
-				 <source src="<?php print $ps_url; ?>" type="video/mp4" />
+				<video id="<?= $id; ?>" playsinline controls data-poster="<?= $poster_frame_url; ?>" width="<?= $width; ?>" height="<?= $height; ?>" >
+				  <source src="<?= $url; ?>" type="video/mp4" />
 <?php
-					if(is_array($va_captions)) {
-						foreach($va_captions as $vn_locale_id => $va_caption_track) {
-							print "<track kind=\"captions\" src=\"".$va_caption_track['url']."\" srclang=\"".$va_caption_track["locale_code"]."\" label=\"".$va_caption_track['locale']."\">\n";	
+						if(is_array($captions)) {
+							foreach($captions as $locale_id => $caption_track) {
+								print '<track kind="captions" src="'.$caption_track['url'].'" srclang="'.substr($caption_track["locale_code"], 0, 2).'" label="'.$caption_track['locale'].'" default>';	
+							}
 						}
-					}
 ?>
 				</video>
-			<script type="text/javascript">
-				_V_.players["<?php print $vs_id; ?>"] = undefined;	// make sure VideoJS doesn't think it has already loaded the viewer
-				
-				w = jQuery('#<?php print $vs_id; ?>:parent').width();
-				if ((h = jQuery('#<?php print $vs_id; ?>:parent').height()) < 100) {
-					h = Math.ceil(w * .7);
-				}
-				jQuery("#<?php print $vs_id; ?>").attr('width', w).attr('height', h).on('contextmenu', function(e) {
-					e.preventDefault();
-				});
-				_V_("<?php print $vs_id; ?>", {}, function() {});
-				
-				if (caUI.mediaPlayerManager) { caUI.mediaPlayerManager.register("<?php print $vs_id; ?>", _V_.players["<?php print $vs_id; ?>"], 'VideoJS'); }
-			</script>
-			<!-- End VideoJS -->
+				<script type="text/javascript">
+					jQuery(document).ready(function() {
+						options = {
+							debug: false,
+							iconUrl: '<?= __CA_URL_ROOT__; ?>/assets/plyr/plyr.svg',
+							controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'fullscreen'],
+						};
+						const player = new Plyr('#<?= $id; ?>', options);
+					});
+				</script>
 <?php
 				return ob_get_clean();
 				break;
@@ -1130,18 +1127,18 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			case 'video/x-matroska':
 			case "video/x-ms-asf":
 			case "video/x-ms-wmv":
-				$vs_id = 						$pa_options["id"] ? $pa_options["id"] : "mp4_player";
-				$vn_width =						$pa_options["viewer_width"] ? $pa_options["viewer_width"] : $pa_properties["width"];
-				$vn_height =					$pa_options["viewer_height"] ? $pa_options["viewer_height"] : $pa_properties["height"];
+				$id = 						$options["id"] ? $options["id"] : "mp4_player";
+				$width =					$options["viewer_width"] ? $options["viewer_width"] : $properties["width"];
+				$height =					$options["viewer_height"] ? $options["viewer_height"] : $properties["height"];
 				
-				return "<video id='{$vs_id}' src='{$ps_url}' width='{$vn_width}' height='{$vn_height}' controls='1'></video>";
+				return "<video id='{$id}' src='{$url}' width='{$width}' height='{$height}' controls='1'></video>";
 				break;
 			# ------------------------------------------------
 			case 'image/jpeg':
 			case 'image/gif':
-				if (!is_array($pa_options)) { $pa_options = array(); }
-				if (!is_array($pa_properties)) { $pa_properties = array(); }
-				return caHTMLImage($ps_url, array_merge($pa_options, $pa_properties));
+				if (!is_array($options)) { $options = array(); }
+				if (!is_array($properties)) { $properties = array(); }
+				return caHTMLImage($url, array_merge($options, $properties));
 				break;
 			# ------------------------------------------------
 		}

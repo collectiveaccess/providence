@@ -377,20 +377,21 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 		$vs_left_table_name = $this->getLeftTableName();
 		$vs_right_table_name = $this->getRightTableName();
 		
+		$restrict_to_relationship_types = caGetOption(['restrictToRelationshipTypes', 'restrict_to_relationship_types'], $pa_options, null);
 		$vb_dont_include_subtypes_in_type_restriction = caGetOptions('dont_include_subtypes_in_type_restriction', $pa_options, false);
 		
 		$o_db = $this->getDb();
 		$t_rel_type = new ca_relationship_types();
 		
 		$vs_restrict_to_relationship_type_sql = '';
-		if (isset($pa_options['restrict_to_relationship_types']) && $pa_options['restrict_to_relationship_types']) {
-			if(!is_array($pa_options['restrict_to_relationship_types'])) {
-				$pa_options['restrict_to_relationship_types'] = array($pa_options['restrict_to_relationship_types']);
+		if (isset($restrict_to_relationship_types) && $restrict_to_relationship_types) {
+			if(!is_array($restrict_to_relationship_types)) {
+				$restrict_to_relationship_types = [$restrict_to_relationship_types];
 			}
-			if(sizeof($pa_options['restrict_to_relationship_types'])) {
+			if(sizeof($restrict_to_relationship_types)) {
 				$va_restrict_to_type_list = [];
 				
-				foreach($pa_options['restrict_to_relationship_types'] as $vs_type_code) {
+				foreach($restrict_to_relationship_types as $vs_type_code) {
 					if (!strlen(trim($vs_type_code))) { continue; }
 					
 					$va_criteria = array('table_num' => $this->tableNum());

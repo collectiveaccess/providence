@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2020 Whirl-i-Gig
+ * Copyright 2015-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,7 +31,6 @@
  */
 
 require_once(__CA_LIB_DIR__."/Logging/Logger.php");
-require_once(__CA_LIB_DIR__."/Datamodel.php");
 require_once(__CA_MODELS_DIR__."/ca_change_log.php");
 
 use \CollectiveAccessService as CAS;
@@ -297,6 +296,8 @@ class Replicator {
                 // Dictionary with log_ids sent from this source in this session
                 $this->sent_log_ids = [];
                 
+                if(($chunk_size = (int)$this->opo_replication_conf->get('chunk_size')) <= 0) { $chunk_size = 100; }
+                
 				while(true) { // use chunks of 10 entries until something happens (success/err)
 				    $this->last_log_id = null;
 				    if (sizeof($this->sent_log_ids) > 100000) {
@@ -309,7 +310,7 @@ class Replicator {
 					$va_source_log_entries = $o_source->setEndpoint('getlog')->clearGetParameters()
 						->addGetParameter('from', $replicated_log_id)
 						->addGetParameter('skipIfExpression', $vs_skip_if_expression)
-						->addGetParameter('limit', 100)
+						->addGetParameter('limit', $chunk_size)
 						->addGetParameter('ignoreTables', $vs_ignore_tables)
 						->addGetParameter('onlyTables', $vs_only_tables)
 						->addGetParameter('includeMetadata', $vs_include_metadata)
@@ -879,6 +880,7 @@ class Replicator {
 				
 					foreach($va_log_entry['snapshot'] as $k => $v) {
 						if (in_array($v, $this->guids_to_skip, true)) { 
+							if(($k === 'user_id') || ($k === 'user_id_guid')) { continue; }
 							if (preg_match("!parent!", $k)) {
 								unset($va_log_entry['snapshot'][$k]);
 								unset($va_log_entry['snapshot'][str_replace("_guid", "", $k)]);

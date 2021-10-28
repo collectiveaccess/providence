@@ -154,7 +154,7 @@
                             foreach($va_reps as $va_rep) {
                                 if (is_array($access_values) && sizeof($access_values) && !in_array($va_rep['access'], $access_values)) { continue; }
                                 $pa_data['resources'][] = [
-                                    'title' => str_replace("[".caGetBlankLabelText()."]", "", $va_labels[$va_rep['representation_id']]),
+                                    'title' => str_replace("[".caGetBlankLabelText('ca_object_representations')."]", "", $va_labels[$va_rep['representation_id']]),
                                     'representation_id' => $va_rep['representation_id'],
                                     'preview_url' => $va_rep['urls']['small'],
                                     'url' => $va_rep['urls'][$vs_display_version],

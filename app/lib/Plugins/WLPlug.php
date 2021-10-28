@@ -34,9 +34,6 @@
   *
   */
 
-require_once(__CA_LIB_DIR__."/ApplicationError.php");
-require_once(__CA_LIB_DIR__."/BaseObject.php");
-
 class WLPlug extends BaseObject {
 	# ------------------------------------------------------------------------
 	var $error_output = false;
@@ -50,11 +47,10 @@ class WLPlug extends BaseObject {
 	public function checkStatus() {
 		return array(
 			'description' => $this->getDescription(),
-			'errors' => array(),
-			'warnings' => array(),
+			'errors' => [],
+			'warnings' => [],
 			'available' => false
 		);
 	}
 	# ------------------------------------------------------------------------
 }
-?>

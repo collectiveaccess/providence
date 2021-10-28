@@ -82,6 +82,14 @@ $_ca_attribute_settings['ListAttributeValue'] = array(		// global
 		'label' => _t('Allow duplicate values?'),
 		'description' => _t('Check this option if you want to allow duplicate values to be set when element is not in a container and is repeating.')
 	),
+	'raiseErrorOnDuplicateValue' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Show error message for duplicate values?'),
+		'description' => _t('Check this option to show an error message when value is duplicate and <em>allow duplicate values</em> is not set.')
+	),
 	'implicitNullOption' => array(
 		'formatType' => FT_NUMBER,
 		'displayType' => DT_CHECKBOXES,
@@ -376,6 +384,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 	 * @param array $pa_options Options are:
 	 *		alwaysTreatValueAsIdno = Always try to convert $ps_value to a list idno value, even if it is numeric
 	 *		matchOn =
+	 *		serializeCommaSeparatedValues = Convert values in the form "Print, Photo" to a serialized version ("Photo Print") if the provided value fails to match. [Default is true]
 	 *
 	 * @return array
 	 */
@@ -384,6 +393,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 
 		if (is_array($ps_value)) { $ps_value = array_pop($ps_value); }
 
+		$serialize_comma_separated_values = caGetOption('serializeCommaSeparatedValues', $pa_options, true);
 		$va_match_on = caGetOption('matchOn', $pa_options, null);
 		if ($va_match_on && !is_array($va_match_on)){ $va_match_on = array($va_match_on); }
 		if (!is_array($va_match_on) && $vb_treat_value_as_idno) { $va_match_on = array('idno', 'label', 'item_id'); }
@@ -409,12 +419,22 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 					if ($vn_id = caGetListItemID($pa_element_info['list_id'], $ps_value, $pa_options)) {
 						break(2);
 					}
+					if($serialize_comma_separated_values && strpos($ps_value, ',')) {
+						if ($vn_id = caGetListItemID($pa_element_info['list_id'], caSerializeCommaSeparatedName($ps_value), $pa_options)) {
+							break(2);
+						}
+					}
 					break;
 				case 'label':
 				case 'labels':
 					// try to convert label to item_id
 					if ($vn_id = caGetListItemIDForLabel($pa_element_info['list_id'], $ps_value, $pa_options)) {
 						break(2);
+					}
+					if($serialize_comma_separated_values && strpos($ps_value, ',')) {
+						if ($vn_id = caGetListItemIDForLabel($pa_element_info['list_id'], caSerializeCommaSeparatedName($ps_value), $pa_options)) {
+							break(2);
+						}
 					}
 					break;
 				case 'item_id':
@@ -490,7 +510,6 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		$current_selection_display_format = caGetOption('currentSelectionDisplayFormat', $pa_options, caGetOption('currentSelectionDisplayFormat', $pa_element_info['settings'], null));
 
 		$vn_max_columns = $pa_element_info['settings']['maxColumns'];
-		if (!$vb_require_value) { $vn_max_columns++; }
 
 		if(!isset($pa_options['useDefaultWhenNull'])) {
 			$pa_options['useDefaultWhenNull'] = isset($pa_element_info['settings']['useDefaultWhenNull']) ? (bool)$pa_element_info['settings']['useDefaultWhenNull'] : false;
@@ -611,7 +630,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 	});
 	select.trigger('change');
 	caUI.utils.showUnsavedChangesWarning(false);
-});</script>\n";
+  });</script>\n";
             }
 		}
 

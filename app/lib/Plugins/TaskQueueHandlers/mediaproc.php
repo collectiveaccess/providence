@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2019 Whirl-i-Gig
+ * Copyright 2006-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -86,10 +86,10 @@ include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 				'label' => _t('Input format'),
 				'value' => $va_parameters["INPUT_MIMETYPE"]
 			);
-			if (file_exists($va_parameters["FILENAME"])) {
+			if (file_exists($va_parameters["FILENAME"]) && ($size = filesize($va_parameters["FILENAME"]))) {
 				$va_params['input_file_size'] = array(
 					'label' => _t('Input file size'),
-					'value' => sprintf("%s", caFormatFileSize(filesize($va_parameters["FILENAME"])))
+					'value' => sprintf("%s", caFormatFileSize($size))
 				);
 			}
 			$va_params['table'] = array(
@@ -327,6 +327,13 @@ include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 								}
 							}
 						} else {
+							if(is_array($va_media_center = $t_instance->getMediaCenter($vs_field))) {
+								$pa_parameters['_centerX'] = caGetOption('x', $va_media_center, 0.5);
+								$pa_parameters['_centerY'] = caGetOption('y', $va_media_center, 0.5);
+						
+								if (($pa_parameters['_centerX'] < 0) || ($pa_parameters['_centerX'] > 1)) { $pa_parameters['_centerX'] = 0.5; }
+								if (($pa_parameters['_centerY'] < 0) || ($pa_parameters['_centerY'] > 1)) { $pa_parameters['_centerY'] = 0.5; }
+							}
 							if (!($o_media->transform($operation, $pa_parameters))) {
 							  $this->error = $o_media->errors[0];
 							  $o_media->cleanup();
@@ -458,22 +465,24 @@ include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 					$va_merged_media_desc[$vs_k] = $va_v;
 				}
 				
-				$t_instance->setMode(ACCESS_WRITE);
 				$t_instance->setMediaInfo($vs_field, $va_merged_media_desc);
 				
-				$t_instance->update();
-				if ($t_instance->numErrors()) {
-					# get rid of files we just created
-					foreach($va_output_files as $vs_to_delete) {
-						@unlink($vs_to_delete); 
-					}
-					$this->error->setError(560, _t("Could not update %1.%2: %3", $vs_table, $vs_field, join(", ", $t_instance->getErrors())), "mediaproc->process()");
-					$o_media->cleanup();
-					return false;
-				} 
-				
-				$va_report['notes'][] = _t("Processed file %1", $vs_input_file);
-				
+				try {
+					$t_instance->update();
+					if ($t_instance->numErrors()) {
+						# get rid of files we just created
+						foreach($va_output_files as $vs_to_delete) {
+							@unlink($vs_to_delete); 
+						}
+						$this->error->setError(560, _t("Could not update %1.%2: %3", $vs_table, $vs_field, join(", ", $t_instance->getErrors())), "mediaproc->process()");
+						$o_media->cleanup();
+						return false;
+					} 
+					$va_report['notes'][] = _t("Processed file %1", $vs_input_file);
+				} catch(MediaExistsException $e) {
+					$va_report['errors'][] = _t("Skipping file %1 because it already exists and duplicated are not allowed", $vs_input_file);
+					return $va_report;
+				}
 				
 				
 				// Generate preview frames for media that support that (Eg. video)

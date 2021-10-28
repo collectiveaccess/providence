@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,49 +38,71 @@ var caUI = caUI || {};
 			idnoFormElementIDs: [],
 			separator: '.',
 			row_id: null,
+			type_id: null,
 			context_id: null,
+			checkDupes: false,
+			includesSequence: false,
 			
 			singularAlreadyInUseMessage: 'Identifier is already in use',
-			pluralAlreadyInUseMessage: 'Identifier is already in use %1 times'
+			pluralAlreadyInUseMessage: 'Identifier is already in use %1 times',
+			
+			sequenceMessage: '&lt;Will be assigned %1 when saved&gt;',
+			
+			debounce: null
 		}, options);
 		
 		
 		that.checkIDNo = function() { 
 			jQuery('#' + that.idnoStatusID).html((that.processIndicator ? that.processIndicator : ''));
 			var ids = jQuery.makeArray(jQuery(that.idnoFormElementIDs.join(',')));
-			
 			var vals = [];
 			jQuery.each(ids, function() {
 				vals.push(this.value);
 			});
 			var idno = vals.join(that.separator);
-			jQuery.getJSON(that.lookupUrl, { n: idno, id: that.row_id, _context_id: that.context_id }, 
-				function(data) {
-					if (
-						(
-							(data.length > 1) &&
-							(jQuery.inArray(that.row_id, data) === -1)
-						) ||
-						(
-							(data.length == 1) &&
-							(parseInt(data) != parseInt(that.row_id))
-						)
-					) {
-						var msg;
-						if (data.length == 1) {
-							msg = that.singularAlreadyInUseMessage;
-						} else {
-							msg = that.pluralAlreadyInUseMessage.replace('%1', '' + data.length);
-						}
-						if (that.searchUrl) {
-							msg = "<a href='" + that.searchUrl + idno + "'>" + msg + "</a>";
-						}
-						jQuery('#' + that.idnoStatusID).html((that.errorIcon ? that.errorIcon + ' ' : '') + msg).show(0);
-					} else{
-						jQuery('#' + that.idnoStatusID).html('').hide(0);
-					}
-				}
-			);
+			
+			clearTimeout(that.debounce);
+			
+			that.debounce = setTimeout(function(){
+                jQuery.getJSON(that.lookupUrl, { n: idno, id: that.row_id, type_id: that.type_id, _context_id: that.context_id }, 
+                    function(data) {
+                        jQuery('#' + that.idnoStatusID).html('').hide(0);
+                        if(that.checkDupes) {
+                            if (
+                                (
+                                    (data.matches) &&
+                                    (data.matches.length > 1) &&
+                                    (jQuery.inArray(that.row_id, data.matches) === -1)
+                                ) ||
+                                (
+                                    (data.matches.length == 1) &&
+                                    (parseInt(data.matches[0]) !== parseInt(that.row_id))
+                                )
+                            ) {
+                                var msg;
+                                if (data.matches.length == 1) {
+                                    msg = that.singularAlreadyInUseMessage;
+                                } else {
+                                    msg = that.pluralAlreadyInUseMessage.replace('%1', '' + data.matches.length);
+                                }
+                                if (that.searchUrl) {
+                                    msg = "<a href='" + that.searchUrl + idno + "'>" + msg + "</a>";
+                                }
+                                jQuery('#' + that.idnoStatusID).html((that.errorIcon ? that.errorIcon + ' ' : '') + msg).show(0);
+                            }
+                        }
+                        if(that.includesSequence) {
+                            for(var k in data.sequences) {
+                                for(var j in that.idnoFormElementIDs) {
+                                    if(that.idnoFormElementIDs[j] === ('#idno_' + k)) {
+                                        jQuery(that.idnoFormElementIDs[j]).html(that.sequenceMessage.replace('%1', data.sequences[k]));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                );
+            }, 250);
 		}
 		
 		jQuery(that.idnoFormElementIDs.join(',')).bind('change keyup', that.checkIDNo);

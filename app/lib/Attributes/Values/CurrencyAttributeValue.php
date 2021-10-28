@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,11 +40,6 @@
  	require_once(__CA_LIB_DIR__.'/Attributes/Values/AttributeValue.php');
  	require_once(__CA_LIB_DIR__.'/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
 
- 	require_once(__CA_LIB_DIR__.'/Zend/Currency.php');
- 	require_once(__CA_LIB_DIR__.'/Zend/Locale.php');
- 	require_once(__CA_LIB_DIR__.'/Zend/Locale/Data.php');
- 	require_once(__CA_LIB_DIR__.'/Zend/Locale/Format.php');
- 
  	global $_ca_attribute_settings;
  	
  	$_ca_attribute_settings['CurrencyAttributeValue'] = array(		// global
@@ -80,6 +75,20 @@
 			'label' => _t('Height of data entry field in user interface'),
 			'description' => _t('Height, in characters, of the field when displayed in a user interface.')
 		),
+		'dollarCurrency' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_SELECT,
+			'default' => '',
+			'options' => [
+				_t('System default') => '',
+				_t('US Dollar (USD)') => 'USD',
+				_t('Canadian Dollar (CDN)') => 'CDN',
+				_t('Australian Dollar (AUD)') => 'AUD'
+			],
+			'width' => 40, 'height' => 1,
+			'label' => _t('Use currency for "$"'),
+			'description' => _t('Currency indicated for values using the "$" character.')
+		),
 		'doesNotTakeLocale' => array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_CHECKBOXES,
@@ -95,6 +104,14 @@
 			'width' => 1, 'height' => 1,
 			'label' => _t('Allow duplicate values?'),
 			'description' => _t('Check this option if you want to allow duplicate values to be set when element is not in a container and is repeating.')
+		),
+		'raiseErrorOnDuplicateValue' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Show error message for duplicate values?'),
+			'description' => _t('Check this option to show an error message when value is duplicate and <em>allow duplicate values</em> is not set.')
 		),
 		'canBeUsedInSort' => array(
 			'formatType' => FT_NUMBER,
@@ -186,7 +203,7 @@
 		public function getDisplayValue($pa_options=null) {
 			if (caGetOption('returnAsDecimalWithCurrencySpecifier', $pa_options, false)) {
 				if (!$this->ops_currency_specifier) { return null; }
-				return caGetCurrencySymbol($this->ops_currency_specifier).' '.$this->opn_value;
+				return caGetCurrencySymbol($this->ops_currency_specifier, $this->getElementID()).' '.$this->opn_value;
 			}
 			if(Zend_Registry::isRegistered("Zend_Locale")) {
 				$o_locale = Zend_Registry::get('Zend_Locale');
@@ -211,18 +228,23 @@
  			}
 
  			// insert currency which is not locale-dependent in our case
- 			$vs_val = str_replace('%', caGetCurrencySymbol($this->ops_currency_specifier), $vs_decimal_with_placeholder);
+ 			$vs_val = str_replace('%', caGetCurrencySymbol($this->ops_currency_specifier, $this->getElementID()), $vs_decimal_with_placeholder);
  			if (($vs_to_currency = caGetOption('displayCurrencyConversion', $pa_options, false)) && ($this->ops_currency_specifier != $vs_to_currency)) {
- 				$vs_val .= " ("._t("~%1", caConvertCurrencyValue(caGetCurrencySymbol($this->ops_currency_specifier).' '.$this->opn_value, $vs_to_currency)).")";
+ 				$vs_val .= " ("._t("~%1", caConvertCurrencyValue(caGetCurrencySymbol($this->ops_currency_specifier, $this->getElementID()).' '.$this->opn_value, $vs_to_currency)).")";
  			}
  			return $vs_val;
 		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
+			$o_config = Configuration::load();
+			
  			$ps_value = trim($ps_value);
  			$va_settings = $this->getSettingValuesFromElementArray(
  				$pa_element_info, 
- 				array('minValue', 'maxValue', 'mustNotBeBlank')
+ 				array('minValue', 'maxValue', 'mustNotBeBlank', 'dollarCurrency')
  			);
  			
  			if (strlen($ps_value) == 0) {
@@ -244,6 +266,9 @@
  				return false;
  			}
 
+			if(!$vs_currency_specifier){
+				$vs_currency_specifier = $o_config->get('default_currency');
+			}
  			if(!$vs_currency_specifier){
  				// this respects the global UI locale which is set using Zend_Locale
  				$o_currency = new Zend_Currency();
@@ -266,8 +291,8 @@
 			
 			switch($vs_currency_specifier) {
 				case '$':
-					$o_config = Configuration::load();
-					$vs_currency_specifier = ($vs_dollars_are_this = $o_config->get('default_dollar_currency')) ? $vs_dollars_are_this : 'USD';
+					$vs_dollars_are_this = caGetOption('dollarCurrency', $va_settings, $o_config->get('default_dollar_currency'), ['defaultOnEmptyString' => true]);
+					$vs_currency_specifier = $vs_dollars_are_this ? $vs_dollars_are_this : 'USD';
 					break;
 				case '¥':
 					$vs_currency_specifier = 'JPY';

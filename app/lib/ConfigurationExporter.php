@@ -35,7 +35,6 @@
  */
 
 require_once(__CA_LIB_DIR__."/Configuration.php");
-require_once(__CA_LIB_DIR__."/Datamodel.php");
 require_once(__CA_MODELS_DIR__.'/ca_bundle_displays.php');
 require_once(__CA_MODELS_DIR__."/ca_lists.php");
 require_once(__CA_MODELS_DIR__."/ca_metadata_elements.php");
@@ -199,7 +198,7 @@ final class ConfigurationExporter {
 	}
 	# -------------------------------------------------------
 	public function getListsAsDOM() {
-		$qr_lists = $this->opo_db->query("SELECT * FROM ca_lists ORDER BY list_id");
+		$qr_lists = $this->opo_db->query("SELECT * FROM ca_lists WHERE deleted = 0 ORDER BY list_id");
 
 		$vo_lists = $this->opo_dom->createElement("lists");
 
@@ -450,6 +449,16 @@ final class ConfigurationExporter {
 				foreach($t_element->getSettings() as $vs_setting => $va_values) {
 					if(is_null($va_values)) { continue; }
 					if(!is_array($va_values)) { $va_values = array($va_values); }
+					
+					switch($vs_setting) {
+						case 'restrictToTypes':
+						case 'restrict_to_types':
+							// Convert authority type restriction
+							if ($t = AuthorityAttributeValue::elementTypeToInstance($t_element->get('datatype'))) {
+								$va_values = caMakeTypeList($t->tableName(), $va_values);
+							}
+							break;
+					}
 					foreach($va_values as $vs_value) {
 						if ($t_element->isValidSetting($vs_setting)) {
 							// we export all settings (not just non-default) when we're running diff exports ..
@@ -500,10 +509,15 @@ final class ConfigurationExporter {
 				if($t_restriction->get("type_id")) {
 					/** @var BaseRelationshipModel $t_instance */
 					$t_instance = Datamodel::getInstanceByTableNum($t_restriction->get("table_num"));
-					$vs_type_code = $t_instance->getTypeListCode();
-
-					$va_item = $t_list->getItemFromListByItemID($vs_type_code, $t_restriction->get("type_id"));
-					$vo_type = $this->opo_dom->createElement("type",$va_item["idno"]);
+					if ($t_instance instanceof BaseRelationshipModel) {
+						$vo_relationship_type = new ca_relationship_types($t_restriction->get('type_id'));
+						$vs_type = $vo_relationship_type->get('type_code');
+					} else {
+						$vs_type_code = $t_instance->getTypeListCode();
+						$va_item = $t_list->getItemFromListByItemID($vs_type_code, $t_restriction->get("type_id"));
+						$vs_type = $va_item['idno'];
+					}
+					$vo_type = $this->opo_dom->createElement("type",$vs_type);
 
 					$vo_restriction->appendChild($vo_type);
 				}
@@ -580,6 +594,10 @@ final class ConfigurationExporter {
 					if(is_null($va_values)) { continue; }
 					if(!is_array($va_values)) { $va_values = array($va_values); }
 					foreach($va_values as $vs_value) {
+						if ($vs_setting === 'restrictToTypes'){
+							$t_item = new ca_list_items($vs_value);
+							$vs_value = $t_item->get('idno');
+						}
 						$vo_setting = $this->opo_dom->createElement("setting", caEscapeForXML($vs_value));
 						$vo_setting->setAttribute("name", $vs_setting);
 						$vo_settings->appendChild($vo_setting);
@@ -1015,7 +1033,7 @@ final class ConfigurationExporter {
 					}
 
 					if (is_array($va_types) && (sizeof($va_types) > 0)) {
-						$vo_screen->setAttribute("typeRestrictions", join(",", $va_types));
+						$vo_screen->setAttribute("typeRestrictions", join(",", array_unique($va_types)));
 						$vo_screen->setAttribute("includeSubtypes", $vb_include_subtypes ? 1 : 0);
 					}
 				}
@@ -1036,7 +1054,7 @@ final class ConfigurationExporter {
 							if($va_type_restrictions && !is_array($va_type_restrictions)) { $va_type_restrictions = [$va_type_restrictions]; }
 							
 							if (is_array($va_type_restrictions) && (sizeof($va_type_restrictions) > 0)) {
-								$vo_placement->setAttribute("typeRestrictions", join(",", caMakeTypeList($vs_type, $va_type_restrictions)));
+								$vo_placement->setAttribute("typeRestrictions", join(",", array_unique(caMakeTypeList($vs_type, $va_type_restrictions))));
 							}
 						}
 						if (isset($va_placement['settings']['bundleTypeRestrictionsIncludeSubtypes']) && (bool)$va_placement['settings']['bundleTypeRestrictionsIncludeSubtypes']) {

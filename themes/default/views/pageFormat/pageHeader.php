@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -32,6 +32,7 @@
  			$vs_window_title = array_pop($va_breadcrumb);
  		}
  	}
+	$vs_window_title = strip_tags($vs_window_title);
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -45,6 +46,8 @@
 		<title><?php print $this->appconfig->get("window_title").($vs_window_title ? " : {$vs_window_title}" : ''); ?></title>
 
 		<script type="text/javascript">window.caBasePath = '<?php print $this->request->getBaseUrlPath(); ?>';</script>
+		
+        <link rel="stylesheet" type="text/css" href="<?php print $this->request->getAssetsUrlPath(); ?>/mirador/css/mirador-combined.css"/>	
 <?php
 	print AssetLoadManager::getLoadHTML($this->request, ['outputTarget' => 'header']);
 	print MetaTagManager::getHTML();
@@ -74,8 +77,6 @@
 						animation: { opacity: 'show' }
 					}
 				);
-				
-				jQuery('#caQuickSearchFormText').searchlight('<?php print caNavUrl($this->request, 'find', 'SearchObjects', 'lookup'); ?>', {showIcons: false, searchDelay: 100, minimumCharacters: 3, limitPerCategory: 3});
 			});
 			
 			// initialize CA Utils
@@ -84,15 +85,6 @@
 			var caPromptManager = caUI.initPromptManager();
 			let providenceUIApps = {};
 		</script>
-		<!--[if lte IE 6]>
-			<style type="text/css">
-			#container {
-			height: 100%;
-			}
-			</style>
-			<![endif]-->
-		<!-- super fish end menus -->	
-        <link rel="stylesheet" type="text/css" href="<?php print $this->request->getAssetsUrlPath(); ?>/mirador/css/mirador-combined.css"/>	
 	</head>	
 	<body id="providenceApp">
 		<div align="center">

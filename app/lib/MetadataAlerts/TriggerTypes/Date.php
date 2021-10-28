@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2018 Whirl-i-Gig
+ * Copyright 2016-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -32,8 +32,6 @@
 
 namespace CA\MetadataAlerts\TriggerTypes;
 
-require_once(__CA_MODELS_DIR__ . '/ca_metadata_elements.php');
-
 class Date extends Base {
 
 	/**
@@ -43,7 +41,7 @@ class Date extends Base {
 	 */
 	public function getTypeSpecificSettings() {
 		return [
-			'offset' => array(
+			'offset' => [
 				'formatType' => FT_TEXT,
 				'displayType' => DT_INTERVAL,
 				'width' => 5, 'height' => 1,
@@ -51,6 +49,20 @@ class Date extends Base {
 				'label' => _t('Notify user'),
 				'suffix' => _t('date'),
 				'description' => _t('Set an interval before or after an event in which to trigger a notification. Note that if the event is a date range, the trigger will fire before the beginning of the range or after the end of the range.')
+			],
+			'datePart' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'height' => 1,
+				'default' => '',
+				'label' => _t('Date part'),
+				'nullOption' => _t('Both'),
+				'options' => [
+					_t('Both') => 'both',
+					_t('Start') => 'start',
+					_t('End') => 'end',
+					],
+				'description' => _t('Specify which part of the data range the alert applies to. Defaults to both dates in a range'),
 			),
 		];
 	}
@@ -74,7 +86,8 @@ class Date extends Base {
 		$va_spec = $this->_getSpec($t_instance);
 		$vs_element_code = $va_spec['element_code'];
 		$vs_get_spec = $va_spec['spec'];
-		
+		$vs_date_part = $this->getTriggerValues()['settings']['datePart'] ?: 'both';
+
 		if (is_array($va_filters = $va_values['element_filters']) && !sizeof($va_filters)) { $va_filters = null; }
 
 		if(\ca_metadata_elements::getDataTypeForElementCode($vs_element_code) !== __CA_ATTRIBUTE_VALUE_DATERANGE__) {
@@ -83,12 +96,19 @@ class Date extends Base {
 		
 		foreach($t_instance->get($vs_get_spec, ['returnAsArray' => true, 'dateFormat' => 'iso8601', 'filters' => $va_filters]) as $vs_val) {
 			$o_tep->parse($vs_val);
-			
+
 			// offset should be in seconds
 			$vn_offset = self::offsetToSeconds($this->getTriggerValues()['settings']['offset']);
-			if(($vn_offset <= 0) && (time() > (($o_tep->getUnixTimestamps()['start']) - abs($vn_offset)))) {
+			if(
+				($vn_offset <= 0) &&
+				in_array($vs_date_part, ['both', 'start'])
+				&& (time() > (($o_tep->getUnixTimestamps()['start']) - abs($vn_offset)))
+			) {
 				return true;
-			} elseif(time() >= ($o_tep->getUnixTimestamps()['end'] + abs($vn_offset))) {
+			} elseif(
+				in_array($vs_date_part, ['both', 'end'])
+				&& time() >= ( $o_tep->getUnixTimestamps()['end'] + abs($vn_offset))
+			) {
 				return true;
 			}
 		}
@@ -141,7 +161,7 @@ class Date extends Base {
 	 *
 	 * @return string Always returns null
 	 */
-	public function getEventKey($t_instance) {
+	public function getEventKey($t_instance, ?array $additional_data=null) {
 		$va_spec = $this->_getSpec($t_instance);
 		return md5($t_instance->tableName().'/'.$t_instance->getPrimaryKey().'/'.$t_instance->get($va_spec['spec']));
 	}
@@ -210,7 +230,7 @@ class Date extends Base {
 		
 		$vs_date_range = caGetLocalizedDateRange($vn_start, $vn_end, ['timeOmit' => false]);
 		
-		if ($vs_parent_code) {
+		if ($vs_parent_code && ($vs_parent_code !== $vs_element_code)) {
 			$va_criteria[$vs_parent_code] = [$vs_element_code => $vs_date_range];
 		} else {
 			$va_criteria[$vs_element_code] = $vs_date_range;

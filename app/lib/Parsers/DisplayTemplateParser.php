@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2020 Whirl-i-Gig
+ * Copyright 2015-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -242,19 +242,25 @@ class DisplayTemplateParser {
 				if(isset($pa_options['sort'])&& is_array($pa_options['sort'])) {
 					$va_vals = caSortArrayByKeyInValue($va_vals, array('__sort__'), $pa_options['sortDirection'], array('dontRemoveKeyPrefixes' => true));
 				}
-				foreach($va_vals as $vn_index => $va_val_list) {
-			        try {
-				        if ($ps_skip_when && ExpressionParser::evaluate($ps_skip_when, $va_val_list)) { continue; }
-					} catch (Exception $e) {
-					    // noop
-					}
+				
+				if(is_array($va_vals) && sizeof($va_vals)) {
+					foreach($va_vals as $vn_index => $va_val_list) {
+						try {
+							if ($ps_skip_when && ExpressionParser::evaluate($ps_skip_when, $va_val_list)) { continue; }
+						} catch (Exception $e) {
+							// noop
+						}
 					
-					$v = is_array($va_val_list) ? DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, array_merge($pa_options, ['index' => $vn_index, 'returnAsArray' => $pa_options['aggregateUnique']])) : '';
-					if ($pb_index_with_ids) {
-				        $va_proc_templates[$qr_res->get($vs_pk)] = $v;
-				    } else {
-				        $va_proc_templates[] = $v;
-				    }
+						$v = is_array($va_val_list) ? DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, array_merge($pa_options, ['index' => $vn_index, 'returnAsArray' => $pa_options['aggregateUnique']])) : '';
+						if ($pb_index_with_ids) {
+							$va_proc_templates[$qr_res->get($vs_pk)] = $v;
+						} else {
+							$va_proc_templates[] = $v;
+						}
+					}
+				} elseif(sizeof($va_template['units']) > 0) {
+					$v = DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, [], array_merge($pa_options, ['returnAsArray' => $pa_options['aggregateUnique']]));
+					$va_proc_templates[$qr_res->get($vs_pk)] = $v;
 				}
 			} else {
 			    $va_val_list = DisplayTemplateParser::_getValues($qr_res, array_merge($va_template['tags'], array_flip(caGetTemplateTags($ps_skip_when))), $pa_options);
@@ -662,7 +668,7 @@ class DisplayTemplateParser {
 						if (sizeof($va_relative_ids) && is_array($va_get_options['filterTypes'])) {
 						    $vs_rel_table_name = $t_rel_instance->tableName();
 						    $vs_rel_pk = $t_rel_instance->primaryKey();
-						    if (is_array($va_filter_types = caMakeTypeIDList($vs_rel_table_name, $va_get_options['filterTypes'])) && sizeof($va_filter_types)) {
+						    if (is_array($va_filter_types = caMakeTypeIDList($vs_rel_table_name, $va_get_options['filterTypes'], ['dontIncludeSubtypesInTypeRestriction' => true])) && sizeof($va_filter_types)) {
 						        if ($qr_types = caMakeSearchResult($vs_rel_table_name, $va_relative_ids)) {
 						            $va_filtered_ids = [];
 						            while($qr_types->nextHit()) {
@@ -805,23 +811,7 @@ class DisplayTemplateParser {
 						if (sizeof($va_relative_ids) && is_array($va_get_options['filterTypes'])) {
 						    $vs_rel_table_name = $t_rel_instance->tableName();
 						    $vs_rel_pk = $t_rel_instance->primaryKey();
-						    if (is_array($va_filter_types = caMakeTypeIDList($vs_rel_table_name, $va_get_options['filterTypes'])) && sizeof($va_filter_types)) {
-						        if ($qr_types = caMakeSearchResult($vs_rel_table_name, $va_relative_ids)) {
-						            $va_filtered_ids = [];
-						            while($qr_types->nextHit()) {
-						                if(in_array($qr_types->get("{$vs_rel_table_name}.type_id"), $va_filter_types)) {
-						                    $va_filtered_ids[] = (int)$qr_types->get("{$vs_rel_table_name}.{$vs_rel_pk}");
-						                }
-						            }
-						            $va_relative_ids = $va_filtered_ids;
-						        }
-						    }
-						}
-						
-						if (sizeof($va_relative_ids) && is_array($va_get_options['filterTypes'])) {
-						    $vs_rel_table_name = $t_rel_instance->tableName();
-						    $vs_rel_pk = $t_rel_instance->primaryKey();
-						    if (is_array($va_filter_types = caMakeTypeIDList($vs_rel_table_name, $va_get_options['filterTypes'])) && sizeof($va_filter_types)) {
+						    if (is_array($va_filter_types = caMakeTypeIDList($vs_rel_table_name, $va_get_options['filterTypes'], ['dontIncludeSubtypesInTypeRestriction' => true])) && sizeof($va_filter_types)) {
 						        if ($qr_types = caMakeSearchResult($vs_rel_table_name, $va_relative_ids)) {
 						            $va_filtered_ids = [];
 						            while($qr_types->nextHit()) {
@@ -1720,13 +1710,19 @@ class DisplayTemplateParser {
 		foreach($va_codes as $vs_code => $vs_bool) {
 		    if (isset(self::$join_tag_vals[$vs_code]) && strlen(self::$join_tag_vals[$vs_code])) { return true; }
 			$vm_val = isset($pa_values[$vs_code]) ? $pa_values[$vs_code] : null;
-			$vb_value_present = (bool)$vm_val;
+			if(!is_array($vm_val)) { $vm_val = [$vm_val]; }
 			
-			if ($pb_mode !== 'present') { $vb_value_present = !$vb_value_present; }
+			foreach($vm_val as $v) {
+				$vb_value_present = (bool)trim($v);
+				if ($pb_mode !== 'present') { $vb_value_present = !$vb_value_present; }
 			
-			if (is_null($vb_has_value)) { $vb_has_value = $vb_value_present; }
+				if (is_null($vb_has_value)) { $vb_has_value = $vb_value_present; }
 			
-			$vb_has_value = ($vs_bool == 'OR') ? ($vb_has_value || $vb_value_present) : ($vb_has_value && $vb_value_present);
+				$vb_has_value = ($vs_bool == 'OR') ? ($vb_has_value || $vb_value_present) : ($vb_has_value && $vb_value_present);
+				
+				if(($vs_bool == 'OR') && $vb_has_value) { return $vb_has_value; }
+				if(($vs_bool == 'AND') && !$vb_has_value) { return $vb_has_value; }
+			}
 		}
 		return $vb_has_value;
 	}

@@ -35,7 +35,6 @@
   */
   
 require_once(__CA_LIB_DIR__."/Service/BaseService.php");
-require_once(__CA_LIB_DIR__."/Datamodel.php");
 
 class CataloguingService extends BaseService {
 	# -------------------------------------------------------

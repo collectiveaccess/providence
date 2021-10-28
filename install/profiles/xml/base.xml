@@ -1643,12 +1643,12 @@
         <item idno="socken" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>parrish</name_singular>
-              <name_plural>parrishes</name_plural>
+              <name_singular>parish</name_singular>
+              <name_plural>parishes</name_plural>
             </label>
             <label locale="en_CA" preferred="1">
-              <name_singular>parrish</name_singular>
-              <name_plural>parrishes</name_plural>
+              <name_singular>parish</name_singular>
+              <name_plural>parishes</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
               <name_singular>socken</name_singular>
@@ -4014,8 +4014,14 @@
             <placement code="idno2">
               <bundle>idno</bundle>
             </placement>
-            <placement code="media3">
-              <bundle>media</bundle>
+            <placement code="media_display">
+              <bundle>ca_object_representations_media_display</bundle>
+            </placement>
+            <placement code="media_captions">
+              <bundle>ca_object_representation_captions</bundle>
+            </placement>
+            <placement code="media_sidecars">
+              <bundle>ca_object_representation_sidecars</bundle>
             </placement>
             <placement code="access4">
               <bundle>access</bundle>
@@ -5144,23 +5150,11 @@
     
     <relationshipTable name="ca_loans_x_object_representations">
       <types>
-        <type code="lender" default="1">
+        <type code="part_of" default="1">
           <labels>
             <label locale="en_US">
-              <typename>is lent from</typename>
-              <typename_reverse>is lender of</typename_reverse>
-            </label>
-            <label locale="en_CA">
-              <typename>is lent from</typename>
-              <typename_reverse>is lender of</typename_reverse>
-            </label>
-            <label locale="fr_FR">
-              <typename>est prêté par</typename>
-              <typename_reverse>a prêté</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>lånas ut från</typename>
-              <typename_reverse>är långivare av</typename_reverse>
+              <typename>contains</typename>
+              <typename_reverse>part of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>

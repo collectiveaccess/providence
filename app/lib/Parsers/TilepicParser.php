@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2020 Whirl-i-Gig
+ * Copyright 2004-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -107,7 +107,7 @@ class TilepicParser {
 	var $ops_graphicsmagick_path;
 	
 	# ------------------------------------------------------------------------------------
-	function TilepicParser($filename="") {
+	function __construct($filename="") {
 		$this->opo_config = Configuration::load();
 		$vs_external_app_config_path = $this->opo_config->get('external_applications');
 		
@@ -382,7 +382,7 @@ class TilepicParser {
 	}
 	# ------------------------------------------------
 	private function _imageMagickProcess($ps_source_filepath, $ps_dest_filepath, $pa_ops, $pn_quality=null) {
-		$va_ops = array('-colorspace RGB');
+		$va_ops = [];
 		if (!is_null($pn_quality)) {
 			$va_ops[] = '-quality '.intval($pn_quality);
 		}
@@ -436,7 +436,7 @@ class TilepicParser {
 	}
 	# ------------------------------------------------
 	private function _graphicsMagickProcess($ps_source_filepath, $ps_dest_filepath, $pa_ops, $pn_quality=null) {
-		$va_ops = array('-colorspace RGB');
+		$va_ops = [];
 		if (!is_null($pn_quality)) {
 			$va_ops[] = '-quality '.intval($pn_quality);
 		}
@@ -570,7 +570,7 @@ class TilepicParser {
         }
         
          if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
-			if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
+			if (is_array($va_exif = @exif_read_data($ps_filepath, 'IDF0', true, false))) { 
 				if (isset($va_exif['IFD0']['Orientation'])) {
 					$vn_orientation_rotate = null;
 					$vn_orientation = $va_exif['IFD0']['Orientation'];
@@ -835,7 +835,7 @@ class TilepicParser {
 		}
 
 		 if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
-			if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
+			if (is_array($va_exif = @exif_read_data($ps_filepath, 'IFD0', true, false))) { 
 				if (isset($va_exif['IFD0']['Orientation'])) {
 					$vn_orientation_rotate = null;
 					$vn_orientation = $va_exif['IFD0']['Orientation'];
@@ -1079,7 +1079,7 @@ class TilepicParser {
         $h->profileImage('*', null);
         
         if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
-			if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
+			if (is_array($va_exif = @exif_read_data($ps_filepath, 'IFD0', true, false))) { 
 				if (isset($va_exif['IFD0']['Orientation'])) {
 					$vn_orientation = $va_exif['IFD0']['Orientation'];
 					switch($vn_orientation) {
@@ -1099,9 +1099,11 @@ class TilepicParser {
         
         $h->setImageType(imagick::IMGTYPE_TRUECOLOR);
 
-		if (!$h->setImageColorspace(imagick::COLORSPACE_RGB)) {
-			$this->error = "Error during RGB colorspace transformation operation";
-			return false;
+		if ($h->getImageColorspace() === imagick::COLORSPACE_CMYK) {
+			if (!$h->setImageColorspace(imagick::COLORSPACE_RGB)) {
+				$this->error = "Error during RGB colorspace transformation operation";
+				return false;
+			}
 		}
 		
 		$va_tmp = $h->getImageGeometry();
@@ -1303,9 +1305,36 @@ class TilepicParser {
 		
 		$rotation = null;
 		if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
-			if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
+			if (is_array($va_exif = @exif_read_data($ps_filepath, 'IFD0', true, false))) { 
 				if (isset($va_exif['IFD0']['Orientation'])) {
 					$vn_orientation = $va_exif['IFD0']['Orientation'];
+					if($vn_orientation > 0) {
+						// Make copy without EXIF rotation and re-read. There's no other way
+						// to get rid of the orientation tag in derived files (argh).
+						$use_exif_tool_to_strip = (bool)$this->opo_config->get('dont_use_exiftool_to_strip_exif_orientation_tags');
+						
+						// Fall back to using stripImage() if ExifTool is not available. This is quick and easy 
+						// but will strip *everything* including color profiles which will be a problem for many users.
+						if (!caExifToolInstalled() || $use_exif_tool_to_strip) {	
+							$h->stripImage();
+						} else {
+							// Stripping with EXIF tool means copying the entire file and then shelling out
+							// to remove the EXIF tag. We could avoid a copy by running EXIF tool on each tile we
+							// generate, but then we'd be shelling out hundreds or thousands of times per image. 
+							// Either way it sucks.
+							copy($ps_filepath, "{$ps_filepath}_orient");
+							caExtractRemoveOrientationTagWithExifTool("{$ps_filepath}_orient");
+							
+							try {
+								$h = new Gmagick("{$ps_filepath}_orient");
+								$this->setResourceLimits_gmagick($h);
+								$h->setimageindex(0);	// force use of first image in multi-page TIFF
+							} catch (Exception $e){
+								$this->error = "Couldn't open image {$ps_filepath}_orient";
+								return false;
+							}
+						}
+					}
 					switch($vn_orientation) {
 						case 3:
 							$h->rotateimage("#FFFFFF", $rotation = 180);
@@ -1329,9 +1358,11 @@ class TilepicParser {
         
 		$h->setimagetype(Gmagick::IMGTYPE_TRUECOLOR);
 
-		if (!$h->setimagecolorspace(Gmagick::COLORSPACE_RGB)) {
-			$this->error = "Error during RGB colorspace transformation operation";
-			return false;
+		if ($h->getimagecolorspace() === Gmagick::COLORSPACE_CMYK) {
+			if (!$h->setimagecolorspace(Gmagick::COLORSPACE_RGB)) {
+				$this->error = "Error during RGB colorspace transformation operation";
+				return false;
+			}
 		}
 		
 		$image_width = 	$image_dimensions['width'];
@@ -1424,9 +1455,6 @@ class TilepicParser {
 					// noop
 				}
 				
-				if(abs($rotation) === 90) {	// flip rotation due to EXIF rotation (Gmagick doesn't set EXIF rotation properly)
-					$slice->rotateimage("#FFFFFF", -1 * $rotation);
-				}
 				$layer_list[sizeof($layer_list)-1][] = $slice->getImageBlob();
 				$slice->destroy();
 				$x += $pa_options["tile_width"];
@@ -1444,6 +1472,9 @@ class TilepicParser {
 		}
 		
 		$h->destroy();
+		
+		@unlink("{$ps_filepath}_orient");
+		
 		#
 		# Write Tilepic format file
 		#
@@ -1541,7 +1572,7 @@ class TilepicParser {
 				case IMAGETYPE_JPEG:
 					$r_image = imagecreatefromjpeg($ps_filepath);
 					 if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
-						if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
+						if (is_array($va_exif = @exif_read_data($ps_filepath, 'IFD0', true, false))) { 
 							if (isset($va_exif['IFD0']['Orientation'])) {
 								$vn_orientation = $va_exif['IFD0']['Orientation'];
 								$h = new WLPlugMediaGD();

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,15 +27,12 @@
  */
 
 include_once(__CA_LIB_DIR__."/Search/SearchEngine.php");
-include_once(__CA_LIB_DIR__."/Media.php");
 include_once(__CA_LIB_DIR__."/Print/PDFRenderer.php");
-include_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
-include_once(__CA_LIB_DIR__."/ConfigurationCheck.php");
-include_once(__CA_MODELS_DIR__."/ca_change_log.php");
 
 class ConfigurationCheckController extends ActionController {
 	# ------------------------------------------------
 	public function DoCheck(){
+		define('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__', true);	// Force all plugins to reload their paths
 		AssetLoadManager::register('tableList');
 
 		// latest log id

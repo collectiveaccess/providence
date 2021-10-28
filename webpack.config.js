@@ -36,14 +36,18 @@ module.exports = {
 		test: require.resolve('react'),
 		use: [{
 			loader: 'expose-loader',
-			options: 'React'
+			options: {
+			    exposes: 'React'
+			}
 	  	}],
 	  },
 	  {
 		test: require.resolve('react-dom'),
 		use: [{
 			loader: 'expose-loader',
-			options: 'ReactDOM'
+			options: {
+			    exposes: 'ReactDOM'
+			}
 	  	}],
 	  },
       {
@@ -71,12 +75,12 @@ module.exports = {
         use: ['style-loader', 'css-loader', {
 				  loader: 'postcss-loader', // Run post css actions
 				  options: {
-					plugins: function () { // post css plugins, can be exported to postcss.config.js
-					  return [
-						require('precss'),
-						require('autoprefixer')
-					  ];
-					}
+				    postcssOptions: {
+				        plugins: [
+				            ['precss'],
+				            ['autoprefixer']
+				        ]
+				    }
 				  }
 				},  'sass-loader']
       },

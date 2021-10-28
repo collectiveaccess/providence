@@ -85,7 +85,8 @@ BaseModel::$s_ca_models_definitions['ca_metadata_alert_rules'] = array(
 					_t('Movements') => 137,
 					_t('List items') => 33,
 					_t('Tours') => 153,
-					_t('Tour stops') => 155
+					_t('Tour stops') => 155,
+					_t('Submissions') => 38
 				)
 		),
 		'code' => array(
@@ -246,7 +247,7 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 		parent::__construct($pn_id);	# call superclass constructor
 
 		// Filter list of tables form can be used for to those enabled in current config
-		BaseModel::$s_ca_models_definitions['ca_metadata_alert_rules']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = array_flip(caGetPrimaryTables(true));
+		BaseModel::$s_ca_models_definitions['ca_metadata_alert_rules']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = array_flip(caGetPrimaryTables(true, ['ca_media_upload_sessions']));
 	}
 	# ------------------------------------------------------
 	protected function initLabelDefinitions($pa_options=null) {
@@ -385,6 +386,8 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 	 *
 	 */
 	public function setTypeRestrictions($pa_type_ids) {
+		if (!($t_instance = Datamodel::getInstanceByTableNum($this->get('table_num')))) { return false; }
+		if(!method_exists($t_instance, "getTypeList")) { return null; }
 		if (!($vn_rule_id = $this->getPrimaryKey())) { return null; }		// rule must be loaded
 		if (!is_array($pa_type_ids)) {
 			if (is_numeric($pa_type_ids)) {
@@ -394,7 +397,6 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 			}
 		}
 
-		if (!($t_instance = Datamodel::getInstanceByTableNum($this->get('table_num')))) { return false; }
 
 		$va_type_list = $t_instance->getTypeList();
 		$va_current_restrictions = $this->getTypeRestrictions();
@@ -445,15 +447,16 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 
 		if (!($t_instance = Datamodel::getInstanceByTableNum($vn_table_num = $this->get('table_num')))) { return null; }
 
-		$o_view->setVar('type_restrictions', $t_instance->getTypeListAsHTMLFormElement('type_restrictions[]', array('multiple' => 1, 'height' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)));
+		$o_view->setVar('type_restrictions', method_exists($t_instance, "getTypeListAsHTMLFormElement") ? $t_instance->getTypeListAsHTMLFormElement('type_restrictions[]', array('multiple' => 1, 'height' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)) : _t('Not applicable'));
 
 		return $o_view->render('ca_metadata_alert_rule_type_restrictions.php');
 	}
 	# ----------------------------------------
 	public function saveTypeRestrictionsFromHTMLForm($po_request, $ps_form_prefix, $ps_placement_code) {
-		if (!$this->getPrimaryKey()) { return null; }
-
+		if(!$this->getPrimaryKey()) { return null; }
 		return $this->setTypeRestrictions($po_request->getParameter('type_restrictions', pArray));
+		
+		return true;
 	}
 	# ------------------------------------------------------
 	/**
@@ -617,6 +620,9 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 		if ((bool)$t_rule->get('is_system') && ($pn_access == __CA_ALERT_RULE_ACCESS_NOTIFICATION__)) {	// system forms are readable by all
 			return ca_metadata_alert_rules::$s_have_access_to_rule_cache[$vn_rule_id.'/'.$pn_user_id.'/'.$pn_access] = true;
 		}
+		$u = new ca_users($vn_form_user_id);
+		if(!$u->isLoaded()) { return false; }
+		if($u->canDoAction('is_administrator')) { return true; }
 
 		$o_db =  $this->getDb();
 		$qr_res = $o_db->query("

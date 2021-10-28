@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020 Whirl-i-Gig
+ * Copyright 2020-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -41,10 +41,12 @@ var caUI = caUI || {};
 			uploadAreaMessage: 'Upload here',
 			uploadAreaIndicator: 'Uploading...',
 			progressMessage: "Progress: ",
-			uploadTotalMessage: "%count uploaded",
+			uploadTotalMessage: "%count selected",
 			uploadTotalMessageClass: "mediaUploadAreaMessageCount",
 			isPrimaryLabel: "Is primary",
-			index: 0
+			index: 0,
+			maxFilesize: null,
+			maxFilesizeTxt: null
 		}, options);
 		
 		jQuery('#' + that.fieldNamePrefix + 'UploadAreaMessage' + that.index).html(that.uploadAreaMessage).on('click', function(e) {
@@ -58,6 +60,19 @@ var caUI = caUI || {};
 			dropZone: jQuery('#' + that.fieldNamePrefix + 'UploadArea' + that.index),
 			fileInput: jQuery('#' + that.fieldNamePrefix + 'UploadFileControl' + that.index),
 			singleFileUploads: false,
+			change: function(e, data) {
+				data.files.map(function (file) {
+					if(options.maxFilesize && file.size > options.maxFilesize ) {
+						jQuery('#' + that.fieldNamePrefix + 'ProgressGroup' + that.index).show(250);
+						jQuery('#' + that.fieldNamePrefix + 'ProgressStatus' + that.index).html(`file exceeds maximum upload size ${options.maxFilesizeTxt}`);
+						setTimeout(function() {
+							jQuery('#' + that.fieldNamePrefix + 'ProgressGroup' + that.index).hide(250);
+							jQuery('#' + that.fieldNamePrefix + 'UploadArea' + that.index).show(150);
+						}, 1000);
+						throw `file exceeds maximum upload size ${options.maxFilesizeTxt}`;
+					}
+				});
+			},
 			done: function (e, data) {
 				if (data.result.error) {
 					jQuery('#' + that.fieldNamePrefix + 'ProgressGroup' + that.index).show(250);
@@ -73,15 +88,7 @@ var caUI = caUI || {};
 					}, 1500);
 				}
 				
-				var existing_files = jQuery('#' + that.fieldNamePrefix + 'MediaRefs' + that.index).val();
-				var files = (existing_files && existing_files.length > 0) ? existing_files.split(";") : [];
-				files = files.concat(data.result.files).filter((v, i, a) => a.indexOf(v) === i);	// unique files only
-				
-				var m = "<div class='" + that.uploadTotalMessageClass + "'>" + that.uploadTotalMessage.replace("%count", files.length) + "</div>";
-				jQuery('#' + that.fieldNamePrefix + 'UploadAreaMessage' + that.index).html(that.uploadAreaMessage + ((files.length > 0) ? m : ''));
-				jQuery('#' + that.fieldNamePrefix + 'MediaRefs' + that.index).val(files.join(";"));
-				
-				jQuery('#' + that.fieldNamePrefix + 'UploadCount' + that.index).data('count', files.length);
+				that.addFiles(data.result.files);
 			},
 			progressall: function (e, data) {
 				var m = "<div class='" + that.uploadTotalMessageClass + "'>" + that.uploadAreaIndicator.replace("%percent", parseInt(data.loaded / data.total * 100, 10) + "%") + "</div>";
@@ -92,6 +99,18 @@ var caUI = caUI || {};
 		// --------------------------------------------------------------------------------
 		// Methods
 		// --------------------------------------------------------------------------------
+		that.addFiles = function(newFiles) {
+		    var existing_files = jQuery('#' + that.fieldNamePrefix + 'MediaRefs' + that.index).val();
+            var files = (existing_files && existing_files.length > 0) ? existing_files.split(";") : [];
+            files = files.concat(newFiles).filter((v, i, a) => a.indexOf(v) === i);	// unique files only
+            
+            var m = "<div class='" + that.uploadTotalMessageClass + "'>" + that.uploadTotalMessage.replace("%count", files.length) + "</div>";
+            jQuery('#' + that.fieldNamePrefix + 'UploadAreaMessage' + that.index).html(that.uploadAreaMessage + ((files.length > 0) ? m : ''));
+            jQuery('#' + that.fieldNamePrefix + 'MediaRefs' + that.index).val(files.join(";"));
+            
+            jQuery('#' + that.fieldNamePrefix + 'UploadCount' + that.index).data('count', files.length);
+		};
+		
 		that.openEditor = function() {
 			jQuery('#' + that.fieldNamePrefix + '_rep_info_ro' + that.index).hide();
 			jQuery('#' + that.fieldNamePrefix + '_MediaMetadataEditButton' + that.index).hide();
@@ -141,6 +160,7 @@ var caUI = caUI || {};
 		
 		jQuery('#' + that.fieldNamePrefix + '_MediaMetadataEditButton' + that.index).off('click').on('click', function(e) {
 			that.openEditor();
+			e.preventDefault();
 		});
 		
 		jQuery('#' + that.fieldNamePrefix + '_MediaMetadataSaveButton' + that.index).off('click').on('click', function(e) {

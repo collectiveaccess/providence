@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2020 Whirl-i-Gig
+ * Copyright 2011-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,31 +38,31 @@ if (!is_array($opa_error_messages)) {
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<title>CollectiveAccess configuration error display</title>
-	<link href="<?php print __CA_THEME_URL__; ?>/css/error.css" rel="stylesheet" type="text/css" media='all'/>
-	<link href='../assets/fontawesome/css/font-awesome.min.css' rel='stylesheet' type='text/css' media='all'/>
+	<link href="<?= caGetThemeUrlPath() ?>/css/error.css" rel="stylesheet" type="text/css" media='all'/>
+	<link href='../assets/fontawesome/css/all.min.css' rel='stylesheet' type='text/css' media='all'/>
+	<link href='../assets/fontawesome/css/v4-shims.min.css' rel='stylesheet' type='text/css' media='all'/>
 </head>
 <body>
 	<div id='box'>
-	<div id="logo"><img src="<?php print __CA_THEME_URL__ ?>/graphics/logos/ca_logo.png"/></div><!-- end logo -->
-	<div id="content">
-		<?php print "<div class='error'>Issues with your system configuration have been detected</div>
-			General installation instructions can be found
-			<a href='http://wiki.collectiveaccess.org/index.php?title=Installation_(Providence)' target='_blank'>here</a>.
-			For more specific hints on the existing issues please have a look at the messages below."; ?>
-		<br/><br/>
+		<div id="logo"><?= caGetDefaultLogo(); ?></div><!-- end logo -->
+		<div id="content">
+			<?= "<div class='error'>There are issues with your configuration</div>
+				<div class='errorDescription'>General installation instructions can be found
+				<a href='https://manual.collectiveaccess.org/setup/Installation.html' target='_blank'>here</a>.
+				or more specific information on detected issues review the messages below:</div>"; ?>
 <?php
-foreach ($opa_error_messages as $vs_message):
+foreach ($opa_error_messages as $vs_message) {
 ?>
-		<div class="permissionError">
-			<?php if (function_exists("caNavIcon")) { print caNavIcon(__CA_NAV_ICON_ALERT__ , 2, array('class' => 'permissionErrorIcon')); } ?>
-			<?php print $vs_message; ?>
-			<div style='clear:both; height:1px;'><!-- empty --></div>
-		</div>
-		<br/>
+			<div class="permissionError">
+				<?php if (function_exists("caNavIcon")) { print caNavIcon(__CA_NAV_ICON_ALERT__ , 2, array('class' => 'permissionErrorIcon')); } ?>
+				<?= $vs_message; ?>
+				<div style='clear:both; height:1px;'><!-- empty --></div>
+			</div>
+			<br/>
 <?php
-endforeach;
+}
 ?>
-	
-</div><!-- end content --></div><!-- end box -->
+		</div><!-- end content -->
+	</div><!-- end box -->
 </body>
 </html>

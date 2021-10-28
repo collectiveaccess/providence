@@ -78,6 +78,14 @@
 		'label' => _t('Allow duplicate values?'),
 		'description' => _t('Check this option if you want to allow duplicate values to be set when element is not in a container and is repeating.')
 	),
+	'raiseErrorOnDuplicateValue' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Show error message for duplicate values?'),
+		'description' => _t('Check this option to show an error message when value is duplicate and <em>allow duplicate values</em> is not set.')
+	),
 	'canBeUsedInSort' => array(
 		'formatType' => FT_NUMBER,
 		'displayType' => DT_CHECKBOXES,
@@ -238,7 +246,7 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, ['canBeEmpty']);
 		if (!$ps_value) {
  			if(!$va_settings["canBeEmpty"]){
-				$this->postError(1970, _t('Entry was blank.'), 'GeoNamesAttributeValue->parseValue()');
+				$this->postError(1970, _t('Entry for <em>%1</em> was blank.', $pa_element_info['displayLabel']), 'GeoNamesAttributeValue->parseValue()');
 				return false;
 			}
 			return [];
@@ -294,7 +302,7 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 				    return false;
                 }
 				if(!$va_settings["canBeEmpty"]){
-					$this->postError(1970, _t('Entry was blank.'), 'GeoNamesAttributeValue->parseValue()');
+					$this->postError(1970, _t('Entry for <em>%1</em> was blank.', $pa_element_info['displayLabel']), 'GeoNamesAttributeValue->parseValue()');
 					return false;
 				}
 				return [];
@@ -388,47 +396,50 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 			</script>
 		";
 
-		if(!caGetOption("disableMap", $va_settings, false) && !caGetOption("disableMap", $pa_options, false) && strlen($o_config->get('google_maps_key'))){
+		if(!caGetOption("disableMap", $va_settings, false) && !caGetOption("disableMap", $pa_options, false)) {
+			if (strlen($o_config->get('google_maps_key'))) {
+				AssetLoadManager::register('maps');
 
-			AssetLoadManager::register('maps');
+				$vs_element .= "
+					<div id='map_".$pa_element_info['element_id']."{n}' style='width:700px; height:160px;'>
 
-			$vs_element .= "
-				<div id='map_".$pa_element_info['element_id']."{n}' style='width:700px; height:160px;'>
+					</div>
+					<script type='text/javascript'>
+						if ('{n}'.substring(0,3) == 'new') {
+							jQuery('#map_".$pa_element_info['element_id']."{n}').hide();
+						} else {
+							jQuery(document).ready(function() {
+				";
 
-				</div>
-				<script type='text/javascript'>
-					if ('{n}'.substring(0,3) == 'new') {
-						jQuery('#map_".$pa_element_info['element_id']."{n}').hide();
-					} else {
-						jQuery(document).ready(function() {
-			";
+				$vs_element .= "
+						var re = /\[([\d\.\-,; ]+)\]/;
+						var r = re.exec('{{".$pa_element_info['element_id']."}}');
+						var latlong = (r) ? r[1] : null;
 
-			$vs_element .= "
-					var re = /\[([\d\.\-,; ]+)\]/;
-					var r = re.exec('{{".$pa_element_info['element_id']."}}');
-					var latlong = (r) ? r[1] : null;
+						if (latlong) {
+							// map vars are global
+							map_".$pa_element_info['element_id']."{n} = new google.maps.Map(document.getElementById('map_".$pa_element_info['element_id']."{n}'), {
+								disableDefaultUI: false,
+								mapTypeId: google.maps.MapTypeId.SATELLITE
+							});
 
-					if (latlong) {
-						// map vars are global
-						map_".$pa_element_info['element_id']."{n} = new google.maps.Map(document.getElementById('map_".$pa_element_info['element_id']."{n}'), {
-							disableDefaultUI: false,
-							mapTypeId: google.maps.MapTypeId.SATELLITE
-						});
+							var tmp = latlong.split(',');
+							var pt = new google.maps.LatLng(tmp[0], tmp[1]);
+							map_".$pa_element_info['element_id']."{n}.setCenter(pt);
+							map_".$pa_element_info['element_id']."{n}.setZoom(15);		// todo: make this a user preference of some sort
+							var marker = new google.maps.Marker({
+								position: pt,
+								map: map_".$pa_element_info['element_id']."{n}
+							});
+						}";
 
-						var tmp = latlong.split(',');
-						var pt = new google.maps.LatLng(tmp[0], tmp[1]);
-						map_".$pa_element_info['element_id']."{n}.setCenter(pt);
-						map_".$pa_element_info['element_id']."{n}.setZoom(15);		// todo: make this a user preference of some sort
-						var marker = new google.maps.Marker({
-							position: pt,
-							map: map_".$pa_element_info['element_id']."{n}
-						});
-					}";
-
-			$vs_element .= "
-						});
-					}
-				</script>";
+				$vs_element .= "
+							});
+						}
+					</script>";
+			} else {
+				$vs_element .= "<h3>"._t('Warning: Cannot display map without configured GoogleMaps key')."</h3>";
+			}
 		}
 
  		return $vs_element;

@@ -38,7 +38,6 @@ require_once(__CA_APP_DIR__."/helpers/batchHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/configurationHelpers.php");
 require_once(__CA_MODELS_DIR__."/ca_sets.php");
 require_once(__CA_MODELS_DIR__."/ca_data_exporters.php");
-require_once(__CA_LIB_DIR__."/Datamodel.php");
 require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__."/BatchProcessor.php");
 require_once(__CA_LIB_DIR__."/BatchMetadataExportProgress.php");
@@ -46,7 +45,6 @@ require_once(__CA_LIB_DIR__."/BatchMetadataExportProgress.php");
 
 class MetadataExportController extends ActionController {
 	# -------------------------------------------------------
-	protected $opo_datamodel;
 	protected $opo_app_plugin_manager;
 	# -------------------------------------------------------
 	#
@@ -203,6 +201,15 @@ class MetadataExportController extends ActionController {
 			Session::setVar('export_file', $vs_tmp_file);
 			Session::setVar('export_content_type', $t_exporter->getContentType());
 			Session::setVar('exporter_id', $t_exporter->getPrimaryKey());
+			
+			if($this->request->user->getPreference('immediate_download_of_exports') === 'immediate') {
+				$this->getView()->setVar('file_name', $vs_filename);
+				$this->getView()->setVar('export_file', $vs_tmp_file);
+				$this->getView()->setVar('export_content_type', $t_exporter->getContentType());
+
+				$this->render('export/download_export_binary.php');
+				return;
+			}
 
 			$this->render('export/export_destination_html.php');
 		}

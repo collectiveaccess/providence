@@ -1,7 +1,7 @@
 /*
 	Date: 16 June 2020
 	Migration: 164
-	Description:    Add media upload manager session table
+	Description:    Add media upload manager session table; add index to ca_task_queue
 */
 
 /*==========================================================================*/
@@ -31,6 +31,8 @@ create table if not exists ca_media_upload_sessions (
    unique index i_session_key      	(session_key)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+
+create index i_handler on ca_task_queue(handler);
 
 /*==========================================================================*/
 

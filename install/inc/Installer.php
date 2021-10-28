@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2020 Whirl-i-Gig
+ * Copyright 2011-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -142,21 +142,54 @@ class Installer {
 	 * @return array
 	 */
 	static public function getProfileInfo($ps_profile_dir, $ps_profile_name) {
-		$o_installer = new Installer($ps_profile_dir,$ps_profile_name);
-		$o_installer->loadProfile($ps_profile_dir, $ps_profile_name);
+		$path = $ps_profile_dir.'/'.$ps_profile_name.'.xml';
+		$reader = new XMLReader();
+		
+		if (!@$reader->open($path)) {
+			return null;
+		}
 
-		return array(
-			'useForConfiguration' => $o_installer->getAttribute($o_installer->opo_profile, 'useForConfiguration'),
-			'display' => (string)$o_installer->opo_profile->{'profileName'},
-			'description' => (string)$o_installer->opo_profile->{'profileDescription'},
-			'locales' => (string)$o_installer->opo_profile->{'locales'},
-		);
+		$name = $description = $useForConfiguration = $locales = null;
+		while(@$reader->read()) {
+			if ($reader->nodeType === XMLReader::ELEMENT) {
+				switch($reader->name) {
+					case 'profile':
+						$useForConfiguration = $reader->getAttribute('useForConfiguration');
+						break;
+					case 'profileName':
+						$name = $reader->readOuterXML();
+						break;
+					case 'profileDescription':
+						$description = $reader->readOuterXML();
+						break;
+					case 'locale':
+						$locale = $reader->getAttribute('lang').'_'.$reader->getAttribute('country');
+						$locales[$locale] = [
+							'lang' => $reader->getAttribute('lang'),
+							'country' => $reader->getAttribute('country'),
+							'locale' => $locale,
+							'display' => $reader->readOuterXML()
+						];
+						break;
+					case 'lists':
+						break(2);
+				}
+			}
+		}
+		$reader->close();		
+
+		return [
+			'useForConfiguration' => $useForConfiguration,
+			'display' => $name,
+			'description' => $description,
+			'locales' => $locales,
+		];
 	}
 	# --------------------------------------------------
 	private function validateProfile() {
 		// simplexml doesn't support validation -> use DOMDocument
 		$vo_profile = new DOMDocument();
-		$vo_profile->load($this->ops_profile_dir."/".$this->ops_profile_name.".xml");
+		@$vo_profile->load($this->ops_profile_dir."/".$this->ops_profile_name.".xml");
 
 		if($this->opo_base) {
 			$vo_base = new DOMDocument();
@@ -192,7 +225,7 @@ class Installer {
 		$vs_file = $ps_profile_dir."/".$ps_profile_name.".xml";
 
 		if(is_readable($vs_file)) {
-			$this->opo_profile = simplexml_load_file($vs_file);
+			$this->opo_profile = @simplexml_load_file($vs_file);
 			return true;
 		} else {
 			return false;
@@ -372,7 +405,7 @@ class Installer {
 			}
 		}
 
-		if ($o_config->get('search_engine_plugin') == 'ElasticSearch') {
+		if (($o_config->get('search_engine_plugin') == 'ElasticSearch') && (!$this->isAlreadyInstalled() || (defined('__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__') && __CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__ && $this->opb_overwrite))) {
 			$o_es = new WLPlugSearchEngineElasticSearch();
 			try {
 				$o_es->truncateIndex();
@@ -390,7 +423,6 @@ class Installer {
 	    if (sizeof($this->opa_metadata_element_deferred_settings_processing)) {
 	        foreach($this->opa_metadata_element_deferred_settings_processing as $vs_element_code => $va_settings) {
 	            if (!($t_element = ca_metadata_elements::getInstance($vs_element_code))) { continue; }
-	            $t_element->setMode(ACCESS_WRITE);
 	            $va_available_settings = $t_element->getAvailableSettings();
 	            foreach($va_settings as $vs_setting_name => $va_setting_values) {
 	                if (!isset($va_available_settings[$vs_setting_name])) { continue; }
@@ -413,10 +445,29 @@ class Installer {
 		// refresh mapping if ElasticSearch is used
 		$o_config = Configuration::load();
 		if ($o_config->get('search_engine_plugin') == 'ElasticSearch') {
-			$o_si = new SearchIndexer();
-			$o_si->reindex(null, array('showProgress' => false, 'interactiveProgressDisplay' => false));
+			$o_es = new WLPlugSearchEngineElasticSearch();
+			$o_es->refreshMapping(true);
 			CompositeCache::flush();
 		}
+	}
+	# --------------------------------------------------
+	/**
+	 * Checks if ColletiveAccess tables already exist in the database
+	 *
+	 * @return boolean Returns true if CA is already installed
+	 */
+	public function isAlreadyInstalled() {
+		$ca_tables = Datamodel::getTableNames();
+
+		$qr = $this->opo_db->query("SHOW TABLES");
+
+		while($qr->nextRow()) {
+			$table = $qr->getFieldAtIndex(0);
+			if (in_array($table, $ca_tables)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	# --------------------------------------------------
 	/**
@@ -433,24 +484,14 @@ class Installer {
 			$this->opo_db->query('CREATE DATABASE `'.__CA_DB_DATABASE__.'`');
 			$this->opo_db->query('USE `'.__CA_DB_DATABASE__.'`');
 		}
-
-		$va_ca_tables = Datamodel::getTableNames();
-
-		$qr_tables = $this->opo_db->query("SHOW TABLES");
-
-		while($qr_tables->nextRow()) {
-			$vs_table = $qr_tables->getFieldAtIndex(0);
-			if (in_array($vs_table, $va_ca_tables)) {
-				$this->addError("Table ".$vs_table." already exists; have you already installed CollectiveAccess?");
-				return false;
-			}
+		
+		if($this->isAlreadyInstalled()) {
+			throw new Exception("Cannot install because an existing CollectiveAccess installation has been detected.");
 		}
-
+		
 		// load schema
-
 		if (!($vs_schema = file_get_contents(__CA_BASE_DIR__."/install/inc/schema_mysql.sql"))) {
-			$this->addError("Could not open schema definition file");
-			return false;
+			throw new Exception("Could not open schema definition file");
 		}
 		$va_schema_statements = explode(';', $vs_schema);
 
@@ -478,8 +519,7 @@ class Installer {
 			}
 			$this->opo_db->query($vs_statement);
 			if ($this->opo_db->numErrors()) {
-				$this->addError("Error while loading the database schema: ".join("; ",$this->opo_db->getErrors()));
-				return false;
+				throw new Exception("Error while loading the database schema: ".join("; ",$this->opo_db->getErrors()));
 			}
 		}
 	}
@@ -496,6 +536,7 @@ class Installer {
 		foreach($va_locales as $vs_code => $va_locale) {
 			$this->opa_locales[$vs_code] = $va_locale['locale_id'];
 		}
+		global $g_ui_locale, $g_ui_locale_id;
 		if($this->ops_base_name) {
 			$va_locales = [];
 			foreach($this->opo_profile->locales->children() as $vo_locale) {				
@@ -512,18 +553,17 @@ class Installer {
 		} else {
 			$va_locales = $this->opo_profile->locales->children();
 		}
-
 		foreach($va_locales as $vo_locale) {
 			$t_locale->clear();
 			$vs_language = self::getAttribute($vo_locale, "lang");
 			$vs_dialect = self::getAttribute($vo_locale, "dialect");
 			$vs_country = self::getAttribute($vo_locale, "country");
 			$vb_dont_use_for_cataloguing = self::getAttribute($vo_locale, "dontUseForCataloguing");
+			$vs_locale_code = $vs_dialect ? $vs_language."_".$vs_country.'_'.$vs_dialect : $vs_language."_".$vs_country;
 
-			if(isset($this->opa_locales[$vs_language."_".$vs_country]) && ($vn_locale_id = $this->opa_locales[$vs_language."_".$vs_country])) { // don't insert duplicate locales
+			if(isset($this->opa_locales[$vs_locale_code]) && ($vn_locale_id = $this->opa_locales[$vs_locale_code])) { // don't insert duplicate locales
 				$t_locale->load($vn_locale_id); // load locale so that we can 'overwrite' any existing attributes/fields
 			}
-
 			$t_locale->set('name', (string)$vo_locale);
 			$t_locale->set('country', $vs_country);
 			$t_locale->set('language', $vs_language);
@@ -535,10 +575,12 @@ class Installer {
 			($t_locale->getPrimaryKey() > 0) ? $t_locale->update() : $t_locale->insert();
 
 			if ($t_locale->numErrors()) {
-				$this->addError("There was an error while inserting locale {$vs_language}_{$vs_country}: ".join(" ",$t_locale->getErrors()));
+				$this->addError("There was an error while inserting locale {$vs_locale_code}: ".join(" ",$t_locale->getErrors()));
 			}
-
-			$this->opa_locales[$vs_language."_".$vs_country] = $t_locale->getPrimaryKey();
+			if ($vs_locale_code === $g_ui_locale && $t_locale->getPrimaryKey()){
+				$g_ui_locale_id = $t_locale->getPrimaryKey();
+			}
+			$this->opa_locales[$vs_locale_code] = $t_locale->getPrimaryKey();
 		}
 
 		$va_locales = $t_locale->getAppConfig()->getList('locale_defaults');
@@ -547,6 +589,10 @@ class Installer {
 		if(!$vn_locale_id) {
 			throw new Exception("The locale default is set to a non-existing locale. Try adding '". $va_locales[0] . "' to your profile.");
 		}
+		// Ensure the default locale comes first.
+		uksort($this->opa_locales, function($a) use ( $vn_locale_id ) {
+			return $a === $vn_locale_id;
+		});
 
 		return true;
 	}
@@ -567,7 +613,7 @@ class Installer {
 			$va_lists = $this->opo_profile->lists->children();
 		}
 
-		$o_trans = new Transaction();
+		//$o_trans = new Transaction();
 
 		$vn_i = 0;
 		$vn_num_lists = sizeof($va_lists);
@@ -577,7 +623,7 @@ class Installer {
 			if(!($t_list = ca_lists::find(array('list_code' => $vs_list_code), array('returnAs' => 'firstModelInstance')))) {
 				$t_list = new ca_lists();
 			}
-			$t_list->setTransaction($o_trans);
+			//$t_list->setTransaction($o_trans);
 
 			if($t_list->getPrimaryKey()) {
 				$this->logStatus(_t('List %1 already exists', $vs_list_code));
@@ -590,7 +636,7 @@ class Installer {
 			if(self::getAttribute($vo_list, "deleted") && $t_list->getPrimaryKey()) {
 				$this->logStatus(_t('Deleting list %1', $vs_list_code));
 				$t_list->delete(true);
-				$o_trans->commit();
+				//$o_trans->commit();
 				continue;
 			}
 
@@ -626,10 +672,10 @@ class Installer {
 				}
 				if($vo_list->items) {
 					if(!$this->processListItems($t_list, $vo_list->items, null)) {
-						$o_trans->rollback();
+						//$o_trans->rollback();
 						return false;
 					}
-					$o_trans->commit();
+					//$o_trans->commit();
 				}
 			}
 		}
@@ -669,10 +715,10 @@ class Installer {
 			if (!isset($vs_rank)) { $vs_rank = 0; }
 
 			$this->logStatus(_t('Processing list item with idno %1', $vs_item_idno));
-
+			$vb_deleted = self::getAttribute($vo_item, "deleted");
 			if($vn_item_id = caGetListItemID($t_list->get('list_code'), $vs_item_idno, array('dontCache' => true))) {
 				$this->logStatus(_t('List item with idno %1 already exists', $vs_item_idno));
-				if(self::getAttribute($vo_item, "deleted")) {
+				if($vb_deleted) {
 					$this->logStatus(_t('Deleting list item with idno %1', $vs_item_idno));
 					$t_item = new ca_list_items($vn_item_id);
 					$t_item->setMode(ACCESS_WRITE);
@@ -682,7 +728,11 @@ class Installer {
 				$t_item = $t_list->editItem($vn_item_id, $vs_item_value, $vn_enabled, $vn_default, $pn_parent_id, $vs_item_idno, '', (int)$vs_status, (int)$vs_access, (int)$vs_rank, $vs_color);
 			} else {
 				$this->logStatus(_t('List item with idno %1 is a new item', $vs_item_idno));
-				$t_item = $t_list->addItem($vs_item_value, $vn_enabled, $vn_default, $pn_parent_id, $vn_type_id, $vs_item_idno, '', (int)$vs_status, (int)$vs_access, (int)$vs_rank, $vs_color);
+				if ($vb_deleted) {
+					continue;
+				} else {
+					$t_item = $t_list->addItem($vs_item_value, $vn_enabled, $vn_default, $pn_parent_id, $vn_type_id, $vs_item_idno, '', (int)$vs_status, (int)$vs_access, (int)$vs_rank, $vs_color);
+				}
 			}
 
 			if (($t_list->numErrors() > 0) || !is_object($t_item)) {
@@ -840,9 +890,9 @@ class Installer {
 		$this->_processSettings($t_md_element, $po_element->settings, ['settingsInfo' => $t_md_element->getAvailableSettings()]);
 
 		if($t_md_element->getPrimaryKey()) {
-			$t_md_element->update();
+			$t_md_element->update(['noFlush' => true]);
 		}else{
-			$t_md_element->insert();
+			$t_md_element->insert(['noFlush' => true]);
 		}
 
 		if ($t_md_element->numErrors()) {
@@ -2514,7 +2564,7 @@ class Installer {
 				return false;
 			}
 
-			$this->logStatus(_t('Added trigger %1 for metadata alert %3', $vs_code, $t_md_alert->get('code')));
+			$this->logStatus(_t('Added trigger %1 for metadata alert %2', $vs_code, $t_md_alert->get('code')));
 			$vn_i++;
 		}
 		return true;
@@ -2586,6 +2636,22 @@ class Installer {
                 }
 
 				if((strlen($vs_setting_name)>0) && (strlen($vs_value)>0)) { // settings need at least name and value
+					$vs_datatype = (int)$pt_instance ?$pt_instance->get('datatype') : null;
+					if ($vs_setting_name === 'restrictToTypes' && $t_authority_instance = AuthorityAttributeValue::elementTypeToInstance($vs_datatype)){
+						if ($t_authority_instance instanceof BaseModelWithAttributes && is_string($vs_value)){
+							$vn_type_id = $t_authority_instance->getTypeIDForCode($vs_value);
+							if ($vn_type_id){
+								$vs_value = $vn_type_id;
+							} else {
+								$this->addError(
+									_t('Failed to lookup type id for type restriction %1 in element %2 as could not retrieve type record. ',
+										$vs_value,
+										$pt_instance->get('element_code')
+									)
+								);
+							}
+						}
+					}
 					if ($vs_locale) { // settings with locale (those can't repeat)
 						$va_settings[$vs_setting_name][$vs_locale] = $vs_value;
 					} else {

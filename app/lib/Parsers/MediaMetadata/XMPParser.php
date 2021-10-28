@@ -490,7 +490,7 @@ class XMPParser extends BaseMediaMetadataParser {
 		$data = $this->networkSafeFread($filehnd, 2);
 
 		// Check that the third character is 0xFF (Start of first segment header)
-		if ($data{0} != "\xFF") {
+		if ($data[0] != "\xFF") {
 			// NO FF found - close file and return - JPEG is probably corrupted
 			fclose($filehnd);
 			return false;
@@ -504,10 +504,10 @@ class XMPParser extends BaseMediaMetadataParser {
 		//                                       2) we have hit the compressed image data (no more headers are allowed after data)
 		//                                       3) or end of file is hit
 
-		while ( ($data{1} != "\xD9") && (! $hit_compressed_image_data) && ( ! feof($filehnd))) {
+		while ( ($data[1] != "\xD9") && (! $hit_compressed_image_data) && ( ! feof($filehnd))) {
 			// Found a segment to look at.
 			// Check that the segment marker is not a Restart marker - restart markers don't have size or data after them
-			if (  ( ord($data{1}) < 0xD0) || ( ord($data{1}) > 0xD7)) {
+			if (  ( ord($data[1]) < 0xD0) || ( ord($data[1]) > 0xD7)) {
 				// Segment isn't a Restart marker
 				// Read the next two bytes (size)
 				$sizestr = $this->networkSafeFread($filehnd, 2);
@@ -523,14 +523,14 @@ class XMPParser extends BaseMediaMetadataParser {
 
 
 				// Store the segment information in the output array
-				$headerdata[] = array(  "SegType" => ord($data{1}),
-					"SegName" => XMPParser::$s_jpeg_segment_names[ ord($data{1}) ],
+				$headerdata[] = array(  "SegType" => ord($data[1]),
+					"SegName" => XMPParser::$s_jpeg_segment_names[ ord($data[1]) ],
 					"SegDataStart" => $segdatastart,
 					"SegData" => $segdata);
 			}
 
 			// If this is a SOS (Start Of Scan) segment, then there is no more header data - the compressed image data follows
-			if ($data{1} == "\xDA") {
+			if ($data[1] == "\xDA") {
 				// Flag that we have hit the compressed image data - exit loop as no more headers available.
 				$hit_compressed_image_data = true;
 			}
@@ -539,7 +539,7 @@ class XMPParser extends BaseMediaMetadataParser {
 				$data = $this->networkSafeFread($filehnd, 2);
 
 				// Check that the first byte of the two is 0xFF as it should be for a marker
-				if ($data{0} != "\xFF") {
+				if ($data[0] != "\xFF") {
 					// NO FF found - close file and return - JPEG is probably corrupted
 					fclose($filehnd);
 					return false;
@@ -675,7 +675,7 @@ class XMPParser extends BaseMediaMetadataParser {
 		$data = $this->networkSafeFread($filehnd, 2);
 
 		// Check that the third character is 0xFF (Start of first segment header)
-		if ($data{0} != "\xFF") {
+		if ($data[0] != "\xFF") {
 			// NO FF found - close file and return
 			fclose($filehnd);
 			return;
@@ -689,10 +689,10 @@ class XMPParser extends BaseMediaMetadataParser {
 		//                                       2) we have hit the compressed image data (no more headers are allowed after data)
 		//                                       3) or end of file is hit
 
-		while ( ($data{1} != "\xD9") && (! $hit_compressed_image_data) && ( ! feof($filehnd))) {
+		while ( ($data[1] != "\xD9") && (! $hit_compressed_image_data) && ( ! feof($filehnd))) {
 			// Found a segment to look at.
 			// Check that the segment marker is not a Restart marker - restart markers don't have size or data after them
-			if (  ( ord($data{1}) < 0xD0) || ( ord($data{1}) > 0xD7)) {
+			if (  ( ord($data[1]) < 0xD0) || ( ord($data[1]) > 0xD7)) {
 				// Segment isn't a Restart marker
 				// Read the next two bytes (size)
 				$sizestr = $this->networkSafeFread($filehnd, 2);
@@ -705,7 +705,7 @@ class XMPParser extends BaseMediaMetadataParser {
 			}
 
 			// If this is a SOS (Start Of Scan) segment, then there is no more header data - the compressed image data follows
-			if ($data{1} == "\xDA") {
+			if ($data[1] == "\xDA") {
 				// Flag that we have hit the compressed image data - exit loop after reading the data
 				$hit_compressed_image_data = true;
 
@@ -727,7 +727,7 @@ class XMPParser extends BaseMediaMetadataParser {
 				$data = $this->networkSafeFread($filehnd, 2);
 
 				// Check that the first byte of the two is 0xFF as it should be for a marker
-				if ($data{0} != "\xFF")
+				if ($data[0] != "\xFF")
 				{
 					// Problem - NO FF foundclose file and return";
 					fclose($filehnd);

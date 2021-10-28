@@ -138,6 +138,7 @@
       <xs:enumeration value="Taxonomy"/>
       <xs:enumeration value="InformationService"/>
       <xs:enumeration value="Objects"/>
+      <xs:enumeration value="ObjectLots"/>
       <xs:enumeration value="Entities"/>
       <xs:enumeration value="Places"/>
       <xs:enumeration value="Occurrences"/>
@@ -146,6 +147,9 @@
       <xs:enumeration value="Movements"/>
       <xs:enumeration value="StorageLocations"/>
       <xs:enumeration value="ObjectRepresentations"/>
+      <xs:enumeration value="Color"/>
+      <xs:enumeration value="Filesize"/>
+      <xs:enumeration value="FloorPlan"/>
     </xs:restriction>
   </xs:simpleType>
 
@@ -192,6 +196,7 @@
             <xs:element name="description" type="xs:string" minOccurs="0" maxOccurs="1"/>
           </xs:sequence>
           <xs:attribute name="locale" type="localeType" use="required"/>
+          <xs:attribute name="preferred" type="booleanType" />
         </xs:complexType>
       </xs:element>
     </xs:sequence>

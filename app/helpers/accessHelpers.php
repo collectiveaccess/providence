@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2018 Whirl-i-Gig
+ * Copyright 2010-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -65,6 +65,7 @@
 			} else {
 				$va_access = $va_public_access_settings;
 			}
+			if(!is_array($va_access)) { $va_access = []; }
 			
 			if ($po_request->isLoggedIn()) {
 				$va_user_access = $po_request->user->getAccessStatuses(1);
@@ -72,7 +73,7 @@
 					$va_access = array_unique(array_merge($va_access, $va_user_access));
 				}
 			}
-			return $va_access;
+			return array_map('intval', $va_access);
 		}
 		return array();
 	}
@@ -87,6 +88,7 @@
 	  * @return boolean True if user is privileged, false if not
 	  */
 	function caUserIsPrivileged($po_request, $pa_options=null) {
+		if($po_request->isLoggedIn()) { return true; }
 		$va_privileged_networks = isset($pa_options['privileged_networks']) && is_array($pa_options['privileged_networks']) ? $pa_options['privileged_networks'] : (array)$po_request->config->getList('privileged_networks');
 		
 		if (!($va_priv_ips = $va_privileged_networks)) {
@@ -311,6 +313,7 @@
 		}
 		$t_instance = Datamodel::getInstanceByTableName($vs_table_name, true);
 		if (!$t_instance) { return null; }	// bad table
+		if(is_a($t_instance, 'BaseLabel')) { $t_instance = $t_instance->getSubjectTableInstance(); }
 		if (!($vs_type_list_code = $t_instance->getTypeListCode())) { return null; }	// table doesn't use types
 		
 		$va_ret = caMakeItemIDList($vs_type_list_code, $pa_types, $pa_options);
@@ -521,6 +524,28 @@
 		
 		$t_rel_type = new ca_relationship_types();
 		return $t_rel_type->relationshipTypeListToIDs($pm_table_name_or_num, $pa_types, $pa_options);
+	}
+	# ------------------------------------------------------
+	/**
+	 * Converts the given list of relationship type ids or relationship type names into an expanded list of alphanumeric type codes. Processing
+	 * includes expansion of types to include subtypes and conversion of any type_ids to type codes.
+	 *
+	 * @param mixed $pm_table_name_or_num Table name or number to which types apply
+	 * @param array $pa_type_ids List of type_ids that are the basis of the list
+	 * @param array $pa_options Array of options:
+	 * 		dont_include_subtypes_in_type_restriction = if set, returned list is not expanded to include subtypes
+	 *		dontIncludeSubtypesInTypeRestriction = synonym for dont_include_subtypes_in_type_restriction
+	 *
+	 * @return array List of alphanumeric type codes
+	 */
+	function caMakeRelationshipTypeCodeList($table_name_or_num, $type_ids, $options=null) {
+		if (!$type_ids) { return []; }
+		if (!is_array($type_ids)) { $type_ids = [$type_ids]; }
+		if(isset($options['dontIncludeSubtypesInTypeRestriction']) && (!isset($options['dont_include_subtypes_in_type_restriction']) || !$options['dont_include_subtypes_in_type_restriction'])) { $options['dont_include_subtypes_in_type_restriction'] = $options['dontIncludeSubtypesInTypeRestriction']; }
+	 	
+		$options['includeChildren'] = (isset($options['dont_include_subtypes_in_type_restriction']) && $options['dont_include_subtypes_in_type_restriction']) ? false : true;
+		
+		return ca_relationship_types::relationshipTypeIDsToTypeCodes($type_ids, $options);
 	}
 	# ------------------------------------------------------
 	/**

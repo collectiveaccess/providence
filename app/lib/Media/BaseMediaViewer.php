@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2017 Whirl-i-Gig
+ * Copyright 2016-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -69,16 +69,18 @@
 			$t_media = isset($pa_data['t_media']) ? $pa_data['t_media'] : $t_subject;
 			$pa_check_access = caGetOption('checkAccess', $pa_options, null);
 			
+			$display_version = caGetOption('display_version', $pa_data['display'], null);
+			
 			// Controls
 			$vs_controls = '';
 			if ($t_subject) {
 				$vs_media_overlay_titlebar_text = null;
 				if (($vs_media_overlay_titlebar_template = $po_request->config->get('media_overlay_titlebar_template')) && (is_a($t_instance, 'BundlableLabelableBaseModelWithAttributes'))) { 
 				    // for everything except ca_site_page_media when a template is defined
-				    $vs_media_overlay_titlebar_text = caProcessTemplateForIDs($vs_media_overlay_titlebar_template, $t_subject->tableName(), [$t_subject->getPrimaryKey()], $pa_options);
+				    $vs_media_overlay_titlebar_text = caProcessTemplateForIDs($vs_media_overlay_titlebar_template, $t_instance->tableName(), [$t_instance->getPrimaryKey()], $pa_options);
 				} elseif(is_a($t_instance, 'BundlableLabelableBaseModelWithAttributes')) {
 				    // for everything except ca_site_page_media
-				    $vs_media_overlay_titlebar_text = caTruncateStringWithEllipsis($t_subject->get($t_subject->tableName().'.preferred_labels'), 80)." (".$t_subject->get($t_subject->tableName().'.'.$t_subject->getProperty('ID_NUMBERING_ID_FIELD')).")";
+				    $vs_media_overlay_titlebar_text = caTruncateStringWithEllipsis($t_subject->get($t_instance->tableName().'.preferred_labels'), 80)." (".$t_instance->get($t_subject->tableName().'.'.$t_subject->getProperty('ID_NUMBERING_ID_FIELD')).")";
 			    } else {
 			        // for ca_site_page_media 
 			        $vs_media_overlay_titlebar_text = caTruncateStringWithEllipsis($t_instance->get($t_instance->tableName().'.'.array_shift($t_instance->getProperty('LIST_FIELDS'))), 80)." (".$t_instance->get($t_instance->tableName().'.'.$t_instance->getProperty('ID_NUMBERING_ID_FIELD')).")";
@@ -106,6 +108,14 @@
 					
 					$o_view->setVar('page', $vn_rep_index);		
 				}
+				$o_view->setVar('original_media_url', $original_media_url = $t_instance->getMediaUrl('media', 'original', []));
+				$o_view->setVar('display_media_url', $display_version ? $t_instance->getMediaUrl('media', $display_version, []) : $original_media_url);
+			} elseif(is_a($t_instance, 'ca_attribute_values')) {
+				$o_view->setVar('original_media_url', $original_media_url = $t_instance->getMediaUrl('value_blob', 'original', []));
+				$o_view->setVar('display_media_url', $display_version ? $t_instance->getMediaUrl('value_blob', $display_version, []) : $original_media_url);
+			} elseif(is_a($t_instance, 'ca_site_page_media')) {
+				$o_view->setVar('original_media_url', $original_media_url = $t_instance->getMediaUrl('media', 'original', []));
+				$o_view->setVar('display_media_url', $display_version ? $t_instance->getMediaUrl('media', $display_version, []) : $original_media_url);
 			}
 			if ($t_subject && $t_instance && ($po_request->user->canDoAction('can_download_media') || $po_request->user->canDoAction('can_download_ca_object_representations'))) {
 					if (is_array($va_versions = $po_request->config->getList('ca_object_representation_download_versions'))) {
@@ -116,7 +126,7 @@
 						// -- provide user with a choice of versions to download
 						$vs_controls .= caFormTag($po_request, 'DownloadMedia', 'caMediaDownloadForm', $vs_download_path, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
 						$vs_controls .= _t('Download as %1', caHTMLSelect('version', array_combine(array_map("_t", $va_versions), $va_versions), array('style' => 'font-size: 8px; height: 16px;')));
-						$vs_controls .= caFormSubmitLink($po_request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1, [], ['color' => 'white']), '', 'caMediaDownloadForm', 'caMediaDownloadFormButton');
+						$vs_controls .= caFormSubmitLink($po_request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1, [], ['color' => 'white']), '', 'caMediaDownloadForm', 'caMediaDownloadFormButton', ['aria-label' => _t('Download media representations')]);
 						$vs_controls .= caHTMLHiddenInput($t_media->primaryKey(), array('value' => $t_media->getPrimaryKey()));
 						if (is_a($t_instance, 'ca_object_representations')) { $vs_controls .= caHTMLHiddenInput("representation_id", array('value' => $t_instance->getPrimaryKey())); }
 						if (is_a($t_instance, 'ca_site_page_media')) { $vs_controls .= caHTMLHiddenInput("media_id", array('value' => $t_instance->getPrimaryKey())); }

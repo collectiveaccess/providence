@@ -132,8 +132,8 @@ if (defined('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__') && __CA_AL
 	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 	<title>CollectiveAccess: Installer</title>
 	<link href="css/site.css" rel="stylesheet" type="text/css" />
-	<link rel='stylesheet' href='../assets/fontawesome/css/font-awesome.min.css' type='text/css' media='all'/>
-	
+	<link rel="stylesheet" href="../assets/fontawesome/css/all.min.css" />
+	<link rel="stylesheet" href="../assets/fontawesome/css/v4-shims.min.css" />
 	<script src='../assets/jquery/jquery.js' type='text/javascript'></script>
 	<script src='../assets/jquery/jquery-ui/jquery-ui.min.js' type='text/javascript'></script></head>
 <?php

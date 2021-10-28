@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2017 Whirl-i-Gig
+ * Copyright 2016-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -104,14 +104,15 @@ BaseModel::$s_ca_models_definitions['ca_site_pages'] = array(
 				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 5,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Page metdata: keywords'), 'DESCRIPTION' => _t('Optional keywords for this page.')
+				'LABEL' => _t('Page metadata: keywords'), 'DESCRIPTION' => _t('Optional keywords for this page.')
 		),
 		'deleted' => array(
 				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => 0,
-				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if list item is deleted or not.')
+				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if list item is deleted or not.'),
+				'DONT_INCLUDE_IN_SEARCH_FORM' => true
 		),
 		'view_count' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
@@ -334,6 +335,7 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 	 * @return string Returns null if page cannot be rendered
 	 */
 	public static function renderPageForPath($po_controller, $ps_path, $options=null) {
+		$ps_path = preg_replace("!/_default$!", "", $ps_path);	// strip default path component if present
 		if (
 			(
 				is_numeric($ps_path) 
@@ -699,8 +701,10 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
                     'versions' => join("; ", $va_m['versions']),
                     'page_id' => $va_m['page_id'],
                     'fetched_from' => $va_m['fetched_from'],
-                    'fetched_on' => $va_m['fetched_on'] ? date('c', $va_m['fetched_on']) : null,
-                    'fetched' => $va_m['fetched_from'] ? _t("<h3>Fetched from:</h3> URL %1 on %2", '<a href="'.$va_m['fetched_from'].'" target="_ext" title="'.$va_m['fetched_from'].'">'.$va_m['fetched_from'].'</a>', date('c', $va_m['fetched_on'])): ""
+					'fetched_original_url' => $va_m['fetched_original_url'],
+					'fetched_by' => $va_m['fetched_by'],
+					'fetched_on' => $va_m['fetched_on'] ? date('c', $va_m['fetched_on']) : null,
+                    'fetched' => $va_m['fetched_from'] ? _t("<h3>Fetched from:</h3> URL %1 on %2 uing %3 URL handler", '<a href="'.$va_m['fetched_from'].'" target="_ext" title="'.$va_m['fetched_from'].'">'.$va_m['fetched_from'].'</a>', date('c', $va_m['fetched_on']), caGetOption('fetched_by', $va_rep, 'default')): ""
                 );
         }
         return $va_initial_values;

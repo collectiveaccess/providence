@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -562,7 +562,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				if (!$pb_settings_only) {
 					$t_placement->setSettingDefinitionsForPlacement($va_available_bundles[$vs_bundle_name]['settings']);
 					$va_placements[$vn_placement_id]['display'] = $va_available_bundles[$vs_bundle_name]['display'];
-					$va_placements[$vn_placement_id]['settingsForm'] = $t_placement->getHTMLSettingForm(array('id' => $vs_bundle_name.'_'.$vn_placement_id, 'settings' => $va_settings, 'table' => $table_name));
+					$va_placements[$vn_placement_id]['settingsForm'] = $t_placement->getHTMLSettingForm(array('id' => $vs_bundle_name.'_'.$vn_placement_id, 'settings' => $va_settings, 'table' => $table_name, 'relatedTable' => Datamodel::getTableNum($vs_bundle_name) ? $vs_bundle_name : null));
 				} else {
 					$va_tmp = explode('.', $vs_bundle_name);
 					$t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true);
@@ -874,11 +874,32 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'displayType' => DT_SELECT,
 								'default' => '__default__',
 								'width' => "275px", 'height' => 1,
-								'useHistoryTrackingReferringPolicyList' => true,
+								'useHistoryTrackingPolicyList' => true,
 								'label' => _t('Use history tracking policy'),
 								'description' => ''
+							),
+							'showBatchEditorButton' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_CHECKBOXES,
+								'width' => 10, 'height' => 1,
+								'takesLocale' => false,
+								'default' => false,
+								'label' => _t('Show batch editing button?'),
+								'description' => _t('If checked an option to batch edit related records will be displaye.')
 							)
 						);	
+						
+						if(
+							!($policies = array_merge(
+								ca_objects::getHistoryTrackingCurrentValuePolicies($vs_rel_table, ['uses' => [$t_instance->tableName()]]),
+								ca_objects::getDependentHistoryTrackingCurrentValuePolicies($vs_rel_table, ['usedBy' => [$t_instance->tableName()]])
+							))
+							||
+							!sizeof($policies)	
+						) {
+							unset($va_additional_settings['showCurrentOnly']);
+							unset($va_additional_settings['policy']);
+						}
 						
 						if ($vs_rel_table == 'ca_object_representations') {
 						    unset($va_additional_settings['restrict_to_search']);
@@ -946,29 +967,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'width' => "200px", 'height' => 1,
 								'label' => _t('Format of relationship list'),
 								'description' => _t('.')
-							),
-							'sort' => array(
-								'formatType' => FT_TEXT,
-								'displayType' => DT_SELECT,
-								'width' => "475px", 'height' => 1,
-								'takesLocale' => false,
-								'default' => '',
-								'label' => _t('Sort using'),
-								'showSortableBundlesFor' => $t_rel->tableName(),
-								'description' => _t('Method used to sort related items.')
-							),
-							'sortDirection' => array(
-								'formatType' => FT_TEXT,
-								'displayType' => DT_SELECT,
-								'width' => "200px", 'height' => 1,
-								'takesLocale' => false,
-								'default' => 'ASC',
-								'options' => array(
-									_t('Ascending') => 'ASC',
-									_t('Descending') => 'DESC'
-								),
-								'label' => _t('Sort direction'),
-								'description' => _t('Direction of sort, when not in a user-specified order.')
 							),
 							'colorFirstItem' => array(
 								'formatType' => FT_TEXT,
@@ -1043,21 +1041,18 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'displayType' => DT_CHECKBOXES,
 								'width' => 10, 'height' => 1,
 								'takesLocale' => false,
-								'showOnSelect' => 'showCurrentUsingDate',
+								'showOnSelect' => 'policy',
 								'default' => '0',
 								'label' => _t('Show current only?'),
 								'description' => _t('If checked only the most recently dated relationship displayed.')
 							),
-							'showCurrentUsingDate' => array(
+							'policy' => array(
 								'formatType' => FT_TEXT,
 								'displayType' => DT_SELECT,
-								'table' => $va_path[1],
-								'showMetadataElementsWithDataType' => 2,
-								'includeIntrinsics' => ['effective_date'],
-								'takesLocale' => false,
-								'default' => '',
-								'width' => "475px", 'height' => 1,
-								'label' => _t('Base current status on date'),
+								'default' => '__default__',
+								'width' => "275px", 'height' => 1,
+								'useHistoryTrackingPolicyList' => true,
+								'label' => _t('Use history tracking policy'),
 								'description' => ''
 							),
 							'disableQuickadd' => array(
@@ -1079,25 +1074,48 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'label' => _t('Prepopulate quick add fields with search text'),
 								'description' => _t('Select quickadd form fields to be pre-filled with the user-entered search value. If no fields are selected then the preferred label will be prepopulated by default.')
 							),
+							'sort' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_SELECT,
+								'width' => "475px", 'height' => 1,
+								'takesLocale' => false,
+								'default' => '',
+								'label' => _t('Initially sort using'),
+								'showSortableBundlesFor' => ['table' => $t_rel->tableName(), 'relationship' => $vs_table],
+								'description' => _t('Method used to sort related items.')
+							),
+							'sortDirection' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_SELECT,
+								'width' => "200px", 'height' => "1",
+								'takesLocale' => false,
+								'default' => 'ASC',
+								'options' => array(
+									_t('Ascending') => 'ASC',
+									_t('Descending') => 'DESC'
+								),
+								'label' => _t('Initial sort direction'),
+								'description' => _t('Direction of sort, when not in a user-specified order.')
+							),
 							'disableSorts' => array(
 								'formatType' => FT_TEXT,
 								'displayType' => DT_CHECKBOXES,
 								'width' => 10, 'height' => 1,
 								'takesLocale' => false,
 								'default' => '0',
-								'label' => _t('Disable sorting?'),
+								'label' => _t('Disable user-selectable sorting options?'),
 								'hideOnSelect' => ['allowedSorts'],
 								'description' => _t('If checked sorting of related items will be disabled.')
 							),
 							'allowedSorts' => array(
 								'formatType' => FT_TEXT,
 								'displayType' => DT_SELECT,
-								'options' => array_flip(caGetAvailableSortFields($vs_bundle, null, ['includeInterstitialSortsFor' => $vs_table, 'distinguishInterstitials' => true])),
+								'showSortableBundlesFor' => ['table' => $t_rel->tableName(), 'relationship' => $vs_table],
 								'default' => null,
 								'multiple' => true,
 								'width' => "475px", 'height' => 5,
-								'label' => _t('Sort options'),
-								'description' => _t('Limits sort options on this bundle.')
+								'label' => _t('User-selectable sort options'),
+								'description' => _t('Limits user-selectable sort options on this bundle.')
 							),
 							'showCount' => array(
 								'formatType' => FT_NUMBER,
@@ -1123,8 +1141,29 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'width' => "5", 'height' => 1,
 								'label' => _t('Number of items to load per page'),
 								'description' => _t('Maximum number of items to render on initial load.')
+							),
+							'showBatchEditorButton' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_CHECKBOXES,
+								'width' => 10, 'height' => 1,
+								'takesLocale' => false,
+								'default' => false,
+								'label' => _t('Show batch editing button?'),
+								'description' => _t('If checked an option to batch edit related records will be displaye.')
 							)
 						);
+				
+						if(
+							!($policies = array_merge(
+								ca_objects::getHistoryTrackingCurrentValuePolicies($vs_bundle, ['uses' => [$t_instance->tableName()]]),
+								ca_objects::getDependentHistoryTrackingCurrentValuePolicies($vs_bundle, ['usedBy' => [$t_instance->tableName()]])
+							))
+							||
+							!sizeof($policies)	
+						) {
+							unset($va_additional_settings['showCurrentOnly']);
+							unset($va_additional_settings['policy']);
+						}
 					}
 											
                     if ($vs_bundle == 'ca_object_representations') {
@@ -1133,12 +1172,43 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
                         unset($va_additional_settings['disableQuickadd']);
                         unset($va_additional_settings['prepopulateQuickaddFields']);
                         unset($va_additional_settings['showCurrentOnly']);
-                        unset($va_additional_settings['showCurrentUsingDate']);
+                        unset($va_additional_settings['policy']);
                         unset($va_additional_settings['colorFirstItem']);
                         unset($va_additional_settings['colorLastItem']);
                         unset($va_additional_settings['colorItem']);
                         unset($va_additional_settings['list_format']);
                         
+                        $va_additional_settings['autocompletePlaceholderText'] = array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_FIELD,
+							'takesLocale' => true,
+							'default' => null,
+							'multiple' => false,
+							'width' => "475px", 'height' => "1",
+							'label' => _t('Representation auto-complete lookup placeholder text'),
+							'description' => _t('Placeholder text to display in representation autocomplete search box when linking n existing representation to a record. (New UI only)')
+						);
+						
+						$va_additional_settings['dontAllowRelationshipsToExistingRepresentations'] = array(
+							'formatType' => FT_NUMBER,
+							'displayType' => DT_CHECKBOXES,
+							'takesLocale' => false,
+							'default' => 0,
+							'multiple' => false,
+							'label' => _t('Do not allow linking to existing representations? (New UI only)'),
+							'description' => _t('Do not provide option to create relationships to existing representations. (New UI only)')
+						);
+						
+						$va_additional_settings['dontAllowAccessToImportDirectory'] = array(
+							'formatType' => FT_NUMBER,
+							'displayType' => DT_CHECKBOXES,
+							'takesLocale' => false,
+							'default' => 0,
+							'multiple' => false,
+							'label' => _t('Do not allow selection of media in the import directory? (New UI only)'),
+							'description' => _t('Do not provide option to upload media from the import directory as representations. (New UI only)')
+						);
+						
 						$va_additional_settings['dontShowPreferredLabel'] = array(
 							'formatType' => FT_NUMBER,
 							'displayType' => DT_CHECKBOXES,
@@ -1197,10 +1267,10 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								_t('Classic') => 'CLASSIC',
 								_t('New UI with batch uploading') => 'NEW_UI'
 							],
-							'default' => '',
-							'multiple' => true,
+							'default' => 'NEW_UI',
+							'multiple' => false,
 							'label' => _t('User interface style'),
-							'description' => _t('')
+							'description' => ''
 						];
 						
 						$va_additional_settings['showBundlesForEditing'] = [
@@ -1248,7 +1318,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 						);
 					}
 
-					if ($vs_bundle == 'ca_objects') {
+					if (in_array($vs_bundle, ['ca_objects', 'ca_collections', 'ca_object_lots', 'ca_object_representations'], true)) {
 						$va_additional_settings['showReturnToHomeLocations'] = array(
 							'formatType' => FT_TEXT,
 							'displayType' => DT_CHECKBOXES,
@@ -1364,6 +1434,26 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'default' => '1',
 								'label' => _t('Open hierarchy browser by default'),
 								'description' => _t('If checked hierarchy browser will be open when form loads.')
+							),
+							'restrict_to_types' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_SELECT,
+								'useList' => $t_instance->getTypeListCode(),
+								'width' => "475px", 'height' => "75px",
+								'takesLocale' => false,
+								'default' => '',
+								'multiple' => true,
+								'label' => _t('Restrict to types'),
+								'description' => _t('Restricts addition of child records / lookups to items of the specified type(s). Leave all unselected for no restriction.')
+							),
+							'label_for_count' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_FIELD,
+								'takesLocale' => true,
+								'default' => '',
+								'width' => "475px", 'height' => 1,
+								'label' => _t('Label for hierarchy count'),
+								'description' => _t('Text label for hierarchy count. Defaults to table name.')
 							),
 							'auto_shrink' => array(
 								'formatType' => FT_NUMBER,
@@ -1529,7 +1619,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 											_t('Current value + history') => 'tabs'
 										),
 										'takesLocale' => false,
-										'default' => ($bundle == 'ca_objects_location') ? 'tabs' : 'chronology',
+										'default' => ($vs_bundle == 'ca_objects_location') ? 'tabs' : 'chronology',
 										'width' => "200px", 'height' => 1,
 										'label' => _t('Display'),
 										'description' => _t('Display format for chronology.')
@@ -1626,7 +1716,16 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => '0',
 										'label' => _t('Hide "Add to loan" controls'),
+										'hideOnSelect' => ['loan_control_label'],
 										'description' => _t('Check this option if you want to hide the "Add to loan" controls in this bundle placement.')
+									),
+									'loan_control_label' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 1,
+										'label' => _t('"Add to loan" control label text'),
+										'description' => _t('Text to label "Add to loan" control with. If omitted a default label will be used.')
 									),
 									'hide_add_to_movement_controls' => array(
 										'formatType' => FT_NUMBER,
@@ -1635,7 +1734,25 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => '0',
 										'label' => _t('Hide "Add to movement" controls'),
+										'hideOnSelect' => ['movement_control_label', 'always_create_new_movement'],
 										'description' => _t('Check this option if you want to hide the "Add to movement" controls in this bundle placement.')
+									),
+									'always_create_new_movement' => array(
+										'formatType' => FT_NUMBER,
+										'displayType' => DT_CHECKBOXES,
+										'width' => 10, 'height' => 1,
+										'takesLocale' => false,
+										'default' => '0',
+										'label' => _t('Always create new movement?'),
+										'description' => _t('Check this option if you want to only create new movements when recording location. When this option is set linking to existing movements is not possible.')
+									),
+									'movement_control_label' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 1,
+										'label' => _t('"Add to movement" control label text'),
+										'description' => _t('Text to label "Add to movement" control with. If omitted a default label will be used.')
 									),
 									'hide_update_location_controls' => array(
 										'formatType' => FT_NUMBER,
@@ -1644,7 +1761,16 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => '0',
 										'label' => _t('Hide "Update Location" controls'),
+										'hideOnSelect' => ['update_location_control_label'],
 										'description' => _t('Check this option if you want to hide the "Update Location" controls in this bundle placement.')
+									),
+									'update_location_control_label' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 1,
+										'label' => _t('"Update location" control label text'),
+										'description' => _t('Text to label "Update location" control with. If omitted a default label will be used.')
 									),
 									'hide_return_to_home_location_controls' => array(
 										'formatType' => FT_NUMBER,
@@ -1653,7 +1779,16 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => '0',
 										'label' => _t('Hide "Return to Home Location" controls'),
+										'hideOnSelect' => ['return_to_home_location_control_label'],
 										'description' => _t('Check this option if you want to hide the "Return to Home Location" controls in this bundle placement.')
+									),
+									'return_to_home_location_control_label' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 1,
+										'label' => _t('"Return to home location" control label text'),
+										'description' => _t('Text to label "Return to home location" control with. If omitted a default label will be used.')
 									),
 									'hide_add_to_occurrence_controls' => array(
 										'formatType' => FT_NUMBER,
@@ -1662,8 +1797,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => '0',
 										'label' => _t('Hide "Add to" occurrence controls'),
-										'description' => _t('Check this option if you want to hide the "Add to" occurrence controls in this bundle placement.'),
-										'hideOnSelect' => ['add_to_occurrence_types']
+										'description' => _t('Check this option if you want to hide the "Add to occurrence" controls in this bundle placement.'),
+										'hideOnSelect' => ['add_to_occurrence_types', 'occurrence_control_label']
 									),
 									'add_to_occurrence_types' => array(
 										'formatType' => FT_TEXT,
@@ -1673,8 +1808,16 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'default' => '',
 										'multiple' => true,
 										'width' => "475px", 'height' => "75px",
-										'label' => _t('Show "Add to" occurrence controls for'),
+										'label' => _t('Show "Add to occurrence" controls for'),
 										'description' => ''
+									),
+									'occurrence_control_label' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 1,
+										'label' => _t('"Add to occurrence" control label text'),
+										'description' => _t('Text to label "Add to occurrence" control with. If omitted a default label will be used.')
 									),
 									'hide_add_to_collection_controls' => array(
 										'formatType' => FT_NUMBER,
@@ -1683,6 +1826,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => '0',
 										'label' => _t('Hide "Add to collection" controls'),
+										'hideOnSelect' => ['add_to_collection_types', 'collection_control_label'],
 										'description' => _t('Check this option if you want to hide the "Add to collection" controls in this bundle placement.')
 									),
 									'add_to_collection_types' => array(
@@ -1696,6 +1840,14 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Show "Add to" collection controls for'),
 										'description' => ''
 									),
+									'collection_control_label' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 1,
+										'label' => _t('"Add to collection" control label text'),
+										'description' => _t('Text to label "Add to collection" control with. If omitted a default label will be used.')
+									),
 									'hide_add_to_entity_controls' => array(
 										'formatType' => FT_NUMBER,
 										'displayType' => DT_CHECKBOXES,
@@ -1703,6 +1855,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => '0',
 										'label' => _t('Hide "Add to entity" controls'),
+										'hideOnSelect' => ['add_to_entity_types', 'entity_control_label'],
 										'description' => _t('Check this option if you want to hide the "Add to entity" controls in this bundle placement.')
 									),
 									'add_to_entity_types' => array(
@@ -1713,8 +1866,16 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'default' => '',
 										'multiple' => true,
 										'width' => "475px", 'height' => "75px",
-										'label' => _t('Show "Add to" entity controls for'),
+										'label' => _t('Show "Add to entity" controls for'),
 										'description' => ''
+									),
+									'entity_control_label' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 1,
+										'label' => _t('"Add to entity" control label text'),
+										'description' => _t('Text to label "Add to entity" control with. If omitted a default label will be used.')
 									),
 									'hide_add_to_object_controls' => array(
 										'formatType' => FT_NUMBER,
@@ -1723,7 +1884,16 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => '0',
 										'label' => _t('Hide "Add to object" controls'),
+										'hideOnSelect' => ['object_control_label'],
 										'description' => _t('Check this option if you want to hide the "Add to object" controls in this bundle placement.')
+									),
+									'object_control_label' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 1,
+										'label' => _t('"Add to object" control label text'),
+										'description' => _t('Text to label "Add to object" control with. If omitted a default label will be used.')
 									),
 									'useHierarchicalBrowser' => array(
 										'formatType' => FT_TEXT,
@@ -1919,7 +2089,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				'bundle' => $vs_bundle,
 				'display' => $vs_display,
 				'description' => $vs_description = $t_instance->getDisplayDescription($vs_table.'.'.$vs_bundle),
-				'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0_', 'table' => $vs_table)),
+				'settingsForm' => $t_placement->getHTMLSettingForm(['id' => $vs_bundle.'_0_', 'table' => $vs_table, 'relatedTable' => Datamodel::getTableNum($vs_bundle) ? $vs_bundle : null]),
 				'settings' => $va_additional_settings,
 				'deprecated' => $deprecated
 			);
