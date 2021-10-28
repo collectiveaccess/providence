@@ -940,6 +940,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 			$list_id_vals = $criteria['list_id'];
 			foreach($list_id_vals as $i => $list_id_val) {
 				$op = strtolower($list_id_val[0]);
+				if($op == 'is') { $op = '='; }
 				$value = $list_id_val[1];
 	
 				if (!is_numeric($value)) {
