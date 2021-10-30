@@ -572,12 +572,14 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						
 						$errors = $warnings = $info = [];
 						
-						
 						if($list = $args['list']) {
 							$table = 'ca_list_items';
 							$qr = $table::find(['list_id' => $list], ['modified' => $args['date'], 'restrictToTypes' => (isset($args['types']) && is_array($args['types']) && sizeof($args['types'])) ? $args['types'] : ($args['type'] ?? [$args['type']]), 'returnAs' => 'searchResult']);
 						} else {
 							$table = $args['table'];
+							if(!\Datamodel::tableExists($table)) {
+								throw new \ServiceException(_t('Invalid table: %1', $table));
+							}
 							$qr = $table::find('*', ['modified' => $args['date'], 'restrictToTypes' => (isset($args['types']) && is_array($args['types']) && sizeof($args['types'])) ? $args['types'] : ($args['type'] ?? [$args['type']]), 'returnAs' => 'searchResult']);
 						}
 						$c = 0;
@@ -591,7 +593,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 								$db = new Db();
 										
 								try {
-									if($args['date'] || $args['types']) {
+									if($args['date'] || $args['types'] || $list) {
 										$db->query("UPDATE {$table} SET deleted = 1 WHERE {$pk} IN (?)".($hier_root_restriction_sql ? " AND parent_id IS NOT NULL" : ''), [$qr->getAllFieldValues("{$table}.{$pk}")]);
 									} else {
 										$db->query("UPDATE {$table} SET deleted = 1".($hier_root_restriction_sql ? " WHERE parent_id IS NOT NULL" : ''));
@@ -612,6 +614,9 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 										$c++;
 									}
 								}
+							}
+							if($table === 'ca_list_items') {
+								ExternalCache::flush('listItems');
 							}
 						}
 						
