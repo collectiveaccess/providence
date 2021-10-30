@@ -156,6 +156,10 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						$errors = $warnings = $info =  $ids = $idnos = [];
 						
 						$table = $args['table'];
+						if(!\Datamodel::tableExists($table)) {
+							throw new \ServiceException(_t('Invalid table: %1', $table));
+						}
+						
 						$insert_mode = strtoupper($args['insertMode']);
 						$erp = strtoupper($args['existingRecordPolicy']);
 						$match_on = (is_array($args['matchOn']) && sizeof($args['matchOn'])) ? $args['matchOn'] : ['idno'];
@@ -386,6 +390,9 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						$errors = $warnings = $info = $ids = $idnos = [];
 						
 						$table = $args['table'];
+						if(!\Datamodel::tableExists($table)) {
+							throw new \ServiceException(_t('Invalid table: %1', $table));
+						}
 						$idno_fld = \Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD');
 						
 						$records = (is_array($args['records']) && sizeof($args['records'])) ? $args['records'] : [[
@@ -480,6 +487,9 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						$errors = $warnings = $info = [];
 						
 						$table = $args['table'];
+						if(!\Datamodel::tableExists($table)) {
+							throw new \ServiceException(_t('Invalid table: %1', $table));
+						}
 						
 						$opts = [];
 						$identifiers = [];
