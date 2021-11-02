@@ -194,10 +194,13 @@ class RequestHTTP extends Request {
 		$this->ops_base_path = join('/', $va_tmp);
 		$this->ops_full_path = $_SERVER['REQUEST_URI'];
 		if (!caUseCleanUrls() && !preg_match("!/index.php!", $this->ops_full_path) && !preg_match("!/service.php!", $this->ops_full_path)) { $this->ops_full_path = rtrim($this->ops_full_path, "/")."/index.php"; }
-		$vs_path_info = str_replace($_SERVER['SCRIPT_NAME'], "", str_replace("?".$_SERVER['QUERY_STRING'], "", $this->ops_full_path));
+		$this->ops_full_path = preg_replace("![/]+!", "/", $this->ops_full_path);
+		$vs_path_info = str_replace($this->ops_script_name, "", str_replace("?".$_SERVER['QUERY_STRING'], "", $this->ops_full_path));
 		
-		$this->ops_path_info = $vs_path_info ? $vs_path_info : (isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '');
-		if (__CA_URL_ROOT__) { $this->ops_path_info = preg_replace("!^".__CA_URL_ROOT__."/!", "", $this->ops_path_info); }
+		$this->ops_path_info = preg_replace("![/]+!", "/", $vs_path_info ? "/{$vs_path_info}" : (isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : ''));
+		
+		if (__CA_URL_ROOT__) { $this->ops_path_info = preg_replace("!^".__CA_URL_ROOT__."!", "", $this->ops_path_info); }
+
 	}
 	# -------------------------------------------------------
 	/** 
