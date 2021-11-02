@@ -308,37 +308,23 @@
 		 * @param int $pn_max_length_of_name Maximum length in characters of returned file names. Note that the full name is always returned in the 'fullname' value. Only 'name' is truncated.
 		 * @return array An array of file names.
 		 */
-		private function _getDirectoryListing($dir, $pb_include_hidden_files=false, $pn_max_length_of_name=25, $pn_start_at=0, $pn_max_items_to_return=25) {
+		private function _getDirectoryListing($dirs, $pb_include_hidden_files=false, $pn_max_length_of_name=25, $pn_start_at=0, $pn_max_items_to_return=25) {
+			if (!is_array($dirs)) { $dirs = [$dirs]; }
+
 			$va_file_list = [];
 			foreach($dirs as $dir) {
 				if (!is_dir($dir)) { continue; }
 				if(substr($dir, -1, 1) == "/"){
 					$dir = substr($dir, 0, strlen($dir) - 1);
 				}
-			
+
 				if($va_paths = @scandir($dir, 0)) {
 					$vn_i = $vn_c = 0;
 					foreach($va_paths as $item) {
-						if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item[0] !== '.'))) {
+						if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
 							$vb_is_dir = is_dir("{$dir}/{$item}");
 							$vs_k = preg_replace('![@@]+!', '|', $item);
-							if ($vb_is_dir) { 
-								$vn_i++;
-								if (($pn_start_at > 0) && ($vn_i <= $pn_start_at)) { continue; }
-								$va_child_counts = caGetDirectoryContentsCount("{$dir}/{$item}", false, false);
-								$va_file_list[$vs_k] = array(
-									'item_id' => $vs_k, 
-									'name' => caTruncateStringWithEllipsis($item, $pn_max_length_of_name),
-									'fullname' => $item,
-									'type' => 'DIR',
-									'children' => (int)$va_child_counts['files'] + (int)$va_child_counts['directories'],
-									'files' => (int)$va_child_counts['files'],
-									'subdirectories' => (int)$va_child_counts['directories']
-								);
-								$vn_c++;
-							} else { 
-								if (!$vb_is_dir) { 
-
+							if ($vb_is_dir) {
 								$vn_i++;
 								if (($pn_start_at > 0) && ($vn_i <= $pn_start_at)) { continue; }
 								$va_child_counts = caGetDirectoryContentsCount("{$dir}/{$item}", false, false);
