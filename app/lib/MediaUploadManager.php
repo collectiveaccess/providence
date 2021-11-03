@@ -114,6 +114,7 @@ class MediaUploadManager {
 		$s = MediaUploadManager::findSession($key, $user_id);
 		$s->set('completed_on', _t('now'));
 		$s->set('cancelled', 1);
+		$s->set('status', 'CANCELLED');
 		$s->update();
 		if ($s->numErrors() > 0) {
 			throw new MediaUploadManageSessionException(_t('Could not cancel media upload session: '.join('; ', $s->getErrors())));

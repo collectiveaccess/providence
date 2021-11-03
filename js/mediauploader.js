@@ -835,22 +835,22 @@ class MediauploaderRecentItem extends React.Component {
         }
 
         let status, statusClass, current;
-        if (item.cancelled > 0) {
+        if (item.status === 'CANCELLED') {
             current = 'Cancelled: ' + item.completed_on;
             status = 'Cancelled';
-            statusClass = 'badge badge-danger pull-right';
+            statusClass = 'badge bg-danger pull-right';
         } else if (parseInt(item.error_code) > 0) {
             current = 'Error: ' + item.error_display;
             status = 'Error';
-            statusClass = 'badge badge-danger pull-right';
+            statusClass = 'badge bg-danger pull-right';
         } else if (item.completed_on) {
             current = 'Completed: ' + item.completed_on;
             status = 'Completed';
-            statusClass = 'badge badge-success pull-right';
+            statusClass = 'badge bg-success pull-right';
         } else {
             current = "Last activity: " + item.last_activity_on;
             status = 'Incomplete';
-            statusClass = 'badge badge-warning pull-right';
+            statusClass = 'badge bg-warning pull-right';
         }
 
         return <div className="col-md-4 mt-4">
