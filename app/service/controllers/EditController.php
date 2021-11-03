@@ -1143,7 +1143,9 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 				# -----------------------------------
 				default:
 					if($instance->hasField($bundle_name)) {
-						$instance->set($bundle_name, $delete ? null : ((is_array($b['values']) && sizeof($b['values'])) ? array_shift($b['values']) : $b['value'] ?? null), ['allowSettingOfTypeID' => true]);
+						$v = $delete ? null : ((is_array($b['values']) && sizeof($b['values'])) ? array_shift($b['values']) : $b['value'] ?? null);
+						if(is_array($v)) { $v = $v['value'] ?? null; }
+						$instance->set($bundle_name, $v, ['allowSettingOfTypeID' => true]);
 						$rc = $instance->update();
 					} else {
 						 // attribute
