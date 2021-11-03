@@ -44,6 +44,10 @@
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			
  			AssetLoadManager::register('react');
+ 			
+ 			if(!$po_request->config->get('media_uploader_enabled')) { 
+ 				throw new ApplicationException(_t('Media uploader is not enabled'));
+ 			}
  		}
  		# -------------------------------------------------------
  		/**
