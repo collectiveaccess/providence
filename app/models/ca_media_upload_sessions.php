@@ -110,6 +110,8 @@ BaseModel::$s_ca_models_definitions['ca_media_upload_sessions'] = array(
 				_t('In review') => 'IN_REVIEW',
 				_t('Accepted') => 'ACCEPTED',
 				_t('Rejected') => 'REJECTED',
+				_t('Completed') => 'COMPLETED',
+				_t('Cancelled') => 'CANCELLED',
 				_t('Error') => 'ERROR'
 			),
 			'LABEL' => _t('Status of session'), 'DESCRIPTION' => _t('Status of session. Possible states: IN_PROGRESS, SUBMITTED, PROCESSING, PROCESSED, IN_REVIEW, ACCEPTED, REJECTED, ERROR.')

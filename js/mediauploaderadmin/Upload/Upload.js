@@ -53,18 +53,15 @@ class Upload extends Component {
   }
 
   render() {
-    const progress = [];
-    for (const [key, value] of Object.entries(this.props.data.files)) {
-      progress.push(value.progressInBytes);
-    }
-
-	let fileSizeForDisplay = fileSize(this.props.data.total_bytes);
+	let fileSizeForDisplay = this.props.data.total_display;
+	
+	let bytesReceived = this.props.data.received_bytes;
+	let totalBytes = this.props.data.total_bytes;
 
     let progressBar = null;
-    const arrSum = (arr) => arr.reduce((a, b) => a + b, 0);
-    let progressSum = arrSum(progress) / 1000;
+   
     let progressPecentage =
-      (progressSum / (this.props.data.total_bytes / 1000)) * 100;
+      (bytesReceived/totalBytes) * 100;
     if (this.state.status !== "COMPLETED") {
       progressBar = (
         <div style={{ marginTop: "10px" }}>
@@ -76,15 +73,15 @@ class Upload extends Component {
       );
     }
     
-    let badge_class = 'badge badge-success pull-right';
+    let badge_class = 'badge bg-success pull-right';
     if (this.state.status === 'IN_PROGRESS') {
-    	badge_class = 'badge badge-warning pull-right';
+    	badge_class = 'badge bg-warning pull-right';
     } else if (this.state.status === 'ERROR') {
-    	badge_class = 'badge badge-danger pull-right';
+    	badge_class = 'badge bg-danger pull-right';
     } else if (this.state.status === 'CANCELLED') {
-    	badge_class = 'badge badge-danger pull-right';
+    	badge_class = 'badge bg-danger pull-right';
     } else if (this.state.status === 'UNKNOWN') {
-    	badge_class = 'badge badge-secondary pull-right';
+    	badge_class = 'badge bg-secondary pull-right';
     }
 
     return (
@@ -94,9 +91,8 @@ class Upload extends Component {
         style={{ marginBottom: "15px" }}
       >
         <div className="card-body">
-          <div className="container">
             <div
-              className="row"
+              className="row align-items-center"
               style={{ justifyContent: "space-between", marginBottom: "8px" }}
             >
               <div className="col">
@@ -130,7 +126,6 @@ class Upload extends Component {
                   ""
                 )}
               </div>
-            </div>
           </div>
 
           <div className="card-subtitle mb-2 text-muted">

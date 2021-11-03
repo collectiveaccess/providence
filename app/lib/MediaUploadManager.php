@@ -99,6 +99,7 @@ class MediaUploadManager {
 		$s = MediaUploadManager::findSession($key, $user_id);
 		
 		$s->set('completed_on', _t('now'));
+		$s->set('status', 'COMPLETED');
 		$s->update();
 		if ($s->numErrors() > 0) {
 			throw new MediaUploadManageSessionException(_t('Could not complete media upload session: '.join('; ', $s->getErrors())));
@@ -327,12 +328,13 @@ class MediaUploadManager {
 				
 				$fp = self::_partialToFinalPath($fileMeta['file_path']);
 				
-				$session->setFile($fileMeta['file_path'], [
+				$session->setFile($fp, [
 					'bytes_received' => $fileMeta['offset'], 'total_bytes' => $fileMeta['size'],
 					'completed_on' => ($fileMeta['offset'] == $fileMeta['size']) ? _t('now') : null, 'last_activity_on' => _t('now'), 
 					'error_code' => null
 				]);
 				$session->updateStats();
+				self::updateStorageStats($user_id, $session, $fileMeta);
 			}
 		});
 		$server->event()->addListener('tus-server.upload.complete', function (\TusPhp\Events\TusEvent $event) use ($user_id) {
@@ -347,29 +349,20 @@ class MediaUploadManager {
 			if ($session = MediaUploadManager::findSession($key, $user_id)) {
 				$session->set('last_activity_on', _t('now'));
 				
-				$session->setFile($fileMeta['file_path'], [
+				$session->setFile($fp, [
 					'bytes_received' => $fileMeta['offset'], 'total_bytes' => $fileMeta['size'],
 					'completed_on' => _t('now'), 'last_activity_on' => _t('now'), 
 					'error_code' => null
 				]);
 				
 				$session->updateStats();
-
-				if (PersistentCache::contains("userStorageStats_{$user_id}", 'mediaUploader')) {
-					$stats = PersistentCache::fetch("userStorageStats_{$user_id}", 'mediaUploader');
-					$stats['fileCount'] = $session->get('num_files');
-				
-					$stats['storageUsage'] += $fileMeta['size'];
-					$stats['storageUsageDisplay'] = caHumanFilesize($stats['storageUsage']);
-				
-					PersistentCache::save("userStorageStats_{$user_id}", $stats, 'mediaUploader');
-				
-					$config = Configuration::load();
-					$max_num_files = (int)$config->get('media_uploader_max_files_per_session');
-					if (($max_num_files > 0) && ((int)$session->get('num_files') > $max_num_files)) {
-						// exceeded max files per session limit
-						$session->set('error_code', 3610);
-					}
+				self::updateStorageStats($user_id, $session, $fileMeta);
+			
+				$config = Configuration::load();
+				$max_num_files = (int)$config->get('media_uploader_max_files_per_session');
+				if (($max_num_files > 0) && ((int)$session->get('num_files') > $max_num_files)) {
+					// exceeded max files per session limit
+					$session->set('error_code', 3610);
 				}
 			}
 
@@ -383,8 +376,8 @@ class MediaUploadManager {
 				$rel_path_proc = [];
 				foreach(preg_split('!/!', $rel_path) as $rel_path_dir) {
 					if(strlen($rel_path_dir = preg_replace('![^A-Za-z0-9\-_]+!', '_', $rel_path_dir))) {
-						if(file_exists($rel_path_dir)) { continue; }
 						$rel_path_proc[] = $rel_path_dir;
+						if(file_exists("{$path}/".join("/", $rel_path_proc))) { continue; }
 						@mkdir("{$path}/".join("/", $rel_path_proc));
 						$new_dir_count++;
 					}
@@ -402,6 +395,25 @@ class MediaUploadManager {
 			}
 		});
 		return $server;
+    }
+    # ------------------------------------------------------
+    /**
+     *
+     */
+    static private function updateStorageStats($user_id, $session, $fileMeta) {
+    	$stats = PersistentCache::contains("userStorageStats_{$user_id}", 'mediaUploader') 
+    		? 
+				PersistentCache::fetch("userStorageStats_{$user_id}", 'mediaUploader', ['lock' => true]) 
+				: 
+				[];
+		
+		if((int)$fileMeta['offset'] === (int)$fileMeta['size']) {
+			$stats['fileCount']++;
+			$stats['storageUsage'] += $fileMeta['size'];
+			$stats['storageUsageDisplay'] = caHumanFilesize($stats['storageUsage']);
+		}
+	
+		PersistentCache::save("userStorageStats_{$user_id}", $stats, 'mediaUploader');
     }
     # ------------------------------------------------------
     /**

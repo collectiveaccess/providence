@@ -53,7 +53,7 @@
  		 * @param array $pa_options Array of options passed through to _initView
  		 *
  		 */
- 		public function Index($pa_values=null, $pa_options=null) {
+ 		public function index($pa_values=null, $pa_options=null) {
  			AssetLoadManager::register("directoryBrowser");
 
  			$this->render('mediauploader/index_html.php');
@@ -65,7 +65,7 @@
  		 * @param array $pa_options Array of options passed through to _initView
  		 *
  		 */
- 		public function Admin($pa_options=null) {
+ 		public function admin($pa_options=null) {
         	// Check that user has privs to use uploader admin console
  		    $this->request->getUser()->canDoAction('is_media_uploader_administrator', ['throwException' => true]);
  		    
@@ -86,6 +86,7 @@
             try {
             	$response = $server->serve();
            		$response->send();
+           		exit;
            	} catch(Exception $e) {
            		// Delete all files
            		$request = $server->getRequest();

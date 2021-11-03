@@ -44,12 +44,9 @@ class MediaUploaderHandler implements TusMiddleware {
         $session_key = $request->header('x-session-key');
         $session = null;
 		try {
-			$session = MediaUploadManager::findSession($session_key);
+		 	$session = MediaUploadManager::findSession($session_key);
 			if((int)$session->get('cancelled') == 1) {
 				throw new MediaUploadManageSessionException(_t('Upload has been cancelled'));
-			}
-			if(strlen($session->get('completed_on')) > 0) {
-				throw new MediaUploadManageSessionException(_t('Upload is complete'));
 			}
 			if($error_num = $session->hasError()) {
 				throw new MediaUploadManageSessionException(_t('Error: %1', caGetErrorMessage($error_num)));

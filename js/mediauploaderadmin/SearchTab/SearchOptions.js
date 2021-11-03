@@ -66,77 +66,79 @@ class SearchOptions extends Component {
       <div>
         <div className="card" style={{ marginTop: "10px", padding: "10px" }}>
           <div className="container">
+         <form className="header" onSubmit={this.handleSubmit}>
             <div className="row">
-              <form className="header" onSubmit={this.handleSubmit}>
-                <div className="form-row" style={{ padding: "5px" }}>
-                  <div className="form-group" style={{ marginRight: "10px" }}>
-                    <label htmlFor="username" style={{ marginRight: "5px" }}>
-                      User
-                    </label>
-                    <select
-                      value={this.state.selectedUser}
-                      onChange={this.handleChange}
-                      name="selectedUser"
-                    >
-                    <option value=''>-</option>
-                      {this.props.users.map((u) => {
-                        return (
-                          <option value={u.user_name} key={u.user_name}>
-                            {u.fname} {u.lname}
-                          </option>
-                        );
-                      })}
-                    </select>
-                  </div>
-
-                  <div className="form-group" style={{ marginRight: "10px" }}>
-                    <label
-                      htmlFor="upload-status"
-                      style={{ marginRight: "5px" }}
-                    >
-                    Status
-                    </label>
-                    <select
-                      value={this.state.selectedStatus}
-                      onChange={this.handleChange}
-                      name="selectedStatus"
-                    >
-                      <option value=''>-</option>
-                      <option value='COMPLETED'>COMPLETED</option>
-                      <option value='IN_PROGRESS'>IN PROGRESS</option>
-                      <option value='CANCELLED'>CANCELLED</option>
-                      <option value='ERROR'>ERROR</option>
-                    </select>
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="upload-date" style={{ marginRight: "5px" }}>
-                    Date
-                    </label>
-                    <input
-                      type="text"
-                      value={this.state.selectedDate}
-                      onChange={this.handleChange}
-                      name="selectedDate"
-                      placeholder="eg. August or 2020"
-                    ></input>
-                  </div>
-
-                  <div className="form-group" style={{ marginLeft: "10px" }}>
-                    <button
-                      type="submit"
-                      className="btn btn-outline-primary"
-                      onClick={() =>
-                        this.props.handleSearchParams(this.state.selectedDate, this.state.selectedStatus, this.state.selectedUser)
-                      }
-                    >
-                      Submit
-                    </button>
-                  </div>
-
+                <div className="col">
+                      <div className="input-group">
+                        <label htmlFor="username">
+                          User
+                        </label>
+                        <select
+                          value={this.state.selectedUser}
+                          onChange={this.handleChange}
+                          name="selectedUser"
+                        >
+                        <option value=''>-</option>
+                          {this.props.users.map((u) => {
+                            return (
+                              <option value={u.user_name} key={u.user_name}>
+                                {u.fname} {u.lname}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </div>
                 </div>
-              </form>
-            </div>
+                <div className="col">
+                      <div className="input-group">
+                        <label
+                          htmlFor="upload-status"
+                          style={{ marginRight: "5px" }}
+                        >
+                        Status
+                        </label>
+                        <select
+                          value={this.state.selectedStatus}
+                          onChange={this.handleChange}
+                          name="selectedStatus"
+                        >
+                          <option value=''>-</option>
+                          <option value='COMPLETED'>COMPLETED</option>
+                          <option value='IN_PROGRESS'>IN PROGRESS</option>
+                          <option value='CANCELLED'>CANCELLED</option>
+                          <option value='ERROR'>ERROR</option>
+                        </select>
+                      </div>
+                </div>
+                <div className="col">
+                      <div className="input-group">
+                        <label htmlFor="upload-date">
+                        Date
+                        </label>
+                        <input
+                          type="text"
+                          value={this.state.selectedDate}
+                          onChange={this.handleChange}
+                          name="selectedDate"
+                          placeholder="eg. August or 2020"
+                        ></input>
+                      </div>
+                </div>
+                 <div className="col mt-auto">
+                      <div className="input-group">
+                        <button
+                          type="submit"
+                          className="btn btn-primary"
+                          onClick={() =>
+                            this.props.handleSearchParams(this.state.selectedDate, this.state.selectedStatus, this.state.selectedUser)
+                          }
+                        >
+                          Submit
+                        </button>
+                      </div>
+                    </div>
+                </div>
+            </form>
           </div>
         </div>
 

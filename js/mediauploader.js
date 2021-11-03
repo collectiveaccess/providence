@@ -30,7 +30,7 @@ class MediaUploader extends React.Component {
         super(props);
 
         this.statusMessages = {
-            idle: 'Select files to upload',
+            idle: '',
             ready: 'Ready to upload',
             start: 'Starting upload',
             upload: 'Uploading files',
