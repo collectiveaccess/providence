@@ -10681,7 +10681,7 @@ $pa_options["display_form_field_tips"] = true;
 	public function addComment($ps_comment, $pn_rating=null, $pn_user_id=null, $pn_locale_id=null, $ps_name=null, $ps_email=null, $pn_access=0, $pn_moderator=null, $pa_options=null, $ps_media1=null, $ps_media2=null, $ps_media3=null, $ps_media4=null, $ps_location=null) {
 		global $g_ui_locale_id;
 		if (!($vn_row_id = $this->getPrimaryKey())) { return null; }
-		if (!$pn_locale_id) { $pn_locale_id = $g_ui_locale_id; }
+		if (!$pn_locale_id) { $pn_locale_id = ca_locales::getDefaultCataloguingLocaleID(); }
 		
 		if(!isset($pa_options['purify'])) { $pa_options['purify'] = true; }
 		
