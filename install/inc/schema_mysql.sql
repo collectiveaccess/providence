@@ -380,6 +380,7 @@ create table ca_metadata_elements
    datatype                       tinyint unsigned               not null,
    settings                       longtext                       not null,
    `rank`                           smallint unsigned              not null default 0,
+   deleted              tinyint unsigned     not null default 0,
    hier_left                      decimal(30,20)                 not null,
    hier_right                     decimal(30,20)                 not null,
    hier_element_id                smallint unsigned              null,
@@ -399,6 +400,7 @@ create index i_parent_id on ca_metadata_elements(parent_id);
 create index i_hier_left on ca_metadata_elements(hier_left);
 create index i_hier_right on ca_metadata_elements(hier_right);
 create index i_list_id on ca_metadata_elements(list_id);
+create index i_deleted on ca_metadata_elements(deleted);
 
 
 /*==========================================================================*/
@@ -2185,7 +2187,7 @@ create index i_table_num on ca_attributes(table_num);
 create index i_element_id on ca_attributes(element_id);
 create index i_row_table_num on ca_attributes(row_id, table_num);
 create index i_prefetch ON ca_attributes(row_id, element_id, table_num);
-create index i_value_source on ca_attributes(value_source);
+create index i_value_source on ca_attributes(value_source(255));
 
 
 /*==========================================================================*/
@@ -7623,33 +7625,6 @@ create table if not exists ca_media_upload_session_files (
 
 
 /*==========================================================================*/
-create table if not exists ca_media_upload_sessions (
-   session_id                int unsigned                   not null AUTO_INCREMENT,
-   user_id                   int unsigned                   not null references ca_users(user_id),
-   session_key               char(36)                       not null,
-   created_on                int unsigned                   not null,
-   completed_on              int unsigned                   null,
-   last_activity_on          int unsigned                   null,
-   cancelled                 tinyint unsigned               not null default 0,
-   error_code                smallint unsigned              not null default 0,
-   
-   num_files		         int unsigned                   not null,
-   total_bytes		         bigint unsigned                not null default 0,
-   progress		             longtext                       null,
-   
-   primary key (session_id),
-
-   index i_session_id               (session_id),
-   index i_created_on			    (created_on),
-   index i_completed_on			    (completed_on),
-   index i_last_activity_on			(last_activity_on),
-   index i_cancelled      	        (cancelled),
-   index i_error_code      	        (error_code),
-   unique index i_session_key      	(session_key)
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-
-/*==========================================================================*/
 /* Schema update tracking                                                   */
 /*==========================================================================*/
 create table ca_schema_updates (
@@ -7660,4 +7635,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (173, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (174, unix_timestamp());
