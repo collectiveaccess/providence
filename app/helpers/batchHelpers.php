@@ -486,7 +486,7 @@ function caIsValidMediaImportDirectory(string $directory, array $options=null) {
 
 	if($user_id = caGetOption('user_id', $options, null)) {
 		if ($user_path = caGetMediaUploadPathForUser($user_id)) {
-			if (is_dir($dir="{$user_path}{$directory}")) {
+			if (is_dir($dir="{$user_path}/{$directory}")) {
 				return $dir;
 			}
 		}

@@ -535,39 +535,25 @@ class BatchProcessor {
 			//'transaction' => $o_trans
 		));
 
-		if (!is_dir($pa_options['importFromDirectory'])) {
-			$o_eventlog->log(array(
-				"CODE" => 'ERR',
-				"SOURCE" => "mediaImport",
-				"MESSAGE" => $vs_msg = _t("Specified import directory '%1' is not a directory", $pa_options['importFromDirectory'])
-			));
-			BatchProcessor::$s_import_error_list[] = $vs_msg;
-			$o_log->logError($vs_msg);
-			return null;
-		}
-
-		$vs_batch_media_import_root_directory = $o_config->get('batch_media_import_root_directory');
-		if (!preg_match("!^{$vs_batch_media_import_root_directory}!", $pa_options['importFromDirectory'])) {
-			$o_eventlog->log(array(
-				"CODE" => 'ERR',
-				"SOURCE" => "mediaImport",
-				"MESSAGE" => $vs_msg = _t("Specified import directory '%1' is not within the configured root %2", $pa_options['importFromDirectory'], $vs_batch_media_import_root_directory)
-			));
-			$o_log->logError($vs_msg);
+		$batch_media_import_root_directory = null;
+		$batch_media_import_root_directories = array_filter(caGetAvailableMediaUploadPaths($vn_user_id), function($v) use ($pa_options) {
+			$p = $v."/".$pa_options['importFromDirectory'];
+			return is_dir($p);
+		});
+		if(sizeof($batch_media_import_root_directories) === 0) {
+			$o_eventlog->log([
+				"CODE"    => 'ERR',
+				"SOURCE"  => "mediaImport",
+				"MESSAGE" => $vs_msg
+					= _t( "Specified import directory '%1' is not valid",
+					$pa_options['importFromDirectory'])
+			]);
+			$o_log->logError( $vs_msg );
 			BatchProcessor::$s_import_error_list[] = $vs_msg;
 			return null;
 		}
-
-		if (preg_match("!\.\./!", $pa_options['importFromDirectory'])) {
-			$o_eventlog->log(array(
-				"CODE" => 'ERR',
-				"SOURCE" => "mediaImport",
-				"MESSAGE" => $vs_msg = _t("Specified import directory '%1' is invalid", $pa_options['importFromDirectory'])
-			));
-			$o_log->logError($vs_msg);
-			BatchProcessor::$s_import_error_list[] = $vs_msg;
-			return null;
-		}
+		$batch_media_import_root_directory = array_shift($batch_media_import_root_directories);
+		$batch_media_import_directory = $batch_media_import_root_directory.'/'.$pa_options['importFromDirectory'];
 
 		$vb_include_subdirectories 			= (bool)$pa_options['includeSubDirectories'];
 		$vb_delete_media_on_import			= (bool)$pa_options['deleteMediaOnImport'];
@@ -621,7 +607,7 @@ class BatchProcessor {
 
 		if (!$vn_locale_id) { $vn_locale_id = $g_ui_locale_id; }
 
-		$va_files_to_process = caGetDirectoryContentsAsList($pa_options['importFromDirectory'], $vb_include_subdirectories, false, true);
+		$va_files_to_process = caGetDirectoryContentsAsList($batch_media_import_directory, $vb_include_subdirectories, false, true);
 		$o_log->logInfo(_t('Found %1 files in directory \'%2\'', sizeof($va_files_to_process), $pa_options['importFromDirectory']));
 
 		if ($vs_set_mode == 'add') {
