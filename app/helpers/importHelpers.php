@@ -1209,7 +1209,7 @@
 							            	$files_added++;
 										}
 										if($files_added > 0) {	// if we found matching files we're done
-											continue(2);
+											break(2);
 										}
 									}
 							        $vn_c++;
