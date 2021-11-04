@@ -3397,7 +3397,7 @@ class ca_users extends BaseModel {
 			$roles[$role_id] = $role_info;
 		}
 		
-		$va_actions = ca_user_roles::getActionsForRoleIDs(array_keys($va_roles));
+		$va_actions = ca_user_roles::getActionsForRoleIDs(array_keys($roles));
 		if(in_array('is_administrator', $va_actions)) { return ca_users::$s_user_action_access_cache[$vs_cache_key] = true; }		// access restrictions don't apply to users with is_administrator role
 
 		if(in_array($ps_action, $va_actions)) {
