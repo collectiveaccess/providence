@@ -1696,7 +1696,7 @@ class BaseModel extends BaseObject {
 								|| 
 								($vb_allow_fetching_of_urls && isURL($vm_value))
 								||
-								(preg_match("!^userMedia[\d]+/!", $vm_value))
+								(preg_match("!^".caGetUserDirectoryName()."/!", $vm_value))
 							)
 						) {
 							$this->_SET_FILES[$vs_field]['original_filename'] = $pa_options["original_filename"];
@@ -4380,10 +4380,11 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				}
 			
 				// is it server-side stored user media?
-				if (preg_match("!^userMedia[\d]+/!", $this->_SET_FILES[$ps_field]['tmp_name'])) {
+				if (preg_match("!^".caGetUserDirectoryName()."/!", $this->_SET_FILES[$ps_field]['tmp_name'])) {
 					// use configured directory to dump media with fallback to standard tmp directory
-					if (!is_writeable($vs_tmp_directory = $this->getAppConfig()->get('ajax_media_upload_tmp_directory'))) {
-						$vs_tmp_directory = caGetTempDirPath();
+					if (!is_readable($vs_tmp_directory = $this->getAppConfig()->get('media_uploader_root_directory'))) {
+						$this->postError(1600, _t('User media upload directory is not readable'), "BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
+						return false;
 					}
 					$this->_SET_FILES[$ps_field]['tmp_name'] = "{$vs_tmp_directory}/".$this->_SET_FILES[$ps_field]['tmp_name'];
 				
@@ -10680,7 +10681,7 @@ $pa_options["display_form_field_tips"] = true;
 	public function addComment($ps_comment, $pn_rating=null, $pn_user_id=null, $pn_locale_id=null, $ps_name=null, $ps_email=null, $pn_access=0, $pn_moderator=null, $pa_options=null, $ps_media1=null, $ps_media2=null, $ps_media3=null, $ps_media4=null, $ps_location=null) {
 		global $g_ui_locale_id;
 		if (!($vn_row_id = $this->getPrimaryKey())) { return null; }
-		if (!$pn_locale_id) { $pn_locale_id = $g_ui_locale_id; }
+		if (!$pn_locale_id) { $pn_locale_id = ca_locales::getDefaultCataloguingLocaleID(); }
 		
 		if(!isset($pa_options['purify'])) { $pa_options['purify'] = true; }
 		
@@ -12091,7 +12092,7 @@ $pa_options["display_form_field_tips"] = true;
 				while($qr_res->nextRow()) {
 					$t_instance = new $vs_table;
 					if ($o_trans) { $t_instance->setTransaction($o_trans); }
-					if ($t_instance->load((int)$qr_res->get($vs_pk))) {
+					if ($t_instance->load((int)$qr_res->get($vs_pk), !caGetOption('noCache', $pa_options, false))) {
 						return $t_instance;
 					}
 				}
@@ -12144,6 +12145,30 @@ $pa_options["display_form_field_tips"] = true;
 				break;
 		}
 		return null;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Find row(s) with fields having values matching specific values. Returns a model instance for the first record found.
+	 * This is a convenience wrapper around LabelableBaseModelWithAttributes::find() and support all 
+	 * options offered by that method.
+	 *
+	 * @see LabelableBaseModelWithAttributes::find()
+	 */
+	public static function findAsInstance($pa_values, $pa_options=null) {
+		if (!is_array($pa_options)) { $pa_options = []; }
+		return self::find($pa_values, array_merge($pa_options, ['returnAs' => 'firstModelInstance']));
+	}	
+	# ------------------------------------------------------------------
+	/**
+	 * Find row(s) with fields having values matching specific values. Returns a the primary key (id) of the first record found.
+	 * This is a convenience wrapper around LabelableBaseModelWithAttributes::find() and support all 
+	 * options offered by that method.
+	 *
+	 * @see LabelableBaseModelWithAttributes::find()
+	 */
+	public static function findAsID($pa_values, $pa_options=null) {
+		if (!is_array($pa_options)) { $pa_options = []; }
+		return self::find($pa_values, array_merge($pa_options, ['returnAs' => 'firstid']));
 	}
 	# ------------------------------------------------------
 	/**

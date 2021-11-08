@@ -144,6 +144,27 @@ function caExtractRequestParams() {
 
 	return $pa_params;
 }
+
+# --------------------------------------------------------------------------------------------
+/**
+ * Return application error message for numeric code
+ *
+ * @param int $error_code
+ * @param string $locale
+ *
+ * @return string
+ */
+function caGetErrorMessage(int $error_code, string $locale=null) {
+	if (!$locale || !preg_match("!^[a-z]{2,3}_[A-Z]{2,3}$!", $locale)) { $locale = 'en_US'; } 
+	
+	$path = __CA_LIB_DIR__."/Error/errors.{$locale}";
+	if(!file_exists($path)) {
+		$path = __CA_LIB_DIR__."/Error/errors.en_US";
+	}
+	if (!($errors = Configuration::load($path))) { return null; }
+	
+	return $errors->get($error_code);
+}
 # --------------------------------------------------------------------------------------------
  /**
   * Return URL path to themes directory, guessing based upon PHP script name is constants aren't set

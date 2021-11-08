@@ -1038,7 +1038,7 @@
 					while($qr_res->nextRow()) {
 						$o_instance = new $vs_table;
 						if($dont_filter_by_acl && method_exists($t_instance, "disableACL")) { $o_instance->disableACL(true); }
-						if ($o_instance->load($qr_res->get($vs_pk))) {
+						if ($o_instance->load($qr_res->get($vs_pk), !caGetOption('noCache', $pa_options, false))) {
 							return $o_instance;
 						}
 					}
@@ -1103,30 +1103,6 @@
 		public static function findAsSearchResult($pa_values, $pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = []; }
 			return self::find($pa_values, array_merge($pa_options, ['returnAs' => 'searchResult']));
-		}
-		# ------------------------------------------------------------------
- 		/**
- 		 * Find row(s) with fields having values matching specific values. Returns a model instance for the first record found.
- 		 * This is a convenience wrapper around LabelableBaseModelWithAttributes::find() and support all 
- 		 * options offered by that method.
- 		 *
- 		 * @see LabelableBaseModelWithAttributes::find()
- 		 */
-		public static function findAsInstance($pa_values, $pa_options=null) {
-			if (!is_array($pa_options)) { $pa_options = []; }
-			return self::find($pa_values, array_merge($pa_options, ['returnAs' => 'firstModelInstance']));
-		}
-		# ------------------------------------------------------------------
- 		/**
- 		 * Find row(s) with fields having values matching specific values. Returns a the primary key (id) of the first record found.
- 		 * This is a convenience wrapper around LabelableBaseModelWithAttributes::find() and support all 
- 		 * options offered by that method.
- 		 *
- 		 * @see LabelableBaseModelWithAttributes::find()
- 		 */
-		public static function findAsID($pa_values, $pa_options=null) {
-			if (!is_array($pa_options)) { $pa_options = []; }
-			return self::find($pa_values, array_merge($pa_options, ['returnAs' => 'firstid']));
 		}
  		# ------------------------------------------------------------------
  		/**

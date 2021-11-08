@@ -349,8 +349,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	$text = join(' ', $this->_tokenize($term->text, true));
 	 	
 	 	$blank_val = caGetBlankLabelText($subject_tablenum);
-	 	$is_blank = ((mb_strtolower("[{$blank_val}]") === mb_strtolower($text)) || (mb_strtolower("[BLANK]") === mb_strtolower($text)));
-	 	$is_not_blank = (mb_strtolower("["._t('SET')."]") === mb_strtolower($text));
+	 	$is_blank = ((mb_strtolower("[{$blank_val}]") === mb_strtolower($term->text)) || (mb_strtolower("[BLANK]") === mb_strtolower($term->text)));
+	 	$is_not_blank = (mb_strtolower("["._t('SET')."]") === mb_strtolower($term->text));
 	 	
 	 	$word_field = 'sw.word';
 	 	
@@ -1903,7 +1903,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		switch($modifier) {
 			case '#gt#':
 				$sql_where = "({$sfield} > ?)"; 
-				$params = [$dates['start']];
+				$params = [$dates['end']];
 				break;
 			case '#gt=':
 				$sql_where = "({$sfield} >= ?)"; 
@@ -1911,7 +1911,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				break;
 			case '#lt#':
 				$sql_where = "({$efield} < ?)"; 
-				$params = [$dates['end']];
+				$params = [$dates['start']];
 				break;
 			case '#lt=':
 				$sql_where = "({$efield} <= ?)"; 

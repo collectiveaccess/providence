@@ -4475,7 +4475,7 @@ if (!$vb_batch) {
                                     	// Is remote URL
                                         $va_tmp = explode('/', $vs_path);
                                         $vs_original_name = array_pop($va_tmp);
-                                    } elseif(preg_match("!^userMedia".$po_request->getUserID()."!", $va_values['tmp_name'])) {
+                                    } elseif(preg_match("!^".($u = caGetUserDirectoryName($po_request->getUserID()))."!", $va_values['tmp_name'])) {
                                     	// Is user-uploaded media
                                     	if (!is_writeable($vs_tmp_directory = $ajax_import_directory_path)) {
 											$vs_tmp_directory = caGetTempDirPath();

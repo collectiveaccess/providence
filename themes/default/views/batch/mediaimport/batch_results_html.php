@@ -92,11 +92,13 @@
 						$vs_buf .= "<li><em>".caEditorLink($po_request, $va_notice['label'], '', $pa_general['table'], $vn_id)."</em> (".$va_notice['idno']."): "._t($va_notice['status'])."</li>";
 						break;
 					case 'SKIPPED':
-					case 'EXISTS':
 					case 'NO_MATCH':
 					case 'MATCHED':
 					case 'RELATED':
 						$vs_buf .= "<li><em>".$va_notice['label']."</em>: ".$va_notice['message']."</li>";
+						break;
+					case 'EXISTS':
+						$vs_buf .= "<li><em>".$va_notice['label']."</em>: ".$va_notice['message']." <a href='".$va_notice['reference']."' class='button'>".caNavIcon(__CA_NAV_ICON_GO__, '14px', ['title' => _t('View media'), 'alt' => _t('View media')]).'</a></li>';
 						break;
 					default:
 						$vs_buf .= "<li><em>".$va_notice['label']."</em> (".$va_notice['idno']."): "._t($va_notice['status'])."</li>";
@@ -112,6 +114,9 @@
 				_t('Batch edit set <em>%1</em> containing imported media', caNavLink($po_request, $pa_general['setName'], '', 'batch', 'Editor', 'Edit', array('id' => 'ca_sets:'.$pa_general['set_id'])));
 		}
 		
+		if ($pa_general['processingLog']) {
+			$vs_buf .= caNavLink($po_request, _t("Download import log"), '', '*', '*', 'DownloadLog', ['file' => pathinfo($pa_general['processingLog'], PATHINFO_FILENAME)])."<br/>";
+		}
 		if ($pa_general['skiplog']) {
 			$vs_buf .= caNavLink($po_request, _t("Download skipped files log"), '', '*', '*', 'DownloadLog', ['file' => pathinfo($pa_general['skiplog'], PATHINFO_FILENAME)])."<br/>";
 		}

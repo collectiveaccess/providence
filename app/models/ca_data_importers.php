@@ -818,6 +818,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		if (method_exists($this->SETTINGS, $ps_name)) {
 			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
 		}
+		print caPrintStackTrace();
 		die($this->tableName()." does not implement method {$ps_name}");
 	}
 	# ------------------------------------------------------
@@ -1219,17 +1220,29 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Alias for ca_data_importers::logImportError
+	 */
+	public function logDebug($ps_message, $pa_options=null) {
+		if(!is_array($pa_options)) { $pa_options = []; }
+		return $this->logImportError($ps_message, array_merge($pa_options, ['debug' => true]));
+	}
+	# ------------------------------------------------------
+	/**
 	 *
 	 */
 	public function logImportError($ps_message, $pa_options=null) {
 		$this->num_import_errors++;
+		$o_log = (isset($pa_options['log']) && $pa_options['log']) ? $pa_options['log'] : $this->log;
+		
+		if ($debug = caGetOption('debug', $pa_options, false)) {
+			if ($o_log) {  $o_log->logDebug($ps_message); return;  }
+		}
 		
 		if ($vb_skipped = ((isset($pa_options['skip']) && ((bool)$pa_options['skip'])))) {
 			$this->num_records_skipped++;
 		}
 		if (!is_array($pa_options)) { $pa_options = []; }
 		
-		$o_log = (isset($pa_options['log']) && $pa_options['log']) ? $pa_options['log'] : $this->log;
 		
 		$vb_dont_output = (bool)(!isset($pa_options['dontOutput']) || !$pa_options['dontOutput']);
 		
@@ -1255,7 +1268,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		//
 		// Log message
 		//
-		if ($o_log) { $o_log->logError($ps_message); }
+		if ($o_log) {  $o_log->logError($ps_message); }
 		
 		// 
 		// Detailed (bundle-level) logging

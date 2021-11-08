@@ -121,9 +121,6 @@
 		 * Remove media present in media directories but not referenced in database (aka. orphan media)
 		 */
 		public static function remove_unused_media($po_opts=null) {
-			require_once(__CA_LIB_DIR__."/Db.php");
-			require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
-
 			$vb_delete_opt = (bool)$po_opts->getOption('delete');
 			$o_db = new Db();
 
@@ -228,9 +225,6 @@
 		 * Permanently remove object representations marked for deletion, deleting referenced files on disk and reclaiming disk space
 		 */
 		public static function remove_deleted_representations($po_opts=null) {
-			require_once(__CA_LIB_DIR__."/Db.php");
-			require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
-
 			$vb_delete_opt = (bool)$po_opts->getOption('delete');
 			$o_db = new Db();
 
@@ -404,8 +398,6 @@
 		 * Update database schema
 		 */
 		public static function update_database_schema($po_opts=null) {
-			require_once(__CA_LIB_DIR__."/ConfigurationCheck.php");
-
 			$o_config_check = new ConfigurationCheck();
 			if (($vn_current_revision = ConfigurationCheck::getSchemaVersion()) < __CollectiveAccess_Schema_Rev__) {
 				CLIUtils::addMessage(_t("Are you sure you want to update your CollectiveAccess database from revision %1 to %2?\nNOTE: you should backup your database before applying updates!\n\nType 'y' to proceed or 'N' to cancel, then hit return ", $vn_current_revision, __CollectiveAccess_Schema_Rev__));
@@ -466,8 +458,6 @@
 		 * @return bool
 		 */
 		public static function clear_search_indexing_queue_lock_file($po_opts=null) {
-            require_once(__CA_MODELS_DIR__."/ca_search_indexing_queue.php");
-			
 			if (ca_search_indexing_queue::lockExists()) {
 			    if (ca_search_indexing_queue::lockCanBeRemoved()) {
 			        ca_search_indexing_queue::lockRelease();
@@ -510,6 +500,8 @@
 		 * Fix file permissions
 		 */
 		public static function fix_permissions($po_opts=null) {
+			$config = Configuration::load();
+			
 			// Guess web server user
 			if (!($vs_user = $po_opts->getOption("user"))) {
 				$vs_user = caDetermineWebServerUser();
@@ -537,7 +529,7 @@
 			}
 
 			if (!$po_opts->getOption("quiet")) { CLIUtils::addMessage(_t("Fixing permissions for the temporary directory (app/tmp) for ownership by \"%1\"...", $vs_user)); }
-			$va_files = caGetDirectoryContentsAsList($vs_path = __CA_APP_DIR__.'/tmp', true, false, false, true);
+			$va_files = caGetDirectoryContentsAsList(__CA_APP_DIR__.'/tmp', true, true, false, true, ['includeRoot' => true]);
 
 			foreach($va_files as $vs_path) {
 				chown($vs_path, $vs_user);
@@ -545,7 +537,8 @@
 				chmod($vs_path, 0770);
 			}
 			if (!$po_opts->getOption("quiet")) { CLIUtils::addMessage(_t("Fixing permissions for the media directory (media) for ownership by \"%1\"...", $vs_user)); }
-			$va_files = caGetDirectoryContentsAsList($vs_path = __CA_BASE_DIR__.'/media', true, false, false, true);
+			$media_root = $config->get("ca_media_root_dir");
+			$va_files = caGetDirectoryContentsAsList($media_root, true, true, false, true, ['includeRoot' => true]);
 
 			foreach($va_files as $vs_path) {
 				chown($vs_path, $vs_user);
@@ -554,8 +547,27 @@
 			}
 
 			if (!$po_opts->getOption("quiet")) { CLIUtils::addMessage(_t("Fixing permissions for the HTMLPurifier definition cache directory (vendor/ezyang/htmlpurifier/library/HTMLPurifier/DefinitionCache/Serializer) for ownership by \"%1\"...", $vs_user)); }
-			$va_files = caGetDirectoryContentsAsList($vs_path = __CA_BASE_DIR__.'/vendor/ezyang/htmlpurifier/library/HTMLPurifier/DefinitionCache/Serializer', true, false, false, true);
+			$va_files = caGetDirectoryContentsAsList(__CA_BASE_DIR__.'/vendor/ezyang/htmlpurifier/library/HTMLPurifier/DefinitionCache/Serializer', true, false, false, true);
 
+			foreach($va_files as $vs_path) {
+				chown($vs_path, $vs_user);
+				chgrp($vs_path, $vs_group);
+				chmod($vs_path, 0770);
+			}
+			
+			if (!$po_opts->getOption("quiet")) { CLIUtils::addMessage(_t("Fixing permissions for the log directory (app/log) for ownership by \"%1\"...", $vs_user)); }
+			$va_files = caGetDirectoryContentsAsList(__CA_APP_DIR__.'/log', true, true, false, true, ['includeRoot' => true]);
+
+			foreach($va_files as $vs_path) {
+				chown($vs_path, $vs_user);
+				chgrp($vs_path, $vs_group);
+				chmod($vs_path, 0770);
+			}
+			
+			if (!$po_opts->getOption("quiet")) { CLIUtils::addMessage(_t("Fixing permissions for the user media upload directory (app/log) for ownership by \"%1\"...", $vs_user)); }
+			$upload_root = $config->get("media_uploader_root_directory");
+			$va_files = caGetDirectoryContentsAsList($upload_root, true, true, false, true, ['includeRoot' => true]);
+			
 			foreach($va_files as $vs_path) {
 				chown($vs_path, $vs_user);
 				chgrp($vs_path, $vs_group);
@@ -713,9 +725,6 @@
 		 *
 		 */
 		public static function validate_using_metadata_dictionary_rules($po_opts=null) {
-			require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_rules.php');
-			require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_rule_violations.php');
-
 			$rules = ca_metadata_dictionary_rules::getRules();
 			$tables = array_unique(array_map(function($v) { return $v['table_num']; }, $rules));
 			print CLIProgressBar::start(sizeof($tables), _t('Evaluating'));
@@ -783,10 +792,6 @@
 		 *
 		 */
 		public static function check_media_fixity($po_opts=null) {
-			require_once(__CA_LIB_DIR__."/Db.php");
-			require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
-
-
 			$quiet = $po_opts->getOption('quiet');
 			
 			$ps_email = caGetOption('email', $po_opts, null, ['castTo' => 'string']);
@@ -1203,7 +1208,6 @@
 		 *
 		 */
 		public static function clear_caches($po_opts=null) {
-			require_once(__CA_LIB_DIR__."/Configuration.php");
 			$o_config = Configuration::load();
 
 			$ps_cache = strtolower((string)$po_opts->getOption('cache'));
@@ -1219,7 +1223,7 @@
 				PersistentCache::flush();
 			}
 			if (in_array($ps_cache, array('all', 'usermedia'))) {
-				if (($vs_tmp_directory = $o_config->get('ajax_media_upload_tmp_directory')) && (file_exists($vs_tmp_directory))) {
+				if (($vs_tmp_directory = $o_config->get('media_uploader_root_directory')) && (file_exists($vs_tmp_directory))) {
 					if (is_writable($vs_tmp_directory)) {
 						CLIUtils::addMessage(_t('Clearing user media cache in %1...', $vs_tmp_directory));
 						caRemoveDirectory($vs_tmp_directory, false);
@@ -1316,12 +1320,7 @@
 		 *
 		 */
 		public static function do_configuration_check($po_opts=null) {
-			
 			include_once(__CA_LIB_DIR__."/Search/SearchEngine.php");
-			include_once(__CA_LIB_DIR__."/Media.php");
-			include_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
-			include_once(__CA_LIB_DIR__."/ConfigurationCheck.php");
-			require_once(__CA_LIB_DIR__."/Configuration.php");
 			
 			// Media
 			$t_media = new Media();
@@ -1473,8 +1472,6 @@
 		 * @return bool
 		 */
 		public static function reload_ulan_records($po_opts=null) {
-			require_once(__CA_MODELS_DIR__.'/ca_data_importers.php');
-
 			if(!($vs_mapping = $po_opts->getOption('mapping'))) {
 				CLIUtils::addError("\t\tNo mapping found. Please use the -m parameter to specify a ULAN mapping.");
 				return false;
@@ -1551,7 +1548,6 @@
 		 *
 		 */
 		public static function precache_search_index($po_opts=null) {
-			require_once(__CA_LIB_DIR__."/Db.php");
 			$o_db = new Db();
 			
 			CLIUtils::addMessage(_t("Preloading primary search index..."), array('color' => 'bold_blue'));
@@ -1601,8 +1597,6 @@
 		 *
 		 */
 		public static function precache_content($po_opts=null) {
-			require_once(__CA_LIB_DIR__."/Db.php");
-			
 			$o_config = Configuration::load();
 			if(!(bool)$o_config->get('do_content_caching')) { 
 				CLIUtils::addError(_t("Content caching is not enabled"));
@@ -1962,7 +1956,6 @@
 		 * @return bool
 		 */
 		public static function check_metadata_alerts($po_opts=null) {
-			require_once(__CA_MODELS_DIR__ . '/ca_metadata_alert_triggers.php');
 			ca_metadata_alert_triggers::firePeriodicTriggers();
 		}
 		# -------------------------------------------------------
@@ -2078,9 +2071,6 @@
 		 * @return bool
 		 */
 		public static function check_relationship_type_roots($po_opts=null) {
-            require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
-            require_once(__CA_MODELS_DIR__."/ca_locales.php");
-            
 			$vn_locale_id = ca_locales::getDefaultCataloguingLocaleID();	
 			
 			$va_tables = Datamodel::getTableNames();
@@ -2266,11 +2256,6 @@
 		}
         # -------------------------------------------------------
 		public static function reload_object_current_location_dates($po_opts=null) {
-			require_once(__CA_MODELS_DIR__."/ca_movements.php");
-			require_once(__CA_MODELS_DIR__."/ca_movements_x_objects.php");
-			require_once(__CA_MODELS_DIR__."/ca_movements_x_storage_locations.php");
-			require_once(__CA_MODELS_DIR__."/ca_objects_x_storage_locations.php");
-			
 			$o_config = Configuration::load();
 			$o_db = new Db();
 			
