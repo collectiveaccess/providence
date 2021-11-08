@@ -380,7 +380,7 @@ create table ca_metadata_elements
    datatype                       tinyint unsigned               not null,
    settings                       longtext                       not null,
    `rank`                           smallint unsigned              not null default 0,
-   deleted              tinyint unsigned     not null,
+   deleted              tinyint unsigned     not null default 0,
    hier_left                      decimal(30,20)                 not null,
    hier_right                     decimal(30,20)                 not null,
    hier_element_id                smallint unsigned              null,
