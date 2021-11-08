@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018 Whirl-i-Gig
+ * Copyright 2018-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -150,7 +150,12 @@ abstract class BaseNomismaLODServicePlugin extends BaseInformationServicePlugin 
 			if(!isset($va_node['literal'])) { continue; }
 
 			$vs_uri_for_pull = isset($va_node['uri']) ? $va_node['uri'] : null;
-			$va_return[$vs_key] = str_replace('; ', ' ', self::getLiteralFromRDFNode($ps_url, $va_node['literal'], $vs_uri_for_pull, $va_node));
+			
+			try {
+				$va_return[$vs_key] = str_replace('; ', ' ', self::getLiteralFromRDFNode($ps_url, $va_node['literal'], $vs_uri_for_pull, $va_node));
+			} catch (Exception $e) {
+				continue;
+			}
 		}
 
 		return $va_return;
