@@ -98,7 +98,7 @@ abstract class BaseTestWithData extends TestCase {
 	}
 	# -------------------------------------------------------
 	/**
-	 * @param string $ps_table Target table
+	 * @param BaseModel $instance Target instance
 	 * @param array $pa_data Test data. Format of a single record is similar to the JSON format used in the
 	 * Web Service API, only that it's a PHP array, obviously. In fact, we use the same code to insert the data.
 	 *
@@ -106,18 +106,15 @@ abstract class BaseTestWithData extends TestCase {
 	 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
 	 * @return int the primary key of the newly created record
 	 */
-	protected function addTestRelationship$ps_table, $pa_data) {
-		if(!is_array($pa_data)) { return false; }
-
-		$o_itemservice = new ItemService($this->opo_request, $ps_table);
-		$va_return = $o_itemservice->addItem($ps_table, $pa_data);
-		if(!$va_return) {
-			$this->assertTrue(false, 'Inserting test data failed. API errors are: ' . join(' ', $o_itemservice->getErrors()));
+	protected function addTestRelationship($instance, $table, $id, $relationship_type, $effective_date=null) {
+		$return = $instance->addRelationship($table, $id, $relationship_type, $effective_date);
+		if(!$return) {
+			$this->assertTrue(false, 'Inserting test data failed. API errors are: ' . join(' ', $instance->getErrors()));
 		}
 
-		$this->opa_record_map[$ps_table][] = $vn_return = array_shift($va_return);
+		$this->opa_record_map[$instance->tableName()][] = $return;
 
-		return $vn_return;
+		return $return;
 	}
 	# -------------------------------------------------------
 	protected function getRecordMap() {

@@ -343,6 +343,26 @@ class ca_users extends BaseModel {
 		$this->opo_auth_config = Configuration::load(__CA_CONF_DIR__.'/authentication.conf');
 		$this->opo_log = new Eventlog();
 	}
+	# ------------------------------------------------------
+	/**
+	 * Clear all internal caches
+	 *
+	 * @return void
+	 */ 
+	public static function clearCaches() {
+		self::$s_user_role_cache = [];
+		self::$s_user_group_cache = [];
+		self::$s_group_role_cache = [];
+		self::$s_user_type_access_cache = [];
+		self::$s_user_source_access_cache = [];
+		self::$s_user_bundle_access_cache = [];
+		self::$s_user_action_access_cache = [];
+		self::$s_user_type_with_access_cache = [];
+		self::$s_user_source_with_access_cache = [];
+		self::$s_user_id_cache = [];
+		self::$s_user_name_cache = [];
+		self::$s_user_info_cache = [];
+	}
 	# ----------------------------------------
 	/**
 	 * Loads user record.
@@ -3397,18 +3417,18 @@ class ca_users extends BaseModel {
 			$roles[$role_id] = $role_info;
 		}
 		
-		$va_actions = ca_user_roles::getActionsForRoleIDs(array_keys($va_roles));
+		$va_actions = ca_user_roles::getActionsForRoleIDs(array_keys($roles));
 		if(in_array('is_administrator', $va_actions)) { return ca_users::$s_user_action_access_cache[$vs_cache_key] = true; }		// access restrictions don't apply to users with is_administrator role
 
-		if(in_array($ps_action, $va_actions)) {
-			return ca_users::$s_user_action_access_cache[$vs_cache_key] = in_array($ps_action, $va_actions);
+		if(in_array($action, $va_actions)) {
+			return ca_users::$s_user_action_access_cache[$vs_cache_key] = in_array($action, $va_actions);
 		}
 		// is default set in user_action.conf?
 		$user_actions = Configuration::load(__CA_CONF_DIR__.'/user_actions.conf');
 		if($user_actions && is_array($actions = $user_actions->getAssoc('user_actions'))) {
 			foreach($actions as $categories) {
-				if(isset($categories['actions'][$ps_action]) && isset($categories['actions'][$ps_action]['default'])) {
-					return ca_users::$s_user_action_access_cache[$vs_cache_key] = (bool)$categories['actions'][$ps_action]['default'];
+				if(isset($categories['actions'][$action]) && isset($categories['actions'][$action]['default'])) {
+					return ca_users::$s_user_action_access_cache[$vs_cache_key] = (bool)$categories['actions'][$action]['default'];
 				}
 			}
 		}
