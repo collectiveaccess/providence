@@ -190,7 +190,7 @@ class historyTrackingCurrentValueTest extends BaseTestWithData {
 		
 		$rel2 = $this->addTestRelationship($object, 'ca_storage_locations', $this->shelf2_id, 'related', '10/1/2029');
 		$history = $object->getHistory(['currentOnly' => true]);
-		print_R($history);
+	
 		$this->assertIsArray($history);
 		$this->assertCount(1, $history);
 		$by_time = array_shift($history);

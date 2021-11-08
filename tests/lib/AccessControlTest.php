@@ -66,14 +66,11 @@ class AccessControlTest extends TestCase {
 			print "ERROR inserting role: ".join(" ",$this->opt_role->getErrors())."\n";
 		}
 
-		$this->opt_role->setMode(ACCESS_READ);
-
 		// set up test user
 
 		$this->ops_username = "unit_test_user";
 		$this->ops_password = "topsecret";
 		$this->opt_user = new ca_users();
-		$this->opt_user->setMode(ACCESS_WRITE);
 		$this->opt_user->set(
 			array(
 				'user_name' => $this->ops_username,
@@ -90,7 +87,6 @@ class AccessControlTest extends TestCase {
 			print "ERROR inserting user: ".join(" ",$this->opt_user->getErrors())."\n";
 		}
 		$this->opt_user->addRoles("unit_test_role");
-		$this->opt_user->setMode(ACCESS_READ);
 
 		global $req, $resp;
 		$resp = new ResponseHTTP();
@@ -140,7 +136,6 @@ class AccessControlTest extends TestCase {
 
 		$this->assertFalse($vb_access);
 
-		$this->opt_role->setMode(ACCESS_WRITE);
 		$this->opt_role->setRoleActions(array("can_view_configuration_check"));
 		$this->opt_role->update();
 		ca_users::$s_user_action_access_cache = array();

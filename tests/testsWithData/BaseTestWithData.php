@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2020 Whirl-i-Gig
+ * Copyright 2015-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -95,6 +95,19 @@ abstract class BaseTestWithData extends TestCase {
 		$this->opa_record_map[$ps_table][] = $vn_return = array_shift($va_return);
 
 		return $vn_return;
+	}
+	# -------------------------------------------------------
+	/**
+	 * @param BaseModel $instance
+	 * @param string $rel_table Target table
+	 * @param int $rel_id ID of target record
+	 * @param string $rel_type Relationship type
+	 * @param string $effective_date Effective date for relationship. [Default is null]
+	 *
+	 * @return BaseRelationShipModel
+	 */
+	protected function addTestRelationship($instance, $rel_table, $rel_id, $rel_type, $effective_date=null) {
+		return $instance->addRelationship($rel_table, $rel_id, $rel_type, $effective_date);
 	}
 	# -------------------------------------------------------
 	protected function getRecordMap() {
