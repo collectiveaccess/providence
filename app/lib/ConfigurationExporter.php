@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2019 Whirl-i-Gig
+ * Copyright 2012-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -388,7 +388,7 @@ final class ConfigurationExporter {
 
 		$vo_elements = $this->opo_dom->createElement("elementSets");
 
-		$qr_elements = $this->opo_db->query("SELECT * FROM ca_metadata_elements WHERE parent_id IS NULL ORDER BY element_id");
+		$qr_elements = $this->opo_db->query("SELECT * FROM ca_metadata_elements WHERE parent_id IS NULL AND deleted = 0 ORDER BY element_id");
 
 		$t_element = new ca_metadata_elements();
 
@@ -553,7 +553,7 @@ final class ConfigurationExporter {
 		$t_element = new ca_metadata_elements();
 		$t_list = new ca_lists();
 
-		$qr_elements = $this->opo_db->query("SELECT * FROM ca_metadata_elements WHERE parent_id = ? ORDER BY element_id",$pn_parent_id);
+		$qr_elements = $this->opo_db->query("SELECT * FROM ca_metadata_elements WHERE parent_id = ? AND deleted = 0 ORDER BY element_id",$pn_parent_id);
 		if(!$qr_elements->numRows()) {
 			return null;
 		}
