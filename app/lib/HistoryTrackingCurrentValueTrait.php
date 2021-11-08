@@ -516,18 +516,20 @@
                         return true;
 				    }
 				    
-				    // Remove old tracking value
-				    self::$s_history_tracking_deleted_current_values[$l['tracked_table_num']][$l['tracked_row_id']][$policy] = 
-					    self::$s_history_tracking_deleted_current_values[$l['current_table_num']][$l['current_row_id']][$policy] = 
-					        ['table_num' => $l['table_num'], 'row_id' => $l['row_id']];
-					        
-					$t_l = new ca_history_tracking_current_values();
-					$t_l->setDb($this->getDb());	
-					$t_l->load($l['tracking_id']);
-				    if (!($rc = $t_l->delete())) {
-                        $this->errors = $t_l->errors;
-                        return false;
-                    }
+				    if(!$is_future) {
+						// Remove old tracking value
+						self::$s_history_tracking_deleted_current_values[$l['tracked_table_num']][$l['tracked_row_id']][$policy] = 
+							self::$s_history_tracking_deleted_current_values[$l['current_table_num']][$l['current_row_id']][$policy] = 
+								['table_num' => $l['table_num'], 'row_id' => $l['row_id']];
+ 
+						$t_l = new ca_history_tracking_current_values();
+						$t_l->setDb($this->getDb());	
+						$t_l->load($l['tracking_id']);
+						if (!($rc = $t_l->delete())) {
+							$this->errors = $t_l->errors;
+							return false;
+						}
+					}
 				}
 			}
 			
