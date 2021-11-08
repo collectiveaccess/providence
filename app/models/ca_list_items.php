@@ -593,6 +593,8 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	}
  	# ------------------------------------------------------
 	public function insert($pa_options=null) {
+		if(!is_array($pa_options)) { $pa_options = []; }
+		
 		$vb_we_set_transaction = false;
 		if (!$this->inTransaction()) {
 			$this->setTransaction(new Transaction($this->getDb()));
@@ -601,6 +603,11 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		
 		$o_trans = $this->getTransaction();
 		
+		// Enabled by default
+		if(!$this->changed('is_enabled')) {
+			$this->set('is_enabled', 1);
+		}
+		
 		if ($this->get('is_default')) {
 			$o_trans->getDb()->query("
 				UPDATE ca_list_items 
@@ -608,7 +615,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 				WHERE list_id = ?
 			", (int)$this->get('list_id'));
 		}
-		$vn_rc = parent::insert($pa_options);
+		$vn_rc = parent::insert(array_merge($pa_options, ['validateAllIdnos' => true]));
 		
 		if ($this->getPrimaryKey()) {
 			$t_list = new ca_lists();
@@ -919,4 +926,41 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 
 		return false;
 	}
+	# ------------------------------------------------------
+	/**
+	 * Rewrite criteria passed to BaseModel::find() with model-specific value conversions. Called by BaseModel::find()
+	 *
+	 * @param array $criteria
+	 *
+	 * @return array
+	 */
+	public function rewriteFindCriteria(array $criteria) : array {
+		if (isset($criteria['list_id']) && !is_numeric($criteria['list_id'])) {
+						
+			$list_id_vals = $criteria['list_id'];
+			foreach($list_id_vals as $i => $list_id_val) {
+				$op = strtolower($list_id_val[0]);
+				if($op == 'is') { $op = '='; }
+				$value = $list_id_val[1];
+	
+				if (!is_numeric($value)) {
+					if (is_array($value)) {
+						$trans_vals = [];
+						foreach($value as $j => $v) {
+							if (is_numeric($v)) {
+								$trans_vals[] = (int)$v;
+							} elseif ($list_id = caGetListID($v)) {
+								$trans_vals[] = $list_id;
+							}
+							$criteria['list_id'][$i] = [$op, $trans_vals];
+						}
+					} elseif ($list_id = caGetListID($value)) {
+						$criteria['list_id'][$i] = [$op, $list_id];
+					}
+				}
+			}
+		}
+		return $criteria;
+	}
+	# ------------------------------------------------------
 }
