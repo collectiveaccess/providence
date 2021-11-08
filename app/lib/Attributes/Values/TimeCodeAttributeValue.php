@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,7 +40,7 @@
  	require_once(__CA_LIB_DIR__.'/Parsers/TimecodeParser.php');
  
  	global $_ca_attribute_settings;
- 	$_ca_attribute_settings['TimecodeAttributeValue'] = array(		// global
+ 	$_ca_attribute_settings['TimeCodeAttributeValue'] = array(		// global
 		'fieldWidth' => array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_FIELD,
@@ -212,7 +212,7 @@
 			if (strlen($ps_value)) {
 				if ($o_tcp->parse($ps_value) === false) { 
 					// invalid timecode
-					$this->postError(1970, _t('%1 is invalid', $pa_element_info['displayLabel']), 'TimecodeAttributeValue->parseValue()');
+					$this->postError(1970, _t('%1 is invalid', $pa_element_info['displayLabel']), 'TimeCodeAttributeValue->parseValue()');
 					return false;
 				}
 				$vn_seconds = (float)$o_tcp->getParsedValueInSeconds();
@@ -265,7 +265,7 @@
  		public function getAvailableSettings($pa_element_info=null) {
  			global $_ca_attribute_settings;
  			
- 			return $_ca_attribute_settings['TimecodeAttributeValue'];
+ 			return $_ca_attribute_settings['TimeCodeAttributeValue'];
  		}
  		# ------------------------------------------------------------------
 		/**
