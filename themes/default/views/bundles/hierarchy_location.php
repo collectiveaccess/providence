@@ -410,7 +410,7 @@
 						} else {
 							// for items without types
 							print "<div id='{$id_prefix}HierarchyBrowseAdd'>"._t("Add a new %1 %2 <em>%3</em>",  $t_subject->getProperty('NAME_SINGULAR'), caHTMLSelect('add_type', $va_add_types, array('id' => "{$id_prefix}addType"), ['value' => Session::getVar('default_hierarchy_add_mode')]), $vs_subject_label);
-							print " <a href='#' onclick='_navigateToNewForm(0, jQuery(\"#{$id_prefix}addType\").val(), (jQuery(\"#{$id_prefix}addType\").val() == \"next_to\") ? ".intval($pn_parent_id)." : ".intval($pn_id).")'>".caNavIcon(__CA_NAV_ICON_ADD__, '15px')."</a></div>";
+							print " <a href='#' onclick='_navigateToNewForm(0, jQuery(\"#{$id_prefix}addType\").val(), (jQuery(\"#{$id_prefix}addType\").val() == \"next_to\") ? ".intval($pn_parent_id)." : ".intval($pn_id).", ".intval($pn_id).")'>".caNavIcon(__CA_NAV_ICON_ADD__, '15px')."</a></div>";
 						}
 ?>
 					</div>
@@ -516,15 +516,19 @@
 ?>	
 	if (typeof  _navigateToNewForm != 'function') {
 		function _navigateToNewForm(type_id, action, id, after_id) {
+			if(!type_id) { type_id = ''; }
 			switch(action) {
 				case 'above':
-					document.location = '<?= caEditorUrl($this->request, $t_subject->tableName(), 0); ?>/type_id/' + type_id + '/above_id/' + id;
+					if(!id) { break; }
+					document.location = '<?= caEditorUrl($this->request, $t_subject->tableName(), 0); ?>' + (type_id ? '/type_id/' + type_id : '') + '/above_id/' + id;
 					break;
 				case 'under':
-					document.location = '<?= caEditorUrl($this->request, $t_subject->tableName(), 0); ?>/type_id/' + type_id + '/parent_id/' + id;
+					if(!id) { break; }
+					document.location = '<?= caEditorUrl($this->request, $t_subject->tableName(), 0); ?>' + (type_id ? '/type_id/' + type_id : '') + '/parent_id/' + id;
 					break;
 				case 'next_to':
-					document.location = '<?= caEditorUrl($this->request, $t_subject->tableName(), 0); ?>/type_id/' + type_id + '/parent_id/' + id + '/after_id/' + after_id;
+					if(!after_id) { break; }
+					document.location = '<?= caEditorUrl($this->request, $t_subject->tableName(), 0); ?>' + (type_id ? '/type_id/' + type_id : '') + '/parent_id/' + id + '/after_id/' + after_id;
 					break;
 				default:
 					alert("Invalid action!");
