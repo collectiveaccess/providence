@@ -2927,29 +2927,39 @@ function caFileIsIncludable($ps_file) {
 	/** 
 	 *
 	 */
-	function caHumanFilesize($bytes, $decimals = 2) : string {
-		$size = ['B','KiB','MiB','GiB','TiB'];
+	function caHumanFilesize($bytes, $decimals = 2, ?array $options=null) : string {
+		if(caGetOption('useMebibytes', $options, Configuration::load()->get('show_filesizes_in_mebibytes'))) {
+			$size = ['B','KiB','MiB','GiB','TiB'];
+			$divisor = 1024;
+		} else {
+			$size = ['B','KB','MB','GB','TB'];
+			$divisor = 1000;
+		}
+		
 		$factor = intval(floor((strlen((int)$bytes) - 1) / 3), 10);
 
-		return sprintf("%.{$decimals}f", (int)$bytes/pow(1024, $factor)).' '.@$size[$factor];
+		return sprintf("%.{$decimals}f", (int)$bytes/pow($divisor, $factor)).' '.@$size[$factor];
 	}
 	# ----------------------------------------
 	/** 
 	 * Parse human-readable filesize into bytes. Note that we always assume that 
-	 * 1 kilobyte = 1024 bytes, not 1000 bytes as Mac OS and some hard drive manufacturers do.
+	 * 1 kilobyte = 1024 bytes, not 1000 bytes as Mac OS and some hard drive manufacturers do when 
+	 * the useMebibytes is set (or show_filesizes_in_mebibytes is set in app.conf)
 	 *
 	 * Common and IEC units may be used:
 	 *		Common = 'B', 'KB', 'MB', 'GB', 'TB', 'PB'
 	 *		IEC = 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'
 	 *
 	 * @param string $from File size expression
+	 * @param array Options include:
+	 *		useMebibytes = Assume 1 kilobyte = 1024 bytes; otherwise assume 1 kilobyte = 1000 bytes. [Default is whatever value of show_filesizes_in_mebibytes in app.conf is]
 	 * @return int File size in bytes, or null if the expression could not be parsed.
 	 */
 	function caParseHumanFilesize(string $from): ?int {
-		$alts = [
-			'KIB' => 'KB', 'MIB' => 'MB', 'GIB' => 'GB', 'TIB' => 'TB', 'PIB' => 'PB'		// iec
-		];
-		$units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+		$return_mebibytes = caGetOption('useMebibytes', $options, Configuration::load()->get('show_filesizes_in_mebibytes'));
+		
+		$iec = ['B' => 'B', 'KIB' => 'KB', 'MIB' => 'MB', 'GIB' => 'GB', 'TIB' => 'TB', 'PIB' => 'PB'];
+		$common = ['B' => 'B', 'KB' => 'KIB', 'MB' => 'MIB', 'GB' => 'GIB', 'TB' => 'TIB', 'PB' => 'PIB'];
 		
 		$suffix = preg_match('![ ]*([KIBMGTP]+)[ ]*$!i', $from, $m) ? strtoupper($m[1]) : null;
 		$number = preg_replace('![^\d\.]!', '', $from);
@@ -2959,14 +2969,31 @@ function caFileIsIncludable($ps_file) {
 			return $number;
 		}
 		
-		if (isset($alts[$suffix])) { $suffix = $alts[$suffix]; }
+		if (isset($iec[$suffix])) { 
+			$divisor = 1024;
+			$units = array_keys($iec);
+		} elseif (isset($common[$suffix])) {  
+			$divisor = 1000;
+			$units = array_keys($common);
+		} else {
+			// invalid units
+			return null;
+		}
 
 		$exponent = array_flip($units)[$suffix] ?? null;
 		if($exponent === null) {
 			return null;
 		}
 
-		return $number * (1024 ** $exponent);
+		$bytes =  $number * ($divisor ** $exponent);
+		
+		if(($return_mebibytes && ($divisor === 1024)) || (!$return_mebibytes && ($divisor === 1000))) {
+			return $bytes;
+		} elseif($return_mebibytes) {
+			return ceil($bytes * (1024/1000));
+		} elseif(!$return_mebibytes) {
+			return ceil($bytes * (1000/1024));
+		}
 	}
 	# ----------------------------------------
 	/**
