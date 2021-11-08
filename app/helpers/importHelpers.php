@@ -1649,7 +1649,7 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	function caApplyDataTransforms($value, string $transform, ?array $options){
 		switch(strtolower($transform)) {
 			case 'filesize':
-				$value = caHumanFilesize((int)$value, caGetOption('decimals', $options, 2));
+				$value = caHumanFilesize(caParseHumanFilesize($value), caGetOption('decimals', $options, 2));
 				break;
 		}
 		return $value;
