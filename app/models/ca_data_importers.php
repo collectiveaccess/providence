@@ -2789,10 +2789,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								$va_group_buf[ $vn_c ]['_displaynameFormat'] = $displaynameFormat_setting;
 							}
 							
-							if (($source_setting = $va_item['settings']['source']) || ($source_setting = $default_source_text)) { // try source set on this mapping, or try to fall back to mapping source if defined
-								$source_setting = DisplayTemplateParser::processTemplate($source_setting, $va_row_with_replacements, ['getFrom' => $o_reader]);
-								$va_group_buf[ $vn_c ]['_source'] = $source_setting;
-							}
+							$va_group_buf[ $vn_c ]['_source'] = self::_setSourceValue($va_group_buf[ $vn_c ], $va_row_with_replacements, $va_item, $default_source_text, $o_reader);
 
 							// Is it a constant value?
 							if ( preg_match( "!^_CONSTANT_:[\d]+:(.*)!", $va_item['source'], $va_matches ) ) {
@@ -2962,7 +2959,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												}
 												break;
 										}
-										$vn_c ++;
+										
+										$va_group_buf[ $vn_c ]['_source'] = self::_setSourceValue($va_group_buf[ $vn_c ], $va_row_with_replacements, $va_item, $default_source_text, $o_reader);
+										
+										$vn_c++;
 									}
 									$vn_c = $vn_orig_c;
 
@@ -3135,7 +3135,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				// Process data in subject record
 				//
 				//print_r($va_content_tree);
-				//die("END\n\n");
+ 				//die("END\n\n");
 				//continue;
 				if (!($opa_app_plugin_manager->hookDataImportContentTree(array('mapping' => $t_mapping, 'content_tree' => &$va_content_tree, 'idno' => &$vs_idno, 'type_id' => &$vs_type, 'transaction' => &$o_trans, 'log' => &$o_log, 'logReference' => $vs_idno, 'reader' => $o_reader, 'environment' => $va_environment,'importEvent' => $o_event, 'importEventSource' => $vn_row)))) {
 					continue;
@@ -4293,6 +4293,25 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 		return $value;
+	}
+	
+	# ------------------------------------------------------
+	/**
+	 * 
+	 */
+	private static function _setSourceValue(?array $values, array $row_with_replacements, array $item, string $default_source_text, BaseDataReader $o_reader) : ?string {
+		
+		if (($source_setting = $item['settings']['source']) || ($source_setting = $default_source_text)) { // try source set on this mapping, or try to fall back to mapping source if defined
+			if ((!isset($values['_source'])) || ($values['_source'] === $default_source_text)) {
+			
+				$source_setting = DisplayTemplateParser::processTemplate($source_setting, $row_with_replacements, ['getFrom' => $o_reader]);
+				$source_setting = str_replace("__date__", date("Y-m-d"), $source_setting);
+				$source_setting = str_replace("__now__", date("Y-m-d H:i:s"), $source_setting);
+
+				return $source_setting;
+			}
+		}
+		return $values['_source'] ?? null;
 	}
 	# ------------------------------------------------------
 	/**
