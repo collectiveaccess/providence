@@ -2118,11 +2118,26 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 								continue;
 							}
 						}
-						$va_item_info[] = array(
-							'element' => $vs_element,
-							'text' => $vs_text,
-							'text_raw' => $return_raw_data ? $va_values_raw[$vn_i] : null
-						);
+						
+						// When delimiter is set with repeat we make repeating values out of single values by exploding on delimiter
+						// This allows for synthesis of repeating values from a template.
+						if($vs_delimiter && $vb_repeat) {	
+							$tvals = array_map("trim", explode($vs_delimiter, $vs_text));
+							if($deduplicate) { $tvals = array_unique($tvals); }
+							foreach($tvals as $tval) {
+								$va_item_info[] = array(
+									'element' => $vs_element,
+									'text' => $tval,
+									'text_raw' => $tval
+								);
+							}
+						} else {
+							$va_item_info[] = array(
+								'element' => $vs_element,
+								'text' => $vs_text,
+								'text_raw' => $return_raw_data ? $va_values_raw[$vn_i] : null
+							);
+						}
 					}
 				}
 			}
