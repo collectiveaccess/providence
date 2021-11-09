@@ -8,7 +8,7 @@
     "ezyang/htmlpurifier": "~4.9",
     "guzzlehttp/guzzle": "^6.3",
     "guzzlehttp/psr7": "^1.4",
-    "hoa/compiler": "~3.17",
+    "sanmai/hoa-compiler": "*",
     "hoa/visitor": "~2.17",
     "james-heinrich/getid3": "^1.9.20",
     "joshralph/password-policy": "~0.2",
@@ -30,21 +30,16 @@
     "phpoffice/phppresentation": "dev-master",
     "phpoffice/phpspreadsheet": "v1.10",
     "phpoffice/phpword": "v0.15.*",
-    "phpunit/phpunit": "8.5",
-    "scholarslab/bagit": "*",
-    "srmklive/flysystem-dropbox-v2": ">=1.0.0",
     "zendframework/zend-stdlib": "^3.2",
-    "james-heinrich/getid3": "^1.9.20",
     "ext-iconv": "*",
     "ext-simplexml": "*",
     "phpseclib/phpseclib": "^2.0",
     "ankitpokhrel/tus-php": "^2.0",
-    "tedivm/stash": "0.14.*",
+    "tedivm/stash": "0.15.*",
     "cache/predis-adapter": "^1.1",
     "cache/filesystem-adapter": "^1.1",
     "codeitnowin/barcode": "^3.0",
-    "ext-iconv": "*",
-    "ext-simplexml": "*"
+    "whikloj/bagittools": "^3.0"
   },
   "config": {
   	"discard-changes": true
