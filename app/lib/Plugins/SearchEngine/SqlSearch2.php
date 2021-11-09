@@ -383,6 +383,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	$word_op = '=';
 	 	
 	 	$use_boost = true;
+	 	$is_bare_wildcard = false;
 	 	if (is_array($ap) && $is_blank) {
 	 		$params[] = 0;
 	 		$word_field = 'swi.word_id';
@@ -392,6 +393,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 		$word_op = '>';
 	 		$params[] = 0;
 	 		$word_field = 'swi.word_id';
+	 	} elseif ($text === '*') {
+	 		$is_bare_wildcard = true;
 	 	} elseif ($has_wildcard = ((strpos($text, '*') !== false) || (strpos($text, '?') !== false))) {
 	 		$word_op = 'LIKE';
 	 		$text = str_replace('*', '%', $text);
@@ -437,7 +440,16 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	
 	 	$private_sql = ($this->getOption('omitPrivateIndexing') ? ' AND swi.access = 0' : '');
 	 	
-	 	if($use_boost) {
+	 	if ($is_bare_wildcard) {
+	 		$t = Datamodel::getInstance($subject_tablenum, true);
+	 		$pk = $t->primaryKey();
+	 		$table = $t->tableName();
+	 		
+	 		$qr_res = $this->db->query("
+				SELECT {$pk} row_id, 100 boost
+				FROM {$table}".($t->hasField('deleted') ? " WHERE deleted = 0" : "")."
+			", []);
+	 	} elseif($use_boost) {
 			$qr_res = $this->db->query("
 				SELECT swi.row_id, SUM(swi.boost) boost
 				FROM ca_sql_search_word_index swi
