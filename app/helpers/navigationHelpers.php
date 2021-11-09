@@ -559,12 +559,11 @@
 			$pa_attributes['class'] .= " {$vs_classname}";
 		}
 		
-		$va_attr = array();
-		if ($ps_id) { $va_attr[] = "id='{$ps_id}'"; }
 		if (!is_array($pa_attributes)) {
 			$pa_attributes = [];
 		}
 		$pa_attributes['aria-label'] = $ps_content;
+		if ($ps_id) { $pa_attributes['id'] = $ps_id; }
 
 		$vs_button = "<a "._caHTMLMakeAttributeString($pa_attributes).">";
 		if (!$pb_no_background) { 
