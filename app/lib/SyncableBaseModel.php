@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -87,7 +87,7 @@ trait SyncableBaseModel {
 			if($this->inTransaction()) {
 				$va_options['transaction'] = $this->getTransaction();
 			}
-			return ca_guids::getForRow($this->getPrimaryKey(), $this->tableNum(), $va_options);
+			return ca_guids::getForRow($this->tableNum(), $this->getPrimaryKey(), $va_options);
 		}
 
 		return null;
