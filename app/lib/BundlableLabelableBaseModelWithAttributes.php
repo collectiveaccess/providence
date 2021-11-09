@@ -4276,13 +4276,10 @@ if (!$vb_batch) {
 						$vb_allow_existing_rep = (bool)$this->_CONFIG->get('ca_objects_allow_relationships_to_existing_representations') && !(bool)caGetOption('dontAllowRelationshipsToExistingRepresentations', $va_bundle_settings, false);
 						$dont_allow_access_to_import_directory = caGetOption('dontAllowAccessToImportDirectory', $va_bundle_settings, false);
 	
-						$import_directory_path = $po_request->config->get('batch_media_import_root_directory');
-						$ajax_import_directory_path = $po_request->config->get('ajax_media_upload_tmp_directory');
-						
+						$import_directory_paths = caGetAvailableMediaUploadPaths($po_request->getUserID());
 						
 						$va_rep_ids_sorted = $va_rep_sort_order = explode(';',$po_request->getParameter($vs_prefix_stub.'ObjectRepresentationBundleList', pString));
 						sort($va_rep_ids_sorted, SORT_NUMERIC);
-						
 						
 						$va_reps = $this->getRepresentations();
 						
@@ -4475,18 +4472,21 @@ if (!$vb_batch) {
                                     	// Is remote URL
                                         $va_tmp = explode('/', $vs_path);
                                         $vs_original_name = array_pop($va_tmp);
-                                    } elseif(preg_match("!^".($u = caGetUserDirectoryName($po_request->getUserID()))."!", $va_values['tmp_name'])) {
-                                    	// Is user-uploaded media
-                                    	if (!is_writeable($vs_tmp_directory = $ajax_import_directory_path)) {
-											$vs_tmp_directory = caGetTempDirPath();
+                                    } elseif(preg_match("!^".($u = caGetUserDirectoryName($po_request->getUserID()))."/(.*)$!", $va_values['tmp_name'], $m)) {
+                                    	foreach($import_directory_paths as $p) {
+                                    		if(file_exists($vs_path = "{$p}/{$m[1]}")) {
+                                    			$vs_original_name = pathinfo($va_values['tmp_name'], PATHINFO_FILENAME);
+                                    			break;
+                                    		}
+                                    	}
+                                    } elseif(!$dont_allow_access_to_import_directory && ($vs_key !== 'empty') && sizeof($import_directory_paths) && strlen($va_values['tmp_name'])) {
+                                    	// Is user-selected file from s media import directory
+                                    	foreach($import_directory_paths as $p) {
+											if(file_exists($vs_path = "{$p}{$va_values['tmp_name']}")) {
+												$vs_original_name = pathinfo($va_values['name'], PATHINFO_BASENAME);
+												break;
+											}
 										}
-                                    	$vs_path = $vs_tmp_directory.'/'.$va_values['tmp_name'];
-                                    	$md = json_decode(@file_get_contents("{$vs_path}_metadata"), true);
-                                        $vs_original_name = $md['original_filename'];
-                                    } elseif(!$dont_allow_access_to_import_directory && ($vs_key !== 'empty') && ($vs_tmp_directory = $import_directory_path) && file_exists("{$vs_tmp_directory}/{$va_values['tmp_name']}") && strlen($va_values['tmp_name'])) {
-                                    	// Is user-selected file from batch media import directory
-                                        $vs_path = "{$vs_tmp_directory}/{$va_values['tmp_name']}";
-                                        $vs_original_name = pathinfo($va_values['name'], PATHINFO_BASENAME);
                                     } elseif(isset($va_values['tmp_name']) && $is_form_upload && file_exists($va_values['tmp_name'])) {
                                     	$vs_path = $va_values['tmp_name'];
                                         $vs_original_name = $va_values['name'];
