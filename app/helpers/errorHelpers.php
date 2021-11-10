@@ -56,9 +56,22 @@ function caDisplayException(Exception $e) {
 
 	$o_log->logError(get_class($e) . ': ' . $e->getMessage());
 	$o_log->logDebug(print_r($e->getTrace(), true));
-
-	require_once((defined("__CA_THEME_DIR__") ? __CA_THEME_DIR__ : __DIR__.'/../../themes/default').'/views/system/fatal_error_html.php');
+	require_once(fatalErrorHtmlView());
 	exit;
+}
+
+/**
+ * Get view path for fatal error html
+ * @return string
+ */
+function fatalErrorHtmlView() {
+	$fatal_error_html = '/views/system/fatal_error_html.php';
+	if (defined("__CA_THEME_DIR__") && file_exists(__CA_THEME_DIR__ . $fatal_error_html)) {
+		return __CA_THEME_DIR__ . $fatal_error_html;
+	}
+	else {
+		return __CA_THEMES_DIR__ . '/default' . $fatal_error_html;
+	}
 }
 # --------------------------------------------------------------------------------------------
 /**
@@ -84,7 +97,7 @@ function caDisplayFatalError($pn_errno, $ps_errstr, $ps_errfile, $pn_errline, $p
 			break;
 		default:
 			if(class_exists('AppController')) { $o_app = AppController::getInstance()->removeAllPlugins(); }
-			require_once((defined("__CA_THEME_DIR__") ? __CA_THEME_DIR__ : __DIR__."/../../themes/default")."/views/system/fatal_error_html.php");
+			require_once(fatalErrorHtmlView());
 			exit;
 	}
 }
