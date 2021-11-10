@@ -309,6 +309,15 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 	# ------------------------------------------------
 	/**
 	 *
+	 * @param array $pa_element_info
+	 * @param array $pa_options Options include:
+	 *		hideCoordinatesDisplay = don't show coordinate display text entry. [Default is false]
+	 *		hideGeocodeUI = Don't show geocoding search box. [Default is false]
+	 *		hideTools = Don't show drawing tools. [Default is false]
+	 *		mapWidth = Width of map, in pixels. [Default is 695px]
+	 *		mapHeight = Height of map, in pixels. [Default is 400px]
+	 *
+	 * @return string HTML for bundle
 	 */
 	public function getAttributeBundleHTML($pa_element_info, $pa_options=null) {
  		AssetLoadManager::register('leaflet');
@@ -318,6 +327,10 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 		$va_element_height = caParseFormElementDimension($pa_element_info['settings']['fieldHeight']);
 		$vn_element_height = $va_element_height['dimension'];
 		
+		$map_width_info = caParseFormElementDimension(caGetOption('mapWidth', $pa_options, '695px'));
+		$map_width = $map_width_info['dimension'].'px';
+		$map_height_info = caParseFormElementDimension(caGetOption('mapHeight', $pa_options, '400px'));
+		$map_height = $map_height_info['dimension'].'px';
 		
 		$min_zoom_level = (int)caGetOption('minZoomLevel', $pa_element_info['settings'], 0);
 		$max_zoom_level = (int)caGetOption('maxZoomLevel', $pa_element_info['settings'], 18);
@@ -344,7 +357,7 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
  		}
 		$vs_element = 	"
 <div id='mapholder_{$element_id}_{n}' class='mapholder' style='z-index:0;'>
-	 <div class='map' style='width:695px; height:400px;'></div>
+	 <div class='map' style='width:{$map_width}; height:{$map_height};'></div>
 </div>
 <script type='text/javascript'>
 	jQuery(document).ready(function() {
@@ -369,48 +382,60 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 		var map = L.map('mapholder_{$element_id}_{n}', { attributionControl: false, minZoom: {$min_zoom_level}, maxZoom: {$max_zoom_level} }).setView([0, 0], 8);
 		jQuery('#mapholder_{$element_id}_{n}').data('map', map); // stash map reference in <div> to allow redraw by bundle visibility manager
 		var b = L.tileLayer('{$base_map_url}').addTo(map);	
-		map.addControl(new L.Control.OSMGeocoder({ text: '"._t('Go')."', 'collapsed': false, callback: function(results) {
-			var bbox = results[0].boundingbox,
-				mid = new L.LatLng((parseFloat(bbox[0]) + parseFloat(bbox[1]))/2, (parseFloat(bbox[2]) + parseFloat(bbox[3]))/2),
-				bounds = new L.LatLngBounds([new L.LatLng(bbox[0], bbox[2]), new L.LatLng(bbox[1], bbox[3])]);
-			if({$autoDropPin}) {	// drop pin at center of search location if option is set
-				var marker = L.marker(mid);
-				g.addLayer(marker);
-				map_{$vs_id}_update_coord_list();
-			}
-			this._map.fitBounds(bounds);
-		}}));
-			
-		var map_{$vs_id}_update_coord_list = function (e) {
-			var label = jQuery.trim(map_{$vs_id}_loc_str.match(/^[^\[]+/));
-			var objs = [];
-			g.eachLayer(function (layer) {
-				if (layer.getRadius) { // circle
-					var c = layer.getLatLng();
-					objs.push(c.lat + ',' + c.lng + '~' + layer.getRadius());
-				} else if (layer.getLatLngs) { // path
-					var cs = layer.getLatLngs()[0].map(c => { return c.lat + ',' + c.lng});
-					objs.push(cs.join(';'));
-				} else if (layer.getLatLng) { // marker
-					var c = layer.getLatLng();
-					
-					if (layer.options.rotationAngle !== 0) {
-						objs.push(c.lat + ',' + c.lng + '*' + layer.options.rotationAngle);
-					} else {
-						objs.push(c.lat + ',' + c.lng);
+";
+
+		if(!caGetOption('hideGeocodeUI', $pa_options, false)) {
+			$vs_element .= 	"
+				map.addControl(new L.Control.OSMGeocoder({ text: '"._t('Go')."', 'collapsed': false, callback: function(results) {
+					var bbox = results[0].boundingbox,
+						mid = new L.LatLng((parseFloat(bbox[0]) + parseFloat(bbox[1]))/2, (parseFloat(bbox[2]) + parseFloat(bbox[3]))/2),
+						bounds = new L.LatLngBounds([new L.LatLng(bbox[0], bbox[2]), new L.LatLng(bbox[1], bbox[3])]);
+					if({$autoDropPin}) {	// drop pin at center of search location if option is set
+						var marker = L.marker(mid);
+						g.addLayer(marker);
+						map_{$vs_id}_update_coord_list();
 					}
-				}
-			});
-			var coords = objs.join(':');
-			jQuery('#{fieldNamePrefix}{$element_id}_{n}').val((label ? label : '') + (coords ? (label ? ' ' : '') + '[' + coords + ']' : ''));
-		};
+					this._map.fitBounds(bounds);
+				}}));
+			";
+		}
 		
-		var drawControl = new L.Control.Draw({
-			edit: { featureGroup: g, edit: true },
-			draw: { circlemarker: false }
-		});
-		map.addControl(drawControl);
+		$vs_element .= 	"	
+			var map_{$vs_id}_update_coord_list = function (e) {
+				var label = jQuery.trim(map_{$vs_id}_loc_str.match(/^[^\[]+/));
+				var objs = [];
+				g.eachLayer(function (layer) {
+					if (layer.getRadius) { // circle
+						var c = layer.getLatLng();
+						objs.push(c.lat + ',' + c.lng + '~' + layer.getRadius());
+					} else if (layer.getLatLngs) { // path
+						var cs = layer.getLatLngs()[0].map(c => { return c.lat + ',' + c.lng});
+						objs.push(cs.join(';'));
+					} else if (layer.getLatLng) { // marker
+						var c = layer.getLatLng();
+					
+						if (layer.options.rotationAngle !== 0) {
+							objs.push(c.lat + ',' + c.lng + '*' + layer.options.rotationAngle);
+						} else {
+							objs.push(c.lat + ',' + c.lng);
+						}
+					}
+				});
+				var coords = objs.join(':');
+				jQuery('#{fieldNamePrefix}{$element_id}_{n}').val((label ? label : '') + (coords ? (label ? ' ' : '') + '[' + coords + ']' : ''));
+			};
+		";
 		
+		if(!caGetOption('hideTools', $pa_options, false)) {
+			$vs_element .= 	"	
+				var drawControl = new L.Control.Draw({
+					edit: { featureGroup: g, edit: true },
+					draw: { circlemarker: false }
+				});
+				map.addControl(drawControl);
+			";
+		}
+		$vs_element .= 	"	
 		var map_{$vs_id}_set_rotation_guide = function(layer, angle) {
 			var transformation = new L.Transformation(
 				1, Math.sin(angle*Math.PI / 180)*100,
@@ -568,8 +593,10 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 		".(($default_zoom >= 0) ? "map.setZoom({$default_zoom_level}, {animate: false});" : '')."
 	});
 </script>
-	<input class='coordinates mapCoordinateDisplay' type='text' name='{fieldNamePrefix}{$element_id}_{n}' id='{fieldNamePrefix}{$element_id}_{n}' size='80' value='{{$element_id}}'/>
 ";
+		if(!caGetOption('hideCoordinatesDisplay', $pa_options, false)) {
+			$vs_element .= "<input class='coordinates mapCoordinateDisplay' type='text' name='{fieldNamePrefix}{$element_id}_{n}' id='{fieldNamePrefix}{$element_id}_{n}' size='80' value='{{$element_id}}'/>\n";
+		}
 		return $vs_element;
 	}
 	# ------------------------------------------------

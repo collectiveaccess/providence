@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -49,7 +49,7 @@
 	'fieldWidth' => array(
 		'formatType' => FT_NUMBER,
 		'displayType' => DT_FIELD,
-		'default' => 60,
+		'default' => '670px',
 		'width' => 5, 'height' => 1,
 		'label' => _t('Width of data entry field in user interface'),
 		'description' => _t('Width, in characters, of the field when displayed in a user interface.')
@@ -61,6 +61,110 @@
 		'width' => 5, 'height' => 1,
 		'label' => _t('Height of data entry field in user interface'),
 		'description' => _t('Height, in characters, of the field when displayed in a user interface.')
+	),
+	'mapWidth' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_FIELD,
+		'default' => '695px',
+		'width' => 5, 'height' => 1,
+		'label' => _t('Width of map display in user interface'),
+		'description' => _t('Width in pixels of the display map.')
+	),
+	'mapHeight' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_FIELD,
+		'default' => '150px',
+		'width' => 5, 'height' => 1,
+		'label' => _t('Height of map display in user interface'),
+		'description' => _t('Height in pixels of the display map.')
+	),
+	'minZoomLevel' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_SELECT,
+		'default' => 1,
+		'options' => [
+			0 => 0,
+			1 => 1,
+			2 => 2,
+			3 => 3,
+			4 => 4,
+			5 => 5,
+			6 => 6,
+			7 => 7,
+			8 => 8,
+			9 => 9,
+			10 => 10,
+			11 => 11,
+			12 => 12,
+			13 => 13,
+			14 => 14,
+			15 => 15,
+			16 => 16,
+			17 => 17,
+			18 => 18
+		],
+		'width' => '100px', 'height' => 1,
+		'label' => _t('Minimum zoom level'),
+		'description' => _t('Minimum allowable zoom level for map.')
+	),
+	'maxZoomLevel' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_SELECT,
+		'default' => 16,
+		'options' => [
+			0 => 0,
+			1 => 1,
+			2 => 2,
+			3 => 3,
+			4 => 4,
+			5 => 5,
+			6 => 6,
+			7 => 7,
+			8 => 8,
+			9 => 9,
+			10 => 10,
+			11 => 11,
+			12 => 12,
+			13 => 13,
+			14 => 14,
+			15 => 15,
+			16 => 16,
+			17 => 17,
+			18 => 18
+		],
+		'width' => '100px', 'height' => 1,
+		'label' => _t('Maximum zoom level'),
+		'description' => _t('Maximum allowed zoom level for map.')
+	),
+	'defaultZoomLevel' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_SELECT,
+		'default' => null,
+		'options' => [
+			_t('Auto') => -1,
+			0 => 0,
+			1 => 1,
+			2 => 2,
+			3 => 3,
+			4 => 4,
+			5 => 5,
+			6 => 6,
+			7 => 7,
+			8 => 8,
+			9 => 9,
+			10 => 10,
+			11 => 11,
+			12 => 12,
+			13 => 13,
+			14 => 14,
+			15 => 15,
+			16 => 16,
+			17 => 17,
+			18 => 18
+		],
+		'width' => '100px', 'height' => 1,
+		'label' => _t('Default zoom level'),
+		'description' => _t('Default zoom level for newly opened maps.')
 	),
 	'doesNotTakeLocale' => array(
 		'formatType' => FT_NUMBER,
@@ -198,9 +302,12 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 	# ------------------------------------------------------------------
  	private $ops_text_value;
  	private $ops_uri_value;
+ 	
+ 	private $opo_geo_plugin;
  	# ------------------------------------------------------------------
  	public function __construct($pa_value_array=null) {
  		parent::__construct($pa_value_array);
+		$this->opo_geo_plugin = new GeographicMap();
  	}
  	# ------------------------------------------------------------------
  	public function loadTypeSpecificValueFromRow($pa_value_array) {
@@ -400,54 +507,22 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
                             jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}').css('display', 'inline').attr('href', 'http://geonames.org/' + geoname_id);
                         }
                     }
+                    if ('{n}'.substring(0,3) == 'new') {
+						jQuery('#mapholder_".$pa_element_info['element_id']."_{n}').hide();
+					}
 				});
 			</script>
 		";
-
+		
 		if(!caGetOption("disableMap", $va_settings, false) && !caGetOption("disableMap", $pa_options, false)) {
-			if (strlen($o_config->get('google_maps_key'))) {
-				AssetLoadManager::register('maps');
-
-				$vs_element .= "
-					<div id='map_".$pa_element_info['element_id']."{n}' style='width:700px; height:160px;'>
-
-					</div>
-					<script type='text/javascript'>
-						if ('{n}'.substring(0,3) == 'new') {
-							jQuery('#map_".$pa_element_info['element_id']."{n}').hide();
-						} else {
-							jQuery(document).ready(function() {
-				";
-
-				$vs_element .= "
-						var re = /\[([\d\.\-,; ]+)\]/;
-						var r = re.exec('{{".$pa_element_info['element_id']."}}');
-						var latlong = (r) ? r[1] : null;
-
-						if (latlong) {
-							// map vars are global
-							map_".$pa_element_info['element_id']."{n} = new google.maps.Map(document.getElementById('map_".$pa_element_info['element_id']."{n}'), {
-								disableDefaultUI: false,
-								mapTypeId: google.maps.MapTypeId.SATELLITE
-							});
-
-							var tmp = latlong.split(',');
-							var pt = new google.maps.LatLng(tmp[0], tmp[1]);
-							map_".$pa_element_info['element_id']."{n}.setCenter(pt);
-							map_".$pa_element_info['element_id']."{n}.setZoom(15);		// todo: make this a user preference of some sort
-							var marker = new google.maps.Marker({
-								position: pt,
-								map: map_".$pa_element_info['element_id']."{n}
-							});
-						}";
-
-				$vs_element .= "
-							});
-						}
-					</script>";
-			} else {
-				$vs_element .= "<h3>"._t('Warning: Cannot display map without configured GoogleMaps key')."</h3>";
-			}
+			$vs_element .= $this->opo_geo_plugin->getAttributeBundleHTML($pa_element_info, array_merge([
+				'zoomLevel' => caGetOption('defaultZoomLevel', $pa_element_info['settings'], null),
+				'minZoomLevel' => caGetOption('minZoomLevel', $pa_element_info['settings'], null),
+				'maxZoomLevel' => caGetOption('maxZoomLevel', $pa_element_info['settings'], null),
+				'hideCoordinatesDisplay' => true, 'hideGeocodeUI' => true, 'hideTools' => true,
+				'mapWidth' => caGetOption('mapWidth', $pa_element_info['settings'], '695px'), 
+				'mapHeight' => caGetOption('mapHeight', $pa_element_info['settings'], '200px')
+			], $pa_options));
 		}
 
  		return $vs_element;
@@ -459,22 +534,22 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
  		return $_ca_attribute_settings['GeoNamesAttributeValue'];
  	}
  	# ------------------------------------------------------------------
-		/**
-		 * Returns name of field in ca_attribute_values to use for sort operations
-		 * 
-		 * @return string Name of sort field
-		 */
-		public function sortField() {
-			return 'value_longtext1';
-		}
+	/**
+	 * Returns name of field in ca_attribute_values to use for sort operations
+	 * 
+	 * @return string Name of sort field
+	 */
+	public function sortField() {
+		return 'value_longtext1';
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Returns constant for geonames attribute value
+	 * 
+	 * @return int Attribute value type code
+	 */
+	public function getType() {
+		return __CA_ATTRIBUTE_VALUE_GEONAMES__;
+	}
  	# ------------------------------------------------------------------
-		/**
-		 * Returns constant for geonames attribute value
-		 * 
-		 * @return int Attribute value type code
-		 */
-		public function getType() {
-			return __CA_ATTRIBUTE_VALUE_GEONAMES__;
-		}
- 		# ------------------------------------------------------------------
 }
