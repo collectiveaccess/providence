@@ -2304,7 +2304,7 @@ class ca_users extends BaseModel {
 		
 		$o_db = $this->getDb();
 		$qr_uis = $o_db->query("
-			SELECT ceui.ui_id, ceuil.name, ceuil.locale_id, ceuitr.type_id
+			SELECT ceui.ui_id, ceuil.name, ceuil.locale_id, ceuitr.type_id, ceuitr.include_subtypes
 			FROM ca_editor_uis ceui
 			INNER JOIN ca_editor_ui_labels AS ceuil ON ceui.ui_id = ceuil.ui_id
 			LEFT JOIN ca_editor_ui_type_restrictions AS ceuitr ON ceui.ui_id = ceuitr.ui_id 
@@ -2327,8 +2327,20 @@ class ca_users extends BaseModel {
 		
 		$va_ui_list_by_type = array();
 		while($qr_uis->nextRow()) {
-			if (!($vn_type_id = $qr_uis->get('type_id'))) { $vn_type_id = '__all__'; }
-			$va_ui_list_by_type[$vn_type_id][$qr_uis->get('ui_id')][$qr_uis->get('locale_id')] = $qr_uis->get('name');
+			$ui_id = $qr_uis->get('ui_id');
+			$locale_id = $qr_uis->get('locale_id');
+			$name = $qr_uis->get('name');
+			
+			$type_ids = [];
+			if (!($vn_type_id = $qr_uis->get('type_id'))) { 
+				$type_ids[] = '__all__'; 
+			} elseif($qr_uis->get('include_subtypes') > 0) {
+				$type_ids = caMakeTypeIDList($pn_table_num, $vn_type_id);
+			}
+			
+			foreach($type_ids as $t) {
+				$va_ui_list_by_type[$t][$ui_id][$locale_id] = $name;
+			}
 		}
 		
 		return $va_ui_list_by_type;
