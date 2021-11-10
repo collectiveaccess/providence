@@ -103,7 +103,7 @@
 	$count = $this->getVar('relationship_count');
 	
 	if (!RequestHTTP::isAjax()) {
-		if(caGetOption('showCount', $va_settings, false)) { print $count ? "({$count})" : ''; }
+		if(caGetOption('showCount', $settings, false)) { print $count ? "({$count})" : ''; }
 	
 		if ($vb_batch) {
 			print caBatchEditorRelationshipModeControl($t_item, $id_prefix);
@@ -409,7 +409,7 @@
 ?>
 	    <div class='bundleSubLabel'>
 <?php
-			print caEditorBundleBatchEditorControls($this->request, $vn_placement_id, $t_subject, $t_instance->tableName(), $va_settings);
+			print caEditorBundleBatchEditorControls($this->request, $vn_placement_id, $t_subject, $t_instance->tableName(), $settings);
             print caEditorBundleSortControls($this->request, $id_prefix, $t_item->tableName(), $t_instance->tableName(), array_merge($settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
 
 		    if (($rep_count > 1) && $this->request->getUser()->canDoAction('can_download_ca_object_representations')) {
