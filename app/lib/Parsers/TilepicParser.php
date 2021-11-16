@@ -1308,6 +1308,33 @@ class TilepicParser {
 			if (is_array($va_exif = @exif_read_data($ps_filepath, 'IFD0', true, false))) { 
 				if (isset($va_exif['IFD0']['Orientation'])) {
 					$vn_orientation = $va_exif['IFD0']['Orientation'];
+					if($vn_orientation > 0) {
+						// Make copy without EXIF rotation and re-read. There's no other way
+						// to get rid of the orientation tag in derived files (argh).
+						$use_exif_tool_to_strip = (bool)$this->opo_config->get('dont_use_exiftool_to_strip_exif_orientation_tags');
+						
+						// Fall back to using stripImage() if ExifTool is not available. This is quick and easy 
+						// but will strip *everything* including color profiles which will be a problem for many users.
+						if (!caExifToolInstalled() || $use_exif_tool_to_strip) {	
+							$h->stripImage();
+						} else {
+							// Stripping with EXIF tool means copying the entire file and then shelling out
+							// to remove the EXIF tag. We could avoid a copy by running EXIF tool on each tile we
+							// generate, but then we'd be shelling out hundreds or thousands of times per image. 
+							// Either way it sucks.
+							copy($ps_filepath, "{$ps_filepath}_orient");
+							caExtractRemoveOrientationTagWithExifTool("{$ps_filepath}_orient");
+							
+							try {
+								$h = new Gmagick("{$ps_filepath}_orient");
+								$this->setResourceLimits_gmagick($h);
+								$h->setimageindex(0);	// force use of first image in multi-page TIFF
+							} catch (Exception $e){
+								$this->error = "Couldn't open image {$ps_filepath}_orient";
+								return false;
+							}
+						}
+					}
 					switch($vn_orientation) {
 						case 3:
 							$h->rotateimage("#FFFFFF", $rotation = 180);
@@ -1445,6 +1472,9 @@ class TilepicParser {
 		}
 		
 		$h->destroy();
+		
+		@unlink("{$ps_filepath}_orient");
+		
 		#
 		# Write Tilepic format file
 		#
