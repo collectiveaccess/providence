@@ -546,14 +546,6 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		# get parameters for this operation
 		$sparams = $this->info["TRANSFORMATIONS"][$operation];
 		
-		if($this->properties['exif_orientation'] > 0) {
-			// flip to reflect EXIF orientation
-			$tw = $parameters["width"];
-			$th = $parameters["height"];
-			$parameters["width"] = $th;
-			$parameters["height"] = $tw;
-		} 
-		
 		$w = $parameters["width"];
 		$h = $parameters["height"];
 		$cw = $this->get("width");	// already flipped if EXIF orientation requires it
