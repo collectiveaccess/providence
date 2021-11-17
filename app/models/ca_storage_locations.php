@@ -573,8 +573,8 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 				}
 			}
 		}
-		if($we_set_transaction) { $this->removeTransaction($vn_rc); }
-		return $vn_rc;
+		if($we_set_transaction) { $this->removeTransaction(true); }
+		return true;
 	}
 	# ------------------------------------------------------
 }
