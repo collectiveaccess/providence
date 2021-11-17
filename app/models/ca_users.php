@@ -2336,13 +2336,14 @@ class ca_users extends BaseModel {
 				$type_ids[] = '__all__'; 
 			} elseif($qr_uis->get('include_subtypes') > 0) {
 				$type_ids = caMakeTypeIDList($pn_table_num, $vn_type_id);
+			} else {
+				$type_ids = caMakeTypeIDList($pn_table_num, $vn_type_id, ['dontIncludeSubtypesInTypeRestriction' => true]);
 			}
 			
 			foreach($type_ids as $t) {
 				$va_ui_list_by_type[$t][$ui_id][$locale_id] = $name;
 			}
 		}
-		
 		return $va_ui_list_by_type;
 	}
 	# ----------------------------------------
