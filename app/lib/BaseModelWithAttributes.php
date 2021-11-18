@@ -153,24 +153,27 @@
 			
 			if($takes_locale && $single_value_per_locale) {
 				$attrs_to_remove = array_map(function($v) { return (int)$v['attribute_id']; }, $this->opa_attributes_to_remove);
-				$va_attrs = array_filter($this->getAttributesByElement($pm_element_code_or_id), function($v) use ($attrs_to_remove) {
+				$attrs_for_element = $this->getAttributesByElement($pm_element_code_or_id);
+				if(is_array($attrs_for_element)) { 
+					$va_attrs = array_filter($attrs_for_element, function($v) use ($attrs_to_remove) {
 					return !in_array((int)$v->getAttributeID(), $attrs_to_remove, true);
-				});
-				$extant_locales = array_unique(
-					array_merge(
-						(is_array($va_attrs) ? array_map(function($a) { return $a->getLocaleID(); }, $va_attrs) : []), 
-						array_map(function($a) { 
-							return (int)$a['values']['locale_id'] ?? null;
-						}, ($this->opa_attributes_to_add + $this->opa_attributes_to_edit))
-					)
-				);
+					});
+					$extant_locales = array_unique(
+						array_merge(
+							(is_array($va_attrs) ? array_map(function($a) { return $a->getLocaleID(); }, $va_attrs) : []), 
+							array_map(function($a) { 
+								return (int)$a['values']['locale_id'] ?? null;
+							}, ($this->opa_attributes_to_add + $this->opa_attributes_to_edit))
+						)
+					);
 				
-				$extant_locales = array_filter($extant_locales, function($v) { return (bool)$v; });
-				if(($locale_id = $pa_values['locale_id'] ?? null) && in_array((int)$locale_id, $extant_locales, true)) {
-					if (caGetOption('raiseErrorOnDuplicateLocale', $element_info, true)) {
-						$this->postError(1985, _t('Value for locale is already set'), 'BaseModelWithAttributes->addAttribute()', $ps_error_source);
+					$extant_locales = array_filter($extant_locales, function($v) { return (bool)$v; });
+					if(($locale_id = $pa_values['locale_id'] ?? null) && in_array((int)$locale_id, $extant_locales, true)) {
+						if (caGetOption('raiseErrorOnDuplicateLocale', $element_info, true)) {
+							$this->postError(1985, _t('Value for locale is already set'), 'BaseModelWithAttributes->addAttribute()', $ps_error_source);
+						}
+						return null;	
 					}
-					return null;	
 				}
 			}
 			
@@ -286,26 +289,30 @@
 				$attrs_to_remove = array_map(function($v) { return (int)$v['attribute_id']; }, $this->opa_attributes_to_remove);
 				$attrs_to_remove[] = (int)$pn_attribute_id;
 				
-				$va_attrs = array_filter($this->getAttributesByElement($pm_element_code_or_id), function($v) use ($attrs_to_remove) {
-					return !in_array((int)$v->getAttributeID(), $attrs_to_remove, true);
-				});
+				$attrs_for_element = $this->getAttributesByElement($pm_element_code_or_id);
 				
-				$extant_locales = array_unique(
-					array_merge(
-						(is_array($va_attrs) ? array_map(function($a) { return $a->getLocaleID(); }, $va_attrs) : []), 
-						array_map(function($a) { 
-							return (int)$a['locale_id'] ?? null;
-						}, ($this->opa_attributes_to_add + $this->opa_attributes_to_edit))
-					)
-				);
+				if(is_array($attrs_for_element)) {
+					$va_attrs = array_filter($attrs_for_element, function($v) use ($attrs_to_remove) {
+						return !in_array((int)$v->getAttributeID(), $attrs_to_remove, true);
+					});
 				
-				$extant_locales = array_filter($extant_locales, function($v) { return (bool)$v; });
+					$extant_locales = array_unique(
+						array_merge(
+							(is_array($va_attrs) ? array_map(function($a) { return $a->getLocaleID(); }, $va_attrs) : []), 
+							array_map(function($a) { 
+								return (int)$a['locale_id'] ?? null;
+							}, ($this->opa_attributes_to_add + $this->opa_attributes_to_edit))
+						)
+					);
 				
-				if(($locale_id = $pa_values['locale_id'] ?? null) && in_array((int)$locale_id, $extant_locales, true)) {
-					if (caGetOption('raiseErrorOnDuplicateLocale', $element_info, true)) {
-						$this->postError(1985, _t('Value for locale is already set'), 'BaseModelWithAttributes->editAttribute()', $ps_error_source);
+					$extant_locales = array_filter($extant_locales, function($v) { return (bool)$v; });
+				
+					if(($locale_id = $pa_values['locale_id'] ?? null) && in_array((int)$locale_id, $extant_locales, true)) {
+						if (caGetOption('raiseErrorOnDuplicateLocale', $element_info, true)) {
+							$this->postError(1985, _t('Value for locale is already set'), 'BaseModelWithAttributes->editAttribute()', $ps_error_source);
+						}
+						return null;	
 					}
-					return null;	
 				}
 			}
 			
