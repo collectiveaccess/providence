@@ -1117,6 +1117,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 							controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'fullscreen'],
 						};
 						const player = new Plyr('#<?= $id; ?>', options);
+						jQuery('#<?= $id; ?>').data('player', player);
 					});
 				</script>
 <?php
