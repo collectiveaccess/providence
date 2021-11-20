@@ -2839,7 +2839,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												'importEvent'       => $o_event,
 												'importEventSource' => $vn_row,
 												'reader'            => $o_reader,
-												'valueIndex'        => $vn_i
+												'valueIndex'        => $vn_i,
+												'sourceValue' 		=> $va_group_buf[ $vn_c ]['_source']
 											) );
 
 										if ( ! $va_refined_values
