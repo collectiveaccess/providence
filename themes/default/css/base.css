@@ -6798,7 +6798,7 @@ div.caRepresentationMediaReplicationControls {
 	background-image: url(../graphics/icons/audio.png);
 	background-position: center center;
 	background-repeat:no-repeat;
-    background-color: #000;
+    background-color: #fff;
 }
 .caAnnoEditorMediaPlayer {
 	width: 500px;
@@ -6813,10 +6813,12 @@ div.caRepresentationMediaReplicationControls {
 .caAnnoMediaPlayerControlsLeft {
 	float: left;
 	padding: 10px;
+    background-color: #fff;
 }
 .caAnnoMediaPlayerControlsRight {
 	float: right;
 	padding: 10px;
+    background-color: #fff;
 }
 
 .caAnnoEditorEditorScreen {
