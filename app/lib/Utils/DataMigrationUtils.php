@@ -746,6 +746,11 @@
 				}
 			}
 			
+			// Treat parentheticals as suffixes
+			if (preg_match("![,]*[ ]*([\(]+.*[ \)]+)$!i", $text, $matches)) {
+				$name['suffix'] = $matches[1];
+				$text = str_replace($matches[0], '', $text);
+			}
 			$name['surname'] = $text;
 			return $name;
 		}
