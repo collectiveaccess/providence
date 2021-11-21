@@ -61,6 +61,7 @@
 		$o_reader = caGetOption('reader', $pa_options, null);
 		$o_trans = caGetOption('transaction', $pa_options, null);
 		$o_refinery_instance = caGetOption('refinery', $pa_options, null);
+		$source_value = caGetOption('sourceValue', $pa_options, null);
 		
 		$va_delimiter = $pa_item['settings']["{$ps_refinery_name}_delimiter"];
 
@@ -132,7 +133,7 @@
 			
 			// Process "attributes" block
 			$va_attributes = array_merge(
-				caProcessRefineryAttributes($va_attributes_spec, $pa_source_data, $pa_item, $pn_c, array('delimiter' => $va_delimiter, 'log' => $o_log, 'reader' => $o_reader, 'refineryName' => $ps_refinery_name)),
+				caProcessRefineryAttributes($va_attributes_spec, $pa_source_data, $pa_item, $pn_c, array('delimiter' => $va_delimiter, 'log' => $o_log, 'reader' => $o_reader, 'refineryName' => $ps_refinery_name, 'sourceValue' => $source_value)),
 				['idno' => $vs_idno, 'parent_id' => $vn_id, '_treatNumericValueAsID' => true]
 			);
 			
@@ -323,6 +324,7 @@
 		$o_reader = caGetOption('reader', $pa_options, null);
 		$o_trans = caGetOption('transaction', $pa_options, null);
 		$ps_refinery_name = caGetOption('refineryName', $pa_options, null);
+		$source_value = caGetOption('sourceValue', $pa_options, null);
 		
 		if (is_array($pa_attributes)) {
 			$va_attr_vals = array();
@@ -385,6 +387,10 @@
 										}
 									}
 									$va_attr_vals[$vs_element_code][$vn_offset + $vn_x][$vs_k] = $va_v;
+									
+									if($source_value) {
+										$va_attr_vals[$vs_element_code][$vn_offset + $vn_x]['_source'] = $source_value;
+									}
 									$vn_c++;
 									if ($vn_c >= $vn_num_repeats) { break; }
 								}
@@ -427,6 +433,9 @@
 									}
 								}
 								$va_attr_vals[$vs_element_code][$vn_x][$vs_k] = $va_v;
+								if($source_value) {
+									$va_attr_vals[$vs_element_code][$vn_x]['_source'] = $source_value;
+								}
 								$vn_c++;
 								if ($vn_c >= $vn_num_repeats) { break; }
 							}
@@ -437,18 +446,6 @@
 								}
 								$va_attr_vals[$vs_element_code][$vs_k] = $vs_path;
 							}
-						}
-					}
-				} else {
-					if ($vm_val_to_import = trim((is_array($vm_v = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $pn_c, array('returnDelimitedValueAt' => $pn_c, 'returnAsString' => true, 'delimiter' => caGetOption('delimiter', $pa_options, null), 'reader' => $o_reader)))) ? join(" ", $vm_v) : $vm_v)) {
-						if(!file_exists($vs_path = $vs_prefix.$vm_val_to_import) && ($va_candidates = array_filter($va_prefix_file_list, function($v) use ($vs_path) { return preg_match("!^{$vs_path}!", $v); })) && is_array($va_candidates) && sizeof($va_candidates)){
-							$vs_path = array_shift($va_candidates);
-						}
-						
-						if (in_array($vs_element_code, array_merge(caGetPreferredLabelNameKeyList(), caGetIdnoNameKeyList()))) {
-							$va_attr_vals[$vs_element_code] = $vs_path;
-						} else {
-							$va_attr_vals[$vs_element_code][$vs_element_code] = $vs_path;
 						}
 					}
 				}
@@ -475,6 +472,7 @@
 		$o_reader = caGetOption('reader', $pa_options, null);
 		$o_log = caGetOption('log', $pa_options, null);
 		$o_trans = caGetOption('transaction', $pa_options, null);
+		$source_value = caGetOption('sourceValue', $pa_options, null);
 		
 		if (is_array($pa_item['settings']["{$ps_refinery_name}_interstitial"])) {
 			if (!($ps_import_tablename = Datamodel::getTableName($pm_import_tablename_or_num))) { return null; }
@@ -498,10 +496,17 @@
 				if ($vs_linking_table) {
 					foreach($pa_item['settings']["{$ps_refinery_name}_interstitial"] as $vs_element_code => $va_attrs) {
 						if(!is_array($va_attrs)) { 
-							$va_attr_vals['_interstitial'][$vs_element_code] = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $pn_c, array('returnAsString' => true, 'reader' => $o_reader));
+							$va_attr_vals['_interstitial'][$vs_element_code][$vs_element_code] = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $pn_c, array('returnAsString' => true, 'reader' => $o_reader));
+							
+							if($source_value) {
+								$va_attr_vals['_interstitial'][$vs_element_code]['_source'] = $source_value; 
+							}
 						} else {
 							foreach($va_attrs as $vs_k => $vs_v) {
 								$va_attr_vals['_interstitial'][$vs_element_code][$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $pn_c, array('returnAsString' => true, 'reader' => $o_reader));
+							}
+							if($source_value) {
+								$va_attr_vals['_interstitial'][$vs_element_code]['_source'] = $source_value;
 							}
 						}
 					}
@@ -739,6 +744,7 @@
 		$vn_hierarchy_id = null;
 		
 		$pn_value_index = caGetOption('valueIndex', $pa_options, 0);
+		$source_value = caGetOption('sourceValue', $pa_options, null);
 		
 		// We can probably always use the item destination – using group destination is a vestige of older code and no longer is used
 		// but we're leaving it in for now as a fallback it item dest is not set for some reason
@@ -956,7 +962,7 @@
 		
 						// Set attributes
 						//      $va_attr_vals = directly attached attributes for item
-						if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']["{$ps_refinery_name}_attributes"], $pa_source_data, $pa_item, $pn_value_index, array('delimiter' => $va_delimiter, 'log' => $o_log, 'reader' => $o_reader, 'refineryName' => $ps_refinery_name)))) {
+						if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']["{$ps_refinery_name}_attributes"], $pa_source_data, $pa_item, $pn_value_index, array('delimiter' => $va_delimiter, 'log' => $o_log, 'reader' => $o_reader, 'refineryName' => $ps_refinery_name, 'sourceValue' => $source_value)))) {
 							$va_val = array_merge($va_val, $va_attr_vals);
 						}
 						
@@ -973,7 +979,7 @@
 			
 						// Set interstitials
 						//      $va_interstitial_attr_vals = interstitial attributes for item
-						if (isset($pa_options['mapping']) && is_array($va_interstitial_attr_vals = caProcessInterstitialAttributes($ps_refinery_name, $pa_options['mapping']->get('table_num'), $ps_table, $pa_source_data, $pa_item, $pn_value_index, array('log' => $o_log, 'reader' => $o_reader)))) {
+						if (isset($pa_options['mapping']) && is_array($va_interstitial_attr_vals = caProcessInterstitialAttributes($ps_refinery_name, $pa_options['mapping']->get('table_num'), $ps_table, $pa_source_data, $pa_item, $pn_value_index, array('log' => $o_log, 'reader' => $o_reader, 'sourceValue' => $source_value)))) {
 							$va_val = array_merge($va_val, $va_interstitial_attr_vals);
 						}
 

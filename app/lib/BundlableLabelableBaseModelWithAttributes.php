@@ -8024,11 +8024,17 @@ side. For many self-relations the direction determines the nature and display te
 					if (!isset($va_value_instance['locale_id'])) {
 						$va_value_instance['locale_id'] = $g_ui_locale_id ? $g_ui_locale_id : ca_locales::getDefaultCataloguingLocaleID();
 					}
+					
+					$opts = [];
+					if($source_value = caGetOption('_source', $va_value_instance, null)) {
+						unset($va_value_instance['_source']);
+						$opts['source'] = $source_value;
+					}
 					// Create or update the attribute
 					if ($pb_update) {
-						$t_rel->editAttribute($va_value_instance, $vs_element);
+						$t_rel->editAttribute($va_value_instance, $vs_element, null, $opts);
 					} else {
-						$t_rel->addAttribute($va_value_instance, $vs_element);
+						$t_rel->addAttribute($va_value_instance, $vs_element, null, $opts);
 					}
 				}
 			}
