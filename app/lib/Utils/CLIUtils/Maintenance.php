@@ -35,19 +35,27 @@
 		/**
 		 * Rebuild search indices
 		 */
-		public static function rebuild_sort_values() {
+		public static function rebuild_sort_values($po_opts=null) {
 			$o_db = new Db();
-
-			foreach(array(
-				'ca_objects', 'ca_object_lots', 'ca_places', 'ca_entities',
-				'ca_occurrences', 'ca_collections', 'ca_storage_locations',
-				'ca_object_representations', 'ca_representation_annotations',
-				'ca_list_items'
-			) as $vs_table) {
-				require_once(__CA_MODELS_DIR__."/{$vs_table}.php");
-				$t_table = new $vs_table;
+			
+			$tables = trim((string)$po_opts->getOption('table'));
+			
+			if($tables) {
+				$tables = preg_split('![,;]+!', $tables);
+			} else {
+				$tables = [
+					'ca_objects', 'ca_object_lots', 'ca_places', 'ca_entities',
+					'ca_occurrences', 'ca_collections', 'ca_storage_locations',
+					'ca_object_representations', 'ca_representation_annotations',
+					'ca_list_items'
+				];
+			}
+			
+			foreach($tables as $table) {
+				if(is_numeric($table)) { continue; }
+				if(!($t_table = Datamodel::getInstance($table))) { continue; }
 				$vs_pk = $t_table->primaryKey();
-				$qr_res = $o_db->query("SELECT {$vs_pk} FROM {$vs_table}");
+				$qr_res = $o_db->query("SELECT {$vs_pk} FROM {$table}");
 
 				if ($vs_label_table_name = $t_table->getLabelTableName()) {
 					require_once(__CA_MODELS_DIR__."/".$vs_label_table_name.".php");
@@ -61,7 +69,6 @@
 						print CLIProgressBar::next();
 						if ($t_label->load($vn_label_pk_val)) {
 							$t_table->logChanges(false);
-							$t_label->setMode(ACCESS_WRITE);
 							$t_label->update();
 						}
 					}
@@ -74,7 +81,6 @@
 					print CLIProgressBar::next();
 					if ($t_table->load($vn_pk_val)) {
 						$t_table->logChanges(false);
-						$t_table->setMode(ACCESS_WRITE);
 						$t_table->update();
 					}
 				}
@@ -87,7 +93,9 @@
 		 *
 		 */
 		public static function rebuild_sort_valuesParamList() {
-			return array();
+			return array(
+				"table|t=s" => _t('Restrict rebuilding to a comma-separated list of table names.')
+			);
 		}
 		# -------------------------------------------------------
 		/**
