@@ -1048,7 +1048,7 @@ final class ConfigurationExporter {
 						$vo_placement = $this->opo_dom->createElement("placement");
 						$vo_placements->appendChild($vo_placement);
 
-						$vo_placement->setAttribute("code", $vs_code = $this->makeIDNO($va_placement["placement_code"], 30, $va_used_codes));
+						$vo_placement->setAttribute("code", $vs_code = $this->makeIDNO($va_placement["placement_code"], 100, $va_used_codes));
 
 						if (isset($va_placement['settings']['bundleTypeRestrictions']) && (is_array($va_type_restrictions = $va_placement['settings']['bundleTypeRestrictions']) || strlen($va_type_restrictions))) {
 							if($va_type_restrictions && !is_array($va_type_restrictions)) { $va_type_restrictions = [$va_type_restrictions]; }
@@ -1871,7 +1871,7 @@ final class ConfigurationExporter {
 	# -------------------------------------------------------
 	// Utilities
 	# -------------------------------------------------------
-	private function makeIDNO($ps_idno, $pn_length = 30, $pa_used_list=null) {
+	private function makeIDNO($ps_idno, $pn_length = 100, $pa_used_list=null) {
 		if(strlen($ps_idno)>0) {
 			$vs_code =  substr(preg_replace("/[^_a-zA-Z0-9]/","_",$ps_idno),0, $pn_length);
 		} else {
@@ -1916,8 +1916,8 @@ final class ConfigurationExporter {
 	 */
 	private function makeIDNOFromInstance($po_model_instance, $ps_field_name, $pa_used_list=null) {
 		$va_length = $po_model_instance->getFieldInfo($ps_field_name, 'BOUNDS_LENGTH');
-		// Previously this was always 30, so let's be conservative
-		$vn_max_length = isset($va_length[1]) ? $va_length[1] : 30;
+		
+		$vn_max_length = isset($va_length[1]) ? $va_length[1] : 100;
 		$vs_value = $po_model_instance->get($ps_field_name);
 		return $this->makeIDNO($vs_value, $vn_max_length, $pa_used_list);
 	}

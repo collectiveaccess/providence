@@ -4087,7 +4087,8 @@ function caFileIsIncludable($ps_file) {
 		$o_locale_settings = TimeExpressionParser::getSettingsForLanguage($ps_locale);
 
 		$vs_display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $ps_text));
-
+		$vs_display_value = preg_replace('![ ]+!', ' ', $vs_display_value);
+		
 		// Move articles to end of string
 		$va_articles = caGetArticlesForLocale($ps_locale) ?: [];
 
