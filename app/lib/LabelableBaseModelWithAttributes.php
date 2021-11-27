@@ -1173,6 +1173,7 @@
 		 * 
 		 * @param array $labels A list of labels
 		 * @param array $pa_options Options include:
+		 *	   field = label field to use. If omitted the label display field is used. [Default is null]
 		 *     forceToLowercase = force keys in returned array to lowercase. [Default is false] 
 		 *	   checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for table that have an "access" field.
 		 *	   returnAll = return all matching values. [Default is false; only the first matched value is returned]
@@ -1181,6 +1182,7 @@
 		static public function getIDsForLabels($labels, $options=null) {
 			if (!is_array($labels) && strlen($labels)) { $labels = [$labels]; }
 		
+			$label_fld = caGetOption('field', $options, null);
 			$access_values = caGetOption('checkAccess', $options, null);
 			$return_all = caGetOption('returnAll', $options, false);
 			$force_to_lowercase = caGetOption('forceToLowercase', $options, false);
@@ -1192,10 +1194,15 @@
 		
 			$pk = $t_instance->primaryKey();
 			$table_name = $t_instance->tableName();
-			if(!($label_fld = $t_instance->getLabelDisplayField())) {
-				return null;
-			}
+			
 			$label_table = $t_instance->getLabelTableName();
+			$l = $t_instance->getLabelTableInstance();
+			
+			if(!$label_fld || !$l->hasField($label_fld)) {
+				if(!($label_fld = $t_instance->getLabelDisplayField())) {
+					return null;
+				}
+			}
 			$deleted_sql = $t_instance->hasField('deleted') ? " AND t.deleted = 0" : "";
 		
 			$params = [$labels];
