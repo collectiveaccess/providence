@@ -277,6 +277,7 @@
 			$va_attr_values = $t_attr->getAttributeValues();
 			$element = null;
 			
+			$is_changed = false;
 			
 			$num_values = sizeof($pa_values);
 			if(array_key_exists('locale_id', $pa_values)) { $num_values--; }
@@ -386,6 +387,7 @@
 				// Value arrays are different sizes - probably means the elements in the set have been reconfigured (sub-elements added or removed)
 				// so we need to force a save.
 		       $this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_attr_element_id] = true;
+		       $is_changed = true;
 			} else {
 				if(!$elements) { $elements = array_filter(ca_metadata_elements::getElementsForSet($vn_attr_element_id, ['omitContainers' => true]), function($v) { return (int)$v['datatype'] !== 0; }); }
 				
@@ -434,6 +436,7 @@
 					) {
 						$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_attr_element_id] = true;
 						$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_element_id] = true;
+						$is_changed = true;
 						break;
 					}
 				}
@@ -443,6 +446,7 @@
 						if((isset($pa_values[$element_code]) && $pa_values[$element_code]) || (isset($pa_values[$element_id]) && $pa_values[$element_id])) {
 							$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_attr_element_id] = true;
 							$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$element_id] = true;
+							$is_changed = true;
 							break;
 						}
 					}
@@ -451,7 +455,7 @@
 			
 			if (!$ps_error_source) { $ps_error_source = $this->tableName().'.'.ca_metadata_elements::getElementCodeForId($pm_element_code_or_id); }
 			
-			if (isset($this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_attr_element_id]) && $this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_attr_element_id]) {
+			if ($is_changed) {
 				$this->opa_attributes_to_edit[] = array(
 					'values' => $pa_values,
 					'attribute_id' => $pn_attribute_id,
