@@ -27,13 +27,13 @@
     "opis/json-schema": "^1.0",
     "pear/file_marc": "~1.2",
     "php-http/guzzle6-adapter": "~1.1.1",
-    "phpoffice/phppresentation": "dev-master",
-    "phpoffice/phpspreadsheet": "v1.10",
-    "phpoffice/phpword": "v0.15.*",
+    "phpoffice/phppresentation": "1.0.0",
+    "phpoffice/phpspreadsheet": "v1.20",
+    "phpoffice/phpword": "v0.18.*",
     "phpunit/phpunit": "8.5",
-    "scholarslab/bagit": "*",
+    "scholarslab/bagit": "~0.2",
     "srmklive/flysystem-dropbox-v2": ">=1.0.0",
-    "tedivm/stash": "0.14.*"
+    "tedivm/stash": "0.15.*"
   },
   "require": {
     "ext-iconv": "*",
