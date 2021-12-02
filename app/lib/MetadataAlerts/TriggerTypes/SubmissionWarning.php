@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/MetadataAlerts/TriggerTypes/Submission.php
+ * app/lib/MetadataAlerts/TriggerTypes/SubmissionWarning.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -32,7 +32,7 @@
 
 namespace CA\MetadataAlerts\TriggerTypes;
 
-class Submission extends Base {
+class SubmissionWarning extends Base {
 
 	/**
 	 * This should return a list of type specific settings in the usual ModelSettings format
@@ -44,7 +44,7 @@ class Submission extends Base {
 	}
 
 	public function getTriggerType() {
-		return __CA_MD_ALERT_CHECK_TYPE_SUBMISSION__;
+		return __CA_MD_ALERT_CHECK_TYPE_SUBMISSION_WARNING__;
 	}
 
 	/**
@@ -61,7 +61,7 @@ class Submission extends Base {
 	 * @return string
 	 */
 	public function getEventKey($t_instance, ?array $additional_data=null) {
-		return $t_instance->tableName().'/'.$t_instance->getPrimaryKey();
+		return 'SubmissionWarning/'.$t_instance->tableName().'/'.$t_instance->getPrimaryKey().'/'.caGetOption('index', $additional_data, null);
 	}
 	
 	/**

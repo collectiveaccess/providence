@@ -103,9 +103,8 @@ class AuthController extends \GraphQLServices\GraphQLServiceController {
 					],
 					'resolve' => function ($rootValue, $args) {
 						if($d = self::decodeJWT($args['token'])) {
-							$id = $d->id;
 							return [
-								'jwt' => self::encodeJWT(['id' => $id])
+								'jwt' => self::encodeJWT((array)$d)
 							];
 						}
 						

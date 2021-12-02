@@ -3586,12 +3586,13 @@ class TimeExpressionParser {
 		$start = $this->getISODateTime($pa_start_date, 'START', $pa_options);
 		$end = $this->getISODateTime($pa_end_date, 'END', $pa_options);
 		
-		switch($x=$this->isDMYRange($pa_start_date, $pa_end_date)) {
+		switch($this->isDMYRange($pa_start_date, $pa_end_date)) {
 			case 'DAY':
 				return $this->getISODateTime($pa_start_date, 'FULL', array_merge($pa_options, ['timeOmit' => true]));
 			case 'MONTH':
 				return $this->getISODateTime($pa_start_date, 'FULL', array_merge($pa_options, ['timeOmit' => true])).'/'.$this->getISODateTime($pa_end_date, 'FULL', array_merge($pa_options, ['timeOmit' => true]));
 		}
+		if ($start == $end) { return $start; }
 		return "{$start}/{$end}";
 	}
 	# -------------------------------------------------------------------

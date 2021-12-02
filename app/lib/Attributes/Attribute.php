@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -73,10 +73,18 @@ class Attribute {
 	private $opn_attribute_id;
 	private $opn_element_id;
 	private $opn_locale_id;
+	private $ops_value_source;
 	
 	static $s_instance_cache = array();
 	static $s_attribute_types = array();
 	
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getValueSource() {
+		return $this->ops_value_source;
+	}
 	# ------------------------------------------------------------------
 	/**
 	 *
@@ -92,14 +100,21 @@ class Attribute {
 	}
 	# ------------------------------------------------------------------
 	/**
-	 *
+	 * Initializes properties of this Attribute instance.
 	 *
 	 * @param array $pa_values
 	 */
 	public function setInfo($pa_values) {
 		foreach($pa_values as $vs_key => $vs_val) {
-			if (!in_array($vs_key, array('attribute_id', 'element_id', 'locale_id', 'table_num', 'row_id'))) { continue; }
-			$this->{'opn_'.$vs_key} = $vs_val;
+			# Strings:
+			if (in_array($vs_key, ['value_source'])) {
+				$this->{'ops_'.$vs_key} = $vs_val;
+				continue;
+			}
+			# Numbers:
+			if (in_array($vs_key, ['attribute_id', 'element_id', 'locale_id', 'table_num', 'row_id'])) {
+				$this->{'opn_'.$vs_key} = $vs_val;
+			}
 		}
 		
 		return true;

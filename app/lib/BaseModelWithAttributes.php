@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2019 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -99,6 +99,7 @@
 		 *      skipExistingValues = Don't add values that already exist on this record. [Default is false]
 		 *      showRepeatCountErrors = Emit visible errors when minimum/maximum repeat counts are exceeded. [Default is false]
 		 *      dontCheckMinMax = Don't do minimum/maximum repeat count checks. [Default is false]
+		 *		source = Source notes for attribute value. [Default is null]
 		 *      
 		 * @return bool True on success, false on error or null if attribute was skipped.
 		 */
@@ -168,17 +169,17 @@
 			        $vals = [];
 			        foreach($va_attrs as $o_attr) {
 			            foreach($o_attr->getValues() as $o_value) {
-			                $vn_element_id = $o_value->getElementID();
-			                $vs_element_code = ca_metadata_elements::getElementCodeForId($vn_element_id);
+			                $vn_sub_element_id = $o_value->getElementID();
+			                $vs_element_code = ca_metadata_elements::getElementCodeForId($vn_sub_element_id);
 			                
-			                if(isset($pa_values[$vn_element_id]) || isset($pa_values[$vs_element_code])) {
-			                	$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_element_id] = true;
+			                if(isset($pa_values[$vn_sub_element_id]) || isset($pa_values[$vs_element_code])) {
+			                	$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_sub_element_id] = true;
 			                }
 			                
 			                $pv = $o_value->getDisplayValue(['dateFormat' => 'original']); // need to compare dates as-entered
 			                $vals[] = $o_value->getDisplayValue(['output' => 'text', 'dateFormat' => 'original']);
 			                if (
-			                	(strlen($pa_values[$vn_element_id] && ($pa_values[$vn_element_id] != $pv)))
+			                	(strlen($pa_values[$vn_sub_element_id] && ($pa_values[$vn_sub_element_id] != $pv)))
 			            		||
 			            		(strlen($pa_values[$vs_element_code] && ($pa_values[$vs_element_code] != $pv)))
 			            	) {
@@ -227,6 +228,10 @@
 			return $vn_attribute_id;
 		}
 		# ------------------------------------------------------------------
+		/**
+		 *
+		 *		source = Source notes for attribute value. [Default is null]
+		 */
 		public function editAttribute($pn_attribute_id, $pm_element_code_or_id, $pa_values, $ps_error_source=null, $pa_options=null) {
 			$t_attr = new ca_attributes($pn_attribute_id);
 			$t_attr->purify($this->purify());
@@ -318,7 +323,10 @@
 			} else {
 				if(!$elements) { $elements = array_filter(ca_metadata_elements::getElementsForSet($vn_attr_element_id, ['omitContainers' => true]), function($v) { return (int)$v['datatype'] !== 0; }); }
 				
-				$element_codes = array_flip(array_map(function($v) { return $v['element_code']; }, $elements));
+				$element_codes = [];
+				foreach($elements as $e) {
+					$element_codes[$e['element_code']] = $e['element_id'];
+				}
 				
 				// Have any of the values changed?
 				foreach($va_attr_values as $o_attr_value) {
@@ -366,7 +374,8 @@
 				
 				if(sizeof($element_codes) > 0) {
 					foreach($element_codes as $element_code => $element_id) {
-						if(isset($pa_values[$element_code]) && $pa_values[$element_code]) {
+						if((isset($pa_values[$element_code]) && $pa_values[$element_code]) || (isset($pa_values[$element_id]) && $pa_values[$element_id])) {
+							$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$element_id] = true;
 							$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$element_id] = true;
 							break;
 						}
@@ -389,7 +398,9 @@
 			return true;
 		}
 		# ------------------------------------------------------------------
-		// edit attribute from current row
+		/**
+		 * edit attribute from current row
+		 */
 		public function _editAttribute($pn_attribute_id, $pa_values, $po_trans=null, $pa_info=null) {
 			$t_attr = new ca_attributes($pn_attribute_id);
 			$t_attr->purify($this->purify());
@@ -411,6 +422,8 @@
 		/**
 		 * Replaces first attribute value with specified values; will add attribute value if no attributes are defined 
 		 * This is handy for doing editing on non-repeating attributes
+		 *
+		 *		source = Source notes for attribute value. [Default is null]
 		 */
 		public function replaceAttribute($pa_values, $pm_element_code_or_id, $ps_error_source=null, $pa_options=null) {
 			$va_attrs = $this->getAttributesByElement($pm_element_code_or_id);
@@ -1795,7 +1808,8 @@
 			
 			$va_element_codes = array();
 			$va_elements_by_container = array();
-			$vb_should_output_locale_id = ($t_element->getSetting('doesNotTakeLocale')) ? false : true;
+			$vb_should_output_locale_id = (bool)$t_element->getSetting('doesNotTakeLocale');
+			$vb_should_output_value_source = (bool)$t_element->getSetting('includeSourceData');
 			$va_element_value_defaults = array();
 			$va_elements_without_break_by_container = array();
 			$va_elements_break_by_container = array();
@@ -1901,6 +1915,21 @@
 				];
 				if (stripos($va_elements_by_container['_locale_id']['element'], "'hidden'")) {
 					$va_elements_by_container['_locale_id']['hidden'] = true;
+				}
+			}
+			
+			if ($vb_should_output_value_source) {	// output value_source, if necessary
+				$va_elements_by_container['_value_source'] = [
+					'hidden' => false, 
+					'element' => $t_attr->htmlFormElement('value_source', '^ELEMENT', [
+						'width' => '670px', 'height' => 3, 'value' => '{value_source}',
+						'id' => '{fieldNamePrefix}value_source_{n}', 
+						'name' => '{fieldNamePrefix}value_source_{n}',
+						'no_tooltips' => true, 
+					])
+				];
+				if (stripos($va_elements_by_container['_value_source']['element'], "'hidden'")) {
+					$va_elements_by_container['_value_source']['hidden'] = true;
 				}
 			}
 			
@@ -3469,6 +3498,70 @@
             if(sizeof($cf) === 0) { return false; }
             if (sizeof(array_filter(array_keys($cf), function($v) { return substr($v, 0, 14) === '_ca_attribute_'; })) > 0) { return true; }
             return false;
+		}
+		# --------------------------------------------------------------------------------
+		/**
+		 * Translate an array of attribute values into row_ids 
+		 * 
+		 * @param array $values A list of values
+		 * @param array $options Options include:
+		 *     forceToLowercase = force keys in returned array to lowercase. [Default is false] 
+		 *	   checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for table that have an "access" field.
+		 *	   returnAll = return all matching values. [Default is false; only the first matched value is returned]
+		 * @return array Array with keys set to labels and values set to row_ids. Returns null on error.
+		 */
+		static public function getIDsForAttributeValues(string $element_code, array $values, ?array $options=null) : array {
+			if (!is_array($values) && strlen($values)) { $values = [$values]; }
+		
+			$access_values = caGetOption('checkAccess', $options, null);
+			$return_all = caGetOption('returnAll', $options, false);
+			$force_to_lowercase = caGetOption('forceToLowercase', $options, false);
+		
+			$table_name = $table_name ? $table_name : get_called_class();
+			if (!($t_instance = Datamodel::getInstanceByTableName($table_name, true))) { return null; }
+		
+			$values = array_map(function($v) { return (string)$v; }, $values);
+		
+			$pk = $t_instance->primaryKey();
+			$table_name = $t_instance->tableName();
+			$table_num = $t_instance->tableNum();
+			
+			
+			$deleted_sql = $t_instance->hasField('deleted') ? " AND t.deleted = 0" : "";
+		
+			$element_id = ca_metadata_elements::getElementID($element_code);
+			$datatype = ca_metadata_elements::getElementDatatype($element_code);
+			
+			$attr_fld = Attribute::getSortFieldForDatatype($datatype);
+			
+			$params = [$element_id, $values];
+		
+			$access_sql = '';
+			if (is_array($access_values) && sizeof($access_values)) {
+				$access_sql = " AND t.access IN (?)";
+				$params[] = $access_values;
+			}
+			
+			$qr_res = $t_instance->getDb()->query("
+				SELECT t.{$pk}, av.{$attr_fld}
+				FROM {$table_name} t
+				INNER JOIN ca_attributes AS a ON a.row_id = t.{$pk} AND a.table_num = {$table_num}
+				INNER JOIN ca_attribute_values AS av ON av.attribute_id = a.attribute_id
+				WHERE
+					av.element_id = ? AND av.{$attr_fld} IN (?) {$deleted_sql} {$access_sql}
+			", $params);
+		
+			$ret = [];
+			while($qr_res->nextRow()) {
+				$key = $force_to_lowercase ? strtolower($qr_res->get($attr_fld)) : $qr_res->get($attr_fld);
+				if ($return_all) {
+					$ret[$key][] = $qr_res->get($pk);
+				} else {
+					if(array_key_exists($key, $ret)) { continue; }
+					$ret[$key] = $qr_res->get($pk);
+				}
+			}
+			return $ret;
 		}
 		# ------------------------------------------------------------------
 	}

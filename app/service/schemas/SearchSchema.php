@@ -207,13 +207,17 @@ class SearchSchema extends \GraphQLServices\GraphQLSchema {
 					'type' => Type::string(),
 					'description' => 'Table searched'
 				],
-				'idnos' => [
-					'type' => Type::listOf($valueMap),
-					'description' => 'Idno value map'
+				'bundle' => [
+					'type' => Type::string(),
+					'description' => 'Bundle searched'
 				],
-				'labels' => [
+				'map' => [
+					'type' => Type::string(),
+					'description' => 'JSON-encoded table of values to existing ids'
+				],
+				'values' => [
 					'type' => Type::listOf($valueMap),
-					'description' => 'Label map'
+					'description' => 'Value map'
 				]
 			]
 		]);

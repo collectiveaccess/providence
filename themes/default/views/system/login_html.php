@@ -34,10 +34,8 @@
 		<title><?php print $this->request->config->get("app_display_name"); ?></title>
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		
-		<link href="<?php print $this->request->getThemeUrlPath(); ?>/css/login.css" rel="stylesheet" type="text/css" />
-<?php
-	print AssetLoadManager::getLoadHTML($this->request);
-?>
+		<link href="<?= caGetThemeUrlPath() ?>/css/login.css" rel="stylesheet" type="text/css" />
+		<?= AssetLoadManager::getLoadHTML($this->request); ?>
 
 		<script type="text/javascript">
 			// initialize CA Utils
@@ -48,7 +46,7 @@
 		<div align="center">
 			<div id="loginBox">
 				<div align="center">
-					<?= caGetLoginLogo(); ?>
+					<?= caGetDefaultLogo(); ?>
 				</div>
 				<div id="systemTitle">
 					<?php print $this->request->config->get("app_display_name"); ?>

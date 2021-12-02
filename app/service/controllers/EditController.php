@@ -156,6 +156,10 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						$errors = $warnings = $info =  $ids = $idnos = [];
 						
 						$table = $args['table'];
+						if(!\Datamodel::tableExists($table)) {
+							throw new \ServiceException(_t('Invalid table: %1', $table));
+						}
+						
 						$insert_mode = strtoupper($args['insertMode']);
 						$erp = strtoupper($args['existingRecordPolicy']);
 						$match_on = (is_array($args['matchOn']) && sizeof($args['matchOn'])) ? $args['matchOn'] : ['idno'];
@@ -386,6 +390,9 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						$errors = $warnings = $info = $ids = $idnos = [];
 						
 						$table = $args['table'];
+						if(!\Datamodel::tableExists($table)) {
+							throw new \ServiceException(_t('Invalid table: %1', $table));
+						}
 						$idno_fld = \Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD');
 						
 						$records = (is_array($args['records']) && sizeof($args['records'])) ? $args['records'] : [[
@@ -480,6 +487,9 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						$errors = $warnings = $info = [];
 						
 						$table = $args['table'];
+						if(!\Datamodel::tableExists($table)) {
+							throw new \ServiceException(_t('Invalid table: %1', $table));
+						}
 						
 						$opts = [];
 						$identifiers = [];
@@ -572,26 +582,28 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						
 						$errors = $warnings = $info = [];
 						
-						
 						if($list = $args['list']) {
 							$table = 'ca_list_items';
 							$qr = $table::find(['list_id' => $list], ['modified' => $args['date'], 'restrictToTypes' => (isset($args['types']) && is_array($args['types']) && sizeof($args['types'])) ? $args['types'] : ($args['type'] ?? [$args['type']]), 'returnAs' => 'searchResult']);
 						} else {
 							$table = $args['table'];
+							if(!\Datamodel::tableExists($table)) {
+								throw new \ServiceException(_t('Invalid table: %1', $table));
+							}
 							$qr = $table::find('*', ['modified' => $args['date'], 'restrictToTypes' => (isset($args['types']) && is_array($args['types']) && sizeof($args['types'])) ? $args['types'] : ($args['type'] ?? [$args['type']]), 'returnAs' => 'searchResult']);
 						}
 						$c = 0;
 						if($qr && ($qr->numHits() > 0)) {
-							$t_instance = Datamodel::getInstance($table, true);
-							$pk = $t_instance->primaryKey();
+							$instance = Datamodel::getInstance($table, true);
+							$pk = $instance->primaryKey();
 							
-							$hier_root_restriction_sql = in_array($t_instance->getHierarchyType(), [__CA_HIER_TYPE_SIMPLE_MONO__, __CA_HIER_TYPE_MULTI_MONO__]);
+							$hier_root_restriction_sql = in_array($instance->getHierarchyType(), [__CA_HIER_TYPE_SIMPLE_MONO__, __CA_HIER_TYPE_MULTI_MONO__]);
 							
 							if((bool)$args['fast'] && Datamodel::getFieldNum($table, 'deleted')) {
 								$db = new Db();
 										
 								try {
-									if($args['date'] || $args['types']) {
+									if($args['date'] || $args['types'] || $list) {
 										$db->query("UPDATE {$table} SET deleted = 1 WHERE {$pk} IN (?)".($hier_root_restriction_sql ? " AND parent_id IS NOT NULL" : ''), [$qr->getAllFieldValues("{$table}.{$pk}")]);
 									} else {
 										$db->query("UPDATE {$table} SET deleted = 1".($hier_root_restriction_sql ? " WHERE parent_id IS NOT NULL" : ''));
@@ -612,6 +624,9 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 										$c++;
 									}
 								}
+							}
+							if($table === 'ca_list_items') {
+								ExternalCache::flush('listItems');
 							}
 						}
 						
@@ -708,8 +723,9 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							$c = 0;
 							list($target_identifier, $opts) = Edit\resolveParams($args, 'target');
 							if(!($rel = $subject->addRelationship($target, $target_identifier, $reltype, $effective_date, null, null, null, $opts))) {
+								
 								foreach($subject->errors() as $e) {
-									$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", Errors\toGraphQLError($e->getErrorNumber()), _t('Could not create relationship: %1', $e->getErrorMessage()), 'GENERAL');
+									$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", Error\toGraphQLError($e->getErrorNumber()), _t('Could not create relationship: %1', $e->getErrorMessage()), 'GENERAL');
 								}
 							} elseif(sizeof($bundles) > 0) {
 								//  Add interstitial data
@@ -835,7 +851,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 								$c = 0;
 								if(!($rel = $s->editRelationship($target, $rel_id, $target_identifier, $new_rel_type, $effective_date))) {
 									foreach($s->errors() as $e) {
-										$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", Errors\toGraphQLError($e->getErrorNumber()), _t('Could not edit relationship: %1', $e->getErrorMessage()), 'GENERAL'); 
+										$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", Error\toGraphQLError($e->getErrorNumber()), _t('Could not edit relationship: %1', $e->getErrorMessage()), 'GENERAL'); 
 									}
 								} elseif(sizeof($bundles) > 0) {
 									//  Edit interstitial data
@@ -1079,6 +1095,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 			
 			if(!strlen($bundle_name)) { continue; }
 			
+			$pref_label_set = false;
 			switch($bundle_name) {
 				# -----------------------------------
 				case 'effective_date':
@@ -1100,11 +1117,14 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 					if(!$delete && $id) {
 						// Edit
 						$rc = $instance->editLabel($id, $label_values, $locale_id, $type_id, ($bundle_name === 'preferred_labels'));
+						if($bundle_name === 'preferred_labels') { $pref_label_set = true; }
 					} elseif($replace && !$id) {
 						$rc = $instance->replaceLabel($label_values, $locale_id, $type_id, ($bundle_name === 'preferred_labels'));
+						if($bundle_name === 'preferred_labels') { $pref_label_set = true; }
 					} elseif(!$delete && !$id) {
 						// Add
 						$rc = $instance->addLabel($label_values, $locale_id, $type_id, ($bundle_name === 'preferred_labels'));
+						if($bundle_name === 'preferred_labels') { $pref_label_set = true; }
 					} elseif($delete && $id) {
 						// Delete
 						$rc = $instance->removeLabel($id);
@@ -1123,7 +1143,9 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 				# -----------------------------------
 				default:
 					if($instance->hasField($bundle_name)) {
-						$instance->set($bundle_name, $delete ? null : ((is_array($b['values']) && sizeof($b['values'])) ? array_shift($b['values']) : $b['value'] ?? null), ['allowSettingOfTypeID' => true]);
+						$v = $delete ? null : ((is_array($b['values']) && sizeof($b['values'])) ? array_shift($b['values']) : $b['value'] ?? null);
+						if(is_array($v)) { $v = $v['value'] ?? null; }
+						$instance->set($bundle_name, $v, ['allowSettingOfTypeID' => true]);
 						$rc = $instance->update();
 					} else {
 						 // attribute
@@ -1177,6 +1199,11 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 					break;
 				# -----------------------------------
 			}
+		}
+		
+		if(method_exists($instance, 'addLabel') && ($instance->getLabelCount(true) == 0)) {
+			$locale_id = ca_locales::getDefaultCataloguingLocaleID();
+			$rc = $instance->addLabel([$instance->getLabelDisplayField() => "[".caGetBlankLabelText($instance->tableName())."]"], $locale_id, null, true);
 		}
 		return ['errors' => $errors, 'warnings' => $warnings, 'info' => $info];
 	}

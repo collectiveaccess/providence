@@ -163,5 +163,20 @@ function caGetThemeUrlPath() : string {
 	array_pop($tmp);
 	return defined('__CA_THEME_URL__') ? __CA_THEME_URL__ : join("/", $tmp).'/themes/default';
 }
+# --------------------------------------------------------------------------------------------
+ /**
+  * Return default application logo as HTML tag
+  *
+  * @return string
+  */
+function caGetDefaultLogo() : string {
+	if(function_exists('caGetLoginLogo')) { 
+		return caGetLoginLogo();
+	}
+	$url = caGetThemeUrlPath()."/graphics/logos/logo.svg";
+	$width = 327;
+	$height = 45;
+	return "<img src={$url} alt='CollectiveAccess logo' width='{$width}' height='{$height}'/>";
+}
 # ---------------------------------------------------------------------------------------------
 		
