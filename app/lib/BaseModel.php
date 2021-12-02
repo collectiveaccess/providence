@@ -12274,11 +12274,7 @@ $pa_options["display_form_field_tips"] = true;
 					
 					$t_instance = new $vs_table;
 					if ($o_trans) { $t_instance->setTransaction($o_trans); }
-<<<<<<< HEAD
-					if ($t_instance->load($id)) {
-=======
-					if ($t_instance->load((int)$qr_res->get($vs_pk), !caGetOption('noCache', $pa_options, false))) {
->>>>>>> develop
+					if ($t_instance->load($id, !caGetOption('noCache', $pa_options, false))) {
 						return $t_instance;
 					}
 				}
