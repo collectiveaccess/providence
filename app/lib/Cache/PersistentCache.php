@@ -48,6 +48,11 @@ class PersistentCache {
 	 *
 	 */
 	static $existance_cache = [];
+
+	/**
+	 *
+	 */
+	static $in_transaction = false;
 	# ------------------------------------------------
 	/**
 	 * Fetches an entry from the cache.
@@ -55,11 +60,21 @@ class PersistentCache {
 	 * @param string $namespace
 	 * @return mixed The cached data or NULL, if no cache entry exists for the given key.
 	 */
-	public static function fetch($key, $namespace='default') {
+	public static function fetch($key, $namespace='default', ?array $options=null) {
 		if (!self::$db) { self::$db = new Db(); }
 		$cache_key = md5("{$key}/{$namespace}");
 		
-		$qr = self::$db->query("SELECT cache_value FROM ca_persistent_cache WHERE cache_key = ?", [$cache_key]);
+		// Note: we can lock rows here to prevent race conditions
+		$lock = caGetOption('lock', $options, false);
+		if(self::$in_transaction) { 
+			self::$db->commitTransaction();
+			self::$in_transaction = false;
+		}
+		if($lock) { 
+			self::$db->beginTransaction(); 
+			self::$in_transaction = true;
+		}
+		$qr = self::$db->query("SELECT cache_value FROM ca_persistent_cache WHERE cache_key = ?".($lock ? ' FOR UPDATE' : ''), [$cache_key]);
 		if ($qr && $qr->nextRow()) {
 			self::$existance_cache[$cache_key] = true;
 			return self::$memory_cache[$cache_key] = caUnserializeForDatabase($qr->get('cache_value'));
@@ -88,6 +103,12 @@ class PersistentCache {
 		if ((bool)$qr) {
 			self::$existance_cache[$cache_key] = true;
 			self::$memory_cache[$cache_key] = $data;
+		}
+		
+		// Remove transaction and unlock any locked rows
+		if(self::$in_transaction) { 
+			self::$db->commitTransaction();
+			self::$in_transaction = false;
 		}
 		
 		return (bool)$qr;
@@ -170,3 +191,11 @@ class PersistentCache {
 	}
 	# ------------------------------------------------
 }
+
+	
+register_shutdown_function(function() {
+	if(PersistentCache::$in_transaction) { 
+		PersistentCache::$db->commitTransaction();
+		PersistentCache::$in_transaction = false;
+	}
+});

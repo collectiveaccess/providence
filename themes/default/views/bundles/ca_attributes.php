@@ -63,6 +63,8 @@
 	// Show attribute source data (hardcoded text field)
 	$include_source_data = ($t_element->getSetting('includeSourceData') && ($vs_render_mode !== 'checklist'));
 	
+	$single_value_per_locale = (bool)$t_element->getSetting('singleValuePerLocale');
+	
 	if(($t_element->get('datatype') == __CA_ATTRIBUTE_VALUE_CONTAINER__) && isset($va_element_settings['readonlyTemplate']) && (strlen($va_element_settings['readonlyTemplate']) > 0)) {
 		$vb_is_read_only_for_existing_vals = true;
 
@@ -405,6 +407,7 @@ if (caGetOption('canMakePDF', $va_element_info[$root_element_id]['settings'], fa
 			bundlePreview: <?= caEscapeForBundlePreview($vs_bundle_preview); ?>,
 			readonly: <?= $vb_read_only ? "1" : "0"; ?>,
 			defaultLocaleID: <?= ca_locales::getDefaultCataloguingLocaleID(); ?>,
+			singleValuePerLocale: <?= $single_value_per_locale ? "1" : "0"; ?>,
 			onInitializeItem: caHideBundlesForReadOnlyContainers, /* todo: look for better callback (or make one up?) */
 			
 			listItemClassName: 'repeatingItem',
@@ -421,3 +424,4 @@ if (caGetOption('canMakePDF', $va_element_info[$root_element_id]['settings'], fa
 		window.location = '<?= caNavUrl($this->request, '*', '*', 'PrintBundle', array('element_code' => $t_element->get('element_code'), $t_instance->primaryKey() => $t_instance->getPrimaryKey())); ?>/template/' + template + '/attribute_id/' + attribute_id;
 	}
 </script>
+

@@ -1655,7 +1655,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		}
 	
 		if (!($t_instance = ca_data_exporters::loadInstanceByID($pn_record_id, $pn_table_num, $pa_options))) {
-			throw new ApplicationException(_t("Record with ID %1 does not exist in table %2", $pn_record_id, $pn_table_num));
+			//throw new ApplicationException(_t("Record with ID %1 does not exist in table %2", $pn_record_id, $pn_table_num));
+			return [];
 		}
 		
 		$settings = $t_exporter_item->getSettings();
@@ -2118,11 +2119,26 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 								continue;
 							}
 						}
-						$va_item_info[] = array(
-							'element' => $vs_element,
-							'text' => $vs_text,
-							'text_raw' => $return_raw_data ? $va_values_raw[$vn_i] : null
-						);
+						
+						// When delimiter is set with repeat we make repeating values out of single values by exploding on delimiter
+						// This allows for synthesis of repeating values from a template.
+						if($vs_delimiter && $vb_repeat) {	
+							$tvals = array_map("trim", explode($vs_delimiter, $vs_text));
+							if($deduplicate) { $tvals = array_unique($tvals); }
+							foreach($tvals as $tval) {
+								$va_item_info[] = array(
+									'element' => $vs_element,
+									'text' => $tval,
+									'text_raw' => $tval
+								);
+							}
+						} else {
+							$va_item_info[] = array(
+								'element' => $vs_element,
+								'text' => $vs_text,
+								'text_raw' => $return_raw_data ? $va_values_raw[$vn_i] : null
+							);
+						}
 					}
 				}
 			}
@@ -2299,8 +2315,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		unset($pa_options['limit']);
 		$cache_key = caMakeCacheKeyFromOptions($pa_options, "{$pn_record_id}/{$pn_table_num}");
 		
-		if(sizeof(ca_data_exporters::$s_instance_cache)>255) {
-			array_shift(ca_data_exporters::$s_instance_cache);
+		if(sizeof(ca_data_exporters::$s_instance_cache)>4096) {
+			array_splice(ca_data_exporters::$s_instance_cache, 0, 1024);
 		}
 
 		if(isset(ca_data_exporters::$s_instance_cache[$cache_key])) {

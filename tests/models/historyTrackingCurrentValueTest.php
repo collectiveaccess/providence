@@ -190,7 +190,6 @@ class historyTrackingCurrentValueTest extends BaseTestWithData {
 		
 		$rel2 = $this->addTestRelationship($object, 'ca_storage_locations', $this->shelf2_id, 'related', '10/1/2029');
 		$history = $object->getHistory(['currentOnly' => true]);
-		print_R($history);
 		$this->assertIsArray($history);
 		$this->assertCount(1, $history);
 		$by_time = array_shift($history);
@@ -206,7 +205,7 @@ class historyTrackingCurrentValueTest extends BaseTestWithData {
 	 */
 	private function _testCurrentValuePolicyUsingSimpleHistory(string $policy) {
 		$object = ca_objects::findAsInstance(['object_id' => $this->image_id]);		
-		$rel1 = $object->addRelationship('ca_storage_locations', $this->shelf1_id, 'related', '5/2020');
+		$rel1 = $this->addTestRelationship($object, 'ca_storage_locations', $this->shelf1_id, 'related', '5/2020');
 		
 		$history = $object->getHistory(['policy' => $policy]);
 		$this->assertIsArray($history);

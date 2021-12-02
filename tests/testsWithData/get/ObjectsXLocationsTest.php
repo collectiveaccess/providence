@@ -133,18 +133,6 @@ class ObjectsXLocationsTest extends BaseTestWithData {
 		));
 		$this->assertEquals('A Room > My Shelf; A Room > My Cabinet', $vm_ret);
 
-		$vm_ret = $this->opt_object->get('ca_storage_locations', array(
-			'showCurrentOnly' => true
-		));
-		$this->assertEquals('My Shelf', $vm_ret);
-
-		$vm_ret = $this->opt_object->get('ca_storage_locations.hierarchy.preferred_labels.name', array(
-			'delimiter' => '; ',
-			'hierarchyDelimiter' => ' > ',
-			'showCurrentOnly' => true
-		));
-		$this->assertEquals('A Room > My Shelf', $vm_ret);
-
 		$vm_ret = $this->opt_object->get("ca_objects_x_storage_locations.effective_date");
 		$this->assertEquals('January 28 1985;2015', $vm_ret);
 

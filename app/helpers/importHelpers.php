@@ -61,6 +61,7 @@
 		$o_reader = caGetOption('reader', $pa_options, null);
 		$o_trans = caGetOption('transaction', $pa_options, null);
 		$o_refinery_instance = caGetOption('refinery', $pa_options, null);
+		$source_value = caGetOption('sourceValue', $pa_options, null);
 		
 		$va_delimiter = $pa_item['settings']["{$ps_refinery_name}_delimiter"];
 
@@ -132,7 +133,7 @@
 			
 			// Process "attributes" block
 			$va_attributes = array_merge(
-				caProcessRefineryAttributes($va_attributes_spec, $pa_source_data, $pa_item, $pn_c, array('delimiter' => $va_delimiter, 'log' => $o_log, 'reader' => $o_reader, 'refineryName' => $ps_refinery_name)),
+				caProcessRefineryAttributes($va_attributes_spec, $pa_source_data, $pa_item, $pn_c, array('delimiter' => $va_delimiter, 'log' => $o_log, 'reader' => $o_reader, 'refineryName' => $ps_refinery_name, 'sourceValue' => $source_value)),
 				['idno' => $vs_idno, 'parent_id' => $vn_id, '_treatNumericValueAsID' => true]
 			);
 			
@@ -322,8 +323,8 @@
 		$o_log = caGetOption('log', $pa_options, null);
 		$o_reader = caGetOption('reader', $pa_options, null);
 		$o_trans = caGetOption('transaction', $pa_options, null);
-		$vs_batch_media_directory = Configuration::load()->get('batch_media_import_root_directory');
 		$ps_refinery_name = caGetOption('refineryName', $pa_options, null);
+		$source_value = caGetOption('sourceValue', $pa_options, null);
 		
 		if (is_array($pa_attributes)) {
 			$va_attr_vals = array();
@@ -332,9 +333,13 @@
 				$va_prefix_file_list = [];
 
 				// Add details for file and media types.
-				if (in_array(ca_metadata_elements::getElementDatatype($vs_element_code), [__CA_ATTRIBUTE_VALUE_FILE__, __CA_ATTRIBUTE_VALUE_MEDIA__]) && $vs_batch_media_directory && isset($pa_item['settings']["{$ps_refinery_name}_mediaPrefix"]) && $pa_item['settings']["{$ps_refinery_name}_mediaPrefix"]) {
-					 $vs_prefix = preg_replace("![/]+!", "/", "{$vs_batch_media_directory}/".$pa_item['settings']["{$ps_refinery_name}_mediaPrefix"]."/");
-					 $va_prefix_file_list = caGetDirectoryContentsAsList($vs_prefix, true); 
+				$va_prefix_file_list = [];
+				$media_directories = caGetAvailableMediaUploadPaths();
+				if (in_array(ca_metadata_elements::getElementDatatype($vs_element_code), [__CA_ATTRIBUTE_VALUE_FILE__, __CA_ATTRIBUTE_VALUE_MEDIA__]) && sizeof($media_directories) && isset($pa_item['settings']["{$ps_refinery_name}_mediaPrefix"]) && $pa_item['settings']["{$ps_refinery_name}_mediaPrefix"]) {
+					foreach($media_directories as $d) {
+						$vs_prefix = preg_replace("![/]+!", "/", "{$d}/".$pa_item['settings']["{$ps_refinery_name}_mediaPrefix"]."/");
+						$va_prefix_file_list = array_merge($va_prefix_file_list, caGetDirectoryContentsAsList($vs_prefix, true));
+					}
 				}
 			
 				$vb_is_repeating = false;
@@ -360,17 +365,32 @@
 									if (!$va_v || (!is_array($va_v) && !trim($va_v))) { continue; }
 									if ($vs_prefix && is_array($va_v)) {
 										$va_v = array_map(function($v) use ($vs_prefix) { return $vs_prefix.$v; });
-									
+
 										foreach($va_v as $vn_y => $vm_val_to_import) {
 											$vm_val_to_import = preg_replace("![\\]+!", "/", $vm_val_to_import);
-											if(!file_exists($vs_path = $vs_prefix.$vm_val_to_import) && ($va_candidates = array_filter($va_prefix_file_list, function($v) use ($vs_path) { return preg_match("!^{$vs_path}!", $v); })) && is_array($va_candidates) && sizeof($va_candidates)){
-												$va_v[$vn_y] = array_shift($va_candidates);
-											} else {
-												$va_v[$vn_y] = $vs_path;
+											foreach($media_directories as $d) {
+												if ( ! file_exists( $vs_path = $d . $vm_val_to_import )
+												     && ( $va_candidates = array_filter( $va_prefix_file_list,
+														function ( $v ) use ( $vs_path ) {
+															return preg_match( "!^{$vs_path}!", $v );
+														} ) )
+												     && is_array( $va_candidates )
+												     && sizeof( $va_candidates )
+												) {
+													$va_v[ $vn_y ] = array_shift( $va_candidates );
+													break;
+												} elseif(file_exists( $vs_path = $d . $vm_val_to_import )) {
+													$va_v[ $vn_y ] = $vs_path;
+													break;
+												}
 											}
 										}
 									}
 									$va_attr_vals[$vs_element_code][$vn_offset + $vn_x][$vs_k] = $va_v;
+									
+									if($source_value) {
+										$va_attr_vals[$vs_element_code][$vn_offset + $vn_x]['_source'] = $source_value;
+									}
 									$vn_c++;
 									if ($vn_c >= $vn_num_repeats) { break; }
 								}
@@ -413,6 +433,9 @@
 									}
 								}
 								$va_attr_vals[$vs_element_code][$vn_x][$vs_k] = $va_v;
+								if($source_value) {
+									$va_attr_vals[$vs_element_code][$vn_x]['_source'] = $source_value;
+								}
 								$vn_c++;
 								if ($vn_c >= $vn_num_repeats) { break; }
 							}
@@ -423,18 +446,6 @@
 								}
 								$va_attr_vals[$vs_element_code][$vs_k] = $vs_path;
 							}
-						}
-					}
-				} else {
-					if ($vm_val_to_import = trim((is_array($vm_v = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $pn_c, array('returnDelimitedValueAt' => $pn_c, 'returnAsString' => true, 'delimiter' => caGetOption('delimiter', $pa_options, null), 'reader' => $o_reader)))) ? join(" ", $vm_v) : $vm_v)) {
-						if(!file_exists($vs_path = $vs_prefix.$vm_val_to_import) && ($va_candidates = array_filter($va_prefix_file_list, function($v) use ($vs_path) { return preg_match("!^{$vs_path}!", $v); })) && is_array($va_candidates) && sizeof($va_candidates)){
-							$vs_path = array_shift($va_candidates);
-						}
-						
-						if (in_array($vs_element_code, array_merge(caGetPreferredLabelNameKeyList(), caGetIdnoNameKeyList()))) {
-							$va_attr_vals[$vs_element_code] = $vs_path;
-						} else {
-							$va_attr_vals[$vs_element_code][$vs_element_code] = $vs_path;
 						}
 					}
 				}
@@ -461,6 +472,7 @@
 		$o_reader = caGetOption('reader', $pa_options, null);
 		$o_log = caGetOption('log', $pa_options, null);
 		$o_trans = caGetOption('transaction', $pa_options, null);
+		$source_value = caGetOption('sourceValue', $pa_options, null);
 		
 		if (is_array($pa_item['settings']["{$ps_refinery_name}_interstitial"])) {
 			if (!($ps_import_tablename = Datamodel::getTableName($pm_import_tablename_or_num))) { return null; }
@@ -484,10 +496,17 @@
 				if ($vs_linking_table) {
 					foreach($pa_item['settings']["{$ps_refinery_name}_interstitial"] as $vs_element_code => $va_attrs) {
 						if(!is_array($va_attrs)) { 
-							$va_attr_vals['_interstitial'][$vs_element_code] = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $pn_c, array('returnAsString' => true, 'reader' => $o_reader));
+							$va_attr_vals['_interstitial'][$vs_element_code][$vs_element_code] = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $pn_c, array('returnAsString' => true, 'reader' => $o_reader));
+							
+							if($source_value) {
+								$va_attr_vals['_interstitial'][$vs_element_code]['_source'] = $source_value; 
+							}
 						} else {
 							foreach($va_attrs as $vs_k => $vs_v) {
 								$va_attr_vals['_interstitial'][$vs_element_code][$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $pn_c, array('returnAsString' => true, 'reader' => $o_reader));
+							}
+							if($source_value) {
+								$va_attr_vals['_interstitial'][$vs_element_code]['_source'] = $source_value;
 							}
 						}
 					}
@@ -725,6 +744,7 @@
 		$vn_hierarchy_id = null;
 		
 		$pn_value_index = caGetOption('valueIndex', $pa_options, 0);
+		$source_value = caGetOption('sourceValue', $pa_options, null);
 		
 		// We can probably always use the item destination – using group destination is a vestige of older code and no longer is used
 		// but we're leaving it in for now as a fallback it item dest is not set for some reason
@@ -942,7 +962,7 @@
 		
 						// Set attributes
 						//      $va_attr_vals = directly attached attributes for item
-						if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']["{$ps_refinery_name}_attributes"], $pa_source_data, $pa_item, $pn_value_index, array('delimiter' => $va_delimiter, 'log' => $o_log, 'reader' => $o_reader, 'refineryName' => $ps_refinery_name)))) {
+						if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']["{$ps_refinery_name}_attributes"], $pa_source_data, $pa_item, $pn_value_index, array('delimiter' => $va_delimiter, 'log' => $o_log, 'reader' => $o_reader, 'refineryName' => $ps_refinery_name, 'sourceValue' => $source_value)))) {
 							$va_val = array_merge($va_val, $va_attr_vals);
 						}
 						
@@ -959,7 +979,7 @@
 			
 						// Set interstitials
 						//      $va_interstitial_attr_vals = interstitial attributes for item
-						if (isset($pa_options['mapping']) && is_array($va_interstitial_attr_vals = caProcessInterstitialAttributes($ps_refinery_name, $pa_options['mapping']->get('table_num'), $ps_table, $pa_source_data, $pa_item, $pn_value_index, array('log' => $o_log, 'reader' => $o_reader)))) {
+						if (isset($pa_options['mapping']) && is_array($va_interstitial_attr_vals = caProcessInterstitialAttributes($ps_refinery_name, $pa_options['mapping']->get('table_num'), $ps_table, $pa_source_data, $pa_item, $pn_value_index, array('log' => $o_log, 'reader' => $o_reader, 'sourceValue' => $source_value)))) {
 							$va_val = array_merge($va_val, $va_interstitial_attr_vals);
 						}
 
@@ -1145,8 +1165,6 @@
 								unset($va_val['_status']);
 								break;
 							case 'ca_object_representations':
-								if (!($vs_batch_media_directory = $t_instance->getAppConfig()->get('batch_media_import_root_directory'))) { break; }
-							
 							    if (isset($va_val['name']) && is_array($va_val['name']) && isset($va_val['name']['name']) && $va_val['name']['name']) { 
 							        $vs_name = $va_val['name']['name'];
 							    } elseif((isset($va_val['name']) && $va_val['name'])) {
@@ -1161,34 +1179,56 @@
 									// Search for files in import directory (or subdirectory of import directory specified by mediaPrefix)
 									$vs_media_dir_prefix = isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) ? '/'.$pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] : '';
 
-								    $va_files = caBatchFindMatchingMedia($vs_batch_media_directory.$vs_media_dir_prefix, $vs_item, ['matchMode' => caGetOption('objectRepresentationSplitter_matchMode', $pa_item['settings'],'FILE_NAME'), 'matchType' => caGetOption('objectRepresentationSplitter_matchType', $pa_item['settings'], null), 'log' => $o_log]);
+									foreach(caGetAvailableMediaUploadPaths() as $d) {
+										$va_files = caBatchFindMatchingMedia( $d
+										                                      . $vs_media_dir_prefix, $vs_item, [
+											'matchMode' => caGetOption( 'objectRepresentationSplitter_matchMode',
+												$pa_item['settings'], 'FILE_NAME' ),
+											'matchType' => caGetOption( 'objectRepresentationSplitter_matchType',
+												$pa_item['settings'], null ),
+											'log'       => $o_log
+										] );
 
-									$files_added = 0;
-									foreach($va_files as $vs_file) {
-										if (preg_match("!(SynoResource|SynoEA)!", $vs_file)) { continue; } // skip Synology res files
-										
-									    $va_media_val = $va_val;
-							            if(!isset($va_media_val['idno'])) { $va_media_val['idno'] = pathinfo($vs_file, PATHINFO_FILENAME); }
-							            $va_media_val['media']['media'] = $vs_file;
-							            if ($pb_dont_create) { $va_media_val['_dontCreate'] = 1; }
-							            if (isset($pa_options['nonPreferredLabels']) && is_array($pa_options['nonPreferredLabels'])) {
-                                            $va_media_val['nonpreferred_labels'] = $pa_options['nonPreferredLabels'];
-                                        }
+										$files_added = 0;
+										foreach ( $va_files as $vs_file ) {
+											if ( preg_match( "!(SynoResource|SynoEA)!", $vs_file ) ) {
+												continue;
+											} // skip Synology res files
 
-					                    $va_media_val['_matchOn'] = $va_match_on;
-							            $va_vals[] = $va_media_val;
-							            $files_added++;
-							        }
-							        if($files_added > 0) {	// if we found matching files we're done
-							        	continue(2);
-							        }
-								}
-								if (preg_match("!^http[s]{0,1}://!", strtolower($vs_item))) {
-									// Is the media import item a URL?
-									$va_val['media']['media'] = $vs_item;
+											$va_media_val = $va_val;
+											if ( ! isset( $va_media_val['idno'] ) ) {
+												$va_media_val['idno'] = pathinfo( $vs_file, PATHINFO_FILENAME );
+											}
+											$va_media_val['media']['media'] = $vs_file;
+											if ( $pb_dont_create ) {
+												$va_media_val['_dontCreate'] = 1;
+											}
+											if ( isset( $pa_options['nonPreferredLabels'] )
+											     && is_array( $pa_options['nonPreferredLabels'] )
+											) {
+												$va_media_val['nonpreferred_labels']
+													= $pa_options['nonPreferredLabels'];
+											}
+
+											$va_media_val['_matchOn'] = $va_match_on;
+											$va_vals[]                = $va_media_val;
+							            	$files_added++;
+										}
+										if($files_added > 0) {	// if we found matching files we're done
+											break(2);
+										}
+									}
+							        $vn_c++;
+							        continue(2);
 								} else {
-									// If noting else matches, just try to load the item from the import directory using the value as file name
-									$va_val['media']['media'] = $vs_batch_media_directory.'/'.$vs_item;
+								    if (preg_match("!^http[s]{0,1}://!", strtolower($vs_item))) {
+								        $va_val['media']['media'] = $vs_item;
+								    } else {
+									    foreach(caGetAvailableMediaUploadPaths() as $d) {
+									    	if(!file_exists($d . '/' . $vs_item)) { continue; }
+										    $va_val['media']['media'] = $d . '/' . $vs_item;
+									    }
+									}
 								}
 								
 								// Default idno for rperesentation is the file name
@@ -1649,7 +1689,7 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	function caApplyDataTransforms($value, string $transform, ?array $options){
 		switch(strtolower($transform)) {
 			case 'filesize':
-				$value = caHumanFilesize((int)$value, caGetOption('decimals', $options, 2));
+				$value = caHumanFilesize(caParseHumanFilesize($value), caGetOption('decimals', $options, 2));
 				break;
 		}
 		return $value;

@@ -349,8 +349,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	$text = join(' ', $this->_tokenize($term->text, true));
 	 	
 	 	$blank_val = caGetBlankLabelText($subject_tablenum);
-	 	$is_blank = ((mb_strtolower("[{$blank_val}]") === mb_strtolower($text)) || (mb_strtolower("[BLANK]") === mb_strtolower($text)));
-	 	$is_not_blank = (mb_strtolower("["._t('SET')."]") === mb_strtolower($text));
+	 	$is_blank = ((mb_strtolower("[{$blank_val}]") === mb_strtolower($term->text)) || (mb_strtolower("[BLANK]") === mb_strtolower($term->text)));
+	 	$is_not_blank = (mb_strtolower("["._t('SET')."]") === mb_strtolower($term->text));
 	 	
 	 	$word_field = 'sw.word';
 	 	
@@ -383,6 +383,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	$word_op = '=';
 	 	
 	 	$use_boost = true;
+	 	$is_bare_wildcard = false;
 	 	if (is_array($ap) && $is_blank) {
 	 		$params[] = 0;
 	 		$word_field = 'swi.word_id';
@@ -392,6 +393,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 		$word_op = '>';
 	 		$params[] = 0;
 	 		$word_field = 'swi.word_id';
+	 	} elseif ($text === '*') {
+	 		$is_bare_wildcard = true;
 	 	} elseif ($has_wildcard = ((strpos($text, '*') !== false) || (strpos($text, '?') !== false))) {
 	 		$word_op = 'LIKE';
 	 		$text = str_replace('*', '%', $text);
@@ -437,7 +440,16 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	
 	 	$private_sql = ($this->getOption('omitPrivateIndexing') ? ' AND swi.access = 0' : '');
 	 	
-	 	if($use_boost) {
+	 	if ($is_bare_wildcard) {
+	 		$t = Datamodel::getInstance($subject_tablenum, true);
+	 		$pk = $t->primaryKey();
+	 		$table = $t->tableName();
+	 		
+	 		$qr_res = $this->db->query("
+				SELECT {$pk} row_id, 100 boost
+				FROM {$table}".($t->hasField('deleted') ? " WHERE deleted = 0" : "")."
+			", []);
+	 	} elseif($use_boost) {
 			$qr_res = $this->db->query("
 				SELECT swi.row_id, SUM(swi.boost) boost
 				FROM ca_sql_search_word_index swi
@@ -1903,7 +1915,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		switch($modifier) {
 			case '#gt#':
 				$sql_where = "({$sfield} > ?)"; 
-				$params = [$dates['start']];
+				$params = [$dates['end']];
 				break;
 			case '#gt=':
 				$sql_where = "({$sfield} >= ?)"; 
@@ -1911,7 +1923,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				break;
 			case '#lt#':
 				$sql_where = "({$efield} < ?)"; 
-				$params = [$dates['end']];
+				$params = [$dates['start']];
 				break;
 			case '#lt=':
 				$sql_where = "({$efield} <= ?)"; 

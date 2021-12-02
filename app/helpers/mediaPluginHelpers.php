@@ -654,6 +654,7 @@
 							$po_instance->replaceAttribute(array($va_tmp[1] => $vs_date, 'locale_id' => $pn_locale_id), $va_tmp[1]);
 						}
 					}
+					$po_instance->update();	// commit immediately and don't worry about errors (in case date is somehow invalid)
 					$vb_did_mapping = true;
 				}
 			}

@@ -82,7 +82,7 @@
 			
 			$vn_max_items_per_page = $this->request->getParameter('max', pInteger);
 			if (($vn_max_items_per_page > 1000) || ($vn_max_items_per_page <= 0)) {
-				$vn_max_items_per_page = 100;
+				$vn_max_items_per_page = 500;
 			}
 			
 			$va_level_data = array();

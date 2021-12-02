@@ -97,6 +97,26 @@ abstract class BaseTestWithData extends TestCase {
 		return $vn_return;
 	}
 	# -------------------------------------------------------
+	/**
+	 * @param BaseModel $instance Target instance
+	 * @param array $pa_data Test data. Format of a single record is similar to the JSON format used in the
+	 * Web Service API, only that it's a PHP array, obviously. In fact, we use the same code to insert the data.
+	 *
+	 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
+	 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
+	 * @return int the primary key of the newly created record
+	 */
+	protected function addTestRelationship($instance, $table, $id, $relationship_type, $effective_date=null) {
+		$return = $instance->addRelationship($table, $id, $relationship_type, $effective_date);
+		if(!$return) {
+			$this->assertTrue(false, 'Inserting test data failed. API errors are: ' . join(' ', $instance->getErrors()));
+		}
+
+		$this->opa_record_map[$instance->tableName()][] = $return;
+
+		return $return;
+	}
+	# -------------------------------------------------------
 	protected function getRecordMap() {
 		return $this->opa_record_map;
 	}

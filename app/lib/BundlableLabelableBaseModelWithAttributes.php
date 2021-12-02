@@ -4276,13 +4276,10 @@ if (!$vb_batch) {
 						$vb_allow_existing_rep = (bool)$this->_CONFIG->get('ca_objects_allow_relationships_to_existing_representations') && !(bool)caGetOption('dontAllowRelationshipsToExistingRepresentations', $va_bundle_settings, false);
 						$dont_allow_access_to_import_directory = caGetOption('dontAllowAccessToImportDirectory', $va_bundle_settings, false);
 	
-						$import_directory_path = $po_request->config->get('batch_media_import_root_directory');
-						$ajax_import_directory_path = $po_request->config->get('ajax_media_upload_tmp_directory');
-						
+						$import_directory_paths = caGetAvailableMediaUploadPaths($po_request->getUserID());
 						
 						$va_rep_ids_sorted = $va_rep_sort_order = explode(';',$po_request->getParameter($vs_prefix_stub.'ObjectRepresentationBundleList', pString));
 						sort($va_rep_ids_sorted, SORT_NUMERIC);
-						
 						
 						$va_reps = $this->getRepresentations();
 						
@@ -4475,18 +4472,21 @@ if (!$vb_batch) {
                                     	// Is remote URL
                                         $va_tmp = explode('/', $vs_path);
                                         $vs_original_name = array_pop($va_tmp);
-                                    } elseif(preg_match("!^userMedia".$po_request->getUserID()."!", $va_values['tmp_name'])) {
-                                    	// Is user-uploaded media
-                                    	if (!is_writeable($vs_tmp_directory = $ajax_import_directory_path)) {
-											$vs_tmp_directory = caGetTempDirPath();
+                                    } elseif(preg_match("!^".($u = caGetUserDirectoryName($po_request->getUserID()))."/(.*)$!", $va_values['tmp_name'], $m)) {
+                                    	foreach($import_directory_paths as $p) {
+                                    		if(file_exists($vs_path = "{$p}/{$m[1]}")) {
+                                    			$vs_original_name = pathinfo($va_values['tmp_name'], PATHINFO_FILENAME);
+                                    			break;
+                                    		}
+                                    	}
+                                    } elseif(!$dont_allow_access_to_import_directory && ($vs_key !== 'empty') && sizeof($import_directory_paths) && strlen($va_values['tmp_name'])) {
+                                    	// Is user-selected file from s media import directory
+                                    	foreach($import_directory_paths as $p) {
+											if(file_exists($vs_path = "{$p}{$va_values['tmp_name']}")) {
+												$vs_original_name = pathinfo($va_values['name'], PATHINFO_BASENAME);
+												break;
+											}
 										}
-                                    	$vs_path = $vs_tmp_directory.'/'.$va_values['tmp_name'];
-                                    	$md = json_decode(@file_get_contents("{$vs_path}_metadata"), true);
-                                        $vs_original_name = $md['original_filename'];
-                                    } elseif(!$dont_allow_access_to_import_directory && ($vs_key !== 'empty') && ($vs_tmp_directory = $import_directory_path) && file_exists("{$vs_tmp_directory}/{$va_values['tmp_name']}") && strlen($va_values['tmp_name'])) {
-                                    	// Is user-selected file from batch media import directory
-                                        $vs_path = "{$vs_tmp_directory}/{$va_values['tmp_name']}";
-                                        $vs_original_name = pathinfo($va_values['name'], PATHINFO_BASENAME);
                                     } elseif(isset($va_values['tmp_name']) && $is_form_upload && file_exists($va_values['tmp_name'])) {
                                     	$vs_path = $va_values['tmp_name'];
                                         $vs_original_name = $va_values['name'];
@@ -5580,6 +5580,11 @@ if (!$vb_batch) {
  	private function _processRelated($po_request, $ps_bundle_name, $ps_form_prefix, $ps_placement_code, $pa_options=null) {
  		$pa_settings = caGetOption('settings', $pa_options, []);
  		$vb_batch = caGetOption('batch', $pa_options, false);
+ 		
+ 		if ($bundle_type_restrictions = caGetOption('bundleTypeRestrictions', $pa_settings, null)) {
+ 			if(!is_array($bundle_type_restrictions)) { $bundle_type_restrictions = [$bundle_type_restrictions]; }
+ 			if(!in_array($this->getTypeID(), $bundle_type_restrictions)) { return; }
+ 		}
 		
 		$vn_min_relationships = caGetOption('minRelationshipsPerRow', $pa_settings, 0);
 		$vn_max_relationships = caGetOption('maxRelationshipsPerRow', $pa_settings, 65535);
@@ -5678,14 +5683,16 @@ if (!$vb_batch) {
 			}
 		}
 		
+		$bundle_label = caExtractSettingsValueByUserLocale('label', $pa_settings);
+
 		// Check min/max
 		$vn_total_rel_count = (sizeof($va_rel_items) + sizeof($va_rels_to_add) - sizeof($va_rels_to_delete));
 		if ($vn_min_relationships && ($vn_total_rel_count < $vn_min_relationships)) {
-			$po_request->addActionErrors(array(new ApplicationError(2590, ($vn_min_relationships == 1) ? _t('There must be at least %1 relationship for %2', $vn_min_relationships, Datamodel::getTableProperty($ps_bundle_name, 'NAME_PLURAL')) : _t('There must be at least %1 relationships for %2', $vn_min_relationships, Datamodel::getTableProperty($ps_bundle_name, 'NAME_PLURAL')), 'BundleableLabelableBaseModelWithAttributes::_processRelated()', null, null, false, false)), $ps_bundle_name);
+			$po_request->addActionErrors(array(new ApplicationError(2590, ($vn_min_relationships == 1) ? _t('There must be at least %1 relationship for %2', $vn_min_relationships, $bundle_label) : _t('There must be at least %1 relationships for %2', $vn_min_relationships, $bundle_label), 'BundleableLabelableBaseModelWithAttributes::_processRelated()', null, null, false, false)), $ps_bundle_name);
 			return false;
 		}
 		if ($vn_max_relationships && ($vn_total_rel_count > $vn_max_relationships)) {
-			$po_request->addActionErrors(array(new ApplicationError(2590, ($vn_max_relationships == 1) ? _t('There must be no more than %1 relationship for %2', $vn_max_relationships, Datamodel::getTableProperty($ps_bundle_name, 'NAME_PLURAL')) : _t('There must be no more than %1 relationships for %2', $vn_max_relationships, Datamodel::getTableProperty($ps_bundle_name, 'NAME_PLURAL')), 'BundleableLabelableBaseModelWithAttributes::_processRelated()', null, null, false, false)), $ps_bundle_name);
+			$po_request->addActionErrors(array(new ApplicationError(2590, ($vn_max_relationships == 1) ? _t('There must be no more than %1 relationship for %2', $vn_max_relationships, $bundle_label) : _t('There must be no more than %1 relationships for %2', $vn_max_relationships, $bundle_label), 'BundleableLabelableBaseModelWithAttributes::_processRelated()', null, null, false, false)), $ps_bundle_name);
 			return false;
 		}
 		
@@ -8017,11 +8024,17 @@ side. For many self-relations the direction determines the nature and display te
 					if (!isset($va_value_instance['locale_id'])) {
 						$va_value_instance['locale_id'] = $g_ui_locale_id ? $g_ui_locale_id : ca_locales::getDefaultCataloguingLocaleID();
 					}
+					
+					$opts = [];
+					if($source_value = caGetOption('_source', $va_value_instance, null)) {
+						unset($va_value_instance['_source']);
+						$opts['source'] = $source_value;
+					}
 					// Create or update the attribute
 					if ($pb_update) {
-						$t_rel->editAttribute($va_value_instance, $vs_element);
+						$t_rel->editAttribute($va_value_instance, $vs_element, null, $opts);
 					} else {
-						$t_rel->addAttribute($va_value_instance, $vs_element);
+						$t_rel->addAttribute($va_value_instance, $vs_element, null, $opts);
 					}
 				}
 			}

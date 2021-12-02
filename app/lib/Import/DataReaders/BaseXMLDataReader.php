@@ -270,6 +270,8 @@ class BaseXMLDataReader extends BaseDataReader {
 	public function get($ps_spec, $pa_options=null) {
 		if ($vm_ret = parent::get($ps_spec, $pa_options)) { return $vm_ret; }
 		
+		if (!($o_node_list = $this->getXPath($ps_spec, $pa_options))) { return null; }
+		
 		$vb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
 		$vs_delimiter = caGetOption('delimiter', $pa_options, ';');
 		
@@ -285,6 +287,23 @@ class BaseXMLDataReader extends BaseDataReader {
 		}
 		if ($vb_return_as_array) { return $va_values; }
 		return join($vs_delimiter, $va_values);
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @param string $ps_spec
+	 * @param array $pa_options
+	 * @return mixed
+	 */
+	public function getXPath($ps_spec, $pa_options=null) {
+		// Recondition the spec for Xpath
+		$ps_spec = $this->_convertXPathExpression($ps_spec, array('useRootTag' => $this->ops_base_root_tag));
+
+		if (!($o_node_list = @$this->opo_handle_xpath->query($ps_spec))) {
+			return null;
+		}
+		return $o_node_list;
 	}
 	# -------------------------------------------------------
 	/**

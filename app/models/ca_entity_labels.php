@@ -349,12 +349,12 @@ class ca_entity_labels extends BaseLabel {
 				$is_org = ($et->getSetting('entity_class') === 'ORG');
 			}
 			if($is_org) {
-				$n = $this->get('ca_entity_labels.surname');
+				parent::_generateSortableValue();
 			} else {
 				$n = DataMigrationUtils::splitEntityName($this->get($vs_display_field), ['displaynameFormat' => 'surnamecommaforename']);
 				$n = $n['displayname'];
+				$this->set($vs_sort_field, $n);
 			}
-			$this->set($vs_sort_field, $n);
 		}
 	}
 	# ------------------------------------------------------

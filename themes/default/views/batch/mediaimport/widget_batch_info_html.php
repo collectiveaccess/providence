@@ -27,4 +27,3 @@
  */
  
  	print caBatchMediaImportInspector($this, array());
-?>

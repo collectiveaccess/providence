@@ -56,17 +56,23 @@ function caDisplayException(Exception $e, ?array $options=null) : void {
 
 	$o_log->logError(get_class($e) . ': ' . $e->getMessage());
 	$o_log->logDebug(print_r($e->getTrace(), true));
-	
-	if(defined("__CA_IS_SERVICE_REQUEST__")) {
-		$show_debugging = ((defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) || $config->get('graphql_services_debug'));
-		header("Content-type: application/json");
-		print json_encode([
-			'ok' => false, 'errors' => ['message' => $e->getMessage(), 'extensions' => ['category' => caGetOption('category', $options, null)],"locations" => $show_debugging ? ['file' => $errfile, 'line' => $errline] : null]
-		]);
-	} else {
-		require_once((defined("__CA_THEME_DIR__") ? __CA_THEME_DIR__ : __DIR__.'/../../themes/default').'/views/system/fatal_error_html.php');
-	}
+
+	require_once(fatalErrorHtmlView());
 	exit;
+}
+
+/**
+ * Get view path for fatal error html
+ * @return string
+ */
+function fatalErrorHtmlView() {
+	$fatal_error_html = '/views/system/fatal_error_html.php';
+	if (defined("__CA_THEME_DIR__") && file_exists(__CA_THEME_DIR__ . $fatal_error_html)) {
+		return __CA_THEME_DIR__ . $fatal_error_html;
+	}
+	else {
+		return __CA_THEMES_DIR__ . '/default' . $fatal_error_html;
+	}
 }
 # --------------------------------------------------------------------------------------------
 /**
@@ -92,7 +98,7 @@ function caDisplayFatalError($pn_errno, $ps_errstr, $ps_errfile, $pn_errline, $p
 			break;
 		default:
 			if(class_exists('AppController')) { $o_app = AppController::getInstance()->removeAllPlugins(); }
-			require_once((defined("__CA_THEME_DIR__") ? __CA_THEME_DIR__ : __DIR__."/../../themes/default")."/views/system/fatal_error_html.php");
+			require_once(fatalErrorHtmlView());
 			exit;
 	}
 }
@@ -151,6 +157,27 @@ function caExtractRequestParams() {
 	}
 
 	return $pa_params;
+}
+
+# --------------------------------------------------------------------------------------------
+/**
+ * Return application error message for numeric code
+ *
+ * @param int $error_code
+ * @param string $locale
+ *
+ * @return string
+ */
+function caGetErrorMessage(int $error_code, string $locale=null) {
+	if (!$locale || !preg_match("!^[a-z]{2,3}_[A-Z]{2,3}$!", $locale)) { $locale = 'en_US'; } 
+	
+	$path = __CA_LIB_DIR__."/Error/errors.{$locale}";
+	if(!file_exists($path)) {
+		$path = __CA_LIB_DIR__."/Error/errors.en_US";
+	}
+	if (!($errors = Configuration::load($path))) { return null; }
+	
+	return $errors->get($error_code);
 }
 # --------------------------------------------------------------------------------------------
  /**

@@ -146,6 +146,37 @@
 			}
 			
 			$element_info = ca_metadata_elements::getElementSettingsForId($pm_element_code_or_id);
+			
+			// restrict to single value per-locale?
+			$takes_locale = !caGetOption('doesNotTakeLocale', $element_info, false);
+			$single_value_per_locale = caGetOption('singleValuePerLocale', $element_info, false);
+			
+			if($takes_locale && $single_value_per_locale) {
+				$attrs_to_remove = array_map(function($v) { return (int)$v['attribute_id']; }, $this->opa_attributes_to_remove);
+				$attrs_for_element = $this->getAttributesByElement($pm_element_code_or_id);
+				if(is_array($attrs_for_element)) { 
+					$va_attrs = array_filter($attrs_for_element, function($v) use ($attrs_to_remove) {
+					return !in_array((int)$v->getAttributeID(), $attrs_to_remove, true);
+					});
+					$extant_locales = array_unique(
+						array_merge(
+							(is_array($va_attrs) ? array_map(function($a) { return $a->getLocaleID(); }, $va_attrs) : []), 
+							array_map(function($a) { 
+								return (int)$a['values']['locale_id'] ?? null;
+							}, ($this->opa_attributes_to_add + $this->opa_attributes_to_edit))
+						)
+					);
+				
+					$extant_locales = array_filter($extant_locales, function($v) { return (bool)$v; });
+					if(($locale_id = $pa_values['locale_id'] ?? null) && in_array((int)$locale_id, $extant_locales, true)) {
+						if (caGetOption('raiseErrorOnDuplicateLocale', $element_info, true)) {
+							$this->postError(1985, _t('Value for locale is already set'), 'BaseModelWithAttributes->addAttribute()', $ps_error_source);
+						}
+						return null;	
+					}
+				}
+			}
+			
 			if (caGetOption('skipExistingValues', $pa_options, false) || !caGetOption('allowDuplicateValues', $element_info, false)) {
 				// filter out any values that already exist on this row or duplicate a value queued for addition
 				 
@@ -246,9 +277,45 @@
 			$va_attr_values = $t_attr->getAttributeValues();
 			$element = null;
 			
+			$is_changed = false;
 			
 			$num_values = sizeof($pa_values);
 			if(array_key_exists('locale_id', $pa_values)) { $num_values--; }
+			
+			// restrict to single value per-locale?
+			$takes_locale = !caGetOption('doesNotTakeLocale', $element_info, false);
+			$single_value_per_locale = caGetOption('singleValuePerLocale', $element_info, false);
+			
+			if($takes_locale && $single_value_per_locale) {
+				$attrs_to_remove = array_map(function($v) { return (int)$v['attribute_id']; }, $this->opa_attributes_to_remove);
+				$attrs_to_remove[] = (int)$pn_attribute_id;
+				
+				$attrs_for_element = $this->getAttributesByElement($pm_element_code_or_id);
+				
+				if(is_array($attrs_for_element)) {
+					$va_attrs = array_filter($attrs_for_element, function($v) use ($attrs_to_remove) {
+						return !in_array((int)$v->getAttributeID(), $attrs_to_remove, true);
+					});
+				
+					$extant_locales = array_unique(
+						array_merge(
+							(is_array($va_attrs) ? array_map(function($a) { return $a->getLocaleID(); }, $va_attrs) : []), 
+							array_map(function($a) { 
+								return (int)$a['locale_id'] ?? null;
+							}, ($this->opa_attributes_to_add + $this->opa_attributes_to_edit))
+						)
+					);
+				
+					$extant_locales = array_filter($extant_locales, function($v) { return (bool)$v; });
+				
+					if(($locale_id = $pa_values['locale_id'] ?? null) && in_array((int)$locale_id, $extant_locales, true)) {
+						if (caGetOption('raiseErrorOnDuplicateLocale', $element_info, true)) {
+							$this->postError(1985, _t('Value for locale is already set'), 'BaseModelWithAttributes->editAttribute()', $ps_error_source);
+						}
+						return null;	
+					}
+				}
+			}
 			
 			if (caGetOption('skipExistingValues', $pa_options, false) || !caGetOption('allowDuplicateValues', $element_info, false)) {
 			    // filter out any values that already exist on this row or match a value already queued for change
@@ -320,6 +387,7 @@
 				// Value arrays are different sizes - probably means the elements in the set have been reconfigured (sub-elements added or removed)
 				// so we need to force a save.
 		       $this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_attr_element_id] = true;
+		       $is_changed = true;
 			} else {
 				if(!$elements) { $elements = array_filter(ca_metadata_elements::getElementsForSet($vn_attr_element_id, ['omitContainers' => true]), function($v) { return (int)$v['datatype'] !== 0; }); }
 				
@@ -368,6 +436,7 @@
 					) {
 						$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_attr_element_id] = true;
 						$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_element_id] = true;
+						$is_changed = true;
 						break;
 					}
 				}
@@ -375,8 +444,9 @@
 				if(sizeof($element_codes) > 0) {
 					foreach($element_codes as $element_code => $element_id) {
 						if((isset($pa_values[$element_code]) && $pa_values[$element_code]) || (isset($pa_values[$element_id]) && $pa_values[$element_id])) {
+							$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_attr_element_id] = true;
 							$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$element_id] = true;
-							$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$element_id] = true;
+							$is_changed = true;
 							break;
 						}
 					}
@@ -385,7 +455,7 @@
 			
 			if (!$ps_error_source) { $ps_error_source = $this->tableName().'.'.ca_metadata_elements::getElementCodeForId($pm_element_code_or_id); }
 			
-			if (isset($this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_attr_element_id]) && $this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_attr_element_id]) {
+			if ($is_changed) {
 				$this->opa_attributes_to_edit[] = array(
 					'values' => $pa_values,
 					'attribute_id' => $pn_attribute_id,
@@ -1808,14 +1878,13 @@
 			
 			$va_element_codes = array();
 			$va_elements_by_container = array();
-			$vb_should_output_locale_id = (bool)$t_element->getSetting('doesNotTakeLocale');
+			$vb_should_output_locale_id = !(bool)$t_element->getSetting('doesNotTakeLocale');
 			$vb_should_output_value_source = (bool)$t_element->getSetting('includeSourceData');
 			$va_element_value_defaults = array();
 			$va_elements_without_break_by_container = array();
 			$va_elements_break_by_container = array();
 			
 			$va_element_info = array();
-
 			// fine element breaks by container
 			foreach($va_element_set as $va_element) {
 				if ($va_element['datatype'] == 0) {		// containers are not active form elements

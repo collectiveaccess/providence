@@ -360,24 +360,26 @@ class SearchEngine extends SearchBase {
 			}
 
 			// log search
-			$o_log = new Searchlog();
+			if(!$this->opo_app_config->get('dont_use_search_log')) {
+				$o_log = new Searchlog();
 			
-			$vn_search_form_id = isset($pa_options['form_id']) ? $pa_options['form_id'] : null;
-			$vs_log_details = isset($pa_options['log_details']) ? $pa_options['log_details'] : '';
-			$vs_search_source = isset($pa_options['search_source']) ? $pa_options['search_source'] : '';
+				$vn_search_form_id = isset($pa_options['form_id']) ? $pa_options['form_id'] : null;
+				$vs_log_details = isset($pa_options['log_details']) ? $pa_options['log_details'] : '';
+				$vs_search_source = isset($pa_options['search_source']) ? $pa_options['search_source'] : '';
 				
-			$vn_execution_time = $t->getTime(4);
-			$o_log->log(array(
-				'user_id' => ($user_id > 0) ? $user_id : null, 
-				'table_num' => $this->opn_tablenum, 
-				'search_expression' => $ps_search, 
-				'num_hits' => sizeof($va_hits),
-				'form_id' => $vn_search_form_id, 
-				'ip_addr' => RequestHTTP::ip(),
-				'details' => $vs_log_details,
-				'search_source' => __CA_APP_TYPE__.($vs_search_source ? ":{$vs_search_source}" : ""),
-				'execution_time' => $vn_execution_time
-			));
+				$vn_execution_time = $t->getTime(4);
+				$o_log->log(array(
+					'user_id' => ($user_id > 0) ? $user_id : null, 
+					'table_num' => $this->opn_tablenum, 
+					'search_expression' => $ps_search, 
+					'num_hits' => sizeof($va_hits),
+					'form_id' => $vn_search_form_id, 
+					'ip_addr' => RequestHTTP::ip(),
+					'details' => $vs_log_details,
+					'search_source' => __CA_APP_TYPE__.($vs_search_source ? ":{$vs_search_source}" : ""),
+					'execution_time' => $vn_execution_time
+				));
+			}
 		}
 
 		if ($po_result) {

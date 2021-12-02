@@ -168,6 +168,8 @@
 	});
 	</script>
 <?php
+
+	print AssetLoadManager::getLoadHTML($this->request, ['outputTarget' => 'footer']);
 	if (Db::$monitor) { print $this->render('system/monitor_html.php'); }
 ?>
 	</body>

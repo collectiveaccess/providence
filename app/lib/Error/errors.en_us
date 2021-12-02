@@ -266,3 +266,9 @@
 3615 = Could not create storage location - movement new parent relationship for history tracking
 3620 = Could not create storage location - movement new sub-location relationship for history tracking
 3625 = Could not create movement to related item relationship for history tracking
+
+# --- Media uploader errors
+3700 = Storage allocation exceeded
+3705 = Server connection limit exceeded
+3710 = Per-session file count limit exceeded
+3715 = Maximum file size limit exceeded
