@@ -172,11 +172,13 @@ class RecordSelection {
 	 * 
 	 */
 	public function serialize(array $options=null) : array {
+		$items = $this->getItemRowIDs();
 		return [
 			'id' => $this->ID(),
 			'name' => $this->name(),
 			'table' => $this->tableName(),
-			'items' => $this->getItemRowIDs(),
+			'items' => ($this->type === 'ca_sets') ? null : $items,
+			'itemCount' => is_array($items) ? sizeof($items) : 0,
 			'types' => $this->getTypesForItems()
 		];
 	}
