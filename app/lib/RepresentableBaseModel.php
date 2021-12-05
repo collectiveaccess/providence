@@ -982,6 +982,11 @@
 			if ($this->inTransaction()) {
 				$t_oxor->setTransaction($this->getTransaction());
 			}
+			
+			// Don't link if relationship already exists
+			if ($rel_ids = $this->relationshipExists('ca_object_representations', $pn_representation_id)) { 
+				return $t_oxor->load(array_shift($rel_ids));
+			}
 			$t_oxor->setMode(ACCESS_WRITE);
 			$t_oxor->set($vs_pk, $vn_id);
 			$t_oxor->set('representation_id', $pn_representation_id);
