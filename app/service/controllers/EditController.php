@@ -230,6 +230,17 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 															break(2);
 														}
 														break;
+													default:
+														if ($m) {
+															$b = array_shift(array_filter($record['bundles'], function($v) use ($m) {
+																return ($v['name'] === $m);
+															}));
+															if($instance = $table::findAsInstance([$m => $b['value']])) {
+																$info[] = Error\info($b['value'], 'MATCH', _t('Record found for match on (%1) with values(%2)', $m, $b['value']), 'GENERAL');
+																break(2);
+															}
+														}
+														break;
 												}
 											} catch(\ServiceException $e) {
 												// No matching record
