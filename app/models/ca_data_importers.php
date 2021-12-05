@@ -2802,8 +2802,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								$va_group_buf[ $vn_c ]['_displaynameFormat'] = $displaynameFormat_setting;
 							}
 							
-							$va_group_buf[ $vn_c ]['_source'] = self::_setSourceValue($va_group_buf[ $vn_c ], $va_row_with_replacements, $va_item, $default_source_text, $o_reader);
-
+							if(is_array($va_group_buf[ $vn_c ]) && sizeof($va_group_buf[ $vn_c ])) { 
+								$va_group_buf[ $vn_c ]['_source'] = self::_setSourceValue($va_group_buf[ $vn_c ], $va_row_with_replacements, $va_item, $default_source_text, $o_reader);
+							}
+							
 							// Is it a constant value?
 							if ( preg_match( "!^_CONSTANT_:[\d]+:(.*)!", $va_item['source'], $va_matches ) ) {
 								$va_group_buf[ $vn_c ][ $vs_item_terminal ]
@@ -2974,8 +2976,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												break;
 										}
 										
-										$va_group_buf[ $vn_c ]['_source'] = self::_setSourceValue($va_group_buf[ $vn_c ], $va_row_with_replacements, $va_item, $default_source_text, $o_reader);
 										
+										if(is_array($va_group_buf[ $vn_c ]) && sizeof($va_group_buf[ $vn_c ])) {
+											$va_group_buf[ $vn_c ]['_source'] = self::_setSourceValue($va_group_buf[ $vn_c ], $va_row_with_replacements, $va_item, $default_source_text, $o_reader);
+										}
 										$vn_c++;
 									}
 									$vn_c = $vn_orig_c;
@@ -3035,6 +3039,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									     && ( sizeof( $va_item_dest ) == 2 )
 									) {
 										$vs_type = $vm_val;
+										$va_group_buf[ $vn_c ][ $vs_item_terminal ] = $vm_val;
 									}
 									break;
 								case 'preferred_labels':
@@ -3473,14 +3478,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											if ($t_subject->hasField($vs_element) && (($vs_element != $t_subject->primaryKey(true)) && ($vs_element != $t_subject->primaryKey()))) {
 												if ($vb_skip_if_data_present && strlen($t_subject->get($vs_element))) { continue(2); } 
 												$va_field_info = $t_subject->getFieldInfo($vs_element);
-												$va_opts = array('assumeIdnoForRepresentationID' => !$vb_treat_numeric_value_as_id, 'assumeIdnoStubForLotID' => !isset($va_element_content['_matchOn']) && !$vb_treat_numeric_value_as_id, 'tryObjectIdnoForRepresentationID' => !$vb_treat_numeric_value_as_id, 'treatParentIDAsIdno' => !$vb_treat_numeric_value_as_id);
+												$va_opts = array('allowSettingOfTypeID' => true, 'assumeIdnoForRepresentationID' => !$vb_treat_numeric_value_as_id, 'assumeIdnoStubForLotID' => !isset($va_element_content['_matchOn']) && !$vb_treat_numeric_value_as_id, 'tryObjectIdnoForRepresentationID' => !$vb_treat_numeric_value_as_id, 'treatParentIDAsIdno' => !$vb_treat_numeric_value_as_id);
 												if($va_field_info['FIELD_TYPE'] == FT_MEDIA) {
 													$va_opts['original_filename'] = basename($va_element_content[$vs_element]);
 												}
 												
 												$vs_content = (is_array($va_element_content) && array_key_exists($vs_element, $va_element_content)) ? $va_element_content[$vs_element] : 
 																	(!is_array($va_element_content) ? $va_element_content : null);
-																	
 												$t_subject->set($vs_element, $vs_content, $va_opts);
 												if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not set intrinsic %2 to %3:", $vs_idno, $vs_element, $t_subject->tableName()), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 													$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_element, 'notes' => null]));

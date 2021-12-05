@@ -246,8 +246,8 @@
 								$template = caGetOption('displayTemplate', $settings, null);
 							}
 							
-							if ($template && (is_array($tags = caGetTemplateTags($template)) && sizeof($tags))) {			// extract tag
-								$display_list[$i]['bundle_sort'] = str_replace('^', '', $tags[0]);
+							if ($template && (is_array($tags = caGetTemplateTags($template)) && sizeof($tags))) {
+								$display_list[$i]['bundle_sort'] = str_replace('^', '', join(';', $tags));
 								continue;
 							}
 					    	

@@ -525,10 +525,13 @@
 		 * @return mixed Returns primary key (link_id) of the relationship row linking the newly created representation to the item; if the 'returnRepresentation' is set then an instance for the newly created ca_object_representations is returned instead; boolean false is returned on error
 		 */
 		public function addRepresentation($ps_media_path, $pn_type_id, $pn_locale_id, $pn_status, $pn_access, $pb_is_primary, $pa_values=null, $pa_options=null) {
-			if (!$ps_media_path) { return null; }
+			$allow_medialess_reps = (bool)$this->getAppConfig()->get('allow_representations_without_media');
+			if (!$allow_medialess_reps && !$ps_media_path) { return null; }
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
 			if (!$pn_locale_id) { $pn_locale_id = ca_locales::getDefaultCataloguingLocaleID(); }
-			if(!isUrl($ps_media_path) && (!file_exists($ps_media_path) || !is_readable($ps_media_path))) { 
+			
+			
+			if(!$allow_medialess_reps && (!isUrl($ps_media_path) && (!file_exists($ps_media_path) || !is_readable($ps_media_path)))) { 
 				$this->postError(1670, _t("Media does not exist or is not readable"), "RepresentableBaseModel->addRepresentation()");
 				return false; 
 			}
@@ -565,14 +568,14 @@
 				$t_rep->set('locale_id', $pn_locale_id);
 				$t_rep->set('status', $pn_status);
 				$t_rep->set('access', $pn_access);
-				$t_rep->set('media', $ps_media_path, $pa_options);
+				if($ps_media_path) { $t_rep->set('media', $ps_media_path, $pa_options); }
 		
 				if ($o_idno = $t_rep->getIDNoPlugInInstance()) {
 					$t_rep->setIdnoWithTemplate($o_idno->makeTemplateFromValue(''));
 				}
 				
 				$media_proc_opts = [];
-				if(is_array($skip_config = $this->getAppConfig()->get('skip_object_representation_versions_for_mimetype_when'))) {
+				if($ps_media_path && is_array($skip_config = $this->getAppConfig()->get('skip_object_representation_versions_for_mimetype_when'))) {
 					// process values to use codes for list items
 					$exp_values = $pa_values; 
 					foreach($exp_values as $k => $v) {
@@ -978,6 +981,11 @@
 			
 			if ($this->inTransaction()) {
 				$t_oxor->setTransaction($this->getTransaction());
+			}
+			
+			// Don't link if relationship already exists
+			if ($rel_ids = $this->relationshipExists('ca_object_representations', $pn_representation_id)) { 
+				return $t_oxor->load(array_shift($rel_ids));
 			}
 			$t_oxor->setMode(ACCESS_WRITE);
 			$t_oxor->set($vs_pk, $vn_id);

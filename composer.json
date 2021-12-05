@@ -27,9 +27,9 @@
     "opis/json-schema": "^1.0",
     "pear/file_marc": "~1.2",
     "php-http/guzzle6-adapter": "~1.1.1",
-    "phpoffice/phppresentation": "dev-master",
-    "phpoffice/phpspreadsheet": "v1.10",
-    "phpoffice/phpword": "v0.15.*",
+    "phpoffice/phppresentation": "1.0.0",
+    "phpoffice/phpspreadsheet": "v1.20",
+    "phpoffice/phpword": "v0.18.*",
     "zendframework/zend-stdlib": "^3.2",
     "ext-iconv": "*",
     "ext-simplexml": "*",
@@ -39,7 +39,8 @@
     "cache/predis-adapter": "^1.1",
     "cache/filesystem-adapter": "^1.1",
     "codeitnowin/barcode": "^3.0",
-    "whikloj/bagittools": "^3.0"
+    "whikloj/bagittools": "^3.0",
+    "scholarslab/bagit": "~0.2"
   },
   "config": {
   	"discard-changes": true
