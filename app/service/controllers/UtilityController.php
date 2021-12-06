@@ -57,7 +57,7 @@ class UtilityController extends \GraphQLServices\GraphQLServiceController {
 				// Dates
 				// ------------------------------------------------------------
 				'parseDate' => [
-					'type' => UtilitySchema::get('DateParseResult'),
+					'type' => Type::listOf(UtilitySchema::get('DateParseResult')),
 					'description' => _t('Parse date expression'),
 					'args' => [
 						[
@@ -69,7 +69,12 @@ class UtilityController extends \GraphQLServices\GraphQLServiceController {
 						[
 							'name' => 'date',
 							'type' => Type::string(),
-							'description' => _t('Table to search')
+							'description' => _t('Date to parse')
+						],
+						[
+							'name' => 'dates',
+							'type' => Type::listOf(Type::string()),
+							'description' => _t('Date to parse')
 						],
 						[
 							'name' => 'format',
@@ -91,26 +96,35 @@ class UtilityController extends \GraphQLServices\GraphQLServiceController {
 					],
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
-						$date = trim($args['date']);
+						$dates = is_array($args['dates']) ? $args['dates'] : [$args['date']];
 						
-						if(!$date) {
+						$dates = array_map(function($v) { return trim($v); }, $dates);
+						$dates = array_filter($dates, function($v) { return (strlen($v) > 0); });
+						
+						if(!sizeof($dates)) {
 							throw new \ServiceException(_t('Must specify date'));
 						}
 						
-						$tep = new TimeExpressionParser();
-						if(!$tep->parse($date)) {
-							throw new \ServiceException(_t('Could not parse date %1', $date));
-						}
+						$tep = new TimeExpressionParser();						
 						if($args['locale']) {
 							$tep->setLanguage($args['locale']);
 						}
-						if(strtolower($args['format']) === 'unix') {
-							$ret = $tep->getUnixTimestamps();
-						} else {
-							$ret = $tep->getHistoricTimestamps();
+						$ret = [];
+						foreach($dates as $date) {
+							if(!$tep->parse($date)) {
+								$ret[] = ['date' => $date, 'start' => null, 'end' => null, 'text' => null];
+								continue;
+							}
+							if(strtolower($args['format']) === 'unix') {
+								$d = $tep->getUnixTimestamps();
+							} else {
+								$d = $tep->getHistoricTimestamps();
+							}
+							
+							$ret[] = ['date' => $date, 'start' => $d['start'], 'end' => $d['end'], 'text' => $tep->getText(['dateFormat' => $args['displayFormat']])];
 						}
 						
-						return ['start' => $ret['start'], 'end' => $ret['end'], 'text' => $tep->getText(['dateFormat' => $args['displayFormat']])];
+						return $ret;
 					}
 				],
 				// ------------------------------------------------------------
