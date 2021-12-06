@@ -49,6 +49,23 @@ function getRelationship(\ca_users $u, \BaseModel $subject, \BaseModel $target, 
 /**
  *
  */
+function getRelationshipById(\ca_users $u, string $subject, string $target, int $rel_id) : ?array {
+	if(!($linking_table = \Datamodel::getLinkingTableName($subject, $target))) { return null; }
+	
+	$s = $t = null;
+	if($rel = $linking_table::findAsInstance(['relation_id' => $rel_id])) {
+		$s = $rel->getLeftTableInstance();
+		$t = $rel->getRightTableInstance();
+		
+		if(!$s->isSaveable($u) || !$t->isSaveable($u)) { return null; }
+	}
+	
+	return $rel ? ['subject' => ($s->tableName() == $subject) ? $s : $t, 'target' => ($t->tableName() == $target) ? $t : $s, 'rel' => $rel] : null;
+}
+
+/**
+ *
+ */
 function extractValueFromBundles(array $bundles, array $fields) {
 	$values = array_filter($bundles, function($v) use ($fields) {
 		return (isset($v['name']) && in_array($v['name'], $fields));

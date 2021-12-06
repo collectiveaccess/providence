@@ -104,7 +104,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						],
 						[
 							'name' => 'relationships',
-							'type' => Type::listOf(EditSchema::get('Relationship')),
+							'type' => Type::listOf(EditSchema::get('SubjectRelationship')),
 							'default' => null,
 							'description' => _t('List of relationship to create for new record')
 						],
@@ -384,7 +384,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						],
 						[
 							'name' => 'relationships',
-							'type' => Type::listOf(EditSchema::get('Relationship')),
+							'type' => Type::listOf(EditSchema::get('SubjectRelationship')),
 							'default' => null,
 							'description' => _t('List of relationship to create for new record')
 						],
@@ -711,45 +711,29 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
 						
-						$errors = $warnings = $info = [];
+						return array_shift(self::processFullyQualifiedRelationships($u,  [$args], []));
+					}
+				],
+				'addRelationships' => [
+					'type' => Type::listOf(EditSchema::get('EditResult')),
+					'description' => _t('Add multiple relationships between records'),
+					'args' => [
+						[
+							'name' => 'jwt',
+							'type' => Type::string(),
+							'description' => _t('JWT'),
+							'defaultValue' => self::getBearerToken()
+						],
+						[
+							'name' => 'relationships',
+							'type' => Type::listOf(EditSchema::get('Relationship')),
+							'description' => _t('List of fully specified relationships')
+						]
+					],
+					'resolve' => function ($rootValue, $args) {
+						$u = self::authenticate($args['jwt']);
 						
-						$subject = $args['subject'];
-						$target = $args['target'];
-						
-						$reltype = $args['relationshipType'];
-						$bundles = caGetOption('bundles', $args, [], ['castTo' => 'array']);
-						
-						list($subject_identifier, $opts) = Edit\resolveParams($args, 'subject');
-						if(!($subject = self::resolveIdentifier($subject, $subject_identifier, null, $opts))) {
-							$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", 'INVALID_IDENTIFIER', _t('Invalid subject identifier'), 'GENERAL');
-						} else {
-							// Check privs
-							if (!$subject->isSaveable($u)) {
-								throw new \ServiceException(_t('Subject is not accessible'));
-							}
-						
-							// effective_date set?
-							$effective_date = Edit\extractValueFromBundles($bundles, ['effective_date']);
-						
-							$c = 0;
-							list($target_identifier, $opts) = Edit\resolveParams($args, 'target');
-							if(!($rel = $subject->addRelationship($target, $target_identifier, $reltype, $effective_date, null, null, null, $opts))) {
-								
-								foreach($subject->errors() as $e) {
-									$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", Error\toGraphQLError($e->getErrorNumber()), _t('Could not create relationship: %1', $e->getErrorMessage()), 'GENERAL');
-								}
-							} elseif(sizeof($bundles) > 0) {
-								//  Add interstitial data
-								if (is_array($ret = self::processBundles($rel, $bundles))) {
-									$errors = array_merge($errors, $ret['errors']);
-									$warnings = array_merge($warnings, $ret['warnings']);
-									$info = array_merge($info, $ret['info']);
-								}
-								$c++;
-							}
-						}
-						
-						return ['table' => is_object($rel) ? $rel->tableName() : null, 'id' => is_object($rel) ?  [$rel->getPrimaryKey()] : null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings, 'info' => $info, 'changed' => $c];
+						return self::processFullyQualifiedRelationships($u,  $args['relationships'], []);
 					}
 				],
 				'editRelationship' => [
@@ -822,61 +806,29 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
 						
-						$errors = $warnings = $info = [];
+						return array_shift(self::processFullyQualifiedRelationships($u,  [$args], []));
+					}
+				],
+				'editRelationships' => [
+					'type' => Type::listOf(EditSchema::get('EditResult')),
+					'description' => _t('Add multiple relationships between records'),
+					'args' => [
+						[
+							'name' => 'jwt',
+							'type' => Type::string(),
+							'description' => _t('JWT'),
+							'defaultValue' => self::getBearerToken()
+						],
+						[
+							'name' => 'relationships',
+							'type' => Type::listOf(EditSchema::get('Relationship')),
+							'description' => _t('List of fully specified relationships')
+						]
+					],
+					'resolve' => function ($rootValue, $args) {
+						$u = self::authenticate($args['jwt']);
 						
-						$s = $t = null;				
-						$subject = $args['subject'];
-						$target = $args['target'];
-						$target_identifier = $args['targetIdentifier'];
-						$rel_type = $args['relationshipType'];
-						$bundles = caGetOption('bundles', $args, [], ['castTo' => 'array']);
-						
-						// effective_date set?
-						$effective_date = Edit\extractValueFromBundles($bundles, ['effective_date']);
-						
-						// rel type set?
-						$new_rel_type = Edit\extractValueFromBundles($bundles, ['relationship_type']);
-						
-						list($subject_identifier, $opts) = Edit\resolveParams($args, 'subject');
-						if(!($s = self::resolveIdentifier($subject, $subject_identifier, $opts))) {
-							$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", 'INVALID_IDENTIFIER', _t('Invalid subject identifier'), 'GENERAL');
-						} else {
-							if (!$s->isSaveable($u)) {
-								throw new \ServiceException(_t('Subject is not accessible'));
-							}
-						
-							if(!($rel_id = $args['id'])) {		
-								list($target_identifier, $opts) = Edit\resolveParams($args, 'target');
-								if(!($t = self::resolveIdentifier($target, $target_identifier, $opts))) {
-									$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", 'INVALID_IDENTIFIER', _t('Invalid target identifier'), 'GENERAL');
-								} else {
-									if ($rel = Edit\getRelationship($u, $s, $t, $rel_type)) {
-										$rel_id = $rel->getPrimaryKey();
-									}
-								}
-							} 
-							if(!$rel_id) {
-								$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", 'INVALID_IDENTIFIER', _t('Relationship does not exist'), 'GENERAL');
-							} else {
-						
-								$c = 0;
-								if(!($rel = $s->editRelationship($target, $rel_id, $target_identifier, $new_rel_type, $effective_date))) {
-									foreach($s->errors() as $e) {
-										$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", Error\toGraphQLError($e->getErrorNumber()), _t('Could not edit relationship: %1', $e->getErrorMessage()), 'GENERAL'); 
-									}
-								} elseif(sizeof($bundles) > 0) {
-									//  Edit interstitial data
-									if (is_array($ret = self::processBundles($rel, $bundles))) {
-										$errors = array_merge($errors, $ret['errors']);
-										$warnings = array_merge($warnings, $ret['warnings']);
-										$info = array_merge($info, $ret['info']);
-									}
-									$c++;
-								}
-							}
-						}
-						
-						return ['table' => is_object($rel) ? $rel->tableName() : null, 'id' => is_object($rel) ?  [$rel->getPrimaryKey()] : null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings, 'info' => $info, 'changed' => $c];
+						return self::processFullyQualifiedRelationships($u,  $args['relationships'], []);
 					}
 				],
 				'deleteRelationship' => [
@@ -944,48 +896,29 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
 						
-						$errors = $warnings = $info = [];
+						return array_shift(self::processFullyQualifiedRelationshipDeletes($u, [$args]));
+					}
+				],
+				'deleteRelationships' => [
+					'type' => Type::listOf(EditSchema::get('EditResult')),
+					'description' => _t('Add multiple relationships between records'),
+					'args' => [
+						[
+							'name' => 'jwt',
+							'type' => Type::string(),
+							'description' => _t('JWT'),
+							'defaultValue' => self::getBearerToken()
+						],
+						[
+							'name' => 'relationships',
+							'type' => Type::listOf(EditSchema::get('Relationship')),
+							'description' => _t('List of fully specified relationships')
+						]
+					],
+					'resolve' => function ($rootValue, $args) {
+						$u = self::authenticate($args['jwt']);
 						
-						$rel_type = $s = $t = null;				
-						$subject = $args['subject'];
-						$target = $args['target'];
-						
-						list($subject_identifier, $opts) = Edit\resolveParams($args, 'subject');
-						if(!($s = self::resolveIdentifier($subject, $subject_identifier, $opts))) {
-							$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", 'INVALID_IDENTIFIER', _t('Invalid subject identifier'), 'GENERAL');
-						} else {
-							if (!$s->isSaveable($u)) {
-								throw new \ServiceException(_t('Subject is not accessible'));
-							}
-						
-							if(!($rel_id = $args['id'])) {		
-								$rel_type = $args['relationshipType'];
-							
-								list($target_identifier, $opts) = Edit\resolveParams($args, 'target');
-								if(!($t = self::resolveIdentifier($target, $target_identifier, $opts))) {
-									$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", 'INVALID_IDENTIFIER', _t('Invalid target identifier'), 'GENERAL');
-								} else {
-									if($rel = Edit\getRelationship($u, $s, $t, $rel_type)) {
-										$rel_id = $rel->getPrimaryKey();
-									}
-								}
-							} 
-						
-							if (!$rel_id) {
-								$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", 'INVALID_IDENTIFIER', _t('Relationship does not exist'), 'GENERAL');
-							} else {
-								$c = 0;
-								if(!$s->removeRelationship($target, $rel_id)) {			
-									foreach($s->errors() as $e) {				
-										$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", Error\toGraphQLError($e->getErrorNumber()), _t('Could not delete relationship: %1', $s->getErrorMessage()), 'GENERAL');
-									}
-								} else {
-									$c++;
-								}
-							}
-						}
-						
-						return ['table' => is_object($s) ? $s->tableName() : null, 'id' => is_object($s) ?  [$s->getPrimaryKey()] : null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings, 'info' => $info, 'changed' => $c];
+						return self::processFullyQualifiedRelationshipDeletes($u,  $args['relationships'], []);
 					}
 				],
 				'deleteAllRelationships' => [
@@ -1220,6 +1153,171 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 	}
 	# -------------------------------------------------------
 	/**
+	 * Process relationship data relative to a subject 
+	 *
+	 * @param BaseModel $instance A subject instance
+	 * @param array $relationships A list of relationships, defined relative to the subject
+	 * @param array $options Options include:
+	 *		replace = replace existing relationships with those in $relationships. [Default is false]
+	 *
+	 * @return array
+	 *
+	 * TODO: 
+	 *		1. Special handling for self-relations? (Eg. direction)
+	 *		2. Options to control when relationship is edited vs. recreated
+	 *
+	 */
+	private static function processFullyQualifiedRelationships(\ca_users $u, array $relationships, ?array $options=null) : array {
+		$ret = [];
+		foreach($relationships as $r) {
+			$errors = $warnings = $info = [];
+		
+			$subject = $r['subject'];
+			$target = $r['target'];
+			
+			$reltype = $r['relationshipType'];
+			$bundles = caGetOption('bundles', $r, [], ['castTo' => 'array']);
+			
+			// effective_date set?
+			$effective_date = Edit\extractValueFromBundles($bundles, ['effective_date']);
+			
+			$rel_id = $r['id'] ?? null;
+			if($rel_id) {
+				if($ri = Edit\getRelationshipById($u, $subject, $target, $rel_id)) {
+					$rel = $ri['subject']->editRelationship($ri['target']->tableName(), $ri['rel']->getPrimaryKey(), $ri['target']->getPrimaryKey(), $reltype, $effective_date);
+				
+					$subject_identifier = $ri['subject']->getPrimaryKey();
+					$target_identifier = $ri['target']->getPrimaryKey();
+					foreach($ri['subject']->errors() as $e) {
+						$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", Error\toGraphQLError($e->getErrorNumber()), _t('Could not edit relationship: %1', $e->getErrorMessage()), 'GENERAL'); 
+					}
+				} else {
+					$errors[] = Error\error("relationship", Error\toGraphQLError(1100), _t('Could not find relationship with relation_id %1', $rel_id), 'GENERAL'); 
+				}
+			} else {
+				list($subject_identifier, $opts) = Edit\resolveParams($r, 'subject');
+				if(!($subject = self::resolveIdentifier($subject, $subject_identifier, null, $opts))) {
+					$errors[] = Error\error("{$subject_identifier}", 'INVALID_IDENTIFIER', _t('Invalid subject identifier'), 'GENERAL');
+				} else {
+					// Check privs
+					if (!$subject->isSaveable($u)) {
+						throw new \ServiceException(_t('Subject is not accessible'));
+					}
+		
+		
+					$c = 0;
+					list($target_identifier, $opts) = Edit\resolveParams($r, 'target');
+					
+					if(is_array($rel_ids = $subject->relationshipExists($target, $target_identifier, $r['relationshipType'])) && sizeof($rel_ids)) {		
+						$rel_id = array_shift($rel_ids);
+						$rel = $subject->editRelationship($target, $rel_id, $target_identifier, $reltype, $effective_date);
+					} else {
+						$rel = $subject->addRelationship($target, $target_identifier, $reltype, $effective_date, null, null, null, $opts);
+					}
+					if(!$rel) {
+				
+						foreach($subject->errors() as $e) {
+							$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", Error\toGraphQLError($e->getErrorNumber()), _t('Could not create relationship: %1', $e->getErrorMessage()), 'GENERAL');
+						}
+					} elseif(sizeof($bundles) > 0) {
+						//  Add interstitial data
+						if (is_array($ret = self::processBundles($rel, $bundles))) {
+							$errors = array_merge($errors, $ret['errors']);
+							$warnings = array_merge($warnings, $ret['warnings']);
+							$info = array_merge($info, $ret['info']);
+						}
+						$c++;
+					}
+				}
+			}
+			$ret[] = ['table' => is_object($rel) ? $rel->tableName() : null, 'id' => is_object($rel) ?  [$rel->getPrimaryKey()] : null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings, 'info' => $info, 'changed' => $c];	
+		}
+		return $ret;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Delete relationships
+	 *
+	 * @param BaseModel $instance A subject instance
+	 * @param array $relationships A list of relationships to delete
+	 * @param array $options No options are currently supported
+	 *
+	 * @return array
+	 */
+	private static function processFullyQualifiedRelationshipDeletes(\ca_users $u, array $relationships, ?array $options=null) : array {
+		$ret = [];
+		foreach($relationships as $r) {
+			$errors = $warnings = $info = [];
+						
+			$rel_type = $s = $t = null;				
+			$subject = $r['subject'];
+			$target = $r['target'];
+		
+			$rel_id = $r['id'] ?? null;
+			if($rel_id) {
+				if($ri = Edit\getRelationshipById($u, $subject, $target, $rel_id)) {
+					$rel = $ri['subject']->removeRelationship($ri['target']->tableName(), $ri['rel']->getPrimaryKey());
+				
+					$subject_identifier = $ri['subject']->getPrimaryKey();
+					$target_identifier = $ri['target']->getPrimaryKey();
+					foreach($ri['subject']->errors() as $e) {
+						$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", Error\toGraphQLError($e->getErrorNumber()), _t('Could not edit relationship: %1', $e->getErrorMessage()), 'GENERAL'); 
+					}
+				} else {
+					$errors[] = Error\error("relationship", Error\toGraphQLError(1100), _t('Could not find relationship with relation_id %1', $rel_id), 'GENERAL'); 
+				}
+			} else {
+				list($subject_identifier, $opts) = Edit\resolveParams($r, 'subject');
+				if(!($s = self::resolveIdentifier($subject, $subject_identifier, $opts))) {
+					$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", 'INVALID_IDENTIFIER', _t('Invalid subject identifier'), 'GENERAL');
+				} else {
+					if (!$s->isSaveable($u)) {
+						throw new \ServiceException(_t('Subject is not accessible'));
+					}
+		
+					if(!($rel_id = $r['id'])) {		
+						$rel_type = $r['relationshipType'];
+			
+						list($target_identifier, $opts) = Edit\resolveParams($r, 'target');
+						if(!($t = self::resolveIdentifier($target, $target_identifier, $opts))) {
+							$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", 'INVALID_IDENTIFIER', _t('Invalid target identifier'), 'GENERAL');
+						} else {
+							if($rel = Edit\getRelationship($u, $s, $t, $rel_type)) {
+								$rel_id = $rel->getPrimaryKey();
+							}
+						}
+					} 
+		
+					if (!$rel_id) {
+						$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", 'INVALID_IDENTIFIER', _t('Relationship does not exist'), 'GENERAL');
+					} else {
+						$c = 0;
+						if(!$s->removeRelationship($target, $rel_id)) {			
+							foreach($s->errors() as $e) {				
+								$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", Error\toGraphQLError($e->getErrorNumber()), _t('Could not delete relationship: %1', $s->getErrorMessage()), 'GENERAL');
+							}
+						} else {
+							$c++;
+						}
+					}
+				}
+			}
+		
+			$ret[] = ['table' => is_object($s) ? $s->tableName() : null, 'id' => is_object($s) ?  [$s->getPrimaryKey()] : null, 'idno' => null, 'errors' => $errors, 'warnings' => $warnings, 'info' => $info, 'changed' => $c];
+		}
+		return $ret;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Process relationship data relative to a subject 
+	 *
+	 * @param BaseModel $instance A subject instance
+	 * @param array $relationships A list of relationships, defined relative to the subject
+	 * @param array $options Options include:
+	 *		replace = replace existing relationships with those in $relationships. [Default is false]
+	 *
+	 * @return array
+	 *
 	 * TODO: 
 	 *		1. Special handling for self-relations? (Eg. direction)
 	 *		2. Options to control when relationship is edited vs. recreated
