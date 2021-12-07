@@ -2211,7 +2211,7 @@ msgstr "Indexováno %1/%2"
 #: ../../themes/default/views/administrate/maintenance/search_reindex_status_html.php:62
 #: ../../themes/default/views/administrate/maintenance/hierarchical_reindex_status_html.php:49
 msgid "Indexing %1 (%2/%3)"
-msgstr "Indexuji %1 (%2/%3)"
+msgstr "Vytváří se rejstřík z %1 (%2/%3)"
 
 #: ../../themes/default/views/administrate/maintenance/search_reindex_landing_html.php:32
 msgid ""
