@@ -2211,7 +2211,7 @@ msgstr "Indexováno %1/%2"
 #: ../../themes/default/views/administrate/maintenance/search_reindex_status_html.php:62
 #: ../../themes/default/views/administrate/maintenance/hierarchical_reindex_status_html.php:49
 msgid "Indexing %1 (%2/%3)"
-msgstr "Indexuji %1 (%2/%3)"
+msgstr "Vytváří se rejstřík z %1 (%2/%3)"
 
 #: ../../themes/default/views/administrate/maintenance/search_reindex_landing_html.php:32
 msgid ""
@@ -2254,7 +2254,7 @@ msgstr ""
 
 #: ../../themes/default/views/administrate/maintenance/sort_values_reload_status_html.php:58
 msgid "Reloading %1/%2"
-msgstr "Znovu načítám %1/%2"
+msgstr "Znovu se načítá %1/%2"
 
 #: ../../themes/default/views/administrate/maintenance/sort_values_reload_status_html.php:62
 msgid "Reloading sort values for %1 (%2/%3)"
@@ -2334,7 +2334,7 @@ msgstr "Neduplikovat"
 
 #: ../../themes/default/views/system/preferences_duplication_html.php:98
 msgid "No preferences available"
-msgstr "Nejsou dostupné předvolby"
+msgstr "Nejsou k dispozici žádné předvolby"
 
 #: ../../themes/default/views/system/auth_error_html.php:61
 #: ../../themes/default/views/system/logged_out_html.php:61
@@ -2393,7 +2393,7 @@ msgstr "Lokace"
 #: ../../themes/default/views/system/monitor_html.php:47
 #: ../../themes/default/views/logs/search_html.php:73
 msgid "Execution time"
-msgstr "Doba běhu"
+msgstr "Doba vykonávání"
 
 #: ../../themes/default/views/system/monitor_html.php:47
 #: ../../themes/default/views/logs/search_html.php:61
@@ -2442,7 +2442,7 @@ msgstr "Přihlášení"
 
 #: ../../themes/default/views/system/login_html.php:77
 msgid "Forgot your password?"
-msgstr "Nepamatujete si heslo?"
+msgstr "Zapomněli jste heslo?"
 
 #: ../../themes/default/views/system/login_html.php:79
 msgid "Manage your account"
@@ -2470,7 +2470,7 @@ msgstr "Zpět k přihlášení"
 
 #: ../../themes/default/views/system/configuration_error_schema_update_html.php:45
 msgid "Updating your database..."
-msgstr "Aktualizuji vaši databázi..."
+msgstr "Aktualizace databáze…"
 
 #: ../../themes/default/views/system/configuration_error_schema_update_html.php:79
 msgid ""
@@ -2594,15 +2594,15 @@ msgstr "Přidat %1"
 
 #: ../../themes/default/views/editor/template_test_html.php:34
 msgid "Display template debugger"
-msgstr "Zobrazit ladič šablon"
+msgstr "Zobrazit ladění šablon"
 
 #: ../../themes/default/views/editor/template_test_html.php:38
 msgid "Enter display template here ..."
-msgstr "Vyberte zobrazovací šablonu zde ..."
+msgstr "Vyberte zde šablonu zobrazování"
 
 #: ../../themes/default/views/editor/template_test_html.php:41
 msgid "Result will go here ..."
-msgstr "Zde budou výsledky ..."
+msgstr "Zde budou výsledky…"
 
 #: ../../themes/default/views/editor/object_representations/ajax_representation_annotation_editor_html.php:48
 msgid "Close annotations"
@@ -2850,11 +2850,11 @@ msgstr "Datum/čas"
 
 #: ../../themes/default/views/logs/events_html.php:91
 msgid "No events found"
-msgstr "Žádné události nenalezeny"
+msgstr "Nenalezeny žádné události"
 
 #: ../../themes/default/views/logs/events_html.php:91
 msgid "Enter a date to display events from above"
-msgstr "Zadejte datum, od něhož mají být události zobrazeny"
+msgstr "Zadejte datum, od kterého mají být události zobrazeny"
 
 #: ../../themes/default/views/logs/search_html.php:64
 #: ../../themes/default/views/logs/download_html.php:125
@@ -2886,7 +2886,7 @@ msgstr "Uživatel"
 #: ../../themes/default/views/logs/search_html.php:67
 #: ../../themes/default/views/logs/download_html.php:131
 msgid "IP"
-msgstr "IP"
+msgstr "IP adresa"
 
 #: ../../themes/default/views/logs/search_html.php:115
 msgid "No searches found"
@@ -2906,7 +2906,7 @@ msgstr "Záznam"
 
 #: ../../themes/default/views/logs/download_html.php:47
 msgid "Group by %1 from %2"
-msgstr "Seskupovat  %1 s užitím %2"
+msgstr "Seskupovat podle %1 s užitím %2"
 
 #: ../../themes/default/views/logs/download_html.php:59
 #: ../../themes/default/views/logs/download_html.php:122
@@ -3274,7 +3274,7 @@ msgstr "Upravit metadata položky sady"
 msgid ""
 "Drag your selection from column to column to edit the contents of the "
 "display."
-msgstr "Pro editaci obsahu zobrazení posunujte výběr napříč sloupci"
+msgstr "Obsah zobrazení upravíte přetažením toho co vyberete napříč sloupci."
 
 #: ../../themes/default/views/bundles/ca_bundle_display_placements.php:49
 msgid "Available information"
@@ -3337,7 +3337,7 @@ msgstr "Současný %1 "
 #: ../../themes/default/views/bundles/history_tracking_chronology.php:227
 #: ../../themes/default/views/bundles/history_tracking_chronology.php:264
 msgid "No %1 set"
-msgstr "%1  není nastaveno"
+msgstr "%1 není nastaveno"
 
 #: ../../themes/default/views/bundles/history_tracking_chronology.php:745
 msgid "Return to home location "
@@ -3378,7 +3378,7 @@ msgstr "Přidat anotaci"
 
 #: ../../themes/default/views/bundles/ca_user_roles.php:76
 msgid "No roles are available"
-msgstr "Nejsou dostupné žádné role"
+msgstr "Nejsou k dispozici žádné role"
 
 #: ../../themes/default/views/bundles/ca_acl_access.php:48
 msgid "Global access"
@@ -3398,7 +3398,7 @@ msgstr "Upravit globální přístup"
 
 #: ../../themes/default/views/bundles/ca_acl_access.php:66
 msgid "Exceptions"
-msgstr "Vyjímky"
+msgstr "Výjimky"
 
 #: ../../themes/default/views/bundles/ca_acl_access.php:69
 msgid ""
@@ -3430,11 +3430,11 @@ msgstr "Přístupová práva uživatelů"
 
 #: ../../themes/default/views/bundles/ca_acl_access.php:98
 msgid "Edit Exceptions"
-msgstr "Upravit vyjímky"
+msgstr "Upravit výjimky"
 
 #: ../../themes/default/views/bundles/ca_acl_access.php:102
 msgid "Create an Exception"
-msgstr "Vytvořit vyjímku"
+msgstr "Vytvořit výjimku"
 
 #: ../../themes/default/views/bundles/ca_representation_transcriptions.php:96
 msgid "No transcriptions"
@@ -3442,14 +3442,15 @@ msgstr "Žádné přepisy"
 
 #: ../../themes/default/views/bundles/ca_object_representation_chooser_html.php:60
 msgid "No metadata element is configured"
-msgstr "Není nakonfigurován žádný metadatový element"
+msgstr "Není nastaven žádný metadatový element"
 
 #: ../../themes/default/views/bundles/ca_search_form_placements.php:46
 msgid ""
 "Drag your selection from column to column to edit the contents of the search"
 " form."
 msgstr ""
-"Pro editaci obsahu vyhledávacího formuláře posunujte výběr napříč sloupci. "
+"Obsah vyhledávacího formuláře upravíte přetažením toho, co vyberete, napříč "
+"sloupci."
 
 #: ../../themes/default/views/bundles/ca_search_form_placements.php:50
 msgid "Available search items"
@@ -3478,7 +3479,7 @@ msgstr "Soubor ke stažení neexistuje"
 #: ../../themes/default/views/bundles/batch_change_type_html.php:57
 #: ../../themes/default/views/bundles/change_type_html.php:56
 msgid "Change %1 type"
-msgstr "Změnit u  %1  typ"
+msgstr "Změnit u %1 typ"
 
 #: ../../themes/default/views/bundles/batch_change_type_html.php:60
 #: ../../themes/default/views/bundles/change_type_html.php:59
@@ -3509,7 +3510,7 @@ msgstr "Zpracovat na pozadí"
 #: ../../themes/default/views/batch/editor/confirm_html.php:110
 #: ../../themes/default/views/batch/mediaimport/confirm_html.php:105
 msgid "Send email to <strong>%1</strong> when done"
-msgstr "Zaslat email <strong>%1</strong> po dokončení"
+msgstr "Po dokončení zaslat e-mail <strong>%1</strong>"
 
 #: ../../themes/default/views/bundles/batch_change_type_html.php:115
 #: ../../themes/default/views/manage/tools/confirm_html.php:128
@@ -3517,7 +3518,7 @@ msgstr "Zaslat email <strong>%1</strong> po dokončení"
 #: ../../themes/default/views/batch/editor/confirm_html.php:129
 #: ../../themes/default/views/batch/mediaimport/confirm_html.php:124
 msgid "Send SMS to <strong>%1</strong> when done"
-msgstr "Zaslat SMS <strong>%1</strong> po dokončení"
+msgstr "Po dokončení zaslat SMS <strong>%1</strong>"
 
 #: ../../themes/default/views/bundles/ca_acl_users.php:81
 #: ../../themes/default/views/bundles/ca_users.php:77
@@ -3611,7 +3612,7 @@ msgstr "Po uložení bude přesunut na vrchol vlastní hierarchie."
 
 #: ../../themes/default/views/bundles/hierarchy_location.php:607
 msgid "Cannot move collection under object"
-msgstr "Nemohu přesunout sbírku pod objekt"
+msgstr "Není možné přesunout sbírku pod objekt"
 
 #: ../../themes/default/views/bundles/create_component_html.php:31
 #: ../../themes/default/views/bundles/ca_objects_components_list.php:37
@@ -3755,7 +3756,7 @@ msgstr "z URL"
 #: ../../themes/default/views/bundles/ca_site_page_media.php:308
 #: ../../app/lib/IDNumbering/MultipartIDNumber.php:879
 msgid "Identifier is already in use"
-msgstr "Identifikátor byl již použit"
+msgstr "Identifikátor už byl použit"
 
 #: ../../themes/default/views/bundles/ca_site_page_media.php:190
 #: ../../themes/default/views/bundles/ca_site_page_media.php:309
@@ -3770,7 +3771,7 @@ msgstr "Replikace"
 #: ../../themes/default/views/bundles/ca_site_page_media.php:224
 #: ../../themes/default/views/bundles/set_home_location_html.php:84
 msgid "Loading"
-msgstr "Nahrávám"
+msgstr "Načítá se"
 
 #: ../../themes/default/views/bundles/ca_site_page_media.php:325
 #: ../../themes/default/views/bundles/ca_object_representations_classic.php:535
@@ -3840,7 +3841,7 @@ msgstr "Název se již používá"
 
 #: ../../themes/default/views/bundles/settings.php:45
 msgid "No settings"
-msgstr "Žádné nastavení"
+msgstr "Žádná nastavení"
 
 #: ../../themes/default/views/bundles/ca_acl_world.php:48
 msgid "Everyone"
@@ -4042,11 +4043,11 @@ msgstr "použít existující"
 #: ../../themes/default/views/bundles/ca_object_representations_classic.php:627
 #: ../../themes/default/views/bundles/ca_object_representations.php:481
 msgid "Load next %num of %total"
-msgstr "Nahrát další %num z %total"
+msgstr "Načíst další %num z %total"
 
 #: ../../themes/default/views/bundles/ca_object_representations.php:140
 msgid "Changes will be applied on save"
-msgstr "Při  ukládání se změny aplikují"
+msgstr "Změny se uplatní při ukládání"
 
 #: ../../themes/default/views/bundles/ca_object_representations.php:151
 msgid "Full record"
@@ -4055,12 +4056,12 @@ msgstr "Plný záznam"
 #: ../../themes/default/views/bundles/ca_object_representations.php:183
 #: ../../themes/default/views/bundles/ca_object_representations.php:297
 msgid "Relationship type: %1"
-msgstr "TYp vztahu: %1"
+msgstr "Typ vztahu: %1"
 
 #: ../../themes/default/views/bundles/ca_object_representations.php:188
 #: ../../themes/default/views/bundles/ca_object_representations.php:291
 msgid "Fetch media from URL"
-msgstr "Nahrát média z URL"
+msgstr "Získat média z URL"
 
 #: ../../themes/default/views/bundles/ca_object_representations.php:243
 #: ../../themes/default/views/bundles/ca_object_representations.php:343
@@ -4071,7 +4072,7 @@ msgstr "Nahrát média"
 #: ../../themes/default/views/bundles/ca_object_representations.php:244
 #: ../../themes/default/views/bundles/ca_object_representations.php:371
 msgid "Uploading... %percent"
-msgstr "Nahrávám... %percent"
+msgstr "Nahrávání… %percent"
 
 #: ../../themes/default/views/bundles/ca_object_representations.php:245
 msgid "Is primary"
@@ -26000,8 +26001,8 @@ msgid ""
 "If checked all settings are taken from history tracking policy. Uncheck to "
 "override values."
 msgstr ""
-"Je li zaškrtnuto, všechny hodnoty jsou brány z politiky sledování historie. "
-"Odškrtněnte pro přepsání hodnot."
+"Pokud je zaškrtnuto, všechny hodnoty jsou brány z politiky sledování "
+"historie. Pokud chcete přepsat hodnoty, zrušte zaškrtnutí."
 
 #: ../../app/models/ca_editor_ui_screens.php:1656
 msgid "Set ascending or descending order for list."
@@ -26033,51 +26034,51 @@ msgstr "Barvaa použitá ke zvýraznění předchozích hodnot v historii."
 
 #: ../../app/models/ca_editor_ui_screens.php:1709
 msgid "Hide \"Include child history\" controls"
-msgstr "Skrýt ovládání \"Zahrnout historii podřízených \""
+msgstr "Skrýt ovládání „Zahrnout historii podřízených“"
 
 #: ../../app/models/ca_editor_ui_screens.php:1710
 msgid ""
 "Check this option if you want to hide the \"Include child history\" controls"
 " in this bundle placement."
 msgstr ""
-"Zaškrtněte tuto volbu, chcete li skrýt v tomto umístění  volbu \"Zahrnout "
-"historii podřízených\""
+"Zaškrtněte tuto volbu, pokud chcete skrýt v tomto umístění  volbu „Zahrnout "
+"historii podřízených“"
 
 #: ../../app/models/ca_editor_ui_screens.php:1718
 msgid "Hide \"Add to loan\" controls"
-msgstr "Skrýt ovladač \"Přidat k zápůjčce\""
+msgstr "Skrýt ovládací prvky pro „Přidat k zápůjčce“"
 
 #: ../../app/models/ca_editor_ui_screens.php:1720
 msgid ""
 "Check this option if you want to hide the \"Add to loan\" controls in this "
 "bundle placement."
 msgstr ""
-"Zaškrtnutím této volby  skryjete v tomto umístění  tlačítko \"Přidat k "
-"zápůjčce\"."
+"Zaškrtnutím této volby skryjete v tomto umístění tlačítko „Přidat k "
+"zápůjčce“."
 
 #: ../../app/models/ca_editor_ui_screens.php:1727
 msgid "\"Add to loan\" control label text"
-msgstr "Text na ovladacím prvku \"Přidat k zápůjčce\""
+msgstr "Text na ovládacím prvku „Přidat k zápůjčce“"
 
 #: ../../app/models/ca_editor_ui_screens.php:1728
 msgid ""
 "Text to label \"Add to loan\" control with. If omitted a default label will "
 "be used."
 msgstr ""
-"Text na ovladacím prvku \"Přidat k zápůjčce\". Není li vyplněno, použije se "
-"výchozí."
+"Text na ovládacím prvku „Přidat k zápůjčce“. Pokud není vyplněno, použije se"
+" výchozí."
 
 #: ../../app/models/ca_editor_ui_screens.php:1736
 msgid "Hide \"Add to movement\" controls"
-msgstr "Skrýt ovladač \"Přidat k přesunu\""
+msgstr "Skrýt ovládací prvky pro „Přidat k přesunu“"
 
 #: ../../app/models/ca_editor_ui_screens.php:1738
 msgid ""
 "Check this option if you want to hide the \"Add to movement\" controls in "
 "this bundle placement."
 msgstr ""
-"Zaškrtněte tuto volbu, chcete li v tomto umístění skrýt tlačítko \"Přidat k "
-"přesunu\"."
+"Zaškrtněte tuto volbu, pokud chcete v tomto umístění skrýt tlačítko „Přidat "
+"k přesunu“."
 
 #: ../../app/models/ca_editor_ui_screens.php:1746
 msgid "Always create new movement?"
@@ -26089,12 +26090,12 @@ msgid ""
 "location. When this option is set linking to existing movements is not "
 "possible."
 msgstr ""
-"Zaškrtněte, chcete li pouze vytvářet nové pohyby při zadávání umístění.  "
+"Zaškrtněte, pokud chcete vytvářet nové pohyby pouze při zadávání umístění. "
 "Když je možnost zadaná, odkazování existujících přesunů není možné."
 
 #: ../../app/models/ca_editor_ui_screens.php:1754
 msgid "\"Add to movement\" control label text"
-msgstr "Text na ovladacím prvku \"Přidat k přesunu\""
+msgstr "Text na ovládacím prvku „Přidat k přesunu“"
 
 #: ../../app/models/ca_editor_ui_screens.php:1755
 msgid ""
@@ -26106,7 +26107,7 @@ msgstr ""
 
 #: ../../app/models/ca_editor_ui_screens.php:1763
 msgid "Hide \"Update Location\" controls"
-msgstr "Skrýt ovladač \" Aktualizovat umístění\""
+msgstr "Skrýt ovládací prvky pro „Aktualizovat umístění“"
 
 #: ../../app/models/ca_editor_ui_screens.php:1765
 msgid ""
@@ -26306,7 +26307,7 @@ msgstr "Barva objektu"
 
 #: ../../app/models/ca_editor_ui_screens.php:1963
 msgid "If set object in list will use this color."
-msgstr "Je li nastaveno, objekty v seznamu se budou zobrazovat v této barvě."
+msgstr "Pokud nastaveno, objekty v seznamu se budou zobrazovat v této barvě."
 
 #: ../../app/models/ca_editor_ui_screens.php:1971
 msgid ""
@@ -26315,9 +26316,9 @@ msgid ""
 "relationship. Element code tags prefixed with the ^ character can be used to"
 " represent the value in the template. For example: <i>^ca_objects.idno</i>."
 msgstr ""
-"Rozvržení pro  všechny objekty  v úložišti(může obsahovat HTML). Šablona je "
+"Rozvržení pro všechny objekty  v úložišti(může obsahovat HTML). Šablona je "
 "vyhodnocována relativně ke každému vztahu objekt-přesun či objekt-úložiště. "
-"Tagy elementů uvedené znakem ^ representují hodnoty v šabloně. Např.: "
+"Tagy elementů uvedené znakem ^ reprezentují hodnoty v šabloně. Např.: "
 "<i>^ca_objects.idno</i>."
 
 #: ../../app/models/ca_editor_ui_screens.php:1987
@@ -26364,7 +26365,7 @@ msgstr "Automaticky zahrnout podtypy vybraných typů v omezení typů."
 #: ../../app/models/ca_bundle_displays.php:2703
 #: ../../app/models/ca_search_forms.php:1741
 msgid "Include subtypes?"
-msgstr "rnout podtypy?"
+msgstr "Zahrnout podtypy?"
 
 #: ../../app/models/ca_collections_x_storage_locations.php:41
 msgid "collection ⇔ storage location relationship"
@@ -26483,7 +26484,7 @@ msgstr "Je vyřazené?"
 
 #: ../../app/models/ca_object_lots.php:122
 msgid "Check if lot is deaccessioned"
-msgstr "Zaškrtněte, je li akvizice vyřazená"
+msgstr "Zaškrtněte, pokud je akvizice vyřazená"
 
 #: ../../app/models/ca_object_lots.php:132 ../../app/models/ca_objects.php:157
 #: ../../app/models/ca_collections.php:140
@@ -26668,11 +26669,11 @@ msgstr "Název složky"
 
 #: ../../app/models/ca_bookmark_folders.php:55
 msgid "A name to display for the folder."
-msgstr "Jméno, které se pro složku zobrazí."
+msgstr "Název, které se pro složku zobrazí."
 
 #: ../../app/models/ca_bookmark_folders.php:411
 msgid "Could not reorder bookmark %1: %2"
-msgstr "Nemohu změnit pořadí záložky %1:%2"
+msgstr "Nedaří se změnit pořadí záložky %1: %2"
 
 #: ../../app/models/ca_site_page_media.php:56
 msgid "Short descriptive title for media"
@@ -26713,7 +26714,7 @@ msgstr "Původní název souboru"
 #: ../../app/models/ca_site_page_media.php:142
 #: ../../app/models/ca_object_representations.php:148
 msgid "The filename of the media at the time of upload."
-msgstr "Název souboru v době jeho nahrání"
+msgstr "Název souboru v době jeho nahrání."
 
 #: ../../app/models/ca_site_page_media.php:153
 #: ../../app/models/ca_object_representations.php:159
@@ -26723,7 +26724,7 @@ msgstr "Původní typ MIME"
 #: ../../app/models/ca_site_page_media.php:153
 #: ../../app/models/ca_object_representations.php:159
 msgid "The MIME type of the media at the time of upload."
-msgstr "Typ MIME  méedia v okamžiku nahrání."
+msgstr "Typ MIME  média v okamžiku nahrání."
 
 #: ../../app/models/ca_site_page_media.php:173
 msgid "Indicates if the media is accessible to the public or not."
@@ -26790,7 +26791,7 @@ msgstr "Systémové uživatelské rozhraní?"
 
 #: ../../app/models/ca_editor_uis.php:73
 msgid "If set, user interface will be available to all users."
-msgstr "Je-li nastaveno, uživatelské rozhraní bude přístupné všem uživatelům."
+msgstr "Pokud nastaveno, uživatelské rozhraní bude přístupné všem uživatelům."
 
 #: ../../app/models/ca_editor_uis.php:82
 msgid "Editor type"
@@ -26818,7 +26819,7 @@ msgstr "Obrazovky"
 
 #: ../../app/models/ca_editor_uis.php:1154
 msgid "Could not reorder screen %1: %2"
-msgstr "Nemohu změnit pořadí obrazovky %1:%2"
+msgstr "Nedaří se změnit pořadí obrazovky %1: %2"
 
 #: ../../app/models/ca_entities_x_places.php:40
 msgid "entity ⇔ place relationship"
@@ -26888,7 +26889,7 @@ msgstr "Obecné"
 
 #: ../../app/models/ca_notifications.php:58
 msgid "Metadata alert"
-msgstr "Metadatové varování"
+msgstr "Varování ohledně metadat"
 
 #: ../../app/models/ca_notifications.php:59
 msgid "Url reference check"
@@ -39954,7 +39955,7 @@ msgstr "Jste starší 18 let?"
 
 #: ../../app/conf/user_pref_defs.conf:1583
 msgid "If checked user has verified they are over 18 years of age."
-msgstr "Je li zaškrtnuto,  uživatel ověřil, že je starší 18 let věku."
+msgstr "Pokud je zaškrtnuto, uživatel ověřil, že je starší 18 let věku."
 
 #: ../../app/conf/user_pref_defs.conf:1593
 msgid "Field of research"
@@ -39974,11 +39975,11 @@ msgstr "Fortografie"
 
 #: ../../app/conf/user_pref_defs.conf:1601
 msgid "Art gallery/dealer"
-msgstr "Galerie/obchodník s uměním"
+msgstr "Galerie / obchodník s uměním"
 
 #: ../../app/conf/user_pref_defs.conf:1602
 msgid "Authentication"
-msgstr "Autentikace"
+msgstr "Ověření"
 
 #: ../../app/conf/user_pref_defs.conf:1607
 msgid "Your organization."
@@ -40058,7 +40059,7 @@ msgstr "Zobrazí text dotazu generovaného v nástroji pro budování dotazů"
 
 #: ../../app/conf/user_pref_defs.conf:1704
 msgid "Show template debugger"
-msgstr "Zobrazit ladič šablon"
+msgstr "Zobrazit ladění šablon"
 
 #: ../../app/conf/user_pref_defs.conf:1705
 msgid "Show template debugger on editor summary screens"
@@ -42332,8 +42333,8 @@ msgstr "Duplikovat stránku"
 
 #: ../../app/conf/user_actions.conf:1194
 msgid "Allow user to use duplicate site pages"
-msgstr "Povolí uživateli duplikovat stránky"
+msgstr "Povolit uživateli duplikovat stránky"
 
 #: ../../app/conf/user_actions.conf:1198
 msgid "Allow user to view site page change logs"
-msgstr "Povolí uživateli zobrazit protokol změn stránek"
+msgstr "Povolit uživateli zobrazit protokol změn stránek"
