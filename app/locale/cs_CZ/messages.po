@@ -2211,7 +2211,7 @@ msgstr "Indexováno %1/%2"
 #: ../../themes/default/views/administrate/maintenance/search_reindex_status_html.php:62
 #: ../../themes/default/views/administrate/maintenance/hierarchical_reindex_status_html.php:49
 msgid "Indexing %1 (%2/%3)"
-msgstr "Indexuji %1 (%2/%3)"
+msgstr "Vytváří se rejstřík z %1 (%2/%3)"
 
 #: ../../themes/default/views/administrate/maintenance/search_reindex_landing_html.php:32
 msgid ""
@@ -2254,7 +2254,7 @@ msgstr ""
 
 #: ../../themes/default/views/administrate/maintenance/sort_values_reload_status_html.php:58
 msgid "Reloading %1/%2"
-msgstr "Znovu načítám %1/%2"
+msgstr "Znovu se načítá %1/%2"
 
 #: ../../themes/default/views/administrate/maintenance/sort_values_reload_status_html.php:62
 msgid "Reloading sort values for %1 (%2/%3)"
@@ -2334,7 +2334,7 @@ msgstr "Neduplikovat"
 
 #: ../../themes/default/views/system/preferences_duplication_html.php:98
 msgid "No preferences available"
-msgstr "Nejsou dostupné předvolby"
+msgstr "Nejsou k dispozici žádné předvolby"
 
 #: ../../themes/default/views/system/auth_error_html.php:61
 #: ../../themes/default/views/system/logged_out_html.php:61
@@ -2393,7 +2393,7 @@ msgstr "Lokace"
 #: ../../themes/default/views/system/monitor_html.php:47
 #: ../../themes/default/views/logs/search_html.php:73
 msgid "Execution time"
-msgstr "Doba běhu"
+msgstr "Doba vykonávání"
 
 #: ../../themes/default/views/system/monitor_html.php:47
 #: ../../themes/default/views/logs/search_html.php:61
@@ -2442,7 +2442,7 @@ msgstr "Přihlášení"
 
 #: ../../themes/default/views/system/login_html.php:77
 msgid "Forgot your password?"
-msgstr "Nepamatujete si heslo?"
+msgstr "Zapomněli jste heslo?"
 
 #: ../../themes/default/views/system/login_html.php:79
 msgid "Manage your account"
@@ -2470,7 +2470,7 @@ msgstr "Zpět k přihlášení"
 
 #: ../../themes/default/views/system/configuration_error_schema_update_html.php:45
 msgid "Updating your database..."
-msgstr "Aktualizuji vaši databázi..."
+msgstr "Aktualizace databáze…"
 
 #: ../../themes/default/views/system/configuration_error_schema_update_html.php:79
 msgid ""
@@ -2594,15 +2594,15 @@ msgstr "Přidat %1"
 
 #: ../../themes/default/views/editor/template_test_html.php:34
 msgid "Display template debugger"
-msgstr "Zobrazit ladič šablon"
+msgstr "Zobrazit ladění šablon"
 
 #: ../../themes/default/views/editor/template_test_html.php:38
 msgid "Enter display template here ..."
-msgstr "Vyberte zobrazovací šablonu zde ..."
+msgstr "Vyberte zde šablonu zobrazování"
 
 #: ../../themes/default/views/editor/template_test_html.php:41
 msgid "Result will go here ..."
-msgstr "Zde budou výsledky ..."
+msgstr "Zde budou výsledky…"
 
 #: ../../themes/default/views/editor/object_representations/ajax_representation_annotation_editor_html.php:48
 msgid "Close annotations"
@@ -2850,11 +2850,11 @@ msgstr "Datum/čas"
 
 #: ../../themes/default/views/logs/events_html.php:91
 msgid "No events found"
-msgstr "Žádné události nenalezeny"
+msgstr "Nenalezeny žádné události"
 
 #: ../../themes/default/views/logs/events_html.php:91
 msgid "Enter a date to display events from above"
-msgstr "Zadejte datum, od něhož mají být události zobrazeny"
+msgstr "Zadejte datum, od kterého mají být události zobrazeny"
 
 #: ../../themes/default/views/logs/search_html.php:64
 #: ../../themes/default/views/logs/download_html.php:125
@@ -2886,7 +2886,7 @@ msgstr "Uživatel"
 #: ../../themes/default/views/logs/search_html.php:67
 #: ../../themes/default/views/logs/download_html.php:131
 msgid "IP"
-msgstr "IP"
+msgstr "IP adresa"
 
 #: ../../themes/default/views/logs/search_html.php:115
 msgid "No searches found"
@@ -2906,7 +2906,7 @@ msgstr "Záznam"
 
 #: ../../themes/default/views/logs/download_html.php:47
 msgid "Group by %1 from %2"
-msgstr "Seskupovat  %1 s užitím %2"
+msgstr "Seskupovat podle %1 s užitím %2"
 
 #: ../../themes/default/views/logs/download_html.php:59
 #: ../../themes/default/views/logs/download_html.php:122
@@ -3274,7 +3274,7 @@ msgstr "Upravit metadata položky sady"
 msgid ""
 "Drag your selection from column to column to edit the contents of the "
 "display."
-msgstr "Pro editaci obsahu zobrazení posunujte výběr napříč sloupci"
+msgstr "Obsah zobrazení upravíte přetažením toho co vyberete napříč sloupci."
 
 #: ../../themes/default/views/bundles/ca_bundle_display_placements.php:49
 msgid "Available information"
@@ -3337,7 +3337,7 @@ msgstr "Současný %1 "
 #: ../../themes/default/views/bundles/history_tracking_chronology.php:227
 #: ../../themes/default/views/bundles/history_tracking_chronology.php:264
 msgid "No %1 set"
-msgstr "%1  není nastaveno"
+msgstr "%1 není nastaveno"
 
 #: ../../themes/default/views/bundles/history_tracking_chronology.php:745
 msgid "Return to home location "
@@ -3378,7 +3378,7 @@ msgstr "Přidat anotaci"
 
 #: ../../themes/default/views/bundles/ca_user_roles.php:76
 msgid "No roles are available"
-msgstr "Nejsou dostupné žádné role"
+msgstr "Nejsou k dispozici žádné role"
 
 #: ../../themes/default/views/bundles/ca_acl_access.php:48
 msgid "Global access"
@@ -3398,7 +3398,7 @@ msgstr "Upravit globální přístup"
 
 #: ../../themes/default/views/bundles/ca_acl_access.php:66
 msgid "Exceptions"
-msgstr "Vyjímky"
+msgstr "Výjimky"
 
 #: ../../themes/default/views/bundles/ca_acl_access.php:69
 msgid ""
@@ -3430,11 +3430,11 @@ msgstr "Přístupová práva uživatelů"
 
 #: ../../themes/default/views/bundles/ca_acl_access.php:98
 msgid "Edit Exceptions"
-msgstr "Upravit vyjímky"
+msgstr "Upravit výjimky"
 
 #: ../../themes/default/views/bundles/ca_acl_access.php:102
 msgid "Create an Exception"
-msgstr "Vytvořit vyjímku"
+msgstr "Vytvořit výjimku"
 
 #: ../../themes/default/views/bundles/ca_representation_transcriptions.php:96
 msgid "No transcriptions"
@@ -3442,14 +3442,15 @@ msgstr "Žádné přepisy"
 
 #: ../../themes/default/views/bundles/ca_object_representation_chooser_html.php:60
 msgid "No metadata element is configured"
-msgstr "Není nakonfigurován žádný metadatový element"
+msgstr "Není nastaven žádný metadatový element"
 
 #: ../../themes/default/views/bundles/ca_search_form_placements.php:46
 msgid ""
 "Drag your selection from column to column to edit the contents of the search"
 " form."
 msgstr ""
-"Pro editaci obsahu vyhledávacího formuláře posunujte výběr napříč sloupci. "
+"Obsah vyhledávacího formuláře upravíte přetažením toho, co vyberete, napříč "
+"sloupci."
 
 #: ../../themes/default/views/bundles/ca_search_form_placements.php:50
 msgid "Available search items"
@@ -3478,7 +3479,7 @@ msgstr "Soubor ke stažení neexistuje"
 #: ../../themes/default/views/bundles/batch_change_type_html.php:57
 #: ../../themes/default/views/bundles/change_type_html.php:56
 msgid "Change %1 type"
-msgstr "Změnit u  %1  typ"
+msgstr "Změnit u %1 typ"
 
 #: ../../themes/default/views/bundles/batch_change_type_html.php:60
 #: ../../themes/default/views/bundles/change_type_html.php:59
@@ -3509,7 +3510,7 @@ msgstr "Zpracovat na pozadí"
 #: ../../themes/default/views/batch/editor/confirm_html.php:110
 #: ../../themes/default/views/batch/mediaimport/confirm_html.php:105
 msgid "Send email to <strong>%1</strong> when done"
-msgstr "Zaslat email <strong>%1</strong> po dokončení"
+msgstr "Po dokončení zaslat e-mail <strong>%1</strong>"
 
 #: ../../themes/default/views/bundles/batch_change_type_html.php:115
 #: ../../themes/default/views/manage/tools/confirm_html.php:128
