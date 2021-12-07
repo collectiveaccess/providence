@@ -339,6 +339,8 @@ function caBatchFindMatchingMedia($ps_directory, $ps_value, $pa_options=null) {
 		$ps_value = array_pop($va_file_bits);
 		$ps_directory .= "/".join("/", $va_file_bits);
 	}
+	
+	$ps_value = Normalizer::normalize($ps_value);
 
 	// Get file list
 	if (!isset($g_batch_helpers_media_directory_contents_cache[$ps_directory])) {
@@ -359,7 +361,7 @@ function caBatchFindMatchingMedia($ps_directory, $ps_value, $pa_options=null) {
 		if (preg_match('!(SynoResource|SynoEA)!', $vs_file)) { continue; }
 		$va_tmp = explode("/", $vs_file);
 		$f = array_pop($va_tmp);
-		$f_lc = strtolower($f);
+		$f_lc = mb_strtolower($f);
 		$d = array_pop($va_tmp);
 		array_push($va_tmp, $d);
 		$vs_directory = join("/", $va_tmp);
@@ -417,9 +419,10 @@ function caBatchFindMatchingMedia($ps_directory, $ps_value, $pa_options=null) {
 				if ($o_log) $o_log->logDebug("Names to match: ".print_r($va_names_to_match, true));
 
 				foreach($va_names_to_match as $vs_match_name) {
-					if (preg_match('!'.$vs_regex.'!', $vs_match_name, $va_matches)) {
+					if (preg_match('!'.$vs_regex.'!u', $vs_match_name, $va_matches)) {
 						if (!$va_matches[1]) { if (!($va_matches[1] = $va_matches[0])) { continue; } }	// skip blank matches
-
+						$match = Normalizer::normalize($va_matches[1]);
+						
 						if ($o_log) $o_log->logDebug(_t("Extracted value from name %1 using regex %2",$vs_match_name,$vs_regex));
 						
 						$vb_match = false;
@@ -427,31 +430,29 @@ function caBatchFindMatchingMedia($ps_directory, $ps_value, $pa_options=null) {
 						// all comparisons are case-insensitive
 						switch(strtoupper($ps_match_type)) {
 							case 'STARTS':
-								$vb_match = preg_match('!^'.$ps_value.'!i', $va_matches[1], $va_matches);
-								if ($o_log) $o_log->logDebug(_t("STARTS match on %1 to value %2", $va_matches[1], $ps_value));
+								$vb_match = preg_match('!^'.$ps_value.'!i', $match, $va_matches);
+								if ($o_log) $o_log->logDebug(_t("STARTS match on %1 to value %2", $match, $ps_value));
 								break;
 							case 'ENDS':
-								$vb_match = preg_match('!'.$ps_value.'$!i', $va_matches[1], $va_matches);
-								if ($o_log) $o_log->logDebug(_t("ENDS match on %1 to value %2", $va_matches[1], $ps_value));
+								$vb_match = preg_match('!'.$ps_value.'$!i', $match, $va_matches);
+								if ($o_log) $o_log->logDebug(_t("ENDS match on %1 to value %2", $match, $ps_value));
 								break;
 							case 'CONTAINS':
-								$vb_match = preg_match('!'.$ps_value.'!i', $va_matches[1], $va_matches);
-								if ($o_log) $o_log->logDebug(_t("CONTAINS match on %1 to value %2", $va_matches[1], $ps_value));
+								$vb_match = preg_match('!'.$ps_value.'!i', $match, $va_matches);
+								if ($o_log) $o_log->logDebug(_t("CONTAINS match on %1 to value %2", $match, $ps_value));
 								break;
 							case 'EXACT':
 								// match the name exactly
-								$vb_match = (strtolower($va_matches[1]) === strtolower($ps_value));
-								if ($o_log) $o_log->logDebug(_t("EXACT match on %1 to value %2", $va_matches[1], $ps_value));
+								$vb_match = (mb_strtolower($match) === mb_strtolower($ps_value));
+								if ($o_log) $o_log->logDebug(_t("EXACT match on %1 to value %2", $match, $ps_value));
 								break;  
 							// Default is to match exact name or name without extension
 							default:
-								$vb_match = ((strtolower($va_matches[1]) === strtolower($ps_value)) || (strtolower($va_matches[1]) === strtolower(pathinfo($ps_value, PATHINFO_FILENAME))));
-								
-								if ($o_log) $o_log->logDebug(_t("Case-insensitive match on %1 to value %2", $va_matches[1], $ps_value));
+								$vb_match = ((mb_strtolower($match) === mb_strtolower($ps_value)) || (mb_strtolower($match) === mb_strtolower(pathinfo($ps_value, PATHINFO_FILENAME))));
+								if ($o_log) $o_log->logDebug(_t("Case-insensitive match on %1 to value %2", $match, $ps_value));
 								break;
 						}
 						if ($vb_match) {  $va_matched_files[] = $vs_file; }
-						
 					} else {
 						if ($o_log) $o_log->logDebug(_t("Couldn't match name %1 on regex %2",$vs_match_name,$vs_regex));
 					}
