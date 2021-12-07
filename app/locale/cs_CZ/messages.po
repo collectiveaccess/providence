@@ -2211,7 +2211,7 @@ msgstr "Indexováno %1/%2"
 #: ../../themes/default/views/administrate/maintenance/search_reindex_status_html.php:62
 #: ../../themes/default/views/administrate/maintenance/hierarchical_reindex_status_html.php:49
 msgid "Indexing %1 (%2/%3)"
-msgstr "Indexuji %1 (%2/%3)"
+msgstr "Vytváří se rejstřík z %1 (%2/%3)"
 
 #: ../../themes/default/views/administrate/maintenance/search_reindex_landing_html.php:32
 msgid ""
@@ -2254,7 +2254,7 @@ msgstr ""
 
 #: ../../themes/default/views/administrate/maintenance/sort_values_reload_status_html.php:58
 msgid "Reloading %1/%2"
-msgstr "Znovu načítám %1/%2"
+msgstr "Znovu se načítá %1/%2"
 
 #: ../../themes/default/views/administrate/maintenance/sort_values_reload_status_html.php:62
 msgid "Reloading sort values for %1 (%2/%3)"
@@ -2334,7 +2334,7 @@ msgstr "Neduplikovat"
 
 #: ../../themes/default/views/system/preferences_duplication_html.php:98
 msgid "No preferences available"
-msgstr "Nejsou dostupné předvolby"
+msgstr "Nejsou k dispozici žádné předvolby"
 
 #: ../../themes/default/views/system/auth_error_html.php:61
 #: ../../themes/default/views/system/logged_out_html.php:61
@@ -2393,7 +2393,7 @@ msgstr "Lokace"
 #: ../../themes/default/views/system/monitor_html.php:47
 #: ../../themes/default/views/logs/search_html.php:73
 msgid "Execution time"
-msgstr "Doba běhu"
+msgstr "Doba vykonávání"
 
 #: ../../themes/default/views/system/monitor_html.php:47
 #: ../../themes/default/views/logs/search_html.php:61
