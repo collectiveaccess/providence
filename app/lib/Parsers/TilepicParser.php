@@ -342,7 +342,7 @@ class TilepicParser {
 	# ------------------------------------------------
 	private function _imageMagickRead($ps_filepath) {
 		if ($this->ops_imagemagick_path) {
-			caExec($x=$this->ops_imagemagick_path.' -format "%m;%w;%h\n" '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+			caExec($this->ops_imagemagick_path.' -format "%m;%w;%h\n" '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 	
 			$va_tmp = explode(';', $va_output[0]);
 			if (sizeof($va_tmp) != 3) {
@@ -535,7 +535,7 @@ class TilepicParser {
 		#
 		$h = $this->_imageMagickRead($ps_filepath);
         if (!$h) {
-			$this->error = "xxxCouldn't open image $ps_filepath";
+			$this->error = "Couldn't open image $ps_filepath";
 			return false;
         }
         
