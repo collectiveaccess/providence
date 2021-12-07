@@ -426,7 +426,7 @@ class SearchIndexer extends SearchBase {
 			$va_hier_values = array();
 			while($qr_hier_res->nextHit()) {
 				if ($vs_v = $qr_hier_res->get($vs_subject_tablename.".".$ps_field)) {
-					// return as array in case somehow there are dupe preferred labels (ie. the database is corrupt 
+					// return as array in case somehow there are dupe preferred labels (ie. the database is corrupt)
 					$label_id = is_array($label_ids = $qr_hier_res->get($vs_subject_tablename.'.preferred_labels.label_id', ['returnAsArray' => true])) ? (int)array_shift($label_ids) : null;
 					$va_hier_values[($is_label && ($label_id > 0)) ? $label_id : $qr_hier_res->getPrimaryKey()] = $vs_v;
 				}
