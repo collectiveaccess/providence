@@ -1173,6 +1173,8 @@
 							        $vs_name = pathinfo($vs_item, PATHINFO_FILENAME);
 							    }
 							    
+							    $is_primary = caGetOption( 'objectRepresentationSplitter_isPrimary', $pa_item['settings'], false);
+							    
 								if(!isset($va_val['preferred_labels']) || !strlen($va_val['preferred_labels'])) { $va_val['preferred_labels'] = $vs_name ? $vs_name : '['.caGetBlankLabelText('ca_object_representations').']'; }
 					
 								if ($va_val['media']['media'] || $vs_item) {
@@ -1208,6 +1210,11 @@
 											) {
 												$va_media_val['nonpreferred_labels']
 													= $pa_options['nonPreferredLabels'];
+											}
+											
+											if($is_primary) {
+												$va_media_val['is_primary'] = true;
+												$is_primary = false;
 											}
 
 											$va_media_val['_matchOn'] = $va_match_on;
