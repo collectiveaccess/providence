@@ -4061,7 +4061,7 @@ msgstr "Typ vztahu: %1"
 #: ../../themes/default/views/bundles/ca_object_representations.php:188
 #: ../../themes/default/views/bundles/ca_object_representations.php:291
 msgid "Fetch media from URL"
-msgstr "Nahrát média z URL"
+msgstr "Získat média z URL"
 
 #: ../../themes/default/views/bundles/ca_object_representations.php:243
 #: ../../themes/default/views/bundles/ca_object_representations.php:343
