@@ -2211,7 +2211,7 @@ msgstr "Indexováno %1/%2"
 #: ../../themes/default/views/administrate/maintenance/search_reindex_status_html.php:62
 #: ../../themes/default/views/administrate/maintenance/hierarchical_reindex_status_html.php:49
 msgid "Indexing %1 (%2/%3)"
-msgstr "Indexuji %1 (%2/%3)"
+msgstr "Vytváří se rejstřík z %1 (%2/%3)"
 
 #: ../../themes/default/views/administrate/maintenance/search_reindex_landing_html.php:32
 msgid ""
@@ -2254,7 +2254,7 @@ msgstr ""
 
 #: ../../themes/default/views/administrate/maintenance/sort_values_reload_status_html.php:58
 msgid "Reloading %1/%2"
-msgstr "Znovu načítám %1/%2"
+msgstr "Znovu se načítá %1/%2"
 
 #: ../../themes/default/views/administrate/maintenance/sort_values_reload_status_html.php:62
 msgid "Reloading sort values for %1 (%2/%3)"
@@ -2334,7 +2334,7 @@ msgstr "Neduplikovat"
 
 #: ../../themes/default/views/system/preferences_duplication_html.php:98
 msgid "No preferences available"
-msgstr "Nejsou dostupné předvolby"
+msgstr "Nejsou k dispozici žádné předvolby"
 
 #: ../../themes/default/views/system/auth_error_html.php:61
 #: ../../themes/default/views/system/logged_out_html.php:61
@@ -2393,7 +2393,7 @@ msgstr "Lokace"
 #: ../../themes/default/views/system/monitor_html.php:47
 #: ../../themes/default/views/logs/search_html.php:73
 msgid "Execution time"
-msgstr "Doba běhu"
+msgstr "Doba vykonávání"
 
 #: ../../themes/default/views/system/monitor_html.php:47
 #: ../../themes/default/views/logs/search_html.php:61
@@ -2442,7 +2442,7 @@ msgstr "Přihlášení"
 
 #: ../../themes/default/views/system/login_html.php:77
 msgid "Forgot your password?"
-msgstr "Nepamatujete si heslo?"
+msgstr "Zapomněli jste heslo?"
 
 #: ../../themes/default/views/system/login_html.php:79
 msgid "Manage your account"
@@ -2470,7 +2470,7 @@ msgstr "Zpět k přihlášení"
 
 #: ../../themes/default/views/system/configuration_error_schema_update_html.php:45
 msgid "Updating your database..."
-msgstr "Aktualizuji vaši databázi..."
+msgstr "Aktualizace databáze…"
 
 #: ../../themes/default/views/system/configuration_error_schema_update_html.php:79
 msgid ""
@@ -2594,15 +2594,15 @@ msgstr "Přidat %1"
 
 #: ../../themes/default/views/editor/template_test_html.php:34
 msgid "Display template debugger"
-msgstr "Zobrazit ladič šablon"
+msgstr "Zobrazit ladění šablon"
 
 #: ../../themes/default/views/editor/template_test_html.php:38
 msgid "Enter display template here ..."
-msgstr "Vyberte zobrazovací šablonu zde ..."
+msgstr "Vyberte zde šablonu zobrazování"
 
 #: ../../themes/default/views/editor/template_test_html.php:41
 msgid "Result will go here ..."
-msgstr "Zde budou výsledky ..."
+msgstr "Zde budou výsledky…"
 
 #: ../../themes/default/views/editor/object_representations/ajax_representation_annotation_editor_html.php:48
 msgid "Close annotations"
@@ -2850,11 +2850,11 @@ msgstr "Datum/čas"
 
 #: ../../themes/default/views/logs/events_html.php:91
 msgid "No events found"
-msgstr "Žádné události nenalezeny"
+msgstr "Nenalezeny žádné události"
 
 #: ../../themes/default/views/logs/events_html.php:91
 msgid "Enter a date to display events from above"
-msgstr "Zadejte datum, od něhož mají být události zobrazeny"
+msgstr "Zadejte datum, od kterého mají být události zobrazeny"
 
 #: ../../themes/default/views/logs/search_html.php:64
 #: ../../themes/default/views/logs/download_html.php:125
@@ -2886,7 +2886,7 @@ msgstr "Uživatel"
 #: ../../themes/default/views/logs/search_html.php:67
 #: ../../themes/default/views/logs/download_html.php:131
 msgid "IP"
-msgstr "IP"
+msgstr "IP adresa"
 
 #: ../../themes/default/views/logs/search_html.php:115
 msgid "No searches found"
