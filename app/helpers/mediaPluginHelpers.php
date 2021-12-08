@@ -87,7 +87,7 @@
 			return $ps_imagemagick_path; 
 		}	// don't try exec test on Windows
 		
-		caExec($ps_imagemagick_path.'/identify 2> /dev/null', $va_output, $vn_return);
+		caExec($ps_imagemagick_path.' 2> /dev/null', $va_output, $vn_return);
 		
 		$vb_ret =  (($vn_return >= 0) && ($vn_return < 127));
 		
