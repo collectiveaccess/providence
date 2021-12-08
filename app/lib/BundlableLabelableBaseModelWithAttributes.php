@@ -7784,6 +7784,7 @@ side. For many self-relations the direction determines the nature and display te
 
 		if(is_null($ps_effective_date) && is_array($pa_options) && is_array($pa_options['interstitialValues'])) {
 			$ps_effective_date = caGetOption('effective_date', $pa_options['interstitialValues'], null);
+			if(is_array($ps_effective_date)) { $ps_effective_date = $ps_effective_date['effective_date'] ?? null; }
 			unset($pa_options['interstitialValues']['effective_date']);
 		}
 
@@ -8009,6 +8010,7 @@ side. For many self-relations the direction determines the nature and display te
 		if (isset($pa_options['interstitialValues']) && is_array($pa_options['interstitialValues'])) {
 			foreach ($pa_options['interstitialValues'] as $vs_element => $va_value) {
 				if ($t_rel->hasField($vs_element)) {
+					if(is_array($va_value)) { $va_value = $va_value[$vs_element] ?? null; }
 					$t_rel->set($vs_element, $va_value);
 					continue;
 				}
