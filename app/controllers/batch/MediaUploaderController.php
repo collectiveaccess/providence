@@ -84,11 +84,20 @@
  		 * tus resume-able file upload API endpoint (see https://tus.io and https://github.com/ankitpokhrel/tus-php)
  		 */
  		public function tus(){
+ 			$config = Configuration::load();
             $user_id = $this->request->getUserID();
 
  		    $server = MediaUploadManager::getTUSServer($user_id);
             try {
             	$response = $server->serve();
+            	
+            	# Force protocol for urls returned by service to configured value if needed. This
+            	# can be necessary when running behind a proxy that doesn't set 
+				# X-Forwarded-Host and X-Forwarded-Proto headers
+            	if(($force_proto_to = strtolower($config->get('media_uploader_force_protocol_to'))) && in_array($force_proto_to, ['http', 'https'], true)) {
+            		$location = preg_replace('!^[A-Za-z]+:!', "{$force_proto_to}:", $response->headers->get('location'));
+            		$response->headers->set('location', $location);
+            	}
            		$response->send();
            		exit;
            	} catch(Exception $e) {

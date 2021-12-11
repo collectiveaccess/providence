@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2019 Whirl-i-Gig
+ * Copyright 2014-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -169,6 +169,15 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Media prefix'),
+				'description' => ''
+			),
+			'objectRepresentationSplitter_isPrimary' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => false,
+				'label' => _t('Set first identified media as primary'),
 				'description' => ''
 			),
 			'objectRepresentationSplitter_matchMode' => array(

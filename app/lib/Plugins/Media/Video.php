@@ -786,13 +786,13 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 							if($res && $res!=''){
 								$other_params.="-s ".$res;
 							}
-							caExec($cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -acodec libfaac {$other_params} -vpre {$vpreset} -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
+							caExec($cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 {$other_params} -vpre {$vpreset} -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
 						} else {
 							if(!$vb_twopass) {
-								caExec($cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -acodec libfaac ".join(" ",$ffmpeg_params)." -y ".caEscapeShellArg($filepath.".".$ext). ((caGetOSFamily() == OS_POSIX) ? " 2> /dev/null" : ""), $output, $return);
+								caExec($cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 ".join(" ",$ffmpeg_params)." -y ".caEscapeShellArg($filepath.".".$ext). ((caGetOSFamily() == OS_POSIX) ? " 2> /dev/null" : ""), $output, $return);
 							} else {
-								caExec($cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -pass 1 -acodec libfaac ".join(" ",$ffmpeg_params)." -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
-								caExec($cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -pass 2 -acodec libfaac ".join(" ",$ffmpeg_params)." -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
+								caExec($cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -pass 1 ".join(" ",$ffmpeg_params)." -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
+								caExec($cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -pass 2 ".join(" ",$ffmpeg_params)." -y ".caEscapeShellArg($filepath.".".$ext). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
 								// probably cleanup logfiles here
 							}
 						}

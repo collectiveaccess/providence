@@ -3866,7 +3866,7 @@ if (!$vb_batch) {
 							
 							$vs_k = $vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_set_id.'_'.$vn_element_id.'_'.$vn_attribute_id;
 							if(is_null($po_request->parameterExists($vs_k)) && !isset($_FILES[$vs_k])) { continue; }
-							$vs_attr_val = $po_request->getParameter($vs_k, pString);
+							$vs_attr_val = array_pop($po_request->getParameter($vs_k, pArray));
 							if (isset($_FILES[$vs_k]) && ($va_val = $_FILES[$vs_k])) {
 								if ($va_val['size'] > 0) {	// is there actually a file?
 									$va_val['_uploaded_file'] = true;
@@ -4482,7 +4482,7 @@ if (!$vb_batch) {
                                     } elseif(!$dont_allow_access_to_import_directory && ($vs_key !== 'empty') && sizeof($import_directory_paths) && strlen($va_values['tmp_name'])) {
                                     	// Is user-selected file from s media import directory
                                     	foreach($import_directory_paths as $p) {
-											if(file_exists($vs_path = "{$p}{$va_values['tmp_name']}")) {
+											if(file_exists($vs_path = "{$p}/{$va_values['tmp_name']}")) {
 												$vs_original_name = pathinfo($va_values['name'], PATHINFO_BASENAME);
 												break;
 											}
@@ -4543,6 +4543,8 @@ if (!$vb_batch) {
 											}
 											$t_rep = $this->addRepresentation($f, $vn_rep_type_id, $vals['locale_id'], $vals['status'], $vals['access'], $vn_is_primary, array_merge($vals, ['name' => $vals['rep_label']]), array('original_filename' => $vs_original_name, 'returnRepresentation' => true, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vn_type_id, 'mapping_id' => $vn_object_representation_mapping_id));	// $vn_type_id = *relationship* type_id (as opposed to representation type)
 										}
+									} elseif($vs_key === 'empty') {
+										$t_rep = $this->addRepresentation(null, $vn_rep_type_id, $vals['locale_id'], $vals['status'], $vals['access'], $vn_is_primary, array_merge($vals, ['name' => $vals['rep_label']]), array('original_filename' => $vs_original_name, 'returnRepresentation' => true, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vn_type_id, 'mapping_id' => $vn_object_representation_mapping_id));	// $vn_type_id = *relationship* type_id (as opposed to representation type)
 									}
                                     
                                     if ($this->numErrors()) {
@@ -7782,6 +7784,7 @@ side. For many self-relations the direction determines the nature and display te
 
 		if(is_null($ps_effective_date) && is_array($pa_options) && is_array($pa_options['interstitialValues'])) {
 			$ps_effective_date = caGetOption('effective_date', $pa_options['interstitialValues'], null);
+			if(is_array($ps_effective_date)) { $ps_effective_date = $ps_effective_date['effective_date'] ?? null; }
 			unset($pa_options['interstitialValues']['effective_date']);
 		}
 
@@ -8007,6 +8010,7 @@ side. For many self-relations the direction determines the nature and display te
 		if (isset($pa_options['interstitialValues']) && is_array($pa_options['interstitialValues'])) {
 			foreach ($pa_options['interstitialValues'] as $vs_element => $va_value) {
 				if ($t_rel->hasField($vs_element)) {
+					if(is_array($va_value)) { $va_value = $va_value[$vs_element] ?? null; }
 					$t_rel->set($vs_element, $va_value);
 					continue;
 				}

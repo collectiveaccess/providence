@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2020 Whirl-i-Gig
+ * Copyright 2013-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -163,6 +163,11 @@ class BaseXMLDataReader extends BaseDataReader {
 			$this->opo_xpath->registerNamespace($this->ops_xml_namespace_prefix, $this->ops_xml_namespace);
 		}
 		
+		if ($this->ops_additional_xml_namespaces && is_array($this->ops_additional_xml_namespaces)) {
+			foreach($this->ops_additional_xml_namespaces as $prefix => $ns) {
+				$this->opo_xpath->registerNamespace($prefix, $ns);
+			}
+		}
 		$this->opo_handle = $this->opo_xpath->query($this->ops_xpath, null, $this->opb_register_root_tag);
 
 		$this->opn_current_row = 0;
