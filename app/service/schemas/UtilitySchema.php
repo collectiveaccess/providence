@@ -47,6 +47,10 @@ class UtilitySchema extends \GraphQLServices\GraphQLSchema {
 				'name' => 'DateParseResult',
 				'description' => 'Parsed date expression',
 				'fields' => [
+					'date' => [
+						'type' => Type::string(),
+						'description' => 'Original date expression'
+					],
 					'start' => [
 						'type' => Type::float(),
 						'description' => 'Start of date interval'

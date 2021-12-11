@@ -221,10 +221,70 @@ class EditSchema extends \GraphQLServices\GraphQLSchema {
 					],
 				]
 			]),
+			$subjectRelationshipType = new InputObjectType([
+				'name' => 'SubjectRelationship',
+				'description' => 'Input for relationship added relative to a single subject',
+				'fields' => [				
+					[
+						'name' => 'target',
+						'type' => Type::string(),
+						'description' => _t('Target table name. (Eg. ca_objects)')
+					],
+					[
+						'name' => 'targetId',
+						'type' => Type::int(),
+						'description' => _t('Numeric database id of record to use as relationship target.')
+					],
+					[
+						'name' => 'targetIdno',
+						'type' => Type::string(),
+						'description' => _t('Alphanumeric idno value of record to use as relationship target')
+					],
+					[
+						'name' => 'targetIdentifier',
+						'type' => Type::string(),
+						'description' => _t('Alphanumeric idno value or numeric database id of record to use as relationship target.')
+					],
+					[
+						'name' => 'relationshipType',
+						'type' => Type::string(),
+						'description' => _t('Relationship type code.')
+					],
+					[
+						'name' => 'bundles',
+						'type' => Type::listOf($EditBundleType),
+						'description' => _t('Bundles to add')
+					]
+				]
+			]),
 			$RelationshipType = new InputObjectType([
 				'name' => 'Relationship',
-				'description' => '.',
+				'description' => 'Fully specified relationship',
 				'fields' => [
+					'id' => [
+						'type' => Type::int(),
+						'description' => 'IDs of added/edited records'
+					],				
+					[
+						'name' => 'subject',
+						'type' => Type::string(),
+						'description' => _t('Subject table name. (Eg. ca_objects)')
+					],
+					[
+						'name' => 'subjectId',
+						'type' => Type::int(),
+						'description' => _t('Numeric database id of record to use as relationship subject.')
+					],
+					[
+						'name' => 'subjectIdno',
+						'type' => Type::string(),
+						'description' => _t('Alphanumeric idno value of record to use as relationship subject')
+					],
+					[
+						'name' => 'subjectIdentifier',
+						'type' => Type::string(),
+						'description' => _t('Alphanumeric idno value or numeric database id of record to use as relationship subject.')
+					],
 					[
 						'name' => 'target',
 						'type' => Type::string(),
