@@ -2157,23 +2157,27 @@
 		public static function reload_current_values_for_history_tracking_policies($po_opts=null) {
 			$tables = ca_objects::getTablesWithHistoryTrackingPolicies();
 			
-			foreach($tables as $table) {
-			    $c = 0;
-                $t = Datamodel::getInstance($table, true);
-                $qr = $table::find('*', ['returnAs' => 'searchResult']);
-                print CLIProgressBar::start($qr->numHits(), _t('Starting...'));
-                $table::clearHistoryTrackingCurrentValues();
-                while($qr->nextHit()) {
-                    if ($t->load($qr->getPrimaryKey())) {
-                        print CLIProgressBar::next(1, _t('Processing %1', $t->getWithTemplate("^{$table}.preferred_labels (^{$table}.idno)")));
-                        if ($t->deriveHistoryTrackingCurrentValue()) {
-                            $c++;
-                        }
-                    }
-                }
-			    print CLIProgressBar::finish();
-			    CLIUtils::addMessage(_t('Processed %1 %2', $c, Datamodel::getTableProperty($table, "NAME_PLURAL")));
-            }
+            if(sizeof($tables) > 0) {
+				$tables[0]::clearHistoryTrackingCurrentValues();
+				foreach($tables as $table) {
+					$c = 0;
+					$t = Datamodel::getInstance($table, true);
+					$qr = $table::find('*', ['returnAs' => 'searchResult']);
+					print CLIProgressBar::start($qr->numHits(), _t('Starting...'));
+					while($qr->nextHit()) {
+						if ($t->load($qr->getPrimaryKey())) {
+							print CLIProgressBar::next(1, _t('Processing %1', $t->getWithTemplate("^{$table}.preferred_labels (^{$table}.idno)")));
+							if ($t->deriveHistoryTrackingCurrentValue()) {
+								$c++;
+							}
+						}
+					}
+					print CLIProgressBar::finish();
+					CLIUtils::addMessage(_t('Processed %1 %2', $c, Datamodel::getTableProperty($table, "NAME_PLURAL")));
+				}
+			} else {
+				CLIUtils::addError(_t('No history tracking policies are configured'));
+			}
 			
 			return true;
 		}

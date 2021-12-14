@@ -59,8 +59,14 @@
 		 *
 		 */
 		static public function clearHistoryTrackingCurrentValues($options=null) {
+			$table_num = Datamodel::getTableNum(get_called_class());
 			$db = new Db();
-			$db->query("TRUNCATE TABLE ca_history_tracking_current_values");
+			
+			if(caGetOption('all', $options, true)) {
+				$db->query("TRUNCATE TABLE ca_history_tracking_current_values");
+			} else {
+				$db->query("DELETE FROM ca_history_tracking_current_values WHERE table_num = ?", [$table_num]);
+			}
 			return true;
 		}
 		# ------------------------------------------------------
