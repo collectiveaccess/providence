@@ -102,6 +102,8 @@ BaseModel::$s_ca_models_definitions['ca_object_representations_x_vocabulary_term
 );
 
 class ca_object_representations_x_vocabulary_terms extends BaseRepresentationRelationship {
+	use HistoryTrackingCurrentValueTrait;
+	
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------

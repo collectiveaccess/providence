@@ -102,6 +102,8 @@ BaseModel::$s_ca_models_definitions['ca_object_representations_x_storage_locatio
 );
 
 class ca_object_representations_x_storage_locations extends BaseRepresentationRelationship {
+	use HistoryTrackingCurrentValueTrait;
+	
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
