@@ -264,7 +264,7 @@ function caBatchGetIdnoRegexList($options=null) {
 	$o_config = Configuration::load();
 	$o_log = caGetOption('log', $options, null);
 	
-	$regex_list = $o_config->get(['mediaObjectIdnoRegexes', 'media_idno_rewrites');
+	$regex_list = $o_config->get(['mediaObjectIdnoRegexes', 'media_idno_rewrites']);
 	if (!is_array($regex_list)) { $regex_list = []; }
 	
 	foreach($regex_list as $k => $v){
