@@ -164,7 +164,7 @@
 	if($this->request->getUser()->canDoAction('can_download_ca_object_representations')) {
 ?>
 					<div class='mediaMetadataActionButton'>
-						<span id="{fieldNamePrefix}download_{n}"><?= urldecode(caNavLink($this->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1).' '._t('Download'), '', '*', '*', 'DownloadMedia', array('version' => 'original', 'representation_id' => "{representation_id}", $t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'download' => 1), array('id' => "{fieldNamePrefix}download_button_{n}"))); ?></span>
+						<span id="{fieldNamePrefix}download_{n}"><?= urldecode(caNavLink($this->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1).' '._t('Download'), '', '*', '*', 'DownloadMedia', array('context' => 'media_overlay', 'representation_id' => "{representation_id}", $t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'download' => 1), array('id' => "{fieldNamePrefix}download_button_{n}"))); ?></span>
 					</div>
 <?php
 	}
