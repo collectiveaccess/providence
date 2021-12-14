@@ -289,7 +289,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		if(caGetOption('hooks', $pa_options, true)) {
-			$this->opo_app_plugin_manager->hookInsertItem(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'is_insert' => true));
+			$this->opo_app_plugin_manager->hookInsertItem(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'is_insert' => true, 'for_duplication' => caGetOption('forDuplication', $pa_options, true)));
 		}
 		return $vn_rc;
 	}
@@ -359,7 +359,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		SearchResult::clearResultCacheForRow($this->tableName(), $this->getPrimaryKey());
 
 		if(caGetOption('hooks', $pa_options, true)) {
-			$this->opo_app_plugin_manager->hookUpdateItem(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'is_insert' => false));
+			$this->opo_app_plugin_manager->hookUpdateItem(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'is_insert' => false, 'for_duplication' => caGetOption('forDuplication', $pa_options, true)));
 		}
 		return $vn_rc;
 	}	
@@ -516,7 +516,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		if (isset($pa_options['user_id']) && $pa_options['user_id'] && $t_dupe->hasField('user_id')) { $t_dupe->set('user_id', $pa_options['user_id']); }
 		
-		$t_dupe->insert();
+		$t_dupe->insert(['forDuplication' => true]);
 		
 		if ($t_dupe->numErrors()) {
 			$this->errors = $t_dupe->errors;
@@ -635,7 +635,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						return false;
 					}
 					$t_child_dupe->set($vs_parent_id_fld, $dupe_id);
-					$t_child_dupe->update();
+					$t_child_dupe->update(['forDuplication' => true]);
 					if ($t_child_dupe->numErrors()) {
 						$this->errors = $t_child_dupe->errors;
 						if ($vb_we_set_transaction) { $o_t->rollback();}
