@@ -4482,7 +4482,7 @@ if (!$vb_batch) {
                                     } elseif(!$dont_allow_access_to_import_directory && ($vs_key !== 'empty') && sizeof($import_directory_paths) && strlen($va_values['tmp_name'])) {
                                     	// Is user-selected file from s media import directory
                                     	foreach($import_directory_paths as $p) {
-											if(file_exists($vs_path = "{$p}{$va_values['tmp_name']}")) {
+											if(file_exists($vs_path = "{$p}/{$va_values['tmp_name']}")) {
 												$vs_original_name = pathinfo($va_values['name'], PATHINFO_BASENAME);
 												break;
 											}
