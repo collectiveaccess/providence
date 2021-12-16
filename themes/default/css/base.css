@@ -833,7 +833,6 @@ a.sf-menu-selected:hover {
     background-color: #ddd;
     background-repeat:no-repeat;
     background-position: top right;
-    height:13px;
 }
 
 a.sf-menu-disabled-selected, #leftNav h2 a.sf-menu-disabled-selected {
