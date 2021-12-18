@@ -92,9 +92,7 @@ class DisplayTemplateParser {
 							if (!$qr_res) { return; }
 
 							/** @var HTML_Node $o_node */
-							if((($o_node->filterNonPrimaryRepresentations == '0') || (strtolower($o_node->filterNonPrimaryRepresentations) == 'no')) && (is_a($qr_res, "SearchResult"))) {
-								if (method_exists($qr_res, "filterNonPrimaryRepresentations")) { $qr_res->filterNonPrimaryRepresentations(false); }
-							}
+							$filter_non_primary_reps = self::_setPrimaryRepresentationFiltering($qr_res, $o_node->filterNonPrimaryRepresentations);
 						
 							$va_cache_opts = $qr_res->get($vs_relative_to.".".$qr_res->primaryKey(), array_merge($va_get_options, ['returnCacheOptions' => true]));
 						
@@ -202,11 +200,8 @@ class DisplayTemplateParser {
 
 		if(!$qr_res) { return $pb_return_as_array ? array() : ""; }
 
-        $vm_filter_non_primary_reps = caGetOption('filterNonPrimaryRepresentations', $pa_options, true);
-		if((!$vm_filter_non_primary_reps || ($vm_filter_non_primary_reps == '0') || (strtolower($vm_filter_non_primary_reps) == 'no')) && (is_a($qr_res, "SearchResult"))) {
-			if (method_exists($qr_res, "filterNonPrimaryRepresentations")) { $qr_res->filterNonPrimaryRepresentations(false); }
-		}
-		
+        $filter_non_primary_reps = self::_setPrimaryRepresentationFiltering($qr_res, caGetOption('filterNonPrimaryRepresentations', $pa_options, true));
+        
 		$pa_check_access = ($t_instance->hasField('access')) ? caGetOption('checkAccess', $pa_options, null) : null;
 		if (!is_array($pa_check_access) || !sizeof($pa_check_access)) { $pa_check_access = null; }
 		
@@ -354,8 +349,7 @@ class DisplayTemplateParser {
 					];
 					
 					break;	
-			}
-			
+			}	
 		}
 		
 		return $pa_units;
@@ -577,11 +571,7 @@ class DisplayTemplateParser {
 					$vb_aggregate_unique = $o_node->aggregateUnique ? (bool)$o_node->aggregateUnique : false;
 					$vb_omit_blanks = !is_null($o_node->omitBlanks) ? (bool)$o_node->omitBlanks : null;
 
-					$vb_filter_non_primary_reps = caGetOption('filterNonPrimaryRepresentations', $pa_options, true);
-					if(!$vb_filter_non_primary_reps || (($o_node->filterNonPrimaryRepresentations == '0') || (strtolower($o_node->filterNonPrimaryRepresentations) == 'no'))) {
-						$vb_filter_non_primary_reps = false;
-						if (method_exists($pr_res, "filterNonPrimaryRepresentations")) { $pr_res->filterNonPrimaryRepresentations(false); }
-					}
+					$filter_non_primary_reps = self::_setPrimaryRepresentationFiltering($pr_res, caGetOption('filterNonPrimaryRepresentations', $options, $o_node->filterNonPrimaryRepresentations));
 
 					$vs_unit_skip_if_expression = (string)$o_node->skipIfExpression;
 					$vs_unit_skip_when = (string)$o_node->skipWhen;
@@ -606,6 +596,7 @@ class DisplayTemplateParser {
 					$va_get_options['maxLevelsFromTop'] = (int)$o_node->maxLevelsFromTop ?: null;
 					$va_get_options['maxLevelsFromBottom'] = (int)$o_node->maxLevelsFromBottom ?: null;
 					$va_get_options['allDescendants'] = (int)$o_node->allDescendants ?: null;
+					$va_get_options['filterNonPrimaryRepresentations'] = $filter_non_primary_reps;
 					
 					if ($o_node->sort) {
 						$va_get_options['sort'] = preg_split('![ ,;]+!', $o_node->sort);
@@ -707,7 +698,7 @@ class DisplayTemplateParser {
 									'includeBlankValuesInTopLevelForPrefetch' => false,
 									'unique' => $vb_unique,
 									'aggregateUnique' => $vb_aggregate_unique,
-									'filterNonPrimaryRepresentations' => $vb_filter_non_primary_reps
+									'filterNonPrimaryRepresentations' => $filter_non_primary_reps
 								]
 							)
 						);
@@ -856,7 +847,7 @@ class DisplayTemplateParser {
 									'aggregateUnique' => $vb_aggregate_unique,
 									'relationIDs' => $va_relation_ids,
 									'relationshipTypeIDs' => $va_relationship_type_ids,
-									'filterNonPrimaryRepresentations' => $vb_filter_non_primary_reps,
+									'filterNonPrimaryRepresentations' => $filter_non_primary_reps,
 									'primaryIDs' => $va_get_options['primaryIDs']
 								]
 							)
@@ -1920,6 +1911,20 @@ class DisplayTemplateParser {
 			}
 		}
 		return $filter_regex;
-	}					
+	}	
+	# -------------------------------------------------------------------
+	/**
+	 *
+	 */
+	static private function _setPrimaryRepresentationFiltering($res, $value) {
+		if (!is_a($res, "SearchResult") || !method_exists($res, "filterNonPrimaryRepresentations")) { return null; }
+		
+	 	$filter_opt = $value;
+	 	$filter = true;
+        if(!(bool)$filter_opt || ($filter_opt === '0') || (strtolower($filter_opt) === 'no')) { $filter = false; }
+		$res->filterNonPrimaryRepresentations($filter); 
+		
+		return $filter;
+	}
 	# -------------------------------------------------------------------
 }
