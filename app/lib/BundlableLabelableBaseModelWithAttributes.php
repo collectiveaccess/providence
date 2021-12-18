@@ -6504,42 +6504,53 @@ if (!$vb_batch) {
 					foreach($va_rel_info[$vs_cur_table][$vs_join_table] as $vn_i => $va_rel) {
 						$va_tmp[] = $vs_cur_table.".".$va_rel_info[$vs_cur_table][$vs_join_table][$vn_i][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][$vn_i][1]."\n";
 					}
-					$va_joins[] = $vs_join.join(' OR ', $va_tmp);
+					$va_joins[] = $vs_join.' ('.join(' OR ', $va_tmp).')'.(Datamodel::getFieldNum($vs_join_table, 'deleted') ? " AND ({$vs_join_table}.deleted = 0)" : '');
 					$vs_cur_table = $vs_join_table;
 				}
 				
 				
 			
+				// When related item is a relationship filter filter "restrictToTypes" as relationship types
+				// (if specified) and also filter out deleted target rows (eg. don't include relationships pointing to deleted rows).
                 if (method_exists($t_rel_item, 'isRelationship') && $t_rel_item->isRelationship()) {
+                    $va_rels = Datamodel::getManyToOneRelations($t_rel_item->tableName());
+                    
+                    // Derive filter for deleted target rows
+                    $deleted_filter = null;
+                    foreach($va_rels as $vs_rel_pk => $va_rel_info) {
+						if(!in_array($va_rel_info['one_table'], [$this->tableName(), 'ca_relationship_types'])) {
+							$deleted_filter = (Datamodel::getFieldNum($va_rel_info['one_table'], 'deleted') ? " AND (r.deleted = 0)" : '');
+							break;
+						}
+					}   
+                    
                     if(is_array($options['restrictToTypes']) && sizeof($options['restrictToTypes'])) {
-                        $va_rels = Datamodel::getManyToOneRelations($t_rel_item->tableName());
-
                         foreach($va_rels as $vs_rel_pk => $va_rel_info) {
-                            if ($va_rel_info['one_table'] != $this->tableName()) {
+                            if (!in_array($va_rel_info['one_table'], [$this->tableName()])) {
                                 $va_type_ids = caMakeTypeIDList($va_rel_info['one_table'], $options['restrictToTypes']);
                     
                                 if (is_array($va_type_ids) && sizeof($va_type_ids)) { 
-                                    $va_joins[] = "INNER JOIN {$va_rel_info['one_table']} AS r ON r.{$va_rel_info['one_table_field']} = ".$t_rel_item->tableName().".{$vs_rel_pk}";
                                     $va_wheres[] = "(r.type_id IN (".join(",", $va_type_ids)."))";
+                                    $va_joins[] = "INNER JOIN {$va_rel_info['one_table']} AS r ON r.{$va_rel_info['one_table_field']} = {$vs_related_table_name}.".($vs_rel_pk ?? $t_rel_item->primaryKey()).$deleted_filter;
                                 }
                                 break;
                             }
                         }
                     }elseif(is_array($options['excludeTypes']) && sizeof($options['excludeTypes'])) {
-                        $va_rels = Datamodel::getManyToOneRelations($t_rel_item->tableName());
-
                         foreach($va_rels as $vs_rel_pk => $va_rel_info) {
-                            if ($va_rel_info['one_table'] != $this->tableName()) {
+                            if (!in_array($va_rel_info['one_table'], [$this->tableName()])) {
                                 $va_type_ids = caMakeTypeIDList($va_rel_info['one_table'], $options['excludeTypes']);
                                 
                                 if (is_array($va_type_ids) && sizeof($va_type_ids)) { 
-                                    $va_joins[] = "INNER JOIN {$va_rel_info['one_table']} AS r ON r.{$va_rel_info['one_table_field']} = ".$t_rel_item->tableName().".{$vs_rel_pk}";
                                     $va_wheres[] = "(r.type_id NOT IN (".join(",", $va_type_ids)."))";
+                                    $va_joins[] = "INNER JOIN {$va_rel_info['one_table']} AS r ON r.{$va_rel_info['one_table_field']} = {$vs_related_table_name}.".($vs_rel_pk ?? $t_rel_item->primaryKey()).$deleted_filter;
                                 }
                                 break;
                             }
                         }
-                    }
+                    } elseif($deleted_filter) {
+                    	$va_joins[] = "INNER JOIN {$va_rel_info['one_table']} AS r ON r.{$va_rel_info['one_table_field']} = {$vs_related_table_name}.".($vs_rel_pk ?? $t_rel_item->primaryKey()).(Datamodel::getFieldNum($va_rel_info['one_table'], 'deleted') ? " AND (r.deleted = 0)" : '');
+                    }   
                 }
 			}
 
@@ -6639,11 +6650,6 @@ if (!$vb_batch) {
 				if (is_array($pa_primary_ids) && is_array($pa_primary_ids[$vs_related_table])) {
 					if (in_array($qr_res->get($vs_key), $pa_primary_ids[$vs_related_table])) { continue; }
 				}
-				
-				//if ($ps_return_as !== 'data') {
-				//	$va_rels_for_id[] = $qr_res->get($t_rel_item->primaryKey());
-				//	continue;
-				//}
 
 				$va_row = $qr_res->getRow();
 				$vs_v = (sizeof($va_path) <= 2) ? $va_row['row_id'].'/'.$va_row[$vs_key] : $va_row[$vs_key];
