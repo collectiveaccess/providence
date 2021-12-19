@@ -1,5 +1,5 @@
 {
-  "require-dev": {
+  "require": {
     "caseyamcl/phpoaipmh": "^3.0",
     "collectiveaccess/service-wrapper": "v1.1.3",
     "dompdf/dompdf": "0.8.5",
@@ -27,18 +27,14 @@
     "opis/json-schema": "^1.0",
     "pear/file_marc": "~1.2",
     "php-http/guzzle6-adapter": "~1.1.1",
-    "phpoffice/phppresentation": "dev-master",
-    "phpoffice/phpspreadsheet": "v1.10",
-    "phpoffice/phpword": "v0.15.*",
-    "phpunit/phpunit": "8.5",
-    "scholarslab/bagit": "*",
-    "srmklive/flysystem-dropbox-v2": ">=1.0.0",
-    "tedivm/stash": "0.14.*"
-  },
-  "require": {
+    "phpoffice/phppresentation": "1.0.0",
+    "phpoffice/phpspreadsheet": "v1.20",
+    "phpoffice/phpword": "v0.18.*",
+    "zendframework/zend-stdlib": "^3.2",
     "ext-iconv": "*",
     "ext-simplexml": "*",
     "phpseclib/phpseclib": "^2.0",
+    "tedivm/stash": "0.15.*",
     "cache/predis-adapter": "^1.1",
     "cache/filesystem-adapter": "^1.1",
     "codeitnowin/barcode": "^3.0"
