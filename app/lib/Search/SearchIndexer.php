@@ -426,7 +426,9 @@ class SearchIndexer extends SearchBase {
 			$va_hier_values = array();
 			while($qr_hier_res->nextHit()) {
 				if ($vs_v = $qr_hier_res->get($vs_subject_tablename.".".$ps_field)) {
-					$va_hier_values[$is_label ? $qr_hier_res->get($vs_subject_tablename.'.preferred_labels.label_id') : $qr_hier_res->getPrimaryKey()] = $vs_v;
+					// return as array in case somehow there are dupe preferred labels (ie. the database is corrupt)
+					$label_id = is_array($label_ids = $qr_hier_res->get($vs_subject_tablename.'.preferred_labels.label_id', ['returnAsArray' => true])) ? (int)array_shift($label_ids) : null;
+					$va_hier_values[($is_label && ($label_id > 0)) ? $label_id : $qr_hier_res->getPrimaryKey()] = $vs_v;
 				}
 			}
 
@@ -823,7 +825,7 @@ if (!$for_current_value_reindex) {
 		// We also do this indexing if we're in "reindexing" mode. When reindexing is indicated it means that we need to act as if
 		// we're indexing this row for the first time, and all indexing should be performed.
 		if (!$vb_can_do_incremental_indexing || $pb_reindex_mode || $for_current_value_reindex) {
-			$public_access = array_map('intval', $this->opo_app_config->getList('public_access_settings'));
+			$public_access = array_map('intval', $this->opo_app_config->getList('public_access_settings') ?? []);
 			
 			if (is_array($va_related_tables = $this->getRelatedIndexingTables($pn_subject_table_num))) {
 				if (!$vb_started_indexing) {
@@ -946,7 +948,7 @@ if (!$for_current_value_reindex) {
 							
 							$vn_private = ((!is_array($va_private_rel_types) || !sizeof($va_private_rel_types) || !in_array($vn_rel_type_id, $va_private_rel_types))) ? 0 : 1;
 							
-							if(!$vn_private && $t_rel->hasField('access') && (!in_array($t_rel->tableName(), ['ca_sets', 'ca_set_items'], true)) && (!in_array((int)$qr_res->get('access'), $public_access, true))) {
+							if(!$vn_private && $t_rel->hasField('access') && (!in_array($t_rel->tableName(), ['ca_sets', 'ca_set_items'], true)) && (!in_array((int)$qr_res->get('access'), $public_access ?? [], true))) {
 								$vn_private = 1;
 							}
 				
@@ -1968,7 +1970,7 @@ if (!$for_current_value_reindex) {
 		$t_subject = Datamodel::getInstanceByTableName($vs_subject_tablename, true);
 		$vs_subject_pk = $t_subject->primaryKey();
 		
-		$public_access = array_map('intval', $this->opo_app_config->getList('public_access_settings'));
+		$public_access = array_map('intval', $this->opo_app_config->getList('public_access_settings') ?? []);
 
 // Loop through dependent tables
 
@@ -2237,7 +2239,7 @@ if (!$for_current_value_reindex) {
 									
 									$vn_private = (is_array($va_private_rel_types) && sizeof($va_private_rel_types) && in_array($vn_rel_type_id, $va_private_rel_types)) ? 1 : 0;
 									
-									if(!$vn_private && $t_rel->hasField('access') && (!in_array((int)$va_row['access'], $public_access, true))) {
+									if(!$vn_private && $t_rel->hasField('access') && (!in_array((int)$va_row['access'], $public_access ?? [], true))) {
 										$vn_private = 1;
 									}
 									

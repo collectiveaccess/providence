@@ -399,7 +399,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		if (!is_array($va_match_on) && $vb_treat_value_as_idno) { $va_match_on = array('idno', 'label', 'item_id'); }
 		if ((!is_array($va_match_on) || !sizeof($va_match_on)) && preg_match('![^\d]+!', $ps_value)) { $va_match_on = array('idno', 'label', 'item_id'); }
 		if (($vb_treat_value_as_idno) && (!in_array('idno', $va_match_on))) { array_push($va_match_on, 'idno'); }
-		if (!is_array($va_match_on) || !sizeof($va_match_on)) { $va_match_on = array('item_id'); }
+		if (!is_array($va_match_on) || !sizeof($va_match_on)) { $va_match_on = ['item_id', 'idno']; }
 
 		$o_trans = caGetOption('transaction', $pa_options, null);
 
