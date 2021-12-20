@@ -725,7 +725,7 @@ class BatchProcessor {
 
 			$vn_c++;
 
-			$vs_relative_directory = preg_replace("!{$vs_batch_media_import_root_directory}[/]*!", "", $vs_directory);
+			$vs_relative_directory = preg_replace("!^{$vs_batch_media_import_root_directory}[/]*!", "", $vs_directory);
 
 			if (isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
 				$ps_callback($po_request,
