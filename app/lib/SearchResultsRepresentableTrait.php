@@ -90,6 +90,14 @@ trait SearchResultsRepresentableTrait {
 			'criteria' => $criteria
 		];
 		
+		if($filter) {
+			$this->opa_tables[$table] = [
+				'fieldList' => ["{$table}.relation_id", "{$table}.is_primary"],
+				'joinTables' => [],
+				'criteria' => ["{$table}.is_primary = 1"]
+			];
+		}
+		
 		return true;
 	}
 	# -------------------------------------

@@ -368,7 +368,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 * Check user's item level access before passing delete to lower level libraries
 	 *
 	 */
-	public function delete ($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
 		global $AUTH_CURRENT_USER_ID;
 		if ($this->getAppConfig()->get('perform_item_level_access_checking')) {
 			if ($this->checkACLAccessForUser(new ca_users($AUTH_CURRENT_USER_ID)) < __CA_ACL_EDIT_DELETE_ACCESS__) {
@@ -5777,7 +5777,8 @@ if (!$vb_batch) {
  	 *			criteria = Restrict returned items using SQL criteria appended directly onto the query. Criteria is used as-is and must be compatible with the generated SQL query. [Default is null]
  	 *			showCurrentOnly = Returns the relationship with the latest effective date for the row_id that is not greater than the current date. This option is only supported for standard many-many self and non-self relations and is ignored for all other kinds of relationships. [Default is false]
  	 *			currentOnly = Synonym for showCurrentOnly
- 	 *			policy = 
+ 	 *			policy = History tracking current value policy to filter by, if returned result set is subject to a policy. [Default is null]
+ 	 *			filterNonPrimaryRepresentations = Set filtering of non-primary representations in those models that support representations [Default is false]
  	 *		
  	 *		[Options controlling scope of data in return value]
  	 *			restrictToTypes = Restrict returned items to those of the specified types. An array or comma/semicolon delimited string of list item idnos and/or item_ids may be specified. [Default is null]
@@ -6163,6 +6164,16 @@ if (!$vb_batch) {
 		
 		if (($va_criteria = (isset($options['criteria']) ? $options['criteria'] : null)) && (is_array($va_criteria)) && (sizeof($va_criteria))) {
 			$va_wheres[] = "(".join(" AND ", $va_criteria).")"; 
+		}
+		
+		if(caGetOption('filterNonPrimaryRepresentations', $options, false)) {
+			if ($t_item_rel && $t_item_rel->hasField('is_primary')) {
+				$va_wheres[] = "({$vs_item_rel_table_name}.is_primary = 1)";
+			}
+		
+			if ($t_rel_item && $t_rel_item->hasField('is_primary')) {
+				$va_wheres[] = "({$vs_related_table}.is_primary = 1)";
+			}
 		}
 
 		if($vb_self_relationship) {

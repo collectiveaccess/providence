@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -103,6 +103,7 @@ BaseModel::$s_ca_models_definitions['ca_object_representations_x_places'] = arra
 
 class ca_object_representations_x_places extends BaseRepresentationRelationship {
 	use HistoryTrackingCurrentValueTrait;
+	use PrimaryRepresentationTrait;
 	
 	# ---------------------------------
 	# --- Object attribute properties
