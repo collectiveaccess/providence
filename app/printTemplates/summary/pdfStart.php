@@ -33,10 +33,11 @@
  */
  
  $t_item = $this->getVar('t_subject');
- 
+
 ?><!DOCTYPE html>
 <html>
 	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 		<title><?php print _t('Summary for %1 (%2)', $t_item->getLabelForDisplay(), $t_item->get($t_item->getProperty('ID_NUMBERING_ID_FIELD'))); ?></title>
 				
 <?php
@@ -53,8 +54,5 @@
 		<style type="text/css">
 			@page { margin: {{{marginTop}}} {{{marginRight}}} {{{marginBottom}}} {{{marginLeft}}}; }
 		</style>
-		<script type="text/javascript">
-			var PhantomJSPrinting = {};
-		</script>
 	</head>
 	<body>

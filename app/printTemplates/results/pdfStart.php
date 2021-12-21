@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/templates/pdfStart.php : top-matter prepended to PDF templates
+ * app/printTemplatews/results/pdfStart.php : top-matter prepended to PDF templates
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -50,8 +50,6 @@
 		<style type="text/css">
 			@page { margin: {{{marginTop}}} {{{marginRight}}} {{{marginBottom}}} {{{marginLeft}}}; }
 		</style>
-		<script type="text/javascript">
-			var PhantomJSPrinting = {};
-		</script>
+		
 	</head>
 	<body>
