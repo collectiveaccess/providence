@@ -328,6 +328,7 @@ function caBatchGetMediaFilenameReplacementRegexList($options=null) {
  */
 $g_batch_helpers_media_directory_contents_cache = [];
 function caBatchFindMatchingMedia($ps_directory, $ps_value, $pa_options=null) {	
+	if(!$ps_value) { return []; }
 	global $g_batch_helpers_media_directory_contents_cache; // we cache directory contents for the duration of the request
 	
 	$o_log = caGetOption('log', $pa_options, null);

@@ -3866,7 +3866,8 @@ if (!$vb_batch) {
 							
 							$vs_k = $vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_set_id.'_'.$vn_element_id.'_'.$vn_attribute_id;
 							if(is_null($po_request->parameterExists($vs_k)) && !isset($_FILES[$vs_k])) { continue; }
-							$vs_attr_val = array_pop($po_request->getParameter($vs_k, pArray));
+							$vm_v = $po_request->getParameter($vs_k, pArray);
+							$vs_attr_val = is_array($vm_v) ? array_pop($vm_v) : null;
 							if (isset($_FILES[$vs_k]) && ($va_val = $_FILES[$vs_k])) {
 								if ($va_val['size'] > 0) {	// is there actually a file?
 									$va_val['_uploaded_file'] = true;
