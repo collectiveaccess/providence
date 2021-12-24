@@ -751,14 +751,25 @@ class DisplayTemplateParser {
 								break;
 							case 'related':
 							default:
+								$va_relationship_type_ids = $va_relationship_type_orientations = [];
 								if (method_exists($t_instance, 'isSelfRelationship') && $t_instance->isSelfRelationship() && is_array($pa_primary_ids) && isset($pa_primary_ids[$t_rel_instance->tableName()])) {
 									if (!is_array($va_relative_ids = array_values($t_instance->getRelatedIDsForSelfRelationship($pa_primary_ids[$t_rel_instance->tableName()], array($pr_res->getPrimaryKey()))))) { $va_relative_ids = []; }
 
 									$va_relation_ids = array_keys($t_instance->getRelatedItems($t_rel_instance->tableName(), array_merge($va_get_options, array('returnAs' => 'data', 'row_ids' => [$pr_res->getPrimaryKey()]))));
-									$va_relationship_type_ids = array();
+								
 									if (is_array($va_relation_ids) && sizeof($va_relation_ids)) {
-										$qr_rels = caMakeSearchResult($t_rel_instance->getSelfRelationTableName(), $va_relation_ids);
-										$va_relationship_type_ids = $qr_rels->getAllFieldValues($t_rel_instance->getSelfRelationTableName().'.type_id');
+										$self_rel_table_name = $t_instance->tableName();
+										
+										$primary_ids_by_table = caGetOption('primaryIDs', $pa_options, null);
+										$primary_ids = $primary_ids_by_table[$t_instance->getLeftTableName()] ?? [];
+											
+										$self_label_field_name = $t_instance->getLeftTableFieldName();
+										
+										$qr_rels = caMakeSearchResult($self_rel_table_name, $va_relation_ids);
+										while($qr_rels->nextHit()) {
+											$va_relationship_type_ids[] = $qr_rels->get("{$self_rel_table_name}.type_id");
+											$va_relationship_type_orientations[] = (in_array($qr_rels->get("{$self_rel_table_name}.{$self_label_field_name}"), $primary_ids)) ? 'LTOR' : 'RTOL';
+										}
 									}
 								} else {
 									if (method_exists($t_rel_instance, 'isSelfRelationship') && $t_rel_instance->isSelfRelationship()) {
@@ -783,10 +794,22 @@ class DisplayTemplateParser {
                                         $rels = $t_instance->getRelatedItems($t_rel_instance->tableName(), array_merge($va_get_options, array('returnAs' => 'data', 'row_ids' => [$pr_res->getPrimaryKey()])));
 								        $va_relation_ids = is_array($rels) ? array_keys($rels) : [];
 								    }
-									$va_relationship_type_ids = array();
 									if (is_array($va_relation_ids) && sizeof($va_relation_ids)) {
 										$qr_rels = caMakeSearchResult($t = $t_rel_instance->isRelationship() ? $t_rel_instance->tableName() : $t_rel_instance->getRelationshipTableName($ps_tablename), $va_relation_ids);
-										$va_relationship_type_ids = $qr_rels->getAllFieldValues("{$t}.type_id");
+										
+										if(method_exists($t_self_rel = Datamodel::getInstance($t, true), 'isSelfRelationship') && $t_self_rel->isSelfRelationship()) {
+											$primary_ids_by_table = caGetOption('primaryIDs', $pa_options, null);
+											$primary_ids = $primary_ids_by_table[$t_self_rel->getLeftTableName()] ?? [];
+											
+											$self_label_field_name = $t_self_rel->getLeftTableFieldName();
+											while($qr_rels->nextHit()) {
+												$va_relationship_type_ids[] = $qr_rels->get("{$t}.type_id");
+												$va_relationship_type_orientations[] = (in_array($qr_rels->get("{$t}.{$self_label_field_name}"), $primary_ids)) ? 'LTOR' : 'RTOL';
+											}
+										} else {
+											$va_relationship_type_ids = $qr_rels->getAllFieldValues("{$t}.type_id");
+										}
+										
 									} elseif($t_rel_instance->isRelationship()) {
 										// return type on relationship
 										$va_relationship_type_ids = $pr_res->get($t_rel_instance->tableName().".type_id", ['returnAsArray' => true]);
@@ -795,7 +818,6 @@ class DisplayTemplateParser {
 										$va_relationship_type_ids = $pr_res->get("{$vs_rel_tablename}.type_id", ['returnAsArray' => true]);
  									}
 								}
-							
 								break;
 						}
 						
@@ -847,6 +869,7 @@ class DisplayTemplateParser {
 									'aggregateUnique' => $vb_aggregate_unique,
 									'relationIDs' => $va_relation_ids,
 									'relationshipTypeIDs' => $va_relationship_type_ids,
+									'relationshipTypeOrientations' => $va_relationship_type_orientations,
 									'filterNonPrimaryRepresentations' => $filter_non_primary_reps,
 									'primaryIDs' => $va_get_options['primaryIDs']
 								]
@@ -957,8 +980,7 @@ class DisplayTemplateParser {
 		$vn_full_value_count = caGetOption('fullValueCount', $pa_options, $pr_res->numHits(), ['castTo' => 'int']);
 		
 		$va_relationship_type_ids = caGetOption('relationshipTypeIDs', $pa_options, array(), ['castTo' => 'array']);
-		
-		
+		$va_relationship_orientations = caGetOption('relationshipTypeOrientations', $pa_options, array(), ['castTo' => 'array']);
 		
 		$pb_include_blanks = caGetOption('includeBlankValuesInArray', $pa_options, false);
 		$ps_prefix = caGetOption(['placeholderPrefix', 'relativeTo', 'prefix'], $pa_options, null);
@@ -1102,17 +1124,21 @@ class DisplayTemplateParser {
                             $vb_val_is_set = true;
                         }
 				} else {				
-                    switch(strtolower($vs_get_spec)) {
+					switch(strtolower($vs_get_spec)) {
                         case 'relationship_typename':
                             $va_val_list = array();
+                            
+                            // (caGetOption('orientation', $pa_options, 'LTOR')
+                            $va_relationship_orientations = array_slice($va_relationship_orientations, $vn_start);
+                            $orientation = $va_relationship_orientations[$pr_res->currentIndex()] ?? 'LTOR';
                             
                             if (is_array($va_relationship_type_ids) && is_array($va_relationship_type_ids = array_slice($va_relationship_type_ids, $vn_start)) && ($vn_type_id = $va_relationship_type_ids[$pr_res->currentIndex()])) {
                                 $qr_rels = caMakeSearchResult('ca_relationship_types', array($vn_type_id));
                                 if ($qr_rels->nextHit()) {
-                                    $va_val_list = $qr_rels->get('ca_relationship_types.preferred_labels.'.((caGetOption('orientation', $pa_options, 'LTOR') == 'LTOR') ? 'typename' : 'typename_reverse'), $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
+                                    $va_val_list = $qr_rels->get('ca_relationship_types.preferred_labels.'.(($orientation == 'LTOR') ? 'typename' : 'typename_reverse'), $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
                                 }
                             } else {
-                                $va_val_list = $pr_res->get('ca_relationship_types.preferred_labels.'.((caGetOption('orientation', $pa_options, 'LTOR') == 'LTOR') ? 'typename' : 'typename_reverse'), $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
+                                $va_val_list = $pr_res->get('ca_relationship_types.preferred_labels.'.(($orientation == 'LTOR') ? 'typename' : 'typename_reverse'), $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
                             }
                             $vb_rel_type_is_set = true;
                             break;
