@@ -860,9 +860,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			
 			$vn_row_num = $o_row->getRowIndex();
 			$o_cell = $o_sheet->getCellByColumnAndRow(1, $vn_row_num);
-			$vs_mode = trim((string)$o_cell->getValue());
+			$vs_mode = strtolower(trim((string)$o_cell->getValue()));
 			
-			switch(strtolower($vs_mode)) {
+			switch($vs_mode) {
 				default:
 				case 'skip':
 					continue(2);
