@@ -28,7 +28,7 @@
 	if (!constant('__CollectiveAccess_Installer__')) { die("Cannot run"); }
 	
 	$t_total = new Timer();
-	$va_profile_info = Installer::getProfileInfo("./profiles/xml", $ps_profile)
+	$va_profile_info = \Installer\Installer::getProfileInfo("./profiles", $ps_profile)
 ?>
 <div id='box'>
 	<div id="logo"><?= caGetLoginLogo(); ?></div><!-- end logo -->
@@ -55,7 +55,7 @@
 	$vn_progress = 0;
 	
 	// parameters: profile dir, profile name, admin email, overwrite y/n, profile debug mode y/n
-	$vo_installer = new Installer("profiles/", $ps_profile, $ps_email, $pb_overwrite, $pb_debug);
+	$vo_installer = new \Installer\Installer("profiles/", $ps_profile, $ps_email, $pb_overwrite, $pb_debug);
 	
 	// if profile validation against XSD failed, we already have an error here
 	if($vo_installer->numErrors()){

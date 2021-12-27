@@ -88,7 +88,7 @@ class Installer {
 
 		$this->opa_locales = [];
 
-		$this->opo_db = new Db();
+		$this->opo_db = new \Db();
 		
 		$profile_path = caGetProfilePath($directory, $profile);
 		
@@ -107,7 +107,7 @@ class Installer {
 		if($log_output) {
 			require_once(__CA_LIB_DIR__.'/Logging/KLogger/KLogger.php');
 			// @todo make this configurable or get from app.conf?
-			$this->opo_log = new KLogger(__CA_BASE_DIR__ . '/app/log', KLogger::DEBUG);
+			$this->opo_log = new \KLogger(__CA_BASE_DIR__ . '/app/log', \KLogger::DEBUG);
 			$this->opb_logging_status = true;
 		}
 	}
@@ -161,11 +161,11 @@ class Installer {
 		$schema_path = caGetProfilePath($this->ops_profile_dir, 'profile.xsd');
 		
 		// simplexml doesn't support validation -> use DOMDocument
-		$vo_profile = new DOMDocument();
+		$vo_profile = new \DOMDocument();
 		@$vo_profile->load($profile_path);
 
 		if($this->opo_base) {
-			$vo_base = new DOMDocument();
+			$vo_base = new \DOMDocument();
 			$vo_base->load($base_path);
 
 			if($this->opb_debug) {
@@ -212,15 +212,15 @@ class Installer {
 	 */
 	public function loadProfileFromString($ps_xml, $pb_skip_validation=false) {
 		if(!$pb_skip_validation) {
-			$o_dom = new DOMDocument();
+			$o_dom = new \DOMDocument();
 			$o_dom->loadXML($ps_xml);
 			if(!@$o_dom->schemaValidate(__CA_BASE_DIR__.'/install/profiles/xml/profile.xsd')) {
-				throw new Exception("Profile validation failed. Your profile doesn't conform to the required XML schema.");
+				throw new \Exception("Profile validation failed. Your profile doesn't conform to the required XML schema.");
 			}
 		}
 		$this->opo_profile = @simplexml_load_string($ps_xml);
 		if(!$this->opo_profile) {
-			throw new Exception('Something went wrong while initializing Installer. Did you send valid XML?');
+			throw new \Exception('Something went wrong while initializing Installer. Did you send valid XML?');
 		}
 
 		$this->logStatus(_t('Successfully loaded profile from string'));
@@ -234,7 +234,7 @@ class Installer {
 	public function extractAndLoadBase() {
 		$this->ops_base_name = self::getAttribute($this->opo_profile, "base");
 		if(!($base_path = caGetProfilePath($this->ops_profile_dir, $this->ops_base_name))) {
-			throw new Exception("Could not find base profile.");
+			throw new \Exception("Could not find base profile.");
 		}
 		if($this->ops_base_name) {
 			$this->opo_base = simplexml_load_file($base_path);
@@ -318,7 +318,7 @@ class Installer {
 	protected static function addLabelsFromXMLElement($t_instance,$po_labels, $pa_locales, $pb_force_preferred=false) {
 		require_once(__CA_LIB_DIR__."/LabelableBaseModelWithAttributes.php");
 
-		if(!($t_instance instanceof LabelableBaseModelWithAttributes)) {
+		if(!($t_instance instanceof \LabelableBaseModelWithAttributes)) {
 			return false;
 		}
 		/** @var LabelableBaseModelWithAttributes $t_instance */
@@ -367,8 +367,8 @@ class Installer {
 	}
 	# --------------------------------------------------
 	public function performPreInstallTasks() {
-		$o_config = Configuration::load();
-		CompositeCache::flush(); // avoid stale cache
+		$o_config = \Configuration::load();
+		\CompositeCache::flush(); // avoid stale cache
 
 		// create tmp dir
 		if (!file_exists($o_config->get('taskqueue_tmp_directory'))) {
@@ -382,7 +382,7 @@ class Installer {
 		}
 
 		// Create media directories
-		$o_media_volumes = new MediaVolumes();
+		$o_media_volumes = new \MediaVolumes();
 		$va_media_volumes = $o_media_volumes->getAllVolumeInformation();
 
 		$vs_base_dir = $o_config->get('ca_base_dir');
@@ -396,7 +396,7 @@ class Installer {
 		}
 
 		if (($o_config->get('search_engine_plugin') == 'ElasticSearch') && (!$this->isAlreadyInstalled() || (defined('__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__') && __CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__ && $this->opb_overwrite))) {
-			$o_es = new WLPlugSearchEngineElasticSearch();
+			$o_es = new \WLPlugSearchEngineElasticSearch();
 			try {
 				$o_es->truncateIndex();
 			} catch(DatabaseException $e) {
@@ -412,7 +412,7 @@ class Installer {
 	    // (Eg. those for hideIfSelected_*)
 	    if (sizeof($this->opa_metadata_element_deferred_settings_processing)) {
 	        foreach($this->opa_metadata_element_deferred_settings_processing as $vs_element_code => $va_settings) {
-	            if (!($t_element = ca_metadata_elements::getInstance($vs_element_code))) { continue; }
+	            if (!($t_element = \ca_metadata_elements::getInstance($vs_element_code))) { continue; }
 	            $va_available_settings = $t_element->getAvailableSettings();
 	            foreach($va_settings as $vs_setting_name => $va_setting_values) {
 	                if (!isset($va_available_settings[$vs_setting_name])) { continue; }
@@ -428,16 +428,16 @@ class Installer {
 	    } 
 	    
 		// generate system GUID -- used to identify systems in data sync protocol
-		$o_vars = new ApplicationVars();
+		$o_vars = new \ApplicationVars();
 		$o_vars->setVar('system_guid', caGenerateGUID());
 		$o_vars->save();
 
 		// refresh mapping if ElasticSearch is used
-		$o_config = Configuration::load();
+		$o_config = \Configuration::load();
 		if ($o_config->get('search_engine_plugin') == 'ElasticSearch') {
-			$o_es = new WLPlugSearchEngineElasticSearch();
+			$o_es = new \WLPlugSearchEngineElasticSearch();
 			$o_es->refreshMapping(true);
-			CompositeCache::flush();
+			\CompositeCache::flush();
 		}
 	}
 	# --------------------------------------------------
@@ -447,7 +447,7 @@ class Installer {
 	 * @return boolean Returns true if CA is already installed
 	 */
 	public function isAlreadyInstalled() {
-		$ca_tables = Datamodel::getTableNames();
+		$ca_tables = \Datamodel::getTableNames();
 
 		$qr = $this->opo_db->query("SHOW TABLES");
 
@@ -468,7 +468,7 @@ class Installer {
 	 */
 	public function loadSchema($f_callback=null) {
 
-		$vo_config = Configuration::load();
+		$vo_config = \Configuration::load();
 		if (defined('__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__') && __CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__ && ($this->opb_overwrite)) {
 			$this->opo_db->query('DROP DATABASE IF EXISTS `'.__CA_DB_DATABASE__.'`');
 			$this->opo_db->query('CREATE DATABASE `'.__CA_DB_DATABASE__.'`');
@@ -476,12 +476,12 @@ class Installer {
 		}
 		
 		if($this->isAlreadyInstalled()) {
-			throw new Exception("Cannot install because an existing CollectiveAccess installation has been detected.");
+			throw new \Exception("Cannot install because an existing CollectiveAccess installation has been detected.");
 		}
 		
 		// load schema
 		if (!($vs_schema = file_get_contents(__CA_BASE_DIR__."/install/inc/schema_mysql.sql"))) {
-			throw new Exception("Could not open schema definition file");
+			throw new \Exception("Could not open schema definition file");
 		}
 		$va_schema_statements = explode(';', $vs_schema);
 
@@ -501,7 +501,7 @@ class Installer {
 				$vn_i++;
 				if (file_exists(__CA_MODELS_DIR__.'/'.$va_matches[1].'.php')) {
 					include_once(__CA_MODELS_DIR__.'/'.$va_matches[1].'.php');
-					$vs_table = BaseModel::$s_ca_models_definitions[$va_matches[1]]['NAME_PLURAL'];
+					$vs_table = \BaseModel::$s_ca_models_definitions[$va_matches[1]]['NAME_PLURAL'];
 				} else {
 					$vs_table = $va_matches[1];
 				}
@@ -509,7 +509,7 @@ class Installer {
 			}
 			$this->opo_db->query($vs_statement);
 			if ($this->opo_db->numErrors()) {
-				throw new Exception("Error while loading the database schema: ".join("; ",$this->opo_db->getErrors()));
+				throw new \Exception("Error while loading the database schema: ".join("; ",$this->opo_db->getErrors()));
 			}
 		}
 	}
@@ -519,7 +519,7 @@ class Installer {
 	public function processLocales() {
 		require_once(__CA_MODELS_DIR__."/ca_locales.php");
 
-		$t_locale = new ca_locales();
+		$t_locale = new \ca_locales();
 		// Find any existing locales
 		$va_locales = $t_locale->getLocaleList(array('index_by_code' => true));
 		foreach($va_locales as $vs_code => $va_locale) {
@@ -576,7 +576,7 @@ class Installer {
 		$vn_locale_id = $t_locale->localeCodeToID($va_locales[0]);
 
 		if(!$vn_locale_id) {
-			throw new Exception("The locale default is set to a non-existing locale. Try adding '". $va_locales[0] . "' to your profile.");
+			throw new \Exception("The locale default is set to a non-existing locale. Try adding '". $va_locales[0] . "' to your profile.");
 		}
 		// Ensure the default locale comes first.
 		uksort($this->opa_locales, function($a) use ( $vn_locale_id ) {
@@ -602,15 +602,15 @@ class Installer {
 			$va_lists = $this->opo_profile->lists->children();
 		}
 
-		//$o_trans = new Transaction();
+		//$o_trans = new \Transaction();
 
 		$vn_i = 0;
 		$vn_num_lists = sizeof($va_lists);
 		foreach($va_lists as $vo_list) {
 			$vs_list_code = self::getAttribute($vo_list, "code");
 			$this->logStatus(_t('Processing list with code %1', $vs_list_code));
-			if(!($t_list = ca_lists::find(array('list_code' => $vs_list_code), array('returnAs' => 'firstModelInstance')))) {
-				$t_list = new ca_lists();
+			if(!($t_list = \ca_lists::find(array('list_code' => $vs_list_code), array('returnAs' => 'firstModelInstance')))) {
+				$t_list = new \ca_lists();
 			}
 			//$t_list->setTransaction($o_trans);
 
@@ -708,7 +708,7 @@ class Installer {
 				$this->logStatus(_t('List item with idno %1 already exists', $vs_item_idno));
 				if($vb_deleted) {
 					$this->logStatus(_t('Deleting list item with idno %1', $vs_item_idno));
-					$t_item = new ca_list_items($vn_item_id);
+					$t_item = new \ca_list_items($vn_item_id);
 					$t_item->delete();
 					continue;
 				}
@@ -755,8 +755,8 @@ class Installer {
 		require_once(__CA_MODELS_DIR__."/ca_list_items.php");
 		require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
 
-		$t_rel_types = new ca_relationship_types();
-		$t_list = new ca_lists();
+		$t_rel_types = new \ca_relationship_types();
+		$t_list = new \ca_lists();
 
 		$va_elements = [];
 		if($this->ops_base_name) { // "merge" profile and its base
@@ -786,18 +786,18 @@ class Installer {
 				foreach($vo_element->typeRestrictions->children() as $vo_restriction) {
 					$vs_restriction_code = self::getAttribute($vo_restriction, "code");
 
-					if (!($vn_table_num = Datamodel::getTableNum((string)$vo_restriction->table))) {
+					if (!($vn_table_num = \Datamodel::getTableNum((string)$vo_restriction->table))) {
 						$this->addError("Invalid table specified for restriction $vs_restriction_code in element $vs_element_code");
 						return false;
 					}
-					$t_instance = Datamodel::getInstance((string)$vo_restriction->table);
+					$t_instance = \Datamodel::getInstance((string)$vo_restriction->table);
 					$vn_type_id = null;
 					$vs_type = trim((string)$vo_restriction->type);
 
 					// is this restriction further restricted on a specific type? -> get real id from code
 					if (strlen($vs_type)>0) {
 						// interstitial with type restriction -> code is relationship type code
-						if($t_instance instanceof BaseRelationshipModel) {
+						if($t_instance instanceof \BaseRelationshipModel) {
 							$vn_type_id = $t_rel_types->getRelationshipTypeID($t_instance->tableName(),$vs_type);
 						} else { // "normal" type restriction -> code is from actual type list
 							$vs_type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
@@ -806,7 +806,7 @@ class Installer {
 					}
 
 					// add restriction
-					$t_restriction = new ca_metadata_type_restrictions();
+					$t_restriction = new \ca_metadata_type_restrictions();
 					$t_restriction->set('table_num', $vn_table_num);
 					$t_restriction->set('include_subtypes', (bool)$vo_restriction->includeSubtypes ? 1 : 0);
 					$t_restriction->set('type_id', $vn_type_id);
@@ -835,8 +835,8 @@ class Installer {
 		$this->logStatus(_t('Processing metadata element with code %1', $vs_element_code));
 
 		// try to load element by code for potential update. codes are unique, globally
-		if(!($t_md_element = ca_metadata_elements::getInstance($vs_element_code))) {
-			$t_md_element = new ca_metadata_elements();
+		if(!($t_md_element = \ca_metadata_elements::getInstance($vs_element_code))) {
+			$t_md_element = new \ca_metadata_elements();
 		}
 
 		if($t_md_element->getPrimaryKey()) {
@@ -851,11 +851,11 @@ class Installer {
 			return false; // we don't want the postprocessing to kick in. our work here is done.
 		}
 
-		if (($vn_datatype = ca_metadata_elements::getAttributeTypeCode(self::getAttribute($po_element, "datatype"))) === false) {
+		if (($vn_datatype = \ca_metadata_elements::getAttributeTypeCode(self::getAttribute($po_element, "datatype"))) === false) {
 			return false; // should not happen due to XSD restrictions, but just in case
 		}
 
-		$t_lists = new ca_lists();
+		$t_lists = new \ca_lists();
 
 		$t_md_element->set('element_code', $vs_element_code);
 		$t_md_element->set('parent_id', $pn_parent_id);
@@ -915,13 +915,13 @@ class Installer {
 				continue;
 			}
 			
-			if(!($vn_table_num = Datamodel::getTableNum($vs_table))) {
+			if(!($vn_table_num = \Datamodel::getTableNum($vs_table))) {
 				$this->addError("Table {$vs_table} is invalid for metadata dictionary entry. Skipping row.");
 				continue;
 			}
 
 			// insert dictionary entry
-			$t_entry = new ca_metadata_dictionary_entries();
+			$t_entry = new \ca_metadata_dictionary_entries();
 			$t_entry->set('bundle_name', $vs_field);
 			$t_entry->set('table_num', $vn_table_num);
 			$this->_processSettings($t_entry, $vo_entry->settings);
@@ -938,7 +938,7 @@ class Installer {
 					$vs_code = self::getAttribute($vo_rule, "code");
 					$vs_level = self::getAttribute($vo_rule, "level");
 
-					$t_rule = new ca_metadata_dictionary_rules();
+					$t_rule = new \ca_metadata_dictionary_rules();
 					$t_rule->set('entry_id', $t_entry->getPrimaryKey());
 					$t_rule->set('rule_code', $vs_code);
 					$t_rule->set('rule_level', $vs_level);
@@ -965,12 +965,12 @@ class Installer {
 		require_once(__CA_MODELS_DIR__."/ca_list_items.php");
 		require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
 
-		$o_annotation_type_conf = Configuration::load(Configuration::load()->get('annotation_type_config'));
+		$o_annotation_type_conf = \Configuration::load(\Configuration::load()->get('annotation_type_config'));
 
-		$t_placement = new ca_editor_ui_bundle_placements();
+		$t_placement = new \ca_editor_ui_bundle_placements();
 
-		$t_list = new ca_lists();
-		$t_rel_types = new ca_relationship_types();
+		$t_list = new \ca_lists();
+		$t_rel_types = new \ca_relationship_types();
 		$va_uis = [];
 		if($this->ops_base_name) { // "merge" profile and its base
 			foreach($this->opo_base->userInterfaces->children() as $vo_ui) {
@@ -987,7 +987,7 @@ class Installer {
 
 		foreach($va_uis as $vs_ui_code => $vo_ui) {
 			$vs_type = self::getAttribute($vo_ui, "type");
-			if (!($vn_type = Datamodel::getTableNum($vs_type))) {
+			if (!($vn_type = \Datamodel::getTableNum($vs_type))) {
 				$this->addError("Invalid type {$vs_type} for UI code {$vs_ui_code}");
 				return false;
 			}
@@ -995,11 +995,11 @@ class Installer {
 			$this->logStatus(_t('Processing user interface with code %1', $vs_ui_code));
 
 			// model instance of UI type
-			$t_instance = Datamodel::getInstanceByTableNum($vn_type);
+			$t_instance = \Datamodel::getInstanceByTableNum($vn_type);
 
 			// create ui row
-			if(!($t_ui = ca_editor_uis::find(array('editor_code' => $vs_ui_code, 'editor_type' =>  $vn_type), array('returnAs' => 'firstModelInstance')))) {
-				$t_ui = new ca_editor_uis();
+			if(!($t_ui = \ca_editor_uis::find(array('editor_code' => $vs_ui_code, 'editor_type' =>  $vn_type), array('returnAs' => 'firstModelInstance')))) {
+				$t_ui = new \ca_editor_uis();
 				$this->logStatus(_t('User interface with code %1 is new', $vs_ui_code));
 			} else {
 				$this->logStatus(_t('User interface with code %1 already exists', $vs_ui_code));
@@ -1051,9 +1051,9 @@ class Installer {
 
 					if (strlen($vs_restriction_type)>0) {
 						// interstitial with type restriction -> code is relationship type code
-						if($t_instance instanceof BaseRelationshipModel) {
+						if($t_instance instanceof \BaseRelationshipModel) {
 							$vn_type_id = $t_rel_types->getRelationshipTypeID($t_instance->tableName(),$vs_restriction_type);
-						} elseif($t_instance instanceof ca_representation_annotations) {
+						} elseif($t_instance instanceof \ca_representation_annotations) {
 							// representation annotation -> code is annotation type from annotation_types.conf
 							$vn_type_id = $va_annotation_types[$vs_restriction_type]['typeID'];
 						} else { // "normal" type restriction -> code is from actual type list
@@ -1072,9 +1072,9 @@ class Installer {
 				// Copy type restrictions listed on the <placement> tag into numeric type_ids stored
 				// as settings on the placement record.
 				$va_codes = preg_split("![ ,;\|]!", $vs_type_restrictions);
-				if ($t_instance instanceof BaseRelationshipModel) {
+				if ($t_instance instanceof \BaseRelationshipModel) {
 					$va_ids = caMakeRelationshipTypeIDList($t_instance->tableNum(), $va_codes);
-				} elseif($t_instance instanceof ca_representation_annotations) {
+				} elseif($t_instance instanceof \ca_representation_annotations) {
 					$va_ids = [];
 					foreach($va_codes as $vs_annotation_type) {
 						if(isset($va_annotation_types[$vs_annotation_type]['typeID'])) {
@@ -1098,12 +1098,12 @@ class Installer {
 
 				$this->logStatus(_t('Processing screen with code %1 for user interface with code %2', $vs_screen_idno, $vs_ui_code));
 
-				$t_ui_screens = ca_editor_ui_screens::find(array(
+				$t_ui_screens = \ca_editor_ui_screens::find(array(
 					'idno' => $vs_screen_idno,
 					'ui_id' => $vn_ui_id
 				), array('returnAs' => 'firstModelInstance'));
 
-				$t_ui_screens = $t_ui_screens ? $t_ui_screens : new ca_editor_ui_screens();
+				$t_ui_screens = $t_ui_screens ? $t_ui_screens : new \ca_editor_ui_screens();
 
 				if($t_ui_screens->getPrimaryKey()) {
 					$this->logStatus(_t('Screen with code %1 for user interface with code %2 already exists', $vs_screen_idno, $vs_ui_code));
@@ -1150,7 +1150,7 @@ class Installer {
 
                 // set user and group access
                 if($vo_screen->userAccess) {
-                    $t_user = new ca_users();
+                    $t_user = new \ca_users();
                     $va_ui_screen_users = [];
                     foreach($vo_screen->userAccess->children() as $vo_permission) {
                         $vs_user = trim((string)self::getAttribute($vo_permission, "user"));
@@ -1170,7 +1170,7 @@ class Installer {
                 }
 
                 if($vo_screen->groupAccess) {
-                    $t_group = new ca_user_groups();
+                    $t_group = new \ca_user_groups();
                     $va_ui_screen_groups = [];
                     foreach($vo_screen->groupAccess->children() as $vo_permission) {
                         $vs_group = trim((string)self::getAttribute($vo_permission, "group"));
@@ -1190,7 +1190,7 @@ class Installer {
                 }
                 
                 if($vo_screen->roleAccess) {
-                    $t_role = new ca_user_roles();
+                    $t_role = new \ca_user_roles();
                     $va_ui_screen_roles = [];
                     foreach($vo_screen->roleAccess->children() as $vo_permission) {
                         $vs_role = trim((string)self::getAttribute($vo_permission, "role"));
@@ -1221,9 +1221,9 @@ class Installer {
 					if ($vs_bundle_type_restrictions) {
 						// Copy type restrictions listed on the <placement> tag into numeric type_ids stored
 						// as settings on the placement record.
-						if ($t_instance instanceof BaseRelationshipModel) {
+						if ($t_instance instanceof \BaseRelationshipModel) {
 							$va_ids = caMakeRelationshipTypeIDList($t_instance->tableNum(), preg_split("![ ,;\|]!", $vs_bundle_type_restrictions));
-						} elseif($t_instance instanceof ca_representation_annotations) {
+						} elseif($t_instance instanceof \ca_representation_annotations) {
 							$va_ids = [];
 							foreach(explode(',', $vs_bundle_type_restrictions) as $vs_annotation_type) {
 								if(isset($va_annotation_types[$vs_annotation_type]['typeID'])) {
@@ -1270,9 +1270,9 @@ class Installer {
 
 						if (strlen($vs_restriction_type)>0) {
 							// interstitial with type restriction -> code is relationship type code
-							if($t_instance instanceof BaseRelationshipModel) {
+							if($t_instance instanceof \BaseRelationshipModel) {
 								$vn_type_id = $t_rel_types->getRelationshipTypeID($t_instance->tableName(),$vs_restriction_type);
-							} elseif($t_instance instanceof ca_representation_annotations) {
+							} elseif($t_instance instanceof \ca_representation_annotations) {
 								// representation annotation -> code is annotation type from annotation_types.conf
 								$vn_type_id = $va_annotation_types[$vs_restriction_type]['typeID'];
 							} else { // "normal" type restriction -> code is from actual type list
@@ -1291,9 +1291,9 @@ class Installer {
 				
 				if ($vs_type_restrictions = self::getAttribute($vo_screen, "typeRestrictions")) {
                     $va_codes = preg_split("![ ,;\|]!", $vs_type_restrictions);
-                    if ($t_instance instanceof BaseRelationshipModel) {
+                    if ($t_instance instanceof \BaseRelationshipModel) {
                         $va_ids = caMakeRelationshipTypeIDList($t_instance->tableNum(), $va_codes);
-                    } elseif($t_instance instanceof ca_representation_annotations) {
+                    } elseif($t_instance instanceof \ca_representation_annotations) {
                         $va_ids = [];
                         foreach($va_codes as $vs_annotation_type) {
                             if(isset($va_annotation_types[$vs_annotation_type]['typeID'])) {
@@ -1313,7 +1313,7 @@ class Installer {
 
 			// set user and group access
 			if($vo_ui->userAccess) {
-				$t_user = new ca_users();
+				$t_user = new \ca_users();
 				$va_ui_users = [];
 				foreach($vo_ui->userAccess->children() as $vo_permission) {
 					$vs_user = trim((string)self::getAttribute($vo_permission, "user"));
@@ -1333,7 +1333,7 @@ class Installer {
 			}
 
 			if($vo_ui->groupAccess) {
-				$t_group = new ca_user_groups();
+				$t_group = new \ca_user_groups();
 				$va_ui_groups = [];
 				foreach($vo_ui->groupAccess->children() as $vo_permission) {
 					$vs_group = trim((string)self::getAttribute($vo_permission, "group"));
@@ -1353,7 +1353,7 @@ class Installer {
 			}
 			
 			if($vo_ui->roleAccess) {
-				$t_role = new ca_user_roles();
+				$t_role = new \ca_user_roles();
 				$va_ui_roles = [];
 				foreach($vo_ui->roleAccess->children() as $vo_permission) {
 					$vs_role = trim((string)self::getAttribute($vo_permission, "role"));
@@ -1412,10 +1412,10 @@ class Installer {
 		}
 
 		foreach($va_rel_tables as $vs_table => $vo_rel_table) {
-			$vn_table_num = Datamodel::getTableNum($vs_table);
+			$vn_table_num = \Datamodel::getTableNum($vs_table);
 			$this->logStatus(_t('Processing relationship types for table %1', $vs_table));
 
-			$t_rel_table = Datamodel::getInstance($vs_table);
+			$t_rel_table = \Datamodel::getInstance($vs_table);
 
 			if (!method_exists($t_rel_table, 'getLeftTableName')) {
 				continue;
@@ -1427,12 +1427,12 @@ class Installer {
 			$vs_root_type_code = 'root_for_'.$vn_table_num;
 
 			/** @var ca_relationship_types $t_rel_type */
-			$t_rel_type = ca_relationship_types::find(
+			$t_rel_type = \ca_relationship_types::find(
 				array('type_code' => $vs_root_type_code, 'table_num' => $vn_table_num, 'parent_id' => null),
 				array('returnAs' => 'firstModelInstance')
 			);
 
-			$t_rel_type = $t_rel_type ? $t_rel_type : new ca_relationship_types();
+			$t_rel_type = $t_rel_type ? $t_rel_type : new \ca_relationship_types();
 			// create relationship type root if necessary
 			$t_rel_type->set('parent_id', null);
 			$t_rel_type->set('type_code', $vs_root_type_code);
@@ -1459,11 +1459,11 @@ class Installer {
 	# --------------------------------------------------
 	private function processRelationshipTypesForTable($po_relationship_types, $pn_table_num, $ps_left_table, $ps_right_table, $pn_parent_id, $pa_list_item_ids) {
 		// nuke caches to be safe
-		ca_relationship_types::$s_relationship_type_id_cache = [];
-		ca_relationship_types::$s_relationship_type_table_cache = [];
-		ca_relationship_types::$s_relationship_type_id_to_code_cache = [];
+		\ca_relationship_types::$s_relationship_type_id_cache = [];
+		\ca_relationship_types::$s_relationship_type_table_cache = [];
+		\ca_relationship_types::$s_relationship_type_id_to_code_cache = [];
 
-		$t_rel_type = new ca_relationship_types();
+		$t_rel_type = new \ca_relationship_types();
 
 		$vn_rank_default = (int)$t_rel_type->getFieldInfo('rank', 'DEFAULT');
 		foreach($po_relationship_types->children() as $vo_type) {
@@ -1473,12 +1473,12 @@ class Installer {
 
 			$this->logStatus(_t('Processing relationship type with code %1', $vs_type_code));
 
-			$t_rel_type = ca_relationship_types::find(
+			$t_rel_type = \ca_relationship_types::find(
 				array('type_code' => $vs_type_code, 'table_num' => $pn_table_num, 'parent_id' => $pn_parent_id),
 				array('returnAs' => 'firstModelInstance')
 			);
 
-			$t_rel_type = $t_rel_type ? $t_rel_type : new ca_relationship_types();
+			$t_rel_type = $t_rel_type ? $t_rel_type : new \ca_relationship_types();
 
 			if($t_rel_type->getPrimaryKey()) {
 				$this->logStatus(_t('Relationship type with code %1 already exists', $vs_type_code));
@@ -1517,7 +1517,7 @@ class Installer {
 				||
 				($vs_left_subtype_code = trim((string) $vo_type->subTypeLeft))
 			) {
-				$t_obj = Datamodel::getInstance($ps_left_table);
+				$t_obj = \Datamodel::getInstance($ps_left_table);
 				$vs_list_code = $t_obj->getFieldListCode($t_obj->getTypeFieldName());
 
 				$this->logStatus(_t('Adding left type restriction %1 for relationship type with code %2', $vs_left_subtype_code, $vs_type_code));
@@ -1547,7 +1547,7 @@ class Installer {
 				||
 				($vs_right_subtype_code = trim((string) $vo_type->subTypeRight))
 			) {
-				$t_obj = Datamodel::getInstance($ps_right_table);
+				$t_obj = \Datamodel::getInstance($ps_right_table);
 				$vs_list_code = $t_obj->getFieldListCode($t_obj->getTypeFieldName());
 
 				$this->logStatus(_t('Adding right type restriction %1 for relationship type with code %2', $vs_right_subtype_code, $vs_type_code));
@@ -1607,9 +1607,9 @@ class Installer {
 		foreach($va_roles as $vs_role_code => $vo_role) {
 			$this->logStatus(_t('Processing user role with code %1', $vs_role_code));
 
-			if(!($t_role = ca_user_roles::find(array('code' => (string)$vs_role_code), array('returnAs' => 'firstModelInstance')))) {
+			if(!($t_role = \ca_user_roles::find(array('code' => (string)$vs_role_code), array('returnAs' => 'firstModelInstance')))) {
 				$this->logStatus(_t('User role with code %1 is new', $vs_role_code));
-				$t_role = new ca_user_roles();
+				$t_role = new \ca_user_roles();
 			} else {
 				$this->logStatus(_t('User role with code %1 already exists', $vs_role_code));
 			}
@@ -1721,7 +1721,7 @@ class Installer {
 		require_once(__CA_MODELS_DIR__."/ca_bundle_display_placements.php");
 		require_once(__CA_MODELS_DIR__."/ca_bundle_display_type_restrictions.php");
 
-		$o_config = Configuration::load();
+		$o_config = \Configuration::load();
 
 		$va_displays = [];
 		if($this->ops_base_name) { // "merge" profile and its base
@@ -1750,15 +1750,15 @@ class Installer {
 			$vs_display_code = self::getAttribute($vo_display, "code");
 			$vb_system = self::getAttribute($vo_display, "system");
 			$vs_table = self::getAttribute($vo_display, "type");
-			$vn_table_num = Datamodel::getTableNum($vs_table);
+			$vn_table_num = \Datamodel::getTableNum($vs_table);
 
 			$this->logStatus(_t('Processing display with code %1', $vs_display_code));
 
 			if ($o_config->get($vs_table.'_disable')) { continue; }
 
-			if(!($t_display = ca_bundle_displays::find(array('display_code' => $vs_display_code), array('returnAs' => 'firstModelInstance')))) {
+			if(!($t_display = \ca_bundle_displays::find(array('display_code' => $vs_display_code), array('returnAs' => 'firstModelInstance')))) {
 				$this->logStatus(_t('Display with code %1 is new', $vs_display_code));
-				$t_display = new ca_bundle_displays();
+				$t_display = new \ca_bundle_displays();
 			} else {
 				$this->logStatus(_t('Display with code %1 already exists', $vs_display_code));
 			}
@@ -1771,7 +1771,7 @@ class Installer {
 
 			$t_display->set("display_code", $vs_display_code);
 			$t_display->set("is_system", $vb_system);
-			$t_display->set("table_num",Datamodel::getTableNum($vs_table));
+			$t_display->set("table_num",\Datamodel::getTableNum($vs_table));
 			$t_display->set("user_id", 1);		// let administrative user own these
 
 			$this->_processSettings($t_display, $vo_display->settings);
@@ -1828,7 +1828,7 @@ class Installer {
 			}
 
 			if($vo_display->userAccess) {
-				$t_user = new ca_users();
+				$t_user = new \ca_users();
 				$va_display_users = [];
 				foreach($vo_display->userAccess->children() as $vo_permission) {
 					$vs_user = trim((string)self::getAttribute($vo_permission, "user"));
@@ -1848,7 +1848,7 @@ class Installer {
 			}
 
 			if($vo_display->groupAccess) {
-				$t_group = new ca_user_groups();
+				$t_group = new \ca_user_groups();
 				$va_display_groups = [];
 				foreach($vo_display->groupAccess->children() as $vo_permission) {
 					$vs_group = trim((string)self::getAttribute($vo_permission, "group"));
@@ -1868,7 +1868,7 @@ class Installer {
 			}
 			
 			if($vo_display->roleAccess) {
-				$t_role = new ca_user_roles();
+				$t_role = new \ca_user_roles();
 				$va_display_roles = [];
 				foreach($vo_display->roleAccess->children() as $vo_permission) {
 					$vs_role = trim((string)self::getAttribute($vo_permission, "role"));
@@ -1929,7 +1929,7 @@ class Installer {
 		require_once(__CA_MODELS_DIR__."/ca_search_forms.php");
 		require_once(__CA_MODELS_DIR__."/ca_search_form_placements.php");
 
-		$o_config = Configuration::load();
+		$o_config = \Configuration::load();
 		$va_forms = [];
 		if($this->ops_base_name) { // "merge" profile and its base
 			if($this->opo_base->searchForms) {
@@ -1957,15 +1957,15 @@ class Installer {
 			$vs_form_code = self::getAttribute($vo_form, "code");
 			$vb_system = self::getAttribute($vo_form, "system");
 			$vs_table = self::getAttribute($vo_form, "type");
-			if (!($t_instance = Datamodel::getInstanceByTableName($vs_table, true))) { continue; }
+			if (!($t_instance = \Datamodel::getInstanceByTableName($vs_table, true))) { continue; }
 			if (method_exists($t_instance, 'getTypeList') && !sizeof($t_instance->getTypeList())) { continue; } // no types configured
 			if ($o_config->get($vs_table.'_disable')) { continue; }
-			$vn_table_num = (int)Datamodel::getTableNum($vs_table);
+			$vn_table_num = (int)\Datamodel::getTableNum($vs_table);
 
 			$this->logStatus(_t('Processing search form with code %1', $vs_form_code));
 
-			if(!($t_form = ca_search_forms::find(array('form_code' => (string)$vs_form_code, 'table_num' => $vn_table_num), array('returnAs' => 'firstModelInstance')))) {
-				$t_form = new ca_search_forms();
+			if(!($t_form = \ca_search_forms::find(array('form_code' => (string)$vs_form_code, 'table_num' => $vn_table_num), array('returnAs' => 'firstModelInstance')))) {
+				$t_form = new \ca_search_forms();
 				$this->logStatus(_t('Search form with code %1 is new', $vs_form_code));
 			} else {
 				$this->logStatus(_t('Search form with code %1 already exists', $vs_form_code));
@@ -2037,7 +2037,7 @@ class Installer {
 
 			// set user and group access
 			if($vo_form->userAccess) {
-				$t_user = new ca_users();
+				$t_user = new \ca_users();
 				$va_form_users = [];
 				foreach($vo_form->userAccess->children() as $vo_permission) {
 					$vs_user = trim((string)self::getAttribute($vo_permission, "user"));
@@ -2057,7 +2057,7 @@ class Installer {
 			}
 
 			if($vo_form->groupAccess) {
-				$t_group = new ca_user_groups();
+				$t_group = new \ca_user_groups();
 				$va_form_groups = [];
 				foreach($vo_form->groupAccess->children() as $vo_permission) {
 					$vs_group = trim((string)self::getAttribute($vo_permission, "group"));
@@ -2077,7 +2077,7 @@ class Installer {
 			}
 			
 			if($vo_form->roleAccess) {
-				$t_role = new ca_user_roles();
+				$t_role = new \ca_user_roles();
 				$va_form_roles = [];
 				foreach($vo_form->roleAccess->children() as $vo_permission) {
 					$vs_role = trim((string)self::getAttribute($vo_permission, "role"));
@@ -2136,8 +2136,8 @@ class Installer {
 	public function processGroups() {
 
 		// Create root group
-		$t_user_group = ca_user_groups::find(array('code' => 'Root', 'parent_id' => null), array('returnAs' => 'firstModelInstance'));
-		$t_user_group = $t_user_group ? $t_user_group : new ca_user_groups();
+		$t_user_group = \ca_user_groups::find(array('code' => 'Root', 'parent_id' => null), array('returnAs' => 'firstModelInstance'));
+		$t_user_group = $t_user_group ? $t_user_group : new \ca_user_groups();
 
 		$t_user_group->set('name', 'Root');
 		if($t_user_group->getPrimaryKey()) {
@@ -2174,8 +2174,8 @@ class Installer {
 
 		if (is_array($va_groups)) {
 			foreach($va_groups as $vs_group_code => $vo_group) {
-				if(!($t_group = ca_user_groups::find(array('code' => (string)$vs_group_code), array('returnAs' => 'firstModelInstance')))) {
-					$t_group = new ca_user_groups();
+				if(!($t_group = \ca_user_groups::find(array('code' => (string)$vs_group_code), array('returnAs' => 'firstModelInstance')))) {
+					$t_group = new \ca_user_groups();
 				}
 
 				if(self::getAttribute($vo_group, "deleted") && $t_group->getPrimaryKey()) {
@@ -2247,7 +2247,7 @@ class Installer {
 				$vs_password = caGenerateRandomPassword(8);
 			}
 
-			$t_user = new ca_users();
+			$t_user = new \ca_users();
 			$t_user->set('user_name', $vs_user_name = trim((string) self::getAttribute($vo_login, "user_name")));
 			$t_user->set('password', $vs_password);
 			$t_user->set('fname',  trim((string) self::getAttribute($vo_login, "fname")));
@@ -2290,7 +2290,7 @@ class Installer {
 		require_once(__CA_MODELS_DIR__."/ca_metadata_alert_rules.php");
 		require_once(__CA_MODELS_DIR__."/ca_metadata_alert_triggers.php");
 
-		$o_config = Configuration::load();
+		$o_config = \Configuration::load();
 		$va_md_alerts = [];
 		if($this->ops_base_name) { // "merge" profile and its base
 			if($this->opo_base->metadataAlerts) {
@@ -2317,15 +2317,15 @@ class Installer {
 		foreach($va_md_alerts as $vo_md_alert) {
 			$vs_alert_code = self::getAttribute($vo_md_alert, "code");
 			$vs_table = self::getAttribute($vo_md_alert, "type");
-			if (!($t_instance = Datamodel::getInstanceByTableName($vs_table, true))) { continue; }
+			if (!($t_instance = \Datamodel::getInstanceByTableName($vs_table, true))) { continue; }
 			if (method_exists($t_instance, 'getTypeList') && !sizeof($t_instance->getTypeList())) { continue; } // no types configured
 			if ($o_config->get($vs_table.'_disable')) { continue; }
-			$vn_table_num = (int)Datamodel::getTableNum($vs_table);
+			$vn_table_num = (int)\Datamodel::getTableNum($vs_table);
 
 			$this->logStatus(_t('Processing metadata alert with code %1', $vs_alert_code));
 
-			if(!($t_md_alert = ca_metadata_alert_rules::find(array('code' => (string)$vs_alert_code, 'table_num' => $vn_table_num), array('returnAs' => 'firstModelInstance')))) {
-				$t_md_alert = new ca_metadata_alert_rules();
+			if(!($t_md_alert = \ca_metadata_alert_rules::find(array('code' => (string)$vs_alert_code, 'table_num' => $vn_table_num), array('returnAs' => 'firstModelInstance')))) {
+				$t_md_alert = new \ca_metadata_alert_rules();
 				$this->logStatus(_t('Metadata alert with code %1 is new', $vs_alert_code));
 			} else {
 				$this->logStatus(_t('Metadata alert with code %1 already exists', $vs_alert_code));
@@ -2396,7 +2396,7 @@ class Installer {
 
 			// set user and group access
 			if($vo_md_alert->userAccess) {
-				$t_user = new ca_users();
+				$t_user = new \ca_users();
 				$va_form_users = [];
 				foreach($vo_md_alert->userAccess->children() as $vo_permission) {
 					$vs_user = trim((string)self::getAttribute($vo_permission, "user"));
@@ -2415,7 +2415,7 @@ class Installer {
 			}
 
 			if($vo_md_alert->groupAccess) {
-				$t_group = new ca_user_groups();
+				$t_group = new \ca_user_groups();
 				$va_form_groups = [];
 				foreach($vo_md_alert->groupAccess->children() as $vo_permission) {
 					$vs_group = trim((string)self::getAttribute($vo_permission, "group"));
@@ -2434,7 +2434,7 @@ class Installer {
 			}
 			
 			if($vo_md_alert->roleAccess) {
-				$t_role = new ca_user_roles();
+				$t_role = new \ca_user_roles();
 				$va_form_roles = [];
 				foreach($vo_md_alert->roleAccess->children() as $vo_permission) {
 					$vs_role = trim((string)self::getAttribute($vo_permission, "role"));
@@ -2478,7 +2478,7 @@ class Installer {
 			$vs_metadata_element = self::getAttribute($vo_trigger, "metadataElement");
 			$vs_metadata_element_filter = self::getAttribute($vo_trigger, "metadataElementFilter");
 			
-			if (!($vn_element_id = ca_metadata_elements::getElementID($vs_metadata_element))) { 
+			if (!($vn_element_id = \ca_metadata_elements::getElementID($vs_metadata_element))) { 
 				$this->logStatus(_t('Skipped trigger %1 for metadata alert %2 because element code %3 is invalid', $vs_code, $t_md_alert->get('code'), $vs_metadata_element));
 				continue; 
 			}
@@ -2491,8 +2491,8 @@ class Installer {
 			if(is_array($va_metadata_element_filters_raw = explode(';', $vs_metadata_element_filter)) && sizeof($va_metadata_element_filters_raw)) {
 				foreach($va_metadata_element_filters_raw as $vs_metadata_element_filters_raw) {
 					if(is_array($va_tmp = explode(":", $vs_metadata_element_filters_raw)) && (sizeof($va_tmp) > 1)) {
-						if ($t_element = ca_metadata_elements::getInstance($va_tmp[0])) {
-							if (is_array($va_item_ids = ca_lists::IDNOsToItemIDs(explode("|", $va_tmp[1]))) && sizeof($va_item_ids)) {
+						if ($t_element = \ca_metadata_elements::getInstance($va_tmp[0])) {
+							if (is_array($va_item_ids = \ca_lists::IDNOsToItemIDs(explode("|", $va_tmp[1]))) && sizeof($va_item_ids)) {
 								$va_item_ids = array_keys($va_item_ids);
 								$va_metadata_element_filters[$va_tmp[0]] = $va_item_ids;
 							}
@@ -2500,7 +2500,7 @@ class Installer {
 					}
 				}
 			}
-			$t_trigger = new ca_metadata_alert_triggers();
+			$t_trigger = new \ca_metadata_alert_triggers();
 			$t_trigger->set('rule_id', $t_md_alert->get('rule_id'));
 			$t_trigger->set('element_id', $vn_element_id);
 			$t_trigger->set('element_filters', $va_metadata_element_filters);
@@ -2539,7 +2539,7 @@ class Installer {
 		#
 		# Create roots for storage locations hierarchies
 		#
-		$t_storage_location = new ca_storage_locations();
+		$t_storage_location = new \ca_storage_locations();
 		$t_storage_location->set('status', 0);
 		$t_storage_location->set('parent_id', null);
 		$t_storage_location->insert();
@@ -2553,7 +2553,7 @@ class Installer {
 	public function createAdminAccount() {
 
 		$ps_password = caGenerateRandomPassword(8);
-		$t_user = new ca_users();
+		$t_user = new \ca_users();
 		$t_user->set("user_name", 'administrator');
 		$t_user->set("password", $ps_password);
 		$t_user->set("email", $this->ops_admin_email);
@@ -2602,8 +2602,8 @@ class Installer {
 
 				if((strlen($vs_setting_name)>0) && (strlen($vs_value)>0)) { // settings need at least name and value
 					$vs_datatype = (int)$pt_instance ?$pt_instance->get('datatype') : null;
-					if ($vs_setting_name === 'restrictToTypes' && $t_authority_instance = AuthorityAttributeValue::elementTypeToInstance($vs_datatype)){
-						if ($t_authority_instance instanceof BaseModelWithAttributes && is_string($vs_value)){
+					if ($vs_setting_name === 'restrictToTypes' && $t_authority_instance = \AuthorityAttributeValue::elementTypeToInstance($vs_datatype)){
+						if ($t_authority_instance instanceof \BaseModelWithAttributes && is_string($vs_value)){
 							$vn_type_id = $t_authority_instance->getTypeIDForCode($vs_value);
 							if ($vn_type_id){
 								$vs_value = $vn_type_id;
