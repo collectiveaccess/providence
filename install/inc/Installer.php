@@ -26,15 +26,9 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/Cache/CompositeCache.php');
-require_once(__CA_LIB_DIR__.'/Configuration.php');
-require_once(__CA_LIB_DIR__.'/Datamodel.php');
-require_once(__CA_LIB_DIR__.'/Db.php');
+namespace Installer;
+
 require_once(__CA_LIB_DIR__.'/Media/MediaVolumes.php');
-require_once(__CA_APP_DIR__.'/helpers/utilityHelpers.php');
-require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
-require_once(__CA_MODELS_DIR__.'/ca_users.php');
-require_once(__CA_MODELS_DIR__.'/ca_user_groups.php');
 require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch.php');
 
 class Installer {
@@ -85,19 +79,21 @@ class Installer {
 	 * @param boolean $pb_skip_load dont actually load profile (useful if you want to fill in some gaps by hand)
 	 * @param boolean $pb_log_output log output using Klogger
 	 */
-	public function  __construct($ps_profile_dir, $ps_profile_name, $ps_admin_email=null, $pb_overwrite=false, $pb_debug=false, $pb_skip_load=false, $pb_log_output=false) {
-		$this->ops_profile_dir = $ps_profile_dir;
-		$this->ops_profile_name = $ps_profile_name;
-		$this->ops_admin_email = $ps_admin_email;
-		$this->opb_overwrite = $pb_overwrite;
-		$this->opb_debug = $pb_debug;
+	public function  __construct(string $directory, string $profile, ?string $admin_email=null, ?bool $overwrite=false, ?bool $debug=false, ?bool $skip_load=false, ?bool $log_output=false) {
+		$this->ops_profile_dir = $directory;
+		$this->ops_profile_name = $profile;
+		$this->ops_admin_email = $admin_email;
+		$this->opb_overwrite = $overwrite;
+		$this->opb_debug = $debug;
 
 		$this->opa_locales = [];
 
 		$this->opo_db = new Db();
-
-		if(!$pb_skip_load) {
-			if($this->loadProfile($ps_profile_dir, $ps_profile_name)) {
+		
+		$profile_path = caGetProfilePath($directory, $profile);
+		
+		if(!$skip_load) {
+			if($this->loadProfile($directory, $profile)) {
 				$this->extractAndLoadBase();
 
 				if(!$this->validateProfile()) {
@@ -108,7 +104,7 @@ class Installer {
 			}
 		}
 
-		if($pb_log_output) {
+		if($log_output) {
 			require_once(__CA_LIB_DIR__.'/Logging/KLogger/KLogger.php');
 			// @todo make this configurable or get from app.conf?
 			$this->opo_log = new KLogger(__CA_BASE_DIR__ . '/app/log', KLogger::DEBUG);
@@ -117,98 +113,75 @@ class Installer {
 	}
 	# --------------------------------------------------
 	/**
-	 * Get an installer instance from just a XML string. This allows initializing
-	 * a system without having to write the profile to a file first.
+	 * Return metadata (name, description) for a profile
 	 *
-	 * @param string $ps_profile_xml
-	 * @param string $ps_admin_email
-	 * @param bool $pb_overwrite
-	 * @param bool $pb_log_output
-	 * @return Installer|false
+	 * @param string $directory path to a directory containing profiles and XML schema
+	 * @param string $profile of the profile, as in <$directory>/xml/<$profile>.xml
+	 *
+	 * @return array
 	 */
-	public static function getFromString($ps_profile_xml, $ps_admin_email='', $pb_overwrite=false, $pb_log_output=false) {
-		$o_installer = new Installer(__CA_BASE_DIR__.'/install/profiles/xml', 'export', $ps_admin_email, $pb_overwrite, false, true, $pb_log_output);
-		if($o_installer->loadProfileFromString($ps_profile_xml, true)) {
-			$o_installer->extractAndLoadBase();
-			return $o_installer;
-		} else {
-			return false;
+	static public function getProfileInfo(string $directory, string $profile) : ?array {
+		if(!($path = caGetProfilePath($directory, $profile))) {
+			return null;
 		}
+		
+		if(!($parser = self::profileParser($path))) { return null; }
+		
+		return $parser->profileInfo($path);
 	}
 	# --------------------------------------------------
 	/**
-	 * @param string $ps_profile_dir path to a directory containing profiles and XML schema
-	 * @param string $ps_profile_name of the profile, as in <$ps_profile_dir>/<$ps_profile_name>.xml
+	 * Return instance of profile parser for selected file
+	 *
+	 * @param string $profile_path path to a profile file
+	 *
 	 * @return array
 	 */
-	static public function getProfileInfo($ps_profile_dir, $ps_profile_name) {
-		$path = $ps_profile_dir.'/'.$ps_profile_name.'.xml';
-		$reader = new XMLReader();
+	static public function profileParser(string $profile_path) : ?\Installer\Parsers\BaseProfileParser {
+		$extension = strtolower(pathinfo($profile_path, PATHINFO_EXTENSION));
 		
-		if (!@$reader->open($path)) {
-			return null;
+		switch($extension) {
+			case 'xlsx':
+				// noop - not supported yet
+				break;
+			case 'xml':
+				require_once(__CA_BASE_DIR__.'/install/inc/Parsers/XMLProfileParser.php');
+				return new \Installer\Parsers\XMLProfileParser();
+				break;
 		}
-
-		$name = $description = $useForConfiguration = $locales = null;
-		while(@$reader->read()) {
-			if ($reader->nodeType === XMLReader::ELEMENT) {
-				switch($reader->name) {
-					case 'profile':
-						$useForConfiguration = $reader->getAttribute('useForConfiguration');
-						break;
-					case 'profileName':
-						$name = $reader->readOuterXML();
-						break;
-					case 'profileDescription':
-						$description = $reader->readOuterXML();
-						break;
-					case 'locale':
-						$locale = $reader->getAttribute('lang').'_'.$reader->getAttribute('country');
-						$locales[$locale] = [
-							'lang' => $reader->getAttribute('lang'),
-							'country' => $reader->getAttribute('country'),
-							'locale' => $locale,
-							'display' => $reader->readOuterXML()
-						];
-						break;
-					case 'lists':
-						break(2);
-				}
-			}
-		}
-		$reader->close();		
-
-		return [
-			'useForConfiguration' => $useForConfiguration,
-			'display' => $name,
-			'description' => $description,
-			'locales' => $locales,
-		];
+		return null;
 	}
 	# --------------------------------------------------
+	/**
+	 *
+	 */
 	private function validateProfile() {
+		$profile_path = caGetProfilePath($this->ops_profile_dir, $this->ops_profile_name);
+		$base_path = caGetProfilePath($this->ops_profile_dir, $this->ops_base_name);
+		$schema_path = caGetProfilePath($this->ops_profile_dir, 'profile.xsd');
+		
 		// simplexml doesn't support validation -> use DOMDocument
 		$vo_profile = new DOMDocument();
-		@$vo_profile->load($this->ops_profile_dir."/".$this->ops_profile_name.".xml");
+		@$vo_profile->load($profile_path);
 
 		if($this->opo_base) {
 			$vo_base = new DOMDocument();
-			$vo_base->load($this->ops_profile_dir."/".$this->ops_base_name.".xml");
+			$vo_base->load($base_path);
 
 			if($this->opb_debug) {
 				ob_start();
-				$vb_return = $vo_profile->schemaValidate($this->ops_profile_dir."/profile.xsd") && $vo_base->schemaValidate($this->ops_profile_dir."/profile.xsd");
+				$vb_return = $vo_profile->schemaValidate($schema_path) && $vo_base->schemaValidate($schema_path);
 				$this->ops_profile_debug .= ob_get_clean();
 			} else {
-				$vb_return = @$vo_profile->schemaValidate($this->ops_profile_dir."/profile.xsd") && @$vo_base->schemaValidate($this->ops_profile_dir."/profile.xsd");
+				$vb_return = @$vo_profile->schemaValidate($schema_path) && @$vo_base->schemaValidate($schema_path);
 			}
 		} else {
 			if($this->opb_debug) {
 				ob_start();
-				$vb_return = $vo_profile->schemaValidate($this->ops_profile_dir."/profile.xsd");
+				$vb_return = $vo_profile->schemaValidate($schema_path);
 				$this->ops_profile_debug .= ob_get_clean();
 			} else {
-				$vb_return = @$vo_profile->schemaValidate($this->ops_profile_dir."/profile.xsd");
+				$vb_return = @$vo_profile->schemaValidate($schema_path);
 			}
 		}
 
@@ -221,17 +194,22 @@ class Installer {
 		return $vb_return;
 	}
 	# --------------------------------------------------
-	public function loadProfile($ps_profile_dir, $ps_profile_name) {
-		$vs_file = $ps_profile_dir."/".$ps_profile_name.".xml";
-
-		if(is_readable($vs_file)) {
-			$this->opo_profile = @simplexml_load_file($vs_file);
+	/**
+	 *
+	 */
+	public function loadProfile(string $directory, string $profile) : bool {
+		$path = caGetProfilePath($directory, $profile);
+		if(is_readable($path)) {
+			$this->opo_profile = @simplexml_load_file($path);
 			return true;
 		} else {
 			return false;
 		}
 	}
 	# --------------------------------------------------
+	/**
+	 *
+	 */
 	public function loadProfileFromString($ps_xml, $pb_skip_validation=false) {
 		if(!$pb_skip_validation) {
 			$o_dom = new DOMDocument();
@@ -250,10 +228,16 @@ class Installer {
 		return (bool) $this->opo_profile;
 	}
 	# --------------------------------------------------
+	/**
+	 *
+	 */
 	public function extractAndLoadBase() {
 		$this->ops_base_name = self::getAttribute($this->opo_profile, "base");
+		if(!($base_path = caGetProfilePath($this->ops_profile_dir, $this->ops_base_name))) {
+			throw new Exception("Could not find base profile.");
+		}
 		if($this->ops_base_name) {
-			$this->opo_base = simplexml_load_file($this->ops_profile_dir."/".$this->ops_base_name.".xml");
+			$this->opo_base = simplexml_load_file($base_path);
 			$this->logStatus(_t('Successfully loaded base profile %1', $this->ops_base_name));
 		} else {
 			$this->opo_base = null;
@@ -298,6 +282,9 @@ class Installer {
 	# --------------------------------------------------
 	# UTILITIES
 	# --------------------------------------------------
+	/**
+	 *
+	 */
 	protected  static function getAttribute($po_simplexml, $ps_attr) {
 		if(isset($po_simplexml[$ps_attr])) {
 			return (string) $po_simplexml[$ps_attr];
@@ -306,6 +293,9 @@ class Installer {
 		}
 	}
 	# --------------------------------------------------
+	/**
+	 *
+	 */
 	private static function createDirectoryPath($ps_path) {
 		if (!file_exists($ps_path)) {
 			if (!@mkdir($ps_path, 0777, true)) {
@@ -530,7 +520,6 @@ class Installer {
 		require_once(__CA_MODELS_DIR__."/ca_locales.php");
 
 		$t_locale = new ca_locales();
-		$t_locale->setMode(ACCESS_WRITE);
 		// Find any existing locales
 		$va_locales = $t_locale->getLocaleList(array('index_by_code' => true));
 		foreach($va_locales as $vs_code => $va_locale) {
@@ -631,7 +620,6 @@ class Installer {
 				$this->logStatus(_t('%1 is a new list', $vs_list_code));
 			}
 
-			$t_list->setMode(ACCESS_WRITE);
 
 			if(self::getAttribute($vo_list, "deleted") && $t_list->getPrimaryKey()) {
 				$this->logStatus(_t('Deleting list %1', $vs_list_code));
@@ -721,7 +709,6 @@ class Installer {
 				if($vb_deleted) {
 					$this->logStatus(_t('Deleting list item with idno %1', $vs_item_idno));
 					$t_item = new ca_list_items($vn_item_id);
-					$t_item->setMode(ACCESS_WRITE);
 					$t_item->delete();
 					continue;
 				}
@@ -740,7 +727,6 @@ class Installer {
 				return false;
 			} else {
 				$this->logStatus(_t('Successfully updated/inserted list item with idno %1', $vs_item_idno));
-				$t_item->setMode(ACCESS_WRITE);
 				if($vo_item->settings) {
 					$this->_processSettings($t_item, $vo_item->settings);
 					$t_item->update();
@@ -821,7 +807,6 @@ class Installer {
 
 					// add restriction
 					$t_restriction = new ca_metadata_type_restrictions();
-					$t_restriction->setMode(ACCESS_WRITE);
 					$t_restriction->set('table_num', $vn_table_num);
 					$t_restriction->set('include_subtypes', (bool)$vo_restriction->includeSubtypes ? 1 : 0);
 					$t_restriction->set('type_id', $vn_type_id);
@@ -859,8 +844,6 @@ class Installer {
 		} else {
 			$this->logStatus(_t('Metadata element with code %1 is new', $vs_element_code));
 		}
-
-		$t_md_element->setMode(ACCESS_WRITE);
 
 		if(self::getAttribute($po_element, 'deleted') && $t_md_element->getPrimaryKey()) {
 			$this->logStatus(_t('Deleting metadata element with code %1', $vs_element_code));
@@ -939,7 +922,6 @@ class Installer {
 
 			// insert dictionary entry
 			$t_entry = new ca_metadata_dictionary_entries();
-			$t_entry->setMode(ACCESS_WRITE);
 			$t_entry->set('bundle_name', $vs_field);
 			$t_entry->set('table_num', $vn_table_num);
 			$this->_processSettings($t_entry, $vo_entry->settings);
@@ -957,7 +939,6 @@ class Installer {
 					$vs_level = self::getAttribute($vo_rule, "level");
 
 					$t_rule = new ca_metadata_dictionary_rules();
-					$t_rule->setMode(ACCESS_WRITE);
 					$t_rule->set('entry_id', $t_entry->getPrimaryKey());
 					$t_rule->set('rule_code', $vs_code);
 					$t_rule->set('rule_level', $vs_level);
@@ -1023,8 +1004,6 @@ class Installer {
 			} else {
 				$this->logStatus(_t('User interface with code %1 already exists', $vs_ui_code));
 			}
-
-			$t_ui->setMode(ACCESS_WRITE);
 
 			if(self::getAttribute($vo_ui, 'deleted') && $t_ui->getPrimaryKey()) {
 				$this->logStatus(_t('Deleting user interface with code %1', $vs_ui_code));
@@ -1125,7 +1104,6 @@ class Installer {
 				), array('returnAs' => 'firstModelInstance'));
 
 				$t_ui_screens = $t_ui_screens ? $t_ui_screens : new ca_editor_ui_screens();
-				$t_ui_screens->setMode(ACCESS_WRITE);
 
 				if($t_ui_screens->getPrimaryKey()) {
 					$this->logStatus(_t('Screen with code %1 for user interface with code %2 already exists', $vs_screen_idno, $vs_ui_code));
@@ -1455,7 +1433,6 @@ class Installer {
 			);
 
 			$t_rel_type = $t_rel_type ? $t_rel_type : new ca_relationship_types();
-			$t_rel_type->setMode(ACCESS_WRITE);
 			// create relationship type root if necessary
 			$t_rel_type->set('parent_id', null);
 			$t_rel_type->set('type_code', $vs_root_type_code);
@@ -1487,7 +1464,6 @@ class Installer {
 		ca_relationship_types::$s_relationship_type_id_to_code_cache = [];
 
 		$t_rel_type = new ca_relationship_types();
-		$t_rel_type->setMode(ACCESS_WRITE);
 
 		$vn_rank_default = (int)$t_rel_type->getFieldInfo('rank', 'DEFAULT');
 		foreach($po_relationship_types->children() as $vo_type) {
@@ -1503,7 +1479,6 @@ class Installer {
 			);
 
 			$t_rel_type = $t_rel_type ? $t_rel_type : new ca_relationship_types();
-			$t_rel_type->setMode(ACCESS_WRITE);
 
 			if($t_rel_type->getPrimaryKey()) {
 				$this->logStatus(_t('Relationship type with code %1 already exists', $vs_type_code));
@@ -1638,8 +1613,6 @@ class Installer {
 			} else {
 				$this->logStatus(_t('User role with code %1 already exists', $vs_role_code));
 			}
-
-			$t_role->setMode(ACCESS_WRITE);
 
 			if(self::getAttribute($vo_role, "deleted") && $t_role->getPrimaryKey()) {
 				$this->logStatus(_t('Deleting user role with code %1', $vs_role_code));
@@ -1789,8 +1762,6 @@ class Installer {
 			} else {
 				$this->logStatus(_t('Display with code %1 already exists', $vs_display_code));
 			}
-
-			$t_display->setMode(ACCESS_WRITE);
 
 			if(self::getAttribute($vo_display, "deleted") && $t_display->getPrimaryKey()) {
 				$t_display->delete(true);
@@ -1999,7 +1970,6 @@ class Installer {
 			} else {
 				$this->logStatus(_t('Search form with code %1 already exists', $vs_form_code));
 			}
-			$t_form->setMode(ACCESS_WRITE);
 
 			if(self::getAttribute($vo_form, "deleted") && $t_form->getPrimaryKey()) {
 				$this->logStatus(_t('Deleting search form with code %1', $vs_form_code));
@@ -2169,7 +2139,6 @@ class Installer {
 		$t_user_group = ca_user_groups::find(array('code' => 'Root', 'parent_id' => null), array('returnAs' => 'firstModelInstance'));
 		$t_user_group = $t_user_group ? $t_user_group : new ca_user_groups();
 
-		$t_user_group->setMode(ACCESS_WRITE);
 		$t_user_group->set('name', 'Root');
 		if($t_user_group->getPrimaryKey()) {
 			$t_user_group->update();
@@ -2209,14 +2178,11 @@ class Installer {
 					$t_group = new ca_user_groups();
 				}
 
-				$t_group->setMode(ACCESS_WRITE);
-
 				if(self::getAttribute($vo_group, "deleted") && $t_group->getPrimaryKey()) {
 					$t_group->delete(true);
 					continue;
 				}
 
-				$t_group->setMode(ACCESS_WRITE);
 				$t_group->set('name', trim((string) $vo_group->name));
 				$t_group->set('description', trim((string) $vo_group->description));
 				if($t_group->getPrimaryKey()) {
@@ -2282,7 +2248,6 @@ class Installer {
 			}
 
 			$t_user = new ca_users();
-			$t_user->setMode(ACCESS_WRITE);
 			$t_user->set('user_name', $vs_user_name = trim((string) self::getAttribute($vo_login, "user_name")));
 			$t_user->set('password', $vs_password);
 			$t_user->set('fname',  trim((string) self::getAttribute($vo_login, "fname")));
@@ -2365,7 +2330,6 @@ class Installer {
 			} else {
 				$this->logStatus(_t('Metadata alert with code %1 already exists', $vs_alert_code));
 			}
-			$t_md_alert->setMode(ACCESS_WRITE);
 
 			if(self::getAttribute($vo_md_alert, "deleted") && $t_md_alert->getPrimaryKey()) {
 				$this->logStatus(_t('Deleting metadata alert with code %1', $vs_alert_code));
@@ -2537,7 +2501,6 @@ class Installer {
 				}
 			}
 			$t_trigger = new ca_metadata_alert_triggers();
-			$t_trigger->setMode(ACCESS_WRITE);
 			$t_trigger->set('rule_id', $t_md_alert->get('rule_id'));
 			$t_trigger->set('element_id', $vn_element_id);
 			$t_trigger->set('element_filters', $va_metadata_element_filters);
@@ -2577,7 +2540,6 @@ class Installer {
 		# Create roots for storage locations hierarchies
 		#
 		$t_storage_location = new ca_storage_locations();
-		$t_storage_location->setMode(ACCESS_WRITE);
 		$t_storage_location->set('status', 0);
 		$t_storage_location->set('parent_id', null);
 		$t_storage_location->insert();
@@ -2589,11 +2551,9 @@ class Installer {
 	}
 	# --------------------------------------------------
 	public function createAdminAccount() {
-		require_once(__CA_MODELS_DIR__."/ca_users.php");
 
 		$ps_password = caGenerateRandomPassword(8);
 		$t_user = new ca_users();
-		$t_user->setMode(ACCESS_WRITE);
 		$t_user->set("user_name", 'administrator');
 		$t_user->set("password", $ps_password);
 		$t_user->set("email", $this->ops_admin_email);

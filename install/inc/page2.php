@@ -55,7 +55,7 @@
 	$vn_progress = 0;
 	
 	// parameters: profile dir, profile name, admin email, overwrite y/n, profile debug mode y/n
-	$vo_installer = new Installer("profiles/xml/", $ps_profile, $ps_email, $pb_overwrite, $pb_debug);
+	$vo_installer = new Installer("profiles/", $ps_profile, $ps_email, $pb_overwrite, $pb_debug);
 	
 	// if profile validation against XSD failed, we already have an error here
 	if($vo_installer->numErrors()){
