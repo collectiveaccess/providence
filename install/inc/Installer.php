@@ -33,35 +33,35 @@ require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch.php');
 
 class Installer {
 	# --------------------------------------------------
-	protected $opa_errors;
-	protected $opb_debug;
-	protected $ops_profile_debug = "";
+	protected $errors;
+	protected $debug;
+	protected $profile_debug = "";
 	# --------------------------------------------------
-	protected $ops_profile_dir;
-	protected $ops_profile_name;
+	protected $profile_dir;
+	protected $profile_name;
 
-	protected $ops_admin_email;
-	protected $opb_overwrite;
+	protected $admin_email;
+	protected $overwrite;
 	# --------------------------------------------------
 	/** @var  bool */
-	protected $opb_logging_status = false;
+	protected $logging_status = false;
 	/** @var KLogger */
-	protected $opo_log;
+	protected $log;
 	# --------------------------------------------------
 	/** @var  SimpleXMLElement */
-	protected $opo_profile;
+	protected $profile;
 	/** @var  SimpleXMLElement */
-	protected  $opo_base;
+	protected $base;
 	/** @var  string */
-	protected  $ops_base_name;
+	protected $base_name;
 	# --------------------------------------------------
 	/** @var array  */
-	protected $opa_locales;
+	protected $locales;
 	# --------------------------------------------------
 	/**
 	 * @var Db
 	 */
-	protected $opo_db;
+	protected $db;
 	# --------------------------------------------------
 	/**
 	 * @var array
@@ -80,17 +80,15 @@ class Installer {
 	 * @param boolean $pb_log_output log output using Klogger
 	 */
 	public function  __construct(string $directory, string $profile, ?string $admin_email=null, ?bool $overwrite=false, ?bool $debug=false, ?bool $skip_load=false, ?bool $log_output=false) {
-		$this->ops_profile_dir = $directory;
-		$this->ops_profile_name = $profile;
-		$this->ops_admin_email = $admin_email;
-		$this->opb_overwrite = $overwrite;
-		$this->opb_debug = $debug;
+		$this->profile_dir = $directory;
+		$this->profile_name = $profile;
+		$this->admin_email = $admin_email;
+		$this->overwrite = $overwrite;
+		$this->debug = $debug;
 
-		$this->opa_locales = [];
+		$this->locales = [];
 
-		$this->opo_db = new \Db();
-		
-		$profile_path = caGetProfilePath($directory, $profile);
+		$this->db = new \Db();
 		
 		if(!$skip_load) {
 			if($this->loadProfile($directory, $profile)) {
@@ -107,8 +105,8 @@ class Installer {
 		if($log_output) {
 			require_once(__CA_LIB_DIR__.'/Logging/KLogger/KLogger.php');
 			// @todo make this configurable or get from app.conf?
-			$this->opo_log = new \KLogger(__CA_BASE_DIR__ . '/app/log', \KLogger::DEBUG);
-			$this->opb_logging_status = true;
+			$this->log = new \KLogger(__CA_BASE_DIR__ . '/app/log', \KLogger::DEBUG);
+			$this->logging_status = true;
 		}
 	}
 	# --------------------------------------------------
@@ -156,39 +154,39 @@ class Installer {
 	 *
 	 */
 	private function validateProfile() {
-		$profile_path = caGetProfilePath($this->ops_profile_dir, $this->ops_profile_name);
-		$base_path = caGetProfilePath($this->ops_profile_dir, $this->ops_base_name);
-		$schema_path = caGetProfilePath($this->ops_profile_dir, 'profile.xsd');
+		$profile_path = caGetProfilePath($this->profile_dir, $this->profile_name);
+		$base_path = caGetProfilePath($this->profile_dir, $this->base_name);
+		$schema_path = caGetProfilePath($this->profile_dir, 'profile.xsd');
 		
 		// simplexml doesn't support validation -> use DOMDocument
 		$vo_profile = new \DOMDocument();
 		@$vo_profile->load($profile_path);
 
-		if($this->opo_base) {
+		if($this->base) {
 			$vo_base = new \DOMDocument();
 			$vo_base->load($base_path);
 
-			if($this->opb_debug) {
+			if($this->debug) {
 				ob_start();
 				$vb_return = $vo_profile->schemaValidate($schema_path) && $vo_base->schemaValidate($schema_path);
-				$this->ops_profile_debug .= ob_get_clean();
+				$this->profile_debug .= ob_get_clean();
 			} else {
 				$vb_return = @$vo_profile->schemaValidate($schema_path) && @$vo_base->schemaValidate($schema_path);
 			}
 		} else {
-			if($this->opb_debug) {
+			if($this->debug) {
 				ob_start();
 				$vb_return = $vo_profile->schemaValidate($schema_path);
-				$this->ops_profile_debug .= ob_get_clean();
+				$this->profile_debug .= ob_get_clean();
 			} else {
 				$vb_return = @$vo_profile->schemaValidate($schema_path);
 			}
 		}
 
 		if($vb_return) {
-			$this->logStatus(_t('Successfully validated profile %1', $this->ops_profile_name));
+			$this->logStatus(_t('Successfully validated profile %1', $this->profile_name));
 		} else {
-			$this->logStatus(_t('Validation failed for profile %1', $this->ops_profile_name));
+			$this->logStatus(_t('Validation failed for profile %1', $this->profile_name));
 		}
 
 		return $vb_return;
@@ -200,7 +198,7 @@ class Installer {
 	public function loadProfile(string $directory, string $profile) : bool {
 		$path = caGetProfilePath($directory, $profile);
 		if(is_readable($path)) {
-			$this->opo_profile = @simplexml_load_file($path);
+			$this->profile = @simplexml_load_file($path);
 			return true;
 		} else {
 			return false;
@@ -218,29 +216,29 @@ class Installer {
 				throw new \Exception("Profile validation failed. Your profile doesn't conform to the required XML schema.");
 			}
 		}
-		$this->opo_profile = @simplexml_load_string($ps_xml);
-		if(!$this->opo_profile) {
+		$this->profile = @simplexml_load_string($ps_xml);
+		if(!$this->profile) {
 			throw new \Exception('Something went wrong while initializing Installer. Did you send valid XML?');
 		}
 
 		$this->logStatus(_t('Successfully loaded profile from string'));
 
-		return (bool) $this->opo_profile;
+		return (bool) $this->profile;
 	}
 	# --------------------------------------------------
 	/**
 	 *
 	 */
 	public function extractAndLoadBase() {
-		$this->ops_base_name = self::getAttribute($this->opo_profile, "base");
-		if(!($base_path = caGetProfilePath($this->ops_profile_dir, $this->ops_base_name))) {
+		$this->base_name = self::getAttribute($this->profile, "base");
+		if(!($base_path = caGetProfilePath($this->profile_dir, $this->base_name))) {
 			throw new \Exception("Could not find base profile.");
 		}
-		if($this->ops_base_name) {
-			$this->opo_base = simplexml_load_file($base_path);
-			$this->logStatus(_t('Successfully loaded base profile %1', $this->ops_base_name));
+		if($this->base_name) {
+			$this->base = simplexml_load_file($base_path);
+			$this->logStatus(_t('Successfully loaded base profile %1', $this->base_name));
 		} else {
-			$this->opo_base = null;
+			$this->base = null;
 		}
 	}
 	# --------------------------------------------------
@@ -248,7 +246,7 @@ class Installer {
 	# --------------------------------------------------
 	protected function addError($ps_error) {
 		$this->logStatus($ps_error);
-		$this->opa_errors[] = $ps_error;
+		$this->errors[] = $ps_error;
 	}
 	# --------------------------------------------------
 	/**
@@ -257,7 +255,7 @@ class Installer {
 	 * @return int number of errors
 	 */
 	public function numErrors() {
-		return is_array($this->opa_errors) ? sizeof($this->opa_errors) : 0;
+		return is_array($this->errors) ? sizeof($this->errors) : 0;
 	}
 	# --------------------------------------------------
 	/**
@@ -266,7 +264,7 @@ class Installer {
 	 * @return array errors
 	 */
 	public function getErrors() {
-		return $this->opa_errors;
+		return $this->errors;
 	}
 	# --------------------------------------------------
 	/**
@@ -277,7 +275,7 @@ class Installer {
 	 * @return string profile debug info
 	 */
 	public function getProfileDebugInfo() {
-		return $this->ops_profile_debug;
+		return $this->profile_debug;
 	}
 	# --------------------------------------------------
 	# UTILITIES
@@ -395,7 +393,7 @@ class Installer {
 			}
 		}
 
-		if (($o_config->get('search_engine_plugin') == 'ElasticSearch') && (!$this->isAlreadyInstalled() || (defined('__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__') && __CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__ && $this->opb_overwrite))) {
+		if (($o_config->get('search_engine_plugin') == 'ElasticSearch') && (!$this->isAlreadyInstalled() || (defined('__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__') && __CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__ && $this->overwrite))) {
 			$o_es = new \WLPlugSearchEngineElasticSearch();
 			try {
 				$o_es->truncateIndex();
@@ -449,7 +447,7 @@ class Installer {
 	public function isAlreadyInstalled() {
 		$ca_tables = \Datamodel::getTableNames();
 
-		$qr = $this->opo_db->query("SHOW TABLES");
+		$qr = $this->db->query("SHOW TABLES");
 
 		while($qr->nextRow()) {
 			$table = $qr->getFieldAtIndex(0);
@@ -469,10 +467,10 @@ class Installer {
 	public function loadSchema($f_callback=null) {
 
 		$vo_config = \Configuration::load();
-		if (defined('__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__') && __CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__ && ($this->opb_overwrite)) {
-			$this->opo_db->query('DROP DATABASE IF EXISTS `'.__CA_DB_DATABASE__.'`');
-			$this->opo_db->query('CREATE DATABASE `'.__CA_DB_DATABASE__.'`');
-			$this->opo_db->query('USE `'.__CA_DB_DATABASE__.'`');
+		if (defined('__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__') && __CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__ && ($this->overwrite)) {
+			$this->db->query('DROP DATABASE IF EXISTS `'.__CA_DB_DATABASE__.'`');
+			$this->db->query('CREATE DATABASE `'.__CA_DB_DATABASE__.'`');
+			$this->db->query('USE `'.__CA_DB_DATABASE__.'`');
 		}
 		
 		if($this->isAlreadyInstalled()) {
@@ -507,9 +505,9 @@ class Installer {
 				}
 				$f_callback($vs_statement, $vs_table, $vn_i, $vn_num_tables);
 			}
-			$this->opo_db->query($vs_statement);
-			if ($this->opo_db->numErrors()) {
-				throw new \Exception("Error while loading the database schema: ".join("; ",$this->opo_db->getErrors()));
+			$this->db->query($vs_statement);
+			if ($this->db->numErrors()) {
+				throw new \Exception("Error while loading the database schema: ".join("; ",$this->db->getErrors()));
 			}
 		}
 	}
@@ -523,24 +521,24 @@ class Installer {
 		// Find any existing locales
 		$va_locales = $t_locale->getLocaleList(array('index_by_code' => true));
 		foreach($va_locales as $vs_code => $va_locale) {
-			$this->opa_locales[$vs_code] = $va_locale['locale_id'];
+			$this->locales[$vs_code] = $va_locale['locale_id'];
 		}
 		global $g_ui_locale, $g_ui_locale_id;
-		if($this->ops_base_name) {
+		if($this->base_name) {
 			$va_locales = [];
-			foreach($this->opo_profile->locales->children() as $vo_locale) {				
+			foreach($this->profile->locales->children() as $vo_locale) {				
 				$key = self::getAttribute($vo_locale, "lang").'_'.self::getAttribute($vo_locale, "country").'_'.self::getAttribute($vo_locale, "dialect");
 				if (isset($va_locales[$key])) { continue; }
 				$va_locales[$key] = $vo_locale;
 			}
-			foreach($this->opo_base->locales->children() as $vo_locale) {
+			foreach($this->base->locales->children() as $vo_locale) {
 				$key = self::getAttribute($vo_locale, "lang").'_'.self::getAttribute($vo_locale, "country").'_'.self::getAttribute($vo_locale, "dialect");
 				if (isset($va_locales[$key])) { continue; }
 				$va_locales[$key] = $vo_locale;
 			}
 			$va_locales = array_values($va_locales);
 		} else {
-			$va_locales = $this->opo_profile->locales->children();
+			$va_locales = $this->profile->locales->children();
 		}
 		foreach($va_locales as $vo_locale) {
 			$t_locale->clear();
@@ -550,7 +548,7 @@ class Installer {
 			$vb_dont_use_for_cataloguing = self::getAttribute($vo_locale, "dontUseForCataloguing");
 			$vs_locale_code = $vs_dialect ? $vs_language."_".$vs_country.'_'.$vs_dialect : $vs_language."_".$vs_country;
 
-			if(isset($this->opa_locales[$vs_locale_code]) && ($vn_locale_id = $this->opa_locales[$vs_locale_code])) { // don't insert duplicate locales
+			if(isset($this->locales[$vs_locale_code]) && ($vn_locale_id = $this->locales[$vs_locale_code])) { // don't insert duplicate locales
 				$t_locale->load($vn_locale_id); // load locale so that we can 'overwrite' any existing attributes/fields
 			}
 			$t_locale->set('name', (string)$vo_locale);
@@ -569,7 +567,7 @@ class Installer {
 			if ($vs_locale_code === $g_ui_locale && $t_locale->getPrimaryKey()){
 				$g_ui_locale_id = $t_locale->getPrimaryKey();
 			}
-			$this->opa_locales[$vs_locale_code] = $t_locale->getPrimaryKey();
+			$this->locales[$vs_locale_code] = $t_locale->getPrimaryKey();
 		}
 
 		$va_locales = $t_locale->getAppConfig()->getList('locale_defaults');
@@ -579,7 +577,7 @@ class Installer {
 			throw new \Exception("The locale default is set to a non-existing locale. Try adding '". $va_locales[0] . "' to your profile.");
 		}
 		// Ensure the default locale comes first.
-		uksort($this->opa_locales, function($a) use ( $vn_locale_id ) {
+		uksort($this->locales, function($a) use ( $vn_locale_id ) {
 			return $a === $vn_locale_id;
 		});
 
@@ -590,16 +588,16 @@ class Installer {
 		require_once(__CA_MODELS_DIR__."/ca_lists.php");
 		require_once(__CA_MODELS_DIR__."/ca_list_items.php");
 
-		if($this->ops_base_name) { // "merge" profile and its base
+		if($this->base_name) { // "merge" profile and its base
 			$va_lists = [];
-			foreach($this->opo_base->lists->children() as $vo_list) {
+			foreach($this->base->lists->children() as $vo_list) {
 				$va_lists[self::getAttribute($vo_list, "code")] = $vo_list;
 			}
-			foreach($this->opo_profile->lists->children() as $vo_list) {
+			foreach($this->profile->lists->children() as $vo_list) {
 				$va_lists[self::getAttribute($vo_list, "code")] = $vo_list;
 			}
 		} else {
-			$va_lists = $this->opo_profile->lists->children();
+			$va_lists = $this->profile->lists->children();
 		}
 
 		//$o_trans = new \Transaction();
@@ -654,7 +652,7 @@ class Installer {
 				$this->addError("There was an error while inserting list {$vs_list_code}: ".join(" ",$t_list->getErrors()));
 			} else {
 				$this->logStatus(_t('Successfully inserted or updated list %1', $vs_list_code));
-				self::addLabelsFromXMLElement($t_list, $vo_list->labels, $this->opa_locales);
+				self::addLabelsFromXMLElement($t_list, $vo_list->labels, $this->locales);
 				if ($t_list->numErrors()) {
 					$this->addError("There was an error while inserting list label for {$vs_list_code}: ".join(" ",$t_list->getErrors()));
 				}
@@ -734,7 +732,7 @@ class Installer {
 						$this->addError("There was an error while adding a setting for list item with idno {$vs_item_idno}: ".join(" ",$t_item->getErrors()));
 					}
 				}
-				self::addLabelsFromXMLElement($t_item, $vo_item->labels, $this->opa_locales);
+				self::addLabelsFromXMLElement($t_item, $vo_item->labels, $this->locales);
 				if ($t_item->numErrors()) {
 					$this->addError("There was an error while inserting list item label for {$vs_item_idno}: ".join(" ",$t_item->getErrors()));
 				}
@@ -759,15 +757,15 @@ class Installer {
 		$t_list = new \ca_lists();
 
 		$va_elements = [];
-		if($this->ops_base_name) { // "merge" profile and its base
-			foreach($this->opo_base->elementSets->children() as $vo_element) {
+		if($this->base_name) { // "merge" profile and its base
+			foreach($this->base->elementSets->children() as $vo_element) {
 				$va_elements[self::getAttribute($vo_element, "code")] = $vo_element;
 			}
-			foreach($this->opo_profile->elementSets->children() as $vo_element) {
+			foreach($this->profile->elementSets->children() as $vo_element) {
 				$va_elements[self::getAttribute($vo_element, "code")] = $vo_element;
 			}
 		} else {
-			foreach($this->opo_profile->elementSets->children() as $vo_element) {
+			foreach($this->profile->elementSets->children() as $vo_element) {
 				$va_elements[self::getAttribute($vo_element, "code")] = $vo_element;
 			}
 		}
@@ -777,7 +775,7 @@ class Installer {
 				// nuke previous restrictions. there shouldn't be any if we're installing from scratch.
 				// if we're updating, we expect the list of restrictions to include all restrictions!
 				if(sizeof($vo_element->typeRestrictions->children())) {
-					$this->opo_db->query('DELETE FROM ca_metadata_type_restrictions WHERE element_id=?', $vn_element_id);
+					$this->db->query('DELETE FROM ca_metadata_type_restrictions WHERE element_id=?', $vn_element_id);
 				}
 
 				$this->logStatus(_t('Successfully nuked all type restrictions for element %1', $vs_element_code));
@@ -888,7 +886,7 @@ class Installer {
 		$vn_element_id = $t_md_element->getPrimaryKey();
 
 		// add element labels
-		self::addLabelsFromXMLElement($t_md_element, $po_element->labels, $this->opa_locales);
+		self::addLabelsFromXMLElement($t_md_element, $po_element->labels, $this->locales);
 
 		if ($po_element->elements) {
 			foreach($po_element->elements->children() as $vo_child) {
@@ -902,12 +900,12 @@ class Installer {
 	public function processMetadataDictionary() {
 		require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_entries.php');
 
-		if(!$this->opo_profile->metadataDictionary) { return true; } // no dict specified. it's optional, so don't barf
+		if(!$this->profile->metadataDictionary) { return true; } // no dict specified. it's optional, so don't barf
 
 		// dictionary entries don't have a code or any other attribute that could be used for
 		// identification so we won't support setting them in a base profile, for now ...
 
-		foreach($this->opo_profile->metadataDictionary->children() as $vo_entry) {
+		foreach($this->profile->metadataDictionary->children() as $vo_entry) {
 			$vs_field = self::getAttribute($vo_entry, "bundle");
 			$vs_table = self::getAttribute($vo_entry, "table");
 			if(strlen($vs_field)<1) {
@@ -972,15 +970,15 @@ class Installer {
 		$t_list = new \ca_lists();
 		$t_rel_types = new \ca_relationship_types();
 		$va_uis = [];
-		if($this->ops_base_name) { // "merge" profile and its base
-			foreach($this->opo_base->userInterfaces->children() as $vo_ui) {
+		if($this->base_name) { // "merge" profile and its base
+			foreach($this->base->userInterfaces->children() as $vo_ui) {
 				$va_uis[self::getAttribute($vo_ui, "code")] = $vo_ui;
 			}
-			foreach($this->opo_profile->userInterfaces->children() as $vo_ui) {
+			foreach($this->profile->userInterfaces->children() as $vo_ui) {
 				$va_uis[self::getAttribute($vo_ui, "code")] = $vo_ui;
 			}
 		} else {
-			foreach($this->opo_profile->userInterfaces->children() as $vo_ui) {
+			foreach($this->profile->userInterfaces->children() as $vo_ui) {
 				$va_uis[self::getAttribute($vo_ui, "code")] = $vo_ui;
 			}
 		}
@@ -1032,7 +1030,7 @@ class Installer {
 
 			$vn_ui_id = $t_ui->getPrimaryKey();
 
-			self::addLabelsFromXMLElement($t_ui, $vo_ui->labels, $this->opa_locales);
+			self::addLabelsFromXMLElement($t_ui, $vo_ui->labels, $this->locales);
 
 			$va_annotation_types = $o_annotation_type_conf->get('types');
 			
@@ -1041,7 +1039,7 @@ class Installer {
 				// nuke previous restrictions. there shouldn't be any if we're installing from scratch.
 				// if we're updating, we expect the list of restrictions to include all restrictions!
 				if(sizeof($vo_ui->typeRestrictions->children())) {
-					$this->opo_db->query('DELETE FROM ca_editor_ui_type_restrictions WHERE ui_id=?', $vn_ui_id);
+					$this->db->query('DELETE FROM ca_editor_ui_type_restrictions WHERE ui_id=?', $vn_ui_id);
 				}
 
 				$this->logStatus(_t('Successfully nuked all type restrictions for user interface with code %1', $vs_ui_code));
@@ -1136,14 +1134,14 @@ class Installer {
 
 				$this->logStatus(_t('Successfully updated/inserted screen with code %1 for user interface with code %2', $vs_screen_idno, $vs_ui_code));
 
-				self::addLabelsFromXMLElement($t_ui_screens, $vo_screen->labels, $this->opa_locales);
+				self::addLabelsFromXMLElement($t_ui_screens, $vo_screen->labels, $this->locales);
 			
 				$va_available_bundles = $t_ui_screens->getAvailableBundles(null,array('dontCache' => true));
 
 				// nuke previous placements. there shouldn't be any if we're installing from scratch.
 				// if we're updating, we expect the list of placements to include all of them!
 				if(sizeof($vo_screen->bundlePlacements->children())) {
-					$this->opo_db->query('DELETE FROM ca_editor_ui_bundle_placements WHERE screen_id=?', $t_ui_screens->getPrimaryKey());
+					$this->db->query('DELETE FROM ca_editor_ui_bundle_placements WHERE screen_id=?', $t_ui_screens->getPrimaryKey());
 				}
 
 				$this->logStatus(_t('Successfully nuked all bundle placements for screen with code %1 for user interface with code %2', $vs_screen_idno, $vs_ui_code));
@@ -1260,7 +1258,7 @@ class Installer {
 					// nuke previous restrictions. there shouldn't be any if we're installing from scratch.
 					// if we're updating, we expect the list of restrictions to include all of them!
 					if(sizeof($vo_screen->typeRestrictions->children())) {
-						$this->opo_db->query('DELETE FROM ca_editor_ui_screen_type_restrictions WHERE screen_id=?', $t_ui_screens->getPrimaryKey());
+						$this->db->query('DELETE FROM ca_editor_ui_screen_type_restrictions WHERE screen_id=?', $t_ui_screens->getPrimaryKey());
 					}
 
 					$this->logStatus(_t('Successfully nuked all type restrictions for screen with code %1 for user interface with code %2', $vs_screen_idno, $vs_ui_code));
@@ -1383,20 +1381,20 @@ class Installer {
 		require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
 
 		$va_rel_tables = [];
-		if($this->ops_base_name) { // "merge" profile and its base
-			foreach($this->opo_base->relationshipTypes->children() as $vo_rel_table) {
+		if($this->base_name) { // "merge" profile and its base
+			foreach($this->base->relationshipTypes->children() as $vo_rel_table) {
 				$va_rel_tables[self::getAttribute($vo_rel_table, "name")] = $vo_rel_table;
 			}
-			foreach($this->opo_profile->relationshipTypes->children() as $vo_rel_table) {
+			foreach($this->profile->relationshipTypes->children() as $vo_rel_table) {
 				$va_rel_tables[self::getAttribute($vo_rel_table, "name")] = $vo_rel_table;
 			}
 		} else {
-			foreach($this->opo_profile->relationshipTypes->children() as $vo_rel_table) {
+			foreach($this->profile->relationshipTypes->children() as $vo_rel_table) {
 				$va_rel_tables[self::getAttribute($vo_rel_table, "name")] = $vo_rel_table;
 			}
 		}
 
-		$qr_lists = $this->opo_db->query("SELECT * FROM ca_lists");
+		$qr_lists = $this->db->query("SELECT * FROM ca_lists");
 
 		$va_list_names = [];
 		$va_list_item_ids = [];
@@ -1405,7 +1403,7 @@ class Installer {
 		}
 
 		// get list items
-		$qr_list_item_result = $this->opo_db->query("SELECT * FROM ca_list_items cli INNER JOIN ca_list_item_labels AS clil ON clil.item_id = cli.item_id");
+		$qr_list_item_result = $this->db->query("SELECT * FROM ca_list_items cli INNER JOIN ca_list_item_labels AS clil ON clil.item_id = cli.item_id");
 		while($qr_list_item_result->nextRow()) {
 			$vs_type_code = $va_list_names[$qr_list_item_result->get('list_id')];
 			$va_list_item_ids[$vs_type_code][$qr_list_item_result->get('item_value')] = $qr_list_item_result->get('item_id');
@@ -1573,7 +1571,7 @@ class Installer {
 
 			$this->logStatus(_t('Successfully updated/inserted relationship type with code %1', $vs_type_code));
 
-			self::addLabelsFromXMLElement($t_rel_type, $vo_type->labels, $this->opa_locales);
+			self::addLabelsFromXMLElement($t_rel_type, $vo_type->labels, $this->locales);
 
 			if ($vo_type->types) {
 				$this->processRelationshipTypesForTable($vo_type->types, $pn_table_num, $ps_left_table, $ps_right_table, $t_rel_type->getPrimaryKey(), $pa_list_item_ids);
@@ -1584,21 +1582,21 @@ class Installer {
 	public function processRoles() {
 		require_once(__CA_MODELS_DIR__."/ca_user_roles.php");
 		$va_roles = [];
-		if($this->ops_base_name) { // "merge" profile and its base
+		if($this->base_name) { // "merge" profile and its base
 
-			if($this->opo_base->roles) {
-				foreach($this->opo_base->roles->children() as $vo_role) {
+			if($this->base->roles) {
+				foreach($this->base->roles->children() as $vo_role) {
 					$va_roles[self::getAttribute($vo_role, "code")] = $vo_role;
 				}
 			}
-			if($this->opo_profile->roles) {
-				foreach($this->opo_profile->roles->children() as $vo_role) {
+			if($this->profile->roles) {
+				foreach($this->profile->roles->children() as $vo_role) {
 					$va_roles[self::getAttribute($vo_role, "code")] = $vo_role;
 				}
 			}
 		} else {
-			if($this->opo_profile->roles) {
-				foreach($this->opo_profile->roles->children() as $vo_role) {
+			if($this->profile->roles) {
+				foreach($this->profile->roles->children() as $vo_role) {
 					$va_roles[self::getAttribute($vo_role, "code")] = $vo_role;
 				}
 			}
@@ -1724,21 +1722,21 @@ class Installer {
 		$o_config = \Configuration::load();
 
 		$va_displays = [];
-		if($this->ops_base_name) { // "merge" profile and its base
-			if($this->opo_base->displays) {
-				foreach($this->opo_base->displays->children() as $vo_display) {
+		if($this->base_name) { // "merge" profile and its base
+			if($this->base->displays) {
+				foreach($this->base->displays->children() as $vo_display) {
 					$va_displays[self::getAttribute($vo_display, "code")] = $vo_display;
 				}
 			}
 
-			if($this->opo_profile->displays) {
-				foreach($this->opo_profile->displays->children() as $vo_display) {
+			if($this->profile->displays) {
+				foreach($this->profile->displays->children() as $vo_display) {
 					$va_displays[self::getAttribute($vo_display, "code")] = $vo_display;
 				}
 			}
 		} else {
-			if($this->opo_profile->displays) {
-				foreach($this->opo_profile->displays->children() as $vo_display) {
+			if($this->profile->displays) {
+				foreach($this->profile->displays->children() as $vo_display) {
 					$va_displays[self::getAttribute($vo_display, "code")] = $vo_display;
 				}
 			}
@@ -1787,7 +1785,7 @@ class Installer {
 			} else {
 				$this->logStatus(_t('Successfully updated/inserted display with code %1', $vs_display_code));
 
-				self::addLabelsFromXMLElement($t_display, $vo_display->labels, $this->opa_locales);
+				self::addLabelsFromXMLElement($t_display, $vo_display->labels, $this->locales);
 				if ($t_display->numErrors()) {
 					$this->addError("There was an error while inserting display label for {$vs_display_code}: ".join(" ",$t_display->getErrors()));
 				}
@@ -1800,7 +1798,7 @@ class Installer {
 				// nuke previous restrictions. there shouldn't be any if we're installing from scratch.
 				// if we're updating, we expect the list of restrictions to include all restrictions!
 				if(sizeof($vo_display->typeRestrictions->children())) {
-					$this->opo_db->query('DELETE FROM ca_bundle_display_type_restrictions WHERE display_id=?', $t_display->getPrimaryKey());
+					$this->db->query('DELETE FROM ca_bundle_display_type_restrictions WHERE display_id=?', $t_display->getPrimaryKey());
 					$this->logStatus(_t('Successfully nuked all type restrictions for display with code %1', $vs_display_code));
 				}
 
@@ -1903,7 +1901,7 @@ class Installer {
 		// if we're updating, we expect the list of restrictions to include all restrictions!
 		if(sizeof($po_placements->children())) {
 			$this->logStatus(_t('Successfully nuked all placements for display with code %1', $t_display->get('display_code')));
-			$this->opo_db->query('DELETE FROM ca_bundle_display_placements WHERE display_id=?', $t_display->getPrimaryKey());
+			$this->db->query('DELETE FROM ca_bundle_display_placements WHERE display_id=?', $t_display->getPrimaryKey());
 		}
 
 		$vn_i = 1;
@@ -1931,21 +1929,21 @@ class Installer {
 
 		$o_config = \Configuration::load();
 		$va_forms = [];
-		if($this->ops_base_name) { // "merge" profile and its base
-			if($this->opo_base->searchForms) {
-				foreach($this->opo_base->searchForms->children() as $vo_form) {
+		if($this->base_name) { // "merge" profile and its base
+			if($this->base->searchForms) {
+				foreach($this->base->searchForms->children() as $vo_form) {
 					$va_forms[self::getAttribute($vo_form, "code")] = $vo_form;
 				}
 			}
 
-			if($this->opo_profile->searchForms) {
-				foreach($this->opo_profile->searchForms->children() as $vo_form) {
+			if($this->profile->searchForms) {
+				foreach($this->profile->searchForms->children() as $vo_form) {
 					$va_forms[self::getAttribute($vo_form, "code")] = $vo_form;
 				}
 			}
 		} else {
-			if($this->opo_profile->searchForms) {
-				foreach($this->opo_profile->searchForms->children() as $vo_form) {
+			if($this->profile->searchForms) {
+				foreach($this->profile->searchForms->children() as $vo_form) {
 					$va_forms[self::getAttribute($vo_form, "code")] = $vo_form;
 				}
 			}
@@ -1995,7 +1993,7 @@ class Installer {
 			} else {
 				$this->logStatus(_t('Successfully updated/inserted form with code %1', $vs_form_code));
 
-				self::addLabelsFromXMLElement($t_form, $vo_form->labels, $this->opa_locales);
+				self::addLabelsFromXMLElement($t_form, $vo_form->labels, $this->locales);
 				if ($t_form->numErrors()) {
 					$this->addError("There was an error while inserting search form label for {$vs_form_code}: ".join(" ",$t_form->getErrors()));
 				}
@@ -2008,7 +2006,7 @@ class Installer {
 				// nuke previous restrictions. there shouldn't be any if we're installing from scratch.
 				// if we're updating, we expect the list of restrictions to include all restrictions!
 				if(sizeof($vo_form->typeRestrictions->children())) {
-					$this->opo_db->query('DELETE FROM ca_search_form_type_restrictions WHERE form_id=?', $t_form->getPrimaryKey());
+					$this->db->query('DELETE FROM ca_search_form_type_restrictions WHERE form_id=?', $t_form->getPrimaryKey());
 					$this->logStatus(_t('Successfully nuked all type restrictions for form with code %1', $vs_form_code));
 				}
 
@@ -2111,7 +2109,7 @@ class Installer {
 		// if we're updating, we expect the list of restrictions to include all restrictions!
 		if(sizeof($po_placements->children())) {
 			$this->logStatus(_t('Successfully nuked all placements for form with code %1', $t_form->get('form_code')));
-			$this->opo_db->query('DELETE FROM ca_search_form_placements WHERE form_id=?', $t_form->getPrimaryKey());
+			$this->db->query('DELETE FROM ca_search_form_placements WHERE form_id=?', $t_form->getPrimaryKey());
 		}
 
 		$vn_i = 1;
@@ -2152,21 +2150,21 @@ class Installer {
 			$this->addError("Errors creating root user group 'Root': ".join("; ",$t_user_group->getErrors()));
 			return false;
 		}
-		if($this->ops_base_name) { // "merge" profile and its base
+		if($this->base_name) { // "merge" profile and its base
 			$va_groups = [];
-			if($this->opo_base->groups) {
-				foreach($this->opo_base->groups->children() as $vo_group) {
+			if($this->base->groups) {
+				foreach($this->base->groups->children() as $vo_group) {
 					$va_groups[self::getAttribute($vo_group, "code")] = $vo_group;
 				}
 			}
-			if($this->opo_profile->groups) {
-				foreach($this->opo_profile->groups->children() as $vo_group) {
+			if($this->profile->groups) {
+				foreach($this->profile->groups->children() as $vo_group) {
 					$va_groups[self::getAttribute($vo_group, "code")] = $vo_group;
 				}
 			}
 		} else {
-			if($this->opo_profile->groups) {
-				foreach($this->opo_profile->groups->children() as $vo_group) {
+			if($this->profile->groups) {
+				foreach($this->profile->groups->children() as $vo_group) {
 					$va_groups[self::getAttribute($vo_group, "code")] = $vo_group;
 				}
 			}
@@ -2215,20 +2213,20 @@ class Installer {
 	# --------------------------------------------------
 	public function processLogins($pb_create_admin_account=true) {
 		$va_logins = [];
-		if($this->ops_base_name) { // "merge" profile and its base
-			if($this->opo_base->logins) {
-				foreach($this->opo_base->logins->children() as $vo_login) {
+		if($this->base_name) { // "merge" profile and its base
+			if($this->base->logins) {
+				foreach($this->base->logins->children() as $vo_login) {
 					$vs_logins[self::getAttribute($vo_login, "user_name")] = $vo_login;
 				}
 			}
-			if($this->opo_profile->logins) {
-				foreach($this->opo_profile->logins->children() as $vo_login) {
+			if($this->profile->logins) {
+				foreach($this->profile->logins->children() as $vo_login) {
 					$va_logins[self::getAttribute($vo_login, "user_name")] = $vo_login;
 				}
 			}
 		} else {
-			if($this->opo_profile->logins) {
-				foreach($this->opo_profile->logins->children() as $vo_login) {
+			if($this->profile->logins) {
+				foreach($this->profile->logins->children() as $vo_login) {
 					$va_logins[self::getAttribute($vo_login, "user_name")] = $vo_login;
 				}
 			}
@@ -2292,21 +2290,21 @@ class Installer {
 
 		$o_config = \Configuration::load();
 		$va_md_alerts = [];
-		if($this->ops_base_name) { // "merge" profile and its base
-			if($this->opo_base->metadataAlerts) {
-				foreach($this->opo_base->metadataAlerts->children() as $vo_md_alert) {
+		if($this->base_name) { // "merge" profile and its base
+			if($this->base->metadataAlerts) {
+				foreach($this->base->metadataAlerts->children() as $vo_md_alert) {
 					$va_md_alerts[self::getAttribute($vo_md_alert, "code")] = $vo_md_alert;
 				}
 			}
 
-			if($this->opo_profile->metadataAlerts) {
-				foreach($this->opo_profile->metadataAlerts->children() as $vo_md_alert) {
+			if($this->profile->metadataAlerts) {
+				foreach($this->profile->metadataAlerts->children() as $vo_md_alert) {
 					$va_md_alerts[self::getAttribute($vo_md_alert, "code")] = $vo_md_alert;
 				}
 			}
 		} else {
-			if($this->opo_profile->metadataAlerts) {
-				foreach($this->opo_profile->metadataAlerts->children() as $vo_md_alert) {
+			if($this->profile->metadataAlerts) {
+				foreach($this->profile->metadataAlerts->children() as $vo_md_alert) {
 					$va_md_alerts[self::getAttribute($vo_md_alert, "code")] = $vo_md_alert;
 				}
 			}
@@ -2354,7 +2352,7 @@ class Installer {
 			} else {
 				$this->logStatus(_t('Successfully updated/inserted metadata alert with code %1', $vs_alert_code));
 
-				self::addLabelsFromXMLElement($t_md_alert, $vo_md_alert->labels, $this->opa_locales);
+				self::addLabelsFromXMLElement($t_md_alert, $vo_md_alert->labels, $this->locales);
 				if ($t_md_alert->numErrors()) {
 					$this->addError("There was an error while inserting metadata alert label for {$vs_alert_code}: ".join(" ",$t_md_alert->getErrors()));
 				}
@@ -2367,7 +2365,7 @@ class Installer {
 				// nuke previous restrictions. there shouldn't be any if we're installing from scratch.
 				// if we're updating, we expect the list of restrictions to include all restrictions!
 				if(sizeof($vo_md_alert->typeRestrictions->children())) {
-					$this->opo_db->query('DELETE FROM ca_metadata_alert_rule_type_restrictions WHERE rule_id = ?', [$t_md_alert->getPrimaryKey()]);
+					$this->db->query('DELETE FROM ca_metadata_alert_rule_type_restrictions WHERE rule_id = ?', [$t_md_alert->getPrimaryKey()]);
 					$this->logStatus(_t('Successfully nuked all type restrictions for metadata alert with code %1', $vs_alert_code));
 				}
 
@@ -2468,7 +2466,7 @@ class Installer {
 		// if we're updating, we expect the list of restrictions to include all restrictions!
 		if(sizeof($po_triggers->children())) {
 			$this->logStatus(_t('Successfully nuked all triggers for metadata alert with code %1', $t_md_alert->get('code')));
-			$this->opo_db->query('DELETE FROM ca_metadata_alert_triggers WHERE rule_id = ?', [$t_md_alert->getPrimaryKey()]);
+			$this->db->query('DELETE FROM ca_metadata_alert_triggers WHERE rule_id = ?', [$t_md_alert->getPrimaryKey()]);
 		}
 
 		$vn_i = 0;
@@ -2556,7 +2554,7 @@ class Installer {
 		$t_user = new \ca_users();
 		$t_user->set("user_name", 'administrator');
 		$t_user->set("password", $ps_password);
-		$t_user->set("email", $this->ops_admin_email);
+		$t_user->set("email", $this->admin_email);
 		$t_user->set("fname", 'CollectiveAccess');
 		$t_user->set("lname", 'Administrator');
 		$t_user->set("userclass", 0);
@@ -2585,8 +2583,8 @@ class Installer {
 			foreach($po_settings_node->children() as $vo_setting) {
 				// some settings like 'label' or 'add_label' have 'locale' as sub-setting
 				$vs_locale = self::getAttribute($vo_setting, "locale");
-				if($vs_locale && isset($this->opa_locales[$vs_locale])) {
-					$vn_locale_id = $this->opa_locales[$vs_locale];
+				if($vs_locale && isset($this->locales[$vs_locale])) {
+					$vn_locale_id = $this->locales[$vs_locale];
 				} else {
 					$vn_locale_id = null;
 				}
@@ -2671,12 +2669,12 @@ class Installer {
 	 * @return bool
 	 */
 	protected function loggingStatus() {
-		return $this->opb_logging_status;
+		return $this->logging_status;
 	}
 	# --------------------------------------------------
 	protected function logStatus($ps_msg) {
 		if($this->loggingStatus()) {
-			$this->opo_log->logInfo($ps_msg);
+			$this->log->logInfo($ps_msg);
 		}
 	}
 	# --------------------------------------------------

@@ -54,9 +54,13 @@ class XMLProfileParser extends BaseProfileParser {
 	}
 	# --------------------------------------------------
 	/**
+	 * Return metadata (name, description) for a profile
 	 *
+	 * @param string $profile_path Path to an XML-format profile
+	 *
+	 * return array Array of data, or null if profile cannot be read.
 	 */
-	public function profileInfo(string $profile_path) : array {
+	public function profileInfo(string $profile_path) : ?array {
 		$reader = new \XMLReader();
 		
 		if (!@$reader->open($profile_path)) {
@@ -98,8 +102,6 @@ class XMLProfileParser extends BaseProfileParser {
 			'description' => $description,
 			'locales' => $locales,
 		];
-	
-		return true;
 	}
 	# --------------------------------------------------
 	/**
