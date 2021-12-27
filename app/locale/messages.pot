@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Providence\n"
 "Report-Msgid-Bugs-To: info@collectiveaccess.org\n"
-"POT-Creation-Date: 2021-06-09 12:02+0200\n"
+"POT-Creation-Date: 2021-12-27 14:57+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -85,7 +85,7 @@ msgstr ""
 #: ../../app/models/ca_bundle_displays.php:117
 #: ../../app/models/ca_data_importer_items.php:93
 #: ../../app/models/ca_metadata_elements.php:110
-#: ../../app/models/ca_list_items.php:178
+#: ../../app/models/ca_list_items.php:174
 #: ../../app/models/ca_data_exporter_items.php:94
 #: ../../app/models/ca_metadata_dictionary_rules.php:122
 #: ../../app/models/ca_editor_ui_screen_type_restrictions.php:90
@@ -293,13 +293,13 @@ msgid "Download user report as"
 msgstr ""
 
 #: ../../themes/default/views/administrate/access/user_tools_html.php:36
-#: ../../app/lib/BaseFindController.php:247
+#: ../../app/lib/BaseFindController.php:246
 #: ../../app/lib/Import/DataReaders/TabDelimitedDataReader.php:55
 msgid "Tab delimited"
 msgstr ""
 
 #: ../../themes/default/views/administrate/access/user_tools_html.php:36
-#: ../../app/lib/BaseFindController.php:251
+#: ../../app/lib/BaseFindController.php:250
 msgid "Comma delimited (CSV)"
 msgstr ""
 
@@ -405,7 +405,7 @@ msgstr ""
 #: ../../app/models/ca_object_lots.php:60 ../../app/models/ca_places.php:75
 #: ../../app/models/ca_occurrences.php:74
 #: ../../app/models/ca_representation_annotation_labels.php:73
-#: ../../app/models/ca_list_items.php:77
+#: ../../app/models/ca_list_items.php:73
 #: ../../app/models/ca_movement_labels.php:72
 #: ../../app/models/ca_objects.php:106
 #: ../../app/models/ca_object_representations.php:75
@@ -422,7 +422,7 @@ msgid "Type"
 msgstr ""
 
 #: ../../themes/default/views/administrate/access/role_edit_html.php:196
-#: ../../app/lib/BaseFindController.php:160
+#: ../../app/lib/BaseFindController.php:159
 #: ../../app/lib/Attributes/Values/ColorAttributeValue.php:73
 #: ../../app/models/ca_bundle_displays.php:845
 #: ../../app/models/ca_search_forms.php:657
@@ -437,7 +437,7 @@ msgstr ""
 #: ../../app/models/ca_entities.php:74 ../../app/models/ca_object_lots.php:135
 #: ../../app/models/ca_movements.php:85 ../../app/models/ca_places.php:84
 #: ../../app/models/ca_occurrences.php:100
-#: ../../app/models/ca_list_items.php:209 ../../app/models/ca_loans.php:92
+#: ../../app/models/ca_list_items.php:205 ../../app/models/ca_loans.php:92
 #: ../../app/models/ca_objects.php:98
 #: ../../app/models/ca_object_representations.php:211
 #: ../../app/models/ca_data_import_event_log.php:96
@@ -872,23 +872,27 @@ msgstr ""
 #: ../../themes/default/views/administrate/setup/interface_editor/summary_html.php:68
 #: ../../themes/default/views/administrate/setup/interface_screen_editor/summary_html.php:68
 #: ../../themes/default/views/administrate/setup/list_editor/summary_html.php:68
-#: ../../themes/default/views/administrate/setup/list_item_editor/summary_html.php:49
-#: ../../themes/default/views/editor/tour_stops/summary_html.php:49
-#: ../../themes/default/views/editor/movements/summary_html.php:49
-#: ../../themes/default/views/editor/entities/summary_html.php:49
-#: ../../themes/default/views/editor/object_representations/summary_html.php:49
-#: ../../themes/default/views/editor/tours/summary_html.php:49
-#: ../../themes/default/views/editor/objects/summary_html.php:84
-#: ../../themes/default/views/editor/representation_annotations/summary_html.php:49
-#: ../../themes/default/views/editor/loans/summary_html.php:49
-#: ../../themes/default/views/editor/storage_locations/summary_html.php:49
-#: ../../themes/default/views/editor/collections/summary_html.php:49
-#: ../../themes/default/views/editor/places/summary_html.php:49
-#: ../../themes/default/views/editor/occurrences/summary_html.php:49
-#: ../../themes/default/views/editor/object_lots/summary_html.php:49
+#: ../../themes/default/views/administrate/setup/list_item_editor/summary_html.php:47
+#: ../../themes/default/views/editor/tour_stops/summary_html.php:47
+#: ../../themes/default/views/editor/movements/summary_html.php:47
+#: ../../themes/default/views/editor/entities/summary_html.php:47
+#: ../../themes/default/views/editor/object_representations/summary_html.php:47
+#: ../../themes/default/views/editor/tours/summary_html.php:47
+#: ../../themes/default/views/editor/objects/summary_html.php:83
+#: ../../themes/default/views/editor/representation_annotations/summary_html.php:47
+#: ../../themes/default/views/editor/loans/summary_html.php:47
+#: ../../themes/default/views/editor/storage_locations/summary_html.php:47
+#: ../../themes/default/views/editor/collections/summary_html.php:47
+#: ../../themes/default/views/editor/places/summary_html.php:47
+#: ../../themes/default/views/editor/occurrences/summary_html.php:47
+#: ../../themes/default/views/editor/object_lots/summary_html.php:47
 #: ../../app/printTemplates/results/display.php:86
+#: ../../app/printTemplates/results/local/display.php:86
+#: ../../app/printTemplates/results/local/checklist.php:91
 #: ../../app/printTemplates/results/checklist.php:90
 #: ../../app/printTemplates/summary/summary.php:63
+#: ../../app/printTemplates/summary/local/summary.php:63
+#: ../../app/printTemplates/summary/local/ca_objects_summary.php:82
 #: ../../app/printTemplates/summary/ca_objects_summary.php:82
 msgid "not defined"
 msgstr ""
@@ -896,40 +900,40 @@ msgstr ""
 #: ../../themes/default/views/administrate/setup/interface_editor/summary_html.php:80
 #: ../../themes/default/views/administrate/setup/interface_screen_editor/summary_html.php:80
 #: ../../themes/default/views/administrate/setup/list_editor/summary_html.php:80
-#: ../../themes/default/views/administrate/setup/list_item_editor/summary_html.php:61
-#: ../../themes/default/views/editor/tour_stops/summary_html.php:61
-#: ../../themes/default/views/editor/movements/summary_html.php:61
-#: ../../themes/default/views/editor/entities/summary_html.php:61
-#: ../../themes/default/views/editor/object_representations/summary_html.php:61
-#: ../../themes/default/views/editor/tours/summary_html.php:61
-#: ../../themes/default/views/editor/objects/summary_html.php:95
-#: ../../themes/default/views/editor/representation_annotations/summary_html.php:61
-#: ../../themes/default/views/editor/loans/summary_html.php:61
-#: ../../themes/default/views/editor/storage_locations/summary_html.php:61
-#: ../../themes/default/views/editor/collections/summary_html.php:88
-#: ../../themes/default/views/editor/places/summary_html.php:61
-#: ../../themes/default/views/editor/occurrences/summary_html.php:61
-#: ../../themes/default/views/editor/object_lots/summary_html.php:61
+#: ../../themes/default/views/administrate/setup/list_item_editor/summary_html.php:58
+#: ../../themes/default/views/editor/tour_stops/summary_html.php:58
+#: ../../themes/default/views/editor/movements/summary_html.php:58
+#: ../../themes/default/views/editor/entities/summary_html.php:58
+#: ../../themes/default/views/editor/object_representations/summary_html.php:58
+#: ../../themes/default/views/editor/tours/summary_html.php:58
+#: ../../themes/default/views/editor/objects/summary_html.php:94
+#: ../../themes/default/views/editor/representation_annotations/summary_html.php:58
+#: ../../themes/default/views/editor/loans/summary_html.php:58
+#: ../../themes/default/views/editor/storage_locations/summary_html.php:58
+#: ../../themes/default/views/editor/collections/summary_html.php:83
+#: ../../themes/default/views/editor/places/summary_html.php:58
+#: ../../themes/default/views/editor/occurrences/summary_html.php:58
+#: ../../themes/default/views/editor/object_lots/summary_html.php:58
 msgid "Download Summary as PDF"
 msgstr ""
 
 #: ../../themes/default/views/administrate/setup/interface_editor/summary_html.php:81
 #: ../../themes/default/views/administrate/setup/interface_screen_editor/summary_html.php:81
 #: ../../themes/default/views/administrate/setup/list_editor/summary_html.php:81
-#: ../../themes/default/views/administrate/setup/list_item_editor/summary_html.php:62
-#: ../../themes/default/views/editor/tour_stops/summary_html.php:62
-#: ../../themes/default/views/editor/movements/summary_html.php:62
-#: ../../themes/default/views/editor/entities/summary_html.php:62
-#: ../../themes/default/views/editor/object_representations/summary_html.php:62
-#: ../../themes/default/views/editor/tours/summary_html.php:62
-#: ../../themes/default/views/editor/objects/summary_html.php:96
-#: ../../themes/default/views/editor/representation_annotations/summary_html.php:62
-#: ../../themes/default/views/editor/loans/summary_html.php:62
-#: ../../themes/default/views/editor/storage_locations/summary_html.php:62
-#: ../../themes/default/views/editor/collections/summary_html.php:89
-#: ../../themes/default/views/editor/places/summary_html.php:62
-#: ../../themes/default/views/editor/occurrences/summary_html.php:62
-#: ../../themes/default/views/editor/object_lots/summary_html.php:62
+#: ../../themes/default/views/administrate/setup/list_item_editor/summary_html.php:59
+#: ../../themes/default/views/editor/tour_stops/summary_html.php:59
+#: ../../themes/default/views/editor/movements/summary_html.php:59
+#: ../../themes/default/views/editor/entities/summary_html.php:59
+#: ../../themes/default/views/editor/object_representations/summary_html.php:59
+#: ../../themes/default/views/editor/tours/summary_html.php:59
+#: ../../themes/default/views/editor/objects/summary_html.php:95
+#: ../../themes/default/views/editor/representation_annotations/summary_html.php:59
+#: ../../themes/default/views/editor/loans/summary_html.php:59
+#: ../../themes/default/views/editor/storage_locations/summary_html.php:59
+#: ../../themes/default/views/editor/collections/summary_html.php:84
+#: ../../themes/default/views/editor/places/summary_html.php:59
+#: ../../themes/default/views/editor/occurrences/summary_html.php:59
+#: ../../themes/default/views/editor/object_lots/summary_html.php:59
 msgid "Download Media"
 msgstr ""
 
@@ -1057,7 +1061,7 @@ msgstr ""
 #: ../../app/models/ca_entities.php:165 ../../app/models/ca_object_lots.php:126
 #: ../../app/models/ca_movements.php:121 ../../app/models/ca_places.php:153
 #: ../../app/models/ca_occurrences.php:157
-#: ../../app/models/ca_list_items.php:193 ../../app/models/ca_loans.php:149
+#: ../../app/models/ca_list_items.php:189 ../../app/models/ca_loans.php:149
 #: ../../app/models/ca_objects.php:289
 #: ../../app/models/ca_object_representations.php:187
 #: ../../app/models/ca_sets.php:148 ../../app/models/ca_collections.php:157
@@ -1190,8 +1194,8 @@ msgid "Toggle checked"
 msgstr ""
 
 #: ../../themes/default/views/administrate/setup/Search/search_sets_html.php:64
-#: ../../themes/default/views/administrate/setup/Search/search_sets_html.php:197
-#: ../../themes/default/views/administrate/setup/Search/search_sets_html.php:211
+#: ../../themes/default/views/administrate/setup/Search/search_sets_html.php:198
+#: ../../themes/default/views/administrate/setup/Search/search_sets_html.php:212
 #: ../../themes/default/views/find/Search/search_sets_html.php:72
 #: ../../themes/default/views/find/Search/search_sets_html.php:219
 #: ../../themes/default/views/find/Search/search_sets_html.php:233
@@ -1242,7 +1246,7 @@ msgstr ""
 msgid "Add to set"
 msgstr ""
 
-#: ../../themes/default/views/administrate/setup/Search/search_sets_html.php:189
+#: ../../themes/default/views/administrate/setup/Search/search_sets_html.php:190
 #: ../../themes/default/views/find/Search/search_sets_html.php:211
 msgid "Created set <i>^set_name</i> with ^num_items ^item_type_name"
 msgstr ""
@@ -1397,10 +1401,10 @@ msgstr ""
 #: ../../themes/default/views/manage/Search/ca_item_tags_search_controls_html.php:40
 #: ../../themes/default/views/manage/set_list_html.php:79
 #: ../../themes/default/views/manage/set_list_by_user_html.php:79
-#: ../../themes/default/views/pageFormat/menuBar.php:7
+#: ../../themes/default/views/pageFormat/menuBar.php:34
 #: ../../app/lib/Utils/CLIUtils.php:286 ../../app/lib/Utils/CLIUtils.php:2809
 #: ../../app/lib/Utils/CLIUtils.php:2849
-#: ../../app/lib/Browse/BrowseEngine.php:160 ../../app/models/ca_lists.php:1863
+#: ../../app/lib/Browse/BrowseEngine.php:160 ../../app/models/ca_lists.php:1866
 #: ../../app/widgets/searchBySet/views/main_html.php:87
 #: ../../app/widgets/savedSearches/views/main_html.php:89
 #: ../../app/widgets/advancedSearchForm/views/search_advanced_form_html.php:76
@@ -1520,7 +1524,7 @@ msgid "Available for cataloguing?"
 msgstr ""
 
 #: ../../themes/default/views/administrate/setup/locale_list_html.php:74
-#: ../../app/lib/Search/SearchEngine.php:575 ../../app/lib/BaseModel.php:973
+#: ../../app/lib/Search/SearchEngine.php:575 ../../app/lib/BaseModel.php:975
 #: ../../app/models/ca_editor_ui_screens.php:484
 #: ../../app/models/ca_editor_ui_screens.php:503
 #: ../../app/models/ca_editor_ui_screens.php:627
@@ -1528,16 +1532,16 @@ msgstr ""
 #: ../../app/models/ca_data_importer_items.php:246
 #: ../../app/models/ca_data_importer_items.php:286
 #: ../../app/models/ca_data_importer_items.php:326
-#: ../../app/models/ca_list_items.php:245
-#: ../../app/models/ca_list_items.php:260
-#: ../../app/models/ca_list_items.php:275
-#: ../../app/models/ca_list_items.php:290
-#: ../../app/models/ca_list_items.php:305
-#: ../../app/models/ca_list_items.php:320
-#: ../../app/models/ca_list_items.php:335
-#: ../../app/models/ca_list_items.php:350
-#: ../../app/models/ca_list_items.php:365
-#: ../../app/models/ca_list_items.php:380
+#: ../../app/models/ca_list_items.php:241
+#: ../../app/models/ca_list_items.php:256
+#: ../../app/models/ca_list_items.php:271
+#: ../../app/models/ca_list_items.php:286
+#: ../../app/models/ca_list_items.php:301
+#: ../../app/models/ca_list_items.php:316
+#: ../../app/models/ca_list_items.php:331
+#: ../../app/models/ca_list_items.php:346
+#: ../../app/models/ca_list_items.php:361
+#: ../../app/models/ca_list_items.php:376
 #: ../../app/models/ca_data_exporter_items.php:287
 #: ../../app/models/ca_data_exporter_items.php:301
 #: ../../app/models/ca_data_exporter_items.php:315
@@ -1552,7 +1556,7 @@ msgid "no"
 msgstr ""
 
 #: ../../themes/default/views/administrate/setup/locale_list_html.php:74
-#: ../../app/lib/Search/SearchEngine.php:571 ../../app/lib/BaseModel.php:973
+#: ../../app/lib/Search/SearchEngine.php:571 ../../app/lib/BaseModel.php:975
 #: ../../app/models/ca_editor_ui_screens.php:483
 #: ../../app/models/ca_editor_ui_screens.php:502
 #: ../../app/models/ca_editor_ui_screens.php:626
@@ -1560,16 +1564,16 @@ msgstr ""
 #: ../../app/models/ca_data_importer_items.php:245
 #: ../../app/models/ca_data_importer_items.php:285
 #: ../../app/models/ca_data_importer_items.php:325
-#: ../../app/models/ca_list_items.php:244
-#: ../../app/models/ca_list_items.php:259
-#: ../../app/models/ca_list_items.php:274
-#: ../../app/models/ca_list_items.php:289
-#: ../../app/models/ca_list_items.php:304
-#: ../../app/models/ca_list_items.php:319
-#: ../../app/models/ca_list_items.php:334
-#: ../../app/models/ca_list_items.php:349
-#: ../../app/models/ca_list_items.php:364
-#: ../../app/models/ca_list_items.php:379
+#: ../../app/models/ca_list_items.php:240
+#: ../../app/models/ca_list_items.php:255
+#: ../../app/models/ca_list_items.php:270
+#: ../../app/models/ca_list_items.php:285
+#: ../../app/models/ca_list_items.php:300
+#: ../../app/models/ca_list_items.php:315
+#: ../../app/models/ca_list_items.php:330
+#: ../../app/models/ca_list_items.php:345
+#: ../../app/models/ca_list_items.php:360
+#: ../../app/models/ca_list_items.php:375
 #: ../../app/models/ca_data_exporter_items.php:286
 #: ../../app/models/ca_data_exporter_items.php:300
 #: ../../app/models/ca_data_exporter_items.php:314
@@ -1704,12 +1708,20 @@ msgstr ""
 #: ../../themes/default/views/manage/sets/paging_controls_html.php:51
 #: ../../themes/default/views/manage/Results/ca_item_tags_paging_controls_html.php:49
 #: ../../themes/default/views/manage/Results/ca_item_comments_paging_controls_html.php:49
+#: ../../app/printTemplates/results/local/header.php:55
+#: ../../app/printTemplates/results/local/header.php:68
 #: ../../app/printTemplates/results/header.php:55
 #: ../../app/printTemplates/results/header.php:68
+#: ../../app/printTemplates/summary/local/header.php:46
+#: ../../app/printTemplates/summary/local/header.php:60
 #: ../../app/printTemplates/summary/header.php:46
 #: ../../app/printTemplates/summary/header.php:60
+#: ../../app/printTemplates/bundles/local/header.php:44
+#: ../../app/printTemplates/bundles/local/header.php:57
 #: ../../app/printTemplates/bundles/header.php:44
 #: ../../app/printTemplates/bundles/header.php:57
+#: ../../app/printTemplates/sets/local/header.php:55
+#: ../../app/printTemplates/sets/local/header.php:68
 #: ../../app/printTemplates/sets/header.php:55
 #: ../../app/printTemplates/sets/header.php:68
 #: ../../app/models/ca_site_page_media.php:87
@@ -2365,7 +2377,7 @@ msgid "Saved changes to"
 msgstr ""
 
 #: ../../themes/default/views/editor/interstitial/interstitial_html.php:108
-#: ../../themes/default/views/find/Results/ajax_results_editable_complex_data_form_html.php:87
+#: ../../themes/default/views/find/Results/ajax_results_editable_complex_data_form_html.php:88
 msgid "Edit %1"
 msgstr ""
 
@@ -2525,13 +2537,13 @@ msgstr ""
 #: ../../app/models/ca_storage_locations.php:361
 #: ../../app/models/ca_entities.php:367 ../../app/models/ca_places.php:379
 #: ../../app/models/ca_occurrences.php:367
-#: ../../app/models/ca_list_items.php:572 ../../app/models/ca_objects.php:558
+#: ../../app/models/ca_list_items.php:568 ../../app/models/ca_objects.php:558
 #: ../../app/models/ca_collections.php:386
 #: ../../app/models/ca_relationship_types.php:346
 msgid "Location in hierarchy"
 msgstr ""
 
-#: ../../themes/default/views/editor/collections/summary_html.php:58
+#: ../../themes/default/views/editor/collections/summary_html.php:54
 msgid "%1 contents"
 msgstr ""
 
@@ -3092,9 +3104,9 @@ msgstr ""
 #: ../../app/helpers/utilityHelpers.php:2799
 #: ../../app/helpers/utilityHelpers.php:2820
 #: ../../app/helpers/displayHelpers.php:912
-#: ../../app/lib/BaseEditorController.php:249 ../../app/lib/BaseModel.php:10234
-#: ../../app/lib/BaseModel.php:10236 ../../app/lib/BaseModel.php:11992
-#: ../../app/lib/BaseModel.php:12028 ../../app/lib/BaseModel.php:12062
+#: ../../app/lib/BaseEditorController.php:253 ../../app/lib/BaseModel.php:10236
+#: ../../app/lib/BaseModel.php:10238 ../../app/lib/BaseModel.php:11994
+#: ../../app/lib/BaseModel.php:12030 ../../app/lib/BaseModel.php:12064
 #: ../../app/models/ca_movements_x_objects.php:240
 #: ../../app/models/ca_notification_subjects.php:219
 #: ../../app/models/ca_notification_subjects.php:229
@@ -3337,7 +3349,7 @@ msgstr ""
 
 #: ../../themes/default/views/bundles/ca_site_page_media.php:105
 #: ../../app/models/ca_editor_ui_screens.php:879
-#: ../../app/models/ca_occurrences.php:82 ../../app/models/ca_list_items.php:84
+#: ../../app/models/ca_occurrences.php:82 ../../app/models/ca_list_items.php:80
 msgid "Identifier"
 msgstr ""
 
@@ -3376,7 +3388,7 @@ msgstr ""
 #: ../../app/models/ca_occurrences.php:141
 #: ../../app/models/ca_search_forms_x_users.php:73
 #: ../../app/models/ca_items_x_tags.php:89
-#: ../../app/models/ca_list_items.php:171 ../../app/models/ca_loans.php:133
+#: ../../app/models/ca_list_items.php:167 ../../app/models/ca_loans.php:133
 #: ../../app/models/ca_objects.php:273
 #: ../../app/models/ca_object_representations.php:171
 #: ../../app/models/ca_sets.php:133
@@ -3536,12 +3548,12 @@ msgid "Everyone"
 msgstr ""
 
 #: ../../themes/default/views/bundles/ca_object_representations_media_display.php:33
-#: ../../app/lib/RepresentableBaseModel.php:1232
+#: ../../app/lib/RepresentableBaseModel.php:1235
 msgid "+ 1 additional preview"
 msgstr ""
 
 #: ../../themes/default/views/bundles/ca_object_representations_media_display.php:33
-#: ../../app/lib/RepresentableBaseModel.php:1232
+#: ../../app/lib/RepresentableBaseModel.php:1235
 msgid "+ %1 additional previews"
 msgstr ""
 
@@ -3974,7 +3986,7 @@ msgstr ""
 msgid "Edit in Spreadsheet"
 msgstr ""
 
-#: ../../themes/default/views/find/Results/ajax_results_editable_complex_data_form_html.php:88
+#: ../../themes/default/views/find/Results/ajax_results_editable_complex_data_form_html.php:89
 msgid "Updated %1 "
 msgstr ""
 
@@ -4801,7 +4813,7 @@ msgid "Approved"
 msgstr ""
 
 #: ../../themes/default/views/manage/Results/ca_item_comments_list_html.php:127
-#: ../../app/lib/BaseModel.php:10446 ../../app/lib/BaseModel.php:10830
+#: ../../app/lib/BaseModel.php:10448 ../../app/lib/BaseModel.php:10832
 msgid "Needs moderation"
 msgstr ""
 
@@ -5317,6 +5329,10 @@ msgid ""
 "navigate away from this form you will lose your unsaved changes."
 msgstr ""
 
+#: ../../themes/default/views/pageFormat/menuBar.php:59
+msgid "Perform a quick search"
+msgstr ""
+
 #: ../../themes/default/views/library/dashboard/index_html.php:36
 msgid "Statistics Dashboard"
 msgstr ""
@@ -5498,7 +5514,7 @@ msgstr ""
 msgid "day"
 msgstr ""
 
-#: ../../app/helpers/utilityHelpers.php:1235 ../../app/lib/BaseSettings.php:572
+#: ../../app/helpers/utilityHelpers.php:1235 ../../app/lib/BaseSettings.php:665
 msgid "days"
 msgstr ""
 
@@ -5506,7 +5522,7 @@ msgstr ""
 msgid "hour"
 msgstr ""
 
-#: ../../app/helpers/utilityHelpers.php:1236 ../../app/lib/BaseSettings.php:572
+#: ../../app/helpers/utilityHelpers.php:1236 ../../app/lib/BaseSettings.php:665
 msgid "hours"
 msgstr ""
 
@@ -5558,31 +5574,31 @@ msgstr ""
 msgid "Not a valid unit of weight [%2]"
 msgstr ""
 
-#: ../../app/helpers/utilityHelpers.php:3636
-#: ../../app/helpers/utilityHelpers.php:3639
+#: ../../app/helpers/utilityHelpers.php:3637
+#: ../../app/helpers/utilityHelpers.php:3640
 msgid "CSRF token is not valid"
 msgstr ""
 
-#: ../../app/helpers/utilityHelpers.php:4328
+#: ../../app/helpers/utilityHelpers.php:4329
 #: ../../app/lib/Utils/DataMigrationUtils.php:657
 #: ../../app/widgets/count/views/main_html.php:42
 msgid "and"
 msgstr ""
 
-#: ../../app/helpers/utilityHelpers.php:4392
+#: ../../app/helpers/utilityHelpers.php:4393
 #: ../../app/lib/Media/Remote/Base.php:113
 msgid "Cannot open temporary file for media fetched from URL [%1]"
 msgstr ""
 
-#: ../../app/helpers/utilityHelpers.php:4402
+#: ../../app/helpers/utilityHelpers.php:4403
 msgid "Media fetch from URL [%1] failed: %2"
 msgstr ""
 
-#: ../../app/helpers/utilityHelpers.php:4412
+#: ../../app/helpers/utilityHelpers.php:4413
 msgid "Media fetched from URL [%1] failed with status code %2"
 msgstr ""
 
-#: ../../app/helpers/utilityHelpers.php:4419
+#: ../../app/helpers/utilityHelpers.php:4420
 msgid "Media fetched from URL [%1] is not in accepted format"
 msgstr ""
 
@@ -5769,10 +5785,10 @@ msgstr ""
 
 #: ../../app/helpers/printHelpers.php:504
 #: ../../app/helpers/exportHelpers.php:479
-#: ../../app/lib/BaseFindController.php:461
-#: ../../app/lib/BaseFindController.php:587
-#: ../../app/lib/BaseEditorController.php:886
-#: ../../app/lib/BaseEditorController.php:977
+#: ../../app/lib/BaseFindController.php:460
+#: ../../app/lib/BaseFindController.php:586
+#: ../../app/lib/BaseEditorController.php:890
+#: ../../app/lib/BaseEditorController.php:981
 msgid "Could not generate PDF"
 msgstr ""
 
@@ -6355,7 +6371,7 @@ msgid "Close options"
 msgstr ""
 
 #: ../../app/helpers/displayHelpers.php:2030
-#: ../../app/controllers/batch/MediaImportController.php:390
+#: ../../app/controllers/batch/MediaImportController.php:394
 #: ../../app/conf/user_actions.conf:116
 msgid "Batch import media"
 msgstr ""
@@ -6377,8 +6393,8 @@ msgstr ""
 msgid "Back to record"
 msgstr ""
 
-#: ../../app/helpers/displayHelpers.php:3282 ../../app/lib/BaseSettings.php:535
-#: ../../app/lib/BaseSettings.php:541
+#: ../../app/helpers/displayHelpers.php:3282 ../../app/lib/BaseSettings.php:583
+#: ../../app/lib/BaseSettings.php:589
 msgid "User defined sort order"
 msgstr ""
 
@@ -6415,19 +6431,19 @@ msgstr ""
 #: ../../app/helpers/displayHelpers.php:4097
 #: ../../app/helpers/displayHelpers.php:4146
 #: ../../app/lib/Media/MediaViewers/Spin360.php:102
-#: ../../app/lib/BaseEditorController.php:2000
-#: ../../app/lib/BaseEditorController.php:2073
-#: ../../app/lib/BaseEditorController.php:2111
+#: ../../app/lib/BaseEditorController.php:2016
+#: ../../app/lib/BaseEditorController.php:2089
+#: ../../app/lib/BaseEditorController.php:2127
 msgid "Invalid identifier %1"
 msgstr ""
 
 #: ../../app/helpers/displayHelpers.php:3921
 #: ../../app/helpers/displayHelpers.php:3993
-#: ../../app/lib/BaseEditorController.php:1894
-#: ../../app/lib/BaseEditorController.php:1908
-#: ../../app/lib/BaseEditorController.php:1995
-#: ../../app/lib/BaseEditorController.php:2068
-#: ../../app/lib/BaseEditorController.php:2106
+#: ../../app/lib/BaseEditorController.php:1910
+#: ../../app/lib/BaseEditorController.php:1924
+#: ../../app/lib/BaseEditorController.php:2011
+#: ../../app/lib/BaseEditorController.php:2084
+#: ../../app/lib/BaseEditorController.php:2122
 msgid "Cannot view media"
 msgstr ""
 
@@ -6447,15 +6463,15 @@ msgstr ""
 #: ../../app/helpers/displayHelpers.php:4122
 #: ../../app/helpers/displayHelpers.php:4156
 #: ../../app/helpers/displayHelpers.php:4171
-#: ../../app/lib/BaseEditorController.php:1898
-#: ../../app/lib/BaseEditorController.php:1920
-#: ../../app/lib/BaseEditorController.php:1964
-#: ../../app/lib/BaseEditorController.php:2011
-#: ../../app/lib/BaseEditorController.php:2044
-#: ../../app/lib/BaseEditorController.php:2083
-#: ../../app/lib/BaseEditorController.php:2091
-#: ../../app/lib/BaseEditorController.php:2121
-#: ../../app/lib/BaseEditorController.php:2129
+#: ../../app/lib/BaseEditorController.php:1914
+#: ../../app/lib/BaseEditorController.php:1936
+#: ../../app/lib/BaseEditorController.php:1980
+#: ../../app/lib/BaseEditorController.php:2027
+#: ../../app/lib/BaseEditorController.php:2060
+#: ../../app/lib/BaseEditorController.php:2099
+#: ../../app/lib/BaseEditorController.php:2107
+#: ../../app/lib/BaseEditorController.php:2137
+#: ../../app/lib/BaseEditorController.php:2145
 msgid "Invalid viewer"
 msgstr ""
 
@@ -6474,8 +6490,8 @@ msgid "Invalid viewer %1/%2"
 msgstr ""
 
 #: ../../app/helpers/displayHelpers.php:4226
-#: ../../app/lib/BaseEditorController.php:1984
-#: ../../app/lib/BaseModel.php:12532
+#: ../../app/lib/BaseEditorController.php:2000
+#: ../../app/lib/BaseModel.php:12534
 msgid "Invalid id"
 msgstr ""
 
@@ -6487,7 +6503,7 @@ msgstr ""
 msgid "BLANK"
 msgstr ""
 
-#: ../../app/helpers/htmlFormHelpers.php:459
+#: ../../app/helpers/htmlFormHelpers.php:465
 msgid "More..."
 msgstr ""
 
@@ -7995,7 +8011,7 @@ msgstr ""
 msgid "Could not get title for given Flickr ID %1"
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:147
+#: ../../app/lib/ConfigurationCheck.php:148
 msgid ""
 "The CollectiveAccess <i>app/tmp</i> directory is NOT writeable by the "
 "installer. This may result in installation errors. It is recommended that "
@@ -8004,7 +8020,7 @@ msgid ""
 "changed permissions are correct."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:154
+#: ../../app/lib/ConfigurationCheck.php:155
 msgid ""
 "The CollectiveAccess <i>app/log</i> directory is NOT writeable by the "
 "installer. This may result in installation errors. It is recommended that "
@@ -8013,7 +8029,7 @@ msgid ""
 "changed permissions are correct."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:187
+#: ../../app/lib/ConfigurationCheck.php:188
 msgid ""
 "The CollectiveAccess media directory is NOT writeable by the installer. This "
 "will prevent proper creation of the media directory structure and result in "
@@ -8022,38 +8038,38 @@ msgid ""
 "reload the installer to verify that the changed permissions are correct."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:209
+#: ../../app/lib/ConfigurationCheck.php:210
 msgid ""
 "Your MySQL installation doesn't support the InnoDB storage engine which is "
-"required by CollectiveAccess. For more information also see %1."
+"required by CollectiveAccess."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:220
+#: ../../app/lib/ConfigurationCheck.php:221
 msgid ""
 "No database login information found. Have you specified it in your setup.php "
 "file?"
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:223
+#: ../../app/lib/ConfigurationCheck.php:224
 msgid ""
 "Could not connect to database. Did you enter your database login information "
 "into setup.php?"
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:235
+#: ../../app/lib/ConfigurationCheck.php:236
 msgid ""
 "It looks like you have not installed your database yet. Check your "
 "configuration or run the <a href=\"%1/install/\">installer</a>."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:246
+#: ../../app/lib/ConfigurationCheck.php:247
 msgid ""
 "Your database is extremely out-of-date. Please install all database "
 "migrations starting with migration #1 or contact support@collectiveaccess."
 "org for assistance."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:249
+#: ../../app/lib/ConfigurationCheck.php:250
 msgid ""
 "Your database is out-of-date. Please install all schema migrations starting "
 "with migration #%1. <a href='index.php?updateSchema=1'><strong>Click here</"
@@ -8062,192 +8078,194 @@ msgid ""
 "applying updates!</strong></div>"
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:251
+#: ../../app/lib/ConfigurationCheck.php:252
 msgid ""
 "Your database is out-of-date. Please install all schema migrations starting "
 "with migration #%1.<br/><br/><div align='center'><strong>NOTE: you should "
 "back-up your database before applying updates!</strong></div>"
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:256
-#: ../../app/lib/ConfigurationCheck.php:630
-#: ../../app/lib/ConfigurationCheck.php:633
+#: ../../app/lib/ConfigurationCheck.php:257
+#: ../../app/lib/ConfigurationCheck.php:655
+#: ../../app/lib/ConfigurationCheck.php:658
 msgid "For migration %1"
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:270
+#: ../../app/lib/ConfigurationCheck.php:271
 msgid ""
-"CollectiveAccess requires PHP version 5.6 or higher to function properly. "
+"CollectiveAccess requires PHP version 7.2 or higher to function properly. "
 "You're running %1. Please upgrade."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:280
+#: ../../app/lib/ConfigurationCheck.php:281
 msgid ""
 "Your setup.php file does not include a setting for __CA_SITE_PROTOCOL__. "
 "Please update it using the current setup.php-dist as a template."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:291
+#: ../../app/lib/ConfigurationCheck.php:293
+msgid ""
+"It looks like the directory for temporary upload files is not writable by "
+"the webserver. Please change the permissions of %1 and enable the user which "
+"runs the webserver to write to this directory."
+msgstr ""
+
+#: ../../app/lib/ConfigurationCheck.php:303
 msgid ""
 "It looks like the directory for temporary files is not writable by the "
 "webserver. Please change the permissions of %1 and enable the user which "
 "runs the webserver to write to this directory."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:308
+#: ../../app/lib/ConfigurationCheck.php:320
 msgid ""
 "It looks like the cache directory is not writable by the webserver. Please "
 "change the permissions of %1 and enable the user which runs the webserver to "
 "write to this directory."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:318
+#: ../../app/lib/ConfigurationCheck.php:330
 msgid ""
 "It looks like the log directory is not writable by the webserver. Please "
 "change the permissions of %1 (or create it if it doesn't exist already) and "
 "enable the user which runs the webserver to write to this directory."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:326
+#: ../../app/lib/ConfigurationCheck.php:338
 msgid ""
 "It looks like the media directory is not writable by the webserver. Please "
 "change the permissions of %1 (or create it if it doesn't exist already) and "
 "enable the user which runs the webserver to write to this directory."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:338
+#: ../../app/lib/ConfigurationCheck.php:350
 msgid ""
 "It looks like the directory for HTML filtering caches is not writable by the "
 "webserver. Please change the permissions of %1 and enable the user which "
 "runs the webserver to write to this directory."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:349
+#: ../../app/lib/ConfigurationCheck.php:360
 msgid ""
 "It looks like the __CA_URL_ROOT__ variable in your setup.php is not set "
-"correctly. Please try to set it to &quot;%1&quot;. We came up with this "
-"suggestion because you accessed this script via &quot;&lt;your_hostname&gt;"
-"%2&quot;."
+"correctly. Please try to set it to &quot;%1&quot;."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:353
+#: ../../app/lib/ConfigurationCheck.php:364
 msgid ""
 "It looks like the __CA_URL_ROOT__ variable in your setup.php is not set "
-"correctly. Please try to set it to &quot;%1&quot;. We came up with this "
-"suggestion because you accessed this script via &quot;&lt;your_hostname&gt;"
-"%2&quot;. Note that paths are case sensitive."
+"correctly. Please try to set it to &quot;%1&quot;. Note that paths are case "
+"sensitive."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:368
+#: ../../app/lib/ConfigurationCheck.php:378
 msgid ""
 "It looks like the __CA_BASE_DIR__ variable in your setup.php is not set "
-"correctly. Please try to set it to &quot;%1&quot;. We came up with this "
-"suggestion because the location of this script is &quot;%2&quot;."
+"correctly. Please try to set it to &quot;%1&quot;."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:372
+#: ../../app/lib/ConfigurationCheck.php:382
 msgid ""
 "It looks like the __CA_BASE_DIR__ variable in your setup.php is not set "
-"correctly. Please try to set it to &quot;%1&quot;. We came up with this "
-"suggestion because the location of this script is &quot;%2&quot;. Note that "
-"paths are case sensitive."
+"correctly. Please try to set it to &quot;%1&quot;. Note that paths are case "
+"sensitive."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:381
+#: ../../app/lib/ConfigurationCheck.php:405
 msgid ""
 "PHP JSON module is required for CollectiveAccess to run. Please install it."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:384
+#: ../../app/lib/ConfigurationCheck.php:408
 msgid ""
 "PHP mbstring module is required for CollectiveAccess to run. Please install "
 "it."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:387
+#: ../../app/lib/ConfigurationCheck.php:411
 msgid ""
 "PHP iconv module is required for CollectiveAccess to run. Please install it."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:390
+#: ../../app/lib/ConfigurationCheck.php:414
 msgid ""
 "PHP mysql or mysqli module is required for CollectiveAccess to run. Please "
 "install it."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:393
+#: ../../app/lib/ConfigurationCheck.php:417
 msgid ""
 "PHP zlib module is required for CollectiveAccess to run. Please install it."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:396
+#: ../../app/lib/ConfigurationCheck.php:420
 msgid ""
 "PHP PCRE module is required for CollectiveAccess to run. Please install it."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:399
+#: ../../app/lib/ConfigurationCheck.php:423
 msgid ""
 "PHP Document Object Model (DOM) module is required for CollectiveAccess to "
 "run. Please install it."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:402
+#: ../../app/lib/ConfigurationCheck.php:426
 msgid ""
 "Either the mcrypt or openssl module are required for CollectiveAccess to "
 "run. Please install one of them (or both)."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:405
+#: ../../app/lib/ConfigurationCheck.php:429
 msgid ""
 "The PHP Message Digest (hash) engine is required for CollectiveAccess to "
 "run. Please install it."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:408
+#: ../../app/lib/ConfigurationCheck.php:432
 msgid ""
 "Your PHP installation doesn't seem to have support for the sha256 hashing "
 "algorithm. Please install a newer version of either PHP or the hash module."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:411
+#: ../../app/lib/ConfigurationCheck.php:435
 msgid ""
 "The PHP phar module is required for CollectiveAccess to run. Please install "
 "it."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:414
+#: ../../app/lib/ConfigurationCheck.php:438
 msgid ""
 "The PHP cURL module is required for CollectiveAccess to run. Please install "
 "it."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:417
+#: ../../app/lib/ConfigurationCheck.php:441
 msgid ""
 "The PHP ZipArchive module is required for CollectiveAccess to run. Please "
 "install it."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:421
+#: ../../app/lib/ConfigurationCheck.php:445
 msgid ""
 "Your version of the PHP PCRE module lacks unicode features. Please install a "
 "module version with UTF-8 support."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:431
+#: ../../app/lib/ConfigurationCheck.php:455
 msgid ""
 "It looks like the __CA_APP_NAME__ setting in your setup.php is invalid. It "
 "may only consist of alphanumeric ASCII characters and underscores (&quot;"
 "_&quot;)"
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:448
+#: ../../app/lib/ConfigurationCheck.php:473
 msgid ""
 "It looks like a subdirectory in the media directory is not writable by the "
 "webserver. Please change the permissions for %1 and enable the user which "
 "runs the webserver to write to this directory."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:464
+#: ../../app/lib/ConfigurationCheck.php:489
 msgid ""
 "It looks like the __CA_SITE_HOSTNAME__ setting in your setup.php may be set "
 "incorrectly. If you experience any troubles with image display try setting "
@@ -8258,7 +8276,7 @@ msgid ""
 "very careful when editing this."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:483
+#: ../../app/lib/ConfigurationCheck.php:508
 msgid ""
 "The memory limit for your PHP installation may not be sufficient to run "
 "CollectiveAccess correctly. Please consider adjusting the \"memory_limit\" "
@@ -8269,7 +8287,7 @@ msgid ""
 "value is &quot;128M&quot; or higher."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:498
+#: ../../app/lib/ConfigurationCheck.php:523
 msgid ""
 "It looks like the PHP configuration variables \"post_max_size\" and "
 "\"upload_max_filesize\" are set to different values. Note that the lowest of "
@@ -8277,7 +8295,7 @@ msgid ""
 "Your values: upload_max_filesize=%1 and post_max_size=%2."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:506
+#: ../../app/lib/ConfigurationCheck.php:531
 msgid ""
 "It looks like at least one of the PHP configuration variables \"post_max_size"
 "\" and \"upload_max_filesize\" is set to a very low value. Note that the "
@@ -8287,53 +8305,53 @@ msgid ""
 "CollectiveAccess. Your values: upload_max_filesize=%1 and post_max_size=%2."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:520
-#: ../../app/lib/ConfigurationCheck.php:527
-#: ../../app/lib/ConfigurationCheck.php:534
-#: ../../app/lib/ConfigurationCheck.php:541
+#: ../../app/lib/ConfigurationCheck.php:545
+#: ../../app/lib/ConfigurationCheck.php:552
+#: ../../app/lib/ConfigurationCheck.php:559
+#: ../../app/lib/ConfigurationCheck.php:566
 msgid ""
 "It looks like you have the PHP Suhoshin extension installed which introduces "
 "some default constraints than can prevent CA from saving information entered "
 "into forms."
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:521
+#: ../../app/lib/ConfigurationCheck.php:546
 msgid ""
 "In particular, you have to set the configuration value \"suhosin.post."
 "max_name_length\" to 256 or higher to ensure that CA works correctly. Your "
 "value is %1"
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:528
+#: ../../app/lib/ConfigurationCheck.php:553
 msgid ""
 "In particular, you have to set the configuration value \"suhosin.request."
 "max_varname_length\" to 256 or higher to ensure that CA works correctly. "
 "Your value is %1"
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:535
+#: ../../app/lib/ConfigurationCheck.php:560
 msgid ""
 "In particular, you have to set the configuration value \"suhosin.post."
 "max_totalname_length\" to 5012 or higher to ensure that CA works correctly. "
 "Your value is %1"
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:542
+#: ../../app/lib/ConfigurationCheck.php:567
 msgid ""
 "In particular, you have to set the configuration value \"suhosin.request."
 "max_totalname_length\" to 5012 or higher to ensure that CA works correctly. "
 "Your value is %1"
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:619
+#: ../../app/lib/ConfigurationCheck.php:644
 msgid "Could not apply database update for migration %1"
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:633
+#: ../../app/lib/ConfigurationCheck.php:658
 msgid "The following tasks did not complete: %1"
 msgstr ""
 
-#: ../../app/lib/ConfigurationCheck.php:635
+#: ../../app/lib/ConfigurationCheck.php:660
 msgid "Applied migration %1"
 msgstr ""
 
@@ -8514,8 +8532,8 @@ msgid "No interface defined for %1"
 msgstr ""
 
 #: ../../app/lib/BaseQuickAddController.php:237
-#: ../../app/lib/BaseEditorController.php:167
-#: ../../app/lib/BaseEditorController.php:169
+#: ../../app/lib/BaseEditorController.php:171
+#: ../../app/lib/BaseEditorController.php:173
 #: ../../app/lib/BaseInterstitialController.php:95
 #: ../../app/controllers/editor/objects/ObjectComponentController.php:170
 msgid ""
@@ -8529,7 +8547,7 @@ msgid "You are not allowed to quickadd %1"
 msgstr ""
 
 #: ../../app/lib/BaseQuickAddController.php:324
-#: ../../app/lib/BaseEditorController.php:259
+#: ../../app/lib/BaseEditorController.php:263
 #: ../../app/lib/BaseInterstitialController.php:175
 #: ../../app/models/ca_bundle_displays.php:2954
 #: ../../app/controllers/editor/objects/ObjectComponentController.php:218
@@ -8537,20 +8555,20 @@ msgid "Cannot save using empty request. Are you using a bookmark?"
 msgstr ""
 
 #: ../../app/lib/BaseQuickAddController.php:375
-#: ../../app/lib/BaseEditorController.php:307
+#: ../../app/lib/BaseEditorController.php:311
 #: ../../app/controllers/editor/objects/ObjectComponentController.php:263
 msgid "Could not save %1"
 msgstr ""
 
 #: ../../app/lib/BaseQuickAddController.php:377
-#: ../../app/lib/BaseEditorController.php:309
+#: ../../app/lib/BaseEditorController.php:313
 #: ../../app/controllers/editor/objects/ObjectComponentController.php:265
 #: ../../install/index.php:75
 msgid "Added %1"
 msgstr ""
 
 #: ../../app/lib/BaseQuickAddController.php:391
-#: ../../app/lib/BaseEditorController.php:352
+#: ../../app/lib/BaseEditorController.php:356
 #: ../../app/lib/BaseInterstitialController.php:200
 #: ../../app/models/ca_bundle_displays.php:2987
 #: ../../app/controllers/editor/objects/ObjectComponentController.php:279
@@ -8663,14 +8681,14 @@ msgstr ""
 
 #: ../../app/lib/IDNumbering/MultipartIDNumber.php:488
 #: ../../app/lib/IDNumbering/SMFMultipartIDNumber.php:289
-#: ../../app/lib/Attributes/Values/NumericAttributeValue.php:216
+#: ../../app/lib/Attributes/Values/NumericAttributeValue.php:230
 #: ../../app/lib/Attributes/Values/IntegerAttributeValue.php:225
 msgid "%1 must be a number"
 msgstr ""
 
 #: ../../app/lib/IDNumbering/MultipartIDNumber.php:491
 #: ../../app/lib/IDNumbering/SMFMultipartIDNumber.php:292
-#: ../../app/lib/BaseModel.php:5837
+#: ../../app/lib/BaseModel.php:5839
 msgid "%1 must not be less than %2"
 msgstr ""
 
@@ -8732,14 +8750,14 @@ msgid "%1 must be set to %2"
 msgstr ""
 
 #: ../../app/lib/IDNumbering/UUIDNumber.php:128
-msgid "A value is reuiqred for UUID Versions 3 & 5"
+msgid "A value is required for UUID Versions 3 & 5"
 msgstr ""
 
 #: ../../app/lib/IDNumbering/UUIDNumber.php:131
 msgid "A NamespaceID (root UUID) is required for UUID %1"
 msgstr ""
 
-#: ../../app/lib/Parsers/DisplayTemplateParser.php:1382
+#: ../../app/lib/Parsers/DisplayTemplateParser.php:1416
 msgid "Cannot be path between %1 and %2"
 msgstr ""
 
@@ -8996,30 +9014,30 @@ msgstr ""
 msgid "Tour stops"
 msgstr ""
 
-#: ../../app/lib/BaseFindController.php:255
+#: ../../app/lib/BaseFindController.php:254
 msgid "Spreadsheet with media icons (XLSX)"
 msgstr ""
 
-#: ../../app/lib/BaseFindController.php:259
+#: ../../app/lib/BaseFindController.php:258
 msgid "Word processing (DOCX)"
 msgstr ""
 
-#: ../../app/lib/BaseFindController.php:360
-#: ../../app/lib/BaseFindController.php:558
-#: ../../app/lib/BaseEditorController.php:833
-#: ../../app/lib/BaseEditorController.php:907
+#: ../../app/lib/BaseFindController.php:359
+#: ../../app/lib/BaseFindController.php:557
+#: ../../app/lib/BaseEditorController.php:837
+#: ../../app/lib/BaseEditorController.php:911
 msgid "Could not find view for PDF"
 msgstr ""
 
-#: ../../app/lib/BaseFindController.php:606
+#: ../../app/lib/BaseFindController.php:605
 msgid "Nothing was selected"
 msgstr ""
 
-#: ../../app/lib/BaseFindController.php:637
+#: ../../app/lib/BaseFindController.php:636
 msgid "Invalid set"
 msgstr ""
 
-#: ../../app/lib/BaseFindController.php:640
+#: ../../app/lib/BaseFindController.php:639
 #: ../../app/lib/BaseLookupController.php:525
 #: ../../app/lib/BaseLookupController.php:534
 #: ../../app/lib/BaseLookupController.php:544
@@ -9034,29 +9052,39 @@ msgstr ""
 msgid "Access denied"
 msgstr ""
 
-#: ../../app/lib/BaseFindController.php:644
+#: ../../app/lib/BaseFindController.php:643
 msgid "You cannot edit sets"
 msgstr ""
 
-#: ../../app/lib/BaseFindController.php:703
+#: ../../app/lib/BaseFindController.php:657
+#: ../../app/lib/BaseFindController.php:1056
+#: ../../app/lib/BaseEditorController.php:95
+#: ../../app/lib/BaseEditorController.php:1035
+#: ../../app/lib/BaseEditorController.php:1466
+#: ../../app/lib/BaseEditorController.php:1490
+#: ../../app/lib/BaseEditorController.php:2207
+msgid "CSRF check failed"
+msgstr ""
+
+#: ../../app/lib/BaseFindController.php:707
 msgid "You cannot create sets"
 msgstr ""
 
-#: ../../app/lib/BaseFindController.php:734
+#: ../../app/lib/BaseFindController.php:738
 msgid "Search could not be saved"
 msgstr ""
 
-#: ../../app/lib/BaseFindController.php:887
+#: ../../app/lib/BaseFindController.php:891
 #: ../../app/controllers/editor/object_lots/ObjectLotEditorController.php:158
 #: ../../app/controllers/manage/sets/SetEditorController.php:245
 msgid "No files to download"
 msgstr ""
 
-#: ../../app/lib/BaseFindController.php:893
+#: ../../app/lib/BaseFindController.php:897
 msgid "Could not generate ZIP file for download"
 msgstr ""
 
-#: ../../app/lib/BaseFindController.php:1074
+#: ../../app/lib/BaseFindController.php:1082
 msgid "Cannot edit %1"
 msgstr ""
 
@@ -9081,147 +9109,147 @@ msgstr ""
 msgid "Invalid numeric value '%1' for %2"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:111
+#: ../../app/lib/BaseEditorController.php:115
 msgid "Duplicated %1 \"%2\" (%3)"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:120
+#: ../../app/lib/BaseEditorController.php:124
 msgid "Could not duplicate %1: %2"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:251
+#: ../../app/lib/BaseEditorController.php:255
 msgid "Added relationship"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:286
-#: ../../app/lib/BaseEditorController.php:481 ../../app/lib/BaseModel.php:5817
+#: ../../app/lib/BaseEditorController.php:290
+#: ../../app/lib/BaseEditorController.php:485 ../../app/lib/BaseModel.php:5819
 msgid "%1 does not exist"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:377
+#: ../../app/lib/BaseEditorController.php:381
 msgid ""
 "There are errors preventing <strong>ALL</strong> information from being "
 "saved. Correct the problems and click \"save\" again.\n"
 "<ul>"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:380
+#: ../../app/lib/BaseEditorController.php:384
 msgid ""
 "There are errors preventing information in specific fields from being saved "
 "as noted below.\n"
 "<ul>"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:487
+#: ../../app/lib/BaseEditorController.php:491
 msgid "Cannot delete root of hierarchy"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:508
+#: ../../app/lib/BaseEditorController.php:512
 msgid "Transferred %1 relationship to type <em>%2</em>"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:508
+#: ../../app/lib/BaseEditorController.php:512
 msgid "Transferred %1 relationships to type <em>%2</em>"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:544
+#: ../../app/lib/BaseEditorController.php:548
 msgid "Transferred %1 relationship to <em>%2</em> (%3)"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:544
+#: ../../app/lib/BaseEditorController.php:548
 msgid "Transferred %1 relationships to <em>%2</em> (%3)"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:564
+#: ../../app/lib/BaseEditorController.php:568
 msgid "Transferred %1 children to <em>%2</em> (%3)"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:584
+#: ../../app/lib/BaseEditorController.php:588
 msgid "Deleted %1 child"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:584
+#: ../../app/lib/BaseEditorController.php:588
 msgid "Deleted %1 children"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:593
+#: ../../app/lib/BaseEditorController.php:597
 msgid "Could not move references to other items in metadata before delete: %1"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:621
+#: ../../app/lib/BaseEditorController.php:625
 msgid "%1 was deleted"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:875
+#: ../../app/lib/BaseEditorController.php:879
 msgid "Unsupported format: %1"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:918
+#: ../../app/lib/BaseEditorController.php:922
 msgid "No access to element"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:926
+#: ../../app/lib/BaseEditorController.php:930
 msgid "Element is not part of current item"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:1100
+#: ../../app/lib/BaseEditorController.php:1108
 msgid "Could not set ACL inheritance settings: %1"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:1132
+#: ../../app/lib/BaseEditorController.php:1140
 msgid "Could not set type to <em>%1</em>: %2"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:1134
+#: ../../app/lib/BaseEditorController.php:1142
 msgid "Set type to <em>%1</em>"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:1140
+#: ../../app/lib/BaseEditorController.php:1148
 msgid "Cannot change type"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:1205
+#: ../../app/lib/BaseEditorController.php:1213
 msgid "new %1"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:1205
+#: ../../app/lib/BaseEditorController.php:1213
 msgid "Editing %1 : %2"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:1946
+#: ../../app/lib/BaseEditorController.php:1962
 #: ../../app/lib/BaseSearchController.php:500
 msgid "Invalid object/representation"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:1973
+#: ../../app/lib/BaseEditorController.php:1989
 msgid "Invalid object/media"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:2058
+#: ../../app/lib/BaseEditorController.php:2074
 msgid "Invalid type"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:2263
+#: ../../app/lib/BaseEditorController.php:2283
 msgid "Invalid representation_id"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:2272
+#: ../../app/lib/BaseEditorController.php:2292
 msgid "Transformation failed"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:2362
+#: ../../app/lib/BaseEditorController.php:2382
 msgid "No media to download for this type of record"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:2514
+#: ../../app/lib/BaseEditorController.php:2534
 msgid "downloaded_file"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:2527
+#: ../../app/lib/BaseEditorController.php:2547
 msgid "downloaded_file.%1"
 msgstr ""
 
-#: ../../app/lib/BaseEditorController.php:2532
+#: ../../app/lib/BaseEditorController.php:2552
 msgid "Invalid file"
 msgstr ""
 
@@ -11861,29 +11889,29 @@ msgstr ""
 msgid "Representation id=%1 is not related to %3 id=%2"
 msgstr ""
 
-#: ../../app/lib/RepresentableBaseModel.php:916
-#: ../../app/lib/BaseModel.php:9112
+#: ../../app/lib/RepresentableBaseModel.php:919
+#: ../../app/lib/BaseModel.php:9114
 msgid "Type id \"%1\" is not valid"
 msgstr ""
 
-#: ../../app/lib/RepresentableBaseModel.php:1205
+#: ../../app/lib/RepresentableBaseModel.php:1208
 msgid "Extracted metadata"
 msgstr ""
 
-#: ../../app/lib/RepresentableBaseModel.php:1207
+#: ../../app/lib/RepresentableBaseModel.php:1210
 msgid "MD5 signature"
 msgstr ""
 
-#: ../../app/lib/RepresentableBaseModel.php:1224
+#: ../../app/lib/RepresentableBaseModel.php:1227
 msgid "PRIMARY"
 msgstr ""
 
-#: ../../app/lib/RepresentableBaseModel.php:1231 ../../app/lib/TaskQueue.php:91
+#: ../../app/lib/RepresentableBaseModel.php:1234 ../../app/lib/TaskQueue.php:91
 #: ../../app/models/ca_site_pages.php:671
 msgid "Unknown"
 msgstr ""
 
-#: ../../app/lib/RepresentableBaseModel.php:1238
+#: ../../app/lib/RepresentableBaseModel.php:1241
 #: ../../app/models/ca_site_pages.php:678
 msgid "<h3>Fetched from:</h3> URL %1 on %2"
 msgstr ""
@@ -12161,367 +12189,367 @@ msgstr ""
 msgid "Invalid field %2 for table %1"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:1142 ../../app/lib/BaseModel.php:1691
-#: ../../app/lib/BaseModel.php:8990
+#: ../../app/lib/BaseModel.php:1144 ../../app/lib/BaseModel.php:1693
+#: ../../app/lib/BaseModel.php:8992
 msgid "'%1' does not exist in this object"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:1371
+#: ../../app/lib/BaseModel.php:1373
 msgid "Value %1 is not in list %2"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:1378
+#: ../../app/lib/BaseModel.php:1380
 msgid "'%1' for %2 is not numeric"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:1487
+#: ../../app/lib/BaseModel.php:1489
 msgid "Invalid direct date values"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:1539
+#: ../../app/lib/BaseModel.php:1541
 msgid "Invalid direct time values"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:1949
+#: ../../app/lib/BaseModel.php:1951
 msgid "BaseModel '%1' cannot be accessed with this class"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:1952
+#: ../../app/lib/BaseModel.php:1954
 msgid "BaseModel '%1' does not exist"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:1960
+#: ../../app/lib/BaseModel.php:1962
 msgid "Field '%1' does not exist"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:2199 ../../app/lib/BaseModel.php:2724
+#: ../../app/lib/BaseModel.php:2201 ../../app/lib/BaseModel.php:2726
 msgid "The combination of %1 and %2 must be unique"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:2201 ../../app/lib/BaseModel.php:2726
+#: ../../app/lib/BaseModel.php:2203 ../../app/lib/BaseModel.php:2728
 msgid "The value of %1 must be unique"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:2213
+#: ../../app/lib/BaseModel.php:2215
 msgid "Invalid relationship type"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:2215
+#: ../../app/lib/BaseModel.php:2217
 msgid "Invalid relationship reference for %1"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:2401
+#: ../../app/lib/BaseModel.php:2403
 msgid "Date is undefined but field %1 does not support NULL values"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:2407 ../../app/lib/BaseModel.php:3023
+#: ../../app/lib/BaseModel.php:2409 ../../app/lib/BaseModel.php:3025
 msgid "Date is invalid for %1"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:2421
+#: ../../app/lib/BaseModel.php:2423
 msgid "Time is undefined but field %1 does not support NULL values"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:2427
+#: ../../app/lib/BaseModel.php:2429
 msgid "Time is invalid for "
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:2457 ../../app/lib/BaseModel.php:3073
+#: ../../app/lib/BaseModel.php:2459 ../../app/lib/BaseModel.php:3075
 msgid "Daterange is undefined but field does not support NULL values"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:2463 ../../app/lib/BaseModel.php:3079
+#: ../../app/lib/BaseModel.php:2465 ../../app/lib/BaseModel.php:3081
 msgid "Starting date is invalid"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:2471 ../../app/lib/BaseModel.php:3087
+#: ../../app/lib/BaseModel.php:2473 ../../app/lib/BaseModel.php:3089
 msgid "Ending date is invalid"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:2495 ../../app/lib/BaseModel.php:3109
+#: ../../app/lib/BaseModel.php:2497 ../../app/lib/BaseModel.php:3111
 msgid "Time range is undefined but field does not support NULL values"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:2501 ../../app/lib/BaseModel.php:3115
+#: ../../app/lib/BaseModel.php:2503 ../../app/lib/BaseModel.php:3117
 msgid "Starting time is invalid"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:2509 ../../app/lib/BaseModel.php:3123
+#: ../../app/lib/BaseModel.php:2511 ../../app/lib/BaseModel.php:3125
 msgid "Ending time is invalid"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:2537
+#: ../../app/lib/BaseModel.php:2539
 msgid "Number is invalid for %1 [%2]"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:2551 ../../app/lib/BaseModel.php:3138
+#: ../../app/lib/BaseModel.php:2553 ../../app/lib/BaseModel.php:3140
 msgid "Timecode is invalid"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:2768
+#: ../../app/lib/BaseModel.php:2770
 msgid "Can't do update() on new record; use insert() instead"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:2797
+#: ../../app/lib/BaseModel.php:2799
 msgid ""
 "Changes have been made since you loaded this data. Save again to overwrite "
 "the changes or cancel to keep the changes."
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:2800
+#: ../../app/lib/BaseModel.php:2802
 msgid ""
 "Changes have been made since you loaded this data by %1. Save again to "
 "overwrite the changes or cancel to keep the changes."
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:2803
+#: ../../app/lib/BaseModel.php:2805
 msgid ""
 "Changes have been made since you loaded this data by these users: %1. Save "
 "again to overwrite the changes or cancel to keep the changes."
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:2843
+#: ../../app/lib/BaseModel.php:2845
 msgid "Cannot move %1 under its sub-record"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:2860
+#: ../../app/lib/BaseModel.php:2862
 msgid "Hierarchy ID must be specified for this update"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:2989
+#: ../../app/lib/BaseModel.php:2991
 msgid "Number is invalid for %1"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:3017
+#: ../../app/lib/BaseModel.php:3019
 msgid "Date is undefined but field does not support NULL values"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:3037
+#: ../../app/lib/BaseModel.php:3039
 msgid "Time is undefined but field does not support NULL values"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:3043
+#: ../../app/lib/BaseModel.php:3045
 msgid "Time is invalid for %1"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:3355
+#: ../../app/lib/BaseModel.php:3357
 msgid "No record loaded"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:3412
+#: ../../app/lib/BaseModel.php:3414
 msgid "Can't delete item because it has sub-records"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:3464
+#: ../../app/lib/BaseModel.php:3466
 msgid "Can't delete item because items related to it have sub-records (%1)"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:3472
+#: ../../app/lib/BaseModel.php:3474
 msgid "Can't delete item because it is in use (%1)"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:3683 ../../app/lib/BaseModel.php:4231
-#: ../../app/lib/BaseModel.php:4711 ../../app/lib/BaseModel.php:4849
+#: ../../app/lib/BaseModel.php:3685 ../../app/lib/BaseModel.php:4233
+#: ../../app/lib/BaseModel.php:4713 ../../app/lib/BaseModel.php:4851
 #: ../../app/lib/Plugins/TaskQueueHandlers/mediaproc.php:299
 #: ../../app/lib/Plugins/TaskQueueHandlers/mediaproc.php:415
 msgid "Couldn't queue mirror using '%1' for version '%2' (handler '%3')"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:4192 ../../app/lib/BaseModel.php:4200
+#: ../../app/lib/BaseModel.php:4194 ../../app/lib/BaseModel.php:4202
 msgid "Could not cancel pending tasks: %1"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:4316
+#: ../../app/lib/BaseModel.php:4318
 msgid "Could not download media"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:4362
+#: ../../app/lib/BaseModel.php:4364
 msgid "Media already exists in database"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:4401
+#: ../../app/lib/BaseModel.php:4403
 msgid "File type %1 not accepted by %2"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:4401
+#: ../../app/lib/BaseModel.php:4403
 msgid "Unknown file type not accepted by %1"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:4565
+#: ../../app/lib/BaseModel.php:4567
 msgid "Media is being processed and will be available shortly."
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:4591
+#: ../../app/lib/BaseModel.php:4593
 msgid ""
 "File could not be copied for %1; can't convert mimetype '%2' to extension"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:4600 ../../app/lib/BaseModel.php:4764
-#: ../../app/lib/BaseModel.php:5517
+#: ../../app/lib/BaseModel.php:4602 ../../app/lib/BaseModel.php:4766
+#: ../../app/lib/BaseModel.php:5519
 msgid ""
 "Could not create subdirectory for uploaded file in %1. Please ask your "
 "administrator to check the permissions of your media directory."
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:4649 ../../app/lib/BaseModel.php:5552
+#: ../../app/lib/BaseModel.php:4651 ../../app/lib/BaseModel.php:5554
 msgid ""
 "File could not be copied. Ask your administrator to check permissions and "
 "file space for %1"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:4755
+#: ../../app/lib/BaseModel.php:4757
 msgid ""
 "File could not be processed for %1; can't convert mimetype '%2' to extension"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:4774
+#: ../../app/lib/BaseModel.php:4776
 msgid "Couldn't write file: %1"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:4920
+#: ../../app/lib/BaseModel.php:4922
 msgid "Couldn't queue processing for version '%1' using handler '%2'"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:5008
+#: ../../app/lib/BaseModel.php:5010
 msgid "File could not be processed for %1: %2"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:5494
+#: ../../app/lib/BaseModel.php:5496
 msgid "File is not a valid format"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:5826
+#: ../../app/lib/BaseModel.php:5828
 #: ../../app/lib/Attributes/Values/TimeCodeAttributeValue.php:191
 #: ../../app/lib/Attributes/Values/DateRangeAttributeValue.php:308
 msgid "%1 is invalid"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:5841
+#: ../../app/lib/BaseModel.php:5843
 msgid "%1 must not be greater than %2"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:5856
+#: ../../app/lib/BaseModel.php:5858
 msgid "%1 must be at least %2 characters"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:5862
+#: ../../app/lib/BaseModel.php:5864
 msgid "%1 must not be more than %2 characters long"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:5899 ../../app/lib/BaseModel.php:5905
+#: ../../app/lib/BaseModel.php:5901 ../../app/lib/BaseModel.php:5907
 msgid "'%1' is not valid choice for %2"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:6072 ../../app/lib/BaseModel.php:6086
+#: ../../app/lib/BaseModel.php:6074 ../../app/lib/BaseModel.php:6088
 msgid "Creation date/time"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:6075
+#: ../../app/lib/BaseModel.php:6077
 msgid "Modification date/time"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:6089
+#: ../../app/lib/BaseModel.php:6091
 msgid "Last modification date/time"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:6107 ../../app/lib/BaseModel.php:6121
+#: ../../app/lib/BaseModel.php:6109 ../../app/lib/BaseModel.php:6123
 msgid "Date and time %1 was created"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:6110
+#: ../../app/lib/BaseModel.php:6112
 msgid "Date and time %1 was modified"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:6124
+#: ../../app/lib/BaseModel.php:6126
 msgid "Date and time %1 was last modified"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:6988
+#: ../../app/lib/BaseModel.php:6990
 msgid "Hierarchy ID must be specified"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:7520
+#: ../../app/lib/BaseModel.php:7522
 msgid "Could not get parent_id to load siblings by: %1"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:7524
+#: ../../app/lib/BaseModel.php:7526
 msgid "Could not get hierarchy siblings: %1"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:8352 ../../app/lib/BaseModel.php:8448
-#: ../../app/lib/BaseModel.php:8543 ../../app/lib/BaseModel.php:8636
+#: ../../app/lib/BaseModel.php:8354 ../../app/lib/BaseModel.php:8450
+#: ../../app/lib/BaseModel.php:8545 ../../app/lib/BaseModel.php:8638
 msgid "- NONE -"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:8709
+#: ../../app/lib/BaseModel.php:8711
 msgid "Value must be unique. Please try another."
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:8870
+#: ../../app/lib/BaseModel.php:8872
 msgid "Maximum upload size is %1"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:9100 ../../app/lib/BaseModel.php:9249
-#: ../../app/lib/BaseModel.php:9402 ../../app/lib/BaseModel.php:9870
+#: ../../app/lib/BaseModel.php:9102 ../../app/lib/BaseModel.php:9251
+#: ../../app/lib/BaseModel.php:9404 ../../app/lib/BaseModel.php:9872
 msgid "Related table specification \"%1\" is not valid"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:9132 ../../app/lib/BaseModel.php:9275
+#: ../../app/lib/BaseModel.php:9134 ../../app/lib/BaseModel.php:9277
 msgid "Relationship already exists"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:9140 ../../app/lib/BaseModel.php:9283
+#: ../../app/lib/BaseModel.php:9142 ../../app/lib/BaseModel.php:9285
 msgid "Cannot relate a record to itself"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:9226
+#: ../../app/lib/BaseModel.php:9228
 msgid "Could not find a path to the specified related table"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:10194
+#: ../../app/lib/BaseModel.php:10196
 msgid "No locale was set for tag"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:10272 ../../app/lib/BaseModel.php:10322
-#: ../../app/lib/BaseModel.php:10367
+#: ../../app/lib/BaseModel.php:10274 ../../app/lib/BaseModel.php:10324
+#: ../../app/lib/BaseModel.php:10369
 msgid "Tag relation id is invalid"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:10279 ../../app/lib/BaseModel.php:10329
-#: ../../app/lib/BaseModel.php:10374
+#: ../../app/lib/BaseModel.php:10281 ../../app/lib/BaseModel.php:10331
+#: ../../app/lib/BaseModel.php:10376
 msgid "Tag is not part of the current row"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:10285 ../../app/lib/BaseModel.php:10335
-#: ../../app/lib/BaseModel.php:10380
+#: ../../app/lib/BaseModel.php:10287 ../../app/lib/BaseModel.php:10337
+#: ../../app/lib/BaseModel.php:10382
 msgid "Tag was not created by specified user"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:10557 ../../app/lib/BaseModel.php:10623
+#: ../../app/lib/BaseModel.php:10559 ../../app/lib/BaseModel.php:10625
 #: ../../app/lib/SiteComments.php:119 ../../app/lib/SiteComments.php:158
 msgid "Comment id is invalid"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:10564 ../../app/lib/BaseModel.php:10632
+#: ../../app/lib/BaseModel.php:10566 ../../app/lib/BaseModel.php:10634
 msgid "Comment is not part of the current row"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:10638 ../../app/lib/SiteComments.php:164
+#: ../../app/lib/BaseModel.php:10640 ../../app/lib/SiteComments.php:164
 msgid "Comment was not created by specified user"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:10824
+#: ../../app/lib/BaseModel.php:10826
 msgid "Comment made in set %1"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:11672 ../../app/lib/BaseModel.php:11681
-#: ../../app/lib/BaseModel.php:11728 ../../app/lib/BaseModel.php:11763
+#: ../../app/lib/BaseModel.php:11674 ../../app/lib/BaseModel.php:11683
+#: ../../app/lib/BaseModel.php:11730 ../../app/lib/BaseModel.php:11765
 #: ../../app/lib/LabelableBaseModelWithAttributes.php:716
 #: ../../app/lib/LabelableBaseModelWithAttributes.php:767
 msgid "Invalid numeric operator: %1"
 msgstr ""
 
-#: ../../app/lib/BaseModel.php:11771
+#: ../../app/lib/BaseModel.php:11773
 #: ../../app/lib/LabelableBaseModelWithAttributes.php:723
 #: ../../app/lib/LabelableBaseModelWithAttributes.php:769
 msgid "Invalid string operator: %1"
@@ -14121,7 +14149,7 @@ msgstr ""
 #: ../../app/models/ca_editor_uis.php:100
 #: ../../app/models/ca_data_exporters.php:91
 #: ../../app/models/ca_bundle_displays.php:100
-#: ../../app/models/ca_list_items.php:46 ../../app/models/ca_bookmarks.php:78
+#: ../../app/models/ca_list_items.php:42 ../../app/models/ca_bookmarks.php:78
 #: ../../app/models/ca_data_importers.php:95
 #: ../../app/models/ca_metadata_type_restrictions.php:101
 msgid "list items"
@@ -15591,33 +15619,33 @@ msgstr ""
 
 #: ../../app/lib/Attributes/Values/TextAttributeValue.php:259
 #: ../../app/lib/Attributes/Values/UrlAttributeValue.php:243
-#: ../../app/lib/Attributes/Values/NumericAttributeValue.php:203
+#: ../../app/lib/Attributes/Values/NumericAttributeValue.php:206
 #: ../../app/lib/Attributes/Values/IntegerAttributeValue.php:212
 msgid "%1 must be at least 1 character long"
 msgstr ""
 
 #: ../../app/lib/Attributes/Values/TextAttributeValue.php:259
 #: ../../app/lib/Attributes/Values/UrlAttributeValue.php:243
-#: ../../app/lib/Attributes/Values/NumericAttributeValue.php:203
+#: ../../app/lib/Attributes/Values/NumericAttributeValue.php:206
 #: ../../app/lib/Attributes/Values/IntegerAttributeValue.php:212
 msgid "%1 must be at least %2 characters long"
 msgstr ""
 
 #: ../../app/lib/Attributes/Values/TextAttributeValue.php:265
 #: ../../app/lib/Attributes/Values/UrlAttributeValue.php:249
-#: ../../app/lib/Attributes/Values/NumericAttributeValue.php:209
+#: ../../app/lib/Attributes/Values/NumericAttributeValue.php:212
 #: ../../app/lib/Attributes/Values/IntegerAttributeValue.php:218
 msgid "%1 must be no more than 1 character long"
 msgstr ""
 
 #: ../../app/lib/Attributes/Values/TextAttributeValue.php:265
-#: ../../app/lib/Attributes/Values/NumericAttributeValue.php:209
+#: ../../app/lib/Attributes/Values/NumericAttributeValue.php:212
 #: ../../app/lib/Attributes/Values/IntegerAttributeValue.php:218
 msgid "%1 must be no more than %2 characters long"
 msgstr ""
 
 #: ../../app/lib/Attributes/Values/TextAttributeValue.php:272
-#: ../../app/lib/Attributes/Values/NumericAttributeValue.php:250
+#: ../../app/lib/Attributes/Values/NumericAttributeValue.php:262
 #: ../../app/lib/Attributes/Values/IntegerAttributeValue.php:259
 msgid "%1 does not conform to required format"
 msgstr ""
@@ -15778,7 +15806,11 @@ msgid ""
 "must not be blank in other words. (The default is not to be.)"
 msgstr ""
 
-#: ../../app/lib/Attributes/Values/NumericAttributeValue.php:223
+#: ../../app/lib/Attributes/Values/NumericAttributeValue.php:222
+msgid "%1 is not a numeric value"
+msgstr ""
+
+#: ../../app/lib/Attributes/Values/NumericAttributeValue.php:237
 #: ../../app/lib/Attributes/Values/TimeCodeAttributeValue.php:198
 #: ../../app/lib/Attributes/Values/IntegerAttributeValue.php:232
 #: ../../app/lib/Attributes/Values/DateRangeAttributeValue.php:329
@@ -15786,19 +15818,15 @@ msgstr ""
 msgid "%1 must not be empty"
 msgstr ""
 
-#: ../../app/lib/Attributes/Values/NumericAttributeValue.php:236
+#: ../../app/lib/Attributes/Values/NumericAttributeValue.php:249
 #: ../../app/lib/Attributes/Values/IntegerAttributeValue.php:245
 #: ../../app/lib/Attributes/Values/CurrencyAttributeValue.php:289
 msgid "%1 must be at least %2"
 msgstr ""
 
-#: ../../app/lib/Attributes/Values/NumericAttributeValue.php:242
+#: ../../app/lib/Attributes/Values/NumericAttributeValue.php:255
 #: ../../app/lib/Attributes/Values/IntegerAttributeValue.php:251
 msgid "%1 must be no more than %2"
-msgstr ""
-
-#: ../../app/lib/Attributes/Values/NumericAttributeValue.php:256
-msgid "%1 is not a numeric value"
 msgstr ""
 
 #: ../../app/lib/Attributes/Values/CollectionsAttributeValue.php:48
@@ -16870,23 +16898,23 @@ msgstr ""
 msgid "Key"
 msgstr ""
 
-#: ../../app/lib/BaseSettings.php:493
+#: ../../app/lib/BaseSettings.php:541
 msgid "All lists"
 msgstr ""
 
-#: ../../app/lib/BaseSettings.php:536
+#: ../../app/lib/BaseSettings.php:584
 msgid "Order created"
 msgstr ""
 
-#: ../../app/lib/BaseSettings.php:572
+#: ../../app/lib/BaseSettings.php:665
 msgid "weeks"
 msgstr ""
 
-#: ../../app/lib/BaseSettings.php:573
+#: ../../app/lib/BaseSettings.php:666
 msgid "before"
 msgstr ""
 
-#: ../../app/lib/BaseSettings.php:573
+#: ../../app/lib/BaseSettings.php:666
 msgid "after"
 msgstr ""
 
@@ -17205,18 +17233,25 @@ msgstr ""
 msgid "Modification"
 msgstr ""
 
+#: ../../app/printTemplates/results/local/footer.php:47
 #: ../../app/printTemplates/results/footer.php:47
+#: ../../app/printTemplates/bundles/local/footer.php:47
 #: ../../app/printTemplates/bundles/footer.php:47
+#: ../../app/printTemplates/sets/local/footer.php:47
 #: ../../app/printTemplates/sets/footer.php:47
 msgid "%1 item"
 msgstr ""
 
+#: ../../app/printTemplates/results/local/footer.php:47
 #: ../../app/printTemplates/results/footer.php:47
+#: ../../app/printTemplates/bundles/local/footer.php:47
 #: ../../app/printTemplates/bundles/footer.php:47
+#: ../../app/printTemplates/sets/local/footer.php:47
 #: ../../app/printTemplates/sets/footer.php:47
 msgid "%1 items"
 msgstr ""
 
+#: ../../app/printTemplates/summary/local/pdfStart.php:40
 #: ../../app/printTemplates/summary/pdfStart.php:40
 msgid "Summary for %1 (%2)"
 msgstr ""
@@ -17554,7 +17589,7 @@ msgstr ""
 #: ../../app/models/ca_representation_annotation_labels.php:88
 #: ../../app/models/ca_metadata_elements.php:117
 #: ../../app/models/ca_loans_x_objects.php:92
-#: ../../app/models/ca_list_items.php:123
+#: ../../app/models/ca_list_items.php:119
 #: ../../app/models/ca_object_representations_x_occurrences.php:99
 #: ../../app/models/ca_loans_x_entities.php:92
 #: ../../app/models/ca_loans.php:164 ../../app/models/ca_objects.php:304
@@ -17785,7 +17820,7 @@ msgstr ""
 #: ../../app/models/ca_data_importer_items.php:56
 #: ../../app/models/ca_guids.php:46 ../../app/models/ca_occurrences.php:51
 #: ../../app/models/ca_metadata_elements.php:52
-#: ../../app/models/ca_list_items.php:53 ../../app/models/ca_loans.php:51
+#: ../../app/models/ca_list_items.php:49 ../../app/models/ca_loans.php:51
 #: ../../app/models/ca_objects.php:59
 #: ../../app/models/ca_user_sort_items.php:46
 #: ../../app/models/ca_object_representations.php:57
@@ -18094,17 +18129,17 @@ msgstr ""
 #: ../../app/models/ca_site_templates.php:49
 #: ../../app/models/ca_site_pages.php:51
 #: ../../app/models/ca_site_page_media.php:49
-#: ../../app/models/ca_list_items.php:53 ../../app/models/ca_tours.php:48
+#: ../../app/models/ca_list_items.php:49 ../../app/models/ca_tours.php:48
 msgid ""
 "Unique numeric identifier used by CollectiveAccess internally to identify "
 "this item"
 msgstr ""
 
-#: ../../app/models/ca_tour_stops.php:60 ../../app/models/ca_list_items.php:60
+#: ../../app/models/ca_tour_stops.php:60 ../../app/models/ca_list_items.php:56
 msgid "Parent"
 msgstr ""
 
-#: ../../app/models/ca_tour_stops.php:60 ../../app/models/ca_list_items.php:60
+#: ../../app/models/ca_tour_stops.php:60 ../../app/models/ca_list_items.php:56
 msgid "Parent list item for this item"
 msgstr ""
 
@@ -18170,7 +18205,7 @@ msgstr ""
 #: ../../app/models/ca_bundle_displays.php:126
 #: ../../app/models/ca_places.php:133 ../../app/models/ca_occurrences.php:137
 #: ../../app/models/ca_items_x_tags.php:86
-#: ../../app/models/ca_list_items.php:167 ../../app/models/ca_loans.php:129
+#: ../../app/models/ca_list_items.php:163 ../../app/models/ca_loans.php:129
 #: ../../app/models/ca_objects.php:269
 #: ../../app/models/ca_object_representations.php:167
 #: ../../app/models/ca_sets.php:129 ../../app/models/ca_collections.php:137
@@ -18189,7 +18224,7 @@ msgstr ""
 #: ../../app/models/ca_bundle_displays.php:127
 #: ../../app/models/ca_places.php:134 ../../app/models/ca_occurrences.php:138
 #: ../../app/models/ca_items_x_tags.php:87
-#: ../../app/models/ca_list_items.php:168 ../../app/models/ca_loans.php:130
+#: ../../app/models/ca_list_items.php:164 ../../app/models/ca_loans.php:130
 #: ../../app/models/ca_objects.php:270
 #: ../../app/models/ca_object_representations.php:168
 #: ../../app/models/ca_sets.php:130 ../../app/models/ca_collections.php:138
@@ -18198,7 +18233,7 @@ msgid "Accessible to public"
 msgstr ""
 
 #: ../../app/models/ca_tour_stops.php:148
-#: ../../app/models/ca_list_items.php:171 ../../app/models/ca_tours.php:108
+#: ../../app/models/ca_list_items.php:167 ../../app/models/ca_tours.php:108
 msgid "Indicates if the list item is accessible to the public or not. "
 msgstr ""
 
@@ -18209,7 +18244,7 @@ msgstr ""
 #: ../../app/models/ca_entities.php:158 ../../app/models/ca_object_lots.php:119
 #: ../../app/models/ca_movements.php:114 ../../app/models/ca_places.php:146
 #: ../../app/models/ca_occurrences.php:150
-#: ../../app/models/ca_list_items.php:186 ../../app/models/ca_loans.php:142
+#: ../../app/models/ca_list_items.php:182 ../../app/models/ca_loans.php:142
 #: ../../app/models/ca_objects.php:282
 #: ../../app/models/ca_object_representations.php:180
 #: ../../app/models/ca_sets.php:141 ../../app/models/ca_collections.php:150
@@ -18224,7 +18259,7 @@ msgstr ""
 #: ../../app/models/ca_entities.php:159 ../../app/models/ca_object_lots.php:120
 #: ../../app/models/ca_movements.php:115 ../../app/models/ca_places.php:147
 #: ../../app/models/ca_occurrences.php:151
-#: ../../app/models/ca_list_items.php:187 ../../app/models/ca_loans.php:143
+#: ../../app/models/ca_list_items.php:183 ../../app/models/ca_loans.php:143
 #: ../../app/models/ca_objects.php:283
 #: ../../app/models/ca_object_representations.php:181
 #: ../../app/models/ca_sets.php:142 ../../app/models/ca_collections.php:151
@@ -18239,7 +18274,7 @@ msgstr ""
 #: ../../app/models/ca_entities.php:160 ../../app/models/ca_object_lots.php:121
 #: ../../app/models/ca_movements.php:116 ../../app/models/ca_places.php:148
 #: ../../app/models/ca_occurrences.php:152
-#: ../../app/models/ca_list_items.php:188 ../../app/models/ca_loans.php:144
+#: ../../app/models/ca_list_items.php:184 ../../app/models/ca_loans.php:144
 #: ../../app/models/ca_objects.php:284
 #: ../../app/models/ca_object_representations.php:182
 #: ../../app/models/ca_sets.php:143 ../../app/models/ca_collections.php:152
@@ -18254,7 +18289,7 @@ msgstr ""
 #: ../../app/models/ca_entities.php:161 ../../app/models/ca_object_lots.php:122
 #: ../../app/models/ca_movements.php:117 ../../app/models/ca_places.php:149
 #: ../../app/models/ca_occurrences.php:153
-#: ../../app/models/ca_list_items.php:189 ../../app/models/ca_loans.php:145
+#: ../../app/models/ca_list_items.php:185 ../../app/models/ca_loans.php:145
 #: ../../app/models/ca_objects.php:285
 #: ../../app/models/ca_object_representations.php:183
 #: ../../app/models/ca_sets.php:144 ../../app/models/ca_collections.php:153
@@ -18269,7 +18304,7 @@ msgstr ""
 #: ../../app/models/ca_entities.php:162 ../../app/models/ca_object_lots.php:123
 #: ../../app/models/ca_movements.php:118 ../../app/models/ca_places.php:150
 #: ../../app/models/ca_occurrences.php:154
-#: ../../app/models/ca_list_items.php:190 ../../app/models/ca_loans.php:146
+#: ../../app/models/ca_list_items.php:186 ../../app/models/ca_loans.php:146
 #: ../../app/models/ca_objects.php:286
 #: ../../app/models/ca_object_representations.php:184
 #: ../../app/models/ca_sets.php:145 ../../app/models/ca_collections.php:154
@@ -18278,7 +18313,7 @@ msgid "Completed"
 msgstr ""
 
 #: ../../app/models/ca_tour_stops.php:163
-#: ../../app/models/ca_list_items.php:193
+#: ../../app/models/ca_list_items.php:189
 msgid "Indicates the current state of the list item."
 msgstr ""
 
@@ -18290,7 +18325,7 @@ msgstr ""
 #: ../../app/models/ca_site_page_media.php:180
 #: ../../app/models/ca_movements.php:128 ../../app/models/ca_places.php:168
 #: ../../app/models/ca_occurrences.php:164
-#: ../../app/models/ca_list_items.php:200 ../../app/models/ca_loans.php:156
+#: ../../app/models/ca_list_items.php:196 ../../app/models/ca_loans.php:156
 #: ../../app/models/ca_objects.php:296
 #: ../../app/models/ca_object_representations.php:194
 #: ../../app/models/ca_sets.php:169 ../../app/models/ca_lists.php:114
@@ -18304,7 +18339,7 @@ msgstr ""
 #: ../../app/models/ca_tour_stops.php:170
 #: ../../app/models/ca_site_templates.php:94
 #: ../../app/models/ca_site_pages.php:114
-#: ../../app/models/ca_list_items.php:200 ../../app/models/ca_lists.php:114
+#: ../../app/models/ca_list_items.php:196 ../../app/models/ca_lists.php:114
 msgid "Indicates if list item is deleted or not."
 msgstr ""
 
@@ -18315,7 +18350,7 @@ msgstr ""
 #: ../../app/models/ca_entities.php:338 ../../app/models/ca_object_lots.php:342
 #: ../../app/models/ca_movements.php:298 ../../app/models/ca_places.php:347
 #: ../../app/models/ca_occurrences.php:335
-#: ../../app/models/ca_list_items.php:544 ../../app/models/ca_loans.php:326
+#: ../../app/models/ca_list_items.php:540 ../../app/models/ca_loans.php:326
 #: ../../app/models/ca_objects.php:526
 #: ../../app/models/ca_object_representations.php:371
 #: ../../app/models/ca_collections.php:355
@@ -18337,8 +18372,8 @@ msgstr ""
 #: ../../app/models/ca_places.php:348 ../../app/models/ca_places.php:349
 #: ../../app/models/ca_occurrences.php:336
 #: ../../app/models/ca_occurrences.php:337
-#: ../../app/models/ca_list_items.php:545
-#: ../../app/models/ca_list_items.php:546 ../../app/models/ca_loans.php:327
+#: ../../app/models/ca_list_items.php:541
+#: ../../app/models/ca_list_items.php:542 ../../app/models/ca_loans.php:327
 #: ../../app/models/ca_loans.php:328 ../../app/models/ca_objects.php:527
 #: ../../app/models/ca_objects.php:528
 #: ../../app/models/ca_object_representations.php:372
@@ -18355,7 +18390,7 @@ msgstr ""
 #: ../../app/models/ca_entities.php:341 ../../app/models/ca_object_lots.php:345
 #: ../../app/models/ca_movements.php:301 ../../app/models/ca_places.php:350
 #: ../../app/models/ca_occurrences.php:338
-#: ../../app/models/ca_list_items.php:547 ../../app/models/ca_loans.php:329
+#: ../../app/models/ca_list_items.php:543 ../../app/models/ca_loans.php:329
 #: ../../app/models/ca_objects.php:529
 #: ../../app/models/ca_object_representations.php:374
 #: ../../app/models/ca_collections.php:358
@@ -18369,7 +18404,7 @@ msgstr ""
 #: ../../app/models/ca_entities.php:342 ../../app/models/ca_object_lots.php:346
 #: ../../app/models/ca_movements.php:302 ../../app/models/ca_places.php:351
 #: ../../app/models/ca_occurrences.php:339
-#: ../../app/models/ca_list_items.php:548 ../../app/models/ca_loans.php:330
+#: ../../app/models/ca_list_items.php:544 ../../app/models/ca_loans.php:330
 #: ../../app/models/ca_objects.php:530
 #: ../../app/models/ca_object_representations.php:375
 #: ../../app/models/ca_collections.php:359
@@ -18383,7 +18418,7 @@ msgstr ""
 #: ../../app/models/ca_entities.php:343 ../../app/models/ca_object_lots.php:347
 #: ../../app/models/ca_movements.php:303 ../../app/models/ca_places.php:352
 #: ../../app/models/ca_occurrences.php:340
-#: ../../app/models/ca_list_items.php:549 ../../app/models/ca_loans.php:331
+#: ../../app/models/ca_list_items.php:545 ../../app/models/ca_loans.php:331
 #: ../../app/models/ca_objects.php:531
 #: ../../app/models/ca_object_representations.php:376
 #: ../../app/models/ca_collections.php:360
@@ -18397,7 +18432,7 @@ msgstr ""
 #: ../../app/models/ca_entities.php:344 ../../app/models/ca_object_lots.php:348
 #: ../../app/models/ca_movements.php:304 ../../app/models/ca_places.php:353
 #: ../../app/models/ca_occurrences.php:341
-#: ../../app/models/ca_list_items.php:550 ../../app/models/ca_loans.php:332
+#: ../../app/models/ca_list_items.php:546 ../../app/models/ca_loans.php:332
 #: ../../app/models/ca_objects.php:532
 #: ../../app/models/ca_object_representations.php:377
 #: ../../app/models/ca_collections.php:361
@@ -18411,7 +18446,7 @@ msgstr ""
 #: ../../app/models/ca_entities.php:345 ../../app/models/ca_object_lots.php:349
 #: ../../app/models/ca_movements.php:305 ../../app/models/ca_places.php:354
 #: ../../app/models/ca_occurrences.php:342
-#: ../../app/models/ca_list_items.php:551 ../../app/models/ca_loans.php:333
+#: ../../app/models/ca_list_items.php:547 ../../app/models/ca_loans.php:333
 #: ../../app/models/ca_objects.php:533
 #: ../../app/models/ca_object_representations.php:378
 #: ../../app/models/ca_collections.php:362
@@ -18425,7 +18460,7 @@ msgstr ""
 #: ../../app/models/ca_entities.php:346 ../../app/models/ca_object_lots.php:350
 #: ../../app/models/ca_movements.php:306 ../../app/models/ca_places.php:355
 #: ../../app/models/ca_occurrences.php:343
-#: ../../app/models/ca_list_items.php:552 ../../app/models/ca_loans.php:334
+#: ../../app/models/ca_list_items.php:548 ../../app/models/ca_loans.php:334
 #: ../../app/models/ca_objects.php:534
 #: ../../app/models/ca_object_representations.php:379
 #: ../../app/models/ca_collections.php:363
@@ -18439,7 +18474,7 @@ msgstr ""
 #: ../../app/models/ca_entities.php:347 ../../app/models/ca_object_lots.php:351
 #: ../../app/models/ca_movements.php:307 ../../app/models/ca_places.php:356
 #: ../../app/models/ca_occurrences.php:344
-#: ../../app/models/ca_list_items.php:553 ../../app/models/ca_loans.php:335
+#: ../../app/models/ca_list_items.php:549 ../../app/models/ca_loans.php:335
 #: ../../app/models/ca_objects.php:535
 #: ../../app/models/ca_object_representations.php:380
 #: ../../app/models/ca_collections.php:364
@@ -18453,7 +18488,7 @@ msgstr ""
 #: ../../app/models/ca_entities.php:348 ../../app/models/ca_object_lots.php:352
 #: ../../app/models/ca_movements.php:308 ../../app/models/ca_places.php:357
 #: ../../app/models/ca_occurrences.php:345
-#: ../../app/models/ca_list_items.php:554 ../../app/models/ca_loans.php:336
+#: ../../app/models/ca_list_items.php:550 ../../app/models/ca_loans.php:336
 #: ../../app/models/ca_objects.php:536
 #: ../../app/models/ca_object_representations.php:381
 #: ../../app/models/ca_collections.php:365
@@ -18467,7 +18502,7 @@ msgstr ""
 #: ../../app/models/ca_entities.php:349 ../../app/models/ca_object_lots.php:353
 #: ../../app/models/ca_movements.php:309 ../../app/models/ca_places.php:358
 #: ../../app/models/ca_occurrences.php:346
-#: ../../app/models/ca_list_items.php:555 ../../app/models/ca_loans.php:337
+#: ../../app/models/ca_list_items.php:551 ../../app/models/ca_loans.php:337
 #: ../../app/models/ca_objects.php:537
 #: ../../app/models/ca_object_representations.php:382
 #: ../../app/models/ca_collections.php:366
@@ -18481,7 +18516,7 @@ msgstr ""
 #: ../../app/models/ca_entities.php:350 ../../app/models/ca_object_lots.php:354
 #: ../../app/models/ca_movements.php:310 ../../app/models/ca_places.php:359
 #: ../../app/models/ca_occurrences.php:347
-#: ../../app/models/ca_list_items.php:556 ../../app/models/ca_loans.php:338
+#: ../../app/models/ca_list_items.php:552 ../../app/models/ca_loans.php:338
 #: ../../app/models/ca_objects.php:538
 #: ../../app/models/ca_object_representations.php:383
 #: ../../app/models/ca_collections.php:367
@@ -18495,7 +18530,7 @@ msgstr ""
 #: ../../app/models/ca_entities.php:336 ../../app/models/ca_object_lots.php:326
 #: ../../app/models/ca_movements.php:312 ../../app/models/ca_places.php:346
 #: ../../app/models/ca_occurrences.php:334
-#: ../../app/models/ca_list_items.php:558 ../../app/models/ca_loans.php:340
+#: ../../app/models/ca_list_items.php:554 ../../app/models/ca_loans.php:340
 #: ../../app/models/ca_objects.php:539
 #: ../../app/models/ca_object_representations.php:384
 #: ../../app/models/ca_collections.php:354
@@ -18509,7 +18544,7 @@ msgstr ""
 #: ../../app/models/ca_entities.php:337 ../../app/models/ca_object_lots.php:327
 #: ../../app/models/ca_movements.php:314 ../../app/models/ca_places.php:361
 #: ../../app/models/ca_occurrences.php:351
-#: ../../app/models/ca_list_items.php:559 ../../app/models/ca_loans.php:341
+#: ../../app/models/ca_list_items.php:555 ../../app/models/ca_loans.php:341
 #: ../../app/models/ca_objects.php:540
 #: ../../app/models/ca_object_representations.php:385
 #: ../../app/models/ca_collections.php:368
@@ -18523,7 +18558,7 @@ msgstr ""
 #: ../../app/models/ca_entities.php:351 ../../app/models/ca_object_lots.php:328
 #: ../../app/models/ca_movements.php:313 ../../app/models/ca_places.php:363
 #: ../../app/models/ca_occurrences.php:349
-#: ../../app/models/ca_list_items.php:560 ../../app/models/ca_loans.php:342
+#: ../../app/models/ca_list_items.php:556 ../../app/models/ca_loans.php:342
 #: ../../app/models/ca_objects.php:541
 #: ../../app/models/ca_object_representations.php:386
 #: ../../app/models/ca_collections.php:370
@@ -18535,7 +18570,7 @@ msgstr ""
 #: ../../app/models/ca_entities.php:352 ../../app/models/ca_object_lots.php:329
 #: ../../app/models/ca_movements.php:317 ../../app/models/ca_places.php:362
 #: ../../app/models/ca_occurrences.php:350
-#: ../../app/models/ca_list_items.php:561 ../../app/models/ca_loans.php:343
+#: ../../app/models/ca_list_items.php:557 ../../app/models/ca_loans.php:343
 #: ../../app/models/ca_objects.php:542
 #: ../../app/models/ca_object_representations.php:387
 #: ../../app/models/ca_collections.php:369
@@ -18555,7 +18590,7 @@ msgstr ""
 #: ../../app/models/ca_entities.php:360 ../../app/models/ca_object_lots.php:336
 #: ../../app/models/ca_movements.php:323 ../../app/models/ca_places.php:370
 #: ../../app/models/ca_occurrences.php:358
-#: ../../app/models/ca_list_items.php:567 ../../app/models/ca_loans.php:350
+#: ../../app/models/ca_list_items.php:563 ../../app/models/ca_loans.php:350
 #: ../../app/models/ca_objects.php:551
 #: ../../app/models/ca_object_representations.php:391
 #: ../../app/models/ca_collections.php:374
@@ -18566,7 +18601,7 @@ msgstr ""
 #: ../../app/models/ca_storage_locations.php:360
 #: ../../app/models/ca_entities.php:366 ../../app/models/ca_places.php:378
 #: ../../app/models/ca_occurrences.php:366
-#: ../../app/models/ca_list_items.php:571 ../../app/models/ca_objects.php:557
+#: ../../app/models/ca_list_items.php:567 ../../app/models/ca_objects.php:557
 #: ../../app/models/ca_collections.php:385
 #: ../../app/models/ca_relationship_types.php:345
 msgid "Hierarchy navigation"
@@ -19963,7 +19998,7 @@ msgid "Optional icon to identify the editor UI with"
 msgstr ""
 
 #: ../../app/models/ca_storage_locations.php:180
-#: ../../app/models/ca_list_items.php:144
+#: ../../app/models/ca_list_items.php:140
 msgid "Is enabled?"
 msgstr ""
 
@@ -19977,7 +20012,7 @@ msgstr ""
 #: ../../app/models/ca_entities.php:335 ../../app/models/ca_object_lots.php:325
 #: ../../app/models/ca_movements.php:297 ../../app/models/ca_places.php:345
 #: ../../app/models/ca_occurrences.php:333
-#: ../../app/models/ca_list_items.php:543 ../../app/models/ca_loans.php:325
+#: ../../app/models/ca_list_items.php:539 ../../app/models/ca_loans.php:325
 #: ../../app/models/ca_objects.php:525 ../../app/models/ca_collections.php:353
 msgid "Media representations"
 msgstr ""
@@ -19985,7 +20020,7 @@ msgstr ""
 #: ../../app/models/ca_storage_locations.php:344
 #: ../../app/models/ca_object_lots.php:334
 #: ../../app/models/ca_movements.php:311 ../../app/models/ca_places.php:360
-#: ../../app/models/ca_list_items.php:557 ../../app/models/ca_loans.php:339
+#: ../../app/models/ca_list_items.php:553 ../../app/models/ca_loans.php:339
 msgid "Related lots"
 msgstr ""
 
@@ -19993,7 +20028,7 @@ msgstr ""
 #: ../../app/models/ca_entities.php:356 ../../app/models/ca_object_lots.php:330
 #: ../../app/models/ca_movements.php:319 ../../app/models/ca_places.php:364
 #: ../../app/models/ca_occurrences.php:352
-#: ../../app/models/ca_list_items.php:562 ../../app/models/ca_loans.php:346
+#: ../../app/models/ca_list_items.php:558 ../../app/models/ca_loans.php:346
 #: ../../app/models/ca_objects.php:543
 #: ../../app/models/ca_object_representations.php:388
 #: ../../app/models/ca_collections.php:372
@@ -20004,7 +20039,7 @@ msgstr ""
 #: ../../app/models/ca_entities.php:354 ../../app/models/ca_object_lots.php:332
 #: ../../app/models/ca_movements.php:315 ../../app/models/ca_places.php:365
 #: ../../app/models/ca_occurrences.php:353
-#: ../../app/models/ca_list_items.php:564 ../../app/models/ca_loans.php:344
+#: ../../app/models/ca_list_items.php:560 ../../app/models/ca_loans.php:344
 #: ../../app/models/ca_objects.php:544
 #: ../../app/models/ca_object_representations.php:394
 #: ../../app/models/ca_collections.php:380
@@ -20015,7 +20050,7 @@ msgstr ""
 #: ../../app/models/ca_entities.php:355 ../../app/models/ca_object_lots.php:333
 #: ../../app/models/ca_movements.php:316 ../../app/models/ca_places.php:366
 #: ../../app/models/ca_occurrences.php:354
-#: ../../app/models/ca_list_items.php:565 ../../app/models/ca_loans.php:345
+#: ../../app/models/ca_list_items.php:561 ../../app/models/ca_loans.php:345
 #: ../../app/models/ca_objects.php:545
 #: ../../app/models/ca_object_representations.php:395
 #: ../../app/models/ca_collections.php:381
@@ -20025,7 +20060,7 @@ msgstr ""
 #: ../../app/models/ca_storage_locations.php:355
 #: ../../app/models/ca_entities.php:361 ../../app/models/ca_object_lots.php:337
 #: ../../app/models/ca_places.php:371 ../../app/models/ca_occurrences.php:359
-#: ../../app/models/ca_list_items.php:568 ../../app/models/ca_objects.php:552
+#: ../../app/models/ca_list_items.php:564 ../../app/models/ca_objects.php:552
 #: ../../app/models/ca_object_representations.php:392
 #: ../../app/models/ca_collections.php:375
 msgid "Related sets"
@@ -20034,7 +20069,7 @@ msgstr ""
 #: ../../app/models/ca_storage_locations.php:356
 #: ../../app/models/ca_entities.php:362 ../../app/models/ca_object_lots.php:338
 #: ../../app/models/ca_places.php:372 ../../app/models/ca_occurrences.php:360
-#: ../../app/models/ca_list_items.php:569 ../../app/models/ca_objects.php:553
+#: ../../app/models/ca_list_items.php:565 ../../app/models/ca_objects.php:553
 #: ../../app/models/ca_object_representations.php:393
 #: ../../app/models/ca_collections.php:376
 #: ../../app/widgets/recentlyCreated/recentlyCreatedWidget.php:55
@@ -20049,7 +20084,7 @@ msgstr ""
 #: ../../app/models/ca_entities.php:369 ../../app/models/ca_object_lots.php:356
 #: ../../app/models/ca_movements.php:325 ../../app/models/ca_places.php:376
 #: ../../app/models/ca_occurrences.php:364
-#: ../../app/models/ca_list_items.php:574 ../../app/models/ca_loans.php:352
+#: ../../app/models/ca_list_items.php:570 ../../app/models/ca_loans.php:352
 #: ../../app/models/ca_objects.php:570
 #: ../../app/models/ca_object_representations.php:403
 #: ../../app/models/ca_collections.php:388
@@ -21014,7 +21049,7 @@ msgid "If set first item in list will use this color."
 msgstr ""
 
 #: ../../app/models/ca_editor_ui_screens.php:789
-#: ../../app/models/ca_list_items.php:108
+#: ../../app/models/ca_list_items.php:104
 msgid "Item color"
 msgstr ""
 
@@ -23983,87 +24018,87 @@ msgstr ""
 msgid "loans ⇔ objects relationships"
 msgstr ""
 
-#: ../../app/models/ca_list_items.php:45
+#: ../../app/models/ca_list_items.php:41
 msgid "list item"
 msgstr ""
 
-#: ../../app/models/ca_list_items.php:67
+#: ../../app/models/ca_list_items.php:63
 #: ../../app/refineries/listItemHierarchyBuilder/listItemHierarchyBuilderRefinery.php:126
 #: ../../app/refineries/listItemSplitter/listItemSplitterRefinery.php:167
 #: ../../app/refineries/listItemIndentedHierarchyBuilder/listItemIndentedHierarchyBuilderRefinery.php:217
 msgid "List"
 msgstr ""
 
-#: ../../app/models/ca_list_items.php:67
+#: ../../app/models/ca_list_items.php:63
 msgid "List item belongs to"
 msgstr ""
 
-#: ../../app/models/ca_list_items.php:77
+#: ../../app/models/ca_list_items.php:73
 msgid "Indicates the type of the list item."
 msgstr ""
 
-#: ../../app/models/ca_list_items.php:84
+#: ../../app/models/ca_list_items.php:80
 msgid "Unique identifier for this list item"
 msgstr ""
 
-#: ../../app/models/ca_list_items.php:92
+#: ../../app/models/ca_list_items.php:88
 msgid "Identifier sort"
 msgstr ""
 
-#: ../../app/models/ca_list_items.php:92
+#: ../../app/models/ca_list_items.php:88
 msgid "Sortable value for identifier"
 msgstr ""
 
-#: ../../app/models/ca_list_items.php:100
+#: ../../app/models/ca_list_items.php:96
 msgid "Item value"
 msgstr ""
 
-#: ../../app/models/ca_list_items.php:100
+#: ../../app/models/ca_list_items.php:96
 msgid ""
 "Value of this list item; is stored in database when this item is selected"
 msgstr ""
 
-#: ../../app/models/ca_list_items.php:108
+#: ../../app/models/ca_list_items.php:104
 msgid "Color to display item in"
 msgstr ""
 
-#: ../../app/models/ca_list_items.php:116
+#: ../../app/models/ca_list_items.php:112
 msgid "Item icon"
 msgstr ""
 
-#: ../../app/models/ca_list_items.php:116
+#: ../../app/models/ca_list_items.php:112
 msgid "Optional icon to use with item"
 msgstr ""
 
-#: ../../app/models/ca_list_items.php:144
+#: ../../app/models/ca_list_items.php:140
 msgid "If checked this item is selectable and can be used in cataloguing."
 msgstr ""
 
-#: ../../app/models/ca_list_items.php:151
+#: ../../app/models/ca_list_items.php:147
 #: ../../app/models/ca_relationship_types.php:126
 msgid "Is default?"
 msgstr ""
 
-#: ../../app/models/ca_list_items.php:151
+#: ../../app/models/ca_list_items.php:147
 msgid "If checked this item will be the default selection for the list."
 msgstr ""
 
-#: ../../app/models/ca_list_items.php:158
+#: ../../app/models/ca_list_items.php:154
 msgid "Validation format"
 msgstr ""
 
-#: ../../app/models/ca_list_items.php:158
+#: ../../app/models/ca_list_items.php:154
 msgid ""
 "NOT CURRENTLY SUPPORTED; WILL BE A PERL-COMPATIBLE REGEX APPLIED TO VALIDATE "
 "INPUT"
 msgstr ""
 
-#: ../../app/models/ca_list_items.php:178
-#: ../../app/models/ca_list_items.php:576
+#: ../../app/models/ca_list_items.php:174
+#: ../../app/models/ca_list_items.php:572
 msgid "List item settings"
 msgstr ""
 
-#: ../../app/models/ca_list_items.php:209
+#: ../../app/models/ca_list_items.php:205
 msgid ""
 "Administrative source of list item. This value is often used to indicate the "
 "administrative sub-division or legacy database from which the object "
@@ -24071,24 +24106,24 @@ msgid ""
 "tool if needed."
 msgstr ""
 
-#: ../../app/models/ca_list_items.php:230
+#: ../../app/models/ca_list_items.php:226
 msgid "Individual person"
 msgstr ""
 
-#: ../../app/models/ca_list_items.php:231
+#: ../../app/models/ca_list_items.php:227
 #: ../../app/conf/user_pref_defs.conf:1465
 msgid "Organization"
 msgstr ""
 
-#: ../../app/models/ca_list_items.php:232
+#: ../../app/models/ca_list_items.php:228
 msgid "Individual person without additional forenames"
 msgstr ""
 
-#: ../../app/models/ca_list_items.php:237
+#: ../../app/models/ca_list_items.php:233
 msgid "Entity class"
 msgstr ""
 
-#: ../../app/models/ca_list_items.php:238
+#: ../../app/models/ca_list_items.php:234
 msgid ""
 "The class of entity the type represents. Use <em>Individual person</em> for "
 "entities that require a fully articulated personal name. Use "
@@ -24096,30 +24131,30 @@ msgid ""
 "families."
 msgstr ""
 
-#: ../../app/models/ca_list_items.php:250
-#: ../../app/models/ca_list_items.php:251
-#: ../../app/models/ca_list_items.php:265
-#: ../../app/models/ca_list_items.php:266
-#: ../../app/models/ca_list_items.php:280
-#: ../../app/models/ca_list_items.php:281
-#: ../../app/models/ca_list_items.php:295
-#: ../../app/models/ca_list_items.php:296
-#: ../../app/models/ca_list_items.php:310
-#: ../../app/models/ca_list_items.php:311
-#: ../../app/models/ca_list_items.php:325
-#: ../../app/models/ca_list_items.php:326
-#: ../../app/models/ca_list_items.php:340
-#: ../../app/models/ca_list_items.php:341
-#: ../../app/models/ca_list_items.php:355
-#: ../../app/models/ca_list_items.php:356
-#: ../../app/models/ca_list_items.php:370
-#: ../../app/models/ca_list_items.php:371
-#: ../../app/models/ca_list_items.php:385
-#: ../../app/models/ca_list_items.php:386
+#: ../../app/models/ca_list_items.php:246
+#: ../../app/models/ca_list_items.php:247
+#: ../../app/models/ca_list_items.php:261
+#: ../../app/models/ca_list_items.php:262
+#: ../../app/models/ca_list_items.php:276
+#: ../../app/models/ca_list_items.php:277
+#: ../../app/models/ca_list_items.php:291
+#: ../../app/models/ca_list_items.php:292
+#: ../../app/models/ca_list_items.php:306
+#: ../../app/models/ca_list_items.php:307
+#: ../../app/models/ca_list_items.php:321
+#: ../../app/models/ca_list_items.php:322
+#: ../../app/models/ca_list_items.php:336
+#: ../../app/models/ca_list_items.php:337
+#: ../../app/models/ca_list_items.php:351
+#: ../../app/models/ca_list_items.php:352
+#: ../../app/models/ca_list_items.php:366
+#: ../../app/models/ca_list_items.php:367
+#: ../../app/models/ca_list_items.php:381
+#: ../../app/models/ca_list_items.php:382
 msgid "Render in new menu"
 msgstr ""
 
-#: ../../app/models/ca_list_items.php:622
+#: ../../app/models/ca_list_items.php:618
 msgid "Locale %1 does not exist"
 msgstr ""
 
@@ -25282,7 +25317,7 @@ msgid ""
 "cataloguing."
 msgstr ""
 
-#: ../../app/models/ca_lists.php:1867
+#: ../../app/models/ca_lists.php:1870
 msgid "Current selection"
 msgstr ""
 
@@ -28910,7 +28945,7 @@ msgstr ""
 msgid "You cannot edit that form"
 msgstr ""
 
-#: ../../app/controllers/manage/PawtucketController.php:140
+#: ../../app/controllers/manage/PawtucketController.php:144
 msgid "Saved values"
 msgstr ""
 
@@ -28979,7 +29014,7 @@ msgid "Skipped %1 worksheet"
 msgstr ""
 
 #: ../../app/controllers/manage/MetadataExportController.php:283
-#: ../../app/controllers/batch/MetadataImportController.php:225
+#: ../../app/controllers/batch/MetadataImportController.php:229
 msgid "Deleted importer"
 msgstr ""
 
@@ -29046,23 +29081,23 @@ msgid "Row_id is invalid"
 msgstr ""
 
 #: ../../app/controllers/manage/sets/SetEditorController.php:189
-#: ../../app/controllers/manage/sets/SetEditorController.php:291
+#: ../../app/controllers/manage/sets/SetEditorController.php:295
 msgid "No set defined"
 msgstr ""
 
-#: ../../app/controllers/manage/sets/SetEditorController.php:270
+#: ../../app/controllers/manage/sets/SetEditorController.php:274
 msgid "Could not duplicate items in set: %1"
 msgstr ""
 
-#: ../../app/controllers/manage/sets/SetEditorController.php:275
+#: ../../app/controllers/manage/sets/SetEditorController.php:279
 msgid "Records have been successfully duplicated and added to set"
 msgstr ""
 
-#: ../../app/controllers/manage/sets/SetEditorController.php:278
+#: ../../app/controllers/manage/sets/SetEditorController.php:282
 msgid "Cannot duplicate items"
 msgstr ""
 
-#: ../../app/controllers/manage/sets/SetEditorController.php:298
+#: ../../app/controllers/manage/sets/SetEditorController.php:302
 msgid "No items are available for export"
 msgstr ""
 
@@ -29126,31 +29161,31 @@ msgstr ""
 msgid "contains"
 msgstr ""
 
-#: ../../app/controllers/batch/MediaImportController.php:515
+#: ../../app/controllers/batch/MediaImportController.php:519
 msgid "Cannot write file: directory %1 is not accessible"
 msgstr ""
 
-#: ../../app/controllers/batch/MediaImportController.php:532
+#: ../../app/controllers/batch/MediaImportController.php:536
 msgid "Uploaded %1 file"
 msgstr ""
 
-#: ../../app/controllers/batch/MediaImportController.php:532
+#: ../../app/controllers/batch/MediaImportController.php:536
 msgid "Uploaded %1 files"
 msgstr ""
 
-#: ../../app/controllers/batch/MediaImportController.php:534
+#: ../../app/controllers/batch/MediaImportController.php:538
 msgid "Skipped %1 file"
 msgstr ""
 
-#: ../../app/controllers/batch/MediaImportController.php:534
+#: ../../app/controllers/batch/MediaImportController.php:538
 msgid "Skipped %1 files"
 msgstr ""
 
-#: ../../app/controllers/batch/EditorController.php:302
+#: ../../app/controllers/batch/EditorController.php:306
 msgid "Batch editing %1 %2 with set %3"
 msgstr ""
 
-#: ../../app/controllers/batch/MetadataImportController.php:249
+#: ../../app/controllers/batch/MetadataImportController.php:253
 msgid "Invalid importer"
 msgstr ""
 

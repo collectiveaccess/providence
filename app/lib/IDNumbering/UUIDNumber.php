@@ -125,7 +125,7 @@
 					case 'VER3':
                     case 'VER5':
                         if (!$ps_value) {
-                            $va_element_errors[$vs_element_name] = _t("A value is reuiqred for UUID Versions 3 & 5");
+                            $va_element_errors[$vs_element_name] = _t("A value is required for UUID Versions 3 & 5");
                         }
                         if($va_element_info['namespaceID'] == ''){
                             $va_element_errors[$vs_element_name] = _t("A NamespaceID (root UUID) is required for UUID %1", $va_element_info['type']);
