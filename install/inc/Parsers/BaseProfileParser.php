@@ -27,8 +27,30 @@
  */
 namespace Installer\Parsers;
 
+require_once(__CA_LIB_DIR__.'/Logging/KLogger/KLogger.php');
+
 class BaseProfileParser {
 	# --------------------------------------------------
+	/**
+	 *
+	 */
+	protected $log;
 	
+	# --------------------------------------------------
+	/**
+	 *
+	 */
+	public function __construct(?string $directory=null, ?string $profile=null) {
+		$this->log = new \KLogger(__CA_BASE_DIR__ . '/app/log', \KLogger::DEBUG);
+	}
+	# --------------------------------------------------
+	/**
+	 *
+	 */
+	protected function logStatus(string $msg) {
+		if($this->log) {
+			$this->log->logInfo($msg);
+		}
+	}
 	# --------------------------------------------------
 }

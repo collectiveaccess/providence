@@ -78,8 +78,8 @@
 			caIncrementProgress($vn_progress, "Processing locales");
 			$vo_installer->processLocales();
 
-			caIncrementProgress($vn_progress, "Processing lists");
-			$vo_installer->processLists('caGetListToBeLoaded');
+			#caIncrementProgress($vn_progress, "Processing lists");
+			#$vo_installer->processLists('caGetListToBeLoaded');
 
 			$vn_progress += 7;
 			caIncrementProgress($vn_progress, "Processing relationship types");

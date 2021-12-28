@@ -57,7 +57,7 @@ trait CLIUtilsConfiguration {
 		$vs_profile_directory = $vs_profile_directory ? $vs_profile_directory : __CA_BASE_DIR__ . '/install/profiles';
 		$t_total = new Timer();
 
-		$vo_installer = new Installer(
+		$vo_installer = new \Installer\Installer(
 			$vs_profile_directory,
 			$profile,
 			$po_opts->getOption('admin-email'),

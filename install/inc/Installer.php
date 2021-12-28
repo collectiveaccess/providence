@@ -30,6 +30,7 @@ namespace Installer;
 
 require_once(__CA_LIB_DIR__.'/Media/MediaVolumes.php');
 require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch.php');
+require_once(__CA_APP_DIR__.'/helpers/configurationHelpers.php');
 
 class Installer {
 	# --------------------------------------------------
@@ -57,6 +58,11 @@ class Installer {
 	# --------------------------------------------------
 	/** @var array  */
 	protected $locales;
+	
+	/** 
+	 * Parsed profile data for insertion
+	 */
+	protected $parsed_data = [];
 	# --------------------------------------------------
 	/**
 	 * @var Db
@@ -66,7 +72,7 @@ class Installer {
 	/**
 	 * @var array
 	 */
-	protected $opa_metadata_element_deferred_settings_processing = [];
+	protected $metadata_element_deferred_settings_processing = [];
 	# --------------------------------------------------
 	/**
 	 * Constructor
@@ -90,16 +96,16 @@ class Installer {
 
 		$this->db = new \Db();
 		
+		// Process selected profile into data structure for insertion
+		$data = $this->parseProfile($directory, $profile);
+		
 		if(!$skip_load) {
-			if($this->loadProfile($directory, $profile)) {
-				$this->extractAndLoadBase();
-
-				if(!$this->validateProfile()) {
-					$this->addError("Profile validation failed. Your profile doesn't conform to the required XML schema.");
-				}
-			} else {
-				$this->addError("Could not read profile '{$ps_profile_name}'. Please check the file permissions.");
+			if(!is_array($data)) {
+				// TODO: get error from parser
+				$this->addError("Could not load profile.");
+				return false;
 			}
+			$this->parsed_data = $data;
 		}
 
 		if($log_output) {
@@ -111,15 +117,33 @@ class Installer {
 	}
 	# --------------------------------------------------
 	/**
+	 * Parse a profile, returning a data structure will profile content ready for insertion into the database
+	 *
+	 * @param string $directory path to a directory containing profiles
+	 * @param string $profile Name of the profile, with or without file extension
+	 *
+	 * @return array
+	 */
+	public function parseProfile(string $directory, string $profile) : ?array {
+		if(!($path = \caGetProfilePath($directory, $profile))) {
+			return null;
+		}
+		
+		if(!($parser = self::profileParser($path))) { return null; }
+		
+		return $parser->parse($directory, $profile);
+	}
+	# --------------------------------------------------
+	/**
 	 * Return metadata (name, description) for a profile
 	 *
-	 * @param string $directory path to a directory containing profiles and XML schema
-	 * @param string $profile of the profile, as in <$directory>/xml/<$profile>.xml
+	 * @param string $directory path to a directory containing profiles
+	 * @param string $profile Name of the profile, with or without file extension
 	 *
 	 * @return array
 	 */
 	static public function getProfileInfo(string $directory, string $profile) : ?array {
-		if(!($path = caGetProfilePath($directory, $profile))) {
+		if(!($path = \caGetProfilePath($directory, $profile))) {
 			return null;
 		}
 		
@@ -151,99 +175,26 @@ class Installer {
 	}
 	# --------------------------------------------------
 	/**
-	 *
+	 * TODO: Remove
 	 */
-	private function validateProfile() {
-		$profile_path = caGetProfilePath($this->profile_dir, $this->profile_name);
-		$base_path = caGetProfilePath($this->profile_dir, $this->base_name);
-		$schema_path = caGetProfilePath($this->profile_dir, 'profile.xsd');
-		
-		// simplexml doesn't support validation -> use DOMDocument
-		$vo_profile = new \DOMDocument();
-		@$vo_profile->load($profile_path);
-
-		if($this->base) {
-			$vo_base = new \DOMDocument();
-			$vo_base->load($base_path);
-
-			if($this->debug) {
-				ob_start();
-				$vb_return = $vo_profile->schemaValidate($schema_path) && $vo_base->schemaValidate($schema_path);
-				$this->profile_debug .= ob_get_clean();
-			} else {
-				$vb_return = @$vo_profile->schemaValidate($schema_path) && @$vo_base->schemaValidate($schema_path);
-			}
-		} else {
-			if($this->debug) {
-				ob_start();
-				$vb_return = $vo_profile->schemaValidate($schema_path);
-				$this->profile_debug .= ob_get_clean();
-			} else {
-				$vb_return = @$vo_profile->schemaValidate($schema_path);
-			}
-		}
-
-		if($vb_return) {
-			$this->logStatus(_t('Successfully validated profile %1', $this->profile_name));
-		} else {
-			$this->logStatus(_t('Validation failed for profile %1', $this->profile_name));
-		}
-
-		return $vb_return;
-	}
-	# --------------------------------------------------
-	/**
-	 *
-	 */
-	public function loadProfile(string $directory, string $profile) : bool {
-		$path = caGetProfilePath($directory, $profile);
-		if(is_readable($path)) {
-			$this->profile = @simplexml_load_file($path);
-			return true;
-		} else {
-			return false;
-		}
-	}
-	# --------------------------------------------------
-	/**
-	 *
-	 */
-	public function loadProfileFromString($ps_xml, $pb_skip_validation=false) {
-		if(!$pb_skip_validation) {
-			$o_dom = new \DOMDocument();
-			$o_dom->loadXML($ps_xml);
-			if(!@$o_dom->schemaValidate(__CA_BASE_DIR__.'/install/profiles/xml/profile.xsd')) {
-				throw new \Exception("Profile validation failed. Your profile doesn't conform to the required XML schema.");
-			}
-		}
-		$this->profile = @simplexml_load_string($ps_xml);
-		if(!$this->profile) {
-			throw new \Exception('Something went wrong while initializing Installer. Did you send valid XML?');
-		}
-
-		$this->logStatus(_t('Successfully loaded profile from string'));
-
-		return (bool) $this->profile;
-	}
-	# --------------------------------------------------
-	/**
-	 *
-	 */
-	public function extractAndLoadBase() {
-		$this->base_name = self::getAttribute($this->profile, "base");
-		if(!($base_path = caGetProfilePath($this->profile_dir, $this->base_name))) {
-			throw new \Exception("Could not find base profile.");
-		}
-		if($this->base_name) {
-			$this->base = simplexml_load_file($base_path);
-			$this->logStatus(_t('Successfully loaded base profile %1', $this->base_name));
-		} else {
-			$this->base = null;
-		}
-	}
+// 	public function extractAndLoadBase() {
+// 		$this->base_name = self::getAttribute($this->profile, "base");
+// 		if(!($base_path = caGetProfilePath($this->profile_dir, $this->base_name))) {
+// 			throw new \Exception("Could not find base profile.");
+// 		}
+// 		if($this->base_name) {
+// 			$this->base = simplexml_load_file($base_path);
+// 			$this->logStatus(_t('Successfully loaded base profile %1', $this->base_name));
+// 		} else {
+// 			$this->base = null;
+// 		}
+// 	}
 	# --------------------------------------------------
 	# ERROR HANDLING / DEBUGGING
 	# --------------------------------------------------
+	/**
+	 *
+	 */
 	protected function addError($ps_error) {
 		$this->logStatus($ps_error);
 		$this->errors[] = $ps_error;
@@ -283,17 +234,6 @@ class Installer {
 	/**
 	 *
 	 */
-	protected  static function getAttribute($po_simplexml, $ps_attr) {
-		if(isset($po_simplexml[$ps_attr])) {
-			return (string) $po_simplexml[$ps_attr];
-		} else {
-			return null;
-		}
-	}
-	# --------------------------------------------------
-	/**
-	 *
-	 */
 	private static function createDirectoryPath($ps_path) {
 		if (!file_exists($ps_path)) {
 			if (!@mkdir($ps_path, 0777, true)) {
@@ -307,40 +247,41 @@ class Installer {
 	}
 	# --------------------------------------------------
 	/**
+	 * 
+	 *
 	 * @param LabelableBaseModelWithAttributes $t_instance
-	 * @param SimpleXMLElement $po_labels
-	 * @param array $pa_locales array
 	 * @param bool $pb_force_preferred
 	 * @return bool
 	 */
-	protected static function addLabelsFromXMLElement($t_instance,$po_labels, $pa_locales, $pb_force_preferred=false) {
+	protected static function addLabels($t_instance, $labels, $force_preferred=false) {
 		require_once(__CA_LIB_DIR__."/LabelableBaseModelWithAttributes.php");
 
 		if(!($t_instance instanceof \LabelableBaseModelWithAttributes)) {
 			return false;
 		}
+		
 		/** @var LabelableBaseModelWithAttributes $t_instance */
-		if (!$po_labels || !$po_labels->children()) {
-			$t_instance->addLabel(array($t_instance->getLabelDisplayField() => "???"), array_shift($pa_locales), false, true);
+		if (!$labels || !is_array($labels) || !sizeof($labels)) {
+			$t_instance->addLabel(array($t_instance->getLabelDisplayField() => "???"), \ca_locales::getDefaultCataloguingLocaleID(), false, true);
 			return true; 
 		}
 
 		$va_old_label_ids = array_flip($t_instance->getLabelIDs());
 
-		foreach($po_labels->children() as $vo_label) {
+		foreach($labels as $label) {
 			$va_label_values = [];
-			$vs_locale = self::getAttribute($vo_label, "locale");
-			$vn_locale_id = $pa_locales[$vs_locale];
+			$vs_locale = $label["locale"];
+			$vn_locale_id = \ca_locales::codeToID($vs_locale);
 
-			$vb_preferred = self::getAttribute($vo_label, "preferred");
-			if($pb_force_preferred || (bool)$vb_preferred || is_null($vb_preferred)) {
+			$vb_preferred = $label["preferred"];
+			if($force_preferred || (bool)$vb_preferred || is_null($vb_preferred)) {
 				$vb_preferred = true;
 			} else {
 				$vb_preferred = false;
 			}
 
-			foreach($vo_label->children() as $vo_field) {
-				$va_label_values[$vo_field->getName()] = (string) $vo_field;
+			foreach($label as $name => $value) {
+				$va_label_values[$name] = (string) $value;
 			}
 			$va_existing_labels = $vb_preferred ? $t_instance->getPreferredLabels(array($vn_locale_id)) : $t_instance->getNonPreferredLabels(array($vn_locale_id));
 			if(
@@ -364,6 +305,9 @@ class Installer {
 		return true;
 	}
 	# --------------------------------------------------
+	/**
+	 *
+	 */
 	public function performPreInstallTasks() {
 		$o_config = \Configuration::load();
 		\CompositeCache::flush(); // avoid stale cache
@@ -405,11 +349,14 @@ class Installer {
 		return true;
 	}
 	# --------------------------------------------------
+	/**
+	 *
+	 */
 	public function performPostInstallTasks() {
 	    // process metadata element settings that couldn't be processed during install
 	    // (Eg. those for hideIfSelected_*)
-	    if (sizeof($this->opa_metadata_element_deferred_settings_processing)) {
-	        foreach($this->opa_metadata_element_deferred_settings_processing as $vs_element_code => $va_settings) {
+	    if (sizeof($this->metadata_element_deferred_settings_processing)) {
+	        foreach($this->metadata_element_deferred_settings_processing as $vs_element_code => $va_settings) {
 	            if (!($t_element = \ca_metadata_elements::getInstance($vs_element_code))) { continue; }
 	            $va_available_settings = $t_element->getAvailableSettings();
 	            foreach($va_settings as $vs_setting_name => $va_setting_values) {
@@ -440,7 +387,7 @@ class Installer {
 	}
 	# --------------------------------------------------
 	/**
-	 * Checks if ColletiveAccess tables already exist in the database
+	 * Checks if CollectiveAccess tables already exist in the database
 	 *
 	 * @return boolean Returns true if CA is already installed
 	 */
@@ -515,153 +462,120 @@ class Installer {
 	# PROFILE CONTENT PROCESSING
 	# --------------------------------------------------
 	public function processLocales() {
-		require_once(__CA_MODELS_DIR__."/ca_locales.php");
+		global $g_ui_locale_id, $g_ui_locale;
 
 		$t_locale = new \ca_locales();
 		// Find any existing locales
-		$va_locales = $t_locale->getLocaleList(array('index_by_code' => true));
-		foreach($va_locales as $vs_code => $va_locale) {
+		$locales = $t_locale->getLocaleList(array('index_by_code' => true));
+		foreach($locales as $vs_code => $va_locale) {
 			$this->locales[$vs_code] = $va_locale['locale_id'];
 		}
-		global $g_ui_locale, $g_ui_locale_id;
-		if($this->base_name) {
-			$va_locales = [];
-			foreach($this->profile->locales->children() as $vo_locale) {				
-				$key = self::getAttribute($vo_locale, "lang").'_'.self::getAttribute($vo_locale, "country").'_'.self::getAttribute($vo_locale, "dialect");
-				if (isset($va_locales[$key])) { continue; }
-				$va_locales[$key] = $vo_locale;
-			}
-			foreach($this->base->locales->children() as $vo_locale) {
-				$key = self::getAttribute($vo_locale, "lang").'_'.self::getAttribute($vo_locale, "country").'_'.self::getAttribute($vo_locale, "dialect");
-				if (isset($va_locales[$key])) { continue; }
-				$va_locales[$key] = $vo_locale;
-			}
-			$va_locales = array_values($va_locales);
-		} else {
-			$va_locales = $this->profile->locales->children();
-		}
-		foreach($va_locales as $vo_locale) {
-			$t_locale->clear();
-			$vs_language = self::getAttribute($vo_locale, "lang");
-			$vs_dialect = self::getAttribute($vo_locale, "dialect");
-			$vs_country = self::getAttribute($vo_locale, "country");
-			$vb_dont_use_for_cataloguing = self::getAttribute($vo_locale, "dontUseForCataloguing");
-			$vs_locale_code = $vs_dialect ? $vs_language."_".$vs_country.'_'.$vs_dialect : $vs_language."_".$vs_country;
+		
+		$locales = $this->parsed_data['locales'];
 
-			if(isset($this->locales[$vs_locale_code]) && ($vn_locale_id = $this->locales[$vs_locale_code])) { // don't insert duplicate locales
-				$t_locale->load($vn_locale_id); // load locale so that we can 'overwrite' any existing attributes/fields
+		foreach($locales as $locale) {
+			$t_locale->clear();
+			$name = $locale["name"];
+			$language = $locale["language"];
+			$dialect = $locale["dialect"];
+			$country = $locale["country"];
+			$dont_use_for_cataloguing = $locale["dontUseForCataloguing"];
+			$locale_code = $dialect ? $language."_".$country.'_'.$dialect : $language."_".$country;
+
+			if(isset($this->locales[$locale_code]) && ($locale_id = $this->locales[$locale_code])) { // don't insert duplicate locales
+				$t_locale->load($locale_id); // load locale so that we can 'overwrite' any existing attributes/fields
 			}
-			$t_locale->set('name', (string)$vo_locale);
-			$t_locale->set('country', $vs_country);
-			$t_locale->set('language', $vs_language);
-			if($vs_dialect) $t_locale->set('dialect', $vs_dialect);
+			$t_locale->set('name', $name);
+			$t_locale->set('country', $country);
+			$t_locale->set('language', $language);
+			if($dialect) $t_locale->set('dialect', $dialect);
 			
-			if (!is_null($vb_dont_use_for_cataloguing)) {
-				$t_locale->set('dont_use_for_cataloguing', (bool)$vb_dont_use_for_cataloguing);
+			if (!is_null($dont_use_for_cataloguing)) {
+				$t_locale->set('dont_use_for_cataloguing', (bool)$dont_use_for_cataloguing);
 			}
 			($t_locale->getPrimaryKey() > 0) ? $t_locale->update() : $t_locale->insert();
 
 			if ($t_locale->numErrors()) {
-				$this->addError("There was an error while inserting locale {$vs_locale_code}: ".join(" ",$t_locale->getErrors()));
+				$this->addError("There was an error while inserting locale {$locale_code}: ".join(" ",$t_locale->getErrors()));
 			}
-			if ($vs_locale_code === $g_ui_locale && $t_locale->getPrimaryKey()){
+			if ($locale_code === $g_ui_locale && $t_locale->getPrimaryKey()){
 				$g_ui_locale_id = $t_locale->getPrimaryKey();
 			}
-			$this->locales[$vs_locale_code] = $t_locale->getPrimaryKey();
+			$this->locales[$locale_code] = $t_locale->getPrimaryKey();
 		}
 
-		$va_locales = $t_locale->getAppConfig()->getList('locale_defaults');
-		$vn_locale_id = $t_locale->localeCodeToID($va_locales[0]);
+		$locales = $t_locale->getAppConfig()->getList('locale_defaults');
+		$locale_id = $t_locale->localeCodeToID($locales[0]);
 
-		if(!$vn_locale_id) {
-			throw new \Exception("The locale default is set to a non-existing locale. Try adding '". $va_locales[0] . "' to your profile.");
+		if(!$locale_id) {
+			throw new \Exception("The locale default is set to a non-existing locale. Try adding '". $locales[0] . "' to your profile.");
 		}
 		// Ensure the default locale comes first.
-		uksort($this->locales, function($a) use ( $vn_locale_id ) {
-			return $a === $vn_locale_id;
+		uksort($this->locales, function($a) use ( $locale_id ) {
+			return $a === $locale_id;
 		});
 
 		return true;
 	}
 	# --------------------------------------------------
+	/**
+	 *
+	 */
 	public function processLists($f_callback=null) {
-		require_once(__CA_MODELS_DIR__."/ca_lists.php");
-		require_once(__CA_MODELS_DIR__."/ca_list_items.php");
+		$lists = $this->parsed_data['lists'];
 
-		if($this->base_name) { // "merge" profile and its base
-			$va_lists = [];
-			foreach($this->base->lists->children() as $vo_list) {
-				$va_lists[self::getAttribute($vo_list, "code")] = $vo_list;
-			}
-			foreach($this->profile->lists->children() as $vo_list) {
-				$va_lists[self::getAttribute($vo_list, "code")] = $vo_list;
-			}
-		} else {
-			$va_lists = $this->profile->lists->children();
-		}
-
-		//$o_trans = new \Transaction();
-
-		$vn_i = 0;
-		$vn_num_lists = sizeof($va_lists);
-		foreach($va_lists as $vo_list) {
-			$vs_list_code = self::getAttribute($vo_list, "code");
-			$this->logStatus(_t('Processing list with code %1', $vs_list_code));
-			if(!($t_list = \ca_lists::find(array('list_code' => $vs_list_code), array('returnAs' => 'firstModelInstance')))) {
+		$i = 0;
+		$num_lists = sizeof($lists);
+		foreach($lists as $list) {
+			$list_code = $list['code'];
+			$this->logStatus(_t('Processing list with code %1', $list_code));
+			if(!($t_list = \ca_lists::find(array('list_code' => $list_code), array('returnAs' => 'firstModelInstance')))) {
 				$t_list = new \ca_lists();
 			}
-			//$t_list->setTransaction($o_trans);
 
 			if($t_list->getPrimaryKey()) {
-				$this->logStatus(_t('List %1 already exists', $vs_list_code));
+				$this->logStatus(_t('List %1 already exists', $list_code));
 			} else {
-				$this->logStatus(_t('%1 is a new list', $vs_list_code));
+				$this->logStatus(_t('%1 is a new list', $list_code));
 			}
 
 
-			if(self::getAttribute($vo_list, "deleted") && $t_list->getPrimaryKey()) {
-				$this->logStatus(_t('Deleting list %1', $vs_list_code));
+			if($list["deleted"] && $t_list->getPrimaryKey()) {
+				$this->logStatus(_t('Deleting list %1', $list_code));
 				$t_list->delete(true);
-				//$o_trans->commit();
 				continue;
 			}
-
-			$vb_hierarchical = self::getAttribute($vo_list, "hierarchical");
-			$vb_system = self::getAttribute($vo_list, "system");
-			$vb_voc = self::getAttribute($vo_list, "vocabulary");
-			$vn_def_sort = self::getAttribute($vo_list, "defaultSort");
 
 			if (is_callable($f_callback)) {
 				$vn_i++;
 
-				$f_callback($vs_list_code, $vn_i, $vn_num_lists);
+				$f_callback($list_code, $i, $num_lists);
 			}
 
-			$t_list->set("list_code",$vs_list_code);
-			$t_list->set("is_system_list",intval($vb_system));
-			$t_list->set("is_hierarchical",$vb_hierarchical);
-			$t_list->set("use_as_vocabulary",$vb_voc);
-			if($vn_def_sort) $t_list->set("default_sort",(int)$vn_def_sort);
+			$t_list->set("list_code", $list_code);
+			$t_list->set("is_system_list", intval($list['system']));
+			$t_list->set("is_hierarchical", $list['hierarchical']);
+			$t_list->set("use_as_vocabulary", $list['vocabulary']);
+			if((int)$list['defaultSort'] >= 0) $t_list->set("default_sort",(int)$list['defaultSort']);
 			if($t_list->getPrimaryKey()) {
 				$t_list->update();
 			} else {
 				$t_list->insert();
 			}
-
+			
 			if ($t_list->numErrors()) {
-				$this->addError("There was an error while inserting list {$vs_list_code}: ".join(" ",$t_list->getErrors()));
+				$this->addError("There was an error while inserting list {$list_code}: ".join(" ",$t_list->getErrors()));
 			} else {
-				$this->logStatus(_t('Successfully inserted or updated list %1', $vs_list_code));
-				self::addLabelsFromXMLElement($t_list, $vo_list->labels, $this->locales);
+				$this->logStatus(_t('Successfully inserted or updated list %1', $list_code));
+				
+				$this->addLabels($t_list, $list['labels']);
 				if ($t_list->numErrors()) {
 					$this->addError("There was an error while inserting list label for {$vs_list_code}: ".join(" ",$t_list->getErrors()));
 				}
-				if($vo_list->items) {
-					if(!$this->processListItems($t_list, $vo_list->items, null)) {
-						//$o_trans->rollback();
+				if($list['items']) {
+					if(!$this->processListItems($t_list, $list['items'], null)) {
 						return false;
 					}
-					//$o_trans->commit();
 				}
 			}
 		}
@@ -675,71 +589,68 @@ class Installer {
 	 * @param $pn_parent_id int
 	 * @return bool
 	 */
-	protected  function processListItems($t_list, $po_items, $pn_parent_id) {
-		foreach($po_items->children() as $vo_item) {
-			$vs_item_value = self::getAttribute($vo_item, "value");
-			$vs_item_idno = self::getAttribute($vo_item, "idno");
-			$vs_type = self::getAttribute($vo_item, "type");
-			$vs_status = self::getAttribute($vo_item, "status");
-			$vs_access = self::getAttribute($vo_item, "access");
-			$vs_rank = self::getAttribute($vo_item, "rank");
-			$vn_enabled = self::getAttribute($vo_item, "enabled");
-			$vn_default = self::getAttribute($vo_item, "default");
-			$vs_color = self::getAttribute($vo_item, "color");
+	protected  function processListItems($t_list, $items, $parent_id) {
+		foreach($items as $item) {
+			$item_value = $item["value"];
+			$item_idno = $item["idno"];
+			$type = $item["type"];
+			$status = $item["status"];
+			$access = $item["access"];
+			$rank = $item["rank"];
+			$vn_enabled = $item["enabled"];
+			$vn_default = $item["default"];
+			$color = $item["color"];
 
-			if (!isset($vs_item_value) || !strlen(trim($vs_item_value))) {
-				$vs_item_value = $vs_item_idno;
+			$type_id = null;
+			if ($type) {
+				$type_id = $t_list->getItemIDFromList('list_item_types', $type);
 			}
 
-			$vn_type_id = null;
-			if ($vs_type) {
-				$vn_type_id = $t_list->getItemIDFromList('list_item_types', $vs_type);
-			}
+			if (!isset($status)) { $status = 0; }
+			if (!isset($access)) { $access = 0; }
+			if (!isset($rank)) { $rank = 0; }
 
-			if (!isset($vs_status)) { $vs_status = 0; }
-			if (!isset($vs_access)) { $vs_access = 0; }
-			if (!isset($vs_rank)) { $vs_rank = 0; }
-
-			$this->logStatus(_t('Processing list item with idno %1', $vs_item_idno));
-			$vb_deleted = self::getAttribute($vo_item, "deleted");
-			if($vn_item_id = caGetListItemID($t_list->get('list_code'), $vs_item_idno, array('dontCache' => true))) {
-				$this->logStatus(_t('List item with idno %1 already exists', $vs_item_idno));
-				if($vb_deleted) {
-					$this->logStatus(_t('Deleting list item with idno %1', $vs_item_idno));
-					$t_item = new \ca_list_items($vn_item_id);
+			$this->logStatus(_t('Processing list item with idno %1', $item_idno));
+			$deleted = $item["deleted"];
+			
+			if($item_id = caGetListItemID($t_list->get('list_code'), $item_idno, ['dontCache' => true])) {
+				$this->logStatus(_t('List item with idno %1 already exists', $item_idno));
+				if($deleted) {
+					$this->logStatus(_t('Deleting list item with idno %1', $item_idno));
+					$t_item = new \ca_list_items($item_id);
 					$t_item->delete();
 					continue;
 				}
-				$t_item = $t_list->editItem($vn_item_id, $vs_item_value, $vn_enabled, $vn_default, $pn_parent_id, $vs_item_idno, '', (int)$vs_status, (int)$vs_access, (int)$vs_rank, $vs_color);
+				$t_item = $t_list->editItem($item_id, $item_value, $enabled, $default, $parent_id, $item_idno, '', (int)$status, (int)$access, (int)$rank, $color);
 			} else {
-				$this->logStatus(_t('List item with idno %1 is a new item', $vs_item_idno));
+				$this->logStatus(_t('List item with idno %1 is a new item', $item_idno));
 				if ($vb_deleted) {
 					continue;
 				} else {
-					$t_item = $t_list->addItem($vs_item_value, $vn_enabled, $vn_default, $pn_parent_id, $vn_type_id, $vs_item_idno, '', (int)$vs_status, (int)$vs_access, (int)$vs_rank, $vs_color);
+					$t_item = $t_list->addItem($item_value, $enabled, $default, $parent_id, $type_id, $item_idno, '', (int)$status, (int)$access, (int)$rank, $color);
 				}
 			}
 
 			if (($t_list->numErrors() > 0) || !is_object($t_item)) {
-				$this->addError("There was an error while inserting list item {$vs_item_idno}: ".join(" ",$t_list->getErrors()));
+				$this->addError("There was an error while inserting list item {$item_idno}: ".join(" ",$t_list->getErrors()));
 				return false;
 			} else {
-				$this->logStatus(_t('Successfully updated/inserted list item with idno %1', $vs_item_idno));
-				if($vo_item->settings) {
-					$this->_processSettings($t_item, $vo_item->settings);
+				$this->logStatus(_t('Successfully updated/inserted list item with idno %1', $item_idno));
+				if($item->settings) {
+					$this->_processSettings($t_item, $item['settings']);
 					$t_item->update();
 					if ($t_item->numErrors()) {
-						$this->addError("There was an error while adding a setting for list item with idno {$vs_item_idno}: ".join(" ",$t_item->getErrors()));
+						$this->addError("There was an error while adding a setting for list item with idno {$item_idno}: ".join(" ",$t_item->getErrors()));
 					}
 				}
-				self::addLabelsFromXMLElement($t_item, $vo_item->labels, $this->locales);
+				self::addLabels($t_item, $item['labels']);
 				if ($t_item->numErrors()) {
-					$this->addError("There was an error while inserting list item label for {$vs_item_idno}: ".join(" ",$t_item->getErrors()));
+					$this->addError("There was an error while inserting list item label for {$item_idno}: ".join(" ",$t_item->getErrors()));
 				}
 			}
 
-			if (isset($vo_item->items)) {
-				if(!$this->processListItems($t_list, $vo_item->items, $t_item->getPrimaryKey())) {
+			if (isset($item['items'])) {
+				if(!$this->processListItems($t_list, $item['items'], $t_item->getPrimaryKey())) {
 					return false;
 				}
 			}
@@ -756,119 +667,108 @@ class Installer {
 		$t_rel_types = new \ca_relationship_types();
 		$t_list = new \ca_lists();
 
-		$va_elements = [];
-		if($this->base_name) { // "merge" profile and its base
-			foreach($this->base->elementSets->children() as $vo_element) {
-				$va_elements[self::getAttribute($vo_element, "code")] = $vo_element;
-			}
-			foreach($this->profile->elementSets->children() as $vo_element) {
-				$va_elements[self::getAttribute($vo_element, "code")] = $vo_element;
-			}
-		} else {
-			foreach($this->profile->elementSets->children() as $vo_element) {
-				$va_elements[self::getAttribute($vo_element, "code")] = $vo_element;
-			}
-		}
+		$elements = $this->parsed_data['metadataElements'];
+		
 
-		foreach($va_elements as $vs_element_code => $vo_element) {
-			if($vn_element_id = $this->processMetadataElement($vo_element, null)) {
+		foreach($elements as $element_code => $element) {
+			if($element_id = $this->processMetadataElement($element, null)) {
 				// nuke previous restrictions. there shouldn't be any if we're installing from scratch.
 				// if we're updating, we expect the list of restrictions to include all restrictions!
-				if(sizeof($vo_element->typeRestrictions->children())) {
-					$this->db->query('DELETE FROM ca_metadata_type_restrictions WHERE element_id=?', $vn_element_id);
+				if(sizeof($element['typeRestrictions'])) {
+					$this->db->query('DELETE FROM ca_metadata_type_restrictions WHERE element_id = ?', $element_id);
 				}
 
-				$this->logStatus(_t('Successfully nuked all type restrictions for element %1', $vs_element_code));
+				$this->logStatus(_t('Successfully nuked all type restrictions for element %1', $element_code));
 
 				// handle restrictions
-				foreach($vo_element->typeRestrictions->children() as $vo_restriction) {
-					$vs_restriction_code = self::getAttribute($vo_restriction, "code");
+				foreach($element['typeRestrictions'] as $restriction) {
+					$restriction_code = $restriction["code"];
 
-					if (!($vn_table_num = \Datamodel::getTableNum((string)$vo_restriction->table))) {
-						$this->addError("Invalid table specified for restriction $vs_restriction_code in element $vs_element_code");
+					if (!($table_num = \Datamodel::getTableNum($restriction['table']))) {
+						$this->addError("Invalid table specified for restriction $restriction_code in element $element_code");
 						return false;
 					}
-					$t_instance = \Datamodel::getInstance((string)$vo_restriction->table);
-					$vn_type_id = null;
-					$vs_type = trim((string)$vo_restriction->type);
+					$t_instance = \Datamodel::getInstance((string)$restriction['table']);
+					$type_id = null;
+					$type = trim((string)$restriction['type']);
 
 					// is this restriction further restricted on a specific type? -> get real id from code
-					if (strlen($vs_type)>0) {
+					if (strlen($type)>0) {
 						// interstitial with type restriction -> code is relationship type code
 						if($t_instance instanceof \BaseRelationshipModel) {
-							$vn_type_id = $t_rel_types->getRelationshipTypeID($t_instance->tableName(),$vs_type);
+							$type_id = $t_rel_types->getRelationshipTypeID($t_instance->tableName(),$type);
 						} else { // "normal" type restriction -> code is from actual type list
-							$vs_type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
-							$vn_type_id = $t_list->getItemIDFromList($vs_type_list_name,$vs_type);
+							$type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
+							$type_id = $t_list->getItemIDFromList($type_list_name, $type);
 						}
 					}
 
 					// add restriction
 					$t_restriction = new \ca_metadata_type_restrictions();
-					$t_restriction->set('table_num', $vn_table_num);
-					$t_restriction->set('include_subtypes', (bool)$vo_restriction->includeSubtypes ? 1 : 0);
-					$t_restriction->set('type_id', $vn_type_id);
-					$t_restriction->set('element_id', $vn_element_id);
+					$t_restriction->set('table_num', $table_num);
+					$t_restriction->set('include_subtypes', (bool)$restriction['includeSubtypes'] ? 1 : 0);
+					$t_restriction->set('type_id', $type_id);
+					$t_restriction->set('element_id', $element_id);
 
-					$this->_processSettings($t_restriction, $vo_restriction->settings);
+					$this->_processSettings($t_restriction, $restriction['settings']);
 					$t_restriction->insert();
 
 					if ($t_restriction->numErrors()) {
-						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} for metadata element {$vs_element_code}: ".join("; ",$t_restriction->getErrors()));
+						$this->addError("There was an error while inserting type restriction {$restriction_code} for metadata element {$element_code}: ".join("; ",$t_restriction->getErrors()));
 					}
 
-					$this->logStatus(_t('Successfully added type restriction %1 for element %2', $vs_restriction_code, $vs_element_code));
+					$this->logStatus(_t('Successfully added type restriction %1 for element %2', $restriction_code, $element_code));
 				}
 			}
 		}
 		return true;
 	}
 	# --------------------------------------------------
-	private function processMetadataElement($po_element, $pn_parent_id) {
+	private function processMetadataElement($element, $parent_id) {
 		require_once(__CA_MODELS_DIR__."/ca_metadata_elements.php");
 		require_once(__CA_MODELS_DIR__."/ca_lists.php");
 
-		$vs_element_code = self::getAttribute($po_element, "code");
+		$element_code = $element["code"];
 
-		$this->logStatus(_t('Processing metadata element with code %1', $vs_element_code));
+		$this->logStatus(_t('Processing metadata element with code %1', $element_code));
 
 		// try to load element by code for potential update. codes are unique, globally
-		if(!($t_md_element = \ca_metadata_elements::getInstance($vs_element_code))) {
+		if(!($t_md_element = \ca_metadata_elements::getInstance($element_code))) {
 			$t_md_element = new \ca_metadata_elements();
 		}
 
 		if($t_md_element->getPrimaryKey()) {
-			$this->logStatus(_t('Metadata element with code %1 already exists', $vs_element_code));
+			$this->logStatus(_t('Metadata element with code %1 already exists', $element_code));
 		} else {
-			$this->logStatus(_t('Metadata element with code %1 is new', $vs_element_code));
+			$this->logStatus(_t('Metadata element with code %1 is new', $element_code));
 		}
 
-		if(self::getAttribute($po_element, 'deleted') && $t_md_element->getPrimaryKey()) {
-			$this->logStatus(_t('Deleting metadata element with code %1', $vs_element_code));
-			$t_md_element->delete(true, array('hard' => true));
+		if($element['deleted'] && $t_md_element->getPrimaryKey()) {
+			$this->logStatus(_t('Deleting metadata element with code %1', $element_code));
+			$t_md_element->delete(true, ['hard' => true]);
 			return false; // we don't want the postprocessing to kick in. our work here is done.
 		}
 
-		if (($vn_datatype = \ca_metadata_elements::getAttributeTypeCode(self::getAttribute($po_element, "datatype"))) === false) {
+		if (($datatype = \ca_metadata_elements::getAttributeTypeCode($element["datatype"])) === false) {
 			return false; // should not happen due to XSD restrictions, but just in case
 		}
 
 		$t_lists = new \ca_lists();
 
-		$t_md_element->set('element_code', $vs_element_code);
-		$t_md_element->set('parent_id', $pn_parent_id);
-		$t_md_element->set('documentation_url',(string)$po_element->documentationUrl);
-		$t_md_element->set('datatype', $vn_datatype);
+		$t_md_element->set('element_code', $element_code);
+		$t_md_element->set('parent_id', $parent_id);
+		$t_md_element->set('documentation_url',$element['documentationUrl']);
+		$t_md_element->set('datatype', $datatype);
 
-		$vs_list = self::getAttribute($po_element, "list");
+		$vs_list = $element["list"];
 
-		if (isset($vs_list) && $vs_list && $t_lists->load(array('list_code' => $vs_list))) {
-			$vn_list_id = $t_lists->getPrimaryKey();
+		if (isset($list) && $list && $t_lists->load(['list_code' => $list])) {
+			$list_id = $t_lists->getPrimaryKey();
 		} else {
-			$vn_list_id = null;
+			$list_id = null;
 		}
-		$t_md_element->set('list_id', $vn_list_id);
-		$this->_processSettings($t_md_element, $po_element->settings, ['settingsInfo' => $t_md_element->getAvailableSettings()]);
+		$t_md_element->set('list_id', $list_id);
+		$this->_processSettings($t_md_element, $element['settings'], ['settingsInfo' => $t_md_element->getAvailableSettings()]);
 
 		if($t_md_element->getPrimaryKey()) {
 			$t_md_element->update(['noFlush' => true]);
@@ -877,24 +777,24 @@ class Installer {
 		}
 
 		if ($t_md_element->numErrors()) {
-			$this->addError("There was an error while inserting metadata element {$vs_element_code}: ".join(" ",$t_md_element->getErrors()));
+			$this->addError("There was an error while inserting metadata element {$element_code}: ".join(" ",$t_md_element->getErrors()));
 			return false;
 		}
 
-		$this->logStatus(_t('Successfully inserted/updated metadata element with code %1', $vs_element_code));
+		$this->logStatus(_t('Successfully inserted/updated metadata element with code %1', $element_code));
 
-		$vn_element_id = $t_md_element->getPrimaryKey();
+		$element_id = $t_md_element->getPrimaryKey();
 
 		// add element labels
-		self::addLabelsFromXMLElement($t_md_element, $po_element->labels, $this->locales);
+		self::addLabels($t_md_element, $element['labels']);
 
-		if ($po_element->elements) {
-			foreach($po_element->elements->children() as $vo_child) {
-				$this->processMetadataElement($vo_child, $vn_element_id);
+		if ($element['elements']) {
+			foreach($element['elements'] as $child) {
+				$this->processMetadataElement($child, $element_id);
 			}
 		}
 
-		return $vn_element_id;
+		return $element_id;
 	}
 	# --------------------------------------------------
 	public function processMetadataDictionary() {
@@ -1380,63 +1280,54 @@ class Installer {
 	public function processRelationshipTypes() {
 		require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
 
-		$va_rel_tables = [];
-		if($this->base_name) { // "merge" profile and its base
-			foreach($this->base->relationshipTypes->children() as $vo_rel_table) {
-				$va_rel_tables[self::getAttribute($vo_rel_table, "name")] = $vo_rel_table;
-			}
-			foreach($this->profile->relationshipTypes->children() as $vo_rel_table) {
-				$va_rel_tables[self::getAttribute($vo_rel_table, "name")] = $vo_rel_table;
-			}
-		} else {
-			foreach($this->profile->relationshipTypes->children() as $vo_rel_table) {
-				$va_rel_tables[self::getAttribute($vo_rel_table, "name")] = $vo_rel_table;
-			}
-		}
-
+		$relationship_types = $this->parsed_data['relationshipTypes'];
+		
 		$qr_lists = $this->db->query("SELECT * FROM ca_lists");
 
-		$va_list_names = [];
-		$va_list_item_ids = [];
+		$list_names = $list_item_ids = [];
 		while($qr_lists->nextRow()) {
-			$va_list_names[$qr_lists->get('list_id')] = $qr_lists->get('list_code');
+			$list_names[$qr_lists->get('list_id')] = $qr_lists->get('list_code');
 		}
 
 		// get list items
-		$qr_list_item_result = $this->db->query("SELECT * FROM ca_list_items cli INNER JOIN ca_list_item_labels AS clil ON clil.item_id = cli.item_id");
+		$qr_list_item_result = $this->db->query("
+			SELECT * 
+			FROM ca_list_items cli 
+			INNER JOIN ca_list_item_labels AS clil ON clil.item_id = cli.item_id
+		");
 		while($qr_list_item_result->nextRow()) {
-			$vs_type_code = $va_list_names[$qr_list_item_result->get('list_id')];
-			$va_list_item_ids[$vs_type_code][$qr_list_item_result->get('item_value')] = $qr_list_item_result->get('item_id');
+			$type_code = $list_names[$qr_list_item_result->get('list_id')];
+			$list_item_ids[$type_code][$qr_list_item_result->get('item_value')] = $qr_list_item_result->get('item_id');
 		}
 
-		foreach($va_rel_tables as $vs_table => $vo_rel_table) {
-			$vn_table_num = \Datamodel::getTableNum($vs_table);
-			$this->logStatus(_t('Processing relationship types for table %1', $vs_table));
+		foreach($relationship_types as $rel_table => $types) {
+			$table_num = \Datamodel::getTableNum($rel_table);
+			$this->logStatus(_t('Processing relationship types for table %1', $rel_table));
 
-			$t_rel_table = \Datamodel::getInstance($vs_table);
+			$t_rel_table = \Datamodel::getInstance($rel_table);
 
 			if (!method_exists($t_rel_table, 'getLeftTableName')) {
 				continue;
 			}
-			$vs_left_table = $t_rel_table->getLeftTableName();
-			$vs_right_table = $t_rel_table->getRightTableName();
+			$left_table = $t_rel_table->getLeftTableName();
+			$right_table = $t_rel_table->getRightTableName();
 
 
-			$vs_root_type_code = 'root_for_'.$vn_table_num;
+			$root_type_code = "root_for_{$table_num}";
 
 			/** @var ca_relationship_types $t_rel_type */
 			$t_rel_type = \ca_relationship_types::find(
-				array('type_code' => $vs_root_type_code, 'table_num' => $vn_table_num, 'parent_id' => null),
-				array('returnAs' => 'firstModelInstance')
+				['type_code' => $root_type_code, 'table_num' => $table_num, 'parent_id' => null],
+				['returnAs' => 'firstModelInstance']
 			);
 
 			$t_rel_type = $t_rel_type ? $t_rel_type : new \ca_relationship_types();
 			// create relationship type root if necessary
 			$t_rel_type->set('parent_id', null);
-			$t_rel_type->set('type_code', $vs_root_type_code);
+			$t_rel_type->set('type_code', $root_type_code);
 			$t_rel_type->set('sub_type_left_id', null);
 			$t_rel_type->set('sub_type_right_id', null);
-			$t_rel_type->set('table_num', $vn_table_num);
+			$t_rel_type->set('table_num', $table_num);
 			$t_rel_type->set('rank', 10);
 			$t_rel_type->set('is_default', 0);
 			if(!$t_rel_type->getPrimaryKey()) { // do nothing if find() found that very root
@@ -1448,14 +1339,17 @@ class Installer {
 				return false;
 			}
 
-			$vn_parent_id = $t_rel_type->getPrimaryKey();
+			$parent_id = $t_rel_type->getPrimaryKey();
 
-			$this->processRelationshipTypesForTable($vo_rel_table->types, $vn_table_num, $vs_left_table, $vs_right_table, $vn_parent_id, $va_list_item_ids);
+			$this->processRelationshipTypesForTable($types, $table_num, $left_table, $right_table, $parent_id, $list_item_ids);
 		}
 		return true;
 	}
 	# --------------------------------------------------
-	private function processRelationshipTypesForTable($po_relationship_types, $pn_table_num, $ps_left_table, $ps_right_table, $pn_parent_id, $pa_list_item_ids) {
+	/** 
+	 *
+	 */
+	private function processRelationshipTypesForTable($relationship_types, $table_num, $left_table, $right_table, $parent_id, $list_item_ids) {
 		// nuke caches to be safe
 		\ca_relationship_types::$s_relationship_type_id_cache = [];
 		\ca_relationship_types::$s_relationship_type_table_cache = [];
@@ -1463,42 +1357,42 @@ class Installer {
 
 		$t_rel_type = new \ca_relationship_types();
 
-		$vn_rank_default = (int)$t_rel_type->getFieldInfo('rank', 'DEFAULT');
-		foreach($po_relationship_types->children() as $vo_type) {
-			$vs_type_code = self::getAttribute($vo_type, "code");
-			$vn_default = self::getAttribute($vo_type, "default");
-			$vn_rank = (int)self::getAttribute($vo_type, "rank");
+		$rank_default = (int)$t_rel_type->getFieldInfo('rank', 'DEFAULT');
+		foreach($relationship_types as $type) {
+			$type_code = $type["code"];
+			$default = $type["default"];
+			$rank = (int)$type["rank"];
 
-			$this->logStatus(_t('Processing relationship type with code %1', $vs_type_code));
+			$this->logStatus(_t('Processing relationship type with code %1', $type_code));
 
 			$t_rel_type = \ca_relationship_types::find(
-				array('type_code' => $vs_type_code, 'table_num' => $pn_table_num, 'parent_id' => $pn_parent_id),
-				array('returnAs' => 'firstModelInstance')
+				['type_code' => $type_code, 'table_num' => $table_num, 'parent_id' => $parent_id],
+				['returnAs' => 'firstModelInstance']
 			);
 
 			$t_rel_type = $t_rel_type ? $t_rel_type : new \ca_relationship_types();
 
 			if($t_rel_type->getPrimaryKey()) {
-				$this->logStatus(_t('Relationship type with code %1 already exists', $vs_type_code));
+				$this->logStatus(_t('Relationship type with code %1 already exists', $type_code));
 			} else {
-				$this->logStatus(_t('Relationship type with code %1 is new', $vs_type_code));
+				$this->logStatus(_t('Relationship type with code %1 is new', $type_code));
 			}
 
-			if(self::getAttribute($vo_type, "deleted") && $t_rel_type->getPrimaryKey()) {
-				$this->logStatus(_t('Deleting relationship type with code %1', $vs_type_code));
+			if($type["deleted"] && $t_rel_type->getPrimaryKey()) {
+				$this->logStatus(_t('Deleting relationship type with code %1', $type_code));
 				$t_rel_type->delete(true);
 				continue;
 			}
 
-			$t_rel_type->set('table_num', $pn_table_num);
-			$t_rel_type->set('type_code', $vs_type_code);
-			$t_rel_type->set('parent_id', $pn_parent_id);
-			$t_rel_type->set('is_default', $vn_default ? 1 : 0);
+			$t_rel_type->set('table_num', $table_num);
+			$t_rel_type->set('type_code', $type_code);
+			$t_rel_type->set('parent_id', $parent_id);
+			$t_rel_type->set('is_default', $default ? 1 : 0);
 
 			if ($vn_rank > 0) {
-				$t_rel_type->set("rank", $vn_rank);
+				$t_rel_type->set("rank", $rank);
 			} else {
-				$t_rel_type->set("rank", $vn_rank_default);
+				$t_rel_type->set("rank", $rank_default);
 			}
 
 			if($t_rel_type->getPrimaryKey()) {
@@ -1509,72 +1403,56 @@ class Installer {
 
 			// As of February 2017 "typeRestrictionLeft" is preferred over "subTypeLeft"
 			if(
-				($vs_left_subtype_code = self::getAttribute($vo_type, "typeRestrictionLeft"))
-				||
-				($vs_left_subtype_code = trim((string) $vo_type->typeRestrictionLeft))
-				||
-				($vs_left_subtype_code = trim((string) $vo_type->subTypeLeft))
+				($vs_left_subtype_code = $type["typeRestrictionLeft"])
 			) {
-				$t_obj = \Datamodel::getInstance($ps_left_table);
+				$t_obj = \Datamodel::getInstance($left_table);
 				$vs_list_code = $t_obj->getFieldListCode($t_obj->getTypeFieldName());
 
-				$this->logStatus(_t('Adding left type restriction %1 for relationship type with code %2', $vs_left_subtype_code, $vs_type_code));
+				$this->logStatus(_t('Adding left type restriction %1 for relationship type with code %2', $left_subtype_code, $type_code));
 
-				if (isset($pa_list_item_ids[$vs_list_code][$vs_left_subtype_code])) {
-					$t_rel_type->set('sub_type_left_id', $pa_list_item_ids[$vs_list_code][$vs_left_subtype_code]);
+				if (isset($list_item_ids[$list_code][$left_subtype_code])) {
+					$t_rel_type->set('sub_type_left_id', $list_item_ids[$list_code][$left_subtype_code]);
 					
 					if(
-						($vn_include_subtypes = self::getAttribute($vo_type, "includeSubtypesLeft"))
-						||
-						($vn_include_subtypes = trim((string) $vo_type->includeSubtypesLeft))
+						($include_subtypes = $type["includeSubtypesLeft"])
 					) {
-						$t_rel_type->set('include_subtypes_left', (bool)$vn_include_subtypes ? 1 : 0);
+						$t_rel_type->set('include_subtypes_left', (bool)$include_subtypes ? 1 : 0);
 					}
 					$t_rel_type->update();
 				}
 			}
 			
-			// As of February 2017 "typeRestrictionRight" is preferred over "subTypeRight"
-			if(!($vs_right_subtype_code = trim((string) $vo_type->typeRestrictionRight))) {
-				$vs_right_subtype_code = trim((string) $vo_type->subTypeRight);
-			}
 			if(
-				($vs_right_subtype_code = self::getAttribute($vo_type, "typeRestrictionRight"))
-				||
-				($vs_right_subtype_code = trim((string) $vo_type->typeRestrictionRight))
-				||
-				($vs_right_subtype_code = trim((string) $vo_type->subTypeRight))
+				($vs_right_subtype_code = $type["typeRestrictionRight"])
 			) {
-				$t_obj = \Datamodel::getInstance($ps_right_table);
-				$vs_list_code = $t_obj->getFieldListCode($t_obj->getTypeFieldName());
+				$t_obj = \Datamodel::getInstance($right_table);
+				$list_code = $t_obj->getFieldListCode($t_obj->getTypeFieldName());
 
-				$this->logStatus(_t('Adding right type restriction %1 for relationship type with code %2', $vs_right_subtype_code, $vs_type_code));
+				$this->logStatus(_t('Adding right type restriction %1 for relationship type with code %2', $right_subtype_code, $type_code));
 
-				if (isset($pa_list_item_ids[$vs_list_code][$vs_right_subtype_code])) {
-					$t_rel_type->set('sub_type_right_id', $pa_list_item_ids[$vs_list_code][$vs_right_subtype_code]);
+				if (isset($list_item_ids[$list_code][$right_subtype_code])) {
+					$t_rel_type->set('sub_type_right_id', $list_item_ids[$list_code][$right_subtype_code]);
 					
 					if(
-						($vn_include_subtypes = self::getAttribute($vo_type, "includeSubtypesRight"))
-						||
-						($vn_include_subtypes = trim((string) $vo_type->includeSubtypesRight))
+						($include_subtypes = $type["includeSubtypesRight"])
 					) {
-						$t_rel_type->set('include_subtypes_right', (bool)$vn_include_subtypes ? 1 : 0);
+						$t_rel_type->set('include_subtypes_right', (bool)$include_subtypes ? 1 : 0);
 					}
 					$t_rel_type->update();
 				}
 			}
 
 			if ($t_rel_type->numErrors()) {
-				$this->addError("Errors inserting relationship {$vs_type_code}: ".join("; ",$t_rel_type->getErrors()));
+				$this->addError("Errors inserting relationship {$type_code}: ".join("; ",$t_rel_type->getErrors()));
 				return false;
 			}
 
-			$this->logStatus(_t('Successfully updated/inserted relationship type with code %1', $vs_type_code));
+			$this->logStatus(_t('Successfully updated/inserted relationship type with code %1', $type_code));
 
-			self::addLabelsFromXMLElement($t_rel_type, $vo_type->labels, $this->locales);
+			self::addLabels($t_rel_type, $type['labels']);
 
-			if ($vo_type->types) {
-				$this->processRelationshipTypesForTable($vo_type->types, $pn_table_num, $ps_left_table, $ps_right_table, $t_rel_type->getPrimaryKey(), $pa_list_item_ids);
+			if ($type['types']) {
+				$this->processRelationshipTypesForTable($type['types'], $table_num, $left_table, $right_table, $t_rel_type->getPrimaryKey(), $list_item_ids);
 			}
 		}
 	}
@@ -2574,72 +2452,71 @@ class Installer {
 		return $ps_password;
 	}
 	# --------------------------------------------------
-	private function _processSettings($pt_instance, $po_settings_node, $pa_options=null) {
-		$va_settings = [];
+	private function _processSettings($pt_instance, $settings, $options=null) {
+		$settings_list = [];
 		
-		$pa_settings_info = caGetOption('settingsInfo', $pa_options, []);
+		$settings_info = caGetOption('settingsInfo', $options, []);
 
-		if($po_settings_node) {
-			foreach($po_settings_node->children() as $vo_setting) {
-				// some settings like 'label' or 'add_label' have 'locale' as sub-setting
-				$vs_locale = self::getAttribute($vo_setting, "locale");
-				if($vs_locale && isset($this->locales[$vs_locale])) {
-					$vn_locale_id = $this->locales[$vs_locale];
-				} else {
-					$vn_locale_id = null;
-				}
-
-				$vs_setting_name = self::getAttribute($vo_setting, "name");
-				$vs_value = (string) $vo_setting;
-				
-				
-                if (isset($pa_settings_info[$vs_setting_name]) && isset($pa_settings_info[$vs_setting_name]['deferred']) && $pa_settings_info[$vs_setting_name]['deferred']) {
-                    $this->opa_metadata_element_deferred_settings_processing[$pt_instance->get('element_code')][$vs_setting_name][] = $vs_value;
-                    continue;
-                }
-
-				if((strlen($vs_setting_name)>0) && (strlen($vs_value)>0)) { // settings need at least name and value
-					$vs_datatype = (int)$pt_instance ?$pt_instance->get('datatype') : null;
-					if ($vs_setting_name === 'restrictToTypes' && $t_authority_instance = \AuthorityAttributeValue::elementTypeToInstance($vs_datatype)){
-						if ($t_authority_instance instanceof \BaseModelWithAttributes && is_string($vs_value)){
-							$vn_type_id = $t_authority_instance->getTypeIDForCode($vs_value);
-							if ($vn_type_id){
-								$vs_value = $vn_type_id;
-							} else {
-								$this->addError(
-									_t('Failed to lookup type id for type restriction %1 in element %2 as could not retrieve type record. ',
-										$vs_value,
-										$pt_instance->get('element_code')
-									)
-								);
-							}
-						}
-					}
-					if ($vs_locale) { // settings with locale (those can't repeat)
-						$va_settings[$vs_setting_name][$vs_locale] = $vs_value;
+		if($settings) {
+			foreach($settings as $setting_name => $values_by_locale) {
+				foreach($values_by_locale as $locale => $values) {
+					// some settings like 'label' or 'add_label' have 'locale' as sub-setting
+					if($locale && isset($this->parsed_data['locales'][$locale])) {
+						$locale_id = $this->locales[$vs_locale];
 					} else {
-						// some settings allow multiple values under the same key, for instance restrict_to_types.
-						// in those cases $va_settings[$vs_setting_name] becomes an array of values
-						if (isset($va_settings[$vs_setting_name]) && (!isset($pa_settings_info[$vs_setting_name]) || ($pa_settings_info[$vs_setting_name]['multiple']))) {
-							if (!is_array($va_settings[$vs_setting_name])) {
-								$va_settings[$vs_setting_name] = array($va_settings[$vs_setting_name]);
+						$locale_id = null;
+					}
+
+					foreach($values as $setting_value) {
+						if (isset($settings_info[$setting_name]) && isset($settings_info[$setting_name]['deferred']) && $settings_info[$setting_name]['deferred']) {
+							$this->metadata_element_deferred_settings_processing[$pt_instance->get('element_code')][$setting_name][] = $setting_value;
+							continue;
+						}
+
+						if((strlen($setting_name)>0) && (strlen($setting_value)>0)) { // settings need at least name and value
+							$datatype = (int)$pt_instance ? $pt_instance->get('datatype') : null;
+							if ($setting_name === 'restrictToTypes' && $t_authority_instance = \AuthorityAttributeValue::elementTypeToInstance($datatype)){
+								if ($t_authority_instance instanceof \BaseModelWithAttributes && is_string($setting_value)){
+									$type_id = $t_authority_instance->getTypeIDForCode($setting_value);
+									if ($type_id){
+										$setting_value = $type_id;
+									} else {
+										$this->addError(
+											_t('Failed to lookup type id for type restriction %1 in element %2 as could not retrieve type record. ',
+												$setting_value,
+												$pt_instance->get('element_code')
+											)
+										);
+									}
+								}
 							}
-							$va_settings[$vs_setting_name][] = $vs_value;
-						} else {
-							$va_settings[$vs_setting_name] = $vs_value;
+							if ($locale) { // settings with locale (those can't repeat)
+								$settings_list[$setting_name][$locale] = $setting_value;
+							} else {
+								// some settings allow multiple values under the same key, for instance restrict_to_types.
+								// in those cases $va_settings[$vs_setting_name] becomes an array of values
+								if (isset($settings_list[$setting_name]) && (!isset($settings_info[$setting_name]) || ($settings_info[$setting_name]['multiple']))) {
+									if (!is_array($settings_list[$setting_name])) {
+										$settings_list[$setting_name] = array($settings_list[$setting_name]);
+									}
+									$settings_list[$setting_name][] = $setting_value;
+								} else {
+									$settings_list[$setting_name] = $setting_value;
+								}
+							}
 						}
 					}
-				}
-			}
 
-			if (is_object($pt_instance)) {
-				foreach($va_settings as $vs_setting_name => $vm_setting_value) {
-					$pt_instance->setSetting($vs_setting_name, $vm_setting_value);
+					if (is_object($pt_instance)) {
+						foreach($settings_list as $setting_name => $setting_value) {
+							$pt_instance->setSetting($setting_name, $setting_value);
+						}
+					}
 				}
 			}
 		}
 
-		return $va_settings;
+		return $settings_list;
 	}
 	# --------------------------------------------------
 	private function _convertACLStringToConstant($ps_name) {
