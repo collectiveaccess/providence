@@ -75,10 +75,10 @@ class XMLProfileParser extends BaseProfileParser {
 		}
 		
 		if(!$this->validateProfile($directory, $profile)) {
-			throw new Exception(_t('XML profile validation failed'));
+			throw new \Exception(_t('XML profile validation failed'));
 		}
 		if(!$this->loadProfile($directory, $profile)) {
-			throw new Exception(_t('Could not load XML profile'));
+			throw new \Exception(_t('Could not load XML profile'));
 		}
 		
 		$this->directory = $directory;
@@ -89,6 +89,7 @@ class XMLProfileParser extends BaseProfileParser {
 		$this->processLists();
 		$this->processRelationshipTypes();
 		$this->processMetadataElementSets();
+		$this->processUIs();
 		
 		return $this->data;
 	}
@@ -307,7 +308,7 @@ class XMLProfileParser extends BaseProfileParser {
 			}
 			$values[$item_idno] = [
 				'idno' => $item_idno,
-				'value' -> $item_value,
+				'value' => $item_value,
 				'labels' => $labels,
 				'settings' => $settings,
 				'type' => $type,
@@ -464,6 +465,160 @@ class XMLProfileParser extends BaseProfileParser {
 			];
 		}
 		return $type_list;
+	}
+	# --------------------------------------------------
+	/**
+	 *
+	 */
+	public function processUIs($f_callback=null) {
+		$ui_list = [];
+		if($this->base && $this->base->userInterfaces) { $lists_list[] = $this->base->userInterfaces->children(); }
+		$ui_list[] = $this->xml->userInterfaces->children();
+	
+		$this->data['userInterfaces'] = [];
+		foreach($ui_list as $uis) {
+			foreach($uis as $ui) {
+				$ui_code = self::getAttribute($ui, "code");
+				$type = self::getAttribute($ui, "type");
+				$color = self::getAttribute($ui, "color");
+				$include_subtypes = self::getAttribute($ui, "includeSubtypes");
+			
+				$labels = self::getLabelsFromXML($ui->labels);
+				
+				$type_restrictions = self::processTypeRestrictionStrings(self::getAttribute($ui, "typeRestrictions"));
+				if($ui->typeRestrictions) { 
+					$type_restrictions = array_merge($type_restrictions, self::processTypeRestrictionLists($ui->typeRestrictions));
+				}
+				
+				$user_access = self::processAccessRestrictions('user', $ui->userAccess);
+				$group_access = self::processAccessRestrictions('group', $ui->groupAccess);
+				$role_access = self::processAccessRestrictions('role', $ui->userAccess);
+			
+				$this->data['userInterfaces'][$ui_code] = [
+					'labels' => $labels,
+					'code' => $ui_code,
+					'type' => $type,
+					'color' => $color,
+					'typeRestrictions' => $type_restrictions,
+					'includeSubtypes' => $include_subtypes,
+					'screens' => $ui->screens ? $this->processUIScreens($ui->screens) : [],
+					'userAccess' => $user_access,
+					'groupAccess' => $group_access,
+					'roleAccess' => $role_access
+				];
+			}
+		}
+		print_r($this->data['userInterfaces']);die;
+		return true;
+	}
+	# --------------------------------------------------
+	/**
+	 *
+	 */
+	protected function processUIScreens($screens) {
+		$values = [];
+		foreach($screens->children() as $screen) {
+			$idno = self::getAttribute($screen, "idno");
+			$default = self::getAttribute($screen, "default");
+			$deleted = self::getAttribute($screen, "deleted");
+			$color = self::getAttribute($screen, "color");
+			$include_subtypes = self::getAttribute($ui, "includeSubtypes");
+			
+			$labels = self::getLabelsFromXML($screen->labels);
+		
+			$settings = $screen->settings ? $this->getSettingsFromXML($screen->settings) : [];
+			
+			$type_restrictions = self::processTypeRestrictionStrings(self::getAttribute($screen, "typeRestrictions"));
+			if($screen->typeRestrictions) { 
+				$type_restrictions = array_merge($type_restrictions, self::processTypeRestrictionLists($screen->typeRestrictions));
+			}
+			
+			$user_access = self::processAccessRestrictions('user', $screen->userAccess);
+			$group_access = self::processAccessRestrictions('group', $screen->groupAccess);
+			$role_access = self::processAccessRestrictions('role', $screen->userAccess);
+			
+			$values[$idno] = [
+				'idno' => $idno,
+				'default' => $default,
+				'labels' => $labels,
+				'settings' => $settings,
+				'color' => $color,
+				'deleted' => $deleted,
+				'typeRestrictions' => $type_restrictions,
+				'includeSubtypes' => $include_subtypes,
+				'bundles' => $screen->bundlePlacements ? $this->processUIBundles($screen->bundlePlacements) : [],
+				'userAccess' => $user_access,
+				'groupAccess' => $group_access,
+				'roleAccess' => $role_access
+			];
+		}
+
+		return $values;
+	}
+	# --------------------------------------------------
+	/**
+	 *
+	 */
+	protected function processUIBundles($bundles) {
+		$values = [];
+		foreach($bundles->children() as $bundle) {
+			$code = self::getAttribute($bundle, "code");
+			$bundle_name = trim((string)$bundle->bundle);
+			$include_subtypes = self::getAttribute($ui, "includeSubtypes");
+			
+			$type_restrictions = self::processTypeRestrictionStrings(self::getAttribute($bundle, "typeRestrictions"));
+			
+			$settings = $bundle->settings ? $this->getSettingsFromXML($bundle->settings) : [];
+			
+			$values[$code] = [
+				'code' => $code,
+				'bundle' => $bundle_name,
+				'settings' => $settings,
+				'includeSubtypes' => $include_subtypes,
+				'type_restrictions' => $type_restrictions
+			];
+		}
+
+		return $values;
+	}
+	# --------------------------------------------------
+	/**
+	 *
+	 */
+	private static function processTypeRestrictionStrings($type_restrictions) {
+		return array_filter(preg_split("![ ,;\|]!", $type_restrictions), "strlen");
+	}
+	# --------------------------------------------------
+	/**
+	 *
+	 */
+	private static function processTypeRestrictionLists($type_restrictions) {
+		$values = [];
+		if($type_restrictions) {
+			foreach($type_restrictions->children() as $restriction) {
+				$values[] = [
+					'type' => self::getAttribute($restriction, 'type'),
+					'includeSubtypes' => self::getAttribute($restriction, 'includeSubtypes')
+				];
+			}
+		}
+		return $values;
+	}
+	# --------------------------------------------------
+	/**
+	 *
+	 */
+	private static function processAccessRestrictions($type, $restrictions) {
+		$values = [];
+		if($restrictions) {
+			foreach($restrictions->children() as $restriction) {
+				$values[] = [
+					$type => self::getAttribute($restriction, $type),
+					'access' => self::getAttribute($restriction, 'access')
+				];
+			}
+		}
+		return $values;
 	}
 	# --------------------------------------------------
 	/**
