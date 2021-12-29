@@ -90,6 +90,7 @@ class XMLProfileParser extends BaseProfileParser {
 		$this->processRelationshipTypes();
 		$this->processMetadataElementSets();
 		$this->processUIs();
+		$this->processLogins();
 		
 		return $this->data;
 	}
@@ -485,7 +486,7 @@ class XMLProfileParser extends BaseProfileParser {
 			
 				$labels = self::getLabelsFromXML($ui->labels);
 				
-				$type_restrictions = self::processTypeRestrictionStrings(self::getAttribute($ui, "typeRestrictions"));
+				$type_restrictions = self::processTypeRestrictionStrings(self::getAttribute($ui, "typeRestrictions"), $include_subtypes);
 				if($ui->typeRestrictions) { 
 					$type_restrictions = array_merge($type_restrictions, self::processTypeRestrictionLists($ui->typeRestrictions));
 				}
@@ -508,7 +509,7 @@ class XMLProfileParser extends BaseProfileParser {
 				];
 			}
 		}
-		print_r($this->data['userInterfaces']);die;
+		//print_r($this->data['userInterfaces']);die;
 		return true;
 	}
 	# --------------------------------------------------
@@ -528,7 +529,7 @@ class XMLProfileParser extends BaseProfileParser {
 		
 			$settings = $screen->settings ? $this->getSettingsFromXML($screen->settings) : [];
 			
-			$type_restrictions = self::processTypeRestrictionStrings(self::getAttribute($screen, "typeRestrictions"));
+			$type_restrictions = self::processTypeRestrictionStrings(self::getAttribute($screen, "typeRestrictions"), $include_subtypes);
 			if($screen->typeRestrictions) { 
 				$type_restrictions = array_merge($type_restrictions, self::processTypeRestrictionLists($screen->typeRestrictions));
 			}
@@ -566,7 +567,7 @@ class XMLProfileParser extends BaseProfileParser {
 			$bundle_name = trim((string)$bundle->bundle);
 			$include_subtypes = self::getAttribute($ui, "includeSubtypes");
 			
-			$type_restrictions = self::processTypeRestrictionStrings(self::getAttribute($bundle, "typeRestrictions"));
+			$type_restrictions = self::processTypeRestrictionStrings(self::getAttribute($bundle, "typeRestrictions"), $include_subtypes);
 			
 			$settings = $bundle->settings ? $this->getSettingsFromXML($bundle->settings) : [];
 			
@@ -575,7 +576,7 @@ class XMLProfileParser extends BaseProfileParser {
 				'bundle' => $bundle_name,
 				'settings' => $settings,
 				'includeSubtypes' => $include_subtypes,
-				'type_restrictions' => $type_restrictions
+				'typeRestrictions' => $type_restrictions
 			];
 		}
 
@@ -585,8 +586,60 @@ class XMLProfileParser extends BaseProfileParser {
 	/**
 	 *
 	 */
-	private static function processTypeRestrictionStrings($type_restrictions) {
-		return array_filter(preg_split("![ ,;\|]!", $type_restrictions), "strlen");
+	public function processLogins($f_callback=null) {
+		$login_list = [];
+		if($this->base && $this->base->logins) { $login_list[] = $this->base->logins->children(); }
+		$login_list[] = $this->xml->logins->children();
+	
+		$this->data['logins'] = [];
+		foreach($login_list as $logins) {
+			foreach($logins as $login) {
+				$user_name = self::getAttribute($login, "user_name");
+				$password = self::getAttribute($login, "password");
+				$fname = self::getAttribute($login, "fname");
+				$lname = self::getAttribute($login, "lname");
+				$email = self::getAttribute($login, "email");
+				
+				$roles = $groups = [];
+				if ($access = $login->children()) {
+					foreach($access as $a) {
+						$n = $a->getName();
+						if ($n === 'role') {
+							$roles[] = self::getAttribute($a, 'code');
+						} elseif($n === 'group') {
+							$groups[] = self::getAttribute($a, 'code');
+						}
+					}
+				}
+				
+				$this->data['logins'][$user_name] = [
+					'user_name' => $user_name,
+					'password' => $password,
+					'fname' => $fname,
+					'lname' => $lname,
+					'email' => $email,
+					'roles' => $roles,
+					'groups' => $groups
+				];
+			}
+		}
+		return true;
+	}
+	# --------------------------------------------------
+	/**
+	 *
+	 */
+	private static function processTypeRestrictionStrings($type_restrictions, $include_subtypes=false) {
+		$restrictions = array_filter(preg_split("![ ,;\|]!", $type_restrictions), "strlen");
+		
+		$values = [];
+		foreach($restrictions as $restriction) {
+			$values[] = [
+				'type' => $restriction,
+				'includeSubtypes' => $include_subtypes
+			];
+		}
+		return $values;
 	}
 	# --------------------------------------------------
 	/**

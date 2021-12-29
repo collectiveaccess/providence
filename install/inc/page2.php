@@ -78,8 +78,8 @@
 			caIncrementProgress($vn_progress, "Processing locales");
 			$vo_installer->processLocales();
 
-			#caIncrementProgress($vn_progress, "Processing lists");
-			#$vo_installer->processLists('caGetListToBeLoaded');
+			caIncrementProgress($vn_progress, "Processing lists");
+			$vo_installer->processLists('caGetListToBeLoaded');
 
 			$vn_progress += 7;
 			caIncrementProgress($vn_progress, "Processing relationship types");
@@ -89,18 +89,18 @@
 			caIncrementProgress($vn_progress, "Processing metadata elements");
 			$vo_installer->processMetadataElements('caGetMetadataElementToBeLoaded');
 
-			$vn_progress += 2;
-			caIncrementProgress($vn_progress, "Processing metadata dictionary");
-			$vo_installer->processMetadataDictionary();
-
-			$vn_progress += 7;
-			caIncrementProgress($vn_progress, "Processing access roles");
-			$vo_installer->processRoles();
-
-			$vn_progress += 7;
-			caIncrementProgress($vn_progress, "Processing user groups");
-			$vo_installer->processGroups();
-
+			// $vn_progress += 2;
+// 			caIncrementProgress($vn_progress, "Processing metadata dictionary");
+// 			$vo_installer->processMetadataDictionary();
+// 
+// 			$vn_progress += 7;
+// 			caIncrementProgress($vn_progress, "Processing access roles");
+// 			$vo_installer->processRoles();
+// 
+// 			$vn_progress += 7;
+// 			caIncrementProgress($vn_progress, "Processing user groups");
+// 			$vo_installer->processGroups();
+// 
 			$vn_progress += 2;
 			caIncrementProgress($vn_progress, "Creating logins");
 			$va_login_info = $vo_installer->processLogins();
@@ -109,21 +109,21 @@
 			caIncrementProgress($vn_progress, "Processing user interfaces");
 			$vo_installer->processUserInterfaces();
 
-			$vn_progress += 7;
-			caIncrementProgress($vn_progress, "Processing displays");
-			$vo_installer->processDisplays();
-
-			$vn_progress += 7;
-			caIncrementProgress($vn_progress, "Processing search forms");
-			$vo_installer->processSearchForms();
+			// $vn_progress += 7;
+// 			caIncrementProgress($vn_progress, "Processing displays");
+// 			$vo_installer->processDisplays();
+// 
+// 			$vn_progress += 7;
+// 			caIncrementProgress($vn_progress, "Processing search forms");
+// 			$vo_installer->processSearchForms();
 
 			$vn_progress += 7;
 			caIncrementProgress($vn_progress, "Setting up hierarchies");
 			$vo_installer->processMiscHierarchicalSetup();
 			
-			$vn_progress += 2;
-			caIncrementProgress($vn_progress, "Processing metadata alerts");
-			$vo_installer->processMetadataAlerts();
+			// $vn_progress += 2;
+// 			caIncrementProgress($vn_progress, "Processing metadata alerts");
+// 			$vo_installer->processMetadataAlerts();
 
 			caIncrementProgress($vn_progress, "Performing post install tasks");
 			$vo_installer->performPostInstallTasks();

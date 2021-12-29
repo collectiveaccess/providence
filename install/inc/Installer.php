@@ -659,6 +659,9 @@ class Installer {
 		return true;
 	}
 	# --------------------------------------------------
+	/**
+	 *
+	 */
 	public function processMetadataElements() {
 		require_once(__CA_MODELS_DIR__."/ca_lists.php");
 		require_once(__CA_MODELS_DIR__."/ca_list_items.php");
@@ -724,6 +727,9 @@ class Installer {
 		return true;
 	}
 	# --------------------------------------------------
+	/**
+	 *
+	 */
 	private function processMetadataElement($element, $parent_id) {
 		require_once(__CA_MODELS_DIR__."/ca_metadata_elements.php");
 		require_once(__CA_MODELS_DIR__."/ca_lists.php");
@@ -797,6 +803,9 @@ class Installer {
 		return $element_id;
 	}
 	# --------------------------------------------------
+	/**
+	 *
+	 */
 	public function processMetadataDictionary() {
 		require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_entries.php');
 
@@ -855,6 +864,9 @@ class Installer {
 		return true;
 	}
 	# --------------------------------------------------
+	/**
+	 *
+	 */
 	public function processUserInterfaces() {
 		require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
 		require_once(__CA_MODELS_DIR__."/ca_editor_ui_screens.php");
@@ -864,56 +876,45 @@ class Installer {
 		require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
 
 		$o_annotation_type_conf = \Configuration::load(\Configuration::load()->get('annotation_type_config'));
-
 		$t_placement = new \ca_editor_ui_bundle_placements();
-
 		$t_list = new \ca_lists();
 		$t_rel_types = new \ca_relationship_types();
-		$va_uis = [];
-		if($this->base_name) { // "merge" profile and its base
-			foreach($this->base->userInterfaces->children() as $vo_ui) {
-				$va_uis[self::getAttribute($vo_ui, "code")] = $vo_ui;
-			}
-			foreach($this->profile->userInterfaces->children() as $vo_ui) {
-				$va_uis[self::getAttribute($vo_ui, "code")] = $vo_ui;
-			}
-		} else {
-			foreach($this->profile->userInterfaces->children() as $vo_ui) {
-				$va_uis[self::getAttribute($vo_ui, "code")] = $vo_ui;
-			}
-		}
+		
+		
+		$uis = $this->parsed_data['userInterfaces'];
+		
 
-		foreach($va_uis as $vs_ui_code => $vo_ui) {
-			$vs_type = self::getAttribute($vo_ui, "type");
-			if (!($vn_type = \Datamodel::getTableNum($vs_type))) {
-				$this->addError("Invalid type {$vs_type} for UI code {$vs_ui_code}");
+		foreach($uis as $ui_code => $ui) {
+			$type = $ui["type"];
+			if (!($type = \Datamodel::getTableNum($type))) {
+				$this->addError("Invalid type {$type} for UI code {$ui_code}");
 				return false;
 			}
 
-			$this->logStatus(_t('Processing user interface with code %1', $vs_ui_code));
+			$this->logStatus(_t('Processing user interface with code %1', $ui_code));
 
 			// model instance of UI type
-			$t_instance = \Datamodel::getInstanceByTableNum($vn_type);
+			$t_instance = \Datamodel::getInstanceByTableNum($type);
 
 			// create ui row
-			if(!($t_ui = \ca_editor_uis::find(array('editor_code' => $vs_ui_code, 'editor_type' =>  $vn_type), array('returnAs' => 'firstModelInstance')))) {
+			if(!($t_ui = \ca_editor_uis::find(['editor_code' => $ui_code, 'editor_type' =>  $type], ['returnAs' => 'firstModelInstance']))) {
 				$t_ui = new \ca_editor_uis();
-				$this->logStatus(_t('User interface with code %1 is new', $vs_ui_code));
+				$this->logStatus(_t('User interface with code %1 is new', $ui_code));
 			} else {
-				$this->logStatus(_t('User interface with code %1 already exists', $vs_ui_code));
+				$this->logStatus(_t('User interface with code %1 already exists', $ui_code));
 			}
 
-			if(self::getAttribute($vo_ui, 'deleted') && $t_ui->getPrimaryKey()) {
-				$this->logStatus(_t('Deleting user interface with code %1', $vs_ui_code));
-				$t_ui->delete(true, array('hard' => true));
+			if($ui['deleted'] && $t_ui->getPrimaryKey()) {
+				$this->logStatus(_t('Deleting user interface with code %1', $ui_code));
+				$t_ui->delete(true, ['hard' => true]);
 				continue;
 			}
 
 			$t_ui->set('user_id', null);
 			$t_ui->set('is_system_ui', 1);
-			$t_ui->set('editor_code', $vs_ui_code);
-			$t_ui->set('editor_type', $vn_type);
-			if ($vs_color = self::getAttribute($vo_ui, "color")) { $t_ui->set('color', $vs_color); }
+			$t_ui->set('editor_code', $ui_code);
+			$t_ui->set('editor_type', $type);
+			if ($color = $ui["color"]) { $t_ui->set('color', $color); }
 
 			if($t_ui->getPrimaryKey()) {
 				$t_ui->update();
@@ -922,103 +923,80 @@ class Installer {
 			}
 
 			if ($t_ui->numErrors()) {
-				$this->addError("Errors inserting UI {$vs_ui_code}: ".join("; ",$t_ui->getErrors()));
+				$this->addError("Errors inserting UI {$ui_code}: ".join("; ",$t_ui->getErrors()));
 				return false;
 			}
 
-			$this->logStatus(_t('Successfully inserted/updated user interface with code %1', $vs_ui_code));
+			$this->logStatus(_t('Successfully inserted/updated user interface with code %1', $ui_code));
 
-			$vn_ui_id = $t_ui->getPrimaryKey();
+			$ui_id = $t_ui->getPrimaryKey();
 
-			self::addLabelsFromXMLElement($t_ui, $vo_ui->labels, $this->locales);
+			self::addLabels($t_ui, $ui['labels']);
 
-			$va_annotation_types = $o_annotation_type_conf->get('types');
+			$annotation_types = $o_annotation_type_conf->get('types');
 			
 			// create ui type restrictions
-			if($vo_ui->typeRestrictions) {
+			if($ui['typeRestrictions']) {
 				// nuke previous restrictions. there shouldn't be any if we're installing from scratch.
 				// if we're updating, we expect the list of restrictions to include all restrictions!
-				if(sizeof($vo_ui->typeRestrictions->children())) {
-					$this->db->query('DELETE FROM ca_editor_ui_type_restrictions WHERE ui_id=?', $vn_ui_id);
+				if(sizeof($ui['typeRestrictions'])) {
+					$this->db->query('DELETE FROM ca_editor_ui_type_restrictions WHERE ui_id=?', $ui_id);
 				}
 
-				$this->logStatus(_t('Successfully nuked all type restrictions for user interface with code %1', $vs_ui_code));
+				$this->logStatus(_t('Successfully nuked all type restrictions for user interface with code %1', $ui_code));
 
-				foreach($vo_ui->typeRestrictions->children() as $vo_restriction) {
-					$vs_restriction_type = self::getAttribute($vo_restriction, "type");
+				foreach($ui['typeRestrictions'] as $restriction) {
+					$restriction_type = $restriction["type"];
 
-					if (strlen($vs_restriction_type)>0) {
+					if (strlen($restriction_type)>0) {
 						// interstitial with type restriction -> code is relationship type code
 						if($t_instance instanceof \BaseRelationshipModel) {
-							$vn_type_id = $t_rel_types->getRelationshipTypeID($t_instance->tableName(),$vs_restriction_type);
+							$type_id = $t_rel_types->getRelationshipTypeID($t_instance->tableName(), $restriction_type);
 						} elseif($t_instance instanceof \ca_representation_annotations) {
 							// representation annotation -> code is annotation type from annotation_types.conf
-							$vn_type_id = $va_annotation_types[$vs_restriction_type]['typeID'];
+							$type_id = $va_annotation_types[$restriction_type]['typeID'];
 						} else { // "normal" type restriction -> code is from actual type list
-							$vs_type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
-							$vn_type_id = $t_list->getItemIDFromList($vs_type_list_name,$vs_restriction_type);
+							$type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
+							$type_id = $t_list->getItemIDFromList($type_list_name, $restriction_type);
 						}
 						
-						$t_ui->addTypeRestriction($vn_type_id, ['includeSubtypes' => self::getAttribute($vo_restriction, "includeSubtypes")]);
+						$t_ui->addTypeRestriction($type_id, ['includeSubtypes' => $restriction["includeSubtypes"]]);
 					
-						$this->logStatus(_t('Successfully added type restriction %1 for user interface with code %2', $vs_restriction_type, $vs_ui_code));
+						$this->logStatus(_t('Successfully added type restriction %1 for user interface with code %2', $restriction_type, $ui_code));
 					}
-				}
-			}
-			
-			if ($vs_type_restrictions = self::getAttribute($vo_ui, "typeRestrictions")) {
-				// Copy type restrictions listed on the <placement> tag into numeric type_ids stored
-				// as settings on the placement record.
-				$va_codes = preg_split("![ ,;\|]!", $vs_type_restrictions);
-				if ($t_instance instanceof \BaseRelationshipModel) {
-					$va_ids = caMakeRelationshipTypeIDList($t_instance->tableNum(), $va_codes);
-				} elseif($t_instance instanceof \ca_representation_annotations) {
-					$va_ids = [];
-					foreach($va_codes as $vs_annotation_type) {
-						if(isset($va_annotation_types[$vs_annotation_type]['typeID'])) {
-							$va_ids[] = $va_annotation_types[$vs_annotation_type]['typeID'];
-						}
-					}
-				} else {
-					$va_ids = caMakeTypeIDList($t_instance->tableNum(), $va_codes, ['dontIncludeSubtypesInTypeRestriction' => true]);
-				}
-				
-				foreach($va_ids as $vn_i => $vn_type_id) {
-					$t_ui->addTypeRestriction($vn_type_id, ['includeSubtypes' => self::getAttribute($vo_ui, "includeSubtypes")]);
-					$this->logStatus(_t('Successfully added type restriction %1 for user interface with code %2', $va_codes[$vn_i], $vs_ui_code));
 				}
 			}
 
 			// create ui screens
-			foreach($vo_ui->screens->children() as $vo_screen) {
-				$vs_screen_idno = self::getAttribute($vo_screen, "idno");
-				$vn_is_default = self::getAttribute($vo_screen, "default");
+			foreach($ui['screens'] as $screen) {
+				$screen_idno = $screen["idno"];
+				$is_default = $screen["default"];
 
-				$this->logStatus(_t('Processing screen with code %1 for user interface with code %2', $vs_screen_idno, $vs_ui_code));
+				$this->logStatus(_t('Processing screen with code %1 for user interface with code %2', $screen_idno, $ui_code));
 
 				$t_ui_screens = \ca_editor_ui_screens::find(array(
-					'idno' => $vs_screen_idno,
-					'ui_id' => $vn_ui_id
-				), array('returnAs' => 'firstModelInstance'));
+					'idno' => $screen_idno,
+					'ui_id' => $ui_id
+				), ['returnAs' => 'firstModelInstance']);
 
 				$t_ui_screens = $t_ui_screens ? $t_ui_screens : new \ca_editor_ui_screens();
 
 				if($t_ui_screens->getPrimaryKey()) {
-					$this->logStatus(_t('Screen with code %1 for user interface with code %2 already exists', $vs_screen_idno, $vs_ui_code));
+					$this->logStatus(_t('Screen with code %1 for user interface with code %2 already exists', $screen_idno, $ui_code));
 				} else {
-					$this->logStatus(_t('Screen with code %1 for user interface with code %2 is new', $vs_screen_idno, $vs_ui_code));
+					$this->logStatus(_t('Screen with code %1 for user interface with code %2 is new', $screen_idno, $ui_code));
 				}
 
-				if(self::getAttribute($vo_screen, 'deleted') && $t_ui_screens->getPrimaryKey()) {
-					$this->logStatus(_t('Deleting screen with code %1 for user interface with code %2', $vs_screen_idno, $vs_ui_code));
-					$t_ui_screens->delete(true, array('hard' => true));
+				if($screen['deleted'] && $t_ui_screens->getPrimaryKey()) {
+					$this->logStatus(_t('Deleting screen with code %1 for user interface with code %2', $screen_idno, $ui_code));
+					$t_ui_screens->delete(true, ['hard' => true]);
 					continue;
 				}
 
-				$t_ui_screens->set('idno',$vs_screen_idno);
-				$t_ui_screens->set('ui_id', $vn_ui_id);
-				$t_ui_screens->set('is_default', $vn_is_default);
-				if ($vs_color = self::getAttribute($vo_screen, "color")) { $t_ui_screens->set('color', $vs_color); }
+				$t_ui_screens->set('idno',$screen_idno);
+				$t_ui_screens->set('ui_id', $ui_id);
+				$t_ui_screens->set('is_default', $is_default);
+				if ($color = $screen["color"]) { $t_ui_screens->set('color', $color); }
 
 				if($t_ui_screens->getPrimaryKey()) {
 					$t_ui_screens->update();
@@ -1028,249 +1006,224 @@ class Installer {
 				}
 
 				if ($t_ui_screens->numErrors()) {
-					$this->addError("Errors inserting UI screen {$vs_screen_idno} for UI {$vs_ui_code}: ".join("; ",$t_ui_screens->getErrors()));
+					$this->addError("Errors inserting UI screen {$screen_idno} for UI {$ui_code}: ".join("; ",$t_ui_screens->getErrors()));
 					return false;
 				}
 
-				$this->logStatus(_t('Successfully updated/inserted screen with code %1 for user interface with code %2', $vs_screen_idno, $vs_ui_code));
+				$this->logStatus(_t('Successfully updated/inserted screen with code %1 for user interface with code %2', $screen_idno, $ui_code));
 
-				self::addLabelsFromXMLElement($t_ui_screens, $vo_screen->labels, $this->locales);
+				self::addLabels($t_ui_screens, $screen['labels']);
 			
-				$va_available_bundles = $t_ui_screens->getAvailableBundles(null,array('dontCache' => true));
+				$available_bundles = $t_ui_screens->getAvailableBundles(null, ['dontCache' => true]);
 
 				// nuke previous placements. there shouldn't be any if we're installing from scratch.
 				// if we're updating, we expect the list of placements to include all of them!
-				if(sizeof($vo_screen->bundlePlacements->children())) {
-					$this->db->query('DELETE FROM ca_editor_ui_bundle_placements WHERE screen_id=?', $t_ui_screens->getPrimaryKey());
+				if(sizeof($screen['bundles'])) {
+					$this->db->query('DELETE FROM ca_editor_ui_bundle_placements WHERE screen_id = ?', $t_ui_screens->getPrimaryKey());
 				}
 
-				$this->logStatus(_t('Successfully nuked all bundle placements for screen with code %1 for user interface with code %2', $vs_screen_idno, $vs_ui_code));
+				$this->logStatus(_t('Successfully nuked all bundle placements for screen with code %1 for user interface with code %2', $screen_idno, $ui_code));
 
                 // set user and group access
-                if($vo_screen->userAccess) {
+                if($screen['userAccess']) {
                     $t_user = new \ca_users();
-                    $va_ui_screen_users = [];
-                    foreach($vo_screen->userAccess->children() as $vo_permission) {
-                        $vs_user = trim((string)self::getAttribute($vo_permission, "user"));
-                        $vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+                    $ui_screen_users = [];
+                    foreach($screen['userAccess'] as $permission) {
+                        $user = trim((string)$permission["user"]);
+                        $access = $this->_convertUserGroupAccessStringToInt($permission['access']);
 
-                        if(!$t_user->load(array('user_name' => $vs_user))) { continue; }
-                        if($vn_access) {
-                            $va_ui_screen_users[$t_user->getUserID()] = $vn_access;
+                        if(!$t_user->load(['user_name' => $user])) { continue; }
+                        if($access) {
+                            $ui_screen_users[$t_user->getUserID()] = $access;
                         } else {
-                            $this->addError("User name or access value invalid for UI screen {$vs_screen_idno} (permission item with user name '{$vs_user}')");
+                            $this->addError("User name or access value invalid for UI screen {$screen_idno} (permission item with user name '{$user}')");
                         }
                     }
 
-                    if(sizeof($va_ui_screen_users)>0) {
-                        $t_ui_screens->addUsers($va_ui_screen_users);
+                    if(sizeof($ui_screen_users) > 0) {
+                        $t_ui_screens->addUsers($ui_screen_users);
                     }
                 }
 
-                if($vo_screen->groupAccess) {
+                if($screen['groupAccess']) {
                     $t_group = new \ca_user_groups();
-                    $va_ui_screen_groups = [];
-                    foreach($vo_screen->groupAccess->children() as $vo_permission) {
-                        $vs_group = trim((string)self::getAttribute($vo_permission, "group"));
-                        $vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+                    $ui_screen_groups = [];
+                    foreach($screen['groupAccess'] as $permission) {
+                        $group = trim((string)$permission["group"]);
+                        $access = $this->_convertUserGroupAccessStringToInt($permission['access']);
 
-                        if(!$t_group->load(array('code' => $vs_group))) { continue; }
-                        if($vn_access) {
-                            $va_ui_screen_groups[$t_group->getPrimaryKey()] = $vn_access;
+                        if(!$t_group->load(['code' => $group])) { continue; }
+                        if($access) {
+                            $ui_screen_groups[$t_group->getPrimaryKey()] = $access;
                         } else {
-                            $this->addError("Group code or access value invalid for UI screen {$vs_screen_idno} (permission item with group code '{$vs_group}')");
+                            $this->addError("Group code or access value invalid for UI screen {$screen_idno} (permission item with group code '{$group}')");
                         }
                     }
 
-                    if(sizeof($va_ui_screen_groups)>0) {
-                        $t_ui_screens->addUserGroups($va_ui_screen_groups);
+                    if(sizeof($ui_screen_groups) > 0) {
+                        $t_ui_screens->addUserGroups($ui_screen_groups);
                     }
                 }
                 
-                if($vo_screen->roleAccess) {
+                if($screen['roleAccess']) {
                     $t_role = new \ca_user_roles();
-                    $va_ui_screen_roles = [];
-                    foreach($vo_screen->roleAccess->children() as $vo_permission) {
-                        $vs_role = trim((string)self::getAttribute($vo_permission, "role"));
-                        $vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+                    $ui_screen_roles = [];
+                    foreach($screen['roleAccess'] as $permission) {
+                        $role = trim((string)$permission["role"]);
+                        $access = $this->_convertUserGroupAccessStringToInt($permission['access']);
 
-                        if(!$t_role->load(array('code' => $vs_role))) { continue; }
-                        if(!is_null($vn_access)) {
-                            $va_ui_screen_roles[$t_role->getPrimaryKey()] = $vn_access;
+                        if(!$t_role->load(['code' => $role])) { continue; }
+                        if(!is_null($access)) {
+                            $ui_screen_roles[$t_role->getPrimaryKey()] = $access;
                         } else {
-                            $this->addError("Role code or access value invalid for UI screen {$vs_screen_idno} (permission item with role code '{$vs_role}')");
+                            $this->addError("Role code or access value invalid for UI screen {$screen_idno} (permission item with role code '{$role}')");
                         }
                     }
-                    if(sizeof($va_ui_screen_roles)>0) {   
+                    if(sizeof($ui_screen_roles)>0) {   
 						$all_roles = $t_role->getRoleList();
 						foreach($all_roles as $role_id => $role_info) {
-							if (!isset($va_ui_screen_roles[$role_id])) { $va_ui_screen_roles[$role_id] = 0; }
+							if (!isset($ui_screen_roles[$role_id])) { $ui_screen_roles[$role_id] = 0; }
 						}
-                        $t_ui_screens->addUserRoles($va_ui_screen_roles);
+                        $t_ui_screens->addUserRoles($ui_screen_roles);
                     }
                 }
 
 				// create ui bundle placements
-				foreach($vo_screen->bundlePlacements->children() as $vo_placement) {
-					$vs_placement_code = self::getAttribute($vo_placement, "code");
-					$vs_bundle_type_restrictions = self::getAttribute($vo_placement, "typeRestrictions");
-					$vs_bundle = trim((string)$vo_placement->bundle);
+				foreach($screen['bundles'] as $placement) {
+					$placement_code = $placement["code"];
+					$bundle_type_restrictions = $placement["typeRestrictions"];
+					$bundle = trim((string)$placement['bundle']);
 
-					if ($vs_bundle_type_restrictions) {
+					if (is_array($bundle_type_restrictions) && sizeof($bundle_type_restrictions)) {
 						// Copy type restrictions listed on the <placement> tag into numeric type_ids stored
 						// as settings on the placement record.
 						if ($t_instance instanceof \BaseRelationshipModel) {
-							$va_ids = caMakeRelationshipTypeIDList($t_instance->tableNum(), preg_split("![ ,;\|]!", $vs_bundle_type_restrictions));
+							$ids = caMakeRelationshipTypeIDList($t_instance->tableNum(), $bundle_type_restrictions);
 						} elseif($t_instance instanceof \ca_representation_annotations) {
-							$va_ids = [];
-							foreach(explode(',', $vs_bundle_type_restrictions) as $vs_annotation_type) {
-								if(isset($va_annotation_types[$vs_annotation_type]['typeID'])) {
-									$va_ids[] = $va_annotation_types[$vs_annotation_type]['typeID'];
+							$ids = [];
+							foreach($bundle_type_restrictions as $annotation_type) {
+								if(isset($annotation_types[$annotation_type]['typeID'])) {
+									$ids[] = $annotation_types[$annotation_type]['typeID'];
 								}
 							}
 						} else {
-							$va_ids = caMakeTypeIDList($t_instance->tableNum(), preg_split("![ ,;\|]!", $vs_bundle_type_restrictions), ['dontIncludeSubtypesInTypeRestriction' => true]);
+							$ids = caMakeTypeIDList($t_instance->tableNum(), $bundle_type_restrictions, ['dontIncludeSubtypesInTypeRestriction' => true]);
 						}
 						
-						if (!$vo_placement->settings) { $vo_placement->addChild("settings"); }
-						
-						foreach($va_ids as $vn_id) {
-							$o_setting = $vo_placement->settings->addChild('setting', $vn_id);
-							$o_setting->addAttribute('name', 'bundleTypeRestrictions');
+						foreach($ids as $id) {
+							$o_setting = $placement['settings']['bundleTypeRestrictions'][''][] = $vn_id;
 						}
 						
-						if ($vs_include_subtypes = (bool)self::getAttribute($vo_placement, "includeSubtypes")) {
-							$o_setting = $vo_placement->settings->addChild('setting', 1);
-							$o_setting->addAttribute('name', 'bundleTypeRestrictionsIncludeSubtypes');
+						if ($vs_include_subtypes = (bool)$placement["includeSubtypes"]) {
+							$o_setting = $placement['settings']['bundleTypeRestrictionsIncludeSubtypes'][''][] = 1;
 						}
 					}
 					
-					$va_settings = $this->_processSettings(null, $vo_placement->settings, ['settingsInfo' => array_merge($t_placement->getAvailableSettings(), is_array($va_available_bundles[$vs_bundle]['settings']) ? $va_available_bundles[$vs_bundle]['settings'] : [])]);
-					$this->logStatus(_t('Adding bundle %1 with code %2 for screen with code %3 and user interface with code %4', $vs_bundle, $vs_placement_code, $vs_screen_idno, $vs_ui_code));
+					$va_settings = $this->_processSettings(null, $placement['settings'], ['settingsInfo' => array_merge($t_placement->getAvailableSettings(), is_array($available_bundles[$bundle]['settings']) ? $available_bundles[$bundle]['settings'] : [])]);
+					$this->logStatus(_t('Adding bundle %1 with code %2 for screen with code %3 and user interface with code %4', $bundle, $placement_code, $screen_idno, $ui_code));
 
-					if (!$t_ui_screens->addPlacement($vs_bundle, $vs_placement_code, $va_settings, null, array('additional_settings' => $va_available_bundles[$vs_bundle]['settings']))) {
+					if (!$t_ui_screens->addPlacement($bundle, $placement_code, $settings, null, ['additional_settings' => $available_bundles[$bundle]['settings']])) {
 						$this->logStatus(join("; ", $t_ui_screens->getErrors()));
 					}
 				}
 
 				// create ui screen type restrictions
-				if($vo_screen->typeRestrictions) {
+				if($screen['typeRestrictions']) {
 					// nuke previous restrictions. there shouldn't be any if we're installing from scratch.
 					// if we're updating, we expect the list of restrictions to include all of them!
-					if(sizeof($vo_screen->typeRestrictions->children())) {
-						$this->db->query('DELETE FROM ca_editor_ui_screen_type_restrictions WHERE screen_id=?', $t_ui_screens->getPrimaryKey());
+					if(sizeof($screen['typeRestrictions'])) {
+						$this->db->query('DELETE FROM ca_editor_ui_screen_type_restrictions WHERE screen_id = ?', $t_ui_screens->getPrimaryKey());
 					}
 
-					$this->logStatus(_t('Successfully nuked all type restrictions for screen with code %1 for user interface with code %2', $vs_screen_idno, $vs_ui_code));
+					$this->logStatus(_t('Successfully nuked all type restrictions for screen with code %1 for user interface with code %2', $screen_idno, $ui_code));
 
-					foreach($vo_screen->typeRestrictions->children() as $vo_restriction) {
-						$vs_restriction_type = self::getAttribute($vo_restriction, "type");
+					foreach($screen['typeRestrictions'] as $restriction) {
+						$restriction_type = $restriction["type"];
 
-						if (strlen($vs_restriction_type)>0) {
+						if (strlen($restriction_type) > 0) {
 							// interstitial with type restriction -> code is relationship type code
 							if($t_instance instanceof \BaseRelationshipModel) {
-								$vn_type_id = $t_rel_types->getRelationshipTypeID($t_instance->tableName(),$vs_restriction_type);
+								$type_id = $t_rel_types->getRelationshipTypeID($t_instance->tableName(),$restriction_type);
 							} elseif($t_instance instanceof \ca_representation_annotations) {
 								// representation annotation -> code is annotation type from annotation_types.conf
-								$vn_type_id = $va_annotation_types[$vs_restriction_type]['typeID'];
+								$type_id = $va_annotation_types[$vs_restriction_type]['typeID'];
 							} else { // "normal" type restriction -> code is from actual type list
-								$vs_type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
-								$vn_type_id = $t_list->getItemIDFromList($vs_type_list_name,$vs_restriction_type);
+								$type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
+								$type_id = $t_list->getItemIDFromList($type_list_name, $restriction_type);
 							}
 
-							if($vn_type_id) {
-								$t_ui_screens->addTypeRestriction($vn_type_id, ['includeSubtypes' => self::getAttribute($vo_restriction, "includeSubtypes")]);
+							if($type_id) {
+								$t_ui_screens->addTypeRestriction($type_id, ['includeSubtypes' => $restriction["includeSubtypes"]]);
 							}
 
-							$this->logStatus(_t('Successfully added type restriction %1 for screen with code %2 for user interface with code %3', $vs_restriction_type, $vs_screen_idno, $vs_ui_code));
+							$this->logStatus(_t('Successfully added type restriction %1 for screen with code %2 for user interface with code %3', $restriction_type, $screen_idno, $ui_code));
 						}
 					}
 				}
-				
-				if ($vs_type_restrictions = self::getAttribute($vo_screen, "typeRestrictions")) {
-                    $va_codes = preg_split("![ ,;\|]!", $vs_type_restrictions);
-                    if ($t_instance instanceof \BaseRelationshipModel) {
-                        $va_ids = caMakeRelationshipTypeIDList($t_instance->tableNum(), $va_codes);
-                    } elseif($t_instance instanceof \ca_representation_annotations) {
-                        $va_ids = [];
-                        foreach($va_codes as $vs_annotation_type) {
-                            if(isset($va_annotation_types[$vs_annotation_type]['typeID'])) {
-                                $va_ids[] = $va_annotation_types[$vs_annotation_type]['typeID'];
-                            }
-                        }
-                    } else {
-                        $va_ids = caMakeTypeIDList($t_instance->tableNum(), $va_codes, ['dontIncludeSubtypesInTypeRestriction' => true]);
-                    }
-                
-                    foreach($va_ids as $vn_i => $vn_type_id) {
-                        $t_ui_screens->addTypeRestriction($vn_type_id, ['includeSubtypes' => self::getAttribute($vo_screen, "includeSubtypes")]);
-                        $this->logStatus(_t('Successfully added type restriction %1 for screen with code %2 for user interface with code %3', $va_codes[$vn_i], $vs_screen_idno, $vs_ui_code));
-                    }
-                }
 			}
 
 			// set user and group access
-			if($vo_ui->userAccess) {
+			if($ui['userAccess']) {
 				$t_user = new \ca_users();
-				$va_ui_users = [];
-				foreach($vo_ui->userAccess->children() as $vo_permission) {
-					$vs_user = trim((string)self::getAttribute($vo_permission, "user"));
-					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+				$ui_users = [];
+				foreach($ui['userAccess'] as $permission) {
+					$user = trim((string)$permission["user"]);
+					$access = $this->_convertUserGroupAccessStringToInt($permission['access']);
 
-					if(!$t_user->load(array('user_name' => $vs_user))) { continue; }
-					if($vn_access) {
-						$va_ui_users[$t_user->getUserID()] = $vn_access;
+					if(!$t_user->load(['user_name' => $user])) { continue; }
+					if($access) {
+						$ui_users[$t_user->getUserID()] = $access;
 					} else {
-						$this->addError("User name or access value invalid for UI {$vs_ui_code} (permission item with user name '{$vs_user}')");
+						$this->addError("User name or access value invalid for UI {$ui_code} (permission item with user name '{$user}')");
 					}
 				}
 
-				if(sizeof($va_ui_users)>0) {
-					$t_ui->addUsers($va_ui_users);
+				if(sizeof($ui_users)>0) {
+					$t_ui->addUsers($ui_users);
 				}
 			}
 
-			if($vo_ui->groupAccess) {
+			if($ui->groupAccess) {
 				$t_group = new \ca_user_groups();
-				$va_ui_groups = [];
-				foreach($vo_ui->groupAccess->children() as $vo_permission) {
-					$vs_group = trim((string)self::getAttribute($vo_permission, "group"));
-					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+				$ui_groups = [];
+				foreach($ui['groupAccess'] as $permission) {
+					$group = trim((string)$permission["group"]);
+					$access = $this->_convertUserGroupAccessStringToInt($permission['access']);
 
-					if(!$t_group->load(array('code' => $vs_group))) { continue; }
-					if($vn_access) {
-						$va_ui_groups[$t_group->getPrimaryKey()] = $vn_access;
+					if(!$t_group->load(['code' => $group])) { continue; }
+					if($access) {
+						$ui_groups[$t_group->getPrimaryKey()] = $access;
 					} else {
-						$this->addError("Group code or access value invalid for UI {$vs_ui_code} (permission item with group code '{$vs_group}')");
+						$this->addError("Group code or access value invalid for UI {$ui_code} (permission item with group code '{$group}')");
 					}
 				}
 
-				if(sizeof($va_ui_groups)>0) {
-					$t_ui->addUserGroups($va_ui_groups);
+				if(sizeof($ui_groups)>0) {
+					$t_ui->addUserGroups($ui_groups);
 				}
 			}
 			
-			if($vo_ui->roleAccess) {
+			if($ui->roleAccess) {
 				$t_role = new \ca_user_roles();
-				$va_ui_roles = [];
-				foreach($vo_ui->roleAccess->children() as $vo_permission) {
-					$vs_role = trim((string)self::getAttribute($vo_permission, "role"));
-					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+				$ui_roles = [];
+				foreach($ui['roleAccess'] as $permission) {
+					$role = trim((string)$permission["role"]);
+					$access = $this->_convertUserGroupAccessStringToInt($permission['access']);
 
-					if(!$t_role->load(array('code' => $vs_role))) { continue; }
-					if(!is_null($vn_access)) {
-						$va_ui_roles[$t_role->getPrimaryKey()] = $vn_access;
+					if(!$t_role->load(['code' => $role])) { continue; }
+					if(!is_null($access)) {
+						$ui_roles[$t_role->getPrimaryKey()] = $access;
 					} else {
-						$this->addError("Role code or access value invalid for UI {$vs_ui_code} (permission item with role code '{$vs_role}')");
+						$this->addError("Role code or access value invalid for UI {$ui_code} (permission item with role code '{$role}')");
 					}
 				}
 
-				if(sizeof($va_ui_roles)>0) {
+				if(sizeof($ui_roles)>0) {
 					$all_roles = $t_role->getRoleList();
 					foreach($all_roles as $role_id => $role_info) {
-						if (!isset($va_ui_roles[$role_id])) { $va_ui_roles[$role_id] = 0; }
+						if (!isset($ui_roles[$role_id])) { $ui_roles[$role_id] = 0; }
 					}
-					$t_ui->addUserRoles($va_ui_roles);
+					$t_ui->addUserRoles($ui_roles);
 				}
 			}
 		}
@@ -2089,78 +2042,59 @@ class Installer {
 		return true;
 	}
 	# --------------------------------------------------
-	public function processLogins($pb_create_admin_account=true) {
-		$va_logins = [];
-		if($this->base_name) { // "merge" profile and its base
-			if($this->base->logins) {
-				foreach($this->base->logins->children() as $vo_login) {
-					$vs_logins[self::getAttribute($vo_login, "user_name")] = $vo_login;
-				}
-			}
-			if($this->profile->logins) {
-				foreach($this->profile->logins->children() as $vo_login) {
-					$va_logins[self::getAttribute($vo_login, "user_name")] = $vo_login;
-				}
-			}
-		} else {
-			if($this->profile->logins) {
-				foreach($this->profile->logins->children() as $vo_login) {
-					$va_logins[self::getAttribute($vo_login, "user_name")] = $vo_login;
-				}
-			}
-		}
+	public function processLogins($create_admin_account=true) {
+		$logins = $this->parsed_data['logins'];
 
 		// If no logins are defined in the profile create an admin login with random password
-		if (!sizeof($va_logins) && $pb_create_admin_account) {
-			$vs_password = $this->createAdminAccount();
-			return array('administrator' => $vs_password);
+		if (!sizeof($logins) && $create_admin_account) {
+			$password = $this->createAdminAccount();
+			return ['administrator' => $password];
 		}
+		
 
-		$va_login_info = [];
-
-		foreach($va_logins as $vs_user_name => $vo_login) {
-			if (!($vs_password = trim((string) self::getAttribute($vo_login, "password")))) {
-				$vs_password = caGenerateRandomPassword(8);
+		$login_info = [];
+		foreach($logins as $user_name => $login) {
+			if (!($password = trim((string)$login["password"]))) {
+				$password = caGenerateRandomPassword(8);
 			}
 
 			$t_user = new \ca_users();
-			$t_user->set('user_name', $vs_user_name = trim((string) self::getAttribute($vo_login, "user_name")));
-			$t_user->set('password', $vs_password);
-			$t_user->set('fname',  trim((string) self::getAttribute($vo_login, "fname")));
-			$t_user->set('lname',  trim((string) self::getAttribute($vo_login, "lname")));
-			$t_user->set('email',  trim((string) self::getAttribute($vo_login, "email")));
+			$t_user->set('user_name', $user_name = trim((string)$login["user_name"]));
+			$t_user->set('password', $password);
+			$t_user->set('fname',  trim((string)$login["fname"]));
+			$t_user->set('lname',  trim((string)$login["lname"]));
+			$t_user->set('email',  trim((string)$login["email"]));
 			$t_user->set('active', 1);
 			$t_user->set('userclass', 0);
 			$t_user->insert();
 
-			$va_roles = [];
-			if($vo_login->role) {
-				foreach($vo_login->role as $vo_role) {
-					$va_roles[] = trim((string) self::getAttribute($vo_role, "code"));
+			$roles = [];
+			if($login['roles']) {
+				foreach($login['roles'] as $role) {
+					$roles[] = trim((string)$role);
 				}
 			}
-			if (sizeof($va_roles)) { $t_user->addRoles($va_roles); }
+			if (sizeof($roles)) { $t_user->addRoles($roles); }
 
 
-			$va_groups = [];
-			if($vo_login->group) {
-				foreach($vo_login->group as $vo_group) {
-					$va_groups[] = trim((string) self::getAttribute($vo_group, "code"));
+			$groups = [];
+			if($login['groups']) {
+				foreach($login['groups'] as $group) {
+					$groups[] = trim((string)$group);
 				}
 			}
-			if (sizeof($va_groups)) { $t_user->addToGroups($va_groups); }
+			if (sizeof($groups)) { $t_user->addToGroups($groups); }
 
 			if ($t_user->numErrors()) {
-				$this->addError("Errors adding login {$vs_user_name}: ".join("; ",$t_user->getErrors()));
+				$this->addError("Errors adding login {$user_name}: ".join("; ",$t_user->getErrors()));
 				return false;
 			}
 
-			$va_login_info[$vs_user_name] = $vs_password;
+			$login_info[$user_name] = $password;
 		}
 
-		return $va_login_info;
+		return $login_info;
 	}
-	
 	# --------------------------------------------------
 	public function processMetadataAlerts() {
 		require_once(__CA_MODELS_DIR__."/ca_metadata_alert_rules.php");
