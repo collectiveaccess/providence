@@ -597,8 +597,8 @@ class Installer {
 			$status = $item["status"];
 			$access = $item["access"];
 			$rank = $item["rank"];
-			$vn_enabled = $item["enabled"];
-			$vn_default = $item["default"];
+			$enabled = $item["enabled"];
+			$default = $item["default"];
 			$color = $item["color"];
 
 			$type_id = null;
