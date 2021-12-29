@@ -90,6 +90,7 @@ class XMLProfileParser extends BaseProfileParser {
 		$this->processRelationshipTypes();
 		$this->processMetadataElementSets();
 		$this->processUIs();
+		$this->processDisplays();
 		$this->processLogins();
 		
 		return $this->data;
@@ -473,7 +474,7 @@ class XMLProfileParser extends BaseProfileParser {
 	 */
 	public function processUIs($f_callback=null) {
 		$ui_list = [];
-		if($this->base && $this->base->userInterfaces) { $lists_list[] = $this->base->userInterfaces->children(); }
+		if($this->base && $this->base->userInterfaces) { $ui_list[] = $this->base->userInterfaces->children(); }
 		$ui_list[] = $this->xml->userInterfaces->children();
 	
 		$this->data['userInterfaces'] = [];
@@ -490,6 +491,7 @@ class XMLProfileParser extends BaseProfileParser {
 				if($ui->typeRestrictions) { 
 					$type_restrictions = array_merge($type_restrictions, self::processTypeRestrictionLists($ui->typeRestrictions));
 				}
+				$settings = $ui->settings ? $this->getSettingsFromXML($ui->settings) : [];
 				
 				$user_access = self::processAccessRestrictions('user', $ui->userAccess);
 				$group_access = self::processAccessRestrictions('group', $ui->groupAccess);
@@ -502,6 +504,7 @@ class XMLProfileParser extends BaseProfileParser {
 					'color' => $color,
 					'typeRestrictions' => $type_restrictions,
 					'includeSubtypes' => $include_subtypes,
+					'settings' => $settings,
 					'screens' => $ui->screens ? $this->processUIScreens($ui->screens) : [],
 					'userAccess' => $user_access,
 					'groupAccess' => $group_access,
@@ -509,7 +512,6 @@ class XMLProfileParser extends BaseProfileParser {
 				];
 			}
 		}
-		//print_r($this->data['userInterfaces']);die;
 		return true;
 	}
 	# --------------------------------------------------
@@ -624,6 +626,80 @@ class XMLProfileParser extends BaseProfileParser {
 			}
 		}
 		return true;
+	}
+	# --------------------------------------------------
+	/**
+	 *
+	 */
+	public function processDisplays($f_callback=null) {
+		$display_list = [];
+		if($this->base && $this->base->displays) { $display_list[] = $this->base->displays->children(); }
+		$display_list[] = $this->xml->displays->children();
+	
+		$this->data['displays'] = [];
+		foreach($display_list as $displays) {
+			foreach($displays as $display) {
+				$display_code = self::getAttribute($display, "code");
+				$type = self::getAttribute($display, "type");
+				$system = self::getAttribute($display, "system");
+				$deleted = self::getAttribute($display, "deleted");
+			
+				$labels = self::getLabelsFromXML($display->labels);
+				
+				$type_restrictions = self::processTypeRestrictionStrings(self::getAttribute($display, "typeRestrictions"), $include_subtypes);
+				if($display->typeRestrictions) { 
+					$type_restrictions = array_merge($type_restrictions, self::processTypeRestrictionLists($display->typeRestrictions));
+				}
+				
+				$settings = $display->settings ? $this->getSettingsFromXML($display->settings) : [];
+				
+				$user_access = self::processAccessRestrictions('user', $display->userAccess);
+				$group_access = self::processAccessRestrictions('group', $display->groupAccess);
+				$role_access = self::processAccessRestrictions('role', $display->userAccess);
+			
+				$this->data['displays'][$display_code] = [
+					'labels' => $labels,
+					'code' => $display_code,
+					'type' => $type,
+					'system' => $system,
+					'deleted' => $deleted,
+					'typeRestrictions' => $type_restrictions,
+					'settings' => $settings,
+					'bundles' => $display->bundlePlacements ? $this->processDisplayBundles($display->bundlePlacements) : [],
+					'userAccess' => $user_access,
+					'groupAccess' => $group_access,
+					'roleAccess' => $role_access
+				];
+			}
+		}
+		return true;
+	}
+	
+	# --------------------------------------------------
+	/**
+	 *
+	 */
+	protected function processDisplayBundles($bundles) {
+		$values = [];
+		foreach($bundles->children() as $bundle) {
+			$code = self::getAttribute($bundle, "code");
+			$bundle_name = trim((string)$bundle->bundle);
+			$include_subtypes = self::getAttribute($ui, "includeSubtypes");
+			
+			$type_restrictions = self::processTypeRestrictionStrings(self::getAttribute($bundle, "typeRestrictions"), $include_subtypes);
+			
+			$settings = $bundle->settings ? $this->getSettingsFromXML($bundle->settings) : [];
+			
+			$values[$code] = [
+				'code' => $code,
+				'bundle' => $bundle_name,
+				'settings' => $settings,
+				'includeSubtypes' => $include_subtypes,
+				'typeRestrictions' => $type_restrictions
+			];
+		}
+
+		return $values;
 	}
 	# --------------------------------------------------
 	/**

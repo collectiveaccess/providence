@@ -109,10 +109,10 @@
 			caIncrementProgress($vn_progress, "Processing user interfaces");
 			$vo_installer->processUserInterfaces();
 
-			// $vn_progress += 7;
-// 			caIncrementProgress($vn_progress, "Processing displays");
-// 			$vo_installer->processDisplays();
-// 
+			$vn_progress += 7;
+			caIncrementProgress($vn_progress, "Processing displays");
+			$vo_installer->processDisplays();
+
 // 			$vn_progress += 7;
 // 			caIncrementProgress($vn_progress, "Processing search forms");
 // 			$vo_installer->processSearchForms();

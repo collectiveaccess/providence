@@ -880,10 +880,8 @@ class Installer {
 		$t_list = new \ca_lists();
 		$t_rel_types = new \ca_relationship_types();
 		
-		
 		$uis = $this->parsed_data['userInterfaces'];
-		
-
+	
 		foreach($uis as $ui_code => $ui) {
 			$type = $ui["type"];
 			if (!($type = \Datamodel::getTableNum($type))) {
@@ -1551,59 +1549,40 @@ class Installer {
 		require_once(__CA_MODELS_DIR__."/ca_bundle_display_type_restrictions.php");
 
 		$o_config = \Configuration::load();
+		
+		$displays = $this->parsed_data['displays'];
 
-		$va_displays = [];
-		if($this->base_name) { // "merge" profile and its base
-			if($this->base->displays) {
-				foreach($this->base->displays->children() as $vo_display) {
-					$va_displays[self::getAttribute($vo_display, "code")] = $vo_display;
-				}
-			}
+		if(sizeof($displays) == 0) { return true; }
 
-			if($this->profile->displays) {
-				foreach($this->profile->displays->children() as $vo_display) {
-					$va_displays[self::getAttribute($vo_display, "code")] = $vo_display;
-				}
-			}
-		} else {
-			if($this->profile->displays) {
-				foreach($this->profile->displays->children() as $vo_display) {
-					$va_displays[self::getAttribute($vo_display, "code")] = $vo_display;
-				}
-			}
-		}
+		foreach($displays as $display) {
+			$display_code = $display["code"];
+			$system = $display["system"];
+			$table = $display["type"];
+			$table_num = \Datamodel::getTableNum($table);
 
-		if(sizeof($va_displays) == 0) { return true; }
+			$this->logStatus(_t('Processing display with code %1', $display_code));
 
-		foreach($va_displays as $vo_display) {
-			$vs_display_code = self::getAttribute($vo_display, "code");
-			$vb_system = self::getAttribute($vo_display, "system");
-			$vs_table = self::getAttribute($vo_display, "type");
-			$vn_table_num = \Datamodel::getTableNum($vs_table);
+			if ($o_config->get("{$table}_disable")) { continue; }
 
-			$this->logStatus(_t('Processing display with code %1', $vs_display_code));
-
-			if ($o_config->get($vs_table.'_disable')) { continue; }
-
-			if(!($t_display = \ca_bundle_displays::find(array('display_code' => $vs_display_code), array('returnAs' => 'firstModelInstance')))) {
-				$this->logStatus(_t('Display with code %1 is new', $vs_display_code));
+			if(!($t_display = \ca_bundle_displays::find(['display_code' => $display_code], ['returnAs' => 'firstModelInstance']))) {
+				$this->logStatus(_t('Display with code %1 is new', $display_code));
 				$t_display = new \ca_bundle_displays();
 			} else {
-				$this->logStatus(_t('Display with code %1 already exists', $vs_display_code));
+				$this->logStatus(_t('Display with code %1 already exists', $display_code));
 			}
 
-			if(self::getAttribute($vo_display, "deleted") && $t_display->getPrimaryKey()) {
+			if($display["deleted"] && $t_display->getPrimaryKey()) {
 				$t_display->delete(true);
-				$this->logStatus(_t('Deleting display with code %1', $vs_display_code));
+				$this->logStatus(_t('Deleting display with code %1', $display_code));
 				continue;
 			}
 
-			$t_display->set("display_code", $vs_display_code);
-			$t_display->set("is_system", $vb_system);
-			$t_display->set("table_num",\Datamodel::getTableNum($vs_table));
+			$t_display->set("display_code", $display_code);
+			$t_display->set("is_system", $system);
+			$t_display->set("table_num",\Datamodel::getTableNum($table));
 			$t_display->set("user_id", 1);		// let administrative user own these
 
-			$this->_processSettings($t_display, $vo_display->settings);
+			$this->_processSettings($t_display, $display->settings);
 
 			if($t_display->getPrimaryKey()) {
 				$t_display->update();
@@ -1612,111 +1591,102 @@ class Installer {
 			}
 
 			if ($t_display->numErrors()) {
-				$this->addError("There was an error while inserting display {$vs_display_code}: ".join(" ",$t_display->getErrors()));
+				$this->addError("There was an error while inserting display {$display_code}: ".join(" ",$t_display->getErrors()));
 			} else {
-				$this->logStatus(_t('Successfully updated/inserted display with code %1', $vs_display_code));
+				$this->logStatus(_t('Successfully updated/inserted display with code %1', $display_code));
 
-				self::addLabelsFromXMLElement($t_display, $vo_display->labels, $this->locales);
+				self::addLabels($t_display, $display->labels);
 				if ($t_display->numErrors()) {
-					$this->addError("There was an error while inserting display label for {$vs_display_code}: ".join(" ",$t_display->getErrors()));
+					$this->addError("There was an error while inserting display label for {$display_code}: ".join(" ",$t_display->getErrors()));
 				}
-				if(!$this->processDisplayPlacements($t_display, $vo_display->bundlePlacements, null)) {
+				if(!$this->processDisplayPlacements($t_display, $display['bundles'], null)) {
 					return false;
 				}
 			}
 
-			if ($vo_display->typeRestrictions) {
+			if ($display->typeRestrictions) {
 				// nuke previous restrictions. there shouldn't be any if we're installing from scratch.
 				// if we're updating, we expect the list of restrictions to include all restrictions!
-				if(sizeof($vo_display->typeRestrictions->children())) {
-					$this->db->query('DELETE FROM ca_bundle_display_type_restrictions WHERE display_id=?', $t_display->getPrimaryKey());
-					$this->logStatus(_t('Successfully nuked all type restrictions for display with code %1', $vs_display_code));
+				if(sizeof($display['typeRestrictions'])) {
+					$this->db->query('DELETE FROM ca_bundle_display_type_restrictions WHERE display_id = ?', $t_display->getPrimaryKey());
+					$this->logStatus(_t('Successfully nuked all type restrictions for display with code %1', $display_code));
 				}
 
-				foreach($vo_display->typeRestrictions->children() as $vo_restriction) {
-					$vs_restriction_code = trim((string)self::getAttribute($vo_restriction, "code"));
-					$vs_type = trim((string)self::getAttribute($vo_restriction, "type"));
+				foreach($display['typeRestrictions'] as $restriction) {
+					$restriction_code = trim((string)$restriction["code"]);
+					$type = trim((string)$restriction["type"]);
 					
-					$t_display->addTypeRestriction(array_pop(caMakeTypeIDList($vn_table_num, [$vs_type], ['dontIncludeSubtypesInTypeRestriction' => true])), ['includeSubtypes' => (bool)$vo_restriction->includeSubtypes ? 1 : 0]);
+					$t_display->addTypeRestriction(array_pop(caMakeTypeIDList($table_num, [$type], ['dontIncludeSubtypesInTypeRestriction' => true])), ['includeSubtypes' => (bool)$restriction['includeSubtypes'] ? 1 : 0]);
 					
 					if ($t_display->numErrors()) {
-						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} in display {$vs_display_code}: ".join("; ",$t_display->getErrors()));
+						$this->addError("There was an error while inserting type restriction {$restriction_code} in display {$display_code}: ".join("; ",$t_display->getErrors()));
 					}
 
-					$this->logStatus(_t('Added type restriction with code %1 and type %2 for display with code %3', $vs_restriction_code, $vs_type, $vs_display_code));
-				}
-			}
-			if ($vs_type_restrictions = self::getAttribute($vo_display, "typeRestrictions")) {
-				$va_codes = preg_split("![ ,;\|]!", $vs_type_restrictions);
-				$va_ids = caMakeTypeIDList($vn_table_num, $va_codes, ['dontIncludeSubtypesInTypeRestriction' => true]);
-				
-				foreach($va_ids as $vn_i => $vn_type_id) {
-					$t_display->addTypeRestriction($vn_type_id, ['includeSubtypes' => self::getAttribute($vo_display, "includeSubtypes")]);
-					$this->logStatus(_t('Added type restriction with type %1 for display with code %2', $va_codes[$vn_i], $vs_display_code));
+					$this->logStatus(_t('Added type restriction with code %1 and type %2 for display with code %3', $restriction_code, $type, $display_code));
 				}
 			}
 
-			if($vo_display->userAccess) {
+			if($display['userAccess']) {
 				$t_user = new \ca_users();
-				$va_display_users = [];
-				foreach($vo_display->userAccess->children() as $vo_permission) {
-					$vs_user = trim((string)self::getAttribute($vo_permission, "user"));
-					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+				$display_users = [];
+				foreach($display['userAccess'] as $permission) {
+					$user = trim((string)$permission["user"]);
+					$access = $this->_convertUserGroupAccessStringToInt($permission['access']);
 
-					if(!$t_user->load(array('user_name' => $vs_user))) { continue; }
-					if($vn_access) {
-						$va_display_users[$t_user->getUserID()] = $vn_access;
+					if(!$t_user->load(['user_name' => $user])) { continue; }
+					if($access) {
+						$display_users[$t_user->getUserID()] = $access;
 					} else {
-						$this->addError("User name or access value invalid for display {$vs_display_code} (permission item with user name '{$vs_user}')");
+						$this->addError("User name or access value invalid for display {$display_code} (permission item with user name '{$user}')");
 					}
 				}
 
-				if(sizeof($va_display_users)>0) {
-					$t_display->addUsers($va_display_users);
+				if(sizeof($display_users)>0) {
+					$t_display->addUsers($display_users);
 				}
 			}
 
-			if($vo_display->groupAccess) {
+			if($display['groupAccess']) {
 				$t_group = new \ca_user_groups();
-				$va_display_groups = [];
-				foreach($vo_display->groupAccess->children() as $vo_permission) {
-					$vs_group = trim((string)self::getAttribute($vo_permission, "group"));
-					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+				$display_groups = [];
+				foreach($display['groupAccess'] as $permission) {
+					$group = trim((string)$permission["group"]);
+					$access = $this->_convertUserGroupAccessStringToInt($permission['access']);
 
-					if(!$t_group->load(array('code' => $vs_group))) { continue; }
-					if($vn_access) {
-						$va_display_groups[$t_group->getPrimaryKey()] = $vn_access;
+					if(!$t_group->load(['code' => $group])) { continue; }
+					if($access) {
+						$display_groups[$t_group->getPrimaryKey()] = $access;
 					} else {
-						$this->addError("Group code or access value invalid for display {$vs_display_code} (permission item with group code '{$vs_group}')");
+						$this->addError("Group code or access value invalid for display {$display_code} (permission item with group code '{$group}')");
 					}
 				}
 
-				if(sizeof($va_display_groups)>0) {
-					$t_display->addUserGroups($va_display_groups);
+				if(sizeof($display_groups)>0) {
+					$t_display->addUserGroups($display_groups);
 				}
 			}
 			
-			if($vo_display->roleAccess) {
+			if($display['roleAccess']) {
 				$t_role = new \ca_user_roles();
-				$va_display_roles = [];
-				foreach($vo_display->roleAccess->children() as $vo_permission) {
-					$vs_role = trim((string)self::getAttribute($vo_permission, "role"));
-					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+				$display_roles = [];
+				foreach($display['roleAccess'] as $permission) {
+					$role = trim((string)$permission["role"]);
+					$access = $this->_convertUserGroupAccessStringToInt($permission['access']);
 
-					if(!$t_role->load(array('code' => $vs_role))) { continue; }
-					if(!is_null($vn_access)) {
-						$va_display_roles[$t_role->getPrimaryKey()] = $vn_access;
+					if(!$t_role->load(['code' => $role])) { continue; }
+					if(!is_null($access)) {
+						$display_roles[$t_role->getPrimaryKey()] = $access;
 					} else {
-						$this->addError("Role code or access value invalid for display {$vs_display_code} (permission item with role code '{$vs_role}')");
+						$this->addError("Role code or access value invalid for display {$display_code} (permission item with role code '{$role}')");
 					}
 				}
 
-				if(sizeof($va_display_roles)>0) {
+				if(sizeof($display_roles)>0) {
 					$all_roles = $t_role->getRoleList();
 					foreach($all_roles as $role_id => $role_info) {
-						if (!isset($va_display_roles[$role_id])) { $va_display_roles[$role_id] = 0; }
+						if (!isset($display_roles[$role_id])) { $display_roles[$role_id] = 0; }
 					}
-					$t_display->addUserRoles($va_display_roles);
+					$t_display->addUserRoles($display_roles);
 				}
 			}
 
@@ -1725,29 +1695,29 @@ class Installer {
 		return true;
 	}
 	# --------------------------------------------------
-	private function processDisplayPlacements($t_display, $po_placements) {
-		$va_available_bundles = $t_display->getAvailableBundles(null, array('no_cache' => true));
+	private function processDisplayPlacements($t_display, $placements) {
+		$available_bundles = $t_display->getAvailableBundles(null, ['no_cache' => true]);
 
 		// nuke previous placements. there shouldn't be any if we're installing from scratch.
 		// if we're updating, we expect the list of restrictions to include all restrictions!
-		if(sizeof($po_placements->children())) {
+		if(sizeof($placements)) {
 			$this->logStatus(_t('Successfully nuked all placements for display with code %1', $t_display->get('display_code')));
-			$this->db->query('DELETE FROM ca_bundle_display_placements WHERE display_id=?', $t_display->getPrimaryKey());
+			$this->db->query('DELETE FROM ca_bundle_display_placements WHERE display_id = ?', $t_display->getPrimaryKey());
 		}
 
-		$vn_i = 1;
-		foreach($po_placements->children() as $vo_placement) {
-			$vs_code = self::getAttribute($vo_placement, "code");
-			$vs_bundle = (string)$vo_placement->bundle;
+		$i = 1;
+		foreach($placements as $placement) {
+			$code = $placement["code"];
+			$bundle = (string)$placement['bundle'];
 
-			$va_settings = $this->_processSettings(null, $vo_placement->settings);
-			$t_display->addPlacement($vs_bundle, $va_settings, $vn_i, array('additional_settings' => $va_available_bundles[$vs_bundle]['settings']));
+			$settings = $this->_processSettings(null, $placement['settings']);
+			$t_display->addPlacement($bundle, $settings, $i, ['additional_settings' => $available_bundles[$bundle]['settings']]);
 			if ($t_display->numErrors()) {
-				$this->addError("There was an error while inserting display placement {$vs_code}: ".join(" ",$t_display->getErrors()));
+				$this->addError("There was an error while inserting display placement {$code}: ".join(" ",$t_display->getErrors()));
 				return false;
 			}
 
-			$this->logStatus(_t('Added bundle placement %1 with code %2 for display with code %3', $vs_bundle, $vs_code, $t_display->get('display_code')));
+			$this->logStatus(_t('Added bundle placement %1 with code %2 for display with code %3', $bundle, $code, $t_display->get('display_code')));
 			$vn_i++;
 		}
 
