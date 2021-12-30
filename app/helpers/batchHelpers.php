@@ -236,7 +236,7 @@ function caBatchGetMediaFilenameToIdnoRegexList($options=null) {
 	$o_config = Configuration::load();
 	$o_log = caGetOption('log', $options, null);
 	
-	$regex_list = $o_config->get(['media_filename_to_idno_matching', 'mediaFilenameToObjectIdnoRegexes']);
+	$regex_list = $o_config->get(['mediaFilenameToObjectIdnoRegexes', 'media_filename_to_idno_matching']);
 	if (!is_array($regex_list)) { $regex_list = []; }
 	
 	foreach($regex_list as $k => $v){
@@ -264,7 +264,7 @@ function caBatchGetIdnoRegexList($options=null) {
 	$o_config = Configuration::load();
 	$o_log = caGetOption('log', $options, null);
 	
-	$regex_list = $o_config->get(['media_idno_rewrites', 'mediaObjectIdnoRegexes']);
+	$regex_list = $o_config->get(['mediaObjectIdnoRegexes', 'media_idno_rewrites']);
 	if (!is_array($regex_list)) { $regex_list = []; }
 	
 	foreach($regex_list as $k => $v){
@@ -292,7 +292,7 @@ function caBatchGetMediaFilenameReplacementRegexList($options=null) {
 	$o_config = Configuration::load();
 	$o_log = caGetOption('log', $options, null);
 	
-	$regex_list = $o_config->get(['media_filename_rewrites', 'mediaFilenameReplacements']);
+	$regex_list = $o_config->get(['mediaFilenameReplacements', 'media_filename_rewrites']);
 	if (!is_array($regex_list)) { $regex_list = []; }
 	
 	
@@ -328,6 +328,7 @@ function caBatchGetMediaFilenameReplacementRegexList($options=null) {
  */
 $g_batch_helpers_media_directory_contents_cache = [];
 function caBatchFindMatchingMedia($ps_directory, $ps_value, $pa_options=null) {	
+	if(!$ps_value) { return []; }
 	global $g_batch_helpers_media_directory_contents_cache; // we cache directory contents for the duration of the request
 	
 	$o_log = caGetOption('log', $pa_options, null);

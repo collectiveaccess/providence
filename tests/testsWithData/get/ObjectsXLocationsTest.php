@@ -134,14 +134,14 @@ class ObjectsXLocationsTest extends BaseTestWithData {
 		$this->assertEquals('A Room > My Shelf; A Room > My Cabinet', $vm_ret);
 
 		$vm_ret = $this->opt_object->get("ca_objects_x_storage_locations.effective_date");
-		$this->assertEquals('January 28 1985;2015', $vm_ret);
+		$this->assertEquals('2015;January 28 1985', $vm_ret);
 
 		$vm_ret = $this->opt_object->get("ca_objects_x_storage_locations.effective_date", array('getDirectDate' => true));
-		$this->assertEquals($vm_ret, '1985.01280000000000000000;2015.01010000000000000000');
+		$this->assertEquals($vm_ret, '2015.01010000000000000000;1985.01280000000000000000');
 
 		// try legacy version of same option
 		$vm_ret = $this->opt_object->get("ca_objects_x_storage_locations.effective_date", array('GET_DIRECT_DATE' => true));
-		$this->assertEquals($vm_ret, '1985.01280000000000000000;2015.01010000000000000000');
+		$this->assertEquals($vm_ret, '2015.01010000000000000000;1985.01280000000000000000');
 	}
 	# -------------------------------------------------------
 }

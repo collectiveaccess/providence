@@ -134,8 +134,9 @@ class FMPXMLResultReader extends BaseXMLDataReader {
 			$o_name = $o_field->attributes->getNamedItem('NAME');
 			
 			// Normalize field names by replacing any run of characters that is not a letter, number,
-			// underscore, -, #, ?, :, % or & with a single underscore.
-			$vs_field_name = preg_replace("![^A-Za-z0-9_\-\:\#\?\%\&\.]+!", "_", (string)$o_name->nodeValue);
+			// with a single underscore and forcing the name to lowercase. Non-alphanumeric characters at the
+			// beginning or end of the field name are removed.
+			$vs_field_name = trim(preg_replace("![^A-Za-z0-9]+!", "_", (string)strtolower($o_name->nodeValue)), " \n\r\t\v\0_");
 			
 			$this->opa_metadata[$vn_index] = $vs_field_name;
 			
@@ -185,7 +186,10 @@ class FMPXMLResultReader extends BaseXMLDataReader {
 			$row_with_labels = [];
 			foreach($this->opa_metadata as $i => $l) {
 				$row_with_labels[$l][] = $row[$i];
-				$row_with_labels[strtolower($l)][] = $row[$i];
+				
+				if(strtolower($l) !== $l) {
+					$row_with_labels[strtolower($l)][] = $row[$i];
+				}
 			}
 			$this->opa_row_buf = $row_with_labels;
 		}

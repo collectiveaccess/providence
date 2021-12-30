@@ -52,7 +52,8 @@ class METSReader extends BaseXMLDataReader {
 	protected $ops_xml_namespace = 'http://www.loc.gov/METS/';
 	
 	protected $ops_additional_xml_namespaces = [
-		'mods' => 'http://www.loc.gov/mods/v3'
+		'mods' => 'http://www.loc.gov/mods/v3',
+		'dim' => 'http://www.dspace.org/xmlns/dspace/dim'
 	];
 	
 	/**

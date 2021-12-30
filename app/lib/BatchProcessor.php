@@ -725,7 +725,7 @@ class BatchProcessor {
 
 			$vn_c++;
 
-			$vs_relative_directory = preg_replace("!{$vs_batch_media_import_root_directory}[/]*!", "", $vs_directory);
+			$vs_relative_directory = preg_replace("!^{$vs_batch_media_import_root_directory}[/]*!", "", $vs_directory);
 
 			if (isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
 				$ps_callback($po_request,
@@ -1358,17 +1358,37 @@ class BatchProcessor {
 		
 		$vn_log_level = BatchProcessor::_logLevelStringToNumber($vs_log_level);
 
+		$check_file_extension = false;
 		if (!isURL($ps_source) && is_dir($ps_source)) {
 			$va_sources = caGetDirectoryContentsAsList($ps_source, true, false, false, true);
+			$check_file_extension = true;
 		} else {
 			$va_sources = array($ps_source);
 		}
 		
 		$vn_file_num = 0;
 		foreach($va_sources as $vs_source) {
+			if(is_dir($vs_source)) { continue; }
+			if(!is_readable($vs_source)) { continue; }
 			$vn_file_num++;
 			$t_importer = new ca_data_importers();
-			if (!$t_importer->importDataFromSource($vs_source, $ps_importer, array('originalFilename' => caGetOption('originalFilename', $pa_options, null), 'fileNumber' => $vn_file_num, 'numberOfFiles' => sizeof($va_sources), 'logDirectory' => $o_config->get('batch_metadata_import_log_directory'), 'request' => $po_request,'format' => $ps_input_format, 'showCLIProgressBar' => false, 'progressCallback' => isset($pa_options['progressCallback']) ? $pa_options['progressCallback'] : null, 'reportCallback' => isset($pa_options['reportCallback']) ? $pa_options['reportCallback'] : null,  'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level, 'limitLogTo' => $limit_log_to, 'dryRun' => $vb_dry_run, 'importAllDatasets' => $vb_import_all_datasets))) {
+			if (($ret = $t_importer->importDataFromSource($vs_source, $ps_importer, [
+				'originalFilename' => caGetOption('originalFilename', $pa_options, null), 
+				'fileNumber' => $vn_file_num, 
+				'numberOfFiles' => sizeof($va_sources), 
+				'logDirectory' => $o_config->get('batch_metadata_import_log_directory'), 
+				'request' => $po_request,
+				'format' => $ps_input_format, 
+				'showCLIProgressBar' => false, 
+				'progressCallback' => isset($pa_options['progressCallback']) ? $pa_options['progressCallback'] : null, 
+				'reportCallback' => isset($pa_options['reportCallback']) ? $pa_options['reportCallback'] : null,  
+				'logDirectory' => $vs_log_dir, 
+				'logLevel' => $vn_log_level, 
+				'limitLogTo' => $limit_log_to, 
+				'dryRun' => $vb_dry_run, 
+				'importAllDatasets' => $vb_import_all_datasets,
+				'checkFileExtension' => $check_file_extension
+			])) === false) {
 				$va_errors['general'][] = array(
 					'idno' => "*",
 					'label' => "*",
@@ -1377,14 +1397,13 @@ class BatchProcessor {
 				);
 				BatchProcessor::$s_import_error_list[] = _t("Could not import source %1", $vs_source);
 				return false;
-			} else {
+			} elseif($ret) {
 				$va_notices['general'][] = array(
 					'idno' => "*",
 					'label' => "*",
 					'errors' => array(_t("Imported data from source %1", $vs_source)),
 					'status' => 'SUCCESS'
 				);
-				//return true;
 			}
 		}
 		

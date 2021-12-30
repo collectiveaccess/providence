@@ -281,4 +281,13 @@ abstract class BaseDataReader {
 	 */
 	abstract function getInputType();
 	# -------------------------------------------------------
+	/**
+	 * Returns list of file extensions of formats accepted by the reader
+	 * 
+	 * @return array
+	 */
+	public function getFileExtensions() : array {
+		return [];
+	}
+	# -------------------------------------------------------
 }

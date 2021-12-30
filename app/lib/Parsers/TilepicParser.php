@@ -1303,6 +1303,7 @@ class TilepicParser {
 
 		$image_dimensions = $h->getimagegeometry();
 		
+		$tmp_path = null;
 		$rotation = null;
 		if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
 			if (is_array($va_exif = @exif_read_data($ps_filepath, 'IFD0', true, false))) { 
@@ -1322,11 +1323,12 @@ class TilepicParser {
 							// to remove the EXIF tag. We could avoid a copy by running EXIF tool on each tile we
 							// generate, but then we'd be shelling out hundreds or thousands of times per image. 
 							// Either way it sucks.
-							copy($ps_filepath, "{$ps_filepath}_orient");
-							caExtractRemoveOrientationTagWithExifTool("{$ps_filepath}_orient");
+							$tmp_path = caGetTempDirPath()."/".pathinfo($ps_filepath, PATHINFO_FILENAME)."_orient.".pathinfo($ps_filepath, PATHINFO_EXTENSION);
+							copy($ps_filepath, $tmp_path);
+							caExtractRemoveOrientationTagWithExifTool($tmp_path);
 							
 							try {
-								$h = new Gmagick("{$ps_filepath}_orient");
+								$h = new Gmagick($tmp_path);
 								$this->setResourceLimits_gmagick($h);
 								$h->setimageindex(0);	// force use of first image in multi-page TIFF
 							} catch (Exception $e){
@@ -1473,7 +1475,7 @@ class TilepicParser {
 		
 		$h->destroy();
 		
-		@unlink("{$ps_filepath}_orient");
+		if($tmp_path) { @unlink($tmp_path); }
 		
 		#
 		# Write Tilepic format file

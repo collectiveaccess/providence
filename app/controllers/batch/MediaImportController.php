@@ -323,7 +323,7 @@
 					foreach($va_paths as $item) {
 						if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
 							$vb_is_dir = is_dir("{$dir}/{$item}");
-							$vs_k = preg_replace('![@@]+!', '|', $item);
+							$vs_k = preg_replace('![@]{2,}!', '|', $item);
 							if ($vb_is_dir) {
 								$vn_i++;
 								if (($pn_start_at > 0) && ($vn_i <= $pn_start_at)) { continue; }

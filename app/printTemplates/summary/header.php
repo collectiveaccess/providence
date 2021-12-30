@@ -1,6 +1,6 @@
 <?php	
 /* ----------------------------------------------------------------------
- * app/templates/header.php : standard PDF report header
+ * app/printTemplates/summary/header.php : standard PDF report header
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

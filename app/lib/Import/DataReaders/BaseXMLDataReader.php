@@ -390,6 +390,15 @@ class BaseXMLDataReader extends BaseDataReader {
 	}
 	# -------------------------------------------------------
 	/**
+	 * Return file extensions
+	 * 
+	 * @return array
+	 */
+	public function getFileExtensions() : array {
+		return ['xml'];
+	}
+	# -------------------------------------------------------
+	/**
 	 * Make default namespace explicit and do other adjustments such that reasonable
 	 * XPaths are agreeable to DomXPath
 	 */
