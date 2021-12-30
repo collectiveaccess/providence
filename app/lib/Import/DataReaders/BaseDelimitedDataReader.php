@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2020 Whirl-i-Gig
+ * Copyright 2014-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -217,6 +217,15 @@ class BaseDelimitedDataReader extends BaseDataReader {
 	 */
 	public function valuesCanRepeat() {
 		return false;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Return file extensions
+	 * 
+	 * @return array
+	 */
+	public function getFileExtensions() : array {
+		return ['txt'];
 	}
 	# -------------------------------------------------------
 }

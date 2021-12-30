@@ -2412,7 +2412,17 @@ class BaseEditorController extends ActionController {
 
 		$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
 
-		if (!$ps_version) { $ps_version = 'original'; }
+		if (!($t_rep = ca_object_representations::findAsInstance(['representation_id' => $pn_representation_id]))) {
+			throw new ApplicationException(_t('Invalid representation'));
+		}
+		if(!$t_rep->isReadable($this->request->user)) {
+			throw new ApplicationException(_t('Access denied'));
+		}
+		
+		$m = $t_rep->getMediaInfo('media', 'original', 'MIMETYPE'); 
+		$di = caGetMediaDisplayInfo('media_overlay', $m);	
+		if (!$ps_version) { $ps_version = caGetOption('download_version', $di, 'original'); }
+
 		$o_view->setVar('version', $ps_version);
 
 		$va_ancestor_ids = ($t_subject->isHierarchical()) ? $t_subject->getHierarchyAncestors(null, array('idsOnly' => true, 'includeSelf' => true)) : array($vn_subject_id);

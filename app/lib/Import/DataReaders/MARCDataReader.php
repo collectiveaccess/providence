@@ -163,26 +163,33 @@ class MARCDataReader extends BaseDataReader {
 	 * @return mixed
 	 */
 	public function getRow($pa_options=null) {
+		
 		if (!isset($this->opa_rows[$this->opn_current_row])) { return null; }
 		$o_record = $this->opa_rows[$this->opn_current_row];
 	
 		if ($o_fields = $o_record->getFields()) {
 			$va_row = array();
+			$va_row_occurrence_nb = array();
+
 			foreach($o_fields as $o_field) {
 				switch(get_class($o_field)) {
 					case 'File_MARC_Control_Field':
 						continue(2);
 						break;
 					default:
-						 $o_subfields = $o_field->getSubfields();
-						 foreach($o_subfields as $o_subfield) {
-					
+						if(!isset($va_row_occurrence_nb[$o_field->getTag()])) {
+							$va_row_occurrence_nb[$o_field->getTag()] = 0;	
+						} else {
+							$va_row_occurrence_nb[$o_field->getTag()]++;	
+						}
+						$o_subfields = $o_field->getSubfields();
+						foreach($o_subfields as $o_subfield) {
 							if (!($vs_ind1 = $o_field->getIndicator(1))) { $vs_ind1 = "#"; }
 							if (!($vs_ind2 = $o_field->getIndicator(2))) { $vs_ind2 = "#"; }
 					
-							$va_row[$o_field->getTag().'/'.$o_subfield->getCode()] = $va_row[$o_field->getTag().'/'.$o_subfield->getCode().'/'.$vs_ind1.$vs_ind2] = is_object($o_subfield) ? $o_subfield->getData() : '';
-						 }
-						 break;
+							$va_row[$o_field->getTag().'/'.$o_subfield->getCode()] = $va_row[$o_field->getTag().'/'.$o_subfield->getCode().$va_row_occurrence_nb[$o_field->getTag()]] = $va_row[$o_field->getTag().'/'.$o_subfield->getCode().'/'.$vs_ind1.$vs_ind2] = is_object($o_subfield) ? $o_subfield->getData() : '';
+						}
+						break;
 				}
 			}
 			return $va_row;

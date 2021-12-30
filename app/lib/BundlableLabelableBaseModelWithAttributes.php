@@ -289,7 +289,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		if(caGetOption('hooks', $pa_options, true)) {
-			$this->opo_app_plugin_manager->hookInsertItem(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'is_insert' => true));
+			$this->opo_app_plugin_manager->hookInsertItem(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'is_insert' => true, 'for_duplication' => caGetOption('forDuplication', $pa_options, true)));
 		}
 		return $vn_rc;
 	}
@@ -359,7 +359,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		SearchResult::clearResultCacheForRow($this->tableName(), $this->getPrimaryKey());
 
 		if(caGetOption('hooks', $pa_options, true)) {
-			$this->opo_app_plugin_manager->hookUpdateItem(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'is_insert' => false));
+			$this->opo_app_plugin_manager->hookUpdateItem(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'is_insert' => false, 'for_duplication' => caGetOption('forDuplication', $pa_options, true)));
 		}
 		return $vn_rc;
 	}	
@@ -368,7 +368,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 * Check user's item level access before passing delete to lower level libraries
 	 *
 	 */
-	public function delete ($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
 		global $AUTH_CURRENT_USER_ID;
 		if ($this->getAppConfig()->get('perform_item_level_access_checking')) {
 			if ($this->checkACLAccessForUser(new ca_users($AUTH_CURRENT_USER_ID)) < __CA_ACL_EDIT_DELETE_ACCESS__) {
@@ -516,7 +516,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		if (isset($pa_options['user_id']) && $pa_options['user_id'] && $t_dupe->hasField('user_id')) { $t_dupe->set('user_id', $pa_options['user_id']); }
 		
-		$t_dupe->insert();
+		$t_dupe->insert(['forDuplication' => true]);
 		
 		if ($t_dupe->numErrors()) {
 			$this->errors = $t_dupe->errors;
@@ -635,7 +635,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						return false;
 					}
 					$t_child_dupe->set($vs_parent_id_fld, $dupe_id);
-					$t_child_dupe->update();
+					$t_child_dupe->update(['forDuplication' => true]);
 					if ($t_child_dupe->numErrors()) {
 						$this->errors = $t_child_dupe->errors;
 						if ($vb_we_set_transaction) { $o_t->rollback();}
@@ -3866,7 +3866,8 @@ if (!$vb_batch) {
 							
 							$vs_k = $vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_set_id.'_'.$vn_element_id.'_'.$vn_attribute_id;
 							if(is_null($po_request->parameterExists($vs_k)) && !isset($_FILES[$vs_k])) { continue; }
-							$vs_attr_val = array_pop($po_request->getParameter($vs_k, pArray));
+							$vm_v = $po_request->getParameter($vs_k, pArray);
+							$vs_attr_val = is_array($vm_v) ? array_pop($vm_v) : null;
 							if (isset($_FILES[$vs_k]) && ($va_val = $_FILES[$vs_k])) {
 								if ($va_val['size'] > 0) {	// is there actually a file?
 									$va_val['_uploaded_file'] = true;
@@ -4479,7 +4480,7 @@ if (!$vb_batch) {
                                     			break;
                                     		}
                                     	}
-                                    } elseif(!$dont_allow_access_to_import_directory && ($vs_key !== 'empty') && sizeof($import_directory_paths) && strlen($va_values['tmp_name'])) {
+                                    } elseif(!$is_form_upload && !$dont_allow_access_to_import_directory && ($vs_key !== 'empty') && sizeof($import_directory_paths) && strlen($va_values['tmp_name'])) {
                                     	// Is user-selected file from s media import directory
                                     	foreach($import_directory_paths as $p) {
 											if(file_exists($vs_path = "{$p}/{$va_values['tmp_name']}")) {
@@ -5777,7 +5778,8 @@ if (!$vb_batch) {
  	 *			criteria = Restrict returned items using SQL criteria appended directly onto the query. Criteria is used as-is and must be compatible with the generated SQL query. [Default is null]
  	 *			showCurrentOnly = Returns the relationship with the latest effective date for the row_id that is not greater than the current date. This option is only supported for standard many-many self and non-self relations and is ignored for all other kinds of relationships. [Default is false]
  	 *			currentOnly = Synonym for showCurrentOnly
- 	 *			policy = 
+ 	 *			policy = History tracking current value policy to filter by, if returned result set is subject to a policy. [Default is null]
+ 	 *			filterNonPrimaryRepresentations = Set filtering of non-primary representations in those models that support representations [Default is false]
  	 *		
  	 *		[Options controlling scope of data in return value]
  	 *			restrictToTypes = Restrict returned items to those of the specified types. An array or comma/semicolon delimited string of list item idnos and/or item_ids may be specified. [Default is null]
@@ -6164,6 +6166,16 @@ if (!$vb_batch) {
 		if (($va_criteria = (isset($options['criteria']) ? $options['criteria'] : null)) && (is_array($va_criteria)) && (sizeof($va_criteria))) {
 			$va_wheres[] = "(".join(" AND ", $va_criteria).")"; 
 		}
+		
+		if(caGetOption('filterNonPrimaryRepresentations', $options, false)) {
+			if ($t_item_rel && $t_item_rel->hasField('is_primary')) {
+				$va_wheres[] = "({$vs_item_rel_table_name}.is_primary = 1)";
+			}
+		
+			if ($t_rel_item && $t_rel_item->hasField('is_primary')) {
+				$va_wheres[] = "({$vs_related_table}.is_primary = 1)";
+			}
+		}
 
 		if($vb_self_relationship) {
 			//
@@ -6504,42 +6516,53 @@ if (!$vb_batch) {
 					foreach($va_rel_info[$vs_cur_table][$vs_join_table] as $vn_i => $va_rel) {
 						$va_tmp[] = $vs_cur_table.".".$va_rel_info[$vs_cur_table][$vs_join_table][$vn_i][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][$vn_i][1]."\n";
 					}
-					$va_joins[] = $vs_join.join(' OR ', $va_tmp);
+					$va_joins[] = $vs_join.' ('.join(' OR ', $va_tmp).')'.(Datamodel::getFieldNum($vs_join_table, 'deleted') ? " AND ({$vs_join_table}.deleted = 0)" : '');
 					$vs_cur_table = $vs_join_table;
 				}
 				
 				
 			
+				// When related item is a relationship filter filter "restrictToTypes" as relationship types
+				// (if specified) and also filter out deleted target rows (eg. don't include relationships pointing to deleted rows).
                 if (method_exists($t_rel_item, 'isRelationship') && $t_rel_item->isRelationship()) {
+                    $va_rels = Datamodel::getManyToOneRelations($t_rel_item->tableName());
+                    
+                    // Derive filter for deleted target rows
+                    $deleted_filter = null;
+                    foreach($va_rels as $vs_rel_pk => $va_rel_info) {
+						if(!in_array($va_rel_info['one_table'], [$this->tableName(), 'ca_relationship_types'])) {
+							$deleted_filter = (Datamodel::getFieldNum($va_rel_info['one_table'], 'deleted') ? " AND (r.deleted = 0)" : '');
+							break;
+						}
+					}   
+                    
                     if(is_array($options['restrictToTypes']) && sizeof($options['restrictToTypes'])) {
-                        $va_rels = Datamodel::getManyToOneRelations($t_rel_item->tableName());
-
                         foreach($va_rels as $vs_rel_pk => $va_rel_info) {
-                            if ($va_rel_info['one_table'] != $this->tableName()) {
+                            if (!in_array($va_rel_info['one_table'], [$this->tableName()])) {
                                 $va_type_ids = caMakeTypeIDList($va_rel_info['one_table'], $options['restrictToTypes']);
                     
                                 if (is_array($va_type_ids) && sizeof($va_type_ids)) { 
-                                    $va_joins[] = "INNER JOIN {$va_rel_info['one_table']} AS r ON r.{$va_rel_info['one_table_field']} = ".$t_rel_item->tableName().".{$vs_rel_pk}";
                                     $va_wheres[] = "(r.type_id IN (".join(",", $va_type_ids)."))";
+                                    $va_joins[] = "INNER JOIN {$va_rel_info['one_table']} AS r ON r.{$va_rel_info['one_table_field']} = {$vs_related_table_name}.".($vs_rel_pk ?? $t_rel_item->primaryKey()).$deleted_filter;
                                 }
                                 break;
                             }
                         }
                     }elseif(is_array($options['excludeTypes']) && sizeof($options['excludeTypes'])) {
-                        $va_rels = Datamodel::getManyToOneRelations($t_rel_item->tableName());
-
                         foreach($va_rels as $vs_rel_pk => $va_rel_info) {
-                            if ($va_rel_info['one_table'] != $this->tableName()) {
+                            if (!in_array($va_rel_info['one_table'], [$this->tableName()])) {
                                 $va_type_ids = caMakeTypeIDList($va_rel_info['one_table'], $options['excludeTypes']);
                                 
                                 if (is_array($va_type_ids) && sizeof($va_type_ids)) { 
-                                    $va_joins[] = "INNER JOIN {$va_rel_info['one_table']} AS r ON r.{$va_rel_info['one_table_field']} = ".$t_rel_item->tableName().".{$vs_rel_pk}";
                                     $va_wheres[] = "(r.type_id NOT IN (".join(",", $va_type_ids)."))";
+                                    $va_joins[] = "INNER JOIN {$va_rel_info['one_table']} AS r ON r.{$va_rel_info['one_table_field']} = {$vs_related_table_name}.".($vs_rel_pk ?? $t_rel_item->primaryKey()).$deleted_filter;
                                 }
                                 break;
                             }
                         }
-                    }
+                    } elseif($deleted_filter) {
+                    	$va_joins[] = "INNER JOIN {$va_rel_info['one_table']} AS r ON r.{$va_rel_info['one_table_field']} = {$vs_related_table_name}.".($vs_rel_pk ?? $t_rel_item->primaryKey()).(Datamodel::getFieldNum($va_rel_info['one_table'], 'deleted') ? " AND (r.deleted = 0)" : '');
+                    }   
                 }
 			}
 
@@ -6639,11 +6662,6 @@ if (!$vb_batch) {
 				if (is_array($pa_primary_ids) && is_array($pa_primary_ids[$vs_related_table])) {
 					if (in_array($qr_res->get($vs_key), $pa_primary_ids[$vs_related_table])) { continue; }
 				}
-				
-				//if ($ps_return_as !== 'data') {
-				//	$va_rels_for_id[] = $qr_res->get($t_rel_item->primaryKey());
-				//	continue;
-				//}
 
 				$va_row = $qr_res->getRow();
 				$vs_v = (sizeof($va_path) <= 2) ? $va_row['row_id'].'/'.$va_row[$vs_key] : $va_row[$vs_key];

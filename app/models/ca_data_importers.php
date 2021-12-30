@@ -860,9 +860,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			
 			$vn_row_num = $o_row->getRowIndex();
 			$o_cell = $o_sheet->getCellByColumnAndRow(1, $vn_row_num);
-			$vs_mode = trim((string)$o_cell->getValue());
+			$vs_mode = strtolower(trim((string)$o_cell->getValue()));
 			
-			switch(strtolower($vs_mode)) {
+			switch($vs_mode) {
 				default:
 				case 'skip':
 					continue(2);
@@ -1365,6 +1365,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 *		addToSet = identifier for set to add all imported items to. [Default is null]
 	 *		detailedLogName = [Default is null]
 	 *		reader = Reader instance preloaded with data for import. If set reader content will be used rather than reading the file pointed to by $ps_source. [Default is null]
+	 *		checkFileExtension = Verify the file extension of the source file is supported by the mapping. [Default is false]
 	 */
 	public function importDataFromSource($ps_source, $ps_mapping, $pa_options=null) {
 		$this->num_import_errors = 0;
@@ -1493,12 +1494,18 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$ps_format = (isset($pa_options['format']) && $pa_options['format']) ? $pa_options['format'] : null;	
 		if(!($o_reader = caGetOption('reader', $pa_options, null))) { 
 			$o_reader = $t_mapping->getDataReader($ps_source, $ps_format); 
+			if(caGetOption(['checkFileExtension', 'checkFileExtensions'], $pa_options, false)) {
+				if(!in_array(strtolower(pathinfo($ps_source, PATHINFO_EXTENSION)), $exts = $o_reader->getFileExtensions())) {
+					$o_log->logDebug(_t('Skipped file %1 because it does not have a valid file extension (%)', $ps_source, join('; ', $exts)));
+					if ($o_trans) { $o_trans->rollback(); }
+					return null;
+				}
+			}
 			if (!$o_reader) {
 				$this->logImportError(_t("Could not open source %1 (format=%2)", $ps_source, $ps_format), $va_log_import_error_opts);
 				if ($o_trans) { $o_trans->rollback(); }
 				return false;
 			}
-		
 			$va_reader_opts = array('basePath' => $t_mapping->getSetting('basePath'), 'originalFilename' => caGetOption('originalFilename', $pa_options, null));
 		
 			if (!$o_reader->read($ps_source, $va_reader_opts)) {
@@ -2830,7 +2837,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 
 									if ( $o_refinery = RefineryManager::getRefineryInstance( $vs_refinery ) ) {
 										$va_refined_values = $o_refinery->refine( $va_content_tree, $va_group, $va_item,
-											$va_row_with_replacements, array(
+											$va_raw_row, array(
 												'mapping'           => $t_mapping,
 												'source'            => $ps_source,
 												'subject'           => $t_subject,

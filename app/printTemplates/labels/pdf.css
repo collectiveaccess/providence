@@ -1,14 +1,59 @@
-.thumbnail { font: "helvetica, sans-serif"; font-size: 11px; width: 120px; height: 120px; border-radius: 5px;}	
-.row { font: "helvetica, sans-serif"; font-size: 11px; width: 100%; height: 80px; margin: 5px 0 0 10px; padding: 0px; overflow: none;}	
-.imageTiny { width: 72px; height: 72px; float: left; margin: 0 5px 0 0; border-radius: 5px;}
-.imageTinyPlaceholder { width: 72px; height: 72px; background-color: #eee; float: left; margin: 0 5px 0 0; border-radius: 5px;}
+.thumbnail { 
+	font-family: "DejaVuSans";
+	font-size: 11px;
+	width: 120px;
+	height: 120px;
+	border-radius: 5px;
+}
+	
+.row { 
+	font-family: "DejaVuSans";
+	font-size: 11px;
+	width: 100%;
+	height: 80px;
+	margin: 5px 0 0 10px;
+	padding: 0px;
+	overflow: none;
+}	
 
-.titleText { font: "helvetica, sans-serif"; font-weight: bold; font-size: 14px; }
-.bodyText { font: "helvetica, sans-serif"; font-size: 11px; }
-.smallText { font: "helvetica, sans-serif"; font-size: 9px; }
+.imageTiny { 
+	width: 72px;
+	height: 72px;
+	float: left;
+	margin: 0 5px 0 0;
+	border-radius: 5px;
+}
 
-.code128 { font: "code128"; font-size: 14px; }
-.code39 { font: "fre3of9x"; font-size: 14px; }
+.imageTinyPlaceholder { 
+	width: 72px;
+	height: 72px;
+	background-color: #eee;
+	float: left;
+	margin: 0 5px 0 0;
+	border-radius: 5px;
+}
 
-.pageBreak { page-break-before: always; }
-.clear { clear: both; line-height: 5px; }
+.titleText { 
+	font-family: "DejaVuSans";
+	font-weight: bold;
+	font-size: 14px;
+}
+
+.bodyText { 
+	font-family: "DejaVuSans";
+	font-size: 11px;
+}
+
+.smallText {
+	font-family: "DejaVuSans";
+	font-size: 9px;
+}
+
+.pageBreak { 
+	page-break-before: always;
+}
+
+.clear { 
+	clear: both;
+	line-height: 5px;
+}

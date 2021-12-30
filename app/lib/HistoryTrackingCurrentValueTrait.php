@@ -59,8 +59,14 @@
 		 *
 		 */
 		static public function clearHistoryTrackingCurrentValues($options=null) {
+			$table_num = Datamodel::getTableNum(get_called_class());
 			$db = new Db();
-			$db->query("TRUNCATE TABLE ca_history_tracking_current_values");
+			
+			if(caGetOption('all', $options, true)) {
+				$db->query("TRUNCATE TABLE ca_history_tracking_current_values");
+			} else {
+				$db->query("DELETE FROM ca_history_tracking_current_values WHERE table_num = ?", [$table_num]);
+			}
 			return true;
 		}
 		# ------------------------------------------------------
@@ -873,7 +879,7 @@
 		 */
 		public function getCurrentValue($policy=null, $options=null) {
 		    if(!$policy) { $policy = $this->getInspectorHistoryTrackingDisplayPolicy('policy'); }
-		    if (is_array($history = $this->getHistory(['policy' => $policy, 'limit' => 1, 'row_id' => caGetOption('row_id', $options, null)])) && (sizeof($history) > 0)) {
+		    if (is_array($history = $this->getHistory(['policy' => $policy, 'limit' => 1, 'currentOnly' => true, 'row_id' => caGetOption('row_id', $options, null)])) && (sizeof($history) > 0)) {
                 $current_value = array_shift(array_shift($history));
                 return is_array($current_value) ? $current_value : null;
             }
@@ -1968,14 +1974,14 @@
 		/**
 		 * Return array with list of current contents for currently loaded row
 		 *
-		 * @param string $policy 
+		 * @param string $policy Policy to apply. If omitted the default policy is used.
 		 * @param array $options Array of options. Options include:
 		 *		row_id = 
 		 *		returnHistoryTrackingData = Return arrray with internal history tracking data. [Default is false]
 		 *
 		 * @return SearchResult 
 		 */
-		public function getContents(string $policy, array $options=null) {
+		public function getContents(?string $policy, array $options=null) {
 			if(!($row_id = caGetOption('row_id', $options, $this->getPrimaryKey()))) { return null; }
 			return $this->getContentsForIDs($policy, [$row_id], $options);
 		}
@@ -1983,14 +1989,14 @@
 		/**
 		 * Return array with list of current contents for all specified ids
 		 *
-		 * @param string $policy 
+		 * @param string $policy Policy to apply. If omitted the default policy is used.
 		 * @param array $options Array of options. Options include:
 		 *		returnHistoryTrackingData = Return arrray with internal history tracking data. [Default is false]
 		 *		idsOnly = 
 		 *
 		 * @return SearchResult 
 		 */
-		public function getContentsForIDs(string $policy, array $ids, $options=null) {
+		public function getContentsForIDs(?string $policy, array $ids, $options=null) {
 			if(!($row_id = caGetOption('row_id', $options, $this->getPrimaryKey()))) { return null; }
 			if (!$policy) { if (!($policy = $this->getDefaultHistoryTrackingCurrentValuePolicy())) { return null; } }
 		

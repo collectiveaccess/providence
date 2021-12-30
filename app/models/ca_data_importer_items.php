@@ -224,7 +224,7 @@ class ca_data_importer_items extends BaseModel {
 				_t('no') => 0
 			),
 			'label' => _t('Filter empty values'),
-			'description' => _t('Remove empty values from values before attempting to import.')
+			'description' => _t('Remove empty values before attempting to import.')
 		);
 		$settings['skipIfEmpty'] = array(
 			'formatType' => FT_TEXT,
@@ -282,7 +282,7 @@ class ca_data_importer_items extends BaseModel {
 			'width' => 40, 'height' => 10,
 			'takesLocale' => false,
 			'default' => null,
-			'label' => _t('Skip row if any listed elements is empty'),
+			'label' => _t('Skip row if any listed elements are empty'),
 			'description' => _t('Skip row if any values for listed elements are empty.')
 		);
 		$settings['skipRowWhenAllEmpty'] = array(

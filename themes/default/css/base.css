@@ -147,6 +147,11 @@ h5 {
     float: left;
     cursor: pointer;
 }
+
+img.logo {
+	margin-top: 12px;
+}
+
 *:first-child+html #logo {padding:0px 0px 0px 5px;} * html #logo {padding:0px 0px 0px 5px;} /* IE6 only fixes width */
 #main{
     background-color: #DDDDDD;
@@ -833,7 +838,6 @@ a.sf-menu-selected:hover {
     background-color: #ddd;
     background-repeat:no-repeat;
     background-position: top right;
-    height:13px;
 }
 
 a.sf-menu-disabled-selected, #leftNav h2 a.sf-menu-disabled-selected {

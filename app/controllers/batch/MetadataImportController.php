@@ -189,9 +189,6 @@
  			if ($vs_file_import_path = $this->request->getParameter("fileImportPath", pString)) {
  				$options['fileImportPath'] = $vs_file_import_path;
  			}
- 			if ($vs_file_import_path = $this->request->getParameter("fileImportPath", pString)) {
- 				$options['fileImportPath'] = $vs_file_import_path;
- 			}
  			
  			switch(strtolower($options['fileInput'])) {
  				case 'googledrive':
@@ -211,7 +208,7 @@
 					}
 					break;
 				case 'import':	// from import directory
-					$base_import_dir = $req->config->get('batch_media_import_root_directory');
+					$base_import_dir = Configuration::load()->get('batch_media_import_root_directory');
 					
 					$options['sourceFile'] = "{$base_import_dir}/{$options['fileImportPath']}";
 					$options['sourceFileName'] = pathinfo($options['sourceFile'], PATHINFO_FILENAME);

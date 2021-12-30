@@ -187,6 +187,11 @@ class BaseModel extends BaseObject {
 	 * @access private
 	 */
 	private $_SET_FILES;
+	
+	/**
+	 * @access private
+	 */
+	private $_PROCESSED_FILES;
 
 	/**
 	 * @access private
@@ -4145,6 +4150,17 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	public function hasMediaVersion($ps_field, $ps_version) {
 		return in_array($ps_version, $this->getMediaVersions($ps_field));
 	}
+	
+	/**
+	 * Get originally media path passed to BaseModel::set() after file has been processed
+	 *
+	 * @param string $field 
+	 *
+	 * @return string or null if no media has been set
+	 */
+	public function getOriginalMediaPath($field) {
+		return $this->_PROCESSED_FILES[$field]['tmp_name'] ?? null;
+	}
 
 	/**
 	 * Fetches processing settings information for the given field with respect to the given mimetype
@@ -5095,6 +5111,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					$vs_sql =  "{$ps_field} = ".$this->quote(caSerializeForDatabase($this->_FILES[$ps_field], true)).",";
 				}
 
+				$this->_PROCESSED_FILES[$ps_field] = $this->_SET_FILES[$ps_field];
 				$this->_SET_FILES[$ps_field] = null;
 			} elseif(is_array($this->_FIELD_VALUES[$ps_field])) {
 				// Just set field values in SQL (usually in-place update of media metadata)

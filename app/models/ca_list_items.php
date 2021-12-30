@@ -923,6 +923,15 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 				return $t_item->get('list_id');	
 			}
 		}
+		
+		if($lists = $po_request->getParameter('lists',pString)){
+			$lists = explode(';', $lists);
+			foreach($lists as $l) {
+				if ($vn_list_id = caGetListID($l)) {
+					return $vn_list_id;
+				}
+			}
+		}
 
 		return false;
 	}

@@ -2814,7 +2814,11 @@ if (!$for_current_value_reindex) {
 							$vs_prev_alias = $va_alias_stack[sizeof($va_alias_stack)-2];
 						
 							if(sizeof($va_rel_type_ids) > 0) {
-								$vs_rel_type_res_sql = " AND {$vs_alias}.type_id IN (".join(",", $va_rel_type_ids).")";
+								$vs_rel_type_res_sql .= " AND {$vs_alias}.type_id IN (".join(",", $va_rel_type_ids).")";
+							}
+							
+							if (Datamodel::getFieldInfo($vs_right_table, 'deleted')) {
+								$vs_rel_type_res_sql .= " AND {$vs_alias}.deleted = 0";
 							}
 						
 							if(Datamodel::isSelfRelationship($va_rel['many_table'])) {
@@ -2843,7 +2847,11 @@ if (!$for_current_value_reindex) {
 							$vs_prev_alias = $va_alias_stack[sizeof($va_alias_stack)-2];
 						
 							if(sizeof($va_rel_type_ids) > 0) {
-								$vs_rel_type_res_sql = " AND {$vs_alias}.type_id IN (".join(",", $va_rel_type_ids).")";
+								$vs_rel_type_res_sql .= " AND {$vs_alias}.type_id IN (".join(",", $va_rel_type_ids).")";
+							}
+							
+							if (Datamodel::getFieldInfo($vs_right_table, 'deleted')) {
+								$vs_rel_type_res_sql .= " AND {$vs_alias}.deleted = 0";
 							}
 						
 							if(Datamodel::isSelfRelationship($va_rel['many_table'])) {
