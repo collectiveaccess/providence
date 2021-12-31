@@ -8015,3 +8015,13 @@ span.developerBundleCode, a.developerBundleCode {
     border-radius: 3px;
     white-space: nowrap;
 }
+
+/*.plyr, .plyr__video-wrapper {
+    max-height: 96% !important;
+} */
+.plyr {
+    height: calc(100% - 36px) !important;
+} 
+.plyr__video-wrapper {
+    height: none !important;
+}    
