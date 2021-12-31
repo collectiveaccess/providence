@@ -5272,10 +5272,10 @@ a.dashboardControl {font-weight:normal; padding-right:10px; text-decoration:none
     float: right;
     width:16px;
     height:16px;
-    margin:5px 5px 0px 5px;
+    margin:4px 5px 0px 8px;
+    border:0px;
 }
 a.dashboardRemoveWidget {
-    border:0px;
     text-decoration: none;
 }
 .dashboardWidgetContentContainer {
