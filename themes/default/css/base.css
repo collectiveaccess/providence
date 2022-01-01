@@ -1107,7 +1107,7 @@ li.sfHover > a > .sf-sub-indicator {
 /*** NOTIFICATIONS ***/
 
 div.notification-info-box {
-    background:	url('../graphics/icons/info.png') no-repeat 10px 7px;
+    background:	url('../graphics/icons/info.png') no-repeat 10px 15px;
     background-size:32px 32px;
     text-indent: 32px;
     background-color: #f3f3f3;
@@ -1115,6 +1115,8 @@ div.notification-info-box {
     margin-bottom: 10px;
     clear:both;
     border-radius: 0px !important;
+    max-height: 150px;
+    overflow-y: scroll;
 }
 
 * html div.notification-info-box {  /* IE6 fix */
@@ -1134,11 +1136,13 @@ div.notification-error-box {
 }
 
 div.notification-warning-box {
-    background:	url('../graphics/buttons/warning_sign.png') no-repeat 10px 10px;
+    background:	url('../graphics/icons/warning_sign.png') no-repeat 10px 15px;
     text-indent: 32px;
     background-color: #eeeeee;
     padding: 5px;
     margin-bottom: 10px;
+    max-height: 150px;
+    overflow-y: scroll;
 }
 
 * html div.notification-warning-box {  /* IE6 fix */
@@ -1170,7 +1174,7 @@ li.notification-error-box {
     font-weight: normal;
     color: #EB0000;
     font-size: 13px;
-    text-indent: 10px;
+    text-indent: 0px;
     font-family: 'din-regular';
 }
 
