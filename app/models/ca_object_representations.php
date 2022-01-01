@@ -491,20 +491,24 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		}
 		
 		// does media already exist?
-		if (!($media_path = $this->getMediaPath('media', 'original'))) {
-			$media_path = array_shift($this->get('media', ['returnWithStructure' => true]));
-		}
-		if($media_path && !$this->getAppConfig()->get('allow_representations_duplicate_media') && ($t_existing_rep = ca_object_representations::mediaExists($media_path))) {
-			throw new MediaExistsException(_t('Media already exists'), $t_existing_rep);
+		if(!caGetOption('force', $options, false)) {
+			if (!($media_path = $this->getMediaPath('media', 'original'))) {
+				if(!($media_path = $this->getOriginalMediaPath('media'))) {
+					$media_path = array_shift($this->get('media', ['returnWithStructure' => true]));
+				}
+			}
+			if($media_path && !$this->getAppConfig()->get('allow_representations_duplicate_media') && ($t_existing_rep = ca_object_representations::mediaExists($media_path))) {
+				throw new MediaExistsException(_t('Media already exists'), $t_existing_rep);
+			}
 		}
 		
 		// do insert
 		$reader = $media_path ? $this->_readEmbeddedMetadata($media_path) : null;
 		
 		if ($vn_rc = parent::insert($options)) {
-			if (is_array($va_media_info = $this->getMediaInfo('media', 'original'))) {
-				$this->set('md5', $va_media_info['MD5']);
-				$this->set('mimetype', $media_mimetype = $va_media_info['MIMETYPE']);
+			if (is_array($va_media_info = $this->getMediaInfo('media'))) {
+				$this->set('md5', $va_media_info['INPUT']['MD5']);
+				$this->set('mimetype', $media_mimetype = $va_media_info['INPUT']['MIMETYPE']);
 				
 				if(is_array($type_defaults = $this->getAppConfig()->get('object_representation_media_based_type_defaults')) && sizeof($type_defaults)) {
 					foreach($type_defaults as $m => $default_type) {
@@ -518,7 +522,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 					}	
 				}
 			
-				if(is_array($va_media_info = $this->getMediaInfo('media')) && isset($va_media_info['ORIGINAL_FILENAME']) && strlen($va_media_info['ORIGINAL_FILENAME'])) {
+				if(isset($va_media_info['ORIGINAL_FILENAME']) && strlen($va_media_info['ORIGINAL_FILENAME'])) {
 					$this->set('original_filename', $va_media_info['ORIGINAL_FILENAME']);
 				}
 			}
@@ -541,21 +545,26 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	public function update($options=null) {
 		if(!is_array($options)) { $options = []; }
 		if($vb_media_has_changed = $this->changed('media')) {
-			// does media already exist?
-			if (!($media_path = $this->getMediaPath('media', 'original'))) {
-				$media_path = array_shift($this->get('media', ['returnWithStructure' => true]));
-			}
-			if(!$this->getAppConfig()->get('allow_representations_duplicate_media') && ($t_existing_rep = ca_object_representations::mediaExists($media_path, $this->getPrimaryKey()))) {
-				throw new MediaExistsException(_t('Media already exists'), $t_existing_rep);
+		
+			if(!caGetOption('force', $options, false)) {
+				// does media already exist?
+				if (!($media_path = $this->getMediaPath('media', 'original'))) {
+					if(!($media_path = $this->getOriginalMediaPath('media'))) {
+						$media_path = array_shift($this->get('media', ['returnWithStructure' => true]));
+					}
+				}
+				if(!$this->getAppConfig()->get('allow_representations_duplicate_media') && ($t_existing_rep = ca_object_representations::mediaExists($media_path, $this->getPrimaryKey()))) {
+					throw new MediaExistsException(_t('Media already exists'), $t_existing_rep);
+				}
 			}
 		}
 		
 		$reader = $media_path ? $this->_readEmbeddedMetadata($media_path) : null;
 		
 		if ($vn_rc = parent::update($options)) {
-			if(is_array($va_media_info = $this->getMediaInfo('media', 'original'))) {
-				$this->set('md5', $va_media_info['MD5']);
-				$this->set('mimetype', $va_media_info['MIMETYPE']);
+			if(is_array($va_media_info = $this->getMediaInfo('media'))) {
+				$this->set('md5', $va_media_info['INPUT']['MD5']);
+				$this->set('mimetype', $va_media_info['INPUT']['MIMETYPE']);
 				
 				if(is_array($type_defaults = $this->getAppConfig()->get('object_representation_media_based_type_defaults')) && sizeof($type_defaults)) {
 					foreach($type_defaults as $m => $default_type) {
@@ -569,7 +578,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 					}	
 				}
 				
-				if (is_array($va_media_info = $this->getMediaInfo('media')) && isset($va_media_info['ORIGINAL_FILENAME']) && strlen($va_media_info['ORIGINAL_FILENAME'])) {
+				if (isset($va_media_info['ORIGINAL_FILENAME']) && strlen($va_media_info['ORIGINAL_FILENAME'])) {
 					$this->set('original_filename', $va_media_info['ORIGINAL_FILENAME']);
 				}
 			}
@@ -615,7 +624,9 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	 *
 	 */
 	private function _importEmbeddedMetadata($options=null) {
-		$path = caGetOption('path', $options, $this->getMediaPath('media', 'original'));
+		if(!($path = caGetOption('path', $options, $this->getMediaPath('media', 'original')))) {
+			$path = $this->getOriginalMediaPath('media');
+		}
 		$log = caGetImportLogger(['logLevel' => $this->_CONFIG->get('embedded_metadata_extraction_mapping_log_level')]);
 		if(!($object_representation_mapping_id = caGetOption('mapping_id', $options, null))) {
 			$object_representation_mapping_id = $this->_getEmbeddedMetadataMappingID(['log' => $log]);

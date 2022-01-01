@@ -319,12 +319,15 @@
 		 *		checkAccess - synonym for return_with_access
 		 *		restrict_to_types = An array of type_ids or type codes to restrict count to specified types of representations to
 		 *		restrict_to_relationship_types = An array of relationship type_ids or relationship codes to restrict count to
+		 *		requireMedia = only return IDs for representations with media. [Default is false]
 		 *
 		 * @return array A list of representation_ids
 		 */
 		public function getRepresentationIDs($pa_options=null) {
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
 			if (!is_array($pa_options)) { $pa_options = array(); }
+			
+			$require_media = caGetOption('requireMedia', $pa_options, false);
 		
 			if (!is_array($pa_versions)) { 
 				$pa_versions = array('preview170');
@@ -354,7 +357,7 @@
 		
 			$o_db = $this->getDb();
 			$qr_reps = $o_db->query("
-				SELECT caor.representation_id, caoor.is_primary
+				SELECT caor.representation_id, caoor.is_primary, caor.media
 				FROM ca_object_representations caor
 				INNER JOIN {$vs_linking_table} AS caoor ON caor.representation_id = caoor.representation_id
 				WHERE
@@ -368,6 +371,7 @@
 		
 			$va_rep_ids = array();
 			while($qr_reps->nextRow()) {
+				if($require_media && !is_array($versions = $qr_reps->getMediaVersions('media')) || !sizeof($versions)) { continue; }
 				$va_rep_ids[$qr_reps->get('representation_id')] = ($qr_reps->get('is_primary') == 1) ? true : false;
 			}
 			return $va_rep_ids;

@@ -468,7 +468,7 @@ include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 				$t_instance->setMediaInfo($vs_field, $va_merged_media_desc);
 				
 				try {
-					$t_instance->update();
+					$t_instance->update(['force' => true]);
 					if ($t_instance->numErrors()) {
 						# get rid of files we just created
 						foreach($va_output_files as $vs_to_delete) {
