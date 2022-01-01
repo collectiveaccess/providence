@@ -838,7 +838,7 @@ function caFileIsIncludable($ps_file) {
 		$files_to_delete = caGetDirectoryContentsAsList($user_dir, true, false, false, true, ['notModifiedSince' => time() - $timeout]);
 		$count = 0;
 		foreach($files_to_delete as $file_to_delete) {
-			if(@unlink($file_to_delete)) { $count++; }
+			if(is_writeable($file_to_delete) && @unlink($file_to_delete)) { $count++; }
 		}
 		
 		// Cleanup orphan metadata files
