@@ -157,7 +157,7 @@
 			if (!($policy_table = caGetOption('table', $policy_info, false))) { return []; }
 
 			foreach($map as $table => $types) {
-				if ($table == 'ca_objects') { // TODO: this is a hack
+				if (in_array($table, ['ca_objects', 'ca_object_lots', 'ca_collections'])) { // TODO: this is a hack
 				    $bundle_settings['showDeaccessionInformation'] = true; 
 				    $bundle_settings['deaccession_displayTemplate'] = $types['__default__']['template']; 
 				    $bundle_settings['deaccession_color'] = $types['__default__']['color']; 
@@ -178,28 +178,28 @@
 						}
 						if (in_array($type_list, ['*', '__default__'])) { 
 							$bundle_settings["{$table}_displayTemplate"] = $config['template'];
-							$types = array_map(function($v) { return $v['idno']; }, $t_instance->getTypeList());
-							
+							$tt = array_filter(array_map(function($v) { return $v['idno']; }, $t_instance->getTypeList()), function($v) use ($types) { return !isset($types[$v]); });
 							$bundle_settings["{$table}_setInterstitialElementsOnAdd"] = $config['setInterstitialElementsOnAdd'];
 						} else {
-							$types = preg_split("![ ]*[,;]{1}[ ]*!", $type_list);
+							$tt = preg_split("![ ]*[,;]{1}[ ]*!", $type_list);
 						}
-						foreach($types as $type) {
+						
+						foreach($tt as $t) {
 							if(!is_array($config)) { break; }
 							if ($table === 'ca_storage_locations') { 
 								$bundle_settings["{$table}_setInterstitialElementsOnAdd"] = $config['setInterstitialElementsOnAdd'];
 								$bundle_settings["{$table}_useDatePicker"] = $config['useDatePicker'];
 							} else {
-								$bundle_settings["{$table}_{$type}_setInterstitialElementsOnAdd"] = $config['setInterstitialElementsOnAdd'];
+								$bundle_settings["{$table}_{$t}_setInterstitialElementsOnAdd"] = $config['setInterstitialElementsOnAdd'];
 							}
-							$bundle_settings["{$table}_{$type}_displayTemplate"] = $config['template'];
-							$bundle_settings["{$table}_{$type}_color"] = $config['color'];
-							$bundle_settings["{$table}_showTypes"][] = array_shift(caMakeTypeIDList($table, [$type]));
+							$bundle_settings["{$table}_{$t}_displayTemplate"] = $config['template'];
+							$bundle_settings["{$table}_{$t}_color"] = $config['color'];
+							$bundle_settings["{$table}_showTypes"][] = array_shift(caMakeTypeIDList($table, [$t]));
 							
-							$bundle_settings["{$table}_{$type}_useRelated"] = $config['useRelated'];
-							$bundle_settings["{$table}_{$type}_useRelatedRelationshipType"] = $config['useRelatedRelationshipType'];
+							$bundle_settings["{$table}_{$t}_useRelated"] = $config['useRelated'];
+							$bundle_settings["{$table}_{$t}_useRelatedRelationshipType"] = $config['useRelatedRelationshipType'];
 						
-							$bundle_settings["{$table}_{$type}_dateElement"] = $config['date'];
+							$bundle_settings["{$table}_{$t}_dateElement"] = $config['date'];
 
 							if ((sizeof($path) === 3) && ($rel_types = caGetOption(['restrictToRelationshipTypes', 'showRelationshipTypes'], $config, null)) && $path[1]) { 
 								$bundle_settings["{$table}_showRelationshipTypes"] = [];

@@ -1102,7 +1102,7 @@ class Configuration {
 
 		// attempt translation if text is enclosed in _( and ) ... for example _t(translate me)
 		// assumes translation function _t() is present; if not loaded will not attempt translation
-		if (function_exists('_t') && preg_match("/(?<=\s|^)_\(([^\"\)]+)\)/", $ps_text, $va_matches)) {
+		if (function_exists('_t') && preg_match("/(?<=\s|>|^)_\(([^\"\)]+)\)/", $ps_text, $va_matches)) {
 			$vs_trans_text = $ps_text;
 			array_shift($va_matches);
 			foreach($va_matches as $vs_match) {
