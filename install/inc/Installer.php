@@ -553,7 +553,7 @@ class Installer {
 			}
 
 			$t_list->set("list_code", $list_code);
-			$t_list->set("is_system_list", intval($list['system']));
+			$t_list->set("is_system_list", $list['system'] ? 1 : 0);
 			$t_list->set("is_hierarchical", $list['hierarchical']);
 			$t_list->set("use_as_vocabulary", $list['vocabulary']);
 			if((int)$list['defaultSort'] >= 0) $t_list->set("default_sort",(int)$list['defaultSort']);
@@ -1511,10 +1511,6 @@ class Installer {
 	}
 	# --------------------------------------------------
 	public function processDisplays() {
-		require_once(__CA_MODELS_DIR__."/ca_bundle_displays.php");
-		require_once(__CA_MODELS_DIR__."/ca_bundle_display_placements.php");
-		require_once(__CA_MODELS_DIR__."/ca_bundle_display_type_restrictions.php");
-
 		$o_config = \Configuration::load();
 		
 		$displays = $this->parsed_data['displays'];
@@ -1545,11 +1541,11 @@ class Installer {
 			}
 
 			$t_display->set("display_code", $display_code);
-			$t_display->set("is_system", $system);
+			$t_display->set("is_system", $system ? 1 : 0);
 			$t_display->set("table_num",\Datamodel::getTableNum($table));
 			$t_display->set("user_id", 1);		// let administrative user own these
 
-			$this->_processSettings($t_display, $display->settings);
+			$this->_processSettings($t_display, $display['settings']);
 
 			if($t_display->getPrimaryKey()) {
 				$t_display->update();
@@ -1692,62 +1688,41 @@ class Installer {
 	}
 	# --------------------------------------------------
 	public function processSearchForms() {
-		require_once(__CA_MODELS_DIR__."/ca_search_forms.php");
-		require_once(__CA_MODELS_DIR__."/ca_search_form_placements.php");
-
 		$o_config = \Configuration::load();
-		$va_forms = [];
-		if($this->base_name) { // "merge" profile and its base
-			if($this->base->searchForms) {
-				foreach($this->base->searchForms->children() as $vo_form) {
-					$va_forms[self::getAttribute($vo_form, "code")] = $vo_form;
-				}
-			}
+		
+		$forms = $this->parsed_data['searchForms'];
 
-			if($this->profile->searchForms) {
-				foreach($this->profile->searchForms->children() as $vo_form) {
-					$va_forms[self::getAttribute($vo_form, "code")] = $vo_form;
-				}
-			}
-		} else {
-			if($this->profile->searchForms) {
-				foreach($this->profile->searchForms->children() as $vo_form) {
-					$va_forms[self::getAttribute($vo_form, "code")] = $vo_form;
-				}
-			}
-		}
+		if(sizeof($forms) == 0) { return true; }
 
-		if(sizeof($va_forms) == 0) { return true; }
-
-		foreach($va_forms as $vo_form) {
-			$vs_form_code = self::getAttribute($vo_form, "code");
-			$vb_system = self::getAttribute($vo_form, "system");
-			$vs_table = self::getAttribute($vo_form, "type");
-			if (!($t_instance = \Datamodel::getInstanceByTableName($vs_table, true))) { continue; }
+		foreach($forms as $form) {
+			$form_code = $form["code"];
+			$system = $form["system"];
+			$table = $form["type"];
+			if (!($t_instance = \Datamodel::getInstanceByTableName($table, true))) { continue; }
 			if (method_exists($t_instance, 'getTypeList') && !sizeof($t_instance->getTypeList())) { continue; } // no types configured
-			if ($o_config->get($vs_table.'_disable')) { continue; }
-			$vn_table_num = (int)\Datamodel::getTableNum($vs_table);
+			if ($o_config->get($table.'_disable')) { continue; }
+			$table_num = (int)\Datamodel::getTableNum($table);
 
-			$this->logStatus(_t('Processing search form with code %1', $vs_form_code));
+			$this->logStatus(_t('Processing search form with code %1', $form_code));
 
-			if(!($t_form = \ca_search_forms::find(array('form_code' => (string)$vs_form_code, 'table_num' => $vn_table_num), array('returnAs' => 'firstModelInstance')))) {
+			if(!($t_form = \ca_search_forms::find(['form_code' => (string)$form_code, 'table_num' => $table_num], ['returnAs' => 'firstModelInstance']))) {
 				$t_form = new \ca_search_forms();
-				$this->logStatus(_t('Search form with code %1 is new', $vs_form_code));
+				$this->logStatus(_t('Search form with code %1 is new', $form_code));
 			} else {
-				$this->logStatus(_t('Search form with code %1 already exists', $vs_form_code));
+				$this->logStatus(_t('Search form with code %1 already exists', $form_code));
 			}
 
-			if(self::getAttribute($vo_form, "deleted") && $t_form->getPrimaryKey()) {
-				$this->logStatus(_t('Deleting search form with code %1', $vs_form_code));
+			if($form["deleted"] && $t_form->getPrimaryKey()) {
+				$this->logStatus(_t('Deleting search form with code %1', $form_code));
 				$t_form->delete(true);
 				continue;
 			}
 
-			$t_form->set("form_code", (string)$vs_form_code);
-			$t_form->set("is_system", (int)$vb_system);
-			$t_form->set("table_num", $vn_table_num);
+			$t_form->set("form_code", (string)$form_code);
+			$t_form->set("is_system", $system ? 1 : 0);
+			$t_form->set("table_num", $table_num);
 
-			$this->_processSettings($t_form, $vo_form->settings);
+			$this->_processSettings($t_form, $form['settings']);
 
 			if($t_form->getPrimaryKey()) {
 				$t_form->update();
@@ -1757,112 +1732,103 @@ class Installer {
 			}
 
 			if ($t_form->numErrors()) {
-				$this->addError("There was an error while inserting search form {$vs_form_code}: ".join(" ",$t_form->getErrors()));
+				$this->addError("There was an error while inserting search form {$form_code}: ".join(" ", $t_form->getErrors()));
 			} else {
-				$this->logStatus(_t('Successfully updated/inserted form with code %1', $vs_form_code));
+				$this->logStatus(_t('Successfully updated/inserted form with code %1', $form_code));
 
-				self::addLabelsFromXMLElement($t_form, $vo_form->labels, $this->locales);
+				self::addLabels($t_form, $form['labels']);
 				if ($t_form->numErrors()) {
-					$this->addError("There was an error while inserting search form label for {$vs_form_code}: ".join(" ",$t_form->getErrors()));
+					$this->addError("There was an error while inserting search form label for {$form_code}: ".join(" ", $t_form->getErrors()));
 				}
-				if(!$this->processSearchFormPlacements($t_form, $vo_form->bundlePlacements)) {
+				if(!$this->processSearchFormPlacements($t_form, $form['bundles'])) {
 					return false;
 				}
 			}
 			
-			if ($vo_form->typeRestrictions) {
+			if ($form['typeRestrictions']) {
 				// nuke previous restrictions. there shouldn't be any if we're installing from scratch.
 				// if we're updating, we expect the list of restrictions to include all restrictions!
-				if(sizeof($vo_form->typeRestrictions->children())) {
-					$this->db->query('DELETE FROM ca_search_form_type_restrictions WHERE form_id=?', $t_form->getPrimaryKey());
-					$this->logStatus(_t('Successfully nuked all type restrictions for form with code %1', $vs_form_code));
+				if(sizeof($form['typeRestrictions'])) {
+					$this->db->query('DELETE FROM ca_search_form_type_restrictions WHERE form_id = ?', $t_form->getPrimaryKey());
+					$this->logStatus(_t('Successfully nuked all type restrictions for form with code %1', $form_code));
 				}
 
-				foreach($vo_form->typeRestrictions->children() as $vo_restriction) {
-					$vs_restriction_code = trim((string)self::getAttribute($vo_restriction, "code"));
-					$vs_type = trim((string)self::getAttribute($vo_restriction, "type"));
+				foreach($form['typeRestrictions'] as $restriction) {
+					$restriction_code = trim($restriction["code"]);
+					$type = trim($restriction["type"]);
 					
-					$t_form->addTypeRestriction(array_pop(caMakeTypeIDList($vn_table_num, [$vs_type], ['dontIncludeSubtypesInTypeRestriction' => true])), ['includeSubtypes' => (bool)$vo_restriction->includeSubtypes ? 1 : 0]);
+					$t_form->addTypeRestriction(array_pop(caMakeTypeIDList($table_num, [$type], ['dontIncludeSubtypesInTypeRestriction' => true])), ['includeSubtypes' => (bool)$restriction['includeSubtypes'] ? 1 : 0]);
 
 					if ($t_form->numErrors()) {
-						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} in form {$vs_form_code}: ".join("; ",$t_form->getErrors()));
+						$this->addError("There was an error while inserting type restriction {$restriction_code} in form {$form_code}: ".join("; ",$t_form->getErrors()));
 					}
 
-					$this->logStatus(_t('Added type restriction with code %1 and type %2 for form with code %3', $vs_restriction_code, $vs_type, $vs_form_code));
-				}
-			}
-			if ($vs_type_restrictions = self::getAttribute($vo_form, "typeRestrictions")) {
-				$va_codes = preg_split("![ ,;\|]!", $vs_type_restrictions);
-				$va_ids = caMakeTypeIDList($vn_table_num, $va_codes, ['dontIncludeSubtypesInTypeRestriction' => true]);
-				
-				foreach($va_ids as $vn_i => $vn_type_id) {
-					$t_form->addTypeRestriction($vn_type_id, ['includeSubtypes' => self::getAttribute($vo_form, "includeSubtypes")]);
-					$this->logStatus(_t('Added type restriction with type %1 for form with code %2', $va_codes[$vn_i], $vs_form_code));
+					$this->logStatus(_t('Added type restriction with code %1 and type %2 for form with code %3', $restriction_code, $type, $form_code));
 				}
 			}
 
 			// set user and group access
-			if($vo_form->userAccess) {
+			if($form['userAccess']) {
 				$t_user = new \ca_users();
-				$va_form_users = [];
-				foreach($vo_form->userAccess->children() as $vo_permission) {
-					$vs_user = trim((string)self::getAttribute($vo_permission, "user"));
-					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+				$form_users = [];
+				foreach($form['userAccess'] as $permission) {
+					$user = trim($permission["user"]);
+					$access = $this->_convertUserGroupAccessStringToInt($permission['access']);
 
-					if(!$t_user->load(array('user_name' => $vs_user))) { continue; }
-					if($vn_access) {
-						$va_form_users[$t_user->getUserID()] = $vn_access;
+					if(!$t_user->load(['user_name' => $user])) { continue; }
+					if($access) {
+						$form_users[$t_user->getUserID()] = $access;
 					} else {
-						$this->addError("User name or access value invalid for search form {$vs_form_code} (permission item with user name '{$vs_user}')");
+						$this->addError("User name or access value invalid for search form {$form_code} (permission item with user name '{$user}')");
 					}
 				}
 
-				if(sizeof($va_form_users)>0) {
-					$t_form->addUsers($va_form_users);
+				if(sizeof($form_users)>0) {
+					$t_form->addUsers($form_users);
 				}
 			}
 
-			if($vo_form->groupAccess) {
+			if($form['groupAccess']) {
 				$t_group = new \ca_user_groups();
-				$va_form_groups = [];
-				foreach($vo_form->groupAccess->children() as $vo_permission) {
-					$vs_group = trim((string)self::getAttribute($vo_permission, "group"));
-					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+				$form_groups = [];
+				foreach($form['groupAccess'] as $permission) {
+					$group = trim($permission["group"]);
+					$access = $this->_convertUserGroupAccessStringToInt($permission['access']);
 
-					if(!$t_group->load(array('code' => $vs_group))) { continue; }
-					if($vn_access) {
-						$va_form_groups[$t_group->getPrimaryKey()] = $vn_access;
+					if(!$t_group->load(['code' => $group])) { continue; }
+					if($access) {
+						$form_groups[$t_group->getPrimaryKey()] = $access;
 					} else {
-						$this->addError("Group code or access value invalid for search form {$vs_form_code} (permission item with group code '{$vs_group}')");
+						$this->addError("Group code or access value invalid for search form {$form_code} (permission item with group code '{$group}')");
 					}
 				}
 
-				if(sizeof($va_form_groups)>0) {
-					$t_form->addUserGroups($va_form_groups);
+				if(sizeof($form_groups)>0) {
+					$t_form->addUserGroups($form_groups);
 				}
 			}
 			
-			if($vo_form->roleAccess) {
+			if($form['roleAccess']) {
 				$t_role = new \ca_user_roles();
-				$va_form_roles = [];
-				foreach($vo_form->roleAccess->children() as $vo_permission) {
-					$vs_role = trim((string)self::getAttribute($vo_permission, "role"));
-					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+				$form_roles = [];
+				foreach($form['roleAccess'] as $permission) {
+					$role = trim($permission["role"]);
+					$access = $this->_convertUserGroupAccessStringToInt($permission['access']);
 
-					if(!$t_role->load(array('code' => $vs_role))) { continue; }
-					if(!is_null($vn_access)) {
-						$va_form_roles[$t_role->getPrimaryKey()] = $vn_access;
+					if(!$t_role->load(['code' => $role])) { continue; }
+					if(!is_null($access)) {
+						$form_roles[$t_role->getPrimaryKey()] = $access;
 					} else {
-						$this->addError("Role code or access value invalid for form {$vs_form_code} (permission item with role code '{$vs_role}')");
+						$this->addError("Role code or access value invalid for form {$form_code} (permission item with role code '{$role}')");
 					}
 				}
 
-				if(sizeof($va_form_roles)>0) {
+				if(sizeof($form_roles)>0) {
 					$all_roles = $t_role->getRoleList();
 					foreach($all_roles as $role_id => $role_info) {
-						if (!isset($va_form_roles[$role_id])) { $va_form_roles[$role_id] = 0; }
+						if (!isset($form_roles[$role_id])) { $form_roles[$role_id] = 0; }
 					}
-					$t_form->addUserRoles($va_form_roles);
+					$t_form->addUserRoles($form_roles);
 				}
 			}
 		}

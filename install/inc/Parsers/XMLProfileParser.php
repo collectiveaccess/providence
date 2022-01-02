@@ -82,6 +82,7 @@ class XMLProfileParser extends BaseProfileParser {
 		$this->processMetadataElementSets();
 		$this->processUIs();
 		$this->processDisplays();
+		$this->processSearchForms();
 		$this->processMetadataDictionary();
 		$this->processRoles();
 		$this->processGroups();
@@ -864,6 +865,74 @@ class XMLProfileParser extends BaseProfileParser {
 			}
 		}
 		return true;
+	}
+	# --------------------------------------------------
+	/**
+	 *
+	 */
+	public function processSearchForms($f_callback=null) {
+		$form_list = [];
+		if($this->base && $this->base->searchForms) { $display_list[] = $this->base->searchForms->children(); }
+		$form_list[] = $this->xml->searchForms->children();
+	
+		$this->data['searchForms'] = [];
+		foreach($form_list as $forms) {
+			foreach($forms as $form) {
+				$form_code = self::getAttribute($form, "code");
+				$type = self::getAttribute($form, "type");
+				$system = self::getAttribute($form, "system");
+				$deleted = self::getAttribute($form, "deleted");
+			
+				$labels = self::getLabelsFromXML($form->labels);
+				
+				$type_restrictions = self::processTypeRestrictionStrings(self::getAttribute($form, "typeRestrictions"), $include_subtypes);
+				if($form->typeRestrictions) { 
+					$type_restrictions = array_merge($type_restrictions, self::processTypeRestrictionLists($form->typeRestrictions));
+				}
+				
+				$settings = $form->settings ? $this->getSettingsFromXML($form->settings) : [];
+				
+				$user_access = self::processAccessRestrictions('user', $form->userAccess);
+				$group_access = self::processAccessRestrictions('group', $form->groupAccess);
+				$role_access = self::processAccessRestrictions('role', $form->userAccess);
+			
+				$this->data['searchForms'][$form_code] = [
+					'labels' => $labels,
+					'code' => $form_code,
+					'type' => $type,
+					'system' => $system,
+					'deleted' => $deleted,
+					'typeRestrictions' => $type_restrictions,
+					'settings' => $settings,
+					'bundles' => $form->bundlePlacements ? $this->processSearchFormBundles($form->bundlePlacements) : [],
+					'userAccess' => $user_access,
+					'groupAccess' => $group_access,
+					'roleAccess' => $role_access
+				];
+			}
+		}
+		return true;
+	}
+	# --------------------------------------------------
+	/**
+	 *
+	 */
+	protected function processSearchFormBundles($bundles) {
+		$values = [];
+		foreach($bundles->children() as $bundle) {
+			$code = self::getAttribute($bundle, "code");
+			$bundle_name = trim((string)$bundle->bundle);
+			
+			$settings = $bundle->settings ? $this->getSettingsFromXML($bundle->settings) : [];
+			
+			$values[$code] = [
+				'code' => $code,
+				'bundle' => $bundle_name,
+				'settings' => $settings,
+			];
+		}
+
+		return $values;
 	}
 	# --------------------------------------------------
 	/**
