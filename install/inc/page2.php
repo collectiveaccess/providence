@@ -89,9 +89,9 @@
 			caIncrementProgress($vn_progress, "Processing metadata elements");
 			$vo_installer->processMetadataElements('caGetMetadataElementToBeLoaded');
 
-			// $vn_progress += 2;
-// 			caIncrementProgress($vn_progress, "Processing metadata dictionary");
-// 			$vo_installer->processMetadataDictionary();
+			$vn_progress += 2;
+			caIncrementProgress($vn_progress, "Processing metadata dictionary");
+			$vo_installer->processMetadataDictionary();
 // 
 // 			$vn_progress += 7;
 // 			caIncrementProgress($vn_progress, "Processing access roles");

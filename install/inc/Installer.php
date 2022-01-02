@@ -807,50 +807,43 @@ class Installer {
 	 *
 	 */
 	public function processMetadataDictionary() {
-		require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_entries.php');
-
-		if(!$this->profile->metadataDictionary) { return true; } // no dict specified. it's optional, so don't barf
-
+		$dict = $this->parsed_data['metadataDictionary'];
+		
 		// dictionary entries don't have a code or any other attribute that could be used for
 		// identification so we won't support setting them in a base profile, for now ...
 
-		foreach($this->profile->metadataDictionary->children() as $vo_entry) {
-			$vs_field = self::getAttribute($vo_entry, "bundle");
-			$vs_table = self::getAttribute($vo_entry, "table");
-			if(strlen($vs_field)<1) {
+		foreach($dict as $i => $entry) {
+			if(strlen($entry['bundle'])<1) {
 				$this->addError("No bundle specified in a metadata dictionary entry. Skipping row.");
 				continue;
 			}
 			
-			if(!($vn_table_num = \Datamodel::getTableNum($vs_table))) {
-				$this->addError("Table {$vs_table} is invalid for metadata dictionary entry. Skipping row.");
+			if(!($table_num = \Datamodel::getTableNum($entry['table']))) {
+				$this->addError("Table {$entry['table']} is invalid for metadata dictionary entry. Skipping row.");
 				continue;
 			}
-
+			
 			// insert dictionary entry
 			$t_entry = new \ca_metadata_dictionary_entries();
-			$t_entry->set('bundle_name', $vs_field);
-			$t_entry->set('table_num', $vn_table_num);
-			$this->_processSettings($t_entry, $vo_entry->settings);
-
+			$t_entry->set('bundle_name', $entry['bundle']);
+			$t_entry->set('table_num', $table_num);
+			$this->_processSettings($t_entry, $entry['settings']);
+			
 			$t_entry->insert();
 
 			if($t_entry->numErrors() > 0 || !($t_entry->getPrimaryKey()>0)) {
 				$this->addError("There were errors while adding dictionary entry: " . join(';', $t_entry->getErrors()));
 				return false;
 			}
-
-			if($vo_entry->rules) {
-				foreach($vo_entry->rules->children() as $vo_rule) {
-					$vs_code = self::getAttribute($vo_rule, "code");
-					$vs_level = self::getAttribute($vo_rule, "level");
-
+			
+			if(is_array($entry['rules'])) {
+				foreach($entry['rules'] as $rule) {
 					$t_rule = new \ca_metadata_dictionary_rules();
 					$t_rule->set('entry_id', $t_entry->getPrimaryKey());
-					$t_rule->set('rule_code', $vs_code);
-					$t_rule->set('rule_level', $vs_level);
-					$t_rule->set('expression', (string) $vo_rule->expression);
-					$this->_processSettings($t_rule, $vo_rule->settings);
+					$t_rule->set('rule_code', $rule['code']);
+					$t_rule->set('rule_level', $rule['level']);
+					$t_rule->set('expression', $rule['expression']);
+					$this->_processSettings($t_rule, $rule['settings']);
 
 					$t_rule->insert();
 					if ($t_rule->numErrors()) {
@@ -860,7 +853,7 @@ class Installer {
 				}
 			}
 		}
-
+		
 		return true;
 	}
 	# --------------------------------------------------

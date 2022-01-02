@@ -42,6 +42,9 @@ class BaseProfileParser {
 	 */
 	public function __construct(?string $directory=null, ?string $profile=null) {
 		$this->log = new \KLogger(__CA_BASE_DIR__ . '/app/log', \KLogger::DEBUG);
+		if($profile) {
+			$this->parse($directory, $profile);
+		}
 	}
 	# --------------------------------------------------
 	/**

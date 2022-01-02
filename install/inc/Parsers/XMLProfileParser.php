@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * install/inc/SketchInstaller.php : install system from Excel-format system sketch
+ * install/inc/Parsers/XMLProfileParser.php : install system from Excel-format system sketch
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -60,15 +60,6 @@ class XMLProfileParser extends BaseProfileParser {
 	/**
 	 *
 	 */
-	public function __construct(?string $directory=null, ?string $profile=null) {
-		if($profile) {
-			$this->parse($directory, $profile);
-		}
-	}
-	# --------------------------------------------------
-	/**
-	 *
-	 */
 	public function parse(string $directory, string $profile) : array {
 		if(!($profile_path = caGetProfilePath($directory, $profile))) {
 			return null;
@@ -91,6 +82,7 @@ class XMLProfileParser extends BaseProfileParser {
 		$this->processMetadataElementSets();
 		$this->processUIs();
 		$this->processDisplays();
+		$this->processMetadataDictionary();
 		$this->processLogins();
 		
 		return $this->data;
@@ -674,7 +666,6 @@ class XMLProfileParser extends BaseProfileParser {
 		}
 		return true;
 	}
-	
 	# --------------------------------------------------
 	/**
 	 *
@@ -700,6 +691,51 @@ class XMLProfileParser extends BaseProfileParser {
 		}
 
 		return $values;
+	}
+	# --------------------------------------------------
+	/**
+	 *
+	 */
+	public function processMetadataDictionary($f_callback=null) {
+		$dict_list = [];
+		if($this->base && $this->base->metadataDictionary) { $display_list[] = $this->base->metadataDictionary->children(); }
+		$dict_list[] = $this->xml->metadataDictionary->children();
+	
+		$this->data['metadataDictionary'] = [];
+		foreach($dict_list as $dict) {
+			foreach($dict as $entry) {
+				$bundle = self::getAttribute($entry, "bundle");
+				$table = self::getAttribute($entry, "table");
+				
+				$settings = $entry->settings ? $this->getSettingsFromXML($entry->settings) : [];
+			
+				$data = [
+					'bundle' => $bundle,
+					'table' => $table,
+					'settings' => $settings,
+					'rules' => []
+				];
+				
+				if($entry->rules) {
+					foreach($entry->rules->children() as $rule) {
+						$code = self::getAttribute($rule, "code");
+						$level = self::getAttribute($rule, "level");
+						$expression = (string)$rule->expression;
+						$settings = $rule->settings ? $this->getSettingsFromXML($rule->settings) : [];
+					
+						$data['rules'][] = [
+							'code' => $code,
+							'level' => $level,
+							'expression' => $expression,
+							'settings' => $settings
+						];
+					}
+				}
+			
+				$this->data['metadataDictionary'][] = $data;
+			}
+		}
+		return true;
 	}
 	# --------------------------------------------------
 	/**
