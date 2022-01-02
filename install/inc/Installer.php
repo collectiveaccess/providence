@@ -2139,7 +2139,7 @@ class Installer {
 	/**
 	 *
 	 */
-	private function processMetadataAlertTriggers($t_alert, $po_triggers) {
+	private function processMetadataAlertTriggers($t_alert, $triggers) {
 		$available_triggers = $t_alert->getTriggers();
 
 		// nuke previous restrictions. there shouldn't be any if we're installing from scratch.
