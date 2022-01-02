@@ -174,22 +174,6 @@ class Installer {
 		return null;
 	}
 	# --------------------------------------------------
-	/**
-	 * TODO: Remove
-	 */
-// 	public function extractAndLoadBase() {
-// 		$this->base_name = self::getAttribute($this->profile, "base");
-// 		if(!($base_path = caGetProfilePath($this->profile_dir, $this->base_name))) {
-// 			throw new \Exception("Could not find base profile.");
-// 		}
-// 		if($this->base_name) {
-// 			$this->base = simplexml_load_file($base_path);
-// 			$this->logStatus(_t('Successfully loaded base profile %1', $this->base_name));
-// 		} else {
-// 			$this->base = null;
-// 		}
-// 	}
-	# --------------------------------------------------
 	# ERROR HANDLING / DEBUGGING
 	# --------------------------------------------------
 	/**
@@ -461,6 +445,9 @@ class Installer {
 	# --------------------------------------------------
 	# PROFILE CONTENT PROCESSING
 	# --------------------------------------------------
+	/**
+	 *
+	 */
 	public function processLocales() {
 		global $g_ui_locale_id, $g_ui_locale;
 
@@ -636,7 +623,7 @@ class Installer {
 				return false;
 			} else {
 				$this->logStatus(_t('Successfully updated/inserted list item with idno %1', $item_idno));
-				if($item->settings) {
+				if($item['settings']) {
 					$this->_processSettings($t_item, $item['settings']);
 					$t_item->update();
 					if ($t_item->numErrors()) {
@@ -1174,7 +1161,7 @@ class Installer {
 				}
 			}
 
-			if($ui->groupAccess) {
+			if($ui['groupAccess']) {
 				$t_group = new \ca_user_groups();
 				$ui_groups = [];
 				foreach($ui['groupAccess'] as $permission) {
@@ -1194,7 +1181,7 @@ class Installer {
 				}
 			}
 			
-			if($ui->roleAccess) {
+			if($ui['roleAccess']) {
 				$t_role = new \ca_user_roles();
 				$ui_roles = [];
 				foreach($ui['roleAccess'] as $permission) {
@@ -1221,6 +1208,9 @@ class Installer {
 		return true;
 	}
 	# --------------------------------------------------
+	/**
+	 *
+	 */
 	public function processRelationshipTypes() {
 		require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
 
@@ -1401,6 +1391,9 @@ class Installer {
 		}
 	}
 	# --------------------------------------------------
+	/**
+	 *
+	 */
 	public function processRoles() {
 		$roles = $this->parsed_data['roles'];
 		
@@ -1510,6 +1503,9 @@ class Installer {
 		return true;
 	}
 	# --------------------------------------------------
+	/**
+	 *
+	 */
 	public function processDisplays() {
 		$o_config = \Configuration::load();
 		
@@ -1558,7 +1554,7 @@ class Installer {
 			} else {
 				$this->logStatus(_t('Successfully updated/inserted display with code %1', $display_code));
 
-				self::addLabels($t_display, $display->labels);
+				self::addLabels($t_display, $display['labels']);
 				if ($t_display->numErrors()) {
 					$this->addError("There was an error while inserting display label for {$display_code}: ".join(" ",$t_display->getErrors()));
 				}
@@ -1567,7 +1563,7 @@ class Installer {
 				}
 			}
 
-			if ($display->typeRestrictions) {
+			if ($display['typeRestrictions']) {
 				// nuke previous restrictions. there shouldn't be any if we're installing from scratch.
 				// if we're updating, we expect the list of restrictions to include all restrictions!
 				if(sizeof($display['typeRestrictions'])) {
@@ -1658,6 +1654,9 @@ class Installer {
 		return true;
 	}
 	# --------------------------------------------------
+	/**
+	 *
+	 */
 	private function processDisplayPlacements($t_display, $placements) {
 		$available_bundles = $t_display->getAvailableBundles(null, ['no_cache' => true]);
 
@@ -1687,6 +1686,9 @@ class Installer {
 		return true;
 	}
 	# --------------------------------------------------
+	/**
+	 *
+	 */
 	public function processSearchForms() {
 		$o_config = \Configuration::load();
 		
@@ -1836,6 +1838,9 @@ class Installer {
 		return true;
 	}
 	# --------------------------------------------------
+	/**
+	 *
+	 */
 	private function processSearchFormPlacements($t_form, $placements) {
 		$available_bundles = $t_form->getAvailableBundles();
 
@@ -1865,8 +1870,10 @@ class Installer {
 		return true;
 	}
 	# --------------------------------------------------
+	/**
+	 *
+	 */
 	public function processGroups() {
-
 		// Create root group
 		$t_user_group = \ca_user_groups::find(['code' => 'Root', 'parent_id' => null], ['returnAs' => 'firstModelInstance']);
 		$t_user_group = $t_user_group ? $t_user_group : new \ca_user_groups();
@@ -1924,6 +1931,9 @@ class Installer {
 		return true;
 	}
 	# --------------------------------------------------
+	/**
+	 *
+	 */
 	public function processLogins($create_admin_account=true) {
 		$logins = $this->parsed_data['logins'];
 
@@ -1978,174 +1988,147 @@ class Installer {
 		return $login_info;
 	}
 	# --------------------------------------------------
+	/**
+	 *
+	 */
 	public function processMetadataAlerts() {
-		require_once(__CA_MODELS_DIR__."/ca_metadata_alert_rules.php");
-		require_once(__CA_MODELS_DIR__."/ca_metadata_alert_triggers.php");
-
 		$o_config = \Configuration::load();
-		$va_md_alerts = [];
-		if($this->base_name) { // "merge" profile and its base
-			if($this->base->metadataAlerts) {
-				foreach($this->base->metadataAlerts->children() as $vo_md_alert) {
-					$va_md_alerts[self::getAttribute($vo_md_alert, "code")] = $vo_md_alert;
-				}
-			}
+		
+		$alerts = $this->parsed_data['metadataAlerts'];
 
-			if($this->profile->metadataAlerts) {
-				foreach($this->profile->metadataAlerts->children() as $vo_md_alert) {
-					$va_md_alerts[self::getAttribute($vo_md_alert, "code")] = $vo_md_alert;
-				}
-			}
-		} else {
-			if($this->profile->metadataAlerts) {
-				foreach($this->profile->metadataAlerts->children() as $vo_md_alert) {
-					$va_md_alerts[self::getAttribute($vo_md_alert, "code")] = $vo_md_alert;
-				}
-			}
-		}
+		if(sizeof($alerts) == 0) { return true; }
 
-		if(sizeof($va_md_alerts) == 0) { return true; }
-
-		foreach($va_md_alerts as $vo_md_alert) {
-			$vs_alert_code = self::getAttribute($vo_md_alert, "code");
-			$vs_table = self::getAttribute($vo_md_alert, "type");
-			if (!($t_instance = \Datamodel::getInstanceByTableName($vs_table, true))) { continue; }
+		foreach($alerts as $alert) {
+			$alert_code = $alert["code"];
+			$table = $alert["type"];
+			if (!($t_instance = \Datamodel::getInstanceByTableName($table, true))) { continue; }
 			if (method_exists($t_instance, 'getTypeList') && !sizeof($t_instance->getTypeList())) { continue; } // no types configured
-			if ($o_config->get($vs_table.'_disable')) { continue; }
-			$vn_table_num = (int)\Datamodel::getTableNum($vs_table);
+			if ($o_config->get($table.'_disable')) { continue; }
+			$table_num = (int)\Datamodel::getTableNum($table);
 
-			$this->logStatus(_t('Processing metadata alert with code %1', $vs_alert_code));
+			$this->logStatus(_t('Processing metadata alert with code %1', $alert_code));
 
-			if(!($t_md_alert = \ca_metadata_alert_rules::find(array('code' => (string)$vs_alert_code, 'table_num' => $vn_table_num), array('returnAs' => 'firstModelInstance')))) {
-				$t_md_alert = new \ca_metadata_alert_rules();
-				$this->logStatus(_t('Metadata alert with code %1 is new', $vs_alert_code));
+			if(!($t_alert = \ca_metadata_alert_rules::find(['code' => (string)$alert_code, 'table_num' => $table_num], ['returnAs' => 'firstModelInstance']))) {
+				$t_alert = new \ca_metadata_alert_rules();
+				$this->logStatus(_t('Metadata alert with code %1 is new', $alert_code));
 			} else {
-				$this->logStatus(_t('Metadata alert with code %1 already exists', $vs_alert_code));
+				$this->logStatus(_t('Metadata alert with code %1 already exists', $alert_code));
 			}
 
-			if(self::getAttribute($vo_md_alert, "deleted") && $t_md_alert->getPrimaryKey()) {
-				$this->logStatus(_t('Deleting metadata alert with code %1', $vs_alert_code));
-				$t_md_alert->delete(true);
+			if($alert["deleted"] && $t_alert->getPrimaryKey()) {
+				$this->logStatus(_t('Deleting metadata alert with code %1', $alert_code));
+				$t_alert->delete(true);
 				continue;
 			}
 
-			$t_md_alert->set("code", (string)$vs_alert_code);
-			$t_md_alert->set("table_num", $vn_table_num);
+			$t_alert->set("code", $alert_code);
+			$t_alert->set("table_num", $table_num);
 
-			$this->_processSettings($t_md_alert, $vo_md_alert->settings);
+			$this->_processSettings($t_alert, $alert['settings']);
 
-			if($t_md_alert->getPrimaryKey()) {
-				$t_md_alert->update();
+			if($t_alert->getPrimaryKey()) {
+				$t_alert->update();
 			} else {
-				$t_md_alert->set("user_id", 1);		// let administrative user own these
-				$t_md_alert->insert();
+				$t_alert->set("user_id", 1);		// let administrative user own these
+				$t_alert->insert();
 			}
 			
-			if ($t_md_alert->numErrors()) {
-				$this->addError("There was an error while inserting metadata alert {$vs_alert_code}: ".join(" ",$t_md_alert->getErrors()));
+			if ($t_alert->numErrors()) {
+				$this->addError("There was an error while inserting metadata alert {$alert_code}: ".join(" ",$t_alert->getErrors()));
 			} else {
-				$this->logStatus(_t('Successfully updated/inserted metadata alert with code %1', $vs_alert_code));
+				$this->logStatus(_t('Successfully updated/inserted metadata alert with code %1', $alert_code));
 
-				self::addLabelsFromXMLElement($t_md_alert, $vo_md_alert->labels, $this->locales);
-				if ($t_md_alert->numErrors()) {
-					$this->addError("There was an error while inserting metadata alert label for {$vs_alert_code}: ".join(" ",$t_md_alert->getErrors()));
+				self::addLabels($t_alert, $alert['labels']);
+				if ($t_alert->numErrors()) {
+					$this->addError("There was an error while inserting metadata alert label for {$alert_code}: ".join(" ",$t_alert->getErrors()));
 				}
-				if(!$this->processMetadataAlertTriggers($t_md_alert, $vo_md_alert->triggers)) {
+				if(!$this->processMetadataAlertTriggers($t_alert, $alert['triggers'])) {
 					return false;
 				}
 			}
 			
-			if ($vo_md_alert->typeRestrictions) {
+			if ($alert['typeRestrictions']) {
 				// nuke previous restrictions. there shouldn't be any if we're installing from scratch.
 				// if we're updating, we expect the list of restrictions to include all restrictions!
-				if(sizeof($vo_md_alert->typeRestrictions->children())) {
-					$this->db->query('DELETE FROM ca_metadata_alert_rule_type_restrictions WHERE rule_id = ?', [$t_md_alert->getPrimaryKey()]);
-					$this->logStatus(_t('Successfully nuked all type restrictions for metadata alert with code %1', $vs_alert_code));
+				if(sizeof($alert['typeRestrictions'])) {
+					$this->db->query('DELETE FROM ca_metadata_alert_rule_type_restrictions WHERE rule_id = ?', [$t_alert->getPrimaryKey()]);
+					$this->logStatus(_t('Successfully nuked all type restrictions for metadata alert with code %1', $alert_code));
 				}
 
-				foreach($vo_md_alert->typeRestrictions->children() as $vo_restriction) {
-					$vs_restriction_code = trim((string)self::getAttribute($vo_restriction, "code"));
-					$vs_type = trim((string)self::getAttribute($vo_restriction, "type"));
+				foreach($alert['typeRestrictions'] as $restriction) {
+					$restriction_code = trim($restriction["code"]);
+					$type = trim($restriction["type"]);
 					
-					$t_md_alert->addTypeRestriction(array_pop(caMakeTypeIDList($vn_table_num, [$vs_type], ['dontIncludeSubtypesInTypeRestriction' => true])), ['includeSubtypes' => (bool)$vo_restriction->includeSubtypes ? 1 : 0]);
+					$t_alert->addTypeRestriction(array_pop(caMakeTypeIDList($table_num, [$type], ['dontIncludeSubtypesInTypeRestriction' => true])), ['includeSubtypes' => (bool)$restriction['includeSubtypes'] ? 1 : 0]);
 					
-					if ($t_md_alert->numErrors()) {
-						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} in metadata alert {$vs_alert_code}: ".join("; ",$t_md_alert->getErrors()));
+					if ($t_alert->numErrors()) {
+						$this->addError("There was an error while inserting type restriction {$restriction_code} in metadata alert {$alert_code}: ".join("; ",$t_alert->getErrors()));
 					}
 
-					$this->logStatus(_t('Added type restriction with code %1 and type %2 for metadata alert with code %3', $vs_restriction_code, $vs_type, $vs_alert_code));
-				}
-			}
-			if ($vs_type_restrictions = self::getAttribute($vo_md_alert, "typeRestrictions")) {
-				$va_codes = preg_split("![ ,;\|]!", $vs_type_restrictions);
-				$va_ids = caMakeTypeIDList($vn_table_num, $va_codes, ['dontIncludeSubtypesInTypeRestriction' => true]);
-				
-				foreach($va_ids as $vn_i => $vn_type_id) {
-					$t_md_alert->addTypeRestriction($vn_type_id, ['includeSubtypes' => self::getAttribute($vo_md_alert, "includeSubtypes")]);
-					$this->logStatus(_t('Added type restriction with type %1 for metadata alert with code %2', $va_codes[$vn_i], $vs_alert_code));
+					$this->logStatus(_t('Added type restriction with code %1 and type %2 for metadata alert with code %3', $restriction_code, $type, $alert_code));
 				}
 			}
 
 			// set user and group access
-			if($vo_md_alert->userAccess) {
+			if($alert['userAccess']) {
 				$t_user = new \ca_users();
-				$va_form_users = [];
-				foreach($vo_md_alert->userAccess->children() as $vo_permission) {
-					$vs_user = trim((string)self::getAttribute($vo_permission, "user"));
-					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+				$form_users = [];
+				foreach($alert['userAccess'] as $permission) {
+					$user = trim($permission["user"]);
+					$access = $this->_convertUserGroupAccessStringToInt($permission['access']);
 
-					if($vn_access && $t_user->load(array('user_name' => $vs_user))) {
-						$va_form_users[$t_user->getUserID()] = $vn_access;
+					if($access && $t_user->load(['user_name' => $user])) {
+						$form_users[$t_user->getUserID()] = $access;
 					} else {
-						$this->addError("User name or access value invalid for metadata alert {$vs_alert_code} (permission item with user name '{$vs_user}')");
+						$this->addError("User name or access value invalid for metadata alert {$alert_code} (permission item with user name '{$user}')");
 					}
 				}
 
-				if(sizeof($va_form_users)>0) {
-					$t_md_alert->addUsers($va_form_users);
+				if(sizeof($form_users)>0) {
+					$t_alert->addUsers($form_users);
 				}
 			}
 
-			if($vo_md_alert->groupAccess) {
+			if($alert['groupAccess']) {
 				$t_group = new \ca_user_groups();
-				$va_form_groups = [];
-				foreach($vo_md_alert->groupAccess->children() as $vo_permission) {
-					$vs_group = trim((string)self::getAttribute($vo_permission, "group"));
-					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+				$form_groups = [];
+				foreach($alert['groupAccess'] as $permission) {
+					$group = trim($permission["group"]);
+					$access = $this->_convertUserGroupAccessStringToInt($permission['access']);
 
-					if($vn_access && $t_group->load(array('code' => $vs_group))) {
-						$va_form_groups[$t_group->getPrimaryKey()] = $vn_access;
+					if($access && $t_group->load(['code' => $group])) {
+						$form_groups[$t_group->getPrimaryKey()] = $access;
 					} else {
-						$this->addError("Group code or access value invalid for metadata alert {$vs_alert_code} (permission item with group code '{$vs_group}')");
+						$this->addError("Group code or access value invalid for metadata alert {$alert_code} (permission item with group code '{$group}')");
 					}
 				}
 
-				if(sizeof($va_form_groups)>0) {
-					$t_md_alert->addUserGroups($va_form_groups);
+				if(sizeof($form_groups)>0) {
+					$t_alert->addUserGroups($form_groups);
 				}
 			}
 			
-			if($vo_md_alert->roleAccess) {
+			if($alert['roleAccess']) {
 				$t_role = new \ca_user_roles();
-				$va_form_roles = [];
-				foreach($vo_md_alert->roleAccess->children() as $vo_permission) {
-					$vs_role = trim((string)self::getAttribute($vo_permission, "role"));
-					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+				$form_roles = [];
+				foreach($alert['roleAccess'] as $permission) {
+					$role = trim($permission["role"]);
+					$access = $this->_convertUserGroupAccessStringToInt($permission['access']);
 
-					if(!$t_role->load(array('code' => $vs_role))) { continue; }
-					if(!is_null($vn_access)) {
-						$va_form_roles[$t_role->getPrimaryKey()] = $vn_access;
+					if(!$t_role->load(['code' => $role])) { continue; }
+					if(!is_null($access)) {
+						$form_roles[$t_role->getPrimaryKey()] = $access;
 					} else {
-						$this->addError("Role code or access value invalid for metadata alert {$vs_alert_code} (permission item with role code '{$vs_role}')");
+						$this->addError("Role code or access value invalid for metadata alert {$alert_code} (permission item with role code '{$role}')");
 					}
 				}
 
-				if(sizeof($va_form_roles)>0) {
+				if(sizeof($form_roles)>0) {
 					$all_roles = $t_role->getRoleList();
 					foreach($all_roles as $role_id => $role_info) {
-						if (!isset($va_form_roles[$role_id])) { $va_form_roles[$role_id] = 0; }
+						if (!isset($form_roles[$role_id])) { $form_roles[$role_id] = 0; }
 					}
-					$t_md_alert->addUserRoles($va_form_roles);
+					$t_alert->addUserRoles($form_roles);
 				}
 			}
 		}
@@ -2153,78 +2136,83 @@ class Installer {
 		return true;
 	}
 	# --------------------------------------------------
-	private function processMetadataAlertTriggers($t_md_alert, $po_triggers) {
-		$va_available_triggers = $t_md_alert->getTriggers();
+	/**
+	 *
+	 */
+	private function processMetadataAlertTriggers($t_alert, $po_triggers) {
+		$available_triggers = $t_alert->getTriggers();
 
 		// nuke previous restrictions. there shouldn't be any if we're installing from scratch.
 		// if we're updating, we expect the list of restrictions to include all restrictions!
-		if(sizeof($po_triggers->children())) {
-			$this->logStatus(_t('Successfully nuked all triggers for metadata alert with code %1', $t_md_alert->get('code')));
-			$this->db->query('DELETE FROM ca_metadata_alert_triggers WHERE rule_id = ?', [$t_md_alert->getPrimaryKey()]);
+		if(sizeof($triggers)) {
+			$this->logStatus(_t('Successfully nuked all triggers for metadata alert with code %1', $t_alert->get('code')));
+			$this->db->query('DELETE FROM ca_metadata_alert_triggers WHERE rule_id = ?', [$t_alert->getPrimaryKey()]);
 		}
 
-		$vn_i = 0;
-		foreach($po_triggers->children() as $vo_trigger) {
-			$vs_code = self::getAttribute($vo_trigger, "code");
-			$vs_type = self::getAttribute($vo_trigger, "type");
-			$vs_metadata_element = self::getAttribute($vo_trigger, "metadataElement");
-			$vs_metadata_element_filter = self::getAttribute($vo_trigger, "metadataElementFilter");
+		$i = 0;
+		foreach($triggers->children() as $trigger) {
+			$code = $trigger["code"];
+			$type = $trigger["type"];
+			$metadata_element = $trigger["metadataElement"];
+			$metadata_element_filter = $trigger["metadataElementFilter"];
 			
-			if (!($vn_element_id = \ca_metadata_elements::getElementID($vs_metadata_element))) { 
-				$this->logStatus(_t('Skipped trigger %1 for metadata alert %2 because element code %3 is invalid', $vs_code, $t_md_alert->get('code'), $vs_metadata_element));
+			if (!($element_id = \ca_metadata_elements::getElementID($metadata_element))) { 
+				$this->logStatus(_t('Skipped trigger %1 for metadata alert %2 because element code %3 is invalid', $code, $t_alert->get('code'), $metadata_element));
 				continue; 
 			}
 
-			$va_settings = $this->_processSettings(null, $vo_trigger->settings);
-			
+			$settings = $this->_processSettings(null, $trigger['settings']);
 			
 			//<element code1>:<list item code>|<list item code>|...;<element code2>:<list item code>|<list item code>
-			$va_metadata_element_filters = [];
-			if(is_array($va_metadata_element_filters_raw = explode(';', $vs_metadata_element_filter)) && sizeof($va_metadata_element_filters_raw)) {
-				foreach($va_metadata_element_filters_raw as $vs_metadata_element_filters_raw) {
-					if(is_array($va_tmp = explode(":", $vs_metadata_element_filters_raw)) && (sizeof($va_tmp) > 1)) {
-						if ($t_element = \ca_metadata_elements::getInstance($va_tmp[0])) {
-							if (is_array($va_item_ids = \ca_lists::IDNOsToItemIDs(explode("|", $va_tmp[1]))) && sizeof($va_item_ids)) {
-								$va_item_ids = array_keys($va_item_ids);
-								$va_metadata_element_filters[$va_tmp[0]] = $va_item_ids;
+			$metadata_element_filters = [];
+			if(is_array($metadata_element_filters_raw = explode(';', $metadata_element_filter)) && sizeof($metadata_element_filters_raw)) {
+				foreach($metadata_element_filters_raw as $metadata_element_filters_raw) {
+					if(is_array($tmp = explode(":", $metadata_element_filters_raw)) && (sizeof($tmp) > 1)) {
+						if ($t_element = \ca_metadata_elements::getInstance($tmp[0])) {
+							if (is_array($item_ids = \ca_lists::IDNOsToItemIDs(explode("|", $tmp[1]))) && sizeof($item_ids)) {
+								$item_ids = array_keys($item_ids);
+								$metadata_element_filters[$tmp[0]] = $item_ids;
 							}
 						}
 					}
 				}
 			}
 			$t_trigger = new \ca_metadata_alert_triggers();
-			$t_trigger->set('rule_id', $t_md_alert->get('rule_id'));
-			$t_trigger->set('element_id', $vn_element_id);
-			$t_trigger->set('element_filters', $va_metadata_element_filters);
-			$t_trigger->set('trigger_type', $vs_type);
+			$t_trigger->set('rule_id', $t_alert->get('rule_id'));
+			$t_trigger->set('element_id', $element_id);
+			$t_trigger->set('element_filters', $metadata_element_filters);
+			$t_trigger->set('trigger_type', $type);
 			
-			foreach($va_settings as $vs_setting => $vs_setting_value) {
-				switch($vs_setting) {
+			foreach($settings as $setting => $setting_value) {
+				switch($setting) {
 					case 'notificationDeliveryOptions':
-						$v = explode('|', $vs_setting_value);
+						$v = explode('|', $setting_value);
 						break;
 					default:
-						$v = $vs_setting_value;
+						$v = $setting_value;
 						break;
 				}
-				if (!$t_trigger->setSetting($vs_setting, $v)) {
-					$this->logStatus(_t('Skipped setting %1 for trigger %2 on metadata alert %3 because value %4 is invalid', $vs_setting, $vs_code, $t_md_alert->get('code'), $vs_setting_value));	
+				if (!$t_trigger->setSetting($setting, $v)) {
+					$this->logStatus(_t('Skipped setting %1 for trigger %2 on metadata alert %3 because value %4 is invalid', $setting, $code, $t_alert->get('code'), $setting_value));	
 				}
 			}
 			
 			$t_trigger->insert();
 			
 			if ($t_trigger->numErrors()) {
-				$this->addError("There was an error while inserting metadata alert trigger {$vs_code}: ".join(" ",$t_trigger->getErrors()));
+				$this->addError("There was an error while inserting metadata alert trigger {$code}: ".join(" ",$t_trigger->getErrors()));
 				return false;
 			}
 
-			$this->logStatus(_t('Added trigger %1 for metadata alert %2', $vs_code, $t_md_alert->get('code')));
-			$vn_i++;
+			$this->logStatus(_t('Added trigger %1 for metadata alert %2', $code, $t_alert->get('code')));
+			$i++;
 		}
 		return true;
 	}
 	# --------------------------------------------------
+	/**
+	 *
+	 */
 	public function processMiscHierarchicalSetup() {
 		require_once(__CA_MODELS_DIR__."/ca_storage_locations.php");
 
@@ -2242,6 +2230,9 @@ class Installer {
 		}
 	}
 	# --------------------------------------------------
+	/**
+	 *
+	 */
 	public function createAdminAccount() {
 
 		$ps_password = caGenerateRandomPassword(8);
@@ -2268,6 +2259,9 @@ class Installer {
 		return $ps_password;
 	}
 	# --------------------------------------------------
+	/**
+	 *
+	 */
 	private function _processSettings($pt_instance, $settings, $options=null) {
 		$settings_list = [];
 		
@@ -2335,6 +2329,9 @@ class Installer {
 		return $settings_list;
 	}
 	# --------------------------------------------------
+	/**
+	 *
+	 */
 	private function _convertACLStringToConstant($ps_name) {
 		switch($ps_name) {
 			case 'edit':
@@ -2347,6 +2344,9 @@ class Installer {
 		}
 	}
 	# --------------------------------------------------
+	/**
+	 *
+	 */
 	private function _convertUserGroupAccessStringToInt($ps_name) {
 		switch($ps_name) {
 			case 'read':
@@ -2365,6 +2365,9 @@ class Installer {
 		return $this->logging_status;
 	}
 	# --------------------------------------------------
+	/**
+	 *
+	 */
 	protected function logStatus($ps_msg) {
 		if($this->loggingStatus()) {
 			$this->log->logInfo($ps_msg);

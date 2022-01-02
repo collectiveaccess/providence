@@ -84,6 +84,7 @@ class XMLProfileParser extends BaseProfileParser {
 		$this->processDisplays();
 		$this->processSearchForms();
 		$this->processMetadataDictionary();
+		$this->processMetadataAlerts();
 		$this->processRoles();
 		$this->processGroups();
 		$this->processLogins();
@@ -210,7 +211,7 @@ class XMLProfileParser extends BaseProfileParser {
 	public function processLocales(?array $options=null) : bool {
 		$locale_list = [];
 		if($this->base && $this->base->locales) { $locale_list[] = $this->base->locales->children(); }
-		$locale_list[] = $this->xml->locales->children();
+		if($this->xml->locales) { $locale_list[] = $this->xml->locales->children(); }
 		
 		$this->data['locales'] = [];
 		foreach($locale_list as $locales) {
@@ -232,6 +233,7 @@ class XMLProfileParser extends BaseProfileParser {
 				];
 			}
 		}
+		
 		return true;
 	}
 	# --------------------------------------------------
@@ -241,7 +243,7 @@ class XMLProfileParser extends BaseProfileParser {
 	public function processLists($f_callback=null) {
 		$lists_list = [];
 		if($this->base && $this->base->lists) { $lists_list[] = $this->base->lists->children(); }
-		$lists_list[] = $this->xml->lists->children();
+		if($this->xml->lists) { $lists_list[] = $this->xml->lists->children(); }
 	
 		$this->data['lists'] = [];
 		foreach($lists_list as $lists) {
@@ -267,6 +269,7 @@ class XMLProfileParser extends BaseProfileParser {
 				];
 			}
 		}
+		
 		return true;
 	}
 	# --------------------------------------------------
@@ -329,7 +332,7 @@ class XMLProfileParser extends BaseProfileParser {
 	public function processMetadataElementSets($f_callback=null) {
 		$elements_list = [];
 		if($this->base && $this->base->elementSets) { $elements_list[] = $this->base->elementSets->children(); }
-		$elements_list[] = $this->xml->elementSets->children();
+		if($this->xml->elementSets) { $elements_list[] = $this->xml->elementSets->children(); }
 	
 		$this->data['metadataElements'] = [];
 		$acc = [];
@@ -337,6 +340,7 @@ class XMLProfileParser extends BaseProfileParser {
 			$acc = array_merge($acc, $this->processMetadataElements($elements));
 		}
 		$this->data['metadataElements'] = $acc;
+		
 		return true;
 	}
 	# --------------------------------------------------
@@ -399,6 +403,7 @@ class XMLProfileParser extends BaseProfileParser {
 				'typeRestrictions' => $type_restrictions
 			];
 		}
+		
 		return $element_list;
 	}
 	# --------------------------------------------------
@@ -408,7 +413,7 @@ class XMLProfileParser extends BaseProfileParser {
 	public function processRelationshipTypes() {
 		$relationship_types_list = [];
 		if($this->base && $this->base->relationshipTypes) { $relationship_types_list[] = $this->base->relationshipTypes->children(); }
-		$relationship_types_list[] = $this->xml->relationshipTypes->children();
+		if($this->xml->relationshipTypes) { $relationship_types_list[] = $this->xml->relationshipTypes->children(); }
 
 		$types_by_table = [];
 		foreach($relationship_types_list as $relationship_types) {
@@ -422,6 +427,7 @@ class XMLProfileParser extends BaseProfileParser {
 			}
 		}
 		$this->data['relationshipTypes'] = $types_by_table;
+		
 		return true;
 	}
 	# --------------------------------------------------
@@ -461,6 +467,7 @@ class XMLProfileParser extends BaseProfileParser {
 				'types' => $sub_types
 			];
 		}
+		
 		return $type_list;
 	}
 	# --------------------------------------------------
@@ -470,7 +477,7 @@ class XMLProfileParser extends BaseProfileParser {
 	public function processUIs($f_callback=null) {
 		$ui_list = [];
 		if($this->base && $this->base->userInterfaces) { $ui_list[] = $this->base->userInterfaces->children(); }
-		$ui_list[] = $this->xml->userInterfaces->children();
+		if($this->xml->userInterfaces) { $ui_list[] = $this->xml->userInterfaces->children(); }
 	
 		$this->data['userInterfaces'] = [];
 		foreach($ui_list as $uis) {
@@ -507,6 +514,7 @@ class XMLProfileParser extends BaseProfileParser {
 				];
 			}
 		}
+		
 		return true;
 	}
 	# --------------------------------------------------
@@ -586,7 +594,7 @@ class XMLProfileParser extends BaseProfileParser {
 	public function processLogins($f_callback=null) {
 		$login_list = [];
 		if($this->base && $this->base->logins) { $login_list[] = $this->base->logins->children(); }
-		$login_list[] = $this->xml->logins->children();
+		if($this->xml->logins) { $login_list[] = $this->xml->logins->children(); }
 	
 		$this->data['logins'] = [];
 		foreach($login_list as $logins) {
@@ -620,6 +628,7 @@ class XMLProfileParser extends BaseProfileParser {
 				];
 			}
 		}
+		
 		return true;
 	}
 	# --------------------------------------------------
@@ -629,7 +638,7 @@ class XMLProfileParser extends BaseProfileParser {
 	public function processDisplays($f_callback=null) {
 		$display_list = [];
 		if($this->base && $this->base->displays) { $display_list[] = $this->base->displays->children(); }
-		$display_list[] = $this->xml->displays->children();
+		if($this->xml->displays) { $display_list[] = $this->xml->displays->children(); }
 	
 		$this->data['displays'] = [];
 		foreach($display_list as $displays) {
@@ -667,6 +676,7 @@ class XMLProfileParser extends BaseProfileParser {
 				];
 			}
 		}
+		
 		return true;
 	}
 	# --------------------------------------------------
@@ -701,8 +711,8 @@ class XMLProfileParser extends BaseProfileParser {
 	 */
 	public function processMetadataDictionary($f_callback=null) {
 		$dict_list = [];
-		if($this->base && $this->base->metadataDictionary) { $display_list[] = $this->base->metadataDictionary->children(); }
-		$dict_list[] = $this->xml->metadataDictionary->children();
+		if($this->base && $this->base->metadataDictionary) { $dict_list[] = $this->base->metadataDictionary->children(); }
+		if($this->xml->metadataDictionary) { $dict_list[] = $this->xml->metadataDictionary->children(); }
 	
 		$this->data['metadataDictionary'] = [];
 		foreach($dict_list as $dict) {
@@ -738,6 +748,7 @@ class XMLProfileParser extends BaseProfileParser {
 				$this->data['metadataDictionary'][] = $data;
 			}
 		}
+		
 		return true;
 	}
 	# --------------------------------------------------
@@ -746,8 +757,8 @@ class XMLProfileParser extends BaseProfileParser {
 	 */
 	public function processRoles($f_callback=null) {
 		$role_list = [];
-		if($this->base && $this->base->roles) { $display_list[] = $this->base->roles->children(); }
-		$role_list[] = $this->xml->roles->children();
+		if($this->base && $this->base->roles) { $role_list[] = $this->base->roles->children(); }
+		if($this->xml->roles) { $role_list[] = $this->xml->roles->children(); }
 	
 		$this->data['roles'] = [];
 		foreach($role_list as $roles) {
@@ -826,6 +837,7 @@ class XMLProfileParser extends BaseProfileParser {
 				$this->data['roles'][$code] = $data;
 			}
 		}
+		
 		return true;
 	}
 	# --------------------------------------------------
@@ -834,8 +846,8 @@ class XMLProfileParser extends BaseProfileParser {
 	 */
 	public function processGroups($f_callback=null) {
 		$group_list = [];
-		if($this->base && $this->base->groups) { $display_list[] = $this->base->groups->children(); }
-		$group_list[] = $this->xml->groups->children();
+		if($this->base && $this->base->groups) { $group_list[] = $this->base->groups->children(); }
+		if($this->xml->groups) { $group_list[] = $this->xml->groups->children(); }
 	
 		$this->data['groups'] = [];
 		foreach($group_list as $groups) {
@@ -864,6 +876,7 @@ class XMLProfileParser extends BaseProfileParser {
 				$this->data['groups'][$code] = $data;
 			}
 		}
+		
 		return true;
 	}
 	# --------------------------------------------------
@@ -872,8 +885,8 @@ class XMLProfileParser extends BaseProfileParser {
 	 */
 	public function processSearchForms($f_callback=null) {
 		$form_list = [];
-		if($this->base && $this->base->searchForms) { $display_list[] = $this->base->searchForms->children(); }
-		$form_list[] = $this->xml->searchForms->children();
+		if($this->base && $this->base->searchForms) { $form_list[] = $this->base->searchForms->children(); }
+		if($this->xml->searchForms) { $form_list[] = $this->xml->searchForms->children(); }
 	
 		$this->data['searchForms'] = [];
 		foreach($form_list as $forms) {
@@ -911,6 +924,7 @@ class XMLProfileParser extends BaseProfileParser {
 				];
 			}
 		}
+		
 		return true;
 	}
 	# --------------------------------------------------
@@ -928,6 +942,77 @@ class XMLProfileParser extends BaseProfileParser {
 			$values[$code] = [
 				'code' => $code,
 				'bundle' => $bundle_name,
+				'settings' => $settings,
+			];
+		}
+
+		return $values;
+	}
+	# --------------------------------------------------
+	/**
+	 *
+	 */
+	public function processMetadataAlerts($f_callback=null) {
+		$alert_list = [];
+		if($this->base && $this->base->metadataAlerts) { $alert_list[] = $this->base->metadataAlerts->children(); }
+		if($this->xml->metadataAlerts) { $alert_list[] = $this->xml->metadataAlerts->children(); }
+	
+		$this->data['metadataAlerts'] = [];
+		foreach($alert_list as $alerts) {
+			foreach($alerts as $alert) {
+				$alert_code = self::getAttribute($alert, "code");
+				$type = self::getAttribute($alert, "type");
+				$deleted = self::getAttribute($alert, "deleted");
+			
+				$labels = self::getLabelsFromXML($alert->labels);
+				
+				$type_restrictions = self::processTypeRestrictionStrings(self::getAttribute($alert, "typeRestrictions"), $include_subtypes);
+				if($alert->typeRestrictions) { 
+					$type_restrictions = array_merge($type_restrictions, self::processTypeRestrictionLists($alert->typeRestrictions));
+				}
+				
+				$settings = $alert->settings ? $this->getSettingsFromXML($alert->settings) : [];
+				
+				$user_access = self::processAccessRestrictions('user', $alert->userAccess);
+				$group_access = self::processAccessRestrictions('group', $alert->groupAccess);
+				$role_access = self::processAccessRestrictions('role', $alert->userAccess);
+			
+				$this->data['metadataAlerts'][$alert_code] = [
+					'labels' => $labels,
+					'code' => $alert_code,
+					'type' => $type,
+					'deleted' => $deleted,
+					'typeRestrictions' => $type_restrictions,
+					'settings' => $settings,
+					'triggers' => $alert->triggers ? $this->processMetadataAlertTriggers($alert->triggers) : [],
+					'userAccess' => $user_access,
+					'groupAccess' => $group_access,
+					'roleAccess' => $role_access
+				];
+			}
+		}
+		
+		return true;
+	}
+	# --------------------------------------------------
+	/**
+	 *
+	 */
+	protected function processMetadataAlertTriggers($triggers) {
+		$values = [];
+		foreach($triggers->children() as $trigger) {
+			$code = self::getAttribute($trigger, "code");
+			$type = self::getAttribute($trigger, "type");
+			$metadata_element = self::getAttribute($trigger, "metadataElement");
+			$metadata_element_filter = self::getAttribute($trigger, "metadataElementFilter");
+			
+			$settings = $trigger->settings ? $this->getSettingsFromXML($trigger->settings) : [];
+			
+			$values[$code] = [
+				'code' => $code,
+				'type' => $type,
+				'metadataElement' => $metadata_element,
+				'metadataElementFilter' => $metadata_element_filter,
 				'settings' => $settings,
 			];
 		}

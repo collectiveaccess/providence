@@ -121,9 +121,9 @@
 			caIncrementProgress($vn_progress, "Setting up hierarchies");
 			$vo_installer->processMiscHierarchicalSetup();
 			
-			// $vn_progress += 2;
-// 			caIncrementProgress($vn_progress, "Processing metadata alerts");
-// 			$vo_installer->processMetadataAlerts();
+			$vn_progress += 2;
+			caIncrementProgress($vn_progress, "Processing metadata alerts");
+			$vo_installer->processMetadataAlerts();
 
 			caIncrementProgress($vn_progress, "Performing post install tasks");
 			$vo_installer->performPostInstallTasks();
