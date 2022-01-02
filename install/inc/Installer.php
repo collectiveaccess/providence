@@ -1836,30 +1836,30 @@ class Installer {
 		return true;
 	}
 	# --------------------------------------------------
-	private function processSearchFormPlacements($t_form, $po_placements) {
-		$va_available_bundles = $t_form->getAvailableBundles();
+	private function processSearchFormPlacements($t_form, $placements) {
+		$available_bundles = $t_form->getAvailableBundles();
 
 		// nuke previous restrictions. there shouldn't be any if we're installing from scratch.
 		// if we're updating, we expect the list of restrictions to include all restrictions!
-		if(sizeof($po_placements->children())) {
+		if(sizeof($placements)) {
 			$this->logStatus(_t('Successfully nuked all placements for form with code %1', $t_form->get('form_code')));
-			$this->db->query('DELETE FROM ca_search_form_placements WHERE form_id=?', $t_form->getPrimaryKey());
+			$this->db->query('DELETE FROM ca_search_form_placements WHERE form_id = ?', $t_form->getPrimaryKey());
 		}
 
-		$vn_i = 1;
-		foreach($po_placements->children() as $vo_placement) {
-			$vs_code = self::getAttribute($vo_placement, "code");
-			$vs_bundle = (string)$vo_placement->bundle;
+		$i = 1;
+		foreach($placements as $placement) {
+			$code = $placement["code"];
+			$bundle = $placement['bundle'];
 
-			$va_settings = $this->_processSettings(null, $vo_placement->settings);
-			$t_form->addPlacement($vs_bundle, $va_settings, $vn_i, array('additional_settings' => $va_available_bundles[$vs_bundle]['settings']));
+			$settings = $this->_processSettings(null, $placement['settings']);
+			$t_form->addPlacement($bundle, $settings, $i, ['additional_settings' => $available_bundles[$bundle]['settings']]);
 			if ($t_form->numErrors()) {
 				$this->addError("There was an error while inserting search form placement {$vs_code}: ".join(" ",$t_form->getErrors()));
 				return false;
 			}
 
-			$this->logStatus(_t('Added bundle placement %1 with code %2 for form with code %3', $vs_bundle, $vs_code, $t_form->get('form_code')));
-			$vn_i++;
+			$this->logStatus(_t('Added bundle placement %1 with code %2 for form with code %3', $bundle, $code, $t_form->get('form_code')));
+			$i++;
 		}
 
 		return true;
