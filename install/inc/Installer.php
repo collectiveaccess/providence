@@ -37,25 +37,25 @@ class Installer {
 	protected $errors;
 	protected $debug;
 	protected $profile_debug = "";
-	# --------------------------------------------------
+	
 	protected $profile_dir;
 	protected $profile_name;
 
 	protected $admin_email;
 	protected $overwrite;
-	# --------------------------------------------------
+	
 	/** @var  bool */
 	protected $logging_status = false;
 	/** @var KLogger */
 	protected $log;
-	# --------------------------------------------------
+	
 	/** @var  SimpleXMLElement */
 	protected $profile;
 	/** @var  SimpleXMLElement */
 	protected $base;
 	/** @var  string */
 	protected $base_name;
-	# --------------------------------------------------
+	
 	/** @var array  */
 	protected $locales;
 	
@@ -63,16 +63,23 @@ class Installer {
 	 * Parsed profile data for insertion
 	 */
 	protected $parsed_data = [];
-	# --------------------------------------------------
+	
 	/**
 	 * @var Db
 	 */
 	protected $db;
-	# --------------------------------------------------
+	
 	/**
 	 * @var array
 	 */
 	protected $metadata_element_deferred_settings_processing = [];
+	
+	/**
+	 * Application configuration
+	 *
+	 * @var Configuration
+	 */
+	protected $config; 
 	# --------------------------------------------------
 	/**
 	 * Constructor
@@ -91,6 +98,8 @@ class Installer {
 		$this->admin_email = $admin_email;
 		$this->overwrite = $overwrite;
 		$this->debug = $debug;
+		
+		$this->config = \Configuration::load();
 
 		$this->locales = [];
 
@@ -293,25 +302,24 @@ class Installer {
 	 *
 	 */
 	public function performPreInstallTasks() {
-		$o_config = \Configuration::load();
 		\CompositeCache::flush(); // avoid stale cache
 
 		// create tmp dir
-		if (!file_exists($o_config->get('taskqueue_tmp_directory'))) {
-			if (!self::createDirectoryPath($o_config->get('taskqueue_tmp_directory'))) {
-				$this->addError("Couldn't create tmp directory at ".$o_config->get('taskqueue_tmp_directory'));
+		if (!file_exists($this->config->get('taskqueue_tmp_directory'))) {
+			if (!self::createDirectoryPath($this->config->get('taskqueue_tmp_directory'))) {
+				$this->addError("Couldn't create tmp directory at ".$this->config->get('taskqueue_tmp_directory'));
 				return false;
 			}
 		} else {
 			// if already exists then remove all contents to avoid stale cache
-			caRemoveDirectory($o_config->get('taskqueue_tmp_directory'), false);
+			caRemoveDirectory($this->config->get('taskqueue_tmp_directory'), false);
 		}
 
 		// Create media directories
 		$o_media_volumes = new \MediaVolumes();
 		$va_media_volumes = $o_media_volumes->getAllVolumeInformation();
 
-		$vs_base_dir = $o_config->get('ca_base_dir');
+		$vs_base_dir = $this->config->get('ca_base_dir');
 		foreach($va_media_volumes as $vs_label => $va_volume_info) {
 			if (preg_match('!^'.$vs_base_dir.'!', $va_volume_info['absolutePath'])) {
 				if (!self::createDirectoryPath($va_volume_info['absolutePath'])) {
@@ -321,7 +329,7 @@ class Installer {
 			}
 		}
 
-		if (($o_config->get('search_engine_plugin') == 'ElasticSearch') && (!$this->isAlreadyInstalled() || (defined('__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__') && __CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__ && $this->overwrite))) {
+		if (($this->config->get('search_engine_plugin') == 'ElasticSearch') && (!$this->isAlreadyInstalled() || (defined('__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__') && __CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__ && $this->overwrite))) {
 			$o_es = new \WLPlugSearchEngineElasticSearch();
 			try {
 				$o_es->truncateIndex();
@@ -362,8 +370,7 @@ class Installer {
 		$o_vars->save();
 
 		// refresh mapping if ElasticSearch is used
-		$o_config = \Configuration::load();
-		if ($o_config->get('search_engine_plugin') == 'ElasticSearch') {
+		if ($this->config->get('search_engine_plugin') == 'ElasticSearch') {
 			$o_es = new \WLPlugSearchEngineElasticSearch();
 			$o_es->refreshMapping(true);
 			\CompositeCache::flush();
@@ -396,8 +403,6 @@ class Installer {
 	 * @return boolean Returns true on success, false if an error occurred
 	 */
 	public function loadSchema($f_callback=null) {
-
-		$vo_config = \Configuration::load();
 		if (defined('__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__') && __CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__ && ($this->overwrite)) {
 			$this->db->query('DROP DATABASE IF EXISTS `'.__CA_DB_DATABASE__.'`');
 			$this->db->query('CREATE DATABASE `'.__CA_DB_DATABASE__.'`');
@@ -1507,8 +1512,6 @@ class Installer {
 	 *
 	 */
 	public function processDisplays() {
-		$o_config = \Configuration::load();
-		
 		$displays = $this->parsed_data['displays'];
 
 		if(sizeof($displays) == 0) { return true; }
@@ -1521,7 +1524,7 @@ class Installer {
 
 			$this->logStatus(_t('Processing display with code %1', $display_code));
 
-			if ($o_config->get("{$table}_disable")) { continue; }
+			if ($this->config->get("{$table}_disable")) { continue; }
 
 			if(!($t_display = \ca_bundle_displays::find(['display_code' => $display_code], ['returnAs' => 'firstModelInstance']))) {
 				$this->logStatus(_t('Display with code %1 is new', $display_code));
@@ -1690,7 +1693,6 @@ class Installer {
 	 *
 	 */
 	public function processSearchForms() {
-		$o_config = \Configuration::load();
 		
 		$forms = $this->parsed_data['searchForms'];
 
@@ -1702,7 +1704,7 @@ class Installer {
 			$table = $form["type"];
 			if (!($t_instance = \Datamodel::getInstanceByTableName($table, true))) { continue; }
 			if (method_exists($t_instance, 'getTypeList') && !sizeof($t_instance->getTypeList())) { continue; } // no types configured
-			if ($o_config->get($table.'_disable')) { continue; }
+			if ($this->config->get($table.'_disable')) { continue; }
 			$table_num = (int)\Datamodel::getTableNum($table);
 
 			$this->logStatus(_t('Processing search form with code %1', $form_code));
@@ -1992,8 +1994,6 @@ class Installer {
 	 *
 	 */
 	public function processMetadataAlerts() {
-		$o_config = \Configuration::load();
-		
 		$alerts = $this->parsed_data['metadataAlerts'];
 
 		if(sizeof($alerts) == 0) { return true; }
@@ -2003,7 +2003,7 @@ class Installer {
 			$table = $alert["type"];
 			if (!($t_instance = \Datamodel::getInstanceByTableName($table, true))) { continue; }
 			if (method_exists($t_instance, 'getTypeList') && !sizeof($t_instance->getTypeList())) { continue; } // no types configured
-			if ($o_config->get($table.'_disable')) { continue; }
+			if ($this->config->get($table.'_disable')) { continue; }
 			$table_num = (int)\Datamodel::getTableNum($table);
 
 			$this->logStatus(_t('Processing metadata alert with code %1', $alert_code));
@@ -2150,7 +2150,7 @@ class Installer {
 		}
 
 		$i = 0;
-		foreach($triggers->children() as $trigger) {
+		foreach($triggers as $trigger) {
 			$code = $trigger["code"];
 			$type = $trigger["type"];
 			$metadata_element = $trigger["metadataElement"];
