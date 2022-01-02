@@ -84,13 +84,13 @@ class Installer {
 	/**
 	 * Constructor
 	 *
-	 * @param string $ps_profile_dir path to a directory containing profiles and XML schema
-	 * @param string $ps_profile_name of the profile, as in <$ps_profile_dir>/<$ps_profile_name>.xml
-	 * @param string $ps_admin_email e-mail address for the initial administrator account
-	 * @param boolean $pb_overwrite overwrite existing install? optional, defaults to false
-	 * @param boolean $pb_debug enable or disable debugging mode
-	 * @param boolean $pb_skip_load dont actually load profile (useful if you want to fill in some gaps by hand)
-	 * @param boolean $pb_log_output log output using Klogger
+	 * @param string $profile_dir path to a directory containing profiles and XML schema
+	 * @param string $profile_name of the profile, as in <$profile_dir>/<$profile_name>.xml
+	 * @param string $admin_email e-mail address for the initial administrator account
+	 * @param boolean $overwrite overwrite existing install? optional, defaults to false
+	 * @param boolean $debug enable or disable debugging mode
+	 * @param boolean $skip_load dont actually load profile (useful if you want to fill in some gaps by hand)
+	 * @param boolean $log_output log output using Klogger
 	 */
 	public function  __construct(string $directory, string $profile, ?string $admin_email=null, ?bool $overwrite=false, ?bool $debug=false, ?bool $skip_load=false, ?bool $log_output=false) {
 		$this->profile_dir = $directory;
@@ -188,9 +188,9 @@ class Installer {
 	/**
 	 *
 	 */
-	protected function addError($ps_error) {
-		$this->logStatus($ps_error);
-		$this->errors[] = $ps_error;
+	protected function addError($error) {
+		$this->logStatus($error);
+		$this->errors[] = $error;
 	}
 	# --------------------------------------------------
 	/**
@@ -227,9 +227,9 @@ class Installer {
 	/**
 	 *
 	 */
-	private static function createDirectoryPath($ps_path) {
-		if (!file_exists($ps_path)) {
-			if (!@mkdir($ps_path, 0777, true)) {
+	private static function createDirectoryPath($path) {
+		if (!file_exists($path)) {
+			if (!@mkdir($path, 0777, true)) {
 				return false;
 			} else {
 				return true;
@@ -243,7 +243,7 @@ class Installer {
 	 * 
 	 *
 	 * @param LabelableBaseModelWithAttributes $t_instance
-	 * @param bool $pb_force_preferred
+	 * @param bool $force_preferred
 	 * @return bool
 	 */
 	protected static function addLabels($t_instance, $labels, $force_preferred=false) {
@@ -259,40 +259,40 @@ class Installer {
 			return true; 
 		}
 
-		$va_old_label_ids = array_flip($t_instance->getLabelIDs());
+		$old_label_ids = array_flip($t_instance->getLabelIDs());
 
 		foreach($labels as $label) {
-			$va_label_values = [];
-			$vs_locale = $label["locale"];
-			$vn_locale_id = \ca_locales::codeToID($vs_locale);
+			$label_values = [];
+			$locale = $label["locale"];
+			$locale_id = \ca_locales::codeToID($locale);
 
-			$vb_preferred = $label["preferred"];
-			if($force_preferred || (bool)$vb_preferred || is_null($vb_preferred)) {
-				$vb_preferred = true;
+			$preferred = $label["preferred"];
+			if($force_preferred || (bool)$preferred || is_null($preferred)) {
+				$preferred = true;
 			} else {
-				$vb_preferred = false;
+				$preferred = false;
 			}
 
 			foreach($label as $name => $value) {
-				$va_label_values[$name] = (string) $value;
+				$label_values[$name] = (string) $value;
 			}
-			$va_existing_labels = $vb_preferred ? $t_instance->getPreferredLabels(array($vn_locale_id)) : $t_instance->getNonPreferredLabels(array($vn_locale_id));
+			$existing_labels = $preferred ? $t_instance->getPreferredLabels([$locale_id]) : $t_instance->getNonPreferredLabels([$locale_id]);
 			if(
-				is_array($va_existing_labels) &&
-				(sizeof($va_existing_labels) > 0) &&
-				($vn_label_id = $va_existing_labels[(int)$t_instance->getPrimaryKey()][(int)$vn_locale_id][0]['label_id'])
+				is_array($existing_labels) &&
+				(sizeof($existing_labels) > 0) &&
+				($label_id = $existing_labels[(int)$t_instance->getPrimaryKey()][(int)$locale_id][0]['label_id'])
 			) {
-				$vn_label_id = $t_instance->editLabel($vn_label_id, $va_label_values, $vn_locale_id, null, $vb_preferred);
+				$label_id = $t_instance->editLabel($label_id, $label_values, $locale_id, null, $preferred);
 			} else {
-				$vn_label_id = $t_instance->addLabel($va_label_values, $vn_locale_id, false, $vb_preferred);
+				$label_id = $t_instance->addLabel($label_values, $locale_id, false, $preferred);
 			}
 
-			unset($va_old_label_ids[$vn_label_id]);
+			unset($old_label_ids[$label_id]);
 		}
 
 		// remove all old labels that are not present in the XML!
-		foreach($va_old_label_ids as $vn_label_id => $_) {
-			$t_instance->removeLabel($vn_label_id);
+		foreach($old_label_ids as $label_id => $_) {
+			$t_instance->removeLabel($label_id);
 		}
 
 		return true;
@@ -317,13 +317,13 @@ class Installer {
 
 		// Create media directories
 		$o_media_volumes = new \MediaVolumes();
-		$va_media_volumes = $o_media_volumes->getAllVolumeInformation();
+		$media_volumes = $o_media_volumes->getAllVolumeInformation();
 
-		$vs_base_dir = $this->config->get('ca_base_dir');
-		foreach($va_media_volumes as $vs_label => $va_volume_info) {
-			if (preg_match('!^'.$vs_base_dir.'!', $va_volume_info['absolutePath'])) {
-				if (!self::createDirectoryPath($va_volume_info['absolutePath'])) {
-					$this->addError("Couldn't create directory for media volume {$vs_label}");
+		$base_dir = $this->config->get('ca_base_dir');
+		foreach($media_volumes as $label => $volume_info) {
+			if (preg_match('!^'.$base_dir.'!', $volume_info['absolutePath'])) {
+				if (!self::createDirectoryPath($volume_info['absolutePath'])) {
+					$this->addError("Couldn't create directory for media volume {$label}");
 					return false;
 				}
 			}
@@ -348,16 +348,16 @@ class Installer {
 	    // process metadata element settings that couldn't be processed during install
 	    // (Eg. those for hideIfSelected_*)
 	    if (sizeof($this->metadata_element_deferred_settings_processing)) {
-	        foreach($this->metadata_element_deferred_settings_processing as $vs_element_code => $va_settings) {
-	            if (!($t_element = \ca_metadata_elements::getInstance($vs_element_code))) { continue; }
-	            $va_available_settings = $t_element->getAvailableSettings();
-	            foreach($va_settings as $vs_setting_name => $va_setting_values) {
-	                if (!isset($va_available_settings[$vs_setting_name])) { continue; }
+	        foreach($this->metadata_element_deferred_settings_processing as $element_code => $settings) {
+	            if (!($t_element = \ca_metadata_elements::getInstance($element_code))) { continue; }
+	            $available_settings = $t_element->getAvailableSettings();
+	            foreach($settings as $setting_name => $setting_values) {
+	                if (!isset($available_settings[$setting_name])) { continue; }
 	                
-	                if (isset($va_available_settings[$vs_setting_name]['multiple']) && $va_available_settings[$vs_setting_name]['multiple']) {
-	                    $t_element->setSetting($vs_setting_name, $va_setting_values);
+	                if (isset($available_settings[$setting_name]['multiple']) && $available_settings[$setting_name]['multiple']) {
+	                    $t_element->setSetting($setting_name, $setting_values);
 	                } else {
-	                    $t_element->setSetting($vs_setting_name, array_shift($va_setting_values));
+	                    $t_element->setSetting($setting_name, array_shift($setting_values));
 	                }
 	            }
 	        }
@@ -414,34 +414,34 @@ class Installer {
 		}
 		
 		// load schema
-		if (!($vs_schema = file_get_contents(__CA_BASE_DIR__."/install/inc/schema_mysql.sql"))) {
+		if (!($schema = file_get_contents(__CA_BASE_DIR__."/install/inc/schema_mysql.sql"))) {
 			throw new \Exception("Could not open schema definition file");
 		}
-		$va_schema_statements = explode(';', $vs_schema);
+		$schema_statements = explode(';', $schema);
 
-		$vn_num_tables = 0;
-		foreach($va_schema_statements as $vs_statement) {
-			if (!trim($vs_statement)) { continue; }
-			if (preg_match('!create table!i', $vs_statement)) {
-				$vn_num_tables++;
+		$num_tables = 0;
+		foreach($schema_statements as $statement) {
+			if (!trim($statement)) { continue; }
+			if (preg_match('!create table!i', $statement)) {
+				$num_tables++;
 			}
 		}
 
-		$vn_i = 0;
-		foreach($va_schema_statements as $vs_statement) {
-			if (!trim($vs_statement)) { continue; }
+		$i = 0;
+		foreach($schema_statements as $statement) {
+			if (!trim($statement)) { continue; }
 
-			if (is_callable($f_callback) && preg_match('!create[ ]+table[ ]+([A-Za-z0-9_]+)!i', $vs_statement, $va_matches)) {
-				$vn_i++;
-				if (file_exists(__CA_MODELS_DIR__.'/'.$va_matches[1].'.php')) {
-					include_once(__CA_MODELS_DIR__.'/'.$va_matches[1].'.php');
-					$vs_table = \BaseModel::$s_ca_models_definitions[$va_matches[1]]['NAME_PLURAL'];
+			if (is_callable($f_callback) && preg_match('!create[ ]+table[ ]+([A-Za-z0-9_]+)!i', $statement, $matches)) {
+				$i++;
+				if (file_exists(__CA_MODELS_DIR__.'/'.$matches[1].'.php')) {
+					include_once(__CA_MODELS_DIR__.'/'.$matches[1].'.php');
+					$table = \BaseModel::$s_ca_models_definitions[$matches[1]]['NAME_PLURAL'];
 				} else {
-					$vs_table = $va_matches[1];
+					$table = $matches[1];
 				}
-				$f_callback($vs_statement, $vs_table, $vn_i, $vn_num_tables);
+				$f_callback($statement, $table, $i, $num_tables);
 			}
-			$this->db->query($vs_statement);
+			$this->db->query($statement);
 			if ($this->db->numErrors()) {
 				throw new \Exception("Error while loading the database schema: ".join("; ",$this->db->getErrors()));
 			}
@@ -459,8 +459,8 @@ class Installer {
 		$t_locale = new \ca_locales();
 		// Find any existing locales
 		$locales = $t_locale->getLocaleList(array('index_by_code' => true));
-		foreach($locales as $vs_code => $va_locale) {
-			$this->locales[$vs_code] = $va_locale['locale_id'];
+		foreach($locales as $code => $locale) {
+			$this->locales[$code] = $locale['locale_id'];
 		}
 		
 		$locales = $this->parsed_data['locales'];
@@ -539,7 +539,7 @@ class Installer {
 			}
 
 			if (is_callable($f_callback)) {
-				$vn_i++;
+				$i++;
 
 				$f_callback($list_code, $i, $num_lists);
 			}
@@ -562,7 +562,7 @@ class Installer {
 				
 				$this->addLabels($t_list, $list['labels']);
 				if ($t_list->numErrors()) {
-					$this->addError("There was an error while inserting list label for {$vs_list_code}: ".join(" ",$t_list->getErrors()));
+					$this->addError("There was an error while inserting list label for {$list_code}: ".join(" ",$t_list->getErrors()));
 				}
 				if($list['items']) {
 					if(!$this->processListItems($t_list, $list['items'], null)) {
@@ -577,8 +577,8 @@ class Installer {
 	# --------------------------------------------------
 	/**
 	 * @param $t_list ca_lists
-	 * @param $po_items SimpleXMLElement
-	 * @param $pn_parent_id int
+	 * @param $items SimpleXMLElement
+	 * @param $parent_id int
 	 * @return bool
 	 */
 	protected  function processListItems($t_list, $items, $parent_id) {
@@ -616,7 +616,7 @@ class Installer {
 				$t_item = $t_list->editItem($item_id, $item_value, $enabled, $default, $parent_id, $item_idno, '', (int)$status, (int)$access, (int)$rank, $color);
 			} else {
 				$this->logStatus(_t('List item with idno %1 is a new item', $item_idno));
-				if ($vb_deleted) {
+				if ($deleted) {
 					continue;
 				} else {
 					$t_item = $t_list->addItem($item_value, $enabled, $default, $parent_id, $type_id, $item_idno, '', (int)$status, (int)$access, (int)$rank, $color);
@@ -655,10 +655,6 @@ class Installer {
 	 *
 	 */
 	public function processMetadataElements() {
-		require_once(__CA_MODELS_DIR__."/ca_lists.php");
-		require_once(__CA_MODELS_DIR__."/ca_list_items.php");
-		require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
-
 		$t_rel_types = new \ca_relationship_types();
 		$t_list = new \ca_lists();
 
@@ -723,9 +719,6 @@ class Installer {
 	 *
 	 */
 	private function processMetadataElement($element, $parent_id) {
-		require_once(__CA_MODELS_DIR__."/ca_metadata_elements.php");
-		require_once(__CA_MODELS_DIR__."/ca_lists.php");
-
 		$element_code = $element["code"];
 
 		$this->logStatus(_t('Processing metadata element with code %1', $element_code));
@@ -758,7 +751,7 @@ class Installer {
 		$t_md_element->set('documentation_url',$element['documentationUrl']);
 		$t_md_element->set('datatype', $datatype);
 
-		$vs_list = $element["list"];
+		$list = $element["list"];
 
 		if (isset($list) && $list && $t_lists->load(['list_code' => $list])) {
 			$list_id = $t_lists->getPrimaryKey();
@@ -853,13 +846,6 @@ class Installer {
 	 *
 	 */
 	public function processUserInterfaces() {
-		require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
-		require_once(__CA_MODELS_DIR__."/ca_editor_ui_screens.php");
-		require_once(__CA_MODELS_DIR__."/ca_editor_ui_bundle_placements.php");
-		require_once(__CA_MODELS_DIR__."/ca_lists.php");
-		require_once(__CA_MODELS_DIR__."/ca_list_items.php");
-		require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
-
 		$o_annotation_type_conf = \Configuration::load(\Configuration::load()->get('annotation_type_config'));
 		$t_placement = new \ca_editor_ui_bundle_placements();
 		$t_list = new \ca_lists();
@@ -923,7 +909,7 @@ class Installer {
 				// nuke previous restrictions. there shouldn't be any if we're installing from scratch.
 				// if we're updating, we expect the list of restrictions to include all restrictions!
 				if(sizeof($ui['typeRestrictions'])) {
-					$this->db->query('DELETE FROM ca_editor_ui_type_restrictions WHERE ui_id=?', $ui_id);
+					$this->db->query('DELETE FROM ca_editor_ui_type_restrictions WHERE ui_id = ?', $ui_id);
 				}
 
 				$this->logStatus(_t('Successfully nuked all type restrictions for user interface with code %1', $ui_code));
@@ -937,7 +923,7 @@ class Installer {
 							$type_id = $t_rel_types->getRelationshipTypeID($t_instance->tableName(), $restriction_type);
 						} elseif($t_instance instanceof \ca_representation_annotations) {
 							// representation annotation -> code is annotation type from annotation_types.conf
-							$type_id = $va_annotation_types[$restriction_type]['typeID'];
+							$type_id = $annotation_types[$restriction_type]['typeID'];
 						} else { // "normal" type restriction -> code is from actual type list
 							$type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
 							$type_id = $t_list->getItemIDFromList($type_list_name, $restriction_type);
@@ -1094,15 +1080,15 @@ class Installer {
 						}
 						
 						foreach($ids as $id) {
-							$o_setting = $placement['settings']['bundleTypeRestrictions'][''][] = $vn_id;
+							$o_setting = $placement['settings']['bundleTypeRestrictions'][''][] = $id;
 						}
 						
-						if ($vs_include_subtypes = (bool)$placement["includeSubtypes"]) {
+						if ($include_subtypes = (bool)$placement["includeSubtypes"]) {
 							$o_setting = $placement['settings']['bundleTypeRestrictionsIncludeSubtypes'][''][] = 1;
 						}
 					}
 					
-					$va_settings = $this->_processSettings(null, $placement['settings'], ['settingsInfo' => array_merge($t_placement->getAvailableSettings(), is_array($available_bundles[$bundle]['settings']) ? $available_bundles[$bundle]['settings'] : [])]);
+					$settings = $this->_processSettings(null, $placement['settings'], ['settingsInfo' => array_merge($t_placement->getAvailableSettings(), is_array($available_bundles[$bundle]['settings']) ? $available_bundles[$bundle]['settings'] : [])]);
 					$this->logStatus(_t('Adding bundle %1 with code %2 for screen with code %3 and user interface with code %4', $bundle, $placement_code, $screen_idno, $ui_code));
 
 					if (!$t_ui_screens->addPlacement($bundle, $placement_code, $settings, null, ['additional_settings' => $available_bundles[$bundle]['settings']])) {
@@ -1129,7 +1115,7 @@ class Installer {
 								$type_id = $t_rel_types->getRelationshipTypeID($t_instance->tableName(),$restriction_type);
 							} elseif($t_instance instanceof \ca_representation_annotations) {
 								// representation annotation -> code is annotation type from annotation_types.conf
-								$type_id = $va_annotation_types[$vs_restriction_type]['typeID'];
+								$type_id = $annotation_types[$restriction_type]['typeID'];
 							} else { // "normal" type restriction -> code is from actual type list
 								$type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
 								$type_id = $t_list->getItemIDFromList($type_list_name, $restriction_type);
@@ -1217,8 +1203,6 @@ class Installer {
 	 *
 	 */
 	public function processRelationshipTypes() {
-		require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
-
 		$relationship_types = $this->parsed_data['relationshipTypes'];
 		
 		$qr_lists = $this->db->query("SELECT * FROM ca_lists");
@@ -1274,7 +1258,7 @@ class Installer {
 			}
 
 			if ($t_rel_type->numErrors()) {
-				$this->addError("Errors inserting relationship root for {$vs_table}: ".join("; ",$t_rel_type->getErrors()));
+				$this->addError("Errors inserting relationship root for {$rel_table}: ".join("; ",$t_rel_type->getErrors()));
 				return false;
 			}
 
@@ -1328,7 +1312,7 @@ class Installer {
 			$t_rel_type->set('parent_id', $parent_id);
 			$t_rel_type->set('is_default', $default ? 1 : 0);
 
-			if ($vn_rank > 0) {
+			if ($rank > 0) {
 				$t_rel_type->set("rank", $rank);
 			} else {
 				$t_rel_type->set("rank", $rank_default);
@@ -1342,10 +1326,10 @@ class Installer {
 
 			// As of February 2017 "typeRestrictionLeft" is preferred over "subTypeLeft"
 			if(
-				($vs_left_subtype_code = $type["typeRestrictionLeft"])
+				($left_subtype_code = $type["typeRestrictionLeft"])
 			) {
 				$t_obj = \Datamodel::getInstance($left_table);
-				$vs_list_code = $t_obj->getFieldListCode($t_obj->getTypeFieldName());
+				$list_code = $t_obj->getFieldListCode($t_obj->getTypeFieldName());
 
 				$this->logStatus(_t('Adding left type restriction %1 for relationship type with code %2', $left_subtype_code, $type_code));
 
@@ -1362,7 +1346,7 @@ class Installer {
 			}
 			
 			if(
-				($vs_right_subtype_code = $type["typeRestrictionRight"])
+				($right_subtype_code = $type["typeRestrictionRight"])
 			) {
 				$t_obj = \Datamodel::getInstance($right_table);
 				$list_code = $t_obj->getFieldListCode($t_obj->getTypeFieldName());
@@ -1683,7 +1667,7 @@ class Installer {
 			}
 
 			$this->logStatus(_t('Added bundle placement %1 with code %2 for display with code %3', $bundle, $code, $t_display->get('display_code')));
-			$vn_i++;
+			$i++;
 		}
 
 		return true;
@@ -1861,7 +1845,7 @@ class Installer {
 			$settings = $this->_processSettings(null, $placement['settings']);
 			$t_form->addPlacement($bundle, $settings, $i, ['additional_settings' => $available_bundles[$bundle]['settings']]);
 			if ($t_form->numErrors()) {
-				$this->addError("There was an error while inserting search form placement {$vs_code}: ".join(" ",$t_form->getErrors()));
+				$this->addError("There was an error while inserting search form placement {$code}: ".join(" ",$t_form->getErrors()));
 				return false;
 			}
 
@@ -1916,15 +1900,13 @@ class Installer {
 					$t_group->set('parent_id', null);
 					$t_group->insert();
 				}
-
-				$va_roles = [];
-
+				
 				if($group['roles']) {
 					$t_group->addRoles($group['roles']);
 				}
 
 				if ($t_group->numErrors()) {
-					$this->addError("Errors inserting user group {$vs_group_code}: ".join("; ",$t_group->getErrors()));
+					$this->addError("Errors inserting user group {$group_code}: ".join("; ",$t_group->getErrors()));
 					return false;
 				}
 			}
@@ -2214,8 +2196,6 @@ class Installer {
 	 *
 	 */
 	public function processMiscHierarchicalSetup() {
-		require_once(__CA_MODELS_DIR__."/ca_storage_locations.php");
-
 		#
 		# Create roots for storage locations hierarchies
 		#
@@ -2235,10 +2215,10 @@ class Installer {
 	 */
 	public function createAdminAccount() {
 
-		$ps_password = caGenerateRandomPassword(8);
+		$password = caGenerateRandomPassword(8);
 		$t_user = new \ca_users();
 		$t_user->set("user_name", 'administrator');
-		$t_user->set("password", $ps_password);
+		$t_user->set("password", $password);
 		$t_user->set("email", $this->admin_email);
 		$t_user->set("fname", 'CollectiveAccess');
 		$t_user->set("lname", 'Administrator');
@@ -2256,13 +2236,13 @@ class Installer {
 			return false;
 		}
 
-		return $ps_password;
+		return $password;
 	}
 	# --------------------------------------------------
 	/**
 	 *
 	 */
-	private function _processSettings($pt_instance, $settings, $options=null) {
+	private function _processSettings($t_instance, $settings, $options=null) {
 		$settings_list = [];
 		
 		$settings_info = caGetOption('settingsInfo', $options, []);
@@ -2272,19 +2252,19 @@ class Installer {
 				foreach($values_by_locale as $locale => $values) {
 					// some settings like 'label' or 'add_label' have 'locale' as sub-setting
 					if($locale && isset($this->parsed_data['locales'][$locale])) {
-						$locale_id = $this->locales[$vs_locale];
+						$locale_id = $this->locales[$locale];
 					} else {
 						$locale_id = null;
 					}
 
 					foreach($values as $setting_value) {
 						if (isset($settings_info[$setting_name]) && isset($settings_info[$setting_name]['deferred']) && $settings_info[$setting_name]['deferred']) {
-							$this->metadata_element_deferred_settings_processing[$pt_instance->get('element_code')][$setting_name][] = $setting_value;
+							$this->metadata_element_deferred_settings_processing[$t_instance->get('element_code')][$setting_name][] = $setting_value;
 							continue;
 						}
 
 						if((strlen($setting_name)>0) && (strlen($setting_value)>0)) { // settings need at least name and value
-							$datatype = (int)$pt_instance ? $pt_instance->get('datatype') : null;
+							$datatype = (int)$t_instance ? $t_instance->get('datatype') : null;
 							if ($setting_name === 'restrictToTypes' && $t_authority_instance = \AuthorityAttributeValue::elementTypeToInstance($datatype)){
 								if ($t_authority_instance instanceof \BaseModelWithAttributes && is_string($setting_value)){
 									$type_id = $t_authority_instance->getTypeIDForCode($setting_value);
@@ -2294,7 +2274,7 @@ class Installer {
 										$this->addError(
 											_t('Failed to lookup type id for type restriction %1 in element %2 as could not retrieve type record. ',
 												$setting_value,
-												$pt_instance->get('element_code')
+												$t_instance->get('element_code')
 											)
 										);
 									}
@@ -2304,7 +2284,7 @@ class Installer {
 								$settings_list[$setting_name][$locale] = $setting_value;
 							} else {
 								// some settings allow multiple values under the same key, for instance restrict_to_types.
-								// in those cases $va_settings[$vs_setting_name] becomes an array of values
+								// in those cases $settings[$setting_name] becomes an array of values
 								if (isset($settings_list[$setting_name]) && (!isset($settings_info[$setting_name]) || ($settings_info[$setting_name]['multiple']))) {
 									if (!is_array($settings_list[$setting_name])) {
 										$settings_list[$setting_name] = array($settings_list[$setting_name]);
@@ -2317,9 +2297,9 @@ class Installer {
 						}
 					}
 
-					if (is_object($pt_instance)) {
+					if (is_object($t_instance)) {
 						foreach($settings_list as $setting_name => $setting_value) {
-							$pt_instance->setSetting($setting_name, $setting_value);
+							$t_instance->setSetting($setting_name, $setting_value);
 						}
 					}
 				}
@@ -2332,8 +2312,8 @@ class Installer {
 	/**
 	 *
 	 */
-	private function _convertACLStringToConstant($ps_name) {
-		switch($ps_name) {
+	private function _convertACLStringToConstant($name) {
+		switch($name) {
 			case 'edit':
 				return __CA_BUNDLE_ACCESS_EDIT__;
 			case 'read':
@@ -2347,8 +2327,8 @@ class Installer {
 	/**
 	 *
 	 */
-	private function _convertUserGroupAccessStringToInt($ps_name) {
-		switch($ps_name) {
+	private function _convertUserGroupAccessStringToInt($name) {
+		switch($name) {
 			case 'read':
 				return 1;
 			case 'edit':
@@ -2368,9 +2348,9 @@ class Installer {
 	/**
 	 *
 	 */
-	protected function logStatus($ps_msg) {
+	protected function logStatus($msg) {
 		if($this->loggingStatus()) {
-			$this->log->logInfo($ps_msg);
+			$this->log->logInfo($msg);
 		}
 	}
 	# --------------------------------------------------
