@@ -83,6 +83,8 @@ class XMLProfileParser extends BaseProfileParser {
 		$this->processUIs();
 		$this->processDisplays();
 		$this->processMetadataDictionary();
+		$this->processRoles();
+		$this->processGroups();
 		$this->processLogins();
 		
 		return $this->data;
@@ -733,6 +735,132 @@ class XMLProfileParser extends BaseProfileParser {
 				}
 			
 				$this->data['metadataDictionary'][] = $data;
+			}
+		}
+		return true;
+	}
+	# --------------------------------------------------
+	/**
+	 *
+	 */
+	public function processRoles($f_callback=null) {
+		$role_list = [];
+		if($this->base && $this->base->roles) { $display_list[] = $this->base->roles->children(); }
+		$role_list[] = $this->xml->roles->children();
+	
+		$this->data['roles'] = [];
+		foreach($role_list as $roles) {
+			foreach($roles as $role) {
+				$code = self::getAttribute($role, "code");
+				$name = (string)$role->name;
+				$description = (string)$role->description;
+				$deleted = self::getAttribute($role, "deleted");
+				
+				
+				$actions = [];
+				if($role->actions) {
+					foreach($role->actions->children() as $action) {
+						$actions[] = trim((string)$action);
+					}
+				}
+				
+				$bundle_level_access_control = [];
+				if($role->bundleLevelAccessControl) {
+					foreach($role->bundleLevelAccessControl->children() as $permission) {
+						$permission_table = self::getAttribute($permission, 'table');
+						$permission_bundle = self::getAttribute($permission, 'bundle');
+						$permission_access = self::getAttribute($permission, 'access');
+
+						$bundle_level_access_control[] = [
+							'table' => $permission_table,
+							'bundle' => $permission_bundle,
+							'access' => $permission_access
+						];
+					}
+				}
+				
+				$type_level_access_control = [];
+				if($role->typeLevelAccessControl) {
+					foreach($role->typeLevelAccessControl->children() as $permission) {
+						$permission_table = self::getAttribute($permission, 'table');
+						$permission_bundle = self::getAttribute($permission, 'type');
+						$permission_access = self::getAttribute($permission, 'access');
+
+						$type_level_access_control[] = [
+							'table' => $permission_table,
+							'bundle' => $permission_bundle,
+							'access' => $permission_access
+						];
+					}
+				}
+				
+				$source_level_access_control = [];
+				if($role->sourceLevelAccessControl) {
+					foreach($role->sourceLevelAccessControl->children() as $permission) {
+						$permission_table = self::getAttribute($permission, 'table');
+						$permission_bundle = self::getAttribute($permission, 'source');
+						$permission_access = self::getAttribute($permission, 'access');
+						$permission_default = self::getAttribute($permission, 'default');
+
+						$source_level_access_control[] = [
+							'table' => $permission_table,
+							'bundle' => $permission_bundle,
+							'access' => $permission_access,
+							'default' => $permission_default
+						];
+					}
+				}
+				
+				$data = [
+					'code' => $code,
+					'name' => $name,
+					'description' => $description,
+					'actions' => $actions,
+					'deleted' => $deleted,
+					'bundleLevelAccessControl' => $bundle_level_access_control,
+					'typeLevelAccessControl' => $type_level_access_control,
+					'sourceLevelAccessControl' => $source_level_access_control
+				];
+			
+				$this->data['roles'][$code] = $data;
+			}
+		}
+		return true;
+	}
+	# --------------------------------------------------
+	/**
+	 *
+	 */
+	public function processGroups($f_callback=null) {
+		$group_list = [];
+		if($this->base && $this->base->groups) { $display_list[] = $this->base->groups->children(); }
+		$group_list[] = $this->xml->groups->children();
+	
+		$this->data['groups'] = [];
+		foreach($group_list as $groups) {
+			foreach($groups as $group) {
+				$code = self::getAttribute($group, "code");
+				$name = (string)$group->name;
+				$description = (string)$group->description;
+				$deleted = self::getAttribute($group, "deleted");
+				
+				
+				$roles = [];
+				if($group->roles) {
+					foreach($group->roles->children() as $role) {
+						$roles[] = trim((string)$role);
+					}
+				}
+				
+				$data = [
+					'code' => $code,
+					'name' => $name,
+					'description' => $description,
+					'roles' => $roles,
+					'deleted' => $deleted
+				];
+			
+				$this->data['groups'][$code] = $data;
 			}
 		}
 		return true;

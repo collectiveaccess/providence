@@ -92,15 +92,15 @@
 			$vn_progress += 2;
 			caIncrementProgress($vn_progress, "Processing metadata dictionary");
 			$vo_installer->processMetadataDictionary();
-// 
-// 			$vn_progress += 7;
-// 			caIncrementProgress($vn_progress, "Processing access roles");
-// 			$vo_installer->processRoles();
-// 
-// 			$vn_progress += 7;
-// 			caIncrementProgress($vn_progress, "Processing user groups");
-// 			$vo_installer->processGroups();
-// 
+
+			$vn_progress += 7;
+			caIncrementProgress($vn_progress, "Processing access roles");
+			$vo_installer->processRoles();
+
+			$vn_progress += 7;
+			caIncrementProgress($vn_progress, "Processing user groups");
+			$vo_installer->processGroups();
+
 			$vn_progress += 2;
 			caIncrementProgress($vn_progress, "Creating logins");
 			$va_login_info = $vo_installer->processLogins();

@@ -1402,57 +1402,34 @@ class Installer {
 	}
 	# --------------------------------------------------
 	public function processRoles() {
-		require_once(__CA_MODELS_DIR__."/ca_user_roles.php");
-		$va_roles = [];
-		if($this->base_name) { // "merge" profile and its base
+		$roles = $this->parsed_data['roles'];
+		
+		foreach($roles as $role_code => $role) {
+			$this->logStatus(_t('Processing user role with code %1', $role_code));
 
-			if($this->base->roles) {
-				foreach($this->base->roles->children() as $vo_role) {
-					$va_roles[self::getAttribute($vo_role, "code")] = $vo_role;
-				}
-			}
-			if($this->profile->roles) {
-				foreach($this->profile->roles->children() as $vo_role) {
-					$va_roles[self::getAttribute($vo_role, "code")] = $vo_role;
-				}
-			}
-		} else {
-			if($this->profile->roles) {
-				foreach($this->profile->roles->children() as $vo_role) {
-					$va_roles[self::getAttribute($vo_role, "code")] = $vo_role;
-				}
-			}
-		}
-
-		foreach($va_roles as $vs_role_code => $vo_role) {
-			$this->logStatus(_t('Processing user role with code %1', $vs_role_code));
-
-			if(!($t_role = \ca_user_roles::find(array('code' => (string)$vs_role_code), array('returnAs' => 'firstModelInstance')))) {
-				$this->logStatus(_t('User role with code %1 is new', $vs_role_code));
+			if(!($t_role = \ca_user_roles::find(array('code' => (string)$role_code), ['returnAs' => 'firstModelInstance']))) {
+				$this->logStatus(_t('User role with code %1 is new', $role_code));
 				$t_role = new \ca_user_roles();
 			} else {
-				$this->logStatus(_t('User role with code %1 already exists', $vs_role_code));
+				$this->logStatus(_t('User role with code %1 already exists', $role_code));
 			}
 
-			if(self::getAttribute($vo_role, "deleted") && $t_role->getPrimaryKey()) {
-				$this->logStatus(_t('Deleting user role with code %1', $vs_role_code));
+			if($role["deleted"] && $t_role->getPrimaryKey()) {
+				$this->logStatus(_t('Deleting user role with code %1', $role_code));
 				$t_role->delete(true);
 				continue;
 			}
 
-			$t_role->set('name', trim((string) $vo_role->name));
-			$t_role->set('description', trim((string) $vo_role->description));
-			$t_role->set('code', $vs_role_code);
+			$t_role->set('name', $role['name']);
+			$t_role->set('description', $role['description']);
+			$t_role->set('code', $role_code);
 
 			// add actions
-			$va_actions = [];
-			if($vo_role->actions) {
-				foreach($vo_role->actions->children() as $vo_action) {
-					$va_actions[] = trim((string) $vo_action);
-				}
-				$this->logStatus(_t('Role actions for user role with code %1 are: %2', $vs_role_code, join(',', $va_actions)));
+			if(is_array($role['actions']) && sizeof($role['actions'])) {
+				$t_role->setRoleActions($role['actions']);
+				$this->logStatus(_t('Role actions for user role with code %1 are: %2', $role_code, join(',', $role['actions'])));
 			}
-			$t_role->setRoleActions($va_actions);
+			
 			if($t_role->getPrimaryKey()) {
 				$t_role->update();
 			} else {
@@ -1460,76 +1437,73 @@ class Installer {
 			}
 
 			if ($t_role->numErrors()) {
-				$this->addError("Errors inserting access role {$vs_role_code}: ".join("; ",$t_role->getErrors()));
+				$this->addError("Errors inserting access role {$role_code}: ".join("; ",$t_role->getErrors()));
 				return false;
 			}
 
-			$this->logStatus(_t('Successfully updated/inserted user role with code %1', $vs_role_code));
+			$this->logStatus(_t('Successfully updated/inserted user role with code %1', $role_code));
 
 			// add bundle level ACL items
-			if($vo_role->bundleLevelAccessControl) {
+			if($role['bundleLevelAccessControl']) {
 				// nuke old items
-				if(sizeof($vo_role->bundleLevelAccessControl->children()) > 0) {
+				if(sizeof($role['bundleLevelAccessControl']) > 0) {
 					$t_role->removeAllBundleAccessSettings();
-					$this->logStatus(_t('Successfully nuked all bundle level access control items for user role with code %1', $vs_role_code));
+					$this->logStatus(_t('Successfully nuked all bundle level access control items for user role with code %1', $role_code));
 				}
 
-				foreach($vo_role->bundleLevelAccessControl->children() as $vo_permission) {
-					$vs_permission_table = self::getAttribute($vo_permission, 'table');
-					$vs_permission_bundle = self::getAttribute($vo_permission, 'bundle');
-					$vn_permission_access = $this->_convertACLStringToConstant(self::getAttribute($vo_permission, 'access'));
+				foreach($role['bundleLevelAccessControl'] as $permission) {
+					$permission_table = $permission['table'];
+					$permission_bundle = $permission['bundle'];
+					$permission_access = $this->_convertACLStringToConstant($permission['access']);
 
-					if(!$t_role->setAccessSettingForBundle($vs_permission_table, $vs_permission_bundle, $vn_permission_access)) {
-						$this->addError("Could not add bundle level access control for table '{$vs_permission_table}' and bundle '{$vs_permission_bundle}'. Check the table and bundle names.");
-						//return false;
+					if(!$t_role->setAccessSettingForBundle($permission_table, $permission_bundle, $permission_access)) {
+						$this->addError("Could not add bundle level access control for table '{$permission_table}' and bundle '{$permission_bundle}'. Check the table and bundle names.");
 					}
 
-					$this->logStatus(_t('Added bundle level access control item for user role with code %1: table %2, bundle %3, access %4', $vs_role_code, $vs_permission_table, $vs_permission_bundle, $vn_permission_access));
+					$this->logStatus(_t('Added bundle level access control item for user role with code %1: table %2, bundle %3, access %4', $role_code, $permission_table, $permission_bundle, $permission_access));
 				}
 			}
 
 			// add type level ACL items
-			if($vo_role->typeLevelAccessControl) {
+			if($role['typeLevelAccessControl']) {
 				// nuke old items
-				if(sizeof($vo_role->typeLevelAccessControl->children()) > 0) {
+				if(sizeof($role['typeLevelAccessControl']) > 0) {
 					$t_role->removeAllTypeAccessSettings();
-					$this->logStatus(_t('Successfully nuked all type level access control items for user role with code %1', $vs_role_code));
+					$this->logStatus(_t('Successfully nuked all type level access control items for user role with code %1', $role_code));
 				}
 
-				foreach($vo_role->typeLevelAccessControl->children() as $vo_permission) {
-					$vs_permission_table = self::getAttribute($vo_permission, 'table');
-					$vs_permission_type = self::getAttribute($vo_permission, 'type');
-					$vn_permission_access = $this->_convertACLStringToConstant(self::getAttribute($vo_permission, 'access'));
+				foreach($role['typeLevelAccessControl'] as $permission) {
+					$permission_table = $permission['table'];
+					$permission_type = $permission['type'];
+					$permission_access = $this->_convertACLStringToConstant($permission['access']);
 
-					if(!$t_role->setAccessSettingForType($vs_permission_table, $vs_permission_type, $vn_permission_access)) {
-						$this->addError("Could not add type level access control for table '{$vs_permission_table}' and type '{$vs_permission_type}'. Check the table name and the type code.");
-						//return false;
+					if(!$t_role->setAccessSettingForType($permission_table, $permission_type, $permission_access)) {
+						$this->addError("Could not add type level access control for table '{$permission_table}' and type '{$permission_type}'. Check the table name and the type code.");
 					}
 
-					$this->logStatus(_t('Added type level access control item for user role with code %1: table %2, type %3, access %4', $vs_role_code, $vs_permission_table, $vs_permission_type, $vn_permission_access));
+					$this->logStatus(_t('Added type level access control item for user role with code %1: table %2, type %3, access %4', $role_code, $permission_table, $permission_type, $permission_access));
 				}
 			}
 
 			// add source level ACL items
-			if($vo_role->sourceLevelAccessControl) {
+			if($role['sourceLevelAccessControl']) {
 				// nuke old items
-				if(sizeof($vo_role->sourceLevelAccessControl->children()) > 0) {
+				if(sizeof($role['sourceLevelAccessControl']) > 0) {
 					$t_role->removeAllSourceAccessSettings();
-					$this->logStatus(_t('Successfully nuked all source level access control items for user role with code %1', $vs_role_code));
+					$this->logStatus(_t('Successfully nuked all source level access control items for user role with code %1', $role_code));
 				}
 
-				foreach($vo_role->sourceLevelAccessControl->children() as $vo_permission) {
-					$vs_permission_table = self::getAttribute($vo_permission, 'table');
-					$vs_permission_source = self::getAttribute($vo_permission, 'source');
-					$vs_permission_default = self::getAttribute($vo_permission, 'default');
-					$vn_permission_access = $this->_convertACLStringToConstant(self::getAttribute($vo_permission, 'access'));
+				foreach($role['sourceLevelAccessControl'] as $permission) {
+					$permission_table = $permission['table'];
+					$permission_source = $permission['source'];
+					$permission_default = $permission['default'];
+					$permission_access = $this->_convertACLStringToConstant($permission['access']);
 
-					if(!$t_role->setAccessSettingForSource($vs_permission_table, $vs_permission_source, $vn_permission_access, (bool)$vs_permission_default)) {
-						$this->addError("Could not add source level access control for table '{$vs_permission_table}' and source '{$vs_permission_source}'. Check the table name and the source code.");
-						//return false;
+					if(!$t_role->setAccessSettingForSource($permission_table, $permission_source, $permission_access, (bool)$permission_default)) {
+						$this->addError("Could not add source level access control for table '{$permission_table}' and source '{$permission_source}'. Check the table name and the source code.");
 					}
 
-					$this->logStatus(_t('Added source level access control item for user role with code %1: table %2, source %3, access %4', $vs_role_code, $vs_permission_table, $vs_permission_source, $vn_permission_access));
+					$this->logStatus(_t('Added source level access control item for user role with code %1: table %2, source %3, access %4', $role_code, $permission_table, $permission_source, $permission_access));
 				}
 			}
 		}
@@ -1928,7 +1902,7 @@ class Installer {
 	public function processGroups() {
 
 		// Create root group
-		$t_user_group = \ca_user_groups::find(array('code' => 'Root', 'parent_id' => null), array('returnAs' => 'firstModelInstance'));
+		$t_user_group = \ca_user_groups::find(['code' => 'Root', 'parent_id' => null], ['returnAs' => 'firstModelInstance']);
 		$t_user_group = $t_user_group ? $t_user_group : new \ca_user_groups();
 
 		$t_user_group->set('name', 'Root');
@@ -1944,56 +1918,35 @@ class Installer {
 			$this->addError("Errors creating root user group 'Root': ".join("; ",$t_user_group->getErrors()));
 			return false;
 		}
-		if($this->base_name) { // "merge" profile and its base
-			$va_groups = [];
-			if($this->base->groups) {
-				foreach($this->base->groups->children() as $vo_group) {
-					$va_groups[self::getAttribute($vo_group, "code")] = $vo_group;
-				}
-			}
-			if($this->profile->groups) {
-				foreach($this->profile->groups->children() as $vo_group) {
-					$va_groups[self::getAttribute($vo_group, "code")] = $vo_group;
-				}
-			}
-		} else {
-			if($this->profile->groups) {
-				foreach($this->profile->groups->children() as $vo_group) {
-					$va_groups[self::getAttribute($vo_group, "code")] = $vo_group;
-				}
-			}
-		}
-
-		if (is_array($va_groups)) {
-			foreach($va_groups as $vs_group_code => $vo_group) {
-				if(!($t_group = \ca_user_groups::find(array('code' => (string)$vs_group_code), array('returnAs' => 'firstModelInstance')))) {
+		
+		$groups = $this->parsed_data['groups'];
+		
+		if (is_array($groups)) {
+			foreach($groups as $group_code => $group) {
+				if(!($t_group = \ca_user_groups::find(['code' => $group_code], ['returnAs' => 'firstModelInstance']))) {
 					$t_group = new \ca_user_groups();
 				}
 
-				if(self::getAttribute($vo_group, "deleted") && $t_group->getPrimaryKey()) {
+				if($group["deleted"] && $t_group->getPrimaryKey()) {
 					$t_group->delete(true);
 					continue;
 				}
 
-				$t_group->set('name', trim((string) $vo_group->name));
-				$t_group->set('description', trim((string) $vo_group->description));
+				$t_group->set('name', trim($group['name']));
+				$t_group->set('description', trim($group['description']));
 				if($t_group->getPrimaryKey()) {
 					$t_group->update();
 				} else {
-					$t_group->set('code', $vs_group_code);
+					$t_group->set('code', $group_code);
 					$t_group->set('parent_id', null);
 					$t_group->insert();
 				}
 
 				$va_roles = [];
 
-				if($vo_group->roles) {
-					foreach($vo_group->roles->children() as $vo_role) {
-						$va_roles[] = trim((string) $vo_role);
-					}
+				if($group['roles']) {
+					$t_group->addRoles($group['roles']);
 				}
-
-				$t_group->addRoles($va_roles);
 
 				if ($t_group->numErrors()) {
 					$this->addError("Errors inserting user group {$vs_group_code}: ".join("; ",$t_group->getErrors()));
