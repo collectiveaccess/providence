@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * install/inc/Parsers/XMLProfileParser.php : install system from XML-format installation profile
+ * install/inc/Parsers/XLSXProfileParser.php : install system from Excel-format system sketch
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -28,13 +28,14 @@
 namespace Installer\Parsers;
 
 require_once(__CA_BASE_DIR__."/install/inc/Parsers/BaseProfileParser.php");
+require_once(__CA_BASE_DIR__."/install/inc/Parsers/XMLProfileParser.php");
 
-class XMLProfileParser extends BaseProfileParser {
+class XLSXProfileParser extends BaseProfileParser {
 	# --------------------------------------------------
 	/**
 	 *
 	 */
-	private $xml = null; 
+	private $xlsx = null; 
 	
 	/**
 	 * Base profile
@@ -66,28 +67,33 @@ class XMLProfileParser extends BaseProfileParser {
 		}
 		
 		if(!$this->validateProfile($directory, $profile)) {
-			throw new \Exception(_t('XML profile validation failed'));
+			throw new \Exception(_t('XLSX profile validation failed'));
 		}
 		if(!$this->loadProfile($directory, $profile)) {
-			throw new \Exception(_t('Could not load XML profile'));
+			throw new \Exception(_t('Could not load XLSX profile'));
 		}
 		
 		$this->directory = $directory;
 		$this->profile_name = $profile;
+					
+		$this->data = [];
+		
+		// Load XML base profile
+		$info = $this->_getProfileInfo($this->xlsx);
+		if($base_profile = caGetOption('base', $info, 'base.xml')) {
+			$this->data = new \Installer\Parsers\XMLProfileParser(__CA_BASE_DIR__.'/install/profiles/xml', $base_profile);
+		}
+				
+		// Build list of worksheets to process
+		$sheet_map = $this->_getSheetMap();
 		
 		// Parse sections
-		$this->processLocales();
-		$this->processLists();
-		$this->processRelationshipTypes();
-		$this->processMetadataElementSets();
-		$this->processUIs();
-		$this->processDisplays();
-		$this->processSearchForms();
-		$this->processMetadataDictionary();
-		$this->processMetadataAlerts();
-		$this->processRoles();
-		$this->processGroups();
-		$this->processLogins();
+		if($sheet_map['locales']) { $this->processLocales($sheet_map['locales']); }
+// 		$this->processLists();
+// 		$this->processRelationshipTypes();
+// 		$this->processMetadataElementSets();
+// 		$this->processUIs();
+// 		$this->processLogins();
 		
 		return $this->data;
 	}
@@ -95,51 +101,52 @@ class XMLProfileParser extends BaseProfileParser {
 	/**
 	 * Return metadata (name, description) for a profile
 	 *
-	 * @param string $profile_path Path to an XML-format profile
+	 * @param string $profile_path Path to an XLSX-format profile
 	 *
 	 * return array Array of data, or null if profile cannot be read.
 	 */
 	public function profileInfo(string $profile_path) : ?array {
-		$reader = new \XMLReader();
-		
-		if (!@$reader->open($profile_path)) {
+		try {
+			return $this->_getProfileInfo(\PhpOffice\PhpSpreadsheet\IOFactory::load($profile_path));
+		} catch (\Exception $e) {
 			return null;
 		}
+		
+		return null;
+	}
+	# --------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getProfileInfo($xlsx) : array {
+		if (!($sheet = $xlsx->getSheetByName('Settings'))) { 
+			$sheet = $xlsx->getSheetByName('settings');
+		}
+		
+		if($sheet) {
+			$rows = $sheet->getRowIterator();
+			$hrow = $sheet->getHighestRow(); 
 
-		$name = $description = $useForConfiguration = $locales = null;
-		while(@$reader->read()) {
-			if ($reader->nodeType === \XMLReader::ELEMENT) {
-				switch($reader->name) {
-					case 'profile':
-						$useForConfiguration = $reader->getAttribute('useForConfiguration');
-						break;
-					case 'profileName':
-						$name = $reader->readOuterXML();
-						break;
-					case 'profileDescription':
-						$description = $reader->readOuterXML();
-						break;
+			$settings = [];
+			for($line=1; $line <= $hrow; $line++) {
+				$n = strtolower($sheet->getCellByColumnAndRow(1, $line)->getValue());
+				$v = $sheet->getCellByColumnAndRow(2, $line)->getValue();
+			
+				switch($n) {
+					case 'name':
+					case 'base':
 					case 'locale':
-						$locale = $reader->getAttribute('lang').'_'.$reader->getAttribute('country');
-						$locales[$locale] = [
-							'lang' => $reader->getAttribute('lang'),
-							'country' => $reader->getAttribute('country'),
-							'locale' => $locale,
-							'display' => $reader->readOuterXML()
-						];
+					case 'description':
+						$settings[$n] = $v;
 						break;
-					case 'lists':
-						break(2);
 				}
 			}
-		}
-		$reader->close();		
-
+		} 
 		return [
-			'useForConfiguration' => $useForConfiguration,
-			'display' => $name,
-			'description' => $description,
-			'locales' => $locales,
+			'useForConfiguration' => 1,
+			'display' => caGetOption('name', $settings, pathinfo($profile_path, PATHINFO_FILENAME)),
+			'description' => caGetOption('description', $settings, ''),
+			'base' => caGetOption('base', $settings, 'base')
 		];
 	}
 	# --------------------------------------------------
@@ -149,18 +156,61 @@ class XMLProfileParser extends BaseProfileParser {
 	public function loadProfile(string $directory, string $profile) : bool {
 		$path = caGetProfilePath($directory, $profile);
 		if(is_readable($path)) {
-			$this->xml = @simplexml_load_file($path);
-			
-			if($base_profile = self::getAttribute($this->xml, "base")) {
-				if($base_path = caGetProfilePath($directory, $base_profile)) {
-					$this->base = @simplexml_load_file($base_path);
+			try {
+				if ($this->xlsx = \PhpOffice\PhpSpreadsheet\IOFactory::load($path)) {
+					return true;
 				}
+			} catch(\Exception $e) {
+				return false;
 			}
-			
-			return true;
-		} else {
-			return false;
 		}
+		return false;
+	}
+	# --------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getSheetMap() {
+		$sheet_names = $this->xlsx->getSheetNames();
+		
+		$sheet_map = [
+			'settings' => null,
+			'locales' => null,
+			'lists' => null,
+			'metadataElements' => null,
+			'relationshipTypes' => null,
+			'uis' => null,
+		];
+		foreach($sheet_names as $i => $s) {
+			switch(strtolower($s)) {
+				case 'settings':
+					$sheet_map['settings'] = $i;
+					break;
+				case 'metadata elements':
+				case 'metadata_elements':
+				case 'metadata':
+				case 'elements':
+					$sheet_map['metadataElements'] = $i;
+					break;
+				case 'lists':
+					$sheet_map['lists'] = $i;
+					break;
+				case 'relationship types':
+				case 'relationship_types':
+				case 'rel types':
+				case 'rel_types':
+					$sheet_map['relationshipTypes'] = $i;
+					break;
+				default:
+					if(preg_match("!^ui_(.*)$!", strtolower($s), $m)) {
+						if(!is_array($sheet_map['uis'])) { $sheet_map['uis'] = []; }
+						$sheet_map['uis'][$m[1]] = $i;
+					}
+					break;
+			}
+		}
+		
+		return $sheet_map;
 	}
 	# --------------------------------------------------
 	/**
@@ -169,33 +219,8 @@ class XMLProfileParser extends BaseProfileParser {
 	private function validateProfile(string $directory, string $profile) {
 		$profile_path = caGetProfilePath($directory, $profile);
 		$base_path = caGetProfilePath($directory, 'base');
-		$schema_path = caGetProfilePath($directory, 'profile.xsd');
 		
-		// simplexml doesn't support validation -> use DOMDocument
-		$vo_profile = new \DOMDocument();
-		@$vo_profile->load($profile_path);
-
-		if($this->base) {
-			$vo_base = new \DOMDocument();
-			$vo_base->load($base_path);
-
-			if($this->debug) {
-				ob_start();
-				$vb_return = $vo_profile->schemaValidate($schema_path) && $vo_base->schemaValidate($schema_path);
-				$this->profile_debug .= ob_get_clean();
-			} else {
-				$vb_return = @$vo_profile->schemaValidate($schema_path) && @$vo_base->schemaValidate($schema_path);
-			}
-		} else {
-			if($this->debug) {
-				ob_start();
-				$vb_return = $vo_profile->schemaValidate($schema_path);
-				$this->profile_debug .= ob_get_clean();
-			} else {
-				$vb_return = @$vo_profile->schemaValidate($schema_path);
-			}
-		}
-
+		$vb_return = true; // TODO: do actual validation
 		if($vb_return) {
 			$this->logStatus(_t('Successfully validated profile %1', $this->profile_name));
 		} else {

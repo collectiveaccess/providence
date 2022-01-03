@@ -173,7 +173,8 @@ class Installer {
 		
 		switch($extension) {
 			case 'xlsx':
-				// noop - not supported yet
+				require_once(__CA_BASE_DIR__.'/install/inc/Parsers/XLSXProfileParser.php');
+				return new \Installer\Parsers\XLSXProfileParser();
 				break;
 			case 'xml':
 				require_once(__CA_BASE_DIR__.'/install/inc/Parsers/XMLProfileParser.php');
