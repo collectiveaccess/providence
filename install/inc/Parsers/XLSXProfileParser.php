@@ -97,7 +97,7 @@ class XLSXProfileParser extends BaseProfileParser {
 		// Parse sections
 		if(isset($sheet_map['locales'])) { $this->processLocales($sheet_map['locales']); }
  		if(isset($sheet_map['lists'])) { $this->processLists($sheet_map['lists']); }
-// 		$this->processRelationshipTypes();
+ 		if(isset($sheet_map['relationshipTypes'])) { $this->processRelationshipTypes($sheet_map['relationshipTypes']); }
  		if(isset($sheet_map['metadataElements'])) { $this->processMetadataElementSets($sheet_map['metadataElements']); }
 // 		$this->processUIs();
  		if(isset($sheet_map['logins'])) { $this->processLogins($sheet_map['logins']); }
@@ -532,66 +532,90 @@ class XLSXProfileParser extends BaseProfileParser {
 		if($sheet) {
 			$hrow = $sheet->getHighestRow(); 
 			
-			for($r=$row; $r <= $hrow; $r++) {
-				$xxx = trim($sheet->getCellByColumnAndRow(1, $r)->getValue());
-			}
-		}
-		
-		
-		$types_by_table = [];
-		foreach($relationship_types_list as $relationship_types) {
-			foreach($relationship_types as $rel_table_config) {
-				$rel_table = self::getAttribute($rel_table_config, "name");
-				$this->logStatus(_t('Processing relationship types for table %1', $rel_table));
-
-				$types = $this->processRelationshipTypesForTable($rel_table_config->types);
+			// Get relationship tables and column boundaries
+			$rel_tables = [];
 			
-				$types_by_table[self::getAttribute($rel_table_config, "name")] = $types;
+			$cur_rel_table = null;
+			$i = 1;
+			foreach($sheet->getRowIterator() as $row) {
+				$ci = $row->getCellIterator();
+				$ci->setIterateOnlyExistingCells(false); // This loops through all cells,
+				foreach ($ci as $cell) {
+					$rel_table = trim($cell->getValue());
+					
+					if ($rel_table) {
+						$cur_rel_table = $rel_table;
+						$rel_tables[$cur_rel_table] = [
+							'table' => $cur_rel_table,
+							'start' => $i,
+							'end' => $i
+						];
+					} elseif($cur_rel_table) {
+						$rel_tables[$cur_rel_table]['end'] = $i;
+					}
+					$i++;
+				}
+				break;
+			}
+			
+			foreach($rel_tables as $rel_table => $info) {
+				if($rt = self::relTableNameFromString($info['table'])) {
+					$rel_tables[$rel_table]['table'] = $rt;
+				} else {
+					// TODO: generate warning
+					//print "WARNING: No table for $rel_table\n";
+					unset($rel_tables[$rel_table]);
+				}
+			}
+			
+			$r = 1;
+			foreach($rel_tables as $table_code => $info) {
+				$name = caCamelOrSnakeToText($info['code'], ['ucFirst' => true]);
+				
+				$this->data['relationshipTypes'][$info['table']] = $this->processRelationshipTypesForTable($sheet, $info, 2, $info['start']);
+				$r++;
 			}
 		}
-		$this->data['relationshipTypes'] = $types_by_table;
-		
 		return true;
 	}
 	# --------------------------------------------------
 	/**
 	 *
 	 */
-	public function processRelationshipTypesForTable($relationship_types) {
-		$type_list = [];
-		foreach($relationship_types->children() as $type) {
-			$type_code = self::getAttribute($type, "code");
-			$default = self::getAttribute($type, "default");
-			$rank = (int)self::getAttribute($type, "rank");
-			$left_restriction = self::getAttribute($type, "typeRestrictionLeft");
-			$right_restriction = self::getAttribute($type, "typeRestrictionRight");
-			$include_subtypes_left = self::getAttribute($type, "includeSubtypesLeft");
-			$include_subtypes_right = self::getAttribute($type, "includeSubtypesRight");
+	protected function processRelationshipTypesForTable($sheet, array $info, int $row, int $col) : array {
+		$values = [];
+		
+		$hrow = $sheet->getHighestRow(); 
+		for($r=$row; $r <= $hrow; $r++) {
+			$val = trim($sheet->getCellByColumnAndRow($col, $r)->getValue());
+			$next_val = trim($sheet->getCellByColumnAndRow($col, $r+1)->getValue());
+			if(!strlen($val)) { continue; }
 			
-
-			$this->logStatus(_t('Processing relationship type with code %1', $type_code));
-
+			$idno = caTextToSnake($val);
+			$name = caCamelOrSnakeToText($val, ['ucFirst' => true]);
+			
+			$name_tmp = preg_split("![ ]*/[ ]*!", $name);
+			
+			$labels = [[
+				'typename' => $name_tmp[0],
+				'typename_reverse' => $name_tmp[1] ?? $name_tmp[0],
+				'locale' => $this->settings['locale']
+			]];
+			
 			$sub_types = [];
-			if ($type->types) {
-				$sub_types = $this->processRelationshipTypesForTable($type->types);
-			}
-			
-			$labels = self::getLabelsFromXML($type->labels);
-			
-			$type_list[] = [
+			if (!$next_val && ($col < $info['end']) && ($subval = trim($sheet->getCellByColumnAndRow($col+1, $r+1)->getValue()))) {
+ 				$sub_types = $this->processRelationshipTypesForTable($sheet, $info, $row+1, $col+1);
+ 			}
+			$values[$idno] = [
+				'code' => $idno,
 				'labels' => $labels,
-				'code' => $type_code,
-				'default' => $default,
-				'rank' => $rank,
-				'typeRestrictionLeft' => $left_restriction,
-				'typeRestrictionRight' => $right_restriction,
-				'includeSubtypesLeft' => $include_subtypes_left,
-				'includeSubtypesRight' => $include_subtypes_right,
+				'settings' => [],
+				'rank' => $col * $r,
 				'types' => $sub_types
 			];
 		}
 		
-		return $type_list;
+		return $values;
 	}
 	# --------------------------------------------------
 	/**
@@ -765,6 +789,107 @@ class XLSXProfileParser extends BaseProfileParser {
 				return false;
 		}
 		return null;
+	}
+	# --------------------------------------------------
+	/**
+	 *
+	 */
+	private static function tableNameFromString(string $string) : ?string {
+		switch(strtolower($string)) {
+			case 'entity':
+			case 'entities':
+			case 'ca_entities':
+				return 'ca_entities';
+			case 'objects':
+			case 'object':
+			case 'ca_entities':
+				return 'ca_objects';
+			case 'object_lot':
+			case 'object_lots':
+			case 'accession':
+			case 'accessions':
+			case 'ca_object_lots':
+				return 'ca_object_lots';
+			case 'collection':
+			case 'collections':
+			case 'ca_collections':
+				return 'ca_collections';
+			case 'place':
+			case 'places':
+			case 'ca_places':
+				return 'ca_places';
+			case 'occurrence':
+			case 'occurrences':
+			case 'ca_occurrences':
+				return 'ca_occurrences';
+			case 'loan':
+			case 'loans':
+			case 'ca_loans':
+				return 'ca_loans';
+			case 'movement':
+			case 'movements':
+			case 'ca_movements':
+				return 'ca_movements';
+			case 'representation':
+			case 'representations':
+			case 'object_representation';
+			case 'object_representations';
+			case 'rep':
+			case 'reps':
+			case 'ca_object_representations':
+				return 'ca_object_representations';
+			case 'list_item':
+			case 'list_items':
+			case 'item';
+			case 'items';
+			case 'vocabulary':
+			case 'vocabularies':
+			case 'ca_list_items':
+				return 'ca_list_items';
+			case 'storage_location':
+			case 'storage_locations':
+			case 'location';
+			case 'locations';
+			case 'storage':
+			case 'loc':
+			case 'locs':
+			case 'ca_storage_locations':
+				return 'ca_storage_locations';
+			case 'tour':
+			case 'tours':
+			case 'ca_tours':
+				return 'ca_tours';
+			case 'tour_stop':
+			case 'tour_stops':
+			case 'stop':
+			case 'stops':
+			case 'ca_tour_stops':
+				return 'ca_tour_stops';
+		}
+		return null;
+	}
+	# --------------------------------------------------
+	/**
+	 *
+	 */
+	private static function relTableNameFromString(string $string) : ?string {
+		if ($t_rel = \Datamodel::getInstance($string, true)) {
+			if ($t_rel->isRelationship()) { 
+				return $string;
+			}
+			return null;
+		}
+		
+		$tmp = explode('_', $string);
+		$table1 = self::tableNameFromString($tmp[0]);
+		$table2 = self::tableNameFromString($tmp[1]);
+		if(!$table1 || !$table2) { return null; }
+		
+		$path = \Datamodel::getPath($table1, $table2);
+		if(!is_array($path) || (sizeof($path) < 2)) { return null; }
+		
+		$path = array_keys($path);
+		return \Datamodel::isRelationship($path[1]) ? $path[1] : null;
 	}
 	# --------------------------------------------------
 }
