@@ -296,6 +296,64 @@ create unique index u_code on ca_user_roles(code);
 
 
 /*==========================================================================*/
+create table if not exists ca_media_upload_sessions (
+   session_id                int unsigned                   not null AUTO_INCREMENT,
+   user_id                   int unsigned                   not null,
+   session_key               char(36)                       not null,
+   created_on                int unsigned                   not null,
+   submitted_on              int unsigned                   null,
+   completed_on              int unsigned                   null,
+   last_activity_on          int unsigned                   null,
+   error_code                smallint unsigned              not null default 0,
+   source                    varchar(30)                    not null default 'UPLOADER',
+   status                    varchar(30)                    not null default 'IN_PROGRESS',
+   
+   num_files		         int unsigned                   not null,
+   total_bytes		         bigint unsigned                not null default 0,
+   metadata		             longtext                       null,
+   
+   primary key (session_id),
+
+   index i_session_id               (session_id),
+   index i_created_on			    (created_on),
+   index i_completed_on			    (completed_on),
+   index i_last_activity_on			(last_activity_on),
+   index i_error_code      	        (error_code),
+   index i_status   	            (status),
+   unique index i_session_key      	(session_key),
+  
+   constraint fk_ca_media_upload_sessions_user_id foreign key (user_id)
+      references ca_users (user_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
+
+/*==========================================================================*/
+create table if not exists ca_media_upload_session_files (
+   file_id                   int unsigned                   not null AUTO_INCREMENT,
+   session_id                int unsigned                   not null,
+   created_on                int unsigned                   not null,
+   completed_on              int unsigned                   null,
+   last_activity_on          int unsigned                   null,
+   filename                  varchar(1024)                  not null,
+   
+   bytes_received		     bigint unsigned                not null default 0,
+   total_bytes		         bigint unsigned                not null default 0,
+   error_code                smallint unsigned              not null default 0,
+   
+   primary key (file_id),
+
+   index i_session_id               (session_id),
+   index i_created_on			    (created_on),
+   index i_completed_on			    (completed_on),
+   index i_last_activity_on			(last_activity_on),
+   index i_error_code      	        (error_code),
+   
+   constraint fk_ca_media_upload_session_files_session_id foreign key (session_id)
+      references ca_media_upload_sessions (session_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
+
+/*==========================================================================*/
 create table ca_entities
 (
    entity_id                      int unsigned               not null AUTO_INCREMENT,
@@ -7613,64 +7671,6 @@ create table if not exists ca_representation_transcriptions (
   
    constraint fk_ca_representation_transcriptions_user_id foreign key (user_id)
       references ca_users (user_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-
-
-/*==========================================================================*/
-create table if not exists ca_media_upload_sessions (
-   session_id                int unsigned                   not null AUTO_INCREMENT,
-   user_id                   int unsigned                   not null,
-   session_key               char(36)                       not null,
-   created_on                int unsigned                   not null,
-   submitted_on              int unsigned                   null,
-   completed_on              int unsigned                   null,
-   last_activity_on          int unsigned                   null,
-   error_code                smallint unsigned              not null default 0,
-   source                    varchar(30)                    not null default 'UPLOADER',
-   status                    varchar(30)                    not null default 'IN_PROGRESS',
-   
-   num_files		         int unsigned                   not null,
-   total_bytes		         bigint unsigned                not null default 0,
-   metadata		             longtext                       null,
-   
-   primary key (session_id),
-
-   index i_session_id               (session_id),
-   index i_created_on			    (created_on),
-   index i_completed_on			    (completed_on),
-   index i_last_activity_on			(last_activity_on),
-   index i_error_code      	        (error_code),
-   index i_status   	            (status),
-   unique index i_session_key      	(session_key),
-  
-   constraint fk_ca_media_upload_sessions_user_id foreign key (user_id)
-      references ca_users (user_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-
-
-/*==========================================================================*/
-create table if not exists ca_media_upload_session_files (
-   file_id                   int unsigned                   not null AUTO_INCREMENT,
-   session_id                int unsigned                   not null,
-   created_on                int unsigned                   not null,
-   completed_on              int unsigned                   null,
-   last_activity_on          int unsigned                   null,
-   filename                  varchar(1024)                  not null,
-   
-   bytes_received		     bigint unsigned                not null default 0,
-   total_bytes		         bigint unsigned                not null default 0,
-   error_code                smallint unsigned              not null default 0,
-   
-   primary key (file_id),
-
-   index i_session_id               (session_id),
-   index i_created_on			    (created_on),
-   index i_completed_on			    (completed_on),
-   index i_last_activity_on			(last_activity_on),
-   index i_error_code      	        (error_code),
-   
-   constraint fk_ca_media_upload_session_files_session_id foreign key (session_id)
-      references ca_media_upload_sessions (session_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
