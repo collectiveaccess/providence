@@ -45,6 +45,11 @@ class XLSXProfileParser extends BaseProfileParser {
 	/**
 	 *
 	 */
+	private $settings = null;
+	
+	/**
+	 *
+	 */
 	protected $data = [];
 	
 	/**
@@ -62,6 +67,7 @@ class XLSXProfileParser extends BaseProfileParser {
 	 *
 	 */
 	public function parse(string $directory, string $profile) : array {
+		$this->settings = null;
 		if(!($profile_path = caGetProfilePath($directory, $profile))) {
 			return null;
 		}
@@ -79,21 +85,22 @@ class XLSXProfileParser extends BaseProfileParser {
 		$this->data = [];
 		
 		// Load XML base profile
-		$info = $this->_getProfileInfo($this->xlsx);
-		if($base_profile = caGetOption('base', $info, 'base.xml')) {
-			$this->data = new \Installer\Parsers\XMLProfileParser(__CA_BASE_DIR__.'/install/profiles/xml', $base_profile);
+		$this->settings = $this->_getProfileInfo($this->xlsx);
+		if($base_profile = caGetOption('base', $this->settings, 'base.xml')) {
+			$base_parser = new \Installer\Parsers\XMLProfileParser();
+			$this->data = $base_parser->parse(__CA_BASE_DIR__.'/install/profiles/xml', $base_profile);
 		}
 				
 		// Build list of worksheets to process
 		$sheet_map = $this->_getSheetMap();
 		
 		// Parse sections
-		if($sheet_map['locales']) { $this->processLocales($sheet_map['locales']); }
-// 		$this->processLists();
+		if(isset($sheet_map['locales'])) { $this->processLocales($sheet_map['locales']); }
+ 		if(isset($sheet_map['lists'])) { $this->processLists($sheet_map['lists']); }
 // 		$this->processRelationshipTypes();
-// 		$this->processMetadataElementSets();
+ 		if(isset($sheet_map['metadataElements'])) { $this->processMetadataElementSets($sheet_map['metadataElements']); }
 // 		$this->processUIs();
-// 		$this->processLogins();
+ 		if(isset($sheet_map['logins'])) { $this->processLogins($sheet_map['logins']); }
 		
 		return $this->data;
 	}
@@ -124,7 +131,6 @@ class XLSXProfileParser extends BaseProfileParser {
 		}
 		
 		if($sheet) {
-			$rows = $sheet->getRowIterator();
 			$hrow = $sheet->getHighestRow(); 
 
 			$settings = [];
@@ -146,7 +152,8 @@ class XLSXProfileParser extends BaseProfileParser {
 			'useForConfiguration' => 1,
 			'display' => caGetOption('name', $settings, pathinfo($profile_path, PATHINFO_FILENAME)),
 			'description' => caGetOption('description', $settings, ''),
-			'base' => caGetOption('base', $settings, 'base')
+			'base' => caGetOption('base', $settings, 'base'),
+			'locale' => caGetOption('locale', $settings, 'en_US'),
 		];
 	}
 	# --------------------------------------------------
@@ -180,11 +187,19 @@ class XLSXProfileParser extends BaseProfileParser {
 			'metadataElements' => null,
 			'relationshipTypes' => null,
 			'uis' => null,
+			'logins' => null,
+			'locales' => null
 		];
 		foreach($sheet_names as $i => $s) {
 			switch(strtolower($s)) {
 				case 'settings':
 					$sheet_map['settings'] = $i;
+					break;
+				case 'locales':
+					$sheet_map['locales'] = $i;
+					break;
+				case 'logins':
+					$sheet_map['logins'] = $i;
 					break;
 				case 'metadata elements':
 				case 'metadata_elements':
@@ -233,67 +248,85 @@ class XLSXProfileParser extends BaseProfileParser {
 	/**
 	 *
 	 */
-	public function processLocales(?array $options=null) : bool {
-		$locale_list = [];
-		if($this->base && $this->base->locales) { $locale_list[] = $this->base->locales->children(); }
-		if($this->xml->locales) { $locale_list[] = $this->xml->locales->children(); }
+	public function processLocales(int $sheet_num) : bool {
+		$sheet = $this->xlsx->getSheet($sheet_num);
 		
-		$this->data['locales'] = [];
-		foreach($locale_list as $locales) {
-			foreach($locales as $locale) {
-				$name = (string)$locale;
-				$language = self::getAttribute($locale, "lang");
-				$dialect = self::getAttribute($locale, "dialect");
-				$country = self::getAttribute($locale, "country");
-				$dont_use_for_cataloguing = (int)self::getAttribute($locale, "dontUseForCataloguing");
-				$locale_code = $dialect ? $language."_".$country.'_'.$dialect : $language."_".$country;
+		if($sheet) {
+			$hrow = $sheet->getHighestRow(); 
 
-			
+			$settings = [];
+			for($line=2; $line <= $hrow; $line++) {
+				$name = strtolower($sheet->getCellByColumnAndRow(1, $line)->getValue());
+				$language = strtolower($sheet->getCellByColumnAndRow(2, $line)->getValue());
+				$country = strtolower($sheet->getCellByColumnAndRow(3, $line)->getValue());
+				$dont_use_for_cataloguing = strtolower($sheet->getCellByColumnAndRow(4, $line)->getValue());
+				
+				$locale_code = "{$language}_{$country}";
 				$this->data['locales'][$locale_code] = [
 					'name' => $name,
 					'language' => $language,
-					'dialect' => $dialect,
+					'dialect' => null,
 					'country' => $country,
 					'dontUseForCataloguing' => $dont_use_for_cataloguing
 				];
 			}
-		}
-		
+		} 
 		return true;
 	}
 	# --------------------------------------------------
 	/**
 	 *
 	 */
-	public function processLists($f_callback=null) {
-		$lists_list = [];
-		if($this->base && $this->base->lists) { $lists_list[] = $this->base->lists->children(); }
-		if($this->xml->lists) { $lists_list[] = $this->xml->lists->children(); }
-	
-		$this->data['lists'] = [];
-		foreach($lists_list as $lists) {
-			foreach($lists as $list) {
-				$list_code = self::getAttribute($list, "code");
-				$deleted = (bool)self::getAttribute($list, "deleted");
-				$hierarchical = (bool)self::getAttribute($list, "hierarchical");
-				$system = (bool)self::getAttribute($list, "system");
-				$voc = (bool)self::getAttribute($list, "vocabulary");
-				$def_sort = (int)self::getAttribute($list, "defaultSort");
+	public function processLists(int $sheet_num) : bool {
+		$sheet = $this->xlsx->getSheet($sheet_num);
+		
+		if($sheet) {
+			$hrow = $sheet->getHighestRow(); 
 			
-				$labels = self::getLabelsFromXML($list->labels);
-
-				$this->data['lists'][$list_code] = [
-					'labels' => $labels,
-					'code' => $list_code,
-					'deleted' => $deleted,
-					'hierarchical' => $hierarchical,
-					'system' => $system,
-					'vocabulary' => $voc,
-					'defaultSort' => $def_sort,
-					'items' => $list->items ? $this->processListItems($list->items) : []
+			// Get list codes and column boundaries
+			$list_codes = [];
+			
+			$cur_code = null;
+			$i = 1;
+			foreach($sheet->getRowIterator() as $row) {
+				$ci = $row->getCellIterator();
+				$ci->setIterateOnlyExistingCells(false); // This loops through all cells,
+				foreach ($ci as $cell) {
+					$code = trim($cell->getValue());
+					
+					if ($code) {
+						$cur_code = $code;
+						$list_codes[$cur_code] = [
+							'code' => $cur_code,
+							'start' => $i,
+							'end' => $i
+						];
+					} elseif($cur_code) {
+						$list_codes[$cur_code]['end'] = $i;
+					}
+					$i++;
+				}
+				break;
+			}
+			
+			foreach($list_codes as $code => $info) {
+				$name = caCamelOrSnakeToText($code, ['ucFirst' => true]);
+				
+				$this->data['lists'][$code] = [
+					'labels' => [[
+						'name' => $name,
+						'locale' => $this->settings['locale'],
+						'preferred' => 1
+					]],
+					'code' => caTextToSnake($code),
+					'hierarchical' => ($info['start'] !== $info['end']),
+					'system' => false,
+					'vocabulary' => false,
+					'defaultSort' => 0,
+					'items' => $this->processListItems($sheet, $info, 2, $info['start'])
 				];
 			}
-		}
+		} 
 		
 		return true;
 	}
@@ -301,70 +334,97 @@ class XLSXProfileParser extends BaseProfileParser {
 	/**
 	 *
 	 */
-	protected function processListItems($items) {
+	protected function processListItems($sheet, array $info, int $row, int $col) : array {
 		$values = [];
-		foreach($items->children() as $item) {
-			$item_value = self::getAttribute($item, "value");
-			$item_idno = self::getAttribute($item, "idno");
-			$type = self::getAttribute($item, "type");
-			$status = self::getAttribute($item, "status");
-			$access = self::getAttribute($item, "access");
-			$rank = self::getAttribute($item, "rank");
-			$enabled = self::getAttribute($item, "enabled");
-			$default = self::getAttribute($item, "default");
-			$color = self::getAttribute($item, "color");
-
-			if (!isset($item_value) || !strlen(trim($item_value))) {
-				$item_value = $item_idno;
-			}
-
-			if (!isset($status)) { $status = 0; }
-			if (!isset($access)) { $access = 0; }
-			if (!isset($rank)) { $rank = 0; }
-
-			$deleted = self::getAttribute($item, "deleted");
-			
-			$labels = self::getLabelsFromXML($item->labels);
 		
-			$settings = $item->settings ? $this->getSettingsFromXML($item->settings) : [];
-				
-			if (isset($item->items)) {
-				$sub_items = $this->processListItems($item->items);
-			}
-			$values[$item_idno] = [
-				'idno' => $item_idno,
-				'value' => $item_value,
+		$hrow = $sheet->getHighestRow(); 
+		for($r=$row; $r <= $hrow; $r++) {
+			$val = trim($sheet->getCellByColumnAndRow($col, $r)->getValue());
+			$next_val = trim($sheet->getCellByColumnAndRow($col, $r+1)->getValue());
+			if(!strlen($val)) { continue; }
+			
+			$idno = caTextToSnake($val);
+			$name = caCamelOrSnakeToText($val, ['ucFirst' => true]);
+			
+			$labels = [[
+				'name_singular' => $name,
+				'name_plural' => $name,
+				'preferred' => 1,
+				'locale' => $this->settings['locale']
+			]];
+			
+			$sub_items = [];
+			if (!$next_val && ($col < $info['end']) && ($subval = trim($sheet->getCellByColumnAndRow($col+1, $r+1)->getValue()))) {
+ 				$sub_items = $this->processListItems($sheet, $info, $row+1, $col+1);
+ 			}
+			$values[$idno] = [
+				'idno' => $idno,
+				'value' => $val,
 				'labels' => $labels,
-				'settings' => $settings,
-				'type' => $type,
-				'status' => $status,
-				'access' => $access,
-				'rank' => $rank,
-				'enabled' => $enabled,
-				'default' => $default,
-				'color' => $color,
-				'deleted' => $deleted,
+				'settings' => [],
+				'type' => null,
+				'status' => 0,
+				'access' => 0,
+				'rank' => $col * $r,
+				'enabled' => 1,
+				'default' => 0,
+				'color' => '',
 				'items' => $sub_items
 			];
 		}
-
+		
 		return $values;
 	}
 	# --------------------------------------------------
 	/**
 	 *
 	 */
-	public function processMetadataElementSets($f_callback=null) {
-		$elements_list = [];
-		if($this->base && $this->base->elementSets) { $elements_list[] = $this->base->elementSets->children(); }
-		if($this->xml->elementSets) { $elements_list[] = $this->xml->elementSets->children(); }
-	
-		$this->data['metadataElements'] = [];
-		$acc = [];
-		foreach($elements_list as $elements) {
-			$acc = array_merge($acc, $this->processMetadataElements($elements));
+	public function processMetadataElementSets(int $sheet_num) : bool {
+		$sheet = $this->xlsx->getSheet($sheet_num);
+		
+		$element_list = [];
+		if($sheet) {
+			$hrow = $sheet->getHighestRow(); 
+			//Element Name	Sub-element Name	Schema	Element Code	Data Type	Data Format	Source List	Restrict to Types	Display Order	Mandatory	Repeatable	Public	Description	Notes										
+			$row = 2;
+			
+			$elements = [];
+			$parent_element_code = null;
+			for($r=$row; $r <= $hrow; $r++) {
+				$element_name = trim($sheet->getCellByColumnAndRow(1, $r)->getValue());
+				$subelement_name = trim($sheet->getCellByColumnAndRow(2, $r)->getValue());
+				$element_code = trim($sheet->getCellByColumnAndRow(4, $r)->getValue());
+				
+				if(!$element_name || !$element_code) { continue; }
+				
+				$e = [
+					'name' => $subelement_name ? $subelement_name : $element_name,
+					'code' =>  $element_code,
+					'schema' =>  trim($sheet->getCellByColumnAndRow(3, $r)->getValue()),
+					'datatype' =>  trim($sheet->getCellByColumnAndRow(5, $r)->getValue()),	// TODO: validate codes
+					'render' => trim($sheet->getCellByColumnAndRow(6, $r)->getValue()),
+					'list' =>  trim($sheet->getCellByColumnAndRow(7, $r)->getValue()),
+					'restrict_to' =>  trim($sheet->getCellByColumnAndRow(8, $r)->getValue()),
+					'display_order' =>  trim($sheet->getCellByColumnAndRow(9, $r)->getValue()),
+					'mandatory' =>  trim($sheet->getCellByColumnAndRow(10, $r)->getValue()),
+					'repeatable' =>  trim($sheet->getCellByColumnAndRow(11, $r)->getValue()),
+					'public' =>  trim($sheet->getCellByColumnAndRow(12, $r)->getValue()),
+					'description' =>  trim($sheet->getCellByColumnAndRow(13, $r)->getValue()),
+					'notes' =>  trim($sheet->getCellByColumnAndRow(14, $r)->getValue())
+				];
+				
+				if(!$subelement_name) { 
+					$parent_element_code = $element_code;
+				}
+				if (!isset($elements[$parent_element_code])) {
+					$elements[$parent_element_code] = $e;
+				} else {
+					$elements[$parent_element_code]['elements'][$element_code] = $e;
+				}
+			}
+			
+			$this->data['metadataElements'] = $this->processMetadataElements($elements);
 		}
-		$this->data['metadataElements'] = $acc;
 		
 		return true;
 	}
@@ -375,53 +435,84 @@ class XLSXProfileParser extends BaseProfileParser {
 	protected function processMetadataElements($elements) {
 		$element_list = [];
 		foreach($elements as $element) {
-			$element_code = self::getAttribute($element, "code");
-			$deleted = (bool)self::getAttribute($element, "deleted");
-			$datatype = (string)self::getAttribute($element, "datatype");
-			$list = (string)self::getAttribute($element, "list");
-			$documentation_url = (string)self::getAttribute($element, "documentationUrl");
 	
-			$labels = self::getLabelsFromXML($element->labels);
-			$settings = $element->settings ? $this->getSettingsFromXML($element->settings) : [];
-		
-			if ($po_element->elements) {
-				foreach($po_element->elements->children() as $vo_child) {
-					$this->processMetadataElement($vo_child, $vn_element_id);
+			$labels = [
+				['name' => $element['name'], 'description' => $element['description'], 'locale' => $this->settings['locale'], 'preferred' => 1]
+			];
+			$settings = [];
+			
+			foreach(preg_split('![,;\n]+!', $element['render']) as $render_setting) {
+				switch(strtolower($render_setting)) {
+					case 'suggest existing values';
+						$settings['suggestExistingValues'][''] = [
+							1
+						];
+						break;
+					case 'drop-down list':
+					case 'drop down list':
+						$settings['render'][''] = [
+							'select'
+						];
+						break;
+					case 'rich text':
+						$settings['usewysiwygeditor'][''] = [
+							1
+						];
+						break;
+					case 'checklist':
+						$settings['render'][''] = [
+							'checklist'
+						];
+						break;
+					case 'month dd yyyy':
+					case 'mdy':
+					
+						break;
+					case 'cad':
+						$settings['dollarCurrency'][''] = [
+							'CAD'
+						];
+						break;
 				}
 			}
 		
 			$subelements = null;
-			if($element->elements) {
-				$subelements = $this->processMetadataElements($element->elements->children());
+			if (is_array($element['elements']) && sizeof($element['elements'])) {
+				$subelements = $this->processMetadataElements($element['elements']);
 			}
-			
+		
 			$type_restrictions = [];
-			if($element->typeRestrictions) {
-				foreach($element->typeRestrictions->children() as $restriction) {
-					$restriction_code = self::getAttribute($restriction, "code");
-    			    $table = (string)$restriction->table;
-					$type = trim((string)$restriction->type);
-					$include_subtypes = (bool)$restriction->includeSubtypes;
-					$restriction_settings = $restriction->settings ? $this->getSettingsFromXML($restriction->settings) : [];
+			if(!$element['restrict_to']) { $element['restrict_to'] = 'ca_objects'; } // TODO: remove - for testing only
+			if($element['restrict_to']) {
+				$restrictions = preg_split('![;,\n]+!', $element['restrict_to']);
+				foreach($restrictions as $rx => $restriction) {
+					$tmp = explode('/', $restriction);
+    			    $table = $tmp[0];
+					$type = $tmp[1] ?? null;
+					
+					$min_repeats = self::parseBool($element['mandatory']) ? 1 : 0;
+					$max_repeats = self::parseBool($element['repeatable']) ? 1000 : 0;
 
 					$type_restrictions[] = [
-						'code' => $restriction_code,
+						'code' => "res{$rx}",
 						'table' => $table,
 						'type' => $type,
-						'includeSubtypes' => $include_subtypes,
-						'settings' => $restriction_settings
+						'includeSubtypes' => 0,
+						'settings' => [
+							'minAttributesPerRow' => ['' => [$min_repeats]],
+							'maxAttributesPerRow' => ['' => [$max_repeats]],
+							'minimumAttributeBundlesToDisplay' => ['' => [1]]
+						]
 					];
 				}
 			}
-			
-			$labels = self::getLabelsFromXML($element->labels);
 		
-			$element_list[$element_code] = [
+			$element_list[$element['code']] = [
 				'labels' => $labels,
-				'code' => $element_code,
-				'datatype' => $datatype,
-				'list' => $list,
-				'deleted' => $deleted,
+				'code' => $element['code'],
+				'datatype' => $element['datatype'],
+				'list' => $element['list'],
+				'deleted' => false,
 				'documentationUrl' => $documentation_url,
 				'settings' => $settings,
 				'elements' => $subelements,
@@ -435,11 +526,18 @@ class XLSXProfileParser extends BaseProfileParser {
 	/**
 	 *
 	 */
-	public function processRelationshipTypes() {
-		$relationship_types_list = [];
-		if($this->base && $this->base->relationshipTypes) { $relationship_types_list[] = $this->base->relationshipTypes->children(); }
-		if($this->xml->relationshipTypes) { $relationship_types_list[] = $this->xml->relationshipTypes->children(); }
-
+	public function processRelationshipTypes(int $sheet_num) : bool {
+		$sheet = $this->xlsx->getSheet($sheet_num);
+		
+		if($sheet) {
+			$hrow = $sheet->getHighestRow(); 
+			
+			for($r=$row; $r <= $hrow; $r++) {
+				$xxx = trim($sheet->getCellByColumnAndRow(1, $r)->getValue());
+			}
+		}
+		
+		
 		$types_by_table = [];
 		foreach($relationship_types_list as $relationship_types) {
 			foreach($relationship_types as $rel_table_config) {
@@ -499,12 +597,18 @@ class XLSXProfileParser extends BaseProfileParser {
 	/**
 	 *
 	 */
-	public function processUIs($f_callback=null) {
-		$ui_list = [];
-		if($this->base && $this->base->userInterfaces) { $ui_list[] = $this->base->userInterfaces->children(); }
-		if($this->xml->userInterfaces) { $ui_list[] = $this->xml->userInterfaces->children(); }
-	
-		$this->data['userInterfaces'] = [];
+	public function processUIs(int $sheet_num) : bool {
+		$sheet = $this->xlsx->getSheet($sheet_num);
+		
+		if($sheet) {
+			$hrow = $sheet->getHighestRow(); 
+			
+			for($r=$row; $r <= $hrow; $r++) {
+				$xxx = trim($sheet->getCellByColumnAndRow(1, $r)->getValue());
+			}
+		}
+		
+		
 		foreach($ui_list as $uis) {
 			foreach($uis as $ui) {
 				$ui_code = self::getAttribute($ui, "code");
@@ -616,31 +720,20 @@ class XLSXProfileParser extends BaseProfileParser {
 	/**
 	 *
 	 */
-	public function processLogins($f_callback=null) {
-		$login_list = [];
-		if($this->base && $this->base->logins) { $login_list[] = $this->base->logins->children(); }
-		if($this->xml->logins) { $login_list[] = $this->xml->logins->children(); }
-	
-		$this->data['logins'] = [];
-		foreach($login_list as $logins) {
-			foreach($logins as $login) {
-				$user_name = self::getAttribute($login, "user_name");
-				$password = self::getAttribute($login, "password");
-				$fname = self::getAttribute($login, "fname");
-				$lname = self::getAttribute($login, "lname");
-				$email = self::getAttribute($login, "email");
-				
-				$roles = $groups = [];
-				if ($access = $login->children()) {
-					foreach($access as $a) {
-						$n = $a->getName();
-						if ($n === 'role') {
-							$roles[] = self::getAttribute($a, 'code');
-						} elseif($n === 'group') {
-							$groups[] = self::getAttribute($a, 'code');
-						}
-					}
-				}
+	public function processLogins(int $sheet_num) : bool {
+		$sheet = $this->xlsx->getSheet($sheet_num);
+		
+		if($sheet) {
+			$hrow = $sheet->getHighestRow(); 
+			for($r=2; $r <= $hrow; $r++) {
+				$user_name = trim($sheet->getCellByColumnAndRow(1, $r)->getValue());
+				$password = trim($sheet->getCellByColumnAndRow(2, $r)->getValue());
+				$fname = trim($sheet->getCellByColumnAndRow(3, $r)->getValue());
+				$lname = trim($sheet->getCellByColumnAndRow(4, $r)->getValue());
+				$email = trim($sheet->getCellByColumnAndRow(5, $r)->getValue());
+				$roles = trim($sheet->getCellByColumnAndRow(6, $r)->getValue());
+				$groups = trim($sheet->getCellByColumnAndRow(7, $r)->getValue());
+				if(!strlen($user_name)) { continue; }
 				
 				$this->data['logins'][$user_name] = [
 					'user_name' => $user_name,
@@ -648,8 +741,8 @@ class XLSXProfileParser extends BaseProfileParser {
 					'fname' => $fname,
 					'lname' => $lname,
 					'email' => $email,
-					'roles' => $roles,
-					'groups' => $groups
+					'roles' => $roles ? preg_split('![,; ]+!', $roles) : [],
+					'groups' => $groups ? preg_split('![,; ]+!', $groups) : []
 				];
 			}
 		}
@@ -660,506 +753,18 @@ class XLSXProfileParser extends BaseProfileParser {
 	/**
 	 *
 	 */
-	public function processDisplays($f_callback=null) {
-		$display_list = [];
-		if($this->base && $this->base->displays) { $display_list[] = $this->base->displays->children(); }
-		if($this->xml->displays) { $display_list[] = $this->xml->displays->children(); }
-	
-		$this->data['displays'] = [];
-		foreach($display_list as $displays) {
-			foreach($displays as $display) {
-				$display_code = self::getAttribute($display, "code");
-				$type = self::getAttribute($display, "type");
-				$system = self::getAttribute($display, "system");
-				$deleted = self::getAttribute($display, "deleted");
-			
-				$labels = self::getLabelsFromXML($display->labels);
-				
-				$type_restrictions = self::processTypeRestrictionStrings(self::getAttribute($display, "typeRestrictions"), $include_subtypes);
-				if($display->typeRestrictions) { 
-					$type_restrictions = array_merge($type_restrictions, self::processTypeRestrictionLists($display->typeRestrictions));
-				}
-				
-				$settings = $display->settings ? $this->getSettingsFromXML($display->settings) : [];
-				
-				$user_access = self::processAccessRestrictions('user', $display->userAccess);
-				$group_access = self::processAccessRestrictions('group', $display->groupAccess);
-				$role_access = self::processAccessRestrictions('role', $display->userAccess);
-			
-				$this->data['displays'][$display_code] = [
-					'labels' => $labels,
-					'code' => $display_code,
-					'type' => $type,
-					'system' => $system,
-					'deleted' => $deleted,
-					'typeRestrictions' => $type_restrictions,
-					'settings' => $settings,
-					'bundles' => $display->bundlePlacements ? $this->processDisplayBundles($display->bundlePlacements) : [],
-					'userAccess' => $user_access,
-					'groupAccess' => $group_access,
-					'roleAccess' => $role_access
-				];
-			}
+	private static function parseBool(string $string) : bool {
+		switch(strtolower($string)) {
+			case 'y':
+			case 'yes':
+			case 1:
+				return true;
+			case 'n':
+			case 'no':
+			case 0:
+				return false;
 		}
-		
-		return true;
-	}
-	# --------------------------------------------------
-	/**
-	 *
-	 */
-	protected function processDisplayBundles($bundles) {
-		$values = [];
-		foreach($bundles->children() as $bundle) {
-			$code = self::getAttribute($bundle, "code");
-			$bundle_name = trim((string)$bundle->bundle);
-			$include_subtypes = self::getAttribute($ui, "includeSubtypes");
-			
-			$type_restrictions = self::processTypeRestrictionStrings(self::getAttribute($bundle, "typeRestrictions"), $include_subtypes);
-			
-			$settings = $bundle->settings ? $this->getSettingsFromXML($bundle->settings) : [];
-			
-			$values[$code] = [
-				'code' => $code,
-				'bundle' => $bundle_name,
-				'settings' => $settings,
-				'includeSubtypes' => $include_subtypes,
-				'typeRestrictions' => $type_restrictions
-			];
-		}
-
-		return $values;
-	}
-	# --------------------------------------------------
-	/**
-	 *
-	 */
-	public function processMetadataDictionary($f_callback=null) {
-		$dict_list = [];
-		if($this->base && $this->base->metadataDictionary) { $dict_list[] = $this->base->metadataDictionary->children(); }
-		if($this->xml->metadataDictionary) { $dict_list[] = $this->xml->metadataDictionary->children(); }
-	
-		$this->data['metadataDictionary'] = [];
-		foreach($dict_list as $dict) {
-			foreach($dict as $entry) {
-				$bundle = self::getAttribute($entry, "bundle");
-				$table = self::getAttribute($entry, "table");
-				
-				$settings = $entry->settings ? $this->getSettingsFromXML($entry->settings) : [];
-			
-				$data = [
-					'bundle' => $bundle,
-					'table' => $table,
-					'settings' => $settings,
-					'rules' => []
-				];
-				
-				if($entry->rules) {
-					foreach($entry->rules->children() as $rule) {
-						$code = self::getAttribute($rule, "code");
-						$level = self::getAttribute($rule, "level");
-						$expression = (string)$rule->expression;
-						$settings = $rule->settings ? $this->getSettingsFromXML($rule->settings) : [];
-					
-						$data['rules'][] = [
-							'code' => $code,
-							'level' => $level,
-							'expression' => $expression,
-							'settings' => $settings
-						];
-					}
-				}
-			
-				$this->data['metadataDictionary'][] = $data;
-			}
-		}
-		
-		return true;
-	}
-	# --------------------------------------------------
-	/**
-	 *
-	 */
-	public function processRoles($f_callback=null) {
-		$role_list = [];
-		if($this->base && $this->base->roles) { $role_list[] = $this->base->roles->children(); }
-		if($this->xml->roles) { $role_list[] = $this->xml->roles->children(); }
-	
-		$this->data['roles'] = [];
-		foreach($role_list as $roles) {
-			foreach($roles as $role) {
-				$code = self::getAttribute($role, "code");
-				$name = (string)$role->name;
-				$description = (string)$role->description;
-				$deleted = self::getAttribute($role, "deleted");
-				
-				
-				$actions = [];
-				if($role->actions) {
-					foreach($role->actions->children() as $action) {
-						$actions[] = trim((string)$action);
-					}
-				}
-				
-				$bundle_level_access_control = [];
-				if($role->bundleLevelAccessControl) {
-					foreach($role->bundleLevelAccessControl->children() as $permission) {
-						$permission_table = self::getAttribute($permission, 'table');
-						$permission_bundle = self::getAttribute($permission, 'bundle');
-						$permission_access = self::getAttribute($permission, 'access');
-
-						$bundle_level_access_control[] = [
-							'table' => $permission_table,
-							'bundle' => $permission_bundle,
-							'access' => $permission_access
-						];
-					}
-				}
-				
-				$type_level_access_control = [];
-				if($role->typeLevelAccessControl) {
-					foreach($role->typeLevelAccessControl->children() as $permission) {
-						$permission_table = self::getAttribute($permission, 'table');
-						$permission_bundle = self::getAttribute($permission, 'type');
-						$permission_access = self::getAttribute($permission, 'access');
-
-						$type_level_access_control[] = [
-							'table' => $permission_table,
-							'bundle' => $permission_bundle,
-							'access' => $permission_access
-						];
-					}
-				}
-				
-				$source_level_access_control = [];
-				if($role->sourceLevelAccessControl) {
-					foreach($role->sourceLevelAccessControl->children() as $permission) {
-						$permission_table = self::getAttribute($permission, 'table');
-						$permission_bundle = self::getAttribute($permission, 'source');
-						$permission_access = self::getAttribute($permission, 'access');
-						$permission_default = self::getAttribute($permission, 'default');
-
-						$source_level_access_control[] = [
-							'table' => $permission_table,
-							'bundle' => $permission_bundle,
-							'access' => $permission_access,
-							'default' => $permission_default
-						];
-					}
-				}
-				
-				$data = [
-					'code' => $code,
-					'name' => $name,
-					'description' => $description,
-					'actions' => $actions,
-					'deleted' => $deleted,
-					'bundleLevelAccessControl' => $bundle_level_access_control,
-					'typeLevelAccessControl' => $type_level_access_control,
-					'sourceLevelAccessControl' => $source_level_access_control
-				];
-			
-				$this->data['roles'][$code] = $data;
-			}
-		}
-		
-		return true;
-	}
-	# --------------------------------------------------
-	/**
-	 *
-	 */
-	public function processGroups($f_callback=null) {
-		$group_list = [];
-		if($this->base && $this->base->groups) { $group_list[] = $this->base->groups->children(); }
-		if($this->xml->groups) { $group_list[] = $this->xml->groups->children(); }
-	
-		$this->data['groups'] = [];
-		foreach($group_list as $groups) {
-			foreach($groups as $group) {
-				$code = self::getAttribute($group, "code");
-				$name = (string)$group->name;
-				$description = (string)$group->description;
-				$deleted = self::getAttribute($group, "deleted");
-				
-				
-				$roles = [];
-				if($group->roles) {
-					foreach($group->roles->children() as $role) {
-						$roles[] = trim((string)$role);
-					}
-				}
-				
-				$data = [
-					'code' => $code,
-					'name' => $name,
-					'description' => $description,
-					'roles' => $roles,
-					'deleted' => $deleted
-				];
-			
-				$this->data['groups'][$code] = $data;
-			}
-		}
-		
-		return true;
-	}
-	# --------------------------------------------------
-	/**
-	 *
-	 */
-	public function processSearchForms($f_callback=null) {
-		$form_list = [];
-		if($this->base && $this->base->searchForms) { $form_list[] = $this->base->searchForms->children(); }
-		if($this->xml->searchForms) { $form_list[] = $this->xml->searchForms->children(); }
-	
-		$this->data['searchForms'] = [];
-		foreach($form_list as $forms) {
-			foreach($forms as $form) {
-				$form_code = self::getAttribute($form, "code");
-				$type = self::getAttribute($form, "type");
-				$system = self::getAttribute($form, "system");
-				$deleted = self::getAttribute($form, "deleted");
-			
-				$labels = self::getLabelsFromXML($form->labels);
-				
-				$type_restrictions = self::processTypeRestrictionStrings(self::getAttribute($form, "typeRestrictions"), $include_subtypes);
-				if($form->typeRestrictions) { 
-					$type_restrictions = array_merge($type_restrictions, self::processTypeRestrictionLists($form->typeRestrictions));
-				}
-				
-				$settings = $form->settings ? $this->getSettingsFromXML($form->settings) : [];
-				
-				$user_access = self::processAccessRestrictions('user', $form->userAccess);
-				$group_access = self::processAccessRestrictions('group', $form->groupAccess);
-				$role_access = self::processAccessRestrictions('role', $form->userAccess);
-			
-				$this->data['searchForms'][$form_code] = [
-					'labels' => $labels,
-					'code' => $form_code,
-					'type' => $type,
-					'system' => $system,
-					'deleted' => $deleted,
-					'typeRestrictions' => $type_restrictions,
-					'settings' => $settings,
-					'bundles' => $form->bundlePlacements ? $this->processSearchFormBundles($form->bundlePlacements) : [],
-					'userAccess' => $user_access,
-					'groupAccess' => $group_access,
-					'roleAccess' => $role_access
-				];
-			}
-		}
-		
-		return true;
-	}
-	# --------------------------------------------------
-	/**
-	 *
-	 */
-	protected function processSearchFormBundles($bundles) {
-		$values = [];
-		foreach($bundles->children() as $bundle) {
-			$code = self::getAttribute($bundle, "code");
-			$bundle_name = trim((string)$bundle->bundle);
-			
-			$settings = $bundle->settings ? $this->getSettingsFromXML($bundle->settings) : [];
-			
-			$values[$code] = [
-				'code' => $code,
-				'bundle' => $bundle_name,
-				'settings' => $settings,
-			];
-		}
-
-		return $values;
-	}
-	# --------------------------------------------------
-	/**
-	 *
-	 */
-	public function processMetadataAlerts($f_callback=null) {
-		$alert_list = [];
-		if($this->base && $this->base->metadataAlerts) { $alert_list[] = $this->base->metadataAlerts->children(); }
-		if($this->xml->metadataAlerts) { $alert_list[] = $this->xml->metadataAlerts->children(); }
-	
-		$this->data['metadataAlerts'] = [];
-		foreach($alert_list as $alerts) {
-			foreach($alerts as $alert) {
-				$alert_code = self::getAttribute($alert, "code");
-				$type = self::getAttribute($alert, "type");
-				$deleted = self::getAttribute($alert, "deleted");
-			
-				$labels = self::getLabelsFromXML($alert->labels);
-				
-				$type_restrictions = self::processTypeRestrictionStrings(self::getAttribute($alert, "typeRestrictions"), $include_subtypes);
-				if($alert->typeRestrictions) { 
-					$type_restrictions = array_merge($type_restrictions, self::processTypeRestrictionLists($alert->typeRestrictions));
-				}
-				
-				$settings = $alert->settings ? $this->getSettingsFromXML($alert->settings) : [];
-				
-				$user_access = self::processAccessRestrictions('user', $alert->userAccess);
-				$group_access = self::processAccessRestrictions('group', $alert->groupAccess);
-				$role_access = self::processAccessRestrictions('role', $alert->userAccess);
-			
-				$this->data['metadataAlerts'][$alert_code] = [
-					'labels' => $labels,
-					'code' => $alert_code,
-					'type' => $type,
-					'deleted' => $deleted,
-					'typeRestrictions' => $type_restrictions,
-					'settings' => $settings,
-					'triggers' => $alert->triggers ? $this->processMetadataAlertTriggers($alert->triggers) : [],
-					'userAccess' => $user_access,
-					'groupAccess' => $group_access,
-					'roleAccess' => $role_access
-				];
-			}
-		}
-		
-		return true;
-	}
-	# --------------------------------------------------
-	/**
-	 *
-	 */
-	protected function processMetadataAlertTriggers($triggers) {
-		$values = [];
-		foreach($triggers->children() as $trigger) {
-			$code = self::getAttribute($trigger, "code");
-			$type = self::getAttribute($trigger, "type");
-			$metadata_element = self::getAttribute($trigger, "metadataElement");
-			$metadata_element_filter = self::getAttribute($trigger, "metadataElementFilter");
-			
-			$settings = $trigger->settings ? $this->getSettingsFromXML($trigger->settings) : [];
-			
-			$values[$code] = [
-				'code' => $code,
-				'type' => $type,
-				'metadataElement' => $metadata_element,
-				'metadataElementFilter' => $metadata_element_filter,
-				'settings' => $settings,
-			];
-		}
-
-		return $values;
-	}
-	# --------------------------------------------------
-	/**
-	 *
-	 */
-	private static function processTypeRestrictionStrings($type_restrictions, $include_subtypes=false) {
-		$restrictions = array_filter(preg_split("![ ,;\|]!", $type_restrictions), "strlen");
-		
-		$values = [];
-		foreach($restrictions as $restriction) {
-			$values[] = [
-				'type' => $restriction,
-				'includeSubtypes' => $include_subtypes
-			];
-		}
-		return $values;
-	}
-	# --------------------------------------------------
-	/**
-	 *
-	 */
-	private static function processTypeRestrictionLists($type_restrictions) {
-		$values = [];
-		if($type_restrictions) {
-			foreach($type_restrictions->children() as $restriction) {
-				$values[] = [
-					'type' => self::getAttribute($restriction, 'type'),
-					'includeSubtypes' => self::getAttribute($restriction, 'includeSubtypes')
-				];
-			}
-		}
-		return $values;
-	}
-	# --------------------------------------------------
-	/**
-	 *
-	 */
-	private static function processAccessRestrictions($type, $restrictions) {
-		$values = [];
-		if($restrictions) {
-			foreach($restrictions->children() as $restriction) {
-				$values[] = [
-					$type => self::getAttribute($restriction, $type),
-					'access' => self::getAttribute($restriction, 'access')
-				];
-			}
-		}
-		return $values;
-	}
-	# --------------------------------------------------
-	/**
-	 * 
-	 *
-	 * @param SimpleXMLElement $labels
-	 * @param bool $force_preferred
-	 *
-	 * @return array
-	 */
-	protected static function getLabelsFromXML($labels, $force_preferred=false) {
-		$values = [];
-		foreach($labels->children() as $label) {
-			$locale = self::getAttribute($label, "locale");
-			$preferred = self::getAttribute($label, "preferred");
-			
-			if($force_preferred || (bool)$preferred || is_null($preferred)) {
-				$preferred = true;
-			} else {
-				$preferred = false;
-			}
-
-			$value = ['locale' => $locale, 'preferred' => $preferred];
-			foreach($label->children() as $field) {
-				$value[$field->getName()] = (string) $field;
-			}
-			
-			$values[] = $value;
-		}
-		return $values;
-	}
-	# --------------------------------------------------
-	/**
-	 *
-	 */
-	private function getSettingsFromXML($settings, $options=null) {
-		$settings_values = [];
-		
-		if($settings) {
-			foreach($settings->children() as $setting) {
-				// some settings like 'label' or 'add_label' have 'locale' as sub-setting
-				$locale = self::getAttribute($setting, "locale");
-				if($locale && isset($this->data['locales'][$locale])) {
-					$locale_id = $this->data['locales'][$locale];
-				} else {
-					$locale_id = null;
-				}
-
-				$setting_name = self::getAttribute($setting, "name");
-				$setting_value = (string)$setting;
-				
-				if((strlen($setting_name)>0) && (strlen($setting_value)>0)) { // settings need at least name and value
-					$settings_values[$setting_name][$locale ?? ''][] = $setting_value;
-				}
-			}
-		}
-		
-		return $settings_values;
-	}
-	# --------------------------------------------------
-	/**
-	 * 
-	 */
-	protected static function getAttribute($node, $attr) {
-		if(isset($node[$attr])) {
-			return (string) $node[$attr];
-		} else {
-			return null;
-		}
+		return null;
 	}
 	# --------------------------------------------------
 }

@@ -240,7 +240,7 @@ class XMLProfileParser extends BaseProfileParser {
 	/**
 	 *
 	 */
-	public function processLists($f_callback=null) {
+	public function processLists() {
 		$lists_list = [];
 		if($this->base && $this->base->lists) { $lists_list[] = $this->base->lists->children(); }
 		if($this->xml->lists) { $lists_list[] = $this->xml->lists->children(); }
@@ -329,7 +329,7 @@ class XMLProfileParser extends BaseProfileParser {
 	/**
 	 *
 	 */
-	public function processMetadataElementSets($f_callback=null) {
+	public function processMetadataElementSets() {
 		$elements_list = [];
 		if($this->base && $this->base->elementSets) { $elements_list[] = $this->base->elementSets->children(); }
 		if($this->xml->elementSets) { $elements_list[] = $this->xml->elementSets->children(); }
@@ -474,7 +474,7 @@ class XMLProfileParser extends BaseProfileParser {
 	/**
 	 *
 	 */
-	public function processUIs($f_callback=null) {
+	public function processUIs() {
 		$ui_list = [];
 		if($this->base && $this->base->userInterfaces) { $ui_list[] = $this->base->userInterfaces->children(); }
 		if($this->xml->userInterfaces) { $ui_list[] = $this->xml->userInterfaces->children(); }
@@ -591,7 +591,7 @@ class XMLProfileParser extends BaseProfileParser {
 	/**
 	 *
 	 */
-	public function processLogins($f_callback=null) {
+	public function processLogins() {
 		$login_list = [];
 		if($this->base && $this->base->logins) { $login_list[] = $this->base->logins->children(); }
 		if($this->xml->logins) { $login_list[] = $this->xml->logins->children(); }
@@ -635,7 +635,7 @@ class XMLProfileParser extends BaseProfileParser {
 	/**
 	 *
 	 */
-	public function processDisplays($f_callback=null) {
+	public function processDisplays() {
 		$display_list = [];
 		if($this->base && $this->base->displays) { $display_list[] = $this->base->displays->children(); }
 		if($this->xml->displays) { $display_list[] = $this->xml->displays->children(); }
@@ -709,7 +709,7 @@ class XMLProfileParser extends BaseProfileParser {
 	/**
 	 *
 	 */
-	public function processMetadataDictionary($f_callback=null) {
+	public function processMetadataDictionary() {
 		$dict_list = [];
 		if($this->base && $this->base->metadataDictionary) { $dict_list[] = $this->base->metadataDictionary->children(); }
 		if($this->xml->metadataDictionary) { $dict_list[] = $this->xml->metadataDictionary->children(); }
@@ -755,7 +755,7 @@ class XMLProfileParser extends BaseProfileParser {
 	/**
 	 *
 	 */
-	public function processRoles($f_callback=null) {
+	public function processRoles() {
 		$role_list = [];
 		if($this->base && $this->base->roles) { $role_list[] = $this->base->roles->children(); }
 		if($this->xml->roles) { $role_list[] = $this->xml->roles->children(); }
@@ -844,7 +844,7 @@ class XMLProfileParser extends BaseProfileParser {
 	/**
 	 *
 	 */
-	public function processGroups($f_callback=null) {
+	public function processGroups() {
 		$group_list = [];
 		if($this->base && $this->base->groups) { $group_list[] = $this->base->groups->children(); }
 		if($this->xml->groups) { $group_list[] = $this->xml->groups->children(); }
@@ -883,7 +883,7 @@ class XMLProfileParser extends BaseProfileParser {
 	/**
 	 *
 	 */
-	public function processSearchForms($f_callback=null) {
+	public function processSearchForms() {
 		$form_list = [];
 		if($this->base && $this->base->searchForms) { $form_list[] = $this->base->searchForms->children(); }
 		if($this->xml->searchForms) { $form_list[] = $this->xml->searchForms->children(); }
@@ -952,7 +952,7 @@ class XMLProfileParser extends BaseProfileParser {
 	/**
 	 *
 	 */
-	public function processMetadataAlerts($f_callback=null) {
+	public function processMetadataAlerts() {
 		$alert_list = [];
 		if($this->base && $this->base->metadataAlerts) { $alert_list[] = $this->base->metadataAlerts->children(); }
 		if($this->xml->metadataAlerts) { $alert_list[] = $this->xml->metadataAlerts->children(); }
