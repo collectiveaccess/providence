@@ -102,7 +102,7 @@ class RequestDispatcher extends BaseObject {
 		// Rewrite path for /service/index.php style service call
 		if(($this->request->getScriptName() === 'index.php') && defined('__CA_IS_SERVICE_REQUEST__') && __CA_IS_SERVICE_REQUEST__) {
 			array_shift($va_tmp);
-			array_pop($va_tmp);
+			if(!strlen(trim($va_tmp[sizeof($va_tmp)-1]))) { array_pop($va_tmp); }
 			$vs_path = join('/', $va_tmp);
 		}
 		
