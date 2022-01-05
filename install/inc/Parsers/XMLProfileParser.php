@@ -63,7 +63,12 @@ class XMLProfileParser extends BaseProfileParser {
 	
 	# --------------------------------------------------
 	/**
+	 * Parse a profile
 	 *
+	 * @param string $directory Directory containing profile
+	 * @param string $profile Name (with or without extension) of profile to parse
+	 *
+	 * @return array Parsed profile data
 	 */
 	public function parse(string $directory, string $profile) : array {
 		if(!($profile_path = caGetProfilePath($directory, $profile))) {
@@ -169,9 +174,14 @@ class XMLProfileParser extends BaseProfileParser {
 	}
 	# --------------------------------------------------
 	/**
-	 * Validate profile
+	 * Validate profile against schema.
+     *
+	 * @param string $directory path to a directory containing profiles
+	 * @param string $profile Name of the profile, with or without file extension
+	 *
+	 * @return bool
 	 */
-	public function validateProfile(string $directory, string $profile) {
+	public function validateProfile(string $directory, string $profile) : bool {
 		$profile_path = caGetProfilePath($directory, $profile);
 		$base_path = caGetProfilePath($directory, 'base');
 		$schema_path = caGetProfilePath($directory, 'profile.xsd');

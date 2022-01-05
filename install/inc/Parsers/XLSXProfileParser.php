@@ -69,7 +69,12 @@ class XLSXProfileParser extends BaseProfileParser {
 	
 	# --------------------------------------------------
 	/**
+	 * Parse a profile
 	 *
+	 * @param string $directory Directory containing profile
+	 * @param string $profile Name (with or without extension) of profile to parse
+	 *
+	 * @return array Parsed profile data
 	 */
 	public function parse(string $directory, string $profile) : array {
 		$this->settings = null;
@@ -160,7 +165,13 @@ class XLSXProfileParser extends BaseProfileParser {
 	}
 	# --------------------------------------------------
 	/**
+	 * Validate profile. For XLSX validation consists of loading the profile and identifying sheets with content.
+	 * Validation will fail if the file is not a valid XLSX file or no sheets with content are found.
+
+	 * @param string $directory path to a directory containing profiles
+	 * @param string $profile Name of the profile, with or without file extension
 	 *
+	 * @return bool
 	 */
 	public function validateProfile(string $directory, string $profile) : bool {
 		$path = caGetProfilePath($directory, $profile);
@@ -168,7 +179,8 @@ class XLSXProfileParser extends BaseProfileParser {
 		if(is_readable($path)) {
 			try {
 				if ($this->xlsx = \PhpOffice\PhpSpreadsheet\IOFactory::load($path)) {
-					return true;
+					$sheet_map = $this->_getSheetMap();
+					return (is_array($sheet_map) && sizeof($sheet_map));
 				}
 			} catch(\Exception $e) {
 				return false;
