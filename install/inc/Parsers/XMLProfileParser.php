@@ -56,6 +56,11 @@ class XMLProfileParser extends BaseProfileParser {
 	 */
 	private $profile_name; 
 	
+	/**
+	 * Parser format
+	 */
+	var $format = 'XML';
+	
 	# --------------------------------------------------
 	/**
 	 *
@@ -166,7 +171,7 @@ class XMLProfileParser extends BaseProfileParser {
 	/**
 	 * Validate profile
 	 */
-	private function validateProfile(string $directory, string $profile) {
+	public function validateProfile(string $directory, string $profile) {
 		$profile_path = caGetProfilePath($directory, $profile);
 		$base_path = caGetProfilePath($directory, 'base');
 		$schema_path = caGetProfilePath($directory, 'profile.xsd');

@@ -32,12 +32,12 @@
 
 # ----------------------------------------------------------------
 /**
-  * Returns a sorted list of XML profiles. Keys are display names and values are profile codes (filename without .xml extension).
+  * Returns a sorted list of profiles. Keys are display names and values are profile codes (filename without .xml extension).
   *
   * @param string $install_dir_prefix optional prefix for install dir
   * @return array List of available profiles
   */
-function caGetAvailableXMLProfiles(string $install_dir_prefix='.') {
+function caGetAvailableProfiles(string $install_dir_prefix='.') {
 	$files = caGetDirectoryContentsAsList($install_dir_prefix.'/profiles', true);
 	$profiles = array();
 	
@@ -48,11 +48,11 @@ function caGetAvailableXMLProfiles(string $install_dir_prefix='.') {
 			$file = array_shift($tmp2);
 			$profile_info = \Installer\Installer::getProfileInfo($install_dir_prefix.'/profiles', $file);
 			if (!$profile_info['useForConfiguration']) { continue; }
-			$profiles[$profile_info['display']] = $file; 
+			$profiles[strip_tags($profile_info['display'])] = $file; 
 		}
 	}
 	
-	ksort($profiles, SORT_STRING | SORT_FLAG_CASE);
+	ksort($profiles, SORT_NATURAL);
 	return $profiles;
 }
 # --------------------------------------------------

@@ -144,6 +144,24 @@ class Installer {
 	}
 	# --------------------------------------------------
 	/**
+	 * Validate a profile
+	 *
+	 * @param string $directory path to a directory containing profiles
+	 * @param string $profile Name of the profile, with or without file extension
+	 * @param string $format File extension to assume for profile. [Default is null; actual file extension is used]
+	 *
+	 * @return string Format of parsed file (Eg. XML, XLSX, etc) or false if profile is invalid
+	 */
+	static public function validateProfile(string $directory, string $profile, ?string $format=null) {
+		if(!($path = \caGetProfilePath($directory, $profile))) {
+			return null;
+		}
+		if(!($parser = self::profileParser($path, $format))) { return null; }
+		
+		return $parser->validateProfile($directory, $profile) ? $parser->format() : false;
+	}
+	# --------------------------------------------------
+	/**
 	 * Return metadata (name, description) for a profile
 	 *
 	 * @param string $directory path to a directory containing profiles
@@ -165,12 +183,13 @@ class Installer {
 	 * Return instance of profile parser for selected file
 	 *
 	 * @param string $profile_path path to a profile file
+	 * @param string $format File extension to assume for profile. [Default is null; actual file extension is used]
 	 *
 	 * @return array
 	 */
-	static public function profileParser(string $profile_path) : ?\Installer\Parsers\BaseProfileParser {
+	static public function profileParser(string $profile_path, ?string $format=null) : ?\Installer\Parsers\BaseProfileParser {
 		$extension = strtolower(pathinfo($profile_path, PATHINFO_EXTENSION));
-		
+		if($format) { $extension = $format; }
 		switch($extension) {
 			case 'xlsx':
 				require_once(__CA_BASE_DIR__.'/install/inc/Parsers/XLSXProfileParser.php');

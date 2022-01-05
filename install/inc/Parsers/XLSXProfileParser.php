@@ -62,6 +62,11 @@ class XLSXProfileParser extends BaseProfileParser {
 	 */
 	private $profile_name; 
 	
+	/**
+	 * Parser format
+	 */
+	var $format = 'XLSX';
+	
 	# --------------------------------------------------
 	/**
 	 *
@@ -72,11 +77,8 @@ class XLSXProfileParser extends BaseProfileParser {
 			return null;
 		}
 		
-		if(!$this->validateProfile($directory, $profile)) {
+		if(!$this->validateProfile($directory, $profile)) {	// validation loads profile
 			throw new \Exception(_t('XLSX profile validation failed'));
-		}
-		if(!$this->loadProfile($directory, $profile)) {
-			throw new \Exception(_t('Could not load XLSX profile'));
 		}
 		
 		$this->directory = $directory;
@@ -160,8 +162,9 @@ class XLSXProfileParser extends BaseProfileParser {
 	/**
 	 *
 	 */
-	public function loadProfile(string $directory, string $profile) : bool {
+	public function validateProfile(string $directory, string $profile) : bool {
 		$path = caGetProfilePath($directory, $profile);
+		
 		if(is_readable($path)) {
 			try {
 				if ($this->xlsx = \PhpOffice\PhpSpreadsheet\IOFactory::load($path)) {
@@ -226,23 +229,6 @@ class XLSXProfileParser extends BaseProfileParser {
 		}
 		
 		return $sheet_map;
-	}
-	# --------------------------------------------------
-	/**
-	 * Validate profile
-	 */
-	private function validateProfile(string $directory, string $profile) {
-		$profile_path = caGetProfilePath($directory, $profile);
-		$base_path = caGetProfilePath($directory, 'base');
-		
-		$vb_return = true; // TODO: do actual validation
-		if($vb_return) {
-			$this->logStatus(_t('Successfully validated profile %1', $this->profile_name));
-		} else {
-			$this->logStatus(_t('Validation failed for profile %1', $this->profile_name));
-		}
-
-		return $vb_return;
 	}
 	# --------------------------------------------------
 	/**

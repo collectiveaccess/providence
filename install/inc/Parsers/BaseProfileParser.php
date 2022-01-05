@@ -56,4 +56,11 @@ class BaseProfileParser {
 		}
 	}
 	# --------------------------------------------------
+	/**
+	 * Return parser file format (Eg. XLSX, XML, etc)
+	 */
+	public function format() : string {
+		return $this->format;
+	}
+	# --------------------------------------------------
 }
