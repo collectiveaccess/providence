@@ -309,6 +309,7 @@ class XLSXProfileParser extends BaseProfileParser {
 			
 			foreach($list_codes as $code => $info) {
 				$name = caCamelOrSnakeToText($code, ['ucFirst' => true]);
+				$code_proc = caTextToSnake($code);
 				
 				$this->data['lists'][$code] = [
 					'labels' => [[
@@ -316,12 +317,12 @@ class XLSXProfileParser extends BaseProfileParser {
 						'locale' => $this->settings['locale'],
 						'preferred' => 1
 					]],
-					'code' => caTextToSnake($code),
+					'code' => $code_proc,
 					'hierarchical' => ($info['start'] !== $info['end']),
 					'system' => false,
 					'vocabulary' => false,
 					'defaultSort' => 0,
-					'items' => $this->processListItems($sheet, $info, 2, $info['start'])
+					'items' => $this->processListItems($sheet, $info, 2, $info['start'], $code_proc)
 				];
 			}
 		} 
@@ -332,10 +333,11 @@ class XLSXProfileParser extends BaseProfileParser {
 	/**
 	 *
 	 */
-	protected function processListItems($sheet, array $info, int $row, int $col) : array {
+	protected function processListItems($sheet, array $info, int $row, int $col, string $list_code) : array {
 		$values = [];
 		
 		$hrow = $sheet->getHighestRow(); 
+		$i = 0;
 		for($r=$row; $r <= $hrow; $r++) {
 			$val = trim($sheet->getCellByColumnAndRow($col, $r)->getValue());
 			$next_val = trim($sheet->getCellByColumnAndRow($col, $r+1)->getValue());
@@ -353,8 +355,13 @@ class XLSXProfileParser extends BaseProfileParser {
 			
 			$sub_items = [];
 			if (!$next_val && ($col < $info['end']) && ($subval = trim($sheet->getCellByColumnAndRow($col+1, $r+1)->getValue()))) {
- 				$sub_items = $this->processListItems($sheet, $info, $row+1, $col+1);
+ 				$sub_items = $this->processListItems($sheet, $info, $row+1, $col+1, $list_code);
  			}
+ 			
+ 			if(in_array($list_code, ['access_statuses', 'workflow_statuses'])) {
+ 				$idno = $val = $i;
+ 			}
+ 			
 			$values[$idno] = [
 				'idno' => $idno,
 				'value' => $val,
@@ -369,6 +376,7 @@ class XLSXProfileParser extends BaseProfileParser {
 				'color' => '',
 				'items' => $sub_items
 			];
+			$i++;
 		}
 		
 		return $values;
@@ -480,7 +488,9 @@ class XLSXProfileParser extends BaseProfileParser {
 			}
 		
 			$type_restrictions = [];
-			if(!$element['restrict_to']) { $element['restrict_to'] = 'ca_objects'; } // TODO: remove - for testing only
+			if(!$element['restrict_to']) { 
+				$this->warning('processMetadataElements', _t('No type restriction specified for metadata element %1', $element['name']));
+			}
 			if($element['restrict_to']) {
 				$restrictions = preg_split('![;,\n]+!', $element['restrict_to']);
 				foreach($restrictions as $rx => $restriction) {
@@ -560,8 +570,7 @@ class XLSXProfileParser extends BaseProfileParser {
 				if($rt = self::relTableNameFromString($info['table'])) {
 					$rel_tables[$rel_table]['table'] = $rt;
 				} else {
-					// TODO: generate warning
-					//print "WARNING: No table for $rel_table\n";
+					$this->warning('processRelationshipTypes', _t('Could not generate relationship table name from profile heading value %1', $info['table']));
 					unset($rel_tables[$rel_table]);
 				}
 			}
@@ -625,7 +634,7 @@ class XLSXProfileParser extends BaseProfileParser {
 			
 			$tmp = explode('_', $ui_spec);
 			if(!($table = self::tableNameFromString($tmp[0]))) { 
-				// TODO: warn
+				$this->warning('processUIs', _t('Could not generate user interface table from worksheet name %1', $ui_spec));
 				continue;
 			}
 			array_shift($tmp);

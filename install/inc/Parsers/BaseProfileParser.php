@@ -36,6 +36,21 @@ abstract class BaseProfileParser {
 	 */
 	protected $log;
 	
+	/**
+	 *
+	 */
+	protected $notices;
+	
+	/**
+	 *
+	 */
+	protected $warnings;
+	
+	/**
+	 *
+	 */
+	protected $errors;
+	
 	# --------------------------------------------------
 	/**
 	 * Instantiate new parser. If $directory and $profile parameters are passed the 
@@ -46,6 +61,8 @@ abstract class BaseProfileParser {
 	 */
 	public function __construct(?string $directory=null, ?string $profile=null) {
 		$this->log = new \KLogger(__CA_BASE_DIR__ . '/app/log', \KLogger::DEBUG);
+		$this->notices = $this->warnings = $this->errors = [];
+		
 		if($profile) {
 			$this->parse($directory, $profile);
 		}
@@ -81,19 +98,87 @@ abstract class BaseProfileParser {
 	abstract public function profileInfo(string $profile_path) : ?array;
 	# --------------------------------------------------
 	/**
-	 * 
+	 * Return parser file format (Eg. XLSX, XML, etc)
 	 */
-	protected function logStatus(string $msg) {
+	public function format() : string {
+		return $this->format;
+	}
+	# --------------------------------------------------
+	/**
+	 *  Log message during parsing
+	 *
+	 * @param string $message
+	 */
+	protected function logStatus(string $msg) : void {
 		if($this->log) {
 			$this->log->logInfo($msg);
 		}
 	}
 	# --------------------------------------------------
 	/**
-	 * Return parser file format (Eg. XLSX, XML, etc)
+	 * Record informational notice during parsing
+	 *
+	 * @param string $stage Parsing stage 
+	 * @param string $message Notice text
 	 */
-	public function format() : string {
-		return $this->format;
+	protected function notice(string $stage, string $message) : void {
+		$this->notices[] = [
+			'stage' => $stage,
+			'message' => $message
+		];
+	}
+	# --------------------------------------------------
+	/**
+	 * Record warning notice during parsing
+	 *
+	 * @param string $stage Parsing stage 
+	 * @param string $message Warning text
+	 */
+	protected function warning(string $stage, string $message) : void {
+		$this->warnings[] = [
+			'stage' => $stage,
+			'message' => $message
+		];
+	}
+	# --------------------------------------------------
+	/**
+	 * Record error during parsing
+	 *
+	 * @param string $stage Parsing stage 
+	 * @param string $message Error text
+	 */
+	protected function error(string $stage, string $message) : void {
+		$this->errors[] = [
+			'stage' => $stage,
+			'message' => $message
+		];
+	}
+	# --------------------------------------------------
+	/**
+	 * Get notices
+	 *
+	 * @return array List of notices
+	 */
+	public function getNotices() : array {
+		return $this->notices;
+	}
+	# --------------------------------------------------
+	/**
+	 * Get warnings
+	 *
+	 * @return array List of warnings
+	 */
+	public function getWarnings() : array {
+		return $this->warnings;
+	}
+	# --------------------------------------------------
+	/**
+	 * Get errors
+	 *
+	 * @return array List of errors
+	 */
+	public function getErrors() : array {
+		return $this->errors;
 	}
 	# --------------------------------------------------
 }
