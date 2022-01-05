@@ -99,7 +99,7 @@ class XLSXProfileParser extends BaseProfileParser {
  		if(isset($sheet_map['lists'])) { $this->processLists($sheet_map['lists']); }
  		if(isset($sheet_map['relationshipTypes'])) { $this->processRelationshipTypes($sheet_map['relationshipTypes']); }
  		if(isset($sheet_map['metadataElements'])) { $this->processMetadataElementSets($sheet_map['metadataElements']); }
-// 		$this->processUIs();
+ 		if(isset($sheet_map['uis'])) { $this->processUIs($sheet_map['uis']); }
  		if(isset($sheet_map['logins'])) { $this->processLogins($sheet_map['logins']); }
 		
 		return $this->data;
@@ -621,95 +621,84 @@ class XLSXProfileParser extends BaseProfileParser {
 	/**
 	 *
 	 */
-	public function processUIs(int $sheet_num) : bool {
-		$sheet = $this->xlsx->getSheet($sheet_num);
-		
-		if($sheet) {
-			$hrow = $sheet->getHighestRow(); 
+	public function processUIs(array $sheet_nums) : bool {
+		foreach($sheet_nums as $ui_spec => $sheet_num) {
+			$sheet = $this->xlsx->getSheet($sheet_num);
 			
-			for($r=$row; $r <= $hrow; $r++) {
-				$xxx = trim($sheet->getCellByColumnAndRow(1, $r)->getValue());
+			$tmp = explode('_', $ui_spec);
+			if(!($table = self::tableNameFromString($tmp[0]))) { 
+				// TODO: warn
+				continue;
 			}
-		}
-		
-		
-		foreach($ui_list as $uis) {
-			foreach($uis as $ui) {
-				$ui_code = self::getAttribute($ui, "code");
-				$type = self::getAttribute($ui, "type");
-				$color = self::getAttribute($ui, "color");
-				$include_subtypes = self::getAttribute($ui, "includeSubtypes");
+			array_shift($tmp);
 			
-				$labels = self::getLabelsFromXML($ui->labels);
-				
-				$type_restrictions = self::processTypeRestrictionStrings(self::getAttribute($ui, "typeRestrictions"), $include_subtypes);
-				if($ui->typeRestrictions) { 
-					$type_restrictions = array_merge($type_restrictions, self::processTypeRestrictionLists($ui->typeRestrictions));
+			$type_res = join('_', $tmp);	
+		
+			if($sheet) {
+				$hrow = $sheet->getHighestRow(); 
+			
+				$by_screen = [];
+				for($r=2; $r <= $hrow; $r++) {
+					$screen = trim($sheet->getCellByColumnAndRow(1, $r)->getValue());
+					if(!$screen) { continue; }
+					$by_screen[$screen][] = [
+						'label' => trim($sheet->getCellByColumnAndRow(2, $r)->getValue()),
+						'code' => trim($sheet->getCellByColumnAndRow(3, $r)->getValue()),
+						'relationship' => trim($sheet->getCellByColumnAndRow(4, $r)->getValue()),
+						'relationship_type' => trim($sheet->getCellByColumnAndRow(5, $r)->getValue()),
+						'type_res' => trim($sheet->getCellByColumnAndRow(6, $r)->getValue()),
+						'description' => trim($sheet->getCellByColumnAndRow(7, $r)->getValue()),
+						'notes' => trim($sheet->getCellByColumnAndRow(8, $r)->getValue()),
+					];
 				}
-				$settings = $ui->settings ? $this->getSettingsFromXML($ui->settings) : [];
 				
-				$user_access = self::processAccessRestrictions('user', $ui->userAccess);
-				$group_access = self::processAccessRestrictions('group', $ui->groupAccess);
-				$role_access = self::processAccessRestrictions('role', $ui->userAccess);
-			
-				$this->data['userInterfaces'][$ui_code] = [
-					'labels' => $labels,
-					'code' => $ui_code,
-					'type' => $type,
-					'color' => $color,
-					'typeRestrictions' => $type_restrictions,
-					'includeSubtypes' => $include_subtypes,
-					'settings' => $settings,
-					'screens' => $ui->screens ? $this->processUIScreens($ui->screens) : [],
-					'userAccess' => $user_access,
-					'groupAccess' => $group_access,
-					'roleAccess' => $role_access
+				$this->data['userInterfaces'][$ui_spec] = [
+					'labels' => [[
+						'name' => caCamelOrSnakeToText($ui_spec), 'locale' => $this->settings['locale']
+					]],
+					'code' => caTextToSnake($ui_spec),
+					'type' => $table,
+					'color' => '000000',
+					'typeRestrictions' => [['type' => caTextToSnake($type_res), 'includeSubtypes' => 1]],
+					'includeSubtypes' => true,
+					'settings' => [],
+					'screens' => $this->processUIScreens($table, $by_screen),
+					'userAccess' => [],
+					'groupAccess' => [],
+					'roleAccess' => []
 				];
 			}
 		}
-		
 		return true;
 	}
 	# --------------------------------------------------
 	/**
 	 *
 	 */
-	protected function processUIScreens($screens) {
+	protected function processUIScreens(string $table, array $screens) {
 		$values = [];
-		foreach($screens->children() as $screen) {
-			$idno = self::getAttribute($screen, "idno");
-			$default = self::getAttribute($screen, "default");
-			$deleted = self::getAttribute($screen, "deleted");
-			$color = self::getAttribute($screen, "color");
-			$include_subtypes = self::getAttribute($ui, "includeSubtypes");
-			
-			$labels = self::getLabelsFromXML($screen->labels);
-		
-			$settings = $screen->settings ? $this->getSettingsFromXML($screen->settings) : [];
-			
-			$type_restrictions = self::processTypeRestrictionStrings(self::getAttribute($screen, "typeRestrictions"), $include_subtypes);
-			if($screen->typeRestrictions) { 
-				$type_restrictions = array_merge($type_restrictions, self::processTypeRestrictionLists($screen->typeRestrictions));
-			}
-			
-			$user_access = self::processAccessRestrictions('user', $screen->userAccess);
-			$group_access = self::processAccessRestrictions('group', $screen->groupAccess);
-			$role_access = self::processAccessRestrictions('role', $screen->userAccess);
+		$default = true;
+		foreach($screens as $idno => $bundles) {
+			$settings = [];
+			$type_restrictions = [];
 			
 			$values[$idno] = [
-				'idno' => $idno,
+				'idno' => caTextToSnake($idno),
 				'default' => $default,
-				'labels' => $labels,
+				'labels' => [[
+					'name' => $idno, 'locale' => $this->settings['locale']
+				]],
 				'settings' => $settings,
-				'color' => $color,
-				'deleted' => $deleted,
+				'color' => '000000',
 				'typeRestrictions' => $type_restrictions,
-				'includeSubtypes' => $include_subtypes,
-				'bundles' => $screen->bundlePlacements ? $this->processUIBundles($screen->bundlePlacements) : [],
-				'userAccess' => $user_access,
-				'groupAccess' => $group_access,
-				'roleAccess' => $role_access
+				'includeSubtypes' => true,
+				'bundles' => $this->processUIBundles($table, $bundles),
+				'userAccess' => [],
+				'groupAccess' => [],
+				'roleAccess' => []
 			];
+			
+			$default = false;
 		}
 
 		return $values;
@@ -718,23 +707,41 @@ class XLSXProfileParser extends BaseProfileParser {
 	/**
 	 *
 	 */
-	protected function processUIBundles($bundles) {
+	protected function processUIBundles(string $table, array $bundles) {
 		$values = [];
-		foreach($bundles->children() as $bundle) {
-			$code = self::getAttribute($bundle, "code");
-			$bundle_name = trim((string)$bundle->bundle);
-			$include_subtypes = self::getAttribute($ui, "includeSubtypes");
+		foreach($bundles as $bundle) {
+			$code = $bundle["code"];
 			
-			$type_restrictions = self::processTypeRestrictionStrings(self::getAttribute($bundle, "typeRestrictions"), $include_subtypes);
+			$label = $bundle["label"];
+			$description = $bundle["description"];
+			$relationship = $bundle["relationship"];
+			$relationship_type = $bundle["relationship_type"];
+			$type_res = $bundle["type_res"];
 			
-			$settings = $bundle->settings ? $this->getSettingsFromXML($bundle->settings) : [];
+			$rel_table = null;
+		
+			if(!$code && !$relationship) { continue; }
 			
-			$values[$code] = [
-				'code' => $code,
-				'bundle' => $bundle_name,
+			$settings = [];
+			if($type_res) {
+				$settings['restrict_to_types'][] = array_map(function($v) { return caTextToSnake($v); }, preg_split("![;,\n]+!", $type_res));
+			}
+			if($relationship && ($rel_table = self::tableNameFromString($relationship)) && $relationship_type) {
+				$settings['restrict_to_relationship_types'][] = array_map(function($v) { return caTextToSnake($v); }, preg_split("![;,\n]+!", $relationship_type));
+			}
+			if($label) {
+				$settings['label'][$this->settings['locale']] = [$label];
+			}
+			if($description) {
+				$settings['description'][$this->settings['locale']] = [$description];
+			}
+			
+			$values[$code ? $code : $relationship] = [
+				'code' => $code ? $code : $relationship,
+				'bundle' => $rel_table ? $rel_table : "{$table}.{$code}",
 				'settings' => $settings,
-				'includeSubtypes' => $include_subtypes,
-				'typeRestrictions' => $type_restrictions
+				'includeSubtypes' => true,
+				'typeRestrictions' => []
 			];
 		}
 
