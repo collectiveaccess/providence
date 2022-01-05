@@ -246,8 +246,8 @@
 								$template = caGetOption('displayTemplate', $settings, null);
 							}
 							
-							if ($template && (is_array($tags = caGetTemplateTags($template)) && sizeof($tags))) {			// extract tag
-								$display_list[$i]['bundle_sort'] = str_replace('^', '', $tags[0]);
+							if ($template && (is_array($tags = caGetTemplateTags($template)) && sizeof($tags))) {
+								$display_list[$i]['bundle_sort'] = str_replace('^', '', join(';', $tags));
 								continue;
 							}
 					    	
@@ -733,6 +733,11 @@
  		public function createSetFromResult() {
  			global $g_ui_locale_id;
  			
+ 			if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+				throw new ApplicationException(_t('CSRF check failed'));
+				return;
+			}
+ 			
  			$vs_set_name = $vs_set_code = null;
  			$vn_added_items_count = 0;
  			
@@ -1073,6 +1078,9 @@
  		 * Return view for results (spreadsheet-like) editor
  		 */
  		public function resultsEditor() {
+ 			if(!$this->request->user->canDoAction('can_use_spreadsheet_editor_'.$this->ops_tablename)) { 
+ 				throw new ApplicationException(_t('Cannot use editor for %1', $this->ops_tablename));
+ 			}
  			AssetLoadManager::register("tableview");
  			
  			$ids 			= $this->opo_result_context->getResultList();
@@ -1104,6 +1112,9 @@
  		 * Return data for results editor
  		 */
  		public function getResultsEditorData() {
+ 			if(!$this->request->user->canDoAction('can_use_spreadsheet_editor_'.$this->ops_tablename)) { 
+ 				throw new ApplicationException(_t('Cannot use editor for %1', $this->ops_tablename));
+ 			}
  			if (($s = (int)$this->request->getParameter('s', pInteger)) < 0) { $s = 0; }
  			if (($c = (int)$this->request->getParameter('c', pInteger)) < 1) { $c = 10; }
  			
@@ -1150,6 +1161,15 @@
  		 *  (2) "complex" editing from a popup editing window. Data is submitted from a form as standard editor UI form data from a psuedo editor UI screen.
  		 */
  		public function saveResultsEditorData() {
+ 			if(!$this->request->user->canDoAction('can_use_spreadsheet_editor_'.$this->ops_tablename)) { 
+ 				throw new ApplicationException(_t('Cannot use editor for %1', $this->ops_tablename));
+ 			}
+ 			
+ 			if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+				throw new ApplicationException(_t('CSRF check failed'));
+				return;
+			}
+			
  			$t_display = new ca_bundle_displays($this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id, $this->_getShowInStr()));
  			$response = $t_display->saveResultsEditorData($this->ops_tablename, [
  													'request' => $this->request, 
@@ -1168,6 +1188,9 @@
  		 * results editor for data that is too complex to be edited in-cell.
  		 */ 
  		public function resultsComplexDataEditor() {
+ 			if(!$this->request->user->canDoAction('can_use_spreadsheet_editor_'.$this->ops_tablename)) { 
+ 				throw new ApplicationException(_t('Cannot use editor for %1', $this->ops_tablename));
+ 			}
  			$t_instance 			= Datamodel::getInstanceByTableName($this->ops_tablename, true);
  			$display_id 			= $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id, $this->_getShowInStr());
  			

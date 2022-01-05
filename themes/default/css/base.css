@@ -1,6 +1,15 @@
 @font-face {font-family: 'DIN-Regular';src: url('fonts/28EC2C_0_0.eot');src: url('fonts/28EC2C_0_0.eot?#iefix') format('embedded-opentype'),url('fonts/28EC2C_0_0.woff') format('woff'),url('fonts/28EC2C_0_0.ttf') format('truetype');}
 
 /*  dark gray #4b4a4a - teal #134959 - turquoise #1FAA99 - med gray #DDDDDD - light gray #EEEEEE */
+
+html {
+	box-sizing: content-box !important;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit !important;
+}
+
 html {
     font: 12px "Helvetica Neue", Arial, Helvetica, Sans-serif;
 }
@@ -23,7 +32,7 @@ form select {
 	-webkit-appearance: none;
 	appearance: none;
 	-moz-appearance: none;
-	padding: 3px;
+	padding: 2px;
 	padding-right: 30px;
 	background: #fff url('../graphics/icons/downArrowSmall.png') no-repeat 97% 50%;
 	background-size: 7px 4px;
@@ -138,6 +147,11 @@ h5 {
     float: left;
     cursor: pointer;
 }
+
+img.logo {
+	margin-top: 12px;
+}
+
 *:first-child+html #logo {padding:0px 0px 0px 5px;} * html #logo {padding:0px 0px 0px 5px;} /* IE6 only fixes width */
 #main{
     background-color: #DDDDDD;
@@ -824,7 +838,6 @@ a.sf-menu-selected:hover {
     background-color: #ddd;
     background-repeat:no-repeat;
     background-position: top right;
-    height:13px;
 }
 
 a.sf-menu-disabled-selected, #leftNav h2 a.sf-menu-disabled-selected {
@@ -1094,7 +1107,7 @@ li.sfHover > a > .sf-sub-indicator {
 /*** NOTIFICATIONS ***/
 
 div.notification-info-box {
-    background:	url('../graphics/icons/info.png') no-repeat 10px 7px;
+    background:	url('../graphics/icons/info.png') no-repeat 10px 15px;
     background-size:32px 32px;
     text-indent: 32px;
     background-color: #f3f3f3;
@@ -1102,6 +1115,8 @@ div.notification-info-box {
     margin-bottom: 10px;
     clear:both;
     border-radius: 0px !important;
+    max-height: 150px;
+    overflow-y: scroll;
 }
 
 * html div.notification-info-box {  /* IE6 fix */
@@ -1121,11 +1136,13 @@ div.notification-error-box {
 }
 
 div.notification-warning-box {
-    background:	url('../graphics/buttons/warning_sign.png') no-repeat 10px 10px;
+    background:	url('../graphics/icons/warning_sign.png') no-repeat 10px 15px;
     text-indent: 32px;
     background-color: #eeeeee;
     padding: 5px;
     margin-bottom: 10px;
+    max-height: 150px;
+    overflow-y: scroll;
 }
 
 * html div.notification-warning-box {  /* IE6 fix */
@@ -1157,7 +1174,7 @@ li.notification-error-box {
     font-weight: normal;
     color: #EB0000;
     font-size: 13px;
-    text-indent: 10px;
+    text-indent: 0px;
     font-family: 'din-regular';
 }
 
@@ -2774,12 +2791,9 @@ table.representationAnnotationListItem {
     margin: 0px;
     /* overflow: auto; */
     text-align: center;
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    right: 0px;
-    bottom: 0px;
-    padding-bottom: 36px;
+    position: relative;
+    height: 100%;
+    padding-bottom: 5px;
 }
 
 #caMediaPanelProgress {
@@ -2796,11 +2810,11 @@ div.caMediaOverlayControls {
     color:#FFF;
     font-size: 11px;
     text-align:center;
-    position:absolute;
+    position: relative;
     padding: 10px 0px 10px 0px;
     width:100%;
-    bottom:0px;
-    left:0px;
+    height: 20px;
+    overflow: hidden;
     z-index: 35000;			/* needs to be on top of caMediaPanel, which has z-index=34000 */
     /* opacity:.1;	 */
     opacity: 0.7;
@@ -2820,7 +2834,7 @@ div.caMediaOverlayControls .close {
     position: absolute;
     text-align: right;
     width:200px;
-    height:16px;
+    height:20px;
     margin: 10px 10px 0px 20px;
     top: 0px;
     right: 0px;
@@ -2836,17 +2850,19 @@ div.caMediaOverlayControls .close a {
 
 div.caMediaOverlayControls .download {
    	position: absolute;
-    width:200px;
-    height:16px;
+    min-width:200px;
+    height:20px;
     margin: 10px 10px 0px 20px;
     top: 0px;
     right: 300px;
+    overflow: hidden;
 }
 
 div.caMediaOverlayControls .download form a, div.caMediaOverlayControls .download a {
 	font-size: 11px;	
     font-weight: normal;
     color:#FFF;
+    overflow: hidden;
 }
 
 div.caMediaOverlayControls .objectInfo{
@@ -2856,6 +2872,9 @@ div.caMediaOverlayControls .objectInfo{
     text-align:left;
     width:40%;
     float:left;
+    overflow: hidden;
+    height: 14px;
+    padding-top: 3px;
 }
 
 div.caMediaOverlayControls .repNav {
@@ -5257,10 +5276,10 @@ a.dashboardControl {font-weight:normal; padding-right:10px; text-decoration:none
     float: right;
     width:16px;
     height:16px;
-    margin:5px 5px 0px 5px;
+    margin:4px 5px 0px 8px;
+    border:0px;
 }
 a.dashboardRemoveWidget {
-    border:0px;
     text-decoration: none;
 }
 .dashboardWidgetContentContainer {
@@ -6787,7 +6806,7 @@ div.caRepresentationMediaReplicationControls {
 	background-image: url(../graphics/icons/audio.png);
 	background-position: center center;
 	background-repeat:no-repeat;
-    background-color: #000;
+    background-color: #fff;
 }
 .caAnnoEditorMediaPlayer {
 	width: 500px;
@@ -6802,10 +6821,12 @@ div.caRepresentationMediaReplicationControls {
 .caAnnoMediaPlayerControlsLeft {
 	float: left;
 	padding: 10px;
+    background-color: #fff;
 }
 .caAnnoMediaPlayerControlsRight {
 	float: right;
 	padding: 10px;
+    background-color: #fff;
 }
 
 .caAnnoEditorEditorScreen {
@@ -7998,3 +8019,13 @@ span.developerBundleCode, a.developerBundleCode {
     border-radius: 3px;
     white-space: nowrap;
 }
+
+/*.plyr, .plyr__video-wrapper {
+    max-height: 96% !important;
+} */
+.plyr {
+    height: calc(100% - 36px) !important;
+} 
+.plyr__video-wrapper {
+    height: none !important;
+}    

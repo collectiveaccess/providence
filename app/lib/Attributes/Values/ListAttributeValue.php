@@ -66,6 +66,14 @@ $_ca_attribute_settings['ListAttributeValue'] = array(		// global
 		'label' => _t('Does not use locale setting'),
 		'description' => _t('Check this option if you don\'t want your list values to be locale-specific. (The default is to not be.)')
 	),
+	'singleValuePerLocale' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Allow single value per locale'),
+		'description' => _t('Check this option to restrict entry to a single value per-locale.')
+	),
 	'requireValue' => array(
 		'formatType' => FT_NUMBER,
 		'displayType' => DT_CHECKBOXES,
@@ -399,7 +407,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		if (!is_array($va_match_on) && $vb_treat_value_as_idno) { $va_match_on = array('idno', 'label', 'item_id'); }
 		if ((!is_array($va_match_on) || !sizeof($va_match_on)) && preg_match('![^\d]+!', $ps_value)) { $va_match_on = array('idno', 'label', 'item_id'); }
 		if (($vb_treat_value_as_idno) && (!in_array('idno', $va_match_on))) { array_push($va_match_on, 'idno'); }
-		if (!is_array($va_match_on) || !sizeof($va_match_on)) { $va_match_on = array('item_id'); }
+		if (!is_array($va_match_on) || !sizeof($va_match_on)) { $va_match_on = ['item_id', 'idno']; }
 
 		$o_trans = caGetOption('transaction', $pa_options, null);
 

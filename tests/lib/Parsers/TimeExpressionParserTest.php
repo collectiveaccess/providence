@@ -618,6 +618,14 @@ class TimeExpressionParserTest extends TestCase {
 		$this->assertEquals($va_parse['end'], 1098590399);
 		$this->assertEquals($va_parse[0], 1098504000);
 		$this->assertEquals($va_parse[1], 1098590399);
+		
+		$vb_res = $o_tep->parse('10-23-2004');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getUnixTimestamps();
+		$this->assertEquals($va_parse['start'], 1098504000);
+		$this->assertEquals($va_parse['end'], 1098590399);
+		$this->assertEquals($va_parse[0], 1098504000);
+		$this->assertEquals($va_parse[1], 1098590399);
 	}
 
 	public function testParseSimpleDelimitedDateForEuropeanLocale() {
@@ -1925,4 +1933,35 @@ class TimeExpressionParserTest extends TestCase {
 		$this->assertEquals($va_historic['start'], '2010.042100000000');
 		$this->assertEquals($va_historic['end'], '2010.042123595900');
 	}
+	
+	function testCircaSuffix() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage("en_US");
+		
+		$this->assertEquals($o_tep->parse("1953c"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_historic['start'], '1953.010100000010');
+		
+		$this->assertEquals($o_tep->parse("1999C"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_historic['start'], '1999.010100000010');
+	}	
+	
+	
+	function testTruncatedDecadeRange() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage("en_US");
+		
+		$this->assertEquals($o_tep->parse("1910-20s"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_historic['start'], '1910.010100000000');
+		$this->assertEquals($va_historic['end'], '1929.123123595900');
+		$this->assertEquals($o_tep->getText(), '1910 – 1929');
+		
+		$this->assertEquals($o_tep->parse("1910-1920s"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_historic['start'], '1910.010100000000');
+		$this->assertEquals($va_historic['end'], '1929.123123595900');
+		$this->assertEquals($o_tep->getText(), '1910 – 1929');
+	}	
 }

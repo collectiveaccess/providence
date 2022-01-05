@@ -59,8 +59,14 @@
 		 *
 		 */
 		static public function clearHistoryTrackingCurrentValues($options=null) {
+			$table_num = Datamodel::getTableNum(get_called_class());
 			$db = new Db();
-			$db->query("TRUNCATE TABLE ca_history_tracking_current_values");
+			
+			if(caGetOption('all', $options, true)) {
+				$db->query("TRUNCATE TABLE ca_history_tracking_current_values");
+			} else {
+				$db->query("DELETE FROM ca_history_tracking_current_values WHERE table_num = ?", [$table_num]);
+			}
 			return true;
 		}
 		# ------------------------------------------------------
@@ -151,7 +157,7 @@
 			if (!($policy_table = caGetOption('table', $policy_info, false))) { return []; }
 
 			foreach($map as $table => $types) {
-				if ($table == 'ca_objects') { // TODO: this is a hack
+				if (in_array($table, ['ca_objects', 'ca_object_lots', 'ca_collections'])) { // TODO: this is a hack
 				    $bundle_settings['showDeaccessionInformation'] = true; 
 				    $bundle_settings['deaccession_displayTemplate'] = $types['__default__']['template']; 
 				    $bundle_settings['deaccession_color'] = $types['__default__']['color']; 
@@ -172,28 +178,28 @@
 						}
 						if (in_array($type_list, ['*', '__default__'])) { 
 							$bundle_settings["{$table}_displayTemplate"] = $config['template'];
-							$types = array_map(function($v) { return $v['idno']; }, $t_instance->getTypeList());
-							
+							$tt = array_filter(array_map(function($v) { return $v['idno']; }, $t_instance->getTypeList()), function($v) use ($types) { return !isset($types[$v]); });
 							$bundle_settings["{$table}_setInterstitialElementsOnAdd"] = $config['setInterstitialElementsOnAdd'];
 						} else {
-							$types = preg_split("![ ]*[,;]{1}[ ]*!", $type_list);
+							$tt = preg_split("![ ]*[,;]{1}[ ]*!", $type_list);
 						}
-						foreach($types as $type) {
+						
+						foreach($tt as $t) {
 							if(!is_array($config)) { break; }
 							if ($table === 'ca_storage_locations') { 
 								$bundle_settings["{$table}_setInterstitialElementsOnAdd"] = $config['setInterstitialElementsOnAdd'];
 								$bundle_settings["{$table}_useDatePicker"] = $config['useDatePicker'];
 							} else {
-								$bundle_settings["{$table}_{$type}_setInterstitialElementsOnAdd"] = $config['setInterstitialElementsOnAdd'];
+								$bundle_settings["{$table}_{$t}_setInterstitialElementsOnAdd"] = $config['setInterstitialElementsOnAdd'];
 							}
-							$bundle_settings["{$table}_{$type}_displayTemplate"] = $config['template'];
-							$bundle_settings["{$table}_{$type}_color"] = $config['color'];
-							$bundle_settings["{$table}_showTypes"][] = array_shift(caMakeTypeIDList($table, [$type]));
+							$bundle_settings["{$table}_{$t}_displayTemplate"] = $config['template'];
+							$bundle_settings["{$table}_{$t}_color"] = $config['color'];
+							$bundle_settings["{$table}_showTypes"][] = array_shift(caMakeTypeIDList($table, [$t]));
 							
-							$bundle_settings["{$table}_{$type}_useRelated"] = $config['useRelated'];
-							$bundle_settings["{$table}_{$type}_useRelatedRelationshipType"] = $config['useRelatedRelationshipType'];
+							$bundle_settings["{$table}_{$t}_useRelated"] = $config['useRelated'];
+							$bundle_settings["{$table}_{$t}_useRelatedRelationshipType"] = $config['useRelatedRelationshipType'];
 						
-							$bundle_settings["{$table}_{$type}_dateElement"] = $config['date'];
+							$bundle_settings["{$table}_{$t}_dateElement"] = $config['date'];
 
 							if ((sizeof($path) === 3) && ($rel_types = caGetOption(['restrictToRelationshipTypes', 'showRelationshipTypes'], $config, null)) && $path[1]) { 
 								$bundle_settings["{$table}_showRelationshipTypes"] = [];
@@ -517,10 +523,11 @@
 				    }
 				    
 				    // Remove old tracking value
-				    self::$s_history_tracking_deleted_current_values[$l['tracked_table_num']][$l['tracked_row_id']][$policy] = 
-					    self::$s_history_tracking_deleted_current_values[$l['current_table_num']][$l['current_row_id']][$policy] = 
-					        ['table_num' => $l['table_num'], 'row_id' => $l['row_id']];
-					        
+				    if(!$is_future) {
+						self::$s_history_tracking_deleted_current_values[$l['tracked_table_num']][$l['tracked_row_id']][$policy] = 
+							self::$s_history_tracking_deleted_current_values[$l['current_table_num']][$l['current_row_id']][$policy] = 
+								['table_num' => $l['table_num'], 'row_id' => $l['row_id']];
+					}
 					$t_l = new ca_history_tracking_current_values();
 					$t_l->setDb($this->getDb());	
 					$t_l->load($l['tracking_id']);
@@ -872,7 +879,7 @@
 		 */
 		public function getCurrentValue($policy=null, $options=null) {
 		    if(!$policy) { $policy = $this->getInspectorHistoryTrackingDisplayPolicy('policy'); }
-		    if (is_array($history = $this->getHistory(['policy' => $policy, 'limit' => 1, 'row_id' => caGetOption('row_id', $options, null)])) && (sizeof($history) > 0)) {
+		    if (is_array($history = $this->getHistory(['policy' => $policy, 'limit' => 1, 'currentOnly' => true, 'row_id' => caGetOption('row_id', $options, null)])) && (sizeof($history) > 0)) {
                 $current_value = array_shift(array_shift($history));
                 return is_array($current_value) ? $current_value : null;
             }
@@ -1967,14 +1974,14 @@
 		/**
 		 * Return array with list of current contents for currently loaded row
 		 *
-		 * @param string $policy 
+		 * @param string $policy Policy to apply. If omitted the default policy is used.
 		 * @param array $options Array of options. Options include:
 		 *		row_id = 
 		 *		returnHistoryTrackingData = Return arrray with internal history tracking data. [Default is false]
 		 *
 		 * @return SearchResult 
 		 */
-		public function getContents(string $policy, array $options=null) {
+		public function getContents(?string $policy, array $options=null) {
 			if(!($row_id = caGetOption('row_id', $options, $this->getPrimaryKey()))) { return null; }
 			return $this->getContentsForIDs($policy, [$row_id], $options);
 		}
@@ -1982,14 +1989,14 @@
 		/**
 		 * Return array with list of current contents for all specified ids
 		 *
-		 * @param string $policy 
+		 * @param string $policy Policy to apply. If omitted the default policy is used.
 		 * @param array $options Array of options. Options include:
 		 *		returnHistoryTrackingData = Return arrray with internal history tracking data. [Default is false]
 		 *		idsOnly = 
 		 *
 		 * @return SearchResult 
 		 */
-		public function getContentsForIDs(string $policy, array $ids, $options=null) {
+		public function getContentsForIDs(?string $policy, array $ids, $options=null) {
 			if(!($row_id = caGetOption('row_id', $options, $this->getPrimaryKey()))) { return null; }
 			if (!$policy) { if (!($policy = $this->getDefaultHistoryTrackingCurrentValuePolicy())) { return null; } }
 		

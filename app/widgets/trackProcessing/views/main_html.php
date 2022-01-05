@@ -34,33 +34,6 @@
 	$va_jobs_queued = $this->getVar('qd_job_data');
 	$vn_jobs_queued_additional = $this->getVar('qd_job_additional');
 	$va_jobs_processing = $this->getVar('pr_job_data');
-
-	/**
-	 * Returns a string to render status information in html.
-	 *
-	 * @param $va_status
-	 * @param $view
-	 */
-	function getStatusForDisplay($va_status, $view){
-		$result = "";
-		foreach($va_status as $vs_code => $va_info) {
-			switch($vs_code) {
-				case 'table':
-					$va_tmp = explode(':', $va_status['table']['value']);
-					if ($vs_link = caEditorLink($view->request, $va_info['value'], 'link', $va_tmp[0], $va_tmp[2], array(), array(), array('verifyLink' => true))) {
-						$result .= "<strong>".$va_info['label']."</strong>: ".$vs_link."<br/>\n";
-					} else {
-						$result .=  "<strong>".$va_info['label']."</strong>: ".$va_info['value']." [<em>"._t('DELETED')."</em>]<br/>\n";
-					}
-					break;
-				default:
-					$result .= "<strong>".$va_info['label']."</strong>: ".$va_info['value']."<br/>\n";
-					break;
-			}
-		}
-
-		return $result;
-	}
 ?>
 
 <div class="dashboardWidgetContentContainer" id="widget_<?php print $vs_widget_id; ?>">
@@ -108,7 +81,7 @@
 						
 						<?php print "<strong>"._t("Created on")."</strong>: ".caGetLocalizedHistoricDate(caUnixTimestampToHistoricTimestamp( $va_job['created'])) . "<br />"; ?>
 						<?php print "<strong>"._t("Created by")."</strong>: ".$va_job['by']."<br />"; ?>
-						<?php print getStatusForDisplay( $va_job['status'], $this ); ?>
+						<?php print trackProcessingWidget::getStatusForDisplay( $va_job['status'], $this ); ?>
 					</td>
 				</tr>
 <?php
@@ -133,7 +106,7 @@
 						
 						<?php print "<strong>"._t("Created on")."</strong>: ".caGetLocalizedHistoricDate(caUnixTimestampToHistoricTimestamp( $va_job['created'])) . "<br />"; ?>
 						<?php print "<strong>"._t("Created by")."</strong>: ".$va_job['by']."<br />"; ?>
-						<?php print getStatusForDisplay($va_job['status'], $this);
+						<?php print trackProcessingWidget::getStatusForDisplay($va_job['status'], $this);
 ?>
 					</td>
 				</tr>
@@ -184,7 +157,7 @@
 							}
 						}
 
-						print getStatusForDisplay( $va_job['status'], $this );
+						print trackProcessingWidget::getStatusForDisplay( $va_job['status'], $this );
 
 						?>
 						<?php print "<strong>"._t("Total processing time")."</strong>: ".$va_job['processing_time']."s<br />"; ?>

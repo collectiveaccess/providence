@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2014 Whirl-i-Gig
+ * Copyright 2012-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -80,6 +80,10 @@
  			if ($vn_parent_id = $this->request->getParameter('parent_id', pInteger)) {
  				$this->opo_result_context->setParameter($t_subject->tableName().'_last_parent_id', $vn_parent_id);
  			}
+
+			if ($hier_id = $this->request->getParameter('hier_id', pInteger)) {
+ 				$this->view->setVar('hier_id', $hier_id);
+ 			}
  			
  			// Get user query
 			$this->view->setVar('q', preg_replace("!^[^:]*:!", "", $this->request->getParameter('q', pString)));
@@ -128,14 +132,24 @@
 			
 			if (!is_array($va_prepopulate_quickadd_fields) || !sizeof($va_prepopulate_quickadd_fields) || in_array('preferred_labels', $va_prepopulate_quickadd_fields)) {		
 				global $g_ui_locale_id;
+				$v = caUcFirstUTF8Safe($this->view->getVar('q'));
 				$va_force_new_label = [
 					'locale_id' => $g_ui_locale_id, 									// use default locale
-					$t_subject->getLabelDisplayField() => caUcFirstUTF8Safe($this->view->getVar('q'))		// query text is used for display field
+					$t_subject->getLabelDisplayField() => $v					// query text is used for display field
 				];
 				foreach($t_subject->getLabelUIFields() as $vn_i => $vs_fld) {
 					if ($vs_fld === $t_subject->getLabelDisplayField()) { continue; }
 					$va_force_new_label[$vs_fld] = '';
-				}						
+				}
+				
+				// Populate secondary display fields for lists items (name_plural)
+				if($t_subject->tableName() === 'ca_list_items') {
+					if(is_array($sec = $t_subject->getSecondaryLabelDisplayFields())) {
+						foreach($sec as $s) {
+							$va_force_new_label[$s] = $v;
+						}
+					}	
+				}				
 				$this->view->setVar('forceLabel', $va_force_new_label);
 			}
 			
@@ -177,6 +191,9 @@
  					$vn_type_id = $va_restrict_to_type_ids[0];		// get first type on list since default isn't part of restriction
  				}
  			}
+ 			
+ 			$this->view->setVar('restrict_to_lists',$this->request->getParameter('lists', pString));
+ 			
  			$this->request->setParameter('type_id', $vn_type_id);
 			if($t_subject->hasField('type_id')) {
 				$t_subject->set('type_id', $vn_type_id);
@@ -357,6 +374,10 @@
  			$t_subject->set('parent_id', $vn_parent_id);
  			$this->opo_result_context->setParameter($t_subject->tableName().'_last_parent_id', $vn_parent_id);
  			
+ 			if($hier_id_fld = $t_subject->getProperty('HIERARCHY_ID_FLD')) {
+ 				$t_subject->set($hier_id_fld, $this->request->getParameter('hier_id', pInteger));
+ 			}
+ 			
  			// Set lot_id when quick-adding objects from lots
  			if (($t_subject->tableName() == 'ca_objects') && ($vn_lot_id = $this->request->getParameter('lot_id', pInteger))) {
  			    $t_subject->set('lot_id', $vn_lot_id);
@@ -507,9 +528,11 @@
  			$this->view->setVar('t_subject', $t_subject);
  			
  			//MetaTagManager::setWindowTitle(_t("Editing %1 : %2", ($vs_type = $t_subject->getTypeName()) ? $vs_type : $t_subject->getProperty('NAME_SINGULAR'), ($vn_subject_id) ? $t_subject->getLabelForDisplay(true) : _t('new %1', $t_subject->getTypeName())));
- 			
+ 			if($hier_id_fld = $t_subject->getProperty('HIERARCHY_ID_FLD')) {
+ 				$this->view->setVar('hier_id', $hier_id = $this->request->getParameter($hier_id_fld, pInteger));
+ 			}
  			if ($vs_parent_id_fld = $t_subject->getProperty('HIERARCHY_PARENT_ID_FLD')) {
- 				$this->view->setVar('parent_id', $vn_parent_id = $this->request->getParameter($vs_parent_id_fld, pInteger));
+ 				$this->view->setVar($vs_parent_id_fld, $vn_parent_id = $this->request->getParameter($vs_parent_id_fld, pInteger));
 
  				return array($t_subject, $t_ui, $vn_parent_id, null);
  			}

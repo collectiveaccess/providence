@@ -182,17 +182,21 @@ var caUI = caUI || {};
 			
 			jQuery('#' + options.itemID + id + ' #' + options.fieldNamePrefix + 'id' + id).val(item_id);
 			jQuery('#' + options.itemID + id + ' #' + options.fieldNamePrefix + 'type_id' + id).css('display', 'inline');
-			var i, typeList, types = [];
+			var i, typeList, typesByParent = {};
+			//var types = [];
 			var default_type = 0;
 	
 			if (jQuery('#' + options.itemID + id + ' select[name=' + options.fieldNamePrefix + 'type_id' + id + ']').data('item_type_id') == type_id) {
 				// noop - don't change relationship types unless you have to
 			} else {
-				var types_output = {};
+				var typesOutput = {};
 				if (options.relationshipTypes && (typeList = options.relationshipTypes[type_id])) {
 					for(i=0; i < typeList.length; i++) {
-						types.push({type_id: typeList[i].type_id, typename: typeList[i].typename, direction: typeList[i].direction, rank: typeList[i].rank });
-						types_output[typeList[i].type_id] = 1;
+						typesOutput[typeList[i].type_id] = 1;
+						
+						if(!typesByParent[typeList[i].parent_id]) { typesByParent[typeList[i].parent_id] = []; }
+						typesByParent[typeList[i].parent_id].push(typeList[i]);
+						
 						if (parseInt(typeList[i].is_default) === 1) {
 							default_type = (typeList[i].direction ? typeList[i].direction : '') + typeList[i].type_id;
 						}
@@ -201,23 +205,39 @@ var caUI = caUI || {};
 				// look for null (these are unrestricted and therefore always displayed)
 				if (options.relationshipTypes && (typeList = options.relationshipTypes['NULL'])) {
 					for(i=0; i < typeList.length; i++) {
-						if(types_output[typeList[i].type_id]) continue;
-						types.push({type_id: typeList[i].type_id, typename: typeList[i].typename, direction: typeList[i].direction, rank: typeList[i].rank });
-				
+						if(typesOutput[typeList[i].type_id]) { continue };
+						typesOutput[typeList[i].type_id] = 1;
+						
+				        if(!typesByParent[typeList[i].parent_id]) { typesByParent[typeList[i].parent_id] = []; }
+						typesByParent[typeList[i].parent_id].push(typeList[i]);
+						
 						if (parseInt(typeList[i].is_default) === 1) {
 							default_type = (typeList[i].direction ? typeList[i].direction : '') + typeList[i].type_id;
 						}
 					}
 				}
 		
-				types.sort(function(a,b) {
-					a.rank = parseInt(a.rank);
-					b.rank = parseInt(b.rank);
-					if (a.rank != b.rank) {
-						return (a.rank > b.rank) ? 1 : ((b.rank > a.rank) ? -1 : 0);
-					} 
-					return (a.typename > b.typename) ? 1 : ((b.typename > a.typename) ? -1 : 0);
-				});
+		        var root_id = null;
+		        for(var parent_id in typesByParent) {
+		            if(!typesOutput[parseInt(parent_id)]) { root_id = parent_id; }
+                    typesByParent[parent_id].sort(function(a,b) {
+                        a.rank = parseInt(a.rank);
+                        b.rank = parseInt(b.rank);
+                    
+                        if (a.rank != b.rank) {
+                            return (a.rank > b.rank) ? 1 : ((b.rank > a.rank) ? -1 : 0);
+                        } 
+                        return (a.typename > b.typename) ? 1 : ((b.typename > a.typename) ? -1 : 0);
+                    });
+                }
+                
+                if(root_id > 0) {
+                    types = that._flattenOptionList([], typesByParent[root_id], typesByParent);
+                } else {
+                    types = [
+                        { type_id: -1, parent_id: null, direction: null, typename: "NO RELATIONSHIP TYPES DEFINED" }
+                    ];
+                }
 		
 				jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id + ' option').remove();	// clear existing options
 				jQuery.each(types, function (i, t) {
@@ -254,6 +274,16 @@ var caUI = caUI || {};
 		};
 		
 		var that = caUI.initBundle(container, options);
+		
+		that._flattenOptionList = function(acc, list, hier) {
+		    for(var i in list) {
+		        acc.push(list[i]);
+		        if(hier[list[i].type_id]) {
+		            acc = that._flattenOptionList(acc, hier[list[i].type_id], hier);
+		        }
+		    }  
+		    return acc;
+		};
 		
 		that.triggerQuickAdd = function(q, id, params=null) {
 			var autocompleter_id = options.fieldNamePrefix + 'autocomplete' + id;

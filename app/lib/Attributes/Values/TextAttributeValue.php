@@ -97,6 +97,14 @@
 			'label' => _t('Does not use locale setting'),
 			'description' => _t('Check this option if you don\'t want your text to be locale-specific. (The default is to be.)')
 		),
+		'singleValuePerLocale' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow single value per locale'),
+			'description' => _t('Check this option to restrict entry to a single value per-locale.')
+		),
 		'allowDuplicateValues' => array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_CHECKBOXES,
@@ -384,7 +392,7 @@
  					'value' => '{{'.$pa_element_info['element_id'].'}}', 
  					'maxlength' => $va_settings['maxChars'],
  					'class' => $vs_class,
- 					'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 'class' => "{$vs_class}".($va_settings['usewysiwygeditor'] ? " ckeditor" : '')
+ 					'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 'class' => "{$vs_class}".($va_settings['usewysiwygeditor'] ? " ckeditor-element" : '')
  				);
  			if (caGetOption('readonly', $pa_options, false)) { 
  				$va_opts['disabled'] = 1;

@@ -56,9 +56,9 @@ class BaseEditorController extends ActionController {
 
 		AssetLoadManager::register('bundleListEditorUI');
 		AssetLoadManager::register('panel');
-// 		AssetLoadManager::register('maps');
-// 		AssetLoadManager::register('leaflet');
-// 		AssetLoadManager::register('3dmodels');
+ 		AssetLoadManager::register('maps');
+ 		AssetLoadManager::register('leaflet');
+ 		AssetLoadManager::register('3dmodels');
 
 		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 		$this->opo_result_context = new ResultContext($po_request, $this->ops_table_name, ResultContext::getLastFind($po_request, $this->ops_table_name));
@@ -2412,7 +2412,17 @@ class BaseEditorController extends ActionController {
 
 		$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
 
-		if (!$ps_version) { $ps_version = 'original'; }
+		if (!($t_rep = ca_object_representations::findAsInstance(['representation_id' => $pn_representation_id]))) {
+			throw new ApplicationException(_t('Invalid representation'));
+		}
+		if(!$t_rep->isReadable($this->request->user)) {
+			throw new ApplicationException(_t('Access denied'));
+		}
+		
+		$m = $t_rep->getMediaInfo('media', 'original', 'MIMETYPE'); 
+		$di = caGetMediaDisplayInfo('media_overlay', $m);	
+		if (!$ps_version) { $ps_version = caGetOption('download_version', $di, 'original'); }
+
 		$o_view->setVar('version', $ps_version);
 
 		$va_ancestor_ids = ($t_subject->isHierarchical()) ? $t_subject->getHierarchyAncestors(null, array('idsOnly' => true, 'includeSelf' => true)) : array($vn_subject_id);
@@ -2612,7 +2622,7 @@ class BaseEditorController extends ActionController {
 	/**
 	 * Handle ajax media uploads from editor
 	 */
-	public function UploadFiles($pa_options=null) {
+	public function UploadFiles($options=null) {
 		if (!$this->request->isLoggedIn() || ((int)$this->request->user->get('userclass') !== 0)) {
 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
 			return;
@@ -2623,29 +2633,16 @@ class BaseEditorController extends ActionController {
 
 		$stored_files = [];
 		
-		$user_dir = caGetUserMediaDirectoryPath($user_id);
-		$user_files = array_flip(caGetDirectoryContentsAsList($user_dir));
+		$user_dir = caGetMediaUploadPathForUser($user_id);
 
 		if(is_array($_FILES['files'])) {
 			foreach($_FILES['files']['tmp_name'] as $i => $f) {
 				if(!strlen($f)) { continue; }
-				$dest_filename = pathinfo($f, PATHINFO_FILENAME);
 				
-				$md5 = md5_file($f);
-				if (isset($user_files["{$user_dir}/md5_{$md5}"])) { 
-					$f = "{$user_dir}/".file_get_contents("{$user_dir}/md5_{$md5}");
-				}
-				
-				$dest_filename = pathinfo($f, PATHINFO_FILENAME);
+				$dest_filename = isset($_FILES['files']['name'][$i]) ? $_FILES['files']['name'][$i] : pathinfo($f, PATHINFO_FILENAME);
 				@copy($f, $dest_path = "{$user_dir}/{$dest_filename}");
 
-				// write file metadata
-				@file_put_contents("{$dest_path}_metadata", json_encode([
-					'original_filename' => $_FILES['files']['name'][$i],
-					'size' => filesize($dest_path)
-				]));
-				@file_put_contents("{$user_dir}/md5_{$md5}", $dest_filename);
-				$stored_files[$md5] = "userMedia{$user_id}/{$dest_filename}"; // only return the user directory and file name, not the entire path
+				$stored_files[$dest_filename] = caGetUserDirectoryName($this->request->getUserID())."/{$dest_filename}"; // only return the user directory and file name, not the entire path
 			}
 		}
 

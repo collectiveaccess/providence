@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2017 Whirl-i-Gig
+ * Copyright 2012-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -42,20 +42,20 @@
 ?>		
 <script type="text/javascript">
 	var caQuickAddFormHandler = caUI.initQuickAddFormHandler({
-		formID: '<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>',
-		formErrorsPanelID: '<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>',
-		formTypeSelectID: '<?php print $vs_form_name; ?>TypeID<?php print $vs_field_name_prefix.$vs_n; ?>', 
+		formID: '<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>',
+		formErrorsPanelID: '<?= $vs_form_name; ?>Errors<?= $vs_field_name_prefix.$vs_n; ?>',
+		formTypeSelectID: '<?= $vs_form_name; ?>TypeID<?= $vs_field_name_prefix.$vs_n; ?>', 
 		
-		formUrl: '<?php print caNavUrl($this->request, 'editor/places', 'PlaceQuickAdd', 'Form'); ?>',
-		fileUploadUrl: '<?php print caNavUrl($this->request, "editor/places", "PlaceEditor", "UploadFiles"); ?>',
-		saveUrl: '<?php print caNavUrl($this->request, "editor/places", "PlaceQuickAdd", "Save"); ?>',
+		formUrl: '<?= caNavUrl($this->request, 'editor/places', 'PlaceQuickAdd', 'Form'); ?>',
+		fileUploadUrl: '<?= caNavUrl($this->request, "editor/places", "PlaceEditor", "UploadFiles"); ?>',
+		saveUrl: '<?= caNavUrl($this->request, "editor/places", "PlaceQuickAdd", "Save"); ?>',
 		
-		headerText: '<?php print addslashes(_t('Quick add %1', $t_subject->getTypeName())); ?>',
-		saveText: '<?php print addslashes(_t('Created %1 ', $t_subject->getTypeName())); ?> <em>%1</em>',
-		busyIndicator: '<?php print addslashes(caBusyIndicatorIcon($this->request)); ?>'
+		headerText: '<?= addslashes(_t('Quick add %1', $t_subject->getTypeName())); ?>',
+		saveText: '<?= addslashes(_t('Created %1 ', $t_subject->getTypeName())); ?> <em>%1</em>',
+		busyIndicator: '<?= addslashes(caBusyIndicatorIcon($this->request)); ?>'
 	});
 </script>
-<form action="#" class="quickAddSectionForm" name="<?php print $vs_form_name; ?>" method="POST" enctype="multipart/form-data" id="<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>">
+<form action="#" class="quickAddSectionForm" name="<?= $vs_form_name; ?>" method="POST" enctype="multipart/form-data" id="<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>">
 	<div class='quickAddDialogHeader'><?php
 		print "<div class='quickAddTypeList'>"._t('Quick Add %1', $t_subject->getTypeListAsHTMLFormElement('change_type_id', array('id' => "{$vs_form_name}TypeID{$vs_field_name_prefix}{$vs_n}", 'onchange' => "caQuickAddFormHandler.switchForm();"), array('value' => $t_subject->get('type_id'), 'restrictToTypes' => $va_restrict_to_types)))."</div>";
 		if ($vb_can_edit) {
@@ -67,61 +67,61 @@
 	</div>
 	
 	<div class="quickAddFormTopPadding"><!-- empty --></div>
-	<div class="quickAddErrorContainer" id="<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>"> </div>
-	<div class="quickAddSectionBox" id="{$vs_form_name}Container<?php print $vs_field_name_prefix.$vs_n; ?>">
+	<div class="quickAddErrorContainer" id="<?= $vs_form_name; ?>Errors<?= $vs_field_name_prefix.$vs_n; ?>"> </div>
+	<div class="quickAddSectionBox" id="{$vs_form_name}Container<?= $vs_field_name_prefix.$vs_n; ?>">
 <?php
 			// Output hierarchy browser
 			$va_lookup_urls = caJSONLookupServiceUrl($this->request, 'ca_places');
 ?>
-	<div class='bundleLabel'><span class="formLabelText"><?php print _t('Location in hierarchy'); ?></span><br/>
+	<div class='bundleLabel'><span class="formLabelText"><?= _t('Location in hierarchy'); ?></span><br/>
 		<div class="bundleContainer">
 			<div class="caItemList">
 				<div class="hierarchyBrowserContainer">
-					<div id="caQuickAdd<?php print $vs_form_name; ?>HierarchyBrowser" class="hierarchyBrowserSmall">
+					<div id="caQuickAdd<?= $vs_form_name; ?>HierarchyBrowser" class="hierarchyBrowserSmall">
 						<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
 					</div><!-- end hierbrowser -->
 					<div>
-						<?php print _t('Search'); ?>: <input type="text" id="caQuickAdd<?php print $vs_form_name; ?>HierarchyBrowserSearch" name="search" value="<?php print htmlspecialchars($this->getVar('search'), ENT_QUOTES, 'UTF-8'); ?>" size="100"/>
+						<?= _t('Search'); ?>: <input type="text" id="caQuickAdd<?= $vs_form_name; ?>HierarchyBrowserSearch" name="search" value="<?= htmlspecialchars($this->getVar('search'), ENT_QUOTES, 'UTF-8'); ?>" size="100"/>
 					</div>
 				</div>
 							
 				<script type="text/javascript">
 					// Set up "add" hierarchy browser
-					var o<?php print $vs_form_name.$vs_field_name_prefix; ?>HierarchyBrowser = null;				
-					if (!o<?php print $vs_form_name.$vs_field_name_prefix; ?>HierarchyBrowser) {
-						o<?php print $vs_form_name.$vs_field_name_prefix; ?>HierarchyBrowser = caUI.initHierBrowser('caQuickAdd<?php print $vs_form_name.$vs_field_name_prefix; ?>HierarchyBrowser', {
-							levelDataUrl: '<?php print $va_lookup_urls['levelList']; ?>',
-							initDataUrl: '<?php print $va_lookup_urls['ancestorList']; ?>',
-							editButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
+					var o<?= $vs_form_name.$vs_field_name_prefix; ?>HierarchyBrowser = null;				
+					if (!o<?= $vs_form_name.$vs_field_name_prefix; ?>HierarchyBrowser) {
+						o<?= $vs_form_name.$vs_field_name_prefix; ?>HierarchyBrowser = caUI.initHierBrowser('caQuickAdd<?= $vs_form_name.$vs_field_name_prefix; ?>HierarchyBrowser', {
+							levelDataUrl: '<?= $va_lookup_urls['levelList']; ?>',
+							initDataUrl: '<?= $va_lookup_urls['ancestorList']; ?>',
+							editButtonIcon: "<?= caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
 						
 							readOnly: false,
 							selectOnLoad: true,
 							
-							initItemID: '<?php print (int)$this->getVar("default_parent_id"); ?>',
-							indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
+							initItemID: '<?= (int)$this->getVar("default_parent_id"); ?>',
+							indicator: "<?= caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 							displayCurrentSelectionOnLoad: true,
 							
-							currentSelectionIDID: '<?php print $vs_form_name; ?>_parent_id',
+							currentSelectionIDID: '<?= $vs_form_name; ?>_parent_id',
 							currentSelectionDisplayID: 'browseCurrentSelection',
 							onSelection: function(item_id, parent_id, name, display, type_id) {
-								jQuery('#<?php print $vs_form_name; ?>_parent_id').val(item_id);
+								jQuery('#<?= $vs_form_name; ?>_parent_id').val(item_id);
 							}
 						});
 					}
-					jQuery('#caQuickAdd<?php print $vs_form_name.$vs_field_name_prefix; ?>HierarchyBrowserSearch').autocomplete(
+					jQuery('#caQuickAdd<?= $vs_form_name.$vs_field_name_prefix; ?>HierarchyBrowserSearch').autocomplete(
 						{
 							minLength: 3, delay: 800,
-							source: '<?php print caNavUrl($this->request, 'lookup', 'Place', 'Get', array('noInline' => 1)); ?>',
+							source: '<?= caNavUrl($this->request, 'lookup', 'Place', 'Get', array('noInline' => 1)); ?>',
 							select: function(event, ui) {
 								if (parseInt(ui.item.id) > 0) {
-									o<?php print $vs_form_name.$vs_field_name_prefix; ?>HierarchyBrowser.setUpHierarchy(ui.item.id);	// jump browser to selected item
+									o<?= $vs_form_name.$vs_field_name_prefix; ?>HierarchyBrowser.setUpHierarchy(ui.item.id);	// jump browser to selected item
 								}
-								jQuery('#caQuickAdd<?php print $vs_form_name.$vs_field_name_prefix; ?>HierarchyBrowserSearch').val('');
+								jQuery('#caQuickAdd<?= $vs_form_name.$vs_field_name_prefix; ?>HierarchyBrowserSearch').val('');
 							}
 						}
 					);
 				</script>
-				<input type="hidden" name="parent_id" value="<?php print (int)$this->getVar("default_parent_id"); ?>" id="<?php print $vs_form_name; ?>_parent_id"/>
+				<input type="hidden" name="parent_id" value="<?= (int)$this->getVar("default_parent_id"); ?>" id="<?= $vs_form_name; ?>_parent_id"/>
 			</div>
 		</div>
 	</div>
@@ -136,9 +136,9 @@
 			
 			print join("\n", $va_form_elements);
 ?>
-		<input type='hidden' name='_formName' value='<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>'/>
-		<input type='hidden' name='q' value='<?php print htmlspecialchars($vs_q, ENT_QUOTES, 'UTF-8'); ?>'/>
-		<input type='hidden' name='screen' value='<?php print htmlspecialchars($this->getVar('screen')); ?>'/>
-		<input type='hidden' name='types' value='<?php print htmlspecialchars(is_array($va_restrict_to_types) ? join(',', $va_restrict_to_types) : ''); ?>'/>
+		<input type='hidden' name='_formName' value='<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>'/>
+		<input type='hidden' name='q' value='<?= htmlspecialchars($vs_q, ENT_QUOTES, 'UTF-8'); ?>'/>
+		<input type='hidden' name='screen' value='<?= htmlspecialchars($this->getVar('screen')); ?>'/>
+		<input type='hidden' name='types' value='<?= htmlspecialchars(is_array($va_restrict_to_types) ? join(',', $va_restrict_to_types) : ''); ?>'/>
 	</div>
 </form>

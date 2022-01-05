@@ -82,15 +82,24 @@
 			$va_base_settings = BaseRefinery::$s_refinery_settings[$this->getName()];
 			if ($this->supportsRelationships()){
 				$va_base_settings[$this->getName() . '_relationships'] =  array(
-						'formatType' => FT_TEXT,
-						'displayType' => DT_SELECT,
-						'width' => 10, 'height' => 1,
-						'takesLocale' => false,
-						'default' => '',
-						'label' => _t('Relationships'),
-						'description' => _t('A list (array) of relationships related to the %refinery.', array('refinery' => $this->getTitle()))
+					'formatType' => FT_TEXT,
+					'displayType' => DT_FIELD,
+					'width' => 10, 'height' => 1,
+					'takesLocale' => false,
+					'default' => '',
+					'label' => _t('Relationships'),
+					'description' => _t('A list (array) of relationships related to the %refinery.', array('refinery' => $this->getTitle()))
 				);
 			}
+			$va_base_settings[$this->getName() . '_applyImportItemSettings'] =  array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Apply import item settings to refinery values'),
+				'description' => _t('Apply applyRegularExpressions and replacement values transformations to values in the %refinery.', array('refinery' => $this->getTitle()))
+			);
 			return $va_base_settings;
 		}
 		# -------------------------------------------------------
@@ -246,8 +255,6 @@
 					}
 					$vm_val[$vn_i] = trim($vs_val);
 				}
-				
-				$vm_val = caProcessImportItemSettingsForValue($vm_val, $pa_item['settings']);
 				
 				if (is_null($pn_get_at_index)) {
                     if ($pb_return_as_string) {

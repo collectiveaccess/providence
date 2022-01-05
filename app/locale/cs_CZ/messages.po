@@ -7,6 +7,7 @@
 # Seth Kaufman <seth@collectiveaccess.org>, 2020
 # DominikMatus <email@dominikmatus.cz>, 2020
 # Václav Černý <vaclav.vatoz.cerny@gmail.com>, 2021
+# Pavel Borecki <pavel.borecki@gmail.com>, 2021
 # 
 #, fuzzy
 msgid ""
@@ -15,7 +16,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: info@collectiveaccess.org\n"
 "POT-Creation-Date: 2021-09-06 13:44+0200\n"
 "PO-Revision-Date: 2020-12-25 05:13+0000\n"
-"Last-Translator: Václav Černý <vaclav.vatoz.cerny@gmail.com>, 2021\n"
+"Last-Translator: Pavel Borecki <pavel.borecki@gmail.com>, 2021\n"
 "Language-Team: Czech (Czech Republic) (https://www.transifex.com/collectiveaccess/teams/328/cs_CZ/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -181,7 +182,7 @@ msgstr "Uložit"
 
 #: ../../themes/default/views/dashboard/ajax_settings_html.php:48
 msgid "No settings available"
-msgstr "K dispozici nejsou žádná nastavení"
+msgstr "Nejsou k dispozici žádná nastavení"
 
 #: ../../themes/default/views/dashboard/ajax_settings_html.php:53
 #: ../../themes/default/views/administrate/access/group_edit_html.php:36
@@ -947,7 +948,7 @@ msgstr "Popis"
 
 #: ../../themes/default/views/administrate/access/role_list_html.php:92
 msgid "No roles have been configured"
-msgstr "Nebyly nakonfigurovány žádné role"
+msgstr "Nebyly nastaveny žádné role"
 
 #: ../../themes/default/views/administrate/access/group_list_html.php:42
 msgid "New group"
@@ -955,7 +956,7 @@ msgstr "Nová skupina"
 
 #: ../../themes/default/views/administrate/access/group_list_html.php:90
 msgid "No groups have been configured"
-msgstr "Nebyly nakonfigurovány žádné skupiny"
+msgstr "Nebyly nastaveny žádné skupiny"
 
 #: ../../themes/default/views/administrate/access/user_edit_html.php:54
 msgid "Change password"

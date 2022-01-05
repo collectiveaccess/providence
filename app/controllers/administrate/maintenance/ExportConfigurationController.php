@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -47,10 +47,11 @@ class ExportConfigurationController extends ActionController {
 	# ------------------------------------------------
 	public function Export(){
 		set_time_limit(3600);
-		$vs_xml = ConfigurationExporter::exportConfigurationAsXML($this->request->config->get('app_name'), _t('Profile created on %1 by %2', caGetLocalizedDate(), $this->request->user->get('fname').' '.$this->request->user->get('lname')), 'base', '');
+		$name = preg_replace("![^A-Za-z0-9_\-]+!", "_", __CA_APP_DISPLAY_NAME__);
+		$vs_xml = ConfigurationExporter::exportConfigurationAsXML($name, _t('Profile created on %1 by %2', caGetLocalizedDate(), $this->request->user->get('fname').' '.$this->request->user->get('lname')), 'base', '');
 		
 		$this->view->setVar('profile', $vs_xml);
-		$this->view->setVar('profile_file_name', $this->request->config->get('app_name').'_config.xml');
+		$this->view->setVar('profile_file_name', $name.'_config.xml');
 		$this->render('export_configuration_binary.php');
 		
 		return;
