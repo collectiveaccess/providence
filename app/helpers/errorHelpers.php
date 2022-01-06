@@ -29,7 +29,106 @@
  *
  * ----------------------------------------------------------------------
  */	
-# --------------------------------------------------------------------------------------------
+ 
+# ----------------------------------------
+/**
+ * PHP error handler for warnings, deprecations and notices
+ *
+ * @param int $errno
+ * @param string $errstr
+ * @param string $errfile
+ * @param int $errline
+ * @param array $errcontext
+ *
+ * return bool
+ */
+function caErrorHandler(int $errno, string $errstr, ?string $errfile=null, ?int $errline=null, ?array $errcontext) {
+	global $g_warnings, $g_deprecation_warnings, $g_notices;
+	global $g_log_warnings, $g_display_warnings, 
+		$g_log_deprecation_warnings, $g_display_deprecation_warnings, 
+		$g_log_notices, $g_display_notices;
+	global $g_log_ignore;
+	
+    switch ($errno) {
+		case E_WARNING:
+			if($g_log_warnings || $g_display_warnings) {
+				// Ignore?
+				if(sizeof(array_filter($g_log_ignore, function($v) use ($errstr) {
+					return strpos($errstr, $v) !== false;
+				})) > 0) {
+					return true;
+				}
+				$g_warnings[] = [
+					'message' => htmlspecialchars($errstr),
+					'file' => $errfile,
+					'line' => $errline
+				];
+			}
+			return true;
+			break;
+		case E_DEPRECATED:
+			if($g_log_deprecation_warnings || $g_display_deprecation_warnings) {
+				// Ignore?
+				if(sizeof(array_filter($g_log_ignore, function($v) use ($errstr) {
+					return strpos($errstr, $v) !== false;
+				})) > 0) {
+					return true;
+				}
+				$g_deprecation_warnings[] = [
+					'message' => htmlspecialchars($errstr),
+					'file' => $errfile,
+					'line' => $errline
+				];
+			}
+			return true;
+			break;
+		case E_NOTICE:
+			if($g_log_notices || $g_display_notices) {
+				// Ignore?
+				if(sizeof(array_filter($g_log_ignore, function($v) use ($errstr) {
+					return strpos($errstr, $v) !== false;
+				})) > 0) {
+					return true;
+				}
+				$g_notices[] = [
+					'message' => htmlspecialchars($errstr),
+					'file' => $errfile,
+					'line' => $errline
+				];
+			}
+			return true;
+			break;
+    }
+
+    return false;
+}
+# ----------------------------------------
+/**
+ * Set up globals and handler for display and logging of warnings, deprecations and notices
+ */
+function caInitErrorHandler() : void { 
+	global $g_warnings, $g_deprecation_warnings, $g_notices, 
+		$g_log_warnings, $g_display_warnings, 
+		$g_log_deprecation_warnings, $g_display_deprecation_warnings, 
+		$g_log_notices, $g_display_notices,
+		$g_log_ignore;
+	
+	$g_warnings = $g_deprecation_warnings = $g_notices = [];
+	
+	$config = Configuration::load();
+
+	$g_log_warnings = $config->get('log_warnings');
+	$g_display_warnings = $config->get('display_warnings');
+	$g_log_deprecation_warnings = $config->get('log_deprecation_warnings');
+	$g_display_deprecation_warnings = $config->get('display_deprecation_warnings');
+	$g_log_notices = $config->get('log_notices');
+	$g_display_notices = $config->get('display_notices');
+
+	$g_log_ignore = $config->getList('log_ignore') ?? [];
+	
+	set_error_handler('caErrorHandler', E_WARNING | E_DEPRECATED | E_NOTICE);
+}
+# ----------------------------------------
 /**
  * Display exception error screen
  * @param Exception $e
@@ -82,7 +181,7 @@ function fatalErrorHtmlView() {
 		return __CA_THEMES_DIR__ . '/default' . $fatal_error_html;
 	}
 }
-# --------------------------------------------------------------------------------------------
+# ----------------------------------------
 /**
  * Display fatal error screen
  * @param int $pn_errno
@@ -110,7 +209,7 @@ function caDisplayFatalError($pn_errno, $ps_errstr, $ps_errfile, $pn_errline, $p
 			exit;
 	}
 }
-# --------------------------------------------------------------------------------------------
+# ----------------------------------------
 /**
  * extract stack trace arguments from error context
  * @param array $pa_errcontext
@@ -146,7 +245,7 @@ function caExtractStackTraceArguments($pa_errcontext) {
 	}
 	return $pa_args;
 }
-# --------------------------------------------------------------------------------------------
+# ----------------------------------------
 /**
  * extract request parameters
  * @return array
@@ -167,7 +266,7 @@ function caExtractRequestParams() {
 	return $pa_params;
 }
 
-# --------------------------------------------------------------------------------------------
+# ----------------------------------------
 /**
  * Return application error message for numeric code
  *
@@ -187,7 +286,7 @@ function caGetErrorMessage(int $error_code, string $locale=null) {
 	
 	return $errors->get($error_code);
 }
-# --------------------------------------------------------------------------------------------
+# ----------------------------------------
  /**
   * Return URL path to themes directory, guessing based upon PHP script name is constants aren't set
   *
@@ -198,7 +297,7 @@ function caGetThemeUrlPath() : string {
 	array_pop($tmp);
 	return defined('__CA_THEME_URL__') ? __CA_THEME_URL__ : join("/", $tmp).'/themes/default';
 }
-# --------------------------------------------------------------------------------------------
+# ----------------------------------------
  /**
   * Return default application logo as HTML tag
   *
@@ -213,5 +312,5 @@ function caGetDefaultLogo() : string {
 	$height = 45;
 	return "<img src={$url} alt='CollectiveAccess logo' width='{$width}' height='{$height}'/>";
 }
-# ---------------------------------------------------------------------------------------------
+# ----------------------------------------
 		
