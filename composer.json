@@ -40,7 +40,6 @@
     "ext-simplexml": "*",
     "phpseclib/phpseclib": "^2.0",
     "ankitpokhrel/tus-php": "^2.0",
-    "tedivm/stash": "0.15.*",
     "cache/predis-adapter": "^1.1",
     "cache/filesystem-adapter": "^1.1",
     "codeitnowin/barcode": "^3.0",
