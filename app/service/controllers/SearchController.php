@@ -234,7 +234,7 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 				// ------------------------------------------------------------
 				'exists' => [
 					'type' => SearchSchema::get('ExistenceMap'),
-					'description' => _t('Determine whether records exist based upon idnos and labels'),
+					'description' => _t('Determine whether records exist based upon values in a bundle'),
 					'args' => [
 						[
 							'name' => 'jwt',
@@ -248,19 +248,21 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 							'description' => _t('Table to search')
 						],
 						[
-							'name' => 'idnos',
-							'type' => Type::listOf(Type::string()),
-							'description' => _t('List of identifiers')
+							'name' => 'bundle',
+							'type' => Type::string(),
+							'description' => _t('Bundle to search')
 						],
 						[
-							'name' => 'labels',
+							'name' => 'values',
 							'type' => Type::listOf(Type::string()),
-							'description' => _t('List of labels')
+							'description' => _t('List of values')
 						]
 					],
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
 						$table = trim($args['table']);
+						$bundle = trim($args['bundle']);
+						$values = $args['values'];
 						
 						$tables = caFilterTableList(['ca_objects', 'ca_collections', 'ca_entities', 'ca_occurrences', 'ca_places', 'ca_list_items', 'ca_storage_locations', 'ca_loans', 'ca_object_lots', 'ca_movements', 'ca_object_representations']);
 						
@@ -268,32 +270,62 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 							throw new \ServiceException(_t('Invalid table: %1', $table));
 						}
 						
+						// Does user have access to this service?
+						if (!$u->canDoAction('can_access_graphql_exists_search_service')) {
+							throw new \ServiceException(_t('Access denied'));
+						}
+						
 						// Check user privs
-						// TODO: add GraphQL-specific access check?
+						//
+						// NOTE: Currently does not enforce item-level or type-level access control
+						// 		 However, bundle-level ACL is supported
 						if(!in_array($table, ['ca_list_items', 'ca_lists'], true) && !$u->canDoAction("can_search_{$table}")) {
 							throw new \ServiceException(_t('Access denied for table: %1', $table));
 						}
 						
-						$idno_map = [];
-						if(is_array($args['idnos']) && sizeof($args['idnos'])) {
-							$idno_ids = $table::getIDsForIdnos($args['idnos'], ['returnAll' => true]);
-							foreach($args['idnos'] as $v) {
-								if(!array_key_exists($v, $idno_ids)) { $idno_ids[$v] = null; }
+						$bundle_bits = explode('.', $bundle);
+						if((sizeof($bundle_bits) > 1) && \Datamodel::tableExists($bundle_bits[0])) {
+							if($bundle_bits[0] !== $table) {
+								throw new \ServiceException(_t('Bundle must be in current table %1', $table));
 							}
-							$idno_map = array_map(function($v, $k) {return ['id' => $v[0], 'ids' => $v, 'value' => $k]; }, $idno_ids, array_keys($idno_ids));
+							array_shift($bundle_bits);
 						}
 						
-						$label_map = [];
-						if(is_array($args['labels']) && sizeof($args['labels'])) {
-							$label_ids = $table::getIDsForlabels($args['labels'], ['returnAll' => true]);
-							foreach($args['labels'] as $v) {
-								if(!array_key_exists($v, $label_ids)) { $label_ids[$v] = null; }
-							}
-							$label_map = array_map(function($v, $k) {return ['id' => $v[0], 'ids' => $v,'value' => $k]; }, $label_ids, array_keys($label_ids));
+						$t = \Datamodel::getInstance($table, true);
+						switch($bundle_bits[0]) {
+							case 'idno':
+								$ids = $table::getIDsForIdnos($values, ['returnAll' => true]);
+								foreach($values as $v) {
+									if(!array_key_exists($v, $ids)) { $ids[$v] = null; }
+								}
+								$value_map = array_map(function($v, $k) {return ['id' => $v, 'ids' => [$v], 'value' => $k]; }, $ids, array_keys($ids));
+								break;
+							case 'preferred_labels':
+								$ids = $table::getIDsForlabels($values, ['returnAll' => true, 'field' => $bundle_bits[1] ?? null]);
+								foreach($values as $v) {
+									if(!array_key_exists($v, $ids)) { $ids[$v] = null; }
+								}
+								$value_map = array_map(function($v, $k) {return ['id' => $v[0], 'ids' => $v,'value' => $k]; }, $ids, array_keys($ids));
+							
+								break;
+							default:
+								$b = array_pop($bundle_bits);
+								if(!$t->hasElement($b)) { 
+									throw new \ServiceException(_t('Metadata element %1 does not exist', $b));
+								}
+								if ($u->getBundleAccessLevel($table, $b) < __CA_BUNDLE_ACCESS_READONLY__) {
+									throw new \ServiceException(_t('Access denied to %1', $b));
+								}
+								$ids = $table::getIDsForAttributeValues($b, $values, ['returnAll' => true]);
+								foreach($values as $v) {
+									if(!array_key_exists($v, $ids)) { $ids[$v] = null; }
+								}
+								$value_map = array_map(function($v, $k)  { return ['id' => $v[0], 'ids' => $v, 'value' => $k]; }, $ids, array_keys($ids));
+
+								break;
 						}
 						
-						
-						return ['table' => $table, 'idnos' => $idno_map, 'labels' => $label_map];
+						return ['table' => $table, 'bundle' => $bundle, 'map' => json_encode($ids), 'values' => $value_map];
 					}
 				]
 			]

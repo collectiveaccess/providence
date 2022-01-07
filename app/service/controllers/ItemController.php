@@ -137,6 +137,7 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
 						
+						// TODO: add explicit parameter for idno and id (to handle case where numeric idnos are used) 
 						$rec = self::resolveIdentifier($table = $args['table'], $args['identifier']);
 						$rec_pk = $rec->primaryKey();
 						

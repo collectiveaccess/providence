@@ -7,7 +7,7 @@
 /*==========================================================================*/
 
 ALTER TABLE ca_attributes ADD COLUMN value_source varchar(1024) null default null;
-CREATE INDEX i_value_source ON ca_attributes(value_source);
+CREATE INDEX i_value_source ON ca_attributes(value_source(255));
 
 /*==========================================================================*/
 
