@@ -139,6 +139,12 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							'description' => _t('Ignore record type when looking for existing records.')
 						],
 						[
+							'name' => 'ignoreParent',
+							'type' => Type::boolean(),
+							'default' => false,
+							'description' => _t('Ignore record parent when looking for existing records in HIERARCHICAL insert mode.')
+						],
+						[
 							'name' => 'match',
 							'type' => EditSchema::get('MatchRecord'),
 							'description' => _t('Find criteria')
@@ -159,11 +165,11 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						if(!\Datamodel::tableExists($table)) {
 							throw new \ServiceException(_t('Invalid table: %1', $table));
 						}
-						
 						$insert_mode = strtoupper($args['insertMode']);
 						$erp = strtoupper($args['existingRecordPolicy']);
 						$match_on = (is_array($args['matchOn']) && sizeof($args['matchOn'])) ? $args['matchOn'] : ['idno'];
 						$ignore_type = $args['ignoreType'];
+						$ignore_parent = $args['ignoreParent'];
 						
 						$idno_fld = \Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD');
 						
@@ -184,6 +190,16 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							$instance = null;
 							
 							if(!$record['idno'] && $record['identifier']) { $record['idno'] = $record['identifier']; }
+							
+							// Force matching to preferred labels if using serial idnos in hierarchjcal mode and 
+							// matchOn is set to identifier; we need tp do this since serial idnos can't be used
+							// for matching when they don't yet exist
+							if(($insert_mode === 'HIERARCHICAL') && (strpos($record['idno'],'%') !== false)) {
+								if(!sizeof($match_on = array_filter($match_on, function($v) { return $v !== 'idno'; }))) {
+									$ignore_parent = false;
+									$match_on = ['preferred_labels'];
+								}
+							}
 							
 							// Does record already exist?
 							try {
@@ -218,14 +234,14 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 											try {
 												switch($m) {
 													case 'idno':
-														if($instance = (in_array($erp, ['SKIP', 'REPLACE', 'MERGE'])) ? self::resolveIdentifier($table, $record['idno'], $ignore_type ? null : $record['type'], ['idnoOnly' => true, 'list' => $args['list']]) : null) {
+														if($instance = (in_array($erp, ['SKIP', 'REPLACE', 'MERGE'])) ? self::resolveIdentifier($table, $record['idno'], $ignore_type ? null : $record['type'], ['idnoOnly' => true, 'list' => $args['list'], 'parent_id' => (!$ignore_parent && ($insert_mode === 'HIERARCHICAL')) ? $last_id : null]) : null) {
 															$info[] = Error\info($record['idno'], 'MATCH', _t('Record found for match on (%1)', $m), 'GENERAL');
 															break(2);
 														}
 														break;
 													case 'preferred_labels':
 														$label_values = Edit\extractLabelValueFromBundles($table, $record['bundles']);
-														if($instance = self::resolveLabel($table, $label_values, $ignore_type ? null : $record['type'], ['list' => $args['list']])) {
+														if($instance = self::resolveLabel($table, $label_values, $ignore_type ? null : $record['type'], ['list' => $args['list'], 'parent_id' => (!$ignore_parent && ($insert_mode === 'HIERARCHICAL')) ? $last_id : null])) {
 															$info[] = Error\info($record['idno'], 'MATCH', _t('Record found for match on (%1)', $m), 'GENERAL');
 															break(2);
 														}
@@ -235,7 +251,9 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 															$b = array_shift(array_filter($record['bundles'], function($v) use ($m) {
 																return ($v['name'] === $m);
 															}));
-															if($instance = $table::findAsInstance([$m => $b['value']])) {
+															$criteria = [$m => $b['value']];
+															if(!$ignore_parent && ($insert_mode === 'HIERARCHICAL') && $last_id) { $criteria['parent_id'] = $last_id; }
+															if($instance = $table::findAsInstance($criteria)) {
 																$info[] = Error\info($b['value'], 'MATCH', _t('Record found for match on (%1) with values(%2)', $m, $b['value']), 'GENERAL');
 																break(2);
 															}
