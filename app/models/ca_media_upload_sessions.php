@@ -603,7 +603,7 @@ class ca_media_upload_sessions extends BaseModel {
 					
 						$r->addLabel(['name' => $label." [{$index}]"], $locale_id, null, true);
 						
-						if ($r>numErrors()) {
+						if ($r->numErrors()) {
 							self::_setSessionError($session, $label, _t('Could not add label for media record %1 for %2: %3 (file was skipped)', pathinfo($path, PATHINFO_BASENAME), $label, join(", ", $r->getErrors())));
 							continue;
 						}
