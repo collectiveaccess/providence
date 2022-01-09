@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2021 Whirl-i-Gig
+ * Copyright 2012-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -435,7 +435,8 @@
 					$va_level_data["{$vs_k}|{$vn_i}"]['_primaryKey'] = 'name';
 					
 					$va_counts = caGetDirectoryContentsCount($user_import_root_directory.'/'.$vs_directory, false, false);
-					$va_level_data["{$vs_k}|{$vn_i}"]['_itemCount'] = $va_counts['files'] + $va_counts['directories'];
+					$va_shared_counts = caGetDirectoryContentsCount($shared_import_root_directory.'/'.$vs_directory, false, false);
+					$va_level_data["{$vs_k}|{$vn_i}"]['_itemCount'] = $va_counts['files'] + $va_counts['directories'] + $va_shared_counts['files'] + $va_shared_counts['directories'];
 					$vn_i++;
  				}
  			} else {
@@ -468,7 +469,8 @@
 					$va_level_data["{$vs_k}|{$vn_level}"]['_primaryKey'] = 'name';
 					
 					$va_counts = caGetDirectoryContentsCount($user_import_root_directory.'/'.$ps_directory, false, false);
-					$va_level_data["{$vs_k}|{$vn_level}"]['_itemCount'] = $va_counts['files'] + $va_counts['directories'];
+					$va_shared_counts = caGetDirectoryContentsCount($shared_import_root_directory.'/'.$ps_directory, false, false);
+					$va_level_data["{$vs_k}|{$vn_level}"]['_itemCount'] = $va_counts['files'] + $va_counts['directories'] + $va_shared_counts['files'] + $va_shared_counts['directories'];
 				}
 			}
  			

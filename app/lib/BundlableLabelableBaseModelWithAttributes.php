@@ -4896,7 +4896,7 @@ if (!$vb_batch) {
 								if ($o_media->read($this->getMediaPath('media', 'original'))) {
 									$va_files = $o_media->writePreviews(array('force' => true, 'outputDirectory' => $this->_CONFIG->get("taskqueue_tmp_directory"), 'numberOfPages' => 1, 'startAtPage' => $vn_page, 'width' => 2048, 'height' => 2048));
 							
-									if(sizeof($va_files)) { 
+									if(is_array($va_files) && sizeof($va_files)) { 
 										$this->set('media', array_shift($va_files));
 									}
 								}
