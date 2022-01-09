@@ -7,6 +7,7 @@
     "test": "tests"
   },
   "dependencies": {
+    "@babel/core": "^7.16.7",
     "@babel/plugin-proposal-class-properties": "^7.14.5",
     "@babel/preset-env": "^7.15.8",
     "@babel/preset-react": "^7.14.5",
@@ -45,5 +46,8 @@
   "bugs": {
     "url": "https://github.com/CollectiveAccess/providence/issues"
   },
-  "homepage": "https://github.com/CollectiveAccess/providence#readme"
+  "homepage": "https://github.com/CollectiveAccess/providence#readme",
+  "optionalDependencies": {
+    "fsevents": "^2.3.2"
+  }
 }
