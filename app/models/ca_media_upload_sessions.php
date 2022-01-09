@@ -455,6 +455,7 @@ class ca_media_upload_sessions extends BaseModel {
 					$t->set('submission_group_id', null);
 					$t->set('submission_status_id', $submission_status);
 					$t->set('submission_via_form', $form);
+					$t->set('submission_session_id', $session_id);
 					$t->update();
 					
 					if($t->numErrors()) {
@@ -502,6 +503,7 @@ class ca_media_upload_sessions extends BaseModel {
 						$r->set('submission_group_id', null);
 						$r->set('submission_status_id', $submission_status);
 						$r->set('submission_via_form', $form);
+						$r->set('submission_session_id', $session_id);
 						
 						$r->update();
 						
@@ -556,6 +558,7 @@ class ca_media_upload_sessions extends BaseModel {
 					$t->set('submission_group_id', null);
 					$t->set('submission_status_id', $submission_status);
 					$t->set('submission_via_form', $form);
+					$t->set('submission_session_id', $session_id);
 					$t->update();
 					
 					if($t->numErrors()) {
@@ -609,6 +612,7 @@ class ca_media_upload_sessions extends BaseModel {
 						$r->set('submission_group_id', null);
 						$r->set('submission_status_id', $submission_status);
 						$r->set('submission_via_form', $form);
+						$r->set('submission_session_id', $session_id);
 						
 						$r->update();
 						
