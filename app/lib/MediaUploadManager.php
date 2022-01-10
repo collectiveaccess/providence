@@ -179,9 +179,6 @@ class MediaUploadManager {
 				$sessions = array_slice($sessions, 0, $limit);
 			}
 			
-			$importer_config = Configuration::load(__CA_CONF_DIR__.'/importer.conf');
-			$importer_forms = $importer_config->get('importerForms');
-			
 			$sessions = array_map(function($s) use ($user_dir_path, $importer_forms, $t_session) {
 				$session = ca_media_upload_sessions::find($s['session_id']);
 				$files = $session->getFileList();
@@ -198,7 +195,8 @@ class MediaUploadManager {
 				}
 				
 				$s['files'] = $files_proc;
-
+				$s['num_files'] = sizeof($files_proc);
+				
 				foreach(['created_on', 'submitted_on', 'completed_on', 'last_activity_on'] as $f) {
 					$s[$f] = ($s[$f] > 0) ? caGetLocalizedDate($s[$f], ['dateFormat' => 'delimited']) : null;
 				}
@@ -218,11 +216,12 @@ class MediaUploadManager {
 				// display?				
 				$form = null;
 				if(preg_match("!^FORM:(.*)$!", $s['source'], $m)) {
-					if(isset($importer_forms[$m[1]]) && is_array($form_info = $importer_forms[$m[1]]) && is_array($form_info['content'])) {
+					$form_data = caUnSerializeForDatabase($s['metadata']);
+					$form_info = $form_data['configuration'];
+					if(is_array($form_info['content'])){
 						$disp_template = $form_info['display'];
-						$form_data = caUnSerializeForDatabase($s['metadata']);
 						if(isset($form_data['data'])) { $form_data = $form_data['data']; }
-						unset($s['metadata']);
+						//unset($s['metadata']);
 						if(is_array($form_data) && is_array($form_info['content'])) {
 							foreach($form_info['content'] as $k => $v) {
 								if ($form_data[$v['bundle']]) {

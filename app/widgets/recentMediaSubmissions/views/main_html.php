@@ -26,13 +26,13 @@
  * ----------------------------------------------------------------------
  */
  
- 	$po_request				= $this->getVar('request');
-	$va_item_list			= $this->getVar('item_list');
-	$vs_table_num			= $this->getVar('table_num');
-	$vs_table_display		= $this->getVar('table_display');
-	$vs_widget_id			= $this->getVar('widget_id');
-	$vn_height_px			= $this->getVar('height_px');
-	$idno_display			= $this->getVar('idno_display');
+ 	$request				= $this->getVar('request');
+	$submissions_list		= $this->getVar('submissions_list');
+	
+	$table_num				= $this->getVar('table_num');
+	$table_display			= $this->getVar('table_display');
+	$widget_id				= $this->getVar('widget_id');
+	$height_px				= $this->getVar('height_px');
 	
 	$submission_type = _t('media submissions');
 ?>
@@ -41,15 +41,27 @@
 	<div class="dashboardWidgetHeading"><?= _t("Showing recently created %1", $submission_type); ?></div>
 	<div class="dashboardWidgetScrollMedium"><ul>
 <?php
-	// foreach($va_item_list as $vn_id => $va_record) {
-// 		print "<li>".
-// 			"<a href=\"".caEditorUrl($po_request, $vs_table_num, $vn_id)."\">".
-// 			(strlen($va_record["display"])>0 ? $va_record["display"] : '['._t("BLANK").']').
-// 			((($idno_display) && (strlen($va_record["idno"])>0)) ? " [".$va_record["idno"]."]" : "").
-// 			((($idno_display) && (strlen($va_record["idno_stub"])>0)) ? " [".$va_record["idno_stub"]."]" : "").			
-// 			"</a> - ".$va_record['datetime']."</li>\n";
-// 		
-// 	}
+
+	$lines = [];
+	foreach($submissions_list as $session_id => $info) {
+		$data = caUnserializeForDatabase($info['metadata']);
+		
+		$table =  $data['configuration']['table'];
+		if(!Datamodel::tableExists($table)) { continue; }
+		$count = $info['num_files'];
+		if(!$count) { continue; }
+		
+		$search_url = caSearchUrl($request, $table, "mediaUploadSession:".$info['session_key']);
+		$search_link = "<a href='{$search_url}'>".$info['label']."</a>";
+		$file_count_display = ($count == 1) ? _t('%1 file', $count) : _t('%1 files', $count);
+		$submission_date = $info['submitted_on'];
+		$submitter = _t('%1 %2 (%3)', $info['user']['fname'], $info['user']['lname'], $info['user']['email']);
+		$status_display = $info['status_display'];
+		
+		$lines[] = _t('%1 (%2) - submitted on %3 by %4<br/>Status: %5', $search_link, $file_count_display, $submission_date, $submitter, $status_display);
+	}
+	
+	print join("\n", array_map(function($l) { return "<li>{$l}</li>"; }, $lines));
 ?>
 	</ul></div>
 </div>
