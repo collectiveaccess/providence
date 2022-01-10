@@ -234,6 +234,8 @@ class MediaUploadManager {
 							$s['label'] = _t('[EMPTY]');
 						}
 					}
+					
+					$s['file_map'] = $form_data['file_map'] ?? [];
 				}
 				if(!$s['label']) { $s['label'] = _t('[EMPTY]'); }
 
