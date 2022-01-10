@@ -887,10 +887,7 @@ class XLSXProfileParser extends BaseProfileParser {
 	 *
 	 */
 	private static function relTableNameFromString(string $string) : ?string {
-		if ($t_rel = \Datamodel::getInstance($string, true)) {
-			if ($t_rel->isRelationship()) { 
-				return $string;
-			}
+		if(!self::isRelationship($string)) {
 			return null;
 		}
 		
@@ -903,7 +900,19 @@ class XLSXProfileParser extends BaseProfileParser {
 		if(!is_array($path) || (sizeof($path) < 2)) { return null; }
 		
 		$path = array_keys($path);
-		return \Datamodel::isRelationship($path[1]) ? $path[1] : null;
+		return self::isRelationship($path[1]) ? $path[1] : null;
+	}
+	# --------------------------------------------------
+	/**
+	 *
+	 */
+	private static function isRelationship(string $table) : bool {
+		if (\Datamodel::tableExists($table)) {
+			if (preg_match("!^ca_[a-z_]?+_x_[a-z_]+!", $table)) { 
+				return true;
+			}
+		}
+		return false;
 	}
 	# --------------------------------------------------
 }
