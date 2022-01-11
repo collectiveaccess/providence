@@ -1,15 +1,36 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import '../css/main.scss';
+import { SubmissionsManagerContext, SubmissionsManagerContextProvider } from './SubmissionsManager/SubmissionsManagerContext';
+import SubmissionManagerFilterPanel from './SubmissionsManager/SubmissionManagerFilterPanel';
+
+import SubmissionList from './SubmissionsManager/SubmissionList';
 
 const selector = providenceUIApps.SubmissionsManager.selector;
 const appData = providenceUIApps.SubmissionsManager.data;
 
+  
 const SubmissionsManager = (props) => {
-  return(
-    <div>
-      Message is {props.message}
-    </div>
-  );
+
+  const { viewMode } = useContext(SubmissionsManagerContext);
+  const setInitialState = (e) => {
+    setViewMode("submission_list");
+    e.preventDefault();
+  }
+
+  if(viewMode == "submission_list"){
+    return (
+    <>
+      <SubmissionManagerFilterPanel />
+      <div className='import-list'>
+        <SubmissionList />
+      </div>
+      </>
+    )
+    } else {
+     return(<div className='import-list'>
+       Invalid view mode
+      </div>)
+    }
 }
 
 /**
@@ -18,5 +39,7 @@ const SubmissionsManager = (props) => {
  */
 export default function _init() {
 	ReactDOM.render(
-  		<SubmissionsManager message="meow"/> , document.querySelector(selector));
+		<SubmissionsManagerContextProvider> <SubmissionsManager/> </SubmissionsManagerContextProvider> 
+		,
+		document.querySelector(selector));
 }

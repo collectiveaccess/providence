@@ -26,6 +26,7 @@
  * ----------------------------------------------------------------------
  */
  
+require_once(__CA_LIB_DIR__.'/Service/GraphQLServiceController.php');
  
  	class SubmissionsController extends ActionController {
  		# -------------------------------------------------------
@@ -43,7 +44,9 @@
 		 * 
 		 */
  		public function Index() {
- 			
+ 			// API key
+			$this->view->setVar('key', GraphQLServices\GraphQLServiceController::encodeJWTRefresh(['id' => $this->request->user->getPrimaryKey()]));
+			
  		
  			$this->render("submission_index_html.php");	
  		}

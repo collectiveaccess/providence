@@ -42,6 +42,48 @@ class SubmissionSchema extends \GraphQLServices\GraphQLSchema {
 	 */
 	protected static function load() {
 		return [
+			$importerFileProcessingWarningType = new ObjectType([
+				'name' => 'ImporterFileProcessingWarning',
+				'description' => 'Report for warning while processing file',
+				'fields' => [
+					'filename' => [
+						'type' => Type::string(),
+						'description' => 'File name'
+					],
+					'message' => [
+						'type' => Type::string(),
+						'description' => 'Warning message'
+					]
+				]
+			]),
+			$importerFileProcessingErrorType = new ObjectType([
+				'name' => 'ImporterFileProcessingError',
+				'description' => 'Report for error while processing file',
+				'fields' => [
+					'filename' => [
+						'type' => Type::string(),
+						'description' => 'File name'
+					],
+					'message' => [
+						'type' => Type::string(),
+						'description' => 'Error message'
+					]
+				]
+			]),
+			$importerFileLinkType = new ObjectType([
+				'name' => 'ImporterFileLink',
+				'description' => 'Link to imported file',
+				'fields' => [
+					'filename' => [
+						'type' => Type::string(),
+						'description' => 'File name'
+					],
+					'url' => [
+						'type' => Type::string(),
+						'description' => 'URL'
+					]
+				]
+			]),
 			$SubmissionFormFieldInfoType = new ObjectType([
 				'name' => 'SubmissionFormFieldInfo',
 				'description' => 'Description of form field',
@@ -119,6 +161,10 @@ class SubmissionSchema extends \GraphQLServices\GraphQLSchema {
 						'type' => Type::string(),
 						'description' => 'Session user name'
 					],
+					'user' => [
+						'type' => Type::string(),
+						'description' => 'Session full user name'
+					],
 					'email' => [
 						'type' => Type::string(),
 						'description' => 'Session user email'
@@ -135,6 +181,10 @@ class SubmissionSchema extends \GraphQLServices\GraphQLSchema {
 						'type' => Type::int(),
 						'description' => 'Number of files uploaded'
 					],
+					'filesImported' => [
+						'type' => Type::int(),
+						'description' => 'Number of files actually imported (duplicates and errors may reduce the number of imported files)'
+					],
 					'totalBytes' => [
 						'type' => Type::float(),
 						'description' => 'Total quantity of data for upload, in bytes'
@@ -150,6 +200,22 @@ class SubmissionSchema extends \GraphQLServices\GraphQLSchema {
 					'receivedSize' => [
 						'type' => Type::string(),
 						'description' => 'Quantity of data received, formatted for display'
+					],
+					'warnings' => [
+						'type' => Type::listOf($importerFileProcessingWarningType),
+						'description' => 'List of warnings while processing'
+					],
+					'errors' => [
+						'type' => Type::listOf($importerFileProcessingErrorType),
+						'description' => 'List of errors while processing'
+					],
+					'urls' => [
+						'type' => Type::listOf($importerFileLinkType),
+						'description' => 'List URLs for imported files'
+					],
+					'searchUrl' => [
+						'type' => Type::string(),
+						'description' => 'URL for search results containing contents of submission'
 					]
 				]
 			]),
@@ -327,7 +393,48 @@ class SubmissionSchema extends \GraphQLServices\GraphQLSchema {
 						'description' => 'Procssing errors'
 					]
 				]
-			]),
+			]),	
+			$SubmissionSessionUserType = new ObjectType([
+				'name' => 'SubmissionSessionUser',
+				'description' => 'List of users with sessions',
+				'fields' => [
+					'user_id' => [
+						'type' => Type::int(),
+						'description' => 'User id'
+					],
+					'fname' => [		
+						'type' => Type::string(),
+						'description' => 'First name'
+					],
+					'lname' => [		
+						'type' => Type::string(),
+						'description' => 'Last name'
+					],
+					'email' => [		
+						'type' => Type::string(),
+						'description' => 'Email address'
+					],
+					'user_name' => [		
+						'type' => Type::string(),
+						'description' => 'Username'
+					],
+				]
+			]),	
+			
+			$SubmissionSessionFilterValuesType = new ObjectType([
+				'name' => 'SubmissionSessionFilterValues',
+				'description' => 'List of session user and status filter values',
+				'fields' => [
+					'users' => [
+						'type' => Type::listOf($SubmissionSessionUserType),
+						'description' => 'User list'
+					],
+					'statuses' => [
+						'type' => Type::listOf(Type::string()),
+						'description' => 'Status list'
+					]
+				]
+			]),				
 		];
 	}
 	# -------------------------------------------------------

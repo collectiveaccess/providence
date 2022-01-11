@@ -1,12 +1,12 @@
-<div id="submissionManager" style="margin-top: 10px;">App goes here</div>
+<div id="submissionManager" style="margin-top: 10px;"></div>
 
 <script type="text/javascript">
     providenceUIApps['SubmissionsManager'] = {
         'selector': '#submissionManager',
-        'endpoint': '<?= caNavUrl($this->request, 'batch', 'MediaUploader', ''); ?>',
-        'maxConcurrentUploads': <?= (int)Configuration::load()->get('media_uploader_max_conncurrent_user_uploads'); ?>,
-        'maxFileSize': <?= caParseHumanFilesize(Configuration::load()->get('media_uploader_max_file_size')); ?>,
-        'maxFilesPerSession': <?= caParseHumanFilesize(Configuration::load()->get('media_uploader_max_files_per_session')); ?>,
-        'data': {}
+        'key': '<?= $this->getVar('key'); ?>', 
+        'data': {
+			'baseUrl': "<?= __CA_SITE_PROTOCOL__.'://'.__CA_SITE_HOSTNAME__.'/'.__CA_URL_ROOT__."/service.php"; ?>",
+			'siteBaseUrl': "<?= __CA_SITE_PROTOCOL__.'://'.__CA_SITE_HOSTNAME__.'/'.__CA_URL_ROOT__."/index.php"; ?>/Import"
+        }
     };
 </script>

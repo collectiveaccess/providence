@@ -154,7 +154,7 @@ class MediaUploadManager {
         
         if($user_id) { $params['user_id'] = $user_id; }
         if($date && ($d = caDateToUnixTimestamps($date))) {
-        	$params['created_on'] = ['BETWEEN', [$d['start'], $d['end']]]; 
+        	$params['submitted_on'] = ['BETWEEN', [$d['start'], $d['end']]]; 
         }
         
         if($source) {
@@ -171,6 +171,7 @@ class MediaUploadManager {
         
     	$t_session = new ca_media_upload_sessions();
 		if ($sessions = ca_media_upload_sessions::find($params, ['returnAs' => 'arrays', 'sort' => 'created_on', 'sortDirection' => 'desc', 'allowWildcards' => true])) {
+			
 			if (!($user_dir_path = caGetMediaUploadPathForUser($user_id))) {
 				$user_dir_path = caGetUserMediaUploadPath(); 
 			}
@@ -216,14 +217,13 @@ class MediaUploadManager {
 				// display?				
 				$form = null;
 				if(preg_match("!^FORM:(.*)$!", $s['source'], $m)) {
-					$form_data = caUnSerializeForDatabase($s['metadata']);
-					$form_info = $form_data['configuration'];
-					if(is_array($form_info['content'])){
-						$disp_template = $form_info['display'];
-						if(isset($form_data['data'])) { $form_data = $form_data['data']; }
-						//unset($s['metadata']);
-						if(is_array($form_data) && is_array($form_info['content'])) {
-							foreach($form_info['content'] as $k => $v) {
+					$form_info = caUnSerializeForDatabase($s['metadata']);
+					$form_config = $form_info['configuration'];
+					$form_data = $form_info['data'];
+					if(is_array($form_config['content'])){
+						$disp_template = $form_config['display'];
+						if(is_array($form_data) && is_array($form_config['content'])) {
+							foreach($form_config['content'] as $k => $v) {
 								if ($form_data[$v['bundle']]) {
 									$form_data[$k] = $form_data[$v['bundle']];
 								}
@@ -235,10 +235,15 @@ class MediaUploadManager {
 						}
 					}
 					
-					$s['file_map'] = $form_data['file_map'] ?? [];
+					$s['table'] = $form_config['table'];
+					
+					$s['warnings'] = $form_info['warnings'] ?? [];
+					$s['errors'] = $form_info['errors'] ?? [];
+					$s['files_imported'] = $form_info['files_imported'] ?? 0;
 				}
 				if(!$s['label']) { $s['label'] = _t('[EMPTY]'); }
 
+				$s['file_map'] = $form_info['file_map'] ?? [];
 				return $s;
 			}, $sessions);
 			
@@ -269,6 +274,20 @@ class MediaUploadManager {
 			$users[$qr->get('user_id')] = $qr->getRow();
 		}
         return $users;
+    }
+    # ------------------------------------------------------
+    /**
+     * Get list of used session statuses
+     *
+     */
+    static public function getStatusList(array $options=null) {
+       $db = new Db();
+       $qr = $db->query("
+			SELECT DISTINCT s.status
+			FROM ca_media_upload_sessions s
+			ORDER BY s.status
+		");
+		return $qr->getAllFieldValues('status');
     }
     # ------------------------------------------------------
 	/**

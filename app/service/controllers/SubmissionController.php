@@ -69,19 +69,50 @@ class SubmissionController extends \GraphQLServices\GraphQLServiceController {
 							'type' => Type::string(),
 							'description' => _t('JWT'),
 							'defaultValue' => self::getBearerToken()
+						],
+						[
+							'name' => 'date',
+							'type' => Type::string(),
+							'description' => _t('Filter by date')
+						],
+						[
+							'name' => 'user_id',
+							'type' => Type::int(),
+							'description' => _t('Filter by user')
+						],
+						[
+							'name' => 'status',
+							'type' => Type::string(),
+							'description' => _t('Filter by status')
 						]
 					],
-					'resolve' => function ($rootValue, $args) {
+					'resolve' => function ($rootValue, $args) {							
+						global $g_request;
 						if(!$args['jwt']) {
 							throw new \ServiceException(_t('No JWT'));
 						}
 						$u = self::authenticate($args['jwt']);
 						$user_id = $u->getPrimaryKey();
 						
-						$log_entries = MediaUploadManager::getLog(['source' => 'FORM']);//, 'user' => $user_id
+						$log_entries = MediaUploadManager::getLog(['source' => 'FORM', 'user' => $args['user_id'], 'status' => $args['status'], 'date' => $args['date']]);
 						
 						$processed_log = [];
 						foreach($log_entries as $l) {
+							$warnings = array_map(function($filename, $warnings) {
+								return [
+									'filename' => $filename,
+									'message' => join("; ", $warnings)
+								];
+							}, array_keys($l['warnings']), $l['warnings']);
+						
+							$errors = array_map(function($filename, $errors) {
+								return [
+									'filename' => $filename,
+									'message' => join("; ", $errors)
+								];
+							}, array_keys($l['errors']), $l['errors']);
+
+							$search_url = caSearchUrl($g_request, $l['table'], 'mediaUploadSession:'.$l['session_key'], false, null, ['absolute' => true]);
 							$processed_log[] = [
 								'label' => $l['label'],
 								'sessionKey' => $l['session_key'],
@@ -93,12 +124,17 @@ class SubmissionController extends \GraphQLServices\GraphQLServiceController {
 								'source' => $l['source'],
 								'user_id' => $l['user']['user_id'],
 								'username' => $l['user']['user_name'],
+								'user' => trim($l['user']['fname'].' '.$l['user']['lname']),
 								'email' => $l['user']['email'],
 								'files' => $l['num_files'],
 								'totalBytes' => $l['total_bytes'],
 								'receivedBytes' => $l['received_bytes'],
 								'totalSize' => $l['total_display'],
 								'receivedSize' => $l['received_display'],
+								'warnings' => $warnings,
+								'errors' => $errors,
+								'filesImported' => $l['files_imported'],
+								'searchUrl' => $search_url
 							];
 						}
 						return ['sessions' => $processed_log];
@@ -130,7 +166,7 @@ class SubmissionController extends \GraphQLServices\GraphQLServiceController {
 						$user_id = $u->getPrimaryKey();
 						$session_key = $args['sessionKey'];
 						
-						$s = $this->_getSession($user_id, $session_key);
+						$s = $this->_getSession($session_key);
 						if(!$s) {
 							throw new \ServiceException(_t('Invalid session key'));
 						}
@@ -182,7 +218,35 @@ class SubmissionController extends \GraphQLServices\GraphQLServiceController {
 				],
 				//
 				//
-				'updateSession' => [
+				
+				'getSessionFilterValues' => [
+					'type' => SubmissionSchema::get('SubmissionSessionFilterValues'),
+					'description' => _t('Get list of session filter values'),
+					'args' => [
+						[
+							'name' => 'jwt',
+							'type' => Type::string(),
+							'description' => _t('JWT'),
+							'defaultValue' => self::getBearerToken()
+						]
+					],
+					'resolve' => function ($rootValue, $args) {
+						if(!$args['jwt']) {
+							throw new \ServiceException(_t('No JWT'));
+						}
+						$u = self::authenticate($args['jwt']);
+						
+						return ['users' => \MediaUploadManager::getUserList(), 'statuses' => \MediaUploadManager::getStatusList()];
+					}
+				],
+				// ------------------------------------------------------------
+			]
+		]);
+		
+		$mt = new ObjectType([
+			'name' => 'Mutation',
+			'fields' => [
+				'updateSessionStatus' => [
 					'type' => SubmissionSchema::get('SubmissionSessionUpdateResult'),
 					'description' => _t('Return data for existing session'),
 					'args' => [
@@ -192,9 +256,9 @@ class SubmissionController extends \GraphQLServices\GraphQLServiceController {
 							'description' => _t('Session key')
 						],
 						[
-							'name' => 'formData',
+							'name' => 'status',
 							'type' => Type::string(),
-							'description' => _t('JSON-serialized form data')
+							'description' => _t('Session status')
 						],
 						[
 							'name' => 'jwt',
@@ -208,23 +272,17 @@ class SubmissionController extends \GraphQLServices\GraphQLServiceController {
 							throw new \ServiceException(_t('No JWT'));
 						}
 						$u = self::authenticate($args['jwt']);
-						$user_id = $u->getPrimaryKey();
 						$session_key = $args['sessionKey'];
-						
-						$s = $this->_getSession($user_id, $session_key);
-						
-						$form_data = @json_decode($args['formData'], true);
-						if(!is_array($form_data)) {
-							throw new \ServiceException(_t('Invalid form data'));
-						}
-						// TODO: validate data
-						if(!sizeof($form_data)) {
-							return ['updated' => 0];
+						$status = $args['status'];
+						if(!in_array($status, ['ACCEPTED', 'REJECTED'])) {
+							throw new \ServiceException(_t('Invalid status: %1', $status));
 						}
 						
-						$form_config = self::$config->getAssoc('SubmissionForms');
-						$code = str_replace('FORM:', '', $s->get('source'));
-						$s->set('metadata', ['data' => $form_data, 'configuration' => $form_config[$code]]);
+						if(!($s = $this->_getSession($session_key))) {
+							throw new \ServiceException(_t('Invalid session key: %1', $session_key));
+						}
+					
+						$s->set('status', $status);
 						if ($s->update()) {
 							return ['updated' => 1];
 						} else {
@@ -233,7 +291,6 @@ class SubmissionController extends \GraphQLServices\GraphQLServiceController {
 						
 					}
 				],
-				
 				'deleteSession' => [
 					'type' => SubmissionSchema::get('SubmissionSessionDeleteResult'),
 					'description' => _t('Delete session'),
@@ -258,7 +315,7 @@ class SubmissionController extends \GraphQLServices\GraphQLServiceController {
 						$user_id = $u->getPrimaryKey();
 						$session_key = $args['sessionKey'];
 						
-						$s = $this->_getSession($user_id, $session_key);
+						$s = $this->_getSession($session_key);
 						
 						if ($s->delete(true)) {
 							return ['deleted' => 1];
@@ -267,14 +324,6 @@ class SubmissionController extends \GraphQLServices\GraphQLServiceController {
 						}
 					}
 				],
-				// ------------------------------------------------------------
-			]
-		]);
-		
-		$mt = new ObjectType([
-			'name' => 'Mutation',
-			'fields' => [
-			
 			]
 		]);
 		
@@ -284,11 +333,11 @@ class SubmissionController extends \GraphQLServices\GraphQLServiceController {
 	/**
 	 *
 	 */
-	protected function _getSession($user_id, $session_key) {
+	protected function _getSession($session_key) {
 		if(!$session_key) {
 			throw new \ServiceException(_t('Empty session key'));
 		}
-		if(!($s = ca_media_upload_sessions::find(['user_id' => $user_id, 'session_key' => $session_key], ['returnAs' => 'firstModelInstance']))) {
+		if(!($s = ca_media_upload_sessions::find(['session_key' => $session_key], ['returnAs' => 'firstModelInstance']))) {
 			throw new \ServiceException(_t('Invalid session key'));
 		}
 		
