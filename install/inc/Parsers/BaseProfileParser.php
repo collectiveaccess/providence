@@ -51,6 +51,16 @@ abstract class BaseProfileParser {
 	 */
 	protected $errors;
 	
+	/**
+	 *
+	 */
+	protected $debug = false;
+	
+	/**
+	 *
+	 */
+	protected $debug_profile = null;
+	
 	# --------------------------------------------------
 	/**
 	 * Instantiate new parser. If $directory and $profile parameters are passed the 
@@ -62,7 +72,7 @@ abstract class BaseProfileParser {
 	public function __construct(?string $directory=null, ?string $profile=null) {
 		$this->log = new \KLogger(__CA_BASE_DIR__ . '/app/log', \KLogger::DEBUG);
 		$this->notices = $this->warnings = $this->errors = [];
-		
+		$this->debug = true;
 		if($profile) {
 			$this->parse($directory, $profile);
 		}

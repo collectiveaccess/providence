@@ -184,7 +184,9 @@ class XMLProfileParser extends BaseProfileParser {
 	public function validateProfile(string $directory, string $profile) : bool {
 		$profile_path = caGetProfilePath($directory, $profile);
 		$base_path = caGetProfilePath($directory, 'base');
-		$schema_path = caGetProfilePath($directory, 'profile.xsd');
+		if(!($schema_path = caGetProfilePath($directory, 'profile.xsd'))) {
+			$schema_path = caGetProfilePath(__CA_BASE_DIR__.'/install/profiles/xml', 'profile.xsd');
+		}
 		
 		// simplexml doesn't support validation -> use DOMDocument
 		$vo_profile = new \DOMDocument();
@@ -195,6 +197,7 @@ class XMLProfileParser extends BaseProfileParser {
 			$vo_base->load($base_path);
 
 			if($this->debug) {
+				$this->logStatus(_t('Schema path is %1', $schema_path));
 				ob_start();
 				$vb_return = $vo_profile->schemaValidate($schema_path) && $vo_base->schemaValidate($schema_path);
 				$this->profile_debug .= ob_get_clean();
@@ -203,6 +206,7 @@ class XMLProfileParser extends BaseProfileParser {
 			}
 		} else {
 			if($this->debug) {
+				$this->logStatus(_t('Schema path is %1', $schema_path));
 				ob_start();
 				$vb_return = $vo_profile->schemaValidate($schema_path);
 				$this->profile_debug .= ob_get_clean();
@@ -210,11 +214,14 @@ class XMLProfileParser extends BaseProfileParser {
 				$vb_return = @$vo_profile->schemaValidate($schema_path);
 			}
 		}
-
+		
 		if($vb_return) {
 			$this->logStatus(_t('Successfully validated profile %1', $this->profile_name));
 		} else {
 			$this->logStatus(_t('Validation failed for profile %1', $this->profile_name));
+		}
+		if($this->debug) {
+			$this->logStatus($this->profile_debug);
 		}
 
 		return $vb_return;
