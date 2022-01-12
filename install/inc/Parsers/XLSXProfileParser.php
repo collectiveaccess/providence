@@ -476,8 +476,18 @@ class XLSXProfileParser extends BaseProfileParser {
 						break;
 					case 'cad':
 						$settings['dollarCurrency'][''] = [
-							'CAD'
+							'CDN'
 						];
+						break;
+					default:
+						$lines = preg_split("![\n\r]+!", $render_setting);
+						foreach($lines as $line) {
+							$l = explode('=', $line);
+							$setting = self::rewriteSettingName(array_shift($l));
+							$value = join('=', $l);
+							
+							$settings[$setting][''][] = $value;
+						}
 						break;
 				}
 			}
@@ -498,8 +508,8 @@ class XLSXProfileParser extends BaseProfileParser {
     			    $table = $tmp[0];
 					$type = $tmp[1] ?? null;
 					
-					$min_repeats = self::parseBool($element['mandatory']) ? 1 : 0;
-					$max_repeats = self::parseBool($element['repeatable']) ? 1000 : 0;
+					$min_repeats = is_numeric($element['mandatory']) ? (int)$element['mandatory'] : (self::parseBool($element['mandatory']) ? 1 : 0);
+					$max_repeats = is_numeric($element['repeatable']) ? (int)$element['repeatable'] : (self::parseBool($element['repeatable']) ? 1000 : 0);
 
 					$type_restrictions[] = [
 						'code' => "res{$rx}",
@@ -913,6 +923,20 @@ class XLSXProfileParser extends BaseProfileParser {
 			}
 		}
 		return false;
+	}
+	# --------------------------------------------------
+	/**
+	 *
+	 */
+	private static function rewriteSettingName(string $setting) : string {
+		switch(strtolower($setting)) {
+			case 'width':
+				return 'fieldWidth';
+			case 'height':
+				case 'width':
+				return 'fieldHeight';
+		}
+		return $setting;
 	}
 	# --------------------------------------------------
 }
