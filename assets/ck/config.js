@@ -40,7 +40,7 @@ CKEDITOR.editorConfig = function( config ) {
 	
 	startupFocus : false;
 	
-	config.extraPlugins = 'camediacontent,calinks';
+	config.extraPlugins = 'camediacontent,calinks,font,colorbutton';
 	config.allowedContent = true;
 	config.disableNativeSpellChecker = false;
 };
