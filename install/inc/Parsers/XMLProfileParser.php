@@ -325,6 +325,7 @@ class XMLProfileParser extends BaseProfileParser {
 		
 			$settings = $item->settings ? $this->getSettingsFromXML($item->settings) : [];
 				
+			$sub_items = [];
 			if (isset($item->items)) {
 				$sub_items = $this->processListItems($item->items);
 			}
