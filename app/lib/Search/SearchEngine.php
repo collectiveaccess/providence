@@ -606,7 +606,7 @@ class SearchEngine extends SearchBase {
 		}
 		
 		// is it an idno?
-		if (is_array($va_idno_regexs = $this->opo_search_config->get('idno_regexes'))) {
+		if (!$vs_fld && is_array($va_idno_regexs = $this->opo_search_config->get('idno_regexes'))) {
 			if (isset($va_idno_regexs[$this->ops_tablename]) && is_array($va_idno_regexs[$this->ops_tablename])) {
 				foreach($va_idno_regexs[$this->ops_tablename] as $vs_idno_regex) {
 					if ((@preg_match("/".caQuoteRegexDelimiter($vs_idno_regex, "/")."/", (string)$po_term->getTerm()->text, $va_matches)) && ($t_instance = Datamodel::getInstanceByTableName($this->ops_tablename, true)) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
