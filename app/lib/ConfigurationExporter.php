@@ -553,7 +553,7 @@ final class ConfigurationExporter {
 		$t_element = new ca_metadata_elements();
 		$t_list = new ca_lists();
 
-		$qr_elements = $this->opo_db->query("SELECT * FROM ca_metadata_elements WHERE parent_id = ? AND deleted = 0 ORDER BY element_id",$pn_parent_id);
+		$qr_elements = $this->opo_db->query("SELECT * FROM ca_metadata_elements WHERE parent_id = ? AND deleted = 0 ORDER BY `rank`",$pn_parent_id);
 		if(!$qr_elements->numRows()) {
 			return null;
 		}
