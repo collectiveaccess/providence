@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2021 Whirl-i-Gig
+ * Copyright 2021-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -119,15 +119,33 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 				$pt = caParseTagOptions($f);
 				$f = $pt['tag'];
 				
+				$is_template = (strpos($f, '^') !== false);	 // is display template if it has at least one caret
+				
 				$p = \SearchResult::parseFieldPathComponents($table, $f);
 				
 				$values = [];
 				
 				$d = $sresult->get($f, array_merge(['returnWithStructure' => true, 'useLocaleCodes' => true, 'returnAllLocales' => true, 'convertCodesToIdno' => true, 'includeValueIDs' => true], $pt['options']));
 	
-				if(!is_array($d) || (sizeof($d) === 0)) { continue; }
+				if(!$is_template && (!is_array($d) || (sizeof($d) === 0))) { continue; }
 		
-				if($is_intrinsic = $rec->hasField($p['field_name'])) {
+				if($is_template) {
+					$row[] = [
+							'name' => $f, 
+							'code' => $f,
+							'locale' => null,
+							'dataType' => "Text",
+							'values' => [
+								[
+									'value' => $sresult->getWithTemplate($f),
+									'locale' => null,
+									'subvalues' => null,
+									'id' => null,
+									'value_id' => null
+								]
+							]
+						];
+				} elseif($is_intrinsic = $rec->hasField($p['field_name'])) {
 					// Intrinics
 					if(strlen($v = $sresult->get($f, array_merge(['convertCodesToIdno' => true], $pt['options'])))) {
 						$row[] = [
@@ -245,6 +263,7 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 					foreach($d as $index => $by_locale) {
 						foreach($by_locale as $locale => $by_id) {
 							$sub_values = [];
+							if(!is_array($by_id)) { $by_id = [[$by_id]]; }
 			
 							$is_set = false;
 							foreach($by_id as $id => $sub_field_values) {
