@@ -511,7 +511,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		}
 		
 		// do insert
-		$reader = $media_path ? $this->_readEmbeddedMetadata($media_path) : null;
+		$reader = ($media_path && !isUrl($media_path)) ? $this->_readEmbeddedMetadata($media_path) : null;
 		
 		if ($vn_rc = parent::insert($options)) {
 			if (is_array($va_media_info = $this->getMediaInfo('media'))) {
@@ -643,7 +643,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		if ($object_representation_mapping_id && ($t_mapping = ca_data_importers::find(['importer_id' => $object_representation_mapping_id], ['returnAs' => 'firstModelInstance']))) {
 			$format = $t_mapping->getSetting('inputFormats');
 			if(is_array($format)) { $format = array_shift($format); }
-			if ($log) { $log->logDebug(_t('Using embedded media mapping %1 (format %2)', $t_mapping->get('importer_code'), $format)); }
+			if ($log) { $log->logDebug(_t('Using embedded media mapping %1 with path %3 (format %2)', $t_mapping->get('importer_code'), $format, $path)); }
 			
 			$va_media_info = $this->getMediaInfo('media');
 			return $t_mapping->importDataFromSource($path, $object_representation_mapping_id, [
