@@ -164,7 +164,7 @@ use Zend\Stdlib\Glob;
 								continue;
 							}
 
-							if (!is_dir($vs_path.'/'.$vs_template) && preg_match("/^[A-Za-z_]+[A-Za-z0-9_]*$/", $vs_template_tag)) {
+							if (!is_dir($vs_path.'/'.$vs_template) && preg_match("/^[A-Za-z_\-]+[A-Za-z0-9_\-]*$/", $vs_template_tag)) {
 								if ($vb_for_html_select && !isset($va_templates[$va_template_info['name']])) {
 									$va_templates[$va_template_info['name']] = '_pdf_'.$vs_template_tag;
 								} elseif (!isset($va_templates[$vs_template_tag])) {
