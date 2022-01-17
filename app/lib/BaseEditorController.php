@@ -2412,15 +2412,19 @@ class BaseEditorController extends ActionController {
 
 		$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
 
-		if (!($t_rep = ca_object_representations::findAsInstance(['representation_id' => $pn_representation_id]))) {
-			throw new ApplicationException(_t('Invalid representation'));
-		}
-		if(!$t_rep->isReadable($this->request->user)) {
-			throw new ApplicationException(_t('Access denied'));
-		}
-		
-		$m = $t_rep->getMediaInfo('media', 'original', 'MIMETYPE'); 
-		$di = caGetMediaDisplayInfo('media_overlay', $m);	
+		$di = [];
+		if($pn_representation_id) {
+			if (!($t_rep = ca_object_representations::findAsInstance(['representation_id' => $pn_representation_id]))) {
+				throw new ApplicationException(_t('Invalid representation'));
+			}
+			if(!$t_rep->isReadable($this->request->user)) {
+				throw new ApplicationException(_t('Access denied'));
+			}
+			
+			$m = $t_rep->getMediaInfo('media', 'original', 'MIMETYPE'); 
+			$di = caGetMediaDisplayInfo('media_overlay', $m);	
+		}	
+	
 		if (!$ps_version) { $ps_version = caGetOption('download_version', $di, 'original'); }
 
 		$o_view->setVar('version', $ps_version);
@@ -2480,6 +2484,8 @@ class BaseEditorController extends ActionController {
 				// Perform metadata embedding
 				if (isset($va_rep['representation_id']) && ($va_rep['representation_id'] > 0)) {
                     $t_rep = new ca_object_representations($va_rep['representation_id']);
+                    if(!$t_rep->isReadable($this->request->user)) { continue; }
+                    
                     if(!($vs_path = caEmbedMediaMetadataIntoFile($t_rep->getMediaPath('media', $ps_version),
                         $t_subject->tableName(), $t_subject->getPrimaryKey(), $t_subject->getTypeCode(), // subject table info
                         $t_rep->getPrimaryKey(), $t_rep->getTypeCode() // rep info
