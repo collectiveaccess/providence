@@ -144,9 +144,7 @@ if (!$this->request->isAjax()) {
 					<input type="checkbox" class="algebraSetSelector set-table-<?php print $va_set["table_num"]; ?>" name="algebra_set_id[]" data-table_num="<?php print $va_set["table_num"]; ?>" value="<?php print $va_set["set_id"]; ?>">
 				</td>
 				<td>
-					<div class="caItemListName"><?php print $va_set['name'].($va_set['set_code'] ? 
-					((mb_strlen($va_set['set_code']) > 20) ? "<br/>(<span class='abbreviatedPath' title='{$va_set['set_code']}'>".
-					caTruncateStringWithEllipsis($va_set['set_code'], 20, 'start')."</span>)" : '<br/>('.$va_set['set_code'].')') : ""); ?></div>
+					<div class="caItemListName"><?php print $va_set['name']; ?></div>
 				</td>
 				<td>
 					<div><?php print $va_set['set_content_type']; ?></div>

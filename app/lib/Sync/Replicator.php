@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2020 Whirl-i-Gig
+ * Copyright 2015-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -296,6 +296,8 @@ class Replicator {
                 // Dictionary with log_ids sent from this source in this session
                 $this->sent_log_ids = [];
                 
+                if(($chunk_size = (int)$this->opo_replication_conf->get('chunk_size')) <= 0) { $chunk_size = 100; }
+                
 				while(true) { // use chunks of 10 entries until something happens (success/err)
 				    $this->last_log_id = null;
 				    if (sizeof($this->sent_log_ids) > 100000) {
@@ -308,7 +310,7 @@ class Replicator {
 					$va_source_log_entries = $o_source->setEndpoint('getlog')->clearGetParameters()
 						->addGetParameter('from', $replicated_log_id)
 						->addGetParameter('skipIfExpression', $vs_skip_if_expression)
-						->addGetParameter('limit', 100)
+						->addGetParameter('limit', $chunk_size)
 						->addGetParameter('ignoreTables', $vs_ignore_tables)
 						->addGetParameter('onlyTables', $vs_only_tables)
 						->addGetParameter('includeMetadata', $vs_include_metadata)
@@ -512,7 +514,7 @@ class Replicator {
                                                     
                                                     $va_dependent_guids = array_keys(array_filter($va_guids_exist_for_dependencies, function($v) { return !is_array($v); }));
                                                    
-                                                    $missing_guids = array_unique(array_merge($missing_guids, $va_dependent_guids));  // add dependent guid lists to "missing" list; this will forcing dependencies to be processed through this loop
+                                                    $missing_guids = array_filter(array_unique(array_merge($missing_guids, $va_dependent_guids)), 'strlen');  // add dependent guid lists to "missing" list; this will forcing dependencies to be processed through this loop
                                           
                                                     if (is_array($pa_filter_on_access_settings)) {
                                                         // Filter missing guid list using access criteria
@@ -524,8 +526,8 @@ class Replicator {
                                                         $va_access_for_missing = $o_access_for_missing->getRawData();
                                                         
                                                         if (is_array($va_access_for_missing)) {
-                                                        	$missing_guids = array_keys(array_filter($va_access_for_missing, function($v) use ($pa_filter_on_access_settings) { return (($v == '?') || (in_array((int)$v, $pa_filter_on_access_settings, true))); }));
-                                                        	$this->guids_to_skip = array_unique(array_merge($this->guids_to_skip, array_keys(array_filter($va_access_for_missing, function($v) use ($pa_filter_on_access_settings) { return !in_array((int)$v, $pa_filter_on_access_settings, true); }))));
+                                                        	$missing_guids = array_filter(array_keys(array_filter($va_access_for_missing, function($v) use ($pa_filter_on_access_settings) { return (($v == '?') || (in_array((int)$v, $pa_filter_on_access_settings, true))); })), 'strlen');
+                                                        	$this->guids_to_skip = array_filter(array_unique(array_merge($this->guids_to_skip, array_keys(array_filter($va_access_for_missing, function($v) use ($pa_filter_on_access_settings) { return !in_array((int)$v, $pa_filter_on_access_settings, true); })))), 'strlen');
                                                     	} else {
                                                     		$this->log(_t("[%1] Failed to retrieve access values for missing GUID.", $vs_source_key),Zend_Log::DEBUG);
                                                     	}

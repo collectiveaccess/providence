@@ -650,8 +650,18 @@ if (!$for_current_value_reindex) {
 					// Is attribute
 					//
 					if (!preg_match('!^_ca_attribute_(.*)$!', $vs_field, $va_matches)) { continue; }
-
-					if ($vb_can_do_incremental_indexing && (!$pb_is_new_row) && (!$pb_reindex_mode) && (!isset($pa_changed_fields[$vs_field]) || !$pa_changed_fields[$vs_field])) {
+					
+					$child_ids = null;
+					$va_data['datatype'] = (int)ca_metadata_elements::getElementDatatype($va_matches[1]);
+					
+					if ($va_data['datatype'] === 0) {
+						// expand container element ids to include sub-elements
+						$child_ids = ca_metadata_elements::getElementsForSet($va_matches[1], ['idsOnly' => true]);
+		
+						if(sizeof(array_map(function($v) use ($pa_changed_fields) { return isset($pa_changed_field_nums['_ca_attribute_'.$v]);  }, $child_ids)) === 0) {
+							continue;
+						}
+					} elseif ($vb_can_do_incremental_indexing && (!$pb_is_new_row) && (!$pb_reindex_mode) && (!isset($pa_changed_fields[$vs_field]) || !$pa_changed_fields[$vs_field])) {
 						continue;	// skip unchanged attribute value
 					}
 
@@ -666,11 +676,9 @@ if (!$for_current_value_reindex) {
 						if($vb_cont) continue; // skip excluded attribute type
 					}
 
-					$va_data['datatype'] = (int)ca_metadata_elements::getElementDatatype($va_matches[1]);
-					
 					if ($va_data['datatype'] === 0) {
 						// get child ids for container - we need to pass indexing settings for each
-						if(is_array($child_ids = ca_metadata_elements::getElementsForSet($va_matches[1], ['idsOnly' => true]))) {
+						if(is_array($child_ids)) {
 							foreach($child_ids as $child_id) {
 								if(!is_array($va_fields_to_index['_ca_attribute_'.$child_id])) { continue; }
 								$va_data['_ca_attribute_'.$child_id] = $va_fields_to_index['_ca_attribute_'.$child_id];

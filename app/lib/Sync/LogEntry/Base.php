@@ -370,7 +370,7 @@ abstract class Base {
 							}
 						}
 					} elseif ($va_snapshot[$vs_field]) {
-						throw new InvalidLogEntryException("No parent_guid field found");
+						throw new InvalidLogEntryException("No parent_guid field found for $vs_field : ".$va_snapshot[$vs_field]);
 					}
 				}
 			}

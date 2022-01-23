@@ -474,6 +474,14 @@ class ca_change_log extends BaseModel {
 								continue(2);
 							}
 							break;
+						case 'source_id':
+							if($t_instance) {
+								$va_snapshot['source_code'] = $vm_val ? caGetListItemIdno($vm_val) : null;
+							} else {
+								$va_snapshot = ['SKIP' => true];
+								continue(2);
+							}
+							break;
 						case 'row_id':
 							if(isset($va_snapshot['table_num']) && ($vn_table_num = $va_snapshot['table_num'])) {
 								$va_snapshot['row_guid'] = \ca_guids::getForRow($vn_table_num, $vm_val);
@@ -616,6 +624,8 @@ class ca_change_log extends BaseModel {
 								if(($t_instance instanceof \ca_representation_annotations) && ($vs_fld == 'representation_id')) {
 									$va_snapshot['representation_guid'] = ca_guids::getForRow(Datamodel::getTableNum('ca_object_representations'), $vm_val);
 								}
+							} elseif($vs_fld == $t_instance->getProperty('HIERARCHY_PARENT_ID_FLD')) {
+								$va_snapshot[$vs_fld . '_guid'] = null;
 							}
 							break;
 					}
@@ -680,7 +690,7 @@ class ca_change_log extends BaseModel {
 			}
 		}
 
-		return caSanitizeArray($va_ret, ['removeNonCharacterData' => true]);
+		return caSanitizeArray($va_ret, ['removeNonCharacterData' => false]);
 	}
 	# ------------------------------------------------------
 	/**
