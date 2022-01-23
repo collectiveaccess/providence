@@ -598,6 +598,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 			$this->setTransaction(new Transaction($this->getDb()));
 			$vb_we_set_transaction = true;
 		}
+		$vn_list_id = $this->get('list_id');
 		
 		$o_trans = $this->getTransaction();
 		
@@ -614,7 +615,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 			$t_list = new ca_lists();
 			$t_list->setTransaction($o_trans);
 			
-			if (($t_list->load($this->get('list_id'))) && ($t_list->get('list_code') == 'place_hierarchies') && ($this->get('parent_id'))) {
+			if (($t_list->load($vn_list_id)) && ($t_list->get('list_code') == 'place_hierarchies') && ($this->get('parent_id'))) {
 				// insert root or place hierarchy when creating non-root items in 'place_hierarchies' list
 				$t_locale = new ca_locales();
 				$va_locales = $this->getAppConfig()->getList('locale_defaults');
@@ -658,6 +659,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		} else {
 			if ($vb_we_set_transaction) { $o_trans->commit(); }
 			$this->_setSettingsForList();
+			CompositeCache::flush("listItems_{$vn_list_id}");
 			ExternalCache::flush('listItems');
 			CompositeCache::flush('BaseModelWithAttributesTypeIDs');
 		}
@@ -670,6 +672,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 			$vb_we_set_transaction = true;
 			$this->setTransaction(new Transaction($this->getDb()));
 		}
+		$vn_list_id = $this->get('list_id');
 		
 		$o_trans = $this->getTransaction();
 		
@@ -688,6 +691,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 			if ($vb_we_set_transaction) { $this->getTransaction()->commit(); }
 			$this->_setSettingsForList();
 			ExternalCache::flush('listItems');
+			CompositeCache::flush("listItems_{$vn_list_id}");
 			CompositeCache::flush('BaseModelWithAttributesTypeIDs');
 		}
 		return $vn_rc;
@@ -699,6 +703,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
 		$vb_web_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
 		
+		$vn_list_id = $this->get('ca_list_items.list_id');
 		if (!$this->inTransaction()) {
 			$o_trans = new Transaction($this->getDb());
 			$this->setTransaction($o_trans);
@@ -708,6 +713,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		$vn_id = $this->getPrimaryKey();
 		if(parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
 			ExternalCache::flush('listItems');
+			CompositeCache::flush("listItems_{$vn_list_id}");
 			CompositeCache::flush('BaseModelWithAttributesTypeIDs');
 			// Delete any associated attribute values that use this list item
 			if (!($qr_res = $this->getDb()->query("

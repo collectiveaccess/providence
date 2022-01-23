@@ -296,7 +296,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				return false;
 			}
 			
-			ExternalCache::flush('listItems');
+			CompositeCache::flush('listItems');
 		}
 		
 		return $vn_rc;
@@ -307,7 +307,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public function update($pa_options=null) {
 		if ($vn_rc = parent::update($pa_options)) {
-			ExternalCache::flush('listItems');
+			CompositeCache::flush('listItems');
 		}
 		return $vn_rc;
 	}
@@ -333,7 +333,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 			}
 			
-			ExternalCache::flush('listItems');
+			CompositeCache::flush('listItems');
 		}
 
 		return $vn_rc;
@@ -386,6 +386,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			return false;
 		}
 		
+		CompositeCache::flush("listItems");
+		
 		return $t_item;
 	}
 	# ------------------------------------------------------
@@ -436,6 +438,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			$this->errors = array_merge($this->errors, $t_item->errors);
 			return false;
 		}
+		
+		CompositeCache::flush("listItems");
 
 		return $t_item;
 	}
@@ -514,8 +518,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "getItemsForList/{$vn_list_id}");
 
-		if (!$pb_dont_cache && CompositeCache::contains($vs_cache_key, "listItems_{$vn_list_id}")) { 
-			return CompositeCache::fetch($vs_cache_key, "listItems_{$vn_list_id}");
+		if (!$pb_dont_cache && CompositeCache::contains($vs_cache_key, "listItems")) { 
+			return CompositeCache::fetch($vs_cache_key, "listItems");
 		}
 		
 		$t_list = new ca_lists($vn_list_id);
@@ -528,7 +532,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		
 		$t_list_item = new ca_list_items($pn_item_id);
 		if (!$t_list_item->getPrimaryKey() || ($t_list_item->get('list_id') != $vn_list_id)) { 
-			CompositeCache::save($vs_cache_key, null, "listItems_{$vn_list_id}", null, self::$s_list_cache_size);
+			CompositeCache::save($vs_cache_key, null, "listItems", null, self::$s_list_cache_size);
 			return null; 
 		}
 
@@ -619,7 +623,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			if ((isset($pa_options['idsOnly']) && $pa_options['idsOnly'])) {
-				CompositeCache::save($vs_cache_key, $va_items, "listItems_{$vn_list_id}", null, self::$s_list_cache_size);
+				CompositeCache::save($vs_cache_key, $va_items, "listItems", null, self::$s_list_cache_size);
 				return $va_items;
 			}
 			
@@ -645,7 +649,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				foreach($va_items as $vn_item_id => $va_row) {
 					$va_labels[$vn_item_id] = $va_row['name_plural'];
 				}
-				CompositeCache::save($vs_cache_key, $va_labels, "listItems_{$vn_list_id}", null, self::$s_list_cache_size);
+				CompositeCache::save($vs_cache_key, $va_labels, "listItems", null, self::$s_list_cache_size);
 				return $va_labels;
 			}
 		} else {
@@ -711,7 +715,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		if (is_array($va_items) && (sizeof($va_items) < 10000)) {
-			CompositeCache::save($vs_cache_key, $va_items, "listItems_{$vn_list_id}", null, self::$s_list_cache_size);
+			CompositeCache::save($vs_cache_key, $va_items, "listItems", null, self::$s_list_cache_size);
 		}
 		return $va_items;
 	}
@@ -913,8 +917,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	
 		$vn_list_id = $this->_getListID($pm_list_name_or_id);
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "getItemFromList/{$vn_list_id}/{$ps_idno}");
-		if (CompositeCache::contains($vs_cache_key, "listItems_{$vn_list_id}")) {
-			return CompositeCache::fetch($vs_cache_key, "listItems_{$vn_list_id}");
+		if (CompositeCache::contains($vs_cache_key, "listItems")) {
+			return CompositeCache::fetch($vs_cache_key, "listItems");
 		}
 		
 		$o_db = $this->getDb();
@@ -936,10 +940,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		
 		if ($qr_res->nextRow()) {
 			$row = $qr_res->getRow();
-			CompositeCache::save($vs_cache_key, $row, "listItems_{$vn_list_id}", null, self::$s_list_cache_size);
+			CompositeCache::save($vs_cache_key, $row, "listItems", null, self::$s_list_cache_size);
 			return $row;
 		}
-		CompositeCache::save($vs_cache_key, null, "listItems_{$vn_list_id}", null, self::$s_list_cache_size);
+		CompositeCache::save($vs_cache_key, null, "listItems", null, self::$s_list_cache_size);
 		return null;
 	}
 	# ------------------------------------------------------
@@ -956,8 +960,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	public function getItemFromListByItemID($pm_list_name_or_id, $pn_item_id, $pa_options=null) {
 		$vn_list_id = $this->_getListID($pm_list_name_or_id);
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "getItemFromListByItemID/{$vn_list_id}/{$pn_item_id}");
-		if(CompositeCache::contains($vs_cache_key, "listItems_{$vn_list_id}")) {
-			CompositeCache::fetch($vs_cache_key, "listItems_{$vn_list_id}");
+		if(CompositeCache::contains($vs_cache_key, "listItems")) {
+			CompositeCache::fetch($vs_cache_key, "listItems");
 		}
 		
 		$vs_deleted_sql = caGetOption('includeDeleted', $pa_options, false) ? "" : "(cli.deleted = 0) AND ";
@@ -980,10 +984,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$va_items = array();
 		while($qr_res->nextRow()) {
 			$row = $qr_res->getRow();
-			CompositeCache::save($vs_cache_key, $row, "listItems_{$vn_list_id}", null, self::$s_list_cache_size);
+			CompositeCache::save($vs_cache_key, $row, "listItems", null, self::$s_list_cache_size);
 			return $row;
 		}
-		CompositeCache::save($vs_cache_key, null, "listItems_{$vn_list_id}", null, self::$s_list_cache_size);
+		CompositeCache::save($vs_cache_key, null, "listItems", null, self::$s_list_cache_size);
 		return null;
 	}
 	# ------------------------------------------------------
@@ -1001,8 +1005,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$pa_check_access = caGetOption('checkAccess', $pa_options, null);
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "getItemFromListByItemValue/{$pm_list_name_or_id}/{$pm_value}");
 		
-		if(CompositeCache::contains($vs_cache_key, "listItems_{$vn_list_id}")) {
-			return CompositeCache::fetch($vs_cache_key, "listItems_{$vn_list_id}");
+		if(CompositeCache::contains($vs_cache_key, "listItems")) {
+			return CompositeCache::fetch($vs_cache_key, "listItems");
 		}
 		
 		$vn_list_id = $this->_getListID($pm_list_name_or_id);
@@ -1030,7 +1034,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			 $va_items[$pn_item_id][$qr_res->get('locale_id')] = $qr_res->getRow();
 		}
 		
-		CompositeCache::save($vs_cache_key, $va_items, "listItems_{$vn_list_id}", null, self::$s_list_cache_size);
+		CompositeCache::save($vs_cache_key, $va_items, "listItems", null, self::$s_list_cache_size);
 		return $va_items;
 	}
 	# ------------------------------------------------------
@@ -1048,8 +1052,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$vn_list_id = $this->_getListID($pm_list_name_or_id);
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "getItemFromListByLabel/{$vn_list_id}/{$ps_label_name}");
 		
-		if(CompositeCache::contains($vs_cache_key, "listItems_{$vn_list_id}")) {
-			return CompositeCache::fetch($vs_cache_key, "listItems_{$vn_list_id}");
+		if(CompositeCache::contains($vs_cache_key, "listItems")) {
+			return CompositeCache::fetch($vs_cache_key, "listItems");
 		}
 		
 		$va_params = [(int)$vn_list_id, (string)$ps_label_name, (string)$ps_label_name];
@@ -1071,10 +1075,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		
 		if ($qr_res->nextRow()) {
 			$row = $qr_res->getRow();
-			CompositeCache::save($vs_cache_key, $row, "listItems_{$vn_list_id}", null, self::$s_list_cache_size);
+			CompositeCache::save($vs_cache_key, $row, "listItems", null, self::$s_list_cache_size);
 			return $row;
 		}
-		CompositeCache::save($vs_cache_key, null, "listItems_{$vn_list_id}", null, self::$s_list_cache_size);
+		CompositeCache::save($vs_cache_key, null, "listItems", null, self::$s_list_cache_size);
 		return null;
 
 	}	
@@ -1095,8 +1099,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$vn_list_id = $this->_getListID($pm_list_name_or_id);
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "getItemFromListForDisplay/{$pm_list_name_or_id}/{$ps_idno}");
 		
-		if(CompositeCache::contains($vs_cache_key, "listItems_{$vn_list_id}")) {
-			return CompositeCache::fetch($vs_cache_key, "listItems_{$vn_list_id}");
+		if(CompositeCache::contains($vs_cache_key, "listItems")) {
+			return CompositeCache::fetch($vs_cache_key, "listItems");
 		}
 		$va_items = [];
 		
@@ -1129,7 +1133,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$va_item = array_shift($va_tmp);
 		$label = $va_item[$pb_return_plural ? 'name_plural' : 'name_singular'];
 		
-		CompositeCache::save($vs_cache_key, $label, "listItems_{$vn_list_id}", null, self::$s_list_cache_size);
+		CompositeCache::save($vs_cache_key, $label, "listItems", null, self::$s_list_cache_size);
 
 		return $label;
 	}
@@ -1270,8 +1274,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		if ($vn_list_id = $this->_getListID($pm_list_name_or_id)) {
 			$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "getItemIDFromListByLabel/{$vn_list_id}/{$ps_label_name}", ['checkAccess']);
 		
-			if(CompositeCache::contains($vs_cache_key, "listItems_{$vn_list_id}")) {
-				return CompositeCache::fetch($vs_cache_key, "listItems_{$vn_list_id}");
+			if(CompositeCache::contains($vs_cache_key, "listItems")) {
+				return CompositeCache::fetch($vs_cache_key, "listItems");
 			}
 			
 			if (
@@ -1279,7 +1283,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				||
 				($vn_id = ca_list_items::find(array('list_id' => $vn_list_id, 'preferred_labels' => array('name_singular' => $ps_label_name)), array('returnAs' => 'firstId', 'checkAccess' => caGetOption('checkAccess', $pa_options, null))))
 			) {
-				CompositeCache::save($vs_cache_key, $vn_id, "listItems_{$vn_list_id}", null, self::$s_list_cache_size);
+				CompositeCache::save($vs_cache_key, $vn_id, "listItems", null, self::$s_list_cache_size);
 				return $vn_id;
 			} 
 		}
@@ -1995,8 +1999,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			$vn_list_id = $this->getPrimaryKey();
 		}
 		if (!$vn_list_id) { return null; } 
-		if (CompositeCache::contains("root_for_{$vn_list_id}", "listItems_{$vn_list_id}")) { 
-			return CompositeCache::fetch("root_for_{$vn_list_id}", "listItems_{$vn_list_id}"); 
+		if (CompositeCache::contains("root_for_{$vn_list_id}", "listItems")) { 
+			return CompositeCache::fetch("root_for_{$vn_list_id}", "listItems"); 
 		}
 		
 		$t_items = new ca_list_items();
@@ -2004,7 +2008,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$vn_id = $t_items->getPrimaryKey();
 		
 		if ($pm_list_name_or_id && $vn_list_id) {
-			CompositeCache::save("root_for_{$vn_list_id}", $vn_id, "listItems_{$vn_list_id}", null, self::$s_list_cache_size);
+			CompositeCache::save("root_for_{$vn_list_id}", $vn_id, "listItems", null, self::$s_list_cache_size);
 		}
 		
 		return $vn_id;
@@ -2054,7 +2058,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	static public function getListCodes($pa_options=null) {		
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options);
-		if (ExternalCache::contains($vs_cache_key, 'listCodes') && is_array($v = ExternalCache::fetch($vs_cache_key, 'listCodes'))) { 
+		if (CompositeCache::contains($vs_cache_key, 'listCodes') && is_array($v = CompositeCache::fetch($vs_cache_key, 'listCodes'))) { 
 			return $v; 
 		}
 		
@@ -2074,7 +2078,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		}
 		ksort($va_lists);
 		
-		ExternalCache::save($vs_cache_key, $va_lists, 'listCodes');
+		CompositeCache::save($vs_cache_key, $va_lists, 'listCodes');
 		return $va_lists;
 	}
 	# ---------------------------------------------------------------------------------------------

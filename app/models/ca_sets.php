@@ -541,7 +541,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$cache_key = caMakeCacheKeyFromOptions($options);
 		$no_cache 		= caGetOption('noCache', $options, false);
 		if(!$no_cache && ExternalCache::contains($cache_key, 'SetManager')) {
-			return ExternalCache::fetch($cache_key, 'SetManager');;
+		//	return ExternalCache::fetch($cache_key, 'SetManager');;
 		}
 		
 		$table_num = Datamodel::getTableNum(caGetOption('table', $options, null));
@@ -562,6 +562,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	
 		$sort 			= caGetOption('sort', $options, null);
 		$sortdir 		= caGetOption('sortDirection', $options, null);
+		
+		$user_id = caGetOption('user_id', $options, null);
 		
 		$db = $this->getDb();
 		
@@ -668,7 +670,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 							)
 						)";
 					} else {
-						$sql = "(cs.user_id = {$pn_user_id})";
+						$sql = "(cs.user_id = {$user_id})";
 					}
 					
 					$sql .= " OR (cs.set_id IN (
@@ -726,33 +728,49 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			} else {
 				list($set_id, $locale_id, $type_id, $table_num) = $qr->get(['set_id', 'locale_id', 'type_id', 'table_num']);
 			
-				$set_list[$set_id][$locale_id] = array_merge($qr->getRow(), ['item_count' => [], 'set_content_type' => $this->getSetContentTypeName($table_num, ['number' => 'plural']), 'set_type' => $this->getTypeCode($type_id)]);
+				$set_list[$set_id][$locale_id] = array_merge($qr->getRow(), ['item_count' => 0, 'set_content_type' => $this->getSetContentTypeName($table_num, ['number' => 'plural']), 'set_type' => $this->getTypeCode($type_id)]);
+			}
+			
+			// Get item counts for sets if needed
+			if (!$set_ids_only && !$omit_counts && sizeof($set_list)) {
+				if($t = Datamodel::getInstance($qr->get('table_num'), true)) {
+					$qrc = $db->query("
+						SELECT count(distinct csi.row_id) c
+						FROM ca_set_items csi
+						INNER JOIN ".$t->tableName()." AS t ON t.".$t->primaryKey()." = csi.row_id
+						WHERE
+							csi.set_id = ? AND t.deleted = 0
+					", [$qr->get('set_id')]);
+					if($qrc->nextRow()) {
+						$set_list[$set_id][$locale_id]['item_count'] = $qrc->get('c');
+					}
+				}
 			}
 		}
 		if($set_ids_only) {
 			return array_keys($set_list);
 		}
 		
-		// Get item counts for sets if needed
-		if (!$set_ids_only && !$omit_counts && sizeof($set_list)) {
-			$qr = $db->query("
-				SELECT csi.set_id, count(*) c
-				FROM ca_set_items csi
-				WHERE csi.set_id IN (?)
-				GROUP BY csi.set_id
-			", [array_keys($set_list)]);
-			
-			while($qr->nextRow()) {
-				$set_id = $qr->get('set_id');
-				$count = $qr->get('c');
-				
-				if(is_array($set_list[$set_id])) {
-					foreach($set_list[$set_id] as $locale_id => $data) {
-						$set_list[$set_id][$locale_id]['item_count'] = $count;
-					}
-				}
-			}
-		}
+		// // Get item counts for sets if needed
+// 		if (!$set_ids_only && !$omit_counts && sizeof($set_list)) {
+// 			$qr = $db->query("
+// 				SELECT csi.set_id, count(*) c
+// 				FROM ca_set_items csi
+// 				WHERE csi.set_id IN (?)
+// 				GROUP BY csi.set_id
+// 			", [array_keys($set_list)]);
+// 			
+// 			while($qr->nextRow()) {
+// 				$set_id = $qr->get('set_id');
+// 				$count = $qr->get('c');
+// 				
+// 				if(is_array($set_list[$set_id])) {
+// 					foreach($set_list[$set_id] as $locale_id => $data) {
+// 						$set_list[$set_id][$locale_id]['item_count'] = $count;
+// 					}
+// 				}
+// 			}
+// 		}
 		
 		// Get items for sets if needed
 		if ($include_items && sizeof($set_list)) {
