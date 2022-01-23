@@ -193,9 +193,15 @@
  						$po_search->setFacetGroup($vs_group_name);
  					}
  			
-					$results = $po_search->getResultsForPage(array_merge($search_opts,
-						['start' => ($page_num - 1) * $vn_items_per_page, 'limit' => $vn_items_per_page])
-					);
+ 					if($options['output_format'] !== 'HTML') {
+ 						$results = $po_search->getResultsForPage(array_merge($search_opts,
+							['start' => 0 , 'limit' => 0])
+						);
+ 					} else {
+						$results = $po_search->getResultsForPage(array_merge($search_opts,
+							['start' => ($page_num - 1) * $vn_items_per_page, 'limit' => $vn_items_per_page])
+						);
+					}
 					$vo_result = $results['result'];
 					$num_hits = $results['total'];
 					
