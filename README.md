@@ -15,6 +15,9 @@ Version 1.7.14 is a maintenance release with these bug fixes and minor improveme
 * Handle non-standard ports when generating URL for background search indexing
 * Update selected 3rd party libraries for bug fixes
 * Improve script path parsing to addresses issues for systems running PHP-FPM proxies where quick search expressions containing spaces (or other URL escaped characters) will throw an invalid controller error when "full results" is selected. This is due to a bug in PHP processing of content for $_SERVER['SCRIPT_NAME'] in several PHP 7.x versions when running as PHP-FPM. See https://bugs.php.net/bug.php?id=74129.
+* Fix issue where CSRF token was not passed when creating sets from search and browse results
+* Improved cs_CZ translation
+* Add support for localized numeric metadata values
 
 Note that this version is not yet compatible with PHP version 8. Please use versions 7.3 or 7.4.
 
