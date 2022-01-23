@@ -136,7 +136,8 @@
 			'<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'addToSet'); ?>', 
 			{ 
 				set_id: jQuery('#caAddToSetID').val(), 
-				item_ids: caGetSelectedItemIDsToAddToSet().join(';')
+				item_ids: caGetSelectedItemIDsToAddToSet().join(';'),
+				csrfToken: <?= json_encode(caGenerateCSRFToken($this->request));?>
 			}, 
 			function(res) {
 				jQuery("#caAddToSetIDIndicator").hide();
