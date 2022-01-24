@@ -419,11 +419,16 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	
 	 	if($restrictions = $this->_getFieldRestrictions($subject_tablenum)) {
 	 		$res = [];
+	 		
+	 		$res_by_table = [];
 	 		foreach($restrictions['restrict'] as $r) {
-	 			$res[] = "(swi.field_table_num = ? AND swi.field_num = ?)";
-	 			$params[] = $r['table_num'];
-	 			$params[] = $r['field_num'];
+	 			$res_by_table[$r['table_num']][] = $r['field_num'];
 	 		}
+	 		foreach($res_by_table as $rtable_num => $rfield_nums) {
+				$res[] = "(swi.field_table_num = ? AND swi.field_num IN (?))";
+				$params[] = $rtable_num;
+				$params[] = $rfield_nums;
+			}
 	 		
 	 		$flds = [];
 	 		foreach($restrictions['exclude'] as $r) {
@@ -434,7 +439,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 			$params[] = join(',', $flds);
 	 		}
 	 		if(sizeof($res)) {
-	 			$field_sql .= " AND (".join(' AND ', $res).")";
+	 			$field_sql .= " AND (".join(' OR ', $res).")";
 	 		}
 	 	}
 	 	
