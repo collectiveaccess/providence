@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2021 Whirl-i-Gig
+ * Copyright 2014-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -111,10 +111,11 @@ var caUI = caUI || {};
 					success: function(data, textStatus, jqXHR) {
 						if(typeof data.error === 'undefined') {
 							// success... add file paths to form data
-							jQuery.each(data, function(k, v) {
-								formData[k] = v;
-							});
-
+							if(data && data['files']) {
+								jQuery.each(data['files'], function(k, v) {
+									formData[k] = v;
+								});
+							}
 							// call function to process the form
 							that.post(e, formData);
 						} else {
