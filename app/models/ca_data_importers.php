@@ -1931,7 +1931,14 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						$this->num_records_skipped++;
 						continue;	// skip because primary key does not exist
 					}
-				} elseif ($vs_existing_record_policy != 'none') {
+					
+					// Make sure we're using a relevant ERP when ID is forced
+					$vn_mapped_primary_key_value = $vn_id;
+					if(!in_array($vs_existing_record_policy, ['none', 'merge_on_id', 'merge_on_id_with_replace', 'merge_on_id_with_skip', 'overwrite_on_id'])) {
+					    $vs_existing_record_policy = 'merge_on_id_with_replace';
+					}
+				}
+				if ($vs_existing_record_policy != 'none') {
 					$pref_label_lookup_values = $va_pref_label_values;
 					if(is_array($pref_label_lookup_fields_to_omit)) {
 						foreach($pref_label_lookup_fields_to_omit as $f2o) {
