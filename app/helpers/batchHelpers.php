@@ -658,7 +658,8 @@ function caGetAvailableMediaUploadModes(array $options=null) {
 	foreach([
 			_t('Import all media, matching with existing records where possible') => 'TRY_TO_MATCH',
 			_t('Import only media that can be matched with existing records') => 'ALWAYS_MATCH',
-			_t('Import all media, creating new records for each') => 'DONT_MATCH'
+			_t('Import all media, creating new records for each') => 'DONT_MATCH',
+			_t('Import media directories as hierarchies') => 'DIRECTORY_AS_HIERARCHY'
 		] as $label => $mode) {
 		if(!in_array($mode, $available_modes)) { continue; }
 		$import_modes[$label] = $mode;
