@@ -504,7 +504,7 @@ class BatchProcessor {
 
 		if (!is_writeable($vs_log_dir)) { $vs_log_dir = caGetTempDirPath(); }
 		$vn_log_level = BatchProcessor::_logLevelStringToNumber($vs_log_level);
-		$o_log = new KLogger($vs_log_dir, $vn_log_level);
+		$o_log = caGetLogger(['logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level]);
 
 		$o_log->logDebug("[importMediaFromDirectory]: Args\n".json_encode($pa_options));
 		$vs_import_target = caGetOption('importTarget', $pa_options, 'ca_objects');
@@ -908,7 +908,9 @@ class BatchProcessor {
 			if($vs_import_mode === 'DIRECTORY_AS_HIERARCHY') {
 				$stub = str_replace("{$batch_media_import_directory}/", '', $vs_file);
 				
-				$root_code = array_shift(explode('/', $stub));
+				$bits = explode('/', $stub);
+				$root_code = (sizeof($bits) >= 2) ? array_shift(explode('/', $stub)) : array_pop(explode('/', $batch_media_import_directory));
+				
 				if(!isset($directory_as_hierarchy_roots[$root_code])) {
 					
 					$t_parent = Datamodel::getInstance($vs_import_target);
@@ -1036,7 +1038,7 @@ class BatchProcessor {
 					);
 					
 					if($t_parent && !$t_parent->getRepresentationCount()) {
-						$t_parent->addRelationship('ca_object_representations', $t_new_rep->getPrimaryKey(), null); // TODO: rel type for non-object-object_rep relationships?
+						$t_parent->addRelationship('ca_object_representations', $t_new_rep->getPrimaryKey(), $vn_rel_type_id); 
 					}
 
 					if ($t_instance->numErrors()) {
@@ -1055,7 +1057,6 @@ class BatchProcessor {
 							'status' => 'ERROR',
 						);
 						$o_log->logError($vs_msg);
-						//$o_trans->rollback();
 						continue;
 					} else {
 						if ($vb_delete_media_on_import) {
@@ -1198,14 +1199,6 @@ class BatchProcessor {
 		}
 		$o_batch_log->close();
 
-		//if ($vb_we_set_transaction) {
-		//	if (sizeof($va_errors) > 0) {
-				//$o_trans->rollback();
-		//	} else {
-				//$o_trans->commit();
-		//	}
-		//}
-
 		$vs_set_name = $t_set->getLabelForDisplay();
 		$vs_started_on = caGetLocalizedDate($vn_start_time);
 
@@ -1245,7 +1238,7 @@ class BatchProcessor {
 	/**
 	 *
 	 */
-	private static function _addNewRecord($t_instance, $o_log, array $options) : array {
+	private static function _addNewRecord(BaseModel $t_instance, KLogger $o_log, array $options) : array {
 		$errors = [];
 		
 		$t_instance->set('parent_id', caGetOption('parent_id', $options, null));
