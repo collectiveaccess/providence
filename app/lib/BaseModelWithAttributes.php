@@ -3568,5 +3568,69 @@
             if (sizeof(array_filter(array_keys($cf), function($v) { return substr($v, 0, 14) === '_ca_attribute_'; })) > 0) { return true; }
             return false;
 		}
+		# --------------------------------------------------------------------------------
+		/**
+		 * Translate an array of attribute values into row_ids 
+		 * 
+		 * @param array $values A list of values
+		 * @param array $options Options include:
+		 *     forceToLowercase = force keys in returned array to lowercase. [Default is false] 
+		 *	   checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for table that have an "access" field.
+		 *	   returnAll = return all matching values. [Default is false; only the first matched value is returned]
+		 * @return array Array with keys set to labels and values set to row_ids. Returns null on error.
+		 */
+		static public function getIDsForAttributeValues(string $element_code, array $values, ?array $options=null) : array {
+			if (!is_array($values) && strlen($values)) { $values = [$values]; }
+		
+			$access_values = caGetOption('checkAccess', $options, null);
+			$return_all = caGetOption('returnAll', $options, false);
+			$force_to_lowercase = caGetOption('forceToLowercase', $options, false);
+		
+			$table_name = $table_name ? $table_name : get_called_class();
+			if (!($t_instance = Datamodel::getInstanceByTableName($table_name, true))) { return null; }
+		
+			$values = array_map(function($v) { return (string)$v; }, $values);
+		
+			$pk = $t_instance->primaryKey();
+			$table_name = $t_instance->tableName();
+			$table_num = $t_instance->tableNum();
+			
+			
+			$deleted_sql = $t_instance->hasField('deleted') ? " AND t.deleted = 0" : "";
+		
+			$element_id = ca_metadata_elements::getElementID($element_code);
+			$datatype = ca_metadata_elements::getElementDatatype($element_code);
+			
+			$attr_fld = Attribute::getSortFieldForDatatype($datatype);
+			
+			$params = [$element_id, $values];
+		
+			$access_sql = '';
+			if (is_array($access_values) && sizeof($access_values)) {
+				$access_sql = " AND t.access IN (?)";
+				$params[] = $access_values;
+			}
+			
+			$qr_res = $t_instance->getDb()->query("
+				SELECT t.{$pk}, av.{$attr_fld}
+				FROM {$table_name} t
+				INNER JOIN ca_attributes AS a ON a.row_id = t.{$pk} AND a.table_num = {$table_num}
+				INNER JOIN ca_attribute_values AS av ON av.attribute_id = a.attribute_id
+				WHERE
+					av.element_id = ? AND av.{$attr_fld} IN (?) {$deleted_sql} {$access_sql}
+			", $params);
+		
+			$ret = [];
+			while($qr_res->nextRow()) {
+				$key = $force_to_lowercase ? strtolower($qr_res->get($attr_fld)) : $qr_res->get($attr_fld);
+				if ($return_all) {
+					$ret[$key][] = $qr_res->get($pk);
+				} else {
+					if(array_key_exists($key, $ret)) { continue; }
+					$ret[$key] = $qr_res->get($pk);
+				}
+			}
+			return $ret;
+		}
 		# ------------------------------------------------------------------
 	}
