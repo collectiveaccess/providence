@@ -53,6 +53,7 @@ caUI.panelCount = 0;
 			onOpenCallback: null,
 			onCloseCallback: null,
 			finallyCallback: null,
+			onEscapeCallback: null,	// called if panel is closed by escape key
 			callbackData: null,
 			
 			center: false,
@@ -165,6 +166,7 @@ caUI.panelCount = 0;
 			// hide panel if escape key is clicked
 			jQuery(document).keyup(function(event) {
 				if (that.closeOnEsc && (event.keyCode == 27) && !that.isChanging && that.panelIsVisible()) {
+					if(that.onEscapeCallback) { that.onEscapeCallback(that.callbackData); }
 					that.hidePanel();
 				}
 			});
