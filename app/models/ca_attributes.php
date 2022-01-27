@@ -569,7 +569,7 @@ class ca_attributes extends BaseModel {
 		
 		$ps_format = isset($pa_options['format']) ? $pa_options['format'] : null;
 		
-		$vs_label = isset($pa_options['label']) ? $pa_options['label'] : '';
+		$vs_label = isset($pa_options['label']) ? trim($pa_options['label']) : '';
 		$vs_description = isset($pa_options['description']) ? $pa_options['description'] : '';
 		if (isset($pa_options['field_errors']) && is_array($pa_options['field_errors']) && sizeof($pa_options['field_errors'])) {
 			$ps_format = $o_config->get('form_element_error_display_format');
