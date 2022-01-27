@@ -610,6 +610,8 @@ class BatchProcessor {
 		if($vs_import_mode === 'DIRECTORY_AS_HIERARCHY') { 
 			$vb_include_subdirectories = true; 					// hierarchy mode implies processing all sub-directories
 			$vn_type_id = $o_config->get('media_importer_hierarchy_child_type');	
+			
+			// TODO: check that media_importer_hierarchy_parent_type and media_importer_hierarchy_parent_type are valid types
 		}
 		
 		$va_files_to_process = caGetDirectoryContentsAsList($batch_media_import_directory, $vb_include_subdirectories, false, true);
