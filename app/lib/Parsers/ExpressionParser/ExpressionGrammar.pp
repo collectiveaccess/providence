@@ -66,7 +66,7 @@
 %token  div       ÷
 
 // Regular expressions
-%token  regex     /.+?/
+%token  regex     /.+?/[a-z]*
 %token  regex_match      \=\~
 %token  regex_nomatch    \!\~
 
