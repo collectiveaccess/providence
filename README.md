@@ -64,7 +64,7 @@ The latest development version is always available in the `develop` branch (http
 
 1. clone this repository into the location where you wish it to run using `git clone https://github.com/collectiveaccess/providence`.
 2. by default, the newly cloned repository will use the main branch, which contains code for the current release. Choose the `develop` branch by running from within the cloned repository `git checkout develop`.
-3.  install the PHP package manager [Composer](https://getcomposer.org) if you do not already have it installed on your server.
+3. install the PHP package manager [Composer](https://getcomposer.org) if you do not already have it installed on your server.
 4. run `composer` from the root of the cloned repository with `composer.phar install`. This will download and install all required 3rd party software libraries. 
 5. follow the release version installation instructions to complete the installation.
 
