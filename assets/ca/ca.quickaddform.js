@@ -27,9 +27,6 @@
  
 var caUI = caUI || {};
 
-//
-// TODO: Finish up error handling
-//
 
 (function ($) {
 	caUI.initQuickAddFormHandler = function(options) {
@@ -60,6 +57,10 @@ var caUI = caUI || {};
 		jQuery("#" + that.formID).on('change', 'input[type=file]', function(e) { 
 			that._files[jQuery(e.target).prop('name')] = e.target.files; 
 		});
+		
+		jQuery("#" + that.formID).parent().data('panel').onEscapeCallback = function() {
+			that.cleanupOnCancel();
+		};
 		
 		var formData;
 		// --------------------------------------------------------------------------------
@@ -195,6 +196,16 @@ var caUI = caUI || {};
 			jQuery("#" + that.formID).parent().load(that.formUrl, formData);
 			
 		};
+		
+		that.cancel = function(e) {
+			that.cleanupOnCancel();
+			jQuery("#" + that.formID).parent().data('panel').hidePanel();
+		};
+		
+		that.cleanupOnCancel = function(e) {
+			var relationbundle = jQuery("#" + that.formID).parent().data('relationbundle');
+			if(relationbundle) { relationbundle.deleteFromBundle('new_0'); }
+		}
 		
 		// --------------------------------------------------------------------------------
 		

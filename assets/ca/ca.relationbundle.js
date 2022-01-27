@@ -250,6 +250,11 @@ var caUI = caUI || {};
 	
 				// set current type
 				jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).data('item_type_id', type_id);
+				
+				if(jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id + " option").length == 1) {
+					// Don't bother showing bundle if only one type
+					jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).hide();
+				}
 			}
 			that.showUnsavedChangesWarning(true);
 		};
@@ -286,6 +291,7 @@ var caUI = caUI || {};
 		};
 		
 		that.triggerQuickAdd = function(q, id, params=null) {
+			console.log("trigger quickadd!", q, id, params);
 			var autocompleter_id = options.fieldNamePrefix + 'autocomplete' + id;
 			var panelUrl = options.quickaddUrl;
 			if (options && options.types) {
@@ -314,6 +320,8 @@ var caUI = caUI || {};
 			jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteInput', jQuery("#" + options.autocompleteInputID + id).val());
 
 			jQuery("#" + options.autocompleteInputID + id).val('');
+			
+			that.addToBundle(id);
 		};
 		
 		return that;

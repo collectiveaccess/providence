@@ -57,6 +57,7 @@
 	$t_subject = $this->getVar('t_subject'); 
 	$vs_entity_class = $t_subject->getTypeSetting('entity_class');
 	$use_suffix_for_orgs = $t_subject->getTypeSetting('use_suffix_for_orgs');
+	$org_label = $t_subject->getTypeSetting('org_label');
 ?>
 <div id="<?php print $vs_id_prefix; ?>NPLabels" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
@@ -80,7 +81,7 @@
 						<table>
 							<tr>
 								<td>
-									<?php print $t_label->htmlFormElement('surname', null, array('label' => _t('Organization'), 'description' => _t('The full name of the organization.'), 'width' => '500px', 'name' => "{fieldNamePrefix}surname_{n}", 'id' => "{fieldNamePrefix}surname_{n}", "value" => "{{surname}}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_entity_labels_nonpreferred')); ?>
+									<?php print $t_label->htmlFormElement('surname', null, array('label' => $org_label ? $org_label : _t('Organization'), 'description' => _t('The full name of the organization.'), 'width' => '500px', 'name' => "{fieldNamePrefix}surname_{n}", 'id' => "{fieldNamePrefix}surname_{n}", "value" => "{{surname}}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_entity_labels_nonpreferred')); ?>
 								</td>
 <?php
 	if($use_suffix_for_orgs) {
