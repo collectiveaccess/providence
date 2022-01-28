@@ -148,10 +148,6 @@ h5 {
     cursor: pointer;
 }
 
-img.logo {
-	margin-top: 12px;
-}
-
 *:first-child+html #logo {padding:0px 0px 0px 5px;} * html #logo {padding:0px 0px 0px 5px;} /* IE6 only fixes width */
 #main{
     background-color: #DDDDDD;
