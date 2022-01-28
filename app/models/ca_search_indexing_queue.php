@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2020 Whirl-i-Gig
+ * Copyright 2015-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -216,6 +216,21 @@ class ca_search_indexing_queue extends BaseModel {
 	# are listed here is the order in which they will be returned using getFields()
 
 	protected $FIELDS;
+
+	/**
+	 * @var resource|null
+	 */
+	static $s_lock_resource = null;
+	
+	/**
+	 * Path to lock file
+	 */
+	static $s_lock_filepath = __CA_APP_DIR__ . DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR . __CA_APP_NAME__.'_search_indexing_queue.lock';
+
+    /**
+     * Lock time out. Locks older than this will be removed.
+     */
+    static $s_lock_timeout = 60 * 60;   // in seconds
 
 	# ------------------------------------------------------
 	# --- Constructor

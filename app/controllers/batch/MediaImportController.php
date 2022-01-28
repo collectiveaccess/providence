@@ -444,7 +444,7 @@
  				
  				Session::setVar('lastMediaImportDirectoryPath', $ps_directory);
 
-				$va_tmp = explode('/', $ps_directory);
+				$va_tmp = ($ps_directory === '/') ? [''] : explode('/', $ps_directory);
 				$vn_level = sizeof($va_tmp);
 				if ($ps_directory[0] == '/') { $vn_level--; }
 				

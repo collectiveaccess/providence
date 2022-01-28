@@ -2412,15 +2412,19 @@ class BaseEditorController extends ActionController {
 
 		$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
 
-		if (!($t_rep = ca_object_representations::findAsInstance(['representation_id' => $pn_representation_id]))) {
-			throw new ApplicationException(_t('Invalid representation'));
-		}
-		if(!$t_rep->isReadable($this->request->user)) {
-			throw new ApplicationException(_t('Access denied'));
-		}
-		
-		$m = $t_rep->getMediaInfo('media', 'original', 'MIMETYPE'); 
-		$di = caGetMediaDisplayInfo('media_overlay', $m);	
+		$di = [];
+		if($pn_representation_id) {
+			if (!($t_rep = ca_object_representations::findAsInstance(['representation_id' => $pn_representation_id]))) {
+				throw new ApplicationException(_t('Invalid representation'));
+			}
+			if(!$t_rep->isReadable($this->request->user)) {
+				throw new ApplicationException(_t('Access denied'));
+			}
+			
+			$m = $t_rep->getMediaInfo('media', 'original', 'MIMETYPE'); 
+			$di = caGetMediaDisplayInfo('media_overlay', $m);	
+		}	
+	
 		if (!$ps_version) { $ps_version = caGetOption('download_version', $di, 'original'); }
 
 		$o_view->setVar('version', $ps_version);
@@ -2480,6 +2484,8 @@ class BaseEditorController extends ActionController {
 				// Perform metadata embedding
 				if (isset($va_rep['representation_id']) && ($va_rep['representation_id'] > 0)) {
                     $t_rep = new ca_object_representations($va_rep['representation_id']);
+                    if(!$t_rep->isReadable($this->request->user)) { continue; }
+                    
                     if(!($vs_path = caEmbedMediaMetadataIntoFile($t_rep->getMediaPath('media', $ps_version),
                         $t_subject->tableName(), $t_subject->getPrimaryKey(), $t_subject->getTypeCode(), // subject table info
                         $t_rep->getPrimaryKey(), $t_rep->getTypeCode() // rep info
@@ -2636,17 +2642,30 @@ class BaseEditorController extends ActionController {
 		$user_dir = caGetMediaUploadPathForUser($user_id);
 
 		if(is_array($_FILES['files'])) {
+			// used by ca_object_representations bundle file uploader and media importer drag-and-drop file uploads
 			foreach($_FILES['files']['tmp_name'] as $i => $f) {
 				if(!strlen($f)) { continue; }
 				
 				$dest_filename = isset($_FILES['files']['name'][$i]) ? $_FILES['files']['name'][$i] : pathinfo($f, PATHINFO_FILENAME);
-				@copy($f, $dest_path = "{$user_dir}/{$dest_filename}");
+				if(!@copy($f, $dest_path = "{$user_dir}/{$dest_filename}")) { continue; }
 
 				$stored_files[$dest_filename] = caGetUserDirectoryName($this->request->getUserID())."/{$dest_filename}"; // only return the user directory and file name, not the entire path
 			}
+			$this->response->addContent(json_encode(['files' => array_values($stored_files), 'msg' => _t('Uploaded %1 files', sizeof($stored_files))]));
+		} else {
+			// assume single file in each key (used by Quickadd file and media attribute upload process)
+			foreach($_FILES as $k => $info) {
+				if(!is_array($info) || !array_key_exists('tmp_name', $info) || !strlen($info['tmp_name'])) { continue; }
+				
+				$dest_filename = isset($info['name']) ? $info['name'] : pathinfo($info['tmp_name'], PATHINFO_FILENAME);
+				if(!@copy($info['tmp_name'], $dest_path = "{$user_dir}/{$dest_filename}")) { continue; }
+
+				$stored_files[$k] = caGetUserDirectoryName($this->request->getUserID())."/{$dest_filename}"; // only return the user directory and file name, not the entire path
+			}
+			
+			$this->response->addContent(json_encode(['files' => $stored_files, 'msg' => _t('Uploaded %1 files', sizeof($stored_files))]));
 		}
 
-		$this->response->addContent(json_encode(['files' => array_values($stored_files), 'msg' => _t('Uploaded %1 files', sizeof($stored_files))]));
 	}
 	# -------------------------------------------------------
 	/**

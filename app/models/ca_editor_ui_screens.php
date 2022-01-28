@@ -1716,8 +1716,17 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => '0',
 										'label' => _t('Hide "Add to loan" controls'),
-										'hideOnSelect' => ['loan_control_label'],
+										'hideOnSelect' => ['loan_control_label', 'always_create_new_loan'],
 										'description' => _t('Check this option if you want to hide the "Add to loan" controls in this bundle placement.')
+									),
+									'always_create_new_loan' => array(
+										'formatType' => FT_NUMBER,
+										'displayType' => DT_CHECKBOXES,
+										'width' => 10, 'height' => 1,
+										'takesLocale' => false,
+										'default' => '0',
+										'label' => _t('Always create new loan?'),
+										'description' => _t('Check this option if you want to only create new loans when recording location. When this option is set linking to existing loans is not possible.')
 									),
 									'loan_control_label' => array(
 										'formatType' => FT_TEXT,
@@ -1798,7 +1807,16 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'default' => '0',
 										'label' => _t('Hide "Add to" occurrence controls'),
 										'description' => _t('Check this option if you want to hide the "Add to occurrence" controls in this bundle placement.'),
-										'hideOnSelect' => ['add_to_occurrence_types', 'occurrence_control_label']
+										'hideOnSelect' => ['add_to_occurrence_types', 'always_create_new_occurrence', 'occurrence_control_label']
+									),
+									'always_create_new_occurrence' => array(
+										'formatType' => FT_NUMBER,
+										'displayType' => DT_CHECKBOXES,
+										'width' => 10, 'height' => 1,
+										'takesLocale' => false,
+										'default' => '0',
+										'label' => _t('Always create new occurrence?'),
+										'description' => _t('Check this option if you want to only create new occurrences when recording location. When this option is set linking to existing occurrences is not possible.')
 									),
 									'add_to_occurrence_types' => array(
 										'formatType' => FT_TEXT,
