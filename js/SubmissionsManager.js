@@ -4,33 +4,42 @@ import { SubmissionsManagerContext, SubmissionsManagerContextProvider } from './
 import SubmissionManagerFilterPanel from './SubmissionsManager/SubmissionManagerFilterPanel';
 
 import SubmissionList from './SubmissionsManager/SubmissionList';
+import SubmissionInfo from './SubmissionsManager/SubmissionInfo';
 
 const selector = providenceUIApps.SubmissionsManager.selector;
 const appData = providenceUIApps.SubmissionsManager.data;
-
   
 const SubmissionsManager = (props) => {
 
-  const { viewMode } = useContext(SubmissionsManagerContext);
+  const { viewMode, setViewMode, setSessionList, setSessionKey, filterData, setFilterData, setSessionLabel,
+  setSessionSearchUrl } = useContext(SubmissionsManagerContext);
+
   const setInitialState = (e) => {
     setViewMode("submission_list");
+    setSessionList([]);
+    setSessionKey();
+    // setSessionLabel();
+    // setSessionSearchUrl()
+    // setFilterData();
     e.preventDefault();
   }
 
   if(viewMode == "submission_list"){
     return (
-    <>
-      <SubmissionManagerFilterPanel />
-      <div className='import-list'>
-        <SubmissionList />
-      </div>
+      <>
+        <SubmissionManagerFilterPanel />
+        <div className='import-list mt-4'><SubmissionList /></div>
       </>
     )
-    } else {
-     return(<div className='import-list'>
-       Invalid view mode
-      </div>)
-    }
+  } else if (viewMode == "submission_info"){
+    return (<SubmissionInfo setInitialState={(e) => setInitialState(e)} />)
+  }
+  else {
+    return(
+      <div className='import-list'>Invalid view mode</div>
+    )
+  }
+
 }
 
 /**
