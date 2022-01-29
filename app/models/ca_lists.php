@@ -1901,7 +1901,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		if ($vs_render_as == 'horiz_hierbrowser_with_search') {
 			$vs_buf .= "jQuery('#{$ps_name}_hierarchyBrowserSearch{n}').autocomplete(
 					{
-						source: '".caNavUrl($pa_options['request'], 'lookup', 'ListItem', 'Get', array('list' => ca_lists::getListCode($vn_list_id), 'noSymbols' => 1))."', 
+						source: '".caNavUrl($pa_options['request'], 'lookup', 'ListItem', 'Get', array('list' => ca_lists::getListCode($vn_list_id), 'noSymbols' => 1, 'noInline' => 1))."', 
 						minLength: 3, delay: 800,
 						select: function(event, ui) {
 							oHierBrowser.setUpHierarchy(ui.item.id);	// jump browser to selected item

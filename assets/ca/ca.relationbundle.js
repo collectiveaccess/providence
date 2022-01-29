@@ -205,8 +205,9 @@ var caUI = caUI || {};
 				// look for null (these are unrestricted and therefore always displayed)
 				if (options.relationshipTypes && (typeList = options.relationshipTypes['NULL'])) {
 					for(i=0; i < typeList.length; i++) {
-						if(typesOutput[typeList[i].type_id]) { continue };
-						typesOutput[typeList[i].type_id] = 1;
+						let key = typeList[i].type_id + '/' + typeList[i].direction;
+						if(typesOutput[key]) { continue };
+						typesOutput[key] = 1;
 						
 				        if(!typesByParent[typeList[i].parent_id]) { typesByParent[typeList[i].parent_id] = []; }
 						typesByParent[typeList[i].parent_id].push(typeList[i]);
