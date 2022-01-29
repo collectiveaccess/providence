@@ -142,6 +142,7 @@ use Zend\Stdlib\Glob;
 						$vs_template_tag = pathinfo($vs_template, PATHINFO_FILENAME);
 						if (is_array($va_template_info = caGetPrintTemplateDetails($ps_type, $vs_template_tag))) {
 							if (caGetOption('type', $va_template_info, null) !== $vs_type)  { continue; }
+							if (caGetOption('disabled', $va_template_info, false, ['castTo' => 'bool'])) { continue; }
 							
 							if (!is_array($template_restrict_to_types = caGetOption('restrictToTypes', $va_template_info, null))) { $template_restrict_to_types = []; }
 							$c = (array_intersect($restrict_to_types, $template_restrict_to_types));
@@ -236,7 +237,8 @@ use Zend\Stdlib\Glob;
 				"@name", "@type", "@pageSize", "@pageOrientation", "@tables", "@restrictToTypes",
 				"@marginLeft", "@marginRight", "@marginTop", "@marginBottom",
 				"@horizontalGutter", "@verticalGutter", "@labelWidth", "@labelHeight",
-				"@elementCode", "@showOnlyIn", "@filename", "@fileFormat", "@generic", "@standalone"
+				"@elementCode", "@showOnlyIn", "@filename", "@fileFormat", "@generic", "@standalone",
+				"@disabled"
 			) as $vs_tag) {
 				if (preg_match("!{$vs_tag}([^\n\n]+)!", $vs_template, $va_matches)) {
 					$va_info[str_replace("@", "", $vs_tag)] = trim($va_matches[1]);
