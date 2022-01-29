@@ -42,7 +42,7 @@ const getSession = (url, sessionKey, callback) => {
   client
     .query({
       query: gql`
-        query($sessionKey: String) { getSession (sessionKey: $sessionKey) { sessionKey, user_id, user, username, email, formData, files, filesImported, totalSize, label, filesUploaded { name, path, complete, totalSize, receivedSize, totalBytes, receivedBytes }, errors { filename, message }, warnings { filename, message }, urls { filename, url }, searchUrl }}`, variables: { 'sessionKey': sessionKey }
+        query($sessionKey: String) { getSession (sessionKey: $sessionKey) { sessionKey, user_id, user, username, email, formData, files, filesImported, totalSize, label, formInfo, filesUploaded { name, path, complete, totalSize, receivedSize, totalBytes, receivedBytes }, errors { filename, message }, warnings { filename, message }, urls { filename, url }, searchUrl }}`, variables: { 'sessionKey': sessionKey }
     })
     .then(function (result) {
       // console.log('getSession result: ', result.data);

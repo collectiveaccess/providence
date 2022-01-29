@@ -293,6 +293,10 @@ class SubmissionSchema extends \GraphQLServices\GraphQLSchema {
 						'type' => Type::string(),
 						'description' => 'Session user name'
 					],
+					'user' => [
+						'type' => Type::string(),
+						'description' => 'Session full user name'
+					],
 					'email' => [
 						'type' => Type::string(),
 						'description' => 'Session user email'
@@ -301,6 +305,10 @@ class SubmissionSchema extends \GraphQLServices\GraphQLSchema {
 						'type' => Type::string(),
 						'description' => 'Session form metadata'
 					],
+					'formInfo' => [
+						'type' => Type::string(),
+						'description' => 'Session form details'
+					],
 					'label' => [
 						'type' => Type::string(),
 						'description' => 'Display label for session'
@@ -308,6 +316,10 @@ class SubmissionSchema extends \GraphQLServices\GraphQLSchema {
 					'files' => [
 						'type' => Type::int(),
 						'description' => 'Number of files uploaded'
+					],
+					'filesImported' => [
+						'type' => Type::int(),
+						'description' => 'Number of files actually imported (duplicates and errors may reduce the number of imported files)'
 					],
 					'filesUploaded' => [
 						'type' => Type::listOf($SubmissionSessionUploadFileType),
@@ -328,6 +340,22 @@ class SubmissionSchema extends \GraphQLServices\GraphQLSchema {
 					'receivedSize' => [
 						'type' => Type::string(),
 						'description' => 'Quantity of data received, formatted for display'
+					],
+					'warnings' => [
+						'type' => Type::listOf($importerFileProcessingWarningType),
+						'description' => 'List of warnings while processing'
+					],
+					'errors' => [
+						'type' => Type::listOf($importerFileProcessingErrorType),
+						'description' => 'List of errors while processing'
+					],
+					'urls' => [
+						'type' => Type::listOf($importerFileLinkType),
+						'description' => 'List URLs for imported files'
+					],
+					'searchUrl' => [
+						'type' => Type::string(),
+						'description' => 'URL for search results containing contents of submission'
 					]
 					
 				]

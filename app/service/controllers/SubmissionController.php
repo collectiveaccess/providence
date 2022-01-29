@@ -175,20 +175,23 @@ class SubmissionController extends \GraphQLServices\GraphQLServiceController {
 							throw new \ServiceException(_t('Invalid session key'));
 						}
 						
+						$data = array_shift($log_entries);
 						$fields = [
-							'label' => 'label', 'session_key' => 'sessionKey', 'user_id' => 'user_id',
-							'metadata' => 'formData', 'num_files' => 'files', 'total_bytes' => 'totalBytes',
+							'label' => 'label', 'session_key' => 'sessionKey', 'user_id' => 'user_id', 'user' => 'user',
+							'metadata' => 'formData', 'num_files' => 'files', 'files_imported' => 'filesImported', 'total_bytes' => 'totalBytes',
 							'filesUploaded' => 'filesUploaded', 'source' => 'source',
-							'received_bytes' => 'receivedBytes', 'total_display' => 'totalSize', 'received_display' => 'receivedSize'
+							'received_bytes' => 'receivedBytes', 'total_display' => 'totalSize', 'received_display' => 'receivedSize',
+							'warnings' => 'warnings', 'errors' => 'errors', 'file_map' => 'urls'
 						];
 						
-						$data = array_shift($log_entries);
+						$metadata = null;
 						foreach($fields as $f => $k) {
 							$v = isset($data[$f]) ? $data[$f] : $s->get($f);
 							unset($data[$f]);
 							switch($k) {
 								case 'formData':
-									$v = json_encode(caUnserializeForDatabase($v), true);
+									$metadata = caUnserializeForDatabase($v);
+									$v = json_encode(['data' => $metadata['data']], true);
 									break;
 								case 'filesUploaded':
 									$file_list = [];
@@ -209,8 +212,49 @@ class SubmissionController extends \GraphQLServices\GraphQLServiceController {
 									}
 									$data[$k] = $file_list;
 									continue(2);
+								case 'user':
+									$v = trim($v['fname'].' '.$v['lname']);
+									break;
+								case 'warnings':
+								case 'errors':
+									if(!is_array($data[$k])) { $data[$k] = []; }
+									if(is_array($v)) {
+										foreach($v as $f => $e) {
+											$data[$k][] = [
+												'filename' => $f,
+												'message' => join("; ", $e)
+											];
+										}
+									}
+									continue(2);
+								case 'urls':
+									if(!is_array($data[$k])) { $data[$k] = []; }
+									if(is_array($v)) {
+										// Enforce access checks
+										if (!($t_instance = \Datamodel::getInstance($table, true))) { continue(2); }
+										$all_ids = array_reduce($v, function($c, $i) { 
+											return array_merge($c, $i);
+										}, []);
+										$access = $t_instance->getFieldValuesForIDs($all_ids, ['access']);
+										$user_access_values = caGetUserAccessValues();
+										foreach($v as $filename => $ids) {
+											foreach($ids as $id) {
+												if(!isset($access[$id]) || !in_array($access[$id], $user_access_values)) { continue; }
+												$data[$k][] = [
+													'filename' => $filename,
+													'url' => caDetailUrl($table, $id, false, null, ['absolute' => true])
+												];	
+											}
+										}
+									}
+									continue(2);
 							}
 							$data[$k] = $v;
+						}
+						
+						// add form info
+						if($metadata) {
+							$data['formInfo'] = json_encode($metadata['configuration'], true) ?? null;
 						}
 						
 						return $data;

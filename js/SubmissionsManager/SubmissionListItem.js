@@ -8,7 +8,8 @@ const baseUrl = providenceUIApps.SubmissionsManager.data.baseUrl;
 
 const SubmissionListItem = (props) => {
   let context = useContext(SubmissionsManagerContext)
-  const {setSessionKey, sessionKey, setSessionList, setViewMode } = useContext(SubmissionsManagerContext);
+  const { setSessionKey, sessionKey, setSessionList, setViewMode, sessionLabel, setSessionLabel,
+    sessionSearchUrl, setSessionSearchUrl } = useContext(SubmissionsManagerContext);
 
 //   const deleteImportConfirm = () => {
 //     deleteImport(baseUrl, props.data.sessionKey, function(data){
@@ -68,6 +69,14 @@ const SubmissionListItem = (props) => {
     e.preventDefault();
   }
 
+  const importInfo = (e) => {
+    setViewMode("submission_info");
+    e.preventDefault();
+    setSessionKey(props.data.sessionKey);
+    setSessionLabel(props.data.label)
+    setSessionSearchUrl(props.data.searchUrl)
+  }
+
   return (
     <>
       <tr style={{ borderTop: '1px solid lightgrey' }}>
@@ -87,13 +96,13 @@ const SubmissionListItem = (props) => {
           <>
             <td><a href='#' type='button' className='btn btn-secondary btn-sm' onClick={(e) => deleteAlert(e, deleteImportConfirm)}>Delete</a></td>
           </>
-          : null*/}
+        : null*/}
           {(props.data.status === 'PROCESSED') ?
-        <>
-          <td><a href='#' type='button' className='btn btn-secondary btn-sm' onClick={accept}>Accept</a></td>
-          <td><a href='#' type='button' className='btn btn-secondary btn-sm' onClick={reject}>Reject</a></td>
-        </>
-          : null}
+            <>
+              <td><a href='#' type='button' className='btn btn-outline-light btn-sm' onClick={accept}>Accept</a></td>
+              <td><a href='#' type='button' className='btn btn-outline-light btn-sm' onClick={reject}>Reject</a></td>
+            </>
+          : <td><button className='btn btn-secondary btn-sm' onClick={(e) => importInfo(e)}>Info</button></td>}
       </tr>
     </>
   )

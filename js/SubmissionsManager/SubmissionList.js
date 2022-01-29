@@ -8,9 +8,7 @@ const baseUrl = providenceUIApps.SubmissionsManager.data.baseUrl;
 const SubmissionList = (props) => {
 
   let context = useContext(SubmissionsManagerContext);
-  const { sessionList, setSessionList } = useContext(SubmissionsManagerContext);
-  const { filterData, setFilterData } = useContext(SubmissionsManagerContext);
-  const { setViewMode } = useContext(SubmissionsManagerContext);
+  const { sessionList, setSessionList, filterData, setFilterData, setViewMode } = useContext(SubmissionsManagerContext);
 
   const [ submitted, setSubmitted ] = useState([]);  
   const [ unsubmitted, setUnsubmitted ] = useState([]);
@@ -19,7 +17,6 @@ const SubmissionList = (props) => {
     getSessionList(baseUrl, context.filterData, function(data){
       setSessionList(data.sessions);
     });
-	
   }, [filterData])
 
   useEffect(() => {
@@ -66,7 +63,7 @@ const SubmissionList = (props) => {
                   <th scope="col">Status</th>
                   <th scope="col">Files</th>
                   <th scope="col">Size</th>
-                  <th scope="col">Errors/Warnings</th>
+                  <th scope="col">Errors</th>
                   <th scope="col">% Done</th>
                   <th scope="col">User</th>
                   <th scope="col"> </th>
@@ -99,7 +96,7 @@ const SubmissionList = (props) => {
                   <th scope="col">Status</th>
                   <th scope="col">Files</th>
                   <th scope="col">Size</th>
-                  <th scope="col">Errors/Warnings</th>
+                  <th scope="col">Errors</th>
                   <th scope="col">% Done</th>
                   <th scope="col">User</th>
                   <th scope="col"> </th>
