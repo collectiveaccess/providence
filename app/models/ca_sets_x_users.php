@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2016 Whirl-i-Gig
+ * Copyright 2011-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,51 +34,72 @@
    *
    */
 require_once(__CA_LIB_DIR__.'/BaseRelationshipModel.php');
-
+require_once(__CA_MODELS_DIR__.'/ca_sets.php');
 
 BaseModel::$s_ca_models_definitions['ca_sets_x_users'] = array(
  	'NAME_SINGULAR' 	=> _t('user-set assocation'),
  	'NAME_PLURAL' 		=> _t('user-set assocations'),
  	'FIELDS' 			=> array(
  		'relation_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
-				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Relation id', 'DESCRIPTION' => 'Identifier for Relation'
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
+			'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => 'Relation id', 'DESCRIPTION' => 'Identifier for Relation'
 		),
 		'set_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Set id', 'DESCRIPTION' => 'Identifier for Set'
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => 'Set id', 'DESCRIPTION' => 'Identifier for Set'
 		),
 		'user_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'User id', 'DESCRIPTION' => 'Identifier for user'
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => 'User id', 'DESCRIPTION' => 'Identifier for user'
 		),
 		'access' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => 1,
-				'BOUNDS_CHOICE_LIST' => array(
-					_t('can read') => __CA_BUNDLE_ACCESS_READONLY__,
-					_t('can edit') => __CA_BUNDLE_ACCESS_EDIT__
-				),
-				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates user&apos;s level of access to the set. ')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => __CA_SET_READ_ACCESS__,
+			'BOUNDS_CHOICE_LIST' => array(
+				_t('has no access') => __CA_SET_NO_ACCESS__,
+				_t('can read') => __CA_SET_READ_ACCESS__,
+				_t('can edit') => __CA_SET_EDIT_ACCESS__
+			),
+			'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates user&apos;s level of access to the set. ')
+		),
+		'pending_access' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => null, 
+			'DEFAULT' => __CA_SET_NO_ACCESS__,
+			'BOUNDS_CHOICE_LIST' => array(
+				_t('has no access') => __CA_SET_NO_ACCESS__,
+				_t('can read') => __CA_SET_READ_ACCESS__,
+				_t('can edit') => __CA_SET_EDIT_ACCESS__
+			),
+			'LABEL' => _t('Pending access'), 'DESCRIPTION' => _t('Level to grant user on activation of access.')
+		),
+		'activation_key' => array(
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT,
+			'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'BOUNDS_LENGTH' => [36, 36],
+			'LABEL' => _t('Activation key'), 'DESCRIPTION' => _t('Key provided to user to activate access. Used for Pawtucket set/lightbox invitation workflow.')
 		),
 		'effective_date' => array(
-				'FIELD_TYPE' => FT_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
-				'DEFAULT' => '',
-				'START' => 'sdatetime', 'END' => 'edatetime',
-				'LABEL' => _t('Effective dates'), 'DESCRIPTION' => _t('Period of time for which this access is in effect. Leave blank if you do not wish to restrict access to a specific period of time.')
+			'FIELD_TYPE' => FT_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => '',
+			'START' => 'sdatetime', 'END' => 'edatetime',
+			'LABEL' => _t('Effective dates'), 'DESCRIPTION' => _t('Period of time for which this access is in effect. Leave blank if you do not wish to restrict access to a specific period of time.')
 		)
  	)
 );
@@ -176,4 +197,3 @@ class ca_sets_x_users extends BaseRelationshipModel {
 	}
 	# ----------------------------------------
 }
-?>

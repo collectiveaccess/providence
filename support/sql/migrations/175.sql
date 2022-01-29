@@ -1,11 +1,10 @@
 /*
-	Date: 3 January 2022
+	Date: 29 January 2022
 	Migration: 175
-	Description:    Add fields linking imported items to front-end submissions interface
+	Description:    Add metadata element soft delete; Add fields linking imported items to front-end submissions interface
 */
 
 /*==========================================================================*/
-
 
 ALTER TABLE ca_objects ADD COLUMN submission_session_id int unsigned null references ca_media_upload_sessions(session_id);
 create index i_submission_session_id on ca_objects(submission_session_id);
@@ -36,6 +35,10 @@ create index i_submission_session_id on ca_object_representations(submission_ses
 
 ALTER TABLE ca_storage_locations ADD COLUMN submission_session_id int unsigned null references ca_media_upload_sessions(session_id);
 create index i_submission_session_id on ca_storage_locations(submission_session_id);
+
+ALTER TABLE ca_sets_x_users ADD COLUMN pending_access tinyint null;
+ALTER TABLE ca_sets_x_users ADD COLUMN activation_key char(36) null;
+CREATE UNIQUE INDEX u_activation_key ON ca_sets_x_users(activation_key);
 
 /*==========================================================================*/
 

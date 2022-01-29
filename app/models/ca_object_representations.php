@@ -538,7 +538,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			caExtractEmbeddedMetadata($this, $va_metadata, $this->get('locale_id'));	// TODO: deprecate in favor of import mapping based system below?
 			
 			// Extract metadata mapping with configured mappings
-			$this->_importEmbeddedMetadata(array_merge($options, ['path' => $media_path, 'reader' => $reader]));
+			$this->_importEmbeddedMetadata(array_merge($options, ['path' => !isUrl($media_path) ? $media_path : null, 'reader' => $reader]));
 			
 			$vn_rc = parent::update($options);
 
@@ -595,7 +595,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 				caExtractEmbeddedMetadata($this, $va_metadata, $this->get('locale_id'));	// TODO: deprecate in favor of import mapping based system below?
 								
 				// Extract metadata mapping with configured mappings
-				$this->_importEmbeddedMetadata(array_merge($options, ['path' => $media_path, 'reader' => $reader]));
+				$this->_importEmbeddedMetadata(array_merge($options, ['path' => !isUrl($media_path) ? $media_path : null, 'reader' => $reader]));
 			}
 			
 			$vn_rc = parent::update($options);
@@ -635,6 +635,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		if(!($path = caGetOption('path', $options, $this->getMediaPath('media', 'original')))) {
 			$path = $this->getOriginalMediaPath('media');
 		}
+		
 		$log = caGetImportLogger(['logLevel' => $this->_CONFIG->get('embedded_metadata_extraction_mapping_log_level')]);
 		if(!($object_representation_mapping_id = caGetOption('mapping_id', $options, null))) {
 			$object_representation_mapping_id = $this->_getEmbeddedMetadataMappingID(['log' => $log]);

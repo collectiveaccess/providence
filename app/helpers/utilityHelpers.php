@@ -2898,7 +2898,7 @@ function caFileIsIncludable($ps_file) {
 			return ['width' => (int)$pn_target_width, 'height' => (int)$pn_target_height];
 		}
 		
-		if ($$pn_original_width > $pn_original_height) {
+		if ($pn_original_width > $pn_original_height) {
 			$vn_scale_factor = $pn_target_width/$pn_original_width;
 			$pn_target_height = $vn_scale_factor * $pn_original_height;
 		} else {

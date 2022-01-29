@@ -4894,12 +4894,15 @@ create table ca_sets_x_users (
 	set_id int unsigned not null,
 	user_id int unsigned not null,
 	access tinyint unsigned not null default 0,
+	pending_access tinyint unsigned null,
+	activation_key char(36) null,
 	sdatetime int unsigned null,
 	edatetime int unsigned null,
 	
-	primary key 				(relation_id),
-	index i_set_id				(set_id),
-	index i_user_id			(user_id),
+	primary key 				    (relation_id),
+	index i_set_id				    (set_id),
+	index i_user_id			        (user_id),
+	unique index u_activation_key   (activation_key),
 	
    constraint fk_ca_sets_x_users_set_id foreign key (set_id)
       references ca_sets (set_id) on delete restrict on update restrict,

@@ -535,7 +535,11 @@
 		 */
 		public function getTypeRestriction(&$pb_type_restriction_has_changed) {
 			$pb_type_restriction_has_changed = false;
-			if (!($pn_type_id = htmlspecialchars(html_entity_decode($this->opo_request->getParameter('type_id', pString, ['forcePurify' => true]))))) {
+			
+			if((bool)$this->opo_request->getParameter('clearType', pInteger)) {
+				$pb_type_restriction_has_changed = true;
+				return null;
+			} elseif (!($pn_type_id = htmlspecialchars(html_entity_decode($this->opo_request->getParameter('type_id', pString, ['forcePurify' => true]))))) {
  				if ($va_context = $this->getContext()) {
 					return $va_context['type_id'] ? $va_context['type_id'] : null;
 				}
