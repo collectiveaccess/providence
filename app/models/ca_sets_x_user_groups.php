@@ -34,52 +34,52 @@
    *
    */
 require_once(__CA_LIB_DIR__.'/BaseRelationshipModel.php');
-
+require_once(__CA_MODELS_DIR__.'/ca_sets.php');
 
 BaseModel::$s_ca_models_definitions['ca_sets_x_user_groups'] = array(
  	'NAME_SINGULAR' 	=> _t('group-set assocation'),
  	'NAME_PLURAL' 		=> _t('group-set assocations'),
  	'FIELDS' 			=> array(
  		'relation_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
-				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Relation id', 'DESCRIPTION' => 'Identifier for Relation'
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
+			'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => 'Relation id', 'DESCRIPTION' => 'Identifier for Relation'
 		),
 		'set_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Set id', 'DESCRIPTION' => 'Identifier for Set'
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => 'Set id', 'DESCRIPTION' => 'Identifier for Set'
 		),
 		'group_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Group id', 'DESCRIPTION' => 'Identifier for Group'
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => 'Group id', 'DESCRIPTION' => 'Identifier for Group'
 		),
 		'access' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => __CA_BUNDLE_ACCESS_NONE__,
-				'BOUNDS_CHOICE_LIST' => array(
-					_t('can edit') => __CA_BUNDLE_ACCESS_EDIT__,
-					_t('can read') => __CA_BUNDLE_ACCESS_READONLY__,
-					_t('no access') => __CA_BUNDLE_ACCESS_NONE__
-				),
-				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates group&apos;s level of access to the set. ')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => __CA_SET_NO_ACCESS__,
+			'BOUNDS_CHOICE_LIST' => array(
+				_t('has no access') => __CA_SET_NO_ACCESS__,
+				_t('can read') => __CA_SET_READ_ACCESS__,
+				_t('can edit') => __CA_SET_EDIT_ACCESS__
+			),
+			'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates group&apos;s level of access to the set. ')
 		),
 		'effective_date' => array(
-				'FIELD_TYPE' => FT_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
-				'DEFAULT' => '',
-				'START' => 'sdatetime', 'END' => 'edatetime',
-				'LABEL' => _t('Effective dates'), 'DESCRIPTION' => _t('Period of time for which this access is in effect. Leave blank if you do not wish to restrict access to a specific period of time.')
+			'FIELD_TYPE' => FT_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => '',
+			'START' => 'sdatetime', 'END' => 'edatetime',
+			'LABEL' => _t('Effective dates'), 'DESCRIPTION' => _t('Period of time for which this access is in effect. Leave blank if you do not wish to restrict access to a specific period of time.')
 		)
  	)
 );
@@ -177,4 +177,3 @@ class ca_sets_x_user_groups extends BaseRelationshipModel {
 	}
 	# ----------------------------------------
 }
-?>

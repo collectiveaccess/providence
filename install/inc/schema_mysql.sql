@@ -4844,12 +4844,15 @@ create table ca_sets_x_users (
 	set_id int unsigned not null,
 	user_id int unsigned not null,
 	access tinyint unsigned not null default 0,
+	pending_access tinyint unsigned null,
+	activation_key char(36) null,
 	sdatetime int unsigned null,
 	edatetime int unsigned null,
 	
-	primary key 				(relation_id),
-	index i_set_id				(set_id),
-	index i_user_id			(user_id),
+	primary key 				    (relation_id),
+	index i_set_id				    (set_id),
+	index i_user_id			        (user_id),
+	unique index u_activation_key   (activation_key),
 	
    constraint fk_ca_sets_x_users_set_id foreign key (set_id)
       references ca_sets (set_id) on delete restrict on update restrict,
@@ -7635,4 +7638,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (174, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (175, unix_timestamp());
