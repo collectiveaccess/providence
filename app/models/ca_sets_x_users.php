@@ -57,8 +57,8 @@ BaseModel::$s_ca_models_definitions['ca_sets_x_users'] = array(
 		'user_id' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
 			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-			'IS_NULL' => false, 
-			'DEFAULT' => '',
+			'IS_NULL' => true, 
+			'DEFAULT' => null,
 			'LABEL' => 'User id', 'DESCRIPTION' => 'Identifier for user'
 		),
 		'access' => array(
@@ -92,6 +92,14 @@ BaseModel::$s_ca_models_definitions['ca_sets_x_users'] = array(
 			'DEFAULT' => '',
 			'BOUNDS_LENGTH' => [36, 36],
 			'LABEL' => _t('Activation key'), 'DESCRIPTION' => _t('Key provided to user to activate access. Used for Pawtucket set/lightbox invitation workflow.')
+		),
+		'activation_email' => array(
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT,
+			'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+			'IS_NULL' => true,
+			'DEFAULT' => null,
+			'BOUNDS_LENGTH' => [0, 255],
+			'LABEL' => _t('Activation user email'), 'DESCRIPTION' => _t('Email address of invited user. Used for Pawtucket set/lightbox invitation workflow.')
 		),
 		'effective_date' => array(
 			'FIELD_TYPE' => FT_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD, 
