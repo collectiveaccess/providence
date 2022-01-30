@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2021 Whirl-i-Gig
+ * Copyright 2016-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -88,7 +88,7 @@ class BaseMediaViewer {
 			$controls .= "<div class='objectInfo'>{$media_overlay_titlebar_text}</div>";
 		}
 		if ($t_subject && $t_instance && is_a($t_instance, 'ca_object_representations')) {
-			$rep_ids = $t_media->getRepresentationIDs(['requireMedia' => true, 'checkAccess' => $check_access]);
+			$rep_ids = is_a($t_media, 'ca_object_representations') ? [$t_media->getPrimaryKey()] : $t_media->getRepresentationIDs(['requireMedia' => true, 'checkAccess' => $check_access]);
 			$media_count = is_array($rep_ids) ? sizeof($rep_ids) : 0;
 			if ($media_count > 1) {
 				$controls .= "<div class='repNav'>";

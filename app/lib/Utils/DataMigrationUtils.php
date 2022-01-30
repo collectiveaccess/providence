@@ -528,7 +528,7 @@
 		 * @param string $ps_text The name text
 		 * @param array $pa_options Optional array of options. Supported options are:
 		 *		locale = locale code to use when applying rules; if omitted current user locale is employed
-		 *		displaynameFormat = surnameCommaForename, forenameCommaSurname, forenameSurname, forenamemiddlenamesurname, original [Default = original]
+		 *		displaynameFormat = surnameCommaForename, surnameCommaForenameMiddlename, forenameCommaSurname, forenameSurname, forenamemiddlenamesurname, original [Default = original]
 		 *		doNotParse = Use name as-is in the surname and display name fields. All other fields are blank. [Default = false]
 		 *
 		 * @return array Array containing parsed name, keyed on ca_entity_labels fields (eg. forename, surname, middlename, etc.)
@@ -674,6 +674,9 @@
 			switch($format = caGetOption('displaynameFormat', $options, 'original', array('forceLowercase' => true))) {
 				case 'surnamecommaforename':
 					$name['displayname'] = ((strlen(trim($name['surname']))) ? $name['surname'].", " : '').$name['forename'];
+					break;
+				case 'surnamecommaforenamemiddlename':
+					$name['displayname'] = trim((((strlen(trim($name['surname']))) ? $name['surname'].", " : '').$name['forename']).' '.$name['middlename']);
 					break;
 				case 'forenamecommasurname':
 					$name['displayname'] = trim($name['forename'].', '.$name['surname']);

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -538,7 +538,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			caExtractEmbeddedMetadata($this, $va_metadata, $this->get('locale_id'));	// TODO: deprecate in favor of import mapping based system below?
 			
 			// Extract metadata mapping with configured mappings
-			$this->_importEmbeddedMetadata(array_merge($options, ['reader' => $reader]));
+			$this->_importEmbeddedMetadata(array_merge($options, ['path' => !isUrl($media_path) ? $media_path : null, 'reader' => $reader]));
 			
 			$vn_rc = parent::update($options);
 
@@ -556,9 +556,9 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		
 			if(!caGetOption('force', $options, false)) {
 				// does media already exist?
-				if (!($media_path = $this->getMediaPath('media', 'original'))) {
-					if(!($media_path = $this->getOriginalMediaPath('media'))) {
-						$media_path = array_shift($this->get('media', ['returnWithStructure' => true]));
+				if(!($media_path = array_shift($this->get('media', ['returnWithStructure' => true])))) {
+					if (!($media_path = $this->getMediaPath('media', 'original'))) {
+						$media_path = $this->getOriginalMediaPath('media');
 					}
 				}
 				if(!$this->getAppConfig()->get('allow_representations_duplicate_media') && ($t_existing_rep = ca_object_representations::mediaExists($media_path, $this->getPrimaryKey()))) {
@@ -595,7 +595,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 				caExtractEmbeddedMetadata($this, $va_metadata, $this->get('locale_id'));	// TODO: deprecate in favor of import mapping based system below?
 								
 				// Extract metadata mapping with configured mappings
-				$this->_importEmbeddedMetadata(array_merge($options, ['reader' => $reader]));
+				$this->_importEmbeddedMetadata(array_merge($options, ['path' => !isUrl($media_path) ? $media_path : null, 'reader' => $reader]));
 			}
 			
 			$vn_rc = parent::update($options);
@@ -635,6 +635,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		if(!($path = caGetOption('path', $options, $this->getMediaPath('media', 'original')))) {
 			$path = $this->getOriginalMediaPath('media');
 		}
+		
 		$log = caGetImportLogger(['logLevel' => $this->_CONFIG->get('embedded_metadata_extraction_mapping_log_level')]);
 		if(!($object_representation_mapping_id = caGetOption('mapping_id', $options, null))) {
 			$object_representation_mapping_id = $this->_getEmbeddedMetadataMappingID(['log' => $log]);

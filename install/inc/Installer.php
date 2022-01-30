@@ -396,7 +396,8 @@ class Installer {
 	 *
 	 */
 	public function performPreInstallTasks() {
-		\CompositeCache::flush(); // avoid stale cache
+		self::clearCaches();
+		$o_config = Configuration::load();
 
 		// create tmp dir
 		if (!file_exists($this->config->get('taskqueue_tmp_directory'))) {
@@ -404,10 +405,7 @@ class Installer {
 				$this->addError('performPreInstallTasks', "Couldn't create tmp directory at ".$this->config->get('taskqueue_tmp_directory'));
 				return false;
 			}
-		} else {
-			// if already exists then remove all contents to avoid stale cache
-			caRemoveDirectory($this->config->get('taskqueue_tmp_directory'), false);
-		}
+		} 
 
 		// Create media directories
 		$o_media_volumes = new \MediaVolumes();
@@ -665,7 +663,7 @@ class Installer {
 				}
 			}
 		}
-
+		CompositeCache::flush();
 		return true;
 	}
 	# --------------------------------------------------
@@ -2447,6 +2445,16 @@ class Installer {
 		if($this->loggingStatus()) {
 			$this->log->logInfo($msg);
 		}
+	}
+	# --------------------------------------------------
+	/**
+	 * Clear cache and tmp directory
+	 *
+	 * @return void
+	 */
+	public static function clearCaches() {
+		CompositeCache::flush(); 
+		caRemoveDirectory(Configuration::load()->get('taskqueue_tmp_directory'), false);
 	}
 	# --------------------------------------------------
 }

@@ -75,6 +75,7 @@ trait CLIUtilsConfiguration {
 			));
 			return false;
 		}
+
 		if($pb_installing){
 			if (!$vb_quiet) { CLIUtils::addMessage(_t("Performing preinstall tasks")); }
 			$vo_installer->performPreInstallTasks();
@@ -89,6 +90,8 @@ trait CLIUtilsConfiguration {
 				));
 				return false;
 			}
+		} else {
+			Installer::clearCaches();
 		}
 
 		if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing locales")); }

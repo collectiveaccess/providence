@@ -279,7 +279,7 @@
 							'update_location_control_label', 'movement_control_label', 'loan_control_label', 'object_control_label',
 							'return_to_home_location_control_label', 'occurrence_control_label', 'collection_control_label', 'entity_control_label',
 							
-							'always_create_new_movement',
+							'always_create_new_loan', 'always_create_new_movement', 'always_create_new_occurrence',
 							
 							'hide_add_to_occurrence_controls', 'hide_include_child_history_controls', 'add_to_occurrence_types', 
 							'hide_add_to_collection_controls', 'add_to_collection_types', 'hide_add_to_object_controls', 'hide_add_to_entity_controls', 'add_to_entity_types', 
@@ -2068,13 +2068,26 @@
 				if (($t_occ_rel = Datamodel::getInstance($linking_table, true)) && ($t_occ = Datamodel::getInstance('ca_occurrences', true))) {
 					$va_occ_types_to_show =  array_filter(caGetOption('add_to_occurrence_types', $pa_bundle_settings, array(), ['castTo' => 'array']), function($v) { return (bool)$v; });
 					if(sizeof($va_occ_types_to_show) > 0) {
+						$rel_types = $t_occ_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings));
+						
+						if(caGetOption('always_create_new_occurrence', $pa_bundle_settings, false)) {
+							if(is_array($policy_info['elements']['ca_occurrences']['__default__']) && isset($policy_info['elements']['ca_occurrences']['__default__']['trackingRelationshipType'])) {
+								$tracking_rels = caMakeRelationshipTypeIDList($linking_table, [$policy_info['elements']['ca_occurrences']['__default__']['trackingRelationshipType']]);
+							
+								if(is_array($tracking_rels) && sizeof($tracking_rels)) {
+									$tracking_rel_id = array_shift($tracking_rels);
+									$rel_types = [$tracking_rel_id => $rel_types[$tracking_rel_id]];
+								}
+							}
+						}
+					
                         $va_occ_types = $t_occ->getTypeList();
                         foreach($va_occ_types as $vn_type_id => $va_type_info) {
                             if (!in_array($vn_type_id, $va_occ_types_to_show) && !in_array($va_type_info['idno'], $va_occ_types_to_show)) { unset($va_occ_types[$vn_type_id]); }
                         }
                 		
                         $o_view->setVar('occurrence_types', $va_occ_types);
-                        $o_view->setVar('occurrence_relationship_types', $t_occ_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
+                        $o_view->setVar('occurrence_relationship_types', $rel_types);
                         
                         if(!is_array($bundle_config['ca_occurrences_showRelationshipTypes'])) { $bundle_config['ca_occurrences_showRelationshipTypes'] = []; }
                         $o_view->setVar('occurrence_relationship_types_by_sub_type', $t_occ_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($bundle_config, ['restrictToRelationshipTypes' => $bundle_config['ca_occurrences_showRelationshipTypes']])));
@@ -2134,7 +2147,19 @@
 			if (is_array($path = Datamodel::getPath($this->tableName(), 'ca_loans')) && ($path = array_keys($path)) && (sizeof($path) === 3)) {
 				$linking_table = $path[1];
 				if ($t_loan_rel = Datamodel::getInstance($linking_table, true)) {
-					$o_view->setVar('loan_relationship_types', $t_loan_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
+					$rel_types = $t_loan_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings));
+					
+					if(caGetOption('always_create_new_loan', $pa_bundle_settings, false)) {
+						if(is_array($policy_info['elements']['ca_loans']['__default__']) && isset($policy_info['elements']['ca_loans']['__default__']['trackingRelationshipType'])) {
+							$tracking_rels = caMakeRelationshipTypeIDList($linking_table, [$policy_info['elements']['ca_loans']['__default__']['trackingRelationshipType']]);
+							
+							if(is_array($tracking_rels) && sizeof($tracking_rels)) {
+								$tracking_rel_id = array_shift($tracking_rels);
+								$rel_types = [$tracking_rel_id => $rel_types[$tracking_rel_id]];
+							}
+						}
+					}
+					$o_view->setVar('loan_relationship_types', $rel_types);
 					
 					if(!is_array($bundle_config['ca_loans_showRelationshipTypes'])) { $bundle_config['ca_loans_showRelationshipTypes'] = []; }
 					$o_view->setVar('loan_relationship_types_by_sub_type', $t_loan_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($bundle_config, ['restrictToRelationshipTypes' => $bundle_config['ca_loans_showRelationshipTypes']])));

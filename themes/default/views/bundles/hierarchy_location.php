@@ -459,7 +459,7 @@
 		// Set up "move" hierarchy browse search
 		jQuery('#<?= $id_prefix; ?>MoveHierarchyBrowserSearch').autocomplete(
 			{ 
-				source: '<?= $va_lookup_urls_for_move['search']; ?>', minLength: <?= $min_autocomplete_search_length; ?>, delay: 800, html: true,
+				source: '<?= $va_lookup_urls_for_move['search']; ?>', minLength: <?= $min_autocomplete_search_length; ?>, delay: 800, html: true, noInline: true,
 				select: function( event, ui ) {
 					if (ui.item.id) {
 						jQuery("#<?= $id_prefix; ?>HierarchyBrowserContainer").slideDown(350);
@@ -489,7 +489,7 @@
 		// Set up "explore" hierarchy browse search
 		jQuery('#<?= $id_prefix; ?>ExploreHierarchyBrowserSearch').autocomplete(
 			{
-				source: '<?= $va_lookup_urls['search']; ?>', minLength: <?= $min_autocomplete_search_length; ?>, delay: 800, html: true,
+				source: '<?= $va_lookup_urls['search']; ?>', minLength: <?= $min_autocomplete_search_length; ?>, delay: 800, html: true, noInline: true,
 				select: function( event, ui ) {
 					if (ui.item.id) {
 						jQuery("#<?= $id_prefix; ?>HierarchyBrowserContainer").slideDown(350);

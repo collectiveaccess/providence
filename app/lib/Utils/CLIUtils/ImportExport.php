@@ -998,7 +998,6 @@
 				if (!$t_item) {
 					if (!($t_item = $t_list->addItem($data[$level], true, false, $parent_id, null, $id, '', 0, 1))) {
 						CLIUtils::addError(_t("Could not add term %1: %2", $data[$level], join("; ", $t_list->getErrors())));
-						print_R($data);
 						continue;
 					}
 				}
@@ -1006,7 +1005,6 @@
 				if (!$is_existing_item) {
 					if (!$t_item->addLabel(['name_singular' => $data[$level], 'name_plural' => $data[$level], 'description' => $definition], $locale_id, null, true)) {
 						CLIUtils::addError(_t("Could not add term label %1: %2", $data[$level], join("; ", $t_list->getErrors())));
-						print_R($data);
 						continue;
 					}
 				}
@@ -1026,7 +1024,7 @@
 			CLIProgressBar::finish();
 			
 
-			CLIUtils::addMessage(_t('Added %1 terms', $vn_add_count), array('color' => 'bold_green'));
+			CLIUtils::addMessage(_t('Added %1 terms', $add_count), array('color' => 'bold_green'));
 			return true;
 		}
 		# -------------------------------------------------------
