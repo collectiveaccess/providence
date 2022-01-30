@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018 Whirl-i-Gig
+ * Copyright 2018-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,7 +31,6 @@
  */
  
 	trait CLIUtilsSearch { 
-		# -------------------------------------------------------
 		# -------------------------------------------------------
 		/**
 		 * Rebuild search indices
@@ -195,7 +194,10 @@
 		 */
 		public static function process_indexing_queue($po_opts=null) {
 			require_once(__CA_MODELS_DIR__.'/ca_search_indexing_queue.php');
-
+			
+			if($force = ((bool)$po_opts->getOption('force'))) {
+				ca_search_indexing_queue::lockRelease();	
+			}
 			ca_search_indexing_queue::process();
 		}
 		# -------------------------------------------------------
@@ -203,9 +205,9 @@
 		 *
 		 */
 		public static function process_indexing_queueParamList() {
-			return array(
-
-			);
+			return [
+				"force|c=f" => _t('Process queue even if a lock exists from another indexing process.'),
+			];
 		}
 		# -------------------------------------------------------
 		/**

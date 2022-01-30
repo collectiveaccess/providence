@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2021 Whirl-i-Gig
+ * Copyright 2004-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1118,6 +1118,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 						};
 						const player = new Plyr('#<?= $id; ?>', options);
 						jQuery('#<?= $id; ?>').data('player', player);
+						if (caUI.mediaPlayerManager) { caUI.mediaPlayerManager.register("<?= $id; ?>", player, 'Plyr'); }
 					});
 				</script>
 <?php

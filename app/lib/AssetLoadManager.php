@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -226,6 +226,10 @@
 			$vs_theme_directory_path = $po_request->getThemeDirectoryPath();
 			$vs_default_theme_directory_path = $po_request->getDefaultThemeDirectoryPath();
 			
+            if($suffix = Configuration::load(__CA_CONF_DIR__.'/assets.conf')->get('asset_suffix')) {
+            	$suffix = "?rev=".urlencode($suffix);
+            }
+			
 			if (!$g_asset_config) { AssetLoadManager::init(); }
 			$vs_buf = '';
 			if (is_array($g_asset_load_list[$output_target])) {
@@ -277,11 +281,11 @@
                             }
                     
                             if (preg_match('!\.css$!', $vs_lib)) {
-                                $vs_buf .= "<link rel='stylesheet' href='{$vs_url}' type='text/css' media='all'/>\n";
+                                $vs_buf .= "<link rel='stylesheet' href='{$vs_url}{$suffix}' type='text/css' media='all'/>\n";
                             } elseif(preg_match('!\.properties$!', $vs_lib)) {
-                                $vs_buf .= "<link rel='resource' href='{$vs_url}' type='application/l10n' />\n";
+                                $vs_buf .= "<link rel='resource' href='{$vs_url}{$suffix}' type='application/l10n' />\n";
                             } else {
-                                $vs_buf .= "<script src='{$vs_url}' type='text/javascript'></script>\n";
+                                $vs_buf .= "<script src='{$vs_url}{$suffix}' type='text/javascript'></script>\n";
                             }
                         }
 					}

@@ -4892,14 +4892,19 @@ create table ca_sets_x_user_groups (
 create table ca_sets_x_users (
 	relation_id int unsigned not null auto_increment,
 	set_id int unsigned not null,
-	user_id int unsigned not null,
+	user_id int unsigned null,
 	access tinyint unsigned not null default 0,
+	pending_access tinyint unsigned null,
+	activation_key char(36) null,
+	activation_email varchar(255) null,
 	sdatetime int unsigned null,
 	edatetime int unsigned null,
 	
-	primary key 				(relation_id),
-	index i_set_id				(set_id),
-	index i_user_id			(user_id),
+	primary key 				    (relation_id),
+	index i_set_id				    (set_id),
+	index i_user_id			        (user_id),
+	unique index u_activation_key   (activation_key),
+	index i_activation_email        (activation_email),
 	
    constraint fk_ca_sets_x_users_set_id foreign key (set_id)
       references ca_sets (set_id) on delete restrict on update restrict,

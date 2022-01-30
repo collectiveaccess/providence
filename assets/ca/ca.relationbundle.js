@@ -205,8 +205,9 @@ var caUI = caUI || {};
 				// look for null (these are unrestricted and therefore always displayed)
 				if (options.relationshipTypes && (typeList = options.relationshipTypes['NULL'])) {
 					for(i=0; i < typeList.length; i++) {
-						if(typesOutput[typeList[i].type_id]) { continue };
-						typesOutput[typeList[i].type_id] = 1;
+						let key = typeList[i].type_id + '/' + typeList[i].direction;
+						if(typesOutput[key]) { continue };
+						typesOutput[key] = 1;
 						
 				        if(!typesByParent[typeList[i].parent_id]) { typesByParent[typeList[i].parent_id] = []; }
 						typesByParent[typeList[i].parent_id].push(typeList[i]);
@@ -250,6 +251,11 @@ var caUI = caUI || {};
 	
 				// set current type
 				jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).data('item_type_id', type_id);
+				
+				if(jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id + " option").length == 1) {
+					// Don't bother showing bundle if only one type
+					jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).hide();
+				}
 			}
 			that.showUnsavedChangesWarning(true);
 		};
@@ -286,6 +292,7 @@ var caUI = caUI || {};
 		};
 		
 		that.triggerQuickAdd = function(q, id, params=null) {
+			console.log("trigger quickadd!", q, id, params);
 			var autocompleter_id = options.fieldNamePrefix + 'autocomplete' + id;
 			var panelUrl = options.quickaddUrl;
 			if (options && options.types) {
@@ -314,6 +321,8 @@ var caUI = caUI || {};
 			jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteInput', jQuery("#" + options.autocompleteInputID + id).val());
 
 			jQuery("#" + options.autocompleteInputID + id).val('');
+			
+			that.addToBundle(id);
 		};
 		
 		return that;

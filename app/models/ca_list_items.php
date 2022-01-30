@@ -244,6 +244,16 @@ $_ca_list_items_settings = array(
 			'label' => _t('Use suffix for organizations?'),
 			'description' => _t('Show suffix entry field for organization labels?')
 		),
+		'org_label' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			
+			'width' => 100, 'height' => 1,
+			'takesLocale' => false,
+			'default' => _t('Organization'),
+			'label' => _t('Label for organization name'),
+			'description' => _t('Custom label for organization names')
+		),
 		'render_in_new_menu' => array(
 			'formatType' => FT_BIT,
 			'displayType' => DT_SELECT,
