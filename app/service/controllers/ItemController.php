@@ -132,29 +132,38 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'bundles',
 							'type' => Type::listOf(Type::string()),
 							'description' => _t('Bundles to return.')
+						],
+						[
+							'name' => 'resolveRelativeToRelated',
+							'type' => Type::listOf(Type::boolean()),
+							'description' => _t('Resolve all bundles relative to related items, rather than the relationship.'),
+							'defaultValue' => false
 						]
 					],
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
+						
+						$resolve_to_related = $args['resolveRelativeToRelated'];
 						
 						// TODO: add explicit parameter for idno and id (to handle case where numeric idnos are used) 
 						$rec = self::resolveIdentifier($table = $args['table'], $args['identifier']);
 						$rec_pk = $rec->primaryKey();
 						
 						$target = $args['target'];
-						if(!Datamodel::tableExists($target)) { 
+						if(!\Datamodel::tableExists($target)) { 
 							throw new \ServiceException(_t('Invalid target'));
 						}
-						if(!($linking_table = Datamodel::getLinkingTableName($table, $target))) {
+						if(!($linking_table = \Datamodel::getLinkingTableName($table, $target))) {
 							throw new \ServiceException(_t('Cannot resolve relationship'));
 						}
 						
+						$target_pk = \Datamodel::primaryKey($target);
 						$rels = $rec->getRelatedItems($target, ['restrictToTypes' => $args['restrictToTypes'], 'restrictToRelationshipTypes' => $args['restrictToRelationshipTypes']]);
-						
+					
 						$rel_list = [];
-						if (sizeof($rel_ids = array_map(function($v) { return $v['relation_id']; }, $rels)) > 0) {
+						if (sizeof($rel_ids = array_map(function($v) use ($resolve_to_related, $target_pk) { return $v[$resolve_to_related ? $target_pk : 'relation_id']; }, $rels)) > 0) {
 							
-							$qr = caMakeSearchResult($linking_table, $rel_ids);
+							$qr = caMakeSearchResult($resolve_to_related ? $target : $linking_table, $rel_ids);
 							while($qr->nextHit()) {
 								$r = $qr->getInstance();
 							
