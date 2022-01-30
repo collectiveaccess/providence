@@ -90,7 +90,7 @@ BaseModel::$s_ca_models_definitions['ca_sets_x_users'] = array(
 			'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
 			'IS_NULL' => false,
 			'DEFAULT' => '',
-			'BOUNDS_LENGTH' => [36, 36],
+			'BOUNDS_LENGTH' => [0, 36],
 			'LABEL' => _t('Activation key'), 'DESCRIPTION' => _t('Key provided to user to activate access. Used for Pawtucket set/lightbox invitation workflow.')
 		),
 		'activation_email' => array(
