@@ -371,7 +371,7 @@
 		
 			$va_rep_ids = array();
 			while($qr_reps->nextRow()) {
-				if($require_media && !is_array($versions = $qr_reps->getMediaVersions('media')) || !sizeof($versions)) { continue; }
+				if($require_media && (!is_array($versions = $qr_reps->getMediaVersions('media')) || !sizeof($versions))) { continue; }
 				$va_rep_ids[$qr_reps->get('representation_id')] = ($qr_reps->get('is_primary') == 1) ? true : false;
 			}
 			return $va_rep_ids;

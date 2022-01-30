@@ -136,7 +136,7 @@ class FMPXMLResultReader extends BaseXMLDataReader {
 			// Normalize field names by replacing any run of characters that is not a letter, number,
 			// with a single underscore and forcing the name to lowercase. Non-alphanumeric characters at the
 			// beginning or end of the field name are removed.
-			$vs_field_name = trim(preg_replace("![^A-Za-z0-9]+!", "_", (string)strtolower($o_name->nodeValue)), " \n\r\t\v\0_");
+			$vs_field_name = trim(preg_replace("![^A-Za-z0-9]+!", "_", preg_replace("!['\"]+!", "", (string)strtolower(html_entity_decode($o_name->nodeValue)))), " \n\r\t\v\0_");
 			
 			$this->opa_metadata[$vn_index] = $vs_field_name;
 			

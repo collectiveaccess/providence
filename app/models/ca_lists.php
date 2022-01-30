@@ -1688,8 +1688,9 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				if (!sizeof($va_options)) { return ''; }	// return empty string if list has no values
 				$vn_i = 0;
 				
-				$p = floor(100/$max_columns);
-				$vs_buf = ($max_columns > 1) ? "<div class='checklist' style='grid-template-columns: ".str_repeat(" {$p}%", $max_columns).";'>\n" : "<div>\n";
+				$p = floor(670/$max_columns);
+				if ($p > 150) { $p = 150; }
+				$vs_buf = ($max_columns > 1) ? "<div class='checklist' style='grid-template-columns: ".str_repeat("fit-content(175px) ", $max_columns).";'>\n" : "<div>\n";
 	
 				foreach($va_options as $vm_value => $vs_label) {
 					$vs_label = str_replace("&nbsp;", "", trim($vs_label));
@@ -1750,7 +1751,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				if (!sizeof($va_options)) { return ''; }	// return empty string if list has no values
 				
 				$p = floor(100/$max_columns);
-				$vs_buf = ($max_columns > 1) ? "<div class='checklist' style='grid-template-columns: ".str_repeat(" {$p}%", $max_columns).";'>\n" : "<div>\n";
+				$vs_buf = ($max_columns > 1) ? "<div class='checklist' style='grid-template-columns: ".str_repeat("fit-content(175px) ", $max_columns).";'>\n" : "<div>\n";
 			
 				foreach($va_options as $vm_value => $vs_label) {
 					$va_attributes = array('value' => $vm_value);
@@ -1900,7 +1901,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		if ($vs_render_as == 'horiz_hierbrowser_with_search') {
 			$vs_buf .= "jQuery('#{$ps_name}_hierarchyBrowserSearch{n}').autocomplete(
 					{
-						source: '".caNavUrl($pa_options['request'], 'lookup', 'ListItem', 'Get', array('list' => ca_lists::getListCode($vn_list_id), 'noSymbols' => 1))."', 
+						source: '".caNavUrl($pa_options['request'], 'lookup', 'ListItem', 'Get', array('list' => ca_lists::getListCode($vn_list_id), 'noSymbols' => 1, 'noInline' => 1))."', 
 						minLength: 3, delay: 800,
 						select: function(event, ui) {
 							oHierBrowser.setUpHierarchy(ui.item.id);	// jump browser to selected item

@@ -89,6 +89,8 @@
 					));
 					return false;
 				}
+			} else {
+				Installer::clearCaches();
 			}
 
 			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing locales")); }

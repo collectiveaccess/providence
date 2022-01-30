@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018 Whirl-i-Gig
+ * Copyright 2018-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,14 +26,15 @@
  * ----------------------------------------------------------------------
  */
  
-	AssetLoadManager::register("panel");
- 	
- 	$t_item 				= $this->getVar('t_subject');
-	$t_display 				= $this->getVar('t_display');
-	
- 	$va_last_settings       = $this->getVar($t_item->tableName().'_summary_last_settings');
-	
-    $vs_display_select_html = $t_display->getBundleDisplaysAsHTMLSelect('display_id', [], ['table' => $t_item->tableNum(), 'value' => $t_display->getPrimaryKey(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'user_id' => $this->request->getUserID(), 'restrictToTypes' => [$t_item->getTypeID()], 'context' => 'editor_summary']);
+AssetLoadManager::register("panel");
+
+$t_item 				= $this->getVar('t_subject');
+$t_display 				= $this->getVar('t_display');
+
+$last_settings     		= $this->getVar($t_item->tableName().'_summary_last_settings');
+
+$display_select_html 	= $this->getVar('print_display_select_html');
+$formats 				= $this->getVar('formats');
 ?>
 <script type="text/javascript">
 	var caSummaryDownloadOptionsPanel;
@@ -57,7 +58,15 @@
 			});
 		}
 	});
-	
+	function caSummaryUpdateOptions() {
+		var val = jQuery("#caSummaryDownloadOptionsForm #caSummaryDisplaySelector").val();
+		if(val.match(/^_/)) {
+			jQuery("#caSummaryDownloadOptionsForm #caSummaryFormatSelectorGroup").hide();
+		} else {
+			jQuery("#caSummaryDownloadOptionsForm #caSummaryFormatSelectorGroup").show();
+		}
+		return false;
+	}
 	function caExecuteSummaryDownload() {
 		jQuery("#caSummaryDownloadOptionsForm").submit();
 		caSummaryDownloadOptionsPanel.hidePanel();
@@ -72,14 +81,10 @@
 				<table class="caSummaryDownloadOptionsPanelAlertControls">
 					<tr style="vertical-align: top;">
                         <td class="caSummaryDownloadOptionsPanelAlertControl">
-<?php					
-                            print _t('Display<br/> %1', $vs_display_select_html);
-?>			
+							<?= _t('Download')."<br/>{$display_select_html}"; ?>		
                         </td>	
-                        <td class="caSummaryDownloadOptionsPanelAlertControl">
-<?php					
-                            print _t('Format using<br/> %1', caHTMLSelect('template', array_flip($this->getVar('formats')), [], ['value' => caGetOption('template', $va_last_settings, null)]));
-?>			
+                        <td class="caSummaryDownloadOptionsPanelAlertControl" id="caSummaryFormatSelectorGroup">
+							<?= _t('Format').'<br/>'.caHTMLSelect('template', $formats, ['id' => 'caSummaryFormatSelector'], ['value' => caGetOption('template', $last_settings, null)]); ?>
                         </td>		
 					</tr>
 				</table>
@@ -88,8 +93,8 @@
 			<div id="caSummaryDownloadOptionsPanelControlButtons">
 				<table>
 					<tr>
-						<td align="right"><?php print caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Download'), 'caSummaryDownloadOptionsFormExecuteButton', array('onclick' => 'caExecuteSummaryDownload(); return false;'), array()); ?></td>
-						<td align="left"><?php print caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caSummaryDownloadOptionsFormCancelButton', array('onclick' => 'caSummaryDownloadOptionsPanel.hidePanel(); return false;'), array()); ?></td>
+						<td align="right"><?= caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Download'), 'caSummaryDownloadOptionsFormExecuteButton', ['onclick' => 'caExecuteSummaryDownload(); return false;'], []); ?></td>
+						<td align="left"><?= caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caSummaryDownloadOptionsFormCancelButton', ['onclick' => 'caSummaryDownloadOptionsPanel.hidePanel(); return false;'], []); ?></td>
 					</tr>
 				</table>
 			</div>

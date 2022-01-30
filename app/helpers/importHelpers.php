@@ -776,6 +776,13 @@
 		
 		$pm_value = (!isset($pa_source_data[$pa_item['source']]) && $o_reader) ? caProcessImportItemSettingsForValue($o_reader->get($pa_item['source'], array('returnAsArray'=> true)), $pa_item['settings']) : $pa_source_data[$pa_item['source']];
 		
+		
+		if (isset($pa_item['settings']['formatWithTemplate']) && strlen($pa_item['settings']['formatWithTemplate'])) {
+			// Transform mapped value with template, if specified. This provides a way to rewrite values prior to use by the refinery.
+			$pm_value = DisplayTemplateParser::processTemplate($pa_item['settings']['formatWithTemplate'], $pa_source_data);
+		} else {
+			$pm_value = (!isset($pa_source_data[$pa_item['source']]) && $o_reader) ? caProcessImportItemSettingsForValue($o_reader->get($pa_item['source'], array('returnAsArray'=> true)), $pa_item['settings']) : $pa_source_data[$pa_item['source']];
+		}
 		if (is_array($pm_value)) {
 			if (isset($pm_value[$pn_value_index])) {
 				$va_delimited_items = $pm_value[$pn_value_index];	// for input formats that support repeating values
