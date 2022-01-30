@@ -93,7 +93,6 @@
                         } elseif($vn_type_id = Session::getVar($this->ops_tablename.'_type_id')) {
                             $this->opn_type_restriction_id = $vn_type_id;
                         }
-                    
                         $this->opb_type_restriction_has_changed =  $pb_type_restriction_has_changed;	// get change status
                     }
 				}	
@@ -145,8 +144,9 @@
 			// Set display options
 			$va_display_options = array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__);
 			
-			if(($vn_type_id = $this->opo_result_context->getTypeRestriction($vb_type)) && ($t_instance::typeCodeForID($vn_type_id))) { // occurrence searches are inherently type-restricted
-				$va_display_options['restrictToTypes'] = array($vn_type_id);
+			$vn_type_id = $this->opo_result_context->getTypeRestriction($vb_type);
+			if(is_null($vn_type_id) || $t_instance::typeCodeForID($vn_type_id)) { // occurrence searches are inherently type-restricted
+				$va_display_options['restrictToTypes'] = $vn_type_id ? [$vn_type_id] : null;
 			}
 
 			// Get current display list

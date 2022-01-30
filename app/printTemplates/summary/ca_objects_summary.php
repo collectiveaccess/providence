@@ -26,7 +26,7 @@
  * -=-=-=-=-=- CUT HERE -=-=-=-=-=-
  * Template configuration:
  *
- * @name Object summary
+ * @name PDF
  * @type page
  * @pageSize letter
  * @pageOrientation portrait

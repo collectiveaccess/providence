@@ -705,18 +705,6 @@ class BaseEditorController extends ActionController {
 			$this->view->setVar('placements', $va_display_list['displayList']);
 			
 		}
-		
-		// Summary formats list
-		$formats = [];
-		if(is_array($available_templates = caGetAvailablePrintTemplates('summary', ['table' => $t_subject->tableName(), 'restrictToTypes' => $t_subject->getTypeID()]))) {
-            $num_available_templates = sizeof($available_templates);
-            foreach($available_templates as $k => $v) {
-                if (($num_available_templates > 1) && (bool)$v['generic']) { continue; }    // omit generics from list when specific templates are available
-                $formats[$v['code']] = $v['name'].' ('.$v['type'].')';
-            }
-        }
-		$this->view->setVar('formats', $formats);
-		
 		$this->view->setVar($t_subject->tableName().'_summary_last_settings', Session::getVar($t_subject->tableName().'_summary_last_settings'));
 		
 		$this->opo_app_plugin_manager->hookSummarizeItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject));
@@ -741,7 +729,16 @@ class BaseEditorController extends ActionController {
 		$t_display = new ca_bundle_displays();
 		$va_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays(array('table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'restrictToTypes' => array($t_subject->getTypeID()))));
 
-		if ((!($vn_display_id = $this->request->getParameter('display_id', pInteger))) || !isset($va_displays[$vn_display_id])) {
+		$vn_display_id = $this->request->getParameter('display_id', pString);
+		$ps_template = $this->request->getParameter('template', pString);
+		
+		// PDF templates set in the display list need to be remapped to the template parameter
+		if(substr($vn_display_id, 0, 4) === '_pdf') {
+			$ps_template = $vn_display_id;
+			$vn_display_id = null;
+		}
+
+		if ((!$vn_display_id ) || !isset($va_displays[$vn_display_id])) {
 			$vn_display_id = $this->request->user->getVar($t_subject->tableName().'_summary_display_id');
 		}
 		
@@ -793,13 +790,13 @@ class BaseEditorController extends ActionController {
 		} else {
 			$vn_display_id = null;
 			$this->view->setVar('display_id', null);
-			$this->view->setVar('placements', array());
+			$this->view->setVar('placements', []);
 		}
 
 		//
 		// PDF output
 		//
-		if (($ps_template = $this->request->getParameter('template', pString)) && (preg_match("!^_([A-Za-z0-9]+)_(.*)$!", $ps_template, $m)) && (in_array($m[1], ['pdf', 'docx'])) && is_array($va_template_info = caGetPrintTemplateDetails('summary', $m[2]))) {
+		if ($ps_template && (preg_match("!^_([A-Za-z0-9]+)_(.*)$!", $ps_template, $m)) && (in_array($m[1], ['pdf', 'docx'])) && is_array($va_template_info = caGetPrintTemplateDetails('summary', $m[2]))) {
 		    $last_settings['template'] = $ps_template;
 		} else {		
             // When no display is specified (or valid) and no template is specified try loading the default summary format for the table
