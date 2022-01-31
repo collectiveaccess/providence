@@ -319,11 +319,12 @@ create table ca_entities
    access                         tinyint unsigned               not null default 0,
    status                         tinyint unsigned               not null default 0,
    deleted                        tinyint unsigned               not null default 0,
-   `rank`                           int unsigned                   not null default 0,
-   submission_user_id               int unsigned                   null,
+   `rank`                         int unsigned                   not null default 0,
+   submission_user_id             int unsigned                   null,
    submission_group_id            int unsigned                   null,
-   submission_status_id              int unsigned                   null,
+   submission_status_id           int unsigned                   null,
    submission_via_form            varchar(100)                   null,
+   submission_session_id          int unsigned                   null,
    
    primary key (entity_id),
    constraint fk_ca_entities_source_id foreign key (source_id)
@@ -345,7 +346,10 @@ create table ca_entities
       references ca_user_groups (group_id) on delete restrict on update restrict,
 
    constraint fk_ca_entities_submission_status_id foreign key (submission_status_id)
-      references ca_list_items (item_id) on delete restrict on update restrict
+      references ca_list_items (item_id) on delete restrict on update restrict,
+
+   constraint fk_ca_entities_submission_session_id foreign key (submission_session_id)
+      references ca_media_upload_sessions(session_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 create index i_source_id on ca_entities(source_id);
@@ -365,6 +369,7 @@ create index i_submission_user_id on ca_entities(submission_user_id);
 create index i_submission_group_id on ca_entities(submission_group_id);
 create index i_submission_status_id on ca_entities(submission_status_id);
 create index i_submission_via_form on ca_entities(submission_via_form);
+create index i_submission_session_id on ca_entities(submission_session_id);
 
 alter table ca_users add constraint fk_ca_users_entity_id foreign key (entity_id) references ca_entities (entity_id) on delete restrict on update restrict;
 
@@ -380,6 +385,7 @@ create table ca_metadata_elements
    datatype                       tinyint unsigned               not null,
    settings                       longtext                       not null,
    `rank`                           smallint unsigned              not null default 0,
+   deleted              tinyint unsigned     not null default 0,
    hier_left                      decimal(30,20)                 not null,
    hier_right                     decimal(30,20)                 not null,
    hier_element_id                smallint unsigned              null,
@@ -399,6 +405,7 @@ create index i_parent_id on ca_metadata_elements(parent_id);
 create index i_hier_left on ca_metadata_elements(hier_left);
 create index i_hier_right on ca_metadata_elements(hier_right);
 create index i_list_id on ca_metadata_elements(list_id);
+create index i_deleted on ca_metadata_elements(deleted);
 
 
 /*==========================================================================*/
@@ -484,6 +491,7 @@ create table ca_storage_locations
    submission_group_id            int unsigned                   null,
    submission_status_id              int unsigned                   null,
    submission_via_form            varchar(100)                   null,
+   submission_session_id          int unsigned                   null,
    
    primary key (location_id),
    constraint fk_ca_storage_locations_type_id foreign key (type_id)
@@ -502,7 +510,10 @@ create table ca_storage_locations
       references ca_user_groups (group_id) on delete restrict on update restrict,
 
    constraint fk_ca_storage_locations_submission_status_id foreign key (submission_status_id)
-      references ca_list_items (item_id) on delete restrict on update restrict
+      references ca_list_items (item_id) on delete restrict on update restrict,
+
+   constraint fk_ca_storage_locations_submission_session_id foreign key (submission_session_id)
+      references ca_media_upload_sessions(session_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 create index i_parent_id on ca_storage_locations(parent_id);
@@ -518,6 +529,7 @@ create index i_submission_user_id on ca_storage_locations(submission_user_id);
 create index i_submission_group_id on ca_storage_locations(submission_group_id);
 create index i_submission_status_id on ca_storage_locations(submission_status_id);
 create index i_submission_via_form on ca_storage_locations(submission_via_form);
+create index i_submission_session_id on ca_storage_locations(submission_session_id);
 
 
 /*==========================================================================*/
@@ -556,6 +568,7 @@ create table ca_object_lots
    submission_group_id            int unsigned                   null,
    submission_status_id              int unsigned                   null,
    submission_via_form            varchar(100)                   null,
+   submission_session_id          int unsigned                   null,
    primary key (lot_id),
    
    constraint fk_ca_object_lots_type_id foreign key (type_id)
@@ -580,7 +593,10 @@ create table ca_object_lots
       references ca_user_groups (group_id) on delete restrict on update restrict,
 
    constraint fk_ca_object_lots_submission_status_id foreign key (submission_status_id)
-      references ca_list_items (item_id) on delete restrict on update restrict
+      references ca_list_items (item_id) on delete restrict on update restrict,
+
+   constraint fk_ca_object_lots_submission_session_id foreign key (submission_session_id)
+      references ca_media_upload_sessions(session_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 create index i_admin_idno_stub on ca_object_lots(idno_stub);
@@ -604,6 +620,7 @@ create index i_submission_user_id on ca_object_lots(submission_user_id);
 create index i_submission_group_id on ca_object_lots(submission_group_id);
 create index i_submission_status_id on ca_object_lots(submission_status_id);
 create index i_submission_via_form on ca_object_lots(submission_via_form);
+create index i_submission_session_id on ca_object_lots(submission_session_id);
 
 
 /*==========================================================================*/
@@ -636,6 +653,7 @@ create table ca_object_representations
    submission_group_id            int unsigned                   null,
    submission_status_id           int unsigned                   null,
    submission_via_form            varchar(100)                   null,
+   submission_session_id          int unsigned                   null,
    is_transcribable               tinyint unsigned               not null default 0,
    
    primary key (representation_id),
@@ -658,7 +676,10 @@ create table ca_object_representations
       references ca_user_groups (group_id) on delete restrict on update restrict,
 
    constraint fk_ca_object_reps_submission_status_id foreign key (submission_status_id)
-      references ca_list_items (item_id) on delete restrict on update restrict
+      references ca_list_items (item_id) on delete restrict on update restrict,
+
+   constraint fk_ca_object_reps_submission_session_id foreign key (submission_session_id)
+      references ca_media_upload_sessions(session_id) on delete restrict on update restrict
       
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
@@ -677,6 +698,7 @@ create index i_submission_user_id on ca_object_representations(submission_user_i
 create index i_submission_group_id on ca_object_representations(submission_group_id);
 create index i_submission_status_id on ca_object_representations(submission_status_id);
 create index i_submission_via_form on ca_object_representations(submission_via_form);
+create index i_submission_session_id on ca_object_representations(submission_session_id);
 create index i_is_transcribable on ca_object_representations(is_transcribable);
 create index i_home_location_id on ca_object_representations(home_location_id);
 
@@ -801,6 +823,7 @@ create table ca_occurrences
    submission_group_id            int unsigned                   null,
    submission_status_id              int unsigned                   null,
    submission_via_form            varchar(100)                   null,
+   submission_session_id          int unsigned                   null,
    primary key (occurrence_id),
    
    constraint fk_ca_occurrences_type_id foreign key (type_id)
@@ -822,7 +845,10 @@ create table ca_occurrences
       references ca_user_groups (group_id) on delete restrict on update restrict,
 
    constraint fk_ca_occurrences_submission_status_id foreign key (submission_status_id)
-      references ca_list_items (item_id) on delete restrict on update restrict
+      references ca_list_items (item_id) on delete restrict on update restrict,
+
+   constraint fk_ca_occurrences_submission_session_id foreign key (submission_session_id)
+      references ca_media_upload_sessions(session_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 create index i_parent_id on ca_occurrences(parent_id);
@@ -838,6 +864,7 @@ create index i_submission_user_id on ca_occurrences(submission_user_id);
 create index i_submission_group_id on ca_occurrences(submission_group_id);
 create index i_submission_status_id on ca_occurrences(submission_status_id);
 create index i_submission_via_form on ca_occurrences(submission_via_form);
+create index i_submission_session_id on ca_occurrences(submission_session_id);
 
 
 /*==========================================================================*/
@@ -912,6 +939,7 @@ create table ca_collections
    submission_group_id            int unsigned                   null,
    submission_status_id              int unsigned                   null,
    submission_via_form            varchar(100)                   null,
+   submission_session_id          int unsigned                   null,
    
    primary key (collection_id),
    constraint fk_ca_collections_type_id foreign key (type_id)
@@ -939,7 +967,10 @@ create table ca_collections
       references ca_user_groups (group_id) on delete restrict on update restrict,
 
    constraint fk_ca_collections_submission_status_id foreign key (submission_status_id)
-      references ca_list_items (item_id) on delete restrict on update restrict
+      references ca_list_items (item_id) on delete restrict on update restrict,
+
+   constraint fk_ca_collections_submission_session_id foreign key (submission_session_id)
+      references ca_media_upload_sessions(session_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 create index i_parent_id on ca_collections(parent_id);
@@ -968,6 +999,7 @@ create index i_submission_user_id on ca_collections(submission_user_id);
 create index i_submission_group_id on ca_collections(submission_group_id);
 create index i_submission_status_id on ca_collections(submission_status_id);
 create index i_submission_via_form on ca_collections(submission_via_form);
+create index i_submission_session_id on ca_collections(submission_session_id);
 
 
 /*==========================================================================*/
@@ -1034,6 +1066,7 @@ create table ca_places
    submission_group_id            int unsigned                   null,
    submission_status_id              int unsigned                   null,
    submission_via_form            varchar(100)                   null,
+   submission_session_id          int unsigned                   null,
    
    primary key (place_id),
    constraint fk_ca_places_source_id foreign key (source_id)
@@ -1058,7 +1091,10 @@ create table ca_places
       references ca_user_groups (group_id) on delete restrict on update restrict,
 
    constraint fk_ca_places_submission_status_id foreign key (submission_status_id)
-      references ca_list_items (item_id) on delete restrict on update restrict
+      references ca_list_items (item_id) on delete restrict on update restrict,
+
+   constraint fk_ca_places_submission_session_id foreign key (submission_session_id)
+      references ca_media_upload_sessions(session_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 create index i_hierarchy_id on ca_places(hierarchy_id);
@@ -1078,6 +1114,7 @@ create index i_submission_user_id on ca_places(submission_user_id);
 create index i_submission_group_id on ca_places(submission_group_id);
 create index i_submission_status_id on ca_places(submission_status_id);
 create index i_submission_via_form on ca_places(submission_via_form);
+create index i_submission_session_id on ca_places(submission_session_id);
 
 
 /*==========================================================================*/
@@ -1171,6 +1208,7 @@ create table ca_loans (
    submission_group_id            int unsigned                   null,
    submission_status_id              int unsigned                   null,
    submission_via_form            varchar(100)                   null,
+   submission_session_id          int unsigned                   null,
    primary key (loan_id),
    
    constraint fk_ca_loans_type_id foreign key (type_id)
@@ -1192,7 +1230,10 @@ create table ca_loans (
       references ca_user_groups (group_id) on delete restrict on update restrict,
 
    constraint fk_ca_loans_submission_status_id foreign key (submission_status_id)
-      references ca_list_items (item_id) on delete restrict on update restrict
+      references ca_list_items (item_id) on delete restrict on update restrict,
+
+   constraint fk_ca_loans_submission_session_id foreign key (submission_session_id)
+      references ca_media_upload_sessions(session_id) on delete restrict on update restrict
       
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
@@ -1211,6 +1252,7 @@ create index i_submission_user_id on ca_loans(submission_user_id);
 create index i_submission_group_id on ca_loans(submission_group_id);
 create index i_submission_status_id on ca_loans(submission_status_id);
 create index i_submission_via_form on ca_loans(submission_via_form);
+create index i_submission_session_id on ca_loans(submission_session_id);
 
 
 /*==========================================================================*/
@@ -1262,6 +1304,7 @@ create table ca_movements (
    submission_group_id            int unsigned                   null,
    submission_status_id              int unsigned                   null,
    submission_via_form            varchar(100)                   null,
+   submission_session_id          int unsigned                   null,
    primary key (movement_id),
    
     constraint fk_ca_movements_type_id foreign key (type_id)
@@ -1280,7 +1323,10 @@ create table ca_movements (
       references ca_user_groups (group_id) on delete restrict on update restrict,
 
    constraint fk_ca_movements_submission_status_id foreign key (submission_status_id)
-      references ca_list_items (item_id) on delete restrict on update restrict
+      references ca_list_items (item_id) on delete restrict on update restrict,
+
+   constraint fk_ca_movements_submission_session_id foreign key (submission_session_id)
+      references ca_media_upload_sessions(session_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 create index i_type_id on ca_movements(type_id);
@@ -1294,6 +1340,7 @@ create index i_submission_user_id on ca_movements(submission_user_id);
 create index i_submission_group_id on ca_movements(submission_group_id);
 create index i_submission_status_id on ca_movements(submission_status_id);
 create index i_submission_via_form on ca_movements(submission_via_form);
+create index i_submission_session_id on ca_movements(submission_session_id);
 
 
 /*==========================================================================*/
@@ -1844,6 +1891,7 @@ create table ca_objects
    submission_group_id            int unsigned                   null,
    submission_status_id              int unsigned                   null,
    submission_via_form            varchar(100)                   null,
+   submission_session_id          int unsigned                   null,
    
    primary key (object_id),
    constraint fk_ca_objects_source_id foreign key (source_id)
@@ -1883,7 +1931,10 @@ create table ca_objects
       references ca_user_groups (group_id) on delete restrict on update restrict,
 
    constraint fk_ca_objects_submission_status_id foreign key (submission_status_id)
-      references ca_list_items (item_id) on delete restrict on update restrict
+      references ca_list_items (item_id) on delete restrict on update restrict,
+
+   constraint fk_ca_objects_submission_session_id foreign key (submission_session_id)
+      references ca_media_upload_sessions(session_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 create index i_parent_id on ca_objects(parent_id);
@@ -1923,6 +1974,7 @@ create index i_submission_user_id on ca_objects(submission_user_id);
 create index i_submission_group_id on ca_objects(submission_group_id);
 create index i_submission_status_id on ca_objects(submission_status_id);
 create index i_submission_via_form on ca_objects(submission_via_form);
+create index i_submission_session_id on ca_objects(submission_session_id);
 
 
 /*==========================================================================*/
@@ -4840,14 +4892,19 @@ create table ca_sets_x_user_groups (
 create table ca_sets_x_users (
 	relation_id int unsigned not null auto_increment,
 	set_id int unsigned not null,
-	user_id int unsigned not null,
+	user_id int unsigned null,
 	access tinyint unsigned not null default 0,
+	pending_access tinyint unsigned null,
+	activation_key char(36) null,
+	activation_email varchar(255) null,
 	sdatetime int unsigned null,
 	edatetime int unsigned null,
 	
-	primary key 				(relation_id),
-	index i_set_id				(set_id),
-	index i_user_id			(user_id),
+	primary key 				    (relation_id),
+	index i_set_id				    (set_id),
+	index i_user_id			        (user_id),
+	unique index u_activation_key   (activation_key),
+	index i_activation_email        (activation_email),
 	
    constraint fk_ca_sets_x_users_set_id foreign key (set_id)
       references ca_sets (set_id) on delete restrict on update restrict,
@@ -7633,4 +7690,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (173, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (175, unix_timestamp());

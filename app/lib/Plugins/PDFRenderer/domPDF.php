@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2020 Whirl-i-Gig
+ * Copyright 2014-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -67,6 +67,13 @@ class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugIn Implements IWLPlugPD
 		$options->set('chroot', $chroot);
 		$options->set('logOutputFile', __CA_APP_DIR__.'/tmp/log.htm');
     	$options->set('tempDir', __CA_APP_DIR__.'/tmp');
+    	
+    	// Look for theme and app-based font directories
+    	if(file_exists(__CA_THEME_DIR__.'/fonts')) {
+    		$options->set('fontDir', __CA_THEME_DIR__.'/fonts');
+    	} elseif(file_exists(__CA_APP_DIR__.'/fonts')) {
+    		$options->set('fontDir', __CA_APP_DIR__.'/fonts');
+    	}
 		$this->renderer = new DOMPDF($options);
 	}
 	# ------------------------------------------------

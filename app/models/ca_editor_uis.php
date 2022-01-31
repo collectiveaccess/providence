@@ -493,6 +493,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			
 			if($qr_res->get('restriction_type_id')) {
 				$vs_key_to_add = ($t_instance instanceof BaseRelationshipModel) ? 'type_code' : 'name_plural';
+				if(!isset($va_types[$qr_res->get('restriction_type_id')])) { continue; }
 				$va_screens[$vn_screen_id][$vn_screen_locale_id]['typeRestrictions'][$qr_res->get('restriction_type_id')] = $va_types[$qr_res->get('restriction_type_id')][$vs_key_to_add];
 			}
 		}

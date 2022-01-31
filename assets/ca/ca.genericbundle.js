@@ -60,6 +60,7 @@ var caUI = caUI || {};
 			onItemCreate: null,	/* callback function when a bundle item is created */
 			onAddItem: null,
 			incrementLocalesForNewBundles: true,
+			singleValuePerLocale: false,
 			defaultValues: {},
 			bundlePreview: '',
 			readonly: 0,
@@ -397,7 +398,7 @@ var caUI = caUI || {};
 			if (isNew) {
 				if (defaultLocaleSelectedIndex !== false) {
 					if (jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option:eq(" + defaultLocaleSelectedIndex + ")").length) {
-						// There's a locale drop-dow to mess with
+						// There's a locale drop-down to mess with
 						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option:eq(" + defaultLocaleSelectedIndex + ")").prop('selected', true);
 					} else {
 						// No locale drop-down, or it somehow doesn't include the locale we want
@@ -406,7 +407,7 @@ var caUI = caUI || {};
 					}
 				} else {
 					if (jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option[value=" + that.defaultLocaleID + "]").length) {
-						// There's a locale drop-dow to mess with
+						// There's a locale drop-down to mess with
 						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option[value=" + that.defaultLocaleID + "]").prop('selected', true);
 					} else {
 						// No locale drop-down, or it somehow doesn't include the locale we want
@@ -414,6 +415,8 @@ var caUI = caUI || {};
 						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n).remove();
 					}
 				}
+				
+				
 			}
 
 			// Add bundle preview value text
@@ -439,6 +442,15 @@ var caUI = caUI || {};
 			}
 
 			return this;
+		};
+		
+		that.refreshLocaleAvailability = function() {
+            var localeList = jQuery.makeArray(jQuery(this.container + " select." + this.localeClassName + ":first option"));
+            for(i=0; i < localeList.length; i++) {
+                if (jQuery(this.container + " select." + this.localeClassName + " option:selected[value=" + localeList[i].value + "]").length > 0) {
+                    jQuery(this.container + " select." + this.localeClassName + " option:not(:selected)[value=" + localeList[i].value + "]").attr('disabled', true);
+                }
+            }
 		};
 
 		that.updateBundleFormState = function() {
@@ -473,6 +485,11 @@ var caUI = caUI || {};
 					jQuery(this.container + " ." + options.listItemClassName + ":odd").css('background-color', '#' + options.evenColor);
 				}	
 			}
+			
+			// Disable locales if "single-value-per-locale" restriction is in placementID
+            if(that.singleValuePerLocale) {
+                this.refreshLocaleAvailability();
+            }
 			return this;
 		};
 

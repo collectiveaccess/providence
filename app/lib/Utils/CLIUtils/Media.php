@@ -51,7 +51,8 @@
 			$pa_kinds = caGetOption('kinds', $po_opts, 'all', ['forceLowercase' => true, 'validValues' => ['all', 'ca_object_representations', 'ca_attributes', 'icons'], 'delimiter' => [',', ';']]);
 			
 			$unprocessed = (bool)$po_opts->getOption('unprocessed');
-
+			$oriented_only = (bool)$po_opts->getOption('oriented-only');
+		
 			$va_log_options = array();
 			$vs_log_dir = $po_opts->getOption('log');
 			if ($vs_log_dir){
@@ -133,7 +134,9 @@
 				if (!$quiet) { print CLIProgressBar::start($qr_reps->numRows(), _t('Re-processing representation media')); }
 				while($qr_reps->nextRow()) {
 					$va_media_info = $qr_reps->getMediaInfo('media');
-					if(!is_array($va_media_info)) { continue; }
+					if(!is_array($va_media_info)) { print CLIProgressBar::next(1, "SKIPPED"); continue; }
+					if($oriented_only && $media_metadata['EXIF']['IFD0']['Orientation'] == 1) { print CLIProgressBar::next(1, "SKIPPED"); continue; }
+					
 					$vs_original_filename = $va_media_info['ORIGINAL_FILENAME'];
 
 					if($unprocessed) {
@@ -286,6 +289,7 @@
 				"object_ids|o-s" => _t('Comma separated list of object ids to reload'),
 				"kinds|k-s" => _t('Comma separated list of kind of media to reprocess. Valid kinds are ca_object_representations (object representations), ca_attributes (metadata elements) and icons (icon graphics on list items, storage locations, editors, editor screens, tours and tour stops). You may also specify "all" to reprocess all kinds of media. Default is "all"'),
 				"unprocessed|u" => _t('Reprocess all unprocessed media'),
+				"oriented-only|x-i" => _t('Only reprocess image media having the EXIF orientation set to a value > 1')
 			);
 		}
 		# -------------------------------------------------------

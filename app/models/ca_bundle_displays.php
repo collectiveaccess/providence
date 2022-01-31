@@ -972,8 +972,10 @@ if (!$pb_omit_editing_info) {
 		if (!$pm_table_name_or_num) { return null; }
 		$cache_key = caMakeCacheKeyFromOptions($options, $pm_table_name_or_num.'|'.(($g_request && $g_request->user) ? 'USER:'.$g_request->user->getPrimaryKey() : ''));
 		if(CompositeCache::contains($cache_key)) {
-			return CompositeCache::fetch($cache_key);
+		//	return CompositeCache::fetch($cache_key);
 		}
+		
+		$t_subject = Datamodel::getInstance($pm_table_name_or_num, true);
 		
 		$vb_show_tooltips = (isset($options['no_tooltips']) && (bool)$options['no_tooltips']) ? false : true;
 		$vs_format = (isset($options['format']) && in_array($options['format'], array('simple', 'full'))) ? $options['format'] : 'full';
@@ -1584,7 +1586,7 @@ if (!$pb_omit_editing_info) {
 		
 		if (caGetBundleAccessLevel($vs_table, "ca_object_representations") != __CA_BUNDLE_ACCESS_NONE__) {
 			// get object representations (objects only, of course)
-			if ($vs_table == 'ca_objects') {
+			if (is_a($t_subject, 'RepresentableBaseModel')) {
 				$va_additional_settings = array(
 					'display_mode' => array(
 						'formatType' => FT_TEXT,
@@ -1746,7 +1748,21 @@ if (!$pb_omit_editing_info) {
 				)
 			);
 			
-			
+			if($vs_related_table == 'ca_object_representations') {
+				$va_additional_settings['show_nonprimary'] = [
+					'formatType' => FT_TEXT,
+					'displayType' => DT_SELECT,
+					'width' => 35, 'height' => 1,
+					'takesLocale' => false,
+					'default' => 0,
+					'options' => array(
+						_t('Yes') => 1,
+						_t('No') => 0
+					),
+					'label' => _t('Include non-primary media'),
+					'description' => _t('Includes non-primary media in display.')
+				];
+			}
 			
 			if ($vs_related_table == 'ca_list_items') {
 				$va_additional_settings['restrictToLists'] = array(
@@ -2182,6 +2198,8 @@ if (!$pb_omit_editing_info) {
 		$vb_return_info =	caGetOption('returnInfo', $options, false);
 		$vb_include_nonprimary_media = caGetOption('show_nonprimary', $options, false);
 		
+		if(method_exists($po_result, 'filterNonPrimaryRepresentations')) { $po_result->filterNonPrimaryRepresentations(!$vb_include_nonprimary_media); }
+		
 		if (!isset($options['convertCodesToDisplayText'])) { $options['convertCodesToDisplayText'] = true; }
 		if (!isset($options['forReport'])) { $options['forReport'] = false; }
 		if (!isset($options['purify'])) { $options['purify'] = false; }
@@ -2269,7 +2287,10 @@ if (!$pb_omit_editing_info) {
 						    $vs_sort_dir_attr = ($vs_sort_dir) ? "sortDirection=\"{$vs_sort_dir}\"" : "";
 						}
 						$max_items = (int)caGetOption('numPerPage', $va_settings, 0);
-						$vs_unit_tag = "<unit ".(($max_items > 0) ? "length=\"{$max_items}\"" : '')." relativeTo=\"".$va_path[1]."\" delimiter=\"".$options['delimiter']."\" {$vs_restrict_to_types} {$vs_restrict_to_relationship_types} {$vs_sort_attr} {$vs_sort_dir_attr}>";
+						
+						$filter_primary_attr = 'filterNonPrimaryRepresentations="'.($vb_include_nonprimary_media ? "0" : "1").'"';
+						
+						$vs_unit_tag = "<unit ".(($max_items > 0) ? "length=\"{$max_items}\"" : '')." relativeTo=\"".$va_path[1]."\" delimiter=\"".$options['delimiter']."\" {$vs_restrict_to_types} {$vs_restrict_to_relationship_types} {$vs_sort_attr} {$vs_sort_dir_attr} {$filter_primary_attr}>";
 
 						switch(sizeof($va_path)) {
 							case 3:
@@ -2315,12 +2336,9 @@ if (!$pb_omit_editing_info) {
 				$va_bundle_bits[] = 'hierarchy.preferred_labels.name';
 			}
 			
-			if ($vb_include_nonprimary_media) { $po_result->filterNonPrimaryRepresentations(false); }
-			
 			// policy passed for history tracking current value
 			// returnPath passed to force absolute file path to be used when running reports – some systems cannot handle urls in PDFs due to DNS configuration
 			$vs_val = $po_result->get(join(".", $va_bundle_bits), array_merge(['doRefSubstitution' => true], $options, ['policy' => $va_settings['policy'], 'returnPath' => $options['forReport']]));	
-			if ($vb_include_nonprimary_media) { $po_result->filterNonPrimaryRepresentations(true); }
 		}
 		
 		if (isset($options['purify']) && $options['purify']) {

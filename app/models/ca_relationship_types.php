@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2019 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -397,11 +397,16 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 * @param array $pa_options Option are
 	 *		create = create relationship type using parameters if one with the specified type code or type_id doesn't exist already [default=false]
 	 *		cache = cache relationship types as they are referenced and return cached value if possible [default=true]
+	 *		matchOn = List of values to match on. Valid entries as "type_code", "typecode", "label", "label". [default=null]
 	 */
 	public function getRelationshipTypeID($pm_table_name_or_num, $pm_type_code_or_id, $pn_locale_id=null, $pa_values=null, $pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		if (!isset($pa_options['create'])) { $pa_options['create'] = false; }
 		if (!isset($pa_options['cache'])) { $pa_options['cache'] = true; }
+		
+		if(!is_array($match_on = caGetOption('matchOn', $pa_options, []))) { $match_on = []; }
+		$match_on = array_filter(array_map('strtolower', $match_on), function ($v) { return in_array($v, ['type_code', 'typecode', 'label', 'labels']); });
+		if(!sizeof($match_on)) { $match_on = ['type_code']; }
 		
 		$pm_type_code_or_id = mb_strtolower($pm_type_code_or_id);
 		
@@ -423,8 +428,21 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		} else {
 			if ($va_relationships = $this->getRelationshipInfo($pm_table_name_or_num, $pm_type_code_or_id)) {
 				foreach($va_relationships as $vn_type_id => $va_type_info) {
-					if ((mb_strtolower($va_type_info['type_code']) === $pm_type_code_or_id) || (mb_strtolower($va_type_info['typename']) === $pm_type_code_or_id) || (mb_strtolower($va_type_info['typename_reverse']) === $pm_type_code_or_id)){
-						return ca_relationship_types::$s_relationship_type_id_cache[$vn_table_num.'/'.$pm_type_code_or_id] = $vn_type_id;
+					foreach($match_on as $m) {
+						switch($m) {
+							case 'type_code':
+							case 'typecode':
+								if ((mb_strtolower($va_type_info['type_code']) === $pm_type_code_or_id)) {
+									return ca_relationship_types::$s_relationship_type_id_cache[$vn_table_num.'/'.$pm_type_code_or_id] = $vn_type_id;
+								}	
+								break;
+							case 'label':
+							case 'labels':
+								if ((mb_strtolower($va_type_info['typename']) === $pm_type_code_or_id) || (mb_strtolower($va_type_info['typename_reverse']) === $pm_type_code_or_id)) {
+									return ca_relationship_types::$s_relationship_type_id_cache[$vn_table_num.'/'.$pm_type_code_or_id] = $vn_type_id;
+								}	
+								break;
+						}
 					}
 				}
 			}

@@ -117,6 +117,15 @@ BaseModel::$s_ca_models_definitions['ca_metadata_elements'] = array(
 			'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('The relative priority of the element when displayed in a list with other element. Lower numbers indicate higher priority.'),
 			'BOUNDS_VALUE' => array(0,65535)
 		),
+		'deleted' => array(
+			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => 0,
+			'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if the element is deleted or not.'),
+			'BOUNDS_VALUE' => array(0,1),
+			'DONT_INCLUDE_IN_SEARCH_FORM' => true
+		),
 		'hier_left' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
 			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
@@ -294,7 +303,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			SELECT element_id, element_code
 			FROM ca_metadata_elements
 			WHERE
-				element_code IN (?)
+				element_code IN (?) and deleted = 0
 		", array($pa_element_codes));
 
 		$va_element_ids = array();
@@ -769,6 +778,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		
 		$va_wheres = $va_where_params = [];
 		
+		$va_wheres[] = 'cme.deleted = 0';
+		
 		if ($pb_root_elements_only) {
 			$va_wheres[] = 'cme.parent_id is NULL';
 		}
@@ -895,7 +906,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 
 		$vo_db = new Db();
 
-		$va_wheres = array();
+		$va_wheres = ['cme.deleted = 0'];
 		if ($pb_root_elements_only) {
 			$va_wheres[] = 'cme.parent_id is NULL';
 		}
@@ -1137,9 +1148,11 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			}
 		}
 
-		$sql_where = '';
-		if ($element_id) {
-			$sql_where = " WHERE cmtr.element_id = {$element_id}";
+		$vs_sql_where = '';
+		if ($vn_element_id) {
+			$vs_sql_where = " WHERE cmtr.element_id = {$vn_element_id} AND cme.deleted = 0";
+		} else {
+			$vs_sql_where = " WHERE cme.deleted = 0";
 		}
 
 		$qr_restrictions = $vo_db->query("

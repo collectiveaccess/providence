@@ -261,6 +261,11 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 				} else {
 					// Metadata elements
 					foreach($d as $index => $by_locale) {
+						if(!is_array($by_locale)) { 
+							$by_locale = [
+								\ca_locales::getDefaultCataloguingLocale() => $by_locale
+							];
+						}
 						foreach($by_locale as $locale => $by_id) {
 							$sub_values = [];
 							if(!is_array($by_id)) { $by_id = [[$by_id]]; }

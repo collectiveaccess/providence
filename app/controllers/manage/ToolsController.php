@@ -140,7 +140,7 @@
  			foreach($va_settings as $vs_setting => $va_setting_info) {
  				$va_setting_values[$vs_setting] = $va_last_setting_values[$vs_setting] = $this->request->getParameter("{$vs_form_id}_{$vs_setting}", pString);
  				if ($va_setting_info['displayType'] == DT_FILE_BROWSER) {
- 					$va_setting_values[$vs_setting] = $this->request->config->get('batch_media_import_root_directory').'/'.$va_setting_values[$vs_setting];
+ 					$va_setting_values[$vs_setting] = caGetSharedMediaUploadPath().'/'.$va_setting_values[$vs_setting];
  				}
  			}
  			
@@ -232,7 +232,7 @@
  			
  			$ps_id = $this->request->getParameter('id', pString);
  			$pn_max = $this->request->getParameter('max', pString);
- 			$vs_root_directory = $this->request->config->get('batch_media_import_root_directory');
+ 			$vs_root_directory = caGetSharedMediaUploadPath();
  			
  			$va_level_data = array();
  			

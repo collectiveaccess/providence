@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -49,6 +49,9 @@
 					if(!is_array($pa_additional_query_params)) { $pa_additional_query_params = array(); }
 					
 					$va_lists = explode(";", $ps_lists);
+					
+					$pa_options['hier_id'] = caGetListID($va_lists[0]);
+					
 					$va_tmp = array();
 					$pa_options['filters'] = array();
 					foreach($va_lists as $vs_list) {
@@ -82,7 +85,7 @@
 			
 			$vn_max_items_per_page = $this->request->getParameter('max', pInteger);
 			if (($vn_max_items_per_page > 1000) || ($vn_max_items_per_page <= 0)) {
-				$vn_max_items_per_page = 100;
+				$vn_max_items_per_page = 500;
 			}
 			
 			$va_level_data = array();

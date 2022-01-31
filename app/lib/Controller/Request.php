@@ -270,9 +270,6 @@ class Request {
 			# -----------------------------------------
 			case pString:
 				if (is_string($vs_val)) {
-					if (get_magic_quotes_gpc()) {
-						$vs_val = stripSlashes($vs_val);
-					}
 					return rawurldecode($vs_val);
 				}
 				break;

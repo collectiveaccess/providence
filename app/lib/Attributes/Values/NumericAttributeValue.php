@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -105,6 +105,14 @@
 			'label' => _t('Does not use locale setting'),
 			'description' => _t('Check this option if you don\'t want your numeric values to be locale-specific. (The default is to be.)')
 		),
+		'singleValuePerLocale' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow single value per locale'),
+			'description' => _t('Check this option to restrict entry to a single value per-locale.')
+		),
 		'allowDuplicateValues' => array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_CHECKBOXES,
@@ -199,7 +207,8 @@
  		}
  		# ------------------------------------------------------------------
  		public function loadTypeSpecificValueFromRow($pa_value_array) {
- 			$this->ops_text_value = $pa_value_array['value_longtext1'];
+ 			global $g_ui_locale;
+ 			$this->ops_text_value = Zend_Locale_Format::toNumber(strlen($pa_value_array['value_longtext1']) ? $pa_value_array['value_longtext1'] : 0, ['locale' => $g_ui_locale]);
  			$this->opn_numeric_value = $pa_value_array['value_decimal1'];
  		}
  		# ------------------------------------------------------------------
@@ -208,75 +217,80 @@
 		}
  		# ------------------------------------------------------------------
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
+ 			global $g_ui_locale;
+ 			
  			$ps_value = trim($ps_value);
  			$va_settings = $this->getSettingValuesFromElementArray(
  				$pa_element_info, 
- 				array('minChars', 'maxChars', 'minValue', 'maxValue', 'regex', 'mustNotBeBlank')
+ 				['minChars', 'maxChars', 'minValue', 'maxValue', 'regex', 'mustNotBeBlank']
  			);
  			$vn_strlen = mb_strlen($ps_value);
  			if ($va_settings['minChars'] && ($vn_strlen < $va_settings['minChars'])) {
- 				// length is too short
+ 				// Length too short
  				$vs_err_str = ($va_settings['minChars'] == 1) ? _t('%1 must be at least 1 character long', $pa_element_info['displayLabel']) : _t('%1 must be at least %2 characters long', $pa_element_info['displayLabel'], $va_settings['minChars']); 
 				$this->postError(1970, $vs_err_str, 'NumericAttributeValue->parseValue()');
 				return false;
  			}
  			if ($va_settings['maxChars'] && ($vn_strlen > $va_settings['maxChars'])) {
- 				// length is too long
+ 				// Length too long
  				$vs_err_str = ($va_settings['minChars'] == 1) ? _t('%1 must be no more than 1 character long', $pa_element_info['displayLabel']) : _t('%1 must be no more than %2 characters long', $pa_element_info['displayLabel'], $va_settings['maxChars']); 
 				$this->postError(1970, $vs_err_str, 'NumericAttributeValue->parseValue()');
 				return false;
  			}
  			
- 			if (strlen($ps_value) && !is_numeric($ps_value)) {
- 				// value is not numeric
+ 			try {
+				$pn_value = Zend_Locale_Format::getNumber($ps_value, ['locale' => $g_ui_locale]);
+			} catch(Exception $e) {			
+				if(!(is_numeric($ps_value))){
+					// This is not an number, it contains symbols other than [0-9]
+					$this->postError(1970, _t('%1 is not a numeric value', $pa_element_info['displayLabel']), 'NumericAttributeValue->parseValue()');
+					return false;
+				}
+				$pn_value = (float)$ps_value;
+			}
+ 			
+ 			if (strlen($pn_value) && !is_numeric($pn_value)) {
+ 				// Value is not numeric
  				$vs_err_str = _t('%1 must be a number', $pa_element_info['displayLabel']); 
 				$this->postError(1970, $vs_err_str, 'NumericAttributeValue->parseValue()');
 				return false;
  			}
  			
- 			if (strlen($ps_value) == 0) {
+ 			if (strlen($pn_value) == 0) {
  				if ((bool)$va_settings['mustNotBeBlank']) {
 					$this->postError(1970, _t('%1 must not be empty', $pa_element_info['displayLabel']), 'NumericAttributeValue->parseValue()');
 					return false;
 				} else {
-					return array(
+					return [
 						'value_longtext1' => null,
 						'value_decimal1' => null
-					);
+					];
 				}
 			}
  			
- 			$pn_value = floatval($ps_value);
  			if (strlen($va_settings['minValue']) && ($pn_value < $va_settings['minValue'])) {
- 				// value is too small
+ 				// Value is too small
  				$vs_err_str = _t('%1 must be at least %2', $pa_element_info['displayLabel'], $va_settings['minValue']); 
 				$this->postError(1970, $vs_err_str, 'NumericAttributeValue->parseValue()');
 				return false;
  			}
  			if (strlen($va_settings['maxValue']) && ($pn_value > $va_settings['maxValue'])) {
- 				// value is too large
+ 				// Value is too large
  				$vs_err_str = _t('%1 must be no more than %2', $pa_element_info['displayLabel'], $va_settings['maxValue']); 
 				$this->postError(1970, $vs_err_str, 'NumericAttributeValue->parseValue()');
 				return false;
  			}
  			
  			if ($va_settings['regex'] && !preg_match("!".$va_settings['regex']."!", $ps_value)) {
- 				// regex failed
- 				// TODO: need more descriptive error message
+ 				// Regex failed
 				$this->postError(1970, _t('%1 does not conform to required format', $pa_element_info['displayLabel']), 'NumericAttributeValue->parseValue()');
 				return false;
  			}
 			
-			if(!(is_numeric($ps_value))){
-				//this is not an integer, it contains symbols other than [0-9]
-				$this->postError(1970, _t('%1 is not a numeric value', $pa_element_info['displayLabel']), 'NumericAttributeValue->parseValue()');
-				return false;
-			}
-			
- 			return array(
+ 			return [
  				'value_longtext1' => $pn_value,
  				'value_decimal1' => $pn_value
- 			);
+ 			];
  		}
  		# ------------------------------------------------------------------
  		/**
@@ -296,14 +310,14 @@
  			
  			return caHTMLTextInput(
  				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 
- 				array(
+ 				[
  					'size' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth'],
  					'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight'], 
  					'value' => '{{'.$pa_element_info['element_id'].'}}', 
  					'maxlength' => $va_settings['maxChars'],
  					'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
  					'class' => $vs_class
- 				)
+ 				]
  			);
  		}
  		# ------------------------------------------------------------------

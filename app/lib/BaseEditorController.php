@@ -56,9 +56,9 @@ class BaseEditorController extends ActionController {
 
 		AssetLoadManager::register('bundleListEditorUI');
 		AssetLoadManager::register('panel');
-// 		AssetLoadManager::register('maps');
-// 		AssetLoadManager::register('leaflet');
-// 		AssetLoadManager::register('3dmodels');
+ 		AssetLoadManager::register('maps');
+ 		AssetLoadManager::register('leaflet');
+ 		AssetLoadManager::register('3dmodels');
 
 		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 		$this->opo_result_context = new ResultContext($po_request, $this->ops_table_name, ResultContext::getLastFind($po_request, $this->ops_table_name));
@@ -705,18 +705,6 @@ class BaseEditorController extends ActionController {
 			$this->view->setVar('placements', $va_display_list['displayList']);
 			
 		}
-		
-		// Summary formats list
-		$formats = [];
-		if(is_array($available_templates = caGetAvailablePrintTemplates('summary', ['table' => $t_subject->tableName(), 'restrictToTypes' => $t_subject->getTypeID()]))) {
-            $num_available_templates = sizeof($available_templates);
-            foreach($available_templates as $k => $v) {
-                if (($num_available_templates > 1) && (bool)$v['generic']) { continue; }    // omit generics from list when specific templates are available
-                $formats[$v['code']] = $v['name'].' ('.$v['type'].')';
-            }
-        }
-		$this->view->setVar('formats', $formats);
-		
 		$this->view->setVar($t_subject->tableName().'_summary_last_settings', Session::getVar($t_subject->tableName().'_summary_last_settings'));
 		
 		$this->opo_app_plugin_manager->hookSummarizeItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject));
@@ -741,7 +729,16 @@ class BaseEditorController extends ActionController {
 		$t_display = new ca_bundle_displays();
 		$va_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays(array('table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'restrictToTypes' => array($t_subject->getTypeID()))));
 
-		if ((!($vn_display_id = $this->request->getParameter('display_id', pInteger))) || !isset($va_displays[$vn_display_id])) {
+		$vn_display_id = $this->request->getParameter('display_id', pString);
+		$ps_template = $this->request->getParameter('template', pString);
+		
+		// PDF templates set in the display list need to be remapped to the template parameter
+		if(substr($vn_display_id, 0, 4) === '_pdf') {
+			$ps_template = $vn_display_id;
+			$vn_display_id = null;
+		}
+
+		if ((!$vn_display_id ) || !isset($va_displays[$vn_display_id])) {
 			$vn_display_id = $this->request->user->getVar($t_subject->tableName().'_summary_display_id');
 		}
 		
@@ -793,13 +790,13 @@ class BaseEditorController extends ActionController {
 		} else {
 			$vn_display_id = null;
 			$this->view->setVar('display_id', null);
-			$this->view->setVar('placements', array());
+			$this->view->setVar('placements', []);
 		}
 
 		//
 		// PDF output
 		//
-		if (($ps_template = $this->request->getParameter('template', pString)) && (preg_match("!^_([A-Za-z0-9]+)_(.*)$!", $ps_template, $m)) && (in_array($m[1], ['pdf', 'docx'])) && is_array($va_template_info = caGetPrintTemplateDetails('summary', $m[2]))) {
+		if ($ps_template && (preg_match("!^_([A-Za-z0-9]+)_(.*)$!", $ps_template, $m)) && (in_array($m[1], ['pdf', 'docx'])) && is_array($va_template_info = caGetPrintTemplateDetails('summary', $m[2]))) {
 		    $last_settings['template'] = $ps_template;
 		} else {		
             // When no display is specified (or valid) and no template is specified try loading the default summary format for the table
@@ -2412,7 +2409,21 @@ class BaseEditorController extends ActionController {
 
 		$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
 
-		if (!$ps_version) { $ps_version = 'original'; }
+		$di = [];
+		if($pn_representation_id) {
+			if (!($t_rep = ca_object_representations::findAsInstance(['representation_id' => $pn_representation_id]))) {
+				throw new ApplicationException(_t('Invalid representation'));
+			}
+			if(!$t_rep->isReadable($this->request->user)) {
+				throw new ApplicationException(_t('Access denied'));
+			}
+			
+			$m = $t_rep->getMediaInfo('media', 'original', 'MIMETYPE'); 
+			$di = caGetMediaDisplayInfo('media_overlay', $m);	
+		}	
+	
+		if (!$ps_version) { $ps_version = caGetOption('download_version', $di, 'original'); }
+
 		$o_view->setVar('version', $ps_version);
 
 		$va_ancestor_ids = ($t_subject->isHierarchical()) ? $t_subject->getHierarchyAncestors(null, array('idsOnly' => true, 'includeSelf' => true)) : array($vn_subject_id);
@@ -2470,6 +2481,8 @@ class BaseEditorController extends ActionController {
 				// Perform metadata embedding
 				if (isset($va_rep['representation_id']) && ($va_rep['representation_id'] > 0)) {
                     $t_rep = new ca_object_representations($va_rep['representation_id']);
+                    if(!$t_rep->isReadable($this->request->user)) { continue; }
+                    
                     if(!($vs_path = caEmbedMediaMetadataIntoFile($t_rep->getMediaPath('media', $ps_version),
                         $t_subject->tableName(), $t_subject->getPrimaryKey(), $t_subject->getTypeCode(), // subject table info
                         $t_rep->getPrimaryKey(), $t_rep->getTypeCode() // rep info
@@ -2612,7 +2625,7 @@ class BaseEditorController extends ActionController {
 	/**
 	 * Handle ajax media uploads from editor
 	 */
-	public function UploadFiles($pa_options=null) {
+	public function UploadFiles($options=null) {
 		if (!$this->request->isLoggedIn() || ((int)$this->request->user->get('userclass') !== 0)) {
 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
 			return;
@@ -2623,33 +2636,33 @@ class BaseEditorController extends ActionController {
 
 		$stored_files = [];
 		
-		$user_dir = caGetUserMediaDirectoryPath($user_id);
-		$user_files = array_flip(caGetDirectoryContentsAsList($user_dir));
+		$user_dir = caGetMediaUploadPathForUser($user_id);
 
 		if(is_array($_FILES['files'])) {
+			// used by ca_object_representations bundle file uploader and media importer drag-and-drop file uploads
 			foreach($_FILES['files']['tmp_name'] as $i => $f) {
 				if(!strlen($f)) { continue; }
-				$dest_filename = pathinfo($f, PATHINFO_FILENAME);
 				
-				$md5 = md5_file($f);
-				if (isset($user_files["{$user_dir}/md5_{$md5}"])) { 
-					$f = "{$user_dir}/".file_get_contents("{$user_dir}/md5_{$md5}");
-				}
-				
-				$dest_filename = pathinfo($f, PATHINFO_FILENAME);
-				@copy($f, $dest_path = "{$user_dir}/{$dest_filename}");
+				$dest_filename = isset($_FILES['files']['name'][$i]) ? $_FILES['files']['name'][$i] : pathinfo($f, PATHINFO_FILENAME);
+				if(!@copy($f, $dest_path = "{$user_dir}/{$dest_filename}")) { continue; }
 
-				// write file metadata
-				@file_put_contents("{$dest_path}_metadata", json_encode([
-					'original_filename' => $_FILES['files']['name'][$i],
-					'size' => filesize($dest_path)
-				]));
-				@file_put_contents("{$user_dir}/md5_{$md5}", $dest_filename);
-				$stored_files[$md5] = "userMedia{$user_id}/{$dest_filename}"; // only return the user directory and file name, not the entire path
+				$stored_files[$dest_filename] = caGetUserDirectoryName($this->request->getUserID())."/{$dest_filename}"; // only return the user directory and file name, not the entire path
 			}
+			$this->response->addContent(json_encode(['files' => array_values($stored_files), 'msg' => _t('Uploaded %1 files', sizeof($stored_files))]));
+		} else {
+			// assume single file in each key (used by Quickadd file and media attribute upload process)
+			foreach($_FILES as $k => $info) {
+				if(!is_array($info) || !array_key_exists('tmp_name', $info) || !strlen($info['tmp_name'])) { continue; }
+				
+				$dest_filename = isset($info['name']) ? $info['name'] : pathinfo($info['tmp_name'], PATHINFO_FILENAME);
+				if(!@copy($info['tmp_name'], $dest_path = "{$user_dir}/{$dest_filename}")) { continue; }
+
+				$stored_files[$k] = caGetUserDirectoryName($this->request->getUserID())."/{$dest_filename}"; // only return the user directory and file name, not the entire path
+			}
+			
+			$this->response->addContent(json_encode(['files' => $stored_files, 'msg' => _t('Uploaded %1 files', sizeof($stored_files))]));
 		}
 
-		$this->response->addContent(json_encode(['files' => array_values($stored_files), 'msg' => _t('Uploaded %1 files', sizeof($stored_files))]));
 	}
 	# -------------------------------------------------------
 	/**

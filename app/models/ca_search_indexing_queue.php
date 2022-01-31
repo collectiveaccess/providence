@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2020 Whirl-i-Gig
+ * Copyright 2015-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -227,7 +227,7 @@ class ca_search_indexing_queue extends BaseModel {
     /**
      * Lock time out. Locks older than this will be removed.
      */
-    static $s_lock_timeout = 3 * 60 * 60;   // in seconds
+    static $s_lock_timeout = 60 * 60;   // in seconds
 
 	# ------------------------------------------------------
 	# --- Constructor

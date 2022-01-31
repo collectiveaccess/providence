@@ -419,7 +419,9 @@ abstract class Base {
 				// we assume they're the same in this system and try to set() them if they exist.
 				$vs_potential_code_field = str_replace('_id', '', $vs_field) . '_code';
 				if(isset($va_fld_info['LIST']) || isset($va_fld_info['LIST_CODE'])) {
-					if(array_key_exists($vs_potential_code_field, $va_snapshot)) {
+					if(in_array($vs_field, ['access', 'status'])) {
+						$this->getModelInstance()->set($vs_field, $va_snapshot[$vs_field]);
+					} elseif(array_key_exists($vs_potential_code_field, $va_snapshot)) {
 						$vs_code = $va_snapshot[$vs_potential_code_field];
 						// already established one of them is set, a few lines above
 						$vs_list = isset($va_fld_info['LIST']) ? $va_fld_info['LIST'] : $va_fld_info['LIST_CODE'];

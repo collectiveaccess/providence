@@ -159,6 +159,9 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 		}
 
 		$this->filepath = $filepath;
+		if(!($filesize = file_exists($filepath) ? filesize($filepath) : null)) {
+			return '';
+		}
 
 		// PLY and STL are basically a simple text files describing polygons
 		// SURF is binary but with a plain text meta part at the beginning
@@ -167,7 +170,7 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 			if (preg_match('!^ply!', $sig)) {
 				$this->properties = $this->handle = $this->ohandle = [
 					"mimetype" => 'application/ply',
-					"filesize" => filesize($filepath),
+					"filesize" => $filesize,
 					"typename" => "Polygon File Format"
 				];
 				return "application/ply";
@@ -175,7 +178,7 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 			if (preg_match('!^solid!', $sig)) {
 				$this->properties = $this->handle = $this->ohandle = [
 					"mimetype" => 'application/stl',
-					"filesize" => filesize($filepath),
+					"filesize" => $filesize,
 					"typename" => "Standard Tessellation Language File"
 				];
 				return "application/stl";
@@ -183,7 +186,7 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 			if (preg_match('!\#\ HyperSurface!', $sig)) {
 				$this->properties = $this->handle = $this->ohandle = [
 					"mimetype" => 'application/surf',
-					"filesize" => filesize($filepath),
+					"filesize" => $filesize,
 					"typename" => "Surface Grid Format"
 				];
 				return "application/surf";
@@ -196,7 +199,7 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 			
 			if (is_array($facets = @unpack("I", $data))) {
 				$num_facets = array_shift($facets);
-				if ((84 + ($num_facets * 50)) == ($filesize = filesize($filepath))) {
+				if ((84 + ($num_facets * 50)) == $filesize) {
 					$this->properties = $this->handle = $this->ohandle = [
 						"mimetype" => 'application/stl',
 						"filesize" => $filesize,
@@ -210,7 +213,7 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 			if ($this->_parseOBJ($filepath)) {
 				$this->properties = $this->handle = $this->ohandle = [
 					"mimetype" => 'text/prs.wavefront-obj',
-					"filesize" => filesize($filepath),
+					"filesize" => $filesize,
 					"typename" => "Wavefront OBJ"
 				];
 				return "text/prs.wavefront-obj";
@@ -218,7 +221,7 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 			
 			// GLTF?
 			if(
-				(filesize($filepath) <= 1048576)
+				($filesize <= 1048576)
 				&&
 				($json = json_decode(file_get_contents($filepath), true))
 				&& 

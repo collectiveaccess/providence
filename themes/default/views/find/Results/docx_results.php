@@ -143,7 +143,7 @@ while($vo_result->nextHit()) {
 
 
 	// Second column : bundles
-	$contentCell = $table->addCell(($media_added ? 12 : 17$) * $cmToTwips);
+	$contentCell = $table->addCell(($media_added ? 12 : 17) * $cmToTwips);
 
 	$contentCell->addText(
 		caEscapeForXML(html_entity_decode(strip_tags(br2nl($vo_result->get('preferred_labels'))), ENT_QUOTES | ENT_HTML5)),

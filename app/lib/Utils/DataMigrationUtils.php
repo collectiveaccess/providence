@@ -528,7 +528,7 @@
 		 * @param string $ps_text The name text
 		 * @param array $pa_options Optional array of options. Supported options are:
 		 *		locale = locale code to use when applying rules; if omitted current user locale is employed
-		 *		displaynameFormat = surnameCommaForename, forenameCommaSurname, forenameSurname, forenamemiddlenamesurname, original [Default = original]
+		 *		displaynameFormat = surnameCommaForename, surnameCommaForenameMiddlename, forenameCommaSurname, forenameSurname, forenamemiddlenamesurname, original [Default = original]
 		 *		doNotParse = Use name as-is in the surname and display name fields. All other fields are blank. [Default = false]
 		 *
 		 * @return array Array containing parsed name, keyed on ca_entity_labels fields (eg. forename, surname, middlename, etc.)
@@ -675,6 +675,9 @@
 				case 'surnamecommaforename':
 					$name['displayname'] = ((strlen(trim($name['surname']))) ? $name['surname'].", " : '').$name['forename'];
 					break;
+				case 'surnamecommaforenamemiddlename':
+					$name['displayname'] = trim((((strlen(trim($name['surname']))) ? $name['surname'].", " : '').$name['forename']).' '.$name['middlename']);
+					break;
 				case 'forenamecommasurname':
 					$name['displayname'] = trim($name['forename'].', '.$name['surname']);
 					break;
@@ -746,6 +749,11 @@
 				}
 			}
 			
+			// Treat parentheticals as suffixes
+			if (preg_match("![,]*[ ]*([\(]+.*[ \)]+)$!i", $text, $matches)) {
+				$name['suffix'] = $matches[1];
+				$text = str_replace($matches[0], '', $text);
+			}
 			$name['surname'] = $text;
 			return $name;
 		}
@@ -772,7 +780,6 @@
 			
 			$vb_separate_updates = caGetOption('separateUpdatesForAttributes', $pa_options, false);
 			
-			$pt_instance->setMode(ACCESS_WRITE);
 			if (is_array($pa_values)) {
 				foreach($pa_values as $vs_element => $va_values) {
 					if (!$pt_instance->hasElement($vs_element)) { continue; }
@@ -799,10 +806,14 @@
 						    }
 							// array of values (complex multi-valued attribute)
 							foreach($va_expanded_values as $va_v) {
+								if($source_value = caGetOption('_source', $va_v, null)) {
+									unset($va_v['_source']);
+								}
                                 $pt_instance->addAttribute(
                                     array_merge($va_v, array(
                                         'locale_id' => $pn_locale_id
                                     )), $vs_element, null, [
+                                    	'source' => $source_value,
                                     	'skipExistingValues' => (caGetOption('skipExistingValues', $pa_options, true) 
                                     		|| 
                                     		caGetOption('skipExistingValues', $va_values, true)), // default to skipping attribute values if they already exist (until v1.7.9 default was _not_ to skip)
@@ -811,10 +822,13 @@
 						} else {
 							// scalar value (simple single value attribute)
 							if ($va_value) {
+								if($source_value = caGetOption('_source', $va_value, null)) {
+									unset($va_value['_source']);
+								}
 								$pt_instance->addAttribute(array(
 									'locale_id' => $pn_locale_id,
 									$vs_element => $va_value
-								), $vs_element, null, ['skipExistingValues' => true, 'matchOn' => caGetOption('matchOn', $va_values, null)]);
+								), $vs_element, null, ['source' => $source_value, 'skipExistingValues' => true, 'matchOn' => caGetOption('matchOn', $va_values, null)]);
 							}
 						}
 						if ($vb_separate_updates) {

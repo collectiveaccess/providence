@@ -82,6 +82,7 @@ var caUI = caUI || {};
 			var that = this;	// for closures
 			
 			// set up access drop-downs
+			jQuery(that.container + ' select').val("0");	// init
 			jQuery.each(initialValues, function(k, v) {
 				jQuery(that.container + ' #' + that.fieldNamePrefix + 'access_' + v['role_id']).val(v['access']);
 			});			
