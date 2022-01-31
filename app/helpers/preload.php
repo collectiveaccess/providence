@@ -127,7 +127,4 @@ register_shutdown_function(function() {
   });
 
 caInitErrorHandler();
-print_r();
-$xxx=  'foo';
-print $xxx['meow'];
 
