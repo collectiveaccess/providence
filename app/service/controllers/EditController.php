@@ -1095,7 +1095,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						$rc = $instance->removeAllLabels(($bundle_name === 'preferred_labels') ? __CA_LABEL_TYPE_PREFERRED__ : __CA_LABEL_TYPE_NONPREFERRED__);
 					} else {
 						// invalid operation
-						$warnings[] = warning($bundle_name, _t('Invalid operation %1 on %2', ($delete ? _t('delete') : $id ? 'edit' : 'add')));	
+						$warnings[] = Error\warning($idno, "", _t('Invalid operation %1 on %2', ($delete ? _t('delete') : $id ? 'edit' : 'add')), $bundle_name);	
 					}
 					
 					foreach($instance->errors() as $e) {
@@ -1109,7 +1109,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						if(is_array($v)) { $v = $v['value'] ?? null; }
 						$instance->set($bundle_name, $v, ['allowSettingOfTypeID' => true]);
 						$rc = $instance->update();
-					} else {
+					} elseif($instance->hasElement($bundle_name)) {
 						 // attribute
 						$attr_values = [];
 						if (isset($b['values']) && is_array($b['values']) && sizeof($b['values'])) {
@@ -1151,8 +1151,10 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							}
 						} else {
 							// invalid operation
-							$warnings[] = warning($bundle_name, _t('Invalid operation %1 on %2', ($delete ? _t('delete') : $id ? 'edit' : 'add')));
+							$warnings[] = Error\warning($idno, "", _t('Invalid operation %1 on %2', ($delete ? _t('delete') : $id ? 'edit' : 'add')), $bundle_name);
 						}
+					} else {
+						$warnings[] = Error\warning($idno, "", _t('Bundle %1 was skipped because it does not exist', $bundle_name), $bundle_name);	
 					}
 				
 					foreach($instance->errors() as $e) {
