@@ -34,6 +34,14 @@ use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 
 /**
+ * Ensure all checkAccess values are valid
+ */
+function filterAccessValues(?array $values) : ?array {
+	if(!$values) { return null; }
+	return array_unique(array_map(function($v) { return (int)$v; }, $values));
+}
+
+/**
  * Extract list of bundles to return from request args.
  *
  */
@@ -73,6 +81,8 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 	$limit = caGetOption('limit', $options, null);
 	
 	$ancestor_filters = caGetOption('filterByAncestors', $options, null);
+	
+	$check_access = caGetOption('checkAccess', $options, null);
 		
 	$data = [];
 	if(isset($bundles) && is_array($bundles) && sizeof($bundles)) {
@@ -96,14 +106,14 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 				
 				$id = $sresult->getPrimaryKey();
 				
-				$ancestor_ids = $rec->getHierarchyAncestors($id, ['idsOnly' => true]);
+				$ancestor_ids = $rec->getHierarchyAncestors($id, ['idsOnly' => true, 'checkAccess' => $check_access]);
 				if(is_array($ancestor_ids) && sizeof($ancestor_ids)) {
 					$qr_ancestors = caMakeSearchResult($table, $ancestor_ids);
 					while($qr_ancestors->nextHit()) {
 						$af = array_shift($ancestor_filter_list);	
 						if(is_array($af['criteria'])) {
 							foreach($af['criteria'] as $c) {
-								$cv = $qr_ancestors->get($c['name']);
+								$cv = $qr_ancestors->get($c['name'], ['checkAccess' => $check_access]);
 								if(!compare($c['operator'], $cv, $c['value'])) { continue(3); }
 							}
 						}
@@ -125,7 +135,7 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 				
 				$values = [];
 				
-				$d = $sresult->get($f, array_merge(['returnWithStructure' => true, 'useLocaleCodes' => true, 'returnAllLocales' => true, 'convertCodesToIdno' => true, 'includeValueIDs' => true], $pt['options']));
+				$d = $sresult->get($f, array_merge(['checkAccess' => $check_access, 'returnWithStructure' => true, 'useLocaleCodes' => true, 'returnAllLocales' => true, 'convertCodesToIdno' => true, 'includeValueIDs' => true], $pt['options']));
 	
 				if(!$is_template && (!is_array($d) || (sizeof($d) === 0))) { continue; }
 		
@@ -137,7 +147,7 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 							'dataType' => "Text",
 							'values' => [
 								[
-									'value' => $sresult->getWithTemplate($f),
+									'value' => $sresult->getWithTemplate($f, ['checkAccess' => $check_access]),
 									'locale' => null,
 									'subvalues' => null,
 									'id' => null,
@@ -147,7 +157,7 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 						];
 				} elseif($is_intrinsic = $rec->hasField($p['field_name'])) {
 					// Intrinics
-					if(strlen($v = $sresult->get($f, array_merge(['convertCodesToIdno' => true], $pt['options'])))) {
+					if(strlen($v = $sresult->get($f, array_merge(['convertCodesToIdno' => true, 'checkAccess' => $check_access], $pt['options'])))) {
 						$row[] = [
 							'name' => $rec->getDisplayLabel($f), 
 							'code' => $f,
@@ -194,7 +204,7 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 							if($is_set) {
 								$values[] = [
 									'locale' => $locale,
-									'value' => $sresult->get($f, array_merge(['convertCodesToIdno' => true], $pt['options'])),
+									'value' => $sresult->get($f, array_merge(['convertCodesToIdno' => true, 'checkAccess' => $check_access], $pt['options'])),
 									'subvalues' => $sub_values,
 									'id' => $id		// label_id
 								];

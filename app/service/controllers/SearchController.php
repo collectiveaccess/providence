@@ -83,6 +83,11 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 							'description' => _t('Filter results by ancestors')
 						],
 						[
+							'name' => 'checkAccess',
+							'type' => Type::listOf(Type::int()),
+							'description' => _t('Filter results by access values')
+						],
+						[
 							'name' => 'bundles',
 							'type' => Type::listOf(Type::string()),
 							'description' => _t('Bundles to return')
@@ -110,6 +115,8 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 						$search = trim($args['search']);
 						$table = trim($args['table']);
 						
+						$check_access = \GraphQLServices\Helpers\filterAccessValues($args['checkAccess']);
+						
 						if(!strlen($search)) { 
 							throw new \ServiceException(_t('Search cannot be empty'));
 						}
@@ -135,12 +142,12 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 							$s->setTypeRestrictions($args['restrictToTypes']);
 						}
 						
-						$qr = $s->search($search);
+						$qr = $s->search($search, ['checkAccess' => $check_access]);
 						$rec = \Datamodel::getInstance($table, true);
 						
 						$bundles = \GraphQLServices\Helpers\extractBundleNames($rec, $args, []);
 
-						$data = \GraphQLServices\Helpers\fetchDataForBundles($qr, $bundles, ['start' => $args['start'], 'limit' => $args['limit'], 'filterByAncestors' => $args['filterByAncestors']]);
+						$data = \GraphQLServices\Helpers\fetchDataForBundles($qr, $bundles, ['checkAccess' => $check_access, 'start' => $args['start'], 'limit' => $args['limit'], 'filterByAncestors' => $args['filterByAncestors']]);
 						
 						return ['table' => $table, 'search' => $search, 'count' => sizeof($data), 'results' => $data];
 					}
@@ -174,6 +181,11 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 							'description' => _t('Filter results by ancestors')
 						],
 						[
+							'name' => 'checkAccess',
+							'type' => Type::listOf(Type::int()),
+							'description' => _t('Filter results by access values')
+						],
+						[
 							'name' => 'bundles',
 							'type' => Type::listOf(Type::string()),
 							'description' => _t('Bundles to return')
@@ -206,6 +218,8 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 							throw new \ServiceException(_t('Invalid table: %1', $table));
 						}
 						
+						$check_access = \GraphQLServices\Helpers\filterAccessValues($args['checkAccess']);
+						
 						// Check user privs
 						// TODO: add GraphQL-specific access check?
 						if(!in_array($table, ['ca_list_items', 'ca_lists'], true) && !$u->canDoAction("can_search_{$table}")) {
@@ -216,7 +230,7 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 							$args['restrictToTypes'] = [$args['restrictToTypes']];
 						}
 						
-						if(!($qr = $table::find(\GraphQLServices\Helpers\Search\convertCriteriaToFindSpec($args['criteria'], $table), ['returnAs' => 'searchResult', 'allowWildcards' => true, 'restrictToTypes' => $args['restrictToTypes']]))) {
+						if(!($qr = $table::find(\GraphQLServices\Helpers\Search\convertCriteriaToFindSpec($args['criteria'], $table), ['returnAs' => 'searchResult', 'allowWildcards' => true, 'restrictToTypes' => $args['restrictToTypes'], 'checkAccess' => $check_access]))) {
 							throw new \ServiceException(_t('No results for table: %1', $table));
 						}
 					
@@ -224,7 +238,7 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 						
 						$bundles = \GraphQLServices\Helpers\extractBundleNames($rec, $args, []);
 
-						$data = \GraphQLServices\Helpers\fetchDataForBundles($qr, $bundles, ['start' => $args['start'], 'limit' => $args['limit'], 'filterByAncestors' => $args['filterByAncestors']]);
+						$data = \GraphQLServices\Helpers\fetchDataForBundles($qr, $bundles, ['checkAccess' => $check_access, 'start' => $args['start'], 'limit' => $args['limit'], 'filterByAncestors' => $args['filterByAncestors']]);
 						
 						return ['table' => $table, 'search' => $search, 'count' => sizeof($data), 'results' => $data];
 					}
