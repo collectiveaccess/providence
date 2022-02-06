@@ -50,7 +50,7 @@ include_once(__CA_LIB_DIR__."/Plugins/Media/ImageMagick.php");
 include_once(__CA_LIB_DIR__."/Plugins/Media/Imagick.php");
 
 class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
-	var $errors = array();
+	var $errors = [];
 	
 	var $ps_filepath;
 	var $handle;
@@ -59,9 +59,9 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $metadata = array();
 	
 	var $opo_config;
-	var $opo_external_app_config;
 	
 	var $filepath;
+	var $tmpfiles_to_delete = [];
 	
 	var $info = array(
 		'IMPORT' => array(
@@ -88,6 +88,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			'image/x-sigma-x3f'	=> 'x3f',
 			'image/x-dcraw'	=> 'raw',
 			'application/dicom' => 'dcm',
+			'image/heic'		=> 'heic'
 		),
 		'EXPORT' => array(
 			'image/jpeg' 		=> 'jpg',
@@ -113,6 +114,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			'image/x-sigma-x3f'	=> 'x3f',
 			'image/x-dcraw'	=> 'raw',
 			'application/dicom' => 'dcm',
+			'image/heic' 		=> 'heic',
 		),
 		'TRANSFORMATIONS' => array(
 			'SCALE' 			=> array('width', 'height', 'mode', 'antialiasing'),
@@ -138,6 +140,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			'layers'			=> 'W',
 			'quality' 			=> 'W',
 			'colorspace'		=> 'W',
+			'background'		=> 'W',
 			'tile_width'		=> 'W',
 			'tile_height'		=> 'W',
 			'antialiasing'		=> 'W',
@@ -148,6 +151,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			'reference-black'	=> 'W',
 			'reference-white'	=> 'W',
 			'no_upsampling'		=> 'W',
+			'exif_orientation' 	=> 'R',
 			'version'			=> 'W'	// required of all plug-ins
 		),
 		
@@ -178,6 +182,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		'image/x-sigma-x3f'	=> 'Sigma X3F RAW Image',
 		'image/x-dcraw'	=> 'RAW Image',
 		'application/dicom' => 'DICOM medical imaging data',
+		'image/heic' 		=> 'HEIC'
 	);
 	
 	var $magick_names = array(
@@ -204,6 +209,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		'image/x-sigma-x3f'	=> 'X3F',
 		'image/x-dcraw'		=> 'RAW',
 		'application/dicom' => 'DCM',
+		'image/heic' 		=> 'HEIC'
 	);
 	
 	#
@@ -232,27 +238,29 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 	private $ops_dcraw_path;
 	private $ops_graphicsmagick_path;
-	private $ops_imagemagick_path;
 	private $opa_raw_list = [];
+	private $opa_heic_list = [];
 	
 	/**
 	 * Per-request cache of extracted metadata from read files
 	 */
 	static $s_metadata_read_cache = [];
 	# ------------------------------------------------
+	/**
+	 *
+	 */
 	public function __construct() {
-		$this->description = _t('Provides image processing and conversion services using ImageMagick via the PECL Gmagick PHP extension');
+		$this->description = _t('Provides image processing and conversion services using GraphicsMagick via the PECL Gmagick PHP extension');
 	}
 	# ------------------------------------------------
-	# Tell WebLib what kinds of media this plug-in supports
-	# for import and export
+	/**
+	 *
+	 */
 	public function register() {
 		$this->opo_config = Configuration::load();
-		$this->opo_external_app_config = Configuration::load(__CA_CONF_DIR__."/external_applications.conf");
-		$this->ops_graphicsmagick_path = $this->opo_external_app_config->get('graphicsmagick_app');
-		$this->ops_imagemagick_path = $this->opo_external_app_config->get('imagemagick_path');
-		
-		$this->ops_dcraw_path = $this->opo_external_app_config->get('dcraw_app');
+		$this->caMediaPluginGraphicsMagickInstalled = caMediaPluginGraphicsMagickInstalled('');
+		$this->ops_dcraw_path = caMediaPluginDcrawInstalled();
+		$this->imagemagick_path = caMediaPluginImageMagickInstalled();
 		
 		if (!caMediaPluginGmagickInstalled()) {
 			return null;	// don't use if Gmagick functions are unavailable
@@ -262,6 +270,9 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		return $this->info;
 	}
 	# ------------------------------------------------
+	/**
+	 *
+	 */
 	public function checkStatus() {
 		$va_status = parent::checkStatus();
 		
@@ -273,17 +284,23 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			} 
 		}
 		
-		if (!caMediaPluginDcrawInstalled($this->ops_dcraw_path)) {
-			$va_status['warnings'][] = _t("RAW image support is not enabled because DCRAW cannot be found");
+		if (!caMediaPluginDcrawInstalled()) {
+			$va_status['warnings'][] = _t("RAW support is not avaiable because DCRAW cannot be found");
+		}
+		if(!caMediaPluginImageMagickInstalled()) {
+			$va_status['warnings'][] = _t("HEIC support is not avaiable because ImageMagick cannot be found<br/>\n(GraphicsMagick does not provide support for HEIC)");
 		}
 		
 		return $va_status;
 	}
 	# ------------------------------------------------
+	/**
+	 *
+	 */
 	public function divineFileFormat($ps_filepath) {
-		# is it a camera raw image?
-		if (caMediaPluginDcrawInstalled($this->ops_dcraw_path)) {
-			exec($this->ops_dcraw_path." -i ".caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
+		// Is it a camera raw image?
+		if ($this->ops_dcraw_path) {
+			caExec($this->ops_dcraw_path." -i ".caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
 			if ($vn_return == 0) {
 				if ((!preg_match("/^Cannot decode/", $va_output[0])) && (!preg_match("/Master/i", $va_output[0]))) {
 					$this->opa_raw_list[$ps_filepath] = true;
@@ -303,17 +320,26 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				}
 			} 
 		} catch (Exception $e) {
-			# is it a tilepic?
+			// Is it a tilepic?
 			$tp = new TilepicParser();
 			if ($tp->isTilepic($ps_filepath)) {
 				return 'image/tilepic';
-			} else {
-				# file format is not supported by this plug-in
-				return '';
+			} elseif ($this->imagemagick_path && (preg_match('!\.heic$!i', $ps_filepath) || preg_match('!\.psd$!i', $ps_filepath))) {	// Is it HEIC?
+				caExec($this->imagemagick_path." ".caEscapeShellArg($ps_filepath)." 2> /dev/null", $output, $return);
+				if(is_array($output) && preg_match("!(HEIC|PSD) [\d]+x[\d]+!", $output[0], $m)) {
+					$this->opa_heic_list[$ps_filepath] = true;
+					return ($m[1] === 'HEIC') ? 'image/heic' : 'image/x-psd';
+				}
 			}
+				
+			// File format is not supported by this plug-in
+			return '';
 		}
 	}
 	# ----------------------------------------------------------
+	/**
+	 *
+	 */
 	public function _getMagickImageMimeType($pr_handle) {
 		$ps_format = $pr_handle->getimageformat();
 		foreach($this->magick_names as $vs_mimetype => $vs_format) {
@@ -324,12 +350,14 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		return "image/x-unknown";
 	}
 	# ----------------------------------------------------------
+	/**
+	 *
+	 */
 	public function get($property) {
 		if ($this->handle) {
 			if ($this->info["PROPERTIES"][$property]) {
 				return $this->properties[$property];
 			} else {
-				//print "Invalid property";
 				return "";
 			}
 		} else {
@@ -337,6 +365,9 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		}
 	}
 	# ----------------------------------------------------------
+	/**
+	 *
+	 */
 	public function set($property, $value) {
 		if ($this->handle) {
 			if ($property == "tile_size") {
@@ -431,7 +462,10 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		return $this->metadata;
 	}
 	# ----------------------------------------------------------
-	public function read($ps_filepath, $mimetype="") {
+	/**
+	 *
+	 */
+	public function read($ps_filepath, $mimetype="", $options=null) {
 		if (!(($this->handle) && ($ps_filepath === $this->filepath))) {
 			
 			if ($mimetype == 'image/tilepic') {
@@ -456,15 +490,19 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			} else {
 				$this->handle = "";
 				$this->filepath = "";
-
 				$this->metadata = array();
 
-				// convert to tiff with dcraw if necessary
+				// convert RAW to tiff with dcraw if necessary
 				if (($mimetype == 'image/x-dcraw') || ($this->opa_raw_list[$ps_filepath])) {
 					$ps_filepath = $this->_dcrawConvertToTiff($ps_filepath);
 				}
+				
+				// convert HEIC to tiff with ImageMagick if necessary and possible
+				if (($mimetype == 'image/heic') || ($this->opa_heic_list[$ps_filepath])) {
+					$ps_filepath = $this->_imConvertHEICToTiff($ps_filepath);
+				}
 
-				if(!($handle = $this->_gmagickRead($ps_filepath))) {
+				if(!($handle = $this->_gmagickRead($ps_filepath, $options))) {
 					return false; // plugin cant handle format
 				}
 
@@ -472,24 +510,20 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$va_tmp = $this->handle->getimagegeometry();
 				$this->properties["width"] = $va_tmp['width'];
 				$this->properties["height"] = $va_tmp['height'];
+				
 				$this->properties["quality"] = "";
 				$this->properties["filesize"] = filesize($ps_filepath);
 				$this->properties["bitdepth"] = $this->handle->getimagedepth();
 				$this->properties["resolution"] = $this->handle->getimageresolution();
 				$this->properties["colorspace"] = $this->_getColorspaceAsString($this->handle->getimagecolorspace());
-
-				// force all images to true color (takes care of GIF transparency for one thing...)
-				$this->handle->setimagetype(Gmagick::IMGTYPE_TRUECOLOR);
-
-				if (!$this->handle->setimagecolorspace(Gmagick::COLORSPACE_RGB)) {
-					$this->postError(1610, _t("Error during RGB colorspace transformation operation"), "WLPlugGmagick->read()");
-					return false;
-				}
+				
+				$this->properties["exif_orientation"] = (in_array($orientation = (int)$this->metadata['EXIF']['IFD0']['Orientation'], [3, 6, 8], true)) ? $orientation : null;
 
 				$this->properties["mimetype"] = $this->_getMagickImageMimeType($this->handle);
 				$this->properties["typename"] = $this->handle->getimageformat();
 
-				$this->ohandle = clone $this->handle;
+				$this->_gmagickOrient();
+				$this->ohandle = is_object($this->handle) ? clone $this->handle : null;
 				return 1;
 			}
 		} else {
@@ -498,6 +532,9 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		}
 	}
 	# ----------------------------------------------------------
+	/**
+	 *
+	 */
 	public function transform($operation, $parameters) {
 		if ($this->properties["mimetype"] == "image/tilepic") { return false;} # no transformations for Tilepic
 		if (!$this->handle) { return false; }
@@ -513,8 +550,9 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		
 		$w = $parameters["width"];
 		$h = $parameters["height"];
-		$cw = $this->get("width");
+		$cw = $this->get("width");	// already flipped if EXIF orientation requires it
 		$ch = $this->get("height");
+		
 		
 		if((bool)$this->properties['no_upsampling']) {
 			$w = min($cw, round($w)); 
@@ -550,6 +588,10 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 					}
 					$this->handle->annotateimage($d,$inset, $size + $inset, 0, $parameters['text']);
 					break;
+				# -----------------------
+				case 'STRIP':	
+			        $this->handle->stripimage();	// remove all lingering metadata
+			        break;
 				# -----------------------
 				case 'WATERMARK':
 					if (!file_exists($parameters['image'])) { break; }
@@ -659,6 +701,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 								$crop_w_edge = $crop_h_edge = intval($parameters["trim_edges"]);
 							}
 						}
+						
 						if (!$this->handle->resizeimage($w + ($crop_w_edge * 2), $h + ($crop_h_edge * 2), Gmagick::FILTER_CUBIC, $aa)) {
 								$this->postError(1610, _t("Error during resize operation"), "WLPlugGmagick->transform()");
 								return false;
@@ -704,7 +747,6 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 									}
 									break;
 							}
-							
 							if (!$this->handle->cropimage($parameters["width"], $parameters["height"], $crop_w_edge + $crop_from_offset_x, $crop_h_edge + $crop_from_offset_y )) {
 								$this->postError(1610, _t("Error during crop operation"), "WLPlugGmagick->transform()");
 								return false;
@@ -727,7 +769,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			case "ROTATE":
 				$angle = $parameters["angle"];
 				if (($angle > -360) && ($angle < 360)) {
-					if ( !$this->handle->rotateimage("#FFFFFF", $angle) ) {
+					if ( !$this->handle->rotateimage(caGetOption('background', $this->properties, "#FFFFFF"), $angle) ) {
 						$this->postError(1610, _t("Error during image rotate"), "WLPlugGmagick->transform():ROTATE");
 						return false;
 					}
@@ -808,6 +850,9 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		}
 	}
 	# ----------------------------------------------------------
+	/**
+	 *
+	 */
 	public function write($ps_filepath, $mimetype) {
 		if (!$this->handle) { return false; }
 		if(strpos($ps_filepath, ':') && (caGetOSFamily() != OS_WIN32)) {
@@ -848,13 +893,36 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				return false;
 			} 
 			
+			// If the EXIF Orientation tag is set we must remove it from derivatives, as 
+			// they're written out rotated into the correct orientation. The continued presence of
+			// the tag will result in consumers of the image rotating it again into an 
+			// incorrect orientation (very confusing...). Gmagick provides for either passing
+			// through all metadata or stripping all metadata, including color profiles. There's
+			// no way to selectively remove data, or even just preserve color profiles. Thus,
+			// we are left with two options:
+			//
+			// 1. Kill all metadata using Gmagick::stripImage(). This will address orientation issues
+			//    but also remove color profiles. Many users won't notice the difference. Those who do
+			//    will be very unhappy.
+			//
+			// 2. Use Exiftool to rewrite the image without the EXIF Orientation tag. This works 
+			//    well, but is relatively slow and requires ExifTool to be installed, which is often 
+			//    not the case.
+			//
+			// So... what we do is use stripImage() when EXIF orientation is set and ExifTool is not
+			// installed. stripImage() must be called before the image is written. If ExifTool is 
+			// present and orientation is set then we call it later, after the image is written.
+			$use_exif_tool_to_strip = (bool)$this->opo_config->get('dont_use_exiftool_to_strip_exif_orientation_tags');
+			if (($this->properties['exif_orientation'] > 0) && (!caExifToolInstalled() || $use_exif_tool_to_strip)) {
+				$this->handle->stripImage();
+			}
 			$this->handle->setimageformat($this->magick_names[$mimetype]);
 			# set quality
 			if (($this->properties["quality"]) && ($this->properties["mimetype"] != "image/tiff")){ 
 				$this->handle->setcompressionquality($this->properties["quality"]);
 			}
 			
-			$this->handle->setimagebackgroundcolor(new GmagickPixel("#CC0000"));
+			$this->handle->setimagebackgroundcolor(new GmagickPixel(caGetOption('background', $this->properties, "#FFFFFF")));
 		
 			if ($this->properties['gamma']) {
 				if (!$this->properties['reference-black']) { $this->properties['reference-black'] = 0; }
@@ -914,6 +982,14 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 					$this->postError(1610, _t("Error writing file"), "WLPlugGmagick->write()");
 					return false;
+				} 
+				
+				// Call ExifTool to strip EXIF orientation tag from written file (see above for 
+				// a discussion of the problem). caExtractRemoveOrientationTagWithExifTool() tests
+				// for presence of ExifTool so we don't bother here. We don't care if it succeeds of
+				// not in any event as there's nothing else we can do.
+				if (($this->properties['exif_orientation'] > 0) && !$use_exif_tool_to_strip) {
+					caExtractRemoveOrientationTagWithExifTool($ps_filepath.".".$ext);
 				}
 			} catch (Exception $e) {
 				$this->postError(1610, _t("Error writing file: %1", $e->getMessage()), "WLPlugGmagick->write()");
@@ -929,74 +1005,124 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 	/** 
+	 * This method must be implemented for plug-ins that can output preview frames for videos or pages for documents
+	 */
+	public function &writePreviews($ps_filepath, $pa_options) {
+		global $file_cleanup_list;
+		
+		if (!isset($pa_options['outputDirectory']) || !$pa_options['outputDirectory'] || !file_exists($pa_options['outputDirectory'])) {
+			if (!($tmp_dir = $this->opo_config->get("taskqueue_tmp_directory"))) {
+				// no dir
+				return false;
+			}
+		} else {
+			$tmp_dir = $pa_options['outputDirectory'];
+		}
+
+		$output_file_prefix = tempnam($tmp_dir, 'caMultipagePreview');
+		@unlink($output_file_prefix);
+		
+		$files = [];
+		$i = 0;
+		
+		$dont_import_pages_for_tiffs = $this->opo_config->get("dont_import_additional_pages_for_tiffs");
+		
+		$this->handle->setimageindex(0);
+		$num_previews = 0;
+		do {
+			if ($i > 1) { $this->handle->nextImage(); }
+			$num_previews++;
+			$i++;
+		} while($this->handle->hasnextimage());
+		
+		$this->handle->setimageindex(0);
+		
+		if ($num_previews > 1) {
+			$i = 0;
+			do {
+				if ($i > 1) { $this->handle->nextImage(); }
+			
+				$this->handle->writeImage($output_file_prefix.sprintf("_%05d", $i).".jpg");
+				$file_cleanup_list[] = $files[$i] = $output_file_prefix.sprintf("_%05d", $i).'.jpg';
+				
+				if($dont_import_pages_for_tiffs && ($this->get('mimetype') === 'image/tiff')) { break; }
+			
+				$i++;
+			} while($this->handle->hasnextimage());
+			$this->handle->setimageindex(0);
+			return $files;
+		}
+		return false;
+	}
+	# ------------------------------------------------
+	/**
 	 *
 	 */
-	# This method must be implemented for plug-ins that can output preview frames for videos or pages for documents
-	public function &writePreviews($ps_filepath, $pa_options) {
-		$vo_plugin = null;
-
-		// gmagick multi-image object traversal seems to be broken
-		// the traversal works but writeimage always takes the first image in a sequence no matter where you set the pointer (with nextimage())
-		// until this is fixed, we're going to try and use one of the other plugins to do this
-		
-		if(caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)){
-			$vo_plugin = new WLPlugMediaGraphicsMagick();
-		} else if(caMediaPluginImagickInstalled()){
-			$vo_plugin = new WLPlugMediaImagick();
-		} else if(caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)){
-			$vo_plugin = new WLPlugMediaImageMagick();
-		}
-
-		if(is_object($vo_plugin) && file_exists($this->filepath)){
-			$vo_plugin->register();
-
-			// read original file
-			$vo_plugin->divineFileFormat($this->filepath);
-			$vo_plugin->read($this->filepath);
-			$va_return = $vo_plugin->writePreviews($this->filepath,$pa_options);
-			
-			return $va_return;
-		} else {
-			return null;
-		}
-	}
-	# ------------------------------------------------
 	public function joinArchiveContents($pa_files, $pa_options = array()) {
-		// the gmagick multi image feature seems broken -> try and use one of the other plugins to do this
-		$vo_plugin = null;
+		global $file_cleanup_list;
+		
+		if(!is_array($pa_files)) { return false; }
 
-		if(caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)){
-			$vo_plugin = new WLPlugMediaGraphicsMagick();
-		} else if(caMediaPluginImagickInstalled()){
-			$vo_plugin = new WLPlugMediaImagick();
-		} else if(caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)){
-			$vo_plugin = new WLPlugMediaImageMagick();
+		$vs_archive_original = tempnam(caGetTempDirPath(), "caArchiveOriginal");
+		@rename($vs_archive_original, $vs_archive_original.".tif");
+		$file_cleanup_list[] = $vs_archive_original = $vs_archive_original.".tif";
+		
+		$vo_orig = new Gmagick();
+		$this->setResourceLimits($vo_orig);
+
+		$i = 0;
+		foreach($pa_files as $vs_file){
+			if(file_exists($vs_file)){
+				$vo_gmagick = new Gmagick();
+				$this->setResourceLimits($vo_gmagick);
+
+				if($vo_gmagick->readImage($vs_file)){
+					$vo_orig->addImage($vo_gmagick);
+				}
+				$i++;
+			}
 		}
 
-		if(is_object($vo_plugin)){
-			$vo_plugin->register();
-			return $vo_plugin->joinArchiveContents($pa_files,$pa_options);	
-		} else {
-			return false;
+		if($i > 0){
+			if($vo_orig->writeImages($vs_archive_original,true)){
+				return $vs_archive_original;
+			}
 		}
+
+		return false;
 	}
 	# ------------------------------------------------
+	/**
+	 *
+	 */
 	public function getOutputFormats() {
 		return $this->info["EXPORT"];
 	}
 	# ------------------------------------------------
+	/**
+	 *
+	 */
 	public function getTransformations() {
 		return $this->info["TRANSFORMATIONS"];
 	}
 	# ------------------------------------------------
+	/**
+	 *
+	 */
 	public function getProperties() {
 		return $this->info["PROPERTIES"];
 	}
 	# ------------------------------------------------
+	/**
+	 *
+	 */
 	public function mimetype2extension($mimetype) {
 		return $this->info["EXPORT"][$mimetype];
 	}
 	# ------------------------------------------------
+	/**
+	 *
+	 */
 	public function extension2mimetype($extension) {
 		reset($this->info["EXPORT"]);
 		while(list($k, $v) = each($this->info["EXPORT"])) {
@@ -1007,6 +1133,9 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		return "";
 	}
 	# ------------------------------------------------
+	/**
+	 *
+	 */
 	private function _getColorspaceAsString($pn_colorspace) {
 		switch($pn_colorspace) {
 			case Gmagick::COLORSPACE_UNDEFINED:
@@ -1076,17 +1205,25 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		return $vs_colorspace;
 	}
 	# ------------------------------------------------
+	/**
+	 *
+	 */
 	public function mimetype2typename($mimetype) {
 		return $this->typenames[$mimetype];
 	}
 	# ------------------------------------------------
+	/**
+	 *
+	 */
 	public function reset() {
 		if ($this->ohandle) {
-			$this->handle = clone $this->ohandle;
+			$this->handle = is_object($this->ohandle) ? clone $this->ohandle : null;
+
 			# load image properties
 			$va_tmp = $this->handle->getimagegeometry();
 			$this->properties["width"] = $va_tmp['width'];
 			$this->properties["height"] = $va_tmp['height'];
+			
 			$this->properties["quality"] = "";
 			$this->properties["mimetype"] = $this->_getMagickImageMimeType($this->handle);
 			$this->properties["typename"] = $this->handle->getimageformat();
@@ -1095,6 +1232,9 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		return false;
 	}
 	# ------------------------------------------------
+	/**
+	 *
+	 */
 	public function init() {
 		unset($this->handle);
 		unset($this->ohandle);
@@ -1105,6 +1245,9 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$this->errors = array();
 	}
 	# ------------------------------------------------
+	/**
+	 *
+	 */
 	private function setResourceLimits($po_handle) {
 	    // As of GraphicMagick 1.3.32 setResourceLimit is broken
 		// $po_handle->setResourceLimit(Gmagick::RESOURCETYPE_MEMORY, 1024*1024*1024);		// Set maximum amount of memory in bytes to allocate for the pixel cache from the heap.
@@ -1116,23 +1259,42 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		return true;
 	}
 	# ------------------------------------------------
+	/**
+	 *
+	 */
 	public function cleanup() {
-		$this->destruct();
+		$this->__destruct();
 	}
 	# ------------------------------------------------
-	public function destruct() {
+	/**
+	 *
+	 */
+	public function __destruct() {
 		if(is_object($this->handle)) { $this->handle->destroy(); }
 		if(is_object($this->ohandle)) { $this->ohandle->destroy(); }
+		if(is_array($this->tmpfiles_to_delete)) {
+		    foreach(array_keys($this->tmpfiles_to_delete) as $f) {
+		        @unlink($f);
+		    }
+		}
 	}
 	# ------------------------------------------------
+	/**
+	 *
+	 */
 	public function htmlTag($ps_url, $pa_properties, $pa_options=null, $pa_volume_info=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		if (!is_array($pa_properties)) { $pa_properties = array(); }
 		return caHTMLImage($ps_url, array_merge($pa_options, $pa_properties));
 	}	
 	# ------------------------------------------------
+	/**
+	 *
+	 */
 	private function _dcrawConvertToTiff($ps_filepath) {
-		if (!caMediaPluginDcrawInstalled($this->ops_dcraw_path)) {
+		global $file_cleanup_list;
+		
+		if (!$this->ops_dcraw_path) {
 			$this->postError(1610, _t("Could not convert Camera RAW format file because conversion tool (dcraw) is not installed"), "WLPlugGmagick->read()");
 			return false;
 		}
@@ -1142,7 +1304,12 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$this->postError(1610, _t("Could not copy Camera RAW file to temporary directory"), "WLPlugGmagick->read()");
 			return false;
 		}
-		exec($this->ops_dcraw_path." -T ".caEscapeShellArg($vs_tmp_name), $va_output, $vn_return);
+        $this->tmpfiles_to_delete[$vs_tmp_name] = 1;
+        $this->tmpfiles_to_delete[$vs_tmp_name.'.tiff'] = 1;
+        $file_cleanup_list[] = $vs_tmp_name;
+    	$file_cleanup_list[] = $vs_tmp_name.'.tiff';
+         
+		caExec($this->ops_dcraw_path." -T ".caEscapeShellArg($vs_tmp_name), $va_output, $vn_return);
 		if ($vn_return != 0) {
 			$this->postError(1610, _t("Camera RAW file conversion failed: %1", $vn_return), "WLPlugGmagick->read()");
 			return false;
@@ -1154,133 +1321,176 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 		return $vs_tmp_name.'.tiff';
 	}
+	# ------------------------------------------------
+	/**
+	 *
+	 */
+	private function _imConvertHEICToTiff($ps_filepath) {
+		global $file_cleanup_list;
+		if (!$this->imagemagick_path) {
+			$this->postError(1610, _t("Could not convert HEIC format file because conversion tool (ImageMagick) is not installed"), "WLPlugGmagick->read()");
+			return false;
+		}
+
+		$vs_tmp_name = tempnam(caGetTempDirPath(), "heictmp");
+		if (!copy($ps_filepath, $vs_tmp_name)) {
+			$this->postError(1610, _t("Could not copy Camera RAW file to temporary directory"), "WLPlugGmagick->read()");
+			return false;
+		}
+        $this->tmpfiles_to_delete[$vs_tmp_name] = 1;
+        $this->tmpfiles_to_delete[$vs_tmp_name.'.tiff'] = 1;
+        $file_cleanup_list[] = $vs_tmp_name;
+    	$file_cleanup_list[] = $vs_tmp_name.'.tiff';
+        
+		caExec(str_replace("identify", "convert", $this->imagemagick_path)." ".caEscapeShellArg($vs_tmp_name)." ".caEscapeShellArg($vs_tmp_name.'.tiff'), $va_output, $vn_return);
+		
+		if ($vn_return != 0) {
+			$this->postError(1610, _t("HEIC file conversion failed: %1", $vn_return), "WLPlugGmagick->read()");
+			return false;
+		}
+		if (!(file_exists($vs_tmp_name.'.tiff') && (filesize($vs_tmp_name.'.tiff') > 0))) {
+			$this->postError(1610, _t("Translation from HEIC to TIFF failed"), "WLPlugGmagick->read()");
+			return false;
+		}
+
+		return $vs_tmp_name.'.tiff';
+	}
 	# ----------------------------------------------------------------------
-	private function _gmagickRead($ps_filepath) {
+	/**
+	 *
+	 */
+	private function _gmagickRead($ps_filepath, $options=null) {
 		try {
 			$handle = new Gmagick($ps_filepath);
 			$this->setResourceLimits($handle);
 			$handle->setimageindex(0);        // force use of first image in multi-page TIFF
 			$this->handle = $handle;
 			$this->filepath = $ps_filepath;
-
-			$this->metadata = array();
-
-		if (WLPlugMediaGmagick::$s_metadata_read_cache[$ps_filepath]) {
-			$this->metadata = WLPlugMediaGmagick::$s_metadata_read_cache[$ps_filepath];
-		} else {
-			// handle metadata
-
-			/* EXIF */
-			if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
-			    $va_exif_data = @exif_read_data($ps_filepath, 'IFD0', true, false);
-			    $vn_exif_size = strlen(print_R($va_exif_data, true));
-				if (($vn_exif_size <= $this->opo_config->get('dont_use_exif_read_data_if_larger_than')) && (is_array($va_exif = caSanitizeArray($va_exif_data)))) { $va_metadata['EXIF'] = $va_exif; }
-			}
-
-			// if the builtin EXIF extraction is not used or failed for some reason, try ExifTool
-			if(!isset($va_metadata['EXIF']) || !is_array($va_metadata['EXIF'])) {
-				if(caExifToolInstalled()) {
-					$va_metadata['EXIF'] = caExtractMetadataWithExifTool($ps_filepath, true);
+			
+			$background = caGetOption('background', $this->properties, "#FFFFFF");
+			
+			if ($this->handle->getimagecolorspace() === Gmagick::COLORSPACE_CMYK) { 
+				if (!$this->handle->setimagecolorspace(Gmagick::COLORSPACE_RGB)) {
+					$this->postError(1610, _t("Error during RGB colorspace transformation operation"), "WLPlugGmagick->read()");
+					return false;
 				}
 			}
-
-			// Rotate incoming image as needed
-
-			if (isset($va_metadata['EXIF']['IFD0']['Orientation'])) {
-				$vn_orientation = $va_metadata['EXIF']['IFD0']['Orientation'];
-				$vs_tmp_basename = tempnam(caGetTempDirPath(), 'ca_image_tmp');
-
-				$vb_is_rotated = false;
-				switch ($vn_orientation) {
-					case 3:
-						$this->handle->rotateimage("#FFFFFF", 180);
-						unset($va_metadata['EXIF']['IFD0']['Orientation']);
-						$vb_is_rotated = true;
-						break;
-					case 6:
-						$this->handle->rotateimage("#FFFFFF", 90);
-						unset($va_metadata['EXIF']['IFD0']['Orientation']);
-						$vb_is_rotated = true;
-						break;
-					case 8:
-						$this->handle->rotateimage("#FFFFFF", -90);
-						unset($va_metadata['EXIF']['IFD0']['Orientation']);
-						$vb_is_rotated = true;
-						break;
-				}
+		
+			// force all images to true color (takes care of GIF transparency for one thing...)
+			$this->handle->setimagetype(Gmagick::IMGTYPE_TRUECOLOR);
+			
+			$format = $this->handle->getimageformat();
+			
+			// Set background color for transparent PNG or GIF
+			if ($background && in_array($format, ['PNG', 'GIF'])) {
+				$geometry = $this->handle->getimagegeometry();
+				$r = new Gmagick();
+				$r_new_image = $r->newimage($geometry['width'], $geometry['height'], $background, $format);
+				$r_new_image->setimagebackgroundcolor(new GmagickPixel($background));
+				$r_new_image->setimagecompose(Gmagick::COMPOSITE_DEFAULT);
+			
+				$r_new_image->compositeimage($this->handle, Gmagick::COMPOSITE_DEFAULT, 0, 0 );
+				$this->handle->destroy();
+				$this->handle = $r_new_image;
 			}
+			
+			$this->metadata = [];
 
-			// get XMP
-			$o_xmp = new XMPParser();
-			if ($o_xmp->parse($ps_filepath)) {
-				if (is_array($va_xmp_metadata = $o_xmp->getMetadata()) && sizeof($va_xmp_metadata)) {
-					$va_metadata['XMP'] = array();
-					foreach($va_xmp_metadata as $vs_xmp_tag => $va_xmp_values) {
-						$va_metadata['XMP'][$vs_xmp_tag] = join('; ',$va_xmp_values);
+			if (WLPlugMediaGmagick::$s_metadata_read_cache[$ps_filepath]) {
+				$this->metadata = WLPlugMediaGmagick::$s_metadata_read_cache[$ps_filepath];
+			} else {
+				// handle metadata
+
+				/* EXIF */
+				if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
+					$va_exif_data = @exif_read_data($ps_filepath, 'IFD0', true, false);
+					$vn_exif_size = strlen(print_R($va_exif_data, true));
+					if (($vn_exif_size <= $this->opo_config->get('dont_use_exif_read_data_if_larger_than')) && (is_array($va_exif = caSanitizeArray($va_exif_data)))) { $va_metadata['EXIF'] = $va_exif; }
+				}
+
+				// if the builtin EXIF extraction is not used or failed for some reason, try ExifTool
+				if(!isset($va_metadata['EXIF']) || !is_array($va_metadata['EXIF'])) {
+					if(caExifToolInstalled()) {
+						$va_metadata['EXIF'] = caExtractMetadataWithExifTool($ps_filepath, true);
 					}
-
 				}
+			
+				// rewrite file name to use originally uploaded name
+				if(isset($va_metadata['EXIF']) && is_array($va_metadata['EXIF']) && array_key_exists("FILE", $va_metadata['EXIF']) && ($f = caGetOption('original_filename', $options, null))) {
+					$va_metadata['EXIF']['FILE']['FileName'] = $f;
+				}
+
+				// get XMP
+				$o_xmp = new XMPParser();
+				if ($o_xmp->parse($ps_filepath)) {
+					if (is_array($va_xmp_metadata = $o_xmp->getMetadata()) && sizeof($va_xmp_metadata)) {
+						$va_metadata['XMP'] = array();
+						foreach($va_xmp_metadata as $vs_xmp_tag => $va_xmp_values) {
+							$va_metadata['XMP'][$vs_xmp_tag] = join('; ',$va_xmp_values);
+						}
+
+					}
+				}
+
+				// try to get IPTC and DPX with GraphicsMagick, if available
+				 if($this->ops_graphicsmagick_path) {
+					/* IPTC metadata */
+					$vs_iptc_file = tempnam(caGetTempDirPath(), 'gmiptc');
+					@rename($vs_iptc_file, $vs_iptc_file.'.iptc');  // GM uses the file extension to figure out what we want
+					$vs_iptc_file .= '.iptc';
+					caExec($this->ops_graphicsmagick_path." convert ".caEscapeShellArg($ps_filepath)." ".caEscapeShellArg($vs_iptc_file).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+ 
+					$vs_iptc_data = file_get_contents($vs_iptc_file);
+					@unlink($vs_iptc_file);
+ 
+					$va_iptc_raw = iptcparse($vs_iptc_data);
+ 
+					$va_iptc_tags = array(
+						'2#004'=>'Genre',
+						'2#005'=>'DocumentTitle',
+						'2#010'=>'Urgency',
+						'2#015'=>'Category',
+						'2#020'=>'Subcategories',
+						'2#025'=>'Keywords',
+						'2#040'=>'SpecialInstructions',
+						'2#055'=>'CreationDate',
+						'2#060'=>'TimeCreated',
+						'2#080'=>'AuthorByline',
+						'2#085'=>'AuthorTitle',
+						'2#090'=>'City',
+						'2#095'=>'State',
+						'2#100'=>'CountryCode',
+						'2#101'=>'Country',
+						'2#103'=>'OTR',
+						'2#105'=>'Headline',
+						'2#110'=>'Credit',
+						'2#115'=>'PhotoSource',
+						'2#116'=>'Copyright',
+						'2#120'=>'Caption',
+						'2#122'=>'CaptionWriter'
+					);
+ 
+					$va_iptc = array();
+					if (is_array($va_iptc_raw)) {
+						foreach($va_iptc_raw as $vs_iptc_tag => $va_iptc_tag_data){
+							if(isset($va_iptc_tags[$vs_iptc_tag])) {
+								$va_iptc[$va_iptc_tags[$vs_iptc_tag]] = join('; ',$va_iptc_tag_data);
+							}
+						}
+					}
+ 
+					if (sizeof($va_iptc)) {
+						$va_metadata['IPTC'] = $va_iptc;
+					}
+ 
+					/* DPX metadata */
+					caExec($this->ops_graphicsmagick_path." identify -format '%[DPX:*]' ".caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+					if ($va_output[0]) { $va_metadata['DPX'] = $va_output; }
+				}
+
+				if (sizeof(WLPlugMediaGmagick::$s_metadata_read_cache) > 100) { WLPlugMediaGmagick::$s_metadata_read_cache = array_slice(WLPlugMediaGmagick::$s_metadata_read_cache, 50); }
+				$this->metadata = WLPlugMediaGmagick::$s_metadata_read_cache[$ps_filepath] = $va_metadata;
 			}
-
-			// try to get IPTC and DPX with GraphicsMagick, if available
-			 if(caMediaPluginGraphicsMagickInstalled()) {
- 				/* IPTC metadata */
- 				$vs_iptc_file = tempnam(caGetTempDirPath(), 'gmiptc');
- 				@rename($vs_iptc_file, $vs_iptc_file.'.iptc');  // GM uses the file extension to figure out what we want
- 				$vs_iptc_file .= '.iptc';
- 				exec($this->ops_graphicsmagick_path." convert ".caEscapeShellArg($ps_filepath)." ".caEscapeShellArg($vs_iptc_file).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
- 
- 				$vs_iptc_data = file_get_contents($vs_iptc_file);
- 				@unlink($vs_iptc_file);
- 
- 				$va_iptc_raw = iptcparse($vs_iptc_data);
- 
- 				$va_iptc_tags = array(
- 					'2#004'=>'Genre',
- 					'2#005'=>'DocumentTitle',
- 					'2#010'=>'Urgency',
- 					'2#015'=>'Category',
- 					'2#020'=>'Subcategories',
- 					'2#025'=>'Keywords',
- 					'2#040'=>'SpecialInstructions',
- 					'2#055'=>'CreationDate',
- 					'2#060'=>'TimeCreated',
- 					'2#080'=>'AuthorByline',
- 					'2#085'=>'AuthorTitle',
- 					'2#090'=>'City',
- 					'2#095'=>'State',
- 					'2#100'=>'CountryCode',
- 					'2#101'=>'Country',
- 					'2#103'=>'OTR',
- 					'2#105'=>'Headline',
- 					'2#110'=>'Credit',
- 					'2#115'=>'PhotoSource',
- 					'2#116'=>'Copyright',
- 					'2#120'=>'Caption',
- 					'2#122'=>'CaptionWriter'
- 				);
- 
- 				$va_iptc = array();
- 				if (is_array($va_iptc_raw)) {
- 					foreach($va_iptc_raw as $vs_iptc_tag => $va_iptc_tag_data){
- 						if(isset($va_iptc_tags[$vs_iptc_tag])) {
- 							$va_iptc[$va_iptc_tags[$vs_iptc_tag]] = join('; ',$va_iptc_tag_data);
- 						}
- 					}
- 				}
- 
- 				if (sizeof($va_iptc)) {
- 					$va_metadata['IPTC'] = $va_iptc;
- 				}
- 
- 				/* DPX metadata */
- 				exec($this->ops_graphicsmagick_path." identify -format '%[DPX:*]' ".caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
- 				if ($va_output[0]) { $va_metadata['DPX'] = $va_output; }
- 			}
-
-			if (sizeof(WLPlugMediaGmagick::$s_metadata_read_cache) > 100) { WLPlugMediaGmagick::$s_metadata_read_cache = array_slice(WLPlugMediaGmagick::$s_metadata_read_cache, 50); }
-			$this->metadata = WLPlugMediaGmagick::$s_metadata_read_cache[$ps_filepath] = $va_metadata;
-		}
 
 			return $handle;
 		} catch(Exception $e) {
@@ -1288,5 +1498,41 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			return false; // gmagick couldn't read file, presumably
 		}
 	}
+	# ----------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _gmagickOrient() {
+		// Rotate incoming image as needed
+		
+		if (isset($this->metadata['EXIF']['IFD0']['Orientation'])) {
+			$orientation = $this->metadata['EXIF']['IFD0']['Orientation'];
+
+			$rotation = null;
+			switch ($orientation) {
+				case 3:
+					$rotation = 180;
+					break;
+				case 6:
+					$rotation = 90;
+					break;
+				case 8:
+					$rotation = -90;
+					break;
+			}
+			
+			if($rotation) { 
+				$this->handle->rotateImage('#ffffff', $rotation);
+			}
+						
+			if (($rotation) && (abs($rotation) === 90)) {
+				$w = $this->properties["width"]; $h = $this->properties["height"];
+				$this->properties["width"] = $h;
+ 				$this->properties["height"] = $w;
+			}
+			return true;
+		}
+		return false;
+	}
+	# ----------------------------------------------------------------------
 }
-# ----------------------------------------------------------------------
