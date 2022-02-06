@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -243,7 +243,15 @@ $_ca_attribute_settings['ListAttributeValue'] = array(		// global
 		'width' => 1, 'height' => 1,
 		'label' => _t('Minimize existing values?'),
 		'description' => _t('Check this option if existing values should displayed in a minimized, non-editable format.')
-	)
+	),
+	'separateDisabledValues' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Separate disabled values?'),
+		'description' => _t('Group disabled entries after active entries.')
+	),
 );
 
 
@@ -516,7 +524,8 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		$vb_auto_shrink = (bool) caGetOption('auto_shrink', $pa_options, caGetOption('auto_shrink', $pa_element_info['settings'], false));
 		
 		$current_selection_display_format = caGetOption('currentSelectionDisplayFormat', $pa_options, caGetOption('currentSelectionDisplayFormat', $pa_element_info['settings'], null));
-
+		$separate_disabled_values = caGetOption('separateDisabledValues', $pa_options, caGetOption('separateDisabledValues', $pa_element_info['settings'], false));
+		
 		$vn_max_columns = $pa_element_info['settings']['maxColumns'];
 
 		if(!isset($pa_options['useDefaultWhenNull'])) {
@@ -532,7 +541,13 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 			),
 			array_merge(
 				$pa_options,
-				['render' => $vs_render, 'maxColumns' => $vn_max_columns, 'element_id' => $pa_element_info['element_id'], 'nullOption' => $vb_null_option, 'implicitNullOption' => $vb_implicit_nulls, 'auto_shrink' => $vb_auto_shrink, 'currentSelectionDisplayFormat' => $current_selection_display_format]
+				[
+					'render' => $vs_render, 'maxColumns' => $vn_max_columns, 
+					'element_id' => $pa_element_info['element_id'], 'nullOption' => $vb_null_option, 
+					'implicitNullOption' => $vb_implicit_nulls, 'auto_shrink' => $vb_auto_shrink, 
+					'currentSelectionDisplayFormat' => $current_selection_display_format,
+					'separateDisabledValues' => $separate_disabled_values
+				]
 			)
 		);
 
