@@ -33,7 +33,27 @@
 	/**
 	*
 	*/
+	# ---------------------------------------
+	/**
+	 * Generate URL tag for asset in current theme; if asset is not available the graphic in the default theme will be returned.
+	 *
+	 * @param string $ps_file_path
+	 * @param array $pa_options
+	 * @return string
+	 */
+	function caGetThemeAssetURL($ps_file_path, $pa_options=null) {
+		global $g_request;
+		$vs_base_path = $g_request->getThemeUrlPath();
+		$vs_file_path = '/assets/pawtucket/'.$ps_file_path;
 
+		if (!file_exists($g_request->getThemeDirectoryPath().$vs_file_path)) {
+			$vs_base_path = $g_request->getDefaultThemeUrlPath();
+		}
+		if(caGetOption('absolute', $pa_options, false)) { 
+			$vs_base_path = $g_request->config->get('site_host').$vs_base_path;
+		}
+		return $vs_base_path.$vs_file_path;
+	}
    	# ---------------------------------------
 	/**
 	 * Generate HTML <img> tag for graphic in current theme; if graphic is not available the graphic in the default theme will be returned.
