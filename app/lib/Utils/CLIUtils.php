@@ -3836,6 +3836,7 @@
 			$vb_delete_opt = (bool)$po_opts->getOption('delete');
 
 			foreach ($va_tables as $vs_t) {
+				Datamodel::getInstance($vs_t, true);
 				if (class_exists($vs_t) && method_exists($vs_t, 'listPotentialDupes')) {
 					$va_dupes = $vs_t::listPotentialDupes();
 					if (sizeof($va_dupes)) {
