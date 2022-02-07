@@ -2536,6 +2536,15 @@ jQuery(document).ready(function() {
 				case 'NL2BR':
 					$ps_value = nl2br($ps_value);
 					break;
+				case 'TRUNCATE':
+					$ellipsis = ((bool)$va_tmp[2]);
+					if((int)$va_tmp[1] > 0) { 
+						$ellipsis = $ellipsis && (mb_strlen($ps_value) > (int)$va_tmp[1]);
+						$ps_value = mb_substr($ps_value, 0, (int)$va_tmp[1]); 
+						if($ellipsis) { $ps_value .= '...'; }
+					}
+					
+					break;
 			}
 		}
 

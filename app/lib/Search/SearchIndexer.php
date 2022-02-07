@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1674,7 +1674,7 @@ if (!$for_current_value_reindex) {
 							}
 							
 							if ($vn_datatype == __CA_ATTRIBUTE_VALUE_LIST__) {
-								$this->opo_engine->indexField($pn_subject_table_num, $field_num_prefix.$vn_element_id, $pn_row_id, [$vs_v = $vo_value->getDisplayValue(['output' => 'idno'])], array_merge($pa_data, ['DONT_TOKENIZE' => 1]));
+								$this->opo_engine->indexField($pn_subject_table_num, $field_num_prefix.$vn_element_id, $pn_row_id, $vs_v = [$vo_value->getDisplayValue(['output' => 'idno']), $vo_value->getDisplayValue(['output' => 'text'])], array_merge($pa_data, ['DONT_TOKENIZE' => 1]));
 								$this->_genIndexInheritance($t_inheritance_subject ? $t_inheritance_subject : $pt_subject,
 									$t_inheritance_subject ? $pt_subject : null,
 									$field_num_prefix.$vn_element_id,

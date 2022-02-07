@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2021 Whirl-i-Gig
+ * Copyright 2012-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1939,7 +1939,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					}
 				}
 				if ($vs_existing_record_policy != 'none') {
-					$pref_label_lookup_values = $va_pref_label_values;
+					$label_table = $t_subject->getLabelTableName();
+					$pref_label_lookup_values = $label_table::normalizeLabel($va_pref_label_values);	// complex labels need to be standardized (eg. ca_entity_labels)
 					if(is_array($pref_label_lookup_fields_to_omit)) {
 						foreach($pref_label_lookup_fields_to_omit as $f2o) {
 							unset($pref_label_lookup_values[trim($f2o)]);
