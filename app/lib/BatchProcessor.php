@@ -562,6 +562,8 @@ class BatchProcessor {
 		$vs_match_mode 						= $pa_options['matchMode'];
 		$vs_match_type						= $pa_options['matchType'];
 		$vn_type_id 						= $pa_options[$vs_import_target.'_type_id'];
+		$vn_parent_type_id 					= $pa_options[$vs_import_target.'_parent_type_id'];
+		$vn_child_type_id 					= $pa_options[$vs_import_target.'_child_type_id'];
 		$vn_rep_type_id 					= $pa_options['ca_object_representations_type_id'];
 
 		$va_limit_matching_to_type_ids 		= $pa_options[$vs_import_target.'_limit_matching_to_type_ids'];
@@ -609,7 +611,7 @@ class BatchProcessor {
 
 		if($vs_import_mode === 'DIRECTORY_AS_HIERARCHY') { 
 			$vb_include_subdirectories = true; 					// hierarchy mode implies processing all sub-directories
-			$vn_type_id = $o_config->get('media_importer_hierarchy_child_type');	
+			$vn_type_id = $vn_child_type_id;	
 			
 			// TODO: check that media_importer_hierarchy_parent_type and media_importer_hierarchy_parent_type are valid types
 		}
@@ -918,7 +920,7 @@ class BatchProcessor {
 					$t_parent = Datamodel::getInstance($vs_import_target);
 					if(sizeof($add_errors = self::_addNewRecord($t_parent, $o_log, [
 						'parent_id' => null,
-						'type_id' => $o_config->get('media_importer_hierarchy_parent_type'),
+						'type_id' => $vn_parent_type_id,
 						'locale_id' => $vn_locale_id,
 						'status' => $vn_status,
 						'access' => $vn_access,

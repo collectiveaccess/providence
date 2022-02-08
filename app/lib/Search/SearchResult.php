@@ -2776,7 +2776,7 @@ class SearchResult extends BaseObject {
 		if ($pa_options['returnAllLocales']) {
 			$pa_array = caExtractValuesByUserLocale($pa_array);
 			foreach($pa_array as $va_by_attr) {
-				if (!is_array($va_by_attr)) { $va_flattened_values[] = $va_by_attr; continue;  }
+				if (!is_array($va_by_attr)) { $va_by_attr[] = $va_by_attr; }
 				foreach($va_by_attr as $vs_val) {
 					if (is_array($vs_val) && sizeof($vs_val) == 1) { 
 						$vs_val = array_shift($vs_val); 
@@ -2790,6 +2790,9 @@ class SearchResult extends BaseObject {
 					}
 					if($pa_options['toLower'] || $pa_options['tolower']) {
 						$vs_val = mb_strtolower($vs_val);
+					}
+					if($pa_options['periodsToUnderscores'] || $pa_options['periodstounderscores']) {
+						$vs_val = str_replace('.', '_', $vs_val);
 					}
 					if($pa_options['makeFirstUpper'] || $pa_options['makefirstupper']) {
 						$vs_val = ucfirst($vs_val);
@@ -2826,7 +2829,7 @@ class SearchResult extends BaseObject {
 			}	
 		} else {
 			foreach($pa_array as $va_vals) {
-				if(!is_array($va_vals)) { $va_flattened_values[] = $va_vals; continue; }
+				if(!is_array($va_vals)) { $va_vals = [$va_vals]; }
 				foreach($va_vals as $vs_val) {
 					if (is_array($vs_val) && sizeof($vs_val) == 1) { 
 						$vs_val = array_shift($vs_val); 
@@ -2840,6 +2843,9 @@ class SearchResult extends BaseObject {
 					}
 					if($pa_options['toLower'] || $pa_options['tolower']) {
 						$vs_val = mb_strtolower($vs_val);
+					}
+					if($pa_options['periodsToUnderscores'] || $pa_options['periodstounderscores']) {
+						$vs_val = str_replace('.', '_', $vs_val);
 					}
 					if($pa_options['makeFirstUpper'] || $pa_options['makefirstupper']) {
 						$vs_val = ucfirst($vs_val);

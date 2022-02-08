@@ -325,20 +325,50 @@ class ca_entity_labels extends BaseLabel {
 		if (($t_entity = caGetOption('subject', $options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG')) {
 			$this->set('displayname', $this->get('surname'));
 		} elseif (!$this->get('displayname')) {
-			if(is_array($parsed_label = DataMigrationUtils::splitEntityName($l = trim(preg_replace('![ ]+!', ' ', $this->get('forename').' '.$this->get('middlename').' '.$this->get('surname'))), $options))) {
+			if(is_array($normalized_label = self::normalizeLabel($label_values = [
+				'prefix' => $this->get('prefix'),
+				'forename' => $this->get('forename'),
+				'other_forenames' => $this->get('other_forenames'),
+				'middlename' => $this->get('middlename'),
+				'surname' => $this->get('surname'),
+				'suffix' => $this->get('suffix')
+			]))) {
 				if(caGetOption('normalize', $options, true)) {
-					foreach($parsed_label as $fld => $val) {
+					foreach($normalized_label as $fld => $val) {
 						$this->set($fld, $val);
 					}
 				} else {
-					$this->set('displayname', $parsed_label['displayname'] ?? $l);
+					$this->set('displayname', $normalized_label['displayname'] ?? self::labelAsString($label_values));
 				}
 			} else {
-				$this->set('displayname', $l);
+				$this->set('displayname', self::labelAsString($label_values));
 			}
 		}
 		
 		return parent::insert($options);
+	}
+	# ------------------------------------------------------
+	/**
+	 * Convert label components into canonical format
+	 *
+	 * @param array $label_values
+	 *
+	 * @return array
+	 */
+	public static function normalizeLabel(array $label_values) : array {
+		$normalized_values = DataMigrationUtils::splitEntityName(self::labelAsString($label_values), $options);
+		return $normalized_values;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Convert label components into string
+	 *
+	 * @param array $label_values
+	 *
+	 * @return string
+	 */
+	public static function labelAsString(array $label_values) : string {
+		return trim(preg_replace('![ ]+!', ' ', $label_values['prefix'].' '.$label_values['forename'].' '.$label_values['other_forenames'].' '.$label_values['middlename'].' '.$label_values['surname'].' '.$label_values['suffix']));
 	}
 	# ------------------------------------------------------
 	/**

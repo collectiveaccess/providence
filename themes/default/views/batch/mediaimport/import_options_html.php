@@ -152,6 +152,16 @@
 									</td>
 									<td class='formLabel'>
 <?php
+										print _t('Type used for newly created parent %1', caGetTableDisplayName($t_instance->tableName(), false))."<br/>\n".$this->getVar($t_instance->tableName().'_parent_type_list')."\n";
+?>
+									</td>
+									<td class='formLabel'>
+<?php
+										print _t('Type used for newly created child %1', caGetTableDisplayName($t_instance->tableName(), false))."<br/>\n".$this->getVar($t_instance->tableName().'_child_type_list')."\n";
+?>
+									</td>
+									<td class='formLabel'>
+<?php
 										print _t('Type used for newly created object representations')."<br/>\n".$this->getVar('ca_object_representations_type_list')."</div>\n";
 ?>
 									</td>
@@ -631,8 +641,26 @@
 			caConfirmBatchExecutionPanel.showPanel();
 			jQuery('#caConfirmBatchExecutionPanelAlertText').html(msg);
 		}
+		
+		function caUpdateFormForMode(m) {
+			if(m === 'DIRECTORY_AS_HIERARCHY') {
+				jQuery('#primary_type_id').parent('td').hide();
+				jQuery('#parent_type_id, #child_type_id').parent('td').show();
+			} else {
+				jQuery('#primary_type_id').parent('td').show();
+				jQuery('#parent_type_id, #child_type_id').parent('td').hide();
+			}
+		}
 
-		$(document).bind('drop dragover', function (e) {
+		jQuery(document).bind('drop dragover', function (e) {
 			e.preventDefault();
 		});
+		
+		jQuery(document).ready(function() {
+			jQuery('#importMode').on('change', function(e) {
+				caUpdateFormForMode(jQuery('#importMode').val());
+			});
+			caUpdateFormForMode(jQuery('#importMode').val());
+		});
+		
 	</script>
