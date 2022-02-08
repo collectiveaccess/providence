@@ -6119,6 +6119,7 @@ if (!$vb_batch) {
 			$va_rels = $va_rels_by_date = [];
 
 			$vn_i = 0;
+			$vn_c = 0;
 			foreach($va_rel_info[$va_path[0]][$va_path[1]] as $va_possible_keys) {
 				$va_joins = [];
 				$va_joins[] = "INNER JOIN ".$va_path[1]." ON ".$va_path[1].'.'.$va_possible_keys[1].' = '.$va_path[0].'.'.$va_possible_keys[0]."\n";
@@ -6173,7 +6174,6 @@ if (!$vb_batch) {
 				if (!is_null($pn_count)) { $pn_count = $qr_res->numRows(); }
 
 				if ($vb_uses_relationship_types) { $va_rel_types = $t_rel->getRelationshipInfo($va_path[1]); }
-				$vn_c = 0;
 				if (($pn_start > 0) && !is_array($pa_sort_fields)) { $qr_res->seek($pn_start); }
 				while($qr_res->nextRow()) {
 					if (($vn_c >= $pn_limit) && !is_array($pa_sort_fields)) { break; }
@@ -6237,7 +6237,6 @@ if (!$vb_batch) {
 				}
 				$vn_i++;
 			}
-			
 			ksort($va_rels);	// sort by sort key... we'll remove the sort key in the next loop while we add the labels
 
 			// Set 'label' entry - display label in current user's locale
@@ -6251,7 +6250,7 @@ if (!$vb_batch) {
 				}
 			}
 			$va_rels = $va_sorted_rels;
-			
+	
 			if ($ps_return_as !== 'data') {
 				$va_rels = caExtractArrayValuesFromArrayOfArrays($va_rels, ($ps_return_as === 'relationids') ? 'relation_id' : $t_rel_item->primaryKey());
 			}
