@@ -721,7 +721,6 @@ if (!$for_current_value_reindex) {
 									$o_indexer->indexRow($pn_subject_table_num, $qr_children_res->get($vs_subject_pk), array('parent_id' => $qr_children_res->get('parent_id'), $vs_field => $qr_children_res->get($vs_field)), false, $pa_exclusion_list, array($vs_field => true));
 								}
 							}
-							continue;
 						}
 					}
 
