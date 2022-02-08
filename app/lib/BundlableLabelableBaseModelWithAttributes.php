@@ -3896,35 +3896,89 @@ if (!$vb_batch) {
 			
 			if ($vb_batch && ($po_request->getParameter($vs_placement_code.$vs_form_prefix.'_batch_mode', pString) !== '_replace_')) { continue; }
 			
-			$va_parent_tmp = explode("-", $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_new_parent_id", pString));
+			$parent_tmp = explode("-", $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_new_parent_id", pString));
+			$multiple_move_selection = explode(";", $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_move_selection", pString));
 		
 			// Hierarchy browser sets new_parent_id param to "X" if user wants to extract item from hierarchy
-			$vn_parent_id = (($vn_parent_id = array_pop($va_parent_tmp)) == 'X') ? -1 : (int)$vn_parent_id;
-			if (sizeof($va_parent_tmp) > 0) { $vs_parent_table = array_pop($va_parent_tmp); } else { $vs_parent_table = $this->tableName(); }
-		
+			$vn_parent_id = (($vn_parent_id = array_pop($parent_tmp)) == 'X') ? -1 : (int)$vn_parent_id;
+			
+			$target_table = $this->tableName();
+			$parent_table = (sizeof($parent_tmp) > 0) ? array_pop($parent_tmp) : $target_table;
+			
+			
 			if ($this->getPrimaryKey() && $this->HIERARCHY_PARENT_ID_FLD && ($vn_parent_id > 0)) {
 			
-				if ($vs_parent_table == $this->tableName()) {
-					if ($vn_parent_id != $this->getPrimaryKey()) { $this->set($this->HIERARCHY_PARENT_ID_FLD, $vn_parent_id); }
-				} else {
-					if ((bool)$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && ($vs_parent_table == 'ca_collections') && ($this->tableName() == 'ca_objects') && ($vs_coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type'))) {
+				if ($parent_table == $target_table) {	
+					// moving a record under another record in the same table
+					if(sizeof($multiple_move_selection) > 0) {
+						if($qr = $table::findAsSearchResult([$this->primaryKey() => ['IN', $multiple_move_selection]])) {
+							if($qr->getPrimaryKey() ==  $this->getPrimaryKey()) { continue; }
+							while($qr->nextHit()) {
+								$t = $qr->getInstance();
+								if(!$t->isSaveable($po_request)) { continue; }
+								
+								$t->set($this->HIERARCHY_PARENT_ID_FLD, $vn_parent_id); 
+								if(!$t->update()) {
+									$this->postError(2510, _t('Could not move item [%1]: %2', $t->getPrimaryKey(), join("; ", $this->getErrors())), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()");
+									$po_request->addActionErrors($this->errors());
+								}
+							}
+						}
+					} else {
+						$this->set($this->HIERARCHY_PARENT_ID_FLD, $vn_parent_id); 
+					}
+				} elseif(
+					(bool)$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') &&
+					($parent_table == 'ca_collections') && ($target_table == 'ca_objects') &&
+					($coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type'))
+				) { 
+					if(sizeof($multiple_move_selection) > 0) {
+						$object_selection = array_map(
+							function($v) { return (int)substr($v, 11); },
+							array_filter($multiple_move_selection, function($v) { return preg_match("!^ca_objects\-!", $v); })
+						);
+						
+						if($qr = ca_objects::findAsSearchResult(['object_id' => ['IN', $object_selection]])) {
+							while($qr->nextHit()) {
+								$t = $qr->getInstance();
+								$t->removeRelationships('ca_collections', $coll_rel_type);
+								$t->set($t->HIERARCHY_PARENT_ID_FLD, null);
+								$t->set($t->HIERARCHY_ID_FLD, $t->getPrimaryKey());
+								if(!$t->update()) {
+									$this->postError(2510, _t('Could not move object under collection: %1', join("; ", $this->getErrors())), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()");
+									$po_request->addActionErrors($this->errors());
+								}
+								if (!($t->addRelationship('ca_collections', $vn_parent_id, $coll_rel_type))) {
+									$this->postError(2510, _t('Could not move object under collection: %1', join("; ", $this->getErrors())), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()");
+									$po_request->addActionErrors($this->errors());
+								}
+							}
+						}
+					} else {
 						// link object to collection
-						$this->removeRelationships('ca_collections', $vs_coll_rel_type);
+						$this->removeRelationships('ca_collections', $coll_rel_type);
 						$this->set($this->HIERARCHY_PARENT_ID_FLD, null);
 						$this->set($this->HIERARCHY_ID_FLD, $this->getPrimaryKey());
-						if (!($this->addRelationship('ca_collections', $vn_parent_id, $vs_coll_rel_type))) {
+						if (!($this->addRelationship('ca_collections', $vn_parent_id, $coll_rel_type))) {
 							$this->postError(2510, _t('Could not move object under collection: %1', join("; ", $this->getErrors())), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()");
 							$po_request->addActionErrors($this->errors());
 						}
 					}
 				}
 			} else {
-				if ($this->getPrimaryKey() && $this->HIERARCHY_PARENT_ID_FLD && ($this->HIERARCHY_TYPE == __CA_HIER_TYPE_ADHOC_MONO__) && isset($_REQUEST["{$vs_placement_code}{$vs_form_prefix}_new_parent_id"]) && ($vn_parent_id <= 0)) {
+				// Move record to root of adhoc hierarchy (Eg. Take object out of hierarchy and make top-level)
+				if (
+					$this->getPrimaryKey() && 
+					$this->HIERARCHY_PARENT_ID_FLD && 
+					($this->HIERARCHY_TYPE == __CA_HIER_TYPE_ADHOC_MONO__) && 
+					isset($_REQUEST["{$vs_placement_code}{$vs_form_prefix}_new_parent_id"]) && 
+					($vn_parent_id <= 0)
+				) {
 					$this->set($this->HIERARCHY_PARENT_ID_FLD, null);
 					$this->set($this->HIERARCHY_ID_FLD, $this->getPrimaryKey());
 				
 					// Support for collection-object cross-table hierarchies
-					if ((bool)$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && ($this->tableName() == 'ca_objects') && ($vs_coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type')) && ($vn_parent_id == -1)) {	// -1 = extract from hierarchy
+					if ((bool)$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && ($target_table == 'ca_objects') && ($vs_coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type')) && ($vn_parent_id == -1)) {	// -1 = extract from hierarchy
 						$this->removeRelationships('ca_collections', $vs_coll_rel_type);
 					}
 				}
@@ -6189,6 +6243,7 @@ if (!$vb_batch) {
 			$va_rels = $va_rels_by_date = [];
 
 			$vn_i = 0;
+			$vn_c = 0;
 			foreach($va_rel_info[$va_path[0]][$va_path[1]] as $va_possible_keys) {
 				$va_joins = [];
 				$va_joins[] = "INNER JOIN ".$va_path[1]." ON ".$va_path[1].'.'.$va_possible_keys[1].' = '.$va_path[0].'.'.$va_possible_keys[0]."\n";
@@ -6243,7 +6298,6 @@ if (!$vb_batch) {
 				if (!is_null($pn_count)) { $pn_count = $qr_res->numRows(); }
 
 				if ($vb_uses_relationship_types) { $va_rel_types = $t_rel->getRelationshipInfo($va_path[1]); }
-				$vn_c = 0;
 				if (($pn_start > 0) && !is_array($pa_sort_fields)) { $qr_res->seek($pn_start); }
 				while($qr_res->nextRow()) {
 					if (($vn_c >= $pn_limit) && !is_array($pa_sort_fields)) { break; }
@@ -6307,7 +6361,6 @@ if (!$vb_batch) {
 				}
 				$vn_i++;
 			}
-			
 			ksort($va_rels);	// sort by sort key... we'll remove the sort key in the next loop while we add the labels
 
 			// Set 'label' entry - display label in current user's locale
@@ -6321,7 +6374,7 @@ if (!$vb_batch) {
 				}
 			}
 			$va_rels = $va_sorted_rels;
-			
+	
 			if ($ps_return_as !== 'data') {
 				$va_rels = caExtractArrayValuesFromArrayOfArrays($va_rels, ($ps_return_as === 'relationids') ? 'relation_id' : $t_rel_item->primaryKey());
 			}
