@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2021 Whirl-i-Gig
+ * Copyright 2012-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1666,147 +1666,173 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		// switch context to a different set of records if necessary and repeat current exporter item for all those selected records
 		// (e.g. hierarchy children or related items in another table, restricted by types or relationship types)
-		if(!$vb_ignore_context && ($vs_context = $settings['context'])) {
-			$va_filter_types = $settings['filterTypes'];	
-			if (!is_array($va_filter_types) && $va_filter_types) { $va_filter_types = [$va_filter_types]; }
-				
-			$va_restrict_to_types = $settings['restrictToTypes'];		
-			if (!is_array($va_restrict_to_rel_types = $settings['restrictToRelationshipTypes'])) { $va_restrict_to_rel_types = []; }
-			$va_restrict_to_rel_types = array_merge($va_restrict_to_rel_types, caGetOption('restrictToRelationshipTypes', $pa_options, []));
-			
-			$va_restrict_to_bundle_vals = $settings['restrictToBundleValues'];
-			$va_check_access = $settings['checkAccess'];
-			$va_sort = $settings['sort'];
-
-
-            $vn_new_table_num = $vs_new_table_name = $vs_key = null;
-            if (sizeof($tmp = explode('.', $vs_context)) == 2) {
-                // convert <table>.<spec> contexts to just <spec> when table is present
-                $vn_new_table_num = Datamodel::getTableNum($tmp[0]);
-                
-                if ($pn_table_num != $vn_new_table_num) {
-                    $vs_new_table_name = Datamodel::getTableName($tmp[0]);
-                    $vs_context = $tmp[1];
-                
-                    $vs_key = Datamodel::primaryKey($tmp[0]);
-                } else {
-                    $vn_new_table_num = null;
-                }
-            } elseif($vn_new_table_num = Datamodel::getTableNum($vs_context)) { // switch to new table
-				$vs_key = Datamodel::primaryKey($vs_context);
-				$vs_new_table_name = Datamodel::getTableName($vs_context);
-			} else { // this table, i.e. hierarchy context switch
-				$vs_key = $t_instance->primaryKey();
+		if(!$vb_ignore_context && ($contexts = $settings['context'])) {
+			if(!is_array($contexts)) { 
+				$contexts = [$contexts, $settings]; 
 			}
 			
-			$vb_context_is_related_table = false;
-			$va_related = null;
-			$vb_force_context = false;
+			$cur_table_num = $pn_table_num;
+			$cur_record_id = $pn_record_id;
+			
+			$vs_key = $t_instance->primaryKey();
+			$va_related = [[$vs_key => $pn_record_id]];
+			
+			for($i=0; $i < sizeof($contexts); $i = $i + 2) {
+				$context = $contexts[$i];
+				if(!is_array($context_settings = $contexts[$i+1])) { $context_settings = []; }
+				
+				$va_filter_types = $context_settings['filterTypes'];	
+				if (!is_array($va_filter_types) && $va_filter_types) { $va_filter_types = [$va_filter_types]; }
+				
+				$va_restrict_to_types = $context_settings['restrictToTypes'];		
+				if (!is_array($va_restrict_to_rel_types = $context_settings['restrictToRelationshipTypes'])) { $va_restrict_to_rel_types = []; }
+				$va_restrict_to_rel_types = array_merge($va_restrict_to_rel_types, caGetOption('restrictToRelationshipTypes', $pa_options, []));
+			
+				$va_restrict_to_bundle_vals = $context_settings['restrictToBundleValues'];
+				$va_check_access = $context_settings['checkAccess'];
+				$va_sort = $context_settings['sort'];
 
-			$o_log->logInfo(_t("Initiating context switch to '%1' for mapping ID %2 and record ID %3. The processor now tries to find matching records for the switch and calls itself for each of those items.", $vs_context, $pn_item_id, $pn_record_id));
 
-			switch($vs_context) {
-				case 'children':
-					$va_related = $t_instance->getHierarchyChildren();
-					break;
-				case 'parent':
-					$va_related = array();
-					if($vs_parent_id_fld = $t_instance->getProperty("HIERARCHY_PARENT_ID_FLD")) {
-						$va_related[] = [
-						    $vs_key => $t_instance->get($vs_parent_id_fld)
-						];
-					}
-					break;
-				case 'ancestors':
-				case 'hierarchy':
-					$va_parents = $t_instance->get("{$vs_new_table_name}.hierarchy.{$vs_key}", ['returnAsArray' => true, 'restrictToTypes' => $va_filter_types]);
+				$ids = array_map(function($v) use ($vs_key) {
+					return $v[$vs_key];
+				}, $va_related);
+				$qrl = caMakeSearchResult($cur_table_num, $ids);
 
-					$va_related = [];
-					foreach(array_unique($va_parents) as $vn_pk) {
-						$va_related[] = [
-						    $vs_key => intval($vn_pk)
-						];
-					}
-					break;
-				case 'ca_sets':
-					$t_set = new ca_sets();
-					$va_set_options = array();
-					if(isset($va_restrict_to_types[0])) {
-						// the utility used below doesn't support passing multiple types so we just pass the first.
-						// this should be enough for 99.99% of the actual use cases anyway
-						$va_set_options['setType'] = $va_restrict_to_types[0];
-					}
-					$va_set_options['checkAccess'] = $va_check_access;
-					$va_set_options['setIDsOnly'] = true;
-					$va_set_ids = $t_set->getSetsForItem($pn_table_num,$t_instance->getPrimaryKey(),$va_set_options);
-					$va_related = array();
-					foreach(array_unique($va_set_ids) as $vn_pk) {
-						$va_related[] = array($vs_key => intval($vn_pk));
-					}
-					break;
-				case 'ca_list_items.firstLevel':
-					if($t_instance->tableName() == 'ca_lists') {
-						$va_related = [];
-						$va_items_legacy_format = $t_instance->getListItemsAsHierarchy(null,array('maxLevels' => 1, 'dontIncludeRoot' => true));
-						$vn_new_table_num = Datamodel::getTableNum('ca_list_items');
-						$vs_key = 'item_id';
-						foreach($va_items_legacy_format as $va_item_legacy_format) {
-							$va_related[$va_item_legacy_format['NODE']['item_id']] = $va_item_legacy_format['NODE'];
+				while($qrl->nextHit()) {
+					$t_rel = $qrl->getInstance();
+					
+					$vn_new_table_num = $vs_new_table_name = $vs_key = null;
+					if (sizeof($tmp = explode('.', $context)) == 2) {
+						// convert <table>.<spec> contexts to just <spec> when table is present
+						$vn_new_table_num = Datamodel::getTableNum($tmp[0]);
+				
+						if ($cur_table_num != $vn_new_table_num) {
+							$vs_new_table_name = Datamodel::getTableName($tmp[0]);
+							$context = $tmp[1];
+				
+							$vs_key = Datamodel::primaryKey($tmp[0]);
+						} else {
+							$vn_new_table_num = null;
 						}
-						break;
-					} else {
-						return array();
+					} elseif($vn_new_table_num = Datamodel::getTableNum($context)) { // switch to new table
+						$vs_key = Datamodel::primaryKey($context);
+						$vs_new_table_name = Datamodel::getTableName($context);
+					} else { // this table, i.e. hierarchy context switch
+						$vs_key = $t_rel->primaryKey();
 					}
-					break;
-				default:
-					if($vn_new_table_num) {
-						$va_options = array(
-							'restrictToTypes' => $va_restrict_to_types,
-							'restrictToRelationshipTypes' => $va_restrict_to_rel_types,
-							'restrictToBundleValues' => $va_restrict_to_bundle_vals,
-							'checkAccess' => $va_check_access,
-							'sort' => $va_sort,
-						);
+			
+					$vb_context_is_related_table = false;
+					$va_related = null;
+					$vb_force_context = false;
 
-						$o_log->logDebug(_t("Calling getRelatedItems with options: %1.", print_r($va_options,true)));
+					$o_log->logInfo(_t("Initiating context switch to '%1' for mapping ID %2 and record ID %3. The processor now tries to find matching records for the switch and calls itself for each of those items.", $context, $pn_item_id, $cur_record_id));
 
-						$va_related = $t_instance->getRelatedItems($vs_context, $va_options);
-						$vb_context_is_related_table = true;
-					} else { // container or invalid context
-						$va_context_tmp = explode('.', $vs_context);
-						if(sizeof($va_context_tmp) != 2) {
-							$o_log->logError(_t("Invalid context %1. Ignoring this mapping.", $vs_context));
-							return array();
-						}
+					switch($context) {
+						case 'children':
+							$va_related = $t_rel->getHierarchyChildren();
+							break;
+						case 'parent':
+							$va_related = array();
+							if($vs_parent_id_fld = $t_rel->getProperty("HIERARCHY_PARENT_ID_FLD")) {
+								$va_related[] = [
+									$vs_key => $t_rel->get($vs_parent_id_fld)
+								];
+							}
+							break;
+						case 'ancestors':
+						case 'hierarchy':
+							$va_parents = $t_rel->get("{$vs_new_table_name}.hierarchy.{$vs_key}", ['returnAsArray' => true, 'restrictToTypes' => $va_filter_types]);
 
-						$va_attrs = $t_instance->getAttributesByElement($va_context_tmp[1]);
-
-						$va_info = array();
-
-						if(is_array($va_attrs) && sizeof($va_attrs)>0) {
-
-							$o_log->logInfo(_t("Switching context for element code: %1.", $va_context_tmp[1]));
-							$o_log->logDebug(_t("Raw attribute value array is as follows. The mapping will now be repeated for each (outer) attribute. %1", print_r($va_attrs,true)));
-
-							$vn_i = 0;
-							foreach($va_attrs as $vo_attr) {
-								$va_attribute_export = $this->processExporterItem($pn_item_id,$pn_table_num,$pn_record_id,
-									array_merge(array('ignoreContext' => true, 'attribute_id' => $vo_attr->getAttributeID(), 'offset' => $vn_i), $pa_options)
+							$va_related = [];
+							foreach(array_unique($va_parents) as $vn_pk) {
+								$va_related[] = [
+									$vs_key => intval($vn_pk)
+								];
+							}
+							break;
+						case 'ca_sets':
+							$t_set = new ca_sets();
+							$va_set_options = array();
+							if(isset($va_restrict_to_types[0])) {
+								// the utility used below doesn't support passing multiple types so we just pass the first.
+								// this should be enough for 99.99% of the actual use cases anyway
+								$va_set_options['setType'] = $va_restrict_to_types[0];
+							}
+							$va_set_options['checkAccess'] = $va_check_access;
+							$va_set_options['setIDsOnly'] = true;
+							$va_set_ids = $t_set->getSetsForItem($cur_table_num,$t_rel->getPrimaryKey(),$va_set_options);
+							$va_related = array();
+							foreach(array_unique($va_set_ids) as $vn_pk) {
+								$va_related[] = array($vs_key => intval($vn_pk));
+							}
+							break;
+						case 'ca_list_items.firstLevel':
+							if($t_rel->tableName() == 'ca_lists') {
+								$va_related = [];
+								$va_items_legacy_format = $t_rel->getListItemsAsHierarchy(null,array('maxLevels' => 1, 'dontIncludeRoot' => true));
+								$vn_new_table_num = Datamodel::getTableNum('ca_list_items');
+								$vs_key = 'item_id';
+								foreach($va_items_legacy_format as $va_item_legacy_format) {
+									$va_related[$va_item_legacy_format['NODE']['item_id']] = $va_item_legacy_format['NODE'];
+								}
+								break;
+							} else {
+								return array();
+							}
+							break;
+						default:
+							if($vn_new_table_num) {
+								$va_options = array(
+									'restrictToTypes' => $va_restrict_to_types,
+									'restrictToRelationshipTypes' => $va_restrict_to_rel_types,
+									'restrictToBundleValues' => $va_restrict_to_bundle_vals,
+									'checkAccess' => $va_check_access,
+									'sort' => $va_sort,
 								);
 
-								$va_info = array_merge($va_info, $va_attribute_export);
-								$vn_i++;
+								$o_log->logDebug(_t("Calling getRelatedItems with options: %1.", print_r($va_options,true)));
+
+								$va_related = $t_rel->getRelatedItems($context, $va_options);
+								$vb_context_is_related_table = true;
+							} else { // container or invalid context
+								$va_context_tmp = explode('.', $context);
+								if(sizeof($va_context_tmp) != 2) {
+									$o_log->logError(_t("Invalid context %1. Ignoring this mapping.", $context));
+									return array();
+								}
+
+								$va_attrs = $t_rel->getAttributesByElement($va_context_tmp[1]);
+
+								$va_info = array();
+
+								if(is_array($va_attrs) && sizeof($va_attrs)>0) {
+
+									$o_log->logInfo(_t("Switching context for element code: %1.", $va_context_tmp[1]));
+									$o_log->logDebug(_t("Raw attribute value array is as follows. The mapping will now be repeated for each (outer) attribute. %1", print_r($va_attrs,true)));
+
+									$vn_i = 0;
+									foreach($va_attrs as $vo_attr) {
+										$va_attribute_export = $this->processExporterItem($pn_item_id,$cur_table_num,$cur_record_id,
+											array_merge(array('ignoreContext' => true, 'attribute_id' => $vo_attr->getAttributeID(), 'offset' => $vn_i), $pa_options)
+										);
+
+										$va_info = array_merge($va_info, $va_attribute_export);
+										$vn_i++;
+									}
+								} else {
+									$o_log->logInfo(_t("Switching context for element code %1 failed. Either there is no attribute with that code attached to the current row or the code is invalid. Mapping is ignored for current row.", $va_context_tmp[1]));
+								}
+								return $va_info;
+
 							}
-						} else {
-							$o_log->logInfo(_t("Switching context for element code %1 failed. Either there is no attribute with that code attached to the current row or the code is invalid. Mapping is ignored for current row.", $va_context_tmp[1]));
-						}
-						return $va_info;
-
+							break;
 					}
-					break;
+				}
+				$cur_table_num = $vn_new_table_num;
 			}
-
+			
 			$va_info = [];
+			
 
 			if(is_array($va_related) && sizeof($va_related)) {
 				$o_log->logDebug(_t("The current mapping will now be repeated for these items: %1", print_r($va_related,true)));
@@ -1820,7 +1846,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						$pa_options['relationship_type_code'] = $va_rel['relationship_type_code'];
 						$pa_options['relationship_type_id'] = $va_rel['relationship_type_id'];
 					}
-					
 					$va_rel_export = $this->processExporterItem($pn_item_id,$vn_new_table_num,$va_rel[$vs_key],array_merge(array('ignoreContext' => true),$pa_options));
 					$va_info = array_merge($va_info,$va_rel_export);
 				}
