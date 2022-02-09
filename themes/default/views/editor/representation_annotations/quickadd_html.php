@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2017 Whirl-i-Gig
+ * Copyright 2013-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,22 +26,22 @@
  * ----------------------------------------------------------------------
  */
  
- 	global $g_ui_locale_id;
- 
- 	$t_subject 			= $this->getVar('t_subject');
-	$vn_subject_id 		= $this->getVar('subject_id');
-	
-	$vs_field_name_prefix = $this->getVar('field_name_prefix');
-	$vs_n 				= $this->getVar('n');
-	$vs_q				= caUcFirstUTF8Safe($this->getVar('q'));
+global $g_ui_locale_id;
 
-	$vb_can_edit	 	= $t_subject->isSaveable($this->request);
-	
-	$vs_form_name 		= "RepresentationAnnotationQuickAddForm";
-	
-	$va_notifications 	= $this->getVar('notifications');
+$t_subject 			= $this->getVar('t_subject');
+$vn_subject_id 		= $this->getVar('subject_id');
+
+$vs_field_name_prefix = $this->getVar('field_name_prefix');
+$vs_n 				= $this->getVar('n');
+$vs_q				= caUcFirstUTF8Safe($this->getVar('q'));
+
+$vb_can_edit	 	= $t_subject->isSaveable($this->request);
+
+$vs_form_name 		= "RepresentationAnnotationQuickAddForm";
+
+$va_notifications 	= $this->getVar('notifications');
 ?>		
-<form action="#" class="quickAddSectionForm" name="<?php print $vs_form_name; ?>" method="POST" enctype="multipart/form-data" id="<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>">
+<form action="#" class="quickAddSectionForm" name="<?= $vs_form_name; ?>" method="POST" enctype="multipart/form-data" id="<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>">
 	<div class='quickAddDialogHeader'><?php 	
 		if ($vb_can_edit) {
 			if (($vn_subject_id > 0) && (preg_match("!timebased!i", $t_subject->getAnnotationType()))) {
@@ -54,8 +54,8 @@
 	</div>
 	
 	<div class="quickAddFormTopPadding"><!-- empty --></div>
-	<div class="caAnnoEditorEditorErrorContainer" id="<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>"></div>
-	<div class="quickAddSectionBox" id="<?php print $vs_form_name; ?>Container<?php print $vs_field_name_prefix.$vs_n; ?>">
+	<div class="caAnnoEditorEditorErrorContainer" id="<?= $vs_form_name; ?>Errors<?= $vs_field_name_prefix.$vs_n; ?>"></div>
+	<div class="quickAddSectionBox" id="<?= $vs_form_name; ?>Container<?= $vs_field_name_prefix.$vs_n; ?>">
 <?php
 		$va_form_elements = $t_subject->getBundleFormHTMLForScreen($this->getVar('screen'), array(
 					'width' => '625px',
@@ -66,14 +66,14 @@
 			
 			print join("\n", $va_form_elements);
 ?>
-		<input type='hidden' name='_formName' value='<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>'/>
-		<input type='hidden' name='q' value='<?php print htmlspecialchars($vs_q, ENT_QUOTES, 'UTF-8'); ?>'/>
+		<input type='hidden' name='_formName' value='<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>'/>
+		<input type='hidden' name='q' value='<?= htmlspecialchars($vs_q, ENT_QUOTES, 'UTF-8'); ?>'/>
 		
-		<input type='hidden' id='caAnnoEditorAnnotationID' name='annotation_id' value='<?php print $vn_subject_id; ?>'/>
-		<input type='hidden' name='representation_id' value='<?php print $t_subject->get('representation_id'); ?>'/>
-		<input type='hidden' name='type_code' value='<?php print $t_subject->get('type_code'); ?>'/>
+		<input type='hidden' id='caAnnoEditorAnnotationID' name='annotation_id' value='<?= $vn_subject_id; ?>'/>
+		<input type='hidden' name='representation_id' value='<?= $t_subject->get('representation_id'); ?>'/>
+		<input type='hidden' name='type_code' value='<?= $t_subject->get('type_code'); ?>'/>
 		
-		<input type='hidden' name='screen' value='<?php print htmlspecialchars($this->getVar('screen')); ?>'/>
+		<input type='hidden' name='screen' value='<?= htmlspecialchars($this->getVar('screen')); ?>'/>
 		
 		<script type="text/javascript">
 			jQuery(document).ready(function() {
@@ -81,16 +81,16 @@
 					instance.on( 'focus', function( evt ) { evt.editor.focusManager.blur( true ); } );
 				});
 			});
-			function caSaveAnnotation<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>(e) {
+			function caSaveAnnotation<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>(e) {
 				jQuery.each(CKEDITOR.instances, function(k, instance) {
 					instance.updateElement();
 				});
 
-				jQuery.post('<?php print caNavUrl($this->request, "editor/representation_annotations", "RepresentationAnnotationQuickAdd", "Save"); ?>', jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").serialize(), function(resp, textStatus) {
+				jQuery.post('<?= caNavUrl($this->request, "editor/representation_annotations", "RepresentationAnnotationQuickAdd", "Save"); ?>', jQuery("#<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").serialize(), function(resp, textStatus) {
 					if (resp.status == 0) {
 						
-						var inputID = jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().data('autocompleteInputID');
-						var itemIDID = jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().data('autocompleteItemIDID');
+						var inputID = jQuery("#<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().data('autocompleteInputID');
+						var itemIDID = jQuery("#<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().data('autocompleteItemIDID');
 					
 						jQuery('#' + inputID).val(resp.display);
 						jQuery('#' + itemIDID).val(resp.id);
@@ -118,10 +118,10 @@
 						}
 						content += '</ul></div>';
 						
-						jQuery("#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>").html(content).slideDown(200);
+						jQuery("#<?= $vs_form_name; ?>Errors<?= $vs_field_name_prefix.$vs_n; ?>").html(content).slideDown(200);
 						
 						var quickAddClearErrorInterval = setInterval(function() {
-							jQuery("#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>").slideUp(500);
+							jQuery("#<?= $vs_form_name; ?>Errors<?= $vs_field_name_prefix.$vs_n; ?>").slideUp(500);
 							clearInterval(quickAddClearErrorInterval);
 						}, 3000);
 					}
@@ -131,22 +131,22 @@
 			function caConfirmDeleteAnnotation(show) {
 				if (show) {
 					var content = 	'<div class="notification-info-box rounded"><ul class="notification-info-box">' + 
-										'<li class="notification-info-box"><?php print addslashes(_t("Really delete annotation? %1 %2", 
+										'<li class="notification-info-box"><?= addslashes(_t("Really delete annotation? %1 %2", 
 												caJSButton($this->request, __CA_NAV_ICON_DELETE__, _t("Yes"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "caDeleteAnnotation(true);")),
 												caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t("No"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "caConfirmDeleteAnnotation(false); return false;"))
 											)); ?></li>' +
 										'</ul></div>';
-					jQuery('#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>').html(content).slideDown(200);
+					jQuery('#<?= $vs_form_name; ?>Errors<?= $vs_field_name_prefix.$vs_n; ?>').html(content).slideDown(200);
 				} else {
-					jQuery('#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>').slideUp(200, function() { jQuery(this).html(''); });
+					jQuery('#<?= $vs_form_name; ?>Errors<?= $vs_field_name_prefix.$vs_n; ?>').slideUp(200, function() { jQuery(this).html(''); });
 				}
 			}
 			
 			function caDeleteAnnotation() {
-				jQuery.getJSON('<?php print caNavUrl($this->request, '*', '*', 'deleteAnnotation'); ?>', {annotation_id: <?php print (int)$vn_subject_id; ?>}, function(resp) {
+				jQuery.getJSON('<?= caNavUrl($this->request, '*', '*', 'deleteAnnotation'); ?>', {annotation_id: <?= (int)$vn_subject_id; ?>}, function(resp) {
 					if (resp.code == 0) {
 						// delete succeeded... so update clip list
-						caAnnoEditorTlRemove(jQuery("#caAnnoEditorTlCarousel"), <?php print (int)$vn_subject_id; ?>);
+						caAnnoEditorTlRemove(jQuery("#caAnnoEditorTlCarousel"), <?= (int)$vn_subject_id; ?>);
 						caAnnoEditorDisableAnnotationForm();
 					} else {
 						// error
@@ -156,7 +156,7 @@
 						}
 						content += '</ul></div>';
 						
-						jQuery("#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>").html(content).slideDown(200);
+						jQuery("#<?= $vs_form_name; ?>Errors<?= $vs_field_name_prefix.$vs_n; ?>").html(content).slideDown(200);
 					}
 				});
 			}
@@ -186,12 +186,12 @@
 						}
 					}
 ?>	
-					content += '<?php print addslashes($vs_content); ?>';
+					content += '<?= addslashes($vs_content); ?>';
 					content += '</ul></div>';
-					jQuery("#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>").hide().html(content).slideDown(200);
+					jQuery("#<?= $vs_form_name; ?>Errors<?= $vs_field_name_prefix.$vs_n; ?>").hide().html(content).slideDown(200);
 						
 					var quickAddClearErrorInterval = setInterval(function() {
-						jQuery("#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>").slideUp(500);
+						jQuery("#<?= $vs_form_name; ?>Errors<?= $vs_field_name_prefix.$vs_n; ?>").slideUp(500);
 						clearInterval(quickAddClearErrorInterval);
 					}, 3000);
 				});

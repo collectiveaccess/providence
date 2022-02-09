@@ -30,6 +30,11 @@
     "phpoffice/phppresentation": "1.0.0",
     "phpoffice/phpspreadsheet": "v1.20",
     "phpoffice/phpword": "v0.18.*",
+    "phpunit/phpunit": "8.5",
+    "scholarslab/bagit": "*",
+    "srmklive/flysystem-dropbox-v2": ">=1.0.0",
+    "tedivm/stash": "0.14.*",
+    "webonyx/graphql-php": "^14.1",
     "zendframework/zend-stdlib": "^3.2",
     "ext-iconv": "*",
     "ext-simplexml": "*",
@@ -39,6 +44,8 @@
     "cache/predis-adapter": "^1.1",
     "cache/filesystem-adapter": "^1.1",
     "codeitnowin/barcode": "^3.0",
+    "firebase/php-jwt": "^5.2",
+    "softonic/graphql-client": "^1.3"
     "whikloj/bagittools": "^3.0",
     "scholarslab/bagit": "~0.2"
   },

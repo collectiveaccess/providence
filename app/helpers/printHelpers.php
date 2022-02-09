@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2021 Whirl-i-Gig
+ * Copyright 2014-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -112,7 +112,7 @@ use Zend\Stdlib\Glob;
 		$va_templates = array();
 		$vb_needs_caching = false;
 		
-		$va_cached_list = (ExternalCache::contains($vs_cache_key, 'PrintTemplates')) ? ExternalCache::fetch($vs_cache_key, 'PrintTemplates') : [];
+		$va_cached_list = (ExternalCache::contains($vs_cache_key, 'PrintTemplates')) ? ExternalCache::fetch($vs_cache_key, 'PrintTemplates') : null;
 			
 		foreach($va_template_paths as $vs_template_path) {
 			foreach(array("{$vs_template_path}", "{$vs_template_path}/local") as $vs_path) {
@@ -142,6 +142,7 @@ use Zend\Stdlib\Glob;
 						$vs_template_tag = pathinfo($vs_template, PATHINFO_FILENAME);
 						if (is_array($va_template_info = caGetPrintTemplateDetails($ps_type, $vs_template_tag))) {
 							if (caGetOption('type', $va_template_info, null) !== $vs_type)  { continue; }
+							if (caGetOption('disabled', $va_template_info, false, ['castTo' => 'bool'])) { continue; }
 							
 							if (!is_array($template_restrict_to_types = caGetOption('restrictToTypes', $va_template_info, null))) { $template_restrict_to_types = []; }
 							$c = (array_intersect($restrict_to_types, $template_restrict_to_types));
@@ -164,7 +165,7 @@ use Zend\Stdlib\Glob;
 								continue;
 							}
 
-							if (!is_dir($vs_path.'/'.$vs_template) && preg_match("/^[A-Za-z_]+[A-Za-z0-9_]*$/", $vs_template_tag)) {
+							if (!is_dir($vs_path.'/'.$vs_template) && preg_match("/^[A-Za-z_\-]+[A-Za-z0-9_\-]*$/", $vs_template_tag)) {
 								if ($vb_for_html_select && !isset($va_templates[$va_template_info['name']])) {
 									$va_templates[$va_template_info['name']] = '_pdf_'.$vs_template_tag;
 								} elseif (!isset($va_templates[$vs_template_tag])) {
@@ -172,7 +173,8 @@ use Zend\Stdlib\Glob;
 										'name' => $va_template_info['name'],
 										'code' => '_'.$va_template_info['fileFormat'].'_'.$vs_template_tag,
 										'type' => $va_template_info['fileFormat'],
-										'generic' => $va_template_info['generic'] ? 1 : 0
+										'generic' => $va_template_info['generic'] ? 1 : 0,
+										'standalone' => $va_template_info['standalone'] ? 1 : 0
 									);
 								}
 								
@@ -235,7 +237,8 @@ use Zend\Stdlib\Glob;
 				"@name", "@type", "@pageSize", "@pageOrientation", "@tables", "@restrictToTypes",
 				"@marginLeft", "@marginRight", "@marginTop", "@marginBottom",
 				"@horizontalGutter", "@verticalGutter", "@labelWidth", "@labelHeight",
-				"@elementCode", "@showOnlyIn", "@filename", "@fileFormat", "@generic"
+				"@elementCode", "@showOnlyIn", "@filename", "@fileFormat", "@generic", "@standalone",
+				"@disabled"
 			) as $vs_tag) {
 				if (preg_match("!{$vs_tag}([^\n\n]+)!", $vs_template, $va_matches)) {
 					$va_info[str_replace("@", "", $vs_tag)] = trim($va_matches[1]);
@@ -662,19 +665,76 @@ use Zend\Stdlib\Glob;
 	 * 
 	 * @return string
 	 */
-	function caEditorPrintSummaryControls($po_view) {
-	    $t_display = $po_view->getVar('t_display');
-	    $t_item = $po_view->getVar('t_subject');
-	    $request = $po_view->request;
+	function caEditorPrintSummaryControls($view) {
+	    $t_display = $view->getVar('t_display');
+	    $t_item = $view->getVar('t_subject');
+	    $request = $view->request;
 	    
-	    $vn_item_id = $t_item->getPrimaryKey();
+	    $item_id = $t_item->getPrimaryKey();
+	    
+	    $available_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays([
+			'table' => $t_item->tableNum(), 
+			'value' => $t_display->getPrimaryKey(), 
+			'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 
+			'user_id' => $request->getUserID(), 'restrictToTypes' => [$t_item->getTypeID()], 
+			'context' => 'editor_summary'
+		]));
+		
+		// Opts for on-screen display list (only displays; no PDF print templates)
+		$display_opts = [];
+		foreach($available_displays as $d) {
+			$display_opts[$d['name']] = $d['display_id'];
+		}
+		ksort($display_opts);
+		
+		// HTML <select> for on-screen display list
+		$display_select_html = caHTMLSelect(
+			'display_id', 
+			$display_opts, 
+			['onchange' => 'jQuery("#caSummaryDisplaySelectorForm").submit();', 'class' => 'searchFormSelector'],
+			['value' => $t_display->getPrimaryKey()]
+		);
+		
+		// Opts for print templates (displays + PDF templates)
+		$print_templates = caGetAvailablePrintTemplates('summary', ['table' => $t_item->tableName(), 'restrictToTypes' => $t_item->getTypeID()]);
 
-		$po_view->setViewPath('bundles');
-		$vs_buf = $po_view->render('summary_download_options_html.php');
+		// Add PDF templates to existing display list
+		foreach($print_templates as $pt) {
+			if((bool)$pt['standalone']) {	// templates marked standalone are shown as printable options in the display list 
+				$display_opts[$pt['name']] = $pt['code'];
+			}
+		}
+		ksort($display_opts);
+		
+		// HTML <select> for print template list
+		$print_display_select_html = caHTMLSelect(
+			'display_id', 
+			$display_opts, 
+			['onchange' => 'return caSummaryUpdateOptions();', 'id' => 'caSummaryDisplaySelector', 'class' => 'searchFormSelector'],
+			['value' => $t_display->getPrimaryKey()]
+		);
+		$view->setVar('print_display_select_html', $print_display_select_html);
+		
+		// Opts for print formats list (PDF, DOCX, etc – any template that is not marked as standalone is a format)
+		$formats = [];
+		if(is_array($print_templates)) {
+            $num_available_templates = sizeof($print_templates);
+            foreach($print_templates as $k => $v) {
+                if (($num_available_templates > 1) && (bool)$v['generic']) { continue; }    // omit generics from list when specific templates are available
+            	if ((bool)$v['standalone']) { continue; }
+                $formats[$v['name']] = $v['code'];
+            }
+        }
+		$view->setVar('formats', $formats);
+
+		$view->setViewPath('bundles');
+		
+		// Generate print options overlay
+		$buf = $view->render('summary_download_options_html.php');
     
-        if ($vs_display_select_html = $t_display->getBundleDisplaysAsHTMLSelect('display_id', array('onchange' => 'jQuery("#caSummaryDisplaySelectorForm").submit();',  'class' => 'searchFormSelector'), array('table' => $t_item->tableNum(), 'value' => $t_display->getPrimaryKey(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'user_id' => $request->getUserID(), 'restrictToTypes' => array($t_item->getTypeID()), 'context' => 'editor_summary'))) {
-
-            $vs_buf .= "<div id='printButton'>
+    	// Add on-screen display list
+        if ($display_select_html) {
+            $buf .= "<div id='printButton'>
                 <a href='#' onclick='return caShowSummaryDownloadOptionsPanel();'>".caNavIcon(__CA_NAV_ICON_PDF__, 2)."</a>
                     <script type='text/javascript'>
                             function caShowSummaryDownloadOptionsPanel() {
@@ -683,12 +743,12 @@ use Zend\Stdlib\Glob;
                             }
                     </script>
  </div>\n";
-            $vs_buf .= caFormTag($request, 'Summary', 'caSummaryDisplaySelectorForm', null, 'post', 'multipart/form-data', '_top', ['noCSRFToken' => true, 'disableUnsavedChangesWarning' => true]).
-            "<div class='searchFormSelector' style='float:right;'>". _t('Display').": {$vs_display_select_html}</div>
-            <input type='hidden' name='".$t_item->primaryKey()."' value='{$vn_item_id}'/>
+            $buf .= caFormTag($request, 'Summary', 'caSummaryDisplaySelectorForm', null, 'post', 'multipart/form-data', '_top', ['noCSRFToken' => true, 'disableUnsavedChangesWarning' => true]).
+            "<div class='searchFormSelector' style='float:right;'>". _t('Display').": {$display_select_html}</div>
+            <input type='hidden' name='".$t_item->primaryKey()."' value='{$item_id}'/>
             </form>\n";
-	}
+		}
 	
-        return $vs_buf;
+        return $buf;
 	}
 	# ---------------------------------------

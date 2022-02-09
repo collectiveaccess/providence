@@ -174,15 +174,21 @@ var caUI = caUI || {};
 				jQuery('#' + stateProvID + '_select').empty();
 				var countryCode = jQuery('#' + countryID).val();
 				if (statesByCountryList[countryCode]) {
+					let valuePresent = false;
 					for(k in statesByCountryList[countryCode]) {
 						jQuery('#' + stateProvID + '_select').append('<option value="' + statesByCountryList[countryCode][k] + '">' + k + '</option>');
 						
 						if (!stateValue && (origStateValue == statesByCountryList[countryCode][k])) {
 							stateValue = origStateValue;
 						}
+						if(stateValue === statesByCountryList[countryCode][k]) {
+							valuePresent = true;
+						}
 					}
 					jQuery('#' + stateProvID + '_text').css('display', 'none').attr('name', stateProvID + '_text');
-					jQuery('#' + stateProvID + '_select').css('display', 'inline').attr('name', stateProvID).val(stateValue);
+					if(valuePresent) {
+						jQuery('#' + stateProvID + '_select').css('display', 'inline').attr('name', stateProvID).val(stateValue);
+					}
 					
 					if (mirrorCountryID) {
 						jQuery('#' + stateProvID + '_select').change(function() {

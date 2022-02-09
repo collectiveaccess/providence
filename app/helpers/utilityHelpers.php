@@ -838,7 +838,7 @@ function caFileIsIncludable($ps_file) {
 		$files_to_delete = caGetDirectoryContentsAsList($user_dir, true, false, false, true, ['notModifiedSince' => time() - $timeout]);
 		$count = 0;
 		foreach($files_to_delete as $file_to_delete) {
-			if(@unlink($file_to_delete)) { $count++; }
+			if(is_writeable($file_to_delete) && @unlink($file_to_delete)) { $count++; }
 		}
 		
 		// Cleanup orphan metadata files
@@ -2898,7 +2898,7 @@ function caFileIsIncludable($ps_file) {
 			return ['width' => (int)$pn_target_width, 'height' => (int)$pn_target_height];
 		}
 		
-		if ($$pn_original_width > $pn_original_height) {
+		if ($pn_original_width > $pn_original_height) {
 			$vn_scale_factor = $pn_target_width/$pn_original_width;
 			$pn_target_height = $vn_scale_factor * $pn_original_height;
 		} else {
