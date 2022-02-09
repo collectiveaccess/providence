@@ -1175,6 +1175,7 @@
 		 * @param array $pa_options Options include:
 		 *	   field = label field to use. If omitted the label display field is used. [Default is null]
 		 *     forceToLowercase = force keys in returned array to lowercase. [Default is false] 
+		 *     restrictToTypes = an optional array of numeric type ids or alphanumeric type identifiers to restrict the returned labels to. The types are list items in a list specified in app.conf (or, if not defined there, by hardcoded constants in the model)		
 		 *	   checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for table that have an "access" field.
 		 *	   returnAll = return all matching values. [Default is false; only the first matched value is returned]
 		 * @return array Array with keys set to labels and values set to row_ids. Returns null on error.
@@ -1189,6 +1190,10 @@
 		
 			$table_name = $table_name ? $table_name : get_called_class();
 			if (!($t_instance = Datamodel::getInstanceByTableName($table_name, true))) { return null; }
+			
+			if ($restrict_to_types = caGetOption('restrictToTypes', $options, null)) {
+				$restrict_to_types = caMakeTypeIDList($table_name, $restrict_to_types);
+			}
 		
 			$labels = array_map(function($v) { return (string)$v; }, $labels);
 		
@@ -1212,13 +1217,23 @@
 				$access_sql = " AND t.access IN (?)";
 				$params[] = $access_values;
 			}
+			
+			$type_sql = '';
+			if(
+				method_exists($t_instance, 'getTypeFieldName') && 
+				($type_fld_name = $t_instance->getTypeFieldName()) && 
+				is_array($restrict_to_types) && sizeof($restrict_to_types)
+			) {
+				$type_sql = " AND t.{$type_fld_name}} IN (?)";
+				$params[] = $restrict_to_types;
+			}
 		
 			$qr_res = $t_instance->getDb()->query($z="
 				SELECT t.{$pk}, l.{$label_fld}
 				FROM {$table_name} t
 				INNER JOIN {$label_table} AS l ON l.{$pk} = t.{$pk}
 				WHERE
-					l.{$label_fld} IN (?) {$deleted_sql} {$access_sql}
+					l.{$label_fld} IN (?) {$deleted_sql} {$access_sql} {$type_sql}
 			", $params);
 	
 		

@@ -1288,6 +1288,7 @@ class BaseModel extends BaseObject {
 	 * @param array $pa_options Options include:
 	 *     forceToLowercase = force keys in returned array to lowercase. [Default is false] 
 	 *	   checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for table that have an "access" field.
+	 *     restrictToTypes = an optional array of numeric type ids or alphanumeric type identifiers to restrict the returned labels to. The types are list items in a list specified in app.conf (or, if not defined there, by hardcoded constants in the model)
 	 *	   returnAll = return all matching values. [Default is false; only the first matched value is returned]
 	 *
 	 * @return array Array with keys set to idnos and values set to row_ids. Returns null on error.
@@ -1301,7 +1302,11 @@ class BaseModel extends BaseObject {
 		$force_to_lowercase = caGetOption('forceToLowercase', $options, false);
 		
 		$table_name = $table_name ? $table_name : get_called_class();
-
+		
+		if ($restrict_to_types = caGetOption('restrictToTypes', $options, null)) {
+			$restrict_to_types = caMakeTypeIDList($table_name, $restrict_to_types);
+		}
+		
 		if (!($t_instance = Datamodel::getInstanceByTableName($table_name, true))) { return null; }
 		
 	    $idnos = array_map(function($v) { return (string)$v; }, $idnos);
@@ -1321,12 +1326,22 @@ class BaseModel extends BaseObject {
 		    $access_sql = " AND access IN (?)";
 		    $params[] = $access_values;
 		}
+		
+		$type_sql = '';
+		if(
+			method_exists($t_instance, 'getTypeFieldName') && 
+			($type_fld_name = $t_instance->getTypeFieldName()) && 
+			is_array($restrict_to_types) && sizeof($restrict_to_types)
+		) {
+			$type_sql = " AND {$type_fld_name}} IN (?)";
+			$params[] = $restrict_to_types;
+		}
 	    
 	    $qr_res = $t_instance->getDb()->query("
 			SELECT {$pk}, {$idno_fld}
 			FROM {$table_name}
 			WHERE
-				{$idno_fld} IN (?) {$deleted_sql} {$access_sql}
+				{$idno_fld} IN (?) {$deleted_sql} {$access_sql} {$type_sql}
 		", $params);
 		
 		$ret = [];
