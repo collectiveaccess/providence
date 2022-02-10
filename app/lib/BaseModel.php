@@ -1333,7 +1333,7 @@ class BaseModel extends BaseObject {
 			($type_fld_name = $t_instance->getTypeFieldName()) && 
 			is_array($restrict_to_types) && sizeof($restrict_to_types)
 		) {
-			$type_sql = " AND {$type_fld_name}} IN (?)";
+			$type_sql = " AND {$type_fld_name} IN (?)";
 			$params[] = $restrict_to_types;
 		}
 	    

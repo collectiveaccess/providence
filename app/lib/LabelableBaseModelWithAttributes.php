@@ -1224,7 +1224,7 @@
 				($type_fld_name = $t_instance->getTypeFieldName()) && 
 				is_array($restrict_to_types) && sizeof($restrict_to_types)
 			) {
-				$type_sql = " AND t.{$type_fld_name}} IN (?)";
+				$type_sql = " AND t.{$type_fld_name} IN (?)";
 				$params[] = $restrict_to_types;
 			}
 		
