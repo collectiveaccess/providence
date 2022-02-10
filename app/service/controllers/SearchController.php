@@ -318,10 +318,11 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 						switch($bundle_bits[0]) {
 							case 'idno':
 								$ids = $table::getIDsForIdnos($values, ['restrictToTypes' => $args['restrictToTypes'], 'returnAll' => true]);
+							
 								foreach($values as $v) {
 									if(!array_key_exists($v, $ids)) { $ids[$v] = null; }
 								}
-								$value_map = array_map(function($v, $k) {return ['id' => $v, 'ids' => [$v], 'value' => $k]; }, $ids, array_keys($ids));
+								$value_map = array_map(function($v, $k) {return ['id' => $v[0], 'ids' => $v, 'value' => $k]; }, $ids, array_keys($ids));
 								break;
 							case 'preferred_labels':
 								$ids = $table::getIDsForlabels($values, ['restrictToTypes' => $args['restrictToTypes'], 'returnAll' => true, 'field' => $bundle_bits[1] ?? null]);
