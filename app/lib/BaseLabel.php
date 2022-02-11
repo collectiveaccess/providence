@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -211,6 +211,17 @@
                 }
 			}
 			return parent::htmlFormElement($ps_field, $ps_format, $pa_options);
+		}
+		# ------------------------------------------------------
+		/**
+		 * Convert label components into canonical format. Overridden by label classes.
+		 *
+		 * @param array $label_values
+		 *
+		 * @return array
+		 */
+		public static function normalizeLabel(array $label_values) : array {
+			return $label_values;
 		}
 		# -------------------------------------------------------
 	}

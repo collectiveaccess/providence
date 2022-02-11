@@ -57,27 +57,27 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 	}
 	# --------------------------------------------------------------------------------------------
 	public function hookInsertItem(&$pa_params) {
-		if($this->opo_plugin_config->get('enabled')) {
+		if($this->opo_plugin_config->get('enabled') && !caGetOption('for_duplication', $pa_params, false)) {
 			$this->prepopulateFields($pa_params['instance'], ['hook' => 'save']);
 		}
 		return true;
 	}
 	public function hookUpdateItem(&$pa_params) {
-		if($this->opo_plugin_config->get('enabled')) {
+		if($this->opo_plugin_config->get('enabled') && !caGetOption('for_duplication', $pa_params, false)) {
 			$this->prepopulateFields($pa_params['instance'], ['hook' => 'save']);
 		}
 		return true;
 	}
 	# --------------------------------------------------------------------------------------------
 	public function hookSaveItem(&$pa_params) {
-		if($this->opo_plugin_config->get('enabled')) {
+		if($this->opo_plugin_config->get('enabled') && !caGetOption('for_duplication', $pa_params, false)) {
 			$this->prepopulateFields($pa_params['instance'], ['hook' => 'save']);
 		}
 		return true;
 	}
 	# --------------------------------------------------------------------------------------------
 	public function hookEditItem(&$pa_params) {
-		if ($this->opo_plugin_config->get('enabled')) {
+		if ($this->opo_plugin_config->get('enabled') && !caGetOption('for_duplication', $pa_params, false)) {
 			$this->prepopulateFields($pa_params['instance'], ['hook' => 'edit']);
 		}
 		return true;

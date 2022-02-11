@@ -535,8 +535,8 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$vs_intro_filepath = $this->get("intro_filepath");
 		$vs_outro_filepath = $this->get("outro_filepath");
 
-		if (($vn_output_bitrate = $this->get("bitrate"))< 32) {
-			$vn_output_bitrate = 64;
+		if (($vn_output_bitrate = $this->get("bitrate")) < 32000) {
+			$vn_output_bitrate = 320000;
 		}
 		if (($vn_sample_frequency = $this->get("sample_frequency")) < 4096) {
 			$vn_sample_frequency = 44100;

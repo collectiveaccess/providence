@@ -290,4 +290,13 @@ class ExcelDataReader extends BaseDataReader {
 		return $o_value;
 	}
 	# -------------------------------------------------------
+	/**
+	 * Return file extensions
+	 * 
+	 * @return array
+	 */
+	public function getFileExtensions() : array {
+		return array_merge(parent::getFileExtensions(), ['xls', 'xlsx', 'odt']);
+	}
+	# -------------------------------------------------------
 }

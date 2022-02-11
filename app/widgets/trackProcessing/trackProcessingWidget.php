@@ -173,6 +173,33 @@
 			);
 		}
 		# -------------------------------------------------------
+
+		/**
+		 * Returns a string to render status information in html.
+		 *
+		 * @param $va_status
+		 * @param $view
+		 */
+		public static function getStatusForDisplay($va_status, $view){
+			$result = "";
+			foreach($va_status as $vs_code => $va_info) {
+				switch($vs_code) {
+					case 'table':
+						$va_tmp = explode(':', $va_status['table']['value']);
+						if ($vs_link = caEditorLink($view->request, $va_info['value'], 'link', $va_tmp[0], $va_tmp[2], array(), array(), array('verifyLink' => true))) {
+							$result .= "<strong>".$va_info['label']."</strong>: ".$vs_link."<br/>\n";
+						} else {
+							$result .=  "<strong>".$va_info['label']."</strong>: ".$va_info['value']." [<em>"._t('DELETED')."</em>]<br/>\n";
+						}
+						break;
+					default:
+						$result .= "<strong>".$va_info['label']."</strong>: ".$va_info['value']."<br/>\n";
+						break;
+				}
+			}
+
+			return $result;
+		}
 	}
 	
 	BaseWidget::$s_widget_settings['trackProcessingWidget'] = array(

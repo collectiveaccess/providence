@@ -204,8 +204,9 @@ class RequestHTTP extends Request {
 		$this->ops_full_path = preg_replace("![/]+!", "/", $this->ops_full_path);
 		$vs_path_info = str_replace($this->ops_script_name, "", str_replace("?".$_SERVER['QUERY_STRING'], "", $this->ops_full_path));
 		
-		$this->ops_path_info = preg_replace("![/]+!", "/", $vs_path_info ? $vs_path_info : (isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : ''));
-		if (__CA_URL_ROOT__) { $this->ops_path_info = preg_replace("!^".__CA_URL_ROOT__."/!", "", $this->ops_path_info); }
+		$this->ops_path_info = preg_replace("![/]+!", "/", $vs_path_info ? "/{$vs_path_info}" : (isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : ''));
+		
+		if (__CA_URL_ROOT__) { $this->ops_path_info = preg_replace("!^".__CA_URL_ROOT__."!", "", $this->ops_path_info); }
 	}
 	# -------------------------------------------------------
 	/** 
@@ -572,7 +573,7 @@ class RequestHTTP extends Request {
 		    }
 		}
 		
-		if ($vm_val == "") { return ""; }
+		if ($vm_val == "") { return ($pn_type == pArray) ? [] : ''; }
 		
 		switch($pn_type) {
 			# -----------------------------------------
@@ -605,6 +606,8 @@ class RequestHTTP extends Request {
 			case pArray:
 				if (is_array($vm_val)) {
 					return $vm_val;
+				} elseif(is_string($vm_val) || is_numeric($vm_val)) {
+					return [$vm_val];
 				}
 				break;
 			# -----------------------------------------
@@ -968,6 +971,7 @@ class RequestHTTP extends Request {
 	 * @access public
 	 */
 	public function isServiceAuthRequest() {
+		if(defined('__CA_IS_SERVICE_REQUEST__') && __CA_IS_SERVICE_REQUEST__) { return true; }
 		if($this->getParameter("method",pString)=="auth") {
 			return true;
 		}

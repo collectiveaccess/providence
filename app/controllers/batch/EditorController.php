@@ -242,7 +242,7 @@ class EditorController extends ActionController {
 			throw new ApplicationException(_t('Cannot batch edit %1', $rs->tableName()));
 		}
 		
-		if(!($t_subject = Datamodel::getInstance($rs->tableName(), true))) {
+		if(!($t_subject = Datamodel::getInstance($rs->tableName(), false))) {
 			throw new ApplicationException(_t('Invalid table %1', $rs->tableName()));
 		}
 		

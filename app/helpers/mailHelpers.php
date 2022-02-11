@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020  Whirl-i-Gig
+ * Copyright 2009-2022  Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -250,12 +250,21 @@
  	 * @return string True if send, false if error
 	 */
 	function caSendMessageUsingView($po_request, $pa_to, $pa_from, $ps_subject, $ps_view, $pa_values, $pa_cc=null, $pa_bcc=null, $pa_options=null) {
-		$vs_view_path = (is_object($po_request)) ? $po_request->getViewsDirectoryPath() : __CA_BASE_DIR__.'/themes/default/views';
+		$view_paths = (is_object($po_request)) ? [$po_request->getViewsDirectoryPath().'/mailTemplates'] : array_unique([__CA_BASE_DIR__.'/themes/'.__CA_THEME__.'/views/mailTemplates', __CA_BASE_DIR__.'/themes/default/views/mailTemplates']);
 		if(!is_object($po_request)) { $po_request = null; }
 		
-		$o_view = new View($po_request, $vs_view_path."/mailTemplates", 'UTF8', array('includeDefaultThemePath' => false));
-		foreach($pa_values as $vs_key => $vm_val) {
-			$o_view->setVar($vs_key, $vm_val);
+		$o_view = new View($po_request, $view_paths, 'UTF8', array('includeDefaultThemePath' => false));
+		
+		$tag_list = $o_view->getTagList($ps_view);		// get list of tags in view
+
+		foreach($tag_list as $tag) {
+			if ((strpos($tag, "^") !== false) || (strpos($tag, "<") !== false)) {
+				$o_view->setVar($tag, $z=caProcessTemplate($tag, $pa_values, []) );
+			} elseif (array_key_exists($tag, $pa_values)) {
+				$o_view->setVar($tag, $pa_values[$tag]);
+			} else {
+				$o_view->setVar($tag, "?{$tag}");
+			}
 		}
 		return caSendmail($pa_to, $pa_from, $ps_subject, null, $o_view->render($ps_view), $pa_cc, $pa_bcc, caGetOption(['attachment', 'attachments'], $pa_options, null), $pa_options);
 	}

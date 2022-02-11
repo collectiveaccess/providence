@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -66,11 +66,11 @@ BaseModel::$s_ca_models_definitions['ca_editor_ui_screens_x_roles'] = array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
-				'DEFAULT' => 0,
+				'DEFAULT' => __CA_BUNDLE_ACCESS_EDIT__,
 				'BOUNDS_CHOICE_LIST' => array(
-					_t('has no access set') => __CA_BUNDLE_ACCESS_NONE__,
+					_t('can edit') => __CA_BUNDLE_ACCESS_EDIT__,
 					_t('can read') => __CA_BUNDLE_ACCESS_READONLY__,
-					_t('can edit') => __CA_BUNDLE_ACCESS_EDIT__
+					_t('no access') => __CA_BUNDLE_ACCESS_NONE__
 				),
 				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates role&apos;s level of access to the editor UI screen.')
 		)

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2019 Whirl-i-Gig
+ * Copyright 2004-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -55,7 +55,7 @@ class TimecodeParser {
 	/**
 	 *
 	 */
-	private $opn_parsed_value_in_seconds;
+	private $opn_parsed_value_in_seconds = null;
 	
 	/**
 	 *
@@ -242,7 +242,7 @@ class TimecodeParser {
 			case 'COLON_DELIMITED':
 			case 'HOURS_MINUTES_SECONDS':
 			case 'HOURS_MINUTES':
-				$vn_time_in_seconds = $this->opn_parsed_value_in_seconds;
+				$vn_time_in_seconds = (float)$this->opn_parsed_value_in_seconds;
 				
 				if (!$vn_time_in_seconds && $pb_blank_on_zero) {
 					return "";

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -302,6 +302,21 @@ class ca_users extends BaseModel {
 	static $s_user_source_with_access_cache = [];
 
 	/**
+	 * Used by ca_users::getUserID() to cache user_id return values
+	 *
+	 * @var array
+	 */
+	static $s_user_id_cache = [];
+
+	/**
+	 * Used by ca_users::getUserName() to cache user_name return values
+	 *
+	 * @var array
+	 */
+	static $s_user_name_cache = [];
+	static $s_user_info_cache = [];
+
+	/**
 	 * List of tables that can have bundle- or type-level access control
 	 */
 	static $s_bundlable_tables = array(
@@ -327,6 +342,26 @@ class ca_users extends BaseModel {
 		
 		$this->opo_auth_config = Configuration::load(__CA_CONF_DIR__.'/authentication.conf');
 		$this->opo_log = new Eventlog();
+	}
+	# ------------------------------------------------------
+	/**
+	 * Clear all internal caches
+	 *
+	 * @return void
+	 */ 
+	public static function clearCaches() {
+		self::$s_user_role_cache = [];
+		self::$s_user_group_cache = [];
+		self::$s_group_role_cache = [];
+		self::$s_user_type_access_cache = [];
+		self::$s_user_source_access_cache = [];
+		self::$s_user_bundle_access_cache = [];
+		self::$s_user_action_access_cache = [];
+		self::$s_user_type_with_access_cache = [];
+		self::$s_user_source_with_access_cache = [];
+		self::$s_user_id_cache = [];
+		self::$s_user_name_cache = [];
+		self::$s_user_info_cache = [];
 	}
 	# ----------------------------------------
 	/**
@@ -2153,8 +2188,9 @@ class ca_users extends BaseModel {
 						$vs_output .= "var caStatesByCountryList = ".json_encode(caGetStateList()).";\n";
 						
 						$vs_output .= "
-							jQuery('#pref_{$ps_pref}').click({countryID: 'pref_{$ps_pref}', stateProvID: 'pref_".$va_pref_info['stateProvPref']."', value: '".addslashes($this->getPreference($va_pref_info['stateProvPref']))."', statesByCountryList: caStatesByCountryList}, caUI.utils.updateStateProvinceForCountry);
 							jQuery(document).ready(function() {
+								jQuery('#pref_{$ps_pref}').on('change', null, {countryID: 'pref_{$ps_pref}', stateProvID: 'pref_".$va_pref_info['stateProvPref']."', value: '".addslashes($this->getPreference($va_pref_info['stateProvPref']))."', statesByCountryList: caStatesByCountryList}, caUI.utils.updateStateProvinceForCountry);
+							
 								caUI.utils.updateStateProvinceForCountry({data: {countryID: 'pref_{$ps_pref}', stateProvID: 'pref_".$va_pref_info['stateProvPref']."', value: '".addslashes($this->getPreference($va_pref_info['stateProvPref']))."', statesByCountryList: caStatesByCountryList}});
 							});
 						";
@@ -2269,7 +2305,7 @@ class ca_users extends BaseModel {
 		
 		$o_db = $this->getDb();
 		$qr_uis = $o_db->query("
-			SELECT ceui.ui_id, ceuil.name, ceuil.locale_id, ceuitr.type_id
+			SELECT ceui.ui_id, ceuil.name, ceuil.locale_id, ceuitr.type_id, ceuitr.include_subtypes
 			FROM ca_editor_uis ceui
 			INNER JOIN ca_editor_ui_labels AS ceuil ON ceui.ui_id = ceuil.ui_id
 			LEFT JOIN ca_editor_ui_type_restrictions AS ceuitr ON ceui.ui_id = ceuitr.ui_id 
@@ -2292,10 +2328,26 @@ class ca_users extends BaseModel {
 		
 		$va_ui_list_by_type = array();
 		while($qr_uis->nextRow()) {
-			if (!($vn_type_id = $qr_uis->get('type_id'))) { $vn_type_id = '__all__'; }
-			$va_ui_list_by_type[$vn_type_id][$qr_uis->get('ui_id')][$qr_uis->get('locale_id')] = $qr_uis->get('name');
+			$ui_id = $qr_uis->get('ui_id');
+			$locale_id = $qr_uis->get('locale_id');
+			$name = $qr_uis->get('name');
+			
+			$type_ids = [];
+			if (!($vn_type_id = $qr_uis->get('type_id'))) { 
+				$type_ids[] = '__all__'; 
+			} elseif($qr_uis->get('include_subtypes') > 0) {
+				$type_ids = caMakeTypeIDList($pn_table_num, $vn_type_id);
+			} else {
+				$type_ids = caMakeTypeIDList($pn_table_num, $vn_type_id, ['dontIncludeSubtypesInTypeRestriction' => true]);
+			}
+			if(!is_array($type_ids)) {
+				$type_ids = ['__all__'];
+			}
+			
+			foreach($type_ids as $t) {
+				$va_ui_list_by_type[$t][$ui_id][$locale_id] = $name;
+			}
 		}
-		
 		return $va_ui_list_by_type;
 	}
 	# ----------------------------------------
@@ -3336,45 +3388,64 @@ class ca_users extends BaseModel {
 	/**
 	 * Checks if user is allowed to perform the specified action (possible actions are defined in app/conf/user_actions.conf)
 	 * Returns true if user can do action, false otherwise.
+	 *
+	 * @param string $action
+	 * @param array $options Options include:
+	 *		throwException = Throw application exception if user does not have specified action. [Default is false]
+	 *		exceptionMessage = Message returned in exception on error. [Default is 'Access Denied']
+	 * @return bool
 	 */
-	public function canDoAction($ps_action) {
-		$vs_cache_key = $ps_action."/".$this->getPrimaryKey();
-		if (isset(ca_users::$s_user_action_access_cache[$vs_cache_key])) { return ca_users::$s_user_action_access_cache[$vs_cache_key]; }
+	public function canDoAction(string $action, array $options=null) : bool {
+		$throw = caGetOption('throwException', $options, false); 
+		$cache_key = $action."/".$this->getPrimaryKey();
+		if (isset(ca_users::$s_user_action_access_cache[$cache_key])) { 
+			if ($throw && !ca_users::$s_user_action_access_cache[$cache_key]) {
+				throw new UserActionException(caGetOption('exceptionMessage', $options, _t('Access denied')));
+			}
+			return ca_users::$s_user_action_access_cache[$cache_key]; 
+		}
 
-		if(!$this->getPrimaryKey()) { return ca_users::$s_user_action_access_cache[$vs_cache_key] = false; } 						// "empty" ca_users object -> no groups or roles associated -> can't do action
-		if(!ca_user_roles::isValidAction($ps_action)) { 
+		if(!$this->getPrimaryKey()) { return ca_users::$s_user_action_access_cache[$cache_key] = false; } 						// "empty" ca_users object -> no groups or roles associated -> can't do action
+		if(!ca_user_roles::isValidAction($action)) { 
 		    // check for alternatives...
-		    if (preg_match("!^can_(create|edit|delete)_ca_([A-Za-z0-9_]+)$!", $ps_action, $m)) {
+		    if (preg_match("!^can_(create|edit|delete)_ca_([A-Za-z0-9_]+)$!", $action, $m)) {
 		        if (ca_user_roles::isValidAction("can_configure_".$m[2])) {
-		            return self::canDoAction("can_configure_".$m[2]);
+		        	$r = self::canDoAction("can_configure_".$m[2]);
+		        	if ($throw && !$r) {
+						throw new UserActionException(caGetOption('exceptionMessage', $options, _t('Access denied')));
+					}
+		            return $r;
 		        }
 		    }
 		    
 			// return false if action is not valid	
-		    return ca_users::$s_user_action_access_cache[$vs_cache_key] = false; 
+			if ($throw) {
+				throw new UserActionException(caGetOption('exceptionMessage', $options, _t('Access denied')));
+			}
+		    return ca_users::$s_user_action_access_cache[$cache_key] = false; 
 		}
 		
 		// is user administrator?
 		if ($this->getPrimaryKey() == $this->_CONFIG->get('administrator_user_id')) { return ca_users::$s_user_action_access_cache[$vs_cache_key] = true; }	// access restrictions don't apply to user with user_id = admin id
 	
 		// get user roles
-		$va_roles = $this->getUserRoles();
-		foreach($this->getGroupRoles() as $vn_role_id => $va_role_info) {
-			$va_roles[$vn_role_id] = $va_role_info;
+		$roles = $this->getUserRoles();
+		foreach($this->getGroupRoles() as $role_id => $role_info) {
+			$roles[$role_id] = $role_info;
 		}
 		
-		$va_actions = ca_user_roles::getActionsForRoleIDs(array_keys($va_roles));
+		$va_actions = ca_user_roles::getActionsForRoleIDs(array_keys($roles));
 		if(in_array('is_administrator', $va_actions)) { return ca_users::$s_user_action_access_cache[$vs_cache_key] = true; }		// access restrictions don't apply to users with is_administrator role
 
-		if(in_array($ps_action, $va_actions)) {
-			return ca_users::$s_user_action_access_cache[$vs_cache_key] = in_array($ps_action, $va_actions);
+		if(in_array($action, $va_actions)) {
+			return ca_users::$s_user_action_access_cache[$vs_cache_key] = in_array($action, $va_actions);
 		}
 		// is default set in user_action.conf?
 		$user_actions = Configuration::load(__CA_CONF_DIR__.'/user_actions.conf');
 		if($user_actions && is_array($actions = $user_actions->getAssoc('user_actions'))) {
 			foreach($actions as $categories) {
-				if(isset($categories['actions'][$ps_action]) && isset($categories['actions'][$ps_action]['default'])) {
-					return ca_users::$s_user_action_access_cache[$vs_cache_key] = (bool)$categories['actions'][$ps_action]['default'];
+				if(isset($categories['actions'][$action]) && isset($categories['actions'][$action]['default'])) {
+					return ca_users::$s_user_action_access_cache[$vs_cache_key] = (bool)$categories['actions'][$action]['default'];
 				}
 			}
 		}
@@ -3711,3 +3782,8 @@ class ca_users extends BaseModel {
 	}
 	# ----------------------------------------
 }
+
+/** 
+ * Exception thrown when user lacks required action-level privs
+ */
+class UserActionException extends Exception {}

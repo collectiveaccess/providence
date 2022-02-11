@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * bundles/ca_objects_history.php : 
+ * bundles/history_tracking_chronology.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2020 Whirl-i-Gig
+ * Copyright 2014-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -88,22 +88,15 @@
             }
 			if(!$read_only && !caGetOption('hide_add_to_loan_controls', $settings, false) && ($subject_table::historyTrackingPolicyUses($policy, 'ca_loans'))) {
 			    $show_loan_controls = true;
-?>
+?>			    
 				<div style='float: left;' class='button caAddLoanButton'><a href="#" id="<?= $vs_id_prefix; ?>AddLoan"><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= caGetOption('loan_control_label', $settings, _t('Add to loan'), ['defaultOnEmptyString' => true]); ?></a></div>
 <?php
 			}
 			if(!$read_only && !caGetOption('hide_add_to_movement_controls', $settings, false) && ($subject_table::historyTrackingPolicyUses($policy, 'ca_movements'))) {
                 $show_movement_controls = true;
-                
-                if(!caGetOption('always_create_new_movement', $settings, false)) {
 ?>
 				<div style='float: left;' class='button caAddMovementButton'><a href="#" id="<?= $vs_id_prefix; ?>AddMovement"><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= caGetOption('movement_control_label', $settings, _t('Add to movement'), ['defaultOnEmptyString' => true]); ?></a></div>
 <?php
-				} else {
-?>
-					<div style='float: left;' class='button caAddMovementButton'><a href="#" id="<?= $vs_id_prefix; ?>AddMovement" onclick='caRelationBundle<?= $vs_id_prefix; ?>_ca_movements.triggerQuickAdd("", "new_0", { usePolicy: <?= json_encode($policy); ?> }); return false;'><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= caGetOption('movement_control_label', $settings, _t('Add to movement')); ?></a></div>					
-<?php
-				}
 			}
 			if(!$read_only && !caGetOption('hide_update_location_controls', $settings, false) && ($subject_table::historyTrackingPolicyUses($policy, 'ca_storage_locations'))) {
                 $show_location_controls = true;
@@ -124,8 +117,8 @@
 				foreach($occ_types as $vn_type_id => $va_type_info) {
 					if (!$subject_table::historyTrackingPolicyUses($policy, 'ca_occurrences', $va_type_info['idno'])) { continue; }
 ?>
-				<div style='float: left;'  class='button caAddOccurrenceButton <?= $vs_id_prefix; ?>caAddOccurrenceButton<?= $vn_type_id; ?>'><a href="#" id="<?= $vs_id_prefix; ?>AddOcc<?= $vn_type_id; ?>"><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= _t(caGetOption('occurrence_control_label', $settings, _t('Add to %1'), ['defaultOnEmptyString' => true]), $va_type_info['name_singular']); ?></a></div>
-<?php		
+					<div style='float: left;' class='button caAddOccurrenceButton'><a href="#" id="<?= $vs_id_prefix; ?>AddOcc<?= $vn_type_id; ?>"><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= caGetOption('occurrence_control_label', $settings, _t('Add to Occurrence'), ['defaultOnEmptyString' => true]); ?></a></div>
+<?php					
 				}
 			}
 			
@@ -793,6 +786,13 @@ if($show_entity_controls) {
 				}
 			});
 <?php	
+			if(caGetOption('always_create_new_loan', $settings, false)) {
+?>
+				jQuery('#<?= $vs_id_prefix; ?>AddLoan<?= $vn_type_id; ?>').on('click', function(e) { 
+					caRelationBundle<?= $vs_id_prefix; ?>_ca_loans_<?= $vn_type_id; ?>.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }); 
+				});
+<?php
+			}
     }
 	if($show_movement_controls) {
 ?>			
@@ -833,6 +833,13 @@ if($show_entity_controls) {
 				}
 			});
 <?php	
+			if(caGetOption('always_create_new_movement', $settings, false)) {
+?>
+				jQuery('#<?= $vs_id_prefix; ?>AddMovement<?= $vn_type_id; ?>').on('click', function(e) { 
+					caRelationBundle<?= $vs_id_prefix; ?>_ca_movements_<?= $vn_type_id; ?>.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }); 
+				});
+<?php
+			}
     }
 	if($show_object_controls) {
 ?>
@@ -913,7 +920,14 @@ if($show_entity_controls) {
 					jQuery("#<?= $vs_id_prefix; ?>").find(".caHistoryTrackingButtonBar").slideDown(250);
 				}
 			});
-	<?php
+<?php
+			if(caGetOption('always_create_new_occurrence', $settings, false)) {
+?>
+				jQuery('#<?= $vs_id_prefix; ?>AddOcc<?= $vn_type_id; ?>').on('click', function(e) { 
+					caRelationBundle<?= $vs_id_prefix; ?>_ca_occurrences_<?= $vn_type_id; ?>.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }); 
+				});
+<?php
+			}
 		}
 	}
 	if($show_collection_controls) {

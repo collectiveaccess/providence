@@ -234,7 +234,7 @@ function run_script()
 # -----------------------------------------------------------------
 function log_event() 
 {
-	local date=`date --iso-8601=seconds`
+	local date=`date -u +"%Y-%m-%dT%H:%M:%SZ"`
 	echo "[$date] $2" >> $1
 	
 	return 0

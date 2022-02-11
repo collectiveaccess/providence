@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/templates/footer.php : standard PDF report footer
+ * app/printTemplates/summary/footer.php : standard PDF report footer
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -32,46 +32,29 @@
  * ----------------------------------------------------------------------
  */
  	
- 	$t_item = $this->getVar('t_subject');
+$t_item = $this->getVar('t_subject');
+
+if($this->request->config->get('summary_header_enabled')) {
+	$footer = '<table class="footerText" style="width: 100%;"><tr>';
+	if($this->request->config->get('summary_show_identifier')) {
+		$footer .= "<td class='footerText'>".$t_item->getLabelForDisplay()." (".$t_item->get($t_item->getProperty('ID_NUMBERING_ID_FIELD')).")</td>";
+	}
+
+	if($this->request->config->get('summary_show_timestamp')) {
+		$footer .= "<td class='footerText'>".caGetLocalizedDate(null, array('dateFormat' => 'delimited'))."</td>";
+	}
+	$footer .= "</tr></table>";
 	
-	if($this->request->config->get('summary_header_enabled')) {
-		$vs_footer = '<table class="footerText" style="width: 100%;"><tr>';
-		if($this->request->config->get('summary_show_identifier')) {
-			$vs_footer .= "<td class='footerText'  style='font-family: \"Sans Light\"; font-size: 12px; text-align: center;'>".$t_item->getLabelForDisplay()." (".$t_item->get($t_item->getProperty('ID_NUMBERING_ID_FIELD')).")</td>";
-		}
 	
-		if($this->request->config->get('summary_show_timestamp')) {
-			$vs_footer .= "<td class='footerText'  style='font-family: \"Sans Light\"; font-size: 12px; text-align: center;'>".caGetLocalizedDate(null, array('dateFormat' => 'delimited'))."</td>";
-		}
-		$vs_footer .= "</tr></table>";
-		
-		
-		switch($this->getVar('PDFRenderer')) {
-			case 'domPDF':
+	switch($this->getVar('PDFRenderer')) {
+		case 'domPDF':
 ?>
 <div id='footer'>
-<?php
-	
-	print $vs_footer;
-?>
+	<?= $footer; ?>
 </div>
 <?php
 				break;
-			
-			case 'PhantomJS':
-?>
-			<script type="text/javascript">
-				// For PhantomJS
-				PhantomJSPrinting['footer'] = {
-					height: "50mm",
-					contents: function(pageNum, numPages) { 
-						return '<div style="position: relative;width: 100%; height: 100px; text-align: center;"><?php print addslashes($vs_footer); ?></div>';	
-					}
-				};
-			</script>
-<?php
-				break;
-			case 'wkhtmltopdf':
+		case 'wkhtmltopdf':
 ?>
 <!--BEGIN FOOTER-->
 <!DOCTYPE html>
@@ -81,14 +64,12 @@
 	<link type="text/css" href="<?php print $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
 </head>
 <body>
-<?php
-	print $vs_footer;
-?>
+<?= $footer; ?>
 </body>
 </html>
 <!--END FOOTER-->
 
 <?php
-			break;
-		}
+		break;
 	}
+}

@@ -218,7 +218,8 @@ class AuthController extends ActionController {
 		$host = $_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['HTTP_HOST'];
 		$redirect_url = $this->request->getParameter('redirect', pString, null, ['forcePurify' => true]) ?: caNavUrl($this->request, null, null, null);
 		
-		if(!preg_match('!^'.preg_quote($host, '!').'!', $redirect_url)) {
+		$redirect_url = preg_replace("![^A-Za-z0-9/:\?\._\*\+\-]+.*!", '', $redirect_url);
+		if(!preg_match('!^'.preg_quote("{$host}/", '!').'!', $redirect_url)) {
 			$redirect_url = null;
 		}
 		return $redirect_url;

@@ -59,7 +59,7 @@
 			<div class='formItem'>
 <?php	
 						if(sizeof($va_errors)) { 
-							print "<div class='contentError'><img src='{$vs_url_path}/graphics/warning.gif'/> "._t('Please enter a valid email address')."</div>\n"; 
+							print "<div class='contentError'> ".caNavIcon(__CA_NAV_ICON_ALERT__ , 1, ['class' => 'permissionErrorIcon'])._t('Please enter a valid email address')."</div>\n"; 
 						}
 ?>
 				<?php _p("Administrator's e-mail address"); ?>:<br/>

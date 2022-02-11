@@ -215,7 +215,7 @@ class ReplicationService {
 						$vn_code = curl_getinfo($o_curl, CURLINFO_HTTP_CODE);
 						if($vn_code != 200) {
 							if ($vn_retries == 0) {
-								ReplicationService::$s_logger->log(_t("Could not upload file [%1] to target [%2] after %4 retries. HTTP response code was %3.", $vs_local_path, $ps_push_media_to, $vn_code, $max_retries);
+								ReplicationService::$s_logger->log(_t("Could not upload file [%1] to target [%2] after %4 retries. HTTP response code was %3.", $vs_local_path, $ps_push_media_to, $vn_code, $max_retries));
 								if($abort_sync_on_failed_media_upload) {
 									throw new Exception(_t("Could not upload file [%1] to target [%2] after $4 retries. HTTP response code was %3.", $vs_local_path, $ps_push_media_to, $vn_code, $max_retries));
 								}

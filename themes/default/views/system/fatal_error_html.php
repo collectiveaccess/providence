@@ -45,7 +45,7 @@
 			<div id="stacktace">
 				<ol class="tracelist">
 <?php
-					foreach($pa_errcontext as $vn_i => $va_trace) {
+					foreach($errcontext as $vn_i => $va_trace) {
 						print "<li>".(($vn_i == 0) ? "In " : "At ").$va_trace['class'].$va_trace['type'].$va_trace['function']."(".join(', ', $pa_errcontext_args[$vn_i] ?? []).") in <a class='tracelistEntry' title='".$va_trace['file']."' ondblclick='var f=this.innerHTML;this.innerHTML=this.title;this.title=f;'>".pathinfo($va_trace['file'], PATHINFO_FILENAME)."</a> line ".$va_trace['line']."</li>\n";
 					}
 ?>

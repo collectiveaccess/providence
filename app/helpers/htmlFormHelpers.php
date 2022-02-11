@@ -393,13 +393,16 @@
 		$vn_scale_css_width_to = caGetOption('scaleCSSWidthTo', $pa_options, null);
 		$vn_scale_css_height_to = caGetOption('scaleCSSHeightTo', $pa_options, null);
 		
+		$width = caGetOption('width', $pa_options, $va_attributes['width']);
+		$height = caGetOption('height', $pa_options, $va_attributes['height']);
+		
 		if ($vn_scale_css_width_to || $vn_scale_css_height_to) {
 			if (!$vn_scale_css_width_to) { $vn_scale_css_width_to = $vn_scale_css_height_to; }
 			if (!$vn_scale_css_height_to) { $vn_scale_css_height_to = $vn_scale_css_width_to; }
 			
-			$va_scaled_dimensions = caFitImageDimensions($va_attributes['width'], $va_attributes['height'], $vn_scale_css_width_to, $vn_scale_css_height_to);
-			$va_attributes['width'] = $va_scaled_dimensions['width'].'px';
-			$va_attributes['height'] = $va_scaled_dimensions['height'].'px';
+			$va_scaled_dimensions = caFitImageDimensions($width, $height, $vn_scale_css_width_to, $vn_scale_css_height_to);
+			$width = $va_attributes['width'] = $va_scaled_dimensions['width'].'px';
+			$height = $va_attributes['height'] = $va_scaled_dimensions['height'].'px';
 		}
 		
 		$vs_attr_string = _caHTMLMakeAttributeString($va_attributes, $pa_options);
@@ -408,9 +411,6 @@
 			#
 			# Tilepic
 			#
-			
-			$vn_width = 						(int)$pa_options["width"];
-			$vn_height = 						(int)$pa_options["height"];
 			
 			$vn_tile_width = 					caGetOption('tile_width', $pa_options, 256, array('castTo'=>'int'));
 			$vn_tile_height = 					caGetOption('tile_height', $pa_options, 256, array('castTo'=>'int'));
@@ -469,8 +469,8 @@
 			), $va_viewer_opts_from_app_config);
 			
 			$va_opts['info'] = array(
-				'width' => $vn_width,
-				'height' => $vn_height,
+				'width' => $width,
+				'height' => $height,
 				// Set tile size using function options.
 				'tilesize'=> $vn_tile_width,
 				'levels' => $vn_layers
@@ -495,10 +495,10 @@ $vs_tag = "
 			# Standard image
 			#
 			
-			if (!isset($pa_options["width"])) $pa_options["width"] = 100;
-			if (!isset($pa_options["height"])) $pa_options["height"] = 100;
+			if (!isset($width)) $width = 100;
+			if (!isset($height)) $height = 100;
 					
-			if (($ps_url) && ($pa_options["width"] > 0) && ($pa_options["height"] > 0)) {
+			if (($ps_url) && ($width> 0) && ($height > 0)) {
 			
 				$vs_element = "<img {$vs_attr_string} />";
 			} else {

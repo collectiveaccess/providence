@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2008 Whirl-i-Gig
+ * Copyright 2007-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,48 +33,47 @@
  /**
   *
   */
- 
- 	define('__NOTIFICATION_TYPE_ERROR__', 0);
- 	define('__NOTIFICATION_TYPE_WARNING__', 1);
- 	define('__NOTIFICATION_TYPE_INFO__', 2);
- 
-	class NotificationManager {
-		# -------------------------------------------------------
-		private $opo_request;
-		# -------------------------------------------------------
-		public function __construct($po_request) {
-			$this->setRequest($po_request);
-		}
-		# -------------------------------------------------------
-		public function setRequest($po_request) {
-			$this->opo_request = $po_request;
-		}
-		# -------------------------------------------------------
-		public function addNotification($ps_message, $pn_type=0) {
-			if (!trim($ps_message)) { return false; }
-			
-			$va_tmp = $this->getNotifications(true);
-			array_push($va_tmp, array('message' => $ps_message, 'type' => $pn_type));
-			Session::setVar('_user_notifications', $va_tmp);
-			return true;
-		}
-		# -------------------------------------------------------
-		public function numNotifications() {
-			return sizeof($this->getNotifications(true));
-		}
-		# -------------------------------------------------------
-		public function &getNotifications($pb_dont_remove=false) {
-			$va_tmp = Session::getVar('_user_notifications');
-			if (!is_array($va_tmp)) { $va_tmp = array(); }
-			if (!$pb_dont_remove) {
-				$this->clearNotifications();
-			}
-			return $va_tmp;
-		}
-		# -------------------------------------------------------
-		public function clearNotifications() {
-			 Session::setVar('_user_notifications', array());
-		}
-		# -------------------------------------------------------
+
+define('__NOTIFICATION_TYPE_ERROR__', 0);
+define('__NOTIFICATION_TYPE_WARNING__', 1);
+define('__NOTIFICATION_TYPE_INFO__', 2);
+
+class NotificationManager {
+	# -------------------------------------------------------
+	private $request;
+	# -------------------------------------------------------
+	public function __construct($request) {
+		$this->setRequest($request);
 	}
-?>
+	# -------------------------------------------------------
+	public function setRequest($request) {
+		$this->request = $request;
+	}
+	# -------------------------------------------------------
+	public function addNotification(string $message, int $type=0) : bool {
+		if (!trim($message)) { return false; }
+		
+		$tmp = $this->getNotifications(true);
+		array_push($tmp, ['message' => $message, 'type' => $type]);
+		Session::setVar('_user_notifications', $tmp);
+		return true;
+	}
+	# -------------------------------------------------------
+	public function numNotifications() : int {
+		return sizeof($this->getNotifications(true));
+	}
+	# -------------------------------------------------------
+	public function &getNotifications(bool $dont_remove=false) : array {
+		$tmp = Session::getVar('_user_notifications');
+		if (!is_array($tmp)) { $tmp = []; }
+		if (!$dont_remove) {
+			$this->clearNotifications();
+		}
+		return $tmp;
+	}
+	# -------------------------------------------------------
+	public function clearNotifications() {
+		 Session::setVar('_user_notifications', []);
+	}
+	# -------------------------------------------------------
+}

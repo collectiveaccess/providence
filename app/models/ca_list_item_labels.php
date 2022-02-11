@@ -210,6 +210,7 @@ class ca_list_item_labels extends BaseLabel {
 		'name_singular', 'name_plural', 'description'
 	);
 	protected $LABEL_DISPLAY_FIELD = 'name_singular';
+	protected $LABEL_SECONDARY_DISPLAY_FIELDS = ['name_plural'];
 	
 	# --- Name of field used for sorting purposes
 	protected $LABEL_SORT_FIELD = 'name_sort';

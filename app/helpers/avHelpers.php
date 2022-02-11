@@ -67,6 +67,17 @@ function caMediaInfoGuessFileFormat($ps_path) {
  */
 function caGetID3GuessFileFormat($ps_path) {
 	if($va_getid3_info = caExtractMetadataWithGetID3($ps_path)) {
+	
+		if(
+			isset($va_getid3_info['quicktime']) && 
+			isset($va_getid3_info['quicktime']['ftyp']) && 
+			isset($va_getid3_info['quicktime']['ftyp']['signature']) && 
+			($va_getid3_info['quicktime']['ftyp']['signature'] === 'heic')
+		) {
+			return false;
+		}
+	
+	
 		if($va_getid3_info['mime_type']) {
 			return $va_getid3_info["mime_type"];
 		}

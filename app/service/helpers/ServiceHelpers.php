@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2021 Whirl-i-Gig
+ * Copyright 2021-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -32,6 +32,14 @@ use GraphQL\Type\Schema;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
+
+/**
+ * Ensure all checkAccess values are valid
+ */
+function filterAccessValues(?array $values) : ?array {
+	if(!$values) { return null; }
+	return array_unique(array_map(function($v) { return (int)$v; }, $values));
+}
 
 /**
  * Extract list of bundles to return from request args.
@@ -73,6 +81,8 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 	$limit = caGetOption('limit', $options, null);
 	
 	$ancestor_filters = caGetOption('filterByAncestors', $options, null);
+	
+	$check_access = caGetOption('checkAccess', $options, null);
 		
 	$data = [];
 	if(isset($bundles) && is_array($bundles) && sizeof($bundles)) {
@@ -96,14 +106,14 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 				
 				$id = $sresult->getPrimaryKey();
 				
-				$ancestor_ids = $rec->getHierarchyAncestors($id, ['idsOnly' => true]);
+				$ancestor_ids = $rec->getHierarchyAncestors($id, ['idsOnly' => true, 'checkAccess' => $check_access]);
 				if(is_array($ancestor_ids) && sizeof($ancestor_ids)) {
 					$qr_ancestors = caMakeSearchResult($table, $ancestor_ids);
 					while($qr_ancestors->nextHit()) {
 						$af = array_shift($ancestor_filter_list);	
 						if(is_array($af['criteria'])) {
 							foreach($af['criteria'] as $c) {
-								$cv = $qr_ancestors->get($c['name']);
+								$cv = $qr_ancestors->get($c['name'], ['checkAccess' => $check_access]);
 								if(!compare($c['operator'], $cv, $c['value'])) { continue(3); }
 							}
 						}
@@ -119,17 +129,35 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 				$pt = caParseTagOptions($f);
 				$f = $pt['tag'];
 				
+				$is_template = (strpos($f, '^') !== false);	 // is display template if it has at least one caret
+				
 				$p = \SearchResult::parseFieldPathComponents($table, $f);
 				
 				$values = [];
 				
-				$d = $sresult->get($f, array_merge(['returnWithStructure' => true, 'useLocaleCodes' => true, 'returnAllLocales' => true, 'convertCodesToIdno' => true, 'includeValueIDs' => true], $pt['options']));
+				$d = $sresult->get($f, array_merge(['checkAccess' => $check_access, 'returnWithStructure' => true, 'useLocaleCodes' => true, 'returnAllLocales' => true, 'convertCodesToIdno' => true, 'includeValueIDs' => true], $pt['options']));
 	
-				if(!is_array($d) || (sizeof($d) === 0)) { continue; }
+				if(!$is_template && (!is_array($d) || (sizeof($d) === 0))) { continue; }
 		
-				if($is_intrinsic = $rec->hasField($p['field_name'])) {
+				if($is_template) {
+					$row[] = [
+							'name' => $f, 
+							'code' => $f,
+							'locale' => null,
+							'dataType' => "Text",
+							'values' => [
+								[
+									'value' => $sresult->getWithTemplate($f, ['checkAccess' => $check_access]),
+									'locale' => null,
+									'subvalues' => null,
+									'id' => null,
+									'value_id' => null
+								]
+							]
+						];
+				} elseif($is_intrinsic = $rec->hasField($p['field_name'])) {
 					// Intrinics
-					if(strlen($v = $sresult->get($f, array_merge(['convertCodesToIdno' => true], $pt['options'])))) {
+					if(strlen($v = $sresult->get($f, array_merge(['convertCodesToIdno' => true, 'checkAccess' => $check_access], $pt['options'])))) {
 						$row[] = [
 							'name' => $rec->getDisplayLabel($f), 
 							'code' => $f,
@@ -176,7 +204,7 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 							if($is_set) {
 								$values[] = [
 									'locale' => $locale,
-									'value' => $sresult->get($f, array_merge(['convertCodesToIdno' => true], $pt['options'])),
+									'value' => $sresult->get($f, array_merge(['convertCodesToIdno' => true, 'checkAccess' => $check_access], $pt['options'])),
 									'subvalues' => $sub_values,
 									'id' => $id		// label_id
 								];
@@ -243,23 +271,34 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 				} else {
 					// Metadata elements
 					foreach($d as $index => $by_locale) {
+						if(!is_array($by_locale)) { 
+							$by_locale = [
+								\ca_locales::getDefaultCataloguingLocale() => $by_locale
+							];
+						}
 						foreach($by_locale as $locale => $by_id) {
 							$sub_values = [];
+							if(!is_array($by_id)) { $by_id = [[$by_id]]; }
 			
 							$is_set = false;
 							foreach($by_id as $id => $sub_field_values) {
 								$v = $sf =  null;
 								foreach($sub_field_values as $sub_field => $sub_field_value) {
-									if(preg_match("!^(.*)_value_id$!", $sub_field, $m) && isset($sub_field_values[$m[1]])) { continue; }
+									$is_value_id = preg_match("!^(.*)_value_id$!", $sub_field, $m);
+									//if($is_value_id && isset($sub_field_values[$m[1]])) { continue; }
 									if(strlen($sub_field_value)) { $is_set = true; }
 				
 									$sf = $sub_field;
+									
+									if(!$is_value_id && !$v) {
+										$v = $sub_field_value;
+									} 
 									
 									// Sub-value level
 									$sub_values[] = [
 										'name' => $rec->getDisplayLabel("{$p['table_name']}.{$p['field_name']}.{$p['subfield_name']}"),
 										'code' => $sub_field,
-										'value' => $v = $sub_field_value,
+										'value' => $sub_field_value,
 										'dataType' => \ca_metadata_elements::getElementDatatype($sub_field, ['returnAsString' => true]),
 										'id' => $sub_field_values[$sub_field.'_value_id']
 									];
