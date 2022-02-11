@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2021 Whirl-i-Gig
+ * Copyright 2006-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -357,8 +357,7 @@ include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 					}
 					$vs_magic = rand(0,99999);
 					$vs_filepath = $va_volume_info["absolutePath"]."/".$vs_dirhash."/".$vs_magic."_".$vs_table."_".$vs_field."_".$vn_id."_".$v;
-							
-					$o_media->set('colorspace', 'RGB');					
+				
 					if (!($vs_output_file = $o_media->write($vs_filepath, $vs_output_mimetype, $va_options))) {
 						$this->error = $o_media->errors[0];
 						$o_media->cleanup();
