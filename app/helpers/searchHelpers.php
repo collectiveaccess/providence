@@ -2104,6 +2104,8 @@
 			$va_result['input'] = 'select';
 			$va_result['values'] = $va_select_options;
 			$va_result['operators'] = $va_operators_by_type['select'];
+		} elseif($vs_name === "{$vs_table}.".$t_subject->getProperty('ID_NUMBERING_ID_FIELD')) {
+			$va_result['operators'] = array_merge($va_operators_by_type['select'], ['between']);
 		} else {
 			$va_result['input'] = 'text';
 		}
