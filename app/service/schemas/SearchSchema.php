@@ -195,7 +195,15 @@ class SearchSchema extends \GraphQLServices\GraphQLSchema {
 				'ids' => [
 					'type' => Type::listOf(Type::int()),
 					'description' => 'Full list of matched IDs'
-				]
+				],
+				'idno' => [
+					'type' => Type::string(),
+					'description' => 'First matched identifer'
+				],
+				'idnos' => [
+					'type' => Type::listOf(Type::string()),
+					'description' => 'Full list of matched identifers'
+				],
 			]
 		]);
 		

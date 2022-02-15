@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -3578,6 +3578,7 @@
 		 *	   checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for table that have an "access" field.
 		 *     restrictToTypes = an optional array of numeric type ids or alphanumeric type identifiers to restrict the returned labels to. The types are list items in a list specified in app.conf (or, if not defined there, by hardcoded constants in the model)
 		 *	   returnAll = return all matching values. [Default is false; only the first matched value is returned]
+		 *	   returnIdnos = return identifier (idno) values in addition to row_ids, in array keyed on 'id' and 'idno'. [Default is false]
 		 * @return array Array with keys set to labels and values set to row_ids. Returns null on error.
 		 */
 		static public function getIDsForAttributeValues(string $element_code, array $values, ?array $options=null) : array {
@@ -3585,6 +3586,7 @@
 		
 			$access_values = caGetOption('checkAccess', $options, null);
 			$return_all = caGetOption('returnAll', $options, false);
+			$return_idnos = caGetOption('returnIdnos', $options, false);
 			$force_to_lowercase = caGetOption('forceToLowercase', $options, false);
 		
 			$table_name = $table_name ? $table_name : get_called_class();
@@ -3595,6 +3597,7 @@
 			$pk = $t_instance->primaryKey();
 			$table_name = $t_instance->tableName();
 			$table_num = $t_instance->tableNum();
+			$idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD');
 			
 			if ($restrict_to_types = caGetOption('restrictToTypes', $options, null)) {
 				$restrict_to_types = caMakeTypeIDList($table_name, $restrict_to_types);
@@ -3626,7 +3629,7 @@
 			}
 			
 			$qr_res = $t_instance->getDb()->query("
-				SELECT t.{$pk}, av.{$attr_fld}
+				SELECT t.{$pk}, av.{$attr_fld}".($idno_fld ? ", t.{$idno_fld}" : '')."
 				FROM {$table_name} t
 				INNER JOIN ca_attributes AS a ON a.row_id = t.{$pk} AND a.table_num = {$table_num}
 				INNER JOIN ca_attribute_values AS av ON av.attribute_id = a.attribute_id
@@ -3638,10 +3641,10 @@
 			while($qr_res->nextRow()) {
 				$key = $force_to_lowercase ? strtolower($qr_res->get($attr_fld)) : $qr_res->get($attr_fld);
 				if ($return_all) {
-					$ret[$key][] = $qr_res->get($pk);
+					$ret[$key][] = $return_idnos ? ['idno' => $qr_res->get($idno_fld), 'id' => $qr_res->get($pk)] :  $qr_res->get($pk);
 				} else {
 					if(array_key_exists($key, $ret)) { continue; }
-					$ret[$key] = $qr_res->get($pk);
+					$ret[$key] = $return_idnos ? ['idno' => $qr_res->get($idno_fld), 'id' => $qr_res->get($pk)] : $qr_res->get($pk);
 				}
 			}
 			return $ret;

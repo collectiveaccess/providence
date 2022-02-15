@@ -182,9 +182,12 @@ class GraphQLServiceController extends \BaseServiceController {
 	 */
 	public static function authenticate(?string $jwt, array $options=null) {
 		if ($d = self::decodeJWT($jwt)) {
-			if ($u = \ca_users::find(['user_id' => (int)$d->id, 'active' => 1, 'userclass' => ['<>', 255]], ['returnAs' => 'firstModelInstance'])) {
+			if(caGetOption('allowAnonymous', $options, false) && array_key_exists('anonymous', $d)) {
+				return (array)$d;
+			} elseif ($u = \ca_users::find(['user_id' => (int)$d->id, 'active' => 1, 'userclass' => ['<>', 255]], ['returnAs' => 'firstModelInstance'])) {
 				// User must have can_use_graphql_services permission to authenticate
-				if($u->canDoAction('can_use_graphql_services')) {
+				
+				if($u->canDoAction('can_use_graphql_services') || (defined('__CA_APP_TYPE__') && (__CA_APP_TYPE__ === 'PAWTUCKET'))) {
 					if(is_array($actions = caGetOption('actions', $options, null)) && (sizeof($actions) > 0)) {
 						$require = strtolower(caGetOption('requireActions', $options, 'all'));
 						$success = false;
@@ -210,6 +213,11 @@ class GraphQLServiceController extends \BaseServiceController {
 							'lname' => $u->get('ca_users.lname'),
 							'userclass' => $u->get('ca_users.userclass')
 						];
+					}
+					
+					global $g_request;
+					if($g_request) {
+						$g_request->setUser($u);
 					}
 					return $u;
 				}

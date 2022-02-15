@@ -322,14 +322,15 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 								foreach($values as $v) {
 									if(!array_key_exists($v, $ids)) { $ids[$v] = null; }
 								}
-								$value_map = array_map(function($v, $k) {return ['id' => $v[0], 'ids' => $v, 'value' => $k]; }, $ids, array_keys($ids));
+								$value_map = array_map(function($v, $k) {return ['id' => $v[0], 'ids' => $v, 'idno' => $k, 'idnos' => [$k], 'value' => $k]; }, $ids, array_keys($ids));
 								break;
 							case 'preferred_labels':
-								$ids = $table::getIDsForlabels($values, ['restrictToTypes' => $args['restrictToTypes'], 'returnAll' => true, 'field' => $bundle_bits[1] ?? null]);
+								$ids = $table::getIDsForlabels($values, ['returnIdnos' => true, 'restrictToTypes' => $args['restrictToTypes'], 'returnAll' => true, 'field' => $bundle_bits[1] ?? null]);
+								
 								foreach($values as $v) {
 									if(!array_key_exists($v, $ids)) { $ids[$v] = null; }
 								}
-								$value_map = array_map(function($v, $k) {return ['id' => $v[0], 'ids' => $v,'value' => $k]; }, $ids, array_keys($ids));
+								$value_map = array_map(function($v, $k) use ($idnos) {return ['id' => $v[0]['id'], 'ids' => array_map(function($x) { return $x['id']; }, $v), 'idno' => $v[0]['idno'], 'idnos' => array_map(function($x) { return $x['idno']; }, $v), 'value' => $k]; }, $ids, array_keys($ids));
 							
 								break;
 							default:
@@ -340,11 +341,12 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 								if ($u->getBundleAccessLevel($table, $b) < __CA_BUNDLE_ACCESS_READONLY__) {
 									throw new \ServiceException(_t('Access denied to %1', $b));
 								}
-								$ids = $table::getIDsForAttributeValues($b, $values, ['restrictToTypes' => $args['restrictToTypes'], 'returnAll' => true]);
+								$ids = $table::getIDsForAttributeValues($b, $values, ['returnIdnos' => true, 'restrictToTypes' => $args['restrictToTypes'], 'returnAll' => true]);
+								
 								foreach($values as $v) {
 									if(!array_key_exists($v, $ids)) { $ids[$v] = null; }
 								}
-								$value_map = array_map(function($v, $k)  { return ['id' => $v[0], 'ids' => $v, 'value' => $k]; }, $ids, array_keys($ids));
+								$value_map = array_map(function($v, $k)  { return ['id' => $v[0]['id'], 'ids' => array_map(function($x) { return $x['id']; }, $v), 'idno' => $v[0]['idno'], 'idnos' => array_map(function($x) { return $x['idno']; }, $v), 'value' => $k]; }, $ids, array_keys($ids));
 
 								break;
 						}
