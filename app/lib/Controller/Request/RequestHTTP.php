@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2021 Whirl-i-Gig
+ * Copyright 2007-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -297,6 +297,17 @@ class RequestHTTP extends Request {
 	# -------------------------------------------------------
 	public function getUser() {
 		return $this->user;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Set current user
+	 *
+	 * @param ca_users $user
+	 *
+	 * @return void
+	 */
+	public function setUser(ca_users $user) : void {
+		$this->user = $user;
 	}
 	# -------------------------------------------------------
 	public function getThemeUrlPath($pb_use_default=false) {
