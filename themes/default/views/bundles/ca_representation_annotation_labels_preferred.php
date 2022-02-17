@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,13 +40,7 @@
 	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel('ca_representation_annotations', 'preferred_labels') == __CA_BUNDLE_ACCESS_READONLY__));
 	
 	$vb_batch			= $this->getVar('batch');
-	$vs_bundle_preview = '';
-	if(isset($va_settings['displayTemplate'])) {
-		$vs_bundle_preview = $t_subject->getWithTemplate($va_settings['displayTemplate']);
-	}
-	if(!$vs_bundle_preview) {
-		$vs_bundle_preview = current($va_initial_values)['name'];
-	}
+
 	if ($vb_batch) {
 		print caBatchEditorPreferredLabelsModeControl($t_label, $vs_id_prefix);
 	} else {
@@ -93,7 +87,7 @@
 		labelListClassName: 'caLabelList',
 		addButtonClassName: 'caAddLabelButton',
 		deleteButtonClassName: 'caDeleteLabelButton',
-		bundlePreview: <?php print caEscapeForBundlePreview($vs_bundle_preview); ?>,
+		bundlePreview: <?php print caEscapeForBundlePreview($this->getVar('bundle_preview')); ?>,
 		readonly: <?php print $vb_read_only ? "1" : "0"; ?>,
 		defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>
 	});
