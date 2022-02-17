@@ -224,6 +224,7 @@ create unique index u_all on ca_list_item_labels
 );
 create index i_name_sort on ca_list_item_labels(name_sort(128));
 create index i_type_id on ca_list_item_labels(type_id);
+create index i_effective_date ON ca_list_item_labels(sdatetime, edatetime);
 
 
 /*==========================================================================*/
@@ -803,6 +804,19 @@ create table ca_object_representation_labels
       
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
+create index i_representation_id on ca_object_representation_labels(representation_id);
+create index i_name on ca_object_representation_labels(name(128));
+create unique index u_all on ca_object_representation_labels(
+   representation_id,
+   name(255),
+   type_id,
+   locale_id
+);
+create index i_locale_id on ca_object_representation_labels(locale_id);
+create index i_name_sort on ca_object_representation_labels(name_sort(255));
+create index i_type_id on ca_object_representation_labels(type_id);
+create index i_effective_date ON ca_object_representation_labels(sdatetime, edatetime);
+
 
 /*==========================================================================*/
 create table ca_object_representation_multifiles (
@@ -982,6 +996,7 @@ create unique index u_all on ca_occurrence_labels(
 create index i_locale_id on ca_occurrence_labels(locale_id);
 create index i_name_sort on ca_occurrence_labels(name_sort(255));
 create index i_type_id on ca_occurrence_labels(type_id);
+create index i_effective_date ON ca_occurrence_labels(sdatetime, edatetime);
 
 
 /*==========================================================================*/
@@ -1124,6 +1139,7 @@ create unique index u_all on ca_collection_labels
 create index i_locale_id on ca_collection_labels(locale_id);
 create index i_type_id on ca_collection_labels(type_id);
 create index i_name_sort on ca_collection_labels(name_sort(128));
+create index i_effective_date ON ca_collection_labels(sdatetime, edatetime);
 
 
 /*==========================================================================*/
@@ -1245,6 +1261,7 @@ create unique index u_all on ca_place_labels
 );
 create index i_locale_id on ca_place_labels(locale_id);
 create index i_type_id on ca_place_labels(type_id);
+create index i_effective_date ON ca_place_labels(sdatetime, edatetime);
 
 
 /*==========================================================================*/
@@ -1283,6 +1300,7 @@ create unique index u_all on ca_storage_location_labels
 create index i_locale_id on ca_storage_location_labels(locale_id);
 create index i_type_id on ca_storage_location_labels(type_id);
 create index i_name_sort on ca_storage_location_labels(name_sort(128));
+create index i_effective_date ON ca_storage_location_labels(sdatetime, edatetime);
 
 
 /*==========================================================================*/
@@ -1389,6 +1407,7 @@ create index i_locale_id_id on ca_loan_labels(locale_id);
 create index i_type_id on ca_loan_labels(type_id);
 create index i_name on ca_loan_labels(name(128));
 create index i_name_sort on ca_loan_labels(name_sort(128));
+create index i_effective_date ON ca_loan_labels(sdatetime, edatetime);
 
 
 /*==========================================================================*/
@@ -1483,6 +1502,7 @@ create index i_locale_id_id on ca_movement_labels(locale_id);
 create index i_type_id on ca_movement_labels(type_id);
 create index i_name on ca_movement_labels(name(128));
 create index i_name_sort on ca_movement_labels(name_sort(128));
+create index i_effective_date ON ca_movement_labels(sdatetime, edatetime);
 
 
 /*==========================================================================*/
@@ -1859,6 +1879,7 @@ create unique index u_all on ca_object_lot_labels
 create index i_name_sort on ca_object_lot_labels(name_sort(128));
 create index i_type_id on ca_object_lot_labels(type_id);
 create index i_locale_id on ca_object_lot_labels(locale_id);
+create index i_effective_date ON ca_object_lot_labels(sdatetime, edatetime);
 
 
 /*==========================================================================*/
@@ -2131,7 +2152,7 @@ create unique index u_all on ca_object_labels
 create index i_name_sort on ca_object_labels(name_sort(128));
 create index i_type_id on ca_object_labels(type_id);
 create index i_locale_id on ca_object_labels(locale_id);
-
+create index i_effective_date ON ca_object_labels(sdatetime, edatetime);
 
 
 /*==========================================================================*/
@@ -2922,6 +2943,7 @@ create unique index u_all on ca_entity_labels
 create index i_locale_id on ca_entity_labels(locale_id);
 create index i_type_id on ca_entity_labels(type_id);
 create index i_name_sort on ca_entity_labels(name_sort(128));
+create index i_effective_date ON ca_entity_labels(sdatetime, edatetime);
 
 
 /*==========================================================================*/
