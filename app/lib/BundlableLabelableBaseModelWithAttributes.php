@@ -929,7 +929,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$this->set($vs_idno_sort_field, $o_idno->getSortableValue($this->get($vs_idno_field)));
 				
 				if($this->hasField("{$vs_idno_sort_field}_num") && (method_exists($o_idno, 'getSortableNumericValue'))) {
-					$this->set("{$vs_idno_sort_field}_num", $o_idno->getSortableNumericValue($this->get($vs_idno_field)));
+					if(($n = $o_idno->getSortableNumericValue($this->get($vs_idno_field))) < 0) { return; } 
+					$this->set("{$vs_idno_sort_field}_num", $n);
 				}
 				return;
 			}
