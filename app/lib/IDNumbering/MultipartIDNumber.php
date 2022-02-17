@@ -648,6 +648,107 @@ class MultipartIDNumber extends IDNumber {
 	}
 	# -------------------------------------------------------
 	/**
+	 * Returns value as sortable integer
+	 *
+	 * @param string $value Value from which to derive the sortable value. If omitted the current value is used. [Default is null]
+	 * @return int The sortable value
+	 */
+	public function getSortableNumericValue(?string $value=null) : ?int {
+		$separator = $this->getSeparator();
+		if (!is_array($elements_normal_order = $this->getElements())) { $elements_normal_order = []; }
+		$element_names_normal_order = array_keys($elements_normal_order);
+
+		if (
+			!($elements = $this->getElementOrderForSort()) || 
+			(sizeof(array_intersect($elements, $element_names_normal_order)) !== sizeof($element_names_normal_order))
+		) { $elements = $element_names_normal_order; }
+		$element_values = $this->explodeValue($value ?: $this->getValue());
+		$output = [];
+		
+		$n = 0;
+		foreach ($elements as $element) {
+			$element_info = $elements_normal_order[$element];
+			$i = array_search($element, $element_names_normal_order);
+			$v = $element_values[$i];
+			
+			$range = caGetOption('range', $element_info, 5);
+			$precision = caGetOption('precision', $element_info, 2);
+			
+			$values = strlen($v) ? array_reverse($this->_valueToSortableInts($v, $range, $precision)) : [];
+			$p = 0;
+			foreach($values as $v) {
+				$z = (int)(($v * pow(10, $p)));
+				$n += $z;
+				$p += $range;
+			}
+		}
+		return (int)$n;
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _valueToSortableInts(string $value, int $range, int $precision) : array {
+		$sub_values = preg_split('![^A-Za-z\d\.]+!', $value);
+
+		$ints = [];
+		foreach($sub_values as $sv) {
+			if(is_numeric($sv)) {
+				// convert number to sortable int
+				$ints[] = $this->_numToSortableInt((float)$sv, $range, $precision);
+			} elseif(preg_match('!^([\d]+)([A-Za-z]+)$!', $sv, $m)) {
+				// Treat trailing letters on a numeric values as right-of-decimal (Eg. a sub-identifier)
+				$ints[] = $this->_numToSortableInt($m[0].'.'.$this->_stringToSortableInt($m[1], $range, $precision), $range, $precision);
+			} elseif(strpos($sv, '.') !== false) {
+				$x = explode('.', $sv);
+				while(sizeof($x) > 0) {
+					$svp = array_shift($x);
+					if(is_numeric($svp)) {
+						$ints[] = $this->_numToSortableInt($svp, $range, $precision);
+					} else {
+						// Treat as base-36 number
+						$ints[] = $this->_stringToSortableInt($svp, $range, $precision);
+					}
+				}
+			} else {
+				// Treat as base-36 number
+				$ints[] = $this->_stringToSortableInt($sv, $range, $precision);
+			}
+		}
+		return $ints;
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _stringToSortableInt(string $value, int $range, int $precision) : int {
+		$n = [];
+		for($i=0; $i < strlen($value); $i++) {
+			$c = $value[$i];
+			if(is_numeric($c)) {
+				$n[] = $c;
+			} else {
+				$n[] = ord(strtoupper($c)) - 65 + 10;
+			}
+		}
+		$v = 0;
+		$p = 0;
+		foreach(array_reverse($n) as $x) {
+			$v += ($x * pow(10, $p));
+			$p++;
+		}
+		$v *= pow(10, $precision);
+		return (int)$v;
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _numToSortableInt(float $value, int $range, int $precision) : int {
+		return (int)str_replace('.', '', $value * pow(10, $precision));
+	}
+	# -------------------------------------------------------
+	/**
 	 * Return a list of modified identifier values suitable for search indexing according to the format of the specified format and type
 	 * Modifications include removal of leading zeros, stemming and more.
 	 *
