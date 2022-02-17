@@ -190,6 +190,10 @@ create table ca_list_item_labels
    description                    text                           not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null default 0,
+   sdatetime                      decimal(30,20),
+   edatetime                      decimal(30,20),
+   access                         tinyint unsigned               not null default 0,
+   
    primary key (label_id),
    constraint fk_ca_list_item_labels_item_id foreign key (item_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
@@ -220,6 +224,7 @@ create unique index u_all on ca_list_item_labels
 );
 create index i_name_sort on ca_list_item_labels(name_sort(128));
 create index i_type_id on ca_list_item_labels(type_id);
+create index i_effective_date ON ca_list_item_labels(sdatetime, edatetime);
 
 
 /*==========================================================================*/
@@ -782,6 +787,10 @@ create table ca_object_representation_labels
    name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
+   sdatetime                      decimal(30,20),
+   edatetime                      decimal(30,20),
+   access                         tinyint unsigned               not null default 0,
+   
    primary key (label_id),
    
    constraint fk_ca_object_representation_labels_type_id foreign key (type_id)
@@ -794,6 +803,19 @@ create table ca_object_representation_labels
       references ca_object_representations (representation_id) on delete restrict on update restrict
       
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
+create index i_representation_id on ca_object_representation_labels(representation_id);
+create index i_name on ca_object_representation_labels(name(128));
+create unique index u_all on ca_object_representation_labels(
+   representation_id,
+   name(255),
+   type_id,
+   locale_id
+);
+create index i_locale_id on ca_object_representation_labels(locale_id);
+create index i_name_sort on ca_object_representation_labels(name_sort(255));
+create index i_type_id on ca_object_representation_labels(type_id);
+create index i_effective_date ON ca_object_representation_labels(sdatetime, edatetime);
 
 
 /*==========================================================================*/
@@ -950,6 +972,10 @@ create table ca_occurrence_labels
    name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
+   sdatetime                      decimal(30,20),
+   edatetime                      decimal(30,20),
+   access                         tinyint unsigned               not null default 0,
+   
    primary key (label_id),
    constraint fk_ca_occurrence_labels_type_id foreign key (type_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
@@ -970,6 +996,7 @@ create unique index u_all on ca_occurrence_labels(
 create index i_locale_id on ca_occurrence_labels(locale_id);
 create index i_name_sort on ca_occurrence_labels(name_sort(255));
 create index i_type_id on ca_occurrence_labels(type_id);
+create index i_effective_date ON ca_occurrence_labels(sdatetime, edatetime);
 
 
 /*==========================================================================*/
@@ -1087,6 +1114,10 @@ create table ca_collection_labels
    name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
+   sdatetime                      decimal(30,20),
+   edatetime                      decimal(30,20),
+   access                         tinyint unsigned               not null default 0,
+   
    primary key (label_id),
    constraint fk_ca_collection_labels_type_id foreign key (type_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
@@ -1108,6 +1139,7 @@ create unique index u_all on ca_collection_labels
 create index i_locale_id on ca_collection_labels(locale_id);
 create index i_type_id on ca_collection_labels(type_id);
 create index i_name_sort on ca_collection_labels(name_sort(128));
+create index i_effective_date ON ca_collection_labels(sdatetime, edatetime);
 
 
 /*==========================================================================*/
@@ -1204,6 +1236,10 @@ create table ca_place_labels
    name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
+   sdatetime                      decimal(30,20),
+   edatetime                      decimal(30,20),
+   access                         tinyint unsigned               not null default 0,
+   
    primary key (label_id),
    constraint fk_ca_place_labels_type_id foreign key (type_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
@@ -1225,6 +1261,7 @@ create unique index u_all on ca_place_labels
 );
 create index i_locale_id on ca_place_labels(locale_id);
 create index i_type_id on ca_place_labels(type_id);
+create index i_effective_date ON ca_place_labels(sdatetime, edatetime);
 
 
 /*==========================================================================*/
@@ -1238,6 +1275,10 @@ create table ca_storage_location_labels
    name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
+   sdatetime                      decimal(30,20),
+   edatetime                      decimal(30,20),
+   access                         tinyint unsigned               not null default 0,
+   
    primary key (label_id),
    constraint fk_ca_storage_location_labels_locale_id foreign key (locale_id)
       references ca_locales (locale_id) on delete restrict on update restrict,
@@ -1259,6 +1300,7 @@ create unique index u_all on ca_storage_location_labels
 create index i_locale_id on ca_storage_location_labels(locale_id);
 create index i_type_id on ca_storage_location_labels(type_id);
 create index i_name_sort on ca_storage_location_labels(name_sort(128));
+create index i_effective_date ON ca_storage_location_labels(sdatetime, edatetime);
 
 
 /*==========================================================================*/
@@ -1343,6 +1385,10 @@ create table ca_loan_labels (
    name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
+   sdatetime                      decimal(30,20),
+   edatetime                      decimal(30,20),
+   access                         tinyint unsigned               not null default 0,
+   
    primary key (label_id),
    
    constraint fk_ca_loan_labels_type_id foreign key (type_id)
@@ -1361,6 +1407,7 @@ create index i_locale_id_id on ca_loan_labels(locale_id);
 create index i_type_id on ca_loan_labels(type_id);
 create index i_name on ca_loan_labels(name(128));
 create index i_name_sort on ca_loan_labels(name_sort(128));
+create index i_effective_date ON ca_loan_labels(sdatetime, edatetime);
 
 
 /*==========================================================================*/
@@ -1433,6 +1480,10 @@ create table ca_movement_labels (
    name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
+   sdatetime                      decimal(30,20),
+   edatetime                      decimal(30,20),
+   access                         tinyint unsigned               not null default 0,
+   
    primary key (label_id),
    
    constraint fk_ca_movement_labels_movement_id foreign key (movement_id)
@@ -1451,6 +1502,7 @@ create index i_locale_id_id on ca_movement_labels(locale_id);
 create index i_type_id on ca_movement_labels(type_id);
 create index i_name on ca_movement_labels(name(128));
 create index i_name_sort on ca_movement_labels(name_sort(128));
+create index i_effective_date ON ca_movement_labels(sdatetime, edatetime);
 
 
 /*==========================================================================*/
@@ -1802,6 +1854,10 @@ create table ca_object_lot_labels
    name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
+   sdatetime                      decimal(30,20),
+   edatetime                      decimal(30,20),
+   access                         tinyint unsigned               not null default 0,
+   
    primary key (label_id),
    constraint fk_ca_object_lot_labels_lot_id foreign key (lot_id)
       references ca_object_lots (lot_id) on delete restrict on update restrict,
@@ -1823,6 +1879,7 @@ create unique index u_all on ca_object_lot_labels
 create index i_name_sort on ca_object_lot_labels(name_sort(128));
 create index i_type_id on ca_object_lot_labels(type_id);
 create index i_locale_id on ca_object_lot_labels(locale_id);
+create index i_effective_date ON ca_object_lot_labels(sdatetime, edatetime);
 
 
 /*==========================================================================*/
@@ -2070,6 +2127,10 @@ create table ca_object_labels
    name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
+   sdatetime                      decimal(30,20),
+   edatetime                      decimal(30,20),
+   access                         tinyint unsigned               not null default 0,
+   
    primary key (label_id),
    constraint fk_ca_object_labels_type_id foreign key (type_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
@@ -2091,7 +2152,7 @@ create unique index u_all on ca_object_labels
 create index i_name_sort on ca_object_labels(name_sort(128));
 create index i_type_id on ca_object_labels(type_id);
 create index i_locale_id on ca_object_labels(locale_id);
-
+create index i_effective_date ON ca_object_labels(sdatetime, edatetime);
 
 
 /*==========================================================================*/
@@ -2853,6 +2914,10 @@ create table ca_entity_labels
    name_sort                      varchar(512)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
+   sdatetime                      decimal(30,20),
+   edatetime                      decimal(30,20),
+   access                         tinyint unsigned               not null default 0,
+   
    primary key (label_id),
    constraint fk_ca_entity_labels_type_id foreign key (type_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
@@ -2878,6 +2943,7 @@ create unique index u_all on ca_entity_labels
 create index i_locale_id on ca_entity_labels(locale_id);
 create index i_type_id on ca_entity_labels(type_id);
 create index i_name_sort on ca_entity_labels(name_sort(128));
+create index i_effective_date ON ca_entity_labels(sdatetime, edatetime);
 
 
 /*==========================================================================*/
@@ -7718,4 +7784,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (176, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (177, unix_timestamp());
