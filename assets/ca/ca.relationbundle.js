@@ -291,8 +291,7 @@ var caUI = caUI || {};
 		    return acc;
 		};
 		
-		that.triggerQuickAdd = function(q, id, params=null) {
-			console.log("trigger quickadd!", q, id, params);
+		that.triggerQuickAdd = function(q, id, params=null, opts=null) {
 			var autocompleter_id = options.fieldNamePrefix + 'autocomplete' + id;
 			var panelUrl = options.quickaddUrl;
 			if (options && options.types) {
@@ -322,7 +321,9 @@ var caUI = caUI || {};
 
 			jQuery("#" + options.autocompleteInputID + id).val('');
 			
-			that.addToBundle(id);
+			if(opts && opts.addBundle) {
+				that.addToBundle(id);
+			}
 		};
 		
 		return that;
