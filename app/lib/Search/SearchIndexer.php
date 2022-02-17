@@ -407,6 +407,8 @@ class SearchIndexer extends SearchBase {
 		$pn_start = caGetOption('INDEX_ANCESTORS_START_AT_LEVEL', $pa_options, 0);
 		$pn_max_levels = caGetOption('INDEX_ANCESTORS_MAX_NUMBER_OF_LEVELS', $pa_options, null);
 		$ps_delimiter = caGetOption('INDEX_ANCESTORS_AS_PATH_WITH_DELIMITER', $pa_options, '; ');
+		
+		$hier_type = $t_subject->getProperty('HIERARCHY_TYPE');
 
 		// Automagically generate hierarchical paths for preferred labels passed as label table + label field
 		$is_label = false;
@@ -417,7 +419,7 @@ class SearchIndexer extends SearchBase {
 			$ps_field = "preferred_labels.{$ps_field}";
 			$is_label = true;
 		}
-		$va_ids = $t_subject->getHierarchyAncestors($pn_subject_row_id, array('idsOnly' => true, 'includeSelf' => true));
+		$va_ids = $t_subject->getHierarchyAncestors($pn_subject_row_id, array('idsOnly' => true, 'includeSelf' => true, 'omitRoot' => ($hier_type === __CA_HIER_TYPE_MULTI_MONO__)));
 		$vs_subject_tablename = $t_subject->tableName();
 
 		if (is_array($va_ids) && sizeof($va_ids) > 0) {
