@@ -515,7 +515,7 @@ class MultipartIDNumber extends IDNumber {
 			if ($qr_res->numRows()) {
 				while($qr_res->nextRow()) {
 					$tmp = $this->explodeValue($qr_res->get($field));
-					if(is_numeric($tmp[$i]) && (intval($tmp[$i]) < pow(2,30))) {
+					if(is_numeric($tmp[$i]) && (intval($tmp[$i]) < pow(2,64))) {
 						$num = intval($tmp[$i]) + 1;
 						break;
 					}
