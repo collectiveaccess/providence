@@ -241,7 +241,7 @@
  			try {
 				$pn_value = Zend_Locale_Format::getNumber($ps_value, ['locale' => $g_ui_locale]);
 			} catch(Exception $e) {			
-				if(!(is_numeric($ps_value))){
+				if($ps_value && !(is_numeric($ps_value))){
 					// This is not an number, it contains symbols other than [0-9]
 					$this->postError(1970, _t('%1 is not a numeric value', $pa_element_info['displayLabel']), 'NumericAttributeValue->parseValue()');
 					return false;
