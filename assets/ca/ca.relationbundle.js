@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2021 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -182,8 +182,8 @@ var caUI = caUI || {};
 			
 			jQuery('#' + options.itemID + id + ' #' + options.fieldNamePrefix + 'id' + id).val(item_id);
 			jQuery('#' + options.itemID + id + ' #' + options.fieldNamePrefix + 'type_id' + id).css('display', 'inline');
+			
 			var i, typeList, typesByParent = {};
-			//var types = [];
 			var default_type = 0;
 	
 			if (jQuery('#' + options.itemID + id + ' select[name=' + options.fieldNamePrefix + 'type_id' + id + ']').data('item_type_id') == type_id) {
@@ -202,14 +202,23 @@ var caUI = caUI || {};
 						}
 					}
 				} 
+				
 				// look for null (these are unrestricted and therefore always displayed)
 				if (options.relationshipTypes && (typeList = options.relationshipTypes['NULL'])) {
 					for(i=0; i < typeList.length; i++) {
 						let key = typeList[i].type_id + '/' + typeList[i].direction;
 						if(typesOutput[key]) { continue };
-						typesOutput[key] = 1;
+						typesOutput[key] = typesOutput[parseInt(typeList[i].type_id)] = 1;
 						
 				        if(!typesByParent[typeList[i].parent_id]) { typesByParent[typeList[i].parent_id] = []; }
+				        
+				        var parent = that._findRelType(typeList[i].parent_id);
+						if(!typesOutput[parent.type_id]) { 
+							let parentKey = parent.type_id + '/' + parent.direction;
+							typesByParent[parseInt(parent.parent_id)].push(parent);	
+							typesOutput[parentKey] = typesOutput[parseInt(parent.type_id)] = 1;
+						}
+				        
 						typesByParent[typeList[i].parent_id].push(typeList[i]);
 						
 						if (parseInt(typeList[i].is_default) === 1) {
@@ -217,7 +226,7 @@ var caUI = caUI || {};
 						}
 					}
 				}
-		
+				
 		        var root_id = null;
 		        for(var parent_id in typesByParent) {
 		            if(!typesOutput[parseInt(parent_id)]) { root_id = parent_id; }
@@ -289,6 +298,19 @@ var caUI = caUI || {};
 		        }
 		    }  
 		    return acc;
+		};
+		
+		that._findRelType = function(type_id) {
+			if (options.relationshipTypes) {
+				for(var t in options.relationshipTypes) {
+					for(var i in options.relationshipTypes[t]) {
+						if(options.relationshipTypes[t][i].type_id == type_id) {
+							return options.relationshipTypes[t][i];
+						}
+					}
+				}
+			}
+			return null;
 		};
 		
 		that.triggerQuickAdd = function(q, id, params=null, opts=null) {
