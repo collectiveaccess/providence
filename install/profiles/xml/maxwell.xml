@@ -33581,7 +33581,7 @@ A Closed loan is completed and inactive.</setting>
               <settings>
                 <setting name="readonly"/>
                 <setting name="label" locale="en_US">Accession</setting>
-                <setting name="add_label" locale="en_US">add Accession</setting>
+                <setting name="add_label" locale="en_US">Add Accession</setting>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
                 <setting name="dont_include_subtypes_in_type_restriction">0</setting>
@@ -35341,7 +35341,7 @@ A Closed loan is completed and inactive.</setting>
               <bundle>ca_object_lots</bundle>
               <settings>
                 <setting name="label" locale="en_US">Accession Number</setting>
-                <setting name="add_label" locale="en_US">add Accession</setting>
+                <setting name="add_label" locale="en_US">Add Accession</setting>
                 <setting name="display_template">^ca_object_lots.preferred_labels (^ca_object_lots.idno_stub)</setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow">1</setting>
@@ -35364,7 +35364,7 @@ A Closed loan is completed and inactive.</setting>
               <bundle>preferred_labels</bundle>
               <settings>
                 <setting name="use_list">maxwell_list_objects</setting>
-                <setting name="use_list_format">lookup</setting>
+                <setting name="use_list_format">select</setting>
                 <setting name="label" locale="en_US">Object Name</setting>
                 <setting name="readonly"/>
               </settings>
@@ -35892,27 +35892,6 @@ A Closed loan is completed and inactive.</setting>
                 <setting name="auto_shrink"/>
               </settings>
             </placement>
-            <placement code="ca_collections">
-              <bundle>ca_collections</bundle>
-              <settings>
-                <setting name="readonly"/>
-                
-                <setting name="restrict_to_types">archival_collection</setting>
-                <setting name="expand_collapse_value">dont_force</setting>
-                <setting name="expand_collapse_no_value">dont_force</setting>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="list_format">bubbles</setting>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="dontShowDeleteButton">0</setting>
-                <setting name="display_template">^ca_collections.hierarchy.preferred_labels%delimiter=_>_</setting>
-                <setting name="minRelationshipsPerRow"/>
-                <setting name="maxRelationshipsPerRow"/>
-                <setting name="showCurrentOnly">0</setting>
-                <setting name="disableQuickadd">0</setting>
-                <setting name="prepopulateQuickaddFields">0</setting>
-                <setting name="disableSorts">0</setting>
-              </settings>
-            </placement>
             <placement code="idno1">
               <bundle>idno</bundle>
               <settings>
@@ -35927,7 +35906,7 @@ A Closed loan is completed and inactive.</setting>
               <bundle>ca_object_lots</bundle>
               <settings>
                 <setting name="label" locale="en_US">Accession Number</setting>
-                <setting name="add_label" locale="en_US">add Accession</setting>
+                <setting name="add_label" locale="en_US">Add Accession</setting>
                 <setting name="display_template">^ca_object_lots.preferred_labels (^ca_object_lots.idno_stub)</setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow">1</setting>
@@ -35940,7 +35919,7 @@ A Closed loan is completed and inactive.</setting>
               <bundle>preferred_labels</bundle>
               <settings>
                 <setting name="use_list">maxwell_list_objects</setting>
-                <setting name="use_list_format">lookup</setting>
+                <setting name="use_list_format">select</setting>
                 <setting name="label" locale="en_US">Object Name</setting>
                 <setting name="readonly"/>
               </settings>
@@ -36218,7 +36197,7 @@ A Closed loan is completed and inactive.</setting>
               <bundle>ca_object_lots</bundle>
               <settings>
                 <setting name="label" locale="en_US">Accession Number</setting>
-                <setting name="add_label" locale="en_US">add Accession</setting>
+                <setting name="add_label" locale="en_US">Add Accession</setting>
                 <setting name="display_template">^ca_object_lots.preferred_labels (^ca_object_lots.idno_stub)</setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow">1</setting>
@@ -36231,7 +36210,7 @@ A Closed loan is completed and inactive.</setting>
               <bundle>preferred_labels</bundle>
               <settings>
                 <setting name="use_list">maxwell_list_objects</setting>
-                <setting name="use_list_format">lookup</setting>
+                <setting name="use_list_format">select</setting>
                 <setting name="label" locale="en_US">Object Name</setting>
                 <setting name="readonly"/>
               </settings>
@@ -36653,7 +36632,7 @@ A Closed loan is completed and inactive.</setting>
               <bundle>ca_object_lots</bundle>
               <settings>
                 <setting name="label" locale="en_US">Accession Number</setting>
-                <setting name="add_label" locale="en_US">add Accession</setting>
+                <setting name="add_label" locale="en_US">Add Accession</setting>
                 <setting name="display_template">^ca_object_lots.preferred_labels (^ca_object_lots.idno_stub)</setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow">1</setting>
@@ -36666,7 +36645,7 @@ A Closed loan is completed and inactive.</setting>
               <bundle>preferred_labels</bundle>
               <settings>
                 <setting name="use_list">maxwell_list_objects</setting>
-                <setting name="use_list_format">lookup</setting>
+                <setting name="use_list_format">select</setting>
                 <setting name="label" locale="en_US">Object Name</setting>
                 <setting name="readonly"/>
               </settings>
@@ -36974,7 +36953,7 @@ A Closed loan is completed and inactive.</setting>
               <bundle>ca_object_lots</bundle>
               <settings>
                 <setting name="label" locale="en_US">Accession Number</setting>
-                <setting name="add_label" locale="en_US">add Accession</setting>
+                <setting name="add_label" locale="en_US">Add Accession</setting>
                 <setting name="display_template">^ca_object_lots.preferred_labels (^ca_object_lots.idno_stub)</setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow">1</setting>
@@ -36987,7 +36966,7 @@ A Closed loan is completed and inactive.</setting>
               <bundle>preferred_labels</bundle>
               <settings>
                 <setting name="use_list">maxwell_list_objects</setting>
-                <setting name="use_list_format">lookup</setting>
+                <setting name="use_list_format">select</setting>
                 <setting name="label" locale="en_US">Object Name</setting>
                 <setting name="readonly"/>
               </settings>
@@ -37241,7 +37220,7 @@ A Closed loan is completed and inactive.</setting>
               <bundle>ca_object_lots</bundle>
               <settings>
                 <setting name="label" locale="en_US">Accession Number</setting>
-                <setting name="add_label" locale="en_US">add Accession</setting>
+                <setting name="add_label" locale="en_US">Add Accession</setting>
                 <setting name="display_template">^ca_object_lots.preferred_labels (^ca_object_lots.idno_stub)</setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow">1</setting>
@@ -37264,7 +37243,7 @@ A Closed loan is completed and inactive.</setting>
               <bundle>preferred_labels</bundle>
               <settings>
                 <setting name="use_list">maxwell_list_objects</setting>
-                <setting name="use_list_format">lookup</setting>
+                <setting name="use_list_format">select</setting>
                 <setting name="label" locale="en_US">Object Name</setting>
                 <setting name="readonly"/>
               </settings>
@@ -37615,7 +37594,7 @@ A Closed loan is completed and inactive.</setting>
               <bundle>ca_object_lots</bundle>
               <settings>
                 <setting name="label" locale="en_US">Accession Number</setting>
-                <setting name="add_label" locale="en_US">add Accession</setting>
+                <setting name="add_label" locale="en_US">Add Accession</setting>
                 <setting name="display_template">^ca_object_lots.preferred_labels (^ca_object_lots.idno_stub)</setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow">1</setting>
@@ -37628,7 +37607,7 @@ A Closed loan is completed and inactive.</setting>
               <bundle>preferred_labels</bundle>
               <settings>
                 <setting name="use_list">maxwell_list_objects</setting>
-                <setting name="use_list_format">lookup</setting>
+                <setting name="use_list_format">select</setting>
                 <setting name="label" locale="en_US">Object Name</setting>
                 <setting name="readonly"/>
               </settings>
@@ -39502,7 +39481,7 @@ A Closed loan is completed and inactive.</setting>
               <bundle>ca_object_lots</bundle>
               <settings>
                 <setting name="label" locale="en_US">Related Accession</setting>
-                <setting name="add_label" locale="en_US">add Accession</setting>
+                <setting name="add_label" locale="en_US">Add Accession</setting>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
@@ -40416,7 +40395,7 @@ A Closed loan is completed and inactive.</setting>
               <bundle>ca_object_lots</bundle>
               <settings>
                 <setting name="label" locale="en_US">Related Accessions</setting>
-                <setting name="add_label" locale="en_US">add Accession</setting>
+                <setting name="add_label" locale="en_US">Add Accession</setting>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
@@ -40706,7 +40685,7 @@ A Closed loan is completed and inactive.</setting>
               <bundle>ca_object_lots</bundle>
               <settings>
                 <setting name="label" locale="en_US">Accessions</setting>
-                <setting name="add_label" locale="en_US">add Accession</setting>
+                <setting name="add_label" locale="en_US">Add Accession</setting>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
                 <setting name="restrict_to_relationship_types">occurrence_lot_related</setting>
@@ -41068,7 +41047,7 @@ A Closed loan is completed and inactive.</setting>
               <bundle>ca_object_lots_related_list</bundle>
               <settings>
                 <setting name="label" locale="en_US">Related Accession</setting>
-                <setting name="add_label" locale="en_US">add Accession</setting>
+                <setting name="add_label" locale="en_US">Add Accession</setting>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
@@ -41790,7 +41769,7 @@ A Closed loan is completed and inactive.</setting>
               <bundle>ca_object_lots</bundle>
               <settings>
                 <setting name="label" locale="en_US">Related Accessions</setting>
-                <setting name="add_label" locale="en_US">add Accession</setting>
+                <setting name="add_label" locale="en_US">Add Accession</setting>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
@@ -42135,7 +42114,7 @@ A Closed loan is completed and inactive.</setting>
       </screens>
     </userInterface>
     <userInterface code="standard_object_lots_ui" type="ca_object_lots"
-      typeRestrictions="arch_accession" includeSubtypes="0">
+      typeRestrictions="arch_accession,temp_custody" includeSubtypes="0">
       <labels>
         <label locale="en_US">
           <name>Object lots editor</name>
@@ -42471,7 +42450,7 @@ A Closed loan is completed and inactive.</setting>
               <bundle>ca_object_lots</bundle>
               <settings>
                 <setting name="label" locale="en_US">Related Accessions</setting>
-                <setting name="add_label" locale="en_US">add Accession</setting>
+                <setting name="add_label" locale="en_US">Add Accession</setting>
                 <setting name="restrict_to_types">arch_accession</setting>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">dont_force</setting>
@@ -42697,7 +42676,7 @@ A Closed loan is completed and inactive.</setting>
               <bundle>ca_object_lots</bundle>
               <settings>
                 <setting name="label" locale="en_US">Related Accessions</setting>
-                <setting name="add_label" locale="en_US">add Accession</setting>
+                <setting name="add_label" locale="en_US">Add Accession</setting>
                 <setting name="restrict_to_types">arch_accession</setting>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">dont_force</setting>
