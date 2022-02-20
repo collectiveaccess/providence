@@ -1850,7 +1850,12 @@
 		 */
 		public function getAttributeHTMLFormBundle($po_request, $ps_form_name, $pm_element_code_or_id, $ps_placement_code, $pa_bundle_settings, $pa_options) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
-			if (!is_array($pa_bundle_settings)) { $pa_bundle_settings = array(); }
+			if (!is_array($pa_bundle_settings)) { $pa_bundle_settings = []; }
+			
+			$table_name = $this->tableName();
+			$table_num = $this->tableNum();
+			
+			$show_bundle_codes = $po_request->user->getPreference('show_bundle_codes_in_editor');
 			
 			$vb_elements_only = caGetOption('elementsOnly', $pa_options, false);
 			$vb_batch = caGetOption('batch', $pa_options, false);
@@ -1876,15 +1881,16 @@
 			$t_attr = new ca_attributes();
 			$t_attr->purify($this->purify());
 			
-			$va_element_codes = array();
-			$va_elements_by_container = array();
 			$vb_should_output_locale_id = !(bool)$t_element->getSetting('doesNotTakeLocale');
 			$vb_should_output_value_source = (bool)$t_element->getSetting('includeSourceData');
-			$va_element_value_defaults = array();
-			$va_elements_without_break_by_container = array();
-			$va_elements_break_by_container = array();
 			
-			$va_element_info = array();
+			$va_element_codes = [];
+			$va_elements_by_container = [];
+			$va_element_value_defaults = [];
+			$va_elements_without_break_by_container = [];
+			$va_elements_break_by_container = [];
+			$va_element_info = [];
+			
 			// fine element breaks by container
 			foreach($va_element_set as $va_element) {
 				if ($va_element['datatype'] == 0) {		// containers are not active form elements
@@ -1904,16 +1910,26 @@
 			
 			$t_element_datatype = $t_element->get('datatype');
 			$t_element_code = $t_element->get('element_code');
-			$table_name = $this->tableName();
-			$show_bundle_codes = $po_request->user->getPreference('show_bundle_codes_in_editor');
 			
+			$bound_types_for_container = $t_element->getBoundTypesForContainerElement($table_num, $pm_element_code_or_id);
+	
 			foreach($va_element_set as $va_element) {
 				$va_element_info[$va_element['element_id']] = $va_element;
 				
 				if (($va_element['datatype'] == 0) && ($va_element['parent_id'] > 0)) { continue; }
 	
 				$va_label = $this->getAttributeLabelAndDescription($va_element['element_id']);
-
+				
+				if($va_element['parent_id'] > 0) {	// check sub-element type restrictions
+					
+					if(
+						is_array($bound_types_for_container[$va_element['element_id']]) && 
+						sizeof($bound_types_for_container[$va_element['element_id']]) && 
+						!in_array($this->getTypeID(), $bound_types_for_container[$va_element['element_id']])
+					) { continue; }
+					
+				}
+				
 				if(!isset($va_elements_without_break_by_container[$va_element['parent_id']])){
 					$va_elements_without_break_by_container[$va_element['parent_id']] = 1;
 				} else {
@@ -3394,9 +3410,9 @@
  				WHERE
  					$vs_type_sql (camtr.table_num = ?) AND came.parent_id IS NULL
  			", (int)$this->tableNum());
- 			$va_codes = array();
  			
- 			$va_element_labels_by_locale = array();
+ 			$va_codes = $va_element_labels_by_locale = [];
+ 			
  			while($qr_res->nextRow()) {
  				$vn_element_id = (int)$qr_res->get('element_id');
  				$vs_element_code = (string)$qr_res->get('element_code');

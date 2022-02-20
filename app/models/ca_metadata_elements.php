@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1468,7 +1468,6 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 */
 	public function addTypeRestriction($pn_table_num, $pn_type_id, $pa_settings) {
 		if (!($vn_element = $this->getPrimaryKey())) { return null; }		// element must be loaded
-		if ($this->get('parent_id')) { return null; }						// element must be root of hierarchy
 		if (!is_array($pa_settings)) { $pa_settings = array(); }
 
 		$t_restriction = new ca_metadata_type_restrictions();
@@ -1497,7 +1496,6 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 */
 	public function removeTypeRestriction($pn_table_num, $pn_type_id=null) {
 		if (!($vn_element = $this->getPrimaryKey())) { return null; }		// element must be loaded
-		if ($this->get('parent_id')) { return null; }						// element must be root of hierarchy
 
 		$o_db = $this->getDb();
 
@@ -1522,7 +1520,6 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 */
 	public function removeAllTypeRestrictions() {
 		if (!($vn_element = $this->getPrimaryKey())) { return null; }		// element must be loaded
-		if ($this->get('parent_id')) { return null; }						// element must be root of hierarchy
 
 		$o_db = $this->getDb();
 
@@ -1548,12 +1545,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 */
 	public function getTypeRestrictions($pn_table_num=null, $pn_type_id=null) {
 		if (!($vn_element_id = $this->getPrimaryKey())) { return null; }		// element must be loaded
-		if ($this->get('parent_id')) {
-			// element must be root of hierarchy...
-			// if not, then use root of hierarchy since all type restrictions are bound to the root
-			$vn_element_id = $this->getHierarchyRootID(null);
-		}	
-		
+			
 		$vs_key = caMakeCacheKeyFromOptions(['table_num' => $pn_table_num, 'type_id' => $pn_type_id, 'element_id' => $vn_element_id]);
 		
 		if (CompositeCache::contains($vs_key, 'ElementTypeRestrictions')) { 
@@ -1618,16 +1610,16 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * @param $pn_type_id - type_id of type restriction; leave null if you want a non-type-specific restriction
 	 * @return ca_metadata_type_restrictions instance - will be loaded with type restriction
 	 */
-	public function getTypeRestrictionInstanceForElement($pn_table_num, $pn_type_id) {
-		if (!($vn_element_id = $this->getPrimaryKey())) { return null; }		// element must be loaded
-		if ($this->get('parent_id')) { return null; }						// element must be root of hierarchy
+	public function getTypeRestrictionInstanceForElement($pn_table_num, $pn_type_id, ?int $element_id=null) {
+		if(!$element_id) { $element_id = $this->getPrimaryKey(); }
+		if(!$element_id) { return null; }	
 
 		$t_restriction = new ca_metadata_type_restrictions();
 
-		if (($pn_type_id > 0) && $t_restriction->load(array('table_num' => (int)$pn_table_num, 'type_id' => (int)$pn_type_id, 'element_id' => (int)$vn_element_id))) {
+		if (($pn_type_id > 0) && $t_restriction->load(array('table_num' => (int)$pn_table_num, 'type_id' => (int)$pn_type_id, 'element_id' => (int)$element_id))) {
 			return $t_restriction;
 		} else {
-			if ($t_restriction->load(array('table_num' => (int)$pn_table_num, 'type_id' => null, 'element_id' => (int)$vn_element_id))) {
+			if ($t_restriction->load(array('table_num' => (int)$pn_table_num, 'type_id' => null, 'element_id' => (int)$element_id))) {
 				return $t_restriction;
 			}
 
@@ -1642,7 +1634,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 							FROM ca_metadata_type_restrictions
 							WHERE
 								type_id IN (?) AND table_num = ? AND include_subtypes = 1 AND element_id = ?
-						", array($va_ancestors, (int)$pn_table_num, (int)$vn_element_id));
+						", array($va_ancestors, (int)$pn_table_num, (int)$element_id));
 
 						if ($qr_res->nextRow()) {
 							if ($t_restriction->load($qr_res->get('restriction_id'))) {
@@ -1654,6 +1646,31 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			}
 		}
 		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getBoundTypesForContainerElement(int $table_num, $root_element_code_or_id=null) : array {
+		if(!$root_element_code_or_id) { 
+			$root_element_id = self::getElementHierarchyID($this->getPrimaryKey()); 
+		} else {
+			$root_element_id =  self::getElementHierarchyID($root_element_code_or_id);
+		}
+		
+		$qr_res = $this->getDb()->query("
+			SELECT e.element_id, cmtr.type_id
+			FROM ca_metadata_type_restrictions cmtr
+			INNER JOIN ca_metadata_elements AS e ON e.element_id = cmtr.element_id
+			WHERE
+				cmtr.table_num = ? AND e.hier_element_id = ?
+		", [(int)$table_num, (int)$root_element_id]);
+
+		while($qr_res->nextRow()) {
+			$acc[$qr_res->get('element_id')][] = $qr_res->get('type_id');
+		}
+
+		return $acc;
 	}
 	# ------------------------------------------------------
 	/**

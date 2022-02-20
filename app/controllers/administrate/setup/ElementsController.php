@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2021 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,13 +27,13 @@
  */
 
 
-	require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
-	require_once(__CA_MODELS_DIR__.'/ca_metadata_element_labels.php');
-	require_once(__CA_MODELS_DIR__.'/ca_metadata_type_restrictions.php');
-	require_once(__CA_LIB_DIR__.'/Attributes/Attribute.php');
-	require_once(__CA_LIB_DIR__.'/Datamodel.php');
-	require_once(__CA_LIB_DIR__.'/BaseEditorController.php');
-	require_once(__CA_LIB_DIR__.'/ResultContext.php');
+require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
+require_once(__CA_MODELS_DIR__.'/ca_metadata_element_labels.php');
+require_once(__CA_MODELS_DIR__.'/ca_metadata_type_restrictions.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Attribute.php');
+require_once(__CA_LIB_DIR__.'/Datamodel.php');
+require_once(__CA_LIB_DIR__.'/BaseEditorController.php');
+require_once(__CA_LIB_DIR__.'/ResultContext.php');
 
 class ElementsController extends BaseEditorController {
 	# -------------------------------------------------------
@@ -60,7 +60,6 @@ class ElementsController extends BaseEditorController {
 	# -------------------------------------------------------
 	public function Edit($pa_values=null, $pa_options=null){
 		AssetLoadManager::register('bundleableEditor');
-		
 		
 		$t_element = $this->getElementObject();
 		$t_restriction = new ca_metadata_type_restrictions(null, true);
@@ -119,7 +118,6 @@ class ElementsController extends BaseEditorController {
 	# -------------------------------------------------------
 	public function Save($pa_values=null) {
 		$t_element = $this->getElementObject(false);
-		$t_element->setMode(ACCESS_WRITE);
 		$va_request = $_REQUEST; /* we don't want to modify $_REQUEST since this may cause ugly side-effects */
 		foreach($t_element->getFormFields() as $vs_f => $va_field_info) {
 			if ((bool)$t_element->getAppConfig()->get('ca_metadata_elements_dont_allow_editing_of_codes_when_in_use') && $t_element->getPrimaryKey()) { continue; }
@@ -225,7 +223,6 @@ class ElementsController extends BaseEditorController {
 					}
 					$t_element_label->set('is_preferred', $is_preferred);
 					$t_element_label->set('element_id',$t_element->getPrimaryKey());
-					$t_element_label->setMode(ACCESS_WRITE);
 					$t_element_label->insert();
 					if ($t_element_label->numErrors()) {
 						foreach ($t_element_label->errors() as $o_e) {
@@ -238,7 +235,6 @@ class ElementsController extends BaseEditorController {
 				/* delete labels */
 				foreach($data['delete'] as $vn_label){
 					$t_element_label->load($vn_label);
-					$t_element_label->setMode(ACCESS_WRITE);
 					$t_element_label->delete(false);
 				}
 	
@@ -251,7 +247,6 @@ class ElementsController extends BaseEditorController {
 					}
 					$t_element_label->set('is_preferred', $is_preferred);
 					$t_element_label->set('element_id',$t_element->getPrimaryKey());
-					$t_element_label->setMode(ACCESS_WRITE);
 					if($vb_new){
 						$t_element_label->insert();
 					} else {
@@ -311,7 +306,6 @@ class ElementsController extends BaseEditorController {
 				if (preg_match('!^type_restrictions_table_num_([\d]+)$!', $vs_key, $va_matches)) {
 					// got one to update
 					if ($t_restriction->load($va_matches[1])) {
-						$t_restriction->setMode(ACCESS_WRITE);
 						$t_restriction->set('table_num', $this->request->getParameter('type_restrictions_table_num_'.$va_matches[1], pInteger));
 						$t_restriction->set('type_id', ($vn_type_id = $this->request->getParameter('type_restrictions_type_id_'.$va_matches[1], pInteger)) ? $vn_type_id : null);
 						$t_restriction->set('include_subtypes', ($vn_include_subtypes = $this->request->getParameter('type_restrictions_include_subtypes_'.$va_matches[1], pInteger)) ? $vn_include_subtypes : null);
@@ -326,7 +320,6 @@ class ElementsController extends BaseEditorController {
 				}
 				if (preg_match('!^type_restrictions_table_num_new_([\d]+)$!', $vs_key, $va_matches)) {
 					// got one to create
-					$t_restriction->setMode(ACCESS_WRITE);
 					$t_restriction->set('element_id', $t_element->getPrimaryKey());
 					$t_restriction->set('table_num', $this->request->getParameter('type_restrictions_table_num_new_'.$va_matches[1], pInteger));
 					$t_restriction->set('type_id', ($vn_type_id = $this->request->getParameter('type_restrictions_type_id_new_'.$va_matches[1], pInteger)) ? $vn_type_id : null);
@@ -343,7 +336,6 @@ class ElementsController extends BaseEditorController {
 				if (preg_match('!^type_restrictions_([\d]+)_delete$!', $vs_key, $va_matches)) {
 					// got one to delete
 					if ($t_restriction->load($va_matches[1])) {
-						$t_restriction->setMode(ACCESS_WRITE);
 						$t_restriction->delete();
 					}
 					continue;
@@ -360,7 +352,6 @@ class ElementsController extends BaseEditorController {
 	public function Delete($pa_values=null) {
 		$t_element = $this->getElementObject();
 		if ($this->request->getParameter('confirm', pInteger)) {
-			$t_element->setMode(ACCESS_WRITE);
 			$t_element->delete(true);
 
 			if ($t_element->numErrors()) {
@@ -481,10 +472,8 @@ class ElementsController extends BaseEditorController {
 	private function swapRanks(&$t_first,&$t_second){
 		$vn_first_rank = $t_first->get('rank');
 		$vn_second_rank = $t_second->get('rank');
-		$t_first->setMode(ACCESS_WRITE);
 		$t_first->set('rank',$vn_second_rank);
 		$t_first->update();
-		$t_second->setMode(ACCESS_WRITE);
 		$t_second->set('rank',$vn_first_rank);
 		$t_second->update();
 		return true;
@@ -533,7 +522,6 @@ class ElementsController extends BaseEditorController {
 			while($qr_res->nextRow()){
 				$t_element->load($qr_res->get('element_id'));
 				$t_element->set('rank',intval($t_element->get('rank'))+$pa_ranks[0]);
-				$t_element->setMode(ACCESS_WRITE);
 				$t_element->update();
 			}
 			$qr_res = $vo_db->query("
@@ -553,7 +541,6 @@ class ElementsController extends BaseEditorController {
 				$i++;
 				$t_element->load($qr_res->get('element_id'));
 				$t_element->set('rank',intval($t_element->get('rank')) + $i);
-				$t_element->setMode(ACCESS_WRITE);
 				$t_element->update();
 			}
 			$pa_ranks = $this->elementRankStabilizationNeeded($pn_parent_id);
