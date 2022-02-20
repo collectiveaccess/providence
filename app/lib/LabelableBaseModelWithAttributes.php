@@ -1178,8 +1178,8 @@
 		 *     restrictToTypes = an optional array of numeric type ids or alphanumeric type identifiers to restrict the returned labels to. The types are list items in a list specified in app.conf (or, if not defined there, by hardcoded constants in the model)		
 		 *	   checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for table that have an "access" field.
 		 *	   returnAll = return all matching values. [Default is false; only the first matched value is returned]
-		 *	   returnIdnos = return identifier (idno) values instead of row_ids. [Default is false]
 		 *	   returnIdnos = return identifier (idno) values in addition to row_ids, in array keyed on 'id' and 'idno'. [Default is false]
+		 *	   mode = Set to __CA_LABEL_TYPE_PREFERRED__ to return only matches on preferred labels; __CA_LABEL_TYPE_NONPREFERRED__ for matches on non-preferred labels only; __CA_LABEL_TYPE_ANY__ or null to return any type of label match. [Default is null]
 		 */
 		static public function getIDsForLabels($labels, $options=null) {
 			if (!is_array($labels) && strlen($labels)) { $labels = [$labels]; }
@@ -1189,6 +1189,7 @@
 			$return_all = caGetOption('returnAll', $options, false);
 			$return_idnos = caGetOption('returnIdnos', $options, false);
 			$force_to_lowercase = caGetOption('forceToLowercase', $options, false);
+			$mode = caGetOption('mode', $options, null);
 		
 			$table_name = $table_name ? $table_name : get_called_class();
 			if (!($t_instance = Datamodel::getInstanceByTableName($table_name, true))) { return null; }
@@ -1230,13 +1231,21 @@
 				$type_sql = " AND t.{$type_fld_name} IN (?)";
 				$params[] = $restrict_to_types;
 			}
-		
+			
+			$pref_sql = '';
+			if($l->hasField('is_preferred')) {
+				if($mode === __CA_LABEL_TYPE_PREFERRED__) {
+					$pref_sql = " AND l.is_preferred = 1";
+				} elseif($mode === __CA_LABEL_TYPE_NONPREFERRED__) {
+					$pref_sql = " AND l.is_preferred = 0";
+				}
+			}
 			$qr_res = $t_instance->getDb()->query("
 				SELECT t.{$pk}, l.{$label_fld}".($idno_fld ? ", t.{$idno_fld}" : '')."
 				FROM {$table_name} t
 				INNER JOIN {$label_table} AS l ON l.{$pk} = t.{$pk}
 				WHERE
-					l.{$label_fld} IN (?) {$deleted_sql} {$access_sql} {$type_sql}
+					l.{$label_fld} IN (?) {$deleted_sql} {$access_sql} {$type_sql} {$pref_sql}
 			", $params);
 	
 		
