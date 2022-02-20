@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2021 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -82,19 +82,19 @@
 	}
 
 	if (in_array($t_subject->tableName(), array('ca_objects', 'ca_collections')) && $vb_objects_x_collections_hierarchy_enabled) {
-		$va_lookup_urls_for_move = $va_lookup_urls = array(
+		$lookup_urls_for_move = $lookup_urls = array(
 			'search' => caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'Get', $va_search_lookup_extra_params),
 			'levelList' => caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'GetHierarchyLevel'),
 			'ancestorList' => caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'GetHierarchyAncestorList'),
 			'sortSave' => caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'SetSortOrder')
 		);
-		$va_lookup_urls_for_move['search'] = caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'Get', array_merge($va_search_lookup_extra_params, ['currentHierarchyOnly' => null]));
+		$lookup_urls_for_move['search'] = caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'Get', array_merge($va_search_lookup_extra_params, ['currentHierarchyOnly' => null]));
 		
 		$vs_edit_url = caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'Edit').'/id/';
 		$vn_init_id = $t_subject->tableName()."-".$pn_id;
 	} else {
-		$va_lookup_urls 			= caJSONLookupServiceUrl($this->request, $t_subject->tableName(), $va_search_lookup_extra_params);
-		$va_lookup_urls_for_move 	= caJSONLookupServiceUrl($this->request, $t_subject->tableName(), array_merge($va_search_lookup_extra_params, ['currentHierarchyOnly' => null]));
+		$lookup_urls 			= caJSONLookupServiceUrl($this->request, $t_subject->tableName(), $va_search_lookup_extra_params);
+		$lookup_urls_for_move 	= caJSONLookupServiceUrl($this->request, $t_subject->tableName(), array_merge($va_search_lookup_extra_params, ['currentHierarchyOnly' => null]));
 		$vs_edit_url = caEditorUrl($this->request, $t_subject->tableName());
 		$vn_init_id = $pn_id;
 	}
@@ -450,6 +450,7 @@
 		</div>
 	</div>
 	<input type='hidden' name='<?= $id_prefix; ?>_new_parent_id' id='<?= $id_prefix; ?>_new_parent_id' value='<?= $pn_parent_id; ?>'/>
+	<input type='hidden' name='<?= $id_prefix; ?>_move_selection' id='<?= $id_prefix; ?>_move_selection' value=''/>
 
 <script type="text/javascript">
 	jQuery(document).ready(function() {	
@@ -459,7 +460,7 @@
 		// Set up "move" hierarchy browse search
 		jQuery('#<?= $id_prefix; ?>MoveHierarchyBrowserSearch').autocomplete(
 			{ 
-				source: '<?= $va_lookup_urls_for_move['search']; ?>', minLength: <?= $min_autocomplete_search_length; ?>, delay: 800, html: true, noInline: true,
+				source: '<?= $lookup_urls_for_move['search']; ?>', minLength: <?= $min_autocomplete_search_length; ?>, delay: 800, html: true, noInline: true,
 				select: function( event, ui ) {
 					if (ui.item.id) {
 						jQuery("#<?= $id_prefix; ?>HierarchyBrowserContainer").slideDown(350);
@@ -489,7 +490,7 @@
 		// Set up "explore" hierarchy browse search
 		jQuery('#<?= $id_prefix; ?>ExploreHierarchyBrowserSearch').autocomplete(
 			{
-				source: '<?= $va_lookup_urls['search']; ?>', minLength: <?= $min_autocomplete_search_length; ?>, delay: 800, html: true, noInline: true,
+				source: '<?= $lookup_urls['search']; ?>', minLength: <?= $min_autocomplete_search_length; ?>, delay: 800, html: true, noInline: true,
 				select: function( event, ui ) {
 					if (ui.item.id) {
 						jQuery("#<?= $id_prefix; ?>HierarchyBrowserContainer").slideDown(350);
@@ -548,8 +549,8 @@
 	function _init<?= $id_prefix; ?>ExploreHierarchyBrowser() {
 		if (!o<?= $id_prefix; ?>ExploreHierarchyBrowser) {
 			o<?= $id_prefix; ?>ExploreHierarchyBrowser = caUI.initHierBrowser('<?= $id_prefix; ?>ExploreHierarchyBrowser', {
-				levelDataUrl: '<?= $va_lookup_urls['levelList']; ?>',
-				initDataUrl: '<?= $va_lookup_urls['ancestorList']; ?>',
+				levelDataUrl: '<?= $lookup_urls['levelList']; ?>',
+				initDataUrl: '<?= $lookup_urls['ancestorList']; ?>',
 				
 				dontAllowEditForFirstLevel: <?= (in_array($t_subject->tableName(), array('ca_places', 'ca_storage_locations', 'ca_list_items', 'ca_relationship_types')) ? 'true' : 'false'); ?>,
 				
@@ -561,7 +562,7 @@
 				disabledButtonIcon: "<?= caNavIcon(__CA_NAV_ICON_DOT__, 1); ?>",
 				
 				allowDragAndDropSorting: <?= caDragAndDropSortingForHierarchyEnabled($this->request, $t_subject->tableName(), $t_subject->getPrimaryKey()) ? "true" : "false"; ?>,
-				sortSaveUrl: '<?= $va_lookup_urls['sortSave']; ?>',
+				sortSaveUrl: '<?= $lookup_urls['sortSave']; ?>',
 				dontAllowDragAndDropSortForFirstLevel: true,
 
 				initItemID: '<?= $vn_init_id; ?>',
@@ -582,8 +583,8 @@
 	function _init<?= $id_prefix; ?>MoveHierarchyBrowser() {
 		if (!o<?= $id_prefix; ?>MoveHierarchyBrowser) {
 			o<?= $id_prefix; ?>MoveHierarchyBrowser = caUI.initHierBrowser('<?= $id_prefix; ?>MoveHierarchyBrowser', {
-				levelDataUrl: '<?= $va_lookup_urls['levelList']; ?>',
-				initDataUrl: '<?= $va_lookup_urls['ancestorList']; ?>',
+				levelDataUrl: '<?= $lookup_urls['levelList']; ?>',
+				initDataUrl: '<?= $lookup_urls['ancestorList']; ?>',
 				
 				readOnly: <?= $vb_read_only ? 1 : 0; ?>,
 				disabledItems: '<?= $vs_disabled_items_mode; ?>',
@@ -594,16 +595,20 @@
 				disabledButtonIcon: "<?= caNavIcon(__CA_NAV_ICON_DOT__, 1); ?>",
 						
 				allowDragAndDropSorting: <?= caDragAndDropSortingForHierarchyEnabled($this->request, $t_subject->tableName(), $t_subject->getPrimaryKey()) ? "true" : "false"; ?>,
-				sortSaveUrl: '<?= $va_lookup_urls['sortSave']; ?>',
+				sortSaveUrl: '<?= $lookup_urls['sortSave']; ?>',
 				dontAllowDragAndDropSortForFirstLevel: true,
 		
 				currentSelectionIDID: '<?= $id_prefix; ?>_new_parent_id',
 				currentSelectionDisplayID: '<?= $id_prefix; ?>HierarchyBrowserSelectionMessage',
-				currentSelectionDisplayFormat: '<?= addslashes(_t('Will be moved under <em>^current</em> after next save.')); ?>',
+				currentSelectionDisplayFormat: <?= json_encode(_t('Will be moved under <em>^current</em> after next save.')); ?>,
 				
 				allowExtractionFromHierarchy: <?= ($t_subject->getProperty('HIERARCHY_TYPE') == __CA_HIER_TYPE_ADHOC_MONO__) ? 'true' : 'false'; ?>,
 				extractFromHierarchyButtonIcon: "<?= caNavIcon(__CA_NAV_ICON_EXTRACT__, 1); ?>",
-				extractFromHierarchyMessage: '<?= addslashes(_t('Will be placed at the top of its own hierarchy after next save.')); ?>',
+				extractFromHierarchyMessage: <?= json_encode(_t('Will be placed at the top of its own hierarchy after next save.')); ?>,
+				
+				allowSecondarySelection: true,
+				secondarySelectionID: '<?= $id_prefix; ?>_move_selection',
+				defaultSecondarySelection: [<?= $t_subject->getPrimaryKey() ?>],
 				
 				onSelection: function(id, parent_id, name, formattedDisplay) {
 					// Update "move" status message
@@ -611,7 +616,7 @@
 	if (($t_subject->tableName() == 'ca_collections')) {
 ?>
 					if (id.substr(0, 10) == 'ca_objects') {
-						formattedDisplay = '<?= addslashes(_t("Cannot move collection under object")); ?>';
+						formattedDisplay = <?= json_encode(_t("Cannot move collection under object")); ?>;
 						jQuery("#<?= $id_prefix; ?>HierarchyBrowserSelectionMessage").html(formattedDisplay);
 						return;
 					}
@@ -639,8 +644,8 @@
 	function _init<?= $id_prefix; ?>AddHierarchyBrowser() {
 		if (!o<?= $id_prefix; ?>AddHierarchyBrowser) {
 			o<?= $id_prefix; ?>AddHierarchyBrowser = caUI.initHierBrowser('<?= $id_prefix; ?>AddHierarchyBrowser', {
-				levelDataUrl: '<?= $va_lookup_urls['levelList']; ?>',
-				initDataUrl: '<?= $va_lookup_urls['ancestorList']; ?>',
+				levelDataUrl: '<?= $lookup_urls['levelList']; ?>',
+				initDataUrl: '<?= $lookup_urls['ancestorList']; ?>',
 				
 				readOnly: true,
 				allowSelection: false,
@@ -665,8 +670,8 @@
 	function _init<?= $id_prefix; ?>AddObjectHierarchyBrowser() {
 		if (!o<?= $id_prefix; ?>AddObjectHierarchyBrowser) {
 			o<?= $id_prefix; ?>AddObjectHierarchyBrowser = caUI.initHierBrowser('<?= $id_prefix; ?>AddObjectHierarchyBrowser', {
-				levelDataUrl: '<?= $va_lookup_urls['levelList']; ?>',
-				initDataUrl: '<?= $va_lookup_urls['ancestorList']; ?>',
+				levelDataUrl: '<?= $lookup_urls['levelList']; ?>',
+				initDataUrl: '<?= $lookup_urls['ancestorList']; ?>',
 				
 				readOnly: true,
 				allowSelection: false,

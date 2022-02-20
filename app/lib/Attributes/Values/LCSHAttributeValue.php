@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2021 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -167,7 +167,7 @@ $_ca_attribute_settings['LCSHAttributeValue'] = array(		// global
 			_t('Preservation Events') => 'cs:http://id.loc.gov/vocabulary/preservationEvents',
 			_t('Preservation Level Role') => 'cs:http://id.loc.gov/vocabulary/preservationLevelRole',
 			_t('Cryptographic Hash Functions') => 'cs:http://id.loc.gov/vocabulary/cryptographicHashFunctions',
-			_t('Controlled Vocabulary for Rare Materials Cataloging') => 'cs:http://id.loc.gov/vocabulary/rbmstr',
+			_t('Controlled Vocabulary for Rare Materials Cataloging') => 'cs:http://id.loc.gov/vocabulary/rbmscv',
 			_t('MARC Relators') => 'cs:http://id.loc.gov/vocabulary/relators',
 			_t('MARC Countries') => 'cs:http://id.loc.gov/vocabulary/countries',
 			_t('MARC Geographic Areas') => 'cs:http://id.loc.gov/vocabulary/geographicAreas',

@@ -36631,6 +36631,7 @@ A Closed loan is completed and inactive.</setting>
             <placement code="ca_object_lots">
               <bundle>ca_object_lots</bundle>
               <settings>
+                <setting name="label" locale="en_US">Accession Number</setting>
                 <setting name="add_label" locale="en_US">Add Accession</setting>
                 <setting name="display_template">^ca_object_lots.preferred_labels (^ca_object_lots.idno_stub)</setting>
                 <setting name="minRelationshipsPerRow"/>

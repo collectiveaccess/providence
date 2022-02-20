@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2326,19 +2326,22 @@ class ca_users extends BaseModel {
 				AND (ceui.editor_type = ?)
 		", (int)$this->getPrimaryKey(), (int)$this->getPrimaryKey(), (int)$pn_table_num);
 		
+		$is_relationship = Datamodel::isRelationship($pn_table_num);
 		$va_ui_list_by_type = array();
 		while($qr_uis->nextRow()) {
 			$ui_id = $qr_uis->get('ui_id');
 			$locale_id = $qr_uis->get('locale_id');
 			$name = $qr_uis->get('name');
 			
+			
+			
 			$type_ids = [];
 			if (!($vn_type_id = $qr_uis->get('type_id'))) { 
 				$type_ids[] = '__all__'; 
-			} elseif($qr_uis->get('include_subtypes') > 0) {
-				$type_ids = caMakeTypeIDList($pn_table_num, $vn_type_id);
+			} elseif($is_relationship) {
+				$type_ids = caMakeRelationshipTypeIDList($pn_table_num, $vn_type_id, ['dontIncludeSubtypesInTypeRestriction' => ($qr_uis->get('include_subtypes') == 0)]);
 			} else {
-				$type_ids = caMakeTypeIDList($pn_table_num, $vn_type_id, ['dontIncludeSubtypesInTypeRestriction' => true]);
+				$type_ids = caMakeTypeIDList($pn_table_num, $vn_type_id, ['dontIncludeSubtypesInTypeRestriction' => ($qr_uis->get('include_subtypes') == 0)]);
 			}
 			if(!is_array($type_ids)) {
 				$type_ids = ['__all__'];
