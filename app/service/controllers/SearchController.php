@@ -315,7 +315,7 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 						}
 						
 						$t = \Datamodel::getInstance($table, true);
-						switch($bundle_bits[0]) {
+						switch($b = $bundle_bits[0]) {
 							case 'idno':
 								$ids = $table::getIDsForIdnos($values, ['restrictToTypes' => $args['restrictToTypes'], 'returnAll' => true]);
 							
@@ -325,7 +325,8 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 								$value_map = array_map(function($v, $k) {return ['id' => $v[0], 'ids' => $v, 'idno' => $k, 'idnos' => [$k], 'value' => $k]; }, $ids, array_keys($ids));
 								break;
 							case 'preferred_labels':
-								$ids = $table::getIDsForlabels($values, ['returnIdnos' => true, 'restrictToTypes' => $args['restrictToTypes'], 'returnAll' => true, 'field' => $bundle_bits[1] ?? null]);
+							case 'nonpreferred_labels':
+								$ids = $table::getIDsForlabels($values, ['mode' => ($b === 'preferred_labels') ? __CA_LABEL_TYPE_PREFERRED__ : __CA_LABEL_TYPE_NONPREFERRED__, 'returnIdnos' => true, 'restrictToTypes' => $args['restrictToTypes'], 'returnAll' => true, 'field' => $bundle_bits[1] ?? null]);
 								
 								foreach($values as $v) {
 									if(!array_key_exists($v, $ids)) { $ids[$v] = null; }
