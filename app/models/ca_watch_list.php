@@ -241,7 +241,7 @@ class ca_watch_list extends BaseModel {
 					"idno" => $t_item_table->get("idno"), 
 					"item_type" => $t_item_table->getProperty('NAME_SINGULAR'), 
 					"primary_key" => $t_item_table->getPrimaryKey(), 
-					"change_log" => [] //$t_changelog->getChangeLogForRowForDisplay($t_item_table, null, $vn_request_user_id)
+					"change_log" => $t_changelog->getChangeLogForRowForDisplay($t_item_table, null, $vn_request_user_id, ['limit' => 50])
 				);
 			}
 		}
