@@ -213,7 +213,7 @@ var caUI = caUI || {};
 				        if(!typesByParent[typeList[i].parent_id]) { typesByParent[typeList[i].parent_id] = []; }
 				        
 				        var parent = that._findRelType(typeList[i].parent_id);
-						if(!typesOutput[parent.type_id]) { 
+						if(parent && !typesOutput[parent.type_id]) { 
 							let parentKey = parent.type_id + '/' + parent.direction;
 							typesByParent[parseInt(parent.parent_id)].push(parent);	
 							typesOutput[parentKey] = typesOutput[parseInt(parent.type_id)] = 1;
