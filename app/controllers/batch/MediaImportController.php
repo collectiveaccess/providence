@@ -100,6 +100,8 @@
  			AssetLoadManager::register("directoryBrowser");
  			list($t_ui) = $this->_initView($pa_options);
  			
+ 			$o_config = Configuration::load();
+ 			
  			$this->view->setVar('batch_mediaimport_last_settings', $va_last_settings = is_array($va_last_settings = $this->request->user->getVar('batch_mediaimport_last_settings')) ? $va_last_settings : array());
 
 			// get import type from request
@@ -142,22 +144,24 @@
 				throw new ApplicationException(_t('No import modes are configured. Check the application configuration <em>media_importer_allowed_modes</em> setting and make sure at least one valid mode is set.'));
 			}
 			
-			$this->view->setVar('import_mode', caHTMLSelect('import_mode', $import_modes, array(), array('value' => $va_last_settings['importMode'])));
+			$this->view->setVar('import_mode', caHTMLSelect('import_mode', $import_modes, ['id' => 'importMode'], ['value' => $va_last_settings['importMode']]));
 			
-			$this->view->setVar('match_mode', caHTMLSelect('match_mode', array(
+			$this->view->setVar('match_mode', caHTMLSelect('match_mode', [
 				_t('Match using file name') => 'FILE_NAME',
 				_t('Match using directory name') => 'DIRECTORY_NAME',
 				_t('Match using directory name, then file name') => 'FILE_AND_DIRECTORY_NAMES'
-			), array(), array('value' => $va_last_settings['matchMode'])));
+			], [], ['value' => $va_last_settings['matchMode']]));
 			
-			$this->view->setVar('match_type', caHTMLSelect('match_type', array(
+			$this->view->setVar('match_type', caHTMLSelect('match_type', [
 				_t('matches exactly') => 'EXACT',
 				_t('starts with') => 'STARTS',
 				_t('ends with') => 'ENDS',
 				_t('contains') => 'CONTAINS'
-			), array(), array('value' => $va_last_settings['matchType'])));
+			], [], ['value' => $va_last_settings['matchType']]));
  			
- 			$this->view->setVar($vs_import_target.'_type_list', $t_instance->getTypeListAsHTMLFormElement($vs_import_target.'_type_id', null, array('value' => $va_last_settings[$vs_import_target.'_type_id'])));
+ 			$this->view->setVar($vs_import_target.'_type_list', $t_instance->getTypeListAsHTMLFormElement($vs_import_target.'_type_id', ['id' => 'primary_type_id'], array('value' => $va_last_settings[$vs_import_target.'_type_id'])));
+ 			$this->view->setVar($vs_import_target.'_parent_type_list', $t_instance->getTypeListAsHTMLFormElement($vs_import_target.'_parent_type_id', ['id' => 'parent_type_id'], array('value' => $va_last_settings[$vs_import_target.'_parent_type_id'] ?? $t_instance->getTypeIDForCode($o_config->get('media_importer_hierarchy_parent_type')))));
+ 			$this->view->setVar($vs_import_target.'_child_type_list', $t_instance->getTypeListAsHTMLFormElement($vs_import_target.'_child_type_id', ['id' => 'child_type_id'], array('value' => $va_last_settings[$vs_import_target.'_child_type_id'] ?? $t_instance->getTypeIDForCode($o_config->get('media_importer_hierarchy_child_type')))));
  			$this->view->setVar($vs_import_target.'_limit_to_types_list', $t_instance->getTypeListAsHTMLFormElement($vs_import_target.'_limit_matching_to_type_ids[]', array('multiple' => 1), array('height' => '100px', 'values' => $va_last_settings[$vs_import_target.'_limit_matching_to_type_ids'])));
  			$this->view->setVar('ca_object_representations_type_list', $t_rep->getTypeListAsHTMLFormElement('ca_object_representations_type_id', null, array('value' => $va_last_settings['ca_object_representations_type_id'])));
 
@@ -241,6 +245,8 @@
  				'matchType' => $this->request->getParameter('match_type', pString),
 				$vs_import_target.'_limit_matching_to_type_ids' => $this->request->getParameter($vs_import_target.'_limit_matching_to_type_ids', pArray),
  				$vs_import_target.'_type_id' => $this->request->getParameter($vs_import_target.'_type_id', pInteger),
+ 				$vs_import_target.'_parent_type_id' => $this->request->getParameter($vs_import_target.'_parent_type_id', pInteger),
+ 				$vs_import_target.'_child_type_id' => $this->request->getParameter($vs_import_target.'_child_type_id', pInteger),
  				'ca_object_representations_type_id' => $this->request->getParameter('ca_object_representations_type_id', pInteger),
  				$vs_import_target.'_status' => $this->request->getParameter($vs_import_target.'_status', pInteger),
  				'ca_object_representations_status' => $this->request->getParameter('ca_object_representations_status', pInteger),
@@ -444,7 +450,7 @@
  				
  				Session::setVar('lastMediaImportDirectoryPath', $ps_directory);
 
-				$va_tmp = explode('/', $ps_directory);
+				$va_tmp = ($ps_directory === '/') ? [''] : explode('/', $ps_directory);
 				$vn_level = sizeof($va_tmp);
 				if ($ps_directory[0] == '/') { $vn_level--; }
 				

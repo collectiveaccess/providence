@@ -707,7 +707,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			$params = [
 				$subject_tablenum, (int)$lower_text, (int)$upper_text
 			];
-			$qr_res = $this->db->query($x="
+			$qr_res = $this->db->query("
 				SELECT swi.row_id, SUM(swi.boost) boost
 				FROM ca_sql_search_word_index swi
 				INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id
@@ -716,6 +716,30 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				GROUP BY swi.row_id
 			", $params);
 			return $this->_arrayFromDbResult($qr_res);
+		}
+		$table = Datamodel::getTableName($subject_tablenum);
+		$idno_fld = Datamodel::getTableProperty($subject_tablenum, 'ID_NUMBERING_ID_FIELD');
+		if($lower_term->field === "{$table}.{$idno_fld}") {
+			if($o_idno = IDNumbering::newIDNumberer($table)) {
+				$idno_sort_fld = Datamodel::getTableProperty($subject_tablenum, 'ID_NUMBERING_SORT_FIELD');
+				if(($t_subject = Datamodel::getInstance($table, true)) && ($t_subject->hasField("{$idno_sort_fld}_num"))) {
+					$lower_index = $o_idno->getSortableNumericValue($lower_text);
+					$upper_index = $o_idno->getSortableNumericValue($upper_text);
+			
+					$pk = Datamodel::primaryKey($table);
+				
+					$params = [
+						(int)$lower_index, (int)$upper_index
+					];
+					$qr_res = $this->db->query("
+						SELECT t.{$pk} row_id, 100 boost
+						FROM {$table} t
+						WHERE
+							t.{$idno_sort_fld}_num BETWEEN ? AND ?
+					", $params);
+					return $this->_arrayFromDbResult($qr_res);
+				}
+			}
 		}
 		return $this->_processMetadataDataType($subject_tablenum, $ap, $query);
 	}

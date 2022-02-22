@@ -88,7 +88,7 @@ BaseModel::$s_ca_models_definitions['ca_sets_x_users'] = array(
 		'activation_key' => array(
 			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT,
 			'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-			'IS_NULL' => false,
+			'IS_NULL' => true,
 			'DEFAULT' => '',
 			'BOUNDS_LENGTH' => [0, 36],
 			'LABEL' => _t('Activation key'), 'DESCRIPTION' => _t('Key provided to user to activate access. Used for Pawtucket set/lightbox invitation workflow.')
@@ -107,7 +107,7 @@ BaseModel::$s_ca_models_definitions['ca_sets_x_users'] = array(
 			'IS_NULL' => true, 
 			'DEFAULT' => '',
 			'START' => 'sdatetime', 'END' => 'edatetime',
-			'LABEL' => _t('Effective dates'), 'DESCRIPTION' => _t('Period of time for which this access is in effect. Leave blank if you do not wish to restrict access to a specific period of time.')
+			'LABEL' => _t('Effective date'), 'DESCRIPTION' => _t('Period of time for which this access is in effect. Leave blank if you do not wish to restrict access to a specific period of time.')
 		)
  	)
 );

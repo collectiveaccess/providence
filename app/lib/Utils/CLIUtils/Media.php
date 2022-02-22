@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2021 Whirl-i-Gig
+ * Copyright 2018-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -289,7 +289,7 @@
 				"object_ids|o-s" => _t('Comma separated list of object ids to reload'),
 				"kinds|k-s" => _t('Comma separated list of kind of media to reprocess. Valid kinds are ca_object_representations (object representations), ca_attributes (metadata elements) and icons (icon graphics on list items, storage locations, editors, editor screens, tours and tour stops). You may also specify "all" to reprocess all kinds of media. Default is "all"'),
 				"unprocessed|u" => _t('Reprocess all unprocessed media'),
-				"oriented-only|x-i" => _t('Only reprocess image media having the EXIF orientation set to a value > 1')
+				"oriented-only|y-i" => _t('Only reprocess image media having the EXIF orientation set to a value > 1')
 			);
 		}
 		# -------------------------------------------------------

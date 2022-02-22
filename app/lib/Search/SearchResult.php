@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2010,6 +2010,8 @@ class SearchResult extends BaseObject {
 		
 		$va_path_components			=& $pa_options['pathComponents'];
 		
+		$pa_check_access		= $pa_options['checkAccess'];
+		
 		$va_restrict_to_type_ids = null;
 		if (
 		    is_array($va_restrict_to_types = caGetOption('restrictToTypes', $pa_options, null))
@@ -2049,7 +2051,9 @@ class SearchResult extends BaseObject {
 		$va_return_values = array();
 		if (is_array($pa_value_list)) {
 			foreach($pa_value_list as $vn_locale_id => $va_labels_by_locale) {
-									
+				if (is_array($pa_check_access) && sizeof($pa_check_access) && $label_instance->hasField('access') && !in_array($va_label['access'], $pa_check_access)) {
+					continue;
+				}
 				if ($pa_options['useLocaleCodes']) {
 					if (!$vn_locale_id || !($vm_locale_id = SearchResult::$opo_locales->localeIDToCode($vn_locale_id))) { $vm_locale_id = __CA_DEFAULT_LOCALE__; }; 
 				} else {
@@ -2776,7 +2780,7 @@ class SearchResult extends BaseObject {
 		if ($pa_options['returnAllLocales']) {
 			$pa_array = caExtractValuesByUserLocale($pa_array);
 			foreach($pa_array as $va_by_attr) {
-				if (!is_array($va_by_attr)) { $va_flattened_values[] = $va_by_attr; continue;  }
+				if (!is_array($va_by_attr)) { $va_by_attr[] = $va_by_attr; }
 				foreach($va_by_attr as $vs_val) {
 					if (is_array($vs_val) && sizeof($vs_val) == 1) { 
 						$vs_val = array_shift($vs_val); 
@@ -2790,6 +2794,9 @@ class SearchResult extends BaseObject {
 					}
 					if($pa_options['toLower'] || $pa_options['tolower']) {
 						$vs_val = mb_strtolower($vs_val);
+					}
+					if($pa_options['periodsToUnderscores'] || $pa_options['periodstounderscores']) {
+						$vs_val = str_replace('.', '_', $vs_val);
 					}
 					if($pa_options['makeFirstUpper'] || $pa_options['makefirstupper']) {
 						$vs_val = ucfirst($vs_val);
@@ -2826,7 +2833,7 @@ class SearchResult extends BaseObject {
 			}	
 		} else {
 			foreach($pa_array as $va_vals) {
-				if(!is_array($va_vals)) { $va_flattened_values[] = $va_vals; continue; }
+				if(!is_array($va_vals)) { $va_vals = [$va_vals]; }
 				foreach($va_vals as $vs_val) {
 					if (is_array($vs_val) && sizeof($vs_val) == 1) { 
 						$vs_val = array_shift($vs_val); 
@@ -2840,6 +2847,9 @@ class SearchResult extends BaseObject {
 					}
 					if($pa_options['toLower'] || $pa_options['tolower']) {
 						$vs_val = mb_strtolower($vs_val);
+					}
+					if($pa_options['periodsToUnderscores'] || $pa_options['periodstounderscores']) {
+						$vs_val = str_replace('.', '_', $vs_val);
 					}
 					if($pa_options['makeFirstUpper'] || $pa_options['makefirstupper']) {
 						$vs_val = ucfirst($vs_val);

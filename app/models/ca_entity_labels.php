@@ -150,6 +150,27 @@ BaseModel::$s_ca_models_definitions['ca_entity_labels'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Is preferred'), 'DESCRIPTION' => _t('Is preferred')
+		),
+		'effective_date' => array(
+				'FIELD_TYPE' => FT_HISTORIC_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'START' => 'sdatetime', 'END' => 'edatetime',
+				'LABEL' => _t('Effective date'), 'DESCRIPTION' => _t('Period of time for which this label was in effect. This is an option qualification for the relationship. If left blank, this relationship is implied to have existed for as long as the related items have existed.')
+		),
+		'access' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => 0,
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'BOUNDS_CHOICE_LIST' => array(
+					_t('Not accessible to public') => 0,
+					_t('Accessible to public') => 1
+				),
+				'LIST' => 'access_statuses',
+				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates if label is accessible to the public or not.')
 		)
  	)
 );
@@ -325,20 +346,50 @@ class ca_entity_labels extends BaseLabel {
 		if (($t_entity = caGetOption('subject', $options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG')) {
 			$this->set('displayname', $this->get('surname'));
 		} elseif (!$this->get('displayname')) {
-			if(is_array($parsed_label = DataMigrationUtils::splitEntityName($l = trim(preg_replace('![ ]+!', ' ', $this->get('forename').' '.$this->get('middlename').' '.$this->get('surname'))), $options))) {
+			if(is_array($normalized_label = self::normalizeLabel($label_values = [
+				'prefix' => $this->get('prefix'),
+				'forename' => $this->get('forename'),
+				'other_forenames' => $this->get('other_forenames'),
+				'middlename' => $this->get('middlename'),
+				'surname' => $this->get('surname'),
+				'suffix' => $this->get('suffix')
+			]))) {
 				if(caGetOption('normalize', $options, true)) {
-					foreach($parsed_label as $fld => $val) {
+					foreach($normalized_label as $fld => $val) {
 						$this->set($fld, $val);
 					}
 				} else {
-					$this->set('displayname', $parsed_label['displayname'] ?? $l);
+					$this->set('displayname', $normalized_label['displayname'] ?? self::labelAsString($label_values));
 				}
 			} else {
-				$this->set('displayname', $l);
+				$this->set('displayname', self::labelAsString($label_values));
 			}
 		}
 		
 		return parent::insert($options);
+	}
+	# ------------------------------------------------------
+	/**
+	 * Convert label components into canonical format
+	 *
+	 * @param array $label_values
+	 *
+	 * @return array
+	 */
+	public static function normalizeLabel(array $label_values) : array {
+		$normalized_values = DataMigrationUtils::splitEntityName(self::labelAsString($label_values), $options);
+		return $normalized_values;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Convert label components into string
+	 *
+	 * @param array $label_values
+	 *
+	 * @return string
+	 */
+	public static function labelAsString(array $label_values) : string {
+		return trim(preg_replace('![ ]+!', ' ', $label_values['prefix'].' '.$label_values['forename'].' '.$label_values['other_forenames'].' '.$label_values['middlename'].' '.$label_values['surname'].' '.$label_values['suffix']));
 	}
 	# ------------------------------------------------------
 	/**

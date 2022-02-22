@@ -1610,6 +1610,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		
 		$va_colors = array();
 		$vn_default_val = null;
+		
+		$separate_disabled = caGetOption('separateDisabledValues', $pa_options, false);
+		
+		$disabled_option_list = [];
 		foreach($va_list_items as $vn_item_id => $va_item) {
 			if (is_array($pa_options['limitToItemsWithID']) && !in_array($vn_item_id, $pa_options['limitToItemsWithID'])) { continue; }
 			if (is_array($pa_options['omitItemsWithID']) && in_array($vn_item_id, $pa_options['omitItemsWithID'])) { continue; }
@@ -1617,8 +1621,13 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			if (is_array($pa_check_access) && (sizeof($pa_check_access) > 0) && !in_array($va_item['access'], $pa_check_access)) { continue; }
 			if (is_array($pa_exclude_items) && (sizeof($pa_exclude_items) > 0) && in_array($va_item['idno'], $pa_exclude_items)) { continue; }
 			
-			$va_options[$va_item[$pa_options['key']]] = str_repeat('&nbsp;', intval($va_item['LEVEL']) * 3).' '.$va_item['name_singular'];
 			if (!caGetOption('forceEnabled', $pa_options, false) && (!$va_item['is_enabled'] || (is_array($va_disabled_item_ids) && in_array($vn_item_id, $va_disabled_item_ids)))) { $va_disabled_options[$va_item[$pa_options['key']]] = true; }
+			
+			if($separate_disabled && !$va_item['is_enabled']) {
+				$disabled_option_list[$va_item[$pa_options['key']]] = str_repeat('&nbsp;', intval($va_item['LEVEL']) * 3).' '.$va_item['name_singular'];
+				continue;
+			}
+			$va_options[$va_item[$pa_options['key']]] = str_repeat('&nbsp;', intval($va_item['LEVEL']) * 3).' '.$va_item['name_singular'];
 			$va_colors[$vn_item_id] = $va_item['color'];
 			
 			if ($va_item['is_default']) { $vn_default_val = $va_item[$pa_options['key']]; }		// get default value
@@ -1640,6 +1649,9 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		
 		if (isset($pa_options['additionalOptions']) && is_array($pa_options['additionalOptions'])) {
 			$va_options = array_merge($va_options, array_flip($pa_options['additionalOptions']));
+		}
+		if($separate_disabled) {
+			$va_options += $disabled_option_list;
 		}
 		
 		$pa_options['disabledOptions'] = $va_disabled_options;

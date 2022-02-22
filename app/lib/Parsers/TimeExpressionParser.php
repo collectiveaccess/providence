@@ -878,6 +878,11 @@ class TimeExpressionParser {
 			$ps_expression = preg_replace("!([\-\–\—]+)([A-Za-z]+)!", " - $2", $ps_expression);
 		}
 		
+		// Handle ?-<date> (Ex. ?-1948)
+		if (preg_match("!^\?[\-–]{1}!", $ps_expression)) {			
+			$ps_expression = preg_replace("!^\?[\-–]{1}!", "? - ", $ps_expression);
+		}
+		
 		$va_era_list = array_merge(array_keys($this->opo_language_settings->getAssoc("ADBCTable")), array($this->opo_language_settings->get("dateADIndicator"), $this->opo_language_settings->get("dateBCIndicator")));
 		foreach($va_era_list as $vs_era) {
 			$ps_expression = preg_replace("/([\d]+)".$vs_era."[ ]*/i", "$1 $vs_era ", $ps_expression); #str_replace($vs_era, " ".$vs_era, $ps_expression);
@@ -2231,8 +2236,8 @@ class TimeExpressionParser {
 			
 			if (($pa_dates['start']['year'] === TEP_START_OF_UNIVERSE) && ($pa_dates['end']['year'] !== TEP_END_OF_UNIVERSE)) {
 				if($pa_dates['end']['month'] === null) { $pa_dates['end']['month'] = 12; }
-				if($pa_dates['end']['day'] === null) { $pa_dates['end']['day'] = 31; }
 				if($pa_dates['end']['year'] === null) { $pa_dates['end']['year'] = date("Y"); }
+				if($pa_dates['end']['day'] === null) { $pa_dates['end']['day'] = $this->daysInMonth( $pa_dates['end']['month'], $pa_dates['end']['year']); }
 			}
 			
 			if (($pa_dates['start']['year'] !== TEP_START_OF_UNIVERSE) && ($pa_dates['end']['year'] === TEP_END_OF_UNIVERSE)) {
@@ -2240,8 +2245,7 @@ class TimeExpressionParser {
 				if($pa_dates['start']['day'] === null) { $pa_dates['start']['day'] = 1; }
 				if($pa_dates['start']['year'] === null) { $pa_dates['start']['year'] = date("Y"); }
 			}
-			
-
+		
 			if (($pa_dates['start']['month'] === null) && ($pa_dates['end']['month'] === null) && ($pa_dates['start']['year'] != TEP_START_OF_UNIVERSE) && ($pa_dates['end']['year'] != TEP_END_OF_UNIVERSE)) { 
 				$pa_dates['start']['month'] = 1; 
 				$pa_dates['end']['month'] = 12; 

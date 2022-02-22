@@ -789,7 +789,7 @@ if($show_entity_controls) {
 			if(caGetOption('always_create_new_loan', $settings, false)) {
 ?>
 				jQuery('#<?= $vs_id_prefix; ?>AddLoan<?= $vn_type_id; ?>').on('click', function(e) { 
-					caRelationBundle<?= $vs_id_prefix; ?>_ca_loans_<?= $vn_type_id; ?>.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }); 
+					caRelationBundle<?= $vs_id_prefix; ?>_ca_loans_<?= $vn_type_id; ?>.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }, {'addBundle': true }); 
 				});
 <?php
 			}
@@ -836,7 +836,7 @@ if($show_entity_controls) {
 			if(caGetOption('always_create_new_movement', $settings, false)) {
 ?>
 				jQuery('#<?= $vs_id_prefix; ?>AddMovement<?= $vn_type_id; ?>').on('click', function(e) { 
-					caRelationBundle<?= $vs_id_prefix; ?>_ca_movements_<?= $vn_type_id; ?>.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }); 
+					caRelationBundle<?= $vs_id_prefix; ?>_ca_movements_<?= $vn_type_id; ?>.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }, {'addBundle': true }); 
 				});
 <?php
 			}
@@ -924,7 +924,7 @@ if($show_entity_controls) {
 			if(caGetOption('always_create_new_occurrence', $settings, false)) {
 ?>
 				jQuery('#<?= $vs_id_prefix; ?>AddOcc<?= $vn_type_id; ?>').on('click', function(e) { 
-					caRelationBundle<?= $vs_id_prefix; ?>_ca_occurrences_<?= $vn_type_id; ?>.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }); 
+					caRelationBundle<?= $vs_id_prefix; ?>_ca_occurrences_<?= $vn_type_id; ?>.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }, {'addBundle': true }); 
 				});
 <?php
 			}
