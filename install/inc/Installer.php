@@ -397,7 +397,7 @@ class Installer {
 	 */
 	public function performPreInstallTasks() {
 		self::clearCaches();
-		$o_config = Configuration::load();
+		$o_config = \Configuration::load();
 
 		// create tmp dir
 		if (!file_exists($this->config->get('taskqueue_tmp_directory'))) {
@@ -663,7 +663,7 @@ class Installer {
 				}
 			}
 		}
-		CompositeCache::flush();
+		\CompositeCache::flush();
 		return true;
 	}
 	# --------------------------------------------------
@@ -2453,8 +2453,8 @@ class Installer {
 	 * @return void
 	 */
 	public static function clearCaches() {
-		CompositeCache::flush(); 
-		caRemoveDirectory(Configuration::load()->get('taskqueue_tmp_directory'), false);
+		\CompositeCache::flush(); 
+		caRemoveDirectory(\Configuration::load()->get('taskqueue_tmp_directory'), false);
 	}
 	# --------------------------------------------------
 }
