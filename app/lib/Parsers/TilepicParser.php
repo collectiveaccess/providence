@@ -98,7 +98,7 @@ class TilepicParser {
 		"image/jp2"			=> "public.jpeg-2000"
 	);
 	
-	var $debug = false;
+	var $debug = true;
 	
 	var $backend;
 	

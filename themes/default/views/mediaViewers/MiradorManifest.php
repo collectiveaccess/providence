@@ -58,6 +58,8 @@
 	
 	foreach($va_resources as $va_resource) {
 		$vs_canvas_id = "{$vs_identifer}:{$vn_page}";
+		$vs_canvas_id = "representation:".$va_resource['representation_id'].":".$vn_page;//"{$vs_identifier}:{$vn_page}";
+		
 		
 		if (isset($va_resource['noPages'])) {
 			// If resource includes explicitly set "noPages" then assume representation identifier with that id
