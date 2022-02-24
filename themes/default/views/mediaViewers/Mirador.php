@@ -39,8 +39,22 @@
 ?>
 <script type="text/javascript" src="<?php print $this->request->getAssetsUrlPath(); ?>/mirador/mirador.js"></script>
 <script type="text/javascript">
+	
+	function onAdded(event,param){	
+		miradorInstance.eventEmitter.subscribe('currentCanvasIDUpdated.'+param.id , onCanvas);
+	}
+
+	function onCanvas(event,canvasId){	
+		if(canvasId){
+			var new_download_item=canvasId.slice(canvasId.indexOf(":", 5)+1,canvasId.indexOf(":", 15) );
+			jQuery(".repNav").html("<?php echo _t("Unavailable") ?>");
+			document.getElementsByName('representation_id')[0].value =	new_download_item;	
+		}
+	}
+
+	var miradorInstance=null;
     jQuery(document).ready(function() {
-      Mirador({
+      miradorInstance = Mirador({
         "id": "<?php print $ps_id; ?>", 
         "layout": "1x1", 
         "mainMenuSettings" : {
@@ -68,8 +82,14 @@
         }],
 		"buildPath": '<?php print __CA_URL_ROOT__."/assets/mirador/"; ?>'
       });
+
+	  miradorInstance.eventEmitter.subscribe('currentCanvasIDUpdated.<?php print $ps_id; ?>' , onCanvas);
+	  miradorInstance.eventEmitter.subscribe('windowAdded' , onAdded);
+	  
       jQuery(".mirador-icon-metadata-view, .mirador-osd-annotation-controls").hide();
     });
+
+
   </script>
   <div id="<?php print $ps_id; ?>" style="width: <?php print $vs_width; ?>; height: <?php print !$this->getVar('hideOverlayControls') ? "calc({$vs_height} - 24px)" : $vs_height; ?>;">
   
