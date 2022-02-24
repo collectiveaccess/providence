@@ -57,10 +57,8 @@
 	$vn_num_resources = sizeof($va_resources);
 	
 	foreach($va_resources as $va_resource) {
-		$vs_canvas_id = "{$vs_identifer}:{$vn_page}";
-		$vs_canvas_id = "representation:".$va_resource['representation_id'].":".$vn_page;//"{$vs_identifier}:{$vn_page}";
-		
-		
+		$vs_canvas_id = "representation:".$va_resource['representation_id'].":".$vn_page;
+				
 		if (isset($va_resource['noPages'])) {
 			// If resource includes explicitly set "noPages" then assume representation identifier with that id
 			// (This is used to support the "use_mirador_for_image_list_length_at_least" option in media_display.conf

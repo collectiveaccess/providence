@@ -125,7 +125,7 @@
 						$vs_controls .= "</form>\n";
 						
 						if (is_array($va_ids) && (sizeof($va_ids) > 1)) {
-							$vs_controls .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".caNavLink($po_request, _t('Download all')." ".caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1, [], ['color' => 'white']), 'xxx', '*', '*', 'DownloadMedia', [$t_subject->primaryKey() => $t_subject->getPrimaryKey()]);							
+							$vs_controls .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".caNavLink($po_request, _t('Download all')." ".caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1, [], ['color' => 'white']), 'xxx', '*', '*', 'DownloadMedia', [$t_subject->primaryKey() => $t_subject->getPrimaryKey()]);
 						}
 						$vs_controls .= "</div>\n";
 					}
