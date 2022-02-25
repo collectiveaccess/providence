@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2021 Whirl-i-Gig
+ * Copyright 2021-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -100,7 +100,6 @@ class XLSXProfileParser extends BaseProfileParser {
 				
 		// Build list of worksheets to process
 		$sheet_map = $this->_getSheetMap();
-		
 		// Parse sections
 		if(isset($sheet_map['locales'])) { $this->processLocales($sheet_map['locales']); }
  		if(isset($sheet_map['lists'])) { $this->processLists($sheet_map['lists']); }
@@ -253,12 +252,13 @@ class XLSXProfileParser extends BaseProfileParser {
 			$hrow = $sheet->getHighestRow(); 
 
 			$settings = [];
-			for($line=2; $line <= $hrow; $line++) {
+			for($line=3; $line <= $hrow; $line++) {
 				$name = strtolower($sheet->getCellByColumnAndRow(1, $line)->getValue());
 				$language = strtolower($sheet->getCellByColumnAndRow(2, $line)->getValue());
-				$country = strtolower($sheet->getCellByColumnAndRow(3, $line)->getValue());
+				$country = strtoupper($sheet->getCellByColumnAndRow(3, $line)->getValue());
 				$dont_use_for_cataloguing = strtolower($sheet->getCellByColumnAndRow(4, $line)->getValue());
 				
+				if(!$language || !$country) { continue; }
 				$locale_code = "{$language}_{$country}";
 				$this->data['locales'][$locale_code] = [
 					'name' => $name,
@@ -322,7 +322,7 @@ class XLSXProfileParser extends BaseProfileParser {
 					'system' => false,
 					'vocabulary' => false,
 					'defaultSort' => 0,
-					'items' => $this->processListItems($sheet, $info, 2, $info['start'], $code_proc)
+					'items' => $this->processListItems($sheet, $info, 3, $info['start'], $code_proc)
 				];
 			}
 		} 
@@ -392,7 +392,7 @@ class XLSXProfileParser extends BaseProfileParser {
 		if($sheet) {
 			$hrow = $sheet->getHighestRow(); 
 			//Element Name	Sub-element Name	Schema	Element Code	Data Type	Data Format	Source List	Restrict to Types	Display Order	Mandatory	Repeatable	Public	Description	Notes										
-			$row = 2;
+			$row = 3;
 			
 			$elements = [];
 			$parent_element_code = null;
@@ -443,52 +443,21 @@ class XLSXProfileParser extends BaseProfileParser {
 		foreach($elements as $element) {
 	
 			$labels = [
-				['name' => $element['name'], 'description' => $element['description'], 'locale' => $this->settings['locale'], 'preferred' => 1]
+				[
+					'name' => $element['name'], 'description' => $element['description'], 
+					'locale' => $this->settings['locale'], 'preferred' => 1
+				]
 			];
 			$settings = [];
 			
 			foreach(preg_split('![,;\n]+!', $element['render']) as $render_setting) {
-				switch(strtolower($render_setting)) {
-					case 'suggest existing values';
-						$settings['suggestExistingValues'][''] = [
-							1
-						];
-						break;
-					case 'drop-down list':
-					case 'drop down list':
-						$settings['render'][''] = [
-							'select'
-						];
-						break;
-					case 'rich text':
-						$settings['usewysiwygeditor'][''] = [
-							1
-						];
-						break;
-					case 'checklist':
-						$settings['render'][''] = [
-							'checklist'
-						];
-						break;
-					case 'month dd yyyy':
-					case 'mdy':
+				$lines = preg_split("![\n\r]+!", $render_setting);
+				foreach($lines as $line) {
+					$l = explode('=', $line);
+					$setting = self::rewriteSettingName(array_shift($l));
+					$value = join('=', $l);
 					
-						break;
-					case 'cad':
-						$settings['dollarCurrency'][''] = [
-							'CDN'
-						];
-						break;
-					default:
-						$lines = preg_split("![\n\r]+!", $render_setting);
-						foreach($lines as $line) {
-							$l = explode('=', $line);
-							$setting = self::rewriteSettingName(array_shift($l));
-							$value = join('=', $l);
-							
-							$settings[$setting][''][] = $value;
-						}
-						break;
+					$settings[$setting][''][] = $value;
 				}
 			}
 		
@@ -505,7 +474,7 @@ class XLSXProfileParser extends BaseProfileParser {
 				$restrictions = preg_split('![;,\n]+!', $element['restrict_to']);
 				foreach($restrictions as $rx => $restriction) {
 					$tmp = explode('/', $restriction);
-    			    $table = $tmp[0];
+    			    $table = self::tableNameFromString($tmp[0]);
 					$type = $tmp[1] ?? null;
 					
 					$min_repeats = is_numeric($element['mandatory']) ? (int)$element['mandatory'] : (self::parseBool($element['mandatory']) ? 1 : 0);
@@ -589,7 +558,7 @@ class XLSXProfileParser extends BaseProfileParser {
 			foreach($rel_tables as $table_code => $info) {
 				$name = caCamelOrSnakeToText($info['code'], ['ucFirst' => true]);
 				
-				$this->data['relationshipTypes'][$info['table']] = $this->processRelationshipTypesForTable($sheet, $info, 2, $info['start']);
+				$this->data['relationshipTypes'][$info['table']] = $this->processRelationshipTypesForTable($sheet, $info, 3, $info['start']);
 				$r++;
 			}
 		}
@@ -655,11 +624,15 @@ class XLSXProfileParser extends BaseProfileParser {
 				$hrow = $sheet->getHighestRow(); 
 			
 				$by_screen = [];
-				for($r=2; $r <= $hrow; $r++) {
+				for($r=3; $r <= $hrow; $r++) {
 					$screen = trim($sheet->getCellByColumnAndRow(1, $r)->getValue());
 					if(!$screen) { continue; }
+					
+					// Skip if label if blank (allows inclusion of sub-elements for documentation purposes)
+					if(!($label = trim($sheet->getCellByColumnAndRow(2, $r)->getValue()))) { continue; }
+					
 					$by_screen[$screen][] = [
-						'label' => trim($sheet->getCellByColumnAndRow(2, $r)->getValue()),
+						'label' => $label,
 						'code' => trim($sheet->getCellByColumnAndRow(3, $r)->getValue()),
 						'relationship' => trim($sheet->getCellByColumnAndRow(4, $r)->getValue()),
 						'relationship_type' => trim($sheet->getCellByColumnAndRow(5, $r)->getValue()),
@@ -773,7 +746,7 @@ class XLSXProfileParser extends BaseProfileParser {
 		
 		if($sheet) {
 			$hrow = $sheet->getHighestRow(); 
-			for($r=2; $r <= $hrow; $r++) {
+			for($r=3; $r <= $hrow; $r++) {
 				$user_name = trim($sheet->getCellByColumnAndRow(1, $r)->getValue());
 				$password = trim($sheet->getCellByColumnAndRow(2, $r)->getValue());
 				$fname = trim($sheet->getCellByColumnAndRow(3, $r)->getValue());
@@ -818,7 +791,8 @@ class XLSXProfileParser extends BaseProfileParser {
 	/**
 	 *
 	 */
-	private static function tableNameFromString(string $string) : ?string {
+	private static function tableNameFromString(string $string, ?bool $search_relationships=true) : ?string {
+		if(\Datamodel::tableExists($string)) { return $string; }
 		switch(strtolower($string)) {
 			case 'entity':
 			case 'entities':
@@ -890,20 +864,21 @@ class XLSXProfileParser extends BaseProfileParser {
 			case 'ca_tour_stops':
 				return 'ca_tour_stops';
 		}
-		return null;
+		return $search_relationships ? self::relTableNameFromString($string) : false;
 	}
 	# --------------------------------------------------
 	/**
 	 *
 	 */
 	private static function relTableNameFromString(string $string) : ?string {
-		if(!self::isRelationship($string)) {
-			return null;
+		if(self::isRelationship($string)) {
+			return true;
 		}
 		
-		$tmp = explode('_', $string);
-		$table1 = self::tableNameFromString($tmp[0]);
-		$table2 = self::tableNameFromString($tmp[1]);
+		$tmp = preg_split('!'.(preg_match('!_x_!i', $string) ? '_x_' : '_').'!i', $string);
+
+		$table1 = self::tableNameFromString($tmp[0], false);
+		$table2 = self::tableNameFromString($tmp[1], false);
 		if(!$table1 || !$table2) { return null; }
 		
 		$path = \Datamodel::getPath($table1, $table2);
@@ -918,7 +893,7 @@ class XLSXProfileParser extends BaseProfileParser {
 	 */
 	private static function isRelationship(string $table) : bool {
 		if (\Datamodel::tableExists($table)) {
-			if (preg_match("!^ca_[a-z_]?+_x_[a-z_]+!", $table)) { 
+			if (preg_match("!^ca_[a-z_]+?_x_[a-z_]+!", $table)) { 
 				return true;
 			}
 		}

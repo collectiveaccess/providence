@@ -590,7 +590,7 @@ class Datamodel {
        if($ps_left_table == $ps_right_table) {
              //define rel table
              $rel_table  = $ps_left_table . "_x_" . str_replace("ca_","",$ps_left_table);
-             if (!Datamodel::getInstanceByTableName($rel_table, true)) {
+             if (!Datamodel::tableExists($rel_table)) {
              	$va_path = [];		// self relation doesn't exist
              }
              $va_path = array($ps_left_table=>Datamodel::getTableNum($ps_left_table),$rel_table=>Datamodel::getTableNum($rel_table));
