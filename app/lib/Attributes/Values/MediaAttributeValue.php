@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -171,7 +171,7 @@
                         return $this->opo_media_info_coder->getMediaInfo($vs_version, 'MIMETYPE');
                         break;
                     case 'tag':
-                        return $this->opo_media_info_coder->getMediaTag($vs_version, ['alt' => caGetOption('alt', $pa_options, null)]);
+                        return $this->opo_media_info_coder->getMediaTag($vs_version, ['alt' => caGetOption('alt', $pa_options, null), 'scaleCSSWidthTo' => caGetOption('scaleCSSWidthTo', $pa_options, null), 'scaleCSSHeightTo' => caGetOption('scaleCSSHeightTo', $pa_options, null)]);
                         break;
                     case 'path':
                         return $this->opo_media_info_coder->getMediaPath($vs_version);
