@@ -768,7 +768,7 @@ class Installer {
 					$restriction_code = $restriction["code"];
 
 					if (!($table_num = \Datamodel::getTableNum($restriction['table']))) {
-						$this->addError('processMetadataElements', "Invalid table specified for restriction $restriction_code in element $element_code");
+						$this->addError('processMetadataElements', "Invalid table {$restriction['table']} specified for restriction {$restriction_code} in element {$element_code}");
 						return false;
 					}
 					$t_instance = \Datamodel::getInstance((string)$restriction['table']);
