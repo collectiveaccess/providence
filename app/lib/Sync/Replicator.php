@@ -419,18 +419,6 @@ class Replicator {
                                                 continue; 
                                             } 
                                             
-                                           //  $o_access_for_missing = $o_source->setRequestMethod('POST')->setEndpoint('hasAccess')
-//                                                                     ->addGetParameter('access', $vs_access)
-//                                                                     ->setRequestBody([$vs_missing_guid])
-//                                                                     ->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
-//                                                                     ->request();
-//                                             $va_access_for_missing = $o_access_for_missing->getRawData();
-//                                             if ($pa_filter_on_access_settings && ($va_access_for_missing[$vs_missing_guid] !== '?') && !in_array((int)$va_access_for_missing[$vs_missing_guid], $pa_filter_on_access_settings, true)) {
-// 												// skip rows for which we have no access
-// 												$this->log(_t("[%1] Don't pull log for missing guid %2 because we have no access.", $vs_source_key, $vs_missing_guid), Zend_Log::DEBUG);
-// 												continue;
-// 											}
-                                            
                                             // Pull log for "missing" guid we need to replicate on target
                                             $this->log(_t("[%1] Fetching log for missing guid %2.", $vs_source_key, $vs_missing_guid), Zend_Log::DEBUG);
                                             $va_log_for_missing_guid = $o_source->setEndpoint('getlog')
@@ -465,13 +453,7 @@ class Replicator {
                                                                 
                                                 		continue; 
                                                 	}	
-                                                    // if ($va_missing_entry['log_id'] >= ($replicated_log_id + $chunk_size)) { 
-//                                                         // Skip rows in the future - the regular sync process will take care of those. 
-//                                                         // All we do here is bring the target "up to date"
-//                                                        $this->log(_t("[%1] Skip missing log id %1 for %2 because it's beyond the current frame.", $vs_source_key, $va_missing_entry['log_id'], $va_missing_entry['guid']), Zend_Log::DEBUG);
-//                                                         
-//                                                         continue; 
-//                                                     }
+                                                	
                                                     if ($pa_filter_on_access_settings && ($va_access_for_dependent[$va_missing_entry['guid']] !== '?') && !in_array((int)$va_access_for_dependent[$va_missing_entry['guid']], $pa_filter_on_access_settings, true)) {
                                                         // skip rows for which we have no access
                                                         $this->log(_t("[%1] Skip %2 because we have no access.", $vs_source_key, $va_missing_entry['guid']), Zend_Log::DEBUG);
@@ -568,19 +550,11 @@ class Replicator {
                                                                 $this->log(_t("[%1] Skipped entry because it lacks a log_id.", $vs_source_key), Zend_Log::WARN);
                                                                 continue; 
                                                             }
-                                                            // if ($vn_log_id == $vn_mlog_id) { 
-//                                                             	$this->log(_t("[%1] Skipped missing entry because it is the current id.", $vs_source_key), Zend_Log::DEBUG);
-//                                                             	continue; 
-//                                                             } // don't pull in current log entry
                                                             
                                                             if ($vn_mlog_id > $this->last_log_id) { 
                                                                 $this->log(_t("[%1] Skipped entry (%2) because it's in the future.", $vs_source_key, $vn_mlog_id),Zend_Log::DEBUG);
                                                                 continue; 
                                                             }
-                                                           //  if ($vn_mlog_id >= $pn_start_replicated_id) { 
-//                                                                 $this->log(_t("[%1] Skipped entry (%2) because it's within the current sync frame (log_id >= %3).", $vs_source_key, $vn_mlog_id, $pn_start_replicated_id),Zend_Log::DEBUG);
-//                                                                 continue; 
-//                                                             }
                                                             
                                                             // is this an attribute value? If so then check for existence of related attribute 
                                                             // since CA didn't write log entries for this in some versions
@@ -833,7 +807,7 @@ class Replicator {
 							) { 
 								if (!in_array($matches[1], ['lot', 'lot_id', 'parent', 'parent_id'], true)) { 
 									continue; 
-								} 		// TODO: just do dependencies for lots and parents for now; eventually we'll need to consider list items, relationship types, et al.
+								} 		// @TODO: just do dependencies for lots and parents for now; eventually we'll need to consider list items, relationship types, et al.
 								if ($entry['guid'] === $snv) { continue; }										// don't make item dependency of itself
 								
 								if (!isset($source_log_entries_for_missing_guids[$snv])) { continue; }
