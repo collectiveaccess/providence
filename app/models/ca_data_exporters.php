@@ -2410,9 +2410,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
         $o_sheet->getParent()->getDefaultStyle()->applyFromArray($cellstyle);
         $o_sheet->setTitle(substr($exporter_code, 0, 31));
-        
-        $o_sheet->getRowDimension($vn_line)->setRowHeight(30);
-        
+
         $col = 0;
         $line = 1;
         foreach(["Rule type","ID","Parent ID","Element","Source","Options","Notes"] as $h) {
