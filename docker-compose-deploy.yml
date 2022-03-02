@@ -1,0 +1,19 @@
+services:
+  providence:
+    depends_on: 
+      - mysql
+      - memcached
+    volumes:
+      - ${APACHE_LOGS_DIR:-./log}:/app/apache2/logs
+    links:
+      - mysql 
+      - memcached
+
+  mysql:
+    volumes:
+      - $mysql_data:/var/lib/mysql 
+
+  memcached:
+    image: memcached:latest
+    environment:
+      MEMCACHED_CACHE_SIZE: 128
