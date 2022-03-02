@@ -15,6 +15,6 @@ chmod 775 $(find /app/apache2/htdocs/media -type d)
 chmod 664 $(find /app/apache2/htdocs/media -type f)
 
 #htmlpurifier plugin
-chgrp -R daemon /app/apache2/htdocs/vendor/ezyang/htmlpurifier/library/HTMLPurifier/DefinitionCache/Serializer
-chmod 775 $(find /app/apache2/htdocs/vendor/ezyang/htmlpurifier/library/HTMLPurifier/DefinitionCache/Serializer -type d)
-chmod 664 $(find /app/apache2/htdocs/vendor/ezyang/htmlpurifier/library/HTMLPurifier/DefinitionCache/Serializer -type f)
+chgrp -R daemon /app/apache2/htdocs/vendor/
+chmod 775 $(find /app/apache2/htdocs/vendor -type d)
+chmod 664 $(find /app/apache2/htdocs/vendor -type f)
