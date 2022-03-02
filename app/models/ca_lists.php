@@ -1610,6 +1610,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		
 		$va_colors = array();
 		$vn_default_val = null;
+		
+		$separate_disabled = caGetOption('separateDisabledValues', $pa_options, false);
+		
+		$disabled_option_list = [];
 		foreach($va_list_items as $vn_item_id => $va_item) {
 			if (is_array($pa_options['limitToItemsWithID']) && !in_array($vn_item_id, $pa_options['limitToItemsWithID'])) { continue; }
 			if (is_array($pa_options['omitItemsWithID']) && in_array($vn_item_id, $pa_options['omitItemsWithID'])) { continue; }
@@ -1617,8 +1621,13 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			if (is_array($pa_check_access) && (sizeof($pa_check_access) > 0) && !in_array($va_item['access'], $pa_check_access)) { continue; }
 			if (is_array($pa_exclude_items) && (sizeof($pa_exclude_items) > 0) && in_array($va_item['idno'], $pa_exclude_items)) { continue; }
 			
-			$va_options[$va_item[$pa_options['key']]] = str_repeat('&nbsp;', intval($va_item['LEVEL']) * 3).' '.$va_item['name_singular'];
 			if (!caGetOption('forceEnabled', $pa_options, false) && (!$va_item['is_enabled'] || (is_array($va_disabled_item_ids) && in_array($vn_item_id, $va_disabled_item_ids)))) { $va_disabled_options[$va_item[$pa_options['key']]] = true; }
+			
+			if($separate_disabled && !$va_item['is_enabled']) {
+				$disabled_option_list[$va_item[$pa_options['key']]] = str_repeat('&nbsp;', intval($va_item['LEVEL']) * 3).' '.$va_item['name_singular'];
+				continue;
+			}
+			$va_options[$va_item[$pa_options['key']]] = str_repeat('&nbsp;', intval($va_item['LEVEL']) * 3).' '.$va_item['name_singular'];
 			$va_colors[$vn_item_id] = $va_item['color'];
 			
 			if ($va_item['is_default']) { $vn_default_val = $va_item[$pa_options['key']]; }		// get default value
@@ -1640,6 +1649,9 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		
 		if (isset($pa_options['additionalOptions']) && is_array($pa_options['additionalOptions'])) {
 			$va_options = array_merge($va_options, array_flip($pa_options['additionalOptions']));
+		}
+		if($separate_disabled) {
+			$va_options += $disabled_option_list;
 		}
 		
 		$pa_options['disabledOptions'] = $va_disabled_options;
@@ -1688,11 +1700,12 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				if (!sizeof($va_options)) { return ''; }	// return empty string if list has no values
 				$vn_i = 0;
 				
-				$p = floor(100/$max_columns);
-				$vs_buf = ($max_columns > 1) ? "<div class='checklist' style='grid-template-columns: ".str_repeat(" {$p}%", $max_columns).";'>\n" : "<div>\n";
+				$p = floor(670/$max_columns);
+				if ($p > 150) { $p = 150; }
+				$vs_buf = ($max_columns > 1) ? "<div class='checklist' style='grid-template-columns: ".str_repeat("fit-content(175px) ", $max_columns).";'>\n" : "<div>\n";
 	
 				foreach($va_options as $vm_value => $vs_label) {
-					
+					$vs_label = str_replace("&nbsp;", "", trim($vs_label));
 					$va_attributes = array('value' => $vm_value);
 					if (isset($va_disabled_options[$vm_value]) && $va_disabled_options[$vm_value]) {
 						$va_attributes['disabled'] = 1;
@@ -1750,7 +1763,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				if (!sizeof($va_options)) { return ''; }	// return empty string if list has no values
 				
 				$p = floor(100/$max_columns);
-				$vs_buf = ($max_columns > 1) ? "<div class='checklist' style='grid-template-columns: ".str_repeat(" {$p}%", $max_columns).";'>\n" : "<div>\n";
+				$vs_buf = ($max_columns > 1) ? "<div class='checklist' style='grid-template-columns: ".str_repeat("fit-content(175px) ", $max_columns).";'>\n" : "<div>\n";
 			
 				foreach($va_options as $vm_value => $vs_label) {
 					$va_attributes = array('value' => $vm_value);
@@ -1900,7 +1913,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		if ($vs_render_as == 'horiz_hierbrowser_with_search') {
 			$vs_buf .= "jQuery('#{$ps_name}_hierarchyBrowserSearch{n}').autocomplete(
 					{
-						source: '".caNavUrl($pa_options['request'], 'lookup', 'ListItem', 'Get', array('list' => ca_lists::getListCode($vn_list_id), 'noSymbols' => 1))."', 
+						source: '".caNavUrl($pa_options['request'], 'lookup', 'ListItem', 'Get', array('list' => ca_lists::getListCode($vn_list_id), 'noSymbols' => 1, 'noInline' => 1))."', 
 						minLength: 3, delay: 800,
 						select: function(event, ui) {
 							oHierBrowser.setUpHierarchy(ui.item.id);	// jump browser to selected item

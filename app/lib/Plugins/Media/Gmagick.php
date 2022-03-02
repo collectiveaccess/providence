@@ -322,7 +322,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$tp = new TilepicParser();
 			if ($tp->isTilepic($ps_filepath)) {
 				return 'image/tilepic';
-			} elseif ($this->imagemagick_path) {	// Is it HEIC?
+			} elseif ($this->imagemagick_path && (preg_match('!\.heic$!i', $ps_filepath) || preg_match('!\.psd$!i', $ps_filepath))) {	// Is it HEIC?
 				caExec($this->imagemagick_path." ".caEscapeShellArg($ps_filepath)." 2> /dev/null", $output, $return);
 				if(is_array($output) && preg_match("!(HEIC|PSD) [\d]+x[\d]+!", $output[0], $m)) {
 					$this->opa_heic_list[$ps_filepath] = true;
@@ -515,7 +515,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$this->properties["resolution"] = $this->handle->getimageresolution();
 				$this->properties["colorspace"] = $this->_getColorspaceAsString($this->handle->getimagecolorspace());
 				
-				$this->properties["exif_orientation"] = (in_array($orientation = (int)$this->metadata['EXIF']['IFD0']['Orientation'], [6, 8], true)) ? $orientation : null;
+				$this->properties["exif_orientation"] = (in_array($orientation = (int)$this->metadata['EXIF']['IFD0']['Orientation'], [3, 6, 8], true)) ? $orientation : null;
 
 				$this->properties["mimetype"] = $this->_getMagickImageMimeType($this->handle);
 				$this->properties["typename"] = $this->handle->getimageformat();
@@ -545,14 +545,6 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		
 		# get parameters for this operation
 		$sparams = $this->info["TRANSFORMATIONS"][$operation];
-		
-		if($this->properties['exif_orientation'] > 0) {
-			// flip to reflect EXIF orientation
-			$tw = $parameters["width"];
-			$th = $parameters["height"];
-			$parameters["width"] = $th;
-			$parameters["height"] = $tw;
-		} 
 		
 		$w = $parameters["width"];
 		$h = $parameters["height"];

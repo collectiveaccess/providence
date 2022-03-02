@@ -39,6 +39,7 @@ require_once(__CA_LIB_DIR__.'/Configuration.php');
 require_once(__CA_LIB_DIR__.'/Parsers/ZipFile.php');
 require_once(__CA_LIB_DIR__.'/Logging/Eventlog.php');
 require_once(__CA_LIB_DIR__.'/Utils/Encoding.php');
+require_once(__CA_APP_DIR__.'/helpers/batchHelpers.php');
 require_once(__CA_LIB_DIR__.'/Parsers/ganon.php');
 
 /**
@@ -74,9 +75,15 @@ $g_translation_cache = [];
 
 function _t($ps_key) {
 	if(!$ps_key) { return ''; }
-	global $_, $g_translation_strings, $g_translation_replacements, $g_translation_cache;
+	global $_, $_locale, $g_translation_strings, $g_translation_replacements, $g_translation_cache;
 	
-	if (isset($g_translation_strings[$ps_key])) { return $g_translation_strings[$ps_key]; }
+	if (
+		isset($g_translation_strings[$ps_key]) && 
+		(
+			is_string($g_translation_strings[$ps_key]) || 
+			(is_array($g_translation_strings[$ps_key]) && isset($g_translation_strings[$ps_key][(string)$_locale]))
+		)
+	) { return is_array($g_translation_strings[$ps_key]) ? $g_translation_strings[$ps_key][(string)$_locale] : $g_translation_strings[$ps_key]; }
 	
 	if(!isset($g_translation_cache[$ps_key])) {
 		if (is_array($_)) {
@@ -333,6 +340,7 @@ function caFileIsIncludable($ps_file) {
 	 * @param array $pa_options Additional options, including:
 	 *		modifiedSince = Only return files and directories modified after a Unix timestamp [Default=null]
 	 *		notModifiedSince = Only return files and directories not modified after a Unix timestamp [Default=null]
+	 *		includeRoot = Include root directory path in returned values. [Default is false]
 	 *		limit = Maximum number of files to return [Default=null; no limit]
 	 * @return array An array of file paths.
 	 */
@@ -341,10 +349,15 @@ function caFileIsIncludable($ps_file) {
 		if(substr($dir, -1, 1) == "/"){
 			$dir = substr($dir, 0, strlen($dir) - 1);
 		}
+
+		if(!file_exists($dir)) { return []; }
+		
+		if(caGetOption('includeRoot', $pa_options, false)) {
+			$va_file_list[$dir] = true;
+		}
 		$limit = caGetOption('limit', $pa_options, null);
 		
-		if(!file_exists($dir)) { return []; }
-		if($va_paths = @scandir($dir, 0)) {
+		if($va_paths = scandir($dir, 0)) {
 			foreach($va_paths as $item) {
 				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item[0] !== '.'))) {
 					$va_stat = @stat("{$dir}/{$item}");
@@ -392,9 +405,11 @@ function caFileIsIncludable($ps_file) {
 	 * @param string $dir The path to the directory you wish to get the contents list for
 	 * @param bool $pb_recursive Optional. By default caGetDirectoryContentsAsList() will recurse through all sub-directories of $dir; set this to false to only consider files that are in $dir itself.
 	 * @param bool $pb_include_hidden_files Optional. By default caGetDirectoryContentsAsList() does not consider hidden files (files starting with a '.') when calculating file counts. Set this to true to include hidden files in counts. Note that the special UNIX '.' and '..' directory entries are *never* counted as files.
-	 * @return array An array of counts with two keys: 'directories' and 'files'
+	 * @param array $options Options include:
+	 *		returnAsTotal = Return integer count of files + directories. [Default is false]
+	 * @return mixed An array of counts with two keys: 'directories' and 'files' unless returnAsTotal option is set, in which case an integer sum of both keys is returned.
 	 */
-	function caGetDirectoryContentsCount($dir, $pb_recursive=true, $pb_include_hidden_files=false) {
+	function caGetDirectoryContentsCount($dir, $pb_recursive=true, $pb_include_hidden_files=false, array $options=null) {
 		$vn_file_count = 0;
 		if(substr($dir, -1, 1) == "/"){
 			$dir = substr($dir, 0, strlen($dir) - 1);
@@ -424,6 +439,9 @@ function caFileIsIncludable($ps_file) {
 			closedir($handle);
 		}
 
+		if (caGetOption('returnAsTotal', $options, false)) {
+			return (int)$va_counts['files'] + (int)$va_counts['directories'];
+		}
 		return $va_counts;
 	}
 	# ----------------------------------------
@@ -467,18 +485,57 @@ function caFileIsIncludable($ps_file) {
 	# ----------------------------------------
 	/**
 	 * Checks if a given directory is empty (i.e. doesn't have any subdirectories or files in it)
-	 * @param string $vs_dir The directory to check
+	 * @param string $dir The directory to check
 	 * @return bool false if it's not a readable directory or if it's not empty, otherwise true
 	 */
-	function caDirectoryIsEmpty($vs_dir) {
-		if(!is_readable($vs_dir) || !is_dir($vs_dir)) { return false; }
+	function caDirectoryIsEmpty($dir) {
+		if(!is_readable($dir) || !is_dir($dir)) { return false; }
 
 		try {
-			$o_iterator = new \FilesystemIterator($vs_dir);
+			$o_iterator = new \FilesystemIterator($dir);
 			return !$o_iterator->valid();
 		} catch (Exception $e) {
 			return false;
 		}
+	}
+	# ----------------------------------------
+	/**
+	 * Calculates size of directory and all sub-directories in bytes.
+	 *
+	 * @param string $dir The directory to check
+	 * @param array $options Options include:
+	 *		forDisplay = return human-readable version of size value. [Default is false]
+	 *		returnAll = return array with size in bytes, human readable size and file count
+	 * @return mixed Size of directory contents (including all sub-directories) in bytes; human-readable version of size or array with size and count
+	 */
+	function caDirectorySize($dir, array $options=null) {
+		$size = $c = $dc = 0;
+		
+		if ($dir) {
+			foreach (glob(rtrim($dir, '/').'/*', GLOB_NOSORT) as $each) {
+				if (!$each) { continue; }
+				if(is_file($each)) {
+					$size += filesize($each);
+					$c++;
+				} else {
+					$d = caDirectorySize($each, ['returnAll' => true]);
+					$size += $d['size'];
+					$c += $d['fileCount'];
+					$dc += $d['directoryCount'] + 1;
+				}
+			}
+		}
+		
+		if(caGetOption('forDisplay', $options, false)) { return caHumanFilesize($size); }
+		if(caGetOption('returnAll', $options, false)) { 
+			return [
+				'size' => $size, 
+				'display' => caHumanFilesize($size), 
+				'fileCount' => $c, 
+				'directoryCount' => $dc
+			]; 
+		}
+		return $size;
 	}
 	# ----------------------------------------
 	function caZipDirectory($ps_directory, $ps_name, $ps_output_file) {
@@ -767,24 +824,27 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 *
 	 */
-	function caCleanUserMediaDirectory(int $user_id) {
+	function caCleanUserMediaDirectory($user) {
 	    // use configured directory to dump media with fallback to standard tmp directory
 	    $config = Configuration::load();
-		if (!is_writeable($tmp_directory = $config->get('ajax_media_upload_tmp_directory'))) {
-			$tmp_directory = caGetTempDirPath();
-		}
 
-		$user_dir = caGetUserMediaDirectoryPath($user_id);
+		$user_dir = caGetMediaUploadPathForUser($user);
 		
-		if (!($timeout = (int)$config->get('ajax_media_upload_tmp_directory_timeout'))) {
-			$timeout = 24 * 60 * 60;
+		if (($timeout = (int)$config->get('media_uploader_directory_timeout')) <= 0) {		// bail if no timeout
+			return 0;
 		}
 		
 		// Cleanup any old files here
 		$files_to_delete = caGetDirectoryContentsAsList($user_dir, true, false, false, true, ['notModifiedSince' => time() - $timeout]);
 		$count = 0;
 		foreach($files_to_delete as $file_to_delete) {
-			if(@unlink($file_to_delete)) { $count++; }
+			if(is_writeable($file_to_delete)) {
+				if(is_dir($file_to_delete)) {
+					if (@rmdir($file_to_delete)) { $count++; }
+				} else {
+					if (@unlink($file_to_delete)) { $count++; }
+				}
+			}
 		}
 		
 		// Cleanup orphan metadata files
@@ -792,11 +852,11 @@ function caFileIsIncludable($ps_file) {
 	
 		foreach($files as $f => $i) {
 			$b = pathinfo($f, PATHINFO_BASENAME);
-			if (preg_match("!^([^_]+)_metadata!", $b, $m) && !isset($files[$user_dir."/".$m[1]])) {
+			if (preg_match("!^\.([^_]+)_metadata!", $b, $m) && !isset($files[$user_dir."/".$m[1]])) {
 				@unlink($f);
 				continue;
 			}
-			if (preg_match("!^md5_(.*)$!", $b, $m)) {
+			if (preg_match("!^\.md5_(.*)$!", $b, $m)) {
 				$r = @file_get_contents($f);
 				if (!isset($files[$user_dir."/".$r])) { @unlink($f); }
 			}
@@ -810,14 +870,14 @@ function caFileIsIncludable($ps_file) {
 	function caCleanUserMediaDirectories() {
 	    // use configured directory to dump media with fallback to standard tmp directory
 	    $config = Configuration::load();
-		if (!is_writeable($tmp_directory = $config->get('ajax_media_upload_tmp_directory'))) {
-			$tmp_directory = caGetTempDirPath();
+		if (!is_writeable($tmp_directory = $config->get('media_uploader_root_directory'))) {
+			return null;
 		}
 
 		$count = 0;
 		if(is_array($dirs = scandir($tmp_directory))) {
 			foreach($dirs as $dir) {
-				if (preg_match("!^userMedia([\d]+)$!", $dir, $m)) {
+				if (preg_match("!^~([A-Za-z0-9_\-]+)$!", $dir, $m)) {
 					caCleanUserMediaDirectory($m[1]);
 					$count++;
 				}
@@ -1362,6 +1422,7 @@ function caFileIsIncludable($ps_file) {
 	 * 		dontRemoveKeyPrefixes = By default keys that are period-delimited will have the prefix before the first period removed (this is to ease sorting by field names). Set to true to disable this behavior. [Default is false]
 	 *      caseInsenstive = Sort case insensitively. [Default is true]
 	 *      naturalSort = Sort case insensitively and only considers letters and numbers in sort, stripping punctuation and other characters. [Default is false]
+	 *		mode = PHP sort mode to use. [Default is null; use string sort]
 	 * @return array The sorted array
 	*/
 	function caSortArrayByKeyInValue($pa_values, $pa_sort_keys, $ps_sort_direction="ASC", $pa_options=null) {
@@ -1394,7 +1455,7 @@ function caFileIsIncludable($ps_file) {
 			}
 			$va_sorted_by_key[join('/', $va_key)][$vn_id] = $va_data;
 		}
-		ksort($va_sorted_by_key);
+		ksort($va_sorted_by_key, caGetOption('mode', $pa_options, null));
 		if (strtolower($ps_sort_direction) == 'desc') {
 			$va_sorted_by_key = array_reverse($va_sorted_by_key);
 		}
@@ -2155,18 +2216,33 @@ function caFileIsIncludable($ps_file) {
 	function caTruncateStringWithEllipsis($ps_text, $pn_max_length=30, $ps_side="start") {
 		if ($pn_max_length < 1) { $pn_max_length = 30; }
 		if (mb_strlen($ps_text) > $pn_max_length) {
-			if (strtolower($ps_side == 'end')) {
-				$vs_txt = mb_substr($ps_text, mb_strlen($ps_text) - $pn_max_length + 3, null, 'UTF-8');
-				if (preg_match("!<[^>]*$!", $vs_txt, $va_matches)) {
-					$vs_txt = preg_replace("!{$va_matches[0]}$!", '', $vs_txt);
-				}
-				$ps_text = "...{$vs_txt}";
-			} else {
-				$vs_txt = mb_substr($ps_text, 0, ($pn_max_length - 3), 'UTF-8');
-				if (preg_match("!(<[^>]*)$!", $vs_txt, $va_matches)) {
-					$vs_txt = preg_replace("!{$va_matches[0]}$!", '', $vs_txt);
-				}
-				$ps_text = "{$vs_txt}...";
+			switch(strtolower($ps_side)) {
+				case 'end':
+					$vs_txt = mb_substr($ps_text, mb_strlen($ps_text) - $pn_max_length + 3, null, 'UTF-8');
+					if (preg_match("!<[^>]*$!", $vs_txt, $va_matches)) {
+						$vs_txt = preg_replace("!{$va_matches[0]}$!", '', $vs_txt);
+					}
+					$ps_text = "...{$vs_txt}";
+					break;
+				case 'middle':
+					$l = floor(($pn_max_length-3)/2);
+					$start = mb_substr($ps_text, 0, $l);
+					if (preg_match("!<[^>]*$!", $start, $va_matches)) {
+						$start = preg_replace("!{$va_matches[0]}$!", '', $start);
+					}
+					$end = mb_substr($ps_text, -1*$l);
+					if (preg_match("!<[^>]*$!", $end, $va_matches)) {
+						$end = preg_replace("!{$va_matches[0]}$!", '', $end);
+					}
+					$ps_text = $start.'...'.$end;
+					break;
+				default:
+					$vs_txt = mb_substr($ps_text, 0, ($pn_max_length - 3), 'UTF-8');
+					if (preg_match("!(<[^>]*)$!", $vs_txt, $va_matches)) {
+						$vs_txt = preg_replace("!{$va_matches[0]}$!", '', $vs_txt);
+					}
+					$ps_text = "{$vs_txt}...";
+					break;
 			}
 		}
 		return $ps_text;
@@ -2383,7 +2459,7 @@ function caFileIsIncludable($ps_file) {
 		if (!is_array($pa_array)) { return array(); }
 
 		if (!(($o_purifier = caGetOption('purifier', $pa_options, null)) instanceof HTMLPurifier)) {
-			$o_purifier = new HTMLPurifier();
+			$o_purifier = caGetHTMLPurifier();
 		}
 
 		if (!is_array($pa_array)) { return $o_purifier->purify($pa_array); }
@@ -2829,7 +2905,7 @@ function caFileIsIncludable($ps_file) {
 			return ['width' => (int)$pn_target_width, 'height' => (int)$pn_target_height];
 		}
 		
-		if ($$pn_original_width > $pn_original_height) {
+		if ($pn_original_width > $pn_original_height) {
 			$vn_scale_factor = $pn_target_width/$pn_original_width;
 			$pn_target_height = $vn_scale_factor * $pn_original_height;
 		} else {
@@ -2921,29 +2997,39 @@ function caFileIsIncludable($ps_file) {
 	/** 
 	 *
 	 */
-	function caHumanFilesize($bytes, $decimals = 2) : string {
-		$size = ['B','KiB','MiB','GiB','TiB'];
+	function caHumanFilesize($bytes, $decimals = 2, ?array $options=null) : string {
+		if(caGetOption('useMebibytes', $options, Configuration::load()->get('show_filesizes_in_mebibytes'))) {
+			$size = ['B','KiB','MiB','GiB','TiB'];
+			$divisor = 1024;
+		} else {
+			$size = ['B','KB','MB','GB','TB'];
+			$divisor = 1000;
+		}
+		
 		$factor = intval(floor((strlen((int)$bytes) - 1) / 3), 10);
 
-		return sprintf("%.{$decimals}f", (int)$bytes/pow(1024, $factor)).@$size[$factor];
+		return sprintf("%.{$decimals}f", (int)$bytes/pow($divisor, $factor)).' '.@$size[$factor];
 	}
 	# ----------------------------------------
 	/** 
 	 * Parse human-readable filesize into bytes. Note that we always assume that 
-	 * 1 kilobyte = 1024 bytes, not 1000 bytes as Mac OS and some hard drive manufacturers do.
+	 * 1 kilobyte = 1024 bytes, not 1000 bytes as Mac OS and some hard drive manufacturers do when 
+	 * the useMebibytes is set (or show_filesizes_in_mebibytes is set in app.conf)
 	 *
 	 * Common and IEC units may be used:
 	 *		Common = 'B', 'KB', 'MB', 'GB', 'TB', 'PB'
 	 *		IEC = 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'
 	 *
 	 * @param string $from File size expression
+	 * @param array Options include:
+	 *		useMebibytes = Assume 1 kilobyte = 1024 bytes; otherwise assume 1 kilobyte = 1000 bytes. [Default is whatever value of show_filesizes_in_mebibytes in app.conf is]
 	 * @return int File size in bytes, or null if the expression could not be parsed.
 	 */
 	function caParseHumanFilesize(string $from): ?int {
-		$alts = [
-			'KIB' => 'KB', 'MIB' => 'MB', 'GIB' => 'GB', 'TIB' => 'TB', 'PIB' => 'PB'		// iec
-		];
-		$units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+		$return_mebibytes = caGetOption('useMebibytes', $options, Configuration::load()->get('show_filesizes_in_mebibytes'));
+		
+		$iec = ['B' => 'B', 'KIB' => 'KB', 'MIB' => 'MB', 'GIB' => 'GB', 'TIB' => 'TB', 'PIB' => 'PB'];
+		$common = ['B' => 'B', 'KB' => 'KIB', 'MB' => 'MIB', 'GB' => 'GIB', 'TB' => 'TIB', 'PB' => 'PIB'];
 		
 		$suffix = preg_match('![ ]*([KIBMGTP]+)[ ]*$!i', $from, $m) ? strtoupper($m[1]) : null;
 		$number = preg_replace('![^\d\.]!', '', $from);
@@ -2953,14 +3039,31 @@ function caFileIsIncludable($ps_file) {
 			return $number;
 		}
 		
-		if (isset($alts[$suffix])) { $suffix = $alts[$suffix]; }
+		if (isset($iec[$suffix])) { 
+			$divisor = 1024;
+			$units = array_keys($iec);
+		} elseif (isset($common[$suffix])) {  
+			$divisor = 1000;
+			$units = array_keys($common);
+		} else {
+			// invalid units
+			return null;
+		}
 
 		$exponent = array_flip($units)[$suffix] ?? null;
 		if($exponent === null) {
 			return null;
 		}
 
-		return $number * (1024 ** $exponent);
+		$bytes =  $number * ($divisor ** $exponent);
+		
+		if(($return_mebibytes && ($divisor === 1024)) || (!$return_mebibytes && ($divisor === 1000))) {
+			return $bytes;
+		} elseif($return_mebibytes) {
+			return ceil($bytes * (1024/1000));
+		} elseif(!$return_mebibytes) {
+			return ceil($bytes * (1000/1024));
+		}
 	}
 	# ----------------------------------------
 	/**
@@ -3644,11 +3747,11 @@ function caFileIsIncludable($ps_file) {
 	    }
 	    if ($po_request) {
 	        if (!is_array($va_tokens = PersistentCache::fetch("csrf_tokens_{$session_id}", "csrf_tokens"))) { $va_tokens = []; }
-	        if (sizeof($va_tokens) > 300) { 
-	        	$va_tokens = array_filter($va_tokens, function($v) { return ($v > (time() - 28800)); });	// delete any token older than eight hours
+	        if (sizeof($va_tokens) > 2000) { 
+	        	$va_tokens = array_filter($va_tokens, function($v) { return ($v > (time() - 86400)); });	// delete any token older than eight hours
 	    	}
-	    	if (sizeof($va_tokens) > 600) { 
-	    		$va_tokens = array_slice($va_tokens, 0, 200, true); // delete last third of token buffer if it gets too long
+	    	if (sizeof($va_tokens) > 2000) { 
+	    		$va_tokens = array_slice($va_tokens, 0, 500, true); // delete last quarter of token buffer if it gets too long
 	    	}
 	    
 	        if (!isset($va_tokens[$vs_token])) { $va_tokens[$vs_token] = time(); }
@@ -3662,17 +3765,18 @@ function caFileIsIncludable($ps_file) {
 	 * Validate CSRF token using current session
 	 *
 	 * @param RequestHTTP $po_request Current request
-	 * @param string $ps_token CSRF token to validate. If omitted token in the "crsfToken" parameter is extracted from current request.
+	 * @param string $ps_token CSRF token to validate. If omitted token in the "csrfToken" parameter is extracted from current request.
 	 * @param array $pa_options Options include:
-	 *      remove = remove validated token from active token list. [Default is true]
-	 *      exceptions = throw exception if token is invalid. [Default is true]
+	 *      remove = remove validated token from active token list. [Default is false]
+	 *      exceptions = throw exception if token is invalid. [Default is false]
+	 *      notifications = post notification if token is invalid. [Default is false]
 	 * @return bool
 	 * @throws ApplicationException
 	 */
 	function caValidateCSRFToken($po_request, $ps_token=null, $pa_options=null){
 		$session_id = $po_request ? $po_request->getSessionID() : 'none';
 		
-	    if(!$ps_token) { $ps_token = $po_request->getParameter('crsfToken', pString); }
+	    if(!$ps_token) { $ps_token = $po_request->getParameter('csrfToken', pString); }
 	    if (!is_array($va_tokens = PersistentCache::fetch("csrf_tokens_{$session_id}", "csrf_tokens"))) { $va_tokens = []; }
 	    
 	    if (isset($va_tokens[$ps_token])) { 
@@ -3982,6 +4086,7 @@ function caFileIsIncludable($ps_file) {
 		global $g_ui_locale;
 		$ps_locale = caGetOption('locale', $pa_options, $g_ui_locale);
 		$max_length = caGetOption('maxLength', $pa_options, 255, ['castTo' => 'int']);
+		$ps_text = strip_tags($ps_text);
 		if (!$ps_locale) { return mb_substr($ps_text, 0, $max_length); }
 
 		$pb_omit_article = caGetOption('omitArticle', $pa_options, true);
@@ -3989,7 +4094,8 @@ function caFileIsIncludable($ps_file) {
 		$o_locale_settings = TimeExpressionParser::getSettingsForLanguage($ps_locale);
 
 		$vs_display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $ps_text));
-
+		$vs_display_value = preg_replace('![ ]+!', ' ', $vs_display_value);
+		
 		// Move articles to end of string
 		$va_articles = caGetArticlesForLocale($ps_locale) ?: [];
 
@@ -4007,15 +4113,17 @@ function caFileIsIncludable($ps_file) {
 				$vs_display_value = str_replace($va_matches[$i], $vs_padded, $vs_display_value);
 			}
 		}
-		return mb_substr($vs_display_value, 0, $max_length);
+		return mb_substr($vs_display_value, 0, $max_length, 'UTF-8');
 	}
 	# ----------------------------------------
 	/**
 	 * Get list of (enabled) primary tables as table_num => table_name mappings
 	 * @param bool $pb_include_rel_tables Include relationship tables or not. Defaults to false
+	 * @param array $additional_tables Optional array of additional tables to include. [Default is null]
+	 *
 	 * @return array
 	 */
-	function caGetPrimaryTables($pb_include_rel_tables=false) {
+	function caGetPrimaryTables($pb_include_rel_tables=false, ?array $additional_tables=null) {
 		$o_conf = Configuration::load();
 		$va_ret = [];
 		foreach([
@@ -4037,7 +4145,13 @@ function caFileIsIncludable($ps_file) {
 				$va_ret[$vn_table_num] = $vs_table_name;
 			}
 		}
-
+		if(is_array($additional_tables) && sizeof($additional_tables)) {
+			foreach($additional_tables as $table) {
+				if(!($t=Datamodel::getInstance($table, true))) { continue; }
+				$va_ret[$t->tableNum()] = $table;
+			}
+		}
+		
 		if($pb_include_rel_tables) {
 			require_once(__CA_MODELS_DIR__.'/ca_relationship_types.php');
 			$t_rel = new ca_relationship_types();
@@ -4056,8 +4170,8 @@ function caFileIsIncludable($ps_file) {
 	 * @param bool $pb_include_rel_tables Include relationship tables or not. Defaults to false
 	 * @return array
 	 */
-	function caGetPrimaryTablesForHTMLSelect($pb_include_rel_tables=false) {
-		$va_tables = caGetPrimaryTables($pb_include_rel_tables);
+	function caGetPrimaryTablesForHTMLSelect($pb_include_rel_tables=false, ?array $additional_tables=null) {
+		$va_tables = caGetPrimaryTables($pb_include_rel_tables, $additional_tables);
 		$va_ret = [];
 		foreach($va_tables as $vn_table_num => $vs_table) {
 			$va_ret[Datamodel::getInstance($vn_table_num, true)->getProperty('NAME_PLURAL')] = $vn_table_num;
@@ -4075,7 +4189,7 @@ function caFileIsIncludable($ps_file) {
 		$o_purifier = null;
 		if($pb_purify = caGetOption('purify', $pa_options, false)) {
 			if (!(($o_purifier = caGetOption('purifier', $pa_options, null)) instanceof HTMLPurifier)) {
-				$o_purifier = new HTMLPurifier();
+				$o_purifier = caGetHTMLPurifier();
 			}
 		}
 
@@ -4555,4 +4669,58 @@ function caFileIsIncludable($ps_file) {
 		}
 		return $ret;
 	}
+	# ----------------------------------------
+	/**
+	 * Transform comma separated values in the form "Print, Photo" to a serialized version ("Photo Print")
+	 *
+	 * @param string $value Value to transform
+	 *
+	 * @return string Transformed value
+	 */
+	function caSerializeCommaSeparatedName(string $value) {
+		$tmp = array_map("trim", explode(',', $value));
+		$v = array_shift($tmp);
+		return join(" ", $tmp)." {$v}";
+	}
     # ----------------------------------------
+	/**
+	 * Convery hex color value to decimal RGB values
+	 *
+	 * @param string $value Hex color value to convert
+	 *
+	 * @return array Array of RGB decimal values
+	 */
+	function caHexColorToRGB(string $value) {
+		if ($value[0] === '#') { $value = substr($value, 1); }
+		if(strlen($value) !== 6) { return null; }
+		
+		return [
+			hexdec(substr($value, 0, 2)),
+			hexdec(substr($value, 2, 2)),
+			hexdec(substr($value, 4, 2))
+		];
+	}
+    # ----------------------------------------
+	/**
+	 * Escape/quote regex delimiter, leaving other special characters intact
+	 *
+	 * @param string $regex 
+	 * @param string $delimiter
+	 *
+	 * @return string
+	 */
+	function caQuoteRegexDelimiter(string $regex, string $delimiter) : string {
+		$regex = str_replace($delimiter, "\\{$delimiter}", $regex);
+		
+		return $regex;
+	}
+    # ----------------------------------------
+	/**
+	 *
+	 */
+	function caGetHTMLPurifier(?array $options=null) : HTMLPurifier {
+		$config = HTMLPurifier_Config::createDefault();
+		$config->set('URI.DisableExternalResources', !Configuration::load()->get('purify_allow_external_references'));
+		return new HTMLPurifier($config); 
+	}
+	# ----------------------------------------

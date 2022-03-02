@@ -535,7 +535,11 @@
 		 */
 		public function getTypeRestriction(&$pb_type_restriction_has_changed) {
 			$pb_type_restriction_has_changed = false;
-			if (!($pn_type_id = htmlspecialchars(html_entity_decode($this->opo_request->getParameter('type_id', pString, ['forcePurify' => true]))))) {
+			
+			if((bool)$this->opo_request->getParameter('clearType', pInteger)) {
+				$pb_type_restriction_has_changed = true;
+				return null;
+			} elseif (!($pn_type_id = htmlspecialchars(html_entity_decode($this->opo_request->getParameter('type_id', pString, ['forcePurify' => true]))))) {
  				if ($va_context = $this->getContext()) {
 					return $va_context['type_id'] ? $va_context['type_id'] : null;
 				}
@@ -747,6 +751,10 @@
 		 * @return string - sort as set
 		 */
 		public function setParameter($ps_param, $pm_value) {
+			if(is_null($pm_value)) { 
+				$this->deleteContextValue('param_'.$ps_param);
+				return true;
+			}
 			return $this->setContextValue('param_'.$ps_param, $pm_value);
 		}
 		# ------------------------------------------------------------------
@@ -877,8 +885,10 @@
 				$o_context = new ResultContext($po_request, $pm_table_name_or_num, $va_tmp[0], isset($va_tmp[1]) ? $va_tmp[1] : null);
 				foreach ($va_nav['params'] as $vs_param) {
 					if (!($vs_param = trim($vs_param))) { continue; }
-					if(!trim($va_params[$vs_param] = $po_request->getParameter($vs_param, pString))) {
-						$va_params[$vs_param] = trim($o_context->getParameter($vs_param));
+					if(strlen($v = trim($po_request->getParameter($vs_param, pString, ['forcePurify' => true])))) {
+						$va_params[$vs_param] = $v;
+					} elseif(strlen($v = trim($o_context->getParameter($vs_param)))) {
+						$va_params[$vs_param] = $v;
 					}
 				}
 				
@@ -906,7 +916,10 @@
 			
 			$vs_last_find = ResultContext::getLastFind($po_request, $pm_table_name_or_num);
 			$va_tmp = explode('/', $vs_last_find);
-			
+			if (!is_array($pa_attributes)) {
+				$pa_attributes = [];
+			}
+			$pa_attributes['aria-label'] = _t('Return to results');
 			$o_find_navigation = Configuration::load(((defined('__CA_THEME_DIR__') && file_exists(__CA_THEME_DIR__.'/conf/find_navigation.conf')) ? __CA_THEME_DIR__ : __CA_APP_DIR__).'/conf/find_navigation.conf');
 			$va_find_nav = $o_find_navigation->getAssoc($vs_table_name);
 			$va_nav = $va_find_nav[$va_tmp[0]];
@@ -935,8 +948,10 @@
 				$o_context = new ResultContext($po_request, $pm_table_name_or_num, $va_tmp[0], isset($va_tmp[1]) ? $va_tmp[1] : null);
 				foreach ($va_nav['params'] as $vs_param) {
 					if (!($vs_param = trim($vs_param))) { continue; }
-					if(!trim($va_params[$vs_param] = $po_request->getParameter($vs_param, pString, ['forcePurify' => true]))) {
-						$va_params[$vs_param] = trim($o_context->getParameter($vs_param));
+					if(strlen($v = trim($po_request->getParameter($vs_param, pString, ['forcePurify' => true])))) {
+						$va_params[$vs_param] = $v;
+					} elseif(strlen($v = trim($o_context->getParameter($vs_param)))) {
+						$va_params[$vs_param] = $v;
 					}
 				}
 				
@@ -1081,6 +1096,17 @@
 		 */
 		protected function getContextValue($ps_key) {
 			return $this->opa_context[$ps_key];
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Removes context value. It is not meant to be invoked by outside callers.
+		 *
+		 * @param $ps_key - string identifier for context value
+		 * @param $pm_value - the value (string, number, array)
+		 */
+		protected function deleteContextValue($ps_key) {
+			unset($this->opa_context[$ps_key]);
+			return true;
 		}
 		# ------------------------------------------------------------------
 		/**

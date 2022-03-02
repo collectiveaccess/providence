@@ -34,7 +34,6 @@ create table if not exists ca_media_upload_sessions (
 
 create index i_handler on ca_task_queue(handler);
 
-
 /*==========================================================================*/
 
 /* Always add the update to ca_schema_updates at the end of the file */

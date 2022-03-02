@@ -197,7 +197,7 @@ class BaseSettings {
 		$vs_name = 				caGetOption('name', $pa_options, null);
 		$vs_placement_code = 	caGetOption('placement_code', $pa_options, null);
 		
-		$va_options = array('request' => $po_request, 'id_prefix' => $vs_id, 'table' => caGetOption('table', $pa_options, null));
+		$va_options = ['request' => $po_request, 'id_prefix' => $vs_id, 'table' => caGetOption('table', $pa_options, null), 'relatedTable' => caGetOption('relatedTable', $pa_options, null)];
 		foreach($va_settings as $vs_setting => $va_setting_info) {
 			if ($format) {
 				$va_options['id'] = str_replace("^setting_name", $vs_setting, $format);

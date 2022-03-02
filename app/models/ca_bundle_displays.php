@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2020 Whirl-i-Gig
+ * Copyright 2010-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -629,27 +629,29 @@ if (!$pb_omit_editing_info) {
 											case 'horiz_hierbrowser_with_search':
 											case 'vert_hierbrowser':
 											case 'vert_hierbrowser_down':
-											    if ($t_list->numItemsInList($t_element->get("list_id")) > 500) {
-											        // don't send very large lists
-											        $placements[$placement_id]['allowInlineEditing'] = false;
-												    $placements[$placement_id]['inlineEditingType'] = null;
-											    } else {
-                                                    $placements[$placement_id]['allowInlineEditing'] = $vb_user_can_edit;
-                                                    $placements[$placement_id]['inlineEditingType'] = DT_SELECT;
-                                                
-                                                    $va_list_values = $t_list->getItemsForList($t_element->get("list_id"), array('labelsOnly' => true));
-                                                
-                                                    $qr_list_items = caMakeSearchResult('ca_list_items', array_keys($va_list_values));
-                                                    $va_list_item_labels = [];
-                                        
-                                                    while($qr_list_items->nextHit()) {
-                                                    	if(!($v = trim($qr_list_items->get('ca_list_items.hierarchy.preferred_labels.name_plural', ['delimiter' => $ps_hierarchical_delimiter])))) { continue; }
-                                                        $va_list_item_labels[$vb_use_item_values ? $qr_list_items->get('ca_list_items.item_value') : $qr_list_items->get('ca_list_items.item_id')] = $v;
-                                                    }
-                                                    asort($va_list_item_labels);
-                                                    $placements[$placement_id]['inlineEditingListValues'] = array_values($va_list_item_labels);
-                                                    $placements[$placement_id]['inlineEditingListValueMap'] = array_flip($va_list_item_labels);
-                                                }
+												if($t_element->get("list_id") > 0) {
+													if ($t_list->numItemsInList($t_element->get("list_id")) > 500) {
+														// don't send very large lists
+														$placements[$placement_id]['allowInlineEditing'] = false;
+														$placements[$placement_id]['inlineEditingType'] = null;
+													} else {
+														$placements[$placement_id]['allowInlineEditing'] = $vb_user_can_edit;
+														$placements[$placement_id]['inlineEditingType'] = DT_SELECT;
+												
+														$va_list_values = $t_list->getItemsForList($t_element->get("list_id"), array('labelsOnly' => true));
+												
+														$qr_list_items = caMakeSearchResult('ca_list_items', array_keys($va_list_values));
+														$va_list_item_labels = [];
+										
+														while($qr_list_items->nextHit()) {
+															if(!($v = trim($qr_list_items->get('ca_list_items.hierarchy.preferred_labels.name_plural', ['delimiter' => $ps_hierarchical_delimiter])))) { continue; }
+															$va_list_item_labels[$vb_use_item_values ? $qr_list_items->get('ca_list_items.item_value') : $qr_list_items->get('ca_list_items.item_id')] = $v;
+														}
+														asort($va_list_item_labels);
+														$placements[$placement_id]['inlineEditingListValues'] = array_values($va_list_item_labels);
+														$placements[$placement_id]['inlineEditingListValueMap'] = array_flip($va_list_item_labels);
+													}
+												}
 												break;
 											default: // if it's a render setting we don't know about it's not editable
 												$placements[$placement_id]['allowInlineEditing'] = false;
@@ -970,8 +972,10 @@ if (!$pb_omit_editing_info) {
 		if (!$pm_table_name_or_num) { return null; }
 		$cache_key = caMakeCacheKeyFromOptions($options, $pm_table_name_or_num.'|'.(($g_request && $g_request->user) ? 'USER:'.$g_request->user->getPrimaryKey() : ''));
 		if(CompositeCache::contains($cache_key)) {
-			return CompositeCache::fetch($cache_key);
+		//	return CompositeCache::fetch($cache_key);
 		}
+		
+		$t_subject = Datamodel::getInstance($pm_table_name_or_num, true);
 		
 		$vb_show_tooltips = (isset($options['no_tooltips']) && (bool)$options['no_tooltips']) ? false : true;
 		$vs_format = (isset($options['format']) && in_array($options['format'], array('simple', 'full'))) ? $options['format'] : 'full';
@@ -1125,6 +1129,23 @@ if (!$pb_omit_editing_info) {
 			}
 			
 			switch($va_all_elements[$vn_element_id]['datatype']) {
+				case __CA_ATTRIBUTE_VALUE_TEXT__:
+					$va_even_more_settings = array(
+						'newlines' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'width' => 30, 'height' => 1,
+							'takesLocale' => false,
+							'default' => 'HTML',
+							'options' => array(
+								_t('Preserve newlines') => 'NL2BR',
+								_t('Display as HTML') => 'HTML'
+							),
+							'label' => _t('Newlines'),
+							'description' => _t('Determines how newlines in text are processed.')
+						)		
+					);
+					break;
 				case __CA_ATTRIBUTE_VALUE_LIST__:
 					$va_even_more_settings = array(
 						'sense' => array(
@@ -1363,6 +1384,26 @@ if (!$pb_omit_editing_info) {
 					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 				);
 			}
+			
+			$vs_bundle = $vs_table.'.home_location_value';
+			$vs_label = _t('Home location didplay value');
+			$vs_display = "<div id='bundleDisplayEditorBundle_{$vs_table}_home_location_value'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> "._t('Home location display value')."</div>";
+			$vs_description = _t('Home location of object');
+			
+			$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
+				'bundle' => $vs_bundle,
+				'display' => ($vs_format == 'simple') ? $vs_label : $vs_display,
+				'description' => $vs_description,
+				'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0')),
+				'settings' => $va_additional_settings
+			);
+			
+			if ($vb_show_tooltips) {
+				TooltipManager::add(
+					"#bundleDisplayEditorBundle_home_location_value",
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
+				);
+			}
 
 		}
 		
@@ -1545,7 +1586,7 @@ if (!$pb_omit_editing_info) {
 		
 		if (caGetBundleAccessLevel($vs_table, "ca_object_representations") != __CA_BUNDLE_ACCESS_NONE__) {
 			// get object representations (objects only, of course)
-			if ($vs_table == 'ca_objects') {
+			if (is_a($t_subject, 'RepresentableBaseModel')) {
 				$va_additional_settings = array(
 					'display_mode' => array(
 						'formatType' => FT_TEXT,
@@ -1707,7 +1748,21 @@ if (!$pb_omit_editing_info) {
 				)
 			);
 			
-			
+			if($vs_related_table == 'ca_object_representations') {
+				$va_additional_settings['show_nonprimary'] = [
+					'formatType' => FT_TEXT,
+					'displayType' => DT_SELECT,
+					'width' => 35, 'height' => 1,
+					'takesLocale' => false,
+					'default' => 0,
+					'options' => array(
+						_t('Yes') => 1,
+						_t('No') => 0
+					),
+					'label' => _t('Include non-primary media'),
+					'description' => _t('Includes non-primary media in display.')
+				];
+			}
 			
 			if ($vs_related_table == 'ca_list_items') {
 				$va_additional_settings['restrictToLists'] = array(
@@ -2143,6 +2198,8 @@ if (!$pb_omit_editing_info) {
 		$vb_return_info =	caGetOption('returnInfo', $options, false);
 		$vb_include_nonprimary_media = caGetOption('show_nonprimary', $options, false);
 		
+		if(method_exists($po_result, 'filterNonPrimaryRepresentations')) { $po_result->filterNonPrimaryRepresentations(!$vb_include_nonprimary_media); }
+		
 		if (!isset($options['convertCodesToDisplayText'])) { $options['convertCodesToDisplayText'] = true; }
 		if (!isset($options['forReport'])) { $options['forReport'] = false; }
 		if (!isset($options['purify'])) { $options['purify'] = false; }
@@ -2230,7 +2287,10 @@ if (!$pb_omit_editing_info) {
 						    $vs_sort_dir_attr = ($vs_sort_dir) ? "sortDirection=\"{$vs_sort_dir}\"" : "";
 						}
 						$max_items = (int)caGetOption('numPerPage', $va_settings, 0);
-						$vs_unit_tag = "<unit ".(($max_items > 0) ? "length=\"{$max_items}\"" : '')." relativeTo=\"".$va_path[1]."\" delimiter=\"".$options['delimiter']."\" {$vs_restrict_to_types} {$vs_restrict_to_relationship_types} {$vs_sort_attr} {$vs_sort_dir_attr}>";
+						
+						$filter_primary_attr = 'filterNonPrimaryRepresentations="'.($vb_include_nonprimary_media ? "0" : "1").'"';
+						
+						$vs_unit_tag = "<unit ".(($max_items > 0) ? "length=\"{$max_items}\"" : '')." relativeTo=\"".$va_path[1]."\" delimiter=\"".$options['delimiter']."\" {$vs_restrict_to_types} {$vs_restrict_to_relationship_types} {$vs_sort_attr} {$vs_sort_dir_attr} {$filter_primary_attr}>";
 
 						switch(sizeof($va_path)) {
 							case 3:
@@ -2256,8 +2316,14 @@ if (!$pb_omit_editing_info) {
 					}
 				} else {
 					// resolve template relative to current record
+					$rtc = null;
+					$element_code = $va_bundle_bits[sizeof($va_bundle_bits)-1];
+					if($element_code !== '_generic_bundle_') {
+						$dt = ca_metadata_elements::getElementDatatype($element_code);
+						$rtc = ($dt === 0) ? $vs_bundle_name : null;
+					}
 					$vs_val = $po_result->getWithTemplate($vs_template, [
-						'relativeToContainer' => (ca_metadata_elements::getElementDatatype($va_bundle_bits[sizeof($va_bundle_bits)-1]) === 0) ? $vs_bundle_name : null, 
+						'relativeToContainer' => $rtc, 
 						'filters'=> $options['filters'], 
 						'delimiter' => $options['delimiter'], 
 						'policy' => $va_settings['policy']]		// passed for history tracking current value
@@ -2270,12 +2336,9 @@ if (!$pb_omit_editing_info) {
 				$va_bundle_bits[] = 'hierarchy.preferred_labels.name';
 			}
 			
-			if ($vb_include_nonprimary_media) { $po_result->filterNonPrimaryRepresentations(false); }
-			
 			// policy passed for history tracking current value
 			// returnPath passed to force absolute file path to be used when running reports – some systems cannot handle urls in PDFs due to DNS configuration
 			$vs_val = $po_result->get(join(".", $va_bundle_bits), array_merge(['doRefSubstitution' => true], $options, ['policy' => $va_settings['policy'], 'returnPath' => $options['forReport']]));	
-			if ($vb_include_nonprimary_media) { $po_result->filterNonPrimaryRepresentations(true); }
 		}
 		
 		if (isset($options['purify']) && $options['purify']) {
@@ -2397,6 +2460,10 @@ if (!$pb_omit_editing_info) {
 			$doc = new DOMDocument();
 			@$doc->loadHTML('<?xml encoding="utf-8" ?>'.mb_substr($vs_val, 0, $options['maximumLength']));
 			return $doc->saveHTML();
+		}
+		
+		if(caGetOption('newlines', $va_settings, null) === 'NL2BR') {
+			$vs_val = nl2br($vs_val);
 		}
 		return $vs_val;
 	}

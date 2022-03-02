@@ -100,7 +100,7 @@ class ca_setsTest extends TestCase {
 
 		// try text (no return as array)
 		$vs_ret = $t_set->get('ca_set_items.item_id'); // what comes out is a string with the primary key
-		$this->assertRegExp("/^[0-9]+$/", $vs_ret);
+		$this->assertMatchesRegularExpression("/^[0-9]+$/", $vs_ret);
 
 		$vs_ret = $t_set->get('ca_set_items.preferred_labels');
 		$this->assertEquals("[BLANK]", $vs_ret);

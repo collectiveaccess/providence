@@ -122,6 +122,8 @@
 			//
 			// Execute the search
 			//
+			$vs_search_suffix = (caGetSearchConfig()->get('match_on_stem') && caIsSearchStem($vs_search)) ? '*' : '';
+			
 			if($vs_search){ /* any request? */
 				if(is_array($va_set_ids = caSearchIsForSets($vs_search))) {
 					// When search includes sets we add sort options for the references sets...
@@ -130,9 +132,9 @@
 					}
 					
 					// ... and default the sort to the set
-					if ($vb_is_new_search) {
-						$this->opo_result_context->setCurrentSort($vs_sort = "ca_sets.set_id:{$vn_set_id}");
-					}
+					//if ($vb_is_new_search) {
+					//	$this->opo_result_context->setCurrentSort($vs_sort = "ca_sets.set_id:{$vn_set_id}");
+					//}
 				}
 				
 				$va_search_opts = array(
@@ -152,7 +154,7 @@
 					$vs_browse_classname = get_class($po_search);
  					$po_search = new $vs_browse_classname;
  					if (is_subclass_of($po_search, "BrowseEngine")) {
- 						$po_search->addCriteria('_search', $vs_search);
+ 						$po_search->addCriteria('_search', $vs_search.$vs_search_suffix);
  						
  						if (method_exists($this, "hookBeforeNewSearch")) {
  							$this->hookBeforeNewSearch($po_search);
@@ -199,7 +201,7 @@
 					}
 					
 				} elseif($po_search) {
-					$vo_result = $po_search->search($vs_search, $va_search_opts);
+					$vo_result = $po_search->search($vs_search.$vs_search_suffix, $va_search_opts);
 				}
 		} catch (SearchException $e) {
 			$this->notification->addNotification($e->getMessage(), __NOTIFICATION_TYPE_ERROR__);

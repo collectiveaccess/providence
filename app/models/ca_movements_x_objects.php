@@ -79,11 +79,11 @@ BaseModel::$s_ca_models_definitions['ca_movements_x_objects'] = array(
 		),
 		'effective_date' => array(
 				'FIELD_TYPE' => FT_HISTORIC_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => true, 
 				'DEFAULT' => '',
 				'START' => 'sdatetime', 'END' => 'edatetime',
-				'LABEL' => _t('Effective dates'), 'DESCRIPTION' => _t('Period of time for which this relationship was in effect. This is an option qualification for the relationship. If left blank, this relationship is implied to have existed for as long as the related items have existed.')
+				'LABEL' => _t('Effective date'), 'DESCRIPTION' => _t('Period of time for which this relationship was in effect. This is an option qualification for the relationship. If left blank, this relationship is implied to have existed for as long as the related items have existed.')
 		),
 		'rank' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
@@ -209,39 +209,5 @@ class ca_movements_x_objects extends ObjectRelationshipBaseModel {
 	public function __construct($pn_id=null) {
 		parent::__construct($pn_id);	# call superclass constructor
 	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	// public function insert($pa_options=null) {
-// 		if (!$this->get('effective_date', array('getDirectDate' => true))) {  
-// 			$this->set('effective_date', $this->_getMovementDate()); 
-// 		}
-// 		return parent::insert($pa_options);
-// 	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	// public function update($pa_options=null) {
-// 		if (!$this->get('effective_date', array('getDirectDate' => true))) { 
-// 			$this->set('effective_date',  $this->_getMovementDate()); 
-// 		}
-// 		return parent::update($pa_options);
-// 	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	// private function _getMovementDate() {
-// 	 	$vs_date = null;
-// 	 	if ($vs_movement_storage_element = $this->getAppConfig()->get('movement_storage_location_date_element')) {
-// 			$t_movement = new ca_movements($this->get('movement_id'));
-// 			if ($t_movement->getPrimaryKey()) {
-// 				$vs_date = $t_movement->get("ca_movements.{$vs_movement_storage_element}");
-// 			}
-// 		}
-// 		return ($vs_date) ? $vs_date : _t('now');
-// 	}
 	# ------------------------------------------------------
 }

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2020 Whirl-i-Gig
+ * Copyright 2015-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -94,6 +94,8 @@ class RelatedListController extends BaseSearchController {
 		
 		// get request data
 		if ($placement_id = $this->getRequest()->getParameter('placement_id', pInteger)) {
+			Session::setVar("P{$placement_id}_last_export_format", $this->getRequest()->getParameter('export_format', pString));
+			
 			// Generate list of related items from editor UI placement when defined	...
 			//
 			// TODO: convert the entire related list UI mess to use passed placement_id's rather than giant lists of related IDs
@@ -147,7 +149,12 @@ class RelatedListController extends BaseSearchController {
 
 		$va_relation_id_typenames = array();
 		while($o_interstitial_res->nextHit()) {
-			$va_relation_id_typenames[$o_interstitial_res->getPrimaryKey()] = $o_interstitial_res->getWithTemplate('^relationship_typename');
+			$va_get_params = [];
+			if ( method_exists($t_related_rel, 'isSelfRelationship') && $t_related_rel->isSelfRelationship()) {
+				$vn_left_id = $o_interstitial_res->get($t_related_rel->getLeftTableFieldName());
+				$va_get_params['orientation'] = ( $t_subject->getPrimaryKey() === $vn_left_id ? 'LTOR' : 'RTOL' );
+			}
+			$va_relation_id_typenames[$o_interstitial_res->getPrimaryKey()] = $o_interstitial_res->getWithTemplate('^relationship_typename', $va_get_params);
 		}
 
 		$this->getView()->setVar('relationIdTypeNames', $va_relation_id_typenames);

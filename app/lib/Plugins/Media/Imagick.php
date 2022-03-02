@@ -534,7 +534,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$this->properties["bitdepth"] = $this->handle->getImageDepth();
 					$this->properties["resolution"] = $this->handle->getImageResolution();
 					$this->properties["colorspace"] = $this->_getColorspaceAsString($this->handle->getImageColorspace());
-					$this->properties["exif_orientation"] = (in_array($orientation = (int)$this->metadata['EXIF']['IFD0']['Orientation'], [6, 8], true)) ? $orientation : null;
+					$this->properties["exif_orientation"] = (in_array($orientation = (int)$this->metadata['EXIF']['IFD0']['Orientation'], [3, 6, 8], true)) ? $orientation : null;
 					
 					// force all images to true color (takes care of GIF transparency for one thing...)
 					$this->handle->setImageType(imagick::IMGTYPE_TRUECOLOR);

@@ -64,33 +64,31 @@ require_once(__CA_MODELS_DIR__.'/ca_users.php');
 		# --------------------------------------------------------------------------------
 		public function getParametersForDisplay($pa_rec) {
 			$va_parameters = caUnserializeForDatabase($pa_rec["parameters"]);
-			
-			$va_params = array();
-			
-			$o_config = Configuration::load();
-			$vs_batch_media_import_root_directory = $o_config->get('batch_media_import_root_directory');
-			$vs_relative_directory = preg_replace("!{$vs_batch_media_import_root_directory}[/]*!", "", $va_parameters["importFromDirectory"]); 
-			
-			$va_params['importFromDirectory'] = array(
+			$va_params_for_display = [];
+
+			$$relative_directories = [];
+			foreach(caGetAvailableMediaUploadPaths() as $d) {
+				$relative_directories[] = preg_replace("!{$d}[/]*!", "", '/'.$va_parameters["importFromDirectory"]);;
+			}
+			$va_params_for_display['importFromDirectory'] = array(
 				'label' => _t("Importing media from"),
-				'value' => "/".$vs_relative_directory
+				'values' => $relative_directories
 			);
 			
 			if (file_exists($va_parameters["importFromDirectory"])) {
 				$va_counts = caGetDirectoryContentsCount($va_parameters["importFromDirectory"], $va_parameters["includeSubDirectories"], false);
-				$va_params['number_of_files'] = array(
+				$va_params_for_display['number_of_files'] = array(
 					'label' => _t("Files to import"),
 					'value' => (int)$va_counts['files']
 				);
 			}
-			return $va_params;
+			return $va_params_for_display;
 		}
 		# --------------------------------------------------------------------------------
 		# Task processor function - all task queue handlers must implement this
 		# 
 		# Returns 1 on success, 0 on error
 		public function process($pa_parameters) {
-			
 			$o_response = new ResponseHTTP();
 			$o_request = new RequestHTTP($o_response, array('simulateWith' => array(
 					'POST' => $pa_parameters['values'],

@@ -39,11 +39,11 @@
 		<div class="col">
 			<?php
 			print _t("Export results with mapping") . ":<br/>";
-			print caFormTag($this->request, 'ExportData'.$vs_url_string, 'caExportWithMappingForm_'.$this->getVar('interstitialPrefix'), 'manage/MetadataExport', 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
+			print caFormTag($this->request, 'ExportData'.$vs_url_string, 'caExportWithMappingForm_'.$this->getVar('interstitialPrefix'), 'manage/MetadataExport', 'post', 'multipart/form-data', '_top', array('noCSRFToken' => false, 'disableUnsavedChangesWarning' => true));
 			print ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_subject->tableNum(), array('id' => 'caExporterList'),array('width' => '150px'));
 			print caHTMLHiddenInput('caIsExportFromSearchOrBrowseResult', array('value' => 1));
 			print caHTMLHiddenInput('find_type', array('value' => $this->getVar('find_type')));
-			print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), 'button', 'caExportWithMappingForm_'.$this->getVar('interstitialPrefix'));
+			print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), 'button', 'caExportWithMappingForm_'.$this->getVar('interstitialPrefix'), null, ['aria-label' => _t('Export')]);
 			
 		print caHTMLHiddenInput('ids', ['value' => $params['ids']]);
 			?>
@@ -56,7 +56,7 @@
 		<div class="col">
 <?php
 			print _t("Print results as labels").":<br/>";
-			print caFormTag($this->request, 'printLabels' . $vs_url_string, 'caPrintLabelsForm_'.$this->getVar('interstitialPrefix'), $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
+			print caFormTag($this->request, 'printLabels' . $vs_url_string, 'caPrintLabelsForm_'.$this->getVar('interstitialPrefix'), $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('noCSRFToken' => false, 'disableUnsavedChangesWarning' => true));
 	
 			$va_options = array();
 			foreach($this->getVar('label_formats') as $vn_ => $va_form_info) {
@@ -66,7 +66,7 @@
 			uksort($va_options, 'strnatcasecmp');
 			
 			print caHTMLSelect('label_form', $va_options, array('class' => 'searchToolsSelect'), array('value' => $this->getVar('current_label_form'), 'width' => '150px'))."\n";
-			print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), 'button', 'caPrintLabelsForm_'.$this->getVar('interstitialPrefix'));
+			print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), 'button', 'caPrintLabelsForm_'.$this->getVar('interstitialPrefix'), null, ['aria-label' => _t('Download labels')]);
 
 		print caHTMLHiddenInput('ids', ['value' => $params['ids']]);
 ?>
@@ -79,14 +79,14 @@
 	<div class="col">
 <?php
 		print _t("Download results as").":<br/>";
-		print caFormTag($this->request, 'export'.$vs_url_string, 'caExportForm_'.$this->getVar('interstitialPrefix'), $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
+		print caFormTag($this->request, 'export'.$vs_url_string, 'caExportForm_'.$this->getVar('interstitialPrefix'), $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('noCSRFToken' => false, 'disableUnsavedChangesWarning' => true));
 
 		$va_options = array();
 		foreach($this->getVar('export_formats') as $vn_i => $va_format_info) {
 			$va_options[$va_format_info['name']] = $va_format_info['code'];
 		}
 		print caHTMLSelect('export_format', $va_options, array('class' => 'searchToolsSelect'), array('value' => $this->getVar('current_export_format'), 'width' => '150px'))."\n";
-		print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), 'button', 'caExportForm_'.$this->getVar('interstitialPrefix'));
+		print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), 'button', 'caExportForm_'.$this->getVar('interstitialPrefix'), null, ['aria-label' => _t('Download results')]);
 
 		print caHTMLHiddenInput('ids', ['value' => $params['ids']]);
 ?>

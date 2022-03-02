@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -57,7 +57,7 @@ class Bundlable extends Base {
 				$this->applyOutsideIntrinsics($pa_set_intrinsics[$this->getModelInstance()->tableName()]);
 			}
 		}
-		$this->getModelInstance()->insert(array('setGUIDTo' => $this->getGUID()));
+		$this->getModelInstance()->insert(['setGUIDTo' => $this->getGUID(), 'dontForcePrimary' => true]);
 		$this->checkModelInstanceForErrors();
 	}
 
@@ -72,7 +72,7 @@ class Bundlable extends Base {
 				$this->applyOutsideIntrinsics($pa_set_intrinsics[$this->getModelInstance()->tableName()]);
 			}
 		}
-		$this->getModelInstance()->update();
+		$this->getModelInstance()->update(['dontForcePrimary' => true]);
 		$this->checkModelInstanceForErrors();
 	}
 

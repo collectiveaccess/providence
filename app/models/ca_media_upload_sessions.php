@@ -35,8 +35,8 @@
    */
 
 BaseModel::$s_ca_models_definitions['ca_media_upload_sessions'] = array(
- 	'NAME_SINGULAR' 	=> _t('Media upload'),
- 	'NAME_PLURAL' 		=> _t('Media uploads'),
+ 	'NAME_SINGULAR' 	=> _t('media submission'),
+ 	'NAME_PLURAL' 		=> _t('media submissions'),
  	'FIELDS' 			=> array(
  		'session_id' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
@@ -109,9 +109,12 @@ BaseModel::$s_ca_models_definitions['ca_media_upload_sessions'] = array(
 				_t('Processed') => 'PROCESSED',
 				_t('In review') => 'IN_REVIEW',
 				_t('Accepted') => 'ACCEPTED',
-				_t('Rejected') => 'REJECTED'
+				_t('Rejected') => 'REJECTED',
+				_t('Completed') => 'COMPLETED',
+				_t('Cancelled') => 'CANCELLED',
+				_t('Error') => 'ERROR'
 			),
-			'LABEL' => _t('Status of session'), 'DESCRIPTION' => _t('Status of session. Possible states: IN_PROGRESS, SUBMITTED, PROCESSING, PROCESSED, IN_REVIEW, ACCEPTED, REJECTED.')
+			'LABEL' => _t('Status of session'), 'DESCRIPTION' => _t('Status of session. Possible states: IN_PROGRESS, SUBMITTED, PROCESSING, PROCESSED, IN_REVIEW, ACCEPTED, REJECTED, ERROR.')
 		),
 		'num_files' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -133,13 +136,6 @@ BaseModel::$s_ca_models_definitions['ca_media_upload_sessions'] = array(
 			'IS_NULL' => false, 
 			'DEFAULT' => 0,
 			'LABEL' => _t('Error code'), 'DESCRIPTION' => _t('Error code. Zero if no error.')
-		),
-		'progress' => array(
-			'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
-			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-			'IS_NULL' => false, 
-			'DEFAULT' => 0,
-			'LABEL' => _t('Upload progress'), 'DESCRIPTION' => _t('Data regarding upload process of individual files.')
 		),
 		'metadata' => array(
 			'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
@@ -235,6 +231,12 @@ class ca_media_upload_sessions extends BaseModel {
 	protected $FIELDS;
 	
 	# ------------------------------------------------------
+	# Search
+	# ------------------------------------------------------
+	protected $SEARCH_CLASSNAME = null;
+	protected $SEARCH_RESULT_CLASSNAME = 'MediaUploadSessionSearchResult';
+	
+	# ------------------------------------------------------
 	# --- Constructor
 	#
 	# This is a function called when a new instance of this object is created. This
@@ -247,6 +249,25 @@ class ca_media_upload_sessions extends BaseModel {
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
 		parent::__construct($pn_id);	# call superclass constructor
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function updateStats() {
+		if(!$this->isLoaded()) { return null; }
+		$files = $this->getFileList();
+		
+		$this->set('num_files', sizeof($files));
+		
+		$total_bytes = 0;
+		foreach($files as $f) {
+			$total_bytes += $f['total_bytes'];
+		}	
+	
+		$this->set('total_bytes', $total_bytes);	
+		
+		return $this->update();
 	}
 	# ------------------------------------------------------
 	/**
@@ -268,6 +289,458 @@ class ca_media_upload_sessions extends BaseModel {
 	public function hasError() {
 		if(!$this->isLoaded()) { return null; }
 		return ($error_code = (int)$this->get('error_code')) ? $error_code : false;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @return array
+	 */
+	public function getFileList(?array $options=null) : ?array {
+		if(!($session_id = caGetOption('session_id', $options, null))){
+			$session_id = $this->getPrimaryKey();
+		} 
+		if(!$session_id) { return null; }
+		
+		$db = $this->getDb();
+		
+		$qr = $db->query("SELECT * FROM ca_media_upload_session_files WHERE session_id = ?", [$session_id]);
+		
+		$files = [];
+		while($qr->nextRow()) {
+			$row = $qr->getRow();
+			$files[$row['filename']] = $row;
+		}
+		
+		return $files;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @return array
+	 */
+	public static function getFileListForSession(int $session_id) : ?array {
+		$t = new ca_media_upload_sessions();
+		return $t->getFileList(['session_id' => $session_id]);
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @return 
+	 */
+	public function getFile(string $filename) : ?ca_media_upload_session_files {
+		if(!$this->isLoaded()) { return null; }
+		
+		return ca_media_upload_session_files::find(
+			['session_id' => $this->getPrimaryKey(), 'filename' => $filename], 
+			['returnAs' => 'firstModelInstance']
+		);
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @return bool
+	 */
+	public function setFile(string $filename, array $data, ?array $options=null) : ?ca_media_upload_session_files {
+		if(!$this->isLoaded()) { return false; }
+		
+		if(!($t_file = $this->getFile($filename))) {
+			$t_file = new ca_media_upload_session_files();
+			$t_file->set('filename', $filename);
+			$t_file->set('session_id', $this->getPrimaryKey());
+		}
+		
+		foreach(['completed_on', 'last_activity_on', 'bytes_received', 'total_bytes', 'error_code'] as $f) {
+			if(isset($data[$f])) {
+				$t_file->set($f, $data[$f]);
+			}
+		}
+		if($t_file->getPrimaryKey() ? $t_file->update() : $t_file->insert()) {
+			return $t_file;
+		}
+		$this->errors = $t_file->errors;
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function processSessions(?array $options=null) : int {
+		$limit = caGetOption('limit', $options, 10);
+		$session_ids = ca_media_upload_sessions::find(['submitted_on' => ['>', 0], 'completed_on' => null], ['returnAs' => 'ids']);
+			
+		$log = caGetImportLogger();
+		
+		$c = 0;
+		
+		$errors = [];
+		while($session_id = array_shift($session_ids)) {
+			$session = new ca_media_upload_sessions($session_id);
+			
+			$d = $session->get('metadata');
+			$data = $d['data'];
+			$config = $d['configuration'];
+			$mode = strtolower(caGetOption('importMode', $config['options'], 'media'));
+			
+			$user_id = $session->get('user_id');
+			
+			$form = preg_replace('!^FORM:!', 'IMPORTER:', $session->get('source'));
+			
+			$log->logInfo("Processing session for form ".$config['formTitle']);
+			
+			$table = $config['table'];
+			$type = $config['type'];
+			$idno = $config['idno'];
+			$status = $config['status'];
+			$access = $config['access'];
+			
+			$rep_type = $config['representation_type'];
+			$rep_status = $config['representation_status'];
+			$rep_access = $config['representation_access'];
+			
+			$submission_status = $config['submission_status'];
+			
+			$locale_id = ca_locales::codeToID(caGetOption('alwaysUseLocale', $config, ca_locales::getDefaultCataloguingLocaleID()));
+			
+			$form_values = [];
+			foreach($config['content'] as $k => $info) {
+				$v = $data[$info['bundle']];
+				$form_values[$k] = $v;
+			}
+			$label = caProcessTemplate($config['display'], $form_values);
+			
+			$media = array_filter($session->getFileList(), function($v) {
+				return ($v['completed_on'] > 0);
+			});
+			foreach($media as $path => $info) {
+				if(ca_object_representations::mediaExists($path)) {
+					unset($media[$path]);
+					self::_setSessionWarning($session, $label, _t('Media file <em>%1</em> is already loaded (file was skipped)', pathinfo($path, PATHINFO_BASENAME)));
+				}
+			}
+			
+			if(($mode === 'hierarchy') && (sizeof($media) === 1)) {	// don't create hierarchies with only one media item
+				$mode = 'media';
+			}
+			if(sizeof($media) === 0) {
+				// all media filtered - send warning notification and bail
+				self::_setSessionError($session, $label, _t('Submission was skipped because there are no media files to import'));
+				continue;
+			}
+			
+			$dont_moderate = Configuration::load()->get("dont_moderate_tags");
+			
+			$album_rep = null;	// rep used on hierarchy "album"
+			switch($mode) {
+				case 'hierarchy':
+					// create top-level record
+					$t = Datamodel::getInstance($table);
+					$t->set('type_id', $type);
+					$t->set('status', $status);
+					$t->set('access', $access);
+					$t->setIdnoWithTemplate($idno);
+					$t->insert();
+					
+					if ($t->numErrors()) {
+						self::_setSessionError($session, $label, _t('Could not create hierarchy parent %1: %2 (submission was skipped)', $label, join(", ", $t->getErrors())));
+						continue(2);
+					}
+					
+					$t->addLabel(['name' => $label], $locale_id, null, true);
+					
+					$t->set('submission_user_id', $user_id);
+					$t->set('submission_group_id', null);
+					$t->set('submission_status_id', $submission_status);
+					$t->set('submission_via_form', $form);
+					$t->update();
+					
+					if($t->numErrors()) {
+						self::_setSessionWarning($session, $label, _t('Could not set submitter information for hierarchy parent %1: %2', $label, join(", ", $t->getErrors())));
+					}
+					
+					$errors = self::_processContent($t, $config, $data);
+							
+					$album_rep = $t->addRepresentation(
+						$p=array_shift(array_keys($media)), $rep_type, $locale_id, $rep_status, $rep_access, $is_primary, [], ['returnRepresentation' => true, 'original_filename' => pathinfo($p, PATHINFO_BASENAME)]
+					);
+					
+					if($t->numErrors()) {
+						self::_setSessionWarning($session, $label, _t('Could not add media %1 for hierarchy parent %2: %3', pathinfo($p, PATHINFO_BASENAME), $label, join(", ", $t->getErrors())));
+					}
+				
+					$t_pk = $t->getPrimaryKey();
+					
+					// Add media
+					$index = 1;
+					$is_primary = true;
+					foreach($media as $path => $info) {
+						$r = Datamodel::getInstance($table);
+						$r->set('parent_id', $t_pk);
+						$r->set('status', $status);
+						$r->set('access', $access);
+						$r->set('type_id', 'item');			// TODO: make configurable for sub-item
+						$r->setIdnoWithTemplate($idno);		// TODO: make configurable for sub-item
+						
+						$r->insert();
+						
+						if ($r->numErrors()) {
+							self::_setSessionError($session, $label, _t('Could not create media child record %1 for %2: %3 (file was skipped)', pathinfo($path, PATHINFO_BASENAME), $label, join(", ", $r->getErrors())));
+							continue;
+						}
+					
+						$r->addLabel(['name' => $label." [{$index}]"], $locale_id, null, true);
+						
+						if ($r->numErrors()) {
+							self::_setSessionError($session, $label, _t('Could not add label for media child record for %1: %2 (file was skipped)', $label, join(", ", $t->getErrors())));
+							continue;
+						}
+						
+						$r->set('submission_user_id', $user_id);
+						$r->set('submission_group_id', null);
+						$r->set('submission_status_id', $submission_status);
+						$r->set('submission_via_form', $form);
+						
+						$r->update();
+						
+						if($r->numErrors()) {
+							self::_setSessionWarning($session, $label, _t('Could not set submitter information for media child record for %1: %2', $label, join(", ", $r->getErrors())));
+						}
+						
+						//
+						if ($is_primary && $album_rep) {
+							$r->addRelationship('ca_object_representations', $album_rep->getPrimaryKey());
+							
+							if($r->numErrors()) {
+								self::_setSessionWarning($session, $label, _t('Could not add media relation to %1 for media child record for %2: %3', pathinfo($path, PATHINFO_BASENAME), $label, join(", ", $r->getErrors())));
+							}
+						} else { 
+							$r->addRepresentation(
+								$path, $rep_type, $locale_id, $rep_status, $rep_access, true, [], ['original_filename' => pathinfo($p, PATHINFO_BASENAME)]
+							);
+							
+							if($r->numErrors()) {
+								self::_setSessionWarning($session, $label, _t('Could not add media %1 for media child record for %2: %3', pathinfo($path, PATHINFO_BASENAME), $label, join(", ", $r->getErrors())));
+							}
+						}
+						$index++;
+						$is_primary = false;
+					}
+					
+					ca_metadata_alert_triggers::fireApplicableTriggers($t, __CA_MD_ALERT_CHECK_TYPE_SUBMISSION__);
+					break;
+				case 'allinone':
+					// create top-level record
+					$t = Datamodel::getInstance($table);
+					$t->set('type_id', $type);
+					$t->set('status', $status);
+					$t->set('access', $access);
+					$t->setIdnoWithTemplate($idno);
+					$t->insert();
+					
+					if ($t->numErrors()) {
+						self::_setSessionError($session, $label, _t('Could not create all-in-one record for %1: %2 (submission was skipped)', $label, join(", ", $t->getErrors())));
+						continue(2);
+					}
+					
+					$t->addLabel(['name' => $label], $locale_id, null, true);
+					
+					if ($t->numErrors()) {
+						self::_setSessionError($session, $label, _t('Could not add label for all-in-one record for %1: %2 (submission was skipped)', $label, join(", ", $t->getErrors())));
+						continue(2);
+					}
+					
+					$t->set('submission_user_id', $user_id);
+					$t->set('submission_group_id', null);
+					$t->set('submission_status_id', $submission_status);
+					$t->set('submission_via_form', $form);
+					$t->update();
+					
+					if($t->numErrors()) {
+						self::_setSessionWarning($session, $label, _t('Could not set submitter information for all-in-one record for %1: %2', $label, join(", ", $t->getErrors())));
+					}
+					
+					$errors = self::_processContent($t, $config, $data);
+					
+					// Add media
+					$index = 1;
+					$is_primary = true;
+					foreach($media as $path => $info) {
+						$r = $t->addRepresentation(
+							$path, $rep_type, $locale_id, $rep_status, $rep_access, $is_primary, [], ['returnRepresentation' => true, 'original_filename' => pathinfo($p, PATHINFO_BASENAME)]
+						);
+						$is_primary = false;
+						$index++;
+						
+						if($t->numErrors()) {
+							self::_setSessionWarning($session, $label, _t('Could not add media %1 for all-in-one record for %2: %3', pathinfo($path, PATHINFO_BASENAME), $label, join(", ", $t->getErrors())));
+						}
+					}
+					
+					ca_metadata_alert_triggers::fireApplicableTriggers($t, __CA_MD_ALERT_CHECK_TYPE_SUBMISSION__);
+					break;
+				case 'media':
+				default:
+					foreach($media as $path => $info) {
+						$r = Datamodel::getInstance($table);
+						$r->set('parent_id', null);
+						$r->set('status', $status);
+						$r->set('access', $access);
+						$r->set('type_id', 'item');			// TODO: make configurable for sub-item
+						$r->setIdnoWithTemplate($idno);		// TODO: make configurable for sub-item
+						
+						$r->insert();
+						
+						if ($r->numErrors()) {
+							self::_setSessionError($session, $label, _t('Could not create media record %1 for %2: %3 (file was skipped)', pathinfo($path, PATHINFO_BASENAME), $label, join(", ", $t->getErrors())));
+							continue;
+						}
+					
+						$r->addLabel(['name' => $label." [{$index}]"], $locale_id, null, true);
+						
+						if ($r>numErrors()) {
+							self::_setSessionError($session, $label, _t('Could not add label for media record %1 for %2: %3 (file was skipped)', pathinfo($path, PATHINFO_BASENAME), $label, join(", ", $r->getErrors())));
+							continue;
+						}
+						
+						$r->set('submission_user_id', $user_id);
+						$r->set('submission_group_id', null);
+						$r->set('submission_status_id', $submission_status);
+						$r->set('submission_via_form', $form);
+						
+						$r->update();
+						
+						if($r->numErrors()) {
+							self::_setSessionWarning($session, $label, _t('Could not set submitter information for media record for %1: %2', $label, join(", ", $r->getErrors())));
+						}
+						
+						$errors = self::_processContent($r, $config, $data);
+	
+						$r->addRepresentation(
+							$path, $rep_type, $locale_id, $rep_status, $rep_access, true, [], ['original_filename' => pathinfo($p, PATHINFO_BASENAME)]
+						);
+						if($r->numErrors()) {
+							self::_setSessionWarning($session, $label, _t('Could not add media %1 for media record for %2: %3', pathinfo($path, PATHINFO_BASENAME), $label, join(", ", $r->getErrors())));
+						}
+						
+						$index++;
+						
+					}
+					
+					ca_metadata_alert_triggers::fireApplicableTriggers($r, __CA_MD_ALERT_CHECK_TYPE_SUBMISSION__);
+					break;
+			}
+			
+			// TODO: write ids of records created into session for playback when session is viewed
+			
+			$session->set('completed_on', _t('now'));
+			$session->set('status', 'PROCESSED');
+			$session->update();
+			
+			
+			foreach(array_keys($media) as $path) {
+				unlink($path);
+			}
+			
+			$c++;
+			if ($c > $limit) { break; }
+		}
+		
+		return $c;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static private function _processContent(BaseModel $t_instance, array $config, array $data) : array {
+		$table = $t_instance->tableName();
+		$tags_added = 0;
+		
+		$errors = [];
+		foreach($config['content'] as $k => $info) {
+			$bundle_bits = explode('.', $info['bundle']);
+		
+			if($bundle_bits[0] === $table) {
+				switch(sizeof($bundle_bits)) {
+					case 3:	// container
+						// TODO: implement
+						break;
+					case 2:	// attribute or intrinsic
+						if(!is_array($data[$info['bundle']])) { $data[$info['bundle']] = [$data[$info['bundle']]]; }
+						
+						foreach($data[$info['bundle']] as $i => $d) {
+							if($t_instance->hasField($bundle_bits[1])) {
+								$t_instance->set($bundle_bits[1], $data[$info['bundle']]);
+							} else {
+								$t_instance->addAttribute([
+									$bundle_bits[1] => $d
+								], $bundle_bits[1]);
+							}
+						}
+						$t_instance->update();
+						
+						break;
+				}
+			} else {
+				if($bundle_bits[0] === 'ca_item_tags') {
+					if(!is_array($data[$info['bundle']])) { $data[$info['bundle']] = [$data[$info['bundle']]]; }
+					foreach($data[$info['bundle']] as $i => $d) {
+						// is tags
+						$tags = $d ? preg_split("![ ]*[,;]+[ ]*!", $d) : [];
+						foreach($tags as $tag) {
+							if($t_instance->addTag(
+								$tag, $user_id, ca_locales::getDefaultCataloguingLocaleID(), 
+								((in_array($table, ["ca_sets", "ca_set_items"])) || $dont_moderate) ? 1 : 0, null
+							)) {
+								$tags_added++;
+							} else {
+								$errors[] = join('; ', $t_instance->getErrors());
+							}
+						}	
+					}
+				} else {
+					// is relationship
+					if(!is_array($data[$info['bundle']])) { $data[$info['bundle']] = [$data[$info['bundle']]]; }
+					foreach($data[$info['bundle']] as $i => $d) {
+						$reltype = $info['relationshipType'];
+						$t_instance->addRelationship($bundle_bits[0], $d, $reltype, null, null, null, null, ['idnoOnly' => true]);
+					}
+				}
+			}
+		}	
+		return $errors;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static private function _setSessionError($session, $label, $error) {
+		ca_metadata_alert_triggers::fireApplicableTriggers($session, __CA_MD_ALERT_CHECK_TYPE_SUBMISSION_ERROR__, array_merge(
+			[
+				'label' => $label, 
+				'error' => $error
+			]
+		));
+		
+		$session->set('completed_on', _t('now'));
+		$session->set('status', 'ERROR');
+		return $session->update();
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static private function _setSessionWarning($session, $label, $warning) {
+		ca_metadata_alert_triggers::fireApplicableTriggers($session, __CA_MD_ALERT_CHECK_TYPE_SUBMISSION_WARNING__, array_merge(
+			[
+				'label' => $label, 
+				'warning' => $warning
+			]
+		));
+		
+		return true;
 	}
 	# ------------------------------------------------------
 }

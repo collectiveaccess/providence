@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2020 Whirl-i-Gig
+ * Copyright 2014-2022 Whirl-i-Gig
  * This file originally contributed 2014 by Gaia Resources
  *
  * For more information visit http://www.CollectiveAccess.org
@@ -56,15 +56,28 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 		);
 	}
 	# --------------------------------------------------------------------------------------------
+	public function hookInsertItem(&$pa_params) {
+		if($this->opo_plugin_config->get('enabled') && !caGetOption('for_duplication', $pa_params, false)) {
+			$this->prepopulateFields($pa_params['instance'], ['hook' => 'save']);
+		}
+		return true;
+	}
+	public function hookUpdateItem(&$pa_params) {
+		if($this->opo_plugin_config->get('enabled') && !caGetOption('for_duplication', $pa_params, false)) {
+			$this->prepopulateFields($pa_params['instance'], ['hook' => 'save']);
+		}
+		return true;
+	}
+	# --------------------------------------------------------------------------------------------
 	public function hookSaveItem(&$pa_params) {
-		if($this->opo_plugin_config->get('enabled')) {
+		if($this->opo_plugin_config->get('enabled') && !caGetOption('for_duplication', $pa_params, false)) {
 			$this->prepopulateFields($pa_params['instance'], ['hook' => 'save']);
 		}
 		return true;
 	}
 	# --------------------------------------------------------------------------------------------
 	public function hookEditItem(&$pa_params) {
-		if ($this->opo_plugin_config->get('enabled')) {
+		if ($this->opo_plugin_config->get('enabled') && !caGetOption('for_duplication', $pa_params, false)) {
 			$this->prepopulateFields($pa_params['instance'], ['hook' => 'edit']);
 		}
 		return true;
@@ -125,7 +138,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 		//$vn_timestamp = $_REQUEST['form_timestamp'];
 		//unset($_REQUEST['form_timestamp']);
 
-		$vb_we_set_transaction = true;
+		$vb_we_set_transaction = false;
 		if (!$t_instance->inTransaction()) {
 			$t_instance->setTransaction(new Transaction($t_instance->getDb()));
 			$vb_we_set_transaction = true;
@@ -318,7 +331,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 							
 							$i = 0;
 							$t_instance->removeAttributes($va_parts[1]);
-							$t_instance->update(['force' => true]);
+							$t_instance->update(['force' => true, 'hooks' => false]);
 							
 							if($t_instance->numErrors()) { 
 								Debug::msg(_t("[prepopulateFields()] error while removing old values during copy of containers: %1", join("; ", $t_instance->getErrors())));
@@ -512,15 +525,16 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 		}
 
 
-		if(isset($_REQUEST['form_timestamp']) && ($_REQUEST['form_timestamp'] > 0)) { $_REQUEST['form_timestamp'] = time(); }
-		$t_instance->update(['force' => true]);
-
-		if($t_instance->numErrors() > 0) {
-			foreach($t_instance->getErrors() as $vs_error) {
-				Debug::msg("[prepopulateFields()] there was an error while updating the record: ".$vs_error);
+		if ($t_instance->attributesChanged() || (count($t_instance->getChangedFieldValuesArray()) > 0)) {
+			if(isset($_REQUEST['form_timestamp']) && ($_REQUEST['form_timestamp'] > 0)) { $_REQUEST['form_timestamp'] = time(); }
+			$t_instance->update(['force' => true, 'hooks' => false]);
+			if($t_instance->numErrors() > 0) {
+				foreach($t_instance->getErrors() as $vs_error) {
+					Debug::msg("[prepopulateFields()] there was an error while updating the record: ".$vs_error);
+				}
+				if ($vb_we_set_transaction) { $t_instance->removeTransaction(false); }
+				return false;
 			}
-			if ($vb_we_set_transaction) { $t_instance->removeTransaction(false); }
-			return false;
 		}
 
 		if ($vb_we_set_transaction) { $t_instance->removeTransaction(true); }

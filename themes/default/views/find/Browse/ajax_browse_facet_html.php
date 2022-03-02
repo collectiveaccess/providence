@@ -56,15 +56,15 @@
 ?>
 <script type="text/javascript">
 	function caUpdateFacetDisplay(grouping) {
-		caUIBrowsePanel.showBrowsePanel('<?php print $vs_facet_name; ?>', <?php print ((intval($vm_modify_id) > 0) ? 'true' : 'false'); ?>, <?php print ((intval($vm_modify_id) > 0) ?  $vm_modify_id : 'null'); ?>, grouping);
+		caUIBrowsePanel.showBrowsePanel('<?= $vs_facet_name; ?>', <?= ((intval($vm_modify_id) > 0) ? 'true' : 'false'); ?>, <?= ((intval($vm_modify_id) > 0) ?  $vm_modify_id : 'null'); ?>, grouping);
 	}
 </script>
 
-<div class="browseSelectPanelContentArea <?php print ($vb_multiple_selection_facet) ? "browseSelectMultiplePanelContentArea" : "" ?>" id="browseSelectPanelContentArea">
+<div class="browseSelectPanelContentArea <?= ($vb_multiple_selection_facet) ? "browseSelectMultiplePanelContentArea" : "" ?>" id="browseSelectPanelContentArea">
 <?php
 	if ($vb_multiple_selection_facet) {
 ?>
-		<div class='applyFacetContainer'><a href="#" id="facet_apply" data-facet="<?php print $vs_facet_name; ?>" class="facetApply">Apply</a></div>
+		<div class='applyFacetContainer'><a href="#" id="facet_apply" data-facet="<?= $vs_facet_name; ?>" class="facetApply">Apply</a></div>
 <?php
 	}
 
@@ -73,14 +73,14 @@
 		# ------------------------------------------------------------
 		case 'hierarchical';
 ?>
-	<h2 class='browse'><?php print caUcFirstUTF8Safe($va_facet_info['label_plural']); ?></h2>
+	<h2 class='browse'><?= caUcFirstUTF8Safe($va_facet_info['label_plural']); ?></h2>
 	<div class='clearDivide'></div>
-	<div id="hierarchyBrowserContainer"><div id="<?php print $vs_facet_name; ?>_facet_container">
+	<div id="hierarchyBrowserContainer"><div id="<?= $vs_facet_name; ?>_facet_container">
 		<div id="hierarchyBrowser" class='hierarchyBrowser'>
 			<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
 		</div>
 		<div class="hierarchyBrowserSearchBar">
-			<label for="hierarchyBrowserSearch"><?php print _t("Search"); ?>:</label>
+			<label for="hierarchyBrowserSearch"><?= _t("Search"); ?>:</label>
 			<input id="hierarchyBrowserSearch" type="text" size="40" />
 			<span class="ui-helper-hidden-accessible" role="status" aria-live="polite"></span>
 		</div>
@@ -88,7 +88,7 @@
 		if ($t_item && $t_subject) {
 ?>
 			<div class="hierarchyBrowserHelpText">
-				<?php print _t("Click on a %1 to find %2 related to it. Click on the arrow next to a %3 to see more specific %4 within that %5, or use the search field.", $t_item->getProperty('NAME_SINGULAR'), $t_subject->getProperty('NAME_PLURAL'), $t_item->getProperty('NAME_SINGULAR'), $t_item->getProperty('NAME_PLURAL'), $t_item->getProperty('NAME_SINGULAR') ); ?>
+				<?= _t("Click on a %1 to find %2 related to it. Click on the arrow next to a %3 to see more specific %4 within that %5, or use the search field.", $t_item->getProperty('NAME_SINGULAR'), $t_subject->getProperty('NAME_PLURAL'), $t_item->getProperty('NAME_SINGULAR'), $t_item->getProperty('NAME_PLURAL'), $t_item->getProperty('NAME_SINGULAR') ); ?>
 			</div>
 <?php
 		}
@@ -101,22 +101,22 @@
 		jQuery(document).ready(function() {
 
 			oHierBrowser = caUI.initHierBrowser('hierarchyBrowser', {
-				levelDataUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacetHierarchyLevel', array('facet' => $vs_facet_name)); ?>',
-				initDataUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacetHierarchyAncestorList', array('facet' => $vs_facet_name)); ?>',
+				levelDataUrl: '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacetHierarchyLevel', array('facet' => $vs_facet_name)); ?>',
+				initDataUrl: '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacetHierarchyAncestorList', array('facet' => $vs_facet_name)); ?>',
 
-				editUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'addCriteria', array('facet' => $vs_facet_name, 'id' => '')); ?>',
-				editButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__ ,1); ?>",
+				editUrl: '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'addCriteria', array('facet' => $vs_facet_name, 'id' => '')); ?>',
+				editButtonIcon: "<?= caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__ ,1); ?>",
 
-				initItemID: '<?php print $this->getVar('browse_last_id'); ?>',
-				indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
+				initItemID: '<?= $this->getVar('browse_last_id'); ?>',
+				indicator: "<?= caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 
 				currentSelectionDisplayID: 'browseCurrentSelection',
 				
-				selectMultiple: <?php print ($vb_multiple_selection_facet) ? 1 : 0; ?>
+				selectMultiple: <?= ($vb_multiple_selection_facet) ? 1 : 0; ?>
 			});
 
 			jQuery('#hierarchyBrowserSearch').autocomplete({
-				source: '<?php print $va_service_urls['search']; ?>',
+				source: '<?= $va_service_urls['search']; ?>',
 				minLength: 3,
 				delay: 800,
 				html: true,
@@ -135,11 +135,11 @@
 		# ------------------------------------------------------------
 		case 'none':
 ?>
-	<h2 class='browse'><?php print caUcFirstUTF8Safe($va_facet_info['label_plural']); ?></h2>
+	<h2 class='browse'><?= caUcFirstUTF8Safe($va_facet_info['label_plural']); ?></h2>
 	<div class='clearDivide'></div>
 
 	<div class="browseSelectPanelList">
-		<table class='browseSelectPanelListTable' id='<?php print $vs_facet_name; ?>_facet_container'>
+		<table class='browseSelectPanelListTable' id='<?= $vs_facet_name; ?>_facet_container'>
 <?php
 			$va_row = array();
 			foreach($va_facet as $vn_i => $va_item) {
@@ -174,7 +174,7 @@
 ?>
 
 	<div class="browseSelectPanelHeader">
-	<h2 class='browse'><?php print caUcFirstUTF8Safe($va_facet_info['label_plural']); ?></h2>
+	<h2 class='browse'><?= caUcFirstUTF8Safe($va_facet_info['label_plural']); ?></h2>
 
 <?php 
 	$vs_g = null;
@@ -207,7 +207,7 @@
 		?>
 		</div>		
 	</div>
-	<div class="browseSelectPanelList" id="browseSelectPanelList"><div id='<?php print $vs_facet_name; ?>_facet_container'>
+	<div class="browseSelectPanelList" id="browseSelectPanelList"><div id='<?= $vs_facet_name; ?>_facet_container'>
 <?php
 			
 			if (($vs_g) && (isset($va_facet[$vs_g]))) {
@@ -257,7 +257,7 @@
 
 <script type="text/javascript">
 	function loadFacetGroup(g) {
-		jQuery('#browseSelectPanelContentArea').parent().load("<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacet', array('facet' => $vs_facet_name, 'grouping' => $this->getVar('grouping'), 'show_group' => '')); ?>" + escape(g));
+		jQuery('#browseSelectPanelContentArea').parent().load("<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacet', array('facet' => $vs_facet_name, 'grouping' => $this->getVar('grouping'), 'show_group' => '')); ?>" + escape(g));
 	}
 	
 	
@@ -289,15 +289,17 @@ if($vb_multiple_selection_facet){
 		});
 		
 		jQuery(".facetApply").on('click', function(e) { 
-			var facet = '<?php print $vs_facet_name; ?>';
+			var facet = '<?= $vs_facet_name; ?>';
 			
 			var ids = [];
 			jQuery.each(jQuery("#" + facet + "_facet_container").find("[facet_item_selected=1]"), function(k,v) {
-				ids.push(jQuery(v).data('facet_item_id'));
+				var id = jQuery(v).data('facet_item_id');
+				if(!id) { id = jQuery(v).data('item_id'); }
+				if ((''+id).length > 0) { ids.push(id); }
 			});
 
 			if(ids.length){
-				window.location = '<?php print caNavUrl($this->request, 'find', $this->request->getController(),((strlen($vm_modify_id)) ? 'modifyCriteria' : 'addCriteria'), array('mod_id' => $vm_modify_id)); ?>/facet/' + facet + '/id/' + ids.join('|');
+				window.location = '<?= caNavUrl($this->request, 'find', $this->request->getController(),((strlen($vm_modify_id)) ? 'modifyCriteria' : 'addCriteria'), array('mod_id' => $vm_modify_id)); ?>/facet/' + facet + '/id/' + ids.join('|');
 			}
 			e.preventDefault();
 		});
@@ -305,9 +307,4 @@ if($vb_multiple_selection_facet){
 <?php
 }
 ?>	
-	
-	
-	
-	
-	
 </script>

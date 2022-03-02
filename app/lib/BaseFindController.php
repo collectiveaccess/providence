@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -93,7 +93,6 @@
                         } elseif($vn_type_id = Session::getVar($this->ops_tablename.'_type_id')) {
                             $this->opn_type_restriction_id = $vn_type_id;
                         }
-                    
                         $this->opb_type_restriction_has_changed =  $pb_type_restriction_has_changed;	// get change status
                     }
 				}	
@@ -145,8 +144,9 @@
 			// Set display options
 			$va_display_options = array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__);
 			
-			if(($vn_type_id = $this->opo_result_context->getTypeRestriction($vb_type)) && ($t_instance::typeCodeForID($vn_type_id))) { // occurrence searches are inherently type-restricted
-				$va_display_options['restrictToTypes'] = array($vn_type_id);
+			$vn_type_id = $this->opo_result_context->getTypeRestriction($vb_type);
+			if(is_null($vn_type_id) || $t_instance::typeCodeForID($vn_type_id)) { // occurrence searches are inherently type-restricted
+				$va_display_options['restrictToTypes'] = $vn_type_id ? [$vn_type_id] : null;
 			}
 
 			// Get current display list
@@ -246,8 +246,8 @@
 								$template = caGetOption('displayTemplate', $settings, null);
 							}
 							
-							if ($template && (is_array($tags = caGetTemplateTags($template)) && sizeof($tags))) {			// extract tag
-								$display_list[$i]['bundle_sort'] = str_replace('^', '', $tags[0]);
+							if ($template && (is_array($tags = caGetTemplateTags($template)) && sizeof($tags))) {
+								$display_list[$i]['bundle_sort'] = str_replace('^', '', join(';', $tags));
 								continue;
 							}
 					    	
@@ -564,14 +564,14 @@
                         return;						
 					case '_csv':
 						$vs_delimiter = ",";
-						$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename.'_csv'), 0, 30);
-						$vs_file_extension = 'txt';
+						$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename), 0, 30);
+						$vs_file_extension = 'csv';
 						$vs_mimetype = "text/plain";
 						break;
 					case '_tab':
 						$vs_delimiter = "\t";	
-						$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename.'_tab'), 0, 30);
-						$vs_file_extension = 'txt';
+						$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename), 0, 30);
+						$vs_file_extension = 'tsv';
 						$vs_mimetype = "text/plain";
 					default:
 					    if(substr($ps_output_type, 0, 5) === '_docx') {
@@ -732,6 +732,11 @@
  		 */ 
  		public function createSetFromResult() {
  			global $g_ui_locale_id;
+ 			
+ 			if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+				throw new ApplicationException(_t('CSRF check failed'));
+				return;
+			}
  			
  			$vs_set_name = $vs_set_code = null;
  			$vn_added_items_count = 0;
@@ -970,6 +975,15 @@
  			// post error
  			$this->postError(3100, _t("Could not generate ZIP file for download"),"BaseFindController->DownloadMedia()");
  		}
+ 		# -------------------------------------------------------
+		/**
+		 * Access to sidecar data (primarily used by 3d viewer)
+		 * Will only return sidecars that are images (for 3d textures), MTL files (for 3d OBJ-format files) or 
+		 * binary (for GLTF .bin buffer data)
+		 */
+		public function GetMediaSidecarData() {
+			caReturnMediaSidecarData($this->request->getParameter('sidecar_id', pInteger), $this->request->user);
+		}
  		# ------------------------------------------------------------------
  		/**
  		 * Set up variables for "tools" widget
@@ -1064,6 +1078,9 @@
  		 * Return view for results (spreadsheet-like) editor
  		 */
  		public function resultsEditor() {
+ 			if(!$this->request->user->canDoAction('can_use_spreadsheet_editor_'.$this->ops_tablename)) { 
+ 				throw new ApplicationException(_t('Cannot use editor for %1', $this->ops_tablename));
+ 			}
  			AssetLoadManager::register("tableview");
  			
  			$ids 			= $this->opo_result_context->getResultList();
@@ -1095,6 +1112,9 @@
  		 * Return data for results editor
  		 */
  		public function getResultsEditorData() {
+ 			if(!$this->request->user->canDoAction('can_use_spreadsheet_editor_'.$this->ops_tablename)) { 
+ 				throw new ApplicationException(_t('Cannot use editor for %1', $this->ops_tablename));
+ 			}
  			if (($s = (int)$this->request->getParameter('s', pInteger)) < 0) { $s = 0; }
  			if (($c = (int)$this->request->getParameter('c', pInteger)) < 1) { $c = 10; }
  			
@@ -1141,6 +1161,15 @@
  		 *  (2) "complex" editing from a popup editing window. Data is submitted from a form as standard editor UI form data from a psuedo editor UI screen.
  		 */
  		public function saveResultsEditorData() {
+ 			if(!$this->request->user->canDoAction('can_use_spreadsheet_editor_'.$this->ops_tablename)) { 
+ 				throw new ApplicationException(_t('Cannot use editor for %1', $this->ops_tablename));
+ 			}
+ 			
+ 			if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+				throw new ApplicationException(_t('CSRF check failed'));
+				return;
+			}
+			
  			$t_display = new ca_bundle_displays($this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id, $this->_getShowInStr()));
  			$response = $t_display->saveResultsEditorData($this->ops_tablename, [
  													'request' => $this->request, 
@@ -1159,6 +1188,9 @@
  		 * results editor for data that is too complex to be edited in-cell.
  		 */ 
  		public function resultsComplexDataEditor() {
+ 			if(!$this->request->user->canDoAction('can_use_spreadsheet_editor_'.$this->ops_tablename)) { 
+ 				throw new ApplicationException(_t('Cannot use editor for %1', $this->ops_tablename));
+ 			}
  			$t_instance 			= Datamodel::getInstanceByTableName($this->ops_tablename, true);
  			$display_id 			= $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id, $this->_getShowInStr());
  			

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -56,9 +56,9 @@ class BaseEditorController extends ActionController {
 
 		AssetLoadManager::register('bundleListEditorUI');
 		AssetLoadManager::register('panel');
-// 		AssetLoadManager::register('maps');
-// 		AssetLoadManager::register('leaflet');
-// 		AssetLoadManager::register('3dmodels');
+ 		AssetLoadManager::register('maps');
+ 		AssetLoadManager::register('leaflet');
+ 		AssetLoadManager::register('3dmodels');
 
 		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 		$this->opo_result_context = new ResultContext($po_request, $this->ops_table_name, ResultContext::getLastFind($po_request, $this->ops_table_name));
@@ -83,6 +83,10 @@ class BaseEditorController extends ActionController {
 		// Are we duplicating?
 		//
 		if (($vs_mode == 'dupe') && $this->request->user->canDoAction('can_duplicate_'.$t_subject->tableName())) {
+			if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+				throw new ApplicationException(_t('CSRF check failed'));
+				return;
+			}
 			if (!($vs_type_name = $t_subject->getTypeName())) {
 				$vs_type_name = $t_subject->getProperty('NAME_SINGULAR');
 			}
@@ -224,6 +228,8 @@ class BaseEditorController extends ActionController {
 	    	return;
 	    }
 	    
+		$vb_no_save_error = false;
+	    
 		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vn_after_id, $vs_rel_table, $vn_rel_type_id, $vn_rel_id) = $this->_initView($pa_options);
 		/** @var $t_subject BundlableLabelableBaseModelWithAttributes */
 		if (!is_array($pa_options)) { $pa_options = array(); }
@@ -272,7 +278,7 @@ class BaseEditorController extends ActionController {
 				}
 			}
 
-			if ($vn_context_id) { $t_subject->set($vs_idno_context_field, $vn_context_id); }
+			if ($vn_context_id && !$t_subject->get($vs_idno_context_field)) { $t_subject->set($vs_idno_context_field, $vn_context_id); }
 		}
 
 		if (!($vs_type_name = $t_subject->getTypeName())) {
@@ -294,6 +300,8 @@ class BaseEditorController extends ActionController {
 		if ($this->_beforeSave($t_subject, $vb_is_insert)) {
 			if ($vb_save_rc = $t_subject->saveBundlesForScreen($this->request->getActionExtra(), $this->request, $va_opts)) {
 				$this->_afterSave($t_subject, $vb_is_insert);
+			} elseif($t_subject->hasErrorNumInRange(3600, 3699)) {
+				$vb_no_save_error = true;
 			}
 		}
 		$this->view->setVar('t_ui', $t_ui);
@@ -358,14 +366,18 @@ class BaseEditorController extends ActionController {
 		}
 		if(sizeof($va_errors) - sizeof($va_general_errors) > 0) {
 			$va_error_list = [];
-			$vb_no_save_error = false;
 			foreach($va_errors as $o_e) {
 				$bundle = array_shift(explode('/', $o_e->getErrorSource()));
 				$va_error_list[] = "<li><u>".$t_subject->getDisplayLabel($bundle).'</u>: '.$o_e->getErrorDescription()."</li>\n";
 
-				switch($o_e->getErrorNumber()) {
+				switch($error_num = (int)$o_e->getErrorNumber()) {
 					case 1100:	// duplicate/invalid idno
 						if (!$vn_subject_id) {		// can't save new record if idno is not valid (when updating everything but idno is saved if it is invalid)
+							$vb_no_save_error = true;
+						}
+						break;
+					default:
+						if(($error_num >= 3600) && ($error_num <= 3699)) { 	// failed to create movement for storage location
 							$vb_no_save_error = true;
 						}
 						break;
@@ -502,71 +514,25 @@ class BaseEditorController extends ActionController {
 				$vb_we_set_transaction = true;
 			}
 			
-			// Do we need to move relationships?
-			if (($vn_remap_id =  $this->request->getParameter('caReferenceHandlingToRemapToID', pInteger)) && ($this->request->getParameter('caReferenceHandlingTo', pString) == 'remap')) {
+			// Do we need to merge content to another record?
+			if (($remap_id =  $this->request->getParameter('caReferenceHandlingToRemapToID', pInteger)) && ($this->request->getParameter('caReferenceHandlingTo', pString) == 'remap')) {
 				switch($subject_table) {
 					case 'ca_relationship_types':
-						if ($vn_c = $t_subject->moveRelationshipsToType($vn_remap_id)) {
-							$t_target = new ca_relationship_types($vn_remap_id);
+						if ($vn_c = $t_subject->moveRelationshipsToType($remap_id)) {
+							$t_target = new ca_relationship_types($remap_id);
 							$this->notification->addNotification(($vn_c == 1) ? _t("Transferred %1 relationship to type <em>%2</em>", $vn_c, $t_target->getLabelForDisplay()) : _t("Transferred %1 relationships to type <em>%2</em>", $vn_c, $t_target->getLabelForDisplay()), __NOTIFICATION_TYPE_INFO__);
 						}
 						break;
 					default:
-						// update relationships
-						$va_tables = [
-							'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations', 'ca_list_items', 'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops', 'ca_object_representations', 'ca_list_items'
-						];
-
-						$vn_c = 0;
-						foreach($va_tables as $vs_table) {
-							$vn_c += $t_subject->moveRelationships($vs_table, $vn_remap_id);
+						$merge_opts = ['relationships'];
+						if($this->request->getParameter('caReferenceHandlingMetadata', pInteger)) {
+							$merge_opts = array_merge($merge_opts, ['preferred_labels', 'nonpreferred_labels', 'intrinsics', 'attributes']);
 						}
-						
-						if ($subject_table == 'ca_object_lots') { 		// move objects to new target
-							$object_ids = $t_subject->get('ca_objects.object_id', ['returnAsArray' => true]);
-							if(is_array($object_ids) && sizeof($object_ids)) {
-								$t_object = Datamodel::getInstance('ca_objects', true);
-								foreach($object_ids as $object_id) {
-									if ($t_object->load($object_id)) {
-										$t_object->setMode(ACCESS_WRITE);
-										$t_object->set('lot_id', $vn_remap_id);
-										$t_object->update();
-										if ($t_object->numErrors() > 0) { continue; }
-										$vn_c++;
-									}
-								}
-							}
+						try {
+							$t_target = $subject_table::merge([$remap_id, $vn_subject_id],['useID' => $remap_id, 'preferredLabelsMode' => 'base', 'intrinsicMode' => 'whenNotSet', 'notification' => $this->notification, 'merge' => $merge_opts]);
+						} catch(MergeException $e) {
+							$this->notification->addNotification(_t("Could not merge data: %1", $e->getMessage()), __NOTIFICATION_TYPE_ERROR__);
 						}
-
-						// update existing metadata attributes to use remapped value
-						$t_subject->moveAuthorityElementReferences($vn_remap_id);
-
-						if ($vn_c > 0) {
-							$t_target = Datamodel::getInstance($this->ops_table_name, true);
-							$t_target->load($vn_remap_id);
-							$this->notification->addNotification(($vn_c == 1) ? _t("Transferred %1 relationship to <em>%2</em> (%3)", $vn_c, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))) : _t("Transferred %1 relationships to <em>%2</em> (%3)", $vn_c, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
-						}
-						
-						// move children
-						if ($t_subject->isHierarchical() && is_array($va_children = call_user_func("{$subject_table}::getHierarchyChildrenForIDs", [$t_subject->getPrimaryKey()]))) {
-							if (!$t_target) {
-								$t_target = Datamodel::getInstance($this->ops_table_name, true);
-								$t_target->load($vn_remap_id);
-							}
-							
-							$t_child = Datamodel::getInstance($this->ops_table_name, true);
-							$vn_child_count = 0;
-							foreach($va_children as $vn_child_id) {
-								$t_child->load($vn_child_id);
-								$t_child->setMode(ACCESS_WRITE);
-								$t_child->set('parent_id', $vn_remap_id);
-								$t_child->update();
-								if ($t_child->numErrors() > 0) { continue; }
-								$vn_child_count++;
-							}
-							$this->notification->addNotification(($vn_child_count == 1) ? _t("Transferred %1 children to <em>%2</em> (%3)", $vn_child_count, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))) : _t("Transferred %1 children to <em>%2</em> (%3)", $vn_child_count, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
-						}
-						
 						break;
 				}
 			} else {
@@ -587,18 +553,7 @@ class BaseEditorController extends ActionController {
 					$this->notification->addNotification(($vn_child_count == 1) ? _t("Deleted %1 child", $vn_child_count) : _t("Deleted %1 children", $vn_child_count), __NOTIFICATION_TYPE_INFO__);
 				}
 			}
-			
-			// Do we need to move references contained in attributes bound to this item?
-			if (($vn_remap_id =  $this->request->getParameter('caReferenceHandlingToRemapFromID', pInteger)) && ($this->request->getParameter('caReferenceHandlingFrom', pString) == 'remap')) {
-				try {
-					$t_subject->moveAttributes($vn_remap_id, $t_subject->getAuthorityElementList(['idsOnly' => true]));
-				} catch(ApplicationException $o_e) {
-					$this->notification->addNotification(_t("Could not move references to other items in metadata before delete: %1", $o_e->getErrorDescription()), __NOTIFICATION_TYPE_ERROR__);
-				}
-			}
-			
-			$t_subject->setMode(ACCESS_WRITE);
-
+		
 			$vb_rc = false;
 			if ($this->_beforeDelete($t_subject)) {
 				if ($vb_rc = $t_subject->delete(true)) {
@@ -684,8 +639,8 @@ class BaseEditorController extends ActionController {
 
 		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
 
-		if((defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) || (bool)$this->request->config->get('display_template_debugger')) {
-			$this->render(__CA_THEME_DIR__.'/views/editor/template_test_html.php');
+		if((defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) || (bool)$this->request->config->get('display_template_debugger') || ($this->request->user->getPreference('show_template_debugger') !== 'hide')) {
+			$this->render('../template_test_html.php');
 		}
 		
 
@@ -750,18 +705,6 @@ class BaseEditorController extends ActionController {
 			$this->view->setVar('placements', $va_display_list['displayList']);
 			
 		}
-		
-		// Summary formats list
-		$formats = [];
-		if(is_array($available_templates = caGetAvailablePrintTemplates('summary', ['table' => $t_subject->tableName(), 'restrictToTypes' => $t_subject->getTypeID()]))) {
-            $num_available_templates = sizeof($available_templates);
-            foreach($available_templates as $k => $v) {
-                if (($num_available_templates > 1) && (bool)$v['generic']) { continue; }    // omit generics from list when specific templates are available
-                $formats[$v['code']] = $v['name'].' ('.$v['type'].')';
-            }
-        }
-		$this->view->setVar('formats', $formats);
-		
 		$this->view->setVar($t_subject->tableName().'_summary_last_settings', Session::getVar($t_subject->tableName().'_summary_last_settings'));
 		
 		$this->opo_app_plugin_manager->hookSummarizeItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject));
@@ -786,7 +729,16 @@ class BaseEditorController extends ActionController {
 		$t_display = new ca_bundle_displays();
 		$va_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays(array('table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'restrictToTypes' => array($t_subject->getTypeID()))));
 
-		if ((!($vn_display_id = $this->request->getParameter('display_id', pInteger))) || !isset($va_displays[$vn_display_id])) {
+		$vn_display_id = $this->request->getParameter('display_id', pString);
+		$ps_template = $this->request->getParameter('template', pString);
+		
+		// PDF templates set in the display list need to be remapped to the template parameter
+		if(substr($vn_display_id, 0, 4) === '_pdf') {
+			$ps_template = $vn_display_id;
+			$vn_display_id = null;
+		}
+
+		if ((!$vn_display_id ) || !isset($va_displays[$vn_display_id])) {
 			$vn_display_id = $this->request->user->getVar($t_subject->tableName().'_summary_display_id');
 		}
 		
@@ -838,13 +790,13 @@ class BaseEditorController extends ActionController {
 		} else {
 			$vn_display_id = null;
 			$this->view->setVar('display_id', null);
-			$this->view->setVar('placements', array());
+			$this->view->setVar('placements', []);
 		}
 
 		//
 		// PDF output
 		//
-		if (($ps_template = $this->request->getParameter('template', pString)) && (preg_match("!^_([A-Za-z0-9]+)_(.*)$!", $ps_template, $m)) && (in_array($m[1], ['pdf', 'docx'])) && is_array($va_template_info = caGetPrintTemplateDetails('summary', $m[2]))) {
+		if ($ps_template && (preg_match("!^_([A-Za-z0-9]+)_(.*)$!", $ps_template, $m)) && (in_array($m[1], ['pdf', 'docx'])) && is_array($va_template_info = caGetPrintTemplateDetails('summary', $m[2]))) {
 		    $last_settings['template'] = $ps_template;
 		} else {		
             // When no display is specified (or valid) and no template is specified try loading the default summary format for the table
@@ -1059,6 +1011,10 @@ class BaseEditorController extends ActionController {
 	 * @param array $pa_options Array of options passed through to _initView
 	 */
 	public function SetAccess($pa_options=null) {
+		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+	    	throw new ApplicationException(_t('CSRF check failed'));
+	    	return;
+	    }
 		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
 
 
@@ -1150,6 +1106,10 @@ class BaseEditorController extends ActionController {
 	 * @param array $pa_options Array of options passed through to _initView
 	 */
 	public function ChangeType($pa_options=null) {
+		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+	    	throw new ApplicationException(_t('CSRF check failed'));
+	    	return;
+	    }
 		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
 
 		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
@@ -1517,6 +1477,10 @@ class BaseEditorController extends ActionController {
 	 * Export data is rendered into the current view inherited from ActionController
 	 */
 	public function exportItem() {
+		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+	    	throw new ApplicationException(_t('CSRF check failed'));
+	    	return;
+	    }
 		list($vn_subject_id, $t_subject) = $this->_initView();
 
 		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
@@ -1537,6 +1501,10 @@ class BaseEditorController extends ActionController {
 	 * Add item to user's watch list. Intended to be called via ajax, and JSON response is returned in the current view inherited from ActionController
 	 */
 	public function toggleWatch() {
+		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+	    	throw new ApplicationException(_t('CSRF check failed'));
+	    	return;
+	    }
 		list($vn_subject_id, $t_subject) = $this->_initView();
 		require_once(__CA_MODELS_DIR__.'/ca_watch_list.php');
 
@@ -1627,7 +1595,13 @@ class BaseEditorController extends ActionController {
 					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
 					return;
 				}
-
+				
+				if (!is_array($bundle_sort_defaults = $this->request->user->getVar('bundleSortDefaults'))) { 
+					$bundle_sort_defaults = [];
+				}
+				$bundle_sort_defaults["P{$pn_placement_id}"] = ['sort' => $ps_sort, 'sortDirection' => $ps_sort_direction];
+				$this->request->user->setVar('bundleSortDefaults', $bundle_sort_defaults);
+				
 				$this->response->addContent($t_subject->getBundleFormHTML($ps_bundle, "P{$pn_placement_id}", array_merge($t_placement->get('settings'), ['placement_id' => $pn_placement_id]), ['request' => $this->request, 'contentOnly' => true, 'sort' => $ps_sort, 'sortDirection' => $ps_sort_direction], $vs_label));
 				break;
 		}
@@ -1996,7 +1970,7 @@ class BaseEditorController extends ActionController {
 			$t_instance = new ca_object_representations($pn_representation_id);
 			
 			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'INPUT', 'MIMETYPE')))) {
-				throw new ApplicationException(_t('Invalid viewer'));
+				throw new ApplicationException(_t('Invalid viewer for '.$vs_mimetype));
 			}
 			
 			$va_display_info = caGetMediaDisplayInfo('media_overlay', $vs_mimetype);
@@ -2160,6 +2134,15 @@ class BaseEditorController extends ActionController {
 	}
 	# -------------------------------------------------------
 	/**
+	 * Access to sidecar data (primarily used by 3d viewer)
+	 * Will only return sidecars that are images (for 3d textures), MTL files (for 3d OBJ-format files) or 
+	 * binary (for GLTF .bin buffer data)
+	 */
+	public function GetMediaSidecarData() {
+		caReturnMediaSidecarData($this->request->getParameter('sidecar_id', pInteger), $this->request->user);
+	}
+	# -------------------------------------------------------
+	/**
 	 * Provide in-viewer search for those that support it (Eg. UniversalViewer)
 	 */
 	public function SearchMediaData() {
@@ -2288,6 +2271,10 @@ class BaseEditorController extends ActionController {
 	 *
 	 */
 	public function SaveAnnotations() {
+		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+	    	throw new ApplicationException(_t('CSRF check failed'));
+	    	return;
+	    }
 		global $g_ui_locale_id;
 		$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
 		$t_rep = new ca_object_representations($pn_representation_id);
@@ -2422,7 +2409,21 @@ class BaseEditorController extends ActionController {
 
 		$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
 
-		if (!$ps_version) { $ps_version = 'original'; }
+		$di = [];
+		if($pn_representation_id) {
+			if (!($t_rep = ca_object_representations::findAsInstance(['representation_id' => $pn_representation_id]))) {
+				throw new ApplicationException(_t('Invalid representation'));
+			}
+			if(!$t_rep->isReadable($this->request->user)) {
+				throw new ApplicationException(_t('Access denied'));
+			}
+			
+			$m = $t_rep->getMediaInfo('media', 'original', 'MIMETYPE'); 
+			$di = caGetMediaDisplayInfo('media_overlay', $m);	
+		}	
+	
+		if (!$ps_version) { $ps_version = caGetOption('download_version', $di, 'original'); }
+
 		$o_view->setVar('version', $ps_version);
 
 		$va_ancestor_ids = ($t_subject->isHierarchical()) ? $t_subject->getHierarchyAncestors(null, array('idsOnly' => true, 'includeSelf' => true)) : array($vn_subject_id);
@@ -2480,6 +2481,8 @@ class BaseEditorController extends ActionController {
 				// Perform metadata embedding
 				if (isset($va_rep['representation_id']) && ($va_rep['representation_id'] > 0)) {
                     $t_rep = new ca_object_representations($va_rep['representation_id']);
+                    if(!$t_rep->isReadable($this->request->user)) { continue; }
+                    
                     if(!($vs_path = caEmbedMediaMetadataIntoFile($t_rep->getMediaPath('media', $ps_version),
                         $t_subject->tableName(), $t_subject->getPrimaryKey(), $t_subject->getTypeCode(), // subject table info
                         $t_rep->getPrimaryKey(), $t_rep->getTypeCode() // rep info
@@ -2622,7 +2625,7 @@ class BaseEditorController extends ActionController {
 	/**
 	 * Handle ajax media uploads from editor
 	 */
-	public function UploadFiles($pa_options=null) {
+	public function UploadFiles($options=null) {
 		if (!$this->request->isLoggedIn() || ((int)$this->request->user->get('userclass') !== 0)) {
 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
 			return;
@@ -2633,33 +2636,33 @@ class BaseEditorController extends ActionController {
 
 		$stored_files = [];
 		
-		$user_dir = caGetUserMediaDirectoryPath($user_id);
-		$user_files = array_flip(caGetDirectoryContentsAsList($user_dir));
+		$user_dir = caGetMediaUploadPathForUser($user_id);
 
 		if(is_array($_FILES['files'])) {
+			// used by ca_object_representations bundle file uploader and media importer drag-and-drop file uploads
 			foreach($_FILES['files']['tmp_name'] as $i => $f) {
 				if(!strlen($f)) { continue; }
-				$dest_filename = pathinfo($f, PATHINFO_FILENAME);
 				
-				$md5 = md5_file($f);
-				if (isset($user_files["{$user_dir}/md5_{$md5}"])) { 
-					$f = "{$user_dir}/".file_get_contents("{$user_dir}/md5_{$md5}");
-				}
-				
-				$dest_filename = pathinfo($f, PATHINFO_FILENAME);
-				@copy($f, $dest_path = "{$user_dir}/{$dest_filename}");
+				$dest_filename = isset($_FILES['files']['name'][$i]) ? $_FILES['files']['name'][$i] : pathinfo($f, PATHINFO_FILENAME);
+				if(!@copy($f, $dest_path = "{$user_dir}/{$dest_filename}")) { continue; }
 
-				// write file metadata
-				@file_put_contents("{$dest_path}_metadata", json_encode([
-					'original_filename' => $_FILES['files']['name'][$i],
-					'size' => filesize($dest_path)
-				]));
-				@file_put_contents("{$user_dir}/md5_{$md5}", $dest_filename);
-				$stored_files[$md5] = "userMedia{$user_id}/{$dest_filename}"; // only return the user directory and file name, not the entire path
+				$stored_files[$dest_filename] = caGetUserDirectoryName($this->request->getUserID())."/{$dest_filename}"; // only return the user directory and file name, not the entire path
 			}
+			$this->response->addContent(json_encode(['files' => array_values($stored_files), 'msg' => _t('Uploaded %1 files', sizeof($stored_files))]));
+		} else {
+			// assume single file in each key (used by Quickadd file and media attribute upload process)
+			foreach($_FILES as $k => $info) {
+				if(!is_array($info) || !array_key_exists('tmp_name', $info) || !strlen($info['tmp_name'])) { continue; }
+				
+				$dest_filename = isset($info['name']) ? $info['name'] : pathinfo($info['tmp_name'], PATHINFO_FILENAME);
+				if(!@copy($info['tmp_name'], $dest_path = "{$user_dir}/{$dest_filename}")) { continue; }
+
+				$stored_files[$k] = caGetUserDirectoryName($this->request->getUserID())."/{$dest_filename}"; // only return the user directory and file name, not the entire path
+			}
+			
+			$this->response->addContent(json_encode(['files' => $stored_files, 'msg' => _t('Uploaded %1 files', sizeof($stored_files))]));
 		}
 
-		$this->response->addContent(json_encode(['files' => array_values($stored_files), 'msg' => _t('Uploaded %1 files', sizeof($stored_files))]));
 	}
 	# -------------------------------------------------------
 	/**
@@ -2674,6 +2677,10 @@ class BaseEditorController extends ActionController {
 	 * 
 	 */
 	public function SetHomeLocation($options=null) {
+		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+	    	throw new ApplicationException(_t('CSRF check failed'));
+	    	return;
+	    }
 		list($vn_subject_id, $t_subject) = $this->_initView();
 		if (!$t_subject->isLoaded()) { 
 			throw new ApplicationException(_t('Invalid id '.$vn_su));
@@ -2724,7 +2731,7 @@ class BaseEditorController extends ActionController {
 		}
 		
 		$table = preg_replace("!_related_list$!", "", $placement->get('bundle_name'));
-		$ids = $t_instance->getRelatedItems($table, ['returnAs' => 'ids', 'restrictToTypes' => $placement->getSetting('restrict_to_types'), 'restrictToRelationshipTypes' => $placement->getSetting('restrict_to_relationship_types'), ]);
+		$ids = $t_instance->getRelatedItems($table, ['showCurrentOnly' => $placement->getSetting('showCurrentOnly'), 'returnAs' => 'ids', 'restrictToTypes' => $placement->getSetting('restrict_to_types'), 'restrictToRelationshipTypes' => $placement->getSetting('restrict_to_relationship_types'), ]);
 		if(!$ids || !sizeof($ids)) { 
 			throw new ApplicationException(_('No related items'));
 		}
@@ -2747,7 +2754,7 @@ class BaseEditorController extends ActionController {
 		if(in_array($target, ['ca_objects', 'ca_collections', 'ca_object_lots', 'ca_object_representations'], true)) {
 			if(!$this->request->user->canDoAction("can_edit_{$target}")) {
 				$resp = ['ok' => 0, 'message' => _t('Access denied'), 'updated' => [], 'errors' => [], 'timestamp' => time()];	
-			} elseif(!is_array($policies = $target::getHistoryTrackingCurrentValuePoliciesForTable($target))) {
+			} elseif(!is_array($policies = $target::getHistoryTrackingCurrentValuePolicies($target))) {
 				$resp = ['ok' => 0, 'message' => _t('No policies available'), 'updated' => [], 'errors' => [], 'timestamp' => time()];	
 			} else {
 				$policies = array_filter($policies, function($v) use ($table) { return array_key_exists('ca_storage_locations', $v['elements']); });

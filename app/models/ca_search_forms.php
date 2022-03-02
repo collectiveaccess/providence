@@ -1303,8 +1303,10 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
-	public function getLuceneQueryStringForHTMLFormInput($pa_form_content) {
+	public function getLuceneQueryStringForHTMLFormInput($pa_form_content, array $options=null) {
 		$va_values = $this->extractFormValuesFromArray($pa_form_content);
+
+		$match_on_stem = caGetSearchConfig()->get('match_on_stem');
 
 		$va_query_elements = [];
 		if (is_array($va_values) && sizeof($va_values)) {
@@ -1317,6 +1319,9 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 					} else {
 						$vs_query_element = $vs_value;
 					}
+					
+					$vs_query_element .= ($match_on_stem && caIsSearchStem($vs_query_element)) ? '*' : '';
+					
 					switch($vs_element){
 						case '_fulltext':		// don't qualify special "fulltext" element
 							$va_query_elements[] = $vs_query_element;
@@ -1359,6 +1364,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		if (!($vn_form_id = $this->getPrimaryKey())) { return null; }
 
 		$va_form_contents = $this->getElementsForForm();
+		
 		$va_values = [];
 		foreach($va_form_contents as $vn_i => $vs_element) {
 			switch($vs_element) {
@@ -1405,8 +1411,9 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 				}
 				if (sizeof($va_sub_elements = $t_element->getElementsInSet()) > 1) {
 					foreach($va_sub_elements as $vn_element_id => $va_element_info) {
-						if ($element_code == $va_element_info['element_code']) { continue; }
-						$va_elements[$vn_i] = $element_prefix.'.'.$va_element_info['element_code'];
+						if($element_code == $va_element_info['element_code']) { continue; }
+						if($va_element_info['datatype'] == 0) { continue; }
+						$va_elements[$vn_i.'_'.$vn_element_id] = $element_prefix.'.'.$va_element_info['element_code'];
 					}
 				}
 			} else {

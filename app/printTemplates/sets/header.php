@@ -41,11 +41,11 @@
 <?php
 	if(file_exists($this->getVar('base_path')."/local/pdf.css")){
 ?>
-		<link type="text/css" href="<?php print $this->getVar('base_path'); ?>/local/pdf.css" rel="stylesheet" />
+		<link type="text/css" href="<?= $this->getVar('base_path'); ?>/local/pdf.css" rel="stylesheet" />
 <?php	
 	} else {
 ?>
-		<link type="text/css" href="<?php print $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
+		<link type="text/css" href="<?= $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
 <?php
 	}	
 
@@ -62,11 +62,11 @@
 <?php
 	if(file_exists($this->getVar('base_path')."/local/pdf.css")){
 ?>
-		<link type="text/css" href="<?php print $this->getVar('base_path'); ?>/local/pdf.css" rel="stylesheet" />
+		<link type="text/css" href="<?= $this->getVar('base_path'); ?>/local/pdf.css" rel="stylesheet" />
 <?php	
 	} else {
 ?>
-		<link type="text/css" href="<?php print $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
+		<link type="text/css" href="<?= $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
 <?php
 	}
 	print caGetReportLogo()."<div class='pagingText' id='pagingText' style='position: absolute; top: 0px; right: 0px;'> </div>";

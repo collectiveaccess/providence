@@ -504,7 +504,7 @@ class BatchProcessor {
 
 		if (!is_writeable($vs_log_dir)) { $vs_log_dir = caGetTempDirPath(); }
 		$vn_log_level = BatchProcessor::_logLevelStringToNumber($vs_log_level);
-		$o_log = new KLogger($vs_log_dir, $vn_log_level);
+		$o_log = caGetLogger(['logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level]);
 
 		$o_log->logDebug("[importMediaFromDirectory]: Args\n".json_encode($pa_options));
 		$vs_import_target = caGetOption('importTarget', $pa_options, 'ca_objects');
@@ -535,39 +535,25 @@ class BatchProcessor {
 			//'transaction' => $o_trans
 		));
 
-		if (!is_dir($pa_options['importFromDirectory'])) {
-			$o_eventlog->log(array(
-				"CODE" => 'ERR',
-				"SOURCE" => "mediaImport",
-				"MESSAGE" => $vs_msg = _t("Specified import directory '%1' is not a directory", $pa_options['importFromDirectory'])
-			));
-			BatchProcessor::$s_import_error_list[] = $vs_msg;
-			$o_log->logError($vs_msg);
-			return null;
-		}
-
-		$vs_batch_media_import_root_directory = $o_config->get('batch_media_import_root_directory');
-		if (!preg_match("!^{$vs_batch_media_import_root_directory}!", $pa_options['importFromDirectory'])) {
-			$o_eventlog->log(array(
-				"CODE" => 'ERR',
-				"SOURCE" => "mediaImport",
-				"MESSAGE" => $vs_msg = _t("Specified import directory '%1' is not within the configured root %2", $pa_options['importFromDirectory'], $vs_batch_media_import_root_directory)
-			));
-			$o_log->logError($vs_msg);
+		$batch_media_import_root_directory = null;
+		$batch_media_import_root_directories = array_filter(caGetAvailableMediaUploadPaths($vn_user_id), function($v) use ($pa_options) {
+			$p = $v."/".$pa_options['importFromDirectory'];
+			return is_dir($p);
+		});
+		if(sizeof($batch_media_import_root_directories) === 0) {
+			$o_eventlog->log([
+				"CODE"    => 'ERR',
+				"SOURCE"  => "mediaImport",
+				"MESSAGE" => $vs_msg
+					= _t( "Specified import directory '%1' is not valid",
+					$pa_options['importFromDirectory'])
+			]);
+			$o_log->logError( $vs_msg );
 			BatchProcessor::$s_import_error_list[] = $vs_msg;
 			return null;
 		}
-
-		if (preg_match("!\.\./!", $pa_options['importFromDirectory'])) {
-			$o_eventlog->log(array(
-				"CODE" => 'ERR',
-				"SOURCE" => "mediaImport",
-				"MESSAGE" => $vs_msg = _t("Specified import directory '%1' is invalid", $pa_options['importFromDirectory'])
-			));
-			$o_log->logError($vs_msg);
-			BatchProcessor::$s_import_error_list[] = $vs_msg;
-			return null;
-		}
+		$batch_media_import_root_directory = array_shift($batch_media_import_root_directories);
+		$batch_media_import_directory = $batch_media_import_root_directory.'/'.$pa_options['importFromDirectory'];
 
 		$vb_include_subdirectories 			= (bool)$pa_options['includeSubDirectories'];
 		$vb_delete_media_on_import			= (bool)$pa_options['deleteMediaOnImport'];
@@ -576,6 +562,8 @@ class BatchProcessor {
 		$vs_match_mode 						= $pa_options['matchMode'];
 		$vs_match_type						= $pa_options['matchType'];
 		$vn_type_id 						= $pa_options[$vs_import_target.'_type_id'];
+		$vn_parent_type_id 					= $pa_options[$vs_import_target.'_parent_type_id'];
+		$vn_child_type_id 					= $pa_options[$vs_import_target.'_child_type_id'];
 		$vn_rep_type_id 					= $pa_options['ca_object_representations_type_id'];
 
 		$va_limit_matching_to_type_ids 		= $pa_options[$vs_import_target.'_limit_matching_to_type_ids'];
@@ -621,7 +609,14 @@ class BatchProcessor {
 
 		if (!$vn_locale_id) { $vn_locale_id = $g_ui_locale_id; }
 
-		$va_files_to_process = caGetDirectoryContentsAsList($pa_options['importFromDirectory'], $vb_include_subdirectories);
+		if($vs_import_mode === 'DIRECTORY_AS_HIERARCHY') { 
+			$vb_include_subdirectories = true; 					// hierarchy mode implies processing all sub-directories
+			$vn_type_id = $vn_child_type_id;	
+			
+			// TODO: check that media_importer_hierarchy_parent_type and media_importer_hierarchy_parent_type are valid types
+		}
+		
+		$va_files_to_process = caGetDirectoryContentsAsList($batch_media_import_directory, $vb_include_subdirectories, false, true);
 		$o_log->logInfo(_t('Found %1 files in directory \'%2\'', sizeof($va_files_to_process), $pa_options['importFromDirectory']));
 
 		if ($vs_set_mode == 'add') {
@@ -730,6 +725,8 @@ class BatchProcessor {
 		$vn_c = 0;
 		$vn_start_time = time();
 		
+		$directory_as_hierarchy_roots = [];	// list of hierarchy roots created when in DIRECTORY_AS_HIERARCHY import mode
+		$parent_id = null;	// parent for hierarchy
 		foreach($va_files_to_process as $vs_file) {
 			$va_tmp = explode("/", $vs_file);
 			$f = array_pop($va_tmp);
@@ -739,7 +736,7 @@ class BatchProcessor {
 
 			$vn_c++;
 
-			$vs_relative_directory = preg_replace("!{$vs_batch_media_import_root_directory}[/]*!", "", $vs_directory);
+			$vs_relative_directory = preg_replace("!^{$vs_batch_media_import_root_directory}[/]*!", "", $vs_directory);
 
 			if (isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
 				$ps_callback($po_request,
@@ -783,7 +780,6 @@ class BatchProcessor {
 			}
 
 			$t_instance = Datamodel::getInstance($vs_import_target, false);
-			//$t_instance->setTransaction($o_trans);
 
 			$vs_modified_filename = $f;
 			$va_extracted_idnos_from_filename = array();
@@ -912,7 +908,36 @@ class BatchProcessor {
 				}
 			}
 
-			if (!$t_instance->getPrimaryKey() && ($vs_import_mode !== 'DONT_MATCH')) {
+
+			if($vs_import_mode === 'DIRECTORY_AS_HIERARCHY') {
+				$stub = str_replace("{$batch_media_import_directory}/", '', $vs_file);
+				
+				$bits = explode('/', $stub);
+				$root_code = (sizeof($bits) >= 2) ? array_shift(explode('/', $stub)) : array_pop(explode('/', $batch_media_import_directory));
+				
+				if(!isset($directory_as_hierarchy_roots[$root_code])) {
+					
+					$t_parent = Datamodel::getInstance($vs_import_target);
+					if(sizeof($add_errors = self::_addNewRecord($t_parent, $o_log, [
+						'parent_id' => null,
+						'type_id' => $vn_parent_type_id,
+						'locale_id' => $vn_locale_id,
+						'status' => $vn_status,
+						'access' => $vn_access,
+						'filename' => $f,
+						'directory' => $d,
+						'relative_directory' => $vs_relative_directory,
+						'idno_mode' => $vs_idno_mode,
+						'label_mode' => 'directory'
+					]))) {
+						$va_errors = array_merge($va_errors, $add_errors);
+						continue;
+					}
+					$directory_as_hierarchy_roots[$root_code] = $t_parent->getPrimaryKey();
+				}
+				$parent_id = $directory_as_hierarchy_roots[$root_code];
+				$t_instance = Datamodel::getInstance($vs_import_target);
+			} else if (!$t_instance->getPrimaryKey() && ($vs_import_mode !== 'DONT_MATCH')) {
 				// Use filename as idno if all else fails
 				if ($t_instance->load(array('idno' => $f, 'deleted' => 0))) {
 					$va_notices[$vs_relative_directory.'/'.$f.'_match'] = array(
@@ -990,130 +1015,35 @@ class BatchProcessor {
 				}
 			} else {
 				// should we create new record?
-				if (in_array($vs_import_mode, array('TRY_TO_MATCH', 'DONT_MATCH'))) {
-					$t_instance->set('type_id', $vn_type_id);
-					$t_instance->set('locale_id', $vn_locale_id);
-					$t_instance->set('status', $vn_status);
-					$t_instance->set('access', $vn_access);
-
-					// for places, take first hierarchy we can find. in most setups there is but one. we might wanna make this configurable via setup screen at some point
-					if($t_instance->hasField('hierarchy_id')) {
-						$va_hierarchies = $t_instance->getHierarchyList();
-						reset($va_hierarchies);
-						$vn_hierarchy_id = key($va_hierarchies);
-						$t_instance->set('hierarchy_id', $vn_hierarchy_id);
-					}
-
-					$vs_idno_value = null;
-					switch(strtolower($vs_idno_mode)) {
-						case 'filename':
-							// use the filename as identifier
-							$vs_idno_value = $f;
-							break;
-						case 'filename_no_ext':
-							// use filename without extension as identifier
-							$f_no_ext = preg_replace(self::REGEXP_FILENAME_NO_EXT, '', $f);
-							$vs_idno_value = $f_no_ext;
-							break;
-						case 'directory_and_filename':
-							// use the directory + filename as identifier
-							$vs_idno_value = $d.'/'.$f;
-							break;
-						default:
-							// Calculate identifier using numbering plugin
-							$o_numbering_plugin = $t_instance->getIDNoPlugInInstance();
-							if (!($vs_sep = $o_numbering_plugin->getSeparator())) { $vs_sep = ''; }
-							if (!is_array($va_idno_values = $o_numbering_plugin->htmlFormValuesAsArray('idno', null, false, false, true))) { $va_idno_values = array(); }
-							// true=always set serial values, even if they already have a value; this let's us use the original pattern while replacing the serial value every time through
-							$vs_idno_value = join($vs_sep, $va_idno_values);
-							break;
-					}
-					$t_instance->set('idno', $vs_idno_value);
-
-					$t_instance->insert();
-
-					if ($t_instance->numErrors()) {
-						$o_eventlog->log(array(
-							"CODE" => 'ERR',
-							"SOURCE" => "mediaImport",
-							"MESSAGE" => _t("Error creating new record while importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors()))
-						));
-						$va_errors[$vs_relative_directory.'/'.$f] = array(
-							'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
-							'label' => $t_instance->getLabelForDisplay(),
-							'errors' => $t_instance->errors(),
-							'message' => $vs_msg = _t("Error creating new record while importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors())),
-							'file' => $f,
-							'status' => 'ERROR',
-						);
-						$o_log->logError($vs_msg);
-						//$o_trans->rollback();
+				if (in_array($vs_import_mode, array('TRY_TO_MATCH', 'DONT_MATCH', 'DIRECTORY_AS_HIERARCHY'))) {
+				
+					if(sizeof($add_errors = self::_addNewRecord($t_instance, $o_log, [
+						'parent_id' => $parent_id,
+						'type_id' => $vn_type_id,
+						'locale_id' => $vn_locale_id,
+						'status' => $vn_status,
+						'access' => $vn_access,
+						'filename' => $f,
+						'directory' => $d,
+						'label_text' => $label_text,
+						'relative_directory' => $vs_relative_directory,
+						'idno_mode' => $vs_idno_mode,
+						'label_mode' => $vs_label_mode
+					]))) {
+						$va_errors = array_merge($va_errors, $add_errors);
 						continue;
 					}
-					
-					switch(strtolower($vs_label_mode)) {
-						case 'idno':
-							$vs_label_value = $vs_idno_value;
-							break;
-						case 'blank':
-							// Use blank placeholder text
-							$vs_label_value = '['.caGetBlankLabelText($vs_import_target).']';
-							break;
-						case 'filename_no_ext':
-							// use filename without extension as identifier
-							$f_no_ext = preg_replace(self::REGEXP_FILENAME_NO_EXT, '', $f);
-							$vs_label_value = $f_no_ext;
-							break;
-						case 'directory_and_filename':
-							// use the directory + filename as identifier
-							$vs_label_value = $d.'/'.$f;
-							break;
-						case 'user':
-							$vs_label_value = $label_text;
-							break;
-						case 'filename':
-						default:
-							// use the filename as label
-							$vs_label_value = $f;
-							break;
-					}
-
-					if($t_instance->tableName() == 'ca_entities') { // entity labels deserve special treatment
-						$t_instance->addLabel(
-							array('surname' => $vs_label_value), $vn_locale_id, null, true
-						);
-					} else {
-						$t_instance->addLabel(
-							array($t_instance->getLabelDisplayField() => $vs_label_value), $vn_locale_id, null, true
-						);
-					}
-
-					if ($t_instance->numErrors()) {
-						$o_eventlog->log(array(
-							"CODE" => 'ERR',
-							"SOURCE" => "mediaImport",
-							"MESSAGE" => _t("Error creating record label while importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors()))
-						));
-
-						$va_errors[$vs_relative_directory.'/'.$f] = array(
-							'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
-							'label' => $t_instance->getLabelForDisplay(),
-							'errors' => $t_instance->errors(),
-							'message' => $vs_msg = _t("Error creating record label while importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors())),
-							'file' => $f,
-							'status' => 'ERROR',
-						);
-						$o_log->logError($vs_msg);
-						//$o_trans->rollback();
-						continue;
-					}
-
+				
 					$t_new_rep = $t_instance->addRepresentation(
 						$vs_directory.'/'.$f, $vn_rep_type_id, // path, type_id
 						$vn_locale_id, $vn_object_representation_status, $vn_object_representation_access, true, // locale, status, access, primary
 						array('idno' => $vs_rep_idno), // values
 						array('original_filename' => $f, 'returnRepresentation' => true, 'type_id' => $vn_rel_type_id, 'mapping_id' => $vn_object_representation_mapping_id) // options
 					);
+					
+					if($t_parent && !$t_parent->getRepresentationCount()) {
+						$t_parent->addRelationship('ca_object_representations', $t_new_rep->getPrimaryKey(), $vn_rel_type_id); 
+					}
 
 					if ($t_instance->numErrors()) {
 						$o_eventlog->log(array(
@@ -1131,7 +1061,6 @@ class BatchProcessor {
 							'status' => 'ERROR',
 						);
 						$o_log->logError($vs_msg);
-						//$o_trans->rollback();
 						continue;
 					} else {
 						if ($vb_delete_media_on_import) {
@@ -1274,14 +1203,6 @@ class BatchProcessor {
 		}
 		$o_batch_log->close();
 
-		//if ($vb_we_set_transaction) {
-		//	if (sizeof($va_errors) > 0) {
-				//$o_trans->rollback();
-		//	} else {
-				//$o_trans->commit();
-		//	}
-		//}
-
 		$vs_set_name = $t_set->getLabelForDisplay();
 		$vs_started_on = caGetLocalizedDate($vn_start_time);
 
@@ -1308,6 +1229,7 @@ class BatchProcessor {
 					), null, null, ['source' => 'Batch media import complete', 'attachments' => $attachments]
 				);
 			}
+
 		}
 
 		if ($po_request && isset($pa_options['sendSMS']) && $pa_options['sendSMS']) {
@@ -1315,6 +1237,126 @@ class BatchProcessor {
 		}
 		$o_log->logInfo(_t("Media import processing for directory %1 with %2 %3 begun at %4 is complete", $vs_relative_directory, $vn_num_items, (($vn_num_items == 1) ? _t('file') : _t('files')), $vs_started_on));
 		return array('errors' => $va_errors, 'notices' => $va_notices, 'processing_time' => caFormatInterval($vn_elapsed_time));
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	private static function _addNewRecord(BaseModel $t_instance, KLogger $o_log, array $options) : array {
+		$errors = [];
+		
+		$t_instance->set('parent_id', caGetOption('parent_id', $options, null));
+		$t_instance->set('type_id', caGetOption('type_id', $options, null));
+		$t_instance->set('locale_id', $locale_id = caGetOption('locale_id', $options, null));
+		$t_instance->set('status', caGetOption('status', $options, null));
+		$t_instance->set('access', caGetOption('access', $options, null));
+
+		// for places, take first hierarchy we can find. in most setups there is but one. we might wanna make this configurable via setup screen at some point
+		if($t_instance->hasField('hierarchy_id')) {
+			$hierarchies = $t_instance->getHierarchyList();
+			reset($hierarchies);
+			$hierarchy_id = key($hierarchies);
+			$t_instance->set('hierarchy_id', $hierarchy_id);
+		}
+
+		$f = caGetOption('filename', $options, null);
+		$d = caGetOption('directory', $options, null);
+
+		$vs_idno_value = null;
+		$vs_idno_mode = caGetOption('idno_mode', $options, null);
+		switch(strtolower($vs_idno_mode)) {
+			case 'filename':
+				// use the filename as identifier
+				$vs_idno_value = $f;
+				break;
+			case 'filename_no_ext':
+				// use filename without extension as identifier
+				$f_no_ext = preg_replace(self::REGEXP_FILENAME_NO_EXT, '', $f);
+				$vs_idno_value = $f_no_ext;
+				break;
+			case 'directory_and_filename':
+				// use the directory + filename as identifier
+				$vs_idno_value = $d.'/'.$f;
+				break;
+			default:
+				// Calculate identifier using numbering plugin
+				$o_numbering_plugin = $t_instance->getIDNoPlugInInstance();
+				if (!($vs_sep = $o_numbering_plugin->getSeparator())) { $vs_sep = ''; }
+				if (!is_array($va_idno_values = $o_numbering_plugin->htmlFormValuesAsArray('idno', null, false, false, true))) { $va_idno_values = array(); }
+				// true=always set serial values, even if they already have a value; this let's us use the original pattern while replacing the serial value every time through
+				$vs_idno_value = join($vs_sep, $va_idno_values);
+				break;
+		}
+		$t_instance->set('idno', $vs_idno_value);
+
+		$t_instance->insert();
+
+		if ($t_instance->numErrors()) {
+			$errors[$vs_relative_directory.'/'.$f] = array(
+				'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
+				'label' => $t_instance->getLabelForDisplay(),
+				'errors' => $t_instance->errors(),
+				'message' => $vs_msg = _t("Error creating new record while importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors())),
+				'file' => $f,
+				'status' => 'ERROR',
+			);
+			$o_log->logError($vs_msg);
+			return $errors;
+		}
+		
+		switch(strtolower(caGetOption('label_mode', $options, null))) {
+			case 'idno':
+				$vs_label_value = $vs_idno_value;
+				break;
+			case 'blank':
+				// Use blank placeholder text
+				$vs_label_value = '['.caGetBlankLabelText($vs_import_target).']';
+				break;
+			case 'filename_no_ext':
+				// use filename without extension as identifier
+				$f_no_ext = preg_replace(self::REGEXP_FILENAME_NO_EXT, '', $f);
+				$vs_label_value = $f_no_ext;
+				break;
+			case 'directory_and_filename':
+				// use the directory + filename as identifier
+				$vs_label_value = $d.'/'.$f;
+				break;
+			case 'directory':
+				// use the directory + filename as identifier
+				$vs_label_value = $d;
+				break;
+			case 'user':
+				$vs_label_value = caGetOption('label_text', $options, '???');
+				break;
+			case 'filename':
+			default:
+				// use the filename as label
+				$vs_label_value = $f;
+				break;
+		}
+
+		if($t_instance->tableName() == 'ca_entities') { // entity labels deserve special treatment
+			$t_instance->addLabel(
+				['surname' => $vs_label_value], $locale_id, null, true
+			);
+		} else {
+			$t_instance->addLabel(
+				[$t_instance->getLabelDisplayField() => $vs_label_value], $locale_id, null, true
+			);
+		}
+
+		if ($t_instance->numErrors()) {
+			$errors[$vs_relative_directory.'/'.$f] = array(
+				'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
+				'label' => $t_instance->getLabelForDisplay(),
+				'errors' => $t_instance->errors(),
+				'message' => $vs_msg = _t("Error creating record label while importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors())),
+				'file' => $f,
+				'status' => 'ERROR',
+			);
+			$o_log->logError($vs_msg);
+		}
+		return $errors;
 	}
 	# ----------------------------------------
 	/**
@@ -1341,7 +1383,6 @@ class BatchProcessor {
 	 *			KLogger::NOTICE = Notices (normal but significant conditions)
 	 *			KLogger::INFO = Informational messages
 	 *			KLogger::DEBUG = Debugging messages
-
 	 */
 	public static function importMetadata($po_request, $ps_source, $ps_importer, $ps_input_format, $pa_options=null) {
 		$va_errors = $va_noticed = array();
@@ -1371,17 +1412,37 @@ class BatchProcessor {
 		
 		$vn_log_level = BatchProcessor::_logLevelStringToNumber($vs_log_level);
 
+		$check_file_extension = false;
 		if (!isURL($ps_source) && is_dir($ps_source)) {
-			$va_sources = caGetDirectoryContentsAsList($ps_source, true, false, false, false);
+			$va_sources = caGetDirectoryContentsAsList($ps_source, true, false, false, true);
+			$check_file_extension = true;
 		} else {
 			$va_sources = array($ps_source);
 		}
 		
 		$vn_file_num = 0;
 		foreach($va_sources as $vs_source) {
+			if(is_dir($vs_source)) { continue; }
+			if(!is_readable($vs_source)) { continue; }
 			$vn_file_num++;
 			$t_importer = new ca_data_importers();
-			if (!$t_importer->importDataFromSource($vs_source, $ps_importer, array('originalFilename' => caGetOption('originalFilename', $pa_options, null), 'fileNumber' => $vn_file_num, 'numberOfFiles' => sizeof($va_sources), 'logDirectory' => $o_config->get('batch_metadata_import_log_directory'), 'request' => $po_request,'format' => $ps_input_format, 'showCLIProgressBar' => false, 'progressCallback' => isset($pa_options['progressCallback']) ? $pa_options['progressCallback'] : null, 'reportCallback' => isset($pa_options['reportCallback']) ? $pa_options['reportCallback'] : null,  'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level, 'limitLogTo' => $limit_log_to, 'dryRun' => $vb_dry_run, 'importAllDatasets' => $vb_import_all_datasets))) {
+			if (($ret = $t_importer->importDataFromSource($vs_source, $ps_importer, [
+				'originalFilename' => caGetOption('originalFilename', $pa_options, null), 
+				'fileNumber' => $vn_file_num, 
+				'numberOfFiles' => sizeof($va_sources), 
+				'logDirectory' => $o_config->get('batch_metadata_import_log_directory'), 
+				'request' => $po_request,
+				'format' => $ps_input_format, 
+				'showCLIProgressBar' => false, 
+				'progressCallback' => isset($pa_options['progressCallback']) ? $pa_options['progressCallback'] : null, 
+				'reportCallback' => isset($pa_options['reportCallback']) ? $pa_options['reportCallback'] : null,  
+				'logDirectory' => $vs_log_dir, 
+				'logLevel' => $vn_log_level, 
+				'limitLogTo' => $limit_log_to, 
+				'dryRun' => $vb_dry_run, 
+				'importAllDatasets' => $vb_import_all_datasets,
+				'checkFileExtension' => $check_file_extension
+			])) === false) {
 				$va_errors['general'][] = array(
 					'idno' => "*",
 					'label' => "*",
@@ -1390,14 +1451,13 @@ class BatchProcessor {
 				);
 				BatchProcessor::$s_import_error_list[] = _t("Could not import source %1", $vs_source);
 				return false;
-			} else {
+			} elseif($ret) {
 				$va_notices['general'][] = array(
 					'idno' => "*",
 					'label' => "*",
 					'errors' => array(_t("Imported data from source %1", $vs_source)),
 					'status' => 'SUCCESS'
 				);
-				//return true;
 			}
 		}
 		

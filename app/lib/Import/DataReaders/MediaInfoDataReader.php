@@ -123,6 +123,8 @@ class MediaInfoDataReader extends BaseXMLDataReader {
 		if (file_exists($ps_source) && (filesize($ps_source) < 1024 * 1024)) { 	
 			$d = file_get_contents($ps_source);
 			if (preg_match("!<pbcoreInstantiationDocument!", $d)) {
+				$d = preg_replace("!</pbcoreInstantiationDocument>.*!s", "</pbcoreInstantiationDocument>", $d);
+		
 				$pa_options['fromString'] = $d;
 				$ps_source = null;
 			}	

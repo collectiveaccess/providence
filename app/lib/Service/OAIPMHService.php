@@ -572,12 +572,23 @@ class OAIPMHService extends BaseService {
 			if($vs_query === '*') {
 				$o_search = caGetSearchInstance($this->table);
 				
+				if(is_array($type_res = caGetOption('restrictToTypes', $this->opa_provider_info, null)) && sizeof($type_res)) {
+					$o_search->setTypeRestrictions($type_res);
+				} elseif(is_array($type_exclusion = caGetOption('excludeTypes', $this->opa_provider_info, null)) && sizeof($type_exclusion)) {
+					$o_search->setTypeExclusions($type_exclusion);
+				}
 				$qr_res = $o_search->search($vs_range ? 'modified:"'.$vs_range.'"' : '*', array('showDeleted' => $vb_show_deleted, 'no_cache' => $vb_dont_cache, 'checkAccess' => $vb_dont_enforce_access_settings ? null : $va_access_values, 'dontFilterByACL' => $this->opa_provider_info['dontFilterByACL']));
 			} else {
 				$o_browse = caGetBrowseInstance($this->table);
 		
 				if ($vs_query) {
 					$o_browse->addCriteria("_search", $vs_query);
+				}
+				
+				if(is_array($type_res = caGetOption('restrictToTypes', $this->opa_provider_info, null)) && sizeof($type_res)) {
+					$o_browse->setTypeRestrictions($type_res);
+				} elseif(is_array($type_exclusion = caGetOption('excludeTypes', $this->opa_provider_info, null)) && sizeof($type_exclusion)) {
+					$o_browse->setTypeExclusions($type_exclusion);
 				}
 			
 				if ($this->opa_provider_info['setFacet'] && $set) {
@@ -590,6 +601,11 @@ class OAIPMHService extends BaseService {
 				$qr_res = $o_browse->getResults();
 			}
 		} else {
+			if(is_array($type_res = caGetOption('restrictToTypes', $this->opa_provider_info, null)) && sizeof($type_res)) {
+				$o_search->setTypeRestrictions($type_res);
+			} elseif(is_array($type_exclusion = caGetOption('excludeTypes', $this->opa_provider_info, null)) && sizeof($type_exclusion)) {
+				$o_search->setTypeExclusions($type_exclusion);
+			}
 			$qr_res = $o_search->search(strlen($this->opa_provider_info['query']) ? $this->opa_provider_info['query'] : "*", array('no_cache' => $vb_dont_cache, 'limitToModifiedOn' => $vs_range, 'showDeleted' => $vb_show_deleted, 'checkAccess' => $vb_dont_enforce_access_settings ? null : $va_access_values, 'dontFilterByACL' => $this->opa_provider_info['dontFilterByACL']));
 		}
 

@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2019 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -174,15 +174,21 @@ var caUI = caUI || {};
 				jQuery('#' + stateProvID + '_select').empty();
 				var countryCode = jQuery('#' + countryID).val();
 				if (statesByCountryList[countryCode]) {
+					let valuePresent = false;
 					for(k in statesByCountryList[countryCode]) {
 						jQuery('#' + stateProvID + '_select').append('<option value="' + statesByCountryList[countryCode][k] + '">' + k + '</option>');
 						
 						if (!stateValue && (origStateValue == statesByCountryList[countryCode][k])) {
 							stateValue = origStateValue;
 						}
+						if(stateValue === statesByCountryList[countryCode][k]) {
+							valuePresent = true;
+						}
 					}
 					jQuery('#' + stateProvID + '_text').css('display', 'none').attr('name', stateProvID + '_text');
-					jQuery('#' + stateProvID + '_select').css('display', 'inline').attr('name', stateProvID).val(stateValue);
+					if(valuePresent) {
+						jQuery('#' + stateProvID + '_select').css('display', 'inline').attr('name', stateProvID).val(stateValue);
+					}
 					
 					if (mirrorCountryID) {
 						jQuery('#' + stateProvID + '_select').change(function() {
@@ -397,6 +403,23 @@ var caUI = caUI || {};
 					acrobatVersion: getAcrobatVersion()
 				};
 			};
+			
+			
+			//
+			// Copy text to clipboard
+			//
+			caUI.utils.copyToClipboard = function(content, msg=null, options=null) {
+                var textArea = document.createElement("textarea");
+                textArea.value = content;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand("Copy");
+                textArea.remove();
+                
+                if(msg) {
+                    jQuery.jGrowl(msg, options);
+                }
+			}
 			// ------------------------------------------------------------------------------------
 		
 		return that;

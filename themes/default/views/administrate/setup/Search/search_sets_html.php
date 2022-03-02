@@ -175,7 +175,8 @@
 			{ 
 				set_name: jQuery('#caCreateSetFromResultsInput').val(),
 				mode: jQuery('#caCreateSetFromResultsMode').val(),
-				item_ids: caGetSelectedItemIDsToAddToSet().join(';')
+				item_ids: caGetSelectedItemIDsToAddToSet().join(';'),
+				csrfToken: <?= json_encode(caGenerateCSRFToken($this->request));?>
 			}, 
 			function(res) {
 				jQuery("#caCreateSetFromResultsIndicator").hide();

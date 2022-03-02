@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,7 +33,7 @@
 	$t_subject 			= $this->getVar('t_subject');		
 	$va_settings 		= $this->getVar('settings');
 	
-	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_users') == __CA_BUNDLE_ACCESS_READONLY__));
+	$vb_read_only		= ((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_users') == __CA_BUNDLE_ACCESS_READONLY__));
 	
 	
 	$va_initial_values = $this->getVar('initialValues');
@@ -44,14 +44,14 @@
 	
 	$va_role_list = $t_item->getRoleList();
 ?>
-<div id="<?php print $vs_id_prefix; ?>">
+<div id="<?= $vs_id_prefix; ?>">
 <?php
 	//
 	// The bundle template - used to generate each bundle in the form
 	//
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
-		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo">
+		<div id="<?= $vs_id_prefix; ?>Item_{n}" class="labelInfo">
 			<span class="formLabelError">{error}</span>
 			<table class="objectRepresentationListItem" width="90%"><?php 
 					$vn_c = 0;
@@ -88,15 +88,15 @@
 </div>
 
 <script type="text/javascript">
-	caUI.initrolelistbundle('#<?php print $vs_id_prefix; ?>', {
-		fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
+	caUI.initrolelistbundle('#<?= $vs_id_prefix; ?>', {
+		fieldNamePrefix: '<?= $vs_id_prefix; ?>_',
 		templateValues: ['role_id'],
-		initialValues: <?php print json_encode($va_initial_values); ?>,
-		initialValueOrder: <?php print json_encode(array_keys($va_initial_values)); ?>,
-		errors: <?php print json_encode($va_errors); ?>,
-		itemID: '<?php print $vs_id_prefix; ?>Item_',
+		initialValues: <?= json_encode($va_initial_values); ?>,
+		initialValueOrder: <?= json_encode(array_keys($va_initial_values)); ?>,
+		errors: <?= json_encode($va_errors); ?>,
+		itemID: '<?= $vs_id_prefix; ?>Item_',
 		templateClassName: 'caItemTemplate',
 		itemListClassName: 'caItemList',
-		readonly: <?php print $vb_read_only ? "true" : "false"; ?>
+		readonly: <?= $vb_read_only ? "true" : "false"; ?>
 	});
 </script>

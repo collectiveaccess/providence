@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -138,7 +138,7 @@
 
 	<div id="resultBox">
 <?php
-	if (sizeof($va_criteria) > 0) {
+	if ((sizeof($va_criteria) > 0) || caShowAllForNoCriteriaBrowse($va_results->tableName())) {
 		# --- show results
 		print $this->render('Results/paging_controls_html.php');
 		print $this->render('Results/search_options_html.php');

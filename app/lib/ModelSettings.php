@@ -285,7 +285,7 @@ trait ModelSettings {
 		$vs_name = 				caGetOption('name', $pa_options, null);
 		$vs_placement_code = 	caGetOption('placement_code', $pa_options, null);
 		
-		$va_options = array('request' => $po_request, 'id_prefix' => $vs_id, 'table' => caGetOption('table', $pa_options, null));
+		$va_options = array('request' => $po_request, 'id_prefix' => $vs_id, 'table' => caGetOption('table', $pa_options, null), 'relatedTable' => caGetOption('relatedTable', $pa_options, null));
 		
 		if (is_array($va_settings)) { 
 			foreach($va_settings as $vs_setting => $va_setting_info) {
@@ -552,34 +552,27 @@ trait ModelSettings {
 							$va_type_opts[$va_type_info['idno']] = $vn_type_id;
 						}
 					} else { // "normal" (list-based) type restriction
-						$va_type_list = $t_show_types_for_table->getTypeList();
-						if (!is_array($va_type_list)) { break; }
-						
-						foreach($va_type_list as $vn_type_id => $va_type_info) {
-							$va_type_opts[$va_type_info['name_plural']] = $va_type_info['item_id'];
-						}
+						$vs_select_element = $t_show_types_for_table->getTypeListAsHTMLFormElement($vs_input_name.(($vn_height > 1) ? '[]' : ''), ['multiple' => ($vn_height > 1), 'width' => $vn_width, 'height' => $vn_height, 'id' => $vs_input_id], ['values' => $vs_value, 'nullOption' => '', 'useDefaultWhenNull' => false]);
 					}
 					
-					if ($vn_height > 1) { 
-						$va_attr['multiple'] = 1; $vs_input_name .= '[]'; 
-					}
-					
-					$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height);
-					if ($vn_height > 1) {
-						if ($vs_value && !is_array($vs_value)) { $vs_value = array($vs_value); }
-						$va_opts['values'] = $vs_value;
-					} else {
-						if (is_array($vs_value)) {
-							$va_opts['value'] = array_pop($vs_value);
+					if($vs_select_element == '') {
+						$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height);
+						if ($vn_height > 1) {
+							if ($vs_value && !is_array($vs_value)) { $vs_value = array($vs_value); }
+							$va_opts['values'] = $vs_value;
 						} else {
-							if ($vs_value) {
-								$va_opts['value'] = $vs_value;
+							if (is_array($vs_value)) {
+								$va_opts['value'] = array_pop($vs_value);
 							} else {
-								$va_opts['value'] = null;
+								if ($vs_value) {
+									$va_opts['value'] = $vs_value;
+								} else {
+									$va_opts['value'] = null;
+								}
 							}
 						}
+						$vs_select_element = caHTMLSelect($vs_input_name, $va_type_opts, $va_attr, $va_opts);
 					}
-					$vs_select_element = caHTMLSelect($vs_input_name, $va_type_opts, $va_attr, $va_opts);
 				} elseif (
 					($vs_rel_table = $va_properties['useRelationshipTypeList']) || 
 					($vb_locale_list = (bool)$va_properties['useLocaleList']) || 
@@ -605,9 +598,16 @@ trait ModelSettings {
 						if ($vb_locale_list) {
 							$va_rel_opts = array_flip(ca_locales::getLocaleList(array('return_display_values' => true)));
 						} elseif($vb_policy_list) {
+							$table = caGetOption('table', $pa_options, null);
+							$rel_table = caGetOption('relatedTable', $pa_options, null);
+							$policies = array_merge(
+								ca_objects::getHistoryTrackingCurrentValuePolicies($table, ['uses' => $rel_table ? [$rel_table] : null]),
+								ca_objects::getDependentHistoryTrackingCurrentValuePolicies($table)
+							);
+							
 							$va_rel_opts = array_flip(array_map(function($v) {
 								return $v['name'];
-							}, ca_objects::getHistoryTrackingCurrentValuePolicies(caGetOption('table', $pa_options, null))));
+							}, $policies));
 						} elseif($vb_referring_policy_list) {
 							$va_rel_opts = array_flip(array_map(function($v) {
 								return $v['name'];

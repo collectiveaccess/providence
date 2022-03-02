@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2021 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -213,7 +213,11 @@ class LuceneSyntaxParser extends Zend_Search_Lucene_FSM {
 			
 				// Auto-insert default boolean when none is specified between terms?
 				if ($insert_missing_ops && $this->opo_last_token && (in_array($this->opo_last_token->type, [Zend_Search_Lucene_Search_QueryToken::TT_PHRASE, Zend_Search_Lucene_Search_QueryToken::TT_WORD])) && in_array($vo_token->type, [Zend_Search_Lucene_Search_QueryToken::TT_PHRASE, Zend_Search_Lucene_Search_QueryToken::TT_WORD, Zend_Search_Lucene_Search_QueryToken::TT_FIELD])) {	
-					$this->opo_context->setNextEntrySign(Zend_Search_Lucene_Search_QueryToken::TT_REQUIRED);
+					if($this->opo_context->getMode() === LuceneSyntaxParserContext::GM_SIGNS) {
+						$this->opo_context->setNextEntrySign(Zend_Search_Lucene_Search_QueryToken::TT_REQUIRED);
+					} else {
+						$this->opo_context->addLogicalOperator(Zend_Search_Lucene_Search_QueryToken::TT_AND_LEXEME);
+					}
 				}
 				$this->opo_current_token = $vo_token;
 				$this->process($vo_token->type);
@@ -310,7 +314,7 @@ class LuceneSyntaxParser extends Zend_Search_Lucene_FSM {
 	 */
 	public function subqueryStart() {
 		$this->opa_context_stack[] = $this->opo_context;
-		$this->opo_context        = new Zend_Search_Lucene_Search_QueryParserContext($this->_encoding, $this->opo_context->getField());
+		$this->opo_context        = new LuceneSyntaxParserContext($this->_encoding, $this->opo_context->getField());
 	}
 
 	/**

@@ -118,8 +118,8 @@ class ExpressionParserTest extends TestCase {
 		$this->assertEquals(1, ExpressionParser::evaluate('avgdays("1945/01/02 - 1945/01/03", "1985/01/28 - 1985/01/29")'));
 
 		// date formatting
-		$this->assertRegExp("/^1985\-01\-28T/", ExpressionParser::evaluate('formatdate("1985/01/28")'));
-		$this->assertRegExp("/^1985\-01\-28T/", ExpressionParser::evaluate('formatgmdate("1985/01/28")'));
+		$this->assertMatchesRegularExpression("/^1985\-01\-28T/", ExpressionParser::evaluate('formatdate("1985/01/28")'));
+		$this->assertMatchesRegularExpression("/^1985\-01\-28T/", ExpressionParser::evaluate('formatgmdate("1985/01/28")'));
 
 		// join strings
 		$this->assertEquals('piece1gluepiece2', ExpressionParser::evaluate('join("glue", "piece1", "piece2")'));

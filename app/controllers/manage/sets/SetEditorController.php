@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -82,6 +82,18 @@
 			
       		$this->view->setVar('can_delete', $this->UserCanDeleteSet($t_subject->get('user_id')));
  			parent::Edit($pa_values, $pa_options);
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+		 *
+		 */
+ 		public function Save($pa_options=null) {
+ 			$parent_id = $this->request->getParameter('parent_id', pInteger);
+ 			$t_parent = new ca_sets($parent_id);
+ 			if(!$this->request->getParameter('table_num', pInteger)) {
+ 				$this->request->setParameter('table_num', $t_parent->get('ca_sets.table_num'));
+ 			}
+ 			parent::Save($pa_options);
  		}
  		# -------------------------------------------------------
  		/**
@@ -258,6 +270,10 @@
 		 *
 		 */
 		public function DuplicateItems() {
+			if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+				$this->Edit();
+				return;
+			}
 			$t_set = new ca_sets($this->getRequest()->getParameter('set_id', pInteger));
 			if(!$t_set->getPrimaryKey()) { return; }
 
