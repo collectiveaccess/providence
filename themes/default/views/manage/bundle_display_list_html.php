@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2020 Whirl-i-Gig
+ * Copyright 2010-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -113,7 +113,7 @@
 	} else {
 ?>
 		<tr>
-			<td colspan='4'>
+			<td colspan='5'>
 				<div align="center">
 					<?php print _t('No displays lists have been configured'); ?>
 				</div>

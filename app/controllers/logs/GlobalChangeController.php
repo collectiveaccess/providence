@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2019 Whirl-i-Gig
+ * Copyright 2016-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -86,7 +86,7 @@ class GlobalChangeController extends ActionController {
 		
 		$start = (int)($page * self::$log_entries_per_page);
 
-		$log_entries = $params_set ? ApplicationChangeLog::getChangeLog(['limitByUnit' => true, 'groupBySubject' => true, 'tables' => $filter_table ? $filter_table : array_values($table_list), 'start' => $start, 'limit' => self::$log_entries_per_page, 'daterange' => ($filter_daterange !== _t('any time')) ? $filter_daterange : null, 'user_id' => $filter_user_id]) : [];
+		$log_entries = $params_set ? ApplicationChangeLog::getChangeLog(['limitByUnit' => true, 'groupBySubject' => true, 'tables' => $filter_table ? $filter_table : array_values($table_list), 'start' => $start, 'limit' => self::$log_entries_per_page, 'daterange' => ($filter_daterange !== _t('any time')) ? $filter_daterange : null, 'user_id' => $filter_user_id, 'changetype' => $filter_change_type]) : [];
 		$this->view->setVar('change_log_list', $log_entries);
 
 		$this->render('global_change_log_html.php');

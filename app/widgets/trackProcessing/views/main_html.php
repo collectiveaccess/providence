@@ -29,36 +29,11 @@
  	$vs_widget_id = $this->getVar('widget_id');
 	$vn_jobs_done = $this->getVar('jobs_done');
 	$va_jobs_done = $this->getVar('jobs_done_data');
+	$vn_jobs_done_additional = $this->getVar('jobs_done_additional');
 	$vn_jobs_queued_processing = $this->getVar('jobs_queued_processing');
 	$va_jobs_queued = $this->getVar('qd_job_data');
+	$vn_jobs_queued_additional = $this->getVar('qd_job_additional');
 	$va_jobs_processing = $this->getVar('pr_job_data');
-
-	/**
-	 * Returns a string to render status information in html.
-	 *
-	 * @param $va_status
-	 * @param $view
-	 */
-	function getStatusForDisplay($va_status, $view){
-		$result = "";
-		foreach($va_status as $vs_code => $va_info) {
-			switch($vs_code) {
-				case 'table':
-					$va_tmp = explode(':', $va_status['table']['value']);
-					if ($vs_link = caEditorLink($view->request, $va_info['value'], 'link', $va_tmp[0], $va_tmp[2], array(), array(), array('verifyLink' => true))) {
-						$result .= "<strong>".$va_info['label']."</strong>: ".$vs_link."<br/>\n";
-					} else {
-						$result .=  "<strong>".$va_info['label']."</strong>: ".$va_info['value']." [<em>"._t('DELETED')."</em>]<br/>\n";
-					}
-					break;
-				default:
-					$result .= "<strong>".$va_info['label']."</strong>: ".$va_info['value']."<br/>\n";
-					break;
-			}
-		}
-
-		return $result;
-	}
 ?>
 
 <div class="dashboardWidgetContentContainer" id="widget_<?php print $vs_widget_id; ?>">
@@ -104,9 +79,9 @@
 					<td>
 						<?php print "<h2>"._t('By <em>%1</em>', mb_strtolower($va_job['handler_name']))."</h2>"; ?>
 						
-						<?php print "<strong>"._t("Created on")."</strong>: ".date("n/d/Y @ g:i:sa T", $va_job["created"])."<br />"; ?>
+						<?php print "<strong>"._t("Created on")."</strong>: ".caGetLocalizedHistoricDate(caUnixTimestampToHistoricTimestamp( $va_job['created'])) . "<br />"; ?>
 						<?php print "<strong>"._t("Created by")."</strong>: ".$va_job['by']."<br />"; ?>
-						<?php print getStatusForDisplay( $va_job['status'], $this ); ?>
+						<?php print trackProcessingWidget::getStatusForDisplay( $va_job['status'], $this ); ?>
 					</td>
 				</tr>
 <?php
@@ -129,9 +104,9 @@
 					<td>
 						<?php print "<h2>"._t('For <em>%1</em>', mb_strtolower($va_job['handler_name']))."</h2>"; ?>
 						
-						<?php print "<strong>"._t("Created on")."</strong>: ".date("n/d/Y @ g:i:sa T", $va_job["created"])."<br />"; ?>
+						<?php print "<strong>"._t("Created on")."</strong>: ".caGetLocalizedHistoricDate(caUnixTimestampToHistoricTimestamp( $va_job['created'])) . "<br />"; ?>
 						<?php print "<strong>"._t("Created by")."</strong>: ".$va_job['by']."<br />"; ?>
-						<?php print getStatusForDisplay($va_job['status'], $this);
+						<?php print trackProcessingWidget::getStatusForDisplay($va_job['status'], $this);
 ?>
 					</td>
 				</tr>
@@ -141,6 +116,19 @@
 			</table></div><!-- end dashboardWidgetScrollMedium --></div><!-- end queued -->
 <?php
 		endif;
+		if ($vn_jobs_queued_additional): ?>
+			<div id="queued_additional<?= $vs_widget_id; ?>">
+				<div class="dashboardWidgetScrollMedium">
+					<table class='dashboardWidgetTable'>
+						<tr>
+							<td><?=_t('And %1 more queued job(s) ', $vn_jobs_queued_additional)?></td>
+						</tr>
+					</table>
+				</div><!-- end dashboardWidgetScrollMedium -->
+			</div><!-- end queued -->
+		<?php
+		endif;
+
 		if(sizeof($va_jobs_done)>0):
 		?>
 			<div id="completed_<?php print $vs_widget_id; ?>"><div class="dashboardWidgetScrollMedium"><table class='dashboardWidgetTable'>
@@ -154,11 +142,11 @@
 					<td>
 						<?php print "<h2>"._t('By <em>%1</em>', mb_strtolower($va_job['handler_name']))."</h2>"; ?>
 						
-						<?php print "<strong>"._t("Created on")."</strong>: ".date("n/d/Y @ g:i:sa T", $va_job["created"])."<br />"; ?>
+						<?php print "<strong>"._t("Created on")."</strong>: ".caGetLocalizedHistoricDate(caUnixTimestampToHistoricTimestamp( $va_job['created'])) . "<br />"; ?>
 						<?php print "<strong>"._t("Created by")."</strong>: ".$va_job['by']."<br />"; ?>
 		<?php 
 						if ((int)$va_job["completed_on"] > 0) {
-							print "<strong>"._t('Completed on')."</strong>: ".date("n/d/Y @ g:i:sa T", $va_job["completed_on"])."<br/>\n"; 
+							print "<strong>"._t('Completed on')."</strong>: ".caGetLocalizedHistoricDate(caUnixTimestampToHistoricTimestamp( $va_job['completed_on'])) . "<br/>\n";
 							
 							if ((int)$va_job["error_code"] > 0) {
 								print "<span style='color: #cc0000;'><strong>" . _t( 'Error' ) . "</strong>: "
@@ -169,7 +157,7 @@
 							}
 						}
 
-						print getStatusForDisplay( $va_job['status'], $this );
+						print trackProcessingWidget::getStatusForDisplay( $va_job['status'], $this );
 
 						?>
 						<?php print "<strong>"._t("Total processing time")."</strong>: ".$va_job['processing_time']."s<br />"; ?>
@@ -177,6 +165,13 @@
 				</tr>
 		<?php
 			endforeach;
+			if ($vn_jobs_done_additional):
+		?>
+				<tr>
+					<td><strong><?=_t('%1 more job(s) not displayed due to limit.', $vn_jobs_done_additional)?></strong></td>
+				</tr>
+		<?php
+			endif;
 		?>
 			</table></div><!-- end dashboardWidgetScrollMedium --></div><!-- end completed -->
 		<?php

@@ -40,4 +40,14 @@ class AATInformationServiceAttributeValueTest extends TestCase {
 		$o_service = new WLPlugInformationServiceAAT();
 		$this->assertEquals('dump trucks', $o_service->getDisplayValueFromLookupText('[300022372] dump trucks [trucks, cargo vehicles by form]'));
 	}
+	public function testAdditionalFilters() {
+		$o_service = new WLPlugInformationServiceAAT();
+		$va_result_without_filter = $o_service->lookup([], 'Museum');
+		$va_result_with_filter = $o_service->lookup(['additionalFilter' => 'gvp:broaderExtended aat:300312238'], 'Museum');
+		$this->assertNotEmpty($va_result_without_filter);
+		$this->assertNotEmpty($va_result_with_filter);
+		$this->assertNotEquals($va_result_without_filter, $va_result_with_filter, 'Results with filter applied should be different');
+		$this->assertLessThan(count($va_result_without_filter['results']), count($va_result_with_filter['results']), 'More results should be returned without a filter.');
+
+	}
 }

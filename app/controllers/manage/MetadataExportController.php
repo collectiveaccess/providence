@@ -201,6 +201,15 @@ class MetadataExportController extends ActionController {
 			Session::setVar('export_file', $vs_tmp_file);
 			Session::setVar('export_content_type', $t_exporter->getContentType());
 			Session::setVar('exporter_id', $t_exporter->getPrimaryKey());
+			
+			if($this->request->user->getPreference('immediate_download_of_exports') === 'immediate') {
+				$this->getView()->setVar('file_name', $vs_filename);
+				$this->getView()->setVar('export_file', $vs_tmp_file);
+				$this->getView()->setVar('export_content_type', $t_exporter->getContentType());
+
+				$this->render('export/download_export_binary.php');
+				return;
+			}
 
 			$this->render('export/export_destination_html.php');
 		}

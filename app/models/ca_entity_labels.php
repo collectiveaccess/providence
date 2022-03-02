@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,7 +36,6 @@
 
 require_once(__CA_LIB_DIR__.'/BaseLabel.php');
 require_once(__CA_LIB_DIR__.'/Utils/DataMigrationUtils.php');
-require_once(__CA_MODELS_DIR__.'/ca_entities.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_entity_labels'] = array(
@@ -151,6 +150,27 @@ BaseModel::$s_ca_models_definitions['ca_entity_labels'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Is preferred'), 'DESCRIPTION' => _t('Is preferred')
+		),
+		'effective_date' => array(
+				'FIELD_TYPE' => FT_HISTORIC_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'START' => 'sdatetime', 'END' => 'edatetime',
+				'LABEL' => _t('Effective date'), 'DESCRIPTION' => _t('Period of time for which this label was in effect. This is an option qualification for the relationship. If left blank, this relationship is implied to have existed for as long as the related items have existed.')
+		),
+		'access' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => 0,
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'BOUNDS_CHOICE_LIST' => array(
+					_t('Not accessible to public') => 0,
+					_t('Accessible to public') => 1
+				),
+				'LIST' => 'access_statuses',
+				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates if label is accessible to the public or not.')
 		)
  	)
 );
@@ -276,27 +296,40 @@ class ca_entity_labels extends BaseLabel {
 		parent::__construct($pn_id);	# call superclass constructor
 	}
 	# ------------------------------------------------------
-	public function insert($pa_options=null) {
+	/**
+	 * Override insert() to adjust entity name format as needed
+	 *
+	 * @param array $options Options include:
+	 *		subject = Entity instance
+	 *		normalize = 
+	 *		displaynameFormat = 
+	 *		locale =
+	 *		doNotParse  
+	 *
+	 * @return bool
+	 */
+	public function insert($options=null) {
 		if (!trim($this->get('surname')) && !trim($this->get('forename'))) {
-			// auto-split entity name if displayname is set
+			// auto-split entity name into forename and surname if displayname is set and 
+			// surname and forename are not explicitly defined
 			$we_set_displayname = false;
-			if($vs_display_name = trim($this->get('displayname'))) {
+			if($displayname = trim($this->get('displayname'))) {
 			
-				if (($t_entity = caGetOption('subject', $pa_options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG')) {
-					$va_label = [
-						'displayname' => $vs_display_name,
-						'surname' => $vs_display_name,
+				if (($t_entity = caGetOption('subject', $options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG')) {
+					$label = [
+						'displayname' => $displayname,
+						'surname' => $displayname,
 						'forename' => ''	
 					];
 				} else {
-					$va_label = DataMigrationUtils::splitEntityName($vs_display_name, $pa_options);
+					$label = DataMigrationUtils::splitEntityName($displayname, $options);
 					$we_set_displayname = true;
 				}
-				if(is_array($va_label)) {
-					if (!$we_set_displayname) { unset($va_label['displayname']); } // just make sure we don't mangle the user-entered displayname
+				if(is_array($label)) {
+					if (!$we_set_displayname) { unset($label['displayname']); } // just make sure we don't mangle the user-entered displayname
 
-					foreach($va_label as $vs_fld => $vs_val) {
-						$this->set($vs_fld, $vs_val);
+					foreach($label as $fld => $val) {
+						$this->set($fld, $val);
 					}
 				} else {
 					$this->postError(1100, _t('Something went wrong when splitting displayname'), 'ca_entity_labels->insert()');
@@ -307,26 +340,72 @@ class ca_entity_labels extends BaseLabel {
 				return false;
 			}
 		}
-		if (($t_entity = caGetOption('subject', $pa_options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG')) {
+		
+		// Generate displayname from forename/middlename/surname when subject
+		// entity is organization or displayname is not explicitly defined
+		if (($t_entity = caGetOption('subject', $options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG')) {
 			$this->set('displayname', $this->get('surname'));
 		} elseif (!$this->get('displayname')) {
-			$this->set('displayname', trim(preg_replace('![ ]+!', ' ', $this->get('forename').' '.$this->get('middlename').' '.$this->get('surname'))));
+			if(is_array($normalized_label = self::normalizeLabel($label_values = [
+				'prefix' => $this->get('prefix'),
+				'forename' => $this->get('forename'),
+				'other_forenames' => $this->get('other_forenames'),
+				'middlename' => $this->get('middlename'),
+				'surname' => $this->get('surname'),
+				'suffix' => $this->get('suffix')
+			]))) {
+				if(caGetOption('normalize', $options, true)) {
+					foreach($normalized_label as $fld => $val) {
+						$this->set($fld, $val);
+					}
+				} else {
+					$this->set('displayname', $normalized_label['displayname'] ?? self::labelAsString($label_values));
+				}
+			} else {
+				$this->set('displayname', self::labelAsString($label_values));
+			}
 		}
 		
-		return parent::insert($pa_options);
+		return parent::insert($options);
 	}
 	# ------------------------------------------------------
-	public function update($pa_options=null) {
+	/**
+	 * Convert label components into canonical format
+	 *
+	 * @param array $label_values
+	 *
+	 * @return array
+	 */
+	public static function normalizeLabel(array $label_values) : array {
+		$normalized_values = DataMigrationUtils::splitEntityName(self::labelAsString($label_values), $options);
+		return $normalized_values;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Convert label components into string
+	 *
+	 * @param array $label_values
+	 *
+	 * @return string
+	 */
+	public static function labelAsString(array $label_values) : string {
+		return trim(preg_replace('![ ]+!', ' ', $label_values['prefix'].' '.$label_values['forename'].' '.$label_values['other_forenames'].' '.$label_values['middlename'].' '.$label_values['surname'].' '.$label_values['suffix']));
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function update($options=null) {
 		if (!trim($this->get('surname')) && !trim($this->get('forename'))) {
 			$this->postError(1100, _t('Surname or forename must be set'), 'ca_entity_labels->insert()');
 			return false;
 		}
-		if (($t_entity = caGetOption('subject', $pa_options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG')) {
+		if (($t_entity = caGetOption('subject', $options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG')) {
 			$this->set('displayname', $this->get('surname'));
 		} elseif (!$this->get('displayname')) {
 			$this->set('displayname', trim(preg_replace('![ ]+!', ' ', $this->get('forename').' '.$this->get('middlename').' '.$this->get('surname'))));
 		}
-		return parent::update($pa_options);
+		return parent::update($options);
 	}
 	# -------------------------------------------------------
 	/**
@@ -343,8 +422,18 @@ class ca_entity_labels extends BaseLabel {
 		if ($vs_sort_field = $this->getProperty('LABEL_SORT_FIELD')) {
 			$vs_display_field = $this->getProperty('LABEL_DISPLAY_FIELD');
 			
-			$n = DataMigrationUtils::splitEntityName($this->get($vs_display_field), ['displaynameFormat' => 'surnamecommaforename']);
-			$this->set($vs_sort_field, $n['displayname']);
+			// is entity org?
+			$is_org = false;
+			if (($entity = $this->getSubjectTableInstance()) && ($et = $entity->getTypeInstance())) {
+				$is_org = ($et->getSetting('entity_class') === 'ORG');
+			}
+			if($is_org) {
+				parent::_generateSortableValue();
+			} else {
+				$n = DataMigrationUtils::splitEntityName($this->get($vs_display_field), ['displaynameFormat' => 'surnamecommaforename']);
+				$n = $n['displayname'];
+				$this->set($vs_sort_field, $n);
+			}
 		}
 	}
 	# ------------------------------------------------------

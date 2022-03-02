@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2020 Whirl-i-Gig
+ * Copyright 2010-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -87,7 +87,7 @@
 			return $ps_imagemagick_path; 
 		}	// don't try exec test on Windows
 		
-		caExec($ps_imagemagick_path.'/identify 2> /dev/null', $va_output, $vn_return);
+		caExec($ps_imagemagick_path.' 2> /dev/null', $va_output, $vn_return);
 		
 		$vb_ret =  (($vn_return >= 0) && ($vn_return < 127));
 		
@@ -346,35 +346,6 @@
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
-	 * Detects if OpenCTM (http://openctm.sourceforge.net) is installed in the given path.
-	 *
-	 * @param string $ps_openctm_path path to OpenCTM ctmconv binary
-	 * @param array $options Options include:
-	 *		noCache = Don't cached path value. [Default is false]
-	 *
-	 * @return mixed Path to executable if installed, false if not installed
-	 */
-	function caOpenCTMInstalled($ps_openctm_ctmconv_path=null, $options=null) {
-		if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_openctm_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_openctm_installed", "mediaPluginInfo"); }
-		if(!$ps_openctm_ctmconv_path) { $ps_openctm_ctmconv_path = caGetExternalApplicationPath('openctm'); }
-
-		if (!caIsValidFilePath($ps_openctm_ctmconv_path)) { 
-			CompositeCache::save("mediahelper_openctm_installed", false, "mediaPluginInfo");
-			return false; 
-		}
-		if ((caGetOSFamily() == OS_WIN32) && $ps_openctm_ctmconv_path) { 
-			CompositeCache::save("mediahelper_openctm_installed", $ps_openctm_ctmconv_path, "mediaPluginInfo");
-			return $ps_openctm_ctmconv_path; 
-		}	// don't try exec test on Windows
-		caExec($ps_openctm_ctmconv_path." --help > /dev/null",$va_output,$vn_return);
-		$vb_ret = ($vn_return == 0);
-		
-		CompositeCache::save("mediahelper_openctm_installed", $ps_openctm_ctmconv_path, "mediaPluginInfo");
-		
-		return $vb_ret ? $ps_openctm_ctmconv_path : false;
-	}
-	# ------------------------------------------------------------------------------------------------
-	/**
 	 * Detects if Meshlab (http://meshlab.sourceforge.net), and specifically the meshlabserver command line tool, is installed in the given path.
 	 *
 	 * @param string $ps_meshlabserver_path path to the meshlabserver binary
@@ -433,11 +404,11 @@
 			CompositeCache::save("mediahelper_pdfminer_installed", $ps_pdfminer_path, "mediaPluginInfo");
 			return $ps_pdfminer_path; 
 		} // don't try exec test on Windows
+
+		caExec($ps_pdfminer_path." --version > /dev/null",$va_output,$vn_return);
 		
-		caExec($ps_pdfminer_path." > /dev/null",$va_output,$vn_return);
-		
-		$vb_ret = ($vn_return == 100);
-		
+		$vb_ret = ($vn_return == 100 || $vn_return == 0);
+
 		CompositeCache::save("mediahelper_pdfminer_installed", $ps_pdfminer_path, "mediaPluginInfo");
 		
 		return $vb_ret ? $ps_pdfminer_path : false;
@@ -683,6 +654,7 @@
 							$po_instance->replaceAttribute(array($va_tmp[1] => $vs_date, 'locale_id' => $pn_locale_id), $va_tmp[1]);
 						}
 					}
+					$po_instance->update();	// commit immediately and don't worry about errors (in case date is somehow invalid)
 					$vb_did_mapping = true;
 				}
 			}

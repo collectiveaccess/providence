@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2021 Whirl-i-Gig
+ * Copyright 2012-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -49,7 +49,7 @@
 
 	<div class="sectionBox">
 <?php
-		print caFormTag($this->request, 'Save/'.$this->request->getActionExtra(), 'caBatchMediaImportForm', null, 'POST', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
+		print caFormTag($this->request, 'Save/'.$this->request->getActionExtra(), 'caBatchMediaImportForm', null, 'POST', 'multipart/form-data', '_top', array('noCSRFToken' => false, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
 		print caHTMLHiddenInput('import_target', array('value' => $this->getVar('import_target')));
 ?>
 		<div class='bundleLabel'>
@@ -92,7 +92,7 @@
 			uploadProgressID: "batchProcessingTableProgressGroup",
 			uploadProgressBarID: "progressbar",
 			uploadProgressStatusID: "batchProcessingTableStatus",
-			allowDragAndDropUpload: <?= is_writable($this->request->config->get('batch_media_import_root_directory')) ? "true" : "false"; ?>,
+			allowDragAndDropUpload: <?= (sizeof(array_filter(caGetAvailableMediaUploadPaths(), 'is_writable')) > 0) ? "true" : "false"; ?>,
 			dragAndDropUploadUrl: "<?= caNavUrl($this->request, 'batch', 'MediaImport', 'UploadFiles'); ?>",
 
 			initItemID: <?= json_encode($va_last_settings['importFromDirectory']); ?>,
@@ -148,6 +148,16 @@
 									<td class='formLabel'>
 <?php
 										print _t('Type used for newly created %1', caGetTableDisplayName($t_instance->tableName(), false))."<br/>\n".$this->getVar($t_instance->tableName().'_type_list')."\n";
+?>
+									</td>
+									<td class='formLabel'>
+<?php
+										print _t('Type used for newly created parent %1', caGetTableDisplayName($t_instance->tableName(), false))."<br/>\n".$this->getVar($t_instance->tableName().'_parent_type_list')."\n";
+?>
+									</td>
+									<td class='formLabel'>
+<?php
+										print _t('Type used for newly created child %1', caGetTableDisplayName($t_instance->tableName(), false))."<br/>\n".$this->getVar($t_instance->tableName().'_child_type_list')."\n";
 ?>
 									</td>
 									<td class='formLabel'>
@@ -631,8 +641,26 @@
 			caConfirmBatchExecutionPanel.showPanel();
 			jQuery('#caConfirmBatchExecutionPanelAlertText').html(msg);
 		}
+		
+		function caUpdateFormForMode(m) {
+			if(m === 'DIRECTORY_AS_HIERARCHY') {
+				jQuery('#primary_type_id').parent('td').hide();
+				jQuery('#parent_type_id, #child_type_id').parent('td').show();
+			} else {
+				jQuery('#primary_type_id').parent('td').show();
+				jQuery('#parent_type_id, #child_type_id').parent('td').hide();
+			}
+		}
 
-		$(document).bind('drop dragover', function (e) {
+		jQuery(document).bind('drop dragover', function (e) {
 			e.preventDefault();
 		});
+		
+		jQuery(document).ready(function() {
+			jQuery('#importMode').on('change', function(e) {
+				caUpdateFormForMode(jQuery('#importMode').val());
+			});
+			caUpdateFormForMode(jQuery('#importMode').val());
+		});
+		
 	</script>

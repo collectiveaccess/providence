@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -124,13 +124,20 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 			'LABEL' => 'Sortable object identifier', 'DESCRIPTION' => 'Value used for sorting objects on identifier value.',
 			'BOUNDS_LENGTH' => array(0,255)
 		),
+		'idno_sort_num' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => 'Sortable object identifier as integer', 'DESCRIPTION' => 'Integer value used for sorting objects; used for idno range query.'
+		),
 		'home_location_id' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
 			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 			'IS_NULL' => true, 
 			'DEFAULT' => null,
 			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
-			'LABEL' => _t('Home location'), 'DESCRIPTION' => _t('The customary storage location for this object.')
+			'LABEL' => _t('Home location ID'), 'DESCRIPTION' => _t('The customary storage location for this object.')
 		),
 		'is_deaccessioned' => array(
 			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_CHECKBOXES, 
@@ -611,7 +618,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		$this->BUNDLES['submitted_by_user'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Submitted by'), 'displayOnly' => true);
 		$this->BUNDLES['submission_group'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Submission group'), 'displayOnly' => true);
 		
-		$this->BUNDLES['home_location_value'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Home location'), 'displayOnly' => true);
+		$this->BUNDLES['home_location_value'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Home location display value'), 'displayOnly' => true);
 	}
 	# ------------------------------------------------------
 	/**
@@ -927,68 +934,6 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		
 		return true;
 	}
- 	# ------------------------------------------------------
- 	# Current location browse support
- 	# ------------------------------------------------------
- 	/**
- 	 * Override BaseModel::addRelationship() to update current location fields in ca_objects
- 	 *
- 	 * @param mixed $pm_rel_table_name_or_num
- 	 * @param int $pn_rel_id
- 	 * @param mixed $pm_type_id
- 	 * @param string $ps_effective_date
- 	 * @param string $ps_source_info
- 	 * @param string $ps_direction
- 	 * @param int $pn_rank
- 	 * @param array $pa_options
- 	 *
- 	 * @return BaseRelationshipModel
- 	 */
- 	public function addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
- 		return parent::addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_source_info, $ps_direction, $pn_rank, $pa_options);
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Override BaseModel::editRelationship() to update current location fields in ca_objects
- 	 *
- 	 * @param mixed $pm_rel_table_name_or_num
- 	 * @param int $pn_relation_id
- 	 * @param mixed $pm_type_id
- 	 * @param string $ps_effective_date
- 	 * @param string $ps_source_info
- 	 * @param string $ps_direction
- 	 * @param int $pn_rank
- 	 * @param array $pa_array
- 	 *
- 	 * @return int
- 	 */
- 	public function editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
- 	    return parent::editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_source_info, $ps_direction, $pn_rank, $pa_options);
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Override BaseModel::removeRelationship() to update current location fields in ca_objects
- 	 *
- 	 * @param mixed $pm_rel_table_name_or_num
- 	 * @param int $pn_relation_id
- 	 *
- 	 * @return int
- 	 */
- 	public function removeRelationship($pm_rel_table_name_or_num, $pn_relation_id) {
- 		return parent::removeRelationship($pm_rel_table_name_or_num, $pn_relation_id);
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Override BaseModel::removeRelationships() to update current location fields in ca_objects
- 	 *
- 	 * @param mixed $pm_rel_table_name_or_num
- 	 * @param mixed $pm_type_id
- 	 *
- 	 * @return int
- 	 */
- 	public function removeRelationships($pm_rel_table_name_or_num, $pm_type_id=null, $pa_options=null) {
- 		return parent::removeRelationships($pm_rel_table_name_or_num, $pm_type_id, $pa_options);
- 	}
  	# ------------------------------------------------------
  	# Object checkout 
  	# ------------------------------------------------------

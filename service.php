@@ -30,28 +30,36 @@
 	if (!file_exists('./setup.php')) { print "No setup.php file found!"; exit; }
 	require('./setup.php');
 
-	// connect to database
-	$o_db = new Db(null, null, false);
+	try {
+		// connect to database
+		$o_db = new Db(null, null, false);
 
-	$app = AppController::getInstance();
+		$app = AppController::getInstance();
 
-	$req = $app->getRequest();
-	$resp = $app->getResponse();
+		$req = $app->getRequest();
+		$resp = $app->getResponse();
 
-	// Prevent caching
-	$resp->addHeader('Access-Control-Allow-Origin', '*');
-	$resp->addHeader("Cache-Control", "no-cache, must-revalidate");
-	$resp->addHeader("Expires", "Mon, 26 Jul 1997 05:00:00 GMT");
+		// Prevent caching
+		$resp->addHeader('Access-Control-Allow-Origin', '*');
+		$resp->addHeader("Cache-Control", "no-cache, must-revalidate");
+		$resp->addHeader("Expires", "Mon, 26 Jul 1997 05:00:00 GMT");
 	
-	$vb_auth_success = $req->doAuthentication(array('noPublicUsers' => true, "dont_redirect" => true, "no_headers" => true));
-	//
-	// Dispatch the request
-	//
-	$app->dispatch(true);
+		$vb_auth_success = $req->doAuthentication(array('noPublicUsers' => true, "dont_redirect" => true, "no_headers" => true));
+		//
+		// Dispatch the request
+		//
+		$app->dispatch(true);
 
-	//
-	// Send output to client
-	//
-	$resp->sendResponse();
+		//
+		// Send output to client
+		//
+		$resp->sendResponse();
 
-	$req->close();
+		$req->close();
+	} catch(DatabaseException $e) {
+		$opa_error_messages = ["Could not connect to database. Check your database configuration in <em>setup.php</em>."];
+		require_once(__CA_BASE_DIR__."/themes/default/views/system/configuration_error_html.php");
+		exit();
+	} catch (Exception $e) {
+		caDisplayException($e);
+	}

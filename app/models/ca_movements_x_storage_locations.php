@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2019 Whirl-i-Gig
+ * Copyright 2011-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,7 +33,6 @@
  /**
    *
    */
-require_once(__CA_LIB_DIR__.'/BaseRelationshipModel.php');
 require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueTrait.php");
 
 
@@ -79,11 +78,11 @@ BaseModel::$s_ca_models_definitions['ca_movements_x_storage_locations'] = array(
 		),
 		'effective_date' => array(
 				'FIELD_TYPE' => FT_HISTORIC_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => true, 
 				'DEFAULT' => '',
 				'START' => 'sdatetime', 'END' => 'edatetime',
-				'LABEL' => _t('Effective dates'), 'DESCRIPTION' => _t('Period of time for which this relationship was in effect. This is an option qualification for the relationship. If left blank, this relationship is implied to have existed for as long as the related items have existed.')
+				'LABEL' => _t('Effective date'), 'DESCRIPTION' => _t('Period of time for which this relationship was in effect. This is an option qualification for the relationship. If left blank, this relationship is implied to have existed for as long as the related items have existed.')
 		),
 		'rank' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
@@ -215,10 +214,8 @@ class ca_movements_x_storage_locations extends BaseRelationshipModel {
 	 */
 	public function insert($pa_options=null) {
 		if (!$this->get('effective_date', array('getDirectDate' => true))) {  
-			//$this->set('effective_date', $this->_getMovementDate()); 
-			//$this->set('source_info', $this->_getStorageLocationInfo());
-			
-			$this->set('effective_date', _t('now')); 
+			$this->set('effective_date', $this->_getMovementDate()); 
+			$this->set('source_info', $this->_getStorageLocationInfo());
 		}
 		
 		try {
@@ -234,10 +231,8 @@ class ca_movements_x_storage_locations extends BaseRelationshipModel {
 	 */
 	public function update($pa_options=null) {
 		if (!$this->get('effective_date', array('getDirectDate' => true))) { 
-			//$this->set('effective_date',  $this->_getMovementDate()); 
-			//$this->set('source_info', $this->_getStorageLocationInfo());
-			
-			$this->set('effective_date', _t('now')); 
+			$this->set('effective_date',  $this->_getMovementDate()); 
+			$this->set('source_info', $this->_getStorageLocationInfo());
 		}
 		
 		try {
@@ -251,30 +246,63 @@ class ca_movements_x_storage_locations extends BaseRelationshipModel {
 	/**
 	 *
 	 */
-	// private function _getMovementDate() {
-// 	 	$vs_date = null;
-// 	 	if ($vs_movement_storage_element = $this->getAppConfig()->get('movement_storage_location_date_element')) {
-// 			$t_movement = new ca_movements($this->get('movement_id'));
-// 			if ($t_movement->getPrimaryKey()) {
-// 				$vs_date = $t_movement->get("ca_movements.{$vs_movement_storage_element}");
-// 			}
-// 		}
-// 		return ($vs_date) ? $vs_date : _t('now');
-// 	}
+	private function _getMovementDate() {
+	 	$date = null;
+	 	if ($movement_storage_element = $this->getAppConfig()->get('movement_storage_location_date_element')) {
+	 		$f = explode('.', $movement_storage_element);
+	 		if ((sizeof($f) > 1) && ($f[0] === 'ca_movements')) { array_shift($f); }
+	 		$movement_storage_element = join('.', $f);
+			if ($t_movement = ca_movements::findAsInstance(['movement_id' => $this->get('movement_id')])) {
+				$date = $t_movement->get("ca_movements.{$movement_storage_element}");
+			}
+		}
+		return ($date) ? $date : _t('now');
+	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
-	// private function _getStorageLocationInfo() {
-// 		$t_loc = new ca_storage_locations($this->get('location_id'));
-// 		if ($t_loc->getPrimaryKey()) {
-// 			return array(
-// 				'path' => $t_loc->get('ca_storage_locations.hierarchy.preferred_labels.name', array('returnAsArray' => true)),
-// 				'ids' => $t_loc->get('ca_storage_locations.hierarchy.location_id',  array('returnAsArray' => true))
-// 			);
-// 		} else {
-// 			return array('path' => array('?'), 'ids' => array(0));
-// 		}
-// 	}	
+	private function _getStorageLocationInfo() {
+		$t_loc = new ca_storage_locations($this->get('location_id'));
+		if ($t_loc->getPrimaryKey()) {
+			if(!($tmpl = Configuration::load()->get('original_storage_location_path_template'))) { $tmpl = '^ca_storage_locations.hierarchy.preferred_labels.name'; }
+			return [
+				'path' => $t_loc->get('ca_storage_locations.hierarchy.preferred_labels.name', array('returnAsArray' => true)),
+				'display' => $t_loc->getWithTemplate($tmpl),
+				'ids' => $t_loc->get('ca_storage_locations.hierarchy.location_id',  array('returnAsArray' => true))
+			];
+		} else {
+			return ['path' => ['?'], 'display' => '?', 'ids' => [0]];
+		}
+	}	
+	# ------------------------------------------------------
+	/**
+	 * Indicate custom bundles for movement-based location tracking
+	 *
+	 * @param string $bundle_name 
+	 */
+	public function isValidBundle($bundle_name) {
+		switch($bundle_name) {
+			case 'original_path':
+				return true;
+		}
+		return false;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Handle "original_path" value for movement-based location tracking.
+	 */
+	public function renderBundleForDisplay($bundle_name, $row_id, $values, $options=null) {
+		switch($bundle_name) {
+			case 'original_path':
+				$qr = ca_movements_x_storage_locations::findAsSearchResult(['relation_id' => $row_id]);
+				if($qr->nextHit()) {
+					$data = $qr->get('ca_movements_x_storage_locations.source_info', ['returnAsArray' => true]);
+					return $data[0]['display'];
+				}
+				break;
+		}
+		return null;
+	}
 	# ------------------------------------------------------
 }

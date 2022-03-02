@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2015 Whirl-i-Gig
+ * Copyright 2013-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -135,6 +135,9 @@ abstract class BaseDataReader {
 		switch($ps_field) {
 			case '__now__':
 				$vs_val = date("Y-m-d H:i:s");
+				break;
+			case '__date__':
+				$vs_val = date("Y-m-d");
 				break;
 			case '__row__':
 				$vs_val = $this->currentRow();
@@ -277,5 +280,14 @@ abstract class BaseDataReader {
 	 * @return int
 	 */
 	abstract function getInputType();
+	# -------------------------------------------------------
+	/**
+	 * Returns list of file extensions of formats accepted by the reader
+	 * 
+	 * @return array
+	 */
+	public function getFileExtensions() : array {
+		return [];
+	}
 	# -------------------------------------------------------
 }

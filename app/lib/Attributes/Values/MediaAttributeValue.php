@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -51,7 +51,15 @@
 			'default' => 1,
 			'width' => 1, 'height' => 1,
 			'label' => _t('Does not use locale setting'),
-			'description' => _t('Check this option if you don\'t want your georeferences to be locale-specific. (The default is to not be.)')
+			'description' => _t('Check this option if you don\'t want your media to be locale-specific. (The default is to not be.)')
+		),
+		'singleValuePerLocale' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow single value per locale'),
+			'description' => _t('Check this option to restrict entry to a single value per-locale.')
 		),
 		'canBeUsedInDisplay' => array(
 			'formatType' => FT_NUMBER,
@@ -163,7 +171,7 @@
                         return $this->opo_media_info_coder->getMediaInfo($vs_version, 'MIMETYPE');
                         break;
                     case 'tag':
-                        return $this->opo_media_info_coder->getMediaTag($vs_version, ['alt' => caGetOption('alt', $pa_options, null)]);
+                        return $this->opo_media_info_coder->getMediaTag($vs_version, ['alt' => caGetOption('alt', $pa_options, null), 'scaleCSSWidthTo' => caGetOption('scaleCSSWidthTo', $pa_options, null), 'scaleCSSHeightTo' => caGetOption('scaleCSSHeightTo', $pa_options, null)]);
                         break;
                     case 'path':
                         return $this->opo_media_info_coder->getMediaPath($vs_version);
@@ -282,18 +290,17 @@
  			$vb_is_file_path = false;
  			$vb_is_user_media = false;
  			
- 			if ($media_prefix = caGetOption('mediaPrefix', $pa_options, null)) {
- 				$config = Configuration::load();
- 				if ($batch_media_directory = $config->get('batch_media_import_root_directory')) {
-					$va_files = caBatchFindMatchingMedia($batch_media_directory.$media_prefix, $ps_value, ['matchMode' => caGetOption('matchMode', $pa_options,'FILE_NAME'), 'matchType' => caGetOption('matchType', $pa_options, null), 'log' => caGetOption('log', $pa_options, null)]);
-					foreach($va_files as $vs_file) {
-						if (preg_match("!(SynoResource|SynoEA)!", $vs_file)) { continue; } // skip Synology res files
-					
-						$ps_value = $vs_file;
-						break;
-					}
+ 			$media_prefix = caGetOption('mediaPrefix', $pa_options, null);
+			$config = Configuration::load();
+			foreach(caGetAvailableMediaUploadPaths() as $d) {
+				$va_files = caBatchFindMatchingMedia($d.$media_prefix, $ps_value['tmp_name'] ?? null, ['matchMode' => caGetOption('matchMode', $pa_options,'FILE_NAME'), 'matchType' => caGetOption('matchType', $pa_options, null), 'log' => caGetOption('log', $pa_options, null)]);
+				foreach($va_files as $vs_file) {
+					if (preg_match("!(SynoResource|SynoEA)!", $vs_file)) { continue; } // skip Synology res files
+			
+					$ps_value = $vs_file;
+					break(2);
 				}
- 			}
+			}
  			
  			if (
  				(is_array($ps_value) && $ps_value['_uploaded_file'] && file_exists($ps_value['tmp_name']) && (filesize($ps_value['tmp_name']) > 0))
@@ -302,29 +309,21 @@
  				||
  				(is_string($ps_value) && ($vb_is_file_path = isURL($ps_value)))
  				||
- 				(is_string($ps_value) && ($vb_is_user_media = preg_match("!^userMedia[\d]+/!", $ps_value)))
+ 				(is_string($ps_value) && ($vb_is_user_media = preg_match("!^".caGetUserDirectoryName()."/!", $ps_value)))
  			) {
  				// got file
- 				$vs_original_name = null;
+ 				$vs_original_name = pathinfo(caGetOption('original_filename', $pa_options, null), PATHINFO_BASENAME);
  				if ($vb_is_user_media) {
  					$vb_is_file_path = true;
- 					$o_config = Configuration::load();
- 					if (!is_writeable($vs_tmp_directory = $o_config->get('ajax_media_upload_tmp_directory'))) {
-						$vs_tmp_directory = caGetTempDirPath();
+ 					if (!is_readable($vs_tmp_directory = Configuration::load()->get('media_uploader_root_directory'))) {
+						return null;
 					}
 					$ps_value = "{$vs_tmp_directory}/{$ps_value}";
-					
-					// read metadata
-					if (file_exists("{$ps_value}_metadata")) {
-						if (is_array($va_tmp_metadata = json_decode(file_get_contents("{$ps_value}_metadata"), true))) {
-							$vs_original_name = $va_tmp_metadata['original_filename'];
-						}
-					}
  				}
  				if ($vb_is_file_path) {
  					return array(
 						'value_blob' => $ps_value,
-						'value_longtext2' => $vs_original_name ? $vs_original_name : $ps_value,
+						'value_longtext2' => $vs_original_name ? $vs_original_name : pathinfo($ps_value, PATHINFO_BASENAME),
 						'value_decimal1' => null,
 						'value_decimal2' => null,
 						'_media' => true			// this tells the ca_attribute_values (which is the caller) to treat value_blob as a path to a file to be ingested

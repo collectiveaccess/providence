@@ -377,8 +377,9 @@ class Installer {
 	}
 	# --------------------------------------------------
 	public function performPreInstallTasks() {
+		self::clearCaches();
+		
 		$o_config = Configuration::load();
-		CompositeCache::flush(); // avoid stale cache
 
 		// create tmp dir
 		if (!file_exists($o_config->get('taskqueue_tmp_directory'))) {
@@ -386,10 +387,7 @@ class Installer {
 				$this->addError("Couldn't create tmp directory at ".$o_config->get('taskqueue_tmp_directory'));
 				return false;
 			}
-		} else {
-			// if already exists then remove all contents to avoid stale cache
-			caRemoveDirectory($o_config->get('taskqueue_tmp_directory'), false);
-		}
+		} 
 
 		// Create media directories
 		$o_media_volumes = new MediaVolumes();
@@ -679,7 +677,7 @@ class Installer {
 				}
 			}
 		}
-
+		CompositeCache::flush();
 		return true;
 	}
 	# --------------------------------------------------
@@ -890,9 +888,9 @@ class Installer {
 		$this->_processSettings($t_md_element, $po_element->settings, ['settingsInfo' => $t_md_element->getAvailableSettings()]);
 
 		if($t_md_element->getPrimaryKey()) {
-			$t_md_element->update();
+			$t_md_element->update(['noFlush' => true]);
 		}else{
-			$t_md_element->insert();
+			$t_md_element->insert(['noFlush' => true]);
 		}
 
 		if ($t_md_element->numErrors()) {
@@ -2564,7 +2562,7 @@ class Installer {
 				return false;
 			}
 
-			$this->logStatus(_t('Added trigger %1 for metadata alert %3', $vs_code, $t_md_alert->get('code')));
+			$this->logStatus(_t('Added trigger %1 for metadata alert %2', $vs_code, $t_md_alert->get('code')));
 			$vn_i++;
 		}
 		return true;
@@ -2605,6 +2603,11 @@ class Installer {
 
 		if ($t_user->numErrors()) {
 			$this->addError("Errors while adding the default administrator account: ".join("; ",$t_user->getErrors()));
+			return false;
+		}
+		
+		if(!$t_user->addRoles(['admin'])) {
+			$this->addError("Could not add the <em>admin</em> role to the default administrator account: ".join("; ",$t_user->getErrors()));
 			return false;
 		}
 
@@ -2713,6 +2716,16 @@ class Installer {
 		if($this->loggingStatus()) {
 			$this->opo_log->logInfo($ps_msg);
 		}
+	}
+	# --------------------------------------------------
+	/**
+	 * Clear cache and tmp directory
+	 *
+	 * @return void
+	 */
+	public static function clearCaches() {
+		CompositeCache::flush(); 
+		caRemoveDirectory(Configuration::load()->get('taskqueue_tmp_directory'), false);
 	}
 	# --------------------------------------------------
 }

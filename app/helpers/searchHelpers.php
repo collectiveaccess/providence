@@ -1899,8 +1899,8 @@
 						if (((int)$sub_element['datatype'] === __CA_ATTRIBUTE_VALUE_CONTAINER__) && ($sub_element['parent_id'] > 0)) { continue; }	// skip sub-containers
 						$sub_element_code = $sub_element['element_code'];
 						
-						if ($sub_element['parent_id'] != $sub_element['hier_element_id']) {	// is root
-							if(!is_array($b)) { $bundles[$b] = []; }
+						if ($sub_element['element_id'] == $sub_element['hier_element_id']) {	// is root
+							if(!is_array($b) && !is_array($bundles[$b])) { $bundles[$b] = []; }
 							$bundles[$b] = array_merge($bundles[$b], [
 								'id' => "{$bundle_info['bundle']}",
 								'bundle' => "{$bundle_info['bundle']}",
@@ -2093,9 +2093,10 @@
 				$t_list = new ca_lists();
 				$va_items = $t_list->getItemsForList($vs_list_code, ['returnHierarchyLevels' => true]);
 				if (is_array($va_items)) {
+					$is_item_val_fld = in_array($vs_name_no_table, ['access', 'status']); // old-tyme fields that use item_value rather than idno
 					foreach ($va_items as $va_item) {
 						foreach ($va_item as $va_item_details) {
-							$va_select_options[$va_item_details['idno']] = str_repeat("&nbsp;", (int)$va_item_details['LEVEL'] * 5).$va_item_details['name_singular'];
+							$va_select_options[$is_item_val_fld ? $va_item_details['item_value'] : $va_item_details['idno']] = str_repeat("&nbsp;", (int)$va_item_details['LEVEL'] * 5).$va_item_details['name_singular'];
 						}
 					}
 				}
@@ -2103,6 +2104,8 @@
 			$va_result['input'] = 'select';
 			$va_result['values'] = $va_select_options;
 			$va_result['operators'] = $va_operators_by_type['select'];
+		} elseif($vs_name === "{$vs_table}.".$t_subject->getProperty('ID_NUMBERING_ID_FIELD')) {
+			$va_result['operators'] = array_merge($va_operators_by_type['select'], ['between']);
 		} else {
 			$va_result['input'] = 'text';
 		}
@@ -2203,5 +2206,16 @@
 			}
 		}
 		return $term;
+	}
+	# ---------------------------------------
+	/**
+	 * Check is string suitable for use as a wildcard-suffixed search stem
+	 *
+	 * @param string $value 
+	 *
+	 * @return bool
+	 */
+	function caIsSearchStem(string $value) : bool {
+		return (!preg_match('![\d]+$!', $value) && !preg_match('!\*$!', $value) && preg_match('![\w]+$!', $value));
 	}
 	# ---------------------------------------

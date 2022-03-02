@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2018 Whirl-i-Gig
+ * Copyright 2016-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,7 +31,7 @@
 		'<div class="caNavHeaderIcon">'.
 		'<a href="#" onclick="_navigateToNewForm(jQuery(\'#tableList\').val());">'.caNavIcon(__CA_NAV_ICON_ADD__, 2).'</a>'.
 		'</div>'.
-		'<form action="#">'._t('New metadata alert rule for ').' '.caHTMLSelect('table_num', caGetPrimaryTablesForHTMLSelect(true), array('id' => 'tableList')).'</form>'.
+		'<form action="#">'._t('New metadata alert rule for ').' '.caHTMLSelect('table_num', caGetPrimaryTablesForHTMLSelect(true, ['ca_media_upload_sessions']), array('id' => 'tableList')).'</form>'.
 		'</div>';
 ?>
 <script language="JavaScript" type="text/javascript">

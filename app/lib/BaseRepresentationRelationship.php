@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2019 Whirl-i-Gig
+ * Copyright 2013-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -46,7 +46,15 @@ class BaseRepresentationRelationship extends BaseRelationshipModel {
 		return array($vs_target_table, $vs_target_key);
 	}
 	# ------------------------------------------------------
+	/**
+	 * @param array $pa_options Options include:
+	 *		dontForcePrimary = Don't force primary flag is none is set. [Default is false]
+	 *
+	 * @return bool
+	 */
 	public function insert($pa_options=null) {
+		if(caGetOption('dontForcePrimary', $pa_options, false)) { return parent::insert($pa_options); }
+		
 		$vb_we_set_transaction = false;
 		if ($this->inTransaction()) {
 			$o_trans = $this->getTransaction();
@@ -108,7 +116,15 @@ class BaseRepresentationRelationship extends BaseRelationshipModel {
 		}
 	}
 	# ------------------------------------------------------
+	/**
+	 * @param array $pa_options Options include:
+	 *		dontForcePrimary = Don't force primary flag is none is set. [Default is false]
+	 *
+	 * @return bool
+	 */
 	public function update($pa_options=null) {
+		if(caGetOption('dontForcePrimary', $pa_options, false)) { return parent::update($pa_options); }
+		
 		$vb_we_set_transaction = false;
 		if ($this->inTransaction()) {
 			$o_trans = $this->getTransaction();

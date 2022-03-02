@@ -328,6 +328,14 @@ final class ConfigurationCheck {
 		return true;
 	}
 	# -------------------------------------------------------
+	public static function userMediaUploadDirQuickCheck() {
+		$upload_root = self::$opo_config->get("media_uploader_root_directory");
+		if(!file_exists($upload_root) || !is_writable($upload_root)){
+			self::addError(_t("It looks like the user media upload directory is not writable by the webserver. Please change the permissions of %1 (or create it if it doesn't exist already) and enable the user which runs the webserver to write to this directory.",$upload_root));
+		}
+		return true;
+	}
+	# -------------------------------------------------------
 	/**
 	 * Does the HTMLPurifier DefinitionCache dir exist and is it writable?
 	 */
@@ -383,7 +391,7 @@ final class ConfigurationCheck {
 	private static function _urlRootGuesses() {
 		return [
 			str_replace("/index.php", "", str_replace("\\", "/", $_SERVER["SCRIPT_NAME"])),
-			str_replace(isset($_SERVER['DOCUMENT_ROOT']) ? $_SERVER['DOCUMENT_ROOT'] : '', '', __CA_BASE_DIR__)
+			str_replace($_SERVER['CONTEXT_DOCUMENT_ROOT'] ?? $_SERVER['DOCUMENT_ROOT'] ?? '', '', __CA_BASE_DIR__)
 		];
 	}
 	# -------------------------------------------------------

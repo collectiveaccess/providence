@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2010 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -73,7 +73,7 @@ BaseModel::$s_ca_models_definitions['ca_list_item_labels'] = array(
 		),
 		'name_singular' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 2,
+				'DISPLAY_WIDTH' => '670px', 'DISPLAY_HEIGHT' => 2,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Item name (singular)'), 'DESCRIPTION' => _t('The name of this list item in the singular form (eg. "disk", "lobster").'),
@@ -81,7 +81,7 @@ BaseModel::$s_ca_models_definitions['ca_list_item_labels'] = array(
 		),
 		'name_plural' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 2,
+				'DISPLAY_WIDTH' => '670px', 'DISPLAY_HEIGHT' => 2,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Item name (plural)'), 'DESCRIPTION' => _t('The name of this list item in the plural form (eg. "disks", "lobsters").'),
@@ -97,7 +97,7 @@ BaseModel::$s_ca_models_definitions['ca_list_item_labels'] = array(
 		),
 		'description' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 70, 'DISPLAY_HEIGHT' => 6,
+				'DISPLAY_WIDTH' => '670px', 'DISPLAY_HEIGHT' => 6,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Description'), 'DESCRIPTION' => _t('A description of the list item, including suggested use notes or definitions.'),
@@ -117,6 +117,27 @@ BaseModel::$s_ca_models_definitions['ca_list_item_labels'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Is preferred?'), 'DESCRIPTION' => _t('Set this if this label is the preferred label for the current locale.'),
 				'BOUNDS_VALUE' => array(0,1)
+		),
+		'effective_date' => array(
+				'FIELD_TYPE' => FT_HISTORIC_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'START' => 'sdatetime', 'END' => 'edatetime',
+				'LABEL' => _t('Effective date'), 'DESCRIPTION' => _t('Period of time for which this label was in effect. This is an option qualification for the relationship. If left blank, this relationship is implied to have existed for as long as the related items have existed.')
+		),
+		'access' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => 0,
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'BOUNDS_CHOICE_LIST' => array(
+					_t('Not accessible to public') => 0,
+					_t('Accessible to public') => 1
+				),
+				'LIST' => 'access_statuses',
+				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates if label is accessible to the public or not.')
 		)
  	)
 );
@@ -210,6 +231,7 @@ class ca_list_item_labels extends BaseLabel {
 		'name_singular', 'name_plural', 'description'
 	);
 	protected $LABEL_DISPLAY_FIELD = 'name_singular';
+	protected $LABEL_SECONDARY_DISPLAY_FIELDS = ['name_plural'];
 	
 	# --- Name of field used for sorting purposes
 	protected $LABEL_SORT_FIELD = 'name_sort';

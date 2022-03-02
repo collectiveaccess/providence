@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2019 Whirl-i-Gig
+ * Copyright 2007-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -140,7 +140,7 @@ class SearchEngine extends SearchBase {
 			$ps_search .= $vs_append_to_search;
 		}
 		
-		$ps_search = preg_replace('![\|]([A-Za-z0-9_,;]+[:]{1})!', "/$1", $ps_search);	// allow | to be used in lieu of / as the relationship type separator, as "/" is problematic to encode in GET requests
+		$ps_search = preg_replace('/[\|]([A-Za-z0-9_,;]+[:]{1})/', "/$1", $ps_search);	// allow | to be used in lieu of / as the relationship type separator, as "/" is problematic to encode in GET requests
 		// the special [BLANK] search term, which returns records that have *no* content in a specific fields, has to be quoted in order to protect the square brackets from the parser.
 		$ps_search = preg_replace('/(?!")\['.caGetBlankLabelText($this->ops_tablename).'\](?!")/i', '"['.caGetBlankLabelText($this->ops_tablename).']"', $ps_search); 
 		$ps_search = preg_replace('/(?!")\[BLANK\](?!")/i', '"[BLANK]"', $ps_search); 
@@ -167,10 +167,10 @@ class SearchEngine extends SearchBase {
 		// This is useful, for example, to allow auto-wildcarding of accession numbers: if the search looks like an accession regex-wise we can append a "*"
 		//
 		$va_suffixes = $this->opo_search_config->getAssoc('search_suffixes');
-		if (is_array($va_suffixes) && sizeof($va_suffixes) && (!preg_match('!"!', $ps_search))) {		// don't add suffix wildcards when quoting
+		if (is_array($va_suffixes) && sizeof($va_suffixes) && (!preg_match('/"/', $ps_search))) {		// don't add suffix wildcards when quoting
 			foreach($va_suffixes as $vs_preg => $vs_suffix) {
-				if (preg_match("!{$vs_preg}!", $ps_search)) {
-					$ps_search = preg_replace("!({$vs_preg})[\*]*!", "$1{$vs_suffix}", $ps_search);
+				if (@preg_match("/".caQuoteRegexDelimiter($vs_preg, "/")."/", $ps_search)) {
+					$ps_search = preg_replace("/(".caQuoteRegexDelimiter($vs_preg, "/").")[\*]*/", "$1{$vs_suffix}", $ps_search);
 				}
 			}
 		}
@@ -179,15 +179,15 @@ class SearchEngine extends SearchBase {
 		if (is_array($va_rewrite_regexs = $this->opo_search_config->get('rewrite_regexes'))) {
 			if (isset($va_rewrite_regexs[$this->ops_tablename]) && is_array($va_rewrite_regexs[$this->ops_tablename])) { 
 				foreach($va_rewrite_regexs[$this->ops_tablename] as $vs_regex_name => $va_rewrite_regex) {
-					$ps_search = preg_replace("!".trim($va_rewrite_regex[0])."!", trim($va_rewrite_regex[1]), $ps_search);
+					$ps_search = preg_replace("/".caQuoteRegexDelimiter(trim($va_rewrite_regex[0]), '/')."/", trim($va_rewrite_regex[1]), $ps_search);
 				}
 			}
 		}
 		
-        if ((is_array($va_idno_regexs = $this->opo_search_config->get('idno_regexes'))) && (!preg_match("!".$this->ops_tablename.".{$vs_idno_fld}!", $ps_search))) {
+        if ((is_array($va_idno_regexs = $this->opo_search_config->get('idno_regexes'))) && (!preg_match("/".$this->ops_tablename.".{$vs_idno_fld}/", $ps_search))) {
 			if (isset($va_idno_regexs[$this->ops_tablename]) && is_array($va_idno_regexs[$this->ops_tablename])) { 
 				foreach($va_idno_regexs[$this->ops_tablename] as $vs_idno_regex) {
-					if ((preg_match("!{$vs_idno_regex}!", $ps_search, $va_matches)) && ($t_instance = Datamodel::getInstanceByTableName($this->ops_tablename, true)) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
+					if ((@preg_match("/".caQuoteRegexDelimiter($vs_idno_regex, "/")."/", $ps_search, $va_matches)) && ($t_instance = Datamodel::getInstanceByTableName($this->ops_tablename, true)) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
 						$ps_search = str_replace($va_matches[0], $this->ops_tablename.".{$vs_idno_fld}:\"".$va_matches[0]."\"", $ps_search);
 					}
 				}
@@ -233,7 +233,7 @@ class SearchEngine extends SearchBase {
 			$o_query_parser->setEncoding('UTF-8');
 			$o_query_parser->setDefaultOperator(LuceneSyntaxParser::B_AND);
 			
-			$ps_search = preg_replace('![\']+!', '', $ps_search);	
+			$ps_search = preg_replace('/[\']+/', '', $ps_search);	
 		
 			try {
 				$o_parsed_query = $o_query_parser->parse($ps_search, 'UTF-8');
@@ -243,8 +243,8 @@ class SearchEngine extends SearchBase {
 					throw new SearchException(_t('Search failed: %1', $e->getMessage()));
 				}
 				try {
-					$vs_search_proc = preg_replace("![ ]+(AND)[ ]+!i", " ", $ps_search);
-					$vs_search_proc = preg_replace("![^A-Za-z0-9 ]+!", " ", $vs_search_proc);
+					$vs_search_proc = preg_replace("/[ ]+(AND)[ ]+/i", " ", $ps_search);
+					$vs_search_proc = preg_replace("/[^A-Za-z0-9 ]+/", " ", $vs_search_proc);
 					$o_parsed_query = $o_query_parser->parse($vs_search_proc, 'UTF-8');
 				} catch (Exception $e) {
 					$o_parsed_query = $o_query_parser->parse("", 'UTF-8');
@@ -340,9 +340,9 @@ class SearchEngine extends SearchBase {
 				$va_hits = $this->filterHitsBySets($va_hits, $pa_options['sets'], array('search' => $vs_search));
 			}
 						
-			$vn_user_id = (isset($pa_options['user_id']) && (int)$pa_options['user_id']) ?  (int)$pa_options['user_id'] : (int)$AUTH_CURRENT_USER_ID;
+			$user_id = (isset($pa_options['user_id']) && (int)$pa_options['user_id']) ?  (int)$pa_options['user_id'] : (int)$AUTH_CURRENT_USER_ID;
 			if ((!isset($pa_options['dontFilterByACL']) || !$pa_options['dontFilterByACL']) && $vb_do_acl) {
-				$va_hits = $this->filterHitsByACL($va_hits, $this->opn_tablenum, $vn_user_id, __CA_ACL_READONLY_ACCESS__);
+				$va_hits = $this->filterHitsByACL($va_hits, $this->opn_tablenum, $user_id, __CA_ACL_READONLY_ACCESS__);
 				if ($vn_limit > 0) { $va_hits = array_slice($va_hits, 0, $vn_limit); }
 			}
 			
@@ -360,24 +360,26 @@ class SearchEngine extends SearchBase {
 			}
 
 			// log search
-			$o_log = new Searchlog();
+			if(!$this->opo_app_config->get('dont_use_search_log')) {
+				$o_log = new Searchlog();
 			
-			$vn_search_form_id = isset($pa_options['form_id']) ? $pa_options['form_id'] : null;
-			$vs_log_details = isset($pa_options['log_details']) ? $pa_options['log_details'] : '';
-			$vs_search_source = isset($pa_options['search_source']) ? $pa_options['search_source'] : '';
+				$vn_search_form_id = isset($pa_options['form_id']) ? $pa_options['form_id'] : null;
+				$vs_log_details = isset($pa_options['log_details']) ? $pa_options['log_details'] : '';
+				$vs_search_source = isset($pa_options['search_source']) ? $pa_options['search_source'] : '';
 				
-			$vn_execution_time = $t->getTime(4);
-			$o_log->log(array(
-				'user_id' => $vn_user_id, 
-				'table_num' => $this->opn_tablenum, 
-				'search_expression' => $ps_search, 
-				'num_hits' => sizeof($va_hits),
-				'form_id' => $vn_search_form_id, 
-				'ip_addr' => RequestHTTP::ip(),
-				'details' => $vs_log_details,
-				'search_source' => __CA_APP_TYPE__.($vs_search_source ? ":{$vs_search_source}" : ""),
-				'execution_time' => $vn_execution_time
-			));
+				$vn_execution_time = $t->getTime(4);
+				$o_log->log(array(
+					'user_id' => ($user_id > 0) ? $user_id : null, 
+					'table_num' => $this->opn_tablenum, 
+					'search_expression' => $ps_search, 
+					'num_hits' => sizeof($va_hits),
+					'form_id' => $vn_search_form_id, 
+					'ip_addr' => RequestHTTP::ip(),
+					'details' => $vs_log_details,
+					'search_source' => __CA_APP_TYPE__.($vs_search_source ? ":{$vs_search_source}" : ""),
+					'execution_time' => $vn_execution_time
+				));
+			}
 		}
 
 		if ($po_result) {
@@ -551,7 +553,7 @@ class SearchEngine extends SearchBase {
 		$vs_fld = $po_term->getTerm()->field;
 		if (is_array($va_access_points = $this->getAccessPoints($this->opn_tablenum)) && sizeof($va_access_points)) {
 			// if field is access point then do rewrite
-			$va_fld_tmp = preg_split("![/\|]+!", mb_strtolower($vs_fld));
+			$va_fld_tmp = preg_split("/[\/\|]+/", mb_strtolower($vs_fld));
 			$vs_fld_lc = $va_fld_tmp[0];
 			$vs_rel_types = isset($va_fld_tmp[1]) ? $va_fld_tmp[1] : null;
 			
@@ -606,10 +608,10 @@ class SearchEngine extends SearchBase {
 		}
 		
 		// is it an idno?
-		if (is_array($va_idno_regexs = $this->opo_search_config->get('idno_regexes'))) {
+		if (!$vs_fld && is_array($va_idno_regexs = $this->opo_search_config->get('idno_regexes'))) {
 			if (isset($va_idno_regexs[$this->ops_tablename]) && is_array($va_idno_regexs[$this->ops_tablename])) {
 				foreach($va_idno_regexs[$this->ops_tablename] as $vs_idno_regex) {
-					if ((preg_match("!{$vs_idno_regex}!", (string)$po_term->getTerm()->text, $va_matches)) && ($t_instance = Datamodel::getInstanceByTableName($this->ops_tablename, true)) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
+					if ((@preg_match("/".caQuoteRegexDelimiter($vs_idno_regex, "/")."/", (string)$po_term->getTerm()->text, $va_matches)) && ($t_instance = Datamodel::getInstanceByTableName($this->ops_tablename, true)) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
 						$vs_table_name = $t_instance->tableName();
 						return array(
 							'terms' => array(new Zend_Search_Lucene_Index_Term((string)((sizeof($va_matches) > 1) ? $va_matches[1] : $va_matches[0]), "{$vs_table_name}.{$vs_idno_fld}")),
@@ -622,7 +624,7 @@ class SearchEngine extends SearchBase {
 		}
 		
 		// is it a label? Rewrite the field for that.
-		$va_tmp = preg_split('![/\|]+!', $vs_fld);
+		$va_tmp = preg_split('/[\/\|]+/', $vs_fld);
 		$va_tmp2 = explode('.', $va_tmp[0]);
 		if (in_array($va_tmp2[1], array('preferred_labels', 'nonpreferred_labels'))) {
 			if ($t_instance = Datamodel::getInstanceByTableName($va_tmp2[0], true)) {
@@ -684,7 +686,7 @@ class SearchEngine extends SearchBase {
 		}
 		
 		// is it a labels? Rewrite the field for that.
-		$va_tmp = preg_split('![/\|]+!', $vs_fld);
+		$va_tmp = preg_split('/[\/\|]+/', $vs_fld);
 		$va_tmp2 = explode('.', $va_tmp[0]);
 		if (in_array($va_tmp2[1], array('preferred_labels', 'nonpreferred_labels'))) {
 			if ($t_instance = Datamodel::getInstanceByTableName($va_tmp2[0], true)) {
@@ -860,6 +862,7 @@ class SearchEngine extends SearchBase {
 	 * @param array $pa_type_codes_or_ids List of type_id or code values to filter search by. When set, the search will only consider items of the specified types. Using a hierarchical parent type will automatically include its children in the restriction. 
 	 * @param array $pa_options Options include
 	 *		includeSubtypes = include any child types in the restriction. Default is true.
+	 *		exclude = Exclude specified types rather than filter on types. [Default is false]
 	 * @return boolean True on success, false on failure
 	 */
 	public function setTypeRestrictions($pa_type_codes_or_ids, $pa_options=null) {
@@ -873,6 +876,14 @@ class SearchEngine extends SearchBase {
 		if (!method_exists($t_instance, 'getTypeListCode')) { return false; }
 		if (!($vs_list_name = $t_instance->getTypeListCode())) { return false; }
 		$va_type_list = $t_instance->getTypeList();
+		
+		if($exclude = caGetOption('exclude', $pa_options, false)) {
+			$type_ids_to_exclude = caMakeTypeIDList($this->ops_tablename, $pa_type_codes_or_ids);
+			foreach($type_ids_to_exclude as $type_id) {
+				unset($va_type_list[$type_id]);
+			}
+			$pa_type_codes_or_ids = array_keys($va_type_list);
+		}
 		
 		$this->opa_search_type_ids = array();
 		foreach($pa_type_codes_or_ids as $vs_code_or_id) {
@@ -891,13 +902,31 @@ class SearchEngine extends SearchBase {
 					$t_item = new ca_list_items($vn_type_id);
 					$va_ids = $t_item->getHierarchyChildren(null, array('idsOnly' => true));
 					$va_ids[] = $vn_type_id;
+					
+					if($exclude) { $va_ids = array_filter($va_ids, function($v) use ($pa_type_codes_or_ids) { return in_array($v, $pa_type_codes_or_ids); }); }
 					$this->opa_search_type_ids = array_merge($this->opa_search_type_ids, $va_ids);
 				} else {
 					$this->opa_search_type_ids[] = $vn_type_id;
 				}
 			}
 		}
+		
 		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 * When type exclusions are specified, the search will only consider items that are not of the given types. 
+	 * If you specify a type that has hierarchical children then the children will automatically be included
+	 * in the exclusion. You may pass numeric type_id and alphanumeric type codes interchangeably.
+	 *
+	 * @param array $pa_type_codes_or_ids List of type_id or code values to exclude from search. Using a hierarchical parent type will automatically include its children in the exclusion. 
+	 * @param array $pa_options Options include
+	 *		includeSubtypes = include any child types in the restriction. Default is true.
+	 * @return boolean True on success, false on failure
+	 */
+	public function setTypeExclusions($pa_type_codes_or_ids, $pa_options=null) {
+		if(!is_array($pa_options)) { $pa_options = []; }
+		return $this->setTypeRestrictions($pa_type_codes_or_ids, array_merge($pa_options, ['exclude' => true]));
 	}
 	# ------------------------------------------------------
 	/**
@@ -1155,13 +1184,13 @@ class SearchEngine extends SearchBase {
 			$o_query_parser->setEncoding('UTF-8');
 			$o_query_parser->setDefaultOperator(LuceneSyntaxParser::B_AND);
 	
-			$ps_search = preg_replace('![\']+!', '', $ps_search);
+			$ps_search = preg_replace('/[\']+/', '', $ps_search);
 			try {
 				$o_parsed_query = $o_query_parser->parse($ps_search, 'UTF-8');
 			} catch (Exception $e) {
 				// Retry search with all non-alphanumeric characters removed
 				try {
-					$o_parsed_query = $o_query_parser->parse(preg_replace("![^A-Za-z0-9 ]+!", " ", $ps_search), 'UTF-8');
+					$o_parsed_query = $o_query_parser->parse(preg_replace("/[^A-Za-z0-9 ]+/", " ", $ps_search), 'UTF-8');
 				} catch (Exception $e) {
 					$o_parsed_query = $o_query_parser->parse("", 'UTF-8');
 				}
@@ -1170,7 +1199,7 @@ class SearchEngine extends SearchBase {
 			$va_field_list = SearchEngine::_getFieldList($o_parsed_query);
 			
 			foreach($va_field_list as $vs_field) {
-				$va_tmp = preg_split('![/\|]+!', $vs_field);
+				$va_tmp = preg_split('/[\/\|]+/', $vs_field);
 				
 				if (sizeof($va_tmp) > 1) {
 					$vs_rel_type = $va_tmp[1];

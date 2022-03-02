@@ -51,4 +51,32 @@ class InterstitialSearchResult extends BaseSearchResult {
 		parent::__construct();
 	}
 	# -------------------------------------
+	/**
+	 * Set if non-primary representations are filtered from returned results
+	 *
+	 * @param bool $filter IF true non primary representations will be filtered from returned results
+	 * @return bool Always returns true
+	 */
+	public function filterNonPrimaryRepresentations($filter) {
+		if ($t_instance = Datamodel::getFieldNum($table = $this->ops_table_name, 'is_primary') > 0) {
+			if ($filter) {
+				$criteria = ["{$table}.is_primary = 1", 'ca_object_representations.deleted = 0'];
+			} else {
+				$criteria = ['ca_object_representations.deleted = 0'];
+			}
+			$this->opa_tables['ca_object_representations'] = [
+				'fieldList' => ['ca_object_representations.media', 'ca_object_representations.representation_id', 'ca_object_representations.access', 'ca_object_representations.md5', 'ca_object_representations.mimetype', 'ca_object_representations.original_filename'],
+				'joinTables' => [$table],
+				'criteria' => $criteria
+			];
+			if($filter) {
+				$this->opa_tables[$table] = [
+					'fieldList' => ["{$table}.relation_id", "{$table}.is_primary"],
+					'joinTables' => [],
+					'criteria' => ["{$table}.is_primary = 1"]
+				];
+			}
+		}
+	}
+	# -------------------------------------
 }

@@ -153,7 +153,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 	        } else {
 			    $va_fields_to_index = [0 => $va_info[$vs_content_table]['fields']];
 	        }
-			$t_subject = Datamodel::getInstanceByTableName($vs_content_table, false);
+			$t_subject = Datamodel::getInstanceByTableName(preg_replace("!\.related$!", "", $vs_content_table), false);
 			
 			foreach($va_fields_to_index as $p => $field_list) {
                 if (caGetOption('intrinsicOnly', $pa_options, false)) {

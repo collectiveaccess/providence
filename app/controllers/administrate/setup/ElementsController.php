@@ -78,7 +78,7 @@ class ElementsController extends BaseEditorController {
 				FROM ca_metadata_elements cme
 				LEFT JOIN ca_metadata_element_labels AS cmel ON cme.element_id = cmel.element_id
 				WHERE
-					cme.parent_id = ?
+					cme.parent_id = ? AND cme.deleted = 0
 				ORDER BY
 					cme.`rank`
 			",(int)$t_element->get('element_id'));
@@ -140,7 +140,6 @@ class ElementsController extends BaseEditorController {
 			$t_element->set('parent_id',$vn_parent_id);
 		}
 		
-
 		if (!$t_element->getPrimaryKey()) {
 			$vb_new = true;
 			$vo_db = $t_element->getDb();
@@ -148,7 +147,7 @@ class ElementsController extends BaseEditorController {
 				$qr_tmp = $vo_db->query("
 					SELECT MAX(`rank`) AS `rank`
 					FROM ca_metadata_elements
-					WHERE parent_id=?
+					WHERE parent_id = ? AND deleted = 0
 				",$vn_parent_id);
 				if(!$qr_tmp->nextRow()){
 					$t_element->set('rank',1);
@@ -211,7 +210,7 @@ class ElementsController extends BaseEditorController {
 				}
 			}
 			
-			
+		
 			/* insert new labels */
 			foreach([
 				1 => ['new' => $va_new_labels, 'old' => $va_old_labels, 'delete' => $va_delete_labels],
@@ -266,7 +265,7 @@ class ElementsController extends BaseEditorController {
 					}
 				}
 			}
-	
+
 			/* process settings */
 			if (is_array($va_settings = $t_element->getAvailableSettings())) {
 				$vb_need_to_update = false;
@@ -298,12 +297,12 @@ class ElementsController extends BaseEditorController {
 						$this->notification->addNotification(_t("Setting %2 is not valid: %1", $vs_error, $vs_setting_key), __NOTIFICATION_TYPE_ERROR__);
 						continue;
 					}
-					$t_element->update();
 				}
 
+				$t_element->update();
 				$_REQUEST['form_timestamp'] = $vn_timestamp;
 			}
-			
+		
 			/* process type restrictions */
 			$t_restriction = new ca_metadata_type_restrictions(null, true);
 			$va_settings = array_keys($t_restriction->getAvailableSettings());
@@ -340,7 +339,7 @@ class ElementsController extends BaseEditorController {
 					$t_restriction->insert();
 					continue;
 				}
-				
+			
 				if (preg_match('!^type_restrictions_([\d]+)_delete$!', $vs_key, $va_matches)) {
 					// got one to delete
 					if ($t_restriction->load($va_matches[1])) {
@@ -350,6 +349,7 @@ class ElementsController extends BaseEditorController {
 					continue;
 				}
 			}
+			
             $t_element->flushCacheForElement();
 		}
 		
@@ -393,6 +393,8 @@ class ElementsController extends BaseEditorController {
 				(`rank` < ?)
 				AND
 				(parent_id = ?)
+				AND
+				(deleted = 0)
 			ORDER BY
 				`rank` DESC
 		",$t_element->get('rank'),$t_element->get('parent_id'));
@@ -432,6 +434,8 @@ class ElementsController extends BaseEditorController {
 				(`rank` > ?)
 				AND
 				(parent_id = ?)
+				AND
+				(deleted = 0)
 			ORDER BY
 				`rank`
 		",$t_element->get('rank'),$t_element->get('parent_id'));
@@ -492,7 +496,7 @@ class ElementsController extends BaseEditorController {
 			SELECT * FROM
 				(SELECT `rank`,count(*) as count
 					FROM ca_metadata_elements
-					WHERE parent_id=?
+					WHERE parent_id = ? AND deleted = 0
 					GROUP BY `rank`) as `lambda`
 			WHERE
 				count > 1;
@@ -518,9 +522,11 @@ class ElementsController extends BaseEditorController {
 				SELECT * FROM
 					ca_metadata_elements
 					WHERE
-						(parent_id=?)
+						(parent_id = ?)
 						AND
 						(`rank` > ?)
+						AND
+						(deleted = 0)
 					ORDER BY
 						`rank`
 			",$pn_parent_id,$vn_rank);
@@ -537,6 +543,8 @@ class ElementsController extends BaseEditorController {
 						(parent_id=?)
 						AND
 						(`rank` = ?)
+						AND
+						(deleted = 0)
 					ORDER BY
 						`rank`
 			",$pn_parent_id,$vn_rank);

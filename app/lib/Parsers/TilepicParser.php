@@ -342,8 +342,8 @@ class TilepicParser {
 	# ------------------------------------------------
 	private function _imageMagickRead($ps_filepath) {
 		if ($this->ops_imagemagick_path) {
-			caExec($this->ops_imagemagick_path.'/identify -format "%m;%w;%h\n" '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
-			
+			caExec($this->ops_imagemagick_path.' -format "%m;%w;%h\n" '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+	
 			$va_tmp = explode(';', $va_output[0]);
 			if (sizeof($va_tmp) != 3) {
 				return null;
@@ -431,7 +431,7 @@ class TilepicParser {
 					break;
 			}
 		}
-		caExec($this->ops_imagemagick_path.'/convert '.caEscapeShellArg($ps_source_filepath.'[0]').' '.join(' ', $va_ops).' "'.$ps_dest_filepath.'"');
+		caExec(str_replace('identify', 'convert', $this->ops_imagemagick_path).' '.caEscapeShellArg($ps_source_filepath.'[0]').' '.join(' ', $va_ops).' "'.$ps_dest_filepath.'"');
 		return true;
 	}
 	# ------------------------------------------------
@@ -493,7 +493,7 @@ class TilepicParser {
 	# ------------------------------------------------
 	private function _imageMagickImageFromTiles($ps_dest_filepath, $pa_tiles, $pn_tile_width, $pn_tile_height) {
 		
-		caExec($this->ops_imagemagick_path.'/montage '.join(' ', $pa_tiles).' -mode Concatenate -tile '.$pn_tile_width.'x'.$pn_tile_height.' "'.$ps_dest_filepath.'"');
+		caExec(str_replace('identify', 'montage', $this->ops_imagemagick_path).' '.join(' ', $pa_tiles).' -mode Concatenate -tile '.$pn_tile_width.'x'.$pn_tile_height.' "'.$ps_dest_filepath.'"');
 	
 		return true;
 	}
@@ -570,7 +570,7 @@ class TilepicParser {
         }
         
          if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
-			if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
+			if (is_array($va_exif = @exif_read_data($ps_filepath, 'IDF0', true, false))) { 
 				if (isset($va_exif['IFD0']['Orientation'])) {
 					$vn_orientation_rotate = null;
 					$vn_orientation = $va_exif['IFD0']['Orientation'];
@@ -835,7 +835,7 @@ class TilepicParser {
 		}
 
 		 if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
-			if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
+			if (is_array($va_exif = @exif_read_data($ps_filepath, 'IFD0', true, false))) { 
 				if (isset($va_exif['IFD0']['Orientation'])) {
 					$vn_orientation_rotate = null;
 					$vn_orientation = $va_exif['IFD0']['Orientation'];
@@ -1079,7 +1079,7 @@ class TilepicParser {
         $h->profileImage('*', null);
         
         if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
-			if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
+			if (is_array($va_exif = @exif_read_data($ps_filepath, 'IFD0', true, false))) { 
 				if (isset($va_exif['IFD0']['Orientation'])) {
 					$vn_orientation = $va_exif['IFD0']['Orientation'];
 					switch($vn_orientation) {
@@ -1303,11 +1303,40 @@ class TilepicParser {
 
 		$image_dimensions = $h->getimagegeometry();
 		
+		$tmp_path = null;
 		$rotation = null;
 		if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
-			if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
+			if (is_array($va_exif = @exif_read_data($ps_filepath, 'IFD0', true, false))) { 
 				if (isset($va_exif['IFD0']['Orientation'])) {
 					$vn_orientation = $va_exif['IFD0']['Orientation'];
+					if($vn_orientation > 0) {
+						// Make copy without EXIF rotation and re-read. There's no other way
+						// to get rid of the orientation tag in derived files (argh).
+						$use_exif_tool_to_strip = (bool)$this->opo_config->get('dont_use_exiftool_to_strip_exif_orientation_tags');
+						
+						// Fall back to using stripImage() if ExifTool is not available. This is quick and easy 
+						// but will strip *everything* including color profiles which will be a problem for many users.
+						if (!caExifToolInstalled() || $use_exif_tool_to_strip) {	
+							$h->stripImage();
+						} else {
+							// Stripping with EXIF tool means copying the entire file and then shelling out
+							// to remove the EXIF tag. We could avoid a copy by running EXIF tool on each tile we
+							// generate, but then we'd be shelling out hundreds or thousands of times per image. 
+							// Either way it sucks.
+							$tmp_path = caGetTempDirPath()."/".pathinfo($ps_filepath, PATHINFO_FILENAME)."_orient.".pathinfo($ps_filepath, PATHINFO_EXTENSION);
+							copy($ps_filepath, $tmp_path);
+							caExtractRemoveOrientationTagWithExifTool($tmp_path);
+							
+							try {
+								$h = new Gmagick($tmp_path);
+								$this->setResourceLimits_gmagick($h);
+								$h->setimageindex(0);	// force use of first image in multi-page TIFF
+							} catch (Exception $e){
+								$this->error = "Couldn't open image {$ps_filepath}_orient";
+								return false;
+							}
+						}
+					}
 					switch($vn_orientation) {
 						case 3:
 							$h->rotateimage("#FFFFFF", $rotation = 180);
@@ -1406,9 +1435,6 @@ class TilepicParser {
 					return false;
 				}
 				
-				
-				if($rotation == 180) { $slice->rotateimage("#FFFFFF", $rotation); }
-				
 				if (!$slice->setimageformat($magick)) {
 					$this->error = "Tile conversion failed: $reason; $description";
 					return false;
@@ -1431,9 +1457,6 @@ class TilepicParser {
 					// noop
 				}
 				
-				if(abs($rotation) === 90) {	// flip rotation due to EXIF rotation (Gmagick doesn't set EXIF rotation properly)
-					$slice->rotateimage("#FFFFFF", -1 * $rotation);
-				}
 				$layer_list[sizeof($layer_list)-1][] = $slice->getImageBlob();
 				$slice->destroy();
 				$x += $pa_options["tile_width"];
@@ -1451,6 +1474,9 @@ class TilepicParser {
 		}
 		
 		$h->destroy();
+		
+		if($tmp_path) { @unlink($tmp_path); }
+		
 		#
 		# Write Tilepic format file
 		#
@@ -1548,7 +1574,7 @@ class TilepicParser {
 				case IMAGETYPE_JPEG:
 					$r_image = imagecreatefromjpeg($ps_filepath);
 					 if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
-						if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
+						if (is_array($va_exif = @exif_read_data($ps_filepath, 'IFD0', true, false))) { 
 							if (isset($va_exif['IFD0']['Orientation'])) {
 								$vn_orientation = $va_exif['IFD0']['Orientation'];
 								$h = new WLPlugMediaGD();

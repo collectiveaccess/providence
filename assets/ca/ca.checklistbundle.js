@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2016 Whirl-i-Gig
+ * Copyright 2010-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -108,6 +108,9 @@ var caUI = caUI || {};
 			});
 			
 			// check current values
+			if(initialValues && (Object.keys(initialValues).length > 0)) {
+				jQuery(container + ' input[type=checkbox]').prop('checked', false);	
+			}
 			jQuery.each(initialValues, function(i, v) {
 				// If they are current rename them to be active values (eg. as if they were separate generic bundle values)
 				jQuery(that.container + " input[value=" + (v[that.templateValues[0]]) + "]").prop('checked', true).attr('id', that.fieldNamePrefix + (that.templateValues[0]) + "_" + i).attr('name', that.fieldNamePrefix + (that.templateValues[0]) + "_" + i);

@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -60,6 +60,7 @@ var caUI = caUI || {};
 			onItemCreate: null,	/* callback function when a bundle item is created */
 			onAddItem: null,
 			incrementLocalesForNewBundles: true,
+			singleValuePerLocale: false,
 			defaultValues: {},
 			bundlePreview: '',
 			readonly: 0,
@@ -228,6 +229,15 @@ var caUI = caUI || {};
 				}
 			}
 
+			// Set default value for new items
+			var is_new = id ? false : true;
+			if (!id) {
+				jQuery.each(this.defaultValues, function(k, v) {
+					if (v && !templateValues[k]) { templateValues[k] = v; }
+				});
+				id = 'new_' + this.getCount();	// set id to ensure sub-fields get painted with unsaved warning handler
+			}
+		
 			// print out any errors
 			var errStrs = [];
 			if (this.errors && this.errors[id]) {
@@ -239,15 +249,6 @@ var caUI = caUI || {};
 
 			templateValues.error = errStrs.join('<br/>');
 			templateValues.fieldNamePrefix = this.fieldNamePrefix; // always pass field name prefix to template
-
-			// Set default value for new items
-			var is_new = id ? false : true;
-			if (!id) {
-				jQuery.each(this.defaultValues, function(k, v) {
-					if (v && !templateValues[k]) { templateValues[k] = v; }
-				});
-				id = 'new_' + this.getCount();	// set id to ensure sub-fields get painted with unsaved warning handler
-			}
 
 			// replace values in template
 			var jElement = jQuery(this.container + ' textarea.' + (isNew ? this.templateClassName : this.initialValueTemplateClassName)).template(templateValues);
@@ -293,7 +294,7 @@ var caUI = caUI || {};
 					if (typeof(this.initialValues[id][info[1]]) == 'boolean') {
 						this.initialValues[id][info[1]] = (this.initialValues[id][info[1]]) ? '1' : '0';
 					}
-					jQuery(this.container + " #" + element_id + " option[value=" + this.initialValues[id][info[1]] +"]").prop('selected', true);
+					jQuery(this.container + " #" + element_id + " option[value='" + this.initialValues[id][info[1]] +"']").prop('selected', true);
 				}
 			}
 
@@ -397,7 +398,7 @@ var caUI = caUI || {};
 			if (isNew) {
 				if (defaultLocaleSelectedIndex !== false) {
 					if (jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option:eq(" + defaultLocaleSelectedIndex + ")").length) {
-						// There's a locale drop-dow to mess with
+						// There's a locale drop-down to mess with
 						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option:eq(" + defaultLocaleSelectedIndex + ")").prop('selected', true);
 					} else {
 						// No locale drop-down, or it somehow doesn't include the locale we want
@@ -406,7 +407,7 @@ var caUI = caUI || {};
 					}
 				} else {
 					if (jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option[value=" + that.defaultLocaleID + "]").length) {
-						// There's a locale drop-dow to mess with
+						// There's a locale drop-down to mess with
 						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option[value=" + that.defaultLocaleID + "]").prop('selected', true);
 					} else {
 						// No locale drop-down, or it somehow doesn't include the locale we want
@@ -414,6 +415,8 @@ var caUI = caUI || {};
 						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n).remove();
 					}
 				}
+				
+				
 			}
 
 			// Add bundle preview value text
@@ -439,6 +442,15 @@ var caUI = caUI || {};
 			}
 
 			return this;
+		};
+		
+		that.refreshLocaleAvailability = function() {
+            var localeList = jQuery.makeArray(jQuery(this.container + " select." + this.localeClassName + ":first option"));
+            for(i=0; i < localeList.length; i++) {
+                if (jQuery(this.container + " select." + this.localeClassName + " option:selected[value=" + localeList[i].value + "]").length > 0) {
+                    jQuery(this.container + " select." + this.localeClassName + " option:not(:selected)[value=" + localeList[i].value + "]").attr('disabled', true);
+                }
+            }
 		};
 
 		that.updateBundleFormState = function() {
@@ -473,6 +485,11 @@ var caUI = caUI || {};
 					jQuery(this.container + " ." + options.listItemClassName + ":odd").css('background-color', '#' + options.evenColor);
 				}	
 			}
+			
+			// Disable locales if "single-value-per-locale" restriction is in placementID
+            if(that.singleValuePerLocale) {
+                this.refreshLocaleAvailability();
+            }
 			return this;
 		};
 
