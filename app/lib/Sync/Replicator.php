@@ -365,7 +365,11 @@ class Replicator {
 						
 						foreach($va_source_log_entries as $vn_log_id => $va_source_log_entry) {
 						    $this->last_log_id = $vn_log_id;
-						    if ($this->sent_log_ids[$vn_log_id]) { continue; }	// Don't send a source entry more than once (should never happen)
+						    if($this->sent_log_ids[$vn_log_id]) { continue; }	// Don't send a source entry more than once (should never happen)
+						    if($source_log_entries_for_missing_guids_seen_guids[$va_source_log_entry['guid']]) {
+						    	$this->log(_t("[%1] Skipping primary entry for guid %2 because it's already queued in missing queue.", $vs_source_key, $va_source_log_entry['guid']), Zend_Log::DEBUG);
+						    	continue;
+						    }
 						    
 							$vb_logged_exists_on_target = is_array($va_guid_already_exists[$va_source_log_entry['guid']]);
 						    if ($pa_filter_on_access_settings && ($va_access_by_guid[$va_source_log_entry['guid']] !== '?') && !in_array((int)$va_access_by_guid[$va_source_log_entry['guid']], $pa_filter_on_access_settings, true) && !$vb_logged_exists_on_target) {
@@ -446,6 +450,7 @@ class Replicator {
                                                 $va_access_for_dependent = $o_access_for_dependent->getRawData();
                                                 
                                                 $va_filtered_log_for_missing_guid = [];  
+                                                ksort($va_log_for_missing_guid, SORT_NUMERIC);
                                                 $this->log(_t("[%1] Missing log for %2 is %3", $vs_source_key, $vs_missing_guid, print_R($va_log_for_missing_guid, true)), Zend_Log::DEBUG);
                                                 foreach($va_log_for_missing_guid as $va_missing_entry) {
                                                 	if ($this->sent_log_ids[$va_missing_entry['log_id']]) { 
@@ -461,7 +466,13 @@ class Replicator {
                                                     }
                                                     
                                                     $va_filtered_log_for_missing_guid[$va_missing_entry['log_id']] = $va_missing_entry;
-                            
+                                                    
+                                                    if(isset($va_source_log_entries[$va_missing_entry['log_id']]) || isset($va_filtered_log_entries[$va_missing_entry['log_id']])) {
+                                                    	//$this->log(_t("[%1] Remove log_id %2 from the primary source log because it part of a missing guid log for %3.", $this->source_key, $va_missing_entry['log_id'], $va_missing_entry['guid']),Zend_Log::DEBUG);
+                                                    	unset($va_source_log_entries[$va_missing_entry['log_id']]); // make "missing" log entries aren't in the primary source log
+                            							unset($va_filtered_log_entries[$va_missing_entry['log_id']]);
+                            						}
+                            						
                                                     // Add guids for dependencies referenced by this log entry
                                                     if(is_array($va_missing_entry['snapshot'])) {
                                                         $va_dependent_guids = array_unique(array_merge($va_dependent_guids, array_values(array_filter($va_missing_entry['snapshot'], function($v, $k) use ($va_missing_entry, $vs_missing_guid) { 
@@ -852,22 +863,32 @@ class Replicator {
 					$va_log_entry = array_shift($va_source_log_entries_for_missing_guid);
 					$vn_mlog_id = $va_log_entry['log_id'];
 					
-					if ($vn_log_id == $vn_mlog_id) { continue; } // don't pull in current log entry
-					if (isset($va_source_log_entries[$vn_mlog_id])) { continue; } // don't push source log entry for a second time
+					if ($vn_log_id == $vn_mlog_id) { 
+						$this->log(_t("[%1] Skipped %2 because it is the current log entry.", $this->source_key, $vn_mlog_id), Zend_Log::DEBUG);
+						continue; 
+					} // don't pull in current log entry
+					
+					if (isset($va_source_log_entries[$vn_mlog_id])) { 
+						$this->log(_t("[%1] Skipped %2 because it is in the current source log.", $this->source_key, $vn_mlog_id), Zend_Log::DEBUG);
+						continue; 
+					} // don't push source log entry for a second time
 				
 										
 					// Don't send log entry for missing guid more than once 
 					// (can happen with attributes where they can be pulled as missing on the primary record 
 					//  and then as dependencies of the primary record)
-					if($this->sent_log_ids[$vn_mlog_id]) { continue; }
+					if($this->sent_log_ids[$vn_mlog_id]) { 
+						$this->log(_t("[%1] Skipped %2 because it has already been sent.", $this->source_key, $vn_mlog_id), Zend_Log::DEBUG);
+						continue; 
+					}
 					if (!$vn_mlog_id) { 
 						$this->log(_t("[%1] Skipped entry because it lacks a log_id %2.", $this->source_key, print_R($va_log_entry, true)), Zend_Log::DEBUG);
 						continue; 
 					}
-					if ($vn_mlog_id > $this->last_log_id) { 
-						$this->log(_t("[%1] Skipped %2 (during push of missing?) because it's in the future.", $this->source_key, $vn_mlog_id),Zend_Log::DEBUG);
-						continue; 
-					}
+					// if ($vn_mlog_id > $this->last_log_id) { 
+// 						$this->log(_t("[%1] Skipped %2 (during push of missing?) because it's in the future.", $this->source_key, $vn_mlog_id),Zend_Log::DEBUG);
+// 						continue; 
+// 					}
 				
 					foreach($va_log_entry['snapshot'] as $k => $v) {
 						if (in_array($v, $this->guids_to_skip, true)) { 
