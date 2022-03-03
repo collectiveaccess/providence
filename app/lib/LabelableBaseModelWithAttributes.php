@@ -2255,7 +2255,7 @@
 				$bundle_preview = $this->getWithTemplate($pa_bundle_settings['displayTemplate']);
 			}
 			if(!$bundle_preview) {
-				$bundle_preview = current($va_inital_values)['displayname'];
+				$bundle_preview = current($va_inital_values)[$this->getLabelDisplayField()];
 			}
 			$o_view->setVar('bundle_preview', $bundle_preview);
 			
@@ -2349,7 +2349,7 @@
 				$bundle_preview = $this->getWithTemplate($pa_bundle_settings['displayTemplate']);
 			}
 			if(!$bundle_preview) {
-				$bundle_preview = current($va_inital_values)['displayname'];
+				$bundle_preview = current($va_inital_values)[$this->getLabelDisplayField()];
 			}
 			$o_view->setVar('bundle_preview', $bundle_preview);
 			
