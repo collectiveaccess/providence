@@ -152,7 +152,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 			if ($useFor && !is_array($useFor)) { $useFor = [$useFor]; }
 			$useFor = is_array($useFor) ? array_map(function($v) { return strtolower($v); }, $useFor) : null;
 			
-			if (is_array($useFor) && !in_array($hook, $useFor, true)) { 
+			if (is_array($useFor) && !is_null($hook) && !in_array($hook, $useFor, true)) { 
 				continue; 
 			} elseif(!$useFor) {
 				if (($hook === 'edit') && !$default_prepop_on_edit) { continue; }
