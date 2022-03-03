@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -60,9 +60,9 @@ class Representation extends Bundlable {
 					$this->getModelInstance()->set('media', __CA_THEME_DIR__.'/graphics/icons/info.png');
 					// try insert again!
 					if($this->isInsert()) {
-						$this->getModelInstance()->insert(array('setGUIDTo' => $this->getGUID()));
+						$this->getModelInstance()->insert(['setGUIDTo' => $this->getGUID(), 'dontForcePrimary' => true]);
 					} elseif($this->isUpdate()) {
-						$this->getModelInstance()->update();
+						$this->getModelInstance()->update(['dontForcePrimary' => true]);
 					}
 
 					// check again!
@@ -85,9 +85,9 @@ class Representation extends Bundlable {
 		$va_snapshot = $this->getSnapshot();
 		if (isset($va_snapshot['media_media_desc']) && is_array($va_snapshot['media_media_desc'])) {
 			if(is_array($va_snapshot['media_media_desc']['_CENTER'])) {
-				\ReplicationService::$s_logger->log("Set media center to ".print_R($va_snapshot['media_media_desc']['_CENTER'], true));
+				//\ReplicationService::$s_logger->log("Set media center to ".print_R($va_snapshot['media_media_desc']['_CENTER'], true));
 				$this->getModelInstance()->setMediaCenter('media', $va_snapshot['media_media_desc']['_CENTER']['x'], $va_snapshot['media_media_desc']['_CENTER']['y']);
-				$this->getModelInstance()->update();
+				$this->getModelInstance()->update(['dontForcePrimary' => true]);
 				if($this->getModelInstance()->numErrors() > 0) {
 					throw new InvalidLogEntryException(
 						_t("There were errors processing record from log entry while trying to set media center %1: %2",

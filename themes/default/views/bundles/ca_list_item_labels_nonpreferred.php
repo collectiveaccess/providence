@@ -61,12 +61,17 @@
 						<table>
 							<tr>
 								<td>
-									<?= $t_label->htmlFormElement('name_singular', null, array('name' => "{fieldNamePrefix}name_singular_{n}", 'id' => "{fieldNamePrefix}name_singular_{n}", "value" => "{{name_singular}}", 'no_tooltips' => false, 'textAreaTagName' => 'textentry', 'readonly' => $read_only, 'tooltip_namespace' => 'bundle_ca_list_item_labels_preferred')); ?>
+									<?= $t_label->htmlFormElement('name_singular', null, array('name' => "{fieldNamePrefix}name_singular_{n}", 'id' => "{fieldNamePrefix}name_singular_{n}", "value" => "{{name_singular}}", 'no_tooltips' => false, 'textAreaTagName' => 'textentry', 'readonly' => $read_only, 'tooltip_namespace' => 'bundle_ca_list_item_labels_nonpreferred')); ?>
 								</td>
 							</tr>
 							<tr>
 								<td>
-									<?= $t_label->htmlFormElement('name_plural', null, array('name' => "{fieldNamePrefix}name_plural_{n}", 'id' => "{fieldNamePrefix}name_plural_{n}", "value" => "{{name_plural}}", 'no_tooltips' => false, 'textAreaTagName' => 'textentry', 'readonly' => $read_only, 'tooltip_namespace' => 'bundle_ca_list_item_labels_preferred')); ?>
+									<?= $t_label->htmlFormElement('name_plural', null, array('name' => "{fieldNamePrefix}name_plural_{n}", 'id' => "{fieldNamePrefix}name_plural_{n}", "value" => "{{name_plural}}", 'no_tooltips' => false, 'textAreaTagName' => 'textentry', 'readonly' => $read_only, 'tooltip_namespace' => 'bundle_ca_list_item_labels_nonpreferred')); ?>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<?= $t_label->htmlFormElement('description', null, array('name' => "{fieldNamePrefix}description_{n}", 'id' => "{fieldNamePrefix}description_{n}", "value" => "{{description}}", 'no_tooltips' => false, 'textAreaTagName' => 'textentry', 'readonly' => $read_only, 'tooltip_namespace' => 'bundle_ca_list_item_labels_nonpreferred')); ?>
 								</td>
 							</tr>
 							<tr>

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010 Whirl-i-Gig
+ * Copyright 2010-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -241,7 +241,7 @@ class ca_watch_list extends BaseModel {
 					"idno" => $t_item_table->get("idno"), 
 					"item_type" => $t_item_table->getProperty('NAME_SINGULAR'), 
 					"primary_key" => $t_item_table->getPrimaryKey(), 
-					"change_log" => $t_changelog->getChangeLogForRowForDisplay($t_item_table, null, $vn_request_user_id, ['limit' => 50])
+					"change_log" => $t_changelog->getChangeLogForRowForDisplay($t_item_table, null, $vn_request_user_id, ['limit' => 25])
 				);
 			}
 		}
