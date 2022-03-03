@@ -3902,7 +3902,7 @@ if (!$vb_batch) {
 			if ($vb_batch && ($po_request->getParameter($vs_placement_code.$vs_form_prefix.'_batch_mode', pString) !== '_replace_')) { continue; }
 			
 			$parent_tmp = explode("-", $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_new_parent_id", pString));
-			$multiple_move_selection = explode(";", $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_move_selection", pString));
+			$multiple_move_selection = array_filter(explode(";", $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_move_selection", pString)), 'is_numeric');
 		
 			// Hierarchy browser sets new_parent_id param to "X" if user wants to extract item from hierarchy
 			$vn_parent_id = (($vn_parent_id = array_pop($parent_tmp)) == 'X') ? -1 : (int)$vn_parent_id;
