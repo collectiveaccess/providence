@@ -36,6 +36,7 @@
 
  	require_once(__CA_LIB_DIR__.'/Configuration.php');
 	require_once(__CA_LIB_DIR__."/Parsers/MediaMetadata/XMPParser.php");
+	require_once(__CA_APP_DIR__."/helpers/systemHelpers.php");
 
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -346,6 +347,31 @@
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Detects if OpenCTM (http://openctm.sourceforge.net) is installed in the given path.
+	 * @param string $ps_openctm_path path to OpenCTM ctmconv binary
+	 * @return bool
+	 */
+	function caOpenCTMInstalled($ps_openctm_ctmconv_path=null) {
+		//if (CompositeCache::contains("mediahelper_openctm_installed")) { return CompositeCache::fetch("mediahelper_openctm_installed"); }
+		if(!$ps_openctm_ctmconv_path) { $ps_openctm_ctmconv_path = caGetExternalApplicationPath('openctm'); }
+
+		if (!caIsValidFilePath($ps_openctm_ctmconv_path)) { 
+			CompositeCache::save("mediahelper_openctm_installed", false);
+			return false; 
+		}
+		if (caGetOSFamily() == OS_WIN32) { 
+			CompositeCache::save("mediahelper_openctm_installed", true);
+			return true; 
+		}	// don't try exec test on Windows
+		exec($ps_openctm_ctmconv_path." --help > /dev/null",$va_output,$vn_return);
+		$vb_ret = ($vn_return == 0);
+		
+		CompositeCache::save("mediahelper_openctm_installed", $vb_ret);
+		
+		return $vb_ret;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
 	 * Detects if Meshlab (http://meshlab.sourceforge.net), and specifically the meshlabserver command line tool, is installed in the given path.
 	 *
 	 * @param string $ps_meshlabserver_path path to the meshlabserver binary
@@ -412,6 +438,39 @@
 		CompositeCache::save("mediahelper_pdfminer_installed", $ps_pdfminer_path, "mediaPluginInfo");
 		
 		return $vb_ret ? $ps_pdfminer_path : false;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Detects if PhantomJS (http://www.phantomjs.org) is installed in the given path.
+	 * @param string $ps_phantomjs_path path to PhantomJS executable
+	 * @return boolean 
+	 */
+	function caPhantomJSInstalled($ps_phantomjs_path=null) {
+		//if (CompositeCache::contains("mediahelper_phantomjs_installed")) { return CompositeCache::fetch("mediahelper_phantomjs_installed"); }
+		if(!$ps_phantomjs_path) { $ps_phantomjs_path = caGetExternalApplicationPath('phantomjs'); }
+		
+		if (!trim($ps_phantomjs_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_phantomjs_path)) || !@is_readable($ps_phantomjs_path)) { 
+			CompositeCache::save("mediahelper_phantomjs_installed", false);
+			return false; 
+		}
+		
+		if (!@is_readable($ps_phantomjs_path)) { 
+			CompositeCache::save("mediahelper_phantomjs_installed", false);
+			return false; 
+		}
+		
+		if (caGetOSFamily() == OS_WIN32) { 
+			CompositeCache::save("mediahelper_phantomjs_installed", true);
+			return true; 
+		}	// don't try exec test on Windows
+		
+		exec($ps_phantomjs_path." > /dev/null", $va_output, $vn_return);
+		
+		$vb_ret = ($vn_return == 0);
+		
+		CompositeCache::save("mediahelper_phantomjs_installed", $vb_ret);
+		
+		return $vb_ret;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
