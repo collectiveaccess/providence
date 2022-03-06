@@ -2005,6 +2005,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 											'label' => _t('Display template (%1)', $vs_table_display_name),
 											'description' => _t('Layout for %1 set item information when used in a display list. For example: <i>^ca_objects.deaccession_notes</i>.', $vs_table_display_name)
 									);
+									
+									$va_additional_settings['numPerPage'] = array(
+										'formatType' => FT_NUMBER,
+										'displayType' => DT_FIELD,
+										'default' => 50,
+										'width' => "30px", 'height' => 1,
+										'label' => _t('Number of items to load per page'),
+										'description' => _t('Maximum number of items to render on initial load.')
+									);
 								}
 								break;
 							case 'ca_metadata_alert_rule_type_restrictions':

@@ -1368,12 +1368,14 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 * @param int $user_id Optional user_id of user to check set access for; if no user_id is specified then no access checking is done
 	 * @return bool True on success, false if an error occurred
 	 */
-	public function removeItem(int $row_id, int $user_id=null) {
+	public function removeItem(int $row_id, int $user_id=null, ?array $options=null) {
 		if(!($set_id = $this->getPrimaryKey())) { return null; }
 		if ($user_id && (!$this->haveAccessToSet($user_id, __CA_SET_EDIT_ACCESS__))) { return false; }
+		$treat_row_ids_as_rids = caGetOption('treatRowIDsAsRIDs', $options, false); 
 		
 		$t_item = new ca_set_items();
-		if ($t_item->load(['set_id' => $set_id, 'row_id' => $row_id])) {
+			$tmp = explode('_', $row_id);
+		if ($t_item->load($treat_row_ids_as_rids ? ['set_id' => $set_id, 'row_id' => $tmp[0], 'item_id' => $tmp[1]] : ['set_id' => $set_id, 'row_id' => $row_id])) {
 			$t_item->delete(true);
 			if ($t_item->numErrors()) {
 				$this->errors = $t_item->errors;
@@ -1390,13 +1392,15 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 * @param int $user_id Optional user_id of user to check set access for; if no user_id is specified then no access checking is done
 	 * @return bool True on success, false if an error occurred
 	 */
-	public function removeItems(array $row_ids, int $user_id=null) {
+	public function removeItems(array $row_ids, int $user_id=null, ?array $options=null) {
 		if(!($set_id = $this->getPrimaryKey())) { return null; }
 		if ($user_id && (!$this->haveAccessToSet($user_id, __CA_SET_EDIT_ACCESS__))) { return false; }
+		$treat_row_ids_as_rids = caGetOption('treatRowIDsAsRIDs', $options, false); 
 		
 		$t_item = new ca_set_items();
 		foreach($row_ids as $row_id) {
-			if ($t_item->load(['set_id' => $set_id, 'row_id' => $row_id])) {
+			$tmp = explode('_', $row_id);
+			if ($t_item->load($treat_row_ids_as_rids ? ['set_id' => $set_id, 'row_id' => $tmp[0], 'item_id' => $tmp[1]] : ['set_id' => $set_id, 'row_id' => $row_id])) {
 				$t_item->delete(true);
 				if ($t_item->numErrors()) {
 					$this->errors = $t_item->errors;
@@ -1604,7 +1608,6 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		$t_set_item = new ca_set_items();
 		$t_set_item->setTransaction($o_trans);
-		$t_set_item->setMode(ACCESS_WRITE);
 		$va_errors = array();
 		
 		
@@ -1641,8 +1644,6 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$va_existing_ranks = array_values($va_row_ranks);
 		$vn_rank_acc = end(array_values($va_row_ranks));
 		
-		$va_rank_updates = array();
-		
 		$rows_in_set = $this->getItemRowIDs();
 		$allow_dupes_in_set = (bool)$this->getAppConfig()->get('allow_duplicate_items_in_sets');
 		foreach($pa_row_ids as $vn_rank => $vn_row_id) {
@@ -1667,42 +1668,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				$this->addItem($vb_treat_row_ids_as_rids ? $va_tmp[0] : $vn_row_id, null, $pn_user_id, $vn_rank_inc);
 			}
 		}
-		
-		$va_updated_item_ids = [];
-		foreach($va_rank_updates as $vn_row_id => $vn_new_rank) {
-			if($vb_treat_row_ids_as_rids) {
-				$va_tmp = explode("_", $vn_row_id);
-				$this->getDb()->query("UPDATE ca_set_items SET `rank` = ? WHERE set_id = ? AND row_id = ? AND item_id = ?", array($vn_new_rank, $vn_set_id, $va_tmp[0], $va_tmp[1]));
-				$va_updated_item_ids[$va_tmp[1]] = 1;
-			} else {
-				$this->getDb()->query("UPDATE ca_set_items SET `rank` = ? WHERE set_id = ? AND row_id = ?", array($vn_set_id, $vn_new_rank));
-			}
-		}
-		
-		if(sizeof($va_updated_item_ids) > 0) {
-			$qr_res = $this->getDb()->query("SELECT * FROM ca_set_items WHERE item_id IN (?)", array(array_keys($va_updated_item_ids)));
-			
-			$t_set_item = new ca_set_items();
-			
-			$va_set_ids = [];
-			while($qr_res->nextRow()) {
-				$va_snapshot = $qr_res->getRow();
-				$va_set_ids[$qr_res->get('ca_set_items.set_id')] = 1;
-				$t_set_item->logChange("I", $pn_user_id, ['row_id' => $qr_res->get('ca_set_items.item_id'), 'snapshot' => $va_snapshot]);
-			}
-			
-			if (sizeof($va_set_ids)) {
-				$qr_res = $this->getDb()->query("SELECT * FROM ca_sets WHERE set_id IN (?)", array(array_keys($va_set_ids)));
-			
-				$t_set = new ca_sets();
-				while($qr_res->nextRow()) {
-					$va_snapshot = $qr_res->getRow();
-					$t_set->logChange("U", $pn_user_id, ['row_id' => $qr_res->get('ca_sets.set_id'), 'snapshot' => $va_snapshot]);
-				}
-			}
-		}
-		
-		
+				
 		if(sizeof($va_errors)) {
 			if ($vb_we_set_transaction) { $o_trans->rollback(); }
 		} else {
@@ -1840,7 +1806,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		if (($t_rel_table->tableName() === 'ca_objects') && (isset($pa_options['thumbnailVersion']) || isset($pa_options['thumbnailVersions']))) {
 			$vs_rep_join_sql = "LEFT JOIN ca_objects_x_object_representations AS coxor ON rel.object_id = coxor.object_id
 LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.representation_id\n";
-			$vs_rep_where_sql = " AND (coxor.is_primary = 1 OR coxor.is_primary IS NULL)";
+			$vs_rep_where_sql = " AND (coxor.is_primary = 1 OR coxor.is_primary IS NULL) AND cor.deleted = 0";
 			
 			$vs_rep_select = ', coxor.*, cor.media, cor.access rep_access';
 			
@@ -1851,8 +1817,9 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 				FROM ca_set_items casi
 				INNER JOIN ca_objects AS rel ON rel.object_id = casi.row_id
 				INNER JOIN ca_objects_x_object_representations AS coxor ON coxor.object_id = rel.object_id
+				INNER JOIN ca_object_representations AS r ON r.representation_id = coxor.representation_id
 				WHERE
-					casi.set_id = ? {$vs_access_sql} {$vs_deleted_sql} AND casi.deleted = 0
+					casi.set_id = ? {$vs_access_sql} {$vs_deleted_sql} AND casi.deleted = 0 AND r.deleted = 0
 				GROUP BY
 					rel.object_id
 			", (int)$vn_set_id);
@@ -2206,11 +2173,13 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 					$vs_template = $this->getAppConfig()->get("{$vs_set_table_name}_set_item_display_template");			// use default in app.conf
 				}
 			} 
-		
+			
+			$n = caGetOption('numPerPage', $pa_bundle_settings, caGetOption('numPerPage', $pa_options, 50));
 			$va_items = caExtractValuesByUserLocale($this->getItems(array(
 				'thumbnailVersion' => $vs_thumbnail_version,
 				'user_id' => $po_request->getUserID(),
-				'template' => $vs_template
+				'template' => $vs_template,
+				'limit' => $n
 			)), null, null, array());
 			$o_view->setVar('items', $va_items);
 		} else {
@@ -3276,6 +3245,33 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 			];
 		}
 		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @return array
+	 */
+	public function getBundleFormValues($bundle_name, $placement_code, $bundle_settings, $options=null) {
+		global $g_request;
+		$set_table_name = Datamodel::getTableName($this->get('table_num'));
+		if (!($template = caGetOption("{$set_table_name}_display_template", $bundle_settings, null))) {		// display template by table
+			if (!($template = caGetOption('display_template', $bundle_settings, null))) {						// try the old non-table-specific template?
+				$template = $this->getAppConfig()->get("{$set_table_name}_set_item_display_template");			// use default in app.conf
+			}
+		} 
+	    $n = caGetOption('numPerPage', $bundle_settings, caGetOption('numPerPage', $options, 50));
+		
+		$start = caGetOption('start', $options, 0);
+		$limit = caGetOption('limit', $options, null);
+		$items = caExtractValuesByUserLocale($this->getItems([
+			'thumbnailVersion' => ($this->getItemCount() > 50) ? 'tiny' : 'thumbnail',
+			'user_id' => $g_request ? $g_request->getUserID() : null,
+			'template' => $template,
+			'start' => $start,
+			'limit' => $limit
+		]), null, null, []);
+        return $items;
 	}
 	# ---------------------------------------------------------------
 }

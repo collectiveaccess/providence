@@ -4695,8 +4695,6 @@ if (!$vb_batch) {
 					// This bundle is only available for types which support set membership
 					case 'ca_sets_checklist':
 						// check for existing labels to delete (no updating supported)
-						require_once(__CA_MODELS_DIR__.'/ca_sets.php');
-						require_once(__CA_MODELS_DIR__.'/ca_set_items.php');
 	
 						$t_set = new ca_sets();
 if (!$vb_batch) {
@@ -4743,9 +4741,10 @@ if (!$vb_batch) {
 						require_once(__CA_MODELS_DIR__.'/ca_sets.php');
 						require_once(__CA_MODELS_DIR__.'/ca_set_items.php');
 						
-						$va_rids = explode(';', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}setRowIDList", pString));
-						
-						$this->reorderItems($va_rids, array('user_id' => $po_request->getUserID(), 'treatRowIDsAsRIDs' => true, 'deleteExcludedItems' => true));
+						$rids = explode(';', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}setRowIDList", pString));
+						$deleted_rids = explode(';', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}setRowIDDeleteList", pString));
+						$this->removeItems($deleted_rids, $po_request->getUserID(), ['treatRowIDsAsRIDs' => true]);
+						$this->reorderItems($rids, ['user_id' => $po_request->getUserID(), 'treatRowIDsAsRIDs' => true, 'deleteExcludedItems' => false]);
 						break;
 					# -------------------------------------
 					// This bundle is only available for ca_search_forms 

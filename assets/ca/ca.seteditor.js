@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2020 Whirl-i-Gig
+ * Copyright 2010-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -42,6 +42,7 @@ var caUI = caUI || {};
 			setNoItemWarningID: 'setNoItemsWarning',
 			setItemAutocompleteID: 'setItemAutocompleter',
 			rowIDListID: 'setRowIDList',
+			rowIDDeleteListID: 'setRowIDDeleteList',
 			displayTemplate: null,
 			
 			lookupURL: null,
@@ -53,7 +54,18 @@ var caUI = caUI || {};
 			
 			initialValues: null,
 			initialValueOrder: null,			/* id's to list display list in; required because Google Chrome doesn't iterate over keys in an object in insertion order [doh] */	
-		
+		      
+			totalValueCount: null,
+			partialLoadUrl: null,           // service URL for loading of set item list]// ajax loading of content
+			loadFrom: 0,
+			loadSize: 5,
+			partialLoadMessage: "Load next %num",
+			partialLoadIndicator: null,
+			onPartialLoad: null,	// called after partial data load is completed
+
+			placementID: null,
+			
+			deletedRowIDs: [],
 		}, options);
 		
 		
@@ -82,10 +94,20 @@ var caUI = caUI || {};
 			
 			// add initial items
 			if (that.initialValues) {
+			    let c = 0;
 				jQuery.each(that.initialValueOrder, function(k, v) {
 					that.addItemToSet(that.initialValues[v].row_id, that.initialValues[v], false);
+					c++;
 				});
+				
+				that.loadFrom = c;
+				
+                if (that.partialLoadUrl && (that.totalValueCount > that.loadFrom)) {
+                    that.addNextValuesLink();
+                }
 			}
+			
+			that.deletedRowIDs = [];
 			
 			that.refresh();
 		}
@@ -145,6 +167,7 @@ var caUI = caUI || {};
 				function() {
 					jQuery('#' + that.fieldNamePrefix + "setItem" + rID).fadeOut(250, function() { 
 						jQuery('#' + that.fieldNamePrefix + "setItem" + rID).remove(); 
+						that.deletedRowIDs.push(rowID + '_' + itemID);
 						that.refresh();
 					});
 					caUI.utils.showUnsavedChangesWarning(true);
@@ -183,6 +206,7 @@ var caUI = caUI || {};
 			// set warning if no items on load
 			jQuery('#' + that.fieldNamePrefix + that.setItemListID + ' li.setItem').length ? jQuery('#' + that.fieldNamePrefix + that.setNoItemWarningID).hide() : jQuery('#' + that.fieldNamePrefix + that.setNoItemWarningID).show();
 			jQuery('#' + that.rowIDListID).val(that.getRowIDs().join(';'));
+			jQuery('#' + that.rowIDDeleteListID).val(that.deletedRowIDs.join(';'));
 		}
 		// ------------------------------------------------------------------------------------
 		that.sort = function(key) {
@@ -218,7 +242,6 @@ var caUI = caUI || {};
 					break;
 			}
 			
-			
 			jQuery.each(indexedValues, function(k, v) {
 				jQuery('#' + that.fieldNamePrefix + that.setItemListID).append(v);
 				var id_string = jQuery(v).attr('id');
@@ -229,6 +252,67 @@ var caUI = caUI || {};
 			
 			caUI.utils.showUnsavedChangesWarning(true);
 			that.refresh();
+		}
+		
+		// ------------------------------------------------------------------------------------
+		
+		that.loadNextValues = function() {
+			if (!that.partialLoadUrl) { return false; }
+
+			jQuery.getJSON(that.partialLoadUrl, { start: that.loadFrom, limit: that.loadSize, sort: that.loadedSort, sortDirection: that.loadedSortDirection }, function(data) {
+				jQuery('#' + that.fieldNamePrefix + that.setItemListID + ' .caItemLoadNextBundles').remove();
+				
+				that.loadFrom += that.loadSize;
+				that.appendToInitialValues(data);
+
+				jQuery('#' + that.fieldNamePrefix + that.setItemListID).scrollTo('+=' + jQuery('#' + that.fieldNamePrefix + that.setItemListID + ' div:first').height() + 'px', 250);
+
+				if (that.onPartialLoad) {
+					that.onPartialLoad.call(data);
+				}
+
+				if (that.partialLoadUrl && (that.totalValueCount > that.loadFrom)) {
+					that.addNextValuesLink();
+				}
+
+				that.refresh();
+			});
+		}
+		
+		that.appendToInitialValues = function(initialValues) {
+			var sort_order = initialValues.sort;
+			var data = initialValues.data;
+			jQuery.each(sort_order, function(i, v) {
+				that.initialValues[v] = data[v];
+				that.addItemToSet(data[v].row_id, data[v], false, false);
+				return true;
+			});
+			that.refresh();
+		}
+
+		that.addNextValuesLink = function() {
+			var end = (that.loadFrom + that.loadSize)
+			if (end > that.totalValueCount) { end = that.totalValueCount % that.loadSize; } else { end = that.loadSize; }
+			
+			var p = '#' + that.fieldNamePrefix + that.setItemListID;
+			var msg = that.partialLoadMessage.replace("%num", end).replace("%total", that.totalValueCount);
+			jQuery(p).append("<div class='caItemLoadNextBundles'><a href='#' id='" + that.fieldNamePrefix + "__next' class='caItemLoadNextBundles'>" + msg + "</a><span id='" + that.fieldNamePrefix + "__busy' class='caItemLoadNextBundlesLoadIndicator'>" + that.partialLoadIndicator + "</span></div>");
+			jQuery(p).off('click').off('scroll').on('click', '.caItemLoadNextBundles', function(e) {
+				jQuery(p).off('click'); // remove handler to prevent repeated calls
+				jQuery(p + ' #' + that.fieldNamePrefix + '__busy').show(); // show loading indicator
+				that.loadNextValues();
+				e.preventDefault();
+				
+				return false;
+			}).on('scroll', null, function(e) {
+				// Trigger load of next page when bottom of current result set is reached.
+				if ((jQuery(this).scrollTop() + jQuery(this).height()) > jQuery(this)[0].scrollHeight) {
+					jQuery(p + " .caItemLoadNextBundles").click();	
+				}
+			});
+			if ((jQuery(p).scrollTop() + jQuery(p).height()) > (jQuery(p)[0].scrollHeight * 1)) {
+				jQuery(p + " .caItemLoadNextBundles").click();	
+			}
 		}
 		// ------------------------------------------------------------------------------------
 		
