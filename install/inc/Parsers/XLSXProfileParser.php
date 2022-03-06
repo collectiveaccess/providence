@@ -231,7 +231,7 @@ class XLSXProfileParser extends BaseProfileParser {
 					$sheet_map['relationshipTypes'] = $i;
 					break;
 				default:
-					if(preg_match("!^ui_(.*)$!", strtolower($s), $m)) {
+					if(preg_match("!^ui_([A-Za-z0-9\-\_]+)!", strtolower($s), $m)) {
 						if(!is_array($sheet_map['uis'])) { $sheet_map['uis'] = []; }
 						$sheet_map['uis'][$m[1]] = $i;
 					}
@@ -871,12 +871,8 @@ class XLSXProfileParser extends BaseProfileParser {
 	 *
 	 */
 	private static function relTableNameFromString(string $string) : ?string {
-		if(self::isRelationship($string)) {
-			return true;
-		}
-		
 		$tmp = preg_split('!'.(preg_match('!_x_!i', $string) ? '_x_' : '_').'!i', $string);
-
+		if(sizeof($tmp) < 2) { return null; }
 		$table1 = self::tableNameFromString($tmp[0], false);
 		$table2 = self::tableNameFromString($tmp[1], false);
 		if(!$table1 || !$table2) { return null; }
