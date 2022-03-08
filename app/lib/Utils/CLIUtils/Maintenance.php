@@ -2092,13 +2092,15 @@
 				$vs_pk = $t_table->primaryKey();
 				$vn_table_num = $t_table->tableNum();
 				
+				if ($t_bad_root = ca_relationship_types::find(['parent_id' => ['>', 0], 'table_num' => $vn_table_num, 'type_code' => 'root_for_'.$vn_table_num], ['returnAs' => 'firstModelInstance'])) {
+					$t_bad_root->delete(true);
+				}	
 				// Create root ca_relationship_types row for table
 				if (!$t_root = ca_relationship_types::find(['parent_id' => null, 'table_num' => $vn_table_num], ['returnAs' => 'firstModelInstance'])) {
 				    $t_root = new ca_relationship_types();
 					$t_root->logChanges(false);
-					$t_root->setMode(ACCESS_WRITE);
 					$t_root->set('table_num', $vn_table_num);
-					$t_root->set('type_code', 'root_for_table_'.$vn_table_num);
+					$t_root->set('type_code', 'root_for_'.$vn_table_num);
 					$t_root->set('rank', 1);
 					$t_root->set('is_default', 0);
 					$t_root->set('parent_id', null);
@@ -2120,6 +2122,10 @@
 					}
 					CLIUtils::addMessage(_t('Added root for %1', $vs_table));
 					$c++;
+				} elseif("root_for_{$vn_table_num}" !== $t_root->get('type_code')) {
+					$t_root->logChanges(false);
+					$t_root->set('type_code', 'root_for_'.$vn_table_num);
+					$t_root->update();
 				}
 			}
 			

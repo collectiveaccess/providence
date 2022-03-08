@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1062,6 +1062,10 @@ class ca_users extends BaseModel {
 	/**
 	 * Get list of roles the current user has
 	 *
+	 *
+	 * @param array $options Options include:
+	 *		skipVars = Don't load role vars data. Skipping loading of vars may improve performance. [Default is false]
+	 *
 	 * @access public
 	 * @return array Returns associative array of roles. Key is role id, value is array containing information about the role.
 	 *
@@ -1071,30 +1075,33 @@ class ca_users extends BaseModel {
 	 *		code		(a short code used for the role)
 	 *		description	(narrative description of role)
 	 */
-	public function getUserRoles() {
+	public function getUserRoles(?array $options=null) {
 		if ($pn_user_id = $this->getPrimaryKey()) {
-			if (isset(ca_users::$s_user_role_cache[$pn_user_id])) {
-				return ca_users::$s_user_role_cache[$pn_user_id];
+			$cache_key = caMakeCacheKeyFromOptions($options, $pn_user_id);
+			if (isset(ca_users::$s_user_role_cache[$cache_key])) {
+				return ca_users::$s_user_role_cache[$cache_key];
 			} else {
 				$o_db = $this->getDb();
+				
+				$skip_vars = caGetOption('skipVars', $options, false);
 				$qr_res = $o_db->query("
-					SELECT wur.role_id, wur.name, wur.code, wur.description, wur.`rank`, wur.vars
+					SELECT wur.role_id, wur.name, wur.code, wur.description, wur.`rank` ".($skip_vars ? '' : ', wur.vars')."
 					FROM ca_user_roles wur
 					INNER JOIN ca_users_x_roles AS wuxr ON wuxr.role_id = wur.role_id
 					WHERE wuxr.user_id = ?
 				", (int)$pn_user_id);
 				
-				$va_roles = array();
+				$va_roles = [];
 				while($qr_res->nextRow()) {
 					$va_row = $qr_res->getRow();
-					$va_row['vars'] = caUnserializeForDatabase($va_row['vars']);
+					$va_row['vars'] = $skip_vars ? [] : caUnserializeForDatabase($va_row['vars']);
 					$va_roles[$va_row['role_id']] = $va_row;
 				}
 				
-				return ca_users::$s_user_role_cache[$pn_user_id] = $va_roles;
+				return ca_users::$s_user_role_cache[$cache_key] = $va_roles;
 			}
 		} else {
-			return array();
+			return [];
 		}
 	}
 	# ----------------------------------------
@@ -1186,7 +1193,7 @@ class ca_users extends BaseModel {
 		$va_roles = $this->getRoleList();
 		$vs_buf = '';
 		if (sizeof($va_roles)) {
-			if(!$va_user_roles = $this->getUserRoles()) { $va_user_roles = array(); }
+			if(!$va_user_roles = $this->getUserRoles(['skipVars' => true])) { $va_user_roles = array(); }
 		
 			$vs_buf .= "<select multiple='1' name='{$vs_name}[]' size='{$vn_size}' id='{$vs_id}'>\n";
 			foreach($va_roles as $vn_role_id => $va_role_info) {
@@ -1362,6 +1369,9 @@ class ca_users extends BaseModel {
 	/**
 	 * Get list of roles the current user has via associated groups
 	 *
+	 * @param array $options Options include:
+	 *		skipVars = Don't load role vars data. Skipping loading of vars may improve performance. [Default is false]
+	 *
 	 * @access public
 	 * @return array Returns associative array of roles. Key is role id, value is array containing information about the role.
 	 *
@@ -1371,14 +1381,17 @@ class ca_users extends BaseModel {
 	 *		code		(a short code used for the role)
 	 *		description	(narrative description of role)
 	 */
-	public function getGroupRoles() {
+	public function getGroupRoles(?array $options=null) {
 		if ($pn_user_id = $this->getPrimaryKey()) {
-			if (isset(ca_users::$s_group_role_cache[$pn_user_id])) {
-				return ca_users::$s_group_role_cache[$pn_user_id];
+			$cache_key = caMakeCacheKeyFromOptions($options, $pn_user_id);
+			if (isset(ca_users::$s_group_role_cache[$cache_key])) {
+				return ca_users::$s_group_role_cache[$cache_key];
 			} else {
 				$o_db = $this->getDb();
+				
+				$skip_vars = caGetOption('skipVars', $options, false);
 				$qr_res = $o_db->query("
-					SELECT wur.role_id, wur.name, wur.code, wur.description, wur.`rank`, wur.vars
+					SELECT wur.role_id, wur.name, wur.code, wur.description, wur.`rank`".($skip_vars ? '' : ', wur.vars')."
 					FROM ca_user_roles wur
 					INNER JOIN ca_groups_x_roles AS wgxr ON wgxr.role_id = wur.role_id
 					INNER JOIN ca_users_x_groups AS wuxg ON wuxg.group_id = wgxr.group_id
@@ -1388,10 +1401,10 @@ class ca_users extends BaseModel {
 				$va_roles = array();
 				while($qr_res->nextRow()) {
 					$va_row = $qr_res->getRow();
-					$va_row['vars'] = caUnserializeForDatabase($va_row['vars']);
+					$va_row['vars'] = $skip_vars ? [] : caUnserializeForDatabase($va_row['vars']);
 					$va_roles[$va_row['role_id']] = $va_row;
 				}
-				return ca_users::$s_group_role_cache[$pn_user_id] = $va_roles;
+				return ca_users::$s_group_role_cache[$cache_key] = $va_roles;
 			}
 		} else {
 			return array();
@@ -2291,7 +2304,7 @@ class ca_users extends BaseModel {
 		}
 		
 		$vs_role_sql = '';
-		if (is_array($va_roles = $this->getUserRoles()) && sizeof($va_roles)) {
+		if (is_array($va_roles = $this->getUserRoles(['skipVars' => true])) && sizeof($va_roles)) {
 			$vs_role_sql = " (
 				(ceui.ui_id IN (
 						SELECT ui_id 
@@ -2326,19 +2339,22 @@ class ca_users extends BaseModel {
 				AND (ceui.editor_type = ?)
 		", (int)$this->getPrimaryKey(), (int)$this->getPrimaryKey(), (int)$pn_table_num);
 		
+		$is_relationship = Datamodel::isRelationship($pn_table_num);
 		$va_ui_list_by_type = array();
 		while($qr_uis->nextRow()) {
 			$ui_id = $qr_uis->get('ui_id');
 			$locale_id = $qr_uis->get('locale_id');
 			$name = $qr_uis->get('name');
 			
+			
+			
 			$type_ids = [];
 			if (!($vn_type_id = $qr_uis->get('type_id'))) { 
 				$type_ids[] = '__all__'; 
-			} elseif($qr_uis->get('include_subtypes') > 0) {
-				$type_ids = caMakeTypeIDList($pn_table_num, $vn_type_id);
+			} elseif($is_relationship) {
+				$type_ids = caMakeRelationshipTypeIDList($pn_table_num, $vn_type_id, ['dontIncludeSubtypesInTypeRestriction' => ($qr_uis->get('include_subtypes') == 0)]);
 			} else {
-				$type_ids = caMakeTypeIDList($pn_table_num, $vn_type_id, ['dontIncludeSubtypesInTypeRestriction' => true]);
+				$type_ids = caMakeTypeIDList($pn_table_num, $vn_type_id, ['dontIncludeSubtypesInTypeRestriction' => ($qr_uis->get('include_subtypes') == 0)]);
 			}
 			if(!is_array($type_ids)) {
 				$type_ids = ['__all__'];
@@ -2370,7 +2386,7 @@ class ca_users extends BaseModel {
 		}
 		
 		$vs_role_sql = '';
-		if (is_array($va_roles = $this->getUserRoles()) && sizeof($va_roles)) {
+		if (is_array($va_roles = $this->getUserRoles(['skipVars' => true])) && sizeof($va_roles)) {
 			$vs_role_sql = " (
 				(ceui.ui_id IN (
 						SELECT ui_id 
@@ -2822,7 +2838,7 @@ class ca_users extends BaseModel {
 	 */
 	public function close() {
 		if($this->getPrimaryKey()) {
-			$this->update(['dontLogChange' => true]);
+			$this->update(['dontLogChange' => true, 'dontDoSearchIndexing' => true]);
 		}
 	}
 	# ----------------------------------------
@@ -3521,7 +3537,7 @@ class ca_users extends BaseModel {
 		if (isset(ca_users::$s_user_type_access_cache[$vs_cache_key])) { return ca_users::$s_user_type_access_cache[$vs_cache_key]; }
 
 		if(in_array($ps_table_name, ca_users::$s_bundlable_tables)) { // type-level access control only applies to these tables
-			$va_roles = array_merge($this->getUserRoles(), $this->getGroupRoles());
+			$va_roles = array_merge($this->getUserRoles(['skipVars' => false]), $this->getGroupRoles(['skipVars' => false]));
 			
 			if (is_numeric($pm_type_code_or_id)) { 
 				$vn_type_id = (int)$pm_type_code_or_id; 
@@ -3740,8 +3756,8 @@ class ca_users extends BaseModel {
 		if(!$this->getPrimaryKey()) { return null; }
 		
 		// get user roles
-		$va_roles = $this->getUserRoles();
-		foreach($this->getGroupRoles() as $vn_role_id => $va_role_info) {
+		$va_roles = $this->getUserRoles(['skipVars' => true]);
+		foreach($this->getGroupRoles(['skipVars' => true]) as $vn_role_id => $va_role_info) {
 			$va_roles[$vn_role_id] = $va_role_info;
 		}	
 		

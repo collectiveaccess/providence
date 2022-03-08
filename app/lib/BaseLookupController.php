@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2019 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -43,7 +43,7 @@
  		protected $opo_item_instance;
  		
  		/**
- 		 * @property $opa_filtera Criteria to filter list Get() return with; array keys are <tablename>.<fieldname> 
+ 		 * @property $opa_filters Criteria to filter list Get() return with; array keys are <tablename>.<fieldname> 
  		 * bundle specs; array values are *array* lists of values. If an item is not equal to a value in the array it will not be 
  		 * returned. Leave set to null or empty array if you don't want to filter.
  		 */
@@ -173,6 +173,11 @@
 					if (isset($pa_options['filters']) && is_array($pa_options['filters']) && sizeof($pa_options['filters'])) {
 						foreach($pa_options['filters'] as $va_filter) {
 							$o_search->addResultFilter($va_filter[0], $va_filter[1], $va_filter[2]);
+						}
+					}
+					if(is_array($this->opa_filters)) {
+						foreach($this->opa_filters as $f => $v) {
+							$o_search->addResultFilter($f, is_array($v) ? 'IN' : '=', is_array($v) ? join(',', $v) : $v);
 						}
 					}
 		

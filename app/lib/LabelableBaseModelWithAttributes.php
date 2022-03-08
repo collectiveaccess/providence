@@ -119,6 +119,8 @@
 		 * @param array $pa_options Options include:
 		 *		truncateLongLabels = truncate label values that exceed the maximum storable length. [Default=false]
 		 * 		queueIndexing =
+		 *		effectiveDate = Effective date for label. [Default is null]
+		 *		access = Access value for label (from access_statuses list). [Default is 0]
 		 * @return int id for newly created label, false on error or null if no row is loaded
 		 */ 
 		public function addLabel($pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=false, $pa_options=null) {
@@ -127,6 +129,9 @@
 			if ($pb_is_preferred && $this->preferredLabelExistsForLocale($pn_locale_id)) { return false; }
 			$vb_truncate_long_labels = caGetOption('truncateLongLabels', $pa_options, false);
 			$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, false);
+			
+			$effective_date = caGetOption(['effective_date', 'effectiveDate'], $pa_options, null);
+			$label_access = caGetOption(['access', 'label_access', 'labelAccess'], $pa_options, 0);
 			
 			$vs_table_name = $this->tableName();
 			
@@ -159,6 +164,8 @@
 			$t_label->set('locale_id', $pn_locale_id);
 			if ($t_label->hasField('type_id')) { $t_label->set('type_id', $pn_type_id); }
 			if ($t_label->hasField('is_preferred')) { $t_label->set('is_preferred', $pb_is_preferred ? 1 : 0); }
+			if ($t_label->hasField('effective_date')) { $t_label->set('effective_date', $effective_date); }
+			if ($t_label->hasField('access')) { $t_label->set('access', $label_access); }
 			
 			$t_label->set($this->primaryKey(), $vn_id);
 			
@@ -195,6 +202,8 @@
 		 * @param array $pa_options Options include:
 		 *		truncateLongLabels = truncate label values that exceed the maximum storable length. [Default=false]
 		 * 		queueIndexing =
+		 *		effectiveDate = Effective date for label. [Default is null]
+		 *		access = Access value for label (from access_statuses list). [Default is 0]
 		 * @return int id for the edited label, false on error or null if no row is loaded
 		 */
 		public function editLabel($pn_label_id, $pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=false, $pa_options=null) {
@@ -202,6 +211,9 @@
 			
 			$vb_truncate_long_labels = caGetOption('truncateLongLabels', $pa_options, false);
 			$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, false);
+			
+			$effective_date = caGetOption(['effective_date', 'effectiveDate'], $pa_options, null);
+			$label_access = caGetOption(['access', 'label_access', 'labelAccess'], $pa_options, 0);
 			
 			$vs_table_name = $this->tableName();
 			
@@ -244,10 +256,21 @@
 			$t_label->set('locale_id', $pn_locale_id); 
 			if ($t_label->changed('locale_id')) { $vb_has_changed = true; }
 			
-			if (!$vb_has_changed) { return $t_label->getPrimaryKey(); }
+			if ($t_label->hasField('is_preferred')) { 
+				$t_label->set('is_preferred', $pb_is_preferred ? 1 : 0); 
+				if ($t_label->changed('is_preferred')) { $vb_has_changed = true; }
+			}
 			
-			if ($t_label->hasField('type_id')) { $t_label->set('type_id', $pn_type_id); }
-			if ($t_label->hasField('is_preferred')) { $t_label->set('is_preferred', $pb_is_preferred ? 1 : 0); }
+			if ($t_label->hasField('effective_date')) { 
+				$t_label->set('effective_date', $effective_date);
+				if ($t_label->changed('effective_date')) { $vb_has_changed = true; }
+			}
+			if ($t_label->hasField('access')) { 
+				$t_label->set('access', $label_access); 
+				if ($t_label->changed('access')) { $vb_has_changed = true; }
+			}
+			
+			if (!$vb_has_changed) { return $t_label->getPrimaryKey(); }
 			
 			$t_label->set($this->primaryKey(), $vn_id);
 			
@@ -1881,7 +1904,12 @@
  			$va_labels = array();
  			$t_label->clear();
  			while($qr_res->nextRow()) {
- 				$va_labels[$vn_id][$qr_res->get('locale_id')][] = array_merge($qr_res->getRow(), array('form_element' => $t_label->htmlFormElement($this->getLabelDisplayField(), null)));
+ 				$row = $qr_res->getRow();
+ 				$va_labels[$vn_id][$qr_res->get('locale_id')][] = array_merge($row, [
+ 					'form_element' => $t_label->htmlFormElement($this->getLabelDisplayField(), null), 
+ 					'effective_date' => caGetLocalizedHistoricDateRange($row['sdatetime'], $row['edatetime'], ['locale_id' => $row['locale_id']])
+ 				]);
+ 				
  			}
  			
  			if (isset($pa_options['extractValuesByUserLocale']) && $pa_options['extractValuesByUserLocale']) {
@@ -2153,6 +2181,8 @@
 			
 			if (!($t_label = Datamodel::getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
 			
+			$table = $this->tableName();
+			
 			if(!is_array($pa_options)) { $pa_options = array(); }
 			$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
 			$o_view = new View($po_request, "{$vs_view_path}/bundles/");
@@ -2170,6 +2200,11 @@
 			$o_view->setVar('t_label', $t_label);
 			$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
 			$o_view->setVar('graphicsPath', $pa_options['graphicsPath']);
+			
+			$o_view->setVar('show_effective_date', $po_request->config->get("{$table}_preferred_label_show_effective_date"));			
+			$o_view->setVar('show_access', $po_request->config->get("{$table}_preferred_label_show_access"));
+			
+			$o_view->setVar('label_type_list', $po_request->config->get("{$table}_preferred_label_type_list"));
 			
 			unset($pa_bundle_settings['label']);
 			$o_view->setVar('settings', $pa_bundle_settings);
@@ -2215,6 +2250,15 @@
 			$o_view->setVar('new_labels', $va_new_labels_to_force_due_to_error);
 			$o_view->setVar('label_initial_values', $va_inital_values);
 			
+			$bundle_preview = '';
+			if(isset($pa_bundle_settings['displayTemplate'])) {
+				$bundle_preview = $this->getWithTemplate($pa_bundle_settings['displayTemplate']);
+			}
+			if(!$bundle_preview) {
+				$bundle_preview = current($va_inital_values)[$this->getLabelDisplayField()];
+			}
+			$o_view->setVar('bundle_preview', $bundle_preview);
+			
 			return $o_view->render($this->getLabelTableName().'_preferred.php');
 		}
 		# ------------------------------------------------------------------
@@ -2235,6 +2279,8 @@
 			
 			if (!($t_label = Datamodel::getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
 			
+			$table = $this->tableName();
+			
 			$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
 			$o_view = new View($po_request, "{$vs_view_path}/bundles/");
 			
@@ -2251,6 +2297,11 @@
 			$o_view->setVar('t_label', $t_label);
 			$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
 			$o_view->setVar('graphicsPath', $pa_options['graphicsPath']);
+			
+			$o_view->setVar('show_effective_date', $po_request->config->get("{$table}_nonpreferred_label_show_effective_date"));			
+			$o_view->setVar('show_access', $po_request->config->get("{$table}_nonpreferred_label_show_access"));
+			
+			$o_view->setVar('label_type_list', $po_request->config->get("{$table}_nonpreferred_label_type_list"));
 			
 			unset($pa_bundle_settings['label']);
 			$o_view->setVar('settings', $pa_bundle_settings);
@@ -2292,6 +2343,16 @@
 			$o_view->setVar('new_labels', $va_new_labels_to_force_due_to_error);
 			$o_view->setVar('label_initial_values', $va_inital_values);
 			$o_view->setVar('batch', (bool)(isset($pa_options['batch']) && $pa_options['batch']));
+			
+			$bundle_preview = '';
+			if(isset($pa_bundle_settings['displayTemplate'])) {
+				$bundle_preview = $this->getWithTemplate($pa_bundle_settings['displayTemplate']);
+			}
+			if(!$bundle_preview) {
+				$l = $this->getLabelDisplayField();
+				$bundle_preview = join('; ', array_map(function($v) use ($l) { return $v[$l]; }, $va_inital_values));
+			}
+			$o_view->setVar('bundle_preview', $bundle_preview);
 			
 			return $o_view->render($this->getLabelTableName().'_nonpreferred.php');
 		}

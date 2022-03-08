@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2020 Whirl-i-Gig
+ * Copyright 2014-2022 Whirl-i-Gig
  * This file originally contributed 2014 by Gaia Resources
  *
  * For more information visit http://www.CollectiveAccess.org
@@ -152,7 +152,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 			if ($useFor && !is_array($useFor)) { $useFor = [$useFor]; }
 			$useFor = is_array($useFor) ? array_map(function($v) { return strtolower($v); }, $useFor) : null;
 			
-			if (is_array($useFor) && !in_array($hook, $useFor, true)) { 
+			if (is_array($useFor) && !is_null($hook) && !in_array($hook, $useFor, true)) { 
 				continue; 
 			} elseif(!$useFor) {
 				if (($hook === 'edit') && !$default_prepop_on_edit) { continue; }
@@ -525,7 +525,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 		}
 
 
-		if (count($t_instance->getChangedFieldValuesArray()) > 0) {
+		if ($t_instance->attributesChanged() || (count($t_instance->getChangedFieldValuesArray()) > 0)) {
 			if(isset($_REQUEST['form_timestamp']) && ($_REQUEST['form_timestamp'] > 0)) { $_REQUEST['form_timestamp'] = time(); }
 			$t_instance->update(['force' => true, 'hooks' => false]);
 			if($t_instance->numErrors() > 0) {

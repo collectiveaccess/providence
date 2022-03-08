@@ -132,6 +132,7 @@ create table ca_list_items
    type_id                        int unsigned                   null,
    idno                           varchar(255)                   not null,
    idno_sort                      varchar(255)                   not null,
+   idno_sort_num                  bigint                         not null default 0,
    item_value                     varchar(255)                   not null,
    `rank`                           int unsigned              not null default 0,
    hier_left                      decimal(30,20)                 not null,
@@ -167,6 +168,7 @@ create index i_list_id on ca_list_items(list_id);
 create index i_parent_id on ca_list_items(parent_id);
 create index i_idno on ca_list_items(idno);
 create index i_idno_sort on ca_list_items(idno_sort);
+create index i_idno_sort_num on ca_list_items(idno_sort_num);
 create index i_hier_left on ca_list_items(hier_left);
 create index i_hier_right on ca_list_items(hier_right);
 create index i_value_text on ca_list_items(item_value);
@@ -188,6 +190,10 @@ create table ca_list_item_labels
    description                    text                           not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null default 0,
+   sdatetime                      decimal(30,20),
+   edatetime                      decimal(30,20),
+   access                         tinyint unsigned               not null default 0,
+   
    primary key (label_id),
    constraint fk_ca_list_item_labels_item_id foreign key (item_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
@@ -218,6 +224,7 @@ create unique index u_all on ca_list_item_labels
 );
 create index i_name_sort on ca_list_item_labels(name_sort(128));
 create index i_type_id on ca_list_item_labels(type_id);
+create index i_effective_date ON ca_list_item_labels(sdatetime, edatetime);
 
 
 /*==========================================================================*/
@@ -296,6 +303,65 @@ create unique index u_code on ca_user_roles(code);
 
 
 /*==========================================================================*/
+create table if not exists ca_media_upload_sessions (
+   session_id                int unsigned                   not null AUTO_INCREMENT,
+   user_id                   int unsigned                   not null,
+   session_key               char(36)                       not null,
+   created_on                int unsigned                   not null,
+   submitted_on              int unsigned                   null,
+   completed_on              int unsigned                   null,
+   last_activity_on          int unsigned                   null,
+   error_code                smallint unsigned              not null default 0,
+   source                    varchar(30)                    not null default 'UPLOADER',
+   status                    varchar(30)                    not null default 'IN_PROGRESS',
+   
+   num_files		         int unsigned                   not null,
+   total_bytes		         bigint unsigned                not null default 0,
+   metadata		             longtext                       null,
+   
+   primary key (session_id),
+
+   index i_session_id               (session_id),
+   index i_created_on			    (created_on),
+   index i_completed_on			    (completed_on),
+   index i_last_activity_on			(last_activity_on),
+   index i_error_code      	        (error_code),
+   index i_status   	            (status),
+   unique index i_session_key      	(session_key),
+  
+   constraint fk_ca_media_upload_sessions_user_id foreign key (user_id)
+      references ca_users (user_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
+
+/*==========================================================================*/
+create table if not exists ca_media_upload_session_files (
+   file_id                   int unsigned                   not null AUTO_INCREMENT,
+   session_id                int unsigned                   not null,
+   created_on                int unsigned                   not null,
+   completed_on              int unsigned                   null,
+   last_activity_on          int unsigned                   null,
+   filename                  varchar(1024)                  not null,
+   
+   bytes_received		     bigint unsigned                not null default 0,
+   total_bytes		         bigint unsigned                not null default 0,
+   error_code                smallint unsigned              not null default 0,
+   
+   primary key (file_id),
+
+   index i_session_id               (session_id),
+   index i_created_on			    (created_on),
+   index i_completed_on			    (completed_on),
+   index i_last_activity_on			(last_activity_on),
+   index i_error_code      	        (error_code),
+   
+   constraint fk_ca_media_upload_session_files_session_id foreign key (session_id)
+      references ca_media_upload_sessions (session_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
+
+
+/*==========================================================================*/
 create table ca_entities
 (
    entity_id                      int unsigned               not null AUTO_INCREMENT,
@@ -305,6 +371,7 @@ create table ca_entities
    type_id                        int unsigned                   not null,
    idno                           varchar(255)                   not null,
    idno_sort                      varchar(255)                   not null,
+   idno_sort_num                  bigint                         not null default 0,
    is_template                    tinyint unsigned               not null default 0,
    commenting_status              tinyint unsigned               not null default 0,
    tagging_status                 tinyint unsigned               not null default 0,
@@ -356,6 +423,7 @@ create index i_source_id on ca_entities(source_id);
 create index i_type_id on ca_entities(type_id);
 create index i_idno on ca_entities(idno);
 create index i_idno_sort on ca_entities(idno_sort);
+create index i_idno_sort_num on ca_entities(idno_sort_num);
 create index i_hier_entity_id on ca_entities(hier_entity_id);
 create index i_locale_id on ca_entities(locale_id);
 create index i_parent_id on ca_entities(parent_id);
@@ -474,6 +542,7 @@ create table ca_storage_locations
    type_id                        int unsigned,
    idno                           varchar(255)                   not null,
    idno_sort                      varchar(255)                   not null,
+   idno_sort_num                  bigint                         not null default 0,
    is_template                    tinyint unsigned               not null default 0,
    view_count                     int unsigned                   not null default 0,
    source_id                      int unsigned,
@@ -518,8 +587,9 @@ create table ca_storage_locations
 
 create index i_parent_id on ca_storage_locations(parent_id);
 create index i_source_id on ca_storage_locations(source_id);
-create index idno on ca_storage_locations(idno);
-create index idno_sort on ca_storage_locations(idno_sort);
+create index i_idno on ca_storage_locations(idno);
+create index i_idno_sort on ca_storage_locations(idno_sort);
+create index i_idno_sort_num on ca_storage_locations(idno_sort_num);
 create index i_type_id on ca_storage_locations(type_id);
 create index i_hier_left on ca_storage_locations(hier_left);
 create index i_hier_right on ca_storage_locations(hier_right);
@@ -540,6 +610,7 @@ create table ca_object_lots
    lot_status_id                  int unsigned                   not null,
    idno_stub                      varchar(255)                   not null,
    idno_stub_sort                 varchar(255)                   not null,
+   idno_stub_sort_num             bigint                         not null default 0,
    is_template                    tinyint unsigned               not null default 0,
    commenting_status              tinyint unsigned               not null default 0,
    tagging_status                 tinyint unsigned               not null default 0,
@@ -631,6 +702,7 @@ create table ca_object_representations
    type_id                        int unsigned                   not null,
    idno                           varchar(255)                   not null,
    idno_sort                      varchar(255)                   not null,
+   idno_sort_num                  bigint                         not null default 0,
    md5                            varchar(32)                    not null,
    mimetype                       varchar(255)                   null,
    original_filename              varchar(1024)                  not null,
@@ -687,6 +759,7 @@ create index i_locale_id on ca_object_representations(locale_id);
 create index i_type_id on ca_object_representations(type_id);
 create index i_idno on ca_object_representations(idno);
 create index i_idno_sort on ca_object_representations(idno_sort);
+create index i_idno_sort_num on ca_object_representations(idno_sort_num);
 create index i_md5 on ca_object_representations(md5);
 create index i_mimetype on ca_object_representations(mimetype);
 create index i_original_filename on ca_object_representations(original_filename(128));
@@ -714,6 +787,10 @@ create table ca_object_representation_labels
    name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
+   sdatetime                      decimal(30,20),
+   edatetime                      decimal(30,20),
+   access                         tinyint unsigned               not null default 0,
+   
    primary key (label_id),
    
    constraint fk_ca_object_representation_labels_type_id foreign key (type_id)
@@ -726,6 +803,19 @@ create table ca_object_representation_labels
       references ca_object_representations (representation_id) on delete restrict on update restrict
       
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
+create index i_representation_id on ca_object_representation_labels(representation_id);
+create index i_name on ca_object_representation_labels(name(128));
+create unique index u_all on ca_object_representation_labels(
+   representation_id,
+   name(255),
+   type_id,
+   locale_id
+);
+create index i_locale_id on ca_object_representation_labels(locale_id);
+create index i_name_sort on ca_object_representation_labels(name_sort(255));
+create index i_type_id on ca_object_representation_labels(type_id);
+create index i_effective_date ON ca_object_representation_labels(sdatetime, edatetime);
 
 
 /*==========================================================================*/
@@ -805,6 +895,7 @@ create table ca_occurrences
    type_id                        int unsigned                   not null,
    idno                           varchar(255)                   not null,
    idno_sort                      varchar(255)                   not null,
+   idno_sort_num                  bigint                         not null default 0,
    is_template                    tinyint unsigned               not null default 0,
    commenting_status              tinyint unsigned               not null default 0,
    tagging_status                 tinyint unsigned               not null default 0,
@@ -855,6 +946,9 @@ create index i_parent_id on ca_occurrences(parent_id);
 create index i_source_id on ca_occurrences(source_id);
 create index i_type_id on ca_occurrences(type_id);
 create index i_locale_id on ca_occurrences(locale_id);
+create index i_idno on ca_occurrences(idno);
+create index i_idno_sort on ca_occurrences(idno_sort);
+create index i_idno_sort_num on ca_occurrences(idno_sort_num);
 create index i_hier_left on ca_occurrences(hier_left);
 create index i_hier_right on ca_occurrences(hier_right);
 create index i_hier_occurrence_id on ca_occurrences(hier_occurrence_id);
@@ -878,6 +972,10 @@ create table ca_occurrence_labels
    name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
+   sdatetime                      decimal(30,20),
+   edatetime                      decimal(30,20),
+   access                         tinyint unsigned               not null default 0,
+   
    primary key (label_id),
    constraint fk_ca_occurrence_labels_type_id foreign key (type_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
@@ -898,6 +996,7 @@ create unique index u_all on ca_occurrence_labels(
 create index i_locale_id on ca_occurrence_labels(locale_id);
 create index i_name_sort on ca_occurrence_labels(name_sort(255));
 create index i_type_id on ca_occurrence_labels(type_id);
+create index i_effective_date ON ca_occurrence_labels(sdatetime, edatetime);
 
 
 /*==========================================================================*/
@@ -909,6 +1008,7 @@ create table ca_collections
    type_id                        int unsigned                   not null,
    idno                           varchar(255)                   not null,
    idno_sort                      varchar(255)                   not null,
+   idno_sort_num                  bigint                         not null default 0,
    is_template                    tinyint unsigned               not null default 0,
    commenting_status              tinyint unsigned               not null default 0,
    tagging_status                 tinyint unsigned               not null default 0,
@@ -977,6 +1077,7 @@ create index i_parent_id on ca_collections(parent_id);
 create index i_type_id on ca_collections(type_id);
 create index i_idno on ca_collections(idno);
 create index i_idno_sort on ca_collections(idno_sort);
+create index i_idno_sort_num on ca_collections(idno_sort_num);
 create index i_locale_id on ca_collections(locale_id);
 create index i_source_id on ca_collections(source_id);
 create index i_hier_collection_id on ca_collections(hier_collection_id);
@@ -1013,6 +1114,10 @@ create table ca_collection_labels
    name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
+   sdatetime                      decimal(30,20),
+   edatetime                      decimal(30,20),
+   access                         tinyint unsigned               not null default 0,
+   
    primary key (label_id),
    constraint fk_ca_collection_labels_type_id foreign key (type_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
@@ -1034,6 +1139,7 @@ create unique index u_all on ca_collection_labels
 create index i_locale_id on ca_collection_labels(locale_id);
 create index i_type_id on ca_collection_labels(type_id);
 create index i_name_sort on ca_collection_labels(name_sort(128));
+create index i_effective_date ON ca_collection_labels(sdatetime, edatetime);
 
 
 /*==========================================================================*/
@@ -1047,6 +1153,7 @@ create table ca_places
    hierarchy_id                   int unsigned                   not null,
    idno                           varchar(255)                   not null,
    idno_sort                      varchar(255)                   not null,
+   idno_sort_num                  bigint                         not null default 0,
    is_template                    tinyint unsigned               not null default 0,
    commenting_status              tinyint unsigned               not null default 0,
    tagging_status                 tinyint unsigned               not null default 0,
@@ -1101,6 +1208,7 @@ create index i_hierarchy_id on ca_places(hierarchy_id);
 create index i_type_id on ca_places(type_id);
 create index i_idno on ca_places(idno);
 create index i_idno_sort on ca_places(idno_sort);
+create index i_idno_sort_num on ca_places(idno_sort_num);
 create index i_locale_id on ca_places(locale_id);
 create index i_source_id on ca_places(source_id);
 create index i_life_sdatetime on ca_places(lifespan_sdate);
@@ -1128,6 +1236,10 @@ create table ca_place_labels
    name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
+   sdatetime                      decimal(30,20),
+   edatetime                      decimal(30,20),
+   access                         tinyint unsigned               not null default 0,
+   
    primary key (label_id),
    constraint fk_ca_place_labels_type_id foreign key (type_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
@@ -1149,6 +1261,7 @@ create unique index u_all on ca_place_labels
 );
 create index i_locale_id on ca_place_labels(locale_id);
 create index i_type_id on ca_place_labels(type_id);
+create index i_effective_date ON ca_place_labels(sdatetime, edatetime);
 
 
 /*==========================================================================*/
@@ -1162,6 +1275,10 @@ create table ca_storage_location_labels
    name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
+   sdatetime                      decimal(30,20),
+   edatetime                      decimal(30,20),
+   access                         tinyint unsigned               not null default 0,
+   
    primary key (label_id),
    constraint fk_ca_storage_location_labels_locale_id foreign key (locale_id)
       references ca_locales (locale_id) on delete restrict on update restrict,
@@ -1183,6 +1300,7 @@ create unique index u_all on ca_storage_location_labels
 create index i_locale_id on ca_storage_location_labels(locale_id);
 create index i_type_id on ca_storage_location_labels(type_id);
 create index i_name_sort on ca_storage_location_labels(name_sort(128));
+create index i_effective_date ON ca_storage_location_labels(sdatetime, edatetime);
 
 
 /*==========================================================================*/
@@ -1193,6 +1311,7 @@ create table ca_loans (
    locale_id                      smallint unsigned              null,
    idno                           varchar(255)                   not null,
    idno_sort                      varchar(255)                   not null,
+   idno_sort_num                  bigint                         not null default 0,
    is_template                    tinyint unsigned               not null default 0,
    view_count                     int unsigned                   not null default 0,
    source_id                      int unsigned,
@@ -1241,8 +1360,9 @@ create index i_parent_id on ca_loans(parent_id);
 create index i_type_id on ca_loans(type_id);
 create index i_source_id on ca_loans(source_id);
 create index i_locale_id on ca_loans(locale_id);
-create index idno on ca_loans(idno);
-create index idno_sort on ca_loans(idno_sort);
+create index i_idno on ca_loans(idno);
+create index i_idno_sort on ca_loans(idno_sort);
+create index i_idno_sort_num on ca_loans(idno_sort_num);
 create index hier_left on ca_loans(hier_left);
 create index hier_right on ca_loans(hier_right);
 create index hier_loan_id on ca_loans(hier_loan_id);
@@ -1265,6 +1385,10 @@ create table ca_loan_labels (
    name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
+   sdatetime                      decimal(30,20),
+   edatetime                      decimal(30,20),
+   access                         tinyint unsigned               not null default 0,
+   
    primary key (label_id),
    
    constraint fk_ca_loan_labels_type_id foreign key (type_id)
@@ -1283,6 +1407,7 @@ create index i_locale_id_id on ca_loan_labels(locale_id);
 create index i_type_id on ca_loan_labels(type_id);
 create index i_name on ca_loan_labels(name(128));
 create index i_name_sort on ca_loan_labels(name_sort(128));
+create index i_effective_date ON ca_loan_labels(sdatetime, edatetime);
 
 
 /*==========================================================================*/
@@ -1292,6 +1417,7 @@ create table ca_movements (
    locale_id                      smallint unsigned              null,
    idno                           varchar(255)                   not null,
    idno_sort                      varchar(255)                   not null,
+   idno_sort_num                  bigint                         not null default 0,
    is_template                    tinyint unsigned               not null default 0,
    view_count                     int unsigned                   not null default 0,
    source_id                      int unsigned,
@@ -1332,8 +1458,9 @@ create table ca_movements (
 create index i_type_id on ca_movements(type_id);
 create index i_source_id on ca_movements(source_id);
 create index i_locale_id on ca_movements(locale_id);
-create index idno on ca_movements(idno);
-create index idno_sort on ca_movements(idno_sort);
+create index i_idno on ca_movements(idno);
+create index i_idno_sort on ca_movements(idno_sort);
+create index i_idno_sort_num on ca_movements(idno_sort_num);
 create index i_view_count on ca_movements(view_count);
 create index i_movement_filter on ca_movements(movement_id, deleted, access);
 create index i_submission_user_id on ca_movements(submission_user_id);
@@ -1353,6 +1480,10 @@ create table ca_movement_labels (
    name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
+   sdatetime                      decimal(30,20),
+   edatetime                      decimal(30,20),
+   access                         tinyint unsigned               not null default 0,
+   
    primary key (label_id),
    
    constraint fk_ca_movement_labels_movement_id foreign key (movement_id)
@@ -1371,6 +1502,7 @@ create index i_locale_id_id on ca_movement_labels(locale_id);
 create index i_type_id on ca_movement_labels(type_id);
 create index i_name on ca_movement_labels(name(128));
 create index i_name_sort on ca_movement_labels(name_sort(128));
+create index i_effective_date ON ca_movement_labels(sdatetime, edatetime);
 
 
 /*==========================================================================*/
@@ -1722,6 +1854,10 @@ create table ca_object_lot_labels
    name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
+   sdatetime                      decimal(30,20),
+   edatetime                      decimal(30,20),
+   access                         tinyint unsigned               not null default 0,
+   
    primary key (label_id),
    constraint fk_ca_object_lot_labels_lot_id foreign key (lot_id)
       references ca_object_lots (lot_id) on delete restrict on update restrict,
@@ -1743,6 +1879,7 @@ create unique index u_all on ca_object_lot_labels
 create index i_name_sort on ca_object_lot_labels(name_sort(128));
 create index i_type_id on ca_object_lot_labels(type_id);
 create index i_locale_id on ca_object_lot_labels(locale_id);
+create index i_effective_date ON ca_object_lot_labels(sdatetime, edatetime);
 
 
 /*==========================================================================*/
@@ -1857,6 +1994,7 @@ create table ca_objects
    type_id                        int unsigned                   not null,
    idno                           varchar(255)                   not null,
    idno_sort                      varchar(255)                   not null,
+   idno_sort_num                  bigint                         not null default 0,
    acquisition_type_id            int unsigned,
    item_status_id                 int unsigned,
    source_info                    longtext                       not null,
@@ -1940,6 +2078,7 @@ create table ca_objects
 create index i_parent_id on ca_objects(parent_id);
 create index i_idno on ca_objects(idno);
 create index i_idno_sort on ca_objects(idno_sort);
+create index i_idno_sort_num on ca_objects(idno_sort_num);
 create index i_type_id on ca_objects(type_id);
 create index i_hier_left on ca_objects(hier_left);
 create index i_hier_right on ca_objects(hier_right);
@@ -1988,6 +2127,10 @@ create table ca_object_labels
    name_sort                      varchar(255)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
+   sdatetime                      decimal(30,20),
+   edatetime                      decimal(30,20),
+   access                         tinyint unsigned               not null default 0,
+   
    primary key (label_id),
    constraint fk_ca_object_labels_type_id foreign key (type_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
@@ -2009,7 +2152,7 @@ create unique index u_all on ca_object_labels
 create index i_name_sort on ca_object_labels(name_sort(128));
 create index i_type_id on ca_object_labels(type_id);
 create index i_locale_id on ca_object_labels(locale_id);
-
+create index i_effective_date ON ca_object_labels(sdatetime, edatetime);
 
 
 /*==========================================================================*/
@@ -2771,6 +2914,10 @@ create table ca_entity_labels
    name_sort                      varchar(512)                   not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
+   sdatetime                      decimal(30,20),
+   edatetime                      decimal(30,20),
+   access                         tinyint unsigned               not null default 0,
+   
    primary key (label_id),
    constraint fk_ca_entity_labels_type_id foreign key (type_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
@@ -2796,6 +2943,7 @@ create unique index u_all on ca_entity_labels
 create index i_locale_id on ca_entity_labels(locale_id);
 create index i_type_id on ca_entity_labels(type_id);
 create index i_name_sort on ca_entity_labels(name_sort(128));
+create index i_effective_date ON ca_entity_labels(sdatetime, edatetime);
 
 
 /*==========================================================================*/
@@ -5377,6 +5525,7 @@ create table ca_tour_stops
    type_id                        int unsigned              null,
    idno                           varchar(255)              not null,
    idno_sort                      varchar(255)              not null,
+   idno_sort_num                  bigint                         not null default 0,
    `rank`                           int unsigned              not null default 0,
    view_count                     int unsigned              not null default 0,
    hier_left                      decimal(30,20)            not null,
@@ -5405,6 +5554,7 @@ create index i_hier_left on ca_tour_stops(hier_left);
 create index i_hier_right on ca_tour_stops(hier_right);
 create index i_idno on ca_tour_stops(idno);
 create index i_idno_sort on ca_tour_stops(idno_sort);
+create index i_idno_sort_num on ca_tour_stops(idno_sort_num);
 create index i_view_count on ca_tour_stops(view_count);
 
 
@@ -7500,6 +7650,7 @@ create table ca_site_page_media (
   caption			    text				not null,
   idno                  varchar(255)        not null,
   idno_sort             varchar(255)        not null,
+  idno_sort_num                  bigint                         not null default 0,
   media        			longblob            not null,
   media_metadata        longblob            not null,
   media_content			longtext			not null,
@@ -7516,6 +7667,7 @@ create table ca_site_page_media (
   key (md5),
   key (idno),
   key (idno_sort),
+  key (idno_sort_num),
   unique index u_idno (page_id, idno),
   
    constraint fk_ca_site_page_media_page_id foreign key (page_id)
@@ -7622,64 +7774,6 @@ create table if not exists ca_representation_transcriptions (
 
 
 /*==========================================================================*/
-create table if not exists ca_media_upload_sessions (
-   session_id                int unsigned                   not null AUTO_INCREMENT,
-   user_id                   int unsigned                   not null,
-   session_key               char(36)                       not null,
-   created_on                int unsigned                   not null,
-   submitted_on              int unsigned                   null,
-   completed_on              int unsigned                   null,
-   last_activity_on          int unsigned                   null,
-   error_code                smallint unsigned              not null default 0,
-   source                    varchar(30)                    not null default 'UPLOADER',
-   status                    varchar(30)                    not null default 'IN_PROGRESS',
-   
-   num_files		         int unsigned                   not null,
-   total_bytes		         bigint unsigned                not null default 0,
-   metadata		             longtext                       null,
-   
-   primary key (session_id),
-
-   index i_session_id               (session_id),
-   index i_created_on			    (created_on),
-   index i_completed_on			    (completed_on),
-   index i_last_activity_on			(last_activity_on),
-   index i_error_code      	        (error_code),
-   index i_status   	            (status),
-   unique index i_session_key      	(session_key),
-  
-   constraint fk_ca_media_upload_sessions_user_id foreign key (user_id)
-      references ca_users (user_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-
-
-/*==========================================================================*/
-create table if not exists ca_media_upload_session_files (
-   file_id                   int unsigned                   not null AUTO_INCREMENT,
-   session_id                int unsigned                   not null,
-   created_on                int unsigned                   not null,
-   completed_on              int unsigned                   null,
-   last_activity_on          int unsigned                   null,
-   filename                  varchar(1024)                  not null,
-   
-   bytes_received		     bigint unsigned                not null default 0,
-   total_bytes		         bigint unsigned                not null default 0,
-   error_code                smallint unsigned              not null default 0,
-   
-   primary key (file_id),
-
-   index i_session_id               (session_id),
-   index i_created_on			    (created_on),
-   index i_completed_on			    (completed_on),
-   index i_last_activity_on			(last_activity_on),
-   index i_error_code      	        (error_code),
-   
-   constraint fk_ca_media_upload_session_files_session_id foreign key (session_id)
-      references ca_media_upload_sessions (session_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-
-
-/*==========================================================================*/
 /* Schema update tracking                                                   */
 /*==========================================================================*/
 create table ca_schema_updates (
@@ -7690,4 +7784,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (175, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (177, unix_timestamp());

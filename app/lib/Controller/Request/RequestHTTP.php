@@ -295,6 +295,17 @@ class RequestHTTP extends Request {
 		return $this->user;
 	}
 	# -------------------------------------------------------
+	/**
+	 * Set current user
+	 *
+	 * @param ca_users $user
+	 *
+	 * @return void
+	 */
+	public function setUser(ca_users $user) : void {
+		$this->user = $user;
+	}
+	# -------------------------------------------------------
 	public function getThemeUrlPath($pb_use_default=false) {
 		if ($this->config->get('always_use_default_theme')) { $pb_use_default = true; }
 		if (!$pb_use_default && $this->isLoggedIn()) {
