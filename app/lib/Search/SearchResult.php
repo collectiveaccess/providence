@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2010,6 +2010,8 @@ class SearchResult extends BaseObject {
 		
 		$va_path_components			=& $pa_options['pathComponents'];
 		
+		$pa_check_access		= $pa_options['checkAccess'];
+		
 		$va_restrict_to_type_ids = null;
 		if (
 		    is_array($va_restrict_to_types = caGetOption('restrictToTypes', $pa_options, null))
@@ -2049,7 +2051,9 @@ class SearchResult extends BaseObject {
 		$va_return_values = array();
 		if (is_array($pa_value_list)) {
 			foreach($pa_value_list as $vn_locale_id => $va_labels_by_locale) {
-									
+				if (is_array($pa_check_access) && sizeof($pa_check_access) && $label_instance->hasField('access') && !in_array($va_label['access'], $pa_check_access)) {
+					continue;
+				}
 				if ($pa_options['useLocaleCodes']) {
 					if (!$vn_locale_id || !($vm_locale_id = SearchResult::$opo_locales->localeIDToCode($vn_locale_id))) { $vm_locale_id = __CA_DEFAULT_LOCALE__; }; 
 				} else {
@@ -2306,7 +2310,7 @@ class SearchResult extends BaseObject {
 								} else {
 									$alt_text = $this->get($this->tableName().".preferred_labels");
 								}
-                                $vs_val_proc = $o_value->getDisplayValue(['alt' => $alt_text, 'return' => $vs_return_type, 'version' => $vs_version]);
+                                $vs_val_proc = $o_value->getDisplayValue(['alt' => $alt_text, 'return' => $vs_return_type, 'version' => $vs_version, 'scaleCSSWidthTo' => $pa_options['scaleCSSWidthTo'] ?? null, 'scaleCSSHeightTo' => $pa_options['scaleCSSHeightTo'] ?? null]);
 						        break;
 							case __CA_ATTRIBUTE_VALUE_LIST__:
 								$t_element = ca_metadata_elements::getInstance($o_value->getElementID());

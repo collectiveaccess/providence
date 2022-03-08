@@ -321,8 +321,8 @@ class ReplicationService {
 
 		$vn_last_applied_log_id = null;
 		
-		$va_log = json_decode($po_request->getRawPostData(), true);
-		if(!is_array($va_log)) { throw new \Exception('log must be array'); }
+		$va_log = json_decode($c=$po_request->getRawPostData(), true);
+		if(!is_array($va_log)) { throw new \Exception('Log must be array: '.$c); }
 		$o_db = new Db();
 
 		// run

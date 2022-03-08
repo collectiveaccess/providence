@@ -169,7 +169,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				if (!($vn_ret = $t_list->itemIsEnabled($this->getTypeListCode(), $vn_type_id))) {
 					$va_type_list = $this->getTypeList(array('directChildrenOnly' => false, 'returnHierarchyLevels' => true, 'item_id' => null));
 					if (!isset($va_type_list[$vn_type_id])) {
-						$this->postError(2510, _t("Type must be specified"), "BundlableLabelableBaseModelWithAttributes->insert()", $this->tableName().'.'.$this->getTypeFieldName());
+						$this->postError(2510, _t("A valid type must be specified"), "BundlableLabelableBaseModelWithAttributes->insert()", $this->tableName().'.'.$this->getTypeFieldName());
 					} else {
 						if(is_null($vn_ret)) {
 							$this->postError(2510, _t("<em>%1</em> is invalid", $va_type_list[$vn_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()", $this->tableName().'.'.$this->getTypeFieldName());
@@ -927,6 +927,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			
 			if (($o_idno = $this->getIDNoPlugInInstance()) && (method_exists($o_idno, 'getSortableValue'))) {	// try to use plug-in's sort key generator if defined
 				$this->set($vs_idno_sort_field, $o_idno->getSortableValue($this->get($vs_idno_field)));
+				
+				if($this->hasField("{$vs_idno_sort_field}_num") && (method_exists($o_idno, 'getSortableNumericValue'))) {
+					if(($n = $o_idno->getSortableNumericValue($this->get($vs_idno_field))) < 0) { return; } 
+					$this->set("{$vs_idno_sort_field}_num", $n);
+				}
 				return;
 			}
 			
@@ -3897,7 +3902,7 @@ if (!$vb_batch) {
 			if ($vb_batch && ($po_request->getParameter($vs_placement_code.$vs_form_prefix.'_batch_mode', pString) !== '_replace_')) { continue; }
 			
 			$parent_tmp = explode("-", $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_new_parent_id", pString));
-			$multiple_move_selection = explode(";", $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_move_selection", pString));
+			$multiple_move_selection = array_filter(explode(";", $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_move_selection", pString)), 'is_numeric');
 		
 			// Hierarchy browser sets new_parent_id param to "X" if user wants to extract item from hierarchy
 			$vn_parent_id = (($vn_parent_id = array_pop($parent_tmp)) == 'X') ? -1 : (int)$vn_parent_id;
@@ -4091,7 +4096,10 @@ if (!$vb_batch) {
 										$po_request->addActionErrors($this->errors(), 'preferred_labels');
 										continue;
 									}
-									$this->editLabel($va_label['label_id'], $va_label_values, $vn_label_locale_id, $vn_label_type_id, true, array('queueIndexing' => true));
+									$effective_date = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'effective_date_'.$va_label['label_id'], pString);
+									$label_access = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'access_'.$va_label['label_id'], pInteger);
+							
+									$this->editLabel($va_label['label_id'], $va_label_values, $vn_label_locale_id, $vn_label_type_id, true, ['queueIndexing' => true, 'effectiveDate' => $effective_date, 'access' => $label_access]);
 									if ($this->numErrors()) {
 										foreach($this->errors() as $o_e) {
 											switch($o_e->getErrorNumber()) {
@@ -4189,7 +4197,10 @@ if (!$vb_batch) {
                             }
                             
 							$vn_label_type_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'type_id_new_'.$vn_c, pInteger);
-							$this->addLabel($va_label_values, $vn_new_label_locale_id, $vn_label_type_id, true, array('queueIndexing' => true));
+							$effective_date = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'effective_date_new_'.$vn_c, pString);
+							$label_access = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'access_new_'.$vn_c, pInteger);
+							
+							$this->addLabel($va_label_values, $vn_new_label_locale_id, $vn_label_type_id, true, ['queueIndexing' => true, 'effectiveDate' => $effective_date, 'access' => $label_access]);
 							if ($this->numErrors()) {
 								$po_request->addActionErrors($this->errors(), $vs_f);
 								$vb_error_inserting_pref_label = true;
@@ -4232,7 +4243,11 @@ if (!$vb_batch) {
 							if ($vn_label_locale_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'locale_id_'.$va_label['label_id'], pString)) {
 								$vn_label_type_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'type_id_'.$va_label['label_id'], pInteger);
 								if (is_array($va_label_values = $this->getLabelUIValuesFromRequest($po_request, $vs_placement_code.$vs_form_prefix, $va_label['label_id'], false))) {
-									$this->editLabel($va_label['label_id'], $va_label_values, $vn_label_locale_id, $vn_label_type_id, false, array('queueIndexing' => true));
+									
+									$effective_date = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'effective_date_'.$va_label['label_id'], pString);
+									$label_access = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'access_'.$va_label['label_id'], pInteger);
+							
+									$this->editLabel($va_label['label_id'], $va_label_values, $vn_label_locale_id, $vn_label_type_id, false, ['queueIndexing' => true, 'effectiveDate' => $effective_date, 'access' => $label_access]);
 									if ($this->numErrors()) {
 										foreach($this->errors() as $o_e) {
 											switch($o_e->getErrorNumber()) {
@@ -4293,7 +4308,10 @@ if (!$vb_batch) {
 					if ($vn_new_label_locale_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'locale_id_new_'.$vn_c, pString)) {
 						if (is_array($va_label_values = $this->getLabelUIValuesFromRequest($po_request, $vs_placement_code.$vs_form_prefix, 'new_'.$vn_c, false))) {
 							$vn_new_label_type_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'type_id_new_'.$vn_c, pInteger);
-							$this->addLabel($va_label_values, $vn_new_label_locale_id, $vn_new_label_type_id, false, array('queueIndexing' => true));
+							$effective_date = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'effective_date_new_'.$vn_c, pString);
+							$label_access = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'access_new_'.$vn_c, pInteger);
+							
+							$this->addLabel($va_label_values, $vn_new_label_locale_id, $vn_new_label_type_id, false, ['queueIndexing' => true, 'effectiveDate' => $effective_date, 'access' => $label_access]);
 						
 							if ($this->numErrors()) {
 								$po_request->addActionErrors($this->errors(), $vs_f);
@@ -4493,6 +4511,9 @@ if (!$vb_batch) {
                             	$index = $va_file_list['empty']['index'];
 								$va_file_list = array_filter($va_file_list, function($v) use ($index) { return (($v['index'] !== $index) || (sizeof($v) === 1)); });
                             }
+                            
+                            // Sort files such that they are inserted in file name order
+                        	$va_file_list = caSortArrayByKeyInValue($va_file_list, ['tmp_name'], 'ASC', ['mode' => SORT_NATURAL]);
                             
                             foreach($va_file_list as $vs_key => $va_values) {
                             	$is_form_upload = caGetOption('is_form_upload', $va_values, false, ['castTo' => 'boolean']);

@@ -1288,6 +1288,7 @@ class BaseModel extends BaseObject {
 	 * @param array $pa_options Options include:
 	 *     forceToLowercase = force keys in returned array to lowercase. [Default is false] 
 	 *	   checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for table that have an "access" field.
+	 *     restrictToTypes = an optional array of numeric type ids or alphanumeric type identifiers to restrict the returned labels to. The types are list items in a list specified in app.conf (or, if not defined there, by hardcoded constants in the model)
 	 *	   returnAll = return all matching values. [Default is false; only the first matched value is returned]
 	 *
 	 * @return array Array with keys set to idnos and values set to row_ids. Returns null on error.
@@ -1296,16 +1297,23 @@ class BaseModel extends BaseObject {
 	    if (!is_array($idnos) && strlen($idnos)) { $idnos = [$idnos]; }
 	    
 	    $access_values = caGetOption('checkAccess', $options, null);
+
 		$return_all = caGetOption('returnAll', $options, false);
 		$force_to_lowercase = caGetOption('forceToLowercase', $options, false);
 		
 		$table_name = $table_name ? $table_name : get_called_class();
+		
+		if ($restrict_to_types = caGetOption('restrictToTypes', $options, null)) {
+			$restrict_to_types = caMakeTypeIDList($table_name, $restrict_to_types);
+		}
+		
 		if (!($t_instance = Datamodel::getInstanceByTableName($table_name, true))) { return null; }
 		
 	    $idnos = array_map(function($v) { return (string)$v; }, $idnos);
 	    
 	    $pk = $t_instance->primaryKey();
 	    $table_name = $t_instance->tableName();
+
 	    if(!($idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
 	    	return null;
 	    }
@@ -1318,19 +1326,34 @@ class BaseModel extends BaseObject {
 		    $access_sql = " AND access IN (?)";
 		    $params[] = $access_values;
 		}
+		
+		$type_sql = '';
+		if(
+			method_exists($t_instance, 'getTypeFieldName') && 
+			($type_fld_name = $t_instance->getTypeFieldName()) && 
+			is_array($restrict_to_types) && sizeof($restrict_to_types)
+		) {
+			$type_sql = " AND {$type_fld_name} IN (?)";
+			$params[] = $restrict_to_types;
+		}
 	    
 	    $qr_res = $t_instance->getDb()->query("
 			SELECT {$pk}, {$idno_fld}
 			FROM {$table_name}
 			WHERE
-				{$idno_fld} IN (?) {$deleted_sql} {$access_sql}
+				{$idno_fld} IN (?) {$deleted_sql} {$access_sql} {$type_sql}
 		", $params);
-		
-		$force_to_lowercase = caGetOption('forceToLowercase', $options, false);
 		
 		$ret = [];
 		while($qr_res->nextRow()) {
-		    $ret[$force_to_lowercase ? strtolower($qr_res->get($idno_fld)) : $qr_res->get($idno_fld)] = $qr_res->get($pk);
+			$key = $force_to_lowercase ? strtolower($qr_res->get($idno_fld)) : $qr_res->get($idno_fld);
+		   
+			if($return_all) {
+				$ret[$key][] = $qr_res->get($pk);
+			} else {
+				if(array_key_exists($key, $ret)) { continue; }
+				$ret[$key] = $qr_res->get($pk);
+			}
 		}
 		return $ret;
 	}
@@ -7793,6 +7816,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	 * @param array optional, options 
 	 *		idsOnly = just return the ids of the ancestors (def. false)
 	 *		includeSelf = include this record (def. false)
+	 *		omitRoot = Don't include root record. [Default is false]
 	 *		additionalTableToJoin = name of additonal table data to return
 	 *		returnDeleted = return deleted records in list (def. false)
 	 * @return array 
@@ -7800,6 +7824,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	public function &getHierarchyAncestors($pn_id=null, $pa_options=null) {
 		if (!$this->isHierarchical()) { return null; }
 		$pb_include_self = (isset($pa_options['includeSelf']) && $pa_options['includeSelf']) ? true : false;
+		$pb_omit_root = (isset($pa_options['omitRoot']) && $pa_options['omitRoot']) ? true : false;
 		$pb_ids_only = (isset($pa_options['idsOnly']) && $pa_options['idsOnly']) ? true : false;
 		
 		$vs_table_name = $this->tableName();
@@ -7884,6 +7909,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					if ($pb_include_self) {
 						while ($qr_root->nextRow()) {
 							if (!$vn_parent_id) { $vn_parent_id = $qr_root->get($vs_hier_parent_id_fld); }
+							if(!$vn_parent_id && $pb_omit_root) { continue; }
 							if ($pb_ids_only) {
 								$va_ancestors[] = $qr_root->get($this->primaryKey());
 							} else {
@@ -7912,6 +7938,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 							$vn_parent_id = null;
 							while ($qr_hier->nextRow()) {
 								if (!$vn_parent_id) { $vn_parent_id = $qr_hier->get($vs_hier_parent_id_fld); }
+								if(!$vn_parent_id && $pb_omit_root) { continue; }
 								if ($pb_ids_only) {
 									$va_ancestors[] = $qr_hier->get($this->primaryKey());
 								} else {
@@ -8956,7 +8983,7 @@ $pa_options["display_form_field_tips"] = true;
 									if ((class_exists("AppController")) && ($app = AppController::getInstance()) && ($req = $app->getRequest())) {
 										AssetLoadManager::register('jquery', 'autocomplete');
 										$vs_element .= "<script type='text/javascript'>
-	jQuery('#".$pa_options["id"]."').autocomplete({ source: '".($pa_options['lookup_url'] ? $pa_options['lookup_url'] : caNavUrl($req, 'lookup', 'Intrinsic', 'Get', array('bundle' => $this->tableName().".{$ps_field}", "max" => 500)))."', minLength: 3, delay: 800});
+	jQuery('#".$pa_options["id"]."').autocomplete({ source: '".($pa_options['lookup_url'] ? $pa_options['lookup_url'].'?noInline=1' : caNavUrl($req, 'lookup', 'Intrinsic', 'Get', array('bundle' => $this->tableName().".{$ps_field}", "max" => 500)))."', minLength: 3, delay: 800});
 </script>";
 									}
 								}
@@ -12283,7 +12310,7 @@ $pa_options["display_form_field_tips"] = true;
 					
 					$t_instance = new $vs_table;
 					if ($o_trans) { $t_instance->setTransaction($o_trans); }
-					if ($t_instance->load((int)$qr_res->get($vs_pk), !caGetOption('noCache', $pa_options, false))) {
+					if ($t_instance->load($id, !caGetOption('noCache', $pa_options, false))) {
 						return $t_instance;
 					}
 				}

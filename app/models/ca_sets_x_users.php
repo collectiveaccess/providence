@@ -107,7 +107,7 @@ BaseModel::$s_ca_models_definitions['ca_sets_x_users'] = array(
 			'IS_NULL' => true, 
 			'DEFAULT' => '',
 			'START' => 'sdatetime', 'END' => 'edatetime',
-			'LABEL' => _t('Effective dates'), 'DESCRIPTION' => _t('Period of time for which this access is in effect. Leave blank if you do not wish to restrict access to a specific period of time.')
+			'LABEL' => _t('Effective date'), 'DESCRIPTION' => _t('Period of time for which this access is in effect. Leave blank if you do not wish to restrict access to a specific period of time.')
 		)
  	)
 );
