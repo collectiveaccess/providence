@@ -1054,6 +1054,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 			$delete = isset($b['delete']) ? (bool)$b['delete'] : false;
 			$replace = isset($b['replace']) ? (bool)$b['replace'] : false;
 			$bundle_name = $b['name'];
+			if($bundle_name === 'type') { $bundle_name = 'type_id'; }	// map "type" to "type_id"
 			
 			if(!strlen($bundle_name)) { continue; }
 			

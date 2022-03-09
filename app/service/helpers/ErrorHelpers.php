@@ -30,7 +30,7 @@ namespace GraphQLServices\Helpers\Error;
 /**
  *
  */
-function error(string $idno, string $code, string $message, ?string $bundle) : array {
+function error(?string $idno, string $code, string $message, ?string $bundle) : array {
 	return [
 		'idno' => $idno, 
 		'code' => $code,
@@ -42,7 +42,7 @@ function error(string $idno, string $code, string $message, ?string $bundle) : a
 /**
  *
  */
-function warning(string $idno, string $code, string $message, ?string $bundle) : array {
+function warning(?string $idno, string $code, string $message, ?string $bundle) : array {
 	return [
 		'idno' => $idno, 
 		'code' => $code,
@@ -54,7 +54,7 @@ function warning(string $idno, string $code, string $message, ?string $bundle) :
 /**
  *
  */
-function info(string $idno, string $code, string $message, ?string $bundle) : array {
+function info(?string $idno, string $code, string $message, ?string $bundle) : array {
 	return [
 		'idno' => $idno, 
 		'code' => $code,
