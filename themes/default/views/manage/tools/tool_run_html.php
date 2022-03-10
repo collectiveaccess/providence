@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -75,7 +75,7 @@
 				
 				var m = jQuery('#progressbar').progressbar("option", "max");
 				jQuery('#progressbar').progressbar("option", "value", m);
-				jQuery('#batchProcessingTableStatus').html('<?php print addslashes(_t("Complete!")); ?>');
+				jQuery('#batchProcessingTableStatus').html(data.message);
 				jQuery('#batchProcessingMessage').show().html((data ? data['message'] : ''));
 				jQuery('#batchProcessingCounts').html(m + "/" + m);
 				

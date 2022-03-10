@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -73,9 +73,9 @@ class Relationship extends Base {
 		$this->setIntrinsicsFromSnapshotInModelInstance();
 
 		if($this->isInsert()) {
-			$this->getModelInstance()->insert(array('setGUIDTo' => $this->getGUID()));
+			$this->getModelInstance()->insert(['setGUIDTo' => $this->getGUID(), 'dontForcePrimary' => true]);
 		} elseif($this->isUpdate()) {
-			$this->getModelInstance()->update();
+			$this->getModelInstance()->update(['dontForcePrimary' => true]);
 		} elseif($this->isDelete()) {
 			$this->getModelInstance()->delete(false);
 		}
@@ -105,6 +105,13 @@ class Relationship extends Base {
 		// right
 		if ($vs_right_field = $this->getModelInstance()->getProperty('RELATIONSHIP_RIGHT_FIELDNAME')) {
 			$this->setLeftOrRightFieldNameFromSnapshot($vs_right_field, false);
+		}
+		
+		foreach($va_snapshot as $k => $v) {
+			if(in_array($k, [$vs_type_field, $vs_left_field, $vs_right_field], true)) { continue; }
+			if($this->getModelInstance()->hasField($k)) {
+				 $this->getModelInstance()->set($k, $v);
+			}
 		}
 	}
 

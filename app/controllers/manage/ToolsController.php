@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -188,14 +188,14 @@
  			$vn_status = $o_tool->run($ps_command);
  			
  			$o_progress = new ProgressBar('WebUI', null, $ps_job_id);
- 			$va_job_data = $o_progress->getDataForJobID();
+ 			$data = $o_progress->getDataForJobID();
  			$this->view->setVar('jobinfo', array(
  				'status' => $vn_status,
  				'job_id' => $ps_job_id,
  				'settings' => $va_settings,
  				'tool' => $o_tool->getToolIdentifier(),
  				'command' => $ps_command,
- 				'message' => $va_job_data['data']['msg']
+ 				'message' => $data['message']
  			));
  			
  			$this->render('tools/tool_runjob_json.php');
