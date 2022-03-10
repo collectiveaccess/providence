@@ -9364,6 +9364,7 @@ $pa_options["display_form_field_tips"] = true;
 	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to add a duplicate relationship. Default is false - don't set error. addRelationship() will always return false when creation of a duplicate relationship fails, no matter how the setErrorOnDuplicate option is set.
 	 *		useAsRelatedIdOnly = 
 	 *		useAsRelatedIdnoOnly = 
+	 *		relationshipTypeDefault = 
 	 * @return BaseRelationshipModel Loaded relationship model instance on success, false on error.
 	 */
 	public function addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
@@ -9379,8 +9380,13 @@ $pa_options["display_form_field_tips"] = true;
 			$t_rel_type = new ca_relationship_types();
 			if ($vs_linking_table = $t_rel_type->getRelationshipTypeTable($this->tableName(), $t_item_rel->tableName())) {
 				if(!($pn_type_id = $t_rel_type->getRelationshipTypeID($vs_linking_table, $pm_type_id))) {
-					$this->postError(2510, _t('Type id "%1" is not valid', $pm_type_id), 'BaseModel->addRelationship()');
-					return false;
+					if($default_type = caGetOption('relationshipTypeDefault', $pa_options, null)) {
+						$pn_type_id = $t_rel_type->getRelationshipTypeID($vs_linking_table, $default_type);
+					}
+					if(!$pn_type_id) {
+						$this->postError(2510, _t('Type id "%1" is not valid', $pm_type_id), 'BaseModel->addRelationship()');
+						return false;
+					}
 				}
 			} else {
 				$this->postError(2510, _t('Could not find relationship table'), 'BaseModel->addRelationship()');
