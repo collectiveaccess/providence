@@ -11,7 +11,7 @@
     "hoa/compiler": "~3.17",
     "hoa/visitor": "~2.17",
     "collectiveaccess/service-wrapper": "v1.1.1",
-    "phpoffice/phppresentation": "dev-master",
+    "phpoffice/phppresentation": "v0.9.*",
     "phpoffice/phpword": "v0.15.*",
     "phpoffice/phpexcel": "v1.8.1",
     "tedivm/stash": "0.14.*",

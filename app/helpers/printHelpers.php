@@ -472,9 +472,8 @@
 					$vn_left = $vn_left_margin;
 						
 					switch($vs_renderer) {
-						case 'PhantomJS':
 						case 'wkhtmltopdf':
-							// WebKit based renderers (PhantomJS, wkhtmltopdf) want things numbered relative to the top of the document (Eg. the upper left hand corner of the first page is 0,0, the second page is 0,792, Etc.)
+							// WebKit based renderers (wkhtmltopdf) want things numbered relative to the top of the document (Eg. the upper left hand corner of the first page is 0,0, the second page is 0,792, Etc.)
 							$vn_page_count++;
 							$vn_top = ($vn_page_count * $vn_page_height) + $vn_top_margin;
 							break;
