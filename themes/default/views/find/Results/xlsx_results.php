@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2018 Whirl-i-Gig
+ * Copyright 2013-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -132,7 +132,9 @@
 				$va_info['bundle_name'] = $tags[0];
 			}
 			if (
-				(strpos($va_info['bundle_name'], 'ca_object_representations.media') !== false)
+				(preg_match('!^ca_object_representations.media!', $va_info['bundle_name']))
+				&&
+				!strlen($va_info['settings']['format'])
 				&&
 				(!isset($va_info['settings']['display_mode']) || ($va_info['settings']['display_mode'] !== 'url'))
 			) {
