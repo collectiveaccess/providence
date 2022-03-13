@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2019 Whirl-i-Gig
+ * Copyright 2010-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,216 +39,252 @@
 
 	# ------------------------------------------------------------------------------------------------
 	/**
-	 * Get path in external_applications.conf for specified application
+	 * Get path in external_applications.conf for specified application. A path is only returned if it exists on the system.
+	 * If none of the configured paths for an application exist on the system, null is returned.
 	 *
 	 * @param string $ps_application_name The name of the application. This is the same as the relevant entry in external_applications.conf without the trailing "_app" (Ex. pdfminer, dcraw, ffmpeg)
-	 * @return string Path to application as defined in external_applications.conf
+	 * @param array $options Options inclide:
+	 * 		executableName = Name of executable to test for when app path is a directory (Ex. for ImageMagick)
+	 *		returnAsArray = Return full list of configured paths. Paths are not checked for existence.
+	 *
+	 * @return string The first path to application, as defined in external_applications.conf, that exists.
 	 */
-	function caGetExternalApplicationPath($ps_application_name) {
-		$o_config = Configuration::load();
-		if (!($o_ext_app_config = Configuration::load(__CA_CONF_DIR__.'/external_applications.conf'))) { return null; }
-
-		return $o_ext_app_config->get($ps_application_name.'_app');
+	function caGetExternalApplicationPath($ps_application_name, $options=null) {
+        if (!($o_ext_app_config = Configuration::load(__CA_CONF_DIR__ . '/external_applications.conf'))) {
+            return null;
+        }
+		$app_paths = $o_ext_app_config->get(["{$ps_application_name}_app", "{$ps_application_name}_path", $ps_application_name]);
+		if (!$app_paths) { return null; }
+		if (!is_array($app_paths)) { $app_paths = [$app_paths]; }
+		if (caGetOption('returnAsArray', $options, false)) { return $app_paths; }
+		foreach($app_paths as $p) {
+			if ($e = caGetOption('executableName', $options, false)) { $p .= "/{$e}"; }
+			if(file_exists($p)) { return $p; }
+		}
+		return null;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
 	 * Detects if ImageMagick executables is available within specified directory path
 	 *
-	 * @param $ps_imagemagick_path - path to directory containing ImageMagick executables
-	 * @return boolean - true if available, false if not
+	 * @param string $ps_imagemagick_path - path to directory containing ImageMagick executables
+	 * @param array $options Options include:
+	 *		noCache = Don't cached path value. [Default is false]
+	 *
+	 * @return mixed Path to executable if installed, false if not installed
 	 */
-	function caMediaPluginImageMagickInstalled($ps_imagemagick_path=null) {
-		//if (CompositeCache::contains("mediahelper_imagemagick_installed")) { return CompositeCache::fetch("mediahelper_imagemagick_installed"); }
-		if(!$ps_imagemagick_path) { $ps_imagemagick_path = caGetExternalApplicationPath('imagemagick'); }
+	function caMediaPluginImageMagickInstalled($ps_imagemagick_path=null, $options=null) {
+		if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_imagemagick_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_imagemagick_installed", "mediaPluginInfo"); }
+		if(!$ps_imagemagick_path) { $ps_imagemagick_path = caGetExternalApplicationPath('imagemagick', ['executableName' => 'identify']); }
 
 		if (!caIsValidFilePath($ps_imagemagick_path)) { 
-			CompositeCache::save("mediahelper_imagemagick_installed", false);
+			CompositeCache::save("mediahelper_imagemagick_installed", false, "mediaPluginInfo");
 			return false; 
 		}
 
-		if (caGetOSFamily() == OS_WIN32) { 
-			CompositeCache::save("mediahelper_imagemagick_installed", true);
-			return true; 
+		if ((caGetOSFamily() == OS_WIN32) && $ps_imagemagick_path) { 
+			CompositeCache::save("mediahelper_imagemagick_installed", $ps_imagemagick_path, "mediaPluginInfo");
+			return $ps_imagemagick_path; 
 		}	// don't try exec test on Windows
 		
-		exec($ps_imagemagick_path.'/identify 2> /dev/null', $va_output, $vn_return);
+		caExec($ps_imagemagick_path.' 2> /dev/null', $va_output, $vn_return);
 		
 		$vb_ret =  (($vn_return >= 0) && ($vn_return < 127));
 		
-		CompositeCache::save("mediahelper_imagemagick_installed", $vb_ret);
+		CompositeCache::save("mediahelper_imagemagick_installed", $ps_imagemagick_path, "mediaPluginInfo");
 		
-		return $vb_ret;
+		return $vb_ret ? $ps_imagemagick_path : false;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
 	 * Detects if GraphicsMagick is available in specified directory path
 	 *
-	 * @param $ps_graphicsmagick_path - path to directory containing GraphicsMagick executables
-	 * @return boolean - true if available, false if not
+	 * @param string $ps_graphicsmagick_path - path to directory containing GraphicsMagick executables
+	 * @param array $options Options include:
+	 *		noCache = Don't cached path value. [Default is false]
+	 *
+	 * @return mixed Path to executable if installed, false if not installed
 	 */
-	function caMediaPluginGraphicsMagickInstalled($ps_graphicsmagick_path=null) {
-		//if (CompositeCache::contains("mediahelper_graphicsmagick_installed")) { return CompositeCache::fetch("mediahelper_graphicsmagick_installed"); }
+	function caMediaPluginGraphicsMagickInstalled($ps_graphicsmagick_path=null, $options=null) {
+		if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_graphicsmagick_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_graphicsmagick_installed", "mediaPluginInfo"); }
 		if(!$ps_graphicsmagick_path) { $ps_graphicsmagick_path = caGetExternalApplicationPath('graphicsmagick'); }
 
 		if (!caIsValidFilePath($ps_graphicsmagick_path)) { 
-			CompositeCache::save("mediahelper_graphicsmagick_installed", false);
+			CompositeCache::save("mediahelper_graphicsmagick_installed", false, "mediaPluginInfo");
 			return false; 
 		}
 
-		if (caGetOSFamily() == OS_WIN32) { 
-			CompositeCache::save("mediahelper_graphicsmagick_installed", true);
-			return  true; 
+		if ((caGetOSFamily() == OS_WIN32) && $ps_graphicsmagick_path) { 
+			CompositeCache::save("mediahelper_graphicsmagick_installed", $ps_graphicsmagick_path, "mediaPluginInfo");
+			return $ps_graphicsmagick_path; 
 		} // don't try exec test on Windows
 		
-		exec($ps_graphicsmagick_path.' 2> /dev/null', $va_output, $vn_return);
+		caExec($ps_graphicsmagick_path.' 2> /dev/null', $va_output, $vn_return);
 		
 		$vb_ret = (($vn_return >= 0) && ($vn_return < 127));
 		
-		CompositeCache::save("mediahelper_graphicsmagick_installed", $vb_ret);
+		CompositeCache::save("mediahelper_graphicsmagick_installed", $ps_graphicsmagick_path, "mediaPluginInfo");
 		
-		return $vb_ret;
+		return $vb_ret ? $ps_graphicsmagick_path : false;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
 	 * Detects if dcraw executable is available at specified path
 	 *
-	 * @param $ps_path_to_dcraw - full path to dcraw including executable name
-	 * @return boolean - true if available, false if not
+	 * @param string $ps_path_to_dcraw - full path to dcraw including executable name
+	 * @param array $options Options include:
+	 *		noCache = Don't cached path value. [Default is false]
+	 *
+	 * @return mixed Path to executable if installed, false if not installed
 	 */
-	function caMediaPluginDcrawInstalled($ps_path_to_dcraw=null) {
-		//if (CompositeCache::contains("mediahelper_dcraw_installed")) { return CompositeCache::fetch("mediahelper_dcraw_installed"); }
+	function caMediaPluginDcrawInstalled($ps_path_to_dcraw=null, $options=null) {
+		if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_dcraw_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_dcraw_installed", "mediaPluginInfo"); }
 		if(!$ps_path_to_dcraw) { $ps_path_to_dcraw = caGetExternalApplicationPath('dcraw'); }
 
 		if (!caIsValidFilePath($ps_path_to_dcraw)) { 
-			CompositeCache::save("mediahelper_dcraw_installed", false);
+			CompositeCache::save("mediahelper_dcraw_installed", false, "mediaPluginInfo");
 			return false; 
 		}
 
-		exec($ps_path_to_dcraw.' -i 2> /dev/null', $va_output, $vn_return);
+		caExec($ps_path_to_dcraw.' -i 2> /dev/null', $va_output, $vn_return);
 		
 		$vb_ret = (($vn_return >= 0) && ($vn_return < 127));
 		
-		CompositeCache::save("mediahelper_dcraw_installed", $vb_ret);
+		CompositeCache::save("mediahelper_dcraw_installed", $ps_path_to_dcraw, "mediaPluginInfo");
 		
-		return $vb_ret;
+		return $vb_ret ? $ps_path_to_dcraw : false;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
 	 * Detects if ffmpeg executable is available at specified path
 	 *
-	 * @param $ps_path_to_ffmpeg - full path to ffmpeg including executable name
-	 * @return boolean - true if available, false if not
+	 * @param string $ps_path_to_ffmpeg - full path to ffmpeg including executable name
+	 * @param array $options Options include:
+	 *		noCache = Don't cached path value. [Default is false]
+	 *
+	 * @return mixed Path to executable if installed, false if not installed
 	 */
-	function caMediaPluginFFmpegInstalled($ps_path_to_ffmpeg=null) {
-		//if (CompositeCache::contains("mediahelper_ffmpeg_installed")) { return CompositeCache::fetch("mediahelper_ffmpeg_installed"); }
+	function caMediaPluginFFmpegInstalled($ps_path_to_ffmpeg=null, $options=null) {
+		if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_ffmpeg_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_ffmpeg_installed", "mediaPluginInfo"); }
 		if(!$ps_path_to_ffmpeg) { $ps_path_to_ffmpeg = caGetExternalApplicationPath('ffmpeg'); }
 
 		if (!caIsValidFilePath($ps_path_to_ffmpeg)) { 
-			CompositeCache::save("mediahelper_ffmpeg_installed", false);
+			CompositeCache::save("mediahelper_ffmpeg_installed", false, "mediaPluginInfo");
 			return false; 
 		}
 
-		if (caGetOSFamily() == OS_WIN32) { 
-			CompositeCache::save("mediahelper_ffmpeg_installed", true);
-			return true; 
+		if ((caGetOSFamily() == OS_WIN32) && $ps_path_to_ffmpeg) { 
+			CompositeCache::save("mediahelper_ffmpeg_installed", $ps_path_to_ffmpeg, "mediaPluginInfo");
+			return $ps_path_to_ffmpeg; 
 		}	// don't try exec test on Windows
 		
-		exec($ps_path_to_ffmpeg.'> /dev/null 2>&1', $va_output, $vn_return);
+		caExec($ps_path_to_ffmpeg.'> /dev/null 2>&1', $va_output, $vn_return);
 		
 		$vb_ret = (($vn_return >= 0) && ($vn_return < 127));
 		
-		CompositeCache::save("mediahelper_ffmpeg_installed", $vb_ret);
+		CompositeCache::save("mediahelper_ffmpeg_installed", $ps_path_to_ffmpeg, "mediaPluginInfo");
 		
-		return $vb_ret;
+		return $vb_ret ? $ps_path_to_ffmpeg : false;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
 	 * Detects if Ghostscript (gs) executable is available at specified path
 	 *
-	 * @param $ps_path_to_ghostscript - full path to Ghostscript including executable name
-	 * @return boolean - true if available, false if not
+	 * @param string $ps_path_to_ghostscript - full path to Ghostscript including executable name
+	 * @param array $options Options include:
+	 *		noCache = Don't cached path value. [Default is false]
+	 *
+	 * @return mixed Path to executable if installed, false if not installed
 	 */
-	function caMediaPluginGhostscriptInstalled($ps_path_to_ghostscript=null) {
-		//if (CompositeCache::contains("mediahelper_ghostscript_installed")) { return CompositeCache::fetch("mediahelper_ghostscript_installed"); }
+	function caMediaPluginGhostscriptInstalled($ps_path_to_ghostscript=null, $options=null) {
+		if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_ghostscript_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_ghostscript_installed", "mediaPluginInfo"); }
 		if(!$ps_path_to_ghostscript) { $ps_path_to_ghostscript = caGetExternalApplicationPath('ghostscript'); }
 
 		if (!caIsValidFilePath($ps_path_to_ghostscript)) { 
-			CompositeCache::save("mediahelper_ghostscript_installed", false);
+			CompositeCache::save("mediahelper_ghostscript_installed", false, "mediaPluginInfo");
 			return false; 
 		}
 		
-		if (caGetOSFamily() == OS_WIN32) { 
-			CompositeCache::save("mediahelper_ghostscript_installed", true);
-			return true; 
+		if ((caGetOSFamily() == OS_WIN32) && $ps_path_to_ghostscript) { 
+			CompositeCache::save("mediahelper_ghostscript_installed", $ps_path_to_ghostscript, "mediaPluginInfo");
+			return $ps_path_to_ghostscript; 
 		} // don't try exec test on Windows
 		
-		exec($ps_path_to_ghostscript." -v 2> /dev/null", $va_output, $vn_return);
+		caExec($ps_path_to_ghostscript." -v 2> /dev/null", $va_output, $vn_return);
 		
 		$vb_ret = (($vn_return >= 0) && ($vn_return < 127));
 		
-		CompositeCache::save("mediahelper_ghostscript_installed", $vb_ret);
+		CompositeCache::save("mediahelper_ghostscript_installed", $ps_path_to_ghostscript, "mediaPluginInfo");
 		
-		return $vb_ret;
+		return $vb_ret ? $ps_path_to_ghostscript : false;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
 	 * Detects if PdfToText executable is available at specified path
 	 *
-	 * @param $ps_path_to_pdf_to_text - full path to PdfToText including executable name
-	 * @return boolean - true if available, false if not
+	 * @param string $ps_path_to_pdf_to_text - full path to PdfToText including executable name
+	 * @param array $options Options include:
+	 *		noCache = Don't cached path value. [Default is false]
+	 *
+	 * @return mixed Path to executable if installed, false if not installed
 	 */
-	function caMediaPluginPdftotextInstalled($ps_path_to_pdf_to_text=null) {
-		//if (CompositeCache::contains("mediahelper_pdftotext_installed")) { return CompositeCache::fetch("mediahelper_pdftotext_installed"); }
+	function caMediaPluginPdftotextInstalled($ps_path_to_pdf_to_text=null, $options=null) {
+		if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_pdftotext_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_pdftotext_installed", "mediaPluginInfo"); }
 		if(!$ps_path_to_pdf_to_text) { $ps_path_to_pdf_to_text = caGetExternalApplicationPath('pdftotext'); }
 		
 		if (!caIsValidFilePath($ps_path_to_pdf_to_text)) { 
-			CompositeCache::save("mediahelper_pdftotext_installed", false);
+			CompositeCache::save("mediahelper_pdftotext_installed", false, "mediaPluginInfo");
 			return false; 
 		}
 		
-		exec($ps_path_to_pdf_to_text." -v 2> /dev/null", $va_output, $vn_return);
+		caExec($ps_path_to_pdf_to_text." -v 2> /dev/null", $va_output, $vn_return);
 		
 		$vb_ret = (($vn_return >= 0) && ($vn_return < 127));
 		
-		CompositeCache::save("mediahelper_pdftotext_installed", $vb_ret);
+		CompositeCache::save("mediahelper_pdftotext_installed", $ps_path_to_pdf_to_text, "mediaPluginInfo");
 		
-		return $vb_ret;
+		return $vb_ret ? $ps_path_to_pdf_to_text : false;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
 	 * Detects if LibreOffice executable is available at specified path
 	 *
-	 * @param $ps_path_to_libreoffice - full path to LibreOffice including executable name
-	 * @return boolean - true if available, false if not
+	 * @param string $ps_path_to_libreoffice - full path to LibreOffice including executable name
+	 * @param array $options Options include:
+	 *		noCache = Don't cached path value. [Default is false]
+	 *
+	 * @return mixed Path to executable if installed, false if not installed
 	 */
-	function caMediaPluginLibreOfficeInstalled($ps_path_to_libreoffice=null) {
-		//if (CompositeCache::contains("mediahelper_libreoffice_installed")) { return CompositeCache::fetch("mediahelper_libreoffice_installed"); }
+	function caMediaPluginLibreOfficeInstalled($ps_path_to_libreoffice=null, $options=null) {
+		if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_libreoffice_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_libreoffice_installed", "mediaPluginInfo"); }
 		if(!$ps_path_to_libreoffice) { $ps_path_to_libreoffice = caGetExternalApplicationPath('libreoffice'); }
 		if (!caIsValidFilePath($ps_path_to_libreoffice)) { 
-			CompositeCache::save("mediahelper_libreoffice_installed", false);
+			CompositeCache::save("mediahelper_libreoffice_installed", false, "mediaPluginInfo");
 			return false;
 		}
 		
-		if (caGetOSFamily() == OS_WIN32) { 
-			CompositeCache::save("mediahelper_libreoffice_installed", true);
-			return true; 
+		if ((caGetOSFamily() == OS_WIN32) && $ps_path_to_libreoffice) { 
+			CompositeCache::save("mediahelper_libreoffice_installed", $ps_path_to_libreoffice, "mediaPluginInfo");
+			return $ps_path_to_libreoffice; 
 		} // don't try exec test on Windows
 		
-		exec($ps_path_to_libreoffice." --version 2> /dev/null", $va_output, $vn_return);
+		caExec($ps_path_to_libreoffice." --version 2> /dev/null", $va_output, $vn_return);
 		
 		$vb_ret = (($vn_return >= 0) && ($vn_return < 127));
 		
-		CompositeCache::save("mediahelper_libreoffice_installed", $vb_ret);
+		CompositeCache::save("mediahelper_libreoffice_installed", $ps_path_to_libreoffice, "mediaPluginInfo");
 		
-		return $vb_ret;
+		return $vb_ret ? $ps_path_to_libreoffice : false;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
 	 * Detects if Imagick PHP extension is available
 	 *
+	 * @param array $options No option are currently available.
+	 *
 	 * @return boolean - true if available, false if not
 	 */
-	function caMediaPluginImagickInstalled() {
+	function caMediaPluginImagickInstalled($options=null) {
 		$o_config = Configuration::load();
 		if ($o_config->get('dont_use_imagick')) { return false; }
 		return class_exists('Imagick') ? true : false;
@@ -257,9 +293,11 @@
 	/**
 	 * Detects if Gmagick PHP extension is available
 	 *
+	 * @param array $options No option are currently available.
+	 *
 	 * @return boolean - true if available, false if not
 	 */
-	function caMediaPluginGmagickInstalled() {
+	function caMediaPluginGmagickInstalled($options=null) {
 		return class_exists('Gmagick') ? true : false;
 	}
 	# ------------------------------------------------------------------------------------------------
@@ -267,10 +305,11 @@
 	 * Detects if GD PHP extension is available. Return false if GD is installed but lacks JPEG support unless "don't worry about JPEGs" parameter is set to true.
 	 *
 	 * @param boolean $pb_dont_worry_about_jpegs If set will return true if GD is installed without JPEG support; default is to consider JPEG-less GD worthless.
+	 * @param array $options No option are currently available.
 	 *
-	 * @return boolean - true if available, false if not
+	 * @return boolean true if available, false if not
 	 */
-	function caMediaPluginGDInstalled($pb_dont_worry_about_jpegs=false) {
+	function caMediaPluginGDInstalled($pb_dont_worry_about_jpegs=false, $options=null) {
 		if ($pb_dont_worry_about_jpegs) {
 			return function_exists('imagecreatefromgif') ? true : false;
 		} else {
@@ -280,212 +319,206 @@
 	# ------------------------------------------------------------------------------------------------
 	/**
 	 * Detects if mediainfo is installed in the given path.
-	 * @param string $ps_mediainfo_path path to mediainfo
+	 *
+	 * @param string $ps_mediainfo_path - full path to MediaInfo executable 
+	 * @param array $options Options include:
+	 *		noCache = Don't cached path value. [Default is false]
+	 *
+	 * @return mixed Path to executable if installed, false if not installed
 	 */
-	function caMediaInfoInstalled($ps_mediainfo_path=null) {
-		//if (CompositeCache::contains("mediahelper_mediainfo_installed")) { return CompositeCache::fetch("mediahelper_mediainfo_installed"); }
+	function caMediaInfoInstalled($ps_mediainfo_path=null, $options=null) {
+		if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_mediainfo_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_mediainfo_installed", "mediaPluginInfo"); }
 		if(!$ps_mediainfo_path) { $ps_mediainfo_path = caGetExternalApplicationPath('mediainfo'); }
-
 		if (!caIsValidFilePath($ps_mediainfo_path)) { 
-			CompositeCache::save("mediahelper_mediainfo_installed", false);
+			CompositeCache::save("mediahelper_mediainfo_installed", false, "mediaPluginInfo");
 			return false; 
 		}
-		if (caGetOSFamily() == OS_WIN32) { 
-			CompositeCache::save("mediahelper_mediainfo_installed", true);
-			return true; 
+		if ((caGetOSFamily() == OS_WIN32) && $ps_mediainfo_path) { 
+			CompositeCache::save("mediahelper_mediainfo_installed", $ps_mediainfo_path, "mediaPluginInfo");
+			return $ps_mediainfo_path; 
 		} // don't try exec test on Windows
+		caExec($ps_mediainfo_path." --Help > /dev/null",$va_output,$vn_return);
+		$vb_ret = ($vn_return == 255) || ($vn_return == 0);
 		
-		exec($ps_mediainfo_path." --Help > /dev/null",$va_output,$vn_return);
+		CompositeCache::save("mediahelper_mediainfo_installed", $ps_mediainfo_path, "mediaPluginInfo");
 		
-		$vb_ret = ($vn_return == 255);
-		
-		CompositeCache::save("mediahelper_mediainfo_installed", $vb_ret);
-		
-		return $vb_ret;
-	}
-	# ------------------------------------------------------------------------------------------------
-	/**
-	 * Detects if OpenCTM (http://openctm.sourceforge.net) is installed in the given path.
-	 * @param string $ps_openctm_path path to OpenCTM ctmconv binary
-	 * @return bool
-	 */
-	function caOpenCTMInstalled($ps_openctm_ctmconv_path=null) {
-		//if (CompositeCache::contains("mediahelper_openctm_installed")) { return CompositeCache::fetch("mediahelper_openctm_installed"); }
-		if(!$ps_openctm_ctmconv_path) { $ps_openctm_ctmconv_path = caGetExternalApplicationPath('openctm'); }
-
-		if (!caIsValidFilePath($ps_openctm_ctmconv_path)) { 
-			CompositeCache::save("mediahelper_openctm_installed", false);
-			return false; 
-		}
-		if (caGetOSFamily() == OS_WIN32) { 
-			CompositeCache::save("mediahelper_openctm_installed", true);
-			return true; 
-		}	// don't try exec test on Windows
-		exec($ps_openctm_ctmconv_path." --help > /dev/null",$va_output,$vn_return);
-		$vb_ret = ($vn_return == 0);
-		
-		CompositeCache::save("mediahelper_openctm_installed", $vb_ret);
-		
-		return $vb_ret;
+		return $vb_ret ? $ps_mediainfo_path : false;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
 	 * Detects if Meshlab (http://meshlab.sourceforge.net), and specifically the meshlabserver command line tool, is installed in the given path.
+	 *
 	 * @param string $ps_meshlabserver_path path to the meshlabserver binary
-	 * @return bool
+	 * @param array $options Options include:
+	 *		noCache = Don't cached path value. [Default is false]
+	 *
+	 * @return mixed Path to executable if installed, false if not installed
 	 */
-	function caMeshlabServerInstalled($ps_meshlabserver_path=null) {
-		//if (CompositeCache::contains("mediahelper_meshlabserver_installed")) { return CompositeCache::fetch("mediahelper_meshlabserver_installed"); }
+	function caMeshlabServerInstalled($ps_meshlabserver_path=null, $options=null) {
+		if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_meshlabserver_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_meshlabserver_installed", "mediaPluginInfo"); }
 		if(!$ps_meshlabserver_path) { $ps_meshlabserver_path = caGetExternalApplicationPath('meshlabserver'); }
 
 		if (!caIsValidFilePath($ps_meshlabserver_path)) { 
-			CompositeCache::save("mediahelper_meshlabserver_installed", false);
+			CompositeCache::save("mediahelper_meshlabserver_installed", false, "mediaPluginInfo");
 			return false; 
 		}
-		if (caGetOSFamily() == OS_WIN32) { 
-			CompositeCache::save("mediahelper_meshlabserver_installed", true);
-			return true; 
+		if ((caGetOSFamily() == OS_WIN32) && $ps_meshlabserver_path) { 
+			CompositeCache::save("mediahelper_meshlabserver_installed", $ps_meshlabserver_path, "mediaPluginInfo");
+			return $ps_meshlabserver_path; 
 		}	// don't try exec test on Windows
 		
 		putenv("DISPLAY=:0");
 		chdir('/usr/local/bin');
-		exec($ps_meshlabserver_path." --help > /dev/null",$va_output,$vn_return);
+		caExec($ps_meshlabserver_path." --help > /dev/null",$va_output,$vn_return);
 		
 		$vb_ret = ($vn_return == 1);
 		
-		CompositeCache::save("mediahelper_meshlabserver_installed", $vb_ret);
+		CompositeCache::save("mediahelper_meshlabserver_installed", $ps_meshlabserver_path, "mediaPluginInfo");
 		
-		return $vb_ret;
+		return $vb_ret ? $ps_meshlabserver_path : false;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
 	 * Detects if PDFMiner (http://www.unixuser.org/~euske/python/pdfminer/index.html) is installed in the given path.
+	 *
 	 * @param string $ps_pdfminer_path path to PDFMiner
-	 * @return boolean
+	 * @param array $options Options include:
+	 *		noCache = Don't cached path value. [Default is false]
+	 *
+	 * @return mixed Path to executable if installed, false if not installed
 	 */
-	function caPDFMinerInstalled($ps_pdfminer_path=null) {
-		//if (CompositeCache::contains("mediahelper_pdfminer_installed")) { return CompositeCache::fetch("mediahelper_pdfminer_installed"); }
+	function caPDFMinerInstalled($ps_pdfminer_path=null, $options=null) {
+		if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_pdfminer_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_pdfminer_installed", "mediaPluginInfo"); }
 		if(!$ps_pdfminer_path) { $ps_pdfminer_path = caGetExternalApplicationPath('pdfminer'); }
 
 		if (!caIsValidFilePath($ps_pdfminer_path)) { 
-			CompositeCache::save("mediahelper_pdfminer_installed", false);
+			CompositeCache::save("mediahelper_pdfminer_installed", false, "mediaPluginInfo");
 			return false; 
 		}
 
 		if (!@is_readable($ps_pdfminer_path)) { 
-			CompositeCache::save("mediahelper_pdfminer_installed", false);
+			CompositeCache::save("mediahelper_pdfminer_installed", false, "mediaPluginInfo");
 			return false; 
 		}
-		if (caGetOSFamily() == OS_WIN32) { 
-			CompositeCache::save("mediahelper_pdfminer_installed", true);
-			return true; 
+		if ((caGetOSFamily() == OS_WIN32) && $ps_pdfminer_path) { 
+			CompositeCache::save("mediahelper_pdfminer_installed", $ps_pdfminer_path, "mediaPluginInfo");
+			return $ps_pdfminer_path; 
 		} // don't try exec test on Windows
+
+		caExec($ps_pdfminer_path." --version > /dev/null",$va_output,$vn_return);
 		
-		exec($ps_pdfminer_path." > /dev/null",$va_output,$vn_return);
+		$vb_ret = ($vn_return == 100 || $vn_return == 0);
+
+		CompositeCache::save("mediahelper_pdfminer_installed", $ps_pdfminer_path, "mediaPluginInfo");
 		
-		$vb_ret = ($vn_return == 100);
-		
-		CompositeCache::save("mediahelper_pdfminer_installed", $vb_ret);
-		
-		return $vb_ret;
-	}
-	# ------------------------------------------------------------------------------------------------
-	/**
-	 * Detects if PhantomJS (http://www.phantomjs.org) is installed in the given path.
-	 * @param string $ps_phantomjs_path path to PhantomJS executable
-	 * @return boolean 
-	 */
-	function caPhantomJSInstalled($ps_phantomjs_path=null) {
-		//if (CompositeCache::contains("mediahelper_phantomjs_installed")) { return CompositeCache::fetch("mediahelper_phantomjs_installed"); }
-		if(!$ps_phantomjs_path) { $ps_phantomjs_path = caGetExternalApplicationPath('phantomjs'); }
-		
-		if (!trim($ps_phantomjs_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_phantomjs_path)) || !@is_readable($ps_phantomjs_path)) { 
-			CompositeCache::save("mediahelper_phantomjs_installed", false);
-			return false; 
-		}
-		
-		if (!@is_readable($ps_phantomjs_path)) { 
-			CompositeCache::save("mediahelper_phantomjs_installed", false);
-			return false; 
-		}
-		
-		if (caGetOSFamily() == OS_WIN32) { 
-			CompositeCache::save("mediahelper_phantomjs_installed", true);
-			return true; 
-		}	// don't try exec test on Windows
-		
-		exec($ps_phantomjs_path." > /dev/null", $va_output, $vn_return);
-		
-		$vb_ret = ($vn_return == 0);
-		
-		CompositeCache::save("mediahelper_phantomjs_installed", $vb_ret);
-		
-		return $vb_ret;
+		return $vb_ret ? $ps_pdfminer_path : false;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
 	 * Detects if wkhtmltopdf (http://www.wkhtmltopdf.org) is installed in the given path.
+	 *
 	 * @param string $ps_wkhtmltopdf_path path to wkhtmltopdf executable
-	 * @return boolean 
+	 * @param array $options Options include:
+	 *		noCache = Don't cached path value. [Default is false]
+	 *
+	 * @return mixed Path to executable if installed, false if not installed
 	 */
-	function caWkhtmltopdfInstalled($ps_wkhtmltopdf_path=null) {
-		//if (CompositeCache::contains("mediahelper_wkhtmltopdf_installed")) { return CompositeCache::fetch("mediahelper_wkhtmltopdf_installed"); }
+	function caWkhtmltopdfInstalled($ps_wkhtmltopdf_path=null, $options=null) {
+		if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_wkhtmltopdf_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_wkhtmltopdf_installed", "mediaPluginInfo"); }
 		if(!$ps_wkhtmltopdf_path) { $ps_wkhtmltopdf_path = caGetExternalApplicationPath('wkhtmltopdf'); }
 		
 		if (!trim($ps_wkhtmltopdf_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_wkhtmltopdf_path)) || !@is_readable($ps_wkhtmltopdf_path)) { 
-			CompositeCache::save("mediahelper_wkhtmltopdf_installed", false);
+			CompositeCache::save("mediahelper_wkhtmltopdf_installed", false, "mediaPluginInfo");
 			return false; 
 		}
 		
 		if (!@is_readable($ps_wkhtmltopdf_path)) { 
-			CompositeCache::save("mediahelper_wkhtmltopdf_installed", false);
+			CompositeCache::save("mediahelper_wkhtmltopdf_installed", false, "mediaPluginInfo");
 			return false; 
 		}
-		if (caGetOSFamily() == OS_WIN32) { 
-			CompositeCache::save("mediahelper_wkhtmltopdf_installed", true);
-			return true; 
+		if ((caGetOSFamily() == OS_WIN32) && $ps_wkhtmltopdf_path){ 
+			CompositeCache::save("mediahelper_wkhtmltopdf_installed", $ps_wkhtmltopdf_path, "mediaPluginInfo");
+			return $ps_wkhtmltopdf_path; 
 		} // don't try exec test on Windows
 		
-		exec($ps_wkhtmltopdf_path." > /dev/null",$va_output,$vn_return);
+		caExec($ps_wkhtmltopdf_path." > /dev/null",$va_output,$vn_return);
 		
 		$vb_ret = (($vn_return == 0) || ($vn_return == 1));
 		
-		CompositeCache::save("mediahelper_wkhtmltopdf_installed", $vb_ret);
+		CompositeCache::save("mediahelper_wkhtmltopdf_installed", $ps_wkhtmltopdf_path, "mediaPluginInfo");
 		
-		return $vb_ret;
+		return $vb_ret ? $ps_wkhtmltopdf_path : false;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Detects if youtube-dl (http://www.youtube-dl.org) is installed in the given path.
+	 *
+	 * @param string $youtube_dl_path path to youtube-dl executable
+	 * @param array $options Options include:
+	 *		noCache = Don't cached path value. [Default is false]
+	 *
+	 * @return mixed Path to executable if installed, false if not installed
+	 */
+	function caYouTubeDlInstalled($youtube_dl_path=null, $options=null) {
+		if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_youtube_dl_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_youtube_dl_installed", "mediaPluginInfo"); }
+		if(!$youtube_dl_path) { $youtube_dl_path = caGetExternalApplicationPath('youtube-dl'); }
+		
+		if (!trim($youtube_dl_path) || (preg_match("/[^\/A-Za-z0-9\.:\-]+/", $youtube_dl_path)) || !@is_readable($youtube_dl_path)) { 
+			CompositeCache::save("mediahelper_youtube_dl_installed", false, "mediaPluginInfo");
+			return false; 
+		}
+		if (!@is_readable($youtube_dl_path)) { 
+			CompositeCache::save("mediahelper_youtube_dl_installed", false, "mediaPluginInfo");
+			return false; 
+		}
+		if ((caGetOSFamily() == OS_WIN32) && $youtube_dl_path){ 
+			CompositeCache::save("mediahelper_youtube_dl_installed", $youtube_dl_path, "mediaPluginInfo");
+			return $youtube_dl_path; 
+		} // don't try exec test on Windows
+		
+		caExec($youtube_dl_path." > /dev/null", $output, $return);
+		
+		$ret = (($return == 0) || ($return == 1) || ($return == 2));
+		
+		CompositeCache::save("mediahelper_youtube_dl_installed", $youtube_dl_path, "mediaPluginInfo");
+		
+		return $ret ? $youtube_dl_path : false;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
 	 * Detects if ExifTool (http://www.sno.phy.queensu.ca/~phil/exiftool/) is installed in the given path.
 	 *
 	 * @param string $ps_exiftool_path path to ExifTool
-	 * @return boolean 
+	 * @param array $options Options include:
+	 *		noCache = Don't cached path value. [Default is false]
+	 *
+	 * @return mixed Path to executable if installed, false if not installed
 	 */
-	function caExifToolInstalled($ps_exiftool_path=null) {
-		//if (CompositeCache::contains("mediahelper_exiftool_installed")) { return CompositeCache::fetch("mediahelper_exiftool_installed"); }
+	function caExifToolInstalled($ps_exiftool_path=null, $options=null) {
+		if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_exiftool_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_exiftool_installed", "mediaPluginInfo"); }
 		if(!$ps_exiftool_path) { $ps_exiftool_path = caGetExternalApplicationPath('exiftool'); }
 		
 		if (!trim($ps_exiftool_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_exiftool_path)) || !@is_readable($ps_exiftool_path)) { 
-			CompositeCache::save("mediahelper_exiftool_installed", false);
+			CompositeCache::save("mediahelper_exiftool_installed", false, "mediaPluginInfo");
 			return false; 
 		}
 		
 		if (!@is_readable($ps_exiftool_path)) { 
-			CompositeCache::save("mediahelper_exiftool_installed", false);
+			CompositeCache::save("mediahelper_exiftool_installed", false, "mediaPluginInfo");
 			return false; 
 		}
-		if (caGetOSFamily() == OS_WIN32) { 
-			CompositeCache::save("mediahelper_exiftool_installed", true);
-			return true; 
+		if ((caGetOSFamily() == OS_WIN32) && $ps_exiftool_path) { 
+			CompositeCache::save("mediahelper_exiftool_installed", $ps_exiftool_path, "mediaPluginInfo");
+			return $ps_exiftool_path; 
 		} // don't try exec test on Windows
 		
-		exec($ps_exiftool_path." > /dev/null",$va_output,$vn_return);
+		caExec($ps_exiftool_path." > /dev/null",$va_output,$vn_return);
 	
 		$vb_ret = ($vn_return == 0);
 		
-		CompositeCache::save("mediahelper_exiftool_installed", $vb_ret);
+		CompositeCache::save("mediahelper_exiftool_installed", $ps_exiftool_path, "mediaPluginInfo");
 		
-		return $vb_ret;
+		return $vb_ret ? $ps_exiftool_path : false;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -499,10 +532,9 @@
 	 * @return array|null Extracted metadata, null if exiftool is not installed or something went wrong
 	 */
 	function caExtractMetadataWithExifTool($ps_filepath, $pb_skip_unknown=false){
-		if (caExifToolInstalled()) {
+		if ($vs_path_to_exif_tool = caExifToolInstalled()) {
 			$vs_unknown_param = ($pb_skip_unknown ? '' : '-u');
-			$vs_path_to_exif_tool = caGetExternalApplicationPath('exiftool');
-			exec("{$vs_path_to_exif_tool} -json -a {$vs_unknown_param} -g1 ".caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
+			caExec("{$vs_path_to_exif_tool} -json -a {$vs_unknown_param} -g1 ".caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
 
 			if($vn_return == 0) {
 				$va_data = json_decode(join("\n", $va_output), true);
@@ -531,7 +563,7 @@
 	function caExtractRemoveOrientationTagWithExifTool($filepath){
 		if(!file_exists($filepath)) { return false; }
 		if ($path_to_exif_tool = caExifToolInstalled()) {
-			exec("{$path_to_exif_tool} -overwrite_original_in_place -P -fast -Orientation= ".caEscapeShellArg($filepath)." 2> /dev/null", $output, $return);
+			caExec("{$path_to_exif_tool} -overwrite_original_in_place -P -fast -Orientation= ".caEscapeShellArg($filepath)." 2> /dev/null", $output, $return);
 
 			if($return == 0) {
 				return true;
@@ -622,6 +654,7 @@
 							$po_instance->replaceAttribute(array($va_tmp[1] => $vs_date, 'locale_id' => $pn_locale_id), $va_tmp[1]);
 						}
 					}
+					$po_instance->update();	// commit immediately and don't worry about errors (in case date is somehow invalid)
 					$vb_did_mapping = true;
 				}
 			}
@@ -751,15 +784,17 @@
 	 * @return string File name of a temporary file with the embedded metadata, false on failure
 	 */
 	function caEmbedMediaMetadataIntoFile($ps_file, $ps_table, $pn_pk, $ps_type_code, $pn_rep_pk, $ps_rep_type_code) {
-		require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
 		if(!caExifToolInstalled()) { return false; } // we need exiftool for embedding
 		$vs_path_to_exif_tool = caGetExternalApplicationPath('exiftool');
 
+		global $file_cleanup_list;
+		
 		if (!@is_readable($ps_file)) { return false; }
 		if (!preg_match("/^image\//", mime_content_type($ps_file))) { return false; } // Don't try to embed in files other than images
 
 		// make a temporary copy (we won't touch the original)
 		copy($ps_file, $vs_tmp_filepath = caGetTempDirPath()."/".time().md5($ps_file));
+		$file_cleanup_list[] = $vs_tmp_filepath;
 
 		//
 		// SUBJECT TABLE
@@ -767,7 +802,7 @@
 		if($vs_subject_table_export = caExportMediaMetadataForRecord($ps_table, $ps_type_code, $pn_pk)) {
 			$vs_export_filename = caGetTempFileName('mediaMetadataSubjExport','xml');
 			if(@file_put_contents($vs_export_filename, $vs_subject_table_export) === false) { return false; }
-			exec("{$vs_path_to_exif_tool} -tagsfromfile {$vs_export_filename} -all:all ".caEscapeShellArg($vs_tmp_filepath), $va_output, $vn_return);
+			caExec("{$vs_path_to_exif_tool} -tagsfromfile {$vs_export_filename} -all:all ".caEscapeShellArg($vs_tmp_filepath), $va_output, $vn_return);
 			@unlink($vs_export_filename);
 			@unlink("{$vs_tmp_filepath}_original");
 		}
@@ -778,8 +813,8 @@
 
 		if($vs_representation_export = caExportMediaMetadataForRecord('ca_object_representations', $ps_rep_type_code, $pn_rep_pk)) {
 			$vs_export_filename = caGetTempFileName('mediaMetadataRepExport','xml');
-			if(@file_put_contents($vs_export_filename, $vs_representation_Export) === false) { return false; }
-			exec("{$vs_path_to_exif_tool} -tagsfromfile {$vs_export_filename} -all:all ".caEscapeShellArg($vs_tmp_filepath), $va_output, $vn_return);
+			if(@file_put_contents($vs_export_filename, $vs_representation_export) === false) { return false; }
+			caExec("{$vs_path_to_exif_tool} -tagsfromfile {$vs_export_filename} -all:all ".caEscapeShellArg($vs_tmp_filepath), $va_output, $vn_return);
 			@unlink($vs_export_filename);
 			@unlink("{$vs_tmp_filepath}_original");
 		}
@@ -986,7 +1021,6 @@
 			    if (!$t_val->isLoaded()) { return null; }
 			    $t_attr = new ca_attributes($t_val->get('attribute_id'));
 			    $vs_table_name  = Datamodel::getTableName($t_attr->get('table_num'));
-			    Datamodel::getInstance($vs_table_name, true);
 			    $vn_subject_id = (int)$t_attr->get('row_id');
 			    if (!($t_subject = $vs_table_name::find($vn_subject_id, $pa_options))) { return null; } // table::find() performs checkAccess
 			    
@@ -1056,7 +1090,6 @@
 		// try ZendPDF
 		if(!$o_config->get('dont_use_zendpdf_to_identify_pdfs')) {
 			try {
-				include_once(__CA_LIB_DIR__."/Zend/Pdf.php");
 				$o_pdf = Zend_Pdf::load($ps_filepath);
 			} catch(Exception $e){
 				$o_pdf = null;
@@ -1071,13 +1104,13 @@
 					'width' => $o_page->getWidth(),
 					'height' => $o_page->getHeight()
 				];
-			}
+			} 
 		}
 		
 		// try graphicsmagick
 		if ((!$o_config->get('dont_use_graphicsmagick_to_identify_pdfs')) && caMediaPluginGraphicsMagickInstalled()) {
 			$vs_graphicsmagick_path = caGetExternalApplicationPath('graphicsmagick');
-			exec($vs_graphicsmagick_path.' identify -format "%m;%w;%h;%p\n" '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+			caExec($vs_graphicsmagick_path.' identify -format "%m;%w;%h;%p\n" '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 
 			array_pop($va_output); // last line is blank
 			if (is_array($va_output) && (sizeof($va_output) > 0)) {
@@ -1097,7 +1130,7 @@
 		// try imagemagick
 		if ((!$o_config->get('dont_use_imagemagick_to_identify_pdfs')) && caMediaPluginImageMagickInstalled()) {
 			$vs_imagemagick_path = caGetExternalApplicationPath('imagemagick');
-			exec($vs_imagemagick_path.'/identify -format "%m;%w;%h;%p\n" '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+			caExec($vs_imagemagick_path.'/identify -format "%m;%w;%h;%p\n" '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 		
 			array_pop($va_output); // last line is blank
 			if (is_array($va_output) && (sizeof($va_output) > 0)) {
@@ -1118,7 +1151,7 @@
 		if (caMediaPluginPdftotextInstalled()) {
 			$vs_path_to_pdf_to_text = str_replace("pdftotext", "pdfinfo", caGetExternalApplicationPath('pdftotext'));
 			
-			exec("{$vs_path_to_pdf_to_text} ".caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+			caExec("{$vs_path_to_pdf_to_text} ".caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 			
 			if (($vn_return == 0) && sizeof($va_output) > 0) {
 				$va_info = [];
