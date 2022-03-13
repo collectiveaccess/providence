@@ -1113,7 +1113,7 @@ class DisplayTemplateParser {
 		for($vn_c = 0; $vn_c < $vn_count; $vn_c++) {
 			foreach(array_keys($tags) as $tag) {
 				if($relative_to_container) {
-					$vals[$vn_c][$tag] = $va_tag_vals[$vn_c];
+					$vals[$vn_c][$tag] = $va_tag_vals[$vn_c][$tag];
 				} elseif ($cv = $orig_cvc[$tag]) {
 					$vals[$tag] = $cv;
 				} else {
