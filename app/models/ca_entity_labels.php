@@ -353,7 +353,7 @@ class ca_entity_labels extends BaseLabel {
 				'middlename' => $this->get('middlename'),
 				'surname' => $this->get('surname'),
 				'suffix' => $this->get('suffix')
-			]))) {
+			], $options))) {
 				if(caGetOption('normalize', $options, true)) {
 					foreach($normalized_label as $fld => $val) {
 						$this->set($fld, $val);
@@ -376,7 +376,7 @@ class ca_entity_labels extends BaseLabel {
 	 *
 	 * @return array
 	 */
-	public static function normalizeLabel(array $label_values) : array {
+	public static function normalizeLabel(array $label_values, ?array $options=null) : array {
 		$normalized_values = DataMigrationUtils::splitEntityName(self::labelAsString($label_values), $options);
 		return $normalized_values;
 	}

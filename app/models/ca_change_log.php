@@ -530,8 +530,6 @@ class ca_change_log extends BaseModel {
 								} elseif (isset($va_many_to_one_rels[$vs_fld]) && ($t_rel_item = Datamodel::getInstanceByTableName($va_many_to_one_rels[$vs_fld]['one_table'], true))) {
 									// handle many-one keys
 									$va_snapshot[$vs_fld . '_guid'] = ca_guids::getForRow($t_rel_item->tableNum(), $vm_val);
-								} else {
-									$va_snapshot[$vs_fld . '_guid'] = null;
 								}
 
 								// handle media ...
