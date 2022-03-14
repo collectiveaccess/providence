@@ -547,6 +547,47 @@ $_ca_list_items_settings = array(
 			'description' => _t('Render in new menu')
 		)
 	),
+	'object_representation_types' => array(
+		'show_source_for_preferred_labels' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Include source entry for preferred labels?'),
+			'description' => _t('Include source entry field for preferred labels')
+		),
+		'show_source_for_nonpreferred_labels' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Include source entry for non-preferred labels?'),
+			'description' => _t('Include source entry field for non-preferred labels')
+		),
+		'render_in_new_menu' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 1,
+			'label' => _t('Render in new menu'),
+			'description' => _t('Render in new menu')
+		)
+	),
 	'occurrence_types' => array(
 		'show_source_for_preferred_labels' => array(
 			'formatType' => FT_BIT,

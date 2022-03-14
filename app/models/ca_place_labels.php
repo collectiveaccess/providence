@@ -123,7 +123,7 @@ BaseModel::$s_ca_models_definitions['ca_place_labels'] = array(
 				'LIST' => 'access_statuses',
 				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates if label is accessible to the public or not.')
 		)
-x 	)
+ 	)
 );
 
 class ca_place_labels extends BaseLabel {
