@@ -563,11 +563,11 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		
 			if(!caGetOption('force', $options, false)) {
 				// does media already exist?
-				if(!($media_path = array_shift($this->get('media', ['returnWithStructure' => true])))) {
+				//if(!($media_path = array_shift($this->get('media', ['returnWithStructure' => true])))) {
 					if (!($media_path = $this->getMediaPath('media', 'original'))) {
 						$media_path = $this->getOriginalMediaPath('media');
 					}
-				}
+				//}
 				if(!$this->getAppConfig()->get('allow_representations_duplicate_media') && ($t_existing_rep = ca_object_representations::mediaExists($media_path, $this->getPrimaryKey()))) {
 					throw new MediaExistsException(_t('Media already exists'), $t_existing_rep);
 				}

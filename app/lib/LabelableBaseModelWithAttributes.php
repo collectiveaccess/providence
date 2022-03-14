@@ -1167,13 +1167,13 @@
 			return self::find($pa_values, array_merge($pa_options, ['returnAs' => 'searchResult']));
 		}
 		# ------------------------------------------------------------------
- 		/**
- 		 * Find row(s) with fields having values matching specific values. Returns a model instance for the first record found.
- 		 * This is a convenience wrapper around LabelableBaseModelWithAttributes::find() and support all 
- 		 * options offered by that method.
- 		 *
- 		 * @see LabelableBaseModelWithAttributes::find()
- 		 */
+		/**
+		 * Find row(s) with fields having values matching specific values. Returns a model instance for the first record found.
+		 * This is a convenience wrapper around LabelableBaseModelWithAttributes::find() and support all 
+		 * options offered by that method.
+		 *
+		 * @see LabelableBaseModelWithAttributes::find()
+		 */
 		public static function findAsInstance($pa_values, $pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = []; }
 			return self::find($pa_values, array_merge($pa_options, ['returnAs' => 'firstModelInstance']));
@@ -2413,7 +2413,7 @@
 				$bundle_preview = $this->getWithTemplate($pa_bundle_settings['displayTemplate']);
 			}
 			if(!$bundle_preview) {
-				$bundle_preview = current($va_inital_values)['displayname'];
+				$bundle_preview = current($va_inital_values)[$this->getLabelDisplayField()];
 			}
 			$o_view->setVar('bundle_preview', $bundle_preview);
 			
@@ -2507,7 +2507,8 @@
 				$bundle_preview = $this->getWithTemplate($pa_bundle_settings['displayTemplate']);
 			}
 			if(!$bundle_preview) {
-				$bundle_preview = current($va_inital_values)['displayname'];
+				$l = $this->getLabelDisplayField();
+				$bundle_preview = join('; ', array_map(function($v) use ($l) { return $v[$l]; }, $va_inital_values));
 			}
 			$o_view->setVar('bundle_preview', $bundle_preview);
 			

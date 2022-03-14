@@ -58,9 +58,14 @@ var caUI = caUI || {};
 			that._files[jQuery(e.target).prop('name')] = e.target.files; 
 		});
 		
-		jQuery("#" + that.formID).parent().data('panel').onEscapeCallback = function() {
-			that.cleanupOnCancel();
-		};
+		let p = jQuery("#" + that.formID).parent().data('panel');
+		if(!p) { p = jQuery("#" + that.formID).parent().parent().data('panel'); }
+		
+		if(p) {
+			p.onEscapeCallback = function() {
+				that.cleanupOnCancel();
+			};
+		}
 		
 		var formData;
 		// --------------------------------------------------------------------------------

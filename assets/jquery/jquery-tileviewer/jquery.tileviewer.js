@@ -88,8 +88,8 @@ var methods = {
             tooltipClass: 'tileviewerTooltipFormat',
             
             uiIcons: {
-            	'zoomIn': '<i class="fa fa-plus-square-o fa-2x"><i>',
-            	'zoomOut': '<i class="fa fa-minus-square-o fa-2x"><i>',
+            	'zoomIn': '<i class="fas fa-plus-square fa-2x fa-inverse"><i>',
+            	'zoomOut': '<i class="fa fa-minus-square fa-2x fa-inverse"><i>',
             	'lock': '<i class="fa fa-lock"></i>',
             	'delete': '<i class="fa fa-trash-o"></i>',
             	'close': '<i class="fa fa-times"></i>'

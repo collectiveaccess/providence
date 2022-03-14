@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -82,6 +82,12 @@ class WLPlugVisualizerTimelineJS Extends BaseVisualizerPlugIn Implements IWLPlug
 			if($this->opn_num_items_rendered >= 250) { break; }
 		}
 
+		global $g_ui_locale;
+		if($lang_code = substr($g_ui_locale, 0, 2)) {
+			$lang = $po_request->config->get('site_host').$po_request->config->get('ca_url_root')."/assets/timelinejs/js/locale/{$lang_code}.json";
+		} else {
+			$lang = 'en';
+		}
 		$vs_buf = $this->getLocaleJSSrc($po_request)."
 	<div id='timeline-embed' style='width: {$vs_width}; height: {$vs_height};'></div>
     <script type='text/javascript'>
@@ -90,6 +96,7 @@ class WLPlugVisualizerTimelineJS Extends BaseVisualizerPlugIn Implements IWLPlug
 				type:       'timeline',
 				width:      '{$vs_width}',
 				height:     '{$vs_height}',
+				language:	'{$lang}',
 				source:     '".caNavUrl($po_request, '*', '*', '*', array('renderData' => '1', 'viz' => $pa_viz_settings['code']))."',
 				embed_id:   'timeline-embed'
 			});
