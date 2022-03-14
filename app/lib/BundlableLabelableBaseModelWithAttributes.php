@@ -4098,8 +4098,9 @@ if (!$vb_batch) {
 									}
 									$effective_date = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'effective_date_'.$va_label['label_id'], pString);
 									$label_access = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'access_'.$va_label['label_id'], pInteger);
+									$source_info = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'source_info_'.$va_label['label_id'], pString);
 							
-									$this->editLabel($va_label['label_id'], $va_label_values, $vn_label_locale_id, $vn_label_type_id, true, ['queueIndexing' => true, 'effectiveDate' => $effective_date, 'access' => $label_access]);
+									$this->editLabel($va_label['label_id'], $va_label_values, $vn_label_locale_id, $vn_label_type_id, true, ['queueIndexing' => true, 'effectiveDate' => $effective_date, 'access' => $label_access, 'sourceInfo' => $source_info]);
 									if ($this->numErrors()) {
 										foreach($this->errors() as $o_e) {
 											switch($o_e->getErrorNumber()) {
@@ -4199,8 +4200,9 @@ if (!$vb_batch) {
 							$vn_label_type_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'type_id_new_'.$vn_c, pInteger);
 							$effective_date = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'effective_date_new_'.$vn_c, pString);
 							$label_access = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'access_new_'.$vn_c, pInteger);
+							$source_info = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'source_info_new_'.$vn_c, pString);
 							
-							$this->addLabel($va_label_values, $vn_new_label_locale_id, $vn_label_type_id, true, ['queueIndexing' => true, 'effectiveDate' => $effective_date, 'access' => $label_access]);
+							$this->addLabel($va_label_values, $vn_new_label_locale_id, $vn_label_type_id, true, ['queueIndexing' => true, 'effectiveDate' => $effective_date, 'access' => $label_access, 'sourceInfo' => $source_info]);
 							if ($this->numErrors()) {
 								$po_request->addActionErrors($this->errors(), $vs_f);
 								$vb_error_inserting_pref_label = true;
@@ -4246,8 +4248,9 @@ if (!$vb_batch) {
 									
 									$effective_date = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'effective_date_'.$va_label['label_id'], pString);
 									$label_access = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'access_'.$va_label['label_id'], pInteger);
+									$source_info = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'source_info_'.$va_label['label_id'], pString);
 							
-									$this->editLabel($va_label['label_id'], $va_label_values, $vn_label_locale_id, $vn_label_type_id, false, ['queueIndexing' => true, 'effectiveDate' => $effective_date, 'access' => $label_access]);
+									$this->editLabel($va_label['label_id'], $va_label_values, $vn_label_locale_id, $vn_label_type_id, false, ['queueIndexing' => true, 'effectiveDate' => $effective_date, 'access' => $label_access, 'sourceInfo' => $source_info]);
 									if ($this->numErrors()) {
 										foreach($this->errors() as $o_e) {
 											switch($o_e->getErrorNumber()) {
@@ -4310,8 +4313,9 @@ if (!$vb_batch) {
 							$vn_new_label_type_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'type_id_new_'.$vn_c, pInteger);
 							$effective_date = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'effective_date_new_'.$vn_c, pString);
 							$label_access = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'access_new_'.$vn_c, pInteger);
+							$source_info = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'source_info_new_'.$vn_c, pString);
 							
-							$this->addLabel($va_label_values, $vn_new_label_locale_id, $vn_new_label_type_id, false, ['queueIndexing' => true, 'effectiveDate' => $effective_date, 'access' => $label_access]);
+							$this->addLabel($va_label_values, $vn_new_label_locale_id, $vn_new_label_type_id, false, ['queueIndexing' => true, 'effectiveDate' => $effective_date, 'access' => $label_access, 'sourceInfo' => $source_info]);
 						
 							if ($this->numErrors()) {
 								$po_request->addActionErrors($this->errors(), $vs_f);
