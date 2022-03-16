@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2020 Whirl-i-Gig
+ * Copyright 2018-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1233,4 +1233,150 @@
 			return _t('Write exporter mapping to Excel-format file.');
         }
 		# -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt|null $po_opts
+		 * @return bool
+		 */
+		public static function export_search_using_display($po_opts=null) {
+            $file = $po_opts->getOption('file');
+            if (!$file) {
+				CLIUtils::addError(_t('A file must be specified'));
+				return;
+			}
+			
+			if ($file && ((file_exists($file) && !is_writeable($file)) || (!file_exists($file) && !is_writeable(pathinfo($file, PATHINFO_DIRNAME))))) {
+				CLIUtils::addError(_t('Cannot write to file %1', $file));
+				return;
+			}
+			
+			$table = $po_opts->getOption('table');
+			if (!$table) {
+				CLIUtils::addError(_t('A table must be specified'));
+				return;
+			}
+			
+			$format = strtoupper($po_opts->getOption('format'));
+			
+			
+			$display = $po_opts->getOption('display');
+			if(!($t_display = ca_bundle_displays::find(['display_code' => $display], ['returnAs' => 'firstModelInstance']))) {
+				CLIUtils::addError(_t('A valid display must be specified'));
+				return;
+			}
+			
+			$search = $po_opts->getOption('search');
+			if(!strlen($search)) { $search = '*'; }
+			
+			if(!($o_s = caGetSearchInstance($table))) {
+				CLIUtils::addError(_t('Could not create search for %1', $table));
+				return;
+			}
+			$result = $o_s->search($search);
+			
+			//$result, $format, $file, $ps_title=null
+			$view = new View(null, [__CA_THEME_DIR__.'/views/find']);
+			
+			$view->setVar('criteria_summary', $search);	// add displayable description of current search/browse parameters
+			$view->setVar('criteria_summary_truncated', mb_substr($search, 0, 60).((mb_strlen($search) > 60) ? '...' : ''));
+	
+			// get display list
+			$ret = $t_display->getDisplayListForResultsEditor($table, 
+ 				['user_id' => null, 'request' => null, 'type_id' => null]);
+ 				
+			$view->setVar('result', $result);
+			$view->setVar('t_display', $t_display);
+			$view->setVar('display_list', $display_list = $ret['displayList']);
+			$view->setVar('current_items_per_page', null);
+			
+			
+			$result->seek(0); // reset result before exporting anything
+			
+			switch($format) {
+				case 'XLSX':
+					$output = $view->render('Results/xlsx_results.php');
+					file_put_contents($file, $output);
+					return;
+				case 'DOCX':
+					$view->render('Results/docx_results.php');
+					file_put_contents($file, $output);
+					return;						
+				case 'CSV':
+					$delimiter = ",";
+					$file_extension = 'txt';
+					$mimetype = "text/plain";
+					break;
+				case 'TAB':
+					$delimiter = "\t";	
+					$file_extension = 'txt';
+					$mimetype = "text/plain";
+					break;
+				default:
+					CLIUtils::addError(_t('Invalid format %1', $format));
+					return;
+			}
+	
+			$rows = [];
+	
+			// output header
+	
+			$row = array();
+			foreach($display_list as $display_item) {
+				$row[] = $display_item['display'];
+			}
+			$rows[] = join($delimiter, $row);
+	
+			$result->seek(0);
+	
+			$r = fopen($file, "w");
+			while($result->nextHit()) {
+				$row = array();
+				foreach($display_list as $placement_id => $display_item) {
+					$vs_value = html_entity_decode($t_display->getDisplayValue($result, $placement_id, array('convert_codes_to_display_text' => true, 'convertLineBreaks' => false)), ENT_QUOTES, 'UTF-8');
+					$vs_value = preg_replace("![\r\n\t]+!", " ", $vs_value);
+				
+					// quote values as required
+					if (preg_match("![^A-Za-z0-9 .;]+!", $vs_value)) {
+						$vs_value = '"'.str_replace('"', '""', $vs_value).'"';
+					}
+					$row[] = $vs_value;
+				}
+				fputcsv($r, $row, $delimiter);
+			}
+			fclose($r);		
+			
+			CLIUtils::addMessage(_t('Exported %1', $mapping));
+		}
+		# -------------------------------------------------------
+		public static function export_search_using_displayParamList() {
+			return [
+				"table|t=s" => _t('Required. Table to search on.'),
+				"search|s=s" => _t('Required. Search to use.'),
+				"file|f=s" => _t('Required. File to save output to.'),
+				"format|x=s" => _t('Format to output in. Supported values as XLSX, DOCX, TAB and CSV.'),
+				"display|d=s" => _t('Code of display to format data with.'),
+				
+			];
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function export_search_using_displayUtilityClass() {
+            return _t('Import/Export');
+        }
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function export_search_using_displayShortHelp() {
+			return _t('Write search to XLSX, Docx or PDF file using display.');
+        }
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function export_search_using_displayHelp() {
+			return _t('Write exporter mapping to Excel-format file.');
+        }
+				
     }
