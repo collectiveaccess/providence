@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2019 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1011,7 +1011,20 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 *
 	 * @return array Array of access levels, keyed on set_id
 	 */
-	public function haveAccessToSets(int $user_id, int $access, array $set_ids, ?array $options=null) {
+	public function haveAccessToSets(int $user_id, int $access, ?array $set_ids, ?array $options=null) {
+		if(is_array($set_ids)) {
+			$set_ids = array_filter($set_ids, function($v) { return (bool)$v; });
+		}
+		if(!is_array($set_ids) || !sizeof($set_ids)) {
+			if($set_ids)  { 
+				$set_ids = [$set_ids];
+			} elseif($set_id = $this->getPrimaryKey()){ 
+				$set_ids = [$set_id];
+			} else {
+				return [];
+			}
+		}
+		
 		$ret = array_flip($set_ids);
 		
 		$shares_only = caGetOption('sharesOnly', $options, false);
