@@ -3632,7 +3632,7 @@ class TimeExpressionParser {
 			case 'MONTH':
 				return $this->getISODateTime($pa_start_date, 'FULL', array_merge($pa_options, ['timeOmit' => true])).'/'.$this->getISODateTime($pa_end_date, 'FULL', array_merge($pa_options, ['timeOmit' => true]));
 		}
-		if ($start == $end) { return $start; }
+		if ($start === $end) { return $start; }
 		return "{$start}/{$end}";
 	}
 	# -------------------------------------------------------------------
