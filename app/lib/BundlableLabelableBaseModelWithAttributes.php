@@ -135,7 +135,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$this->initLabelDefinitions();
 		
 		if ($this->isHierarchical() && $this->opo_idno_plugin_instance) {
-			$this->opo_idno_plugin_instance->isChild((($vs_parent_id_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD')) && $this->get($vs_parent_id_fld) > 0) ? true : false);
+			$this->opo_idno_plugin_instance->isChild($this->isChild());
 		}
 		return $vn_rc;
 	}
@@ -676,7 +676,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		if ($this->opo_idno_plugin_instance) {
 			// If attempting to set parent_id, then flag record as child for id numbering purposes
-			$this->opo_idno_plugin_instance->isChild(((($vs_parent_id_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD')) && isset($pa_fields[$vs_parent_id_fld]) && ($pa_fields[$vs_parent_id_fld] > 0)) || ($this->get($vs_parent_id_fld))) ? true : false);
+			$this->opo_idno_plugin_instance->isChild(((($vs_parent_id_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD')) && isset($pa_fields[$vs_parent_id_fld]) && ($pa_fields[$vs_parent_id_fld] > 0)) || ($this->isChild())) ? true : null);
 		
 			if (in_array($this->getProperty('ID_NUMBERING_ID_FIELD'), $pa_fields)) {
 				if (!$this->_validateIncomingAdminIDNo(true, false)) { 
@@ -780,6 +780,21 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			return ($vn_num_bits == 1) ? true : $t_rel->hasBundle($ps_bundle, $pn_type_id);
 		} 
 		return parent::hasBundle($ps_bundle, $pn_type_id);
+	}
+	# ------------------------------------------------------
+	/** 
+	 * Check if currently loaded row is a hierarchical child of another row (object or collection)
+	 *
+	 * @return bool
+	 */
+	public function isChild() : bool {
+		$ret = parent::isChild();
+		
+		if(($parent_id_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD')) && method_exists($this, 'getIDNoPlugInInstance') && ($o_idno = $this->getIDNoPlugInInstance())) {
+			$o_idno->isChild($ret, $ret ? self::getIdnoForID($this->get($parent_id_fld)) : null);
+		}
+		
+		return $ret;
 	}
 	# ------------------------------------------------------------------
 	/**
