@@ -291,7 +291,9 @@ class BaseEditorController extends ActionController {
 		}
 
 		$vb_is_insert = !$t_subject->getPrimaryKey();
-
+		
+		$t_subject->isChild();	// sets idno "child" flag
+		
 		# trigger "BeforeSaveItem" hook
 		$this->opo_app_plugin_manager->hookBeforeSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => &$t_subject, 'is_insert' => $vb_is_insert));
 

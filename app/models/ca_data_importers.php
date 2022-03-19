@@ -1755,7 +1755,17 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							switch($vs_action_code = strtolower($va_action['action'])) {
 								case 'set':
 									$va_rule_set_values[$va_action['target']] = $va_action['value']; // TODO: transform value using mapping rules?
+									break;
+								case 'transform':
+									$targets = is_array($va_action['targets']) ? $va_action['targets'] : [$va_action['target']];
 									
+									if(is_array($va_action['regexes'])) {
+										foreach($targets as $target) {
+											$va_rule_set_values[$target] = self::_processAppliedRegexes(null, null, 0, $va_action['regexes'], $va_raw_row[$target], $row, $row_with_replacements);
+										}
+									} else {
+										$o_log->logDebug(_t('Invalid transform rule: %1', print_r($va_action, true)));
+									}
 									break;
 								case 'skip':
 								default:
@@ -2822,7 +2832,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 
 									if ( $o_refinery = RefineryManager::getRefineryInstance( $vs_refinery ) ) {
 										$va_refined_values = $o_refinery->refine( $va_content_tree, $va_group, $va_item,
-											$va_raw_row, array(
+											$va_raw_row, [
 												'mapping'           => $t_mapping,
 												'source'            => $ps_source,
 												'subject'           => $t_subject,
@@ -2834,8 +2844,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												'importEventSource' => $vn_row,
 												'reader'            => $o_reader,
 												'valueIndex'        => $vn_i,
-												'sourceValue' 		=> $va_group_buf[ $vn_c ]['_source']
-											) );
+												'sourceValue' 		=> $va_group_buf[ $vn_c ]['_source'],
+												'defaultDisplaynameFormat' => $default_displayname_format
+											] );
 
 										if ( ! $va_refined_values
 										     || ( is_array( $va_refined_values )
@@ -3394,7 +3405,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										$vb_skip_if_data_present = false;
 										$vb_treat_numeric_value_as_id = false;
 										$vs_item_error_policy = null;
-										$vs_displayname_format = null;
+										$displayname_format = null;
 									}
 								
 									$t_subject->clearErrors();
@@ -4103,7 +4114,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		} elseif(isset($pa_environment[$pa_item['source']])) {
 			$vm_value = $pa_environment[$pa_item['source']];
 		} elseif(isset($pa_other_values[$pa_item['source']])) {
-			$vm_value = $pa_other_values[$pa_item['source']];
+			$vm_value = is_array($pa_other_values[$pa_item['source']]) ? $pa_other_values[$pa_item['source']][0] : $pa_other_values[$pa_item['source']];
 		} else {
 			$vn_cur_pos = $po_reader->currentRow();
 			$vb_did_seek = false;
@@ -4254,7 +4265,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	public static function _applyComparisonOptions(?string $value, array $mapping_items, int $item_id, $o_reader, array $row, array $row_with_replacements, ?array $options=null) {
 		// TODO: generalize to support all skipIf* and skipWhen* settings
 		$skip = caGetOption('skip', $options, []. ['castTo' => 'array']);
-		$use_raw = caGetOption('use_raw', $options, null);
+		$use_raw = caGetOption('useRaw', $options, null);
 		$o_log = caGetOption('log', $options, null);
 		
 		if (!in_array('skipIfEmpty', $skip) &&isset($mapping_items[$item_id]['settings']['skipIfEmpty']) && (bool)$mapping_items[$item_id]['settings']['skipIfEmpty'] && !strlen($value)) {
@@ -4315,28 +4326,36 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					return $val;
 				}
 			}
+			if(!($val_is_array = is_array($val))) {
+				$val = [$val];
+			}
+			
 			foreach($regexes as $regex_index => $regex_info) {
 				if (!strlen($regex_info['match'])) { continue; }
 				$regex = "!".str_replace("!", "\\!", $regex_info['match'])."!u".((isset($regex_info['caseSensitive']) && (bool)$regex_info['caseSensitive']) ? '' : 'i');
 				
-				if (!preg_match($regex, $val, $matches)) { continue; }
+				foreach($val as $i => $x) {
+					if (!preg_match($regex, $x, $matches)) { continue; }
 			
-				foreach($matches as $mi => $m) {
-					if($mi === 0) { continue; }
-					if ($o_reader->valuesCanRepeat()) {
-						$row_with_replacements[$item['source'].":{$mi}"][$index] = $row[$item['source'.":{$mi}"]][$index] = $row[mb_strtolower($item['source'].":{$mi}")][$index] = $m;
-					} else {
-						$row_with_replacements[$item['source'].":{$mi}"] = $row[$item['source'.":{$mi}"]] = $row[mb_strtolower($item['source'].":{$mi}")] = $m;
+					if($o_reader) {
+						foreach($matches as $mi => $m) {
+							if($mi === 0) { continue; }
+							if ($o_reader->valuesCanRepeat()) {
+								$row_with_replacements[$item['source'].":{$mi}"][$index] = $row[$item['source'.":{$mi}"]][$index] = $row[mb_strtolower($item['source'].":{$mi}")][$index] = $m;
+							} else {
+								$row_with_replacements[$item['source'].":{$mi}"] = $row[$item['source'.":{$mi}"]] = $row[mb_strtolower($item['source'].":{$mi}")] = $m;
+							}
+						}
 					}
-				}
 				
-				if(!is_null($regex_info['replaceWith'])) {
-					$val = preg_replace($regex , $regex_info['replaceWith'], $val);
+					if(!is_null($regex_info['replaceWith'])) {
+						$val[$i] = preg_replace($regex , $regex_info['replaceWith'], $x);
+					}
 				}
 			}
 		}
 		
-		return $val;
+		return $val_is_array ? $val : $val[0];
 	}
 	# ------------------------------------------------------
 	/**

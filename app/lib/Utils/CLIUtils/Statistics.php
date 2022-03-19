@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/Utils/CLIUtils/Performance.php : 
+ * app/lib/Utils/CLIUtils/Statistics.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

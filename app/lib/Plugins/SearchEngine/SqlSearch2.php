@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2021 Whirl-i-Gig
+ * Copyright 2010-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,13 +33,12 @@
  /**
   *
   */
-
- require_once(__CA_LIB_DIR__.'/Plugins/WLPlug.php');
- require_once(__CA_LIB_DIR__.'/Plugins/IWLPlugSearchEngine.php');
- require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/SqlSearchResult.php'); 
- require_once(__CA_LIB_DIR__.'/Search/Common/Stemmer/SnoballStemmer.php');
- require_once(__CA_APP_DIR__.'/helpers/gisHelpers.php');
- require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/BaseSearchPlugin.php');
+require_once(__CA_LIB_DIR__.'/Plugins/WLPlug.php');
+require_once(__CA_LIB_DIR__.'/Plugins/IWLPlugSearchEngine.php');
+require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/SqlSearchResult.php'); 
+require_once(__CA_LIB_DIR__.'/Search/Common/Stemmer/SnoballStemmer.php');
+require_once(__CA_APP_DIR__.'/helpers/gisHelpers.php');
+require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/BaseSearchPlugin.php');
 
 class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSearchEngine {
 	# -------------------------------------------------------
@@ -54,35 +53,40 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	
 	private $tep;			// date/time expression parse
 	
-	static $word_cache = array();						// cached word-to-word_id values used when indexing
-	static $s_metadata_elements; 						// cached metadata element info
-	static $s_fieldnum_cache = array();				// cached field name-to-number values used when indexing
 	
-	private $ops_insert_word_index_sql = '';
 	private $q_lookup_word = null;
-	private $ops_insert_word_sql = '';
-	private $ops_insert_ngram_sql = '';
+	private $insert_word_sql = '';
+	private $insert_ngram_sql = '';
 
 
-	private $ops_delete_with_field_num_sql = "";
+	private $insert_word_index_sql = '';
+	private $delete_with_field_num_sql = "";
 	private $q_delete_with_field_num = null;
 
-	private $ops_delete_with_field_row_id_sql = '';
+	private $delete_with_field_row_id_sql = '';
 	private $q_delete_with_field_row_id = null;
 
-	private $ops_delete_with_field_row_id_and_num = "";
+	private $delete_with_field_row_id_and_num = "";
 	private $q_delete_with_field_row_id_and_num = null;
 
-	private $ops_delete_dependent_sql = "";
+	private $delete_dependent_sql = "";
 	private $q_delete_dependent_sql = null;
 	
-	static private $s_doc_content_buffer = [];			// content buffer used when indexing
+	
+	static public $whitespace_tokenizer_regex;
+	static public $punctuation_tokenizer_regex;
+	
+	static private $word_cache = [];					// cached word-to-word_id values used when indexing
+	static private $metadata_elements; 					// cached metadata element info
+	static private $fieldnum_cache = [];				// cached field name-to-number values used when indexing
+	static private $stop_words = null;
+	static private $doc_content_buffer = [];			// content buffer used when indexing
 	
 	# -------------------------------------------------------
-	public function __construct($po_db=null) {
+	public function __construct($db=null) {
 		global $g_ui_locale;
 		
-		parent::__construct($po_db);
+		parent::__construct($db);
 		
 		$this->tep = new TimeExpressionParser();
 		$this->tep->setLanguage($g_ui_locale);
@@ -91,23 +95,42 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		$this->do_stemming = (int)trim($this->search_config->get('search_sql_search_do_stemming')) ? true : false;
 		
 		$this->initDbStatements();
-		
-		if (!($this->ops_indexing_tokenizer_regex = trim($this->search_config->get('indexing_tokenizer_regex')))) {
-			$this-> ops_indexing_tokenizer_regex = "^\pL\pN\pNd/_#\@\&\.";
+
+		if(!(self::$whitespace_tokenizer_regex = $this->search_config->get('whitespace_tokenizer_regex'))) {
+			self::$whitespace_tokenizer_regex = '[\s\"\—\-]+';
 		}
-		if (!($this->ops_search_tokenizer_regex = trim($this->search_config->get('search_tokenizer_regex')))) {
-			$this->ops_search_tokenizer_regex = "^\pL\pN\pNd/_#\@\&";
+		if(!(self::$punctuation_tokenizer_regex = $this->search_config->get('punctuation_tokenizer_regex'))) {
+			self::$whitespace_tokenizer_regex = '[\.,;:\(\)\{\}\[\]\|\\\+_\!\&«»\']+';
 		}
 		
-		if (!is_array($this->opa_asis_regexes = $this->search_config->getList('asis_regexes'))) {
-			$this->opa_asis_regexes = [];
+		if($this->search_config->get('use_stop_words')) {
+			if(!is_array(self::$stop_words)) { 
+				if(CompositeCache::contains('stop_words', 'SqlSearch2')) { 
+					self::$stop_words = CompositeCache::fetch('stop_words', 'SqlSearch2');
+				} else {
+					$sw = new \voku\helper\StopWords();
+					$langs = array_map(function($v) { return array_shift(explode('_', $v)); }, ca_locales::getCataloguingLocaleCodes());
+			
+					self::$stop_words = [];
+					foreach($langs as $lang) {
+						self::$stop_words = array_merge(self::$stop_words, array_flip($sw->getStopWordsFromLanguage($lang)));
+					}
+			
+					// Add application-specific stop words
+					self::$stop_words[mb_strtolower('['.caGetBlankLabelText(57).']')] = 1;
+				
+					CompositeCache::save('stop_words', self::$stop_words, 'SqlSearch2');
+				}
+			}
+		} else {
+			self::$stop_words = [];
 		}
 		
 		//
 		// Load info about metadata elements into static var cache if it hasn't already be fetched
 		//
-		if (!is_array(WLPlugSearchEngineSqlSearch2::$s_metadata_elements)) {
-			WLPlugSearchEngineSqlSearch2::$s_metadata_elements = ca_metadata_elements::getRootElementsAsList();
+		if (!is_array(WLPlugSearchEngineSqlSearch2::$metadata_elements)) {
+			WLPlugSearchEngineSqlSearch2::$metadata_elements = ca_metadata_elements::getRootElementsAsList();
 		}
 		$this->debug = false;
 	}
@@ -123,7 +146,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				'limit' => 2000,											// maximum number of hits to return [default=2000]  ** NOT CURRENTLY ENFORCED -- MAY BE DROPPED **
 				'maxIndexingBufferSize' => $max_indexing_buffer_size,	// maximum number of indexed content items to accumulate before writing to the database
 				'maxWordIndexInsertSegmentSize' => ceil($max_indexing_buffer_size / 2), // maximum number of word index rows to put into a single insert
-				'maxWordCacheSize' => 131072,								// maximum number of words to cache while indexing before purging
+				'maxWordCacheSize' => 1048576,								// maximum number of words to cache while indexing before purging
 				'cacheCleanFactor' => 0.50,									// percentage of words retained when cleaning the cache
 				
 				'omitPrivateIndexing' => false,								//
@@ -147,7 +170,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	/**
 	 * Set database connection
 	 *
-	 * @param Db $po_db A database connection to use in place of current one
+	 * @param Db $db A database connection to use in place of current one
 	 */
 	public function setDb($db) {
 		parent::setDb($db);
@@ -158,7 +181,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 *
 	 */
 	public function __destruct() {	
-		if (is_array(self::$s_doc_content_buffer) && sizeof(self::$s_doc_content_buffer)) {
+		if (is_array(self::$doc_content_buffer) && sizeof(self::$doc_content_buffer)) {
 			if($this->db && !$this->db->connected()) {
 				$this->db->connect();
 			}
@@ -232,8 +255,11 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	$pk = Datamodel::primaryKey($subject_tablenum);
 	 	
 	 	$acc = [];
-	 	foreach($subqueries as $i => $subquery) {
+	 	$i = -1;
+	 	foreach($subqueries as $subquery) {
 	 		$hits = $this->_processQuery($subject_tablenum, $subquery);
+	 		if(is_null($hits)) { continue; } // skip stop words
+	 		$i++;
 	 		$op = $this->_getBooleanOperator($signs, $i);
 	 		
 	 		switch($op) {
@@ -346,29 +372,14 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	if (in_array($field_elements[0], [_t('created'), _t('modified')])) {
 	 		return $this->_processQueryChangeLog($subject_tablenum, $term);
 	 	}
-	 	$text = join(' ', $this->_tokenize($term->text, true));
+	 	$words = self::filterStopWords(self::tokenize($term->text, true));
+	 	if(!$words || !sizeof($words)) { return null; }
 	 	
 	 	$blank_val = caGetBlankLabelText($subject_tablenum);
 	 	$is_blank = ((mb_strtolower("[{$blank_val}]") === mb_strtolower($term->text)) || (mb_strtolower("[BLANK]") === mb_strtolower($term->text)));
 	 	$is_not_blank = (mb_strtolower("["._t('SET')."]") === mb_strtolower($term->text));
 	 	
 	 	$word_field = 'sw.word';
-	 	
-	 	// Don't stem if:
-	 	//	1. Stemming is disabled
-	 	//	2. Search for is blank values
-	 	//	3. Search is not non-blank values
-	 	//	4. Search includes non-letter characters
-	 	//  5. Search is flagged with trailing "|" as "do-not-stem"
-	 	$do_not_stem = preg_match("!\|$!", $text);
-	 	$text = preg_replace("!\|$!", '', $text);
-	 	if ($this->do_stemming && !$do_not_stem && !$is_blank && !$is_not_blank && !preg_match("![^A-Za-z]+!u", $text)) {
-	 		$text_stem = $this->stemmer->stem($text);
-	 		if (($text !== $text_stem) && ($text_stem[strlen($text_stem)-1] !== '*')) { 
-	 			$text = $text_stem.'*';
-	 			$word_field = 'sw.stem';
-	 		}
-	 	}
 	 	
 	 	$ap = $field ? $this->_getElementIDForAccessPoint($subject_tablenum, $field) : null;
 	 	
@@ -378,105 +389,127 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 		if(is_array($ret)) { return $ret; }
 	 	}
 	 	
-	 
-	 	$params = [$subject_tablenum];
-	 	$word_op = '=';
-	 	
-	 	$use_boost = true;
-	 	$is_bare_wildcard = false;
-	 	if (is_array($ap) && $is_blank) {
-	 		$params[] = 0;
-	 		$word_field = 'swi.word_id';
-	 	} elseif (!is_array($ap) && $is_blank) {
-	 		return [];
-	 	} elseif(is_array($ap) && $is_not_blank) {
-	 		$word_op = '>';
-	 		$params[] = 0;
-	 		$word_field = 'swi.word_id';
-	 	} elseif ($text === '*') {
-	 		$is_bare_wildcard = true;
-	 	} elseif ($has_wildcard = ((strpos($text, '*') !== false) || (strpos($text, '?') !== false))) {
-	 		$word_op = 'LIKE';
-	 		$text = str_replace('*', '%', $text);
-	 		$text = str_replace('?', '_', $text);
-	 		$params[] = $text;
-	 		$use_boost = false;
-	 	} else{
-	 		$params[] = $text;
-	 	}
-	 
-	 	$field_sql = null;
-	 	if (is_array($ap)) {
-	 		$field_sql = " AND swi.field_table_num = ? AND swi.field_num = ?";
-	 		$params[] = $ap['table_num'];
-	 		$params[] = $ap['field_num'];
-	 		
-	 		if (is_array($ap['relationship_type_ids']) && sizeof($ap['relationship_type_ids'])) {
-	 			$field_sql .= " AND swi.rel_type_id IN (?)";
-	 			$params[] = $ap['relationship_type_ids'];
-	 		}
-	 	}
-	 	
-	 	if($restrictions = $this->_getFieldRestrictions($subject_tablenum)) {
-	 		$res = [];
-	 		
-	 		$res_by_table = [];
-	 		foreach($restrictions['restrict'] as $r) {
-	 			$res_by_table[$r['table_num']][] = $r['field_num'];
-	 		}
-	 		foreach($res_by_table as $rtable_num => $rfield_nums) {
-				$res[] = "(swi.field_table_num = ? AND swi.field_num IN (?))";
-				$params[] = $rtable_num;
-				$params[] = $rfield_nums;
+	 	foreach($words as $i => $text) {
+			// Don't stem if:
+			//	1. Stemming is disabled
+			//	2. Search for is blank values
+			//	3. Search is not non-blank values
+			//	4. Search includes non-letter characters
+			//  5. Search is flagged with trailing "|" as "do-not-stem"
+			$do_not_stem = true;//preg_match("!\|$!", $text);
+			$text = preg_replace("!\|$!", '', $text);
+			if ($this->do_stemming && !$do_not_stem && !$is_blank && !$is_not_blank && !preg_match("![^A-Za-z]+!u", $text)) {
+				$text_stem = $this->stemmer->stem($text);
+				if (($text !== $text_stem) && ($text_stem[strlen($text_stem)-1] !== '*')) { 
+					$text = $text_stem.'*';
+					$word_field = 'sw.stem';
+				}
 			}
-	 		
-	 		$flds = [];
-	 		foreach($restrictions['exclude'] as $r) {
-	 			$flds[] = "'".$r['table_num'].'/'.$r['field_num']."'";
-	 		}
-	 		if(sizeof($flds)) {
-	 			$res[] = "(CONCAT(swi.field_table_num, '/', swi.field_num) NOT IN (?))";
-	 			$params[] = join(',', $flds);
-	 		}
-	 		if(sizeof($res)) {
-	 			$field_sql .= " AND (".join(' OR ', $res).")";
-	 		}
-	 	}
-	 	
-	 	$private_sql = ($this->getOption('omitPrivateIndexing') ? ' AND swi.access = 0' : '');
-	 	
-	 	if ($is_bare_wildcard) {
-	 		$t = Datamodel::getInstance($subject_tablenum, true);
-	 		$pk = $t->primaryKey();
-	 		$table = $t->tableName();
-	 		
-	 		$qr_res = $this->db->query("
-				SELECT {$pk} row_id, 100 boost
-				FROM {$table}".($t->hasField('deleted') ? " WHERE deleted = 0" : "")."
-			", []);
-	 	} elseif($use_boost) {
-			$qr_res = $this->db->query("
-				SELECT swi.row_id, SUM(swi.boost) boost
-				FROM ca_sql_search_word_index swi
-				".(!$is_blank ? 'INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id' : '')."
-				WHERE
-					swi.table_num = ? AND {$word_field} {$word_op} ?
-					{$field_sql}
-					{$private_sql}
-				GROUP BY swi.row_id
-			", $params);
-		} else {
-			$qr_res = $this->db->query("
-				SELECT DISTINCT swi.row_id, 100 boost
-				FROM ca_sql_search_word_index swi
-				".(!$is_blank ? 'INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id' : '')."
-				WHERE
-					swi.table_num = ? AND {$word_field} {$word_op} ?
-					{$field_sql}
-					{$private_sql}
-			", $params);
+		
+			$params = [$subject_tablenum];
+			$word_op = '=';
+		
+			$use_boost = true;
+			$is_bare_wildcard = false;
+			if (is_array($ap) && $is_blank) {
+				$params[] = 0;
+				$word_field = 'swi.word_id';
+			} elseif (!is_array($ap) && $is_blank) {
+				return [];
+			} elseif(is_array($ap) && $is_not_blank) {
+				$word_op = '>';
+				$params[] = 0;
+				$word_field = 'swi.word_id';
+			} elseif ($text === '*') {
+				$is_bare_wildcard = true;
+			} elseif ($has_wildcard = ((strpos($text, '*') !== false) || (strpos($text, '?') !== false))) {
+				$word_op = 'LIKE';
+				$text = str_replace('*', '%', $text);
+				$text = str_replace('?', '_', $text);
+				$params[] = $text;
+				$use_boost = false;
+			} else{
+				$params[] = $text;
+			}
+	 
+			$field_sql = null;
+			if (is_array($ap)) {
+				$field_sql = " AND swi.field_table_num = ? AND swi.field_num = ?";
+				$params[] = $ap['table_num'];
+				$params[] = $ap['field_num'];
+			
+				if (is_array($ap['relationship_type_ids']) && sizeof($ap['relationship_type_ids'])) {
+					$field_sql .= " AND swi.rel_type_id IN (?)";
+					$params[] = $ap['relationship_type_ids'];
+				}
+			}
+		
+			if($restrictions = $this->_getFieldRestrictions($subject_tablenum)) {
+				$res = [];
+			
+				$res_by_table = [];
+				foreach($restrictions['restrict'] as $r) {
+					$res_by_table[$r['table_num']][] = $r['field_num'];
+				}
+				foreach($res_by_table as $rtable_num => $rfield_nums) {
+					$res[] = "(swi.field_table_num = ? AND swi.field_num IN (?))";
+					$params[] = $rtable_num;
+					$params[] = $rfield_nums;
+				}
+			
+				$flds = [];
+				foreach($restrictions['exclude'] as $r) {
+					$flds[] = "'".$r['table_num'].'/'.$r['field_num']."'";
+				}
+				if(sizeof($flds)) {
+					$res[] = "(CONCAT(swi.field_table_num, '/', swi.field_num) NOT IN (?))";
+					$params[] = join(',', $flds);
+				}
+				if(sizeof($res)) {
+					$field_sql .= " AND (".join(' OR ', $res).")";
+				}
+			}
+		
+			$private_sql = ($this->getOption('omitPrivateIndexing') ? ' AND swi.access = 0' : '');
+		
+			if ($is_bare_wildcard) {
+				$t = Datamodel::getInstance($subject_tablenum, true);
+				$pk = $t->primaryKey();
+				$table = $t->tableName();
+			
+				$qr_res = $this->db->query("
+					SELECT {$pk} row_id, 100 boost
+					FROM {$table}".($t->hasField('deleted') ? " WHERE deleted = 0" : "")."
+				", []);
+			} elseif($use_boost) {
+				$qr_res = $this->db->query("
+					SELECT swi.row_id, SUM(swi.boost) boost
+					FROM ca_sql_search_word_index swi
+					".(!$is_blank ? 'INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id' : '')."
+					WHERE
+						swi.table_num = ? AND {$word_field} {$word_op} ?
+						{$field_sql}
+						{$private_sql}
+					GROUP BY swi.row_id
+				", $params);
+			} else {
+				$qr_res = $this->db->query("
+					SELECT DISTINCT swi.row_id, 100 boost
+					FROM ca_sql_search_word_index swi
+					".(!$is_blank ? 'INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id' : '')."
+					WHERE
+						swi.table_num = ? AND {$word_field} {$word_op} ?
+						{$field_sql}
+						{$private_sql}
+				", $params);
+			}
+			$res[$i] = $this->_arrayFromDbResult($qr_res);
 		}
-	 	return $this->_arrayFromDbResult($qr_res);
+		$ret = array_shift($res);
+		foreach($res as $r) {
+			$ret = array_intersect($ret, $res[$r]);
+		}
+		return $ret;
 	}
 	# -------------------------------------------------------
 	/**
@@ -500,7 +533,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			foreach($terms as $term) {
 				if (!$ap_spec && ($field = $term->field)) { $ap_spec = $field; }
 				
-				if (strlen($escaped_text = $this->db->escape(join(' ', $this->_tokenize($term->text, true))))) {
+				if (strlen($escaped_text = $this->db->escape(join(' ', self::tokenize($term->text, true))))) {
 					$words[] = $escaped_text;
 				}
 			}
@@ -980,54 +1013,57 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	# -------------------------------------------------------
 	# Indexing
 	# -------------------------------------------------------
-	public function startRowIndexing($subject_tablenum, $pn_subject_row_id) {
-		if ($this->debug) { Debug::msg("[SqlSearchDebug] startRowIndexing: $subject_tablenum/$pn_subject_row_id"); }
+	/**
+	 *
+	 */
+	public function startRowIndexing(int $subject_tablenum, int $subject_row_id) : void {
+		if ($this->debug) { Debug::msg("[SqlSearchDebug] startRowIndexing: {$subject_tablenum}/{$subject_row_id}"); }
 
 		$this->indexing_subject_tablenum = $subject_tablenum;
-		$this->indexing_subject_row_id = $pn_subject_row_id;
+		$this->indexing_subject_row_id = $subject_row_id;
 	}
 	# -------------------------------------------------------
 	/**
 	 *
 	 */
-	public function indexField($pn_content_tablenum, $ps_content_fieldname, $pn_content_row_id, $pm_content, $pa_options) {
-		if (!is_array($pa_options)) { $pa_options = []; }
+	public function indexField(int $content_tablenum, string $content_fieldname, int $content_row_id, $content, ?array $options=null) {
+		if (!is_array($options)) { $options = []; }
 		
-		if (!is_array($pm_content)) {
-			$pm_content = [$pm_content];
+		if (!is_array($content)) {
+			$content = [$content];
 		}
 		
-		$vn_boost = 1;
-		if (isset($pa_options['BOOST'])) {
-			$vn_boost = intval($pa_options['BOOST']);
+		$boost = 1;
+		if (isset($options['BOOST'])) {
+			$boost = intval($options['BOOST']);
 		}
 		
-		if ($this->debug) { Debug::msg("[SqlSearchDebug] indexField: $pn_content_tablenum/$ps_content_fieldname [$pn_content_row_id] =&gt; $pm_content"); }
+		if ($this->debug) { Debug::msg("[SqlSearchDebug] indexField: $content_tablenum/$content_fieldname [$content_row_id] =&gt; $content"); }
 	
-		if (in_array('DONT_TOKENIZE', array_values($pa_options), true)) { 
-			$pa_options['DONT_TOKENIZE'] = true;  
-		} elseif (!isset($pa_options['DONT_TOKENIZE'])) { 
-			$pa_options['DONT_TOKENIZE'] = false; 
+		if (in_array('DONT_TOKENIZE', array_values($options), true)) { 
+			$options['DONT_TOKENIZE'] = true;  
+		} elseif (!isset($options['DONT_TOKENIZE'])) { 
+			$options['DONT_TOKENIZE'] = false; 
 		}
 		
-		$vb_force_tokenize = (in_array('TOKENIZE', array_values($pa_options), true) || isset($pa_options['TOKENIZE']));
-		$vb_tokenize = $pa_options['DONT_TOKENIZE'] ? false : true;
+		$force_tokenize = (in_array('TOKENIZE', array_values($options), true) || isset($options['TOKENIZE']));
+		$tokenize = $options['DONT_TOKENIZE'] ? false : true;
 		
-		$vn_rel_type_id = (isset($pa_options['relationship_type_id']) && ($pa_options['relationship_type_id'] > 0)) ? (int)$pa_options['relationship_type_id'] : 0;
-		$vn_container_id = (isset($pa_options['container_id']) && ($pa_options['container_id'] > 0)) ? (int)$pa_options['container_id'] : 'NULL';
+		$rel_type_id = (isset($options['relationship_type_id']) && ($options['relationship_type_id'] > 0)) ? (int)$options['relationship_type_id'] : 0;
+		$container_id = (isset($options['container_id']) && ($options['container_id'] > 0)) ? (int)$options['container_id'] : 'NULL';
 		
-		if (!isset($pa_options['PRIVATE'])) { $pa_options['PRIVATE'] = 0; }
-		if (in_array('PRIVATE', $pa_options, true)) { $pa_options['PRIVATE'] = 1; }
-		$vn_private = $pa_options['PRIVATE'] ? 1 : 0;
+		if (!isset($options['PRIVATE'])) { $options['PRIVATE'] = 0; }
+		if (in_array('PRIVATE', $options, true)) { $options['PRIVATE'] = 1; }
+		$private = $options['PRIVATE'] ? 1 : 0;
 		
-		if (!isset($pa_options['datatype'])) { $pa_options['datatype'] = null; }
+		if (!isset($options['datatype'])) { $options['datatype'] = null; }
 		
-		if ($ps_content_fieldname[0] == 'A') {
-			$vn_field_num_proc = (int)substr($ps_content_fieldname, 1);
+		if ($content_fieldname[0] == 'A') {
+			$field_num_proc = (int)substr($content_fieldname, 1);
 			
 			// do we need to index this (don't index attribute types that we'll search directly)
-			if (WLPlugSearchEngineSqlSearch2::$s_metadata_elements[$vn_field_num_proc]) {
-				switch(WLPlugSearchEngineSqlSearch2::$s_metadata_elements[$vn_field_num_proc]['datatype']) {
+			if (WLPlugSearchEngineSqlSearch2::$metadata_elements[$field_num_proc]) {
+				switch(WLPlugSearchEngineSqlSearch2::$metadata_elements[$field_num_proc]['datatype']) {
 					case __CA_ATTRIBUTE_VALUE_CONTAINER__:	
 					case __CA_ATTRIBUTE_VALUE_GEOCODE__:	
 					case __CA_ATTRIBUTE_VALUE_CURRENCY__:
@@ -1040,54 +1076,66 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				}
 			}
 		} 
-		if ((!is_array($pm_content) && !strlen($pm_content)) || !sizeof($pm_content) || (((sizeof($pm_content) == 1) && strlen((string)$pm_content[0]) == 0)) || ((sizeof($pm_content) === 1) && ((string)$pm_content[0] === caGetBlankLabelText(Datamodel::getTableName($pn_content_tablenum))))){ 
-			$va_words = null;
+		if ((!is_array($content) && !strlen($content)) || !sizeof($content) || (((sizeof($content) == 1) && strlen((string)$content[0]) == 0)) || ((sizeof($content) === 1) && ((string)$content[0] === caGetBlankLabelText(Datamodel::getTableName($content_tablenum))))){ 
+			$words = null;
 		} else {
 			// Tokenize string
-			$va_words = [];
-			if ($vb_tokenize || $vb_force_tokenize) {
-				foreach($pm_content as $ps_content) {
-					$va_words = array_merge($va_words, $this->_tokenize((string)$ps_content));
+			$words = [];
+			if ($tokenize || $force_tokenize) {
+				foreach($content as $content) {
+					$words = array_merge($words, self::tokenize((string)$content));
 				}
 			}
-			if (!$vb_tokenize) { $va_words = array_merge($va_words, $pm_content); }
+			if (!$tokenize) { $words = array_merge($words, $content); }
 		}
 		
-		$vb_incremental_reindexing = (bool)$this->can('incremental_reindexing');
+		$incremental_reindexing = (bool)$this->can('incremental_reindexing');
 		
-		if (!defined("__CollectiveAccess_IS_REINDEXING__") && $vb_incremental_reindexing) {
-			$this->removeRowIndexing($this->indexing_subject_tablenum, $this->indexing_subject_row_id, $pn_content_tablenum, array($ps_content_fieldname), $pn_content_row_id, $vn_rel_type_id);
+		if (!defined("__CollectiveAccess_IS_REINDEXING__") && $incremental_reindexing) {
+			$this->removeRowIndexing($this->indexing_subject_tablenum, $this->indexing_subject_row_id, $content_tablenum, array($content_fieldname), $content_row_id, $rel_type_id);
 		}
-		if (!$va_words) {
-			self::$s_doc_content_buffer[] = '('.$this->indexing_subject_tablenum.','.$this->indexing_subject_row_id.','.$pn_content_tablenum.',\''.$ps_content_fieldname.'\','.$vn_container_id.','.$pn_content_row_id.',0,0,'.$vn_private.','.$vn_rel_type_id.')';
+		if (!$words) {
+			self::$doc_content_buffer[] = '('.$this->indexing_subject_tablenum.','.$this->indexing_subject_row_id.','.$content_tablenum.',\''.$content_fieldname.'\','.$container_id.','.$content_row_id.',0,0,'.$private.','.$rel_type_id.')';
 		} else {
-			foreach($va_words as $vs_word) {
+			if((bool)$this->search_config->get('group_index_for_repeating_terms_in_field')) {
+				$u = array_unique($words);
+				if (($c1 = sizeof($u)) < ($c2 = sizeof($words))) { 
+					$words = $u;
+				}
+			}
+			foreach($words as $vs_word) {
 				if(!strlen($vs_word)) { continue; }
-				if (!($vn_word_id = (int)$this->getWordID($vs_word))) { continue; }
+				if (!($word_id = (int)$this->getWordID($vs_word))) { continue; }
 			
-				self::$s_doc_content_buffer[] = '('.$this->indexing_subject_tablenum.','.$this->indexing_subject_row_id.','.$pn_content_tablenum.',\''.$ps_content_fieldname.'\','.$vn_container_id.','.$pn_content_row_id.','.$vn_word_id.','.$vn_boost.','.$vn_private.','.$vn_rel_type_id.')';
+				self::$doc_content_buffer[] = '('.$this->indexing_subject_tablenum.','.$this->indexing_subject_row_id.','.$content_tablenum.',\''.$content_fieldname.'\','.$container_id.','.$content_row_id.','.$word_id.','.$boost.','.$private.','.$rel_type_id.')';
 			}
 		}
 	}
 	# ------------------------------------------------
-	public function commitRowIndexing() {
-		if (sizeof(self::$s_doc_content_buffer) > $this->getOption('maxIndexingBufferSize')) {
+	/**
+	 *
+	 */
+	public function commitRowIndexing() : void {
+		if (sizeof(self::$doc_content_buffer) > $this->getOption('maxIndexingBufferSize')) {
 			$this->flushContentBuffer();
 		}
 	}
 	# ------------------------------------------------
-	public function flushContentBuffer() {
+	/**
+	 *
+	 */
+	public function flushContentBuffer() : void {
 		// add fields to doc
 		$vn_max_word_segment_size = (int)$this->getOption('maxWordIndexInsertSegmentSize');
 		
 		// add new indexing
-		if (is_array(self::$s_doc_content_buffer) && sizeof(self::$s_doc_content_buffer)) {
-			while(sizeof(self::$s_doc_content_buffer) > 0) {
+		if (is_array(self::$doc_content_buffer) && sizeof(self::$doc_content_buffer)) {
+			while(sizeof(self::$doc_content_buffer) > 0) {
 				if (defined("__CollectiveAccess_IS_REINDEXING__")) {
 					$this->db->query("SET unique_checks=0");
 					$this->db->query("SET foreign_key_checks=0");
 				}
-				$this->db->query($this->ops_insert_word_index_sql."\n".join(",", array_splice(self::$s_doc_content_buffer, 0, $vn_max_word_segment_size)));
+				$this->db->query($this->insert_word_index_sql."\n".join(",", array_splice(self::$doc_content_buffer, 0, $vn_max_word_segment_size)));
 				if (defined("__CollectiveAccess_IS_REINDEXING__")) {
 					$this->db->query("SET unique_checks=1");
 					$this->db->query("SET foreign_key_checks=1");
@@ -1097,77 +1145,85 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		}
 	
 		// clean up
-		self::$s_doc_content_buffer = [];
+		self::$doc_content_buffer = [];
 		$this->_checkWordCacheSize();
 	}
 	# ------------------------------------------------
-	public function getWordID($ps_word) {
-		$ps_word = (string)$ps_word;
-		//$ps_word =  preg_replace('/[[:^print:]]/', '', $ps_word);
+	/**
+	 *
+	 */
+	public function getWordID(string $word) : ?int {
+		$word = (string)$word;
 		
 		//reject overly long 2 byte sequences, as well as characters above U+10000 and replace with ?
-		$ps_word = preg_replace('/[\x00-\x08\x10\x0B\x0C\x0E-\x19\x7F]'.
+		$word = preg_replace('/[\x00-\x08\x10\x0B\x0C\x0E-\x19\x7F]'.
 		 '|[\x00-\x7F][\x80-\xBF]+'.
 		 '|([\xC0\xC1]|[\xF0-\xFF])[\x80-\xBF]*'.
 		 '|[\xC2-\xDF]((?![\x80-\xBF])|[\x80-\xBF]{2,})'.
 		 '|[\xE0-\xEF](([\x80-\xBF](?![\x80-\xBF]))|(?![\x80-\xBF]{2})|[\x80-\xBF]{3,})/S',
-		 '?', $ps_word);
+		 '?', $word);
 
 		//reject overly long 3 byte sequences and UTF-16 surrogates and replace with ?
-		$ps_word = preg_replace('/\xE0[\x80-\x9F][\x80-\xBF]'.
-		 '|\xED[\xA0-\xBF][\x80-\xBF]/S','?', $ps_word);
+		$word = preg_replace('/\xE0[\x80-\x9F][\x80-\xBF]'.
+		 '|\xED[\xA0-\xBF][\x80-\xBF]/S','?', $word);
 		 
-		if (!strlen($ps_word = trim(mb_strtolower($ps_word, "UTF-8")))) { return null; }
-		if (mb_strlen($ps_word) > 255) { $ps_word = mb_substr($ps_word, 0, 255); }
-		if (isset(WLPlugSearchEngineSqlSearch2::$word_cache[$ps_word])) { return (int)WLPlugSearchEngineSqlSearch2::$word_cache[$ps_word]; } 
+		if (!strlen($word = trim(mb_strtolower($word, "UTF-8")))) { return null; }
+		if (mb_strlen($word) > 255) { $word = mb_substr($word, 0, 255); }
+		if (isset(WLPlugSearchEngineSqlSearch2::$word_cache[$word])) { return (int)WLPlugSearchEngineSqlSearch2::$word_cache[$word]; } 
 		
-		if ($qr_res = $this->q_lookup_word->execute($ps_word)) {
+		if ($qr_res = $this->q_lookup_word->execute($word)) {
 			if ($qr_res->nextRow()) {
-				return WLPlugSearchEngineSqlSearch2::$word_cache[$ps_word] = (int)$qr_res->get('word_id', array('binary' => true));
+				return WLPlugSearchEngineSqlSearch2::$word_cache[$word] = (int)$qr_res->get('word_id', ['binary' => true]);
 			}
 		}
 		
 		try {
             // insert word
-            if (!($vs_stem = trim($this->stemmer->stem($ps_word)))) { $vs_stem = $ps_word; }
-            if (mb_strlen($vs_stem) > 255) { $vs_stem = mb_substr($vs_stem, 0, 255); }
+            if (!($stem = trim($this->stemmer->stem($word)))) { $stem = $word; }
+            if (mb_strlen($stem) > 255) { $stem = mb_substr($stem, 0, 255); }
         
-            $this->opqr_insert_word->execute($ps_word, $vs_stem);
+            $this->opqr_insert_word->execute($word, $stem);
             if ($this->opqr_insert_word->numErrors()) { return null; }
-            if (!($vn_word_id = (int)$this->opqr_insert_word->getLastInsertID())) { return null; }
+            if (!($word_id = (int)$this->opqr_insert_word->getLastInsertID())) { return null; }
         } catch (Exception $e) {
-            if ($qr_res = $this->q_lookup_word->execute($ps_word)) {
+            if ($qr_res = $this->q_lookup_word->execute($word)) {
                 if ($qr_res->nextRow()) {
-                    return WLPlugSearchEngineSqlSearch2::$word_cache[$ps_word] = (int)$qr_res->get('word_id', array('binary' => true));
+                    return WLPlugSearchEngineSqlSearch2::$word_cache[$word] = (int)$qr_res->get('word_id', ['binary' => true]);
                 }
             }
             return null;
         }
 		
 		// create ngrams
-		// 		$va_ngrams = caNgrams($ps_word, 4);
-		// 		$vn_seq = 0;
+		// 		$va_ngrams = caNgrams($word, 4);
+		// 		$seq = 0;
 		// 		
 		// 		$va_ngram_buf = array();
-		// 		foreach($va_ngrams as $vs_ngram) {
-		// 			$va_ngram_buf[] = "({$vn_word_id},'{$vs_ngram}',{$vn_seq})";
-		// 			$vn_seq++;
+		// 		foreach($va_ngrams as $ngram) {
+		// 			$va_ngram_buf[] = "({$word_id},'{$ngram}',{$seq})";
+		// 			$seq++;
 		// 		}
 		// 		
 		// 		if (sizeof($va_ngram_buf)) {
-		// 			$vs_sql = $this->ops_insert_ngram_sql."\n".join(",", $va_ngram_buf);
-		// 			$this->db->query($vs_sql);
+		// 			$sql = $this->ops_insert_ngram_sql."\n".join(",", $va_ngram_buf);
+		// 			$this->db->query($sql);
 		// 		}
 		
-		return WLPlugSearchEngineSqlSearch2::$word_cache[$ps_word] = $vn_word_id;
+		return WLPlugSearchEngineSqlSearch2::$word_cache[$word] = $word_id;
 	}
 	# ------------------------------------------------
+	/**
+	 *
+	 */
 	private function _checkWordCacheSize() {
 		if ((sizeof(WLPlugSearchEngineSqlSearch2::$word_cache)) > ($vn_max_size = $this->getOption('maxWordCacheSize'))) {
 			WLPlugSearchEngineSqlSearch2::$word_cache = array_slice(WLPlugSearchEngineSqlSearch2::$word_cache, 0, $vn_max_size * $this->getOption('cacheCleanFactor'), true);
 		}
 	}
 	# ------------------------------------------------
+	/**
+	 *
+	 */
 	public function removeRowIndexing($subject_tablenum, $pn_subject_row_id, $pn_field_tablenum=null, $pa_field_nums=null, $pn_field_row_id=null, $pn_rel_type_id=null) {
 
 		//print "[SqlSearchDebug] removeRowIndexing: $subject_tablenum/$pn_subject_row_id<br>\n";
@@ -1236,7 +1292,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		if (caGetOption("DONT_TOKENIZE", $pa_options, false) || in_array('DONT_TOKENIZE', $pa_options, true)) {
 			$va_words = array($ps_content);
 		} else {
-			$va_words = $this->_tokenize($ps_content);
+			$va_words = self::tokenize($ps_content);
 		}
 		
 		if((sizeof($va_words) === 1) && ((string)$va_words[0] === caGetBlankLabelText(Datamodel::getTableName($pn_content_tablenum)))) {
@@ -1308,7 +1364,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		
 		// do insert
 		if (sizeof($va_row_insert_sql)) {
-			$vs_sql = $this->ops_insert_word_index_sql."\n".join(",", $va_row_insert_sql);
+			$vs_sql = $this->insert_word_index_sql."\n".join(",", $va_row_insert_sql);
 			$this->db->query($vs_sql);
 			if ($this->debug) { Debug::msg("[SqlSearchDebug] Commit row indexing"); }
 		}				
@@ -1317,32 +1373,45 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	/**
 	 * Not supported in this engine - does nothing
 	 */
-	public function optimizeIndex($pn_tablenum) {
+	public function optimizeIndex($tablenum) {
 		// noop	
 	}
 	# --------------------------------------------------
+	/**
+	 * 
+	 */
 	public function engineName() {
-		return 'SqlSearch';
+		return 'SqlSearch2';
 	}
 	# --------------------------------------------------
-	private function _tokenize($ps_content, $pb_for_search=false, $pn_index=0) {
-		$ps_content = preg_replace('![\']+!', '', $ps_content);		// strip apostrophes for compatibility with SearchEngine class, which does the same to all search expressions
+	/**
+	 * Tokenize string for indexing or search
+	 *
+	 * @param string $content
+	 * @param bool $for_search
+	 * @param int $index
+	 *
+	 * @return array Tokenized terms
+	 */
+	static public function tokenize(?string $content, ?bool $for_search=false, ?int $index=0) : array {
+		$content = preg_replace('![\']+!u', '', $content);		// strip apostrophes for compatibility with SearchEngine class, which does the same to all search expressions
+
+		$words = preg_split('!'.self::$whitespace_tokenizer_regex.'!u', strip_tags($content));
+		$words = array_map(function($v) {
+			$w = preg_replace('!^'.self::$punctuation_tokenizer_regex.'!u', '', html_entity_decode($v, null, 'UTF-8'));
+			return mb_strtolower(preg_replace('!'.self::$punctuation_tokenizer_regex.'$!u', '', $w));
+		}, $words);
 		
-		if ($pb_for_search) {
-			if ($pn_index == 0) {
-				if (is_array($this->opa_asis_regexes)) {
-					foreach($this->opa_asis_regexes as $vs_asis_regex) {
-						if (preg_match('!'.$vs_asis_regex.'!', $ps_content)) {
-							return array($ps_content);
-						}
-					}
-				}
-			}
-		
-			return preg_split('![ ]+!', trim(preg_replace("%((?<!\d)[".$this->ops_search_tokenizer_regex."]+(?!\d))%u", ' ', strip_tags($ps_content))));
-		} else {
-			return preg_split('![ ]+!', trim(preg_replace("%((?<!\d)[".$this->ops_indexing_tokenizer_regex."]+|[".$this->ops_indexing_tokenizer_regex."]+(?!\d))%u", ' ', strip_tags($ps_content))));
-		}
+		return self::filterStopWords($words);
+	}
+	# --------------------------------------------------
+	/**
+	 *
+	 */
+	static public function filterStopWords(array $words) : array {
+		return array_filter($words, function($v) {
+			return (strlen($v) && !array_key_exists($v, self::$stop_words));
+		});
 	}
 	# --------------------------------------------------
 	/**
@@ -1367,7 +1436,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		}
 		
 		$va_hits = array();
-		$va_words = $this->_tokenize($ps_search, true);
+		$va_words = self::tokenize($ps_search, true);
 		
 		if (sizeof($va_words)) {
 			$va_quoted_words = array();
@@ -1440,79 +1509,82 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		
 		$this->q_lookup_word = $this->db->prepare($this->lookup_word_sql);
 		
-		$this->ops_insert_word_index_sql = "
-			INSERT  INTO ca_sql_search_word_index
+		$this->insert_word_index_sql = "
+			INSERT INTO ca_sql_search_word_index
 			(table_num, row_id, field_table_num, field_num, field_container_id, field_row_id, word_id, boost, access, rel_type_id)
 			VALUES
 		";
 		
-		$this->ops_insert_word_sql = "
-			INSERT  INTO ca_sql_search_words
+		$this->insert_word_sql = "
+			INSERT INTO ca_sql_search_words
 			(word, stem)
 			VALUES
 			(?, ?)
 		";
 		
-		$this->ops_insert_ngram_sql = "
-			INSERT  INTO ca_sql_search_ngrams
+		$this->insert_ngram_sql = "
+			INSERT INTO ca_sql_search_ngrams
 			(word_id, ngram, seq)
 			VALUES
 		";
 		
-		$this->opqr_insert_word = $this->db->prepare($this->ops_insert_word_sql);
+		$this->opqr_insert_word = $this->db->prepare($this->insert_word_sql);
 		
 		$this->delete_sql = "DELETE FROM ca_sql_search_word_index WHERE (table_num = ?) AND (row_id = ?) AND (rel_type_id = ?)";
 		$this->q_delete = $this->db->prepare($this->delete_sql);
 		
-		$this->ops_delete_with_field_num_sql = "DELETE FROM ca_sql_search_word_index WHERE (table_num = ?) AND (row_id = ?) AND (field_table_num = ?) AND (field_num = ?) AND (rel_type_id = ?)";
-		$this->q_delete_with_field_num = $this->db->prepare($this->ops_delete_with_field_num_sql);
+		$this->delete_with_field_num_sql = "DELETE FROM ca_sql_search_word_index WHERE (table_num = ?) AND (row_id = ?) AND (field_table_num = ?) AND (field_num = ?) AND (rel_type_id = ?)";
+		$this->q_delete_with_field_num = $this->db->prepare($this->delete_with_field_num_sql);
 		
-		$this->ops_delete_with_field_num_sql_without_rel_type_id = "DELETE FROM ca_sql_search_word_index WHERE (table_num = ?) AND (row_id = ?) AND (field_table_num = ?) AND (field_num = ?)";
-		$this->q_delete_with_field_num_without_rel_type_id = $this->db->prepare($this->ops_delete_with_field_num_sql_without_rel_type_id);
+		$this->delete_with_field_num_sql_without_rel_type_id = "DELETE FROM ca_sql_search_word_index WHERE (table_num = ?) AND (row_id = ?) AND (field_table_num = ?) AND (field_num = ?)";
+		$this->q_delete_with_field_num_without_rel_type_id = $this->db->prepare($this->delete_with_field_num_sql_without_rel_type_id);
 		
-		$this->ops_delete_with_field_row_id_sql = "DELETE FROM ca_sql_search_word_index WHERE (table_num = ?) AND (row_id = ?) AND (field_table_num = ?) AND (field_row_id = ?) AND (rel_type_id = ?)";
-		$this->q_delete_with_field_row_id = $this->db->prepare($this->ops_delete_with_field_row_id_sql);
+		$this->delete_with_field_row_id_sql = "DELETE FROM ca_sql_search_word_index WHERE (table_num = ?) AND (row_id = ?) AND (field_table_num = ?) AND (field_row_id = ?) AND (rel_type_id = ?)";
+		$this->q_delete_with_field_row_id = $this->db->prepare($this->delete_with_field_row_id_sql);
 		
-		$this->ops_delete_with_field_row_id_and_num = "DELETE FROM ca_sql_search_word_index WHERE (table_num = ?) AND (row_id = ?) AND (field_table_num = ?) AND (field_num = ?) AND (field_row_id = ?) AND (rel_type_id = ?)";
-		$this->q_delete_with_field_row_id_and_num = $this->db->prepare($this->ops_delete_with_field_row_id_and_num);
+		$this->delete_with_field_row_id_and_num = "DELETE FROM ca_sql_search_word_index WHERE (table_num = ?) AND (row_id = ?) AND (field_table_num = ?) AND (field_num = ?) AND (field_row_id = ?) AND (rel_type_id = ?)";
+		$this->q_delete_with_field_row_id_and_num = $this->db->prepare($this->delete_with_field_row_id_and_num);
 		
-		$this->ops_delete_dependent_sql = "DELETE FROM ca_sql_search_word_index WHERE (field_table_num = ?) AND (field_row_id = ?) AND (rel_type_id = ?)";
-		$this->q_delete_dependent_sql = $this->db->prepare($this->ops_delete_dependent_sql);	
+		$this->delete_dependent_sql = "DELETE FROM ca_sql_search_word_index WHERE (field_table_num = ?) AND (field_row_id = ?) AND (rel_type_id = ?)";
+		$this->q_delete_dependent_sql = $this->db->prepare($this->delete_dependent_sql);	
 	}
 	# --------------------------------------------------
 	# Utils
 	# --------------------------------------------------
 	private function getFieldNum($pn_table_name_or_num, $ps_fieldname) {
-		if (isset(WLPlugSearchEngineSqlSearch2::$s_fieldnum_cache[$pn_table_name_or_num.'/'.$ps_fieldname])) { return WLPlugSearchEngineSqlSearch2::$s_fieldnum_cache[$pn_table_name_or_num.'/'.$ps_fieldname]; }
+		if (isset(WLPlugSearchEngineSqlSearch2::$fieldnum_cache[$pn_table_name_or_num.'/'.$ps_fieldname])) { return WLPlugSearchEngineSqlSearch2::$fieldnum_cache[$pn_table_name_or_num.'/'.$ps_fieldname]; }
 		
 		$vs_table_name = is_numeric($pn_table_name_or_num) ? Datamodel::getTableName((int)$pn_table_name_or_num) : (string)$pn_table_name_or_num;
-		return WLPlugSearchEngineSqlSearch2::$s_fieldnum_cache[$pn_table_name_or_num.'/'.$ps_fieldname] = Datamodel::getFieldNum($vs_table_name, $ps_fieldname);
+		return WLPlugSearchEngineSqlSearch2::$fieldnum_cache[$pn_table_name_or_num.'/'.$ps_fieldname] = Datamodel::getFieldNum($vs_table_name, $ps_fieldname);
 	}
 	# -------------------------------------------------------
-	private function _filterValueToQueryValue($pa_filter) {
-		switch(strtolower($pa_filter['operator'])) {
+	/**
+	 *
+	 */
+	private function _filterValueToQueryValue(array $filter) : string {
+		switch(strtolower($filter['operator'])) {
 			case '>':
 			case '<':
 			case '=':
 			case '>=':
 			case '<=':
 			case '<>':
-				return (int)$pa_filter['value'];
+				return (int)$filter['value'];
 				break;
 			case 'in':
 			case 'not in':
-				$va_tmp = explode(',', $pa_filter['value']);
-				$va_values = array();
-				foreach($va_tmp as $vs_tmp) {
-					if ($vs_tmp == 'NULL') { continue; }
-					$va_values[] = (int)preg_replace("![^\d]+!", "", $vs_tmp);
+				$tmp = explode(',', $filter['value']);
+				$values = array();
+				foreach($tmp as $t) {
+					if ($t == 'NULL') { continue; }
+					$values[] = (int)preg_replace("![^\d]+!", "", $t);
 				}
-				return "(".join(",", $va_values).")";
+				return "(".join(",", $values).")";
 				break;
 			case 'is':
 			case 'is not':
 			default:
-				return is_null($pa_filter['value']) ? 'NULL' : (string)$pa_filter['value'];
+				return is_null($filter['value']) ? 'NULL' : (string)$filter['value'];
 				break;
 		}
 	}
@@ -1520,105 +1592,105 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	/**
 	 *
 	 */
-	private function _getElementIDForAccessPoint($subject_tablenum, $ps_access_point) {
-		$va_tmp = preg_split('![/\|]+!', $ps_access_point);
-		list($vs_table, $vs_field, $vs_subfield, $vs_subsubfield, $vs_subsubsubfield) = explode('.', $va_tmp[0]);
-		if ($vs_table === '_fulltext') { return null; }	// ignore "_fulltext" specifier – just treat as text search
+	private function _getElementIDForAccessPoint($subject_tablenum, $access_point) {
+		$tmp = preg_split('![/\|]+!', $access_point);
+		list($table, $field, $subfield, $subsubfield, $subsubsubfield) = explode('.', $tmp[0]);
+		if ($table === '_fulltext') { return null; }	// ignore "_fulltext" specifier – just treat as text search
 		
-		$vs_rel_table = caGetRelationshipTableName($subject_tablenum, $vs_table);
-		$va_rel_type_ids = ($va_tmp[1] && $vs_rel_table) ? caMakeRelationshipTypeIDList($vs_rel_table, preg_split("![,;]+!", $va_tmp[1])) : [];
+		$rel_table = caGetRelationshipTableName($subject_tablenum, $table);
+		$rel_type_ids = ($tmp[1] && $rel_table) ? caMakeRelationshipTypeIDList($rel_table, preg_split("![,;]+!", $tmp[1])) : [];
 		
-		if (!($t_table = Datamodel::getInstanceByTableName($vs_table, true))) { 
-			return array('access_point' => $va_tmp[0]);
+		if (!($t_table = Datamodel::getInstanceByTableName($table, true))) { 
+			return array('access_point' => $tmp[0]);
 		}
-		$vs_table_num = $t_table->tableNum();
+		$table_num = $t_table->tableNum();
 		
 		// counts for relationship
 		$vn_rel_type = null;
 		
-		if (is_array($va_rel_type_ids) && (sizeof($va_rel_type_ids) > 0)) {
-			$vn_rel_type = (int)$va_rel_type_ids[0];
+		if (is_array($rel_type_ids) && (sizeof($rel_type_ids) > 0)) {
+			$vn_rel_type = (int)$rel_type_ids[0];
 		}
 		
 		if(is_array($indexing_info = $this->search_indexing_config->get(Datamodel::getTableName($subject_tablenum)))) {
-			$indexing_info = $indexing_info[$vs_table]['fields'][$vs_field] ?? null;
+			$indexing_info = $indexing_info[$table]['fields'][$field] ?? null;
 		}
-		if (strtolower($vs_field) == 'count') {
-			if (!is_array($va_rel_type_ids) || !sizeof($va_rel_type_ids)) { $va_rel_type_ids = [0]; }	// for counts must pass "0" as relationship type to pull count for all reltypes in aggregate
+		if (strtolower($field) == 'count') {
+			if (!is_array($rel_type_ids) || !sizeof($rel_type_ids)) { $rel_type_ids = [0]; }	// for counts must pass "0" as relationship type to pull count for all reltypes in aggregate
 			return array(
-				'access_point' => "{$vs_table}.{$vs_field}",
+				'access_point' => "{$table}.{$field}",
 				'relationship_type' => $vn_rel_type,
-				'table_num' => $vs_table_num,
+				'table_num' => $table_num,
 				'element_id' => null,
 				'field_num' => 'COUNT',
 				'datatype' => 'COUNT',
 				'element_info' => null,
-				'relationship_type_ids' => $va_rel_type_ids,
+				'relationship_type_ids' => $rel_type_ids,
 				'type' => 'COUNT',
 				'indexing_options' => $indexing_info
 			);
-		} elseif (strtolower($vs_field) == 'current_value') {
-		    if(!$vs_subfield) { $vs_subfield = '__default__'; }
+		} elseif (strtolower($field) == 'current_value') {
+		    if(!$subfield) { $subfield = '__default__'; }
 		    
-		    $vs_fld_num = null;
-		    if ($vn_fld_num = $this->getFieldNum($vs_table, $vs_subsubsubfield ? $vs_subsubsubfield : $vs_subsubfield)) {
-		        $vs_fld_num = "I{$vn_fld_num}";
-		    } elseif($t_element = ca_metadata_elements::getInstance($vs_subsubsubfield ? $vs_subsubsubfield : $vs_subsubfield)) {
-		        $vs_fld_num = "A".$t_element->getPrimaryKey();
+		    $fld_num = null;
+		    if ($vn_fld_num = $this->getFieldNum($table, $subsubsubfield ? $subsubsubfield : $subsubfield)) {
+		        $fld_num = "I{$vn_fld_num}";
+		    } elseif($t_element = ca_metadata_elements::getInstance($subsubsubfield ? $subsubsubfield : $subsubfield)) {
+		        $fld_num = "A".$t_element->getPrimaryKey();
 		    }
 		    return array(
-				'access_point' => $va_tmp[0],
+				'access_point' => $tmp[0],
 				'relationship_type' => $vn_rel_type,
-				'table_num' => $vs_table_num,
+				'table_num' => $table_num,
 				'element_id' => null,
-				'field_num' => $vs_fld_num ? "CV{$vs_subfield}_{$vs_fld_num}" : "CV{$vs_subfield}",
+				'field_num' => $fld_num ? "CV{$subfield}_{$fld_num}" : "CV{$subfield}",
 				'datatype' => 'CV',
 				'element_info' => null,
-				'relationship_type_ids' => $va_rel_type_ids,
-				'policy' => $vs_subfield,
+				'relationship_type_ids' => $rel_type_ids,
+				'policy' => $subfield,
 				'type' => 'CV',
 				'indexing_options' => $indexing_info
 			);
 		
-		} elseif (is_numeric($vs_field)) {
-			$vs_fld_num = $vs_field;
+		} elseif (is_numeric($field)) {
+			$fld_num = $field;
 		} else {
-			$vs_fld_num = $this->getFieldNum($vs_table, $vs_field);
+			$fld_num = $this->getFieldNum($table, $field);
 		}
 		
-		if (!strlen($vs_fld_num)) {
+		if (!strlen($fld_num)) {
 			$t_element = new ca_metadata_elements();
 			
 			$vb_is_count = false;
-			if(strtolower($vs_subfield) == 'count') {
-				$vs_subfield = null;
+			if(strtolower($subfield) == 'count') {
+				$subfield = null;
 				$vb_is_count = true;
-				if (!is_array($va_rel_type_ids) || !sizeof($va_rel_type_ids)) { $va_rel_type_ids = [0]; }
+				if (!is_array($rel_type_ids) || !sizeof($rel_type_ids)) { $rel_type_ids = [0]; }
 			}
-			if ($t_element->load(array('element_code' => ($vs_subfield ? $vs_subfield : $vs_field)))) {
+			if ($t_element->load(array('element_code' => ($subfield ? $subfield : $field)))) {
 				if ($vb_is_count) {
 					return array(
-						'access_point' => "{$vs_table}.{$vs_field}",
-						'relationship_type' => $va_tmp[1],
-						'table_num' => $vs_table_num,
+						'access_point' => "{$table}.{$field}",
+						'relationship_type' => $tmp[1],
+						'table_num' => $table_num,
 						'element_id' => $t_element->getPrimaryKey(),
 						'field_num' => 'COUNT'.$t_element->getPrimaryKey(),
 						'datatype' => 'COUNT',
 						'element_info' => $t_element->getFieldValuesArray(),
-						'relationship_type_ids' => $va_rel_type_ids,
+						'relationship_type_ids' => $rel_type_ids,
 						'type' => 'COUNT',
 						'indexing_options' => $indexing_info
 					);
 				} else {
 					return array(
-						'access_point' => $va_tmp[0],
-						'relationship_type' => $va_tmp[1],
-						'table_num' => $vs_table_num,
+						'access_point' => $tmp[0],
+						'relationship_type' => $tmp[1],
+						'table_num' => $table_num,
 						'element_id' => $t_element->getPrimaryKey(),
 						'field_num' => 'A'.$t_element->getPrimaryKey(),
 						'datatype' => $t_element->get('datatype'),
 						'element_info' => $t_element->getFieldValuesArray(),
-						'relationship_type_ids' => $va_rel_type_ids,
+						'relationship_type_ids' => $rel_type_ids,
 						'type' => 'METADATA',
 						'indexing_options' => $indexing_info
 					);
@@ -1626,7 +1698,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			}
 		} else {
 
-			return array('access_point' => $va_tmp[0], 'relationship_type' => $va_tmp[1], 'table_num' => $vs_table_num, 'field_num' => 'I'.$vs_fld_num, 'field_num_raw' => $vs_fld_num, 'datatype' => null, 'relationship_type_ids' => $va_rel_type_ids, 'type' => 'INTRINSIC', 'indexing_options' => $indexing_info);
+			return array('access_point' => $tmp[0], 'relationship_type' => $tmp[1], 'table_num' => $table_num, 'field_num' => 'I'.$fld_num, 'field_num_raw' => $fld_num, 'datatype' => null, 'relationship_type_ids' => $rel_type_ids, 'type' => 'INTRINSIC', 'indexing_options' => $indexing_info);
 		}
 
 		return null;

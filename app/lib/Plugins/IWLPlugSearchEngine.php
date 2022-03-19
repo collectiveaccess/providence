@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -32,42 +32,40 @@
  
  /**
   *
-  */
+  */	
+interface IWLPlugSearchEngine {
+	# -------------------------------------------------------
+	# Initialization, state and capabilities
+	# -------------------------------------------------------
+	public function __construct();
+	public function init();
+	public function can($capability);
+	public function __destruct();
+	public function engineName();
 	
-	interface IWLPlugSearchEngine {
-		# -------------------------------------------------------
-		# Initialization, state and capabilities
-		# -------------------------------------------------------
-		public function __construct();
-		public function init();
-		public function can($ps_capability);
-		public function __destruct();
-		public function engineName();
-		
-		# -------------------------------------------------------
-		# Options
-		# -------------------------------------------------------
-		public function setOption($ps_option, $pm_value);
-		public function getOption($ps_option);
-		public function getAvailableOptions();
-		public function isValidOption($ps_option);
-		
-		# -------------------------------------------------------
-		# Search
-		# -------------------------------------------------------
-		public function search(int $subject_tablenum, string $search_expression, array $filters=[], $rewritten_query);
-		public function addFilter($ps_access_point, $ps_operator, $pm_value);
-		public function clearFilters();
-		public function quickSearch($pn_table_num, $ps_search, $pa_options=null);
-		
-		# -------------------------------------------------------
-		# Indexing
-		# -------------------------------------------------------
-		public function startRowIndexing($pn_subject_tablenum, $pn_subject_row_id);
-		public function indexField($pn_content_tablenum, $ps_content_fieldname, $pn_content_row_id, $pm_content, $pa_options);
-		public function commitRowIndexing();
-		public function removeRowIndexing($pn_subject_tablenum, $pn_subject_row_id);
-		public function truncateIndex();
-		public function optimizeIndex($pn_tablenum);
-	}
-?>
+	# -------------------------------------------------------
+	# Options
+	# -------------------------------------------------------
+	public function setOption($option, $value);
+	public function getOption($option);
+	public function getAvailableOptions();
+	public function isValidOption($option);
+	
+	# -------------------------------------------------------
+	# Search
+	# -------------------------------------------------------
+	public function search(int $subject_tablenum, string $search_expression, array $filters=[], $rewritten_query);
+	public function addFilter($access_point, $operator, $value);
+	public function clearFilters();
+	public function quickSearch($pn_table_num, $ps_search, $pa_options=null);
+	
+	# -------------------------------------------------------
+	# Indexing
+	# -------------------------------------------------------
+	public function startRowIndexing(int $subject_tablenum, int $subject_row_id) : void;
+	public function indexField(int $content_tablenum, string $content_fieldname, int $content_row_id, $content, ?array $options=null);
+	public function commitRowIndexing();
+	public function removeRowIndexing(int $subject_tablenum, int $subject_row_id);
+	public function truncateIndex();
+	public function optimizeIndex(int $tablenum);
+}

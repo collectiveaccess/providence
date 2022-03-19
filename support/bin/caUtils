@@ -162,7 +162,9 @@
 				$va_params = array($va_plugin_commands[$vs_cmd_proc], $va_settings, 'CLI');
 				$va_params = $o_app_plugin_manager->hookCLICaUtilsGetToolWithSettings($va_params);
 				if ($o_tool = $va_params['tool']) {
-					$o_tool->run($vs_cmd_proc);
+					if($o_tool->run($vs_cmd_proc)) {
+						$vn_error_code = 0;
+					}
 				} else {
 					print CLIUtils::textWithColor("Could not run command \"{$vs_cmd}\"\n", "bold_red");
 				}
