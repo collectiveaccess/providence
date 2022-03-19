@@ -1375,6 +1375,20 @@ class BaseModel extends BaseObject {
 	    
 	    return $idnos;
 	}
+	# ------------------------------------------------------
+	/** 
+	 * Check is currently loaded row is a hierarchical child of another row
+	 *
+	 * @return bool
+	 */
+	public function isChild() : bool {
+		if($parent_id_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD')) {
+			if($this->get($parent_id_fld) > 0) {
+				return true;
+			}
+		}
+		return false;
+	}
 	# --------------------------------------------------------------------------------
 	/**
 	 * Set field value(s) for the table row represented by this object
