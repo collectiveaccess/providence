@@ -26,24 +26,24 @@
  * ----------------------------------------------------------------------
  */
  
-	$id_prefix 						= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$labels 							= $this->getVar('labels');
-	$t_label 							= $this->getVar('t_label');
-	$initial_values 					= $this->getVar('label_initial_values');
-	$t_subject							= $this->getVar('t_subject');
+	$id_prefix 					= $this->getVar('placement_code').$this->getVar('id_prefix');
+	$labels 					= $this->getVar('labels');
+	$t_label 					= $this->getVar('t_label');
+	$initial_values 			= $this->getVar('label_initial_values');
+	$t_subject					= $this->getVar('t_subject');
 	if (!$force_new_labels 		= $this->getVar('new_labels')) { $force_new_labels = array(); }	// list of new labels not saved due to error which we need to for onto the label list as new
 
-	$settings = 		$this->getVar('settings');
-	$add_label =		$this->getVar('add_label');
+	$settings 					= $this->getVar('settings');
+	$add_label 					= $this->getVar('add_label');
 	
-	$read_only		=	((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel('ca_entities', 'preferred_labels') == __CA_BUNDLE_ACCESS_READONLY__));
+	$read_only					= ((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel('ca_entities', 'preferred_labels') == __CA_BUNDLE_ACCESS_READONLY__));
 	
-	$batch			= $this->getVar('batch');
+	$batch						= $this->getVar('batch');
 
-	$show_effective_date = $this->getVar('show_effective_date');
-	$show_access = $this->getVar('show_access');
-	$label_list = $this->getVar('label_type_list');
-
+	$show_effective_date 		= $this->getVar('show_effective_date');
+	$show_access 				= $this->getVar('show_access');
+	$label_list 				= $this->getVar('label_type_list');
+	
 	if ($batch) {
 		print caBatchEditorPreferredLabelsModeControl($t_label, $id_prefix);
 	} else {
@@ -51,10 +51,12 @@
 	}
 	print caEditorBundleMetadataDictionary($this->request, $id_prefix.'Labels', $settings);
 	
-	$t_subject = $this->getVar('t_subject'); 
-	$vs_entity_class = $t_subject->getTypeSetting('entity_class');
-	$use_suffix_for_orgs = $t_subject->getTypeSetting('use_suffix_for_orgs');
-	$org_label = $t_subject->getTypeSetting('org_label');
+	$t_subject 					= $this->getVar('t_subject'); 
+	$vs_entity_class 			= $t_subject->getTypeSetting('entity_class');
+	$use_suffix_for_orgs 		= $t_subject->getTypeSetting('use_suffix_for_orgs');
+	$org_label 					= $t_subject->getTypeSetting('org_label');
+	$show_source 				= $t_subject->getTypeSetting('show_source_for_preferred_labels');
+
 ?>
 <div id="<?= $id_prefix; ?>Labels" <?= $batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
@@ -100,6 +102,19 @@
 									</div>	
 								</td>
 							</tr>
+<?php
+	if($show_source) {
+?>
+							<tr>
+								<td colspan="2">
+									<div class="formLabel">
+										<?= $t_label->htmlFormElement('source_info', "^LABEL<br/>^ELEMENT", array('classname' => 'labelSourceInfo', 'id' => "{fieldNamePrefix}source_info_{n}", 'name' => "{fieldNamePrefix}source_info_{n}", "value" => "{source_info}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry')); ?>	
+									</div>
+								</td>
+							</tr>
+<?php
+	}	
+?>
 						</table>
 						<?= $t_label->htmlFormElement('prefix', null, array('name' => "{fieldNamePrefix}prefix_{n}", 'id' => "{fieldNamePrefix}prefix_{n}", "value" => "{{suffix}}", 'hidden' => true)); ?>
 						<?= $t_label->htmlFormElement('forename', null, array('name' => "{fieldNamePrefix}forename_{n}", 'id' => "{fieldNamePrefix}forename_{n}", "value" => "{{forename}}", 'hidden' => true)); ?>
@@ -129,10 +144,10 @@
 								</td>
 							</tr>
 							<tr>
-								<td colspan="4"><?= $t_label->htmlFormElement('displayname', null, array('name' => "{fieldNamePrefix}displayname_{n}", 'id' => "{fieldNamePrefix}displayname_{n}", "value" => "{{displayname}}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_entity_labels_preferred', 'textAreaTagName' => 'textentry', 'readonly' => $read_only)); ?></td>
+								<td colspan="5"><?= $t_label->htmlFormElement('displayname', null, array('width' => '670px', 'name' => "{fieldNamePrefix}displayname_{n}", 'id' => "{fieldNamePrefix}displayname_{n}", "value" => "{{displayname}}", 'width' => '670px', 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_entity_labels_preferred', 'textAreaTagName' => 'textentry', 'readonly' => $read_only)); ?></td>
 							</tr>
 							<tr>
-								<td colspan="4">
+								<td colspan="5">
 									<div class="formLabel">
 										<?= $t_label->htmlFormElement('locale_id', "^LABEL ^ELEMENT", array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}locale_id_{n}", 'name' => "{fieldNamePrefix}locale_id_{n}", "value" => "{locale_id}", 'no_tooltips' => true, 'dont_show_null_value' => true, 'hide_select_if_only_one_option' => true, 'WHERE' => array('(dont_use_for_cataloguing = 0)'))); ?>	
 										<?= $label_list ? $t_label->htmlFormElement('type_id', "^LABEL ^ELEMENT", array('classname' => 'labelType', 'id' => "{fieldNamePrefix}type_id_{n}", 'name' => "{fieldNamePrefix}type_id_{n}", "value" => "{type_id}", 'no_tooltips' => true, 'list_code' => $label_list, 'dont_show_null_value' => true, 'hide_select_if_no_options' => true)) : ''; ?>
@@ -141,6 +156,19 @@
 									</div>	
 								</td>
 							</tr>
+<?php
+	if($show_source) {
+?>
+							<tr>
+								<td colspan="5">
+									<div class="formLabel">
+										<?= $t_label->htmlFormElement('source_info', "^LABEL<br/>^ELEMENT", array('classname' => 'labelSourceInfo', 'id' => "{fieldNamePrefix}source_info_{n}", 'name' => "{fieldNamePrefix}source_info_{n}", "value" => "{source_info}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry')); ?>	
+									</div>
+								</td>
+							</tr>
+<?php
+	}	
+?>
 						</table>
 						<?= $t_label->htmlFormElement('other_forenames', null, array('name' => "{fieldNamePrefix}other_forenames-{n}", 'id' => "{fieldNamePrefix}other_forenames_{n}", "value" => "{{other_forenames}}", 'hidden' => true)); ?>
 <?php
@@ -184,6 +212,19 @@
 									</div>	
 								</td>
 							</tr>
+	<?php
+	if($show_source) {
+?>
+							<tr>
+								<td colspan="5">
+									<div class="formLabel">
+										<?= $t_label->htmlFormElement('source_info', "^LABEL<br/>^ELEMENT", array('classname' => 'labelSourceInfo', 'id' => "{fieldNamePrefix}source_info_{n}", 'name' => "{fieldNamePrefix}source_info_{n}", "value" => "{source_info}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry')); ?>	
+									</div>
+								</td>
+							</tr>
+<?php
+	}	
+?>
 						</table>
 <?php
 			break;
@@ -209,7 +250,7 @@
 	caUI.initLabelBundle('#<?= $id_prefix; ?>Labels', {
 		mode: 'preferred',
 		fieldNamePrefix: '<?= $id_prefix; ?>',
-		templateValues: ['displayname', 'prefix', 'forename', 'other_forenames', 'middlename', 'surname', 'suffix', 'locale_id', 'type_id', 'effective_date', 'access'],
+		templateValues: ['displayname', 'prefix', 'forename', 'other_forenames', 'middlename', 'surname', 'suffix', 'locale_id', 'type_id', 'effective_date', 'access', 'source_info'],
 		initialValues: <?= json_encode($initial_values); ?>,
 		forceNewValues: <?= json_encode($force_new_labels); ?>,
 		labelID: 'Label_',

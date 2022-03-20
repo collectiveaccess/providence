@@ -1347,8 +1347,8 @@
 						$vs_type_idno = $va_occurrence_type_info[$vn_type_id]['idno'];
 						$vn_rel_type_id = $qr_occurrences->get("{$linking_table}.type_id");
 						
-						$vs_display_template = $pb_display_label_only ? $vs_default_display_template : caGetOption(["ca_occurrences_{$vs_type_idno}_displayTemplate", "ca_occurrences_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
-						$vs_child_display_template = $pb_display_label_only ? $vs_default_child_display_template : caGetOption(["ca_occurrences_{$vs_type_idno}_childDisplayTemplate", "ca_occurrences_{$vs_type_idno}_childTemplate"], $pa_bundle_settings, $vs_display_template);
+						$vs_display_template = $pb_display_label_only ? $vs_default_display_template : caGetOption(["ca_occurrences_{$vs_type_idno}_displayTemplate", "ca_occurrences_displayTemplate"], $pa_bundle_settings, $vs_default_display_template, ['castTo' => 'string']);
+						$vs_child_display_template = $pb_display_label_only ? $vs_default_child_display_template : caGetOption(["ca_occurrences_{$vs_type_idno}_childDisplayTemplate", "ca_occurrences_{$vs_type_idno}_childTemplate"], $pa_bundle_settings, $vs_display_template, ['castTo' => 'string']);
 		   			
 						$va_dates = [];
 						if($pb_date_mode) {

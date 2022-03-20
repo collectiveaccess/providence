@@ -201,7 +201,7 @@ class ca_guids extends BaseModel {
 			$vs_guid = $qr_guid->get('guid');
 			return $vs_guid;
 		} else {
-			if(!caGetOption('dontAdd', $pa_options) && ($t_instance = Datamodel::getInstance($pn_table_num, true))) {
+			if(!caGetOption('dontAdd', $pa_options, false) && ($t_instance = Datamodel::getInstance($pn_table_num, true))) {
 				if($vs_guid = self::addForRow($pn_table_num, $pn_row_id, $pa_options)) {
 					return $vs_guid;
 				}

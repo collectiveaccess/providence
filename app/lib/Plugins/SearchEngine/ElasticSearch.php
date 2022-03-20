@@ -425,7 +425,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @param int $pn_subject_tablenum
 	 * @param int $pn_subject_row_id
 	 */
-	public function startRowIndexing($pn_subject_tablenum, $pn_subject_row_id){
+	public function startRowIndexing(int $pn_subject_tablenum, int $pn_subject_row_id) : void {
 		$this->index_content_buffer = [];
 		$this->indexing_subject_tablenum = $pn_subject_tablenum;
 		$this->indexing_subject_row_id = $pn_subject_row_id;
@@ -441,7 +441,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @param array $pa_options
 	 * @return null
 	 */
-	public function indexField($pn_content_tablenum, $ps_content_fieldname, $pn_content_row_id, $pm_content, $pa_options) {
+	public function indexField(int $pn_content_tablenum, string $ps_content_fieldname, int $pn_content_row_id, $pm_content, ?array $pa_options=null) {
 		$o_field = new ElasticSearch\Field($pn_content_tablenum, $ps_content_fieldname);
 		if(!is_array($pm_content)) { $pm_content = [$pm_content]; }
 
@@ -511,7 +511,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @param int|null|array $pm_field_nums
 	 * @param int|null $pn_content_row_id
 	 */
-	public function removeRowIndexing($pn_subject_tablenum, $pn_subject_row_id, $pn_field_tablenum=null, $pm_field_nums=null, $pn_content_row_id=null) {
+	public function removeRowIndexing(int $pn_subject_tablenum, int $pn_subject_row_id, ?int $pn_field_tablenum=null, $pm_field_nums=null, ?int $pn_content_row_id=null, ?int $pn_rel_type_id=null) {
 		$table = Datamodel::getTableName($pn_subject_tablenum);
 		// if the field table num is set, we only remove content for this field and don't nuke the entire record!
 		if($pn_field_tablenum) {
@@ -734,8 +734,8 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		$this->getClient()->indices()->open(['index' => $this->getIndexName($table)]);
 	}
 	# -------------------------------------------------------
-	public function optimizeIndex($pn_table_num) {
-		$this->getClient()->indices()->forceMerge(['index' => $this->getIndexName($pn_table_num)]);
+	public function optimizeIndex(int $table_num) {
+		$this->getClient()->indices()->forceMerge(['index' => $this->getIndexName($table_num)]);
 	}
 	# -------------------------------------------------------
 	public function engineName() {

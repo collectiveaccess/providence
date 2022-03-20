@@ -40,7 +40,8 @@
     "cache/filesystem-adapter": "^1.1",
     "codeitnowin/barcode": "^3.0",
     "whikloj/bagittools": "^3.0",
-    "scholarslab/bagit": "~0.2"
+    "scholarslab/bagit": "~0.2",
+    "voku/stop-words": "^2.0"
   },
   "config": {
   	"discard-changes": true
