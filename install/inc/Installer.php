@@ -674,6 +674,7 @@ class Installer {
 	 * @return bool
 	 */
 	protected  function processListItems($t_list, $items, $parent_id) {
+		$list_code = $t_list->get('list_code');
 		foreach($items as $item) {
 			$item_value = $item["value"];
 			$item_idno = $item["idno"];
@@ -697,7 +698,7 @@ class Installer {
 			$this->logStatus(_t('Processing list item with idno %1', $item_idno));
 			$deleted = $item["deleted"];
 			
-			if($item_id = caGetListItemID($t_list->get('list_code'), $item_idno, ['dontCache' => true])) {
+			if($item_id = caGetListItemID($list_code, $item_idno, ['dontCache' => true])) {
 				$this->logStatus(_t('List item with idno %1 already exists', $item_idno));
 				if($deleted) {
 					$this->logStatus(_t('Deleting list item with idno %1', $item_idno));
@@ -721,7 +722,7 @@ class Installer {
 			} else {
 				$this->logStatus(_t('Successfully updated/inserted list item with idno %1', $item_idno));
 				if($item['settings']) {
-					$this->_processSettings($t_item, $item['settings']);
+					$this->_processSettings($t_item, $item['settings'], ['source' => "List:{$list_code}:{$item_idno}"]);
 					$t_item->update();
 					if ($t_item->numErrors()) {
 						$this->addError('processListItems', "There was an error while adding a setting for list item with idno {$item_idno}: ".join(" ",$t_item->getErrors()));
@@ -793,7 +794,7 @@ class Installer {
 					$t_restriction->set('type_id', $type_id);
 					$t_restriction->set('element_id', $element_id);
 
-					$this->_processSettings($t_restriction, $restriction['settings']);
+					$this->_processSettings($t_restriction, $restriction['settings'], ['source' => "MetadataElement:{$element_code}"]);
 					$t_restriction->insert();
 
 					if ($t_restriction->numErrors()) {
@@ -851,7 +852,7 @@ class Installer {
 			$list_id = null;
 		}
 		$t_md_element->set('list_id', $list_id);
-		$this->_processSettings($t_md_element, $element['settings'], ['settingsInfo' => $t_md_element->getAvailableSettings()]);
+		$this->_processSettings($t_md_element, $element['settings'], ['settingsInfo' => $t_md_element->getAvailableSettings(), 'source' => "MetadataElement:{$element_code}"]);
 
 		if($t_md_element->getPrimaryKey()) {
 			$t_md_element->update(['noFlush' => true]);
@@ -904,7 +905,7 @@ class Installer {
 			$t_entry = new \ca_metadata_dictionary_entries();
 			$t_entry->set('bundle_name', $entry['bundle']);
 			$t_entry->set('table_num', $table_num);
-			$this->_processSettings($t_entry, $entry['settings']);
+			$this->_processSettings($t_entry, $entry['settings'], ['source' => "MetadataDictionary:table {$table_num}:".$entry['bundle']]);
 			
 			$t_entry->insert();
 
@@ -920,7 +921,7 @@ class Installer {
 					$t_rule->set('rule_code', $rule['code']);
 					$t_rule->set('rule_level', $rule['level']);
 					$t_rule->set('expression', $rule['expression']);
-					$this->_processSettings($t_rule, $rule['settings']);
+					$this->_processSettings($t_rule, $rule['settings'], ['source' => "MetadataDictionary:table {$table_num}:".$entry['bundle'].":Rule ".$rule['code']]);
 
 					$t_rule->insert();
 					if ($t_rule->numErrors()) {
@@ -1180,7 +1181,11 @@ class Installer {
 						}
 					}
 					
-					$settings = $this->_processSettings(null, $placement['settings'], ['settingsInfo' => array_merge($t_placement->getAvailableSettings(), is_array($available_bundles[$bundle]['settings']) ? $available_bundles[$bundle]['settings'] : [])]);
+					$settings = $this->_processSettings(null, $placement['settings'], [
+						'table' => \Datamodel::tableExists($bundle) ? $bundle : null, 
+						'settingsInfo' => array_merge($t_placement->getAvailableSettings(), is_array($available_bundles[$bundle]['settings']) ? $available_bundles[$bundle]['settings'] : []),
+						'source' => "UserInterface:{$ui_code}:Screen {$screen_idno}:Placement {$placement_code}"
+					]);
 					$this->logStatus(_t('Adding bundle %1 with code %2 for screen with code %3 and user interface with code %4', $bundle, $placement_code, $screen_idno, $ui_code));
 
 					if (!$t_ui_screens->addPlacement($bundle, $placement_code, $settings, null, ['additional_settings' => $available_bundles[$bundle]['settings']])) {
@@ -1620,7 +1625,7 @@ class Installer {
 			$t_display->set("table_num",\Datamodel::getTableNum($table));
 			$t_display->set("user_id", 1);		// let administrative user own these
 
-			$this->_processSettings($t_display, $display['settings']);
+			$this->_processSettings($t_display, $display['settings'], ['source' => "Display:{$display_code}"]);
 
 			if($t_display->getPrimaryKey()) {
 				$t_display->update();
@@ -1747,11 +1752,12 @@ class Installer {
 		}
 
 		$i = 1;
+		$display_code = $t_display->get('ca_bundle_displays.display_code');
 		foreach($placements as $placement) {
 			$code = $placement["code"];
 			$bundle = (string)$placement['bundle'];
 
-			$settings = $this->_processSettings(null, $placement['settings']);
+			$settings = $this->_processSettings(null, $placement['settings'], ['source' => "Display:{$display_code}:Placement {$code}"]);
 			$t_display->addPlacement($bundle, $settings, $i, ['additional_settings' => $available_bundles[$bundle]['settings']]);
 			if ($t_display->numErrors()) {
 				$this->addError('processDisplayPlacements', "There was an error while inserting display placement {$code}: ".join(" ",$t_display->getErrors()));
@@ -1802,7 +1808,7 @@ class Installer {
 			$t_form->set("is_system", $system ? 1 : 0);
 			$t_form->set("table_num", $table_num);
 
-			$this->_processSettings($t_form, $form['settings']);
+			$this->_processSettings($t_form, $form['settings'], ['source' => "SearchForm:{$form_code}"]);
 
 			if($t_form->getPrimaryKey()) {
 				$t_form->update();
@@ -1930,11 +1936,12 @@ class Installer {
 		}
 
 		$i = 1;
+		$form_code = $t_form->get('ca_search_forms.form_code');
 		foreach($placements as $placement) {
 			$code = $placement["code"];
 			$bundle = $placement['bundle'];
 
-			$settings = $this->_processSettings(null, $placement['settings']);
+			$settings = $this->_processSettings(null, $placement['settings'], ['source' => "SearchForm:{$form_code}:Placement {$code}"]);
 			$t_form->addPlacement($bundle, $settings, $i, ['additional_settings' => $available_bundles[$bundle]['settings']]);
 			if ($t_form->numErrors()) {
 				$this->addError('processSearchFormPlacements', "There was an error while inserting search form placement {$code}: ".join(" ",$t_form->getErrors()));
@@ -2098,7 +2105,7 @@ class Installer {
 			$t_alert->set("code", $alert_code);
 			$t_alert->set("table_num", $table_num);
 
-			$this->_processSettings($t_alert, $alert['settings']);
+			$this->_processSettings($t_alert, $alert['settings'], ['source' => "MetadataAlerts:{$alert_code}"]);
 
 			if($t_alert->getPrimaryKey()) {
 				$t_alert->update();
@@ -2235,7 +2242,7 @@ class Installer {
 				continue; 
 			}
 
-			$settings = $this->_processSettings(null, $trigger['settings']);
+			$settings = $this->_processSettings(null, $trigger['settings'], ['source' => "MetadataAlerts:{$alert_code}:Trigger {$code}"]);
 			
 			//<element code1>:<list item code>|<list item code>|...;<element code2>:<list item code>|<list item code>
 			$metadata_element_filters = [];
@@ -2338,6 +2345,7 @@ class Installer {
 		$settings_list = [];
 		
 		$settings_info = caGetOption('settingsInfo', $options, []);
+		$source = caGetOption('source', $options, []);
 
 		if($settings) {
 			foreach($settings as $setting_name => $values_by_locale) {
@@ -2356,6 +2364,27 @@ class Installer {
 						}
 
 						if((strlen($setting_name)>0) && (strlen($setting_value)>0)) { // settings need at least name and value
+							// validate types
+							$table = caGetOption('table', $options, null);
+							switch($setting_name) {
+								case 'restrict_to_relationship_types':
+									if($table) {
+										$ret = caValidateRelationshipTypeList($table, $setting_value);
+										foreach(array_keys(array_filter($ret, function($v) { return !$v; })) as $bad_type) {
+											$this->addError('processSettings', _t('Relationship type %1 is not valid; set in relationship type restriction setting for %3', $bad_type, $source));
+										}
+									}
+									break;
+								case 'restrict_to_types':
+									if($table) {
+										$ret = caValidateTypeList($table, $setting_value);
+										foreach(array_keys(array_filter($ret, function($v) { return !$v; })) as $bad_type) {
+											$this->addError('processSettings', _t('Type %1 is not valid for %2; set in type restriction setting for %3', $bad_type, $table, $source));
+										}
+									}
+									break;
+							}
+						
 							$datatype = (int)$t_instance ? $t_instance->get('datatype') : null;
 							if ($setting_name === 'restrictToTypes' && $t_authority_instance = \AuthorityAttributeValue::elementTypeToInstance($datatype)){
 								if ($t_authority_instance instanceof \BaseModelWithAttributes && is_string($setting_value)){

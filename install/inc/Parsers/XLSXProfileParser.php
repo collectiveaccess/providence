@@ -478,7 +478,7 @@ class XLSXProfileParser extends BaseProfileParser {
 					$type = $tmp[1] ?? null;
 					
 					$min_repeats = is_numeric($element['mandatory']) ? (int)$element['mandatory'] : (self::parseBool($element['mandatory']) ? 1 : 0);
-					$max_repeats = is_numeric($element['repeatable']) ? (int)$element['repeatable'] : (self::parseBool($element['repeatable']) ? 1000 : 0);
+					$max_repeats = is_numeric($element['repeatable']) ? (int)$element['repeatable'] : (self::parseBool($element['repeatable']) ? 1000 : 1);
 
 					$type_restrictions[] = [
 						'code' => "res{$rx}",
@@ -726,8 +726,15 @@ class XLSXProfileParser extends BaseProfileParser {
 				$settings['description'][$this->settings['locale']] = [$description];
 			}
 			
-			$values[$code ? $code : $relationship] = [
-				'code' => $code ? $code : $relationship,
+			$base_key = $key = $code ? $code : $relationship;
+			
+			$i = 0;
+			while(isset($values[$key])) {
+				$i++;
+				$key = "{$base_key}_{$i}";
+			}
+			$values[$key] = [
+				'code' => $key,
 				'bundle' => $rel_table ? $rel_table : "{$table}.{$code}",
 				'settings' => $settings,
 				'includeSubtypes' => true,
