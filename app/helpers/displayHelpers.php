@@ -1234,7 +1234,7 @@ jQuery(document).ready(function() {
 				$vs_buf .= "{$vs_watch}\n";
 				TooltipManager::add("#caWatchItemButton", _t('Watch/Unwatch this record'));
 
-				if ($po_view->request->user->canDoAction("can_change_type_{$vs_table_name}") && (sizeof($t_item->getTypeList()) > 1)) {
+				if ($po_view->request->user->canDoAction("can_change_type_{$vs_table_name}") && (sizeof($t_item->getTypeList()) >= 1)) {
 
 					$vs_buf .= "<div id='inspectorChangeType' class='inspectorActionButton'><div id='inspectorChangeTypeButton'><a href='#' onclick='caTypeChangePanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_CHANGE__, '20px', array('title' => _t('Change type')))."</a></div></div>\n";
 

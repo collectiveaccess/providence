@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2021 Whirl-i-Gig
+ * Copyright 2014-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -181,19 +181,37 @@ class FMPXMLResultReader extends BaseXMLDataReader {
 	 * @return mixed
 	 */
 	public function nextRow() {
-		if ($rc = parent::nextRow()) {
-			$row = $this->opa_row_buf['/COL'];
-			$row_with_labels = [];
-			foreach($this->opa_metadata as $i => $l) {
-				$row_with_labels[$l][] = $row[$i];
-				
-				if(strtolower($l) !== $l) {
-					$row_with_labels[strtolower($l)][] = $row[$i];
-				}
-			}
-			$this->opa_row_buf = $row_with_labels;
+		if (!($o_row = $this->opo_handle->item($this->opn_current_row))) { return false; }
+		
+		$o_row_clone = $o_row->cloneNode(TRUE);
+		$this->opo_handle_xml = new DOMDocument();
+		$this->opo_handle_xml->appendChild($this->opo_handle_xml->importNode($o_row_clone,TRUE));
+
+		$this->opo_handle_xpath = new DOMXPath($this->opo_handle_xml);
+		
+		if ($this->ops_xml_namespace_prefix && $this->ops_xml_namespace) {
+			$this->opo_handle_xpath->registerNamespace($this->ops_xml_namespace_prefix, $this->ops_xml_namespace);
 		}
-		return $rc;
+		
+		$row_with_labels = [];
+		foreach($this->opa_metadata as $i => $l) {
+			$o_node = $o_row->childNodes->item($i);
+			
+			$vals = [];
+			foreach($o_node->childNodes as $n) {
+				$vals[] = html_entity_decode((string)$n->nodeValue, null, 'UTF-8');
+			}
+			$row_with_labels[$l] = $vals;
+			
+			if(strtolower($l) !== $l) {
+				$row_with_labels[strtolower($l)] = $vals;
+			}
+		}
+		$this->opa_row_buf = $row_with_labels;
+		
+		$this->opn_current_row++;
+		if ($this->opn_current_row > $this->numRows()) { return false; }
+		return true;
 	}
 	# -------------------------------------------------------
 	/**

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2017 Whirl-i-Gig
+ * Copyright 2013-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -152,9 +152,7 @@ class MediaContentLocationIndexer  {
 	 */
 	static function searchWithinMedia($ps_query, $pm_table, $pn_row_id, $ps_field) {
 		$o_config = Configuration::load();
-		$o_search_config = Configuration::load(__CA_CONF_DIR__.'/search.conf');
-		$vs_indexing_regex = $o_search_config->get('indexing_tokenizer_regex');
-		$va_words = preg_split("![{$vs_indexing_regex}]!u", $ps_query);
+		$va_words = caTokenizeString($ps_query);
 		
 		$va_results = array(
 			'matches' => 0,
@@ -291,4 +289,3 @@ class MediaContentLocationIndexer  {
 	}
 	# ------------------------------------------------
 }
-?>

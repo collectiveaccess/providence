@@ -1144,13 +1144,14 @@
 						}
 			
 						if (
-							(!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) 
-							&& 
 							($vs_rel_type_opt = $pa_item['settings']["{$ps_refinery_name}_relationshipTypeDefault"])	
 						) {
-							if (!($va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnAsString' => true,  'returnDelimitedValueAt' => $vn_x, 'applyImportItemSettings' => $apply_import_item_settings)))) {
-								$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'returnAsString' => true, 'applyImportItemSettings' => $apply_import_item_settings));
+							if(!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) {
+								if (!($va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnAsString' => true,  'returnDelimitedValueAt' => $vn_x, 'applyImportItemSettings' => $apply_import_item_settings)))) {
+									$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'returnAsString' => true, 'applyImportItemSettings' => $apply_import_item_settings));
+								}
 							}
+							$va_val['_relationship_type_default'] = $vs_rel_type_opt;
 						}
 
 						if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && $o_log && ($ps_refinery_name !== 'objectRepresentationSplitter')) {

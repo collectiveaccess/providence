@@ -972,7 +972,7 @@ if (!$pb_omit_editing_info) {
 		if (!$pm_table_name_or_num) { return null; }
 		$cache_key = caMakeCacheKeyFromOptions($options, $pm_table_name_or_num.'|'.(($g_request && $g_request->user) ? 'USER:'.$g_request->user->getPrimaryKey() : ''));
 		if(CompositeCache::contains($cache_key)) {
-		//	return CompositeCache::fetch($cache_key);
+			return CompositeCache::fetch($cache_key);
 		}
 		
 		$t_subject = Datamodel::getInstance($pm_table_name_or_num, true);
@@ -2800,7 +2800,7 @@ if (!$pb_omit_editing_info) {
 		$user_id = caGetOption('user_id', $options, null);
 		$type_id = caGetOption('type_id', $options, null);
 		
-		if($this->haveAccessToDisplay($user_id, __CA_BUNDLE_DISPLAY_READ_ACCESS__)) {
+		if(is_null($user_id) || $this->haveAccessToDisplay($user_id, __CA_BUNDLE_DISPLAY_READ_ACCESS__)) {
 			$placements = $this->getPlacements(['settingsOnly' => true, 
 				'hierarchicalDelimiter' => ' ➜ ', 'user_id' => $user_id, 
 				'request' => caGetOption('request', $options, null)

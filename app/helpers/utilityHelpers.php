@@ -4385,8 +4385,8 @@ function caFileIsIncludable($ps_file) {
 
 			if ($vb_is_ca_tag && (strpos($vs_tag, '%') === false)) {
 				// ca_* tags that don't have modifiers always end whenever a non-alphanumeric character is encountered
-				$vs_tag = preg_replace("![^0-9\p{L}_]+$!u", "", $vs_tag);
-			} elseif(preg_match("!^([\d]+)[^0-9\p{L}_]+!", $vs_tag, $va_matches)) {
+				$vs_tag = preg_replace("![^0-9/\p{L}_]+$!u", "", $vs_tag);
+			} elseif(preg_match("!^([\d]+)[^0-9/\p{L}_]+!", $vs_tag, $va_matches)) {
 				// tags beginning with numbers followed by non-alphanumeric characters are truncated to number-only tags
 				$vs_tag = $va_matches[1];
 			}

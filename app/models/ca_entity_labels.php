@@ -138,11 +138,11 @@ BaseModel::$s_ca_models_definitions['ca_entity_labels'] = array(
 				'BOUNDS_LENGTH' => array(0,512)
 		),
 		'source_info' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => "670px", 'DISPLAY_HEIGHT' => 3,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => 'Source information', 'DESCRIPTION' => 'Source information'
+				'LABEL' => 'Source', 'DESCRIPTION' => 'Source information'
 		),
 		'is_preferred' => array(
 				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT, 
@@ -353,7 +353,7 @@ class ca_entity_labels extends BaseLabel {
 				'middlename' => $this->get('middlename'),
 				'surname' => $this->get('surname'),
 				'suffix' => $this->get('suffix')
-			]))) {
+			], $options))) {
 				if(caGetOption('normalize', $options, true)) {
 					foreach($normalized_label as $fld => $val) {
 						$this->set($fld, $val);
@@ -376,7 +376,7 @@ class ca_entity_labels extends BaseLabel {
 	 *
 	 * @return array
 	 */
-	public static function normalizeLabel(array $label_values) : array {
+	public static function normalizeLabel(array $label_values, ?array $options=null) : array {
 		$normalized_values = DataMigrationUtils::splitEntityName(self::labelAsString($label_values), $options);
 		return $normalized_values;
 	}
