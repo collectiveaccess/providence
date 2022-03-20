@@ -2226,7 +2226,7 @@
 	 *
 	 * @return array list of words
 	 */
-	function caTokenizeString(string $value) : array {
+	function caTokenizeString(?string $value) : array {
 		$search_engine_class = SearchBase::searchEngineClassName();
 		
 		if(method_exists('SearchBase', $search_engine_class)) {
