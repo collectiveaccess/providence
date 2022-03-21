@@ -113,7 +113,11 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			
 					self::$stop_words = [];
 					foreach($langs as $lang) {
-						self::$stop_words = array_merge(self::$stop_words, array_flip($sw->getStopWordsFromLanguage($lang)));
+						try {
+							self::$stop_words = array_merge(self::$stop_words, array_flip($sw->getStopWordsFromLanguage($lang)));
+						} catch(Exception $e) {
+							// noop
+						}
 					}
 			
 					// Add application-specific stop words
