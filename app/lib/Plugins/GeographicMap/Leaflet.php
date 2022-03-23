@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2021 Whirl-i-Gig
+ * Copyright 2018-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -406,14 +406,13 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 				var objs = [];
 				g.eachLayer(function (layer) {
 					if (layer.getRadius) { // circle
-						var c = layer.getLatLng();
+						var c = layer.getLatLng().wrap();
 						objs.push(c.lat + ',' + c.lng + '~' + layer.getRadius());
 					} else if (layer.getLatLngs) { // path
-						var cs = layer.getLatLngs()[0].map(c => { return c.lat + ',' + c.lng});
+						var cs = layer.getLatLngs()[0].map(c => { c.wrap(); return c.lat + ',' + c.lng});
 						objs.push(cs.join(';'));
 					} else if (layer.getLatLng) { // marker
-						var c = layer.getLatLng();
-					
+						var c = layer.getLatLng().wrap();
 						if (layer.options.rotationAngle !== 0) {
 							objs.push(c.lat + ',' + c.lng + '*' + layer.options.rotationAngle);
 						} else {
