@@ -490,7 +490,7 @@
 					if (($vn_top + $vn_height) > (($vn_page_count + 1) * $vn_page_height)) {
 						
 						// next page
-						if ($vn_label_count < $po_result->numHits()) { $vs_content .= "<div class=\"pageBreak\">&nbsp;</div>\n"; }
+						if ($vn_label_count < $po_result->numHits()) { $vs_content .= "<div class=\"pageBreak\" style=\"page-break-after: always;\">&nbsp;</div>\n"; }
 						$vn_left = $vn_left_margin;
 							
 						switch($vs_renderer) {
