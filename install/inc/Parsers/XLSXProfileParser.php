@@ -344,11 +344,10 @@ class XLSXProfileParser extends BaseProfileParser {
 			if(!strlen($val)) { continue; }
 			
 			$idno = caTextToSnake($val);
-			$name = caCamelOrSnakeToText($val, ['ucFirst' => true]);
 			
 			$labels = [[
-				'name_singular' => $name,
-				'name_plural' => $name,
+				'name_singular' => $val,
+				'name_plural' => $val,
 				'preferred' => 1,
 				'locale' => $this->settings['locale']
 			]];
@@ -556,8 +555,6 @@ class XLSXProfileParser extends BaseProfileParser {
 			
 			$r = 1;
 			foreach($rel_tables as $table_code => $info) {
-				$name = caCamelOrSnakeToText($info['code'], ['ucFirst' => true]);
-				
 				$this->data['relationshipTypes'][$info['table']] = $this->processRelationshipTypesForTable($sheet, $info, 3, $info['start']);
 				$r++;
 			}
