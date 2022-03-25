@@ -7394,7 +7394,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			
 			foreach($va_id2parent as $vn_row_id => $vn_parent_id) {
 			    if(!$vn_parent_id) { 
-			        $va_parent_map[$vn_row_id] = ['level' =>  1];
+			        $va_parent_map[$vn_row_id] = ['level' =>  0];
 			    } else {
 			        $r = $vn_row_id;
 			        $l = 0;
