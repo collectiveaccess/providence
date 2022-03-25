@@ -4731,7 +4731,7 @@ function caFileIsIncludable($ps_file) {
 	 * Cyrillic (Russian, Etc.), Greek, Hebrew, and Latin. If no specific alphabet is detected null is returned.
 	 *
 	 * @param string Text to test
-	 * @return string Alphabet designator or null. Designators are HAN|HIRAGANA|KATAKANA|HANGUL|CYRILLIC|GREEK|HEBREW|LATIN
+	 * @return string Alphabet designator or null. Designators are HIRAGANA|KATAKANA|HAN|HANGUL|CYRILLIC|GREEK|HEBREW|LATIN
 	 */
 	function caIdentifyAlphabet(string $text) : ?string {
 		if(preg_match_all('/\p{Hiragana}/u', $text, $result)) {

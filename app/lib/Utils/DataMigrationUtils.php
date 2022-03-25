@@ -548,8 +548,8 @@ class DataMigrationUtils {
 		switch(caIdentifyAlphabet($text)) {
 			case 'HAN':
 			case 'HANGUL':
-				if(preg_match('! !', $text)) {	// if name has spaces in it split on that
-					$bits = preg_split('![ ]+!u', $text);
+				if(preg_match('![ ·]!', $text)) {	// if name has spaces in it split on that
+					$bits = preg_split('![ ·]+!u', $text);
 					$surname = array_shift($bits);
 					$forename = array_shift($bits);
 					$suffix = join(' ', $bits);
@@ -562,6 +562,23 @@ class DataMigrationUtils {
 					'surname' => $surname, 'forename' =>  $forename, 'middlename' => '',
 					'prefix' => '', 'suffix' => $suffix, 'displayname' => $text
 				];
+			case 'HIRAGANA':
+			case 'KATAKANA':
+				if(preg_match('![ ·]!', $text)) {	// if name has spaces in it split on that
+					$bits = preg_split('![ ·]+!u', $text);
+					$surname = array_shift($bits);
+					$forename = array_shift($bits);
+					$suffix = join(' ', $bits);
+				} else {						// assume surname=displayname
+					$surname = $text;
+					$forename = '';
+					$suffix = '';
+				}
+				return [
+					'surname' => $surname, 'forename' =>  $forename, 'middlename' => '',
+					'prefix' => '', 'suffix' => $suffix, 'displayname' => $text
+				];
+				break;
 		}
 		
 		if (isset($options['locale']) && $options['locale']) {
