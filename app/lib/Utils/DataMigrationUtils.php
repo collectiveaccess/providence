@@ -544,6 +544,26 @@ class DataMigrationUtils {
 			];
 		}
 		
+		// Split names in non-roman alphabets
+		switch(caIdentifyAlphabet($text)) {
+			case 'HAN':
+			case 'HANGUL':
+				if(preg_match('! !', $text)) {	// if name has spaces in it split on that
+					$bits = preg_split('![ ]+!u', $text);
+					$surname = array_shift($bits);
+					$forename = array_shift($bits);
+					$suffix = join(' ', $bits);
+				} else {						// assume first character is surname, everything else is forename
+					$surname = mb_substr($text, 0, 1);
+					$forename = mb_substr($text, 1);
+					$suffix = '';
+				}
+				return [
+					'surname' => $surname, 'forename' =>  $forename, 'middlename' => '',
+					'prefix' => '', 'suffix' => $suffix, 'displayname' => $text
+				];
+		}
+		
 		if (isset($options['locale']) && $options['locale']) {
 			$locale = $options['locale'];
 		} else {
