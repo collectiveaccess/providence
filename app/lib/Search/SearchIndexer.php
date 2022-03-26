@@ -949,7 +949,12 @@ if (!$for_current_value_reindex) {
 							
 							$vn_private = ((!is_array($va_private_rel_types) || !sizeof($va_private_rel_types) || !in_array($vn_rel_type_id, $va_private_rel_types))) ? 0 : 1;
 							
-							if(!$vn_private && $t_rel->hasField('access') && (!in_array($t_rel->tableName(), ['ca_sets', 'ca_set_items'], true)) && (!in_array((int)$qr_res->get('access'), $public_access ?? [], true))) {
+							if(
+								!$vn_private && $t_rel->hasField('access') && 
+								!(is_a($t_rel, "BaseLabel") && $this->opo_app_config->get('dont_check_label_access')) && 
+								(!in_array($t_rel->tableName(), ['ca_sets', 'ca_set_items'], true)) && 
+								(!in_array((int)$qr_res->get('access'), $public_access ?? [], true))
+							) {
 								$vn_private = 1;
 							}
 				
@@ -2260,7 +2265,11 @@ if (!$for_current_value_reindex) {
 									
 									$vn_private = (is_array($va_private_rel_types) && sizeof($va_private_rel_types) && in_array($vn_rel_type_id, $va_private_rel_types)) ? 1 : 0;
 									
-									if(!$vn_private && $t_rel->hasField('access') && (!in_array((int)$va_row['access'], $public_access ?? [], true))) {
+									if(
+										!$vn_private && $t_rel->hasField('access') && 
+										!(is_a($t_rel, "BaseLabel") && $this->opo_app_config->get('dont_check_label_access')) && 
+										(!in_array((int)$va_row['access'], $public_access ?? [], true))
+									) {
 										$vn_private = 1;
 									}
 									
