@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2021 Whirl-i-Gig
+ * Copyright 2007-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -860,7 +860,7 @@ class MultipartIDNumber extends IDNumber {
 		$output_values = array_unique($output_values);
 		
 		// generate tokenized version
-		if($tokens = preg_split("![".$this->search_config->get('indexing_tokenizer_regex')."]+!", $value)) {
+		if($tokens = caTokenizeString($value)){
 			$output_values = array_merge($output_values, $tokens);
 		}
 		

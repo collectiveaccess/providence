@@ -88,11 +88,11 @@ BaseModel::$s_ca_models_definitions['ca_data_importer_labels'] = array(
 				'LABEL' => _t('Locale'), 'DESCRIPTION' => _t('Locale of importer name'),
 		),
 		'source_info' => array(
-				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => "670px", 'DISPLAY_HEIGHT' => 3,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => 'Source information', 'DESCRIPTION' => 'Source information'
+				'LABEL' => 'Source', 'DESCRIPTION' => 'Source information'
 		),
 		'is_preferred' => array(
 				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT, 

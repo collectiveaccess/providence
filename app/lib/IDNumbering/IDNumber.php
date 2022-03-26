@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2021 Whirl-i-Gig
+ * Copyright 2007-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -366,6 +366,8 @@ abstract class IDNumber implements IIDNumbering {
 				$elements = [];
 				foreach($this->formats[$format][$type]['elements'] as $k => $element_info) {
 					if (!$is_child && isset($element_info['child_only']) && (bool)$element_info['child_only']) { continue; }
+					if($is_child && $element_info['root_only']) { continue; }
+					
 					$elements[$k] = $element_info;
 				}
 			}

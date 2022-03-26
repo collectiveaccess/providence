@@ -4385,8 +4385,8 @@ function caFileIsIncludable($ps_file) {
 
 			if ($vb_is_ca_tag && (strpos($vs_tag, '%') === false)) {
 				// ca_* tags that don't have modifiers always end whenever a non-alphanumeric character is encountered
-				$vs_tag = preg_replace("![^0-9\p{L}_]+$!u", "", $vs_tag);
-			} elseif(preg_match("!^([\d]+)[^0-9\p{L}_]+!", $vs_tag, $va_matches)) {
+				$vs_tag = preg_replace("![^0-9/\p{L}_]+$!u", "", $vs_tag);
+			} elseif(preg_match("!^([\d]+)[^0-9/\p{L}_]+!", $vs_tag, $va_matches)) {
 				// tags beginning with numbers followed by non-alphanumeric characters are truncated to number-only tags
 				$vs_tag = $va_matches[1];
 			}
@@ -4723,4 +4723,34 @@ function caFileIsIncludable($ps_file) {
 		$config->set('URI.DisableExternalResources', !Configuration::load()->get('purify_allow_external_references'));
 		return new HTMLPurifier($config); 
 	}
+	# ----------------------------------------
+	/**
+	 * Classify alphabet used by a string. Detection is simplistic: if the string contains
+	 * any characters from one of the supported alphabets it is considered to be in that alphabet.
+	 * Alphabets are tested in order: Han (Chinese), Hiragana (Japanese), Katakana (Japanese), Hangul (Korean),
+	 * Cyrillic (Russian, Etc.), Greek, Hebrew, and Latin. If no specific alphabet is detected null is returned.
+	 *
+	 * @param string Text to test
+	 * @return string Alphabet designator or null. Designators are HIRAGANA|KATAKANA|HAN|HANGUL|CYRILLIC|GREEK|HEBREW|LATIN
+	 */
+	function caIdentifyAlphabet(string $text) : ?string {
+		if(preg_match_all('/\p{Hiragana}/u', $text, $result)) {
+			return 'HIRAGANA';
+		} elseif(preg_match_all('/\p{Katakana}/u', $text, $result)) {
+			return 'KATAKANA';
+		} elseif(preg_match_all('/\p{Han}/u', $text, $result)) {
+			return 'HAN';
+		} elseif(preg_match_all('/\p{Hangul}/u', $text, $result)) {
+			return 'HANGUL';
+		} elseif(preg_match_all('/(\p{Cyrillic}+)/u', $text, $result)) {
+			return 'CYRILLIC';
+		} elseif(preg_match_all('/(\p{Latin}+)/u', $text, $result)) {
+			return 'GREEK';
+		} elseif(preg_match_all('/(\p{Greek}+)/u', $text, $result)) {
+			return 'HEBREW';
+		} elseif(preg_match_all('/(\p{Hebrew}+)/u', $text, $result)) {
+			return 'LATIN';
+		}
+		return null;
+    }
 	# ----------------------------------------

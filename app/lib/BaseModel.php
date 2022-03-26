@@ -1375,6 +1375,20 @@ class BaseModel extends BaseObject {
 	    
 	    return $idnos;
 	}
+	# ------------------------------------------------------
+	/** 
+	 * Check is currently loaded row is a hierarchical child of another row
+	 *
+	 * @return bool
+	 */
+	public function isChild() : bool {
+		if($parent_id_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD')) {
+			if($this->get($parent_id_fld) > 0) {
+				return true;
+			}
+		}
+		return false;
+	}
 	# --------------------------------------------------------------------------------
 	/**
 	 * Set field value(s) for the table row represented by this object
@@ -6778,7 +6792,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 							(wcls.subject_row_id  = ?)
 						)
 						{$vs_daterange_sql}
-					ORDER BY log_datetime
+					ORDER BY log_datetime ".(($pn_max_num_entries_returned > 0) ? 'DESC' : '')."
 				"))) {
 					# should not happen
 					return false;
@@ -6803,7 +6817,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			$va_log[] = $qr_log->getRow();
 			$va_log[sizeof($va_log)-1]['snapshot'] = caUnserializeForDatabase($va_log[sizeof($va_log)-1]['snapshot']);
 		}
-
+		if($pn_max_num_entries_returned > 0) { return array_reverse($va_log); }
 		return $va_log;
 	}
 	# --------------------------------------------------------------------------------------------
@@ -7380,7 +7394,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			
 			foreach($va_id2parent as $vn_row_id => $vn_parent_id) {
 			    if(!$vn_parent_id) { 
-			        $va_parent_map[$vn_row_id] = ['level' =>  1];
+			        $va_parent_map[$vn_row_id] = ['level' =>  0];
 			    } else {
 			        $r = $vn_row_id;
 			        $l = 0;
