@@ -1827,8 +1827,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			// which is why we unset it here and restore it later
 			global $g_ui_locale;
 			$vs_old_ui_locale = $g_ui_locale;
-			$g_ui_locale = null;
 
+			$g_ui_locale = $vs_locale;
 			$va_get_options['locale'] = $vs_locale;
 		}
 		
