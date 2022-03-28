@@ -2832,28 +2832,37 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 * Parse currency value and return array with value and currency type.
 	 *
-	 * @param string $ps_value
-	 * @return array
+	 * @param string $value Currency value, including currency specifier
+	 * @param string $locale Locale to parse value under. [Default is to use current user interface locale, or if not defined the system default locale]
+	 *
+	 * @return array An array with keys for currency specifier ("currency") and decimal amount ("value")
 	 */
-	function caParseCurrencyValue($ps_value) {
+	function caParseCurrencyValue(string $value, $locale=null) : ?array {
+		global $g_ui_locale;
+		if(!$locale) { $locale = $g_ui_locale; }
+		if(!$locale && defined('__CA_DEFAULT_LOCALE__')) { $locale = __CA_DEFAULT_LOCALE__; }
+		
 		// it's either "<something><decimal>" ($1000) or "<decimal><something>" (1000 EUR) or just "<decimal>" with an implicit <something>
-
-		// either
-		if (preg_match("!^([^\d]+)([\d\.\,]+)$!", trim($ps_value), $va_matches)) {
-			$vs_decimal_value = round((float)str_replace(',', '', $va_matches[2]), 2);
-			$vs_currency_specifier = trim($va_matches[1]);
-		// or 1
-		} else if (preg_match("!^([\d\.\,]+)([^\d]+)$!", trim($ps_value), $va_matches)) {
-			$vs_decimal_value = round((float)str_replace(',', '', $va_matches[1]), 2);
-			$vs_currency_specifier = trim($va_matches[2]);
-		// or 2
-		} else if (preg_match("!(^[\d\,\.]+$)!", trim($ps_value), $va_matches)) {
-			$vs_decimal_value = round((float)str_replace(',', '', $va_matches[1]), 2);
-			$vs_currency_specifier = null;
+		try {
+			// either
+			if (preg_match("!^([^\d]+)([\d\.\,]+)$!", trim($value), $matches)) {
+				$decimal_value = (strpos($matches[2], ',') !== false) ? Zend_Locale_Format::getNumber($matches[2], ['locale' => $g_locale, 'precision' => 2]) : (float)$matches[2];
+				$currency_specifier = trim($matches[1]);
+			// or 1
+			} else if (preg_match("!^([\d\.\,]+)([^\d]+)$!", trim($value), $matches)) {
+				$decimal_value = (strpos($matches[1], ',') !== false) ? Zend_Locale_Format::getNumber($matches[1], ['locale' => $g_locale, 'precision' => 2]) : (float)$matches[1];
+				$currency_specifier = trim($matches[2]);
+			// or 2
+			} else if (preg_match("!(^[\d\,\.]+$)!", trim($value), $matches)) {
+				$decimal_value = (strpos($matches[1], ',') !== false) ? Zend_Locale_Format::getNumber($matches[1], ['locale' => $g_locale, 'precision' => 2]) : (float)$matches[1];
+				$currency_specifier = null;
+			}
+		} catch (Zend_Locale_Exception $e){
+			return null;
 		}
 
-		if ($vs_currency_specifier || ($vs_decimal_value > 0)) {
-			return ['currency' => $vs_currency_specifier, 'value' => $vs_decimal_value];
+		if ($currency_specifier || ($decimal_value > 0)) {
+			return ['currency' => $currency_specifier, 'value' => $decimal_value];
 		}
 		return null;
  	}
