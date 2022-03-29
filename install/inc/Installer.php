@@ -2371,7 +2371,7 @@ class Installer {
 									if($table) {
 										$ret = caValidateRelationshipTypeList($table, $setting_value);
 										foreach(array_keys(array_filter($ret, function($v) { return !$v; })) as $bad_type) {
-											$this->addError('processSettings', _t('Relationship type %1 is not valid; set in relationship type restriction setting for %3', $bad_type, $source));
+											$this->addError('processSettings', _t('Relationship type %1 is not valid; set in relationship type restriction setting for %2', $bad_type, $source));
 										}
 									}
 									break;
