@@ -26,20 +26,21 @@
  * ----------------------------------------------------------------------
  */
  
-	$id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$labels 			= $this->getVar('labels');
-	$t_label 			= $this->getVar('t_label');
-	$initial_values 	= $this->getVar('label_initial_values');
-	if (!$force_new_labels = $this->getVar('new_labels')) { $force_new_labels = array(); }	// list of new labels not saved due to error which we need to for onto the label list as new
+	$id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
+	$labels 				= $this->getVar('labels');
+	$t_label 				= $this->getVar('t_label');
+	$initial_values 		= $this->getVar('label_initial_values');
+	if (!$force_new_labels 	= $this->getVar('new_labels')) { $force_new_labels = array(); }	// list of new labels not saved due to error which we need to for onto the label list as new
 
-	$settings = 		$this->getVar('settings');
-	$add_label =		$this->getVar('add_label');
+	$settings 				= $this->getVar('settings');
+	$add_label 				= $this->getVar('add_label');
 	
-	$read_only		=	((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel('ca_list_items', 'nonpreferred_labels') == __CA_BUNDLE_ACCESS_READONLY__));
+	$read_only				= ((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel('ca_list_items', 'nonpreferred_labels') == __CA_BUNDLE_ACCESS_READONLY__));
 	
-	$show_effective_date = $this->getVar('show_effective_date');
-	$show_access = $this->getVar('show_access');
-	$label_list = $this->getVar('label_type_list');
+	$show_effective_date 	= $this->getVar('show_effective_date');
+	$show_access 			= $this->getVar('show_access');
+	$label_list 			= $this->getVar('label_type_list');
+	$show_source 			= $t_subject->getTypeSetting('show_source_for_nonpreferred_labels');
 	
 	print caEditorBundleShowHideControl($this->request, $id_prefix.'NPLabels', $settings, caInitialValuesArrayHasValue($id_prefix.'NPLabels', $initial_values));	
 	print caEditorBundleMetadataDictionary($this->request, $id_prefix.'NPLabels', $settings);
@@ -61,12 +62,17 @@
 						<table>
 							<tr>
 								<td>
-									<?= $t_label->htmlFormElement('name_singular', null, array('name' => "{fieldNamePrefix}name_singular_{n}", 'id' => "{fieldNamePrefix}name_singular_{n}", "value" => "{{name_singular}}", 'no_tooltips' => false, 'textAreaTagName' => 'textentry', 'readonly' => $read_only, 'tooltip_namespace' => 'bundle_ca_list_item_labels_preferred')); ?>
+									<?= $t_label->htmlFormElement('name_singular', null, array('name' => "{fieldNamePrefix}name_singular_{n}", 'id' => "{fieldNamePrefix}name_singular_{n}", "value" => "{{name_singular}}", 'no_tooltips' => false, 'textAreaTagName' => 'textentry', 'readonly' => $read_only, 'tooltip_namespace' => 'bundle_ca_list_item_labels_nonpreferred')); ?>
 								</td>
 							</tr>
 							<tr>
 								<td>
-									<?= $t_label->htmlFormElement('name_plural', null, array('name' => "{fieldNamePrefix}name_plural_{n}", 'id' => "{fieldNamePrefix}name_plural_{n}", "value" => "{{name_plural}}", 'no_tooltips' => false, 'textAreaTagName' => 'textentry', 'readonly' => $read_only, 'tooltip_namespace' => 'bundle_ca_list_item_labels_preferred')); ?>
+									<?= $t_label->htmlFormElement('name_plural', null, array('name' => "{fieldNamePrefix}name_plural_{n}", 'id' => "{fieldNamePrefix}name_plural_{n}", "value" => "{{name_plural}}", 'no_tooltips' => false, 'textAreaTagName' => 'textentry', 'readonly' => $read_only, 'tooltip_namespace' => 'bundle_ca_list_item_labels_nonpreferred')); ?>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<?= $t_label->htmlFormElement('description', null, array('name' => "{fieldNamePrefix}description_{n}", 'id' => "{fieldNamePrefix}description_{n}", "value" => "{{description}}", 'no_tooltips' => false, 'textAreaTagName' => 'textentry', 'readonly' => $read_only, 'tooltip_namespace' => 'bundle_ca_list_item_labels_nonpreferred')); ?>
 								</td>
 							</tr>
 							<tr>
@@ -78,7 +84,20 @@
 										<?= $show_access ? $t_label->htmlFormElement('access', "^LABEL ^ELEMENT", array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}access_{n}", 'name' => "{fieldNamePrefix}access_{n}", "value" => "{access}", 'no_tooltips' => true)) : ''; ?>	
 									</div>	
 								</td>
+							</tr>
+<?php
+	if($show_source) {
+?>					
 							<tr>
+								<td>
+									<div class="formLabel">
+										<?= $t_label->htmlFormElement('source_info', "^LABEL<br/>^ELEMENT", array('classname' => 'labelSourceInfo', 'id' => "{fieldNamePrefix}source_info_{n}", 'name' => "{fieldNamePrefix}source_info_{n}", "value" => "{source_info}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry')); ?>	
+									</div>
+								</td>
+							</tr>
+<?php
+	}	
+?>
 						</table>
 					</td>
 				</tr>
@@ -102,7 +121,7 @@
 	caUI.initLabelBundle('#<?= $id_prefix; ?>NPLabels', {
 		mode: 'nonpreferred',
 		fieldNamePrefix: '<?= $id_prefix; ?>',
-		templateValues: ['name_singular', 'name_plural', 'description', 'locale_id', 'type_id', 'effective_date', 'access'],
+		templateValues: ['name_singular', 'name_plural', 'description', 'locale_id', 'type_id', 'effective_date', 'access', 'source_info'],
 		initialValues: <?= json_encode($initial_values); ?>,
 		forceNewValues: <?= json_encode($force_new_labels); ?>,
 		labelID: 'Label_',

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2021 Whirl-i-Gig
+ * Copyright 2013-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -57,7 +57,7 @@ class entitySplitterRefinery extends BaseRefinery {
 	 *
 	 */
 	public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
-		$pa_options['displaynameFormat'] = caGetOption('entitySplitter_displaynameFormat', $pa_item['settings'], null);
+		$pa_options['displaynameFormat'] = caGetOption('entitySplitter_displaynameFormat', $pa_item['settings'], caGetOption('defaultDisplaynameFormat', $pa_options, null));
 		$pa_options['doNotParse'] = caGetOption('entitySplitter_doNotParse', $pa_item['settings'], null);
 		return caGenericImportSplitter('entitySplitter', 'entity', 'ca_entities', $this, $pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options);
 	}

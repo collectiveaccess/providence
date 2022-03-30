@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2018 Whirl-i-Gig
+ * Copyright 2013-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -132,7 +132,9 @@
 				$va_info['bundle_name'] = $tags[0];
 			}
 			if (
-				(strpos($va_info['bundle_name'], 'ca_object_representations.media') !== false)
+				(preg_match('!^ca_object_representations.media!', $va_info['bundle_name']))
+				&&
+				!strlen($va_info['settings']['format'])
 				&&
 				(!isset($va_info['settings']['display_mode']) || ($va_info['settings']['display_mode'] !== 'url'))
 			) {
@@ -200,7 +202,7 @@
 		}
 	}
 	
-	if($this->request->config->get('excel_report_header_enabled') || $this->request->config->get('excel_report_footer_enabled')){
+	if($this->request && ($this->request->config->get('excel_report_header_enabled') || $this->request->config->get('excel_report_footer_enabled'))){
 		$o_sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE);
 		$o_sheet->getPageMargins()->setTop(1);
 		$o_sheet->getPageMargins()->setRight(0.75);
@@ -208,7 +210,7 @@
 		$o_sheet->getPageMargins()->setBottom(1);
 		$o_sheet->getPageSetup()->setRowsToRepeatAtTopByStartAndEnd(1,1);
 		
-		if($this->request->config->get('excel_report_header_enabled')){
+		if($this->request && $this->request->config->get('excel_report_header_enabled')){
 			if(file_exists($this->request->getThemeDirectoryPath()."/graphics/logos/".$this->request->config->get('report_img'))){
 				$vs_logo_path = $this->request->getThemeDirectoryPath().'/graphics/logos/'.$this->request->config->get('report_img');
 			}
@@ -223,7 +225,7 @@
 			$o_sheet->getHeaderFooter()->setOddHeader('&L&G& '.(($this->request->config->get('excel_report_show_search_term')) ? '&R&B&12 '.$vs_criteria_summary : ''));
 			
 		}
-		if($this->request->config->get('excel_report_footer_enabled')){
+		if(!$this->request || $this->request->config->get('excel_report_footer_enabled')){
 			$t_instance = Datamodel::getInstanceByTableName($vo_result->tableName(), true);
 			$o_sheet->getHeaderFooter()->setOddFooter('&L&10'.ucfirst($t_instance->getProperty('NAME_SINGULAR').' report').' &C&10Page &P of &N &R&10 '.date("m/t/y"));
 		}

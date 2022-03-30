@@ -1964,4 +1964,39 @@ class TimeExpressionParserTest extends TestCase {
 		$this->assertEquals($va_historic['end'], '1929.123123595900');
 		$this->assertEquals($o_tep->getText(), '1910 – 1929');
 	}	
+	
+	function testUncertainDateRange() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage("en_US");
+		
+		$this->assertEquals($o_tep->parse("1948-?"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_historic['start'], '1948.010100000000');
+		$this->assertEquals($va_historic['end'], '2000000000.123123595900');
+		$this->assertEquals($o_tep->getText(), 'after 1948');
+		
+		$this->assertEquals($o_tep->parse("1948 - ?"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_historic['start'], '1948.010100000000');
+		$this->assertEquals($va_historic['end'], '2000000000.123123595900');
+		$this->assertEquals($o_tep->getText(), 'after 1948');
+		
+		$this->assertEquals($o_tep->parse("?-1948"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_historic['start'], '-2000000000.000000000000');
+		$this->assertEquals($va_historic['end'], '1948.123123595900');
+		$this->assertEquals($o_tep->getText(), 'before 1948');
+		
+		$this->assertEquals($o_tep->parse("? - 1948"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_historic['start'], '-2000000000.000000000000');
+		$this->assertEquals($va_historic['end'], '1948.123123595900');
+		$this->assertEquals($o_tep->getText(), 'before 1948');
+		
+		$this->assertEquals($o_tep->parse("? -  June 1948"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_historic['start'], '-2000000000.000000000000');
+		$this->assertEquals($va_historic['end'], '1948.063023595900');
+		$this->assertEquals($o_tep->getText(), 'before June 1948');
+	}	
 }

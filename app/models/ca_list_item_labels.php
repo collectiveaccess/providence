@@ -73,7 +73,7 @@ BaseModel::$s_ca_models_definitions['ca_list_item_labels'] = array(
 		),
 		'name_singular' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 2,
+				'DISPLAY_WIDTH' => '670px', 'DISPLAY_HEIGHT' => 2,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Item name (singular)'), 'DESCRIPTION' => _t('The name of this list item in the singular form (eg. "disk", "lobster").'),
@@ -81,7 +81,7 @@ BaseModel::$s_ca_models_definitions['ca_list_item_labels'] = array(
 		),
 		'name_plural' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 2,
+				'DISPLAY_WIDTH' => '670px', 'DISPLAY_HEIGHT' => 2,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Item name (plural)'), 'DESCRIPTION' => _t('The name of this list item in the plural form (eg. "disks", "lobsters").'),
@@ -97,18 +97,18 @@ BaseModel::$s_ca_models_definitions['ca_list_item_labels'] = array(
 		),
 		'description' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 70, 'DISPLAY_HEIGHT' => 6,
+				'DISPLAY_WIDTH' => '670px', 'DISPLAY_HEIGHT' => 6,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Description'), 'DESCRIPTION' => _t('A description of the list item, including suggested use notes or definitions.'),
 				'BOUNDS_LENGTH' => array(0,65535)
 		),
 		'source_info' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => "670px", 'DISPLAY_HEIGHT' => 3,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => 'Source information', 'DESCRIPTION' => 'Source information'
+				'LABEL' => 'Source', 'DESCRIPTION' => 'Source information'
 		),
 		'is_preferred' => array(
 				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT, 

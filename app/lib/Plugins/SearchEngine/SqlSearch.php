@@ -867,7 +867,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						 	foreach($o_lucene_query_element->getQueryTerms() as $o_term) {
 								if (!$vs_access_point && ($vs_field = $o_term->field)) { $vs_access_point = $vs_field; }
 								
-								$va_terms = $this->_tokenize((string)$o_term->text, true); //preg_split("![".$this->ops_search_tokenizer_regex."]+!u", (string)$o_term->text);
+								$va_terms = self::tokenize((string)$o_term->text, true); //preg_split("![".$this->ops_search_tokenizer_regex."]+!u", (string)$o_term->text);
 								$va_raw_terms[] = (string)$o_term->text;
 								$va_raw_terms_escaped[] = '"'.$this->db->escape((string)$o_term->text).'"';
 								foreach($va_terms as $vs_term) {
@@ -955,7 +955,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							
 								$vs_raw_term = (string)$o_term->text;
 								//$vs_term = preg_replace("%((?<!\d)[".$this->ops_search_tokenizer_regex."]+|[".$this->ops_search_tokenizer_regex."]+(?!\d))%u", '', $vs_raw_term);
-								$vs_term = join(' ', $this->_tokenize($vs_raw_term, true));
+								$vs_term = join(' ', self::tokenize($vs_raw_term, true));
 	
 								if ($vs_access_point && (mb_strtoupper($vs_raw_term) == '['.caGetBlankLabelText($pn_subject_tablenum).']')) {
 									$t_ap = Datamodel::getInstanceByTableNum($va_access_point_info['table_num'], true);
@@ -978,7 +978,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									$vs_fld_num = $va_access_point_info['field_num'];
 								}
 							
-								$va_terms = array($vs_term); //$this->_tokenize($vs_term, true, $vn_i);
+								$va_terms = array($vs_term); //self::tokenize($vs_term, true, $vn_i);
 								$vb_has_wildcard = (bool)(preg_match('!\*$!', $vs_raw_term));
 								$vb_output_term = false;
 								foreach($va_terms as $vs_term) {
@@ -1924,7 +1924,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	# -------------------------------------------------------
 	# Indexing
 	# -------------------------------------------------------
-	public function startRowIndexing($pn_subject_tablenum, $pn_subject_row_id) {
+	public function startRowIndexing(int $pn_subject_tablenum, int $pn_subject_row_id) : void {
 		$this->_setMode('indexing');
 		
 		if ($this->debug) { Debug::msg("[SqlSearchDebug] startRowIndexing: $pn_subject_tablenum/$pn_subject_row_id"); }
@@ -1936,7 +1936,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	/**
 	 *
 	 */
-	public function indexField($pn_content_tablenum, $ps_content_fieldname, $pn_content_row_id, $pm_content, $pa_options) {
+	public function indexField(int $pn_content_tablenum, string $ps_content_fieldname, int $pn_content_row_id, $pm_content, ?array $pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = []; }
 		
 		if (!is_array($pm_content)) {
@@ -1994,7 +1994,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			$va_words = [];
 			if ($vb_tokenize || $vb_force_tokenize) {
 				foreach($pm_content as $ps_content) {
-					$va_words = array_merge($va_words, $this->_tokenize((string)$ps_content));
+					$va_words = array_merge($va_words, self::tokenize((string)$ps_content));
 				}
 			}
 			if (!$vb_tokenize) { $va_words = array_merge($va_words, $pm_content); }
@@ -2115,7 +2115,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		}
 	}
 	# ------------------------------------------------
-	public function removeRowIndexing($pn_subject_tablenum, $pn_subject_row_id, $pn_field_tablenum=null, $pa_field_nums=null, $pn_field_row_id=null, $pn_rel_type_id=null) {
+	public function removeRowIndexing(int $pn_subject_tablenum, int $pn_subject_row_id, ?int $pn_field_tablenum=null, $pa_field_nums=null, ?int $pn_field_row_id=null, ?int $pn_rel_type_id=null) {
 
 		//print "[SqlSearchDebug] removeRowIndexing: $pn_subject_tablenum/$pn_subject_row_id<br>\n";
 		$vn_rel_type_id = $pn_rel_type_id ? $pn_rel_type_id : 0;
@@ -2183,7 +2183,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		if (caGetOption("DONT_TOKENIZE", $pa_options, false) || in_array('DONT_TOKENIZE', $pa_options, true)) {
 			$va_words = array($ps_content);
 		} else {
-			$va_words = $this->_tokenize($ps_content);
+			$va_words = self::tokenize($ps_content);
 		}
 		
 		if (caGetOption("INDEX_AS_IDNO", $pa_options, false) || in_array('INDEX_AS_IDNO', $pa_options, true)) {
@@ -2256,7 +2256,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	/**
 	 * Not supported in this engine - does nothing
 	 */
-	public function optimizeIndex($pn_tablenum) {
+	public function optimizeIndex(int $tablenum) {
 		// noop	
 	}
 	# --------------------------------------------------
@@ -2264,23 +2264,26 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		return 'SqlSearch';
 	}
 	# --------------------------------------------------
-	private function _tokenize($ps_content, $pb_for_search=false, $pn_index=0) {
-		$ps_content = preg_replace('![\']+!', '', $ps_content);		// strip apostrophes for compatibility with SearchEngine class, which does the same to all search expressions
+	/**
+	 *
+	 */
+	public static function tokenize(?string $content, ?bool $for_search=false, ?int $index=0) : array {
+		$content = preg_replace('![\']+!', '', $content);		// strip apostrophes for compatibility with SearchEngine class, which does the same to all search expressions
 		
-		if ($pb_for_search) {
-			if ($pn_index == 0) {
+		if ($for_search) {
+			if ($index == 0) {
 				if (is_array($this->opa_asis_regexes)) {
-					foreach($this->opa_asis_regexes as $vs_asis_regex) {
-						if (preg_match('!'.$vs_asis_regex.'!', $ps_content)) {
-							return array($ps_content);
+					foreach($this->opa_asis_regexes as $asis_regex) {
+						if (preg_match('!'.$asis_regex.'!', $content)) {
+							return [$content];
 						}
 					}
 				}
 			}
 		
-			return preg_split('![ ]+!', trim(preg_replace("%((?<!\d)[".$this->ops_search_tokenizer_regex."]+(?!\d))%u", ' ', strip_tags($ps_content))));
+			return preg_split('![ ]+!', trim(preg_replace("%((?<!\d)[".$this->ops_search_tokenizer_regex."]+(?!\d))%u", ' ', strip_tags($content))));
 		} else {
-			return preg_split('![ ]+!', trim(preg_replace("%((?<!\d)[".$this->ops_search_tokenizer_regex."]+|[".$this->ops_search_tokenizer_regex."]+(?!\d))%u", ' ', strip_tags($ps_content))));
+			return preg_split('![ ]+!', trim(preg_replace("%((?<!\d)[".$this->ops_search_tokenizer_regex."]+|[".$this->ops_search_tokenizer_regex."]+(?!\d))%u", ' ', strip_tags($content))));
 		}
 	}
 	# --------------------------------------------------
