@@ -338,7 +338,30 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 							}
 		
 							foreach(array_shift($source_values) as $attr_id => $attr) {
-								if(is_array($va_source_map) && sizeof($va_source_map)) {
+								if ($vs_mode == 'merge') {
+									// Merge mode
+									// Make a temporary copy of the original attribute
+									foreach($va_attributes[$i]->getValues() as $v) {
+											$map_attr[$v->getElementCode()]=$v->getDisplayValue();
+									}
+									
+									// Check if there is a sourceMap
+									if(is_array($va_source_map) && sizeof($va_source_map)) {
+										// SourceMap present, copy only the values from the sourceMap when the target is null
+										foreach($va_source_map as $sk => $sv) {
+											if (strlen($attr[$sk]>0) && (strlen($map_attr[$sv]) == 0))
+													$map_attr[$sv] = $attr[$sk];
+										}
+									} else {
+										// SourceMap not present, copy only the values from the source when the target is null
+										foreach($map_attr as $k => $v) {
+											if ((strlen($attr[$k])>0) && (strlen($v)==0))
+												$map_attr[$k]=$attr[$k];
+										}
+									}
+									$attr = $map_attr;
+								} elseif(is_array($va_source_map) && sizeof($va_source_map)) {
+									// Overwrite mode
 									$map_attr = [];
 									foreach($va_source_map as $sk => $sv) {
 										$map_attr[$sv] = $attr[$sk];
