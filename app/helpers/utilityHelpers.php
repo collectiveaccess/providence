@@ -2839,28 +2839,37 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 * Parse currency value and return array with value and currency type.
 	 *
-	 * @param string $ps_value
-	 * @return array
+	 * @param string $value Currency value, including currency specifier
+	 * @param string $locale Locale to parse value under. [Default is to use current user interface locale, or if not defined the system default locale]
+	 *
+	 * @return array An array with keys for currency specifier ("currency") and decimal amount ("value")
 	 */
-	function caParseCurrencyValue($ps_value) {
+	function caParseCurrencyValue(string $value, $locale=null) : ?array {
+		global $g_ui_locale;
+		if(!$locale) { $locale = $g_ui_locale; }
+		if(!$locale && defined('__CA_DEFAULT_LOCALE__')) { $locale = __CA_DEFAULT_LOCALE__; }
+		
 		// it's either "<something><decimal>" ($1000) or "<decimal><something>" (1000 EUR) or just "<decimal>" with an implicit <something>
-
-		// either
-		if (preg_match("!^([^\d]+)([\d\.\,]+)$!", trim($ps_value), $va_matches)) {
-			$vs_decimal_value = round((float)str_replace(',', '', $va_matches[2]), 2);
-			$vs_currency_specifier = trim($va_matches[1]);
-		// or 1
-		} else if (preg_match("!^([\d\.\,]+)([^\d]+)$!", trim($ps_value), $va_matches)) {
-			$vs_decimal_value = round((float)str_replace(',', '', $va_matches[1]), 2);
-			$vs_currency_specifier = trim($va_matches[2]);
-		// or 2
-		} else if (preg_match("!(^[\d\,\.]+$)!", trim($ps_value), $va_matches)) {
-			$vs_decimal_value = round((float)str_replace(',', '', $va_matches[1]), 2);
-			$vs_currency_specifier = null;
+		try {
+			// either
+			if (preg_match("!^([^\d]+)([\d\.\,]+)$!", trim($value), $matches)) {
+				$decimal_value = (strpos($matches[2], ',') !== false) ? Zend_Locale_Format::getNumber($matches[2], ['locale' => $g_locale, 'precision' => 2]) : (float)$matches[2];
+				$currency_specifier = trim($matches[1]);
+			// or 1
+			} else if (preg_match("!^([\d\.\,]+)([^\d]+)$!", trim($value), $matches)) {
+				$decimal_value = (strpos($matches[1], ',') !== false) ? Zend_Locale_Format::getNumber($matches[1], ['locale' => $g_locale, 'precision' => 2]) : (float)$matches[1];
+				$currency_specifier = trim($matches[2]);
+			// or 2
+			} else if (preg_match("!(^[\d\,\.]+$)!", trim($value), $matches)) {
+				$decimal_value = (strpos($matches[1], ',') !== false) ? Zend_Locale_Format::getNumber($matches[1], ['locale' => $g_locale, 'precision' => 2]) : (float)$matches[1];
+				$currency_specifier = null;
+			}
+		} catch (Zend_Locale_Exception $e){
+			return null;
 		}
 
-		if ($vs_currency_specifier || ($vs_decimal_value > 0)) {
-			return ['currency' => $vs_currency_specifier, 'value' => $vs_decimal_value];
+		if ($currency_specifier || ($decimal_value > 0)) {
+			return ['currency' => $currency_specifier, 'value' => $decimal_value];
 		}
 		return null;
  	}
@@ -4790,4 +4799,34 @@ function caFileIsIncludable($ps_file) {
 		$config->set('URI.DisableExternalResources', !Configuration::load()->get('purify_allow_external_references'));
 		return new HTMLPurifier($config); 
 	}
+	# ----------------------------------------
+	/**
+	 * Classify alphabet used by a string. Detection is simplistic: if the string contains
+	 * any characters from one of the supported alphabets it is considered to be in that alphabet.
+	 * Alphabets are tested in order: Han (Chinese), Hiragana (Japanese), Katakana (Japanese), Hangul (Korean),
+	 * Cyrillic (Russian, Etc.), Greek, Hebrew, and Latin. If no specific alphabet is detected null is returned.
+	 *
+	 * @param string Text to test
+	 * @return string Alphabet designator or null. Designators are HIRAGANA|KATAKANA|HAN|HANGUL|CYRILLIC|GREEK|HEBREW|LATIN
+	 */
+	function caIdentifyAlphabet(string $text) : ?string {
+		if(preg_match_all('/\p{Hiragana}/u', $text, $result)) {
+			return 'HIRAGANA';
+		} elseif(preg_match_all('/\p{Katakana}/u', $text, $result)) {
+			return 'KATAKANA';
+		} elseif(preg_match_all('/\p{Han}/u', $text, $result)) {
+			return 'HAN';
+		} elseif(preg_match_all('/\p{Hangul}/u', $text, $result)) {
+			return 'HANGUL';
+		} elseif(preg_match_all('/(\p{Cyrillic}+)/u', $text, $result)) {
+			return 'CYRILLIC';
+		} elseif(preg_match_all('/(\p{Latin}+)/u', $text, $result)) {
+			return 'GREEK';
+		} elseif(preg_match_all('/(\p{Greek}+)/u', $text, $result)) {
+			return 'HEBREW';
+		} elseif(preg_match_all('/(\p{Hebrew}+)/u', $text, $result)) {
+			return 'LATIN';
+		}
+		return null;
+    }
 	# ----------------------------------------

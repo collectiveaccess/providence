@@ -474,8 +474,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		// Calculate identifier using numbering plugin
 		if ($vs_idno_fld && (!isset($va_duplicate_element_settings[$vs_idno_fld]) || (isset($va_duplicate_element_settings[$vs_idno_fld]) && ($va_duplicate_element_settings[$vs_idno_fld] == 1)))) {
 			$vb_needs_suffix_generated = false;
+			$vs_sep = null;
 			if (method_exists($this, "getIDNoPlugInInstance") && ($o_numbering_plugin = $this->getIDNoPlugInInstance())) {
-				if (!($vs_sep = $o_numbering_plugin->getSeparator())) { $vs_sep = '-'; }	// Must have a separator or you can get inexplicable numbers as numeric increments are appended string-style
+				$vs_sep = $o_numbering_plugin->getSeparator();
 				
 				$vs_idno_template = $o_numbering_plugin->makeTemplateFromValue($this->get($vs_idno_fld), 1);	// make template out of original idno by replacing last SERIAL element with "%"
 				if (!preg_match("!%$!", $vs_idno_template)) { $vb_needs_suffix_generated = true; }
@@ -493,7 +494,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				if ($vb_needs_suffix_generated) {
 					$t_lookup = Datamodel::getInstance($table, true);
 				
-					$va_tmp = $vs_sep ? preg_split("![{$vs_sep}]+!", $vs_idno_stub) : array($vs_idno_stub);
+					$va_tmp = $vs_sep ? preg_split("![{$vs_sep}]+!", $vs_idno_stub) : [$vs_idno_stub];
 					$vs_suffix = (is_array($va_tmp) && (sizeof($va_tmp) > 1)) ? array_pop($va_tmp) : '';
 					if (!is_numeric($vs_suffix)) { 
 						$vs_suffix = 0; 
@@ -502,8 +503,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					}
 					do {
 						$vs_suffix = (int)$vs_suffix + 1;
-						$vs_idno = trim($vs_idno_stub).$vs_sep.trim($vs_suffix);	// force separator if none defined otherwise you end up with agglutinative numbers
-					} while($t_lookup->load(array($vs_idno_fld => $vs_idno)));
+						$vs_idno = trim($vs_idno_stub).($vs_sep ?? '-').trim($vs_suffix);	// force separator if none defined otherwise you end up with agglutinative numbers
+					} while($t_lookup->load([$vs_idno_fld => $vs_idno]));
 				} else {
 					$vs_idno = $vs_idno_stub;
 				}

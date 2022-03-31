@@ -78,8 +78,8 @@
 ?>
 						<table>
 							<tr>
-								<td>
-									<?= $t_label->htmlFormElement('surname', null, array('label' => $org_label ? $org_label : _t('Organization'), 'description' => _t('The full name of the organization.'), 'width' => '500px', 'name' => "{fieldNamePrefix}surname_{n}", 'id' => "{fieldNamePrefix}surname_{n}", "value" => "{{surname}}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_entity_labels_nonpreferred')); ?>
+								<td <?= (!$use_suffix_for_orgs) ? 'colspan="2"' : '' ?>>
+									<?= $t_label->htmlFormElement('surname', null, array_merge($settings, array('label' => $org_label ? $org_label : _t('Organization'), 'description' => _t('The full name of the organization.'), 'width' => $use_suffix_for_orgs ? '500px' : '670px', 'height' => caGetOption('usewysiwygeditor', $settings, false) ? 4 : 1, 'name' => "{fieldNamePrefix}surname_{n}", 'id' => "{fieldNamePrefix}surname_{n}", "value" => "{{surname}}", 'no_tooltips' => false, 'textAreaTagName' => 'textentry', 'tooltip_namespace' => 'bundle_ca_entity_labels_preferred'))); ?>
 								</td>
 <?php
 	if($use_suffix_for_orgs) {

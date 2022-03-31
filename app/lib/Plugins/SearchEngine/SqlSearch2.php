@@ -376,7 +376,14 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	if (in_array($field_elements[0], [_t('created'), _t('modified')])) {
 	 		return $this->_processQueryChangeLog($subject_tablenum, $term);
 	 	}
-	 	$words = self::filterStopWords(self::tokenize($term->text, true));
+	 	$ap = $field ? $this->_getElementIDForAccessPoint($subject_tablenum, $field) : null;
+	 	$words = [$term->text];
+	 	if($field && !is_array($ap)) {
+	 		array_unshift($words, $field);
+	 		$field = null;
+	 	}
+	 	
+	 	$words = self::filterStopWords(self::tokenize(join(' ', $words), true));
 	 	if(!$words || !sizeof($words)) { return null; }
 	 	
 	 	$blank_val = caGetBlankLabelText($subject_tablenum);
@@ -384,8 +391,6 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	$is_not_blank = (mb_strtolower("["._t('SET')."]") === mb_strtolower($term->text));
 	 	
 	 	$word_field = 'sw.word';
-	 	
-	 	$ap = $field ? $this->_getElementIDForAccessPoint($subject_tablenum, $field) : null;
 	 	
 	 	if (is_array($ap) && !$this->useSearchIndexForAP($ap)) {
 	 		// Handle datatype-specific queries
@@ -400,7 +405,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			//	3. Search is not non-blank values
 			//	4. Search includes non-letter characters
 			//  5. Search is flagged with trailing "|" as "do-not-stem"
-			$do_not_stem = true;//preg_match("!\|$!", $text);
+			$do_not_stem = preg_match("!\|$!", $text);
 			$text = preg_replace("!\|$!", '', $text);
 			if ($this->do_stemming && !$do_not_stem && !$is_blank && !$is_not_blank && !preg_match("![^A-Za-z]+!u", $text)) {
 				$text_stem = $this->stemmer->stem($text);
@@ -1605,7 +1610,10 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		$rel_type_ids = ($tmp[1] && $rel_table) ? caMakeRelationshipTypeIDList($rel_table, preg_split("![,;]+!", $tmp[1])) : [];
 		
 		if (!($t_table = Datamodel::getInstanceByTableName($table, true))) { 
-			return array('access_point' => $tmp[0]);
+			if(in_array($table, caSearchGetTablesForAccessPoints([$tmp[0]]))) {
+				return ['access_point' => $tmp[0]];
+			}
+			return null;
 		}
 		$table_num = $t_table->tableNum();
 		
