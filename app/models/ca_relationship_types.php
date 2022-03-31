@@ -559,7 +559,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 public function relationshipTypeListToIDs($pm_table_name_or_num, $pa_list, $pa_options=null) {
 	 	$va_rel_ids = array();
 		foreach($pa_list as $vm_type) {
-			if ($vn_type_id = $this->getRelationshipTypeID($pm_table_name_or_num, $vm_type)) {
+			if ($vn_type_id = $this->getRelationshipTypeID($pm_table_name_or_num, $vm_type, null, null, $pa_options)) {
 				$va_rel_ids[] = $vn_type_id;
 			}
 		}
@@ -587,7 +587,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 public function validateRelationshipTypeCodes($table_name_or_num, array $list, ?array $options=null) {
 	 	$ret = [];
 		foreach($list as $type) {
-			$ret[$type] = (bool)$this->getRelationshipTypeID($table_name_or_num, $type);
+			$ret[$type] = (bool)$this->getRelationshipTypeID($table_name_or_num, $type, null, null, ['cache' => false]);
 		}
 		return $ret;
 	}

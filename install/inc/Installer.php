@@ -1183,6 +1183,7 @@ class Installer {
 					
 					$settings = $this->_processSettings(null, $placement['settings'], [
 						'table' => \Datamodel::tableExists($bundle) ? $bundle : null, 
+						'relTable' => \Datamodel::getLinkingTableName($bundle, $type),
 						'settingsInfo' => array_merge($t_placement->getAvailableSettings(), is_array($available_bundles[$bundle]['settings']) ? $available_bundles[$bundle]['settings'] : []),
 						'source' => "UserInterface:{$ui_code}:Screen {$screen_idno}:Placement {$placement_code}"
 					]);
@@ -2368,18 +2369,20 @@ class Installer {
 							$table = caGetOption('table', $options, null);
 							switch($setting_name) {
 								case 'restrict_to_relationship_types':
-									if($table) {
-										$ret = caValidateRelationshipTypeList($table, $setting_value);
+									if($rel_table = caGetOption('relTable', $options, null)) {
+										$ret = caValidateRelationshipTypeList($rel_table, $setting_value);
 										foreach(array_keys(array_filter($ret, function($v) { return !$v; })) as $bad_type) {
-											$this->addError('processSettings', _t('Relationship type %1 is not valid; set in relationship type restriction setting for %2', $bad_type, $source));
+											$this->addError('processSettings', _t('Relationship type %1 is not valid for %2; set in relationship type restriction setting %3 for %4', $bad_type, $table, $setting_value, $source));
 										}
+									} else {
+										$this->addError('processSettings', _t('Relationship type %1 is not valid for %2 because no relationship table was set; set in relationship type restriction setting %3 for %4', $bad_type, $table, $setting_value, $source));
 									}
 									break;
 								case 'restrict_to_types':
 									if($table) {
 										$ret = caValidateTypeList($table, $setting_value);
 										foreach(array_keys(array_filter($ret, function($v) { return !$v; })) as $bad_type) {
-											$this->addError('processSettings', _t('Type %1 is not valid for %2; set in type restriction setting for %3', $bad_type, $table, $source));
+											$this->addError('processSettings', _t('Type %1 is not valid for %2; set in type restriction setting %3 for %4', $bad_type, $table, $setting_value, $source));
 										}
 									}
 									break;
