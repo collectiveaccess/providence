@@ -1157,33 +1157,32 @@ class Installer {
 					$bundle = trim((string)$placement['bundle']);
 
 					if (is_array($bundle_type_restrictions) && sizeof($bundle_type_restrictions)) {
+						$bundle_type_restrictions_types = array_map(function($v) { return $v['type']; }, $bundle_type_restrictions);
+						$bundle_type_restrictions_include_sub_types = (bool)array_reduce($bundle_type_restrictions, function($c, $i) { return $c + ((bool)$i['includeSubtypes'] ? 1 : 0); }, 0);
+						
 						// Copy type restrictions listed on the <placement> tag into numeric type_ids stored
 						// as settings on the placement record.
 						if ($t_instance instanceof \BaseRelationshipModel) {
-							$ids = caMakeRelationshipTypeIDList($t_instance->tableNum(), $bundle_type_restrictions);
+							$ids = caMakeRelationshipTypeIDList($t_instance->tableNum(), $bundle_type_restrictions_types);
 						} elseif($t_instance instanceof \ca_representation_annotations) {
 							$ids = [];
-							foreach($bundle_type_restrictions as $annotation_type) {
+							foreach($bundle_type_restrictions_types as $annotation_type) {
 								if(isset($annotation_types[$annotation_type]['typeID'])) {
 									$ids[] = $annotation_types[$annotation_type]['typeID'];
 								}
 							}
 						} else {
-							$ids = caMakeTypeIDList($t_instance->tableNum(), $bundle_type_restrictions, ['dontIncludeSubtypesInTypeRestriction' => true]);
+							$ids = caMakeTypeIDList($t_instance->tableNum(), $bundle_type_restrictions_types, ['dontIncludeSubtypesInTypeRestriction' => $bundle_type_restrictions_include_sub_types]);
 						}
-						
 						foreach($ids as $id) {
-							$o_setting = $placement['settings']['bundleTypeRestrictions'][''][] = $id;
-						}
-						
-						if ($include_subtypes = (bool)$placement["includeSubtypes"]) {
-							$o_setting = $placement['settings']['bundleTypeRestrictionsIncludeSubtypes'][''][] = 1;
+							$placement['settings']['bundleTypeRestrictions'][''][] = $id;
+							$placement['settings']['bundleTypeRestrictionsIncludeSubtypes'][''][] = $bundle_type_restrictions_include_sub_types;
 						}
 					}
-					
 					$settings = $this->_processSettings(null, $placement['settings'], [
 						'table' => \Datamodel::tableExists($bundle) ? $bundle : null, 
-						'relTable' => \Datamodel::getLinkingTableName($bundle, $type),
+						'leftTable' => \Datamodel::tableExists($bundle) ? $bundle : null, 
+						'rightTable' => \Datamodel::tableExists($type) ? $type : null, 
 						'settingsInfo' => array_merge($t_placement->getAvailableSettings(), is_array($available_bundles[$bundle]['settings']) ? $available_bundles[$bundle]['settings'] : []),
 						'source' => "UserInterface:{$ui_code}:Screen {$screen_idno}:Placement {$placement_code}"
 					]);
@@ -2366,10 +2365,11 @@ class Installer {
 
 						if((strlen($setting_name)>0) && (strlen($setting_value)>0)) { // settings need at least name and value
 							// validate types
-							$table = caGetOption('table', $options, null);
+							$table = caGetOption('leftTable', $options, null);
+							$right_table = caGetOption('rightTable', $options, null);
 							switch($setting_name) {
 								case 'restrict_to_relationship_types':
-									if($rel_table = caGetOption('relTable', $options, null)) {
+									if($rel_table = \Datamodel::getLinkingTableName($table, $right_table)) {
 										$ret = caValidateRelationshipTypeList($rel_table, $setting_value);
 										foreach(array_keys(array_filter($ret, function($v) { return !$v; })) as $bad_type) {
 											$this->addError('processSettings', _t('Relationship type %1 is not valid for %2; set in relationship type restriction setting %3 for %4', $bad_type, $table, $setting_value, $source));
@@ -2383,6 +2383,14 @@ class Installer {
 										$ret = caValidateTypeList($table, $setting_value);
 										foreach(array_keys(array_filter($ret, function($v) { return !$v; })) as $bad_type) {
 											$this->addError('processSettings', _t('Type %1 is not valid for %2; set in type restriction setting %3 for %4', $bad_type, $table, $setting_value, $source));
+										}
+									}
+									break;
+								case 'bundleTypeRestrictions':
+									if($right_table) {
+										$ret = caValidateTypeList($right_table, $setting_value);
+										foreach(array_keys(array_filter($ret, function($v) { return !$v; })) as $bad_type) {
+											$this->addError('processSettings', _t('Type %1 is not valid for %2; set in bundle type restriction setting %3 for %4', $bad_type, $table, $setting_value, $source));
 										}
 									}
 									break;
@@ -2421,7 +2429,7 @@ class Installer {
 							}
 						}
 					}
-
+//print_R($settings_list);
 					if (is_object($t_instance)) {
 						foreach($settings_list as $setting_name => $setting_value) {
 							$t_instance->setSetting($setting_name, $setting_value);

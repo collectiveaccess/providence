@@ -341,10 +341,11 @@
 		
 		$t_list = new ca_lists();
 		if (!is_array($idnos_in_list = $t_list->getItemsForList($type_list_code, ['idnosOnly' => true]))) { return null; }
+		if (!is_array($ids_in_list = $t_list->getItemsForList($type_list_code, ['idsOnly' => true]))) { return null; }
 		
 		$ret = [];
 		foreach($types as $type) {
-			$ret[$type] = (bool)in_array($type, $idnos_in_list, true);
+			$ret[$type] = ((bool)in_array($type, $idnos_in_list) || (bool)in_array($type, $ids_in_list) );
 		}
 		return $ret;
 	}

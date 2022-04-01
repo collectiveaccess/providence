@@ -612,8 +612,18 @@ class Datamodel {
 	 * @return string Name of linking table, or null if no linking table is defined.
 	 */
 	static public function getLinkingTableName($ps_left_table, $ps_right_table) {
-		if(is_array($path = Datamodel::getPath($ps_left_table, $ps_right_table)) && (sizeof($path) == 3) && ($path = array_keys($path))) {
-			return $path[1];
+		$path = Datamodel::getPath($ps_left_table, $ps_right_table);	
+		if(is_array($path)) {
+			$path = array_keys($path);
+			if(sizeof($path) === 3) {
+				return $path[1];
+			}
+			
+			if(($ps_left_table == $ps_right_table) || (self::getTableName($ps_left_table) === self::getTableName($ps_right_table))) {
+				if(sizeof($path) >= 2) {
+					return $path[1];
+				}
+			}
 		}
 		return null;
 	}
