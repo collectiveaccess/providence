@@ -338,7 +338,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 							}
 		
 							foreach(array_shift($source_values) as $attr_id => $attr) {
-								if ($vs_mode == 'merge') {
+								if (($vs_mode == 'merge') && (sizeof($va_attributes)>0)) {
 									// Merge mode
 									// Make a temporary copy of the original attribute
 									foreach($va_attributes[$i]->getValues() as $v) {
