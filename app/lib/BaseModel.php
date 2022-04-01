@@ -9909,7 +9909,7 @@ $pa_options["display_form_field_tips"] = true;
 			$skip_relation_ids = [];
 			while($qr_res->nextRow()) {
                 $row = $qr_res->getRow();
-				if($t_to_item->relationshipExists($rel_table_name_or_num, ($row_id == $row[$left_table_field_name]) ? $row[$right_table_field_name] : $row[$left_table_field_name], $row['type_id'])){ 
+				if($t_to_item->relationshipExists($rel_table_name_or_num, ($row_id == $row[$left_table_field_name]) ? $row[$right_table_field_name] : $row[$left_table_field_name], $row['type_id'], caGetLocalizedHistoricDateRange($row['sdatetime'], $row['edatetime']))){ 
 					$skip_relation_ids[] = $row['relation_id'];
 					continue; 
 				}
@@ -9956,7 +9956,7 @@ $pa_options["display_form_field_tips"] = true;
             	$skip_relation_ids = [];
                 while($qr_res->nextRow()) {
                 	$row = $qr_res->getRow();
-                	if($t_to_item->relationshipExists($rel_table_name_or_num, $row[$rel_item_pk], $row['type_id'] ?? null)){ 
+                	if($t_to_item->relationshipExists($rel_table_name_or_num, $row[$rel_item_pk], $row['type_id'] ?? null, caGetLocalizedHistoricDateRange($row['sdatetime'], $row['edatetime']))){ 
                 		$skip_relation_ids[] = $row['relation_id'];
                 		continue; 
                 	}
