@@ -635,7 +635,8 @@ class XLSXProfileParser extends BaseProfileParser {
 						'relationship_type' => trim($sheet->getCellByColumnAndRow(5, $r)->getValue()),
 						'type_res' => trim($sheet->getCellByColumnAndRow(6, $r)->getValue()),
 						'description' => trim($sheet->getCellByColumnAndRow(7, $r)->getValue()),
-						'notes' => trim($sheet->getCellByColumnAndRow(8, $r)->getValue()),
+						'settings' => trim($sheet->getCellByColumnAndRow(8, $r)->getValue()),
+						'notes' => trim($sheet->getCellByColumnAndRow(9, $r)->getValue()),
 					];
 				}
 				
@@ -723,6 +724,21 @@ class XLSXProfileParser extends BaseProfileParser {
 				$settings['description'][$this->settings['locale']] = [$description];
 			}
 			
+			foreach(preg_split('![,;\n]+!', $element['settings']) as $render_setting) {
+				$lines = preg_split("![\n\r]+!", $render_setting);
+				foreach($lines as $line) {
+					$l = explode('=', $line);
+					$setting = self::rewriteSettingName(array_shift($l));
+					$value = join('=', $l);
+					
+					$settings[$setting][''][] = $value;
+				}
+			}
+			
+			if(!isset($settings['add_label']) && $relationship && $rel_table && $label) {
+				$settings['add_label'][''][] = _t('Add %1', $label);
+			}
+			
 			$base_key = $key = $code ? $code : $relationship;
 			
 			$i = 0;
@@ -730,9 +746,31 @@ class XLSXProfileParser extends BaseProfileParser {
 				$i++;
 				$key = "{$base_key}_{$i}";
 			}
+			
+			$bundle_type = null;
+			$bundle_list = \Datamodel::getInstance($table, true)->getBundleList(['includeBundleInfo' => true]);
+			
+			if($rel_table) {
+				$bundle_type = 'relationship';
+			} elseif(isset($bundle_list[$code])) {
+				$bundle_type = $bundle_list[$code]['type'];	
+			}
+			
+			switch($bundle_type) {
+				case 'relationship':
+					$bundle = $rel_table;
+					break;
+				case 'special':
+					$bundle = $code;
+					break;
+				default:
+					$bundle = "{$table}.{$code}";
+					break;
+			}
+			
 			$values[$key] = [
 				'code' => $key,
-				'bundle' => $rel_table ? $rel_table : "{$table}.{$code}",
+				'bundle' => $bundle,
 				'settings' => $settings,
 				'includeSubtypes' => true,
 				'typeRestrictions' => []
