@@ -607,14 +607,37 @@ class XLSXProfileParser extends BaseProfileParser {
 	public function processUIs(array $sheet_nums) : bool {
 		foreach($sheet_nums as $ui_spec => $sheet_num) {
 			$sheet = $this->xlsx->getSheet($sheet_num);
-			$tmp = explode('_', $ui_spec);
-			if(!($table = self::tableNameFromString($tmp[0]))) { 
-				$this->warning('processUIs', _t('Could not generate user interface table from worksheet name %1', $ui_spec));
-				continue;
-			}
-			array_shift($tmp);
 			
-			$type_res = join('_', $tmp);	
+			$type_res = null;
+			if(preg_match("!^([a-z_]+)_x_([a-z_]+)!", $ui_spec, $m)) {
+				// interstitial
+				if(!($left_table = self::tableNameFromString($m[1]))) { 
+					$this->warning('processUIs', _t('Could not generate interstitial left table from worksheet name %1', $ui_spec));
+					continue;
+				}
+				if(!($right_table = self::tableNameFromString($m[2]))) { 
+					$this->warning('processUIs', _t('Could not generate interstitial right table from worksheet name %1', $ui_spec));
+					continue;
+				}
+				
+				if(!($table = \Datamodel::getLinkingTableName($left_table, $right_table))) {
+					$this->warning('processUIs', _t('Could not find interstitial table for %1/%2 using worksheet name %1', $left_table, $right_table, $ui_spec));
+					continue;
+				}
+				
+				if(preg_match("![ ]+(.*)$!", $ui_spec, $m)) {	// everything after the space is a type restriction
+					if(!($type_res = trim($m[1]))) { $type_res = null; }
+				}
+			} else {
+				$tmp = explode('_', $ui_spec);
+				if(!($table = self::tableNameFromString($tmp[0]))) { 
+					$this->warning('processUIs', _t('Could not generate user interface table from worksheet name %1', $ui_spec));
+					continue;
+				}
+				array_shift($tmp);
+			
+				$type_res = join('_', $tmp);	
+			}
 		
 			if($sheet) {
 				$hrow = $sheet->getHighestRow(); 
