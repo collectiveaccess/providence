@@ -547,3 +547,267 @@ function itemSchemaDefinitions() {
 		
 	];
 }
+
+/**
+ *
+ */
+/**
+ *
+ */
+function fieldTypeToJsonFormTypes(\BaseModel $t_instance, string $bundle, ?array $options=null) : array {
+	$table = $t_instance->tableName();
+	
+	$height = caGetOption('height', $options, null);
+	$dont_repeat = caGetOption('dontRepeat', $options, false);
+	$render = caGetOption('render', $options, false);
+	$type_restriction = caGetOption('type', $options, false);
+	
+	$types = [];
+	
+	$element_code = array_pop(explode('.', $bundle));
+	if ($t_instance->hasElement($element_code)) {
+		if(!($dt = ca_metadata_elements::getInstance($element_code))) {
+			throw new \ServiceException(_t('Cannot get instance for element %1', $element_code));
+		}		
+		switch($dt->get('datatype')) {
+			case __CA_ATTRIBUTE_VALUE_DATERANGE__:
+				$type = ['type' => 'string', 'format' => caGetOption('useDatePicker', $options, false) ? 'date' : 'string'];
+				break;	
+			case __CA_ATTRIBUTE_VALUE_INTEGER__:
+				$type = ['type' => 'integer', 'format' => 'string'];
+				break;
+			case __CA_ATTRIBUTE_VALUE_NUMERIC__:
+				$type = ['type' => 'number', 'format' => 'string'];
+				break;	
+			case __CA_ATTRIBUTE_VALUE_LIST__:
+				$type = ['type' => 'string', 'format' => 'string'];
+				$list_id = $dt->get('list_id');
+				$t_list = new ca_lists();
+				$item_count = $t_list->numItemsInList($list_id);
+				
+				if ($item_count <= 500) {
+					$items = array_map(function($v) { return $v['name_plural']; }, caExtractValuesByUserLocale($t_list->getItemsForList($list_id)));
+					$type['enum'] = array_map(function($v) { return (string)$v; }, array_keys($items));
+					$type['enumNames'] = array_values($items);
+				}
+				break;	
+			default:
+				$type = ['type' => 'string', 'format' => 'string'];	
+				if($height > 1) {
+					$type['uiSchema'] = [
+						"ui:widget" => "textarea",
+						"ui:options" => [
+							"rows" => $height
+						]
+					];
+				}	
+				break;
+		}
+	
+		if(($min_length = $dt->getSetting('minChars')) > 0) {
+			$type['minLength'] = (int)$min_length;
+		}
+		if(($max_length = $dt->getSetting('maxChars')) > 0) {
+			$type['maxLength'] = (int)$max_length;
+		}
+		
+		if(is_array($res = $dt->getTypeRestrictions(Datamodel::getTableNum($table), array_shift(caMakeTypeIDList($table, $type_restriction))))) {
+			foreach($res as $r) {
+				$settings = caUnserializeForDatabase($r['settings']);
+				if(($settings['maxAttributesPerRow'] > 1) && !$dont_repeat) {
+					$type = [
+						'type' => 'array',
+						'format' => 'string',
+						'items' => $type,
+						'minItems' => (int)$settings['minAttributesPerRow'],
+						'maxItems' => (int)$settings['maxAttributesPerRow'],
+						'uniqueItems' => true
+					];
+					
+					if($render === 'checkboxes') {
+						$type['uiSchema'] = [
+							"ui:widget" => "checkboxes",
+							"classNames" => "importCheckboxList",
+							"ui:options" => [
+								"inline" => true
+							]
+						];
+					}
+					break;
+				} 
+			}
+		}
+		
+		$type['code'] = $bundle;
+		
+		$types[] = $type;
+		
+	} elseif($t_instance->hasField($element_code)) {	// is intrinsic
+		$fi = $t_instance->getFieldInfo($element_code);
+		if($element_code === 'settings') {	// settings
+			$settings = $t_instance->getAvailableSettings();
+			foreach($settings as $setting => $sinfo) {
+				switch($sinfo['formatType']) {
+					case FT_NUMBER:
+						$type = ['type' => 'number', 'format' => 'number'];
+				
+						if (is_array($sinfo['BOUNDS_VALUE'])) {
+							$type['minimum'] = (int)caGetOption(0, $sinfo['BOUNDS_VALUE'], 0);
+							$type['maximum'] = (int)caGetOption(1 , $sinfo['BOUNDS_VALUE'], 2000000);
+						}
+						break;
+					case FT_BIT:
+						$type = ['type' => 'boolean', 'format' => 'string'];
+						break;
+					default:
+						$type = ['type' => 'string', 'format' => 'string'];
+						break;
+				}
+				if(isset($sinfo['options']) && is_array($items = $sinfo['options']) && sizeof($items)) {			
+					$type['enum'] = array_map(function($v) { return (string)$v; }, array_values($items));
+					$type['enumNames'] = array_keys($items);
+				}
+				if (is_array($sinfo['BOUNDS_LENGTH'])) {
+					if(($min_length = $sinfo['BOUNDS_LENGTH'][0]) > 0) {
+						$type['minLength'] = (int)$min_length;
+					}
+					if(($max_length = $sinfo['BOUNDS_LENGTH'][1]) > 0) {
+						$type['maxLength'] = (int)$max_length;
+					}
+				}		
+				$type['code'] = "setting_{$setting}";
+				$type['width'] = caGetOption('width', $sinfo, $width);
+				$type['height'] = caGetOption('height', $sinfo, $height);
+				$type['label'] = caGetOption('label', $sinfo, null);
+				$type['description'] = caGetOption('description', $sinfo, null);
+				
+				$types[] = $type;
+			}
+		} else {
+			switch($fi['FIELD_TYPE']) {
+				case FT_NUMBER:
+					$type = ['type' => 'number', 'format' => 'number'];
+				
+					if (is_array($fi['BOUNDS_VALUE'])) {
+						$type['minimum'] = (int)caGetOption(0, $fi['BOUNDS_VALUE'], 0);
+						$type['maximum'] = (int)caGetOption(1 , $fi['BOUNDS_VALUE'], 2000000);
+					}
+					break;
+				case FT_BIT:
+					$type = ['type' => 'boolean', 'format' => 'string'];
+					break;
+				default:
+					$type = ['type' => 'string', 'format' => 'string'];
+					break;
+			}
+			if(isset($fi['BOUNDS_CHOICE_LIST']) && is_array($items = $fi['BOUNDS_CHOICE_LIST']) && sizeof($items)) {			
+				$type['enum'] = array_map(function($v) { return (string)$v; }, array_values($items));
+				$type['enumNames'] = array_keys($items);
+			}
+			if (is_array($fi['BOUNDS_LENGTH'])) {
+				if(($min_length = $fi['BOUNDS_LENGTH'][0]) > 0) {
+					$type['minLength'] = (int)$min_length;
+				}
+				if(($max_length = $fi['BOUNDS_LENGTH'][1]) > 0) {
+					$type['maxLength'] = (int)$max_length;
+				}
+			}		
+			$type['code'] = $bundle;
+			$type['width'] = caGetOption('DISPLAY_WIDTH', $fi, $width);
+			$type['height'] = caGetOption('DISPLAY_HEIGHT', $fi, $height);
+			$type['label'] = caGetOption('LABEL', $fi, null);
+			$type['description'] = caGetOption('DESCRIPTION', $fi, null);
+			$types[] = $type;
+		}
+	} elseif($t = \Datamodel::getInstance($element_code, true)) { // is related
+		if(is_array($list_options = caGetOption('options', $options, null)) && sizeof($list_options)) {
+			$type = [
+				'type' => 'array', 'format' => 'string',
+				'items' => [
+					'type' => 'string', 'format' => 'string', 
+					'enum' => array_values($list_options), 'enumNames' => array_keys($list_options)
+				],
+				'uniqueItems' => true
+			];
+			
+			if($render === 'checkboxes') {
+				$type['uiSchema'] = [
+					"ui:widget" => "checkboxes",
+							"classNames" => "importCheckboxList",
+					"ui:options" => [
+						"inline" => true
+					]
+				];
+			}
+		} else {
+			// TODO: autocomplete goes here
+			$type = [
+				'type' => 'array', 
+				'items' => [
+					'type' => 'string', 'format' => 'string', 
+				]
+			];
+			$type = ['type' => 'string', 'format' => 'string'];
+			if($height > 1) {
+				$type['uiSchema'] = [
+					"ui:widget" => "textarea",
+					"ui:options" => [
+						"rows" => $height
+					]
+				];
+			}
+		}		
+		$type['code'] = $bundle;
+		$types[] = $type;
+	} else {
+		$type = ['type' => 'string', 'format' => 'string'];
+		
+		if($height > 1) {
+			$type['uiSchema'] = [
+				"ui:widget" => "textarea",
+				"ui:options" => [
+					"rows" => $height
+				]
+			];
+		}		
+		$type['code'] = $bundle;
+		$types[] = $type;
+	}
+	return $types;
+}
+
+/**
+ *
+ */
+function fieldFormValues(\BaseModel $t_instance) : array {
+	$values = [];
+	
+	if($t_instance->isLoaded()) {
+		$table = $t_instance->tableName();
+		$fields = $t_instance->getFormFields();
+		foreach($fields as $f => $fi) {
+			switch($f) {
+				case 'settings':
+					// noo[
+					break;
+				default:
+					$values["{$table}.{$f}"] = $t_instance->get("{$table}.{$f}");
+					break;
+			}
+		}
+		
+		if($t_instance->hasField('settings')) {
+			$settings = $t_instance->getAvailableSettings();
+			foreach($settings as $s => $si) {
+				$values["setting_{$s}"] = $t_instance->getSetting($s);
+			}
+		}
+		
+		$label_fields = $t_instance->getLabelUIFields();
+		foreach($label_fields as $lf) {
+			$values["{$table}.preferred_labels.{$lf}"] = $t_instance->get("{$table}.preferred_labels.{$lf}");
+		}
+	}
+	
+	return $values;
+}

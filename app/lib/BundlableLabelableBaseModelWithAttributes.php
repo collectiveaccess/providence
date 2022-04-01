@@ -722,7 +722,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 			return $this->_rowAsSearchResult->get($ps_field, $pa_options);
 		}
-		return null;
+		return parent::get($ps_field, $pa_options);
 	}
 	# ------------------------------------------------------------------
 	/**

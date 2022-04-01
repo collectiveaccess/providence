@@ -129,6 +129,36 @@ class MetadataImportSchema extends \GraphQLServices\GraphQLSchema {
 					]
 				]
 			]),
+			$importerFormInfoType = new ObjectType([
+				'name' => 'ImporterFormInfo',
+				'description' => 'Information for importer form',
+				'fields' => [
+					'title' => [
+						'type' => Type::string(),
+						'description' => 'Title of form for display'
+					],
+					'description' => [
+						'type' => Type::string(),
+						'description' => 'Description of form'
+					],
+					'required' => [
+						'type' => Type::listOf(Type::string()),
+						'description' => 'Required fields'
+					],
+					'properties' => [
+						'type' => Type::string(),
+						'description' => 'Information about each field in the form, serialized as JSON'
+					],
+					'uiSchema' => [
+						'type' => Type::string(),
+						'description' => 'UI display configuration about each field in the form, serialized as JSON'
+					],
+					'values' => [
+						'type' => Type::string(),
+						'description' => 'Form values, serialized as JSON'
+					],
+				]
+			]),
 		];
 	}
 	# -------------------------------------------------------

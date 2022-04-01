@@ -1,0 +1,117 @@
+import React, { useContext, useEffect } from 'react';
+import { MappingContext } from './MappingContext';
+
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css';
+
+import { getImportersList, deleteImporter, addImporter, editImporter } from './MappingQueries';
+
+const ImporterList = () => {
+  const { importerId, setImporterId, importerName, setImporterName,
+    importerCode, setImporterCode, importerList, setImporterList, currentView, setCurrentView } = useContext(MappingContext)
+
+  useEffect(() => {
+    getImporterList()
+  }, [])
+  
+  const getImporterList = () => {
+    getImportersList("http://importui.whirl-i-gig.com:8085/service.php/MetadataImport", data => {
+      console.log("getImporterList: ", data);
+      setImporterList(data)
+    })
+  }
+  const viewImporter = (e, importer) => {
+    setCurrentView("importer_mappings")
+    setImporterId(importer.id)
+    setImporterName(importer.name)
+    setImporterCode(importer.code)
+    e.preventDefault()
+  }
+
+  const deleteImporterConfirm = (id, name) => {
+
+    confirmAlert({
+      customUI: ({ onClose }) => {
+        return (
+          <div className='info text-gray'>
+            <p>Really delete <em>{name}</em>?</p>
+            <div className='btn btn-secondary btn-sm mr-2' onClick={() => {
+              deleteImporter("http://importui.whirl-i-gig.com:8085/service.php/MetadataImport", id, data => {
+                console.log("deleteImporter: ", data);
+                getImporterList();
+              });
+              onClose();
+            }}> Yes </div>
+            &nbsp;
+            <div className='btn btn-secondary btn-sm' onClick={onClose}>No</div>
+          </div>
+        );
+      }
+    });
+    // e.preventDefault()
+  }
+
+  const addNewImporter = (e) => {
+
+    setCurrentView("importer_mappings");
+    setImporterId()
+    setImporterName()
+    setImporterCode()
+
+    e.preventDefault()
+  }
+
+  if(importerList && importerList.length > 0){
+    return (
+      <div>
+
+        <h1 className='mb-5'>Importers List</h1>
+
+
+        <table className="table table-striped">
+          <thead>
+            <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Code</th>
+              <th scope="col"></th>
+            </tr>
+          </thead>
+          <tbody>
+
+            {importerList.map((importer, index) => {
+              return (
+                <tr className='mb-2' key={index}>
+                  <td className=''>{importer.name}</td>
+                  <td className=''> <strong>({importer.code})</strong></td>
+                  <td><button className='btn btn-secondary btn-sm mr-2' onClick={(e) => viewImporter(e, importer)}>View</button>
+                    <button className='btn btn-secondary btn-sm' onClick={() => deleteImporterConfirm(importer.id, importer.name)}>Delete</button></td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+
+        {/* {importerList.map((importer, index) => {
+          return(
+            <div className='row mb-2' key={index}>
+              <div className='col mr-2'>{importer.name}</div>
+              <div className='col mr-3'> <strong>({importer.code})</strong></div>
+              <button className='btn btn-secondary btn-sm mr-2' onClick={(e) => viewImporter(e)}>View</button>
+              <button className='btn btn-secondary btn-sm' onClick={() => deleteImporterConfirm(importer.id, importer.name)}>Delete</button>
+            </div>
+          )
+        })} */}
+
+        <div className='row justify-content-end mt-5 mr-2'>
+          <button className='btn btn-secondary btn-sm' onClick={(e) => addNewImporter(e)}>Add Importer +</button>
+        </div>
+
+      </div>
+    )
+  }else{
+    return null
+  }
+
+}
+
+export default ImporterList

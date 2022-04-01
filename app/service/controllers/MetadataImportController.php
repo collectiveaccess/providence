@@ -28,12 +28,14 @@
 require_once(__CA_LIB_DIR__.'/Service/GraphQLServiceController.php');
 require_once(__CA_APP_DIR__.'/service/schemas/MetadataImportSchema.php');
 require_once(__CA_APP_DIR__.'/service/helpers/MetadataImportHelpers.php');
+require_once(__CA_APP_DIR__.'/service/helpers/ServiceHelpers.php');
 
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use GraphQLServices\Schemas\MetadataImportSchema;
 use GraphQLServices\Helpers\MetadataImport;
+use GraphQLServices\Helpers;
 
 
 class MetadataImportController extends \GraphQLServices\GraphQLServiceController {
@@ -113,6 +115,7 @@ class MetadataImportController extends \GraphQLServices\GraphQLServiceController
 						]
 					],
 					'resolve' => function ($rootValue, $args) {
+						$u = self::authenticate($args['jwt']);
 						
 						$t_importer = new ca_data_importers();
 
@@ -132,6 +135,78 @@ class MetadataImportController extends \GraphQLServices\GraphQLServiceController
 						}, $data = $t_importer->getAvailableSettings(), array_keys($data));
 						
 						return $settings;
+					}
+				],
+				// ------------------------------------------------------------
+				// Importer form
+				// ------------------------------------------------------------
+				'importerForm' => [
+					'type' => MetadataImportSchema::get('ImporterFormInfo'),
+					'description' => _t('Get importer editing form data'),
+					'args' => [
+						[
+							'name' => 'jwt',
+							'type' => Type::string(),
+							'description' => _t('JWT'),
+							'defaultValue' => self::getBearerToken()
+						],
+						[
+							'name' => 'id',
+							'type' => Type::int(),
+							'description' => _t('ID of importer to edit')
+						],
+					],
+					'resolve' => function ($rootValue, $args) {
+						$u = self::authenticate($args['jwt']);
+						
+						$id = $args['id'];
+						
+						$t_importer = new ca_data_importers($id);
+						$fields = $t_importer->getFormFields();
+						
+						$required_fields = ['ca_data_importers.preferred_labels.name', 'ca_data_importers.importer_code', 'ca_data_importers.table_num'];
+						
+						$properties = $ui_schema = [];
+						foreach([
+								'ca_data_importers.preferred_labels.name', 'ca_data_importers.importer_code', 
+								'ca_data_importers.table_num', 'ca_data_importers.settings'
+							] as $code
+						) {
+							$types = \GraphQLServices\Helpers\fieldTypeToJsonFormTypes($t_importer, $code, []);
+
+							foreach($types as $type) {
+								$field = [
+									'title' => $type['label'] ?? '???',
+									'description' => $type['description'] ?? '',
+									'type' => $type['type'] ?? '',
+									'format' => $type['format'] ?? '',
+									'uniqueItems' => $type['uniqueItems'] ?? false
+								]; 		
+								if($type['items']) { $field['items'] = $type['items']; }
+								if($type['uiSchema']) { 
+									$ui_schema[$code] = $type['uiSchema'];
+								}
+								foreach(['minLength', 'maxLength', 'enum', 'enumNames', 'minimum', 'maximum'] as $k) {
+									if (isset($type[$k])) {
+										$field[$k] = $type[$k];
+									}
+								}
+							
+								$properties[$type['code']] = $field;	
+							}				
+						}
+						
+						$values = \GraphQLServices\Helpers\fieldFormValues($t_importer);
+						$form = [
+							'title' => $t_importer->get('ca_data_importers.preferred_labels'),
+							'description' => '',
+							'required' => $required_fields,
+							'properties' => json_encode($properties),
+							'uiSchema' => json_encode($ui_schema),
+							'values' => json_encode($values)
+						];
+						
+						return $form;
 					}
 				]
 			]
