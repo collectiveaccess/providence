@@ -231,7 +231,7 @@ class XLSXProfileParser extends BaseProfileParser {
 					$sheet_map['relationshipTypes'] = $i;
 					break;
 				default:
-					if(preg_match("!^ui_([A-Za-z0-9\-\_]+)!", strtolower($s), $m)) {
+					if(preg_match("!^ui_([A-Za-z0-9\-\_ ]+)!", strtolower($s), $m)) {
 						if(!is_array($sheet_map['uis'])) { $sheet_map['uis'] = []; }
 						$sheet_map['uis'][$m[1]] = $i;
 					}
@@ -607,7 +607,6 @@ class XLSXProfileParser extends BaseProfileParser {
 	public function processUIs(array $sheet_nums) : bool {
 		foreach($sheet_nums as $ui_spec => $sheet_num) {
 			$sheet = $this->xlsx->getSheet($sheet_num);
-			
 			$tmp = explode('_', $ui_spec);
 			if(!($table = self::tableNameFromString($tmp[0]))) { 
 				$this->warning('processUIs', _t('Could not generate user interface table from worksheet name %1', $ui_spec));
