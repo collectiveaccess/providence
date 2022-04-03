@@ -522,7 +522,6 @@ class DisplayTemplateParser {
 					// Does a placeholder with value precede this tag?
 					// NOTE: 	We don't take into account <ifdef> and friends when finding a set placeholder; it may be set but not visible due to a conditional
 					// 			This case is not covered at the moment on the assumption that if you're using <between> you're not using conditionals. This may or may not be a good assumption.
-					
 					$vb_has_preceding_value = false;
 					for($vn_i = 0; $vn_i < $vn_index; $vn_i++) {
 						if ($po_nodes[$vn_i] && ($po_nodes[$vn_i]->tag == '~text~') && is_array($va_preceding_tags = caGetTemplateTags($po_nodes[$vn_i]->text))) {
@@ -544,9 +543,10 @@ class DisplayTemplateParser {
 									if(isset($pa_vals[$vs_following_tag]) && strlen($pa_vals[$vs_following_tag])) {
 										$vs_acc .= $content = DisplayTemplateParser::_processChildren($pr_res, $o_node->children, $pa_vals, $pa_options);
 										if ($pb_is_case && $content) { break(2); }
+										break;
 									}
-									break;
 								}
+								break;
 							}
 						}
 					}
