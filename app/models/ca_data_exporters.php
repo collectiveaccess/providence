@@ -1331,7 +1331,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				}
 			}
 
-			$vs_item_export = ca_data_exporters::exportRecord($ps_exporter_code, $po_result->get($t_instance->primaryKey()), array('logger' => $o_log));
+			$vs_item_export = ca_data_exporters::exportRecord($ps_exporter_code, $po_result->get($t_instance->primaryKey()), ['logger' => $o_log, 'singleRecord' => $individual_files]);
 			
 			if($individual_files) {
 				$individual_filename = preg_replace("![^\pL\d_\-]+!u", '_', $po_result->getWithTemplate($filename_template));
