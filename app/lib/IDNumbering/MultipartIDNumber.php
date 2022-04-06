@@ -539,6 +539,10 @@ class MultipartIDNumber extends IDNumber {
 			if ($num <= $max_num) {
 				$num = $max_num + 1;
 			}
+			
+			if(isset($element_info['minimum']) && (($min = (int)$element_info['minimum']) > 0) && ($num < $min)) { 
+				$num = $min;
+			}
 
 			if (($zeropad_to_length = (int)$element_info['zeropad_to_length']) > 0) {
 				return sprintf("%0{$zeropad_to_length}d", $num);
