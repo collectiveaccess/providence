@@ -1188,10 +1188,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 * Export a record set as defined by the given search expression and the table_num for this exporter.
 	 * This function wraps the record-level exports using the settings 'wrap_before' and 'wrap_after' if they are set.
+	 *
 	 * @param string $ps_exporter_code defines the exporter to use
 	 * @param SearchResult $po_result An existing SearchResult object
 	 * @param string $ps_filename Destination filename (we can't keep everything in memory here)
 	 * @param array $pa_options
+	 *		individualFiles = For XML and JSON exports, output data one record per-file, using $ps_filename as a path to a directory into which to write the files. [Default is false]
+	 *		filenameTemplate = When individualFiles option is set, may contain a template used to name each file. [Default is ^<table>.idno]
 	 * 		progressCallback = callback function for asynchronous UI status reporting
 	 *		showCLIProgressBar = Show command-line progress bar. Default is false.
 	 *		logDirectory = path to directory where logs should be written
@@ -1208,6 +1211,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	static public function exportRecordsFromSearchResult($ps_exporter_code, $po_result, $ps_filename=null, $pa_options=array()) {
 		if(!($po_result instanceof SearchResult)) { return false; }
+		
+		$individual_files = caGetOption('individualFiles', $pa_options, false);
+		$filename_template = caGetOption('filenameTemplate', $pa_options, null);
 
 		$vs_log_dir = caGetOption('logDirectory',$pa_options);
 		if(!file_exists($vs_log_dir) || !is_writable($vs_log_dir)) {
@@ -1250,13 +1256,15 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vs_wrap_before = $t_mapping->getSetting('wrap_before');
 		$vs_wrap_after = $t_mapping->getSetting('wrap_after');
 		$vs_export_format = $t_mapping->getSetting('exporter_format');
+		
+		if($vs_export_format === 'CSV') { $individual_files = false; } // no individual file output with CSV
 
 		$t_instance = Datamodel::getInstanceByTableNum($t_mapping->get('table_num'));
 		$vn_num_items = $po_result->numHits();
 
 		$o_log->logInfo(_t("SearchResult contains %1 results. Now calling single-item export for each record.", $vn_num_items));
 
-		if($vs_wrap_before) {
+		if(!$individual_files && $vs_wrap_before) {
 			file_put_contents($ps_filename, $vs_wrap_before."\n", FILE_APPEND);
 		}
 
@@ -1278,7 +1286,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vn_num_processed = 0;
 
 
-		if ($t_mapping->getSetting('CSV_print_field_names')) {
+		if (!$individual_files && $t_mapping->getSetting('CSV_print_field_names')) {
 			$va_header = $va_header_sources = array();
 			$va_mapping_items = $t_mapping->getItems();
 			foreach($va_mapping_items as $vn_i => $va_mapping_item) {
@@ -1304,9 +1312,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			file_put_contents($ps_filename, $vs_enclosure . join($vs_enclosure.$vs_delimiter.$vs_enclosure,$va_header) . $vs_enclosure."\n", FILE_APPEND);
 		}
 
+		if($individual_files && !$filename_template) {
+			$table = $po_result->tableName();
+			$filename_template = "^{$table}.".Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD');
+		}
+
 		$i = 0;
 		while($po_result->nextHit()) {
-
 			// clear caches every once in a while. doesn't make much sense to keep them around while exporting
 			if((++$i % 1000) == 0) {
 				SearchResult::clearCaches();
@@ -1319,10 +1331,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				}
 			}
 
-			$vs_item_export = ca_data_exporters::exportRecord($ps_exporter_code, $po_result->get($t_instance->primaryKey()), array('logger' => $o_log));
-			if($vs_export_format == 'JSON'){
+			$vs_item_export = ca_data_exporters::exportRecord($ps_exporter_code, $po_result->get($t_instance->primaryKey()), ['logger' => $o_log, 'singleRecord' => $individual_files]);
+			
+			if($individual_files) {
+				$individual_filename = preg_replace("![^\pL\d_\-]+!u", '_', $po_result->getWithTemplate($filename_template));
+				file_put_contents("{$ps_filename}/{$individual_filename}.".strtolower($vs_export_format), $vs_wrap_before.$vs_item_export.$vs_wrap_after);
+			} elseif($vs_export_format == 'JSON'){
 				array_push($va_json_data, json_decode($vs_item_export));
-				#file_put_contents($ps_filename, $vs_item_export.",", FILE_APPEND);
 			} else {
 				file_put_contents($ps_filename, $vs_item_export."\n", FILE_APPEND);
 			}
@@ -1338,13 +1353,14 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 
-		if($vs_wrap_after) {
-			file_put_contents($ps_filename, $vs_wrap_after."\n", FILE_APPEND);
-		}
+		if(!$individual_files) {
+			if($vs_wrap_after) {
+				file_put_contents($ps_filename, $vs_wrap_after."\n", FILE_APPEND);
+			}
 
-		if($vs_export_format == 'JSON'){
-			file_put_contents($ps_filename, json_encode($va_json_data), FILE_APPEND);
-			#file_put_contents($ps_filename, "]", FILE_APPEND);
+			if(!$vs_export_format == 'JSON'){
+				file_put_contents($ps_filename, json_encode($va_json_data), FILE_APPEND);
+			}
 		}
 
 		if ($vb_show_cli_progress_bar) {

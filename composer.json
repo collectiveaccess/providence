@@ -7,7 +7,7 @@
     "elasticsearch/elasticsearch": "~7.0",
     "ezyang/htmlpurifier": "~4.9",
     "guzzlehttp/guzzle": "^6.3",
-    "guzzlehttp/psr7": "^1.4",
+    "guzzlehttp/psr7": "^1.8.4",
     "hoa/compiler": "~3.17",
     "hoa/visitor": "~2.17",
     "james-heinrich/getid3": "^1.9.20",
@@ -40,7 +40,8 @@
     "cache/filesystem-adapter": "^1.1",
     "codeitnowin/barcode": "^3.0",
     "whikloj/bagittools": "^3.0",
-    "scholarslab/bagit": "~0.2"
+    "scholarslab/bagit": "~0.2",
+    "voku/stop-words": "^2.0"
   },
   "config": {
   	"discard-changes": true

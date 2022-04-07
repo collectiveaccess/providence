@@ -78,6 +78,8 @@
 					e.date_time DESC
 			", $vn_threshold);
 			
+			$this->opo_view->setVar('show_ips', $show_ips = $this->opo_config->get('show_user_ip_addresses'));
+			
 			$va_login_list = array();
 			$t_user = new ca_users();
 			$va_user_cache = array();
@@ -111,8 +113,9 @@
 				
 				$va_log = array_merge($va_log, $va_user_cache[$vs_username]);
 				
-				
-				$va_log['ip'] = str_replace('IP=', '', $va_tmp[1]);
+				if($show_ips) { 
+					$va_log['ip'] = str_replace('IP=', '', $va_tmp[1]);
+				}
 				
 				$va_login_list[] = $va_log;
 			}

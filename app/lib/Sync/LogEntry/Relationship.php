@@ -106,6 +106,13 @@ class Relationship extends Base {
 		if ($vs_right_field = $this->getModelInstance()->getProperty('RELATIONSHIP_RIGHT_FIELDNAME')) {
 			$this->setLeftOrRightFieldNameFromSnapshot($vs_right_field, false);
 		}
+		
+		foreach($va_snapshot as $k => $v) {
+			if(in_array($k, [$vs_type_field, $vs_left_field, $vs_right_field], true)) { continue; }
+			if($this->getModelInstance()->hasField($k)) {
+				 $this->getModelInstance()->set($k, $v);
+			}
+		}
 	}
 
 	/**

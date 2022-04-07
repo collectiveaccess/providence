@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2021 Whirl-i-Gig
+ * Copyright 2007-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -539,6 +539,10 @@ class MultipartIDNumber extends IDNumber {
 			if ($num <= $max_num) {
 				$num = $max_num + 1;
 			}
+			
+			if(isset($element_info['minimum']) && (($min = (int)$element_info['minimum']) > 0) && ($num < $min)) { 
+				$num = $min;
+			}
 
 			if (($zeropad_to_length = (int)$element_info['zeropad_to_length']) > 0) {
 				return sprintf("%0{$zeropad_to_length}d", $num);
@@ -860,7 +864,7 @@ class MultipartIDNumber extends IDNumber {
 		$output_values = array_unique($output_values);
 		
 		// generate tokenized version
-		if($tokens = preg_split("![".$this->search_config->get('indexing_tokenizer_regex')."]+!", $value)) {
+		if($tokens = caTokenizeString($value)){
 			$output_values = array_merge($output_values, $tokens);
 		}
 		
