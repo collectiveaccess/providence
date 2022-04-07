@@ -3,7 +3,7 @@ FROM ubuntu:20.04
 #Args for use in construction of the container
 #Change the LOCAL_UID to that of your user that owns the git repo files
 ARG LOCAL_UID=1000
-ARG APACHE_VERSION=2.4.52
+ARG APACHE_VERSION=2.4.53
 ARG PHP_VERSION=7.4.28
 ARG FFMPEG_VERSION=4.3.3
 ENV DEBIAN_FRONTEND=noninteractive
