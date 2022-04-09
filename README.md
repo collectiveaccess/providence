@@ -79,7 +79,8 @@ The latest development version is always available in the `develop` branch (http
   * https://docs.collectiveaccess.org/wiki/Release_Notes_for_Providence_1.7
   * https://docs.collectiveaccess.org/wiki/Release_Notes_for_Providence_1.7.8
 * Forum: https://www.collectiveaccess.org/support/forum
-* Bug Tracker: https://clangers.collectiveaccess.org
+
+To report issues please use GitHub Issues.
 
 
 ### Other modules
