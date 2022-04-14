@@ -70,7 +70,7 @@ class applyPrepopulateRulesTool extends BaseApplicationTool {
 	/**
 	 * 
 	 */
-	public function commandApply_Prepopulate_Rules() {
+	public function commandApply_Prepopulate_Rules(?array $options=null) {
 		$o_conf = $this->getToolConfig();
 		
 		$rules = $o_conf->get('prepopulate_rules');
