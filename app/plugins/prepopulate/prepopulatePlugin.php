@@ -368,7 +368,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 								Debug::msg(_t("[prepopulateFields()] error while removing old values during copy of containers: %1", join("; ", $t_instance->getErrors())));
 							}
                             foreach($source_values as $source_value) {
-    							foreach($source_values as $attr_id => $attr) {
+    							foreach($source_value as $attr_id => $attr) {
     								if (($vs_mode == 'merge') && (sizeof($va_attributes)>0)) {
     									// Merge mode
     									// Make a temporary copy of the original attribute
