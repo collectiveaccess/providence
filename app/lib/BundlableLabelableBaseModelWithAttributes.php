@@ -4571,7 +4571,7 @@ if (!$vb_batch) {
                                     } elseif(preg_match("!^".($u = caGetUserDirectoryName($po_request->getUserID()))."/(.*)$!", $va_values['tmp_name'], $m)) {
                                     	foreach($import_directory_paths as $p) {
                                     		if(file_exists($vs_path = "{$p}/{$m[1]}")) {
-                                    			$vs_original_name = pathinfo($va_values['tmp_name'], PATHINFO_FILENAME);
+                                    			$vs_original_name = pathinfo($va_values['tmp_name'], PATHINFO_BASENAME);
                                     			break;
                                     		}
                                     	}
