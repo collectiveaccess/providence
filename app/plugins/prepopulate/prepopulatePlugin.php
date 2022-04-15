@@ -367,49 +367,50 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 							if($t_instance->numErrors()) {
 								Debug::msg(_t("[prepopulateFields()] error while removing old values during copy of containers: %1", join("; ", $t_instance->getErrors())));
 							}
+                            foreach($source_values as $source_value) {
+    							foreach($source_values as $attr_id => $attr) {
+    								if (($vs_mode == 'merge') && (sizeof($va_attributes)>0)) {
+    									// Merge mode
+    									// Make a temporary copy of the original attribute
+    									foreach($va_attributes[$i]->getValues() as $v) {
+    											$map_attr[$v->getElementCode()]=$v->getDisplayValue();
+    									}
 
-							foreach(array_shift($source_values) as $attr_id => $attr) {
-								if (($vs_mode == 'merge') && (sizeof($va_attributes)>0)) {
-									// Merge mode
-									// Make a temporary copy of the original attribute
-									foreach($va_attributes[$i]->getValues() as $v) {
-											$map_attr[$v->getElementCode()]=$v->getDisplayValue();
-									}
-
-									// Check if there is a sourceMap
-									if(is_array($va_source_map) && sizeof($va_source_map)) {
-										// SourceMap present, copy only the values from the sourceMap when the target is null
-										foreach($va_source_map as $sk => $sv) {
-											if (strlen($attr[$sk]>0) && (strlen($map_attr[$sv]) == 0))
-													$map_attr[$sv] = $attr[$sk];
-										}
-									} else {
-										// SourceMap not present, copy only the values from the source when the target is null
-										foreach($map_attr as $k => $v) {
-											if ((strlen($attr[$k])>0) && (strlen($v)==0))
-												$map_attr[$k]=$attr[$k];
-										}
-									}
-									$attr = $map_attr;
-								} elseif(is_array($va_source_map) && sizeof($va_source_map)) {
-									// Overwrite mode
-									$map_attr = [];
-									foreach($va_source_map as $sk => $sv) {
-										$map_attr[$sv] = $attr[$sk];
-									}
-									$attr = $map_attr;
-								}
-								if ($i == 0) {
-									$t_instance->replaceAttribute($attr, $va_parts[1]);
-								} else {
-									$t_instance->addAttribute($attr, $va_parts[1]);
-								}
-								if($t_instance->numErrors()) {
-									Debug::msg(_t("[prepopulateFields()] error during copy of containers: %1", join("; ", $t_instance->getErrors())));
-								}
-								$i++;
-							}
-						}
+    									// Check if there is a sourceMap
+    									if(is_array($va_source_map) && sizeof($va_source_map)) {
+    										// SourceMap present, copy only the values from the sourceMap when the target is null
+    										foreach($va_source_map as $sk => $sv) {
+    											if (strlen($attr[$sk]>0) && (strlen($map_attr[$sv]) == 0))
+    													$map_attr[$sv] = $attr[$sk];
+    										}
+    									} else {
+    										// SourceMap not present, copy only the values from the source when the target is null
+    										foreach($map_attr as $k => $v) {
+    											if ((strlen($attr[$k])>0) && (strlen($v)==0))
+    												$map_attr[$k]=$attr[$k];
+    										}
+    									}
+    									$attr = $map_attr;
+    								} elseif(is_array($va_source_map) && sizeof($va_source_map)) {
+    									// Overwrite mode
+    									$map_attr = [];
+    									foreach($va_source_map as $sk => $sv) {
+    										$map_attr[$sv] = $attr[$sk];
+    									}
+    									$attr = $map_attr;
+    								}
+    								if ($i == 0) {
+    									$t_instance->replaceAttribute($attr, $va_parts[1]);
+    								} else {
+    									$t_instance->addAttribute($attr, $va_parts[1]);
+    								}
+    								if($t_instance->numErrors()) {
+    									Debug::msg(_t("[prepopulateFields()] error during copy of containers: %1", join("; ", $t_instance->getErrors())));
+    								}
+    								$i++;
+    							}
+    						}
+                        }
 					} else {
 						if((sizeof($va_attributes)>1) && ($vs_mode !== 'addifempty')) {
 							$t_instance->removeAttributes($va_parts[1]);
