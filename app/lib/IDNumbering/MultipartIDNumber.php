@@ -674,7 +674,7 @@ class MultipartIDNumber extends IDNumber {
 			$range = caGetOption('range', $element_info, 5);
 			$precision = caGetOption('precision', $element_info, 2);
 			
-			$values = array_reverse($this->_valueToSortableInts($v, $range, $precision));
+			$values = strlen($v) ? array_reverse($this->_valueToSortableInts($v, $range, $precision)) : [];
 			$p = 0;
 			foreach($values as $v) {
 				$z = (int)(($v * pow(10, $p)));

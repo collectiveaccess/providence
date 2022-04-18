@@ -1422,6 +1422,7 @@ function caFileIsIncludable($ps_file) {
 	 * 		dontRemoveKeyPrefixes = By default keys that are period-delimited will have the prefix before the first period removed (this is to ease sorting by field names). Set to true to disable this behavior. [Default is false]
 	 *      caseInsenstive = Sort case insensitively. [Default is true]
 	 *      naturalSort = Sort case insensitively and only considers letters and numbers in sort, stripping punctuation and other characters. [Default is false]
+	 *		mode = PHP sort mode to use. [Default is null; use string sort]
 	 * @return array The sorted array
 	*/
 	function caSortArrayByKeyInValue($pa_values, $pa_sort_keys, $ps_sort_direction="ASC", $pa_options=null) {
@@ -1454,7 +1455,7 @@ function caFileIsIncludable($ps_file) {
 			}
 			$va_sorted_by_key[join('/', $va_key)][$vn_id] = $va_data;
 		}
-		ksort($va_sorted_by_key);
+		ksort($va_sorted_by_key, caGetOption('mode', $pa_options, null));
 		if (strtolower($ps_sort_direction) == 'desc') {
 			$va_sorted_by_key = array_reverse($va_sorted_by_key);
 		}
@@ -3746,11 +3747,11 @@ function caFileIsIncludable($ps_file) {
 	    }
 	    if ($po_request) {
 	        if (!is_array($va_tokens = PersistentCache::fetch("csrf_tokens_{$session_id}", "csrf_tokens"))) { $va_tokens = []; }
-	        if (sizeof($va_tokens) > 300) { 
-	        	$va_tokens = array_filter($va_tokens, function($v) { return ($v > (time() - 28800)); });	// delete any token older than eight hours
+	        if (sizeof($va_tokens) > 2000) { 
+	        	$va_tokens = array_filter($va_tokens, function($v) { return ($v > (time() - 86400)); });	// delete any token older than eight hours
 	    	}
-	    	if (sizeof($va_tokens) > 600) { 
-	    		$va_tokens = array_slice($va_tokens, 0, 200, true); // delete last third of token buffer if it gets too long
+	    	if (sizeof($va_tokens) > 2000) { 
+	    		$va_tokens = array_slice($va_tokens, 0, 500, true); // delete last quarter of token buffer if it gets too long
 	    	}
 	    
 	        if (!isset($va_tokens[$vs_token])) { $va_tokens[$vs_token] = time(); }

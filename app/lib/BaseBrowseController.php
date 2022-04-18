@@ -164,6 +164,11 @@
  				}
  			}
  			
+ 			if(((!is_array($va_criteria) || sizeof($va_criteria) === 0)) && ($default_sort = $this->request->config->get($this->ops_tablename.'_browse_default_sort'))) {
+				$this->opo_result_context->setCurrentSort($vs_sort = $default_sort);
+				$this->opo_result_context->setCurrentSortDirection($vs_sort_direction = 'ASC');
+ 			}
+ 			
  			MetaTagManager::setWindowTitle(_t('%1 browse', $this->browseName('plural')));
  			
  			//

@@ -4498,6 +4498,9 @@ if (!$vb_batch) {
 								$va_file_list = array_filter($va_file_list, function($v) use ($index) { return (($v['index'] !== $index) || (sizeof($v) === 1)); });
                             }
                             
+                            // Sort files such that they are inserted in file name order
+                        	$va_file_list = caSortArrayByKeyInValue($va_file_list, ['tmp_name'], 'ASC', ['mode' => SORT_NATURAL]);
+                            
                             foreach($va_file_list as $vs_key => $va_values) {
                             	$is_form_upload = caGetOption('is_form_upload', $va_values, false, ['castTo' => 'boolean']);
                             	$va_values['tmp_name'] = stripslashes($va_values['tmp_name']);
