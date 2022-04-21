@@ -11,7 +11,7 @@ Allow from all
 <FilesMatch "^(index|service|tilepic)\.php$">
         Allow from all
 </FilesMatch>
-<FilesMatch "^.*\.(css|gif|jpg|png|js|woff|woff2|ttf|swf|map|tif|m4v|xml|ply|stl|html|json|mp3|wav|aiff|tiff|obj|bmp|mp4|pdf|svg|ico)$">
+<FilesMatch "^.*\.(css|gif|jpg|png|js|woff|woff2|ttf|swf|map|tif|m4v|xml|ply|stl|html|json|mp3|wav|aiff|tiff|obj|bmp|mp4|pdf|svg|ico|txt)$">
         Allow from all
 </FilesMatch>
 
