@@ -177,7 +177,8 @@
  		 */
  		public function SaveTransaction() {
  			$library_config = Configuration::load(__CA_CONF_DIR__."/library_services.conf");
- 			$display_template = $library_config->get('checkout_receipt_item_display_template');
+			$checkout_template = $library_config->get('checkout_receipt_item_display_template');
+			$reservation_template = $library_config->get('checkout_reservation_receipt_item_display_template');
  		
  			$pn_user_id = $this->request->getParameter('user_id', pInteger);
  			$ps_item_list = $this->request->getParameter('item_list', pString);
@@ -209,7 +210,7 @@
 							$vb_res = $t_checkout->reserve($va_item['object_id'], $pn_user_id, $va_item['note'], array('request' => $this->request));
 							if ($vb_res) {
 								$va_ret['checkouts'][$va_item['object_id']] = _t('Reserved <em>%1</em>', $vs_name);
-								$va_item['_display'] = $t_object->getWithTemplate($display_template);
+								$va_item['_display'] = $t_checkout->getWithTemplate($reservation_template);
 								$reserved_items[] = $va_item;
 							} else {
 								$va_ret['errors'][$va_item['object_id']] = _t('Could not reserve <em>%1</em>: %2', $vs_name, join('; ', $t_checkout->getErrors()));
@@ -223,7 +224,7 @@
 				
 							if ($vb_res) {
 								$va_ret['checkouts'][$va_item['object_id']] = _t('Checked out <em>%1</em>; due date is %2', $vs_name, $va_item['due_date']);
-								$va_item['_display'] = $t_object->getWithTemplate($display_template);
+								$va_item['_display'] = $t_checkout->getWithTemplate($checkout_template);
 								$checked_out_items[] = $va_item;
 							} else {
 								$va_ret['errors'][$va_item['object_id']] = _t('Could not check out <em>%1</em>: %2', $vs_name, join('; ', $t_checkout->getErrors()));

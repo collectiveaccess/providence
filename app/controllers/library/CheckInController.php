@@ -115,7 +115,7 @@ class CheckInController extends ActionController {
 					
 							if ($t_checkout->numErrors() == 0) {
 								$va_ret['checkins'][] = _t('Returned <em>%1</em> (%2) borrowed by %3 on %4', $t_object->get('ca_objects.preferred_labels.name'), $t_object->get('ca_objects.idno'), $vs_user_name, $vs_borrow_date);
-								$va_item['_display'] = $t_object->getWithTemplate($display_template);
+								$va_item['_display'] = $t_checkout->getWithTemplate($display_template);
 								$checked_in_items[] = $va_item;
 							} else {
 								$va_ret['errors'][] = _t('Could not check in <em>%1</em> (%2): %3', $t_object->get('ca_objects.preferred_labels.name'), $t_object->get('ca_objects.idno'), join("; ", $t_checkout->getErrors()));
