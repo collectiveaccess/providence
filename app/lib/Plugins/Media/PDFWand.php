@@ -512,6 +512,10 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 			if ($vn_end_page < 1) { $vn_end_page = $vn_start_page; }
 			if ($vn_start_page > $vn_end_page) { $vn_end_page = $vn_start_page; }
 			
+			if(!$pb_write_all_pages) {
+				$vn_end_page = $vn_start_page;
+			}
+			
 			$vs_antialiasing = ($this->get("antialiasing") || $pb_antialiasing) ?  "-dTextAlphaBits=4 -dGraphicsAlphaBits=4" : "";
 		
 			$vb_processed_preview = false;
