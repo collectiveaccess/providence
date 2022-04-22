@@ -244,4 +244,3 @@ class ca_storage_location_labels extends BaseLabel {
 	}
 	# ------------------------------------------------------
 }
-?>

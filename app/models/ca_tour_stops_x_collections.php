@@ -206,4 +206,4 @@ class ca_tour_stops_x_collections extends BaseRelationshipModel {
 	}
 	# ------------------------------------------------------
 }
-?>
+

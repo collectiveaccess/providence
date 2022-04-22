@@ -207,4 +207,3 @@ class ca_loans_x_places extends BaseRelationshipModel {
 	}
 	# ------------------------------------------------------
 }
-?>

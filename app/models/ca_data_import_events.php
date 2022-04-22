@@ -454,4 +454,3 @@ class ca_data_import_events extends BaseModel {
 	}
 	# ------------------------------------------------------
 }
-?>
