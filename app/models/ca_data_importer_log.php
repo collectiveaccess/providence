@@ -452,4 +452,3 @@ class ca_data_importer_log extends BaseModel {
 	}
 	# ------------------------------------------------------
 }
-?>

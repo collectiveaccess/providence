@@ -169,4 +169,3 @@ class ca_bundle_displays_x_user_groups extends BaseRelationshipModel {
 	}
 	# ----------------------------------------
 }
-?>

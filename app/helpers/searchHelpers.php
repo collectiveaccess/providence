@@ -516,11 +516,23 @@
 			$va_options['excludeFieldsFromSearch'] = caGetOption('excludeFieldsFromSearch', $va_block_info, null);
 			$va_options['rootRecordsOnly'] = caGetOption('omitChildRecords', $va_block_info, null);
 			
+			$base_criteria = caGetOption('baseCriteria', $va_block_info, null);
+			
 			if (caGetOption('dontShowChildren', $va_block_info, false)) {
 				$o_search->addResultFilter('ca_objects.parent_id', 'is', 'null');	
 			}
-			$qr_res = $o_search->search(trim($ps_search_expression).(($vb_match_on_stem && !preg_match('![\*\"\']$!', $ps_search_expression)) ? '*' : ''), $va_options);
 			
+			if(is_array($base_criteria)) {
+				if (!($o_browse = caGetBrowseInstance($va_block_info['table']))) { continue; }
+				foreach($base_criteria as $facet => $value){
+					$o_browse->addCriteria($facet, $value);
+				}
+				$o_browse->addCriteria('_search', [$ps_search_expression]);
+				$o_browse->execute();
+				$qr_res = $o_browse->getResults($va_options);
+			} else {
+				$qr_res = $o_search->search(trim($ps_search_expression).(($vb_match_on_stem && !preg_match('![\*\"\']$!', $ps_search_expression)) ? '*' : ''), $va_options);
+			}
 			$va_contexts[$vs_block]->setSearchExpression($ps_search_expression);
 			$va_contexts[$vs_block]->setResultList($qr_res->getPrimaryKeyValues());
 			
@@ -583,7 +595,7 @@
 			$o_view->setVar('sort', $ps_sort);
 			$o_view->setVar('accessValues', $va_access_values);
 			
-			$o_view->setVar('sortDirectionControl', '<a href="#" id="'.$vs_block.'_sort_direction"><span class="glyphicon glyphicon-sort-by-alphabet'.(($ps_sort_direction == 'desc') ? '-alt' : '').'" aria-label="Sort direction"></span></a>');
+			$o_view->setVar('sortDirectionControl', '<a href="#" id="'.$vs_block.'_sort_direction"><span class="glyphicon glyphicon-sort-by-alphabet'.(($ps_sort_direction == 'desc') ? '-alt' : '').'" role="button" aria-label="Sort direction"></span></a>');
 			$o_view->setVar('sortDirection', $ps_sort_direction);
 			
 			

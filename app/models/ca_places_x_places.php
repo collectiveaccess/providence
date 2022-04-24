@@ -205,4 +205,3 @@ class ca_places_x_places extends BaseRelationshipModel {
 	}
 	# ------------------------------------------------------
 }
-?>

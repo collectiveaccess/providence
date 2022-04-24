@@ -4571,7 +4571,7 @@ if (!$vb_batch) {
                                     } elseif(preg_match("!^".($u = caGetUserDirectoryName($po_request->getUserID()))."/(.*)$!", $va_values['tmp_name'], $m)) {
                                     	foreach($import_directory_paths as $p) {
                                     		if(file_exists($vs_path = "{$p}/{$m[1]}")) {
-                                    			$vs_original_name = pathinfo($va_values['tmp_name'], PATHINFO_FILENAME);
+                                    			$vs_original_name = pathinfo($va_values['tmp_name'], PATHINFO_BASENAME);
                                     			break;
                                     		}
                                     	}
@@ -5329,8 +5329,6 @@ if (!$vb_batch) {
 						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
 					
 						// Save checkout/return note edits
-					    require_once(__CA_MODELS_DIR__."/ca_object_checkouts.php");
-					    
 					    $edits = [];
 						foreach($_REQUEST as $k => $v) {
 						    if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}(checkout|return)_notes_([\d]+)$!", $k, $m)) {
@@ -5351,6 +5349,17 @@ if (!$vb_batch) {
                                 }
                             }
                         }
+                        
+                        // Cancel reservations
+                        foreach($_REQUEST as $k => $v) {
+						    if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}cancelReservation_([\d]+)$!", $k, $m)) {
+						    	if(($t_checkout = new ca_object_checkouts((int)$m[1])) && ($t_checkout->get('object_id') == $this->getPrimaryKey()) && $t_checkout->isReservation()){
+						    		if (!$t_checkout->delete(true)) {
+                                        $po_request->addActionErrors($t_checkout->errors(), 'ca_object_checkouts', 'general');
+                                    }
+						    	}
+						    }
+						}
 					
 						break;
 					# -------------------------------

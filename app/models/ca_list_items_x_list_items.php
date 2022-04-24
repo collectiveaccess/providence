@@ -205,4 +205,3 @@ class ca_list_items_x_list_items extends BaseRelationshipModel {
 	}
 	# ------------------------------------------------------
 }
-?>

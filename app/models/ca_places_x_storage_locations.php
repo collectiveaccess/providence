@@ -211,4 +211,3 @@ class ca_places_x_storage_locations extends BaseRelationshipModel {
 	}
 	# ------------------------------------------------------
 }
-?>

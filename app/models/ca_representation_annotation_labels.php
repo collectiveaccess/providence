@@ -223,4 +223,3 @@ class ca_representation_annotation_labels extends BaseLabel {
 	}
 	# ------------------------------------------------------
 }
-?>

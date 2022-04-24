@@ -205,4 +205,3 @@ class ca_data_exporter_labels extends BaseLabel {
 	}
 	# ----------------------------------------
 }
-?>

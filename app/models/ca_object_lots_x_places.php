@@ -206,4 +206,4 @@ class ca_object_lots_x_places extends BaseRelationshipModel {
 	}
 	# ------------------------------------------------------
 }
-?>
+

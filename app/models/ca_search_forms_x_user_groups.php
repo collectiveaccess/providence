@@ -169,4 +169,4 @@ class ca_search_forms_x_user_groups extends BaseRelationshipModel {
 	}
 	# ----------------------------------------
 }
-?>
+

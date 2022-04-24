@@ -704,4 +704,3 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
  	}
  	# ------------------------------------------------------
 }
-?>
