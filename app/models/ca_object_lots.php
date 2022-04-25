@@ -676,7 +676,6 @@ class ca_object_lots extends RepresentableBaseModel {
 			$va_objects = $this->getObjects();
 			$vs_lot_num = $this->get('idno_stub');
 			
-			
 			$t_object = new ca_objects();
 			
 			$vb_web_set_transaction = false;
@@ -706,36 +705,35 @@ class ca_object_lots extends RepresentableBaseModel {
 					if ($po_application_plugin_manager) {
 						$po_application_plugin_manager->hookBeforeSaveItem(array('id' => $vn_object_id, 'table_num' => $t_object->tableNum(), 'table_name' => $t_object->tableName(), 'instance' => $t_object));
 					}
-					$t_object->setMode(ACCESS_WRITE);
 					
-					$va_tmp = $va_lot_num;
+					$tmp = $va_lot_num;
 					
 					$cur_num_tmp = explode($vs_separator, $t_object->get('idno'));
-			        $n = (int)$cur_num_tmp[sizeof($va_lot_num)];
+			        $n = (int)$cur_num_tmp[sizeof($va_lot_num)] + 1;
 			        
 			        switch($va_object_info['_reason']) {
 			            case 'out-of-lot':
-			                $va_tmp[] = $n;
+			                $tmp[] = $n;
 			                break;
 			            case 'dupe':
 			                $maxnum++;
-			                $va_tmp[] = $maxnum;
+			                $tmp[] = $maxnum;
 			                break;
 			            case 'out-of-range':
                             while(isset($nums[$i])) {
                                 $i++;
                             }
-                            $va_tmp[] = $i;
+                            $tmp[] = $i;
                             $nums[$i] = true;
 			                break;
 			        }
 			        
-			        $tail = array_slice($cur_num_tmp, sizeof($va_tmp));
-			        $va_tmp += $tail;
+			        $tail = array_slice($cur_num_tmp, sizeof($tmp));
+			        $tmp += $tail;
 			        
-			       // print join($vs_separator, $cur_num_tmp)." => ".join($vs_separator, $va_tmp)."<br>\n";
+			       // print join($vs_separator, $cur_num_tmp)." => ".join($vs_separator, $tmp)."<br>\n";
 					
-					$t_object->setIdnoWithTemplate(join($vs_separator, $va_tmp));
+					$t_object->setIdnoWithTemplate(join($vs_separator, $tmp));
 				
 					$t_object->update();
 					if ($t_object->numErrors()) {
