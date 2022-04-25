@@ -480,7 +480,7 @@ var caUI = caUI || {};
 							if (that.uiStyle == 'horizontal') {
 								var moreButton = '';
 								if (that.editButtonIcon) {
-									if ((item.children > 0) || ((level == 0) && (item.children == null))){
+									if (item.children > 0) {
 										moreButton = "<div style='float: right;'><a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "_edit' aria-label='Expand hierarchy' >" + that.editButtonIcon + "</a></div>";
 									} else {
 										moreButton = "<div style='float: right;'><a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "_edit'  class='noChildren' aria-label='No children'>" + that.disabledButtonIcon + "</a></div>";
