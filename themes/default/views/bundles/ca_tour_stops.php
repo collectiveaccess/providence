@@ -49,6 +49,8 @@
 	// Dyamically loaded sort ordering
 	$loaded_sort 			= $this->getVar('sort');
 	$loaded_sort_direction 	= $this->getVar('sortDirection');
+	
+	$dont_show_relationship_type = caGetOption('dontShowRelationshipTypes', $va_settings, false) ? 'none' : null; 
 		
 	// params to pass during tour stop lookup
 	$va_lookup_params = array(
@@ -97,7 +99,7 @@
 		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo roundedRel caRelatedItem">
 			<span id='<?php print $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
-			print caGetRelationDisplayString($this->request, 'ca_tour_stops', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => true, 'prefix' => $vs_id_prefix));
+			print caGetRelationDisplayString($this->request, 'ca_tour_stops', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => true, 'prefix' => $vs_id_prefix, 'relationshipTypeDisplayPosition' => $dont_show_relationship_type));
 ?>
 			</span>
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
@@ -177,7 +179,7 @@
 	</div>
 	
 	<textarea class='caBundleDisplayTemplate' style='display: none;'>
-		<?php print caGetRelationDisplayString($this->request, 'ca_tour_stops', array(), array('display' => '_display', 'makeLink' => false)); ?>
+		<?php print caGetRelationDisplayString($this->request, 'ca_tour_stops', array(), array('display' => '_display', 'makeLink' => false, 'relationshipTypeDisplayPosition' => $dont_show_relationship_type)); ?>
 	</textarea>
 </div>	
 <script type="text/javascript">
