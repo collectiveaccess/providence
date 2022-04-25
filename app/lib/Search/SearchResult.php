@@ -2782,57 +2782,58 @@ class SearchResult extends BaseObject {
 	private function _flattenArray($pa_array, $pa_options=null) {
 		$va_flattened_values = array();
 		if ($pa_options['returnAllLocales']) {
-			$pa_array = caExtractValuesByUserLocale($pa_array);
-			foreach($pa_array as $va_by_attr) {
-				if (!is_array($va_by_attr)) { $va_by_attr[] = $va_by_attr; }
-				foreach($va_by_attr as $vs_val) {
-					if (is_array($vs_val) && sizeof($vs_val) == 1) { 
-						$vs_val = array_shift($vs_val); 
-					} elseif(is_array($vs_val)) {
-						$va_flattened_values[] = $vs_val;
-						continue;
-					}
-				
-					if($pa_options['toUpper'] || $pa_options['toUpper']) {
-						$vs_val = mb_strtoupper($vs_val);
-					}
-					if($pa_options['toLower'] || $pa_options['tolower']) {
-						$vs_val = mb_strtolower($vs_val);
-					}
-					if($pa_options['periodsToUnderscores'] || $pa_options['periodstounderscores']) {
-						$vs_val = str_replace('.', '_', $vs_val);
-					}
-					if($pa_options['makeFirstUpper'] || $pa_options['makefirstupper']) {
-						$vs_val = ucfirst($vs_val);
-					}
-					if($pa_options['stripreturns'] || $pa_options['stripreturns']) {
-						$vs_val = preg_replace("![\n\r]+!", " ", $vs_val);
-					}
-					if($pa_options['striptags'] || $pa_options['striptags']) {
-						$vs_val = strip_tags($vs_val);
-					}
-					if ($pa_options['truncate'] && ($pa_options['truncate'] > 0)) { 
-						$pa_options['start'] = 0;
-						$pa_options['length'] = (int)$pa_options['truncate'];
-					}
-					$vn_start = (strlen($pa_options['start']) && is_numeric($pa_options['start'])) ? (int)$pa_options['start'] : 0;
-					$vn_length = (strlen($pa_options['length']) && ($pa_options['length'] > 0)) ? (int)$pa_options['length'] : null;
-					
-					$vb_needs_ellipsis = false;
-					if(($vn_start > 0) || (!is_null($vn_length))) {
-						if ($pa_options['ellipsis'] && (strlen($vs_val) > ($vn_start + $vn_length))) {
-							$vb_needs_ellipsis = true; $vn_length -= 3;
+			foreach($pa_array as $va_by_locale) {
+				foreach($va_by_locale as $locale_id => $values) {
+					if (!is_array($values)) { $values[] = $values; }
+					foreach($values as $vs_val) {
+						if (is_array($vs_val) && sizeof($vs_val) == 1) { 
+							$vs_val = array_shift($vs_val); 
+						} elseif(is_array($vs_val)) {
+							$va_flattened_values[] = $vs_val;
+							continue;
 						}
-						$vs_val = mb_substr($vs_val, $vn_start, $vn_length);
+				
+						if($pa_options['toUpper'] || $pa_options['toUpper']) {
+							$vs_val = mb_strtoupper($vs_val);
+						}
+						if($pa_options['toLower'] || $pa_options['tolower']) {
+							$vs_val = mb_strtolower($vs_val);
+						}
+						if($pa_options['periodsToUnderscores'] || $pa_options['periodstounderscores']) {
+							$vs_val = str_replace('.', '_', $vs_val);
+						}
+						if($pa_options['makeFirstUpper'] || $pa_options['makefirstupper']) {
+							$vs_val = ucfirst($vs_val);
+						}
+						if($pa_options['stripreturns'] || $pa_options['stripreturns']) {
+							$vs_val = preg_replace("![\n\r]+!", " ", $vs_val);
+						}
+						if($pa_options['striptags'] || $pa_options['striptags']) {
+							$vs_val = strip_tags($vs_val);
+						}
+						if ($pa_options['truncate'] && ($pa_options['truncate'] > 0)) { 
+							$pa_options['start'] = 0;
+							$pa_options['length'] = (int)$pa_options['truncate'];
+						}
+						$vn_start = (strlen($pa_options['start']) && is_numeric($pa_options['start'])) ? (int)$pa_options['start'] : 0;
+						$vn_length = (strlen($pa_options['length']) && ($pa_options['length'] > 0)) ? (int)$pa_options['length'] : null;
+					
+						$vb_needs_ellipsis = false;
+						if(($vn_start > 0) || (!is_null($vn_length))) {
+							if ($pa_options['ellipsis'] && (strlen($vs_val) > ($vn_start + $vn_length))) {
+								$vb_needs_ellipsis = true; $vn_length -= 3;
+							}
+							$vs_val = mb_substr($vs_val, $vn_start, $vn_length);
+						}
+						if($pa_options['trim']) {
+							$vs_val = trim($vs_val);
+						}
+					
+						$vs_val .= ($vb_needs_ellipsis ? '...' : '');
+					
+					
+						$va_flattened_values[] = $vs_val;
 					}
-					if($pa_options['trim']) {
-						$vs_val = trim($vs_val);
-					}
-					
-					$vs_val .= ($vb_needs_ellipsis ? '...' : '');
-					
-					
-					$va_flattened_values[] = $vs_val;
 				}
 			}	
 		} else {
