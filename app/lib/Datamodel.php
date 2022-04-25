@@ -590,7 +590,7 @@ class Datamodel {
        if($ps_left_table == $ps_right_table) {
              //define rel table
              $rel_table  = $ps_left_table . "_x_" . str_replace("ca_","",$ps_left_table);
-             if (!Datamodel::getInstanceByTableName($rel_table, true)) {
+             if (!Datamodel::tableExists($rel_table)) {
              	$va_path = [];		// self relation doesn't exist
              }
              $va_path = array($ps_left_table=>Datamodel::getTableNum($ps_left_table),$rel_table=>Datamodel::getTableNum($rel_table));
@@ -612,8 +612,18 @@ class Datamodel {
 	 * @return string Name of linking table, or null if no linking table is defined.
 	 */
 	static public function getLinkingTableName($ps_left_table, $ps_right_table) {
-		if(is_array($path = Datamodel::getPath($ps_left_table, $ps_right_table)) && (sizeof($path) == 3) && ($path = array_keys($path))) {
-			return $path[1];
+		$path = Datamodel::getPath($ps_left_table, $ps_right_table);	
+		if(is_array($path)) {
+			$path = array_keys($path);
+			if(sizeof($path) === 3) {
+				return $path[1];
+			}
+			
+			if(($ps_left_table == $ps_right_table) || (self::getTableName($ps_left_table) === self::getTableName($ps_right_table))) {
+				if(sizeof($path) >= 2) {
+					return $path[1];
+				}
+			}
 		}
 		return null;
 	}

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -559,7 +559,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 public function relationshipTypeListToIDs($pm_table_name_or_num, $pa_list, $pa_options=null) {
 	 	$va_rel_ids = array();
 		foreach($pa_list as $vm_type) {
-			if ($vn_type_id = $this->getRelationshipTypeID($pm_table_name_or_num, $vm_type)) {
+			if ($vn_type_id = $this->getRelationshipTypeID($pm_table_name_or_num, $vm_type, null, null, $pa_options)) {
 				$va_rel_ids[] = $vn_type_id;
 			}
 		}
@@ -574,6 +574,22 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		return $va_rel_ids;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Check a list of relationship type codes and/or ids for validity
+	 *
+	 * @param mixed $table_name_or_num The name or number of the relationship table that the types are valid for (Eg. ca_objects_x_entities)
+	 * @param array $list A list of relationship type_code string and/or numeric type_ids
+	 * @param array $options No options are supported
+	 * @return array 
+	 */
+	 public function validateRelationshipTypeCodes($table_name_or_num, array $list, ?array $options=null) {
+	 	$ret = [];
+		foreach($list as $type) {
+			$ret[$type] = (bool)$this->getRelationshipTypeID($table_name_or_num, $type, null, null, ['cache' => false]);
+		}
+		return $ret;
 	}
 	# ------------------------------------------------------
 	/**

@@ -8,7 +8,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2021 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -68,7 +68,7 @@
 			<div class='formItem'><?php _p("Installation profile"); ?>:<br/>
 				<div id="profileChooser">
 <?php
-					print caHTMLSelect('profile', caGetAvailableXMLProfiles(), array('id' => 'profileSelect'), array('value' => $ps_profile));
+					print caHTMLSelect('profile', caGetAvailableProfiles(), array('id' => 'profileSelect'), array('value' => $ps_profile));
 
 			if (defined('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__') && __CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__) {
 ?>

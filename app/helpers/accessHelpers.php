@@ -323,6 +323,35 @@
 		ExternalCache::save($vs_cache_key, $va_ret, 'listItems');
 		return $va_ret;
 	}
+	# ------------------------------------------------------
+	/**
+	 * Checks validity of type codes and/or ids in a list
+	 *
+	 * @param mixed $table_name_or_num Table name or number to which types apply
+	 * @param array $types List of type codes and/or type_ids that are the basis of the list
+	 * @param array $options No options are supported
+	 *
+	 * @return array Keys are type codes/ids; values are true for valid, false for invalid
+	 */
+	function caValidateTypeList($table_name_or_num, $types, ?array $options=null) {
+		if (!$types) { return []; }
+		if (!is_array($types)) { $types = [$types]; }
+		
+		$t_instance = Datamodel::getInstance($table_name_or_num, true);
+		if (!$t_instance) { return null; }	// bad table
+		if(is_a($t_instance, 'BaseLabel')) { $t_instance = $t_instance->getSubjectTableInstance(); }
+		if (!($type_list_code = $t_instance->getTypeListCode())) { return null; }	// table doesn't use types
+		
+		$t_list = new ca_lists();
+		if (!is_array($idnos_in_list = $t_list->getItemsForList($type_list_code, ['idnosOnly' => true]))) { return null; }
+		if (!is_array($ids_in_list = $t_list->getItemsForList($type_list_code, ['idsOnly' => true]))) { return null; }
+		
+		$ret = [];
+		foreach($types as $type) {
+			$ret[$type] = ((bool)in_array($type, $idnos_in_list) || (bool)in_array($type, $ids_in_list) );
+		}
+		return $ret;
+	}
 	# ---------------------------------------------------------------------------------------------
 	/**
 	 * Converts the given list of item idnos or item_ids into an expanded list of numeric item_ids. Processing
@@ -527,6 +556,23 @@
 		
 		$t_rel_type = new ca_relationship_types();
 		return $t_rel_type->relationshipTypeListToIDs($pm_table_name_or_num, $pa_types, $pa_options);
+	}
+	# ------------------------------------------------------
+	/**
+	 * Checks validity of relationship type codes and/or ids in a list
+	 *
+	 * @param mixed $table_name_or_num Table name or number to which types apply
+	 * @param array $types List of type codes and/or type_ids that are the basis of the list
+	 * @param array $options No options are supported
+	 *
+	 * @return array Keys are type codes/ids; values are true for valid, false for invalid
+	 */
+	function caValidateRelationshipTypeList($table_name_or_num, $types, ?array $options=null) {
+		if (!$types) { return []; }
+		if (!is_array($types)) { $types = [$types]; }
+		
+		$t_rel_type = new ca_relationship_types();
+		return $t_rel_type->validateRelationshipTypeCodes($table_name_or_num, $types, $options);
 	}
 	# ------------------------------------------------------
 	/**
