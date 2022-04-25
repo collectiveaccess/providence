@@ -2490,7 +2490,7 @@ class TimeExpressionParser {
 	 *		dateTimeConjunction (string) [default is first in lang. config]
 	 *		showADEra (true|false) [default is false]
 	 *		uncertaintyIndicator (string) [default is first in lang. config]
- 	 *		dateFormat		(text|delimited|iso8601|yearOnly|ymd)	[default is text]
+ 	 *		dateFormat		(text|delimited|iso8601|yearOnly|ymd|xsd)	[default is text]
 	 *		dateDelimiter	(string) [default is first delimiter in language config file]
 	 *		circaIndicator	(string) [default is first indicator in language config file]
 	 *		beforeQualifier	(string) [default is first indicator in language config file]
@@ -2681,7 +2681,7 @@ class TimeExpressionParser {
 			}
 			
 			
-			if (isset($pa_options['dateFormat']) && ($pa_options['dateFormat'] == 'iso8601')) {
+			if (isset($pa_options['dateFormat']) && (in_array($pa_options['dateFormat'], ['iso8601', 'xsd'], true))) {
 				return $this->getISODateRange($va_start_pieces, $va_end_pieces, $pa_options);
 			}
 
@@ -3644,7 +3644,7 @@ class TimeExpressionParser {
 	 * @param array $pa_options Options include:
 	 *		timeOmit = Omit time from returned ISO 8601 date. [Default is false]
 	 *		returnUnbounded = Return extreme value for unbounded dates. For "before" dates the start date would be equal to -9999; for "after" dates the end date would equal "9999". [Default is false]
-	 *		dateFormat = If set to "yearOnly" will return bare year. [Default is null]
+	 *		dateFormat = If set to "yearOnly" will return bare year; if set to 'xsd' BCE years are returned relative to zero. [Default is null]
 	 *		full = Always return full date [Default is false]
 	 * @return string
 	 */
@@ -3656,6 +3656,10 @@ class TimeExpressionParser {
 		if (($pa_date['year'] == TEP_END_OF_UNIVERSE) && !caGetOption('returnUnbounded', $pa_options, false)) { return ''; }
 		if ($pa_date['year'] == TEP_START_OF_UNIVERSE && !caGetOption('returnUnbounded', $pa_options, false)) { return ''; }
 		
+		if((isset($pa_options['dateFormat']) && ($pa_options['dateFormat'] == 'xsd')) && ($pa_date['year'] < 0)) { $pa_date['year']++; }
+		
+		$pa_date['year'] = sprintf(($pa_date['year'] < 0) ? "%05d" : "%04d", $pa_date['year']);
+		 
 		if ($ps_mode == 'FULL') {
 			$vs_date = $pa_date['year'].'-'.sprintf("%02d", $pa_date['month']).'-'.sprintf("%02d", $pa_date['day']);
 			

@@ -40,6 +40,64 @@ class TimeExpressionParserTest extends TestCase {
 		date_default_timezone_set('America/New_York');
 	}
 	
+	public function testBCISO() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+		
+		$vb_res = $o_tep->parse('30 BCE');
+		$this->assertEquals($vb_res, true);
+		$parse = $o_tep->getHistoricTimestamps();
+		$t = $o_tep->getText(['dateFormat' => 'iso8601']);
+		$this->assertEquals($t, "-0030");
+		
+		$vb_res = $o_tep->parse('30 CE');
+		$this->assertEquals($vb_res, true);
+		$parse = $o_tep->getHistoricTimestamps();
+		$t = $o_tep->getText(['dateFormat' => 'iso8601']);
+		$this->assertEquals($t, "0030");
+		
+		$vb_res = $o_tep->parse('5/2/30 BCE');
+		$this->assertEquals($vb_res, true);
+		$parse = $o_tep->getHistoricTimestamps();
+		$t = $o_tep->getText(['dateFormat' => 'iso8601']);
+		$this->assertEquals($t, "-0030-05-02");
+		
+		$vb_res = $o_tep->parse('5/2/30 CE');
+		$this->assertEquals($vb_res, true);
+		$parse = $o_tep->getHistoricTimestamps();
+		$t = $o_tep->getText(['dateFormat' => 'iso8601']);
+		$this->assertEquals($t, "0030-05-02");
+	}
+	
+	public function testYearEins() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+		
+		$vb_res = $o_tep->parse('1 BCE');
+		$this->assertEquals($vb_res, true);
+		$parse = $o_tep->getHistoricTimestamps();
+		$t = $o_tep->getText(['dateFormat' => 'iso8601']);
+		$this->assertEquals($t, "-0001");
+		
+		$vb_res = $o_tep->parse('1 BCE');
+		$this->assertEquals($vb_res, true);
+		$parse = $o_tep->getHistoricTimestamps();
+		$t = $o_tep->getText(['dateFormat' => 'xsd']);
+		$this->assertEquals($t, "0000");
+		
+		$vb_res = $o_tep->parse('300 BCE');
+		$this->assertEquals($vb_res, true);
+		$parse = $o_tep->getHistoricTimestamps();
+		$t = $o_tep->getText(['dateFormat' => 'iso8601']);
+		$this->assertEquals($t, "-0300");
+		
+		$vb_res = $o_tep->parse('300 BCE');
+		$this->assertEquals($vb_res, true);
+		$parse = $o_tep->getHistoricTimestamps();
+		$t = $o_tep->getText(['dateFormat' => 'xsd']);
+		$this->assertEquals($t, "-0299");
+	}
+	
 	public function testHyphensInSortOfOddPlaces() {
 		#
 		# These tests assume the datetime.conf dontInferQualifiedRanges is set to 0
