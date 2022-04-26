@@ -6970,6 +6970,12 @@ div.caHistoryTrackingIconText {
 	text-align: center;
 	font-size: 11px;
 	font-style: italic;
+	
+	overflow: hidden;
+	text-overflow: ellipsis;
+	
+	padding: 3px;
+	width: 57px;
 }
 
 div.caHistoryTrackingEntryDate {
