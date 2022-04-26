@@ -70,7 +70,8 @@ The latest development version is always available in the `develop` branch (http
 * Demo: https://demo.collectiveaccess.org/
 * System requirements: https://manual.collectiveaccess.org/setup/systemReq.html
 * Forum: https://www.collectiveaccess.org/support
-* Bug Tracker: https://clangers.collectiveaccess.org
+
+To report issues please use GitHub issues.
 
 
 ### Other modules
