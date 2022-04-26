@@ -2126,7 +2126,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					$va_values = $t_instance->get($vs_source, array_merge($va_get_options, ['returnAsArray' => true]));
 					if($deduplicate) { $va_values = array_unique($va_values); } 
 					
-					$vs_get = join(caGetOption('delimiter', $va_get_opts, ';'), $va_values);
+					$vs_get = join(caGetOption('delimiter', $va_get_opts, ';'), $va_values ?? []);
 					$o_log->logDebug(_t("Source is a simple get() for some bundle. Value for this mapping is '%1'", $vs_get));
 					$o_log->logDebug(_t("get() options are: %1", print_r($va_get_options,true)));
 
