@@ -599,46 +599,49 @@
 			return _t("Loads export mapping from Excel XLSX format file.");
 		}
 		# -------------------------------------------------------
-		public static function export_data($po_opts=null) {
+		public static function export_data($opts=null) {
 			require_once(__CA_MODELS_DIR__."/ca_data_exporters.php");
 
-			$vs_search = $po_opts->getOption('search');
-			$vs_id = $po_opts->getOption('id');
-			$vb_rdf = (bool)$po_opts->getOption('rdf');
+			$search = $opts->getOption('search');
+			$id = $opts->getOption('id');
+			$rdf = (bool)$opts->getOption('rdf');
 
-			if (!$vb_rdf && !$vs_search && !$vs_id) {
+			if (!$rdf && !$search && !$id) {
 				print _t('You must specify either an idno or a search expression to select a record or record set for export or activate RDF mode.')."\n";
 				return false;
 			}
-			if (!($vs_filename = $po_opts->getOption('file'))) {
+			if (!($filename = $opts->getOption('file'))) {
 				print _t('You must specify a file to write export output to.')."\n";
 				return false;
 			}
 
-			if(@file_put_contents($vs_filename, "") === false){
+			if(is_writeable($filename === false)){
 				// probably a permission error
-				print _t("Can't write to file %1. Check the permissions.",$vs_filename)."\n";
+				print _t("Can't write to file %1. Check the permissions.",$filename)."\n";
 				return false;
 			}
+			
+			$individual_files = (bool)$opts->getOption('individual-files');
+			$filename_template = (string)$opts->getOption('filename-template');
 
-			$vs_log_dir = $po_opts->getOption('log');
-			$vn_log_level = $po_opts->getOption('log-level');
+			$log_dir = $opts->getOption('log');
+			$log_level = $opts->getOption('log-level');
 
 			// RDF mode
-			if($vb_rdf){
-				if (!($vs_config = $po_opts->getOption('config'))) {
+			if($rdf){
+				if (!($config = $opts->getOption('config'))) {
 					print _t('You must specify a configuration file that contains the export definition for the RDF mode.')."\n";
 					return false;
 				}
 
 				// test config syntax
-				if(!Configuration::load($vs_config)){
-					print _t('Syntax error in configuration file %s.',$vs_config)."\n";
+				if(!Configuration::load($config)){
+					print _t('Syntax error in configuration file %s.',$config)."\n";
 					return false;
 				}
 
-				if(ca_data_exporters::exportRDFMode($vs_config, $vs_filename,array('showCLIProgressBar' => true, 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level))){
-					print _t("Exported data to %1", CLIUtils::textWithColor($vs_filename, 'yellow'));
+				if(ca_data_exporters::exportRDFMode($config, $filename,array('showCLIProgressBar' => true, 'logDirectory' => $log_dir, 'logLevel' => $log_level))){
+					print _t("Exported data to %1", CLIUtils::textWithColor($filename, 'yellow'));
 					return true;
 				} else {
 					print _t("Could not run RDF mode export")."\n";
@@ -648,34 +651,34 @@
 
 			// Search or ID mode
 
-			if (!($vs_mapping = $po_opts->getOption('mapping'))) {
+			if (!($mapping = $opts->getOption('mapping'))) {
 				print _t('You must specify a mapping for export.')."\n";
 				return false;
 			}
 
-			if (!(ca_data_exporters::loadExporterByCode($vs_mapping))) {
-				print _t('Mapping %1 does not exist', $vs_mapping)."\n";
+			if (!(ca_data_exporters::loadExporterByCode($mapping))) {
+				print _t('Mapping %1 does not exist', $mapping)."\n";
 				return false;
 			}
 
-			if(sizeof($va_errors = ca_data_exporters::checkMapping($vs_mapping))>0){
-				print _t("Mapping %1 has errors: %2",$vs_mapping,join("; ",$va_errors))."\n";
+			if(sizeof($va_errors = ca_data_exporters::checkMapping($mapping))>0){
+				print _t("Mapping %1 has errors: %2",$mapping,join("; ",$va_errors))."\n";
 				return false;
 			}
 
-			if($vs_search){
-				if(!ca_data_exporters::exportRecordsFromSearchExpression($vs_mapping, $vs_search, $vs_filename, array('showCLIProgressBar' => true, 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level))){
-					print _t("Could not export mapping %1", $vs_mapping)."\n";
+			if($search){
+				if(!ca_data_exporters::exportRecordsFromSearchExpression($mapping, $search, $filename, ['showCLIProgressBar' => true, 'logDirectory' => $log_dir, 'logLevel' => $log_level, 'individualFiles' => $individual_files, 'filenameTemplate' => $filename_template])){
+					print _t("Could not export mapping %1", $mapping)."\n";
 					return false;
 				} else {
-					print _t("Exported data to %1", $vs_filename)."\n";
+					print _t("Exported data to %1", $filename)."\n";
 				}
-			} else if($vs_id){
-				if($vs_export = ca_data_exporters::exportRecord($vs_mapping, $vs_id, array('singleRecord' => true, 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level))){
-					file_put_contents($vs_filename, $vs_export);
-					print _t("Exported data to %1", CLIUtils::textWithColor($vs_filename, 'yellow'));
+			} else if($id){
+				if($export = ca_data_exporters::exportRecord($mapping, $id, ['singleRecord' => true, 'logDirectory' => $log_dir, 'logLevel' => $log_level, 'individualFiles' => $individual_files, 'filenameTemplate' => $filename_template])){
+					file_put_contents($filename, $export);
+					print _t("Exported data to %1", CLIUtils::textWithColor($filename, 'yellow'));
 				} else {
-					print _t("Could not export mapping %1", $vs_mapping)."\n";
+					print _t("Could not export mapping %1", $mapping)."\n";
 					return false;
 				}
 			}
@@ -691,6 +694,8 @@
 				"log-level|d-s" => _t('Optional logging threshold. Possible values are, in ascending order of important: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
 				"rdf" => _t('Switches to RDF export mode. You can use this to assemble record-level exports across authorities with multiple mappings in a single export (usually an RDF graph). -s, -i and -m are ignored and -c is required.'),
 				"config|c=s" => _t('Configuration file for RDF export mode.'),
+				"individual-files|j=s" => _t('Output non-CSV exports as individual files, rather than a single concatenated file.'),
+				"filename-template|t=s" => _t('Display template to generate file names with when individual-files option is set. Do not include the file extension. The exporter will append it. The default template uses the identifier of the exported records.'),
 			);
 		}
 		# -------------------------------------------------------

@@ -162,7 +162,7 @@
 				$va_params = array($va_plugin_commands[$vs_cmd_proc], $va_settings, 'CLI');
 				$va_params = $o_app_plugin_manager->hookCLICaUtilsGetToolWithSettings($va_params);
 				if ($o_tool = $va_params['tool']) {
-					if($o_tool->run($vs_cmd_proc)) {
+					if($o_tool->run($vs_cmd_proc, $va_settings)) {
 						$vn_error_code = 0;
 					}
 				} else {

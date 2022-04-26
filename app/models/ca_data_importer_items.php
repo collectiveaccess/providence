@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2021 Whirl-i-Gig
+ * Copyright 2012-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -596,7 +596,6 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Force to lowercase'),
 			'description' => _t('Force value to lowercase.')
 		);
-		
 		$settings['useAsSingleValue'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -695,8 +694,7 @@ class ca_data_importer_items extends BaseModel {
 			'default' => '',
 			'label' => _t('Media match mode'),
 			'description' => _t('Determines whether to search on file names, enclosing directory names or both. Valid values are DIRECTORY_NAME, FILE_AND_DIRECTORY_NAMES and FILE_NAME. (Default is FILE_NAME).')
-		);
-		
+		);	
 		$settings['add'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -705,8 +703,7 @@ class ca_data_importer_items extends BaseModel {
 			'default' => false,
 			'label' => _t('Always add values?'),
 			'description' => _t('Always add values after existing ones even if existing record policy mandates replacement (Eg. merge_on_idno_with_replace, Etc.).')
-		);
-		
+		);	
 		$settings['replace'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -715,8 +712,7 @@ class ca_data_importer_items extends BaseModel {
 			'default' => false,
 			'label' => _t('Always replace values?'),
 			'description' => _t('Always replace values, removing existing, ones even if existing record policy does not mandate replacement (Eg. is not merge_on_idno_with_replace, Etc.).')
-		);
-		
+		);	
 		$settings['source'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -726,6 +722,14 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Source for data'),
 			'description' => _t('Optional text indicating source of data. Will be set for attributes created with this mapping. Only supported for metadata attributes (not labels or intrinsics)')
 		);
+		$settings['literalIdentifier'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('If set for identifier mapping the value will be set as-is without processing. This option ensures that identifier data is stored without modification, even if it does not conform to configured identifier/numbering policy.'),
+		);	
 		
 		$this->setAvailableSettings($settings);
 	}

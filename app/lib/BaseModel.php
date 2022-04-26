@@ -10053,8 +10053,12 @@ $pa_options["display_form_field_tips"] = true;
 			return null;
 		}
 		
+		$sql_field_list = $t_item_rel->getFormFields(true, true, true);
+		$logical_field_list = $t_item_rel->getFormFields(true);
+			
 		$va_to_reindex_relations = array();
 		if ($t_item_rel->tableName() == $this->getSelfRelationTableName()) {
+			
 		    $params = [(int)$vn_row_id, (int)$vn_row_id];
 		    if ($relation_id_sql) { $params[] = $relation_ids; }
 		    
@@ -10062,7 +10066,7 @@ $pa_options["display_form_field_tips"] = true;
 			$vs_right_field_name = $t_item_rel->getRightTableFieldName();
 			
 			$qr_res = $o_db->query("
-				SELECT * 
+				SELECT ".join(', ', $sql_field_list)."
 				FROM ".$t_item_rel->tableName()." 
 				WHERE 
 					(({$vs_left_field_name} = ?) OR ({$vs_right_field_name} = ?))
@@ -10088,6 +10092,12 @@ $pa_options["display_form_field_tips"] = true;
 				
 				if(isset($va_row['source_info'])) { $va_row['source_info'] = caUnserializeForDatabase($va_row['source_info']); }
 				
+				// translate dates
+				if(array_key_exists('sdatetime', $va_row)) {
+					$va_row['effective_date'] = strlen($va_row['sdatetime']) ? caGetLocalizedHistoricDateRange($va_row['sdatetime'], $va_row['edatetime']) : null;
+					unset($va_row['sdatetime']); unset($va_row['edatetime']);
+				}
+				
 				$t_item_rel->set($va_row);
 				$t_item_rel->insert();
 				if ($t_item_rel->numErrors()) {
@@ -10107,7 +10117,7 @@ $pa_options["display_form_field_tips"] = true;
 		    $params = [(int)$vn_row_id];
 		    if ($relation_id_sql) { $params[] = $relation_ids; }
 			$qr_res = $o_db->query("
-				SELECT * 
+				SELECT ".join(', ', array_map(function($v) {  return '`'.$v.'`'; }, $sql_field_list))."
 				FROM ".$t_item_rel->tableName()." 
 				WHERE 
 					({$vs_item_pk} = ?)
@@ -10130,6 +10140,12 @@ $pa_options["display_form_field_tips"] = true;
 				unset($va_row[$vs_rel_pk]);
 				if(isset($va_row['source_info'])) { $va_row['source_info'] = caUnserializeForDatabase($va_row['source_info']); }
 				$va_row[$vs_item_pk] = $pn_to_id;
+				
+				// translate dates
+				if(array_key_exists('sdatetime', $va_row)) {
+					$va_row['effective_date'] = strlen($va_row['sdatetime']) ? caGetLocalizedHistoricDateRange($va_row['sdatetime'], $va_row['edatetime']) : null;
+					unset($va_row['sdatetime']); unset($va_row['edatetime']);
+				}
 				 
 				$t_item_rel->set($va_row);
 				$t_item_rel->insert();

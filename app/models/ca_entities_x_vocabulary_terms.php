@@ -206,4 +206,3 @@ class ca_entities_x_vocabulary_terms extends BaseRelationshipModel {
 	}
 	# ------------------------------------------------------
 }
-?>

@@ -2369,12 +2369,25 @@ class SearchResult extends BaseObject {
 								}
 
 								// support ca_objects.container.wikipedia.abstract
-								if(($vs_element_code == $va_path_components['subfield_name']) && ($va_path_components['num_components'] == 4)) {
-									$vs_val_proc = $o_value->getExtraInfo($va_path_components['components'][3]);
+								if(($vs_element_code == $va_path_components['subfield_name']) && ($va_path_components['num_components'] > 3)) {
+
+									switch($vs_final_path_key = end($va_path_components['components'])) {
+										case 'uri':
+										case 'url':
+											$vs_val_proc = $o_value->getUri();
+											break;
+										case 'name':
+											$vs_val_proc = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'])));
+											break;
+										default:
+											$vs_val_proc = $o_value->getExtraInfo($vs_final_path_key);
+											break;
+									}
+
 									$vb_dont_return_value = false;
 									break;
 								}
-							
+
 								// support ca_objects.wikipedia or ca_objects.container.wikipedia (Eg. no "extra" value specified)
 								if (($vs_element_code == $va_path_components['field_name']) || ($vs_element_code == $va_path_components['subfield_name'])) {
 									$vs_val_proc = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'])));

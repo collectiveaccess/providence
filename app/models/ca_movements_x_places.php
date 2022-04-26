@@ -207,4 +207,3 @@ class ca_movements_x_places extends BaseRelationshipModel {
 	}
 	# ------------------------------------------------------
 }
-?>

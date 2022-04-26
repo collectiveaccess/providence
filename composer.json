@@ -28,7 +28,7 @@
     "pear/file_marc": "~1.2",
     "php-http/guzzle6-adapter": "~1.1.1",
     "phpoffice/phppresentation": "1.0.0",
-    "phpoffice/phpspreadsheet": "v1.20",
+    "phpoffice/phpspreadsheet": "v1.22",
     "phpoffice/phpword": "v0.18.*",
     "phpunit/phpunit": "8.5",
     "srmklive/flysystem-dropbox-v2": ">=1.0.0",

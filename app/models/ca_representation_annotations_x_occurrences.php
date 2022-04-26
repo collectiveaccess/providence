@@ -206,4 +206,3 @@ class ca_representation_annotations_x_occurrences extends BaseRelationshipModel 
 	}
 	# ------------------------------------------------------
 }
-?>

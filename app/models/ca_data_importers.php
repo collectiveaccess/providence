@@ -3256,7 +3256,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				} else {
 					$o_event->beginItem($vn_row, $t_subject->tableNum(), 'U') ;
 					// update
-					$t_subject->setMode(ACCESS_WRITE);
 					
 					if ($vn_idno_mapping_item_id || !$t_subject->get($vs_idno_fld)) {
 						if ($vb_idno_is_template) {
@@ -3346,29 +3345,27 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					$o_log->logDebug(_t('Updated idno %1 at %2 seconds', $vs_idno, $t->getTime(4)));
 				}
 			
-			
-				
-					if ($vs_idno_fld && ($o_idno = $t_subject->getIDNoPlugInInstance())) {
-						$va_values = $o_idno->htmlFormValuesAsArray($vs_idno_fld, $t_subject->get($vs_idno_fld));
-						if (!is_array($va_values)) { $va_values = array($va_values); }
-						if (($vs_proc_idno = join($o_idno->getSeparator(), $va_values)) && ($vs_proc_idno != $vs_idno)) {
-							$t_subject->set($vs_idno_fld, $vs_proc_idno);
-							$t_subject->update(['queueIndexing' => true]);
-						
-							if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could update idno to %2", $vs_idno, $vs_proc_idno), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-								$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_idno_fld, 'notes' => _t('While updating matched record')]));
-								if ($vs_import_error_policy == 'stop') {
-									$o_log->logAlert(_t('Import stopped due to import error policy'));
-								
-									$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
-															
-									$stopped_on_error = true;
-									goto stop_on_error;
-								}
-								continue;
+				if ($vs_idno_fld  && !$va_mapping_items[$vn_idno_mapping_item_id]['settings']['literalIdentifier'] && ($o_idno = $t_subject->getIDNoPlugInInstance())) {
+					$va_values = $o_idno->htmlFormValuesAsArray($vs_idno_fld, $t_subject->get($vs_idno_fld));
+					if (!is_array($va_values)) { $va_values = array($va_values); }
+					if (($vs_proc_idno = join($o_idno->getSeparator(), $va_values)) && ($vs_proc_idno != $vs_idno)) {
+						$t_subject->set($vs_idno_fld, $vs_proc_idno);
+						$t_subject->update(['queueIndexing' => true]);
+					
+						if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could update idno to %2", $vs_idno, $vs_proc_idno), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+							$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_idno_fld, 'notes' => _t('While updating matched record')]));
+							if ($vs_import_error_policy == 'stop') {
+								$o_log->logAlert(_t('Import stopped due to import error policy'));
+							
+								$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
+														
+								$stopped_on_error = true;
+								goto stop_on_error;
 							}
+							continue;
 						}
 					}
+				}
 		
 				$o_log->logDebug(_t('Started insert of content tree for idno %1 at %2 seconds [id=%3]', $vs_idno, $t->getTime(4), $t_subject->getPrimaryKey()));
 				$va_elements_set_for_this_record = array();

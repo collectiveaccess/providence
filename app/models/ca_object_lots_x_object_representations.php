@@ -215,4 +215,3 @@ class ca_object_lots_x_object_representations extends BaseRelationshipModel {
 	}
 	# ------------------------------------------------------
 }
-?>

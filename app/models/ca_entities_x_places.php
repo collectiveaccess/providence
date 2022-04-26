@@ -207,4 +207,3 @@ class ca_entities_x_places extends BaseRelationshipModel {
 	}
 	# ------------------------------------------------------
 }
-?>

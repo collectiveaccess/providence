@@ -224,4 +224,3 @@ class ca_search_form_labels extends BaseLabel {
 	}
 	# ------------------------------------------------------
 }
-?>
