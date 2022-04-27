@@ -208,7 +208,7 @@
  		# ------------------------------------------------------------------
  		public function loadTypeSpecificValueFromRow($pa_value_array) {
  			global $g_ui_locale;
- 			$this->ops_text_value = strlen($pa_value_array['value_longtext1']) ? Zend_Locale_Format::toNumber($pa_value_array['value_longtext1'], ['locale' => $g_ui_locale]) : null;
+ 			$this->ops_text_value = (strlen($pa_value_array['value_longtext1']) && is_numeric($pa_value_array['value_longtext1'])) ? Zend_Locale_Format::toNumber((float)$pa_value_array['value_longtext1'], ['locale' => $g_ui_locale]) : null;
  			$this->opn_numeric_value = $pa_value_array['value_decimal1'];
  		}
  		# ------------------------------------------------------------------
