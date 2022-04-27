@@ -43,11 +43,18 @@
 	
 	if(!($min_autocomplete_search_length = (int)$t_subject->getAppConfig()->get(["{$vs_priv_table}_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]))) { $min_autocomplete_search_length = 3; }
 
-	if (!$pn_id && $vb_batch && ($t_subject->getProperty('HIERARCHY_TYPE') === __CA_HIER_TYPE_ADHOC_MONO__)) {
-		// For batching on ad-hoc hierarchies we need to load something, so we pick the first record we can find
-		$table = $t_subject->tableName();
-		if($t_subject = $table::findAsInstance('*', ['limit' => 1, 'returnAs' => 'ids'])) {
-			$pn_id = $t_subject->getPrimaryKey();
+	if (!$pn_id && $vb_batch) {
+		switch($t_subject->getProperty('HIERARCHY_TYPE')) {
+			case __CA_HIER_TYPE_ADHOC_MONO__:
+				// For batching on ad-hoc hierarchies we need to load something, so we pick the first record we can find
+				$table = $t_subject->tableName();
+				if($t_subject = $table::findAsInstance('*', ['limit' => 1, 'returnAs' => 'ids'])) {
+					$pn_id = $t_subject->getPrimaryKey();
+				}
+				break;
+			case __CA_HIER_TYPE_SIMPLE_MONO__:
+				$pn_id = $t_subject->getHierarchyRootID();
+				break;
 		}
 	}
 	
@@ -706,14 +713,18 @@
 ?>
 		jQuery("#<?= $id_prefix; ?>HierarchyBrowserContainer").show();
 		jQuery("#<?= $id_prefix; ?>").hide();
+<?php
+		if($show_move) { 
+?>
 		_init<?= $id_prefix; ?>MoveHierarchyBrowser();
 <?php
+		}
 	} elseif (isset($pa_bundle_settings['open_hierarchy']) && (bool)$pa_bundle_settings['open_hierarchy']) {
 ?>
 		jQuery("#<?= $id_prefix; ?>browseToggle").trigger("click", { "delay" : 0 });
 <?php
 	}
-	if($default_tab_index === 1) {
+	if(($default_tab_index === 1) && $show_move) {
 		// Send event to move tab to trigger load of hierarchy
 ?>
 		_init<?= $id_prefix; ?>MoveHierarchyBrowser();
