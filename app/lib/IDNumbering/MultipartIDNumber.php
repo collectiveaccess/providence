@@ -984,7 +984,7 @@ class MultipartIDNumber extends IDNumber {
 					singularAlreadyInUseMessage: '".addslashes(_t('Identifier is already in use'))."',
 					pluralAlreadyInUseMessage: '".addslashes(_t('Identifier is already in use %1 times'))."',
 					
-					sequenceMessage: '&lt;".addslashes(_t('Will be assigned %1 when saved'))."&gt;'
+					sequenceMessage: '&lt;".addslashes(_t('%1 on save'))."&gt;'
 				});
 			";
 
@@ -1043,21 +1043,20 @@ class MultipartIDNumber extends IDNumber {
 
 		$i = 0;
 		$num_serial_elements_seen = 0;
+		
 		foreach ($elements as $element_info) {
-			//if ($i >= sizeof($values)) { break; }
-
 			switch($element_info['type']) {
 				case 'SERIAL':
 					$num_serial_elements_seen++;
 
-					if ($max_num_replacements <= 0) {	// replace all
-						if ($no_placeholders) { unset($values[$i]); $i++; continue(2); }
+					if ($no_placeholders) { 
+						$values[$i] = null; 
+					} elseif ($max_num_replacements <= 0) {	// replace all
+						$values[$i] = '%';
+					} elseif (($num_serial_elements - $num_serial_elements_seen) < $max_num_replacements) {
 						$values[$i] = '%';
 					} else {
-						if (($num_serial_elements - $num_serial_elements_seen) < $max_num_replacements) {
-							if ($no_placeholders) { unset($values[$i]); $i++; continue(2); }
-							$values[$i] = '%';
-						}
+						$values[$i] = null;
 					}
 					break;
 				case 'CONSTANT':
@@ -1081,11 +1080,14 @@ class MultipartIDNumber extends IDNumber {
 						$values[$i] = $tmp['mday'];
 					}
 					break;
+				default:
+					$values[$i] = null;
+					break;
 			}
 
 			$i++;
 		}
-
+		
 		return join($separator, $values);
 	}
 	# -------------------------------------------------------
@@ -1287,16 +1289,14 @@ class MultipartIDNumber extends IDNumber {
 
 				if ($generate_for_search_form) {
 					$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="" maxlength="'.$width.'" size="'.$width.'"'.($options['readonly'] ? ' disabled="1" ' : '').'/>';
-				} else {
-					if ($element_value == '') {
+				} elseif ($element_value == '') {
 						$next_num = $this->getNextValue($element_name, null, true);
-						$element .= "<span id='".$id_prefix.$element_form_name."'>&lt;"._t('Will be assigned %1 when saved', $next_num)."&gt;</span>";
+						$element .= "<span id='".$id_prefix.$element_form_name."'>&lt;"._t('%1 on save', $next_num)."&gt;</span>";
+				} else {
+					if ($element_info['editable']) {
+						$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'" maxlength="'.$width.'"'.($options['readonly'] ? ' disabled="1" ' : '').'/>';
 					} else {
-						if ($element_info['editable']) {
-							$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'" maxlength="'.$width.'"'.($options['readonly'] ? ' disabled="1" ' : '').'/>';
-						} else {
-							$element .= '<input type="hidden" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'"/>'.$element_value;
-						}
+						$element .= '<input type="hidden" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'"/>'.$element_value;
 					}
 				}
 				break;
