@@ -587,7 +587,8 @@ class MultipartIDNumber extends IDNumber {
 					$len = mb_strlen($element_info['value']);
 					if ($padding < $len) { $padding = $len; }
 					$repeat_len = ($padding - mb_strlen($element_values[$i]));
-					$output[] = (($repeat_len > 0) ? str_repeat(' ', $padding - mb_strlen($element_values[$i])) : '').$element_values[$i];
+					$n = $padding - mb_strlen($element_values[$i]);
+					$output[] = (($repeat_len > 0) ? (($n >= 0) ? str_repeat(' ', $n) : '') : '').$element_values[$i];
 					break;
 				case 'FREE':
 				case 'ALPHANUMERIC':
@@ -626,7 +627,9 @@ class MultipartIDNumber extends IDNumber {
 				case 'SERIAL':
 				case 'NUMERIC':
 					if ($padding < $element_info['width']) { $padding = $element_info['width']; }
-					$output[] = str_repeat(' ', $padding - strlen(intval($element_values[$i]))).intval($element_values[$i]);
+					$n = $padding - strlen(intval($element_values[$i]));
+					
+					$output[] = (($n >= 0) ? str_repeat(' ', $n) : '').intval($element_values[$i]);
 					break;
 				case 'YEAR':
 					$p = (($element_info['width'] == 2) ? 2 : 4) - mb_strlen($element_values[$i]);
@@ -637,13 +640,16 @@ class MultipartIDNumber extends IDNumber {
 				case 'DAY':
 					$p = 2 - mb_strlen($element_values[$i]);
 					if ($p < 0) { $p = 0; }
-					$output[] = str_repeat(' ', 2 - $p).$element_values[$i];
+					$n = 2 - $p;
+					$output[] = (($n >= 0) ? str_repeat(' ', $n) : '').$element_values[$i];
 					break;
 				case 'PARENT':
-					$output[] = $element_values[$i].str_repeat(' ', $padding - mb_strlen($element_values[$i]));
+					$n = $padding - mb_strlen($element_values[$i]);
+					$output[] = $element_values[$i].($n >= 0) ? str_repeat(' ', $n) : null;
 					break;
 				default:
-					$output[] = str_repeat(' ', $padding - mb_strlen($element_values[$i])).$element_values[$i];
+					$n = $padding - mb_strlen($element_values[$i]);
+					$output[] = (($n >= 0) ? str_repeat(' ', $n) : '').$element_values[$i];
 					break;
 
 			}
