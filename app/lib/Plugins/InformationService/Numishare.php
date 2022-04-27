@@ -144,7 +144,7 @@ class WLPlugInformationServiceNumishare extends BaseInformationServicePlugin Imp
 	 */
 	public function getExtendedInformation($pa_settings, $ps_url) {
 		if (
-			!preg_match("!^(http://numismatics.org/[A-Za-z_]+)/id/([A-Za-z0-9\.\-]+)!", $ps_url, $matches)
+			!preg_match("!^(http://numismatics.org/[A-Za-z_]+/)id/([A-Za-z0-9\.\-]+)!", $ps_url, $matches)
 			&&
 			!preg_match("!^(https://iacb\.arch\.ox\.ac\.uk/)id/([A-Za-z0-9\.\-]+)!", $ps_url, $matches)
 		) { return []; }
