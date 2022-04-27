@@ -67,7 +67,7 @@ class WLPlugInformationServiceNumishare extends BaseInformationServicePlugin Imp
 		parent::__construct();
 		$this->info['NAME'] = 'Numishare';
 		
-		$this->description = _t('Provides access to Numishare numismatic data service (http://numismatics.org)');
+		$this->description = _t('Provides access to Numishare-based numismatic data services');
 	}
 	# ------------------------------------------------
 	/** 
@@ -143,13 +143,17 @@ class WLPlugInformationServiceNumishare extends BaseInformationServicePlugin Imp
 	 * @return array An array of data from the data server defining the item.
 	 */
 	public function getExtendedInformation($pa_settings, $ps_url) {
-		if (!preg_match("!^http://numismatics.org/([A-Za-z_]+)/id/([A-Za-z0-9\.\-]+)!", $ps_url, $matches)) { return []; }
+		if (
+			!preg_match("!^(http://numismatics.org/[A-Za-z_]+)/id/([A-Za-z0-9\.\-]+)!", $ps_url, $matches)
+			&&
+			!preg_match("!^(https://iacb\.arch\.ox\.ac\.uk/)id/([A-Za-z0-9\.\-]+)!", $ps_url, $matches)
+		) { return []; }
 		$service = $matches[1];
 		$id = $matches[2];
-		if(!self::validateService("http://numismatics.org/{$service}/")) { 
+		if(!self::validateService($service)) { 
 			return ['display' => _t('Invalid service: %1', $service)];
 		}
-		$vs_result = caQueryExternalWebservice("http://numismatics.org/{$service}/id/{$id}.jsonld");
+		$vs_result = caQueryExternalWebservice("{$service}id/{$id}.jsonld");
 		
 		if(!$vs_result) { return []; }
 		if(!is_array($va_data = json_decode($vs_result, true))) { return []; }
@@ -212,7 +216,11 @@ class WLPlugInformationServiceNumishare extends BaseInformationServicePlugin Imp
 	 */
 	public function getAdditionalFieldValues($attribute_value) : array {
 		$uri =  $attribute_value->getUri();
-		if(preg_match("!^(http://numismatics.org/[A-Za-z_]+/)!", $uri, $m)) {
+		if(
+			preg_match("!^(http://numismatics.org/[A-Za-z_]+/)!", $uri, $m)
+			||
+			preg_match("!^(https://iacb.arch.ox.ac.uk/)!", $uri, $m)
+		) {
 			return [$attribute_value->getElementID().'_service' => $m[1]];
 		}
 		return [];
