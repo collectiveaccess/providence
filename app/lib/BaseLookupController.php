@@ -437,8 +437,11 @@ class BaseLookupController extends ActionController {
 			) {
 				$o_numbering_plugin->setFormat($this->opo_item_instance->tableName());
 				$o_numbering_plugin->setType($type);
-				$elements = $o_numbering_plugin->getElements();
 				
+				if ($parent_value = $this->request->getParameter('parentValue', pString)) {
+					$o_numbering_plugin->isChild(true, $parent_value);
+				}
+				$elements = $o_numbering_plugin->getElements();
 				foreach($elements as $ename => $e) {
 					if ($e['type'] === 'SERIAL') {
 						$sequences[$ename] = $o_numbering_plugin->getNextValue($ename, $idno);
