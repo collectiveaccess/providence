@@ -40,12 +40,12 @@ require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
 
 abstract class AttributeValue extends BaseObject {
 	# ------------------------------------------------------------------
-	private $opn_element_id;
-	private $ops_element_code;
-	private $opn_datatype;
+	protected $opn_element_id;
+	protected $ops_element_code;
+	protected $opn_datatype;
 	protected $opn_value_id;
-	private $opa_source_info;
-	private $ops_sort_value;
+	protected $opa_source_info;
+	protected $ops_sort_value;
 
 	# ------------------------------------------------------------------
 	public function __construct($pa_value_array=null) {
@@ -193,7 +193,19 @@ abstract class AttributeValue extends BaseObject {
 	 * @return array
 	 */
 	public function getDataForSearchIndexing() {
-		return array();
+		return [];
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Return list of additional values for display. Used by InformationService attribute types (and perhaps others)
+	 * to support additional interface elements on-screen for a value.
+	 *
+	 * Returns an empty array for attribute types that don't support additional values.
+	 *
+	 * @return array
+	 */
+	public function getAdditionalDisplayValues() : array {
+		return [];
 	}
 	# ------------------------------------------------------------------
 }

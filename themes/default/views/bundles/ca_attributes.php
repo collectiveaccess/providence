@@ -106,8 +106,9 @@
 				$vn_element_id = $o_value->getElementID();
 				
 				$attr_table = method_exists($o_value, 'tableName') ? $o_value->tableName() : null;
+				$dt = $o_value->getDatatype();
 				
-				if ($va_failed_updates[$vn_attr_id] && !in_array($o_value->getDatatype(), array(
+				if ($va_failed_updates[$vn_attr_id] && !in_array($dt, array(
 					__CA_ATTRIBUTE_VALUE_LCSH__, 
 					__CA_ATTRIBUTE_VALUE_OBJECTS__,
 					__CA_ATTRIBUTE_VALUE_OBJECTLOTS__,
@@ -128,6 +129,18 @@
 				}
 				
 				$va_initial_values[$vn_attr_id][$vn_element_id] = $vs_display_val;
+				
+				switch($dt) {
+					case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
+						// Emit display values for InformationService attributes that support additional 
+						// user interface elements beyond the value entry fields (Eg. Numishare)
+						// 
+						foreach($o_value->getAdditionalDisplayValues() as $k => $v) {
+							if(!in_array($k, $va_template_tags)) { $va_template_tags[] = $v; }
+							$va_initial_values[$vn_attr_id][$k] = $v;
+						}
+						break;	
+				}
 				
 				if ($attr_table && isset($va_element_info[$vn_element_id]) && ((isset($va_element_info[$vn_element_id]['settings']['render']) && ($va_element_info[$vn_element_id]['settings']['render'] == 'lookup')) || $minimize_existing_values)) {		// autocompleter-based mode for list attributes
 					$va_template_tags[] = "{$vn_element_id}_label";
