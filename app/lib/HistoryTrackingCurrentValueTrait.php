@@ -928,7 +928,7 @@
 		/**
 		 *
 		 */
-		public function checkPolicyTypeRestrictions(string $policy, array $type_restrictions, ?array $options=null) : ?bool {
+		public function checkPolicyTypeRestrictions(?string $policy, array $type_restrictions, ?array $options=null) : ?bool {
 			if(!is_array($policy_info = self::getHistoryTrackingCurrentValuePolicy($policy))) { return null; }
 			if(!sizeof($type_restrictions)) { return true; }
 			if(!is_array($policy_info['restrictToTypes']) || !sizeof($policy_info['restrictToTypes'])) { return true; }
