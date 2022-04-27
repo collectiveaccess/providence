@@ -421,7 +421,7 @@ class MultipartIDNumber extends IDNumber {
 						}
 						break;
 					case 'PARENT':
-						$element_vals[] = $this->getParentValue();
+						$element_vals[] = explode($separator, $this->getParentValue());
 						break;
 					case 'SERIAL':
 						$element_vals[] = '';
@@ -442,7 +442,9 @@ class MultipartIDNumber extends IDNumber {
 		$blank_count = 0;
 		foreach($elements as $ename => $element_info) {
 			if ($ename == $element_name) { break; }
-			if (!strlen($v = array_shift($element_vals))) { $blank_count++; }
+			$v = array_shift($element_vals);
+			if(is_array($v)) { $v = join($separator, $v); }
+			if (!strlen($v)) { $blank_count++; }
 			$tmp[] = $v;
 			$i++;
 		}
@@ -644,8 +646,12 @@ class MultipartIDNumber extends IDNumber {
 					$output[] = (($n >= 0) ? str_repeat(' ', $n) : '').$element_values[$i];
 					break;
 				case 'PARENT':
-					$n = $padding - mb_strlen($element_values[$i]);
-					$output[] = $element_values[$i].($n >= 0) ? str_repeat(' ', $n) : null;
+					$tmp = explode($separator, $element_values[$i]);
+					
+					foreach($tmp as $t) {
+						$n = $padding - mb_strlen($t);
+						$output[] = (($n >= 0) ? str_repeat(' ', $n) : '').$t;
+					}
 					break;
 				default:
 					$n = $padding - mb_strlen($element_values[$i]);
@@ -974,16 +980,17 @@ class MultipartIDNumber extends IDNumber {
 			$lookup_url_info = caJSONLookupServiceUrl($options['request'], $options['table']);
 			$js .= "
 				caUI.initIDNoChecker({
-					errorIcon: \"".$options['error_icon']."\",
-					processIndicator: \"".$options['progress_indicator']."\",
+					errorIcon: ".json_encode($options['error_icon']).",
+					processIndicator: ".json_encode($options['progress_indicator']).",
 					idnoStatusID: 'idnoStatus',
-					lookupUrl: '".$lookup_url_info['idno']."',
-					searchUrl: '".$options['search_url']."',
+					lookupUrl: ".json_encode($lookup_url_info['idno']).",
+					searchUrl: ".json_encode($options['search_url']).",
 					idnoFormElementIDs: [".join(',', $ids)."],
-					separator: '".$this->getSeparator()."',
+					separator: ".json_encode($this->getSeparator()).",
 					row_id: ".intval($options['row_id']).",
 					type_id: ".intval($options['type_id']).",
 					context_id: ".intval($options['context_id']).",
+					parentValue: ".json_encode($this->getParentValue()).",
 					checkDupes: ".(($options['check_for_dupes'] && !$next_in_seq_is_present) ? '1' : '0').",
 					includesSequence: ".($next_in_seq_is_present ? '1' : '0').",
 

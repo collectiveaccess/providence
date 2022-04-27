@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2021 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -41,6 +41,7 @@ var caUI = caUI || {};
 			type_id: null,
 			context_id: null,
 			checkDupes: false,
+			parentValue: null,
 			includesSequence: false,
 			
 			singularAlreadyInUseMessage: 'Identifier is already in use',
@@ -64,7 +65,7 @@ var caUI = caUI || {};
 			clearTimeout(that.debounce);
 			
 			that.debounce = setTimeout(function(){
-                jQuery.getJSON(that.lookupUrl, { n: idno, id: that.row_id, type_id: that.type_id, _context_id: that.context_id }, 
+                jQuery.getJSON(that.lookupUrl, { n: idno, id: that.row_id, type_id: that.type_id, _context_id: that.context_id, parentValue: that.parentValue }, 
                     function(data) {
                         jQuery('#' + that.idnoStatusID).html('').hide(0);
                         if(that.checkDupes) {
