@@ -459,6 +459,40 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	}
 	# ---------------------------------------
 	/**
+	 * Fetch setting value for list item
+	 *
+	 * @param string $list_code List code
+	 * @param string $idno
+	 * @param string $setting
+	 * @param array $pa_options Options include:
+	 *		transaction = transaction to execute queries within. [Default=null]
+	 *      noCache = Don't use cache. [Default is false]
+	 *      dontCache = Synonym for noCache
+     *
+	 * @return mixed Value of setting, or null if item or setting do not exist.
+	 */
+	$g_default_list_item_setting_cache = [];
+	function caGetListItemSettingValue(string $list_code, string $idno, string $setting, ?array $options=null) {
+		global $g_default_list_item_setting_cache;
+		if(!is_array($options)) { $options = []; }
+		if(!is_array($g_default_list_item_setting_cache)) { $g_default_list_item_setting_cache = []; }
+		$cache_key = caMakeCacheKeyFromOptions($options, $list_code.'/'.$idno.'/'.$setting);
+		
+		if(!caGetOption(['noCache', 'dontCache'], $options, false)) {
+		    if(array_key_exists($cache_key, $g_default_list_item_setting_cache)) { return $g_default_list_item_setting_cache[$cache_key]; }
+		}
+		
+		if(!($item_id = caGetListItemID($list_code, $idno))) {
+			return $g_default_list_item_setting_cache[$cache_key] = null;
+		}
+		
+		$t_item = new ca_list_items();
+		if ($o_trans = caGetOption('transaction', $options, null)) { $t_item->setTransaction($o_trans); }
+		if(!$t_item->load($item_id)) { return null; }
+		return $g_default_list_item_setting_cache[$cache_key] = $t_item->getSetting($setting);
+	}
+	# ---------------------------------------
+	/**
 	 * Converts the given list of list idnos or item_ids into a list of numeric item_ids
 	 *
 	 * @param mixed $pm_list List code or list_id
