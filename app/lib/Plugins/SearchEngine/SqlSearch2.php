@@ -1046,6 +1046,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		if (isset($options['BOOST'])) {
 			$boost = intval($options['BOOST']);
 		}
+		if($boost < 0) { $boost = 0; }
+		if($boost > 255) { $boost = 255; }
 		
 		if ($this->debug) { Debug::msg("[SqlSearchDebug] indexField: $content_tablenum/$content_fieldname [$content_row_id] =&gt; $content"); }
 	
