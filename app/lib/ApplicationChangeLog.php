@@ -1060,7 +1060,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 			if (!$qr) { return null; }
 			$units += $qr->getAllFieldValues('unit_id');
 		}
-		if(sizeof($units = array_unique($units)) > 0) {
+		if(is_array($units) && (sizeof($units = array_unique($units)) > 0)) {
 			$sql_daterange = $sql_limit = null;
 			$sql_user_id = "AND (wcl.unit_id IN (?))";
 			$sql_table = "1";

@@ -207,4 +207,3 @@ class ca_tour_stops_x_objects extends ObjectRelationshipBaseModel {
 	}
 	# ------------------------------------------------------
 }
-?>

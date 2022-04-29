@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * default/views/mailTemplates/library_coming_due.tpl
+ * default/views/mailTemplates/library_checkout_receipt.tpl
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2022 Whirl-i-Gig
+ * Copyright 2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,10 +25,25 @@
  *
  * ----------------------------------------------------------------------
  */
-$items = $this->getVar('items') ?? [];
+ 
+$checkouts = $this->getVar('checkouts') ?? [];
+$reservations = $this->getVar('reservations') ?? [];
+
+if(sizeof($checkouts)) { 
 ?>
-The following borrowed item(s) will be due on the dates specified below: 
+<p>The following items were borrowed on <?= $this->getVar('checkout_date'); ?> and will be due on the dates specified below: </p>
 
-<ul><?= join("\n", array_map(function($v) { return $v['_display']; }, $items)); ?></ul>
+<ul><?= join("\n", array_map(function($v) { return $v['_display']; }, $checkouts)); ?></ul>
 
-Please return them on or before the listed dates. Thank you!
+<p>Please return them on or before the listed dates. Thank you!</p>
+<?php
+}
+if(sizeof($reservations)) {
+?>
+<p>The following items were reserved on <?= $this->getVar('checkout_date'); ?>: </p>
+
+<ul><?= join("\n", array_map(function($v) { return $v['_display']; }, $reservations)); ?></ul>
+
+You will be notified when these items become available.
+<?php
+}

@@ -207,4 +207,4 @@ class ca_storage_locations_x_vocabulary_terms extends BaseRelationshipModel {
 	}
 	# ------------------------------------------------------
 }
-?>
+

@@ -37,6 +37,7 @@
 		 */
 		public static function rebuild_sort_values($po_opts=null) {
 			$o_db = new Db();
+			ini_set('memory_limit', '4000m');
 			
 			$tables = trim((string)$po_opts->getOption('table'));
 			
@@ -66,6 +67,8 @@
 					print CLIProgressBar::start($qr_labels->numRows(), _t('Processing %1', $t_label->getProperty('NAME_PLURAL')));
 					while($qr_labels->nextRow()) {
 						$vn_label_pk_val = $qr_labels->get($vs_label_pk);
+						
+						CLIProgressBar::setMessage(_t("Memory: %1", caGetMemoryUsage()));
 						print CLIProgressBar::next();
 						if ($t_label->load($vn_label_pk_val)) {
 							$t_table->logChanges(false);
@@ -78,6 +81,8 @@
 				print CLIProgressBar::start($qr_res->numRows(), _t('Processing %1 identifiers', $t_table->getProperty('NAME_SINGULAR')));
 				while($qr_res->nextRow()) {
 					$vn_pk_val = $qr_res->get($vs_pk);
+					
+					CLIProgressBar::setMessage(_t("Memory: %1", caGetMemoryUsage()));
 					print CLIProgressBar::next();
 					if ($t_table->load($vn_pk_val)) {
 						$t_table->logChanges(false);

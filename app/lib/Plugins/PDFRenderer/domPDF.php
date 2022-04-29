@@ -84,6 +84,7 @@ class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugIn Implements IWLPlugPD
 	 * @param array $pa_options Options include:
 	 *		stream = Output the rendered PDF directly to the response [Default=false]
 	 *		filename = The filename to set the PDF to when streams [Default=export_results.pdf]
+	 *		writeFile = File path to write PDF to. [Default=false]
 	 *
 	 * @return string The rendered PDF content
 	 * @seealso domPDF::renderFile()
@@ -97,6 +98,11 @@ class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugIn Implements IWLPlugPD
 			$this->renderer->stream(caGetOption('filename', $pa_options, 'export_results.pdf'));
 		}
 		
+		$output = $this->renderer->output();
+		if($path = caGetOption('writeFile', $pa_options, false)) {
+			file_put_contents($path, $output);
+		}
+		
 		return $this->renderer->output();
 	}
 	# ------------------------------------------------
@@ -107,6 +113,7 @@ class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugIn Implements IWLPlugPD
 	 * @param array $pa_options Options include:
 	 *		stream = Output the rendered PDF directly to the response [Default=false]
 	 *		filename = The filename to set the PDF to when streams [Default=export_results.pdf]
+	 *		writeFile = File path to write PDF to. [Default=false]
 	 *
 	 * @return string The rendered PDF content
 	 * @seealso domPDF::render()
@@ -120,7 +127,12 @@ class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugIn Implements IWLPlugPD
 			$this->renderer->stream(caGetOption('filename', $pa_options, 'output.pdf'));
 		}
 		
-		return $this->renderer->output();
+		$output = $this->renderer->output();
+		if($path = caGetOption('writeFile', $pa_options, false)) {
+			file_put_contents($path, $output);
+		}
+		
+		return $output;
 	}
 	# ------------------------------------------------
 	/**

@@ -70,7 +70,7 @@ $vs_form_name = "ListItemQuickAddForm";
 	
 	<div class="quickAddFormTopPadding"><!-- empty --></div>
 	<div class="quickAddErrorContainer" id="<?= $vs_form_name; ?>Errors<?= $vs_field_name_prefix.$vs_n; ?>"> </div>
-	<div class="quickAddSectionBox" id="{$vs_form_name}Container<?= $vs_field_name_prefix.$vs_n; ?>">
+	<div class="quickAddSectionBox" id="<?= $vs_form_name.'Container'.$vs_field_name_prefix.$vs_n; ?>">
 <?php
 			// Output hierarchy browser
 			$va_lookup_urls = caJSONLookupServiceUrl($this->request, 'ca_list_items');
@@ -134,7 +134,8 @@ $vs_form_name = "ListItemQuickAddForm";
 				'restrictToTypes' => array($t_subject->get('type_id')),
 				'formName' => $vs_form_name.$vs_field_name_prefix.$vs_n,
 				'forceLabelForNew' => $this->getVar('forceLabel'),							// force query text to be default in label fields
-				'omit' => ['parent_id', 'hierarchy_location', 'hierarchy_navigation']
+				'omit' => ['parent_id', 'hierarchy_location', 'hierarchy_navigation'],
+				'quickadd'=> true
 			));
 			
 			print join("\n", $va_form_elements);

@@ -311,10 +311,23 @@ class ExternalExportManager {
 						}
 						
 						$file_list = array_merge($file_list, $files);
+						
+						if(sizeof($file_list) > 25) {
+							$this->log->logDebug(_t('[ExternalExportManager] Transporting batch of %1 files during processing of trigger', sizeof($file_list)));
+							$this->transport($target, $file_list, $options);
+							self::cleanupFiles($file_list);
+							$file_list = [];
+						}
 					}
 				}
 			}
-			$this->transport($target, $file_list, $options);
+			
+			if(sizeof($file_list) > 0) {
+				$this->log->logDebug(_t('[ExternalExportManager] Transporting %1 files to complete processing of trigger', sizeof($file_list)));
+				$this->transport($target, $file_list, $options);
+				self::cleanupFiles($file_list);
+				$file_list = [];
+			}
         }
         
 		if ($latest_log_id_seen > 0) { 
@@ -322,10 +335,6 @@ class ExternalExportManager {
 			$o_app_vars->save();
 			
 			$this->log->logDebug(_t('[ExternalExportManager] Set last_log_id to %1', $latest_log_id_seen));
-		}
-		
-		foreach($file_list as $f) {
-			unlink($f);
 		}
     }
     # ------------------------------------------------------
@@ -434,6 +443,16 @@ class ExternalExportManager {
     	MemoryCache::save($cache_key, $has_targets, "ExternalExportManager");
     	return $has_targets;
     }
+    # ------------------------------------------------------
+	/**
+	 * 
+	 */
+	public static function cleanupFiles($file_list) {
+		foreach($file_list as $f) {
+			@unlink($f);
+		}
+		return true;
+	}
     # ------------------------------------------------------
 }
 

@@ -207,4 +207,3 @@ class ca_object_representations_x_object_representations extends BaseRelationshi
 	}
 	# ------------------------------------------------------
 }
-?>

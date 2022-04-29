@@ -123,61 +123,68 @@
 					                      . str_replace(array("\r", "\n"), '',var_export( $va_params, true ) . "'" )) );
 				}
 
-				$qr_reps = $o_db->query("
-					SELECT ca_object_representations.representation_id, ca_object_representations.media
-					FROM ca_object_representations
-					{$vs_sql_joins}
-					{$vs_sql_where}
-					ORDER BY ca_object_representations.representation_id
-				", $va_params);
-
-				if (!$quiet) { print CLIProgressBar::start($qr_reps->numRows(), _t('Re-processing representation media')); }
-				while($qr_reps->nextRow()) {
-					$va_media_info = $qr_reps->getMediaInfo('media');
-					if(!is_array($va_media_info)) { print CLIProgressBar::next(1, "SKIPPED"); continue; }
-					if($oriented_only && $media_metadata['EXIF']['IFD0']['Orientation'] == 1) { print CLIProgressBar::next(1, "SKIPPED"); continue; }
+				$c = 0; $inc = 50;
+				do {
+					$qr_reps = $o_db->query("
+						SELECT ca_object_representations.representation_id, ca_object_representations.media, ca_object_representations.media_metadata
+						FROM ca_object_representations
+						{$vs_sql_joins}
+						{$vs_sql_where}
+						ORDER BY ca_object_representations.representation_id
+						LIMIT {$c}, {$inc}
+					", $va_params);
+					$n = $qr_reps->numRows();
 					
-					$vs_original_filename = $va_media_info['ORIGINAL_FILENAME'];
+					if (!$quiet) { print CLIProgressBar::start($qr_reps->numRows(), _t('Re-processing representation media')); }
+					while($qr_reps->nextRow()) {
+						$va_media_info = $qr_reps->getMediaInfo('media');
+						if(!is_array($va_media_info)) { print CLIProgressBar::next(1, "SKIPPED"); continue; }
+						$media_metadata = caUnserializeForDatabase($qr_reps->get('ca_object_representations.media_metadata'));
+						if($oriented_only && $media_metadata['EXIF']['IFD0']['Orientation'] == 1) { print CLIProgressBar::next(1, "SKIPPED"); continue; }
+					
+						$vs_original_filename = $va_media_info['ORIGINAL_FILENAME'];
 
-					if($unprocessed) {
-						if(!sizeof(array_filter($va_media_info, function($v) {
-							return isset($v['QUEUED']);
-						}))) {
-							if (!$quiet) { print CLIProgressBar::next(1, $vs_message); }
-							continue;
+						if($unprocessed) {
+							if(!sizeof(array_filter($va_media_info, function($v) {
+								return isset($v['QUEUED']);
+							}))) {
+								if (!$quiet) { print CLIProgressBar::next(1, $vs_message); }
+								continue;
+							}
+						}
+
+
+						if (!$quiet) {
+							$vs_message = _t("Re-processing %1", ($vs_original_filename ? $vs_original_filename." (".$qr_reps->get('representation_id').")" : $qr_reps->get('representation_id')));
+							print CLIProgressBar::next(1, $vs_message);
+							if ($o_log) { $o_log->logDebug($vs_message); }
+						}
+						$vs_mimetype = $qr_reps->getMediaInfo('media', 'original', 'MIMETYPE');
+						if(is_array($pa_mimetypes) && sizeof($pa_mimetypes)) {
+							if(!caMimetypeIsValid($vs_mimetype, $pa_mimetypes)) { continue; }
+						}
+						if(is_array($skip_mimetypes) && sizeof($skip_mimetypes)) {
+							if(caMimetypeIsValid($vs_mimetype, $skip_mimetypes)) { continue; }
+						}
+
+						$t_rep->load($qr_reps->get('representation_id'));
+						$t_rep->set('media', $qr_reps->getMediaPath('media', 'original'), array('original_filename' => $vs_original_filename));
+
+						if (is_array($pa_versions) && sizeof($pa_versions)) {
+							$t_rep->update(array('updateOnlyMediaVersions' =>$pa_versions));
+						} else {
+							$t_rep->update();
+						}
+
+						if ($t_rep->numErrors()) {
+							$vs_message = _t("Error processing representation media: %1", join('; ', $t_rep->getErrors()));
+							CLIUtils::addError($vs_message);
+							if ($o_log) { $o_log->logDebug($vs_message); }
 						}
 					}
-
-
-					if (!$quiet) {
-						$vs_message = _t("Re-processing %1", ($vs_original_filename ? $vs_original_filename." (".$qr_reps->get('representation_id').")" : $qr_reps->get('representation_id')));
-						print CLIProgressBar::next(1, $vs_message);
-						if ($o_log) { $o_log->logDebug($vs_message); }
-					}
-					$vs_mimetype = $qr_reps->getMediaInfo('media', 'original', 'MIMETYPE');
-					if(is_array($pa_mimetypes) && sizeof($pa_mimetypes)) {
-						if(!caMimetypeIsValid($vs_mimetype, $pa_mimetypes)) { continue; }
-					}
-					if(is_array($skip_mimetypes) && sizeof($skip_mimetypes)) {
-						if(caMimetypeIsValid($vs_mimetype, $skip_mimetypes)) { continue; }
-					}
-
-					$t_rep->load($qr_reps->get('representation_id'));
-					$t_rep->set('media', $qr_reps->getMediaPath('media', 'original'), array('original_filename' => $vs_original_filename));
-
-					if (is_array($pa_versions) && sizeof($pa_versions)) {
-						$t_rep->update(array('updateOnlyMediaVersions' =>$pa_versions));
-					} else {
-						$t_rep->update();
-					}
-
-					if ($t_rep->numErrors()) {
-						$vs_message = _t("Error processing representation media: %1", join('; ', $t_rep->getErrors()));
-						CLIUtils::addError($vs_message);
-						if ($o_log) { $o_log->logDebug($vs_message); }
-					}
-				}
-				if (!$quiet) { print CLIProgressBar::finish(); }
+					if (!$quiet) { print CLIProgressBar::finish(); }
+					$c += $inc;
+				} while($n > 0);
 			}
 
 			if ((in_array('all', $pa_kinds)  || in_array('ca_attributes', $pa_kinds)) && (!$vn_start && !$vn_end)) {

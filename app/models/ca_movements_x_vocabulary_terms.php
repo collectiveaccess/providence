@@ -207,4 +207,4 @@ class ca_movements_x_vocabulary_terms extends BaseRelationshipModel {
 	}
 	# ------------------------------------------------------
 }
-?>
+
