@@ -2676,7 +2676,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  		if (isset($pa_options['ui_instance']) && ($pa_options['ui_instance'])) {
  			$t_ui = $pa_options['ui_instance'];
  		} else {
- 			$t_ui = ca_editor_uis::loadDefaultUI($vs_table_name, $pa_options['request'], $this->getTypeID());
+ 			$t_ui = ca_editor_uis::loadDefaultUI($vs_table_name, $pa_options['request'], $this->getTypeID(), ['editorPref' => caGetOption('quickadd', $pa_options, false) ? 'quickadd' : null]);
  		}
  		if (!$t_ui) { return false; }
  		
