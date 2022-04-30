@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2019 Whirl-i-Gig
+ * Copyright 2014-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -397,19 +397,17 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 			$ps_due_date = isset($va_checkout_config['default_checkout_date']) ? $va_checkout_config['default_checkout_date'] : null;
 		}
 		
-		$this->setMode(ACCESS_WRITE);
 		$this->set(array(
 			'group_uuid' => $vs_uuid,
 			'object_id' => $pn_object_id,
 			'user_id' => $pn_user_id,
 			'checkout_notes' => $ps_note,
-			'checkout_date' => _t('today'),
+			'checkout_date' => TimeExpressionParser::nowExpression(),
 			'due_date' => $ps_due_date
 		));	
 		
 		// Do we need to set values?
 		if (is_array($va_checkout_config['set_values']) && sizeof($va_checkout_config['set_values'])) {
-			$t_object->setMode(ACCESS_WRITE);
 			foreach($va_checkout_config['set_values'] as $vs_attr => $va_attr_values_by_event) {
 				if (!is_array($va_attr_values_by_event['checkout'])) {
 					if ($t_object->hasField($vs_attr)) {
@@ -462,15 +460,13 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 			throw new Exception(_t('Item is not out'));
 		}
 		
-		$this->setMode(ACCESS_WRITE);
 		$this->set(array(
-			'return_date' => _t('now'),
+			'return_date' => TimeExpressionParser::nowExpression(),
 			'return_notes' => $ps_note
 		));	
 		
 		// Do we need to set values?
 		if (is_array($va_checkout_config['set_values']) && sizeof($va_checkout_config['set_values'])) {
-			$t_object->setMode(ACCESS_WRITE);
 			foreach($va_checkout_config['set_values'] as $vs_attr => $va_attr_values_by_event) {
 				if (!is_array($va_attr_values_by_event['checkin'])) {
 					if ($t_object->hasField($vs_attr)) {
@@ -537,7 +533,6 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 			throw new ApplicationException(_t("Configuration for type %1 does not exist", $type_code));
 		}
 		
-		$this->setMode(ACCESS_WRITE);
 		$this->set(array(
 			'group_uuid' => $vs_uuid,
 			'object_id' => $pn_object_id,
@@ -547,7 +542,6 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 		
 		// Do we need to set values?
 		if (is_array($va_checkout_config['set_values']) && sizeof($va_checkout_config['set_values'])) {
-			$t_object->setMode(ACCESS_WRITE);
 			foreach($va_checkout_config['set_values'] as $vs_attr => $va_attr_values_by_event) {
 				if (!is_array($va_attr_values_by_event['reserve'])) {
 					if ($t_object->hasField($vs_attr)) {
@@ -1430,7 +1424,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	static public function getDashboardStatistics($ps_datetime=null, $pa_options=null) {
 		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }
-		if (!$ps_datetime) { $ps_datetime = _t('today'); }
+		if (!$ps_datetime) { $ps_datetime = TimeExpressionParser::todayExpression(); }
 		
 		$va_stats = array(
 			'numOverdueCheckouts' => ca_object_checkouts::numOverdueCheckouts($ps_datetime),			//	Number of individual copies checked-out and overdue

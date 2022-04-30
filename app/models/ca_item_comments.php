@@ -346,7 +346,7 @@ class ca_item_comments extends BaseModel {
 		if (!$this->getPrimaryKey()) { return null; }
 		$this->setMode(ACCESS_WRITE);
 		$this->set('moderated_by_user_id', $user_id);
-		$this->set('moderated_on', _t('now'));
+		$this->set('moderated_on', TimeExpressionParser::nowExpression());
 		return $this->update();
 	}
 	# ------------------------------------------------------

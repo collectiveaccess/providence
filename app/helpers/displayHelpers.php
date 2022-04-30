@@ -996,7 +996,7 @@ jQuery(document).ready(function() {
 					}
 				}
 
-				if ($t_item->hasField('is_deaccessioned') && $t_item->get('is_deaccessioned') && ($t_item->get('deaccession_date', array('getDirectDate' => true)) <= caDateToHistoricTimestamp(_t('now')))) {
+				if ($t_item->hasField('is_deaccessioned') && $t_item->get('is_deaccessioned') && ($t_item->get('deaccession_date', array('getDirectDate' => true)) <= caDateToHistoricTimestamp(TimeExpressionParser::nowExpression()))) {
 					// If currently deaccessioned then display deaccession message
 					$vs_buf .= "<br/><div class='inspectorDeaccessioned'>"._t('Deaccessioned %1', $t_item->get('deaccession_date'))."</div>\n";
 					if ($vs_deaccession_notes = $t_item->get('deaccession_notes')) { TooltipManager::add(".inspectorDeaccessioned", $vs_deaccession_notes); }

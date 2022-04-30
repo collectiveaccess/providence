@@ -10619,9 +10619,9 @@ $pa_options["display_form_field_tips"] = true;
 		
 		if (!is_null($pn_moderator)) {
 			$t_ixt->set('moderated_by_user_id', $pn_moderator);
-			$t_ixt->set('moderated_on', _t('now'));
+			$t_ixt->set('moderated_on', TimeExpressionParser::nowExpression());
 		}elseif(caGetOption('forceModerated', $pa_options, false) || $this->_CONFIG->get("dont_moderate_comments")){
-			$t_ixt->set('moderated_on', _t('now'));
+			$t_ixt->set('moderated_on', TimeExpressionParser::nowExpression());
 		}
 		
 		$t_ixt->insert();
@@ -12495,7 +12495,7 @@ $pa_options["display_form_field_tips"] = true;
 
 		$t_notification->set('notification_type', $pn_type);
 		$t_notification->set('message', $ps_message);
-		$t_notification->set('datetime', caGetOption('datetime', $pa_options, _t('now')));
+		$t_notification->set('datetime', caGetOption('datetime', $pa_options, TimeExpressionParser::nowExpression()));
 		$t_notification->set('is_system', $pb_system ? 1 : 0);
 		$t_notification->set('notification_key', caGetOption('key', $pa_options, null));
 		
@@ -12531,7 +12531,7 @@ $pa_options["display_form_field_tips"] = true;
 			// Send email immediately when queue is not enabled
 			if ((!defined("__CA_QUEUE_ENABLED__") || !__CA_QUEUE_ENABLED__) && (bool)$vb_send_email && $this->hasField('email') && ($vs_to_email = $this->get('email'))) {
 				if (caSendMessageUsingView(null, $vs_to_email, $vs_sender_email, $this->getAppConfig()->get('notification_email_subject'), "notification.tpl", ['notification' => $ps_message, 'sent_on' => time()],null, null, ['source' => 'Notification'])) {
-					$t_subject->set('delivery_email_sent_on', _t('now'));
+					$t_subject->set('delivery_email_sent_on', TimeExpressionParser::nowExpression());
 					$t_subject->update();
 				} // caSendMessageUsingView logs failures
 			}
@@ -12565,7 +12565,7 @@ $pa_options["display_form_field_tips"] = true;
 				// Send email immediately when queue is not enabled
 				if ((!defined("__CA_QUEUE_ENABLED__") || !__CA_QUEUE_ENABLED__) && (bool)$vb_send_email && $t_instance->hasField('email') && ($t_instance->load($va_subject['row_id'])) &&  ($vs_to_email = $t_instance->get('email'))) {
 					if (caSendMessageUsingView(null, $vs_to_email, $vs_sender_email, $this->getAppConfig()->get('notification_email_subject'), "notification.tpl", ['notification' => $ps_message, 'datetime' => time(), 'datetime_display' => caGetLocalizedDate()], null, null, ['source' => 'Notification'])) {
-						$t_subject->set('delivery_email_sent_on', _t('now'));
+						$t_subject->set('delivery_email_sent_on', TimeExpressionParser::nowExpression());
 						$t_subject->update();
 					} // caSendMessageUsingView logs failures
 				}
