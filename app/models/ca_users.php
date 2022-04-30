@@ -1608,7 +1608,6 @@ class ca_users extends BaseModel {
 			}
 			return $this->getPreferenceDefault($ps_pref);
 		} else {
-			//$this->postError(920, _t("%1 is not a valid user preference", $ps_pref),"User->getPreference()");
 			return null;
 		}
 	}
@@ -1653,11 +1652,33 @@ class ca_users extends BaseModel {
 					$vn_table_num = $this->_editorPrefFormatTypeToTableNum($va_pref_info["formatType"]);
 					$va_uis = $this->_getUIListByType($vn_table_num);
 					
+					$table = Datamodel::getTableName($vn_table_num);
+					$config = Configuration::load();
 					$va_defaults = array();
 					if(is_array($va_uis)) {
 						foreach($va_uis as $vn_type_id => $va_editor_info) {
+							$type_code = caGetListItemIdno($vn_type_idno);
 							foreach($va_editor_info as $vn_ui_id => $va_editor_labels) {
+								if(preg_match('!^batch_.*_ui$!', $ps_pref)) {
+									if((($dp = $config->get("{$table}_{$type_code}_default_batch_editor")) || ($dp = $config->get("{$table}_default_batch_editor"))) && ($d_ui_id = ca_editor_uis::find(['editor_code' => $dp], ['returnAs' => 'firstId']))) {
+										$va_defaults[$vn_type_id] = $d_ui_id;
+										break;	
+									}
+								}
+								if(preg_match('!^quickadd_.*_ui$!', $ps_pref)) {
+									if((($dp = $config->get("{$table}_{$type_code}_default_quickadd_editor")) || ($dp = $config->get("{$table}_default_quickadd_editor"))) && ($d_ui_id = ca_editor_uis::find(['editor_code' => $dp], ['returnAs' => 'firstId']))) {
+										$va_defaults[$vn_type_id] = $d_ui_id;
+										break;	
+									}
+								}
+								if(preg_match('!^cataloguing_.*_ui$!', $ps_pref)) {
+									if((($dp = $config->get("{$table}_{$type_code}_default_editor")) || ($dp = $config->get("{$table}_default_editor")))&& ($d_ui_id = ca_editor_uis::find(['editor_code' => $dp], ['returnAs' => 'firstId']))) {
+										$va_defaults[$vn_type_id] = $d_ui_id;
+										break;	
+									}
+								}
 								$va_defaults[$vn_type_id] = $vn_ui_id;
+								break;
 							}
 						}
 					}

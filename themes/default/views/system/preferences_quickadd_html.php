@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -50,7 +50,7 @@
 	print "<div class='preferenceSectionDivider'><!-- empty --></div>\n"; 
 	
 	foreach(array(
-		'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations'
+		'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations', 'ca_list_items'
 	) as $vs_table) {
 		if (!caTableIsActive($vs_table)) { continue; }
 		$t_instance = Datamodel::getInstanceByTableName($vs_table, true);
