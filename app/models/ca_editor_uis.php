@@ -333,6 +333,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 					$va_uis_by_type = $po_request->user->getPreference("cataloguing_{$vs_table_name}_editor_ui");
 					break;
 			}
+			
 			$va_available_uis_by_type = $po_request->user->_getUIListByType($vn_table_num);
 		} else {
 			$va_uis_by_type = $va_available_uis_by_type = [];
@@ -345,13 +346,19 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 					$vn_type_id = null;
 				}
 				$va_uis_by_type = []; 
-			} else {
-				if (!isset($va_available_uis_by_type[$vn_type_id][$va_uis_by_type[$vn_type_id]]) && !isset($va_available_uis_by_type['__all__'][$va_uis_by_type[$vn_type_id]])) {
-					$vn_type_id = null;
-				}
+			} elseif (!isset($va_available_uis_by_type[$vn_type_id][$va_uis_by_type[$vn_type_id]]) && !isset($va_available_uis_by_type['__all__'][$va_uis_by_type[$vn_type_id]])) {
+				$vn_type_id = null;
 			}
 		}
 	
+		if($vn_type_id && isset($va_uis_by_type[$vn_type_id])) {
+			if ($t_ui = ca_editor_uis::findAsInstance(['ui_id' => $va_uis_by_type[$vn_type_id]])) { return $t_ui; }
+		}
+		if(isset($va_uis_by_type['__all__'])) {
+			if ($t_ui = ca_editor_uis::findAsInstance(['ui_id' => $va_uis_by_type['__all__']])) { return $t_ui; }
+		}
+		
+		
 		$t_ui = new ca_editor_uis();
 		
 		// If table supports null types take type_id=null to be  "none" rather than a signal to allow any type of editor
