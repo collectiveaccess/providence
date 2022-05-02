@@ -241,7 +241,8 @@
 	 *
 	 *
 	 * @param array $pa_options Options are:
-	 *		no_background =
+	 *		icon_position =
+	 *		no_background = 
 	 *		dont_show_content = 
 	 *		graphicsPath =
 	 *		size =
@@ -255,6 +256,7 @@
 			$vs_url = '';
 		}
 		
+		$ps_icon_pos = isset($pa_options['icon_position']) ? $pa_options['icon_position'] : __CA_NAV_ICON_ICON_POS_LEFT__;
 		$pb_no_background = (isset($pa_options['no_background']) && $pa_options['no_background']) ? true : false;
 		$pb_dont_show_content = (isset($pa_options['dont_show_content']) && $pa_options['dont_show_content']) ? true : false;
 		
@@ -476,6 +478,7 @@
 	 *		size = 
 	 */
 	function caFormSubmitButton($po_request, $pn_type, $ps_content, $ps_id, $pa_options=null) {
+		$ps_icon_pos = isset($pa_options['icon_position']) ? $pa_options['icon_position'] : __CA_NAV_ICON_ICON_POS_LEFT__;
 		$ps_use_classname = isset($pa_options['class']) ? $pa_options['class'] : '';
 		$pb_no_background = (isset($pa_options['no_background']) && $pa_options['no_background']) ? true : false;
 		$pb_dont_show_content = (isset($pa_options['dont_show_content']) && $pa_options['dont_show_content']) ? true : false;

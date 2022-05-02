@@ -920,6 +920,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'label' => _t('Restrict to relationship types'),
 								'description' => _t('Restricts display to items related using the specified relationship type(s). Leave all unselected for no restriction.')
 							),
+							'dontShowRelationshipTypes' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_CHECKBOXES,
+								'width' => 10, 'height' => 1,
+								'takesLocale' => false,
+								'default' => false,
+								'label' => _t('Do not show relationship types?'),
+								'description' => _t('If checked relationship types will not be shown when displaying related items.')
+							),
 							'restrict_to_types' => array(
 								'formatType' => FT_TEXT,
 								'displayType' => DT_SELECT,
@@ -1149,7 +1158,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'takesLocale' => false,
 								'default' => false,
 								'label' => _t('Show batch editing button?'),
-								'description' => _t('If checked an option to batch edit related records will be displaye.')
+								'description' => _t('If checked an option to batch edit related records will be displayed.')
 							)
 						);
 				

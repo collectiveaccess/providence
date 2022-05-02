@@ -2832,7 +2832,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 
 									if ( $o_refinery = RefineryManager::getRefineryInstance( $vs_refinery ) ) {
 										$va_refined_values = $o_refinery->refine( $va_content_tree, $va_group, $va_item,
-											$va_raw_row, [
+											$va_row_with_replacements, [
 												'mapping'           => $t_mapping,
 												'source'            => $ps_source,
 												'subject'           => $t_subject,
@@ -2845,7 +2845,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												'reader'            => $o_reader,
 												'valueIndex'        => $vn_i,
 												'sourceValue' 		=> $va_group_buf[ $vn_c ]['_source'],
-												'defaultDisplaynameFormat' => $default_displayname_format
+												'defaultDisplaynameFormat' => $default_displayname_format,
+												'raw' 				=> $va_raw_row
 											] );
 
 										if ( ! $va_refined_values

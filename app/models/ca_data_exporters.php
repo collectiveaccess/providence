@@ -1925,6 +1925,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 			$va_get_options['locale'] = $vs_locale;
 		}
+		if($settings['returnAllLocales']) {
+			$va_get_options['returnAllLocales'] = true;
+		}
+		
 		
 		// AttributeValue settings that are simply passed through by the exporter
 	
@@ -2114,7 +2118,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			} else if(in_array($vs_source, array("relationship_type_id", "relationship_type_code", "relationship_typename"))) {
 				if(isset($pa_options[$vs_source]) && strlen($pa_options[$vs_source])>0) {
 
-					$o_log->logDebug(_t("Source refers to releationship type information. Value for this mapping is '%1'", $pa_options[$vs_source]));
+					$o_log->logDebug(_t("Source refers to relationship type information. Value for this mapping is '%1'", $pa_options[$vs_source]));
 
 					$va_item_info[] = array(
 						'text' => $pa_options[$vs_source],
