@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * listItemIndentedHierarchyBuilderRefinery.php.php : 
+ * storageLocationIndentedHierarchyBuilderRefinery.php.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2022 Whirl-i-Gig
+ * Copyright 2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,18 +26,20 @@
  * ----------------------------------------------------------------------
  */
 require_once(__CA_LIB_DIR__.'/Import/BaseRefinery.php');
+require_once(__CA_LIB_DIR__.'/Utils/DataMigrationUtils.php');
 require_once(__CA_APP_DIR__.'/helpers/importHelpers.php');
 
-class listItemIndentedHierarchyBuilderRefinery extends BaseRefinery {
+class storageLocationIndentedHierarchyBuilderRefinery extends BaseRefinery {
 	# -------------------------------------------------------
 	static $level_values = null;
 	static $level_value_ids = null;
+	static $level_parent_ids = null;
 	
 	# -------------------------------------------------------
 	public function __construct() {
-		$this->ops_name = 'listItemIndentedHierarchyBuilder';
-		$this->ops_title = _t('Indexed list item hierarchy builder');
-		$this->ops_description = _t('Imports spreadsheets with hierarchies expressed as indented values spread across several columns as hierarchical lists.');
+		$this->ops_name = 'storageLocationIndentedHierarchyBuilder';
+		$this->ops_title = _t('Indexed storage location hierarchy builder');
+		$this->ops_description = _t('Imports spreadsheets with hierarchies expressed as indented values spread across several columns as hierarchical storage location.');
 		
 		$this->opb_returns_multiple_values = true;
 		
@@ -70,9 +72,9 @@ class listItemIndentedHierarchyBuilderRefinery extends BaseRefinery {
 		
 		$t_mapping = caGetOption('mapping', $options, null);
 		if ($t_mapping) {
-			if ($t_mapping->get('table_num') != Datamodel::getTableNum('ca_list_items')) { 
+			if ($t_mapping->get('table_num') != Datamodel::getTableNum('ca_storage_locations')) { 
 				if ($o_log) {
-					$o_log->logError(_t("listItemIndentedHierarchyBuilder refinery may only be used in imports to ca_list_items"));
+					$o_log->logError(_t("storageLocationIndentedHierarchyBuilder refinery may only be used in imports to ca_storage_locations"));
 				}
 				return null; 
 			}
@@ -83,57 +85,35 @@ class listItemIndentedHierarchyBuilderRefinery extends BaseRefinery {
 		$pm_value = $source_data[$item['source']];
 		
 		// Get list of fields to insert
-		if (!is_array($levels = $item['settings']['listItemIndentedHierarchyBuilder_levels'])) {
+		if (!is_array($levels = $item['settings']['storageLocationIndentedHierarchyBuilder_levels'])) {
 			if ($o_log) {
-				$o_log->logError(_t("listItemIndentedHierarchyBuilder requires levels option be set to a list of data source placeholders"));
+				$o_log->logError(_t("storageLocationIndentedHierarchyBuilder requires levels option be set to a list of data source placeholders"));
 			}
 			return null; 
 		} else {
-			$level_types = $item['settings']['listItemIndentedHierarchyBuilder_levelTypes'];
+			$level_types = $item['settings']['storageLocationIndentedHierarchyBuilder_levelTypes'];
 		}
 		
-		// Get list, or create if it doesn't already exist
-		if (!($list_code = $item['settings']['listItemIndentedHierarchyBuilder_list'])) {
-			if ($o_log) {
-				$o_log->logError(_t("listItemIndentedHierarchyBuilder requires list option be set"));
-			}
-			return null; 
-		}
-		$t_list = new ca_lists();
-		if (!$t_list->load(array('list_code' => $list_code))) {
-			// create list
-			$t_list->set('list_code', $list_code);
-			$t_list->insert();
-			
-			if ($t_list->numErrors()) {
-				if ($o_log) {
-					$o_log->logError(_t("listItemIndentedHierarchyBuilder could not create list %1: %2", $list_code, join("; ", $t_list->getErrors())));
-				}	
-				return null;
-			}
-			
-			$t_list->addLabel(array('name' => caUcFirstUTF8Safe($list_code)), $locale_id, null, true);
-			if ($t_list->numErrors()) {
-				if ($o_log) {
-					$o_log->logError(_t("listItemIndentedHierarchyBuilder could not create list label %1: %2", $list_code, join("; ", $t_list->getErrors())));
-				}	
-				return null;
-			}
-		}
+		
+		$t_loc = new ca_storage_locations();
 		
 		// Handle each level
-		if (!is_array($level_values = listItemIndentedHierarchyBuilderRefinery::$level_values)) { 
+		if (!is_array($level_values = storageLocationIndentedHierarchyBuilderRefinery::$level_values)) { 
 			$level_values = $level_value_ids = [];
 		}
-		$level_value_ids = listItemIndentedHierarchyBuilderRefinery::$level_value_ids;
-		$level_parent_ids = listItemIndentedHierarchyBuilderRefinery::$level_parent_ids;
-		
+		$level_value_ids = storageLocationIndentedHierarchyBuilderRefinery::$level_value_ids;
+		$level_parent_ids = storageLocationIndentedHierarchyBuilderRefinery::$level_parent_ids;
 		$max_level = 0;
 		$parent_id = null;
+		$attr_spec = null;
+		
+		if(is_array($attributes = caGetOption('attributes', $options, null))) {
+			$attr_spec = caProcessRefineryAttributes($attributes, $source_data, $item, 0, $options);
+		}
 		foreach($levels as $i => $level_placeholder) {
 			$level_value = null;
 			if (strlen($level_placeholder)) {
-				if ($level_value = BaseRefinery::parsePlaceholder($level_placeholder, $source_data, $item, 0, array('reader' => caGetOption('reader', $options, null), 'returnAsString' => true))) {
+				if ($level_value = BaseRefinery::parsePlaceholder($level_placeholder, $source_data, $item, 0, ['reader' => caGetOption('reader', $options, null), 'returnAsString' => true])) {
 					if (!$parent_id) { 
 						$x = $i;
 						do {
@@ -143,9 +123,10 @@ class listItemIndentedHierarchyBuilderRefinery extends BaseRefinery {
 					}
 					
 					$type = isset($level_types[$i]) ? $level_types[$i] : null;
-					if ($item_id = DataMigrationUtils::getListItemID($list_code, preg_replace("![^A-Za-z0-9_]+!", "_", $level_value), $type, $locale_id, 
-							['is_enabled' => 1, 'parent_id' => $parent_id, 'preferred_labels' => array('name_singular' => $level_value, 'name_plural' => $level_value)], 
-							['matchOnIdno' => true, 'log' => $o_log, 'transaction' => caGetOption('transaction', $options, null), 'importEvent' => caGetOption('event', $options, null), 'importEventSource' => 'listItemIndentedHierarchyBuilder']
+					if (
+						$item_id = DataMigrationUtils::getStorageLocationID($level_value, $parent_id, $type, $locale_id, 
+							array_merge(['is_enabled' => 1, 'idno' => preg_replace("![^A-Za-z0-9_]+!", "_", $level_value)], $attr_spec ?? []), 
+							['matchOnIdno' => true, 'log' => $o_log, 'transaction' => caGetOption('transaction', $options, null), 'importEvent' => caGetOption('event', $options, null), 'importEventSource' => 'storageLocationIndentedHierarchyBuilder']
 						)
 					) {
 						$level_parent_ids[$i] = $parent_id;
@@ -155,16 +136,17 @@ class listItemIndentedHierarchyBuilderRefinery extends BaseRefinery {
 						$level_values[$i] = $level_value;
 						$level_value_ids[$i] = $item_id;
 						$max_level = $i;
+						
 					
 					}	
 				}
 			} 
 		}
-		listItemIndentedHierarchyBuilderRefinery::$level_values = array_slice($level_values, 0, $max_level + 1);
-		listItemIndentedHierarchyBuilderRefinery::$level_value_ids = array_slice($level_value_ids, 0, $max_level + 1);
-		listItemIndentedHierarchyBuilderRefinery::$level_parent_ids = array_slice($level_parent_ids, 0, $max_level + 2);
+		storageLocationIndentedHierarchyBuilderRefinery::$level_values = array_slice($level_values, 0, $max_level + 1);
+		storageLocationIndentedHierarchyBuilderRefinery::$level_value_ids = array_slice($level_value_ids, 0, $max_level + 1);
+		storageLocationIndentedHierarchyBuilderRefinery::$level_parent_ids = array_slice($level_parent_ids, 0, $max_level + 2);
 		
-		if ($item['settings']['listItemIndentedHierarchyBuilder_list'] == 'returnData') {
+		if ($item['settings']['storageLocationIndentedHierarchyBuilder_list'] == 'returnData') {
 			return $parent_id;
 		}
 		
@@ -172,7 +154,7 @@ class listItemIndentedHierarchyBuilderRefinery extends BaseRefinery {
 	}
 	# -------------------------------------------------------	
 	/**
-	 * listItemIndentedHierarchyBuilderRefinery returns multiple values
+	 * storageLocationIndentedHierarchyBuilderRefinery returns multiple values
 	 *
 	 * @return bool
 	 */
@@ -181,7 +163,7 @@ class listItemIndentedHierarchyBuilderRefinery extends BaseRefinery {
 	}
 	# -------------------------------------------------------	
 	/**
-	 * listItemIndentedHierarchyBuilder returns actual row_ids, not idnos
+	 * storageLocationIndentedHierarchyBuilder returns actual row_ids, not idnos
 	 *
 	 * @return bool
 	 */
@@ -191,8 +173,8 @@ class listItemIndentedHierarchyBuilderRefinery extends BaseRefinery {
 	# -------------------------------------------------------
 }
 
- BaseRefinery::$s_refinery_settings['listItemIndentedHierarchyBuilder'] = array(	
-	'listItemIndentedHierarchyBuilder_levels' => array(
+ BaseRefinery::$s_refinery_settings['storageLocationIndentedHierarchyBuilder'] = [
+	'storageLocationIndentedHierarchyBuilder_levels' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_FIELD,
 		'width' => 10, 'height' => 1,
@@ -201,7 +183,7 @@ class listItemIndentedHierarchyBuilderRefinery extends BaseRefinery {
 		'label' => _t('Levels'),
 		'description' => _t('List of sources for hierarchy levels')
 	),
-	'listItemIndentedHierarchyBuilder_levelTypes' => array(
+	'storageLocationIndentedHierarchyBuilder_levelTypes' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_FIELD,
 		'width' => 10, 'height' => 1,
@@ -210,16 +192,7 @@ class listItemIndentedHierarchyBuilderRefinery extends BaseRefinery {
 		'label' => _t('Level types'),
 		'description' => _t('List of types for hierarchy levels')
 	),
-	'listItemIndentedHierarchyBuilder_list' => array(
-		'formatType' => FT_TEXT,
-		'displayType' => DT_SELECT,
-		'width' => 10, 'height' => 1,
-		'takesLocale' => false,
-		'default' => '',
-		'label' => _t('List'),
-		'description' => _t('Code of list to import items into')
-	),
-	'listItemIndentedHierarchyBuilder_mode' => array(
+	'storageLocationIndentedHierarchyBuilder_mode' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_SELECT,
 		'width' => 10, 'height' => 1,
@@ -231,8 +204,17 @@ class listItemIndentedHierarchyBuilderRefinery extends BaseRefinery {
 		),
 		'label' => _t('Operating mode'),
 		'description' => _t('Set to "returnData" to return the id of lowest item in the hierarchy to the importer; set to "processOnly" to create the list items in the hierarchy but not return values to the importer. Default is to process only.')
-	),			
-	'listItemIndentedHierarchyBuilder_ignoreParent' => array(
+	),	
+	'storageLocationIndentedHierarchyBuilder_attributes' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'width' => 10, 'height' => 1,
+		'takesLocale' => false,
+		'default' => '',
+		'label' => _t('Attributes'),
+		'description' => _t('Sets or maps metadata for the lot record by referencing the metadataElement code and the location in the data source where the data values can be found.')
+	),		
+	'storageLocationIndentedHierarchyBuilder_ignoreParent' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_FIELD,
 		'width' => 10, 'height' => 1,
@@ -241,7 +223,7 @@ class listItemIndentedHierarchyBuilderRefinery extends BaseRefinery {
 		'label' => _t('Ignore parent when trying to match row'),
 		'description' => _t('Ignore parent when trying to match row.')
 	),
-	'listItemIndentedHierarchyBuilder_ignoreType' => array(
+	'storageLocationIndentedHierarchyBuilder_ignoreType' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_FIELD,
 		'width' => 10, 'height' => 1,
@@ -250,4 +232,4 @@ class listItemIndentedHierarchyBuilderRefinery extends BaseRefinery {
 		'label' => _t('Ignore type when trying to match row'),
 		'description' => _t('Ignore type when trying to match row.')
 	)
-);
+];
