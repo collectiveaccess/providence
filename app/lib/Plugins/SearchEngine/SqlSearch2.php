@@ -383,7 +383,10 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 		$field = null;
 	 	}
 	 	
-	 	$words = self::filterStopWords(self::tokenize(join(' ', $words), true));
+	 	$indexing_options = caGetOption('indexing_options', $ap, null);
+	 	if(!is_array($indexing_options) || !in_array('DONT_TOKENIZE', $indexing_options)) {
+	 		$words = self::filterStopWords(self::tokenize(join(' ', $words), true));
+	 	}
 	 	if(!$words || !sizeof($words)) { return null; }
 	 	
 	 	$blank_val = caGetBlankLabelText($subject_tablenum);
