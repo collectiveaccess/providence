@@ -200,7 +200,7 @@ class DisplayTemplateParser {
 
 		if(!$qr_res) { return $pb_return_as_array ? array() : ""; }
 
-        $filter_non_primary_reps = self::_setPrimaryRepresentationFiltering($qr_res, caGetOption('filterNonPrimaryRepresentations', $pa_options, false));
+        $filter_non_primary_reps = self::_setPrimaryRepresentationFiltering($qr_res, caGetOption('filterNonPrimaryRepresentations', $pa_options, null));
         
 		$pa_check_access = ($t_instance->hasField('access')) ? caGetOption('checkAccess', $pa_options, null) : null;
 		if (!is_array($pa_check_access) || !sizeof($pa_check_access)) { $pa_check_access = null; }
@@ -1953,7 +1953,7 @@ class DisplayTemplateParser {
 		
 	 	$filter_opt = $value;
 	 	$filter = true;
-        if(!(bool)$filter_opt || ($filter_opt === '0') || (strtolower($filter_opt) === 'no')) { $filter = false; }
+        if(!is_null($filter_opt) && (!(bool)$filter_opt || ($filter_opt === '0') || (strtolower($filter_opt) === 'no'))) { $filter = false; }
 		$res->filterNonPrimaryRepresentations($filter); 
 		
 		return $filter;
