@@ -1160,15 +1160,18 @@
 						}
 						
 	
+						$label_is_not_set = (!isset($va_val['preferred_labels']) || (is_array($va_val['preferred_labels']) && !sizeof($va_val['preferred_labels'])) || !strlen($va_val['preferred_labels']));
 						switch($ps_table) {
 							case 'ca_entities':
-								if(!isset($va_val['preferred_labels']) || !is_array($va_val['preferred_labels'])) { 
+								if($label_is_not_set) { 
 									$va_val['preferred_labels'] = DataMigrationUtils::splitEntityName($vs_item, array_merge($pa_options, ['doNotParse' => $pa_item['settings']["{$ps_refinery_name}_doNotParse"]])); 
 								}
 								if(!isset($va_val['idno'])) { $va_val['idno'] = $vs_item; }
 								break;
 							case 'ca_list_items':
-								$va_val['preferred_labels'] = array('name_singular' => str_replace("_", " ", $vs_item), 'name_plural' => str_replace("_", " ", $vs_item));
+								if($label_is_not_set) { 
+									$va_val['preferred_labels'] = ['name_singular' => str_replace("_", " ", $vs_item), 'name_plural' => str_replace("_", " ", $vs_item)];
+								}
 								$va_val['_list'] = $pa_options['list_id'];
 								if(!isset($va_val['idno'])) { $va_val['idno'] = $vs_item; }
 								break;
@@ -1179,11 +1182,15 @@
 							case 'ca_occurrences':
 							case 'ca_places':
 							case 'ca_objects':
-								$va_val['preferred_labels'] = array('name' => $vs_item);
+								if($label_is_not_set) { 
+									$va_val['preferred_labels'] = ['name' => $vs_item];
+								}
 								if(!isset($va_val['idno'])) { $va_val['idno'] = $vs_item; }
 								break;
 							case 'ca_object_lots':
-								$va_val['preferred_labels'] = array('name' => $vs_item);
+								if($label_is_not_set) { 
+									$va_val['preferred_labels'] = ['name' => $vs_item];
+								}
 								if(!isset($va_val['idno_stub'])) { $va_val['idno_stub'] = $vs_item; }
 								
 								if (isset($va_val['_status'])) {
@@ -1202,7 +1209,9 @@
 							    
 							    $is_primary = caGetOption( 'objectRepresentationSplitter_isPrimary', $pa_item['settings'], false);
 							    
-								if(!isset($va_val['preferred_labels']) || !strlen($va_val['preferred_labels'])) { $va_val['preferred_labels'] = $vs_name ? $vs_name : '['.caGetBlankLabelText('ca_object_representations').']'; }
+								if($label_is_not_set) { 
+									 $va_val['preferred_labels'] = $vs_name ? $vs_name : '['.caGetBlankLabelText('ca_object_representations').']';
+								}
 					
 								if ($va_val['media']['media'] || $vs_item) {
 									// Search for files in import directory (or subdirectory of import directory specified by mediaPrefix)
