@@ -69,7 +69,7 @@ $vs_form_name = "StorageLocationQuickAddForm";
 	
 	<div class="quickAddFormTopPadding"><!-- empty --></div>
 	<div class="quickAddErrorContainer" id="<?= $vs_form_name; ?>Errors<?= $vs_field_name_prefix.$vs_n; ?>"> </div>
-	<div class="quickAddSectionBox" id="{$vs_form_name}Container<?= $vs_field_name_prefix.$vs_n; ?>">
+	<div class="quickAddSectionBox" id="<?= $vs_form_name.'Container'.$vs_field_name_prefix.$vs_n; ?>">
 <?php
 	// Output hierarchy browser
 	$va_lookup_urls = caJSONLookupServiceUrl($this->request, 'ca_storage_locations');
@@ -128,11 +128,12 @@ $vs_form_name = "StorageLocationQuickAddForm";
 	</div>
 <?php
 			$va_form_elements = $t_subject->getBundleFormHTMLForScreen($this->getVar('screen'), array(
-					'request' => $this->request, 
-					'restrictToTypes' => array($t_subject->get('type_id')),
-					'formName' => $vs_form_name.$vs_field_name_prefix.$vs_n,
-					'forceLabelForNew' => $this->getVar('forceLabel'),							// force query text to be default in label fields
-					'omit' => array('parent_id')
+				'request' => $this->request, 
+				'restrictToTypes' => array($t_subject->get('type_id')),
+				'formName' => $vs_form_name.$vs_field_name_prefix.$vs_n,
+				'forceLabelForNew' => $this->getVar('forceLabel'),							// force query text to be default in label fields
+				'omit' => array('parent_id'),
+				'quickadd' => true
 			));
 			
 			print join("\n", $va_form_elements);

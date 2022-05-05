@@ -124,8 +124,8 @@
 	/**
 	 * Return list of types to restrict activity by for given table
 	 *
-	 * @param mixed $pm_table_name_or_num Table name of number to fetch types for
-	 * @param array $pa_options Array of options:
+	 * @param mixed $table_name_or_num Table name of number to fetch types for
+	 * @param array $options Array of options:
 	 *		access = minimum access level user must have to a type for it to be returned. Values are:
 	 *			__CA_BUNDLE_ACCESS_NONE__ (0)
 	 *			__CA_BUNDLE_ACCESS_READONLY__ (1)
@@ -136,50 +136,51 @@
 	 *
 	 * @return array List of numeric type_ids for which the user has access, or null if there are no restrictions at all
 	 */
-	function caGetTypeRestrictionsForUser($pm_table_name_or_num, $pa_options=null) {
+	function caGetTypeRestrictionsForUser($table_name_or_num, $options=null) {
 		global $g_request, $g_access_helpers_type_restriction_cache;
-		if (!is_array($pa_options)) { $pa_options = array(); }
+		if (!is_array($options)) { $options = array(); }
 		
-		//if ($g_request && $g_request->isLoggedIn() && ($g_request->user->canDoAction('is_administrator'))) { return null; }
+		$user_id = ($g_request && $g_request->isLoggedIn()) ? $g_request->getUserID() : '';
 		
-		$vs_cache_key = md5($pm_table_name_or_num."/".print_r($pa_options, true));
-		if (isset($g_access_helpers_type_restriction_cache[$vs_cache_key])) { return $g_access_helpers_type_restriction_cache[$vs_cache_key]; }
+		$cache_key = caMakeCacheKeyFromOptions($options, $table_name_or_num.'/'.$user_id);
+		
+		if (isset($g_access_helpers_type_restriction_cache[$cache_key])) { return $g_access_helpers_type_restriction_cache[$cache_key]; }
 		$o_config = Configuration::load();
 		
-		$vn_min_access = isset($pa_options['access']) ? (int)$pa_options['access'] : __CA_BUNDLE_ACCESS_READONLY__;
+		$min_access = isset($options['access']) ? (int)$options['access'] : __CA_BUNDLE_ACCESS_READONLY__;
 		
-		if (is_numeric($pm_table_name_or_num)) {
-			$vs_table_name = Datamodel::getTableName($pm_table_name_or_num);
+		if (is_numeric($table_name_or_num)) {
+			$table_name = Datamodel::getTableName($table_name_or_num);
 		} else {
-			$vs_table_name = $pm_table_name_or_num;
+			$table_name = $table_name_or_num;
 		}
-		$t_instance = Datamodel::getInstanceByTableName($vs_table_name, true);
+		$t_instance = Datamodel::getInstanceByTableName($table_name, true);
 		if (!$t_instance) { return null; }	// bad table
 		
 		// get types user has at least read-only access to
-		$va_type_ids = null;
+		$type_ids = null;
 		if ((bool)$t_instance->getAppConfig()->get('perform_type_access_checking') && $g_request && $g_request->isLoggedIn()) {
-			if (is_array($va_type_ids = $g_request->user->getTypesWithAccess($t_instance->tableName(), $vn_min_access))) {
-				$va_type_ids = caMakeTypeIDList($pm_table_name_or_num, $va_type_ids, array_merge($pa_options, array('dont_include_subtypes_in_type_restriction' => true)));
+			if (is_array($type_ids = $g_request->user->getTypesWithAccess($t_instance->tableName(), $min_access))) {
+				$type_ids = caMakeTypeIDList($table_name_or_num, $type_ids, array_merge($options, array('dont_include_subtypes_in_type_restriction' => true)));
 			}
 		}
 		// get types from config file
-		if ($va_config_types = $t_instance->getAppConfig()->getList($vs_table_name.'_restrict_to_types')) {
-			if ((bool)$o_config->get($vs_table_name.'_restrict_to_types_dont_include_subtypes')) {
-				$pa_options['dont_include_subtypes_in_type_restriction'] = true;
+		if ($config_types = $t_instance->getAppConfig()->getList($table_name.'_restrict_to_types')) {
+			if ((bool)$o_config->get($table_name.'_restrict_to_types_dont_include_subtypes')) {
+				$options['dont_include_subtypes_in_type_restriction'] = true;
 			}
-			$va_config_type_ids = caMakeTypeIDList($pm_table_name_or_num, $va_config_types, $pa_options);
+			$config_type_ids = caMakeTypeIDList($table_name_or_num, $config_types, $options);
 			
-			if (is_array($va_config_type_ids)) {
-				if (is_array($va_type_ids) && sizeof($va_type_ids)) {
-					$va_type_ids = array_intersect($va_type_ids, $va_config_type_ids);
+			if (is_array($config_type_ids)) {
+				if (is_array($type_ids) && sizeof($type_ids)) {
+					$type_ids = array_intersect($type_ids, $config_type_ids);
 				} else {
-					$va_type_ids = $va_config_type_ids;
+					$type_ids = $config_type_ids;
 				}
 			}
 		}
 		
-		return $g_access_helpers_type_restriction_cache[$vs_cache_key] = $va_type_ids;
+		return $g_access_helpers_type_restriction_cache[$cache_key] = $type_ids;
 	}
 	# ---------------------------------------------------------------------------------------------
 	/**
