@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * default/views/mailTemplates/library_coming_due.tpl
+ * default/views/mailTemplates/library_checkin_receipt.tpl
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2022 Whirl-i-Gig
+ * Copyright 2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,10 +25,11 @@
  *
  * ----------------------------------------------------------------------
  */
-$items = $this->getVar('items') ?? [];
+ 
+$checkins = $this->getVar('checkins') ?? [];
 ?>
-The following borrowed item(s) will be due on the dates specified below: 
+<p>The following items were returned on <?= $this->getVar('checkin_date'); ?>: </p>
 
-<ul><?= join("\n", array_map(function($v) { return $v['_display']; }, $items)); ?></ul>
+<ul><?= join("\n", array_map(function($v) { return $v['_display']; }, $checkins)); ?></ul>
 
-Please return them on or before the listed dates. Thank you!
+<p>Thank you!</p>

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2020 Whirl-i-Gig
+ * Copyright 2014-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -67,6 +67,7 @@
 			$item_value_col = (string)$po_opts->getOption('itemValueColumn');
 			$item_desc_col = (string)$po_opts->getOption('itemDescriptionColumn');
 			$np_label_col = (string)$po_opts->getOption('nonPreferredLabelsColumn');
+			$worksheet = (int)$po_opts->getOption('worksheet');
 			
 			$locale = (string)$po_opts->getOption('locale');
 			if (!preg_match("!^[A-Za-z]{2,3}_[A-Za-z]{2,3}$!", $locale)) { $locale = 'en_US'; }
@@ -74,8 +75,8 @@
 			$vn_skip = (int)$po_opts->getOption('skip');
 			
 			$o_handle = \PhpOffice\PhpSpreadsheet\IOFactory::load($vs_filepath);
-			$o_sheet = $o_handle->getActiveSheet();
-			
+			$o_handle->setActiveSheetIndex($worksheet);
+			$o_sheet = $o_handle->getActiveSheet();		
 			
 			$vn_c = 0;
 			$vn_last_level = 0;
@@ -185,6 +186,7 @@
 				"itemValueColumn|x=s" => _t('Column number to use for item values. Omit to not set item values.'),
 				"itemDescriptionColumn|y=s" => _t('Column number to use for item descriptions. Omit to not set item descriptions.'),
 				"nonPreferredLabelsColumn|z=s" => _t('Column number to use for item nonpreferred labels. Omit to not set nonpreferred labels.'),
+				"worksheet|w-s" => _t('Zeroobased index of worksheet to use. If omitted first worksheet (0) is used.')
 			);
 		}
 		# -------------------------------------------------------

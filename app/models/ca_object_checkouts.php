@@ -361,7 +361,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 			SELECT *
 			FROM ca_object_checkouts
 			WHERE
-				user_id = ? AND object_id = ? AND checkout_date IS NOT NULL AND return_date IS NULL
+				user_id = ? AND object_id = ? AND checkout_date IS NOT NULL AND return_date IS NULL AND deleted = 0
 			ORDER BY 
 				created_on
 		", array($pn_user_id, $pn_object_id));
@@ -375,7 +375,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 			SELECT *
 			FROM ca_object_checkouts
 			WHERE
-				user_id = ? AND object_id = ? AND checkout_date IS NULL AND return_date IS NULL
+				user_id = ? AND object_id = ? AND checkout_date IS NULL AND return_date IS NULL AND deleted = 0
 			ORDER BY 
 				created_on
 		", array($pn_user_id, $pn_object_id));
@@ -623,6 +623,8 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 				(return_date IS NULL)
 				AND
 				(object_id = ?)
+				AND
+				(deleted = 0)
 		", array(time(), $pn_object_id));
 		
 		if ($qr_res->nextRow()) {
@@ -648,6 +650,8 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 				(return_date IS NULL)
 				AND
 				(object_id = ?)
+				AND
+				(deleted = 0)
 		", array(time(), $pn_object_id));
 		
 		$va_checkout_ids = $qr_res->getAllFieldValues('checkout_id');

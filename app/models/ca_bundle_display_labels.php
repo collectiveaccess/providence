@@ -205,4 +205,4 @@ class ca_bundle_display_labels extends BaseLabel {
 	}
 	# ----------------------------------------
 }
-?>
+

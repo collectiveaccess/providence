@@ -206,4 +206,3 @@ class ca_objects_x_vocabulary_terms extends ObjectRelationshipBaseModel {
 	}
 	# ------------------------------------------------------
 }
-?>

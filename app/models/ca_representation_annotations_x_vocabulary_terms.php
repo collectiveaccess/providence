@@ -206,4 +206,3 @@ class ca_representation_annotations_x_vocabulary_terms extends BaseRelationshipM
 	}
 	# ------------------------------------------------------
 }
-?>

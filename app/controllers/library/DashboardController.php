@@ -127,10 +127,10 @@
 							foreach($va_attrs as $vn_attr_id => $va_vals) {
 							    if(is_array($va_vals)) {
                                     foreach($va_vals as $vn_val_id => $va_val) {
-                                        $va_counts[$va_val[$va_group_by_elements[$vn_i]]]++;
+                                        $va_counts[$k = $va_val[$va_group_by_elements[$vn_i]]]++;
                                     }
                                 } else {
-                                    $va_counts[$va_vals]++;
+                                    $va_counts[$k = $va_vals]++;
                                 }
 							}
 							
@@ -179,6 +179,49 @@
  			
  			
  			$this->render('dashboard/user_detail_html.php');
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
+ 		public function getGroupDetail() {
+ 			$group_by = $this->request->getParameter('group_by', pString);
+ 			$group = $this->request->getParameter('group', pString);
+ 			$ps_daterange = $this->request->getParameter('daterange', pString);
+ 			$group_by_fld = array_pop(explode('.', $group_by));
+ 			$checkouts = [];
+ 			$object_ids = ca_object_checkouts::getObjectIDsForOutstandingCheckouts($ps_daterange);
+ 			if ($qr = ca_objects::find([$group_by_fld => $group, 'object_id' => ['IN', $object_ids]], ['returnAs' => 'searchResult'])) {	
+ 				$this->view->setVar('group', $group);
+ 			
+ 				$checkouts = [];
+ 				while($qr->nextHit()) {
+ 					$vs_item_display_template = "<unit relativeTo=\"ca_objects\"><l>^ca_objects.preferred_labels.name</l> (^ca_objects.idno)</unit>";
+ 			
+ 					$checkouts[] = [
+ 						'_display' => $qr->getWithTemplate($vs_item_display_template)
+ 					];
+					// Get checkouts 
+					 //ca_object_checkouts::getOutstandingCheckoutsForUser($pn_user_id, $vs_item_display_template, $ps_daterange, ['omitOverdue' => true]);
+				}
+					
+					// // Get checkins 
+	// 				$this->view->setVar('checkins', ca_object_checkouts::getCheckinsForUser($pn_user_id, $vs_item_display_template, $ps_daterange));
+	// 			
+	// 				// Get overdue
+	// 				$this->view->setVar('overdue_checkouts', ca_object_checkouts::getOverdueCheckoutsForUser($pn_user_id, $vs_item_display_template, $ps_daterange));
+	// 			
+	// 				// Get reservations
+	// 				$this->view->setVar('reservations', ca_object_checkouts::getOutstandingReservationsForUser($pn_user_id, $vs_item_display_template));
+			
+			} else {
+				$this->view->setVar('group', "???");
+			}
+			
+			$this->view->setVar('checkouts', $checkouts);
+ 			
+ 			
+ 			$this->render('dashboard/group_detail_html.php');
  		}
  		# -------------------------------------------------------
  	}

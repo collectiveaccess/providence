@@ -522,4 +522,19 @@ class ca_locales extends BaseModel {
 		return $pb_codes_only ? array_keys($va_locales) : $va_locales;
 	}
 	# ------------------------------------------------------
+	/**
+	 * Text direction for locale, either "ltr" for left-to-right or "rtl" for right-to-left
+	 *
+	 * @param string $locale
+	 *
+	 * @return string 'rtl' or 'ltr'
+	 */
+	static function directionForLocale(string $locale) : string {
+		$locale_data = Zend_Locale_Data::getList($locale, 'layout');
+		if($locale_data['characterOrder'] === 'right-to-left') {
+			return 'rtl';
+		}
+		return 'ltr';
+	}
+	# ------------------------------------------------------
 }

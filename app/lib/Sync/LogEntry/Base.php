@@ -500,6 +500,7 @@ abstract class Base {
 				// handle many-to-ones relationships (Eg. ca_set_items.set_id => ca_sets.set_id)
 				if (isset($va_many_to_one_rels[$vs_field]) && ($t_rel_item = \Datamodel::getInstanceByTableName($va_many_to_one_rels[$vs_field]['one_table'], true)) && ($t_rel_item instanceof \BundlableLabelableBaseModelWithAttributes)) {
 					$t_rel_item->setTransaction($this->getTx());
+					if(in_array($vs_field, ['home_location_id'])) { continue; }
 					if($t_rel_item->loadByGUID($va_snapshot[$vs_field.'_guid'])) {
 						$this->getModelInstance()->set($vs_field, $t_rel_item->getPrimaryKey());
 						continue;

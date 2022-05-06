@@ -2676,7 +2676,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  		if (isset($pa_options['ui_instance']) && ($pa_options['ui_instance'])) {
  			$t_ui = $pa_options['ui_instance'];
  		} else {
- 			$t_ui = ca_editor_uis::loadDefaultUI($vs_table_name, $pa_options['request'], $this->getTypeID());
+ 			$t_ui = ca_editor_uis::loadDefaultUI($vs_table_name, $pa_options['request'], $this->getTypeID(), ['editorPref' => caGetOption('quickadd', $pa_options, false) ? 'quickadd' : null]);
  		}
  		if (!$t_ui) { return false; }
  		
@@ -4571,7 +4571,7 @@ if (!$vb_batch) {
                                     } elseif(preg_match("!^".($u = caGetUserDirectoryName($po_request->getUserID()))."/(.*)$!", $va_values['tmp_name'], $m)) {
                                     	foreach($import_directory_paths as $p) {
                                     		if(file_exists($vs_path = "{$p}/{$m[1]}")) {
-                                    			$vs_original_name = pathinfo($va_values['tmp_name'], PATHINFO_FILENAME);
+                                    			$vs_original_name = pathinfo($va_values['tmp_name'], PATHINFO_BASENAME);
                                     			break;
                                     		}
                                     	}
@@ -5329,8 +5329,6 @@ if (!$vb_batch) {
 						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
 					
 						// Save checkout/return note edits
-					    require_once(__CA_MODELS_DIR__."/ca_object_checkouts.php");
-					    
 					    $edits = [];
 						foreach($_REQUEST as $k => $v) {
 						    if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}(checkout|return)_notes_([\d]+)$!", $k, $m)) {
@@ -5351,6 +5349,17 @@ if (!$vb_batch) {
                                 }
                             }
                         }
+                        
+                        // Cancel reservations
+                        foreach($_REQUEST as $k => $v) {
+						    if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}cancelReservation_([\d]+)$!", $k, $m)) {
+						    	if(($t_checkout = new ca_object_checkouts((int)$m[1])) && ($t_checkout->get('object_id') == $this->getPrimaryKey()) && $t_checkout->isReservation()){
+						    		if (!$t_checkout->delete(true)) {
+                                        $po_request->addActionErrors($t_checkout->errors(), 'ca_object_checkouts', 'general');
+                                    }
+						    	}
+						    }
+						}
 					
 						break;
 					# -------------------------------
@@ -8831,7 +8840,7 @@ side. For many self-relations the direction determines the nature and display te
 					$element_code = ca_metadata_elements::getElementCodeForID($element_id);
 					$t_element = ca_metadata_elements::getInstance($element_id);
 					
-					$values = $attr->getDisplayValues();
+					$values = $attr->getDisplayValues(false, ['forDuplication' => true]);
 					if(!sizeof(array_filter($values, function($v) {
 						return (bool)strlen($v);
 					}))) {
@@ -8847,7 +8856,7 @@ side. For many self-relations the direction determines the nature and display te
 					if($c >= $max) {
 						if($datatype == 1) { // try to append for text fields
 							$existing_vals = $t_base->getAttributesByElement($element_id);
-							$existing_val = $existing_vals[0]->getDisplayValues();
+							$existing_val = $existing_vals[0]->getDisplayValues(false, ['forDuplication' => true]);
 							
 							if(sizeof(array_diff_assoc($existing_val, $values))) {
 								$values[$element_code] = $existing_val[$element_code]."\n".$values[$element_code];
