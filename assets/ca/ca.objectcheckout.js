@@ -171,7 +171,11 @@ var caUI = caUI || {};
 						);
 					}
 				}
-			}).click(function() { this.select(); }).focus();
+			}).click(function() { this.select(); }).keydown(function (e) {
+				if (e.keyCode == 13) {
+					e.preventDefault();
+				}
+			});focus();
 			
 			jQuery('#transactionSubmit').on('click', function(e) {
 				// marshall transaction data and submit

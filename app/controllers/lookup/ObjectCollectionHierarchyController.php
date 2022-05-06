@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2017 Whirl-i-Gig
+ * Copyright 2012-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -135,7 +135,7 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 
 			if (!$pb_exact) {
 				$o_search_config = caGetSearchConfig();
-				$ps_query = trim(preg_replace("![".str_replace("!", "\\!", $o_search_config->get('search_tokenizer_regex'))."]+!u", " ", $ps_query));
+				$ps_query = join(' ', caTokenizeString($ps_query));
 			}
 
 			if (!(is_array($va_object_sort = $o_config->getList('ca_objects_lookup_sort'))) || !sizeof($va_object_sort)) {
