@@ -770,7 +770,9 @@ class XLSXProfileParser extends BaseProfileParser {
 			}
 			
 			$bundle_type = null;
-			$bundle_list = \Datamodel::getInstance($table, true)->getBundleList(['includeBundleInfo' => true]);
+			
+			// Don't init metadata elements as the ca_metadata_elements table may not exist yet, and even if it does won't have data in it
+			$bundle_list = \Datamodel::getInstance($table, false, null, ['dontInitMetadataElements' => true])->getBundleList(['includeBundleInfo' => true, 'dontInitMetadataElements' => true]);
 			
 			if($rel_table) {
 				$bundle_type = 'relationship';
