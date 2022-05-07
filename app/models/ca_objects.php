@@ -546,7 +546,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 	#    the record identified by the primary key value
 	#
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
+	public function __construct($id=null, ?array $options=null) {
 		if (
 			!is_null(BaseModel::$s_ca_models_definitions['ca_objects']['FIELDS']['acl_inherit_from_parent']['DEFAULT'])
 			||
@@ -561,7 +561,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 				BaseModel::$s_ca_models_definitions['ca_objects']['FIELDS']['acl_inherit_from_ca_collections']['DEFAULT'] = (int)$o_config->get('ca_objects_acl_inherit_from_ca_collections_default');
 			}
 		}
-		parent::__construct($pn_id);
+		parent::__construct($id, $options);
 	}
 	# ------------------------------------------------------
 	protected function initLabelDefinitions($pa_options=null) {

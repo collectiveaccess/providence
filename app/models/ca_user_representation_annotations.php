@@ -270,8 +270,8 @@ class ca_user_representation_annotations extends BundlableLabelableBaseModelWith
 	#    the record identified by the primary key value
 	#
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
+	public function __construct($id=null, ?array $options=null) {
+		parent::__construct($id, $options);	# call superclass constructor
 		
  		$o_config = $this->getAppConfig();
  		$this->opo_type_config = Configuration::load(__CA_CONF_DIR__.'/annotation_types.conf');

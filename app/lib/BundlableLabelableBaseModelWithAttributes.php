@@ -94,22 +94,15 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 */
 	protected $_rowAsSearchResult;
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
-		require_once(__CA_MODELS_DIR__."/ca_acl.php");
-		require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_entries.php');
-		require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rules.php');
-		require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
-
-		parent::__construct($pn_id);	# call superclass constructor
+	public function __construct($id=null, ?array $options=null) {
+		parent::__construct($id, $options);	# call superclass constructor
 		
 		if ($pn_id) {
-			if ($this->_rowAsSearchResult = $this->makeSearchResult($this->tableName(), array($pn_id))) {
+			if ($this->_rowAsSearchResult = $this->makeSearchResult($this->tableName(), [$id])) {
 				$this->_rowAsSearchResult->nextHit();
 			}
 		}
-		
-		$this->initLabelDefinitions();
+		$this->initLabelDefinitions($options);
 	}
 	# ------------------------------------------------------
 	/**
@@ -1043,7 +1036,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	}
 	# ------------------------------------------------------
 	/**
-	 *
+	 * @param array $options Options include:
+	 *		dontInitMetadataElements = Don't add metadata elements to definition list. Used by installer when checking bundles to avoid hitting the database for metadata element definitions before database tables are created. [Default is false]
 	 */
 	protected function initLabelDefinitions($pa_options=null) {
 		$pb_dont_cache = caGetOption('dontCache', $pa_options, false);
@@ -1076,10 +1070,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		// add metadata elements
-		foreach($this->getApplicableElementCodes($vn_type_id, false, $pb_dont_cache) as $vs_code) {
-			$this->BUNDLES['ca_attribute_'.$vs_code] = array(
-				'type' => 'attribute', 'repeating' => false, 'label' => $vs_code
-			);
+		if(!caGetOption('dontInitMetadataElements', $pa_options, false)) {
+			foreach($this->getApplicableElementCodes($vn_type_id, false, $pb_dont_cache) as $vs_code) {
+				$this->BUNDLES['ca_attribute_'.$vs_code] = array(
+					'type' => 'attribute', 'repeating' => false, 'label' => $vs_code
+				);
+			}
 		}
 	}
 	# ---------------------------------------------------------------------------------------------
@@ -6190,7 +6186,7 @@ if (!$vb_batch) {
 		}
 
 		if ($this->getAppConfig()->get('perform_item_level_access_checking')) {
-			$t_user = new ca_users($vn_user_id, true);
+			$t_user = new ca_users($vn_user_id);
 			if (is_array($va_groups = $t_user->getUserGroups()) && sizeof($va_groups)) {
 				$va_group_ids = array_keys($va_groups);
 			} else {

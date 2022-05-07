@@ -282,11 +282,11 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	#    the record identified by the primary key value
 	#
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
+	public function __construct($id=null, ?array $options=null) {
+		parent::__construct($id, $options);	# call superclass constructor
 		
 		// 
-		if ($pn_id) { $this->loadSubtypeLists();}
+		if ($id) { $this->loadSubtypeLists();}
 	}
 	# ------------------------------------------------------
 	public function load($pm_id = NULL, $pb_use_cache = true) {

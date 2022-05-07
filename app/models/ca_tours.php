@@ -270,10 +270,6 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 	
 	static $s_stop_info_cache;
 	
-	# ----------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);
-	}
 	# ------------------------------------------------------
 	protected function initLabelDefinitions($pa_options=null) {
 		parent::initLabelDefinitions($pa_options);

@@ -258,8 +258,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	
 	
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);
+	public function __construct($id=null, ?array $options=null) {
+		parent::__construct($id, $options);
 		
 		$this->initSettings();
 	}
