@@ -2370,9 +2370,12 @@ class Installer {
 							switch($setting_name) {
 								case 'restrict_to_relationship_types':
 									if($rel_table = \Datamodel::getLinkingTableName($table, $right_table)) {
-										$ret = caValidateRelationshipTypeList($rel_table, $setting_value);
-										foreach(array_keys(array_filter($ret, function($v) { return !$v; })) as $bad_type) {
-											$this->addError('processSettings', _t('Relationship type %1 is not valid for %2; set in relationship type restriction setting %3 for %4', $bad_type, $table, $setting_value, $source));
+										if(is_array($ret = caValidateRelationshipTypeList($rel_table, $setting_value))) {
+											foreach(array_keys(array_filter($ret, function($v) { return !$v; })) as $bad_type) {
+												$this->addError('processSettings', _t('Relationship type %1 is not valid for %2; set in relationship type restriction setting %3 for %4', $bad_type, $table, $setting_value, $source));
+											}
+										} else {
+											$this->addError('processSettings', _t('Relationship type %1 is not valid for %2 because no types are defined; set in relationship type restriction setting %3 for %4', $bad_type, $table, $setting_value, $source));
 										}
 									} else {
 										$this->addError('processSettings', _t('Relationship type %1 is not valid for %2 because no relationship table was set; set in relationship type restriction setting %3 for %4', $bad_type, $table, $setting_value, $source));
@@ -2380,17 +2383,23 @@ class Installer {
 									break;
 								case 'restrict_to_types':
 									if($table) {
-										$ret = caValidateTypeList($table, $setting_value);
-										foreach(array_keys(array_filter($ret, function($v) { return !$v; })) as $bad_type) {
-											$this->addError('processSettings', _t('Type %1 is not valid for %2; set in type restriction setting %3 for %4', $bad_type, $table, $setting_value, $source));
+										if(is_array($ret = caValidateTypeList($table, $setting_value))) {
+											foreach(array_keys(array_filter($ret, function($v) { return !$v; })) as $bad_type) {
+												$this->addError('processSettings', _t('Type %1 is not valid for %2; set in type restriction setting %3 for %4', $bad_type, $table, $setting_value, $source));
+											}
+										} else {
+											$this->addError('processSettings', _t('Type %1 is not valid for %2 because no types are defined; set in type restriction setting %3 for %4', $bad_type, $table, $setting_value, $source));
 										}
 									}
 									break;
 								case 'bundleTypeRestrictions':
 									if($right_table) {
-										$ret = caValidateTypeList($right_table, $setting_value);
-										foreach(array_keys(array_filter($ret, function($v) { return !$v; })) as $bad_type) {
-											$this->addError('processSettings', _t('Type %1 is not valid for %2; set in bundle type restriction setting %3 for %4', $bad_type, $table, $setting_value, $source));
+										if(is_array($ret = caValidateTypeList($right_table, $setting_value))) {
+											foreach(array_keys(array_filter($ret, function($v) { return !$v; })) as $bad_type) {
+												$this->addError('processSettings', _t('Type %1 is not valid for %2; set in bundle type restriction setting %3 for %4', $bad_type, $table, $setting_value, $source));
+											}
+										} else {
+											$this->addError('processSettings', _t('Type %1 is not valid for %2 because no types are defined; set in bundle type restriction setting %3 for %4', $bad_type, $table, $setting_value, $source));
 										}
 									}
 									break;
@@ -2429,7 +2438,7 @@ class Installer {
 							}
 						}
 					}
-//print_R($settings_list);
+
 					if (is_object($t_instance)) {
 						foreach($settings_list as $setting_name => $setting_value) {
 							$t_instance->setSetting($setting_name, $setting_value);
