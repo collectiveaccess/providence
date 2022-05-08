@@ -126,7 +126,7 @@ class Installer {
 		if(!$skip_load) {
 			if(!is_array($data)) {
 				// TODO: get error from parser
-				$this->addError('init', "Could not load profile.");
+				$this->addError('init', _t('Could not load profile.'));
 				return false;
 			}
 			$this->parsed_data = $data;
@@ -402,7 +402,7 @@ class Installer {
 		// create tmp dir
 		if (!file_exists($this->config->get('taskqueue_tmp_directory'))) {
 			if (!self::createDirectoryPath($this->config->get('taskqueue_tmp_directory'))) {
-				$this->addError('performPreInstallTasks', "Couldn't create tmp directory at ".$this->config->get('taskqueue_tmp_directory'));
+				$this->addError('performPreInstallTasks', _t("Couldn't create tmp directory at %1", $this->config->get('taskqueue_tmp_directory')));
 				return false;
 			}
 		} 
@@ -415,7 +415,7 @@ class Installer {
 		foreach($media_volumes as $label => $volume_info) {
 			if (preg_match('!^'.$base_dir.'!', $volume_info['absolutePath'])) {
 				if (!self::createDirectoryPath($volume_info['absolutePath'])) {
-					$this->addError('performPreInstallTasks', "Couldn't create directory for media volume {$label}");
+					$this->addError('performPreInstallTasks', _t("Couldn't create directory for media volume %1", $label));
 					return false;
 				}
 			}
@@ -580,7 +580,7 @@ class Installer {
 			($t_locale->getPrimaryKey() > 0) ? $t_locale->update() : $t_locale->insert();
 
 			if ($t_locale->numErrors()) {
-				$this->addError('processLocales', "There was an error while inserting locale {$locale_code}: ".join(" ",$t_locale->getErrors()));
+				$this->addError('processLocales', _t("There was an error while inserting locale %1: %2", $locale_code, join(" ",$t_locale->getErrors())));
 			}
 			if ($locale_code === $g_ui_locale && $t_locale->getPrimaryKey()){
 				$g_ui_locale_id = $t_locale->getPrimaryKey();
@@ -592,7 +592,7 @@ class Installer {
 		$locale_id = $t_locale->localeCodeToID($locales[0]);
 
 		if(!$locale_id) {
-			throw new \Exception("The locale default is set to a non-existing locale. Try adding '". $locales[0] . "' to your profile.");
+			throw new \Exception(_t("The locale default is set to a non-existing locale. Try adding '%1' to your profile.", $locales[0]));
 		}
 		// Ensure the default locale comes first.
 		uksort($this->locales, function($a) use ( $locale_id ) {
@@ -648,13 +648,13 @@ class Installer {
 			}
 			
 			if ($t_list->numErrors()) {
-				$this->addError('processLists', "There was an error while inserting list {$list_code}: ".join(" ",$t_list->getErrors()));
+				$this->addError('processLists', _t("There was an error while inserting list %1: %2", $list_code, join(" ",$t_list->getErrors())));
 			} else {
 				$this->logStatus(_t('Successfully inserted or updated list %1', $list_code));
 				
 				$this->addLabels($t_list, $list['labels']);
 				if ($t_list->numErrors()) {
-					$this->addError('processLists', "There was an error while inserting list label for {$list_code}: ".join(" ",$t_list->getErrors()));
+					$this->addError('processLists', _t("There was an error while inserting list label for %1: %2", $list_code, join(" ",$t_list->getErrors())));
 				}
 				if($list['items']) {
 					if(!$this->processListItems($t_list, $list['items'], null)) {
@@ -717,7 +717,7 @@ class Installer {
 			}
 
 			if (($t_list->numErrors() > 0) || !is_object($t_item)) {
-				$this->addError('processListItems', "There was an error while inserting list item {$item_idno}: ".join(" ",$t_list->getErrors()));
+				$this->addError('processListItems', _t("There was an error while inserting list item %1: %2", $item_idno, join(" ",$t_list->getErrors())));
 				return false;
 			} else {
 				$this->logStatus(_t('Successfully updated/inserted list item with idno %1', $item_idno));
@@ -725,12 +725,12 @@ class Installer {
 					$this->_processSettings($t_item, $item['settings'], ['source' => "List:{$list_code}:{$item_idno}"]);
 					$t_item->update();
 					if ($t_item->numErrors()) {
-						$this->addError('processListItems', "There was an error while adding a setting for list item with idno {$item_idno}: ".join(" ",$t_item->getErrors()));
+						$this->addError('processListItems', _t("There was an error while adding a setting for list item with idno %1: %2", $item_idno, join(" ",$t_item->getErrors())));
 					}
 				}
 				self::addLabels($t_item, $item['labels']);
 				if ($t_item->numErrors()) {
-					$this->addError('processListItems', "There was an error while inserting list item label for {$item_idno}: ".join(" ",$t_item->getErrors()));
+					$this->addError('processListItems', _t("There was an error while inserting list item label for %1: %2", $item_idno, join(" ",$t_item->getErrors())));
 				}
 			}
 
@@ -769,7 +769,7 @@ class Installer {
 					$restriction_code = $restriction["code"];
 
 					if (!($table_num = \Datamodel::getTableNum($restriction['table']))) {
-						$this->addError('processMetadataElements', "Invalid table {$restriction['table']} specified for restriction {$restriction_code} in element {$element_code}");
+						$this->addError('processMetadataElements', _t("Invalid table %1 specified for restriction %2 in element %3", $restriction['table'], $restriction_code, $element_code));
 						return false;
 					}
 					$t_instance = \Datamodel::getInstance((string)$restriction['table']);
@@ -798,7 +798,7 @@ class Installer {
 					$t_restriction->insert();
 
 					if ($t_restriction->numErrors()) {
-						$this->addError('processMetadataElements', "There was an error while inserting type restriction {$restriction_code} for metadata element {$element_code}: ".join("; ",$t_restriction->getErrors()));
+						$this->addError('processMetadataElements', _t("There was an error while inserting type restriction %1 for metadata element %2: %3", $restriction_code, $element_code, join("; ",$t_restriction->getErrors())));
 					}
 
 					$this->logStatus(_t('Successfully added type restriction %1 for element %2', $restriction_code, $element_code));
@@ -861,7 +861,7 @@ class Installer {
 		}
 
 		if ($t_md_element->numErrors()) {
-			$this->addError('processMetadataElement', "There was an error while inserting metadata element {$element_code}: ".join(" ",$t_md_element->getErrors()));
+			$this->addError('processMetadataElement', _t("There was an error while inserting metadata element %1: %2", $element_code, join(" ",$t_md_element->getErrors())));
 			return false;
 		}
 
@@ -892,12 +892,12 @@ class Installer {
 
 		foreach($dict as $i => $entry) {
 			if(strlen($entry['bundle'])<1) {
-				$this->addError('processMetadataDictionary', "No bundle specified in a metadata dictionary entry. Skipping row.");
+				$this->addError('processMetadataDictionary', _t("No bundle specified in a metadata dictionary entry. Skipping row."));
 				continue;
 			}
 			
 			if(!($table_num = \Datamodel::getTableNum($entry['table']))) {
-				$this->addError('processMetadataDictionary', "Table {$entry['table']} is invalid for metadata dictionary entry. Skipping row.");
+				$this->addError('processMetadataDictionary', _t("Table %1 is invalid for metadata dictionary entry. Skipping row.", $entry['table']));
 				continue;
 			}
 			
@@ -910,7 +910,7 @@ class Installer {
 			$t_entry->insert();
 
 			if($t_entry->numErrors() > 0 || !($t_entry->getPrimaryKey()>0)) {
-				$this->addError('processMetadataDictionary', "There were errors while adding dictionary entry: " . join(';', $t_entry->getErrors()));
+				$this->addError('processMetadataDictionary', _t("There were errors while adding dictionary entry: %1", join(';', $t_entry->getErrors())));
 				return false;
 			}
 			
@@ -925,7 +925,7 @@ class Installer {
 
 					$t_rule->insert();
 					if ($t_rule->numErrors()) {
-						$this->addError('processMetadataDictionary', "There were errors while adding dictionary rule: " . join(';', $t_rule->getErrors()));
+						$this->addError('processMetadataDictionary', _t("There were errors while adding dictionary rule: %1", join(';', $t_rule->getErrors())));
 						continue;
 					}
 				}
@@ -949,7 +949,7 @@ class Installer {
 		foreach($uis as $ui_code => $ui) {
 			$type = $ui["type"];
 			if (!($type = \Datamodel::getTableNum($type))) {
-				$this->addError('processUserInterfaces', "Invalid type {$type} for UI code {$ui_code}");
+				$this->addError('processUserInterfaces', _t("Invalid type %1 for UI code %2", $type, $ui_code));
 				return false;
 			}
 
@@ -985,7 +985,7 @@ class Installer {
 			}
 
 			if ($t_ui->numErrors()) {
-				$this->addError('processUserInterfaces', "Errors inserting UI {$ui_code}: ".join("; ",$t_ui->getErrors()));
+				$this->addError('processUserInterfaces', _t("Errors inserting UI %1: %2", $ui_code, join("; ",$t_ui->getErrors())));
 				return false;
 			}
 
@@ -1006,7 +1006,6 @@ class Installer {
 				}
 
 				$this->logStatus(_t('Successfully nuked all type restrictions for user interface with code %1', $ui_code));
-
 				foreach($ui['typeRestrictions'] as $restriction) {
 					$restriction_type = $restriction["type"];
 
@@ -1022,9 +1021,11 @@ class Installer {
 							$type_id = $t_list->getItemIDFromList($type_list_name, $restriction_type);
 						}
 						
-						$t_ui->addTypeRestriction($type_id, ['includeSubtypes' => $restriction["includeSubtypes"]]);
-					
-						$this->logStatus(_t('Successfully added type restriction %1 for user interface with code %2', $restriction_type, $ui_code));
+						if(!$t_ui->addTypeRestriction($type_id, ['includeSubtypes' => $restriction["includeSubtypes"]])) {
+							$this->addError('processUserInterfaces', _t("Could not restrict UI %1 to type %2: %3", $ui_code, $restriction_type, join("; ",$t_ui->getErrors())));
+						} else {
+							$this->logStatus(_t('Successfully added type restriction %1 for user interface with code %2', $restriction_type, $ui_code));
+						}
 					}
 				}
 			}
@@ -1068,7 +1069,7 @@ class Installer {
 				}
 
 				if ($t_ui_screens->numErrors()) {
-					$this->addError('processUserInterfaces', "Errors inserting UI screen {$screen_idno} for UI {$ui_code}: ".join("; ",$t_ui_screens->getErrors()));
+					$this->addError('processUserInterfaces', _t("Errors inserting UI screen %1 for UI %2: %3", $screen_idno, $ui_code, join("; ",$t_ui_screens->getErrors())));
 					return false;
 				}
 
@@ -1098,7 +1099,7 @@ class Installer {
                         if($access) {
                             $ui_screen_users[$t_user->getUserID()] = $access;
                         } else {
-                            $this->addError('processUserInterfaces', "User name or access value invalid for UI screen {$screen_idno} (permission item with user name '{$user}')");
+                            $this->addError('processUserInterfaces', _t("User name or access value invalid for UI screen %1 (permission item with user name '%2')", $screen_idno, $user));
                         }
                     }
 
@@ -1118,7 +1119,7 @@ class Installer {
                         if($access) {
                             $ui_screen_groups[$t_group->getPrimaryKey()] = $access;
                         } else {
-                            $this->addError('processUserInterfaces', "Group code or access value invalid for UI screen {$screen_idno} (permission item with group code '{$group}')");
+                            $this->addError('processUserInterfaces', _t("Group code or access value invalid for UI screen %1 (permission item with group code '%2')", $screen_idno, $group));
                         }
                     }
 
@@ -1138,7 +1139,7 @@ class Installer {
                         if(!is_null($access)) {
                             $ui_screen_roles[$t_role->getPrimaryKey()] = $access;
                         } else {
-                            $this->addError('processUserInterfaces', "Role code or access value invalid for UI screen {$screen_idno} (permission item with role code '{$role}')");
+                            $this->addError('processUserInterfaces', _t("Role code or access value invalid for UI screen %1 (permission item with role code '%2')", $screen_idno, $role));
                         }
                     }
                     if(sizeof($ui_screen_roles)>0) {   
@@ -1240,7 +1241,7 @@ class Installer {
 					if($access) {
 						$ui_users[$t_user->getUserID()] = $access;
 					} else {
-						$this->addError('processUserInterfaces', "User name or access value invalid for UI {$ui_code} (permission item with user name '{$user}')");
+						$this->addError('processUserInterfaces', _t("User name or access value invalid for UI %1 (permission item with user name '%2')", $ui_code, $user));
 					}
 				}
 
@@ -1260,7 +1261,7 @@ class Installer {
 					if($access) {
 						$ui_groups[$t_group->getPrimaryKey()] = $access;
 					} else {
-						$this->addError('processUserInterfaces', "Group code or access value invalid for UI {$ui_code} (permission item with group code '{$group}')");
+						$this->addError('processUserInterfaces', _t("Group code or access value invalid for UI %1 (permission item with group code '%2')", $ui_code, $group));
 					}
 				}
 
@@ -1280,7 +1281,7 @@ class Installer {
 					if(!is_null($access)) {
 						$ui_roles[$t_role->getPrimaryKey()] = $access;
 					} else {
-						$this->addError('processUserInterfaces', "Role code or access value invalid for UI {$ui_code} (permission item with role code '{$role}')");
+						$this->addError('processUserInterfaces', _t("Role code or access value invalid for UI %1 (permission item with role code '%2')", $ui_code, $role));
 					}
 				}
 
@@ -1355,7 +1356,7 @@ class Installer {
 			}
 
 			if ($t_rel_type->numErrors()) {
-				$this->addError('processRelationshipTypes', "Errors inserting relationship root for {$rel_table}: ".join("; ",$t_rel_type->getErrors()));
+				$this->addError('processRelationshipTypes', _t("Errors inserting relationship root for %1: %2", $rel_table, join("; ",$t_rel_type->getErrors())));
 				return false;
 			}
 
@@ -1463,7 +1464,7 @@ class Installer {
 			}
 
 			if ($t_rel_type->numErrors()) {
-				$this->addError('processRelationshipTypesForTable', "Errors inserting relationship {$type_code}: ".join("; ",$t_rel_type->getErrors()));
+				$this->addError('processRelationshipTypesForTable', _t("Errors inserting relationship %1: %2", $type_code, join("; ",$t_rel_type->getErrors())));
 				return false;
 			}
 
@@ -1516,7 +1517,7 @@ class Installer {
 			}
 
 			if ($t_role->numErrors()) {
-				$this->addError('processRoles', "Errors inserting access role {$role_code}: ".join("; ",$t_role->getErrors()));
+				$this->addError('processRoles', _t("Errors inserting access role %1: %2", $role_code, join("; ",$t_role->getErrors())));
 				return false;
 			}
 
@@ -1536,7 +1537,7 @@ class Installer {
 					$permission_access = $this->_convertACLStringToConstant($permission['access']);
 
 					if(!$t_role->setAccessSettingForBundle($permission_table, $permission_bundle, $permission_access)) {
-						$this->addError('processRoles', "Could not add bundle level access control for table '{$permission_table}' and bundle '{$permission_bundle}'. Check the table and bundle names.");
+						$this->addError('processRoles', _t("Could not add bundle level access control for table '%1' and bundle '%2'. Check the table and bundle names.", $permission_table, $permission_bundle));
 					}
 
 					$this->logStatus(_t('Added bundle level access control item for user role with code %1: table %2, bundle %3, access %4', $role_code, $permission_table, $permission_bundle, $permission_access));
@@ -1557,7 +1558,7 @@ class Installer {
 					$permission_access = $this->_convertACLStringToConstant($permission['access']);
 
 					if(!$t_role->setAccessSettingForType($permission_table, $permission_type, $permission_access)) {
-						$this->addError('processRoles', "Could not add type level access control for table '{$permission_table}' and type '{$permission_type}'. Check the table name and the type code.");
+						$this->addError('processRoles', _t("Could not add type level access control for table '%1' and type '%2'. Check the table name and the type code.", $permission_table, $permission_type));
 					}
 
 					$this->logStatus(_t('Added type level access control item for user role with code %1: table %2, type %3, access %4', $role_code, $permission_table, $permission_type, $permission_access));
@@ -1579,7 +1580,7 @@ class Installer {
 					$permission_access = $this->_convertACLStringToConstant($permission['access']);
 
 					if(!$t_role->setAccessSettingForSource($permission_table, $permission_source, $permission_access, (bool)$permission_default)) {
-						$this->addError('processRoles', "Could not add source level access control for table '{$permission_table}' and source '{$permission_source}'. Check the table name and the source code.");
+						$this->addError('processRoles', _t("Could not add source level access control for table '%1' and source '%2'. Check the table name and the source code.", $permission_table, $permission_source));
 					}
 
 					$this->logStatus(_t('Added source level access control item for user role with code %1: table %2, source %3, access %4', $role_code, $permission_table, $permission_source, $permission_access));
@@ -1634,13 +1635,13 @@ class Installer {
 			}
 
 			if ($t_display->numErrors()) {
-				$this->addError('processDisplays', "There was an error while inserting display {$display_code}: ".join(" ",$t_display->getErrors()));
+				$this->addError('processDisplays', _t("There was an error while inserting display %1: %2", $display_code, join(" ",$t_display->getErrors())));
 			} else {
 				$this->logStatus(_t('Successfully updated/inserted display with code %1', $display_code));
 
 				self::addLabels($t_display, $display['labels']);
 				if ($t_display->numErrors()) {
-					$this->addError('processDisplays', "There was an error while inserting display label for {$display_code}: ".join(" ",$t_display->getErrors()));
+					$this->addError('processDisplays', _t("There was an error while inserting display label for %1: %2", $display_code, join(" ",$t_display->getErrors())));
 				}
 				if(!$this->processDisplayPlacements($t_display, $display['bundles'], null)) {
 					return false;
@@ -1662,7 +1663,7 @@ class Installer {
 					$t_display->addTypeRestriction(array_pop(caMakeTypeIDList($table_num, [$type], ['dontIncludeSubtypesInTypeRestriction' => true])), ['includeSubtypes' => (bool)$restriction['includeSubtypes'] ? 1 : 0]);
 					
 					if ($t_display->numErrors()) {
-						$this->addError('processDisplays', "There was an error while inserting type restriction {$restriction_code} in display {$display_code}: ".join("; ",$t_display->getErrors()));
+						$this->addError('processDisplays', _t("There was an error while inserting type restriction %1 in display %2: %3", $restriction_code, $display_code, join("; ",$t_display->getErrors())));
 					}
 
 					$this->logStatus(_t('Added type restriction with code %1 and type %2 for display with code %3', $restriction_code, $type, $display_code));
@@ -1680,7 +1681,7 @@ class Installer {
 					if($access) {
 						$display_users[$t_user->getUserID()] = $access;
 					} else {
-						$this->addError('processDisplays', "User name or access value invalid for display {$display_code} (permission item with user name '{$user}')");
+						$this->addError('processDisplays', _t("User name or access value invalid for display %1 (permission item with user name '%2')", $display_code, $user));
 					}
 				}
 
@@ -1700,7 +1701,7 @@ class Installer {
 					if($access) {
 						$display_groups[$t_group->getPrimaryKey()] = $access;
 					} else {
-						$this->addError('processDisplays', "Group code or access value invalid for display {$display_code} (permission item with group code '{$group}')");
+						$this->addError('processDisplays', _t("Group code or access value invalid for display %1 (permission item with group code '%2')", $display_code, $group));
 					}
 				}
 
@@ -1720,7 +1721,7 @@ class Installer {
 					if(!is_null($access)) {
 						$display_roles[$t_role->getPrimaryKey()] = $access;
 					} else {
-						$this->addError('processDisplays', "Role code or access value invalid for display {$display_code} (permission item with role code '{$role}')");
+						$this->addError('processDisplays', _t("Role code or access value invalid for display %1 (permission item with role code '%2')", $display_code, $role));
 					}
 				}
 
@@ -1760,7 +1761,7 @@ class Installer {
 			$settings = $this->_processSettings(null, $placement['settings'], ['source' => "Display:{$display_code}:Placement {$code}"]);
 			$t_display->addPlacement($bundle, $settings, $i, ['additional_settings' => $available_bundles[$bundle]['settings']]);
 			if ($t_display->numErrors()) {
-				$this->addError('processDisplayPlacements', "There was an error while inserting display placement {$code}: ".join(" ",$t_display->getErrors()));
+				$this->addError('processDisplayPlacements', _t("There was an error while inserting display placement %1: %2", $code, join(" ",$t_display->getErrors())));
 				return false;
 			}
 
@@ -1818,13 +1819,13 @@ class Installer {
 			}
 
 			if ($t_form->numErrors()) {
-				$this->addError('processSearchForms', "There was an error while inserting search form {$form_code}: ".join(" ", $t_form->getErrors()));
+				$this->addError('processSearchForms', _t("There was an error while inserting search form %1: %2", $form_code, join(" ", $t_form->getErrors())));
 			} else {
 				$this->logStatus(_t('Successfully updated/inserted form with code %1', $form_code));
 
 				self::addLabels($t_form, $form['labels']);
 				if ($t_form->numErrors()) {
-					$this->addError('processSearchForms', "There was an error while inserting search form label for {$form_code}: ".join(" ", $t_form->getErrors()));
+					$this->addError('processSearchForms', _t("There was an error while inserting search form label for %1: %2", $form_code ,join(" ", $t_form->getErrors())));
 				}
 				if(!$this->processSearchFormPlacements($t_form, $form['bundles'])) {
 					return false;
@@ -1846,7 +1847,7 @@ class Installer {
 					$t_form->addTypeRestriction(array_pop(caMakeTypeIDList($table_num, [$type], ['dontIncludeSubtypesInTypeRestriction' => true])), ['includeSubtypes' => (bool)$restriction['includeSubtypes'] ? 1 : 0]);
 
 					if ($t_form->numErrors()) {
-						$this->addError('processSearchForms', "There was an error while inserting type restriction {$restriction_code} in form {$form_code}: ".join("; ",$t_form->getErrors()));
+						$this->addError('processSearchForms', _t("There was an error while inserting type restriction %1 in form %2: %3", $restriction_code, $form_code, join("; ",$t_form->getErrors())));
 					}
 
 					$this->logStatus(_t('Added type restriction with code %1 and type %2 for form with code %3', $restriction_code, $type, $form_code));
@@ -1865,7 +1866,7 @@ class Installer {
 					if($access) {
 						$form_users[$t_user->getUserID()] = $access;
 					} else {
-						$this->addError('processSearchForms', "User name or access value invalid for search form {$form_code} (permission item with user name '{$user}')");
+						$this->addError('processSearchForms', _t("User name or access value invalid for search form %1 (permission item with user name '%2')", $form_code, $user));
 					}
 				}
 
@@ -1885,7 +1886,7 @@ class Installer {
 					if($access) {
 						$form_groups[$t_group->getPrimaryKey()] = $access;
 					} else {
-						$this->addError('processSearchForms', "Group code or access value invalid for search form {$form_code} (permission item with group code '{$group}')");
+						$this->addError('processSearchForms', _t("Group code or access value invalid for search form %1 (permission item with group code '%2')", $form_code, $group));
 					}
 				}
 
@@ -1905,7 +1906,7 @@ class Installer {
 					if(!is_null($access)) {
 						$form_roles[$t_role->getPrimaryKey()] = $access;
 					} else {
-						$this->addError('processSearchForms', "Role code or access value invalid for form {$form_code} (permission item with role code '{$role}')");
+						$this->addError('processSearchForms', _t("Role code or access value invalid for form %1 (permission item with role code '%2')", $form_code, $role));
 					}
 				}
 
@@ -1944,7 +1945,7 @@ class Installer {
 			$settings = $this->_processSettings(null, $placement['settings'], ['source' => "SearchForm:{$form_code}:Placement {$code}"]);
 			$t_form->addPlacement($bundle, $settings, $i, ['additional_settings' => $available_bundles[$bundle]['settings']]);
 			if ($t_form->numErrors()) {
-				$this->addError('processSearchFormPlacements', "There was an error while inserting search form placement {$code}: ".join(" ",$t_form->getErrors()));
+				$this->addError('processSearchFormPlacements', _t("There was an error while inserting search form placement %1: %2", $code, join(" ",$t_form->getErrors())));
 				return false;
 			}
 
@@ -1973,7 +1974,7 @@ class Installer {
 		}
 
 		if ($t_user_group->numErrors()) {
-			$this->addError('processGroups', "Errors creating root user group 'Root': ".join("; ",$t_user_group->getErrors()));
+			$this->addError('processGroups', _t("Errors creating root user group 'Root': %1", join("; ",$t_user_group->getErrors())));
 			return false;
 		}
 		
@@ -2005,7 +2006,7 @@ class Installer {
 				}
 
 				if ($t_group->numErrors()) {
-					$this->addError('processGroups', "Errors inserting user group {$group_code}: ".join("; ",$t_group->getErrors()));
+					$this->addError('processGroups', _t("Errors inserting user group %1: %2", $group_code, join("; ",$t_group->getErrors())));
 					return false;
 				}
 			}
@@ -2061,7 +2062,7 @@ class Installer {
 			if (sizeof($groups)) { $t_user->addToGroups($groups); }
 
 			if ($t_user->numErrors()) {
-				$this->addError('processLogins', "Errors adding login {$user_name}: ".join("; ",$t_user->getErrors()));
+				$this->addError('processLogins', _t("Errors adding login %1: %2", $user_name, join("; ",$t_user->getErrors())));
 				return false;
 			}
 
@@ -2115,13 +2116,13 @@ class Installer {
 			}
 			
 			if ($t_alert->numErrors()) {
-				$this->addError('processMetadataAlerts', "There was an error while inserting metadata alert {$alert_code}: ".join(" ",$t_alert->getErrors()));
+				$this->addError('processMetadataAlerts', _t("There was an error while inserting metadata alert %1: %2", $alert_code, join(" ",$t_alert->getErrors())));
 			} else {
 				$this->logStatus(_t('Successfully updated/inserted metadata alert with code %1', $alert_code));
 
 				self::addLabels($t_alert, $alert['labels']);
 				if ($t_alert->numErrors()) {
-					$this->addError('processMetadataAlerts', "There was an error while inserting metadata alert label for {$alert_code}: ".join(" ",$t_alert->getErrors()));
+					$this->addError('processMetadataAlerts', _t("There was an error while inserting metadata alert label for %1: %2", $alert_code, join(" ",$t_alert->getErrors())));
 				}
 				if(!$this->processMetadataAlertTriggers($t_alert, $alert['triggers'])) {
 					return false;
@@ -2143,7 +2144,7 @@ class Installer {
 					$t_alert->addTypeRestriction(array_pop(caMakeTypeIDList($table_num, [$type], ['dontIncludeSubtypesInTypeRestriction' => true])), ['includeSubtypes' => (bool)$restriction['includeSubtypes'] ? 1 : 0]);
 					
 					if ($t_alert->numErrors()) {
-						$this->addError('processMetadataAlerts', "There was an error while inserting type restriction {$restriction_code} in metadata alert {$alert_code}: ".join("; ",$t_alert->getErrors()));
+						$this->addError('processMetadataAlerts', _t("There was an error while inserting type restriction %1 in metadata alert %2: %3", $restriction_code, $alert_code, join("; ",$t_alert->getErrors())));
 					}
 
 					$this->logStatus(_t('Added type restriction with code %1 and type %2 for metadata alert with code %3', $restriction_code, $type, $alert_code));
@@ -2161,7 +2162,7 @@ class Installer {
 					if($access && $t_user->load(['user_name' => $user])) {
 						$form_users[$t_user->getUserID()] = $access;
 					} else {
-						$this->addError('processMetadataAlerts', "User name or access value invalid for metadata alert {$alert_code} (permission item with user name '{$user}')");
+						$this->addError('processMetadataAlerts', _t("User name or access value invalid for metadata alert %1 (permission item with user name '%2')", $alert_code, $user));
 					}
 				}
 
@@ -2180,7 +2181,7 @@ class Installer {
 					if($access && $t_group->load(['code' => $group])) {
 						$form_groups[$t_group->getPrimaryKey()] = $access;
 					} else {
-						$this->addError('processMetadataAlerts', "Group code or access value invalid for metadata alert {$alert_code} (permission item with group code '{$group}')");
+						$this->addError('processMetadataAlerts', _t("Group code or access value invalid for metadata alert %1 (permission item with group code '%2')", $alert_code, $group));
 					}
 				}
 
@@ -2200,7 +2201,7 @@ class Installer {
 					if(!is_null($access)) {
 						$form_roles[$t_role->getPrimaryKey()] = $access;
 					} else {
-						$this->addError('processMetadataAlerts', "Role code or access value invalid for metadata alert {$alert_code} (permission item with role code '{$role}')");
+						$this->addError('processMetadataAlerts', _t("Role code or access value invalid for metadata alert %1 (permission item with role code '%2')", $alert_code, $role));
 					}
 				}
 
@@ -2281,7 +2282,7 @@ class Installer {
 			$t_trigger->insert();
 			
 			if ($t_trigger->numErrors()) {
-				$this->addError('processMetadataAlertTriggers', "There was an error while inserting metadata alert trigger {$code}: ".join(" ",$t_trigger->getErrors()));
+				$this->addError('processMetadataAlertTriggers', _t("There was an error while inserting metadata alert trigger %1: %2", $code, join(" ",$t_trigger->getErrors())));
 				return false;
 			}
 
@@ -2304,7 +2305,7 @@ class Installer {
 		$t_storage_location->insert();
 
 		if ($t_storage_location->numErrors()) {
-			$this->addError('processMiscHierarchicalSetup', "Errors inserting the storage location root: ".join("; ",$t_storage_location->getErrors()));
+			$this->addError('processMiscHierarchicalSetup', _t("Errors inserting the storage location root: %1", join("; ",$t_storage_location->getErrors())));
 			return;
 		}
 	}
@@ -2326,12 +2327,12 @@ class Installer {
 		$t_user->insert();
 
 		if ($t_user->numErrors()) {
-			$this->addError('createAdminAccount', "Errors while adding the default administrator account: ".join("; ",$t_user->getErrors()));
+			$this->addError('createAdminAccount', _t("Errors while adding the default administrator account: %1", join("; ",$t_user->getErrors())));
 			return false;
 		}
 		
 		if(!$t_user->addRoles(['admin'])) {
-			$this->addError('createAdminAccount', "Could not add the <em>admin</em> role to the default administrator account: ".join("; ",$t_user->getErrors()));
+			$this->addError('createAdminAccount', _t("Could not add the <em>admin</em> role to the default administrator account: %1", join("; ",$t_user->getErrors())));
 			return false;
 		}
 
