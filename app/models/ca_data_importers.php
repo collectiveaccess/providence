@@ -1892,6 +1892,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										$va_mapping_items[$vn_preferred_label_mapping_id]['settings']['applyRegularExpressions'], $vs_label_val, $va_row,
 										$va_row_with_replacements );
 					}
+					
+					if (!strlen($vs_label_val) && isset($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['default']) && strlen($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['default'])) {
+						$vs_label_val = $va_mapping_items[$vn_preferred_label_mapping_id]['settings']['default'];
+					}
 				
 					$vs_label_val = self::_applyCaseTransforms($vs_label_val, $va_mapping_items[$vn_preferred_label_mapping_id]);
 					$vs_label_val = self::_applyDataTransforms($vs_label_val, $va_mapping_items[$vn_preferred_label_mapping_id]);
@@ -2222,6 +2226,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 
 						// Do value conversions
 						foreach($va_vals as $vn_i => $vm_val) {
+							if ( isset( $va_item['settings']['default'] ) && strlen( $va_item['settings']['default'] )
+							     && ! strlen( $vm_val )
+							) {
+								$vm_val = $va_item['settings']['default'];
+							}
+							
 							if ($va_item['settings']['skipWhenEmpty'] && !is_array($va_item['settings']['skipWhenEmpty'])) { $va_item['settings']['skipWhenEmpty'] = array($va_item['settings']['skipWhenEmpty']); }
 							if (isset($va_item['settings']['skipWhenEmpty']) && is_array($va_item['settings']['skipWhenEmpty'])) {
 								foreach($va_item['settings']['skipWhenEmpty'] as $v) {
@@ -2438,12 +2448,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										$vs_idno, $va_item['destination'], $vm_val ) );
 								}
 								continue( 2 );
-							}
-
-							if ( isset( $va_item['settings']['default'] ) && strlen( $va_item['settings']['default'] )
-							     && ! strlen( $vm_val )
-							) {
-								$vm_val = $va_item['settings']['default'];
 							}
 
 							// Apply prefix/suffix *AFTER* setting default
