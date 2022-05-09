@@ -2869,7 +2869,7 @@ function caFileIsIncludable($ps_file) {
 		}
 
 		if ($currency_specifier || ($decimal_value > 0)) {
-			return ['currency' => $currency_specifier, 'value' => $decimal_value];
+			return ['currency' => $currency_specifier, 'value' => round($decimal_value, 2)];
 		}
 		return null;
  	}
