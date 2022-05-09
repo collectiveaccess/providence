@@ -33,85 +33,84 @@
  /**
   *
   */
- 	require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
+require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 
- 
-	class ToolsManager {
-		# -------------------------------------------------------
-		/**
-		 * Instance of application plugin manager, used to query available tools
-		 */
-		private $opo_app_plugin_manager;
-		# -------------------------------------------------------
-		/**
-		 * Constructor
-		 */
-		public function __construct() {
- 			$this->opo_app_plugin_manager = new ApplicationPluginManager();
-		}
-		# -------------------------------------------------------
-		/**
-		 * Return possible commands for CLI caUtils
-		 *
-		 * @return array
-		 */
-		public function getToolCommands() {
-			return $this->getToolCommandList();
-		}
-		# -------------------------------------------------------
-		/**
-		 * Return list of availble tools
-		 *
-		 * @return array List of available tools
-		 */
-		public function getTools() {
-			$va_tools = $this->opo_app_plugin_manager->hookGetToolInstances();
-			if(!is_array($va_tools) || !sizeof($va_tools)) { return array(); }
-			$va_tool_list = array_shift($va_tools);
-			return  $va_tool_list;
-		}
-		# -------------------------------------------------------
-		/**
-		 * Return number of available tools
-		 *
-		 * @return int Number of tools
-		 */
-		public function getToolCount() {
-			return sizeof($this->getTools());
-		}
-		# -------------------------------------------------------
-		/**
-		 * Return instance of tool
-		 *
-		 * @param string $ps_tool_name The name or identifier of the tool
-		 * @return BaseApplicationTool Instance of tool or null if name/identifier is invalid
-		 */
-		public function getTool($ps_tool_name) {
-			$va_tool_list = $this->getTools();
-			
-			// Get by name
-			if (isset($va_tool_list[$ps_tool_name])) {
-				return $va_tool_list[$ps_tool_name];
-			}
-			
-			// Get by identifier
-			foreach($va_tool_list as $vs_tool_name => $o_tool) {
-				if ($o_tool->getToolIdentifier() == $ps_tool_name) {
-					return $o_tool;
-				}
-			}
-			
-			return null;	// Bad tool
-		}
-		# -------------------------------------------------------
-		/**
-		 * Return possible commands for CLI caUtils
-		 *
-		 * @return array List of commands grouped by tool
-		 */
-		public function getToolCommandList() {
-			return $this->opo_app_plugin_manager->hookCLICaUtilsGetCommands();
-		}
-		# -------------------------------------------------------
+
+class ToolsManager {
+	# -------------------------------------------------------
+	/**
+	 * Instance of application plugin manager, used to query available tools
+	 */
+	private $opo_app_plugin_manager;
+	# -------------------------------------------------------
+	/**
+	 * Constructor
+	 */
+	public function __construct() {
+		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 	}
-?>
+	# -------------------------------------------------------
+	/**
+	 * Return possible commands for CLI caUtils
+	 *
+	 * @return array
+	 */
+	public function getToolCommands() {
+		return $this->getToolCommandList();
+	}
+	# -------------------------------------------------------
+	/**
+	 * Return list of availble tools
+	 *
+	 * @return array List of available tools
+	 */
+	public function getTools() {
+		$va_tools = $this->opo_app_plugin_manager->hookGetToolInstances();
+		if(!is_array($va_tools) || !sizeof($va_tools)) { return array(); }
+		$va_tool_list = array_shift($va_tools);
+		return  $va_tool_list;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Return number of available tools
+	 *
+	 * @return int Number of tools
+	 */
+	public function getToolCount() {
+		return sizeof($this->getTools());
+	}
+	# -------------------------------------------------------
+	/**
+	 * Return instance of tool
+	 *
+	 * @param string $ps_tool_name The name or identifier of the tool
+	 * @return BaseApplicationTool Instance of tool or null if name/identifier is invalid
+	 */
+	public function getTool($ps_tool_name) {
+		$va_tool_list = $this->getTools();
+		
+		// Get by name
+		if (isset($va_tool_list[$ps_tool_name])) {
+			return $va_tool_list[$ps_tool_name];
+		}
+		
+		// Get by identifier
+		foreach($va_tool_list as $vs_tool_name => $o_tool) {
+			if ($o_tool->getToolIdentifier() == $ps_tool_name) {
+				return $o_tool;
+			}
+		}
+		
+		return null;	// Bad tool
+	}
+	# -------------------------------------------------------
+	/**
+	 * Return possible commands for CLI caUtils
+	 *
+	 * @return array List of commands grouped by tool
+	 */
+	public function getToolCommandList() {
+		return $this->opo_app_plugin_manager->hookCLICaUtilsGetCommands();
+	}
+	# -------------------------------------------------------
+}

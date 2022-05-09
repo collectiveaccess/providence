@@ -214,4 +214,3 @@ class ca_object_representations_x_places extends BaseRepresentationRelationship 
 	}
 	# ------------------------------------------------------
 }
-?>

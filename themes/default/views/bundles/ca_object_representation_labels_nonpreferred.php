@@ -26,23 +26,24 @@
  * ----------------------------------------------------------------------
  */
  
-	$id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$labels 			= $this->getVar('labels');
-	$t_label 			= $this->getVar('t_label');
+	$id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
+	$labels 				= $this->getVar('labels');
+	$t_label 				= $this->getVar('t_label');
 	/** @var BundlableLabelableBaseModelWithAttributes $t_subject */
-	$t_subject			= $this->getVar('t_subject');
-	$initial_values 	= $this->getVar('label_initial_values');
+	$t_subject				= $this->getVar('t_subject');
+	$initial_values 		= $this->getVar('label_initial_values');
 	if (!$force_new_labels = $this->getVar('new_labels')) { $force_new_labels = array(); }	// list of new labels not saved due to error which we need to for onto the label list as new
 
-	$settings = 		$this->getVar('settings');
-	$add_label =		$this->getVar('add_label');
+	$settings 				= $this->getVar('settings');
+	$add_label 				= $this->getVar('add_label');
 	
-	$read_only		= ((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel('ca_object_representations', 'nonpreferred_labels') == __CA_BUNDLE_ACCESS_READONLY__));
-	$batch			= $this->getVar('batch');
+	$read_only				= ((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel('ca_object_representations', 'nonpreferred_labels') == __CA_BUNDLE_ACCESS_READONLY__));
+	$batch					= $this->getVar('batch');
 	
-	$show_effective_date = $this->getVar('show_effective_date');
-	$show_access = $this->getVar('show_access');
-	$label_list = $this->getVar('label_type_list');
+	$show_effective_date 	= $this->getVar('show_effective_date');
+	$show_access 			= $this->getVar('show_access');
+	$label_list 			= $this->getVar('label_type_list');
+	$show_source 			= $t_subject->getTypeSetting('show_source_for_nonpreferred_labels');
 	
 	if ($batch) {
 		print caBatchEditorNonPreferredLabelsModeControl($t_label, $id_prefix);
@@ -69,6 +70,15 @@
 				<?= $show_effective_date ? $t_label->htmlFormElement('effective_date', "^LABEL ^ELEMENT", array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}effective_date_{n}", 'name' => "{fieldNamePrefix}effective_date_{n}", "value" => "{effective_date}", 'no_tooltips' => true)) : ''; ?>	
 				<?= $show_access ? $t_label->htmlFormElement('access', "^LABEL ^ELEMENT", array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}access_{n}", 'name' => "{fieldNamePrefix}access_{n}", "value" => "{access}", 'no_tooltips' => true)) : ''; ?>	
 			</div>
+<?php
+	if($show_source) {
+?>					
+			<div class="formLabel">
+				<?= $t_label->htmlFormElement('source_info', "^LABEL<br/>^ELEMENT", array('classname' => 'labelSourceInfo', 'id' => "{fieldNamePrefix}source_info_{n}", 'name' => "{fieldNamePrefix}source_info_{n}", "value" => "{source_info}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry')); ?>	
+			</div>
+<?php
+	}	
+?>
 		</div>
 	</textarea>
 	
@@ -83,7 +93,7 @@
 	caUI.initLabelBundle('#<?= $id_prefix; ?>NPLabels', {
 		mode: 'nonpreferred',
 		fieldNamePrefix: '<?= $id_prefix; ?>',
-		templateValues: ['name', 'locale_id', 'type_id', 'effective_date', 'access'],
+		templateValues: ['name', 'locale_id', 'type_id', 'effective_date', 'access', 'source_info'],
 		initialValues: <?= json_encode($initial_values); ?>,
 		forceNewValues: <?= json_encode($force_new_labels); ?>,
 		labelID: 'Label_',

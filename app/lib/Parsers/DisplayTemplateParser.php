@@ -200,7 +200,7 @@ class DisplayTemplateParser {
 
 		if(!$qr_res) { return $pb_return_as_array ? array() : ""; }
 
-        $filter_non_primary_reps = self::_setPrimaryRepresentationFiltering($qr_res, caGetOption('filterNonPrimaryRepresentations', $pa_options, false));
+        $filter_non_primary_reps = self::_setPrimaryRepresentationFiltering($qr_res, caGetOption('filterNonPrimaryRepresentations', $pa_options, null));
         
 		$pa_check_access = ($t_instance->hasField('access')) ? caGetOption('checkAccess', $pa_options, null) : null;
 		if (!is_array($pa_check_access) || !sizeof($pa_check_access)) { $pa_check_access = null; }
@@ -293,11 +293,13 @@ class DisplayTemplateParser {
 		if (!$pb_include_blanks && !$pb_include_blanks_for_prefetch) { $va_proc_templates = array_filter($va_proc_templates, 'strlen'); }
 		
 		// Transform links
-		$va_proc_templates = caCreateLinksFromText(
-			$va_proc_templates, $ps_tablename, $pa_row_ids,
-			null, caGetOption('linkTarget', $pa_options, null),
-			array_merge(['addRelParameter' => true, 'requireLinkTags' => true], $pa_options)
-		);
+		if(caGetOption('makeLink', $pa_options, true)) {
+			$va_proc_templates = caCreateLinksFromText(
+				$va_proc_templates, $ps_tablename, $pa_row_ids,
+				null, caGetOption('linkTarget', $pa_options, null),
+				array_merge(['addRelParameter' => true, 'requireLinkTags' => true], $pa_options)
+			);
+		}
 		
 		if (!$pb_include_blanks && !$pb_include_blanks_for_prefetch) { $va_proc_templates = array_filter($va_proc_templates, 'strlen'); }
 		
@@ -522,7 +524,6 @@ class DisplayTemplateParser {
 					// Does a placeholder with value precede this tag?
 					// NOTE: 	We don't take into account <ifdef> and friends when finding a set placeholder; it may be set but not visible due to a conditional
 					// 			This case is not covered at the moment on the assumption that if you're using <between> you're not using conditionals. This may or may not be a good assumption.
-					
 					$vb_has_preceding_value = false;
 					for($vn_i = 0; $vn_i < $vn_index; $vn_i++) {
 						if ($po_nodes[$vn_i] && ($po_nodes[$vn_i]->tag == '~text~') && is_array($va_preceding_tags = caGetTemplateTags($po_nodes[$vn_i]->text))) {
@@ -544,9 +545,10 @@ class DisplayTemplateParser {
 									if(isset($pa_vals[$vs_following_tag]) && strlen($pa_vals[$vs_following_tag])) {
 										$vs_acc .= $content = DisplayTemplateParser::_processChildren($pr_res, $o_node->children, $pa_vals, $pa_options);
 										if ($pb_is_case && $content) { break(2); }
+										break;
 									}
-									break;
 								}
+								break;
 							}
 						}
 					}
@@ -566,7 +568,7 @@ class DisplayTemplateParser {
 					$vn_last_unit_omit_count = 0;
 					
 					// <unit> attributes
-					$vs_unit_delimiter = $o_node->delimiter ? (string)$o_node->delimiter : $ps_delimiter;
+					$vs_unit_delimiter = !is_null($o_node->delimiter) ? (string)$o_node->delimiter : $ps_delimiter;
 					$vb_unique = $o_node->unique ? (bool)$o_node->unique : false;
 					$vb_aggregate_unique = $o_node->aggregateUnique ? (bool)$o_node->aggregateUnique : false;
 					$vb_omit_blanks = !is_null($o_node->omitBlanks) ? (bool)$o_node->omitBlanks : null;
@@ -793,6 +795,9 @@ class DisplayTemplateParser {
                                         
                                         $rels = $t_instance->getRelatedItems($t_rel_instance->tableName(), array_merge($va_get_options, array('returnAs' => 'data', 'row_ids' => [$pr_res->getPrimaryKey()])));
 								        $va_relation_ids = is_array($rels) ? array_keys($rels) : [];
+								 
+								        $va_relationship_type_ids = array_values(array_map(function($r) { return $r['relationship_type_id']; }, $rels));
+								        $va_relationship_type_orientations = array_values(array_map(function($r) { return $r['direction']; }, $rels));
 								    }
 									if (is_array($va_relation_ids) && sizeof($va_relation_ids)) {
 										$qr_rels = caMakeSearchResult($t = $t_rel_instance->isRelationship() ? $t_rel_instance->tableName() : $t_rel_instance->getRelationshipTableName($ps_tablename), $va_relation_ids);
@@ -903,7 +908,7 @@ class DisplayTemplateParser {
 						$vs_proc_template = caProcessTemplate($o_node->html(), $pa_vals, ['quote' => $pb_quote]);
 					}
 					
-					if ($vs_tag === 'l') {
+					if (($vs_tag === 'l') && caGetOption('makeLink', $pa_options, true)) {
 						$vs_linking_context = $ps_tablename;
 						$va_linking_ids = [$pr_res->getPrimaryKey()];
 						
@@ -1126,8 +1131,7 @@ class DisplayTemplateParser {
 				} else {				
 					switch(strtolower($vs_get_spec)) {
                         case 'relationship_typename':
-                            $va_val_list = array();
-                            
+                            $va_val_list = [];
                             // (caGetOption('orientation', $pa_options, 'LTOR')
                             $va_relationship_orientations = array_slice($va_relationship_orientations, $vn_start);
                             $orientation = $va_relationship_orientations[$pr_res->currentIndex()] ?? 'LTOR';
@@ -1794,7 +1798,12 @@ class DisplayTemplateParser {
 				
 				$ps_template = preg_replace("/\^".preg_quote($vs_tag, '/')."(?![A-Za-z0-9]+)/", $vs_gotten_val, $ps_template);
 			} else {
-				if (
+				if(isset($pa_values[$vs_tag])) { 
+					$vs_val = $pa_values[$vs_tag];
+					if(is_array($vs_val)) {
+						$vs_val = join(" ", $vs_val);
+					}
+				} elseif (
 				    is_array($vs_val = isset($pa_values[$va_tmp[0]]) ? $pa_values[$va_tmp[0]] : '')
 				) {
 					// If value is an array try to make a string of it
@@ -1947,7 +1956,7 @@ class DisplayTemplateParser {
 		
 	 	$filter_opt = $value;
 	 	$filter = true;
-        if(!(bool)$filter_opt || ($filter_opt === '0') || (strtolower($filter_opt) === 'no')) { $filter = false; }
+        if(!is_null($filter_opt) && (!(bool)$filter_opt || ($filter_opt === '0') || (strtolower($filter_opt) === 'no'))) { $filter = false; }
 		$res->filterNonPrimaryRepresentations($filter); 
 		
 		return $filter;

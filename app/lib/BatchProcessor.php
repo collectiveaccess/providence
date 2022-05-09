@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2021 Whirl-i-Gig
+ * Copyright 2012-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -119,7 +119,8 @@ class BatchProcessor {
 				//
 				// Is record of correct type?
 				//
-				if (($perform_type_access_checking) && (is_array($va_restrict_to_types) && !in_array($t_subject->get('type_id'), $va_restrict_to_types))) {
+				$type_id = $t_subject->get('type_id');
+				if ($perform_type_access_checking && $type_id && (is_array($va_restrict_to_types) &&  !in_array($type_id, $va_restrict_to_types))) {
 					continue;		// skip
 				}
 

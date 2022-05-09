@@ -184,6 +184,7 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 
 			$this->view->setVar('num_hits', $vo_result->numHits());
 			$this->view->setVar('num_pages', $vn_num_pages = ceil($vo_result->numHits()/$vn_items_per_page));
+ 			$this->view->setVar('start', ($vn_page_num - 1) * $vn_items_per_page);
 			if ($vn_page_num > $vn_num_pages) { $vn_page_num = 1; }
 
 			$this->view->setVar('page', $vn_page_num);

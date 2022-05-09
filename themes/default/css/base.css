@@ -4221,7 +4221,7 @@ div.quickSearchNoResults {
 }
 .facetHeadingLink{
 	float: left;
-	width: 200px;
+	width: 320px;
 	padding: 5px 5px 2px 8px;
 	background-color:#ededed;
 	margin-right: 30px;
@@ -4276,7 +4276,7 @@ div.quickSearchNoResults {
 }
 #refineBrowse a.facetLink{
 	float: left;
-	width: 200px;
+	width: 320px;
 	padding: 5px 5px 2px 8px;
 	background-color:#ededed;
 	margin-right: 30px;
@@ -4403,10 +4403,11 @@ div.quickSearchNoResults {
 }
 .browseSelectPanelContentArea {
 	background-color: #f7f7f7;
-	padding: 10px 7px 5px 7px;
+	padding: 10px 0px 5px 7px;
 	border-radius: 4px;
 	-moz-border-radius: 4px;
 	-webkit-border-radius: 4px;
+	overflow-y: hidden;
 }
 h2.browse {
 	margin: 0px;
@@ -4454,7 +4455,7 @@ h2.browse {
 }
 .browseSelectPanelList {
     margin: 0px;
-    width: 750px;
+    width: 100%;
     height: auto;
     overflow: auto;
     padding: 0px;
@@ -4479,7 +4480,7 @@ div.browseSelectPanelListGroupHeading {
 	border-radius: 4px;
 	-moz-border-radius: 4px;
 	-webkit-border-radius: 4px;
-	margin: 0px 20px 0px 0px;
+	margin: 4px 0px 8px 0px;
 }
 a.browseSelectPanelListGroupHeading, a.browseSelectPanelListGroupHeading:hover {
     text-decoration: none;
@@ -6971,6 +6972,12 @@ div.caHistoryTrackingIconText {
 	text-align: center;
 	font-size: 11px;
 	font-style: italic;
+	
+	overflow: hidden;
+	text-overflow: ellipsis;
+	
+	padding: 3px;
+	width: 57px;
 }
 
 div.caHistoryTrackingEntryDate {

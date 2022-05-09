@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2021 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -70,7 +70,7 @@
 						foreach($va_available_facets as $vs_facet_code => $va_facet_info) {
 							$i++;
 							$vs_style = "";
-							if($i == 4){
+							if($i == 3){
 								$vs_style = "style='clear:left;'";
 								$i = 1;
 							}
@@ -113,7 +113,7 @@
 					foreach($va_available_facets as $vs_facet_code => $va_facet_info) {
 						$i++;
 						$vs_style = "";
-						if($i == 4){
+						if($i == 3){
 							$vs_style = "style='clear:left;'";
 							$i = 1;
 						}

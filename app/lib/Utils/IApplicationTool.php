@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,45 +34,43 @@
   *
   */
  
- interface IApplicationTool {
- 	
- 	/**
- 	 * Settings
- 	 */ 
+interface IApplicationTool {
+	/**
+	 * Settings
+	 */ 
 	public function getToolSettings();
-	
+
 	/**
 	 * Configuration
 	 */
 	public function getAppConfig();
 	public function getToolConfig();
-	 
+ 
 	 /**
 	  * Logging
 	  */
 	public function getLogger();
 	public function getLogLevel();
-	public function setLogLevel($pn_log_level);
+	public function setLogLevel(int $log_level);
 	public function getLogPath();
-	public function setLogPath($ps_log_path);
-	 
+	public function setLogPath(string $log_path);
+ 
 	/**
 	 * Help
 	 */
-	public function getShortHelpText($ps_command);
-	public function getHelpText($ps_command);
-	
+	public function getShortHelpText(string $command);
+	public function getHelpText(string $command);
+
 	/**
 	 * Progress bar
- 	 */
-	public function getProgressBar($pn_total=null);
-	public function setMode($ps_mode);
+	 */
+	public function getProgressBar(?int $total=null);
+	public function setMode(string $mode);
 	public function getMode();
-	 
+ 
 	/**
- 	 * Execution
- 	 */ 
+	 * Execution
+	 */ 
 	public function getCommands();
-	public function run($ps_command);
- }
-?>
+	public function run(string $command, ?array $options=null);
+}

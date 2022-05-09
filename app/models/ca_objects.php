@@ -709,6 +709,36 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		return parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
 	}
 	# ------------------------------------------------------
+	/** 
+	 * Check if currently loaded row is a hierarchical child of another row (object or collection)
+	 *
+	 * @return bool
+	 */
+	public function isChild() : bool {
+		global $g_request;
+		$collection_id = $g_request ? $g_request->getParameter('collection_id', pInteger) : null;
+		$config = $this->getAppConfig();
+		if (
+			$config->get('ca_objects_x_collections_hierarchy_enabled') && 
+			($coll_rel_type = $config->get('ca_objects_x_collections_hierarchy_relationship_type')) && 
+			(
+				$collection_id
+				||
+				($collection_id = (is_array($coll_ids = $this->get('ca_collections.collection_id', ['returnAsArray' => true, 'restrictToRelationshipTypes' => [$coll_rel_type]])) ? array_shift($coll_ids) : null))
+			)
+		) {
+			if($o_idno = $this->getIDNoPlugInInstance()) {
+				$o_idno->isChild(true, ca_collections::getIdnoForID($collection_id));
+			}
+			return true;
+		}
+		
+		if(parent::isChild()) { 
+			return true;
+		}
+		return false;
+	}
+	# ------------------------------------------------------
 	/**
 	 * @param array $pa_options
 	 *		duplicate_media
@@ -755,6 +785,12 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 					}
 				}
 			}
+			
+			// update idno
+			if($this->isChild()) {
+				$t_dupe->set('idno', $t_dupe->get('ca_objects.idno'));
+				$t_dupe->update();
+			}
 		} else {
 			if ($vb_we_set_transaction) { $o_t->rollback(); }
 			return false;
@@ -793,9 +829,11 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		
 		$o_view->setVar('t_subject', $this);
 		
-		$o_view->setVar('checkout_history', $va_history = $this->getCheckoutHistory());
-		$o_view->setVar('checkout_count', sizeof($va_history));
-		$o_view->setVar('client_list', $va_client_list = array_unique(caExtractValuesFromArrayList($va_history, 'user_name')));
+		$o_view->setVar('checkout_history', $history = $this->getCheckoutHistory());
+		$o_view->setVar('reservations', $reservations = $this->getCheckoutReservations());
+		$o_view->setVar('checkout_count', sizeof($history));
+		$o_view->setVar('reservation_count', sizeof($reservations));
+		$o_view->setVar('client_list', $va_client_list = array_unique(caExtractValuesFromArrayList($history, 'user_name')));
 		$o_view->setVar('client_count', sizeof($va_client_list));
 		
 		

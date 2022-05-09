@@ -214,4 +214,3 @@ class ca_loans_x_object_representations extends BaseRepresentationRelationship {
 	}
 	# ------------------------------------------------------
 }
-?>

@@ -216,4 +216,3 @@ class ca_object_representations_x_vocabulary_terms extends BaseRepresentationRel
 	}
 	# ------------------------------------------------------
 }
-?>

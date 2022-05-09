@@ -121,6 +121,7 @@
 		 * 		queueIndexing =
 		 *		effectiveDate = Effective date for label. [Default is null]
 		 *		access = Access value for label (from access_statuses list). [Default is 0]
+		 *		aourceInfo = Source for label. [Default is null]
 		 * @return int id for newly created label, false on error or null if no row is loaded
 		 */ 
 		public function addLabel($pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=false, $pa_options=null) {
@@ -132,6 +133,7 @@
 			
 			$effective_date = caGetOption(['effective_date', 'effectiveDate'], $pa_options, null);
 			$label_access = caGetOption(['access', 'label_access', 'labelAccess'], $pa_options, 0);
+			$source_info = caGetOption(['source_info', 'sourceInfo'], $pa_options, null);
 			
 			$vs_table_name = $this->tableName();
 			
@@ -166,6 +168,7 @@
 			if ($t_label->hasField('is_preferred')) { $t_label->set('is_preferred', $pb_is_preferred ? 1 : 0); }
 			if ($t_label->hasField('effective_date')) { $t_label->set('effective_date', $effective_date); }
 			if ($t_label->hasField('access')) { $t_label->set('access', $label_access); }
+			if ($t_label->hasField('source_info')) { $t_label->set('source_info', $source_info); }
 			
 			$t_label->set($this->primaryKey(), $vn_id);
 			
@@ -204,6 +207,7 @@
 		 * 		queueIndexing =
 		 *		effectiveDate = Effective date for label. [Default is null]
 		 *		access = Access value for label (from access_statuses list). [Default is 0]
+		 *		aourceInfo = Source for label. [Default is null]
 		 * @return int id for the edited label, false on error or null if no row is loaded
 		 */
 		public function editLabel($pn_label_id, $pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=false, $pa_options=null) {
@@ -214,6 +218,7 @@
 			
 			$effective_date = caGetOption(['effective_date', 'effectiveDate'], $pa_options, null);
 			$label_access = caGetOption(['access', 'label_access', 'labelAccess'], $pa_options, 0);
+			$source_info = caGetOption(['source_info', 'sourceInfo'], $pa_options, null);
 			
 			$vs_table_name = $this->tableName();
 			
@@ -268,6 +273,10 @@
 			if ($t_label->hasField('access')) { 
 				$t_label->set('access', $label_access); 
 				if ($t_label->changed('access')) { $vb_has_changed = true; }
+			}
+			if ($t_label->hasField('source_info')) { 
+				$t_label->set('source_info', $source_info); 
+				if ($t_label->changed('source_info')) { $vb_has_changed = true; }
 			}
 			
 			if (!$vb_has_changed) { return $t_label->getPrimaryKey(); }
@@ -1013,7 +1022,6 @@
 			
 			$va_sql = [];
 			if ($vs_wheres = join(" {$ps_boolean} ", $va_label_sql)) { $va_sql[] = "({$vs_wheres})"; }
-			if ($vs_type_restriction_sql) { $va_sql[] = $vs_type_restriction_sql; }
 			if ($vs_deleted_sql) { $va_sql[] = $vs_deleted_sql; }			
 
 
@@ -1053,6 +1061,8 @@
 					$select_flds = $vs_pk;
 					break;
 			}
+			
+			if ($vs_type_restriction_sql) { $va_sql[] = $vs_type_restriction_sql; }
 		
             $vs_sql = "SELECT DISTINCT {$vs_table}.{$select_flds}".($vs_sort_proc ? ", {$vs_sort_proc}" : "")." FROM {$vs_table}";
             $vs_sql .= join("\n", $va_joins);
@@ -1085,7 +1095,7 @@
 			if ($start > 0) { $limit_sql = "{$start}"; }
 			if ($limit > 0) { $limit_sql .= $limit_sql ? ", {$limit}" : "{$limit}"; }
 		
-			$qr_res = $o_db->query($vs_sql.($limit_sql ? " LIMIT {$limit_sql}" : ''), array_merge($va_type_restriction_params, $va_sql_params));
+			$qr_res = $o_db->query($vs_sql.($limit_sql ? " LIMIT {$limit_sql}" : ''), array_merge($va_sql_params, $va_type_restriction_params));
 
 			if ($vb_purify_with_fallback && ($qr_res->numRows() == 0)) {
 				return self::find($pa_values, array_merge($pa_options, ['purifyWithFallback' => false, 'purify' => false]));

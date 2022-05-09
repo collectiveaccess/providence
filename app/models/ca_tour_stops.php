@@ -404,4 +404,3 @@ class ca_tour_stops extends BundlableLabelableBaseModelWithAttributes {
  	}
 	# ------------------------------------------------------
 }
-?>

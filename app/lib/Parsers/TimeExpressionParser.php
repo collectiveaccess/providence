@@ -3632,7 +3632,7 @@ class TimeExpressionParser {
 			case 'MONTH':
 				return $this->getISODateTime($pa_start_date, 'FULL', array_merge($pa_options, ['timeOmit' => true])).'/'.$this->getISODateTime($pa_end_date, 'FULL', array_merge($pa_options, ['timeOmit' => true]));
 		}
-		if ($start == $end) { return $start; }
+		if ($start === $end) { return $start; }
 		return "{$start}/{$end}";
 	}
 	# -------------------------------------------------------------------
@@ -3645,6 +3645,7 @@ class TimeExpressionParser {
 	 *		timeOmit = Omit time from returned ISO 8601 date. [Default is false]
 	 *		returnUnbounded = Return extreme value for unbounded dates. For "before" dates the start date would be equal to -9999; for "after" dates the end date would equal "9999". [Default is false]
 	 *		dateFormat = If set to "yearOnly" will return bare year. [Default is null]
+	 *		full = Always return full date [Default is false]
 	 * @return string
 	 */
 	public function getISODateTime($pa_date, $ps_mode='START', $pa_options=null) {
@@ -3676,7 +3677,7 @@ class TimeExpressionParser {
 		
 		if (
 			((!($pa_date['month'] == 1 && $pa_date['day'] == 1 && ($ps_mode == 'START'))) &&
-			(!($pa_date['month'] == 12 && $pa_date['day'] == 31 && ($ps_mode == 'END')))) || $vs_time
+			(!($pa_date['month'] == 12 && $pa_date['day'] == 31 && ($ps_mode == 'END')))) || $vs_time || caGetOption('full', $pa_options, $this->opo_datetime_settings->get('alwaysUseFullISODates'))
 			
 		) {
 			$vs_date = $pa_date['year'].'-'.sprintf("%02d", $pa_date['month']).'-'.sprintf("%02d", $pa_date['day']);

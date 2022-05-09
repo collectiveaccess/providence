@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2020 Whirl-i-Gig
+ * Copyright 2012-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -124,50 +124,89 @@ JSON;
 		$this->assertEquals("5.0 in", $vm_ret[1]);
 	}
 	# -------------------------------------------------------
-
     public function testCaEscapeForDelimitedRegexpWithEmptyExpression(){
         $regexp = '';
         $result = caEscapeForDelimitedRegexp($regexp, '!');
         $this->assertEquals('', $result);
     }
-
+	# -------------------------------------------------------
     public function testCaEscapeForDelimitedRegexpWithSharp(){
         $regexp = '#';
         $result = caEscapeForDelimitedRegexp($regexp, '#');
         $this->assertEquals('\#', $result);
     }
-
+	# -------------------------------------------------------
     public function testCaEscapeForDelimitedRegexpWithSlash(){
         $regexp = '/';
         $result = caEscapeForDelimitedRegexp($regexp, '/');
         $this->assertEquals('\/', $result);
     }
-
+	# -------------------------------------------------------
     public function testCaEscapeForDelimitedRegexpWithExclamation(){
         $regexp = '!';
         $result = caEscapeForDelimitedRegexp($regexp, '!');
         $this->assertEquals('\\!', $result);
     }
-
+	# -------------------------------------------------------
     public function testCaEscapeForDelimitedRegexpEscapedDelimiter(){
         $regexp = '\!';
         $result = caEscapeForDelimitedRegexp($regexp, '!');
         $this->assertEquals('\!', $result);
     }
-
+	# -------------------------------------------------------
     public function testCaMakeDelimitedRegexp(){
         $regexp = '([0-9]+)!([0-9]+)';
         $result = caMakeDelimitedRegexp($regexp, '!');
         $this->assertEquals('!([0-9]+)\\!([0-9]+)!', $result);
     }
+	# -------------------------------------------------------
     public function testCaMakeDelimitedRegexpWithSharp(){
         $regexp = '([0-9]+)!([0-9]+)';
         $result = caMakeDelimitedRegexp($regexp, '#');
         $this->assertEquals('#([0-9]+)!([0-9]+)#', $result);
     }
+	# -------------------------------------------------------
     public function testCaMakeDelimitedRegexpWithSlash(){
         $regexp = '([0-9]+)!([0-9]+)';
         $result = caMakeDelimitedRegexp($regexp, '/');
         $this->assertEquals('/([0-9]+)!([0-9]+)/', $result);
     }
+    
+	# -------------------------------------------------------
+	public function testCaExtractTagsFromTemplate() {
+		$tags = caExtractTagsFromTemplate("IDNO:^ca_objects.idno");
+		$this->assertIsArray($tags);
+		$this->assertCount(1, $tags);
+		$this->assertEquals("ca_objects.idno", $tags[0]);
+		
+		$tags = caExtractTagsFromTemplate("IDNO:^ca_objects.idno/^ca_objects.extent");
+		$this->assertIsArray($tags);
+		$this->assertCount(2, $tags);
+		$this->assertEquals("ca_objects.idno", $tags[0]);
+		$this->assertEquals("ca_objects.extent", $tags[1]);
+		
+		$tags = caExtractTagsFromTemplate("IDNO:^ca_objects.idno%delimiter=foo&restrictToTypes=books;papers/^ca_objects.extent");
+		$this->assertIsArray($tags);
+		$this->assertCount(2, $tags);
+		$this->assertEquals("ca_objects.idno%delimiter=foo&restrictToTypes=books;papers", $tags[0]);
+		$this->assertEquals("ca_objects.extent", $tags[1]);
+		
+		$tags = caExtractTagsFromTemplate("IDNO:^ca_objects.idno%delimiter=foo&restrictToTypes=books;papers/^ca_objects.extent%toUpper=1");
+		$this->assertIsArray($tags);
+		$this->assertCount(2, $tags);
+		$this->assertEquals("ca_objects.idno%delimiter=foo&restrictToTypes=books;papers", $tags[0]);
+		$this->assertEquals("ca_objects.extent%toUpper=1", $tags[1]);
+		
+		$tags = caExtractTagsFromTemplate("Artists are ^ca_entities.preferred_labels.displayname/artist ; [END]");
+		$this->assertIsArray($tags);
+		$this->assertCount(1, $tags);
+		$this->assertEquals("ca_entities.preferred_labels.displayname", $tags[0]);
+		
+		$tags = caExtractTagsFromTemplate("MARC: ^701/a");
+		$this->assertIsArray($tags);
+		$this->assertCount(1, $tags);
+		$this->assertEquals("701/a", $tags[0]);
+		
+	}
+	# -------------------------------------------------------
 }
