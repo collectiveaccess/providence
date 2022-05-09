@@ -605,7 +605,7 @@ class MetadataImportController extends \GraphQLServices\GraphQLServiceController
 						[
 							'name' => 'id',
 							'type' => Type::int(),
-							'description' => _t('ID of mapping to delete')
+							'description' => _t('ID of importer to delete')
 						],
 						[
 							'name' => 'mapping_id',
@@ -632,8 +632,50 @@ class MetadataImportController extends \GraphQLServices\GraphQLServiceController
 						
 						return ['id' => null, 'errors' => $errors, 'warnings' => [], 'info' => []];
 					}
-				]
-			]
+				],
+				'reorderMappings' => [
+					'type' => MetadataImportSchema::get('ImporterResult'),
+					'description' => _t('Reorder mappings'),
+					'args' => [
+						[
+							'name' => 'jwt',
+							'type' => Type::string(),
+							'description' => _t('JWT'),
+							'defaultValue' => self::getBearerToken()
+						],
+						[
+							'name' => 'id',
+							'type' => Type::int(),
+							'description' => _t('ID of importer to reorder'),
+							'defaultValue' => null
+						],
+						[
+							'name' => 'data',
+							'type' => MetadataImportSchema::get('ImporterReorderInputType'),
+							'description' => _t('Reorder values for mapping')
+						]
+					],
+					'resolve' => function ($rootValue, $args) {
+						if (!($u = self::authenticate($args['jwt']))) {
+							throw new ServiceException(_t('Invalid JWT'));
+						}
+						
+						$errors = [];
+						if (!is_a($t_importer = self::_loadImporter($args['id']), 'ca_data_importers')) {
+							$errors[] = $t_importer;
+						} else {
+
+							$sorted_id_str = $args['data']['sorted_ids'];
+							$sorted_id_arr = preg_split('![&;,]!', $sorted_id_str);
+							$sorted_id_int_arr = array_filter(array_map(function($v) { return (int)$v; }, $sorted_id_arr), function($v) { return ($v > 0); });
+						
+							$errors = $t_importer->reorderItems($sorted_id_int_arr);
+							
+							return ['id' => [$args['id']], 'errors' => $errors, 'warnings' => [], 'info' => []];
+						}
+					}
+				],
+			],
 		]);
 		
 		return self::resolve($qt, $mt);

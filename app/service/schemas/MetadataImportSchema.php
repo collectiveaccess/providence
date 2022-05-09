@@ -429,6 +429,15 @@ class MetadataImportSchema extends \GraphQLServices\GraphQLSchema {
 					]
 				]
 			]),
+			$importerReorderInputType = new InputObjectType([
+				'name' => 'ImporterReorderInputType',
+				'fields' => [
+					'sorted_ids' => [
+						'type' => Type::string(),
+						'description' => 'Sorted importer item item_ids'
+					]
+				]
+			]),
 			
 		];
 	}

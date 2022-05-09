@@ -712,6 +712,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			SELECT * 
 			FROM ca_data_importer_groups 
 			WHERE importer_id = ?
+			ORDER BY `rank`
 		",$this->getPrimaryKey());
 		
 		$va_return = array();
@@ -742,6 +743,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			SELECT * 
 			FROM ca_data_importer_items 
 			WHERE importer_id = ?
+			ORDER BY `rank`
 		",$this->getPrimaryKey());
 		
 		$va_return = array();
@@ -828,6 +830,66 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		}
 
 		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Sets order of items in the currently loaded importer to the order of row_ids as set in $row_ids
+	 *
+	 * @param array $pa_row_ids A list of row_ids in the set, in the order in which they should be displayed in the set
+	 * @param array $pa_options An optional array of options. No options are currently supported.
+	 * @return array An array of errors. If the array is empty then no errors occurred
+	 */
+	public function reorderItems($row_ids, $options=null) {
+		if (!($importer_id = $this->getPrimaryKey())) {	
+			return null;
+		}
+		
+		$we_set_transaction = false;
+		if (!$this->inTransaction()) {
+			$o_trans = new Transaction($this->getDb());
+			$we_set_transaction = true;
+		} else {
+			$o_trans = $this->getTransaction();
+		}
+		
+		$t_item = new ca_data_importer_items();
+		$t_item->setTransaction($o_trans);
+		$errors = [];
+		
+		$items = $this->getItems();
+		
+		// rewrite ranks
+		$existing_ranks = array_values(array_map(function($v) { return $v['rank'] ?? null; }, $items));
+		$rank_acc = end($existing_ranks);
+		
+		foreach($row_ids as $rank => $row_id) {
+			if (isset($existing_ranks[$rank])) {
+				$rank_inc = $existing_ranks[$rank];
+			} else {
+				$rank_acc++;
+				$rank_inc = $rank_acc;
+			}
+			
+			if (isset($items[$row_id])) {
+				if ($items[$row_id]['rank'] != $rank_inc) {
+					$t_item->load($row_id);
+					$t_item->set('rank', $rank_inc);
+					$t_item->update();
+				
+					if ($t_item->numErrors()) {
+						$errors[$row_id] = _t('Could not reorder item %1: %2', $row_id, join('; ', $t_item->getErrors()));
+					}
+				}
+			} 
+		}
+		
+		if(sizeof($errors)) {
+			if ($we_set_transaction) { $o_trans->rollback(); }
+		} else {
+			if ($we_set_transaction) { $o_trans->commit(); }
+		}
+		
+		return $errors;
 	}
 	# ------------------------------------------------------
 	/**
