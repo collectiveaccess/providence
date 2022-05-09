@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2021 Whirl-i-Gig
+ * Copyright 2012-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -169,11 +169,11 @@ class ca_data_importer_groups extends BaseModel {
 	/**
 	 *
 	 */
-	public function __construct($pn_id=null) {
+	public function __construct($id=null) {
 		// Filter list of tables importers can be used for to those enabled in current config
 		//BaseModel::$s_ca_models_definitions['ca_data_importer_groups']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = caFilterTableList(BaseModel::$s_ca_models_definitions['ca_data_importer_groups']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST']);
 		
-		parent::__construct($pn_id);
+		parent::__construct($id);
 		
 		$this->setAvailableSettings([]);
 	}
@@ -181,19 +181,18 @@ class ca_data_importer_groups extends BaseModel {
 	/**
 	 *
 	 */
-	public function addItem($ps_source, $ps_destination, $pa_settings=null, $pa_options=null) {
+	public function addItem(string $source, string $destination, ?array $settings=null, ?array $options=null) {
 		if(!$this->getPrimaryKey()) return false;
 		
 		$t_item = new ca_data_importer_items();
-		$t_item->setMode(ACCESS_WRITE);
 		$t_item->set('group_id', $this->getPrimaryKey());
 		$t_item->set('importer_id', $this->get('importer_id'));
-		$t_item->set('source', $ps_source);
-		$t_item->set('destination', $ps_destination);
+		$t_item->set('source', $source);
+		$t_item->set('destination', $destination);
 		
-		if (is_array($pa_settings)) {
-			foreach($pa_settings as $vs_k => $vs_v) {
-				$t_item->setSetting($vs_k, $vs_v);
+		if (is_array($settings)) {
+			foreach($settings as $k => $v) {
+				$t_item->setSetting($k, $v);
 			}
 		}
 		
@@ -204,7 +203,37 @@ class ca_data_importer_groups extends BaseModel {
 			return false;
 		}
 		
-		if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
+		if (isset($options['returnInstance']) && $options['returnInstance']) {
+			return $t_item;
+		}
+		return $t_item->getPrimaryKey();
+		
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function editItem(int $item_id, string $source, string $destination, ?array $settings=null, ?array $options=null) {
+		if(!($t_item = ca_data_importer_items::find(['item_id' => $item_id], ['returnAs' => 'firstModelInstance']))) {
+			return null;
+		}
+		$t_item->set('source', $source);
+		$t_item->set('destination', $destination);
+		
+		if (is_array($settings)) {
+			foreach($settings as $k => $v) {
+				$t_item->setSetting($k, $v);
+			}
+		}
+		
+		$t_item->update();
+		
+		if ($t_item->numErrors()) {
+			$this->errors = $t_item->errors;
+			return false;
+		}
+		
+		if (isset($options['returnInstance']) && $options['returnInstance']) {
 			return $t_item;
 		}
 		return $t_item->getPrimaryKey();
@@ -217,28 +246,28 @@ class ca_data_importer_groups extends BaseModel {
 	public function getItems() {
 		if(!$this->getPrimaryKey()) return false;
 		
-		$vo_db = $this->getDb();
+		$db = $this->getDb();
 		
-		$qr_items = $vo_db->query("
+		$qr_items = $db->query("
 			SELECT * 
 			FROM ca_data_importer_items 
 			WHERE group_id = ?
 		", (int)$this->getPrimaryKey());
 		
-		$va_return = array();
+		$return = array();
 		while($qr_items->nextRow()){
-			$va_return[(int)$qr_items->get("item_id")] = $qr_items->getRow();
+			$return[(int)$qr_items->get("item_id")] = $qr_items->getRow();
 		}
 		
-		return $va_return;
+		return $return;
 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
 	public function getItemIDs() {
-		if(is_array($va_items = $this->getItems())){
-			return $va_items;
+		if(is_array($items = $this->getItems())){
+			return $items;
 		} else {
 			return array();
 		}
@@ -255,7 +284,6 @@ class ca_data_importer_groups extends BaseModel {
 		}
 		
 		if($t_item->load($pn_item_id)){
-			$t_item->setMode(ACCESS_WRITE);
 			$t_item->delete();
 		} else {
 			return false;

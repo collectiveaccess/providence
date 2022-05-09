@@ -1,10 +1,10 @@
-import React, {useContext} from 'react'
+import React, {useContext, useEffect} from 'react'
 import Mapping from './Mapping';
 import { MappingContext } from '../MappingContext';
+import { getListMappings, editMappings } from '../MappingQueries';
 
 import { SortableContainer, SortableElement, SortableHandle } from 'react-sortable-hoc';
 import arrayMove from 'array-move'; //used for the react-sortable-hoc
-
 // const DragHandle = SortableHandle(() => <span>::</span>);
 
 const Item = SortableElement(({ value }) => {
@@ -25,14 +25,58 @@ const ItemList = SortableContainer(({ items }) => {
 
 const MappingList = () => {
 
-  const { importerName, setImporterName,
-    importerCode, setImporterCode, mappingList, setMappingList } = useContext(MappingContext)
+  const { importerId, setImporterId, mappingList, setMappingList} = useContext(MappingContext)
+
+  useEffect(() => {
+    if (importerId) {
+      getListMappings("http://importui.whirl-i-gig.com:8085/service.php/MetadataImport", importerId, data => {
+        console.log("getListMappings: ", data);
+
+        let tempMappingList = [...mappingList];
+
+        if (data.mappings){
+          data.mappings.map((mapping, index) => {
+            let line_num = index + 1;
+            tempMappingList.push(<Mapping data={mapping} line_num={line_num} />)
+          })
+        }
+
+        setMappingList(tempMappingList);
+      })
+    }
+  }, [importerId]); 
+
 
   const addMapping = () => {
     console.log("addMapping");
-    let tempMappingList = [...mappingList];
-    tempMappingList.push(<Mapping />)
-    setMappingList(tempMappingList);
+
+    let mappingData = [{
+      type: "MAPPING",
+      source: "2",
+      destination: "ca_objects.preferred_labels",
+      options: [{ name: "prefix", value: "GOT:" }],
+      refineries: [{ refinery: "entitySplitter", options: [{ name: "delimiter", value: ";" }] }],
+      replacement_values: [
+        { original: "meow", replacement: "arf" },
+        { original: "blah", replacement: "glurg" }
+      ]
+    }]
+
+    editMappings("http://importui.whirl-i-gig.com:8085/service.php/MetadataImport", importerId, mappingData, data => {
+      console.log("editMappings", data);
+
+      getListMappings("http://importui.whirl-i-gig.com:8085/service.php/MetadataImport", importerId, data => {
+        console.log("getListMappings: ", data);
+        let tempMappingList = [];
+        if (data.mappings) {
+          data.mappings.map((mapping, index) => {
+            let line_num = index+1;
+            tempMappingList.push(<Mapping data={mapping} line_num={line_num} />)
+          })
+        }
+        setMappingList(tempMappingList);
+      })
+    })
   } 
 
   //required function for react-sortable-hoc, saves the newly drag-sorted position
@@ -44,17 +88,6 @@ const MappingList = () => {
   return (
     <div>
       <ItemList axis='y' items={mappingList} onSortEnd={onSortEnd} useDragHandle />
-
-      {/* {mappingList && mappingList.length > 0 ?
-        mappingList.map((mapping, index) => {
-          console.log("mapping", mapping);
-          return (
-            <div key={index*2+1}>
-              {mapping}
-            </div>
-          )
-        })
-      : null} */}
 
       <div className='d-flex justify-content-end mt-2'>
         <button className='btn btn-secondary btn-sm' onClick={() => addMapping()}>Add mapping +</button>

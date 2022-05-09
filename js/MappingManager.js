@@ -8,7 +8,7 @@ import ImporterMapping from './MappingManager/ImporterMapping';
 const selector = providenceUIApps.MappingManager.selector;
 const appData = providenceUIApps.MappingManager.data;
 
-console.log("key: ", providenceUIApps.MappingManager.key);
+// console.log("key: ", providenceUIApps.MappingManager.key);
   
 const MappingManager = (props) => {
 	const { id, currentView, setCurrentView } = useContext(MappingContext)

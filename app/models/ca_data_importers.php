@@ -642,8 +642,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
-	public function addImportItem($pa_values){
+	public function addImportItems(array $items){
+		foreach($items as $item) {
 		
+		}
 	}
 	# ------------------------------------------------------
 	/**
@@ -653,7 +655,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		if(!$this->getPrimaryKey()) return false;
 		
 		$t_group = new ca_data_importer_groups();
-		$t_group->setMode(ACCESS_WRITE);
 		$t_group->set('importer_id', $this->getPrimaryKey());
 		$t_group->set('group_code', $ps_group_code);
 		$t_group->set('destination', $ps_destination);
@@ -674,6 +675,29 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			return $t_group;
 		}
 		return $t_group->getPrimaryKey();
+	}
+	# ------------------------------------------------------
+	/**
+	 * Get ca_data_importer_groups instance for specified group. If the group does not exist it
+	 * will be created, unless the 'dontCreate' option is set.
+	 *
+	 * @param mixed $group Group_id or code
+	 * @param array $options Options include:
+	 *		dontCreate = Don't create new group if specific group does not exist. [Default is false]
+	 *
+	 * @return ca_data_importer_groups instance or null if group does not exist and 'dontCreate' option is set
+	 */
+	public function getGroup($group, ?array $options=null) : ?ca_data_importer_groups {
+		if(!($importer_id = $this->getPrimaryKey())) { return false; }
+		
+		if(!($t_group = ca_data_importer_groups::find(['importer_id' => $importer_id, 'group_id' => $group], ['returnAs' => 'firstModelInstance']))) {
+			$t_group = ca_data_importer_groups::find(['importer_id' => $importer_id, 'group_code' => $group], ['returnAs' => 'firstModelInstance']);
+		}
+		if(!$t_group && !caGetOption('dontCreate', $options, false)) {
+			$t_group = $this->addGroup($group, '', null, ['returnInstance' => true]);
+		}
+		
+		return $t_group;
 	}
 	# ------------------------------------------------------
 	/**
@@ -784,16 +808,21 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		return true;
 	}
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	public function removeItem($pn_item_id){
 		$t_item = new ca_data_importer_items();
 		
-		if(!in_array($pn_item_id, $this->getItemIDs())){
+		if(!in_array($pn_item_id, array_map(function($v) { return $v['item_id']; }, $this->getItemIDs()))){
 			return false; // don't delete items from other importers
 		}
 		
 		if($t_item->load($pn_item_id)){
-			$t_item->setMode(ACCESS_WRITE);
-			$t_item->delete();
+			if(!$t_item->delete()) {
+				$this->errors = $t_item->errors;
+				return false;
+			}
 		} else {
 			return false;
 		}
@@ -830,6 +859,17 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		}
 		print caPrintStackTrace();
 		die($this->tableName()." does not implement method {$ps_name}");
+	}
+	# ------------------------------------------------------
+	/**
+	 * Delete all mappings (items) from importer
+	 *
+	 * @return true on success, false on failure or null if no importer is loaded.
+	 */
+	public function deleteAllItems() : ?bool { 
+		if(!($mapping_id = $this->getPrimaryKey())) { return null; }
+		
+		
 	}
 	# ------------------------------------------------------
 	/**
@@ -1079,10 +1119,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$t_importer = new ca_data_importers();
 		$t_importer->setMode(ACCESS_WRITE);
 		
-		// Remove any existing mapping
+		// Remove any existing mappings
 		if ($t_importer->load(array('importer_code' => $va_settings['code']))) {
 			if ((!(bool)$t_importer->get('deleted'))) { $is_new = false; }
-			$t_importer->delete(true, array('hard' => true));
+			$t_importer->delete(true, ['hard' => true]);
 			if ($t_importer->numErrors()) {
 				$pa_errors[] = _t("Could not delete existing mapping for %1: %2", $va_settings['code'], join("; ", $t_importer->getErrors()))."\n";
 				if ($o_log) { $o_log->logError(_t("[loadImporterFromFile:%1] Could not delete existing mapping for %2: %3", $ps_source, $va_settings['code'], join("; ", $t_importer->getErrors()))); }
@@ -1112,7 +1152,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		
-		$t_importer->addLabel(array('name' => $va_settings['name']), $vn_locale_id, null, true);
+		$t_importer->addLabel(['name' => $va_settings['name']], $vn_locale_id, null, true);
 		
 		if ($t_importer->numErrors()) {
 			$pa_errors[] = _t("Error creating mapping name: %1", join("; ", $t_importer->getErrors()))."\n";
@@ -1147,25 +1187,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			// Add items
 			foreach($va_mappings_for_group as $vs_source => $va_mappings_for_source) {
 				foreach($va_mappings_for_source as $va_row) {
-					$va_item_settings = array();
-					$va_item_settings['refineries'] = array($va_row['refinery']);
-				
-					$va_item_settings['original_values'] = $va_row['original_values'];
-					$va_item_settings['replacement_values'] = $va_row['replacement_values'];
-				
-					if (is_array($va_row['options'])) {
-						foreach($va_row['options'] as $vs_k => $vs_v) {
-							if ($vs_k == 'restrictToRelationshipTypes') { $vs_k = 'filterToRelationshipTypes'; }	// "restrictToRelationshipTypes" is now "filterToRelationshipTypes" but we want to support old mappings so we translate here
-							$va_item_settings[$vs_k] = $vs_v;
-						}
-					}
-					if (is_array($va_row['refinery_options'])) {
-						foreach($va_row['refinery_options'] as $vs_k => $vs_v) {
-							$va_item_settings[$va_row['refinery'].'_'.$vs_k] = $vs_v;
-						}
-					}
-					
-					$t_group->addItem($vs_source, $va_row['destination'], $va_item_settings, array('returnInstance' => true));
+					$t_group->addItem($vs_source, $va_row['destination'], self::mergeItemSettings($va_row), ['returnInstance' => true]);
 				}
 			}
 		}
@@ -1177,6 +1199,52 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		return $t_importer;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function mergeItemSettings(array $settings) {
+		$item_settings = [];
+		if(isset($settings['refinery']) && strlen($settings['refinery'])) {
+			$item_settings['refineries'] = [$settings['refinery']];
+			if (is_array($settings['refinery_options'])) {
+				foreach($settings['refinery_options'] as $k => $v) {
+					$item_settings[$settings['refinery'].'_'.$k] = $v;
+				}
+			}
+		} elseif(is_array($settings['refineries'])) {
+			$item_settings['refineries'] = [];
+			foreach($settings['refineries'] as $r) {
+				$item_settings['refineries'][] = $r['refinery'];
+				
+				if(is_array($r['options'])) {
+					foreach($r['options'] as $r_opt) {
+						if(isset($r_opr['values'])) {
+							$item_settings[$r['refinery'].'_'.$r_opt['name']] = $r_opt['values'];
+						} else {
+							$item_settings[$r['refinery'].'_'.$r_opt['name']] = $r_opt['value'];
+						}
+					}
+				}
+			}
+		}	
+		$item_settings['original_values'] = $settings['original_values'];
+		$item_settings['replacement_values'] = $settings['replacement_values'];
+	
+		if (is_array($settings['options'])) {
+			foreach($settings['options'] as $k => $opt) {
+				if(is_array($opt) && isset($opt['name'])) {
+					$item_settings[$opt['name']] = is_array($opt['values']) ? $opt['values'] : $opt['value'];
+				} else {
+					if ($k == 'restrictToRelationshipTypes') { $k = 'filterToRelationshipTypes'; }	// "restrictToRelationshipTypes" is now "filterToRelationshipTypes" but we want to support old mappings so we translate here
+					$item_settings[$k] = $v;
+				}
+			}
+		}
+		
+		
+		return $item_settings;
 	}
 	# ------------------------------------------------------
 	/**

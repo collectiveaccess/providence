@@ -37,7 +37,7 @@ const getImportersList = (url, callback) => {
     .then(function (result) {
       callback(result.data['list']);
     }).catch(function (error) {
-      console.log("Error while attempting to getList: ", error);
+      console.log("Error while attempting to get importer List: ", error);
     });
 }
 
@@ -62,6 +62,49 @@ const getImporterForm = (url, id, callback) => {
     });
 }
 
+const getNewImporterForm = (url, callback) => {
+  const client = getGraphQLClient(url, {});
+  client
+    .query({
+      query: gql
+        `
+          query {
+            importerForm {
+              title, required, properties, uiSchema, values
+            }
+          }
+        `
+    })
+    .then(function (result) {
+      callback(result.data['importerForm']);
+    }).catch(function (error) {
+      console.log("Error while attempting to get importerForm: ", error);
+    });
+}
+
+const getListMappings = (url, id, callback) => {
+  const client = getGraphQLClient(url, {});
+  client
+    .query({
+      query: gql
+        `
+          query ($id: Int) {
+            listMappings(id: $id) {
+              mappings { id, type, group_id, source, destination, options { name, value},
+                refineries { refinery, options { name, value }}
+                replacement_values { original, replacement}
+                }
+            }
+          }
+        `, variables: { "id": id }
+    })
+    .then(function (result) {
+      callback(result.data['listMappings']);
+    }).catch(function (error) {
+      console.log("Error while attempting to get importerForm: ", error);
+    });
+}
+
 function addImporter(uri, name, formats, code, table, type, settings, callback) {
   const client = getGraphQLClient(uri, {});
   client
@@ -73,7 +116,7 @@ function addImporter(uri, name, formats, code, table, type, settings, callback) 
             $formats: [String], 
             $code: String, 
             $table: String, 
-            $type: String, 
+            $type: Int, 
             $settings: [ImporterSetting]
           ) 
           { 
@@ -100,6 +143,36 @@ function addImporter(uri, name, formats, code, table, type, settings, callback) 
     });
 }
 
+function editMappings(uri, id, mappings, callback) {
+  const client = getGraphQLClient(uri, {});
+  client
+    .mutate({
+      mutation: gql
+        `
+          mutation (
+            $id: Int, 
+            $mappings: [ImporterMappingInput], 
+          ) 
+          { 
+            editMappings (
+              id: $id, 
+              mappings: $mappings, 
+            ) 
+            {
+              id, errors {id, code, message}, warnings {id, code, message}, info {id, code, message}
+            } 
+          }
+        `
+      , variables: { "id": id, "mappings": mappings }
+    })
+    .then(function (result) {
+      console.log("editMappings", result);
+      callback(result.data['editMappings']);
+    }).catch(function (error) {
+      console.log("Error while attempting to edit mappings: ", error);
+    });
+}
+
 function deleteImporter(uri, id, callback) {
   const client = getGraphQLClient(uri, {});
   client
@@ -121,13 +194,34 @@ function deleteImporter(uri, id, callback) {
     });
 }
 
+function deleteMapping(uri, id, mapping_id, callback) {
+  const client = getGraphQLClient(uri, {});
+  client
+    .mutate({
+      mutation: gql
+        `
+          mutation ($id: Int, $mapping_id: Int) {
+            deleteMapping(id: $id, mapping_id: $mapping_id) {
+                id, errors { message }
+            }
+          }
+        `
+      , variables: { 'id': id, 'mapping_id': mapping_id }
+    })
+    .then(function (result) {
+      callback(result.data['deleteMapping']);
+    }).catch(function (error) {
+      console.log("Error while attempting to delete mapping: ", error);
+    });
+}
+
 function editImporter(uri, id, name, formats, code, table, type, settings, callback) {
   const client = getGraphQLClient(uri, {});
   client
     .mutate({
       mutation: gql
         `
-          mutation ($id: Int, $name: String, $formats: [String], $code: String, $table: String, $type: String, $settings: [ImporterSetting]) { 
+          mutation ($id: Int, $name: String, $formats: [String], $code: String, $table: String, $type: Int, $settings: [ImporterSetting]) { 
             edit(id: $id, name: $name, formats: $formats, code: $code, table: $table, type: $type, settings: $settings) {
               id, name, code, table, type, formats, source, errors
             } 
@@ -142,4 +236,4 @@ function editImporter(uri, id, name, formats, code, table, type, settings, callb
     });
 }
 
-export { getGraphQLClient, getImportersList, addImporter, deleteImporter, editImporter, getImporterForm };
+export { getGraphQLClient, getImportersList, addImporter, deleteImporter, deleteMapping, editImporter, editMappings, getImporterForm, getNewImporterForm, getListMappings };

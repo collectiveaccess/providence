@@ -29,6 +29,7 @@ require_once(__CA_LIB_DIR__.'/Service/GraphQLServiceController.php');
 require_once(__CA_APP_DIR__.'/service/schemas/MetadataImportSchema.php');
 require_once(__CA_APP_DIR__.'/service/helpers/MetadataImportHelpers.php');
 require_once(__CA_APP_DIR__.'/service/helpers/ServiceHelpers.php');
+require_once(__CA_APP_DIR__.'/service/helpers/ErrorHelpers.php');
 
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
@@ -36,6 +37,7 @@ use GraphQL\Type\Definition\Type;
 use GraphQLServices\Schemas\MetadataImportSchema;
 use GraphQLServices\Helpers\MetadataImport;
 use GraphQLServices\Helpers;
+use GraphQLServices\Helpers\Error;
 
 
 class MetadataImportController extends \GraphQLServices\GraphQLServiceController {
@@ -135,7 +137,7 @@ class MetadataImportController extends \GraphQLServices\GraphQLServiceController
 						}, $data = $t_importer->getAvailableSettings(), array_keys($data));
 						
 						return $settings;
-					}
+					},
 				],
 				// ------------------------------------------------------------
 				// Importer form
@@ -207,8 +209,144 @@ class MetadataImportController extends \GraphQLServices\GraphQLServiceController
 						];
 						
 						return $form;
-					}
-				]
+					},
+				],
+				// ------------------------------------------------------------
+				// List mappings for importer
+				// ------------------------------------------------------------
+				'listMappings' => [
+					'type' => MetadataImportSchema::get('ImporterMappingListInfo'),
+					'description' => _t('Return mappings and contextual information for mappings in an importer'),
+					'args' => [
+						[
+							'name' => 'jwt',
+							'type' => Type::string(),
+							'description' => _t('JWT'),
+							'defaultValue' => self::getBearerToken()
+						],
+						[
+							'name' => 'id',
+							'type' => Type::int(),
+							'description' => _t('ID of importer')
+						],
+					],
+					'resolve' => function ($rootValue, $args) {
+						$u = self::authenticate($args['jwt']);
+						
+						$t_importer = new ca_data_importers($args['id']);
+						if(!$t_importer->isLoaded()) {
+							throw new \ServiceException(_t('Importer does not exist'));
+						}
+						$items = $t_importer->getItems();
+						
+						$ret = $mappings = [];
+						
+						foreach($items as $item) {
+							$tmp = explode(':', $item['source']);
+							if($tmp[0] === '_CONSTANT_') {	// detect constants
+								$mapping_type = 'CONSTANT';
+								$item['source'] = join(':', array_slice($tmp, 2));
+							} else {
+								$mapping_type = 'MAPPING';
+							}
+							
+							$settings = $item['settings'];
+							$refineries = $replacement_values = [];
+							if(is_array($settings['refineries'])) {
+								foreach($settings['refineries'] as $r) {
+									if(!trim($r)) { continue; }
+									$rsettings = [];
+									foreach($settings as $k => $v) {
+										if(preg_match("!^{$r}_(.*)$!", $k, $m)) {
+											$rsettings[] = ['name' => $m[1], 'value' => is_array($v) ? json_encode($v) : $v];
+											unset($settings[$k]);
+										}
+									}
+									$refineries[] = [
+										'refinery' => $r,
+										'options' => $rsettings
+									];
+								}
+								unset($settings['refineries']);
+							}
+							
+							if(is_array($settings['original_values'])) {
+								foreach($settings['original_values'] as $i => $ov) {
+									if(!strlen($ov)) { continue; }
+									$rv = $settings['replacement_values'][$i] ?? null;
+									$replacement_values[] = [
+										'original' => $ov,
+										'replacement' => $rv
+									];
+								}
+							}
+							unset($settings['original_values']);
+							unset($settings['replacement_values']);
+							
+							$m = [
+								'id' => $item['item_id'],
+								'type' => $mapping_type,
+								'group_id' => $item['group_id'],
+								'source' => $item['source'],
+								'destination' => $item['destination'],
+								'options' => $settings,
+								'replacement_values' => $replacement_values,
+								'refineries' => $refineries
+							];
+							
+							$mappings[] = $m;
+						}
+						
+						return ['mappings' => $mappings];
+					},
+				],
+				// ------------------------------------------------------------
+				// Get mapping settings (options) form
+				// ------------------------------------------------------------
+				'mappingSettings' => [
+					'type' => MetadataImportSchema::get('ImporterMapping'),
+					'description' => _t('Return mappings and contextual information for mappings in an importer'),
+					'args' => [
+						[
+							'name' => 'jwt',
+							'type' => Type::string(),
+							'description' => _t('JWT'),
+							'defaultValue' => self::getBearerToken()
+						],
+						[
+							'name' => 'id',
+							'type' => Type::int(),
+							'description' => _t('ID of importer')
+						],
+						[
+							'name' => 'mapping_id',
+							'type' => Type::int(),
+							'description' => _t('ID of mapping')
+						],
+					],
+					'resolve' => function ($rootValue, $args) {
+						$u = self::authenticate($args['jwt']);
+						
+						$t_importer = new ca_data_importers();
+
+						// $settings = array_map(function($v, $c) {
+// 							if(is_array($options = $v['options'] ?? null)) {
+// 								$options = array_map(function($name, $value) {
+// 									return ['name' => $name, 'value' => $value];
+// 								}, $options, array_keys($options));
+// 							}
+// 						
+// 							return [
+// 								'name' => $v['label'],
+// 								'code' => $c,
+// 								'description' => $v['description'],
+// 								'options' => $options
+// 							];
+// 						}, $data = $t_importer->getAvailableSettings(), array_keys($data));
+						
+						return $settings;
+					},
+				],
 			]
 		]);
 		
@@ -255,8 +393,8 @@ class MetadataImportController extends \GraphQLServices\GraphQLServiceController
 						],
 						[
 							'name' => 'type',
-							'type' => Type::string(),
-							'description' => _t('Table type importer targets')
+							'type' => Type::int(),
+							'description' => _t('Table type importer target')
 						],
 						[
 							'name' => 'settings',
@@ -271,6 +409,9 @@ class MetadataImportController extends \GraphQLServices\GraphQLServiceController
 						return self::_setImporter($args);
 					}
 				],
+				// ------------------------------------------------------------
+				// Edit importer
+				// ------------------------------------------------------------
 				'edit' => [
 					'type' => MetadataImportSchema::get('Importer'),
 					'description' => _t('Edit importer'),
@@ -313,8 +454,8 @@ class MetadataImportController extends \GraphQLServices\GraphQLServiceController
 						],
 						[
 							'name' => 'type',
-							'type' => Type::string(),
-							'description' => _t('Table type importer targets')
+							'type' => Type::int(),
+							'description' => _t('Table type importer table number')
 						],
 						[
 							'name' => 'settings',
@@ -329,8 +470,11 @@ class MetadataImportController extends \GraphQLServices\GraphQLServiceController
 						return self::_setImporter($args);
 					}
 				],
+				// ------------------------------------------------------------
+				// Delete importer
+				// ------------------------------------------------------------
 				'delete' => [
-					'type' => MetadataImportSchema::get('Importer'),
+					'type' => MetadataImportSchema::get('ImporterResult'),
 					'description' => _t('Edit importer'),
 					'args' => [
 						[
@@ -348,24 +492,161 @@ class MetadataImportController extends \GraphQLServices\GraphQLServiceController
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
 						
+						$errors = [];
 						if(!$t_importer = ca_data_importers::findAsInstance(['importer_id' => $args['id']])) {
-							return ['errors' => [
-								_t('Importer with id %1 does not exist', $args['id'])
-							]];
+							$errors[] = Error\error($args['id'], 750, _t('Importer with id %1 does not exist', $args['id']), 'GENERAL');
 						}
 						if(!$t_importer->delete(true)) {
-							return ['errors' => [
-								_t('Could not delete importer: %1', join('; ', $t_importer->getErrors()))
-							]];
+							foreach($t_importer->getErrors() as $e) {
+								$errors[] = Error\error($args['id'], $e->getErrorNumber(), $e->getErrorDescription());
+							}
 						}
 						
-						return [];
+						return ['id' => null, 'errors' => $errors, 'warnings' => [], 'info' => []];
+					}
+				],
+				// ------------------------------------------------------------
+				// Editing mappings
+				// ------------------------------------------------------------
+				'editMappings' => [
+					'type' => MetadataImportSchema::get('ImporterResult'),
+					'description' => _t('Edit mapping'),
+					'args' => [
+						[
+							'name' => 'jwt',
+							'type' => Type::string(),
+							'description' => _t('JWT'),
+							'defaultValue' => self::getBearerToken()
+						],
+						[
+							'name' => 'id',
+							'type' => Type::int(),
+							'description' => _t('ID of importer to edit')
+						],
+						[
+							'name' => 'mappings',
+							'type' => Type::listOf(MetadataImportSchema::get('ImporterMappingInput')),
+							'description' => _t('ID of importer to edit')
+						],
+					],
+					'resolve' => function ($rootValue, $args) {
+						$u = self::authenticate($args['jwt']);
+						
+						$errors = $warnings = $info = [];
+						
+						$ids = [];
+						if(!$t_importer = ca_data_importers::findAsInstance(['importer_id' => $args['id']])) {
+							$errors[] = Error\error($args['id'], 750, _t('Importer with id %1 does not exist', $args['id']), 'GENERAL');
+						} else {
+							foreach($args['mappings'] as $i => $mapping) {
+								$group = caGetOption('group', $mapping, "group_{$i}");
+								$source = $mapping['source'];
+								$destination = $mapping['destination'];
+							
+								if(!$source || !$destination) {
+									$warnings[] = Error\warning($args['id'], 750, _t('No source or destination specified for mapping'), 'MAPPING');
+									continue;
+								}
+							
+								$t_group = $t_importer->getGroup($group);
+							
+								$settings = [];
+							
+								if(is_array($mapping['options'])) {
+									$settings['options'] = $mapping['options'];
+								}
+								if(is_array($mapping['replacement_values'])) {
+									$settings['original_values'] = array_map(
+										function($v) { return $v['original']; },
+										$mapping['replacement_values']
+									);
+									$settings['replacement_values'] = array_map(
+										function($v) { return $v['replacement']; },
+										$mapping['replacement_values']
+									);
+								}
+							
+								if(is_array($mapping['refineries'])) {
+									$settings['refineries'] = $mapping['refineries'];
+								}
+							
+								$settings = \ca_data_importers::mergeItemSettings($settings);
+								
+								if (isset($mapping['id']) && $mapping['id']) {
+									if($t_item = $t_group->editItem($mapping['id'], $source, $destination, $settings, ['returnInstance' => true])) {
+										$info[] = Error\info($t_item->getPrimaryKey(), 'EDIT', _t('Edited mapping for source %1 and destination %2 with item_id %3', $source, $destination, $t_item->getPrimaryKey()), 'MAPPING');
+									}								
+								} else {
+									if($t_item = $t_group->addItem($source, $destination, $settings, ['returnInstance' => true])) {
+										$info[] = Error\info($t_item->getPrimaryKey(), 'ADD', _t('Added mapping for source %1 and destination %2 with item_id %3', $source, $destination, $t_item->getPrimaryKey()), 'MAPPING');
+									}
+								}
+								$ids[] = $t_group->getPrimaryKey();
+								
+							}
+						}
+						
+						return ['id' => $ids, 'errors' => $errors, 'warnings' => $warnings, 'info' => $info];
+					}
+				],
+				// ------------------------------------------------------------
+				// Delete mapping
+				// ------------------------------------------------------------
+				'deleteMapping' => [
+					'type' => MetadataImportSchema::get('ImporterResult'),
+					'description' => _t('Delete mapping'),
+					'args' => [
+						[
+							'name' => 'jwt',
+							'type' => Type::string(),
+							'description' => _t('JWT'),
+							'defaultValue' => self::getBearerToken()
+						],
+						[
+							'name' => 'id',
+							'type' => Type::int(),
+							'description' => _t('ID of mapping to delete')
+						],
+						[
+							'name' => 'mapping_id',
+							'type' => Type::int(),
+							'description' => _t('ID of mapping to delete')
+						],
+					],
+					'resolve' => function ($rootValue, $args) {
+						$u = self::authenticate($args['jwt']);
+						
+						$errors = [];
+						
+						if (!is_a($t_importer = self::_loadImporter($args['id']), 'ca_data_importers')) {
+							$errors[] = $t_importer;
+						} elseif(!$t_importer->removeItem($args['mapping_id'])) {
+							if($t_importer->numErrors() > 0) {
+								foreach($t_importer->getErrors() as $e) {
+									$errors[] = Error\error($args['mapping_id'], $e->getErrorNumber(), $e->getErrorMessage, 'REMOVE_MAPPING');
+								}
+							} else {
+								$errors[] = Error\error($args['mapping_id'], 750, _t('Could not remove mapping'), 'REMOVE_MAPPING');
+							}
+						}
+						
+						return ['id' => null, 'errors' => $errors, 'warnings' => [], 'info' => []];
 					}
 				]
 			]
 		]);
 		
 		return self::resolve($qt, $mt);
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	private static function _loadImporter(int $id) {
+		if(!$t_importer = ca_data_importers::findAsInstance(['importer_id' => $id])) {
+			return Error\error($id, 750, _t('Importer with id %1 does not exist', $args['id']), 'LOAD');
+		}
+		return $t_importer;
 	}
 	# -------------------------------------------------------
 	/**

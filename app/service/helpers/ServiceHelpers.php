@@ -663,8 +663,12 @@ function fieldTypeToJsonFormTypes(\BaseModel $t_instance, string $bundle, ?array
 						$type = ['type' => 'string', 'format' => 'string'];
 						break;
 				}
-				if(isset($sinfo['options']) && is_array($items = $sinfo['options']) && sizeof($items)) {			
-					$type['enum'] = array_map(function($v) { return (string)$v; }, array_values($items));
+				if(isset($sinfo['options']) && is_array($items = $sinfo['options']) && sizeof($items)) {	
+					if($fi['FIELD_TYPE'] === FT_NUMBER) {
+						$type['enum'] = array_map(function($v) { return (int)$v; }, array_values($items));
+					} else {		
+						$type['enum'] = array_map(function($v) { return (string)$v; }, array_values($items));
+					}
 					$type['enumNames'] = array_keys($items);
 				}
 				if (is_array($sinfo['BOUNDS_LENGTH'])) {
@@ -700,8 +704,12 @@ function fieldTypeToJsonFormTypes(\BaseModel $t_instance, string $bundle, ?array
 					$type = ['type' => 'string', 'format' => 'string'];
 					break;
 			}
-			if(isset($fi['BOUNDS_CHOICE_LIST']) && is_array($items = $fi['BOUNDS_CHOICE_LIST']) && sizeof($items)) {			
-				$type['enum'] = array_map(function($v) { return (string)$v; }, array_values($items));
+			if(isset($fi['BOUNDS_CHOICE_LIST']) && is_array($items = $fi['BOUNDS_CHOICE_LIST']) && sizeof($items)) {
+				if($fi['FIELD_TYPE'] === FT_NUMBER) {
+					$type['enum'] = array_map(function($v) { return (int)$v; }, array_values($items));
+				} else {		
+					$type['enum'] = array_map(function($v) { return (string)$v; }, array_values($items));
+				}
 				$type['enumNames'] = array_keys($items);
 			}
 			if (is_array($fi['BOUNDS_LENGTH'])) {

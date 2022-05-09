@@ -79,3 +79,27 @@ a.mediaUploaderFilename {
 .nav-link.active { 
 	font-weight: bold;
 }
+
+.mapping-intro{
+	.field-description{
+		display: none;
+	}
+	.rjsf{
+		padding-left: 10px;
+		.form-control{
+			width: fit-content;
+		}
+	}
+}
+
+.mapping-settings{
+	.field-description{
+		display: none;
+	}
+	.rjsf{
+		padding-left: 0px;
+		.form-control{
+			width: fit-content;
+		}
+	}
+}

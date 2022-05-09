@@ -1,12 +1,115 @@
-import React from 'react'
+import React, { useContext, useEffect, useState } from 'react'
+import { MappingContext } from '../MappingContext';
+import { getImportersList, getImporterForm, editImporter, getNewImporterForm } from '../MappingQueries';
+import Form from "@rjsf/core";
 
 const MappingSettings = () => {
-  return (
-    <div className='col'>
-      {/* <button className='btn btn-outline-secondary btn-sm mr-2'>Settings +</button> */}
 
+  const { importerId, setImporterId, settingSchema, setSettingSchema, settingFormData, setSettingFormData, importerFormData, setImporterFormData
+} = useContext(MappingContext)
+
+  useEffect(() => {
+    if (importerId) {
+      getImporterForm("http://importui.whirl-i-gig.com:8085/service.php/MetadataImport", importerId, data => {
+        console.log("getImporterForm: ", data);
+
+        let form = { ...data }
+        let jsonProperties = JSON.parse(data.properties);
+        form.properties = jsonProperties;
+
+        const settings_properties = Object.keys(form.properties)
+          .filter((key) => key.includes("setting"))
+          .reduce((obj, key) => {
+            return Object.assign(obj, {
+              [key]: form.properties[key]
+            });
+          }, {});
+
+        // console.log("settings_properties: ", settings_properties);
+
+        let settingSchemaObj = {
+          "title": data.title,
+          "required": data.required,
+          "properties": settings_properties
+        };
+
+        const settings_data = Object.keys(JSON.parse(data.values))
+          .filter((key) => key.includes("setting"))
+          .reduce((obj, key) => {
+            return Object.assign(obj, {
+              [key]: JSON.parse(data.values)[key]
+            });
+          }, {});
+
+        // console.log("settings_data: ", settings_data);
+        // console.log("schemaObj: ", schemaObj);
+        setSettingSchema(settingSchemaObj);
+        setSettingFormData(settings_data)
+      })
+    } else {
+      getNewImporterForm("http://importui.whirl-i-gig.com:8085/service.php/MetadataImport", data => {
+        console.log("getNewImporterForm: ", data);
+
+        let form = { ...data }
+        let jsonProperties = JSON.parse(data.properties);
+        form.properties = jsonProperties;
+
+        const settings_properties = Object.keys(form.properties)
+          .filter((key) => key.includes("setting"))
+          .reduce((obj, key) => {
+            return Object.assign(obj, {
+              [key]: form.properties[key]
+            });
+          }, {});
+
+      
+        let settingSchemaObj = {
+          "title": data.title,
+          "required": data.required,
+          "properties": settings_properties
+        };
+
+        const settings_data = Object.keys(JSON.parse(data.values))
+          .filter((key) => key.includes("setting"))
+          .reduce((obj, key) => {
+            return Object.assign(obj, {
+              [key]: JSON.parse(data.values)[key]
+            });
+          }, {});
+
+        setSettingSchema(settingSchemaObj);
+        setSettingFormData(settings_data)
+      })
+    }
+  }, [importerId]);
+
+  const saveSettings = () => {
+    let name = importerFormData["ca_data_importers.preferred_labels.name"]
+    let code = importerFormData["ca_data_importers.importer_code"]
+    let type = importerFormData["ca_data_importers.table_num"]
+
+    editImporter(
+      "http://importui.whirl-i-gig.com:8085/service.php/MetadataImport", 
+      importerId, 
+      name, 
+      settingFormData.setting_inputFormats, 
+      code, 
+      "ca_objects", 
+      type, 
+      [{ "code": "existingRecordPolicy", "value": "skip_on_idno" }], 
+      data => {
+        console.log("editImporter: ", data);
+        getImportersList();
+    })
+  }
+
+  // console.log("settingSchema: ", settingSchema);
+  // console.log("settingFormData: ", settingFormData);
+
+  return (
+    <div className='mapping-settings'>
       {/* <!-- Button trigger modal --> */}
-      <button type="button" className="btn btn-outline-secondary btn-sm mr-2" data-toggle="modal" data-target="#exampleModal">
+      <button type="button" className="btn btn-outline-secondary mr-2" data-toggle="modal" data-target="#exampleModal">
         Settings +
       </button>
 
@@ -20,26 +123,23 @@ const MappingSettings = () => {
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
-            <div className="modal-body">
-              {(schema) ?
+            <div className="modal-body text-left p-3">
+              {(settingSchema) ?
                 <Form
-                  schema={schema}
-                  formData={formData}
-                  onChange={console.log("changed")}
-                  onSubmit={console.log("submitted")}
-                  onError={console.log("errors")}
+                  schema={settingSchema}
+                  formData={settingFormData}
+                // onChange={(e) => { saveFormData(e.formData) }}
+                // onSubmit={console.log("submitted")}
+                // onError={console.log("errors")}
                 >
-                  <button id="form-submit-button" type="submit" className="btn btn-primary">Save changes</button>
+                  <button id="form-submit-button" type="submit" className="btn btn-secondary" onClick={() => saveSettings()}>Save</button>
                 </Form>
                 : null
               }
-              {/* <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button> */}
             </div>
           </div>
         </div>
       </div>
-
-      <button className='btn btn-outline-secondary btn-sm'>Test data +</button>
     </div>
   )
 }

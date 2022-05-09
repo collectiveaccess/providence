@@ -7,8 +7,7 @@ import 'react-confirm-alert/src/react-confirm-alert.css';
 import { getImportersList, deleteImporter, addImporter, editImporter } from './MappingQueries';
 
 const ImporterList = () => {
-  const { importerId, setImporterId, importerName, setImporterName,
-    importerCode, setImporterCode, importerList, setImporterList, currentView, setCurrentView } = useContext(MappingContext)
+  const { importerId, setImporterId, importerName, setImporterName, importerCode, setImporterCode, importerList, setImporterList, currentView, setCurrentView } = useContext(MappingContext)
 
   useEffect(() => {
     getImporterList()
@@ -29,7 +28,6 @@ const ImporterList = () => {
   }
 
   const deleteImporterConfirm = (id, name) => {
-
     confirmAlert({
       customUI: ({ onClose }) => {
         return (
@@ -48,12 +46,11 @@ const ImporterList = () => {
         );
       }
     });
-    // e.preventDefault()
   }
 
   const addNewImporter = (e) => {
-
     setCurrentView("importer_mappings");
+
     setImporterId()
     setImporterName()
     setImporterCode()
@@ -67,7 +64,6 @@ const ImporterList = () => {
 
         <h1 className='mb-5'>Importers List</h1>
 
-
         <table className="table table-striped">
           <thead>
             <tr>
@@ -77,7 +73,6 @@ const ImporterList = () => {
             </tr>
           </thead>
           <tbody>
-
             {importerList.map((importer, index) => {
               return (
                 <tr className='mb-2' key={index}>
@@ -90,17 +85,6 @@ const ImporterList = () => {
             })}
           </tbody>
         </table>
-
-        {/* {importerList.map((importer, index) => {
-          return(
-            <div className='row mb-2' key={index}>
-              <div className='col mr-2'>{importer.name}</div>
-              <div className='col mr-3'> <strong>({importer.code})</strong></div>
-              <button className='btn btn-secondary btn-sm mr-2' onClick={(e) => viewImporter(e)}>View</button>
-              <button className='btn btn-secondary btn-sm' onClick={() => deleteImporterConfirm(importer.id, importer.name)}>Delete</button>
-            </div>
-          )
-        })} */}
 
         <div className='row justify-content-end mt-5 mr-2'>
           <button className='btn btn-secondary btn-sm' onClick={(e) => addNewImporter(e)}>Add Importer +</button>
