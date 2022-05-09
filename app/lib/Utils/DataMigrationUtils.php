@@ -530,6 +530,7 @@ class DataMigrationUtils {
 	 *		locale = locale code to use when applying rules; if omitted current user locale is employed
 	 *		displaynameFormat = surnameCommaForename, surnameCommaForenameMiddlename, forenameCommaSurname, forenameSurname, forenamemiddlenamesurname, original [Default = original]
 	 *		doNotParse = Use name as-is in the surname and display name fields. All other fields are blank. [Default = false]
+	 *		type = entity type, used to determine organization vs. individual format. If omitted individual is assumed. [Default is null]
 	 *
 	 * @return array Array containing parsed name, keyed on ca_entity_labels fields (eg. forename, surname, middlename, etc.)
 	 */
@@ -542,6 +543,11 @@ class DataMigrationUtils {
 				'forename' => '', 'middlename' => '', 'surname' => $text,
 				'displayname' => $text, 'prefix' => '', 'suffix' => ''
 			];
+		}
+		
+		$class = null;
+		if ($entity_type = caGetOption('type', $options, false)) {
+			$class = caGetListItemSettingValue('entity_types', $entity_type, 'entity_class');
 		}
 		
 		// Split names in non-roman alphabets
@@ -746,6 +752,15 @@ class DataMigrationUtils {
 		foreach($name as $k => $v) {
 			$name[$k] = trim(preg_replace('![ ]+!', ' ', $v));
 		}
+		
+		if($class === 'ORG') {
+			$name = [
+				'displayname' => $name['displayname'],
+				'surname' => $name['displayname'],
+				'suffix' => $name['suffix']
+			];
+		}
+		
 		return $name;
 	}
 	
