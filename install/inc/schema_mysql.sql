@@ -2499,6 +2499,7 @@ create table ca_data_importer_groups (
    group_code           varchar(100)         not null,
    destination          varchar(1024)        not null,
    settings             longtext             not null,
+   `rank`               int unsigned         not null default 0,
 
    primary key (group_id),
 
@@ -2512,12 +2513,13 @@ create unique index u_group_code on ca_data_importer_groups(importer_id, group_c
 
 /*==========================================================================*/
 create table ca_data_importer_items (
-   item_id           int unsigned         not null AUTO_INCREMENT,
+   item_id              int unsigned         not null AUTO_INCREMENT,
    importer_id          int unsigned         not null,
    group_id             int unsigned         not null,
-   source               varchar(1024)         not null,
-   destination          varchar(1024)         not null,
-   settings          longtext          not null,
+   source               varchar(1024)        not null,
+   destination          varchar(1024)        not null,
+   settings             longtext             not null,
+   `rank`               int unsigned         not null default 0,
 
    primary key (item_id),
 
@@ -7784,4 +7786,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (177, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (178, unix_timestamp());
