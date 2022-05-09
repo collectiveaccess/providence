@@ -103,8 +103,10 @@ class LuceneSyntaxParser extends Zend_Search_Lucene_FSM {
 		));
 		$this->addRules(array(
 			array(self::ST_CLOSEDINT_RQ_START,	Zend_Search_Lucene_Search_QueryToken::TT_WORD,           self::ST_CLOSEDINT_RQ_FIRST_TERM),
+			array(self::ST_CLOSEDINT_RQ_START,	Zend_Search_Lucene_Search_QueryToken::TT_PHRASE,           self::ST_CLOSEDINT_RQ_FIRST_TERM),
 			array(self::ST_CLOSEDINT_RQ_FIRST_TERM,	Zend_Search_Lucene_Search_QueryToken::TT_TO_LEXEME,      self::ST_CLOSEDINT_RQ_TO_TERM),
 			array(self::ST_CLOSEDINT_RQ_TO_TERM,	Zend_Search_Lucene_Search_QueryToken::TT_WORD,           self::ST_CLOSEDINT_RQ_LAST_TERM),
+			array(self::ST_CLOSEDINT_RQ_TO_TERM,	Zend_Search_Lucene_Search_QueryToken::TT_PHRASE,           self::ST_CLOSEDINT_RQ_LAST_TERM),
 			array(self::ST_CLOSEDINT_RQ_LAST_TERM,	Zend_Search_Lucene_Search_QueryToken::TT_RANGE_INCL_END, self::ST_COMMON_QUERY_ELEMENT)
 		));
 
