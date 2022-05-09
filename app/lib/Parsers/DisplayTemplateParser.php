@@ -1800,6 +1800,9 @@ class DisplayTemplateParser {
 			} else {
 				if(isset($pa_values[$vs_tag])) { 
 					$vs_val = $pa_values[$vs_tag];
+					if(is_array($vs_val)) {
+						$vs_val = join(" ", $vs_val);
+					}
 				} elseif (
 				    is_array($vs_val = isset($pa_values[$va_tmp[0]]) ? $pa_values[$va_tmp[0]] : '')
 				) {
