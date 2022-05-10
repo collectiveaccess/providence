@@ -249,7 +249,7 @@ class BaseEditorController extends ActionController {
 		if($vn_subject_id && $vs_rel_table && $vn_rel_type_id && $vn_rel_id) {
 			if(Datamodel::tableExists($vs_rel_table)) {
 				Debug::msg("[Save()] Relating new record using parameters from request: $vs_rel_table / $vn_rel_type_id / $vn_rel_id");
-				$t_subject->addRelationship($vs_rel_table, $vn_rel_id, $vn_rel_type_id, _t('now'));
+				$t_subject->addRelationship($vs_rel_table, $vn_rel_id, $vn_rel_type_id, TimeExpressionParser::nowExpression());
 			}
 			$this->notification->addNotification(_t("Added relationship"), __NOTIFICATION_TYPE_INFO__);
 			$this->render('screen_html.php');
@@ -2813,7 +2813,7 @@ class BaseEditorController extends ActionController {
 								foreach($interstitial_elements as $e) {
 									switch($e) {
 										case 'effective_date':
-											$effective_date = _t('today');
+											$effective_date = TimeExpressionParser::todayExpression();
 											break;
 									}
 								}

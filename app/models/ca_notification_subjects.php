@@ -203,7 +203,7 @@ class ca_notification_subjects extends BaseModel {
 	 */
 	public function insert($pa_options=null) {
 		if ($this->get('was_read')) { 
-			$this->set('read_on', _t('now'));
+			$this->set('read_on', TimeExpressionParser::nowExpression());
 		}
 		return parent::insert($pa_options);
 	}
@@ -213,7 +213,7 @@ class ca_notification_subjects extends BaseModel {
 	 */
 	public function update($pa_options=null) {
 		if ($this->changed('was_read') && $this->get('was_read')) { 
-			$this->set('read_on', _t('now'));
+			$this->set('read_on', TimeExpressionParser::nowExpression());
 		}
 		return parent::update($pa_options);
 	}

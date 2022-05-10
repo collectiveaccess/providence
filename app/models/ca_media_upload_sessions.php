@@ -622,7 +622,7 @@ class ca_media_upload_sessions extends BaseModel {
 			
 			// TODO: write ids of records created into session for playback when session is viewed
 			
-			$session->set('completed_on', _t('now'));
+			$session->set('completed_on', TimeExpressionParser::nowExpression());
 			$session->set('status', 'PROCESSED');
 			$session->update();
 			
@@ -711,7 +711,7 @@ class ca_media_upload_sessions extends BaseModel {
 			]
 		));
 		
-		$session->set('completed_on', _t('now'));
+		$session->set('completed_on', TimeExpressionParser::nowExpression());
 		$session->set('status', 'ERROR');
 		return $session->update();
 	}

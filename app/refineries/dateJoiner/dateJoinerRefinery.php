@@ -85,7 +85,7 @@
 					
 					$va_date = array();
 					if ($vs_date_start = BaseRefinery::parsePlaceholder($vs_date_start, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true))) { 
-						if ($pa_item['settings']['dateJoiner_ignorePresentDayStartDates'] && (caDateToUnixTimestamp($vs_date_start) === caDateToUnixTimestamp(_t('today')))) {
+						if ($pa_item['settings']['dateJoiner_ignorePresentDayStartDates'] && (caDateToUnixTimestamp($vs_date_start) === caDateToUnixTimestamp(TimeExpressionParser::todayExpression()))) {
 						    $vs_date_start = '';
 						}
 						if (
@@ -101,7 +101,7 @@
 						}
 					}
 					if ($vs_date_end = BaseRefinery::parsePlaceholder($vs_date_end, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true))) { 
-						if ($pa_item['settings']['dateJoiner_ignorePresentDayEndDates'] && (caDateToUnixTimestamp($vs_date_end) === caDateToUnixTimestamp(_t('today')))) {
+						if ($pa_item['settings']['dateJoiner_ignorePresentDayEndDates'] && (caDateToUnixTimestamp($vs_date_end) === caDateToUnixTimestamp(TimeExpressionParser::todayExpression()))) {
 						    $vs_date_end = ($vs_date_start) ? _t('present') : "";
 						}
 						

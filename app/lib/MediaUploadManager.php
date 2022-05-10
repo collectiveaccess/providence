@@ -98,7 +98,7 @@ class MediaUploadManager {
     static public function completeSession($key, $user_id=null){
 		$s = MediaUploadManager::findSession($key, $user_id);
 		
-		$s->set('completed_on', _t('now'));
+		$s->set('completed_on', TimeExpressionParser::nowExpression());
 		$s->set('status', 'COMPLETED');
 		$s->update();
 		if ($s->numErrors() > 0) {
@@ -112,7 +112,7 @@ class MediaUploadManager {
      */
     static public function cancelSession($key, $user_id=null){
 		$s = MediaUploadManager::findSession($key, $user_id);
-		$s->set('completed_on', _t('now'));
+		$s->set('completed_on', TimeExpressionParser::nowExpression());
 		$s->set('cancelled', 1);
 		$s->set('status', 'CANCELLED');
 		$s->update();
@@ -325,13 +325,13 @@ class MediaUploadManager {
 
 			// ...
 			if ($session = MediaUploadManager::findSession($key, $user_id)) {
-				$session->set('last_activity_on', _t('now'));
+				$session->set('last_activity_on', TimeExpressionParser::nowExpression());
 				
 				$fp = self::_partialToFinalPath($fileMeta['file_path']);
 				
 				$session->setFile($fp, [
 					'bytes_received' => $fileMeta['offset'], 'total_bytes' => $fileMeta['size'],
-					'completed_on' => ($fileMeta['offset'] == $fileMeta['size']) ? _t('now') : null, 'last_activity_on' => _t('now'), 
+					'completed_on' => ($fileMeta['offset'] == $fileMeta['size']) ? TimeExpressionParser::nowExpression() : null, 'last_activity_on' => TimeExpressionParser::nowExpression(), 
 					'error_code' => null
 				]);
 				$session->updateStats();
@@ -348,11 +348,11 @@ class MediaUploadManager {
 				
 			// ...
 			if ($session = MediaUploadManager::findSession($key, $user_id)) {
-				$session->set('last_activity_on', _t('now'));
+				$session->set('last_activity_on', TimeExpressionParser::nowExpression());
 				
 				$session->setFile($fp, [
 					'bytes_received' => $fileMeta['offset'], 'total_bytes' => $fileMeta['size'],
-					'completed_on' => _t('now'), 'last_activity_on' => _t('now'), 
+					'completed_on' => TimeExpressionParser::nowExpression(), 'last_activity_on' => TimeExpressionParser::nowExpression(), 
 					'error_code' => null
 				]);
 				

@@ -57,7 +57,7 @@
  		 */
  		public function Index() {
  			AssetLoadManager::register("jquery", "scrollto");
- 			if (!($ps_daterange = $this->request->getParameter('daterange', pString))) { $ps_daterange = _t('today'); }
+ 			if (!($ps_daterange = $this->request->getParameter('daterange', pString))) { $ps_daterange = TimeExpressionParser::todayExpression(); }
  			
 			$va_dashboard_config = $this->opo_library_services_config->getAssoc('dashboard');
  			

@@ -209,7 +209,7 @@ class ca_objects_x_storage_locations extends ObjectRelationshipBaseModel {
 	 */
 	public function insert($options=null) {
 		if (!caGetOption('dontAutomaticallySetEffectiveDate', $options, false) && !$this->get('effective_date', array('getDirectDate' => true))) {  
-			$this->set('effective_date', _t('now')); 
+			$this->set('effective_date', TimeExpressionParser::nowExpression()); 
 		}
 		
 		return parent::insert($options);
@@ -220,7 +220,7 @@ class ca_objects_x_storage_locations extends ObjectRelationshipBaseModel {
 	 */
 	public function update($options=null) {
 		if (!caGetOption('dontAutomaticallySetEffectiveDate', $options, false) && !$this->get('effective_date', array('getDirectDate' => true))) { 
-			$this->set('effective_date', _t('now')); 
+			$this->set('effective_date', TimeExpressionParser::nowExpression()); 
 		}
 		
 		return parent::update($options);

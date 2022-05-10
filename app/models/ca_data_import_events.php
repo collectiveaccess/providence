@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2010 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -266,7 +266,7 @@ class ca_data_import_events extends BaseModel {
 		
 		$this->opo_data_import_item->setMode(ACCESS_WRITE);
 		$this->opo_data_import_item->set('event_id', $vn_event_id);
-		$this->opo_data_import_item->set('completed_on', _t("now"));
+		$this->opo_data_import_item->set('completed_on', TimeExpressionParser::nowExpression());
 		$this->opo_data_import_item->set('elapsed_time', (microtime(true) - $this->opn_start_time));
 	
 		$this->opo_data_import_item->set('success', (int)$pn_success);

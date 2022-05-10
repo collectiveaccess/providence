@@ -242,7 +242,7 @@ class ca_movements_x_storage_locations extends BaseRelationshipModel {
 				$date = $t_movement->get("ca_movements.{$movement_storage_element}");
 			}
 		}
-		return ($date) ? $date : _t('now');
+		return ($date) ? $date : TimeExpressionParser::nowExpression();
 	}
 	# ------------------------------------------------------
 	/**

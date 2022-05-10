@@ -4192,5 +4192,54 @@ class TimeExpressionParser {
 		}
 		return ($dates['start']['year'] - ($dates['start']['year'] % 10)).$decade_indicator;
  	}
+ 	# -------------------------------------------------------------------
+ 	/** 
+ 	 * Return a setting value for a locale.If no locale is 
+ 	 * specified the current UI locale is used, or if that is unavailable the system default
+ 	 * locale is used.
+ 	 *
+ 	 * @param string $setting
+ 	 * @param string $locale
+ 	 *
+ 	 * @return string|array The setting value, or null is the setting is not defined
+ 	 */
+ 	static public function localeSetting(string $setting, ?string $locale=null) {
+ 		global $g_ui_locale;
+ 		
+ 		if(!$locale) { $locale = $g_ui_locale; }
+ 		if(!$locale && defined('__CA_DEFAULT_LOCALE__')) { $locale = __CA_DEFAULT_LOCALE__; }
+ 		
+ 		$lang = Configuration::load(__CA_LIB_DIR__.'/Parsers/TimeExpressionParser/'.$locale.'.lang');
+ 		
+ 		return $lang->get($setting);
+ 	}
+ 	# -------------------------------------------------------------------
+ 	/** 
+ 	 * Return primary (first configured) phrase for "now" for a locale. If no locale is 
+ 	 * specified the current UI locale is used, or if that is unavailable the system default
+ 	 * locale is used.
+ 	 *
+ 	 * @param string $locale 
+ 	 *
+ 	 * @return string
+ 	 */
+ 	static public function nowExpression(?string $locale=null) : string {
+ 		$nows = self::localeSetting('nowDate', $locale);
+ 		return (is_array($nows) && sizeof($nows)) ? array_shift($nows) : null;
+ 	}
+ 	# -------------------------------------------------------------------
+ 	/** 
+ 	 * Return primary (first configured) phrase for "today" for a locale. If no locale is 
+ 	 * specified the current UI locale is used, or if that is unavailable the system default
+ 	 * locale is used.
+ 	 *
+ 	 * @param string $locale 
+ 	 *
+ 	 * @return string
+ 	 */
+ 	static public function todayExpression(?string $locale=null) : string {
+ 		$todays = self::localeSetting('todayDate', $locale);
+ 		return (is_array($todays) && sizeof($todays)) ? array_shift($todays) : null;
+ 	}
  	# ------------------------------------------------------------------- 	
 }

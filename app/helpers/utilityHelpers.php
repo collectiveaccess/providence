@@ -2932,7 +2932,7 @@ function caFileIsIncludable($ps_file) {
 	 */
 	function caIsCurrentDate($ps_date_expression) {
 		if ($va_date = caDateToHistoricTimestamps($ps_date_expression)) {
-			$va_now = caDateToHistoricTimestamps(_t('now'));
+			$va_now = caDateToHistoricTimestamps(TimeExpressionParser::nowExpression());
 			if (
 				(($va_date['start'] <= $va_now['start'])
 				&&
@@ -2953,7 +2953,7 @@ function caFileIsIncludable($ps_file) {
 	 */
 	function caDateEndsInFuture($ps_date_expression) {
 		if ($va_date = caDateToHistoricTimestamps($ps_date_expression)) {
-			$va_now = caDateToHistoricTimestamps(_t('now'));
+			$va_now = caDateToHistoricTimestamps(TimeExpressionParser::nowExpression());
 			if (
 				($va_date['end'] >= $va_now['end'])
 			) {

@@ -2426,7 +2426,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		if (caGetOption('uncomplete', $options, false)) {
 			$transcript->set('completed_on', null);
 		} elseif ($complete) {
-			$transcript->set('completed_on', _t('now'));	
+			$transcript->set('completed_on', TimeExpressionParser::nowExpression());	
 		}
 		if ($user_id) {
 			$transcript->set('user_id', $user_id);
