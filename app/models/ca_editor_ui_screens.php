@@ -216,10 +216,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	static $s_placement_list_cache;		// cache for getPlacements()
 	static $s_table_num_cache;			// cache for getTableNum()
 	
-	# ----------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);
-	}
 	# ------------------------------------------------------
 	protected function initLabelDefinitions($pa_options=null) {
 		parent::initLabelDefinitions($pa_options);
@@ -297,7 +293,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			return false;
 		}
 		
-		$t_placement = new ca_editor_ui_bundle_placements(null, is_array($pa_options['additional_settings']) ? $pa_options['additional_settings'] : null);
+		$t_placement = new ca_editor_ui_bundle_placements(null, null, is_array($pa_options['additional_settings']) ? $pa_options['additional_settings'] : null);
 		if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 		$t_placement->setMode(ACCESS_WRITE);
 		$t_placement->set('screen_id', $vn_screen_id);
@@ -612,7 +608,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 
 		$vs_table_display_name = $t_instance->getProperty('NAME_PLURAL');
 		
-		$t_placement = new ca_editor_ui_bundle_placements(null, array());
+		$t_placement = new ca_editor_ui_bundle_placements(null, null, []);
 		if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 		$va_defined_bundles = method_exists($t_instance, "getBundleList") ? $t_instance->getBundleList(array('includeBundleInfo' => true)) : [];		// these are the bundles defined for this type of editor
 		
@@ -2509,7 +2505,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 						return false;
 					}
 				} else {
-					$t_placement = new ca_editor_ui_bundle_placements($vn_placement_id, $va_available_bundles[$vs_bundle]['settings']);
+					$t_placement = new ca_editor_ui_bundle_placements($vn_placement_id, null, $va_available_bundles[$vs_bundle]['settings']);
 					if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 					$t_placement->setMode(ACCESS_WRITE);
 					$t_placement->set('rank', $vn_i + 1);

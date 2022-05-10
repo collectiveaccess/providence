@@ -216,9 +216,9 @@ class ca_metadata_type_restrictions extends BaseModel {
 	/**
 	 * 
 	 */
-	public function __construct($pn_id=null, $pb_filter_tables=false) {
+	public function __construct($id=null, ?array $options=null, $pb_filter_tables=false) {
 		global $_ca_metadata_type_restriction_settings;
-		parent::__construct($pn_id);	# call superclass constructor
+		parent::__construct($id, $options);	# call superclass constructor
 		
 		//
 		$this->setAvailableSettings([

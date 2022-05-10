@@ -772,7 +772,7 @@ $g_source_access_level_cache = array();
 	 */
 	function caCanRead($pn_user_id, $pm_table, $pm_id, $ps_bundle_name=null, $pa_options=null) {
 		$pb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
-		$t_user = new ca_users($pn_user_id, true);
+		$t_user = new ca_users($pn_user_id);
 		if (!$t_user->getPrimaryKey()) { return null; }
 		
 		$ps_table_name = (is_numeric($pm_table)) ? Datamodel::getTableName($pm_table) : $pm_table;		

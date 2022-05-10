@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018 Whirl-i-Gig
+ * Copyright 2018-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -71,7 +71,7 @@ trait CLIUtilsConfiguration {
 		if($vo_installer->numErrors()){
 			CLIUtils::addError(_t(
 				"There were errors parsing the profile(s): %1",
-				"\n * " . join("\n * ", $vo_installer->getErrors())
+				"\n * " . join("\n * ", array_map(function($v) { return $v['message']; }, $vo_installer->getErrors()))
 			));
 			return false;
 		}
@@ -86,7 +86,7 @@ trait CLIUtilsConfiguration {
 			if($vo_installer->numErrors()){
 				CLIUtils::addError(_t(
 					"There were errors loading the database schema: %1",
-					"\n * " . join("\n * ", $vo_installer->getErrors())
+					"\n * " . join("\n * ", array_map(function($v) { return $v['message']; }, $vo_installer->getErrors()))
 				));
 				return false;
 			}
@@ -145,7 +145,7 @@ trait CLIUtilsConfiguration {
 		if($vo_installer->numErrors()){
 			CLIUtils::addError(_t(
 				"There were errors during installation: %1\n(%2)",
-				"\n * " . join("\n * ", $vo_installer->getErrors()),
+				"\n * " . join("\n * ", array_map(function($v) { return $v['message']; }, $vo_installer->getErrors())),
 				$vs_time
 			));
 			return false;

@@ -464,13 +464,13 @@ class ca_collections extends RepresentableBaseModel implements IBundleProvider {
 	#    the record identified by the primary key value
 	#
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
+	public function __construct($id=null, ?array $options=null) {
 		
 		if (!is_null(BaseModel::$s_ca_models_definitions['ca_collections']['FIELDS']['acl_inherit_from_parent']['DEFAULT'])) {
 			$o_config = Configuration::load();
 			BaseModel::$s_ca_models_definitions['ca_collections']['FIELDS']['acl_inherit_from_parent']['DEFAULT'] = (int)$o_config->get('ca_collections_acl_inherit_from_parent_default');
 		}
-		parent::__construct($pn_id);	# call superclass constructor
+		parent::__construct($id, $options);	# call superclass constructor
 	}
 	# ------------------------------------------------------
 	protected function initLabelDefinitions($pa_options=null) {

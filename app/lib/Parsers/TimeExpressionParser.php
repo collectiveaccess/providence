@@ -2012,7 +2012,7 @@ class TimeExpressionParser {
 				    $vb_month_comes_first = $this->opo_language_settings->get('monthComesFirstInDelimitedDate');
 				}
 				
-				if ($vb_month_comes_first) {
+				if ((bool)$vb_month_comes_first) {
 					$vn_month = $va_tmp[0];
 					$vn_day = $va_tmp[1];
 				} else {
@@ -2039,7 +2039,11 @@ class TimeExpressionParser {
 							return(array('value' => $vs_token, 'month' => $vn_month, 'day' => $vn_day, 'year' => $vn_year, 'type' => TEP_TOKEN_DATE));
 						}
 					}
-				} else {
+				} elseif(
+					($vn_month > 0) && ($vn_month < $this->daysInMonth($vn_day, $vn_year ? $vn_year : 2004)) 
+					&& 
+					(($vn_day > 0) && ($vn_day <= 12))
+				) {
 					// try to swap day and month and see if that works...
 					$m = $vn_month;
 					$vn_month = $vn_day;

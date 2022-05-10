@@ -212,7 +212,6 @@
 				$vb_ignore_parent = caGetOption("{$ps_refinery_name}_ignoreParent", $pa_item['settings'], false);
 				$pa_options = array_merge(array('matchOn' => $va_match_on, 'ignoreParent' => $vb_ignore_parent, 'ignoreType' => $vb_ignore_type), $pa_options);
 			
-
 				$vn_hierarchy_id = null;
 				switch($ps_table) {
 					case 'ca_objects':

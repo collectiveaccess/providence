@@ -82,11 +82,15 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	static private $stop_words = null;
 	static private $doc_content_buffer = [];			// content buffer used when indexing
 	
+	static protected $filter_stop_words = null;
+	
 	# -------------------------------------------------------
 	public function __construct($db=null) {
 		global $g_ui_locale;
 		
 		parent::__construct($db);
+		
+		if(is_null(self::$filter_stop_words)) { self::$filter_stop_words = $this->search_config->get('use_stop_words'); }
 		
 		$this->tep = new TimeExpressionParser();
 		$this->tep->setLanguage($g_ui_locale);
@@ -103,7 +107,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			self::$whitespace_tokenizer_regex = '[\.,;:\(\)\{\}\[\]\|\\\+_\!\&«»\']+';
 		}
 		
-		if($this->search_config->get('use_stop_words')) {
+		if(self::$filter_stop_words) {
 			if(!is_array(self::$stop_words)) { 
 				if(CompositeCache::contains('stop_words', 'SqlSearch2')) { 
 					self::$stop_words = CompositeCache::fetch('stop_words', 'SqlSearch2');
@@ -382,16 +386,17 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 		array_unshift($words, $field);
 	 		$field = null;
 	 	}
-	 	
 	 	$indexing_options = caGetOption('indexing_options', $ap, null);
-	 	if(!is_array($indexing_options) || !in_array('DONT_TOKENIZE', $indexing_options)) {
-	 		$words = self::filterStopWords(self::tokenize(join(' ', $words), true));
-	 	}
-	 	if(!$words || !sizeof($words)) { return null; }
 	 	
 	 	$blank_val = caGetBlankLabelText($subject_tablenum);
 	 	$is_blank = ((mb_strtolower("[{$blank_val}]") === mb_strtolower($term->text)) || (mb_strtolower("[BLANK]") === mb_strtolower($term->text)));
 	 	$is_not_blank = (mb_strtolower("["._t('SET')."]") === mb_strtolower($term->text));
+	 	
+	 	if(!$is_blank && !$is_not_blank && (!is_array($indexing_options) || !in_array('DONT_TOKENIZE', $indexing_options))) {
+	 		$words = self::filterStopWords(self::tokenize(join(' ', $words), true));
+	 	}
+	 	if(!$words || !sizeof($words)) { return null; }
+	 	
 	 	
 	 	$word_field = 'sw.word';
 	 	
@@ -1090,7 +1095,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				}
 			}
 		} 
-		if ((!is_array($content) && !strlen($content)) || !sizeof($content) || (((sizeof($content) == 1) && strlen((string)$content[0]) == 0)) || ((sizeof($content) === 1) && ((string)$content[0] === caGetBlankLabelText(Datamodel::getTableName($content_tablenum))))){ 
+		if ((!is_array($content) && !strlen($content)) || !sizeof($content) || (((sizeof($content) == 1) && strlen((string)$content[0]) == 0)) || ((sizeof($content) === 1) && ((string)mb_strtolower($content[0]) === mb_strtolower(caGetBlankLabelText(Datamodel::getTableName($content_tablenum)))))){ 
 			$words = null;
 		} else {
 			// Tokenize string
@@ -1309,7 +1314,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			$va_words = self::tokenize($ps_content);
 		}
 		
-		if((sizeof($va_words) === 1) && ((string)$va_words[0] === caGetBlankLabelText(Datamodel::getTableName($pn_content_tablenum)))) {
+		if((sizeof($va_words) === 1) && (mb_strtolower((string)$va_words[0]) === mb_strtolower(caGetBlankLabelText(Datamodel::getTableName($pn_content_tablenum))))) {
 			$va_words = null;
 		} elseif (caGetOption("INDEX_AS_IDNO", $pa_options, false) || in_array('INDEX_AS_IDNO', $pa_options, true)) {
 			$t_content = Datamodel::getInstanceByTableNum($pn_content_tablenum, true);
@@ -1424,6 +1429,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 *
 	 */
 	static public function filterStopWords(array $words) : array {
+		if(!self::$filter_stop_words) { return $words; }
 		return array_filter($words, function($v) {
 			return (strlen($v) && !array_key_exists($v, self::$stop_words));
 		});

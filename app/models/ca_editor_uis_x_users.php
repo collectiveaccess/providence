@@ -163,9 +163,5 @@ class ca_editor_uis_x_users extends BaseRelationshipModel {
 	protected $FIELDS;
 	
 	# ----------------------------------------
-	function __construct($pn_id=null) {
-		parent::__construct($pn_id);
-	}
-	# ----------------------------------------
 }
 ?>

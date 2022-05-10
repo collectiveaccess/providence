@@ -192,11 +192,11 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		self::$s_variables = array();
 	}
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
+	public function __construct($id=null, ?array $options=null) {
 		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 		BaseModel::$s_ca_models_definitions['ca_data_exporters']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = array_flip(caGetPrimaryTables(true));
 		global $_ca_data_exporters_settings;
-		parent::__construct($pn_id);
+		parent::__construct($id, $options);
 
 		// settings
 		$this->initSettings();

@@ -630,13 +630,19 @@ class XLSXProfileParser extends BaseProfileParser {
 				}
 			} else {
 				$tmp = explode('_', $ui_spec);
-				if(!($table = self::tableNameFromString($tmp[0]))) { 
+				$type_res_arr = [];
+				while(sizeof($tmp)) {
+					if($table = self::tableNameFromString(join('_', $tmp))) { 
+						break;
+					}
+					$type_res_arr[] = array_pop($tmp);
+				}
+				if(!$table) {
 					$this->warning('processUIs', _t('Could not generate user interface table from worksheet name %1', $ui_spec));
 					continue;
 				}
-				array_shift($tmp);
 			
-				$type_res = join('_', $tmp);	
+				$type_res = join('_', $type_res_arr);	
 			}
 		
 			if($sheet) {
@@ -770,7 +776,9 @@ class XLSXProfileParser extends BaseProfileParser {
 			}
 			
 			$bundle_type = null;
-			$bundle_list = \Datamodel::getInstance($table, true)->getBundleList(['includeBundleInfo' => true]);
+			
+			// Don't init metadata elements as the ca_metadata_elements table may not exist yet, and even if it does won't have data in it
+			$bundle_list = \Datamodel::getInstance($table, false, null, ['dontInitMetadataElements' => true])->getBundleList(['includeBundleInfo' => true, 'dontInitMetadataElements' => true]);
 			
 			if($rel_table) {
 				$bundle_type = 'relationship';

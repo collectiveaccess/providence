@@ -85,10 +85,6 @@
 		 */
 		private $opa_failed_nonpreferred_label_inserts = array();
 		# ------------------------------------------------------------------
-		public function __construct($pn_id=null) {
-			parent::__construct($pn_id);
-		}
-		# ------------------------------------------------------------------
 		/**
 		 * Check if preferred label for a given locale is defined for the current record
 		 *

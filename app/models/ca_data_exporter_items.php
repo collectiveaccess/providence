@@ -200,9 +200,9 @@ class ca_data_exporter_items extends BaseModel {
 	protected $FIELDS;
 	
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {		
+	public function __construct($id=null, ?array $options=null) {		
 		global $_ca_data_exporter_items_settings;
-		parent::__construct($pn_id);
+		parent::__construct($id, $options);
 		
 		//
 		$this->initSettings();
