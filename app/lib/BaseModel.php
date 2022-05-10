@@ -376,28 +376,28 @@ class BaseModel extends BaseObject {
 	 * if omitted, an empty object is created which can be used to create a new row in the database.
 	 * @return BaseModel
 	 */
-	public function __construct($pn_id=null, $pb_use_cache=true) {
+	public function __construct($id=null, ?array $options=null) {
 		$this->opn_instantiated_at = time();
-		$vs_table_name = $this->tableName();
+		$table_name = $this->tableName();
 		
-		if (!$this->FIELDS =& BaseModel::$s_ca_models_definitions[$vs_table_name]['FIELDS']) {
-			die("Field definitions not found for {$vs_table_name}");
+		if (!$this->FIELDS =& BaseModel::$s_ca_models_definitions[$table_name]['FIELDS']) {
+			die("Field definitions not found for {$table_name}");
 		}
 		if (!is_array(self::$field_list_for_load)) { self::$field_list_for_load = []; }
-		if (!self::$field_list_for_load[$vs_table_name]) {
-			self::$field_list_for_load[$vs_table_name] = [];
+		if (!self::$field_list_for_load[$table_name]) {
+			self::$field_list_for_load[$table_name] = [];
 			foreach($this->FIELDS as $f => $info) {
 				if(isset($info['START']) && isset($info['END'])) {
-					self::$field_list_for_load[$vs_table_name][] = "`{$info['START']}`";
-					self::$field_list_for_load[$vs_table_name][] = "`{$info['END']}`";
+					self::$field_list_for_load[$table_name][] = "`{$info['START']}`";
+					self::$field_list_for_load[$table_name][] = "`{$info['END']}`";
 				} else {
-					self::$field_list_for_load[$vs_table_name][] = "`{$f}`";
+					self::$field_list_for_load[$table_name][] = "`{$f}`";
 				}
 			}
 		}
 		
-		$this->NAME_SINGULAR =& BaseModel::$s_ca_models_definitions[$vs_table_name]['NAME_SINGULAR'];
-		$this->NAME_PLURAL =& BaseModel::$s_ca_models_definitions[$vs_table_name]['NAME_PLURAL'];
+		$this->NAME_SINGULAR =& BaseModel::$s_ca_models_definitions[$table_name]['NAME_SINGULAR'];
+		$this->NAME_PLURAL =& BaseModel::$s_ca_models_definitions[$table_name]['NAME_PLURAL'];
 		
 		$this->errors = array();
 		$this->error_output = 0;  # don't halt on error
@@ -411,15 +411,15 @@ class BaseModel extends BaseObject {
 		$this->_FILE_VOLUMES = FileVolumes::load();
 		$this->_FIELD_VALUE_CHANGED = $this->_FIELD_VALUE_DID_CHANGE = array();
 
-		if ($vs_locale = $this->_CONFIG->get("locale")) {
-			$this->ops_locale = $vs_locale;
+		if ($locale = $this->_CONFIG->get("locale")) {
+			$this->ops_locale = $locale;
 		}
 		
 		$this->opb_purify_input = strlen($this->_CONFIG->get("purify_all_text_input")) ? (bool)$this->_CONFIG->get("purify_all_text_input") : false;
 		
  		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 
-		if ($pn_id) { $this->load($pn_id, $pb_use_cache);}
+		if ($id) { $this->load($id, caGetOption('useCache', $options, true)); }
 	}
 
 	/**

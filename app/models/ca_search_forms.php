@@ -246,11 +246,11 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	#    the record identified by the primary key value
 	#
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
+	public function __construct($id=null, ?array $options=null) {
 		// Filter list of tables form can be used for to those enabled in current config
 		BaseModel::$s_ca_models_definitions['ca_search_forms']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = caFilterTableList(BaseModel::$s_ca_models_definitions['ca_search_forms']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST']);
 
-		parent::__construct($pn_id);	# call superclass constructor
+		parent::__construct($id, $options);	# call superclass constructor
 
 		$this->opo_search_config = Configuration::load(__CA_CONF_DIR__.'/search.conf');
 		$this->opo_search_indexing_config = Configuration::load(__CA_CONF_DIR__.'/search_indexing.conf');
@@ -327,7 +327,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 			return null;
 		}
 
-		$t_placement = new ca_search_form_placements(null, is_array($pa_options['additional_settings']) ? $pa_options['additional_settings'] : null);
+		$t_placement = new ca_search_form_placements(null, null, is_array($pa_options['additional_settings']) ? $pa_options['additional_settings'] : null);
 		$t_placement->setMode(ACCESS_WRITE);
 		$t_placement->set('form_id', $vn_form_id);
 		$t_placement->set('bundle_name', trim($ps_bundle_name));
@@ -770,7 +770,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		$vs_primary_table = $t_instance->tableName();
 		$vs_table_display_name = $t_instance->getProperty('NAME_PLURAL');
 
-		$t_placement = new ca_search_form_placements(null, []);
+		$t_placement = new ca_search_form_placements(null, null, []);
 
 		$va_available_bundles = [];
 
@@ -1511,7 +1511,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 						return false;
 					}
 				} else {
-					$t_placement = new ca_search_form_placements($vn_placement_id, $va_available_bundles[$vs_bundle]['settings']);
+					$t_placement = new ca_search_form_placements($vn_placement_id, null, $va_available_bundles[$vs_bundle]['settings']);
 					$t_placement->setMode(ACCESS_WRITE);
 					$t_placement->set('rank', $vn_i + 1);
 

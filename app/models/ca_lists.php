@@ -251,23 +251,6 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	protected $FIELDS;
 	
 	# ------------------------------------------------------
-	# --- Constructor
-	#
-	# This is a function called when a new instance of this object is created. This
-	# standard constructor supports three calling modes:
-	#
-	# 1. If called without parameters, simply creates a new, empty objects object
-	# 2. If called with a single, valid primary key value, creates a new objects object and loads
-	#    the record identified by the primary key value
-	#
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
-	}
-	# ------------------------------------------------------
 	/**
 	 *
 	 */
@@ -483,6 +466,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 *		item_id =		optional item_id to use as root of hierarchy for returned items; if this is not set (the default) then all items in the list are returned
 	 *		sort =			if set to a __CA_LISTS_SORT_BY_*__ constant, will force the list to be sorted by that criteria overriding the sort order set in the ca_lists.default_sort field
 	 *		idsOnly = 		if true, only the primary key id values of the list items are returned
+	 *		idnosOnly = 	if true, only idno values of list items are returned
 	 *		enabledOnly =	return only enabled list items [default=false]
 	 *		omitRoot =		don't include root node [Default=false]
 	 *		labelsOnly = 	if true only labels in the current locale are returns in an array key'ed on item_id
@@ -614,6 +598,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				if (($pn_limit > 0) && ($vn_c > $pn_limit)) { break; }
 				if ((isset($pa_options['idsOnly']) && $pa_options['idsOnly'])) {
 					$va_items[] = $vn_item_id;
+					continue;
+				}
+				if ((isset($pa_options['idnosOnly']) && $pa_options['idnosOnly'])) {
+					$va_items[] = $qr_res->get('idno');
 					continue;
 				}
 				if ((!isset($pa_options['includeSelf']) || !$pa_options['includeSelf']) && ($vn_item_id == $pn_item_id)) { continue; }

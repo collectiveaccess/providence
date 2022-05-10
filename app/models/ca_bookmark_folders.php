@@ -155,10 +155,6 @@ class ca_bookmark_folders extends BaseModel {
 	protected $FIELDS;
 	
 	# ----------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);
-	}
-	# ----------------------------------------
 	#
 	# ----------------------------------------
 	/**

@@ -203,8 +203,8 @@ class ca_user_roles extends BaseModel {
 	#    the record identified by the primary key value
 	#
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
+	public function __construct($id=null, ?array $options=null) {
+		parent::__construct($id, $options);	# call superclass constructor
 		
  		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 		$this->opo_widget_manager = new WidgetManager();

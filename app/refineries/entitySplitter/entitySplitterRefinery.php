@@ -258,5 +258,14 @@ BaseRefinery::$s_refinery_settings['entitySplitter'] = array(
 		],
 		'label' => _t('Text transformation'),
 		'description' => _t('Transform text case.')
+	),
+	'entitySplitter_useRawValues' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'width' => 10, 'height' => 1,
+		'takesLocale' => false,
+		'default' => '',
+		'label' => _t('Use raw values'),
+		'description' => _t('If set splitter will use raw data values without processing such as replacement values, regular expressions, etc.')
 	)
 );

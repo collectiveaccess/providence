@@ -163,9 +163,5 @@ class ca_search_forms_x_users extends BaseRelationshipModel {
 	protected $FIELDS;
 	
 	# ----------------------------------------
-	function __construct($pn_id=null) {
-		parent::__construct($pn_id);
-	}
-	# ----------------------------------------
 }
 ?>
