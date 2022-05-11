@@ -67,15 +67,17 @@ class XMLProfileParser extends BaseProfileParser {
 	 *
 	 * @param string $directory Directory containing profile
 	 * @param string $profile Name (with or without extension) of profile to parse
+	 * @param array $options Options include:
+	 *		dontValidate = Don't validate profiles
 	 *
 	 * @return array Parsed profile data
 	 */
-	public function parse(string $directory, string $profile) : array {
+	public function parse(string $directory, string $profile, ?array $options=null) : array {
 		if(!($profile_path = caGetProfilePath($directory, $profile))) {
 			return null;
 		}
 		
-		if(!$this->validateProfile($directory, $profile)) {
+		if(!caGetOption('dontValidate', $options, false) && !$this->validateProfile($directory, $profile)) {
 			throw new \Exception(_t('XML profile validation failed'));
 		}
 		if(!$this->loadProfile($directory, $profile)) {
@@ -467,6 +469,7 @@ class XMLProfileParser extends BaseProfileParser {
 			$right_restriction = self::getAttribute($type, "typeRestrictionRight");
 			$include_subtypes_left = self::getAttribute($type, "includeSubtypesLeft");
 			$include_subtypes_right = self::getAttribute($type, "includeSubtypesRight");
+			$deleted = self::getAttribute($type, "deleted");
 			
 
 			$this->logStatus(_t('Processing relationship type with code %1', $type_code));
@@ -487,7 +490,8 @@ class XMLProfileParser extends BaseProfileParser {
 				'typeRestrictionRight' => $right_restriction,
 				'includeSubtypesLeft' => $include_subtypes_left,
 				'includeSubtypesRight' => $include_subtypes_right,
-				'types' => $sub_types
+				'types' => $sub_types,
+				'deleted' => $deleted
 			];
 		}
 		
@@ -1101,6 +1105,7 @@ class XMLProfileParser extends BaseProfileParser {
 	 */
 	protected static function getLabelsFromXML($labels, $force_preferred=false) {
 		$values = [];
+		if(!$labels || !$labels->children()) { return []; }
 		foreach($labels->children() as $label) {
 			$locale = self::getAttribute($label, "locale");
 			$preferred = self::getAttribute($label, "preferred");

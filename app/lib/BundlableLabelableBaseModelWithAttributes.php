@@ -308,6 +308,34 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 
 		$we_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
+		
+		if ($this->HIERARCHY_PARENT_ID_FLD && (bool)$this->getAppConfig()->get($this->tableName().'_enforce_strict_type_hierarchy')) {
+			if ($vn_parent_id = $this->get($this->HIERARCHY_PARENT_ID_FLD)) {
+				// is child
+				$t_parent = Datamodel::getInstanceByTableName($this->tableName());
+				if ($t_parent->load($vn_parent_id)) {
+					$vn_parent_type_id = $t_parent->getTypeID();
+					$va_type_list = $t_parent->getTypeList(array('directChildrenOnly' => ($this->getAppConfig()->get($this->tableName().'_enforce_strict_type_hierarchy') === '~') ? false : true, 'childrenOfCurrentTypeOnly' => true, 'returnHierarchyLevels' => true));
+
+					if (!isset($va_type_list[$this->getTypeID()])) {
+						$va_type_list = $this->getTypeList(array('directChildrenOnly' => false, 'returnHierarchyLevels' => true, 'item_id' => null));
+
+						$this->postError(2510, _t("<em>%1</em> is not a valid type for a child record of type <em>%2</em>", $va_type_list[$this->getTypeID()]['name_singular'], $va_type_list[$vn_parent_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()", $this->tableName().'.'.$this->getTypeFieldName());
+								
+						if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
+						if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+						return false;
+					}
+				} else {
+					// error - no parent?
+					$this->postError(2510, _t("No parent was found when verifying type of new child"), "BundlableLabelableBaseModelWithAttributes->insert()", $this->tableName().'.'.$this->getTypeFieldName());
+													
+					if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
+					if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+					return false;
+				}	
+			}		
+		}
 
 		$va_errors = [];
 		if (!$this->_validateIncomingAdminIDNo(true, false)) { 

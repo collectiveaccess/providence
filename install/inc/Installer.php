@@ -106,7 +106,7 @@ class Installer {
 	 * @param boolean $skip_load dont actually load profile (useful if you want to fill in some gaps by hand)
 	 * @param boolean $log_output log output using Klogger
 	 */
-	public function  __construct(string $directory, string $profile, ?string $admin_email=null, ?bool $overwrite=false, ?bool $debug=false, ?bool $skip_load=false, ?bool $log_output=false) {
+	public function  __construct(string $directory, string $profile, ?string $admin_email=null, ?bool $overwrite=false, ?bool $debug=false, ?bool $skip_load=false, ?bool $log_output=false, $dont_validate=false) {
 		$this->profile_dir = $directory;
 		$this->profile_name = $profile;
 		$this->admin_email = $admin_email;
@@ -121,7 +121,7 @@ class Installer {
 		$this->db = new \Db();
 		
 		// Process selected profile into data structure for insertion
-		$data = $this->parseProfile($directory, $profile);
+		$data = $this->parseProfile($directory, $profile, ['dontValidate' => $dont_validate]);
 		
 		if(!$skip_load) {
 			if(!is_array($data)) {
@@ -148,7 +148,7 @@ class Installer {
 	 *
 	 * @return array
 	 */
-	public function parseProfile(string $directory, string $profile) : ?array {
+	public function parseProfile(string $directory, string $profile, ?array $options=null) : ?array {
 		if(!($path = \caGetProfilePath($directory, $profile))) {
 			return null;
 		}
@@ -156,7 +156,7 @@ class Installer {
 		
 		if(!($parser = self::profileParser($path))) { return null; }
 		
-		$data = $parser->parse($directory, $profile);
+		$data = $parser->parse($directory, $profile, $options);
 		
 		$this->notices = $parser->getNotices();
 		$this->warnings = $parser->getWarnings();

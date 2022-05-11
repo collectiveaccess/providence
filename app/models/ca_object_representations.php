@@ -2282,7 +2282,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	 * @param int $representation_id Optional representation_id to ignore when checking for duplicated. [Default is null]
 	 * @return mixed ca_object_representations instance representing the first representation that contains the file, if representation exists with this file, false if the file does not yet exist
 	 */
-	static function mediaExists(string $filepath, ?int $representation_id=null) {
+	static function mediaExists(?string $filepath, ?int $representation_id=null) {
 		if (!file_exists($filepath) || !is_readable($filepath)) { return null; }
 		$md5 = @md5_file($filepath);
 		

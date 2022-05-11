@@ -40,7 +40,7 @@ class ModelSettingsTest extends TestCase {
 		$available_settings = $t->getAvailableSettings();
 		
 		$this->assertIsArray($available_settings);
-		$this->assertCount(3, $available_settings);
+		$this->assertCount(6, $available_settings);
 		$this->assertContains('entity_class', array_keys($available_settings));
 		$this->assertContains('use_suffix_for_orgs', array_keys($available_settings));
 		$this->assertContains('render_in_new_menu', array_keys($available_settings));
