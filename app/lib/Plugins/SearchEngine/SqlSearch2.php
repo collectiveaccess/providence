@@ -1416,11 +1416,25 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	static public function tokenize(?string $content, ?bool $for_search=false, ?int $index=0) : array {
 		$content = preg_replace('![\']+!u', '', $content);		// strip apostrophes for compatibility with SearchEngine class, which does the same to all search expressions
 
-		$words = preg_split('!'.self::$whitespace_tokenizer_regex.'!u', strip_tags($content));
-		$words = array_map(function($v) {
-			$w = preg_replace('!^'.self::$punctuation_tokenizer_regex.'!u', '', html_entity_decode($v, null, 'UTF-8'));
-			return mb_strtolower(preg_replace('!'.self::$punctuation_tokenizer_regex.'$!u', '', $w));
-		}, $words);
+		switch($alphabet = caIdentifyAlphabet($content)) {
+			case 'HAN':
+				if(class_exists("\Binaryoung\Jieba\Jieba")) {
+					$words = \Binaryoung\Jieba\Jieba::cut($content);
+					$words = array_map(function($v) {
+						$w = str_replace('·', ' ', html_entity_decode($v, null, 'UTF-8'));
+						$w = preg_replace('!^'.self::$punctuation_tokenizer_regex.'!u', '', $w);
+						return mb_strtolower(preg_replace('!'.self::$punctuation_tokenizer_regex.'$!u', '', $w));
+					}, $words);
+					break;
+				}
+			default:
+				$words = preg_split('!'.self::$whitespace_tokenizer_regex.'!u', strip_tags($content));
+				$words = array_map(function($v) {
+					$w = preg_replace('!^'.self::$punctuation_tokenizer_regex.'!u', '', html_entity_decode($v, null, 'UTF-8'));
+					return mb_strtolower(preg_replace('!'.self::$punctuation_tokenizer_regex.'$!u', '', $w));
+				}, $words);
+				break;
+		}
 		
 		return self::filterStopWords($words);
 	}
