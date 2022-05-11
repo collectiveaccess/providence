@@ -91,8 +91,8 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 	    	'Command' => 'apply-prepopulate-rules',
             'Options' => [
                         'restrictToTables|T-s' => _t('Apply rules only on specified tables. You can include multiple tables with a comma separated list (Ex: --restrictToTables="ca_objects,ca_entities". Cannot be used with excludeTables'),
-                        'excludeTables|t-s' => _t('Don\'apply rules on specified tables. You can exclude multiple tables with a comma separated list (Ex: --excludeTables="rule1,rule2". Cannot be used with restrictToTables'),
-                        'restrictToRules|R-s' => _t('Apply only specified rules. You can include multiple rules with a comma separated list (Ex: --restrictToRules="ca_objects,ca_entities". Cannot be used with excludeRules'),
+                        'excludeTables|t-s' => _t('Don\'apply rules on specified tables. You can exclude multiple tables with a comma separated list (Ex: --excludeTables="ca_objects,ca_entities". Cannot be used with restrictToTables'),
+                        'restrictToRules|R-s' => _t('Apply only specified rules. You can include multiple rules with a comma separated list (Ex: --restrictToRules="rule1,rule2". Cannot be used with excludeRules'),
                         'excludeRules|r-s' => _t('Don\'apply specified rules. You can exclude multiple rules with a comma separated list (Ex: --excludeRules="rule1,rule2". Cannot be used with restrictToRules'),
                         'findQuery|F-s' => _t("Accept an associative array of key and values in json format. Key can be an intrinsic or a metadata, used without table identifier. Ex: --findQuery='{\"idno\":\"foo\"}' to apply the rules to every record where idno=foo")],
 	        'Help' => _t('Applies rules defined in prepopulate.conf to all relevant records.'),
