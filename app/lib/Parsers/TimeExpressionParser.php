@@ -873,6 +873,9 @@ class TimeExpressionParser {
 			$ps_expression = preg_replace('!([\d]{3})[\-]{1}[\D]+!', '\1_', $ps_expression);
 		}
 		
+		if (preg_match("!([\d]+)[ ]*[\-]{1}[ ]*([\d]+)!", $ps_expression, $m)) {	
+			$ps_expression = preg_replace("!([\d]+)[ ]*[\-]{1}[ ]*([\d]+)!", "$1 - $2", $ps_expression);
+		}
 		if (!preg_match("!^[\-]{1}[\d]+$!", $ps_expression)) {			
 			$ps_expression = preg_replace("!([A-Za-z]+)([\-\–\—]+)!", "$1 - ", $ps_expression);
 			$ps_expression = preg_replace("!([\-\–\—]+)([A-Za-z]+)!", " - $2", $ps_expression);
