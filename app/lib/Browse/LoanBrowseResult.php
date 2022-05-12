@@ -45,5 +45,4 @@ class LoanBrowseResult extends BaseSearchResult {
 	 */
 	protected $ops_table_name = 'ca_loans';
 	# -------------------------------------
-	# -------------------------------------
 }

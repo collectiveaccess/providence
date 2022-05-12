@@ -113,7 +113,11 @@ class SearchSchema extends \GraphQLServices\GraphQLSchema {
 				'BETWEEN' => [
 					'value' => 'BETWEEN',
 					'description' => 'BETWEEN values in list'
-				]
+				],
+				'IS' => [
+					'value' => 'IS',
+					'description' => 'IS null'
+				],
 			]
 		]);
 		

@@ -650,7 +650,7 @@
                             $va_name[$vs_label_fld] = BaseRefinery::parsePlaceholder($pa_related_options[$vs_label_fld], $pa_source_data, $pa_item, $pn_c, array('returnAsString' => true, 'reader' => $o_reader, 'applyImportItemSettings' => $apply_import_item_settings));
                         }
                     } else {
-                        $va_name = DataMigrationUtils::splitEntityName($vs_name, array_merge($pa_options, ['doNotParse' => $pa_item['settings']["{$refinery_name}_doNotParse"]]));
+                        $va_name = DataMigrationUtils::splitEntityName($vs_name, array_merge($pa_options, ['type' => $vs_type, 'doNotParse' => $pa_item['settings']["{$refinery_name}_doNotParse"]]));
                     } 
             
                     if (!is_array($va_name) || !$va_name) { 
@@ -699,7 +699,7 @@
                     }
                 } elseif($vs_non_preferred_label = trim($pa_related_options["nonPreferredLabels"])) {
                     if ($ps_refinery_name == 'entitySplitter') {
-                        if (is_array($va_npl = DataMigrationUtils::splitEntityName(BaseRefinery::parsePlaceholder($vs_non_preferred_label, $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null, 'applyImportItemSettings' => $apply_import_item_settings)), $pa_options))) { 
+                        if (is_array($va_npl = DataMigrationUtils::splitEntityName(BaseRefinery::parsePlaceholder($vs_non_preferred_label, $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null, 'applyImportItemSettings' => $apply_import_item_settings)), array_merge(['type' => $vs_type], $pa_options)))) { 
                         	$pa_options['nonPreferredLabels'][] = $va_npl; 
                         }
                     } else {
@@ -787,6 +787,10 @@
 		$pn_value_index = caGetOption('valueIndex', $pa_options, 0);
 		$source_value = caGetOption('sourceValue', $pa_options, null);
 		$apply_import_item_settings = $pa_item['settings']["{$ps_refinery_name}_applyImportItemSettings"];
+		
+		if(($use_raw_values = (bool)$pa_item['settings']["{$ps_refinery_name}_useRawValues"]) && ($raw_data = caGetOption('raw', $pa_options, null))) {
+			$pa_source_data = $raw_data;
+		}
 		
 		// We can probably always use the item destination – using group destination is a vestige of older code and no longer is used
 		// but we're leaving it in for now as a fallback it item dest is not set for some reason
@@ -1048,7 +1052,7 @@
 							}
 						} elseif($vs_non_preferred_label = trim($pa_item['settings']["{$ps_refinery_name}_nonPreferredLabels"])) {
 							if ($ps_refinery_name == 'entitySplitter') {
-								$pa_options['nonPreferredLabels'][] = DataMigrationUtils::splitEntityName(BaseRefinery::parsePlaceholder($vs_non_preferred_label, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null, 'applyImportItemSettings' => $apply_import_item_settings)), $pa_options);
+								$pa_options['nonPreferredLabels'][] = DataMigrationUtils::splitEntityName(BaseRefinery::parsePlaceholder($vs_non_preferred_label, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null, 'applyImportItemSettings' => $apply_import_item_settings)), array_merge(['type' => $va_val['_type']], $pa_options));
 							} else {
 								$pa_options['nonPreferredLabels'][] = [
 									$vs_label_fld => BaseRefinery::parsePlaceholder($vs_non_preferred_label, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null, 'applyImportItemSettings' => $apply_import_item_settings))
@@ -1083,7 +1087,7 @@
 								break;
 							case 'ca_entities':
 								$n = $va_val['preferred_labels'] ? $va_val['preferred_labels'] : $vs_item;
-								$va_val['preferred_labels'] = is_array($n) ? $n : DataMigrationUtils::splitEntityName($n, array_merge($pa_options, ['doNotParse' => $pa_item['settings']["{$ps_refinery_name}_doNotParse"]]));
+								$va_val['preferred_labels'] = is_array($n) ? $n : DataMigrationUtils::splitEntityName($n, array_merge($pa_options, ['type' => $va_val['_type'], 'doNotParse' => $pa_item['settings']["{$ps_refinery_name}_doNotParse"]]));
 								
 								$vn_item_id = DataMigrationUtils::getEntityID($va_val['preferred_labels'], $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
 								break;
@@ -1190,8 +1194,8 @@
 						$label_is_not_set = (!isset($va_val['preferred_labels']) || (is_array($va_val['preferred_labels']) && !sizeof($va_val['preferred_labels'])) || !strlen($va_val['preferred_labels']));
 						switch($ps_table) {
 							case 'ca_entities':
-								if($label_is_not_set) { 
-									$va_val['preferred_labels'] = DataMigrationUtils::splitEntityName($vs_item, array_merge($pa_options, ['doNotParse' => $pa_item['settings']["{$ps_refinery_name}_doNotParse"]])); 
+								if(!isset($va_val['preferred_labels']) || !is_array($va_val['preferred_labels'])) { 
+									$va_val['preferred_labels'] = DataMigrationUtils::splitEntityName($vs_item, array_merge($pa_options, ['type' => $va_val['_type'], 'doNotParse' => $pa_item['settings']["{$ps_refinery_name}_doNotParse"]])); 
 								}
 								if(!isset($va_val['idno'])) { $va_val['idno'] = $vs_item; }
 								break;

@@ -200,9 +200,9 @@ class ca_data_exporter_items extends BaseModel {
 	protected $FIELDS;
 	
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {		
+	public function __construct($id=null, ?array $options=null) {		
 		global $_ca_data_exporter_items_settings;
-		parent::__construct($pn_id);
+		parent::__construct($id, $options);
 		
 		//
 		$this->initSettings();
@@ -409,6 +409,16 @@ class ca_data_exporter_items extends BaseModel {
 			'default' => '',
 			'label' => _t('Locale'),
 			'description' => _t('Locale code to use to get the field values. If not set, the system/user default is used.')
+		);
+		
+		$va_settings['returnAllLocales'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Return all locales'),
+			'description' => _t('Return all available values for any locale. If not set, only values for the current locale are returned.')
 		);
 
 		$va_settings['omitIfEmpty'] = array(

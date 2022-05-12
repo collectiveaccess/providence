@@ -360,7 +360,6 @@ create table if not exists ca_media_upload_session_files (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
-
 /*==========================================================================*/
 create table ca_entities
 (

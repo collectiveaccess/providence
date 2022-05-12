@@ -1,13 +1,7 @@
-/*
-<<<<<<< HEAD
-	Date: 3 January 2022
-	Migration: 175
-	Description:    Add fields linking imported items to front-end submissions interface
-=======
+/*xsx
 	Date: 29 January 2022
 	Migration: 175
 	Description:    Add metadata element soft delete; Add fields linking imported items to front-end submissions interface
->>>>>>> develop
 */
 
 /*==========================================================================*/

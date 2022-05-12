@@ -33,7 +33,6 @@
   /**
   *
   */
-  
 require_once(__CA_LIB_DIR__.'/BaseModel.php');
 require_once(__CA_LIB_DIR__.'/Parsers/TimeExpressionParser.php');
 require_once(__CA_LIB_DIR__."/SyncableBaseModel.php");
@@ -41,10 +40,6 @@ require_once(__CA_LIB_DIR__."/SyncableBaseModel.php");
 class BaseLabel extends BaseModel {
 	# -------------------------------------------------------
 	use SyncableBaseModel;
-	# -------------------------------------------------------
-	public function __construct($pn_id=null, $pb_use_cache=true) {
-		parent::__construct($pn_id, $pb_use_cache);
-	}
 	# -------------------------------------------------------
 	public function insert($pa_options=null) {
 		$this->_generateSortableValue();	// populate sort field

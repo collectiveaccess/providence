@@ -1016,7 +1016,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 								foreach($rel_types as $rel_type) {
 									if(!$s->removeRelationships($target, $rel_type)) {
 										foreach($s->errors() as $e) {
-											$errors[] = Error\error($subject_identifier, Error\toGraphQLError($e->getErrorNumber()), _t('Could not delete relationships for relationship type %1: %2', $rel_type, $s->getErrorMessage()), 'GENERAL'); 
+											$errors[] = Error\error($subject_identifier, Error\toGraphQLError($e->getErrorNumber()), _t('Could not delete relationships for relationship type %1: %2', $rel_type, $s->getErrorDescription()), 'GENERAL'); 
 										}
 										continue;
 									} 
@@ -1025,7 +1025,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							} else {
 								if(!$s->removeRelationships($target)) {
 									foreach($s->errors() as $e) {
-										$errors[] = Error\error($subject_identifier, Error\toGraphQLError($e->getErrorNumber()), _t('Could not delete relationships: %1', $s->getErrorMessage()), 'GENERAL'); 
+										$errors[] = Error\error($subject_identifier, Error\toGraphQLError($e->getErrorNumber()), _t('Could not delete relationships: %1', $s->getErrorDescription()), 'GENERAL'); 
 									}
 								} else {
 									$c++;
@@ -1210,7 +1210,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 					$subject_identifier = $ri['subject']->getPrimaryKey();
 					$target_identifier = $ri['target']->getPrimaryKey();
 					foreach($ri['subject']->errors() as $e) {
-						$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", Error\toGraphQLError($e->getErrorNumber()), _t('Could not edit relationship: %1', $e->getErrorMessage()), 'GENERAL'); 
+						$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", Error\toGraphQLError($e->getErrorNumber()), _t('Could not edit relationship: %1', $e->getErrorDescription()), 'GENERAL'); 
 					}
 				} else {
 					$errors[] = Error\error("relationship", Error\toGraphQLError(1100), _t('Could not find relationship with relation_id %1', $rel_id), 'GENERAL'); 
@@ -1238,7 +1238,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 					if(!$rel) {
 				
 						foreach($subject->errors() as $e) {
-							$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", Error\toGraphQLError($e->getErrorNumber()), _t('Could not create relationship: %1', $e->getErrorMessage()), 'GENERAL');
+							$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", Error\toGraphQLError($e->getErrorNumber()), _t('Could not create relationship: %1', $e->getErrorDescription()), 'GENERAL');
 						}
 					} elseif(sizeof($bundles) > 0) {
 						//  Add interstitial data
@@ -1282,7 +1282,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 					$subject_identifier = $ri['subject']->getPrimaryKey();
 					$target_identifier = $ri['target']->getPrimaryKey();
 					foreach($ri['subject']->errors() as $e) {
-						$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", Error\toGraphQLError($e->getErrorNumber()), _t('Could not edit relationship: %1', $e->getErrorMessage()), 'GENERAL'); 
+						$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", Error\toGraphQLError($e->getErrorNumber()), _t('Could not edit relationship: %1', $e->getErrorDescription()), 'GENERAL'); 
 					}
 				} else {
 					$errors[] = Error\error("relationship", Error\toGraphQLError(1100), _t('Could not find relationship with relation_id %1', $rel_id), 'GENERAL'); 
@@ -1315,7 +1315,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						$c = 0;
 						if(!$s->removeRelationship($target, $rel_id)) {			
 							foreach($s->errors() as $e) {				
-								$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", Error\toGraphQLError($e->getErrorNumber()), _t('Could not delete relationship: %1', $s->getErrorMessage()), 'GENERAL');
+								$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", Error\toGraphQLError($e->getErrorNumber()), _t('Could not delete relationship: %1', $s->getErrorDescription()), 'GENERAL');
 							}
 						} else {
 							$c++;
@@ -1376,9 +1376,9 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 				foreach($instance->errors() as $e) {
 					$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", Error\toGraphQLError($e->getErrorNumber()), 
 						is_array($rel_ids) ? 
-							_t('Could not edit relationship: %1', $e->getErrorMessage()) 
+							_t('Could not edit relationship: %1', $e->getErrorDescription()) 
 							: 
-							_t('Could not create relationship: %1', $e->getErrorMessage()),
+							_t('Could not create relationship: %1', $e->getErrorDescription()),
 						'GENERAL'
 					); 
 				}

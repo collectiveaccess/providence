@@ -313,11 +313,11 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	#    the record identified by the primary key value
 	#
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
+	public function __construct($id=null, ?array $options=null) {
 		// Filter list of tables set can be used for to those enabled in current config
 		BaseModel::$s_ca_models_definitions['ca_sets']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = caFilterTableList(BaseModel::$s_ca_models_definitions['ca_sets']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST']);
 		
-		parent::__construct($pn_id);	# call superclass constructor
+		parent::__construct($id, $options);	# call superclass constructor
 	}
 	# ------------------------------------------------------
 	/**

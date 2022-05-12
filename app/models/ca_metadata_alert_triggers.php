@@ -194,8 +194,8 @@ class ca_metadata_alert_triggers extends BaseModel {
 	/**
 	 *
 	 */
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
+	public function __construct($id=null, ?array $options=null) {
+		parent::__construct($id, $options);	# call superclass constructor
 
 		$this->loadAvailableSettingsForTriggerType();
 	}

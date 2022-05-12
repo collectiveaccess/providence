@@ -234,8 +234,8 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	static $s_placements_for_bundle_cache = [];
 	
 	# ----------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);
+	public function __construct($id=null, ?array $options=null) {
+		parent::__construct($id, $options);
 		
 		if (!ca_editor_uis::$s_loaded_relationship_tables) {
 			require_once(__CA_MODELS_DIR__.'/ca_relationship_types.php');

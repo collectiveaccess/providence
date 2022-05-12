@@ -567,6 +567,13 @@
 
 			switch($va_facet_info['type']) {
 				# -----------------------------------------------------
+				case 'hierarchy':
+					if (!($t_table = Datamodel::getInstanceByTableName($this->ops_browse_table_name, true))) { break; }
+					if (!$t_table->load($pn_row_id)) { return '???'; }
+					
+					return $t_table->getLabelForDisplay();
+					break;
+				# -----------------------------------------------------
 				case 'has':
 					$vs_yes_text = (isset($va_facet_info['label_yes']) && $va_facet_info['label_yes']) ? $va_facet_info['label_yes'] : _t('Yes');
 					$vs_no_text = (isset($va_facet_info['label_no']) && $va_facet_info['label_no']) ? $va_facet_info['label_no'] : _t('No');
@@ -1177,6 +1184,12 @@
                         $va_sql_params = [];
 							$vs_relative_to_join = '';
 							switch($va_facet_info['type']) {
+								# -----------------------------------------------------
+								case 'hierarchy':
+									$children = $vs_target_browse_table_name::getHierarchyChildrenForIDs($va_row_ids);
+									$va_acc[$vn_i] = $children;
+									$vn_i++;
+									break;
 								# -----------------------------------------------------
 								case 'has':
 									$vs_rel_table_name = $va_facet_info['table'];
@@ -3244,6 +3257,12 @@
 			$vs_single_value = isset($va_facet_info['single_value']) ? $va_facet_info['single_value'] : null;
 
 			$va_wheres = array();
+			
+			$filter_deaccessioned = false;
+			$t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true);
+			if ((isset($pa_options['filterDeaccessionedRecords']) && $pa_options['filterDeaccessionedRecords']) && $t_item->hasField('is_deaccessioned')) {
+				$va_wheres[] = $filter_deaccessioned = "({$vs_browse_table_name}.is_deaccessioned = 0)";
+			}
 
 			switch($va_facet_info['type']) {
 				# -----------------------------------------------------
@@ -3291,6 +3310,8 @@
 						$va_counts = array();
 						foreach($va_facet_values as $vs_state_name => $va_state_info) {
 							$va_wheres = array();
+							
+							if ($filter_deaccessioned) { $va_wheres[] = $filter_deaccessioned; }
 							$va_joins = array();
 							
 
@@ -3436,6 +3457,8 @@
 						$va_counts = array();
 						foreach($va_facet_values as $vs_state_name => $va_state_info) {
 							$va_wheres = array();
+							
+							if ($filter_deaccessioned) { $va_wheres[] = $filter_deaccessioned; }
 
 							if ($vs_browse_type_limit_sql) {
 								$va_wheres[] = $vs_browse_type_limit_sql;
@@ -7527,12 +7550,12 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 				return array('joins' => $va_joins, 'wheres' => $va_wheres);
 			} 
 			switch(sizeof($va_path = array_keys(Datamodel::getPath($ps_relative_to_table, $this->ops_browse_table_name)))) {
-				case 3:
+				case __CA_ATTRIBUTE_VALUE_LIST__:
 					$t_item_rel = Datamodel::getInstanceByTableName($va_path[1], true);
 					$t_rel_item = Datamodel::getInstanceByTableName($va_path[2], true);
 					$vs_key = 'relation_id';
 					break;
-				case 2:
+				case __CA_ATTRIBUTE_VALUE_DATERANGE__:
 					$t_item_rel = null;
 					$t_rel_item = Datamodel::getInstanceByTableName($va_path[1], true);
 					$vs_key = $t_rel_item->primaryKey();
@@ -7588,12 +7611,12 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 			$t_item = Datamodel::getInstanceByTableName($this->ops_browse_table_name, true);
 
 			switch(sizeof($va_path = array_keys(Datamodel::getPath($ps_relative_to_table, $this->ops_browse_table_name)))) {
-				case 3:
+				case __CA_ATTRIBUTE_VALUE_LIST__:
 					$t_item_rel = Datamodel::getInstanceByTableName($va_path[1], true);
 					$t_rel_item = Datamodel::getInstanceByTableName($va_path[2], true);
 					$vs_key = 'relation_id';
 					break;
-				case 2:
+				case __CA_ATTRIBUTE_VALUE_DATERANGE__:
 					$t_item_rel = null;
 					$t_rel_item = Datamodel::getInstanceByTableName($va_path[1], true);
 					$vs_key = $t_rel_item->primaryKey();

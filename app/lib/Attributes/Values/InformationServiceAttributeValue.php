@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2019 Whirl-i-Gig
+ * Copyright 2011-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -308,8 +308,14 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 			        'value_decimal1' => is_numeric($m[1]) ? $m[1] : null,
 			        'value_blob' => null
 			    ];
-			} else { // don't save if value hasn't changed
-				return array('_dont_save' => true);
+			    
+			} else { // raw text
+				return [
+			        'value_longtext1' => $ps_value,
+			        'value_longtext2' => '',
+			        'value_decimal1' => null,
+			        'value_blob' => null
+			    ];
 			}
 		}
 
