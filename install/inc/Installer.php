@@ -1180,9 +1180,18 @@ class Installer {
 							$placement['settings']['bundleTypeRestrictionsIncludeSubtypes'][''][] = $bundle_type_restrictions_include_sub_types;
 						}
 					}
+					
+					// Allow for <table>_table (Ex. ca_objects_table)
+					if(!($table = \Datamodel::tableExists($bundle) ? $bundle : null)) {
+						$tbundle = preg_replace('!_table$!', '', $bundle);
+						if(($tbundle !== $bundle) && \Datamodel::tableExists($tbundle)) {
+							$table = $tbundle;
+						}
+					}
+					
 					$settings = $this->_processSettings(null, $placement['settings'], [
-						'table' => \Datamodel::tableExists($bundle) ? $bundle : null, 
-						'leftTable' => \Datamodel::tableExists($bundle) ? $bundle : null, 
+						'table' => $table, 
+						'leftTable' => $table, 
 						'rightTable' => \Datamodel::tableExists($type) ? $type : null, 
 						'settingsInfo' => array_merge($t_placement->getAvailableSettings(), is_array($available_bundles[$bundle]['settings']) ? $available_bundles[$bundle]['settings'] : []),
 						'source' => "UserInterface:{$ui_code}:Screen {$screen_idno}:Placement {$placement_code}"
