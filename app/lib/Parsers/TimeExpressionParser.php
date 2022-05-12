@@ -852,7 +852,7 @@ class TimeExpressionParser {
 		$ps_expression = preg_replace("/([\d]{1,2})-([A-Za-z]{3,15})-([\d]{2,4})/", "$1#$2#$3", $ps_expression);
 		
 		# convert dd-mm-yyyy dates to dd/mm/yyyy to prevent our range conjunction code below doesn't mangle it
-		$ps_expression = preg_replace("/([\d]{2})-([\d]{2})-([\d]{4})/", "$1/$2/$3", $ps_expression);
+		$ps_expression = preg_replace("/([\d]{1,2})-([\d]{1,2})-([\d]{4})/", "$1/$2/$3", $ps_expression);
 		
 		if (preg_match("/([\d]{4})-([\d]{2})(\/|$)/", $ps_expression, $va_matches)) {
 			if (intval($va_matches[2]) > 12) {
@@ -876,6 +876,7 @@ class TimeExpressionParser {
 		if (preg_match("!([\d]+)[ ]*[\-]{1}[ ]*([\d]+)!", $ps_expression, $m)) {	
 			$ps_expression = preg_replace("!([\d]+)[ ]*[\-]{1}[ ]*([\d]+)!", "$1 - $2", $ps_expression);
 		}
+		
 		if (!preg_match("!^[\-]{1}[\d]+$!", $ps_expression)) {			
 			$ps_expression = preg_replace("!([A-Za-z]+)([\-\–\—]+)!", "$1 - ", $ps_expression);
 			$ps_expression = preg_replace("!([\-\–\—]+)([A-Za-z]+)!", " - $2", $ps_expression);

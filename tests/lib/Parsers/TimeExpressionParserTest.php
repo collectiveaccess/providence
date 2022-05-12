@@ -135,6 +135,40 @@ class TimeExpressionParserTest extends TestCase {
 		$this->assertEquals($o_tep->getText(), "July 31 1928 – March 31 1930");
 	}
 	
+	public function testHypenDatesWithSingleDigits() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+		
+		$vb_res = $o_tep->parse('8-27-1979');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1979.082700000000");
+		$this->assertEquals($va_parse['end'], "1979.082723595900");
+		$this->assertEquals($va_parse[0], "1979.082700000000");
+		$this->assertEquals($va_parse[1], "1979.082723595900");	
+		$this->assertEquals($o_tep->getText(), "August 27 1979");
+
+		$vb_res = $o_tep->parse('8-7-1979');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1979.080700000000");
+		$this->assertEquals($va_parse['end'], "1979.080723595900");
+		$this->assertEquals($va_parse[0], "1979.080700000000");
+		$this->assertEquals($va_parse[1], "1979.080723595900");	
+		$this->assertEquals($o_tep->getText(), "August 7 1979");
+		
+		$vb_res = $o_tep->parse('08-7-1979');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1979.080700000000");
+		$this->assertEquals($va_parse['end'], "1979.080723595900");
+		$this->assertEquals($va_parse[0], "1979.080700000000");
+		$this->assertEquals($va_parse[1], "1979.080723595900");	
+		$this->assertEquals($o_tep->getText(), "August 7 1979");
+	}
+	
+	
+	
 	public function testQualifiedDecadeAndCenturyRanges() {
 		$o_tep = new TimeExpressionParser();
 		$o_tep->setLanguage('en_US');
