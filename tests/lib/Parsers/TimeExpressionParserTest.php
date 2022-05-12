@@ -135,6 +135,29 @@ class TimeExpressionParserTest extends TestCase {
 		$this->assertEquals($o_tep->getText(), "July 31 1928 – March 31 1930");
 	}
 	
+	public function testHyphenWithTwoDigitYear() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+		
+		$vb_res = $o_tep->parse('10-24-02');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "2002.102400000000");
+		$this->assertEquals($va_parse['end'], "2002.102423595900");
+		$this->assertEquals($va_parse[0], "2002.102400000000");
+		$this->assertEquals($va_parse[1], "2002.102423595900");	
+		$this->assertEquals($o_tep->getText(), "October 24 2002");
+		
+		$vb_res = $o_tep->parse('10-24-02 - 11-05-03');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "2002.102400000000");
+		$this->assertEquals($va_parse['end'], "2003.110523595900");
+		$this->assertEquals($va_parse[0], "2002.102400000000");
+		$this->assertEquals($va_parse[1], "2003.110523595900");	
+		$this->assertEquals($o_tep->getText(), "October 24 2002 – November 5 2003");
+	}
+		
 	public function testHypenDatesWithSingleDigits() {
 		$o_tep = new TimeExpressionParser();
 		$o_tep->setLanguage('en_US');
