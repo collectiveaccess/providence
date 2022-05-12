@@ -173,6 +173,36 @@ function editMappings(uri, id, mappings, callback) {
     });
 }
 
+function reorderMappings(uri, id, data, callback) {
+  const client = getGraphQLClient(uri, {});
+  client
+    .mutate({
+      mutation: gql
+        `
+          mutation (
+            $id: Int, 
+            $data: ImporterReorderInputType, 
+          ) 
+          { 
+            reorderMappings (
+              id: $id, 
+              data: $data, 
+            ) 
+            {
+              id, errors { message }
+            } 
+          }
+        `
+      , variables: { "id": id, "data": data }
+    })
+    .then(function (result) {
+      console.log("reorderMappings", result);
+      callback(result.data['reorderMappings']);
+    }).catch(function (error) {
+      console.log("Error while attempting to reorder mappings: ", error);
+    });
+}
+
 function deleteImporter(uri, id, callback) {
   const client = getGraphQLClient(uri, {});
   client
@@ -236,4 +266,4 @@ function editImporter(uri, id, name, formats, code, table, type, settings, callb
     });
 }
 
-export { getGraphQLClient, getImportersList, addImporter, deleteImporter, deleteMapping, editImporter, editMappings, getImporterForm, getNewImporterForm, getListMappings };
+export { getGraphQLClient, getImportersList, addImporter, deleteImporter, deleteMapping, editImporter, editMappings, getImporterForm, getNewImporterForm, getListMappings, reorderMappings };

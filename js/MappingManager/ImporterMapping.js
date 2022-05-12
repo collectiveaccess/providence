@@ -15,6 +15,7 @@ const ImporterMapping = () => {
     setImporterName()
     setImporterCode()
     setMappingList([])
+    setMappingDataList([])
 
     e.preventDefault()
   }
@@ -42,9 +43,11 @@ const ImporterMapping = () => {
           getImportersList();
         }
       )
+      
       editMappings("http://importui.whirl-i-gig.com:8085/service.php/MetadataImport", importerId, mappingDataList, data => {
         console.log("editMappings", data);
       })
+
     } else {
       addImporter("http://importui.whirl-i-gig.com:8085/service.php/MetadataImport",
         name,
@@ -64,6 +67,8 @@ const ImporterMapping = () => {
     }
   }
 
+  // console.log("importerFormData: ", importerFormData);
+
   return (
     <div>
       <div className='row justify-content-start my-2'>
@@ -78,7 +83,7 @@ const ImporterMapping = () => {
       </div>
       <MappingList />
       <div className='mr-3'>
-        <button className='btn btn-outline-secondary btn-sm' onClick={saveImporter}>Save</button>
+        <button className='btn btn-secondary' onClick={saveImporter}>Save Changes</button>
       </div> 
     </div>
   )

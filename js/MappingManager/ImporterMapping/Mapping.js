@@ -5,18 +5,22 @@ import { deleteMapping, editMappings } from '../MappingQueries';
 import { SortableHandle } from 'react-sortable-hoc';
 const DragHandle = SortableHandle(() => <span style={{fontSize: "22px", cursor: "pointer"}}>::</span>);
 
-const Mapping = ({ data, line_num }) => {
+const Mapping = ({ data, line_num, index }) => {
 
   const { importerId, setImporterId, mappingList, setMappingList, mappingDataList, setMappingDataList } = useContext(MappingContext)
 
-  const [ mappingType, setMappingType ] = useState(data && data.type? data.type : null)
   const [ mappingId, setMappingId ] = useState(data && data.id ? data.id : null)
+  const [ mappingType, setMappingType ] = useState(data && data.type? data.type : null)
+  const [ dataSource, setDataSource ] = useState(data && data.source? data.source : null)
+  const [ target, setTarget ] = useState(data && data.destination? data.destination : null)
 
-  const [mappingData, setMappingData] = useState({
+  const [ optionsTab, setOptionsTab ] = useState("")
+
+  const [ mappingData, setMappingData ] = useState({
     id: mappingId,
     type: mappingType,
-    source: "2",
-    destination: "ca_objects.preferred_labels",
+    source: dataSource,
+    destination: target,
     options: [{ name: "prefix", value: "GOT:" }],
     refineries: [{ refinery: "entitySplitter", options: [{ name: "delimiter", value: ";" }] }],
     replacement_values: [
@@ -24,59 +28,63 @@ const Mapping = ({ data, line_num }) => {
       { original: "blah", replacement: "glurg" }
     ]
   })
-
-  useEffect(() => {
-    let tempList = [...mappingDataList]
-    tempList.push(mappingData)
-    setMappingDataList(tempList)
-  }, [mappingType])
-
-  const [ optionsTab, setOptionsTab ] = useState("")
-
+  
   // Change select options handler
-  const handleChange = (event) => {
+  const handleMappingChange = (event) => {
     const { name, value } = event.target;
     if (name == "mappingType") {
       setMappingType(value)
-      console.log('handleChange');
+      setMappingData({
+        id: mappingId,
+        type: value,
+        source: dataSource,
+        destination: target,
+        options: [{ name: "prefix", value: "GOT:" }],
+        refineries: [{ refinery: "entitySplitter", options: [{ name: "delimiter", value: ";" }] }],
+        replacement_values: [
+          { original: "meow", replacement: "arf" },
+          { original: "blah", replacement: "glurg" }
+        ]
+      })
+
     }
+    if (name == "dataSource") {
+      setDataSource(value)
+    }
+    if (name == "target") {
+      setTarget(value)
+    }
+
+    let tempList = [...mappingDataList]
+    // tempList.splice(index, 1, mappingData)
+    tempList[index] = mappingData
+    console.log("tempList: ", tempList);
+    setMappingDataList(tempList)
   }
 
+  // useEffect(() => {
+  //   console.log("useeffect triggered");
+  //   let tempList = [...mappingDataList]
+  //   tempList[index] == mappingData
+  //   setMappingDataList(tempList)
+  // }, [mappingType, dataSource, target])
+  
   const deleteThisMapping = () => {
     deleteMapping("http://importui.whirl-i-gig.com:8085/service.php/MetadataImport", importerId, mappingId, data => {
       console.log("deleteMapping: ", data);
-
+      
       let tempMappingList = [...mappingList]
       tempMappingList.splice(tempMappingList.indexOf(mappingId), 1)
       setMappingList(tempMappingList)
     })
   }
-
-  // const saveMapping = () => {
-    // let mappingData = [{
-    //   id: mappingId,
-    //   type: mappingType,
-    //   source: "2",
-    //   destination: "ca_objects.preferred_labels",
-    //   options: [{ name: "prefix", value: "GOT:" }],
-    //   refineries: [{ refinery: "entitySplitter", options: [{ name: "delimiter", value: ";" }] }],
-    //   replacement_values: [
-    //     { original: "meow", replacement: "arf" },
-    //     { original: "blah", replacement: "glurg" }
-    //   ]
-    // }]
-  //   console.log("mappingData", mappingData);
-  //   editMappings("http://importui.whirl-i-gig.com:8085/service.php/MetadataImport", importerId, mappingData, data => {
-  //     console.log("editMappings", data);
-  //   })
-  // }
-
+  
   const setCurrentTab = (curr_tab) => {
     setOptionsTab(curr_tab)
   }
-
-  // console.log("mappingId", mappingId, mappingType);
-  // console.log(line_num);
+  
+  console.log("mappingId, type ", mappingId, mappingType, dataSource, target);
+  console.log("mappingData: ", mappingData);
 
   return (
     <div className='row m-2 p-2 border border-secondary align-items-center'>
@@ -97,7 +105,7 @@ const Mapping = ({ data, line_num }) => {
           name="mappingType" 
           required 
           value={mappingType} 
-          onChange={handleChange}
+          onChange={handleMappingChange}
         >
           <option value="MAPPING">Mapping</option>
           <option value="SKIP">Skip</option>
@@ -107,18 +115,29 @@ const Mapping = ({ data, line_num }) => {
 
 
       <div className='mr-3'>
-        <select aria-label="Default select example">
-          <option defaultValue={"Data Source"}>Data Source</option>
-          <option value="1"></option>
-          <option value="2"></option>
+        <label className='mb-0 mr-1'>Data Source: </label>
+        <select 
+          aria-label="Data Source"
+          name="dataSource"
+          required
+          value={dataSource}
+          onChange={handleMappingChange}
+        >
+          <option value="1">1</option>
+          <option value="2">2</option>
         </select>
       </div>
 
       <div className='mr-3'>
-        <select aria-label="Default select example">
-          <option defaultValue={"Target"}>Target</option>
-          <option value="1"></option>
-          <option value="2"></option>
+        {/* <label className='mb-0 mr-1'>Target: </label> */}
+        <select 
+          aria-label="Target"
+          name="target"
+          required
+          value={target}
+          onChange={handleMappingChange}
+        >
+          <option value={target}>{target}</option>
         </select>
       </div> 
 
@@ -126,7 +145,7 @@ const Mapping = ({ data, line_num }) => {
         <button type="button" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#exampleModal2">
           Options +
         </button>
-        <div class="modal fade" id="exampleModal2" tabindex="-1" aria-labelledby="exampleModalLabel2" aria-hidden="true">
+        <div class="modal fade" id="exampleModal2" tabIndex="-1" aria-labelledby="exampleModalLabel2" aria-hidden="true">
           <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
               <div class="modal-header">
