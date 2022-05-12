@@ -999,9 +999,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					
 					$vs_source = trim((string)$o_source->getValue());
 					
-					if ($vs_mode == 'constant') {
-						$vs_source = "_CONSTANT_:{$vn_row_num}:{$vs_source}";
-					}
+					// if ($vs_mode == 'constant') {
+// 						$vs_source = "_CONSTANT_:{$vn_row_num}:{$vs_source}";
+// 					}
 					$vs_destination = trim((string)$o_dest->getValue());
 					
 					if (!$vs_source) { 
@@ -1078,6 +1078,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					}
 					
 					$va_mapping[$vs_group][$vs_source][] = array(
+						'mapping_type' => ($vs_mode == 'constant') ? 'C' : 'M',
 						'destination' => $vs_destination,
 						'options' => $va_options,
 						'refinery' => $vs_refinery,
@@ -1249,7 +1250,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			// Add items
 			foreach($va_mappings_for_group as $vs_source => $va_mappings_for_source) {
 				foreach($va_mappings_for_source as $va_row) {
-					$t_group->addItem($vs_source, $va_row['destination'], self::mergeItemSettings($va_row), ['returnInstance' => true]);
+					$t_group->addItem($va_row['mapping_type'], $vs_source, $va_row['destination'], self::mergeItemSettings($va_row), ['returnInstance' => true]);
 				}
 			}
 		}
@@ -2943,9 +2944,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							}
 							
 							// Is it a constant value?
-							if ( preg_match( "!^_CONSTANT_:[\d]+:(.*)!", $va_item['source'], $va_matches ) ) {
+							if ( $va_item['mapping_type'] === 'C' ) {
 								$va_group_buf[ $vn_c ][ $vs_item_terminal ]
-									= $vm_val = $va_matches[1];        // Set it and go onto the next item
+									= $vm_val = $va_item['source'];        // Set it and go onto the next item
 
 								if ( ( $vs_target_table == $vs_subject_table_name )
 								     && ( ( $vs_k
@@ -3127,15 +3128,14 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 
 									if ( sizeof( $va_group_buf ) > 1 ) {
 										foreach ( $va_items_by_group[ $vn_group_id ] as $va_gitem ) {
-											if ( preg_match( "!^_CONSTANT_:[\d]+:(.*)!", $va_gitem['source'],
-												$va_gmatches )
+											if ( $va_gitem['mapping_type'] === 'C'
 											) {
 
 												$va_gitem_dest     = explode( ".", $va_gitem['destination'] );
 												$vs_gitem_terminal = $va_gitem_dest[ sizeof( $va_gitem_dest ) - 1 ];
 												for ( $vn_gc = 1; $vn_gc < sizeof( $va_group_buf ); $vn_gc ++ ) {
 													$va_group_buf[ $vn_gc ][ $vs_gitem_terminal ]
-														= $va_gmatches[1];        // Set it and go onto the next item
+														= $va_gitem['source'];        // Set it and go onto the next item
 												}
 											}
 
@@ -3229,12 +3229,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 
 					if ( sizeof( $va_group_buf ) > 1 ) {
 						foreach ( $va_items_by_group[ $vn_group_id ] as $va_gitem ) {
-							if ( preg_match( "!^_CONSTANT_:[\d]+:(.*)!", $va_gitem['source'], $va_gmatches ) ) {
+							if ( $va_gitem['mapping_type'] === 'C' ) {
 								$va_gitem_dest     = explode( ".", $va_gitem['destination'] );
 								$vs_gitem_terminal = $va_gitem_dest[ sizeof( $va_gitem_dest ) - 1 ];
 								for ( $vn_gc = 1; $vn_gc < sizeof( $va_group_buf ); $vn_gc ++ ) {
 									$va_group_buf[ $vn_gc ][ $vs_gitem_terminal ]
-										= $va_gmatches[1];        // Set it and go onto the next item
+										= $va_gitem['source'];        // Set it and go onto the next item
 								}
 							}
 
@@ -4241,8 +4241,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$hierarchical_delimiter = caGetOption('hierarchicalDelimiter', $pa_options, null);
 		$pn_lookahead = caGetOption('lookahead', $pa_options, 0, array('castTo' => 'int'));
 		
-		if (preg_match('!^_CONSTANT_:[^:]+:(.*)$!', $pa_item['source'], $va_matches)) {
-			$vm_value = $va_matches[1];
+		if ($pa_item['mapping_type'] === 'C') {
+			$vm_value = $pa_item['source'];
 		} elseif(isset($pa_environment[$pa_item['source']])) {
 			$vm_value = $pa_environment[$pa_item['source']];
 		} elseif(isset($pa_other_values[$pa_item['source']])) {

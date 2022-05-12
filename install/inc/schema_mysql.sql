@@ -2515,6 +2515,7 @@ create table ca_data_importer_items (
    item_id              int unsigned         not null AUTO_INCREMENT,
    importer_id          int unsigned         not null,
    group_id             int unsigned         not null,
+   mapping_type         char(1)     		 not null default 'M',
    source               varchar(1024)        not null,
    destination          varchar(1024)        not null,
    settings             longtext             not null,

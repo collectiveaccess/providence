@@ -63,6 +63,19 @@ BaseModel::$s_ca_models_definitions['ca_data_importer_items'] = array(
 				'DEFAULT' => '',
 				'LABEL' => 'Group id', 'DESCRIPTION' => 'Identifier for importer group'
 		),
+		'mapping_type' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 70, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => 'M',
+				'BOUNDS_CHOICE_LIST' => array(
+					_t('Mapping') => 'M',
+					_t('Constant') => 'C',
+					_t('Skip') => 'S'
+				),
+				'LABEL' => _t('Mapping type'), 'DESCRIPTION' => _t('Type of mapping: M=mapping; C=constant; S=skip'),
+				'BOUNDS_LENGTH' => array(1,1)
+		),
 		'source' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 70, 'DISPLAY_HEIGHT' => 1,

@@ -188,10 +188,12 @@ class ca_data_importer_groups extends BaseModel {
 	/**
 	 *
 	 */
-	public function addItem(string $source, string $destination, ?array $settings=null, ?array $options=null) {
+	public function addItem(string $mapping_type, string $source, string $destination, ?array $settings=null, ?array $options=null) {
 		if(!$this->getPrimaryKey()) return false;
 		
 		$t_item = new ca_data_importer_items();
+		
+		$t_item->set('mapping_type', $mapping_type);
 		$t_item->set('group_id', $this->getPrimaryKey());
 		$t_item->set('importer_id', $this->get('importer_id'));
 		$t_item->set('source', $source);
