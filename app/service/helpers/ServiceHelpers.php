@@ -564,8 +564,40 @@ function fieldTypeToJsonFormTypes(\BaseModel $t_instance, string $bundle, ?array
 	
 	$types = [];
 	
-	$element_code = array_pop(explode('.', $bundle));
-	if ($t_instance->hasElement($element_code)) {
+	$field_components = \SearchResult::parseFieldPathComponents($t_instance->tableName(), $bundle);
+	
+	// [table_name] => ca_data_importers
+//     [field_name] => preferred_labels
+//     [subfield_name] => name
+//     [num_components] => 3
+//     [components] => Array
+//         (
+//             [0] => ca_data_importers
+//             [1] => preferred_labels
+//             [2] => name
+//         )
+// 
+//     [related] => 
+//     [is_count] => 
+//     [hierarchical_modifier] => 
+
+	$element_code = $field_components['mse'];
+	
+	if($field_components['field_name'] === 'preferred_labels') {	// is label
+		//$t_label = $t_instance->getLabelTableInstance();
+		$type = ['type' => 'string', 'format' => 'string', 'label' => $t_instance->getDisplayLabel($bundle)];
+		
+		if($height > 1) {
+			$type['uiSchema'] = [
+				"ui:widget" => "textarea",
+				"ui:options" => [
+					"rows" => $height
+				]
+			];
+		}		
+		$type['code'] = $bundle;
+		$types[] = $type;
+	} elseif ($t_instance->hasElement($element_code)) {
 		if(!($dt = ca_metadata_elements::getInstance($element_code))) {
 			throw new \ServiceException(_t('Cannot get instance for element %1', $element_code));
 		}		
@@ -768,7 +800,7 @@ function fieldTypeToJsonFormTypes(\BaseModel $t_instance, string $bundle, ?array
 		$type['code'] = $bundle;
 		$types[] = $type;
 	} else {
-		$type = ['type' => 'string', 'format' => 'string'];
+		$type = ['type' => 'string', 'format' => 'string', 'label' => $bundle];
 		
 		if($height > 1) {
 			$type['uiSchema'] = [
