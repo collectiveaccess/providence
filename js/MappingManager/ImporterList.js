@@ -1,10 +1,10 @@
 import React, { useContext, useEffect } from 'react';
 import { MappingContext } from './MappingContext';
-
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
-
 import { getImportersList, deleteImporter, addImporter, editImporter } from './MappingQueries';
+
+const appData = providenceUIApps.MappingManager.data;
 
 const ImporterList = () => {
   const { importerId, setImporterId, importerName, setImporterName, importerCode, setImporterCode, importerList, setImporterList, currentView, setCurrentView } = useContext(MappingContext)
@@ -14,7 +14,7 @@ const ImporterList = () => {
   }, [])
   
   const getImporterList = () => {
-    getImportersList("http://importui.whirl-i-gig.com:8085/service.php/MetadataImport", data => {
+    getImportersList(appData.baseUrl + "/MetadataImport", data => {
       console.log("getImporterList: ", data);
       setImporterList(data)
     })
@@ -34,7 +34,7 @@ const ImporterList = () => {
           <div className='info text-gray'>
             <p>Really delete <em>{name}</em>?</p>
             <div className='btn btn-secondary btn-sm mr-2' onClick={() => {
-              deleteImporter("http://importui.whirl-i-gig.com:8085/service.php/MetadataImport", id, data => {
+              deleteImporter(appData.baseUrl + "/MetadataImport", id, data => {
                 console.log("deleteImporter: ", data);
                 getImporterList();
               });

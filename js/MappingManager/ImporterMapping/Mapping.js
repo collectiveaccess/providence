@@ -1,9 +1,10 @@
 import React, { useContext, useEffect, useState} from 'react'
 import { MappingContext } from '../MappingContext';
 import { deleteMapping, editMappings } from '../MappingQueries';
-
 import { SortableHandle } from 'react-sortable-hoc';
 const DragHandle = SortableHandle(() => <span style={{fontSize: "22px", cursor: "pointer"}}>::</span>);
+
+const appData = providenceUIApps.MappingManager.data;
 
 const Mapping = ({ data, line_num, index }) => {
 
@@ -70,7 +71,7 @@ const Mapping = ({ data, line_num, index }) => {
   // }, [mappingType, dataSource, target])
   
   const deleteThisMapping = () => {
-    deleteMapping("http://importui.whirl-i-gig.com:8085/service.php/MetadataImport", importerId, mappingId, data => {
+    deleteMapping(appData.baseUrl + "/MetadataImport", importerId, mappingId, data => {
       console.log("deleteMapping: ", data);
       
       let tempMappingList = [...mappingList]
@@ -142,37 +143,37 @@ const Mapping = ({ data, line_num, index }) => {
       </div> 
 
       <div className='mr-3'>
-        <button type="button" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#exampleModal2">
+        <button type="button" className="btn btn-secondary btn-sm" data-toggle="modal" data-target="#exampleModal2">
           Options +
         </button>
-        <div class="modal fade" id="exampleModal2" tabIndex="-1" aria-labelledby="exampleModalLabel2" aria-hidden="true">
-          <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel2">Options for mapping line</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <div className="modal fade" id="exampleModal2" tabIndex="-1" aria-labelledby="exampleModalLabel2" aria-hidden="true">
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel2">Options for mapping line</h5>
+                <button type="button" className="close" data-dismiss="modal" aria-label="Close">
                   <span aria-hidden="true">&times;</span>
                 </button>
               </div>
-              <div class="modal-body">
-                <ul class="nav nav-tabs">
-                  <li class="nav-item">
-                    <a class={"nav-link settings-tab" + (optionsTab == "settings-tab"? "active" : null)} href="#" onClick={()=>setCurrentTab("settings-tab")}>Settings</a>
+              <div className="modal-body">
+                <ul className="nav nav-tabs">
+                  <li className="nav-item">
+                    <a className={"nav-link settings-tab" + (optionsTab == "settings-tab"? "active" : null)} href="#" onClick={()=>setCurrentTab("settings-tab")}>Settings</a>
                   </li>
-                  <li class="nav-item">
-                    <a class={"nav-link refineries-tab" + (optionsTab == "refineries-tab" ? "active" : null)} href="#" onClick={()=>setCurrentTab("refineries-tab")}>Refineries</a>
+                  <li className="nav-item">
+                    <a className={"nav-link refineries-tab" + (optionsTab == "refineries-tab" ? "active" : null)} href="#" onClick={()=>setCurrentTab("refineries-tab")}>Refineries</a>
                   </li>
-                  <li class="nav-item">
-                    <a class={"nav-link replacement-tab" + (optionsTab == "replacement-tab" ? "active" : null)} href="#" onClick={()=>setCurrentTab("replacement-tab")}>Replacement Values</a>
+                  <li className="nav-item">
+                    <a className={"nav-link replacement-tab" + (optionsTab == "replacement-tab" ? "active" : null)} href="#" onClick={()=>setCurrentTab("replacement-tab")}>Replacement Values</a>
                   </li>
                 </ul>
                 <div className='tab-box'>
 
                 </div>
               </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Save changes</button>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" className="btn btn-primary">Save changes</button>
               </div>
             </div>
           </div>

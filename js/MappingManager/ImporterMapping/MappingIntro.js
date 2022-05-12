@@ -4,6 +4,8 @@ import { getImportersList, addImporter, getImporterForm, editImporter, getNewImp
 import Form from "@rjsf/core";
 import MappingSettings from './MappingSettings';
 
+const appData = providenceUIApps.MappingManager.data;
+
 const MappingIntro = () => {
 
   const { importerId, setImporterId, settingFormData, setSettingFormData, importerSchema, setImporterSchema, importerFormData, setImporterFormData } = useContext(MappingContext)
@@ -27,7 +29,7 @@ const MappingIntro = () => {
 
   useEffect(() => {
     if(importerId){
-      getImporterForm("http://importui.whirl-i-gig.com:8085/service.php/MetadataImport", importerId, data => {
+      getImporterForm(appData.baseUrl + "/MetadataImport", importerId, data => {
         console.log("getImporterForm: ", data);
   
         let form = { ...data }
@@ -59,7 +61,7 @@ const MappingIntro = () => {
         setImporterFormData(importer_data)
       })
     }else{
-      getNewImporterForm("http://importui.whirl-i-gig.com:8085/service.php/MetadataImport", data => {
+      getNewImporterForm(appData.baseUrl + "/MetadataImport", data => {
         console.log("getNewImporterForm: ", data);
 
         let form = { ...data }

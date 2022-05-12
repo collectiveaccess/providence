@@ -1,6 +1,8 @@
 import React, { createContext, useState } from 'react';
 export const MappingContext = createContext();
 
+const appData = providenceUIApps.MappingManager.data;
+
 const MappingContextProvider = (props) => {
 
   const [importerList, setImporterList] = useState([]) //list of importers

@@ -1,7 +1,6 @@
 import React, { useContext, useEffect } from 'react';
 import MappingContextProvider from './MappingManager/MappingContext';
 import { MappingContext } from './MappingManager/MappingContext';
-
 import ImporterList from './MappingManager/ImporterList';
 import ImporterMapping from './MappingManager/ImporterMapping';
 

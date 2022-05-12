@@ -5,6 +5,8 @@ import MappingList from './ImporterMapping/MappingList'
 
 import { getImportersList, deleteImporter, addImporter, editImporter, editMappings } from './MappingQueries';
 
+const appData = providenceUIApps.MappingManager.data;
+
 const ImporterMapping = () => {
   const { id, currentView, setCurrentView, importerId, setImporterId, importerName, setImporterName, importerCode, setImporterCode, mappingList, setMappingList, importerFormData, setImporterFormData, mappingDataList, setMappingDataList, settingFormData, setSettingFormData } = useContext(MappingContext)
 
@@ -29,7 +31,7 @@ const ImporterMapping = () => {
 
     if (importerId) {
       editImporter(
-        "http://importui.whirl-i-gig.com:8085/service.php/MetadataImport",
+        appData.baseUrl + "/MetadataImport",
         importerId,
         name,
         settingFormData.setting_inputFormats,
@@ -44,12 +46,12 @@ const ImporterMapping = () => {
         }
       )
       
-      editMappings("http://importui.whirl-i-gig.com:8085/service.php/MetadataImport", importerId, mappingDataList, data => {
+      editMappings(appData.baseUrl + "/MetadataImport", importerId, mappingDataList, data => {
         console.log("editMappings", data);
       })
 
     } else {
-      addImporter("http://importui.whirl-i-gig.com:8085/service.php/MetadataImport",
+      addImporter(appData.baseUrl + "/service.php/MetadataImport",
         name,
         ["XLSX"],
         code,
@@ -59,7 +61,7 @@ const ImporterMapping = () => {
         data => {
           console.log("addImporter: ", data);
           
-          editMappings("http://importui.whirl-i-gig.com:8085/service.php/MetadataImport", importerId, mappingDataList, data => {
+          editMappings(appData.baseUrl + "/MetadataImport", importerId, mappingDataList, data => {
             console.log("editMappings", data);
           })
           getImportersList();

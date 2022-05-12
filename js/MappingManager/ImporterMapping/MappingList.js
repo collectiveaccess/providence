@@ -2,9 +2,11 @@ import React, {useContext, useState, useEffect} from 'react'
 import Mapping from './Mapping';
 import { MappingContext } from '../MappingContext';
 import { getListMappings, editMappings, reorderMappings } from '../MappingQueries';
-
 import { SortableContainer, SortableElement, SortableHandle } from 'react-sortable-hoc';
 import { arrayMoveMutable } from 'array-move'; //used for the react-sortable-hoc
+
+const appData = providenceUIApps.MappingManager.data;
+
 // const DragHandle = SortableHandle(() => <span>::</span>);
 
 const Item = SortableElement(({ value }) => {
@@ -35,7 +37,7 @@ const MappingList = () => {
   }, [importerId]); 
 
   const getImporterMappings = () => {
-    getListMappings("http://importui.whirl-i-gig.com:8085/service.php/MetadataImport", importerId, data => {
+    getListMappings(appData.baseUrl + "/MetadataImport", importerId, data => {
       console.log("getListMappings: ", data);
 
       let tempOrderedIds = []
@@ -83,7 +85,7 @@ const MappingList = () => {
       ]
     }]
 
-    editMappings("http://importui.whirl-i-gig.com:8085/service.php/MetadataImport", importerId, mappingData, data => {
+    editMappings(appData.baseUrl + "/MetadataImport", importerId, mappingData, data => {
       console.log("editMappings", data);
       getImporterMappings();
     })
@@ -100,7 +102,7 @@ const MappingList = () => {
     let new_order = { sorted_ids: String(orderedIds) }
     console.log("New_order:", new_order);
 
-    reorderMappings("http://importui.whirl-i-gig.com:8085/service.php/MetadataImport", importerId, new_order, data => {
+    reorderMappings(appData.baseUrl + "/MetadataImport", importerId, new_order, data => {
       console.log("reorderMappings: ", data);
       getImporterMappings();
     })
