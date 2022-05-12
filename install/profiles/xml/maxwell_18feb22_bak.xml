@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base" infoUrl="">
-  <profileName>Maxwell Museum of Anthropology</profileName>
+  <profileName>DO NOT USE - Maxwell Museum of Anthropology</profileName>
   <profileDescription>Profile created on April 19 2021 by CollectiveAccess Administrator</profileDescription>
   <locales>
     <locale lang="en" country="US">English (US)</locale>
