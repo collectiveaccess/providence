@@ -827,7 +827,7 @@ class XMLProfileParser extends BaseProfileParser {
 
 						$type_level_access_control[] = [
 							'table' => $permission_table,
-							'bundle' => $permission_bundle,
+							'type' => $permission_bundle,
 							'access' => $permission_access
 						];
 					}
@@ -864,7 +864,6 @@ class XMLProfileParser extends BaseProfileParser {
 				$this->data['roles'][$code] = $data;
 			}
 		}
-		
 		return true;
 	}
 	# --------------------------------------------------
