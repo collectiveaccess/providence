@@ -211,7 +211,7 @@ function deleteImporter(uri, id, callback) {
         `
           mutation ($id: Int) {
             delete(id: $id) {
-                id, name, code, table, type, formats, source, errors
+                id, errors { message }, warnings { message }, info { message }
             }
           }
         `
