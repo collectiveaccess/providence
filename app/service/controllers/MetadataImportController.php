@@ -243,9 +243,8 @@ class MetadataImportController extends \GraphQLServices\GraphQLServiceController
 						
 						foreach($items as $item) {
 							$tmp = explode(':', $item['source']);
-							if($tmp[0] === '_CONSTANT_') {	// detect constants
+							if($item['mapping_type'] === 'C') {	// detect constants
 								$mapping_type = 'CONSTANT';
-								$item['source'] = join(':', array_slice($tmp, 2));
 							} else {
 								$mapping_type = 'MAPPING';
 							}
@@ -542,6 +541,18 @@ class MetadataImportController extends \GraphQLServices\GraphQLServiceController
 								$group = caGetOption('group', $mapping, "group_{$i}");
 								$source = $mapping['source'];
 								$destination = $mapping['destination'];
+								$mapping_type = $mapping['type'];
+								
+								switch(strtoupper($mapping_type)) {
+									case 'CONSTANT':
+										$mapping_type = 'C';
+										break;
+									case 'MAPPING':
+									default:
+										$mapping_type = 'M';
+										break;
+									
+								}
 							
 								if(!$source || !$destination) {
 									$warnings[] = Error\warning($args['id'], 750, _t('No source or destination specified for mapping'), 'MAPPING');
@@ -577,7 +588,7 @@ class MetadataImportController extends \GraphQLServices\GraphQLServiceController
 										$info[] = Error\info($t_item->getPrimaryKey(), 'EDIT', _t('Edited mapping for source %1 and destination %2 with item_id %3', $source, $destination, $t_item->getPrimaryKey()), 'MAPPING');
 									}								
 								} else {
-									if($t_item = $t_group->addItem($source, $destination, $settings, ['returnInstance' => true])) {
+									if($t_item = $t_group->addItem($mapping_type, $source, $destination, $settings, ['returnInstance' => true])) {
 										$info[] = Error\info($t_item->getPrimaryKey(), 'ADD', _t('Added mapping for source %1 and destination %2 with item_id %3', $source, $destination, $t_item->getPrimaryKey()), 'MAPPING');
 									}
 								}
