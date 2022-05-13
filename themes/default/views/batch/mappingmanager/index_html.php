@@ -1,4 +1,4 @@
-<div id="mappingManager" style="margin-top: 10px;">xxx</div>
+<div id="mappingManager" style="margin-top: 10px;"></div>
 
 <script type="text/javascript">
     providenceUIApps['MappingManager'] = {
