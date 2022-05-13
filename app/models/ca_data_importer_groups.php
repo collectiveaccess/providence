@@ -222,12 +222,13 @@ class ca_data_importer_groups extends BaseModel {
 	/**
 	 *
 	 */
-	public function editItem(int $item_id, string $source, string $destination, ?array $settings=null, ?array $options=null) {
+	public function editItem(int $item_id, string $mapping_type, string $source, string $destination, ?array $settings=null, ?array $options=null) {
 		if(!($t_item = ca_data_importer_items::find(['item_id' => $item_id], ['returnAs' => 'firstModelInstance']))) {
 			return null;
 		}
 		$t_item->set('source', $source);
 		$t_item->set('destination', $destination);
+		$t_item->set('mapping_type', $mapping_type);
 		
 		if (is_array($settings)) {
 			foreach($settings as $k => $v) {

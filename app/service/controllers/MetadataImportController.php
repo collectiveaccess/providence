@@ -584,7 +584,7 @@ class MetadataImportController extends \GraphQLServices\GraphQLServiceController
 								$settings = \ca_data_importers::mergeItemSettings($settings);
 								
 								if (isset($mapping['id']) && $mapping['id']) {
-									if($t_item = $t_group->editItem($mapping['id'], $source, $destination, $settings, ['returnInstance' => true])) {
+									if($t_item = $t_group->editItem($mapping['id'], $mapping_type, $source, $destination, $settings, ['returnInstance' => true])) {
 										$info[] = Error\info($t_item->getPrimaryKey(), 'EDIT', _t('Edited mapping for source %1 and destination %2 with item_id %3', $source, $destination, $t_item->getPrimaryKey()), 'MAPPING');
 									}								
 								} else {
