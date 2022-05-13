@@ -143,7 +143,7 @@ class Db_mysqli extends DbDriverBase {
 			$po_caller->postError(201, mysqli_error($this->opr_db), "Db->mysqli->connect()");
 			throw new DatabaseException(mysqli_error($this->opr_db), 201, "Db->mysqli->connect()");
 		}
-		mysqli_query($this->opr_db, 'SET NAMES \'utf8\'');
+		mysqli_query($this->opr_db, 'SET NAMES \'utf8mb4\'');
 		mysqli_query($this->opr_db, 'SET character_set_results = NULL');	
 		
 		if (!$vb_unique_connection) { $g_connect[$vs_db_connection_key] = $this->opr_db; }

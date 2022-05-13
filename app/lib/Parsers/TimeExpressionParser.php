@@ -852,7 +852,8 @@ class TimeExpressionParser {
 		$ps_expression = preg_replace("/([\d]{1,2})-([A-Za-z]{3,15})-([\d]{2,4})/", "$1#$2#$3", $ps_expression);
 		
 		# convert dd-mm-yyyy dates to dd/mm/yyyy to prevent our range conjunction code below doesn't mangle it
-		$ps_expression = preg_replace("/([\d]{2})-([\d]{2})-([\d]{4})/", "$1/$2/$3", $ps_expression);
+		$ps_expression = preg_replace("/([\d]{1,2})-([\d]{1,2})-([\d]{4})/", "$1/$2/$3", $ps_expression);
+		$ps_expression = preg_replace("/([\d]{2})-([\d]{2})-([\d]{2})/", "$1/$2/$3", $ps_expression);
 		
 		if (preg_match("/([\d]{4})-([\d]{2})(\/|$)/", $ps_expression, $va_matches)) {
 			if (intval($va_matches[2]) > 12) {
@@ -871,6 +872,10 @@ class TimeExpressionParser {
 			$ps_expression = preg_replace('!([\d]{2})[\-]{2}!', '\1__', $ps_expression);
 			$ps_expression = preg_replace('!([\d]{3})[\-]{1}$!', '\1_', $ps_expression);
 			$ps_expression = preg_replace('!([\d]{3})[\-]{1}[\D]+!', '\1_', $ps_expression);
+		}
+		
+		if (preg_match("!([\d]+)[ ]*[\-]{1}[ ]*([\d]+)!", $ps_expression, $m)) {	
+			$ps_expression = preg_replace("!([\d]+)[ ]*[\-]{1}[ ]*([\d]+)!", "$1 - $2", $ps_expression);
 		}
 		
 		if (!preg_match("!^[\-]{1}[\d]+$!", $ps_expression)) {			
@@ -2012,7 +2017,7 @@ class TimeExpressionParser {
 				    $vb_month_comes_first = $this->opo_language_settings->get('monthComesFirstInDelimitedDate');
 				}
 				
-				if ($vb_month_comes_first) {
+				if ((bool)$vb_month_comes_first) {
 					$vn_month = $va_tmp[0];
 					$vn_day = $va_tmp[1];
 				} else {
@@ -2039,7 +2044,11 @@ class TimeExpressionParser {
 							return(array('value' => $vs_token, 'month' => $vn_month, 'day' => $vn_day, 'year' => $vn_year, 'type' => TEP_TOKEN_DATE));
 						}
 					}
-				} else {
+				} elseif(
+					($vn_month > 0) && ($vn_month < $this->daysInMonth($vn_day, $vn_year ? $vn_year : 2004)) 
+					&& 
+					(($vn_day > 0) && ($vn_day <= 12))
+				) {
 					// try to swap day and month and see if that works...
 					$m = $vn_month;
 					$vn_month = $vn_day;
@@ -3645,6 +3654,7 @@ class TimeExpressionParser {
 	 *		timeOmit = Omit time from returned ISO 8601 date. [Default is false]
 	 *		returnUnbounded = Return extreme value for unbounded dates. For "before" dates the start date would be equal to -9999; for "after" dates the end date would equal "9999". [Default is false]
 	 *		dateFormat = If set to "yearOnly" will return bare year. [Default is null]
+	 *		full = Always return full date [Default is false]
 	 * @return string
 	 */
 	public function getISODateTime($pa_date, $ps_mode='START', $pa_options=null) {
@@ -3676,7 +3686,7 @@ class TimeExpressionParser {
 		
 		if (
 			((!($pa_date['month'] == 1 && $pa_date['day'] == 1 && ($ps_mode == 'START'))) &&
-			(!($pa_date['month'] == 12 && $pa_date['day'] == 31 && ($ps_mode == 'END')))) || $vs_time
+			(!($pa_date['month'] == 12 && $pa_date['day'] == 31 && ($ps_mode == 'END')))) || $vs_time || caGetOption('full', $pa_options, $this->opo_datetime_settings->get('alwaysUseFullISODates'))
 			
 		) {
 			$vs_date = $pa_date['year'].'-'.sprintf("%02d", $pa_date['month']).'-'.sprintf("%02d", $pa_date['day']);

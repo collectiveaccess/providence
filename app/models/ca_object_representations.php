@@ -419,20 +419,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	
 	protected $ANNOTATION_MODE = 'cataloguer'; 
 	
-	# ------------------------------------------------------
-	# --- Constructor
-	#
-	# This is a function called when a new instance of this object is created. This
-	# standard constructor supports three calling modes:
-	#
-	# 1. If called without parameters, simply creates a new, empty objects object
-	# 2. If called with a single, valid primary key value, creates a new objects object and loads
-	#    the record identified by the primary key value
-	#
-	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
-	}
+
 	# ------------------------------------------------------
 	protected function initLabelDefinitions($options=null) {
 		parent::initLabelDefinitions($options);
@@ -651,7 +638,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		if ($object_representation_mapping_id && ($t_mapping = ca_data_importers::find(['importer_id' => $object_representation_mapping_id], ['returnAs' => 'firstModelInstance']))) {
 			$format = $t_mapping->getSetting('inputFormats');
 			if(is_array($format)) { $format = array_shift($format); }
-			if ($log) { $log->logDebug(_t('Using embedded media mapping %1 (format %2)', $t_mapping->get('importer_code'), $format)); }
+			if ($log) { $log->logDebug(_t('Using embedded media mapping %1 with path %3 (format %2)', $t_mapping->get('importer_code'), $format, $path)); }
 			
 			$va_media_info = $this->getMediaInfo('media');
 			return $t_mapping->importDataFromSource($path, $object_representation_mapping_id, [
@@ -2295,7 +2282,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	 * @param int $representation_id Optional representation_id to ignore when checking for duplicated. [Default is null]
 	 * @return mixed ca_object_representations instance representing the first representation that contains the file, if representation exists with this file, false if the file does not yet exist
 	 */
-	static function mediaExists(string $filepath, ?int $representation_id=null) {
+	static function mediaExists(?string $filepath, ?int $representation_id=null) {
 		if (!file_exists($filepath) || !is_readable($filepath)) { return null; }
 		$md5 = @md5_file($filepath);
 		

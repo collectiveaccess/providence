@@ -131,6 +131,7 @@
  		 *
  		 */
 		public function getDisplayValue($pa_options=null) {
+			if(!is_array($pa_options)) { $pa_options = []; }
 			if(isset($pa_options['forDuplication']) && $pa_options['forDuplication']) { $pa_options['return'] = 'path'; }
 			if(!isset($pa_options['return'])) { $pa_options['return'] = null; } else { $pa_options['return'] = strtolower($pa_options['return']); }
 			

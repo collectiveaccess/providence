@@ -215,6 +215,26 @@ class DataMigrationUtilsTest extends TestCase {
 		$this->_checkValue($r, ['surname' => 'Van Der Doe', 'forename' => 'Jane', 'middlename' => 'Alice Erin Dalhia', 'displayname' => 'Van Der Doe, Jane', 'prefix' => 'Ms.', 'suffix' => 'Esq']);	
 	}
 	
+	public function testChineseNames() {
+		$r = DataMigrationUtils::splitEntityName("蔡国强");
+		$this->_checkValue($r, ['surname' => '蔡', 'forename' => '国强', 'middlename' => '', 'displayname' => '蔡国强', 'prefix' => '', 'suffix' => '']);
+	}
+	
+	public function testJapaneseNames() {
+		$r = DataMigrationUtils::splitEntityName("野口 勇");
+		$this->_checkValue($r, ['surname' => '野口', 'forename' => '勇', 'middlename' => '', 'displayname' => '野口 勇', 'prefix' => '', 'suffix' => '']);
+		
+		$r = DataMigrationUtils::splitEntityName("小野 洋子");
+		$this->_checkValue($r, ['surname' => '小野', 'forename' => '洋子', 'middlename' => '', 'displayname' => '小野 洋子', 'prefix' => '', 'suffix' => '']);
+	}
+	
+	public function testKoreanNames() {
+		$r = DataMigrationUtils::splitEntityName("김민수");
+		$this->_checkValue($r, ['surname' => '김', 'forename' => '민수', 'middlename' => '', 'displayname' => '김민수', 'prefix' => '', 'suffix' => '']);
+		
+	}
+	
+	
 	/**
 	 * Verify presence of expected keys and test returned values against expected values
 	 */

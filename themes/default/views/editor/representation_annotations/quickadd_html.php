@@ -1,4 +1,4 @@
-<?php
+ <?php
 /* ----------------------------------------------------------------------
  * app/views/editor/representation_annotations/quickadd_html.php : 
  * ----------------------------------------------------------------------
@@ -55,13 +55,14 @@ $va_notifications 	= $this->getVar('notifications');
 	
 	<div class="quickAddFormTopPadding"><!-- empty --></div>
 	<div class="caAnnoEditorEditorErrorContainer" id="<?= $vs_form_name; ?>Errors<?= $vs_field_name_prefix.$vs_n; ?>"></div>
-	<div class="quickAddSectionBox" id="<?= $vs_form_name; ?>Container<?= $vs_field_name_prefix.$vs_n; ?>">
+	<div class="quickAddSectionBox" id="<?= $vs_form_name.'Container'.$vs_field_name_prefix.$vs_n; ?>">
 <?php
 		$va_form_elements = $t_subject->getBundleFormHTMLForScreen($this->getVar('screen'), array(
-					'width' => '625px',
-					'request' => $this->request, 
-					'formName' => $vs_form_name.$vs_field_name_prefix.$vs_n,
-					'forceLabelForNew' => $this->getVar('forceLabel')							// force query text to be default in label fields
+				'width' => '625px',
+				'request' => $this->request, 
+				'formName' => $vs_form_name.$vs_field_name_prefix.$vs_n,
+				'forceLabelForNew' => $this->getVar('forceLabel'),							// force query text to be default in label fields
+				'quickadd' => true
 			));
 			
 			print join("\n", $va_form_elements);

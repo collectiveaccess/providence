@@ -530,6 +530,7 @@ class DataMigrationUtils {
 	 *		locale = locale code to use when applying rules; if omitted current user locale is employed
 	 *		displaynameFormat = surnameCommaForename, surnameCommaForenameMiddlename, forenameCommaSurname, forenameSurname, forenamemiddlenamesurname, original [Default = original]
 	 *		doNotParse = Use name as-is in the surname and display name fields. All other fields are blank. [Default = false]
+	 *		type = entity type, used to determine organization vs. individual format. If omitted individual is assumed. [Default is null]
 	 *
 	 * @return array Array containing parsed name, keyed on ca_entity_labels fields (eg. forename, surname, middlename, etc.)
 	 */
@@ -542,6 +543,53 @@ class DataMigrationUtils {
 				'forename' => '', 'middlename' => '', 'surname' => $text,
 				'displayname' => $text, 'prefix' => '', 'suffix' => ''
 			];
+		}
+		
+		$class = null;
+		if ($entity_type = caGetOption('type', $options, false)) {
+			$class = caGetListItemSettingValue('entity_types', $entity_type, 'entity_class');
+		}
+		
+		// Split names in non-roman alphabets
+		switch(caIdentifyAlphabet($text)) {
+			case 'HAN':
+			case 'HANGUL':
+				if(preg_match('![·]!', $text)) {	// if name has dot in it split as transliterated name
+					$bits = preg_split('![·]+!u', $text);
+					$forename = array_shift($bits);
+					$surname = array_shift($bits);
+					$suffix = join(' ', $bits);
+				} elseif(preg_match('![ ]!', $text)) {	// if name has spaces in it split on that as surname-forname
+					$bits = preg_split('![ ]+!u', $text);
+					$surname = array_shift($bits);
+					$forename = array_shift($bits);
+					$suffix = join(' ', $bits);
+				} else {						// assume first character is surname, everything else is forename
+					$surname = mb_substr($text, 0, 1);
+					$forename = mb_substr($text, 1);
+					$suffix = '';
+				}
+				return [
+					'surname' => $surname, 'forename' =>  $forename, 'middlename' => '',
+					'prefix' => '', 'suffix' => $suffix, 'displayname' => $text
+				];
+			case 'HIRAGANA':
+			case 'KATAKANA':
+				if(preg_match('![ ·]!', $text)) {	// if name has spaces in it split on that
+					$bits = preg_split('![ ·]+!u', $text);
+					$surname = array_shift($bits);
+					$forename = array_shift($bits);
+					$suffix = join(' ', $bits);
+				} else {						// assume surname=displayname
+					$surname = $text;
+					$forename = '';
+					$suffix = '';
+				}
+				return [
+					'surname' => $surname, 'forename' =>  $forename, 'middlename' => '',
+					'prefix' => '', 'suffix' => $suffix, 'displayname' => $text
+				];
+				break;
 		}
 		
 		if (isset($options['locale']) && $options['locale']) {
@@ -704,6 +752,15 @@ class DataMigrationUtils {
 		foreach($name as $k => $v) {
 			$name[$k] = trim(preg_replace('![ ]+!', ' ', $v));
 		}
+		
+		if($class === 'ORG') {
+			$name = [
+				'displayname' => $name['displayname'],
+				'surname' => $name['displayname'],
+				'suffix' => $name['suffix']
+			];
+		}
+		
 		return $name;
 	}
 	

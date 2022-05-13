@@ -243,8 +243,8 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 	#    the record identified by the primary key value
 	#
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
+	public function __construct($id=null, ?array $options=null) {
+		parent::__construct($id, $options);	# call superclass constructor
 
 		// Filter list of tables form can be used for to those enabled in current config
 		BaseModel::$s_ca_models_definitions['ca_metadata_alert_rules']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = array_flip(caGetPrimaryTables(true, ['ca_media_upload_sessions']));

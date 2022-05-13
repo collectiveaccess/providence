@@ -192,14 +192,18 @@ class FMPXMLResultReader extends BaseXMLDataReader {
 		if ($this->ops_xml_namespace_prefix && $this->ops_xml_namespace) {
 			$this->opo_handle_xpath->registerNamespace($this->ops_xml_namespace_prefix, $this->ops_xml_namespace);
 		}
-		
 		$row_with_labels = [];
+		
+		$cols = $this->opo_handle_xpath->query('n:COL');
+		
 		foreach($this->opa_metadata as $i => $l) {
-			$o_node = $o_row->childNodes->item($i);
-			
+			$o_node = $cols[$i];	// <COL>
 			$vals = [];
-			foreach($o_node->childNodes as $n) {
-				$vals[] = html_entity_decode((string)$n->nodeValue, null, 'UTF-8');
+			
+			$data = $this->opo_handle_xpath->query('n:DATA', $o_node);
+			foreach($data as $n) {
+				$v = html_entity_decode((string)$n->nodeValue, null, 'UTF-8');
+				if(strlen($v)) { $vals[] = $v; }
 			}
 			$row_with_labels[$l] = $vals;
 			
@@ -208,7 +212,6 @@ class FMPXMLResultReader extends BaseXMLDataReader {
 			}
 		}
 		$this->opa_row_buf = $row_with_labels;
-		
 		$this->opn_current_row++;
 		if ($this->opn_current_row > $this->numRows()) { return false; }
 		return true;

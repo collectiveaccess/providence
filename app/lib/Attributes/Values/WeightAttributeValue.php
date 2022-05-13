@@ -182,6 +182,7 @@
  					$this->ops_text_value = $vo_measurement->convertTo(Zend_Measure_Weight::KILOGRAM, 4);
  					break;
  				case 'english':
+ 				case 'fractions':
  					$vo_measurement = new Zend_Measure_Weight((float)$pa_value_array['value_decimal1'], 'KILOGRAM', $g_ui_locale);
  					$this->ops_text_value = $vo_measurement->convertTo(Zend_Measure_Weight::POUND, 4);
  					break;
@@ -222,6 +223,7 @@
  					return $vo_measurement->convertTo(Zend_Measure_Weight::KILOGRAM, 2);
  					break;
  				case 'english':
+ 				case 'fractions':
  					$vo_measurement = new Zend_Measure_Weight((float)$this->opn_decimal_value, 'KILOGRAM', $g_ui_locale);
  					return $vo_measurement->convertTo(Zend_Measure_Weight::POUND, 2);
  					break;

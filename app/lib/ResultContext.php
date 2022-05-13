@@ -880,9 +880,17 @@
 			} else {
 				$vs_action = $va_nav['action'];
 			}
+			
+			$o_context = new ResultContext($po_request, $pm_table_name_or_num, $va_tmp[0], isset($va_tmp[1]) ? $va_tmp[1] : null);
+			if(is_array($tags = caGetTemplateTags($vs_action)) && sizeof($tags)) {
+				$tag_vals = [];
+				foreach($tags as $t) {
+					$tag_vals[$t] = $o_context->getParameter($t);
+				}
+				$va_nav['action'] = $vs_action = caProcessTemplate($vs_action, $tag_vals);
+			}
 			$va_params = array();
 			if (is_array($va_nav['params'])) {
-				$o_context = new ResultContext($po_request, $pm_table_name_or_num, $va_tmp[0], isset($va_tmp[1]) ? $va_tmp[1] : null);
 				foreach ($va_nav['params'] as $vs_param) {
 					if (!($vs_param = trim($vs_param))) { continue; }
 					if(strlen($v = trim($po_request->getParameter($vs_param, pString, ['forcePurify' => true])))) {
@@ -943,9 +951,17 @@
 				$vs_action = $va_nav['action'];
 			}
 			
+			$o_context = new ResultContext($po_request, $pm_table_name_or_num, $va_tmp[0], isset($va_tmp[1]) ? $va_tmp[1] : null);
+			if(is_array($tags = caGetTemplateTags($vs_action)) && sizeof($tags)) {
+				$tag_vals = [];
+				foreach($tags as $t) {
+					$tag_vals[$t] = $o_context->getParameter($t);
+				}
+				$va_nav['action'] = $vs_action = caProcessTemplate($vs_action, $tag_vals);
+			}
+			
 			$va_params = array();
 			if (is_array($va_nav['params'])) {
-				$o_context = new ResultContext($po_request, $pm_table_name_or_num, $va_tmp[0], isset($va_tmp[1]) ? $va_tmp[1] : null);
 				foreach ($va_nav['params'] as $vs_param) {
 					if (!($vs_param = trim($vs_param))) { continue; }
 					if(strlen($v = trim($po_request->getParameter($vs_param, pString, ['forcePurify' => true])))) {

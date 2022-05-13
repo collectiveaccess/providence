@@ -176,20 +176,7 @@ class ca_locales extends BaseModel {
 
 	protected $FIELDS;
 	
-	# ------------------------------------------------------
-	# --- Constructor
-	#
-	# This is a function called when a new instance of this object is created. This
-	# standard constructor supports three calling modes:
-	#
-	# 1. If called without parameters, simply creates a new, empty objects object
-	# 2. If called with a single, valid primary key value, creates a new objects object and loads
-	#    the record identified by the primary key value
-	#
-	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
-	}
+
 	# ------------------------------------------------------
 	public function insert($pa_options=null) {
 		$vm_rc = parent::insert($pa_options);
@@ -531,6 +518,21 @@ class ca_locales extends BaseModel {
 	    }
 	    
 		return $pb_codes_only ? array_keys($va_locales) : $va_locales;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Text direction for locale, either "ltr" for left-to-right or "rtl" for right-to-left
+	 *
+	 * @param string $locale
+	 *
+	 * @return string 'rtl' or 'ltr'
+	 */
+	static function directionForLocale(string $locale) : string {
+		$locale_data = Zend_Locale_Data::getList($locale, 'layout');
+		if($locale_data['characterOrder'] === 'right-to-left') {
+			return 'rtl';
+		}
+		return 'ltr';
 	}
 	# ------------------------------------------------------
 }

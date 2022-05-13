@@ -2839,28 +2839,37 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 * Parse currency value and return array with value and currency type.
 	 *
-	 * @param string $ps_value
-	 * @return array
+	 * @param string $value Currency value, including currency specifier
+	 * @param string $locale Locale to parse value under. [Default is to use current user interface locale, or if not defined the system default locale]
+	 *
+	 * @return array An array with keys for currency specifier ("currency") and decimal amount ("value")
 	 */
-	function caParseCurrencyValue($ps_value) {
+	function caParseCurrencyValue(string $value, $locale=null) : ?array {
+		global $g_ui_locale;
+		if(!$locale) { $locale = $g_ui_locale; }
+		if(!$locale && defined('__CA_DEFAULT_LOCALE__')) { $locale = __CA_DEFAULT_LOCALE__; }
+		
 		// it's either "<something><decimal>" ($1000) or "<decimal><something>" (1000 EUR) or just "<decimal>" with an implicit <something>
-
-		// either
-		if (preg_match("!^([^\d]+)([\d\.\,]+)$!", trim($ps_value), $va_matches)) {
-			$vs_decimal_value = round((float)str_replace(',', '', $va_matches[2]), 2);
-			$vs_currency_specifier = trim($va_matches[1]);
-		// or 1
-		} else if (preg_match("!^([\d\.\,]+)([^\d]+)$!", trim($ps_value), $va_matches)) {
-			$vs_decimal_value = round((float)str_replace(',', '', $va_matches[1]), 2);
-			$vs_currency_specifier = trim($va_matches[2]);
-		// or 2
-		} else if (preg_match("!(^[\d\,\.]+$)!", trim($ps_value), $va_matches)) {
-			$vs_decimal_value = round((float)str_replace(',', '', $va_matches[1]), 2);
-			$vs_currency_specifier = null;
+		try {
+			// either
+			if (preg_match("!^([^\d]+)([\d\.\,]+)$!", trim($value), $matches)) {
+				$decimal_value = (strpos($matches[2], ',') !== false) ? Zend_Locale_Format::getNumber($matches[2], ['locale' => $g_locale, 'precision' => 2]) : (float)$matches[2];
+				$currency_specifier = trim($matches[1]);
+			// or 1
+			} else if (preg_match("!^([\d\.\,]+)([^\d]+)$!", trim($value), $matches)) {
+				$decimal_value = (strpos($matches[1], ',') !== false) ? Zend_Locale_Format::getNumber($matches[1], ['locale' => $g_locale, 'precision' => 2]) : (float)$matches[1];
+				$currency_specifier = trim($matches[2]);
+			// or 2
+			} else if (preg_match("!(^[\d\,\.]+$)!", trim($value), $matches)) {
+				$decimal_value = (strpos($matches[1], ',') !== false) ? Zend_Locale_Format::getNumber($matches[1], ['locale' => $g_locale, 'precision' => 2]) : (float)$matches[1];
+				$currency_specifier = null;
+			}
+		} catch (Zend_Locale_Exception $e){
+			return null;
 		}
 
-		if ($vs_currency_specifier || ($vs_decimal_value > 0)) {
-			return ['currency' => $vs_currency_specifier, 'value' => $vs_decimal_value];
+		if ($currency_specifier || ($decimal_value > 0)) {
+			return ['currency' => $currency_specifier, 'value' => round($decimal_value, 2)];
 		}
 		return null;
  	}
@@ -4440,33 +4449,100 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 * Convert string or array of strings in snake-case to camel-case
 	 *
-	 * @param array $array1
-	 * @param array $array2
+	 * @param array|string $text
 	 *
-	 * @return array
+	 * @return array|string
 	 */
-	function caSnakeToCamel($pm_text) {
-	    if(is_array($pm_text)) {
-	        return array_map(function($v) { return preg_replace_callback("!_([A-Za-z0-9]{1})!", function($m) { return strtoupper($m[1]); }, $v); }, $pm_text);
-	    } else {
-	        return preg_replace_callback("!_([A-Za-z0-9]{1})!", function($m) { return strtoupper($m[1]); }, $pm_text);
+	function caSnakeToCamel($text) {
+	    if(!($is_array = is_array($text))) {
+	    	$text = [$text];
 	    }
+		$vals = array_map(function($v) { return preg_replace_callback("!_([A-Za-z0-9]{1})!", function($m) { return strtoupper($m[1]); }, $v); }, $text);
+	
+		return $is_array ? $vals : array_shift($vals);
+	}
+	# ----------------------------------------
+	/**
+	 * Convert string or array of strings to camel-case
+	 *
+	 * @param array|string $text
+	 *
+	 * @return array|string
+	 */
+	function caTextToCamel($text) {
+	    if(!($is_array = is_array($text))) {
+	    	$text = [$text];
+	    }
+		$vals = array_map(function($v) { return trim(preg_replace_callback("! ([A-Za-z0-9]{1})!", function($m) { return strtoupper($m[1]); }, strtolower($v))); }, $text);
+		
+		return $is_array ? $vals : array_shift($vals);
 	}
 	# ----------------------------------------
 	/**
 	 * Convert string or array of strings in camel-case to snake-case
 	 *
-	 * @param array $array1
-	 * @param array $array2
+	 * @param array|string $text
 	 *
 	 * @return array|string
 	 */
-	function caCamelToSnake($pm_text) {
-	    if(is_array($pm_text)) {
-	        return array_map(function($v) { return trim(preg_replace_callback("!([A-Z]{1})!", function($m) { return strtolower($m[1]); }, $v), '_'); }, $pm_text);
-	    } else {
-	        return trim(preg_replace_callback("!([A-Z]{1})!", function($m) { return strtoupper($m[1]); }, $pm_text), '_');
+	function caCamelToSnake($text) {
+	    if(!($is_array = is_array($text))) {
+	    	$text = [$text];
 	    }
+		$vals = array_map(function($v) { return preg_replace_callback("!([A-Z]{1})!", function($m) { return '_'.strtolower($m[1]); }, $v); }, $text);
+		
+		return $is_array ? $vals : array_shift($vals);
+	}
+	# ----------------------------------------
+	/**
+	 * Convert string or array of strings to snake-case
+	 *
+	 * @param array|string $text
+	 *
+	 * @return array|string
+	 */
+	function caTextToSnake($text) {
+	    if(!($is_array = is_array($text))) {
+	    	$text = [$text];
+	    }
+		$vals = array_map(function($v) { return trim(strtolower(preg_replace("![^A-Za-z0-9]+!", '_', $v)), '_'); }, $text);
+	
+		return $is_array ? $vals : array_shift($vals);
+	}
+	# ----------------------------------------
+	/**
+	 * Convert string or array of strings from camel-case or snake-case to display text
+	 *
+	 * @param array|string $text
+	 * @param array $options Options include
+	 *		ucFirst = Return values with first characters of first word forced to uppercase. [Default is false]
+	 *		ucWords = Return values with first character of each word forced to uppercase. [Default is false]
+	 *
+	 * @return array|string
+	 */
+	function caCamelOrSnakeToText($text, ?array $options=null) {
+	    if(!($is_array = is_array($text))) {
+	    	$text = [$text];
+		}
+		$vals = array_map(function($v) { 
+			$is_snake = (strpos($v, '_') !== false);
+			
+			if($is_snake) {
+				return trim(preg_replace_callback("!_([A-Za-z0-9]{1})!", function($m) { return ' '.strtolower($m[1]); }, $v)); 
+			} else {
+				return trim(preg_replace_callback("!([A-Z]{1})!", function($m) { return ' '.strtolower($m[1]); }, $v)); 
+			}
+		}, $text);
+		
+		if(caGetOption('ucFirst', $options, false)) {
+			$vals = array_map('ucfirst', $vals);
+		}
+		if(caGetOption('ucWords', $options, false)) {
+			$vals = array_map('ucWords', $vals);
+		}
+		$vals = array_map(function($v) { return preg_replace("![ ]+!", " ", $v); }, $vals);
+		
+		return $is_array ? $vals : array_shift($vals);
 	}
 	# ----------------------------------------
 	/**
@@ -4723,4 +4799,34 @@ function caFileIsIncludable($ps_file) {
 		$config->set('URI.DisableExternalResources', !Configuration::load()->get('purify_allow_external_references'));
 		return new HTMLPurifier($config); 
 	}
+	# ----------------------------------------
+	/**
+	 * Classify alphabet used by a string. Detection is simplistic: if the string contains
+	 * any characters from one of the supported alphabets it is considered to be in that alphabet.
+	 * Alphabets are tested in order: Han (Chinese), Hiragana (Japanese), Katakana (Japanese), Hangul (Korean),
+	 * Cyrillic (Russian, Etc.), Greek, Hebrew, and Latin. If no specific alphabet is detected null is returned.
+	 *
+	 * @param string Text to test
+	 * @return string Alphabet designator or null. Designators are HIRAGANA|KATAKANA|HAN|HANGUL|CYRILLIC|GREEK|HEBREW|LATIN
+	 */
+	function caIdentifyAlphabet(string $text) : ?string {
+		if(preg_match_all('/\p{Hiragana}/u', $text, $result)) {
+			return 'HIRAGANA';
+		} elseif(preg_match_all('/\p{Katakana}/u', $text, $result)) {
+			return 'KATAKANA';
+		} elseif(preg_match_all('/\p{Han}/u', $text, $result)) {
+			return 'HAN';
+		} elseif(preg_match_all('/\p{Hangul}/u', $text, $result)) {
+			return 'HANGUL';
+		} elseif(preg_match_all('/(\p{Cyrillic}+)/u', $text, $result)) {
+			return 'CYRILLIC';
+		} elseif(preg_match_all('/(\p{Latin}+)/u', $text, $result)) {
+			return 'GREEK';
+		} elseif(preg_match_all('/(\p{Greek}+)/u', $text, $result)) {
+			return 'HEBREW';
+		} elseif(preg_match_all('/(\p{Hebrew}+)/u', $text, $result)) {
+			return 'LATIN';
+		}
+		return null;
+    }
 	# ----------------------------------------

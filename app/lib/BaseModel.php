@@ -376,28 +376,28 @@ class BaseModel extends BaseObject {
 	 * if omitted, an empty object is created which can be used to create a new row in the database.
 	 * @return BaseModel
 	 */
-	public function __construct($pn_id=null, $pb_use_cache=true) {
+	public function __construct($id=null, ?array $options=null) {
 		$this->opn_instantiated_at = time();
-		$vs_table_name = $this->tableName();
+		$table_name = $this->tableName();
 		
-		if (!$this->FIELDS =& BaseModel::$s_ca_models_definitions[$vs_table_name]['FIELDS']) {
-			die("Field definitions not found for {$vs_table_name}");
+		if (!$this->FIELDS =& BaseModel::$s_ca_models_definitions[$table_name]['FIELDS']) {
+			die("Field definitions not found for {$table_name}");
 		}
 		if (!is_array(self::$field_list_for_load)) { self::$field_list_for_load = []; }
-		if (!self::$field_list_for_load[$vs_table_name]) {
-			self::$field_list_for_load[$vs_table_name] = [];
+		if (!self::$field_list_for_load[$table_name]) {
+			self::$field_list_for_load[$table_name] = [];
 			foreach($this->FIELDS as $f => $info) {
 				if(isset($info['START']) && isset($info['END'])) {
-					self::$field_list_for_load[$vs_table_name][] = "`{$info['START']}`";
-					self::$field_list_for_load[$vs_table_name][] = "`{$info['END']}`";
+					self::$field_list_for_load[$table_name][] = "`{$info['START']}`";
+					self::$field_list_for_load[$table_name][] = "`{$info['END']}`";
 				} else {
-					self::$field_list_for_load[$vs_table_name][] = "`{$f}`";
+					self::$field_list_for_load[$table_name][] = "`{$f}`";
 				}
 			}
 		}
 		
-		$this->NAME_SINGULAR =& BaseModel::$s_ca_models_definitions[$vs_table_name]['NAME_SINGULAR'];
-		$this->NAME_PLURAL =& BaseModel::$s_ca_models_definitions[$vs_table_name]['NAME_PLURAL'];
+		$this->NAME_SINGULAR =& BaseModel::$s_ca_models_definitions[$table_name]['NAME_SINGULAR'];
+		$this->NAME_PLURAL =& BaseModel::$s_ca_models_definitions[$table_name]['NAME_PLURAL'];
 		
 		$this->errors = array();
 		$this->error_output = 0;  # don't halt on error
@@ -411,15 +411,15 @@ class BaseModel extends BaseObject {
 		$this->_FILE_VOLUMES = FileVolumes::load();
 		$this->_FIELD_VALUE_CHANGED = $this->_FIELD_VALUE_DID_CHANGE = array();
 
-		if ($vs_locale = $this->_CONFIG->get("locale")) {
-			$this->ops_locale = $vs_locale;
+		if ($locale = $this->_CONFIG->get("locale")) {
+			$this->ops_locale = $locale;
 		}
 		
 		$this->opb_purify_input = strlen($this->_CONFIG->get("purify_all_text_input")) ? (bool)$this->_CONFIG->get("purify_all_text_input") : false;
 		
  		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 
-		if ($pn_id) { $this->load($pn_id, $pb_use_cache);}
+		if ($id) { $this->load($id, caGetOption('useCache', $options, true)); }
 	}
 
 	/**
@@ -6792,7 +6792,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 							(wcls.subject_row_id  = ?)
 						)
 						{$vs_daterange_sql}
-					ORDER BY log_datetime
+					ORDER BY log_datetime ".(($pn_max_num_entries_returned > 0) ? 'DESC' : '')."
 				"))) {
 					# should not happen
 					return false;
@@ -6817,7 +6817,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			$va_log[] = $qr_log->getRow();
 			$va_log[sizeof($va_log)-1]['snapshot'] = caUnserializeForDatabase($va_log[sizeof($va_log)-1]['snapshot']);
 		}
-
+		if($pn_max_num_entries_returned > 0) { return array_reverse($va_log); }
 		return $va_log;
 	}
 	# --------------------------------------------------------------------------------------------
@@ -7394,7 +7394,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			
 			foreach($va_id2parent as $vn_row_id => $vn_parent_id) {
 			    if(!$vn_parent_id) { 
-			        $va_parent_map[$vn_row_id] = ['level' =>  1];
+			        $va_parent_map[$vn_row_id] = ['level' =>  0];
 			    } else {
 			        $r = $vn_row_id;
 			        $l = 0;
@@ -9909,7 +9909,7 @@ $pa_options["display_form_field_tips"] = true;
 			$skip_relation_ids = [];
 			while($qr_res->nextRow()) {
                 $row = $qr_res->getRow();
-				if($t_to_item->relationshipExists($rel_table_name_or_num, ($row_id == $row[$left_table_field_name]) ? $row[$right_table_field_name] : $row[$left_table_field_name], $row['type_id'])){ 
+				if($t_to_item->relationshipExists($rel_table_name_or_num, ($row_id == $row[$left_table_field_name]) ? $row[$right_table_field_name] : $row[$left_table_field_name], $row['type_id'], caGetLocalizedHistoricDateRange($row['sdatetime'], $row['edatetime']))){ 
 					$skip_relation_ids[] = $row['relation_id'];
 					continue; 
 				}
@@ -9956,7 +9956,7 @@ $pa_options["display_form_field_tips"] = true;
             	$skip_relation_ids = [];
                 while($qr_res->nextRow()) {
                 	$row = $qr_res->getRow();
-                	if($t_to_item->relationshipExists($rel_table_name_or_num, $row[$rel_item_pk], $row['type_id'] ?? null)){ 
+                	if($t_to_item->relationshipExists($rel_table_name_or_num, $row[$rel_item_pk], $row['type_id'] ?? null, caGetLocalizedHistoricDateRange($row['sdatetime'], $row['edatetime']))){ 
                 		$skip_relation_ids[] = $row['relation_id'];
                 		continue; 
                 	}
@@ -10053,8 +10053,12 @@ $pa_options["display_form_field_tips"] = true;
 			return null;
 		}
 		
+		$sql_field_list = $t_item_rel->getFormFields(true, true, true);
+		$logical_field_list = $t_item_rel->getFormFields(true);
+			
 		$va_to_reindex_relations = array();
 		if ($t_item_rel->tableName() == $this->getSelfRelationTableName()) {
+			
 		    $params = [(int)$vn_row_id, (int)$vn_row_id];
 		    if ($relation_id_sql) { $params[] = $relation_ids; }
 		    
@@ -10062,7 +10066,7 @@ $pa_options["display_form_field_tips"] = true;
 			$vs_right_field_name = $t_item_rel->getRightTableFieldName();
 			
 			$qr_res = $o_db->query("
-				SELECT * 
+				SELECT ".join(', ', $sql_field_list)."
 				FROM ".$t_item_rel->tableName()." 
 				WHERE 
 					(({$vs_left_field_name} = ?) OR ({$vs_right_field_name} = ?))
@@ -10088,6 +10092,12 @@ $pa_options["display_form_field_tips"] = true;
 				
 				if(isset($va_row['source_info'])) { $va_row['source_info'] = caUnserializeForDatabase($va_row['source_info']); }
 				
+				// translate dates
+				if(array_key_exists('sdatetime', $va_row)) {
+					$va_row['effective_date'] = strlen($va_row['sdatetime']) ? caGetLocalizedHistoricDateRange($va_row['sdatetime'], $va_row['edatetime']) : null;
+					unset($va_row['sdatetime']); unset($va_row['edatetime']);
+				}
+				
 				$t_item_rel->set($va_row);
 				$t_item_rel->insert();
 				if ($t_item_rel->numErrors()) {
@@ -10107,7 +10117,7 @@ $pa_options["display_form_field_tips"] = true;
 		    $params = [(int)$vn_row_id];
 		    if ($relation_id_sql) { $params[] = $relation_ids; }
 			$qr_res = $o_db->query("
-				SELECT * 
+				SELECT ".join(', ', array_map(function($v) {  return '`'.$v.'`'; }, $sql_field_list))."
 				FROM ".$t_item_rel->tableName()." 
 				WHERE 
 					({$vs_item_pk} = ?)
@@ -10130,6 +10140,12 @@ $pa_options["display_form_field_tips"] = true;
 				unset($va_row[$vs_rel_pk]);
 				if(isset($va_row['source_info'])) { $va_row['source_info'] = caUnserializeForDatabase($va_row['source_info']); }
 				$va_row[$vs_item_pk] = $pn_to_id;
+				
+				// translate dates
+				if(array_key_exists('sdatetime', $va_row)) {
+					$va_row['effective_date'] = strlen($va_row['sdatetime']) ? caGetLocalizedHistoricDateRange($va_row['sdatetime'], $va_row['edatetime']) : null;
+					unset($va_row['sdatetime']); unset($va_row['edatetime']);
+				}
 				 
 				$t_item_rel->set($va_row);
 				$t_item_rel->insert();

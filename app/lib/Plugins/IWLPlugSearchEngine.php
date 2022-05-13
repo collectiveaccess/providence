@@ -65,7 +65,7 @@ interface IWLPlugSearchEngine {
 	public function startRowIndexing(int $subject_tablenum, int $subject_row_id) : void;
 	public function indexField(int $content_tablenum, string $content_fieldname, int $content_row_id, $content, ?array $options=null);
 	public function commitRowIndexing();
-	public function removeRowIndexing(int $subject_tablenum, int $subject_row_id);
+	public function removeRowIndexing(int $subject_tablenum, int $subject_row_id, ?int $field_tablenum=null, $field_nums=null, ?int $field_row_id=null, ?int $rel_type_id=null);
 	public function truncateIndex();
 	public function optimizeIndex(int $tablenum);
 }

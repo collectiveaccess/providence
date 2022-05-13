@@ -268,20 +268,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	
 	
 	
-	# ------------------------------------------------------
-	# --- Constructor
-	#
-	# This is a function called when a new instance of this object is created. This
-	# standard constructor supports three calling modes:
-	#
-	# 1. If called without parameters, simply creates a new, empty objects object
-	# 2. If called with a single, valid primary key value, creates a new objects object and loads
-	#    the record identified by the primary key value
-	#
-	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
-	}
+
 	# ------------------------------------------------------
 	/**
 	 * Creates a new ca_object_checkouts instance and initialize with a new group uuid. The returned instance
@@ -361,7 +348,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 			SELECT *
 			FROM ca_object_checkouts
 			WHERE
-				user_id = ? AND object_id = ? AND checkout_date IS NOT NULL AND return_date IS NULL
+				user_id = ? AND object_id = ? AND checkout_date IS NOT NULL AND return_date IS NULL AND deleted = 0
 			ORDER BY 
 				created_on
 		", array($pn_user_id, $pn_object_id));
@@ -375,7 +362,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 			SELECT *
 			FROM ca_object_checkouts
 			WHERE
-				user_id = ? AND object_id = ? AND checkout_date IS NULL AND return_date IS NULL
+				user_id = ? AND object_id = ? AND checkout_date IS NULL AND return_date IS NULL AND deleted = 0
 			ORDER BY 
 				created_on
 		", array($pn_user_id, $pn_object_id));
@@ -623,6 +610,8 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 				(return_date IS NULL)
 				AND
 				(object_id = ?)
+				AND
+				(deleted = 0)
 		", array(time(), $pn_object_id));
 		
 		if ($qr_res->nextRow()) {
@@ -648,6 +637,8 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 				(return_date IS NULL)
 				AND
 				(object_id = ?)
+				AND
+				(deleted = 0)
 		", array(time(), $pn_object_id));
 		
 		$va_checkout_ids = $qr_res->getAllFieldValues('checkout_id');

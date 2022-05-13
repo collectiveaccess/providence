@@ -313,11 +313,11 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	#    the record identified by the primary key value
 	#
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
+	public function __construct($id=null, ?array $options=null) {
 		// Filter list of tables set can be used for to those enabled in current config
 		BaseModel::$s_ca_models_definitions['ca_sets']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = caFilterTableList(BaseModel::$s_ca_models_definitions['ca_sets']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST']);
 		
-		parent::__construct($pn_id);	# call superclass constructor
+		parent::__construct($id, $options);	# call superclass constructor
 	}
 	# ------------------------------------------------------
 	/**
@@ -591,7 +591,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			$va_sql_selects = array('cs.set_id');
 		} else {
 			$va_sql_selects = array(
-				'cs.set_id', 'cs.set_code', 'cs.status', 'cs.access', 'cs.user_id', 'cs.table_num', 'cs.type_id',
+				'cs.set_id', 'cs.set_code', 'cs.status', 'cs.access', 'cs.user_id', 'cs.table_num', 'cs.type_id', 'cs.parent_id',
 				'csl.label_id', 'csl.name', 'csl.locale_id', 'l.language', 'l.country', 'u.fname', 'u.lname', 'u.email'
 			);
 		}
@@ -2001,7 +2001,8 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 					foreach($pa_options['thumbnailVersions'] as $vs_version) {
 						$va_row['representation_tag_'.$vs_version] = $qr_res->getMediaTag('media', $vs_version, array("alt" => $vs_alt_text));
 						if(!defined('__CA_IS_SERVICE_REQUEST__')) {
-							$va_row['representation_tag_'.$vs_version.'_as_link'] = caDetailLink($qr_res->getMediaTag('media', $vs_version, array("alt" => $vs_alt_text)), '', $t_rel_table->tableName(), $qr_res->get("ca_set_items.row_id"));
+							global $g_request;
+							$va_row['representation_tag_'.$vs_version.'_as_link'] = caDetailLink($g_request, $qr_res->getMediaTag('media', $vs_version, array("alt" => $vs_alt_text)), '', $t_rel_table->tableName(), $qr_res->get("ca_set_items.row_id"));
 						}
 						$va_row['representation_url_'.$vs_version] = $qr_res->getMediaUrl('media', $vs_version);
 						$va_row['representation_path_'.$vs_version] = $qr_res->getMediaPath('media', $vs_version);
@@ -2293,6 +2294,21 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		return $o_view->render('ca_sets_checklist.php');
 	}
 	# ------------------------------------------------------
+	/**
+	 * Returns the first item from each set listed in $pa_set_ids.
+	 *
+	 * @param array $pa_set_ids The set_ids (*not* set codes) for which the first item should be fetched
+	 * @param array $pa_options And optional array of options. Supported values include:
+	 *			version = the media version to include with returned set items, when media is available
+	 *
+	 * @return array A list of items; the keys of the array are set_ids while the values are associative arrays containing the latest information.
+	 */
+	public static function getFirstItemFromSet($pn_set_id, $pa_options=null) {
+		$items_by_set = ca_sets::getFirstItemsFromSets([$pn_set_id], $pa_options);
+		
+		return array_shift(array_shift($items_by_set));
+	}
+	# ------------------------------------------------------
 	# Utilities
 	# ------------------------------------------------------
 	/**
@@ -2338,8 +2354,19 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		$t_set = new ca_sets();
 		$va_items = array();
 		foreach($pa_set_ids as $vn_set_id) {
-			if ($t_set->load($vn_set_id)) {
+		    $t_set = null;
+		    if (is_numeric($vn_set_id)) { 
+		        $t_set = ca_sets::find(['set_id' => $vn_set_id], ['returnAs' => 'firstModelInstance']);
+		    }
+		    if (!$t_set) {
+		        $t_set = ca_sets::find(['set_code' => $vn_set_id], ['returnAs' => 'firstModelInstance']);
+		    }
+			if ($t_set) {
 				$va_item_list = caExtractValuesByUserLocale($t_set->getItems($pa_options));
+				foreach($va_item_list as $x => $y) {
+                    $va_item_list[$x]['set_code'] = $t_set->get('ca_sets.set_code');
+                    $va_item_list[$x]['set_name'] = $t_set->get('ca_sets.preferred_labels.name');
+                }
 				$va_items[$vn_set_id] = $va_item_list;	
 			}
 		}

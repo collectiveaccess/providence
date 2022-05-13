@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2018 Whirl-i-Gig
+ * Copyright 2010-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -196,19 +196,16 @@
                             }
                         
                             $vs_label = $vs_content = $vs_ajax_content = null;
-                
                             
-                            if (!is_null($pa_options['labelTemplate'])) {
-                                $vs_label = caProcessTemplateForIDs($pa_options['labelTemplate'], $vs_table, array($vn_id), array());
-                            } else {
-                                if (!is_null($pa_options['label'])) {
-                                    $vs_label = $po_data_object->get($pa_options['label'], array('returnAsLink' => $vb_render_label_as_link || (strpos($pa_options['contentTemplate'], "<l>") !== false)));
-                                } elseif($va_coordinate['label']) {
-                                    $vs_label = $va_coordinate['label'];
-                                } else {
-                                    $vs_label = $va_coordinate['path'];
-                                }
-                            } 
+                            if (strlen($label_template = caGetOption('labelTemplate', $pa_options, null))) {
+                                $vs_label = caProcessTemplateForIDs($label_template, $vs_table, array($vn_id), array());
+                            } elseif (strlen($label = caGetOption('label', $pa_options, null))) {
+								$vs_label = $po_data_object->get($label, array('returnAsLink' => $vb_render_label_as_link || (strpos($pa_options['contentTemplate'], "<l>") !== false)));
+							} elseif(strlen($va_coordinate['label'])) {
+								$vs_label = $va_coordinate['label'];
+							} else {
+								$vs_label = $va_coordinate['path'];
+							}
                             
                             if (!is_null($vs_color) && $vs_color && (strpos($vs_color, '^') !== false)) {
                                 $vs_color = caProcessTemplateForIDs($pa_options['color'], $vs_table, [$vn_id], ['returnAsLink' => false]);

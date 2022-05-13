@@ -28,7 +28,7 @@
 	if (!constant('__CollectiveAccess_Installer__')) { die("Cannot run"); }
 	
 	$t_total = new Timer();
-	$va_profile_info = Installer::getProfileInfo("./profiles/xml", $ps_profile)
+	$va_profile_info = \Installer\Installer::getProfileInfo("./profiles", $ps_profile)
 ?>
 <div id='box'>
 	<div id="logo"><?= caGetLoginLogo(); ?></div><!-- end logo -->
@@ -55,7 +55,7 @@
 	$vn_progress = 0;
 	
 	// parameters: profile dir, profile name, admin email, overwrite y/n, profile debug mode y/n
-	$vo_installer = new Installer("profiles/xml/", $ps_profile, $ps_email, $pb_overwrite, $pb_debug);
+	$vo_installer = new \Installer\Installer("profiles/", $ps_profile, $ps_email, $pb_overwrite, $pb_debug);
 	
 	// if profile validation against XSD failed, we already have an error here
 	if($vo_installer->numErrors()){
@@ -130,31 +130,34 @@
 
 			caIncrementProgress(100, "Installation complete");
 
+			$vs_message = '';
 			$vs_time =  "(Installation took ".$t_total->getTime(0)." seconds)";
-			if($vo_installer->numErrors()){
-				$va_errors = array();
-				foreach($vo_installer->getErrors() as $vs_err) {
-					$va_errors[] = "<li>{$vs_err}</li>";
+			if($vo_installer->numErrors() || $vo_installer->numWarnings()){
+				if (sizeof($va_errors = array_map(function($e) { return "<li>{$e['stage']}: {$e['message']}</li>"; }, $vo_installer->getErrors()))) {
+					$vs_message .= "<div class='contentFailure'><div class='contentFailureHead'>There were errors during installation:</div><ul>".join("", $va_errors)."</ul></div>";
 				}
-				caSetMessage("<div class='contentFailure'><div class='contentFailureHead'>There were errors during installation:</div><ul>".join("", $va_errors)."</ul><br/>{$vs_time}</div>");
+				if (sizeof($va_warnings = array_map(function($e) { return "<li>{$e['stage']}: {$e['message']}</li>"; }, $vo_installer->getWarnings()))) {
+					$vs_message .= "<div class='contentFailure'><div class='contentFailureHead'>There were warnings during installation:</div><ul>".join("", $va_warnings)."</ul></div>";
+				}
+				$vs_message .= "<div class='contentSuccess'>You can now try to <a href='../index.php?action=login'>login</a> with ";
+		
 			} else {
-				$vs_message = "<div class='contentSuccess'><span style='font-size:18px;'><b>Installation was successful!</b></span><br/>You can now <a href='../index.php?action=login'>login</a> with ";
-
-				if (sizeof($va_login_info) == 1) {
-					foreach($va_login_info as $vs_user_name => $vs_password) {
-						$vs_message .= "username <span class='contentHighlight'>{$vs_user_name}</span> and password <span class='contentHighlight'>{$vs_password}</span>.<br/><b>Make a note of this password!</b><br/>";
-					}
-				} else {
-					$vs_message .= " the following logins:<br/>";
-					foreach($va_login_info as $vs_user_name => $vs_password) {
-						$vs_message .= "Username <span class='contentHighlight'>{$vs_user_name}</span> and password <span class='contentHighlight'>{$vs_password}</span><br/>";
-					}
-					$vs_message .= "<br/><b>Make note of these passwords!</b><br/>";
-				}
-
-				$vs_message .= "<span style='font-size:11px;'>{$vs_time}</span></div>";
-				caSetMessage($vs_message, true);
+				$vs_message .= "<div class='contentSuccess'><span style='font-size:18px;'><b>Installation was successful!</b></span><br/>You can now <a href='../index.php?action=login'>login</a> with ";
 			}
+			if (sizeof($va_login_info) == 1) {
+				foreach($va_login_info as $vs_user_name => $vs_password) {
+					$vs_message .= "username <span class='contentHighlight'>{$vs_user_name}</span> and password <span class='contentHighlight'>{$vs_password}</span>.<br/><b>Make a note of this password!</b><br/>";
+				}
+			} else {
+				$vs_message .= " the following logins:<br/>";
+				foreach($va_login_info as $vs_user_name => $vs_password) {
+					$vs_message .= "Username <span class='contentHighlight'>{$vs_user_name}</span> and password <span class='contentHighlight'>{$vs_password}</span><br/>";
+				}
+				$vs_message .= "<br/><b>Make note of these passwords!</b><br/>";
+			}
+
+			$vs_message .= "<span style='font-size:11px;'>{$vs_time}</span></div>";
+			caSetMessage($vs_message, true);
 
 		} catch(Exception $e) {
 			caSetMessage("<div class='contentFailure'><div class='contentFailureHead'>There were errors during installation:</div><ul><li>".$e->getMessage()."</li></ul></div>");

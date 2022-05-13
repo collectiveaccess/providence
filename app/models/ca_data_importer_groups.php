@@ -169,11 +169,11 @@ class ca_data_importer_groups extends BaseModel {
 	/**
 	 *
 	 */
-	public function __construct($pn_id=null) {
+	public function __construct($id=null, ?array $options=null) {
 		// Filter list of tables importers can be used for to those enabled in current config
 		//BaseModel::$s_ca_models_definitions['ca_data_importer_groups']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = caFilterTableList(BaseModel::$s_ca_models_definitions['ca_data_importer_groups']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST']);
 		
-		parent::__construct($pn_id);
+		parent::__construct($id, $options);
 		
 		$this->setAvailableSettings([]);
 	}

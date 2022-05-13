@@ -1924,7 +1924,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	# -------------------------------------------------------
 	# Indexing
 	# -------------------------------------------------------
-	public function startRowIndexing($pn_subject_tablenum, $pn_subject_row_id) {
+	public function startRowIndexing(int $pn_subject_tablenum, int $pn_subject_row_id) : void {
 		$this->_setMode('indexing');
 		
 		if ($this->debug) { Debug::msg("[SqlSearchDebug] startRowIndexing: $pn_subject_tablenum/$pn_subject_row_id"); }
@@ -1936,7 +1936,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	/**
 	 *
 	 */
-	public function indexField($pn_content_tablenum, $ps_content_fieldname, $pn_content_row_id, $pm_content, $pa_options) {
+	public function indexField(int $pn_content_tablenum, string $ps_content_fieldname, int $pn_content_row_id, $pm_content, ?array $pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = []; }
 		
 		if (!is_array($pm_content)) {
@@ -2115,7 +2115,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		}
 	}
 	# ------------------------------------------------
-	public function removeRowIndexing($pn_subject_tablenum, $pn_subject_row_id, $pn_field_tablenum=null, $pa_field_nums=null, $pn_field_row_id=null, $pn_rel_type_id=null) {
+	public function removeRowIndexing(int $pn_subject_tablenum, int $pn_subject_row_id, ?int $pn_field_tablenum=null, $pa_field_nums=null, ?int $pn_field_row_id=null, ?int $pn_rel_type_id=null) {
 
 		//print "[SqlSearchDebug] removeRowIndexing: $pn_subject_tablenum/$pn_subject_row_id<br>\n";
 		$vn_rel_type_id = $pn_rel_type_id ? $pn_rel_type_id : 0;
@@ -2256,7 +2256,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	/**
 	 * Not supported in this engine - does nothing
 	 */
-	public function optimizeIndex($pn_tablenum) {
+	public function optimizeIndex(int $tablenum) {
 		// noop	
 	}
 	# --------------------------------------------------

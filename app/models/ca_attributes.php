@@ -184,21 +184,6 @@ class ca_attributes extends BaseModel {
 	protected $FIELDS;
 	
 	# ------------------------------------------------------
-	# --- Constructor
-	#
-	# This is a function called when a new instance of this object is created. This
-	# standard constructor supports three calling modes:
-	#
-	# 1. If called without parameters, simply creates a new, empty objects object
-	# 2. If called with a single, valid primary key value, creates a new objects object and loads
-	#    the record identified by the primary key value
-	#
-	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
-		parent::__construct($pn_id);	# call superclass constructor
-	}
-	# ------------------------------------------------------
 	/**
 	 * Stub out indexing for this table - it is never indexed
 	 */

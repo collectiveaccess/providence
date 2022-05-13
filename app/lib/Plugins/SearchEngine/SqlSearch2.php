@@ -82,11 +82,15 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	static private $stop_words = null;
 	static private $doc_content_buffer = [];			// content buffer used when indexing
 	
+	static protected $filter_stop_words = null;
+	
 	# -------------------------------------------------------
 	public function __construct($db=null) {
 		global $g_ui_locale;
 		
 		parent::__construct($db);
+		
+		if(is_null(self::$filter_stop_words)) { self::$filter_stop_words = $this->search_config->get('use_stop_words'); }
 		
 		$this->tep = new TimeExpressionParser();
 		$this->tep->setLanguage($g_ui_locale);
@@ -103,7 +107,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			self::$whitespace_tokenizer_regex = '[\.,;:\(\)\{\}\[\]\|\\\+_\!\&«»\']+';
 		}
 		
-		if($this->search_config->get('use_stop_words')) {
+		if(self::$filter_stop_words) {
 			if(!is_array(self::$stop_words)) { 
 				if(CompositeCache::contains('stop_words', 'SqlSearch2')) { 
 					self::$stop_words = CompositeCache::fetch('stop_words', 'SqlSearch2');
@@ -113,7 +117,11 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			
 					self::$stop_words = [];
 					foreach($langs as $lang) {
-						self::$stop_words = array_merge(self::$stop_words, array_flip($sw->getStopWordsFromLanguage($lang)));
+						try {
+							self::$stop_words = array_merge(self::$stop_words, array_flip($sw->getStopWordsFromLanguage($lang)));
+						} catch(Exception $e) {
+							// noop
+						}
 					}
 			
 					// Add application-specific stop words
@@ -372,16 +380,25 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	if (in_array($field_elements[0], [_t('created'), _t('modified')])) {
 	 		return $this->_processQueryChangeLog($subject_tablenum, $term);
 	 	}
-	 	$words = self::filterStopWords(self::tokenize($term->text, true));
-	 	if(!$words || !sizeof($words)) { return null; }
+	 	$ap = $field ? $this->_getElementIDForAccessPoint($subject_tablenum, $field) : null;
+	 	$words = [$term->text];
+	 	if($field && !is_array($ap)) {
+	 		array_unshift($words, $field);
+	 		$field = null;
+	 	}
+	 	$indexing_options = caGetOption('indexing_options', $ap, null);
 	 	
 	 	$blank_val = caGetBlankLabelText($subject_tablenum);
 	 	$is_blank = ((mb_strtolower("[{$blank_val}]") === mb_strtolower($term->text)) || (mb_strtolower("[BLANK]") === mb_strtolower($term->text)));
 	 	$is_not_blank = (mb_strtolower("["._t('SET')."]") === mb_strtolower($term->text));
 	 	
-	 	$word_field = 'sw.word';
+	 	if(!$is_blank && !$is_not_blank && (!is_array($indexing_options) || !in_array('DONT_TOKENIZE', $indexing_options))) {
+	 		$words = self::filterStopWords(self::tokenize(join(' ', $words), true));
+	 	}
+	 	if(!$words || !sizeof($words)) { return null; }
 	 	
-	 	$ap = $field ? $this->_getElementIDForAccessPoint($subject_tablenum, $field) : null;
+	 	
+	 	$word_field = 'sw.word';
 	 	
 	 	if (is_array($ap) && !$this->useSearchIndexForAP($ap)) {
 	 		// Handle datatype-specific queries
@@ -396,7 +413,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			//	3. Search is not non-blank values
 			//	4. Search includes non-letter characters
 			//  5. Search is flagged with trailing "|" as "do-not-stem"
-			$do_not_stem = true;//preg_match("!\|$!", $text);
+			$do_not_stem = preg_match("!\|$!", $text);
 			$text = preg_replace("!\|$!", '', $text);
 			if ($this->do_stemming && !$do_not_stem && !$is_blank && !$is_not_blank && !preg_match("![^A-Za-z]+!u", $text)) {
 				$text_stem = $this->stemmer->stem($text);
@@ -1037,6 +1054,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		if (isset($options['BOOST'])) {
 			$boost = intval($options['BOOST']);
 		}
+		if($boost < 0) { $boost = 0; }
+		if($boost > 255) { $boost = 255; }
 		
 		if ($this->debug) { Debug::msg("[SqlSearchDebug] indexField: $content_tablenum/$content_fieldname [$content_row_id] =&gt; $content"); }
 	
@@ -1076,7 +1095,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				}
 			}
 		} 
-		if ((!is_array($content) && !strlen($content)) || !sizeof($content) || (((sizeof($content) == 1) && strlen((string)$content[0]) == 0)) || ((sizeof($content) === 1) && ((string)$content[0] === caGetBlankLabelText(Datamodel::getTableName($content_tablenum))))){ 
+		if ((!is_array($content) && !strlen($content)) || !sizeof($content) || (((sizeof($content) == 1) && strlen((string)$content[0]) == 0)) || ((sizeof($content) === 1) && ((string)mb_strtolower($content[0]) === mb_strtolower(caGetBlankLabelText(Datamodel::getTableName($content_tablenum)))))){ 
 			$words = null;
 		} else {
 			// Tokenize string
@@ -1224,7 +1243,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	/**
 	 *
 	 */
-	public function removeRowIndexing($subject_tablenum, $pn_subject_row_id, $pn_field_tablenum=null, $pa_field_nums=null, $pn_field_row_id=null, $pn_rel_type_id=null) {
+	public function removeRowIndexing(int $subject_tablenum, int $pn_subject_row_id, ?int $pn_field_tablenum=null, $pa_field_nums=null, ?int $pn_field_row_id=null, ?int $pn_rel_type_id=null) {
 
 		//print "[SqlSearchDebug] removeRowIndexing: $subject_tablenum/$pn_subject_row_id<br>\n";
 		$vn_rel_type_id = $pn_rel_type_id ? $pn_rel_type_id : 0;
@@ -1295,7 +1314,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			$va_words = self::tokenize($ps_content);
 		}
 		
-		if((sizeof($va_words) === 1) && ((string)$va_words[0] === caGetBlankLabelText(Datamodel::getTableName($pn_content_tablenum)))) {
+		if((sizeof($va_words) === 1) && (mb_strtolower((string)$va_words[0]) === mb_strtolower(caGetBlankLabelText(Datamodel::getTableName($pn_content_tablenum))))) {
 			$va_words = null;
 		} elseif (caGetOption("INDEX_AS_IDNO", $pa_options, false) || in_array('INDEX_AS_IDNO', $pa_options, true)) {
 			$t_content = Datamodel::getInstanceByTableNum($pn_content_tablenum, true);
@@ -1344,6 +1363,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			
 			if($va_words) {
 				foreach($va_words as $vs_word) {
+					if(is_null($vs_word))  { continue; }
 					if (!($vn_word_id = $this->getWordID($vs_word))) { continue; }
 					$va_row_insert_sql[] = "({$subject_tablenum}, {$vn_row_id}, {$pn_content_tablenum}, '{$ps_content_fieldnum}', ".($pn_content_container_id ? $pn_content_container_id : 'NULL').", {$pn_content_row_id}, {$vn_word_id}, {$vn_boost}, {$vn_private}, {$vn_rel_type_id})";
 					$vn_seq++;
@@ -1373,7 +1393,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	/**
 	 * Not supported in this engine - does nothing
 	 */
-	public function optimizeIndex($tablenum) {
+	public function optimizeIndex(int $tablenum) {
 		// noop	
 	}
 	# --------------------------------------------------
@@ -1396,11 +1416,25 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	static public function tokenize(?string $content, ?bool $for_search=false, ?int $index=0) : array {
 		$content = preg_replace('![\']+!u', '', $content);		// strip apostrophes for compatibility with SearchEngine class, which does the same to all search expressions
 
-		$words = preg_split('!'.self::$whitespace_tokenizer_regex.'!u', strip_tags($content));
-		$words = array_map(function($v) {
-			$w = preg_replace('!^'.self::$punctuation_tokenizer_regex.'!u', '', html_entity_decode($v, null, 'UTF-8'));
-			return mb_strtolower(preg_replace('!'.self::$punctuation_tokenizer_regex.'$!u', '', $w));
-		}, $words);
+		switch($alphabet = caIdentifyAlphabet($content)) {
+			case 'HAN':
+				if(class_exists("\Binaryoung\Jieba\Jieba")) {
+					$words = \Binaryoung\Jieba\Jieba::cut($content);
+					$words = array_map(function($v) {
+						$w = str_replace('·', ' ', html_entity_decode($v, null, 'UTF-8'));
+						$w = preg_replace('!^'.self::$punctuation_tokenizer_regex.'!u', '', $w);
+						return mb_strtolower(preg_replace('!'.self::$punctuation_tokenizer_regex.'$!u', '', $w));
+					}, $words);
+					break;
+				}
+			default:
+				$words = preg_split('!'.self::$whitespace_tokenizer_regex.'!u', strip_tags($content));
+				$words = array_map(function($v) {
+					$w = preg_replace('!^'.self::$punctuation_tokenizer_regex.'!u', '', html_entity_decode($v, null, 'UTF-8'));
+					return mb_strtolower(preg_replace('!'.self::$punctuation_tokenizer_regex.'$!u', '', $w));
+				}, $words);
+				break;
+		}
 		
 		return self::filterStopWords($words);
 	}
@@ -1409,6 +1443,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 *
 	 */
 	static public function filterStopWords(array $words) : array {
+		if(!self::$filter_stop_words) { return $words; }
 		return array_filter($words, function($v) {
 			return (strlen($v) && !array_key_exists($v, self::$stop_words));
 		});
@@ -1601,7 +1636,10 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		$rel_type_ids = ($tmp[1] && $rel_table) ? caMakeRelationshipTypeIDList($rel_table, preg_split("![,;]+!", $tmp[1])) : [];
 		
 		if (!($t_table = Datamodel::getInstanceByTableName($table, true))) { 
-			return array('access_point' => $tmp[0]);
+			if(in_array($table, caSearchGetTablesForAccessPoints([$tmp[0]]))) {
+				return ['access_point' => $tmp[0]];
+			}
+			return null;
 		}
 		$table_num = $t_table->tableNum();
 		

@@ -72,7 +72,10 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
         $map = array_flip($this->auth_config->get('shibboleth_field_map'));
 	    $uid = array_shift($attrs[$map['uid']]);
 	    if (!$uid) { return false; }
-	    return true;
+	    if (ca_users::find(['user_name' => $uid], ['returnAs' => 'count']) > 0) {
+	        return true;
+	    }
+	    return false;
 	}
     # --------------------------------------------------------------------------------
 	/**
