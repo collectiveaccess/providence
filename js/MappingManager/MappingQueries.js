@@ -136,7 +136,6 @@ function addImporter(uri, name, formats, code, table, type, settings, callback) 
       , variables: { "name": name, "formats": formats, "code": code, "table": table, "type": type, "settings": settings }
     })
     .then(function (result) {
-		console.log("add", result);
       callback(result.data['add']);
     }).catch(function (error) {
       console.log("Error while attempting to add importer: ", error);
@@ -144,6 +143,7 @@ function addImporter(uri, name, formats, code, table, type, settings, callback) 
 }
 
 function editMappings(uri, id, mappings, callback) {
+	console.trace("save", mappings);
   const client = getGraphQLClient(uri, {});
   client
     .mutate({
@@ -166,7 +166,6 @@ function editMappings(uri, id, mappings, callback) {
       , variables: { "id": id, "mappings": mappings }
     })
     .then(function (result) {
-      console.log("editMappings", result);
       callback(result.data['editMappings']);
     }).catch(function (error) {
       console.log("Error while attempting to edit mappings: ", error);
@@ -266,4 +265,61 @@ function editImporter(uri, id, name, formats, code, table, type, settings, callb
     });
 }
 
-export { getGraphQLClient, getImportersList, addImporter, deleteImporter, deleteMapping, editImporter, editMappings, getImporterForm, getNewImporterForm, getListMappings, reorderMappings };
+const getAvailableBundles = (url, table, callback) => {
+  const client = getGraphQLClient(url, {});
+  client
+    .query({
+      query: gql
+        `
+          query($table: String) {
+			  bundles(table: $table) {
+				bundles {
+					  name,
+					  code,
+					  description,
+					  type,
+					  dataType,
+					  list,
+					  typeRestrictions {
+							  name,
+							  type,
+							  minAttributesPerRow,
+							  maxAttributesPerRow
+					  },
+					  settings {
+							  name,
+							  value
+					  },
+					  subelements {
+							  name,
+							  code,
+							  type,
+							  dataType,
+							  list,
+							  settings {
+									  name,
+									  value
+							  }
+					  }
+				}
+			  }
+		}
+        `, variables: {'table': table}
+    })
+    .then(function (result) {
+      callback(result.data['bundles']);
+    }).catch(function (error) {
+      console.log("Error while attempting to get bundle list: ", error);
+    });
+}
+
+
+
+export { 
+	getGraphQLClient, 
+	getImportersList, 
+	addImporter, editImporter, deleteImporter, 
+	deleteMapping, editMappings, getImporterForm, getNewImporterForm, 
+	getListMappings, reorderMappings,
+	getAvailableBundles
+};

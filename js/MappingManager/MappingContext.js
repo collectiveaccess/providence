@@ -20,6 +20,7 @@ const MappingContextProvider = (props) => {
   const [settingFormData, setSettingFormData] = useState({})
   const [importerSchema, setImporterSchema] = useState({})
   const [importerFormData, setImporterFormData] = useState({})
+  const [availableBundles, setAvailableBundles] = useState([])
 
   const [mappingDataList, setMappingDataList] = useState([])
 
@@ -38,6 +39,7 @@ const MappingContextProvider = (props) => {
         importerSchema, setImporterSchema,
         importerFormData, setImporterFormData,
         mappingDataList, setMappingDataList,
+        availableBundles, setAvailableBundles
       }}>
       {props.children}
     </MappingContext.Provider>

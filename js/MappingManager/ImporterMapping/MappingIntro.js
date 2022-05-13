@@ -1,6 +1,6 @@
 import React, {useContext, useEffect, useState} from 'react'
 import { MappingContext } from '../MappingContext';
-import { getImportersList, addImporter, getImporterForm, editImporter, getNewImporterForm } from '../MappingQueries';
+import { getImportersList, addImporter, getImporterForm, editImporter, getNewImporterForm , getAvailableBundles} from '../MappingQueries';
 import Form from "@rjsf/core";
 import MappingSettings from './MappingSettings';
 
@@ -8,7 +8,7 @@ const appData = providenceUIApps.MappingManager.data;
 
 const MappingIntro = () => {
 
-  const { importerId, setImporterId, settingFormData, setSettingFormData, importerSchema, setImporterSchema, importerFormData, setImporterFormData } = useContext(MappingContext)
+  const { importerId, setImporterId, settingFormData, setSettingFormData, importerSchema, setImporterSchema, importerFormData, setImporterFormData, availableBundles, setAvailableBundles } = useContext(MappingContext)
 
   const [importerUiSchema, setImporterUiSchema] = useState({
     "ca_data_importers.importer_code": {
@@ -30,8 +30,6 @@ const MappingIntro = () => {
   useEffect(() => {
     if(importerId){
       getImporterForm(appData.baseUrl + "/MetadataImport", importerId, data => {
-        console.log("getImporterForm: ", data);
-  
         let form = { ...data }
         let jsonProperties = JSON.parse(data.properties);
         form.properties = jsonProperties;
@@ -48,6 +46,12 @@ const MappingIntro = () => {
           "required": data.required,
           "properties": importer_properties
         };
+        
+        /// LOAD POSSIBLE targets (may not need this)
+        // getAvailableBundles(appData.baseUrl + "/Schema", "ca_objects", data => {
+//         	console.log("SET BUNDLES", data['bundles']);
+//         	setAvailableBundles(data['bundles']);
+//         });
 
         const importer_data = Object.keys(JSON.parse(data.values))
           .filter((key) => key.includes("ca_data_importers"))
@@ -62,8 +66,6 @@ const MappingIntro = () => {
       })
     }else{
       getNewImporterForm(appData.baseUrl + "/MetadataImport", data => {
-        console.log("getNewImporterForm: ", data);
-
         let form = { ...data }
         let jsonProperties = JSON.parse(data.properties);
         form.properties = jsonProperties;
@@ -97,12 +99,8 @@ const MappingIntro = () => {
 
 
   const saveFormData = (formData) => {
-    // console.log("saveFormData");
     setImporterFormData(formData)
   }
-
-  // console.log("importerSchema: ", importerSchema);
-  // console.log("importerFormData: ", importerFormData);
 
   return (
     <>

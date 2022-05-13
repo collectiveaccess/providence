@@ -1,79 +1,87 @@
-import React, { useContext, useEffect, useState} from 'react'
+import React, { useContext, useEffect, useState, useMemo } from 'react'
 import { MappingContext } from '../MappingContext';
 import { deleteMapping, editMappings } from '../MappingQueries';
 import { SortableHandle } from 'react-sortable-hoc';
+import debounce from 'lodash.debounce';
 const DragHandle = SortableHandle(() => <span style={{fontSize: "22px", cursor: "pointer"}}>::</span>);
 
 const appData = providenceUIApps.MappingManager.data;
 
 const Mapping = ({ data, line_num, index }) => {
 
-  const { importerId, setImporterId, mappingList, setMappingList, mappingDataList, setMappingDataList } = useContext(MappingContext)
+  const { importerId, setImporterId, mappingList, setMappingList, mappingDataList, setMappingDataList, availableBundles } = useContext(MappingContext)
+  const [ mappingId, setMappingId ] = useState()
+  const [ mappingType, setMappingType ] = useState()
+  const [ dataSource, setDataSource ] = useState()
+  const [ destination, setDestination ] = useState()
+  const [ optionsTab, setOptionsTab ] = useState()
+  
+  useEffect(() => {
+    setDataSource(data.source);
+    setMappingType(data.type);
+    setMappingId(data.id);
+    setDestination(data.destination);
+  }, [data]);
 
-  const [ mappingId, setMappingId ] = useState(data && data.id ? data.id : null)
-  const [ mappingType, setMappingType ] = useState(data && data.type? data.type : null)
-  const [ dataSource, setDataSource ] = useState(data && data.source? data.source : null)
-  const [ target, setTarget ] = useState(data && data.destination? data.destination : null)
-
-  const [ optionsTab, setOptionsTab ] = useState("")
 
   const [ mappingData, setMappingData ] = useState({
     id: mappingId,
     type: mappingType,
     source: dataSource,
-    destination: target,
-    options: [{ name: "prefix", value: "GOT:" }],
-    refineries: [{ refinery: "entitySplitter", options: [{ name: "delimiter", value: ";" }] }],
+    destination: destination,
+    options: [
+    	//{ name: "prefix", value: "GOT:" }
+    ],
+    refineries: [
+    	//{ refinery: "entitySplitter", options: [{ name: "delimiter", value: ";" }] }
+    ],
     replacement_values: [
-      { original: "meow", replacement: "arf" },
-      { original: "blah", replacement: "glurg" }
+      //{ original: "meow", replacement: "arf" },
+      //{ original: "blah", replacement: "glurg" }
     ]
   })
   
   // Change select options handler
   const handleMappingChange = (event) => {
     const { name, value } = event.target;
-    if (name == "mappingType") {
-      setMappingType(value)
-      setMappingData({
+    let newData = {
         id: mappingId,
-        type: value,
+        type: mappingType,
         source: dataSource,
-        destination: target,
-        options: [{ name: "prefix", value: "GOT:" }],
-        refineries: [{ refinery: "entitySplitter", options: [{ name: "delimiter", value: ";" }] }],
+        destination: destination,
+        options: [
+        	//{ name: "prefix", value: "GOT:" }
+        ],
+        refineries: [
+        	//{ refinery: "entitySplitter", options: [{ name: "delimiter", value: ";" }] }
+        ],
         replacement_values: [
-          { original: "meow", replacement: "arf" },
-          { original: "blah", replacement: "glurg" }
+          //{ original: "meow", replacement: "arf" },
+          //{ original: "blah", replacement: "glurg" }
         ]
-      })
-
+      };
+      
+    if (name == "mappingType") {
+      setMappingType(value);
+      newData['type'] = value;
     }
     if (name == "dataSource") {
-      setDataSource(value)
+      setDataSource(value);
+      newData['source'] = value;
     }
-    if (name == "target") {
-      setTarget(value)
+    if (name == "destination") {
+      setDestination(value);
+      newData['destination'] = value;
     }
-
+    
+    setMappingData(newData)
     let tempList = [...mappingDataList]
-    // tempList.splice(index, 1, mappingData)
-    tempList[index] = mappingData
-    console.log("tempList: ", tempList);
+    tempList[index] = newData
     setMappingDataList(tempList)
-  }
-
-  // useEffect(() => {
-  //   console.log("useeffect triggered");
-  //   let tempList = [...mappingDataList]
-  //   tempList[index] == mappingData
-  //   setMappingDataList(tempList)
-  // }, [mappingType, dataSource, target])
+  };
   
   const deleteThisMapping = () => {
     deleteMapping(appData.baseUrl + "/MetadataImport", importerId, mappingId, data => {
-      console.log("deleteMapping: ", data);
-      
       let tempMappingList = [...mappingList]
       tempMappingList.splice(tempMappingList.indexOf(mappingId), 1)
       setMappingList(tempMappingList)
@@ -83,9 +91,6 @@ const Mapping = ({ data, line_num, index }) => {
   const setCurrentTab = (curr_tab) => {
     setOptionsTab(curr_tab)
   }
-  
-  console.log("mappingId, type ", mappingId, mappingType, dataSource, target);
-  console.log("mappingData: ", mappingData);
 
   return (
     <div className='row m-2 p-2 border border-secondary align-items-center'>
@@ -105,7 +110,7 @@ const Mapping = ({ data, line_num, index }) => {
           aria-label="mapping type" 
           name="mappingType" 
           required 
-          value={mappingType} 
+          defaultValue={mappingType} 
           onChange={handleMappingChange}
         >
           <option value="MAPPING">Mapping</option>
@@ -117,7 +122,7 @@ const Mapping = ({ data, line_num, index }) => {
 
       <div className='mr-3'>
         <label className='mb-0 mr-1'>Data Source: </label>
-        <select 
+        {/*<select 
           aria-label="Data Source"
           name="dataSource"
           required
@@ -126,20 +131,23 @@ const Mapping = ({ data, line_num, index }) => {
         >
           <option value="1">1</option>
           <option value="2">2</option>
-        </select>
+        </select>*/}
+        <input aria-label="Source" name="dataSource" size="8" value={dataSource} onChange={handleMappingChange}/>
+        
       </div>
 
       <div className='mr-3'>
         {/* <label className='mb-0 mr-1'>Target: </label> */}
-        <select 
+       {/* <select 
           aria-label="Target"
-          name="target"
+          name="destination"
           required
-          value={target}
+          value={destination}
           onChange={handleMappingChange}
         >
-          <option value={target}>{target}</option>
-        </select>
+          {options}
+        </select>*/}
+         <input aria-label="Target" name="destination" size="20" defaultValue={destination} onChange={handleMappingChange}/>
       </div> 
 
       <div className='mr-3'>
@@ -181,11 +189,8 @@ const Mapping = ({ data, line_num, index }) => {
       </div>
 
       <div className='mr-4'>
-        <input type="text" className="form-control" placeholder="Group" aria-label="Group" aria-describedby="a group for the mappings"/>
+        <input type="text" className="form-control" size="5" placeholder="Group" aria-label="Group" aria-describedby="a group for the mappings"/>
       </div>
-      {/* <div className='mr-3'>
-        <button className='btn btn-secondary btn-sm'>Show details +</button>
-      </div> */}
       {/* <div className='mr-3'>
         <button className='btn btn-outline-secondary btn-sm' onClick={saveMapping}>Save</button>
       </div> */}
