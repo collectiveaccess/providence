@@ -35,7 +35,6 @@ const MappingList = () => {
   }, [importerId]); 
 
   const getImporterMappings = () => {
-  	console.log("GET MAPPINGS FOR ", importerId);
     getListMappings(appData.baseUrl + "/MetadataImport", importerId, data => {
       let tempOrderedIds = []
       let tempMappingList = [];
@@ -98,14 +97,11 @@ const MappingList = () => {
 
   //required function for react-sortable-hoc, saves the newly drag-sorted position
   const onSortEnd = ({ oldIndex, newIndex }) => {
-    console.log('indexes', oldIndex, newIndex);
-
 	let reorderedIds = arrayMoveImmutable(orderedIds, oldIndex, newIndex);
 	let reorderedMappingList = arrayMoveImmutable(mappingList, oldIndex, newIndex);
    	
     setOrderedIds(reorderedIds);
    	setMappingList(reorderedMappingList);
-   	console.log("reordered", reorderedMappingList);
 
     let new_order = { sorted_ids: String(reorderedIds) }
 

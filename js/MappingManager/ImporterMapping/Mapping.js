@@ -10,17 +10,19 @@ const appData = providenceUIApps.MappingManager.data;
 const Mapping = ({ data, line_num, index }) => {
 
   const { importerId, setImporterId, mappingList, setMappingList, mappingDataList, setMappingDataList, availableBundles } = useContext(MappingContext)
-  const [ mappingId, setMappingId ] = useState()
-  const [ mappingType, setMappingType ] = useState()
-  const [ dataSource, setDataSource ] = useState()
-  const [ destination, setDestination ] = useState()
-  const [ optionsTab, setOptionsTab ] = useState()
+  const [ mappingId, setMappingId ] = useState(null)
+  const [ mappingType, setMappingType ] = useState("")
+  const [ dataSource, setDataSource ] = useState(null)
+  const [ group, setGroup ] = useState(null)
+  const [ destination, setDestination ] = useState(null)
+  const [ optionsTab, setOptionsTab ] = useState(null)
   
   useEffect(() => {
     setDataSource(data.source);
     setMappingType(data.type);
     setMappingId(data.id);
     setDestination(data.destination);
+    setGroup("" + data.group_id);
   }, [data]);
 
 
@@ -29,6 +31,7 @@ const Mapping = ({ data, line_num, index }) => {
     type: mappingType,
     source: dataSource,
     destination: destination,
+    group: group,
     options: [
     	//{ name: "prefix", value: "GOT:" }
     ],
@@ -49,6 +52,7 @@ const Mapping = ({ data, line_num, index }) => {
         type: mappingType,
         source: dataSource,
         destination: destination,
+        group: group,
         options: [
         	//{ name: "prefix", value: "GOT:" }
         ],
@@ -72,6 +76,11 @@ const Mapping = ({ data, line_num, index }) => {
     if (name == "destination") {
       setDestination(value);
       newData['destination'] = value;
+    }
+    
+    if (name == "group") {
+      setGroup(value);
+      newData['group'] = "" + value;
     }
     
     setMappingData(newData)
@@ -110,7 +119,7 @@ const Mapping = ({ data, line_num, index }) => {
           aria-label="mapping type" 
           name="mappingType" 
           required 
-          defaultValue={mappingType} 
+          value={mappingType} 
           onChange={handleMappingChange}
         >
           <option value="MAPPING">Mapping</option>
@@ -121,7 +130,7 @@ const Mapping = ({ data, line_num, index }) => {
 
 
       <div className='mr-3'>
-        <label className='mb-0 mr-1'>Data Source: </label>
+        <label className='mb-0 mr-1'>Source: </label>
         {/*<select 
           aria-label="Data Source"
           name="dataSource"
@@ -132,7 +141,7 @@ const Mapping = ({ data, line_num, index }) => {
           <option value="1">1</option>
           <option value="2">2</option>
         </select>*/}
-        <input aria-label="Source" name="dataSource" size="8" value={dataSource} onChange={handleMappingChange}/>
+        <input aria-label="Source" name="dataSource" size="8" defaultValue={dataSource} onChange={handleMappingChange}/>
         
       </div>
 
@@ -189,7 +198,7 @@ const Mapping = ({ data, line_num, index }) => {
       </div>
 
       <div className='mr-4'>
-        <input type="text" className="form-control" size="5" placeholder="Group" aria-label="Group" aria-describedby="a group for the mappings"/>
+        <input type="text" defaultValue={group} name="group" className="form-control" size="5" placeholder="Group" aria-label="Group" aria-describedby="a group for the mapping"  onChange={handleMappingChange}/>
       </div>
       {/* <div className='mr-3'>
         <button className='btn btn-outline-secondary btn-sm' onClick={saveMapping}>Save</button>

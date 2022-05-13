@@ -143,7 +143,6 @@ function addImporter(uri, name, formats, code, table, type, settings, callback) 
 }
 
 function editMappings(uri, id, mappings, callback) {
-	console.trace("save", mappings);
   const client = getGraphQLClient(uri, {});
   client
     .mutate({
@@ -195,7 +194,6 @@ function reorderMappings(uri, id, data, callback) {
       , variables: { "id": id, "data": data }
     })
     .then(function (result) {
-      console.log("reorderMappings", result);
       callback(result.data['reorderMappings']);
     }).catch(function (error) {
       console.log("Error while attempting to reorder mappings: ", error);
