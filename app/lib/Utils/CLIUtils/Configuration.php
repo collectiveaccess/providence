@@ -91,7 +91,7 @@ trait CLIUtilsConfiguration {
 				return false;
 			}
 		} else {
-			Installer::clearCaches();
+			\Installer\Installer::clearCaches();
 		}
 
 		if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing locales")); }
