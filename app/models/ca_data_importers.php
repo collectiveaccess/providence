@@ -393,19 +393,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'label' => _t('Do not do import'),
 			'description' => _t('If set then the mapping will be evaluated but no rows actually imported. This can be useful when you want to run a refinery over the rows of a data set but not actually perform the primary import.')
 		);
-		$settings['archiveDataSets'] = array(
-			'formatType' => FT_NUMBER,
-			'displayType' => DT_FIELD,
-			'width' => 40, 'height' => 1,
-			'takesLocale' => false,
-			'default' => '',
-			'options' => array(
-				_t('yes') => 1,
-				_t('no') => 0
-			),
-			'label' => _t('Archive data sets?'),
-			'description' => _t('Set to yes to save the data spreadsheet or no to delete it from the server after import.  Pending implementation.')
-		);
 		$settings['errorPolicy'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
