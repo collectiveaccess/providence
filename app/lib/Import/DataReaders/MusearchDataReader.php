@@ -89,6 +89,10 @@ class MusearchDataReader extends BaseXMLDataReader {
 	 */
 	protected $auto_convert_dates = true;
 	
+	protected $categories = [];
+	protected $gcategories = [];
+	protected $scategories = [];
+	
 	# -------------------------------------------------------
 	/**
 	 * @param string $ps_source
@@ -102,9 +106,32 @@ class MusearchDataReader extends BaseXMLDataReader {
 		$this->ops_display_name = _t('Musearch');
 		$this->ops_description = _t('Imports Musearch data');
 		
-		$this->auto_convert_dates = caGetOption('autoconvertDates', $pa_options, false);
+		$this->auto_convert_dates = caGetOption('autoconvertDates', $pa_options, true);
 		
-		$this->opa_formats = array('musearch');	// must be all lowercase to allow for case-insensitive matching
+		$base_path = caGetOption('basePath', $pa_options, null);
+	
+		if($ps_source && (!in_array($base_path, ['/GCategory/record', '/Category/record', '/SourceCategory/record'], true))) {
+			// get gcategories
+			$c = new MusearchDataReader($ps_source, ['basePath' => '/GCategory/record']);
+			while($c->nextRow()) {
+				$row = $c->getRow();
+				$this->gcategories[$row['/GCATEGORYID'][0]] = $row['/GCATEGORYNAME'][0];
+			}
+			// get gcategories
+			$c = new MusearchDataReader($ps_source, ['basePath' => '/Category/record']);
+			while($c->nextRow()) {
+				$row = $c->getRow();
+				$this->categories[$row['/CATEGORYID'][0]] = $row['/CATEGORYNAME'][0];
+			}
+			
+			// get source categories
+			$c = new MusearchDataReader($ps_source, ['basePath' => '/SourceCategory/record']);
+			while($c->nextRow()) {
+				$row = $c->getRow();
+				$this->scategories[$row['/SOURCECATEGORYID'][0]] = $row['/SOURCEDESCRIPTION'][0];
+			}
+		}
+		$this->opa_formats = ['musearch'];	// must be all lowercase to allow for case-insensitive matching
 	}
 
 	# -------------------------------------------------------
@@ -122,8 +149,6 @@ class MusearchDataReader extends BaseXMLDataReader {
 		$vb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
 		$vs_delimiter = caGetOption('delimiter', $pa_options, ';');
 		
-		
-		//$ps_spec = str_replace("/", "", $ps_spec);
 		if ($this->opb_tag_names_as_case_insensitive) { $ps_spec = strtolower($ps_spec); }
 		if (is_array($this->opa_row_buf) && ($ps_spec) && (isset($this->opa_row_buf[$ps_spec]))) {
 			
@@ -135,6 +160,22 @@ class MusearchDataReader extends BaseXMLDataReader {
 						return $v;
 					}
 				}, $this->opa_row_buf[$ps_spec]);
+			}
+			
+			if($ps_spec === '/categoryid') {
+				foreach($this->opa_row_buf[$ps_spec] as $i => $v) {
+					$this->opa_row_buf[$ps_spec][$i] = $this->categories[$v];
+				}	
+			}
+			if($ps_spec === '/sourcecategoryid') {
+				foreach($this->opa_row_buf[$ps_spec] as $i => $v) {
+					$this->opa_row_buf[$ps_spec][$i] = $this->scategories[$v];
+				}	
+			}
+			if($ps_spec === '/gcategoryid') {
+				foreach($this->opa_row_buf[$ps_spec] as $i => $v) {
+					$this->opa_row_buf[$ps_spec][$i] = $this->gcategories[$v];
+				}
 			}
 			if($vb_return_as_array) {
 				return $this->opa_row_buf[$ps_spec];
@@ -155,6 +196,30 @@ class MusearchDataReader extends BaseXMLDataReader {
 	 */
 	public function nextRow() {
 		$rc = parent::nextRow();
+		
+		// add in "related" data
+		$xpath = new DOMXPath($this->opo_xml);
+		
+		if ($this->ops_xml_namespace_prefix && $this->ops_xml_namespace) {
+			$xpath->registerNamespace($this->ops_xml_namespace_prefix, $this->ops_xml_namespace);
+		}
+		
+		if($object_id = ($this->opa_row_buf['/OBJECTID'][0] ?? null)) {
+			foreach([
+				'Video', 'Photos', 'Documents', 'Geo', 'Art', 'History', 'Nature', 'Arch', 'PrintMat', 
+				'OralHistory', 'Maps', 'Audio', 'OtherObj', 'OHTracks', 'AudioTracks', 'AudioInstruments', 
+				'ObjectImages', 'ObjKeywords', 'ObjEvents', 'ObjCondition', 'ObjAppraisal', 'ObjProv', 
+				'ObjNotes', 'Valution', 'FoldObj', 'Folder'
+			] as $t) {
+				$handle = $xpath->query("/root/{$t}/record/OBJECTID[text() = {$object_id}]/parent::record", null, $this->opb_register_root_tag);
+				$l = (int)$handle->length;
+				for($i=0; $i < $l; $i++) {
+					if($item = $handle->item($i)) {
+						$this->_extractXMLValues($item, "/{$t}");
+					}
+				}
+			}
+		}
 		foreach($this->opa_row_buf as $spec => $val) {
 			if(is_array($val)) {
 				$this->opa_row_buf[$spec] = array_map(function($v) { 
