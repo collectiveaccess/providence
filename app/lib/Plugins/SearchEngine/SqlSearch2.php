@@ -753,16 +753,22 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		$ap = $this->_getElementIDForAccessPoint($subject_tablenum, $lower_term->field);
 		if (!is_array($ap)) { return []; }
 		
-		if ($ap['type'] === 'COUNT') {
+		if ($ap['datatype'] === 'COUNT') {
 			$params = [
 				$subject_tablenum, (int)$lower_text, (int)$upper_text
 			];
-			$qr_res = $this->db->query("
+			
+			$rel_type_sql = '';
+			if(is_array($ap['relationship_type_ids']) && sizeof($ap['relationship_type_ids'])) {
+				$rel_type_sql = " AND rel_type_id IN (?)";
+				$params[] = $ap['relationship_type_ids'];
+			}
+			$qr_res = $this->db->query($z="
 				SELECT swi.row_id, SUM(swi.boost) boost
 				FROM ca_sql_search_word_index swi
 				INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id
 				WHERE
-					swi.table_num = ? AND swi.field_num = 'COUNT' AND sw.word BETWEEN ? AND ?
+					swi.table_num = ? AND swi.field_num = 'COUNT' AND sw.word BETWEEN ? AND ? {$rel_type_sql}
 				GROUP BY swi.row_id
 			", $params);
 			return $this->_arrayFromDbResult($qr_res);
