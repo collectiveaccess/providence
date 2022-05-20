@@ -1,0 +1,27 @@
+stages:
+  - deploy
+  - redeploy
+
+
+## Code Deploy
+# Sync the local copy of the code
+deploy_prod:
+  stage: deploy
+  only:
+    - bmac
+  before_script:
+    - cd /app/providence && cp $PROD_ENV_FILE .env
+  script:
+    - cd /app/providence
+    - git pull
+    - source .env
+    - docker-compose -f docker-compose.yml -f docker-compose-deploy.yml build --build-arg LOCAL_UID=$LOCAL_UID --build-arg SERVERNAME=$SERVERNAME  
+    - docker-compose -f docker-compose.yml -f docker-compose-deploy.yml up -d
+  after_script:
+    - cd /app/providence && rm .env
+  environment:
+    name: prod
+    url: https://providence.galib.uga.edu
+  tags:
+    - brown-hosting-shell
+
