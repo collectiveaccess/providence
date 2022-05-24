@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2018 Whirl-i-Gig
+ * Copyright 2013-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -149,7 +149,7 @@ class WLPlugInformationServiceCollectiveAccess Extends BaseInformationServicePlu
 		// Create and send a request with basic Auth
 		$u = parse_url($pa_settings['baseURL']);
 		$o_response = $o_client->request("GET", 
-		    $vs_url = $u['path'].'/service.php/find/'.$pa_settings['table'].'?q='.urlencode($ps_search).'&sort='.$vs_sort_field.'&template='.urlencode($pa_settings['labelFormat']),
+		    $vs_url = $u['path'].'/service.php/json/find/'.$pa_settings['table'].'?q='.urlencode($ps_search).'&sort='.$vs_sort_field.'&template='.urlencode($pa_settings['labelFormat']),
 		    ['auth' => [$pa_settings['user_name'], $pa_settings['password']]]
 		);
 
@@ -161,7 +161,7 @@ class WLPlugInformationServiceCollectiveAccess Extends BaseInformationServicePlu
 			foreach($va_data['results'] as $vs_k => $va_result) {
 				$va_data['results'][$vs_k]['label'] = $va_result['display_label'];
 				unset($va_result['display_label']);
-				$va_data['results'][$vs_k]['url'] = $pa_settings['baseURL'].'/service.php/item/'.$pa_settings['table'].'/id/'.$va_result[$vs_pk];
+				$va_data['results'][$vs_k]['url'] = $pa_settings['baseURL'].'/service.php/json/item/'.$pa_settings['table'].'/id/'.$va_result[$vs_pk];
 			}
 		}
 
@@ -188,7 +188,7 @@ class WLPlugInformationServiceCollectiveAccess Extends BaseInformationServicePlu
 		// Create and send a request with basic Auth
 		$u = parse_url($pa_settings['baseURL']);
 		$o_response = $o_client->request("GET", 
-		    $vs_url = $u['path'].'/service.php/item/'.$pa_settings['table'].'/id/'.urlencode($ps_id).'?format=import&flatten=locales&template='.urlencode($vs_template),
+		    $vs_url = $u['path'].'/service.php/json/item/'.$pa_settings['table'].'/id/'.urlencode($ps_id).'?format=import&flatten=locales&template='.urlencode($vs_template),
 		    ['auth' => [$pa_settings['user_name'], $pa_settings['password']]]
 		);
 

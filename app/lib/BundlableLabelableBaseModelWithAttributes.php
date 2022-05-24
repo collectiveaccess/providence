@@ -7068,11 +7068,12 @@ if (!$vb_batch) {
 				
 				if (!$this->opo_idno_plugin_instance->getFormatProperty('dont_inherit_from_parent')) {
                     if ($t_parent->load($vn_parent_id)) {
-                        $this->opo_idno_plugin_instance->isChild(true, $t_parent->get($this->tableName().".{$vs_idno_fld}")); 
+                    	$pidno = $t_parent->get($this->tableName().".{$vs_idno_fld}");
+                        $this->opo_idno_plugin_instance->isChild(true, $pidno); 
                         if (!$this->getPrimaryKey() && !$this->opo_idno_plugin_instance->formatHas('PARENT')) {
                             $this->set($vs_idno_fld, 
-                                ($t_parent->get($vs_idno_fld)) ? 
-                                    $this->opo_idno_plugin_instance->makeTemplateFromValue($t_parent->get($vs_idno_fld), 1, true)
+                                ($pidno) ? 
+                                    $this->opo_idno_plugin_instance->makeTemplateFromValue($pidno, 1, true)
                                     :
                                     ''
                             );

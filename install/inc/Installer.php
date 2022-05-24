@@ -905,7 +905,7 @@ class Installer {
 			$t_entry = new \ca_metadata_dictionary_entries();
 			$t_entry->set('bundle_name', $entry['bundle']);
 			$t_entry->set('table_num', $table_num);
-			$this->_processSettings($t_entry, $entry['settings'], ['source' => "MetadataDictionary:table {$table_num}:".$entry['bundle']]);
+			$this->_processSettings($t_entry, $entry['settings'], ['leftTable' => $entry['table'], 'rightTable' => $entry['bundle'], 'source' => "MetadataDictionary:table {$table_num}:".$entry['bundle']]);
 			
 			$t_entry->insert();
 

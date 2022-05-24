@@ -1175,7 +1175,7 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="extent" datatype="Text">
+    <metadataElement code="extent_text" datatype="Text">
       <labels>
         <label locale="en_US">
           <name>Extent</name>
@@ -2991,8 +2991,8 @@
             <placement code="ca_attribute_unitdate">
               <bundle>ca_attribute_unitdate</bundle>
             </placement>
-            <placement code="ca_attribute_extent">
-              <bundle>ca_attribute_extent</bundle>
+            <placement code="ca_attribute_extent_text">
+              <bundle>ca_attribute_extent_text</bundle>
             </placement>
              <placement code="ca_attribute_medium">
               <bundle>ca_attribute_medium</bundle>
@@ -3504,8 +3504,8 @@
             <placement code="ca_attribute_unitdate">
               <bundle>ca_attribute_unitdate</bundle>
             </placement>
-            <placement code="ca_attribute_extent">
-              <bundle>ca_attribute_extent</bundle>
+            <placement code="ca_attribute_extent_text">
+              <bundle>ca_attribute_extent_text</bundle>
             </placement>
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>
@@ -4997,8 +4997,8 @@
       <placement code="abstract">
         <bundle>ca_collections.abstract</bundle>
       </placement>
-      <placement code="extent">
-        <bundle>ca_collections.extent</bundle>
+      <placement code="extent_text">
+        <bundle>ca_collections.extent_text</bundle>
       </placement>
       <placement code="repository">
         <bundle>ca_collections.repository</bundle>

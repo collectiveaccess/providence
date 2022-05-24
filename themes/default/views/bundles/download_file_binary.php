@@ -32,7 +32,7 @@
 	header("Cache-Control: post-check=0, pre-check=0", false);
 	header("Pragma: no-cache");
 	header("Cache-control: private");
-	header("Content-Disposition: attachment; filename=".preg_replace('![^A-Za-z0-9\.\-]+!', '_', $this->getVar('archive_name')));
+	header("Content-Disposition: attachment; filename=".preg_replace('![^A-Za-z0-9\.\-&]+!', '_', $this->getVar('archive_name')));
 	
 	set_time_limit(0);
 	
