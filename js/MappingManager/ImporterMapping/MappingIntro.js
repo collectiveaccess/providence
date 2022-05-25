@@ -8,7 +8,7 @@ const appData = providenceUIApps.MappingManager.data;
 
 const MappingIntro = () => {
 
-  const { importerId, setImporterId, settingFormData, setSettingFormData, importerSchema, setImporterSchema, importerFormData, setImporterFormData, availableBundles, setAvailableBundles } = useContext(MappingContext)
+  const { importerId, setImporterId, settingFormData, setSettingFormData, importerSchema, setImporterSchema, importerFormData, setImporterFormData, availableBundles, setAvailableBundles, changesMade, setChangesMade } = useContext(MappingContext)
 
   const [importerUiSchema, setImporterUiSchema] = useState({
     "ca_data_importers.importer_code": {
@@ -100,12 +100,15 @@ const MappingIntro = () => {
 
   const saveFormData = (formData) => {
     setImporterFormData(formData)
+    setChangesMade(true)
   }
 
-  return (
-    <>
-    <div className='row border border-secondary py-2 mapping-intro'>
+  console.log("importerSchema: ", importerSchema);
+  console.log("importerFormData: ", importerFormData);
+  console.log("importerUiSchema: ", importerUiSchema);
 
+  return (
+    <div className='row border border-secondary py-2 mapping-intro'>
         {(importerSchema) ?
           <Form
             schema={importerSchema}
@@ -118,15 +121,14 @@ const MappingIntro = () => {
           : null
         }
         
-        <div className='col p-0 text-right'>
+        <div className='col text-right' style={{ paddingTop: "28px" }}>
           <MappingSettings />
         </div>
-        <div className='col p-0'>
+        <div className='col pl-0' style={{ paddingTop: "14px" }}>
           <button className='btn btn-outline-secondary'>Test data +</button>
+          <button className='btn btn-outline-secondary mt-2'>Preview +</button>
         </div>
-
     </div>
-    </>
   )
 }
 

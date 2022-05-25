@@ -1,15 +1,16 @@
-import React, { useContext, useEffect, useState, useMemo } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { MappingContext } from '../MappingContext';
-import { deleteMapping, editMappings } from '../MappingQueries';
+import { deleteMapping } from '../MappingQueries';
+
 import { SortableHandle } from 'react-sortable-hoc';
 import debounce from 'lodash.debounce';
-const DragHandle = SortableHandle(() => <span style={{fontSize: "22px", cursor: "pointer"}}>::</span>);
+const DragHandle = SortableHandle(() => <span style={{fontSize: "26px", cursor: "pointer", padding: "5px"}}>::</span>);
 
 const appData = providenceUIApps.MappingManager.data;
 
-const Mapping = ({ data, line_num, index }) => {
+const MappingItem = ({ data, line_num, index, group_id, getImporterMappings }) => {
 
-  const { importerId, setImporterId, mappingList, setMappingList, mappingDataList, setMappingDataList, availableBundles } = useContext(MappingContext)
+  const { importerId, setImporterId, mappingDataList, setMappingDataList, availableBundles, changesMade, setChangesMade } = useContext(MappingContext)
   const [ mappingId, setMappingId ] = useState(null)
   const [ mappingType, setMappingType ] = useState("")
   const [ dataSource, setDataSource ] = useState(null)
@@ -32,16 +33,9 @@ const Mapping = ({ data, line_num, index }) => {
     source: dataSource,
     destination: destination,
     group: group,
-    options: [
-    	//{ name: "prefix", value: "GOT:" }
-    ],
-    refineries: [
-    	//{ refinery: "entitySplitter", options: [{ name: "delimiter", value: ";" }] }
-    ],
-    replacement_values: [
-      //{ original: "meow", replacement: "arf" },
-      //{ original: "blah", replacement: "glurg" }
-    ]
+    options: [],
+    refineries: [],
+    replacement_values: []
   })
   
   // Change select options handler
@@ -53,16 +47,9 @@ const Mapping = ({ data, line_num, index }) => {
         source: dataSource,
         destination: destination,
         group: group,
-        options: [
-        	//{ name: "prefix", value: "GOT:" }
-        ],
-        refineries: [
-        	//{ refinery: "entitySplitter", options: [{ name: "delimiter", value: ";" }] }
-        ],
-        replacement_values: [
-          //{ original: "meow", replacement: "arf" },
-          //{ original: "blah", replacement: "glurg" }
-        ]
+        options: [],
+        refineries: [],
+        replacement_values: []
       };
       
     if (name == "mappingType") {
@@ -82,6 +69,8 @@ const Mapping = ({ data, line_num, index }) => {
       setGroup(value);
       newData['group'] = "" + value;
     }
+
+    setChangesMade(true)
     
     setMappingData(newData)
     let tempList = [...mappingDataList]
@@ -91,9 +80,11 @@ const Mapping = ({ data, line_num, index }) => {
   
   const deleteThisMapping = () => {
     deleteMapping(appData.baseUrl + "/MetadataImport", importerId, mappingId, data => {
-      let tempMappingList = [...mappingList]
-      tempMappingList.splice(tempMappingList.indexOf(mappingId), 1)
-      setMappingList(tempMappingList)
+      console.log("deleteMapping", data);
+      let tempMappingDataList = [...mappingDataList]
+      tempMappingDataList.splice(tempMappingDataList.indexOf(mappingId), 1)
+      setMappingDataList(tempMappingDataList)
+      getImporterMappings()
     })
   }
   
@@ -102,20 +93,24 @@ const Mapping = ({ data, line_num, index }) => {
   }
 
   return (
-    <div className='row m-2 p-2 border border-secondary align-items-center'>
-
-      <div className='pr-2' style={{ borderRight: "1px solid", borderRightColor: "black" }}>
-        <button type="button" className="close" aria-label="Close" onClick={deleteThisMapping}>
-          <span aria-hidden="true">&times;</span>
-        </button>
+    <>
+      <div className='d-flex d-inline px-3'>
+        <div className='pr-2'>
+          <button type="button" className="close border border-dark rounded px-1" aria-label="Close" onClick={deleteThisMapping}>
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div className='pl-2'>
+          <strong>{line_num}</strong>
+        </div>
       </div>
 
-      <div className='pl-2 mr-3'>
-        <p className='mb-0'><strong>{line_num}</strong></p>
-      </div>
 
-      <div className='mr-3'>
+      <div className='px-4'>
+        <label className='mb-0 d-block'>Mapping Type: </label>
         <select 
+          style={{width: "77px", height: "22px"}}
+          className='d-block'
           aria-label="mapping type" 
           name="mappingType" 
           required 
@@ -129,38 +124,20 @@ const Mapping = ({ data, line_num, index }) => {
       </div>
 
 
-      <div className='mr-3'>
-        <label className='mb-0 mr-1'>Source: </label>
-        {/*<select 
-          aria-label="Data Source"
-          name="dataSource"
-          required
-          value={dataSource}
-          onChange={handleMappingChange}
-        >
-          <option value="1">1</option>
-          <option value="2">2</option>
-        </select>*/}
-        <input aria-label="Source" name="dataSource" size="8" defaultValue={dataSource} onChange={handleMappingChange}/>
-        
+      <div className='px-4'>
+        <label className='mb-0 d-block'>Source: </label>
+        <input className='d-block' aria-label="Source" name="dataSource" size="20" defaultValue={dataSource} onChange={handleMappingChange}/>
       </div>
 
-      <div className='mr-3'>
-        {/* <label className='mb-0 mr-1'>Target: </label> */}
-       {/* <select 
-          aria-label="Target"
-          name="destination"
-          required
-          value={destination}
-          onChange={handleMappingChange}
-        >
-          {options}
-        </select>*/}
-         <input aria-label="Target" name="destination" size="20" defaultValue={destination} onChange={handleMappingChange}/>
+
+      <div className='px-4'>
+        <label className='mb-0 d-block'>Target: </label>
+        <input className='d-block' aria-label="Target" name="destination" size="30" defaultValue={destination} onChange={handleMappingChange}/>
       </div> 
 
-      <div className='mr-3'>
-        <button type="button" className="btn btn-secondary btn-sm" data-toggle="modal" data-target="#exampleModal2">
+
+      <div className='px-3 pt-4'>
+        <button type="button" style={{width: "50px"}} className="btn btn-outline-secondary btn-sm" data-toggle="modal" data-target="#exampleModal2">
           Options +
         </button>
         <div className="modal fade" id="exampleModal2" tabIndex="-1" aria-labelledby="exampleModalLabel2" aria-hidden="true">
@@ -185,7 +162,6 @@ const Mapping = ({ data, line_num, index }) => {
                   </li>
                 </ul>
                 <div className='tab-box'>
-
                 </div>
               </div>
               <div className="modal-footer">
@@ -197,17 +173,17 @@ const Mapping = ({ data, line_num, index }) => {
         </div>
       </div>
 
-      <div className='mr-4'>
+
+      {/* <div className='col'>
         <input type="text" defaultValue={group} name="group" className="form-control" size="5" placeholder="Group" aria-label="Group" aria-describedby="a group for the mapping"  onChange={handleMappingChange}/>
-      </div>
-      {/* <div className='mr-3'>
-        <button className='btn btn-outline-secondary btn-sm' onClick={saveMapping}>Save</button>
       </div> */}
-      <div className='mr-3'>
+
+
+      <div className='p-0 pl-4'>
         <DragHandle />
       </div>
-    </div>
+    </>
   )
 }
 
-export default Mapping
+export default MappingItem

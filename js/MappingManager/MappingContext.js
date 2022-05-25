@@ -13,8 +13,9 @@ const MappingContextProvider = (props) => {
   
   const [importType, setImportType] = useState(null); // type for an importer, ex objects etc.
 
-  const [mappingList, setMappingList] = useState([]); // list of mappings
   const [currentView, setCurrentView] = useState("importers_list"); //current component view, importers_list, importer_mapping
+
+  const [mappingListGroups, setMappingListGroups] = useState([]) //list of mappings and groups
 
   const [settingSchema, setSettingSchema] = useState({})
   const [settingFormData, setSettingFormData] = useState({})
@@ -23,7 +24,8 @@ const MappingContextProvider = (props) => {
   const [availableBundles, setAvailableBundles] = useState([])
 
   const [mappingDataList, setMappingDataList] = useState([])
-
+  const [changesMade, setChangesMade] = useState(false)
+  
   return (
     <MappingContext.Provider
       value={{
@@ -32,14 +34,15 @@ const MappingContextProvider = (props) => {
         importerName, setImporterName,
         importerCode, setImporterCode,
         importType, setImportType,
-        mappingList, setMappingList,
         currentView, setCurrentView,
         settingSchema, setSettingSchema,
         settingFormData, setSettingFormData,
         importerSchema, setImporterSchema,
         importerFormData, setImporterFormData,
         mappingDataList, setMappingDataList,
-        availableBundles, setAvailableBundles
+        availableBundles, setAvailableBundles,
+        changesMade, setChangesMade,
+        mappingListGroups, setMappingListGroups
       }}>
       {props.children}
     </MappingContext.Provider>

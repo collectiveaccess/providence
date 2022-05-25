@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React, { useEffect, useContext } from 'react'
 import { MappingContext } from './MappingContext';
 import MappingIntro from './ImporterMapping/MappingIntro'
 import MappingList from './ImporterMapping/MappingList'
@@ -8,7 +8,17 @@ import { getImportersList, deleteImporter, addImporter, editImporter, editMappin
 const appData = providenceUIApps.MappingManager.data;
 
 const ImporterMapping = () => {
-  const { id, currentView, setCurrentView, importerId, setImporterId, importerName, setImporterName, importerCode, setImporterCode, mappingList, setMappingList, importerFormData, setImporterFormData, mappingDataList, setMappingDataList, settingFormData, setSettingFormData } = useContext(MappingContext)
+  const { 
+    currentView, setCurrentView, 
+    importerId, setImporterId, 
+    importerName, setImporterName, 
+    importerCode, setImporterCode, 
+    mappingListGroups, setMappingListGroups,
+    importerFormData, setImporterFormData, 
+    mappingDataList, setMappingDataList, 
+    settingFormData, setSettingFormData, 
+    changesMade, setChangesMade 
+  } = useContext(MappingContext)
 
   const viewImporterList = (e) => {
     setCurrentView("importers_list")
@@ -16,13 +26,14 @@ const ImporterMapping = () => {
     setImporterId()
     setImporterName()
     setImporterCode()
-    setMappingList([])
+    setMappingListGroups([])
     setMappingDataList([])
 
     e.preventDefault()
   }
 
   const saveImporter = () => {
+
     let name = importerFormData["ca_data_importers.preferred_labels.name"]
     let code = importerFormData["ca_data_importers.importer_code"]
     let type = importerFormData["ca_data_importers.table_num"]
@@ -41,7 +52,6 @@ const ImporterMapping = () => {
         [{ "code": "existingRecordPolicy", "value": "skip_on_idno" }],
         data => {
           console.log("editImporter: ", data);
-
           getImportersList();
         }
       )
@@ -50,43 +60,49 @@ const ImporterMapping = () => {
         console.log("editMappings", data);
       })
 
+      setChangesMade(false)
+
     } else {
-      addImporter(appData.baseUrl + "/service.php/MetadataImport",
-        name,
-        ["XLSX"],
-        code,
-        "ca_objects",
-        type,
-        [{ "code": "existingRecordPolicy", "value": "skip_on_idno" }],
-        data => {
+      addImporter(appData.baseUrl + "/MetadataImport", name, ["XLSX"], code, "ca_objects", type, [{ "code": "existingRecordPolicy", "value": "skip_on_idno" }], data =>
+        {
           console.log("addImporter: ", data);
           
           editMappings(appData.baseUrl + "/MetadataImport", importerId, mappingDataList, data => {
             console.log("editMappings", data);
           })
+
           getImportersList();
         })
+      setChangesMade(false)
     }
   }
 
+  useEffect(() => {
+    // console.log("state has changed");
+  }, [mappingDataList, importerFormData])
+  
   // console.log("importerFormData: ", importerFormData);
 
   return (
     <div>
       <div className='row justify-content-start my-2'>
-        <button className='btn btn-secondary btn-sm inline-block' onClick={(e) => viewImporterList(e)}>
+        <button className={'btn btn-secondary btn-sm inline-block' + (changesMade? " disabled" : "") } onClick={(e) => viewImporterList(e)}>
           <span className="material-icons">arrow_back</span> 
         </button>
       </div>
 
       <MappingIntro />
-      <div className='d-flex justify-content-end my-2'>
-        <button className='btn btn-secondary btn-sm'>Preview import +</button>
-      </div>
-      <MappingList />
-      <div className='mr-3'>
-        <button className='btn btn-secondary' onClick={saveImporter}>Save Changes</button>
+
+      <div className='row my-2 d-flex'>
+        <div className='col text-left p-0'>
+          <button className={changesMade ? 'btn btn-success' : 'btn btn-secondary'} onClick={saveImporter}>Save Changes</button>
+        </div>
+        {/* <div className='col text-right p-0 ml-5'>
+          <button className='btn btn-secondary'>Preview import +</button>
+        </div> */}
       </div> 
+
+      <MappingList />
     </div>
   )
 }
