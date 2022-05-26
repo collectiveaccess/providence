@@ -47,6 +47,9 @@
     "scholarslab/bagit": "~0.2",
     "voku/stop-words": "^2.0"
   },
+  "suggest": {
+    "binaryoung/jieba-php": "^0.1.0"
+  },
   "config": {
   	"discard-changes": true
   }

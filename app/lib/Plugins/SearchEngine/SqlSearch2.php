@@ -753,16 +753,22 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		$ap = $this->_getElementIDForAccessPoint($subject_tablenum, $lower_term->field);
 		if (!is_array($ap)) { return []; }
 		
-		if ($ap['type'] === 'COUNT') {
+		if ($ap['datatype'] === 'COUNT') {
 			$params = [
 				$subject_tablenum, (int)$lower_text, (int)$upper_text
 			];
-			$qr_res = $this->db->query("
+			
+			$rel_type_sql = '';
+			if(is_array($ap['relationship_type_ids']) && sizeof($ap['relationship_type_ids'])) {
+				$rel_type_sql = " AND rel_type_id IN (?)";
+				$params[] = $ap['relationship_type_ids'];
+			}
+			$qr_res = $this->db->query($z="
 				SELECT swi.row_id, SUM(swi.boost) boost
 				FROM ca_sql_search_word_index swi
 				INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id
 				WHERE
-					swi.table_num = ? AND swi.field_num = 'COUNT' AND sw.word BETWEEN ? AND ?
+					swi.table_num = ? AND swi.field_num = 'COUNT' AND sw.word BETWEEN ? AND ? {$rel_type_sql}
 				GROUP BY swi.row_id
 			", $params);
 			return $this->_arrayFromDbResult($qr_res);
@@ -1416,11 +1422,25 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	static public function tokenize(?string $content, ?bool $for_search=false, ?int $index=0) : array {
 		$content = preg_replace('![\']+!u', '', $content);		// strip apostrophes for compatibility with SearchEngine class, which does the same to all search expressions
 
-		$words = preg_split('!'.self::$whitespace_tokenizer_regex.'!u', strip_tags($content));
-		$words = array_map(function($v) {
-			$w = preg_replace('!^'.self::$punctuation_tokenizer_regex.'!u', '', html_entity_decode($v, null, 'UTF-8'));
-			return mb_strtolower(preg_replace('!'.self::$punctuation_tokenizer_regex.'$!u', '', $w));
-		}, $words);
+		switch($alphabet = caIdentifyAlphabet($content)) {
+			case 'HAN':
+				if(class_exists("\Binaryoung\Jieba\Jieba")) {
+					$words = \Binaryoung\Jieba\Jieba::cut($content);
+					$words = array_map(function($v) {
+						$w = str_replace('·', ' ', html_entity_decode($v, null, 'UTF-8'));
+						$w = preg_replace('!^'.self::$punctuation_tokenizer_regex.'!u', '', $w);
+						return mb_strtolower(preg_replace('!'.self::$punctuation_tokenizer_regex.'$!u', '', $w));
+					}, $words);
+					break;
+				}
+			default:
+				$words = preg_split('!'.self::$whitespace_tokenizer_regex.'!u', strip_tags($content));
+				$words = array_map(function($v) {
+					$w = preg_replace('!^'.self::$punctuation_tokenizer_regex.'!u', '', html_entity_decode($v, null, 'UTF-8'));
+					return mb_strtolower(preg_replace('!'.self::$punctuation_tokenizer_regex.'$!u', '', $w));
+				}, $words);
+				break;
+		}
 		
 		return self::filterStopWords($words);
 	}

@@ -945,6 +945,13 @@ class SearchResult extends BaseObject {
 	 * by locale_id or code (if "returnAllLocales" is set), then the id specific to the data item (Eg. internal attribute_id for metadata, label_id for labels, Etc.), and finally an array with keys set to data element names
 	 * and associated values.
 	 *
+	 * Values for a limited set of system constants set in setup.php can be obtained through get(). These constants are:
+	 *		__CA_APP_NAME__ = application code
+	 *		__CA_APP_DISPLAY_NAME__ = application name for end-user display
+	 *		__CA_SITE_HOSTNAME__ = hostname of installation (Eg. collections.mymuseum.org)
+	 *
+	 * Constants are always returned as string values. When the returnAsArray or returnWithStructure options are set an array with a single element containing the value will be returned.
+	 *
 	 * Return values can be modified using the following options:
 	 *
 	 *		[Options controlling type of return value]
@@ -1026,6 +1033,11 @@ class SearchResult extends BaseObject {
 			$vb_return_with_structure = $vb_return_all_locales = false;
 			$pa_options['template'] = null;
 			$pa_options['returnAsSearchResult'] = false;
+		}
+		
+		// Get system constant?
+		if(in_array($ps_field, ['__CA_APP_NAME__', '__CA_APP_DISPLAY_NAME__', '__CA_SITE_HOSTNAME__']) && defined($ps_field)) {
+			return ($vb_return_as_array || $vb_return_with_structure) ? [constant($ps_field)] : constant($ps_field);
 		}
 		
 		$vb_convert_line_breaks = isset($pa_options['convertLineBreaks']) ? (bool)$pa_options['convertLineBreaks'] : false;

@@ -129,7 +129,7 @@
 				
 				$va_initial_values[$vn_attr_id][$vn_element_id] = $vs_display_val;
 				
-				if ($attr_table && isset($va_element_info[$vn_element_id]) && ((isset($va_element_info[$vn_element_id]['settings']['render']) && ($va_element_info[$vn_element_id]['settings']['render'] == 'lookup')) || $minimize_existing_values)) {		// autocompleter-based mode for list attributes
+				if ($attr_table && isset($va_element_info[$vn_element_id]) && ((isset($va_element_info[$vn_element_id]['settings']['render']) && in_array($va_element_info[$vn_element_id]['settings']['render'], ['lookup', 'horiz_hierbrowser', 'horiz_hierbrowser_with_search', 'vert_hierbrowser', 'vert_hierbrowser_up', 'vert_hierbrowser_down'])) || $minimize_existing_values)) {		// autocompleter-based mode for list attributes
 					$va_template_tags[] = "{$vn_element_id}_label";
 					$va_initial_values[$vn_attr_id]["{$vn_element_id}_label"] = '';
 					$va_item_ids[$attr_table][] = (int)$vs_display_val;

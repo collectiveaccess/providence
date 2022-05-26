@@ -583,6 +583,7 @@ class Datamodel {
 	 *
 	 */
 	static public function getPath($ps_left_table, $ps_right_table) {
+		if(!$ps_left_table || !$ps_right_table) { return []; }
 		if (is_numeric($ps_left_table)) { $ps_left_table = Datamodel::getTableName($ps_left_table); }
 		if (is_numeric($ps_right_table)) { $ps_right_table = Datamodel::getTableName($ps_right_table); }
 

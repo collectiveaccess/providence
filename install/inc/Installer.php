@@ -905,7 +905,7 @@ class Installer {
 			$t_entry = new \ca_metadata_dictionary_entries();
 			$t_entry->set('bundle_name', $entry['bundle']);
 			$t_entry->set('table_num', $table_num);
-			$this->_processSettings($t_entry, $entry['settings'], ['source' => "MetadataDictionary:table {$table_num}:".$entry['bundle']]);
+			$this->_processSettings($t_entry, $entry['settings'], ['leftTable' => $entry['table'], 'rightTable' => $entry['bundle'], 'source' => "MetadataDictionary:table {$table_num}:".$entry['bundle']]);
 			
 			$t_entry->insert();
 
@@ -1180,9 +1180,18 @@ class Installer {
 							$placement['settings']['bundleTypeRestrictionsIncludeSubtypes'][''][] = $bundle_type_restrictions_include_sub_types;
 						}
 					}
+					
+					// Allow for <table>_table (Ex. ca_objects_table)
+					if(!($table = \Datamodel::tableExists($bundle) ? $bundle : null)) {
+						$tbundle = preg_replace('!_table$!', '', $bundle);
+						if(($tbundle !== $bundle) && \Datamodel::tableExists($tbundle)) {
+							$table = $tbundle;
+						}
+					}
+					
 					$settings = $this->_processSettings(null, $placement['settings'], [
-						'table' => \Datamodel::tableExists($bundle) ? $bundle : null, 
-						'leftTable' => \Datamodel::tableExists($bundle) ? $bundle : null, 
+						'table' => $table, 
+						'leftTable' => $table, 
 						'rightTable' => \Datamodel::tableExists($type) ? $type : null, 
 						'settingsInfo' => array_merge($t_placement->getAvailableSettings(), is_array($available_bundles[$bundle]['settings']) ? $available_bundles[$bundle]['settings'] : []),
 						'source' => "UserInterface:{$ui_code}:Screen {$screen_idno}:Placement {$placement_code}"
@@ -1751,6 +1760,8 @@ class Installer {
 			$this->logStatus(_t('Successfully nuked all placements for display with code %1', $t_display->get('display_code')));
 			$this->db->query('DELETE FROM ca_bundle_display_placements WHERE display_id = ?', $t_display->getPrimaryKey());
 		}
+		
+		$table = \Datamodel::getTableName($t_display->get('table_num'));
 
 		$i = 1;
 		$display_code = $t_display->get('ca_bundle_displays.display_code');
@@ -1758,7 +1769,11 @@ class Installer {
 			$code = $placement["code"];
 			$bundle = (string)$placement['bundle'];
 
-			$settings = $this->_processSettings(null, $placement['settings'], ['source' => "Display:{$display_code}:Placement {$code}"]);
+			$settings = $this->_processSettings(null, $placement['settings'], [
+				'source' => "Display:{$display_code}:Placement {$code}",
+				'leftTable' => \Datamodel::tableExists($bundle) ? $bundle : null,
+				'rightTable' => $table, 
+			]);
 			$t_display->addPlacement($bundle, $settings, $i, ['additional_settings' => $available_bundles[$bundle]['settings']]);
 			if ($t_display->numErrors()) {
 				$this->addError('processDisplayPlacements', _t("There was an error while inserting display placement %1: %2", $code, join(" ",$t_display->getErrors())));
@@ -2373,7 +2388,7 @@ class Installer {
 									if($rel_table = \Datamodel::getLinkingTableName($table, $right_table)) {
 										if(is_array($ret = caValidateRelationshipTypeList($rel_table, $setting_value))) {
 											foreach(array_keys(array_filter($ret, function($v) { return !$v; })) as $bad_type) {
-												$this->addError('processSettings', _t('Relationship type %1 is not valid for %2; set in relationship type restriction setting %3 for %4', $bad_type, $table, $setting_value, $source));
+												$this->addError('processSettings', _t('Relationship type %1 is not valid for %2 (%3); set in relationship type restriction setting %4 for %5', $bad_type, $table, $rel_table, $setting_value, $source));
 											}
 										} else {
 											$this->addError('processSettings', _t('Relationship type %1 is not valid for %2 because no types are defined; set in relationship type restriction setting %3 for %4', $bad_type, $table, $setting_value, $source));
