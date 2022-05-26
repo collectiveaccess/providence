@@ -212,6 +212,7 @@ class ca_data_importer_groups extends BaseModel {
 			return false;
 		}
 		
+		$this->updateGroupDestination();
 		if (isset($options['returnInstance']) && $options['returnInstance']) {
 			return $t_item;
 		}
@@ -243,6 +244,7 @@ class ca_data_importer_groups extends BaseModel {
 			return false;
 		}
 		
+		$this->updateGroupDestination();
 		if (isset($options['returnInstance']) && $options['returnInstance']) {
 			return $t_item;
 		}
@@ -270,6 +272,33 @@ class ca_data_importer_groups extends BaseModel {
 		}
 		
 		return $return;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function updateGroupDestination() {
+		$items = $this->getItems();
+		$acc = null;
+		foreach($items as $item_id => $item) {
+			if (is_null($acc)) { 
+				$acc = explode(".", $item['destination']);
+			} else {
+				$tmp = explode(".", $item['destination']);
+			
+				$len = sizeof($acc);
+				for($i=$len - 1; $i >= 0; $i--) {
+					if (!isset($tmp[$vn_i]) || ($acc[$i] != $tmp[$i])) {
+						for($x = $i; $x < $len; $x++) {
+							unset($acc[$x]);
+						}
+					}
+				}
+			}
+		}
+		
+		$this->set('destination', join(".", $acc));
+		return $this->update();
 	}
 	# ------------------------------------------------------
 	/**
@@ -307,6 +336,13 @@ class ca_data_importer_groups extends BaseModel {
 		foreach($this->getItemIDs() as $vn_item_id){
 			$this->removeItem($vn_item_id);
 		}
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function numItems(){
+		return sizeof($this->getItemIDs());
 	}
 	# ------------------------------------------------------
 }

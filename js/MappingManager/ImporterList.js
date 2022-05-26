@@ -98,7 +98,7 @@ const ImporterList = () => {
 
         <h1 className='mb-5'>Importers List</h1>
 
-        <h3>Add and importer</h3>
+        <h3>Add an importer</h3>
 
         <div className='row justify-content-end mt-5 mr-2'>
           <button className='btn btn-secondary btn-sm' onClick={(e) => addNewImporter(e)}>Add Importer +</button>

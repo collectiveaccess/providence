@@ -37,7 +37,7 @@ const getImportersList = (url, callback) => {
     .then(function (result) {
       callback(result.data['list']);
     }).catch(function (error) {
-      console.log("Error while attempting to get importer List: ", error);
+      console.log("Error while attempting to get importer list: ", error);
     });
 }
 
@@ -200,6 +200,35 @@ function reorderMappings(uri, id, data, callback) {
     });
 }
 
+function reorderGroups(uri, id, data, callback) {
+  const client = getGraphQLClient(uri, {});
+  client
+    .mutate({
+      mutation: gql
+        `
+          mutation (
+            $id: Int, 
+            $data: ImporterReorderInputType, 
+          ) 
+          { 
+            reorderGroups (
+              id: $id, 
+              data: $data, 
+            ) 
+            {
+              id, errors { message }
+            } 
+          }
+        `
+      , variables: { "id": id, "data": data }
+    })
+    .then(function (result) {
+      callback(result.data['reorderGroups']);
+    }).catch(function (error) {
+      console.log("Error while attempting to reorder groups: ", error);
+    });
+}
+
 function deleteImporter(uri, id, callback) {
   const client = getGraphQLClient(uri, {});
   client
@@ -318,6 +347,6 @@ export {
 	getImportersList, 
 	addImporter, editImporter, deleteImporter, 
 	deleteMapping, editMappings, getImporterForm, getNewImporterForm, 
-	getListMappings, reorderMappings,
+	getListMappings, reorderMappings, reorderGroups,
 	getAvailableBundles
 };

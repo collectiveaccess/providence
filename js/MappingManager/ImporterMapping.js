@@ -81,8 +81,6 @@ const ImporterMapping = () => {
     // console.log("state has changed");
   }, [mappingDataList, importerFormData])
   
-  // console.log("importerFormData: ", importerFormData);
-
   return (
     <div>
       <div className='row justify-content-start my-2'>
@@ -97,9 +95,6 @@ const ImporterMapping = () => {
         <div className='col text-left p-0'>
           <button className={changesMade ? 'btn btn-success' : 'btn btn-secondary'} onClick={saveImporter}>Save Changes</button>
         </div>
-        {/* <div className='col text-right p-0 ml-5'>
-          <button className='btn btn-secondary'>Preview import +</button>
-        </div> */}
       </div> 
 
       <MappingList />

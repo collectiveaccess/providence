@@ -495,7 +495,7 @@ class MetadataImportController extends \GraphQLServices\GraphQLServiceController
 						if(!$t_importer = ca_data_importers::findAsInstance(['importer_id' => $args['id']])) {
 							$errors[] = Error\error($args['id'], 750, _t('Importer with id %1 does not exist', $args['id']), 'GENERAL');
 						}
-						if(!$t_importer->delete(true)) {
+						if(!$t_importer->delete(true, ['hard' => true])) {
 							foreach($t_importer->getErrors() as $e) {
 								$errors[] = Error\error($args['id'], $e->getErrorNumber(), $e->getErrorDescription());
 							}
@@ -537,8 +537,9 @@ class MetadataImportController extends \GraphQLServices\GraphQLServiceController
 						if(!$t_importer = ca_data_importers::findAsInstance(['importer_id' => $args['id']])) {
 							$errors[] = Error\error($args['id'], 750, _t('Importer with id %1 does not exist', $args['id']), 'GENERAL');
 						} else {
+							$t_new_group = null;
 							foreach($args['mappings'] as $i => $mapping) {
-								$group = caGetOption('group', $mapping, "group_{$i}");
+								$group = caGetOption('group', $mapping, null);
 								$source = $mapping['source'];
 								$destination = $mapping['destination'];
 								$mapping_type = $mapping['type'];
@@ -554,13 +555,19 @@ class MetadataImportController extends \GraphQLServices\GraphQLServiceController
 									
 								}
 							
-								if(!$source || !$destination) {
-									$warnings[] = Error\warning($args['id'], 750, _t('No source or destination specified for mapping'), 'MAPPING');
-									continue;
+								// if(!$source || !$destination) {
+// 									$warnings[] = Error\warning($args['id'], 750, _t('No source or destination specified for mapping'), 'MAPPING');
+// 									continue;
+// 								}
+								
+							
+								if(is_null($group) || !($t_group = $t_importer->getGroup($group))) {
+									if(is_null($t_new_group)) {
+										$t_new_group = $t_importer->addGroup(caGenerateGUID(), $destination, [], ['returnInstance' => true]);
+									} 
+									$t_group = $t_new_group;
 								}
-							
-								$t_group = $t_importer->getGroup($group);
-							
+								
 								$settings = [];
 							
 								if(is_array($mapping['options'])) {
@@ -663,7 +670,7 @@ class MetadataImportController extends \GraphQLServices\GraphQLServiceController
 						[
 							'name' => 'data',
 							'type' => MetadataImportSchema::get('ImporterReorderInputType'),
-							'description' => _t('Reorder values for mapping')
+							'description' => _t('Reorder values for mappings')
 						]
 					],
 					'resolve' => function ($rootValue, $args) {
@@ -681,6 +688,48 @@ class MetadataImportController extends \GraphQLServices\GraphQLServiceController
 							$sorted_id_int_arr = array_filter(array_map(function($v) { return (int)$v; }, $sorted_id_arr), function($v) { return ($v > 0); });
 						
 							$errors = $t_importer->reorderItems($sorted_id_int_arr);
+							
+							return ['id' => [$args['id']], 'errors' => $errors, 'warnings' => [], 'info' => []];
+						}
+					}
+				],
+				'reorderGroups' => [
+					'type' => MetadataImportSchema::get('ImporterResult'),
+					'description' => _t('Reorder groups'),
+					'args' => [
+						[
+							'name' => 'jwt',
+							'type' => Type::string(),
+							'description' => _t('JWT'),
+							'defaultValue' => self::getBearerToken()
+						],
+						[
+							'name' => 'id',
+							'type' => Type::int(),
+							'description' => _t('ID of importer to reorder'),
+							'defaultValue' => null
+						],
+						[
+							'name' => 'data',
+							'type' => MetadataImportSchema::get('ImporterReorderInputType'),
+							'description' => _t('Reorder values for groups')
+						]
+					],
+					'resolve' => function ($rootValue, $args) {
+						if (!($u = self::authenticate($args['jwt']))) {
+							throw new ServiceException(_t('Invalid JWT'));
+						}
+						
+						$errors = [];
+						if (!is_a($t_importer = self::_loadImporter($args['id']), 'ca_data_importers')) {
+							$errors[] = $t_importer;
+						} else {
+
+							$sorted_id_str = $args['data']['sorted_ids'];
+							$sorted_id_arr = preg_split('![&;,]!', $sorted_id_str);
+							$sorted_id_int_arr = array_filter(array_map(function($v) { return (int)$v; }, $sorted_id_arr), function($v) { return ($v > 0); });
+						
+							$errors = $t_importer->reorderGroups($sorted_id_int_arr);
 							
 							return ['id' => [$args['id']], 'errors' => $errors, 'warnings' => [], 'info' => []];
 						}

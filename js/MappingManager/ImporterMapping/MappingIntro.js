@@ -12,7 +12,7 @@ const MappingIntro = () => {
 
   const [importerUiSchema, setImporterUiSchema] = useState({
     "ca_data_importers.importer_code": {
-      classNames: "col"
+      classNames: "col importer_code",
     },
     "ca_data_importers.preferred_labels.name": {
       classNames: "col"
@@ -47,12 +47,6 @@ const MappingIntro = () => {
           "properties": importer_properties
         };
         
-        /// LOAD POSSIBLE targets (may not need this)
-        // getAvailableBundles(appData.baseUrl + "/Schema", "ca_objects", data => {
-//         	console.log("SET BUNDLES", data['bundles']);
-//         	setAvailableBundles(data['bundles']);
-//         });
-
         const importer_data = Object.keys(JSON.parse(data.values))
           .filter((key) => key.includes("ca_data_importers"))
           .reduce((obj, key) => {
@@ -99,7 +93,19 @@ const MappingIntro = () => {
 
 
   const saveFormData = (formData) => {
-    setImporterFormData(formData)
+
+    let temp_data, name
+
+    temp_data = {...formData}
+    name = temp_data["ca_data_importers.preferred_labels.name"]
+
+    if (name) {
+      let code = name.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()'"]/g, "").replace(/ /g, "_")
+      temp_data["ca_data_importers.importer_code"] = code
+    }
+    setImporterFormData(temp_data)
+
+    // setImporterFormData(formData)
     setChangesMade(true)
   }
 
