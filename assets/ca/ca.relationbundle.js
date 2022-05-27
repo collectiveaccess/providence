@@ -250,9 +250,10 @@ var caUI = caUI || {};
                 }
 		
 				jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id + ' option').remove();	// clear existing options
+				
 				jQuery.each(types, function (i, t) {
 					var type_direction = (t.direction) ? t.direction+ "_" : '';
-					jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).append("<option value='" + type_direction + t.type_id + "'>" + t.typename + "</option>");
+					jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).append("<option value='" + type_direction + t.type_id + "' " + (t.disabled ? "disabled='1'" : '') + ">" + t.typename + "</option>");
 				});
 		
 				// select default

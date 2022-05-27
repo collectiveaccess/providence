@@ -286,6 +286,11 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 						$va_restrict_to_type_list[] = "(crt.hier_left >= ".$t_rel_type->get('hier_left')." AND crt.hier_right <= ".$t_rel_type->get('hier_right').")";
 					}
 				}
+				
+				if(sizeof($add_parents = $this->_expandRestrictionWithParents($pa_options['restrict_to_relationship_types']))) {
+					$va_restrict_to_type_list[] = "(crt.type_id IN (".join(',', $add_parents)."))";
+				}
+				
 				if (sizeof($va_restrict_to_type_list)) {
 					$vs_restrict_to_relationship_type_sql = " AND (".join(' OR ', $va_restrict_to_type_list).")";
 				}
@@ -361,6 +366,22 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 	}
 	# ------------------------------------------------------
 	/**
+	 *
+	 */
+	private function _expandRestrictionWithParents(array $types) : array {
+		$t_rel_type = new ca_relationship_types();
+		$type_info = $t_rel_type->getRelationshipInfo($this->tableName());
+		$expanded_types = [];
+		foreach($types as $type_id) {
+			$ancestor_types = $t_rel_type->getHierarchyAncestors($type_id,['idsOnly' => true, 'omitRoot' => true, 'includeSelf' => false]);
+			if(is_array($ancestor_types) && sizeof($ancestor_types)) {
+				$expanded_types = array_merge($expanded_types, $ancestor_types);
+			}
+		}
+		return array_unique(array_filter($expanded_types, 'is_numeric'));
+	}
+	# ------------------------------------------------------
+	/**
 	 * Returns an associative array of relationship types for the relationship
 	 * organized by the sub_type_id specified by $ps_orientation. If $ps_orientation is the name of the "right" table
 	 * then sub_type_left_id is used for keys in the array, if $ps_orientation is the name of the "left" table
@@ -383,6 +404,8 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 		$o_db = $this->getDb();
 		$t_rel_type = new ca_relationship_types();
 		
+		// Expand restriction to include parent types
+		
 		$vs_restrict_to_relationship_type_sql = '';
 		if (isset($restrict_to_relationship_types) && $restrict_to_relationship_types) {
 			if(!is_array($restrict_to_relationship_types)) {
@@ -390,7 +413,6 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 			}
 			if(sizeof($restrict_to_relationship_types)) {
 				$va_restrict_to_type_list = [];
-				
 				foreach($restrict_to_relationship_types as $vs_type_code) {
 					if (!strlen(trim($vs_type_code))) { continue; }
 					
@@ -403,6 +425,10 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 					if ($t_rel_type->load($va_criteria)) {
 						$va_restrict_to_type_list[] = "(crt.hier_left >= ".$t_rel_type->get('hier_left')." AND crt.hier_right <= ".$t_rel_type->get('hier_right').")";
 					}
+				}
+				
+				if(sizeof($add_parents = $this->_expandRestrictionWithParents($restrict_to_relationship_types))) {
+					$va_restrict_to_type_list[] = "(crt.type_id IN (".join(',', $add_parents)."))";
 				}
 				
 				if (sizeof($va_restrict_to_type_list)) {
@@ -554,6 +580,10 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
                                     $va_types[$vn_parent_id][$vs_right_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
                                 }
                             }
+                            
+							if(in_array($va_tmp['type_id'], $add_parents)) {
+								$va_tmp['disabled'] = true;
+							}
 							
 							if (!isset($va_types[$vn_parent_id][$vs_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']])) {
 								$va_types[$vn_parent_id][$vs_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;	
@@ -585,6 +615,10 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 	
 							$vs_key = ((strlen($va_tmp['rank']) > 0)  ? sprintf("%08d", (int)$va_tmp['rank']) : "").preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename']);
 							$va_tmp['direction'] = 'rtol';
+							
+							if(in_array($va_tmp['type_id'], $add_parents)) {
+								$va_tmp['disabled'] = true;
+							}
 							
 							if(is_array($va_right_x)) {
                                 foreach($va_right_x as $vs_right_subtype) {
@@ -666,6 +700,10 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 					
 					$vs_key = ((strlen($va_row['rank']) > 0)  ? sprintf("%08d", (int)$va_row['rank']) : "").preg_replace('![^A-Za-z0-9_]+!', '_', mb_strtolower($va_row['typename_reverse']));
 				
+				}
+				
+				if(in_array($va_row['type_id'], $add_parents)) {
+					$va_row['disabled'] = true;
 				}
 				unset($va_row['typename_reverse']);		// we pass the typename adjusted for direction in '_display', so there's no need to include typename_reverse in the returned values
 				if (!$vs_subtype) { $vs_subtype = 'NULL'; }
