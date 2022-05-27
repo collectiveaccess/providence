@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -60,7 +60,7 @@ BaseModel::$s_ca_models_definitions['ca_relationship_types'] = array(
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '0',
-				'LABEL' => _t('Include subtypes in "left" side restriction?'), 'DESCRIPTION' => _t('Automatically nclude subtypes of selected left-side restriction.')
+				'LABEL' => _t('Include subtypes in "left" side restriction?'), 'DESCRIPTION' => _t('Automatically include subtypes of selected left-side restriction.')
 		),
 		'sub_type_right_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -74,7 +74,7 @@ BaseModel::$s_ca_models_definitions['ca_relationship_types'] = array(
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '0',
-				'LABEL' => _t('Include subtypes in "right" side restriction?'), 'DESCRIPTION' => _t('Automatically nclude subtypes of selected left-side restriction.')
+				'LABEL' => _t('Include subtypes in "right" side restriction?'), 'DESCRIPTION' => _t('Automatically include subtypes of selected left-side restriction.')
 		),
 		'parent_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
@@ -350,18 +350,27 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 * Return information, including typenames filterd by user locale, for relationship types for the 
 	 * specified relationship table (eg. ca_objects_x_entities, ca_entities_x_occurrences).
 	 *
+	 * @params mixed $pm_table_name_or_num
+	 * @params string $ps_type_code
+	 * @params array $options Options include:
+	 *      includeTypeCodesAsKeys = Also set type codes are keys in the returned array. [Default is false]
+	 *
 	 * Returns array keyed on relationship type_id; values are associative arrays keys on ca_relationship_types/ca_relationship_type_labels field names
 	 */
-	public function getRelationshipInfo($pm_table_name_or_num, $ps_type_code=null) {
+	public function getRelationshipInfo($pm_table_name_or_num, $ps_type_code=null, $options=null) {
 		if (!is_numeric($pm_table_name_or_num)) {
 			$vn_table_num = Datamodel::getTableNum($pm_table_name_or_num);
 		} else {
 			$vn_table_num = $pm_table_name_or_num;
 		}
 		
+		$include_type_codes_as_keys = caGetOption('includeTypeCodesAsKeys', $options, false);
+		
+		$params = [(int)$vn_table_num];
 		$vs_type_sql = '';
 		if ($ps_type_code) {
-			$vs_type_sql = " AND (crt.type_code = '".$this->getDb()->escape($ps_type_code)."')";
+			$vs_type_sql = " AND ((crt.type_code = ?) || (crtl.typename = ?) || (crtl.typename_reverse = ?))";
+			$params[] = $ps_type_code; $params[] = $ps_type_code; $params[] = $ps_type_code;
 		}
 		
 		$qr_res = $this->getDb()->query("
@@ -370,13 +379,16 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 			INNER JOIN ca_relationship_type_labels AS crtl ON crt.type_id = crtl.type_id
 			WHERE
 				(crt.table_num = ?) {$vs_type_sql}
-		", (int)$vn_table_num);
+		", $params);
 		
-		$va_relationships = array();
+		$va_relationships = [];
 		while ($qr_res->nextRow()) {
 			$va_row = $qr_res->getRow();
 			$va_row['type_code'] = mb_strtolower($va_row['type_code']);
-			$va_relationships[$qr_res->get('type_id')][$qr_res->get('locale_id')] = $va_row;
+			$va_relationships[$qr_res->get('type_id')][$locale_id = $qr_res->get('locale_id')] = $va_row;
+			if ($include_type_codes_as_keys) {
+			    $va_relationships[$va_row['type_code']][$locale_id] = $va_row;
+			}
 		}
 		return caExtractValuesByUserLocale($va_relationships);
 	}
@@ -385,11 +397,16 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 * @param array $pa_options Option are
 	 *		create = create relationship type using parameters if one with the specified type code or type_id doesn't exist already [default=false]
 	 *		cache = cache relationship types as they are referenced and return cached value if possible [default=true]
+	 *		matchOn = List of values to match on. Valid entries as "type_code", "typecode", "label", "label". [default=null]
 	 */
 	public function getRelationshipTypeID($pm_table_name_or_num, $pm_type_code_or_id, $pn_locale_id=null, $pa_values=null, $pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		if (!isset($pa_options['create'])) { $pa_options['create'] = false; }
 		if (!isset($pa_options['cache'])) { $pa_options['cache'] = true; }
+		
+		if(!is_array($match_on = caGetOption('matchOn', $pa_options, []))) { $match_on = []; }
+		$match_on = array_filter(array_map('strtolower', $match_on), function ($v) { return in_array($v, ['type_code', 'typecode', 'label', 'labels']); });
+		if(!sizeof($match_on)) { $match_on = ['type_code']; }
 		
 		$pm_type_code_or_id = mb_strtolower($pm_type_code_or_id);
 		
@@ -411,8 +428,21 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		} else {
 			if ($va_relationships = $this->getRelationshipInfo($pm_table_name_or_num, $pm_type_code_or_id)) {
 				foreach($va_relationships as $vn_type_id => $va_type_info) {
-					if ($va_type_info['type_code'] == $pm_type_code_or_id) {
-						return ca_relationship_types::$s_relationship_type_id_cache[$vn_table_num.'/'.$pm_type_code_or_id] = $vn_type_id;
+					foreach($match_on as $m) {
+						switch($m) {
+							case 'type_code':
+							case 'typecode':
+								if ((mb_strtolower($va_type_info['type_code']) === $pm_type_code_or_id)) {
+									return ca_relationship_types::$s_relationship_type_id_cache[$vn_table_num.'/'.$pm_type_code_or_id] = $vn_type_id;
+								}	
+								break;
+							case 'label':
+							case 'labels':
+								if ((mb_strtolower($va_type_info['typename']) === $pm_type_code_or_id) || (mb_strtolower($va_type_info['typename_reverse']) === $pm_type_code_or_id)) {
+									return ca_relationship_types::$s_relationship_type_id_cache[$vn_table_num.'/'.$pm_type_code_or_id] = $vn_type_id;
+								}	
+								break;
+						}
 					}
 				}
 			}
@@ -529,7 +559,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 public function relationshipTypeListToIDs($pm_table_name_or_num, $pa_list, $pa_options=null) {
 	 	$va_rel_ids = array();
 		foreach($pa_list as $vm_type) {
-			if ($vn_type_id = $this->getRelationshipTypeID($pm_table_name_or_num, $vm_type)) {
+			if ($vn_type_id = $this->getRelationshipTypeID($pm_table_name_or_num, $vm_type, null, null, $pa_options)) {
 				$va_rel_ids[] = $vn_type_id;
 			}
 		}
@@ -544,6 +574,22 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		return $va_rel_ids;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Check a list of relationship type codes and/or ids for validity
+	 *
+	 * @param mixed $table_name_or_num The name or number of the relationship table that the types are valid for (Eg. ca_objects_x_entities)
+	 * @param array $list A list of relationship type_code string and/or numeric type_ids
+	 * @param array $options No options are supported
+	 * @return array 
+	 */
+	 public function validateRelationshipTypeCodes($table_name_or_num, array $list, ?array $options=null) {
+	 	$ret = [];
+		foreach($list as $type) {
+			$ret[$type] = (bool)$this->getRelationshipTypeID($table_name_or_num, $type, null, null, ['cache' => false]);
+		}
+		return $ret;
 	}
 	# ------------------------------------------------------
 	/**
@@ -641,7 +687,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 	while($qr_res->nextRow()) {
 	 		$va_type_ids_to_codes[$qr_res->get('type_id')] = $qr_res->get('type_code');
 	 	}
-	 	return ca_relationship_types::$s_relationship_type_id_to_code_cache[$vs_key] = $va_type_ids_to_codes + $va_non_numerics;
+	 	return ca_relationship_types::$s_relationship_type_id_to_code_cache[$vs_key] = array_merge($va_type_ids_to_codes, $va_non_numerics);
 	}
 	# ------------------------------------------------------
 	 public function getHierarchyList($pb_vocabularies=false) {
@@ -850,7 +896,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
  	 */
  	public function isSaveable($po_request, $ps_bundle_name=null) {
  		// Check actions
- 		if ($po_request->user->canDoAction('is_administrator')) {
+ 		if ($po_request->user->canDoAction('is_administrator') || $po_request->user->canDoAction('can_configure_relationship_types')) {
  			return true;
  		}
  		
@@ -865,7 +911,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
  		if (!$this->getPrimaryKey()) { return false; }
  			
  		// Check actions
- 		if ($this->getPrimaryKey() && $po_request->user->canDoAction('is_administrator')) {
+ 		if ($this->getPrimaryKey() && ($po_request->user->canDoAction('is_administrator') || $po_request->user->canDoAction('can_configure_relationship_types'))) {
  			return true;
  		}
  		
