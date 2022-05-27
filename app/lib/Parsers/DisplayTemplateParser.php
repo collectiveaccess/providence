@@ -582,6 +582,7 @@ class DisplayTemplateParser {
 					
 					$vn_start = (int)$o_node->start;
 					$vn_length = (int)$o_node->length;
+					$limit = (int)$o_node->limit;
 					
 					$pa_check_access = ($t_instance->hasField('access')) ? caGetOption('checkAccess', $pa_options, null) : null;
 					if (!is_array($pa_check_access) || !sizeof($pa_check_access)) { $pa_check_access = null; }
@@ -704,6 +705,9 @@ class DisplayTemplateParser {
 								]
 							)
 						);
+						if($limit > 0) { 
+							$va_tmpl_val = array_slice($va_tmpl_val, 0, $limit);
+						}
 						
 						if ($vb_unique) { $va_tmpl_val = array_unique($va_tmpl_val); }
 						if (($vn_start > 0) || !is_null($vn_length)) { 
@@ -881,6 +885,10 @@ class DisplayTemplateParser {
 							)
 						);
 						if ($vb_unique) { $va_tmpl_val = array_unique($va_tmpl_val); }
+						
+						if($limit > 0) { 
+							$va_tmpl_val = array_slice($va_tmpl_val, 0, $limit);
+						}
 						if (($vn_start > 0) || !is_null($vn_length)) { 
 							$vn_last_unit_omit_count = $vn_num_vals -  ($vn_length - $vn_start);
 						}
