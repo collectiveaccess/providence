@@ -117,7 +117,7 @@
 				foreach($occ_types as $vn_type_id => $va_type_info) {
 					if (!$subject_table::historyTrackingPolicyUses($policy, 'ca_occurrences', $va_type_info['idno'])) { continue; }
 ?>
-					<div style='float: left;' class='button caAddOccurrenceButton'><a href="#" id="<?= $vs_id_prefix; ?>AddOcc<?= $vn_type_id; ?>"><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= caGetOption('occurrence_control_label', $settings, _t('Add to Occurrence'), ['defaultOnEmptyString' => true]); ?></a></div>
+					<div style='float: left;' class='button caAddOccurrenceButton <?= $vs_id_prefix; ?>caAddOccurrenceButton<?= $vn_type_id; ?>'><a href="#" id="<?= $vs_id_prefix; ?>AddOcc<?= $vn_type_id; ?>"><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= caGetOption('occurrence_control_label', $settings, _t('Add to %1', caGetOption('name_singular', $va_type_info, 'occurrence')), ['defaultOnEmptyString' => true]); ?></a></div>
 <?php					
 				}
 			}
@@ -128,7 +128,7 @@
 				foreach($coll_types as $vn_type_id => $va_type_info) {
 					if (!$subject_table::historyTrackingPolicyUses($policy, 'ca_collections', $va_type_info['idno'])) { continue; }
 ?>
-				<div style='float: left;'  class='button caAddCollectionButton caAddCollectionButton<?= $vn_type_id; ?>'><a href="#" id="<?= $vs_id_prefix; ?>AddColl<?= $vn_type_id; ?>"><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= _t(caGetOption('collection_control_label', $settings, _t('Add to %1'), ['defaultOnEmptyString' => true]), $va_type_info['name_singular']); ?></a></div>
+				<div style='float: left;'  class='button caAddCollectionButton <?= $vs_id_prefix; ?>caAddCollectionButton<?= $vn_type_id; ?>'><a href="#" id="<?= $vs_id_prefix; ?>AddColl<?= $vn_type_id; ?>"><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= _t(caGetOption('collection_control_label', $settings, _t('Add to %1', caGetOption('name_singular', $va_type_info, 'collection')), ['defaultOnEmptyString' => true]), $va_type_info['name_singular']); ?></a></div>
 <?php		
 				}
 			}
@@ -139,7 +139,7 @@
 				foreach($entity_types as $vn_type_id => $va_type_info) {
 					if (!$subject_table::historyTrackingPolicyUses($policy, 'ca_entities', $va_type_info['idno'])) { continue; }
 ?>
-				<div style='float: left;' class='button caAddEntityButton caAddEntityButton<?= $vn_type_id; ?>'><a href="#" id="<?= $vs_id_prefix; ?>AddEntity<?= $vn_type_id; ?>"><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= _t(caGetOption('entity_control_label', $settings, _t('Add to %1'), ['defaultOnEmptyString' => true]), $va_type_info['name_singular']); ?></a></div>
+				<div style='float: left;' class='button caAddEntityButton <?= $vs_id_prefix; ?>caAddEntityButton<?= $vn_type_id; ?>'><a href="#" id="<?= $vs_id_prefix; ?>AddEntity<?= $vn_type_id; ?>"><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= _t(caGetOption('entity_control_label', $settings, _t('Add to %1', caGetOption('name_singular', $va_type_info, 'entity')), ['defaultOnEmptyString' => true]), $va_type_info['name_singular']); ?></a></div>
 <?php		
 				}
 			}
