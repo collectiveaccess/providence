@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2020 Whirl-i-Gig
+ * Copyright 2015-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -104,7 +104,8 @@ class ExpressionVisitor implements Visitor\Visit {
 			'implode'		=> xcallable($implode),
 			'trim'			=> xcallable('trim'),
 			'idnoUseCount'	=> xcallable('caIdnoUseCount'),
-			'dateIsRange'	=> xcallable('caDateIsRange')
+			'dateIsRange'	=> xcallable('caDateIsRange'),
+			'fromUnixtime'	=> xcallable(function($arg) { return date('c', $arg); })
 		);
 		return;
 	}

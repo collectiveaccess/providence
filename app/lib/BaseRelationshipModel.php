@@ -266,6 +266,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 			$vs_sub_type_right_sql = '(crt.sub_type_right_id IS NULL OR crt.sub_type_right_id = ? OR (crt.include_subtypes_right = 1 AND crt.sub_type_right_id IN (?)))';
 		}
 		
+		$add_parents = [];
 		$vs_restrict_to_relationship_type_sql = '';
 		if (isset($pa_options['restrict_to_relationship_types']) && $pa_options['restrict_to_relationship_types']) {
 			if (!is_array($pa_options['restrict_to_relationship_types'])) {
@@ -405,7 +406,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 		$t_rel_type = new ca_relationship_types();
 		
 		// Expand restriction to include parent types
-		
+		$add_parents = [];
 		$vs_restrict_to_relationship_type_sql = '';
 		if (isset($restrict_to_relationship_types) && $restrict_to_relationship_types) {
 			if(!is_array($restrict_to_relationship_types)) {
