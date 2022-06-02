@@ -249,7 +249,7 @@ class SearchIndexer extends SearchBase {
 						ca_attributes::prefetchAttributes($o_db, $vn_table_num, $va_id_slice, $va_element_ids);
 					}
 					$qr_field_data = $o_db->query("
-						SELECT ".join(", ", array_keys($va_intrinsic_list))." 
+						SELECT ".join(", ", array_map(function($v) { return "`{$v}`"; }, array_keys($va_intrinsic_list)))." 
 						FROM {$vs_table}
 						WHERE {$vs_table_pk} IN (?)	
 					", array($va_id_slice));
@@ -888,8 +888,9 @@ if (!$for_current_value_reindex) {
 					$va_queries 			= $va_query_info['queries'];
 					$va_fields_to_index 	= $va_query_info['fields_to_index'];
 					$va_cv_fields_to_index  = $va_query_info['current_value_fields_to_index'];
-					
-						
+					if(!is_array($va_query_info)) {
+						throw new Exception(_t("Cannot get queries for: %1; search_indexing.conf is misconfigured?", $vs_related_table));
+					}
 					if ($vb_index_count = (isset($va_fields_to_index['_count']) && is_array($va_fields_to_index['_count']))) {
 						$va_counts = $this->_getInitedCountList($t_rel); 
 					}
