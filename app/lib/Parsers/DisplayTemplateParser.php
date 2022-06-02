@@ -274,10 +274,6 @@ class DisplayTemplateParser {
 			}
 		}
 		
-		if ($ps_skip_when && (($vn_start = caGetOption('unitStart', $pa_options, 0)) || ($vn_length = caGetOption('unitLength', $pa_options, null)))) {
-		    $va_proc_templates = array_slice($va_proc_templates, $vn_start, $vn_length);
-		}
-		
 		if ($pa_options['aggregateUnique']) {
 			$va_acc = [];
 			foreach($va_proc_templates as $va_val_list) {
@@ -288,6 +284,10 @@ class DisplayTemplateParser {
 				}
 			}
 			$va_proc_templates = array_unique($va_acc);
+		}
+		
+		if (($ps_skip_when || $pa_options['aggregateUnique']) && (($vn_start = caGetOption('unitStart', $pa_options, 0)) || ($vn_length = caGetOption('unitLength', $pa_options, null)))) {
+		    $va_proc_templates = array_slice($va_proc_templates, $vn_start, $vn_length);
 		}
 		
 		if (!$pb_include_blanks && !$pb_include_blanks_for_prefetch) { $va_proc_templates = array_filter($va_proc_templates, 'strlen'); }
@@ -705,11 +705,12 @@ class DisplayTemplateParser {
 								]
 							)
 						);
+						if ($vb_unique) { $va_tmpl_val = array_unique($va_tmpl_val); }
+						
 						if($limit > 0) { 
 							$va_tmpl_val = array_slice($va_tmpl_val, 0, $limit);
 						}
 						
-						if ($vb_unique) { $va_tmpl_val = array_unique($va_tmpl_val); }
 						if (($vn_start > 0) || !is_null($vn_length)) { 
 							$vn_last_unit_omit_count = sizeof($va_tmpl_val) - ($vn_length - $vn_start);
 						}
@@ -847,7 +848,7 @@ class DisplayTemplateParser {
 						}
 						
 						$vn_num_vals = sizeof($va_relative_ids);
-						if ((($vn_start > 0) || ($vn_length > 0)) && sizeof($va_relative_ids)) {
+						if ((!$vb_unique && !$vb_aggregate_unique) && ((($vn_start > 0) || ($vn_length > 0)) && sizeof($va_relative_ids))) {
 							// Only evaluate units that fall within the start/length window to save time
 							// We pass the full count of units as 'fullValueCount' to ensure that ^count, ^index and friends 
 							// are accurate.
@@ -884,11 +885,11 @@ class DisplayTemplateParser {
 								]
 							)
 						);
-						if ($vb_unique) { $va_tmpl_val = array_unique($va_tmpl_val); }
 						
 						if($limit > 0) { 
 							$va_tmpl_val = array_slice($va_tmpl_val, 0, $limit);
 						}
+						if ($vb_unique) { $va_tmpl_val = array_unique($va_tmpl_val); }
 						if (($vn_start > 0) || !is_null($vn_length)) { 
 							$vn_last_unit_omit_count = $vn_num_vals -  ($vn_length - $vn_start);
 						}
