@@ -219,7 +219,7 @@ class SchemaController extends \GraphQLServices\GraphQLServiceController {
 									}, $subelements);
 								}
 							}
-							//print_R($subelements);
+							
 							return [
 								'name' => $t->getDisplayLabel($t->tableName().'.'.$code),
 								'code' => $code,

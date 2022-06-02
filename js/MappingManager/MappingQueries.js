@@ -105,6 +105,26 @@ const getListMappings = (url, id, callback) => {
     });
 }
 
+const getDestinations = (url, id, search, callback) => {
+  const client = getGraphQLClient(url, {});
+  client
+    .query({
+      query: gql
+        `
+          query ($id: Int, $search: String) {
+            bundleLookup(id: $id, search: $search) {
+              matches {name, code, description}
+            }
+          }
+        `, variables: { "id": id, "search": search }
+    })
+    .then(function (result) {
+      callback(result.data['bundleLookup']);
+    }).catch(function (error) {
+      console.log("Error while attempting to get bundleLookup: ", error);
+    });
+}
+
 function addImporter(uri, name, formats, code, table, type, settings, callback) {
   const client = getGraphQLClient(uri, {});
   client
@@ -348,5 +368,5 @@ export {
 	addImporter, editImporter, deleteImporter, 
 	deleteMapping, editMappings, getImporterForm, getNewImporterForm, 
 	getListMappings, reorderMappings, reorderGroups,
-	getAvailableBundles
+  getAvailableBundles, getDestinations
 };

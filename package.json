@@ -31,6 +31,7 @@
     "precss": "^4.0.0",
     "react": "^17.0.2",
     "react-bootstrap": "^2.2.1",
+    "react-bootstrap-typeahead": "^6.0.0-alpha.12",
     "react-confirm-alert": "^2.8.0",
     "react-dom": "^17.0.2",
     "react-dropzone": "^11.4.2",

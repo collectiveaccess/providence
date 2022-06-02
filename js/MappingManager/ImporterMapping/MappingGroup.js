@@ -3,12 +3,11 @@ import { MappingContext } from '../MappingContext';
 import { getListMappings, editMappings, reorderMappings, deleteMapping } from '../MappingQueries';
 import { SortableContainer, SortableElement, SortableHandle } from 'react-sortable-hoc';
 import { arrayMoveImmutable } from 'array-move'; //used for the react-sortable-hoc
-import { animateScroll as scroll } from 'react-scroll'
 
 const appData = providenceUIApps.MappingManager.data;
 
-const DragHandle = SortableHandle(() => <span style={{fontSize: "20px", cursor: "pointer", padding: "0 0 0 7px"}}>::</span>);
-
+// const DragHandle = SortableHandle(() => <span style={{fontSize: "30px", cursor: "pointer"}}>::</span>);
+const DragHandle = SortableHandle(() => <span style={{ fontSize: "40px", cursor: "pointer" }}>⇳</span>);
 
 //The container holding the mapping items of a specific group
 const GroupContainer = SortableContainer(({ items }) => {
@@ -21,14 +20,16 @@ const GroupContainer = SortableContainer(({ items }) => {
   );
 });
 
+//A Mapping Item
 const Mapping = SortableElement(({ value }) => {
   return (
-  <div className="row mapping m-2 border border-secondary align-items-center" style={{ padding: '0px' }}>
+  <div className="row mapping m-2 p-1 border border-secondary align-items-center" style={{ padding: '0px' }}>
     {value}
   </div>
   )
 });
 
+//Mapping group it self is a sortable element
 const MappingGroup = SortableElement(({data, group_id, getImporterMappings}) => {
 
   const {importerId, setImporterId } = useContext(MappingContext)
@@ -65,10 +66,6 @@ const MappingGroup = SortableElement(({data, group_id, getImporterMappings}) => 
     })
   };
 
-  const getMappings = () =>{
-    getImporterMappings()
-  }
-
   const addMapping = () => {
     let mappingData = [{
       type: "MAPPING",
@@ -85,16 +82,23 @@ const MappingGroup = SortableElement(({data, group_id, getImporterMappings}) => 
     })
 
     setChangesMade(true);
-    scroll.scrollToBottom();
   } 
 
   return (
-    <div className='container group-container border p-0 mb-4' style={{ boxShadow: "0px 0px 2px 2px lightgray inset"}}>
-      <div className='row m-0 my-2 d-flex justify-content-between align-middle'>
-        <DragHandle /> <div className='ml-2 mt-1'><strong>Group: {group_id}</strong></div>
-        <button className='btn btn-secondary btn-sm mr-2 mt-1 h-25' onClick={() => addMapping()}>+ Mapping</button>
+    <div className='container group-container border p-0 pb-1 mb-4' style={{ boxShadow: "0px 0px 2px 2px lightgray inset"}}>
+      <div className='row m-0 my-2 '>
+        <div className='p-0 px-2 d-flex align-items-center'>
+          <button className='btn btn-sm d-block'><DragHandle /></button>
+        </div>
+
+        <div className='' style={{width: "700px"}}>
+          <div className='row m-0 d-flex align-items-center'>
+            <button className='btn btn-secondary btn-sm d-block m-0 ml-2' onClick={() => addMapping()}>+ Mapping</button>
+            <div className='ml-2 mt-1'><strong>Group: {group_id}</strong></div>
+          </div>
+          <GroupContainer axis='y' items={groupMappings} onSortEnd={onSortEnd} useDragHandle disableAutoscroll={true} />
+        </div>
       </div>
-      <GroupContainer axis='y' items={groupMappings} onSortEnd={onSortEnd} useDragHandle disableAutoscroll={true} />
     </div>
   )
 });

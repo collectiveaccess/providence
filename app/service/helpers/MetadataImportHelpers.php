@@ -27,14 +27,4 @@
  */
 namespace GraphQLServices\Helpers\Schema;
 
-/**
- * Return primary table names
- */
-function primaryTables() : array {
-	return [
-		'ca_objects', 'ca_collections', 'ca_entities', 
-		'ca_occurrences', 'ca_places', 'ca_list_items', 
-		'ca_storage_locations', 'ca_loans', 'ca_object_lots', 
-		'ca_movements', 'ca_object_representations'
-	];
-}
+

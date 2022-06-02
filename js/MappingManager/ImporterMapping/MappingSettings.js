@@ -10,6 +10,15 @@ const MappingSettings = () => {
   const { importerId, setImporterId, settingSchema, setSettingSchema, settingFormData, setSettingFormData, importerFormData, setImporterFormData
 } = useContext(MappingContext)
 
+  const [settingsUISchema, setSettingsUISchema] = useState({
+    "setting_type": {
+      classNames: "record_type"
+    },
+    "setting_numInitialRowsToSkip": {
+      classNames: "initial_rows_to_skip",
+    },
+  })
+
   useEffect(() => {
     if (importerId) {
       getImporterForm(appData.baseUrl + "/MetadataImport", importerId, data => {
@@ -110,31 +119,28 @@ const MappingSettings = () => {
 
   return (
     <div className='mapping-settings'>
-      {/* <!-- Button trigger modal --> */}
-      <button type="button" className="btn btn-outline-secondary mr-2" data-toggle="modal" data-target="#exampleModal">
+      <button type="button" className="btn btn-outline-secondary btn-sm" data-toggle="modal" data-target="#exampleModal">
         Settings +
       </button>
 
-      {/* <!-- Modal --> */}
       <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-          <div className="modal-content" style={{ maxHeight: "700px", width: "500px" }}>
+          <div className="modal-content" style={{ maxHeight: "50%", width: "min-content" }}>
             <div className="modal-header">
               <h5 className="modal-title" id="exampleModalLabel">Importer Settings</h5>
-              <button type="button" className="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
             </div>
-            <div className="modal-body text-left p-3">
+            <div className="modal-body text-left">
               {(settingSchema) ?
                 <Form
                   schema={settingSchema}
                   formData={settingFormData}
+                  uiSchema={settingsUISchema}
                 // onChange={(e) => { saveFormData(e.formData) }}
                 // onSubmit={console.log("submitted")}
                 // onError={console.log("errors")}
                 >
-                  <button id="form-submit-button" type="submit" className="btn btn-secondary" onClick={() => saveSettings()}>Save</button>
+                  <button id="form-submit-button" type="submit" className="btn btn-secondary mr-2" onClick={() => saveSettings()}>Save</button>
+                  <button type="button" data-dismiss="modal" aria-label="Close" className="btn btn-secondary">Cancel</button>
                 </Form>
                 : null
               }

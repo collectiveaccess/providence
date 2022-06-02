@@ -2,7 +2,7 @@ import React, {useContext, useState, useEffect} from 'react'
 import { MappingContext } from '../MappingContext';
 import { getListMappings, editMappings, reorderMappings, reorderGroups } from '../MappingQueries';
 
-import { SortableContainer, SortableElement, SortableHandle } from 'react-sortable-hoc';
+import { SortableContainer } from 'react-sortable-hoc';
 import { arrayMoveImmutable } from 'array-move'; //used for the react-sortable-hoc
 import { animateScroll as scroll } from 'react-scroll'
 import MappingItem from './MappingItem';
@@ -16,25 +16,19 @@ const appData = providenceUIApps.MappingManager.data;
 // The container holding the mapping items of a specific group
 const GroupListContainer = SortableContainer(({ items }) => {
   return (
-      <div className='group-list-container' style={{marginLeft: "-15px", marginRight: "-15px"}}>
-          {items.map((group, index) => {
-            return group
-          })}
+    <div className='group-list-container' style={{marginLeft: "-15px", marginRight: "-15px", height: "1000px", overflowY: "scroll", overflowX: "clip"}}>
+      {items.map((group, index) => {
+        return <div className='m-0 p-0' key={index}> {group} </div>
+      })}
 		</div>
   );
 });
 
 const MappingList = () => {
 
-  const { 
-    importerId, setImporterId, 
-    mappingListGroups, setMappingListGroups,
-    mappingDataList, setMappingDataList, 
-    changesMade, setChangesMade
-  } = useContext(MappingContext)
+  const { importerId, setImporterId, mappingListGroups, setMappingListGroups, mappingDataList, setMappingDataList,  changesMade, setChangesMade } = useContext(MappingContext)
 
-  const [ orderedIds, setOrderedIds ] = useState('')
-
+  const [orderedIds, setOrderedIds] = useState('')
   const [groups, setGroups] = useState([])
   
   useEffect(() => {
@@ -100,20 +94,17 @@ const MappingList = () => {
     if (mappingListGroups) {
 
       let temp_groups = []
-
-      let temp_group_ids_list = []
+      // let temp_group_ids_list = []
 
       mappingListGroups.forEach((group, index) => {
-		temp_group_ids_list.push(group.group_id)
+		    // temp_group_ids_list.push(group.group_id)
 
-		let line_num = index + 1;
+        let group_mappings = []          
+          group.mappings.map((map, index) =>
+          group_mappings.push(<MappingItem data={map} line_num={index + 1} index={index} id={map.id} getImporterMappings={getImporterMappings} />)
+        )
 
-		let group_mappings = []          
-			group.mappings.map((map, index) =>
-			group_mappings.push(<MappingItem data={map} line_num={index + 1} index={index} id={map.id} getImporterMappings={getImporterMappings} />)
-		)
-
-		temp_groups.push(<MappingGroup data={group_mappings} index={index} group_id={group.group_id} getImporterMappings={getImporterMappings} />)
+        temp_groups.push(<MappingGroup data={group_mappings} index={index} group_id={group.group_id} getImporterMappings={getImporterMappings} />)
 
       });
 
@@ -161,11 +152,11 @@ const MappingList = () => {
 
   if(mappingListGroups){
     return (
-    <>
-    	<div className='row d-flex justify-content-end mt-2 mb-4 h-25'>
-          <button className='btn btn-secondary mr-2' onClick={() => addGroup()}>+ Group</button>
+      <>
+        <div className='row d-flex justify-content-end mt-2 mb-4 h-25'>
+          <button className='btn btn-secondary btn-sm mr-2' onClick={() => addGroup()}>+ Group</button>
         </div>
-      <GroupListContainer axis='y' items={groups} onSortEnd={onSortEnd} useDragHandle disableAutoscroll={true}/>
+        <GroupListContainer axis='y' items={groups} onSortEnd={onSortEnd} useDragHandle disableAutoscroll={true}/>
       </>
     )
   }else{

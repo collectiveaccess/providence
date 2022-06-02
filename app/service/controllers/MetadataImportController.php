@@ -29,6 +29,7 @@ require_once(__CA_LIB_DIR__.'/Service/GraphQLServiceController.php');
 require_once(__CA_APP_DIR__.'/service/schemas/MetadataImportSchema.php');
 require_once(__CA_APP_DIR__.'/service/helpers/MetadataImportHelpers.php');
 require_once(__CA_APP_DIR__.'/service/helpers/ServiceHelpers.php');
+require_once(__CA_APP_DIR__.'/service/helpers/SchemaHelpers.php');
 require_once(__CA_APP_DIR__.'/service/helpers/ErrorHelpers.php');
 
 use GraphQL\GraphQL;
@@ -38,6 +39,7 @@ use GraphQLServices\Schemas\MetadataImportSchema;
 use GraphQLServices\Helpers\MetadataImport;
 use GraphQLServices\Helpers;
 use GraphQLServices\Helpers\Error;
+use GraphQLServices\Helpers\Schema;
 
 
 class MetadataImportController extends \GraphQLServices\GraphQLServiceController {
@@ -344,6 +346,92 @@ class MetadataImportController extends \GraphQLServices\GraphQLServiceController
 // 						}, $data = $t_importer->getAvailableSettings(), array_keys($data));
 						
 						return $settings;
+					},
+				],
+				// ------------------------------------------------------------
+				// Get mapping settings (options) form
+				// ------------------------------------------------------------
+				'bundleLookup' => [
+					'type' => MetadataImportSchema::get('ImporterBundleLookupResult'),
+					'description' => _t('Return matches for '),
+					'args' => [
+						[
+							'name' => 'jwt',
+							'type' => Type::string(),
+							'description' => _t('JWT'),
+							'defaultValue' => self::getBearerToken()
+						],
+						[
+							'name' => 'id',
+							'type' => Type::int(),
+							'description' => _t('ID of importer')
+						],
+						[
+							'name' => 'search',
+							'type' => Type::string(),
+							'description' => _t('Search text')
+						],
+					],
+					'resolve' => function ($rootValue, $args) {
+						$u = self::authenticate($args['jwt']);
+						$id = $args['id'];
+						$search = $args['search'];
+						
+						$t_importer = new ca_data_importers($id);
+						if(!$t_importer->isLoaded()) {
+							throw new ServiceException(_t('Invalid importer id'));
+						}
+						$table_num = $t_importer->get('table_num');
+						$t = Datamodel::getInstance($table_num, true);
+						$table = $t->tableName();
+						$bundle_list = $t->getBundleList(['includeBundleInfo' => true, 'rewriteKeys' => true]);
+						
+						$matches = [];
+						foreach($bundle_list as $k => $b) {
+							if($b['type'] === 'special') { continue; }
+							
+							$code = $k;
+							if(($b['type'] === 'label') || ($b['type'] === 'intrinsic') || ($b['type'] === 'attribute')) { 
+								$code = "{$table}.{$code}";
+							}
+							if(preg_match("!".preg_quote($search, "!")."!", $code)) {
+								$matches[] = [
+									'code' => $code,
+									//'name' => $b['label']
+								];
+							}
+							
+							$dt = \GraphQLServices\Helpers\Schema\bundleDataType($t, $k);
+							if($dt === 'CONTAINER') {
+								if(is_array($subelements = \ca_metadata_elements::getElementsForSet($k))) {
+									array_shift($subelements); // get rid of root
+									$subelements = array_filter($subelements, function($v) { return ($v['datatype'] !== 0); }); // filter containers
+								
+									$subelements = array_map(function($v) use ($code) {
+										return [
+											'name' => $v['display_label'],
+											'code' => "{$code}.".$v['element_code'],
+										];
+									}, $subelements);
+
+									foreach($subelements as $s) {									
+										if(preg_match("!".preg_quote($search, "!")."!", $s['code'])) {
+											$matches[] = $s;
+										}
+									}
+								}
+							}
+						}
+						
+						$matches = array_map(function($v) use ($t) {
+							if(!$v['name']) { $v['name'] = $t->getDisplayLabel($v['code']); }
+							$v['description'] = $t->getDisplayDescription($v['code']);
+							return $v;
+						}, $matches);
+						
+						$bundles = ['matches' => $matches];
+						
+						return $bundles;
 					},
 				],
 			]

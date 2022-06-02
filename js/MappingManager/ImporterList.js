@@ -62,7 +62,7 @@ const ImporterList = () => {
     return (
       <div>
 
-        <h1 className='mb-5'>Importers List</h1>
+        <h1 className='mb-5'>Importers</h1>
 
         <table className="table table-striped">
           <thead>
@@ -78,16 +78,19 @@ const ImporterList = () => {
                 <tr className='mb-2' key={index}>
                   <td className=''>{importer.name}</td>
                   <td className=''> <strong>({importer.code})</strong></td>
-                  <td><button className='btn btn-secondary btn-sm mr-2' onClick={(e) => viewImporter(e, importer)}>View</button>
-                    <button className='btn btn-secondary btn-sm' onClick={() => deleteImporterConfirm(importer.id, importer.name)}>Delete</button></td>
+
+                  <td className='' style={{textAlign: "end"}}>
+                    <button className='btn btn-secondary btn-sm mr-2' onClick={(e) => viewImporter(e, importer)}>View</button>
+                    <button className='btn btn-secondary btn-sm' onClick={() => deleteImporterConfirm(importer.id, importer.name)}>Delete</button>
+                  </td>
                 </tr>
               )
             })}
           </tbody>
         </table>
 
-        <div className='row justify-content-end mt-5 mr-2'>
-          <button className='btn btn-secondary btn-sm' onClick={(e) => addNewImporter(e)}>Add Importer +</button>
+        <div className='row justify-content-end mt-4 mr-2'>
+          <button className='btn btn-secondary btn-sm' onClick={(e) => addNewImporter(e)}>+ Importer</button>
         </div>
 
       </div>

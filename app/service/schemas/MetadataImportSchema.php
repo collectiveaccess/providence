@@ -438,7 +438,34 @@ class MetadataImportSchema extends \GraphQLServices\GraphQLSchema {
 					]
 				]
 			]),
-			
+			$importerBundleLookupItemType = new ObjectType([
+				'name' => 'ImporterBundleLookupItem',
+				'description' => '',
+				'fields' => [
+					'code' => [
+						'type' => Type::string(),
+						'description' => 'Bundle code'
+					],
+					'name' => [
+						'type' => Type::string(),
+						'description' => 'Bundle name'
+					],
+					'description' => [
+						'type' => Type::string(),
+						'description' => 'Bundle description'
+					]
+				]
+			]),
+			$importerBundleLookupResultType = new ObjectType([
+				'name' => 'ImporterBundleLookupResult',
+				'description' => 'Bundle lookup results',
+				'fields' => [
+					'matches' => [
+						'type' => Type::listOf($importerBundleLookupItemType),
+						'description' => 'List of matching bundles'
+					]
+				]
+			]),
 		];
 	}
 	# -------------------------------------------------------
