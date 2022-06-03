@@ -3298,13 +3298,11 @@ var methods = {
 						// Handle scrolling due to click on the overview
 						var tw = layer.thumb.width;
 						var th = layer.thumb.height;
+						var factor = Math.pow(2,layer.level);
 						
 						if ((x >= 0) && (x <= tw) && (y >= 0) && (y <= th)) {
-							view.pan.xdest = ((x/tw) * layer.info.width);
-							if(view.pan.xdest > (layer.info.width * view.current_zoom())) { view.pan.xdest  = (layer.info.width * view.current_zoom()); }
-							
-							view.pan.ydest = ((y/th) * layer.info.height);
-							if(view.pan.ydest > (layer.info.height * view.current_zoom())) { view.pan.ydest  = (layer.info.height * view.current_zoom()); }
+							view.pan.xdest = ((x/tw) * layer.info.width / factor);
+							view.pan.ydest = ((y/th) * layer.info.height / factor);
 							
 							view.pan.level = layer.level;
 							view.needdraw = true;
