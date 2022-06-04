@@ -1111,6 +1111,21 @@ class DisplayTemplateParser {
                             
                             if (is_array($va_relationship_type_ids) && is_array($va_relationship_type_ids = array_slice($va_relationship_type_ids, $vn_start)) && ($vn_type_id = $va_relationship_type_ids[$pr_res->currentIndex()])) {
                                 $qr_rels = caMakeSearchResult('ca_relationship_types', array($vn_type_id));
+                                
+                                if(
+                                	!$pa_options['orientation']
+                                	&&
+                                	($t_rel = $pr_res->getInstance())
+                                	&&
+                                	method_exists($t_rel, 'isRelationship')
+                                	&&
+                                	$t_rel->isRelationship()
+                                	&&
+                                	is_array($primary_ids = caGetOption('primaryIDs', $pa_options, null))
+                                ) {
+                                	$pa_options['orientation'] = $t_rel->getOrientationForRelationship($primary_ids);
+                                }
+                                
                                 if ($qr_rels->nextHit()) {
                                     $va_val_list = $qr_rels->get('ca_relationship_types.preferred_labels.'.((caGetOption('orientation', $pa_options, 'LTOR') == 'LTOR') ? 'typename' : 'typename_reverse'), $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
                                 }
