@@ -943,7 +943,6 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 	public function updateRanksForList($pa_ids) {
 		if(!is_array($pa_ids)) { return false; }
 
-
 		foreach($pa_ids as $i => $vn_id) {
 			$this->getDb()->query("UPDATE ".$this->tableName() . " SET `rank` = ? WHERE relation_id = ?", $i, $vn_id);
 		}
@@ -961,6 +960,55 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 			$this->get('effective_date'),
 			$this->get('source_info')
 		];
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return orientation of relationship relative to ids in "primary" table as defined in the
+	 * primary_ids parameter. primary_ids is an array with a key set to the table name containing the
+	 * primary ids. The value is a list of ids to evaluate the relationship relative to. 
+	 * The string 'LTOR' is returned for left-to-right relationships (primary id on left of relationship)
+	 * and 'RTOL' for right-to-left relationships. Null is returned is the currently loaded relationship
+	 * does not reference any id in the primary_ids array.
+	 *
+	 * @param array $primary_ids
+	 *
+	 * @return ?string LTOR, RTOL or null
+	 */
+	public function getOrientationForRelationship(array $primary_ids) : ?string {
+		if($this->isSelfRelationship()) {
+			$t = $this->getLeftTableName();
+			if(is_array($primary_ids[$t])) {
+				$left_val = $this->get($this->getLeftTableFieldName());
+				$right_val = $this->get($this->getRightTableFieldName());
+				foreach($primary_ids[$t] as $id) {
+					if($id == $left_val) {
+						return 'LTOR';
+					} elseif($id == $right_val) {
+						return 'RTOL';
+					}
+				}
+			}
+		} else {
+			$fld = $dir = $t = null;
+			if(is_array($primary_ids[$t = $this->getLeftTableName()])) {
+				$dir = 'LTOR';
+				$fld = $this->getLeftTableFieldName();
+			} elseif(is_array($primary_ids[$t = $this->getRightTableName()])) {
+				$dir = 'RTOL';
+				$fld = $this->getRightTableFieldName();
+			} else {
+				$t = null;
+			}
+			if($t) {
+				foreach($primary_ids[$t] as $id) {
+					if($id == $this->get($fld)) {
+						return $dir;
+					} 
+				}
+			}
+		}
+		
+		return null;
 	}
 	# ------------------------------------------------------
 }
