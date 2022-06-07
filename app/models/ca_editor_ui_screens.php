@@ -1480,6 +1480,18 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 						);
 					} else {
 						switch($vs_bundle) {
+							case 'hierarchy_tools':
+								$va_additional_settings = [									
+									'numPerPage' => array(
+										'formatType' => FT_NUMBER,
+										'displayType' => DT_FIELD,
+										'default' => 100,
+										'width' => 5, 'height' => 1,
+										'label' => _t('Number of items to load per page'),
+										'description' => _t('Maximum number of items to render on initial load.')
+									),
+								];
+								break;
 							case 'authority_references_list':
 								$va_additional_settings = array(
 									'maxReferencesToDisplay' => array(

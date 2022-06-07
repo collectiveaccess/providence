@@ -8031,3 +8031,65 @@ span.developerBundleCode, a.developerBundleCode {
 .plyr__video-wrapper {
     height: none !important;
 }    
+
+/* hierarchy tools */
+.hierarchyToolsItem {
+    box-sizing: border-box !important;
+    text-align: center;
+    float: left; 
+    width: 180px; 
+    height: 180px;
+       
+}
+.hierarchyToolsItem .hierarchyToolsItemImage {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%); 
+}
+.hierarchyToolsItem .hierarchyToolsItemText {
+    margin: 0;
+    position: absolute;
+    left: 0px;
+    bottom: 5px;
+    background-color: #444;
+    padding: 4px;
+    opacity: 0.8;
+    
+    color: #fff;
+    text-decoration: none;
+    font-weight: normal;
+    font-size: 12px;
+    
+    width: 100%;
+    text-align: center;
+    
+    display: none;
+}
+
+.hierarchyToolsItem .hierarchyToolsItemText a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: normal;
+    font-size: 12px;
+}
+
+.hierarchyToolsItem .hierarchyToolsItemSelect {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+}
+
+.hierarchyToolsItem:hover .hierarchyToolsItemText {
+   display: block;
+}
+
+.hierarchyToolsItem.selected {
+    border: 1px solid #cc0000;
+    border-radius: 10px;
+}
+
+.hierarchyToolsControlSetImage {
+    display: none;
+}
