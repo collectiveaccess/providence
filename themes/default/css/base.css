@@ -8033,6 +8033,11 @@ span.developerBundleCode, a.developerBundleCode {
 }    
 
 /* hierarchy tools */
+
+.hierarchyTools {
+    min-height: 20px;
+}
+
 .hierarchyToolsItem {
     box-sizing: border-box !important;
     text-align: center;
@@ -8079,6 +8084,8 @@ span.developerBundleCode, a.developerBundleCode {
     position: absolute;
     right: 5px;
     top: 5px;
+    border: 1px dotted #999;
+    border-radius: 5px;
 }
 
 .hierarchyToolsItem:hover .hierarchyToolsItemText {
@@ -8090,6 +8097,24 @@ span.developerBundleCode, a.developerBundleCode {
     border-radius: 10px;
 }
 
-.hierarchyToolsControlSetImage {
+.hierarchyToolsControlSetImage, .hierarchyToolsControlRemoveItems, .hierarchyToolsControlTransferItems, .hierarchyToolsControlCreateWithItems {
     display: none;
+    float: left;
+}
+
+.hierarchyToolsControlSetImage, .hierarchyToolsControlRemoveItems {
+    margin-top: 5px;
+}
+
+.hierarchyToolsMessage {
+    display: none;
+    text-align: center;
+    padding: 5px 5px 15px 0px;
+	font-size: 12px;
+}
+
+.hierarchyToolsControlSelect {
+    position: absolute;
+    top: 5px;
+    right: 5px;
 }

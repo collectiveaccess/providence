@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/controllers/editor/InterstitialController.php : 
+ * app/views/editor/generic/hierarchjy_tools_json.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,16 +26,4 @@
  * ----------------------------------------------------------------------
  */
  
-require_once(__CA_LIB_DIR__."/BaseInterstitialController.php");
-
-class InterstitialController extends BaseInterstitialController {
-	# -------------------------------------------------------
-	protected $ops_table_name = null;		// name of "subject" table (what we're editing)
-	# -------------------------------------------------------
-	public function __construct(&$request, &$response, $view_paths=null) {
-		parent::__construct($request, $response, $view_paths);
-		
-		$this->ops_table_name = $request->getParameter('t', pString);
-	}
-	# -------------------------------------------------------
-}
+ print json_encode($this->getVar('response'));

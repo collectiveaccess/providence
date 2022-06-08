@@ -47,24 +47,42 @@
 ?>	
 
 <?php
-	if ($batch) {
-		print caBatchEditorIntrinsicModeControl($t_subject, $id_prefix);
-	} else {
-		print caEditorBundleShowHideControl($this->request, $id_prefix, $bundle_settings, false, $bundle_preview);
+	if (!RequestHTTP::isAjax()) {
+		if ($batch) {
+			print caBatchEditorIntrinsicModeControl($t_subject, $id_prefix);
+		} else {
+			print caEditorBundleShowHideControl($this->request, $id_prefix, $bundle_settings, false, $bundle_preview);
+		}
+		print caEditorBundleMetadataDictionary($this->request, $id_prefix, $bundle_settings);
 	}
-	print caEditorBundleMetadataDictionary($this->request, $id_prefix, $bundle_settings);
-	
 	$initial_values = $this->getVar('items');
 	$total_count = $this->getVar('itemCount');
 ?>
 <div id="<?= $id_prefix; ?>">
 	<div class="bundleContainer">
+		<div class="hierarchyToolsMessage"></div>
 		<div class="hierarchyTools">
-			<b>Controls<br/>
-			<div class="hierarchyToolsControlSetImage"><a href="#">Set image for album</a></div>
+			<div class="hierarchyToolsControlTransferItems button labelInfo">
+				<?= _t('Move to'); ?>
+				<input type="text" style="width: 120px;" name="<?= $id_prefix; ?>_transfer_autocomplete" value="" id="<?= $id_prefix; ?>_transfer_autocomplete" class="lookupBg"  placeholder=<?= json_encode(_t('Album name')); ?>/>
+				<a href="#"><?= caNavIcon(__CA_NAV_ICON_MOVE__, '15px'); ?></a>
+				<input type="hidden" name="<?= $id_prefix; ?>_transfer_id" id="<?= $id_prefix; ?>_transfer_id" value=""/>
+			</div>
+			<div class="hierarchyToolsControlCreateWithItems button labelInfo">
+				<?= _t('Create'); ?>
+				<input type="text" style="width: 120px;" name="<?= $id_prefix; ?>_create_with_name" value="" id="<?= $id_prefix; ?>_create_with_name" placeholder=<?= json_encode(_t('Album name')); ?>/>
+				<a href="#"><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?></a>
+			</div>
+			<div class="hierarchyToolsControlRemoveItems button labelInfo"><?= caNavIcon(__CA_NAV_ICON_DELETE__, '15px'); ?> <a href="#"><?= _t('Remove'); ?></a></div>
+			<div class="hierarchyToolsControlSetImage button labelInfo"><?= caNavIcon(__CA_NAV_ICON_IMAGE__, '15px'); ?> <a href="#"><?= _t('Set image'); ?></a></div>
+			
+			<div class="hierarchyToolsControlSelect button labelInfo">
+				<a href="#" class="hierarchyToolsControlSelectAll"><?= _t('all'); ?></a> / <a href="#" class="hierarchyToolsControlSelectNone"><?= _t('none'); ?></a>
+			</div>
 		</div>
+		<br class="clear"/>
 		<div class="caItemList hierarchyTools"> </div>
-		<input type="text" name="<?= $id_prefix; ?>_selection" id="<?= $id_prefix; ?>_selection" style="width: 670px"/>
+		<input type="hidden" name="<?= $id_prefix; ?>_selection" id="<?= $id_prefix; ?>_selection" style="width: 670px"/>
 	</div><!-- bundleContainer -->
 
 	<textarea class='caItemTemplate' style='display: none;'>
@@ -123,7 +141,94 @@
 			} else {
 				jQuery('.hierarchyToolsControlSetImage').hide();
 			}
+			if(selectedList.length >= 1) {
+				jQuery('.hierarchyToolsControlRemoveItems, .hierarchyToolsControlTransferItems, .hierarchyToolsControlCreateWithItems').show();
+			} else {
+				jQuery('.hierarchyToolsControlRemoveItems, .hierarchyToolsControlTransferItems, .hierarchyToolsControlCreateWithItems').hide();
+			}
 			jQuery('#<?= $id_prefix; ?>_selection').val(selectedList.join(';'));
+		});
+		
+		// Transfer lookup
+		jQuery('#<?= $id_prefix; ?>_transfer_autocomplete').autocomplete({
+				source: '<?= caNavUrl($this->request, 'lookup', 'Object', 'Get', ['noInline' => 1, 'types' => ['album']]); ?>',
+				minLength: <?= (int)$t_subject->getAppConfig()->get(["ca_objects_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>, delay: 800, html: true,
+				select: function(event, ui) {
+					if (parseInt(ui.item.id) > 0) {
+						jQuery('#<?= $id_prefix; ?>_transfer_id').val(parseInt(ui.item.id));
+					}
+					event.preventDefault();
+					//jQuery('#<?= $id_prefix; ?>_transfer_autocomplete').val('');
+				}
+			}
+		);
+		
+		jQuery('#<?= $id_prefix; ?>').find('.hierarchyToolsControlSetImage').on('click', function(e) {
+			let id = jQuery('#<?= $id_prefix; ?>_selection').val().split(';')[0];
+			jQuery.getJSON('<?= caNavUrl($this->request, 'editor', 'HierarchyTools', 'setRootMedia'); ?>/t/<?= $t_subject->tableName(); ?>', {id: id}, function(d) {
+				if(d && d['ok'] && caBundleUpdateManager) { 
+					caBundleUpdateManager.reloadInspector(); 
+				} 
+				let e = jQuery('#<?= $id_prefix; ?>').find('.hierarchyToolsMessage').html(d.message).slideDown(250);
+				
+				setTimeout(function() { 
+					jQuery(e).slideUp(250);
+				}, 5000);
+			});
+		});
+		
+		jQuery('#<?= $id_prefix; ?>').find('.hierarchyToolsControlRemoveItems').on('click', function(e) {
+			let ids = jQuery('#<?= $id_prefix; ?>_selection').val().split(';');
+			jQuery.getJSON('<?= caNavUrl($this->request, 'editor', 'HierarchyTools', 'removeItems'); ?>/t/<?= $t_subject->tableName(); ?>',{ids: ids}, function(d) {
+				if(d && d['ok'] && caBundleUpdateManager) { 
+					caBundleUpdateManager.reloadInspector(); 
+					caBundleUpdateManager.reloadBundle('hierarchy_tools'); 
+				} 
+				
+				setTimeout(function() { 
+					jQuery(e).slideUp(250);
+				}, 5000);
+			});
+		});
+		
+		jQuery('#<?= $id_prefix; ?>').find('.hierarchyToolsControlTransferItems').on('click', function(e) {
+			let ids = jQuery('#<?= $id_prefix; ?>_selection').val().split(';');
+			let transfer_id = jQuery('#<?= $id_prefix; ?>_transfer_id').val();
+			jQuery.getJSON('<?= caNavUrl($this->request, 'editor', 'HierarchyTools', 'transferItems'); ?>/t/<?= $t_subject->tableName(); ?>',{id: transfer_id, ids: ids}, function(d) {
+				if(d && d['ok'] && caBundleUpdateManager) { 
+					caBundleUpdateManager.reloadInspector(); 
+					caBundleUpdateManager.reloadBundle('hierarchy_tools'); 
+				} 
+				
+				setTimeout(function() { 
+					jQuery(e).slideUp(250);
+				}, 5000);
+			});
+		});
+		
+		jQuery('#<?= $id_prefix; ?>').find('.hierarchyToolsControlCreateWithItems').on('click', function(e) {
+			let ids = jQuery('#<?= $id_prefix; ?>_selection').val().split(';');
+			let name = jQuery('#<?= $id_prefix; ?>_create_with_name').val();
+			jQuery.getJSON('<?= caNavUrl($this->request, 'editor', 'HierarchyTools', 'createWith'); ?>/t/<?= $t_subject->tableName(); ?>',{name: name, ids: ids}, function(d) {
+				if(d && d['ok'] && caBundleUpdateManager) { 
+					caBundleUpdateManager.reloadInspector(); 
+					caBundleUpdateManager.reloadBundle('hierarchy_tools'); 
+				} 
+				
+				setTimeout(function() { 
+					jQuery(e).slideUp(250);
+				}, 5000);
+			});
+		});
+		
+		jQuery('#<?= $id_prefix; ?>').find('.hierarchyToolsControlSelectAll').on('click', function(e) {
+			jQuery('#<?= "{$id_prefix}"; ?>').find('.hierarchyToolsItemSelect').find('input').attr('checked', true);
+			jQuery('.hierarchyToolsControlRemoveItems, .hierarchyToolsControlTransferItems, .hierarchyToolsControlCreateWithItems').show();
+		});
+		
+		jQuery('#<?= $id_prefix; ?>').find('.hierarchyToolsControlSelectNone').on('click', function(e) {
+			jQuery('#<?= "{$id_prefix}"; ?>').find('.hierarchyToolsItemSelect').find('input').attr('checked', false);
+			jQuery('.hierarchyToolsControlRemoveItems, .hierarchyToolsControlTransferItems, .hierarchyToolsControlCreateWithItems').hide();
 		});
 	});
 </script>
