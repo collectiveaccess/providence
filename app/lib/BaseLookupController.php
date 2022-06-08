@@ -78,6 +78,7 @@ class BaseLookupController extends ActionController {
 			$pb_quickadd = (bool)$this->request->getParameter('quickadd', pInteger);
 			$pb_no_inline = (bool)$this->request->getParameter('noInline', pInteger);
 			$pb_quiet = (bool)$this->request->getParameter('quiet', pInteger);
+			$root_only = (bool)$this->request->getParameter('root', pInteger);
 			$self = explode(':', $this->request->getParameter('self', pString));		// table:id of calling record
 			
 			if((!(bool)$o_config->get('allow_duplicate_items_in_sets')) && ($set_id = $this->request->getParameter('set_id', pInteger))) {
@@ -190,7 +191,7 @@ class BaseLookupController extends ActionController {
 					$vs_search = trim($ps_query_proc).(intval($pb_exact) ? '' : '*');
 				}
 			
-				$qr_res = $o_search->search($vs_search, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort));
+				$qr_res = $o_search->search($vs_search, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort, 'rootRecordsOnly' => $root_only));
 			
 				$qr_res->setOption('prefetch', $pn_limit);
 				$qr_res->setOption('dontPrefetchAttributes', true);
