@@ -8114,7 +8114,15 @@ span.developerBundleCode, a.developerBundleCode {
 }
 
 .hierarchyToolsControlSelect {
+    display: none;
     position: absolute;
     top: 5px;
     right: 5px;
+}
+
+.hierarchyToolsMessage {
+    width: 100%;
+    text-align: center;
+    font-weight: bold;
+    font-size: 14px;
 }

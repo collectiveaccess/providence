@@ -110,12 +110,11 @@
 			addButtonClassName: 'caAddItemButton',
 			deleteButtonClassName: 'caDeleteItemButton',
 			placementID: <?= json_encode($settings['placement_id']); ?>,
-			showEmptyFormsOnLoad: 1,
+			showEmptyFormsOnLoad: false,
 			readonly: <?= $read_only ? "true" : "false"; ?>,
 			isSortable: <?= !$read_only && !$batch ? "true" : "false"; ?>,
 			listSortOrderID: '<?= $id_prefix; ?>_ObjectRepresentationBundleList',
 			defaultLocaleID: <?= ca_locales::getDefaultCataloguingLocaleID(); ?>,
-			
 			
 			totalValueCount: <?= (int)$total_count; ?>,
 			
@@ -230,5 +229,17 @@
 			jQuery('#<?= "{$id_prefix}"; ?>').find('.hierarchyToolsItemSelect').find('input').attr('checked', false);
 			jQuery('.hierarchyToolsControlRemoveItems, .hierarchyToolsControlTransferItems, .hierarchyToolsControlCreateWithItems').hide();
 		});
+<?php 
+	if($total_count === 0) {
+?>
+		jQuery('#<?= $id_prefix; ?>').find('.hierarchyToolsMessage').html(<?= json_encode(_t('No %1 in hierarchy', $t_subject->getProperty('NAME_PLURAL'))); ?>).show();
+<?php
+	} else {
+?>
+		jQuery('#<?= $id_prefix; ?>').find('.hierarchyToolsControlSelect').show();
+<?php
+	}
+?>
+
 	});
 </script>
