@@ -64,17 +64,17 @@
 		<div class="hierarchyTools">
 			<div class="hierarchyToolsControlTransferItems button labelInfo">
 				<?= _t('Move to'); ?>
-				<input type="text" style="width: 120px;" name="<?= $id_prefix; ?>_transfer_autocomplete" value="" id="<?= $id_prefix; ?>_transfer_autocomplete" class="lookupBg"  placeholder=<?= json_encode(_t('Album name')); ?>/>
+				<input type="text" style="width: 100px;" name="<?= $id_prefix; ?>_transfer_autocomplete" value="" id="<?= $id_prefix; ?>_transfer_autocomplete" class="lookupBg"  placeholder=<?= json_encode(_t('Album name')); ?>/>
 				<a href="#"><?= caNavIcon(__CA_NAV_ICON_MOVE__, '15px'); ?></a>
 				<input type="hidden" name="<?= $id_prefix; ?>_transfer_id" id="<?= $id_prefix; ?>_transfer_id" value=""/>
 			</div>
 			<div class="hierarchyToolsControlCreateWithItems button labelInfo">
 				<?= _t('Create'); ?>
-				<input type="text" style="width: 120px;" name="<?= $id_prefix; ?>_create_with_name" value="" id="<?= $id_prefix; ?>_create_with_name" placeholder=<?= json_encode(_t('Album name')); ?>/>
+				<input type="text" style="width: 100px;" name="<?= $id_prefix; ?>_create_with_name" value="" id="<?= $id_prefix; ?>_create_with_name" placeholder=<?= json_encode(_t('Album name')); ?>/>
 				<a href="#"><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?></a>
 			</div>
-			<div class="hierarchyToolsControlRemoveItems button labelInfo"><?= caNavIcon(__CA_NAV_ICON_DELETE__, '15px'); ?> <a href="#"><?= _t('Remove'); ?></a></div>
-			<div class="hierarchyToolsControlSetImage button labelInfo"><?= caNavIcon(__CA_NAV_ICON_IMAGE__, '15px'); ?> <a href="#"><?= _t('Set image'); ?></a></div>
+			<div class="hierarchyToolsControlRemoveItems button labelInfo"><?= caNavIcon(__CA_NAV_ICON_DELETE__, '15px'); ?> <a href="#"><?= _t('Make standalone'); ?></a></div>
+			<div class="hierarchyToolsControlSetImage button labelInfo"><?= caNavIcon(__CA_NAV_ICON_IMAGE__, '15px'); ?> <a href="#"><?= _t('Set as image'); ?></a></div>
 			
 			<div class="hierarchyToolsControlSelect button labelInfo">
 				<a href="#" class="hierarchyToolsControlSelectAll"><?= _t('all'); ?></a> / <a href="#" class="hierarchyToolsControlSelectNone"><?= _t('none'); ?></a>
