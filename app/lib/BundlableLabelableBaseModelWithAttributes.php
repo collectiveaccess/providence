@@ -2964,7 +2964,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if(is_array($child_ids) && sizeof($child_ids)) {
 			$item_count = sizeof($child_ids);
 			$child_ids = array_slice($child_ids, $start, $limit);	
-			$qr = caMakeSearchResult($this->tableName(), $child_ids);
+			$qr = caMakeSearchResult($this->tableName(), $child_ids, ['sort' => "{$table}.rank", 'sortDirection' => 'ASC']);
 			while($qr->nextHit()) {
 				$items[$id = $qr->getPrimaryKey()] = [
 					'id' => $id,

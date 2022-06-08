@@ -126,7 +126,7 @@ class HierarchyToolsController extends ActionController {
 	}
 	# -------------------------------------------------------
 	/**
-	 * Create new hierarchy with items
+	 * Transfer items to a different hierarchy
 	 */
 	public function transferItems() {
 		$parent_id = $this->request->getParameter('id', pString);	// id of item to move items under
@@ -173,14 +173,14 @@ class HierarchyToolsController extends ActionController {
 			}
 			$c++;
 		}
-		$resp = ['ok' => ($c > 0), 'errors' => $errors, 'message' => _t('Moved %1 items', $c)];
+		$resp = ['ok' => ($c > 0), 'errors' => $errors, 'count' => $c, 'message' => _t('Moved %1 items', $c)];
 		
 		$this->view->setVar('response', $resp);
 		$this->render('generic/hierarchy_tools_json.php');
 	}
 	# -------------------------------------------------------
 	/**
-	 * Transfer items to a different hierarchy
+	 * Create new hierarchy with items
 	 */
 	public function createWith() {
 		$ids = $this->request->getParameter('ids', pArray);	// list of ids to move
@@ -193,9 +193,31 @@ class HierarchyToolsController extends ActionController {
 			throw new ApplicationException(_t('Name is empty'));
 		}
 		
+		// check ids
+		$filtered_ids = [];
+		foreach($ids as $id) {
+			$id = (int)$id;
+			
+			if(!$this->subject->load($id)) {
+				continue;
+			}
+			if(!$this->subject->isSaveable($this->request)) {
+				//throw new ApplicationException(_t('Access denied'));
+				continue;
+			}
+			//if($this->subject->get('parent_id')) {
+				//throw new ApplicationException(_t('Target is not a child record'));	
+			//	continue;
+			//}
+			$filtered_ids[] = $id;
+		}
+		if(sizeof($filtered_ids) === 0) {
+			throw new ApplicationException(_t('Nothing to add'));		
+		}
+		
 		$this->subject = Datamodel::getInstance($this->table_name);
 		$this->subject->set('type_id', 'album'); // TODO: make configurable
-		$this->subject->set('idno', date('Y').'.%'); // TODO: make configurable
+		$this->subject->setIdnoWithTemplate(date('Y').'.%'); // TODO: make configurable
 		$this->subject->insert();
 		
 		if(!($parent_id = $this->subject->getPrimaryKey())) {
@@ -206,17 +228,11 @@ class HierarchyToolsController extends ActionController {
 		
 		$c = 0;
 		$errors = [];
-		foreach($ids as $id) {
+		foreach($filtered_ids as $id) {
 			$id = (int)$id;
 			
 			if(!$this->subject->load($id)) {
 				continue;
-			}
-			if(!$this->subject->isSaveable($this->request)) {
-				throw new ApplicationException(_t('Access denied'));
-			}
-			if(!$this->subject->get('parent_id')) {
-				throw new ApplicationException(_t('Target is not a child record'));	
 			}
 			$this->subject->set('parent_id', $parent_id);
 			$this->subject->update();
@@ -227,7 +243,7 @@ class HierarchyToolsController extends ActionController {
 			}
 			$c++;
 		}
-		$resp = ['ok' => ($c > 0), 'errors' => $errors, 'name' => $name, 'message' => _t('Added %1 items into new album', $c)];
+		$resp = ['ok' => ($c > 0), 'errors' => $errors, 'name' => $name, 'count' => $c, 'message' => _t('Added %1 items into new album', $c)];
 		
 		$this->view->setVar('response', $resp);
 		$this->render('generic/hierarchy_tools_json.php');

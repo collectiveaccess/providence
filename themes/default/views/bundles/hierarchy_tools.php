@@ -87,8 +87,8 @@
 
 	<textarea class='caItemTemplate' style='display: none;'>
 		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo hierarchyToolsItem {selected}">
+			<div class="hierarchyToolsItemImage">{media}</div>
 			<div class="hierarchyToolsItemSelect"><input type="checkbox" value="{n}" name="<?= $id_prefix; ?>_selection_{n}" id="<?= $id_prefix; ?>_selection_{n}"/></div>
-			<div class="hierarchyToolsItemImage"><a href='{url}'>{media}</a></div>
 			<div class="hierarchyToolsItemText"><a href='{url}'>{label}</a> ({idno})</div>
 		</div>
 	</textarea>
@@ -150,7 +150,7 @@
 		
 		// Transfer lookup
 		jQuery('#<?= $id_prefix; ?>_transfer_autocomplete').autocomplete({
-				source: '<?= caNavUrl($this->request, 'lookup', 'Object', 'Get', ['noInline' => 1, 'types' => ['album']]); ?>',
+				source: '<?= caNavUrl($this->request, 'lookup', 'Object', 'Get', ['noInline' => 1, 'noSubtypes' => 1, 'root' => 1, 'types' => ['album']]); ?>',
 				minLength: <?= (int)$t_subject->getAppConfig()->get(["ca_objects_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>, delay: 800, html: true,
 				select: function(event, ui) {
 					if (parseInt(ui.item.id) > 0) {

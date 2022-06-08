@@ -318,7 +318,7 @@ div.clear {
 	font-size: 13px;
 	line-height: 1.4em;
 }
-#leftNav div.visualize, #leftNav div.setTools, #leftNav div.batchTools {
+#leftNav div.visualize, #leftNav div.setTools, #leftNav div.hierarchyTools, #leftNav div.batchTools {
 	background-color:#f7f7f7;
 	border-radius: 4px;
 	-webkit-border-radius: 4px;
@@ -329,10 +329,10 @@ div.clear {
 	text-transform:capitalize;
 	font-size:14px;
 }
-#leftNav div.setTools img, #leftNav div.batchTools img {
+#leftNav div.setTools img, #leftNav div.hierarchyTools img, #leftNav div.batchTools img {
 	padding-right:5px;
 }
-#leftNav div.visualize a, #leftNav div.setTools a, #leftNav div.batchTools a {
+#leftNav div.visualize a, #leftNav div.setTools a, #leftNav div.hierarchyTools a, #leftNav div.batchTools a {
 	text-decoration:none;
 }
 #caColorbox {
@@ -2480,8 +2480,8 @@ select.searchToolsSelect {
     width: 165px;
     font-size: 11px;
 }
-/* Set Tools */
 
+/* Set Tools */
 #searchSetTools, #batchTools {
 	display:none;
 	background-color: #f7f7f7;
@@ -2512,7 +2512,39 @@ select.searchToolsSelect {
 	font-size: 10px;
 }
 
-#caCreateSetFromResultsIndicator, #caAddToSetIDIndicator {
+/* Hierarchy Tools */
+#searchHierarchyTools, #batchTools {
+	display:none;
+	background-color: #f7f7f7;
+	border-radius: 4px;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
+	margin: 10px;
+	padding: 10px;
+}
+#searchHierarchyTools .col, #batchTools .col {
+	margin-bottom:15px;
+}
+#searchHierarchyTools .header, #batchTools .header {
+	font-family: 'din-regular', helvetica, sans-serif;
+	font-weight:bold;
+}
+#searchHierarchyTools a, #batchTools a {
+	float: right;
+	clear: left;
+	text-align: right;
+}
+#searchHierarchyTools .searchHierarchysToggle a {
+	float: left;
+	clear: right;
+	text-align: left;
+	margin-bottom: 15px;
+	margin-top: -14px;
+	font-size: 10px;
+}
+
+
+#caCreateSetFromResultsIndicator, #caAddToSetIDIndicator, #caAddToHierarchyIDIndicator, #caCreateHierarchyFromResultsIndicator {
 	display: none;
 }
 
