@@ -878,7 +878,11 @@ class RequestHTTP extends Request {
                 } else {
                 	// Redirect to external auth?
                 	try {
-                		return $this->user->authenticate($vs_tmp1, $vs_tmp2, $pa_options["options"]);
+                		if($rc = $this->user->authenticate($vs_tmp1, $vs_tmp2, $pa_options["options"])) {
+                			$vn_auth_type = ($rc == 2) ? 2 : 1;
+                			$vn_user_id = $this->user->getPrimaryKey();
+                			$vb_login_successful = true;
+                		}
                 	} catch (Exception $e) {
                 		$o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login with exception '".$e->getMessage()." (".$_SERVER['REQUEST_URI']."); IP=".$_SERVER["REMOTE_ADDR"]."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
                 		$this->opo_response->addHeader("Location", $vs_auth_login_url);
