@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2018 Whirl-i-Gig
+ * Copyright 2014-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -58,8 +58,22 @@ class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugIn Implements IWLPlugPD
 		
 		$this->description = _t('Renders HTML as PDF using domPDF');
 		
+		if (!($chroot = Configuration::load()->get('dompdf_chroot_path'))) {
+			$chroot = __CA_BASE_DIR__;
+		}
+		
 		$options = new Options();
 		$options->set('isRemoteEnabled', TRUE);
+		$options->set('chroot', $chroot);
+		$options->set('logOutputFile', __CA_APP_DIR__.'/tmp/log.htm');
+    	$options->set('tempDir', __CA_APP_DIR__.'/tmp');
+    	
+    	// Look for theme and app-based font directories
+    	if(file_exists(__CA_THEME_DIR__.'/fonts')) {
+    		$options->set('fontDir', __CA_THEME_DIR__.'/fonts');
+    	} elseif(file_exists(__CA_APP_DIR__.'/fonts')) {
+    		$options->set('fontDir', __CA_APP_DIR__.'/fonts');
+    	}
 		$this->renderer = new DOMPDF($options);
 	}
 	# ------------------------------------------------
@@ -70,6 +84,7 @@ class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugIn Implements IWLPlugPD
 	 * @param array $pa_options Options include:
 	 *		stream = Output the rendered PDF directly to the response [Default=false]
 	 *		filename = The filename to set the PDF to when streams [Default=export_results.pdf]
+	 *		writeFile = File path to write PDF to. [Default=false]
 	 *
 	 * @return string The rendered PDF content
 	 * @seealso domPDF::renderFile()
@@ -83,6 +98,11 @@ class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugIn Implements IWLPlugPD
 			$this->renderer->stream(caGetOption('filename', $pa_options, 'export_results.pdf'));
 		}
 		
+		$output = $this->renderer->output();
+		if($path = caGetOption('writeFile', $pa_options, false)) {
+			file_put_contents($path, $output);
+		}
+		
 		return $this->renderer->output();
 	}
 	# ------------------------------------------------
@@ -93,6 +113,7 @@ class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugIn Implements IWLPlugPD
 	 * @param array $pa_options Options include:
 	 *		stream = Output the rendered PDF directly to the response [Default=false]
 	 *		filename = The filename to set the PDF to when streams [Default=export_results.pdf]
+	 *		writeFile = File path to write PDF to. [Default=false]
 	 *
 	 * @return string The rendered PDF content
 	 * @seealso domPDF::render()
@@ -106,7 +127,12 @@ class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugIn Implements IWLPlugPD
 			$this->renderer->stream(caGetOption('filename', $pa_options, 'output.pdf'));
 		}
 		
-		return $this->renderer->output();
+		$output = $this->renderer->output();
+		if($path = caGetOption('writeFile', $pa_options, false)) {
+			file_put_contents($path, $output);
+		}
+		
+		return $output;
 	}
 	# ------------------------------------------------
 	/**
@@ -117,8 +143,8 @@ class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugIn Implements IWLPlugPD
 	 *
 	 * @return bool True on success, false if parameters are invalid
 	 */
-	public function setPage($ps_size, $ps_orientation, $ps_margin_top=0, $ps_margin_right=0, $ps_margin_bottom=0, $ps_margin_left=0) {
-		$this->renderer->set_paper($ps_size, $ps_orientation);
+	public function setPage($size, $orientation, $margin_top=0, $margin_right=0, $margin_bottom=0, $margin_left=0) {
+		$this->renderer->set_paper($size, $orientation);
 		
 		return true;
 	}
@@ -129,19 +155,25 @@ class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugIn Implements IWLPlugPD
 	 * @return array - status info array; 'available' key determines if the plugin should be loaded or not
 	 */
 	public function checkStatus() {
-		$va_status = parent::checkStatus();
+		$status = parent::checkStatus();
 		
-		if (!($vb_wkhtmltopdf = caWkhtmltopdfInstalled())) {
-			$va_status['available'] = true;
+		$config = Configuration::load();
+		$use = $config->get('use_pdf_renderer');
+		
+		$wkhtmltopdf = ((!strlen($use) || (strtolower($use) === 'wkhtmltopdf')) && caWkhtmltopdfInstalled());
+		$dompdf = (!strlen($use) || (strtolower($use) === 'dompdf'));
+		
+		if (!$wkhtmltopdf) {
+			$status['available'] = $dompdf;
 		} else {
-			$va_status['available'] = false;
-			if ($vb_wkhtmltopdf) {
-				$va_status['unused'] = true;
-				$va_status['warnings'][] = _t("Didn't load because wkhtmltopdf is available and preferred");
+			$status['available'] = false;
+			if ($wkhtmltopdf) {
+				$status['unused'] = true;
+				$status['warnings'][] = _t("Didn't load because wkhtmltopdf is available and preferred");
 			} 
 		}
 		
-		return $va_status;
+		return $status;
 	}
 	# ------------------------------------------------
 }
