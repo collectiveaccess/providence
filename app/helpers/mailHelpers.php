@@ -223,7 +223,7 @@
 	 * Returns true if $ps_address looks like an email address, false if it doesn't
 	 */
 	function caCheckEmailAddressRegex($ps_address) {
-		if (!preg_match("/^([a-zA-Z0-9])+([a-zA-Z0-9\._\-\+])*@([a-zA-Z0-9_-])+([a-zA-Z0-9\._-]+)+$/" , $ps_address)) {
+		if (!preg_match("/^([a-zA-Z0-9])+([a-zA-Z0-9\._\-\+\'])*@([a-zA-Z0-9_-])+([a-zA-Z0-9\._-]+)+$/" , $ps_address)) {
 			return false;
 		}
 		return true;
