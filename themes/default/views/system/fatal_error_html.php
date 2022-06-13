@@ -37,7 +37,7 @@
 </head>
 <body>
 	<div id='errorDetails'>
-		<div id="logo"><img src="<?php print $vs_path ?>/themes/default/graphics/ca_nav_logo300.png"/></div><!-- end logo -->
+		<div id="logo"><img src="<?php print $vs_path ?>/themes/default/graphics/logos/logo.svg" style="width: 327px; height: 45px"/></div><!-- end logo -->
 		<div id="content">
 			<div class='error'><?php print _t("Something went wrong"); ?></div>
 <?php if((defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) || (defined('__CA_STACKTRACE_ON_EXCEPTION__') && __CA_STACKTRACE_ON_EXCEPTION__)) { ?>
