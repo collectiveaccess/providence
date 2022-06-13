@@ -26,6 +26,9 @@
  * ----------------------------------------------------------------------
  */
   AppController::getInstance()->removeAllPlugins();
+  
+  $w = $this->request->config->get('login_logo_width');
+  $h = $this->request->config->get('login_logo_height');
 ?>
 <html>
 	<head>
@@ -46,7 +49,7 @@
 		<div align="center">
 			<div id="loginBox">
 				<div align="center">
-					<img src="<?php print $this->request->getThemeUrlPath()."/graphics/logos/".$this->request->config->get('login_logo');?>" border="0">
+					<img src="<?php print $this->request->getThemeUrlPath()."/graphics/logos/".$this->request->config->get('login_logo');?>" border="0" style="width: <?= $w; ?>; height: <?= $h; ?>">
 				</div>
 				<div id="systemTitle">
 <?php 
