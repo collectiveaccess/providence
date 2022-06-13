@@ -291,7 +291,7 @@
 					}
 				}
 			}
-			if (is_array($g_asset_complementary)) {
+			if (is_array($g_asset_complementary) && ($output_target === 'header')) {
 				foreach($g_asset_complementary as $vs_code) { 
 					$vs_buf .= "<script type='text/javascript'>\n{$vs_code}</script>\n";
 				}

@@ -99,7 +99,9 @@
  					unset($va_searches[$vs_target]);
  					continue;
  				}
- 			 	if (!($vo_result = $this->_doSearch($vs_table, $ps_search, $va_sorts[$ps_sort], $vs_type))) { unset($va_searches[$vs_target]); continue; }
+ 				
+				$search_suffix = (caGetSearchConfig()->get('match_on_stem') && caIsSearchStem($ps_search)) ? '*' : '';
+ 			 	if (!($vo_result = $this->_doSearch($vs_table, $ps_search.$search_suffix, $va_sorts[$ps_sort], $vs_type))) { unset($va_searches[$vs_target]); continue; }
  			 	$vo_result->setOption('prefetch', $this->opn_num_results_per_item_type);	// get everything we need in one pass
  			 	$vo_result->setOption('dontPrefetchAttributes', true);						// don't bother trying to prefetch attributes as we don't need them
  				$this->view->setVar("{$vs_target}_results", $vo_result);

@@ -642,7 +642,7 @@ class XLSXProfileParser extends BaseProfileParser {
 					continue;
 				}
 			
-				$type_res = join('_', $type_res_arr);	
+				$type_res = join('_', array_reverse($type_res_arr));	
 			}
 		
 			if($sheet) {

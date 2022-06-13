@@ -77,7 +77,7 @@ class Relationship extends Base {
 		} elseif($this->isUpdate()) {
 			$this->getModelInstance()->update(['dontForcePrimary' => true]);
 		} elseif($this->isDelete()) {
-			$this->getModelInstance()->delete(false);
+			$this->getModelInstance()->delete(true);
 		}
 
 		$this->checkModelInstanceForErrors();
@@ -107,8 +107,10 @@ class Relationship extends Base {
 			$this->setLeftOrRightFieldNameFromSnapshot($vs_right_field, false);
 		}
 		
+		$pk = $this->getModelInstance()->primaryKey();
 		foreach($va_snapshot as $k => $v) {
-			if(in_array($k, [$vs_type_field, $vs_left_field, $vs_right_field], true)) { continue; }
+			if(in_array($k, [$vs_type_field, $vs_left_field, $vs_right_field, $pk], true)) { continue; }
+			
 			if($this->getModelInstance()->hasField($k)) {
 				 $this->getModelInstance()->set($k, $v);
 			}
