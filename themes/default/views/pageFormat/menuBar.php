@@ -27,11 +27,14 @@
  */
 
 $menu_color = $this->request->config->get('menu_color');
+
+$w = $this->request->config->get('header_width');
+$h = $this->request->config->get('header_height');
 ?>
 <div><div id="topNavContainer">
 	<div id="topNav" style="background-color:#<?= $menu_color; ?>;">
 		<div class="roundedNav" >
-			<div id="logo" onclick='document.location="<?php print $this->request->getBaseUrlPath().'/'; ?>";'><?php print "<img src='".$this->request->getUrlPathForThemeFile("graphics/logos/".$this->request->config->get('header_img'))."' border='0' alt='"._t("Search")."'/>" ?></div>
+			<div id="logo" onclick='document.location="<?php print $this->request->getBaseUrlPath().'/'; ?>";'><?php print "<img src='".$this->request->getUrlPathForThemeFile("graphics/logos/".$this->request->config->get('header_img'))."' border='0' style='width: {$w}; height: {$h}; margin-top: 12px;' alt='"._t("Search")."'/>" ?></div>
 				<div id="navWrapper">
 <?php
 		if ($this->request->isLoggedIn()) {

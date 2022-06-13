@@ -1,6 +1,4 @@
-# README: Providence version 1.7.14
-
-[![Build Status](https://secure.travis-ci.org/collectiveaccess/providence.png?branch=master)](http://travis-ci.org/collectiveaccess/providence)
+# README: Providence version 1.7.15
 
 ### About CollectiveAccess
 
@@ -8,16 +6,18 @@ CollectiveAccess is a web-based suite of applications providing a framework for 
 
 CollectiveAccess is freely available under the open source GNU Public License version 3.
 
-### About CollectiveAccess 1.7.14
+### About CollectiveAccess 1.7.15
 
-Version 1.7.14 is a maintenance release with these bug fixes and minor improvements:
-* Add checks to prevent potential XSS and CSRF security vulnerabilities
-* Handle non-standard ports when generating URL for background search indexing
-* Update selected 3rd party libraries for bug fixes
-* Improve script path parsing to addresses issues for systems running PHP-FPM proxies where quick search expressions containing spaces (or other URL escaped characters) will throw an invalid controller error when "full results" is selected. This is due to a bug in PHP processing of content for $_SERVER['SCRIPT_NAME'] in several PHP 7.x versions when running as PHP-FPM. See https://bugs.php.net/bug.php?id=74129.
-* Fix issue where CSRF token was not passed when creating sets from search and browse results
-* Improved cs_CZ translation
-* Add support for localized numeric metadata values
+Version 1.7.15 is a maintenance release with these bug fixes and minor improvements:
+* Fix for issue preventing correct display of relationship types for self-relationships (Eg. entity-entity relationships)
+* Fix broken page navigation in list item editor (GitHub issue #1346)
+* Allow apostrophes in email addresses for new users (GitHub issue #347)
+* Resolve issues with formatting of nested relationship types (GitHub #1193)
+* Minor fixes to DACS and Darwin Core profiles
+* Prevent potential XSS issue in error handler
+* Resolve Tilepic processing issues with images having EXIF orientation set that would result in illegible zoomable images.
+* Update vendor libraries to incorporate security fixes
+
 
 Note that this version is not yet compatible with PHP version 8. Please use versions 7.3 or 7.4.
 
@@ -31,9 +31,9 @@ First make sure your server meets all of the [requirements](https://manual.colle
 
 NOTE: The update process is relatively safe and rarely, if ever, causes data loss. That said BACKUP YOUR EXISTING DATABASE AND CONFIGURATION prior to updating. You almost certainly will not need the backup, but if you do you'll be glad it's there.
 
-To update, decompress the CollectiveAccess Providence 1.7.14 tar.gz or zip file and replace the files in your existing installation with those in the update. Take care to preserve your media directory (`media/`), local configuration directory (`app/conf/local/`), any local print templates (`app/printTemplates/`) and your setup.php file.
+To update, decompress the CollectiveAccess Providence 1.7.15 tar.gz or zip file and replace the files in your existing installation with those in the update. Take care to preserve your media directory (`media/`), local configuration directory (`app/conf/local/`), any local print templates (`app/printTemplates/`) and your setup.php file.
 
-If you are updating from a version prior to 1.7, you must recreate your existing setup.php as the format has changed. Rename the existing setup.php to `setup.php-old` and copy the version 1.7.14 setup.php template in `setup.php-dist` to `setup.php`. Edit this file with your database login information, system name and other basic settings. You can reuse the settings in your existing setup.php file as-is. Only the format of setup.php has changed. If you are updating from version 1.7.x you do not need to change your setup.php file.
+If you are updating from a version prior to 1.7, you must recreate your existing setup.php as the format has changed. Rename the existing setup.php to `setup.php-old` and copy the version 1.7.15 setup.php template in `setup.php-dist` to `setup.php`. Edit this file with your database login information, system name and other basic settings. You can reuse the settings in your existing setup.php file as-is. Only the format of setup.php has changed. If you are updating from version 1.7.x you do not need to change your setup.php file.
 
 Once the updated files are in place navigate in your web browser to the login screen. You will see this message:
 
