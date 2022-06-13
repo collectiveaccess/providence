@@ -1808,6 +1808,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				
 				switch($ps_bundle_name) {
 					# -------------------------------
+					// 
+					case 'generic':
+						if ($vb_batch) { return null; } // not supported in batch mode
+						$vs_element = $this->getGenericFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options, $pa_bundle_settings);
+						break;
+					# -------------------------------
 					// This bundle is only available when editing objects of type ca_representation_annotations
 					case 'ca_representation_annotation_properties':
 						if ($vb_batch) { return null; } // not supported in batch mode
@@ -3404,6 +3410,19 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$o_view->setVar('batch', (bool)(isset($pa_options['batch']) && $pa_options['batch']));
 
 		return $o_view->render('related_list.php');
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	protected function getGenericFormBundle(RequestHTTP $request, string $form_name, string $placement_code, ?array $options=null, ?array $bundle_settings=null) {
+		$view_path = (isset($options['viewPath']) && $options['viewPath']) ? $options['viewPath'] : $request->getViewsDirectoryPath();
+		$o_view = new View($po_request, "{$view_path}/bundles/");
+
+		$o_view->setVar('t_subject', $this);
+		$o_view->setVar('settings', $bundle_settings);
+		
+		return $o_view->render('generic.php');
 	}
 	# ------------------------------------------------------
 	/**
