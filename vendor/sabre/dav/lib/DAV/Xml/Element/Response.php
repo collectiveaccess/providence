@@ -121,7 +121,7 @@ class Response implements Element
 
         foreach ($this->getResponseProperties() as $status => $properties) {
             // Skipping empty lists
-            if (!$properties || (!ctype_digit($status) && !is_int($status))) {
+            if (!$properties || (!is_int($status) && !ctype_digit($status))) {
                 continue;
             }
             $empty = false;
@@ -186,8 +186,21 @@ class Response implements Element
 
                 return [];
             }
+
+            if (!$reader->read()) {
+                $reader->next();
+
+                return [];
+            }
+
+            if (Reader::END_ELEMENT === $reader->nodeType) {
+                $reader->next();
+
+                return [];
+            }
+
             $values = [];
-            $reader->read();
+
             do {
                 if (Reader::ELEMENT === $reader->nodeType) {
                     $clark = $reader->getClark();
@@ -199,9 +212,12 @@ class Response implements Element
                         $values[$clark] = $reader->parseCurrentElement()['value'];
                     }
                 } else {
-                    $reader->read();
+                    if (!$reader->read()) {
+                        break;
+                    }
                 }
             } while (Reader::END_ELEMENT !== $reader->nodeType);
+
             $reader->read();
 
             return $values;

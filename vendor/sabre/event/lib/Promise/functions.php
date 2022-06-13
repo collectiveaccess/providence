@@ -18,7 +18,7 @@ use Throwable;
 
 /**
  * This function takes an array of Promises, and returns a Promise that
- * resolves when all of the given arguments have resolved.
+ * resolves when all the given arguments have resolved.
  *
  * The returned Promise will resolve with a value that's an array of all the
  * values the given promises have been resolved with.

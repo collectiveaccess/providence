@@ -7,7 +7,7 @@ namespace Sabre\Event;
 /**
  * This is the old name for the Emitter class.
  *
- * Instead of of using EventEmitter, please use Emitter. They are identical
+ * Instead of using EventEmitter, please use Emitter. They are identical
  * otherwise.
  *
  * @copyright Copyright (C) fruux GmbH (https://fruux.com/)

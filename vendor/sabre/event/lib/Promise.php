@@ -144,7 +144,7 @@ class Promise
     }
 
     /**
-     * Marks this promise as rejected, and set it's rejection reason.
+     * Marks this promise as rejected, and set its rejection reason.
      */
     public function reject(Throwable $reason)
     {

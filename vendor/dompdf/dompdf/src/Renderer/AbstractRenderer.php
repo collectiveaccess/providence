@@ -112,9 +112,13 @@ abstract class AbstractRenderer
         //$img_w = imagesx($src); $img_h = imagesy($src);
 
         list($img_w, $img_h) = Helpers::dompdf_getimagesize($img, $this->_dompdf->getHttpContext());
-        if (!isset($img_w) || $img_w == 0 || !isset($img_h) || $img_h == 0) {
+        if ($img_w == 0 || $img_h == 0) {
             return;
         }
+
+        // save for later check if file needs to be resized.
+        $org_img_w = $img_w;
+        $org_img_h = $img_h;
 
         $repeat = $style->background_repeat;
         $dpi = $this->_dompdf->getOptions()->getDpi();
@@ -124,6 +128,14 @@ abstract class AbstractRenderer
         $bg_width = round((float)($width * $dpi) / 72);
         $bg_height = round((float)($height * $dpi) / 72);
 
+        list($img_w, $img_h) = $this->_resize_background_image(
+            $img_w,
+            $img_h,
+            $bg_width,
+            $bg_height,
+            $style->background_size,
+            $dpi
+        );
         //Need %bg_x, $bg_y as background pos, where img starts, converted to pixel
 
         list($bg_x, $bg_y) = $style->background_position;
@@ -234,47 +246,69 @@ abstract class AbstractRenderer
             $repeat = "no-repeat";
         }
 
-        //Use filename as indicator only
-        //different names for different variants to have different copies in the pdf
-        //This is not dependent of background color of box! .'_'.(is_array($bg_color) ? $bg_color["hex"] : $bg_color)
-        //Note: Here, bg_* are the start values, not end values after going through the tile loops!
+        // Avoid rendering identical background-image variants multiple times
+        // This is not dependent of background color of box! .'_'.(is_array($bg_color) ? $bg_color["hex"] : $bg_color)
+        // Note: Here, bg_* are the start values, not end values after going through the tile loops!
 
-        $filedummy = $img;
+        $key = implode("_", [$bg_width, $bg_height, $img_w, $img_h, $bg_x, $bg_y, $repeat]);
+        // FIXME: This will fail when a file with that exact name exists in the
+        // same directory, included in the document as regular image
+        $cpdfKey = $img . "_" . $key;
+        $tmpFile = Cache::getTempImage($img, $key);
+        $cached = ($this->_canvas instanceof CPDF && $this->_canvas->get_cpdf()->image_iscached($cpdfKey))
+            || ($tmpFile !== null && file_exists($tmpFile));
 
-        $is_png = false;
-        $filedummy .= '_' . $bg_width . '_' . $bg_height . '_' . $bg_x . '_' . $bg_y . '_' . $repeat;
+        if (!$cached) {
+            // img: image url string
+            // img_w, img_h: original image size in px
+            // width, height: box size in pt
+            // bg_width, bg_height: box size in px
+            // x, y: left/top edge of box on page in pt
+            // start_x, start_y: placement of image relative to pattern
+            // $repeat: repeat mode
+            // $bg: GD object of result image
+            // $src: GD object of original image
 
-        //Optimization to avoid multiple times rendering the same image.
-        //If check functions are existing and identical image already cached,
-        //then skip creation of duplicate, because it is not needed by addImagePng
-        if ($this->_canvas instanceof CPDF && $this->_canvas->get_cpdf()->image_iscached($filedummy)) {
-            $bg = null;
-        } else {
             // Create a new image to fit over the background rectangle
             $bg = imagecreatetruecolor($bg_width, $bg_height);
+            $cpdfFromGd = true;
 
             switch (strtolower($type)) {
                 case "png":
-                    $is_png = true;
+                    $cpdfFromGd = false;
                     imagesavealpha($bg, true);
                     imagealphablending($bg, false);
-                    $src = imagecreatefrompng($img);
+                    $src = @imagecreatefrompng($img);
                     break;
 
                 case "jpeg":
-                    $src = imagecreatefromjpeg($img);
+                    $src = @imagecreatefromjpeg($img);
+                    break;
+
+                case "webp":
+                    $src = @imagecreatefromwebp($img);
                     break;
 
                 case "gif":
-                    $src = imagecreatefromgif($img);
+                    $src = @imagecreatefromgif($img);
                     break;
 
                 case "bmp":
-                    $src = Helpers::imagecreatefrombmp($img);
+                    $src = @Helpers::imagecreatefrombmp($img);
                     break;
 
                 default:
                     return; // Unsupported image type
+            }
+
+            if ($src == null) {
+                return;
+            }
+
+            if ($img_w != $org_img_w || $img_h != $org_img_h) {
+                $newSrc = imagescale($src, $img_w, $img_h);
+                imagedestroy($src);
+                $src = $newSrc;
             }
 
             if ($src == null) {
@@ -382,47 +416,41 @@ abstract class AbstractRenderer
 
             imagedestroy($src);
 
-        } /* End optimize away creation of duplicates */
+            if ($cpdfFromGd && $this->_canvas instanceof CPDF) {
+                // Skip writing temp file as the GD object is added directly
+            } else {
+                $tmpDir = $this->_dompdf->getOptions()->getTempDir();
+                $tmpName = @tempnam($tmpDir, "bg_dompdf_img_");
+                @unlink($tmpName);
+                $tmpFile = "$tmpName.png";
+
+                imagepng($bg, $tmpFile);
+                imagedestroy($bg);
+
+                Cache::addTempImage($img, $tmpFile, $key);
+            }
+        } else {
+            $bg = null;
+            $cpdfFromGd = $tmpFile === null;
+        }
+
+        if ($this->_dompdf->getOptions()->getDebugPng()) {
+            print '[_background_image ' . $tmpFile . ']';
+        }
 
         $this->_canvas->clipping_rectangle($x, $y, $box_width, $box_height);
 
-        //img: image url string
-        //img_w, img_h: original image size in px
-        //width, height: box size in pt
-        //bg_width, bg_height: box size in px
-        //x, y: left/top edge of box on page in pt
-        //start_x, start_y: placement of image relative to pattern
-        //$repeat: repeat mode
-        //$bg: GD object of result image
-        //$src: GD object of original image
-        //When using cpdf and optimization to direct png creation from gd object is available,
-        //don't create temp file, but place gd object directly into the pdf
-        if (!$is_png && $this->_canvas instanceof CPDF) {
+        // When using cpdf and optimization to direct png creation from gd object is available,
+        // don't create temp file, but place gd object directly into the pdf
+        if ($cpdfFromGd && $this->_canvas instanceof CPDF) {
             // Note: CPDF_Adapter image converts y position
-            $this->_canvas->get_cpdf()->addImagePng($filedummy, $x, $this->_canvas->get_height() - $y - $height, $width, $height, $bg);
+            $this->_canvas->get_cpdf()->addImagePng($bg, $cpdfKey, $x, $this->_canvas->get_height() - $y - $height, $width, $height);
+
+            if (isset($bg)) {
+                imagedestroy($bg);
+            }
         } else {
-            $tmp_dir = $this->_dompdf->getOptions()->getTempDir();
-            $tmp_name = @tempnam($tmp_dir, "bg_dompdf_img_");
-            @unlink($tmp_name);
-            $tmp_file = "$tmp_name.png";
-
-            //debugpng
-            if ($this->_dompdf->getOptions()->getDebugPng()) {
-                print '[_background_image ' . $tmp_file . ']';
-            }
-
-            imagepng($bg, $tmp_file);
-            $this->_canvas->image($tmp_file, $x, $y, $width, $height);
-            imagedestroy($bg);
-
-            //debugpng
-            if ($this->_dompdf->getOptions()->getDebugPng()) {
-                print '[_background_image unlink ' . $tmp_file . ']';
-            }
-
-            if (!$this->_dompdf->getOptions()->getDebugKeepTemp()) {
-                unlink($tmp_file);
-            }
+            $this->_canvas->image($tmpFile, $x, $y, $width, $height);
         }
 
         $this->_canvas->clipping_end();
@@ -823,7 +851,7 @@ abstract class AbstractRenderer
      *
      * @var $top
      */
-    protected function _border_line($x, $y, $length, $color, $widths, $side, $corner_style = "bevel", $pattern_name, $r1 = 0, $r2 = 0)
+    protected function _border_line($x, $y, $length, $color, $widths, $side, $corner_style = "bevel", $pattern_name = "none", $r1 = 0, $r2 = 0)
     {
         /** used by $$side */
         list($top, $right, $bottom, $left) = $widths;
@@ -911,12 +939,88 @@ abstract class AbstractRenderer
     }
 
     /**
-     * @param $box
+     * @param array $box
      * @param string $color
      * @param array $style
      */
     protected function _debug_layout($box, $color = "red", $style = [])
     {
         $this->_canvas->rectangle($box[0], $box[1], $box[2], $box[3], Color::parse($color), 0.1, $style);
+    }
+
+    /**
+     * @param float $img_width
+     * @param float $img_height
+     * @param float $container_width
+     * @param float $container_height
+     * @param array|string $bg_resize
+     * @param int $dpi
+     * @return array
+     */
+    protected function _resize_background_image(
+        $img_width,
+        $img_height,
+        $container_width,
+        $container_height,
+        $bg_resize,
+        $dpi
+    ) {
+        // We got two some specific numbers and/or auto definitions
+        if (is_array($bg_resize)) {
+            $is_auto_width = $bg_resize[0] === 'auto';
+            if ($is_auto_width) {
+                $new_img_width = $img_width;
+            } else {
+                $new_img_width = $bg_resize[0];
+                if (Helpers::is_percent($new_img_width)) {
+                    $new_img_width = round(($container_width / 100) * (float)$new_img_width);
+                } else {
+                    $new_img_width = round($new_img_width * $dpi / 72);
+                }
+            }
+
+            $is_auto_height = $bg_resize[1] === 'auto';
+            if ($is_auto_height) {
+                $new_img_height = $img_height;
+            } else {
+                $new_img_height = $bg_resize[1];
+                if (Helpers::is_percent($new_img_height)) {
+                    $new_img_height = round(($container_height / 100) * (float)$new_img_height);
+                } else {
+                    $new_img_height = round($new_img_height * $dpi / 72);
+                }
+            }
+
+            // if one of both was set to auto the other one needs to scale proportionally
+            if ($is_auto_width !== $is_auto_height) {
+                if ($is_auto_height) {
+                    $new_img_height = round($new_img_width * ($img_height / $img_width));
+                } else {
+                    $new_img_width = round($new_img_height * ($img_width / $img_height));
+                }
+            }
+        } else {
+            $container_ratio = $container_height / $container_width;
+
+            if ($bg_resize === 'cover' || $bg_resize === 'contain') {
+                $img_ratio = $img_height / $img_width;
+
+                if (
+                    ($bg_resize === 'cover' && $container_ratio > $img_ratio) ||
+                    ($bg_resize === 'contain' && $container_ratio < $img_ratio)
+                ) {
+                    $new_img_height = $container_height;
+                    $new_img_width = round($container_height / $img_ratio);
+                } else {
+                    $new_img_width = $container_width;
+                    $new_img_height = round($container_width * $img_ratio);
+                }
+            } else {
+                $new_img_width = $img_width;
+                $new_img_height = $img_height;
+            }
+        }
+
+        return [$new_img_width, $new_img_height];
     }
 }

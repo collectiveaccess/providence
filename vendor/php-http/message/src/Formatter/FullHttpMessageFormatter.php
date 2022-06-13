@@ -22,11 +22,18 @@ class FullHttpMessageFormatter implements Formatter
     private $maxBodyLength;
 
     /**
-     * @param int|null $maxBodyLength
+     * @var string
      */
-    public function __construct($maxBodyLength = 1000)
+    private $binaryDetectionRegex;
+
+    /**
+     * @param int|null $maxBodyLength
+     * @param string   $binaryDetectionRegex By default, this is all non-printable ASCII characters and <DEL> except for \t, \r, \n
+     */
+    public function __construct($maxBodyLength = 1000, string $binaryDetectionRegex = '/([\x00-\x09\x0C\x0E-\x1F\x7F])/')
     {
         $this->maxBodyLength = $maxBodyLength;
+        $this->binaryDetectionRegex = $binaryDetectionRegex;
     }
 
     /**
@@ -68,6 +75,16 @@ class FullHttpMessageFormatter implements Formatter
     }
 
     /**
+     * Formats a response in context of its request.
+     *
+     * @return string
+     */
+    public function formatResponseForRequest(ResponseInterface $response, RequestInterface $request)
+    {
+        return $this->formatResponse($response);
+    }
+
+    /**
      * Add the message body if the stream is seekable.
      *
      * @param string $message
@@ -86,8 +103,7 @@ class FullHttpMessageFormatter implements Formatter
         $data = $stream->__toString();
         $stream->rewind();
 
-        // all non-printable ASCII characters and <DEL> except for \t, \r, \n
-        if (preg_match('/([\x00-\x09\x0C\x0E-\x1F\x7F])/', $data)) {
+        if (preg_match($this->binaryDetectionRegex, $data)) {
             return $message.'[binary stream omitted]';
         }
 

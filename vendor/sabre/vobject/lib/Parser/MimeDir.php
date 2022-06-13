@@ -439,7 +439,7 @@ class MimeDir extends Parser
             $propObj->add(null, $namelessParameter);
         }
 
-        if ('QUOTED-PRINTABLE' === strtoupper($propObj['ENCODING'])) {
+        if (isset($propObj['ENCODING']) && 'QUOTED-PRINTABLE' === strtoupper($propObj['ENCODING'])) {
             $propObj->setQuotedPrintableValue($this->extractQuotedPrintableValue());
         } else {
             $charset = $this->charset;
@@ -518,7 +518,7 @@ class MimeDir extends Parser
      *
      * Now for the parameters
      *
-     * If delimiter is not set (null) this method will just return a string.
+     * If delimiter is not set (empty string) this method will just return a string.
      * If it's a comma or a semi-colon the string will be split on those
      * characters, and always return an array.
      *

@@ -96,8 +96,9 @@ class ClientTest extends \PHPUnit\Framework\TestCase
     {
         $client = new ClientMock();
 
+        $fileContent = 'booh';
         $h = fopen('php://memory', 'r+');
-        fwrite($h, 'booh');
+        fwrite($h, $fileContent);
         $request = new Request('PUT', 'http://example.org/', ['X-Foo' => 'bar'], $h);
 
         $settings = [
@@ -105,6 +106,7 @@ class ClientTest extends \PHPUnit\Framework\TestCase
                 CURLOPT_HEADER => true,
                 CURLOPT_PUT => true,
                 CURLOPT_INFILE => $h,
+                CURLOPT_INFILESIZE => strlen($fileContent),
                 CURLOPT_NOBODY => false,
                 CURLOPT_CUSTOMREQUEST => 'PUT',
                 CURLOPT_HTTPHEADER => ['X-Foo: bar'],

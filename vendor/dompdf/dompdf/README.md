@@ -1,10 +1,9 @@
 Dompdf
 ======
 
-[![Build Status](https://travis-ci.org/dompdf/dompdf.png?branch=master)](https://travis-ci.org/dompdf/dompdf)
-[![Latest Stable Version](https://poser.pugx.org/dompdf/dompdf/v/stable.png)](https://packagist.org/packages/dompdf/dompdf)
+[![Build Status](https://github.com/dompdf/dompdf/actions/workflows/test.yml/badge.svg)](https://github.com/dompdf/dompdf/actions/workflows/test.yml)
+[![Latest Release](https://poser.pugx.org/dompdf/dompdf/v/stable.png)](https://packagist.org/packages/dompdf/dompdf)
 [![Total Downloads](https://poser.pugx.org/dompdf/dompdf/downloads.png)](https://packagist.org/packages/dompdf/dompdf)
-[![Latest Unstable Version](https://poser.pugx.org/dompdf/dompdf/v/unstable.png)](https://packagist.org/packages/dompdf/dompdf)
 [![License](https://poser.pugx.org/dompdf/dompdf/license.png)](https://packagist.org/packages/dompdf/dompdf)
  
 **Dompdf is an HTML to PDF converter**
@@ -21,9 +20,9 @@ release. For released code please
 
 ----
 
-**Check out the [demo](https://dompdf.net/examples.php) and ask any
-question on [StackOverflow](http://stackoverflow.com/questions/tagged/dompdf) or
-on the [Google Groups](http://groups.google.com/group/dompdf).**
+**Check out the [demo](http://eclecticgeek.com/dompdf/debug.php) and ask any
+question on [StackOverflow](https://stackoverflow.com/questions/tagged/dompdf) or
+in [Discussions](https://github.com/dompdf/dompdf/discussions).**
 
 Follow us on [![Twitter](http://twitter-badges.s3.amazonaws.com/twitter-a.png)](http://www.twitter.com/dompdf).
 
@@ -43,7 +42,7 @@ Follow us on [![Twitter](http://twitter-badges.s3.amazonaws.com/twitter-a.png)](
  * Image support (gif, png (8, 24 and 32 bit with alpha channel), bmp & jpeg)
  * No dependencies on external PDF libraries, thanks to the R&OS PDF class
  * Inline PHP support
- * Basic SVG support
+ * Basic SVG support (see "Limitations" below)
  
 ## Requirements
 
@@ -53,7 +52,8 @@ Follow us on [![Twitter](http://twitter-badges.s3.amazonaws.com/twitter-a.png)](
  * php-font-lib
  * php-svg-lib
  
-Note that some required dependencies may have further dependencies (notably php-svg-lib requires sabberworm/php-css-parser).
+Note that some required dependencies may have further dependencies 
+(notably php-svg-lib requires sabberworm/php-css-parser).
 
 ### Recommendations
 
@@ -192,25 +192,46 @@ or at run time
 use Dompdf\Dompdf;
 
 $dompdf = new Dompdf();
-$dompdf->set_option('defaultFont', 'Courier');
+$options = $dompdf->getOptions();
+$options->setDefaultFont('Courier');
+$dompdf->setOptions($options);
 ```
 
 See [Dompdf\Options](src/Options.php) for a list of available options.
 
+### Resource Reference Requirements
+
+In order to protect potentially sensitive information Dompdf imposes 
+restrictions on files referenced from the local file system or the web. 
+
+Files accessed through web-based protocols have the following requirements:
+ * The Dompdf option "isRemoteEnabled" must be set to "true"
+ * PHP must either have the curl extension enabled or the 
+   allow_url_fopen setting set to true
+   
+Files accessed through the local file system have the following requirement:
+ * The file must fall within the path(s) specified for the Dompdf "chroot" option
 
 ## Limitations (Known Issues)
 
  * Dompdf is not particularly tolerant to poorly-formed HTML input. To avoid
    any unexpected rendering issues you should either enable the built-in HTML5
-   parser at runtime (`$dompdf->set_option('isHtml5ParserEnabled', true);`) 
+   parser at runtime (`$options->setIsHtml5ParserEnabled(true);`) 
    or run your HTML through a HTML validator/cleaner (such as
    [Tidy](http://tidy.sourceforge.net) or the
    [W3C Markup Validation Service](http://validator.w3.org)).
  * Table cells are not pageable, meaning a table row must fit on a single page.
  * Elements are rendered on the active page when they are parsed.
+ * Embedding "raw" SVG's (`<svg><path...></svg>`) isn't working yet, you need to
+   either link to an external SVG file, or use a DataURI like this:
+     ```php
+     $html = '<img src="data:image/svg+xml;base64,' . base64_encode($svg) . '" ...>';
+     ```
+     Watch https://github.com/dompdf/dompdf/issues/320 for progress
 
 ---
 
 [![Donate button](https://www.paypal.com/en_US/i/btn/btn_donate_SM.gif)](http://goo.gl/DSvWf)
 
-*If you find this project useful, please consider making a donation. Any funds donated will be used to help further development on this project.)*
+*If you find this project useful, please consider making a donation.
+Any funds donated will be used to help further development on this project.)*

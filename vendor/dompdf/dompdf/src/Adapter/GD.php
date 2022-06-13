@@ -31,14 +31,14 @@ class GD implements Canvas
     /**
      * Resource handle for the image
      *
-     * @var resource
+     * @var \GdImage|resource
      */
     protected $_img;
 
     /**
      * Resource handle for the image
      *
-     * @var resource[]
+     * @var \GdImage[]|resource[]
      */
     protected $_imgs;
 
@@ -138,7 +138,7 @@ class GD implements Canvas
      * @param float $aa_factor Anti-aliasing factor, 1 for no AA
      * @param array $bg_color Image background color: array(r,g,b,a), 0 <= r,g,b,a <= 1
      */
-    public function __construct($size = 'letter', $orientation = "portrait", Dompdf $dompdf, $aa_factor = 1.0, $bg_color = [1, 1, 1, 0])
+    public function __construct($size = 'letter', $orientation = "portrait", Dompdf $dompdf = null, $aa_factor = 1.0, $bg_color = [1, 1, 1, 0])
     {
 
         if (!is_array($size)) {
@@ -155,7 +155,11 @@ class GD implements Canvas
             list($size[2], $size[3]) = [$size[3], $size[2]];
         }
 
-        $this->_dompdf = $dompdf;
+        if ($dompdf === null) {
+            $this->_dompdf = new Dompdf();
+        } else {
+            $this->_dompdf = $dompdf;
+        }
 
         $this->dpi = $this->get_dompdf()->getOptions()->getDpi();
 
@@ -174,8 +178,7 @@ class GD implements Canvas
         $this->_actual_width = $this->_upscale($this->_width);
         $this->_actual_height = $this->_upscale($this->_height);
 
-        $this->_page_number = $this->_page_count = 1;
-        $this->_page_text = [];
+        $this->_page_number = $this->_page_count = 0;
 
         if (is_null($bg_color) || !is_array($bg_color)) {
             // Pure white bg
@@ -196,9 +199,9 @@ class GD implements Canvas
     }
 
     /**
-     * Return the GF image resource
+     * Return the GD image resource
      *
-     * @return resource
+     * @return \GdImage|resource
      */
     public function get_image()
     {
@@ -208,25 +211,26 @@ class GD implements Canvas
     /**
      * Return the image's width in pixels
      *
-     * @return float
+     * @return int
      */
     public function get_width()
     {
-        return $this->_width / $this->_aa_factor;
+        return round($this->_width / $this->_aa_factor);
     }
 
     /**
      * Return the image's height in pixels
      *
-     * @return float
+     * @return int
      */
     public function get_height()
     {
-        return $this->_height / $this->_aa_factor;
+        return round($this->_height / $this->_aa_factor);
     }
 
     /**
      * Returns the current page number
+     *
      * @return int
      */
     public function get_page_number()
@@ -236,6 +240,7 @@ class GD implements Canvas
 
     /**
      * Returns the total number of pages in the document
+     *
      * @return int
      */
     public function get_page_count()
@@ -291,10 +296,10 @@ class GD implements Canvas
 
         list($r, $g, $b) = $color;
 
-        $r *= 255;
-        $g *= 255;
-        $b *= 255;
-        $a = 127 - ($a * 127);
+        $r = round($r * 255);
+        $g = round($g * 255);
+        $b = round($b * 255);
+        $a = round(127 - ($a * 127));
 
         // Clip values
         $r = $r > 255 ? 255 : $r;
@@ -326,22 +331,22 @@ class GD implements Canvas
      * Scales value up to the current canvas DPI from 72 DPI
      *
      * @param float $length
-     * @return float
+     * @return int
      */
     protected function _upscale($length)
     {
-        return ($length * $this->dpi) / 72 * $this->_aa_factor;
+        return round(($length * $this->dpi) / 72 * $this->_aa_factor);
     }
 
     /**
      * Scales value down from the current canvas DPI to 72 DPI
      *
      * @param float $length
-     * @return float
+     * @return int
      */
     protected function _downscale($length)
     {
-        return ($length / $this->dpi * 72) / $this->_aa_factor;
+        return round(($length / $this->dpi * 72) / $this->_aa_factor);
     }
 
     /**
@@ -647,12 +652,12 @@ class GD implements Canvas
             }
         }
 
-        imagesetthickness($this->get_image(), $width);
+        imagesetthickness($this->get_image(), isset($width) ? round($width) : 0);
 
         if ($fill) {
-            imagefilledpolygon($this->get_image(), $points, count($points) / 2, $c);
+            imagefilledpolygon($this->get_image(), $points, $c);
         } else {
-            imagepolygon($this->get_image(), $points, count($points) / 2, $c);
+            imagepolygon($this->get_image(), $points, $c);
         }
     }
 
@@ -676,7 +681,7 @@ class GD implements Canvas
         // Scale by the AA factor and DPI
         $x = $this->_upscale($x);
         $y = $this->_upscale($y);
-        $r = $this->_upscale($r);
+        $d = $this->_upscale(2 * $r);
 
         $c = $this->_allocate_color($color);
 
@@ -696,12 +701,12 @@ class GD implements Canvas
             }
         }
 
-        imagesetthickness($this->get_image(), $width);
+        imagesetthickness($this->get_image(), isset($width) ? round($width) : 0);
 
         if ($fill) {
-            imagefilledellipse($this->get_image(), $x, $y, $r, $r, $c);
+            imagefilledellipse($this->get_image(), $x, $y, $d, $d, $c);
         } else {
-            imageellipse($this->get_image(), $x, $y, $r, $r, $c);
+            imageellipse($this->get_image(), $x, $y, $d, $d, $c);
         }
     }
 
@@ -731,10 +736,10 @@ class GD implements Canvas
 
         $func_name = "imagecreatefrom$img_type";
         if (!function_exists($func_name)) {
-            if (!method_exists("Dompdf\Helpers", $func_name)) {
+            if (!method_exists(Helpers::class, $func_name)) {
                 throw new \Exception("Function $func_name() not found.  Cannot convert $img_type image: $img_url.  Please install the image PHP extension.");
             }
-            $func_name = "\\Dompdf\\Helpers::" . $func_name;
+            $func_name = [Helpers::class, $func_name];
         }
         $src = @call_user_func($func_name, $img_url);
 
@@ -778,7 +783,7 @@ class GD implements Canvas
         $y = $this->_upscale($y);
         $size = $this->_upscale($size) * self::FONT_SCALE;
 
-        $h = $this->get_font_height_actual($font, $size);
+        $h = round($this->get_font_height_actual($font, $size));
         $c = $this->_allocate_color($color);
 
         // imagettftext() converts numeric entities to their respective
@@ -876,11 +881,15 @@ class GD implements Canvas
     }
 
     /**
-     * @param $font
+     * @param string|null $font
      * @return string
      */
     public function get_ttf_file($font)
     {
+        if ($font === null) {
+            $font = "";
+        }
+
         if ( stripos($font, ".ttf") === false ) {
             $font .= ".ttf";
         }
@@ -909,7 +918,7 @@ class GD implements Canvas
      *
      * @param string $font
      * @param float $size
-     * @return float
+     * @return int
      */
     public function get_font_height($font, $size)
     {
@@ -976,7 +985,12 @@ class GD implements Canvas
         // N/A
     }
 
-    public function page_text()
+    public function page_script($callback)
+    {
+        // N/A
+    }
+
+    public function page_text($x, $y, $text, $font, $size, $color = [0, 0, 0], $word_space = 0.0, $char_space = 0.0, $angle = 0.0)
     {
         // N/A
     }
@@ -1063,8 +1077,8 @@ class GD implements Canvas
 
         // Perform any antialiasing
         if ($this->_aa_factor != 1) {
-            $dst_w = $this->_actual_width / $this->_aa_factor;
-            $dst_h = $this->_actual_height / $this->_aa_factor;
+            $dst_w = round($this->_actual_width / $this->_aa_factor);
+            $dst_h = round($this->_actual_height / $this->_aa_factor);
             $dst = imagecreatetruecolor($dst_w, $dst_h);
             imagecopyresampled($dst, $img, 0, 0, 0, 0,
                 $dst_w, $dst_h,

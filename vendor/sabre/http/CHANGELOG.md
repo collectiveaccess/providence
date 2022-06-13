@@ -1,6 +1,18 @@
 ChangeLog
 =========
 
+5.1.3 (2021-11-04)
+------------------
+
+* #179 version bump that was missed in 5.1.2 (@phil-davis)
+
+5.1.2 (2021-11-04)
+-------------------------
+
+* #169 Ensure $_SERVER keys are read as strings (@fredrik-eriksson)
+* #170 Fix deprecated usages on PHP 8.1 (@cedric-anne)
+* #175 Add resource size to CURL options in client (from #172 ) (@Dartui)
+
 5.1.1 (2020-10-03)
 -------------------------
 

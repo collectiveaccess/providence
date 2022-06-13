@@ -273,7 +273,9 @@ class Loop
             $read = $this->readStreams;
             $write = $this->writeStreams;
             $except = null;
-            if (stream_select($read, $write, $except, (null === $timeout) ? null : 0, $timeout ? (int) ($timeout * 1000000) : 0)) {
+            // stream_select changes behavior in 8.1 to forbid passing non-null microseconds when the seconds are null.
+            // Older versions of php don't allow passing null to microseconds.
+            if (null !== $timeout ? stream_select($read, $write, $except, 0, (int) ($timeout * 1000000)) : stream_select($read, $write, $except, null)) {
                 // See PHP Bug https://bugs.php.net/bug.php?id=62452
                 // Fixed in PHP7
                 foreach ($read as $readStream) {

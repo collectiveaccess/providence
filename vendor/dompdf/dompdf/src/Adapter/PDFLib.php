@@ -205,7 +205,7 @@ class PDFLib implements Canvas
      * @param string $orientation The orientation of the document (either 'landscape' or 'portrait')
      * @param Dompdf $dompdf
      */
-    public function __construct($paper = "letter", $orientation = "portrait", Dompdf $dompdf)
+    public function __construct($paper = "letter", $orientation = "portrait", Dompdf $dompdf = null)
     {
         if (is_array($paper)) {
             $size = $paper;
@@ -222,7 +222,11 @@ class PDFLib implements Canvas
         $this->_width = $size[2] - $size[0];
         $this->_height = $size[3] - $size[1];
 
-        $this->_dompdf = $dompdf;
+        if ($dompdf === null) {
+            $this->_dompdf = new Dompdf();
+        } else {
+            $this->_dompdf = $dompdf;
+        }
 
         $this->_pdf = new \PDFLib();
 
@@ -779,6 +783,8 @@ class PDFLib implements Canvas
             $options .= " embedding=true";
         }
 
+        $options .= " autosubsetting=" . ($this->_dompdf->getOptions()->getIsFontSubsettingEnabled() === false ? "false" : "true");
+
         if (is_null($encoding)) {
             // Unicode encoding is only available for the commerical
             // version of PDFlib and not PDFlib-Lite
@@ -1300,7 +1306,7 @@ class PDFLib implements Canvas
         } else {
             list($proto, $host, $path, $file) = Helpers::explode_url($url);
 
-            if ($proto == "" || $proto === "file://") {
+            if ($proto === "" || $proto === "file://") {
                 return; // Local links are not allowed
             }
             $url = Helpers::build_url($proto, $host, $path, $file);
@@ -1315,8 +1321,8 @@ class PDFLib implements Canvas
      * @param string $text
      * @param string $font
      * @param float  $size
-     * @param int    $word_spacing
-     * @param int    $letter_spacing
+     * @param float  $word_spacing
+     * @param float  $letter_spacing
      * @return mixed
      */
     public function get_text_width($text, $font, $size, $word_spacing = 0, $letter_spacing = 0)
@@ -1329,7 +1335,7 @@ class PDFLib implements Canvas
 
         if ($letter_spacing) {
             $num_chars = mb_strlen($text);
-            $delta += ($num_chars - $num_spaces) * $letter_spacing;
+            $delta += $num_chars * $letter_spacing;
         }
 
         return $this->_pdf->stringwidth($text, $fh, $size) + $delta;
@@ -1394,20 +1400,29 @@ class PDFLib implements Canvas
     //........................................................................
 
     /**
-     * Processes a script on every page
+     * Processes a callback or script on every page
      *
-     * The variables $pdf, $PAGE_NUM, and $PAGE_COUNT are available.
+     * The callback function receives the four parameters `$pageNumber`,
+     * `$pageCount`, `$pdf`, and `$fontMetrics`, in that order. If a script is
+     * passed as string, the variables `$PAGE_NUM`, `$PAGE_COUNT`, `$pdf`, and
+     * `$fontMetrics` are available instead.
      *
-     * This function can be used to add page numbers to all pages
-     * after the first one, for example.
+     * This function can be used to add page numbers to all pages after the
+     * first one, for example.
      *
-     * @param string $code the script code
-     * @param string $type the language type for script
+     * @param callable|string $code The callback function or PHP script to process on every page
      */
-    public function page_script($code, $type = "text/php")
+    public function page_script($code)
     {
-        $_t = "script";
-        $this->_page_text[] = compact("_t", "code", "type");
+        if (is_callable($code)) {
+            $this->_page_text[] = [
+                "_t"       => "callback",
+                "callback" => $code
+            ];
+        } else {
+            $_t = "script";
+            $this->_page_text[] = compact("_t", "code");
+        }
     }
 
     /**
@@ -1448,15 +1463,20 @@ class PDFLib implements Canvas
                         $this->text($x, $y, $text, $font, $size, $color, $word_space, $char_space, $angle);
                         break;
 
+                    case "callback":
+                        $fontMetrics = $this->get_dompdf()->getFontMetrics();
+                        $callback($p, $this->_page_count, $this, $fontMetrics);
+                        break;
+
                     case "script":
                         if (!$eval) {
                             $eval = new PHPEvaluator($this);
                         }
-                        $eval->evaluate($code, ['PAGE_NUM' => $p, 'PAGE_COUNT' => $this->_page_count]);
+                        $eval->evaluate($code, ["PAGE_NUM" => $p, "PAGE_COUNT" => $this->_page_count]);
                         break;
 
-                    case 'line':
-                        $this->line( $x1, $y1, $x2, $y2, $color, $width, $style );
+                    case "line":
+                        $this->line($x1, $y1, $x2, $y2, $color, $width, $style);
                         break;
 
                 }

@@ -376,11 +376,16 @@ class Client extends EventEmitter
             default:
                 $body = $request->getBody();
                 if (is_resource($body)) {
+                    $bodyStat = fstat($body);
+
                     // This needs to be set to PUT, regardless of the actual
                     // method used. Without it, INFILE will be ignored for some
                     // reason.
                     $settings[CURLOPT_PUT] = true;
-                    $settings[CURLOPT_INFILE] = $request->getBody();
+                    $settings[CURLOPT_INFILE] = $body;
+                    if (false !== $bodyStat && array_key_exists('size', $bodyStat)) {
+                        $settings[CURLOPT_INFILESIZE] = $bodyStat['size'];
+                    }
                 } else {
                     // For security we cast this to a string. If somehow an array could
                     // be passed here, it would be possible for an attacker to use @ to

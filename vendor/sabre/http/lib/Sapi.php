@@ -154,6 +154,7 @@ class Sapi
         $hostName = 'localhost';
 
         foreach ($serverArray as $key => $value) {
+            $key = (string) $key;
             switch ($key) {
                 case 'SERVER_PROTOCOL':
                     if ('HTTP/1.0' === $value) {

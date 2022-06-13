@@ -5,6 +5,7 @@ use Aws;
 use Aws\CommandInterface;
 use Aws\Exception\AwsException;
 use GuzzleHttp\Promise;
+use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\PromisorInterface;
 use Iterator;
 
@@ -137,6 +138,8 @@ class Transfer implements PromisorInterface
 
     /**
      * Transfers the files.
+     *
+     * @return PromiseInterface
      */
     public function promise()
     {
@@ -300,7 +303,7 @@ class Transfer implements PromisorInterface
 
         // Create an EachPromise, that will concurrently handle the upload
         // operations' yielded promises from the iterator.
-        return Promise\each_limit_all($files, $this->concurrency);
+        return Promise\Each::ofLimitAll($files, $this->concurrency);
     }
 
     /** @return Iterator */
