@@ -76,7 +76,7 @@
 				<td><b><?php print $vn_c; ?></b>&nbsp;&nbsp;</td>
 				<td>
 <?php 
-					if ($vs_path = $vo_result->getMediaPath('ca_object_representations.media', 'thumbnail')) {
+					if ($vs_path = $vo_result->getMediaUrl('ca_object_representations.media', 'thumbnail')) {
 						print "<div class=\"imageTiny\"><img src='{$vs_path}'/></div>";
 					} else {
 ?>

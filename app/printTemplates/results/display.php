@@ -67,7 +67,7 @@
 			<tr>
 				<td style="width:250px;">
 <?php	
-					if ($va_rep = $vo_result->get('ca_object_representations.media.small', ['usePath' => true, 'scaleCSSWidthTo' => '250px', 'scaleCSSHeightTo' => '200px'])) {
+					if ($va_rep = $vo_result->get('ca_object_representations.media.small', ['usePath' => false, 'scaleCSSWidthTo' => '250px', 'scaleCSSHeightTo' => '200px'])) {
 						print "<div class='objThumb'>".$va_rep."</div>";
 					} else {
 						print "<div class='imageTinyPlaceholder'></div> ";

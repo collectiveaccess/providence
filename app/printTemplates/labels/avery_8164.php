@@ -51,14 +51,11 @@
  	{{{<ifdef code="ca_objects.description"><div class="smallText">^ca_objects.description</div></ifdef>}}}
  </div>
  
- <div class="barcode" style="position: absolute; left: 0.125in; top: 2.5in; width: 1.5in; height: 0.75in;">
- 	{{{barcode:code128:5:^ca_objects.idno}}}
- </div>
- 
  <div class="thumbnail" style="position: absolute; left: 2in; top: 0.125in; width: 1.875in; overflow: hidden;">
- 	<?php print $vo_result->get('ca_object_representations.media.thumbnail', ['usePath' => true]); ?>
+ 	<?php print $vo_result->get('ca_object_representations.media.thumbnail', ['usePath' => false]); ?>
  </div>
  
  <div class="bodyText" style="position: absolute; left: 0.125in; top: 3in; width: 2.0in; height: 0.375in;">
  	{{{^ca_objects.preferred_labels.name <ifdef code="ca_objects.idno">(^ca_objects.idno)</ifdef>}}}
  </div>
+
