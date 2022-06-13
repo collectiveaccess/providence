@@ -18,7 +18,7 @@
     "pear/file_marc": "~1.2",
     "dompdf/dompdf": "~1.2.1",
     "scholarslab/bagit": "~0.2",
-    "guzzlehttp/guzzle": "~6.5.6",
+    "guzzlehttp/guzzle": "~6.5.7",
     "guzzlehttp/psr7": "^1.4",
     "joshralph/password-policy": "~0.2",
     "league/flysystem": "v1.1.4",
