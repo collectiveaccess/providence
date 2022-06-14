@@ -423,6 +423,10 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					$word_field = 'sw.stem';
 				}
 			}
+			
+			if(($word_field !== 'sw.stem') && ($this->search_config->get('always_stem'))) {
+				$text .= '*';
+			}
 		
 			$params = [$subject_tablenum];
 			$word_op = '=';
