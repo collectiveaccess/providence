@@ -7286,7 +7286,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						}
 						if (is_array($va_rel = Datamodel::getOneToManyRelations($vs_table_name, $ps_additional_table_to_join))) {
 							// one-many rel
-							$va_sql_joins[] = "{$ps_additional_table_join_type} JOIN {$ps_additional_table_to_join} ON {$vs_table_name}".'.'.$va_rel['one_table_field']." = {$ps_additional_table_to_join}.".$va_rel['many_table_field'];
+							$va_sql_joins[$ps_additional_table_to_join] = "{$ps_additional_table_join_type} JOIN {$ps_additional_table_to_join} ON {$vs_table_name}".'.'.$va_rel['one_table_field']." = {$ps_additional_table_to_join}.".$va_rel['many_table_field'];
 						} else {
 							// TODO: handle many-many cases
 						}
@@ -7310,8 +7310,10 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					}
 					$vs_sql_joins = join("\n", $va_sql_joins);
 					
+					$select_tables = array_keys($va_sql_joins);
+					$select_tables[] = $vs_table_name;
 					$vs_sql = "
-						SELECT * 
+						SELECT ".join(',', array_map(function($v) { return "{$v}.*"; }, $select_tables))."
 						FROM {$vs_table_name}
 						{$vs_sql_joins}
 						WHERE
