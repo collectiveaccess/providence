@@ -14,7 +14,7 @@ services:
     image: mysql:5.7
     volumes:
       - mysql_data:/var/lib/mysql 
-#    command: --max_allowed_packet=32505856 ## useful for loading massive database
+    command: --max_allowed_packet=32505856 ## useful for loading massive database
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOTPASS-pRoViDeNcEdEvEnV}
       MYSQL_DATABASE: ${MYSQL_DB-ca}
