@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2015 Whirl-i-Gig
+ * Copyright 2006-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -92,9 +92,16 @@ class MediaInfoCoder {
 		if (!($va_media_info = $this->opa_media_info) && !($va_media_info = caGetOption('data', $pa_options, null))) { return false; }	
 		
 		#
+		# Was this version skipped?
+		#
+		if (isset($va_media_info[$ps_version]["SKIP"]) && $va_media_info[$ps_version]["SKIP"]) {
+			$ps_version = $va_media_info[$ps_version]["REPLACE_WITH_VERSION"];
+		}
+		
+		#
 		# Use icon
 		#
-		if ($ps_version && (!$ps_key || (in_array($ps_key, array('WIDTH', 'HEIGHT'))))) {
+		if ($ps_version && (!$ps_key || (in_array(strtoupper($ps_key), array('WIDTH', 'HEIGHT'))))) {
 			if (isset($va_media_info[$ps_version]['USE_ICON']) && ($vs_icon_code = $va_media_info[$ps_version]['USE_ICON'])) {
 				if ($va_icon_size = caGetMediaIconForSize($vs_icon_code, $va_media_info[$ps_version]['WIDTH'], $va_media_info[$ps_version]['HEIGHT'])) {
 					$va_media_info[$ps_version]['WIDTH'] = $va_icon_size['width'];
@@ -102,7 +109,7 @@ class MediaInfoCoder {
 				}
 			}
 		} else {
-			if (!$ps_key || (in_array($ps_key, array('WIDTH', 'HEIGHT')))) {
+			if (!$ps_key || (in_array(strtoupper($ps_key), array('WIDTH', 'HEIGHT')))) {
 				foreach(array_keys($va_media_info) as $vs_version) {
 					if (isset($va_media_info[$vs_version]['USE_ICON']) && ($vs_icon_code = $va_media_info[$vs_version]['USE_ICON'])) {
 						if ($va_icon_size = caGetMediaIconForSize($vs_icon_code, $va_media_info[$vs_version]['WIDTH'], $va_media_info[$vs_version]['HEIGHT'])) {
@@ -119,7 +126,12 @@ class MediaInfoCoder {
 			if (!$ps_key) {
 				return $va_media_info[$ps_version];
 			} else { 
-				return $va_media_info[$ps_version][$ps_key];
+			    if ($v = $va_media_info[$ps_version][$ps_key]) { return $v; }
+			    
+			    // Make case insensitive
+			    if ($v = $va_media_info[$ps_version][strtoupper($ps_key)]) { return $v; }
+			    if ($v = $va_media_info[$ps_version][strtolower($ps_key)]) { return $v; }
+				return null;
 			}
 		} else {
 			return $va_media_info;
@@ -135,6 +147,13 @@ class MediaInfoCoder {
 		$vn_page = 1;
 		if (is_array($pa_options) && (isset($pa_options["page"])) && ($pa_options["page"] > 1)) {
 			$vn_page = $pa_options["page"];
+		}
+		
+		#
+		# Was this version skipped?
+		#
+		if (isset($va_media_info[$ps_version]["SKIP"]) && $va_media_info[$ps_version]["SKIP"]) {
+			$ps_version = $va_media_info[$ps_version]["REPLACE_WITH_VERSION"];
 		}
 		
 		#
@@ -187,6 +206,13 @@ class MediaInfoCoder {
 		$vn_page = 1;
 		if (is_array($pa_options) && (isset($pa_options["page"])) && ($pa_options["page"] > 1)) {
 			$vn_page = $pa_options["page"];
+		}
+		
+		#
+		# Was this version skipped?
+		#
+		if (isset($va_media_info[$ps_version]["SKIP"]) && $va_media_info[$ps_version]["SKIP"]) {
+			$ps_version = $va_media_info[$ps_version]["REPLACE_WITH_VERSION"];
 		}
 		
 		#
@@ -256,6 +282,13 @@ class MediaInfoCoder {
 		if (!isset($pa_options["page"]) || ($pa_options["page"] < 1)) { $pa_options["page"] = 1; }
 		
 		#
+		# Was this version skipped?
+		#
+		if (isset($va_media_info[$ps_version]["SKIP"]) && $va_media_info[$ps_version]["SKIP"]) {
+			$ps_version = $va_media_info[$ps_version]["REPLACE_WITH_VERSION"];
+		}
+		
+		#
 		# Use icon
 		#
 		if (isset($va_media_info[$ps_version]) && isset($va_media_info[$ps_version]['USE_ICON']) && ($vs_icon_code = $va_media_info[$ps_version]['USE_ICON'])) {
@@ -269,7 +302,8 @@ class MediaInfoCoder {
 			return $va_media_info[$ps_version]["QUEUED_MESSAGE"];
 		}
 		
-		$vs_url = caGetOption('usePath', $pa_options, false) ? $this->getMediaPath($ps_version, $pa_options) : $this->getMediaUrl($ps_version, $pa_options);
+		$vs_url = caGetOption('usePath', $pa_options, false) ? realpath($this->getMediaPath($ps_version, $pa_options)) : $this->getMediaUrl($ps_version, $pa_options);
+		
 		$o_media = new Media();
 		
 		$o_vol = new MediaVolumes();
@@ -289,18 +323,14 @@ class MediaInfoCoder {
 	public function getMediaVersions($pa_options=null) {
 		if (!($va_media_info = $this->opa_media_info) && !($va_media_info = caGetOption('data', $pa_options, null))) { return false; }
 		
-		unset($va_media_info["ORIGINAL_FILENAME"]);
-		unset($va_media_info["INPUT"]);
-		unset($va_media_info["VOLUME"]);
-		unset($va_media_info["_undo_"]);
-		unset($va_media_info["TRANSFORMATION_HISTORY"]);
-		unset($va_media_info["_CENTER"]);
-		unset($va_media_info["_SCALE"]);
-		unset($va_media_info["_SCALE_UNITS"]);
-		unset($va_media_info["REPLICATION_KEYS"]);
-		unset($va_media_info["REPLICATION_STATUS"]);
-		unset($va_media_info["REPLICATION_LOG"]);
+		$to_remove = ['ORIGINAL_FILENAME', 'INPUT', 'VOLUME', 'TRANSFORMATION_HISTORY', 
+						'REPLICATION_KEYS', 'REPLICATION_STATUS', 'REPLICATION_LOG'];
 		
+		foreach($va_media_info as $k => $v) {
+			if(in_array($k, $to_remove, true) || preg_match('!^_[A-Z_]+$!', $k)) {
+				unset($va_media_info[$k]);
+			}
+		}
 		return array_keys($va_media_info);		
 	}
 	# ---------------------------------------------------------------------------
@@ -319,6 +349,13 @@ class MediaInfoCoder {
 	public function mediaIsMirrored($ps_version, $pa_options=null) {
 		if (!($va_media_info = $this->opa_media_info) && !($va_media_info = caGetOption('data', $pa_options, null))) { return false; }
 		
+		#
+		# Was this version skipped?
+		#
+		if (isset($va_media_info[$ps_version]["SKIP"]) && $va_media_info[$ps_version]["SKIP"]) {
+			$ps_version = $va_media_info[$ps_version]["REPLACE_WITH_VERSION"];
+		}
+		
 		$va_volume_info = $this->opo_volume_info->getVolumeInformation($va_media_info[$ps_version]["VOLUME"]);
 		if (!is_array($va_volume_info)) {
 			return false;
@@ -335,6 +372,13 @@ class MediaInfoCoder {
 	 */
 	public function getMediaMirrorStatus($ps_version, $ps_mirror=null, $pa_options=null) {
 		if (!($va_media_info = $this->opa_media_info) && !($va_media_info = caGetOption('data', $pa_options, null))) { return false; }
+		
+		#
+		# Was this version skipped?
+		#
+		if (isset($va_media_info[$ps_version]["SKIP"]) && $va_media_info[$ps_version]["SKIP"]) {
+			$ps_version = $va_media_info[$ps_version]["REPLACE_WITH_VERSION"];
+		}
 		
 		$va_volume_info = $this->opo_volume_info->getVolumeInformation($va_media_info[$ps_version]["VOLUME"]);
 		if (!is_array($va_volume_info)) {
