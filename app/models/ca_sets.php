@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2019 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1014,10 +1014,6 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		if (($vn_set_user_id == $pn_user_id)) {	// owners have all access
 			return ca_sets::$s_have_access_to_set_cache[$vn_set_id.'/'.$pn_user_id.'/'.$pn_access] = true;
-		}
-		
-		if (($t_set->get('access') > 0) && ($pn_access == __CA_SET_READ_ACCESS__)) {	 // public sets are readable by all
-			return ca_sets::$s_have_access_to_set_cache[$vn_set_id.'/'.$pn_user_id.'/'.$pn_access] = true; 
 		}
 		
 		//
