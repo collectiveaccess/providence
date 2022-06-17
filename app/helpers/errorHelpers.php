@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2018 Whirl-i-Gig
+ * Copyright 2015-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -145,4 +145,15 @@ function caExtractRequestParams() {
 	return $pa_params;
 }
 # --------------------------------------------------------------------------------------------
+ /**
+  * Return URL path to themes directory, guessing based upon PHP script name is constants aren't set
+  *
+  * @return string
+  */
+function caGetThemeUrlPath() : string {
+	$tmp = explode("/", str_replace("\\", "/", $_SERVER['SCRIPT_NAME']));
+	array_pop($tmp);
+	return defined('__CA_THEME_URL__') ? __CA_THEME_URL__ : join("/", $tmp).'/themes/default';
+}
+# ---------------------------------------------------------------------------------------------
 		
