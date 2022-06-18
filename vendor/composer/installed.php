@@ -5,7 +5,7 @@
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => 'a023db13b3184e9028255022d37f563c15614f89',
+        'reference' => '9ace8e042f2f8b60b48acf5293d7a259963185ee',
         'name' => '__root__',
         'dev' => true,
     ),
@@ -16,7 +16,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => 'a023db13b3184e9028255022d37f563c15614f89',
+            'reference' => '9ace8e042f2f8b60b48acf5293d7a259963185ee',
             'dev_requirement' => false,
         ),
         'aws/aws-crt-php' => array(
@@ -29,12 +29,12 @@
             'dev_requirement' => true,
         ),
         'aws/aws-sdk-php' => array(
-            'pretty_version' => '3.225.2',
-            'version' => '3.225.2.0',
+            'pretty_version' => '3.227.0',
+            'version' => '3.227.0.0',
             'type' => 'library',
             'install_path' => __DIR__ . '/../aws/aws-sdk-php',
             'aliases' => array(),
-            'reference' => 'f846724ad842916061127d20da4fe4e129f7d4b8',
+            'reference' => '88d803113ade68604ec03c591d65e1e44406ab8e',
             'dev_requirement' => true,
         ),
         'clue/stream-filter' => array(

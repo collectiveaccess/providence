@@ -55,17 +55,17 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.225.2",
-            "version_normalized": "3.225.2.0",
+            "version": "3.227.0",
+            "version_normalized": "3.227.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "f846724ad842916061127d20da4fe4e129f7d4b8"
+                "reference": "88d803113ade68604ec03c591d65e1e44406ab8e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/f846724ad842916061127d20da4fe4e129f7d4b8",
-                "reference": "f846724ad842916061127d20da4fe4e129f7d4b8",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/88d803113ade68604ec03c591d65e1e44406ab8e",
+                "reference": "88d803113ade68604ec03c591d65e1e44406ab8e",
                 "shasum": ""
             },
             "require": {
@@ -73,9 +73,9 @@
                 "ext-json": "*",
                 "ext-pcre": "*",
                 "ext-simplexml": "*",
-                "guzzlehttp/guzzle": "^5.3.3 || ^6.5.6 || ^7.4.3",
+                "guzzlehttp/guzzle": "^6.5.7 || ^7.4.4",
                 "guzzlehttp/promises": "^1.4.0",
-                "guzzlehttp/psr7": "^1.7.0 || ^2.1.1",
+                "guzzlehttp/psr7": "^1.8.5 || ^2.3",
                 "mtdowling/jmespath.php": "^2.6",
                 "php": ">=5.5"
             },
@@ -102,7 +102,7 @@
                 "ext-openssl": "Allows working with CloudFront private distributions and verifying received SNS messages",
                 "ext-sockets": "To use client-side monitoring"
             },
-            "time": "2022-06-10T19:03:26+00:00",
+            "time": "2022-06-17T18:15:06+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -143,7 +143,7 @@
             "support": {
                 "forum": "https://forums.aws.amazon.com/forum.jspa?forumID=80",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.225.2"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.227.0"
             },
             "install-path": "../aws/aws-sdk-php"
         },
