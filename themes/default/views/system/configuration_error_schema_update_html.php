@@ -37,12 +37,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<title>CollectiveAccess database update</title>
-	<link href="<?php print $vs_path; ?>/themes/default/css/error.css" rel="stylesheet" type="text/css" media='all'/>
+	<link href="themes/default/css/error.css" rel="stylesheet" type="text/css" media='all'/>
 	<link href='../assets/fontawesome/css/font-awesome.min.css' rel='stylesheet' type='text/css' media='all'/>
 </head>
 <body>
 	<div id='box'>
-	<div id="logo"><img src="<?php print $vs_path ?>/themes/default/graphics/logos/logo.svg" style="width: 327px; height: 45px"/></div><!-- end logo -->
+	<div id="logo"><img src="themes/default/graphics/logos/logo.svg" style="width: 327px; height: 45px"/></div><!-- end logo -->
 	<div id="content">
 		<div class='error'><?php print _t("Updating your database..."); ?></div>
 <?php

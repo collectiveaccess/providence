@@ -33,11 +33,11 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<title>CollectiveAccess error</title>
-	<link href="<?php print $vs_path; ?>/themes/default/css/error.css" rel="stylesheet" type="text/css" />
+	<link href="themes/default/css/error.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
 	<div id='errorDetails'>
-		<div id="logo"><img src="<?php print $vs_path ?>/themes/default/graphics/logos/logo.svg" style="width: 327px; height: 45px"/></div><!-- end logo -->
+		<div id="logo"><img src="themes/default/graphics/logos/logo.svg" style="width: 327px; height: 45px"/></div><!-- end logo -->
 		<div id="content">
 			<div class='error'><?php print _t("Something went wrong"); ?></div>
 <?php if((defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) || (defined('__CA_STACKTRACE_ON_EXCEPTION__') && __CA_STACKTRACE_ON_EXCEPTION__)) { ?>

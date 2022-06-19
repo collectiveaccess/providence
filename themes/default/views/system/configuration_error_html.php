@@ -42,12 +42,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<title>CollectiveAccess configuration error display</title>
-	<link href="<?php print $vs_theme_url; ?>/css/error.css" rel="stylesheet" type="text/css" media='all'/>
+	<link href="themes/default/css/error.css" rel="stylesheet" type="text/css" media='all'/>
 	<link href='../assets/fontawesome/css/font-awesome.min.css' rel='stylesheet' type='text/css' media='all'/>
 </head>
 <body>
 	<div id='box'>
-	<div id="logo"><img src="<?php print $vs_path ?>/themes/default/graphics/logos/logo.svg" style="width: 327px; height: 45px"/></div><!-- end logo -->
+	<div id="logo"><img src="themes/default/graphics/logos/logo.svg" style="width: 327px; height: 45px"/></div><!-- end logo -->
 	<div id="content">
 		<?php print "<div class='error'>Issues with your system configuration have been detected</div>
 			General installation instructions can be found
