@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit05bbb11d80dd855730e345a5a8c8885d
+class ComposerStaticInit6c868f4d5ac89dbf668190e3343a969e
 {
     public static $files = array (
         '320cde22f66dd4f5d3fd621d3e88b98f' => __DIR__ . '/..' . '/symfony/polyfill-ctype/bootstrap.php',
@@ -29,8 +29,8 @@ class ComposerStaticInit05bbb11d80dd855730e345a5a8c8885d
         'a1cce3d26cc15c00fcd0b3354bd72c88' => __DIR__ . '/..' . '/sabre/event/lib/Promise/functions.php',
         '3569eecfeed3bcf0bad3c998a494ecb8' => __DIR__ . '/..' . '/sabre/xml/lib/Deserializer/functions.php',
         '93aa591bc4ca510c520999e34229ee79' => __DIR__ . '/..' . '/sabre/xml/lib/Serializer/functions.php',
-        '8cff32064859f4559445b89279f3199c' => __DIR__ . '/..' . '/php-http/message/src/filters.php',
         '8a9dc1de0ca7e01f3e08231539562f61' => __DIR__ . '/..' . '/aws/aws-sdk-php/src/functions.php',
+        '8cff32064859f4559445b89279f3199c' => __DIR__ . '/..' . '/php-http/message/src/filters.php',
         'ad155f8f1cf0d418fe49e248db8c661b' => __DIR__ . '/..' . '/react/promise/src/functions_include.php',
         'ebdb698ed4152ae445614b69b5e4bb6a' => __DIR__ . '/..' . '/sabre/http/lib/functions.php',
         '6124b4c8570aa390c21fafd04a26c69f' => __DIR__ . '/..' . '/myclabs/deep-copy/src/DeepCopy/deep_copy.php',
@@ -1145,11 +1145,11 @@ class ComposerStaticInit05bbb11d80dd855730e345a5a8c8885d
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit05bbb11d80dd855730e345a5a8c8885d::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit05bbb11d80dd855730e345a5a8c8885d::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInit05bbb11d80dd855730e345a5a8c8885d::$prefixesPsr0;
-            $loader->fallbackDirsPsr0 = ComposerStaticInit05bbb11d80dd855730e345a5a8c8885d::$fallbackDirsPsr0;
-            $loader->classMap = ComposerStaticInit05bbb11d80dd855730e345a5a8c8885d::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit6c868f4d5ac89dbf668190e3343a969e::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit6c868f4d5ac89dbf668190e3343a969e::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInit6c868f4d5ac89dbf668190e3343a969e::$prefixesPsr0;
+            $loader->fallbackDirsPsr0 = ComposerStaticInit6c868f4d5ac89dbf668190e3343a969e::$fallbackDirsPsr0;
+            $loader->classMap = ComposerStaticInit6c868f4d5ac89dbf668190e3343a969e::$classMap;
 
         }, null, ClassLoader::class);
     }
