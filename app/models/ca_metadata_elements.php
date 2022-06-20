@@ -256,7 +256,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		parent::__construct($id, $options);	# call superclass constructor
 		$this->FIELDS['datatype']['BOUNDS_CHOICE_LIST'] = array_flip(ca_metadata_elements::getAttributeTypes());
 
-		if($pn_id) { $this->opa_element_settings = $this->get('settings'); }
+		if($id) { $this->opa_element_settings = $this->get('settings'); }
 	}
 	# ------------------------------------------------------
 	public function load($pm_id=null, $pb_use_cache = true) {

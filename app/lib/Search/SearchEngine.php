@@ -480,7 +480,7 @@ class SearchEngine extends SearchBase {
 					} else { 
 						for($vn_j = 0; $vn_j < sizeof($va_rewritten_terms['terms']); $vn_j++) {
 							$va_terms[] = new Zend_Search_Lucene_Search_Query_MultiTerm(array($va_rewritten_terms['terms'][$vn_j]), array($va_rewritten_terms['signs'][$vn_j]));
-							$va_signs[] = $va_rewritten_terms['signs'][$vn_j] ? true : is_null($va_rewritten_terms['signs'][$vn_j]) ? null : false;
+							$va_signs[] = ($va_rewritten_terms['signs'][$vn_j] ? true : is_null($va_rewritten_terms['signs'][$vn_j])) ? null : false;
 						}
 					}
 					break;

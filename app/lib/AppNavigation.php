@@ -95,10 +95,10 @@
 					$vn_level = $va_node['level'];
 				}
 				
-				$va_action_info = $va_node['navnode']['default'];
+				$va_action_info = $va_node['navnode']['default'] ?? null;
 				
-				$vs_controller_path = '/'.join('/', array($va_action_info['module'], $va_action_info['controller']));
-				$va_tmp = explode('/', $va_action_info['action']);
+				$vs_controller_path = '/'.join('/', array($va_action_info['module'] ?? null, $va_action_info['controller'] ?? null));
+				$va_tmp = explode('/', $va_action_info['action'] ?? null);
 				$vs_action = array_shift($va_tmp);
 				if (isset($va_node['navnode']) && isset($va_node['navnode']['useActionInPath']) && intval($va_node['navnode']['useActionInPath'])) {
 					$vs_controller_path .= '/'.$vs_action;
@@ -128,7 +128,7 @@
 			}
 			
 			foreach($va_aliases_to_resolve as $vs_alias_controller_path => $vs_alias_nav_path) {
-				$this->opa_reverse_nav_table[$vs_alias_controller_path] = $this->opa_reverse_nav_table[$vs_alias_nav_path];
+				$this->opa_reverse_nav_table[$vs_alias_controller_path] = $this->opa_reverse_nav_table[$vs_alias_nav_path] ?? null;
 			}
 		}
 		# -------------------------------------------------------
@@ -681,7 +681,7 @@
 		private function _genSubMenu($pa_submenu_nav, $ps_cur_selection, $pa_additional_params, $ps_base_path, $pa_defaults) {
 			$vs_buf = '<ul class="sf-menu">';
 			foreach($pa_submenu_nav as $va_submenu_item) {
-				if (is_array($va_requirements = $va_submenu_item['requires'])) {
+				if (is_array($va_requirements = ($va_submenu_item['requires'] ?? null))) {
 					// DOES THIS USER HAVE PRIVS FOR THIS MENU ITEM?
 					if (!$this->_evaluateRequirements($va_requirements, $va_submenu_item['parameters'])) { continue; }
 				}

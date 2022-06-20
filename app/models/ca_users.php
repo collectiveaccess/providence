@@ -3463,7 +3463,7 @@ class ca_users extends BaseModel {
 		}
 		
 		// is user administrator?
-		if ($this->getPrimaryKey() == $this->_CONFIG->get('administrator_user_id')) { return ca_users::$s_user_action_access_cache[$vs_cache_key] = true; }	// access restrictions don't apply to user with user_id = admin id
+		if ($this->getPrimaryKey() == $this->_CONFIG->get('administrator_user_id')) { return ca_users::$s_user_action_access_cache[$cache_key] = true; }	// access restrictions don't apply to user with user_id = admin id
 	
 		// get user roles
 		$roles = $this->getUserRoles();

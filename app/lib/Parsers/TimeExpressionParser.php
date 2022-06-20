@@ -2558,7 +2558,7 @@ class TimeExpressionParser {
 		}
 	
 		$va_times = $this->getTimes();
-		if ($va_times['start'] != null) {
+		if (($va_times['start'] ?? null) != null) {
 			//
 			// Time-only expression
 			//
@@ -2600,7 +2600,7 @@ class TimeExpressionParser {
 		if (!$va_dates['start']) {
 			$va_unix_dates = $this->getUnixTimestamps();
 		
-			if (($va_unix_dates['start'] != null) && ($va_unix_dates['start'] != -1)) {
+			if ((($va_unix_dates['start'] ?? null) != null) && (($va_unix_dates['start'] ?? null) != -1)) {
 				// convert unix timestamps for historic timestamp format for evaluation
 				$va_dates = array(
 					'start' 	=> $this->unixToHistoricTimestamp($va_unix_dates['start']),
@@ -2611,7 +2611,7 @@ class TimeExpressionParser {
 		
 		// is it undated?
 		if (($va_dates['start'] === null) && ($va_dates['end'] === null)) {
-			if ($pa_options['isLifespan'] || !$pa_options['showUndated']) { return ''; }	// no "undated" for lifedates
+			if (($pa_options['isLifespan'] ?? false) || !($pa_options['showUndated'] ?? false)) { return ''; }	// no "undated" for lifedates
 			if (is_array($va_undated = $this->opo_language_settings->getList('undatedDate'))) {
 				return array_shift($va_undated);
 			} 
@@ -2638,10 +2638,10 @@ class TimeExpressionParser {
 			
 			$va_end_pieces = $this->getHistoricDateParts($va_dates['end']);
 				
-			if ($pa_options['start_as_iso8601']) {
+			if ($pa_options['start_as_iso8601'] ?? null) {
 				return $this->getISODateTime($va_start_pieces, 'FULL', $pa_options);
 			}
-			if ($pa_options['end_as_iso8601']) {
+			if ($pa_options['end_as_iso8601'] ?? null) {
 
 				if(caGetOption('dontReturnValueIfOnSameDayAsStart', $pa_options, false)) {
 					if(
@@ -2660,7 +2660,7 @@ class TimeExpressionParser {
 				if ((isset($pa_options['dateFormat']) && ($pa_options['dateFormat'] == 'yearOnly'))) { 
 					return $va_start_pieces['year'];
 				}
-				if ($pa_options['start_as_iso8601'] || $pa_options['end_as_iso8601']) {
+				if (($pa_options['start_as_iso8601'] ?? null) || ($pa_options['end_as_iso8601'] ?? null)) {
 					return $this->getISODateTime($va_start_pieces, 'FULL', $pa_options);
 				}
 				if ((isset($pa_options['dateFormat']) && ($pa_options['dateFormat'] == 'iso8601'))) { 
@@ -3204,7 +3204,7 @@ class TimeExpressionParser {
 		}
 		$va_time_delimiters = $this->opo_language_settings->getList('timeDelimiters');
 		
-		if ($pa_options['timeDelimiter'] && in_array($pa_options['timeDelimiter'], $va_time_delimiters)) {
+		if (isset($pa_options['timeDelimiter']) && in_array($pa_options['timeDelimiter'], $va_time_delimiters)) {
 			$vs_time_delim = $pa_options['timeDelimiter'];
 		} else {
 			$vs_time_delim = $va_time_delimiters[0];
@@ -3237,7 +3237,7 @@ class TimeExpressionParser {
 				$vs_text = join($vs_time_delim, array($vn_hours, sprintf('%02d', $vn_minutes), sprintf('%02d', $vn_seconds))).' '.$vs_meridian;
 			}
 		} else {
-			if ($pa_options['timeOmitSeconds'] || ($vn_seconds == 0)) {
+			if (($pa_options['timeOmitSeconds'] ?? false) || ($vn_seconds == 0)) {
 				$vs_text = join($vs_time_delim, array($vn_hours, sprintf('%02d', $vn_minutes)));
 			} else {
 				$vs_text = join($vs_time_delim, array($vn_hours, sprintf('%02d', $vn_minutes), sprintf('%02d', $vn_seconds)));
@@ -3279,7 +3279,7 @@ class TimeExpressionParser {
 		}
 	
 		$va_uncertainty_indicators = $this->opo_language_settings->getList("dateUncertaintyIndicator");
-		if ($pa_options['uncertaintyIndicator'] && in_array($pa_options['uncertaintyIndicator'], $va_uncertainty_indicators)) {
+		if (isset($pa_options['uncertaintyIndicator']) && in_array($pa_options['uncertaintyIndicator'], $va_uncertainty_indicators)) {
 			$vs_uncertainty_indicator = $pa_options['uncertaintyIndicator'];
 		} else {
 			$vs_uncertainty_indicator = $va_uncertainty_indicators[0];
@@ -3311,7 +3311,7 @@ class TimeExpressionParser {
 				$vs_year = abs($pa_date_pieces['year']).' '.$pa_date_pieces['era'];
 			} else {
 				$vs_year = $pa_date_pieces['year'];
-				if ($pa_options['showADEra']) {
+				if ($pa_options['showADEra'] ?? null) {
 					$vs_year .= ' '.$pa_date_pieces['era'];
 				}
 			}
@@ -3341,7 +3341,7 @@ class TimeExpressionParser {
 			if ($vs_month) { $va_date[] = (($pa_options['dateFormat'] == 'delimited') ? sprintf("%02d", $vs_month) : $vs_month); }
 			if ($vs_day) { 
 				if (
-					(((bool)$pa_options['showCommaAfterDayForTextDates']) && ($pa_options['dateFormat'] == 'text') && $vs_year)
+					(((bool)($pa_options['showCommaAfterDayForTextDates'] ?? false)) && ($pa_options['dateFormat'] == 'text') && $vs_year)
 					||
 					(isset($pa_options['forceCommaAfterDay']) && $pa_options['forceCommaAfterDay'])
 				)
@@ -3375,7 +3375,7 @@ class TimeExpressionParser {
 		
 		$vs_date = $this->_dateToText($pa_date_pieces, $pa_options);
 		
-		if (!$pa_options['timeOmit']) {
+		if (!($pa_options['timeOmit'] ?? false)) {
 			$vn_seconds = ($pa_date_pieces['hours'] * 3600) + ($pa_date_pieces['minutes'] * 60) + $pa_date_pieces['seconds'];
 			$vs_time = $this->_timeToText($vn_seconds, $pa_options);
 			

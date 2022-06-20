@@ -1248,7 +1248,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	 *
 	 * @return array
 	 */
-	public function rewriteFindCriteria(array $criteria) : array {
+	static public function rewriteFindCriteria(array $criteria) : array {
 		if (isset($criteria['list_id']) && !is_numeric($criteria['list_id'])) {
 						
 			$list_id_vals = $criteria['list_id'];

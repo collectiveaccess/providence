@@ -636,7 +636,7 @@
 	function caNavIcon($pn_type, $pm_size=2, $pa_attributes=null, $pa_options=null) {
 		if (!is_array($pa_attributes)) { $pa_attributes = array(); }
 		
-		$vs_opt_class = $pa_attributes['class'] ? ' '.$pa_attributes['class'] : '';
+		$vs_opt_class = ($pa_attributes['class'] ?? null) ? ' '.$pa_attributes['class'] : '';
 		unset($pa_attributes['class']);
 		
 		if ($vs_color = caGetOption('color', $pa_options, null)) {

@@ -200,7 +200,7 @@ class Db_mysqli extends DbDriverBase {
 		$vb_is_escaped = false;
 		
 		while($vn_i < $vn_l) {
-			$vs_c = $ps_sql{$vn_i};
+			$vs_c = $ps_sql[$vn_i];
 
 			switch($vs_c) {
 				case '"':

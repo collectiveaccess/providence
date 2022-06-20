@@ -300,7 +300,8 @@ class Graph {
 			
 			reset ($va_paths[$ps_end_node]); 
 			next ($va_paths[$ps_end_node]);  # skip first element - length of path
-			while (list(,$vs_vertex) = each($va_paths[$ps_end_node])) {
+			//while (list(,$vs_vertex) = each($va_paths[$ps_end_node])) {
+			foreach($va_paths[$ps_end_node] as $vs_vertex) {
 				$va_return_path[$vs_vertex] = $this->getNode($vs_vertex);
 			}	
 			$va_return_path[$ps_end_node] = $this->getNode($ps_end_node);

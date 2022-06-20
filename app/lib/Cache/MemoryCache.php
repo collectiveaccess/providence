@@ -115,7 +115,7 @@ class MemoryCache {
 	public static function itemCountForNamespace($ps_namespace='default') {
 		if(!$ps_namespace) { throw new MemoryCacheInvalidParameterException('Namespace cannot be empty'); }
 
-		if(is_array(self::$opa_caches[$ps_namespace])) {
+		if(is_array(self::$opa_caches[$ps_namespace] ?? null)) {
 			return sizeof(self::$opa_caches[$ps_namespace]);
 		} else {
 			return 0;

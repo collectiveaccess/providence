@@ -1046,7 +1046,7 @@ class SearchResult extends BaseObject {
 		
 		$config = Configuration::load();
 		
-		if($pa_options['filterTypes'] && !is_array($pa_options['filterTypes'])) { $pa_options['filterTypes'] = preg_split('![,;]+!',$pa_options['filterTypes']); }
+		if(($pa_options['filterTypes'] ?? false) && !is_array($pa_options['filterTypes'])) { $pa_options['filterTypes'] = preg_split('![,;]+!',$pa_options['filterTypes']); }
 		
 		if ($vb_return_with_structure) { $pa_options['returnAsArray'] = $vb_return_as_array = true; } // returnWithStructure implies returnAsArray
 		
@@ -1070,7 +1070,7 @@ class SearchResult extends BaseObject {
 		}
 		
 		if(!is_array($pa_options)) { $pa_options = array(); }
-		$va_filters = is_array($pa_options['filters']) ? $pa_options['filters'] : array();
+		$va_filters = is_array(($pa_options['filters'] ?? null)) ? $pa_options['filters'] : array();
 		
 		// Add table name to field specs that lack it
 		if ((strpos($ps_field, '.') === false) && (!Datamodel::tableExists($ps_field))) {
@@ -1176,7 +1176,7 @@ class SearchResult extends BaseObject {
 			}
 		}
 		
-		if (!($t_instance = SearchResult::$s_instance_cache[$va_path_components['table_name']])) {
+		if (!($t_instance = (SearchResult::$s_instance_cache[$va_path_components['table_name']] ?? null))) {
 			$t_instance = SearchResult::$s_instance_cache[$va_path_components['table_name']] = Datamodel::getInstanceByTableName($va_path_components['table_name'], true);
 		}
 		if (!$t_instance) { return null; }	// Bad table
@@ -1706,7 +1706,7 @@ class SearchResult extends BaseObject {
 					if (($t_instance instanceof BaseModelWithAttributes) && isset($va_path_components['field_name']) && $va_path_components['field_name'] && $t_element = ca_metadata_elements::getInstance($va_path_components['field_name'])) {
 						$vn_element_id = $t_element->getPrimaryKey();
 					} else {
-						return $pa_options['returnAsArray'] ? array() : null;
+						return ($pa_options['returnAsArray'] ?? false) ? array() : null;
 					}
 					if (!isset(ca_attributes::$s_get_attributes_cache[(int)$this->opn_table_num.'/'.(int)$vn_row_id][(int)$vn_element_id])) {
 						$va_element_ids = ($vn_element_id ? array($vn_element_id) : null);

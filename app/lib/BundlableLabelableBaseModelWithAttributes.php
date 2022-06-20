@@ -97,7 +97,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	public function __construct($id=null, ?array $options=null) {
 		parent::__construct($id, $options);	# call superclass constructor
 		
-		if ($pn_id) {
+		if ($id) {
 			if ($this->_rowAsSearchResult = $this->makeSearchResult($this->tableName(), [$id])) {
 				$this->_rowAsSearchResult->nextHit();
 			}
@@ -1092,7 +1092,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			if (!$vn_type_id) { $vn_type_id = null; }
 			//$va_types = [];
 			$va_types = $vn_type_id ? caMakeTypeList($this->tableName(), [$vn_type_id]) : null;
-			$this->opo_idno_plugin_instance = IDNumbering::newIDNumberer($this->tableName(), $va_types, null, $o_db);
+			$this->opo_idno_plugin_instance = IDNumbering::newIDNumberer($this->tableName(), $va_types, null, $this->getDb());
 		} else {
 			$this->opo_idno_plugin_instance = null;
 		}

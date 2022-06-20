@@ -393,8 +393,8 @@
 		$vn_scale_css_width_to = caGetOption('scaleCSSWidthTo', $pa_options, null);
 		$vn_scale_css_height_to = caGetOption('scaleCSSHeightTo', $pa_options, null);
 		
-		$width = caGetOption('width', $pa_options, $va_attributes['width']);
-		$height = caGetOption('height', $pa_options, $va_attributes['height']);
+		$width = caGetOption('width', $pa_options, $va_attributes['width'] ?? null);
+		$height = caGetOption('height', $pa_options, $va_attributes['height'] ?? null);
 		
 		if ($vn_scale_css_width_to || $vn_scale_css_height_to) {
 			if (!$vn_scale_css_width_to) { $vn_scale_css_width_to = $vn_scale_css_height_to; }

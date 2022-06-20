@@ -1845,7 +1845,7 @@
  			
  			if (!is_array($pa_options)) { $pa_options = array(); }
  			$vs_cache_key = caMakeCacheKeyFromOptions(array_merge($pa_options, array('table_name' => $this->tableName(), 'id' => $vn_id, 'mode' => (int)$pn_mode)));
- 			if (!$pb_dont_cache && is_array($va_tmp = LabelableBaseModelWithAttributes::$s_label_cache[$this->tableName()][$vn_id][$vs_cache_key])) {
+ 			if (!$pb_dont_cache && is_array($va_tmp = (LabelableBaseModelWithAttributes::$s_label_cache[$this->tableName()][$vn_id][$vs_cache_key] ?? null))) {
  				return $va_tmp;
  			}
 			if (!($t_label = Datamodel::getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
@@ -1937,7 +1937,7 @@
  				$row = $qr_res->getRow();
  				$va_labels[$vn_id][$qr_res->get('locale_id')][] = array_merge($row, [
  					'form_element' => $t_label->htmlFormElement($this->getLabelDisplayField(), null), 
- 					'effective_date' => caGetLocalizedHistoricDateRange($row['sdatetime'], $row['edatetime'], ['locale_id' => $row['locale_id']])
+ 					'effective_date' => caGetLocalizedHistoricDateRange($row['sdatetime'] ?? null, $row['edatetime'] ?? null, ['locale_id' => $row['locale_id'] ?? null])
  				]);
  				
  			}
@@ -1956,7 +1956,7 @@
  				$va_labels = $va_flattened_labels;
  			}
  			
- 			if (is_array(LabelableBaseModelWithAttributes::$s_label_cache[$this->tableName()]) && (sizeof(LabelableBaseModelWithAttributes::$s_label_cache[$this->tableName()]) > LabelableBaseModelWithAttributes::$s_label_cache_size)) {
+ 			if (is_array(LabelableBaseModelWithAttributes::$s_label_cache[$this->tableName()] ?? null) && (sizeof(LabelableBaseModelWithAttributes::$s_label_cache[$this->tableName()]) > LabelableBaseModelWithAttributes::$s_label_cache_size)) {
  				array_splice(LabelableBaseModelWithAttributes::$s_label_cache[$this->tableName()], 0, ceil(LabelableBaseModelWithAttributes::$s_label_cache_size/2));
  			}
  			

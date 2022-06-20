@@ -117,14 +117,16 @@
 					$vs_buf .= "<meta name='".htmlspecialchars($vs_tag_name, ENT_QUOTES)."' content='".htmlspecialchars($vs_content, ENT_QUOTES)."'/>\n";
 				}
 			}
-			if (is_array(MetaTagManager::$opa_tags['meta_property']) && sizeof(MetaTagManager::$opa_tags['meta_property'])) {	
-				foreach(MetaTagManager::$opa_tags['meta_property'] as $vs_tag_property => $vs_content) {
-					$vs_buf .= "<meta property='".htmlspecialchars($vs_tag_property, ENT_QUOTES)."' content='".htmlspecialchars($vs_content, ENT_QUOTES)."'/>\n";
+			if(is_array(MetaTagManager::$opa_tags)) {
+				if (is_array(MetaTagManager::$opa_tags['meta_property'] ?? null) && sizeof(MetaTagManager::$opa_tags['meta_property'])) {	
+					foreach(MetaTagManager::$opa_tags['meta_property'] as $vs_tag_property => $vs_content) {
+						$vs_buf .= "<meta property='".htmlspecialchars($vs_tag_property, ENT_QUOTES)."' content='".htmlspecialchars($vs_content, ENT_QUOTES)."'/>\n";
+					}
 				}
-			}
-			if (MetaTagManager::$opa_tags['link'] && sizeof(MetaTagManager::$opa_tags['link'])) {	
-				foreach(MetaTagManager::$opa_tags['link'] as $vn_i => $va_link) {
-					$vs_buf .= "<link rel='".htmlspecialchars($va_link['rel'], ENT_QUOTES)."' href='".htmlspecialchars($va_link['href'], ENT_QUOTES)."' ".($va_link['type'] ? " type='".$va_link['type']."'" : "")."/>\n";
+				if (is_array(MetaTagManager::$opa_tags['link'] ?? null) && sizeof(MetaTagManager::$opa_tags['link'])) {	
+					foreach(MetaTagManager::$opa_tags['link'] as $vn_i => $va_link) {
+						$vs_buf .= "<link rel='".htmlspecialchars($va_link['rel'], ENT_QUOTES)."' href='".htmlspecialchars($va_link['href'], ENT_QUOTES)."' ".($va_link['type'] ? " type='".$va_link['type']."'" : "")."/>\n";
+					}
 				}
 			}
 			return $vs_buf;

@@ -915,10 +915,9 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		
 		$va_params = [(int)$vn_list_id, (string)$ps_idno];
 		$vs_access_sql = '';
-        if (is_array($pa_check_access) && (sizeof($pa_check_access) > 0)) {
-            $pa_check_access = array_map("intval", $pa_check_access);
+        if (is_array($pa_options['checkAccess'] ?? null) && (sizeof($pa_options['checkAccess']) > 0)) {
             $vs_access_sql = " AND cli.access IN (?)";
-            $va_params[] = $pa_check_access;
+            $va_params[] = array_map("intval", $pa_options['checkAccess']);
         }
         
 		$qr_res = $o_db->query("
@@ -1371,7 +1370,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	static function getListID($pm_list_name_or_id, $pa_options=null) {
 	    $vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $pm_list_name_or_id);
-		if (ca_lists::$s_list_id_cache[$vs_cache_key]) {
+		if (ca_lists::$s_list_id_cache[$vs_cache_key] ?? null) {
 			return ca_lists::$s_list_id_cache[$vs_cache_key];
 		}
 		if (is_numeric($pm_list_name_or_id)) {
