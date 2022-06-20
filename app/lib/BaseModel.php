@@ -2780,7 +2780,7 @@ class BaseModel extends BaseObject {
 				$this->_FIELD_VALUE_DID_CHANGE = $this->_FIELD_VALUE_CHANGED;
 				$this->_FIELD_VALUE_CHANGED = array();					
 					
-				if (is_array(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()]) && (sizeof(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()]) > 100)) { 	// Limit cache to 100 instances per table
+				if (is_array(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()] ?? null) && (sizeof(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()]) > 100)) { 	// Limit cache to 100 instances per table
 					BaseModel::$s_instance_cache[$vs_table_name] = array_slice(BaseModel::$s_instance_cache[$vs_table_name], 0, 50, true);
 				}
 					

@@ -254,7 +254,7 @@ class Configuration {
 			// Write mtimes to cache for each component file (local, theme, stock)
 			if (is_array($mtime_keys) && sizeof($mtime_keys)) {
 				foreach($mtime_keys as $k) {
-					ExternalCache::save($k, self::$s_config_cache[$k], 'ConfigurationCache', 3600 * 3600 * 30);
+					ExternalCache::save($k, self::$s_config_cache[$k] ?? null, 'ConfigurationCache', 3600 * 3600 * 30);
 				}
 			}
 		}

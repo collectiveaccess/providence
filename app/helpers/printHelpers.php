@@ -572,7 +572,7 @@ use Zend\Stdlib\Glob;
 		require_once(__CA_MODELS_DIR__."/ca_bundle_displays.php");
 		$t_display = new ca_bundle_displays();
         foreach(caExtractValuesByUserLocale($t_display->getBundleDisplays(['table' => $pt_related->tableName(), 'restrictToTypes' => $t_placement->getSetting('restrict_to_types')])) as $va_display_info) {
-            if (!is_array($va_display_info['settings']['show_only_in']) || !sizeof($va_display_info['settings']['show_only_in']) || !in_array('editor_relationship_bundle', $va_display_info['settings']['show_only_in'])) { continue; }        
+            if (!is_array($va_display_info['settings']['show_only_in'] ?? null) || !sizeof($va_display_info['settings']['show_only_in']) || !in_array('editor_relationship_bundle', $va_display_info['settings']['show_only_in'])) { continue; }        
             $va_options[$va_display_info['name']] = '_pdf__display_'.$va_display_info['display_id'];
         }
         

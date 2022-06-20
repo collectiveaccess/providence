@@ -1700,7 +1700,7 @@
 			
 			$va_tmp = caExtractValuesByUserLocale($this->getLabels(null, caGetOption('labelType', $pa_options, __CA_LABEL_TYPE_PREFERRED__), $pb_dont_cache, $pa_options), null, $va_preferred_locales, array());
 			$va_label = array_shift($va_tmp);
-			return $va_label[0][$t_label->getDisplayField()];
+			return $va_label[0][$t_label->getDisplayField()] ?? null;
  			
  		}
 		# ------------------------------------------------------------------

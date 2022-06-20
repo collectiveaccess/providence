@@ -526,7 +526,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 							
 				if (!$pb_settings_only) {
 					$t_placement->setSettingDefinitionsForPlacement($va_available_bundles[$vs_bundle_name_proc]['settings']);
-					$placements[$placement_id]['display'] = $va_available_bundles[$vs_bundle_name]['display'];
+					$placements[$placement_id]['display'] = $va_available_bundles[$vs_bundle_name]['display'] ?? null;
 					$placements[$placement_id]['settingsForm'] = $t_placement->getHTMLSettingForm(array('id' => $vs_bundle_name.'_'.$placement_id, 'settings' => $va_settings, 'table' => $vs_subject_table));
 				} else {
 					$t_instance = Datamodel::getInstanceByTableName($va_bundle_name[0], true);
@@ -1122,7 +1122,7 @@ if (!$pb_omit_editing_info) {
 			)
 		);
 		foreach($va_element_codes as $vn_element_id => $vs_element_code) {
-			if (!is_null($va_all_elements[$vn_element_id]['settings']['canBeUsedInDisplay'] ) && !$va_all_elements[$vn_element_id]['settings']['canBeUsedInDisplay']) { continue; }
+			if (!is_null($va_all_elements[$vn_element_id]['settings']['canBeUsedInDisplay'] ?? null) && !$va_all_elements[$vn_element_id]['settings']['canBeUsedInDisplay']) { continue; }
 			$t_placement = new ca_bundle_display_placements(null, null, $va_additional_settings);
 			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 			

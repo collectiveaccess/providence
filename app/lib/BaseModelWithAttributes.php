@@ -377,6 +377,7 @@
 			    }
 			}
 			
+			$elements = null;
 			if (
 			    // this may return a false positive if the attribute is a container with media or file attributes, 
 			    // as ca_attribute_values records for those will only be present if a file was uploaded
@@ -1945,7 +1946,7 @@
 					$bundle_code = "{$table_name}.{$t_element_code}.{$va_element['element_code']}";
 					$label = ($show_bundle_codes !== 'hide') ? "{$label} <span class='developerBundleCode'>(<a href='#' class='developerBundleCode'>{$bundle_code}</a>)</span>" : $label;
 				}
-				
+				if(!is_array($va_element['settings'])) { $va_element['settings'] = []; }
 				$va_elements_by_container[$va_element['parent_id']][] = ($va_element['datatype'] == 0) ? '' : 
 					$vs_br.ca_attributes::attributeHtmlFormElement($va_element, array_merge($pa_bundle_settings, array_merge($pa_options, [
 						'label' => $label,
@@ -1957,7 +1958,7 @@
 						'dontDoRefSubstitution' => true,
 						'format' => 
 							// Set format to single line when displaying yes_no checkboxes
-							(($va_element['datatype'] == 3) && ($va_element['settings']['render'] === 'yes_no_checkboxes')) ? $this->getAppConfig()->get('form_element_display_format_single_line') 
+							(($va_element['datatype'] == 3) && (($va_element['settings']['render'] ?? null) === 'yes_no_checkboxes')) ? $this->getAppConfig()->get('form_element_display_format_single_line') 
 							: null
 						
 				])));

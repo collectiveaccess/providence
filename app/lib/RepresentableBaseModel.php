@@ -404,11 +404,11 @@
 				}
 			} 
 		
-			if (!is_array($pa_options['return_with_access']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) > 0) {
+			if (!is_array($pa_options['return_with_access'] ?? null) && is_array($pa_options['checkAccess'] ?? null) && sizeof($pa_options['checkAccess']) > 0) {
 				$pa_options['return_with_access'] = $pa_options['checkAccess'];
 			}
 		
-			if (is_array($pa_options['return_with_access']) && sizeof($pa_options['return_with_access']) > 0) {
+			if (is_array($pa_options['return_with_access'] ?? null) && sizeof($pa_options['return_with_access']) > 0) {
 				$vs_access_sql = ' AND (caor.access IN ('.join(", ", $pa_options['return_with_access']).'))';
 			} else {
 				$vs_access_sql = '';

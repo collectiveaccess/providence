@@ -423,7 +423,7 @@ class ca_attribute_values extends BaseModel {
 		$this->FIELDS['value_blob']['FIELD_TYPE'] = ($pb_setting) ? FT_FILE : FT_TEXT;
 		// We have to deserialize the FT_FILE info array ourselves since when we loaded the attribute value model
 		// BaseModel didn't know it was an FT_FILE field
-		$this->_FIELD_VALUES['value_blob'] = caUnserializeForDatabase($this->_FIELD_VALUES['value_blob']);
+		$this->_FIELD_VALUES['value_blob'] = caUnserializeForDatabase($this->_FIELD_VALUES['value_blob'] ?? null);
 	}
 	# ------------------------------------------------------
 	/**
@@ -473,7 +473,6 @@ class ca_attribute_values extends BaseModel {
  				return null;
  			}
  		}
- 		$t_multifile->setMode(ACCESS_WRITE);
  		$t_multifile->set('value_id', $this->getPrimaryKey());
  		$t_multifile->set('media', $ps_filepath);
  		$t_multifile->set('resource_path', $ps_resource_path);

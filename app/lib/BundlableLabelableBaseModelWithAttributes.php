@@ -3466,12 +3466,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					continue;
 				}
 				$va_info = $this->getBundleInfo($va_tmp['bundle_name']);
+				if(!is_array($va_info) || !is_array($va_tmp)) { continue; }
 				$va_fields_by_type[$va_info['type']]['P'.$va_tmp['placement_id']] = $va_tmp['bundle_name'];
 			}
 		}
 			
 		// auto-add mandatory fields if this is a new object
-		if (!is_array($va_fields_by_type['intrinsic'])) { $va_fields_by_type['intrinsic'] = []; }
+		if (!is_array($va_fields_by_type['intrinsic'] ?? null)) { $va_fields_by_type['intrinsic'] = []; }
 		if (!$this->getPrimaryKey()) {
 			if (is_array($va_mandatory_fields = $this->getMandatoryFields())) {
 				foreach($va_mandatory_fields as $vs_field) {
@@ -3671,6 +3672,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	public function saveBundlesForScreen($pm_screen, $po_request, &$pa_options) {
 	    global $g_ui_locale_id;
 	    $table = $this->tableName();
+	    
+	    $vn_new_label_locale_id = null;
 										
 		$vb_we_set_transaction = false;
 		$vs_form_prefix = caGetOption('formName', $pa_options, $po_request->getParameter('_formName', pString));
@@ -3829,7 +3832,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$va_attributes_to_delete = [];
 				$va_locales = [];
 				
-				$vs_batch_mode = $_REQUEST[$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_batch_mode'];
+				$vs_batch_mode = $_REQUEST[$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_batch_mode'] ?? null;
 				
 				if ($vb_batch && ($vs_batch_mode == '_delete_')) {		// Remove all attributes and continue
 					$this->removeAttributes($vn_element_id, array('force' => true));
@@ -3976,7 +3979,7 @@ if (!$vb_batch) {
 		}
 }
 		
-	if (is_array($va_fields_by_type['special'])) {
+	if (is_array($va_fields_by_type['special'] ?? null)) {
 		foreach($va_fields_by_type['special'] as $vs_placement_code => $vs_bundle) {
 			if ($vs_bundle !== 'hierarchy_location') { continue; }
 			
@@ -4153,7 +4156,7 @@ if (!$vb_batch) {
 if ($this->getProperty('LABEL_TABLE_NAME')) {
 		$vb_check_for_dupe_labels = $this->_CONFIG->get('allow_duplicate_labels_for_'.$this->tableName()) ? false : true;
 		$vb_error_inserting_pref_label = false;
-		if (is_array($va_fields_by_type['preferred_label'])) {
+		if (is_array($va_fields_by_type['preferred_label'] ?? null)) {
 		    $vs_label_must_be_in_list = $this->_CONFIG->get('preferred_label_for_'.$this->tableName().'_must_be_in_list');
 		    
 			foreach($va_fields_by_type['preferred_label'] as $vs_placement_code => $vs_f) {
@@ -5648,7 +5651,7 @@ if (!$vb_batch) {
 							$tag_ids = array_map(function($v) { return $v['relation_id']; }, $tags);
 							$current_tag_ranks = array_map(function($v) { return $v['rank']; }, $tags);
 							foreach($ids_sorted as $i => $id) {
-								$this->changeTagRank($id, $current_tag_ranks[$i]);
+								$this->changeTagRank($id, $current_tag_ranks[$i] ?? null);
 							}
 						}
 						
@@ -8371,7 +8374,7 @@ side. For many self-relations the direction determines the nature and display te
 		$t_violation = new ca_metadata_dictionary_rule_violations();
 		if ($this->inTransaction()) { $t_violation->setTransaction($this->getTransaction()); }
 		
-		$va_rules = ca_metadata_dictionary_rules::getRules(array('db' => $o_db, 'table' => $this->tableNum(), 'bundles' => caGetOption('bundles', $pa_options, null)));
+		$va_rules = ca_metadata_dictionary_rules::getRules(array('db' => $this->getDb(), 'table' => $this->tableNum(), 'bundles' => caGetOption('bundles', $pa_options, null)));
 		$vn_violation_count = 0;
 		$va_violations = [];
 		foreach($va_rules as $va_rule) {

@@ -393,9 +393,9 @@ class ca_attributes extends BaseModel {
 			if ($t_attr_val->load($o_attr_val->getValueID())) {
 			    $va_element = array_shift(array_filter($va_elements, function($e) use ($vn_element_id) { return $e['element_id'] == $vn_element_id; }));
 				if(isset($pa_values[$vn_element_id])) {
-					$vm_value = $pa_values[$vn_element_id];
+					$vm_value = $pa_values[$vn_element_id] ?? null;
 				} else {
-					$vm_value = $pa_values[$o_attr_val->getElementCode()];
+					$vm_value = $pa_values[$o_attr_val->getElementCode()] ?? null;
 				}
                 if ((isset($va_element['settings']['isDependentValue']) && (bool)$va_element['settings']['isDependentValue']) && (is_null($vm_value))) {
                     $vm_value = caProcessTemplate($va_element['settings']['dependentValueTemplate'], $pa_values);

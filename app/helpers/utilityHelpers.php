@@ -4720,20 +4720,25 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 *
 	 */
-	function caReturnValueInBytes($vs_val) {
-		$vs_val = trim($vs_val);
-		$vs_last = strtolower($vs_val[strlen($vs_val)-1]);
-		switch($vs_last) {
-			case 't':
-				$vs_val *= 1024;
-			case 'g':
-				$vs_val *= 1024;
-			case 'm':
-				$vs_val *= 1024;
-			case 'k':
-				$vs_val *= 1024;
+	function caReturnValueInBytes(string $val) {
+		$val = trim($val);
+		$last = strtolower($val[strlen($val)-1]);
+		
+		if(preg_match("!^([\d\.\,]+)!", $val, $m)) {
+			$val = $m[1];
+			switch($last) {
+				case 't':
+					$val *= 1024;
+				case 'g':
+					$val *= 1024;
+				case 'm':
+					$val *= 1024;
+				case 'k':
+					$val *= 1024;
+			}
+			return $val;
 		}
-		return $vs_val;
+		return null;
 	}
 	# ----------------------------------------
 	/**
