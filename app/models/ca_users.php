@@ -1657,7 +1657,7 @@ class ca_users extends BaseModel {
 					$va_defaults = array();
 					if(is_array($va_uis)) {
 						foreach($va_uis as $vn_type_id => $va_editor_info) {
-							$type_code = caGetListItemIdno($vn_type_idno);
+							$type_code = caGetListItemIdno($vn_type_id);
 							foreach($va_editor_info as $vn_ui_id => $va_editor_labels) {
 								if(preg_match('!^batch_.*_ui$!', $ps_pref)) {
 									if((($dp = $config->get("{$table}_{$type_code}_default_batch_editor")) || ($dp = $config->get("{$table}_default_batch_editor"))) && ($d_ui_id = ca_editor_uis::find(['editor_code' => $dp], ['returnAs' => 'firstId']))) {

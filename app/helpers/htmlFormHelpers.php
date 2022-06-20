@@ -55,7 +55,7 @@
 		if (!is_array($pa_content)) { $pa_content = array(); }
 		if (is_array($va_dim = caParseFormElementDimension(isset($pa_options['width']) ? $pa_options['width'] : null))) {
 			if ($va_dim['type'] == 'pixels') {
-				$pa_attributes['style'] = "width: ".$va_dim['dimension']."px; ".$pa_attributes['style'];
+				$pa_attributes['style'] = "width: ".$va_dim['dimension']."px; ".($pa_attributes['style'] ?? '');
 			} else {
 				// Approximate character width using 1 character = 6 pixels of width
 				$pa_attributes['style'] = "width: ".($va_dim['dimension'] * 6)."px; ".$pa_attributes['style'];
@@ -116,7 +116,7 @@
 			} else {
 				foreach($pa_content as $vs_opt => $vs_val) {
 					if ($vb_use_options_for_values) { $vs_val = preg_replace("!^[\s]+!", "", preg_replace("![\s]+$!", "", str_replace("&nbsp;", "", $vs_opt))); }
-					if ($COLOR = ($vs_color = $va_colors[$vs_val]) ? " data-color='#{$vs_color}'" : '') { $vb_uses_color = true; }
+					if ($COLOR = ($vs_color = ($va_colors[$vs_val] ?? null)) ? " data-color='#{$vs_color}'" : '') { $vb_uses_color = true; }
 				
 					if (is_null($vs_selected_val) || !($SELECTED = ((string)$vs_selected_val === (string)$vs_val) ? ' selected="1"' : '')) {
 						$SELECTED = (is_array($va_selected_vals) && in_array($vs_val, $va_selected_vals)) ? ' selected="1"' : '';
@@ -210,13 +210,13 @@
 		if ($vb_is_textarea) {
 			$tag_name = caGetOption('textAreaTagName', $pa_options, 'textarea');
 			$vs_value = $pa_attributes['value'];
-			if ($pa_attributes['size']) { $pa_attributes['cols'] = $pa_attributes['size']; }
+			if ($pa_attributes['size'] ?? null) { $pa_attributes['cols'] = $pa_attributes['size']; }
 			unset($pa_attributes['size']);
 			unset($pa_attributes['value']);
 			$vs_attr_string = _caHTMLMakeAttributeString($pa_attributes, $pa_options);
 			$vs_element = "<{$tag_name} name='{$ps_name}' wrap='soft' {$vs_attr_string}>".$vs_value."</{$tag_name}>\n";
 		} else {
-			$pa_attributes['size']  = !$pa_attributes['size'] ?  $pa_attributes['width'] : $pa_attributes['size'];
+			$pa_attributes['size'] = ($pa_attributes['size'] ?? false) ? $pa_attributes['size'] : $pa_attributes['width'] ?? null;
 			$vs_attr_string = _caHTMLMakeAttributeString($pa_attributes, $pa_options);
 			$vs_element = "<input name='{$ps_name}' {$vs_attr_string} type='text'/>\n";
 		}

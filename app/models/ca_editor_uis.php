@@ -346,7 +346,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 					$vn_type_id = null;
 				}
 				$va_uis_by_type = []; 
-			} elseif (!isset($va_available_uis_by_type[$vn_type_id][$va_uis_by_type[$vn_type_id]]) && !isset($va_available_uis_by_type['__all__'][$va_uis_by_type[$vn_type_id]])) {
+			} elseif (isset($va_uis_by_type[$vn_type_id]) && !isset($va_available_uis_by_type[$vn_type_id][$va_uis_by_type[$vn_type_id]]) && !isset($va_available_uis_by_type['__all__'][$va_uis_by_type[$vn_type_id]])) {
 				$vn_type_id = null;
 			}
 		}
@@ -490,7 +490,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		while($qr_res->nextRow()) {
 		    if ($vb_ids_only) { $va_ids[] = $qr_res->get('screen_id'); continue; }
 		    
-			if (!$va_screens[$vn_screen_id = $qr_res->get('screen_id')][$vn_screen_locale_id = $qr_res->get('locale_id')]) {
+			if (!($va_screens[$vn_screen_id = $qr_res->get('screen_id')][$vn_screen_locale_id = $qr_res->get('locale_id')] ?? null)) {
 				$va_screens[$vn_screen_id][$vn_screen_locale_id] = $qr_res->getRow();
 				if ((bool)$va_screens[$vn_screen_id][$vn_screen_locale_id]['is_default']) {
 					$va_screens[$vn_screen_id][$vn_screen_locale_id]['isDefault'] = "◉";
@@ -531,7 +531,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		foreach($va_screens as $vn_screen_id => $va_screen_labels_by_locale) {
 			if (is_array($va_screens_with_bundles) && !isset($va_screens_with_bundles[$vn_screen_id])) { unset($va_screens[$vn_screen_id]); continue; }
 			foreach($va_screen_labels_by_locale as $vn_locale_id => $va_restriction_info) {
-				if (!is_array($va_screens[$vn_screen_id][$vn_locale_id]['typeRestrictions'])) { continue; }
+				if (!is_array($va_screens[$vn_screen_id][$vn_locale_id]['typeRestrictions'] ?? null)) { continue; }
 				$va_screens[$vn_screen_id][$vn_locale_id]['typeRestrictionsForDisplay'] = join(', ', $va_screens[$vn_screen_id][$vn_locale_id]['typeRestrictions']);
 			}
 		}
@@ -890,7 +890,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		$va_nav = [];
 		$vn_default_screen_id = null;
 		foreach($va_screens as $va_screen) {
-			$va_screen_restrictions = $va_screen['typeRestrictions'];
+			$va_screen_restrictions = $va_screen['typeRestrictions'] ?? null;
 		    if(is_array($va_screen_restrictions)) { $va_screen_restrictions = caMakeTypeIDList($this->get('editor_type'), array_keys($va_screen_restrictions)); }
 			
 			if(is_array($restrict_to_types) && is_array($va_screen_restrictions) && (sizeof($va_screen_restrictions) > 0)) {

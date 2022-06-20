@@ -691,7 +691,7 @@ class Configuration {
 									$vs_scalar_value .= $vs_token;
 								} else {
 									$i = sizeof($va_assoc_pointer_stack) - 1;
-									if(!is_array($va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key]) || !$vb_merge_mode) {
+									if(!is_array($va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key] ?? null) || !$vb_merge_mode) {
 										$va_assoc_pointer_stack[$i][$vs_assoc_key] = array();
 									}
 									$va_assoc_pointer_stack[] =& $va_assoc_pointer_stack[$i][$vs_assoc_key];

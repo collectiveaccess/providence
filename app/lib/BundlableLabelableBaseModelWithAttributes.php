@@ -1405,6 +1405,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		global $g_ui_locale, $g_ui_locale_id;
 		if (!is_array($pa_bundle_settings)) { $pa_bundle_settings = []; }
 		
+		$vs_documentation_link = null;
 		$vb_batch = (isset($pa_options['batch']) && $pa_options['batch']) ? true : false;
 		
 		// Check if user has access to this bundle
@@ -2737,6 +2738,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  		$va_bundle_html = [];
  		
  		$vn_pk_id = $this->getPrimaryKey();
+ 		$vs_type_id_fld = $this->getTypeFieldName();
 		
 		$va_bundles_present = [];
 		if (is_array($va_bundles)) {
@@ -7057,6 +7059,8 @@ if (!$vb_batch) {
 			as $vs_key) {
 			if(!isset($pa_options[$vs_key])) { $pa_options[$vs_key] = null; }
 		}
+		
+		$vs_errors = null;
 		
 		if (!$this->opo_idno_plugin_instance) {
 			$this->loadIDNoPlugInInstance($pa_options);

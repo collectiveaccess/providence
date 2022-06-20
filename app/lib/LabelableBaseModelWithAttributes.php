@@ -1195,7 +1195,7 @@
 			// does get refer to an attribute?
 			$va_tmp = explode('.', $ps_field);
 			
-			if (($va_tmp[1] == 'hierarchy') && (sizeof($va_tmp) == 2)) {
+			if ((($va_tmp[1] ?? null) == 'hierarchy') && (sizeof($va_tmp) == 2)) {
 				$va_tmp[2] = 'preferred_labels';
 				$ps_field = join('.', $va_tmp);
 			}
@@ -1203,7 +1203,7 @@
 			$t_label = $this->getLabelTableInstance();
 			
 			$t_instance = $this;
-			if ((sizeof($va_tmp) >= 3 && ($va_tmp[2] == 'preferred_labels' && (!$va_tmp[3] || $t_label->hasField($va_tmp[3])))) || ($va_tmp[1] == 'hierarchy')) {
+			if (((sizeof($va_tmp) >= 3) && ((($va_tmp[2] ?? null) == 'preferred_labels') && (!($va_tmp[3] ?? false) || $t_label->hasField($va_tmp[3] ?? null)))) || (($va_tmp[1] ?? null) == 'hierarchy')) {
 				switch($va_tmp[1]) {
 					case 'parent':
 						if (($this->isHierarchical()) && ($vn_parent_id = $this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD')))) {
@@ -2426,6 +2426,8 @@
 		 * @return array An array of preferred labels in the current locale indexed by row_id, unless returnAllLocales is set, in which case the array includes preferred labels in all available locales and is indexed by row_id and locale_id
 		 */
 		public function getPreferredDisplayLabelsForIDs($pa_ids, $pa_options=null) {
+			if(!is_array($pa_options)) { $pa_options = []; }
+			
 			$va_ids = array();
 			foreach($pa_ids as $vn_id) {
 				if (intval($vn_id) > 0) { $va_ids[] = intval($vn_id); }
@@ -2436,7 +2438,7 @@
 			$vb_return_all_types = caGetOption('returnAllTypes', $pa_options, false);
 			
 			$vs_cache_key = md5($this->tableName()."/".print_r($pa_ids, true).'/'.print_R($pa_options, true));
-			if (!isset($pa_options['noCache']) && !$pa_options['noCache'] && LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key]) {
+			if ((!isset($pa_options['noCache']) || !$pa_options['noCache']) && !is_null($vs_cache_key) && (LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key] ?? null)) {
 				return LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key];
 			}
 			

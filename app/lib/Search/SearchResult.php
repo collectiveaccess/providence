@@ -2880,25 +2880,25 @@ class SearchResult extends BaseObject {
 						continue;
 					}
 					
-					if($pa_options['toUpper'] || $pa_options['toupper']) {
+					if(($pa_options['toUpper'] ?? false) || ($pa_options['toupper'] ?? false)) {
 						$vs_val = mb_strtoupper($vs_val);
 					}
-					if($pa_options['toLower'] || $pa_options['tolower']) {
+					if(($pa_options['toLower'] ?? false) || ($pa_options['tolower'] ?? false)) {
 						$vs_val = mb_strtolower($vs_val);
 					}
-					if($pa_options['periodsToUnderscores'] || $pa_options['periodstounderscores']) {
+					if(($pa_options['periodsToUnderscores'] ?? false) || ($pa_options['periodstounderscores'] ?? false)) {
 						$vs_val = str_replace('.', '_', $vs_val);
 					}
-					if($pa_options['makeFirstUpper'] || $pa_options['makefirstupper']) {
+					if(($pa_options['makeFirstUpper'] ?? false) || ($pa_options['makefirstupper'] ?? false)) {
 						$vs_val = ucfirst($vs_val);
 					}
-					if($pa_options['stripreturns'] || $pa_options['stripreturns']) {
+					if(($pa_options['stripreturns'] ?? false) || ($pa_options['stripreturns'] ?? false)) {
 						$vs_val = preg_replace("![\n\r]+!", " ", $vs_val);
 					}
-					if($pa_options['striptags'] || $pa_options['striptags']) {
+					if(($pa_options['striptags'] ?? false) || ($pa_options['striptags'] ?? false)) {
 						$vs_val = strip_tags($vs_val);
 					}
-					if ($pa_options['truncate'] && ($pa_options['truncate'] > 0)) { 
+					if (($pa_options['truncate'] ?? null) && ($pa_options['truncate'] > 0)) { 
 						$pa_options['start'] = 0;
 						$pa_options['length'] = (int)$pa_options['truncate'];
 					}

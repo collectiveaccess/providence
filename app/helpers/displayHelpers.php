@@ -4901,7 +4901,7 @@ jQuery(document).ready(function() {
 				return $pa_settings[$ps_key][$ps_locale];
 			} elseif(is_array($va_locales_for_language = ca_locales::localesForLanguage($ps_locale, ['codesOnly' => true]))) {
 				foreach($va_locales_for_language as $vs_locale) {
-					if($pa_settings[$ps_key][$vs_locale]) { return $pa_settings[$ps_key][$vs_locale]; }
+					if($pa_settings[$ps_key][$vs_locale] ?? null) { return $pa_settings[$ps_key][$vs_locale]; }
 				}
 			}
 		}

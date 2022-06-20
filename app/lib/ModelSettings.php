@@ -411,7 +411,7 @@ trait ModelSettings {
 				} else {
 					$va_locales = array('_generic' => array());
 				}
-				
+				$vs_locale_label = null;
 				foreach($va_locales as $vs_locale => $va_locale_info) {
 					if ($vb_takes_locale && (sizeof($va_locales) > 1)) { 
 						$vs_locale_label = " (".$va_locale_info['name'].")";
@@ -429,9 +429,9 @@ trait ModelSettings {
 					} else {
 						$vs_text_value = $vs_value;
 					}
-					$vs_return .= ($vs_locale_label ? "{$vs_locale_label}<br/>" : "").caHTMLTextInput($vs_input_name.$vs_input_name_suffix, array('size' => $va_properties["width"], 'height' => $va_properties["height"], 'value' => $vs_text_value, 'id' => $vs_input_id.$vs_input_name_suffix))."<br/>\n";	
+					$vs_return .= ($vs_locale_label ? "{$vs_locale_label}<br/>" : "").caHTMLTextInput($vs_input_name.$vs_input_name_suffix, array('size' => $va_properties["width"] ?? null, 'height' => $va_properties["height"] ?? null, 'value' => $vs_text_value, 'id' => $vs_input_id.$vs_input_name_suffix))."<br/>\n";	
 					
-					if($va_properties['usewysiwygeditor']) {
+					if($va_properties['usewysiwygeditor'] ?? null) {
 						AssetLoadManager::register("ckeditor");
 						
 						$config = Configuration::load();
@@ -531,7 +531,7 @@ trait ModelSettings {
 				
 				$vs_select_element = '';
 				
-				if($va_properties['showTypesForTable']) {
+				if($va_properties['showTypesForTable'] ?? false) {
 					$vs_select_element = '';
 					if (!($t_show_types_for_table = Datamodel::getInstanceByTableName($va_properties['showTypesForTable'], true))) {
 						break;
@@ -574,13 +574,13 @@ trait ModelSettings {
 						$vs_select_element = caHTMLSelect($vs_input_name, $va_type_opts, $va_attr, $va_opts);
 					}
 				} elseif (
-					($vs_rel_table = $va_properties['useRelationshipTypeList']) || 
-					($vb_locale_list = (bool)$va_properties['useLocaleList']) || 
-					($vs_list_code = $va_properties['useList']) || 
-					($vb_show_lists = ((bool)$va_properties['showLists'] || 
-					(bool)$va_properties['showVocabularies'])) || 
-					($vb_policy_list = (bool)$va_properties['useHistoryTrackingPolicyList']) ||
-					($vb_referring_policy_list = (bool)$va_properties['useHistoryTrackingReferringPolicyList'])
+					($vs_rel_table = ($va_properties['useRelationshipTypeList'] ?? null)) || 
+					($vb_locale_list = (bool)($va_properties['useLocaleList'] ?? false)) || 
+					($vs_list_code = ($va_properties['useList'] ?? false)) || 
+					($vb_show_lists = ((bool)($va_properties['showLists'] ?? false) || 
+					(bool)($va_properties['showVocabularies'] ?? false))) || 
+					($vb_policy_list = (bool)($va_properties['useHistoryTrackingPolicyList'] ?? false)) ||
+					($vb_referring_policy_list = (bool)($va_properties['useHistoryTrackingReferringPolicyList'] ?? false))
 				) {
 					if ($vs_rel_table) {
 						$t_rel = new ca_relationship_types();
@@ -662,7 +662,7 @@ trait ModelSettings {
 						$vs_select_element = caHTMLSelect($vs_input_name, $va_rel_opts, $va_attr, $va_opts);
 					}
 				} else {
-					if (is_array($va_properties['showSortableBundlesFor']) && (strlen($va_properties['showSortableBundlesFor']['table']) > 0)) {
+					if (is_array($va_properties['showSortableBundlesFor'] ?? null) && (strlen($va_properties['showSortableBundlesFor']['table'] ?? '') > 0)) {
 						$va_select_opts = array_merge([
 							_t('User defined sort order') => '',
 							_t('Order created') => 'relation_id',
@@ -686,7 +686,7 @@ trait ModelSettings {
 							}
 							$vs_select_element = caHTMLSelect($vs_input_name, $va_select_opts, $va_select_attr, $va_opts);
 						}
-					} elseif ($va_properties['showMetadataElementsWithDataType']) {
+					} elseif ($va_properties['showMetadataElementsWithDataType'] ?? false) {
 						if (!is_array($va_properties['table'])) { $va_properties['table'] = [$va_properties['table']]; }
 						
 						$va_select_opts = [];
