@@ -56,6 +56,9 @@
 		protected $opa_attributes_to_edit;
 		protected $opa_attributes_to_remove;
 		
+		protected $ATTRIBUTE_TYPE_ID_FLD;
+		protected $SOURCE_ID_FLD;
+		
 		
 		# ------------------------------------------------------------------
 		public function __construct($id=null, ?array $options=null) {
@@ -1510,7 +1513,8 @@
 		 * @return array List of types
 		 */ 
 		public function getTypeList($pa_options=null) {
-			$ids_only = $pa_options['idsOnly'];
+			if(!is_array($pa_options)) { $pa_options = []; }
+			$ids_only = $pa_options['idsOnly'] ?? false;
 			if (isset($pa_options['childrenOfCurrentTypeOnly']) && $pa_options['childrenOfCurrentTypeOnly']) {
 				$pa_options['item_id'] = $this->get('type_id');
 			}
@@ -1865,7 +1869,7 @@
 			
 			$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
 			$o_view = new View($po_request, "{$vs_view_path}/bundles/");
-			$o_view->setVar('graphicsPath', $pa_options['graphicsPath']);
+			$o_view->setVar('graphicsPath', $pa_options['graphicsPath'] ?? null);
 			
 			// get all elements of this element set
 			$va_element_set = $t_element->getElementsInSet();
@@ -1959,12 +1963,12 @@
 				])));
 				
 				// If the elements datatype returns true from renderDataType, then force render the element
-				if(Attribute::renderDataType($va_element)) {
+				if(\CA\Attributes\Attribute::renderDataType($va_element)) {
 					return array_pop($va_elements_by_container[$va_element['element_id']]);
 				}
 				$va_element_ids[] = $va_element['element_id'];
 				
-				$vs_setting = Attribute::getValueDefault($va_element);
+				$vs_setting = \CA\Attributes\Attribute::getValueDefault($va_element);
 				if (strlen($vs_setting)) {
 					$tmp_element = ca_metadata_elements::getInstance($va_element['element_id']);
 					$va_element_value_defaults[$va_element['element_id']] = caProcessTemplate($tmp_element->getSetting($vs_setting), $user_values);
@@ -2190,7 +2194,7 @@
 				$va_elements_by_container[$va_element['parent_id'] ? $va_element['parent_id'] : $va_element['element_id']][] = $vs_form_element;
 				
 				// If the elements datatype returns true from renderDataType, then force render the element
-				if(Attribute::renderDataType($va_element)) {
+				if(\CA\Attributes\Attribute::renderDataType($va_element)) {
 					return array_pop($va_elements_by_container[$va_element['element_id']]);
 				}
 				$va_element_ids[] = $va_element['element_id'];
@@ -2604,7 +2608,7 @@
 		 */
 		public function getAttributesForDisplay($pm_element_code_or_id, $ps_template=null, $pa_options=null) {
 			if (!($vn_row_id = $this->getPrimaryKey())) { 
-				if (!($vn_row_id = $pa_options['row_id'])) {
+				if (!($vn_row_id = ($pa_options['row_id'] ?? null))) {
 					return null; 
 				}
 			}
@@ -3607,7 +3611,7 @@
 			$element_id = ca_metadata_elements::getElementID($element_code);
 			$datatype = ca_metadata_elements::getElementDatatype($element_code);
 			
-			$attr_fld = Attribute::getSortFieldForDatatype($datatype);
+			$attr_fld = \CA\Attributes\Attribute::getSortFieldForDatatype($datatype);
 			
 			$params = [$element_id, $values];
 		

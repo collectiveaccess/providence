@@ -722,7 +722,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 				$va_types_by_locale = [];
 				foreach($va_types_by_subtype as $vs_key => $va_types_by_key) {
 					foreach($va_types_by_key as $vn_locale_id => $va_t) {
-						if (!is_array($va_types_by_locale[$vn_locale_id])) { $va_types_by_locale[$vn_locale_id] = []; }
+						if (!is_array($va_types_by_locale[$vn_locale_id] ?? null)) { $va_types_by_locale[$vn_locale_id] = []; }
 						$va_types_by_locale[$vn_locale_id] += $va_t;
 					}
 				}
@@ -756,7 +756,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 					$va_types_to_return[$vs_sub_types][$vs_key][$vn_type_id] = $va_item;		// output item
 				
 					// look for sub items
-					if (is_array($pa_hier[$vn_type_id])) {
+					if (is_array($pa_hier[$vn_type_id] ?? null)) {
 						if (is_array($va_tmp = $this->_processRelationshipHierarchy($vn_type_id, $pa_hier, $pa_types, $pn_level + 1))) {
 							foreach($va_tmp as $x_vs_sub_types => $x_va_list) {
 								foreach($x_va_list as $x_vs_key => $x_va_list_by_type_id) {

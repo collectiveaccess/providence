@@ -874,7 +874,7 @@
 											$vs_op = strtolower($va_subfield_value[0]);
 											$vm_value = $va_subfield_value[1];
 									
-											if (!($vs_subfld = Attribute::getSortFieldForDatatype($vn_datatype))) { $vs_subfld = 'value_longtext1'; }
+											if (!($vs_subfld = \CA\Attributes\Attribute::getSortFieldForDatatype($vn_datatype))) { $vs_subfld = 'value_longtext1'; }
 							
 											if (is_null($vm_value)) {
 												if ($vs_op !== '=') { $vs_op = 'IS'; }
@@ -915,7 +915,7 @@
 										}
 										break;
 									default:
-										if (!($vs_fld = Attribute::getSortFieldForDatatype($vn_datatype))) { $vs_fld = 'value_longtext1'; }
+										if (!($vs_fld = \CA\Attributes\Attribute::getSortFieldForDatatype($vn_datatype))) { $vs_fld = 'value_longtext1'; }
 								
 										if ($vn_datatype == __CA_ATTRIBUTE_VALUE_LIST__) {
 											if ($t_element = ca_metadata_elements::getInstance($vs_field)) {
@@ -2229,7 +2229,7 @@
 			$o_view->setVar('t_subject', $this);
 			$o_view->setVar('t_label', $t_label);
 			$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
-			$o_view->setVar('graphicsPath', $pa_options['graphicsPath']);
+			$o_view->setVar('graphicsPath', $pa_options['graphicsPath'] ?? null);
 			
 			$o_view->setVar('show_effective_date', $po_request->config->get("{$table}_preferred_label_show_effective_date"));			
 			$o_view->setVar('show_access', $po_request->config->get("{$table}_preferred_label_show_access"));
@@ -2326,7 +2326,7 @@
 			$o_view->setVar('t_subject', $this);
 			$o_view->setVar('t_label', $t_label);
 			$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
-			$o_view->setVar('graphicsPath', $pa_options['graphicsPath']);
+			$o_view->setVar('graphicsPath', $pa_options['graphicsPath'] ?? null);
 			
 			$o_view->setVar('show_effective_date', $po_request->config->get("{$table}_nonpreferred_label_show_effective_date"));			
 			$o_view->setVar('show_access', $po_request->config->get("{$table}_nonpreferred_label_show_access"));
@@ -2499,6 +2499,7 @@
 		 * @return array An array of nonpreferred labels in the current locale indexed by row_id, unless returnAllLocales is set, in which case the array includes preferred labels in all available locales and is indexed by row_id and locale_id
 		 */
 		public function getNonPreferredDisplayLabelsForIDs($pa_ids, $pa_options=null) {
+			if(!is_array($pa_options)) { $pa_options = []; }
 			$va_ids = array();
 			foreach($pa_ids as $vn_id) {
 				if (intval($vn_id) > 0) { $va_ids[] = intval($vn_id); }
@@ -2508,7 +2509,7 @@
 			$vb_return_all_locales = caGetOption('returnAllLocales', $pa_options, false);
 			
 			$vs_cache_key = md5($this->tableName()."/".print_r($pa_ids, true).'/'.print_R($pa_options, true).'_non_preferred');
-			if (!isset($pa_options['noCache']) && !$pa_options['noCache'] && LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key]) {
+			if ((!isset($pa_options['noCache']) || !$pa_options['noCache']) && (LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key] ?? null)) {
 				return LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key];
 			}
 			
@@ -2540,7 +2541,7 @@
 			// make sure it's in same order the ids were passed in
 			$va_sorted_labels = array();
 			foreach($va_ids as $vn_id) {
-				$va_sorted_labels[$vn_id] = is_array($va_labels[$vn_id]) ? $va_labels[$vn_id] : [];
+				$va_sorted_labels[$vn_id] = is_array($va_labels[$vn_id] ?? null) ? $va_labels[$vn_id] : [];
 			}
 			
 			if (sizeof(LabelableBaseModelWithAttributes::$s_labels_by_id_cache) > LabelableBaseModelWithAttributes::$s_labels_by_id_cache_size) {
@@ -2888,7 +2889,7 @@
 				} 
 				
 				if ($vb_return_for_bundle) {
-					$va_row['label'] = $va_initial_values[$va_row['user_id']]['label'];
+					$va_row['label'] = $va_initial_values[$va_row['user_id']]['label'] ?? null;
 					$va_row['id'] = $va_row['user_id'];
 					$va_users[(int)$qr_res->get('relation_id')] = $va_row;
 				} else {

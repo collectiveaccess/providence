@@ -223,7 +223,7 @@ class Attribute {
 	static public function getAttributeTypes() {
 		if (Attribute::$s_attribute_types) { return Attribute::$s_attribute_types; }
 		
-		$o_attribute_types = Configuration::load(__CA_CONF_DIR__.'/attribute_types.conf');
+		$o_attribute_types = \Configuration::load(__CA_CONF_DIR__.'/attribute_types.conf');
 		return Attribute::$s_attribute_types = $o_attribute_types->getList('types');
 	}
 	# ------------------------------------------------------------------
@@ -265,6 +265,8 @@ class Attribute {
 				if (!file_exists(__CA_LIB_DIR__.'/Attributes/Values/'.$vs_classname.'.php')) { return null; }
 				include_once(__CA_LIB_DIR__.'/Attributes/Values/'.$vs_classname.'.php');
 			}
+			
+			$vs_classname = '\\'.$vs_classname;
 			return Attribute::$s_instance_cache[$pn_datatype] = new $vs_classname($pa_value_array);
 		}
 		return null;

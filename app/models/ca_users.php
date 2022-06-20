@@ -736,7 +736,7 @@ class ca_users extends BaseModel {
 				$vb_has_changed = true;
 				$va_vars[$ps_key] = $vs_proc_val;
 			} else {
-				if ((string)$vs_proc_val != (string)$va_vars[$ps_key]) {
+				if (!is_array($vs_proc_val) && !is_array($va_vars[$ps_key]) && (string)$vs_proc_val != (string)$va_vars[$ps_key]) {
 					$vb_has_changed = true;
 					$va_vars[$ps_key] = $vs_proc_val;
 				}
@@ -1077,7 +1077,7 @@ class ca_users extends BaseModel {
 	 */
 	public function getUserRoles(?array $options=null) {
 		if ($pn_user_id = $this->getPrimaryKey()) {
-			$cache_key = caMakeCacheKeyFromOptions($options, $pn_user_id);
+			$cache_key = caMakeCacheKeyFromOptions($options ?? [], $pn_user_id);
 			if (isset(ca_users::$s_user_role_cache[$cache_key])) {
 				return ca_users::$s_user_role_cache[$cache_key];
 			} else {
@@ -1383,7 +1383,7 @@ class ca_users extends BaseModel {
 	 */
 	public function getGroupRoles(?array $options=null) {
 		if ($pn_user_id = $this->getPrimaryKey()) {
-			$cache_key = caMakeCacheKeyFromOptions($options, $pn_user_id);
+			$cache_key = caMakeCacheKeyFromOptions($options ?? [], $pn_user_id);
 			if (isset(ca_users::$s_group_role_cache[$cache_key])) {
 				return ca_users::$s_group_role_cache[$cache_key];
 			} else {

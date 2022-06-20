@@ -463,7 +463,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * info about the setting itself (label, description type of value, how to display an entry element for the setting in a form)
 	 */
 	public function getAvailableSettings() {
-		$t_attr_val = Attribute::getValueInstance((int)$this->get('datatype'));
+		$t_attr_val = \CA\Attributes\Attribute::getValueInstance((int)$this->get('datatype'));
 		$va_element_info = $this->getFieldValuesArray();
 		$va_element_info['settings'] = $this->getSettings();
 		return $t_attr_val ? $t_attr_val->getAvailableSettings($va_element_info) : null;
@@ -492,7 +492,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			CompositeCache::delete('available_sorts');
 		}
 
-		$o_value_instance = Attribute::getValueInstance($this->get('datatype'), null, true);
+		$o_value_instance = \CA\Attributes\Attribute::getValueInstance($this->get('datatype'), null, true);
 		$vs_error = null;
 		if (!$o_value_instance->validateSetting($this->getFieldValuesArray(), $ps_setting, $pm_value, $vs_error)) {
 			$ps_error = $vs_error;
@@ -975,9 +975,9 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 */
 	public static function getSortableElements($pm_table_name_or_num, $pm_type_name_or_id=null, $options=null){
 		$cache_key = caMakeCacheKeyFromOptions($options, $pm_table_name_or_num.'/'.$pm_type_name_or_id);
-		// if(!($no_cache = caGetOption('noCache', $options, false)) && CompositeCache::contains('ElementsSortable') && is_array($cached_data = CompositeCache::fetch('ElementsSortable')) && isset($cached_data[$cache_key])) {
-// 			return $cached_data[$cache_key];
-// 		}
+		if(!($no_cache = caGetOption('noCache', $options, false)) && CompositeCache::contains('ElementsSortable') && is_array($cached_data = CompositeCache::fetch('ElementsSortable')) && isset($cached_data[$cache_key])) {
+			return $cached_data[$cache_key];
+		}
 		
 		$elements = ca_metadata_elements::getElementsAsList(true, $pm_table_name_or_num, $pm_type_name_or_id, true, false, false, null, $options);
 		if (!is_array($elements) || !sizeof($elements)) { return []; }
@@ -1417,7 +1417,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$vm_return = null;
 		if ($t_element = ca_metadata_elements::getInstance($pm_element_code_or_id)) {
 			//$vm_return = (int) $t_element->get('datatype');
-			$default_setting_name = Attribute::getValueDefaultSettingForDatatype(ca_metadata_elements::getDataTypeForElementCode($pm_element_code_or_id));
+			$default_setting_name = \CA\Attributes\Attribute::getValueDefaultSettingForDatatype(ca_metadata_elements::getDataTypeForElementCode($pm_element_code_or_id));
 		    $settings = ca_metadata_elements::getElementSettingsForId($pm_element_code_or_id);
 		    $vm_return = isset($settings[$default_setting_name]) ? $settings[$default_setting_name] : null;
 		}

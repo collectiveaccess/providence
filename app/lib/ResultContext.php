@@ -127,7 +127,7 @@
 				// get search expression from context
 				if ($va_context = $this->getContext()) {
 					$this->opb_search_expression_has_changed = false;
-					return $va_context['expression'];
+					return $va_context['expression'] ?? null;
 				}
 			}
 			return null;

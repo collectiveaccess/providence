@@ -186,7 +186,7 @@ class DisplayTemplateParser {
 		
 		
 		// Prefetch related items for <units>
-		if (!$pa_options['isUnit'] && !caGetOption('dontPrefetchRelated', $pa_options, false)) {
+		if (!($pa_options['isUnit'] ?? false) && !caGetOption('dontPrefetchRelated', $pa_options, false)) {
 			DisplayTemplateParser::prefetchAllRelatedIDs($va_template['tree']->children, $ps_tablename, $pa_row_ids, $pa_options);
 		}
 
@@ -232,7 +232,7 @@ class DisplayTemplateParser {
 				if(ExpressionParser::evaluate($ps_skip_if_expression, $va_expression_vars)) { continue; }
 			}
 			
-			if ($pa_options['relativeToContainer']) {
+			if ($pa_options['relativeToContainer'] ?? false) {
 				$va_vals = DisplayTemplateParser::_getValues($qr_res, array_merge($va_template['tags'], array_flip(caGetTemplateTags($ps_skip_when))), $pa_options);
 				if(isset($pa_options['sort'])&& is_array($pa_options['sort'])) {
 					$va_vals = caSortArrayByKeyInValue($va_vals, array('__sort__'), $pa_options['sortDirection'], array('dontRemoveKeyPrefixes' => true));
@@ -265,7 +265,7 @@ class DisplayTemplateParser {
 			    } catch (Exception $e) {
 			        // noop
 			    }
-				$v = DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, array_merge($pa_options, ['returnAsArray' => $pa_options['aggregateUnique']]));
+				$v = DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, array_merge($pa_options, ['returnAsArray' => $pa_options['aggregateUnique'] ?? false]));
 				if ($pb_index_with_ids) {
 					$va_proc_templates[$qr_res->get($vs_pk)] = $v;
 				} else {
@@ -274,7 +274,7 @@ class DisplayTemplateParser {
 			}
 		}
 		
-		if ($pa_options['aggregateUnique']) {
+		if ($pa_options['aggregateUnique'] ?? false) {
 			$va_acc = [];
 			foreach($va_proc_templates as $va_val_list) {
 				if(is_array($va_val_list)) { 
@@ -286,7 +286,7 @@ class DisplayTemplateParser {
 			$va_proc_templates = array_unique($va_acc);
 		}
 		
-		if (($ps_skip_when || $pa_options['aggregateUnique']) && (($vn_start = caGetOption('unitStart', $pa_options, 0)) || ($vn_length = caGetOption('unitLength', $pa_options, null)))) {
+		if (($ps_skip_when || ($pa_options['aggregateUnique'] ?? false)) && (($vn_start = caGetOption('unitStart', $pa_options, 0)) || ($vn_length = caGetOption('unitLength', $pa_options, null)))) {
 		    $va_proc_templates = array_slice($va_proc_templates, $vn_start, $vn_length);
 		}
 		
@@ -1363,6 +1363,8 @@ class DisplayTemplateParser {
 		$ps_get_spec = array_shift($va_tmp);
 		$vs_opts = join("%", $va_tmp);
 		
+		$va_tag_filters = [];
+		
 		$va_tmp = explode('~', $ps_get_spec);
 		if (!is_array($va_modifiers = array_slice($va_tmp, 1))) { $va_modifiers = null; }
 	
@@ -1822,13 +1824,13 @@ class DisplayTemplateParser {
 				if (isset($pa_options['dimensionsUnitMap'])) {
                     $t = array_slice($pa_options['dimensionsUnitMap']['tags'], $pa_options['tagIndex']+1);
                 
-                    $cur_unit = $pa_options['dimensionsUnitMap']['units'][$pa_options['tagIndex']];
+                    $cur_unit = $pa_options['dimensionsUnitMap']['units'][$pa_options['tagIndex']] ?? null;
                     $next_unit = null;
                 
                     $i = $pa_options['tagIndex'] + 1;
                     foreach($t as $z) {
                         if ($pa_values[$z]) { 
-                            $next_unit = $pa_options['dimensionsUnitMap']['units'][$i];  
+                            $next_unit = $pa_options['dimensionsUnitMap']['units'][$i] ?? null;  
                             break;
                         } 
                         $i++;

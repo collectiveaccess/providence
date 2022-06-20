@@ -275,7 +275,7 @@ trait ModelSettings {
 		$vs_form = '';
 		$va_form_elements = array();
 		$va_settings = $this->getAvailableSettings();
-		$va_setting_values = is_array($pa_options['settings']) ? $pa_options['settings'] : array();
+		$va_setting_values = is_array($pa_options['settings'] ?? null) ? $pa_options['settings'] : array();
 		
 		$po_request = 			caGetOption('request', $pa_options, null);
 		$vs_id = 				caGetOption('id', $pa_options, null);
@@ -423,7 +423,7 @@ trait ModelSettings {
 					}
 					
 					if (($vs_locale != '_generic') && (is_array($vs_value))) {		// _generic means this setting doesn't take a locale
-						if (!($vs_text_value = $vs_value[$va_locale_info['locale_id']])) {
+						if (!($vs_text_value = ($vs_value[$va_locale_info['locale_id']] ?? null))) {
 							$vs_text_value = (is_array($vs_value) && isset($vs_value[$va_locale_info['code']])) ? $vs_value[$va_locale_info['code']] : '';
 						}
 					} else {

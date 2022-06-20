@@ -455,7 +455,7 @@
 					$vs_classname = ucfirst($va_info['handler']['controller']).'Controller';
 
 
-					if (!$va_info['handler']['isplugin']) {
+					if (!($va_info['handler']['isplugin'] ?? false)) {
 						if (!include_once($this->ops_controller_path.'/'.$va_info['handler']['module'].'/'.$vs_classname.'.php')) {
 							// Invalid controller path
 							$this->postError(2300, _t("Invalid controller path"), "AppNavigation->getHTMLWidgets()");
@@ -587,7 +587,7 @@
 				if (isset($pa_navinfo[$vs_nav]['remember_last_used_navigation']) && $pa_navinfo[$vs_nav]['remember_last_used_navigation']) {
 					$va_nav_defaults = Session::getVar('ca_app_nav_defaults');	// get stored defaults - contains the last used navigation items keyed by base path
 					$navs = [];
-					if($pa_navinfo[$vs_nav]['altLabel']) { $navs[] = $pa_navinfo[$vs_nav]['altLabel']; }
+					if($pa_navinfo[$vs_nav]['altLabel'] ?? null) { $navs[] = $pa_navinfo[$vs_nav]['altLabel']; }
 					$navs[] = $vs_nav;
 					foreach($navs as $n) {
 						if (isset($va_nav_defaults[$ps_base_path.'/'.$n])) {
@@ -614,10 +614,10 @@
 						$vs_buf .= $this->_genDynamicTopLevelMenuItems($va_submenu_nav, $vs_cur_selection, $va_additional_params, $ps_base_path, $va_defaults);
 					}
 				} else {
-					$va_req = $pa_navinfo[$vs_nav]['submenu']['requires'];
+					$va_req = $pa_navinfo[$vs_nav]['submenu']['requires'] ?? null;
 					$vb_submenu_set = $this->_evaluateRequirements($va_req);
 					if ($vb_submenu_set && isset($pa_navinfo[$vs_nav]) && isset($pa_navinfo[$vs_nav]['submenu']) && $pa_navinfo[$vs_nav]['submenu']) {
-						if ($pa_navinfo[$vs_nav]['submenu']['type'] == 'dynamic') {
+						if (($pa_navinfo[$vs_nav]['submenu']['type'] ?? null) == 'dynamic') {
 							$va_submenu_nav = $this->getDynamicSubmenu($pa_navinfo[$vs_nav]['submenu']);
 							if (sizeof($va_submenu_nav)) {
 								$table = null;
@@ -770,7 +770,7 @@
 					$va_additional_params['rel'] = true;
 				}
 				$vs_buf .= caNavLink($this->opo_request, $vs_display_name, (($ps_cur_selection == $ps_base_path.'/'.$ps_key) ? 'sf-menu-selected' : ''), $va_defaults['module'], $va_defaults['controller'], $va_defaults['action'], $va_additional_params, $pa_attributes)."\n";
-				if (is_array($pa_iteminfo['typeRestrictions']) && $pa_iteminfo['typeRestrictions']) {
+				if (isset($pa_iteminfo['typeRestrictions']) && is_array($pa_iteminfo['typeRestrictions']) && $pa_iteminfo['typeRestrictions']) {
 					TooltipManager::add("#".$pa_attributes['id'], (sizeof($pa_iteminfo['typeRestrictions']) == 1) ? _t("For type <em>%1</em>", join(", ", $pa_iteminfo['typeRestrictions'])) : _t("For types <em>%1</em>", join(", ", $pa_iteminfo['typeRestrictions'])));
 				}
 				if ($ps_cur_selection == $ps_base_path.'/'.$ps_key) {

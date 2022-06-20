@@ -213,11 +213,11 @@
 				if (!$this->ops_currency_specifier) { return null; }
 				return caGetCurrencySymbol($this->ops_currency_specifier, $this->getElementID()).' '.$this->opn_value;
 			}
-			if(Zend_Registry::isRegistered("Zend_Locale")) {
-				$o_locale = Zend_Registry::get('Zend_Locale');
-			} else {
+			//if(Zend_Registry::isRegistered("Zend_Locale")) {
+			//	$o_locale = Zend_Registry::get('Zend_Locale');
+			//} else {
 				$o_locale = new Zend_Locale('en_US');
-			}
+			//}
 			
 			if (!$this->ops_currency_specifier) { return null; }
 			$vs_format = Zend_Locale_Data::getContent($o_locale, 'currencynumber');

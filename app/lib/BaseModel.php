@@ -7579,6 +7579,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	public function &getHierarchyChildrenAsQuery($pn_id=null, $pa_options=null) {
 		if (!$this->isHierarchical()) { return null; }
 		$o_db = $this->getDb();
+		
+		$vs_order_by = null;
 			
 		$vs_table_name = $this->tableName();
 		
@@ -8401,6 +8403,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	 */
 	public function htmlFormElement($ps_field, $ps_format=null, $pa_options=null) {
 		$o_db = $this->getDb();
+		
+		$va_limit_list = null;
 		
 		// init options
 		if (!is_array($pa_options)) { 
@@ -12163,11 +12167,11 @@ $pa_options["display_form_field_tips"] = true;
 		// Convert other intrinsic list references
 		//
 		$vb_find_all = false;
-
+		
 		foreach($pa_values as $vs_field => $va_field_values) {
 			foreach($va_field_values as $vn_i => $va_field_value) {
 				if ($vs_field == $vs_type_field_name) { continue; }
-			
+				
 				$vs_op = strtolower($va_field_value[0]);
 				$vm_value = $va_field_value[1];
 				

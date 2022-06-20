@@ -269,7 +269,9 @@
 			}
 	
 			if (!$vb_batch && ($pn_id > 0)) {
-				$vs_count_label = $pa_bundle_settings['label_for_count'] ?? caGetTableDisplayName($t_subject->tableName(), true);
+				if(!($vs_count_label = caExtractSettingsValueByUserLocale('label_for_count', $pa_bundle_settings))) {
+					$vs_count_label = caGetTableDisplayName($t_subject->tableName(), true);
+				}
 ?>
 				<div class="hierarchyCountDisplay"><?php if($vn_items_in_hier > 0) { print _t("Number of %1 in hierarchy: %2", $vs_count_label, $vn_items_in_hier); } ?></div>
 				<div class="buttonPosition">

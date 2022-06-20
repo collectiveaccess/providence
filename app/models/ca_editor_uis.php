@@ -394,7 +394,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	public function getScreens($pn_type_id=null, $pa_options=null) {
 		if (!($vn_id = $this->getPrimaryKey())) { return false; }
 		
-		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$vn_id}/{$pn_type_id}");
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], "{$vn_id}/{$pn_type_id}");
 		if (isset(self::$s_screen_cache[$vs_cache_key])) { return self::$s_screen_cache[$vs_cache_key]; }
 		if (!($t_instance = Datamodel::getInstanceByTableNum($this->get('editor_type')))) { return null; }
 		
@@ -739,7 +739,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	public function getScreenBundlePlacements($pm_screen, $pn_type_id=null, $pa_options=null) {
 		if (!($vn_id = $this->getPrimaryKey())) { return false; }
 		
-		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$vn_id}/{$pm_screen}/{$pn_type_id}");
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], "{$vn_id}/{$pm_screen}/{$pn_type_id}");
 		
 		if (isset(self::$s_screen_bundle_cache[$vs_cache_key])) { return self::$s_screen_bundle_cache[$vs_cache_key]; }
 		
@@ -842,7 +842,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		if (!($vn_id = $this->getPrimaryKey())) { return null; }
 	    if (!is_array($pa_options)) { $pa_options = []; }
 	    
-	    $vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$vn_id}/{$ps_bundle_name}");
+	    $vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], "{$vn_id}/{$ps_bundle_name}");
 		
 		if (isset(self::$s_placements_for_bundle_cache[$vs_cache_key])) { return self::$s_placements_for_bundle_cache[$vs_cache_key]; }
 
@@ -1581,7 +1581,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	public function invalidateScreenCache($po_screen, $pa_options=null){
 		if (!($vn_id = $this->getPrimaryKey())) { return false; }
 		$pn_type_id = $po_screen->getTypeID();
-		$vs_cache_key = caMakeCacheKeyFromOptions(null, "{$vn_id}/{$pn_type_id}");
+		$vs_cache_key = caMakeCacheKeyFromOptions([], "{$vn_id}/{$pn_type_id}");
 
 		unset(ca_editor_uis::$s_screen_cache[$vs_cache_key]);
 	}

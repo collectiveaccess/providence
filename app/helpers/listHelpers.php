@@ -51,7 +51,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	$g_list_id_cache = [];
 	function caGetListID($ps_list, $pa_options=null) {
 		global $g_list_id_cache;
-		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $ps_list);
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], $ps_list);
 		
 		if(isset($g_list_id_cache[$vs_cache_key])) { return $g_list_id_cache[$vs_cache_key]; }
 		$t_list = new ca_lists();
@@ -116,7 +116,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	$g_list_item_id_cache = [];
 	function caGetListItemID($ps_list_code, $ps_idno, $pa_options=null) {
 		global $g_list_item_id_cache;
-	    $vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$ps_list_code}/{$ps_idno}");
+	    $vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], "{$ps_list_code}/{$ps_idno}");
 		
 		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
 			if(isset($g_list_item_id_cache[$vs_cache_key])) { return $g_list_item_id_cache[$vs_cache_key]; }
@@ -141,7 +141,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	$g_ca_get_list_code_cache = [];
 	function caGetListCode($pn_list_id, $pa_options=null) {
 		global $g_ca_get_list_code_cache;
-		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $pn_list_id);
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], $pn_list_id);
 		
 		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
 		    if(isset($g_ca_get_list_code_cache[$vs_cache_key])) { return $g_ca_get_list_code_cache[$vs_cache_key]; }
@@ -168,7 +168,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	$g_ca_get_list_name_cache = [];
 	function caGetListName($pm_list_code_or_id, $pa_options=null) {
 		global $g_ca_get_list_name_cache;
-		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $pm_list_code_or_id);
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], $pm_list_code_or_id);
 		
 		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
 		    if(isset($g_ca_get_list_name_cache[$vs_cache_key])) { return $g_ca_get_list_name_cache[$vs_cache_key]; }
@@ -201,7 +201,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	$g_list_item_idno_cache = [];
 	function caGetListItemIdno($pn_item_id, $pa_options=null) {
 		global $g_list_item_idno_cache;
-		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $pn_item_id);
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], $pn_item_id);
 		
 		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
 		    if(isset($g_list_item_idno_cache[$vs_cache_key])) { return $g_list_item_idno_cache[$vs_cache_key]; }
@@ -232,7 +232,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	$g_list_item_label_cache = [];
 	function caGetListItemForDisplay($ps_list_code, $ps_idno, $pa_options=null) {
 		global $g_list_item_label_cache;
-		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$ps_list_code}/{$ps_idno}");
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], "{$ps_list_code}/{$ps_idno}");
 		
 		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
 		    if(isset($g_list_item_label_cache[$vs_cache_key])) { return $g_list_item_label_cache[$vs_cache_key]; }
@@ -260,7 +260,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	$g_list_item_label_cache = [];
 	function caGetListItemByIDForDisplay($pn_item_id, $pa_options=null) {
 		global $g_list_item_label_cache;
-		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $pn_item_id);
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], $pn_item_id);
 		
 		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
 		    if(isset($g_list_item_label_cache[$vs_cache_key])) { return $g_list_item_label_cache[$vs_cache_key]; }
@@ -303,7 +303,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	$g_list_items_for_values = [];
 	function caGetListItemForValue($ps_list_code, $ps_value, $pa_options=null) {
 		global $g_list_items_for_values;
-		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$ps_list_code}/{$ps_value}");
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], "{$ps_list_code}/{$ps_value}");
 		
 		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
 		    if(isset($g_list_items_for_values[$vs_cache_key])) { return $g_list_items_for_values[$vs_cache_key]; }
@@ -333,7 +333,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	function caGetListItemValueForID($pn_id, $pa_options=null) {
 		global $g_list_item_values_for_ids;
 		if(!$pn_id || !is_numeric($pn_id)) { return null; }
-		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $pn_id);
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], $pn_id);
 		
 		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
 		    if(isset($g_list_item_values_for_ids[$vs_cache_key])) { return $g_list_item_values_for_ids[$vs_cache_key]; }
@@ -377,7 +377,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	function caGetListItemIDForLabel($ps_list_code, $ps_label, $pa_options=null) {
 		global $g_list_item_id_for_label_cache;
 		
-		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$ps_list_code}/{$ps_label}");
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], "{$ps_list_code}/{$ps_label}");
 		
 		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
 		    if(isset($g_list_item_id_for_label_cache[$vs_cache_key])) { return $g_list_item_id_for_label_cache[$vs_cache_key]; }
@@ -407,7 +407,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	$g_list_items_cache = [];
 	function caGetListItems($ps_list_code, $pa_options=null) {
 		global $g_list_items_cache;
-		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $ps_list_code);
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], $ps_list_code);
 		
 		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
 		    if(isset($g_list_items_cache[$vs_cache_key])) { return $g_list_items_cache[$vs_cache_key]; }
@@ -446,7 +446,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	function caGetDefaultItemID($ps_list_code, $pa_options=null) {
 		global $g_default_list_item_id_cache;
 		if (!is_array($pa_options)) { $pa_options = []; }
-		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $ps_list_code);
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], $ps_list_code);
 		
 		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
 		    if(isset($g_default_list_item_id_cache[$vs_cache_key])) { return $g_default_list_item_id_cache[$vs_cache_key]; }
@@ -540,7 +540,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	function caGetAncestorsForItemID($pm_item_id, $pa_options=null) {
 		if(!$pm_item_id) { return null; }
 		global $g_list_item_id_ancestors_cache;
-		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $pm_item_id);
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], print_R($pm_item_id, true));
 		
 		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
 		    if(isset($g_list_item_id_ancestors_cache[$vs_cache_key])) { return $g_list_item_id_ancestors_cache[$vs_cache_key]; }

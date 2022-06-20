@@ -342,7 +342,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 			$pa_options['showHierarchy'] = true;
 		}
 
-        if(!$pa_options['showHierarchy']) {
+        if(!($pa_options['showHierarchy'] ?? false)) {
             if($vb_return_idno = ((isset($pa_options['returnIdno']) && (bool)$pa_options['returnIdno']))) {
                 return caGetListItemIdno($this->opn_item_id, $pa_options);
             }
@@ -358,7 +358,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
         }
 
 		$vn_list_id = (is_array($pa_options) && isset($pa_options['list_id'])) ? (int)$pa_options['list_id'] : null;
-		if ($pa_options['showHierarchy'] && !$vn_list_id) {
+		if (($pa_options['showHierarchy'] ?? false) && !$vn_list_id) {
 			$t_item = new ca_list_items();
 		    $t_item->load((int)$this->opn_item_id);
 		    $vn_list_id = $t_item->get('list_id');
@@ -554,7 +554,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 					'implicitNullOption' => $vb_implicit_nulls, 'auto_shrink' => $vb_auto_shrink, 
 					'currentSelectionDisplayFormat' => $current_selection_display_format,
 					'separateDisabledValues' => $separate_disabled_values,
-					'deferHierarchyLoad' => (bool)$pa_element_info['settings']['deferHierarchyLoad']
+					'deferHierarchyLoad' => (bool)($pa_element_info['settings']['deferHierarchyLoad'] ?? false)
 				]
 			)
 		);

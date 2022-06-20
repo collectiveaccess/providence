@@ -191,7 +191,7 @@ class SearchResult extends BaseObject {
 				case 'hierarchy_siblings_prefetch_cache':
 				case 'hierarchy_siblings_prefetch_cache_index':
 				case 'hierarchy_children_prefetch_cache_index':
-					if (is_array($va_cache) && is_array($va_cache[$ps_tablename]) && (sizeof($va_cache[$ps_tablename]) > SearchResult::$s_cache_size_limit)) {
+					if (is_array($va_cache) && is_array($va_cache[$ps_tablename] ?? null) && (sizeof($va_cache[$ps_tablename]) > SearchResult::$s_cache_size_limit)) {
 						$va_cache[$ps_tablename] = [];
 					}
 					break;
@@ -341,7 +341,7 @@ class SearchResult extends BaseObject {
 	 *
 	 */
 	protected function getRowIDsToPrefetch($pn_start, $pn_num_rows) {
-		if ($this->opa_row_ids_to_prefetch_cache[$pn_start.'/'.$pn_num_rows]) { return $this->opa_row_ids_to_prefetch_cache[$pn_start.'/'.$pn_num_rows]; }
+		if ($this->opa_row_ids_to_prefetch_cache[$pn_start.'/'.$pn_num_rows] ?? null) { return $this->opa_row_ids_to_prefetch_cache[$pn_start.'/'.$pn_num_rows]; }
 		$va_row_ids = array();
 		
 		$vn_cur_row_index = $this->opo_engine_result->currentRow();
@@ -668,7 +668,7 @@ class SearchResult extends BaseObject {
 		if (!($t_instance = SearchResult::$s_instance_cache[$this->ops_table_name])) {
 			$t_instance = SearchResult::$s_instance_cache[$this->ops_table_name] = Datamodel::getInstanceByTableName($this->ops_table_name, true);
 		}
-		if (!($t_rel_instance = SearchResult::$s_instance_cache[$ps_tablename])) {
+		if (!($t_rel_instance = SearchResult::$s_instance_cache[$ps_tablename] ?? null)) {
 			$t_rel_instance = SearchResult::$s_instance_cache[$ps_tablename] = Datamodel::getInstanceByTableName($ps_tablename, true);
 		}
 		if (!$t_instance || !$t_rel_instance) { return; }
@@ -736,7 +736,7 @@ class SearchResult extends BaseObject {
 		}
 		
 		$vs_criteria_sql = '';
-		if (is_array($this->opa_tables[$ps_tablename]['criteria']) && (sizeof($this->opa_tables[$ps_tablename]['criteria']) > 0)) {
+		if (is_array($this->opa_tables[$ps_tablename]['criteria'] ?? null) && (sizeof($this->opa_tables[$ps_tablename]['criteria']) > 0)) {
 			$vs_criteria_sql = ' AND ('.join(' AND ', $this->opa_tables[$ps_tablename]['criteria']).')';
 		}
 		
@@ -783,7 +783,7 @@ class SearchResult extends BaseObject {
 			$vn_row_id = $va_row[$this->ops_table_pk];
 			$vn_rel_row_id = $va_row[$vs_rel_pk];
 			
-			$vn_locale_id = $vb_has_locale_id ? $va_row['locale_id'] : null;
+			$vn_locale_id = $vb_has_locale_id ? $va_row['locale_id'] ?? null : null;
 			self::$s_prefetch_cache[$ps_tablename][$vn_row_id][$vs_md5][$vn_locale_id][$vn_rel_row_id] = $va_row;
 		}
 		
@@ -1908,14 +1908,15 @@ class SearchResult extends BaseObject {
 	 * @return array|string
 	 */
 	private function _getRelatedValue($pa_value_list, $pa_options=null) {
-		$vb_return_as_link 		= $pa_options['returnAsLink'];
+		$vb_return_as_link 		= $pa_options['returnAsLink'] ?? false;
 		$va_path_components		=& $pa_options['pathComponents'];
 		
 		$vb_assume_display_field 	= isset($pa_options['assumeDisplayField']) ? (bool)$pa_options['assumeDisplayField'] : true;
 		
-		$pa_check_access		= $pa_options['checkAccess'];
-		$pb_primary_only		= $pa_options['primaryOnly'];
-		if (!is_array($pa_exclude_idnos	= $pa_options['excludeIdnos'])) { $pa_exclude_idnos = []; }
+		$pa_check_access		= $pa_options['checkAccess'] ?? null;
+		$pb_primary_only		= $pa_options['primaryOnly'] ?? false;
+		$pa_exclude_idnos		= $pa_options['excludeIdnos'] ?? null;
+		if (!is_array($pa_exclude_idnos)) { $pa_exclude_idnos = []; }
 		
 		if (!($t_rel_instance = SearchResult::$s_instance_cache[$va_path_components['table_name']])) {
 			$t_rel_instance = SearchResult::$s_instance_cache[$va_path_components['table_name']] = Datamodel::getInstanceByTableName($va_path_components['table_name'], true);
@@ -2902,8 +2903,8 @@ class SearchResult extends BaseObject {
 						$pa_options['start'] = 0;
 						$pa_options['length'] = (int)$pa_options['truncate'];
 					}
-					$vn_start = (strlen($pa_options['start']) && is_numeric($pa_options['start'])) ? (int)$pa_options['start'] : 0;
-					$vn_length = (strlen($pa_options['length']) && ($pa_options['length'] > 0)) ? (int)$pa_options['length'] : null;
+					$vn_start = (strlen($pa_options['start'] ?? '') && is_numeric($pa_options['start'] ?? null)) ? (int)$pa_options['start'] : 0;
+					$vn_length = (strlen($pa_options['length'] ?? '') && (($pa_options['length'] ?? null) > 0)) ? (int)$pa_options['length'] : null;
 					
 					$vb_needs_ellipsis = false;
 					if(($vn_start > 0) || (!is_null($vn_length))) {
@@ -2912,7 +2913,7 @@ class SearchResult extends BaseObject {
 						}
 						$vs_val = mb_substr($vs_val, $vn_start, $vn_length);
 					} 
-					if($pa_options['trim']) {
+					if($pa_options['trim'] ?? false) {
 						$vs_val = trim($vs_val);
 					}
 					

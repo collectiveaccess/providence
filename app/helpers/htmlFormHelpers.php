@@ -58,13 +58,13 @@
 				$pa_attributes['style'] = "width: ".$va_dim['dimension']."px; ".($pa_attributes['style'] ?? '');
 			} else {
 				// Approximate character width using 1 character = 6 pixels of width
-				$pa_attributes['style'] = "width: ".($va_dim['dimension'] * 6)."px; ".$pa_attributes['style'];
+				$pa_attributes['style'] = "width: ".($va_dim['dimension'] * 6)."px; ".($pa_attributes['style'] ?? '');
 			}
 		}	
 		
 		if (is_array($va_dim = caParseFormElementDimension(isset($pa_options['height']) ? $pa_options['height'] : null))) {
 			if ($va_dim['type'] == 'pixels') {
-				$pa_attributes['style'] = "height: ".$va_dim['dimension']."px; ".$pa_attributes['style'];
+				$pa_attributes['style'] = "height: ".$va_dim['dimension']."px; ".($pa_attributes['style'] ?? '');
 			} else {
 				// Approximate character width using 1 character = 6 pixels of width
 				$pa_attributes['size'] = $va_dim['dimension'];
@@ -76,11 +76,11 @@
 		
 		$vs_element = "<select name='{$ps_name}' {$vs_attr_string}>\n";
 		
-		$vs_selected_val = isset($pa_options['value']) ? $pa_options['value'] : null;
-		if (is_array($pa_options['values']) && $vs_selected_val) { $vs_selected_val = null; }
-		$va_selected_vals = isset($pa_options['values']) ? $pa_options['values'] : array();
+		$vs_selected_val = $pa_options['value'] ?? null;
+		if (is_array($pa_options['values'] ?? null) && $vs_selected_val) { $vs_selected_val = null; }
+		$va_selected_vals = $pa_options['values'] ?? [];
 		
-		$va_disabled_options =  isset($pa_options['disabledOptions']) ? $pa_options['disabledOptions'] : array();
+		$va_disabled_options =  $pa_options['disabledOptions'] ?? [];
 		
 		$vb_content_is_list = caIsIndexedArray($pa_content);
 		
@@ -95,7 +95,7 @@
 		if (isset($pa_options['contentArrayUsesKeysForValues']) && $pa_options['contentArrayUsesKeysForValues']) {
 			foreach($pa_content as $vs_val => $vs_opt) {
 				if ($vb_use_options_for_values) { $vs_val = preg_replace("!^[\s]+!", "", preg_replace("![\s]+$!", "", str_replace("&nbsp;", "", $vs_opt))); }
-				if ($COLOR = ($vs_color = $va_colors[$vs_val]) ? " data-color='#{$vs_color}'" : '') { $vb_uses_color = true; }
+				if ($COLOR = ($vs_color = ($va_colors[$vs_val] ?? null)) ? " data-color='#{$vs_color}'" : '') { $vb_uses_color = true; }
 				if (is_null($vs_selected_val) || !($SELECTED = (((string)$vs_selected_val === (string)$vs_val) && strlen($vs_selected_val)) ? ' selected="1"' : '')) {
 					$SELECTED = (is_array($va_selected_vals) && in_array($vs_val, $va_selected_vals)) ? ' selected="1"' : '';
 				}
@@ -105,7 +105,7 @@
 		} else {
 			if ($vb_content_is_list) {
 				foreach($pa_content as $vs_val) {
-					if ($COLOR = ($vs_color = $va_colors[$vs_val]) ? " data-color='#{$vs_color}'" : '') { $vb_uses_color = true; }
+					if ($COLOR = ($vs_color = ($va_colors[$vs_val] ?? null)) ? " data-color='#{$vs_color}'" : '') { $vb_uses_color = true; }
 					
 					if (is_null($vs_selected_val) || !($SELECTED = ((string)$vs_selected_val === (string)$vs_val) ? ' selected="1"' : '')) {
 						$SELECTED = (is_array($va_selected_vals) && in_array($vs_val, $va_selected_vals))  ? ' selected="1"' : '';

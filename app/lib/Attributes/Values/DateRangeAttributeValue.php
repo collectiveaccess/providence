@@ -441,7 +441,7 @@
  			}
 
  			$vn_max_length = 255;
- 			$vs_element .= caHTMLTextInput(
+ 			$vs_element = caHTMLTextInput(
 				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
 				array(
 					'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
@@ -473,7 +473,7 @@
 
  				// nothing terrible happens if this fails. If no package is registered for the current 
  				// locale, the LoadManager simply ignores it and the default settings (en_US) apply
- 				AssetLoadManager::register("datepicker_i18n_{self::$locale}"); 
+ 				AssetLoadManager::register("datepicker_i18n_".self::$locale); 
 
 				$vs_date_format = isset($va_settings['datePickerDateFormat']) ? $va_settings['datePickerDateFormat'] : 'yy-mm-dd';
 

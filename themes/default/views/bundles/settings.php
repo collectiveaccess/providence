@@ -33,7 +33,7 @@
 	$t_subject					= $this->getVar('t_subject');
 	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, null);
 ?>
 <div id="<?php print $vs_id_prefix; ?>">
 	<div class="bundleContainer">

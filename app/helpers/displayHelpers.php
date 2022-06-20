@@ -936,6 +936,7 @@ jQuery(document).ready(function() {
 
 		$vs_style               = null;
 		$vs_idno                = null;
+		$vn_num_objects			= 0;
 
 		$t_item 				= $po_view->getVar('t_item');
 		$vs_table_name = $t_item->tableName();
@@ -2007,7 +2008,7 @@ jQuery(document).ready(function() {
 
         $o_app_plugin_manager = new ApplicationPluginManager();
         $va_hookAppend = $o_app_plugin_manager->hookAppendToEditorInspector(array("t_item"=>$t_item));
-        if (is_string($va_hookAppend["caEditorInspectorAppend"])) {
+        if (is_string($va_hookAppend["caEditorInspectorAppend"] ?? null)) {
             $vs_buf .= $va_hookAppend["caEditorInspectorAppend"];
         }
 
@@ -2326,7 +2327,7 @@ jQuery(document).ready(function() {
 	 * @return array An array of tags, or an array of arrays when parseOptions option is set.
 	 */
 	function caGetTemplateTags($ps_template, $pa_options=null) {
-		$key = caMakeCacheKeyFromOptions($pa_options, $ps_template);
+		$key = caMakeCacheKeyFromOptions($pa_options ?? [], $ps_template);
 		if(MemoryCache::contains($key, 'DisplayTemplateParserUtils')) { return MemoryCache::fetch($key, 'DisplayTemplateParserUtils'); }
 		
 		$va_tags = caExtractTagsFromTemplate($ps_template, $pa_options);
@@ -3053,7 +3054,7 @@ jQuery(document).ready(function() {
 			unset($va_tmp);
 		}
 
-		if(is_array($pa_options['sortOrder'])) {
+		if(is_array($pa_options['sortOrder'] ?? null)) {
 			$va_items_sorted = [];
 			foreach($pa_options['sortOrder'] as $id) {
 				$va_items_sorted[$id] = $va_items[$id];
@@ -3099,7 +3100,12 @@ jQuery(document).ready(function() {
 				$va_item['hasInterstitialUI'] = false;
 			}
 
-			$va_initial_values[$va_item['relation_id'] ? (int)$va_item['relation_id'] : $va_item[$vs_rel_pk]] = array_merge(
+			if(!($va_item['relation_id'] ?? null)) {
+				$va_item['relation_id'] = $va_item[$vs_rel_pk] ?? null;
+			}
+			$va_item['relation_id'] = (int)$va_item['relation_id'] ;
+			
+			$va_initial_values[] = array_merge(
 				$va_item,
 				array(
 					'label' => $vs_display
@@ -3411,7 +3417,7 @@ jQuery(document).ready(function() {
 	function caEditorBundleMetadataDictionary($po_request, $ps_id_prefix, $pa_settings) {
 		global $g_ui_locale;
 
-		$definition = caGetOption($g_ui_locale, $pa_settings['definition'], null);
+		$definition = caGetOption($g_ui_locale, $pa_settings['definition'] ?? null, null);
 		if(is_array($definition)) { $definition = join ("", $definition); }
 		if (!($vs_definition = trim($definition))) { return ''; }
 

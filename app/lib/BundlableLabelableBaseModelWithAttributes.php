@@ -1115,7 +1115,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  	 * @return bool True if record can be read by the current user, false if not
  	 */
 	function isReadable($po_request, $ps_bundle_name=null) {
- 		$t_user = is_a($po_request, 'ca_users') ? $po_request : $po_request->user;
+ 		$t_user = null;
+ 		if(is_a($po_request, 'ca_users')) {
+ 			$t_user = $po_request;
+ 		} elseif($po_request && property_exists($po_request, 'user')) {
+ 			$t_user = $po_request->user;
+ 		}
+ 		if (!$t_user) { return false; }
  		
 		// Check type restrictions
  		if ((bool)$this->getAppConfig()->get('perform_type_access_checking')) {
@@ -1161,7 +1167,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  	 * @return bool True if record can be saved, false if not
  	 */
  	public function isSaveable($po_request, $ps_bundle_name=null) {
- 		$t_user = is_a($po_request, 'ca_users') ? $po_request : $po_request->user;
+ 		$t_user = null;
+ 		if(is_a($po_request, 'ca_users')) {
+ 			$t_user = $po_request;
+ 		} elseif($po_request && property_exists($po_request, 'user')) {
+ 			$t_user = $po_request->user;
+ 		}
  		if (!$t_user) { return false; }
  		
  		// Check type restrictions
@@ -1210,7 +1221,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  	 * @return bool True if record can be deleted, false if not
  	 */
  	public function isDeletable($po_request) {
- 		$t_user = is_a($po_request, 'ca_users') ? $po_request : $po_request->user;
+ 		$t_user = null;
+ 		if(is_a($po_request, 'ca_users')) {
+ 			$t_user = $po_request;
+ 		} elseif($po_request && property_exists($po_request, 'user')) {
+ 			$t_user = $po_request->user;
+ 		}
+ 		if (!$t_user) { return false; }
  		
  		// Is row loaded?
  		if (!$this->getPrimaryKey()) { return false; }
@@ -1582,10 +1599,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 								'readonly' 					=> $vb_read_only,						
 								'error_icon' 				=> caNavIcon(__CA_NAV_ICON_ALERT__, 1),
 								'progress_indicator'		=> caNavIcon(__CA_NAV_ICON_SPINNER__, 1),
-								'lookup_url' 				=> $va_lookup_url_info['intrinsic'],
+								'lookup_url' 				=> ($va_lookup_url_info['intrinsic'] ?? null),
 								
 								'name'						=> $ps_placement_code.$pa_options['formName'].$ps_bundle_name,
-								'usewysiwygeditor' 			=> $pa_bundle_settings['usewysiwygeditor']
+								'usewysiwygeditor' 			=> ($pa_bundle_settings['usewysiwygeditor'] ?? false)
 							],
 							$pa_options,
 							$va_additional_field_options
@@ -1599,10 +1616,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 									'readonly' 					=> $vb_read_only,						
 									'error_icon' 				=> caNavIcon(__CA_NAV_ICON_ALERT__, 1),
 									'progress_indicator'		=> caNavIcon(__CA_NAV_ICON_SPINNER__, 1),
-									'lookup_url' 				=> $va_lookup_url_info['intrinsic'],
+									'lookup_url' 				=> ($va_lookup_url_info['intrinsic'] ?? null),
 								
 									'name'						=> $ps_placement_code.$pa_options['formName'].$ps_bundle_name,
-									'usewysiwygeditor' 			=> $pa_bundle_settings['usewysiwygeditor']
+									'usewysiwygeditor' 			=> ($pa_bundle_settings['usewysiwygeditor'] ?? false)
 								),
 								$pa_options,
 								$va_additional_field_options
@@ -3230,12 +3247,16 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if(!is_array($pa_bundle_settings)) { $pa_bundle_settings = []; }
 		if(!is_array($pa_options)) { $pa_options = []; }
 		
+		$sort_direction = null;
+		
 		$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
 		$o_view = new View($po_request, "{$vs_view_path}/bundles/");
 		
 		$t_item = Datamodel::getInstance($ps_related_table);
 		$vb_is_many_many = false;
 		$va_path = array_keys(Datamodel::getPath($this->tableName(), $ps_related_table));
+		
+		$t_item_rel = null;
 		if ($this->tableName() == $ps_related_table) {
 			// self relationship
 			$t_item_rel = Datamodel::getInstance($va_path[1]);
@@ -3260,7 +3281,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					break;
 			}
 		}
-		
 		$o_view->setVar('id_prefix', $ps_form_name);
 		$o_view->setVar('t_instance', $this);
 		$o_view->setVar('t_item', $t_item);
@@ -3320,7 +3340,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if ($t_item->getLabelTableName()) {
 			$t_label = Datamodel::getInstanceByTableName($t_item->getLabelTableName(), true);
 		}
-		if (method_exists($t_item_rel, 'getRelationshipTypes')) {
+		if ($t_item_rel && method_exists($t_item_rel, 'getRelationshipTypes')) {
 			$o_view->setVar('relationship_types', $t_item_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
 			$o_view->setVar('relationship_types_by_sub_type', $t_item_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
 		}
@@ -3799,7 +3819,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$vs_element_datatype = $t_element->get('datatype');
 				$include_source_data = $t_element->getSetting('includeSourceData');
 				
-				$vs_datatype = Attribute::getValueInstance($vs_element_datatype);
+				$vs_datatype = \CA\Attributes\Attribute::getValueInstance($vs_element_datatype);
 				if(method_exists($vs_datatype,'saveElement')) {
 					$reserved_elements[] = $t_element;
 					continue;
@@ -4124,7 +4144,7 @@ if (!$vb_batch) {
 			foreach($reserved_elements as $res_element) {
 				$res_element_id = $res_element->getPrimaryKey();
 				$res_element_datatype = $res_element->get('datatype');
-				$res_datatype = Attribute::getValueInstance($res_element_datatype);
+				$res_datatype = \CA\Attributes\Attribute::getValueInstance($res_element_datatype);
 				$res_datatype->saveElement($this,$res_element,$vs_form_prefix,$po_request);
 			}
 		}
@@ -8231,6 +8251,7 @@ side. For many self-relations the direction determines the nature and display te
 	 	$limit_to_show_as_prompt = caGetOption('limitToShowAsPrompt', $options, false);
 	 	
 	 	$bundles_on_screen = null;
+	 	$placement_id = $screen_id = null;
 	 	if (($screen_id = caGetOption('screen_id', $options, null)) || ($placement_id = caGetOption('placement_id', $options, null))) {
 	 		$t_screen = Datamodel::getInstance('ca_editor_ui_screens', true);
 	 		if (is_array($screen_placements = $t_screen->getPlacements($placement_id ? ['placement_id' => $placement_id] : ['screen_id' => $screen_id]))) {

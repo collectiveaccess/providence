@@ -107,7 +107,7 @@ use Zend\Stdlib\Glob;
         }
 		
 
-		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $ps_type);
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], $ps_type);
 		
 		$va_templates = array();
 		$vb_needs_caching = false;
@@ -217,7 +217,7 @@ use Zend\Stdlib\Glob;
 				continue;
 			}
 
-			$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $ps_type.'/'.$vs_template_path);
+			$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], $ps_type.'/'.$vs_template_path);
 			if (ExternalCache::contains($vs_cache_key, 'PrintTemplateDetails')) {
 				$va_list = ExternalCache::fetch($vs_cache_key, 'PrintTemplateDetails');
 				if(!is_array($files = Glob::glob("{$vs_template_path}/*.{php,css}", Glob::GLOB_BRACE))) {

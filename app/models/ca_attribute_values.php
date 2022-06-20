@@ -253,7 +253,7 @@ class ca_attribute_values extends BaseModel {
 		$this->set('attribute_id', $pn_attribute_id);
 		$this->set('element_id', $pa_element_info['element_id']);
 		
-		$o_attr_value = Attribute::getValueInstance($pa_element_info['datatype']);
+		$o_attr_value = \CA\Attributes\Attribute::getValueInstance($pa_element_info['datatype']);
 		$pa_element_info['displayLabel'] = $t_element->getLabelForDisplay(false);
 		$va_values = $o_attr_value->parseValue($ps_value, $pa_element_info, $pa_options);
 		if (isset($va_values['_dont_save']) && $va_values['_dont_save']) { return true; }
@@ -334,7 +334,7 @@ class ca_attribute_values extends BaseModel {
 		
 		$this->setMode(ACCESS_WRITE);
 		
-		$o_attr_value = Attribute::getValueInstance($t_element->get('datatype'));
+		$o_attr_value = \CA\Attributes\Attribute::getValueInstance($t_element->get('datatype'));
 		$pa_element_info['displayLabel'] = $t_element->getLabelForDisplay(false);
 		$va_values = $o_attr_value->parseValue($ps_value, $pa_element_info, $pa_options);
 		if (isset($va_values['_dont_save']) && $va_values['_dont_save']) { return true; }

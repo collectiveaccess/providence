@@ -1324,7 +1324,7 @@
                                                 if (!is_array($va_values)) { $va_values = [$va_values]; }
                     
                                                 if (!($vn_element_id = (int)ca_metadata_elements::getElementID($vs_field_name))) { continue; }
-                                                if (!($o_value = Attribute::getValueInstance(ca_metadata_elements::getElementDatatype($vs_field_name)))) { continue; }
+                                                if (!($o_value = \CA\Attributes\Attribute::getValueInstance(ca_metadata_elements::getElementDatatype($vs_field_name)))) { continue; }
                     
                                                 $va_element_value = $o_value->parseValue($va_values[0], array_merge(ca_metadata_elements::getElementSettingsForId($vs_field_name), ['list_id' => ca_metadata_elements::getElementListID($vs_field_name)], ['matchOn' => ['idno']]));
             
@@ -1596,7 +1596,7 @@
 									// (do we support other types as well?)
 
 									$vn_element_id = $t_element->getPrimaryKey();
-									$o_attr = Attribute::getValueInstance($vn_datatype);
+									$o_attr = \CA\Attributes\Attribute::getValueInstance($vn_datatype);
 									foreach($va_row_ids as $vn_row_id) {
 										$vn_row_id = urldecode($vn_row_id);
 										$vn_row_id = str_replace('&#47;', '/', $vn_row_id);
@@ -2141,7 +2141,7 @@
 												if (!is_array($va_values)) { $va_values = [$va_values]; }
 							
 												if (!($vn_element_id = (int)ca_metadata_elements::getElementID($vs_field_name))) { continue; }
-												if (!($o_value = Attribute::getValueInstance(ca_metadata_elements::getElementDatatype($vs_field_name)))) { continue; }
+												if (!($o_value = \CA\Attributes\Attribute::getValueInstance(ca_metadata_elements::getElementDatatype($vs_field_name)))) { continue; }
 							
 												$va_element_value = $o_value->parseValue($va_values[0], array_merge(ca_metadata_elements::getElementSettingsForId($vs_field_name), ['list_id' => ca_metadata_elements::getElementListID($vs_field_name)], ['matchOn' => ['idno']]));
 					
@@ -4413,7 +4413,7 @@
 						}
 
 						while($qr_res->nextRow()) {
-							$o_attr = Attribute::getValueInstance($vn_element_type, $row = $qr_res->getRow());
+							$o_attr = \CA\Attributes\Attribute::getValueInstance($vn_element_type, $row = $qr_res->getRow());
 							if (!($vs_val = trim($o_attr->getDisplayValue()))) { continue; }
 							if (is_array($va_suppress_values) && (in_array($vs_val, $va_suppress_values))) { continue; }
 							if ($va_criteria[$vs_val]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
@@ -6712,7 +6712,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 							if (!is_array($va_values)) { $va_values = [$va_values]; }
 							
 							if (!($vn_element_id = (int)ca_metadata_elements::getElementID($vs_field_name))) { continue; }
-							if (!($o_value = Attribute::getValueInstance(ca_metadata_elements::getElementDatatype($vs_field_name)))) { continue; }
+							if (!($o_value = \CA\Attributes\Attribute::getValueInstance(ca_metadata_elements::getElementDatatype($vs_field_name)))) { continue; }
 							
 							$va_element_value = $o_value->parseValue($va_values[0], array_merge(ca_metadata_elements::getElementSettingsForId($vs_field_name), ['list_id' => ca_metadata_elements::getElementListID($vs_field_name)], ['matchOn' => ['idno']]));
 					

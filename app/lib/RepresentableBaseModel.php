@@ -91,8 +91,8 @@
 				$vs_is_primary_sql = '';
 			}
 		
-			if ($pa_options['checkAccess']) { $pa_options['return_with_access'] = $pa_options['checkAccess']; }
-			if (is_array($pa_options['return_with_access']) && sizeof($pa_options['return_with_access']) > 0) {
+			if ($pa_options['checkAccess'] ?? null) { $pa_options['return_with_access'] = $pa_options['checkAccess']; }
+			if (isset($pa_options['return_with_access']) && is_array($pa_options['return_with_access']) && sizeof($pa_options['return_with_access']) > 0) {
 				$vs_access_sql = ' AND (caor.access IN ('.join(", ", $pa_options['return_with_access']).'))';
 			} else {
 				$vs_access_sql = '';

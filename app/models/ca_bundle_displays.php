@@ -710,6 +710,7 @@ if (!$pb_omit_editing_info) {
 		
 		$pb_system_only = 									caGetOption('systemOnly', $options, false);
 		
+		$vn_table_num = null;
 	 	if ($pm_table_name_or_num && !($vn_table_num = Datamodel::getTableNum($pm_table_name_or_num))) { return []; }
 		
 		$o_db = $this->getDb();
@@ -873,6 +874,7 @@ if (!$pb_omit_editing_info) {
 	 * @return bool True if user has access, false if not
 	 */
 	public function haveAccessToDisplay($pn_user_id, $pn_user_access, $pn_display_id=null) {
+		$vn_display_id = null;
 		if ($pn_display_id) {
 			$vn_display_id = $pn_display_id;
 			$t_disp = new ca_bundle_displays($vn_display_id);
@@ -970,7 +972,7 @@ if (!$pb_omit_editing_info) {
 		if (!$pm_table_name_or_num) { $pm_table_name_or_num = $this->get('table_num'); }
 		$pm_table_name_or_num = Datamodel::getTableNum($pm_table_name_or_num);
 		if (!$pm_table_name_or_num) { return null; }
-		$cache_key = caMakeCacheKeyFromOptions($options, $pm_table_name_or_num.'|'.(($g_request && $g_request->user) ? 'USER:'.$g_request->user->getPrimaryKey() : ''));
+		$cache_key = caMakeCacheKeyFromOptions($options ?? [], $pm_table_name_or_num.'|'.(($g_request && $g_request->user) ? 'USER:'.$g_request->user->getPrimaryKey() : ''));
 		if(CompositeCache::contains($cache_key)) {
 			return CompositeCache::fetch($cache_key);
 		}

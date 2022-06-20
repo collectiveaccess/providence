@@ -298,9 +298,7 @@ class Graph {
 		if (isset($va_paths[$ps_end_node]) && is_array($va_paths[$ps_end_node])) {    # no path exists is $va_paths[$ps_end_node] is not set
 			$va_return_path[$ps_start_node] = $this->getNode($ps_start_node);
 			
-			reset ($va_paths[$ps_end_node]); 
-			next ($va_paths[$ps_end_node]);  # skip first element - length of path
-			//while (list(,$vs_vertex) = each($va_paths[$ps_end_node])) {
+			array_shift($va_paths[$ps_end_node]);  # skip first element - length of path
 			foreach($va_paths[$ps_end_node] as $vs_vertex) {
 				$va_return_path[$vs_vertex] = $this->getNode($vs_vertex);
 			}	

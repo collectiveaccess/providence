@@ -779,7 +779,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				
 				$vs_type = $t_list->getItemFromListForDisplayByItemID('set_types', $qr_res->get('type_id'));
 				
-				$extras = ['item_count' => intval($va_item_counts[$qr_res->get('set_id')]), 'set_content_type' => $vs_set_type, 'set_type' => $vs_type];
+				$extras = ['item_count' => (int)($va_item_counts[$qr_res->get('set_id')] ?? 0), 'set_content_type' => $vs_set_type, 'set_type' => $vs_type];
 				
 				if ($include_items) {
 				    $extras['items'] = caExtractValuesByUserLocale(ca_sets::getItemsForSet($set_id, $pa_options));

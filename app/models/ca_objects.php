@@ -892,9 +892,9 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		$va_component_types = $this->getAppConfig()->getList('ca_objects_component_types');
 		
 		if (is_array($va_component_types) && (sizeof($va_component_types) && !in_array('*', $va_component_types))) {
-			$va_ids = ca_objects::find(array('parent_id' => $pn_object_id, 'type_id' => $va_component_types, array('returnAs' => 'ids')));
+			$va_ids = ca_objects::find(['parent_id' => $pn_object_id, 'type_id' => $va_component_types], ['returnAs' => 'ids']);
 		} else {
-			$va_ids = ca_objects::find(array('parent_id' => $pn_object_id, array('returnAs' => 'ids')));
+			$va_ids = ca_objects::find(['parent_id' => $pn_object_id], ['returnAs' => 'ids']);
 		}
 	
 		if (!is_array($va_ids)) { return 0; }

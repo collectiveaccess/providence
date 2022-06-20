@@ -898,7 +898,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * @return array 
 	 */
 	public function getItemFromList($pm_list_name_or_id, $ps_idno, $pa_options=null) {
-		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$pm_list_name_or_id}/{$ps_idno}");
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], "{$pm_list_name_or_id}/{$ps_idno}");
 		if (isset(ca_lists::$s_list_item_get_cache[$vs_cache_key])) {
 			return ca_lists::$s_list_item_get_cache[$vs_cache_key];
 		}
@@ -906,7 +906,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$vs_deleted_sql = caGetOption('includeDeleted', $pa_options, false) ? "" : "(cli.deleted = 0) AND ";
 	
 		$vn_list_id = $this->_getListID($pm_list_name_or_id);
-		$vs_alt_key = caMakeCacheKeyFromOptions($pa_options, "{$vn_list_id}/{$ps_idno}");
+		$vs_alt_key = caMakeCacheKeyFromOptions($pa_options ?? [], "{$vn_list_id}/{$ps_idno}");
 		if (isset(ca_lists::$s_list_item_get_cache[$vs_alt_key])) {
 			return ca_lists::$s_list_item_get_cache[$vs_alt_key];
 		}
@@ -983,7 +983,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public function getItemFromListByItemValue($pm_list_name_or_id, $pm_value, $pa_options=null) {
 		$pa_check_access = caGetOption('checkAccess', $pa_options, null);
-		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$pm_list_name_or_id}/{$pm_value}");
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], "{$pm_list_name_or_id}/{$pm_value}");
 		
 		if (isset(ca_lists::$s_list_item_value_display_cache[$vs_cache_key])) {
 			$va_items = ca_lists::$s_list_item_value_display_cache[$vs_cache_key];
@@ -1028,13 +1028,13 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * @return array 
 	 */
 	public function getItemFromListByLabel($pm_list_name_or_id, $ps_label_name, $pa_options=null) {
-	    $vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$pm_list_name_or_id}/{$ps_label_name}");
+	    $vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], "{$pm_list_name_or_id}/{$ps_label_name}");
 		if (isset(ca_lists::$s_list_item_get_cache[$vs_cache_key])) {
 			return ca_lists::$s_list_item_get_cache[$vs_cache_key];
 		}
 	
 		$vn_list_id = $this->_getListID($pm_list_name_or_id);
-		$vs_alt_key = caMakeCacheKeyFromOptions($pa_options, "{$vn_list_id}/{$ps_label_name}");
+		$vs_alt_key = caMakeCacheKeyFromOptions($pa_options ?? [], "{$vn_list_id}/{$ps_label_name}");
 		if (isset(ca_lists::$s_list_item_get_cache[$vs_alt_key])) {
 			return ca_lists::$s_list_item_get_cache[$vs_alt_key];
 		}
@@ -1078,7 +1078,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	public function getItemFromListForDisplay($pm_list_name_or_id, $ps_idno, $pa_options=null) {
 	    $pb_return_plural = !is_array($pa_options) ? (bool)$pa_options : (caGetOption('return', $pa_options, 'singular') == 'plural');
 		$pa_check_access = caGetOption('checkAccess', $pa_options, null);
-		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$pm_list_name_or_id}/{$ps_idno}");
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], "{$pm_list_name_or_id}/{$ps_idno}");
 		
 		if (isset(ca_lists::$s_list_item_display_cache[$ps_idno])) {
 			$va_items = ca_lists::$s_list_item_display_cache[$vs_cache_key];
@@ -1137,7 +1137,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	public function getItemForDisplayByItemID($pn_item_id, $pa_options=null) {
 	    $pb_return_plural = !is_array($pa_options) ? (bool)$pa_options : (caGetOption('return', $pa_options, 'singular') == 'plural');
 		$pa_check_access = caGetOption('checkAccess', $pa_options, null);
-		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$pn_item_id}");
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], "{$pn_item_id}");
 		
 		if (isset(ca_lists::$s_list_item_display_cache[$vs_cache_key])) {
 			$va_items = ca_lists::$s_list_item_display_cache[$vs_cache_key];
@@ -1168,7 +1168,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$va_tmp = caExtractValuesByUserLocale($va_items, null, isset($pa_options['locale']) ? [$pa_options['locale']] : null, array());
 		$va_item = array_shift($va_tmp);
 		
-		return $va_item[$pb_return_plural ? 'name_plural' : 'name_singular'];
+		return is_array($va_item) ? $va_item[$pb_return_plural ? 'name_plural' : 'name_singular'] ?? null : null;
 	}
 	# ------------------------------------------------------
 	/**
@@ -1369,7 +1369,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * @return int list for the specified list, or null if the list does not exist
 	 */
 	static function getListID($pm_list_name_or_id, $pa_options=null) {
-	    $vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $pm_list_name_or_id);
+	    $vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], $pm_list_name_or_id);
 		if (ca_lists::$s_list_id_cache[$vs_cache_key] ?? null) {
 			return ca_lists::$s_list_id_cache[$vs_cache_key];
 		}
@@ -1581,9 +1581,9 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		if(!is_array($pa_check_access) && $pa_check_access) { $va_check_access = array($va_check_access); }
 		
 		$va_in_use_list = null;
-		if ($pa_options['inUse'] && (int)$pa_options['element_id'] && $pa_options['table']) {
+		if (($pa_options['inUse'] ?? false) && (int)($pa_options['element_id'] ?? 0) && ($pa_options['table'] ?? null)) {
 			if ($t_instance = Datamodel::getInstance($pa_options['table'], true)) {
-				$va_params = array((int)$pa_options['element_id']);
+				$va_params = array((int)($pa_options['element_id'] ?? null));
 				if(is_array($pa_check_access) && sizeof($pa_check_access)) {
 					$va_params[] = $pa_check_access;
 				}
@@ -2052,7 +2052,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * @return array
 	 */
 	static public function getListCodes($pa_options=null) {		
-		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options);
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? []);
 		if (ExternalCache::contains($vs_cache_key, 'listCodes') && is_array($v = ExternalCache::fetch($vs_cache_key, 'listCodes'))) { 
 			return $v; 
 		}
