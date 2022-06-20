@@ -1066,12 +1066,12 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public static function getAvailableUIs($pn_table_num, $po_request, $pn_type_id=null) {
 		$pn_user_id = $po_request->getUserID();
-		if (ca_editor_uis::$s_available_ui_cache[$pn_table_num.'/'.$pn_type_id.'/'.$pn_user_id]) { return ca_editor_uis::$s_available_ui_cache[$pn_table_num.'/'.$pn_type_id.'/'.$pn_user_id]; }
+		if (ca_editor_uis::$s_available_ui_cache[$pn_table_num.'/'.$pn_type_id.'/'.$pn_user_id] ?? null) { return ca_editor_uis::$s_available_ui_cache[$pn_table_num.'/'.$pn_type_id.'/'.$pn_user_id]; }
 		
 		if ($pn_type_id) {
 			$va_ui_list = $po_request->user->_getUIListByType($pn_table_num);
-			if (!is_array($va_uis = $va_ui_list[$pn_type_id])) { $va_uis = []; }
-			if (is_array($va_ui_list['__all__'])) {
+			if (!is_array($va_uis = ($va_ui_list[$pn_type_id] ?? null))) { $va_uis = []; }
+			if (is_array($va_ui_list['__all__'] ?? null)) {
 				$va_uis = $va_uis + $va_ui_list['__all__'];
 			}
 		} else {

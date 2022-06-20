@@ -1472,12 +1472,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		// convert intrinsics to bare field names if they include tablename (eg. ca_objects.idno => idno)
 		$va_tmp = explode('.', $ps_bundle_name);
-		if (($this->tableName() === $va_tmp[0]) && $this->hasField($va_tmp[1])) {
+		if (($this->tableName() === ($va_tmp[0] ?? null)) && isset($va_tmp[1]) &&  $this->hasField($va_tmp[1])) {
 			$ps_bundle_name = $va_tmp[1];
 		}
 		
 		$va_info = $this->getBundleInfo($ps_bundle_name);
-		if (!($vs_type = $va_info['type'])) { return null; }
+		if (!($vs_type = ($va_info['type'] ?? null))) { return null; }
 		
 		
 		if (isset($pa_options['config']) && is_object($pa_options['config'])) {
@@ -1583,7 +1583,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				if ($this->getFieldInfo($ps_bundle_name, 'IDENTITY')) {
 					$o_view->setVar('form_element', ($vn_id = (int)$this->get($ps_bundle_name)) ? $vn_id : "&lt;"._t('Not yet issued')."&gt;");
 				} else {
-					$vb_read_only = ($pa_bundle_settings['readonly'] || ($pa_options['request']->user->getBundleAccessLevel($this->tableName(), $ps_bundle_name) == __CA_BUNDLE_ACCESS_READONLY__)) ? true : false;
+					$vb_read_only = (($pa_bundle_settings['readonly'] ?? false) || ($pa_options['request']->user->getBundleAccessLevel($this->tableName(), $ps_bundle_name) == __CA_BUNDLE_ACCESS_READONLY__)) ? true : false;
 
 					$va_additional_field_options = [];
 					if($vn_width = caGetOption('width', $pa_bundle_settings)){
@@ -1821,7 +1821,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 				
 				$vb_read_only = ($pa_options['request']->user->getBundleAccessLevel($this->tableName(), $ps_bundle_name) == __CA_BUNDLE_ACCESS_READONLY__) ? true : false;
-				if (!$pa_bundle_settings['readonly']) { $pa_bundle_settings['readonly'] = (!isset($pa_bundle_settings['readonly']) || !$pa_bundle_settings['readonly']) ? $vb_read_only : true;	}
+				if (!($pa_bundle_settings['readonly'] ?? false)) { $pa_bundle_settings['readonly'] = (!isset($pa_bundle_settings['readonly']) || !$pa_bundle_settings['readonly']) ? $vb_read_only : true;	}
 		
 				
 				switch($ps_bundle_name) {
@@ -2999,7 +2999,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					}
 					break;
 			}
-			if (!$va_info['NODE']['parent_id'] && $vb_dont_show_root) { continue; }
+			if (!$va_info['NODE']['parent_id']) { continue; } // TODO: do we need an option to control visibility of root?
 			
 			$vn_locale_id = isset($va_info['NODE']['locale_id']) ? $va_info['NODE']['locale_id'] : null;
 			$va_ancestor = array(
@@ -3324,7 +3324,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$pa_bundle_settings['showCount'] = true;
 		}
 		$o_view->setVar('settings', $pa_bundle_settings);
-		$o_view->setVar('graphicsPath', $pa_options['graphicsPath']);
+		$o_view->setVar('graphicsPath', $pa_options['graphicsPath'] ?? null);
 		
 		// pass placement code
 		$o_view->setVar('placement_code', $ps_placement_code);
@@ -6001,6 +6001,8 @@ if (!$vb_batch) {
 
 		$ps_return_as = caGetOption('returnAs', $options, 'data', array('forceLowercase' => true, 'validValues' => array('data', 'searchResult', 'ids', 'modelInstances', 'firstId', 'firstModelInstance', 'count', 'relationids')));
 
+		$vb_uses_relationship_types = false;
+		
 		// convert options
 		if (($options['restrictToTypes'] = caGetOption(array('restrictToTypes', 'restrict_to_types', 'restrictToType', 'restrict_to_type'), $options, null)) && !is_array($options['restrictToTypes'])) {
 			$options['restrictToTypes'] = preg_split("![;,]{1}!", $options['restrictToTypes']);
@@ -6178,7 +6180,7 @@ if (!$vb_batch) {
 			}
 
 			// limit related items to a specific type
-			if ($vb_uses_relationship_types && isset($options['restrictToRelationshipTypes']) && $options['restrictToRelationshipTypes']) {
+			if ($vb_uses_relationship_types && ($options['restrictToRelationshipTypes'] ?? null)) {
 				if (!is_array($options['restrictToRelationshipTypes'])) {
 					$options['restrictToRelationshipTypes'] = array($options['restrictToRelationshipTypes']);
 				}
@@ -8513,7 +8515,7 @@ side. For many self-relations the direction determines the nature and display te
 		$o_view->setVar('batch', caGetOption('batch', $pa_options, false));
 		
 		$initial_values = [];
-		foreach(($this->getPrimaryKey() ? $this->getComments(null, null, ['request' => $po_request, 'sortDirection' => $pa_bundle_settings['sortDirection']]) : []) as $v) {
+		foreach(($this->getPrimaryKey() ? $this->getComments(null, null, ['request' => $po_request, 'sortDirection' => $pa_bundle_settings['sortDirection'] ?? null]) : []) as $v) {
 			$initial_values[$v['comment_id']] = $v;
 		}
 		

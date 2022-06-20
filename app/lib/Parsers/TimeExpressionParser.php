@@ -2137,7 +2137,7 @@ class TimeExpressionParser {
 	private function _processParseResults($pa_dates, $pa_options) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		
-		if (!is_array($pa_dates['end'])) { 
+		if (!is_array($pa_dates['end'] ?? null)) { 
 			if (($pa_dates['start']['hours'] == 0) && ($pa_dates['start']['minutes'] == 0) && ($pa_dates['start']['seconds'] == 0)) {
 				$pa_dates['end'] = $pa_dates['start'];
 				$pa_dates['end']['hours'] = 23; $pa_dates['end']['minutes'] = 59; $pa_dates['end']['seconds'] = 59;
@@ -2149,8 +2149,9 @@ class TimeExpressionParser {
 		//if ($pa_dates['start']['is_circa'] || $pa_dates['end']['is_circa']) {
 			//$pa_dates['start']['is_circa'] = $pa_dates['end']['is_circa'] = true;
 		//}
+		$pa_options['mode'] = $pa_options['mode'] ?? null;
 		
-		if ($pa_dates['start']['is_undated']) {
+		if ($pa_dates['start']['is_undated'] ?? false) {
 			$this->opn_start_unixtime = null;
 			$this->opn_end_unixtime = null;
 			
@@ -2209,7 +2210,7 @@ class TimeExpressionParser {
 			if (
 				(!isset($pa_dates['start']['dont_window']) || !$pa_dates['start']['dont_window'])
 				&&
-				(!$pa_dates['start']['era'] && ($pa_dates['start']['year'] > 0) && ($pa_dates['start']['year'] <= 99))
+				(!($pa_dates['start']['era'] ?? null) && isset($pa_dates['start']['year']) && ($pa_dates['start']['year'] > 0) && ($pa_dates['start']['year'] <= 99))
 			) {
 				$va_tmp = $this->gmgetdate();
 				$vn_current_year = intval(substr($va_tmp['year'], 2, 2));		// get last two digits of current year
@@ -2366,13 +2367,13 @@ class TimeExpressionParser {
 			#
 			# If units are not 00, then all digits following it are the uncertainty quantity
 			$vn_start_attributes = 0;
-			if ($pa_dates['start']['is_circa']) {
+			if ($pa_dates['start']['is_circa'] ?? false) {
 				$vn_start_attributes = 1;
 			}
-			if ($pa_dates['start']['is_bp']) {
+			if ($pa_dates['start']['is_bp'] ?? false) {
 				$vn_start_attributes += 8;
 			}
-			if ($pa_dates['start']['is_probably']) {
+			if ($pa_dates['start']['is_probably'] ?? false) {
 				$vn_start_attributes = 9;
 			}
 			
@@ -2397,18 +2398,18 @@ class TimeExpressionParser {
 			$vn_start_historic = $pa_dates['start']['year'].".".sprintf('%02d',$pa_dates['start']['month']).sprintf('%02d',$pa_dates['start']['day']).sprintf('%02d',$pa_dates['start']['hours']).sprintf('%02d',$pa_dates['start']['minutes']).sprintf('%02d',$pa_dates['start']['seconds']).sprintf('%01d', $vn_start_attributes).strlen($vn_start_uncertainty).$vn_start_uncertainty; 
 			
 			$vn_end_attributes = 0;
-			if ($pa_dates['end']['is_circa']) {
+			if ($pa_dates['end']['is_circa'] ?? false) {
 				$vn_end_attributes = 1;
 			}
-			if ($pa_dates['end']['is_bp']) {
+			if ($pa_dates['end']['is_bp'] ?? false) {
 				$vn_end_attributes += 8;
 			}
-			if ($pa_dates['end']['is_probably']) {
+			if ($pa_dates['end']['is_probably'] ?? false) {
 				$vn_start_attributes = 9;
 			}
 			
 			$vn_end_uncertainty = '';
-			if ($pa_dates['end']['uncertainty'] > 0) {
+			if (isset($pa_dates['end']['uncertainty']) && ($pa_dates['end']['uncertainty'] > 0)) {
 				switch($pa_dates['end']['uncertainty_units']) {
 					case 'd':
 						$vn_end_attributes += 2;
@@ -3428,7 +3429,7 @@ class TimeExpressionParser {
 	}
 	# -------------------------------------------------------------------
 	private function getLanguageSettingsWordList($ps_key) {
-		if (TimeExpressionParser::$s_language_settings_list_cache[$this->ops_language][$ps_key]) { return TimeExpressionParser::$s_language_settings_list_cache[$this->ops_language][$ps_key]; }
+		if (TimeExpressionParser::$s_language_settings_list_cache[$this->ops_language][$ps_key] ?? null) { return TimeExpressionParser::$s_language_settings_list_cache[$this->ops_language][$ps_key]; }
 		
 		$va_values = $this->opo_language_settings->getList($ps_key);
 		$va_list_lc = is_array($va_values) ? array_map('mb_strtolower', $va_values) : [];

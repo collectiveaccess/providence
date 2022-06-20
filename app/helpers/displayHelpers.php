@@ -3439,6 +3439,8 @@ jQuery(document).ready(function() {
 		$config = Configuration::load();
 		$default_sorts = $config->getAssoc("{$related_table}_default_bundle_display_sorts");
 	
+		$type_specific_sorts = null;
+		
 		if(!is_array($default_sorts) || !is_array($default_sort_options = caGetOption('options', $default_sorts, null))) { $default_sort_options = []; }
 		if(is_array($rel_types = caGetOption(['restrict_to_types', 'restrictToTypes'], $settings, null)) && sizeof($rel_types)) {
 			$path = array_keys(Datamodel::getPath($table, $related_table));

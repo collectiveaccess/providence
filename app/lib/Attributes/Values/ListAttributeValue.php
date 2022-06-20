@@ -511,7 +511,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 	public function htmlFormElement($pa_element_info, $pa_options=null) {
 		/** @var RequestHTTP $o_request */
 		$o_request = $pa_options['request'];
-		$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? false : (bool)$pa_element_info['settings']['requireValue'];
+		$vb_require_value = (bool)($pa_element_info['settings']['requireValue'] ?? false);
 		if (($pa_element_info['parent_id']) && ($pa_element_info['settings']['render'] == 'checklist')) { $pa_element_info['settings']['render'] = ''; }	// checklists can only be top-level
 		if ((!isset($pa_options['width']) || !strlen($pa_options['width'])) && isset($pa_element_info['settings']['listWidth']) && strlen($pa_element_info['settings']['listWidth']) > 0) { $pa_options['width'] = $pa_element_info['settings']['listWidth']; }
 		if ((!isset($pa_options['height']) || !strlen($pa_options['height'])) && isset($pa_element_info['settings']['listHeight']) && strlen($pa_element_info['settings']['listHeight']) > 0) { $pa_options['height'] = $pa_element_info['settings']['listHeight']; }
@@ -520,7 +520,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		if (isset($pa_options['nullOption']) && strlen($pa_options['nullOption'])) {
 			$vb_null_option = $pa_options['nullOption'];
 		} else {
-			$vb_null_option = !$vb_require_value ? ($pa_element_info['settings']['nullOptionText'] ? $pa_element_info['settings']['nullOptionText'] : _t('Not set')) : null;
+			$vb_null_option = !$vb_require_value ? ($pa_element_info['settings']['nullOptionText'] ?? _t('Not set')) : null;
 		}
 		
 		$vb_implicit_nulls = caGetOption('implicitNullOption', $pa_element_info['settings'], false);
@@ -533,7 +533,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		$current_selection_display_format = caGetOption('currentSelectionDisplayFormat', $pa_options, caGetOption('currentSelectionDisplayFormat', $pa_element_info['settings'], null));
 		$separate_disabled_values = caGetOption('separateDisabledValues', $pa_options, caGetOption('separateDisabledValues', $pa_element_info['settings'], false));
 		
-		$vn_max_columns = $pa_element_info['settings']['maxColumns'];
+		$vn_max_columns = $pa_element_info['settings']['maxColumns'] ?? 1;
 
 		if(!isset($pa_options['useDefaultWhenNull'])) {
 			$pa_options['useDefaultWhenNull'] = isset($pa_element_info['settings']['useDefaultWhenNull']) ? (bool)$pa_element_info['settings']['useDefaultWhenNull'] : false;

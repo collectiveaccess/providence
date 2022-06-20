@@ -629,10 +629,10 @@
 	 */
 	function caMergeTypeRestrictionLists($t_instance, $pa_options) {
 		$va_restrict_to_type_ids = null;
-		if (is_array($pa_options['restrict_to_types']) && sizeof($pa_options['restrict_to_types'])) {
+		if (isset($pa_options['restrict_to_types']) && is_array($pa_options['restrict_to_types']) && sizeof($pa_options['restrict_to_types'])) {
 			$pa_options['restrictToTypes'] = $pa_options['restrict_to_types'];
 		}
-		if (is_array($pa_options['restrictToTypes']) && sizeof($pa_options['restrictToTypes'])) {
+		if (isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes']) && sizeof($pa_options['restrictToTypes'])) {
 			$va_restrict_to_type_ids = caMakeTypeIDList($t_instance->tableName(), $pa_options['restrictToTypes'], array('noChildren' => caGetOption(['dontIncludeSubtypesInTypeRestriction', 'dont_include_subtypes_in_type_restriction'], $pa_options, true)));
 		}
 		
@@ -666,10 +666,10 @@
 	 */
 	function caMergeSourceRestrictionLists($t_instance, $pa_options) {
 		$va_restrict_to_source_ids = null;
-		if (is_array($pa_options['restrict_to_sources']) && sizeof($pa_options['restrict_to_sources'])) {
+		if (isset($pa_options['restrict_to_sources']) && is_array($pa_options['restrict_to_sources']) && sizeof($pa_options['restrict_to_sources'])) {
 			$pa_options['restrictToSources'] = $pa_options['restrict_to_sources'];
 		}
-		if (is_array($pa_options['restrictToSources']) && sizeof($pa_options['restrictToSources'])) {
+		if (isset($pa_options['restrictToSources']) && is_array($pa_options['restrictToSources']) && sizeof($pa_options['restrictToSources'])) {
 			$va_restrict_to_source_ids = caMakeSourceIDList($t_instance->tableName(), $pa_options['restrictToSources'], array('noChildren' => true));
 		}
 		

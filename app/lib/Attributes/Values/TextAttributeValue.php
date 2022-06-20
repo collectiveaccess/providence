@@ -411,7 +411,7 @@
 				";
 			}
  			
- 			if (!caGetOption('forSearch', $pa_options, false) && ($va_settings['isDependentValue'] || $pa_options['isDependentValue'])) {
+ 			if (!caGetOption('forSearch', $pa_options, false) && (($va_settings['isDependentValue'] ?? false) || ($pa_options['isDependentValue'] ?? false))) {
  				$t_element = new ca_metadata_elements($pa_element_info['element_id']);
  				$va_elements = $t_element->getElementsInSet($t_element->getHierarchyRootID());
  				$va_element_dom_ids = array();

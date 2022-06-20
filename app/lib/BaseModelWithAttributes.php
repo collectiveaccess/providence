@@ -2037,8 +2037,8 @@
 			$o_view->setVar('failed_update_attribute_list', $this->getFailedAttributeUpdates($pm_element_code_or_id));
 		
 			// Set the list of existing attributes for the current row
-			$vs_sort = $pa_bundle_settings['sort'];
-			$vs_sort_dir = $pa_bundle_settings['sortDirection'];
+			$vs_sort = $pa_bundle_settings['sort'] ?? null;
+			$vs_sort_dir = $pa_bundle_settings['sortDirection'] ?? null;
 			$va_attribute_list = $this->getAttributesByElement($t_element->get('element_id'), array('sort' => $vs_sort, 'sortDirection' => $vs_sort_dir));
 			
 			$o_view->setVar('attribute_list', $va_attribute_list);

@@ -811,7 +811,7 @@ class SearchResult extends BaseObject {
 		
 		$vs_md5 = caMakeCacheKeyFromOptions($pa_options);
 		
-		$va_criteria = is_array($this->opa_tables[$ps_tablename]) ? $this->opa_tables[$ps_tablename]['criteria'] : null;
+		$va_criteria = is_array($this->opa_tables[$ps_tablename] ?? null) ? $this->opa_tables[$ps_tablename]['criteria'] : null;
 		
 		$va_opts = array_merge($pa_options, array('row_ids' => $va_row_ids, 'criteria' => $va_criteria));
 		if (!isset($va_opts['limit'])) { 

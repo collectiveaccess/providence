@@ -1278,7 +1278,7 @@
         public function getBundleFormValues($ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options=null) {	
         	if($ps_bundle_name !== 'ca_object_representations') { return parent::getBundleFormValues($ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options); }
             foreach(array('restrict_to_types', 'restrict_to_relationship_types') as $vs_k) {
-                $pa_options[$vs_k] = $pa_bundle_settings[$vs_k];
+                $pa_options[$vs_k] = $pa_bundle_settings[$vs_k] ?? null;
             }
             
             $start = caGetOption('start', $pa_options, 0);
