@@ -2977,10 +2977,11 @@ class BaseModel extends BaseObject {
 							$this->set($this->getProperty('HIERARCHY_ID_FLD'), $vn_hierarchy_id);
 						
 							$va_rebuild_hierarchical_index = $this->getHierarchyChildrenForIDs([$this->getPrimaryKey()], ['idsOnly' => true, 'includeSelf' => false]);
-						} 
-							
-						// if there's no parent then this is a root in which case HIERARCHY_ID_FLD should be set to the primary
-						// key of the row, which we'll know once we insert it (so we must set it after insert)
+						} else {
+							// if there's no parent then this is a root in which case HIERARCHY_ID_FLD should be set to the primary
+							// key of the row,
+							$this->set($this->getProperty('HIERARCHY_ID_FLD'), $this->getPrimaryKey());
+						}
 					
 						break;
 					case __CA_HIER_TYPE_MULTI_POLY__:	// TODO: implement
