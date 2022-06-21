@@ -715,7 +715,7 @@
 				// end up with menu items that return nothing. No one likes that.
 				$result_expansion = true;
 				$info = caFindControllerNameInfo($pa_defaults['controller']);
-				if ($type_id = isset($va_submenu_item['parameters']['type_id']) ? $va_submenu_item['parameters']['type_id'] : null) {
+				if (($type_id = isset($va_submenu_item['parameters']['type_id']) ? $va_submenu_item['parameters']['type_id'] : null) && isset($info['table'])) {
 					$dont_expand_types = caMakeTypeIDList($info['table'], $this->opo_config->get($info['table'].'_find_dont_expand_hierarchically'));
 					if (is_array($dont_expand_types) && in_array($type_id, $dont_expand_types)) {
 						$result_expansion = false;
