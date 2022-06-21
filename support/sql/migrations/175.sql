@@ -1,4 +1,4 @@
-/*xsx
+/*
 	Date: 29 January 2022
 	Migration: 175
 	Description:    Add metadata element soft delete; Add fields linking imported items to front-end submissions interface
