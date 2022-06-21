@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -186,13 +186,8 @@
  					$vo_measurement = new Zend_Measure_Weight((float)$pa_value_array['value_decimal1'], 'KILOGRAM', $g_ui_locale);
  					$this->ops_text_value = $vo_measurement->convertTo(Zend_Measure_Weight::POUND, 4);
  					break;
-				default: // show value in unit entered, but adjusted for the UI locale
-					try {
-						$vo_measurement = new Zend_Measure_Weight((float)$pa_value_array['value_decimal1'], 'KILOGRAM', $g_ui_locale);
-						$this->ops_text_value = $vo_measurement->convertTo($pa_value_array['value_longtext2'], 4);
-					} catch (Exception $e) { // derp
-						$this->ops_text_value = $pa_value_array['value_longtext1'];
-					}
+				default: // show value in unit entered
+					$this->ops_text_value = $pa_value_array['value_longtext1'];
 					break;
  			}	
  			
@@ -261,9 +256,9 @@
 				$this->postError(1970, _t('%1 must not be less than zero', $pa_element_info['displayLabel']), 'WeightAttributeValue->parseValue()');
 				return false;
  			}
-
+ 			
  			return array(
- 				'value_longtext1' => $vo_parsed_measurement->toString(),						// parsed measurement
+ 				'value_longtext1' => $ps_value,						// parsed measurement
  				'value_longtext2' => $vo_parsed_measurement->getType(),							// units constant
  				'value_decimal1'  => $vo_parsed_measurement->convertTo('KILOGRAM', 6, 'en_US')	// measurement in metric (for searching)
  			);

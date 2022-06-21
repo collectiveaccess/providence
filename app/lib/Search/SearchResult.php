@@ -1121,7 +1121,7 @@ class SearchResult extends BaseObject {
 		$vs_template 						= isset($pa_options['template']) ? (string)$pa_options['template'] : null;
 		
 		
-		$va_path_components = isset(SearchResult::$s_parsed_field_component_cache[$this->ops_table_name.'/'.$ps_field]) ? SearchResult::$s_parsed_field_component_cache[$this->ops_table_name.'/'.$ps_field] : $this->parseFieldPathComponents($ps_field);
+		$va_path_components = isset(SearchResult::$s_parsed_field_component_cache[$this->ops_table_name.'/'.$ps_field]) ? SearchResult::$s_parsed_field_component_cache[$this->ops_table_name.'/'.$ps_field] : self::parseFieldPathComponents($this->ops_table_name, $ps_field);
 		if ($va_path_components['is_count']) { 
 			$vb_return_as_count = true; 
 		} elseif($vb_return_as_count) {
@@ -3579,8 +3579,8 @@ class SearchResult extends BaseObject {
 	/**
 	  * TODO: NEW!
 	  */
-	private function parseFieldPathComponents($ps_path) {
-		if (isset(SearchResult::$s_parsed_field_component_cache[$this->ops_table_name.'/'.$ps_path])) { return SearchResult::$s_parsed_field_component_cache[$this->ops_table_name.'/'.$ps_path]; }
+	static public function parseFieldPathComponents(string $table, string $ps_path) : array {
+		if (isset(SearchResult::$s_parsed_field_component_cache[$table.'/'.$ps_path])) { return SearchResult::$s_parsed_field_component_cache[$table.'/'.$ps_path]; }
 		$va_tmp = explode('.', $ps_path);
 		
 		$vb_is_related = false;
@@ -3588,7 +3588,7 @@ class SearchResult extends BaseObject {
 			array_splice($va_tmp, 1, 1);
 			$vb_is_related = true;
 		} else {
-			if ($va_tmp[0] !== $this->ops_table_name) {
+			if (Datamodel::tableExists($va_tmp[0]) && ($va_tmp[0] !== $table)) {
 				$vb_is_related = true;
 			}
 		}
@@ -3622,7 +3622,7 @@ class SearchResult extends BaseObject {
 					$vs_field_name = null;
 					$vs_subfield_name = null;
 				} else {																			// field name in searched table
-					$vs_table_name = $this->ops_table_name;
+					$vs_table_name = $table;
 					$vs_field_name = $va_tmp[0];
 					$vs_subfield_name = null;
 				}
@@ -3649,10 +3649,10 @@ class SearchResult extends BaseObject {
 			$vs_subfield_name = $vs_field_name;
 			$vs_field_name = "preferred_labels";
 			$va_tmp = array($vs_table_name, $vs_field_name, $vs_subfield_name);
-			$vb_is_related = ($vs_table_name !== $this->ops_table_name);
+			$vb_is_related = ($vs_table_name !== $table);
 		}
 	
-		return SearchResult::$s_parsed_field_component_cache[$this->ops_table_name.'/'.$ps_path] = array(
+		return SearchResult::$s_parsed_field_component_cache[$table.'/'.$ps_path] = array(
 			'table_name' 		=> $vs_table_name,
 			'field_name' 		=> $vs_field_name,
 			'subfield_name' 	=> $vs_subfield_name,

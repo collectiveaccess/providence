@@ -218,7 +218,9 @@ class ca_locales extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Return numeric locale_id for system default locale
 	 *
+	 * @return int
 	 */
 	static public function getDefaultCataloguingLocaleID() {
 		if(MemoryCache::contains('default_locale_id')) {
@@ -238,6 +240,15 @@ class ca_locales extends BaseModel {
 
 		MemoryCache::save('default_locale_id', $vn_default_id);
 		return $vn_default_id;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return locale code (Eg. en_US) for system default locale
+	 *
+	 * @return string
+	 */
+	static public function getDefaultCataloguingLocale() {
+		return self::IDToCode(self::getDefaultCataloguingLocaleID());
 	}
 	# ------------------------------------------------------
 	/**

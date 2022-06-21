@@ -607,6 +607,23 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	}
 	# ---------------------------------------
 	/**
+	 * Fetch ids of root items in all lists
+	 *
+	 * @param array $options Options include:
+	 *		transaction = transaction to execute queries within. [Default=null]
+	 * @return int item_id of the root list item or null if no default item was found
+	 */
+	function caGetListRootIDs($options=null) {
+		$t_list = new ca_lists();
+		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
+		
+		$db = $t_list->getDb();
+
+		$qr = $db->query("SELECT item_id FROM ca_list_items WHERE parent_id IS NULL");
+		return $qr->getAllFieldValues('item_id');
+	}
+	# ---------------------------------------
+	/**
 	 * Fetch the type code for a given relationship type id (primary key value)
 	 * @param $pn_type_id
 	 * @return Array|bool|mixed|null|string

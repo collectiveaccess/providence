@@ -122,3 +122,5 @@ register_shutdown_function(function() {
 		}
 	}
   });
+
+caInitErrorHandler();

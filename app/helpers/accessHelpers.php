@@ -45,7 +45,7 @@
 	  * are enabled (via the 'dont_enforce_access_settings' configuration directive) and whether the user
 	  * is considered privileged.
 	  *
-	  * @param RequestHTTP|ca_users $po_request The current request or user
+	  * @param RequestHTTP|ca_users $po_request The current request or a ca_users instance
 	  * @param array $pa_options Optional options. If omitted settings are taken application configuration file is used. Any array passed to this function should include the following keys: "dont_enforce_access_settings", "public_access_settings", "privileged_access_settings", "privileged_networks"
 	  * @return array An array of integer values that, if present in a record, indicate that the record should be displayed to the current user
 	  */
@@ -53,6 +53,7 @@
 		if(!caGetOption('ignoreProvidence', $pa_options, false)) {
 			if (defined("__CA_APP_TYPE__") && (__CA_APP_TYPE__ == 'PROVIDENCE')) { return null; }
 		}
+
 		$config = Configuration::load();
 		
 		$vb_dont_enforce_access_settings = isset($pa_options['dont_enforce_access_settings']) ? (bool)$pa_options['dont_enforce_access_settings'] : $config->get('dont_enforce_access_settings');
@@ -62,6 +63,9 @@
 		$vb_is_privileged = caUserIsPrivileged($po_request, $pa_options);
 		if (!$vb_dont_enforce_access_settings) {
 			$va_access = array();
+
+			$vb_is_privileged = ((is_a($po_request, 'ca_users') && $po_request->isLoaded()) || caUserIsPrivileged($po_request, $pa_options));
+
 			if($vb_is_privileged) {
 				$va_access = $va_privileged_access_settings;
 			} else {
@@ -69,6 +73,7 @@
 			}
 			if(!is_array($va_access)) { $va_access = []; }
 			
+
 			if ($vb_is_privileged) {
 				$va_user_access = is_a($po_request, 'ca_users') ? $po_request->getAccessStatuses(1) : $po_request->user->getAccessStatuses(1);
 				if(is_array($va_user_access)) {
