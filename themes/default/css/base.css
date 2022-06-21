@@ -8117,7 +8117,8 @@ span.developerBundleCode, a.developerBundleCode {
     position: absolute;
     right: 5px;
     top: 5px;
-    border: 1px dotted #999;
+    width: auto; height: auto;
+    padding: 1px;
     border-radius: 5px;
 }
 
@@ -8126,7 +8127,7 @@ span.developerBundleCode, a.developerBundleCode {
 }
 
 .hierarchyToolsItem.selected {
-    border: 1px solid #cc0000;
+    border: 1px solid #ccc;
     border-radius: 10px;
 }
 
