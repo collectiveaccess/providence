@@ -8065,7 +8065,6 @@ span.developerBundleCode, a.developerBundleCode {
 }    
 
 /* hierarchy tools */
-
 .hierarchyTools {
     min-height: 20px;
 }
@@ -8157,4 +8156,12 @@ span.developerBundleCode, a.developerBundleCode {
     text-align: center;
     font-weight: bold;
     font-size: 14px;
+}
+
+/* generic editor bundle */
+div.genericEditorContent {
+	padding: 10px;
+	font-size: 12px;
+	color: #000;
+	font-weight: initial;
 }

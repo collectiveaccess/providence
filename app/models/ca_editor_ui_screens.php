@@ -1598,6 +1598,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 									)		
 								);
 								break;
+							case 'generic':
 							case 'ca_objects_components_list':
 								$va_additional_settings = array(
 									'displayTemplate' => array(

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -491,7 +491,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$vb_enabled_only = caGetOption('enabledOnly', $pa_options, false);
 		
 		$pa_check_access = caGetOption('checkAccess', $pa_options, null); 
-		if(!is_array($pa_check_access) && $pa_check_access) { $va_check_access = array($va_check_access); }
+		if(!is_array($pa_check_access) && $pa_check_access) { $pa_check_access = [$pa_check_access]; }
 	
 		$vb_labels_only = false;
 		if (isset($pa_options['labelsOnly']) && $pa_options['labelsOnly']) {
@@ -1166,7 +1166,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			ca_lists::$s_list_item_display_cache[$vs_cache_key] = $va_items;
 		}
 		
-		$va_tmp = caExtractValuesByUserLocale($va_items, null, null, array());
+		$va_tmp = caExtractValuesByUserLocale($va_items, null, isset($pa_options['locale']) ? [$pa_options['locale']] : null, array());
 		$va_item = array_shift($va_tmp);
 		
 		return $va_item[$pb_return_plural ? 'name_plural' : 'name_singular'];
@@ -1874,7 +1874,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				
 				$buf .= "
 	<script type='text/javascript'>
-		var  _init{$ps_name}_hierarchyBrowser{n};
+		var  _init{$ps_name}_hierarchyBrowser{n}, {$ps_name}_hierarchyBrowser{n};
 		var defer = ".($defer_hierarchy_load ? 'true' : 'false').";
 		if('{n}'.match(/^new_/)) { defer = false; }
 		jQuery(document).ready(function() { 
@@ -1890,7 +1890,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			 	});
 			 	
 			 	jQuery('#{$ps_name}_hierarchyBrowser_edit{n}').hide();
-				var oHierBrowser = caUI.initHierBrowser('{$ps_name}_hierarchyBrowser{n}', {
+				{$ps_name}_hierarchyBrowser{n} = caUI.initHierBrowser('{$ps_name}_hierarchyBrowser{n}', {
 					uiStyle: '".($vb_is_vertical_hier_browser ? 'vertical' : 'horizontal')."',
 					uiDirection: '".(($render_as == 'vert_hierbrowser_down') ? 'down' : 'up')."',
 					levelDataUrl: ".json_encode(caNavUrl($pa_options['request'], 'lookup', 'ListItem', 'GetHierarchyLevel', array('noSymbols' => 1))).",
@@ -1928,7 +1928,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 						source: '".caNavUrl($pa_options['request'], 'lookup', 'ListItem', 'Get', array('list' => ca_lists::getListCode($vn_list_id), 'noSymbols' => 1, 'noInline' => 1))."', 
 						minLength: 3, delay: 800,
 						select: function(event, ui) {
-							oHierBrowser.setUpHierarchy(ui.item.id);	// jump browser to selected item
+							{$ps_name}_hierarchyBrowser{n}.setUpHierarchy(ui.item.id);	// jump browser to selected item
 						}
 					}
 				);";
