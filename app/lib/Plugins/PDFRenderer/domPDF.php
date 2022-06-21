@@ -58,8 +58,9 @@ class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugIn Implements IWLPlugPD
 		
 		$this->description = _t('Renders HTML as PDF using domPDF');
 		
-		if (!($chroot = Configuration::load()->get('dompdf_chroot_path'))) {
-			$chroot = __CA_BASE_DIR__;
+		$chroot = [realpath(__CA_BASE_DIR__), realpath(__CA_BASE_DIR__.'/media'), realpath(__CA_BASE_DIR__.'/media/'.__CA_APP_NAME__)];
+		if (($chroot_opt = Configuration::load()->get('dompdf_chroot_path'))) {
+			$chroot[] = realpath($chroot_opt);
 		}
 		
 		$options = new Options();

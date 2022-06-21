@@ -267,6 +267,16 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			'description' => _t('If set, this mapping will only be available for these types. Multiple types are separated by commas or semicolons.')
 		);
 
+		$va_settings['locale'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Locale'),
+			'description' => _t('Locale code to use to get the field values when mapping-specific locale is not set. If not set, the system/user default is used.')
+		);
+
 		// if exporter_format is set, pull in format-specific settings
 		if($vs_format = $this->getSetting('exporter_format')) {
 			if (is_array($va_format_settings = ca_data_exporters::getFormatSettings($vs_format))) {
@@ -1555,6 +1565,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$o_log->logError(_t("Failed to load exporter with code '%1' for item with ID %2", $ps_exporter_code, $pn_record_id));
 			return false;
 		}
+		
+		$pa_options['settings'] = $t_exporter->getSettings();
 
 		$va_type_restrictions = $t_exporter->getSetting('typeRestrictions');
 		if(is_array($va_type_restrictions) && sizeof($va_type_restrictions)) {
@@ -1614,7 +1626,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		$o_manager->hookExportRecord(array('exporter_instance' => $t_exporter, 'record_id' => $pn_record_id, 'export' => &$va_export));
 
-		$pa_options['settings'] = $t_exporter->getSettings();
 
 		$vs_wrap_before = $t_exporter->getSetting('wrap_before_record');
 		$vs_wrap_after = $t_exporter->getSetting('wrap_after_record');
@@ -1915,14 +1926,14 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$va_get_options['template'] = $vs_template;
 		}
 
-		if($vs_locale = $settings['locale']) {
+		if(($vs_locale = $settings['locale']) || ($vs_locale = caGetOption('locale', $pa_options['settings'], null))) {
 			// the global UI locale for some reason has a higher priority
 			// than the locale setting in BaseModelWithAttributes::get
 			// which is why we unset it here and restore it later
 			global $g_ui_locale;
 			$vs_old_ui_locale = $g_ui_locale;
 			$g_ui_locale = null;
-
+			
 			$va_get_options['locale'] = $vs_locale;
 		}
 		if($settings['returnAllLocales']) {
