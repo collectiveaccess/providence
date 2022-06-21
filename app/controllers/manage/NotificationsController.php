@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2019 Whirl-i-Gig
+ * Copyright 2016-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,6 +38,12 @@ class NotificationsController extends ActionController {
 		$pn_subject_id = $this->getRequest()->getParameter('subject_id', pInteger);
 		if(!$pn_subject_id) { return false; }
 		if (!ca_notifications::markAsRead($pn_subject_id, $this->request->getUserID())) {
+			$this->notification->addNotification(_t("Could not mark notification as read"), __NOTIFICATION_TYPE_ERROR__);
+		}
+	}
+	# -------------------------------------------------------
+	public function markAllAsRead() {
+		if (!ca_notifications::markAllAsRead($this->request->getUserID())) {
 			$this->notification->addNotification(_t("Could not mark notification as read"), __NOTIFICATION_TYPE_ERROR__);
 		}
 	}
