@@ -186,7 +186,7 @@ class ca_set_items extends BundlableLabelableBaseModelWithAttributes {
 			'set_id'
 		),
 		"RELATED_TABLES" => array(
-		
+			'ca_sets'
 		)
 	);
 	

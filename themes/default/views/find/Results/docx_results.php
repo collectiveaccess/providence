@@ -60,7 +60,7 @@ $section = $phpWord->addSection($sectionStyle);
 // Add header for all pages
 $header = $section->addHeader();
 
-$headerimage =  $this->request ? $this->request->getThemeDirectoryPath()."/graphics/logos/".$this->request->config->get('report_img') : '';
+$headerimage =  ($this->request && $this->request->config->get('report_img')) ? $this->request->getThemeDirectoryPath()."/graphics/logos/".$this->request->config->get('report_img') : '';
 if(file_exists($headerimage)){
 	$header->addImage($headerimage,array('height' => 30,'wrappingStyle' => 'inline'));
 }

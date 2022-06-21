@@ -83,6 +83,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	
 	static private $s_doc_content_buffer = [];			// content buffer used when indexing
 	
+	static private $s_asis_regexes;
+	static private $s_search_tokenizer_regex;
 	# -------------------------------------------------------
 	public function __construct($po_db=null) {
 		global $g_ui_locale;
@@ -100,12 +102,12 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		if (!($this->ops_indexing_tokenizer_regex = trim($this->search_config->get('indexing_tokenizer_regex')))) {
 			$this-> ops_indexing_tokenizer_regex = "^\pL\pN\pNd/_#\@\&\.";
 		}
-		if (!($this->ops_search_tokenizer_regex = trim($this->search_config->get('search_tokenizer_regex')))) {
-			$this->ops_search_tokenizer_regex = "^\pL\pN\pNd/_#\@\&";
+		if (!(self::$s_search_tokenizer_regex = trim($this->search_config->get('search_tokenizer_regex')))) {
+			self::$s_search_tokenizer_regex = "^\pL\pN\pNd/_#\@\&";
 		}
 		
-		if (!is_array($this->opa_asis_regexes = $this->search_config->getList('asis_regexes'))) {
-			$this->opa_asis_regexes = array();
+		if (!is_array(self::$s_asis_regexes = $this->search_config->getList('asis_regexes'))) {
+			self::$s_asis_regexes = array();
 		}
 		
 		//
@@ -2272,8 +2274,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		
 		if ($for_search) {
 			if ($index == 0) {
-				if (is_array($this->opa_asis_regexes)) {
-					foreach($this->opa_asis_regexes as $asis_regex) {
+				if (is_array(self::$s_asis_regexes)) {
+					foreach(self::$s_asis_regexes as $asis_regex) {
 						if (preg_match('!'.$asis_regex.'!', $content)) {
 							return [$content];
 						}
@@ -2281,9 +2283,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				}
 			}
 		
-			return preg_split('![ ]+!', trim(preg_replace("%((?<!\d)[".$this->ops_search_tokenizer_regex."]+(?!\d))%u", ' ', strip_tags($content))));
+			return preg_split('![ ]+!', trim(preg_replace("%((?<!\d)[".self::$s_search_tokenizer_regex."]+(?!\d))%u", ' ', strip_tags($content))));
 		} else {
-			return preg_split('![ ]+!', trim(preg_replace("%((?<!\d)[".$this->ops_search_tokenizer_regex."]+|[".$this->ops_search_tokenizer_regex."]+(?!\d))%u", ' ', strip_tags($content))));
+			return preg_split('![ ]+!', trim(preg_replace("%((?<!\d)[".self::$s_search_tokenizer_regex."]+|[".self::$s_search_tokenizer_regex."]+(?!\d))%u", ' ', strip_tags($content))));
 		}
 	}
 	# --------------------------------------------------

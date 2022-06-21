@@ -1250,7 +1250,7 @@
 
 									foreach(caGetAvailableMediaUploadPaths() as $d) {
 										$va_files = caBatchFindMatchingMedia( $d
-										                                      . $vs_media_dir_prefix, $vs_item, [
+										                                      . $vs_media_dir_prefix, pathinfo($vs_item, PATHINFO_BASENAME), [
 											'matchMode' => caGetOption( 'objectRepresentationSplitter_matchMode',
 												$pa_item['settings'], 'FILE_NAME' ),
 											'matchType' => caGetOption( 'objectRepresentationSplitter_matchType',

@@ -393,19 +393,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'label' => _t('Do not do import'),
 			'description' => _t('If set then the mapping will be evaluated but no rows actually imported. This can be useful when you want to run a refinery over the rows of a data set but not actually perform the primary import.')
 		);
-		$settings['archiveDataSets'] = array(
-			'formatType' => FT_NUMBER,
-			'displayType' => DT_FIELD,
-			'width' => 40, 'height' => 1,
-			'takesLocale' => false,
-			'default' => '',
-			'options' => array(
-				_t('yes') => 1,
-				_t('no') => 0
-			),
-			'label' => _t('Archive data sets?'),
-			'description' => _t('Set to yes to save the data spreadsheet or no to delete it from the server after import.  Pending implementation.')
-		);
 		$settings['errorPolicy'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -4146,7 +4133,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			if ($vb_did_seek) { $po_reader->seek($vn_cur_pos); }
 		}
 		
-		$vm_value = ca_data_importers::replaceValue(stripslashes($vm_value), $pa_item, $pa_options);
+		$vm_value = ca_data_importers::replaceValue($vm_value, $pa_item, $pa_options);
 		
 		if ($pb_return_as_array) {
 			return is_array($vm_value) ? $vm_value : array($vm_value);

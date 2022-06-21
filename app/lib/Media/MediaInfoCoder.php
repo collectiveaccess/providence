@@ -302,7 +302,8 @@ class MediaInfoCoder {
 			return $va_media_info[$ps_version]["QUEUED_MESSAGE"];
 		}
 		
-		$vs_url = caGetOption('usePath', $pa_options, false) ? $this->getMediaPath($ps_version, $pa_options) : $this->getMediaUrl($ps_version, $pa_options);
+		$vs_url = caGetOption('usePath', $pa_options, false) ? realpath($this->getMediaPath($ps_version, $pa_options)) : $this->getMediaUrl($ps_version, $pa_options);
+		
 		$o_media = new Media();
 		
 		$o_vol = new MediaVolumes();

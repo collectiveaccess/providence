@@ -406,6 +406,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 		if(is_array($ret)) { return $ret; }
 	 	}
 	 	
+	 	$results = [];
 	 	foreach($words as $i => $text) {
 			// Don't stem if:
 			//	1. Stemming is disabled
@@ -421,6 +422,10 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					$text = $text_stem.'*';
 					$word_field = 'sw.stem';
 				}
+			}
+			
+			if(($word_field !== 'sw.stem') && ($this->search_config->get('always_stem'))) {
+				$text .= '*';
 			}
 		
 			$params = [$subject_tablenum];
@@ -520,11 +525,12 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 						{$private_sql}
 				", $params);
 			}
-			$res[$i] = $this->_arrayFromDbResult($qr_res);
+			$results[$i] = $this->_arrayFromDbResult($qr_res);
 		}
-		$ret = array_shift($res);
-		foreach($res as $r) {
-			$ret = array_intersect($ret, $res[$r]);
+		$ret = array_shift($results);
+		foreach($results as $r) {
+			if(!is_array($r)) { continue; }
+			$ret = array_intersect($ret, $r);
 		}
 		return $ret;
 	}
@@ -753,16 +759,22 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		$ap = $this->_getElementIDForAccessPoint($subject_tablenum, $lower_term->field);
 		if (!is_array($ap)) { return []; }
 		
-		if ($ap['type'] === 'COUNT') {
+		if ($ap['datatype'] === 'COUNT') {
 			$params = [
 				$subject_tablenum, (int)$lower_text, (int)$upper_text
 			];
-			$qr_res = $this->db->query("
+			
+			$rel_type_sql = '';
+			if(is_array($ap['relationship_type_ids']) && sizeof($ap['relationship_type_ids'])) {
+				$rel_type_sql = " AND rel_type_id IN (?)";
+				$params[] = $ap['relationship_type_ids'];
+			}
+			$qr_res = $this->db->query($z="
 				SELECT swi.row_id, SUM(swi.boost) boost
 				FROM ca_sql_search_word_index swi
 				INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id
 				WHERE
-					swi.table_num = ? AND swi.field_num = 'COUNT' AND sw.word BETWEEN ? AND ?
+					swi.table_num = ? AND swi.field_num = 'COUNT' AND sw.word BETWEEN ? AND ? {$rel_type_sql}
 				GROUP BY swi.row_id
 			", $params);
 			return $this->_arrayFromDbResult($qr_res);
