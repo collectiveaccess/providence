@@ -17,7 +17,8 @@ Version 1.7.15 is a maintenance release with these bug fixes and minor improveme
 * Prevent potential XSS issue in error handler
 * Resolve Tilepic processing issues with images having EXIF orientation set that would result in illegible zoomable images.
 * Update vendor libraries to incorporate security fixes
-
+* Updated PDF output components for compatibility with new vendor libraries
+* Update logo graphics
 
 Note that this version is not yet compatible with PHP version 8. Please use versions 7.3 or 7.4.
 

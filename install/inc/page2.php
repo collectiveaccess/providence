@@ -31,7 +31,7 @@
 	$va_profile_info = Installer::getProfileInfo("./profiles/xml", $ps_profile)
 ?>
 <div id='box'>
-	<div id="logo"><img src="<?php print $vs_url_path; ?>/graphics/ca_logo.png"/></div><!-- end logo -->
+	<div id="logo"><img src="<?php print $vs_url_path; ?>/graphics/logo.svg" width="327" height="45"/></div><!-- end logo -->
 	<div id="content">
 	<H1>
 		Installing CollectiveAccess <?php print constant('__CollectiveAccess__'); ?>...
