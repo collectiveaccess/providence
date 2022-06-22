@@ -55,17 +55,17 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.227.0",
-            "version_normalized": "3.227.0.0",
+            "version": "3.228.0",
+            "version_normalized": "3.228.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "88d803113ade68604ec03c591d65e1e44406ab8e"
+                "reference": "4ff51d01da43aa3bd36eef921a9cd4e0ff843fab"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/88d803113ade68604ec03c591d65e1e44406ab8e",
-                "reference": "88d803113ade68604ec03c591d65e1e44406ab8e",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/4ff51d01da43aa3bd36eef921a9cd4e0ff843fab",
+                "reference": "4ff51d01da43aa3bd36eef921a9cd4e0ff843fab",
                 "shasum": ""
             },
             "require": {
@@ -102,7 +102,7 @@
                 "ext-openssl": "Allows working with CloudFront private distributions and verifying received SNS messages",
                 "ext-sockets": "To use client-side monitoring"
             },
-            "time": "2022-06-17T18:15:06+00:00",
+            "time": "2022-06-21T18:13:25+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -143,7 +143,7 @@
             "support": {
                 "forum": "https://forums.aws.amazon.com/forum.jspa?forumID=80",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.227.0"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.228.0"
             },
             "install-path": "../aws/aws-sdk-php"
         },
@@ -592,25 +592,25 @@
         },
         {
             "name": "guzzlehttp/guzzle",
-            "version": "6.5.7",
-            "version_normalized": "6.5.7.0",
+            "version": "6.5.8",
+            "version_normalized": "6.5.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/guzzle.git",
-                "reference": "724562fa861e21a4071c652c8a159934e4f05592"
+                "reference": "a52f0440530b54fa079ce76e8c5d196a42cad981"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/724562fa861e21a4071c652c8a159934e4f05592",
-                "reference": "724562fa861e21a4071c652c8a159934e4f05592",
+                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/a52f0440530b54fa079ce76e8c5d196a42cad981",
+                "reference": "a52f0440530b54fa079ce76e8c5d196a42cad981",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
                 "guzzlehttp/promises": "^1.0",
-                "guzzlehttp/psr7": "^1.6.1",
+                "guzzlehttp/psr7": "^1.9",
                 "php": ">=5.5",
-                "symfony/polyfill-intl-idn": "^1.17.0"
+                "symfony/polyfill-intl-idn": "^1.17"
             },
             "require-dev": {
                 "ext-curl": "*",
@@ -620,7 +620,7 @@
             "suggest": {
                 "psr/log": "Required for using the Log middleware"
             },
-            "time": "2022-06-09T21:36:50+00:00",
+            "time": "2022-06-20T22:16:07+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -690,7 +690,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/guzzle/issues",
-                "source": "https://github.com/guzzle/guzzle/tree/6.5.7"
+                "source": "https://github.com/guzzle/guzzle/tree/6.5.8"
             },
             "funding": [
                 {
@@ -797,17 +797,17 @@
         },
         {
             "name": "guzzlehttp/psr7",
-            "version": "1.8.5",
-            "version_normalized": "1.8.5.0",
+            "version": "1.9.0",
+            "version_normalized": "1.9.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/psr7.git",
-                "reference": "337e3ad8e5716c15f9657bd214d16cc5e69df268"
+                "reference": "e98e3e6d4f86621a9b75f623996e6bbdeb4b9318"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/psr7/zipball/337e3ad8e5716c15f9657bd214d16cc5e69df268",
-                "reference": "337e3ad8e5716c15f9657bd214d16cc5e69df268",
+                "url": "https://api.github.com/repos/guzzle/psr7/zipball/e98e3e6d4f86621a9b75f623996e6bbdeb4b9318",
+                "reference": "e98e3e6d4f86621a9b75f623996e6bbdeb4b9318",
                 "shasum": ""
             },
             "require": {
@@ -825,11 +825,11 @@
             "suggest": {
                 "laminas/laminas-httphandlerrunner": "Emit PSR-7 responses"
             },
-            "time": "2022-03-20T21:51:18+00:00",
+            "time": "2022-06-20T21:43:03+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.7-dev"
+                    "dev-master": "1.9-dev"
                 }
             },
             "installation-source": "dist",
@@ -890,7 +890,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/psr7/issues",
-                "source": "https://github.com/guzzle/psr7/tree/1.8.5"
+                "source": "https://github.com/guzzle/psr7/tree/1.9.0"
             },
             "funding": [
                 {
@@ -7489,5 +7489,118 @@
             "install-path": "../zendframework/zend-escaper"
         }
     ],
-    "dev": true
+    "dev": true,
+    "dev-package-names": [
+        "aws/aws-crt-php",
+        "aws/aws-sdk-php",
+        "clue/stream-filter",
+        "collectiveaccess/service-wrapper",
+        "doctrine/instantiator",
+        "dompdf/dompdf",
+        "easyrdf/easyrdf",
+        "elasticsearch/elasticsearch",
+        "ezyang/htmlpurifier",
+        "guzzlehttp/guzzle",
+        "guzzlehttp/promises",
+        "guzzlehttp/psr7",
+        "guzzlehttp/ringphp",
+        "guzzlehttp/streams",
+        "hoa/compiler",
+        "hoa/consistency",
+        "hoa/event",
+        "hoa/exception",
+        "hoa/file",
+        "hoa/iterator",
+        "hoa/math",
+        "hoa/protocol",
+        "hoa/regex",
+        "hoa/stream",
+        "hoa/ustring",
+        "hoa/visitor",
+        "hoa/zformat",
+        "james-heinrich/getid3",
+        "joshralph/password-policy",
+        "knplabs/github-api",
+        "league/climate",
+        "league/flysystem",
+        "league/flysystem-aws-s3-v3",
+        "league/flysystem-cached-adapter",
+        "league/flysystem-webdav",
+        "league/flysystem-ziparchive",
+        "league/mime-type-detection",
+        "maximebf/debugbar",
+        "monolog/monolog",
+        "mtdowling/jmespath.php",
+        "myclabs/deep-copy",
+        "pclzip/pclzip",
+        "pear/archive_tar",
+        "pear/console_getopt",
+        "pear/file_marc",
+        "pear/pear-core-minimal",
+        "pear/pear_exception",
+        "phenx/php-font-lib",
+        "phenx/php-svg-lib",
+        "php-http/cache-plugin",
+        "php-http/client-common",
+        "php-http/discovery",
+        "php-http/guzzle6-adapter",
+        "php-http/httplug",
+        "php-http/message",
+        "php-http/message-factory",
+        "php-http/promise",
+        "phpdocumentor/reflection-common",
+        "phpdocumentor/reflection-docblock",
+        "phpdocumentor/type-resolver",
+        "phpoffice/common",
+        "phpoffice/phpexcel",
+        "phpoffice/phppresentation",
+        "phpoffice/phpword",
+        "phpspec/prophecy",
+        "phpunit/php-code-coverage",
+        "phpunit/php-file-iterator",
+        "phpunit/php-text-template",
+        "phpunit/php-timer",
+        "phpunit/php-token-stream",
+        "phpunit/phpunit",
+        "phpunit/phpunit-mock-objects",
+        "psr/cache",
+        "psr/http-message",
+        "psr/log",
+        "ralouphie/getallheaders",
+        "react/promise",
+        "sabberworm/php-css-parser",
+        "sabre/dav",
+        "sabre/event",
+        "sabre/http",
+        "sabre/uri",
+        "sabre/vobject",
+        "sabre/xml",
+        "scholarslab/bagit",
+        "sebastian/code-unit-reverse-lookup",
+        "sebastian/comparator",
+        "sebastian/diff",
+        "sebastian/environment",
+        "sebastian/exporter",
+        "sebastian/global-state",
+        "sebastian/object-enumerator",
+        "sebastian/recursion-context",
+        "sebastian/resource-operations",
+        "sebastian/version",
+        "seld/cli-prompt",
+        "srmklive/flysystem-dropbox-v2",
+        "symfony/deprecation-contracts",
+        "symfony/options-resolver",
+        "symfony/polyfill-ctype",
+        "symfony/polyfill-intl-idn",
+        "symfony/polyfill-intl-normalizer",
+        "symfony/polyfill-mbstring",
+        "symfony/polyfill-php72",
+        "symfony/polyfill-php73",
+        "symfony/polyfill-php80",
+        "symfony/var-dumper",
+        "symfony/yaml",
+        "tedivm/stash",
+        "webmozart/assert",
+        "zendframework/zend-escaper"
+    ]
 }
