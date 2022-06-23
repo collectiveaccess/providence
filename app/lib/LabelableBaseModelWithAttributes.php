@@ -652,7 +652,7 @@
 					$vs_op = $va_field_value[0];
 					$vm_value = $va_field_value[1];
 				
-					if (in_array($vs_field, $va_element_codes)) { $vb_has_attributes = true; break; }
+					if (!$t_instance->hasField($vs_field) && in_array($vs_field, $va_element_codes)) { $vb_has_attributes = true; break; }
 				}
 			}
 			

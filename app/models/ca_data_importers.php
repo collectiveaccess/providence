@@ -4133,7 +4133,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			if ($vb_did_seek) { $po_reader->seek($vn_cur_pos); }
 		}
 		
-		$vm_value = ca_data_importers::replaceValue(stripslashes($vm_value), $pa_item, $pa_options);
+		$vm_value = ca_data_importers::replaceValue($vm_value, $pa_item, $pa_options);
 		
 		if ($pb_return_as_array) {
 			return is_array($vm_value) ? $vm_value : array($vm_value);

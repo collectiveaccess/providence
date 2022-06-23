@@ -8,7 +8,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2021 Whirl-i-Gig
+ * Copyright 2013-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -100,7 +100,7 @@
 
 	$va_args = $o_opts->getRemainingArgs();
 
-	$vs_app_heading = $quiet ? '' : CLIUtils::textWithColor(_t("CollectiveAccess %1 (%2/%3) Utilities\n(c) 2013-2021 Whirl-i-Gig",__CollectiveAccess__, __CollectiveAccess_Schema_Rev__, __CollectiveAccess_Release_Type__), "bold_blue")."\n\n";
+	$vs_app_heading = $quiet ? '' : CLIUtils::textWithColor(_t("CollectiveAccess %1 (%2/%3) Utilities\n(c) 2013-2022 Whirl-i-Gig",__CollectiveAccess__, __CollectiveAccess_Schema_Rev__, __CollectiveAccess_Release_Type__), "bold_blue")."\n\n";
 
 	print $vs_app_heading;
 

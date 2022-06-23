@@ -684,10 +684,10 @@ function caFileIsIncludable($ps_file) {
 		mb_substitute_character(0xFFFD);
 		$ps_text = mb_convert_encoding($ps_text, 'UTF-8', 'UTF-8');
 
-		return strip_tags($ps_text);
+		//return strip_tags($ps_text);
 
 		// @see http://php.net/manual/en/regexp.reference.unicode.php
-		//return preg_replace("/[^\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{N}\p{P}\p{Zp}\p{Zs}\p{S}]|➔/", '', strip_tags($ps_text));
+		return preg_replace("/[^\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{N}\p{P}\p{Zp}\p{Zs}\p{S}]|➔/", '', strip_tags($ps_text));
 	}
 	# ---------------------------------------
 	/**

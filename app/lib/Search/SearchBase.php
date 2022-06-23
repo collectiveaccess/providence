@@ -189,14 +189,13 @@ class SearchBase extends BaseFindEngine {
 				foreach($field_list as $vs_f => $va_data) {
 					if (substr($vs_f, 0, 14) === '_ca_attribute_') { unset($field_list[$vs_f]); continue; }
 					if (!$t_subject->hasField($vs_f)) { unset($field_list[$vs_f]); continue; }
-					if (($vs_start = $t_subject->getFieldInfo($vs_f, 'START') && ($vs_end = $t_subject->getFieldInfo($vs_f, 'END')))) {
+					if (($vs_start = $t_subject->getFieldInfo($vs_f, 'START')) && ($vs_end = $t_subject->getFieldInfo($vs_f, 'END'))) {
 						$field_list[$vs_start] = $va_data;
 						$field_list[$vs_end] = $va_data;
 						unset($field_list[$vs_f]);
 					
 					}
 				}
-			
 				return $field_list;
 			}
 		
