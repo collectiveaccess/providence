@@ -36,6 +36,7 @@
 
  	require_once(__CA_LIB_DIR__.'/Configuration.php');
 	require_once(__CA_LIB_DIR__."/Parsers/MediaMetadata/XMPParser.php");
+	require_once(__CA_LIB_DIR__."/Zend/Pdf.php");
 
 	# ------------------------------------------------------------------------------------------------
 	/**
