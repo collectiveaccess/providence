@@ -12,6 +12,8 @@ Version 1.7.16 is a maintenance release with these bug fixes and minor improveme
 * Fix for issue preventing correct display of relationship types for non-self-relationships (Eg. object-entity relationships)
 * Update vendor libraries to incorporate security fixes
 * Fix issue where detection of PDFs using Zend_PDF library option would throw a fatal error
+* Revert default path for GraphicsMagick to typical Linux path
+* Resolve issue where adding list items to the place_hierarchies list would cause a fatal error
 
 Note that this version is not yet compatible with PHP version 8. Please use versions 7.3 or 7.4.
 
