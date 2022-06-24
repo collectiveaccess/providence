@@ -1,4 +1,4 @@
-# README: Providence version 1.7.15
+# README: Providence version 1.7.16
 
 ### About CollectiveAccess
 
@@ -6,19 +6,12 @@ CollectiveAccess is a web-based suite of applications providing a framework for 
 
 CollectiveAccess is freely available under the open source GNU Public License version 3.
 
-### About CollectiveAccess 1.7.15
+### About CollectiveAccess 1.7.16
 
-Version 1.7.15 is a maintenance release with these bug fixes and minor improvements:
-* Fix for issue preventing correct display of relationship types for self-relationships (Eg. entity-entity relationships)
-* Fix broken page navigation in list item editor (GitHub issue #1346)
-* Allow apostrophes in email addresses for new users (GitHub issue #347)
-* Resolve issues with formatting of nested relationship types (GitHub #1193)
-* Minor fixes to DACS and Darwin Core profiles
-* Prevent potential XSS issue in error handler
-* Resolve Tilepic processing issues with images having EXIF orientation set that would result in illegible zoomable images.
+Version 1.7.16 is a maintenance release with these bug fixes and minor improvements:
+* Fix for issue preventing correct display of relationship types for non-self-relationships (Eg. object-entity relationships)
 * Update vendor libraries to incorporate security fixes
-* Updated PDF output components for compatibility with new vendor libraries
-* Update logo graphics
+* Fix issue where detection of PDFs using Zend_PDF library option would throw a fatal error
 
 Note that this version is not yet compatible with PHP version 8. Please use versions 7.3 or 7.4.
 
@@ -32,9 +25,9 @@ First make sure your server meets all of the [requirements](https://manual.colle
 
 NOTE: The update process is relatively safe and rarely, if ever, causes data loss. That said BACKUP YOUR EXISTING DATABASE AND CONFIGURATION prior to updating. You almost certainly will not need the backup, but if you do you'll be glad it's there.
 
-To update, decompress the CollectiveAccess Providence 1.7.15 tar.gz or zip file and replace the files in your existing installation with those in the update. Take care to preserve your media directory (`media/`), local configuration directory (`app/conf/local/`), any local print templates (`app/printTemplates/`) and your setup.php file.
+To update, decompress the CollectiveAccess Providence 1.7.16 tar.gz or zip file and replace the files in your existing installation with those in the update. Take care to preserve your media directory (`media/`), local configuration directory (`app/conf/local/`), any local print templates (`app/printTemplates/`) and your setup.php file.
 
-If you are updating from a version prior to 1.7, you must recreate your existing setup.php as the format has changed. Rename the existing setup.php to `setup.php-old` and copy the version 1.7.15 setup.php template in `setup.php-dist` to `setup.php`. Edit this file with your database login information, system name and other basic settings. You can reuse the settings in your existing setup.php file as-is. Only the format of setup.php has changed. If you are updating from version 1.7.x you do not need to change your setup.php file.
+If you are updating from a version prior to 1.7, you must recreate your existing setup.php as the format has changed. Rename the existing setup.php to `setup.php-old` and copy the version 1.7.16 setup.php template in `setup.php-dist` to `setup.php`. Edit this file with your database login information, system name and other basic settings. You can reuse the settings in your existing setup.php file as-is. Only the format of setup.php has changed. If you are updating from version 1.7.x you do not need to change your setup.php file.
 
 Once the updated files are in place navigate in your web browser to the login screen. You will see this message:
 
