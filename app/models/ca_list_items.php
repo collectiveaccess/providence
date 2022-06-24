@@ -621,6 +621,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 				}
 				
 				// create root in ca_places
+				require_once(__CA_MODELS_DIR__."/ca_places.php");
 				$t_place = new ca_places();
 				$t_place->setTransaction($o_trans);
 				$t_place->setMode(ACCESS_WRITE);
