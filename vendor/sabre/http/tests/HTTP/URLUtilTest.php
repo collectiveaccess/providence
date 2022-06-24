@@ -72,6 +72,25 @@ class URLUtilTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * @depends testDecode
+     */
+    public function testDecodeSlavicWords()
+    {
+        $words = [
+            'Ostroměr',
+            'Šventaragis',
+            'Świętopełk',
+            'Dušan',
+            'Živko',
+        ];
+        foreach ($words as $word) {
+            $str = rawurlencode($word);
+            $newStr = decodePath($str);
+            $this->assertEquals($word, $newStr);
+        }
+    }
+
+    /**
      * @depends testDecodeUmlaut
      */
     public function testDecodeUmlautLatin1()
