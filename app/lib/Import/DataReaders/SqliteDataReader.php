@@ -154,18 +154,42 @@ class SqliteDataReader extends BaseDataReader {
 		
 		switch(sizeof($f)) {
 			case 3:
-				$pk_val = caGetOption($f[0], $this->opa_row_buf, null);
-				$rel_table = strtolower($f[1]);
-				$rel_field = strtolower($f[2]);
-			
-				$rel_pk = $this->getPrimaryKeyFieldName($rel_table);
-				$qrel = $this->db->query("SELECT {$rel_field} FROM {$rel_table} WHERE {$rel_pk} = ".(int)$pk_val);
-				if($rdata = $qrel->fetchArray()) {
-					foreach($rdata as $k => $v) {
-						unset($rdata[$k]);
-						$rdata[strtolower($k)] = $v;	// make case-insensitive
+				if($f[0] === '') {
+					$linking_table = strtolower($f[1]);
+					$linking_field = strtolower($f[2]);
+					
+					$pk = strtolower($this->getPrimaryKeyFieldName($this->base_path));
+					$pk_val = caGetOption($pk, $this->opa_row_buf, null);
+					
+					$qrel = $this->db->query("
+						SELECT l.*
+						FROM {$linking_table} l
+						INNER JOIN {$this->base_path} AS t ON t.{$pk} = l.{$pk}
+						WHERE
+							t.{$pk} = ".(int)$pk_val);
+				
+					$val = [];
+					while($rdata = $qrel->fetchArray()) {
+						foreach($rdata as $k => $v) {
+							unset($rdata[$k]);
+							$rdata[strtolower($k)] = $v;	// make case-insensitive
+						}
+						$val[] = $rdata[$linking_field];
 					}
-					$val = $rdata[$rel_field];
+				} else {
+					$pk_val = caGetOption($f[0], $this->opa_row_buf, null);
+					$rel_table = strtolower($f[1]);
+					$rel_field = strtolower($f[2]);
+			
+					$rel_pk = $this->getPrimaryKeyFieldName($rel_table);
+					$qrel = $this->db->query("SELECT {$rel_field} FROM {$rel_table} WHERE {$rel_pk} = ".(int)$pk_val);
+					if($rdata = $qrel->fetchArray()) {
+						foreach($rdata as $k => $v) {
+							unset($rdata[$k]);
+							$rdata[strtolower($k)] = $v;	// make case-insensitive
+						}
+						$val = $rdata[$rel_field];
+					}
 				}
 				break;
 			case 4:
@@ -195,6 +219,9 @@ class SqliteDataReader extends BaseDataReader {
 						$val[] = $rdata[$rel_field];
 					}
 				}
+				break;
+			default:
+				$val = $this->opa_row_buf[$field] ?? null;
 				break;
 		}
 		
