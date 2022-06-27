@@ -1,5 +1,6 @@
 services:
   providence:
+    restart: unless-stopped
     depends_on: 
       - mysql
       - memcached
@@ -11,10 +12,12 @@ services:
       - memcached
 
   mysql:
+    restart: unless-stopped
     volumes:
       - $MYSQL_DATA:/var/lib/mysql 
 
   memcached:
     image: memcached:latest
+    restart: unless-stopped
     environment:
       MEMCACHED_CACHE_SIZE: 128
