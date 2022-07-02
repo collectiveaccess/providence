@@ -881,7 +881,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
                             $policy = $tmp[1];
                             $vs_field = $tmp[2];
                             
-                            $policy_label = $policy ? _t('Current value for %1', $policy) : null;
+                            $policy_label = $policy ? _t('Current value for %1', mb_strtolower($policy)) : null;
                         }
 
 						if (!($va_field_info = $t_instance->getFieldInfo($vs_field))) {
@@ -995,7 +995,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 
 							$vs_label = $t_instance->getDisplayLabel($vs_base_bundle, ['useDisambiguationLabels' => true, 'includeSourceSuffix' => false]);
 							if ($policy) { 
-							    $vs_label = _t('Current value for <em>%1</em> from <em>%2</em>', $vs_label, ca_objects::getHistoryTrackingCurrentValuePolicy($policy, 'name'));
+							    $vs_label = _t('Current value for <em>%1</em> using <em>%2</em>', mb_strtolower($vs_label), mb_strtolower(ca_objects::getHistoryTrackingCurrentValuePolicy($policy, 'name')));
 							}
 							
 							if  (method_exists($t_table, "getSubjectTableName") && ($vs_primary_table == $vs_subject_table)) {
