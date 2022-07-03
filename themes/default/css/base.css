@@ -3609,6 +3609,11 @@ input.urlBg, textarea.urlBg {
     background-repeat:no-repeat;
     background-position:right center;
 }
+input.externalMediaBg, textarea.externalMediaBg {
+    background-image: url('../graphics/icons/formBgUrl.gif');
+    background-repeat:no-repeat;
+    background-position:right center;
+}
 input.filesizeBg, textarea.filesizeBg {
     background-image: url('../graphics/icons/formBgFilesize.gif');
     background-repeat:no-repeat;
@@ -6609,7 +6614,7 @@ div.caObjectRepresentationChooserRepresentation input[type=checkbox] {
 }
 
 /* Information service attributes */
-div.caInformationServiceDetail {
+div.caInformationServiceDetail, div.caExternalMediaDetail {
     width: 100%;
     display:none;
     font-weight: normal;
