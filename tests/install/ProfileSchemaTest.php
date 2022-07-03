@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,11 +37,11 @@ require_once(dirname(__FILE__).'/../../install/inc/Installer.php');
 class ProfileSchemaTest extends TestCase {
 
 	public function testAvailableProfilesConformToSchema() {
-		$va_profiles = caGetAvailableXMLProfiles(dirname(__FILE__).'/../../install/');
+		$va_profiles = caGetAvailableProfiles(dirname(__FILE__).'/../../install/');
 		$this->assertGreaterThan(0, sizeof($va_profiles));
 
 		foreach($va_profiles as $vs_profile) {
-			$vo_installer = new Installer(dirname(__FILE__).'/../../install/profiles/xml/', $vs_profile, 'info@collectiveaccess.org', false, false);
+			$vo_installer = new \Installer\Installer(realpath(dirname(__FILE__).'/../../install/profiles/xml/'), $vs_profile, 'info@collectiveaccess.org', false, false);
 			$this->assertEquals(0, $vo_installer->numErrors(), "The profile '$vs_profile' doesn't conform to the XML schema");
 		}
 	}
