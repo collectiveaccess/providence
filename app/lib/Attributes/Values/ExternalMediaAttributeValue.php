@@ -161,7 +161,7 @@ class ExternalMediaAttributeValue extends AttributeValue implements IAttributeVa
     public function getDisplayValue($options=null) {
         if(caGetOption('embed', $options, false)) {
         	$t_element = ca_metadata_elements::getInstance($this->getElementCode());
-        	return caGetExternalMediaEmbedCode($url, ['width' => caGetOption('width', $options, $t_element->getSetting('mediaWidth')), 'height' => caGetOption('height', $options, $t_element->getSetting('mediaHeight'))]);
+        	return caGetExternalMediaEmbedCode($this->url_value, ['width' => caGetOption('width', $options, $t_element->getSetting('mediaWidth')), 'height' => caGetOption('height', $options, $t_element->getSetting('mediaHeight'))]);
         }
         return $this->url_value;
     }
