@@ -480,6 +480,29 @@ class TimeExpressionParserTest extends TestCase {
 		$this->assertEquals($va_parse[1], "2000000000.123123595900");	
 	}
 	
+	public function testBPRangeDates() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+		
+		$vb_res = $o_tep->parse('200 BP-100 BP');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1750.010100000080");	# Date attribute 8=BP
+		$this->assertEquals($va_parse['end'], "1850.123123595980");
+		$this->assertEquals($va_parse[0], "1750.010100000080");
+		$this->assertEquals($va_parse[1], "1850.123123595980");	
+		
+		
+		$vb_res = $o_tep->parse('250 BP - 50 BP');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1700.010100000080");	# Date attribute 8=BP
+		$this->assertEquals($va_parse['end'], "1900.123123595980");
+		$this->assertEquals($va_parse[0], "1700.010100000080");
+		$this->assertEquals($va_parse[1], "1900.123123595980");	
+		
+	}
+	
 	public function testDatesWithoutStart() {
 		$o_tep = new TimeExpressionParser();
 		$o_tep->setLanguage('en_US');
