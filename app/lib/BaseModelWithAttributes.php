@@ -163,7 +163,9 @@
 							(is_array($va_attrs) ? array_map(function($a) { return $a->getLocaleID(); }, $va_attrs) : []), 
 							array_map(function($a) { 
 								return (int)$a['values']['locale_id'] ?? null;
-							}, ($this->opa_attributes_to_add + $this->opa_attributes_to_edit))
+							}, array_filter(($this->opa_attributes_to_add + $this->opa_attributes_to_edit), function($x) use ($vn_element_id) {
+								return (int)$x['element'] === (int)$vn_element_id;
+							}))
 						)
 					);
 				
@@ -269,6 +271,7 @@
 			if (!($t_element = ca_metadata_elements::getInstance($pm_element_code_or_id))) { return false; }
 			if (!$t_attr->getPrimaryKey()) { return false; }
 			$vn_attr_element_id = $t_attr->get('element_id');
+			$vn_element_id = $t_element->getPrimaryKey();
 			
 			$element_info = ca_metadata_elements::getElementSettingsForId($pm_element_code_or_id);
 			
@@ -302,7 +305,9 @@
 							(is_array($va_attrs) ? array_map(function($a) { return $a->getLocaleID(); }, $va_attrs) : []), 
 							array_map(function($a) { 
 								return (int)$a['locale_id'] ?? null;
-							}, ($this->opa_attributes_to_add + $this->opa_attributes_to_edit))
+							}, array_filter(($this->opa_attributes_to_add + $this->opa_attributes_to_edit), function($x) use ($vn_attr_element_id) {
+								return (int)$x['element'] === (int)$vn_element_id;
+							}))
 						)
 					);
 				
