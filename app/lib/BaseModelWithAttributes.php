@@ -156,18 +156,21 @@
 				$attrs_for_element = $this->getAttributesByElement($pm_element_code_or_id);
 				if(is_array($attrs_for_element)) { 
 					$va_attrs = array_filter($attrs_for_element, function($v) use ($attrs_to_remove) {
-					return !in_array((int)$v->getAttributeID(), $attrs_to_remove, true);
+						return !in_array((int)$v->getAttributeID(), $attrs_to_remove, true);
 					});
 					$extant_locales = array_unique(
 						array_merge(
 							(is_array($va_attrs) ? array_map(function($a) { return $a->getLocaleID(); }, $va_attrs) : []), 
 							array_map(function($a) { 
 								return (int)$a['values']['locale_id'] ?? null;
-							}, ($this->opa_attributes_to_add + $this->opa_attributes_to_edit))
+							}, array_filter(($this->opa_attributes_to_add + $this->opa_attributes_to_edit), function($x) use ($vn_element_id) {
+								return (int)$x['element'] === (int)$vn_element_id;
+							}))
 						)
 					);
 				
 					$extant_locales = array_filter($extant_locales, function($v) { return (bool)$v; });
+					
 					if(($locale_id = $pa_values['locale_id'] ?? null) && in_array((int)$locale_id, $extant_locales, true)) {
 						if (caGetOption('raiseErrorOnDuplicateLocale', $element_info, true)) {
 							$this->postError(1985, _t('Value for locale is already set'), 'BaseModelWithAttributes->addAttribute()', $ps_error_source);
@@ -269,6 +272,7 @@
 			if (!($t_element = ca_metadata_elements::getInstance($pm_element_code_or_id))) { return false; }
 			if (!$t_attr->getPrimaryKey()) { return false; }
 			$vn_attr_element_id = $t_attr->get('element_id');
+			$vn_element_id = $t_element->getPrimaryKey();
 			
 			$element_info = ca_metadata_elements::getElementSettingsForId($pm_element_code_or_id);
 			
@@ -302,7 +306,9 @@
 							(is_array($va_attrs) ? array_map(function($a) { return $a->getLocaleID(); }, $va_attrs) : []), 
 							array_map(function($a) { 
 								return (int)$a['locale_id'] ?? null;
-							}, ($this->opa_attributes_to_add + $this->opa_attributes_to_edit))
+							}, array_filter(($this->opa_attributes_to_add + $this->opa_attributes_to_edit), function($x) use ($vn_attr_element_id) {
+								return (int)$x['element'] === (int)$vn_element_id;
+							}))
 						)
 					);
 				
