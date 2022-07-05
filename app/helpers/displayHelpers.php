@@ -3584,7 +3584,7 @@ jQuery(document).ready(function() {
 		
 		$buf = '';
 		if(caGetOption('showBatchEditorButton', $options, false)) {
-			$buf = '<div class="button batchEdit">'.caNavLink($request, caNavIcon(__CA_NAV_ICON_BATCH_EDIT__, '15px')._t(' Batch edit'), '', '*', '*', 'BatchEdit', ['placement_id' => $placement_id, 'primary_id' => $t_instance->getPrimaryKey(), 'screen' => $request->getActionExtra()]).'</div>';
+			$buf = '<div class="button batchEdit">'.caNavLink($request, caNavIcon(__CA_NAV_ICON_BATCH_EDIT__, '15px')._t(' Batch edit all'), '', '*', '*', 'BatchEdit', ['placement_id' => $placement_id, 'primary_id' => $t_instance->getPrimaryKey(), 'screen' => $request->getActionExtra()]).'</div>';
 		}
 		return $buf;
 	}

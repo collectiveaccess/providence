@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2020 Whirl-i-Gig
+ * Copyright 2015-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -91,17 +91,18 @@
 	}
 ?>
 <script type="text/javascript">
-	function caAsyncSearchResultForm<?php print $vs_id_prefix; ?>(data) {
-		var tableContent = jQuery('#tableContent<?php print $vs_id_prefix; ?>');
+	function caAsyncSearchResultForm<?= $vs_id_prefix; ?>(data) {
+		let tableContent = jQuery('#tableContent<?= $vs_id_prefix; ?>');
+		let bundle = jQuery('#<?= $vs_id_prefix.$t_item->tableNum().'_rel'; ?>');
 
 		if(data) { tableContent.html(data); }
 
 		// have to re-init the relation bundle because the interstitial buttons have only now been loaded
-		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', initiRelationBundleOptions<?php print $vs_id_prefix; ?>);
+		caRelationBundle<?= $vs_id_prefix; ?> = caUI.initRelationBundle('#<?= $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', initiRelationBundleOptions<?= $vs_id_prefix; ?>);
 
-		jQuery('#tableContent<?php print $vs_id_prefix; ?> .list-header-unsorted a, #tableContent<?php print $vs_id_prefix; ?> .list-header-sorted-desc a, #tableContent<?php print $vs_id_prefix; ?> .list-header-sorted-asc a').click(function(event) {
+		jQuery('#tableContent<?= $vs_id_prefix; ?> .list-header-unsorted a, #tableContent<?= $vs_id_prefix; ?> .list-header-sorted-desc a, #tableContent<?= $vs_id_prefix; ?> .list-header-sorted-asc a').click(function(event) {
 			event.preventDefault();
-			jQuery.post(event.target, <?php print json_encode($va_additional_search_controller_params); ?>, caAsyncSearchResultForm<?php print $vs_id_prefix; ?>);
+			jQuery.post(event.target, <?= json_encode($va_additional_search_controller_params); ?>, caAsyncSearchResultForm<?= $vs_id_prefix; ?>);
 		});
 
 		tableContent.find('form').each(function() {
@@ -109,12 +110,13 @@
 				event.preventDefault();
 				jQuery.ajax({
 					type: 'POST',
-					url: event.target.action + '<?php print $vs_url_string; ?>',
+					url: event.target.action + '<?= $vs_url_string; ?>',
 					data: jQuery(this).serialize(),
-					success: caAsyncSearchResultForm<?php print $vs_id_prefix; ?>
+					success: caAsyncSearchResultForm<?= $vs_id_prefix; ?>
 				});
 			});
 		});
+		bundle.find('.batchEditPanel').show();
 	}
 
 <?php
@@ -122,18 +124,21 @@
 		// when ready, pull in the result list via the RelatedList search controller and the JS helper caAsyncSearchResultForm() above
 ?>
 		jQuery(document).ready(function() {
-			jQuery.post('<?php print caNavUrl($this->request, 'find', 'RelatedList', 'Index', []); ?>', <?php print json_encode($va_additional_search_controller_params); ?>, caAsyncSearchResultForm<?php print $vs_id_prefix; ?>);
+			jQuery.post('<?= caNavUrl($this->request, 'find', 'RelatedList', 'Index', []); ?>', <?= json_encode($va_additional_search_controller_params); ?>, caAsyncSearchResultForm<?= $vs_id_prefix; ?>);
 		});
 <?php
 	}
 ?>
 </script>
-<div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
-	<div class='bundleSubLabel'>
+<div id="<?= $vs_id_prefix.$t_item->tableNum().'_rel'; ?>" <?= $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
+	<div class='bundleSubLabel batchEditPanel'>
 		<?= caEditorBundleBatchEditorControls($this->request, $vn_placement_id, $t_subject, $t_instance->tableName(), $va_settings); ?>
-		<div style='clear:both;'></div>
+		
+		<div class="button batchEdit batchEditSelected" id="batchEditSelected<?= $vs_id_prefix; ?>"><a href="#"><?= caNavIcon(__CA_NAV_ICON_BATCH_EDIT__, '15px')._t(' Batch edit selected'); ?></a></div>
 	</div>
-	<div id="tableContent<?php print $vs_id_prefix; ?>" class="labelInfo"></div>
+	<div id="tableContent<?= $vs_id_prefix; ?>" class="labelInfo relatedListTableContent">
+		<?= caBusyIndicatorIcon($this->request).' '._t('Loading'); ?>
+	</div>
 <?php
 	//
 	// Template to generate controls for creating new relationship
@@ -141,80 +146,80 @@
 ?>
 	<textarea class='caNewItemTemplate' style='display: none;'>
 		<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
-		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo caRelatedItem">
+		<div id="<?= $vs_id_prefix; ?>Item_{n}" class="labelInfo caRelatedItem">
 			<table class="caListItem">
 				<tr>
 					<td>
-						<input type="text" size="60" name="<?php print $vs_id_prefix; ?>_autocomplete{n}" value="{{label}}" id="<?php print $vs_id_prefix; ?>_autocomplete{n}" class="lookupBg"/>
+						<input type="text" size="60" name="<?= $vs_id_prefix; ?>_autocomplete{n}" value="{{label}}" id="<?= $vs_id_prefix; ?>_autocomplete{n}" class="lookupBg"/>
 					</td>
 					<td>
 <?php
 	if (sizeof($this->getVar('relationship_types_by_sub_type'))) {
 ?>
-						<select name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" style="display: none;"></select>
+						<select name="<?= $vs_id_prefix; ?>_type_id{n}" id="<?= $vs_id_prefix; ?>_type_id{n}" style="display: none;"></select>
 <?php
 	}
 ?>
-						<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
+						<input type="hidden" name="<?= $vs_id_prefix; ?>_id{n}" id="<?= $vs_id_prefix; ?>_id{n}" value="{id}"/>
 					</td>
 					<td>
-						<a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
+						<a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 						
-						<a href="<?php print urldecode(caEditorUrl($this->request, $t_item->tableName(), '{'.$t_item->primaryKey().'}')); ?>" class="caEditItemButton" id="<?php print $vs_id_prefix; ?>_edit_related_{n}"><?php print caNavIcon(__CA_NAV_ICON_GO__, 1); ?></a>
+						<a href="<?= urldecode(caEditorUrl($this->request, $t_item->tableName(), '{'.$t_item->primaryKey().'}')); ?>" class="caEditItemButton" id="<?= $vs_id_prefix; ?>_edit_related_{n}"><?= caNavIcon(__CA_NAV_ICON_GO__, 1); ?></a>
 					</td>
 				</tr>
 			</table>
 		</div>
 	</textarea>
 	
-	<div class="bundleContainer">
+	<div class="bundleContainerRelatedList">
 		<div class="caItemList">
 <?php
 	if (sizeof($va_errors)) {
 ?>
-		<span class="formLabelError"><?php print join("; ", $va_errors); ?><br class="clear"/></span>
+		<span class="formLabelError"><?= join("; ", $va_errors); ?><br class="clear"/></span>
 <?php
 	}
 ?>
 		
 		</div>
-		<input type="hidden" name="<?php print $vs_id_prefix; ?>BundleList" id="<?php print $vs_id_prefix; ?>BundleList" value=""/>
+		<input type="hidden" name="<?= $vs_id_prefix; ?>BundleList" id="<?= $vs_id_prefix; ?>BundleList" value=""/>
 		<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
 <?php
 	if (!$vb_read_only) {
 ?>	
-		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print $vs_add_label ? $vs_add_label : _t("Add relationship"); ?></a></div>
+		<div class='button labelInfo caAddItemButton'><a href='#'><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= $vs_add_label ? $vs_add_label : _t("Add relationship"); ?></a></div>
 <?php
 	}
 ?>
 	</div>
 </div>
 
-<div id="caRelationQuickAddPanel<?php print $vs_id_prefix; ?>" class="caRelationQuickAddPanel"> 
-	<div id="caRelationQuickAddPanel<?php print $vs_id_prefix; ?>ContentArea">
-	<div class='dialogHeader'><?php print _t('Quick Add', $t_item->getProperty('NAME_SINGULAR')); ?></div>
+<div id="caRelationQuickAddPanel<?= $vs_id_prefix; ?>" class="caRelationQuickAddPanel"> 
+	<div id="caRelationQuickAddPanel<?= $vs_id_prefix; ?>ContentArea">
+	<div class='dialogHeader'><?= _t('Quick Add', $t_item->getProperty('NAME_SINGULAR')); ?></div>
 		
 	</div>
 </div>
-<div id="caRelationEditorPanel<?php print $vs_id_prefix; ?>" class="caRelationQuickAddPanel"> 
-	<div id="caRelationEditorPanel<?php print $vs_id_prefix; ?>ContentArea">
-	<div class='dialogHeader'><?php print _t('Relation editor', $t_item->getProperty('NAME_SINGULAR')); ?></div>
+<div id="caRelationEditorPanel<?= $vs_id_prefix; ?>" class="caRelationQuickAddPanel"> 
+	<div id="caRelationEditorPanel<?= $vs_id_prefix; ?>ContentArea">
+	<div class='dialogHeader'><?= _t('Relation editor', $t_item->getProperty('NAME_SINGULAR')); ?></div>
 		
 	</div>
 	
 	<textarea class='caBundleDisplayTemplate' style='display: none;'>
-		<?php print caGetRelationDisplayString($this->request, $t_item->tableName(), array(), array('display' => '_display', 'makeLink' => false)); ?>
+		<?= caGetRelationDisplayString($this->request, $t_item->tableName(), array(), array('display' => '_display', 'makeLink' => false)); ?>
 	</textarea>
 </div>			
 	
 <script type="text/javascript">
-	var caRelationBundle<?php print $vs_id_prefix; ?>;
-	var initiRelationBundleOptions<?php print $vs_id_prefix; ?>;
+	var caRelationBundle<?= $vs_id_prefix; ?>;
+	var initiRelationBundleOptions<?= $vs_id_prefix; ?>;
 	jQuery(document).ready(function() {
 		if (caUI.initPanel) {
-			caRelationQuickAddPanel<?php print $vs_id_prefix; ?> = caUI.initPanel({ 
-				panelID: "caRelationQuickAddPanel<?php print $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
-				panelContentID: "caRelationQuickAddPanel<?php print $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
+			caRelationQuickAddPanel<?= $vs_id_prefix; ?> = caUI.initPanel({ 
+				panelID: "caRelationQuickAddPanel<?= $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
+				panelContentID: "caRelationQuickAddPanel<?= $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
 				exposeBackgroundColor: "#000000",				
 				exposeBackgroundOpacity: 0.7,					
 				panelTransitionSpeed: 400,						
@@ -227,9 +232,9 @@
 					jQuery("#topNavContainer").show(250);
 				}
 			});
-			caRelationEditorPanel<?php print $vs_id_prefix; ?> = caUI.initPanel({ 
-				panelID: "caRelationEditorPanel<?php print $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
-				panelContentID: "caRelationEditorPanel<?php print $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
+			caRelationEditorPanel<?= $vs_id_prefix; ?> = caUI.initPanel({ 
+				panelID: "caRelationEditorPanel<?= $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
+				panelContentID: "caRelationEditorPanel<?= $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
 				exposeBackgroundColor: "#000000",				
 				exposeBackgroundOpacity: 0.7,					
 				panelTransitionSpeed: 400,						
@@ -244,51 +249,77 @@
 			});
 		}
 
-		initiRelationBundleOptions<?php print $vs_id_prefix; ?> = {
-			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
-			initialValues: <?php print json_encode($this->getVar('initialValues')); ?>,
-			initialValueOrder: <?php print json_encode(array_keys($this->getVar('initialValues'))); ?>,
-			itemID: '<?php print $vs_id_prefix; ?>Item_',
-			placementID: '<?php print $vn_placement_id; ?>',
+		initiRelationBundleOptions<?= $vs_id_prefix; ?> = {
+			fieldNamePrefix: '<?= $vs_id_prefix; ?>_',
+			initialValues: <?= json_encode($this->getVar('initialValues')); ?>,
+			initialValueOrder: <?= json_encode(array_keys($this->getVar('initialValues'))); ?>,
+			itemID: '<?= $vs_id_prefix; ?>Item_',
+			placementID: '<?= $vn_placement_id; ?>',
 			templateClassName: 'caNewItemTemplate',
 			initialValueTemplateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',
 			listItemClassName: 'caRelatedItem',
 			addButtonClassName: 'caAddItemButton',
 			deleteButtonClassName: 'caDeleteItemButton',
-			hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_edit_related_'],
+			hideOnNewIDList: ['<?= $vs_id_prefix; ?>_edit_related_'],
 			showEmptyFormsOnLoad: 1,
-			autocompleteUrl: '<?php print $vs_navurl = caNavUrl($this->request, 'lookup', ucfirst(str_replace(" ", "", ucwords($t_item->getProperty('NAME_SINGULAR'), ' '))), 'Get', $va_lookup_params); ?>',
-			types: <?php print json_encode($va_settings['restrict_to_types']); ?>,
-			restrictToAccessPoint: <?php print json_encode($va_settings['restrict_to_access_point']); ?>,
-			restrictToSearch: <?php print json_encode($va_settings['restrict_to_search']); ?>,
-			bundlePreview: <?php print caGetBundlePreviewForRelationshipBundle($this->getVar('initialValues')); ?>,
-			readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
+			autocompleteUrl: '<?= $vs_navurl = caNavUrl($this->request, 'lookup', ucfirst(str_replace(" ", "", ucwords($t_item->getProperty('NAME_SINGULAR'), ' '))), 'Get', $va_lookup_params); ?>',
+			types: <?= json_encode($va_settings['restrict_to_types']); ?>,
+			restrictToAccessPoint: <?= json_encode($va_settings['restrict_to_access_point']); ?>,
+			restrictToSearch: <?= json_encode($va_settings['restrict_to_search']); ?>,
+			bundlePreview: <?= caGetBundlePreviewForRelationshipBundle($this->getVar('initialValues')); ?>,
+			readonly: <?= $vb_read_only ? "true" : "false"; ?>,
 			isSortable: false,
 
-			quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,
-			quickaddUrl: '<?php print caEditorUrl($this->request, $t_item->tableName(), null, false, null, array('quick_add' => true)); ?>',
+			quickaddPanel: caRelationQuickAddPanel<?= $vs_id_prefix; ?>,
+			quickaddUrl: '<?= caEditorUrl($this->request, $t_item->tableName(), null, false, null, array('quick_add' => true)); ?>',
 
 			interstitialButtonClassName: 'caInterstitialEditButton',
-			interstitialPanel: caRelationEditorPanel<?php print $vs_id_prefix; ?>,
-			interstitialUrl: '<?php print caNavUrl($this->request, 'editor', 'Interstitial', 'Form', array('t' => $t_item_rel->tableName())); ?>',
-			interstitialPrimaryTable: '<?php print $t_instance->tableName(); ?>',
-			interstitialPrimaryID: <?php print (int)$t_instance->getPrimaryKey(); ?>,
+			interstitialPanel: caRelationEditorPanel<?= $vs_id_prefix; ?>,
+			interstitialUrl: '<?= caNavUrl($this->request, 'editor', 'Interstitial', 'Form', array('t' => $t_item_rel->tableName())); ?>',
+			interstitialPrimaryTable: '<?= $t_instance->tableName(); ?>',
+			interstitialPrimaryID: <?= (int)$t_instance->getPrimaryKey(); ?>,
 
-			relationshipTypes: <?php print json_encode($this->getVar('relationship_types_by_sub_type')); ?>,
+			relationshipTypes: <?= json_encode($this->getVar('relationship_types_by_sub_type')); ?>,
 			templateValues: ['label', 'id', 'type_id'],
 
-			minRepeats: <?php print caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
-			maxRepeats: <?php print caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>
+			minRepeats: <?= caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
+			maxRepeats: <?= caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>
 		};
 
 		// only init bundle if there are no values, otherwise we do it after the content is loaded
 <?php
 		if(!sizeof($va_initial_values)) {
 ?>
-			caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', initiRelationBundleOptions<?php print $vs_id_prefix; ?>);
+			caRelationBundle<?= $vs_id_prefix; ?> = caUI.initRelationBundle('#<?= $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', initiRelationBundleOptions<?= $vs_id_prefix; ?>);
 <?php
 		}
 ?>
+		jQuery('#tableContent<?= $vs_id_prefix; ?>').on('click', 'input.addItemToBatchControl', function(e) {
+			let ids = caGetSelectedItemIDsForRelatedList<?= $vs_id_prefix; ?>();
+			let be = jQuery('#<?= $vs_id_prefix.$t_item->tableNum().'_rel'; ?>').find('.batchEditSelected');
+			if(ids.length > 1) {
+				be.show();
+			} else {
+				be.hide();
+			}
+		});
+		jQuery('#batchEditSelected<?= $vs_id_prefix; ?>').on('click', function(e) {
+			let ids = caGetSelectedItemIDsForRelatedList<?= $vs_id_prefix; ?>();
+			if(ids.length > 0) {
+				window.location = '<?= caNavUrl($this->request, '*', '*', 'BatchEdit', ['placement_id' => $vn_placement_id, 'primary_id' => $t_instance->getPrimaryKey(), 'screen' => $this->request->getActionExtra()]);?>/ids/' + ids.join(";");
+			}
+			e.preventDefault();
+			return false;
+		});
+		function caGetSelectedItemIDsForRelatedList<?= $vs_id_prefix; ?>() {
+			var ids = [];
+			jQuery('#tableContent<?= $vs_id_prefix; ?>').find('input.addItemToBatchControl:checked').each(function(i, j) {
+				if (jQuery(j).prop('checked')) {
+					ids.push(jQuery(j).val());
+				}
+			});
+			return ids;
+		}
 	});
 </script>
