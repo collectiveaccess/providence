@@ -45,12 +45,17 @@ class SqliteDataReader extends BaseDataReader {
 	
 	private $db;
 	private $count;
+	private $pk_cache;
+	
+	private $base_path = null;
 	# -------------------------------------------------------
 	/**
 	 *
 	 */
 	public function __construct($source=null, $options=null){
 		parent::__construct($source, $options);
+		
+		$this->pk_cache = [];
 		
 		$this->ops_title = _t('Sqlite data reader');
 		$this->ops_display_name = _t('Sqlite data reader');
@@ -77,7 +82,11 @@ class SqliteDataReader extends BaseDataReader {
 		}
 		
 		$base_path = caGetOption('basePath', $options, []);
+		if(!$base_path) {
+			throw new ApplicationException(_t('A Sqlite table must be set as base path. Did you forget to pass the basePath option?'));
+		}
 		
+		$this->base_path = $base_path;
 		
 		if(!($this->opo_handle = $this->db->query("SELECT * FROM {$base_path}"))) {
 			throw new ApplicationException(_t('Sqlite error on initial query for table %1', $base_path));
@@ -143,27 +152,96 @@ class SqliteDataReader extends BaseDataReader {
 		
 		$f = explode('::', $field);
 		
-		$val = caGetOption($f[0], $this->opa_row_buf, null);
-		
-		if(sizeof($f) == 3) {
-			$rel_table = strtolower($f[1]);
-			$rel_field = strtolower($f[2]);
+		switch(sizeof($f)) {
+			case 3:
+				if($f[0] === '') {
+					$linking_table = strtolower($f[1]);
+					$linking_field = strtolower($f[2]);
+					
+					$pk = strtolower($this->getPrimaryKeyFieldName($this->base_path));
+					$pk_val = caGetOption($pk, $this->opa_row_buf, null);
+					
+					$qrel = $this->db->query("
+						SELECT l.*
+						FROM {$linking_table} l
+						INNER JOIN {$this->base_path} AS t ON t.{$pk} = l.{$pk}
+						WHERE
+							t.{$pk} = ".(int)$pk_val);
+				
+					$val = [];
+					while($rdata = $qrel->fetchArray()) {
+						foreach($rdata as $k => $v) {
+							unset($rdata[$k]);
+							$rdata[strtolower($k)] = $v;	// make case-insensitive
+						}
+						$val[] = $rdata[$linking_field];
+					}
+				} else {
+					$pk_val = caGetOption($f[0], $this->opa_row_buf, null);
+					$rel_table = strtolower($f[1]);
+					$rel_field = strtolower($f[2]);
 			
-			$qrel = $this->db->query("SELECT {$rel_field} FROM {$rel_table}");
-			if($rdata = $qrel->fetchArray()) {
-				foreach($rdata as $k => $v) {
-					unset($rdata[$k]);
-					$rdata[strtolower($k)] = $v;	// make case-insensitive
+					$rel_pk = $this->getPrimaryKeyFieldName($rel_table);
+					$qrel = $this->db->query("SELECT {$rel_field} FROM {$rel_table} WHERE {$rel_pk} = ".(int)$pk_val);
+					if($rdata = $qrel->fetchArray()) {
+						foreach($rdata as $k => $v) {
+							unset($rdata[$k]);
+							$rdata[strtolower($k)] = $v;	// make case-insensitive
+						}
+						$val = $rdata[$rel_field];
+					}
 				}
-				$val = $rdata[$rel_field];
-			}
+				break;
+			case 4:
+				if($f[0] === '') {
+					$linking_table = strtolower($f[1]);
+					$rel_table = strtolower($f[2]);
+					$rel_field = strtolower($f[3]);
+					
+					$pk = strtolower($this->getPrimaryKeyFieldName($this->base_path));
+					$pk_val = caGetOption($pk, $this->opa_row_buf, null);
+					
+					$rel_pk = strtolower($this->getPrimaryKeyFieldName($rel_table));
+					$qrel = $this->db->query("
+						SELECT r.*, l.*
+						FROM {$linking_table} l
+						INNER JOIN {$this->base_path} AS t ON t.{$pk} = l.{$pk}
+						INNER JOIN {$rel_table} AS r ON r.{$rel_pk} = l.{$rel_pk}
+						WHERE
+							t.{$pk} = ".(int)$pk_val);
+				
+					$val = [];
+					while($rdata = $qrel->fetchArray()) {
+						foreach($rdata as $k => $v) {
+							unset($rdata[$k]);
+							$rdata[strtolower($k)] = $v;	// make case-insensitive
+						}
+						$val[] = $rdata[$rel_field];
+					}
+				}
+				break;
+			default:
+				$val = $this->opa_row_buf[$field] ?? null;
+				break;
 		}
 		
 		if (caGetOption('returnAsArray', $options, false)) {
 			return is_array($val) ? $val : array($val);
 		}
 		
-		return $val;	
+		return is_array($val) ? join(caGetOption('delimiter', $options, '; '), $val) : $val;	
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	private function getPrimaryKeyFieldName(string $table) : ?string {
+		$qr = $this->db->query("PRAGMA table_info('{$table}')");
+		if($data = $qr->fetchArray()) {
+			return $this->pk_cache[$table] = $data['name'];
+		}
+		$this->pk_cache[$table] = null;
+		return null;
 	}
 	# -------------------------------------------------------
 	/**
