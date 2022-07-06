@@ -819,7 +819,8 @@ class DisplayTemplateParser {
 											}
 										} else {
 											$va_relationship_type_ids = $qr_rels->getAllFieldValues("{$t}.type_id");
-											$va_relationship_type_orientations = array_fill(0, sizeof($va_relationship_type_ids), $t::getRelationshipOrientationForTables($t, $ps_tablename));
+
+											$va_relationship_type_orientations = array_fill(0, sizeof($va_relationship_type_ids), method_exists($t, 'getRelationshipOrientationForTables') ? $t::getRelationshipOrientationForTables($t, $ps_tablename) : []);
 										}
 										
 									} elseif($t_rel_instance->isRelationship()) {
