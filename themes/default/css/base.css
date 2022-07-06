@@ -8033,3 +8033,10 @@ span.developerBundleCode, a.developerBundleCode {
 .plyr__video-wrapper {
     height: none !important;
 }    
+
+div.genericEditorContent {
+	padding: 10px;
+	font-size: 12px;
+	color: #000;
+	font-weight: initial;
+}

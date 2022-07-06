@@ -406,6 +406,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 		if(is_array($ret)) { return $ret; }
 	 	}
 	 	
+	 	$results = [];
 	 	foreach($words as $i => $text) {
 			// Don't stem if:
 			//	1. Stemming is disabled
@@ -421,6 +422,10 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					$text = $text_stem.'*';
 					$word_field = 'sw.stem';
 				}
+			}
+			
+			if(($word_field !== 'sw.stem') && ($this->search_config->get('always_stem'))) {
+				$text .= '*';
 			}
 		
 			$params = [$subject_tablenum];
@@ -520,11 +525,12 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 						{$private_sql}
 				", $params);
 			}
-			$res[$i] = $this->_arrayFromDbResult($qr_res);
+			$results[$i] = $this->_arrayFromDbResult($qr_res);
 		}
-		$ret = array_shift($res);
-		foreach($res as $r) {
-			$ret = array_intersect($ret, $res[$r]);
+		$ret = array_shift($results);
+		foreach($results as $r) {
+			if(!is_array($r)) { continue; }
+			$ret = array_intersect($ret, $r);
 		}
 		return $ret;
 	}

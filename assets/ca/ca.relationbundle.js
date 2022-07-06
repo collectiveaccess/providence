@@ -193,7 +193,7 @@ var caUI = caUI || {};
 				if (options.relationshipTypes && (typeList = options.relationshipTypes[type_id])) {
 					for(i=0; i < typeList.length; i++) {
 						typesOutput[typeList[i].type_id] = 1;
-						
+						if(!typeList[i].parent_id) { continue; }
 						if(!typesByParent[typeList[i].parent_id]) { typesByParent[typeList[i].parent_id] = []; }
 						typesByParent[typeList[i].parent_id].push(typeList[i]);
 						
@@ -215,6 +215,7 @@ var caUI = caUI || {};
 				        var parent = that._findRelType(typeList[i].parent_id);
 						if(parent && !typesOutput[parent.type_id]) { 
 							let parentKey = parent.type_id + '/' + parent.direction;
+							if(!typesByParent[parseInt(parent.parent_id)]) { typesByParent[parseInt(parent.parent_id)] = []; }
 							typesByParent[parseInt(parent.parent_id)].push(parent);	
 							typesOutput[parentKey] = typesOutput[parseInt(parent.type_id)] = 1;
 						}
@@ -250,9 +251,10 @@ var caUI = caUI || {};
                 }
 		
 				jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id + ' option').remove();	// clear existing options
+				
 				jQuery.each(types, function (i, t) {
 					var type_direction = (t.direction) ? t.direction+ "_" : '';
-					jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).append("<option value='" + type_direction + t.type_id + "'>" + t.typename + "</option>");
+					jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).append("<option value='" + type_direction + t.type_id + "' " + (t.disabled ? "disabled='1'" : '') + ">" + t.typename + "</option>");
 				});
 		
 				// select default
