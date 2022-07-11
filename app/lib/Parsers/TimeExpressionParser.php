@@ -327,7 +327,7 @@ class TimeExpressionParser {
 								$this->skipToken();
 								$this->skipToken();
 							
-								$vn_state = TEP_STATE_ACCEPT;
+								$vn_state = TEP_STATE_DATE_RANGE_CONJUNCTION;
 								$vb_can_accept = true;
 								break(2);
 							} elseif ($va_peek['type'] == TEP_TOKEN_BP) {
@@ -344,7 +344,7 @@ class TimeExpressionParser {
 								$this->skipToken();
 								$this->skipToken();
 						
-								$vn_state = TEP_STATE_ACCEPT;
+								$vn_state = TEP_STATE_DATE_RANGE_CONJUNCTION;
 								$vb_can_accept = true;
 								break(2);
 							}
@@ -671,6 +671,36 @@ class TimeExpressionParser {
 			case TEP_STATE_DATE_RANGE_END_DATE:
 				//$vb_circa_is_set = (bool)$va_dates['start']['is_circa'];	// carry over circa-ness from start
 				
+				//
+				// Look for MYA dates
+				//
+				$va_peek = $this->peekToken(2);
+				if ($va_peek['type'] == TEP_TOKEN_MYA) {
+					$va_dates['end'] = array(
+						'month' => 12, 'day' => 31, 'year' => intval($va_token['value']) * -1000000,
+						'hours' => null, 'minutes' => null, 'seconds' => null,
+						'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false, 'dont_window' => true
+					);
+					$this->skipToken();
+					$this->skipToken();
+				
+					$vn_state = TEP_STATE_ACCEPT;
+					$vb_can_accept = true;
+					break;
+				} elseif ($va_peek['type'] == TEP_TOKEN_BP) {
+					$va_dates['end'] = array(
+						'month' => 12, 'day' => 31, 'year' => 1950 - intval($va_token['value']),
+						'hours' => null, 'minutes' => null, 'seconds' => null,
+						'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false, 'dont_window' => true, 'is_bp' => true
+					);
+					$this->skipToken();
+					$this->skipToken();
+			
+					$vn_state = TEP_STATE_ACCEPT;
+					$vb_can_accept = true;
+					break;
+				}
+				
 				#
 				# is this a decade expression?
 				#
@@ -727,7 +757,6 @@ class TimeExpressionParser {
 			}
 			# -------------------------------------------------------
 		}
-		
 		
 		if ($this->getParseError()) {
 			return false;
@@ -3058,6 +3087,10 @@ class TimeExpressionParser {
 					$va_end_pieces['month'] == 12 && $va_end_pieces['day'] == 31
 				) {
 					// years only
+					if($va_start_pieces['is_bp'] ?? false) {
+						$va_bp_indicators = $this->opo_language_settings->getList("dateBP");
+						return (1950 - $va_start_pieces['year']).' '.$va_bp_indicators[0].' '.$vs_range_conjunction.' '.(1950 - $va_end_pieces['year']).' '.$va_bp_indicators[0];
+					}
 
 					// catch decade dates
 					$vs_start_year = $this->_dateToText(array('year' => $va_start_pieces['year'], 'era' => $va_start_pieces['era'], 'uncertainty' => $va_start_pieces['uncertainty'], 'uncertainty_units' => $va_start_pieces['uncertainty_units']), $pa_options);

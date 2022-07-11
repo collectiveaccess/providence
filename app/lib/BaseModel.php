@@ -1435,7 +1435,7 @@ class BaseModel extends BaseObject {
 				$vs_cur_value = isset($this->_FIELD_VALUES[$vs_field]) ? $this->_FIELD_VALUES[$vs_field] : null;
 				switch ($pa_fields_type) {
 					case (FT_NUMBER):
-						if ($vs_cur_value != $vm_value) {
+						if (($vs_cur_value != $vm_value) || !$this->getPrimaryKey()) {
 							$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
 						}
 						
@@ -1466,7 +1466,7 @@ class BaseModel extends BaseObject {
 						}
 						break;
 					case (FT_BIT):
-						if ($vs_cur_value != $vm_value) {
+						if (($vs_cur_value != $vm_value) || !$this->getPrimaryKey()) {
 							$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
 						}
 						$this->_FIELD_VALUES[$vs_field] = ($vm_value ? 1 : 0);
@@ -2977,10 +2977,11 @@ class BaseModel extends BaseObject {
 							$this->set($this->getProperty('HIERARCHY_ID_FLD'), $vn_hierarchy_id);
 						
 							$va_rebuild_hierarchical_index = $this->getHierarchyChildrenForIDs([$this->getPrimaryKey()], ['idsOnly' => true, 'includeSelf' => false]);
-						} 
-							
-						// if there's no parent then this is a root in which case HIERARCHY_ID_FLD should be set to the primary
-						// key of the row, which we'll know once we insert it (so we must set it after insert)
+						} else {
+							// if there's no parent then this is a root in which case HIERARCHY_ID_FLD should be set to the primary
+							// key of the row,
+							$this->set($this->getProperty('HIERARCHY_ID_FLD'), $this->getPrimaryKey());
+						}
 					
 						break;
 					case __CA_HIER_TYPE_MULTI_POLY__:	// TODO: implement

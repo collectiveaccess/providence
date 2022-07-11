@@ -327,6 +327,12 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 								if($insert_mode === 'HIERARCHICAL') {
 									$instance->set('parent_id', $last_id);
 								}
+								$media_bundle = array_values(array_filter($record['bundles'], function($v) {
+									return ($v['name'] === 'media');
+								}));
+								if(sizeof($media_bundle) > 0) {
+									$instance->set('media', $media_bundle[0]['value']);
+								}
 								$ret = $instance->insert(['validateAllIdnos' => true]);
 							}
 							if(!$ret) {
@@ -1092,8 +1098,34 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						// Delete
 						$rc = $instance->removeLabel($id);
 					} elseif($delete && !$id) {
-						// Delete all
-						$rc = $instance->removeAllLabels(($bundle_name === 'preferred_labels') ? __CA_LABEL_TYPE_PREFERRED__ : __CA_LABEL_TYPE_NONPREFERRED__);
+						if(is_array($label_values) && sizeof($label_values)) {
+							// Delete matching labels
+							$label_ids_to_delete = [];
+							if(is_array($cur_labels = $instance->getLabels())) {
+								$cur_labels = array_shift($cur_labels);
+							
+								//print_R($cur_labels); print_R($label_values);
+								foreach($cur_labels as $locale_id => $labels_for_locale) {
+									foreach($labels_for_locale as $label) {
+										foreach($label_values as $k => $v) {
+											if(isset($label[$k]) && ($label[$k] != $v)) {
+												continue(2);
+											}
+										}
+										$label_ids_to_delete[] = $label['label_id'];
+									}
+								}
+							}
+						
+							if(sizeof($label_ids_to_delete)) {
+								foreach($label_ids_to_delete as $id) {
+									$instance->removeLabel($id);
+								}
+							}
+						} else {
+							// Delete all
+							$rc = $instance->removeAllLabels(($bundle_name === 'preferred_labels') ? __CA_LABEL_TYPE_PREFERRED__ : __CA_LABEL_TYPE_NONPREFERRED__);
+						}
 					} else {
 						// invalid operation
 						$warnings[] = Error\warning($idno, "", _t('Invalid operation %1 on %2', ($delete ? _t('delete') : $id ? 'edit' : 'add')), $bundle_name);	
@@ -1146,10 +1178,30 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 								$rc = $instance->update();
 							}
 						} elseif($delete && !$id) {
-							// Delete all
-							if($rc = $instance->removeAttributes($bundle_name)) {
-								$rc = $instance->update();
+							if(is_array($attr_values) && sizeof($attr_values)) {
+								// Delete attributes with matching values
+								$attribute_ids_to_delete = [];
+								if(is_array($cur_attr_vals = $instance->get($instance->tableName().".{$bundle_name}", ['returnWithStructure' => true]))) {
+									foreach(array_shift($cur_attr_vals) as $attribute_id => $field_values) {
+										foreach($attr_values as $k => $v) {
+											if(isset($field_values[$k]) && ($field_values[$k] != $v)) {
+												continue(2);
+											}
+										}
+										$attribute_ids_to_delete[] = $attribute_id;
+									}
+								}
+							
+								if(sizeof($attribute_ids_to_delete)) {
+									foreach($attribute_ids_to_delete as $id) {
+										$instance->removeAttribute($id);
+									}
+								}
+							} else {
+								// Delete all
+								$rc = $instance->removeAttributes($bundle_name);
 							}
+							$rc = $instance->update();
 						} else {
 							// invalid operation
 							$warnings[] = Error\warning($idno, "", _t('Invalid operation %1 on %2', ($delete ? _t('delete') : $id ? 'edit' : 'add')), $bundle_name);

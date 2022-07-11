@@ -555,7 +555,7 @@ class DisplayTemplateParser {
 					break;
 				case 'expression':
 					if ($vs_exp = trim($o_node->getInnerText())) {
-						$vs_acc .= $content = ExpressionParser::evaluate(DisplayTemplateParser::_processChildren($pr_res, $o_node->children, DisplayTemplateParser::_getValues($pr_res, DisplayTemplateParser::_getTags($o_node->children, $pa_options), $pa_options), array_merge($pa_options, ['quote' => true])), $pa_vals);
+						$vs_acc .= $content = ExpressionParser::evaluate(DisplayTemplateParser::_processChildren($pr_res, $o_node->children, DisplayTemplateParser::_getValues($pr_res, DisplayTemplateParser::_getTags($o_node->children, $pa_options), $pa_options), array_merge($pa_options, ['quoteNonNumericValues' => true])), $pa_vals);
 						
 						if ($pb_is_case && $content) { break(2); }
 					}
@@ -819,6 +819,8 @@ class DisplayTemplateParser {
 											}
 										} else {
 											$va_relationship_type_ids = $qr_rels->getAllFieldValues("{$t}.type_id");
+
+											$va_relationship_type_orientations = array_fill(0, sizeof($va_relationship_type_ids), method_exists($t, 'getRelationshipOrientationForTables') ? $t::getRelationshipOrientationForTables($t, $ps_tablename) : []);
 										}
 										
 									} elseif($t_rel_instance->isRelationship()) {
@@ -1716,6 +1718,10 @@ class DisplayTemplateParser {
 						if ($pb_is_case && $content) { break(2); }
 					}
 					break;
+				case 'expression':
+					$vs_acc .= $content = ExpressionParser::evaluate(DisplayTemplateParser::_processTemplateSubTemplates($o_node->children, $pa_values, array_merge($pa_options, ['quoteNonNumericValues' => true])), $pa_vals);
+					if ($pb_is_case && $content) { break(2); }
+					break;
 				default:
 					$vs_acc .= DisplayTemplateParser::processSimpleTemplate($o_node->html(), $pa_values, $pa_options);
 					break;
@@ -1772,6 +1778,7 @@ class DisplayTemplateParser {
 	 *			removePrefix = string to remove from tags extracted from template before doing lookup into value array
 	 *			getFrom = a model instance to draw data from. If set, $pa_values is ignored.
 	 *			quote = quote replacement values (Eg. ^ca_objects.idno becomes "2015.001" rather than 2015.001). Value containing quotes will be escaped with a backslash. [Default is false]
+	 *			quoteNonNumericValues = quote replacement values if that are not numeric (Eg. ^ca_objects.idno becomes "X.2015.001" rather than X.2015.001). Value containing quotes will be escaped with a backslash. [Default is false]
 	 *          skipTagsWithoutValues = Don't process tags without a corresponding value in $pa_values. [Default is false]
 	 *
 	 * @return string Output of processed template
@@ -1782,6 +1789,8 @@ class DisplayTemplateParser {
 		$ps_prefix = caGetOption('prefix', $pa_options, null);
 		$ps_remove_prefix = caGetOption('removePrefix', $pa_options, null);
 		$pb_quote = caGetOption('quote', $pa_options, false);
+		$pb_quote_strings = caGetOption('quoteNonNumericValues', $pa_options, false);
+		
 		$pb_skip_tags_without_values = caGetOption('skipTagsWithoutValues', $pa_options, false);
 		
 		$va_tags = caGetTemplateTags($ps_template);
@@ -1841,7 +1850,7 @@ class DisplayTemplateParser {
                 }
 				$vs_val = caProcessTemplateTagDirectives($vs_val, $va_tmp, ['omitUnits' => (isset($pa_options['dimensionsUnitMap']) && ($cur_unit == $next_unit))]);
 				
-				if ($pb_quote) { $vs_val = '"'.addslashes($vs_val).'"'; }
+				if ($pb_quote || (!is_numeric($vs_val) & $pb_quote_strings)) { $vs_val = '"'.addslashes($vs_val).'"'; }
 				$vs_tag_proc = preg_quote($vs_tag, '/');
 				$ps_template = preg_replace("/[\{]{0,1}\^(?={$vs_tag_proc}[^A-Za-z0-9_]+|{$vs_tag_proc}$){$vs_tag_proc}[\}]{0,1}/", str_replace("$", "\\$", $vs_val), $ps_template);	// escape "$" to prevent interpretation as backreferences
 			}

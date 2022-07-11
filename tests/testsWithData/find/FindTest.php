@@ -97,7 +97,8 @@ class FindTest extends BaseTestWithData {
 				'dimensions' => array(
 					array(
 						'dimensions_length' => '10 in',
-						'dimensions_weight' => '2 lbs'
+						'dimensions_weight' => '2 lbs',
+						'dimensions_height' => null
 					)
 				),
 
@@ -136,7 +137,7 @@ class FindTest extends BaseTestWithData {
 				// coverageNotes
 				'coverageNotes' => array(
 					array(
-						'coverageNotes' => ''
+						'coverageNotes' => 'Uncertain'
 					),
 				),
 			)
@@ -144,7 +145,7 @@ class FindTest extends BaseTestWithData {
 		
 		$this->assertGreaterThan(0, $this->opn_object_id2 = $this->addTestRecord('ca_objects', array(
 			'intrinsic_fields' => array(
-				'type_id' => 'dataset',
+				'type_id' => 'physical_object',
 				'idno' => 'Another TEST',
 				'extent' => 3
 			),
@@ -184,7 +185,8 @@ Said, hey honey, take a walk on the wild side.'
 				'dimensions' => array(
 					array(
 						'dimensions_length' => '5 cm',
-						'dimensions_weight' => '0.5 kg'
+						'dimensions_height' => '5 in',
+						'dimensions_weight' => '5 kg'
 					)
 				),
 
@@ -503,7 +505,7 @@ Said, hey honey, take a walk on the wild side.'
 		$this->assertCount(1, $vm_ret);
 		$this->assertContains($this->opn_object_id, $vm_ret);
 		
-		$vm_ret = ca_objects::find(['type_id' => 'dataset'], ['purify' => true, 'returnAs' => 'ids']);
+		$vm_ret = ca_objects::find(['type_id' => 'physical_object'], ['purify' => true, 'returnAs' => 'ids']);
 
 		$this->assertIsArray($vm_ret);
 		$this->assertCount(1, $vm_ret);
@@ -517,7 +519,7 @@ Said, hey honey, take a walk on the wild side.'
 		$this->assertCount(1, $vm_ret);
 		$this->assertContains($this->opn_object_id, $vm_ret);
 		
-		$vm_ret = ca_objects::find(['type_id' => 'dataset', 'preferred_labels' => ['name' => ['LIKE', 'Sound%']]], ['purify' => true, 'returnAs' => 'ids']);
+		$vm_ret = ca_objects::find(['type_id' => 'physical_object', 'preferred_labels' => ['name' => ['LIKE', 'Sound%']]], ['purify' => true, 'returnAs' => 'ids']);
 
 		$this->assertIsArray($vm_ret);
 		$this->assertCount(0, $vm_ret);
@@ -546,7 +548,7 @@ Said, hey honey, take a walk on the wild side.'
 		$this->assertCount(1, $vm_ret);
 		$this->assertContains($this->opn_object_id, $vm_ret);
 		
-		$vm_ret = ca_objects::find(['object_id' => ['>', 0]], ['purify' => true, 'returnAs' => 'ids', 'restrictToTypes' => ['dataset']]);
+		$vm_ret = ca_objects::find(['object_id' => ['>', 0]], ['purify' => true, 'returnAs' => 'ids', 'restrictToTypes' => ['physical_object']]);
 
 		$this->assertIsArray($vm_ret);
 		$this->assertCount(1, $vm_ret);
@@ -560,7 +562,7 @@ Said, hey honey, take a walk on the wild side.'
 		$this->assertCount(1, $vm_ret);
 		$this->assertContains($this->opn_object_id, $vm_ret);
 		
-		$vm_ret = ca_objects::find(['preferred_labels' => ['name' => ['LIKE', 'Sound%']]], ['purify' => true, 'returnAs' => 'ids', 'restrictToTypes' => ['dataset']]);
+		$vm_ret = ca_objects::find(['preferred_labels' => ['name' => ['LIKE', 'Sound%']]], ['purify' => true, 'returnAs' => 'ids', 'restrictToTypes' => ['physical_object']]);
 
 		$this->assertIsArray($vm_ret);
 		$this->assertCount(0, $vm_ret);
@@ -641,6 +643,53 @@ Said, hey honey, take a walk on the wild side.'
 
 		$this->assertIsArray($vm_ret);
 		$this->assertCount(2, $vm_ret);
+		$this->assertContains($this->opn_object_id, $vm_ret);
+	}
+	# -------------------------------------------------------
+	public function testFindNullAttribute() {	
+		$vm_ret = ca_objects::find(['coverageNotes' => null], ['purify' => true, 'returnAs' => 'ids']);
+
+		$this->assertIsArray($vm_ret);
+		$this->assertCount(1, $vm_ret);
+ 		$this->assertContains($this->opn_object_id2, $vm_ret);
+		
+		$vm_ret = ca_objects::find(['dimensions' => ['dimensions_height' => null]], ['purify' => true, 'returnAs' => 'ids']);
+
+		$this->assertIsArray($vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertContains($this->opn_object_id, $vm_ret);
+		
+		
+		$vm_ret = ca_objects::find(['dimensions' => ['dimensions_height' => '5in']], ['purify' => true, 'returnAs' => 'ids']);
+
+		$this->assertIsArray($vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertContains($this->opn_object_id2, $vm_ret);
+		
+		$vm_ret = ca_objects::find(['dimensions' => ['dimensions_weight' => '5 kg']], ['purify' => true, 'returnAs' => 'ids']);
+
+		$this->assertIsArray($vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertContains($this->opn_object_id2, $vm_ret);
+		
+		
+		
+		$vm_ret = ca_objects::find(['dimensions' => ['dimensions_length' => '5 cm', 'dimensions_height' => '5 in']], ['purify' => true, 'returnAs' => 'ids']);
+
+		$this->assertIsArray($vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertContains($this->opn_object_id2, $vm_ret);
+		
+		$vm_ret = ca_objects::find(['dimensions' => ['dimensions_length' => '5 cm', 'dimensions_height' => '10 in']], ['purify' => true, 'returnAs' => 'ids']);
+
+		$this->assertIsArray($vm_ret);
+		$this->assertCount(0, $vm_ret);
+		
+		
+		$vm_ret = ca_objects::find(['dimensions' => ['dimensions_length' => '10 in', 'dimensions_weight' => '2 lb', 'dimensions_height' => null]], ['purify' => true, 'returnAs' => 'ids']);
+
+		$this->assertIsArray($vm_ret);
+		$this->assertCount(1, $vm_ret);
 		$this->assertContains($this->opn_object_id, $vm_ret);
 	}
 	# -------------------------------------------------------
