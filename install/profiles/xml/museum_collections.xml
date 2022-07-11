@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base">
-  <profileName>[Standard] SPECTRUM</profileName>
-  <profileDescription>Use this profile if you want a system that is compliant with SPECTRUM: The UK Museum Documentation Standard</profileDescription>
+  <profileName>[Standard] Museum Collection</profileName>
+  <profileDescription>Use this profile as a base for a museum collection</profileDescription>
   <locales>
     <locale lang="en" country="US">English</locale>
 	<locale lang="fr" country="FR">Français</locale>
@@ -211,12 +211,12 @@
         <item idno="i1" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>SPECTRUM</name_singular>
-              <name_plural>SPECTRUM</name_plural>
+              <name_singular>Museum Collection</name_singular>
+              <name_plural>Museum Collection</name_plural>
             </label>
 			<label locale="fr_FR" preferred="1">
-              <name_singular>SPECTRUM</name_singular>
-              <name_plural>SPECTRUM</name_plural>
+              <name_singular>Museum Collection</name_singular>
+              <name_plural>Museum Collection</name_plural>
             </label>
           </labels>
         </item>
@@ -235,12 +235,12 @@
         <item idno="i1" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>SPECTRUM Place Authority</name_singular>
-              <name_plural>SPECTRUM Place Authority</name_plural>
+              <name_singular>Museum Collection Place Authority</name_singular>
+              <name_plural>Museum Collection Place Authority</name_plural>
             </label>
 			<label locale="fr_FR" preferred="1">
-              <name_singular>SPECTRUM Autorité lieu</name_singular>
-              <name_plural>SPECTRUM Autorités lieux</name_plural>
+              <name_singular>Museum Collection Autorité lieu</name_singular>
+              <name_plural>Museum Collection Autorités lieux</name_plural>
             </label>
           </labels>
         </item>
@@ -259,12 +259,12 @@
         <item idno="i1" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>SPECTRUM</name_singular>
-              <name_plural>SPECTRUM</name_plural>
+              <name_singular>Museum Collection</name_singular>
+              <name_plural>Museum Collection</name_plural>
             </label>
 			<label locale="fr_FR" preferred="1">
-              <name_singular>SPECTRUM</name_singular>
-              <name_plural>SPECTRUM</name_plural>
+              <name_singular>Museum Collection</name_singular>
+              <name_plural>Museum Collection</name_plural>
             </label>
           </labels>
         </item>
@@ -393,12 +393,12 @@
         <item idno="i1" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>SPECTRUM</name_singular>
-              <name_plural>SPECTRUM</name_plural>
+              <name_singular>Museum Collection</name_singular>
+              <name_plural>Museum Collection</name_plural>
             </label>
 			<label locale="fr_FR" preferred="1">
-              <name_singular>SPECTRUM</name_singular>
-              <name_plural>SPECTRUM</name_plural>
+              <name_singular>Museum Collection</name_singular>
+              <name_plural>Museum Collection</name_plural>
             </label>
           </labels>
         </item>
@@ -453,12 +453,12 @@
         <item idno="i1" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>SPECTRUM</name_singular>
-              <name_plural>SPECTRUM</name_plural>
+              <name_singular>Museum Collection</name_singular>
+              <name_plural>Museum Collection</name_plural>
             </label>
 			<label locale="fr_FR" preferred="1">
-              <name_singular>SPECTRUM</name_singular>
-              <name_plural>SPECTRUM</name_plural>
+              <name_singular>Museum Collection</name_singular>
+              <name_plural>Museum Collection</name_plural>
             </label>
           </labels>
         </item>
@@ -5130,11 +5130,11 @@
       <labels>
         <label locale="en_US">
           <name>Stratigraphic information</name>
-          <description>To be used to record statigraphic information. Refer to the SPECTRUM documentation for description of each element.</description>
+          <description>To be used to record statigraphic information. Refer to the Museum Collection documentation for description of each element.</description>
         </label>
 		<label locale="fr_FR">
           <name>Information stratégique</name>
-          <description>A utiliser pour enregistrer des informations stratégiques. Référez-vous à la documentation de SPECTRUM pour la description de chaque élément.</description>
+          <description>A utiliser pour enregistrer des informations stratégiques. Référez-vous à la documentation de Museum Collection pour la description de chaque élément.</description>
         </label>
       </labels>
       <settings/>
@@ -5259,11 +5259,11 @@
       <labels>
         <label locale="en_US">
           <name>Completeness information</name>
-          <description>To be used to record completeness information of an object. Refer to the SPECTRUM documentation for description of each element.</description>
+          <description>To be used to record completeness information of an object. Refer to the Museum Collection documentation for description of each element.</description>
         </label>
 		<label locale="fr_FR">
           <name>Information exhaustive</name>
-          <description>A utiliser pour enregistrer les informations exhaustives d'un objet. Référez-vous à la documentation de SPECTRUM pour la description de chaque élément.</description>
+          <description>A utiliser pour enregistrer les informations exhaustives d'un objet. Référez-vous à la documentation de Museum Collection pour la description de chaque élément.</description>
         </label>
       </labels>
       <settings/>
@@ -5371,11 +5371,11 @@
       <labels>
         <label locale="en_US">
           <name>Condition information</name>
-          <description>To be used to record condition information of an object. Refer to the SPECTRUM documentation for description of each element.</description>
+          <description>To be used to record condition information of an object. Refer to the Museum Collection documentation for description of each element.</description>
         </label>
 		<label locale="fr_FR">
           <name>Informations de condition</name>
-          <description>A utiliser pour enregistrer les informations de condition d'un objet. Référez-vous à la documentation de SPECTRUM pour la description de chaque élément.</description>
+          <description>A utiliser pour enregistrer les informations de condition d'un objet. Référez-vous à la documentation de Museum Collection pour la description de chaque élément.</description>
         </label>
       </labels>
       <settings/>
@@ -5705,11 +5705,11 @@
       <labels>
         <label locale="en_US">
           <name>Hazard information</name>
-          <description>To be used to record hazard information of an object. Refer to the SPECTRUM documentation for description of each element.</description>
+          <description>To be used to record hazard information of an object. Refer to the Museum Collection documentation for description of each element.</description>
         </label>
 		<label locale="fr_FR">
           <name>Information sur les risques</name>
-          <description>A utiliser pour enregistrer l'information de risque pour un objet. Se référer à la documentation de SPECTRUM pour la description de chaque élément.</description>
+          <description>A utiliser pour enregistrer l'information de risque pour un objet. Se référer à la documentation de Museum Collection pour la description de chaque élément.</description>
         </label>
       </labels>
       <settings/>
