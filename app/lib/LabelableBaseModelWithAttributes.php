@@ -558,6 +558,8 @@
 		 * @return mixed Depending upon the returnAs option setting, an array, subclass of LabelableBaseModelWithAttributes or integer may be returned.
 		 */
 		public static function find($pa_values, $pa_options=null) {
+			global $g_ui_locale;
+			
 			$t_instance = null;
 			$vs_table = get_called_class();
 			
@@ -842,7 +844,6 @@
 			if ($vb_has_simple_fields) {
 				foreach ($pa_values as $vs_field => $va_field_values) {
 					foreach ($va_field_values as $va_field_value) {
-
 						if (!$t_instance->hasField($vs_field)) {
 							continue;
 						}
@@ -881,18 +882,26 @@
 			}
 			
 			if ($vb_has_attributes) {
-				$va_joins[] = " INNER JOIN ca_attributes ON ca_attributes.row_id = {$vs_table}.{$vs_table_pk} AND ca_attributes.table_num = {$vn_table_num} ";
-				$va_joins[] = " INNER JOIN ca_attribute_values ON ca_attribute_values.attribute_id = ca_attributes.attribute_id ";
+				$va_joins[] = " LEFT JOIN ca_attributes ON {$vs_table}.{$vs_table_pk} = ca_attributes.row_id AND ca_attributes.table_num = {$vn_table_num}";
+				$va_joins[] = " LEFT JOIN ca_attribute_values ON ca_attributes.attribute_id = ca_attribute_values.attribute_id";
 
                 $vn_attr_count = 0;
                 $va_attr_sql = $va_attr_params = [];
+                
 				foreach($pa_values as $vs_field => $va_field_values) {
 					foreach ($va_field_values as $vs_key => $va_field_values_by_key) {
+						// Make list from non-container values
 						if (is_array($va_field_values_by_key) && isset($va_field_values_by_key[0]) && !is_array($va_field_values_by_key[0]) && caIsValidSqlOperator($va_field_values_by_key[0], ['nullable' => true, 'isList' => true])) {
 							$va_field_values_by_key = [$va_field_values_by_key];
 						}
-						if (!is_numeric($vs_key)) { $vs_field = $vs_key;} 
 						
+						$container_field = null;
+						$is_container = null;
+						if (!is_numeric($vs_key)) { 
+							$container_field = $vs_field;
+							$is_container = array_search($container_field, $va_element_codes);
+							$vs_field = $vs_key;
+						} 
 						foreach($va_field_values_by_key as $va_field_value) {
 							$vs_op = strtolower($va_field_value[0]);
 							$vm_value = $va_field_value[1];
@@ -900,101 +909,113 @@
 							$va_q = [];
 							if (($vn_element_id = array_search($vs_field, $va_element_codes)) !== false) {
 							    $vn_attr_count++;
+							    $processed = false;
+							    
 								switch($vn_datatype = ca_metadata_elements::getElementDatatype($vs_field)) {
 									case __CA_ATTRIBUTE_VALUE_CONTAINER__:
-										$va_subelement_codes = $t_instance->getApplicableElementCodes($vn_element_id, true, true);
-								
-										foreach($va_field_value as $vs_subfld => $va_subfield_value) {
-									
-											if (($vn_subelement_id = array_search($vs_subfld, $va_subelement_codes)) === false) { continue; }
-									
-											$vs_q = "((ca_attribute_values.element_id = {$vn_subelement_id}) AND  ";
-									
-											$vs_op = strtolower($va_subfield_value[0]);
-											$vm_value = $va_subfield_value[1];
-									
-											if (!($vs_subfld = Attribute::getSortFieldForDatatype($vn_datatype))) { $vs_subfld = 'value_longtext1'; }
-							
-											if (is_null($vm_value)) {
-												if ($vs_op !== '=') { $vs_op = 'IS'; }
-												$va_q[] = "{$vs_q} (ca_attribute_values.{$vs_subfld} {$vs_op} NULL))";
-											} elseif (is_array($vm_value) && sizeof($vm_value)) {
-												if ($vs_op !== '=') { $vs_op = 'IN'; }
-												$va_q[] = "{$vs_q} (ca_attribute_values.{$vs_subfld} {$vs_op} (?)))";
-											} elseif (caGetOption('allowWildcards', $pa_options, false) && (strpos($vm_value, '%') !== false)) {
-												$va_q[] = "{$vs_q} (ca_attribute_values.{$vs_subfld} LIKE ?))";
-											} else {
-												if ($vm_value === '') { continue; }
-												$va_q[] = "{$vs_q} (ca_attribute_values.{$vs_subfld} {$vs_op} ?))";
-											}
-									
-											$va_attr_params[] = $vm_value;
-								
-										}
-										break;
+										// SKIP
+										continue(2);
 									case __CA_ATTRIBUTE_VALUE_MEDIA__:
 									case __CA_ATTRIBUTE_VALUE_FILE__: 
 										// SKIP
 										continue(2);
-										break;
 									case __CA_ATTRIBUTE_VALUE_DATERANGE__:
-										if(is_array($va_date = caDateToHistoricTimestamps($vm_value))) {
-											$va_q[] = "((ca_attribute_values.element_id = {$vn_element_id}) AND ((ca_attribute_values.value_decimal1 BETWEEN ? AND ?) OR (ca_attribute_values.value_decimal2 BETWEEN ? AND ?) OR (ca_attribute_values.value_decimal1 <= ? AND ca_attribute_values.value_decimal2 >= ?)))";
-											$va_attr_params[] = [(float)$va_date['start'], (float)$va_date['end'], (float)$va_date['start'], (float)$va_date['end'], (float)$va_date['start'], (float)$va_date['end']];
-										} else {
-											continue(2);
+										if($vm_value) {
+											if(is_array($va_date = caDateToHistoricTimestamps($vm_value))) {
+												$va_q[] = "((ca_attribute_values.element_id = {$vn_element_id}) AND ((ca_attribute_values.value_decimal1 BETWEEN ? AND ?) OR (ca_attribute_values.value_decimal2 BETWEEN ? AND ?) OR (ca_attribute_values.value_decimal1 <= ? AND ca_attribute_values.value_decimal2 >= ?)))";
+												$va_attr_params[] = [(float)$va_date['start'], (float)$va_date['end'], (float)$va_date['start'], (float)$va_date['end'], (float)$va_date['start'], (float)$va_date['end']];
+												$processed = true;
+											} else {
+												continue(2);
+											}
 										}
 										break;
 									case __CA_ATTRIBUTE_VALUE_CURRENCY__:
-										if (is_array($va_parsed_value = caParseCurrencyValue($vm_value))) {
-											$va_q[] = "((ca_attribute_values.element_id = {$vn_element_id}) AND ((ca_attribute_values.value_longtext1 = ?) OR (ca_attribute_values.value_decimal1 {$vs_op} ?)))";
-											$va_attr_params[] = [$va_parsed_value['currency'], $va_parsed_value['value']];
-										} else {
-											continue(2);
+										if ($vm_value) {
+										 	if(is_array($va_parsed_value = caParseCurrencyValue($vm_value))) {
+												$va_q[] = "((ca_attribute_values.element_id = {$vn_element_id}) AND ((ca_attribute_values.value_longtext1 = ?) OR (ca_attribute_values.value_decimal1 {$vs_op} ?)))";
+												$va_attr_params[] = [$va_parsed_value['currency'], $va_parsed_value['value']];
+												$processed = true;
+											} else {
+												continue(2);
+											}
 										}
 										break;
-									default:
-										if (!($vs_fld = Attribute::getSortFieldForDatatype($vn_datatype))) { $vs_fld = 'value_longtext1'; }
-								
-										if ($vn_datatype == __CA_ATTRIBUTE_VALUE_LIST__) {
-											if ($t_element = ca_metadata_elements::getInstance($vs_field)) {
-												if (is_array($vm_value)) { 
-													foreach($vm_value as $vn_i => $vm_list_value) {
-														$vm_value[$vn_i] = is_numeric($vm_list_value) ? (int)$vm_list_value : (int)caGetListItemID($t_element->get('list_id'), $vm_list_value);
-													}
-												} else {
-													$vm_value = is_numeric($vm_value) ? (int)$vm_value : (int)caGetListItemID($t_element->get('list_id'), $vm_value);
-												}
+									case __CA_ATTRIBUTE_VALUE_LENGTH__:
+        								if($vm_value) {
+        									$vm_value = caConvertFractionalNumberToDecimal(trim($vm_value), $g_ui_locale);
+											try {
+												$vo_parsed_measurement = caParseLengthDimension($vm_value);
+											} catch (Exception $e) {
+												continue(2);
 											}
-										}
-								
-										$vs_q = "((ca_attribute_values.element_id = {$vn_element_id}) AND  ";
-										if (is_null($vm_value)) {
-											if ($vs_op !== '=') { $vs_op = 'IS'; }
-											$va_q[] = "{$vs_q} (ca_attribute_values.{$vs_fld} {$vs_op} NULL))";
-										} elseif (is_array($vm_value) && sizeof($vm_value)) {
-											if (!in_array(strtoupper($vs_op), ['=', 'NOT IN', 'BETWEEN'])) { $vs_op = 'IN'; }
-											if (strtoupper($vs_op) === 'BETWEEN') {
-												$va_q[] = "(ca_attribute_values.{$vs_fld} BETWEEN ? AND ?)";
-												$va_attr_params[] = $vm_value[0];
-												$va_attr_params[] = $vm_value[1];
+											if ($vo_parsed_measurement) {
+												$va_q[] = "((ca_attribute_values.element_id = {$vn_element_id}) AND (ca_attribute_values.value_decimal1 {$vs_op} ?))";
+												$va_attr_params[] = [(float)$vo_parsed_measurement->convertTo('METER',6, 'en_US')];
+												$processed = true;
 											} else {
-												$va_q[] = "{$vs_q} (ca_attribute_values.{$vs_fld} {$vs_op} (?)))";
-												$va_attr_params[] = $vm_value;
+												continue(2);
 											}
-										} elseif (caGetOption('allowWildcards', $pa_options, false) && (strpos($vm_value, '%') !== false)) {
-											$va_q[] = "{$vs_q} (ca_attribute_values.{$vs_fld} LIKE ?))";
-											$va_attr_params[] = $vm_value;
-										} else {
-											if ($vm_value === '') { break; }
-											$va_q[] = "{$vs_q} (ca_attribute_values.{$vs_fld} {$vs_op} ?))";
-											$va_attr_params[] = $vm_value;
 										}
-								
+										break;
+									case __CA_ATTRIBUTE_VALUE_WEIGHT__:
+										if($vm_value) {
+											try {
+												$vo_parsed_measurement = caParseWeightDimension($vm_value);
+											} catch (Exception $e) {
+												continue(2);
+											}
+											if ($vo_parsed_measurement) {
+												$va_q[] = "((ca_attribute_values.element_id = {$vn_element_id}) AND (ca_attribute_values.value_decimal1 {$vs_op} ?))";
+												$va_attr_params[] = [(float)$vo_parsed_measurement->convertTo('KILOGRAM', 6, 'en_US')];
+												$processed = true;
+											} else {
+												continue(2);
+											}
+										}
 										break;
 								}
+								
+								if(!$processed) {
+									if (!($vs_fld = Attribute::getSortFieldForDatatype($vn_datatype))) { $vs_fld = 'value_longtext1'; }
 						
-						        if (sizeof($va_q)) { $va_attr_sql[] = join(" AND ", $va_q); }
+									if ($vn_datatype == __CA_ATTRIBUTE_VALUE_LIST__) {
+										if ($t_element = ca_metadata_elements::getInstance($vs_field)) {
+											if (is_array($vm_value)) { 
+												foreach($vm_value as $vn_i => $vm_list_value) {
+													$vm_value[$vn_i] = is_numeric($vm_list_value) ? (int)$vm_list_value : (int)caGetListItemID($t_element->get('list_id'), $vm_list_value);
+												}
+											} else {
+												$vm_value = is_numeric($vm_value) ? (int)$vm_value : (int)caGetListItemID($t_element->get('list_id'), $vm_value);
+											}
+										}
+									}
+						
+									$vs_q = "((ca_attribute_values.element_id = {$vn_element_id}) AND ";
+									if (is_null($vm_value)) {
+										$id = $is_container ?? $vn_element_id;
+										$va_q[] = "(({$vs_table}.{$vs_table_pk} NOT IN (SELECT row_id FROM ca_attributes WHERE element_id = {$id} AND table_num = {$vn_table_num})) OR {$vs_q} (ca_attribute_values.{$vs_fld} IS NULL)))";
+										$va_attr_params[] = null;
+									} elseif (is_array($vm_value) && sizeof($vm_value)) {
+										if (!in_array(strtoupper($vs_op), ['=', 'NOT IN', 'BETWEEN'])) { $vs_op = 'IN'; }
+										if (strtoupper($vs_op) === 'BETWEEN') {
+											$va_q[] = "(ca_attribute_values.{$vs_fld} BETWEEN ? AND ?)";
+											$va_attr_params[] = $vm_value[0];
+											$va_attr_params[] = $vm_value[1];
+										} else {
+											$va_q[] = "{$vs_q} (ca_attribute_values.{$vs_fld} {$vs_op} (?)))";
+											$va_attr_params[] = $vm_value;
+										}
+									} elseif (caGetOption('allowWildcards', $pa_options, false) && (strpos($vm_value, '%') !== false)) {
+										$va_q[] = "{$vs_q} (ca_attribute_values.{$vs_fld} LIKE ?))";
+										$va_attr_params[] = $vm_value;
+									} else {
+										if ($vm_value === '') { break; }
+										$va_q[] = "{$vs_q} (ca_attribute_values.{$vs_fld} {$vs_op} ?))";
+										$va_attr_params[] = $vm_value;
+									}
+								}
+								if (sizeof($va_q)) { $va_attr_sql[] = join(" AND ", $va_q); }
 							}
 						}
 					}
@@ -1003,7 +1024,9 @@
 			
 			if (($vn_attr_count == 1) || (($vn_attr_count > 0) && strtolower($ps_boolean) !== 'and')) {
 			    $va_label_sql = array_merge($va_label_sql, $va_attr_sql);
-			    $va_sql_params = array_merge($va_sql_params, ($vs_op !== 'IN') ? caFlattenArray($va_attr_params) : $va_attr_params);
+			    if(!((sizeof($va_attr_params) == 1) && is_null($va_attr_params[0]))) {
+			    	$va_sql_params = array_merge($va_sql_params, ($vs_op !== 'IN') ? caFlattenArray($va_attr_params) : $va_attr_params);
+			    }
 			} 
 			
 			if (!sizeof($va_label_sql) && ($vn_attr_count == 0)) { return null; }
@@ -1032,8 +1055,14 @@
 			if (($vn_attr_count > 1) && (strtolower($ps_boolean) == 'and')) {
 			    $va_ids = null;
 			    foreach($va_attr_sql as $i => $vs_attr_sql) {
-			        $qr_p = $o_db->query("SELECT t.{$vs_table_pk} FROM {$vs_table} t INNER JOIN ca_attributes ON ca_attributes.table_num = {$vn_table_num} AND ca_attributes.row_id = t.{$vs_table_pk} INNER JOIN ca_attribute_values ON ca_attribute_values.attribute_id = ca_attributes.attribute_id WHERE {$vs_attr_sql}", $va_attr_params[$i]);
-			        
+			    	$sql="
+			        	SELECT {$vs_table}.{$vs_table_pk} 
+			        	FROM {$vs_table} 
+			        	LEFT JOIN ca_attributes ON ca_attributes.table_num = {$vn_table_num} AND ca_attributes.row_id = {$vs_table}.{$vs_table_pk} 
+			        	LEFT JOIN ca_attribute_values ON ca_attributes.attribute_id = ca_attribute_values.attribute_id 
+			        	WHERE {$vs_attr_sql}";
+			        	
+			        $qr_p = !is_null($va_attr_params[$i]) ? $o_db->query($sql, $va_attr_params[$i]) : $o_db->query($sql);
 			        if (is_null($va_ids)) { 
 			            $va_ids = array_unique($qr_p->getAllFieldValues($vs_table_pk));
 			        } else {
@@ -1090,7 +1119,7 @@
 			$limit_sql = '';
 			if ($start > 0) { $limit_sql = "{$start}"; }
 			if ($limit > 0) { $limit_sql .= $limit_sql ? ", {$limit}" : "{$limit}"; }
-		
+			
 			$qr_res = $o_db->query($vs_sql.($limit_sql ? " LIMIT {$limit_sql}" : ''), array_merge($va_sql_params, $va_type_restriction_params));
 
 			if ($vb_purify_with_fallback && ($qr_res->numRows() == 0)) {

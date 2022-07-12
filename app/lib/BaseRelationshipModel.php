@@ -968,7 +968,11 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 	 * primary ids. The value is a list of ids to evaluate the relationship relative to. 
 	 * The string 'LTOR' is returned for left-to-right relationships (primary id on left of relationship)
 	 * and 'RTOL' for right-to-left relationships. Null is returned is the currently loaded relationship
-	 * does not reference any id in the primary_ids array.
+	 * does not reference any id in the primary_ids array. 
+	 *
+	 * This method is usually used to determine relationship orientation for relationships between the same 
+	 * table (eg. ca_entities <=> ca_entities) where orientation cannot be derived from the structure of the
+	 * relationship alone. 
 	 *
 	 * @param array $primary_ids
 	 *
@@ -1008,6 +1012,54 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 			}
 		}
 		
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return orientation of relationship between two tables. Tables can be two primary tables (eg. ca_objects and ca_entities)
+	 * or a primary table and a relationship table (eg. ca_objects and ca_objects_x_entities). This method will only return correct orientation
+	 * for relationships between different tables where orientation can be derived from the structure of the relationship alone. For "self"
+	 * relationships (relationships between two records in the same table) the id of the record from whence the related value is being pulled
+	 * (the "primary id") must also be defined. Use getOrientationForRelationship() for these cases.
+	 *
+	 * @param string $table1
+	 * @param string $table2
+	 *
+	 * @return string LTOR, RTOL or null if orientation cannot be determined.
+	 */
+	public static function getRelationshipOrientationForTables(string $table1, string $table2) : ?string {
+		if($table1 === $table2) { return null; }
+		$t_instance1 = Datamodel::getInstance($table1, true);
+		$t_instance2 = Datamodel::getInstance($table2, true);
+		
+		if(is_a($t_instance1, 'BundlableLabelableBaseModelWithAttributes') && is_a($t_instance2, 'BaseRelationshipModel')) {
+			if($t_instance2->getLeftTableName() === $table1) {
+				return 'LTOR';
+			} else {
+				return 'RTOL';
+			}
+		} elseif(is_a($t_instance2, 'BundlableLabelableBaseModelWithAttributes') && is_a($t_instance1, 'BaseRelationshipModel')) {
+			if($t_instance1->getLeftTableName() === $table2) {
+				return 'LTOR';
+			} else {
+				return 'RTOL';
+			}
+		} elseif(is_a($t_instance1, 'BundlableLabelableBaseModelWithAttributes') && is_a($t_instance2, 'BundlableLabelableBaseModelWithAttributes') && is_array($path = Datamodel::getPath($table1, $table2))) {
+			$path = array_keys($path);
+			switch(sizeof($path)) {
+				case 3:
+					$rel = Datamodel::getInstance($path[1], true);
+					if($rel->getLeftTableName() === $path[0]) {
+						return 'LTOR';
+					} else {
+						return 'RTOL';
+					}
+					break;
+				default:
+					return null;
+			
+			}
+		}
 		return null;
 	}
 	# ------------------------------------------------------
