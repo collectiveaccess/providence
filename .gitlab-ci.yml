@@ -14,11 +14,13 @@ deploy_prod:
   script:
     - cd /app/providence
     - git pull
+    - cp $SETUP_PHP_PROVIDENCE setup.php
     - source .env
     - docker-compose -f docker-compose.yml -f docker-compose-deploy.yml build --build-arg LOCAL_UID=$LOCAL_UID --build-arg SERVERNAME=$SERVERNAME  
     - docker-compose -f docker-compose.yml -f docker-compose-deploy.yml up -d
   after_script:
     - cd /app/providence && rm .env
+    - cd /app/providence && chown gitlab-runner:daemon setup.php && chmod 640 setup.php
   environment:
     name: prod
     url: https://providence.galib.uga.edu
