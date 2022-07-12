@@ -323,15 +323,10 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 									}
 									$instance->set('list_id', $args['list']); 
 								}
+								$ret = self::processBundles($instance, $record['bundles'], ['intrinsicsOnly' => true]);
 							
 								if($insert_mode === 'HIERARCHICAL') {
 									$instance->set('parent_id', $last_id);
-								}
-								$media_bundle = array_values(array_filter($record['bundles'], function($v) {
-									return ($v['name'] === 'media');
-								}));
-								if(sizeof($media_bundle) > 0) {
-									$instance->set('media', $media_bundle[0]['value']);
 								}
 								$ret = $instance->insert(['validateAllIdnos' => true]);
 							}
@@ -1051,9 +1046,11 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 	/**
 	 *
 	 */
-	private static function processBundles(\BaseModel $instance, array $bundles) : array {
+	private static function processBundles(\BaseModel $instance, array $bundles, ?array $options=null) : array {
 		$errors = $warnings = $info = [];
 		$idno = $instance->get($instance->tableName().'.'.$instance->getProperty('ID_NUMBERING_ID_FIELD'));
+		
+		$intrinsics_only = caGetOption('intrinsicsOnly', $options, false);
 		
 		foreach($bundles as $b) {
 			$id = $b['id'] ?? null;
@@ -1074,6 +1071,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 				# -----------------------------------
 				case 'preferred_labels':
 				case 'nonpreferred_labels':
+					if($intrinsics_only) { break; }
 					$label_values = [];
 					
 					$label_values = Edit\extractLabelValueFromBundles($instance->tableName(), [$b]);
@@ -1141,8 +1139,8 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						$v = $delete ? null : ((is_array($b['values']) && sizeof($b['values'])) ? array_shift($b['values']) : $b['value'] ?? null);
 						if(is_array($v)) { $v = $v['value'] ?? null; }
 						$instance->set($bundle_name, $v, ['allowSettingOfTypeID' => true]);
-						$rc = $instance->update();
-					} elseif($instance->hasElement($bundle_name)) {
+						if(!$intrinsics_only) { $rc = $instance->update(); }
+					} elseif($instance->hasElement($bundle_name) && !$intrinsics_only) {
 						 // attribute
 						$attr_values = [];
 						if (isset($b['values']) && is_array($b['values']) && sizeof($b['values'])) {
@@ -1206,7 +1204,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							// invalid operation
 							$warnings[] = Error\warning($idno, "", _t('Invalid operation %1 on %2', ($delete ? _t('delete') : $id ? 'edit' : 'add')), $bundle_name);
 						}
-					} else {
+					} elseif(!$intrinsics_only) {
 						$warnings[] = Error\warning($idno, "", _t('Bundle %1 was skipped because it does not exist', $bundle_name), $bundle_name);	
 					}
 				
@@ -1218,7 +1216,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 			}
 		}
 		
-		if(method_exists($instance, 'addLabel') && ($instance->getLabelCount(true) == 0)) {
+		if(!$intrinsics_only && method_exists($instance, 'addLabel') && ($instance->getLabelCount(true) == 0)) {
 			$locale_id = ca_locales::getDefaultCataloguingLocaleID();
 			$rc = $instance->addLabel([$instance->getLabelDisplayField() => "[".caGetBlankLabelText($instance->tableName())."]"], $locale_id, null, true);
 		}
