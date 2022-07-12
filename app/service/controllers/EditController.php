@@ -308,6 +308,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 									break;
 							}
 							
+							$is_new_record = false;
 							if ($instance) {
 								$ret = true;
 							} else {
@@ -329,6 +330,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 									$instance->set('parent_id', $last_id);
 								}
 								$ret = $instance->insert(['validateAllIdnos' => true]);
+								$is_new_record = true;
 							}
 							if(!$ret) {
 								foreach($instance->errors() as $e) {
@@ -338,7 +340,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 								$ids[] = $last_id = $instance->getPrimaryKey();
 								$idnos[] = $instance->get($idno_fld);
 								
-								$ret = self::processBundles($instance, $record['bundles']);
+								$ret = self::processBundles($instance, $record['bundles'], ['skipIntrinsics' => $is_new_record]);
 								$errors = array_merge($errors, $ret['errors']);
 								$warnings = array_merge($warnings, $ret['warnings']);
 								$info = array_merge($info, $ret['info']);
@@ -1051,6 +1053,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 		$idno = $instance->get($instance->tableName().'.'.$instance->getProperty('ID_NUMBERING_ID_FIELD'));
 		
 		$intrinsics_only = caGetOption('intrinsicsOnly', $options, false);
+		$skip_intrinsics = caGetOption('skipIntrinsics', $options, false);
 		
 		foreach($bundles as $b) {
 			$id = $b['id'] ?? null;
@@ -1136,6 +1139,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 				# -----------------------------------
 				default:
 					if($instance->hasField($bundle_name)) {
+						if($skip_intrinsics) { break; }
 						$v = $delete ? null : ((is_array($b['values']) && sizeof($b['values'])) ? array_shift($b['values']) : $b['value'] ?? null);
 						if(is_array($v)) { $v = $v['value'] ?? null; }
 						$instance->set($bundle_name, $v, ['allowSettingOfTypeID' => true]);
