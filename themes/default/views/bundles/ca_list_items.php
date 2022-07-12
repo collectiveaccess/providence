@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2021 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -344,7 +344,7 @@
 			
 <script type="text/javascript">
 <?php if($vb_quick_add_enabled) { ?>
-	var caRelationQuickAddPanel<?php print $vs_id_prefix; ?>;
+	var caRelationQuickAddPanel<?= $vs_id_prefix; ?>;
 <?php } ?>
 	var caRelationBundle<?= $vs_id_prefix; ?>;
 	jQuery(document).ready(function() {
@@ -356,9 +356,9 @@
 		
 	if (caUI.initPanel) {
 <?php if($vb_quick_add_enabled) { ?>
-			caRelationQuickAddPanel<?php print $vs_id_prefix; ?> = caUI.initPanel({ 
-				panelID: "caRelationQuickAddPanel<?php print $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
-				panelContentID: "caRelationQuickAddPanel<?php print $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
+			caRelationQuickAddPanel<?= $vs_id_prefix; ?> = caUI.initPanel({ 
+				panelID: "caRelationQuickAddPanel<?= $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
+				panelContentID: "caRelationQuickAddPanel<?= $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
 				exposeBackgroundColor: "#000000",				
 				exposeBackgroundOpacity: 0.7,					
 				panelTransitionSpeed: 400,						
@@ -408,7 +408,7 @@
 			autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'Vocabulary', 'Get', $va_lookup_params); ?>',
 <?php if($vb_quick_add_enabled) { ?>
 			quickaddPanel: caRelationQuickAddPanel<?= $vs_id_prefix; ?>,
-			quickaddUrl: '<?php print caNavUrl($this->request, 'administrate/setup/list_item_editor', 'ListItemQuickAdd', 'Form', array('item_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$va_settings['dont_include_subtypes_in_type_restriction'], 'prepopulate_fields' => join(";", $va_settings['prepopulateQuickaddFields']), 'lists' => join(';', $va_settings['restrict_to_lists'] ?? []))); ?>',
+			quickaddUrl: '<?= caNavUrl($this->request, 'administrate/setup/list_item_editor', 'ListItemQuickAdd', 'Form', array('item_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$va_settings['dont_include_subtypes_in_type_restriction'], 'prepopulate_fields' => join(";", $va_settings['prepopulateQuickaddFields']), 'lists' => join(';', $va_settings['restrict_to_lists'] ?? []))); ?>',
 <?php } ?>
 			lists: <?= json_encode($va_settings['restrict_to_lists']); ?>,
 			types: <?= json_encode($va_settings['restrict_to_types']); ?>,
@@ -440,7 +440,10 @@
 			interstitialPrimaryID: <?= (int)$t_instance->getPrimaryKey(); ?>,
 			
 			minRepeats: <?= caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
-			maxRepeats: <?= caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>
+			maxRepeats: <?= caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>,
+			
+			isSelfRelationship:<?= ($t_item_rel && $t_item_rel->isSelfRelationship()) ? 'true' : 'false'; ?>,
+			subjectTypeID: <?= (int)$t_subject->getTypeID(); ?>
 		});
 <?php
 	} else {

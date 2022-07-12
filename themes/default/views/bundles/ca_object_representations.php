@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020-2021 Whirl-i-Gig
+ * Copyright 2020-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -158,7 +158,7 @@
 						<span id="{fieldNamePrefix}edit_image_center_{n}"><a href="#" id="{fieldNamePrefix}edit_image_center_{n}"><?= caNavIcon(__CA_NAV_ICON_SET_CENTER__, 1); ?> <?= _t('Set center'); ?></a></span>
 					</div>
 					<div class="mediaMetadataActionButton">
-						<span id="{fieldNamePrefix}edit_image_center_{n}"><a href="#" id="{fieldNamePrefix}caObjectRepresentationMetadataButton_{n}"><?php print caNavIcon(__CA_NAV_ICON_MEDIA_METADATA__, '1').' '._t('Metadata'); ?></a></a></span>
+						<span id="{fieldNamePrefix}edit_image_center_{n}"><a href="#" id="{fieldNamePrefix}caObjectRepresentationMetadataButton_{n}"><?= caNavIcon(__CA_NAV_ICON_MEDIA_METADATA__, '1').' '._t('Metadata'); ?></a></a></span>
 					</div>
 <?php
 	if($this->request->getUser()->canDoAction('can_download_ca_object_representations')) {
@@ -185,7 +185,7 @@
 	} 
 	if ($allow_fetching_from_urls) { 
 ?>
-						<div class='formLabel'><?= _t('Fetch media from URL'); ?><br/><?php print caHTMLTextInput("{fieldNamePrefix}media_url_{n}", array('id' => '{fieldNamePrefix}media_url_{n}', 'class' => 'urlBg uploadInput'), array('width' => '500px')); ?></div>			
+						<div class='formLabel'><?= _t('Fetch media from URL'); ?><br/><?= caHTMLTextInput("{fieldNamePrefix}media_url_{n}", array('id' => '{fieldNamePrefix}media_url_{n}', 'class' => 'urlBg uploadInput'), array('width' => '500px')); ?></div>			
 <?php 
 	} 
 						foreach($bundles_to_edit_proc as $f) {
@@ -288,7 +288,7 @@
 					<div class="mediaUploadEditArea">
 	
 	<?php if ($allow_fetching_from_urls) { ?>
-					<div class='formLabel'><?= _t('Fetch media from URL'); ?><br/><?php print caHTMLTextInput("{fieldNamePrefix}media_url_{n}", array('id' => '{fieldNamePrefix}media_url_{n}', 'class' => 'urlBg uploadInput'), array('width' => '500px')); ?></div>
+					<div class='formLabel'><?= _t('Fetch media from URL'); ?><br/><?= caHTMLTextInput("{fieldNamePrefix}media_url_{n}", array('id' => '{fieldNamePrefix}media_url_{n}', 'class' => 'urlBg uploadInput'), array('width' => '500px')); ?></div>
 				
 	<?php } ?>				
 	<?php
@@ -342,7 +342,7 @@
 				
 				<div class='mediaMetadataActionButton'><a href="#" onclick='<?= $id_prefix; ?>switchMode{n}("UPLOAD"); return false;'><?= caNavIcon(__CA_NAV_ICON_UPLOAD__, 1).' '._t('Upload media'); ?></a></div>
 			
-				<?php print caHTMLTextInput('{fieldNamePrefix}autocomplete{n}', array('placeholder' => caExtractSettingsValueByUserLocale('autocompletePlaceholderText', $settings, ['default' => _t('Search for representation')]), 'value' => '{{label}}', 'id' => '{fieldNamePrefix}autocomplete{n}', 'class' => 'lookupBg uploadInput'), array('width' => '425px')); ?>
+				<?= caHTMLTextInput('{fieldNamePrefix}autocomplete{n}', array('placeholder' => caExtractSettingsValueByUserLocale('autocompletePlaceholderText', $settings, ['default' => _t('Search for representation')]), 'value' => '{{label}}', 'id' => '{fieldNamePrefix}autocomplete{n}', 'class' => 'lookupBg uploadInput'), array('width' => '425px')); ?>
 <?php
 		if ($t_item_rel && $t_item_rel->hasField('type_id')) {
 ?>
@@ -484,7 +484,10 @@
 				// Hide annotation editor links for non-timebased media
 				jQuery(".caAnnoEditorLaunchButton").hide();
 				jQuery(".annotationTypeClipTimeBasedVideo, .annotationTypeClipTimeBasedAudio").show();
-			}
+			},
+			
+			isSelfRelationship:<?= ($t_item_rel && $t_item_rel->isSelfRelationship()) ? 'true' : 'false'; ?>,
+			subjectTypeID: <?= (int)$t_subject->getTypeID(); ?>
 		
 		});
 		if (caUI.initPanel) {
@@ -508,7 +511,7 @@
 </script>
 
 <div id="caMediaBrowserPanel" class="caMediaBrowserPanel"> 
-	<div class='dialogHeader'><?php print _t('Choose media from server'); ?></div>
+	<div class='dialogHeader'><?= _t('Choose media from server'); ?></div>
 	<div id="caMediaBrowserPanelContentArea">
 	
 	</div>

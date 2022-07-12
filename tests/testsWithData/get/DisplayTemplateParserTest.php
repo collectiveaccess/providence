@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2020 Whirl-i-Gig
+ * Copyright 2015-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -562,7 +562,7 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 	}
 	# -------------------------------------------------------
 	public function testFormatsWithExpression() {
-		$vm_ret = DisplayTemplateParser::evaluate("Expression: word count is <expression>wc(^ca_objects.description)</expression>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$vm_ret = DisplayTemplateParser::evaluate("Expression: word count is <expression>wc('^ca_objects.description')</expression>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
 		$this->assertIsArray($vm_ret);
 		$this->assertCount(1, $vm_ret);
 		$this->assertEquals('Expression: word count is 6', $vm_ret[0]);
