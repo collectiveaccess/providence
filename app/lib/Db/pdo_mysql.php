@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2017 Whirl-i-Gig
+ * Copyright 2013-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -197,21 +197,33 @@ class Db_pdo_mysql extends DbDriverBase {
 			$opo_statement = $this->opr_db->prepare($va_tmp['sql']);
 		}
 
-		if (Db::$monitor) {
-			$t = new Timer();
+		$t = Timer::start("db");
+		
+		$logger = null;
+		if(defined('__CA_LOG_DATABASE_QUERIES__') && __CA_LOG_DATABASE_QUERIES__) {
+			$logger = caGetLogger(['logDirectory' => __CA_APP_DIR__.'/log', 'logName' => 'queries'], null);
+			$logger->logInfo(caPrintStacktrace(['head' => 1]));
+			$logger->logInfo(json_encode(['query' => $ps_sql, 'params' => $pa_values]));
 		}
-
 		try {
 			$opo_statement->closeCursor();
 			$opo_statement->execute((is_array($va_tmp['values']) && sizeof($va_tmp['values'])) ? array_values($va_tmp['values']) : null);
 		} catch(PDOException $e) {
-			$po_caller->postError($this->nativeToDbError($this->opr_db->errorCode()), $e->getMessage(), "Db->pdo_mysql->execute()");
-			throw new DatabaseException($e->getMessage(), $this->nativeToDbError($this->opr_db->errorCode()), "Db->pdo_mysql->execute()");
+			$po_caller->postError($error_number= $this->nativeToDbError($this->opr_db->errorCode()), $error_message = $e->getMessage(), "Db->pdo_mysql->execute()");
+			if($logger) {
+				$logger->logError(json_encode(['errorNumber' => $error_number, 'errorMessage' => $error_message]));
+			}
+			throw new DatabaseException($error_message, $error_number, "Db->pdo_mysql->execute()");
 			return false;
 		}
-
-		if (Db::$monitor) {
-			Db::$monitor->logQuery($ps_sql, $pa_values, $t->getTime(4), $opo_statement->rowCount());
+		if($logger) {
+			$time = (float)$t->getTime(4);
+			$threshold = defined('__CA_LONG_DATABASE_QUERY_THRESHOLD__') ? (float)__CA_LONG_DATABASE_QUERY_THRESHOLD__ : 0.5;
+			if ($time > $threshold) {
+				$logger->logWarn(json_encode(['time' => $time, 'numRows' => $opo_statement->rowCount()]));
+			} else {
+				$logger->logInfo(json_encode(['time' => $time, 'numRows' => $opo_statement->rowCount()]));
+			}
 		}
 		return new DbResult($this, $opo_statement);
 	}
