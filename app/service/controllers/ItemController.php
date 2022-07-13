@@ -140,7 +140,7 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 						],
 						[
 							'name' => 'resolveRelativeToRelated',
-							'type' => Type::listOf(Type::boolean()),
+							'type' => Type::boolean(),
 							'description' => _t('Resolve all bundles relative to related items, rather than the relationship.'),
 							'defaultValue' => false
 						]
@@ -169,7 +169,13 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 					
 						$rel_list = [];
 						if (sizeof($rel_ids = array_map(function($v) use ($resolve_to_related, $target_pk) { return $v[$resolve_to_related ? $target_pk : 'relation_id']; }, $rels)) > 0) {
-							
+							$rel_types = array_values(array_map(function($v) {
+								return [
+									'relationship_typename' => $v['relationship_typename'],
+									'relationship_typecode' => $v['relationship_type_code'],
+									'relationship_type_id' => $v['relationship_type_id']
+								];
+							}, $rels));
 							$qr = caMakeSearchResult($resolve_to_related ? $target : $linking_table, $rel_ids);
 							while($qr->nextHit()) {
 								$r = $qr->getInstance();
@@ -177,11 +183,12 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 								$bundles = \GraphQLServices\Helpers\extractBundleNames($r, $args);
 								$data = \GraphQLServices\Helpers\fetchDataForBundles($r, $bundles, []);
 								
-								$rel_list[] = [
-									'id' => $r->getPrimaryKey(),
+								$rel_type = array_shift($rel_types);
+								$rel_list[] = array_merge([
+									'id' => $r->get("{$linking_table}.relation_id"),
 									'table' => $linking_table,
 									'bundles' => $data
-								];
+								], $rel_type);
 							}
 						}
 						return ['table' => $rec->tableName(), 'idno'=> $rec->get($rec->getProperty('ID_NUMBERING_ID_FIELD')), 'identifier' => $args['identifier'], 'id' => $rec->getPrimaryKey(), 'relationships' => $rel_list];

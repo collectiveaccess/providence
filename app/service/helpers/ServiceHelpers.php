@@ -519,7 +519,19 @@ function itemSchemaDefinitions() {
 				'bundles' => [
 					'type' => Type::listOf($bundleValueListType),
 					'description' => ''
-				]
+				],
+				'relationship_type_id' => [
+					'type' => Type::string(),
+					'description' => 'Relationship type_id'
+				],
+				'relationship_typename' => [
+					'type' => Type::string(),
+					'description' => 'Relationship type name'
+				],
+				'relationship_typecode' => [
+					'type' => Type::string(),
+					'description' => 'Relationship type code'
+				],
 			]
 		]),
 		$relationshipList = new ObjectType([
