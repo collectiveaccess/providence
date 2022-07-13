@@ -400,3 +400,11 @@ if (!defined('__CA_LOG_DATABASE_QUERIES__')) {
 if (!defined('__CA_LONG_DATABASE_QUERY_THRESHOLD__')) {
 	define('__CA_LONG_DATABASE_QUERY_THRESHOLD__', 0.5);
 }
+
+# __CA_SHOW_FULL_STACKTRACE_IN_DATABASE_QUERY_LOG__
+#
+# Includes full stacktrace in query log. If not set only the line of code
+# that triggered execution of the query is recordded in the log.
+if (!defined('__CA_SHOW_FULL_STACKTRACE_IN_DATABASE_QUERY_LOG__')) {
+	define('__CA_SHOW_FULL_STACKTRACE_IN_DATABASE_QUERY_LOG__', false);
+}

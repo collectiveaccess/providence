@@ -317,7 +317,7 @@ class Db_mysqli extends DbDriverBase {
 			
 			$prefix = "[{$db_seq}::".getmypid()."] ";
 			$db_seq++;
-			$logger->logInfo(caPrintStacktrace(['skip' => 3, 'head' => 1]));
+			$logger->logInfo(caPrintStacktrace((defined('__CA_SHOW_FULL_STACKTRACE_IN_DATABASE_QUERY_LOG__') && __CA_SHOW_FULL_STACKTRACE_IN_DATABASE_QUERY_LOG__) ? [] : ['skip' => 3, 'head' => 1]));
 			$logger->logInfo($prefix.json_encode(['query' => $vs_sql, 'params' => $pa_values]));
 		}
 		if (!($r_res = @mysqli_query($this->opr_db, $vs_sql, caGetOption('resultMode', $pa_options, MYSQLI_STORE_RESULT)))) {

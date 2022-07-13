@@ -202,7 +202,7 @@ class Db_pdo_mysql extends DbDriverBase {
 		$logger = null;
 		if(defined('__CA_LOG_DATABASE_QUERIES__') && __CA_LOG_DATABASE_QUERIES__) {
 			$logger = caGetLogger(['logDirectory' => __CA_APP_DIR__.'/log', 'logName' => 'queries'], null);
-			$logger->logInfo(caPrintStacktrace(['head' => 1]));
+			$logger->logInfo(caPrintStacktrace(defined('__CA_SHOW_FULL_STACKTRACE_IN_DATABASE_QUERY_LOG__') && __CA_SHOW_FULL_STACKTRACE_IN_DATABASE_QUERY_LOG__) ? [] : ['skip' => 3, 'head' => 1]));
 			$logger->logInfo(json_encode(['query' => $ps_sql, 'params' => $pa_values]));
 		}
 		try {
