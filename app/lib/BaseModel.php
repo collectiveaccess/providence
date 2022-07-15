@@ -13082,6 +13082,15 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 *  Check if model support "soft" delete (ie. tagging of deleted records rather than actual removal)
+	 *
+	 * @return bool
+	 */
+	public function usesSoftDelete() {
+		return $this->hasField('deleted');
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
 	 * Destructor
 	 */
 	public function __destruct() {
