@@ -47,6 +47,10 @@ RUN apt-get install -qq autoconf automake build-essential cmake git-core libass-
 #Config changes for apache/php
 RUN sed -i "s/memory_limit = 128M/memory_limit = 4G/" /usr/local/lib/php.ini && sed -i "s/post_max_size = 8M/post_max_size = 2048M/" /usr/local/lib/php.ini && sed -i "s/upload_max_filesize = 2M/upload_max_filesize = 2048M/" /usr/local/lib/php.ini && sed -i "s/display_errors = Off/display_errors = On/" /usr/local/lib/php.ini && sed -i "s/max_execution_time = 30/max_execution_time = 300/g" /usr/local/lib/php.ini
 
+#PHPRedis
+RUN apt update && apt-get install -qq -y libzstd-dev && wget https://github.com/phpredis/phpredis/archive/refs/tags/5.3.4.tar.gz && tar xzf 5.3.4.tar.gz && cd phpredis-5.3.4 && phpize && ./configure --enable-redis-zstd && make -j$(nproc) && make install && echo "extension=redis.so" >> /usr/local/lib/php.ini &&  cd .. && rm -rf phpredis-5.3.4
+
+
 #Change the LOCAL_UID to that of your user that owns the git repo files (or yours for local non-mac envs)
 ARG LOCAL_UID=1000
 #GitLab runner
