@@ -85,7 +85,6 @@ require_once(__CA_LIB_DIR__.'/ResultContext.php');
 require_once(__CA_APP_DIR__.'/helpers/navigationHelpers.php');
 require_once(__CA_APP_DIR__.'/helpers/mailHelpers.php');
 
-require_once(__CA_LIB_DIR__.'/ApplicationMonitor.php');
 require_once(__CA_LIB_DIR__.'/BaseModel.php');
 require_once(__CA_LIB_DIR__.'/Controller/AppController.php');
 

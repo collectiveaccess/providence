@@ -6050,22 +6050,6 @@ a.caDeleteLabelButton {
     text-decoration: none;
 }
 
-/* Application monitor styles */
-#caApplicationMonitor {
-    border: 2px solid #999;
-    display: none;
-    overflow: auto;
-    width: 900px;
-    height: 500px;
-    position: fixed;
-    top: 100px; left: 50%; margin: 0 0 0 -450px;
-    background: #ffffff;
-    padding: 15px;
-    border-radius: 4px;
-    -moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
-}
-
 /* -------------------------------------------------*/
 /* Item-level access screen                         */
 /* -------------------------------------------------*/
