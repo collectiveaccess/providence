@@ -311,7 +311,7 @@ class SqlBrowse extends BaseBrowsePlugin  {
                         
                         if ($value_id = $this->getFacetValue($facet_id, $o_attr->getDisplayValue(['returnDisplayText' => true]), null, ['item_id' => $item_id])) {
                             try {
-                                $this->selfaddFacetReference($value_id, $row[$pk], $row['access']);
+                                $this->addFacetReference($value_id, $row[$pk], $row['access']);
                             } catch (\Exception $e) {
                                 print "SKIP " . $e->getMessage()."\n";
                             }
