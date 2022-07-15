@@ -7,7 +7,7 @@ services:
     volumes:
       - ${APACHE_LOGS_DIR:-./log}:/app/apache2/logs
       - ${CA_MEDIA_DIR:-./media}:/app/apache2/htdocs/media
-      - ${CA_IMPORT_DIR:-./import:/app/apache2/htdocs/import
+      - ${CA_IMPORT_DIR:-./import}:/app/apache2/htdocs/import
     links:
       - mysql 
 
