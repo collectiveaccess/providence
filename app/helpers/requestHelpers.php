@@ -202,4 +202,29 @@ function caInstallVendorLibraries() {
 	
 	return $errors;
 }
+# --------------------------------------------------------------------------------------------
+ /**
+  * 
+  */
+function caEmitHeaders($response) {
+	$header_conf = Configuration::load(__CA_CONF_DIR__.'/headers.conf');
+	$groups = $header_conf->getAssocKeys();
+	if(is_array($groups)) {
+		foreach($groups as $g) {
+			if (is_array($header_group = $header_conf->getAssoc($g))) {
+				foreach($header_group as $h => $v) {
+					if(is_array($v)) {
+						foreach($v as $vv) {
+							$response->addHeader($h, $vv);
+						}
+					} else {
+						$response->addHeader($h, $v);
+					}
+				}
+			}
+		}
+		return true;
+	}
+	return falsd;
+}
 # ---------------------------------------------------------------------------------------------

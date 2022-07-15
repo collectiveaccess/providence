@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2020 Whirl-i-Gig
+ * Copyright 2014-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -55,7 +55,14 @@ var caUI = caUI || {};
             mmDecimalPrecision: 0,
             centimeterDecimalPrecision: 1,
             meterDecimalPrecision: 1,
-            kilometerDecimalPrecision: 1
+            kilometerDecimalPrecision: 1,
+            
+            kilogramDecimalPrecision: 2,
+            gramDecimalPrecision: 1,
+            mgDecimalPrecision: 1,
+            lbsDecimalPrecision: 1,
+            ozDecimalPrecision: 1,
+            tonDecimalPrecision: 1,
         }, options);
 
 
@@ -422,7 +429,7 @@ var caUI = caUI || {};
                             break;
                         // unit directly specified
                         default:
-                            q = qty.to(cmd[1]).toPrec(that.getPrecisionForUnit(cmd[1])).scalar;
+                        	q = qty.to(cmd[1]).toPrec(that.getPrecisionForUnit(cmd[1])).scalar;
                             lastUnits = cmd[1];
                             templatevalues.push({'value': q, 'units': lastUnits, 'tag': tag, 'type': 'direct'});
                             break;
@@ -624,6 +631,24 @@ var caUI = caUI || {};
                         break;
                     case 'miles':
                         v = that.mileDecimalPrecision;
+                        break;
+                    case 'kilograms':
+                        v = that.kilogramDecimalPrecision;
+                        break;
+                    case 'grams':
+                        v = that.gramDecimalPrecision;
+                        break;
+                    case 'milligrams':
+                        v = that.mgDecimalPrecision;
+                        break;
+                    case 'pounds':
+                        v = that.lbsDecimalPrecision;
+                        break;
+                    case 'ounces':
+                        v = that.ozDecimalPrecision;
+                        break;
+                    case 'ton':
+                        v = that.tonDecimalPrecision;
                         break;
                 }
                 if (v !== null) {

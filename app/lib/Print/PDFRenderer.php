@@ -210,6 +210,7 @@ class PDFRenderer {
 	 * @param array $pa_options Options include:
 	 *		stream = Send PDF output directly to browser [default=false]
 	 *		filename = If streaming, set filename of PDF [default=output.pdf]
+	 *		writeFile = File path to write PDF to. [Default=false]
 	 *      append = List of absolute PDF file paths to append to end of output. [Default is null]
 	 *
 	 * @return string PDF content

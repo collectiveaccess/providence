@@ -169,8 +169,8 @@ class ca_editor_ui_bundle_placements extends BaseModel {
 	protected $FIELDS;
 	
 	# ------------------------------------------------------
-	function __construct($pn_id=null, $pa_additional_settings=null, $pa_setting_values=null) {
-		parent::__construct($pn_id);
+	function __construct($id=null, ?array $options=null, $pa_additional_settings=null, $pa_setting_values=null) {
+		parent::__construct($id, $options);
 		
 		//
 		if (!is_array($pa_additional_settings)) { $pa_additional_settings = array(); }

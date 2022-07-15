@@ -190,7 +190,6 @@ class FilesizeAttributeValue extends AttributeValue implements IAttributeValue {
     # ------------------------------------------------------------------
     public function parseValue($value, $element_info, $options=null) {
         $size_in_bytes = caParseHumanFilesize($value);
-        print $size_in_bytes;
         $settings = $this->getSettingValuesFromElementArray($element_info, ['requireValue']);
         if (!$settings['requireValue'] && !strlen(trim($value))) {
             return [

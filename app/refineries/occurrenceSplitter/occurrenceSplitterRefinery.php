@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2021 Whirl-i-Gig
+ * Copyright 2013-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -228,5 +228,14 @@ BaseRefinery::$s_refinery_settings['occurrenceSplitter'] = array(
 		],
 		'label' => _t('Text transformation'),
 		'description' => _t('Transform text case.')
+	),
+	'occurrenceSplitter_useRawValues' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'width' => 10, 'height' => 1,
+		'takesLocale' => false,
+		'default' => '',
+		'label' => _t('Use raw values'),
+		'description' => _t('If set splitter will use raw data values without processing such as replacement values, regular expressions, etc.')
 	)
 );

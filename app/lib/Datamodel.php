@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2005-2020 Whirl-i-Gig
+ * Copyright 2005-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -290,66 +290,70 @@ class Datamodel {
 	 * and may reflect previous use and may be referenced by previous callers. You should be sure to do any initialization required before use, 
 	 * or don't use the cache. When caching is bypassed you are guaranteed a newly created, freshly initialized instance.
 	 *
-	 * @param mixed $pm_table_name_or_num
-	 * @param bool $pb_use_cache Use a cached instance. [Default is false]
-	 * @param int $pn_id Row_id to load. [Default is null]
+	 * @param mixed $table_name_or_num
+	 * @param bool $use_cache Use a cached instance. [Default is false]
+	 * @param int $id Row_id to load. [Default is null]
+	 * @param array $options Option to pass to instance on instantiation and/or load. Options are only passed on instantiation if use_cache is false or no instance is yet cached. Load options are only passed if $id is set. [Default is null]
+	 * @param array $options
 	 * @return null|BaseModel
 	 */
-	static public function getInstance($pm_table_name_or_num, $pb_use_cache=false, $pn_id=null) {
-		if (is_numeric($pm_table_name_or_num)) {
-			if($t_instance = Datamodel::getInstanceByTableNum($pm_table_name_or_num, $pb_use_cache)) {
-				return $t_instance;
-			}
+	static public function getInstance($table_name_or_num, ?bool $use_cache=false, ?int $id=null, ?array $options=null) {
+		if (is_numeric($table_name_or_num)) {
+			$t_instance = Datamodel::getInstanceByTableNum($table_name_or_num, $use_cache, $options);
+		} else {
+			$t_instance = Datamodel::getInstanceByTableName($table_name_or_num, $use_cache, $options);
 		}
-		$t_instance = Datamodel::getInstanceByTableName($pm_table_name_or_num, $pb_use_cache);
-		
-		if ($pn_id) { $t_instance->load($pn_id); }
+		if($id) {
+			$t_instance->load($id, $options);
+		}
 		return $t_instance;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
 	 * Returns an object representing table; object can be used to manipulate records or get information on various table attributes.
-	 * @param string $ps_table Table name
-	 * @param bool $pb_use_cache Use a cached instance. Default is false.
+	 * @param string $table Table name
+	 * @param bool $use_cache Use a cached instance. Default is false.
+	 * @param array $options Option to pass to instance on instantiation. Options are only passed if use_cache is false or no instance is yet cached. [Default is null]
 	 * @return null|BaseModel
 	 */
-	static public function getInstanceByTableName($ps_table, $pb_use_cache=false) {
-		if(!$ps_table) { return null; }
-		if($pb_use_cache && isset(Datamodel::$s_instance_cache[$ps_table])) { return Datamodel::$s_instance_cache[$ps_table]; }		// keep instances in statics for speed
+	static public function getInstanceByTableName($table, $use_cache=false, ?array $options=null) {
+		if(!$table) { return null; }
+		if($use_cache && isset(Datamodel::$s_instance_cache[$table])) { return Datamodel::$s_instance_cache[$table]; }		// keep instances in statics for speed
 		
-		if(Datamodel::$opo_graph->hasNode($ps_table)) {
-			if(!MemoryCache::contains($ps_table, 'DatamodelModelInstance')) {
-				if (!file_exists(__CA_MODELS_DIR__.'/'.$ps_table.'.php')) { return null; }
-				require_once(__CA_MODELS_DIR__.'/'.$ps_table.'.php'); # class file name has trailing '.php'
+		if(Datamodel::$opo_graph->hasNode($table)) {
+			if(!MemoryCache::contains($table, 'DatamodelModelInstance')) {
+				if (!file_exists(__CA_MODELS_DIR__.'/'.$table.'.php')) { return null; }
+				require_once(__CA_MODELS_DIR__.'/'.$table.'.php'); # class file name has trailing '.php'
 			}
-			$t_instance = new $ps_table;
-			if($pb_use_cache) { Datamodel::$s_instance_cache[$t_instance->tableNum()] = Datamodel::$s_instance_cache[$ps_table] = $t_instance; }
+			$t_instance = new $table(null, $options);
+			if($use_cache) { Datamodel::$s_instance_cache[$t_instance->tableNum()] = Datamodel::$s_instance_cache[$table] = $t_instance; }
 			return $t_instance;
 		} else {
-			Datamodel::$s_instance_cache[$ps_table] = null;
+			Datamodel::$s_instance_cache[$table] = null;
 			return null;
 		}
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
 	 * Returns an object representing table; object can be used to manipulate records or get information on various table attributes.
-	 * @param int $pn_tablenum Table number
-	 * @param bool $pb_use_cache Use a cached instance. Default is false.
+	 * @param int $tablenum Table number
+	 * @param bool $use_cache Use a cached instance. Default is false.
+	 * @param array $options Option to pass to instance on instantiation. Options are only passed if use_cache is false or no instance is yet cached. [Default is null]
 	 * @return null|BaseModel
 	 */
-	static public function getInstanceByTableNum($pn_tablenum, $pb_use_cache=false) {
-		if($pb_use_cache && isset(Datamodel::$s_instance_cache[$pn_tablenum])) { return Datamodel::$s_instance_cache[$pn_tablenum]; }		// keep instances in statics for speed
-		if($vs_class_name = Datamodel::getTableName($pn_tablenum)) {
-			if($pb_use_cache && MemoryCache::contains($vs_class_name, 'DatamodelModelInstance')) {
-				return MemoryCache::fetch($vs_class_name, 'DatamodelModelInstance');
+	static public function getInstanceByTableNum($tablenum, $use_cache=false, ?array $options=null) {
+		if($use_cache && isset(Datamodel::$s_instance_cache[$tablenum])) { return Datamodel::$s_instance_cache[$tablenum]; }		// keep instances in statics for speed
+		if($table = Datamodel::getTableName($tablenum)) {
+			if($use_cache && MemoryCache::contains($table, 'DatamodelModelInstance')) {
+				return MemoryCache::fetch($table, 'DatamodelModelInstance');
 			}
 
-			if(!MemoryCache::contains($vs_class_name, 'DatamodelModelInstance')) {
-				if (!file_exists(__CA_MODELS_DIR__.'/'.$vs_class_name.'.php')) { return null; }
-				require_once(__CA_MODELS_DIR__.'/'.$vs_class_name.'.php'); # class file name has trailing '.php'
+			if(!MemoryCache::contains($table, 'DatamodelModelInstance')) {
+				if (!file_exists(__CA_MODELS_DIR__.'/'.$table.'.php')) { return null; }
+				require_once(__CA_MODELS_DIR__.'/'.$table.'.php'); # class file name has trailing '.php'
 			}
-			$t_instance = new $vs_class_name;
-			if($pb_use_cache) { MemoryCache::save($vs_class_name, $t_instance, 'DatamodelModelInstance'); Datamodel::$s_instance_cache[$pn_tablenum] = Datamodel::$s_instance_cache[$vs_class_name] = $t_instance; }
+			$t_instance = new $table(null, $options);
+			if($use_cache) { MemoryCache::save($table, $t_instance, 'DatamodelModelInstance'); Datamodel::$s_instance_cache[$tablenum] = Datamodel::$s_instance_cache[$table] = $t_instance; }
 			return $t_instance;
 		} else {
 			return null;
@@ -579,6 +583,7 @@ class Datamodel {
 	 *
 	 */
 	static public function getPath($ps_left_table, $ps_right_table) {
+		if(!$ps_left_table || !$ps_right_table) { return []; }
 		if (is_numeric($ps_left_table)) { $ps_left_table = Datamodel::getTableName($ps_left_table); }
 		if (is_numeric($ps_right_table)) { $ps_right_table = Datamodel::getTableName($ps_right_table); }
 
@@ -590,7 +595,7 @@ class Datamodel {
        if($ps_left_table == $ps_right_table) {
              //define rel table
              $rel_table  = $ps_left_table . "_x_" . str_replace("ca_","",$ps_left_table);
-             if (!Datamodel::getInstanceByTableName($rel_table, true)) {
+             if (!Datamodel::tableExists($rel_table)) {
              	$va_path = [];		// self relation doesn't exist
              }
              $va_path = array($ps_left_table=>Datamodel::getTableNum($ps_left_table),$rel_table=>Datamodel::getTableNum($rel_table));
@@ -612,8 +617,18 @@ class Datamodel {
 	 * @return string Name of linking table, or null if no linking table is defined.
 	 */
 	static public function getLinkingTableName($ps_left_table, $ps_right_table) {
-		if(is_array($path = Datamodel::getPath($ps_left_table, $ps_right_table)) && (sizeof($path) == 3) && ($path = array_keys($path))) {
-			return $path[1];
+		$path = Datamodel::getPath($ps_left_table, $ps_right_table);	
+		if(is_array($path)) {
+			$path = array_keys($path);
+			if(sizeof($path) === 3) {
+				return $path[1];
+			}
+			
+			if(($ps_left_table == $ps_right_table) || (self::getTableName($ps_left_table) === self::getTableName($ps_right_table))) {
+				if(sizeof($path) >= 2) {
+					return $path[1];
+				}
+			}
 		}
 		return null;
 	}

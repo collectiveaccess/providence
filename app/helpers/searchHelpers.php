@@ -516,11 +516,23 @@
 			$va_options['excludeFieldsFromSearch'] = caGetOption('excludeFieldsFromSearch', $va_block_info, null);
 			$va_options['rootRecordsOnly'] = caGetOption('omitChildRecords', $va_block_info, null);
 			
+			$base_criteria = caGetOption('baseCriteria', $va_block_info, null);
+			
 			if (caGetOption('dontShowChildren', $va_block_info, false)) {
 				$o_search->addResultFilter('ca_objects.parent_id', 'is', 'null');	
 			}
-			$qr_res = $o_search->search(trim($ps_search_expression).(($vb_match_on_stem && !preg_match('![\*\"\']$!', $ps_search_expression)) ? '*' : ''), $va_options);
 			
+			if(is_array($base_criteria)) {
+				if (!($o_browse = caGetBrowseInstance($va_block_info['table']))) { continue; }
+				foreach($base_criteria as $facet => $value){
+					$o_browse->addCriteria($facet, $value);
+				}
+				$o_browse->addCriteria('_search', [$ps_search_expression]);
+				$o_browse->execute();
+				$qr_res = $o_browse->getResults($va_options);
+			} else {
+				$qr_res = $o_search->search(trim($ps_search_expression).(($vb_match_on_stem && !preg_match('![\*\"\']$!', $ps_search_expression)) ? '*' : ''), $va_options);
+			}
 			$va_contexts[$vs_block]->setSearchExpression($ps_search_expression);
 			$va_contexts[$vs_block]->setResultList($qr_res->getPrimaryKeyValues());
 			
@@ -583,7 +595,7 @@
 			$o_view->setVar('sort', $ps_sort);
 			$o_view->setVar('accessValues', $va_access_values);
 			
-			$o_view->setVar('sortDirectionControl', '<a href="#" id="'.$vs_block.'_sort_direction"><span class="glyphicon glyphicon-sort-by-alphabet'.(($ps_sort_direction == 'desc') ? '-alt' : '').'" aria-label="Sort direction"></span></a>');
+			$o_view->setVar('sortDirectionControl', '<a href="#" id="'.$vs_block.'_sort_direction"><span class="glyphicon glyphicon-sort-by-alphabet'.(($ps_sort_direction == 'desc') ? '-alt' : '').'" role="button" aria-label="Sort direction"></span></a>');
 			$o_view->setVar('sortDirection', $ps_sort_direction);
 			
 			
@@ -781,7 +793,7 @@
 	
 	 	$va_query_elements = $va_query_booleans = array();
 	 	
-	 	$vb_match_on_stem = caGetOption('matchOnStem', $pa_options, false);
+	 	$vb_match_on_stem = caGetOption(['matchOnStem', 'match_on_stem'], $pa_options, false);
 	 	
 	 	if (is_array($va_values) && sizeof($va_values)) {
 			foreach($va_values as $vs_element => $va_value_list) {
@@ -793,7 +805,7 @@
 						$vs_query_element = $vs_value;
 					}
 					
-					$vs_query_element .= ($vb_match_on_stem && !preg_match('!\*$!', $vs_query_element) && preg_match('!^[\w]+$!', $vs_query_element) && !preg_match('!^[0-9]+$!', $vs_query_element)) ? '*' : '';
+					$vs_query_element .= ($vb_match_on_stem && caIsSearchStem($vs_query_element)) ? '*' : '';
 					
 					$va_query_booleans[$vs_element][] = (isset($va_booleans["{$vs_element}:boolean"][$vn_i]) && $va_booleans["{$vs_element}:boolean"][$vn_i]) ? $va_booleans["{$vs_element}:boolean"][$vn_i] : 'AND';
 					switch($vs_element){

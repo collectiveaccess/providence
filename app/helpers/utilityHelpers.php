@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2021 Whirl-i-Gig
+ * Copyright 2007-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -684,10 +684,10 @@ function caFileIsIncludable($ps_file) {
 		mb_substitute_character(0xFFFD);
 		$ps_text = mb_convert_encoding($ps_text, 'UTF-8', 'UTF-8');
 
-		return strip_tags($ps_text);
+		//return strip_tags($ps_text);
 
 		// @see http://php.net/manual/en/regexp.reference.unicode.php
-		//return preg_replace("/[^\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{N}\p{P}\p{Zp}\p{Zs}\p{S}]|➔/", '', strip_tags($ps_text));
+		return preg_replace("/[^\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{N}\p{P}\p{Zp}\p{Zs}\p{S}]|➔/", '', strip_tags($ps_text));
 	}
 	# ---------------------------------------
 	/**
@@ -1120,6 +1120,7 @@ function caFileIsIncludable($ps_file) {
 	 *		html = if true, then HTML formatted output will be returned; otherwise plain-text output is returned. [Default is false]
 	 *		print = if true output is printed to standard output. [Default is false]
 	 *		skip = number of calls to skip from the top of the stack. [Default is 0]
+	 *		head = limit returned lines to number from top. [Default is null]
 	 * @return string Stack trace output
 	 */
 	function caPrintStacktrace($pa_options=null) {
@@ -1127,7 +1128,10 @@ function caFileIsIncludable($ps_file) {
 		$va_trace = debug_backtrace();
 
 		if (isset($pa_options['skip']) && ($pa_options['skip'] > 0)) {
-			$va_trace = array_slice($va_trace, $pa_options['skip']);
+			$va_trace = array_slice($va_trace, (int)$pa_options['skip']);
+		}
+		if (isset($pa_options['head']) && ($pa_options['head'] > 0)) {
+			$va_trace = array_slice($va_trace, 0, (int)$pa_options['head']);
 		}
 
 		$va_buf = array();
@@ -2869,7 +2873,7 @@ function caFileIsIncludable($ps_file) {
 		}
 
 		if ($currency_specifier || ($decimal_value > 0)) {
-			return ['currency' => $currency_specifier, 'value' => $decimal_value];
+			return ['currency' => $currency_specifier, 'value' => round($decimal_value, 2)];
 		}
 		return null;
  	}
@@ -4369,7 +4373,7 @@ function caFileIsIncludable($ps_file) {
 						if (
 							($vb_is_ca_get_ref && !$vb_have_seen_param_delimiter && (!preg_match("![A-Za-z0-9_\-\.~:]!", $vs_char)))
 							||
-							(($vs_char === ':') && !preg_match("!^[A-Za-z0-9]+!", mb_substr($ps_template, $i + 1)))	// colon not followed by letters of numbers is not part of tag
+							(($vs_char === ':') && !preg_match("!^[:]*[A-Za-z0-9]+!", mb_substr($ps_template, $i + 1)))	// colon not followed by letters, numbers or another colon is not part of tag
 						) {
 							if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
 							$vs_tag = '';
@@ -4449,33 +4453,100 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 * Convert string or array of strings in snake-case to camel-case
 	 *
-	 * @param array $array1
-	 * @param array $array2
+	 * @param array|string $text
 	 *
-	 * @return array
+	 * @return array|string
 	 */
-	function caSnakeToCamel($pm_text) {
-	    if(is_array($pm_text)) {
-	        return array_map(function($v) { return preg_replace_callback("!_([A-Za-z0-9]{1})!", function($m) { return strtoupper($m[1]); }, $v); }, $pm_text);
-	    } else {
-	        return preg_replace_callback("!_([A-Za-z0-9]{1})!", function($m) { return strtoupper($m[1]); }, $pm_text);
+	function caSnakeToCamel($text) {
+	    if(!($is_array = is_array($text))) {
+	    	$text = [$text];
 	    }
+		$vals = array_map(function($v) { return preg_replace_callback("!_([A-Za-z0-9]{1})!", function($m) { return strtoupper($m[1]); }, $v); }, $text);
+	
+		return $is_array ? $vals : array_shift($vals);
+	}
+	# ----------------------------------------
+	/**
+	 * Convert string or array of strings to camel-case
+	 *
+	 * @param array|string $text
+	 *
+	 * @return array|string
+	 */
+	function caTextToCamel($text) {
+	    if(!($is_array = is_array($text))) {
+	    	$text = [$text];
+	    }
+		$vals = array_map(function($v) { return trim(preg_replace_callback("! ([A-Za-z0-9]{1})!", function($m) { return strtoupper($m[1]); }, strtolower($v))); }, $text);
+		
+		return $is_array ? $vals : array_shift($vals);
 	}
 	# ----------------------------------------
 	/**
 	 * Convert string or array of strings in camel-case to snake-case
 	 *
-	 * @param array $array1
-	 * @param array $array2
+	 * @param array|string $text
 	 *
 	 * @return array|string
 	 */
-	function caCamelToSnake($pm_text) {
-	    if(is_array($pm_text)) {
-	        return array_map(function($v) { return trim(preg_replace_callback("!([A-Z]{1})!", function($m) { return strtolower($m[1]); }, $v), '_'); }, $pm_text);
-	    } else {
-	        return trim(preg_replace_callback("!([A-Z]{1})!", function($m) { return strtoupper($m[1]); }, $pm_text), '_');
+	function caCamelToSnake($text) {
+	    if(!($is_array = is_array($text))) {
+	    	$text = [$text];
 	    }
+		$vals = array_map(function($v) { return preg_replace_callback("!([A-Z]{1})!", function($m) { return '_'.strtolower($m[1]); }, $v); }, $text);
+		
+		return $is_array ? $vals : array_shift($vals);
+	}
+	# ----------------------------------------
+	/**
+	 * Convert string or array of strings to snake-case
+	 *
+	 * @param array|string $text
+	 *
+	 * @return array|string
+	 */
+	function caTextToSnake($text) {
+	    if(!($is_array = is_array($text))) {
+	    	$text = [$text];
+	    }
+		$vals = array_map(function($v) { return trim(strtolower(preg_replace("![^A-Za-z0-9]+!", '_', $v)), '_'); }, $text);
+	
+		return $is_array ? $vals : array_shift($vals);
+	}
+	# ----------------------------------------
+	/**
+	 * Convert string or array of strings from camel-case or snake-case to display text
+	 *
+	 * @param array|string $text
+	 * @param array $options Options include
+	 *		ucFirst = Return values with first characters of first word forced to uppercase. [Default is false]
+	 *		ucWords = Return values with first character of each word forced to uppercase. [Default is false]
+	 *
+	 * @return array|string
+	 */
+	function caCamelOrSnakeToText($text, ?array $options=null) {
+	    if(!($is_array = is_array($text))) {
+	    	$text = [$text];
+		}
+		$vals = array_map(function($v) { 
+			$is_snake = (strpos($v, '_') !== false);
+			
+			if($is_snake) {
+				return trim(preg_replace_callback("!_([A-Za-z0-9]{1})!", function($m) { return ' '.strtolower($m[1]); }, $v)); 
+			} else {
+				return trim(preg_replace_callback("!([A-Z]{1})!", function($m) { return ' '.strtolower($m[1]); }, $v)); 
+			}
+		}, $text);
+		
+		if(caGetOption('ucFirst', $options, false)) {
+			$vals = array_map('ucfirst', $vals);
+		}
+		if(caGetOption('ucWords', $options, false)) {
+			$vals = array_map('ucWords', $vals);
+		}
+		$vals = array_map(function($v) { return preg_replace("![ ]+!", " ", $v); }, $vals);
+		
+		return $is_array ? $vals : array_shift($vals);
 	}
 	# ----------------------------------------
 	/**

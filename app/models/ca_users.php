@@ -337,8 +337,8 @@ class ca_users extends BaseModel {
 	#    the record identified by the primary key value
 	#
 	# ------------------------------------------------------
-	public function __construct($pn_id=null, $pb_use_cache=false) {
-		parent::__construct($pn_id, $pb_use_cache);	# call superclass constructor	
+	public function __construct($pn_id=null, ?array $options=null) {
+		parent::__construct($pn_id);	# call superclass constructor	
 		
 		$this->opo_auth_config = Configuration::load(__CA_CONF_DIR__.'/authentication.conf');
 		$this->opo_log = new Eventlog();
@@ -1608,7 +1608,6 @@ class ca_users extends BaseModel {
 			}
 			return $this->getPreferenceDefault($ps_pref);
 		} else {
-			//$this->postError(920, _t("%1 is not a valid user preference", $ps_pref),"User->getPreference()");
 			return null;
 		}
 	}
@@ -1653,11 +1652,33 @@ class ca_users extends BaseModel {
 					$vn_table_num = $this->_editorPrefFormatTypeToTableNum($va_pref_info["formatType"]);
 					$va_uis = $this->_getUIListByType($vn_table_num);
 					
+					$table = Datamodel::getTableName($vn_table_num);
+					$config = Configuration::load();
 					$va_defaults = array();
 					if(is_array($va_uis)) {
 						foreach($va_uis as $vn_type_id => $va_editor_info) {
+							$type_code = caGetListItemIdno($vn_type_idno);
 							foreach($va_editor_info as $vn_ui_id => $va_editor_labels) {
+								if(preg_match('!^batch_.*_ui$!', $ps_pref)) {
+									if((($dp = $config->get("{$table}_{$type_code}_default_batch_editor")) || ($dp = $config->get("{$table}_default_batch_editor"))) && ($d_ui_id = ca_editor_uis::find(['editor_code' => $dp], ['returnAs' => 'firstId']))) {
+										$va_defaults[$vn_type_id] = $d_ui_id;
+										break;	
+									}
+								}
+								if(preg_match('!^quickadd_.*_ui$!', $ps_pref)) {
+									if((($dp = $config->get("{$table}_{$type_code}_default_quickadd_editor")) || ($dp = $config->get("{$table}_default_quickadd_editor"))) && ($d_ui_id = ca_editor_uis::find(['editor_code' => $dp], ['returnAs' => 'firstId']))) {
+										$va_defaults[$vn_type_id] = $d_ui_id;
+										break;	
+									}
+								}
+								if(preg_match('!^cataloguing_.*_ui$!', $ps_pref)) {
+									if((($dp = $config->get("{$table}_{$type_code}_default_editor")) || ($dp = $config->get("{$table}_default_editor")))&& ($d_ui_id = ca_editor_uis::find(['editor_code' => $dp], ['returnAs' => 'firstId']))) {
+										$va_defaults[$vn_type_id] = $d_ui_id;
+										break;	
+									}
+								}
 								$va_defaults[$vn_type_id] = $vn_ui_id;
+								break;
 							}
 						}
 					}
@@ -3547,6 +3568,7 @@ class ca_users extends BaseModel {
 				if(!($vs_type_list_code = $t_instance->getTypeListCode())) { return __CA_BUNDLE_ACCESS_EDIT__; } // no type-level acces control for tables without type lists (like ca_lists)
 				$vn_type_id = (int)$t_list->getItemIDFromList($vs_type_list_code, $pm_type_code_or_id);
 			}
+			if($vn_type_id === 0) { return __CA_BUNDLE_ACCESS_EDIT__; }
 			$vn_access = -1;
 			foreach($va_roles as $vn_role_id => $va_role_info) {
 				$va_vars = $va_role_info['vars'];

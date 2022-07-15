@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2020 Whirl-i-Gig
+ * Copyright 2014-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -95,6 +95,7 @@ class WLPlugPDFRendererwkhtmltopdf Extends BasePDFRendererPlugIn Implements IWLP
 	 * @param array $options Options include:
 	 *		stream = Output the rendered PDF directly to the response [Default=false]
 	 *		filename = The filename to set the PDF to when streams [Default=output.pdf]
+	 *		writeFile = File path to write PDF to. [Default=false]
 	 *
 	 * @return string The rendered PDF content
 	 * @seealso wkhtmltopdf::renderFile()
@@ -136,6 +137,10 @@ class WLPlugPDFRendererwkhtmltopdf Extends BasePDFRendererPlugIn Implements IWLP
 		@unlink($vs_content_path);
 		@unlink($vs_header_path);
 		@unlink($vs_footer_path);
+		
+		if($path = caGetOption('writeFile', $pa_options, false)) {
+			copy($vs_output_path, $path);
+		}
 		@unlink($vs_output_path);
 		
 		return $vs_pdf_content;

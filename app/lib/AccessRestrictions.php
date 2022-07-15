@@ -81,7 +81,6 @@ class AccessRestrictions {
 	}
 	# -------------------------------------------------------
 	public function userCanAccess($pn_user_id ,$pa_module_path,$ps_controller,$ps_action,$pa_fake_parameters=array()){
-		
 		if(!$this->opo_acr_config->get("enforce_access_restrictions")){ // admin doesn't want us to enforce any restrictions
 			return true;
 		}

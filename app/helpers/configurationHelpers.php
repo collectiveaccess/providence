@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2019 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,44 +30,64 @@
  * ----------------------------------------------------------------------
  */
 
- /**
-   *
-   */
-   	
-require_once(__CA_LIB_DIR__.'/Configuration.php');
-
-	# ----------------------------------------------------------------
-	/**
-	  * Returns a sorted list of XML profiles. Keys are display names and values are profile codes (filename without .xml extension).
-	  *
-	  * @param string $ps_install_dir_prefix optional prefix for install dir
-	  * @return array List of available profiles
-	  */
-	function caGetAvailableXMLProfiles($ps_install_dir_prefix='.') {
-		$va_files = caGetDirectoryContentsAsList($ps_install_dir_prefix.'/profiles/xml', false);
-		$va_profiles = array();
-		
-		foreach($va_files as $vs_filepath) {
-			if (preg_match("!\.xml$!", $vs_filepath)) {
-				$va_tmp = explode('/', $vs_filepath);
-				$va_tmp2 = explode('.', array_pop($va_tmp));
-				$vs_file = array_shift($va_tmp2);
-				$va_profile_info = Installer::getProfileInfo($ps_install_dir_prefix.'/profiles/xml', $vs_file);
-				if (!$va_profile_info['useForConfiguration']) { continue; }
-				$va_profiles[$va_profile_info['display']] = $vs_file; 
-			}
+# ----------------------------------------------------------------
+/**
+  * Returns a sorted list of profiles. Keys are display names and values are profile codes (filename without .xml extension).
+  *
+  * @param string $install_dir_prefix optional prefix for install dir
+  * @return array List of available profiles
+  */
+function caGetAvailableProfiles(string $install_dir_prefix='.') {
+	$files = caGetDirectoryContentsAsList($install_dir_prefix.'/profiles', true);
+	$profiles = array();
+	
+	foreach($files as $filepath) {
+		if (preg_match("!\.(xml|xlsx)$!", $filepath)) {
+			$tmp = explode('/', $filepath);
+			$tmp2 = explode('.', array_pop($tmp));
+			$file = array_shift($tmp2);
+			$profile_info = \Installer\Installer::getProfileInfo($install_dir_prefix.'/profiles', $file);
+			if (!$profile_info['useForConfiguration']) { continue; }
+			$profiles[strip_tags($profile_info['display'])] = $file; 
 		}
+	}
+	
+	ksort($profiles, SORT_NATURAL);
+	return $profiles;
+}
+# --------------------------------------------------
+/**
+ * Return path to profile based upon profile name and root directory
+ *
+ * @param string $directory path to a directory containing profiles and XML schema
+ * @param string $profile of the profile, as in <$directory>/xml/<$profile>.xml
+ *
+ * @return string Return path to profile, or null if profile was not found
+ */
+function caGetProfilePath(string $directory, string $profile) : ?string {
+	$files = caGetDirectoryContentsAsList($directory);
+	
+	$possible_match = null;
+	foreach($files as $f) {
+		$filename = pathinfo($f, PATHINFO_FILENAME);
+		$basename = pathinfo($f, PATHINFO_BASENAME);
 		
-		ksort($va_profiles, SORT_STRING | SORT_FLAG_CASE);
-		return $va_profiles;
+		if($filename === $profile) {
+			return $f;
+		}
+		if($basename === $profile) {
+			$possible_match = $f;
+		}
 	}
-	# ----------------------------------------------------------------
-	/**
-	 *
-	 */
-	function caFlushOutput() {
-		echo str_pad('',4096)."\n";
-		@ob_flush();
-		flush();
-	}
-	# ----------------------------------------------------------------
+	return $possible_match;
+}
+# ----------------------------------------------------------------
+/**
+ *
+ */
+function caFlushOutput() {
+	echo str_pad('',4096)."\n";
+	@ob_flush();
+	flush();
+}
+# ----------------------------------------------------------------

@@ -3584,7 +3584,7 @@ jQuery(document).ready(function() {
 		
 		$buf = '';
 		if(caGetOption('showBatchEditorButton', $options, false)) {
-			$buf = '<div class="button batchEdit">'.caNavLink($request, caNavIcon(__CA_NAV_ICON_BATCH_EDIT__, '15px')._t(' Batch edit'), '', '*', '*', 'BatchEdit', ['placement_id' => $placement_id, 'primary_id' => $t_instance->getPrimaryKey(), 'screen' => $request->getActionExtra()]).'</div>';
+			$buf = '<div class="button batchEdit">'.caNavLink($request, caNavIcon(__CA_NAV_ICON_BATCH_EDIT__, '15px')._t(' Batch edit all'), '', '*', '*', 'BatchEdit', ['placement_id' => $placement_id, 'primary_id' => $t_instance->getPrimaryKey(), 'screen' => $request->getActionExtra()]).'</div>';
 		}
 		return $buf;
 	}
@@ -4245,14 +4245,14 @@ jQuery(document).ready(function() {
 		$va_detail_type_config = caGetDetailTypeConfig($ps_context);
 
 		if (!caGetOption(['no_overlay'], $va_rep_display_info, false)) {
-			$vs_tool_bar .= "<a href='#' class='zoomButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'Detail', 'GetMediaOverlay', array('context' => $ps_context, 'id' => $pn_subject_id, 'representation_id' => $vn_rep_id, 'set_id' => caGetOption('set_id', $pa_options, 0), 'overlay' => 1))."\", function() { var url = jQuery(\"#\" + caMediaPanel.getPanelID()).data(\"reloadUrl\"); if(url) { window.location = url; } }); return false;' aria-label='"._t("Zoom")."'><span class='glyphicon glyphicon-zoom-in' aria-label='Zoom'></span></a>\n";
+			$vs_tool_bar .= "<a href='#' class='zoomButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'Detail', 'GetMediaOverlay', array('context' => $ps_context, 'id' => $pn_subject_id, 'representation_id' => $vn_rep_id, 'set_id' => caGetOption('set_id', $pa_options, 0), 'overlay' => 1))."\", function() { var url = jQuery(\"#\" + caMediaPanel.getPanelID()).data(\"reloadUrl\"); if(url) { window.location = url; } }); return false;' aria-label='"._t("Zoom")."'><span class='glyphicon glyphicon-zoom-in' role='button' aria-label='Zoom'></span></a>\n";
 		}
 
 		if (is_null($vb_show_compare = caGetOption('compare', $va_detail_type_config['options'], null))) {
 		    $vb_show_compare = caGetOption('compare', $va_rep_display_info, false);
 		}
 		if ($vb_show_compare) {
-		   $vs_tool_bar .= "<a href='#' class='compare_link' aria-label='Compare' data-id='representation:{$vn_rep_id}'><i class='fa fa-clone' aria-hidden='true' aria-label='Compare'></i></a>";
+		   $vs_tool_bar .= "<a href='#' class='compare_link' aria-label='Compare' data-id='representation:{$vn_rep_id}'><i class='fa fa-clone' aria-hidden='true' role='button' aria-label='Compare'></i></a>";
 		}
 
 		if(($ps_table == "ca_objects") && is_array($va_add_to_set_link_info) && sizeof($va_add_to_set_link_info)){
@@ -4263,7 +4263,7 @@ jQuery(document).ready(function() {
 			$va_download_display_info = caGetMediaDisplayInfo('download', $pt_representation->getMediaInfo('media', 'INPUT', 'MIMETYPE'));
 			$vs_download_version = caGetOption(['download_version', 'display_version'], $va_download_display_info);
 			if($vs_download_version){
-				$vs_tool_bar .= caNavLink($po_request, " <span class='glyphicon glyphicon-download-alt' aria-label='Download'></span>", 'dlButton', 'Detail', 'DownloadRepresentation', '', array('context' => $ps_context, 'representation_id' => $pt_representation->getPrimaryKey(), "id" => $pn_subject_id, "download" => 1, "version" => $vs_download_version), array("aria-label" => _t("Download")));
+				$vs_tool_bar .= caNavLink($po_request, " <span class='glyphicon glyphicon-download-alt' role='button' aria-label='Download'></span>", 'dlButton', 'Detail', 'DownloadRepresentation', '', array('context' => $ps_context, 'representation_id' => $pt_representation->getPrimaryKey(), "id" => $pn_subject_id, "download" => 1, "version" => $vs_download_version), array("aria-label" => _t("Download")));
 			}
 		}
 		$vs_tool_bar .= "</div><!-- end detailMediaToolbar -->\n";
@@ -4435,7 +4435,9 @@ jQuery(document).ready(function() {
 					$po_request, 
 					"representation:{$pn_representation_id}", 
 					['t_instance' => $t_instance, 't_subject' => $pt_subject, 'display' => $va_display_info, 'display_type' => $ps_display_type],
-					['viewerWrapper' => caGetOption('inline', $pa_options, false) ? 'viewerInline' : null, 'context' => $ps_context, 'hideOverlayControls' => $pb_hide_overlay_controls, 'noOverlay' => $pb_no_overlay, 'checkAccess' => $pa_check_acccess, 'resultList' => caGetOption('resultList', $pa_options, null)]
+					['viewerWrapper' => caGetOption('inline', $pa_options, false) ? 'viewerInline' : null, 'context' => $ps_context, 'hideOverlayControls' => $pb_hide_overlay_controls, 
+					'noOverlay' => $pb_no_overlay, 'checkAccess' => $pa_check_acccess, 
+					'resultList' => caGetOption('resultList', $pa_options, null), 'showRepresentationViewerNextPreviousLinks' => (bool)caGetOption('showRepresentationViewerNextPreviousLinks', $pa_options, false)]
 				);
 
 				if ($pb_inline) {	
@@ -5208,7 +5210,8 @@ jQuery(document).ready(function() {
 				break;
 		} 
 
-		return preg_replace("![^A-Za-z0-9_\-\.]+!", "_", $filename);
+		$filename = html_entity_decode($filename);
+		return preg_replace("![^A-Za-z0-9_\-\.&]+!", "_", $filename);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -5242,7 +5245,8 @@ jQuery(document).ready(function() {
 				break;
 		} 
 
-		return preg_replace("![^A-Za-z0-9_\-\.]+!", "_", $filename);
+		$filename = html_entity_decode($filename);
+		return preg_replace("![^A-Za-z0-9_\-\.&]+!", "_", $filename);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -5261,7 +5265,7 @@ jQuery(document).ready(function() {
 		$config = Configuration::load();
 		
 		if(is_array($branding = $config->getAssoc('branding')) && is_array($logo = caGetOption($type, $branding, null)) && !empty($logo['src'])) {
-			return caHTMLImage(($abs ? __CA_BASE_DIR__ : __CA_URL_ROOT__).'/'.caGetOption('src', $logo), ['alt' => caGetOption('alt', $logo), 'class' => caGetOption('class', $logo), 'id' => caGetOption('id', $logo), 'scaleCSSWidthTo' => caGetOption('width', $logo), 'scaleCSSHeightTo' => caGetOption('height', $logo)]);
+			return caHTMLImage(($abs ? __CA_BASE_DIR__ : __CA_URL_ROOT__).'/'.caGetOption('src', $logo), ['alt' => caGetOption('alt', $logo), 'class' => caGetOption('class', $logo), 'style' => caGetOption('style', $logo), 'id' => caGetOption('id', $logo), 'scaleCSSWidthTo' => caGetOption('width', $logo), 'scaleCSSHeightTo' => caGetOption('height', $logo)]);
 		}
 		
 		if(!$g_request) { return null; }

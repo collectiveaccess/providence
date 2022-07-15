@@ -38,7 +38,7 @@ function import()
 		# display command 
 		echo "	↳ $1 import-data --quiet --format=$2 --mapping=$3 --source=$4 $5"
 	fi
-	$1 import-data --quiet --format=$2 --mapping=$3 --source=$4 $5
+	$1 import-data --quiet --format="$2" --mapping="$3" --source="$4" $5
 	
 	local ret=$?
 	if [ $ret -ne 0 ] ; then

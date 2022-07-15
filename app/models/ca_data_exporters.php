@@ -192,11 +192,11 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		self::$s_variables = array();
 	}
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
+	public function __construct($id=null, ?array $options=null) {
 		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 		BaseModel::$s_ca_models_definitions['ca_data_exporters']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = array_flip(caGetPrimaryTables(true));
 		global $_ca_data_exporters_settings;
-		parent::__construct($pn_id);
+		parent::__construct($id, $options);
 
 		// settings
 		$this->initSettings();
@@ -265,6 +265,16 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			'default' => '',
 			'label' => _t('Type restrictions'),
 			'description' => _t('If set, this mapping will only be available for these types. Multiple types are separated by commas or semicolons.')
+		);
+
+		$va_settings['locale'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Locale'),
+			'description' => _t('Locale code to use to get the field values when mapping-specific locale is not set. If not set, the system/user default is used.')
 		);
 
 		// if exporter_format is set, pull in format-specific settings
@@ -1188,10 +1198,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 * Export a record set as defined by the given search expression and the table_num for this exporter.
 	 * This function wraps the record-level exports using the settings 'wrap_before' and 'wrap_after' if they are set.
+	 *
 	 * @param string $ps_exporter_code defines the exporter to use
 	 * @param SearchResult $po_result An existing SearchResult object
 	 * @param string $ps_filename Destination filename (we can't keep everything in memory here)
 	 * @param array $pa_options
+	 *		individualFiles = For XML and JSON exports, output data one record per-file, using $ps_filename as a path to a directory into which to write the files. [Default is false]
+	 *		filenameTemplate = When individualFiles option is set, may contain a template used to name each file. [Default is ^<table>.idno]
 	 * 		progressCallback = callback function for asynchronous UI status reporting
 	 *		showCLIProgressBar = Show command-line progress bar. Default is false.
 	 *		logDirectory = path to directory where logs should be written
@@ -1208,6 +1221,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	static public function exportRecordsFromSearchResult($ps_exporter_code, $po_result, $ps_filename=null, $pa_options=array()) {
 		if(!($po_result instanceof SearchResult)) { return false; }
+		
+		$individual_files = caGetOption('individualFiles', $pa_options, false);
+		$filename_template = caGetOption('filenameTemplate', $pa_options, null);
 
 		$vs_log_dir = caGetOption('logDirectory',$pa_options);
 		if(!file_exists($vs_log_dir) || !is_writable($vs_log_dir)) {
@@ -1250,13 +1266,15 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vs_wrap_before = $t_mapping->getSetting('wrap_before');
 		$vs_wrap_after = $t_mapping->getSetting('wrap_after');
 		$vs_export_format = $t_mapping->getSetting('exporter_format');
+		
+		if($vs_export_format === 'CSV') { $individual_files = false; } // no individual file output with CSV
 
 		$t_instance = Datamodel::getInstanceByTableNum($t_mapping->get('table_num'));
 		$vn_num_items = $po_result->numHits();
 
 		$o_log->logInfo(_t("SearchResult contains %1 results. Now calling single-item export for each record.", $vn_num_items));
 
-		if($vs_wrap_before) {
+		if(!$individual_files && $vs_wrap_before) {
 			file_put_contents($ps_filename, $vs_wrap_before."\n", FILE_APPEND);
 		}
 
@@ -1278,7 +1296,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vn_num_processed = 0;
 
 
-		if ($t_mapping->getSetting('CSV_print_field_names')) {
+		if (!$individual_files && $t_mapping->getSetting('CSV_print_field_names')) {
 			$va_header = $va_header_sources = array();
 			$va_mapping_items = $t_mapping->getItems();
 			foreach($va_mapping_items as $vn_i => $va_mapping_item) {
@@ -1304,9 +1322,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			file_put_contents($ps_filename, $vs_enclosure . join($vs_enclosure.$vs_delimiter.$vs_enclosure,$va_header) . $vs_enclosure."\n", FILE_APPEND);
 		}
 
+		if($individual_files && !$filename_template) {
+			$table = $po_result->tableName();
+			$filename_template = "^{$table}.".Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD');
+		}
+
 		$i = 0;
 		while($po_result->nextHit()) {
-
 			// clear caches every once in a while. doesn't make much sense to keep them around while exporting
 			if((++$i % 1000) == 0) {
 				SearchResult::clearCaches();
@@ -1319,10 +1341,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				}
 			}
 
-			$vs_item_export = ca_data_exporters::exportRecord($ps_exporter_code, $po_result->get($t_instance->primaryKey()), array('logger' => $o_log));
-			if($vs_export_format == 'JSON'){
+			$vs_item_export = ca_data_exporters::exportRecord($ps_exporter_code, $po_result->get($t_instance->primaryKey()), ['logger' => $o_log, 'singleRecord' => $individual_files]);
+			
+			if($individual_files) {
+				$individual_filename = preg_replace("![^\pL\d_\-]+!u", '_', $po_result->getWithTemplate($filename_template));
+				file_put_contents("{$ps_filename}/{$individual_filename}.".strtolower($vs_export_format), $vs_wrap_before.$vs_item_export.$vs_wrap_after);
+			} elseif($vs_export_format == 'JSON'){
 				array_push($va_json_data, json_decode($vs_item_export));
-				#file_put_contents($ps_filename, $vs_item_export.",", FILE_APPEND);
 			} else {
 				file_put_contents($ps_filename, $vs_item_export."\n", FILE_APPEND);
 			}
@@ -1338,13 +1363,14 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 
-		if($vs_wrap_after) {
-			file_put_contents($ps_filename, $vs_wrap_after."\n", FILE_APPEND);
-		}
+		if(!$individual_files) {
+			if($vs_wrap_after) {
+				file_put_contents($ps_filename, $vs_wrap_after."\n", FILE_APPEND);
+			}
 
-		if($vs_export_format == 'JSON'){
-			file_put_contents($ps_filename, json_encode($va_json_data), FILE_APPEND);
-			#file_put_contents($ps_filename, "]", FILE_APPEND);
+			if(!$vs_export_format == 'JSON'){
+				file_put_contents($ps_filename, json_encode($va_json_data), FILE_APPEND);
+			}
 		}
 
 		if ($vb_show_cli_progress_bar) {
@@ -1539,6 +1565,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$o_log->logError(_t("Failed to load exporter with code '%1' for item with ID %2", $ps_exporter_code, $pn_record_id));
 			return false;
 		}
+		
+		$pa_options['settings'] = $t_exporter->getSettings();
 
 		$va_type_restrictions = $t_exporter->getSetting('typeRestrictions');
 		if(is_array($va_type_restrictions) && sizeof($va_type_restrictions)) {
@@ -1598,7 +1626,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		$o_manager->hookExportRecord(array('exporter_instance' => $t_exporter, 'record_id' => $pn_record_id, 'export' => &$va_export));
 
-		$pa_options['settings'] = $t_exporter->getSettings();
 
 		$vs_wrap_before = $t_exporter->getSetting('wrap_before_record');
 		$vs_wrap_after = $t_exporter->getSetting('wrap_after_record');
@@ -1899,16 +1926,20 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$va_get_options['template'] = $vs_template;
 		}
 
-		if($vs_locale = $settings['locale']) {
+		if(($vs_locale = $settings['locale']) || ($vs_locale = caGetOption('locale', $pa_options['settings'], null))) {
 			// the global UI locale for some reason has a higher priority
 			// than the locale setting in BaseModelWithAttributes::get
 			// which is why we unset it here and restore it later
 			global $g_ui_locale;
 			$vs_old_ui_locale = $g_ui_locale;
 			$g_ui_locale = null;
-
+			
 			$va_get_options['locale'] = $vs_locale;
 		}
+		if($settings['returnAllLocales']) {
+			$va_get_options['returnAllLocales'] = true;
+		}
+		
 		
 		// AttributeValue settings that are simply passed through by the exporter
 	
@@ -2098,7 +2129,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			} else if(in_array($vs_source, array("relationship_type_id", "relationship_type_code", "relationship_typename"))) {
 				if(isset($pa_options[$vs_source]) && strlen($pa_options[$vs_source])>0) {
 
-					$o_log->logDebug(_t("Source refers to releationship type information. Value for this mapping is '%1'", $pa_options[$vs_source]));
+					$o_log->logDebug(_t("Source refers to relationship type information. Value for this mapping is '%1'", $pa_options[$vs_source]));
 
 					$va_item_info[] = array(
 						'text' => $pa_options[$vs_source],
@@ -2110,7 +2141,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					$va_values = $t_instance->get($vs_source, array_merge($va_get_options, ['returnAsArray' => true]));
 					if($deduplicate) { $va_values = array_unique($va_values); } 
 					
-					$vs_get = join(caGetOption('delimiter', $va_get_opts, ';'), $va_values);
+					$vs_get = join(caGetOption('delimiter', $va_get_opts, ';'), $va_values ?? []);
 					$o_log->logDebug(_t("Source is a simple get() for some bundle. Value for this mapping is '%1'", $vs_get));
 					$o_log->logDebug(_t("get() options are: %1", print_r($va_get_options,true)));
 

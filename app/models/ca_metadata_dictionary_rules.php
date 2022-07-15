@@ -176,15 +176,15 @@ class ca_metadata_dictionary_rules extends BaseModel {
 	protected $FIELDS;
 	
 	# ------------------------------------------------------
-	function __construct($pn_id=null, $pa_additional_settings=null, $pa_setting_values=null) {
-		parent::__construct($pn_id);
+	function __construct($id=null, ?array $options=null, $additional_settings=null, $setting_values=null) {
+		parent::__construct($id, $options);
 		
 		//
-		if (!is_array($pa_additional_settings)) { $pa_additional_settings = array(); }
-		$this->setSettingDefinitionsForRule($pa_additional_settings);
+		if (!is_array($additional_settings)) { $additional_settings = array(); }
+		$this->setSettingDefinitionsForRule($additional_settings);
 		
-		if (is_array($pa_setting_values)) {
-			$this->setSettings($pa_setting_values);
+		if (is_array($setting_values)) {
+			$this->setSettings($setting_values);
 		}
 	}
 	# ------------------------------------------------------
@@ -192,11 +192,11 @@ class ca_metadata_dictionary_rules extends BaseModel {
 	  * Sets setting definitions for to use for the current rule. Note that these definitions persist no matter what row is loaded
 	  * (or even if no row is loaded). You can set the definitions once and reuse the instance for many rules. All will have the set definitions.
 	  *
-	  * @param $pa_additional_settings array Array of settings definitions
+	  * @param $additional_settings array Array of settings definitions
 	  * @return bool Always returns true
 	  */
-	public function setSettingDefinitionsForRule($pa_additional_settings) {
-		if (!is_array($pa_additional_settings)) { $pa_additional_settings = array(); }
+	public function setSettingDefinitionsForRule($additional_settings) {
+		if (!is_array($additional_settings)) { $additional_settings = array(); }
 		
 		$standard_settings = [
 			'label' => array(
@@ -236,7 +236,7 @@ class ca_metadata_dictionary_rules extends BaseModel {
 				'description' => _t('Long form description of rule, used for display to user when presenting issues.')
 			)
 		];
-		$this->setAvailableSettings(array_merge($standard_settings, $pa_additional_settings));
+		$this->setAvailableSettings(array_merge($standard_settings, $additional_settings));
 		
 		return true;
 	}
@@ -244,44 +244,44 @@ class ca_metadata_dictionary_rules extends BaseModel {
 	/**
 	 * Return all rules for all or selected bundles
 	 *
-	 * @param array $pa_options Options include:
+	 * @param array $options Options include:
 	 *		db = Database connection to use. If omitted a new connection is created. [Default is null]
 	 *		bundles = List of bundle name to return rules for. If omitted all rules for all bundles are returned. [Default is null]
 	 *		table = Table to restrict entries to. If omitted rules for all tables are returned. [Default is null]
 	 *
 	 * @return array List of rules. Each rule is an array with rule data.
 	 */
-	static public function getRules($pa_options=null) {
-		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }
+	static public function getRules($options=null) {
+		if (!($o_db = caGetOption('db', $options, null))) { $o_db = new Db(); }
 		
-		$vs_sql = "
+		$sql = "
 			SELECT cmdr.rule_id, cmdr.entry_id, cmde.bundle_name, cmde.settings entry_settings, cmde.table_num,
 			cmdr.rule_code, cmdr.rule_level, cmdr.expression, cmdr.settings rule_settings
 			FROM ca_metadata_dictionary_rules cmdr
 			INNER JOIN ca_metadata_dictionary_entries AS cmde ON cmde.entry_id = cmdr.entry_id
 		";
 		
-		$va_wheres = $va_params = array();
-		if($va_bundles = caGetOption('bundles', $pa_options, null, array('castTo' => 'array'))) {
-			$va_wheres[] = "(cmde.bundle_name IN (?))";
-			$va_params[] = $va_bundles;
+		$wheres = $params = array();
+		if($bundles = caGetOption('bundles', $options, null, array('castTo' => 'array'))) {
+			$wheres[] = "(cmde.bundle_name IN (?))";
+			$params[] = $bundles;
 		}
-		if(($table = caGetOption('table', $pa_options, null)) && $table_num = Datamodel::getTableNum($table)) {
-			$va_wheres[] = "(cmde.table_num = ?)";
-			$va_params[] = $table_num;
+		if(($table = caGetOption('table', $options, null)) && $table_num = Datamodel::getTableNum($table)) {
+			$wheres[] = "(cmde.table_num = ?)";
+			$params[] = $table_num;
 		}
-		if (sizeof($va_wheres) > 0) { $vs_sql .= " WHERE ".join(" AND ", $va_wheres); }
+		if (sizeof($wheres) > 0) { $sql .= " WHERE ".join(" AND ", $wheres); }
 		
-		$qr_rules = $o_db->query($vs_sql, $va_params);
+		$qr_rules = $o_db->query($sql, $params);
 		
-		$va_rules = $qr_rules->getAllRows();
+		$rules = $qr_rules->getAllRows();
 		
-		foreach($va_rules as $vn_i => $va_rule) {
-			$va_rules[$vn_i]['entry_settings'] = unserialize(base64_decode($va_rule['entry_settings']));
-			$va_rules[$vn_i]['rule_settings'] = unserialize(base64_decode($va_rule['rule_settings']));
+		foreach($rules as $i => $rule) {
+			$rules[$i]['entry_settings'] = unserialize(base64_decode($rule['entry_settings']));
+			$rules[$i]['rule_settings'] = unserialize(base64_decode($rule['rule_settings']));
 		}
 		
-		return $va_rules;
+		return $rules;
 	}
 	# ----------------------------------------
 }

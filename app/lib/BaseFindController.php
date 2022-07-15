@@ -198,6 +198,12 @@
 						(($tmp[0] === $vs_label_table_name) && ($tmp[1] === $vs_label_display_field))
 						||
 						(($tmp[0] == $this->ops_tablename) && ($tmp[1] === 'preferred_labels'))
+						||
+						($va_display_item['bundle_name'] === 'preferred_labels')
+						||
+						(($tmp[0] == $this->ops_tablename) && ($tmp[1] === 'nonpreferred_labels'))
+						||
+						($va_display_item['bundle_name'] === 'nonpreferred_labels')
 					) {
 						$display_list[$i]['is_sortable'] = true;
 						$display_list[$i]['bundle_sort'] = $vs_label_table_name.'.'.$t_instance->getLabelSortField();
@@ -211,9 +217,9 @@
 						continue;
 					}
 
-					if ($tmp[0] != $this->ops_tablename) { 
+					if (($tmp[0] != $this->ops_tablename) && ($t_rel = Datamodel::getInstance($tmp[0], true))) { 
 					    // Sort on related tables
-						if (($t_rel = Datamodel::getInstance($tmp[0], true)) && method_exists($t_rel, "getLabelTableInstance") && ($t_rel_label = $t_rel->getLabelTableInstance())) {
+						if (method_exists($t_rel, "getLabelTableInstance") && ($t_rel_label = $t_rel->getLabelTableInstance())) {
                             $display_list[$i]['is_sortable'] = true; 
                             $types = array_merge(caGetOption('restrict_to_relationship_types', $va_display_item['settings'], [], ['castTo' => 'array']), caGetOption('restrict_to_types', $va_display_item['settings'], [], ['castTo' => 'array']));
                             
@@ -222,13 +228,14 @@
 						continue; 
 					}
 					
-					if ($t_instance->hasField($tmp[1])) {
-						if($t_instance->getFieldInfo($tmp[1], 'FIELD_TYPE') == FT_MEDIA) { // sorting media fields doesn't really make sense and can lead to sql errors
+					if ($t_instance->hasField($b = $tmp[1]) || $t_instance->hasField($b = $va_display_item['bundle_name'])) {
+						if ($tmp[0] === $va_display_item['bundle_name']) { $va_display_item['bundle_name'] = $this->ops_tablename.".{$b}"; }
+						if($t_instance->getFieldInfo($b, 'FIELD_TYPE') == FT_MEDIA) { // sorting media fields doesn't really make sense and can lead to sql errors
 							continue;
 						}
 						$display_list[$i]['is_sortable'] = true;
 						
-						if ($t_instance->hasField($tmp[1].'_sort')) {
+						if ($t_instance->hasField($b.'_sort')) {
 							$display_list[$i]['bundle_sort'] = $va_display_item['bundle_name'].'_sort';
 						} else {
 							$display_list[$i]['bundle_sort'] = $va_display_item['bundle_name'];

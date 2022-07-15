@@ -376,28 +376,28 @@ class BaseModel extends BaseObject {
 	 * if omitted, an empty object is created which can be used to create a new row in the database.
 	 * @return BaseModel
 	 */
-	public function __construct($pn_id=null, $pb_use_cache=true) {
+	public function __construct($id=null, ?array $options=null) {
 		$this->opn_instantiated_at = time();
-		$vs_table_name = $this->tableName();
+		$table_name = $this->tableName();
 		
-		if (!$this->FIELDS =& BaseModel::$s_ca_models_definitions[$vs_table_name]['FIELDS']) {
-			die("Field definitions not found for {$vs_table_name}");
+		if (!$this->FIELDS =& BaseModel::$s_ca_models_definitions[$table_name]['FIELDS']) {
+			die("Field definitions not found for {$table_name}");
 		}
 		if (!is_array(self::$field_list_for_load)) { self::$field_list_for_load = []; }
-		if (!self::$field_list_for_load[$vs_table_name]) {
-			self::$field_list_for_load[$vs_table_name] = [];
+		if (!self::$field_list_for_load[$table_name]) {
+			self::$field_list_for_load[$table_name] = [];
 			foreach($this->FIELDS as $f => $info) {
 				if(isset($info['START']) && isset($info['END'])) {
-					self::$field_list_for_load[$vs_table_name][] = "`{$info['START']}`";
-					self::$field_list_for_load[$vs_table_name][] = "`{$info['END']}`";
+					self::$field_list_for_load[$table_name][] = "`{$info['START']}`";
+					self::$field_list_for_load[$table_name][] = "`{$info['END']}`";
 				} else {
-					self::$field_list_for_load[$vs_table_name][] = "`{$f}`";
+					self::$field_list_for_load[$table_name][] = "`{$f}`";
 				}
 			}
 		}
 		
-		$this->NAME_SINGULAR =& BaseModel::$s_ca_models_definitions[$vs_table_name]['NAME_SINGULAR'];
-		$this->NAME_PLURAL =& BaseModel::$s_ca_models_definitions[$vs_table_name]['NAME_PLURAL'];
+		$this->NAME_SINGULAR =& BaseModel::$s_ca_models_definitions[$table_name]['NAME_SINGULAR'];
+		$this->NAME_PLURAL =& BaseModel::$s_ca_models_definitions[$table_name]['NAME_PLURAL'];
 		
 		$this->errors = array();
 		$this->error_output = 0;  # don't halt on error
@@ -411,15 +411,15 @@ class BaseModel extends BaseObject {
 		$this->_FILE_VOLUMES = FileVolumes::load();
 		$this->_FIELD_VALUE_CHANGED = $this->_FIELD_VALUE_DID_CHANGE = array();
 
-		if ($vs_locale = $this->_CONFIG->get("locale")) {
-			$this->ops_locale = $vs_locale;
+		if ($locale = $this->_CONFIG->get("locale")) {
+			$this->ops_locale = $locale;
 		}
 		
 		$this->opb_purify_input = strlen($this->_CONFIG->get("purify_all_text_input")) ? (bool)$this->_CONFIG->get("purify_all_text_input") : false;
 		
  		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 
-		if ($pn_id) { $this->load($pn_id, $pb_use_cache);}
+		if ($id) { $this->load($id, caGetOption('useCache', $options, true)); }
 	}
 
 	/**
@@ -1435,7 +1435,7 @@ class BaseModel extends BaseObject {
 				$vs_cur_value = isset($this->_FIELD_VALUES[$vs_field]) ? $this->_FIELD_VALUES[$vs_field] : null;
 				switch ($pa_fields_type) {
 					case (FT_NUMBER):
-						if ($vs_cur_value != $vm_value) {
+						if (($vs_cur_value != $vm_value) || !$this->getPrimaryKey()) {
 							$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
 						}
 						
@@ -1466,7 +1466,7 @@ class BaseModel extends BaseObject {
 						}
 						break;
 					case (FT_BIT):
-						if ($vs_cur_value != $vm_value) {
+						if (($vs_cur_value != $vm_value) || !$this->getPrimaryKey()) {
 							$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
 						}
 						$this->_FIELD_VALUES[$vs_field] = ($vm_value ? 1 : 0);
@@ -2977,10 +2977,11 @@ class BaseModel extends BaseObject {
 							$this->set($this->getProperty('HIERARCHY_ID_FLD'), $vn_hierarchy_id);
 						
 							$va_rebuild_hierarchical_index = $this->getHierarchyChildrenForIDs([$this->getPrimaryKey()], ['idsOnly' => true, 'includeSelf' => false]);
-						} 
-							
-						// if there's no parent then this is a root in which case HIERARCHY_ID_FLD should be set to the primary
-						// key of the row, which we'll know once we insert it (so we must set it after insert)
+						} else {
+							// if there's no parent then this is a root in which case HIERARCHY_ID_FLD should be set to the primary
+							// key of the row,
+							$this->set($this->getProperty('HIERARCHY_ID_FLD'), $this->getPrimaryKey());
+						}
 					
 						break;
 					case __CA_HIER_TYPE_MULTI_POLY__:	// TODO: implement
@@ -7286,7 +7287,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						}
 						if (is_array($va_rel = Datamodel::getOneToManyRelations($vs_table_name, $ps_additional_table_to_join))) {
 							// one-many rel
-							$va_sql_joins[] = "{$ps_additional_table_join_type} JOIN {$ps_additional_table_to_join} ON {$vs_table_name}".'.'.$va_rel['one_table_field']." = {$ps_additional_table_to_join}.".$va_rel['many_table_field'];
+							$va_sql_joins[$ps_additional_table_to_join] = "{$ps_additional_table_join_type} JOIN {$ps_additional_table_to_join} ON {$vs_table_name}".'.'.$va_rel['one_table_field']." = {$ps_additional_table_to_join}.".$va_rel['many_table_field'];
 						} else {
 							// TODO: handle many-many cases
 						}
@@ -7310,8 +7311,10 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					}
 					$vs_sql_joins = join("\n", $va_sql_joins);
 					
+					$select_tables = array_keys($va_sql_joins);
+					$select_tables[] = $vs_table_name;
 					$vs_sql = "
-						SELECT * 
+						SELECT ".join(',', array_map(function($v) { return "{$v}.*"; }, $select_tables))."
 						FROM {$vs_table_name}
 						{$vs_sql_joins}
 						WHERE
@@ -8188,6 +8191,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	 *			firstId					= the id (primary key) of the first children. This is the same as the first item in the array returned by 'ids'
 	 *			firstModelInstance		= the instance of the first children. This is the same as the first instance in the array returned by 'modelInstances'
 	 *			count					= the number of children
+	 *			maxLevels				= maximum number of hierarchy levels to traverse. [Default is null - no limit]
 	 *			[Default is ids]
 	 *	
 	 *		limit = if searchResult, ids or modelInstances is set, limits number of returned children. [Default is no limit]
@@ -8202,6 +8206,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		$vs_table = get_called_class();
 		$t_instance = new $vs_table;
 		
+		$max_levels = caGetOption('maxLevels', $pa_options, null);
+		
 	 	if (!($vs_parent_id_fld = $t_instance->getProperty('HIERARCHY_PARENT_ID_FLD'))) { return null; }
 		if ($o_trans) { $t_instance->setTransaction($o_trans); }
 		
@@ -8214,6 +8220,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		$va_level_row_ids = $pa_row_ids;
 		
 		$delete_sql = ($t_instance->hasField('deleted')) ? 'deleted = 0 AND ' : '';	// filter deleted
+		$l = 0;
 		do {
 			$qr_level = $o_db->query("
 				SELECT {$vs_table_pk}
@@ -8224,6 +8231,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			", array($va_level_row_ids));
 			$va_level_row_ids = $qr_level->getAllFieldValues($vs_table_pk);
 			$va_child_row_ids = array_merge($va_child_row_ids, $va_level_row_ids);
+			$l++;
+			if($max_levels && ($max_levels <= $l)) { break; }
 		} while(($qr_level->numRows() > 0) && (sizeof($va_level_row_ids))) ;
 		
 		$va_child_row_ids = array_values(array_unique($va_child_row_ids));
@@ -9909,7 +9918,7 @@ $pa_options["display_form_field_tips"] = true;
 			$skip_relation_ids = [];
 			while($qr_res->nextRow()) {
                 $row = $qr_res->getRow();
-				if($t_to_item->relationshipExists($rel_table_name_or_num, ($row_id == $row[$left_table_field_name]) ? $row[$right_table_field_name] : $row[$left_table_field_name], $row['type_id'])){ 
+				if($t_to_item->relationshipExists($rel_table_name_or_num, ($row_id == $row[$left_table_field_name]) ? $row[$right_table_field_name] : $row[$left_table_field_name], $row['type_id'], caGetLocalizedHistoricDateRange($row['sdatetime'], $row['edatetime']))){ 
 					$skip_relation_ids[] = $row['relation_id'];
 					continue; 
 				}
@@ -9956,7 +9965,7 @@ $pa_options["display_form_field_tips"] = true;
             	$skip_relation_ids = [];
                 while($qr_res->nextRow()) {
                 	$row = $qr_res->getRow();
-                	if($t_to_item->relationshipExists($rel_table_name_or_num, $row[$rel_item_pk], $row['type_id'] ?? null)){ 
+                	if($t_to_item->relationshipExists($rel_table_name_or_num, $row[$rel_item_pk], $row['type_id'] ?? null, caGetLocalizedHistoricDateRange($row['sdatetime'], $row['edatetime']))){ 
                 		$skip_relation_ids[] = $row['relation_id'];
                 		continue; 
                 	}
@@ -10053,8 +10062,12 @@ $pa_options["display_form_field_tips"] = true;
 			return null;
 		}
 		
+		$sql_field_list = $t_item_rel->getFormFields(true, true, true);
+		$logical_field_list = $t_item_rel->getFormFields(true);
+			
 		$va_to_reindex_relations = array();
 		if ($t_item_rel->tableName() == $this->getSelfRelationTableName()) {
+			
 		    $params = [(int)$vn_row_id, (int)$vn_row_id];
 		    if ($relation_id_sql) { $params[] = $relation_ids; }
 		    
@@ -10062,7 +10075,7 @@ $pa_options["display_form_field_tips"] = true;
 			$vs_right_field_name = $t_item_rel->getRightTableFieldName();
 			
 			$qr_res = $o_db->query("
-				SELECT * 
+				SELECT ".join(', ', $sql_field_list)."
 				FROM ".$t_item_rel->tableName()." 
 				WHERE 
 					(({$vs_left_field_name} = ?) OR ({$vs_right_field_name} = ?))
@@ -10088,6 +10101,12 @@ $pa_options["display_form_field_tips"] = true;
 				
 				if(isset($va_row['source_info'])) { $va_row['source_info'] = caUnserializeForDatabase($va_row['source_info']); }
 				
+				// translate dates
+				if(array_key_exists('sdatetime', $va_row)) {
+					$va_row['effective_date'] = strlen($va_row['sdatetime']) ? caGetLocalizedHistoricDateRange($va_row['sdatetime'], $va_row['edatetime']) : null;
+					unset($va_row['sdatetime']); unset($va_row['edatetime']);
+				}
+				
 				$t_item_rel->set($va_row);
 				$t_item_rel->insert();
 				if ($t_item_rel->numErrors()) {
@@ -10107,7 +10126,7 @@ $pa_options["display_form_field_tips"] = true;
 		    $params = [(int)$vn_row_id];
 		    if ($relation_id_sql) { $params[] = $relation_ids; }
 			$qr_res = $o_db->query("
-				SELECT * 
+				SELECT ".join(', ', array_map(function($v) {  return '`'.$v.'`'; }, $sql_field_list))."
 				FROM ".$t_item_rel->tableName()." 
 				WHERE 
 					({$vs_item_pk} = ?)
@@ -10130,6 +10149,12 @@ $pa_options["display_form_field_tips"] = true;
 				unset($va_row[$vs_rel_pk]);
 				if(isset($va_row['source_info'])) { $va_row['source_info'] = caUnserializeForDatabase($va_row['source_info']); }
 				$va_row[$vs_item_pk] = $pn_to_id;
+				
+				// translate dates
+				if(array_key_exists('sdatetime', $va_row)) {
+					$va_row['effective_date'] = strlen($va_row['sdatetime']) ? caGetLocalizedHistoricDateRange($va_row['sdatetime'], $va_row['edatetime']) : null;
+					unset($va_row['sdatetime']); unset($va_row['edatetime']);
+				}
 				 
 				$t_item_rel->set($va_row);
 				$t_item_rel->insert();
@@ -11763,16 +11788,26 @@ $pa_options["display_form_field_tips"] = true;
 			$va_wheres[] = "{$vs_table_name}.deleted = 0";
 		}
 		
+		// $vs_sql = "
+// 			SELECT {$vs_table_name}.* 
+// 			FROM (
+// 				SELECT {$vs_table_name}.{$vs_primary_key} FROM {$vs_table_name}
+// 				{$vs_join_sql}
+// 			".(sizeof($va_wheres) ? " WHERE " : "").join(" AND ", $va_wheres)."
+// 				ORDER BY RAND() 
+// 				{$vs_limit_sql}
+// 			) AS random_items 
+// 			INNER JOIN {$vs_table_name} ON {$vs_table_name}.{$vs_primary_key} = random_items.{$vs_primary_key}
+// 		";
 		$vs_sql = "
 			SELECT {$vs_table_name}.* 
-			FROM (
-				SELECT {$vs_table_name}.{$vs_primary_key} FROM {$vs_table_name}
-				{$vs_join_sql}
-			".(sizeof($va_wheres) ? " WHERE " : "").join(" AND ", $va_wheres)."
-				ORDER BY RAND() 
-				{$vs_limit_sql}
-			) AS random_items 
-			INNER JOIN {$vs_table_name} ON {$vs_table_name}.{$vs_primary_key} = random_items.{$vs_primary_key}
+			FROM {$vs_table_name}
+			INNER JOIN (SELECT CEIL(RAND() * (SELECT MAX(object_id) FROM {$vs_table_name})) AS id) AS x 
+			{$vs_join_sql}
+			WHERE {$vs_table_name}.object_id >= x.id 
+			".(sizeof($va_wheres) ? " AND " : "").join(" AND ", $va_wheres)."
+			ORDER BY {$vs_table_name}.object_id ASC 
+			{$vs_limit_sql}
 		";
 		
 		$qr_res = $o_db->query($vs_sql);

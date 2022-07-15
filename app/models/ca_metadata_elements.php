@@ -252,8 +252,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	#    the record identified by the primary key value
 	#
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
+	public function __construct($id=null, ?array $options=null) {
+		parent::__construct($id, $options);	# call superclass constructor
 		$this->FIELDS['datatype']['BOUNDS_CHOICE_LIST'] = array_flip(ca_metadata_elements::getAttributeTypes());
 
 		if($pn_id) { $this->opa_element_settings = $this->get('settings'); }

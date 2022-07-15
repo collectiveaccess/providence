@@ -62,7 +62,7 @@ class ElementsController extends BaseEditorController {
 		AssetLoadManager::register('bundleableEditor');
 		
 		$t_element = $this->getElementObject();
-		$t_restriction = new ca_metadata_type_restrictions(null, true);
+		$t_restriction = new ca_metadata_type_restrictions(null, null, true);
 		
 		$this->view->setVar('available_settings',$t_element->getAvailableSettings());
 		$this->view->setVar('type_list', $t_restriction->getTypeListsForTables());
@@ -299,7 +299,7 @@ class ElementsController extends BaseEditorController {
 			}
 		
 			/* process type restrictions */
-			$t_restriction = new ca_metadata_type_restrictions(null, true);
+			$t_restriction = new ca_metadata_type_restrictions(null, null, true);
 			$va_settings = array_keys($t_restriction->getAvailableSettings());
 
 			foreach($_REQUEST as $vs_key => $vs_value) {

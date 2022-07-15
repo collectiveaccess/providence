@@ -58,8 +58,8 @@
 		
 		
 		# ------------------------------------------------------------------
-		public function __construct($pn_id=null) {
-			parent::__construct($pn_id);
+		public function __construct($id=null, ?array $options=null) {
+			parent::__construct($id, $options);
 			$this->init();
 		}
 		# ------------------------------------------------------------------
@@ -163,7 +163,9 @@
 							(is_array($va_attrs) ? array_map(function($a) { return $a->getLocaleID(); }, $va_attrs) : []), 
 							array_map(function($a) { 
 								return (int)$a['values']['locale_id'] ?? null;
-							}, ($this->opa_attributes_to_add + $this->opa_attributes_to_edit))
+							}, array_filter(($this->opa_attributes_to_add + $this->opa_attributes_to_edit), function($x) use ($vn_element_id) {
+								return (int)$x['element'] === (int)$vn_element_id;
+							}))
 						)
 					);
 				
@@ -269,6 +271,7 @@
 			if (!($t_element = ca_metadata_elements::getInstance($pm_element_code_or_id))) { return false; }
 			if (!$t_attr->getPrimaryKey()) { return false; }
 			$vn_attr_element_id = $t_attr->get('element_id');
+			$vn_element_id = $t_element->getPrimaryKey();
 			
 			$element_info = ca_metadata_elements::getElementSettingsForId($pm_element_code_or_id);
 			
@@ -302,7 +305,9 @@
 							(is_array($va_attrs) ? array_map(function($a) { return $a->getLocaleID(); }, $va_attrs) : []), 
 							array_map(function($a) { 
 								return (int)$a['locale_id'] ?? null;
-							}, ($this->opa_attributes_to_add + $this->opa_attributes_to_edit))
+							}, array_filter(($this->opa_attributes_to_add + $this->opa_attributes_to_edit), function($x) use ($vn_attr_element_id) {
+								return (int)$x['element'] === (int)$vn_element_id;
+							}))
 						)
 					);
 				
@@ -2118,6 +2123,12 @@
 					continue;
 				}
 				
+				if (caGetOption('autocomplete', $pa_options, false) && ca_metadata_elements::isAuthorityDatatype($va_element['element_id'])) {
+					$pa_options['asArrayElement'] = false;
+					
+					return caGetAdvancedSearchFormAutocompleteJS($po_request, $this->tableName().'.'.$va_element['element_code'], AuthorityAttributeValue::elementTypeToInstance($va_element['datatype']), array_merge($pa_options, ['restrictToField' => false]));
+				}
+				
 				$va_label = $this->getAttributeLabelAndDescription($va_element['element_id']);
 				
 				// Include "current_value" syntax if policy is set
@@ -2185,7 +2196,7 @@
 					
 					$vs_form_element = str_replace(
 						"jQuery('#{fieldNamePrefix}".$va_element['element_id']."_{n}')",
-						"jQuery('#".str_replace('.', '_',$f)."')", 
+						"jQuery('#".str_replace(array("[", "]", "."), array("\\\\[", "\\\\]", "\\\\."), $vs_fld_name)."')", 
 						$vs_form_element
 					);
 					

@@ -945,6 +945,13 @@ class SearchResult extends BaseObject {
 	 * by locale_id or code (if "returnAllLocales" is set), then the id specific to the data item (Eg. internal attribute_id for metadata, label_id for labels, Etc.), and finally an array with keys set to data element names
 	 * and associated values.
 	 *
+	 * Values for a limited set of system constants set in setup.php can be obtained through get(). These constants are:
+	 *		__CA_APP_NAME__ = application code
+	 *		__CA_APP_DISPLAY_NAME__ = application name for end-user display
+	 *		__CA_SITE_HOSTNAME__ = hostname of installation (Eg. collections.mymuseum.org)
+	 *
+	 * Constants are always returned as string values. When the returnAsArray or returnWithStructure options are set an array with a single element containing the value will be returned.
+	 *
 	 * Return values can be modified using the following options:
 	 *
 	 *		[Options controlling type of return value]
@@ -1026,6 +1033,13 @@ class SearchResult extends BaseObject {
 			$vb_return_with_structure = $vb_return_all_locales = false;
 			$pa_options['template'] = null;
 			$pa_options['returnAsSearchResult'] = false;
+		}
+		
+		$locale = isset($pa_options['locale']) ? ca_locales::codeToID($pa_options['locale']) : null;
+		
+		// Get system constant?
+		if(in_array($ps_field, ['__CA_APP_NAME__', '__CA_APP_DISPLAY_NAME__', '__CA_SITE_HOSTNAME__']) && defined($ps_field)) {
+			return ($vb_return_as_array || $vb_return_with_structure) ? [constant($ps_field)] : constant($ps_field);
 		}
 		
 		$vb_convert_line_breaks = isset($pa_options['convertLineBreaks']) ? (bool)$pa_options['convertLineBreaks'] : false;
@@ -1391,7 +1405,7 @@ class SearchResult extends BaseObject {
 				
 					$va_acc = [];
 					foreach($va_hier_list as $vn_h => $va_hier_item) {
-					   if (!$vb_return_all_locales) { $va_hier_item = caExtractValuesByUserLocale($va_hier_item); }
+					   if (!$vb_return_all_locales) { $va_hier_item = caExtractValuesByUserLocale($va_hier_item, null, $locale ? [$locale] : null); }
 				
 						if ($vb_return_with_structure) {
 							$va_acc[] = $va_hier_item;
@@ -2014,6 +2028,8 @@ class SearchResult extends BaseObject {
 		
 		$pa_check_access		= $pa_options['checkAccess'];
 		
+		$locale = isset($pa_options['locale']) ? ca_locales::codeToID($pa_options['locale']) : null;
+		
 		$va_restrict_to_type_ids = null;
 		if (
 		    is_array($va_restrict_to_types = caGetOption('restrictToTypes', $pa_options, null))
@@ -2117,7 +2133,7 @@ class SearchResult extends BaseObject {
 			}
 		}
 		
-		if (!$pa_options['returnAllLocales']) { $va_return_values = caExtractValuesByUserLocale($va_return_values); } 	
+		if (!$pa_options['returnAllLocales']) { $va_return_values = caExtractValuesByUserLocale($va_return_values, null, $locale ? [$locale] : null); } 	
 		if ($pa_options['returnWithStructure']) { 
 			return is_array($va_return_values) ? $va_return_values : array(); 
 		}
@@ -2153,6 +2169,7 @@ class SearchResult extends BaseObject {
 		$va_path_components					=& $pa_options['pathComponents'];
 		$vs_delimiter						= isset($pa_options['delimiter']) ? $pa_options['delimiter'] : ';';
 		$vb_convert_codes_to_display_text 	= isset($pa_options['convertCodesToDisplayText']) ? (bool)$pa_options['convertCodesToDisplayText'] : false;
+		$locale = isset($pa_options['locale']) ? $pa_options['locale'] : null;
 		
 		$va_return_values = [];
 		
@@ -2245,7 +2262,7 @@ class SearchResult extends BaseObject {
 							
 							if ($qr_res->nextHit()) {
 								if (($t_instance = $o_value->elementTypeToInstance($o_value->getType())) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
-									if (in_array($qr_res->get($vs_auth_table_name.'.'.$vs_idno_fld), $pa_exclude_idnos)) {
+									if (in_array($qr_res->get($vs_auth_table_name.'.'.$vs_idno_fld, ['locale' => $locale]), $pa_exclude_idnos)) {
 										continue;
 									}
 								}
@@ -2267,7 +2284,7 @@ class SearchResult extends BaseObject {
 												$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID().(($vn_i > 0) ? "_{$vn_i}" : '')]["{$vs_element_code}_value_id"] = $o_value->getValueID();
 											}
 										} else {
-											$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][] = ($vb_has_field_spec || $vb_has_hierarchy_modifier) ? $vs_v : $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'], 'list_id' => $vn_list_id)));
+											$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][] = ($vb_has_field_spec || $vb_has_hierarchy_modifier) ? $vs_v : $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'], 'list_id' => $vn_list_id, 'locale' => $locale)));
 										}
 									}
 								}
@@ -2369,12 +2386,25 @@ class SearchResult extends BaseObject {
 								}
 
 								// support ca_objects.container.wikipedia.abstract
-								if(($vs_element_code == $va_path_components['subfield_name']) && ($va_path_components['num_components'] == 4)) {
-									$vs_val_proc = $o_value->getExtraInfo($va_path_components['components'][3]);
+								if(($vs_element_code == $va_path_components['subfield_name']) && ($va_path_components['num_components'] > 3)) {
+
+									switch($vs_final_path_key = end($va_path_components['components'])) {
+										case 'uri':
+										case 'url':
+											$vs_val_proc = $o_value->getUri();
+											break;
+										case 'name':
+											$vs_val_proc = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'])));
+											break;
+										default:
+											$vs_val_proc = $o_value->getExtraInfo($vs_final_path_key);
+											break;
+									}
+
 									$vb_dont_return_value = false;
 									break;
 								}
-							
+
 								// support ca_objects.wikipedia or ca_objects.container.wikipedia (Eg. no "extra" value specified)
 								if (($vs_element_code == $va_path_components['field_name']) || ($vs_element_code == $va_path_components['subfield_name'])) {
 									$vs_val_proc = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'])));
@@ -2464,7 +2494,8 @@ class SearchResult extends BaseObject {
 			}
 		}
 		
-		if (!$pa_options['returnAllLocales'] && !$vb_return_value_id) { $va_return_values = caExtractValuesByUserLocale($va_return_values); } 	
+		if (!$pa_options['returnAllLocales'] && !$vb_return_value_id) { $va_return_values = caExtractValuesByUserLocale($va_return_values, null, $locale ? [$locale] : null); } 	
+		
 		if ($pa_options['returnWithStructure']) { 
 			return is_array($va_return_values) ? $va_return_values : []; 
 		}
@@ -2501,6 +2532,8 @@ class SearchResult extends BaseObject {
 		$va_path_components		= $pa_options['pathComponents'];
 		$va_field_info 			= $pa_options['fieldInfo'];
 		$vs_pk 					= $pa_options['primaryKey'];
+		
+		$locale = isset($pa_options['locale']) ? ca_locales::codeToID($pa_options['locale']) : null;
 	
 		$vs_table_name = $pt_instance->tableName();
 		
@@ -2742,7 +2775,7 @@ class SearchResult extends BaseObject {
 				break;
 		}	
 		
-		if (!$pa_options['returnAllLocales']) { $va_return_values = caExtractValuesByUserLocale($va_return_values); } 	
+		if (!$pa_options['returnAllLocales']) { $va_return_values = caExtractValuesByUserLocale($va_return_values, null, $locale ? [$locale] : null); } 	
 		if ($pa_options['returnWithStructure']) { 
 			return is_array($va_return_values) ? $va_return_values : array(); 
 		}
@@ -2782,57 +2815,58 @@ class SearchResult extends BaseObject {
 	private function _flattenArray($pa_array, $pa_options=null) {
 		$va_flattened_values = array();
 		if ($pa_options['returnAllLocales']) {
-			$pa_array = caExtractValuesByUserLocale($pa_array);
-			foreach($pa_array as $va_by_attr) {
-				if (!is_array($va_by_attr)) { $va_by_attr[] = $va_by_attr; }
-				foreach($va_by_attr as $vs_val) {
-					if (is_array($vs_val) && sizeof($vs_val) == 1) { 
-						$vs_val = array_shift($vs_val); 
-					} elseif(is_array($vs_val)) {
-						$va_flattened_values[] = $vs_val;
-						continue;
-					}
-				
-					if($pa_options['toUpper'] || $pa_options['toUpper']) {
-						$vs_val = mb_strtoupper($vs_val);
-					}
-					if($pa_options['toLower'] || $pa_options['tolower']) {
-						$vs_val = mb_strtolower($vs_val);
-					}
-					if($pa_options['periodsToUnderscores'] || $pa_options['periodstounderscores']) {
-						$vs_val = str_replace('.', '_', $vs_val);
-					}
-					if($pa_options['makeFirstUpper'] || $pa_options['makefirstupper']) {
-						$vs_val = ucfirst($vs_val);
-					}
-					if($pa_options['stripreturns'] || $pa_options['stripreturns']) {
-						$vs_val = preg_replace("![\n\r]+!", " ", $vs_val);
-					}
-					if($pa_options['striptags'] || $pa_options['striptags']) {
-						$vs_val = strip_tags($vs_val);
-					}
-					if ($pa_options['truncate'] && ($pa_options['truncate'] > 0)) { 
-						$pa_options['start'] = 0;
-						$pa_options['length'] = (int)$pa_options['truncate'];
-					}
-					$vn_start = (strlen($pa_options['start']) && is_numeric($pa_options['start'])) ? (int)$pa_options['start'] : 0;
-					$vn_length = (strlen($pa_options['length']) && ($pa_options['length'] > 0)) ? (int)$pa_options['length'] : null;
-					
-					$vb_needs_ellipsis = false;
-					if(($vn_start > 0) || (!is_null($vn_length))) {
-						if ($pa_options['ellipsis'] && (strlen($vs_val) > ($vn_start + $vn_length))) {
-							$vb_needs_ellipsis = true; $vn_length -= 3;
+			foreach($pa_array as $va_by_locale) {
+				foreach($va_by_locale as $locale_id => $values) {
+					if (!is_array($values)) { $values[] = $values; }
+					foreach($values as $vs_val) {
+						if (is_array($vs_val) && sizeof($vs_val) == 1) { 
+							$vs_val = array_shift($vs_val); 
+						} elseif(is_array($vs_val)) {
+							$va_flattened_values[] = $vs_val;
+							continue;
 						}
-						$vs_val = mb_substr($vs_val, $vn_start, $vn_length);
+				
+						if($pa_options['toUpper'] || $pa_options['toUpper']) {
+							$vs_val = mb_strtoupper($vs_val);
+						}
+						if($pa_options['toLower'] || $pa_options['tolower']) {
+							$vs_val = mb_strtolower($vs_val);
+						}
+						if($pa_options['periodsToUnderscores'] || $pa_options['periodstounderscores']) {
+							$vs_val = str_replace('.', '_', $vs_val);
+						}
+						if($pa_options['makeFirstUpper'] || $pa_options['makefirstupper']) {
+							$vs_val = ucfirst($vs_val);
+						}
+						if($pa_options['stripreturns'] || $pa_options['stripreturns']) {
+							$vs_val = preg_replace("![\n\r]+!", " ", $vs_val);
+						}
+						if($pa_options['striptags'] || $pa_options['striptags']) {
+							$vs_val = strip_tags($vs_val);
+						}
+						if ($pa_options['truncate'] && ($pa_options['truncate'] > 0)) { 
+							$pa_options['start'] = 0;
+							$pa_options['length'] = (int)$pa_options['truncate'];
+						}
+						$vn_start = (strlen($pa_options['start']) && is_numeric($pa_options['start'])) ? (int)$pa_options['start'] : 0;
+						$vn_length = (strlen($pa_options['length']) && ($pa_options['length'] > 0)) ? (int)$pa_options['length'] : null;
+					
+						$vb_needs_ellipsis = false;
+						if(($vn_start > 0) || (!is_null($vn_length))) {
+							if ($pa_options['ellipsis'] && (strlen($vs_val) > ($vn_start + $vn_length))) {
+								$vb_needs_ellipsis = true; $vn_length -= 3;
+							}
+							$vs_val = mb_substr($vs_val, $vn_start, $vn_length);
+						}
+						if($pa_options['trim']) {
+							$vs_val = trim($vs_val);
+						}
+					
+						$vs_val .= ($vb_needs_ellipsis ? '...' : '');
+					
+					
+						$va_flattened_values[] = $vs_val;
 					}
-					if($pa_options['trim']) {
-						$vs_val = trim($vs_val);
-					}
-					
-					$vs_val .= ($vb_needs_ellipsis ? '...' : '');
-					
-					
-					$va_flattened_values[] = $vs_val;
 				}
 			}	
 		} else {
@@ -3626,7 +3660,8 @@ class SearchResult extends BaseObject {
 			'components'		=> $va_tmp,
 			'related'			=> $vb_is_related,
 			'is_count'			=> $vb_is_count,
-			'hierarchical_modifier' => $vs_hierarchical_modifier
+			'hierarchical_modifier' => $vs_hierarchical_modifier,
+			'mse'				=> $vs_subfield_name ? $vs_subfield_name : ($vs_field_name ? $vs_field_name : $s_table_name)	// most specific element
 		);
 	}
 	# ------------------------------------------------------------------

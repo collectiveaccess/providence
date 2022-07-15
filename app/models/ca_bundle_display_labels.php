@@ -200,9 +200,5 @@ class ca_bundle_display_labels extends BaseLabel {
 	protected $FIELDS;
 	
 	# ----------------------------------------
-	function __construct($pn_id=null) {
-		parent::__construct($pn_id);
-	}
-	# ----------------------------------------
 }
-?>
+

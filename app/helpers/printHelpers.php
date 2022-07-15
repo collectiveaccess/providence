@@ -553,7 +553,9 @@ use Zend\Stdlib\Glob;
 	 *
 	 */
 	function caGetPrintFormatsListAsHTMLForRelatedBundles($ps_id_prefix, $po_request, $pt_primary, $pt_related, $pt_relation, $placement_id) {
-		$va_formats = caGetAvailablePrintTemplates('results', ['table' => $pt_related->tableName(), 'type' => null, 'showOnlyIn' => 'editor_relationship_bundle']);
+		$t_placement = new ca_editor_ui_bundle_placements($placement_id);
+	
+		$va_formats = caGetAvailablePrintTemplates('results', ['table' => $pt_related->tableName(), 'type' => $t_placement->getSetting('restrict_to_types'), 'showOnlyIn' => 'editor_relationship_bundle']);
 		if(!is_array($va_formats)) { $va_formats = []; }
 		$vs_pk = $pt_related->primaryKey();
 		
@@ -566,15 +568,15 @@ use Zend\Stdlib\Glob;
             }
         }
         
-		if (sizeof($va_options) == 0) { return ''; }
-		
 		// Get current display list
 		require_once(__CA_MODELS_DIR__."/ca_bundle_displays.php");
 		$t_display = new ca_bundle_displays();
-        foreach(caExtractValuesByUserLocale($t_display->getBundleDisplays(['table' => $pt_related->tableName()])) as $va_display_info) {
-            if (is_array($va_display_info['settings']['show_only_in']) && sizeof($va_display_info['settings']['show_only_in']) && !in_array('editor_relationship_bundle', $va_display_info['settings']['show_only_in'])) { continue; }        
+        foreach(caExtractValuesByUserLocale($t_display->getBundleDisplays(['table' => $pt_related->tableName(), 'restrictToTypes' => $t_placement->getSetting('restrict_to_types')])) as $va_display_info) {
+            if (!is_array($va_display_info['settings']['show_only_in']) || !sizeof($va_display_info['settings']['show_only_in']) || !in_array('editor_relationship_bundle', $va_display_info['settings']['show_only_in'])) { continue; }        
             $va_options[$va_display_info['name']] = '_pdf__display_'.$va_display_info['display_id'];
         }
+        
+		if (sizeof($va_options) == 0) { return ''; }
 		
 		uksort($va_options, 'strnatcasecmp');
 		

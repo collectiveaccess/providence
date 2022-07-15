@@ -2530,7 +2530,7 @@ class BaseEditorController extends ActionController {
 				
 			}
 			$o_view->setVar('zip_stream', $o_zip);
-			$o_view->setVar('archive_name', caGetMediaDownloadArchiveName($t_subject->tableName(), $vn_subject_id, ['extension' => 'zip'])); //preg_replace('![^A-Za-z0-9\.\-]+!', '_', trim($t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD')), "/")).'.zip');
+			$o_view->setVar('archive_name', caGetMediaDownloadArchiveName($t_subject->tableName(), $vn_subject_id, ['extension' => 'zip']));
 		} else {
 			foreach($va_file_paths as $vs_path => $vs_name) {
 				$o_view->setVar('archive_path', $vs_path);
@@ -2733,8 +2733,13 @@ class BaseEditorController extends ActionController {
 		}
 		
 		$table = preg_replace("!_related_list$!", "", $placement->get('bundle_name'));
-		$ids = $t_instance->getRelatedItems($table, ['showCurrentOnly' => $placement->getSetting('showCurrentOnly'), 'policy' => $placement->getSetting('policy'), 'returnAs' => 'ids', 'restrictToTypes' => $placement->getSetting('restrict_to_types'), 'restrictToRelationshipTypes' => $placement->getSetting('restrict_to_relationship_types'), ]);
-	
+		
+		if($ids = $this->request->getParameter('ids', pString)) {
+			$ids = explode(";", $ids);
+		} else {
+			$ids = $t_instance->getRelatedItems($table, ['showCurrentOnly' => $placement->getSetting('showCurrentOnly'), 'policy' => $placement->getSetting('policy'), 'returnAs' => 'ids', 'restrictToTypes' => $placement->getSetting('restrict_to_types'), 'restrictToRelationshipTypes' => $placement->getSetting('restrict_to_relationship_types'), ]);
+		}
+
 		if(!$ids || !sizeof($ids)) { 
 			throw new ApplicationException(_('No related items'));
 		}

@@ -164,8 +164,4 @@ class ca_metadata_alert_rules_x_users extends BaseRelationshipModel {
 	protected $FIELDS;
 
 	# ----------------------------------------
-	function __construct($pn_id=null) {
-		parent::__construct($pn_id);
-	}
-	# ----------------------------------------
 }

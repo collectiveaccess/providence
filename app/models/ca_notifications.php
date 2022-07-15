@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2018 Whirl-i-Gig
+ * Copyright 2016-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -196,20 +196,7 @@ class ca_notifications extends BaseModel {
 	 */
 	static $s_lock_resource = null;
 
-	# ------------------------------------------------------
-	# --- Constructor
-	#
-	# This is a function called when a new instance of this object is created. This
-	# standard constructor supports three calling modes:
-	#
-	# 1. If called without parameters, simply creates a new, empty objects object
-	# 2. If called with a single, valid primary key value, creates a new objects object and loads
-	#    the record identified by the primary key value
-	#
-	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
-	}
+
 	# ------------------------------------------------------
 	/**
 	 * Static utility to add a notification
@@ -243,7 +230,6 @@ class ca_notifications extends BaseModel {
 			}
 
 			$t_subject = new ca_notification_subjects();
-			$t_subject->setMode(ACCESS_WRITE);
 
 			$t_subject->set('notification_id', $t_notification->getPrimaryKey());
 			$t_subject->set('table_num', $va_subject['table_num']);
@@ -274,10 +260,32 @@ class ca_notifications extends BaseModel {
 			if (($t_subject->get('table_num') == 94) && ($pn_user_id) && ((int)$pn_user_id !== (int)$t_subject->get('row_id'))) { // 94 = ca_users
 				return false;
 			}
-			$t_subject->setMode(ACCESS_WRITE);
 
 			$t_subject->set('was_read', 1);
 			return $t_subject->update();
+		}
+		return false;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Mark all notifications for user as read
+	 *
+	 * @param int $user_id 
+	 *
+	 * @return bool True on success
+	 */
+	public static function markAllAsRead(int $user_id) : bool {
+		$qr = ca_notification_subjects::find(['row_id' => $user_id, 'table_num' => 94], ['returnAs' => 'queryresult']);
+		
+		if($qr) {
+			$t_subject = new ca_notification_subjects();
+			while($qr->nextRow()) {
+				if($t_subject->load($qr->get('subject_id'))) {
+					$t_subject->set('was_read', 1);
+					$t_subject->update();
+				}
+			}
+			return true;
 		}
 		return false;
 	}

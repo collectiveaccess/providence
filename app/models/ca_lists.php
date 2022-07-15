@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -251,23 +251,6 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	protected $FIELDS;
 	
 	# ------------------------------------------------------
-	# --- Constructor
-	#
-	# This is a function called when a new instance of this object is created. This
-	# standard constructor supports three calling modes:
-	#
-	# 1. If called without parameters, simply creates a new, empty objects object
-	# 2. If called with a single, valid primary key value, creates a new objects object and loads
-	#    the record identified by the primary key value
-	#
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
-	}
-	# ------------------------------------------------------
 	/**
 	 *
 	 */
@@ -483,6 +466,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 *		item_id =		optional item_id to use as root of hierarchy for returned items; if this is not set (the default) then all items in the list are returned
 	 *		sort =			if set to a __CA_LISTS_SORT_BY_*__ constant, will force the list to be sorted by that criteria overriding the sort order set in the ca_lists.default_sort field
 	 *		idsOnly = 		if true, only the primary key id values of the list items are returned
+	 *		idnosOnly = 	if true, only idno values of list items are returned
 	 *		enabledOnly =	return only enabled list items [default=false]
 	 *		omitRoot =		don't include root node [Default=false]
 	 *		labelsOnly = 	if true only labels in the current locale are returns in an array key'ed on item_id
@@ -507,7 +491,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$vb_enabled_only = caGetOption('enabledOnly', $pa_options, false);
 		
 		$pa_check_access = caGetOption('checkAccess', $pa_options, null); 
-		if(!is_array($pa_check_access) && $pa_check_access) { $va_check_access = array($va_check_access); }
+		if(!is_array($pa_check_access) && $pa_check_access) { $pa_check_access = [$pa_check_access]; }
 	
 		$vb_labels_only = false;
 		if (isset($pa_options['labelsOnly']) && $pa_options['labelsOnly']) {
@@ -614,6 +598,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				if (($pn_limit > 0) && ($vn_c > $pn_limit)) { break; }
 				if ((isset($pa_options['idsOnly']) && $pa_options['idsOnly'])) {
 					$va_items[] = $vn_item_id;
+					continue;
+				}
+				if ((isset($pa_options['idnosOnly']) && $pa_options['idnosOnly'])) {
+					$va_items[] = $qr_res->get('idno');
 					continue;
 				}
 				if ((!isset($pa_options['includeSelf']) || !$pa_options['includeSelf']) && ($vn_item_id == $pn_item_id)) { continue; }
@@ -1178,7 +1166,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			ca_lists::$s_list_item_display_cache[$vs_cache_key] = $va_items;
 		}
 		
-		$va_tmp = caExtractValuesByUserLocale($va_items, null, null, array());
+		$va_tmp = caExtractValuesByUserLocale($va_items, null, isset($pa_options['locale']) ? [$pa_options['locale']] : null, array());
 		$va_item = array_shift($va_tmp);
 		
 		return $va_item[$pb_return_plural ? 'name_plural' : 'name_singular'];
@@ -1461,6 +1449,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 *	exclude = array of item idnos to omit from the returned list. [Default is null]
 	 *
 	 *  forceEnabled = enable all list items regardless of the value of the item's is_enabled value [Default is false]
+	 *
+	 *  deferHierarchyLoad = defer hierarchy browser loads until user clicks on expand button. [Default is false]
 	 *	 
 	 * @return string - HTML code for the <select> element; empty string if the list is empty
 	 */
@@ -1469,6 +1459,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		if($o_trans = caGetOption('transaction', $pa_options, null)) {
 			$t_list->setTransaction($o_trans);
 		}
+		
+		$defer_hierarchy_load = caGetOption('deferHierarchyLoad', $pa_options, false);
 		
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		
@@ -1480,19 +1472,19 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			$vn_list_id = $t_list->_getListID($pm_list_name_or_id);
 			$t_list->load($vn_list_id);
 		}
-		$vn_root_id = (isset($pa_options['childrenOnlyForItemID']) && $pa_options['childrenOnlyForItemID']) ? $pa_options['childrenOnlyForItemID'] : null;
+		$root_id = (isset($pa_options['childrenOnlyForItemID']) && $pa_options['childrenOnlyForItemID']) ? $pa_options['childrenOnlyForItemID'] : null;
 		
 		$va_disabled_item_ids = caGetOption('disableItemsWithID', $pa_options, null);
 		
-		$vs_render_as = isset($pa_options['render']) ? $pa_options['render'] : ''; 
-		$vb_is_vertical_hier_browser = in_array($vs_render_as, ['vert_hierbrowser', 'vert_hierbrowser_up', 'vert_hierbrowser_down']);
+		$render_as = isset($pa_options['render']) ? $pa_options['render'] : ''; 
+		$vb_is_vertical_hier_browser = in_array($render_as, ['vert_hierbrowser', 'vert_hierbrowser_up', 'vert_hierbrowser_down']);
 				
 		$vn_sort_type = $t_list->get('default_sort');
-		if (($vs_render_as == 'yes_no_checkboxes') && ($vn_sort_type == __CA_LISTS_SORT_BY_LABEL__)) {
+		if (($render_as == 'yes_no_checkboxes') && ($vn_sort_type == __CA_LISTS_SORT_BY_LABEL__)) {
 			$vn_sort_type = __CA_LISTS_SORT_BY_IDENTIFIER__;	// never allow sort-by-label when rendering as yes/no checkbox
 		}
 		
-		if (!in_array($vs_render_as, array('lookup', 'horiz_hierbrowser', 'vert_hierbrowser', 'vert_hierbrowser_up', 'vert_hierbrowser_down'))) {
+		if (!in_array($render_as, array('lookup', 'horiz_hierbrowser', 'vert_hierbrowser', 'vert_hierbrowser_up', 'vert_hierbrowser_down'))) {
 			if (isset($pa_options['limitToItemsRelatedToCollections']) && is_array($pa_options['limitToItemsRelatedToCollections'])) {
 				$t_collection = new ca_collections();
 				$va_collection_ids = array();
@@ -1545,7 +1537,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					}
 				}
 			} else {
-				$va_list_items = $t_list->getItemsForList($pm_list_name_or_id, array_merge($pa_options, array('returnHierarchyLevels' => caGetOption('indentForHierarchy', $pa_options, true), 'item_id' => $vn_root_id, 'extractValuesByUserLocale' => true, 'sort' => $vn_sort_type)));
+				$va_list_items = $t_list->getItemsForList($pm_list_name_or_id, array_merge($pa_options, array('returnHierarchyLevels' => caGetOption('indentForHierarchy', $pa_options, true), 'item_id' => $root_id, 'extractValuesByUserLocale' => true, 'sort' => $vn_sort_type)));
 			}
 		}
 		
@@ -1563,12 +1555,13 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		if (!isset($pa_options['omitItemsWithID']) || !is_array($pa_options['omitItemsWithID']) || !sizeof($pa_options['omitItemsWithID'])) { $pa_options['omitItemsWithID'] = null; }
 		$pa_exclude_items = caGetOption('exclude', $pa_options, null);
 	
-		if ((isset($pa_options['nullOption']) && $pa_options['nullOption']) && (($vs_render_as !== 'checklist') && !$pa_options['requireValue'] )) {
+		if ((isset($pa_options['nullOption']) && $pa_options['nullOption']) && (($render_as !== 'checklist') && !$pa_options['requireValue'] )) {
 			$va_options[''] = $pa_options['nullOption'];
 		}
 		
 		
 		if (is_array($pa_options['limitToItemsWithID']) && sizeof($pa_options['limitToItemsWithID'])) {
+		    $pa_options['limitToItemsWithID'] = caMakeItemIDList($pm_list_name_or_id, $pa_options['limitToItemsWithID']);
 			// expand limit list to include parents of items that are included
 			$va_to_add = array();
 			foreach($va_list_items as $vn_item_id => $va_item) {
@@ -1580,6 +1573,9 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				}
 			}	
 			$pa_options['limitToItemsWithID'] += array_keys($va_to_add);
+		}
+		if (is_array($pa_options['omitItemsWithID']) && sizeof($pa_options['omitItemsWithID'])) {
+		     $pa_options['omitItemsWithID'] = caMakeItemIDList($pm_list_name_or_id, $pa_options['omitItemsWithID']);
 		}
 		
 		$pa_check_access = caGetOption('checkAccess', $pa_options, null); 
@@ -1695,14 +1691,14 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		if (($max_columns = caGetOption('maxColumns', $pa_options, 1, ['castTo' => 'integer'])) < 1) { $max_columns = 1; }
-		switch($vs_render_as) {
+		switch($render_as) {
 			case 'radio_buttons':
 				if (!sizeof($va_options)) { return ''; }	// return empty string if list has no values
 				$vn_i = 0;
 				
 				$p = floor(670/$max_columns);
 				if ($p > 150) { $p = 150; }
-				$vs_buf = ($max_columns > 1) ? "<div class='checklist' style='grid-template-columns: ".str_repeat("fit-content(175px) ", $max_columns).";'>\n" : "<div>\n";
+				$buf = ($max_columns > 1) ? "<div class='checklist' style='grid-template-columns: ".str_repeat("fit-content(175px) ", $max_columns).";'>\n" : "<div>\n";
 	
 				foreach($va_options as $vm_value => $vs_label) {
 					$vs_label = str_replace("&nbsp;", "", trim($vs_label));
@@ -1719,12 +1715,12 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					if (isset($pa_options['readonly']) && ($pa_options['readonly'])) {
 						$va_attributes['disabled'] = 1;
 					}
-					$vs_buf .=  "<div class='checklistItem'>".caHTMLRadioButtonInput($ps_name, $va_attributes, $pa_options)." {$vs_label}</div>\n";
+					$buf .=  "<div class='checklistItem'>".caHTMLRadioButtonInput($ps_name, $va_attributes, $pa_options)." {$vs_label}</div>\n";
 					
 					$vn_i++;
 				}
-				$vs_buf .= "</div>";
-				return $vs_buf;
+				$buf .= "</div>";
+				return $buf;
 				break;
 			case 'yes_no_checkboxes':
 				if (!sizeof($va_options)) { return ''; }	// return empty string if list has no values
@@ -1763,7 +1759,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				if (!sizeof($va_options)) { return ''; }	// return empty string if list has no values
 				
 				$p = floor(100/$max_columns);
-				$vs_buf = ($max_columns > 1) ? "<div class='checklist' style='grid-template-columns: ".str_repeat("fit-content(175px) ", $max_columns).";'>\n" : "<div>\n";
+				$buf = ($max_columns > 1) ? "<div class='checklist' style='grid-template-columns: ".str_repeat("fit-content(175px) ", $max_columns).";'>\n" : "<div>\n";
 			
 				foreach($va_options as $vm_value => $vs_label) {
 					$va_attributes = array('value' => $vm_value);
@@ -1777,10 +1773,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 						$va_attributes['checked'] = '1';
 					}
 					
-					$vs_buf .= "<div class='checklistItem'>".caHTMLCheckboxInput($ps_name.'_'.$vm_value, $va_attributes, $pa_options)." ".str_replace('&nbsp;', '', $vs_label)."</div>\n";				
+					$buf .= "<div class='checklistItem'>".caHTMLCheckboxInput($ps_name.'_'.$vm_value, $va_attributes, $pa_options)." ".str_replace('&nbsp;', '', $vs_label)."</div>\n";				
 				}
-				$vs_buf .= "</div>";
-				return $vs_buf;
+				$buf .= "</div>";
+				return $buf;
 				break;
 			case 'lookup':
 				$vs_value = $vs_hidden_value = "";
@@ -1793,7 +1789,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					$vs_value = "{{".$pa_options['element_id']."_label}}";
 					$vs_hidden_value = "{{".$pa_options['element_id']."}}";
 				}
-				$vs_buf =
+				$buf =
  				caHTMLTextInput(
  					$ps_name.'_autocomplete', 
 					array(
@@ -1820,8 +1816,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					$vs_url = '/index.php/lookup/ListItem/Get';	
 				}
 				
-				$vs_buf .= '</div>';
-				$vs_buf .= "
+				$buf .= '</div>';
+				$buf .= "
 					<script type='text/javascript'>
 						jQuery(document).ready(function() {
 							jQuery('#{$ps_name}_autocomplete').autocomplete({
@@ -1841,7 +1837,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 						});
 					</script>
 				";
-				return $vs_buf;
+				return $buf;
 				break;
 			case 'horiz_hierbrowser':
 			case 'horiz_hierbrowser_with_search':
@@ -1856,7 +1852,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				$vn_height = $va_height['dimension'].'px';
 				
 				$t_root_item = new ca_list_items();
-				$t_root_item->load(array('list_id' => $vn_list_id, 'parent_id' => null));
+				$t_root_item->load(['list_id' => $vn_list_id, 'parent_id' => null]);
 
 				// don't set fixed container height when autoshrink is turned on, because we want it to grow/shrink with the
 				// hier browser element ... set max height for autoshrink instead
@@ -1868,7 +1864,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				
 				AssetLoadManager::register("hierBrowser");
 				
-				$vs_buf = "<div style='width: {$vn_width}; ".($vn_height ? "height: {$vn_height}" : "").";'><div id='{$ps_name}_hierarchyBrowser{n}' style='width: 100%; height: 100%;' class='".($vb_is_vertical_hier_browser ? 'hierarchyBrowserVertical' : 'hierarchyBrowser')."'>
+				$buf = "<div id='{$ps_name}_hierarchyBrowser_wrapper{n}'><div style='width: {$vn_width}; ".($vn_height ? "height: {$vn_height}" : "").";'><div id='{$ps_name}_hierarchyBrowser{n}' style='width: 100%; height: 100%;' class='".($vb_is_vertical_hier_browser ? 'hierarchyBrowserVertical' : 'hierarchyBrowser')."'>
 					<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
 				</div><!-- end hierarchyBrowser -->	</div>";
 				
@@ -1876,69 +1872,91 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					$current_selection_display_format = '<ifdef code="hierarchy">^hierarchy%delimiter=_➜_ ➜ </ifdef>^current';
 				}
 				
-				$vs_buf .= "
+				$buf .= "
 	<script type='text/javascript'>
+		var  _init{$ps_name}_hierarchyBrowser{n}, {$ps_name}_hierarchyBrowser{n};
+		var defer = ".($defer_hierarchy_load ? 'true' : 'false').";
+		if('{n}'.match(/^new_/)) { defer = false; }
 		jQuery(document).ready(function() { 
-			var oHierBrowser = caUI.initHierBrowser('{$ps_name}_hierarchyBrowser{n}', {
-				uiStyle: '".($vb_is_vertical_hier_browser ? 'vertical' : 'horizontal')."',
-				uiDirection: '".(($vs_render_as == 'vert_hierbrowser_down') ? 'down' : 'up')."',
-				levelDataUrl: '".caNavUrl($pa_options['request'], 'lookup', 'ListItem', 'GetHierarchyLevel', array('noSymbols' => 1))."',
-				initDataUrl: '".caNavUrl($pa_options['request'], 'lookup', 'ListItem', 'GetHierarchyAncestorList')."',
+			 if(defer) { jQuery('#{$ps_name}_hierarchyBrowser_wrapper{n}').hide(); }
+			 _init{$ps_name}_hierarchyBrowser{n} = function() {
+			 	jQuery('#{$ps_name}_hierarchyBrowser_wrapper{n}').show();
+			 	
+			 	var p = jQuery('#{$ps_name}_hierarchyBrowser_wrapper{n}').parents('.caItemList');
+			 	var st = jQuery('#{$ps_name}_hierarchyBrowser_wrapper{n}').offset().top;
+			 	if(st < 0) { st = 0; }
+			 	p.animate({
+			 		scrollTop: p.scrollTop() + st - p.offset().top - 100
+			 	});
+			 	
+			 	jQuery('#{$ps_name}_hierarchyBrowser_edit{n}').hide();
+				{$ps_name}_hierarchyBrowser{n} = caUI.initHierBrowser('{$ps_name}_hierarchyBrowser{n}', {
+					uiStyle: '".($vb_is_vertical_hier_browser ? 'vertical' : 'horizontal')."',
+					uiDirection: '".(($render_as == 'vert_hierbrowser_down') ? 'down' : 'up')."',
+					levelDataUrl: ".json_encode(caNavUrl($pa_options['request'], 'lookup', 'ListItem', 'GetHierarchyLevel', array('noSymbols' => 1))).",
+					initDataUrl: ".json_encode(caNavUrl($pa_options['request'], 'lookup', 'ListItem', 'GetHierarchyAncestorList')).",
 				
-				selectOnLoad : true,
-				browserWidth: ".(int)$va_width['dimension'].",
+					selectOnLoad : true,
+					browserWidth: ".(int)$va_width['dimension'].",
 				
-				className: '".($vb_is_vertical_hier_browser ? 'hierarchyBrowserLevelVertical' : 'hierarchyBrowserLevel')."',
-				classNameContainer: '".($vb_is_vertical_hier_browser ? 'hierarchyBrowserContainerVertical' : 'hierarchyBrowserContainer')."',
+					className: '".($vb_is_vertical_hier_browser ? 'hierarchyBrowserLevelVertical' : 'hierarchyBrowserLevel')."',
+					classNameContainer: '".($vb_is_vertical_hier_browser ? 'hierarchyBrowserContainerVertical' : 'hierarchyBrowserContainer')."',
 				
-				editButtonIcon: \"".caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1)."\",
-				disabledButtonIcon: \"".caNavIcon(__CA_NAV_ICON_DOT__, 1)."\",
-				initItemID: '{".$pa_options['element_id']."}',
-				defaultItemID: '".$t_list->getDefaultItemID()."',
-				useAsRootID: '".$t_root_item->getPrimaryKey()."',
-				indicatorUrl: \"".caNavIcon(__CA_NAV_ICON_SPINNER__, 1)."\",
-				autoShrink: '".(caGetOption('auto_shrink', $pa_options, false) ? 'true' : 'false')."',
-				autoShrinkAnimateID: '{$ps_name}_hierarchyBrowser{n}',
-				autoShrinkMaxHeightPx: {$vn_autoshrink_height},
+					editButtonIcon: ".json_encode(caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1)).",
+					disabledButtonIcon: ".json_encode(caNavIcon(__CA_NAV_ICON_DOT__, 1)).",
+					initItemID: '{".$pa_options['element_id']."}',
+					defaultItemID: ".json_encode($t_list->getDefaultItemID()).",
+					useAsRootID: ".json_encode($t_root_item->getPrimaryKey()).",
+					indicatorUrl: ".json_encode(caNavIcon(__CA_NAV_ICON_SPINNER__, 1)).",
+					autoShrink: '".(caGetOption('auto_shrink', $pa_options, false) ? 'true' : 'false')."',
+					autoShrinkAnimateID: '{$ps_name}_hierarchyBrowser{n}',
+					autoShrinkMaxHeightPx: {$vn_autoshrink_height},
 				
-				currentSelectionDisplayFormat: ".json_encode($current_selection_display_format).",
+					currentSelectionDisplayFormat: ".json_encode($current_selection_display_format).",
 				
-				currentSelectionDisplayID: '{$ps_name}_browseCurrentSelectionText{n}',
-				onSelection: function(item_id, parent_id, name, display) {
-					jQuery('#{$ps_name}').val(item_id);
-				}
-			});
+					currentSelectionDisplayID: '{$ps_name}_browseCurrentSelectionText{n}',
+					onSelection: function(item_id, parent_id, name, display) {
+						jQuery('#{$ps_name}').val(item_id);
+					}
+				});
+			}
 ";
 			
-		if ($vs_render_as == 'horiz_hierbrowser_with_search') {
-			$vs_buf .= "jQuery('#{$ps_name}_hierarchyBrowserSearch{n}').autocomplete(
+		if ($render_as == 'horiz_hierbrowser_with_search') {
+			$buf .= "jQuery('#{$ps_name}_hierarchyBrowserSearch{n}').autocomplete(
 					{
 						source: '".caNavUrl($pa_options['request'], 'lookup', 'ListItem', 'Get', array('list' => ca_lists::getListCode($vn_list_id), 'noSymbols' => 1, 'noInline' => 1))."', 
 						minLength: 3, delay: 800,
 						select: function(event, ui) {
-							oHierBrowser.setUpHierarchy(ui.item.id);	// jump browser to selected item
+							{$ps_name}_hierarchyBrowser{n}.setUpHierarchy(ui.item.id);	// jump browser to selected item
 						}
 					}
 				);";
 		}
-		$vs_buf .= "});
+		$buf .= "
+			if(!defer) { _init{$ps_name}_hierarchyBrowser{n}(); }
+		});
 	</script>";
 	
-				if ($vs_render_as == 'horiz_hierbrowser_with_search') {
-					$vs_buf .= "<div class='hierarchyBrowserSearchBar'>"._t('Search').": <input type='text' id='{$ps_name}_hierarchyBrowserSearch{n}' class='hierarchyBrowserSearchBar' name='search' value='' size='20'/></div>";
+				if ($render_as == 'horiz_hierbrowser_with_search') {
+					$buf .= "<div class='hierarchyBrowserSearchBar'>"._t('Search').": <input type='text' id='{$ps_name}_hierarchyBrowserSearch{n}' class='hierarchyBrowserSearchBar' name='search' value='' size='20'/></div>";
 				}
 				
 				if (!$vb_is_vertical_hier_browser) {
-					$vs_buf .= "<div id='{$ps_name}_browseCurrentSelection{n}' class='hierarchyBrowserCurrentSelection'>"._t("Current selection").": <span id='{$ps_name}_browseCurrentSelectionText{n}' class='hierarchyBrowserCurrentSelectionText'>-</span></div>";
+					$buf .= "<div id='{$ps_name}_browseCurrentSelection{n}' class='hierarchyBrowserCurrentSelection'>"._t("Current selection").": <span id='{$ps_name}_browseCurrentSelectionText{n}' class='hierarchyBrowserCurrentSelectionText'>-</span></div>";
 				}
-				$vs_buf .= caHTMLHiddenInput(
+				$buf .= caHTMLHiddenInput(
 					$ps_name,
 					array(
 						'value' => "{".$pa_options['element_id']."}", 
 						'id' => $ps_name
 					)
 				);
-				return $vs_buf;
+				$buf .= "</div>\n";
+				
+				// deferred load control
+				$buf .= "<div id='{$ps_name}_hierarchyBrowser_edit{n}'><a href='#' id='{$ps_name}_hierarchyBrowser_edit_link{n}' onclick='_init{$ps_name}_hierarchyBrowser{n}(); return false;'>".caNavIcon(__CA_NAV_ICON_HIER__, '18px')."</a> <span class='formLabelPlain'>{{".$pa_options['element_id']."_label}}</span></div>";
+				return $buf;
 				break;
 			case 'text':
 				return caHTMLTextInput($ps_name, $pa_attributes, $pa_options);
@@ -1950,7 +1968,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			default:
 				if (!sizeof($va_options)) { return ''; }	// return empty string if list has no values
 				if (isset($pa_options['readonly']) && ($pa_options['readonly'])) { $pa_attributes['disabled'] = 1; }
-				if ($vs_render_as == 'multiple') {  
+				if ($render_as == 'multiple') {  
 					$pa_attributes['multiple'] = 1; unset($pa_options['value']); 
 				} elseif(is_array($pa_options['value'])) {
 					$pa_options['value'] = array_shift($pa_options['value']);

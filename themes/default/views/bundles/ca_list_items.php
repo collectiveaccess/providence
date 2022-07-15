@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2021 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -49,6 +49,8 @@
 	$vs_last_color 		= 	((isset($va_settings['colorLastItem']) && $va_settings['colorLastItem'])) ? $va_settings['colorLastItem'] : '';
 	
 	$vb_quick_add_enabled = true; //$this->getVar('quickadd_enabled');
+	
+	$dont_show_relationship_type = caGetOption('dontShowRelationshipTypes', $va_settings, false) ? 'none' : null; 
 	
 	$va_initial_values	= $this->getVar('initialValues');
 	
@@ -119,7 +121,7 @@
 			<a href="<?= urldecode(caEditorUrl($this->request, 'ca_occurrences', '{occurrence_id}')); ?>" class="caEditItemButton" id="<?= $vs_id_prefix; ?>_edit_related_{n}"></a>
 			<span id='<?= $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
-			print caGetRelationDisplayString($this->request, 'ca_list_items', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => true, 'prefix' => $vs_id_prefix));
+			print caGetRelationDisplayString($this->request, 'ca_list_items', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => true, 'prefix' => $vs_id_prefix, 'relationshipTypeDisplayPosition' => $dont_show_relationship_type));
 ?>
 			</span>
 			<input type="hidden" name="<?= $vs_id_prefix; ?>_id{n}" id="<?= $vs_id_prefix; ?>_id{n}" value="{id}"/>
@@ -170,7 +172,7 @@
 		<div id="<?= $vs_id_prefix; ?>Item_{n}" class="labelInfo roundedRel caRelatedItem">
 			<span id='<?= $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
-			print caGetRelationDisplayString($this->request, 'ca_list_items', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => true, 'prefix' => $vs_id_prefix));
+			print caGetRelationDisplayString($this->request, 'ca_list_items', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => true, 'prefix' => $vs_id_prefix, 'relationshipTypeDisplayPosition' => $dont_show_relationship_type));
 ?>
 			</span>
 			<input type="hidden" name="<?= $vs_id_prefix; ?>_id{n}" id="<?= $vs_id_prefix; ?>_id{n}" value="{id}"/>
@@ -336,13 +338,13 @@
 	</div>
 	
 	<textarea class='caBundleDisplayTemplate' style='display: none;'>
-		<?= caGetRelationDisplayString($this->request, 'ca_list_items', array(), array('display' => '_display', 'makeLink' => false)); ?>
+		<?= caGetRelationDisplayString($this->request, 'ca_list_items', array(), array('display' => '_display', 'makeLink' => false, 'relationshipTypeDisplayPosition' => $dont_show_relationship_type)); ?>
 	</textarea>
 </div>	
 			
 <script type="text/javascript">
 <?php if($vb_quick_add_enabled) { ?>
-	var caRelationQuickAddPanel<?php print $vs_id_prefix; ?>;
+	var caRelationQuickAddPanel<?= $vs_id_prefix; ?>;
 <?php } ?>
 	var caRelationBundle<?= $vs_id_prefix; ?>;
 	jQuery(document).ready(function() {
@@ -354,9 +356,9 @@
 		
 	if (caUI.initPanel) {
 <?php if($vb_quick_add_enabled) { ?>
-			caRelationQuickAddPanel<?php print $vs_id_prefix; ?> = caUI.initPanel({ 
-				panelID: "caRelationQuickAddPanel<?php print $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
-				panelContentID: "caRelationQuickAddPanel<?php print $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
+			caRelationQuickAddPanel<?= $vs_id_prefix; ?> = caUI.initPanel({ 
+				panelID: "caRelationQuickAddPanel<?= $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
+				panelContentID: "caRelationQuickAddPanel<?= $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
 				exposeBackgroundColor: "#000000",				
 				exposeBackgroundOpacity: 0.7,					
 				panelTransitionSpeed: 400,						
@@ -406,7 +408,7 @@
 			autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'Vocabulary', 'Get', $va_lookup_params); ?>',
 <?php if($vb_quick_add_enabled) { ?>
 			quickaddPanel: caRelationQuickAddPanel<?= $vs_id_prefix; ?>,
-			quickaddUrl: '<?php print caNavUrl($this->request, 'administrate/setup/list_item_editor', 'ListItemQuickAdd', 'Form', array('item_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$va_settings['dont_include_subtypes_in_type_restriction'], 'prepopulate_fields' => join(";", $va_settings['prepopulateQuickaddFields']), 'lists' => join(';', $va_settings['restrict_to_lists'] ?? []))); ?>',
+			quickaddUrl: '<?= caNavUrl($this->request, 'administrate/setup/list_item_editor', 'ListItemQuickAdd', 'Form', array('item_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$va_settings['dont_include_subtypes_in_type_restriction'], 'prepopulate_fields' => join(";", $va_settings['prepopulateQuickaddFields']), 'lists' => join(';', $va_settings['restrict_to_lists'] ?? []))); ?>',
 <?php } ?>
 			lists: <?= json_encode($va_settings['restrict_to_lists']); ?>,
 			types: <?= json_encode($va_settings['restrict_to_types']); ?>,
@@ -438,7 +440,10 @@
 			interstitialPrimaryID: <?= (int)$t_instance->getPrimaryKey(); ?>,
 			
 			minRepeats: <?= caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
-			maxRepeats: <?= caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>
+			maxRepeats: <?= caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>,
+			
+			isSelfRelationship:<?= ($t_item_rel && $t_item_rel->isSelfRelationship()) ? 'true' : 'false'; ?>,
+			subjectTypeID: <?= (int)$t_subject->getTypeID(); ?>
 		});
 <?php
 	} else {
