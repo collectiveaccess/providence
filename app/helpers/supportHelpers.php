@@ -450,6 +450,7 @@
 		}
 	
 		print "\n\nIMPORT COMPLETE.\n";
+		return;
 	}
 	# ---------------------------------------
 	/**
@@ -457,18 +458,7 @@
 	 *
 	 * @return string 
 	 */
-	function caLoadULAN($ps_path_to_ulan_data=null, $ps_path_to_ulan_config=null, $pa_options=null) {	
-		require_once(__CA_LIB_DIR__.'/Db.php');
-		require_once(__CA_LIB_DIR__.'/Configuration.php');
-		require_once(__CA_LIB_DIR__.'/Utils/DataMigrationUtils.php');
-		require_once(__CA_MODELS_DIR__.'/ca_locales.php');
-		require_once(__CA_MODELS_DIR__.'/ca_entities.php');
-		require_once(__CA_MODELS_DIR__.'/ca_entities_x_entities.php');			
-		require_once(__CA_MODELS_DIR__.'/ca_lists.php');
-		require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
-		require_once(__CA_MODELS_DIR__.'/ca_list_items_x_list_items.php');
-		require_once(__CA_MODELS_DIR__.'/ca_relationship_types.php');
-	
+	function caLoadULAN($ps_path_to_ulan_data=null, $ps_path_to_ulan_config=null, $pa_options=null) {
 		$t = new Timer();
 		$o_log = new KLogger(__CA_APP_DIR__.'/log', KLogger::INFO);
 	
@@ -491,8 +481,7 @@
 		}
 		
 		$vs_ulan_import_mode = $o_config->get('ulan_import_target');
-		
-		
+
 		$t_list = null;
 		
 		if ($vs_ulan_import_mode == 'ca_entities') {
@@ -528,7 +517,14 @@
 			$o_log->logError("Invalid ULAN import mode {$vs_ulan_import_mode}");
 			die("ERROR: invalid ULAN import mode {$vs_ulan_import_mode}\n");
 		}
-		
+		// get list item label types (should be defined by base installation profile [base.profile])
+		// if your installation didn't use a profile inheriting from base.profile then you should make sure
+		// that a list with code='list_item_label_types' is defined and the following four item codes are defined.
+		// If these are not defined then the ULAN will still import, but without any distinction between
+		// terms, facets and guide terms
+		$vn_list_item_label_type_uf = 					$t_list->getItemIDFromList('list_item_label_types', 'uf');
+		$vn_list_item_label_type_alt = 					$t_list->getItemIDFromList('list_item_label_types', 'alt');
+
 		$vn_last_message_length = 0;
 		$vn_term_count = 0;
 		$va_subject = array();
@@ -999,8 +995,8 @@
 	
 	
 			if (in_array($vs_parent_id, array('500000000', '500000001'))) {		
-				if(!$t_item->load($vn_child_item_id)) {
-					$o_log->logError("Could not load item for {$vs_child_id} (was translated to item_id={$vn_child_item_id})");
+				if(!$t_item->load($vs_child_id)) {
+					$o_log->logError("Could not load item for {$vs_child_id} (was translated to item_id={$vs_child_id})");
 					continue;
 				}	
 				$t_item->set('parent_id', $vn_list_root_id);
@@ -1034,7 +1030,10 @@
 				$o_log->logError("Could not set parent_id for {$vs_child_id} (was translated to item_id={$vn_child_item_id}): ".join('; ', $t_item->getErrors()));
 			}
 		}
-
+	
+		// Assume relationship type between ULAN terms is 'related'
+		$t_rel_type = new ca_relationship_types();
+		$vn_list_item_relation_type_id_related = $t_rel_type->getRelationshipTypeID('ca_list_items_x_list_items', 'related');
 		if ($vn_list_item_relation_type_id_related > 0) {
 			$o_log->logInfo("Begin adding ULAN related term links");
 			$vn_last_message_length = 0;
@@ -1080,5 +1079,6 @@
 	
 		$o_log->logInfo("ULAN import complete. Took {$vs_time} ({$vn_duration})");
 		print "\n\nIMPORT COMPLETE. Took {$vs_time} ({$vn_duration})\n";
+		return;
 	}
 	# ---------------------------------------

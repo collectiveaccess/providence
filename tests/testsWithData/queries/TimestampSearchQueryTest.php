@@ -29,6 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
+use PHPUnit\Framework\TestCase;
 
 require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php');
 
@@ -38,7 +39,7 @@ require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php
  */
 class TimestampSearchQueryTest extends AbstractSearchQueryTest {
 	# -------------------------------------------------------
-	public function setUp() {
+	protected function setUp() : void {
 		// don't forget to call parent so that request is set up correctly
 		parent::setUp();
 
@@ -71,7 +72,7 @@ class TimestampSearchQueryTest extends AbstractSearchQueryTest {
 			'created.administrator:' . date('Y') => 1,
 			'created.cataloguer:' . date('Y') => 0,
 			'created:"1985-1986"' => 0,
-			'created:"2000-2020"' => 1,
+			'created:"2010-2030"' => 1,
 		));
 	}
 	# -------------------------------------------------------

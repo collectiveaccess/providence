@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2016 Whirl-i-Gig
+ * Copyright 2011-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,24 +29,20 @@
  *
  * ----------------------------------------------------------------------
  */
-		$va_tmp = explode("/", str_replace("\\", "/", $_SERVER['SCRIPT_NAME']));
-		array_pop($va_tmp);
-		$vs_path = join("/", $va_tmp);
 ?>
-<?php print _t("<div class='error'>An error in your system configuration has been detected</div>
-	    General installation instructions can be found
-	    <a href='http://wiki.collectiveaccess.org/index.php?title=Installation_(Providence)' target='_blank'>here</a>.
-	    For more specific hints on the existing issues please have a look at the messages below."); ?>
+<?= _t("<div class='error'>There are issues with your configuration</div>
+	    <div class='errorDescription'>General installation instructions can be found
+	    <a href='https://manual.collectiveaccess.org/setup/Installation.html' target='_blank'>here</a>.
+	    For more specific information on detected issues review the messages below:</div>"); ?>
 	<br/><br/>
 <?php
-foreach (self::$opa_error_messages as $vs_message):
+foreach (self::$opa_error_messages as $vs_message) {
 ?>
-		<div class="permissionError">
-			<?php print caNavIcon(__CA_NAV_ICON_ALERT__ , 2, array('class' => 'permissionErrorIcon')); ?>
-			<?php print $vs_message; ?>
-			<div style='clear:both; height:1px;'><!-- empty --></div>
-		</div>
-		<br/>
+	<div class="permissionError">
+		<?= caNavIcon(__CA_NAV_ICON_ALERT__ , 2, ['class' => 'permissionErrorIcon']); ?>
+		<?= $vs_message; ?>
+		<div style='clear:both; height:1px;'><!-- empty --></div>
+	</div>
+	<br/>
 <?php
-endforeach;
-?>
+}

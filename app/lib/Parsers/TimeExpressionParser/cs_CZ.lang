@@ -8,18 +8,18 @@ monthListDisplay = [leden, únor, březen, duben, květen, červen, červenec, s
 
 # Hash table mapping acceptable month names to the display names defined in 'monthList'
 monthTable = {
-	jan = leden, jan. = leden, led = leden, 01 = leden, 1 = leden,
-	feb = únor, feb. = únor, ún. = únor, 02 = únor, 2 = únor,
-	mar = březen, mar. = březen, bře = březen, 03 = březen, 3 = březen,
-	apr = duben, apr. = duben, dub = duben, 04 = duben, 4 = duben,
-	may = květen, kvě = květen, 05 = květen, 5 = květen,
-	jun = červen, jun. = červen, 06 = červen, 6 = červen,
-	jul = červenec, jul. = červenec, 07 = červenec, 7 červenec,
-	aug = srpen, aug. = srpen, srp = srpen, 08 = srpen, 8 = srpen,
-	sep = září, sep. = září, zá = září, 09 = září, 9 = září,
-	oct = říjen, oct. = říjen, říj = říjen, ří = říjen, 10 = říjen,
-	nov = listopadu, nov. = listopad, lis = listopad, list = listopad, 11 = listopad,
-	dec = prosinec, dec. = prosinec, pro = prosinec, 12 = prosinec
+	jan = leden, jan. = leden, led = leden,
+	feb = únor, feb. = únor, ún. = únor,
+	mar = březen, mar. = březen, bře = březen,
+	apr = duben, apr. = duben, dub = duben,
+	may = květen, kvě = květen,
+	jun = červen, jun. = červen,
+	jul = červenec, jul. = červenec,
+	aug = srpen, aug. = srpen, srp = srpen,
+	sep = září, sep. = září, zá = září,
+	oct = říjen, oct. = říjen, říj = říjen, ří = říjen,
+	nov = listopadu, nov. = listopad, lis = listopad, list = listopad,
+	dec = prosinec, dec. = prosinec, pro = prosinec
 }
 
 # List of day names, starting with Sunday
@@ -28,7 +28,7 @@ dayListDisplay = [neděle, pondělí, úterý, středa, čtvrtek, pátek, sobota
 rangePreConjunctions = [od]
 rangeConjunctions = [do, -, a, ..]
 
-dateTimeConjunctions = [přibližně, asi, cca, cirka]
+dateTimeConjunctions = [v]
 
 dateDelimiters = [/,-,.]
 timeDelimiters = [:,.]
@@ -41,7 +41,7 @@ meridianTable = {
 	p.m. = pm
 }
 
-dateCircaIndicator = [cirka, cca, c., ca., asi, přibližně]
+dateCircaIndicator = [cirka, cca, c., ca., asi, přibližně, zhruba]
 dateProbablyIndicator = [přibližně]
 dateUncertaintyIndicator = [~]
 dateUncertaintyYearIndicator = [r]
@@ -64,13 +64,16 @@ nowDate = [nyní,now]
 todayDate = [dnes]
 yesterdayDate = [včera]
 tomorrowDate = [zítra]
-undatedDate = [undated, unknown]
+undatedDate = [neznámý, neznámé]
 
 presentDate = [současnost, ?, ??, ???, ????]
 beforeQualifier = [před, do]
+earlyQualifier = [early]
+midQualifier = [mid, middle]
+lateQualifier = [late]
 diedQualifier = [zemřel, zemřela]
 afterQualifier = [po, od]
-bornQualifier = [nar. narozen, narozena]
+bornQualifier = [nar., narozen, narozena]
 
 # Text to indicate century (as in "20th century")
 centuryIndicator = [století]
@@ -99,7 +102,7 @@ definiteArticles = []
 indefiniteArticles = []
 
 # Seasons
-winterSeason = [winter]
-springSeason = [spring]
-summerSeason = [summer]
-autumnSeason = [autumn, fall]
+winterSeason = [zima]
+springSeason = [jaro]
+summerSeason = [léto]
+autumnSeason = [podzim]

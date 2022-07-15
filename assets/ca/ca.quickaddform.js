@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2016 Whirl-i-Gig
+ * Copyright 2014-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,9 +27,6 @@
  
 var caUI = caUI || {};
 
-//
-// TODO: Finish up error handling
-//
 
 (function ($) {
 	caUI.initQuickAddFormHandler = function(options) {
@@ -43,6 +40,7 @@ var caUI = caUI || {};
 			
 			fileUploadUrl: null,
 			saveUrl: null,
+			csrfToken: null,
 			
 			headerText: "QuickAdd",
 			saveText: "Saved record: %1",
@@ -60,6 +58,15 @@ var caUI = caUI || {};
 			that._files[jQuery(e.target).prop('name')] = e.target.files; 
 		});
 		
+		let p = jQuery("#" + that.formID).parent().data('panel');
+		if(!p) { p = jQuery("#" + that.formID).parent().parent().data('panel'); }
+		
+		if(p) {
+			p.onEscapeCallback = function() {
+				that.cleanupOnCancel();
+			};
+		}
+		
 		var formData;
 		// --------------------------------------------------------------------------------
 		// Define methods
@@ -73,6 +80,7 @@ var caUI = caUI || {};
 			});
 			
 			formData = jQuery("#" + that.formID).serializeObject();
+			formData['csrfToken'] = that.csrfToken;
 			
 			// Added "forced relationship" settings if available
 			var relatedID = jQuery("#" + that.formID).parent().data('relatedID');
@@ -109,10 +117,11 @@ var caUI = caUI || {};
 					success: function(data, textStatus, jqXHR) {
 						if(typeof data.error === 'undefined') {
 							// success... add file paths to form data
-							jQuery.each(data, function(k, v) {
-								formData[k] = v;
-							});
-
+							if(data && data['files']) {
+								jQuery.each(data['files'], function(k, v) {
+									formData[k] = v;
+								});
+							}
 							// call function to process the form
 							that.post(e, formData);
 						} else {
@@ -140,6 +149,7 @@ var caUI = caUI || {};
 		// Default handler to call on save for quickadd
 		that.defaultOnSaveHandler = function(resp, textStatus) {
 			if (resp.status == 0) {
+				var rawID = jQuery("#" + that.formID).parent().data('autocompleteRawID');
 				var inputID = jQuery("#" + that.formID).parent().data('autocompleteInputID');
 				var itemIDID = jQuery("#" + that.formID).parent().data('autocompleteItemIDID');
 				var typeIDID = jQuery("#" + that.formID).parent().data('autocompleteTypeIDID');
@@ -149,13 +159,14 @@ var caUI = caUI || {};
 				jQuery('#' + itemIDID).val(resp.id);
 				jQuery('#' + typeIDID).val(resp.type_id);
 				
-				if(relationbundle) { relationbundle.select(null, resp); }
+				if(relationbundle) { relationbundle.select(rawID, resp); }
 				jQuery.jGrowl(that.saveText.replace('%1', resp.display), { header: that.headerText }); 
 				jQuery("#" + that.formID).parent().data('panel').hidePanel();
 				
 				if(formData['relatedID'] && caBundleUpdateManager) { 
 					caBundleUpdateManager.reloadBundle('ca_objects_location'); 
 					caBundleUpdateManager.reloadBundle('ca_objects_history'); 
+					caBundleUpdateManager.reloadBundle('history_tracking_chronology'); 
 					caBundleUpdateManager.reloadInspector(); 
 				}
 			} else {
@@ -190,6 +201,16 @@ var caUI = caUI || {};
 			jQuery("#" + that.formID).parent().load(that.formUrl, formData);
 			
 		};
+		
+		that.cancel = function(e) {
+			that.cleanupOnCancel();
+			jQuery("#" + that.formID).parent().data('panel').hidePanel();
+		};
+		
+		that.cleanupOnCancel = function(e) {
+			var relationbundle = jQuery("#" + that.formID).parent().data('relationbundle');
+			if(relationbundle) { relationbundle.deleteFromBundle('new_0'); }
+		}
 		
 		// --------------------------------------------------------------------------------
 		

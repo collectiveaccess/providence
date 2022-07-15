@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2018 Whirl-i-Gig
+ * Copyright 2014-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,13 +29,14 @@
  *
  * ----------------------------------------------------------------------
  */
+use CodeItNow\BarcodeBundle\Utils\QrCode;
+use CodeItNow\BarcodeBundle\Utils\BarcodeGenerator;
+use Zend\Stdlib\Glob;
 
- /**
+/**
    *
    */
 	require_once(__CA_LIB_DIR__."/Print/PDFRenderer.php");
-	require_once(__CA_LIB_DIR__."/Print/Barcode.php");
-	require_once(__CA_LIB_DIR__."/Print/phpqrcode/qrlib.php");
 
 	global $g_print_measurement_cache;
 	$g_print_measurement_cache = array();
@@ -44,7 +45,7 @@
 	/**
 	 *
 	 *
-	 * @return string
+	 * @return array|string
 	 */
 	function caGetPrintTemplateDirectoryPath($ps_type) {
 		$va_paths = [];
@@ -81,19 +82,29 @@
 	 *		type =
 	 * 		elementCode =
 	 *      showOnlyIn = 
+	 *      restrictToTypes = 
 	 *
 	 * @return array
 	 */
 	function caGetAvailablePrintTemplates($ps_type, $pa_options=null) {
 		if (!is_array($va_template_paths = caGetPrintTemplateDirectoryPath($ps_type))) { $va_template_paths = []; }
 		
-		$vs_tablename = caGetOption('table', $pa_options, null);
+		$restrict_to_types = [];
+		if ($vs_tablename = caGetOption('table', $pa_options, null)) {
+            if(($restrict_to_types = caGetOption('restrictToTypes', $pa_options, false)) && !is_array($restrict_to_types)) {
+                $restrict_to_types = [$restrict_to_types];
+            }
+            if (!is_array($restrict_to_types)) { $restrict_to_types = []; }
+            $restrict_to_types = caMakeTypeList($vs_tablename, $restrict_to_types);
+		}
+		if(!is_array($restrict_to_types)) { $restrict_to_types = []; }
+		
 		$vs_type = caGetOption('type', $pa_options, 'page');
 		$vs_element_code = caGetOption('elementCode', $pa_options, null);
-		$vb_for_html_select = caGetOption('forHTMLSelect', $pa_options, false);
-		if (!is_array($va_show_only_in = caGetOption('showOnlyIn', $pa_options, null))) {
-		    $va_show_only_in = array_map(function($v) { return trim($v); }, explode(',', $va_show_only_in));
-		}
+		$vb_for_html_select = caGetOption('forHTMLSelect', $pa_options, false);    
+        if (!is_array($va_show_only_in = caGetOption('showOnlyIn', $pa_options, null))) {
+            $va_show_only_in = array_map(function($v) { return trim($v); }, explode(',', $va_show_only_in));
+        }
 		
 
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $ps_type);
@@ -101,18 +112,18 @@
 		$va_templates = array();
 		$vb_needs_caching = false;
 		
-		$va_cached_list = (ExternalCache::contains($vs_cache_key, 'PrintTemplates')) ? ExternalCache::fetch($vs_cache_key, 'PrintTemplates') : [];
+		$va_cached_list = (ExternalCache::contains($vs_cache_key, 'PrintTemplates')) ? ExternalCache::fetch($vs_cache_key, 'PrintTemplates') : null;
 			
 		foreach($va_template_paths as $vs_template_path) {
 			foreach(array("{$vs_template_path}", "{$vs_template_path}/local") as $vs_path) {
 				if(!file_exists($vs_path)) { continue; }
 		
 				if (is_array($va_cached_list)) {
-					$f = array_map("filemtime", glob("{$vs_template_path}/*.{php,css}", GLOB_BRACE));
+					$f = array_map("filemtime", Glob::glob("{$vs_template_path}/*.{php,css}", Glob::GLOB_BRACE));
 					sort($f);
 					$vn_template_rev = file_exists($vs_template_path) ? array_pop($f) : 0;
 					
-					$f = array_map("filemtime", glob("{$vs_template_path}/local/*.{php,css}", GLOB_BRACE));
+					$f = array_map("filemtime", Glob::glob("{$vs_template_path}/local/*.{php,css}", Glob::GLOB_BRACE));
 					sort($f);
 					$vn_local_rev = file_exists("{$vs_template_path}/local") ? array_pop($f) : 0;
 					
@@ -131,7 +142,17 @@
 						$vs_template_tag = pathinfo($vs_template, PATHINFO_FILENAME);
 						if (is_array($va_template_info = caGetPrintTemplateDetails($ps_type, $vs_template_tag))) {
 							if (caGetOption('type', $va_template_info, null) !== $vs_type)  { continue; }
+							if (caGetOption('disabled', $va_template_info, false, ['castTo' => 'bool'])) { continue; }
 							
+							if (!is_array($template_restrict_to_types = caGetOption('restrictToTypes', $va_template_info, null))) { $template_restrict_to_types = []; }
+							$c = (array_intersect($restrict_to_types, $template_restrict_to_types));
+							
+							if (
+							    sizeof($restrict_to_types) && sizeof($template_restrict_to_types) && 
+							    (is_array($c) && !sizeof($c)))
+							{ 
+							    continue; 
+							}
 							$va_template_show_only_in = array_filter(array_map(function($v) { return trim($v); }, explode(",", caGetOption('showOnlyIn', $va_template_info, null))), function($v) { return (bool)strlen($v);});
 							if(is_array($va_show_only_in) && (sizeof($va_show_only_in) > 0) && is_array($va_template_show_only_in) && (sizeof($va_template_show_only_in) > 0) && !sizeof(array_intersect($va_template_show_only_in, $va_show_only_in))) { continue; }
                             
@@ -140,16 +161,20 @@
 							if ($vs_tablename && (!in_array($vs_tablename, $va_template_info['tables'])) && (!in_array('*', $va_template_info['tables']))) {
 								continue;
 							}
+							if ($vs_tablename && (!in_array($vs_tablename, $va_template_info['tables'])) && (!in_array('*', $va_template_info['tables']))) {
+								continue;
+							}
 
-							if (!is_dir($vs_path.'/'.$vs_template) && preg_match("/^[A-Za-z_]+[A-Za-z0-9_]*$/", $vs_template_tag)) {
+							if (!is_dir($vs_path.'/'.$vs_template) && preg_match("/^[A-Za-z_\-]+[A-Za-z0-9_\-]*$/", $vs_template_tag)) {
 								if ($vb_for_html_select && !isset($va_templates[$va_template_info['name']])) {
 									$va_templates[$va_template_info['name']] = '_pdf_'.$vs_template_tag;
 								} elseif (!isset($va_templates[$vs_template_tag])) {
 									$va_templates[$vs_template_tag] = array(
 										'name' => $va_template_info['name'],
-										'code' => '_pdf_'.$vs_template_tag,
+										'code' => '_'.$va_template_info['fileFormat'].'_'.$vs_template_tag,
 										'type' => $va_template_info['fileFormat'],
-										'generic' => $va_template_info['generic'] ? 1 : 0
+										'generic' => $va_template_info['generic'] ? 1 : 0,
+										'standalone' => $va_template_info['standalone'] ? 1 : 0
 									);
 								}
 								
@@ -195,7 +220,11 @@
 			$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $ps_type.'/'.$vs_template_path);
 			if (ExternalCache::contains($vs_cache_key, 'PrintTemplateDetails')) {
 				$va_list = ExternalCache::fetch($vs_cache_key, 'PrintTemplateDetails');
-				$vn_template_rev = file_exists($vs_template_path) ? array_shift(array_map("filemtime", glob("{$vs_template_path}/*.{php,css}", GLOB_BRACE))) : 0;
+				if(!is_array($files = Glob::glob("{$vs_template_path}/*.{php,css}", Glob::GLOB_BRACE))) {
+					$files = [$vs_template_path];
+				}
+				
+				$vn_template_rev = file_exists($vs_template_path) ? array_shift(array_map("filemtime", $files)) : 0;
 				if(ExternalCache::fetch("{$vs_cache_key}_mtime", 'PrintTemplateDetails') >= filemtime($vs_template_path)) {
 					return $va_list;
 				}
@@ -205,10 +234,11 @@
 
 			$va_info = [];
 			foreach(array(
-				"@name", "@type", "@pageSize", "@pageOrientation", "@tables",
+				"@name", "@type", "@pageSize", "@pageOrientation", "@tables", "@restrictToTypes",
 				"@marginLeft", "@marginRight", "@marginTop", "@marginBottom",
 				"@horizontalGutter", "@verticalGutter", "@labelWidth", "@labelHeight",
-				"@elementCode", "@showOnlyIn", "@filename", "@fileFormat", "@generic"
+				"@elementCode", "@showOnlyIn", "@filename", "@fileFormat", "@generic", "@standalone",
+				"@disabled"
 			) as $vs_tag) {
 				if (preg_match("!{$vs_tag}([^\n\n]+)!", $vs_template, $va_matches)) {
 					$va_info[str_replace("@", "", $vs_tag)] = trim($va_matches[1]);
@@ -216,8 +246,12 @@
 					$va_info[str_replace("@", "", $vs_tag)] = null;
 				}
 			}
-			if (!$va_info['fileFormat']) { $va_info['fileFormat'] = 'pdf'; }    // pdf is inferred for templates without a specific file format
-			$va_info['tables'] = preg_split("![,;]{1}!", $va_info['tables']);
+			if (!$va_info['fileFormat']) { $va_info['fileFormat'] = 'pdf'; }    // pdf is assumed for templates without a specific file format
+			$va_info['tables'] = preg_split("![,;]{1}!", trim($va_info['tables']));
+			
+			if (trim($va_info['restrictToTypes'])) {
+			    $va_info['restrictToTypes'] = preg_split("![,;]{1}!", trim($va_info['restrictToTypes']));
+			}
 			$va_info['path'] = $vs_template_path;
 
 			ExternalCache::save($vs_cache_key, $va_info, 'PrintTemplateDetails');
@@ -258,7 +292,7 @@
 				$ps_value_in_points = $va_matches[1] * ($vn_dpi/2.54);
 				break;
 			case 'mm':
-				$ps_value_in_points = $va_matches[1] * ($vn_dpi/24.4);
+				$ps_value_in_points = $va_matches[1] * ($vn_dpi/25.4);
 				break;
 			case '':
 			case 'px':
@@ -295,10 +329,10 @@
 				return $vn_in_points/72;
 				break;
 			case 'cm':
-				return $vn_in_points/28.346;
+				return $vn_in_points/28.3465;
 				break;
 			case 'mm':
-				return $vn_in_points/2.8346;
+				return $vn_in_points/2.83465;
 				break;
 			default:
 			case 'px':
@@ -313,10 +347,12 @@
 	 * the units specified by the $ps_units parameter. Units are limited to inches, centimeters, millimeters, pixels and points as
 	 * this function is primarily used to switch between units used when generating PDFs.
 	 *
+	 * If the output units are omitted or otherwise not valid, pixels are assumed.
+	 *
 	 * @param $ps_value string The value to convert. Valid units are in, cm, mm, px and p. If units are invalid or omitted points are assumed.
 	 * @param $ps_units string A valid measurement unit: in, cm, mm, px, p (inches, centimeters, millimeters, pixels, points) respectively.
 	 *
-	 * @return int Converted measurement. If the output units are omitted or otherwise not valid, pixels are assumed.
+	 * @return array Converted measurement as array with two keys: value and units. 
 	 */
 	function caParseMeasurement($ps_value, $pa_options=null) {
 		if (!preg_match("/^([\d\.]+)[ ]*([A-Za-z]*)$/", $ps_value, $va_matches)) {
@@ -345,20 +381,25 @@
 		$ps_barcode_type = caGetOption('type', $pa_options, 'code128', array('forceLowercase' => true));
 		$pn_barcode_height = caConvertMeasurementToPoints(caGetOption('height', $pa_options, '9px'));
 
+		if ($pn_barcode_height < 10) { $pn_barcode_height *= 3; }
+
 		$vs_tmp = null;
 		switch($ps_barcode_type) {
 			case 'qr':
 			case 'qrcode':
-				$vs_tmp = tempnam(caGetTempDirPath(), 'caQRCode');
-				$vs_tmp2 = tempnam(caGetTempDirPath(), 'caQRCodeResize');
-
-				if (!defined('QR_LOG_DIR')) { define('QR_LOG_DIR', false); }
-
-				if (($pn_barcode_height < 1) || ($pn_barcode_height > 8)) {
-					$pn_barcode_height = 1;
-				}
-				QRcode::png($ps_value, "{$vs_tmp}.png", QR_ECLEVEL_H, $pn_barcode_height);
-				return $vs_tmp;
+				$qrCode = new QrCode();
+				$qrCode
+					->setText($ps_value)
+					->setSize($pn_barcode_height)
+					->setPadding(10)
+					->setErrorCorrection('high')
+					->setForegroundColor(array('r' => 0, 'g' => 0, 'b' => 0, 'a' => 0))
+					->setBackgroundColor(array('r' => 255, 'g' => 255, 'b' => 255, 'a' => 0))
+					->setLabel('')
+					->setLabelFontSize(10)
+					->setImageType(QrCode::IMAGE_TYPE_PNG);
+					
+				return '<img src="data:'.$qrCode->getContentType().';base64,'.$qrCode->generate().'" />';
 				break;
 			case 'code128':
 			case 'code39':
@@ -366,10 +407,24 @@
 			case 'int25':
 			case 'postnet':
 			case 'upca':
-				$o_barcode = new Barcode();
-				$vs_tmp = tempnam(caGetTempDirPath(), 'caBarCode');
-				if(!($va_dimensions = $o_barcode->draw($ps_value, "{$vs_tmp}.png", $ps_barcode_type, 'png', $pn_barcode_height))) { return null; }
-				return $vs_tmp;
+				$map = [
+					'code128' => BarcodeGenerator::Code128,
+					'code39' => BarcodeGenerator::Code39,
+					'ean13' => BarcodeGenerator::Ean128,
+					'ean128' => BarcodeGenerator::Ean128,
+					'int25' => BarcodeGenerator::I25,
+					'postnet' => BarcodeGenerator::Postnet,
+					'upca' => BarcodeGenerator::Upca,
+				];
+			
+				$barcode = new BarcodeGenerator();
+				$barcode->setText($ps_value);
+				$barcode->setLabel('');
+				$barcode->setType($map[$ps_barcode_type]);
+				$barcode->setThickness($pn_barcode_height);
+				$barcode->setFontSize(10);
+				
+				return  '<img src="data:image/png;base64,'.$barcode->generate().'" />';
 				break;
 			default:
 				// invalid barcode
@@ -383,27 +438,25 @@
 	 *
 	 */
 	function caParseBarcodeViewTag($ps_tag, $po_view, $po_result, $pa_options=null) {
-		$vs_tmp = null;
+		$tag = null;
 		if (substr($ps_tag, 0, 7) == 'barcode') {
-			$o_barcode = new Barcode();
-
 			// got a barcode
 			$va_bits = explode(":", $ps_tag);
 			array_shift($va_bits); // remove "barcode" identifier
 			$vs_type = array_shift($va_bits);
-			if (is_numeric($va_bits[0])) {
-				$vn_size = (int)array_shift($va_bits);
+			if (is_numeric($va_bits[0]) || caParseMeasurement($va_bits[0])) {
+				$vn_size = array_shift($va_bits);
 				$vs_template = join(":", $va_bits);
 			} else {
 				$vn_size = 16;
 				$vs_template = join(":", $va_bits);
 			}
 
-			$vs_tmp = caGenerateBarcode($po_result->getWithTemplate($vs_template, $pa_options), array('type' => $vs_type, 'height' => $vn_size));
+			$tag = caGenerateBarcode($po_result->getWithTemplate($vs_template, $pa_options), array('type' => $vs_type, 'height' => $vn_size));
 
-			$po_view->setVar($ps_tag, "<img src='{$vs_tmp}.png'/>");
+			$po_view->setVar($ps_tag, $tag);
 		}
-		return $vs_tmp;
+		return $tag;
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -420,7 +473,6 @@
 		try {
 			$po_view->setVar('title', $ps_title);
 			
-		//vs_template_identifier
 			// render labels
 			$vn_width = 				caConvertMeasurement(caGetOption('labelWidth', $va_template_info, null), 'mm');
 			$vn_height = 				caConvertMeasurement(caGetOption('labelHeight', $va_template_info, null), 'mm');
@@ -447,11 +499,8 @@
 			$va_defined_vars = array_keys($po_view->getAllVars());		// get list defined vars (we don't want to copy over them)
 			$va_tag_list = $this->getTagListForView($va_template_info['path']);				// get list of tags in view
 			
-			$va_barcode_files_to_delete = [];
-			
 			$vn_page_count = 0;
 			while($po_result->nextHit()) {
-				$va_barcode_files_to_delete = array_merge($va_barcode_files_to_delete, caDoPrintViewTagSubstitution($po_view, $po_result, $va_template_info['path'], array('checkAccess' => $this->opa_access_values)));
 				
 				$vs_content .= "<div style=\"{$vs_border} position: absolute; width: {$vn_width}mm; height: {$vn_height}mm; left: {$vn_left}mm; top: {$vn_top}mm; overflow: hidden; padding: 0; margin: 0;\">";
 				$vs_content .= $this->render($va_template_info['path']);
@@ -472,9 +521,8 @@
 					$vn_left = $vn_left_margin;
 						
 					switch($vs_renderer) {
-						case 'PhantomJS':
 						case 'wkhtmltopdf':
-							// WebKit based renderers (PhantomJS, wkhtmltopdf) want things numbered relative to the top of the document (Eg. the upper left hand corner of the first page is 0,0, the second page is 0,792, Etc.)
+							// WebKit based renderers (wkhtmltopdf) want things numbered relative to the top of the document (Eg. the upper left hand corner of the first page is 0,0, the second page is 0,792, Etc.)
 							$vn_page_count++;
 							$vn_top = ($vn_page_count * $vn_page_height) + $vn_top_margin;
 							break;
@@ -494,11 +542,7 @@
 			caExportAsPDF($po_view, $vs_template_identifier, caGetOption('filename', $va_template_info, 'labels.pdf'), []);
 
 			$vb_printed_properly = true;
-			
-			foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp); @unlink("{$vs_tmp}.png");}
-			
 		} catch (Exception $e) {
-			foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp); @unlink("{$vs_tmp}.png");}
 			
 			$vb_printed_properly = false;
 			$this->postError(3100, _t("Could not generate PDF"),"BaseFindController->PrintSummary()");
@@ -508,16 +552,14 @@
 	/** 
 	 *
 	 */
-	function caGetPrintFormatsListAsHTMLForRelatedBundles($ps_id_prefix, $po_request, $pt_primary, $pt_related, $pt_relation, $pa_initial_values) {
-		$va_formats = caGetAvailablePrintTemplates('results', ['table' => $pt_related->tableName(), 'type' => null, 'showOnlyIn' => 'editor_relationship_bundle']);
+	function caGetPrintFormatsListAsHTMLForRelatedBundles($ps_id_prefix, $po_request, $pt_primary, $pt_related, $pt_relation, $placement_id) {
+		$t_placement = new ca_editor_ui_bundle_placements($placement_id);
+	
+		$va_formats = caGetAvailablePrintTemplates('results', ['table' => $pt_related->tableName(), 'type' => $t_placement->getSetting('restrict_to_types'), 'showOnlyIn' => 'editor_relationship_bundle']);
 		if(!is_array($va_formats)) { $va_formats = []; }
 		$vs_pk = $pt_related->primaryKey();
 		
 		$va_ids = [];
-		
-		foreach($pa_initial_values as $vn_relation_id => $va_info) {
-			$va_ids[$vn_relation_id] = $va_info[$vs_pk];
-		}
 		
 		$va_options = [];
 		if (sizeof($va_formats) > 0) {
@@ -526,20 +568,20 @@
             }
         }
         
-		if (sizeof($va_options) == 0) { return ''; }
-		
 		// Get current display list
 		require_once(__CA_MODELS_DIR__."/ca_bundle_displays.php");
 		$t_display = new ca_bundle_displays();
-        foreach(caExtractValuesByUserLocale($t_display->getBundleDisplays(['table' => $pt_related->tableName()])) as $va_display_info) {
-            if (is_array($va_display_info['settings']['show_only_in']) && sizeof($va_display_info['settings']['show_only_in']) && !in_array('editor_relationship_bundle', $va_display_info['settings']['show_only_in'])) { continue; }        
+        foreach(caExtractValuesByUserLocale($t_display->getBundleDisplays(['table' => $pt_related->tableName(), 'restrictToTypes' => $t_placement->getSetting('restrict_to_types')])) as $va_display_info) {
+            if (!is_array($va_display_info['settings']['show_only_in']) || !sizeof($va_display_info['settings']['show_only_in']) || !in_array('editor_relationship_bundle', $va_display_info['settings']['show_only_in'])) { continue; }        
             $va_options[$va_display_info['name']] = '_pdf__display_'.$va_display_info['display_id'];
         }
+        
+		if (sizeof($va_options) == 0) { return ''; }
 		
 		uksort($va_options, 'strnatcasecmp');
 		
 		$vs_buf = "<div class='editorBundlePrintControl'>"._t("Export as")." ";
-		$vs_buf .= caHTMLSelect('export_format', $va_options, array('id' => "{$ps_id_prefix}_reportList", 'class' => 'dontTriggerUnsavedChangeWarning'), array('value' => null, 'width' => '150px'))."\n";
+		$vs_buf .= caHTMLSelect('export_format', $va_options, array('id' => "{$ps_id_prefix}_reportList", 'class' => 'dontTriggerUnsavedChangeWarning'), array('value' => Session::getVar("P{$placement_id}_last_export_format"), 'width' => '150px'))."\n";
 		
 		$vs_buf .= caJSButton($po_request, __CA_NAV_ICON_GO__, '', "{$ps_id_prefix}_report", ['onclick' => "caGetExport{$ps_id_prefix}(); return false;"], ['size' => '15px']);
 		
@@ -549,7 +591,10 @@
 			<script type='text/javascript'>
 				function caGetExport{$ps_id_prefix}() {
 					var s = jQuery('#{$ps_id_prefix}_reportList').val();
-					var f = jQuery('<form id=\"caTempExportForm\" action=\"{$vs_url}/export_format/' + s + '\" method=\"post\" style=\"display:none;\"><textarea name=\"ids\">".json_encode($va_ids)."</textarea></form>');
+					var sort =  jQuery('#{$ps_id_prefix}_RelationBundleSortControl').val();
+					var sort_direction =  jQuery('#{$ps_id_prefix}_RelationBundleSortDirectionControl').val();
+					
+					var f = jQuery('<form id=\"caTempExportForm\" action=\"{$vs_url}/export_format/' + s + '/sort/' + sort + '/direction/' + sort_direction + '\" method=\"post\" style=\"display:none;\"><input type=\"hidden\" name=\"placement_id\" value=\"{$placement_id}\"></form>');
 					jQuery('body #caTempExportForm').replaceWith(f).hide();
 					f.submit();
 				}
@@ -577,9 +622,17 @@
 		if (sizeof($va_options) == 0) { return ''; }
 		
 		$t_display = new ca_bundle_displays();
-		if(is_array($va_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays(['user_id' => $po_request->getUserID(), 'table' => $vs_set_table])))) {
+		if(is_array($va_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays(['access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'user_id' => $po_request->getUserID(), 'table' => $vs_set_table])))) {
 		    foreach($va_displays as $vn_display_id => $va_display_info) {
-		        if (is_array($va_display_info['settings']['show_only_in']) && sizeof($va_display_info['settings']['show_only_in']) && !in_array('set_item_bundle', $va_display_info['settings']['show_only_in'])) { continue; }
+		        if (
+		        	(is_array($va_display_info['settings']['show_only_in']) && 
+		        	sizeof($va_display_info['settings']['show_only_in']) && 
+		        	!in_array('set_item_bundle', $va_display_info['settings']['show_only_in'])) 
+		        	|| 
+		        	(!is_array($va_display_info['settings']['show_only_in']) && 
+		        	$va_display_info['settings']['show_only_in'] && 
+		        	($va_display_info['settings']['show_only_in'] != 'set_item_bundle'))
+		        ) { continue; }
 		        $va_options[$va_display_info['name']] = '_display_'.$va_display_info['display_id'];
 		    }
 		}
@@ -614,18 +667,76 @@
 	 * 
 	 * @return string
 	 */
-	function caEditorPrintSummaryControls($po_view) {
-	    $t_display = $po_view->getVar('t_display');
-	    $t_item = $po_view->getVar('t_subject');
-	    $request = $po_view->request;
+	function caEditorPrintSummaryControls($view) {
+	    $t_display = $view->getVar('t_display');
+	    $t_item = $view->getVar('t_subject');
+	    $request = $view->request;
 	    
-	    $vn_item_id = $t_item->getPrimaryKey();
+	    $item_id = $t_item->getPrimaryKey();
 	    
-        $vs_buf = $po_view->render($request->getViewsDirectoryPath(true).'/bundles/summary_download_options_html.php');
-    
-        if ($vs_display_select_html = $t_display->getBundleDisplaysAsHTMLSelect('display_id', array('onchange' => 'jQuery("#caSummaryDisplaySelectorForm").submit();',  'class' => 'searchFormSelector'), array('table' => $t_item->tableNum(), 'value' => $t_display->getPrimaryKey(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'user_id' => $request->getUserID(), 'restrictToTypes' => array($t_item->getTypeID()), 'context' => 'editor_summary'))) {
+	    $available_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays([
+			'table' => $t_item->tableNum(), 
+			'value' => $t_display->getPrimaryKey(), 
+			'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 
+			'user_id' => $request->getUserID(), 'restrictToTypes' => [$t_item->getTypeID()], 
+			'context' => 'editor_summary'
+		]));
+		
+		// Opts for on-screen display list (only displays; no PDF print templates)
+		$display_opts = [];
+		foreach($available_displays as $d) {
+			$display_opts[$d['name']] = $d['display_id'];
+		}
+		ksort($display_opts);
+		
+		// HTML <select> for on-screen display list
+		$display_select_html = caHTMLSelect(
+			'display_id', 
+			$display_opts, 
+			['onchange' => 'jQuery("#caSummaryDisplaySelectorForm").submit();', 'class' => 'searchFormSelector'],
+			['value' => $t_display->getPrimaryKey()]
+		);
+		
+		// Opts for print templates (displays + PDF templates)
+		$print_templates = caGetAvailablePrintTemplates('summary', ['table' => $t_item->tableName(), 'restrictToTypes' => $t_item->getTypeID()]);
 
-            $vs_buf .= "<div id='printButton'>
+		// Add PDF templates to existing display list
+		foreach($print_templates as $pt) {
+			if((bool)$pt['standalone']) {	// templates marked standalone are shown as printable options in the display list 
+				$display_opts[$pt['name']] = $pt['code'];
+			}
+		}
+		ksort($display_opts);
+		
+		// HTML <select> for print template list
+		$print_display_select_html = caHTMLSelect(
+			'display_id', 
+			$display_opts, 
+			['onchange' => 'return caSummaryUpdateOptions();', 'id' => 'caSummaryDisplaySelector', 'class' => 'searchFormSelector'],
+			['value' => $t_display->getPrimaryKey()]
+		);
+		$view->setVar('print_display_select_html', $print_display_select_html);
+		
+		// Opts for print formats list (PDF, DOCX, etc – any template that is not marked as standalone is a format)
+		$formats = [];
+		if(is_array($print_templates)) {
+            $num_available_templates = sizeof($print_templates);
+            foreach($print_templates as $k => $v) {
+                if (($num_available_templates > 1) && (bool)$v['generic']) { continue; }    // omit generics from list when specific templates are available
+            	if ((bool)$v['standalone']) { continue; }
+                $formats[$v['name']] = $v['code'];
+            }
+        }
+		$view->setVar('formats', $formats);
+
+		$view->setViewPath('bundles');
+		
+		// Generate print options overlay
+		$buf = $view->render('summary_download_options_html.php');
+    
+    	// Add on-screen display list
+        if ($display_select_html) {
+            $buf .= "<div id='printButton'>
                 <a href='#' onclick='return caShowSummaryDownloadOptionsPanel();'>".caNavIcon(__CA_NAV_ICON_PDF__, 2)."</a>
                     <script type='text/javascript'>
                             function caShowSummaryDownloadOptionsPanel() {
@@ -634,12 +745,12 @@
                             }
                     </script>
  </div>\n";
-            $vs_buf .= caFormTag($request, 'Summary', 'caSummaryDisplaySelectorForm').
-            "<div class='searchFormSelector' style='float:right;'>". _t('Display').": {$vs_display_select_html}</div>
-            <input type='hidden' name='".$t_item->primaryKey()."' value='{$vn_item_id}'/>
+            $buf .= caFormTag($request, 'Summary', 'caSummaryDisplaySelectorForm', null, 'post', 'multipart/form-data', '_top', ['noCSRFToken' => true, 'disableUnsavedChangesWarning' => true]).
+            "<div class='searchFormSelector' style='float:right;'>". _t('Display').": {$display_select_html}</div>
+            <input type='hidden' name='".$t_item->primaryKey()."' value='{$item_id}'/>
             </form>\n";
-	}
+		}
 	
-        return $vs_buf;
+        return $buf;
 	}
 	# ---------------------------------------

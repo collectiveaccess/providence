@@ -175,7 +175,7 @@ class ApplicationError {
  * @return integer Always returns 1
  */		
 	public function setError ($pn_error_number, $ps_error_description='', $ps_error_context='', $ps_error_source='') {
-		$this->opn_error_number = $pn_error_number;
+		$this->opn_error_number = (int)$pn_error_number;
 		$this->ops_error_description = $ps_error_description;
 		$this->ops_error_context = $ps_error_context;
 		$this->ops_error_source = $ps_error_source;
@@ -321,7 +321,7 @@ class ApplicationError {
 		if ($vs_error_message) {
 			return $vs_error_message;
 		} else {
-			return "Unknown error: ".$this->opn_error_number;
+			return "Unknown error: ".(int)$this->opn_error_number;
 		}
 	}
 	
@@ -431,4 +431,3 @@ class ApplicationError {
 		return false;
 	}
 }
-?>

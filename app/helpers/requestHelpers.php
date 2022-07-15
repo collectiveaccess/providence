@@ -35,10 +35,13 @@
   */
 function caGetPreferredThemeForCurrentDevice($pa_theme_device_mappings) {
     if(isset($_GET['current_theme'])){
-        $_COOKIE['current_theme'] = preg_replace("![^A-Za-z0-9\-\_]+!", "", $_GET['current_theme']);
-    }
-    if(isset($_COOKIE['current_theme']) && file_exists(__CA_THEMES_DIR__.'/'.$_COOKIE['current_theme'])){
+        $vs_theme = preg_replace("![^A-Za-z0-9\-\_]+!", "", $_GET['current_theme']);
+        setcookie('current_theme', $vs_theme);
+    } elseif(isset($_COOKIE['current_theme'])) {
         $vs_theme = $_COOKIE['current_theme'];
+    }
+    
+    if(isset($vs_theme) && defined("__CA_THEMES_DIR__") && file_exists(__CA_THEMES_DIR__.'/'.$vs_theme)){
         return $vs_theme;
     }
     $vs_default_theme = 'default';
@@ -76,7 +79,7 @@ function caDeviceIsMobile() {
   * @return bool
   */
 function caRequestIsHealthCheck() {
-	if (preg_match('!GoogleHC!i', $_SERVER['HTTP_USER_AGENT'])) {
+	if (!empty($_SERVER['HTTP_USER_AGENT']) && preg_match('!GoogleHC!i', $_SERVER['HTTP_USER_AGENT'])) {
 		return true;
 	}
 			
@@ -169,7 +172,12 @@ function caInstallVendorLibraries() {
 		}
 		$output = [];
 		putenv("COLLECTIVEACCESS_HOME=".__CA_BASE_DIR__);
-		exec('sh '.__CA_APP_DIR__.'/tmp/install_composer.sh 2>&1', $output, $ret);
+		
+		if(function_exists("caExec")) {
+			caExec('sh '.__CA_APP_DIR__.'/tmp/install_composer.sh 2>&1', $output, $ret);
+		} else {
+			exec('sh '.__CA_APP_DIR__.'/tmp/install_composer.sh 2>&1', $output, $ret);
+		}
 		if ($ret > 0) {
 			return ["Composer installation failed: ".join("; ", $output)];
 		}
@@ -177,7 +185,12 @@ function caInstallVendorLibraries() {
 		$output = [];
 		putenv("COMPOSER_HOME=".__CA_BASE_DIR__."/app/tmp");
 		chdir(__CA_BASE_DIR__);
-		exec("php ".__CA_APP_DIR__.'/tmp/composer.phar -n install 2>&1', $output, $ret);
+		
+		if(function_exists("caExec")) {
+			caExec("php ".__CA_APP_DIR__.'/tmp/composer.phar -n install 2>&1', $output, $ret);
+		} else {
+			exec("php ".__CA_APP_DIR__.'/tmp/composer.phar -n install 2>&1', $output, $ret);
+		}
 		if ($ret > 0) {
 			return ["Library installation failed: ".join("; ", $output)];
 		}
@@ -188,5 +201,30 @@ function caInstallVendorLibraries() {
 	}
 	
 	return $errors;
+}
+# --------------------------------------------------------------------------------------------
+ /**
+  * 
+  */
+function caEmitHeaders($response) {
+	$header_conf = Configuration::load(__CA_CONF_DIR__.'/headers.conf');
+	$groups = $header_conf->getAssocKeys();
+	if(is_array($groups)) {
+		foreach($groups as $g) {
+			if (is_array($header_group = $header_conf->getAssoc($g))) {
+				foreach($header_group as $h => $v) {
+					if(is_array($v)) {
+						foreach($v as $vv) {
+							$response->addHeader($h, $vv);
+						}
+					} else {
+						$response->addHeader($h, $v);
+					}
+				}
+			}
+		}
+		return true;
+	}
+	return falsd;
 }
 # ---------------------------------------------------------------------------------------------

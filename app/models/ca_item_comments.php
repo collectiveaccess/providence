@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2018 Whirl-i-Gig
+ * Copyright 2009-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -316,23 +316,9 @@ class ca_item_comments extends BaseModel {
 	protected $FIELDS;
 	
 	# ------------------------------------------------------
-	# --- Constructor
-	#
-	# This is a function called when a new instance of this object is created. This
-	# standard constructor supports three calling modes:
-	#
-	# 1. If called without parameters, simply creates a new, empty objects object
-	# 2. If called with a single, valid primary key value, creates a new objects object and loads
-	#    the record identified by the primary key value
-	#
-	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
-	}
-	# ------------------------------------------------------
-	public function insert($pa_options=null) {
-		$this->set('ip_addr', $_SERVER['REMOTE_ADDR']);
-		return parent::insert($pa_options);
+	public function insert($options=null) {
+		$this->set('ip_addr', RequestHTTP::ip());
+		return parent::insert($options);
 	}
 	# ------------------------------------------------------
 	/**
@@ -342,10 +328,10 @@ class ca_item_comments extends BaseModel {
 	 *
 	 * @param $pn_user_id [integer] Valid ca_users.user_id value indicating the user who moderated the comment.
 	 */
-	public function moderate($pn_user_id) {
+	public function moderate($user_id) {
 		if (!$this->getPrimaryKey()) { return null; }
 		$this->setMode(ACCESS_WRITE);
-		$this->set('moderated_by_user_id', $pn_user_id);
+		$this->set('moderated_by_user_id', $user_id);
 		$this->set('moderated_on', _t('now'));
 		return $this->update();
 	}
@@ -360,8 +346,8 @@ class ca_item_comments extends BaseModel {
 	/**
 	 *
 	 */
-	public function getUnmoderatedComments() {
-		return $this->getCommentsList('unmoderated', null, true);
+	public function getUnmoderatedComments($options=null) {
+		return $this->getCommentsList('unmoderated', null, true, $options);
 	}
 	# ------------------------------------------------------
 	/**
@@ -374,10 +360,10 @@ class ca_item_comments extends BaseModel {
 	/**
 	 *
 	 */
-	public function getCommentCount($ps_mode='', $vb_has_comment = true) {
+	public function getCommentCount($mode='', $has_comment = true) {
 		$vs_where = '';
 		$va_wheres = array();
-		switch($ps_mode) {
+		switch($mode) {
 			case 'unmoderated':
 				$va_wheres[] = 'cic.moderated_on IS NULL';
 				break;
@@ -386,7 +372,7 @@ class ca_item_comments extends BaseModel {
 				break;
 		}
 	
-		if($vb_has_comment){
+		if($has_comment){
 			$va_wheres[] = "cic.comment IS NOT NULL";
 		}
 		if(sizeof($va_wheres)){
@@ -406,19 +392,20 @@ class ca_item_comments extends BaseModel {
 		return 0;
 	}
 	# ------------------------------------------------------
-	public function getModeratedComments() {
-		return $this->getCommentsList('moderated');
+	public function getModeratedComments($options=null) {
+		return $this->getCommentsList('moderated', null, true, $options);
 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
-	public function getCommentsList($ps_mode='', $pn_limit=0, $vb_has_comment = true) {
+	public function getCommentsList($mode='', $limit=0, $has_comment = true, $options=null) {
+	    $return_as = caGetOption('returnAs', $options, null);
 		$o_db = $this->getDb();
 		
 		$vs_where = '';
 		$va_wheres = array();
-		switch($ps_mode){ 
+		switch($mode){ 
 			case 'moderated':
 				$va_wheres[] = "cic.moderated_on IS NOT NULL";
 				break;
@@ -426,10 +413,10 @@ class ca_item_comments extends BaseModel {
 				$va_wheres[] = "cic.moderated_on IS NULL";
 				break;
 		}
-		if(intval($pn_limit) > 0){
-			$vs_limit = " LIMIT ".intval($pn_limit);
+		if(intval($limit) > 0){
+			$vs_limit = " LIMIT ".intval($limit);
 		}
-		if($vb_has_comment){
+		if($has_comment){
 			$va_wheres[] = "cic.comment IS NOT NULL";
 		}
 		if(sizeof($va_wheres)){
@@ -444,6 +431,10 @@ class ca_item_comments extends BaseModel {
 			{$vs_where} ORDER BY cic.created_on DESC {$vs_limit}
 		");
 		
+		if ($return_as === 'searchResult') {
+		    return caMakeSearchResult('ca_item_comments', $qr_res->getAllFieldValues('comment_id'));
+		}
+		    
 		$va_comments = array();
 		while($qr_res->nextRow()) {
 			$vn_datetime = $qr_res->get('created_on');
@@ -492,6 +483,153 @@ class ca_item_comments extends BaseModel {
             return $t_item;
         }
         return false;
+    }
+    # ------------------------------------------------------
+    /**
+     * Returns instance with item to which the comment is attached
+     *
+     * @return BaseModel instance of model for item associated with comment; null if no comment is loaded; or false if the associated item cannot be fetched.
+     */
+    public static function getCommentUsersForSelect() {
+        $o_db = new Db();
+        $qr = $o_db->query("SELECT u.user_id, u.fname, u.lname, u.email FROM ca_item_comments c INNER JOIN ca_users AS u ON c.user_id = u.user_id GROUP BY u.user_id");
+        
+        $opts = [];
+        while($qr->nextRow()) {
+            $opts[$qr->get('fname').' '.$qr->get('lname').' ('.$qr->get('email').')'] = $qr->get('user_id');
+        }
+        
+        return $opts;
+    }
+    # ------------------------------------------------------
+    /**
+     * Fetch item comment label data given a result set. When comments are attached to a set item placement
+     * labels are returned from the item referenced in the set, rather than the set item itself.
+     *
+     * @param ItemCommentSearchResult $result A ca_item_comments search result
+     * @param array $options Options include:
+     *      itemsPerPage = Maximum number of comments to return at once. [Default is 36]
+     *      request = The current request.
+     *
+     * @return array 
+     */
+    public static function getItemCommentDataForResult($result, $options=null) {
+        $items_per_page = caGetOption('itemsPerPage', $options, 36);
+        $request = caGetOption('request', $options, null);
+        $item_count = 0;
+        
+        $t_set = new ca_sets();
+        
+        if(($current_index = $result->currentIndex()) < 0) { $current_index = 0; }
+        
+        $item_ids = $row_ids = [];
+        while(($item_count < $items_per_page) && $result->nextHit()) {
+		    $table_num = $result->get('ca_item_comments.table_num');
+		    if ((int)$table_num === 105) { // ca_set_items
+		        $item_ids[] = $result->get('ca_item_comments.row_id');
+		    } else {
+		        $row_ids[$table_num][] = $result->get('ca_item_comments.row_id');
+		    }
+		    
+			$item_count++;
+		}
+		
+	    $item_labels = $row_labels = $row_notes = [];
+	    
+	    if (sizeof($item_ids) > 0) {
+            if (is_array($row_id_conv = ca_sets::getRowIDsForItemIDs($item_ids)) && sizeof($row_id_conv)) {
+                foreach($row_id_conv as $tn => $l) {
+                    if (!($t_table = Datamodel::getInstanceByTableNum($tn, true))) {
+                        continue;
+                    }
+                    $labels = $t_table->getPreferredDisplayLabelsForIDs(array_values($l));
+                    $idnos = $t_table->getFieldValuesForIDs(array_values($l), [$t_table->getProperty('ID_NUMBERING_ID_FIELD')]);
+            
+                    foreach($l as $item_id => $row_id) {
+		                $set = array_shift(caExtractValuesByUserLocale($t_set->getSets(['item_id' => $item_id])));
+                        $item_labels[$item_id] = ['table_num' => $tn, 'id' => $row_id, 'label' => $labels[$row_id], 'idno' => $idnos[$row_id], 'set_message' => _t("Comment made in set %1", $request ? caEditorLink($request, $set['name'], '', 'ca_sets', $set['set_id']) : '')];
+                    }
+                }
+            }
+        }
+        if(sizeof($row_ids) > 0) {
+            foreach($row_ids as $tn => $l) {
+                if (!($t_table = Datamodel::getInstanceByTableNum($tn, true))) {
+                    continue;
+                }
+                $labels = $t_table->getPreferredDisplayLabelsForIDs(array_values($l));
+                $flds = $t_table->getFieldValuesForIDs(array_values($l), [$t_table->getProperty('ID_NUMBERING_ID_FIELD'), 'source_id']);
+      
+                foreach($l as $row_id) {
+                    $row_labels[$row_id] = ['id' => $row_id, 'label' => $labels[$row_id], 'idno' => $flds[$row_id]['idno'], 'source' => $flds[$row_id]['source_id']];
+                }
+            }
+        }
+        
+        $result->seek($current_index);
+        
+        return ['rowLabels' => $row_labels, 'itemLabels' => $item_labels, 'comment' => $result->get('comment'), 'created_on' => $result->get('created_on'), 'moderated_on' => $result->get('moderated_on')];
+    }
+    # ------------------------------------------------------
+    /**
+     * Fetch data for current item comment in a result set, using label data bulk-fetched via ca_item_comments::getItemCommentDataForResult()
+     *
+     * @param ItemCommentSearchResult $result A ca_item_comments search result
+     * @param array $data Item comment label data extracted from the result using ca_item_comments::getItemCommentDataForResult()
+     * @param array $options No options are currently supported.
+     *
+     * @return array 
+     */
+    public static function getItemCommentDataForDisplay($result, $data, $options=null) {
+        $table_num = $result->get('ca_item_comments.table_num');
+        $row_id = $result->get('ca_item_comments.row_id');
+        $user_id = $result->get('ca_item_comments.user_id');
+        
+        $notes = '';
+        
+        if ($table_num == 105) { // ca_set_items
+            $d = $data['itemLabels'][$row_id];
+            $table_num = $d['table_num'];
+            $label = $d['label'];
+            $idno = $d['idno'];
+            $row_id = $d['id'];
+                    
+            $notes = $d['set_message'];
+        } else {		    
+            if (!($t_table = Datamodel::getInstanceByTableNum($table_num, true))) {
+                return null;
+            }
+            $label = $data['rowLabels'][$row_id]['label'];
+            $idno = $data['rowLabels'][$row_id]['idno'];
+            
+        }
+        if (!$row_id) { 
+            $label = _t('Item has been deleted'); 
+        }
+        if(!$label) {
+            $label = '['.caGetBlankLabelText('ca_item_comments').']';
+        }
+        
+        $res = ['table_num' => $table_num, 'id' => $row_id, 'label' => $label, 'idno' => $idno, 'notes' => $notes];
+        
+        if($user_id > 0) {
+            foreach(['ca_users.fname', 'ca_users.lname', 'ca_users.email'] as $f) {
+                $ft = array_pop(explode('.', $f));
+                $res[$ft] = $result->get($f);   
+            }
+            $res['name'] = trim($res['fname'].' '.$res['lname']);
+        } else {
+            $res['name'] = $result->get('ca_item_comments.name');
+            $res['email'] = $result->get('ca_item_comments.email');
+        }
+        $res['source'] = caGetListItemIdno($data['rowLabels'][$row_id]['source']);
+        
+        foreach(['ca_item_comments.comment_id', 'ca_item_comments.comment', 'ca_item_comments.created_on', 'ca_item_comments.moderated_on'] as $f) {
+            $ft = array_pop(explode('.', $f));
+            $res[$ft] = $result->get($f);
+        }
+        
+        return $res;
     }
     # ------------------------------------------------------
 }

@@ -29,6 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
+use PHPUnit\Framework\TestCase;
 
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
 
@@ -38,7 +39,7 @@ require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
  */
 class SearchResultGetTest extends BaseTestWithData {
 	# -------------------------------------------------------
-	public function setUp() {
+	protected function setUp() : void {
 		// don't forget to call parent so that the request is set up
 		parent::setUp();
 
@@ -86,7 +87,7 @@ class SearchResultGetTest extends BaseTestWithData {
 		while($o_res->nextHit()) {
 			$vs_label = $o_res->getWithTemplate('^ca_objects.preferred_labels');
 			$this->assertGreaterThan(0, strlen($vs_label));
-			$this->assertRegExp("/$i$/", $vs_label);
+			$this->assertMatchesRegularExpression("/$i$/", $vs_label);
 
 			$i++;
 		}

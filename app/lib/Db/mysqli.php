@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2017 Whirl-i-Gig
+ * Copyright 2011-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -143,7 +143,7 @@ class Db_mysqli extends DbDriverBase {
 			$po_caller->postError(201, mysqli_error($this->opr_db), "Db->mysqli->connect()");
 			throw new DatabaseException(mysqli_error($this->opr_db), 201, "Db->mysqli->connect()");
 		}
-		mysqli_query($this->opr_db, 'SET NAMES \'utf8\'');
+		mysqli_query($this->opr_db, 'SET NAMES \'utf8mb4\'');
 		mysqli_query($this->opr_db, 'SET character_set_results = NULL');	
 		
 		if (!$vb_unique_connection) { $g_connect[$vs_db_connection_key] = $this->opr_db; }
@@ -222,9 +222,9 @@ class Db_mysqli extends DbDriverBase {
 						} else {
 							if (!$vb_in_quote) {
 								// handle escaped quote in '' format
-								if ($ps_sql{$vn_i + 1} == "'") {
+								if ($ps_sql[$vn_i + 1] == "'") {
 									$vn_i += 2;
-									continue;
+									break;
 								} else {
 									$vb_in_quote = "'";
 								}
@@ -270,6 +270,9 @@ class Db_mysqli extends DbDriverBase {
 	 * @throws DatabaseException
 	 */
 	public function execute($po_caller, $po_statement, $ps_sql, $pa_values, $pa_options=null) {
+		global $db_seq;
+		if(!$db_seq) $db_seq = 1;
+		
 		if (!$ps_sql) {
 			$po_statement->postError(240, _t("Query is empty"), "Db->mysqli->execute()");
 			throw new DatabaseException(_t("Query is empty"), 240, "Db->mysqli->execute()");
@@ -306,18 +309,34 @@ class Db_mysqli extends DbDriverBase {
 			}
 		}
 
-		if (Db::$monitor) {
-			$t = new Timer();
+		$t = Timer::start("db");
+		
+		$logger = null;
+		if(defined('__CA_LOG_DATABASE_QUERIES__') && __CA_LOG_DATABASE_QUERIES__) {
+			$logger = caGetLogger(['logDirectory' => __CA_APP_DIR__.'/log', 'logName' => 'queries'], null);
+			
+			$prefix = "[{$db_seq}::".getmypid()."] ";
+			$db_seq++;
+			$logger->logInfo(caPrintStacktrace((defined('__CA_SHOW_FULL_STACKTRACE_IN_DATABASE_QUERY_LOG__') && __CA_SHOW_FULL_STACKTRACE_IN_DATABASE_QUERY_LOG__) ? [] : ['skip' => 3, 'head' => 1]));
+			$logger->logInfo($prefix.json_encode(['query' => $vs_sql, 'params' => $pa_values]));
 		}
-
 		if (!($r_res = @mysqli_query($this->opr_db, $vs_sql, caGetOption('resultMode', $pa_options, MYSQLI_STORE_RESULT)))) {
 			//print "<pre>".caPrintStacktrace()."</pre>\n";
-			$po_statement->postError($this->nativeToDbError(mysqli_errno($this->opr_db)), mysqli_error($this->opr_db), "Db->mysqli->execute()");
+			$po_statement->postError($this->nativeToDbError($error_num = mysqli_errno($this->opr_db)), $error_message = mysqli_error($this->opr_db), "Db->mysqli->execute()");
+			if($logger) {
+				$logger->logError($prefix.json_encode(['errorNumber' => $error_number, 'errorMessage' => $error_message]));
+			}
 			throw new DatabaseException(mysqli_error($this->opr_db), $this->nativeToDbError(mysqli_errno($this->opr_db)), "Db->mysqli->execute()");
 		}
 
-		if (Db::$monitor) {
-			Db::$monitor->logQuery($ps_sql, $pa_values, $t->getTime(4), is_bool($r_res) ? null : mysqli_num_rows($r_res));
+		if($logger) {
+			$time = (float)$t->getTime(4);
+			$threshold = defined('__CA_LONG_DATABASE_QUERY_THRESHOLD__') ? (float)__CA_LONG_DATABASE_QUERY_THRESHOLD__ : 0.5;
+			if ($time > $threshold) {
+				$logger->logWarn($prefix.json_encode(['time' => $time, 'numRows' => is_bool($r_res) ? null : mysqli_num_rows($r_res)]));
+			} else {
+				$logger->logInfo($prefix.json_encode(['time' => $time, 'numRows' => is_bool($r_res) ? null : mysqli_num_rows($r_res)]));
+			}
 		}
 
 		return new DbResult($this, $r_res);

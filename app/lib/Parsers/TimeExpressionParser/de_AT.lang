@@ -1,7 +1,7 @@
 # *** use ONLY lowercase letters in lists: input will be forced to lowercase for comparison ***
 
 # List month names; used whenever name of month needs to be displayed
-monthList = [januar, februar, marz, april, mai, juni, juli, august, september, oktober, november, dezember]
+monthList = [januar, februar, märz, april, mai, juni, juli, august, september, oktober, november, dezember]
 
 # *** the following list of months is for display and *SHOULD* be capitalized where appropriate
 monthListDisplay = [Januar, Februar, März, April, Mai, Juni, Juli, August, September, Oktober, November, Dezember]
@@ -10,7 +10,7 @@ monthListDisplay = [Januar, Februar, März, April, Mai, Juni, Juli, August, Sept
 monthTable = {
 	jan = januar, jan. = januar,
 	feb = februar, feb. = februar,
-	mar = marz, mar. = marz,
+	mar = märz, mar. = märz,
 	apr = april, apr. = april,
 	ma = mai,
 	jun = juni, jun. = juni,
@@ -74,6 +74,9 @@ undatedDate = [undated, unknown]
 
 presentDate = [gegenwart, ?, ??, ???, ????]
 beforeQualifier = [vor]
+earlyQualifier = [früh]
+midQualifier = [mitte]
+lateQualifier = [spät]
 diedQualifier = [gestorben, gest., gest, d, d.]
 afterQualifier = [nach, ab, seit]
 bornQualifier = [geboren, geb., geb, b, b.]

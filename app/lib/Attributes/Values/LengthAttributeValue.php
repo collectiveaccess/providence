@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,7 +38,6 @@ define("__CA_ATTRIBUTE_VALUE_LENGTH__", 8);
 require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Values/AttributeValue.php');
 require_once(__CA_LIB_DIR__.'/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
-require_once(__CA_LIB_DIR__.'/Zend/Measure/Length.php');	
 
 global $_ca_attribute_settings;
 
@@ -67,6 +66,14 @@ $_ca_attribute_settings['LengthAttributeValue'] = array(		// global
         'label' => _t('Does not use locale setting'),
         'description' => _t('Check this option if you don\'t want your measurements to be locale-specific. (The default is not to be.)')
     ),
+    'singleValuePerLocale' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Allow single value per locale'),
+		'description' => _t('Check this option to restrict entry to a single value per-locale.')
+	),
     'requireValue' => array(
         'formatType' => FT_NUMBER,
         'displayType' => DT_CHECKBOXES,
@@ -75,6 +82,22 @@ $_ca_attribute_settings['LengthAttributeValue'] = array(		// global
         'label' => _t('Require value'),
         'description' => _t('Check this option if you want an error to be thrown if this measurement is left blank.')
     ),
+    'allowDuplicateValues' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Allow duplicate values?'),
+		'description' => _t('Check this option if you want to allow duplicate values to be set when element is not in a container and is repeating.')
+	),
+	'raiseErrorOnDuplicateValue' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Show error message for duplicate values?'),
+		'description' => _t('Check this option to show an error message when value is duplicate and <em>allow duplicate values</em> is not set.')
+	),
     'canBeUsedInSort' => array(
         'formatType' => FT_NUMBER,
         'displayType' => DT_CHECKBOXES,
@@ -158,8 +181,8 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
         $this->ops_text_value = $this->_getValueAsText($pa_value_array, ['precision' => 4]);			
 
         // Trim off trailing zeros in quantity
-        $this->ops_text_value = preg_replace("!\.([1-9]*)[0]+([A-Za-z ]+)$!", ".$1$2", $this->ops_text_value);
-        $this->ops_text_value = preg_replace("!\.([A-Za-z ]+)$!", "$1", $this->ops_text_value);
+        $this->ops_text_value = preg_replace("!\\.([1-9]*)[0]+([A-Za-z\\.\"' ]+)$!", ".$1$2", $this->ops_text_value);
+        $this->ops_text_value = preg_replace("!\\.([A-Za-z\\.\"' ]+)$!", "$1", $this->ops_text_value);
         
         $this->opn_decimal_value = $pa_value_array['value_decimal1'];
     }
@@ -174,12 +197,13 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
      */
     public function _getValueAsText($pa_value_array, $pa_options=null) {
         global $g_ui_locale;
+        global $g_ui_units_pref;
     
         try {
             $vo_measurement = new Zend_Measure_Length((float)$pa_value_array['value_decimal1'], 'METER', $g_ui_locale);
 
             $o_config = Configuration::load();
-            $vs_units = caGetOption('unit', $pa_options, null);
+            $vs_units = caGetOption('units', $pa_options, $g_ui_units_pref);
             
             $vs_value = '';
             $vn_precision = caGetOption('precision', $pa_options, null);
@@ -190,16 +214,16 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
                 $t = explode("/", $v); return ((int)$t[1] > $acc) ? (int)$t[1] : $acc; 
             }, 0);
             
-            if (!in_array($vs_units, ['metric', 'english','as_entered'])) {
+            if (!in_array($vs_units, ['metric', 'english','as_entered', 'original', 'fractions'])) {
                 $vs_as_entered_units = caParseLengthDimension($pa_value_array['value_longtext1'])->getType();
-                $vs_units = 'as_entered'; //(in_array($vs_as_entered_units, [Zend_Measure_Length::INCH, Zend_Measure_Length::FEET, Zend_Measure_Length::MILE])) ? 'english' : 'metric';
+                $vs_units = 'as_entered'; 
             }
             
             switch($vs_units) {
                 default:
                 case 'metric':
                     $vs_value_in_cm = $vo_measurement->convertTo(Zend_Measure_Length::CENTIMETER, 15);
-                    $vn_value_in_cm = (float)preg_replace("![^0-9\.]+!", "", $vs_value_in_cm);
+                    $vn_value_in_cm = (float)preg_replace("![^0-9\.\,]+!", "", $vs_value_in_cm);
                     
                     $vn_mm_threshold = $this->config->get('use_millimeters_for_display_up_to');
                     $vn_cm_threshold = $this->config->get('use_centimeters_for_display_up_to');
@@ -222,8 +246,9 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
                     $vs_value = $vo_measurement->convertTo($vs_convert_to_units, $vn_precision);
                     break;
                 case 'english':
+                case 'fractions':
                     $vs_value_in_inches = $vo_measurement->convertTo(Zend_Measure_Length::INCH, 15);
-                    $vn_value_in_inches = (float)preg_replace("![^0-9\.]+!", "", $vs_value_in_inches);
+                    $vn_value_in_inches = (float)preg_replace("![^0-9\.\,]+!", "", $vs_value_in_inches);
                     
                     $vn_inch_threshold = $this->config->get('use_inches_for_display_up_to');
                     $vn_feet_threshold = $this->config->get('use_feet_for_display_up_to');
@@ -252,7 +277,7 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
                                 $vs_value = $vo_feet->convertTo($vs_convert_to_units, $vn_precision);
                                 if(in_array($vs_convert_to_units, $this->config->get('add_period_after_units'))) { $vs_value .= '.'; }
                                 
-                                if ($vn_inches > 0) {
+                                if (($vn_inches > 0) && ($vs_units === 'fractions')) {
                                     $vs_value .= " ".caLengthToFractions($vn_inches, $vn_maximum_denominator, true, ['precision' => $this->config->get('inch_decimal_precision'), 'allowFractionsFor' => $fracs, 'useUnicodeFractionGlyphsFor' => $unicode_fracs]);
                                     if(in_array(Zend_Measure_Length::INCH, $this->config->get('add_period_after_units'))) { $vs_value .= '.'; }
                                 }
@@ -278,7 +303,7 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
                                     $vs_value .= " ".$vo_feet->convertTo(Zend_Measure_Length::FEET, $this->config->get('feet_decimal_precision'));
                                     if(in_array(Zend_Measure_Length::INCH, $this->config->get('add_period_after_units'))) { $vs_value .= '.'; }
                                 }
-                                if ($vn_inches > 0) {
+                                if (($vn_inches > 0) && ($vs_units === 'fractions')) {
                                     $vs_value .= " ".caLengthToFractions($vn_inches, $vn_maximum_denominator, true, ['units' => Zend_Measure_Length::INCH, 'allowFractionsFor' => $fracs, 'useUnicodeFractionGlyphsFor' => $unicode_fracs]);
                                     if(in_array(Zend_Measure_Length::INCH, $this->config->get('add_period_after_units'))) { $vs_value .= '.'; }
                                 }
@@ -286,12 +311,15 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
                                 break;
                             case Zend_Measure_Length::INCH:
                             default:
-                                $vs_value = caLengthToFractions($vs_value_in_inches, $vn_maximum_denominator, true, ['units' => $vs_convert_to_units, 'allowFractionsFor' => $fracs, 'useUnicodeFractionGlyphsFor' => $unicode_fracs]);
+                            	if($vs_units === 'fractions') {
+                                	$vs_value = caLengthToFractions($vs_value_in_inches, $vn_maximum_denominator, true, ['units' => $vs_convert_to_units, 'allowFractionsFor' => $fracs, 'useUnicodeFractionGlyphsFor' => $unicode_fracs]);
+                                }
                                 break;
                         }
                     } 
                     break;
                 case 'as_entered': 
+                case 'original':
                     // as-entered
                     return $pa_value_array['value_longtext1'];
                     break;
@@ -324,7 +352,7 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
     public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
         global $g_ui_locale;
         
-        $ps_value = preg_replace("![^\d\.A-Za-z\"\'\"’” \/]+!", " ", $ps_value);
+        $ps_value = preg_replace("![^\d\.\,A-Za-z\"\'\"’” \/]+!", " ", $ps_value);
         $ps_value_proc = caConvertFractionalNumberToDecimal(trim($ps_value), $g_ui_locale);
         
         $va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('requireValue'));

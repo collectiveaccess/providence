@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,7 +40,7 @@ class CaUsersAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 
 		$t_user = new ca_users();
 
-		$t_user->load($ps_username);
+		$t_user->load(['user_name' => $ps_username]);
 
 		if($t_user->getPrimaryKey() > 0) {
 

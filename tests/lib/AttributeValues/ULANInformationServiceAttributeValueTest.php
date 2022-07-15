@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,13 +29,16 @@
  * 
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
+
 require_once(__CA_LIB_DIR__."/Plugins/InformationService/ULAN.php");
 
-class ULANInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase {
+class ULANInformationServiceAttributeValueTest extends TestCase {
 
 	public function testBasic() {
 		$o_service = new WLPlugInformationServiceULAN();
 		$va_return = $o_service->lookup(array(), 'Keith Haring');
+		$this->assertIsArray($va_return['results']);
 		$this->assertEquals(1, sizeof($va_return['results']));
 	}
 
@@ -44,7 +47,7 @@ class ULANInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCas
 		$vm_ret = $o_service->getExtendedInformation(array(), 'http://vocab.getty.edu/ulan/500024253');
 
 		$this->assertArrayHasKey('display', $vm_ret);
-		$this->assertInternalType('string', $vm_ret['display']);
+		$this->assertIsString($vm_ret['display']);
 		$this->assertNotEmpty($vm_ret['display']);
 	}
 
@@ -52,7 +55,7 @@ class ULANInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCas
 		$o_service = new WLPlugInformationServiceULAN();
 		$vm_ret = $o_service->getDataForSearchIndexing(array(), 'http://vocab.getty.edu/ulan/500024253');
 
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 		$this->assertGreaterThan(0, sizeof($vm_ret));
 	}
 }

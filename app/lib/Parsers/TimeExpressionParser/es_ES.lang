@@ -4,7 +4,7 @@
 monthList = [enero, febrero, Marzo, abril, mayo, junio, julio, agosto, septiembre, octubre, noviembre, diciembre]
 
 # *** the following list of months is for display and *SHOULD* be capitalized where appropriate
-monthListDisplay = [Enero, Febrero, Marzo, Abril, Mayo, Julio, July, agosto, Septiembre, Octubre, Noviembre, Diciembre]
+monthListDisplay = [Enero, Febrero, Marzo, Abril, Mayo, Junio, Julio, Agosto, Septiembre, Octubre, Noviembre, Diciembre]
 
 # Hash table mapping acceptable month names to the display names defined in 'monthList'
 monthTable = {
@@ -68,6 +68,9 @@ undatedDate = [undated, unknown]
 
 presentDate = [presente, ?, ??, ???, ????]
 beforeQualifier = [antes]
+earlyQualifier = [early]
+midQualifier = [mid, middle]
+lateQualifier = [late]
 diedQualifier = [morir, d, d.]
 afterQualifier = [después]
 bornQualifier = [nació, b, b.]

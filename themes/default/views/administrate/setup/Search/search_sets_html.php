@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2014 Whirl-i-Gig
+ * Copyright 2012-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -175,7 +175,8 @@
 			{ 
 				set_name: jQuery('#caCreateSetFromResultsInput').val(),
 				mode: jQuery('#caCreateSetFromResultsMode').val(),
-				item_ids: caGetSelectedItemIDsToAddToSet().join(';')
+				item_ids: caGetSelectedItemIDsToAddToSet().join(';'),
+				csrfToken: <?= json_encode(caGenerateCSRFToken($this->request));?>
 			}, 
 			function(res) {
 				jQuery("#caCreateSetFromResultsIndicator").hide();
@@ -192,7 +193,7 @@
 					msg = msg.replace('^set_name', res['set_name']);
 					
 					if (jQuery('#caCreateSetBatchEdit').prop('checked')) {
-						window.location = '<?php print caNavUrl($this->request, 'batch', 'Editor', 'Edit', array()); ?>/set_id/' + res['set_id'];
+						window.location = '<?php print caNavUrl($this->request, 'batch', 'Editor', 'Edit', array()); ?>/id/ca_sets:' + res['set_id'];
 					} else {
 						jQuery.jGrowl(msg, { header: '<?php print addslashes(_t('Create set')); ?>' }); 
 						// add new set to "add to set" list

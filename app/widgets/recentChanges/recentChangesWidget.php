@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2013 Whirl-i-Gig
+ * Copyright 2010-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,9 +34,8 @@
 	class recentChangesWidget extends BaseWidget implements IWidget {
 		# -------------------------------------------------------
 		private $opo_config;
-		private $opo_datamodel;
 		
-		static $s_widget_settings = array(	);
+		static $s_widget_settings = [];
 		
 		# -------------------------------------------------------
 		public function __construct($ps_widget_path, $pa_settings) {
@@ -140,4 +139,3 @@
 				'description' => _t('Threshold (in hours) to display change log entries for')
 			)
 		);
-?>

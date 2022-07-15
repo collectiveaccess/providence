@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,13 +36,11 @@
  
  	require_once(__CA_APP_DIR__."/helpers/configurationHelpers.php");
  	require_once(__CA_APP_DIR__."/helpers/importHelpers.php");
- 	require_once(__CA_LIB_DIR__."/Datamodel.php");
  	require_once(__CA_LIB_DIR__."/ToolsManager.php");
 
  
  	class ToolsController extends ActionController {
  		# -------------------------------------------------------
- 		protected $opo_datamodel;
  		protected $opo_tools_manager;
  		# -------------------------------------------------------
  		#
@@ -142,7 +140,7 @@
  			foreach($va_settings as $vs_setting => $va_setting_info) {
  				$va_setting_values[$vs_setting] = $va_last_setting_values[$vs_setting] = $this->request->getParameter("{$vs_form_id}_{$vs_setting}", pString);
  				if ($va_setting_info['displayType'] == DT_FILE_BROWSER) {
- 					$va_setting_values[$vs_setting] = $this->request->config->get('batch_media_import_root_directory').'/'.$va_setting_values[$vs_setting];
+ 					$va_setting_values[$vs_setting] = caGetSharedMediaUploadPath().'/'.$va_setting_values[$vs_setting];
  				}
  			}
  			
@@ -190,14 +188,14 @@
  			$vn_status = $o_tool->run($ps_command);
  			
  			$o_progress = new ProgressBar('WebUI', null, $ps_job_id);
- 			$va_job_data = $o_progress->getDataForJobID();
+ 			$data = $o_progress->getDataForJobID();
  			$this->view->setVar('jobinfo', array(
  				'status' => $vn_status,
  				'job_id' => $ps_job_id,
  				'settings' => $va_settings,
  				'tool' => $o_tool->getToolIdentifier(),
  				'command' => $ps_command,
- 				'message' => $va_job_data['data']['msg']
+ 				'message' => $data['message']
  			));
  			
  			$this->render('tools/tool_runjob_json.php');
@@ -234,7 +232,7 @@
  			
  			$ps_id = $this->request->getParameter('id', pString);
  			$pn_max = $this->request->getParameter('max', pString);
- 			$vs_root_directory = $this->request->config->get('batch_media_import_root_directory');
+ 			$vs_root_directory = caGetSharedMediaUploadPath();
  			
  			$va_level_data = array();
  			

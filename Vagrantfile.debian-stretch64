@@ -1,0 +1,87 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure(2) do |config|
+
+  config.vm.box = "debian/stretch64"
+
+  # Create a forwarded port mapping which allows access to a specific port
+  # within the machine from a port on the host machine. In the example below,
+  # accessing "localhost:8080" will access port 80 on the guest machine.
+  config.vm.network "forwarded_port", guest: 80, host: 8080
+
+  # Provider-specific configuration so you can fine-tune various
+  # backing providers for Vagrant. These expose provider-specific options.
+  #
+  config.vm.provider "virtualbox" do |v|
+  	v.memory = "1024"
+  	v.cpus = 1
+  	v.name = "collectiveaccess"
+  end
+
+  config.vm.synced_folder "./", "/vagrant",
+  	id: "vagrant-root",
+    owner: "vagrant",
+    group: "www-data",
+    mount_options: ["dmode=775,fmode=664"]
+  
+  # provision via shell script
+  #
+  config.vm.provision "shell", inline: <<-SHELL
+  apt-get update && apt-get -q -y upgrade
+  if [[ -e /var/lock/vagrant-provision ]]; then exit; fi
+  
+  # provision vars:
+  path_to_setup="/vagrant/setup.php"
+  path_to_external_apps="/vagrant/app/conf/local/external_applications.conf"
+  mysql_root_password="mysqlr00tp4ssw0rd"
+  mysql_ca_db="collectiveaccess"
+  mysql_ca_user="causer"
+  mysql_ca_password="c4p4ssw0rd"
+  
+  # install required sw:
+  apt-get -q -y install apache2 curl htop screen vim apachetop vnstat
+  apt-get -q -y install php7.0 libapache2-mod-php7.0 php7.0-curl php7.0-mysql php7.0-xml 
+  apt-get -q -y install php7.0-zip php7.0-gd php7.0-json php7.0-imap
+  apt-get -q -y install ffmpeg graphicsmagick python-pdfminer ghostscript 
+  apt-get -q -y dcraw xpdf mediainfo libimage-exiftool-perl phantomjs 
+  apt-get -q -y software-properties-common
+  
+  # install mysql db:
+  echo "mysql-server mysql-server/root_password password ${mysql_root_password}" | sudo debconf-set-selections
+  echo "mysql-server mysql-server/root_password_again password ${mysql_root_password}" | sudo debconf-set-selections
+  apt-get -y install mysql-client mysql-server
+  
+  # configure mysql: create db, create user & asign.
+  echo "CREATE DATABASE IF NOT EXISTS ${mysql_ca_db};CREATE USER '${mysql_ca_user}'@'localhost' IDENTIFIED BY '${mysql_ca_password}';GRANT ALL ON ${mysql_ca_db}.* TO '${mysql_ca_user}'@'localhost';" | sudo mysql -u root --password=root
+  
+  # configure php.ini
+  sed -i "s/memory\_limit\ \=\ 128M/memory\_limit\ \=\ 512M/g" /etc/php/7.0/apache2/php.ini
+  sed -i "s/post\_max\_size\ \=\ 8M/post\_max\_size\ \=\ 64M/g" /etc/php/7.0/apache2/php.ini 
+  sed -i "s/upload\_max\_filesize\ \=\ 2M/upload\_max\_filesize\ \=\ 64M/g" /etc/php/7.0/apache2/php.ini 
+  
+  # link apache2 to providence:
+  if ! [ -L /var/www/html ]; then sudo rm -rf /var/www/html; sudo ln -fs /vagrant /var/www/html; fi
+  
+  # create & configure setup.php
+  if [[ ! -f /vagrant/setup.php ]]; then cp /vagrant/setup.php-dist /vagrant/setup.php; sed -i "s/my_database_user/${mysql_ca_user}/g" ${path_to_setup}; sed -i "s/my_database_password/${mysql_ca_password}/g" ${path_to_setup}; sed -i "s/name_of_my_database/${mysql_ca_db}/g" ${path_to_setup}; sed -i "s/INSTALLS\_\_\'\, false/INSTALLS\_\_\'\, true/g" ${path_to_setup}; fi
+  
+  # configure permissions:
+  chown -R vagrant:www-data /vagrant/app/tmp/
+  chmod -R 775 /vagrant/app/tmp/
+  chown -R vagrant:www-data /vagrant/app/log/
+  chmod -R 775 /vagrant/app/log/
+  chown -R vagrant:www-data /vagrant/media/
+  chmod -R 775 /vagrant/media/
+  chown -R vagrant:www-data /vagrant/vendor/ezyang/htmlpurifier/library/HTMLPurifier/DefinitionCache/Serializer 
+  chmod -R 775 /vagrant/vendor/ezyang/htmlpurifier/library/HTMLPurifier/DefinitionCache/Serializer 
+  
+  # create & configure external_applications.conf
+  if [[ ! -f /vagrant/app/conf/local/external_applications.conf ]]; then cp /vagrant/app/conf/external_applications.conf /vagrant/app/conf/local/external_applications.conf; sed -i 's|/usr/local/bin/qt-faststart|/usr/bin/qt-faststart|g' ${path_to_external_apps}; sed -i 's/pdf2txt\.py/pdf2txt/g' ${path_to_external_apps}; sed -i 's|/usr/local/bin/phantomjs|/usr/bin/phantomjs|g' ${path_to_external_apps}; fi
+  
+  systemctl restart apache2
+  systemctl restart mysql
+  touch /var/lock/vagrant-provision
+
+  SHELL
+end

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2018 Whirl-i-Gig
+ * Copyright 2007-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,7 +34,6 @@
   *
   */
 	require_once(__CA_LIB_DIR__."/BaseObject.php");
-	require_once(__CA_LIB_DIR__."/Datamodel.php");
 	require_once(__CA_LIB_DIR__."/Configuration.php");
  	require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 	
@@ -429,7 +428,7 @@
 							$vs_buf .= "</ul>\n";
 						}
 					} else {
-						if ($vs_menu_item = $this->_genMenuItem($va_menu, $vs_key, $vs_base_path, $vs_cur_selection, "nav_{$vs_key}")) {
+						if ($vs_menu_item = $this->_genMenuItem($va_menu, $vs_key, $vs_base_path, $vs_cur_selection, "nav_{$vs_key}", ['hideDisabled' => true])) {
 							$vs_buf .= "<h2>{$vs_menu_item}</h2>\n";
 						}
 					}
@@ -587,18 +586,24 @@
 				//
 				if (isset($pa_navinfo[$vs_nav]['remember_last_used_navigation']) && $pa_navinfo[$vs_nav]['remember_last_used_navigation']) {
 					$va_nav_defaults = Session::getVar('ca_app_nav_defaults');	// get stored defaults - contains the last used navigation items keyed by base path
-					if (isset($va_nav_defaults[$ps_base_path.'/'.$vs_nav])) {
-						$va_tmp = explode('/', $ps_base_path);		// get components of base path
-						array_push($va_tmp, $vs_nav);				// add on current nav location
-						$va_top_level_nav_info = $this->getNavInfo(0);
+					$navs = [];
+					if($pa_navinfo[$vs_nav]['altLabel']) { $navs[] = $pa_navinfo[$vs_nav]['altLabel']; }
+					$navs[] = $vs_nav;
+					foreach($navs as $n) {
+						if (isset($va_nav_defaults[$ps_base_path.'/'.$n])) {
+							$va_tmp = explode('/', $ps_base_path);		// get components of base path
+							array_push($va_tmp, $n);				// add on current nav location
+							$va_top_level_nav_info = $this->getNavInfo(0);
 						
-						foreach($va_tmp as $vs_t) {
-							if (isset($va_top_level_nav_info[$vs_t]['navigation'])) {
-								$va_top_level_nav_info = $va_top_level_nav_info[$vs_t]['navigation'];
+							foreach($va_tmp as $vs_t) {
+								if (isset($va_top_level_nav_info[$vs_t]['navigation'])) {
+									$va_top_level_nav_info = $va_top_level_nav_info[$vs_t]['navigation'];
+								}
+						
 							}
-						
+							$va_defaults = $va_top_level_nav_info[$va_nav_defaults[$ps_base_path.'/'.$n]]['default'];
+							break;
 						}
-						$va_defaults = $va_top_level_nav_info[$va_nav_defaults[$ps_base_path.'/'.$vs_nav]]['default'];
 					}
 				} 
 				
@@ -615,7 +620,18 @@
 						if ($pa_navinfo[$vs_nav]['submenu']['type'] == 'dynamic') {
 							$va_submenu_nav = $this->getDynamicSubmenu($pa_navinfo[$vs_nav]['submenu']);
 							if (sizeof($va_submenu_nav)) {
-								$vs_buf .= "<li>".caHTMLLink($vs_display_name, array('class' => (($vs_cur_selection == $ps_base_path.'/'.$vs_nav) ? 'sf-menu-selected' : ''), 'href' => '#'));
+								$table = null;
+								
+							    $is_link = (is_array($va_defaults) && $va_defaults['module'] && $va_defaults['module'] == "find");
+								if(is_array($pa_navinfo[$vs_nav]['requires'])) {
+									$table = array_shift(array_filter(array_values(array_map(function($v) { return preg_match("!^action:can_search_([a-z_]+)$!", $v, $m) ? $m[1] : null; }, array_keys($pa_navinfo[$vs_nav]['requires']))), function($v) { return $v;}));
+									if ($this->opo_config->get("{$table}_find_dont_allow_non_type_restricted")) { 
+										$is_link = false; 
+									}
+								}
+							    $va_additional_params['type_id'] = -1;  // force type restriction to be disabled
+							    
+								$vs_buf .= "<li>".($is_link ? caNavLink($this->opo_request, $vs_display_name, (($vs_cur_selection == $ps_base_path.'/'.$vs_nav) ? 'sf-menu-selected' : ''), $va_defaults['module'], $va_defaults['controller'], $va_defaults['action'], $va_additional_params) : caHTMLLink($vs_display_name, array('class' => (($vs_cur_selection == $ps_base_path.'/'.$vs_nav) ? 'sf-menu-selected' : ''), 'href' => '#')));
 								$vs_buf .= $this->_genSubMenu($va_submenu_nav, $vs_cur_selection, $va_additional_params, $ps_base_path, $va_defaults);
 								$vs_buf .= "</li>\n";
 							}
@@ -639,18 +655,43 @@
 			return $vs_buf;
 		}
 		# -------------------------------------------------------
+		/**
+		 * Rewrite "find" menu item defaults to honor settings in app.conf <table>_no_search_for_types, <table>_no_advanced_search_for_types and <table>_no_browse_for_types
+		 */
+		private function _rewriteDefaultsForFindMenuItems($pa_submenu_item, $pa_defaults) {
+			if(($type_id = (int)caGetOption('type_id', $pa_submenu_item['parameters'], null)) && preg_match("!^([A-Z]{1}[a-z]+)(.*)$!", $pa_defaults['controller'], $m) && (in_array($m[1], ['Search', 'Browse']) && is_array($info = caFindControllerNameInfo($pa_defaults['controller'])))) {
+				$type_map = $info['find_interface_restriction_configuration'];
+				
+				if(!in_array($type_id, $type_map[$info['find_type']], true)) {
+					$pa_defaults['controller'] = $info['controller_names'][$info['find_type']];
+				} else {
+					unset($type_map[$info['find_type']]);
+					foreach($type_map as $k => $t) {
+						if(!in_array($type_id, $t, true)) {
+							$pa_defaults['controller'] = $info['controller_names'][$k];
+							break;
+						}
+					}
+				}
+			}
+			
+			return $pa_defaults;
+		}
+		# -------------------------------------------------------
 		private function _genSubMenu($pa_submenu_nav, $ps_cur_selection, $pa_additional_params, $ps_base_path, $pa_defaults) {
 			$vs_buf = '<ul class="sf-menu">';
 			foreach($pa_submenu_nav as $va_submenu_item) {
 				if (is_array($va_requirements = $va_submenu_item['requires'])) {
 					// DOES THIS USER HAVE PRIVS FOR THIS MENU ITEM?
-					if (!$this->_evaluateRequirements($va_requirements)) { continue; }
+					if (!$this->_evaluateRequirements($va_requirements, $va_submenu_item['parameters'])) { continue; }
 				}
 				$vs_buf .= "<li class=\"sf-menu\">";
 				if (isset($va_submenu_item) && isset($va_submenu_item['default']) && is_array($va_submenu_item['default'])) { $pa_defaults = (isset($va_submenu_item['default']) ? $va_submenu_item['default'] : null); }
 				if (!isset($va_submenu_item['parameters']) || !is_array($va_submenu_item['parameters'])) { $va_submenu_item['parameters'] = array(); }
-				if (isset($va_submenu_item) && isset($va_submenu_item['is_enabled']) && intval($va_submenu_item['is_enabled'])) {
-					$vs_buf .= caNavLink($this->opo_request, $va_submenu_item['displayName'], (($ps_cur_selection == $ps_base_path) ? 'sf-menu-selected' : ''), $pa_defaults['module'], $pa_defaults['controller'], $pa_defaults['action'], array_merge($pa_additional_params, $va_submenu_item['parameters']));
+				// only check is_enabled setting for new menu - link to default find for types even if they have subtypes
+				if (isset($va_submenu_item) && ((isset($va_submenu_item['is_enabled']) && intval($va_submenu_item['is_enabled'])) || (is_array($pa_defaults) && $pa_defaults['module'] && $pa_defaults['module'] == "find"))) {
+					$defaults_proc = $this->_rewriteDefaultsForFindMenuItems($va_submenu_item, $pa_defaults);
+					$vs_buf .= caNavLink($this->opo_request, $va_submenu_item['displayName'], (($ps_cur_selection == $ps_base_path) ? 'sf-menu-selected' : ''), $defaults_proc['module'], $defaults_proc['controller'], $defaults_proc['action'], array_merge($pa_additional_params, $this->_parseAdditionalParameters($va_submenu_item['parameters'])));
 				} else {
 					$vs_buf .= "<a href='#'>".$va_submenu_item['displayName']."</a>";
 				}
@@ -669,12 +710,24 @@
 			$vs_buf = '';
 			foreach($pa_menu_nav as $va_submenu_item) {
 				$vs_buf .= "<li>";
-				$vb_disabled = (isset($va_submenu_item['is_enabled']) && $va_submenu_item['is_enabled']) ? false : true;
+				
+				// Only force "find" items to be links if hierarchical results expansion is enabled, otherwise you
+				// end up with menu items that return nothing. No one likes that.
+				$result_expansion = true;
+				$info = caFindControllerNameInfo($pa_defaults['controller']);
+				if ($type_id = isset($va_submenu_item['parameters']['type_id']) ? $va_submenu_item['parameters']['type_id'] : null) {
+					$dont_expand_types = caMakeTypeIDList($info['table'], $this->opo_config->get($info['table'].'_find_dont_expand_hierarchically'));
+					if (is_array($dont_expand_types) && in_array($type_id, $dont_expand_types)) {
+						$result_expansion = false;
+					}
+				}
+				$vb_disabled = ((isset($va_submenu_item['is_enabled']) && $va_submenu_item['is_enabled']) || (is_array($pa_defaults) && $pa_defaults['module'] && $pa_defaults['module'] == "find") && $result_expansion) ? false : true;
 				
 				if ($vb_disabled) {
 					$vs_buf .= caHTMLLink(caUcFirstUTF8Safe(isset($va_submenu_item['displayName']) ? $va_submenu_item['displayName'] : ''), array('href' => '#', 'class' => (($ps_cur_selection == $ps_base_path) ? 'sf-menu-disabled-selected' : '')));
 				} else {
-					$vs_buf .= caNavLink($this->opo_request, caUcFirstUTF8Safe(isset($va_submenu_item['displayName']) ? $va_submenu_item['displayName'] : ''), (($ps_cur_selection == $ps_base_path) ? 'sf-menu-selected' : ''), $pa_defaults['module'], $pa_defaults['controller'], $pa_defaults['action'], array_merge($pa_additional_params, $va_submenu_item['parameters']));
+					$defaults_proc = $this->_rewriteDefaultsForFindMenuItems($va_submenu_item, $pa_defaults);
+					$vs_buf .= caNavLink($this->opo_request, caUcFirstUTF8Safe(isset($va_submenu_item['displayName']) ? $va_submenu_item['displayName'] : ''), (($ps_cur_selection == $ps_base_path) ? 'sf-menu-selected' : ''), $defaults_proc['module'], $defaults_proc['controller'], $defaults_proc['action'], array_merge($pa_additional_params, $va_submenu_item['parameters']));
 				}
 				if (isset($va_submenu_item['navigation']) && $va_submenu_item['navigation']) {
 					$vs_buf .= $this->_genSubMenu($va_submenu_item['navigation'], $ps_cur_selection, $pa_additional_params, $ps_base_path, $pa_defaults);
@@ -707,8 +760,10 @@
 			$va_additional_params = $this->_parseAdditionalParameters(isset($pa_iteminfo['parameters']) ? $pa_iteminfo['parameters'] : null);
 			
 			if ($vb_disabled) {
-				if (!($vb_no_access && (isset($pa_iteminfo['hideIfNoAccess']) && $pa_iteminfo['hideIfNoAccess']))) {
-					$vs_buf .= caHTMLLink($vs_display_name, array('href' => '#', 'class' => (($ps_cur_selection == $ps_base_path.'/'.$ps_key) ? 'sf-menu-disabled-selected' : 'sf-menu-disabled'), 'title' => _t('Disabled')));
+				if(!caGetOption('hideDisabled', $pa_options, false)) {
+					if (!($vb_no_access && (isset($pa_iteminfo['hideIfNoAccess']) && $pa_iteminfo['hideIfNoAccess']))) {
+						$vs_buf .= caHTMLLink($vs_display_name, array('href' => '#', 'class' => (($ps_cur_selection == $ps_base_path.'/'.$ps_key) ? 'sf-menu-disabled-selected' : 'sf-menu-disabled'), 'title' => _t('Disabled')));
+					}
 				}
 			} else {
 				if($this->opo_request->getParameter('rel', pInteger)) { // if rel parameter is set, keep it
@@ -763,11 +818,10 @@
 					}
 				} else {
 					if ($va_tmp[0]) {
-						$va_additional_params[$va_tmp[0]] = $this->_parseParameterValue($vs_value);
+						$va_additional_params[$va_tmp[0]] = ($v = $this->_parseParameterValue($vs_value)) ? $v : $vs_value;
 					}
 				}
 			}
-			
 			return $va_additional_params;
 		}
 		# -------------------------------------------------------
@@ -812,7 +866,7 @@
 			return $ps_value;
 		}
 		# -------------------------------------------------------
-		private function _evaluateRequirements(&$pa_requirements) {
+		private function _evaluateRequirements(&$pa_requirements, $options=null) {
 			if(!is_array($pa_requirements) || (is_array($pa_requirements) && (sizeof($pa_requirements) == 0))) { return true; }	// empty requirements means anyone may access the nav item
 			$vs_result = $vs_value = null;
 			foreach($pa_requirements as $vs_requirement => $vs_boolean) {
@@ -862,6 +916,19 @@
 							$vs_value = false;
 						}
 						break;
+					case 'checktypelimitinconfig':
+						$vs_pref = $va_tmp[1];
+						if ($vb_not = (substr($vs_pref, 0, 1) == '!') ? true : false) {
+							$vs_pref = substr($vs_pref, 1);
+						}
+						
+						$vs_table = $va_tmp[2];
+						
+						$l = caMakeTypeIDList($vs_table, $this->opo_request->config->get($vs_pref),['dontIncludeSubtypesInTypeRestriction' => true]);
+						$s = caGetOption('type_id', $options, (int)Session::getVar("{$vs_table}_type_id"));
+						$vs_value = in_array($s, $l, true);
+						if ($vb_not) { $vs_value = !$vs_value; }
+						break;
 					case 'global':
 						if (isset($va_tmp[2])) {
 							$vs_value = ($GLOBALS[$va_tmp[1]] == $va_tmp[2]) ? true : false;
@@ -892,7 +959,7 @@
 		# -------------------------------------------------------
 		static function clearMenuBarCache($po_request) {
 			Session::setVar('ca_nav_menubar_cache', null);
-			Session::getVar('ca_nav_sidebar_cache', null);
+			Session::setVar('ca_nav_sidebar_cache', null);
 		}
 		# -------------------------------------------------------
 	}

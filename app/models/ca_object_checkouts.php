@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2016 Whirl-i-Gig
+ * Copyright 2014-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -150,7 +150,8 @@ BaseModel::$s_ca_models_definitions['ca_object_checkouts'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => 0,
 				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if the order is deleted or not.'),
-				'BOUNDS_VALUE' => array(0,1)
+				'BOUNDS_VALUE' => array(0,1),
+				'DONT_INCLUDE_IN_SEARCH_FORM' => true
 		),
  	)
 );
@@ -267,20 +268,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	
 	
 	
-	# ------------------------------------------------------
-	# --- Constructor
-	#
-	# This is a function called when a new instance of this object is created. This
-	# standard constructor supports three calling modes:
-	#
-	# 1. If called without parameters, simply creates a new, empty objects object
-	# 2. If called with a single, valid primary key value, creates a new objects object and loads
-	#    the record identified by the primary key value
-	#
-	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
-	}
+
 	# ------------------------------------------------------
 	/**
 	 * Creates a new ca_object_checkouts instance and initialize with a new group uuid. The returned instance
@@ -336,7 +324,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 			$o_trans = $this->getTransaction();
 		} else {	
 			$vb_we_set_transaction = true;
-			$this->setTransaction($o_trans = new Transaction());
+			$this->setTransaction($o_trans = new Transaction($this->getDb()));
 		}
 		
 		$o_request = caGetOption('request', $pa_options, null);
@@ -360,7 +348,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 			SELECT *
 			FROM ca_object_checkouts
 			WHERE
-				user_id = ? AND object_id = ? AND checkout_date IS NOT NULL AND return_date IS NULL
+				user_id = ? AND object_id = ? AND checkout_date IS NOT NULL AND return_date IS NULL AND deleted = 0
 			ORDER BY 
 				created_on
 		", array($pn_user_id, $pn_object_id));
@@ -374,7 +362,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 			SELECT *
 			FROM ca_object_checkouts
 			WHERE
-				user_id = ? AND object_id = ? AND checkout_date IS NULL AND return_date IS NULL
+				user_id = ? AND object_id = ? AND checkout_date IS NULL AND return_date IS NULL AND deleted = 0
 			ORDER BY 
 				created_on
 		", array($pn_user_id, $pn_object_id));
@@ -387,7 +375,9 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 		} else {
 			$vs_uuid = $this->getTransactionUUID();
 		}
-		$va_checkout_config = ca_object_checkouts::getObjectCheckoutConfigForType($t_object->getTypeCode());
+		if(is_null($va_checkout_config = ca_object_checkouts::getObjectCheckoutConfigForType($type_code = $t_object->getTypeCode()))) {
+			throw new ApplicationException(_t("Configuration for type %1 does not exist", $type_code));
+		}
 		
 		if (!($va_checkout_config['allow_override_of_due_dates'] && $ps_due_date && caDateToUnixTimestamp($ps_due_date))) {
 			// calculate default return date
@@ -444,7 +434,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 			$o_trans = $this->getTransaction();
 		} else {	
 			$vb_we_set_transaction = true;
-			$this->setTransaction($o_trans = new Transaction());
+			$this->setTransaction($o_trans = new Transaction($this->getDb()));
 		}
 		
 		$o_request = caGetOption('request', $pa_options, null);
@@ -505,7 +495,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 			$o_trans = $this->getTransaction();
 		} else {	
 			$vb_we_set_transaction = true;
-			$this->setTransaction($o_trans = new Transaction());
+			$this->setTransaction($o_trans = new Transaction($this->getDb()));
 		}
 		
 		$o_request = caGetOption('request', $pa_options, null);
@@ -530,7 +520,9 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		$vs_uuid = $this->getTransactionUUID();
-		$va_checkout_config = ca_object_checkouts::getObjectCheckoutConfigForType($t_object->getTypeCode());
+		if(is_null($va_checkout_config = ca_object_checkouts::getObjectCheckoutConfigForType($type_code = $t_object->getTypeCode()))) {
+			throw new ApplicationException(_t("Configuration for type %1 does not exist", $type_code));
+		}
 		
 		$this->setMode(ACCESS_WRITE);
 		$this->set(array(
@@ -579,6 +571,8 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 		$va_type_config = $o_config->getAssoc('checkout_types');
 		$vs_type_code = is_numeric($pm_type_id) ? $t_object->getTypeCodeForID($pm_type_id) : $pm_type_id;
 		
+		if(!isset($va_type_config[$vs_type_code])) { $vs_type_code = "__default__"; }
+		
 		if(isset($va_type_config[$vs_type_code])) {
 			if (isset($va_type_config[$vs_type_code]['default_checkout_period'])) {
 				if ($vn_due_date = strtotime($va_type_config[$vs_type_code]['default_checkout_period'])) {
@@ -616,6 +610,8 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 				(return_date IS NULL)
 				AND
 				(object_id = ?)
+				AND
+				(deleted = 0)
 		", array(time(), $pn_object_id));
 		
 		if ($qr_res->nextRow()) {
@@ -641,6 +637,8 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 				(return_date IS NULL)
 				AND
 				(object_id = ?)
+				AND
+				(deleted = 0)
 		", array(time(), $pn_object_id));
 		
 		$va_checkout_ids = $qr_res->getAllFieldValues('checkout_id');
@@ -905,7 +903,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 					return_date IS NULL
 					AND
 					user_id = ?
-					".(($pb_omit_overdue ? " AND (due_date > ".time().") " : ''))."
+					".(($pb_omit_overdue ? " AND ((due_date > ".time().") OR due_date IS NULL) " : ''))."
 					AND
 					deleted = 0
 				ORDER BY
@@ -921,7 +919,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 					return_date IS NULL
 					AND
 					user_id = ?
-					".(($pb_omit_overdue ? " AND (due_date > ".time().") " : ''))."
+					".(($pb_omit_overdue ? " AND ((due_date > ".time().") OR due_date IS NULL) " : ''))."
 					AND
 					deleted = 0
 				ORDER BY

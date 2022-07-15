@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,9 +29,11 @@
  * 
  * ----------------------------------------------------------------------
  */
+use PHPUnit\Framework\TestCase;
+
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 
-class UtilityHelpersTest extends PHPUnit_Framework_TestCase {
+class UtilityHelpersTest extends TestCase {
 	# -------------------------------------------------------
 	public function testCaFormatJson(){
 		// actually valid JSON, perl-programmer style!
@@ -57,69 +59,154 @@ JSON;
 	# -------------------------------------------------------
 	public function testParseLengthExpressionHelper() {
 		$vm_ret = caParseLengthExpression("4x6", ['delimiter' => 'X', 'precision' => 0]);
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 		$this->assertCount(2, $vm_ret);
 		$this->assertEquals("4 in", $vm_ret[0]);
 		$this->assertEquals("6 in", $vm_ret[1]);
 		
 		$vm_ret = caParseLengthExpression("4/6", ['delimiter' => '/', 'units' => 'mm']);
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 		$this->assertCount(2, $vm_ret);
 		$this->assertEquals("4 mm", $vm_ret[0]);
 		$this->assertEquals("6 mm", $vm_ret[1]);
 		
 		$vm_ret = caParseLengthExpression("4x6cm", ['precision' => 0]);
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 		$this->assertCount(2, $vm_ret);
 		$this->assertEquals("4 cm", $vm_ret[0]);
 		$this->assertEquals("6 cm", $vm_ret[1]);
 		
 		$vm_ret = caParseLengthExpression("4 1/2\"", ['precision' => 1]);
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 		$this->assertCount(1, $vm_ret);
 		$this->assertEquals("4.5 in", $vm_ret[0]);
 		
 		$vm_ret = caParseLengthExpression("4 ¾\"", ['precision' => 2]);
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 		$this->assertCount(1, $vm_ret);
 		$this->assertEquals("4.75 in", $vm_ret[0]);
 		
 		$vm_ret = caParseLengthExpression("4 ¾\"", ['precision' => 1]);
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 		$this->assertCount(1, $vm_ret);
 		$this->assertEquals("4.8 in", $vm_ret[0]);
 		
 		$vm_ret = caParseLengthExpression("4 ¾ x 4 ⅜ in", ['precision' => 1]);
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 		$this->assertCount(2, $vm_ret);
 		$this->assertEquals("4.8 in", $vm_ret[0]);
 		$this->assertEquals("4.4 in", $vm_ret[1]);
 		
 		
 		$vm_ret = caParseLengthExpression("4.151x6cm", ['precision' => 2]);
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 		$this->assertCount(2, $vm_ret);
 		$this->assertEquals("4.15 cm", $vm_ret[0]);
 		$this->assertEquals("6.0 cm", $vm_ret[1]);
 		
 		$vm_ret = caParseLengthExpression("4 x 6cm x 8\"", ['precision' => 0]);
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 		$this->assertCount(3, $vm_ret);
 		$this->assertEquals("4 cm", $vm_ret[0]);
 		$this->assertEquals("6 cm", $vm_ret[1]);
 		$this->assertEquals("8 in", $vm_ret[2]);
 		
 		$vm_ret = caParseLengthExpression("4\" x 5", ['precision' => 0]);
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 		$this->assertCount(2, $vm_ret);
 		$this->assertEquals("4 in", $vm_ret[0]);
 		$this->assertEquals("5 in", $vm_ret[1]);
 		
 		$vm_ret = caParseLengthExpression("4\" x 5", ['precision' => 1]);
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 		$this->assertCount(2, $vm_ret);
 		$this->assertEquals("4.0 in", $vm_ret[0]);
 		$this->assertEquals("5.0 in", $vm_ret[1]);
+	}
+	# -------------------------------------------------------
+    public function testCaEscapeForDelimitedRegexpWithEmptyExpression(){
+        $regexp = '';
+        $result = caEscapeForDelimitedRegexp($regexp, '!');
+        $this->assertEquals('', $result);
+    }
+	# -------------------------------------------------------
+    public function testCaEscapeForDelimitedRegexpWithSharp(){
+        $regexp = '#';
+        $result = caEscapeForDelimitedRegexp($regexp, '#');
+        $this->assertEquals('\#', $result);
+    }
+	# -------------------------------------------------------
+    public function testCaEscapeForDelimitedRegexpWithSlash(){
+        $regexp = '/';
+        $result = caEscapeForDelimitedRegexp($regexp, '/');
+        $this->assertEquals('\/', $result);
+    }
+	# -------------------------------------------------------
+    public function testCaEscapeForDelimitedRegexpWithExclamation(){
+        $regexp = '!';
+        $result = caEscapeForDelimitedRegexp($regexp, '!');
+        $this->assertEquals('\\!', $result);
+    }
+	# -------------------------------------------------------
+    public function testCaEscapeForDelimitedRegexpEscapedDelimiter(){
+        $regexp = '\!';
+        $result = caEscapeForDelimitedRegexp($regexp, '!');
+        $this->assertEquals('\!', $result);
+    }
+	# -------------------------------------------------------
+    public function testCaMakeDelimitedRegexp(){
+        $regexp = '([0-9]+)!([0-9]+)';
+        $result = caMakeDelimitedRegexp($regexp, '!');
+        $this->assertEquals('!([0-9]+)\\!([0-9]+)!', $result);
+    }
+	# -------------------------------------------------------
+    public function testCaMakeDelimitedRegexpWithSharp(){
+        $regexp = '([0-9]+)!([0-9]+)';
+        $result = caMakeDelimitedRegexp($regexp, '#');
+        $this->assertEquals('#([0-9]+)!([0-9]+)#', $result);
+    }
+	# -------------------------------------------------------
+    public function testCaMakeDelimitedRegexpWithSlash(){
+        $regexp = '([0-9]+)!([0-9]+)';
+        $result = caMakeDelimitedRegexp($regexp, '/');
+        $this->assertEquals('/([0-9]+)!([0-9]+)/', $result);
+    }
+    
+	# -------------------------------------------------------
+	public function testCaExtractTagsFromTemplate() {
+		$tags = caExtractTagsFromTemplate("IDNO:^ca_objects.idno");
+		$this->assertIsArray($tags);
+		$this->assertCount(1, $tags);
+		$this->assertEquals("ca_objects.idno", $tags[0]);
+		
+		$tags = caExtractTagsFromTemplate("IDNO:^ca_objects.idno/^ca_objects.extent");
+		$this->assertIsArray($tags);
+		$this->assertCount(2, $tags);
+		$this->assertEquals("ca_objects.idno", $tags[0]);
+		$this->assertEquals("ca_objects.extent", $tags[1]);
+		
+		$tags = caExtractTagsFromTemplate("IDNO:^ca_objects.idno%delimiter=foo&restrictToTypes=books;papers/^ca_objects.extent");
+		$this->assertIsArray($tags);
+		$this->assertCount(2, $tags);
+		$this->assertEquals("ca_objects.idno%delimiter=foo&restrictToTypes=books;papers", $tags[0]);
+		$this->assertEquals("ca_objects.extent", $tags[1]);
+		
+		$tags = caExtractTagsFromTemplate("IDNO:^ca_objects.idno%delimiter=foo&restrictToTypes=books;papers/^ca_objects.extent%toUpper=1");
+		$this->assertIsArray($tags);
+		$this->assertCount(2, $tags);
+		$this->assertEquals("ca_objects.idno%delimiter=foo&restrictToTypes=books;papers", $tags[0]);
+		$this->assertEquals("ca_objects.extent%toUpper=1", $tags[1]);
+		
+		$tags = caExtractTagsFromTemplate("Artists are ^ca_entities.preferred_labels.displayname/artist ; [END]");
+		$this->assertIsArray($tags);
+		$this->assertCount(1, $tags);
+		$this->assertEquals("ca_entities.preferred_labels.displayname", $tags[0]);
+		
+		$tags = caExtractTagsFromTemplate("MARC: ^701/a");
+		$this->assertIsArray($tags);
+		$this->assertCount(1, $tags);
+		$this->assertEquals("701/a", $tags[0]);
+		
 	}
 	# -------------------------------------------------------
 }

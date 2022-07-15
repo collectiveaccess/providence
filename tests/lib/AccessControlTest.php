@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,6 +29,8 @@
  * 
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
+
 require_once(__CA_LIB_DIR__."/Db.php");
 require_once(__CA_LIB_DIR__."/Configuration.php");
 require_once(__CA_LIB_DIR__."/AccessRestrictions.php");
@@ -38,7 +40,7 @@ require_once(__CA_LIB_DIR__."/Controller/Response/ResponseHTTP.php");
 require_once(__CA_MODELS_DIR__."/ca_user_roles.php");
 require_once(__CA_MODELS_DIR__."/ca_users.php");
 
-class AccessControlTest extends PHPUnit_Framework_TestCase {
+class AccessControlTest extends TestCase {
 	# -------------------------------------------------------
 	private $ops_username;
 	private $ops_password;
@@ -51,14 +53,12 @@ class AccessControlTest extends PHPUnit_Framework_TestCase {
 	 */
 	var $opt_role;
 	# -------------------------------------------------------
-	protected function setUp(){
-		$o_dm = new Datamodel(true); // PHPUnit seems to barf on the caching code if we don't instanciate a Datamodel instance
+	protected function setUp() : void {
 		Datamodel::getTableNum("ca_objects");
 
 		// set up test role
 
 		$this->opt_role = new ca_user_roles();
-		$this->opt_role->setMode(ACCESS_WRITE);
 		$this->opt_role->set("name","UnitTestRole");
 		$this->opt_role->set("code","unit_test_role");
 		if(!$this->opt_role->insert()){
@@ -89,7 +89,6 @@ class AccessControlTest extends PHPUnit_Framework_TestCase {
 			print "ERROR inserting user: ".join(" ",$this->opt_user->getErrors())."\n";
 		}
 		$this->opt_user->addRoles("unit_test_role");
-		$this->opt_user->setMode(ACCESS_READ);
 
 		global $req, $resp;
 		$resp = new ResponseHTTP();
@@ -99,7 +98,7 @@ class AccessControlTest extends PHPUnit_Framework_TestCase {
 		$this->assertInstanceOf('ca_user_roles', $this->opt_role);
 	}
 	# -------------------------------------------------------
-	public function tearDown() {
+	protected function tearDown() : void {
 		//the cascading delete code in BaseModel causes problems in unit
 		//tests so we delete user and role by hand
 
@@ -125,10 +124,9 @@ class AccessControlTest extends PHPUnit_Framework_TestCase {
 
 		$vo_acr->opa_acr = $va_access_restrictions;
 
-		$this->opt_role->setMode(ACCESS_WRITE);
 		$this->opt_role->setRoleActions(array());
 		$this->opt_role->update();
-		ca_users::$s_user_action_access_cache = array();
+		ca_users::clearCaches();
 
 		$vb_access = $vo_acr->userCanAccess(
 			$this->opt_user->getPrimaryKey(),
@@ -139,10 +137,9 @@ class AccessControlTest extends PHPUnit_Framework_TestCase {
 
 		$this->assertFalse($vb_access);
 
-		$this->opt_role->setMode(ACCESS_WRITE);
-		$this->opt_role->setRoleActions(array("can_view_configuration_check"));
+		$this->opt_role->setRoleActions(["can_view_configuration_check"]);
 		$this->opt_role->update();
-		ca_users::$s_user_action_access_cache = array();
+		ca_users::clearCaches();
 
 		$vb_access = $vo_acr->userCanAccess(
 			$this->opt_user->getPrimaryKey(),
@@ -185,10 +182,9 @@ class AccessControlTest extends PHPUnit_Framework_TestCase {
 
 		// no roles -> can't edit or create
 
-		$this->opt_role->setMode(ACCESS_WRITE);
 		$this->opt_role->setRoleActions(array());
 		$this->opt_role->update();
-		ca_users::$s_user_action_access_cache = array();
+		ca_users::clearCaches();
 		
 		$req->setParameter("object_id",null,"GET");
 
@@ -214,10 +210,9 @@ class AccessControlTest extends PHPUnit_Framework_TestCase {
 
 		// edit role -> can edit but not create
 
-		$this->opt_role->setMode(ACCESS_WRITE);
 		$this->opt_role->setRoleActions(array("can_edit_ca_objects"));
 		$this->opt_role->update();
-		ca_users::$s_user_action_access_cache = array();
+		ca_users::clearCaches();
 
 		$req->setParameter("object_id",null,"GET");
 
@@ -243,10 +238,9 @@ class AccessControlTest extends PHPUnit_Framework_TestCase {
 
 		// create role -> can create but not edit
 
-		$this->opt_role->setMode(ACCESS_WRITE);
 		$this->opt_role->setRoleActions(array("can_create_ca_objects"));
 		$this->opt_role->update();
-		ca_users::$s_user_action_access_cache = array();
+		ca_users::clearCaches();
 
 		$req->setParameter("object_id",null,"GET");
 
@@ -272,10 +266,9 @@ class AccessControlTest extends PHPUnit_Framework_TestCase {
 
 		// both roles -> can do both
 
-		$this->opt_role->setMode(ACCESS_WRITE);
 		$this->opt_role->setRoleActions(array("can_create_ca_objects","can_edit_ca_objects"));
 		$this->opt_role->update();
-		ca_users::$s_user_action_access_cache = array();
+		ca_users::clearCaches();
 
 		$req->setParameter("object_id",null,"GET");
 
@@ -315,10 +308,9 @@ class AccessControlTest extends PHPUnit_Framework_TestCase {
 
 		// no role -> can't access any controller in administrate/access
 
-		$this->opt_role->setMode(ACCESS_WRITE);
 		$this->opt_role->setRoleActions(array());
 		$this->opt_role->update();
-		ca_users::$s_user_action_access_cache = array();
+		ca_users::clearCaches();
 
 		$vb_access = $vo_acr->userCanAccess(
 			$this->opt_user->getPrimaryKey(),
@@ -349,10 +341,9 @@ class AccessControlTest extends PHPUnit_Framework_TestCase {
 
 		// got role -> can access any controller in administrate/access
 
-		$this->opt_role->setMode(ACCESS_WRITE);
 		$this->opt_role->setRoleActions(array("can_set_access_control"));
 		$this->opt_role->update();
-		ca_users::$s_user_action_access_cache = array();
+		ca_users::clearCaches();
 
 		$vb_access = $vo_acr->userCanAccess(
 			$this->opt_user->getPrimaryKey(),
@@ -397,10 +388,9 @@ class AccessControlTest extends PHPUnit_Framework_TestCase {
 
 		// no role -> can't access controller
 
-		$this->opt_role->setMode(ACCESS_WRITE);
 		$this->opt_role->setRoleActions(array());
 		$this->opt_role->update();
-		ca_users::$s_user_action_access_cache = array();
+		ca_users::clearCaches();
 
 		$vb_access = $vo_acr->userCanAccess(
 			$this->opt_user->getPrimaryKey(),
@@ -413,10 +403,9 @@ class AccessControlTest extends PHPUnit_Framework_TestCase {
 
 		// got role -> can access controller
 
-		$this->opt_role->setMode(ACCESS_WRITE);
 		$this->opt_role->setRoleActions(array("can_configure_user_interfaces"));
 		$this->opt_role->update();
-		ca_users::$s_user_action_access_cache = array();
+		ca_users::clearCaches();
 
 		$vb_access = $vo_acr->userCanAccess(
 			$this->opt_user->getPrimaryKey(),
@@ -446,10 +435,9 @@ class AccessControlTest extends PHPUnit_Framework_TestCase {
 
 		// no role -> can't access controller
 
-		$this->opt_role->setMode(ACCESS_WRITE);
 		$this->opt_role->setRoleActions(array());
 		$this->opt_role->update();
-		ca_users::$s_user_action_access_cache = array();
+		ca_users::clearCaches();
 
 		$vb_access = $vo_acr->userCanAccess(
 			$this->opt_user->getPrimaryKey(),
@@ -462,11 +450,10 @@ class AccessControlTest extends PHPUnit_Framework_TestCase {
 
 		// has one of the OR-ed roles -> can access controller
 
-		$this->opt_role->setMode(ACCESS_WRITE);
 		$va_actions = $va_access_restrictions["administrate/setup/list_editor/ListEditorController"]["default"]["actions"];
 		$this->opt_role->setRoleActions(array($va_actions[array_rand($va_actions)]));
 		$this->opt_role->update();
-		ca_users::$s_user_action_access_cache = array();
+		ca_users::clearCaches();
 
 		$vb_access = $vo_acr->userCanAccess(
 			$this->opt_user->getPrimaryKey(),
@@ -491,10 +478,9 @@ class AccessControlTest extends PHPUnit_Framework_TestCase {
 
 		// no role -> can't access controller
 
-		$this->opt_role->setMode(ACCESS_WRITE);
 		$this->opt_role->setRoleActions(array());
 		$this->opt_role->update();
-		ca_users::$s_user_action_access_cache = array();
+		ca_users::clearCaches();
 
 		$vb_access = $vo_acr->userCanAccess(
 			$this->opt_user->getPrimaryKey(),
@@ -507,11 +493,10 @@ class AccessControlTest extends PHPUnit_Framework_TestCase {
 
 		// has one of the AND-ed roles -> can't access controller
 
-		$this->opt_role->setMode(ACCESS_WRITE);
 		$va_actions = $va_access_restrictions["administrate/setup/list_editor/ListEditorController"]["default"]["actions"];
 		$this->opt_role->setRoleActions(array($va_actions[array_rand($va_actions)]));
 		$this->opt_role->update();
-		ca_users::$s_user_action_access_cache = array();
+		ca_users::clearCaches();
 
 		$vb_access = $vo_acr->userCanAccess(
 			$this->opt_user->getPrimaryKey(),
@@ -523,11 +508,9 @@ class AccessControlTest extends PHPUnit_Framework_TestCase {
 		$this->assertFalse($vb_access);
 
 		// has all AND-ed roles -> can access controller
-
-		$this->opt_role->setMode(ACCESS_WRITE);
 		$this->opt_role->setRoleActions($va_actions);
 		$this->opt_role->update();
-		ca_users::$s_user_action_access_cache = array();
+		ca_users::clearCaches();
 
 		$vb_access = $vo_acr->userCanAccess(
 			$this->opt_user->getPrimaryKey(),

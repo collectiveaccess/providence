@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -41,10 +41,6 @@
 	class BaseLabel extends BaseModel {
 		# -------------------------------------------------------
 		use SyncableBaseModel;
-		# -------------------------------------------------------
-		public function __construct($pn_id=null, $pb_use_cache=true) {
-			parent::__construct($pn_id, $pb_use_cache);
-		}
 		# -------------------------------------------------------
 		public function insert($pa_options=null) {
 			$this->_generateSortableValue();	// populate sort field
@@ -161,7 +157,7 @@
 		 * locale of the label doesn't correspond to an existing TimeExpressionParser localization, then
 		 * the users' current locale setting is used.
 		 */
-		private function _generateSortableValue() {
+		protected function _generateSortableValue() {
 			if ($vs_sort_field = $this->getProperty('LABEL_SORT_FIELD')) {
 				$vs_display_field = $this->getProperty('LABEL_DISPLAY_FIELD');
 				
@@ -169,7 +165,7 @@
 					$t_locale = new ca_locales();
 					$vs_locale = $t_locale->localeIDToCode($this->get('locale_id'));
 				}
-				$vs_display_value = caSortableValue($this->get($vs_display_field), array('locale' => $vs_locale));
+				$vs_display_value = caSortableValue($this->get($vs_display_field), ['locale' => $vs_locale, 'maxLength' => 255]);
 				
 				$this->set($vs_sort_field, $vs_display_value);
 			}
@@ -197,14 +193,31 @@
 			if (($ps_field == $this->getDisplayField()) && (is_array($va_use_list = caGetOption('use_list', $pa_options, false))) && ($po_request = caGetOption('request', $pa_options, null))) {
 				$vn_list_id = array_shift($va_use_list);
 				if ($vn_list_id > 0) {
-                    $va_urls = caJSONLookupServiceUrl($po_request, 'ca_list_items', ['list' => caGetListCode($vn_list_id)]);
-                
-                    $pa_options['height'] = 1;
-                    $pa_options['usewysiwygeditor'] = false;
-                    $pa_options['lookup_url'] = $va_urls['search'];
+					$ret_format = caGetOption('use_list_format', $pa_options, 'lookup');
+                    
+                    if ($ret_format == 'select') {
+                    	return ca_lists::getListAsHTMLFormElement($vn_list_id, $pa_options['name'], ['id' => $pa_options['name']], array_merge($pa_options, ['useOptionsForValues' => true]));
+                    } else {
+						$va_urls = caJSONLookupServiceUrl($po_request, 'ca_list_items', ['list' => caGetListCode($vn_list_id)]);
+				
+						$pa_options['height'] = 1;
+						$pa_options['usewysiwygeditor'] = false;
+						$pa_options['lookup_url'] = $va_urls['search'];
+					}
                 }
 			}
 			return parent::htmlFormElement($ps_field, $ps_format, $pa_options);
+		}
+		# ------------------------------------------------------
+		/**
+		 * Convert label components into canonical format. Overridden by label classes.
+		 *
+		 * @param array $label_values
+		 *
+		 * @return array
+		 */
+		public static function normalizeLabel(array $label_values) : array {
+			return $label_values;
 		}
 		# -------------------------------------------------------
 	}

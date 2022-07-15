@@ -1,43 +1,64 @@
 language: php
-sudo: required
-dist: trusty
+os: linux
+dist: bionic
 
 addons:
   apt:
     packages:
-    - mysql-server-5.6
-    - mysql-client-core-5.6
-    - mysql-client-5.6
-    
-php:
-  - 5.6
-  - 7.0
-  - 7.1
+      - mysql-server-5.7
+      - mysql-client-core-5.7
+      - mysql-client-5.7
 
+git:
+  depth: 5
+
+php:
+  - 7.2
+  - 7.3
+  - 7.4
+
+cache:
+  - directories:
+      # Cache vendor folder will speed up environment setup
+      - vendor
+      - tests/mysql_profile
+
+services:
+  - mysql
 
 env:
-  # Here we list the profiles that we want to test, each one will be tested, per version of PHP, in parallel
-  - PROFILE=testing
+# Here we list the profiles that we want to test, each one will be tested, per version of PHP, in parallel
+#- PROFILE=default
+
+before_install:
+  # execute all of the commands which need to be executed
+  # before installing dependencies
+  # Remove xdebug to increase speed
+  - phpenv config-rm xdebug.ini
+  # Set up database
+  - tests/database_setup.sh
 
 install:
-  # Initialise the database instance for the test
-  - mysql -uroot -e 'create database ca_test;'
-  - mysql -uroot -e "grant all on ca_test.* to 'ca_test'@'localhost' identified by 'password';"
-  # Set environment variables
-  - export COLLECTIVEACCESS_HOME="$(pwd)"
-  - export PATH="$PATH:$COLLECTIVEACCESS_HOME/support/bin"
   # Create setup.php
+  - export PROFILE=${PROFILE:-testing}
   - ln -s .travis.setup.php setup.php
+  - tests/update_dependencies.sh
   # Install the testing profile
-  - support/bin/caUtils install --hostname=localhost --setup="$(pwd)/tests/setup-tests.php" --skip-roles --profile-name=$PROFILE --admin-email=support@collectiveaccess.org > install.log
+  - tests/profile_setup.sh "$PROFILE"
 
 before_script:
+# execute all of the commands which need to be executed
+# before running actual tests
+
+script:
+  # execute all of the commands which
+  # should make the build pass or fail
   # Go into the tests directory to run the tests
   - cd tests/
+  - ../vendor/phpunit/phpunit/phpunit
 
 branches:
   only:
     - develop
     - master
     - master-fix
-    - dev/refactor

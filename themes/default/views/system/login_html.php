@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,10 +34,8 @@
 		<title><?php print $this->request->config->get("app_display_name"); ?></title>
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		
-		<link href="<?php print $this->request->getThemeUrlPath(); ?>/css/login.css" rel="stylesheet" type="text/css" />
-<?php
-	print AssetLoadManager::getLoadHTML($this->request);
-?>
+		<link href="<?= caGetThemeUrlPath() ?>/css/login.css" rel="stylesheet" type="text/css" />
+		<?= AssetLoadManager::getLoadHTML($this->request); ?>
 
 		<script type="text/javascript">
 			// initialize CA Utils
@@ -48,7 +46,7 @@
 		<div align="center">
 			<div id="loginBox">
 				<div align="center">
-					<img src="<?php print $this->request->getThemeUrlPath()."/graphics/logos/".$this->request->config->get('login_logo');?>" border="0">
+					<?= caGetDefaultLogo(); ?>
 				</div>
 				<div id="systemTitle">
 					<?php print $this->request->config->get("app_display_name"); ?>
@@ -70,6 +68,7 @@
 							<input type="password" name="password" size="25"/>
 						</div>
 						<input name="redirect" type="hidden" value="<?php echo htmlspecialchars($this->getVar('redirect'), ENT_QUOTES); ?>" />
+						<input name="local" type="hidden" value="<?php echo (bool)$_REQUEST['local'] ? 1 : 0; ?>" />
 						<div class="loginSubmitButton"><?php print caFormSubmitButton($this->request, __CA_NAV_ICON_LOGIN__, _t("Login"),"login", array('icon_position' => __CA_NAV_ICON_ICON_POS_RIGHT__)); ?></div>
 					</form>
 <?php if(AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { ?>

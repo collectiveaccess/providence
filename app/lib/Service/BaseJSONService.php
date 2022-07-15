@@ -61,7 +61,7 @@ class BaseJSONService {
 		$this->ops_method = $this->opo_request->getRequestMethod();
 		
 		if(!in_array($this->ops_method, array("PUT","DELETE","GET","POST","OPTIONS"))){
-			$this->addError(("Invalid HTTP request method"));
+			$this->addError(("Invalid HTTP request method: ".$this->ops_method));
 		}
 		
 		$this->opn_id = $this->opo_request->getParameter("id",pString);	// we allow for a string to support fetching by idno; typically it's a numeric id
@@ -155,7 +155,7 @@ class BaseJSONService {
 
 		$vb_include_deleted = intval($this->opo_request->getParameter("include_deleted",pInteger));
 
-		$t_instance = Datamodel::getInstanceByTableName($ps_table);
+		$t_instance = Datamodel::getInstance($ps_table);
 
 		if ($pn_id && !is_numeric($pn_id) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD')) && preg_match("!^[A-Za-z0-9_\-\.,\[\]]+$!", $pn_id)) {
 			// User is loading by idno

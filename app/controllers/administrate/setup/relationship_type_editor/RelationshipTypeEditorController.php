@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -45,15 +45,25 @@
  			$va_cur_result = $o_result_context->getResultList();
  			$vn_id = $this->request->getParameter('type_id', pInteger);
  			$vn_parent_id = $this->request->getParameter('parent_id', pInteger);
+ 			$vn_above_id = $this->request->getParameter('above_id', pInteger);
  				
  			// If we're creating a new record we'll need to establish the table_num
  			// from the parent (there's always a parent)
  			if (!$vn_id) {
- 				$t_parent = new ca_relationship_types($vn_parent_id);
- 				if (!$t_parent->getPrimaryKey()) {
- 					$this->postError(1230, _t("Invalid parent"),"RelationshipTypeEditorController->Edit()");
- 					return;
- 				}
+ 				if($vn_above_id) {
+ 					$t_parent = new ca_relationship_types($vn_above_id);
+					if (!$t_parent->getPrimaryKey()) {
+						$this->postError(1230, _t("Invalid child"),"RelationshipTypeEditorController->Edit()");
+						return;
+					}	
+					
+				} else {
+					$t_parent = new ca_relationship_types($vn_parent_id);
+					if (!$t_parent->getPrimaryKey()) {
+						$this->postError(1230, _t("Invalid parent"),"RelationshipTypeEditorController->Edit()");
+						return;
+					}
+				}
  				$this->request->setParameter('table_num', $t_parent->get('table_num'));
  			}
  			

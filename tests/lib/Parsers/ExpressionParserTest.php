@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,11 @@
  *
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
 
 require_once(__CA_LIB_DIR__.'/Parsers/ExpressionParser.php');
 
-class ExpressionParserTest extends PHPUnit_Framework_TestCase {
+class ExpressionParserTest extends TestCase {
 
 	public function testParens() {
 		$this->assertEquals(13, ExpressionParser::evaluate('5 + (4 * 2)'));
@@ -59,11 +60,19 @@ class ExpressionParserTest extends PHPUnit_Framework_TestCase {
 	public function testIn() {
 		$this->assertTrue(ExpressionParser::evaluate('"Seth" IN ["Julia", "Sophie", "Maria", "Seth"]'));
 		$this->assertFalse(ExpressionParser::evaluate('"Joe" IN ["Julia", "Sophie", "Maria", "Seth"]'));
+		$this->assertFalse(ExpressionParser::evaluate('"Joe" in ["Julia", "Sophie", "Maria", "Seth"]'));
+		$this->assertFalse(ExpressionParser::evaluate("'Joe' IN ['Julia', 'Sophie', 'Maria', 'Seth']"));
+		$this->assertFalse(ExpressionParser::evaluate("'Joe' in ['Julia', 'Sophie', 'Maria', 'Seth']"));
+		
+		$this->assertTrue(ExpressionParser::evaluate("'Joe' NOT IN ['Julia', 'Sophie', 'Maria', 'Seth']"));
+		$this->assertTrue(ExpressionParser::evaluate("'Joe' not in ['Julia', 'Sophie', 'Maria', 'Seth']"));
 	}
 
 	public function testAndOr() {
 		$this->assertFalse(ExpressionParser::evaluate('(5 > 10) AND ("seth" = "seth")'));
+		$this->assertFalse(ExpressionParser::evaluate('(5 > 10) and ("seth" = "seth")'));
 		$this->assertTrue(ExpressionParser::evaluate('(5 > 10) OR ("seth" = "seth")'));
+		$this->assertTrue(ExpressionParser::evaluate('(5 > 10) or ("seth" = "seth")'));
 
 		$this->assertFalse(ExpressionParser::evaluate('(5 = 10) AND ("seth" = "seth") AND (6 > 1)'));
 		$this->assertTrue(ExpressionParser::evaluate('(5 = 5) AND ("seth" = "seth") AND (6 > 1)'));
@@ -109,14 +118,14 @@ class ExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(1, ExpressionParser::evaluate('avgdays("1945/01/02 - 1945/01/03", "1985/01/28 - 1985/01/29")'));
 
 		// date formatting
-		$this->assertRegExp("/^1985\-01\-28T/", ExpressionParser::evaluate('formatdate("1985/01/28")'));
-		$this->assertRegExp("/^1985\-01\-28T/", ExpressionParser::evaluate('formatgmdate("1985/01/28")'));
+		$this->assertMatchesRegularExpression("/^1985\-01\-28T/", ExpressionParser::evaluate('formatdate("1985/01/28")'));
+		$this->assertMatchesRegularExpression("/^1985\-01\-28T/", ExpressionParser::evaluate('formatgmdate("1985/01/28")'));
 
 		// join strings
 		$this->assertEquals('piece1gluepiece2', ExpressionParser::evaluate('join("glue", "piece1", "piece2")'));
-		$this->setExpectedException('Exception', 'Invalid number of arguments. Number of arguments passed: 0');
+		$this->expectException('Exception', 'Invalid number of arguments. Number of arguments passed: 0');
 		ExpressionParser::evaluate('join()');
-		$this->setExpectedException('Exception', 'Invalid number of arguments. Number of arguments passed: 1');
+		$this->expectException('Exception', 'Invalid number of arguments. Number of arguments passed: 1');
 		ExpressionParser::evaluate('join("foo")');
 
 		// trim strings
@@ -133,40 +142,40 @@ class ExpressionParserTest extends PHPUnit_Framework_TestCase {
 	/**
 	 * Random expressions we used for testing while writing the grammar. Might as well leave them in here
 	 */
-	public function testParse() {
-		$o_parser = new ExpressionParser();
-
-		// parse() will throw an exception if it fails, so no assertions necessary
-
-		$o_parser->parse('^ca_objects.preferred_labels = "foo"');
-		$o_parser->parse('^5 = "foo"');
-
-		$o_parser->parse('"Joe" NOT IN ["Julia", "Allison", "Sophie", "Maria", "Angie", "Seth"]');
-		$o_parser->parse('"Seth" IN ["Julia", "Allison", "Sophie", "Maria", "Angie", "Seth"]');
-		$o_parser->parse('5 IN [1,2,3,4,5]');
-
-
-		$o_parser->parse('("seth" = "seth")');
-		$o_parser->parse('5 > 10 OR "seth" = "seth"');
-		$o_parser->parse('(5 = 10) AND ("seth" = "seth") AND (6 > 1)');
-		$o_parser->parse('((5 > 10) AND ("seth" = "seth")) OR (6 > 1)');
-
-		$o_parser->parse('5 =~ /foo/');
-		$o_parser->parse('5 =~ /test test/');
-		$o_parser->parse('"foo" =~ /test test/');
-
-
-		$o_parser->parse('5 + 4');
-		$o_parser->parse('"foo" + "bar"');
-
-		$o_parser->parse('5 > 4');
-		$o_parser->parse('5 >= 4');
-		$o_parser->parse('5 != 4');
-		$o_parser->parse('5 = 4');
-		$o_parser->parse('5+5 >= 4');
-		$o_parser->parse('avg(abs(1.345), max(4,5))');
-		$o_parser->parse('1 ÷ 2 ÷ 3 + 4 * (5 * 2 - 6) * 3.14 ÷ avg(7, 8, 9)');
-	}
+// 	public function testParse() {
+// 		$o_parser = new ExpressionParser();
+// 
+// 		// parse() will throw an exception if it fails, so no assertions necessary
+// 
+// 		$o_parser->parse('^ca_objects.preferred_labels = "foo"');
+// 		$o_parser->parse('^5 = "foo"');
+// 
+// 		$o_parser->parse('"Joe" NOT IN ["Julia", "Allison", "Sophie", "Maria", "Angie", "Seth"]');
+// 		$o_parser->parse('"Seth" IN ["Julia", "Allison", "Sophie", "Maria", "Angie", "Seth"]');
+// 		$o_parser->parse('5 IN [1,2,3,4,5]');
+// 
+// 
+// 		$o_parser->parse('("seth" = "seth")');
+// 		$o_parser->parse('5 > 10 OR "seth" = "seth"');
+// 		$o_parser->parse('(5 = 10) AND ("seth" = "seth") AND (6 > 1)');
+// 		$o_parser->parse('((5 > 10) AND ("seth" = "seth")) OR (6 > 1)');
+// 
+// 		$o_parser->parse('5 =~ /foo/');
+// 		$o_parser->parse('5 =~ /test test/');
+// 		$o_parser->parse('"foo" =~ /test test/');
+// 
+// 
+// 		$o_parser->parse('5 + 4');
+// 		$o_parser->parse('"foo" + "bar"');
+// 
+// 		$o_parser->parse('5 > 4');
+// 		$o_parser->parse('5 >= 4');
+// 		$o_parser->parse('5 != 4');
+// 		$o_parser->parse('5 = 4');
+// 		$o_parser->parse('5+5 >= 4');
+// 		$o_parser->parse('avg(abs(1.345), max(4,5))');
+// 		$o_parser->parse('1 ÷ 2 ÷ 3 + 4 * (5 * 2 - 6) * 3.14 ÷ avg(7, 8, 9)');
+// 	}
 
 	public function testVars() {
 		$this->assertTrue(ExpressionParser::evaluate('^var = 5', array('var' => 5)));

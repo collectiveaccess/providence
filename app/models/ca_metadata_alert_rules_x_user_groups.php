@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,6 +34,7 @@
  *
  */
 require_once(__CA_LIB_DIR__.'/BaseRelationshipModel.php');
+require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rules.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_metadata_alert_rules_x_user_groups'] = array(
@@ -69,7 +70,7 @@ BaseModel::$s_ca_models_definitions['ca_metadata_alert_rules_x_user_groups'] = a
 			'BOUNDS_CHOICE_LIST' => array(
 				_t('no access') => __CA_ALERT_RULE_NO_ACCESS__,
 				_t('receives notifications') => __CA_ALERT_RULE_ACCESS_NOTIFICATION__,
-				_t('can edit and receives notifications') => __CA_ALERT_RULE_ACCESS_ACCESS_EDIT__
+				_t('can edit and receive notifications') => __CA_ALERT_RULE_ACCESS_ACCESS_EDIT__
 			),
 			'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates group&apos;s level of access to the display. ')
 		)
@@ -163,9 +164,5 @@ class ca_metadata_alert_rules_x_user_groups extends BaseRelationshipModel {
 
 	protected $FIELDS;
 
-	# ----------------------------------------
-	function __construct($pn_id=null) {
-		parent::__construct($pn_id);
-	}
 	# ----------------------------------------
 }

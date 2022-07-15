@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2018 Whirl-i-Gig
+ * Copyright 2008-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -213,20 +213,7 @@ class ca_attribute_values extends BaseModel {
 
 	protected $FIELDS;
 	
-	# ------------------------------------------------------
-	# --- Constructor
-	#
-	# This is a function called when a new instance of this object is created. This
-	# standard constructor supports three calling modes:
-	#
-	# 1. If called without parameters, simply creates a new, empty objects object
-	# 2. If called with a single, valid primary key value, creates a new objects object and loads
-	#    the record identified by the primary key value
-	#
-	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
-	}
+
 	# ------------------------------------------------------
 	/**
 	 * Stub out indexing for this table - it is never indexed
@@ -664,9 +651,26 @@ class ca_attribute_values extends BaseModel {
         if ($element_id > 0) {
  	        $db = ($trans = caGetOption('transaction', $options, null)) ? $trans->getDb() : new Db();
  	        
- 	        $qr = $db->query("
- 	            SELECT value_id FROM ca_attribute_values WHERE element_id = ? AND value_longtext1 = ? LIMIT 1
- 	        ", [$element_id, $value]);
+ 	        
+ 	        if(is_array($value)) { 
+ 	            $params = $sql_wheres = [];
+ 	            foreach($value as $k => $v) {
+ 	                if ($v && in_array($k, ['value_longtext1', 'value_longtext2', 'value_decimal1', 'value_decimal2', 'value_integer1'])) { 
+ 	                    $sql_wheres[] = "{$k} = ?";
+ 	                    $params[] = $v;
+ 	                }
+ 	            }
+ 	            if(!sizeof($sql_wheres)) { return null; }
+ 	            
+ 	            array_unshift($params, $element_id);
+                $qr = $db->query("
+                    SELECT value_id FROM ca_attribute_values WHERE element_id = ? AND ".(join(" AND ", $sql_wheres))." LIMIT 1
+                ", $params);
+ 	        } else {
+                $qr = $db->query("
+                    SELECT value_id FROM ca_attribute_values WHERE element_id = ? AND value_longtext1 = ? LIMIT 1
+                ", [$element_id, $value]);
+            }
  	        
  	        if ($qr->nextRow()) {
  	            return $qr->get('value_id');

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2017 Whirl-i-Gig
+ * Copyright 2016-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -157,9 +157,10 @@ class IIIFService {
 					} 
 					break;
 			}
-			 
-			$vn_width = $t_media->getMediaInfo($vs_fldname, 'original', 'WIDTH');
-			$vn_height = $t_media->getMediaInfo($vs_fldname, 'original', 'HEIGHT');
+			
+			$minfo = $t_media->getMediaInfo($vs_fldname);
+			$vn_width = (int)$minfo['INPUT']['WIDTH'];
+			$vn_height = (int)$minfo['INPUT']['HEIGHT'];
 			
 			$va_sizes = IIIFService::getAvailableSizes($t_media, $vs_fldname, ['indexByVersion' => true]);
 			$va_image_info = IIIFService::imageInfo($t_media, $vs_fldname, $po_request);
@@ -181,7 +182,7 @@ class IIIFService {
 				'height' => $vn_height
 			],'IIIFMediaInfo');
 		}
-		
+	
 		if ($pb_is_info_request) {
 			// Return JSON-format IIIF metadata
 			header("Content-type: text/json");
@@ -204,14 +205,14 @@ class IIIFService {
 			// Can we use a pre-generated tilepic tile for this request?
 			$vn_tile_width = $va_tilepic_info['PROPERTIES']['tile_width'];
 			$vn_tile_height = $va_tilepic_info['PROPERTIES']['tile_height'];
-			
+		
 			if (
 				in_array('tilepic', $va_versions)
 				&&
 				(
 					(($va_dimensions['width'] == $vn_tile_width) && ($va_dimensions['height'] == $vn_tile_height))
 					||
-					((($va_dimensions['width'] <= $vn_tile_width) || ($va_dimensions['height'] <= $vn_tile_height)) && ($va_dimensions['mode'] == 'incomplete'))
+					((($va_dimensions['width'] <= $vn_tile_width) || ($va_dimensions['height'] <= $vn_tile_height))) // && ($va_dimensions['mode'] == 'incomplete'))
 				)
 			) {
 				$vn_scale_factor = ceil($va_region['width']/$va_dimensions['width']);						// magnification = width of region requested/width of returned tile
@@ -294,7 +295,7 @@ class IIIFService {
 			if ($vs_target_version) {
 				$vs_image_path = $va_media_paths[$vs_target_version];
 			} else {
-				$vs_image_path = $va_media_paths['original'];
+				$vs_image_path = caGetOption(['original', 'large', 'page_preview', 'large_preview'], $va_media_paths, null);
 			}
 			
 			$vs_output_path = IIIFService::processImage($vs_image_path, $vs_mimetype, $va_operations, $po_request);
@@ -516,7 +517,15 @@ class IIIFService {
 		
 		$va_possible_formats = ['jpg', 'tif', 'tiff', 'png', 'gif'];
 		$o_media  = new Media();
-		if (!$o_media->read($pt_media->getMediaPath($ps_fldname, 'original')) && !$o_media->read($pt_media->getMediaPath($ps_fldname, 'large'))) { 
+		
+		$path = null;
+		foreach(['original', 'large', 'page_preview', 'large_preview'] as $version) {
+			if($path = $pt_media->getMediaPath($ps_fldname, $version)) { break; }
+		}
+		
+		if(!$path) { throw new ApplicationException(_t('No media path')); }
+		
+		if (!$o_media->read($path)) { 
 			throw new Exception("Cannot open file");
 		}
 		
@@ -526,13 +535,13 @@ class IIIFService {
 				$va_formats[] = ($vs_ext === 'tiff') ? 'tif' : $vs_ext; 
 			}
 		}
-		
+		$minfo = $pt_media->getMediaInfo($ps_fldname);
 		$va_resp = [
 			'@context' => 'http://iiif.io/api/image/2/context.json',
 			'@id' => $vs_base_url,
 			'protocol' => 'http://iiif.io/api/image',
-			'width' => $vn_width = (int)$pt_media->getMediaInfo($ps_fldname, 'original', 'WIDTH'),
-			'height' => (int)$pt_media->getMediaInfo($ps_fldname, 'original', 'HEIGHT'),
+			'width' => (int)$minfo['INPUT']['WIDTH'],
+			'height' => (int)$minfo['INPUT']['HEIGHT'],
 			'sizes' => $va_sizes,
 			'tiles' => [$va_tiles],
 			'profile' => [
@@ -549,7 +558,6 @@ class IIIFService {
 			],
 			"maxWidth" => (int)$vn_width
 		];
-		
 		return $va_resp;
 	}
 	# -------------------------------------------------------
@@ -560,7 +568,11 @@ class IIIFService {
 		$va_sizes = [];
 		foreach($pt_media->getMediaVersions($ps_fldname) as $vs_version) {
 			if ($vs_version == 'tilepic') { continue; }
-			$va_sizes[$vs_version] = ['width' => (int)$pt_media->getMediaInfo($ps_fldname, $vs_version, 'WIDTH'), 'height' => (int)$pt_media->getMediaInfo($ps_fldname, $vs_version, 'HEIGHT')];
+			$w = (int)$pt_media->getMediaInfo($ps_fldname, $vs_version, 'WIDTH');
+			$h = (int)$pt_media->getMediaInfo($ps_fldname, $vs_version, 'HEIGHT');
+			if(($w <= 0) || ($h <= 0)) { continue; }
+			
+			$va_sizes[$vs_version] = ['width' => $w, 'height' => $h];
 		}
 		return caGetOption('indexByVersion', $pa_options, false) ? $va_sizes : array_values($va_sizes);
 	}

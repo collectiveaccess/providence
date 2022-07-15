@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010 Whirl-i-Gig
+ * Copyright 2010-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -43,10 +43,12 @@
 		}else{
 			$vs_and = "";
 		}
+		
+		$link = caSearchLink($po_request, $vn_count, '', $vs_table, '*', ['clearType' => 1]);
 		if ($vn_count == 1) {
-			$va_counts[] = $vs_and."<b>".$vn_count.'</b>&nbsp;'._t($va_instances[$vs_table]->getProperty('NAME_SINGULAR'));
+			$va_counts[] = $vs_and."<b>".$link.'</b>&nbsp;'._t($va_instances[$vs_table]->getProperty('NAME_SINGULAR'));
 		} else {
-			$va_counts[] = $vs_and."<b>".$vn_count.'</b>&nbsp;'._t($va_instances[$vs_table]->getProperty('NAME_PLURAL'));
+			$va_counts[] = $vs_and."<b>".$link.'</b>&nbsp;'._t($va_instances[$vs_table]->getProperty('NAME_PLURAL'));
 		}
 		$i++;
 	}

@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -64,12 +64,15 @@ var caUI = caUI || {};
 			defaultItemID: null,	// set to default value to show when no initItemID is set; note that initItemID is an ID to open with *and select.* defaultItemID merely specifies an item to open with, but not select.
 			useAsRootID: null,		// if set to an item_id, that is used at the root of the display hierarchy
 
+			excludeItemIDs: [],		// Skip items with ids in this list
+
 			className: 'hierarchyBrowserLevel',
 			classNameSelected: 'hierarchyBrowserLevelSelected',
 			classNameContainer: 'hierarchyBrowserContainer',
+			classNameContainerReadOnly: 'hierarchyBrowserContainerReadOnly',
 
 			currentSelectionDisplayID: '',
-			currentSelectionDisplayFormat: '%1',
+			currentSelectionDisplayFormat: '<ifdef code="hierarchy">^hierarchy%delimiter=_➜_ ➜ </ifdef>^current',
 			currentSelectionIDID: '',
 			allowSelection: true,
 
@@ -83,6 +86,8 @@ var caUI = caUI || {};
 			autoShrink: false,
 			autoShrinkMaxHeightPx: 180,
 			autoShrinkAnimateID: '',
+			
+			allowSecondarySelection: false,
 			
 			allowDragAndDropSorting: false,
 			dragAndDropSortInProgress: false,
@@ -101,6 +106,7 @@ var caUI = caUI || {};
 
 			indicator: '',	
 			indicatorUrl: '',
+			incrementalLoadIndicator: '',
 			
 			editButtonIcon: '',
 			disabledButtonIcon: '',
@@ -111,19 +117,27 @@ var caUI = caUI || {};
 			levelDivs: [],
 			levelLists: [],
 			selectedItemIDs: [],
+			
+			secondarySelectedItemIDs: [],		// list of checkbox-selected items when secondary selection are enabled
+			secondarySelectionID: null,			// element to write semicolon-delimited list of checkbox-selected items
+			defaultSecondarySelection: [],
 
 			_numOpenLoads: 0,					// number of AJAX loads pending
 			_openLoadsForLevel:[],				// counts of loads pending per-level
 			_pageLoadsForLevel:[],				// log of which pages per-level have been loaded already
-			_queuedLoadsForLevel: [],			// parameters for pending loads per-level
+			_queuedLoadsForLevel: [],			// parameters for pending loads per-level,
+			_foundSelectedForLevel: [],			// track whether selected has been loaded for each level,
 
 			maxItemsPerHierarchyLevelPage: 500,	// maximum number of items to load at one time into a level
 			
 			selectMultiple: ''
 		}, options);
 		
+		if (!that.incrementalLoadIndicator) { that.incrementalLoadIndicator = that.indicator; }
 		
 		that.useAsRootID = parseInt(that.useAsRootID);
+		
+		that.excludeItemIDs = that.excludeItemIDs.map(function(x) { return x + ""; });		// force all ids to string to ensure comparisons work (item ids from service are strings)
 
 		if (!that.levelDataUrl) {
 			alert("No level data url specified for " + that.name + "!");
@@ -141,7 +155,7 @@ var caUI = caUI || {};
 				jQuery('#' + that.container).append("<div class='" + that.classNameContainer + "' id='" + that.container + "_select_container'></div>");
 			}
 		}
-
+		jQuery('#' + that.container).append("<div class='" + that.classNameContainerReadOnly + "' id='" + that.container + "_readonly'></div>");
 		if (that.typeMenuID) {
 			jQuery('#' + that.typeMenuID).hide();
 		}
@@ -155,11 +169,15 @@ var caUI = caUI || {};
 		// @param int item_id The database id of the item to be used as the root of the hierarchy. If omitted the useAsRootID option value is used, or if that is not available whatever root the server decides to use.
 		//
 		that.setUpHierarchy = function(item_id) {
+			that.isReadOnly(that.readOnly, false);
 			if (!item_id) { that.setUpHierarchyLevel(0, that.useAsRootID ? that.useAsRootID : 0, 1, null, true); return; }
 			that.levelDivs = [];
 			that.levelLists = [];
 			that.selectedItemIDs = [];
-			jQuery.getJSON(that.initDataUrl, { id: item_id, bundle: that.bundle}, function(data, e, x) {
+			that.secondarySelectedItemIDs = that.defaultSecondarySelection;
+			that._foundSelectedForLevel = [];
+
+			jQuery.getJSON(that.initDataUrl, { id: item_id, bundle: that.bundle}, function(data, e, x) {	// get ancestors for item_id and load each level
 				if (typeof data === 'object') {
 					var dataAsList = [];
 					for(var o in data) {
@@ -202,6 +220,20 @@ var caUI = caUI || {};
 					jQuery('#' + that.container + '_scrolling_container').animate({scrollLeft: l * that.levelWidth}, 500);
 				}
 			});
+		}
+		// --------------------------------------------------------------------------------
+		// 
+		//
+		// @param bool
+		//
+		that.isReadOnly = function(readonly, animate) {
+		    if(animate === undefined) { animate = true; }
+			if (readonly !== null) {
+				that.readOnly = readonly;
+				
+				that.readOnly ? jQuery("#" + that.container + "_readonly").fadeIn(animate ? 500 : 0) : jQuery("#" + that.container + "_readonly").fadeOut(animate ? 500 : 0);
+			}
+			return that.readOnly;
 		}
 		// --------------------------------------------------------------------------------
 		// Clears hierarchy level display
@@ -260,6 +292,8 @@ var caUI = caUI || {};
 				var selected_item_id_cl = selected_item_id;
 
 				jQuery('#' + newLevelDivID).scroll(function () {
+					if(that.isLoadingLevel) { return; }		// Don't do scroll-based loading if we're already loading a level... otherwise we can get bouncy loads 
+															// (Eg. lots of pages loaded at the same time)
 					if((jQuery('#' + newLevelDivID).scrollTop() + jQuery('#' + newLevelDivID).height()) >= (jQuery('#' + newLevelDivID).prop('scrollHeight'))) {
 						var p = jQuery('#' + newLevelDivID).data("page");
 
@@ -273,10 +307,11 @@ var caUI = caUI || {};
 
 						jQuery('#' + newLevelDivID).data("page", p);
 						var l = jQuery('#' + newLevelDivID).data('level');
-
+					
 						if (!that._pageLoadsForLevel[l] || !that._pageLoadsForLevel[l][p]) {		// is page loaded?
 							if (!that._pageLoadsForLevel[l]) { that._pageLoadsForLevel[l] = []; }
 							that._pageLoadsForLevel[l][p] = true;
+							that.showIncrementalLoadIndicator(newLevelListID);
 							that.queueHierarchyLevelDataLoad(l, item_id, false, newLevelDivID, newLevelListID, selected_item_id_cl, p * that.maxItemsPerHierarchyLevelPage, true);
 						}
 					}
@@ -303,8 +338,7 @@ var caUI = caUI || {};
 						}
 					}
 					
-					jQuery('#' + newLevelDivID).data('level', level);
-					jQuery('#' + newLevelDivID).data('parent_id', item_id);
+					jQuery('#' + newLevelDivID).data('level', level).data('parent_id', item_id);
 					jQuery('#' + newLevelListID).change(function() {
 						var item_id = jQuery("#" + newLevelListID + " option:selected").val();
 						if (!item_id) {
@@ -313,7 +347,7 @@ var caUI = caUI || {};
 							that.setUpHierarchyLevel(level + 1, item_id, 0, undefined, true);
 							that.selectItem(level, item_id, jQuery('#' + newLevelDivID).data('parent_id'), 0, {});
 						}
-					});
+					}).attr('disabled', true);
 					that.showIndicator(newLevelDivID);
 
 					// add first "choose something" item
@@ -360,7 +394,6 @@ var caUI = caUI || {};
 		that.loadHierarchyLevelData = function() {
 			if (that.isLoadingLevel) { return; }
 			that.isLoadingLevel = true;
-
 			var id_list = [];
 			var itemIDsToLevelInfo = {};
 			var is_init = false;
@@ -404,8 +437,11 @@ var caUI = caUI || {};
 			if (!id_list.length) { that.isLoadingLevel = false; return; }
 
 			var start = 0;
+			var onLoadSelection = null;
+			
 			jQuery.getJSON(that.levelDataUrl, { id: id_list.join(';'), bundle: that.bundle, init: is_init ? 1 : '', root_item_id: that.selectedItemIDs[0] ? that.selectedItemIDs[0] : '', start: start * that.maxItemsPerHierarchyLevelPage, max: (that.uiStyle == 'vertical') ? 0 : that.maxItemsPerHierarchyLevelPage }, function(dataForLevels) {
 				var longestLevel = 0;
+				
 				jQuery.each(dataForLevels, function(key, data) {
 					var tmp = key.split(":");
 					var item_id = tmp[0];
@@ -424,21 +460,30 @@ var caUI = caUI || {};
 					for(var i in data['_sortOrder']) {
 						var item = data[data['_sortOrder'][i]];
 						if (!item) { continue; }
-						if (!item.name) { item.name = '??? ' + item['item_id']; }
+						
+						let item_label = item.name;
+						let item_secondary_select = '';
+						if(that.allowSecondarySelection) { 
+							const checked = (that.secondarySelectedItemIDs.indexOf(item['item_id']) >= 0);
+							item_secondary_select = "<input type='checkbox' data-item_id='" +item['item_id'] + "' class='hierBrowser_ss' id='hierBrowser_" + that.name + "_ss_" + item['item_id'] + "' " + (checked ? " checked='1'" : "") + "/> ";
+						}
+						
+						if (!item_label) { item_label = '??? ' + item['item_id']; }
 						if (item['item_id']) {
-							if ((is_init) && (level == 0) && (!that.selectedItemIDs[0])) {
-								that.selectedItemIDs[0] = item['item_id'];
+							if (that.excludeItemIDs && (Array.isArray(that.excludeItemIDs)) && (that.excludeItemIDs.length > 0) && (that.excludeItemIDs.indexOf(item['item_id']) >= 0)) {
+								continue;
 							}
 							if (that.selectedItemIDs[level] == item['item_id']) {
 								foundSelected = true;
+								that._foundSelectedForLevel[level] = true;
 							}
 							if (that.uiStyle == 'horizontal') {
 								var moreButton = '';
 								if (that.editButtonIcon) {
-									if ((item.children > 0) || (level == 0)){
-										moreButton = "<div style='float: right;'><a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "_edit' >" + that.editButtonIcon + "</a></div>";
+									if (item.children > 0) {
+										moreButton = "<div style='float: right;'><a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "_edit' aria-label='Expand hierarchy' >" + that.editButtonIcon + "</a></div>";
 									} else {
-										moreButton = "<div style='float: right;'><a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "_edit'  class='noChildren'>" + that.disabledButtonIcon + "</a></div>";
+										moreButton = "<div style='float: right;'><a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "_edit'  class='noChildren' aria-label='No children'>" + that.disabledButtonIcon + "</a></div>";
 									}
 								}
 
@@ -451,7 +496,7 @@ var caUI = caUI || {};
 									switch (that.disabledItems) {
 										case 'full':
 											jQuery('#' + newLevelListID).append(
-												"<li data-item_id='" +  item['item_id'] + "' class='" + that.className + "'>" + moreButton + "<a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + "'>"  +  item.name + "</a></li>"
+												"<li data-item_id='" +  item['item_id'] + "' class='" + that.className + "'>" + moreButton + "<a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + "'>"  +  item_label + "</a></li>"
 											);
 											break;
 										case 'hide': // item is hidden -> noop
@@ -460,17 +505,17 @@ var caUI = caUI || {};
 										case 'disabled':
 										default:
 											jQuery('#' + newLevelListID).append(
-												"<li data-item_id='" +  item['item_id'] + "' class='" + that.className + "'>" + moreButton +  '<span class="' + that.classNameDisabled + '">' + item.name + "</span></li>"
+												"<li data-item_id='" +  item['item_id'] + "' class='" + that.className + "'>" + moreButton +  '<span class="' + that.classNameDisabled + '">' + item_label + "</span></li>"
 											);
 											break;
 									}
 								} else if ((!((level == 0) && that.dontAllowEditForFirstLevel))) {
 									jQuery('#' + newLevelListID).append(
-										"<li data-item_id='" +  item['item_id'] + "' class='" + that.className + "'>" + moreButton +"<a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + "'>"  +  item.name + "</a></li>"
+										"<li data-item_id='" +  item['item_id'] + "' class='" + that.className + "'>" + item_secondary_select + moreButton +"<a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + "'>"  +  item_label + "</a></li>"
 									);
 								} else {
 									jQuery('#' + newLevelListID).append(
-										"<li data-item_id='" +  item['item_id'] + "' class='" + that.className + "'>" + moreButton + "<a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + "'>"  +  item.name + "</a></li>"
+										"<li data-item_id='" +  item['item_id'] + "' class='" + that.className + "'>" +item_secondary_select +  moreButton + "<a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + "'>"  +  item_label + "</a></li>"
 									);
 								}
 
@@ -518,7 +563,7 @@ var caUI = caUI || {};
 													jQuery(this).attr('facet_item_selected', '1');
 												}
 
-												if (jQuery(".facetItem[facet_item_selected='1']").length > 0) {
+												if (jQuery('#' + newLevelListID).find("a." + that.className + "[facet_item_selected='1']").length > 0) {
 													jQuery("#facet_apply").show();
 												} else {
 													jQuery("#facet_apply").hide();
@@ -541,26 +586,20 @@ var caUI = caUI || {};
 								}
 
 								// hierarchy forward navigation
-								if (!that.readOnly) {
-									jQuery('#' + newLevelListID + " li:last a:first").click(function() {
-										var l = jQuery(this).parent().parent().parent().parent().data('level');
-										var item_id = jQuery(this).data('item_id');
-										var has_children = jQuery(this).data('has_children');
-										that.selectItem(l, item_id, jQuery('#' + newLevelDivID).data('parent_id'), has_children, jQuery(this).data('item'));
+								
+								jQuery('#' + newLevelListID + " li:last a:first").click(function() {
+									if (that.readOnly) { return false; }
+									var l = jQuery(this).parent().parent().parent().parent().data('level');
+									var item_id = jQuery(this).data('item_id');
+									var has_children = jQuery(this).data('has_children');
+									that.selectItem(l, item_id, jQuery('#' + newLevelDivID).data('parent_id'), has_children, jQuery(this).data('item'));
 
-										// scroll to new level
-										that.setUpHierarchyLevel(l + 1, item_id, 0, undefined, true);
-										jQuery('#' + that.container + '_scrolling_container').animate({scrollLeft: l * that.levelWidth}, 500);
+									// scroll to new level
+									that.setUpHierarchyLevel(l + 1, item_id, 0, undefined, true);
+									jQuery('#' + that.container + '_scrolling_container').animate({scrollLeft: l * that.levelWidth}, 500);
 
-										return false;
-									});
-								}
-
-								if (that.readOnly) {
-									jQuery('#' + newLevelListID + " li:first a").click(function() {
-										return false;
-									});
-								}
+									return false;
+								});
 
 								if ((that.allowExtractionFromHierarchy) && (that.extractFromHierarchyButtonIcon)) {
 									jQuery('#' + newLevelListID + ' #hierBrowser_' + that.name + '_extract').unbind('click.extract').bind('click.extract', function() {
@@ -569,17 +608,36 @@ var caUI = caUI || {};
 								}
 							} else {
 								if (that.uiStyle == 'vertical') {
-									jQuery("#" + newLevelListID).append(jQuery("<option></option>").val(item.item_id).text(jQuery('<div />').html(item.name).text()));
+									jQuery("#" + newLevelListID).append(jQuery("<option></option>").val(item.item_id).text(jQuery('<div />').html(item_label).text())).attr('disabled', false);
 								}
 							}
 							// Pass item_id to caller if required
 							if (is_init && that.selectOnLoad && that.onSelection && item['item_id'] == selected_item_id) {
-								var formattedDisplayString = that.currentSelectionDisplayFormat.replace('%1', item.name);
-								that.onSelection(item['item_id'], item.parent_id, item.name, formattedDisplayString, item.type_id);
+								onLoadSelection = {
+									'level': level,
+									'item': item
+								};
 							}
 						} else {
 							if (item.parent_id && (that.selectedItemIDs.length == 0)) { that.selectedItemIDs[0] = item.parent_id; }
 						}
+					}
+					
+					if(that.allowSecondarySelection) {
+						jQuery("#" + newLevelListID).on('click', 'input.hierBrowser_ss', function(e) {
+							const item_id = jQuery(this).data('item_id');
+							const index = that.secondarySelectedItemIDs.indexOf(item_id);
+							const checked = jQuery(this).prop('checked');
+							
+							if(checked && (index < 0)) {
+								that.secondarySelectedItemIDs.push(item_id);
+							} else if(!checked && (index >= 0)) {
+							 	that.secondarySelectedItemIDs.splice(index, 1); 
+							}
+							if(that.secondarySelectionID) {
+								jQuery('#' + that.secondarySelectionID).val(that.secondarySelectedItemIDs.join(';'));
+							}
+						});
 					}
 
 					if (item_id && that.doDragAndDropSorting(item_id) && that.sortSaveUrl && (((level == 0) && !that.dontAllowDragAndDropSortForFirstLevel) || (level > 0))) {
@@ -611,15 +669,19 @@ var caUI = caUI || {};
 					}
 
 					var dontDoSelectAndScroll = false;
-					if (!foundSelected && that.selectedItemIDs[level]) {
+					if (!foundSelected && that.selectedItemIDs[level] && !that._foundSelectedForLevel[level]) {
 						var p = jQuery('#' + newLevelDivID).data("page");
 						if (!p || (p < 0)) { p = 0; }
 						
 						jQuery('#' + newLevelDivID).data("page", p);
+						
 						if (parseInt(jQuery('#' + newLevelDivID).data('itemCount')) > parseInt(p * that.maxItemsPerHierarchyLevelPage)) {
 							if (!that._pageLoadsForLevel[level] || !that._pageLoadsForLevel[level][p + 1]) {		// is page loaded?
 								if (!that._pageLoadsForLevel[level]) { that._pageLoadsForLevel[level] = []; }
-								that._pageLoadsForLevel[level][p] = true;
+								that._pageLoadsForLevel[level][p+1] = true;
+								jQuery('#' + newLevelDivID).data("page", p+1);
+								
+								console.log("add to queue", item_id, newLevelDivID, p + 1);
 								that.queueHierarchyLevelDataLoad(level, item_id, false, newLevelDivID, newLevelListID, selected_item_id, (p + 1) * that.maxItemsPerHierarchyLevelPage, true);
 
 								dontDoSelectAndScroll = true;	// we're still trying to find selected item so don't try to select it
@@ -669,13 +731,10 @@ var caUI = caUI || {};
 
 					that._numOpenLoads--;
 					that._openLoadsForLevel[level] = false;
+					that.hideIncrementalLoadIndicator(newLevelListID);
 
 					that.updateTypeMenu();
 
-					// Handle loading of long hierarchy levels via ajax on scroll
-					if (that.uiStyle == 'horizontal') {
-
-					}
 					that.hideIndicator(newLevelDivID);
 				});
 
@@ -703,9 +762,12 @@ var caUI = caUI || {};
 				}
 
 				that.isLoadingLevel = false;
-
-				// try to load any outstanding level pages
-				that.loadHierarchyLevelData();
+				that.loadHierarchyLevelData();	// try to load additional queued data requests
+				
+				// update current selection info after initial load if required
+				if(onLoadSelection) {
+					that.selectItem(onLoadSelection.level, onLoadSelection.item.item_id, onLoadSelection.item.parent_id, onLoadSelection.item.has_children, onLoadSelection.item);
+				}
 			});
 		}
 		// --------------------------------------------------------------------------------
@@ -719,7 +781,7 @@ var caUI = caUI || {};
 				while(l >= 0) {
 					if (that.displayCurrentSelectionOnLoad && (jQuery('#hierBrowser_' + that.name + '_level_' + l + '_item_' + selectedID).length > 0)) {
 						if (that.currentSelectionDisplayID) {
-							jQuery('#' + that.currentSelectionDisplayID).html(that.currentSelectionDisplayFormat.replace('%1', jQuery('#hierBrowser_' + that.name + '_level_' + l + '_item_' + selectedID).html()));
+							jQuery('#' + that.currentSelectionDisplayID).html(that._getCurrentSelectionStr(jQuery('#hierBrowser_' + that.name + '_level_' + l + '_item_' + selectedID).data('item'), l));
 						}
 						break;
 					}
@@ -758,7 +820,7 @@ var caUI = caUI || {};
 			if (!that.allowSelection) return false;
 
 			// set current selection display
-			var formattedDisplayString = that.currentSelectionDisplayFormat.replace('%1', item.name);
+			var formattedDisplayString = that._getCurrentSelectionStr(item, level);
 
 			if (that.currentSelectionDisplayID) {
 				jQuery('#' + that.currentSelectionDisplayID).html(formattedDisplayString);
@@ -839,14 +901,40 @@ var caUI = caUI || {};
 			return;
 		}
 		// --------------------------------------------------------------------------------
-		// Remove spinning progress indicator from specified level <div>
+		// Remove spinning progress indicator in specified level <div>
 		//
 		// @param string newLevelDivID The ID of the <div> containing the level
 		//
 		that.hideIndicator = function(newLevelDivID) {
 			if (!that.indicatorUrl && !that.indicator) { return; }
 			
-			jQuery('#' + newLevelDivID + ' div._indicator').hide();		// hide loading indicator
+			jQuery('#' + newLevelDivID + ' div._indicator').remove();		// hide loading indicator
+		}
+		// --------------------------------------------------------------------------------
+		// Display spinning progress indicator in specified level list during partial load
+		//
+		// @param string newLevelDivID The ID of the <div> containing the level
+		//
+		that.showIncrementalLoadIndicator = function(newLevelListID) {
+			if (that.uiStyle == 'horizontal') {
+				var indicator = document.createElement('li');
+				jQuery(indicator).append(that.incrementalLoadIndicator);
+				indicator.className = '_indicator';
+			
+				jQuery('#' + newLevelListID).append(indicator);
+			}
+		}
+		// --------------------------------------------------------------------------------
+		// Remove spinning progress indicator from specified level list during partial load
+		//
+		// @param string newLevelDivID The ID of the <div> containing the level
+		//
+		that.hideIncrementalLoadIndicator = function(newLevelListID) {
+			if (!that.indicatorUrl && !that.indicator) { return; }
+			
+			if (that.uiStyle == 'horizontal') {
+				jQuery('#' + newLevelListID + ' li._indicator').remove();		// hide loading indicator
+			}
 		}
 		// --------------------------------------------------------------------------------
 		// Returns database id (the primary key in the database, *NOT* the DOM ID) of currently selected item
@@ -859,6 +947,46 @@ var caUI = caUI || {};
 		//
 		that.numLevels = function() {
 			return that.levelDivs.length;
+		}
+		// --------------------------------------------------------------------------------
+		// Generate display string for current location display. If a template is defined (in that.currentSelectionDisplayFormat)
+		// and caDisplayTemplateParser has been loaded we will evaluate the template with the following tags: ^current (current location name),
+		// ^parent (name of parent of current location) and ^hierarchy (the full hierarchical path to the current location). For hierarchy
+		// a delimiter can be set by appending a delimiter option (Eg. ^hierarchy%delimiter=;)
+		//
+		that._getCurrentSelectionStr = function(item, level) {
+			if(caDisplayTemplateParser.processTemplate) {
+				var str = that.currentSelectionDisplayFormat;
+				var tags = caDisplayTemplateParser.getTagList(str);
+				
+				var hierarchy = '';
+				for(var i in tags) {
+					var tag = tags[i];
+					var opts = caDisplayTemplateParser.parseTagOpts(tag);
+					if (opts.tag === 'hierarchy') {
+						var h = [];
+						var delimiter = opts['delimiter'];
+						if (!delimiter) { delimiter = '; '; }
+						
+						var l = level - 1;
+						var parent_id = item.parent_id;
+						
+						while((l >= 0) && (parent_id > 0)) {
+							var pitem = jQuery('#hierBrowser_' + that.name + '_level_' + (l) + '_item_' + parent_id).data('item');
+							if (!pitem) { break; }
+							h.push(pitem.name);
+							l--;
+							parent_id = pitem.parent_id;
+						}
+						hierarchy = h.reverse().join(delimiter);
+					}
+				}
+					
+				var parent = jQuery('#hierBrowser_' + that.name + '_level_' + (level-1) + '_item_' + item.parent_id).data('item');
+			
+				return caDisplayTemplateParser.processTemplate(str, { 'current': jQuery("<div>" + item.name + "</div>").text(), 'parent': jQuery("<div>" + (parent ? parent.name : '') + "</div>").text(), 'hierarchy': jQuery("<div>" + hierarchy + "</div>").text() });
+			}
+			return item.name;
 		}
 		// --------------------------------------------------------------------------------
 		// END method definitions

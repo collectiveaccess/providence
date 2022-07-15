@@ -37,18 +37,12 @@
 include_once(__CA_LIB_DIR__."/Search/BaseSearchResult.php");
 
 class StorageLocationSearchResult extends BaseSearchResult {
+	use SearchResultsRepresentableTrait;
+	
 	# -------------------------------------
 	/**
 	 * Name of table for this type of search subject
 	 */
 	protected $ops_table_name = 'ca_storage_locations';
 	# -------------------------------------
-	/**
-	 * Constructor
-	 */
-	public function __construct() {
-		parent::__construct();
-	}
-	# -------------------------------------
 }
-?>

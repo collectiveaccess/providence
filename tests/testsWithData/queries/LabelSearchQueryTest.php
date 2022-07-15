@@ -29,6 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
+use PHPUnit\Framework\TestCase;
 
 require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php');
 
@@ -38,7 +39,7 @@ require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php
  */
 class LabelSearchQueryTest extends AbstractSearchQueryTest {
 	# -------------------------------------------------------
-	public function setUp() {
+	protected function setUp() : void {
 		// don't forget to call parent so that request is set up correctly
 		parent::setUp();
 
@@ -65,7 +66,7 @@ class LabelSearchQueryTest extends AbstractSearchQueryTest {
 		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'dataset',
-			),
+			)
 		)));
 
 		// search queries
@@ -75,8 +76,10 @@ class LabelSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_object_labels.name:im*' => 1,
 			'ca_object_labels.name:"[BLANK]"' => 1,
 			'ca_object_labels.name:[BLANK]' => 1,
-			'ca_object_labels.name:"[SET]"' => 2, // the "BLANK" value counts as set I guess
-			'ca_object_labels.name:[SET]' => 2,
+			'ca_objects.preferred_labels.name:"[BLANK]"' => 1,
+			'ca_objects.preferred_labels.name:[BLANK]' => 1,
+			'ca_object_labels.name:"[SET]"' => 1, 
+			'ca_object_labels.name:[SET]' => 1,
 			'ca_object_labels.name:"[My test image]"' => 1,
 		));
 	}

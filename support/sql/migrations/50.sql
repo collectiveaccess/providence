@@ -44,7 +44,7 @@ ALTER TABLE ca_commerce_communications DROP COLUMN set_id;
 
 
 /*==========================================================================*/
-create index i_rank on ca_object_representations(rank);
+create index i_rank on ca_object_representations(`rank`);
 
 /* -------------------------------------------------------------------------------- */
 

@@ -1101,7 +1101,7 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="extent" datatype="Text">
+    <metadataElement code="extent_text" datatype="Text">
       <labels>
         <label locale="en_US">
           <name>Extent and medium of the unit</name>
@@ -2687,7 +2687,7 @@
               <bundle>ca_attribute_unitdate</bundle>
             </placement>
             <placement code="ca_attribute_extent">
-              <bundle>ca_attribute_extent</bundle>
+              <bundle>ca_attribute_extent_text</bundle>
             </placement>
             </bundlePlacements>
         </screen>
@@ -3206,8 +3206,8 @@
             <placement code="ca_attribute_unitdate">
               <bundle>ca_attribute_unitdate</bundle>
             </placement>
-            <placement code="ca_attribute_extent">
-              <bundle>ca_attribute_extent</bundle>
+            <placement code="ca_attribute_extent_text">
+              <bundle>ca_attribute_extent_text</bundle>
             </placement>
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>

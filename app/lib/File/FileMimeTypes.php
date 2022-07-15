@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -165,7 +165,9 @@ $g_mimetypes_to_info= array(
 	'application/vnd.oasis.opendocument.spreadsheet'	=>	array('name' => 'OpenDocument Spreadsheet'),
 	'application/x-shockwave-flash2-preview'	=>	array('name' => 'Adobe Flash'),
 	'application/futuresplash'	=>	array('name' => 'Adobe Flash'),
-	'application/windows-media' => array('name' => 'Windows Media')
+	'application/windows-media' => array('name' => 'Windows Media'),
+	'text/vtt' => array('name' => 'VTT'),
+	'text/srt' => array('name' => 'SRT')
  );
  
  global $g_file_extensions_to_mimetypes;
@@ -720,6 +722,8 @@ $g_mimetypes_to_info= array(
 	'vsd'    => 'application/x-visio',
 	'vst'    => 'application/x-visio',
 	'vsw'    => 'application/x-visio',
+	'vtt'    => 'text/vtt',
+	'srt'    => 'text/srt',
 	'w60'    => 'application/wordperfect6.0',
 	'w61'    => 'application/wordperfect6.1',
 	'w6w'    => 'application/msword',

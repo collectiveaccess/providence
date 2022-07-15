@@ -46,6 +46,22 @@
 			'width' => 1, 'height' => 1,
 			'label' => _t('Require value'),
 			'description' => _t('Check this option if you want to require that a collection be selected.')
+		),		
+		'allowDuplicateValues' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow duplicate values?'),
+			'description' => _t('Check this option if you want to allow duplicate values to be set when element is not in a container and is repeating.')
+		),
+		'raiseErrorOnDuplicateValue' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Show error message for duplicate values?'),
+			'description' => _t('Check this option to show an error message when value is duplicate and <em>allow duplicate values</em> is not set.')
 		),
 		'fieldWidth' => array(
 			'formatType' => FT_NUMBER,
@@ -61,7 +77,15 @@
 			'default' => 1,
 			'width' => 1, 'height' => 1,
 			'label' => _t('Does not use locale setting'),
-			'description' => _t('Check this option if you don\'t want your list values to be locale-specific. (The default is to not be.)')
+			'description' => _t('Check this option if you don\'t want your collection values to be locale-specific. (The default is to not be.)')
+		),
+		'singleValuePerLocale' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow single value per locale'),
+			'description' => _t('Check this option to restrict entry to a single value per-locale.')
 		),
 		'canBeUsedInSort' => array(
 			'formatType' => FT_NUMBER,

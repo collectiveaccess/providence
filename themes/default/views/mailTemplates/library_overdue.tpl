@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,14 +26,10 @@
  * ----------------------------------------------------------------------
  */
  
- $va_items = $this->getVar('items');
+$items = $this->getVar('items') ?? [];
 ?>
-The following items are overdue:
+<p>The following borrowed item(s) will be due on the dates specified below: </p>
 
-<?php 
-	foreach($va_items as $va_item) {
-		print "\t".$va_item['_display']."\n";
-	}
-?>
+<ul><?= join("\n", array_map(function($v) { return $v['_display']; }, $items)); ?></ul>
 
-Please return them as soon as possible. Thank you.
+<p>Please return them on or before the listed dates. Thank you!</p>

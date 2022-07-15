@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,7 +28,6 @@
  
 	$vo_result = $this->getVar('result');
 	$vn_items_per_page = $this->getVar('current_items_per_page');
-	$vs_controller_name = $this->getVar('controller');
 	
 	$va_previous_link_params = array('page' => $this->getVar('page') - 1);
 	$va_next_link_params = array('page' => $this->getVar('page') + 1);
@@ -51,7 +50,7 @@
 			$vs_searchNav .= "<a href='#' onclick='jQuery(\"#resultBox\").load(\"".caNavUrl($this->request, 'manage', 'Tags', 'Index', $va_next_link_params)."\"); return false;' class='button'>"._t("Next")." &rsaquo;</a>";
 		}
 		$vs_searchNav .= "</div>";
-		$vs_searchNav .= '<form action="#">'._t("Jump to page:").' <input type="text" size="3" name="page" id="jumpToPageNum" value=""/> <a href="#" onclick=\'jQuery("#resultBox").load("'.caNavUrl($this->request, 'find', $vs_controller_name, 'Index', $va_jump_to_params).'/page/" + jQuery("#jumpToPageNum").val());\' class="button">'._t("GO").'</a></form>';
+		$vs_searchNav .= '<form action="#">'._t("Jump to page:").' <input type="text" size="3" name="page" id="jumpToPageNum" value=""/> <a href="#" onclick=\'jQuery("#resultBox").load("'.caNavUrl($this->request, 'find', 'Tags', 'Index', $va_jump_to_params).'/page/" + jQuery("#jumpToPageNum").val());\' class="button">'._t("GO").'</a></form>';
 	}
 	$vs_searchNav .= _t('Your %1 found', _t($this->getVar('mode'))).' '.$vo_result->numHits().' '.$this->getVar(($vo_result->numHits() == 1) ? 'mode_type_singular' : 'mode_type_plural');
 	$vs_searchNav .= "</div>";

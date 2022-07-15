@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2015 Whirl-i-Gig
+ * Copyright 2014-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -103,13 +103,7 @@ class BaseDelimitedDataReader extends BaseDataReader {
 		$this->opn_current_row = 0;
 		
 		if($this->opo_parser->parse($ps_source)) {
-			$r_f = fopen($ps_source, 'rb');
-			$this->opn_num_rows = 0;
-			while (!feof($r_f)) {
-				$vs_buf = fread($r_f, 8192);
-				$this->opn_num_rows += (substr_count($vs_buf, "\n") + (substr_count($vs_buf, "\r")));
-			}
-			fclose($r_f);
+			$this->opn_num_rows = $this->opo_parser->numRows();
 			
 			$this->ops_source = $ps_source;
 			return true;
@@ -223,6 +217,15 @@ class BaseDelimitedDataReader extends BaseDataReader {
 	 */
 	public function valuesCanRepeat() {
 		return false;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Return file extensions
+	 * 
+	 * @return array
+	 */
+	public function getFileExtensions() : array {
+		return ['txt'];
 	}
 	# -------------------------------------------------------
 }

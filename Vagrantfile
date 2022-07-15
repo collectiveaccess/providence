@@ -3,7 +3,7 @@
 
 Vagrant.configure(2) do |config|
 
-  config.vm.box = "ubuntu/trusty64"
+  config.vm.box = "ubuntu/xenial64"
 
 
   # Create a forwarded port mapping which allows access to a specific port
@@ -15,13 +15,13 @@ Vagrant.configure(2) do |config|
   # backing providers for Vagrant. These expose provider-specific options.
   #
   config.vm.provider "virtualbox" do |v|
-  	v.memory = "1024"
-  	v.cpus = 1
-  	v.name = "collectiveaccess"
+    v.memory = "1024"
+    v.cpus = 1
+    v.name = "collectiveaccess"
   end
 
   config.vm.synced_folder "./", "/vagrant",
-  	id: "vagrant-root",
+    id: "vagrant-root",
     owner: "vagrant",
     group: "www-data",
     mount_options: ["dmode=775,fmode=664"]
@@ -29,53 +29,49 @@ Vagrant.configure(2) do |config|
   # provision via shell script
   #
   config.vm.provision "shell", inline: <<-SHELL
-
-  	setup_php="/vagrant/setup.php"
-
-	add-apt-repository ppa:kirillshkrogalev/ffmpeg-next
-  	apt-get update
-
-  	# uncomment the line below if you want to upgrade every time you provision
-  	# (which can take a while if there was a kernel update since you pulled the box)
+    # Fix for https://bugs.launchpad.net/ubuntu/+source/livecd-rootfs/+bug/1561250
+    if ! grep -q "ubuntu-xenial" /etc/hosts; then
+        echo "127.0.0.1 ubuntu-xenial" >> /etc/hosts
+    fi
+    setup_php="/vagrant/setup.php"
+    # Install dependencies
+    sudo apt-get install -y software-properties-common
+    sudo LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php
+    apt-get update
+    # uncomment the line below if you want to upgrade every time you provision
+    # (which can take a while if there was a kernel update since you pulled the box)
     # apt-get -q -y -o Dpkg::Options::=--force-confold upgrade
-
-  	if [[ -e /var/lock/vagrant-provision ]]; then
+    if [[ -e /var/lock/vagrant-provision ]]; then
         exit;
     fi
-
     echo "mysql-server mysql-server/root_password password root" | sudo debconf-set-selections
     echo "mysql-server mysql-server/root_password_again password root" | sudo debconf-set-selections
     apt-get -y install mysql-client mysql-server
-
-    apt-get -q -y -o Dpkg::Options::=--force-confold install apache2
-    apt-get -q -y -o Dpkg::Options::=--force-confold install php5 libapache2-mod-php5 php5-cli
-    apt-get -q -y -o Dpkg::Options::=--force-confold install php5-curl php5-mysqlnd php5-json php5-gd php5-imap php5-mcrypt
+    apt-get -q -y -o Dpkg::Options::=--force-confold install curl apache2
+    apt-get -q -y -o Dpkg::Options::=--force-confold install php7.2 libapache2-mod-php7.2 php7.2-curl php7.2-mysql
+    apt-get -q -y -o Dpkg::Options::=--force-confold install php7.2-xml php7.2-zip php7.2-gd 
+    apt-get -q -y -o Dpkg::Options::=--force-confold install php7.2-redis php7.2-json php7.2-imap
     apt-get -q -y -o Dpkg::Options::=--force-confold install htop screen vim apachetop vnstat git
     apt-get -q -y -o Dpkg::Options::=--force-confold install ffmpeg graphicsmagick python-pdfminer
     apt-get -q -y -o Dpkg::Options::=--force-confold install ghostscript dcraw xpdf mediainfo exiftool phantomjs
-
     # slooooow setup with gmagick and libreoffice. if you want a shiny media processing setup, uncomment the following lines
     #
     # apt-get -q -y -o Dpkg::Options::=--force-confold install php5-dev php-pear libgraphicsmagick1-dev libreoffice abiword
-	# pecl install gmagick-1.1.7RC3
-	#
-	# cat << EOF > /etc/php5/mods-available/gmagick.ini
+  # pecl install gmagick-1.1.7RC3
+  #
+  # cat << EOF > /etc/php5/mods-available/gmagick.ini
     # extension=gmagick.so
     # EOF
-	#
-	# ln -s /etc/php5/mods-available/gmagick.ini /etc/php5/apache2/conf.d/20-gmagick.ini
-
+  #
+  # ln -s /etc/php5/mods-available/gmagick.ini /etc/php5/apache2/conf.d/20-gmagick.ini
     echo "CREATE DATABASE IF NOT EXISTS collectiveaccess" | mysql -u root --password=root
-
-    sed -i "s/memory\_limit\ \=\ 128M/memory\_limit\ \=\ 512M/g" /etc/php5/apache2/php.ini
-    sed -i "s/post\_max\_size\ \=\ 8M/post\_max\_size\ \=\ 64M/g" /etc/php5/apache2/php.ini
-    sed -i "s/upload\_max\_filesize \=\ 2M/upload\_max\_filesize\ \=\ 64M/g" /etc/php5/apache2/php.ini
-
+    sed -i "s/memory\_limit\ \=\ 128M/memory\_limit\ \=\ 512M/g" /etc/php/7.2/apache2/php.ini
+    sed -i "s/post\_max\_size\ \=\ 8M/post\_max\_size\ \=\ 64M/g" /etc/php/7.2/apache2/php.ini
+    sed -i "s/upload\_max\_filesize \=\ 2M/upload\_max\_filesize\ \=\ 64M/g" /etc/php/7.2/apache2/php.ini
     if ! [ -L /var/www/html ]; then
       rm -rf /var/www/html
       ln -fs /vagrant /var/www/html
     fi
-
     if [[ ! -f /vagrant/setup.php ]]; then
       cp /vagrant/setup.php-dist /vagrant/setup.php
       sed -i "s/my_database_user/root/g" ${setup_php}
@@ -83,17 +79,13 @@ Vagrant.configure(2) do |config|
       sed -i "s/name_of_my_database/collectiveaccess/g" ${setup_php}
       sed -i "s/INSTALLS\_\_\'\, false/INSTALLS\_\_\'\, true/g" ${setup_php}
     fi
-
     if ! [ -f /vagrant/app/conf/local/external_applications.conf ]; then
       cp /vagrant/app/conf/external_applications.conf /vagrant/app/conf/local/external_applications.conf
-	  sed -i "s/pdf2txt\.py/pdf2txt/g" /vagrant/app/conf/local/external_applications.conf
-	  sed -i "s/\/usr\/local\/bin\/phantomjs/\/usr\/bin\/phantomjs/g" /vagrant/app/conf/local/external_applications.conf
+    sed -i "s/pdf2txt\.py/pdf2txt/g" /vagrant/app/conf/local/external_applications.conf
+    sed -i "s/\/usr\/local\/bin\/phantomjs/\/usr\/bin\/phantomjs/g" /vagrant/app/conf/local/external_applications.conf
     fi
-
     service apache2 restart
     service mysql restart
-
     touch /var/lock/vagrant-provision
-
   SHELL
 end

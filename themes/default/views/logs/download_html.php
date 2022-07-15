@@ -40,11 +40,11 @@
 </script>
 <div class="sectionBox">
 	<?php 
-		print caFormTag($this->request, 'Index', 'downloadLogSearch');
+		print caFormTag($this->request, 'Index', 'downloadLogSearch', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
 		print caFormControlBox(
 			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caDownloadList\').caFilterTable(this.value); return false;" size="20"/></div>', 
 			'', 
-			_t('Group by').': '.caHTMLSelect('group_by', array(_t('Downloads') => "download", _t('Record') => "record"), null, array('value' => $vs_group_by)).'&nbsp;&nbsp;'._t('Show from').': '.caHTMLTextInput('search', array('size' => 25, 'value' => $this->getVar('download_list_search')))." ".caFormSubmitButton($this->request, __CA_NAV_ICON_SEARCH__, "", 'downloadLogSearch')
+			_t('Group by %1 from %2', caHTMLSelect('group_by', array(_t('Downloads') => "download", _t('Record') => "record"), null, array('value' => $vs_group_by)), caHTMLTextInput('search', array('size' => 12, 'value' => $this->getVar('download_list_search'), 'class' => 'dateBg'))).caFormSubmitButton($this->request, __CA_NAV_ICON_SEARCH__, "", 'downloadLogSearch')
 		);
 		print "</form>"; 
 	?>
@@ -96,7 +96,7 @@
 				<tr>
 					<td colspan='9'>
 						<div align="center">
-							<?php print (trim($this->getVar('search_list_search'))) ? _t('No searches found') : _t('Enter a date to display searches from above'); ?>
+							<?php print (trim($this->getVar('search_list_search'))) ? _t('No downloads found') : _t('Enter a date to display downloads from above'); ?>
 						</div>
 					</td>
 				</tr>
@@ -116,7 +116,7 @@
 							<?php print _t('Date/time'); ?>
 						</th>
 						<th class="list-header-unsorted">
-							<?php print _t('Record Type'); ?>
+							<?php print _t('Type'); ?>
 						</th>
 						<th class="list-header-unsorted">
 							<?php print _t('Item'); ?>
@@ -142,7 +142,7 @@
 		?>
 					<tr>
 						<td>
-							<?php print date("n/d/Y @g:i:sa T", $va_download['log_datetime']); ?>
+							<?php print caGetLocalizedDate($va_download['log_datetime']); ?>
 						</td>
 						<td>
 							<?php print $va_tables[$va_download['table_num']]['displayname']; ?>
@@ -170,7 +170,7 @@
 				<tr>
 					<td colspan='9'>
 						<div align="center">
-							<?php print (trim($this->getVar('search_list_search'))) ? _t('No searches found') : _t('Enter a date to display searches from above'); ?>
+							<?php print (trim($this->getVar('search_list_search'))) ? _t('No downloads found') : _t('Enter a date to display downloads from above'); ?>
 						</div>
 					</td>
 				</tr>

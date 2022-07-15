@@ -64,7 +64,7 @@ class ExternalDBAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		if(!$o_ext_db->connected()) {
 			$o_log->log(array(
 				'CODE' => 'LOGF', 'SOURCE' => 'ExternalDBAuthAdapter',
-				'MESSAGE' => _t('Could not login user %1 using external database because login to external database failed [%2]', $ps_username, $_SERVER['REMOTE_ADDR'])
+				'MESSAGE' => _t('Could not login user %1 using external database because login to external database failed [%2]', $ps_username, RequestHTTP::ip())
 			));
 			return false;
 		}
@@ -127,7 +127,7 @@ class ExternalDBAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 
 		// couldn't connect to external database
 		if(!$o_ext_db->connected()) {
-			throw new ExternalDBException(_t('Could not login user %1 using external database because login to external database failed [%2]', $ps_username, $_SERVER['REMOTE_ADDR']));
+			throw new ExternalDBException(_t('Could not login user %1 using external database because login to external database failed [%2]', $ps_username, RequestHTTP::ip()));
 		}
 
 		$vs_extdb_table = $o_auth_config->get("extdb_table");
@@ -152,7 +152,7 @@ class ExternalDBAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 			, array($ps_username, $ps_password_proc));
 
 		if(!$qr_auth || !$qr_auth->nextRow()) {
-			throw new ExternalDBException(_t('Could not login user %1 using external database because external authentication failed [%2]', $ps_username, $_SERVER['REMOTE_ADDR']));
+			throw new ExternalDBException(_t('Could not login user %1 using external database because external authentication failed [%2]', $ps_username, RequestHTTP::ip()));
 		}
 
 		$va_return = array();

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,6 +37,7 @@
 include_once(__CA_LIB_DIR__."/Search/BaseSearchResult.php");
 
 class ListItemBrowseResult extends BaseSearchResult {
+	use SearchResultsRepresentableTrait;
 
 	# -------------------------------------
 	/**
@@ -44,13 +45,4 @@ class ListItemBrowseResult extends BaseSearchResult {
 	 */
 	protected $ops_table_name = 'ca_list_items';
 	# -------------------------------------
-
-	/**
-	 * Constructor
-	 */
-	public function __construct() {
-		parent::__construct();
-	}
-	# -------------------------------------
 }
-?>

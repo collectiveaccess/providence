@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2018 Whirl-i-Gig
+ * Copyright 2015-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -123,7 +123,7 @@ BaseModel::$s_ca_models_definitions['ca_search_indexing_queue'] = array(
             'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
             'IS_NULL' => true, 
             'DEFAULT' => '',
-            'LABEL' => _t('Stared on'), 'DESCRIPTION' => _t('Started on')
+            'LABEL' => _t('Started on'), 'DESCRIPTION' => _t('Started on')
 		)
 	)
 );
@@ -227,25 +227,8 @@ class ca_search_indexing_queue extends BaseModel {
     /**
      * Lock time out. Locks older than this will be removed.
      */
-    static $s_lock_timeout = 3 * 60 * 60;   // in seconds
+    static $s_lock_timeout = 60 * 60;   // in seconds
 
-	# ------------------------------------------------------
-	# --- Constructor
-	#
-	# This is a function called when a new instance of this object is created. This
-	# standard constructor supports three calling modes:
-	#
-	# 1. If called without parameters, simply creates a new, empty objects object
-	# 2. If called with a single, valid primary key value, creates a new objects object and loads
-	#    the record identified by the primary key value
-	#
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
-	}
 	# ------------------------------------------------------
 	/**
 	 *
@@ -254,31 +237,36 @@ class ca_search_indexing_queue extends BaseModel {
 		if(self::lockAcquire()) {
 		    set_time_limit(self::$s_lock_timeout);
 			$o_db = new Db();
-			$o_result = $o_db->query("SELECT * FROM ca_search_indexing_queue WHERE started_on IS NULL ORDER BY entry_id");
-			if($o_result && $o_result->numRows()) {
-				$o_si = new SearchIndexer($o_db);
+			
+			do {
+				$num_entries = 0;
+				if ($o_result = $o_db->query("SELECT * FROM ca_search_indexing_queue WHERE started_on IS NULL ORDER BY entry_id LIMIT 100")) {
+					$num_entries = (int)$o_result->numRows();
+					if($num_entries > 0) {
+						$o_si = new SearchIndexer($o_db);
 
-				while ($o_result->nextRow()) {
-				    $o_db->query('UPDATE ca_search_indexing_queue SET started_on = ? WHERE entry_id = ?', [time(), (int)$o_result->get('entry_id')]);
-					if(!$o_result->get('is_unindex')) { // normal indexRow() call
-						$o_si->indexRow(
-							$o_result->get('table_num'), $o_result->get('row_id'),
-							caUnserializeForDatabase($o_result->get('field_data')),
-							(bool)$o_result->get('reindex'), null,
-							caUnserializeForDatabase($o_result->get('changed_fields')),
-							array_merge(caUnserializeForDatabase($o_result->get('options')), array('queueIndexing' => false))
-						);
-					} else { // is_unindex = 1, so it's a commitRowUnindexing() call
-						$o_si->commitRowUnIndexing(
-							$o_result->get('table_num'), $o_result->get('row_id'),
-							['queueIndexing' => false, 'dependencies' => caUnserializeForDatabase($o_result->get('dependencies'))]
-						);
+						while ($o_result->nextRow()) {
+							$o_db->query('UPDATE ca_search_indexing_queue SET started_on = ? WHERE entry_id = ?', [time(), (int)$o_result->get('entry_id')]);
+							if(!$o_result->get('is_unindex')) { // normal indexRow() call
+								$o_si->indexRow(
+									$o_result->get('table_num'), $o_result->get('row_id'),
+									caUnserializeForDatabase($o_result->get('field_data')),
+									(bool)$o_result->get('reindex'), null,
+									caUnserializeForDatabase($o_result->get('changed_fields')),
+									array_merge(caUnserializeForDatabase($o_result->get('options')), array('queueIndexing' => false))
+								);
+							} else { // is_unindex = 1, so it's a commitRowUnindexing() call
+								$o_si->commitRowUnIndexing(
+									$o_result->get('table_num'), $o_result->get('row_id'),
+									['queueIndexing' => false, 'dependencies' => caUnserializeForDatabase($o_result->get('dependencies'))]
+								);
+							}
+
+							$o_db->query('DELETE FROM ca_search_indexing_queue WHERE entry_id = ?', [$o_result->get('entry_id')]);
+						}
 					}
-
-					$o_db->query('DELETE FROM ca_search_indexing_queue WHERE entry_id = ?', [$o_result->get('entry_id')]);
 				}
-
-			}
+			} while($num_entries > 0);
 
 			self::lockRelease();
 		}

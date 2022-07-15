@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2015 Whirl-i-Gig
+ * Copyright 2014-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -51,7 +51,7 @@ class ExifDataReader extends BaseDataReader {
 		
 		$this->ops_title = _t('EXIF data reader');
 		$this->ops_display_name = _t('Embedded EXIF media metadata');
-		$this->ops_description = _t('Reads Embedded EXIF Media Metadata');
+		$this->ops_description = _t('Reads embedded EXIF media metadata');
 		
 		$this->opa_formats = array('exif');	// must be all lowercase to allow for case-insensitive matching
 	}
@@ -66,8 +66,6 @@ class ExifDataReader extends BaseDataReader {
 	public function read($ps_source, $pa_options=null) {
 		parent::read($ps_source, $pa_options);
 		
-		$vs_path_to_exif_tool = caGetExternalApplicationPath("exiftool");
-	
 		$this->opn_current_row = -1;
 		$this->opa_row_buf = caMakeArrayKeysLowercase(caExtractMetadataWithExifTool($ps_source));
 		if (!is_array($this->opa_row_buf)) { return false; }

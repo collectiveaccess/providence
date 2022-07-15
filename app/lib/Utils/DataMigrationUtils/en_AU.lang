@@ -14,6 +14,8 @@ titles = [
 	RSM, RQMS, Dispatcher, Lance Corporal
 ]
 
-individual_suffixes = [jr, jr., sr, sr., esq, esq., phd]
+surname_prefixes = [Ab, Af, Ap, Abu, Aït, Al, Ālam, At, Ath, Aust, Bar, Bath, Ben, Bert, Bet, Bint, Da, Das, De, Degli, Del, Dele, Della, Der, Di, Dos, Du, El, Fetch, Fitz, Kil, La, Le, Lille, Lu, Mala, Mellom, Myljom, Na, Ned, Neder, Nic, Ní, Nin, Nord, Norr, Ny, Ó, Ua, Uí, Opp, Upp, Öfver, Ost, Över, Øvste, Öz, Pour, Putra, Putera, Putri, Puteri, Setia, Setya, Stor, Söder, Ter, Ter, Tre, Van, Van, Van, Van, Van, Van, Väst, Väster, Verch, Erch, Vest, Vesle, von, war, zu]
 
-corporation_suffixes = [inc, inc., llc, incorporated, Pty Ltd, Proprietary Limited, Ltd]
+individual_suffixes = [jr, sr, esq, phd]
+
+corporation_suffixes = [inc, llc, incorporated, Pty Ltd, Proprietary Limited, Ltd]

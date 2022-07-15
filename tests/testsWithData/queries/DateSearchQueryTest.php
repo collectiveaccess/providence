@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,6 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
 
 require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php');
 
@@ -38,7 +39,7 @@ require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php
  */
 class DateSearchQueryTest extends AbstractSearchQueryTest {
 	# -------------------------------------------------------
-	public function setUp() {
+	protected function setUp() : void {
 		// don't forget to call parent so that request is set up correctly
 		parent::setUp();
 
@@ -141,13 +142,13 @@ class DateSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_objects.coverageDates:"1/28/1986 @ 8am - 1/28/1986 @ 9am"' => 1,
 
 			// # qualifier
-			'ca_objects.coverageDates:"#1986"' => 1,
+			'ca_objects.coverageDates:"#eq#1986"' => 1,
 
 			// >, >=, <, <= qualifiers
-			'ca_objects.coverageDates:">=1985"' => 2,
-			'ca_objects.coverageDates:">1985"' => 1,
-			'ca_objects.coverageDates:"<1986"' => 1,
-			'ca_objects.coverageDates:"<=1986"' => 2,
+			'ca_objects.coverageDates:"#gt=1985"' => 2,
+			'ca_objects.coverageDates:"#gt#1985"' => 1,
+			'ca_objects.coverageDates:"#lt#1986"' => 1,
+			'ca_objects.coverageDates:"#lt=1986"' => 2,
 
 			// in container
 			'ca_objects.date.dates_value:"1845"' => 1,

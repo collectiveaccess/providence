@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2016 Whirl-i-Gig
+ * Copyright 2010-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,7 +33,6 @@
 	class recentlyCreatedWidget extends BaseWidget implements IWidget {
 		# -------------------------------------------------------
 		private $opo_config;
-		private $opo_datamodel;
 
 		private $opa_table_display_names;
 
@@ -269,7 +268,7 @@
 				'displayType' => DT_FIELD,
 				'width' => 6, 'height' => 1,
 				'takesLocale' => false,
-				'default' => 11,
+				'default' => 10,
 				'label' => _t('Display limit'),
 				'description' => _t('Limits the number of records to be listed in the widget.')
 			),

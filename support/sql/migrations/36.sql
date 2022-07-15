@@ -18,7 +18,7 @@ create table ca_tours
    tour_id                       int unsigned                   not null AUTO_INCREMENT,
    tour_code                  varchar(100)                   not null,
    type_id                        int unsigned                   null,
-   rank                           int unsigned              not null,
+   `rank`                           int unsigned              not null,
    color                          char(6)                        null,
    icon                           longblob                       not null,
    access                        tinyint unsigned               not null,
@@ -67,7 +67,7 @@ create table ca_tour_stops
    type_id                        int unsigned                   null,
    idno                           varchar(255)                   not null,
    idno_sort                      varchar(255)                   not null,
-   rank                           int unsigned              not null,
+   `rank`                           int unsigned              not null,
    hier_left                      decimal(30,20)                 not null,
    hier_right                     decimal(30,20)                 not null,
    hier_stop_id				int unsigned 				not null,
@@ -130,7 +130,7 @@ create table ca_tour_stops_x_objects
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   `rank`                           int unsigned                   not null,
    primary key (relation_id),
    constraint fk_ca_tour_stops_x_objects_type_id foreign key (type_id)
       references ca_relationship_types (type_id) on delete restrict on update restrict,
@@ -175,7 +175,7 @@ create table ca_tour_stops_x_entities
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   `rank`                           int unsigned                   not null,
    primary key (relation_id),
    constraint fk_ca_tour_stops_x_entities_type_id foreign key (type_id)
       references ca_relationship_types (type_id) on delete restrict on update restrict,
@@ -220,7 +220,7 @@ create table ca_tour_stops_x_places
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   `rank`                           int unsigned                   not null,
    primary key (relation_id),
    constraint fk_ca_tour_stops_x_places_type_id foreign key (type_id)
       references ca_relationship_types (type_id) on delete restrict on update restrict,
@@ -265,7 +265,7 @@ create table ca_tour_stops_x_occurrences
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   `rank`                           int unsigned                   not null,
    primary key (relation_id),
    constraint fk_ca_tour_stops_x_occurrences_type_id foreign key (type_id)
       references ca_relationship_types (type_id) on delete restrict on update restrict,
@@ -310,7 +310,7 @@ create table ca_tour_stops_x_collections
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   `rank`                           int unsigned                   not null,
    primary key (relation_id),
    constraint fk_ca_tour_stops_x_collections_type_id foreign key (type_id)
       references ca_relationship_types (type_id) on delete restrict on update restrict,
@@ -355,7 +355,7 @@ create table ca_tour_stops_x_vocabulary_terms
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null,
+   `rank`                           int unsigned                   not null,
    primary key (relation_id),
    constraint fk_ca_tour_stops_x_vocabulary_terms_type_id foreign key (type_id)
       references ca_relationship_types (type_id) on delete restrict on update restrict,

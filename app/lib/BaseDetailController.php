@@ -35,7 +35,6 @@
   */
   
  	require_once(__CA_APP_DIR__.'/helpers/accessHelpers.php');
-	require_once(__CA_LIB_DIR__."/Datamodel.php");
  	require_once(__CA_LIB_DIR__.'/ResultContext.php');
  	require_once(__CA_LIB_DIR__.'/GeographicMap.php');
 	require_once(__CA_MODELS_DIR__."/ca_bundle_displays.php");
@@ -44,7 +43,6 @@
  	
 	class BaseDetailController extends ActionController {
 		# -------------------------------------------------------
- 		protected $opo_datamodel;
  		protected $ops_context = '';
 		protected $opo_browse;
 		protected $ops_tablename;
@@ -464,4 +462,3 @@
  		}	
  		# -------------------------------------------------------
 	}
-?>

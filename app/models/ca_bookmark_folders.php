@@ -155,10 +155,6 @@ class ca_bookmark_folders extends BaseModel {
 	protected $FIELDS;
 	
 	# ----------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);
-	}
-	# ----------------------------------------
 	#
 	# ----------------------------------------
 	/**
@@ -437,12 +433,12 @@ class ca_bookmark_folders extends BaseModel {
 		$o_db = $this->getDb();
 		
 		$qr_res = $o_db->query("
-			SELECT b.bookmark_id, b.rank
+			SELECT b.bookmark_id, b.`rank`
 			FROM ca_bookmarks b
 			WHERE
 				b.folder_id = ?
 			ORDER BY 
-				b.rank ASC
+				b.`rank` ASC
 		", (int)$vn_folder_id);
 		$va_bookmarks = array();
 		

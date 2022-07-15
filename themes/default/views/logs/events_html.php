@@ -36,14 +36,15 @@
 /* ]]> */
 </script>
 <div class="sectionBox">
-	<?php 
+<?php 
+		print caFormTag($this->request, 'Index', 'eventsLogSearch', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
 		print caFormControlBox(
 			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>', 
 			'', 
-			_t('Show from').': '.caFormTag($this->request, 'Index', 'eventsLogSearch').caHTMLTextInput('search', array('size' => 25, 'value' => $this->getVar('events_list_search')))." ".caFormSubmitButton($this->request, __CA_NAV_ICON_SEARCH__, "", 'eventsLogSearch')."</form>"
+			_t('From %1', caHTMLTextInput('search', array('size' => 12, 'value' => $this->getVar('events_list_search'), 'class' => 'dateBg'))).caFormSubmitButton($this->request, __CA_NAV_ICON_SEARCH__, "", 'eventsLogSearch')
 		); 
-	?>
-	
+		print "</form>";
+?>	
 	<table id="caItemList" class="listtable">
 		<thead>
 			<tr>
@@ -68,7 +69,7 @@
 ?>
 			<tr>
 				<td>
-					<?php print date("n/d/Y@g:i:sa T", $va_event['date_time']); ?>
+					<?php print caGetLocalizedDate($va_event['date_time']); ?>
 				</td>
 				<td>
 					<?php print $va_event['code']; ?>

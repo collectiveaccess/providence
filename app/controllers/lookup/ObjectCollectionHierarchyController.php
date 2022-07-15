@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2017 Whirl-i-Gig
+ * Copyright 2012-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -135,7 +135,7 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 
 			if (!$pb_exact) {
 				$o_search_config = caGetSearchConfig();
-				$ps_query = trim(preg_replace("![".str_replace("!", "\\!", $o_search_config->get('search_tokenizer_regex'))."]+!u", " ", $ps_query));
+				$ps_query = join(' ', caTokenizeString($ps_query));
 			}
 
 			if (!(is_array($va_object_sort = $o_config->getList('ca_objects_lookup_sort'))) || !sizeof($va_object_sort)) {
@@ -367,7 +367,7 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 					$va_tmp['children'] = sizeof($qr_children->get("{$vs_table}.children.{$vs_pk}", ['returnAsArray' => true]));
 
 					if ($t_item->tableName() == 'ca_collections') {
-						$va_tmp['children'] += sizeof($qr_children->get('ca_objects.object_id', ['returnAsArray' => true, 'restrictToRelationshipTypes' => [$vs_object_collection_rel_type]]));
+						$va_tmp['children'] += $qr_children->get('ca_objects.object_id', ['returnAsCount' => true, 'restrictToRelationshipTypes' => [$vs_object_collection_rel_type]]);
 					}
 
 					if (is_array($va_sorts)) {

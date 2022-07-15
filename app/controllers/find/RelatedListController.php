@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2016 Whirl-i-Gig
+ * Copyright 2015-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -81,8 +81,7 @@ class RelatedListController extends BaseSearchController {
 		AssetLoadManager::register('panel');
 		AssetLoadManager::register('sortableUI');
 
-		// get request data
-		$va_relation_ids = json_decode($this->getRequest()->getParameter('ids', pString), true);
+		
 		// related table, e.g. ca_entities
 		$vs_related_table = $this->getRequest()->getParameter('relatedTable', pString);
 		// relationship table between subject and related, i.e. ca_objects_x_entities --
@@ -91,6 +90,31 @@ class RelatedListController extends BaseSearchController {
 		$vs_interstitial_prefix = $this->getRequest()->getParameter('interstitialPrefix', pString);
 		$vs_primary_table = $this->getRequest()->getParameter('primaryTable', pString);
 		$vn_primary_id = $this->getRequest()->getParameter('primaryID', pInteger);
+		$vs_id_prefix = $this->getRequest()->getParameter('idPrefix', pString);
+		
+		// get request data
+		if ($placement_id = $this->getRequest()->getParameter('placement_id', pInteger)) {
+			Session::setVar("P{$placement_id}_last_export_format", $this->getRequest()->getParameter('export_format', pString));
+			
+			// Generate list of related items from editor UI placement when defined	...
+			//
+			// TODO: convert the entire related list UI mess to use passed placement_id's rather than giant lists of related IDs
+			// For now support both placement_ids and passed ID lists
+			$placement = new ca_editor_ui_bundle_placements($placement_id);
+			if (!$placement->isLoaded()) {
+				throw new ApplicationException(_('Invalid placement_id'));
+			}
+			$t_instance = Datamodel::getInstance($placement->getEditorType(), true);
+			
+			if (!($t_instance->load($vn_primary_id))) { 
+				throw new ApplicationException(_('Invalid id'));
+			}
+			$va_relation_ids = $t_instance->getRelatedItems($placement->get('bundle_name'), ['returnAs' => 'ids']);
+		} else {
+			// ... otherwise use old-style giant list of related ID's passed in form
+			$va_relation_ids = json_decode($this->getRequest()->getParameter('ids', pString), true);
+		}
+
 
 		//
 		// set some instance properties that are normally (i.e. in other BaseSearchControllers) set in constructor
@@ -125,7 +149,12 @@ class RelatedListController extends BaseSearchController {
 
 		$va_relation_id_typenames = array();
 		while($o_interstitial_res->nextHit()) {
-			$va_relation_id_typenames[$o_interstitial_res->getPrimaryKey()] = $o_interstitial_res->getWithTemplate('^relationship_typename');
+			$va_get_params = [];
+			if ( method_exists($t_related_rel, 'isSelfRelationship') && $t_related_rel->isSelfRelationship()) {
+				$vn_left_id = $o_interstitial_res->get($t_related_rel->getLeftTableFieldName());
+				$va_get_params['orientation'] = ( $t_subject->getPrimaryKey() === $vn_left_id ? 'LTOR' : 'RTOL' );
+			}
+			$va_relation_id_typenames[$o_interstitial_res->getPrimaryKey()] = $o_interstitial_res->getWithTemplate('^relationship_typename', $va_get_params);
 		}
 
 		$this->getView()->setVar('relationIdTypeNames', $va_relation_id_typenames);
@@ -135,6 +164,7 @@ class RelatedListController extends BaseSearchController {
 		$this->getView()->setVar('relatedRelTable', $vs_related_rel_table);
 		$this->getView()->setVar('primaryTable', $vs_primary_table);
 		$this->getView()->setVar('primaryID', $vn_primary_id);
+		$this->getView()->setVar('idPrefix', $vs_id_prefix);
 
 		// piece the parameters back together to build the string to append to urls for subsequent form submissions
 		$va_additional_search_controller_params = array(
@@ -143,14 +173,17 @@ class RelatedListController extends BaseSearchController {
 			'relatedTable' => $vs_related_table,
 			'relatedRelTable' => $vs_related_rel_table,
 			'primaryTable' => $vs_primary_table,
-			'primaryID' => $vn_primary_id
+			'primaryID' => $vn_primary_id,
+			'idPrefix' => $vs_id_prefix
 		);
 
 		$vs_url_string = '';
 		foreach($va_additional_search_controller_params as $vs_key => $vs_val) {
+			if($vs_key == 'ids') { continue; }
 			$vs_url_string .= '/' . $vs_key . '/' . urlencode($vs_val);
 		}
 
+		$this->getView()->setVar('relatedListParams', $va_additional_search_controller_params);
 		$this->getView()->setVar('relatedListURLParamString', $vs_url_string);
 
 		$vs_sort_direction = $this->opo_result_context->getCurrentSortDirection();

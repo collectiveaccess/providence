@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -94,29 +94,40 @@
 					instance.updateElement();
 				});
 				
-				jQuery.post('<?php print caNavUrl($this->request, "editor", "Interstitial", "Save"); ?>', jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").serialize(), function(resp, textStatus) {
-				
-					if (resp.status == 0) {
-						jQuery.jGrowl('<?php print addslashes(_t('Saved changes to')); ?> <em>' + resp.display + '</em>', { header: '<?php print addslashes(_t('Edit %1', $t_subject->getProperty('NAME_SINGULAR'))); ?>' }); 
-						jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().data('panel').hidePanel();
-						var displayContent = jQuery('#caRelationEditorPanel<?php print substr($vs_field_name_prefix, 0, strlen($vs_field_name_prefix)-1); ?> .caBundleDisplayTemplate').template(resp.bundleDisplay);
-						jQuery("#<?php print $vs_field_name_prefix; ?>BundleTemplateDisplay<?php print $this->getVar('n'); ?>").empty().append(displayContent);
-					} else {
-						// error
-						var content = '<div class="notification-error-box rounded"><ul class="notification-error-box">';
-						for(var e in resp.errors) {
-							content += '<li class="notification-error-box">' + e + '</li>';
+				var fdata = new FormData(jQuery('#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>')[0]);   
+				$.ajax({
+					type: 'POST',
+					method: 'POST',
+					url: '<?php print caNavUrl($this->request, "editor", "Interstitial", "Save"); ?>',
+					data: fdata,
+					contentType: false,
+					processData: false,
+					cache: false,
+					success: function(resp, textStatus) {
+						if (resp.status == 0) {
+							jQuery.jGrowl('<?php print addslashes(_t('Saved changes to')); ?> <em>' + resp.display + '</em>', { header: '<?php print addslashes(_t('Edit %1', $t_subject->getProperty('NAME_SINGULAR'))); ?>' }); 
+							jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().data('panel').hidePanel();
+							var displayContent = jQuery('#caRelationEditorPanel<?php print substr($vs_field_name_prefix, 0, strlen($vs_field_name_prefix)-1); ?> .caBundleDisplayTemplate').template(resp.bundleDisplay);
+							jQuery("#<?php print $vs_field_name_prefix; ?>BundleTemplateDisplay<?php print $this->getVar('n'); ?>").empty().append(displayContent);
+							jQuery("input[name='form_timestamp']").val(resp['time']);
+						} else {
+							// error
+							var content = '<div class="notification-error-box rounded"><ul class="notification-error-box">';
+							for(var e in resp.errors) {
+								content += '<li class="notification-error-box">' + e + '</li>';
+							}
+							content += '</ul></div>';
+
+							jQuery("#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>").html(content).slideDown(200);
+
+							var quickAddClearErrorInterval = setInterval(function() {
+								jQuery("#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>").slideUp(500);
+								clearInterval(quickAddClearErrorInterval);
+							}, 3000);
 						}
-						content += '</ul></div>';
-						
-						jQuery("#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>").html(content).slideDown(200);
-						
-						var quickAddClearErrorInterval = setInterval(function() {
-							jQuery("#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>").slideUp(500);
-							clearInterval(quickAddClearErrorInterval);
-						}, 3000);
-					}
-				}, "json");
+					},
+					dataType: 'json'
+				});
 			}
 			
 			jQuery(document).ready(function() {

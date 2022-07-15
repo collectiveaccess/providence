@@ -29,6 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
 
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
 
@@ -47,7 +48,7 @@ class EntitiesXEntitiesTest extends BaseTestWithData {
 	 */
 	private $opt_bart = null;
 	# -------------------------------------------------------
-	public function setUp() {
+	protected function setUp() : void {
 		// don't forget to call parent so that the request is set up
 		parent::setUp();
 
@@ -58,7 +59,7 @@ class EntitiesXEntitiesTest extends BaseTestWithData {
 		$vn_homer_id = $this->addTestRecord('ca_entities', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'ind',
-				'idno' => 'hjs',
+				'idno' => '101',
 			),
 			'preferred_labels' => array(
 				array(
@@ -75,7 +76,7 @@ class EntitiesXEntitiesTest extends BaseTestWithData {
 		$vn_bart_id = $this->addTestRecord('ca_entities', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'ind',
-				'idno' => 'bs',
+				'idno' => '102',
 			),
 			'preferred_labels' => array(
 				array(

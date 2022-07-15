@@ -1,7 +1,5 @@
 <?php
 
-require_once __CA_LIB_DIR__.'/Zend/Search/Lucene/Index/Term.php';
-require_once __CA_LIB_DIR__.'/Zend/Search/Lucene/Search/QueryEntry.php';
 
 class TermQueryEntry extends Zend_Search_Lucene_Search_QueryEntry {
 	/**
@@ -73,7 +71,6 @@ class TermQueryEntry extends Zend_Search_Lucene_Search_QueryEntry {
 	{
 	    if (strpos($this->_term, '?') !== false || strpos($this->_term, '*') !== false) {
 		if ($this->_fuzzyQuery) {
-			require_once __CA_LIB_DIR__.'/Zend/Search/Lucene/Search/QueryParserException.php';
 			throw new Zend_Search_Lucene_Search_QueryParserException('Fuzzy search is not supported for terms with wildcards.');
 		}
 
@@ -103,7 +100,7 @@ class TermQueryEntry extends Zend_Search_Lucene_Search_QueryEntry {
 			}
 		}
 
-		$term  = new Zend_Search_Lucene_Index_Term(strtolower($pattern), $this->_field);
+		$term  = new Zend_Search_Lucene_Index_Term(mb_strtolower($pattern), $this->_field);
 		$query = new Zend_Search_Lucene_Search_Query_Wildcard($term);
 		$query->setBoost($this->_boost);
 
@@ -117,7 +114,7 @@ class TermQueryEntry extends Zend_Search_Lucene_Search_QueryEntry {
 	    }
 
 	    if (count($tokens) == 1  && !$this->_fuzzyQuery) {
-		$term  = new Zend_Search_Lucene_Index_Term(strtolower($tokens[0]), $this->_field);
+		$term  = new Zend_Search_Lucene_Index_Term(mb_strtolower($tokens[0]), $this->_field);
 		$query = new Zend_Search_Lucene_Search_Query_Term($term);
 		$query->setBoost($this->_boost);
 
@@ -125,7 +122,7 @@ class TermQueryEntry extends Zend_Search_Lucene_Search_QueryEntry {
 	    }
 
 	    if (count($tokens) == 1  && $this->_fuzzyQuery) {
-		$term  = new Zend_Search_Lucene_Index_Term(strtolower($tokens[0]), $this->_field);
+		$term  = new Zend_Search_Lucene_Index_Term(mb_strtolower($tokens[0]), $this->_field);
 		$query = new Zend_Search_Lucene_Search_Query_Fuzzy($term, $this->_similarity);
 		$query->setBoost($this->_boost);
 
@@ -133,7 +130,6 @@ class TermQueryEntry extends Zend_Search_Lucene_Search_QueryEntry {
 	    }
 
 	    if ($this->_fuzzyQuery) {
-		require_once __CA_LIB_DIR__.'/Zend/Search/Lucene/Search/QueryParserException.php';
 		throw new Zend_Search_Lucene_Search_QueryParserException('Fuzzy search is supported only for non-multiple word terms');
 	    }
 
@@ -141,8 +137,8 @@ class TermQueryEntry extends Zend_Search_Lucene_Search_QueryEntry {
 	    $query = new Zend_Search_Lucene_Search_Query_MultiTerm();
 
 	    foreach ($tokens as $token) {
-		$term = new Zend_Search_Lucene_Index_Term(strtolower($token), $this->_field);
-		$query->addTerm($term, true);
+			$term = new Zend_Search_Lucene_Index_Term(mb_strtolower($token), $this->_field);
+			$query->addTerm($term, true);
 	    }
 
 	    $query->setBoost($this->_boost);

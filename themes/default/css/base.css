@@ -1,9 +1,20 @@
-/* @import url("//hello.myfonts.net/count/28ec2c"); */
-
 @font-face {font-family: 'DIN-Regular';src: url('fonts/28EC2C_0_0.eot');src: url('fonts/28EC2C_0_0.eot?#iefix') format('embedded-opentype'),url('fonts/28EC2C_0_0.woff') format('woff'),url('fonts/28EC2C_0_0.ttf') format('truetype');}
 
 /*  dark gray #4b4a4a - teal #134959 - turquoise #1FAA99 - med gray #DDDDDD - light gray #EEEEEE */
-html, body {
+
+html {
+	box-sizing: content-box !important;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit !important;
+}
+
+html {
+    font: 12px "Helvetica Neue", Arial, Helvetica, Sans-serif;
+}
+
+body {
     font: 12px "Helvetica Neue", Arial, Helvetica, Sans-serif;
     background-color: #fff;
     margin:0px;
@@ -21,7 +32,7 @@ form select {
 	-webkit-appearance: none;
 	appearance: none;
 	-moz-appearance: none;
-	padding: 3px;
+	padding: 2px;
 	padding-right: 30px;
 	background: #fff url('../graphics/icons/downArrowSmall.png') no-repeat 97% 50%;
 	background-size: 7px 4px;
@@ -36,7 +47,7 @@ textarea {
     
 }
 
-a, a:link, a:visited, a font { color: #1ab3c8; text-decoration: underline; }
+a, a:link, a:visited, a font { color:#138290; text-decoration: underline; }
 
 a:hover{
     color: #333;
@@ -136,6 +147,7 @@ h5 {
     float: left;
     cursor: pointer;
 }
+
 *:first-child+html #logo {padding:0px 0px 0px 5px;} * html #logo {padding:0px 0px 0px 5px;} /* IE6 only fixes width */
 #main{
     background-color: #DDDDDD;
@@ -147,7 +159,7 @@ h5 {
 
 #mainContent{
     background-color: #FFFFFF;
-    padding: 10px 20px 0px 20px;
+    padding: 10px 20px 60px 20px;
     width:744px;	/* .width 1000 - #leftNav (width + borders) 216 - 40px padding in mainContent = 744px */
     margin-left: 215px;
     border-right: 2px solid #ddd;
@@ -208,10 +220,10 @@ div.clear {
 
 #leftNav h2 a, #leftNav h2 span { display: block; padding-left: 15px; padding-top: 7px; padding-bottom: 4px; text-decoration: none; color: #666666; border-right:1px solid #dddddd;} 
 #leftNav h2 a:hover{
-    color: #1ab3c8;
+    color: #138290;
 }
 #leftNav h3 h4 a:hover{
-    color: #1ab3c8;
+    color: #138290;
 }
 #leftNav ul { list-style: none; margin: 0px; padding: 3px 0px 3px 0px; display:none; }
 #leftNav ul.arrow { padding:0px; }
@@ -221,7 +233,7 @@ div.clear {
 #leftNav ul.arrow li a, #leftNav ul.arrow li span { _height: 15px; text-decoration: none; display: block;  padding: 8px 0 5px 0;; padding-left: 30px; padding-right: 5px; margin: 0; color:#666; text-transform:uppercase; font-family:"din-regular", arial, sans-serif;}
 #leftNav ul li a:hover { background-color: #fff; }
 #leftNav ul .sf-menu-selected a:hover { background-color: #eee; }
-#leftNav ul.arrow li a:hover { color: #1ab3c8}
+#leftNav ul.arrow li a:hover { color: #138290}
 
 /* h3 used for non link left side nav - currently editing */
 #leftNav h4 {
@@ -293,6 +305,11 @@ div.clear {
 #leftNav .resultLink  {
 	display: inline-block;
 	width: 110px;
+	color: #138290;
+}
+#leftNav .resultLink:hover  {
+	color: #138290;
+	text-decoration:underline;
 }
 #leftNav .creatingNew {
 	font-family: "DIN-Regular", Helvetica, sans-serif;
@@ -301,7 +318,7 @@ div.clear {
 	font-size: 13px;
 	line-height: 1.4em;
 }
-#leftNav div.visualize, #leftNav div.setTools {
+#leftNav div.visualize, #leftNav div.setTools, #leftNav div.batchTools {
 	background-color:#f7f7f7;
 	border-radius: 4px;
 	-webkit-border-radius: 4px;
@@ -312,10 +329,10 @@ div.clear {
 	text-transform:capitalize;
 	font-size:14px;
 }
-#leftNav div.setTools img {
+#leftNav div.setTools img, #leftNav div.batchTools img {
 	padding-right:5px;
 }
-#leftNav div.visualize a, #leftNav div.setTools a {
+#leftNav div.visualize a, #leftNav div.setTools a, #leftNav div.batchTools a {
 	text-decoration:none;
 }
 #caColorbox {
@@ -346,11 +363,17 @@ div.clear {
 	clear: both;
 	min-height: 26px;
 }
-#leftNav .watchThis, #leftNav #inspectorChangeType, #leftNav #inspectorCreateChild, #leftNav #caDuplicateItemButton, #leftNav #inspectorLotMediaDownloadButton, #leftNav #inspectorSetMediaDownloadButton {
+
+#leftNav .inspectorActionButton   {
 	float: left;
-	margin-right: 10px;
+	margin-right: 5px;
 	width: 28px;
 	text-align: center;
+}
+
+#leftNav .infoIcon {
+	padding-left: unset !important;
+	line-height: unset !important;
 }
 
 #leftNav #inspectorLotMediaDownloadButton, #leftNav #inspectorSetMediaDownloadButton {
@@ -424,7 +447,7 @@ div.inspectorLotObjectTypeControls {
 #leftNav #toolIcons .button {
 	text-align:left;
 }
-#leftNav #searchSetTools .button {
+#leftNav #searchSetTools .button, #leftNav #batchTools .button {
 	text-align: right;
 }
 #leftNav .button.info img{
@@ -442,7 +465,7 @@ div.inspectorCheckedOut {
 }
 
 .inspectorDeaccessioned {
-    color: #cc0000;
+    color: #EB0000;
     font-style: italic;
 }
 
@@ -453,7 +476,7 @@ div.inspectorCheckedOut {
 }
 
 .inspectorFlag {
-    color: #FF0000;
+    color: #EB0000;
     font-weight: bold;
 }
 
@@ -468,7 +491,7 @@ div.inspectorCheckedOut {
 #leftNav div.form-button {text-align:right; margin-top: 5px; }
 #leftNav .form-button a {	text-transform:uppercase; text-decoration: underline; }
 #leftNav .form-button a:hover{
-    color: #1ab3c8;
+    color: #138290;
 }
 #leftNav #inspectorMedia, #leftNav #hierarchyInfo { display:none; }
 #leftNav #inspectorMedia {
@@ -576,7 +599,7 @@ div.inspectorCheckedOut {
 	margin-bottom: 5px;
 	font-size: 14px;
 }
-.setStats div, .pawtucketStats div, .groupList div, .yourDisplays div, .searchForms div, .comments div, .tags div, .export div, h3.metalist div, h3.relTypes div, .importers div, .savedSearches div, .searchTours div{
+.setStats div, .pawtucketStats div, .groupList div, .yourDisplays div, .watchedItems div, .searchForms div, .comments div, .tags div, .export div, h3.metalist div, h3.relTypes div, .importers div, .savedSearches div, .searchTours div {
 	font-size:12px;
 	line-height:1.7em;
 }
@@ -773,7 +796,7 @@ ul.sf-menu li li li.sfHover ul {
 }
 
 li.sfHover > a:link, li.sfHover > a:visited {
-    color: #333 !important;
+    color: #aaa !important;
 }
 
 .sf-menu li li:hover, .sf-menu li li li:hover{
@@ -811,7 +834,6 @@ a.sf-menu-selected:hover {
     background-color: #ddd;
     background-repeat:no-repeat;
     background-position: top right;
-    height:13px;
 }
 
 a.sf-menu-disabled-selected, #leftNav h2 a.sf-menu-disabled-selected {
@@ -1081,7 +1103,7 @@ li.sfHover > a > .sf-sub-indicator {
 /*** NOTIFICATIONS ***/
 
 div.notification-info-box {
-    background:	url('../graphics/icons/info.png') no-repeat 10px 7px;
+    background:	url('../graphics/icons/info.png') no-repeat 10px 15px;
     background-size:32px 32px;
     text-indent: 32px;
     background-color: #f3f3f3;
@@ -1089,6 +1111,8 @@ div.notification-info-box {
     margin-bottom: 10px;
     clear:both;
     border-radius: 0px !important;
+    max-height: 150px;
+    overflow-y: scroll;
 }
 
 * html div.notification-info-box {  /* IE6 fix */
@@ -1096,7 +1120,7 @@ div.notification-info-box {
 }
 
 div.notification-error-box {
-    background:	url('../graphics/icons/warning_sign.png') no-repeat 10px 5px;
+    background:	url('../graphics/icons/warning_sign.png') no-repeat 10px 15px;
     text-indent: 32px;
     background-color: #eeeeee;
     padding: 5px;
@@ -1108,11 +1132,13 @@ div.notification-error-box {
 }
 
 div.notification-warning-box {
-    background:	url('../graphics/buttons/warning_sign.png') no-repeat 10px 10px;
+    background:	url('../graphics/icons/warning_sign.png') no-repeat 10px 15px;
     text-indent: 32px;
     background-color: #eeeeee;
     padding: 5px;
     margin-bottom: 10px;
+    max-height: 150px;
+    overflow-y: scroll;
 }
 
 * html div.notification-warning-box {  /* IE6 fix */
@@ -1125,8 +1151,8 @@ ul.notification-error-box, ul.notification-warning-box, ul.notification-info-box
 
 li.notification-info-box {
     font-weight: bold;
-    color: #1ab3c8;
-    font-size: 12px;
+    color: #138290;
+    font-size: 13px;
     text-indent: 10px;
     font-family: 'din-regular';
 	padding-top: 2px;
@@ -1137,13 +1163,23 @@ li.notification-warning-box {
     color: #333;
     font-size: 13px;
     text-indent: 10px;
+    font-family: 'din-regular';
 }
 
 li.notification-error-box {
+    font-weight: normal;
+    color: #EB0000;
+    font-size: 13px;
+    text-indent: 0px;
+    font-family: 'din-regular';
+}
+
+li.notification-error-box .heading {
     font-weight: bold;
-    color: #cc0000;
-    font-size: 12px;
-    text-indent: 10px;
+}
+
+li.notification-error-box ul.errorList {
+    margin-top: 8px;
 }
 
 div.hint {
@@ -1177,6 +1213,7 @@ div.hint {
     margin-bottom: 5px;
     font-weight: bold;
     text-align: left;
+    break-inside: avoid;
 }
 
 .formLabelPlain {
@@ -1198,6 +1235,12 @@ div.hint {
     padding-left:5px;
     font-weight: normal;
     font-size: 9px;
+}
+
+div.formLabelUploadSizeNote {
+	font-weight: normal;
+	font-size: 10px;
+	font-style: italic;
 }
 
 .bundleLabel {
@@ -1222,13 +1265,14 @@ div.hint {
 .bundleSubLabel{
 	clear:both;
 	background-color:#fbfbfb;
-	padding:8px 8px 0px 10px;
+	padding:12px 7px 0px 7px;
 	position:relative;
 	font-weight:normal;
 	font-size:11px;
 	line-height:1em;
+	margin-top: 0px;
 }
-.bundleSubLabel select, .bundleSubLabel .editorBundlePrintControl select{
+.bundleSubLabel select, .bundleSubLabel .editorBundlePrintControl select, .bundleSubLabel .editorBundleSortControl select{
 	position:relative;
 	padding-top:0px;
 	padding-bottom:0px;
@@ -1237,19 +1281,49 @@ div.hint {
 	font-weight: normal;
 	height: 17px;
 	vertical-align: top;
+	max-width: 120px;
 }
-.bundleSubLabel .editorBundlePrintControl{
+.bundleSubLabel .editorBundlePrintControl {
 	float:right;
 	text-align:right;
 	font-size:11px;
 	line-height:1em;
 }
-.bundleSubLabel .editorBundlePrintControl a.form-button{
+.bundleSubLabel .editorBundleSortControl{
+	float:left;
+	text-align:left;
+	font-size:11px;
+	line-height:1em;
+}
+.bundleSubLabel .editorBundlePrintControl a.form-button, .bundleSubLabel .editorBundleReturnToHomeControl a.form-button, .bundleSubLabel .editorBundleSortControl a.form-button{
 	height:auto;
 	vertical-align:top;
 	padding:0px;
 	margin:-6px 0px 0px 0px;
 }
+
+.editorBundleReturnToHomeControls {
+	display: none;
+	clear: both;
+	border: 1px dotted #cccccc;
+	background: #fff;
+	padding: 5px 5px 5px 10px;
+	width: 694px;
+	margin-bottom: 10px;
+}
+
+.editorBundleReturnToHomeControlsMessage {
+	display: none;
+	padding: 5px 5px 15px 0px;
+	font-size: 12px;
+}
+
+.bundleSubLabel .editorBundleReturnToHomeControl{
+	text-align:left;
+	font-size:11px;
+	line-height:1em;
+}
+
 .bundleLabel .iconButton{
 	float:right;
 	text-align:right;
@@ -1279,18 +1353,41 @@ div.hint {
 }
 .settingsBundle {
     padding: 10px;
+    max-height: 700px;
+}
+
+.bundleSubLabel .batchEdit { 
+    float: right;
+}
+
+.batchEditSelected {
+	display: none;
+}
+
+.batchEditPanel {
+	position: absolute;
+	left: 0px;
+	top: 25px;
+	z-index: 32000;
+	display: none;
+}
+
+.relatedListTableContent {
+	min-height: 25px;
+	padding-bottom: 20px !important;
+	text-align: center;
 }
 
 .caDupeLabelMessageBox {
     margin: 0 auto;
     width: 200px;
     font-family: Helvetica Neue, sans-serif;
-    color: #b32b21;
+    color: #EB0000;
 }
 
 .caDupeAttributeMessageBox {
     font-family: Helvetica Neue, sans-serif;
-    color: #b32b21;
+    color: #EB0000;
 }
 
 /* often times referred to as bundlePreview */
@@ -1315,7 +1412,7 @@ div.hint {
 .formLabelError {
     font-family: Verdana, Arial, Helvetica, sans-serif;
     font-size:10px;
-    color: #cc0000;
+    color: #EB0000;
     margin-bottom: 5px;
     text-align: left;
 }
@@ -1323,7 +1420,7 @@ div.hint {
 .bundleLabelError {
     font-family: Verdana, Arial, Helvetica, sans-serif;
     font-size:11px;
-    color: #cc0000;
+    color: #EB0000;
     margin-bottom: 5px;
     text-align: left;
 }
@@ -1376,12 +1473,14 @@ div.hint {
 	display:inline-block;
 	font-weight:bold;
 	color: #666;
+    vertical-align: top;
 }
 #summary .summaryData{
 	width: 70%;
 	display: inline-block;
 	font-family: 'DIN-Regular', Helvetica, sans-serif;
 	color:#333;
+    vertical-align: top;
 }
 #summary .thumbnailsImageContainer{
     border:1px solid #DDDDDD;
@@ -1466,7 +1565,7 @@ div.button a{
 }
 
 div.button a:hover{
-    color: #1ab3c8;
+    color: #138290;
 }
 
 div.button img{
@@ -1474,7 +1573,7 @@ div.button img{
 	margin-top: -1px;
 }
 a.button{
-    color: #1ab3c8;
+    color: #138290;
     text-decoration: none;
     font-size: 11px;
     font-weight:normal;
@@ -1488,7 +1587,17 @@ a.button{
 	font-weight:bold;
 }
 a.button:hover{
-    color: #1ab3c8;
+    color: #138290;
+}
+
+a.inline-button-small {
+    font-size: 10px;
+    text-decoration: none;
+    color: #000;
+}
+a.inline-button-small:hover {
+    text-decoration: none;
+    color: #138290;
 }
 
 a.form-button, span.form-button, del.form-button{
@@ -1644,10 +1753,10 @@ del.form-button{
 
 }
 .form-button.delete:hover .fa, .form-button.delete:hover, .form-button.delete .fa:hover {
-	color:red;
+	color:#EB0000;
 }
 .deleteButton a.form-button span {
-	color:red;
+	color:#EB0000;
 }
 del.form-button span{
     cursor:default;
@@ -1669,7 +1778,7 @@ a.form-button:focus,
 a.dom-button-focus,
 span.form-button-behavior-hover{
     background-position:0 -60px;
-    color:#222;
+    color: #138290;
     text-decoration:none;
 }
 
@@ -1876,7 +1985,7 @@ td.listtableAggregateTotals {
 	padding:5px;
 }
 .caIcon.deleteIcon:hover {
-	color:red;
+	color:#EB0000;
 }
 
 #caSetList tbody tr td div.caSetListName, #caSetList tbody tr td div.caSetListOwner {
@@ -1949,8 +2058,8 @@ div.control-box-left-content {
 
 div.control-box-middle-content {
     text-align: center;
-    margin: 10px;
-    float: left;
+    margin: 3px;
+    float: right;
     font-size:12px;
     font-weight: bold;
 }
@@ -1961,14 +2070,12 @@ div.control-box-right-content {
     font-family: 'DIN-Regular';
 }
 a.deleteButton span{
-	color: red;
+	color: #EB0000;
 	font-weight:bold;
 }
-a.deleteButton span .caIcon:hover{
-	color:red;
-}
+
 a.deleteButton span.form-button:hover {
-	color:red;
+	color: #138290;
 }
 div.control-box-right-content select {
     width: 150px;
@@ -1985,7 +2092,7 @@ div.delete-control-box {
 div.delete_warning_box {
     text-indent: 42px;
     font-size: 14px;
-	color: red;
+	color: #EB0000;
     padding-top: 10px;
     width: 400px;
     height: 26px;
@@ -2027,7 +2134,14 @@ div.search-hier-browser-box {
     margin-bottom: 5px;
 }
 .bundleContainer .caDeleteLabelButton .fa:hover, .bundleContainer .caDeleteItemButton .fa:hover{
-	color:red;
+	color:#EB0000;
+}
+
+.bundleContainerRelatedList {
+    position: relative;
+    background-color: #fbfbfb;
+    border: 0px solid #e6e6e6;
+    padding-left:0px;
 }
 
 .labelInfo {
@@ -2116,7 +2230,7 @@ div.searchSuggestion {
 a.searchSuggestion {
     font-family: Verdana, Arial, Helvetica, sans-serif;
     font-size:12px;
-    color: #cc0000;
+    color: #EB0000;
     margin-bottom: 5px;
     font-style: italic;
     text-align: center;
@@ -2206,7 +2320,7 @@ select.searchSetSelect {
 	position: absolute;
 	top: 100px;
 	left: 25%;
-	width: 400px;
+	width: 500px;
 	z-index:20000;
 }
 
@@ -2301,8 +2415,8 @@ a#hideRefine img {
 #searchRefineParameters{
     float:left;
     color: #666666;
-	border-top: 2px solid #1ab3c8;
-	border-bottom: 2px solid #1ab3c8;
+	border-top: 2px solid #138290;
+	border-bottom: 2px solid #138290;
 	padding: 10px 0px 10px 0px;
 	width: 100%;
 	margin-bottom: 5px;
@@ -2393,11 +2507,8 @@ select.searchToolsSelect {
 }
 /* Set Tools */
 
-#searchSetTools {
+#searchSetTools, #batchTools {
 	display:none;
-}
-
-#searchSetTools {
 	background-color: #f7f7f7;
 	border-radius: 4px;
 	-moz-border-radius: 4px;
@@ -2405,19 +2516,19 @@ select.searchToolsSelect {
 	margin: 10px;
 	padding: 10px;
 }
-#searchSetTools .col{
+#searchSetTools .col, #batchTools .col {
 	margin-bottom:15px;
 }
-#searchSetTools .header {
+#searchSetTools .header, #batchTools .header {
 	font-family: 'din-regular', helvetica, sans-serif;
 	font-weight:bold;
 }
-#searchSetTools a{
+#searchSetTools a, #batchTools a {
 	float: right;
 	clear: left;
 	text-align: right;
 }
-#searchSetTools .searchSetsToggle a{
+#searchSetTools .searchSetsToggle a {
 	float: left;
 	clear: right;
 	text-align: left;
@@ -2482,7 +2593,7 @@ select.searchToolsSelect {
 	cursor: pointer;
 }
 .qlButtonContainerThumbnail a:hover, .qlButtonContainerFull a:hover{
-    color:#1ab3c8;
+    color:#138290;
 }
 
 .objectThumbnailsImageContainer {
@@ -2588,13 +2699,13 @@ select.searchToolsSelect {
     clear:both;
 }
 #leftNav #inspectorInfo.setDelete, #leftNav #inspectorInfo.setDelete a {
-	color: red;
+	color: #EB0000;
 }
 #leftNav #inspectorInfo.setDelete .fa {
 	color:black;
 }
 #leftNav #inspectorInfo.setDelete a:hover .fa{
-	color: red;
+	color: #EB0000;
 }
 #leftNav #inspectorInfo.setDelete {
 	background-color:#FFCCCB;
@@ -2689,6 +2800,7 @@ table.representationAnnotationListItem {
 #caMediaPanelContentArea {
     width: 100%;
     height: 100%;
+    background-color: #000;
 }
 
 #caMediaOverlayTileViewer {
@@ -2700,12 +2812,9 @@ table.representationAnnotationListItem {
     margin: 0px;
     /* overflow: auto; */
     text-align: center;
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    right: 0px;
-    bottom: 0px;
-    padding-bottom: 36px;
+    position: relative;
+    height: 100%;
+    padding-bottom: 5px;
 }
 
 #caMediaPanelProgress {
@@ -2722,17 +2831,17 @@ div.caMediaOverlayControls {
     color:#FFF;
     font-size: 11px;
     text-align:center;
-    position:absolute;
+    position: relative;
     padding: 10px 0px 10px 0px;
     width:100%;
-    bottom:0px;
-    left:0px;
+    height: 20px;
+    overflow: hidden;
     z-index: 35000;			/* needs to be on top of caMediaPanel, which has z-index=34000 */
     /* opacity:.1;	 */
     opacity: 0.7;
 }
 
-div.caMediaOverlayControls a{
+div.caMediaOverlayControls a {
     text-decoration:none;
     font-weight:bold;
     font-size:16px;
@@ -2743,25 +2852,38 @@ div.caMediaOverlayControls a:hover{
     color:#FFF;
 }
 div.caMediaOverlayControls .close {
-    float:right;
-    width:15px;
-    height:16px;
-    margin: 0px 10px 0px 20px;
+    position: absolute;
+    text-align: right;
+    width:200px;
+    height:20px;
+    margin: 10px 10px 0px 20px;
+    top: 0px;
+    right: 0px;
 }
+div.caMediaOverlayControls .close a {
+    font-size: 12px;
+}
+
 
 div.caMediaOverlayControls .close a {
     text-decoration: none;
 }
 
 div.caMediaOverlayControls .download {
-    float:right;
-    margin-left:20px;
+   	position: absolute;
+    min-width:200px;
+    height:20px;
+    margin: 10px 10px 0px 20px;
+    top: 0px;
+    right: 300px;
+    overflow: hidden;
 }
 
 div.caMediaOverlayControls .download form a, div.caMediaOverlayControls .download a {
 	font-size: 11px;	
     font-weight: normal;
     color:#FFF;
+    overflow: hidden;
 }
 
 div.caMediaOverlayControls .objectInfo{
@@ -2771,6 +2893,9 @@ div.caMediaOverlayControls .objectInfo{
     text-align:left;
     width:40%;
     float:left;
+    overflow: hidden;
+    height: 14px;
+    padding-top: 3px;
 }
 
 div.caMediaOverlayControls .repNav {
@@ -2819,7 +2944,7 @@ img.caRepToolsRotateControlButton {
 }
 
 img.caRepToolsRotateControlButtonSelected {
-    border: 1px solid #CC0000;
+    border: 1px solid #EB0000;
     background: #FFFFFF;
 }
 
@@ -3002,19 +3127,6 @@ a.editorFieldListLink {
     display: none;
 }
 
-/*div.editorBundlePrintControl {
-    position: absolute; 
-    top: 2px; 
-    right: 27px;
-}
-
-div.editorBundlePrintControl select {
-    font-size: 9px;
-    font-weight: normal;
-    height: 17px;
-    vertical-align: top;
-}*/
-
 #caHierarchyOverviewHeader {
     font-size: 13px;
     font-weight: bold;
@@ -3169,13 +3281,13 @@ div.caObjectRepresentationMetadata {
 }
 
 span.caObjectRepresentationPrimaryDisplay {
-    color: #cc0000;
+    color: #EB0000;
     font-size: 10px;
     font-weight: bold;
 }
 
 div.caObjectRepresentationPrimaryIndicator {
-    color: #cc0000;
+    color: #EB0000;
     font-size: 10px;
     font-weight: bold;
     font-style: italic;
@@ -3186,7 +3298,7 @@ div.caObjectRepresentationPrimaryIndicator {
 	height: 17px;
 }
 div.caObjectRepresentationChangeIndicator {
-    color: #cc0000;
+    color: #EB0000;
     font-size: 10px;
     font-weight: bold;
     font-style: italic;
@@ -3501,37 +3613,42 @@ input.dateBg, textarea.dateBg {
     background-image: url('../graphics/icons/formBgDate.gif');
     background-repeat:no-repeat;
     background-position:right center;
-    padding-right:30px;
 }
 input.currencyBg, textarea.currencyBg {
     background-image: url('../graphics/icons/formBgCurrency.gif');
     background-repeat:no-repeat;
     background-position:right center;
-    padding-right:15px;
 }
 input.weightBg, textarea.weightBg {
     background-image: url('../graphics/icons/formBgWeight.gif');
     background-repeat:no-repeat;
     background-position:right center;
-    padding-right:25px;
 }
 input.timecodeBg, textarea.timecodeBg {
     background-image: url('../graphics/icons/formBgTimecode.gif');
     background-repeat:no-repeat;
     background-position:right center;
-    padding-right:65px;
 }
 input.urlBg, textarea.urlBg {
     background-image: url('../graphics/icons/formBgUrl.gif');
     background-repeat:no-repeat;
     background-position:right center;
-    padding-right:30px;
+}
+input.externalMediaBg, textarea.externalMediaBg {
+    background-image: url('../graphics/icons/formBgUrl.gif');
+    background-repeat:no-repeat;
+    background-position:right center;
+}
+input.filesizeBg, textarea.filesizeBg {
+    background-image: url('../graphics/icons/formBgFilesize.gif');
+    background-repeat:no-repeat;
+    background-position:right center;
+    padding-right:35px;
 }
 input.lookupBg, textarea.lookupBg {
     background-image: url('../graphics/icons/formBgLookup.gif');
     background-repeat:no-repeat;
     background-position:right center;
-    padding-right:15px;
 }
 
 /*** HIERARCHY BROWSER ***/
@@ -3557,6 +3674,7 @@ div.hierarchyBrowserVertical {
 }
 
 div.hierarchyBrowserSmall {
+    position: relative;
     border: 1px solid #ccc;
     width: 98%;
     height: 180px;
@@ -3564,6 +3682,7 @@ div.hierarchyBrowserSmall {
 }
 
 div.hierarchyBrowserLarge {
+    position: relative;
     border: 1px solid #000000;
     width: 100%;
     height: 400px;
@@ -3577,6 +3696,20 @@ div.hierarchyBrowserContainer {
     height: 100%;
     margin: 0px;
     padding: 0px;
+}
+
+div.hierarchyBrowserContainerReadOnly {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+    top: 0px;
+    left: 0px;
+    z-index: 1000;
+    background-color: #ccc;
+    display: none;
+    opacity: 0.5;
 }
 
 div.hierarchyBrowserContainerVertical {
@@ -3661,7 +3794,6 @@ a.hierarchyBrowserLevelEditButton {
 
 div.hierarchyBrowseTab {
     width: 712px;
-    overflow: hidden;
     font-weight: normal;
     margin-left:-10px;
 }
@@ -3754,13 +3886,13 @@ a.exploreSelected {
     line-height:1.5em;
 }
 .hierNav a {
-    color: #1ab3c8;
+    color: #138290;
     font-weight:normal;
     text-decoration:none;
 
 }
 .hierNav a:hover{
-    color: #1ab3c8;
+    color: #138290;
 }
 .hierNav .buttonPosition{
     float:right;
@@ -3779,7 +3911,7 @@ a.exploreSelected {
     color:#666666;
     font-weight:normal;
     float:right;
-    margin-right:8px;
+    
     padding-left:5px;
 }
 .hierarchyBrowserMessageContainer{    /*** message above browser on editor pages ***/
@@ -3788,7 +3920,7 @@ a.exploreSelected {
     font-weight: normal;
 }
 .hierarchyBrowserNewLocationMessage{ /*** message above browser on editor pages dispaying new location to move record to ***/
-    color: #cc0000;
+    color: #EB0000;
     padding:0px 5px 15px 0px;
     height:1em;
 }
@@ -3823,7 +3955,7 @@ a.exploreSelected {
 .hierarchyPanelHeader a { /*  used in browse and details with browse */
     text-decoration:none;
     font-size:14px;
-    color:#1ab3c8;
+    color:#138290;
     font-weight:normal;
     padding-right:4px;
 }
@@ -3931,7 +4063,13 @@ div.directoryBrowserLevelVertical {
     font-weight: normal;
 }
 
-a.directoryBrowserLevelSelected {
+.directoryBrowserLevel a i {
+    text-decoration: none;
+    font-weight: normal;
+    color: #ccc;
+}
+
+a.directoryBrowserLevelSelected, a.directoryBrowserLevelSelected i {
     color: #000000;
     text-decoration: none;
     font-weight: bold;
@@ -4111,7 +4249,7 @@ div.quickSearchNoResults {
 }
 .facetHeadingLink{
 	float: left;
-	width: 200px;
+	width: 320px;
 	padding: 5px 5px 2px 8px;
 	background-color:#ededed;
 	margin-right: 30px;
@@ -4166,7 +4304,7 @@ div.quickSearchNoResults {
 }
 #refineBrowse a.facetLink{
 	float: left;
-	width: 200px;
+	width: 320px;
 	padding: 5px 5px 2px 8px;
 	background-color:#ededed;
 	margin-right: 30px;
@@ -4239,7 +4377,7 @@ div.quickSearchNoResults {
     white-space: nowrap;
 }
 #browseCriteria a.startOver:hover{
-    color:#1ab3c8;
+    color:#138290;
     text-decoration:underline;
 }
 .criteriaLink {
@@ -4293,10 +4431,11 @@ div.quickSearchNoResults {
 }
 .browseSelectPanelContentArea {
 	background-color: #f7f7f7;
-	padding: 10px 7px 5px 7px;
+	padding: 10px 0px 5px 7px;
 	border-radius: 4px;
 	-moz-border-radius: 4px;
 	-webkit-border-radius: 4px;
+	overflow-y: hidden;
 }
 h2.browse {
 	margin: 0px;
@@ -4344,7 +4483,7 @@ h2.browse {
 }
 .browseSelectPanelList {
     margin: 0px;
-    width: 750px;
+    width: 100%;
     height: auto;
     overflow: auto;
     padding: 0px;
@@ -4369,7 +4508,7 @@ div.browseSelectPanelListGroupHeading {
 	border-radius: 4px;
 	-moz-border-radius: 4px;
 	-webkit-border-radius: 4px;
-	margin: 0px 20px 0px 0px;
+	margin: 4px 0px 8px 0px;
 }
 a.browseSelectPanelListGroupHeading, a.browseSelectPanelListGroupHeading:hover {
     text-decoration: none;
@@ -4711,7 +4850,7 @@ ul#displayItemList {
     left: 14px;
     top: 13px;
     position: absolute;
-    background: #f00;
+    background: #EB0000;
     overflow: hidden;
     cursor: crosshair;
 }
@@ -4756,7 +4895,7 @@ ul#displayItemList {
     height: 30px;
     left: 213px;
     top: 13px;
-    background: #f00;
+    background: #EB0000;
 }
 .colorpicker_current_color {
     position: absolute;
@@ -4764,7 +4903,7 @@ ul#displayItemList {
     height: 30px;
     left: 283px;
     top: 13px;
-    background: #f00;
+    background: #EB0000;
 }
 .colorpicker input {
     background-color: transparent;
@@ -5163,10 +5302,10 @@ a.dashboardControl {font-weight:normal; padding-right:10px; text-decoration:none
     float: right;
     width:16px;
     height:16px;
-    margin:5px 5px 0px 5px;
+    margin:4px 5px 0px 8px;
+    border:0px;
 }
 a.dashboardRemoveWidget {
-    border:0px;
     text-decoration: none;
 }
 .dashboardWidgetContentContainer {
@@ -5191,12 +5330,12 @@ a.dashboardRemoveWidget {
 
 .dashboardWidgetScrollMedium {
     height: 300px;
-    overflow-x: hidden;
+    overflow-x: auto;
     overflow-y: auto;
 }
 .dashboardWidgetScrollLarge {
     height: 400px;
-    overflow-x: hidden;
+    overflow-x: auto;
     overflow-y: auto;
 }
 .dashboardWidgetTable{
@@ -5219,7 +5358,7 @@ a.dashboardRemoveWidget {
     line-height:1.3em;
 }
 .dashboardWidgetClock{
-	color: #1ab3c8;
+	color: #138290;
 	font-size: 48px;
 	font-weight: bold;
 	text-align: center;
@@ -5284,12 +5423,12 @@ a.roleCheckAllNoneButton {
 }
 
 /* find results add to set controls */
-td.addItemToSetControl, th.addItemToSetControl {
+td.addItemToSetControl, th.addItemToSetControl, td.addItemToBatchControl, th.addItemToBatchControl {
 	width:15px; 
 	position: relative;
 }
 
-td.addItemToSetControl div {
+td.addItemToSetControl div, td.addItemToBatchControl div {
 	position: absolute;
 	bottom: 1px;
 	right: 1px;
@@ -5297,6 +5436,17 @@ td.addItemToSetControl div {
 
 input.addItemToSetControl {
     display: none;
+    padding: 0px;
+    margin: 0px;
+    width: 10px;
+    height: 10px;
+    position: absolute;
+    top: 2px; 
+    left: 1px;
+    
+}
+
+input.addItemToBatchControl {
     padding: 0px;
     margin: 0px;
     width: 10px;
@@ -5647,6 +5797,12 @@ select.listRelRelationshipTypeEdit {
     overflow-y: auto;
 }
 
+
+.settingsBundle {
+    padding: 10px;
+    max-height: 700px;
+}
+
 div.caItemListSortControlTrigger {
     font-size: 11px;
     padding: 4px;
@@ -5701,6 +5857,7 @@ select.caItemListSortControlTrigger {
 }
 
 div.caItemLoadNextBundles {
+	clear: both;
 	padding: 10px;
 }
 
@@ -5893,22 +6050,6 @@ a.caDeleteLabelButton {
     text-decoration: none;
 }
 
-/* Application monitor styles */
-#caApplicationMonitor {
-    border: 2px solid #999;
-    display: none;
-    overflow: auto;
-    width: 900px;
-    height: 500px;
-    position: fixed;
-    top: 100px; left: 50%; margin: 0 0 0 -450px;
-    background: #ffffff;
-    padding: 15px;
-    border-radius: 4px;
-    -moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
-}
-
 /* -------------------------------------------------*/
 /* Item-level access screen                         */
 /* -------------------------------------------------*/
@@ -6032,7 +6173,7 @@ div.searchlight-results div.searchlight-selected {
     clear:both;
 }
 .overdue {
-    color: red;
+    color: #EB0000;
 }
 
 /* OpenLayers */
@@ -6229,24 +6370,24 @@ table.caConfirmBatchExecutionPanelAlertControls {
     -webkit-border-radius:4px;
 }
 
-#caTypeChangePanel .close a, #caCreateChildPanel .close a{
+#caTypeChangePanel .close a, #caCreateChildPanel .close a, #caSetHomeLocationPanel .close a{
     text-decoration:none;
     font-size:16px;
 }
 
-#caTypeChangePanelContentArea, #caCreateChildPanelContentArea {
+#caTypeChangePanelContentArea, #caCreateChildPanelContentArea, #caSetHomeLocationPanelContentArea {
     padding:10px;
 }
 
-#caTypeChangePanelControlButtons, #caCreateChildPanelControlButtons {
+#caTypeChangePanelControlButtons, #caCreateChildPanelControlButtons, #caSetHomeLocationPanelControlButtons, #caMediaBrowserPanelControlButtons {
     width: 100%;
     text-align: center;
 }
 
-#caTypeChangePanelControlButtons table, #caCreateChildPanelControlButtons table {
+#caTypeChangePanelControlButtons table, #caCreateChildPanelControlButtons table, #caSetHomeLocationPanelControlButtons table, #caMediaBrowserPanelControlButtons table {
     width: 100%;
 }
-#caTypeChangePanelControlButtons img.form-button-left, #caCreateChildPanelControlButtons img.form-button-left {
+#caTypeChangePanelControlButtons img.form-button-left, #caCreateChildPanelControlButtons img.form-button-left, #caSetHomeLocationPanelControlButtons img.form-button-left {
 	margin-top:-10px;
 }
 .addChild {
@@ -6266,10 +6407,52 @@ div.dialogHeader {
     padding: 7px 5px 5px 5px;
     margin: 0px;
     font-family: "DIN-Regular";
+}
+
+/* Set home location */
+#caSetHomeLocationPanel {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 800px;
+    display: none;
+    margin: 0px;
+    padding:0px !important;
+    z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
+    background-color: #FFFFFF;
     border-radius:4px;
     -moz-border-radius:4px;
     -webkit-border-radius:4px;
+    
+    min-height: 300px;
 }
+
+/* Media chooser */
+#caMediaBrowserPanel {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 800px;
+    display: none;
+    margin: 0px;
+    padding:0px !important;
+    z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
+    background-color: #FFFFFF;
+    border-radius:4px;
+    -moz-border-radius:4px;
+    -webkit-border-radius:4px;
+    
+    min-height: 300px;
+}
+
+#caMediaBrowserPanelContentArea {
+    padding: 10px;
+}
+
+#caMediaBrowserPanelDirectoryBrowser {
+    height: 225px;
+}
+
 
 /* Editor summary download options */
 #caSummaryDownloadOptionsPanel {
@@ -6324,12 +6507,14 @@ table.caSummaryDownloadOptionsPanelAlertControls {
 }
 
 /* Quick add */
-.caRelationQuickAddPanel {
+.caRelationQuickAddPanel, .caRelationInterstitialEditPanel {
     position: fixed;
     top: 0px;
     left: 0px;
-    width: 900px;
-    height: 600px;
+    width: 80vh;
+    min-width: 900px;
+    height: 80vh;
+    min-height: 600px;
     overflow: auto;
     display: none;
     margin: 0px;
@@ -6339,16 +6524,16 @@ table.caSummaryDownloadOptionsPanelAlertControls {
     background-color: #FFFFFF;
 }
 
-#caRelationQuickAddPanel .close a{
+#caRelationQuickAddPanel .close a, #caRelationInterstitialEditPanel .close a{
     text-decoration:none;
     font-size:16px;
 }
 
-#caRelationQuickAddPanelContentArea {
+#caRelationQuickAddPanelContentArea, #caRelationInterstitialEditPanelContentArea {
     padding:10px;
 }
 
-#caRelationQuickAddPanelControlButtons {
+#caRelationQuickAddPanelControlButtons, #caRelationInterstitialEditPanelControlButtons {
     width: 100%;
     text-align: center;
 }
@@ -6376,6 +6561,7 @@ div.quickAddErrorContainer {
     width: 890px;
     display: none;
     z-index:33000;
+    margin-top: 40px;
 }
 
 div.quickAddTypeList {
@@ -6448,7 +6634,7 @@ div.caObjectRepresentationChooserRepresentation input[type=checkbox] {
 }
 
 /* Information service attributes */
-div.caInformationServiceDetail {
+div.caInformationServiceDetail, div.caExternalMediaDetail {
     width: 100%;
     display:none;
     font-weight: normal;
@@ -6593,7 +6779,7 @@ div.caRepresentationMediaReplicationControls {
     border-color: #808080;
 }
 .caAnnoEditorTlAnnotationContainerSelected {
-    border: 2px solid #cc0000;
+    border: 2px solid #EB0000;
 }
 .caAnnoEditorTlAnnotationContainer div.title {
     font-size:12px;
@@ -6641,7 +6827,7 @@ div.caRepresentationMediaReplicationControls {
 	background-image: url(../graphics/icons/audio.png);
 	background-position: center center;
 	background-repeat:no-repeat;
-    background-color: #000;
+    background-color: #fff;
 }
 .caAnnoEditorMediaPlayer {
 	width: 500px;
@@ -6656,10 +6842,12 @@ div.caRepresentationMediaReplicationControls {
 .caAnnoMediaPlayerControlsLeft {
 	float: left;
 	padding: 10px;
+    background-color: #fff;
 }
 .caAnnoMediaPlayerControlsRight {
 	float: right;
 	padding: 10px;
+    background-color: #fff;
 }
 
 .caAnnoEditorEditorScreen {
@@ -6736,50 +6924,56 @@ div.caRepresentationMediaReplicationControls {
 }
 
 /** Object location tracking **/
-.caCurrentLocation {
+.caHistoryTrackingCurrent {
+    position: relative;
 	padding: 10px;
-	margin-right: 12px;
+	min-height: 60px;
 }
 
-div.caLocationHistory {
+div.caHistoryTracking {
+    position: relative;
 	border-top: 1px dotted #e6e6e6;
 	padding: 10px;
-	margin-right: 12px;
+	min-height: 60px;
 }
 
-div.caLocationHistoryTab {
+div.caHistoryTrackingTab {
 	max-height: 400px;
 	overflow: auto;
 }
 
 /** Object use history **/
-div.caUseHistoryEntry {
+div.caHistoryTrackingEntry {
 	position: relative;
 	display: table; 
 	overflow: hidden;
 	font-weight: normal;
 	font-size: 11px;
 	
-	width: 730px;
+	width: 700px;
 	
-	margin: 5px 0 0 5px;
-	padding: 5px 0 5px 0;
+	margin: 1px 0 0 5px;
+	padding: 10px;
 	border-top: 1px dotted #e6e6e6;
 }
 
-div.caUseHistoryEntryFirst {
+div.caHistoryTrackingEntryFirst {
 	border: none;
 }
 
-div.caUseHistoryButtonBar {
+div.caHistoryTrackingButtonBar {
 	padding: 10px;
 }
 
-.caChangeLocationButton, .caAddLoanButton, .caAddOccurrenceButton, .caSetChildViewButton {
+div.caHistoryTrackingButtonBarDelete {
+	float: right;
+}
+
+.caChangeLocationButton, .caReturnToHomeLocationButton, .caAddLoanButton, .caAddOccurrenceButton, .caAddCollectionButton, .caSetChildViewButton, .caAddObjectButton, .caAddEntityButton, .caAddMovementButton, .caAddLoanButton {
 	margin-top: 5px;
 }
 
-div.caUseHistoryIconContainer {
+div.caHistoryTrackingIconContainer {
 	float: left;
 	display: table; 
 	width: 60px;
@@ -6792,18 +6986,24 @@ div.caUseHistoryIconContainer {
 	margin: 0 10px 0 0;
 }
 
-div.caUseHistoryIcon {
+div.caHistoryTrackingIcon {
 	display: table-cell; 
 	vertical-align: middle;
 }
 
-div.caUseHistoryIconText {
+div.caHistoryTrackingIconText {
 	text-align: center;
 	font-size: 11px;
 	font-style: italic;
+	
+	overflow: hidden;
+	text-overflow: ellipsis;
+	
+	padding: 3px;
+	width: 57px;
 }
 
-div.caUseHistoryDate {
+div.caHistoryTrackingEntryDate {
 	position: absolute;
 	bottom: 3px;
 	right: 3px;
@@ -6812,15 +7012,27 @@ div.caUseHistoryDate {
 	font-size: 9px;
 }
 
-h2.caUseHistorySetLocationHeading {
+div.caHistoryTrackingEntryDelete {
+	position: absolute;
+	top: 8px;
+	right: 3px;
+}
+
+div.caHistoryTrackingEntryInterstitialEdit {
+    position: absolute;
+	top: 8px;
+	right: 27px;
+}
+
+h2.caHistoryTrackingSetLocationHeading {
 	float: left;
 }
 
-div.caUseHistoryHierarchyBrowser {
+div.caHistoryTrackingHierarchyBrowser {
 	border-top: 2px;
 }
 
-table.caUseHistoryUpdateLocationMetadata tr td {
+table.caHistoryTrackingUpdateLocationMetadata tr td {
 	vertical-align: middle;
 }
 
@@ -6870,11 +7082,11 @@ div.caMetadataDictionaryViolationsListHeading {
 
 .caMetadataDictionaryViolationCrit {
 	font-weight: bold;
-	color: Red;
+	color: #EB0000;
 }
 
 .caMetadataDictionaryViolationErr {
-	color: Red;
+	color: #EB0000;
 }
 
 .caMetadataDictionaryViolationWarn {
@@ -6889,18 +7101,26 @@ div.caMetadataDictionaryViolationsListHeading {
 	color: #333;
 }
 
+.caMetadataDictionaryViolationInCurrentTab {
+	color: #ffffff;
+}
+
+.caMetadataDictionaryViolationNotInCurrentTab {
+	color: #999999;
+}
+
 /** Metadata importer **/
 table.caFileSourceControls {
 	width: 700px
 }
 
 td.caFileSourceControls {
-	vertical-align: top;
+	vertical-align: middle;
 	padding-top: 4px;
 }
 
 td.caSourceFileControlRadio {
-	vertical-align: top;
+	vertical-align: middle;
 	width: 30px;
 	height: 35px;
 }
@@ -7013,7 +7233,7 @@ div.caLibraryTransactionListItemDueDateLabel {
 }
 
 div.caLibraryTransactionListItemWillReserve {
-	color: #cc0000;
+	color: #EB0000;
 	font-size: 11px;
 	font-weight: bold;
 }
@@ -7224,7 +7444,7 @@ div.authorityReferenceListContainer {
 }
 
 .caResultsEditorErrorCell {
-	border: 2px dashed #cc0000 !important;
+	border: 2px dashed #EB0000 !important;
 }
 
 .caResultsEditorNonEditableCell {
@@ -7298,11 +7518,11 @@ div.caResultsComplexDataEditorErrorContainer {
 }
 
 .caIcon:hover {
-	color: #1ab3c8;
+	color: #138290;
 }
 
 .caIconRed {
-	color: #cc0000;
+	color: #EB0000;
 }
 
 .infoIcon {
@@ -7448,4 +7668,398 @@ li.mediaItem-selected {
 /* Force CKEditor full screen overlay to top of window */
 .cke_maximized {
     top: 0px !important;
+}
+
+div.changeLogSearchResultsPagination {
+	float: right;
+	padding: 5px;
+}
+
+div.checklist {
+    display: grid;
+    width: 100%;
+}
+
+div.checklistItem {
+    font-weight: normal;
+    margin: 2px 15px 2px 5px;
+    white-space: nowrap
+    
+}
+div.checklistItem input {
+	margin-right: 4px;
+}
+
+/* Statistics dashboard */
+div.statisticsDashboardPanel {
+    width: 268px;
+    height: 300px;
+    overflow: auto;
+    float: left;
+    padding: 0 15px 15px 15px;
+    margin: 0 10px 10px 10px;
+    border: 1px dotted #a0a0a0;
+}
+
+div.statisticsDashboardGroupList {
+    margin: 0 0 10px 0;
+}
+
+div.statisticsDashboardsiteList {
+    margin: 0 0 10px 0;
+}
+
+span.statisticsDashboardSelectedGroup {
+    font-weight: bold;
+}
+
+span.statisticsDashboardSelectedsite {
+    font-weight: bold;
+}
+
+/* Current set highlighting */
+a.currentSet {
+    font-weight: bold;
+    color: #333;
+}
+
+.dashboardWidgetContentContainer a.link {
+    text-decoration: underline;
+    color: #138290;
+}
+
+/* "New" ca_object_representations_bundle */
+.mediaUploadContainer {
+	width:700px;
+	margin-top: 14px;
+}
+
+.mediaUploadInfoArea {
+	float: right; 
+	width: 460px;
+}
+
+.mediaUploadEditArea {
+	float: right; 
+	width: 570px;
+}
+
+.mediaUploadStatus {
+    font-size:16px;
+    color: #828282;
+    text-align: left;
+    padding: 10px;
+    line-height:1.3em;
+    overflow: hidden;
+    height: 2.4em;
+}
+
+.mediaUploadArea {
+	border: 1px dashed #ccc; 
+	text-align: center; 
+	padding: 0px; 
+	display: block;
+	width: 120px;
+	height: 120px;
+}
+
+.mediaUploadAreaMessage {
+	font-size: 15px; 
+	color: #333;
+	margin-top: 40px;
+}
+
+.mediaUploadAreaMessage:hover {
+	cursor: pointer;
+}
+
+.mediaUploadAreaMessageCount {
+	font-size: 9px;
+}
+
+div.objectRepresentationListImage {
+    width: 120px;
+}
+
+div.objectRepresentationListImageContainer {
+	float: left; 
+	width: 120px;
+}
+
+div.objectRepresentationMetadataEditorContainer {
+    display: none;
+	font-size: 10px;
+	overflow: auto;
+	line-height: 14px;
+	font-weight: normal;
+	color: #000000;
+}
+
+div.objectRepresentationNewMetadataEditorContainer {
+    display: none;
+    padding: 10px;
+}
+
+div.objectRepresentationMetadataEditorDoneButton {
+    float: none;
+    clear: both;
+    width: 100%;
+    text-align: center;
+}
+
+.objectRepresentationMetadataEditorMediaRightCol {
+	float: right; 
+	width: 110px;
+}
+
+.objectRepresentationMetadataEditorMediaRightCol .fa {
+	font-size:18px;
+	padding-right:5px;
+}
+
+.objectRepresentationAddForm {
+
+}
+
+.objectRepresentationRelateForm {
+    display: none;
+}
+
+.mediaMetadataDisplay {
+	font-weight: normal;
+	font-size: 12px;
+}
+
+div.mediaMetadataActionButton {
+    margin: 10px 0 0 0;
+    font-weight: normal;
+    font-size: 12px;
+}
+
+div.mediaMetadataActionButton img{
+	margin-right:5px;
+}
+
+div.mediaMetadataActionButton a, div.mediaMetadataActionButton span a {
+    text-decoration: none;
+    color: #000;
+}
+
+p.abbreviatedPath, div.abbreviatedPath, span.abbreviatedPath {
+	cursor: help;
+}
+
+.bundleLabelError code, .notification-error-box code {
+    font-family: monospace, serif;
+    font-size: 1em;
+    padding: 2px;
+    margin: 1px;
+    border: 1px solid #ddd;
+    background-color: #f8f8f8;
+    border-radius: 3px;
+    white-space: nowrap;
+}
+
+/* Query builder */
+
+.query-builder .rules-group-container {
+    background: #f7f7f7 !important;
+    border: none !important;
+}
+
+.btn btn-xs btn-primary active {
+    font-weight: bold;;
+}
+
+
+.query-builder, .query-builder * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.query-builder {
+  font-family: sans-serif;
+}
+
+.query-builder .hide {
+  display: none;
+}
+
+.query-builder .pull-right {
+  float: right !important;
+}
+
+.query-builder .btn {
+  text-transform: none;
+  display: inline-block;
+  padding: 6px 12px;
+  margin-bottom: 0px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.42857;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  touch-action: manipulation;
+  cursor: pointer;
+  user-select: none;
+  background-image: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+}
+
+.query-builder .btn.focus, .query-builder .btn:focus, .query-builder .btn:hover {
+  color: #333;
+  text-decoration: none;
+}
+
+.query-builder .btn.active, .query-builder .btn:active {
+  background-image: none;
+  outline: 0px none;
+  box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.125) inset;
+}
+
+.query-builder .btn-success {
+  color: #000;
+  background-color: #f7f7f7;
+  border-color: #f7f7f7;
+}
+
+.query-builder .btn-primary {
+  color: #FFF;
+  background-color: #337AB7;
+  border-color: #2E6DA4;
+}
+
+.query-builder .btn-danger {
+  color: #FFF;
+  background-color: #000;
+  border-color: #000;
+}
+
+.query-builder .btn-success.active, .query-builder .btn-success.focus,
+.query-builder .btn-success:active, .query-builder .btn-success:focus,
+.query-builder .btn-success:hover {
+  color: #FFF;
+  background-color: #000;
+  border-color: #000;
+}
+
+.query-builder .btn-primary.active, .query-builder .btn-primary.focus,
+.query-builder .btn-primary:active, .query-builder .btn-primary:focus,
+.query-builder .btn-primary:hover {
+  color: #FFF;
+  background-color: #286090;
+  border-color: #204D74;
+}
+
+.query-builder .btn-danger.active, .query-builder .btn-danger.focus,
+.query-builder .btn-danger:active, .query-builder .btn-danger:focus,
+.query-builder .btn-danger:hover {
+  color: #000;
+  background-color: #f7f7f7;
+  border-color: #000;
+}
+
+.query-builder .btn-group {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.query-builder .btn-group > .btn {
+  position: relative;
+  float: left;
+}
+
+.query-builder .btn-group > .btn:first-child {
+  margin-left: 0px;
+}
+
+.query-builder .btn-group > .btn:first-child:not(:last-child) {
+  border-top-right-radius: 0px;
+  border-bottom-right-radius: 0px;
+}
+
+.query-builder .btn-group > .btn:last-child:not(:first-child) {
+  border-top-left-radius: 0px;
+  border-bottom-left-radius: 0px;
+}
+
+.query-builder .btn-group .btn + .btn, .query-builder .btn-group .btn + .btn-group,
+.query-builder .btn-group .btn-group + .btn, .query-builder .btn-group .btn-group + .btn-group {
+  margin-left: -1px;
+}
+
+.query-builder .btn-xs, .query-builder .btn-group-xs > .btn {
+  padding: 1px 5px;
+  font-size: 12px;
+  line-height: 1.5;
+  border-radius: 3px;
+}
+
+.query-builder .rule-filter-container select{
+    max-width: 180px;
+}
+.query-builder .rule-operator-container select {
+    max-width: 100px;
+}
+.query-builder .rule-value-container input {
+    width: 240px;
+}
+
+.searchBuilderContainer {
+    position: relative;
+    background-color: #f7f7f7;
+}
+.searchBuilderSubmit {
+    text-align: right;
+    padding: 0 5px 10px 0;
+}
+
+.searchBuilderSave {
+    position: absolute;
+    left: 5px;
+    bottom: 5px;
+}  
+
+#searchBuilderInput {
+    width: 100%;
+}
+
+span.developerBundleCode, a.developerBundleCode {
+    font-size: 10px;
+    text-decoration: none;
+    cursor: pointer;
+    color: #333;
+}
+
+.sidecarFiletype {
+    min-width: 300px;
+}
+.filetype {
+    margin: 0 2px;
+    padding: 0px 5px;
+    border: 1px solid #ddd;
+    background-color: #f8f8f8;
+    border-radius: 3px;
+    white-space: nowrap;
+}
+
+/*.plyr, .plyr__video-wrapper {
+    max-height: 96% !important;
+} */
+.plyr {
+    height: calc(100% - 36px) !important;
+} 
+.plyr__video-wrapper {
+    height: none !important;
+}    
+
+div.genericEditorContent {
+	padding: 10px;
+	font-size: 12px;
+	color: #000;
+	font-weight: initial;
 }

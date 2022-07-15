@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -62,7 +62,7 @@
  			return $vn_rc;
  		}
 		# -------------------------------------------------------
-		protected function redirectAfterDelete($ps_table) {
+		protected function redirectAfterDelete($t_subject) {
 			caSetRedirect(caNavUrl($this->getRequest(),'administrate/setup/interface_editor','InterfaceEditor','Edit', array('ui_id' => $this->opn_ui_id)));
 		}
  		# -------------------------------------------------------

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2017 Whirl-i-Gig
+ * Copyright 2015-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,6 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
 
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
 
@@ -58,7 +59,7 @@ class HierarchyGetTest extends BaseTestWithData {
 	 */
 	protected $opt_third_child_object = null;
 	# -------------------------------------------------------
-	public function setUp() {
+	protected function setUp() : void {
 		// don't forget to call parent so that the request is set up
 		parent::setUp();
 
@@ -261,7 +262,7 @@ class HierarchyGetTest extends BaseTestWithData {
 		$this->assertEquals(3, $vm_ret);
 		
 		$vm_ret = $this->opt_parent_object->get('ca_objects.children._count', ['returnAsArray' => true]);
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 		$this->assertCount(1, $vm_ret);
 		$this->assertEquals(3, $vm_ret[0]);
 		
@@ -280,40 +281,40 @@ class HierarchyGetTest extends BaseTestWithData {
 	# -------------------------------------------------------
 	public function testChildrenRestrictToTypesDisplayTemplates() {
 		$vm_ret = DisplayTemplateParser::evaluate("<unit delimiter='; ' restrictToTypes='image' relativeTo='ca_objects.children'>^ca_objects.preferred_labels.name</unit>", "ca_objects", array($this->opt_parent_object->getPrimaryKey()), array('returnAsArray' => true));
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 		$this->assertCount(1, $vm_ret);
 		$this->assertEquals('My test still; Another test still', $vm_ret[0]);
 		
 		$vm_ret = DisplayTemplateParser::evaluate("<unit delimiter='; ' restrictToTypes='moving_image' relativeTo='ca_objects.children'>^ca_objects.preferred_labels.name</unit>", "ca_objects", array($this->opt_parent_object->getPrimaryKey()), array('returnAsArray' => true));
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 		$this->assertCount(1, $vm_ret);
 		$this->assertEquals('A child movie', $vm_ret[0]);
 		
 		$vm_ret = DisplayTemplateParser::evaluate("<unit delimiter='; ' restrictToTypes='image'>^ca_objects.children.preferred_labels.name</unit>", "ca_objects", array($this->opt_parent_object->getPrimaryKey()), array('returnAsArray' => true));
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 		$this->assertCount(1, $vm_ret);
 		$this->assertEquals('My test still; Another test still', $vm_ret[0]);
 		
 		$vm_ret = DisplayTemplateParser::evaluate("<unit delimiter='; ' restrictToTypes='moving_image'>^ca_objects.children.preferred_labels.name</unit>", "ca_objects", array($this->opt_parent_object->getPrimaryKey()), array('returnAsArray' => true));
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 		$this->assertCount(1, $vm_ret);
 		$this->assertEquals('A child movie', $vm_ret[0]);
 	}
 	# -------------------------------------------------------
 	public function testParentRestrictToTypesDisplayTemplates() {
 		$vm_ret = DisplayTemplateParser::evaluate("<unit delimiter='; ' restrictToTypes='moving_image' relativeTo='ca_objects.parent'>^ca_objects.preferred_labels.name</unit>", "ca_objects", array($this->opt_another_child_object->getPrimaryKey()), array('returnAsArray' => true));
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 		$this->assertCount(1, $vm_ret);
 		$this->assertEquals('My test moving image', $vm_ret[0]);
 		
 		$vm_ret = DisplayTemplateParser::evaluate("<unit delimiter='; ' restrictToTypes='image' relativeTo='ca_objects.parent'>^ca_objects.preferred_labels.name</unit>", "ca_objects", array($this->opt_another_child_object->getPrimaryKey()), array('returnAsArray' => true));
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 		$this->assertCount(0, $vm_ret);
 	}
 	# -------------------------------------------------------
 	public function testHierarchyDisplayTemplates() {
 		$vm_ret = DisplayTemplateParser::evaluate("<unit relativeTo='ca_objects.materials' delimiter='<br/>'>^ca_objects.materials.hierarchy.preferred_labels.name_plural%delimiter=_➔_</unit>", "ca_objects", array($this->opt_parent_object->getPrimaryKey()), array('returnAsArray' => true));
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 		$this->assertCount(1, $vm_ret);
 		
 		$this->assertEquals('fabric ➔ cordage<br/>glass ➔ blown', $vm_ret[0]);
@@ -322,30 +323,30 @@ class HierarchyGetTest extends BaseTestWithData {
 	# -------------------------------------------------------
 	public function testHierarchyRestrictToTypesDisplayTemplates() {
 		$vm_ret = DisplayTemplateParser::evaluate("<unit delimiter='; ' restrictToTypes='image' relativeTo='ca_objects.hierarchy'>^ca_objects.preferred_labels.name</unit>", "ca_objects", array($this->opt_another_child_object->getPrimaryKey()), array('returnAsArray' => true));
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 		$this->assertCount(1, $vm_ret);
 		//print_R($vm_ret);
 		$this->assertEquals('Another test still', $vm_ret[0]);
 		
 		$vm_ret = DisplayTemplateParser::evaluate("<unit delimiter='; ' restrictToTypes='moving_image' relativeTo='ca_objects.hierarchy'>^ca_objects.preferred_labels.name</unit>", "ca_objects", array($this->opt_another_child_object->getPrimaryKey()), array('returnAsArray' => true));
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 		$this->assertCount(1, $vm_ret);
 		$this->assertEquals('My test moving image', $vm_ret[0]);
 	}
 	# -------------------------------------------------------
 	public function testSiblingRestrictToTypesDisplayTemplates() {
 		$vm_ret = DisplayTemplateParser::evaluate("<unit delimiter='; ' restrictToTypes='image' relativeTo='ca_objects.siblings'>^ca_objects.preferred_labels.name</unit>", "ca_objects", array($this->opt_another_child_object->getPrimaryKey()), array('returnAsArray' => true));
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 		$this->assertCount(1, $vm_ret);
 		$this->assertEquals('My test still; Another test still', $vm_ret[0]);
 		
 		$vm_ret = DisplayTemplateParser::evaluate("<unit delimiter='; ' restrictToTypes='moving_image' relativeTo='ca_objects.siblings'>^ca_objects.preferred_labels.name</unit>", "ca_objects", array($this->opt_another_child_object->getPrimaryKey()), array('returnAsArray' => true));
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 		$this->assertCount(1, $vm_ret);
 		$this->assertEquals('A child movie', $vm_ret[0]);
 	}
 	# -------------------------------------------------------
-	public function tearDown() {
+	protected function tearDown() : void {
 
 		// set parent id to null for both children to avoid FK conflicts during tearDown()
 

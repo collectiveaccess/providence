@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2018 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -49,6 +49,9 @@
 					if(!is_array($pa_additional_query_params)) { $pa_additional_query_params = array(); }
 					
 					$va_lists = explode(";", $ps_lists);
+					
+					$pa_options['hier_id'] = caGetListID($va_lists[0]);
+					
 					$va_tmp = array();
 					$pa_options['filters'] = array();
 					foreach($va_lists as $vs_list) {
@@ -80,9 +83,9 @@
 				$va_lists = explode(";", $ps_lists);
 			}
 			
-			$vn_max_items_per_page = null;
-			if ($vn_max_items_per_page > 1000) {
-				$vn_max_items_per_page = 100;
+			$vn_max_items_per_page = $this->request->getParameter('max', pInteger);
+			if (($vn_max_items_per_page > 1000) || ($vn_max_items_per_page <= 0)) {
+				$vn_max_items_per_page = 500;
 			}
 			
 			$va_level_data = array();
@@ -132,11 +135,11 @@
 							unset($va_item['description']);
 							unset($va_item['icon']);
 						
-							if (!$va_item[$vs_label_display_field_name]) { $va_item[$vs_label_display_field_name] = $va_item['idno']; }
-							if (!$va_item[$vs_label_display_field_name]) { $va_item[$vs_label_display_field_name] = '???'; }
+							if (!trim($va_item[$vs_label_display_field_name])) { $va_item[$vs_label_display_field_name] = $va_item['idno']; }
+							if (!trim($va_item[$vs_label_display_field_name])) { $va_item[$vs_label_display_field_name] = '???'; }
 						
 							$va_item['name'] = $va_display_values[$vn_c];
-							if (!$va_item['name']) { $va_item['name'] = '??? '.$vn_item_id; }
+							if (!trim($va_item['name'])) { $va_item['name'] = '??? '.$vn_item_id; }
 							$va_item['table'] = 'ca_list_items';
 						
 							// Child count is only valid if has_children is not null
@@ -165,10 +168,10 @@
 			
 				$va_list_items_sortable = [];
 				foreach($va_list_items as $vn_item_id => $va_item) {
-					$va_list_items_sortable[caSortableValue(mb_strtolower(preg_replace('![^A-Za-z0-9]!', '_', caRemoveAccents($va_item['name_plural'])))).'_'.$vn_item_id] = $va_item;
+					$va_list_items_sortable[caSortableValue(mb_strtolower(preg_replace('![^A-Za-z0-9]!', '_', caRemoveAccents($va_item['name'])))).'_'.$vn_item_id] = $va_item;
 				}
+				//ksort($va_list_items_sortable);
 				$va_list_items = $va_list_items_sortable;
-				
  				$va_list_items['_sortOrder'] = array_keys($va_list_items);
 
 				$va_list_items['_primaryKey'] = $t_item->primaryKey();	// pass the name of the primary key so the hierbrowser knows where to look for item_id's

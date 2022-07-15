@@ -141,27 +141,35 @@
  			$this->view->setVar('file_path', $t_caption->getFilePath('caption_file'));
  			$va_info = $t_caption->getFileInfo("caption_file");
  			
- 			switch($this->request->user->getPreference('downloaded_file_naming')) {
- 				case 'idno':
- 					$this->view->setVar('download_name', (str_replace(' ', '_', $t_rep->get('idno')))."_captions_{$vs_locale}.vtt");
- 					break;
- 				case 'idno_and_version':
- 					$this->view->setVar('download_name', (str_replace(' ', '_', $t_rep->get('idno')))."_captions_{$vs_locale}.vtt");
- 					break;
- 				case 'idno_and_rep_id_and_version':
- 					$this->view->setVar('download_name', (str_replace(' ', '_', $t_rep->get('idno')))."_representation_{$pn_representation_id}_captions_{$vs_locale}.vtt");
- 					break;
- 				case 'original_name':
- 				default:
- 					if ($va_info['ORIGINAL_FILENAME']) {
- 						$this->view->setVar('download_name', $va_info['ORIGINAL_FILENAME']."_captions_{$vs_locale}.vtt");
- 					} else {
- 						$this->view->setVar('download_name', (str_replace(' ', '_', $t_rep->get('idno')))."_representation_{$pn_representation_id}_captions_{$vs_locale}.vtt");
- 					}
- 					break;
- 			} 
- 			
+ 			$this->view->setVar('download_name', caGetRepresentationDownloadFileName('ca_object_representations', ['idno' => $t_rep->get('idno'), 'index' => null, 'version' => 'captions', 'extension' => 'vtt', 'original_filename' => $va_info['ORIGINAL_FILENAME'], 'representation_id' => $pn_representation_id]));				
+			
  			return $this->render('caption_download_binary.php');
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
+ 		public function DownloadSidecarFile() {
+ 			list($pn_representation_id, $t_rep) = $this->_initView();
+ 			
+ 			$pn_sidecar_id = $this->request->getParameter('sidecar_id', pString);
+ 			
+ 			$this->view->setVar('representation_id', $pn_representation_id);
+ 			$this->view->setVar('sidecar_id', $pn_sidecar_id);
+ 			$this->view->setVar('t_object_representation', $t_rep);
+ 			
+ 			$t_sidecar = new ca_object_representation_sidecars($pn_sidecar_id);
+ 			if (!$t_sidecar->getPrimaryKey() || ((int)$t_sidecar->get('representation_id') !== (int)$pn_representation_id)) {
+ 				die(_t("Invalid sidecar file"));
+ 			}
+ 			
+ 			$info = $t_sidecar->getFileInfo('sidecar_file');
+ 			$this->view->setVar('file_path', $path = $t_sidecar->getFilePath('sidecar_file'));
+ 			$va_info = $t_sidecar->getFileInfo("sidecar_file");
+ 			
+ 			$this->view->setVar('download_name', caGetRepresentationDownloadFileName('ca_object_representations', ['idno' => $t_rep->get('idno'), 'index' => null, 'version' => 'sidecars', 'extension' => pathinfo($path, PATHINFO_EXTENSION), 'original_filename' => $va_info['ORIGINAL_FILENAME'], 'representation_id' => $pn_representation_id]));				
+			
+ 			return $this->render('sidecar_download_binary.php');
  		}
  		# -------------------------------------------------------
  		# Sidebar info handler

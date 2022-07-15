@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2018 Whirl-i-Gig
+ * Copyright 2014-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -182,7 +182,7 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 		
 		
 		if ((!$vn_id) && ($o_log = caGetOption('log', $pa_options, null))) {
-			$o_log->logError(_t('Value %1 was not set for %2 because it does not refer to an existing %3', $ps_value, caGetOption('logIdno', $pa_options, '???'), $t_item->getProperty('name_singular')));
+			$o_log->logError(_t('Value %1 was not set for %2 because it does not refer to an existing %3', $ps_value, caGetOption('logReference', $pa_options, '???'), $t_item->getProperty('name_singular')));
 		}
 
 		if (!$vb_require_value && !$vn_id) {
@@ -250,6 +250,9 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 		$o_view->setVar('settings', $va_settings);
 		$o_view->setVar('element_info', $pa_element_info);
 		$o_view->setVar('class', $vs_class);
+		$o_view->setVar('forSearch', caGetOption('forSearch', $pa_options, false));
+		$o_view->setVar('class', $vs_class);
+		$o_view->setVar('table', $t_instance->tableName());
 		
 		$o_view->setVar('allowQuickadd', (strpos($pa_options['request']->getController(), 'Interstitial') === false));
 

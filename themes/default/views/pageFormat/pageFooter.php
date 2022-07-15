@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -48,9 +48,8 @@
 					print caNavLink($this->request, _t('Login'), '', 'system', 'auth', 'login');
 				}
 ?>
-				&nbsp;&nbsp;|&nbsp;&nbsp; &copy; 2018 Whirl-i-Gig, <a href="http://www.collectiveaccess.org" target="_blank">CollectiveAccess</a> <?php _p("is a trademark of"); ?> <a href="http://www.whirl-i-gig.com" target="_blank">Whirl-i-Gig</a>
+				&nbsp;&nbsp;|&nbsp;&nbsp; &copy; 2022 Whirl-i-Gig, <a href="http://www.collectiveaccess.org" target="_blank">CollectiveAccess</a> <?php _p("is a trademark of"); ?> <a href="http://www.whirl-i-gig.com" target="_blank">Whirl-i-Gig</a>
 				[<?php print Session::elapsedTime(4).'s'; ?>/<?php print caGetMemoryUsage(); ?>]
-				<?php if (Db::$monitor) { print " [<a href='#' onclick='jQuery(\"#caApplicationMonitor\").slideToggle(100); return false;'>$</a>]"; } ?>
 			</div></div><!-- end footer -->
 		</div><!-- end footerContainer -->
 		</div><!-- end center -->
@@ -154,10 +153,19 @@
 		} else {
 			jQuery('#caSideNavMoreToggle').hide();
 		}
+		
+		jQuery('.caEditorFormNotifications').on('click', function(e) {
+			introJs().start();
+			e.stopPropagation();
+			return false;
+		});
+		
+		jQuery('a.developerBundleCode').on('click', function(e) {
+			caUI.utils.copyToClipboard(jQuery(this).text(), <?= json_encode(_t('Copied code to clipboard')); ?>, { header: <?= json_encode(_t('Developer tools')); ?>, life: 1000, openDuration: 'fast', closeDuration: 'fast' });
+			e.preventDefault();
+		});
 	});
 	</script>
-<?php
-	if (Db::$monitor) { print $this->render('system/monitor_html.php'); }
-?>
+	<?= AssetLoadManager::getLoadHTML($this->request, ['outputTarget' => 'footer']); ?>
 	</body>
 </html>

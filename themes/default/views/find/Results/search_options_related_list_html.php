@@ -30,10 +30,9 @@
  	$vo_result_context 		= $this->getVar('result_context');
  	$t_subject 				= $this->getVar('t_subject');
  	$vs_table 				= $t_subject->tableName();
- ?>
- 
- 
- <?php
+ 	
+ 	$params				 	= $this->getVar('relatedListParams');
+
 if($vo_result->numHits() > 0) {
 	print $this->render('Search/search_tools_related_list_html.php');
 
@@ -62,7 +61,7 @@ if($vo_result->numHits() > 0) {
 <div id="searchOptionsBox_<?php print $this->getVar('interstitialPrefix'); ?>" class="relatedListSearchOptionsBox">
 	<div class="bg">
 <?php
-		print caFormTag($this->request, 'Index', 'caSearchOptionsForm_'.$this->getVar('interstitialPrefix'),  null , 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); 
+		print caFormTag($this->request, 'Index', 'caSearchOptionsForm_'.$this->getVar('interstitialPrefix'),  null , 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); 
 		
 		print "<div class='col'>";
 		print _t("Sort").": <select name='sort' style='width: 70px;'>\n";
@@ -117,6 +116,8 @@ if($vo_result->numHits() > 0) {
 		}
 		print "</select>\n";
 		print "</div>";		
+		
+		print caHTMLHiddenInput('ids', ['value' => $params['ids']]);
 ?>		
 			<div class="clear"> </div>
 		

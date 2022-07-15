@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,13 @@
  * 
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
+
 require_once(__CA_LIB_DIR__."/Service/BaseJSONService.php");
 require_once(__CA_LIB_DIR__."/Controller/Request/RequestHTTP.php");
 require_once(__CA_LIB_DIR__."/Controller/Response/ResponseHTTP.php");
 
-class BaseJSONServiceTest extends PHPUnit_Framework_TestCase {
+class BaseJSONServiceTest extends TestCase {
 	# -------------------------------------------------------
 	public function testProperInstantiation(){
 		global $_SERVER; // emulate client request
@@ -56,6 +58,8 @@ class BaseJSONServiceTest extends PHPUnit_Framework_TestCase {
 	# -------------------------------------------------------
 	public function testImproperInstantiation(){
 		global $_SERVER; // emulate client request
+		
+		$method = $_SERVER["REQUEST_METHOD"];
 		$_SERVER["REQUEST_METHOD"] = "FOOBAR";
 		$_SERVER["SCRIPT_NAME"] = "/service.php";
 
@@ -70,6 +74,8 @@ class BaseJSONServiceTest extends PHPUnit_Framework_TestCase {
 		// the above code should generate 3 errors (invalid table, no JSON request body
 		// and invalid request method)
 		$this->assertEquals(3,sizeof($vo_service->getErrors()));
+		
+		$_SERVER["REQUEST_METHOD"] = $method;
 	}
 	# -------------------------------------------------------
 }

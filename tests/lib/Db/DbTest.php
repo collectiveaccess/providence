@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2017 Whirl-i-Gig
+ * Copyright 2015-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,16 +29,18 @@
  *
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
+ 
 require_once(__CA_LIB_DIR__."/Db.php");
 
-class DbTest extends PHPUnit_Framework_TestCase {
+class DbTest extends TestCase {
 
 	/**
 	 * @var null|Db
 	 */
 	var $db = null;
 
-	public function setUp() {
+	protected function setUp() : void {
 		$this->db = new Db();
 		$this->db->query("CREATE TABLE IF NOT EXISTS foo (
 			id INT,
@@ -80,7 +82,7 @@ class DbTest extends PHPUnit_Framework_TestCase {
 		$this->db->query("INSERT INTO foo (id, comment) VALUES (1, 'bar')");
 
 		$qr_select = $this->db->query("SELECT * FROM foo");
-		$this->assertInternalType('object', $qr_select);
+		$this->assertIsObject( $qr_select);
 		$this->assertTrue($qr_select->nextRow());
 
 		$this->assertEquals(1, $qr_select->get('id'));
@@ -97,7 +99,7 @@ class DbTest extends PHPUnit_Framework_TestCase {
 		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(1, 'bar'));
 
 		$qr_select = $this->db->query("SELECT * FROM foo");
-		$this->assertInternalType('object', $qr_select);
+		$this->assertIsObject( $qr_select);
 		$this->assertTrue($qr_select->nextRow());
 
 		$this->assertEquals(1, $qr_select->get('id'));
@@ -128,7 +130,7 @@ class DbTest extends PHPUnit_Framework_TestCase {
 		$o_stmt->execute(array(1,'bar'));
 
 		$qr_select = $this->db->query("SELECT * FROM foo");
-		$this->assertInternalType('object', $qr_select);
+		$this->assertIsObject( $qr_select);
 		$this->assertTrue($qr_select->nextRow());
 
 		$this->assertEquals(1, $qr_select->get('id'));
@@ -171,7 +173,7 @@ class DbTest extends PHPUnit_Framework_TestCase {
 		$this->assertContains('foo', $va_tables);
 		$this->assertContains('bar', $va_tables);
 		
-		$this->assertEquals(223, sizeof($va_tables)); // 221 CA tables plus 2 we created!
+		$this->assertEquals(231, sizeof($va_tables)); // 229 CA tables plus 2 we created!
 	}
 
 	public function testQuote() {
@@ -200,7 +202,7 @@ class DbTest extends PHPUnit_Framework_TestCase {
 		$this->db->commitTransaction();
 
 		$qr_select = $this->db->query("SELECT * FROM foo");
-		$this->assertInternalType('object', $qr_select);
+		$this->assertIsObject( $qr_select);
 		$this->assertTrue($qr_select->nextRow());
 
 		$this->assertEquals(1, $qr_select->get('id'));
@@ -252,7 +254,7 @@ class DbTest extends PHPUnit_Framework_TestCase {
 	public function testGetIndices() {
 		$va_indexes = $this->db->getIndices('ca_objects'); // not asking for foo this time!
 
-		$this->assertInternalType('array', $va_indexes);
+		$this->assertIsArray($va_indexes);
 
 		foreach($va_indexes as $va_index) {
 			$this->assertEquals('ca_objects', $va_index['Table']);
@@ -273,7 +275,7 @@ class DbTest extends PHPUnit_Framework_TestCase {
 
 	# ----------------------------
 
-	public function tearDown() {
+	protected function tearDown() : void {
 		$this->db->query("DROP TABLE IF EXISTS foo");
 		$this->db->query("DROP TABLE IF EXISTS bar");
 	}
@@ -281,7 +283,7 @@ class DbTest extends PHPUnit_Framework_TestCase {
 	public function checkIfFooIsEmpty() {
 		$this->assertEquals(0, $this->db->getTransactionCount());
 		$qr_select = $this->db->query("SELECT * FROM foo");
-		$this->assertInternalType('object', $qr_select);
+		$this->assertIsObject( $qr_select);
 		$this->assertFalse($qr_select->nextRow());
 		$this->assertEquals(0, $qr_select->numRows());
 	}

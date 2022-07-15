@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * themes/default/views/mediaViewers/MiradorManifest.php :
+ * themes/default/views/mediaViewers/UniversalViewerManifest.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,7 +31,7 @@
  */
  
 	$va_data = $this->getVar('data');
-	$vs_identifer = $this->getVar('identifier');
+	$vs_identifier = $this->getVar('identifier');
 	$t_instance = $this->getVar('t_instance');
 	$t_subject = $this->getVar('t_subject');
 	$vo_request = $this->getVar('request');
@@ -39,7 +39,7 @@
 	
 	$vs_display_version = caGetOption('display_version', $va_display, 'tilepic');
 	
-	$vs_title = ($t_instance && ($vs_rep_title = str_replace("["._t('BLANK')."]", "", $t_instance->get('preferred_labels')))) ? $vs_rep_title : (($vs_subject_title = str_replace("["._t('BLANK')."]", "", $t_subject->get('preferred_labels'))) ? $vs_subject_title : "???");
+	$vs_title = ($t_instance && ($vs_rep_title = str_replace("[".caGetBlankLabelText('ca_object_representations')."]", "", $t_instance->get('preferred_labels')))) ? $vs_rep_title : (($vs_subject_title = str_replace("[".caGetBlankLabelText($t_subject->tableName())."]", "", $t_subject->get('preferred_labels'))) ? $vs_subject_title : "???");
 	
 	$va_metadata = [
     	["label" => "Title", "value" => $vs_title]
@@ -57,7 +57,7 @@
 	$vn_num_resources = sizeof($va_resources);
 	
 	foreach($va_resources as $va_resource) {
-		$vs_canvas_id = "{$vs_identifer}:{$vn_page}";
+		$vs_canvas_id = "{$vs_identifier}:{$vn_page}";
 		
 		if (isset($va_resource['noPages'])) {
 			// If resource includes explicitly set "noPages" then assume representation identifier with that id
@@ -67,12 +67,12 @@
 			$vs_thumb_url = "{$vs_base_url}/service.php/IIIF/representation:".$va_resource['representation_id']."/full/!512,512/0/default.jpg";
 			$vn_width = $va_resource['width']; $vn_height = $va_resource['height'];
 		} elseif ($vs_display_version == 'tilepic') {
-			$vs_service_url = "{$vs_base_url}/service.php/IIIF/{$vs_identifer}:{$vn_page}";
-			$vs_thumb_url = "{$vs_base_url}/service.php/IIIF/{$vs_identifer}:{$vn_page}/full/!512,512/0/default.jpg";
-			$vn_width = $va_data['width']; $vn_height = $va_data['height'];
+			$vs_service_url = "{$vs_base_url}/service.php/IIIF/{$vs_identifier}:{$vn_page}";
+			$vs_thumb_url = "{$vs_base_url}/service.php/IIIF/{$vs_identifier}:{$vn_page}/full/!512,512/0/default.jpg";
+			$vn_width = $va_resource[$vs_display_version.'_width']; $vn_height = $va_resource[$vs_display_version.'_height'];
 		} else {
 			$vs_service_url = $va_resource['url'];
-			$vs_thumb_url = "{$vs_base_url}/service.php/IIIF/{$vs_identifer}:{$vn_page}/full/!512,512/0/default.jpg";
+			$vs_thumb_url = "{$vs_base_url}/service.php/IIIF/{$vs_identifier}:{$vn_page}/full/!512,512/0/default.jpg";
 			$vn_width = $va_data['width']; $vn_height = $va_data['height'];
 		}
 		
@@ -111,7 +111,7 @@
 	
 	$va_manifest = [
 		"@context" => "http://iiif.io/api/presentation/2/context.json",
-		"@id" => "{$vs_identifer}/manifest",
+		"@id" => "{$vs_identifier}/manifest",
 		"@type" => "sc:Manifest",
 		"label" => '',
 		"metadata" => $va_metadata,
@@ -123,7 +123,7 @@
 		],
 		"sequences" => [
 			[
-				"@id" => "{$vs_identifer}/sequence/s0",
+				"@id" => "{$vs_identifier}/sequence/s0",
 				"@type" => "sc:Sequence",
 				"label" => "Sequence s0",
 				"rendering" => [],

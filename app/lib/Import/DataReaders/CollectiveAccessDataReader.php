@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2016 Whirl-i-Gig
+ * Copyright 2013-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -49,10 +49,10 @@ class CollectiveAccessDataReader extends BaseDataReader {
 	private $opn_current_row = 0;
 	
 	private $opo_client = null;
-	private $opo_datamodel = null;
 	
 	private $ops_table = null;
 	private $ops_path = null;
+	private $ops_url_root = null;
 	# -------------------------------------------------------
 	/**
 	 *
@@ -91,7 +91,7 @@ class CollectiveAccessDataReader extends BaseDataReader {
 		
 		try {
 			$this->opo_client = new \GuzzleHttp\Client();
-			$vs_url_root = "http://".$va_url['user'].":".$va_url['pass']."@".$va_url['host'].(($va_url['port'] != 80) ? ":{$va_url['port']}": '');
+			$this->ops_url_root = $vs_url_root = $va_url['scheme']."://".$va_url['user'].":".$va_url['pass']."@".$va_url['host'].(($va_url['port'] != 80) ? ":{$va_url['port']}": '');
 			
 			$response = $this->opo_client->request("GET", $vs_url_root.($vs_path ? "{$vs_path}" : "")."/service.php/find/{$vs_table}?".$va_url['query']);
 			
@@ -123,16 +123,12 @@ class CollectiveAccessDataReader extends BaseDataReader {
 			
 			$this->opn_current_row++;
 			try {
-				$request = $this->opo_client->get(($this->ops_path ? $this->ops_path : "")."/service.php/item/{$this->ops_table}/id/{$vn_id}?pretty=1&format=import");
-				$response = $request->send();
-				$data = $response->json();
+				$response = $this->opo_client->request("GET", $this->ops_url_root.($this->ops_path ? $this->ops_path : "")."/service.php/item/{$this->ops_table}/id/{$vn_id}?pretty=1&format=import");
+				$data = json_decode($response->getBody(), true);
 				$this->opa_row_buf[$this->opn_current_row] = $data;
 			} catch (Exception $e) {
-				//return false;
 				return $this->nextRow();	// try the next row?
 			}
-			
-		
 			
 			return true;
 		}
@@ -169,7 +165,7 @@ class CollectiveAccessDataReader extends BaseDataReader {
 		if (!is_array($pa_filter_to_relationship_types) && $pa_filter_to_relationship_types) { $pa_filter_to_relationship_types = array($pa_filter_to_relationship_types); }
 		
 		$pb_return_all_locales = isset($pa_options['returnAllLocales']) ? (bool)$pa_options['returnAllLocales'] : false;
-		$pb_convert_codes_to_display_text = isset($pa_options['convertCodesToDisplayText']) ? (bool)$pa_options['convertCodesToDisplayText'] : false;
+		$pb_convert_codes_to_display_text = isset($pa_options['convertCodesToDisplayText']) ? (bool)$pa_options['convertCodesToDisplayText'] : true;
 		$vs_delimiter = isset($pa_options['delimiter']) ? (string)$pa_options['delimiter'] : "; ";
 		
 		$va_col = explode(".", $ps_col);
@@ -183,7 +179,6 @@ class CollectiveAccessDataReader extends BaseDataReader {
 				$va_tmp = caExtractValuesByUserLocale(array($va_data['preferred_labels']));
 				$va_data['preferred_labels'] = array_pop($va_tmp);
 			}
-			
 			switch(sizeof($va_col)) {
 				// ------------------------------------------------------------------------------------------------
 				case 2:
@@ -200,6 +195,32 @@ class CollectiveAccessDataReader extends BaseDataReader {
 								}
 							} else {
 								return $va_data['preferred_labels'][$vs_display_field];
+							}
+						}
+						return null;
+					}
+					if ($va_col[1] == 'nonpreferred_labels') {
+						// figure out what the display field is
+						if ($t_instance = Datamodel::getInstanceByTableName($va_col[0], true)) {
+							$vs_display_field = $t_instance->getLabelDisplayField();
+							
+							$ret = [];
+							if ($pb_return_as_array) {
+								if ($pb_return_all_locales) {
+								    foreach($va_data['nonpreferred_labels'] as $loc => $labels) {
+								        $ret[$loc] = array_map(function($v) use ($vs_display_field) { return $v[$vs_display_field]; }, $labels);
+								    }
+								} else {
+								    foreach($va_data['nonpreferred_labels'] as $loc => $labels) {
+								        $ret = array_merge($ret, array_map(function($v) use ($vs_display_field) { return is_array($v) ? $v[$vs_display_field] : null; }, $labels));
+								    }
+								}
+								return $ret;
+							} else {
+							    foreach($va_data['nonpreferred_labels'] as $loc => $labels) {
+                                    $ret = array_merge($ret, array_map(function($v) use ($vs_display_field) { return $v[$vs_display_field]; }, $labels));
+                                }
+								return join($vs_delimiter, $ret);
 							}
 						}
 						return null;
@@ -268,6 +289,21 @@ class CollectiveAccessDataReader extends BaseDataReader {
 						}
 						return null;
 					}
+					if ($va_col[1] == 'nonpreferred_labels') {
+					    if(is_array($va_data['nonpreferred_labels'])) {
+                            $vals = array_map(function($v) use ($va_col) { return $v[$va_col[2]]; }, $va_data['nonpreferred_labels']);
+                            if ($pb_return_as_array) {
+                                if ($pb_return_all_locales) {
+                                    return array($va_data['locale'] => $vals);
+                                } else {
+                                    return $vals;
+                                }
+                            } else {
+                                return join($vs_delimiter, $vals);
+                            }
+                        }
+						return null;
+					}
 					if (isset($va_data['attributes'][$va_col[1]]) && is_array($va_data['attributes'][$va_col[1]]) && sizeof($va_data['attributes'][$va_col[1]])) {
 						$va_vals = [];
 						foreach($va_data['attributes'][$va_col[1]] as $vn_i => $va_val) {
@@ -314,11 +350,18 @@ class CollectiveAccessDataReader extends BaseDataReader {
 			//
 			// Related
 			//
-			if (!isset($va_data['related'][$va_col[0]])) { return null; }
+			if (!(in_array($va_col[0], ['tags', 'ca_item_tags'])) && !isset($va_data['related'][$va_col[0]])) { return null; }
 			
 			$va_rel_data = $va_data['related'][$va_col[0]];
 			
 			switch(sizeof($va_col)) {
+				// ------------------------------------------------------------------------------------------------
+				case 1:
+				    if (in_array($va_col[0], ['tags', 'ca_item_tags'])) {
+				        return is_array($va_data['tags']) ? $va_data['tags'] : [];
+				    }
+				    return null;
+				    break;
 				// ------------------------------------------------------------------------------------------------
 				case 2:
 					if ($va_col[1] == 'preferred_labels') {
@@ -328,8 +371,28 @@ class CollectiveAccessDataReader extends BaseDataReader {
 							$va_rels = [];
 							foreach($va_rel_data as $vn_i => $va_rel) {
 								$va_labels = $va_rel['preferred_labels'];
-								if (is_array($pa_filter_to_types) && !in_array($va_rel['type_code'], $pa_filter_to_types)) { continue; }
-								if (is_array($pa_filter_to_relationship_types) && !in_array($va_rel['relationship_typename'], $pa_filter_to_relationship_types)) { continue; }
+								if (is_array($pa_filter_to_types) && !in_array($va_rel['type_id_code'], $pa_filter_to_types)) { continue; }
+								if (is_array($pa_filter_to_relationship_types) && !in_array($va_rel['relationship_typename'], $pa_filter_to_relationship_types) && !in_array($va_rel['relationship_type_code'], $pa_filter_to_relationship_types)) { continue; }
+								$va_rels[] = $va_labels[$vs_display_field];
+							}
+							
+							if ($pb_return_as_array) {
+								return $va_rels;
+							} else {
+								return join($vs_delimiter, $va_rels);
+							}
+						}
+						return null;
+					}
+					if ($va_col[1] == 'nonpreferred_labels') {
+						// figure out what the display field is
+						if ($t_instance = Datamodel::getInstanceByTableName($va_col[0], true)) {
+							$vs_display_field = $t_instance->getLabelDisplayField();
+							$va_rels = [];
+							foreach($va_rel_data as $vn_i => $va_rel) {
+								$va_labels = $va_rel['nonpreferred_labels'];
+								if (is_array($pa_filter_to_types) && !in_array($va_rel['type_id_code'], $pa_filter_to_types)) { continue; }
+								if (is_array($pa_filter_to_relationship_types) && !in_array($va_rel['relationship_typename'], $pa_filter_to_relationship_types) && !in_array($va_rel['relationship_type_code'], $pa_filter_to_relationship_types)) { continue; }
 								$va_rels[] = $va_labels[$vs_display_field];
 							}
 							
@@ -344,23 +407,26 @@ class CollectiveAccessDataReader extends BaseDataReader {
 					// try intrinsic
 					$va_rels = [];
 					foreach($va_rel_data as $vn_i => $va_rel) {
-						if (is_array($pa_filter_to_types) && !in_array($va_rel['type_code'], $pa_filter_to_types)) { continue; }
-						if (is_array($pa_filter_to_relationship_types) && !in_array($va_rel['relationship_typename'], $pa_filter_to_relationship_types)) { continue; }
+						if (is_array($pa_filter_to_types) && !in_array($va_rel['type_id_code'], $pa_filter_to_types)) { continue; }
+						if (is_array($pa_filter_to_relationship_types) && !in_array($va_rel['relationship_typename'], $pa_filter_to_relationship_types) && !in_array($va_rel['relationship_type_code'], $pa_filter_to_relationship_types)) { continue; }
 								
 						if (isset($va_rel['intrinsic'][$va_col[1]])) {
 							if ($pb_convert_codes_to_display_text && isset($va_rel['intrinsic'][$va_col[1].'_display'])) {
 								$va_rels[] = $va_rel['intrinsic'][$va_col[1].'_display'];
 							} else {
-								$va_rels[] = $va_rel['intrinsic'][$va_col[1]];
+								$va_rels[] = isset($va_rel['intrinsic'][$va_col[1].'_code']) ? $va_rel['intrinsic'][$va_col[1].'_code'] : $va_rel['intrinsic'][$va_col[1]];
 							}
 						} elseif (isset($va_rel[$va_col[1]])) {
 							if ($pb_convert_codes_to_display_text && isset($va_rel[$va_col[1].'_display'])) {
 								$va_rels[] = $va_rel[$va_col[1].'_display'];
 							} else {
-								$va_rels[] = $va_rel[$va_col[1]];
+								$va_rels[] = isset($va_rel[$va_col[1].'_code']) ? $va_rel[$va_col[1].'_code'] : $va_rel[$va_col[1]];
 							}
+						} else {
+						    $va_rels[] = '';
 						}
 					}
+					
 					if ($pb_return_as_array) {
 						return $va_rels;
 					} else {
@@ -376,9 +442,71 @@ class CollectiveAccessDataReader extends BaseDataReader {
 							$va_rels = [];
 							foreach($va_rel_data as $vn_i => $va_rel) {
 								$va_labels = $va_rel['preferred_labels'];
-								if (is_array($pa_filter_to_types) && !in_array($va_rel['type_code'], $pa_filter_to_types)) { continue; }
-								if (is_array($pa_filter_to_relationship_types) && !in_array($va_rel['relationship_typename'], $pa_filter_to_relationship_types)) { continue; }
+								if (is_array($pa_filter_to_types) && !in_array($va_rel['type_id_code'], $pa_filter_to_types)) { continue; }
+								if (is_array($pa_filter_to_relationship_types) && !in_array($va_rel['relationship_typename'], $pa_filter_to_relationship_types) && !in_array($va_rel['relationship_type_code'], $pa_filter_to_relationship_types)) { continue; }
 								$va_rels[] = $va_labels[$va_col[2]];
+							}
+							
+							if ($pb_return_as_array) {
+								return $va_rels;
+							} else {
+								return join($vs_delimiter, $va_rels);
+							}
+						}
+						return null;
+					}
+					if (($va_col[1] == 'hierarchy') && ($va_col[2] == 'preferred_labels')) {
+						// figure out what the display field is
+						$vs_display_field = $t_instance->getLabelDisplayField();
+						if ($t_instance = Datamodel::getInstanceByTableName($va_col[0], true)) {
+							$va_rels = [];
+							foreach($va_rel_data as $vn_i => $va_rel) {
+								$va_labels = $va_rel['preferred_labels_hierarchy'];
+								if (is_array($pa_filter_to_types) && !in_array($va_rel['type_id_code'], $pa_filter_to_types)) { continue; }
+								if (is_array($pa_filter_to_relationship_types) && !in_array($va_rel['relationship_typename'], $pa_filter_to_relationship_types) && !in_array($va_rel['relationship_type_code'], $pa_filter_to_relationship_types)) { continue; }
+								$va_rels[] = join(caGetOption('hierarchicalDelimiter', $pa_options, ';'), $va_labels);
+							}
+							
+							if ($pb_return_as_array) {
+								return $va_rels;
+							} else {
+								return join($vs_delimiter, $va_rels);
+							}
+						}
+						return null;
+					}
+					if ($va_col[1] == 'nonpreferred_labels') {
+						// figure out what the display field is
+						if ($t_instance = Datamodel::getInstanceByTableName($va_col[0], true)) {
+							$va_rels = [];
+							foreach($va_rel_data as $vn_i => $va_rel) {
+								$va_labels = $va_rel['nonpreferred_labels'];
+								if (is_array($pa_filter_to_types) && !in_array($va_rel['type_id_code'], $pa_filter_to_types)) { continue; }
+								if (is_array($pa_filter_to_relationship_types) && !in_array($va_rel['relationship_typename'], $pa_filter_to_relationship_types) && !in_array($va_rel['relationship_type_code'], $pa_filter_to_relationship_types)) { continue; }
+								$va_rels[] = $va_labels[$va_col[2]];
+							}
+							
+							if ($pb_return_as_array) {
+								return $va_rels;
+							} else {
+								return join($vs_delimiter, $va_rels);
+							}
+						}
+						return null;
+					}
+					
+					break;
+				// ------------------------------------------------------------------------------------------------
+				case 4:
+					if (($va_col[1] == 'hierarchy') && ($va_col[2] == 'preferred_labels')) {
+						// figure out what the display field is
+						if ($t_instance = Datamodel::getInstanceByTableName($va_col[0], true)) {
+							$va_rels = [];
+							foreach($va_rel_data as $vn_i => $va_rel) {
+								$va_labels = $va_rel['preferred_labels_hierarchy'];
+								if (is_array($pa_filter_to_types) && !in_array($va_rel['type_id_code'], $pa_filter_to_types)) { continue; }
+								if (is_array($pa_filter_to_relationship_types) && !in_array($va_rel['relationship_typename'], $pa_filter_to_relationship_types) && !in_array($va_rel['relationship_type_code'], $pa_filter_to_relationship_types)) { continue; }
+								$va_rels[] = join(caGetOption('hierarchicalDelimiter', $pa_options, ';'), $va_labels);
 							}
 							
 							if ($pb_return_as_array) {
@@ -406,7 +534,7 @@ class CollectiveAccessDataReader extends BaseDataReader {
 	public function getRow($pa_options=null) {
 		if (isset($this->opa_row_buf[$this->opn_current_row]) && ($va_data = $this->opa_row_buf[$this->opn_current_row])){
 			$va_row = [];
-			$va_row[$this->ops_table.".preferred_labels"] = $this->get($this->ops_table.".preferred_labels");
+			$va_row[$this->ops_table.".preferred_labels"] = $this->get($this->ops_table.".preferred_labels", ['returnAsArray' => true]);
 			
 			
 			foreach($va_data['preferred_labels'] as $vs_locale => $va_label) {
@@ -429,7 +557,7 @@ class CollectiveAccessDataReader extends BaseDataReader {
 			
 			if (is_array($va_data['attributes'])) {
 				foreach($va_data['attributes'] as $vs_f => $va_v) {
-					$va_row[$this->ops_table.".{$vs_f}"] = $this->get($this->ops_table.".{$vs_f}");
+					$va_row[$this->ops_table.".{$vs_f}"] = $this->get($this->ops_table.".{$vs_f}", ['returnAsArray' => true]);
 				}
 			}
 			
@@ -438,21 +566,21 @@ class CollectiveAccessDataReader extends BaseDataReader {
 					foreach($va_rels as $vn_i => $va_rel) {
 						foreach($va_rel as $vs_f => $vm_v) {
 							if (!is_array($vm_v)) {
-								$va_row[$vs_table.".{$vs_f}"] = $this->get($vs_table.".{$vs_f}");
+								$va_row[$vs_table.".{$vs_f}"] = $this->get($vs_table.".{$vs_f}", ['returnAsArray' => true]);
 							}
 						}
 					
 						foreach($va_rel['preferred_labels'] as $vs_f => $vs_v) {
-							$va_row[$vs_table.".preferred_labels.{$vs_f}"] = $this->get($vs_table.".preferred_labels.{$vs_f}");
+							$va_row[$vs_table.".preferred_labels.{$vs_f}"] = $this->get($vs_table.".preferred_labels.{$vs_f}", ['returnAsArray' => true]);
 						}
 						foreach($va_rel['intrinsic'] as $vs_f => $vs_v) {
-							$va_row[$vs_table.".{$vs_f}"] = $this->get($vs_table.".{$vs_f}");
+							$va_row[$vs_table.".{$vs_f}"] = $this->get($vs_table.".{$vs_f}", ['returnAsArray' => true]);
 						}
 						break;
 					}
 				}
 			}
-		
+			
 			return $va_row;
 		}
 		
@@ -496,7 +624,7 @@ class CollectiveAccessDataReader extends BaseDataReader {
 	}
 	# -------------------------------------------------------
 	/**
-	 * Values can repeat for CollectiveAccess data soruces
+	 * Values can repeat for CollectiveAccess data sources
 	 * 
 	 * @return bool
 	 */

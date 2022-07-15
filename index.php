@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2018 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,7 +31,7 @@
 	require("./app/helpers/errorHelpers.php");
 	
 	if (!file_exists('./setup.php')) {
-		caDisplayException(new ApplicationException("No setup.php found"));
+		require_once("./themes/default/views/system/no_setup_html.php");
 		exit; 
 	}
 	require('./setup.php');
@@ -40,14 +40,7 @@
 	try {
 		// connect to database
 		$o_db = new Db(null, null, false);
-		if (!$o_db->connected()) {
-			$opa_error_messages = array("Could not connect to database. Check your database configuration in <em>setup.php</em>.");
-			require_once(__CA_BASE_DIR__."/themes/default/views/system/configuration_error_html.php");
-			exit();
-		}
-		$g_monitor = new ApplicationMonitor();
-		if ($g_monitor->isEnabled()) { $o_db->setMonitor($g_monitor); }
-
+		
 		//
 		// do a sanity check on application and server configuration before servicing a request
 		//
@@ -67,24 +60,27 @@
 			ca_search_indexing_queue::process();
 			exit();
 		}
-
+		caGetSystemGuid();
+		
 		// run garbage collector
 		GarbageCollection::gc();
 
+		$g_errored = false;	// routing error?
 		$app = AppController::getInstance();
 
 		$g_request = $req = $app->getRequest();
 		$g_response = $resp = $app->getResponse();
 
 		// Prevent caching
-		$resp->addHeader("Cache-Control", "no-cache, must-revalidate");
+		$resp->addHeader("Cache-Control", "no-cache, no-store, must-revalidate");
 		$resp->addHeader("Expires", "Mon, 26 Jul 1997 05:00:00 GMT");
+		
 		
 		// Security headers
 		$resp->addHeader("X-XSS-Protection", "1; mode=block");
 		$resp->addHeader("X-Frame-Options", "SAMEORIGIN");
-		$resp->addHeader("Content-Security-Policy", "script-src 'self' ajax.googleapis.com maps.googleapis.com cdn.knightlab.com 'unsafe-inline' 'unsafe-eval';"); 
-		$resp->addHeader("X-Content-Security-Policy", "script-src 'self' ajax.googleapis.com maps.googleapis.com cdn.knightlab.com 'unsafe-inline' 'unsafe-eval';"); 
+		$resp->addHeader("Content-Security-Policy", "script-src 'self' maps.googleapis.com cdn.knightlab.com nominatim.openstreetmap.org  ajax.googleapis.com tagmanager.google.com www.googletagmanager.com www.google-analytics.com www.google.com/recaptcha/ www.gstatic.com 'unsafe-inline' 'unsafe-eval';"); 
+		$resp->addHeader("X-Content-Security-Policy", "script-src 'self' maps.googleapis.com cdn.knightlab.com nominatim.openstreetmap.org  ajax.googleapis.com  tagmanager.google.com www.googletagmanager.com www.google-analytics.com www.google.com/recaptcha/ www.gstatic.com 'unsafe-inline' 'unsafe-eval';"); 
 
 		//
 		// Don't try to authenticate when doing a login attempt or trying to access the 'forgot password' feature
@@ -127,6 +123,10 @@
 		//
 		$resp->sendResponse();
 		$req->close();
+	} catch(DatabaseException $e) {
+		$opa_error_messages = ["Could not connect to database. Check your database configuration in <em>setup.php</em>: ".$e->getMessage()];
+		require_once(__CA_BASE_DIR__."/themes/default/views/system/configuration_error_html.php");
+		exit();
 	} catch (Exception $e) {
 		caDisplayException($e);
 	}

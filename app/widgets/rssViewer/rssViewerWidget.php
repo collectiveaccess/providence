@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2013 Whirl-i-Gig
+ * Copyright 2011-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,15 +28,12 @@
  */
  	require_once(__CA_LIB_DIR__.'/BaseWidget.php');
  	require_once(__CA_LIB_DIR__.'/IWidget.php');
- 	require_once(__CA_LIB_DIR__.'/Zend/Cache.php');
- 	require_once(__CA_LIB_DIR__.'/Zend/Feed.php');
- 	require_once(__CA_LIB_DIR__.'/Zend/Feed/Rss.php');
- 
+
 	class rssViewerWidget extends BaseWidget implements IWidget {
 		# -------------------------------------------------------
 		private $opo_config;
 		
-		static $s_widget_settings = array();
+		static $s_widget_settings = [];
 		# -------------------------------------------------------
 		public function __construct($ps_widget_path, $pa_settings) {
 			$this->title = _t('RSS Viewer');
@@ -191,5 +188,3 @@
 				'When remove HTML is chosen, all of the feed will be cleaned of any HTML tags, leaving text only.')
 		)		
 	);
-	
-?>

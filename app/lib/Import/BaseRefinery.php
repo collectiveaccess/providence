@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2015 Whirl-i-Gig
+ * Copyright 2013-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -82,15 +82,24 @@
 			$va_base_settings = BaseRefinery::$s_refinery_settings[$this->getName()];
 			if ($this->supportsRelationships()){
 				$va_base_settings[$this->getName() . '_relationships'] =  array(
-						'formatType' => FT_TEXT,
-						'displayType' => DT_SELECT,
-						'width' => 10, 'height' => 1,
-						'takesLocale' => false,
-						'default' => '',
-						'label' => _t('Relationships'),
-						'description' => _t('A list (array) of relationships related to the %refinery.', array('refinery' => $this->getTitle()))
+					'formatType' => FT_TEXT,
+					'displayType' => DT_FIELD,
+					'width' => 10, 'height' => 1,
+					'takesLocale' => false,
+					'default' => '',
+					'label' => _t('Relationships'),
+					'description' => _t('A list (array) of relationships related to the %refinery.', array('refinery' => $this->getTitle()))
 				);
 			}
+			$va_base_settings[$this->getName() . '_applyImportItemSettings'] =  array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Apply import item settings to refinery values'),
+				'description' => _t('Apply applyRegularExpressions and replacement values transformations to values in the %refinery.', array('refinery' => $this->getTitle()))
+			);
 			return $va_base_settings;
 		}
 		# -------------------------------------------------------
@@ -135,6 +144,7 @@
 		 *		returnAsString = Return array of repeating values as string using delimiter. Has effect only is $pn_index parameter is set to null. [Default is false]
 		 *		delimiter = Delimiter to join array values with when returnAsString option is set; or the delimiter to use when breaking apart a value for return via the returnDelimitedValueAt option. [Default is ";"]
 		 *		returnDelimitedValueAt = Return a specific part of a value delimited by the "delimiter" option. Only has effect when returning a specific index of a repeating value (Eg. $pn_index is not null). The option value is a zero-based index. [Default is null – return entire value]
+		 *		applyImportItemSettings = Apply mapping options such as applyRegularExpressions to value. [Default is true]
 		 *
 		 * @return mixed An array or string
 		 */
@@ -174,7 +184,7 @@
 			        }
                 }
 			}
-			if (($ps_placeholder[0] == '^') && (strpos($ps_placeholder, '^', 1) === false)) {
+			if (($ps_placeholder[0] == '^') && (strpos($ps_placeholder, '^', 1) === false) && (sizeof($t = caExtractTagsFromTemplate($ps_placeholder)) == 1) && (array_shift($t) === $ps_placeholder)) {
 				// Placeholder is a single caret-value
 				$va_tag = explode('~', $vs_key);
 				
@@ -246,8 +256,6 @@
 					$vm_val[$vn_i] = trim($vs_val);
 				}
 				
-				$vm_val = caProcessImportItemSettingsForValue($vm_val, $pa_item['settings']);
-				
 				if (is_null($pn_get_at_index)) {
                     if ($pb_return_as_string) {
                         return join($vs_delimiter, $vm_val);
@@ -256,11 +264,16 @@
 				}
 			}
 			if (!is_array($vm_val)) { $vm_val = [$vm_val]; }
+			
+			$apply_import_item_settings = caGetOption('applyImportItemSettings', $pa_options, true);
 			foreach($vm_val as $i => $v) {
                 if (is_array($pa_item['settings']['original_values']) && (($vn_i = array_search(mb_strtolower($v), $pa_item['settings']['original_values'])) !== false)) {
                     $v = $pa_item['settings']['replacement_values'][$vn_i];
                 }
-                $v = caProcessImportItemSettingsForValue($v, $pa_item['settings']);
+                
+                if ($apply_import_item_settings) {
+               		$v = caProcessImportItemSettingsForValue($v, $pa_item['settings']);
+               	}
                 $vm_val[$i] = $v;
             }
 			
@@ -310,4 +323,3 @@
 		}
 		# -------------------------------------------------------	
 	}
-?>

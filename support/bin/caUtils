@@ -8,7 +8,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2018 Whirl-i-Gig
+ * Copyright 2013-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,7 +39,6 @@
 	require_once(__CA_APP_DIR__."/helpers/CLIHelpers.php");
 	require_once(__CA_LIB_DIR__."/Utils/CLIUtils.php");
 	require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
-	require_once(__CA_LIB_DIR__."/Zend/Console/Getopt.php");
 
 	if (!caIsRunFromCLI()) {
 		die("Sorry, caUtils must be run from the command line!\n");
@@ -82,24 +81,26 @@
 	}
 
 	$va_available_cli_opts = array_merge(array(
-			"hostname|h-s" => 'Hostname of installation. If omitted default installation is used.',
+			"hostname-s" => 'Hostname of installation. If omitted default installation is used.',
 			"setup-s" => 'Specify the path to an alternate setup.php.',
-			"help" => "Displays available commands with descriptions."
+			"quiet" => 'Do not emit headers and copyright information.'
 		), $va_command_opts);
 
 	try {
 		$o_opts = new Zend_Console_Getopt($va_available_cli_opts);
 		$o_opts->parse();
 	} catch(Exception $e) {
-		die("Invalid options specified. Try 'caUtils help' to view list of valid options.\n");
+		die("Invalid options specified (".$e->getMessage()."). Try 'caUtils help' to view list of valid options.\n");
 	}
 	if ($vs_hostname = $o_opts->getOption('hostname')) {
 		$_SERVER['HTTP_HOST'] = $vs_hostname;
 	}
+	
+	$quiet = (bool)$o_opts->getOption('quiet');
 
 	$va_args = $o_opts->getRemainingArgs();
 
-	$vs_app_heading = CLIUtils::textWithColor(_t("CollectiveAccess %1 (%2/%3) Utilities\n(c) 2013-2018 Whirl-i-Gig",__CollectiveAccess__, __CollectiveAccess_Schema_Rev__, __CollectiveAccess_Release_Type__), "bold_blue")."\n\n";
+	$vs_app_heading = $quiet ? '' : CLIUtils::textWithColor(_t("CollectiveAccess %1 (%2/%3) Utilities\n(c) 2013-2022 Whirl-i-Gig",__CollectiveAccess__, __CollectiveAccess_Schema_Rev__, __CollectiveAccess_Release_Type__), "bold_blue")."\n\n";
 
 	print $vs_app_heading;
 
@@ -134,14 +135,16 @@
 				if (is_array($va_opts) && sizeof($va_opts)) {
 					print CLIUtils::textWithColor("Options for {$vs_cmd} are:", "bold_green")."\n\n";
 					foreach($va_opts as $vs_opt_format => $vs_opt_desc) {
-						$va_tmp = explode("|", $vs_opt_format);
-						$va_abbr = preg_split("![=\-]+!", $va_tmp[1]);
-
-						print "\t".CLIUtils::textWithColor(str_pad("--".$va_tmp[0]." ".($va_abbr[0] ? "(-{$va_abbr[0]})" : ""), 20), "red").wordwrap($vs_opt_desc, 75, "\n\t".str_repeat(" ", 20))."\n\n";
-					}
+                        $output = caFormatCmdOptionsForDisplay($vs_opt_format, $vs_opt_desc);
+                        print $output;
+                    }
 				}
 			} else {
-				print CLIUtils::textWithColor("No help is available for \"{$vs_subcmd}\"\n", "bold_red");
+				print CLIUtils::textWithColor("No help is available for \"{$vs_cmd_proc}\"\n\n", "bold_red");
+                foreach($va_available_cli_opts as $vs_opt_format => $vs_opt_desc) {
+                    $output = caFormatCmdOptionsForDisplay($vs_opt_format, $vs_opt_desc);
+                    print $output;
+                }
 			}
 			print "\nFor more information visit http://www.collectiveaccess.org\n\n";
 		} else {
@@ -159,7 +162,9 @@
 				$va_params = array($va_plugin_commands[$vs_cmd_proc], $va_settings, 'CLI');
 				$va_params = $o_app_plugin_manager->hookCLICaUtilsGetToolWithSettings($va_params);
 				if ($o_tool = $va_params['tool']) {
-					$o_tool->run($vs_cmd_proc);
+					if($o_tool->run($vs_cmd_proc, $va_settings)) {
+						$vn_error_code = 0;
+					}
 				} else {
 					print CLIUtils::textWithColor("Could not run command \"{$vs_cmd}\"\n", "bold_red");
 				}
@@ -183,11 +188,15 @@
 		// List available commands
 		//
 
+        print CLIUtils::textWithColor("Global options\n\n", "bold_green");
+
+        foreach($va_available_cli_opts as $vs_opt_format => $vs_opt_desc) {
+            $output = caFormatCmdOptionsForDisplay($vs_opt_format, $vs_opt_desc);
+            print $output;
+        }
 		$va_methods = get_class_methods("CLIUtils");
 
-		if ($vs_cmd) {
-			print CLIUtils::textWithColor("\"{$vs_cmd}\" is an invalid command. Valid commands are:", "bold_green")."\n\n";
-		} else {
+		if (!$vs_cmd) {
 			print CLIUtils::textWithColor("You must specify a valid command. Valid commands are:", "bold_red")."\n\n";
 		}
 
@@ -237,11 +246,9 @@
 			foreach($_SERVER['argv'] as $vs_opt) {
 				if (preg_match("!^\-\-hostname\=([A-Za-z0-9_\-\.:]+)!", $vs_opt, $va_matches) || preg_match("!^\-h\=([A-Za-z0-9_\-\.:]+)!", $vs_opt, $va_matches)) {
 					$_SERVER['HTTP_HOST'] = $va_matches[1];
-					break;
 				}
 				if (preg_match('!^\-\-setup\=([A-Za-z0-9_\-\/\.:]+)$!', $vs_opt, $va_matches)) {
 					$vs_setup_path = $va_matches[1];
-					break;
 				}
 			}
 		}
@@ -274,4 +281,3 @@
 	}
 	# --------------------------------------------------------
 	exit($vn_error_code);
-?>

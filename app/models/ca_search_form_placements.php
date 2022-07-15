@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,26 +29,8 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
- 
 require_once(__CA_LIB_DIR__.'/ModelSettings.php');
-
-global $_ca_editor_search_form_placement_settings;
-$_ca_editor_search_form_placement_settings = array(		// global
-	'label' => array(
-		'formatType' => FT_TEXT,
-		'displayType' => DT_FIELD,
-		'width' => 25, 'height' => 1,
-		'takesLocale' => true,
-		'default' => '',
-		'label' => _t('Label'),
-		'description' => _t('Text label to be used for displayed information.')
-	)
-);
-
+ 
 
 BaseModel::$s_ca_models_definitions['ca_search_form_placements'] = array(
  	'NAME_SINGULAR' 	=> _t('search form placement'),
@@ -95,6 +77,8 @@ BaseModel::$s_ca_models_definitions['ca_search_form_placements'] = array(
 
 
 class ca_search_form_placements extends BaseModel {
+	use ModelSettings;
+	
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -176,14 +160,9 @@ class ca_search_form_placements extends BaseModel {
 
 	protected $FIELDS;
 	
-	/**
-	 * Settings delegate - implements methods for setting, getting and using 'settings' var field
-	 */
-	public $SETTINGS;
-	
 	# ------------------------------------------------------
-	function __construct($pn_id=null, $pa_additional_settings=null, $pa_setting_values=null) {
-		parent::__construct($pn_id);
+	function __construct($id=null, ?array $options=null, $pa_additional_settings=null, $pa_setting_values=null) {
+		parent::__construct($id, $options);
 		
 		//
 		if (!is_array($pa_additional_settings)) { $pa_additional_settings = array(); }
@@ -203,25 +182,20 @@ class ca_search_form_placements extends BaseModel {
 	  */
 	public function setSettingDefinitionsForPlacement($pa_additional_settings) {
 		if (!is_array($pa_additional_settings)) { $pa_additional_settings = array(); }
-		global $_ca_editor_search_form_placement_settings;
-		$this->SETTINGS = new ModelSettings($this, 'settings', array_merge($_ca_editor_search_form_placement_settings, $pa_additional_settings));
+		$standard_settings = [
+			'label' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 25, 'height' => 1,
+				'takesLocale' => true,
+				'default' => '',
+				'label' => _t('Label'),
+				'description' => _t('Text label to be used for displayed information.')
+			)
+		];
+		$this->setAvailableSettings(array_merge($standard_settings, $pa_additional_settings));
 		
 		return true;
 	}
 	# ------------------------------------------------------
-	public function __destruct() {
-		unset($this->SETTINGS);
-	}
-	# ------------------------------------------------------
-	/**
-	 * Reroutes calls to method implemented by settings delegate to the delegate class
-	 */
-	public function __call($ps_name, $pa_arguments) {
-		if (method_exists($this->SETTINGS, $ps_name)) {
-			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
-		}
-		die($this->tableName()." does not implement method {$ps_name}");
-	}
-	# ------------------------------------------------------
 }
-?>

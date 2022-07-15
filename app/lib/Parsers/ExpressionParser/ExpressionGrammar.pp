@@ -6,7 +6,7 @@
 // ----------------------------------------------------------------------
 //
 // Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
-// Copyright 2015 Whirl-i-Gig
+// Copyright 2015-2022 Whirl-i-Gig
 //
 // For more information visit http://www.CollectiveAccess.org
 //
@@ -56,6 +56,7 @@
 // Literals
 %token  number    (0|[1-9]\d*)(\.\d+)?([eE][\+\-]?\d+)?
 %token  string    \"[^"]*\"
+%token  string_single_quote    \'[^']*\'
 
 // Math
 %token  plus      \+
@@ -65,7 +66,7 @@
 %token  div       ÷
 
 // Regular expressions
-%token  regex     /.+/
+%token  regex     /.+?/[a-z]*
 %token  regex_match      \=\~
 %token  regex_nomatch    \!\~
 
@@ -78,10 +79,13 @@
 %token  lt        \<
 
 // Boolean
-%token  bool_and  AND
-%token  bool_or   OR
-%token  in_op     IN
-%token  notin_op  NOT\ IN
+%token  bool_and  AND|and
+%token  bool_or   OR|or
+%token  in_op     IN|in
+%token  notin_op  NOT\ IN|not\ in
+
+%token true true|TRUE
+%token false false|FALSE
 
 // Variables
 %token  variable  \^(ca_[A-Za-z]+[A-Za-z0-9_\-\.]+[A-Za-z0-9]{1}[\&\%]{1}[^ <]+|[0-9]+(?=[.,;])|[A-Za-z0-9_\.:\/]+[%]{1}[^\w\^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.\/]+[:]{1}[A-Za-z0-9_\.\/\[\]\@\'\"=:]+\]|[A-Za-z0-9_\.\/]+[:]{1}[A-Za-z0-9_\.\/\[\]\@\'\"=:]+|[A-Za-z0-9_\.\/]+[~]{1}[A-Za-z0-9]+[:]{1}[A-Za-z0-9_\.\/]+|[A-Za-z0-9_\.\/]+)
@@ -94,6 +98,7 @@ expression:
 
 expr:
     factor() (::bool_and:: expr() #bool_and )?
+  | factor() (::bool_or:: expr() #bool_or )?
   | ( ::bracket_:: expr() ::_bracket:: #group )
 
 factor:
@@ -149,7 +154,10 @@ comp_eq:
 scalar:
     (primary() ( ::plus:: #addition scalar() )?)
   | (<string> ( ::plus:: #stradd scalar())?)
+  | (<string_single_quote> ( ::plus:: #stradd scalar())?)
   | <variable>
+  | <true>
+  | <false>
 
 primary:
     secondary() ( ::minus:: #substraction scalar() )?

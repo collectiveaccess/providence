@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2018 Whirl-i-Gig
+ * Copyright 2009-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,8 +26,8 @@
  * ----------------------------------------------------------------------
  */ 
  	$t_comments = $this->getVar('t_comments');
-	$va_comments_list = $this->getVar('comments_list');
-	if(sizeof($va_comments_list) > 0){
+	$result = $this->getVar('comments_list');
+	if($result->numHits() > 0){
 ?>
 		<script language="JavaScript" type="text/javascript">
 		/* <![CDATA[ */
@@ -60,35 +60,50 @@
 							<?php print _t('Comment'); ?>
 						</th>
 						<th class="list-header-unsorted">
-							<?php print _t('Media'); ?>
-						</th>
-						<th class="list-header-unsorted">
-							<?php print _t('Rating'); ?>
-						</th>
-						<th class="list-header-unsorted">
 							<?php print _t('Author'); ?>
 						</th>
 						<th class="list-header-unsorted">
 							<?php print _t('Date'); ?>
+						</th>
+						<th class="list-header-unsorted">
+							<?php print _t('Notes'); ?>
 						</th>
 						<th class="{sorter: false} list-header-nosort"><?php print _t('Select'); ?></th>
 					</tr>
 				</thead>
 				<tbody>
 <?php
-			foreach($va_comments_list as $va_comment) {
+			//foreach($va_comments_list as $va_comment) {
+			
+			$comment_data = ca_item_comments::getItemCommentDataForResult($result, ['itemsPerPage' => 100, 'request' => $this->request]);
+        
+			while($result->nextHit()) {
+			    $d = ca_item_comments::getItemCommentDataForDisplay($result, $comment_data);
 ?>
 					<tr>
 						<td>
-							<?php print caEditorLink($this->request, $va_comment['commented_on'], '', $va_comment['table_num'], $va_comment['row_id']); ?>
+<?php
+						print !$d['id'] ? $d['label'] : caEditorLink($this->request, $d['label'], '', $d['table_num'], $d['id'])." ({$d['idno']})<br/>Source: {$d['source']}";
+?>
 						</td>
 						<td>
 							<div class="caUserCommentsListComment">
-								<?php print $va_comment['comment']; ?>
+								<?php print $d['comment']; ?>
 							</div>
 						</td>	
 						<td>
+							<div class="caUserCommentsListName">
+<?php 
+							print $d['name']." (".$d['email'].")";
+?>
+							</div>
+						</td>
+						<td>
+							<?php print $d['created_on']; ?>
+						</td>
+						<td>							
 <?php
+                            if ($d['notes']) { print "{$d['notes']}<br/>\n"; }
 							if(is_array($va_comment['media1']) && (sizeof($va_comment['media1']) > 0)){
 								print "<span style='white-space: nowrap;'>".$va_comment['media1']['thumbnail']['TAG'];
 								print caNavButton($this->request, __CA_NAV_ICON_DOWNLOAD__, _t('Download'), '', 'manage', 'Comments', 'DownloadMedia', array('version' => 'original', 'comment_id' => $va_comment['comment_id'], 'mode' => 'list', 'download' => 1), array(), array('no_background' => true, 'dont_show_content' => true));
@@ -97,24 +112,7 @@
 ?>
 						</td>
 						<td>
-							<?php print ($va_comment['rating']) ? $va_comment['rating'] : "-"; ?>
-						</td>
-						<td>
-							<div class="caUserCommentsListName">
-<?php 
-							if($va_comment['user_id']){
-								print $va_comment['fname']." ".$va_comment['lname']." (".$va_comment['user_email'].")";
-							}else{
-								print $va_comment['name']." (".$va_comment['email'].")";
-							}
-?>
-							</div>
-						</td>
-						<td>
-							<?php print $va_comment['created_on']; ?>
-						</td>
-						<td>
-							<input type="checkbox" name="comment_id[]" value="<?php print $va_comment['comment_id']; ?>">
+							<input type="checkbox" name="comment_id[]" value="<?php print $d['comment_id']; ?>">
 						</td>
 					</tr>
 <?php

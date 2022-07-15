@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2003-2016 Whirl-i-Gig
+ * Copyright 2003-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -48,26 +48,65 @@ class Media extends BaseObject {
 	# ----------------------------------------------------------
 	# Properties
 	# ----------------------------------------------------------
+	/**
+	 *
+	 */
 	public $DEBUG = false;
-	private $plugins = array();
+	
+	/**
+	 *
+	 */
+	private $plugins = [];
+	
+	/**
+	 *
+	 */
 	private $instance;
 	
 	# --- 
 	# Cache loaded plug-ins
 	# ---
-	static $WLMedia_plugin_cache = array();
-	static $WLMedia_unregistered_plugin_cache = array();
+	/**
+	 *
+	 */
+	static $WLMedia_plugin_cache = [];
+	
+	/**
+	 *
+	 */
+	static $WLMedia_unregistered_plugin_cache = [];
+	
+	/**
+	 *
+	 */
 	static $WLMedia_plugin_names = null;
 	
+	/**
+	 *
+	 */
 	static $plugin_path = null;
 	
+	/**
+	 *
+	 */
 	static $s_file_extension_to_plugin_map = null; 
 	
+	/**
+	 *
+	 */
 	static $s_divine_cache = [];
+	
+	/**
+	 *
+	 */
+	 private $tmp_files = [];
 	
 	# ----------------------------------------------------------
 	# Methods
 	# ----------------------------------------------------------
+	/**
+	 *
+	 */
 	public function __construct($pb_no_cache=false) { 
 		if (!Media::$plugin_path) { Media::$plugin_path = __CA_LIB_DIR__.'/Plugins/Media'; }
 		
@@ -77,10 +116,13 @@ class Media extends BaseObject {
 		Media::$s_file_extension_to_plugin_map = CompositeCache::fetch('media_file_extension_to_plugin_map');
 	}
 	# ----------------------------------------------------------
+	/**
+	 *
+	 */
 	public function getPluginNames() {
 		if (is_array(Media::$WLMedia_plugin_names)) { return Media::$WLMedia_plugin_names; }
 		
-		Media::$WLMedia_plugin_names = array();
+		Media::$WLMedia_plugin_names = [];
 		$dir = opendir(Media::$plugin_path);
 		if (!$dir) { throw new ApplicationException(_t('Cannot open media plugin directory %1', Media::$plugin_path)); }
 	
@@ -103,16 +145,16 @@ class Media extends BaseObject {
 	/**
 	 *
 	 */
-	public function getPlugin($ps_plugin_name) {
-		if (!($p = $this->getUnregisteredPlugin($ps_plugin_name))) { return null; }
+	public function getPlugin($plugin_name) {
+		if (!($p = $this->getUnregisteredPlugin($plugin_name))) { return null; }
 		
 		# register the plugin's capabilities
 		if ($vo_instance = $p->register()) {
-			if ($this->DEBUG) {	print "[DEBUG] LOADED $ps_plugin_name<br>\n"; }
-			return Media::$WLMedia_plugin_cache[$ps_plugin_name] = $vo_instance;
+			if ($this->DEBUG) {	print "[DEBUG] LOADED $plugin_name<br>\n"; }
+			return Media::$WLMedia_plugin_cache[$plugin_name] = $vo_instance;
 		} else {
-			if ($this->DEBUG) {	print "[DEBUG] DID NOT LOAD $ps_plugin_name<br>\n"; }
-			Media::$WLMedia_plugin_cache[$ps_plugin_name] = false;
+			if ($this->DEBUG) {	print "[DEBUG] DID NOT LOAD $plugin_name<br>\n"; }
+			Media::$WLMedia_plugin_cache[$plugin_name] = false;
 			return null;
 		}
 	}
@@ -120,35 +162,38 @@ class Media extends BaseObject {
 	/**
 	 *
 	 */
-	public function getUnregisteredPlugin($ps_plugin_name) {
-		if(!in_array($ps_plugin_name, $this->getPluginNames())) { return null; }
+	public function getUnregisteredPlugin($plugin_name) {
+		if(!in_array($plugin_name, $this->getPluginNames())) { return null; }
 		
 		$plugin_dir = Media::$plugin_path;
 		
 		# load the plugin
-		if (!class_exists("WLPlugMedia{$ps_plugin_name}")) { 
-			require_once("{$plugin_dir}/{$ps_plugin_name}.php"); 
+		if (!class_exists("WLPlugMedia{$plugin_name}")) { 
+			require_once("{$plugin_dir}/{$plugin_name}.php"); 
 		}
-		$ps_plugin_class = "WLPlugMedia{$ps_plugin_name}";
+		$ps_plugin_class = "WLPlugMedia{$plugin_name}";
 		$p = new $ps_plugin_class();
 		
-		Media::$WLMedia_unregistered_plugin_cache[$ps_plugin_name] = $p;
+		Media::$WLMedia_unregistered_plugin_cache[$plugin_name] = $p;
 		
 		return $p;
 	}
 	# ----------------------------------------------------------
-	public function checkPluginStatus($ps_plugin_name) {
+	/**
+	 *
+	 */
+	public function checkPluginStatus($plugin_name) {
 		
-		if(!in_array($ps_plugin_name, $this->getPluginNames())) { return null; }
-		if (isset(Media::$WLMedia_plugin_cache[$ps_plugin_name])) { return Media::$WLMedia_plugin_cache[$ps_plugin_name]; }
+		if(!in_array($plugin_name, $this->getPluginNames())) { return null; }
+		if (isset(Media::$WLMedia_plugin_cache[$plugin_name])) { return Media::$WLMedia_plugin_cache[$plugin_name]; }
 		
 		$plugin_dir = Media::$plugin_path;
 		
 		# load the plugin
-		if (!class_exists("WLPlugMedia{$ps_plugin_name}")) { 
-			require_once("{$plugin_dir}/{$ps_plugin_name}.php"); 
+		if (!class_exists("WLPlugMedia{$plugin_name}")) { 
+			require_once("{$plugin_dir}/{$plugin_name}.php"); 
 		}
-		$vs_classname = "WLPlugMedia{$ps_plugin_name}";
+		$vs_classname = "WLPlugMedia{$plugin_name}";
 		$p = new $vs_classname;
 		# register the plugin's capabilities
 		
@@ -159,15 +204,15 @@ class Media extends BaseObject {
 	 * Determine format of a file
 	 *
 	 * @param string $ps_filepath
-	 * @param array $pa_options Options include:
+	 * @param array $options Options include:
 	 *		noCache = don't use cache. [Default is false]
 	 *		returnPluginInstance = Return instance of media plugin rather than mimetype. [Default is false]
 	 *
 	 * @return mixed String Mimetype of file, or null if file is in an unknown format. If returnPluginInstance option is set then a plugin capable of handling the file is returned.
 	 */
-	function divineFileFormat($ps_filepath, $pa_options=null) {
-		$pb_return_plugin_instance = caGetOption('returnPluginInstance', $pa_options, false);
-		$pb_no_cache = caGetOption('noCache', $pa_options, false);
+	function divineFileFormat($ps_filepath, $options=null) {
+		$pb_return_plugin_instance = caGetOption('returnPluginInstance', $options, false);
+		$pb_no_cache = caGetOption('noCache', $options, false);
 		
 		if (!$pb_no_cache && $pb_return_plugin_instance && isset(Media::$s_divine_cache[$ps_filepath.'_plugin'])) { return Media::$s_divine_cache[$ps_filepath.'_plugin']; }
 		if (!$pb_no_cache && isset(Media::$s_divine_cache[$ps_filepath])) { return Media::$s_divine_cache[$ps_filepath]; }
@@ -205,56 +250,89 @@ class Media extends BaseObject {
 		}
 	}
 	# ----------------------------------------------------------
-	public function getMimetypeTypename($ps_mimetype) {
+	/**
+	 *
+	 */
+	public function getMimetypeTypename($mimetype) {
 		$va_plugin_names = $this->getPluginNames();
 		foreach ($va_plugin_names as $vs_plugin_name) {
 			$va_plugin_info = $this->getPlugin($vs_plugin_name);
 			$o_plugin = $va_plugin_info["INSTANCE"];
-			if (isset($o_plugin->typenames[$ps_mimetype]) && ($vs_typename = $o_plugin->typenames[$ps_mimetype])) {
+			if (isset($o_plugin->typenames[$mimetype]) && ($vs_typename = $o_plugin->typenames[$mimetype])) {
 				return $vs_typename;
 			}
 		}
 		return "unknown";
 	}
 	# ----------------------------------------------------------
+	/**
+	 *
+	 */
 	public function get($property) {
 		if (!$this->instance) { return ""; }
 		return $this->instance->get($property);
 	}
 	# ----------------------------------------------------------
+	/**
+	 *
+	 */
 	public function getProperties() {
-		if (!$this->instance) { return ""; }
+		if (!$this->instance) { return null; }
 		return $this->instance->properties;
 	}
 	# ----------------------------------------------------------
+	/**
+	 *
+	 */
+	public function isValidProperty($property) {
+		if (!$this->instance) { return null; }
+		$props = $this->instance->getProperties();
+		return isset($props[$property]);
+	}
+	# ----------------------------------------------------------
+	/**
+	 *
+	 */
 	public function set($property, $value) {
 		if (!$this->instance) { return false; }
 		$this->instance->set($property, $value);
 	}
 	# ----------------------------------------------------------
+	/**
+	 *
+	 */
 	public function getExtractedText() {
 		if (!$this->instance) { return false; }
 		return $this->instance->getExtractedText();
 	}
 	# ----------------------------------------------------------
+	/**
+	 *
+	 */
 	public function getExtractedTextLocations() {
 		if (!$this->instance) { return false; }
 		return $this->instance->getExtractedTextLocations();
 	}
 	# ----------------------------------------------------------
+	/**
+	 *
+	 */
 	public function getExtractedMetadata() {
 		if (!$this->instance) { return false; }
 		return $this->instance->getExtractedMetadata();
 	}
 	# ----------------------------------------------------------
-	public function read($filepath) {
+	/**
+	 *
+	 */
+	public function read($filepath, $mimetype=null, $options=null) {
 		if ((!$this->instance) || ($filepath != $this->filepath)) {
 			$this->instance = $this->divineFileFormat($filepath, ['returnPluginInstance' => true]);
 		}
 			
 		if ($this->instance) {
 			$this->instance->init();
-			$vn_res = $this->instance->read($filepath, $mimetype);
+			$vn_res = $this->instance->read($filepath, $mimetype, $options);
 		  if ($this->DEBUG) { print "USING ".$plugin_info["NAME"]."\n"; }
 			if (!$vn_res) {
 				$this->postError(1605, join("; ", $this->instance->getErrors()), "Media->read()");	
@@ -267,6 +345,9 @@ class Media extends BaseObject {
 		}
 	}
 	# ----------------------------------------------------------
+	/**
+	 *
+	 */
 	public function transform($operation, $parameters) {
 		if (!$this->instance) { return false; }
 		if (!($vb_ret = $this->instance->transform($operation, $parameters))) {
@@ -275,59 +356,88 @@ class Media extends BaseObject {
 		return $vb_ret;
 	}
 	# ----------------------------------------------------------
-	public function write($filepath, $mimetype, $pa_options=null) {
+	/**
+	 *
+	 */
+	public function write($filepath, $mimetype, $options=null) {
 		if (!$this->instance) { return false; }
 		
 		# TODO: support for cross-plugin writes; that is, allow a file to be read in
 		# by a plugin and convert to an intermediate format supported by a second plugin
 		# in order to allow the second plug-in to write out the file in the desired format.
-		$rc = $this->instance->write($filepath, $mimetype, $pa_options);
+		$rc = $this->instance->write($filepath, $mimetype, $options);
 		$this->errors = $this->instance->errors;
 		return $rc;
 	}
 	# ----------------------------------------------------------
-	public function writePreviews($pa_options) {
+	/**
+	 * Write media preview files for currently loaded media
+	 *
+	 * @param array $options Options include:
+	 *		cleanupFiles = Delete generated files when Media instance is garbage collected. [Default is true]
+	 */
+	public function writePreviews($options=null) {
 		if (!$this->instance) { return false; }
 	
 		if (!method_exists($this->instance, 'writePreviews')) { return false; }
 		$this->instance->set('version', '');
-		return $this->instance->writePreviews($this->filepath, $pa_options);
-	}
-	# ----------------------------------------------------------
-	public function joinArchiveContents($pa_files, $pa_options = array()) {
-		if (!$this->instance) { return false; }
-	
-		if (!method_exists($this->instance, 'joinArchiveContents')) { return false; }
-		$this->instance->set('version', '');
-		return $this->instance->joinArchiveContents($pa_files, $pa_options);
+		$files = $this->instance->writePreviews($this->filepath, $options);
+		
+		if(is_array($files) && caGetOption('cleanupFiles', $options, true)) {
+			$this->tmp_files = array_unique(array_merge($this->tmp_files, $files));
+		}
+		return $files;
 	}
 	# ----------------------------------------------------------
 	/**
 	 *
 	 */
-	public function writeClip($ps_filename, $ps_start_, $ps_end, $pa_options=null) {
+	public function joinArchiveContents($pa_files, $options = []) {
+		if (!$this->instance) { return false; }
+	
+		if (!method_exists($this->instance, 'joinArchiveContents')) { return false; }
+		$this->instance->set('version', '');
+		return $this->instance->joinArchiveContents($pa_files, $options);
+	}
+	# ----------------------------------------------------------
+	/**
+	 *
+	 */
+	public function writeClip($ps_filename, $ps_start_, $ps_end, $options=null) {
 		if (!$this->instance) { return false; }
 		
 		if (method_exists($this->instance, "writeClip")) {
-			return $this->instance->writeClip($ps_filename, $ps_start_, $ps_end, $pa_options);
+			return $this->instance->writeClip($ps_filename, $ps_start_, $ps_end, $options);
 		}
 		return null;
 	}
 	# ----------------------------------------------------------
+	/**
+	 *
+	 */
 	public function getOutputFormats() {
 		if (!$this->instance) { return false; }
 		return $this->instance->getOutputFormats();
 	}
 	# ----------------------------------------------------------
+	/**
+	 *
+	 */
 	public function getTransformations() {
 		if (!$this->instance) { return false; }
 		return $this->instance->getTransformations();
 	}
 	# ----------------------------------------------------------
+	/**
+	 *
+	 */
 	public function reset() {
 		return $this->instance->reset();
 	}
 	# ----------------------------------------------------------
+	/**
+	 *
+	 */
 	public function cleanup() {
 		if ($this->instance) {
 			return $this->instance->cleanup();
@@ -336,56 +446,76 @@ class Media extends BaseObject {
 		}
 	}
 	# ----------------------------------------------------------
+	/**
+	 *
+	 */
 	public function dump() {
 		print_r($this->getPluginNames());
 	}
-	# ------------------------------------------------
+	# ----------------------------------------------------------
+	/**
+	 *
+	 */
 	public function mimetype2extension($mimetype) {
 		if (!$this->instance) {
 			return "";
 		}
 		return $this->instance->mimetype2extension($mimetype);
 	}
-	# ------------------------------------------------
+	# ----------------------------------------------------------
+	/**
+	 *
+	 */
 	public function extension2mimetype($extension) {
 		if (!$this->instance) {
 		  	return "";
 		}
 		return $this->instance->extension2mimetype($extension);
 	}
-	# ------------------------------------------------
+	# ----------------------------------------------------------
+	/**
+	 *
+	 */
 	public function mimetype2typename($mimetype) {
 		if (!$this->instance) {
 		  return "";
 		}
 		return $this->instance->mimetype2typename($mimetype);
 	}
-	# ------------------------------------------------
+	# ----------------------------------------------------------
 	/**
 	 * Return list of file extensions for media formats supported for import
 	 *
 	 * @return array List of file extensions
 	 */
 	public static function getImportFileExtensions() {
+		if (CompositeCache::contains('getImportFileExtensions', 'Media')) {
+			return CompositeCache::fetch('getImportFileExtensions', 'Media');
+		}
+		
 		$o_media = new Media();
 		$va_plugin_names = $o_media->getPluginNames();
 		
-		$va_extensions = array();
+		$va_extensions = [];
 		foreach ($va_plugin_names as $vs_plugin_name) {
 			if (!$va_plugin_info = $o_media->getPlugin($vs_plugin_name)) { continue; }
 			$o_plugin = $va_plugin_info["INSTANCE"];
 			$va_extensions = array_merge($va_extensions, $o_plugin->getImportExtensions());
 		}
 		
-		return array_unique($va_extensions);
+		CompositeCache::save('getImportFileExtensions', $va_extensions = array_unique($va_extensions), 'Media');
+		return $va_extensions;
 	}
-	# ------------------------------------------------
+	# ----------------------------------------------------------
 	/**
 	 * Return list of file extensions for media formats supported for import
 	 *
 	 * @return array List of file extensions
 	 */
 	public function getPluginImportFileExtensionMap() {
+		if (CompositeCache::contains('getPluginImportFileExtensionMap', 'Media')) {
+			return CompositeCache::fetch('getPluginImportFileExtensionMap', 'Media');
+		}
 		$va_plugin_names = $this->getPluginNames();
 		
 		$va_map = [];
@@ -398,32 +528,40 @@ class Media extends BaseObject {
 			
 		}
 		
+		CompositeCache::save('getPluginImportFileExtensionMap', $va_map, 'Media');
 		return $va_map;
 	}
-	# ------------------------------------------------
+	# ----------------------------------------------------------
 	/**
 	 * Return list of mimetypes for media formats supported for import
 	 *
 	 * @return array List of mimetypes
 	 */
 	public static function getImportMimetypes() {
+		if (CompositeCache::contains('getImportMimetypes', 'Media')) {
+			return CompositeCache::fetch('getImportMimetypes', 'Media');
+		}
 		$o_media = new Media();
 		$va_plugin_names = $o_media->getPluginNames();
 		
-		$va_extensions = array();
+		$va_extensions = [];
 		foreach ($va_plugin_names as $vs_plugin_name) {
 			if (!$va_plugin_info = $o_media->getPlugin($vs_plugin_name)) { continue; }
 			$o_plugin = $va_plugin_info["INSTANCE"];
 			$va_extensions = array_replace($va_extensions, $o_plugin->getImportMimetypes());
 		}
 		
-		return array_unique($va_extensions);
+		CompositeCache::save('getImportMimetypes', $va_extensions = array_unique($va_extensions), 'Media');
+		return $va_extensions;
 	}
-	# ------------------------------------------------
+	# ----------------------------------------------------------
 	private function getPluginsForMimetypes() {
+		if (CompositeCache::contains('getPluginsForMimetypes', 'Media')) {
+			return CompositeCache::fetch('getPluginsForMimetypes', 'Media');
+		}
 		$va_plugin_names = $this->getPluginNames();
 
-		$va_return = array();
+		$va_return = [];
 		foreach ($va_plugin_names as $vs_plugin_name) {
 			if (!$va_plugin_info = $this->getPlugin($vs_plugin_name)) { continue; }
 			/** @var BaseMediaPlugin $o_plugin */
@@ -432,118 +570,164 @@ class Media extends BaseObject {
 				$va_return[$vs_mimetype][] = $vs_plugin_name;
 			}
 		}
-
+		CompositeCache::save('getPluginsForMimetypes', $va_return, 'Media');
 		return $va_return;
 	}
-	# ------------------------------------------------
+	# ----------------------------------------------------------
 	/**
 	 * Return list of file extensions for media formats supported for export
 	 *
 	 * @return array List of file extensions
 	 */
 	public static function getExportFileExtensions() {
+		if (CompositeCache::contains('getExportFileExtensions', 'Media')) {
+			return CompositeCache::fetch('getExportFileExtensions', 'Media');
+		}
+		
 		$o_media = new Media();
 		$va_plugin_names = $o_media->getPluginNames();
 		
-		$va_extensions = array();
+		$va_extensions = [];
 		foreach ($va_plugin_names as $vs_plugin_name) {
 			if (!$va_plugin_info = $o_media->getPlugin($vs_plugin_name)) { continue; }
 			$o_plugin = $va_plugin_info["INSTANCE"];
 			$va_extensions = array_merge($va_extensions, $o_plugin->getExportExtensions());
 		}
 		
-		return array_unique($va_extensions);
+		CompositeCache::save('getExportFileExtensions', $va_extensions = array_unique($va_extensions), 'Media');
+		return $va_extensions;
 	}
-	# ------------------------------------------------
+	# ----------------------------------------------------------
 	/**
 	 * Return list of mimetypes for media formats supported for export
 	 *
 	 * @return array List of mimetypes
 	 */
 	public static function getExportMimetypes() {
+		if (CompositeCache::contains('getExportMimetypes', 'Media')) {
+			return CompositeCache::fetch('getExportMimetypes', 'Media');
+		}
+		
 		$o_media = new Media();
 		$va_plugin_names = $o_media->getPluginNames();
 		
-		$va_extensions = array();
+		$mimetypes = [];
 		foreach ($va_plugin_names as $vs_plugin_name) {
 			if (!$va_plugin_info = $o_media->getPlugin($vs_plugin_name)) { continue; }
 			$o_plugin = $va_plugin_info["INSTANCE"];
-			$va_extensions = array_merge($va_extensions, $o_plugin->getExportMimetypes());
+			$mimetypes = array_merge($mimetypes, $o_plugin->getExportMimetypes());
 		}
 		
-		return array_unique($va_extensions);
+		CompositeCache::save('getExportMimetypes', $mimetypes = array_unique($mimetypes), 'Media');
+		return $mimetypes;
 	}
-	# ------------------------------------------------
+	# ----------------------------------------------------------
 	/**
 	 * Return mimetype for given file extension. Only formats supported by an installed plugin for import or export are recognized.
 	 *
 	 * @return string Mimetype or null if extension is not recognized.
 	 */
 	public static function getMimetypeForExtension($ps_extension) {
+		if(!$ps_extension) { return null; }
+		if (CompositeCache::contains($ps_extension, 'Media_getMimetypeForExtension')) {
+			return CompositeCache::fetch($ps_extension, 'Media_getMimetypeForExtension');
+		}
+		
 		$o_media = new Media();
 		$va_plugin_names = $o_media->getPluginNames();
 		
-		$va_formats = array();
+		$va_formats = [];
 		foreach ($va_plugin_names as $vs_plugin_name) {
 			if (!$va_plugin_info = $o_media->getPlugin($vs_plugin_name)) { continue; }
 			$o_plugin = $va_plugin_info["INSTANCE"];
 			$va_formats = array_merge($va_formats, $o_plugin->getImportFormats(), $o_plugin->getExportFormats());
 		}
 		$va_formats = array_flip($va_formats);
-		return $va_formats[strtolower($ps_extension)];
+		
+		CompositeCache::save($ps_extension, $ret = $va_formats[strtolower($ps_extension)], 'Media_getMimetypeForExtension');
+		return $ret;
 	}
-	# ------------------------------------------------
+	# ----------------------------------------------------------
 	/**
 	 * Return file extension for given mimetype. Only formats supported by an installed plugin for import or export are recognized.
 	 *
 	 * @return string File extension or null if mimetype is not recognized.
 	 */
-	public static function getExtensionForMimetype($ps_mimetype) {
+	public static function getExtensionForMimetype($mimetype) {
+		if(!$mimetype) { return null; }
+		if (CompositeCache::contains($mimetype, 'Media_getExtensionForMimetype')) {
+			return CompositeCache::fetch($mimetype, 'Media_getExtensionForMimetype');
+		}
 		$o_media = new Media();
 		$va_plugin_names = $o_media->getPluginNames();
 		
-		$va_formats = array();
+		$va_formats = [];
 		foreach ($va_plugin_names as $vs_plugin_name) {
 			if (!$va_plugin_info = $o_media->getPlugin($vs_plugin_name)) { continue; }
 			$o_plugin = $va_plugin_info["INSTANCE"];
 			$va_formats = array_merge($va_formats, $o_plugin->getImportFormats(), $o_plugin->getExportFormats());
 		}
-		return $va_formats[strtolower($ps_mimetype)];
+		CompositeCache::save($mimetype, $ret = $va_formats[strtolower($mimetype)], 'Media_getExtensionForMimetype');
+		return $ret;
 	}
-	# ------------------------------------------------
+	# ----------------------------------------------------------
 	/**
 	 * Return file type name for given mimetype. Only formats supported by an installed plugin for import or export are recognized.
 	 *
 	 * @return string Type name or null if mimetype is not recognized.
 	 */
-	public static function getTypenameForMimetype($ps_mimetype) {
+	public static function getTypenameForMimetype($mimetype) {
+		if(!$mimetype) { return null; }
+		if (CompositeCache::contains($mimetype, "Media_getTypenameForMimetype")) {
+			return CompositeCache::fetch($mimetype, "Media_getTypenameForMimetype");
+		}
+		
 		$o_media = new Media();
 		$va_plugin_names = $o_media->getPluginNames();
-		
 		foreach ($va_plugin_names as $vs_plugin_name) {
 			if (!$va_plugin_info = $o_media->getPlugin($vs_plugin_name)) { continue; }
 			$o_plugin = $va_plugin_info["INSTANCE"];
-			if ($vs_typename = $o_plugin->mimetype2typename($ps_mimetype)) {
+			if ($vs_typename = $o_plugin->mimetype2typename($mimetype)) {
+				CompositeCache::save($mimetype, $vs_typename, "Media_getTypenameForMimetype");
 				return $vs_typename;
 			}
 		}
+		CompositeCache::save($mimetype, null, "Media_getTypenameForMimetype");
 		return null;
 	}
-	# ------------------------------------------------
+	# ----------------------------------------------------------
 	# --- 
-	# ------------------------------------------------
-	public function htmlTag($ps_mimetype, $ps_url, $pa_properties, $pa_options=null, $pa_volume_info=null) {
-		if (!$ps_mimetype) { return _t('No media available'); }
-		$va_plugin_names = $this->getPluginNames();
-		foreach($va_plugin_names as $vs_plugin_name) {
+	# ----------------------------------------------------------
+	/**
+	 *
+	 */
+	public function htmlTag($mimetype, $ps_url, $pa_properties, $options=null, $pa_volume_info=null) {
+		if (!$mimetype) { return _t('No media available'); }
+		
+		$map = $this->getPluginsForMimetypes();
+		if(is_array($map[$mimetype]) && ($vs_plugin_name = $map[$mimetype][0])) {
 			$p = $this->getUnregisteredPlugin($vs_plugin_name);
-			if ((isset($p->info['EXPORT'][$ps_mimetype])) || (isset($p->info['IMPORT'][$ps_mimetype]))) {
-				$pa_properties["mimetype"] = $ps_mimetype;
-				return $p->htmlTag($ps_url, $pa_properties, $pa_options, $pa_volume_info);
+			if ((isset($p->info['EXPORT'][$mimetype])) || (isset($p->info['IMPORT'][$mimetype]))) {
+				$pa_properties["mimetype"] = $mimetype;
+				return $p->htmlTag($ps_url, $pa_properties, $options, $pa_volume_info);
 			}
 		}
 		
-		return _t("Could not find plug-in for mimetype %1", $ps_mimetype);
+		return _t("Could not find plug-in for mimetype %1", $mimetype);
+	}
+	# ----------------------------------------------------------
+	# --- 
+	# ----------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function __destruct() {
+		// Clean up tmp files
+		if(is_array($this->tmp_files)) {
+			foreach($this->tmp_files as $f) {
+				@unlink($f);
+			}
+		}
 	}
 	# ------------------------------------------------
 }

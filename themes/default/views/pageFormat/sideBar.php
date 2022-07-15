@@ -30,19 +30,19 @@
 
 <?php
 	if ($this->request->isLoggedIn() && ($this->request->user->getPreference('ui_show_breadcrumbs') == 1)) {
-		if (trim($vs_trail = join('<img src="'.$this->request->getThemeUrlPath().'/graphics/arrows/breadcrumb.jpg">', $va_breadcrumb = $this->getVar('nav')->getDestinationAsBreadCrumbTrail()))) {
+		if (trim($vs_trail = join('<img src="'.$this->request->getUrlPathForThemeFile('graphics/arrows/breadcrumb.png') .'">', $va_breadcrumb = $this->getVar('nav')->getDestinationAsBreadCrumbTrail()))) {
 ?>
 <div class='navBreadCrumbContainer'>
 	<div class='navBreadCrumbs'>
 <?php
 	$count = count($va_breadcrumb);
 	$i=1;
-	print '<div class="crumb"><div class="crumbtext navBreadCrumbLabel">'._t('Current location').'</div><img src="'.$this->request->getThemeUrlPath().'/graphics/arrows/breadcrumbloc.png" width="16" height="19" border="0"></div>';
+	print '<div class="crumb"><div class="crumbtext navBreadCrumbLabel">'._t('Current location').'</div><img src="'.$this->request->getUrlPathForThemeFile('graphics/arrows/breadcrumbloc.png') .'" width="16" height="19" border="0"></div>';
 	foreach ($va_breadcrumb as $crumb) {
 		if ($i == $count) {
-			print '<div class="lastcrumb"><nobr><div class="crumbtext">'.caUcFirstUTF8Safe($crumb).'</div><img src="'.$this->request->getThemeUrlPath().'/graphics/arrows/breadcrumb.png" width="16" height="19" border="0"></nobr></div>';
+			print '<div class="lastcrumb"><nobr><div class="crumbtext">'.caUcFirstUTF8Safe($crumb).'</div><img src="'.$this->request->getUrlPathForThemeFile('graphics/arrows/breadcrumb.png') .'" width="16" height="19" border="0"></nobr></div>';
 		} else {
-			print '<div class="crumb"><nobr><div class="crumbtext">'.caUcFirstUTF8Safe($crumb).'</div><img src="'.$this->request->getThemeUrlPath().'/graphics/arrows/breadcrumb.png" width="16" height="19" border="0"></nobr></div>';
+			print '<div class="crumb"><nobr><div class="crumbtext">'.caUcFirstUTF8Safe($crumb).'</div><img src="'.$this->request->getUrlPathForThemeFile('graphics/arrows/breadcrumb.png') .'" width="16" height="19" border="0"></nobr></div>';
 			$i++;
 		}
 	}

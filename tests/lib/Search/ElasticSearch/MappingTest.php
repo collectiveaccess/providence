@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,20 +29,21 @@
  *
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
 
 require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch/Mapping.php');
 require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
 
-class MappingTest extends PHPUnit_Framework_TestCase {
+class MappingTest extends TestCase {
 	public function testGetFieldsToIndex() {
 
 		$o_mapping = new ElasticSearch\Mapping();
 		$va_fields = $o_mapping->getFieldsToIndex('ca_objects');
-		$this->assertInternalType('array', $va_fields);
+		$this->assertIsArray($va_fields);
 		$this->assertEquals(122, sizeof($va_fields));
 
 		foreach($va_fields as $vs_fld => $va_options) {
-			$this->assertRegExp("/^ca[\_a-z]+\.(I|A)[0-9]+$/", $vs_fld);
+			$this->assertMatchesRegularExpression("/^ca[\_a-z]+\.(I|A)[0-9]+$/", $vs_fld);
 		}
 	}
 
@@ -62,13 +63,13 @@ class MappingTest extends PHPUnit_Framework_TestCase {
 		}
 	}
 
-	public function testGetConfigForIntrinsic() {
-		$o_mapping = new ElasticSearch\Mapping();
-		$o_mapping->getConfigForIntrinsic('ca_object_labels', 4, array());
-	}
-
-	public function testGet() {
-		$o_mapping = new ElasticSearch\Mapping();
-		$va_mapping = $o_mapping->get();
-	}
+	// public function testGetConfigForIntrinsic() {
+// 		$o_mapping = new ElasticSearch\Mapping();
+// 		$o_mapping->getConfigForIntrinsic('ca_object_labels', 4, array());
+// 	}
+// 
+// 	public function testGet() {
+// 		$o_mapping = new ElasticSearch\Mapping();
+// 		$va_mapping = $o_mapping->get();
+// 	}
 }

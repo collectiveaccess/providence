@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2010 Whirl-i-Gig
+ * Copyright 2008-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -51,7 +51,13 @@
 					<?php print _t('Team'); ?>
 				</th>
 				<th class="list-header-unsorted">
+					<?php print _t('Join code'); ?>
+				</th>
+				<th class="list-header-unsorted">
 					<?php print _t('Description'); ?>
+				</th>
+				<th class="list-header-unsorted">
+					<?php print _t('For public use?'); ?>
 				</th>
 				<th class="list-header-unsorted">
 					<?php print _t('Members'); ?>
@@ -69,7 +75,13 @@
 					<?php print $va_group['name']; ?>
 				</td>
 				<td>
+					<?php print $va_group['code']; ?>
+				</td>
+				<td>
 					<?php print $va_group['description']; ?>
+				</td>
+				<td>
+					<?php print ((bool)$va_group['for_public_use'] ? _t('Yes') : _t('No')); ?>
 				</td>
 				<td>
 					<?php print $va_group['member_list']; ?>
@@ -85,7 +97,7 @@
 	} else {
 ?>
 			<tr>
-				<td colspan="4">
+				<td colspan="6">
 					<div align="center">
 						<?php print _t('You have not defined any teams'); ?>
 					</div>

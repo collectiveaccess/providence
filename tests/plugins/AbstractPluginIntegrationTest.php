@@ -60,7 +60,9 @@
  *
  * ------------------
  */
-abstract class AbstractPluginIntegrationTest extends PHPUnit_Framework_TestCase {
+use PHPUnit\Framework\TestCase;
+
+abstract class AbstractPluginIntegrationTest extends TestCase {
 
 	/**
 	 * The timestamp when the test was initialised, used for generating unique reference data.

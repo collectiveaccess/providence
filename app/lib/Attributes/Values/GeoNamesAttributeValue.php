@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2018 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -49,7 +49,7 @@
 	'fieldWidth' => array(
 		'formatType' => FT_NUMBER,
 		'displayType' => DT_FIELD,
-		'default' => 60,
+		'default' => '670px',
 		'width' => 5, 'height' => 1,
 		'label' => _t('Width of data entry field in user interface'),
 		'description' => _t('Width, in characters, of the field when displayed in a user interface.')
@@ -62,6 +62,110 @@
 		'label' => _t('Height of data entry field in user interface'),
 		'description' => _t('Height, in characters, of the field when displayed in a user interface.')
 	),
+	'mapWidth' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_FIELD,
+		'default' => '695px',
+		'width' => 5, 'height' => 1,
+		'label' => _t('Width of map display in user interface'),
+		'description' => _t('Width in pixels of the display map.')
+	),
+	'mapHeight' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_FIELD,
+		'default' => '150px',
+		'width' => 5, 'height' => 1,
+		'label' => _t('Height of map display in user interface'),
+		'description' => _t('Height in pixels of the display map.')
+	),
+	'minZoomLevel' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_SELECT,
+		'default' => 1,
+		'options' => [
+			0 => 0,
+			1 => 1,
+			2 => 2,
+			3 => 3,
+			4 => 4,
+			5 => 5,
+			6 => 6,
+			7 => 7,
+			8 => 8,
+			9 => 9,
+			10 => 10,
+			11 => 11,
+			12 => 12,
+			13 => 13,
+			14 => 14,
+			15 => 15,
+			16 => 16,
+			17 => 17,
+			18 => 18
+		],
+		'width' => '100px', 'height' => 1,
+		'label' => _t('Minimum zoom level'),
+		'description' => _t('Minimum allowable zoom level for map.')
+	),
+	'maxZoomLevel' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_SELECT,
+		'default' => 16,
+		'options' => [
+			0 => 0,
+			1 => 1,
+			2 => 2,
+			3 => 3,
+			4 => 4,
+			5 => 5,
+			6 => 6,
+			7 => 7,
+			8 => 8,
+			9 => 9,
+			10 => 10,
+			11 => 11,
+			12 => 12,
+			13 => 13,
+			14 => 14,
+			15 => 15,
+			16 => 16,
+			17 => 17,
+			18 => 18
+		],
+		'width' => '100px', 'height' => 1,
+		'label' => _t('Maximum zoom level'),
+		'description' => _t('Maximum allowed zoom level for map.')
+	),
+	'defaultZoomLevel' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_SELECT,
+		'default' => null,
+		'options' => [
+			_t('Auto') => -1,
+			0 => 0,
+			1 => 1,
+			2 => 2,
+			3 => 3,
+			4 => 4,
+			5 => 5,
+			6 => 6,
+			7 => 7,
+			8 => 8,
+			9 => 9,
+			10 => 10,
+			11 => 11,
+			12 => 12,
+			13 => 13,
+			14 => 14,
+			15 => 15,
+			16 => 16,
+			17 => 17,
+			18 => 18
+		],
+		'width' => '100px', 'height' => 1,
+		'label' => _t('Default zoom level'),
+		'description' => _t('Default zoom level for newly opened maps.')
+	),
 	'doesNotTakeLocale' => array(
 		'formatType' => FT_NUMBER,
 		'displayType' => DT_CHECKBOXES,
@@ -69,6 +173,30 @@
 		'width' => 1, 'height' => 1,
 		'label' => _t('Does not use locale setting'),
 		'description' => _t('Check this option if you don\'t want your GeoNames values to be locale-specific. (The default is to not be.)')
+	),
+	'singleValuePerLocale' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Allow single value per locale'),
+		'description' => _t('Check this option to restrict entry to a single value per-locale.')
+	),
+	'allowDuplicateValues' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Allow duplicate values?'),
+		'description' => _t('Check this option if you want to allow duplicate values to be set when element is not in a container and is repeating.')
+	),
+	'raiseErrorOnDuplicateValue' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Show error message for duplicate values?'),
+		'description' => _t('Check this option to show an error message when value is duplicate and <em>allow duplicate values</em> is not set.')
 	),
 	'canBeUsedInSort' => array(
 		'formatType' => FT_NUMBER,
@@ -174,9 +302,12 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 	# ------------------------------------------------------------------
  	private $ops_text_value;
  	private $ops_uri_value;
+ 	
+ 	private $opo_geo_plugin;
  	# ------------------------------------------------------------------
  	public function __construct($pa_value_array=null) {
  		parent::__construct($pa_value_array);
+		$this->opo_geo_plugin = new GeographicMap();
  	}
  	# ------------------------------------------------------------------
  	public function loadTypeSpecificValueFromRow($pa_value_array) {
@@ -222,17 +353,18 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 	 *
 	 */
 	public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
+		global $g_ui_locale_id;
  		$ps_value = trim(preg_replace("![\t\n\r]+!", ' ', $ps_value));
 		$vo_conf = Configuration::load();
 		$vs_user = trim($vo_conf->get("geonames_user"));
 
-		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('canBeEmpty'));
+		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, ['canBeEmpty']);
 		if (!$ps_value) {
  			if(!$va_settings["canBeEmpty"]){
-				$this->postError(1970, _t('Entry was blank.'), 'GeoNamesAttributeValue->parseValue()');
+				$this->postError(1970, _t('Entry for <em>%1</em> was blank.', $pa_element_info['displayLabel']), 'GeoNamesAttributeValue->parseValue()');
 				return false;
 			}
-			return array();
+			return [];
  		} else {
  			$vs_text = $ps_value;
  			$vs_id = null;
@@ -241,17 +373,60 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 				$vs_text = preg_replace("! \[id:[0-9]+\]$!", "", $ps_value);
 			}
 			if (!$vs_id) {
+			    $vs_base = $vo_conf->get('geonames_api_base_url') . '/search';
+                $t_locale = new ca_locales($g_ui_locale_id);
+                $vs_lang = $t_locale->get("language");
+                $va_params = [
+                    "q" => $ps_value,
+                    "lang" => $vs_lang,
+                    'style' => 'full',
+                    'username' => $vs_user,
+                    'maxRows' => 5,
+                ];
+                
+                $vs_query_string = '';
+                foreach ($va_params as $vs_key => $vs_value) {
+                    $vs_query_string .= "$vs_key=" . urlencode($vs_value) . "&";
+                }
+
+                try {
+                    $vs_xml = caQueryExternalWebservice("{$vs_base}?$vs_query_string");
+                    $vo_xml = new SimpleXMLElement($vs_xml);
+                
+                    $va_attr = $vo_xml->status ? $vo_xml->status->attributes() : null;
+                    if ($va_attr && isset($va_attr['value']) && ((int)$va_attr['value'] > 0)) { 
+                        $this->postError(1970, _t('Connection to GeoNames with username "%1" was rejected with the message "%2". Check your configuration and make sure your GeoNames.org account is enabled for web services.', $vs_user, $va_attr['message']), 'GeoNamesAttributeValue->parseValue()');
+                        return false;
+                    } else {
+                        foreach($vo_xml->children() as $vo_child){
+                            if($vo_child->getName()=="geoname"){
+
+                                $vs_text = $vo_child->name.
+                                                ($vo_child->lat ? " [".$vo_child->lat."," : '').
+                                                ($vo_child->lng ? $vo_child->lng."]" : '');
+                                $vs_id = (string)$vo_child->geonameId;
+                                return [
+                                    'value_longtext1' => $vs_text,
+                                    'value_longtext2' => $vs_id,
+                                ];
+                            }
+                        }
+                    }
+                } catch (Exception $e) {
+                    $this->postError(1970, _t('Could not connect to GeoNames'), 'GeoNamesAttributeValue->parseValue()');
+				    return false;
+                }
 				if(!$va_settings["canBeEmpty"]){
-					$this->postError(1970, _t('Entry was blank.'), 'GeoNamesAttributeValue->parseValue()');
+					$this->postError(1970, _t('Entry for <em>%1</em> was blank.', $pa_element_info['displayLabel']), 'GeoNamesAttributeValue->parseValue()');
 					return false;
 				}
-				return array();
+				return [];
 			}
 
-			return array(
+			return [
 				'value_longtext1' => $vs_text,
 				'value_longtext2' => $vs_id,
-			);
+			];
 		}
 	}
 	# ------------------------------------------------------------------
@@ -332,51 +507,22 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
                             jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}').css('display', 'inline').attr('href', 'http://geonames.org/' + geoname_id);
                         }
                     }
+                    if ('{n}'.substring(0,3) == 'new') {
+						jQuery('#mapholder_".$pa_element_info['element_id']."_{n}').hide();
+					}
 				});
 			</script>
 		";
-
-		if(!caGetOption("disableMap", $va_settings, false) && !caGetOption("disableMap", $pa_options, false) && strlen($o_config->get('google_maps_key'))){
-
-			AssetLoadManager::register('maps');
-
-			$vs_element .= "
-				<div id='map_".$pa_element_info['element_id']."{n}' style='width:700px; height:160px;'>
-
-				</div>
-				<script type='text/javascript'>
-					if ('{n}'.substring(0,3) == 'new') {
-						jQuery('#map_".$pa_element_info['element_id']."{n}').hide();
-					} else {
-						jQuery(document).ready(function() {
-			";
-
-			$vs_element .= "
-					var re = /\[([\d\.\-,; ]+)\]/;
-					var r = re.exec('{{".$pa_element_info['element_id']."}}');
-					var latlong = (r) ? r[1] : null;
-
-					if (latlong) {
-						// map vars are global
-						map_".$pa_element_info['element_id']."{n} = new google.maps.Map(document.getElementById('map_".$pa_element_info['element_id']."{n}'), {
-							disableDefaultUI: false,
-							mapTypeId: google.maps.MapTypeId.SATELLITE
-						});
-
-						var tmp = latlong.split(',');
-						var pt = new google.maps.LatLng(tmp[0], tmp[1]);
-						map_".$pa_element_info['element_id']."{n}.setCenter(pt);
-						map_".$pa_element_info['element_id']."{n}.setZoom(15);		// todo: make this a user preference of some sort
-						var marker = new google.maps.Marker({
-							position: pt,
-							map: map_".$pa_element_info['element_id']."{n}
-						});
-					}";
-
-			$vs_element .= "
-						});
-					}
-				</script>";
+		
+		if(!caGetOption("disableMap", $va_settings, false) && !caGetOption("disableMap", $pa_options, false)) {
+			$vs_element .= $this->opo_geo_plugin->getAttributeBundleHTML($pa_element_info, array_merge([
+				'zoomLevel' => caGetOption('defaultZoomLevel', $pa_element_info['settings'], null),
+				'minZoomLevel' => caGetOption('minZoomLevel', $pa_element_info['settings'], null),
+				'maxZoomLevel' => caGetOption('maxZoomLevel', $pa_element_info['settings'], null),
+				'hideCoordinatesDisplay' => true, 'hideGeocodeUI' => true, 'hideTools' => true,
+				'mapWidth' => caGetOption('mapWidth', $pa_element_info['settings'], '695px'), 
+				'mapHeight' => caGetOption('mapHeight', $pa_element_info['settings'], '200px')
+			], $pa_options));
 		}
 
  		return $vs_element;
@@ -388,22 +534,22 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
  		return $_ca_attribute_settings['GeoNamesAttributeValue'];
  	}
  	# ------------------------------------------------------------------
-		/**
-		 * Returns name of field in ca_attribute_values to use for sort operations
-		 * 
-		 * @return string Name of sort field
-		 */
-		public function sortField() {
-			return 'value_longtext1';
-		}
+	/**
+	 * Returns name of field in ca_attribute_values to use for sort operations
+	 * 
+	 * @return string Name of sort field
+	 */
+	public function sortField() {
+		return 'value_longtext1';
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Returns constant for geonames attribute value
+	 * 
+	 * @return int Attribute value type code
+	 */
+	public function getType() {
+		return __CA_ATTRIBUTE_VALUE_GEONAMES__;
+	}
  	# ------------------------------------------------------------------
-		/**
-		 * Returns constant for geonames attribute value
-		 * 
-		 * @return int Attribute value type code
-		 */
-		public function getType() {
-			return __CA_ATTRIBUTE_VALUE_GEONAMES__;
-		}
- 		# ------------------------------------------------------------------
 }

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018 Whirl-i-Gig
+ * Copyright 2018-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -50,7 +50,7 @@ class WLPlugInformationServiceVIAF extends BaseInformationServicePlugin implemen
     # ------------------------------------------------
     static $s_settings;
     const VIAF_SERVICES_BASE_URL = 'http://www.viaf.org/viaf';
-    const VIAF_LOOKUP = 'AutoSuggest';
+    const VIAF_LOOKUP = 'search';
     private $o_client;
     # ------------------------------------------------
 
@@ -76,25 +76,27 @@ class WLPlugInformationServiceVIAF extends BaseInformationServicePlugin implemen
     public function lookup($pa_settings, $ps_search, $pa_options = null)
     {
         $vo_client = $this->getClient();
-        $vo_response = $vo_client->request("GET", self::VIAF_SERVICES_BASE_URL."/".self::VIAF_LOOKUP, [
+        $vo_response = $vo_client->request("GET", self::VIAF_SERVICES_BASE_URL."/".self::VIAF_LOOKUP."?maximumRecords=100&httpAccept=application/json&query=".urlencode("cql.any all \"{$ps_search}\""), [
             'headers' => [
                 'Accept' => 'application/json'
-            ],
-            ['query' => "'".$ps_search."'"]
+            ]
         ]);
-        #$vo_request->setHeader('Accept', 'application/json');
-        #$vo_request->getQuery()->add('query', "'".$ps_search."'");
-        #$va_raw_resultlist = $vo_request->send()->json();
         $va_raw_resultlist = json_decode($vo_response->getBody(), true);
-        $response_data = $va_raw_resultlist['result'];
+    
         $va_return = [];
-        foreach ($response_data as $data){
-            $va_return['results'][] = [
-                'label' => $data['displayForm'],
-                'url' => self::VIAF_SERVICES_BASE_URL."/".$data['recordID'],
-                'idno' => $data['recordID']
-            ];
-        }
+        if (is_array($response_data = $va_raw_resultlist['searchRetrieveResponse']['records'])) {
+			foreach ($response_data as $data){
+				if (!($label = $data['record']['recordData']['mainHeadings']['data'][0]['text'])) {
+					$label = $data['record']['recordData']['mainHeadings']['data']['text'];
+				}
+				$label = str_replace("|", ":", $label);
+				$va_return['results'][] = [
+					'label' => $label,
+					'url' => self::VIAF_SERVICES_BASE_URL."/".$data['record']['recordData']['viafID'],
+					'idno' => $data['record']['recordData']['viafID']
+				];
+			}
+		}
         return $va_return;
     }
 

@@ -29,6 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
 
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
 require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
@@ -46,7 +47,7 @@ class DisplayHelpersGetTest extends BaseTestWithData {
 	 */
 	private $opn_entity_id = null;
 	# -------------------------------------------------------
-	public function setUp() {
+	protected function setUp() : void {
 		// don't forget to call parent so that the request is set up
 		parent::setUp();
 
@@ -71,7 +72,7 @@ class DisplayHelpersGetTest extends BaseTestWithData {
 		$vn_entity_id = $this->addTestRecord('ca_entities', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'ind',
-				'idno' => 'hjs',
+				'idno' => '101',
 			),
 			'preferred_labels' => array(
 				array(
@@ -107,7 +108,7 @@ class DisplayHelpersGetTest extends BaseTestWithData {
 		$vn_entity_id = $this->addTestRecord('ca_entities', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'ind',
-				'idno' => 'bs',
+				'idno' => '102',
 			),
 			'preferred_labels' => array(
 				array(
@@ -141,7 +142,7 @@ class DisplayHelpersGetTest extends BaseTestWithData {
 
 		// just a plain tag .. 'My test image' is 13 chars
 		$this->assertEquals(13, caProcessTemplateForIDs(
-			'<expression>length(^ca_objects.preferred_labels)</expression>'
+			'<expression>length("^ca_objects.preferred_labels")</expression>'
 		, 'ca_objects', array($this->opt_object->getPrimaryKey())));
 
 		// plain old scalars
@@ -151,7 +152,7 @@ class DisplayHelpersGetTest extends BaseTestWithData {
 
 		// get entity names and their string lengths
 		$this->assertEquals('Homer J. Simpson, 16; Bart Simpson, 12', caProcessTemplateForIDs(
-			'<unit relativeTo="ca_entities">^ca_entities.preferred_labels, <expression>length(^ca_entities.preferred_labels)</expression></unit>'
+			'<unit relativeTo="ca_entities">^ca_entities.preferred_labels, <expression>length("^ca_entities.preferred_labels")</expression></unit>'
 		, 'ca_objects', array($this->opt_object->getPrimaryKey())));
 
 		// scalars in ifdef (false)

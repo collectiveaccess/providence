@@ -28,7 +28,7 @@
  
 	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$t_subject 			= $this->getVar('t_subject');		// object_representation
-	
+
 	$vn_num_multifiles = $this->getVar('representation_num_multifiles');
 	$vs_num_multifiles = ($vn_num_multifiles ? (($vn_num_multifiles == 1) ? _t('+ 1 additional preview') : _t('+ %1 additional previews', $vn_num_multifiles)) : '');
 	
@@ -81,7 +81,7 @@
 <?php
 	}
 ?>
-						<a href="#" onclick="caMediaPanel.showPanel('<?php print urldecode(caNavUrl($this->request, '*', '*', 'GetRepresentationEditor', array('representation_id' => $t_subject->getPrimaryKey()))); ?>'); return false;"><?php print $t_subject->getMediaTag('media', 'preview170'); ?></a>
+						<a href="#" onclick="caMediaPanel.showPanel('<?php print urldecode(caNavUrl($this->request, '*', '*', 'GetMediaOverlay', array('representation_id' => $t_subject->getPrimaryKey()))); ?>'); return false;"><?php print $t_subject->getMediaTag('media', 'preview170'); ?></a>
 					</div>
 				</td>
 			</tr>
@@ -114,7 +114,7 @@
 				<tr>
 					<td><?php
 						print caHTMLRadioButtonInput("{$vs_id_prefix}_derivative_options_mode", array('value' => 'timecode', 'id' => "{$vs_id_prefix}_derivative_options_mode_timecode")).' '._t('Update using frame at timecode').' ';
-						print caHTMLTextInput("{$vs_id_prefix}_derivative_options_mode_timecode_value", array('id' => "{$vs_id_prefix}_derivative_options_mode_timecode_value", 'class' => 'timecodeBg', 'onclick' => "jQuery('#{$vs_id_prefix}_derivative_options_mode_timecode').attr('checked', '1');"), array("width" => 30, "height" => 1));
+						print caHTMLTextInput("{$vs_id_prefix}_derivative_options_mode_timecode_value", array('value' => $t_subject->getMediaInfo('media', '_START_AT_TIME'), 'id' => "{$vs_id_prefix}_derivative_options_mode_timecode_value", 'class' => 'timecodeBg', 'onclick' => "jQuery('#{$vs_id_prefix}_derivative_options_mode_timecode').attr('checked', '1');"), array("width" => 30, "height" => 1));
 					?></td>
 					<td>
 					
@@ -127,7 +127,7 @@
 				<tr>
 					<td><?php
 						print caHTMLRadioButtonInput("{$vs_id_prefix}_derivative_options_mode", array('value' => 'page', 'id' => "{$vs_id_prefix}_derivative_options_mode_page")).' '._t('Update using page #').' ';
-						print caHTMLTextInput("{$vs_id_prefix}_derivative_options_mode_page_value", array('id' => "{$vs_id_prefix}_derivative_options_mode_page_value", 'onclick' => "jQuery('#{$vs_id_prefix}_derivative_options_mode_page').attr('checked', '1');"), array("width" => 4, "height" => 1));
+						print caHTMLTextInput("{$vs_id_prefix}_derivative_options_mode_page_value", array('value' => $t_subject->getMediaInfo('media', '_START_AT_PAGE'), 'id' => "{$vs_id_prefix}_derivative_options_mode_page_value", 'onclick' => "jQuery('#{$vs_id_prefix}_derivative_options_mode_page').attr('checked', '1');"), array("width" => 4, "height" => 1));
 					?></td>
 					<td>
 					

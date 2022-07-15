@@ -61,10 +61,10 @@ var methods = {
             
             toolbar: ['zoomIn', 'zoomOut', 'pan', 'toggleAnnotations', 'rect', 'point', 'polygon', 'measure', 'lock', 'separator',  'overview', 'rotation', 'expand', 'separator', 'list', 'download', 'help', 'key'],
             toolbarIcons: {
-            	'pan': '<i class="fa fa-arrows">',
-            	'toggleAnnotations': '<i class="fa fa-eye"></i>', 
-            	'rect': '<i class="fa fa-square-o"></i>', 
-            	'point': '<i class="fa fa-circle-thin"></i>', 
+            	'pan': '<i class="fas fa-arrows-alt">',
+            	'toggleAnnotations': '<i class="far fa-eye"></i>', 
+            	'rect': '<i class="far fa-square"></i>', 
+            	'point': '<i class="far fa-circle"></i>', 
             	'polygon': '<i class="fa fa-share-alt"></i>', 
             	'measure': '<i class="fa fa-text-width"></i>', 
             	'lock': '<i class="fa fa-lock"></i>', 
@@ -88,8 +88,8 @@ var methods = {
             tooltipClass: 'tileviewerTooltipFormat',
             
             uiIcons: {
-            	'zoomIn': '<i class="fa fa-plus-square-o fa-2x"><i>',
-            	'zoomOut': '<i class="fa fa-minus-square-o fa-2x"><i>',
+            	'zoomIn': '<i class="fas fa-plus-square fa-2x fa-inverse"><i>',
+            	'zoomOut': '<i class="fa fa-minus-square fa-2x fa-inverse"><i>',
             	'lock': '<i class="fa fa-lock"></i>',
             	'delete': '<i class="fa fa-trash-o"></i>',
             	'close': '<i class="fa fa-times"></i>'
@@ -1859,9 +1859,9 @@ var methods = {
 						t = "<form><textarea id='tileviewerAnnotationTextLabel'>" + tText + "</textarea> <div class='tileviewerAnnotationLockedButtonLabel'><input type='checkbox' id='tileviewerAnnotationLockedButton' value='1' " + ((parseInt(curAnnotation['locked']) > 0) ? "CHECKED='1'" : '') + "/> " + options.uiIcons['lock'] + "</div>";
 						
 						if (options.annotationEditorUrl && curAnnotation['annotation_id']) {
-							t += "<a class='tileviewerFullAnnotationEditorLink' href='#' onclick='caRepresentationAnnotationEditor.showPanel(\"" + options.annotationEditorUrl + "/annotation_id/" + curAnnotation['annotation_id'] + "\"); return false;'>" + options.annotationEditorLink + "</a>";
+							t += "<a class='tileviewerFullAnnotationEditorLink' href='#'  aria-label='Edit annotation' onclick='caRepresentationAnnotationEditor.showPanel(\"" + options.annotationEditorUrl + "/annotation_id/" + curAnnotation['annotation_id'] + "\"); return false;'>" + options.annotationEditorLink + "</a>";
 						}
-						t += "<a href='#' class='tileviewerAnnotationDeleteButton'>" + options.uiIcons['delete'] + "</a>";
+						t += "<a href='#' class='tileviewerAnnotationDeleteButton' aria-label='Delete annotation'>" + options.uiIcons['delete'] + "</a>";
 						
 						t += "</form>";
 						
@@ -1975,44 +1975,44 @@ var methods = {
 							view.tools = {};
 							
 							if (options.toolbarZooming) {
-								view.tools['zoomIn'] = "<a href='#' data-toggle='tooltip' title='" + view.get_tool_tip('zoomIn') + "' id='" + options.id + "ControlZoomInImage' class='tileviewerControl'>" + options.toolbarIcons['zoomIn'] + "</a>";
-								view.tools['zoomOut'] = "<a href='#' data-toggle='tooltip' title='" + view.get_tool_tip('zoomOut') + "' id='" + options.id + "ControlZoomOutImage' class='tileviewerControl'>" + options.toolbarIcons['zoomOut'] + "</a>";
+								view.tools['zoomIn'] = "<a href='#'  aria-label='Zoom in' data-toggle='tooltip' title='" + view.get_tool_tip('zoomIn') + "' id='" + options.id + "ControlZoomInImage' class='tileviewerControl'>" + options.toolbarIcons['zoomIn'] + "</a>";
+								view.tools['zoomOut'] = "<a href='#' aria-label='Zoom out' data-toggle='tooltip' title='" + view.get_tool_tip('zoomOut') + "' id='" + options.id + "ControlZoomOutImage' class='tileviewerControl'>" + options.toolbarIcons['zoomOut'] + "</a>";
 							}
 							
-							view.tools['pan'] = "<a href='#' data-toggle='tooltip' title='" + view.get_tool_tip('pan') + "' id='" + options.id + "ControlPanImage' class='tileviewerControl " + (options.panMode ? 'tileviewerControlSelected' : '') + "'>" + options.toolbarIcons['pan'] + "</a>";
+							view.tools['pan'] = "<a href='#' aria-label='Pan image' data-toggle='tooltip' title='" + view.get_tool_tip('pan') + "' id='" + options.id + "ControlPanImage' class='tileviewerControl " + (options.panMode ? 'tileviewerControlSelected' : '') + "'>" + options.toolbarIcons['pan'] + "</a>";
 							if (options.useAnnotations && options.showAnnotationTools && !options.lockAnnotations) { 
-								view.tools['point'] = "<a href='#' title='" + view.get_tool_tip('point') + "' id='" + options.id + "ControlAddPointAnnotation' class='tileviewerControl'>" + options.toolbarIcons['point'] + "</a>";		
-								view.tools['rect'] = "<a href='#' title='" + view.get_tool_tip('rect') + "' id='" + options.id + "ControlAddRectAnnotation' class='tileviewerControl'>" + options.toolbarIcons['rect'] + "</a>";
-								view.tools['polygon'] = "<a href='#' title='" + view.get_tool_tip('polygon') + "' id='" + options.id + "ControlAddPolygonAnnotation' class='tileviewerControl'>" + options.toolbarIcons['polygon'] + "</a>";
+								view.tools['point'] = "<a href='#' aria-label='Add point annotation' title='" + view.get_tool_tip('point') + "' id='" + options.id + "ControlAddPointAnnotation' class='tileviewerControl'>" + options.toolbarIcons['point'] + "</a>";		
+								view.tools['rect'] = "<a href='#' aria-label='Add rectangular annotation' title='" + view.get_tool_tip('rect') + "' id='" + options.id + "ControlAddRectAnnotation' class='tileviewerControl'>" + options.toolbarIcons['rect'] + "</a>";
+								view.tools['polygon'] = "<a href='#' aria-label='Add polygone annotation' title='" + view.get_tool_tip('polygon') + "' id='" + options.id + "ControlAddPolygonAnnotation' class='tileviewerControl'>" + options.toolbarIcons['polygon'] + "</a>";
 								if (options.enableMeasurements) {
-									view.tools['measure'] = "<a href='#' title='" + view.get_tool_tip('measure') + "' id='" + options.id + "ControlAddMeasureAnnotation' class='tileviewerControl'>" + options.toolbarIcons['measure'] + "</a>";	
+									view.tools['measure'] = "<a href='#' aria-label='Measure' title='" + view.get_tool_tip('measure') + "' id='" + options.id + "ControlAddMeasureAnnotation' class='tileviewerControl'>" + options.toolbarIcons['measure'] + "</a>";	
 								}
-								view.tools['lock'] = "<a href='#' title='" + view.get_tool_tip('lock') + "' id='" + options.id + "ControlLockAnnotations' class='tileviewerControl " + (options.lockAnnotations ? 'tileviewerControlSelected' : '') + "'>" + options.toolbarIcons['lock'] + "</a>";
+								view.tools['lock'] = "<a href='#' aria-label='Lock annotations' title='" + view.get_tool_tip('lock') + "' id='" + options.id + "ControlLockAnnotations' class='tileviewerControl " + (options.lockAnnotations ? 'tileviewerControlSelected' : '') + "'>" + options.toolbarIcons['lock'] + "</a>";
 								
 							}
 							if (options.useAnnotations && options.showAnnotationTools && options.useKey) {
-								view.tools['key'] = "<a href='#' title='" + view.get_tool_tip('key') + "' id='" + options.id + "ControlKey' class='tileviewerControl'>" + options.toolbarIcons['key'] + "</a>";	
+								view.tools['key'] = "<a href='#' aria-label='Show/hide key' title='" + view.get_tool_tip('key') + "' id='" + options.id + "ControlKey' class='tileviewerControl'>" + options.toolbarIcons['key'] + "</a>";	
 							}
-							view.tools['overview'] = "<a href='#' title='" + view.get_tool_tip('overview') + "' id='" + options.id + "ControlOverview' class='tileviewerControl'>" + options.toolbarIcons['overview'] + "</a>";	
-							view.tools['expand'] = "<a href='#' title='" + view.get_tool_tip('expand') + "' id='" + options.id + "ControlFitToScreen' class='tileviewerControl'>" + options.toolbarIcons['expand'] + "</a>";	
+							view.tools['overview'] = "<a href='#' aria-label='Show/hide overview' title='" + view.get_tool_tip('overview') + "' id='" + options.id + "ControlOverview' class='tileviewerControl'>" + options.toolbarIcons['overview'] + "</a>";	
+							view.tools['expand'] = "<a href='#' aria-label='Fit image to screen' title='" + view.get_tool_tip('expand') + "' id='" + options.id + "ControlFitToScreen' class='tileviewerControl'>" + options.toolbarIcons['expand'] + "</a>";	
 							if (options.helpLoadUrl) {
-								view.tools['help'] = "<a href='#' title='" + view.get_tool_tip('help') + "' id='" + options.id + "ControlHelp' class='tileviewerControl'>" + options.toolbarIcons['help'] + "</a>";	
+								view.tools['help'] = "<a href='#' aria-label='Show/hide help' title='" + view.get_tool_tip('help') + "' id='" + options.id + "ControlHelp' class='tileviewerControl'>" + options.toolbarIcons['help'] + "</a>";	
 							}
 							
 							if (options.useAnnotations && options.showAnnotationTools) {
-								view.tools['toggleAnnotations'] = "<a href='#' title='" + view.get_tool_tip('toggleAnnotations') + "' id='" + options.id + "ControlToggleAnnotations' class='tileviewerControl " + (options.displayAnnotations ? 'tileviewerControlSelected' : '') + "'>" + options.toolbarIcons['toggleAnnotations'] + "</a>";	
+								view.tools['toggleAnnotations'] = "<a href='#' aria-label='Toggle annotations' title='" + view.get_tool_tip('toggleAnnotations') + "' id='" + options.id + "ControlToggleAnnotations' class='tileviewerControl " + (options.displayAnnotations ? 'tileviewerControlSelected' : '') + "'>" + options.toolbarIcons['toggleAnnotations'] + "</a>";	
 							}
 							
 							if (options.mediaDownloadUrl) {
-								view.tools['download'] = "<a href='#' title='" + view.get_tool_tip('download') + "' id='" + options.id + "ControlDownload' class='tileviewerControl'>" + options.toolbarIcons['download'] + "</a>";	
+								view.tools['download'] = "<a href='#' aria-label='Download' title='" + view.get_tool_tip('download') + "' id='" + options.id + "ControlDownload' class='tileviewerControl'>" + options.toolbarIcons['download'] + "</a>";	
 							}
 					
 							if (options.allowRotation) {
-								view.tools['rotation'] = "<a href='#' title='" + view.get_tool_tip('rotation') + "' id='" + options.id + "ControlRotation' class='tileviewerControl'>" + options.toolbarIcons['rotation'] + "</a>";	
+								view.tools['rotation'] = "<a href='#' aria-label='Show/hide rotation controls' title='" + view.get_tool_tip('rotation') + "' id='" + options.id + "ControlRotation' class='tileviewerControl'>" + options.toolbarIcons['rotation'] + "</a>";	
 							}
 							
 							if (options.allowAnnotationList && options.showAnnotationTools) {
-								view.tools['list'] = "<a href='#' title='" + view.get_tool_tip('list') + "' id='" + options.id + "ControlAnnotationList' class='tileviewerControl'>" + options.toolbarIcons['list'] + "</a>";	
+								view.tools['list'] = "<a href='#' aria-label='Show/hide annotations list' title='" + view.get_tool_tip('list') + "' id='" + options.id + "ControlAnnotationList' class='tileviewerControl'>" + options.toolbarIcons['list'] + "</a>";	
 							}
 					
 							for(var k=0; k < options.toolbar.length; k++) {
@@ -2430,14 +2430,14 @@ var methods = {
 							// Zooming
 							//	
 							if (options.sliderZooming) {	
-								jQuery(view.controls).append("<div class='tileviewerToolbarZoom'> </div>");
-								var z = $(view.controls).find(".tileviewerToolbarZoom");
+								jQuery($this).append("<div class='tileviewerToolbarZoom'> </div>");
+								var z = $($this).find(".tileviewerToolbarZoom");
 					
 								// center it
 								jQuery(z).css("left", ((jQuery($this).width() - 500)/2) + "px");
 					
-								z.append("<a href='#' id='" + options.id + "ControlZoomIn' class='tileviewerControlZoomIn'>" + options.uiIcons['zoomIn'] + "</a>");
-								z.append("<a href='#' id='" + options.id + "ControlZoomOut' class='tileviewerControlZoomOut'>" + options.uiIcons['zoomOut'] + "</a>");
+								z.append("<a href='#' aria-label='Zoom in' id='" + options.id + "ControlZoomIn' class='tileviewerControlZoomIn'>" + options.uiIcons['zoomIn'] + "</a>");
+								z.append("<a href='#' aria-label='Zoom out' id='" + options.id + "ControlZoomOut' class='tileviewerControlZoomOut'>" + options.uiIcons['zoomOut'] + "</a>");
 								z.append("<div id='" + options.id + "ZoomSlider' class='tileviewerToolbarZoomSlider'></div>");
 								jQuery("#" + options.id + "ControlZoomIn").css("opacity", 0.5);
 								jQuery("#" + options.id + "ControlZoomOut").css("opacity", 0.5);
@@ -2698,7 +2698,7 @@ var methods = {
                         if(img == null) {
                             view.loader_request(url);
                         } else {
-                            if(img.loaded) {
+                            if(img.xloaded) {
                                 img.timestamp = new Date().getTime();
                                 dodraw(); //good.. we have the image.. dodraw
                                 return;
@@ -2726,7 +2726,7 @@ var methods = {
                             var subtileid = Math.floor(x/factor) + Math.floor(y/factor)*xtilenum_up;
                         	var url = options.src + methods.getTilepicTileNum(layer.level+down, subtileid, layer);
                             var img = layer.tiles[url];
-                            if(img && img.loaded) {
+                            if(img && img.xloaded) {
                                 //crop the source section
                                 var half_tilesize = layer.info.tilesize/factor;
                                 var sx = (x%factor)*half_tilesize;
@@ -2751,14 +2751,14 @@ var methods = {
 
                     loader_request: function(url) {
                         var img = new Image();
-                        img.loaded = false;
-                        img.loading = false;
+                        img.xloaded = false;
+                        img.xloading = false;
                         img.level_loaded_for = layer.level;
                         img.request_src = url;
                         img.timestamp = new Date().getTime();
                         img.onload = function() {
-                            this.loaded = true;
-                            this.loading = false;
+                            this.xloaded = true;
+                            this.xloading = false;
                             if(this.level_loaded_for == layer.level) {
                                 view.needdraw = true;
                             }
@@ -2778,7 +2778,7 @@ var methods = {
                                 var latest_img = null;
                                 for (var url in layer.tiles) {
                                     img = layer.tiles[url];
-                                    if(img.loaded == false && img.loading == false && (latest_img == null || img.timestamp > latest_img.timestamp)) {
+                                    if(img.xloaded == false && (img.xloading == false) && (latest_img == null || img.timestamp > latest_img.timestamp)) {
                                         latest_img = img;
                                     }
                                 }
@@ -2788,7 +2788,7 @@ var methods = {
                                 //start loading!
                                 img.src = img.request_src;
                                 layer.loader.loading++;
-                                img.loading = true;
+                                img.xloading = true;
                                 view.loader_load(); //recurse to see if we can load more image
                             }
                         }
@@ -2799,7 +2799,7 @@ var methods = {
                             var oldest_img = null;
                             for (var url in layer.tiles) {
                                 img = layer.tiles[url];
-                                if(img.loaded == true && (oldest_img == null || img.timestamp < oldest_img.timestamp)) {
+                                if(img.xloaded == true && (oldest_img == null || img.timestamp < oldest_img.timestamp)) {
                                     oldest_img = img;
                                 }
                             }
@@ -3298,10 +3298,12 @@ var methods = {
 						// Handle scrolling due to click on the overview
 						var tw = layer.thumb.width;
 						var th = layer.thumb.height;
+						var factor = Math.pow(2,layer.level);
 						
 						if ((x >= 0) && (x <= tw) && (y >= 0) && (y <= th)) {
-							view.pan.xdest = ((x/tw) * layer.info.width);
-							view.pan.ydest = ((y/th) * layer.info.height);
+							view.pan.xdest = ((x/tw) * layer.info.width / factor);
+							view.pan.ydest = ((y/th) * layer.info.height / factor);
+							
 							view.pan.level = layer.level;
 							view.needdraw = true;
 							return;

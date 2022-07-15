@@ -30,7 +30,7 @@
 	$vn_items_per_page = $this->getVar('current_items_per_page');
 	
 	if (!$this->request->isAjax()) {
-		print caFormTag($this->request, 'Index', 'PlaceBasicSearchForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
+		print caFormTag($this->request, 'Index', 'PlaceBasicSearchForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
 			print caFormControlBox(
 				'<div class="simple-search-box">'._t('Search').': <input type="text" id="browseSearch" name="search" value="'.htmlspecialchars($this->getVar('search'), ENT_QUOTES, 'UTF-8').'" size="40"/></div>'.
 					caFormJSButton($this->request, __CA_NAV_ICON_SEARCH__, _t("Search"), 'submitSearch', array(), 

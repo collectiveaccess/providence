@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2018 Whirl-i-Gig
+ * Copyright 2014-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -60,21 +60,35 @@ var caBundleUpdateManager = null;
 			for(l in list) {
 				that.registerBundle(list[l].id, list[l].bundle, list[l].placement_id);
 			}
-			//console.log("list", list);
 		}
-		
 		// --------------------------------------------------------------------------------
 		that.reloadBundle = function(bundle, options) {
 			var b = that.byBundle[bundle];
+			return that._reload(b, options);
+		}
+
+		// --------------------------------------------------------------------------------
+		that.reloadBundleByPlacementID = function(placement_id, options) {
+			var b = that.byPlacementID[placement_id];
+
+			return that._reload([b], options);
+		}		
+		
+		// --------------------------------------------------------------------------------
+		that._reload = function(b, options) {
 			if (b) {
 				jQuery.each(b, function(k, v) {
-					var loadURL = that.url + "/" + that.key + "/" + that.id + "/bundle/" + v.bundle + "/placement_id/" + v.placement_id;
-					if (options) { 
-					    for(var k in options) {
-					        loadURL += "/" + k + "/" + options[k];
-					    }
+					for(var i in v) {
+						var loadURL = that.url + "/" + that.key + "/" + that.id;
+						var data = { "bundle": v.bundle, "placement_id": v.placement_id };
+						if (options) { 
+							for(var k in options) {
+								//loadURL += "/" + k + "/" + options[k];
+								data[k] = options[k];
+							}
+						}
+						jQuery("#" + v['id']).load(loadURL, data);
 					}
-					jQuery("#" + v.id).load(loadURL);
 				});
 			}
 		}

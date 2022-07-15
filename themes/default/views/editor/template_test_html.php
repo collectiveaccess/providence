@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,14 +31,14 @@ $t_item = $this->getVar('t_subject');
 ?>
 
 <div style="width:100%">
-	<h3><?php print _t('Test display templates below'); ?>&colon;</h3>
+	<div class="title"><?php print _t('Display template debugger'); ?>&colon;</div>
 	<table style="width:100%">
 		<tr>
 			<th>
 				<textarea id="displayTemplate" style="width: 300px; height: 200px;" placeholder="<?php print _t("Enter display template here ..."); ?>"></textarea>
 			</th>
 			<th>
-				<pre id="templatePreview" style="width: 420px; height: 200px; border: 1px solid grey; overflow: scroll;"><?php print _t("Result will go here ..."); ?></pre>
+				<pre id="templatePreview" style="width: 420px; height: 200px; border: 1px solid grey; overflow: scroll; padding: 3px; font-weight: normal;"><?php print _t("Result will go here ..."); ?></pre>
 			</th>
 		</tr>
 	</table>
@@ -58,6 +58,7 @@ $t_item = $this->getVar('t_subject');
 
 	jQuery('#displayTemplate').keyup(function() {
 		delay(function(){
+			console.log("x", jQuery('#displayTemplate').val());
 			caRunTemplate(jQuery('#displayTemplate').val()); return false;
 		}, 300 );
 	});

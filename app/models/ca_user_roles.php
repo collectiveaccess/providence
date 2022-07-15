@@ -36,7 +36,6 @@
 
 require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__."/WidgetManager.php");
-require_once(__CA_LIB_DIR__."/Datamodel.php");
 require_once(__CA_LIB_DIR__."/SyncableBaseModel.php");
  	
 
@@ -204,8 +203,8 @@ class ca_user_roles extends BaseModel {
 	#    the record identified by the primary key value
 	#
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
+	public function __construct($id=null, ?array $options=null) {
+		parent::__construct($id, $options);	# call superclass constructor
 		
  		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 		$this->opo_widget_manager = new WidgetManager();
@@ -312,7 +311,10 @@ class ca_user_roles extends BaseModel {
 			ca_user_roles::$s_bundle_list[$ps_table] = array_keys($t_ui_screens->getAvailableBundles($ps_table,array('dontCache' => true)));
 		}
 		if(!in_array($ps_bundle, ca_user_roles::$s_bundle_list[$ps_table])) {
-			return false; 
+			$ps_bundle = "ca_attribute_{$ps_bundle}";	// rewrite straight element codes with prefix
+			if(!in_array($ps_bundle, ca_user_roles::$s_bundle_list[$ps_table])) {
+				return false; 
+			}
 		}
 
 		$va_vars['bundle_access_settings'][$ps_table.".".$ps_bundle] = $pn_access;

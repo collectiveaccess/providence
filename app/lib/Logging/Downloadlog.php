@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2012 Whirl-i-Gig
+ * Copyright 2010-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -100,5 +100,22 @@ class Downloadlog extends BaseLogger {
 		return null;
 	}
 	# ----------------------------------------
+	/** 
+	 *
+	 */
+	public static function purgeForRepresentation($representation_id, $options=null) {
+		$trans = caGetOption('transaction', $options, null);
+		$o_db = $trans ? $trans->getDb() : new Db();
+		
+		if ($representation_id && !is_array($representation_id)) { 
+			$representation_id = [$representation_id];
+		} elseif(is_array($representation_id) && !sizeof($representation_id)) {
+			return null;
+		} elseif(!$representation_id) {
+			return null;
+		}
+		
+		return $o_db->query("DELETE FROM ca_download_log WHERE representation_id IN (?)", [$representation_id]);
+	}
+	# ----------------------------------------
 }
-?>

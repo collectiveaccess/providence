@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2017 Whirl-i-Gig
+ * Copyright 2015-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -74,9 +74,9 @@ class Mapping {
 	public function __construct() {
 		// set up basic properties
 		$this->opo_search_conf = \Configuration::load(\Configuration::load()->get('search_config'));
-		$this->opo_indexing_conf = \Configuration::load($this->opo_search_conf->get('search_indexing_config'));
-		$this->version = $this->opo_indexing_conf->get('elasticsearch_version');
-		if (!in_array($this->version, [2,5])) { $this->version = 5; }
+		$this->opo_indexing_conf = \Configuration::load(__CA_CONF_DIR__.'/search_indexing.conf');
+		$this->version = (int)$this->opo_search_conf->get('elasticsearch_version');
+		if (!in_array($this->version, [2, 5, 6, 7], true)) { $this->version = 5; }
 		
 		$this->opo_db = new \Db();
 		$this->opo_search_base = new \SearchBase($this->opo_db, null, false);
@@ -248,7 +248,11 @@ class Mapping {
 				$va_element_config[$ps_table.'/'.$vs_element_code]['type'] = 'date';
 				$va_element_config[$ps_table.'/'.$vs_element_code]['format'] = 'date_time_no_millis';
 				$va_element_config[$ps_table.'/'.$vs_element_code]['ignore_malformed'] = true;
-				$va_element_config[$ps_table.'/'.$vs_element_code.'_text'] = array('type' => ($this->version == 2) ? 'string' : 'text');
+				$va_element_config[$ps_table.'/'.$vs_element_code.'_text']['type'] = ($this->version == 2) ? 'string' : 'text';
+				$va_element_config[$ps_table.'/'.$vs_element_code.'_start']['type'] = 'date';
+				$va_element_config[$ps_table.'/'.$vs_element_code.'_start']['ignore_malformed'] = true;
+				$va_element_config[$ps_table.'/'.$vs_element_code.'_end']['type'] = 'date';
+				$va_element_config[$ps_table.'/'.$vs_element_code.'_end']['ignore_malformed'] = true;
 				break;
 			case 4:	// geocode
 				//@see https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-geo-shape-type.html
@@ -310,6 +314,8 @@ class Mapping {
 	 * @return array
 	 */
 	public function getConfigForIntrinsic($ps_table, $pn_field_num, $pa_indexing_config) {
+		if(!in_array((int)$this->version, [2,5,6,7])) { throw new ApplicationException(_t('Unsupported ElasticSearch version %1', $this->version)); }
+	
 		$vs_field_name = \Datamodel::getFieldName($ps_table, $pn_field_num);
 		if(!$vs_field_name) { return array(); }
 		$t_instance = \Datamodel::getInstance($ps_table);
@@ -331,14 +337,27 @@ class Mapping {
 			unset($va_field_options[$ps_table.'/'.$vs_field_name]['index']);
 			$va_field_options[$ps_table.'/'.$vs_field_name]['analyzer'] = 'keyword_lowercase';
 		}
-
+		
 		switch($t_instance->getFieldInfo($vs_field_name, 'FIELD_TYPE')){
 			case (FT_TEXT):
 			case (FT_MEDIA):
 			case (FT_FILE):
 			case (FT_PASSWORD):
 			case (FT_VARS):
-				$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = ($this->version == 2) ? 'string' : 'text';
+				switch($this->version) {
+					case 2:
+						$v = 'string';
+						$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'string';
+						break;
+					case 5:
+						$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'text';
+						break;
+					case 6:
+					case 7:
+						$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'text';
+						unset($va_field_options[$ps_table.'/'.$vs_field_name]['index']);
+						break;
+				}
 				break;
 			case (FT_NUMBER):
 			case (FT_TIME):
@@ -347,12 +366,32 @@ class Mapping {
 				// list-based intrinsics get indexed with both item_id and label text, like so:
 				// image Image 24 -- for a ca_objects type_id image
 				if ($t_instance->getFieldInfo($vs_field_name, 'LIST_CODE')) {
-					$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = ($this->version == 2) ? 'string' : 'text';
-					$va_field_options[$ps_table.'/'.$vs_field_name]['index'] = 'analyzed';
+					switch($this->version) {
+						case 2:
+							$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'string';
+							$va_field_options[$ps_table.'/'.$vs_field_name]['index'] = 'analyzed';
+							break;
+						case 5:
+							$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'text';
+							$va_field_options[$ps_table.'/'.$vs_field_name]['index'] = 'analyzed';
+							break;
+						case 6:
+						case 7:
+							$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'text';
+							unset($va_field_options[$ps_table.'/'.$vs_field_name]['index']);
+							break;
+					}
 				} else {
-					$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'double';
-					unset($va_field_options[$ps_table.'/'.$vs_field_name]['analyzer']);
-					unset($va_field_options[$ps_table.'/'.$vs_field_name]['index']);
+					switch($this->version) {
+						case 2:
+						case 5:
+						case 6:
+						case 7:
+							$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'double';
+							unset($va_field_options[$ps_table.'/'.$vs_field_name]['analyzer']);
+							unset($va_field_options[$ps_table.'/'.$vs_field_name]['index']);
+							break;
+					}
 				}
 				break;
 			case (FT_TIMESTAMP):
@@ -362,15 +401,46 @@ class Mapping {
 			case (FT_HISTORIC_DATE):
 			case (FT_DATERANGE):
 			case (FT_HISTORIC_DATERANGE):
-				$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'date';
-				$va_field_options[$ps_table.'/'.$vs_field_name]['format'] = 'date_time_no_millis';
-				$va_field_options[$ps_table.'/'.$vs_field_name]['ignore_malformed'] = true;
+				switch($this->version) {
+					case 2:
+					case 5:
+					case 6:
+					case 7:
+						$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'date';
+						$va_field_options[$ps_table.'/'.$vs_field_name]['format'] = 'date_time_no_millis';
+						$va_field_options[$ps_table.'/'.$vs_field_name]['ignore_malformed'] = true;
+						unset($va_field_options[$ps_table.'/'.$vs_field_name]['analyzer']);
+						unset($va_field_options[$ps_table.'/'.$vs_field_name]['index']);
+						break;
+				}
 				break;
 			case (FT_BIT):
-				$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'boolean';
+				switch($this->version) {
+					case 2:
+					case 5:
+						$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'boolean';
+						break;
+					case 6:
+					case 7:
+						$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'integer';
+						unset($va_field_options[$ps_table.'/'.$vs_field_name]['index']);
+						break;
+				}
 				break;
 			default:
-				$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = ($this->version == 2) ? 'string' : 'text';
+				switch($this->version) {
+					case 2:
+						$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'string';
+						break;
+					case 5:
+						$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'text';
+						break;
+					case 6:
+					case 7:
+						$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'text';
+						unset($va_field_options[$ps_table.'/'.$vs_field_name]['index']);
+						break;
+				}
 				break;
 		}
 
@@ -417,14 +487,26 @@ class Mapping {
 			// add config for modified and created, which are always indexed
 			$va_mapping_config[$vs_table]['properties']["modified"] = array(
 				'type' => 'date',
-				'format' => 'date_time_no_millis'
+				'format' => 'date_optional_time',
+				'ignore_malformed' => true
 			);
 			$va_mapping_config[$vs_table]['properties']["created"] = array(
 				'type' => 'date',
-				'format' => 'date_time_no_millis'
+				'format' => 'date_optional_time',
+				'ignore_malformed' => true
 			);
-		}
 
+			$va_mapping_config[$vs_table]['dynamic_templates'] = [
+				[
+					'content_ids' => [
+						'match' => '*_content_ids',
+						'mapping' => [
+							'type' => 'integer',
+						]
+					]
+				]
+			];
+		}
 		return $va_mapping_config;
 	}
 }

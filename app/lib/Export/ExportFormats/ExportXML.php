@@ -69,7 +69,7 @@ class ExportXML extends BaseExportFormat {
 		// XML exports should usually have only one top-level element (i.e. one root).
 		if(sizeof($pa_data)!=1){ return false; }
 
-		$this->processItem(array_pop($pa_data),$this->opo_dom);
+		$this->processItem(array_pop($pa_data),$this->opo_dom, ['stripCDATA' => $pb_strip_cdata]);
 
 		$this->log(_t("XML export formatter: Done processing export tree ..."));
 
@@ -85,7 +85,7 @@ class ExportXML extends BaseExportFormat {
 		return $vs_return;
 	}
 	# ------------------------------------------------------
-	private function processItem($pa_item, $po_parent){
+	private function processItem($pa_item, $po_parent, $pa_options=null){
 		if(!($po_parent instanceof DOMNode)) return false;
 
 		//caDebug($pa_item,"Data passed to XML item processor");
@@ -110,8 +110,12 @@ class ExportXML extends BaseExportFormat {
 			if(strlen($vs_text)>0){
 
 				if($vs_escaped_text != $vs_text) { // sth was escaped by caEscapeForXML -> wrap in CDATA
-					$vo_new_element = $this->opo_dom->createElement($vs_element);
-					$vo_new_element->appendChild(new DOMCdataSection($vs_text));
+					if(caGetOption('stripCDATA', $pa_options, false)) {
+						$vo_new_element = $this->opo_dom->createElement($vs_element, $vs_escaped_text);
+					} else {
+						$vo_new_element = $this->opo_dom->createElement($vs_element);
+						$vo_new_element->appendChild(new DOMCdataSection($vs_text));
+					}
 				}  else { // add text as-is using DOMDocument
 					$vo_new_element = $this->opo_dom->createElement($vs_element,$vs_text);
 				}
@@ -125,7 +129,7 @@ class ExportXML extends BaseExportFormat {
 		if(is_array($pa_item['children'])){
 			foreach($pa_item['children'] as $va_child){
 				if(!empty($va_child)){
-					$this->processItem($va_child,$vo_new_element);
+					$this->processItem($va_child,$vo_new_element, $pa_options);
 				}
 			}
 		}
@@ -136,7 +140,7 @@ class ExportXML extends BaseExportFormat {
 
 		$va_top = $t_mapping->getTopLevelItems(array('dontIncludeVariables' => true));
 		if(sizeof($va_top)!==1){
-			$va_errors[] = _t("XML documents must have exactly one root element");
+			$va_errors[] = _t("XML documents must have exactly one root element. Found %1.", sizeof($va_top));
 		}
 
 		foreach($va_top as $va_item){

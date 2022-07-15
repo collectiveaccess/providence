@@ -173,9 +173,4 @@ class ca_metadata_dictionary_rule_violations extends BaseModel {
 	public $SETTINGS;
 	
 	# ------------------------------------------------------
-	function __construct($pn_id=null, $pa_additional_settings=null, $pa_setting_values=null) {
-		parent::__construct($pn_id);
-		
-	}
-	# ----------------------------------------
 }

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,6 +33,7 @@
  	$vs_bundle = 		$this->getVar('bundle');
  	$vn_row = 			$this->getVar('row');
  	$vn_col = 			$this->getVar('col');
+ 	$placement_id = 	$this->getVar('placement_id');
  	
  	$vb_can_edit = true;
 ?>
@@ -46,7 +47,7 @@
 			'dontAllowBundleShowHide' => true
 	));
 	
-	print caFormTag($this->request, '#', 'caEditableResultsComplexDataForm', null, 'POST', 'multipart/form-data', null, array('disableUnsavedChangesWarning' => true, 'disableSubmit' => true));
+	print caFormTag($this->request, '#', 'caEditableResultsComplexDataForm', null, 'POST', 'multipart/form-data', null, array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'disableSubmit' => true));
 ?>
 		<div class="caResultsComplexDataEditorErrorContainer" id="caEditableResultsComplexDataFormErrors"> </div>
 		
@@ -70,6 +71,7 @@
 		print caHTMLHiddenInput('bundle', array('value' => $vs_bundle));
 		print caHTMLHiddenInput('row', array('value' => $vn_row));
 		print caHTMLHiddenInput('col', array('value' => $vn_col));
+		print caHTMLHiddenInput('placement_id', array('value' => $placement_id));
 ?>
 		</div>
 	</form>
@@ -80,17 +82,18 @@
 			formErrorsPanelID: 'caEditableResultsComplexDataFormErrors',
 			formTypeSelectID: null, 
 		
-			formUrl: '<?php print caNavUrl($this->request, '*', '*', 'resultsComplexDataEditor'); ?>',
-			fileUploadUrl: '<?php print caNavUrl($this->request, "*", "*", "saveResultsEditorFiles"); ?>',
-			saveUrl: '<?php print caNavUrl($this->request, "*", "*", "saveResultsEditorData"); ?>',
+			formUrl: <?= json_encode(caNavUrl($this->request, '*', '*', 'resultsComplexDataEditor')); ?>,
+			fileUploadUrl: <?= json_encode(caNavUrl($this->request, "*", "*", "saveResultsEditorFiles")); ?>,
+			saveUrl: <?= json_encode(caNavUrl($this->request, "*", "*", "saveResultsEditorData")); ?>,
+			csrfToken: <?= json_encode(caGenerateCSRFToken($this->request)); ?>,
 		
-			headerText: '<?php print addslashes(_t('Edit %1', $t_subject->getTypeName())); ?>',
-			saveText: '<?php print addslashes(_t('Updated %1 ', $t_subject->getTypeName())); ?> <em>%1</em>',
-			busyIndicator: '<?php print addslashes(caBusyIndicatorIcon($this->request)); ?>',
+			headerText: <?= json_encode(_t('Edit %1', $t_subject->getTypeName())); ?>,
+			saveText: <?= json_encode(_t('Updated %1 ', $t_subject->getTypeName())." <em>%1</em>"); ?>,
+			busyIndicator: <?= json_encode(caBusyIndicatorIcon($this->request)); ?>,
 			onSave: function(resp) { 
 				if (resp.status == 0) {
 					var ht = jQuery("#caResultsEditorWrapper .caResultsEditorContent").data('handsontable');
-					ht.setDataAtCell(<?php print (int)$vn_row; ?>, <?php print (int)$vn_col; ?>, resp.display, 'external');
+					ht.setDataAtCell(<?= (int)$vn_row; ?>, <?= (int)$vn_col; ?>, resp.display, 'external');
 					if (jQuery("#caEditableResultsComplexDataForm") && jQuery("#caEditableResultsComplexDataForm").parent() && jQuery("#caEditableResultsComplexDataForm").parent().parent() && jQuery("#caEditableResultsComplexDataForm").parent().parent().data("panel")) { jQuery("#caEditableResultsComplexDataForm").parent().parent().data("panel").hidePanel();  }
 					jQuery(".caResultsEditorStatus").html("Saved changes").show();
 					setTimeout(function() { jQuery('.caResultsEditorStatus').fadeOut(500); }, 5000);

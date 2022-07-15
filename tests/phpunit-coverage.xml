@@ -1,0 +1,72 @@
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="http://schema.phpunit.de/8.5/phpunit.xsd"
+         backupGlobals="false"
+         backupStaticAttributes="false"
+         cacheTokens="false"
+         colors="false"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         forceCoversAnnotation="false"
+         processIsolation="false"
+         stopOnError="false"
+         stopOnFailure="false"
+         stopOnIncomplete="false"
+         stopOnSkipped="false"
+         bootstrap="./setup-tests.php"
+         verbose="true">
+
+    <!--
+    IMPORTANT: All paths are relative to this file.
+    -->
+
+    <testsuites>
+        <testsuite name="Helpers Test Suite">
+            <directory>helpers/</directory>
+        </testsuite>
+        <testsuite name="Lib Test Suite">
+            <directory>lib/</directory>
+            <exclude>lib/Search/ElasticSearch</exclude>
+        </testsuite>
+        <testsuite name="Models Test Suite">
+            <directory>models/</directory>
+        </testsuite>
+        <testsuite name="Plugins Test Suite">
+            <directory>plugins/</directory>
+        </testsuite>
+        <testsuite name="Tests With Data Suite">
+            <directory>testsWithData/</directory>
+        </testsuite>
+        <testsuite name="Install Test Suite">
+            <directory>install/</directory>
+        </testsuite>
+        <testsuite name="Refineries Test Suite">
+            <directory>refineries/</directory>
+        </testsuite>
+    </testsuites>
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="false" addUncoveredFilesFromWhitelist="false">
+            <directory suffix=".php">../app</directory>
+            <directory suffix=".php">../install</directory>
+            <directory suffix=".php">../viewers</directory>
+            <directory suffix=".php">../hc</directory>
+            <exclude>
+                <directory>../install/profiles</directory>
+                <directory>../install/css</directory>
+                <directory>../install/graphics</directory>
+                <directory>../app/conf</directory>
+                <directory>../app/fonts</directory>
+                <directory>../app/lib/Zend</directory>
+                <directory>../app/lib/Print/phpqrcode/cache</directory>
+                <directory>../app/locale</directory>
+                <directory>../app/log</directory>
+                <directory>../app/queue</directory>
+                <directory>../app/tmp</directory>
+            </exclude>
+        </whitelist>
+    </filter>
+    <logging>
+        <log type="coverage-clover" target="../build/coverage.xml"/>
+        <log type="coverage-text" target="php://stdout" showOnlySummary="true" showUncoveredFiles="false"/>
+    </logging>
+</phpunit>

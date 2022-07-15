@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,18 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
-
 require_once(__CA_LIB_DIR__.'/ModelSettings.php');
-
-global $_ca_editor_ui_screen_type_restriction_settings;
-$_ca_editor_ui_screen_type_restriction_settings = array(
-
-);		// global
- 
 
 BaseModel::$s_ca_models_definitions['ca_editor_ui_screen_type_restrictions'] = array(
  	'NAME_SINGULAR' 	=> _t('editor ui screen type restriction'),
@@ -100,6 +89,8 @@ BaseModel::$s_ca_models_definitions['ca_editor_ui_screen_type_restrictions'] = a
 );
 	
 class ca_editor_ui_screen_type_restrictions extends BaseModel {
+	use ModelSettings;
+	
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -186,11 +177,6 @@ class ca_editor_ui_screen_type_restrictions extends BaseModel {
 
 	protected $FIELDS;
 	
-	/**
-	 * Settings delegate - implements methods for setting, getting and using 'settings' var field
-	 */
-	public $SETTINGS;
-	
 	# ------------------------------------------------------
 	# --- Constructor
 	#
@@ -202,26 +188,10 @@ class ca_editor_ui_screen_type_restrictions extends BaseModel {
 	#    the record identified by the primary key value
 	#
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		global $_ca_editor_ui_screen_type_restriction_settings;
-		parent::__construct($pn_id);	# call superclass constructor
+	public function __construct($id=null, ?array $options=null) {
+		parent::__construct($id, $options);	# call superclass constructor
 		
-		//
-		$this->SETTINGS = new ModelSettings($this, 'settings', $_ca_editor_ui_screen_type_restriction_settings);
-	}
-	# ------------------------------------------------------
-	public function __destruct() {
-		unset($this->SETTINGS);
-	}
-	# ------------------------------------------------------
-	/**
-	 * Reroutes calls to method implemented by settings delegate to the delegate class
-	 */
-	public function __call($ps_name, $pa_arguments) {
-		if (method_exists($this->SETTINGS, $ps_name)) {
-			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
-		}
-		die($this->tableName()." does not implement method {$ps_name}");
+		$this->setAvailableSettings([]);
 	}
 	# ------------------------------------------------------
 }

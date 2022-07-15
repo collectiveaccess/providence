@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -32,14 +32,17 @@
 
 require_once(__CA_LIB_DIR__.'/ApplicationVars.php');
 
-try{
-	$o_app_vars = new ApplicationVars();
-	if(!($vs_system_guid = $o_app_vars->getVar('system_guid'))) {
-		$vs_system_guid = caGenerateGUID();
-		$o_app_vars->setVar('system_guid', $vs_system_guid);
-		$o_app_vars->save();
+/**
+ * Ensure system GUID is set and set system-wide GUID constant
+ */
+function caGetSystemGuid() {
+	$av = new ApplicationVars();
+	if(!($system_guid = $av->getVar('system_guid'))) {
+		$system_guid = caGenerateGUID();
+		$av->setVar('system_guid', $system_guid);
+		$av->save();
 	}
-	define('__CA_SYSTEM_GUID__', $vs_system_guid);
-} catch(DatabaseException $e) {
-	// noop
+	define('__CA_SYSTEM_GUID__', $system_guid);
+	
+	return $system_guid;
 }

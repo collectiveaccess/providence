@@ -36,7 +36,6 @@
 require_once(__CA_LIB_DIR__."/ApplicationError.php");
 require_once(__CA_LIB_DIR__."/Controller/Request/Session.php");
 require_once(__CA_LIB_DIR__."/Configuration.php");
-require_once(__CA_LIB_DIR__."/Datamodel.php");
 require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 require_once(__CA_MODELS_DIR__."/ca_users.php");
 
@@ -316,7 +315,7 @@ class Request {
  * @return float Seconds elapsed since request started.
  */	
 	function elapsedTime($pn_decimal_places=4) {
-		return $this->session->elapsedTime($pn_decimal_places);
+		return Session::elapsedTime($pn_decimal_places);
 	}
 	# ----------------------------------------
 	# --- Action errors

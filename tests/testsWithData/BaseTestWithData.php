@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,12 +29,13 @@
  *
  * ----------------------------------------------------------------------
  */
+use PHPUnit\Framework\TestCase;
 
 require_once(__CA_LIB_DIR__.'/Service/ItemService.php');
 require_once(__CA_LIB_DIR__.'/Search/SearchIndexer.php');
 require_once(__CA_MODELS_DIR__.'/ca_search_indexing_queue.php');
 
-abstract class BaseTestWithData extends PHPUnit_Framework_TestCase {
+abstract class BaseTestWithData extends TestCase {
 	/**
 	 * @var array list of records we created and their custom 'keys/identifiers' set in the original array
 	 */
@@ -53,19 +54,21 @@ abstract class BaseTestWithData extends PHPUnit_Framework_TestCase {
 	 */
 	private $opb_care_about_side_effects = true;
 
-	static $opa_valid_tables = array('ca_objects', 'ca_entities', 'ca_occurrences', 'ca_movements', 'ca_loans', 'ca_object_lots', 'ca_storage_locations', 'ca_places', 'ca_item_comments');
+	static $opa_valid_tables = array('ca_objects', 'ca_entities', 'ca_occurrences', 'ca_movements', 'ca_loans', 'ca_object_lots', 'ca_storage_locations', 'ca_places', 'ca_item_comments', 'ca_sets');
 	# -------------------------------------------------------
 	/**
 	 * Inserts test data set by implementation
 	 */
-	public function setUp() {
-		global $g_request;
+	protected function setUp() : void {
+		global $g_request, $AUTH_CURRENT_USER_ID;
 		$vo_response = new ResponseHTTP();
 		$g_request = $this->opo_request = new RequestHTTP($vo_response);
-
+		
+		// Set user_id to ensure change log contains user info used by some tests
+		$AUTH_CURRENT_USER_ID = 1;	// 1=administrator
 		define('__CA_APP_TYPE__', 'PROVIDENCE');
 
-		// make sure there are no side-effects caused by lingering recods
+		// make sure there are no side-effects caused by lingering records
 		if($this->opb_care_about_side_effects) {
 			$this->checkRecordCounts();
 		}
@@ -94,6 +97,26 @@ abstract class BaseTestWithData extends PHPUnit_Framework_TestCase {
 		return $vn_return;
 	}
 	# -------------------------------------------------------
+	/**
+	 * @param BaseModel $instance Target instance
+	 * @param array $pa_data Test data. Format of a single record is similar to the JSON format used in the
+	 * Web Service API, only that it's a PHP array, obviously. In fact, we use the same code to insert the data.
+	 *
+	 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
+	 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
+	 * @return int the primary key of the newly created record
+	 */
+	protected function addTestRelationship($instance, $table, $id, $relationship_type, $effective_date=null) {
+		$return = $instance->addRelationship($table, $id, $relationship_type, $effective_date);
+		if(!$return) {
+			$this->assertTrue(false, 'Inserting test data failed. API errors are: ' . join(' ', $instance->getErrors()));
+		}
+
+		$this->opa_record_map[$instance->tableName()][] = $return;
+
+		return $return;
+	}
+	# -------------------------------------------------------
 	protected function getRecordMap() {
 		return $this->opa_record_map;
 	}
@@ -105,7 +128,7 @@ abstract class BaseTestWithData extends PHPUnit_Framework_TestCase {
 	/**
 	 * Delete all records we created for this test to avoid side effects with other tests
 	 */
-	public function tearDown() {
+	protected function tearDown() : void {
 		if($this->opb_care_about_side_effects) {
 			foreach($this->opa_record_map as $vs_table => &$va_records) {
 				$t_instance = Datamodel::getInstance($vs_table);

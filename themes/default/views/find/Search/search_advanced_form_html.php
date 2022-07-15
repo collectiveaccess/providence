@@ -63,7 +63,7 @@
 				$va_flds[] = "'".$va_element['name']."'";
 			}
 ?>
-	<?php print caFormTag($this->request, 'Index', 'AdvancedSearchForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); ?>
+	<?php print caFormTag($this->request, 'Index', 'AdvancedSearchForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); ?>
 		<div class="control-box rounded">
 			<div class="simple-search-box">
 				<?php print $this->render('Search/search_forms/search_form_table_html.php'); ?>
@@ -86,31 +86,3 @@
 		}
 	}
 ?>
-
-<script type="text/javascript">
-	function caSaveSearch(form_id, label, field_names) {
-		var vals = {};
-		jQuery(field_names).each(function(i, field_name) { 					// process all fields in form
-			var field_name_with_no_period = field_name.replace('.', '_');	// we need a bundle name without periods for compatibility
-			vals[field_name] = jQuery('#' + form_id + ' [id=' + field_name_with_no_period + ']').val();
-		});
-		vals['_label'] = label;											// special "display" title, used if all else fails
-		vals['_field_list'] = field_names;								// an array for form fields to expect
-		vals['_form_id'] = <?php print (int)$vn_form_id; ?>;			// the current form_id, if running with an interface that passed a form_id
-		
-		jQuery.getJSON('<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), "addSavedSearch"); ?>', vals, function(data, status) {
-			if ((data) && (data.md5)) {
-				jQuery('.savedSearchSelect').prepend(jQuery("<option></option>").attr("value", data.md5).text(data.label)).attr('selectedIndex', 0);
-					
-			}
-		});
-	}
-	
-	function caAdvancedSearchFormReset() {
-		jQuery('#AdvancedSearchForm textarea').val('');
-		jQuery('#AdvancedSearchForm input[type=text]').val('');
-		jQuery('#AdvancedSearchForm input[type=hidden]').val('');
-		jQuery('#AdvancedSearchForm select').val('');
-		jQuery('#AdvancedSearchForm input[type=checkbox]').attr('checked', 0);
-	}
-</script>

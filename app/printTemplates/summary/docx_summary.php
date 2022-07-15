@@ -74,7 +74,7 @@
     // Add header for all pages
     $header = $section->addHeader();
     
-    $headerimage = $this->request->getThemeDirectoryPath()."/graphics/logos/".$this->request->config->get('report_img');
+    $headerimage = ($this->request && $this->request->config->get('report_img')) ? $this->request->getThemeDirectoryPath()."/graphics/logos/".$this->request->config->get('report_img') : '';
 	if(file_exists($headerimage)){
 		$header->addImage($headerimage,array('height' => 30,'wrappingStyle' => 'inline'));
 	}
@@ -173,6 +173,10 @@
         } elseif ($vs_display_text = $t_display->getDisplayValue($t_item, $vn_placement_id, array_merge(array('request' => $this->request, 'purify' => true), is_array($va_info['settings']) ? $va_info['settings'] : array()))) {
 
             $textrun = $contentCell->createTextRun();
+            
+            if ($this->request->config->get('report_include_labels_in_docx_output')) {
+				$textrun->addText(caEscapeForXML($va_info['display']).': ', $styleBundleNameFont);
+			}
             $textrun->addText(
                 preg_replace("![\n\r]!", "<w:br/>", caEscapeForXML(html_entity_decode(strip_tags(br2nl($vs_display_text)), ENT_QUOTES | ENT_HTML5))),
                 $styleContentFont

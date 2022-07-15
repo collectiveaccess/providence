@@ -43,7 +43,7 @@
 <h3 class='searchHistory'><?php print _t("History"); ?>:
 	<div>
 <?php
-		print caFormTag($this->request, 'Index', 'caSearchHistoryForm', 'find/SearchObjects', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); 
+		print caFormTag($this->request, 'Index', 'caSearchHistoryForm', 'find/SearchObjects', 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); 
 		
 		print "<select name='search' class='searchHistorySelect'>\n";
 		foreach(array_reverse($va_search_history, true) as $vs_search => $va_search_info) {
@@ -53,7 +53,7 @@
 			print "<option value='".htmlspecialchars($vs_search, ENT_QUOTES, 'UTF-8')."' {$SELECTED}>".$vs_display." (".$va_search_info['hits'].")</option>\n";
 		}
 		print "</select>\n ";
-		print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, '18px'), 'button', 'caSearchHistoryForm');
+		print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, '18px'), 'button', 'caSearchHistoryForm', null, ['aria-label' => _t('Repeat previous search')]);
 		print "</form>\n";
 ?>
 	</div>
@@ -66,7 +66,7 @@
 <h3 class='searchSaved'><?php print _t("Saved searches"); ?>:
 	<div>
 <?php
-		print caFormTag($this->request, 'doSavedSearch', 'caSavedSearchesForm', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); 
+		print caFormTag($this->request, 'doSavedSearch', 'caSavedSearchesForm', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); 
 		
 		print "<select name='saved_search_key' class='savedSearchSelect'>\n";
 		
@@ -82,7 +82,7 @@
 			print "<option value='' {$SELECTED}>-</option>\n";
 		}
 		print "</select>\n ";
-		print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, '18px'), 'button', 'caSavedSearchesForm');
+		print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, '18px'), 'button', 'caSavedSearchesForm', null, ['aria-label' => _t('Run saved search')]);
 		print "</form>\n";
 ?>
 	</div>
@@ -93,7 +93,7 @@ if(sizeof($this->getVar("available_sets")) > 0){
 	<h3 class='searchTools'><?php print _t("Search by set"); ?>:
 	<div>
 <?php
-		print caFormTag($this->request, 'Index', 'caSearchSetsForm', 'find/SearchObjects', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); 
+		print caFormTag($this->request, 'Index', 'caSearchSetsForm', 'find/SearchObjects', 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); 
 		print "<select name='search' class='searchSetSelect'>\n";
 		foreach($this->getVar("available_sets") as $vn_set_id => $va_set) {
 			$vs_set_identifier = ($va_set['set_code']) ? $va_set['set_code'] : $vn_set_id;
@@ -115,7 +115,7 @@ if(sizeof($this->getVar("available_sets")) > 0){
 ?>
 			<div class='visualize'>
 				<div id='vizLink'>
-					<?php print "<a href='#'  onclick='jQuery(\"#caSearchVizOptsContainer\").slideToggle(250); jQuery(\"#vizLink\").hide();return false;'>".caNavIcon(__CA_NAV_ICON_VISUALIZE__, 1)." "._t("Visualize")."</a>"; ?>
+					<?php print "<a href='#'  onclick='jQuery(\"#caSearchVizOptsContainer\").slideToggle(250); jQuery(\"#vizLink\").hide();return false;'>".caNavIcon(__CA_NAV_ICON_VISUALIZE__, 2)." "._t("Visualize")."</a>"; ?>
 					<div class='clear:both;'></div>
 				</div>
 				<div id='caSearchVizOptsContainer' style="display:none;">

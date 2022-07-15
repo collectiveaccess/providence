@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,6 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
 
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
 
@@ -48,7 +49,7 @@ class DedupTest extends BaseTestWithData {
 	/** @var ca_entities */
 	private $opt_entity_2 = null;
 	# -------------------------------------------------------
-	public function setUp() {
+	protected function setUp() : void {
 		// don't forget to call parent so that the request is set up
 		parent::setUp();
 
@@ -88,7 +89,7 @@ class DedupTest extends BaseTestWithData {
 		$vn_entity_id = $this->addTestRecord('ca_entities', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'ind',
-				'idno' => 'hjs',
+				'idno' => '101',
 				'lifespan' => '12/17/1989 -'
 			),
 			'preferred_labels' => array(
@@ -131,7 +132,7 @@ class DedupTest extends BaseTestWithData {
 		$vn_entity_id = $this->addTestRecord('ca_entities', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'ind',
-				'idno' => 'hjs',
+				'idno' => '101',
 				'lifespan' => '12/17/1989 -'
 			),
 			'preferred_labels' => array(
@@ -186,7 +187,7 @@ class DedupTest extends BaseTestWithData {
 		$vn_entity_id = $this->addTestRecord('ca_entities', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'ind',
-				'idno' => 'hjs',
+				'idno' => '101',
 			),
 			'preferred_labels' => array(
 				array(
@@ -229,16 +230,18 @@ class DedupTest extends BaseTestWithData {
 	}
 	# -------------------------------------------------------
 	/**
-	 * @expectedException Exception
+	 * 
 	 */
 	public function testInvalidMergeListString() {
+		$this->expectException('Exception');
 		ca_entities::mergeRecords(['foo']);
 	}
 	# -------------------------------------------------------
 	/**
-	 * @expectedException Exception
+	 * 
 	 */
 	public function testInvalidMergeListInvalidID() {
+		$this->expectException('Exception');
 		ca_entities::mergeRecords([time()]);
 	}
 	# -------------------------------------------------------

@@ -36,12 +36,10 @@
  
 require_once(__CA_LIB_DIR__."/ApplicationError.php");
 require_once(__CA_LIB_DIR__."/Configuration.php");
-require_once(__CA_LIB_DIR__."/Datamodel.php");
 
 class MediaProcessingSettings {
 	# ---------------------------------------------------
 	var $opo_config;
-	var $opo_datamodel;
 	
 	var $opa_table_settings;
 	var $opo_config_settings;

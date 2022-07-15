@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2018 Whirl-i-Gig
+ * Copyright 2016-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -110,6 +110,7 @@
 		 *
 		 */
 		public static function getViewerData($po_request, $ps_identifier, $pa_data=null, $pa_options=null) {
+		    $access_values = caGetUserAccessValues($po_request);
 			if ($o_view = BaseMediaViewer::getView($po_request)) {
 				if ($t_instance = caGetOption('t_instance', $pa_data, null)) {
 				    $t_subject = caGetOption('t_subject', $pa_data, null);
@@ -133,7 +134,7 @@
 				
 					$vn_use_mirador_for_image_list_length = caGetOption('use_mirador_for_image_list_length_at_least', $pa_data['display'], null);
 					if (((($vs_display_version = caGetOption('display_version', $pa_data['display'], 'tilepic')) == 'tilepic')) && !$vn_use_mirador_for_image_list_length) {
-						$pa_data['resources'] = $t_instance->getFileList();
+						$pa_data['resources'] = $t_instance->getFileList(null, null, null, [$vs_display_version, 'preview']);
 					} elseif (is_a($t_instance, "ca_object_representations") && $pa_data['t_subject'] && $vn_use_mirador_for_image_list_length && ($va_reps = $pa_data['t_subject']->getRepresentations(['small', $vs_display_version, 'original'], null, []))) {
 						$t_rep = new ca_object_representations();
 						
@@ -151,8 +152,9 @@
                             $va_labels = $t_rep->getPreferredDisplayLabelsForIDs(caExtractArrayValuesFromArrayOfArrays($va_reps, 'representation_id'));
         
                             foreach($va_reps as $va_rep) {
+                                if (is_array($access_values) && sizeof($access_values) && !in_array($va_rep['access'], $access_values)) { continue; }
                                 $pa_data['resources'][] = [
-                                    'title' => str_replace("["._t('BLANK')."]", "", $va_labels[$va_rep['representation_id']]),
+                                    'title' => str_replace("[".caGetBlankLabelText('ca_object_representations')."]", "", $va_labels[$va_rep['representation_id']]),
                                     'representation_id' => $va_rep['representation_id'],
                                     'preview_url' => $va_rep['urls']['small'],
                                     'url' => $va_rep['urls'][$vs_display_version],

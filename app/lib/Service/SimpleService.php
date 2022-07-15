@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2017 Whirl-i-Gig
+ * Copyright 2015-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -49,7 +49,7 @@ class SimpleService {
 
 		$vs_cache_key = $po_request->getHash();
 
-		if(!$po_request->getParameter('noCache', pInteger)) {
+		if(!$po_request->getParameter('noCache', pInteger) && ($po_request->getParameter('sort', pString) !== '_random_')) {
 			if(ExternalCache::contains($vs_cache_key, "SimpleAPI_{$ps_endpoint}")) {
 				return ExternalCache::fetch($vs_cache_key, "SimpleAPI_{$ps_endpoint}");
 			}
@@ -96,9 +96,14 @@ class SimpleService {
 
 		$va_get_options = [];
 
-		$pm_id = $po_request->getParameter('id', pString);
-		if(!$t_instance->load($pm_id)) {
-			$t_instance->load(array($t_instance->getProperty('ID_NUMBERING_ID_FIELD') => $pm_id));
+		if ($pm_id = $po_request->getParameter('id', pString)) {
+			if(!$t_instance->load($pm_id)) {
+				$t_instance->load(array($t_instance->getProperty('ID_NUMBERING_ID_FIELD') => $pm_id));
+			}
+		} elseif($guid = $po_request->getParameter('guid', pString)) {
+			if (is_array($info = ca_guids::getInfoForGUID($guid)) && ((int)$info['table_num'] === (int)$t_instance->tableNum())) {
+				$t_instance->load($info['row_id']);
+			}
 		}
 
 		if(!$t_instance->getPrimaryKey()) {
@@ -188,6 +193,64 @@ class SimpleService {
 			throw new Exception('Invalid table');
 		}
 
+		$from_log_id = $last_log_id = null;
+		$id_list = null;
+		
+		if ($from_timestamp = $po_request->getParameter('timestamp', pString)) {
+			if(!is_numeric($from_timestamp)) { 
+				if(is_array($pd = caDateToUnixTimestamps($from_timestamp))) {
+					$from_timestamp = array_shift($pd); 
+				} else {
+					$from_timestamp = null;
+				}
+			}
+			if ($from_timestamp) { 
+				$from_log_id = ca_change_log::getLogIDForTimestamp($from_timestamp);
+			}
+		}
+		if(!$from_log_id) { $from_log_id = $po_request->getParameter('log_id', pInteger); }
+		if ($from_log_id) {
+			$mode = strtoupper($po_request->getParameter('mode', pString));
+			if (!in_array($mode, ['A', 'I', 'U', 'D'], true)) {
+				$mode = 'A';
+			} 
+			
+			if ($from_log_id < 1) {
+				throw new Exception('Invalid log_id specified');
+			}
+			$log = ca_change_log::getLog($from_log_id, null, ['includeSubjectEntries' => true, 'onlyTables' => [$pa_config['table']]]);
+			
+			$tn = Datamodel::getTableNum($pa_config['table']);
+			$ids = [];
+			foreach($log as $l) {
+				if ($tn == $l['logged_table_num']) { $ids[$l['changetype']][] = (int)$l['logged_row_id']; }
+				
+				if(is_array($l['subjects'])) {
+					foreach($l['subjects'] as $s) {
+						if ($tn == $s['subject_table_num']) { $ids[$l['changetype']][] = (int)$s['subject_row_id']; }
+					}
+				}
+			}
+			$last = array_pop($log);
+			$last_log_id = (int)$last['log_id'];
+			
+			foreach($ids as $changetype => $values) {
+				$ids[$changetype] = array_unique($values);
+			}
+			if ($mode === 'A') {
+				if(!is_array($ids['I'])) { $ids['I'] = []; }
+				if(!is_array($ids['U'])) { $ids['U'] = []; }
+				$id_list = array_merge($ids['I'], $ids['U']);
+			} else {
+				$id_list = $ids[$mode];
+			}
+			
+			if (!is_array($id_list)) {
+				$id_list = [];
+			}
+			
+		} 
+
 		if(!($ps_q = $po_request->getParameter('q', pString))) {
 			throw new Exception('No query specified');
 		}
@@ -203,12 +266,26 @@ class SimpleService {
 		}
 
 		/** @var SearchResult $o_res */
-		$o_res = $o_search->search($ps_q, array(
-			'sort' => ($po_request->getParameter('sort', pString)) ? $po_request->getParameter('sort', pString) : $pa_config['sort'],
-			'sortDirection' => ($po_request->getParameter('sortDirection', pString)) ? $po_request->getParameter('sortDirection', pString) : $pa_config['sortDirection'],
-			'checkAccess' => $pa_config['checkAccess'],
-		));
-
+		if ((trim($ps_q) === '*') && is_array($id_list) && sizeof($id_list)) {
+			// TODO: filter on type and access
+			$o_res = caMakeSearchResult($pa_config['table'], array_unique($id_list));
+		} else {		
+			$o_res = $o_search->search($ps_q, array(
+				'sort' => $sort = (($po_request->getParameter('sort', pString)) ? $po_request->getParameter('sort', pString) : $pa_config['sort']),
+				'sortDirection' => ($po_request->getParameter('sortDirection', pString)) ? $po_request->getParameter('sortDirection', pString) : $pa_config['sortDirection'],
+				'checkAccess' => $pa_config['checkAccess'],
+			));
+			
+			if (is_array($id_list)) {
+				$found_ids = $o_res->getAllFieldValues($t_instance->primaryKey(true));
+				if (sizeof($found_ids = array_intersect($id_list, $found_ids)) > 0) {
+					$o_res = caMakeSearchResult($pa_config['table'], $found_ids);
+				} else {
+					return ['log' => ['start' => $from_log_id, 'end' => $last_log_id > 0 ? $last_log_id : $from_log_id]];
+				}
+			}
+			
+		}
 		if($vn_start = $po_request->getParameter('start', pInteger)) {
 			if(!$o_res->seek($vn_start)) {
 				return [];
@@ -220,13 +297,15 @@ class SimpleService {
 
 		$va_return = [];
 		if (isset($pa_config['includeCount']) && $pa_config['includeCount']) {
-		    $va_return['resultCount'] = $o_res->numHits();
+		    $va_return['resultCount'] = (is_array($id_list) && sizeof($id_list)) ? sizeof($id_list) : $o_res->numHits();
 		}
 		$va_get_options = [];
 		if(isset($pa_config['checkAccess']) && is_array($pa_config['checkAccess'])) {
 			$va_get_options['checkAccess'] = $pa_config['checkAccess'];
 		}
 
+		if ($sort === '_random_') { $o_res->seek(rand(0, $o_res->numHits() - 1)); }
+		
 		while($o_res->nextHit()) {
 			$va_hit = [];
 
@@ -242,6 +321,10 @@ class SimpleService {
 				if($vn_limit && (sizeof($va_return) >= $vn_limit)) { break; }
 			}
 			
+		}
+		
+		if ($from_log_id) {
+			$va_return['log'] = ['start' => $from_log_id, 'end' => $last_log_id > 0 ? $last_log_id : $from_log_id];
 		}
 
 		return $va_return;

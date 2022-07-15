@@ -111,7 +111,6 @@ class WLPlugInformationServiceNomisma extends BaseNomismaLODServicePlugin implem
 		if(is_numeric($ps_search)) {
 			$vs_search = $ps_search;
 		} elseif(isURL($ps_search)) {
-			$vs_search = str_replace('http://nomisma.org/id/', '', $ps_search);
 			$is_url = true;
 		} elseif($pb_phrase) {
 			$vs_search = '\"'.$ps_search.'\"';
@@ -123,25 +122,64 @@ class WLPlugInformationServiceNomisma extends BaseNomismaLODServicePlugin implem
 		if($pa_settings['ontologies'] && !is_array($pa_settings['ontologies'])) { $pa_settings['ontologies'] = [$pa_settings['ontologies']]; }
 		
 		$ontology_filter = (is_array($pa_settings['ontologies']) && sizeof($pa_settings['ontologies'])) ? "FILTER (?t IN (".join(',', $pa_settings['ontologies'])."))" : "";
-		$query_filter = ($is_url) ? 'FILTER (regex(?label, "^'.trim($vs_search).'$", "i"))' : 'FILTER (regex(?label, "\\\\b'.trim($vs_search).'\\\\b", "i"))';
-		$vs_query = urlencode('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX dcterms:	<http://purl.org/dc/terms/>
-PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#>
-PREFIX nm: <http://nomisma.org/id/>
-PREFIX nmo: <http://nomisma.org/ontology#>
-PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-PREFIX spatial: <http://jena.apache.org/spatial#>
-PREFIX xsd:	<http://www.w3.org/2001/XMLSchema#>
-PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+		
+		if ($is_url) {
+		   $query_filter = 'FILTER (?data IN (<'.preg_replace("![^A-Za-z0-9_\-\%\/\&\:\.]+!", "", mb_strtolower($ps_search)).'>))';
+           $vs_query = urlencode('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                PREFIX dcterms:	<http://purl.org/dc/terms/>
+                PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#>
+                PREFIX nm: <http://nomisma.org/id/>
+                PREFIX nmo: <http://nomisma.org/ontology#>
+                PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#>
+                PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+                PREFIX spatial: <http://jena.apache.org/spatial#>
+                PREFIX xsd:	<http://www.w3.org/2001/XMLSchema#>
+                PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 
-SELECT * WHERE {
-   ?data skos:prefLabel ?label .
-   ?data rdf:type ?t.
-   OPTIONAL { ?data skos:broader ?parent }
-  '.$query_filter.'
-  '.$ontology_filter.'
-}
-LIMIT '.$pn_limit);
+                SELECT * WHERE {
+  	               ?data ?predicate ?object.
+                   ?data skos:prefLabel ?label .
+                   ?data rdf:type ?t .
+                   OPTIONAL { 
+                    ?data skos:broader ?parent .
+                    ?data geo:location ?l .
+                    ?l geo:lat ?lat.
+                    ?l geo:long ?long .
+
+                    }
+                  '.$query_filter.'
+                  '.$ontology_filter.'
+                }
+                LIMIT '.(int)$pn_limit); 
+		} else {
+		    $query_filter = 'FILTER (regex(?label, "\\\\b'.trim($vs_search).'\\\\b", "i"))';
+		
+            $vs_query = urlencode('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                PREFIX dcterms:	<http://purl.org/dc/terms/>
+                PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#>
+                PREFIX nm: <http://nomisma.org/id/>
+                PREFIX nmo: <http://nomisma.org/ontology#>
+                PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#>
+                PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+                PREFIX spatial: <http://jena.apache.org/spatial#>
+                PREFIX xsd:	<http://www.w3.org/2001/XMLSchema#>
+                PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+
+                SELECT * WHERE {
+                   ?data skos:prefLabel ?label .
+                   ?data rdf:type ?t .
+                   OPTIONAL { 
+                    ?data skos:broader ?parent .
+                    ?data geo:location ?l .
+                    ?l geo:lat ?lat.
+                    ?l geo:long ?long .
+
+                    }
+                  '.$query_filter.'
+                  '.$ontology_filter.'
+                }
+                LIMIT '.(int)$pn_limit); 
+    }
 
 		$va_results = parent::queryNomisma($vs_query);
 		if(!is_array($va_results)) { return false; }
@@ -171,6 +209,8 @@ LIMIT '.$pn_limit);
 				'label' => htmlentities($vs_label),
 				'url' => $va_values['data']['value'],
 				'idno' => $vs_id,
+				'lat' => isset($va_values['lat']['value']) ? $va_values['lat']['value'] : null,
+				'long' => isset($va_values['long']['value']) ? $va_values['long']['value'] : null
 			);
 		}
 
@@ -191,6 +231,17 @@ LIMIT '.$pn_limit);
 			return $va_matches[1];
 		}
 		return $ps_text;
+	}
+	# ------------------------------------------------
+	/**
+	 *
+	 */
+	public function getExtraInfo($pa_settings, $ps_url) {
+	    $ret = parent::getExtraInfo($pa_settings, $ps_url);
+	    if (isset($ret['lat']) && isset($ret['long']) && $ret['lat'] && $ret['long']) {
+	        $ret['georeference'] = "[".$ret['lat'].",".$ret['long']."]";
+	    }
+	    return $ret;
 	}
 	# ------------------------------------------------
 }

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2014 Whirl-i-Gig
+ * Copyright 2010-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -43,7 +43,7 @@ if($vo_result->numHits() > 0) {
 <div style="clear: both;"><!-- empty --></div>
 
 <?php
-	if($vo_result->numHits() > 0) {
+	if(($vo_result->numHits() > 0) && $this->request->user->canDoAction('can_use_spreadsheet_editor_'.$vs_table)) {
 ?>
 <a href='#' id='showResultsEditor' onclick='caResultsEditorPanel.showPanel("<?php print caNavUrl($this->request, '*', '*', 'resultsEditor'); ?>"); return false;'><?php print caNavIcon(__CA_NAV_ICON_SPREADSHEET__, "24px"); ?></a> 
 <?php
@@ -67,10 +67,10 @@ if($vo_result->numHits() > 0) {
 <div id="searchOptionsBox">
 	<div class="bg">
 <?php
-		print caFormTag($this->request, 'Index', 'caSearchOptionsForm',  null , 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); 
+		print caFormTag($this->request, 'Index', 'caSearchOptionsForm', null , 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); 
 		
 		print "<div class='col'>";
-		print _t("Sort").": <select name='sort' style='width: 70px;'>\n";
+		print _t("Sort").": <select name='sort' style='width: 220px;'>\n";
 		
 		$vs_current_sort = $vo_result_context->getCurrentSort();
 		$vs_current_sort_direction = $vo_result_context->getCurrentSortDirection();
@@ -98,7 +98,7 @@ if($vo_result->numHits() > 0) {
 			}
 		}
 		print "</select>\n";
-		print "</div>";
+		print "</div><br class='clear'/>\n";
 
 		print "<div class='col'>";
 		$va_views = $this->getVar("views");
@@ -121,11 +121,17 @@ if($vo_result->numHits() > 0) {
 		    print _t("Display").": ".caHTMLSelect('display_id', $va_opts, ["id" => "display_select"], ["width" => "100px", "value" => (int)$this->getVar("current_display_list")]);
 		}
 		print "</select>\n";
-		print "</div>";		
+		print "</div><br class='clear'/>\n";		
 		
 		if($this->getVar('show_children_display_mode_control')) {
 			print "<div class='col'>";
 			print _t('Child records').': '.caHTMLSelect('children', [_t('show') => 'show', _t('hide') => 'hide'], [], ['value' => $this->getVar('children_display_mode')]);
+			print "</div>";	
+		}
+		
+		if($this->getVar('show_deaccession_display_mode_control')) {
+			print "<div class='col'>";
+			print _t('Deaccessioned').': '.caHTMLSelect('deaccession', [_t('show') => 'show', _t('hide') => 'hide'], [], ['value' => $this->getVar('deaccession_display_mode')]);
 			print "</div>";	
 		}
 ?>		

@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -113,7 +113,7 @@ var caUI = caUI || {};
 				if (!isNew) {
 					if (localeList[i].value !== templateValues.locale_id) { continue; }
 				} else {
-					if (jQuery(this.container + " select." + this.localeClassName + " option:selected[value=" + localeList[i].value + "]").length > 0) {
+					if (jQuery(this.container + " select." + this.localeClassName + " option:selected[value='" + localeList[i].value + "']").length > 0) {
 						if(jQuery(this.container + " select." + this.localeClassName).length > 1) {
 							continue;
 						}
@@ -131,7 +131,7 @@ var caUI = caUI || {};
 			for (i=0; i < this.templateValues.length; i++) {
 				if (this.templateValues[i] === 'locale_id') { continue; }
 				if (jQuery(this.container + " select#" + this.fieldNamePrefix + this.templateValues[i] + "_" + id).length) {
-					jQuery(this.container + " select#" + this.fieldNamePrefix + this.templateValues[i] + "_" + id + " option[value=" + templateValues[this.templateValues[i]] +"]").prop('selected', true);
+					jQuery(this.container + " select#" + this.fieldNamePrefix + this.templateValues[i] + "_" + id + " option[value='" + templateValues[this.templateValues[i]] +"']").prop('selected', true);
 				}
 			}
 			if(!templateValues.locale_id) { templateValues.locale_id = that.defaultLocaleID; }

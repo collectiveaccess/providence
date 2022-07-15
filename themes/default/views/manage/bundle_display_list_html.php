@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2016 Whirl-i-Gig
+ * Copyright 2010-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -63,6 +63,9 @@
 					<?php print _t('Display name'); ?>
 				</th>
 				<th class="list-header-unsorted">
+					<?php print _t('Code'); ?>
+				</th>
+				<th class="list-header-unsorted">
 					<?php print _t('Owner'); ?>
 				</th>
 				<th class="list-header-unsorted">
@@ -79,6 +82,9 @@
 			<tr>
 				<td>
 					<?php print $va_display['name']; ?>
+				</td>
+				<td>
+					<?php print $va_display['display_code']; ?>
 				</td>
 				<td>
 					<?php print $va_display['fname'].' '.$va_display['lname']; ?>
@@ -107,7 +113,7 @@
 	} else {
 ?>
 		<tr>
-			<td colspan='4'>
+			<td colspan='5'>
 				<div align="center">
 					<?php print _t('No displays lists have been configured'); ?>
 				</div>

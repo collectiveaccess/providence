@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,8 +38,7 @@
  	require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
  	require_once(__CA_LIB_DIR__.'/Attributes/Values/AttributeValue.php');
  	require_once(__CA_LIB_DIR__.'/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
- 	require_once(__CA_LIB_DIR__.'/Zend/Measure/Weight.php');	
- 	
+
  	global $_ca_attribute_settings;
  	$_ca_attribute_settings['WeightAttributeValue'] = array(		// global
 		'fieldWidth' => array(
@@ -66,6 +65,14 @@
 			'label' => _t('Does not use locale setting'),
 			'description' => _t('Check this option if you don\'t want your measurements to be locale-specific. (The default is not to be.)')
 		),
+		'singleValuePerLocale' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow single value per locale'),
+			'description' => _t('Check this option to restrict entry to a single value per-locale.')
+		),
 		'requireValue' => array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_CHECKBOXES,
@@ -73,6 +80,22 @@
 			'width' => 1, 'height' => 1,
 			'label' => _t('Require value'),
 			'description' => _t('Check this option if you want an error to be thrown if this measurement is left blank.')
+		),
+		'allowDuplicateValues' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow duplicate values?'),
+			'description' => _t('Check this option if you want to allow duplicate values to be set when element is not in a container and is repeating.')
+		),
+		'raiseErrorOnDuplicateValue' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Show error message for duplicate values?'),
+			'description' => _t('Check this option to show an error message when value is duplicate and <em>allow duplicate values</em> is not set.')
 		),
 		'canBeUsedInSort' => array(
 			'formatType' => FT_NUMBER,
@@ -146,6 +169,7 @@
  		public function loadTypeSpecificValueFromRow($pa_value_array) {
  			global $g_ui_locale;
  			global $g_ui_units_pref;
+    		global $g_request;
  			
  			if ($pa_value_array['value_decimal1'] === '') {
  				$this->ops_text_value = '';
@@ -158,6 +182,7 @@
  					$this->ops_text_value = $vo_measurement->convertTo(Zend_Measure_Weight::KILOGRAM, 4);
  					break;
  				case 'english':
+ 				case 'fractions':
  					$vo_measurement = new Zend_Measure_Weight((float)$pa_value_array['value_decimal1'], 'KILOGRAM', $g_ui_locale);
  					$this->ops_text_value = $vo_measurement->convertTo(Zend_Measure_Weight::POUND, 4);
  					break;
@@ -183,19 +208,36 @@
  		 *
  		 * @param $pa_options array Options are:
  		 *		returnAsDecimalMetric = return weight in kilograms as decimal number
+ 		 *		units = force units used for display. Values are: metric, english, as_entered. [Default is to use units system of as entered value]
  		 *
  		 * @return mixed Values as string or decimal
  		 */
 		public function getDisplayValue($pa_options=null) {
+ 			global $g_ui_units_pref;
 			if (caGetOption('returnAsDecimalMetric', $pa_options, false)) {
 				return $this->opn_decimal_value;
 			}
-			return $this->ops_text_value;
+			switch(caGetOption('units', $pa_options, $g_ui_units_pref)) {
+ 				case 'metric':
+ 					$vo_measurement = new Zend_Measure_Weight((float)$this->opn_decimal_value, 'KILOGRAM', $g_ui_locale);
+ 					return $vo_measurement->convertTo(Zend_Measure_Weight::KILOGRAM, 2);
+ 					break;
+ 				case 'english':
+ 				case 'fractions':
+ 					$vo_measurement = new Zend_Measure_Weight((float)$this->opn_decimal_value, 'KILOGRAM', $g_ui_locale);
+ 					return $vo_measurement->convertTo(Zend_Measure_Weight::POUND, 2);
+ 					break;
+				default: // show value in unit entered
+					return $this->ops_text_value;
+					break;
+ 			}	
 		}
  		# ------------------------------------------------------------------
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  			$ps_value = trim($ps_value);
  			global $g_ui_locale;
+ 			
+        	$ps_value = preg_replace("![^\d\.\,A-Za-z\"\'\"’” \/]+!", " ", $ps_value);
  			
  			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('requireValue'));
  			if (!$va_settings['requireValue'] && !trim($ps_value)) {

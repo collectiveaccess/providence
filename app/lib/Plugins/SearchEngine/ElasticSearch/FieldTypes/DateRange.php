@@ -43,13 +43,18 @@ class DateRange extends GenericElement {
 		if(is_array($pm_content)) { $pm_content = serialize($pm_content); }
 		$va_return = array();
 
-		if (!is_array($pa_parsed_content = caGetISODates($pm_content))) { return array(); }
-		$va_return[$this->getTableName().'/'.$this->getElementCode().'_text'] = $pm_content;
+		if (!is_array($pa_parsed_content = caGetISODates($pm_content, ['returnUnbounded' => true]))) { return array(); }
+		
+		$key = $this->getTableName().'/'.$this->getElementCode();
+		$va_return[$key.'_text'] = $pm_content;
 
 		$ps_rewritten_start = caRewriteDateForElasticSearch($pa_parsed_content["start"], true);
 		$ps_rewritten_end = caRewriteDateForElasticSearch($pa_parsed_content["end"], false);
 
-		$va_return[$this->getTableName().'/'.$this->getElementCode()] = array($ps_rewritten_start,$ps_rewritten_end);
+		$va_return[$key.'_text'] = $pm_content;
+		$va_return[$key] = array($ps_rewritten_start,$ps_rewritten_end);
+		$va_return[$key.'_start'] = $ps_rewritten_start;
+		$va_return[$key.'_end'] = $ps_rewritten_end;
 		return $va_return;
 	}
 
@@ -65,42 +70,18 @@ class DateRange extends GenericElement {
 			$vs_fld = str_replace('\\', '', $o_term->field);
 			$va_terms[] = $o_term->text;
 		}
-
-		$va_parsed_values = caGetISODates(join(' ', $va_terms));
-
-		// send "empty" date range when query parsing fails (end < start)
-		if(!is_array($va_parsed_values) || !isset($va_parsed_values['start'])) {
-			$va_parsed_values = [
-				'start' => '1985-01-28T10:00:01Z',
-				'end' => '1985-01-28T10:00:00Z',
-			];
-		}
-
-		if($va_parsed_values['end'] != '2000000000-12-31T23:59:59Z') {
-			$va_return[] = array(
-				'range' => array(
-					$vs_fld => array(
-						'lte' => $va_parsed_values['end'],
-					)));
-		}
-
-		if($va_parsed_values['start'] != '-2000000000-01-01T00:00:00Z') {
-			$va_return[] = array(
-				'range' => array(
-					$vs_fld => array(
-						'gte' => $va_parsed_values['start'],
-					)));
-		}
-
-		return $va_return;
+		
+		return $this->getFiltersForTerm(join(' ', $va_terms), $vs_fld);
 	}
 
 	/**
 	 * @param \Zend_Search_Lucene_Index_Term $po_term
 	 * @return array
 	 */
-	function getFiltersForTerm($po_term) {
-
+	function getFiltersForTerm($po_term, $field=null) {
+		if(!is_object($po_term)) {
+			$po_term = new \Zend_Search_Lucene_Index_Term($po_term, $field);
+		}
 		$va_tmp = explode('\\/', $po_term->field);
 		if(sizeof($va_tmp) == 3) {
 			unset($va_tmp[1]);
@@ -118,8 +99,11 @@ class DateRange extends GenericElement {
 			$vs_parse_date = $po_term->text;
 		}
 
-		$va_return = array();
+		$va_return = [];
+		
 		$va_parsed_values = caGetISODates($vs_parse_date);
+		if(!$va_parsed_values['start']) { $va_parsed_values['start'] = '-9999-01-01T00:00:00Z'; }
+		if(!$va_parsed_values['end']) { $va_parsed_values['end'] = '9999-12-31T23:59:59Z'; }
 
 		// send "empty" date range when query parsing fails (end < start)
 		if(!is_array($va_parsed_values) || !isset($va_parsed_values['start'])) {
@@ -162,24 +146,41 @@ class DateRange extends GenericElement {
 				break;
 			case '#':
 			default:
-				if($va_parsed_values['end'] != '2000000000-12-31T23:59:59Z') {
-					$va_return[] = array(
-						'range' => array(
-							$vs_fld => array(
-								'lte' => $va_parsed_values['end'],
-							)));
-				}
-
-				if($va_parsed_values['start'] != '-2000000000-01-01T00:00:00Z') {
-					$va_return[] = array(
-						'range' => array(
-							$vs_fld => array(
-								'gte' => $va_parsed_values['start'],
-							)));
-				}
+				$va_return[] = [
+						'bool' => [
+							'should' => [
+								['range' => [
+									$vs_fld.'_start' => [
+										'gte' => $va_parsed_values['start'],
+										'lte' => $va_parsed_values['end'],
+									]
+								]],
+								['range' => [
+									$vs_fld.'_end' => [
+										'gte' => $va_parsed_values['start'],
+										'lte' => $va_parsed_values['end'],
+									],
+								]],
+								['bool' => [
+									'must' => [
+										['range' => [
+											$vs_fld.'_start' => [
+												'lte' => $va_parsed_values['start']
+											]
+										]],
+										['range' => [
+											$vs_fld.'_end' => [
+												'gte' => $va_parsed_values['end']
+											]
+										]]
+									]
+								]]
+							],
+							'minimum_should_match' => 1
+						]
+					];
 				break;
 		}
-
 		return $va_return;
 	}
 }

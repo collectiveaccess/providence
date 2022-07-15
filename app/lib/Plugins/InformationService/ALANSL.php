@@ -34,13 +34,10 @@
  * @file A class to interface with the ALA National Species Lists API
  */
 
-use Doctrine\Common\Cache\FilesystemCache;
-use Guzzle\Http\Client;
-use Guzzle\Cache\DoctrineCacheAdapter;
-use Guzzle\Plugin\Cache\CachePlugin;
-use Guzzle\Plugin\Cache\DefaultCacheStorage;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 
-require_once(__CA_LIB_DIR__ . "/Plugins/IWLPlugInformationService.php");
+require_once( __CA_LIB_DIR__ . "/Plugins/IWLPlugInformationService.php");
 require_once(__CA_LIB_DIR__ . "/Plugins/InformationService/BaseInformationServicePlugin.php");
 
 global $g_information_service_settings_ala_nsl_search_fields;
@@ -79,32 +76,23 @@ class WLPlugInformationServiceALANSL extends BaseInformationServicePlugin implem
 	const NSL_SERVICES_URL = 'https://biodiversity.org.au/nsl/services';
 	private $pa_available_search_fields;
 
-	/** @var  Guzzle\Http\Client */
+	/** @var  Client */
 	private $o_client;
 
 	/**
-	 * @return Guzzle\Http\Client
+	 * @return Client
 	 */
 	public function getClient() {
 		if (!isset ($this->o_client)) {
 
-			$this->o_client = new \Guzzle\Http\Client(self::NSL_SERVICES_URL, array(
-					'request.params' => array(
+			$this->o_client = new Client(
+				[
+					'base_uri' => self::NSL_SERVICES_URL,
+					'request.params' => [
 						'cache.override_ttl' => 3600,
 						'params.cache.revalidate' => 'skip'
-					)
-				)
-			);
-			// can_cache needs to be callable
-			$this->o_client->addSubscriber(
-				new CachePlugin(array(
-						'storage' => new DefaultCacheStorage(new DoctrineCacheAdapter(new FilesystemCache(caGetTempDirPath()))),
-						'can_cache' => function () {
-							// let's just cache for the above ttl
-							return true;
-						}
-					)
-				)
+					]
+				]
 			);
 			$o_conf = Configuration::load();
 			if($vs_proxy = $o_conf->get('web_services_proxy_url')) { /* proxy server is configured */
@@ -191,17 +179,26 @@ class WLPlugInformationServiceALANSL extends BaseInformationServicePlugin implem
 	/**
 	 * Perform lookup on ALA-NSL-based data service
 	 *
-	 * @param array $pa_settings Plugin settings values
-	 * @param string $ps_search The expression with which to query the remote data service
-	 * @param array $pa_options Lookup options (none defined yet)
+	 * @param array  $pa_settings Plugin settings values
+	 * @param string $ps_search   The expression with which to query the remote data service
+	 * @param array|null  $pa_options  Lookup options (none defined yet)
+	 *
 	 * @return array
+	 * @throws GuzzleException
 	 */
 	public function lookup($pa_settings, $ps_search, $pa_options = null) {
 		$vo_client = $this->getClient();
-		$vo_request = $vo_client->get(self::NSL_SERVICES_URL . '/suggest/acceptableName');
-		$vo_request->setHeader('Accept', 'application/json');
-		$vo_request->getQuery()->add('term', $ps_search);
-		$va_raw_resultlist = $vo_request->send()->json();
+		$vo_response = $vo_client->get(
+			self::NSL_SERVICES_URL . '/suggest/acceptableName',	[
+				'query'=>[
+					'term' => $ps_search
+				],
+				'headers' => [
+					'Accept', 'application/json'
+				]
+			]
+		);
+		$va_raw_resultlist = json_decode($vo_response->getBody(), JSON_OBJECT_AS_ARRAY);
 		$va_resultlist = array_map(function ($pa_name) {
 			return array(
 				'url' => $pa_name['link'],
@@ -236,12 +233,11 @@ class WLPlugInformationServiceALANSL extends BaseInformationServicePlugin implem
 	 */
 	public function getExtendedInformation($pa_settings, $ps_url) {
 		// We can't use the original URL as the embed=true parameter does not survive the redirection
-		// The original URL comes in the format https://biodiversity.org.au/boa/name/apni/54563/api/apc-format?embed=true
-		// and we want it to go to https://biodiversity.org.au/nsl/services/name/apni/54563/api/apc-format?embed=true
-		// TODO: Remove this replace when {formatname}-format-embed is implemented within the service
+		// The original URL comes in the format https://biodiversity.org.au/boa/name/apni/54563/api/apc-format-embed
+		// and we want it to go to https://biodiversity.org.au/nsl/services/name/apni/54563/api/apc-format-embed
 		$vs_format = caGetOption('extraInfoFormat', $pa_settings, 'apc-format');
-		$vs_request_url = str_replace('/boa/name/', '/nsl/services/name/', $ps_url) . '/api/' . $vs_format . '?embed=true';
-		$vs_display = $this->relativeToAbsoluteUrls($this->getClient()->get($vs_request_url)->send()->getBody(true), self::NSL_SERVICES_BASE);
+		$vs_request_url = str_replace('/boa/name/', '/nsl/services/name/', $ps_url) . '/api/' . $vs_format . '-embed';
+		$vs_display = $this->relativeToAbsoluteUrls($this->getClient()->get($vs_request_url)->getBody(), self::NSL_SERVICES_BASE);
 		return array('display' => $vs_display);
 	}
 
@@ -254,8 +250,8 @@ class WLPlugInformationServiceALANSL extends BaseInformationServicePlugin implem
 	 * @return array
 	 */
 	public function getExtraInfo($pa_settings, $ps_url) {
-		$va_extra_info = $this->getClient()->get($ps_url . '/api/simple-name')->addHeader('Accept', 'application/json')->send()->json();
-		return $va_extra_info['nslSimpleName'];
+		$vo_response = $this->getClient()->get($ps_url . '.json', ['headers' => ['Accept', 'application/json']]);
+		return json_decode($vo_response->getBody(), JSON_OBJECT_AS_ARRAY);
 	}
 
 	private function relativeToAbsoluteUrls($ps_html, $ps_base){

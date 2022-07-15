@@ -154,9 +154,10 @@ class KLogger
      *
      * @param string  $logDirectory File path to the logging directory
      * @param integer $severity     One of the pre-defined severity constants
+     * @param string $logName		Options custom log name
      * @return void
      */
-    public function __construct($logDirectory, $severity)
+    public function __construct($logDirectory, $severity, $logName=null)
     {
         $logDirectory = rtrim($logDirectory, '\\/');
 
@@ -166,7 +167,7 @@ class KLogger
 
         $this->_logFilePath = $logDirectory
             . DIRECTORY_SEPARATOR
-            . 'log_'
+            . 'log_' . ($logName  ? "{$logName}_" : "")
             . date('Y-m-d')
             . '.txt';
 

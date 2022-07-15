@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2016 Whirl-i-Gig
+ * Copyright 2013-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,7 +38,7 @@ print $vs_control_box = caFormControlBox(
 ?>
 <div class="sectionBox">
 <?php
-		print caFormTag($this->request, 'ImportData/'.$this->request->getActionExtra(), 'caBatchMetadataImportForm', null, 'POST', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
+		print caFormTag($this->request, 'ImportData/'.$this->request->getActionExtra(), 'caBatchMetadataImportForm', null, 'POST', 'multipart/form-data', '_top', array('noCSRFToken' => false, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
 ?>
 		<div class='bundleLabel'>
 			<span class="formLabelText"><?php print _t('Importer'); ?></span> 
@@ -91,6 +91,15 @@ print $vs_control_box = caFormControlBox(
 ?>
 								</td>
 							</tr>
+							<tr class="caFileSourceControls" id='caFileGoogleDriveContainer'>
+								<td class="caSourceFileControlRadio">
+<?php		
+		$va_attr = array('value' => 'googledrive',  'onclick' => 'caSetBatchMetadataImportFormState();', 'id' => 'caFileGoogleDriveRadio');
+		if (caGetOption('fileInput', $va_last_settings, 'file') === 'googledrive') { $va_attr['checked'] = 'checked'; }	
+		print caHTMLRadioButtonInput("fileInput", $va_attr)."</td><td class='formLabel caFileSourceControls'>"._t('From GoogleDrive')." <span id='caFileGoogleDriveInputContainer'>".caHTMLTextInput('google_drive_url', ['value' => caGetOption('googleDriveUrl', $va_last_settings, ''), 'class' => 'urlBg', 'id' => 'caFileGoogleDriveInput'], ['width' => '500px'])."</span>";
+?>
+								</td>
+							</tr>
 						</table>
 					</div>
 				</div>
@@ -129,6 +138,30 @@ print $vs_control_box = caFormControlBox(
 		print caHTMLSelect('logLevel', caGetLogLevels(), array('id' => 'caLogLevel'), array('value' => $va_last_settings['logLevel']));
 ?>
 					</p>
+				</div>
+			</div>
+		</div>
+		<div class='bundleLabel'>
+			<span class="formLabelText"><?php print _t('Limit log to'); ?></span> 
+			<div class="bundleContainer">
+				<div class="caLabelList">
+					<table style="width: 600px; margin-left: 10px;">
+<?php
+		$c = 0;
+		$acc = [];
+		$limit_log_to_selected = caGetOption('limitLogTo', $va_last_settings, [], ['castTo' => 'array']);
+		foreach(['GENERAL' => _t('General information'), 'EXISTING_RECORD_POLICY' => _t('Existing record policy messages'), 'SKIP' => _t('Skip message'), 'RELATIONSHIPS' => _t('Relationship creation messages')] as $level => $name) {
+			$attr = ['value' => $level];
+			if(in_array($level, $limit_log_to_selected)) { $attr['checked'] = true; }
+			$acc[] = "<td class='formLabelPlain' style='padding: 5px'>".caHTMLCheckboxInput('limitLogTo[]', $attr, [])." {$name}</td>";
+			$c++;
+			if (($c % 2) == 0) {
+				print "<tr>".join("", $acc)."</tr>\n";
+				$acc = [];
+			}
+		}
+?>
+					</table>
 				</div>
 			</div>
 		</div>
@@ -242,13 +275,28 @@ print $vs_control_box = caFormControlBox(
 				jQuery('#caImportAllDatasetsContainer').hide(dontAnimate ? 0 : 150);
 			}
 		}
+		
+		if(currentFormat.toLowerCase() !== 'xlsx') {
+			jQuery("#caFileGoogleDriveContainer").hide();
+			if(jQuery("#caFileGoogleDriveRadio").is(":checked")) {
+				jQuery("#caFileInputRadio").attr('checked', true);
+			}
+		}  else {
+			jQuery("#caFileGoogleDriveContainer").show();
+		}
 			
 		if (jQuery("#caFileInputRadio").is(":checked")) {
-			jQuery("#caFileInputContainer").show(dontAnimate ? 0 : 150);
+			jQuery("#caFileInputContainer").show(dontAnimate ? 0 : 150).attr('disabled', false);
 			jQuery("#caFileBrowserContainer").hide(dontAnimate ? 0 : 150);
+			jQuery("#caFileGoogleDriveInput").attr('disabled', true);
+		} else if(jQuery("#caFileGoogleDriveRadio").is(":checked")) {
+			jQuery("#caFileInputContainer").show(dontAnimate ? 0 : 150).attr('disabled', true);
+			jQuery("#caFileBrowserContainer").hide(dontAnimate ? 0 : 150);
+			jQuery("#caFileGoogleDriveInput").attr('disabled', false);
 		} else {
-			jQuery("#caFileInputContainer").hide(dontAnimate ? 0 : 150);
+			jQuery("#caFileInputContainer").attr('disabled', true);
 			jQuery("#caFileBrowserContainer").show(dontAnimate ? 0 : 150);
+			jQuery("#caFileGoogleDriveInput").attr('disabled', true);
 		}
 	}
 	

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -105,12 +105,6 @@
  			$this->render('preferences_html.php');
  		}
  		# -------------------------------------------------------
- 		public function EditMediaPrefs() {
- 			$this->view->setVar('t_user', $this->request->user);
- 			$this->view->setVar('group', 'media');
- 			$this->render('preferences_html.php');
- 		}
- 		# -------------------------------------------------------
  		public function EditProfilePrefs() {
  			$this->view->setVar('t_user', $this->request->user);
  			$this->view->setVar('group', 'profile');
@@ -153,6 +147,13 @@
 			$this->view->setVar('bundle_list', $va_bundle_list);
  			
  			$this->render('preferences_duplication_html.php');
+ 		}
+ 		# -------------------------------------------------------
+ 		public function EditDeveloperPrefs() {
+ 			$this->view->setVar('t_user', $this->request->user);
+ 			$this->view->setVar('group', 'developer');
+ 			
+ 			$this->render('preferences_html.php');
  		}
  		# -------------------------------------------------------
  		public function Save() {
@@ -216,13 +217,6 @@
 					}
 					$vs_view_name = 'preferences_quickadd_html.php';
  					break;
- 				case 'EditMediaPrefs':
- 					$vs_group = 'media';
- 					
- 					foreach($this->request->user->getValidPreferences($vs_group) as $vs_pref) {
-						$this->request->user->setPreference($vs_pref, $this->request->getParameter('pref_'.$vs_pref, pString));
-					}
- 					break;
  				case 'EditUnitsPrefs':
  					$vs_group = 'units';
  					
@@ -276,6 +270,13 @@
  					
  					$this->notification->addNotification(_t("Saved preference settings"), __NOTIFICATION_TYPE_INFO__);	
 					return $this->EditQuickSearchPrefs();
+ 					break;
+ 				case 'EditDeveloperPrefs':
+ 					$vs_group = 'developer';
+ 					
+ 					foreach($this->request->user->getValidPreferences($vs_group) as $vs_pref) {
+						$this->request->user->setPreference($vs_pref, $this->request->getParameter('pref_'.$vs_pref, pString));
+					}
  					break;
  				case 'EditUIPrefs':
  				default:

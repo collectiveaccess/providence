@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,10 +35,10 @@
    */
  
  
-define('__CA_ACL_NO_ACCESS__', 0);
-define('__CA_ACL_READONLY_ACCESS__', 1);
-define('__CA_ACL_EDIT_ACCESS__', 2);
-define('__CA_ACL_EDIT_DELETE_ACCESS__', 3);
+if(!defined('__CA_ACL_NO_ACCESS__')) { define('__CA_ACL_NO_ACCESS__', 0); }
+if(!defined('__CA_ACL_READONLY_ACCESS__')) { define('__CA_ACL_READONLY_ACCESS__', 1); }
+if(!defined('__CA_ACL_EDIT_ACCESS__')) { define('__CA_ACL_EDIT_ACCESS__', 2); }
+if(!defined('__CA_ACL_EDIT_DELETE_ACCESS__')) { define('__CA_ACL_EDIT_DELETE_ACCESS__', 3); }
  
  BaseModel::$s_ca_models_definitions['ca_acl'] = array(
  	'NAME_SINGULAR' 	=> _t('access control list'),
@@ -193,20 +193,7 @@ class ca_acl extends BaseModel {
 	
 	static $s_acl_access_value_cache = array();
 	
-	# ------------------------------------------------------
-	# --- Constructor
-	#
-	# This is a function called when a new instance of this object is created. This
-	# standard constructor supports three calling modes:
-	#
-	# 1. If called without parameters, simply creates a new, empty objects object
-	# 2. If called with a single, valid primary key value, creates a new objects object and loads
-	#    the record identified by the primary key value
-	#
-	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
-	}
+
 	# ------------------------------------------------------
 	/**
 	 * Checks access control list for the specified row and user and returns an access value. Values are:
@@ -439,4 +426,3 @@ class ca_acl extends BaseModel {
 	}
 	# ------------------------------------------------------
 }
-?>

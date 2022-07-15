@@ -29,6 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
+use PHPUnit\Framework\TestCase;
 
 require_once(__CA_BASE_DIR__ . '/tests/plugins/AbstractPluginIntegrationTest.php');
 require_once(__CA_LIB_DIR__ . '/ApplicationPluginManager.php');
@@ -46,7 +47,7 @@ ApplicationPluginManager::initPlugins();
  */
 class RelationshipGeneratorPluginIntegrationTest extends AbstractPluginIntegrationTest {
 
-	public static function setUpBeforeClass() {
+	public static function setUpBeforeClass() :void {
 		self::_init();
 		self::_processConfiguration(__DIR__ . '/conf/integration', 'conf/relationshipGenerator.conf.template', 'conf/relationshipGenerator.conf');
 		self::_switchInTestPlugin('relationshipGenerator', new relationshipGeneratorPlugin(__DIR__ . '/conf/integration'));
@@ -67,7 +68,7 @@ class RelationshipGeneratorPluginIntegrationTest extends AbstractPluginIntegrati
 		self::_createCollection('collection5');
 	}
 
-	public static function tearDownAfterClass() {
+	public static function tearDownAfterClass() : void {
 		self::_switchOutTestPlugin('relationshipGenerator');
 		self::_cleanup();
 	}

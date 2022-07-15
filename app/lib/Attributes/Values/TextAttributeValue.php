@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -97,6 +97,30 @@
 			'label' => _t('Does not use locale setting'),
 			'description' => _t('Check this option if you don\'t want your text to be locale-specific. (The default is to be.)')
 		),
+		'singleValuePerLocale' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow single value per locale'),
+			'description' => _t('Check this option to restrict entry to a single value per-locale.')
+		),
+		'allowDuplicateValues' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow duplicate values?'),
+			'description' => _t('Check this option if you want to allow duplicate values to be set when element is not in a container and is repeating.')
+		),
+		'raiseErrorOnDuplicateValue' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Show error message for duplicate values?'),
+			'description' => _t('Check this option to show an error message when value is duplicate and <em>allow duplicate values</em> is not set.')
+		),
 		'canBeUsedInSort' => array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_CHECKBOXES,
@@ -119,7 +143,7 @@
 			'default' => 'value',
 			'width' => 20, 'height' => 1,
 			'label' => _t('Sort suggested values by?'),
-			'description' => _t('If suggestion of existing values is enabled this option determines how returned values are sorted. Choose <i>value</i> to sort alphabetically. Choose <i>most recently added </i> to sort with most recently entered values first.'),
+			'description' => _t('If suggestion of existing values is enabled this option determines how returned values are sorted. Choose <em>value</em> to sort alphabetically. Choose <em>most recently added </em> to sort with most recently entered values first.'),
 			'options' => array(
 				_t('Value') => 'value',
 				_t('Most recently added') => 'recent'
@@ -131,7 +155,7 @@
 			'width' => 70, 'height' => 4,
 			'default' => '',
 			'label' => _t('Default text'),
-			'description' => _t('Text to pre-populate a newly created attribute with')
+			'description' => _t('Text to pre-populate a newly created attribute with. You may use the following tags to include information about the currently logged in user: <em>^currentuser.fname</em> (user first name), <em>^currentuser.lname</em> (user last name), <em>^currentuser.email</em> (user email address) and  <em>^currentuser.user_name</em> (login name),  ')
 		),
 		'canBeUsedInSearchForm' => array(
 			'formatType' => FT_NUMBER,
@@ -172,7 +196,7 @@
 			'width' => 90, 'height' => 4,
 			'label' => _t('Display template'),
 			'validForRootOnly' => 1,
-			'description' => _t('Layout for value when used in a display (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^my_element_code</i>.')
+			'description' => _t('Layout for value when used in a display (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <em>^my_element_code</em>.')
 		),
 		'displayDelimiter' => array(
 			'formatType' => FT_TEXT,
@@ -368,14 +392,15 @@
  					'value' => '{{'.$pa_element_info['element_id'].'}}', 
  					'maxlength' => $va_settings['maxChars'],
  					'class' => $vs_class,
- 					'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 'class' => "{$vs_class}".($va_settings['usewysiwygeditor'] ? " ckeditor" : '')
+ 					'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 'class' => "{$vs_class}".($va_settings['usewysiwygeditor'] ? " ckeditor-element" : '')
  				);
  			if (caGetOption('readonly', $pa_options, false)) { 
  				$va_opts['disabled'] = 1;
  			}
  			$vs_element .= caHTMLTextInput(
  				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 
- 				$va_opts
+ 				$va_opts,
+ 				['textAreaTagName' => caGetOption('textAreaTagName', $pa_options, null)]
  			);
 
 			if (isset($va_settings['mustBeUnique']) && $va_settings['mustBeUnique']) {
@@ -397,6 +422,7 @@
  				
  				$o_dimensions_config = Configuration::load(__CA_APP_DIR__."/conf/dimensions.conf");
  				$va_parser_opts = [];
+ 				
  				foreach([
                         'inch_decimal_precision', 'feet_decimal_precision', 'mile_decimal_precision', 
                         'millimeter_decimal_precision', 'centimeter_decimal_precision', 'meter_decimal_precision', 
@@ -404,7 +430,9 @@
                         'use_unicode_fraction_glyphs_for', 'display_fractions_for', 
                         'add_period_after_units', 
                         'use_inches_for_display_up_to', 'use_feet_for_display_up_to', 'use_millimeters_for_display_up_to', 
-                        'use_centimeters_for_display_up_to', 'use_meters_for_display_up_to'
+                        'use_centimeters_for_display_up_to', 'use_meters_for_display_up_to',
+                        'force_meters_for_all_when_dimension_exceeds', 'force_centimeters_for_all_when_dimension_exceeds', 'force_millimeters_for_all_when_dimension_exceeds',
+                        'force_feet_for_all_when_dimension_exceeds', 'force_inches_for_all_when_dimension_exceeds'
  			        ] as $vs_key) {
  				    $vs_proc_key = caSnakeToCamel($vs_key);
  				    $va_parser_opts[$vs_proc_key] = $o_dimensions_config->get($vs_key);
@@ -414,7 +442,7 @@
  				    caDisplayTemplateParser.setOptions(".json_encode($va_parser_opts).");
  					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(caDisplayTemplateParser.processDependentTemplate('".addslashes(preg_replace("![\r\n]+!", " ", $va_settings['dependentValueTemplate']))."', ".json_encode($va_element_dom_ids, JSON_FORCE_OBJECT).", true, {$vs_omit_units}));
  				";
- 				$vs_element .= "jQuery('".join(", ", $va_element_dom_ids)."').on('keyup', function(e) { 
+ 				$vs_element .= "jQuery('".join(", ", $va_element_dom_ids)."').on('keyup change', function(e) { 
  					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(caDisplayTemplateParser.processDependentTemplate('".addslashes(preg_replace("![\r\n]+!", " ", $va_settings['dependentValueTemplate']))."', ".json_encode($va_element_dom_ids, JSON_FORCE_OBJECT).", true, {$vs_omit_units}));
  				});";
  				
@@ -493,4 +521,3 @@
 		}
  		# ------------------------------------------------------------------
 	}
- ?>

@@ -138,6 +138,7 @@
       <xs:enumeration value="Taxonomy"/>
       <xs:enumeration value="InformationService"/>
       <xs:enumeration value="Objects"/>
+      <xs:enumeration value="ObjectLots"/>
       <xs:enumeration value="Entities"/>
       <xs:enumeration value="Places"/>
       <xs:enumeration value="Occurrences"/>
@@ -146,6 +147,9 @@
       <xs:enumeration value="Movements"/>
       <xs:enumeration value="StorageLocations"/>
       <xs:enumeration value="ObjectRepresentations"/>
+      <xs:enumeration value="Color"/>
+      <xs:enumeration value="Filesize"/>
+      <xs:enumeration value="FloorPlan"/>
     </xs:restriction>
   </xs:simpleType>
 
@@ -192,6 +196,7 @@
             <xs:element name="description" type="xs:string" minOccurs="0" maxOccurs="1"/>
           </xs:sequence>
           <xs:attribute name="locale" type="localeType" use="required"/>
+          <xs:attribute name="preferred" type="booleanType" />
         </xs:complexType>
       </xs:element>
     </xs:sequence>
@@ -448,6 +453,48 @@
         <xs:complexType>
           <xs:sequence>
             <xs:element name="labels" type="screenLabels" minOccurs="1" maxOccurs="1"/>
+            
+            <xs:element name="userAccess" minOccurs="0" maxOccurs="1">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="permission" minOccurs="1" maxOccurs="unbounded">
+                    <xs:complexType>
+                      <xs:attribute name="user" type="xs:string" use="required"/>
+                      <xs:attribute name="access" type="acPermissionList"
+                        use="required"/>
+                    </xs:complexType>
+                  </xs:element>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+            
+            <xs:element name="groupAccess" minOccurs="0" maxOccurs="1">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="permission" minOccurs="1" maxOccurs="unbounded">
+                    <xs:complexType>
+                      <xs:attribute name="group" type="xs:string" use="required"/>
+                      <xs:attribute name="access" type="acPermissionList"
+                        use="required"/>
+                    </xs:complexType>
+                  </xs:element>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+            
+            <xs:element name="roleAccess" minOccurs="0" maxOccurs="1">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="permission" minOccurs="1" maxOccurs="unbounded">
+                    <xs:complexType>
+                      <xs:attribute name="role" type="xs:string" use="required"/>
+                      <xs:attribute name="access" type="acPermissionList" use="required"/>
+                    </xs:complexType>
+                  </xs:element>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+            
             <xs:element name="typeRestrictions" minOccurs="0" maxOccurs="1">
               <xs:complexType>
                 <xs:sequence>
@@ -621,6 +668,20 @@
           </xs:sequence>
         </xs:complexType>
       </xs:element>
+      
+      <xs:element name="roleAccess" minOccurs="0" maxOccurs="1">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="permission" minOccurs="1" maxOccurs="unbounded">
+              <xs:complexType>
+                <xs:attribute name="role" type="xs:string" use="required"/>
+                <xs:attribute name="access" type="acPermissionListNotifications" use="required"/>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      
     </xs:sequence>
     <xs:attribute name="code" type="elementCodeType" use="required"/>
     <xs:attribute name="type" type="xs:string" use="required"/>
@@ -786,6 +847,7 @@
 
                   <!-- entry attributes -->
                   <xs:attribute name="bundle" type="bundleType" use="required"/>
+                  <xs:attribute name="table" type="xs:string" use="required"/>
                   <xs:attribute name="deleted" type="booleanType" use="optional"/>
 
                 </xs:complexType>
@@ -845,6 +907,19 @@
                               <xs:attribute name="group" type="xs:string" use="required"/>
                               <xs:attribute name="access" type="acPermissionListNoNone"
                                 use="required"/>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    
+                    <xs:element name="roleAccess" minOccurs="0" maxOccurs="1">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="permission" minOccurs="1" maxOccurs="unbounded">
+                            <xs:complexType>
+                              <xs:attribute name="role" type="xs:string" use="required"/>
+                              <xs:attribute name="access" type="acPermissionListNoNone" use="required"/>
                             </xs:complexType>
                           </xs:element>
                         </xs:sequence>
@@ -1067,6 +1142,19 @@
                         </xs:sequence>
                       </xs:complexType>
                     </xs:element>
+                    
+                    <xs:element name="roleAccess" minOccurs="0" maxOccurs="1">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="permission" minOccurs="1" maxOccurs="unbounded">
+                            <xs:complexType>
+                              <xs:attribute name="role" type="xs:string" use="required"/>
+                              <xs:attribute name="access" type="acPermissionListNoNone" use="required"/>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
 
                     <xs:element name="bundlePlacements" type="bundlePlacements" minOccurs="1"
                       maxOccurs="1"/>
@@ -1149,6 +1237,19 @@
                               <xs:attribute name="group" type="xs:string" use="required"/>
                               <xs:attribute name="access" type="acPermissionListNoNone"
                                 use="required"/>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    
+                    <xs:element name="roleAccess" minOccurs="0" maxOccurs="1">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="permission" minOccurs="1" maxOccurs="unbounded">
+                            <xs:complexType>
+                              <xs:attribute name="role" type="xs:string" use="required"/>
+                              <xs:attribute name="access" type="acPermissionListNoNone" use="required"/>
                             </xs:complexType>
                           </xs:element>
                         </xs:sequence>

@@ -62,7 +62,7 @@ if($vo_result->numHits() > 0) {
 <div id="searchOptionsBox">
 	<div class="bg">
 		<?php
-		print caFormTag($this->request, 'Index', 'caSearchOptionsForm',  null , 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
+		print caFormTag($this->request, 'Index', 'caSearchOptionsForm',  null , 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
 
 		print "<div class='col'>";
 		print _t("Sort").": <select name='sort' style='width: 70px;'>\n";

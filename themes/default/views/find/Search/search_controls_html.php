@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,32 +38,31 @@
 	if (!$this->request->isAjax()) {
 		if (!$this->getVar('uses_hierarchy_browser')) {
 ?>
-		<?php print caFormTag($this->request, 'Index', 'BasicSearchForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); ?>
+		<?php print caFormTag($this->request, 'Index', 'BasicSearchForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); ?>
 <?php 
 			print caFormControlBox(
-				'<div class="simple-search-box">'._t('Search').': <input type="text" id="BasicSearchInput" name="search" value="'.htmlspecialchars($this->getVar('search'), ENT_QUOTES, 'UTF-8').'" size="40"/>'.$vs_type_id_form_element.'</div>',
-				'<a href="#" onclick="caSaveSearch(\'BasicSearchForm\', jQuery(\'#BasicSearchInput\').val(), [\'search\']); return false;" class="button">'._t('Save search').' &rsaquo;</a>',
+				'<div class="simple-search-box">'._t('Search').': <input type="text" id="BasicSearchInput" name="search" value="'.htmlspecialchars($this->getVar('search'), ENT_QUOTES, 'UTF-8').'" size="80"/>'.$vs_type_id_form_element.'</div><br/><a href="#" onclick="caSaveSearch(\'BasicSearchForm\', jQuery(\'#BasicSearchInput\').val(), [\'search\']); return false;" class="inline-button-small">'.caNavIcon($this->request, __CA_NAV_ICON_SAVE__).' '._t('Save').'</a>',
+				'',
 				caFormSearchButton($this->request, __CA_NAV_ICON_SEARCH__, _t("Search"), 'BasicSearchForm')
 			); 
 ?>
 		</form>
 	<?php
 		} else {
-			print caFormTag($this->request, 'Index', 'BasicSearchForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
+			print caFormTag($this->request, 'Index', 'BasicSearchForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
 				print caFormControlBox(
-					'<div class="simple-search-box">'._t('Search').': <input type="text" id="BasicSearchInput" name="search" value="'.htmlspecialchars($this->getVar('search'), ENT_QUOTES, 'UTF-8').'" size="40"/></div>'.
-						caFormJSButton($this->request, __CA_NAV_ICON_SEARCH__, _t("Search"), 'submitSearch', array(), 
-						array('href' => '#', 'onclick' => 'caCloseBrowser(); jQuery("#resultBox").load("'.caNavUrl($this->request, 'find', $this->request->getController(), 'Index', array('search' => '')).'" + escape(jQuery("#BasicSearchInput").attr("value"))); return false;')),
-
-						//caFormSubmitButton($this->request, __CA_NAV_BUTTON_SEARCH__, _t("Search"), 'BasicSearchForm'),
-
-					'<a href="#" onclick="caSaveSearch(\'BasicSearchForm\', jQuery(\'#BasicSearchInput\').val(), [\'search\']); return false;" class="button">'._t('Save search').' &rsaquo;</a>',
-					'<a href="#" id="browseToggle" class="form-button"></a>'
+					'<div class="simple-search-box">'._t('Search').': <input type="text" id="BasicSearchInput" name="search" value="'.htmlspecialchars($this->getVar('search'), ENT_QUOTES, 'UTF-8').'" size="40"/></div><br/><a href="#" onclick="caSaveSearch(\'BasicSearchForm\', jQuery(\'#BasicSearchInput\').val(), [\'search\']); return false;" class="inline-button-small">'.caNavIcon($this->request, __CA_NAV_ICON_SAVE__).' '._t('Save').'</a>',
+					'<a href="#" id="browseToggle" class="form-button"></a>',
+					caFormJSButton($this->request, __CA_NAV_ICON_SEARCH__, _t("Search"), 'submitSearch', [], 
+						['href' => '#', 'onclick' => 'caCloseBrowser(); jQuery("#resultBox").load("'.caNavUrl($this->request, 'find', $this->request->getController(), 'Index', ['search' => '']).'" + escape(jQuery("#BasicSearchInput").attr("value"))); return false;'])
 				); 
 	?>
+	
 			</form>
 			<div id="browse">
-				<div class='subTitle' style='background-color: #eeeeee; padding:5px 0px 5px 5px;'><?php print _t("Hierarchy"); ?></div>
+				<div class='subTitle' style='background-color: #eeeeee; padding:5px 0px 5px 5px;'>
+					<?= _t("Hierarchy"); ?>
+				</div>
 	<?php
 		if ($this->request->user->canDoAction('can_edit_'.$vs_table) && ($this->getVar('num_types') > 0)) {	
 	?>
@@ -141,16 +140,16 @@
 					jQuery("#browseToggle").click(function() {
 						jQuery("#browse").slideToggle(350, function() { 
 							stateCookieJar.set('<?php print $vs_table; ?>BrowserIsClosed', (this.style.display == 'block') ? 0 : 1); 
-							jQuery("#browseToggle").html((this.style.display == 'block') ? '<?php print '<span class="form-button">'.addslashes(_t('Close hierarchy viewer')).'</span>';?>' : '<?php print '<span class="form-button">'._t('Open hierarchy viewer').'</span>';?>');
+							jQuery("#browseToggle").html((this.style.display == 'block') ? '<?= '<span class="form-button">'.addslashes(_t('Hide hierarchy ')).'</span>';?>' : '<?= '<span class="form-button">'._t('Show hierarchy').'</span>';?>');
 						}); 
 						return false;
 					});
 					
 					if (<?php print ($this->getVar('force_hierarchy_browser_open') ? 'true' : "!stateCookieJar.get('{$vs_table}BrowserIsClosed')"); ?>) {
-						jQuery("#browseToggle").html('<?php print '<span class="form-button">'.addslashes(_t('Close hierarchy viewer')).'</span>';?>');
+						jQuery("#browseToggle").html('<?= '<span class="form-button">'.addslashes(_t('Hide hierarchy')).'</span>';?>');
 					} else {
 						jQuery("#browse").hide();
-						jQuery("#browseToggle").html('<?php print '<span class="form-button">'.addslashes(_t('Open hierarchy viewer')).'</span>';?>');
+						jQuery("#browseToggle").html('<?= '<span class="form-button">'.addslashes(_t('Show hierarchy')).'</span>';?>');
 					}
 				});
 				
@@ -167,7 +166,10 @@
 					}
 				}
 				function _navigateToNewForm(type_id) {
-					document.location = '<?php print caEditorUrl($this->request, $vs_table, 0); ?>/type_id/' + type_id + '/parent_id/' + oHierBrowser.getSelectedItemID();
+				    if (type_id === undefined) { type_id = -1; }
+				    var parent_id = oHierBrowser.getSelectedItemID();
+				    if (parent_id === undefined) { parent_id = -1; }
+					document.location = '<?php print caEditorUrl($this->request, $vs_table, 0); ?>/type_id/' + type_id + '/parent_id/' + parent_id;
 				}
 			</script>
 				<!--- END HIERARCHY BROWSER --->
@@ -187,8 +189,10 @@
 		vals['_field_list'] = field_names					// an array for form fields to expect
 		jQuery.getJSON('<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), "addSavedSearch"); ?>', vals, function(data, status) {
 			if ((data) && (data.md5)) {
-				jQuery('.savedSearchSelect').prepend(jQuery("<option></option>").attr("value", data.md5).text(data.label)).attr('selectedIndex', 0);
-					
+				jQuery('.savedSearchSelect').prepend(jQuery("<option></option>").attr("value", data.md5).text(data.label)).attr('selectedIndex', 0);		
+				jQuery.jGrowl("<?= addslashes(_t('Saved search')); ?>" + ' <em>' + data.label + '</em>'); 
+			} else {
+				jQuery.jGrowl("<?= addslashes(_t('Could not save search')); ?>"); 
 			}
 		});
 	}

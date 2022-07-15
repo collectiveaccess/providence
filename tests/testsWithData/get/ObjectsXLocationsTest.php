@@ -29,6 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
+use PHPUnit\Framework\TestCase;
 
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
 
@@ -43,7 +44,7 @@ class ObjectsXLocationsTest extends BaseTestWithData {
 	 */
 	private $opt_object = null;
 	# -------------------------------------------------------
-	public function setUp() {
+	protected function setUp() : void {
 		// don't forget to call parent so that the request is set up
 		parent::setUp();
 
@@ -73,6 +74,30 @@ class ObjectsXLocationsTest extends BaseTestWithData {
 		));
 
 		$this->assertGreaterThan(0, $vn_room_id);
+		
+		$vn_drawer_id = $this->addTestRecord('ca_storage_locations', array(
+			'intrinsic_fields' => array(
+				'type_id' => 'shelf',
+				'parent_id' => $vn_room_id,
+			),
+			'preferred_labels' => array(
+				array(
+					"locale" => "en_US",
+					"name" => "My Shelf",
+				),
+			),
+			'related' => array(
+				'ca_objects' => array(
+					array(
+						'object_id' => $vn_object_id,
+						'type_id' => 'related',
+						'effective_date' => '2015'
+					)
+				),
+			),
+		));
+
+		$this->assertGreaterThan(0, $vn_drawer_id);
 
 		$vn_cabinet_id = $this->addTestRecord('ca_storage_locations', array(
 			'intrinsic_fields' => array(
@@ -98,30 +123,6 @@ class ObjectsXLocationsTest extends BaseTestWithData {
 
 		$this->assertGreaterThan(0, $vn_cabinet_id);
 
-		$vn_drawer_id = $this->addTestRecord('ca_storage_locations', array(
-			'intrinsic_fields' => array(
-				'type_id' => 'shelf',
-				'parent_id' => $vn_room_id,
-			),
-			'preferred_labels' => array(
-				array(
-					"locale" => "en_US",
-					"name" => "My Shelf",
-				),
-			),
-			'related' => array(
-				'ca_objects' => array(
-					array(
-						'object_id' => $vn_object_id,
-						'type_id' => 'related',
-						'effective_date' => '2015'
-					)
-				),
-			),
-		));
-
-		$this->assertGreaterThan(0, $vn_drawer_id);
-
 		$this->opt_object = new ca_objects($vn_object_id);
 	}
 	# -------------------------------------------------------
@@ -130,29 +131,17 @@ class ObjectsXLocationsTest extends BaseTestWithData {
 			'delimiter' => '; ',
 			'hierarchyDelimiter' => ' > '
 		));
-		$this->assertEquals('A Room > My Cabinet; A Room > My Shelf', $vm_ret);
-
-		$vm_ret = $this->opt_object->get('ca_storage_locations', array(
-			'showCurrentOnly' => true
-		));
-		$this->assertEquals('My Shelf', $vm_ret);
-
-		$vm_ret = $this->opt_object->get('ca_storage_locations.hierarchy.preferred_labels.name', array(
-			'delimiter' => '; ',
-			'hierarchyDelimiter' => ' > ',
-			'showCurrentOnly' => true
-		));
-		$this->assertEquals('A Room > My Shelf', $vm_ret);
+		$this->assertEquals('A Room > My Shelf; A Room > My Cabinet', $vm_ret);
 
 		$vm_ret = $this->opt_object->get("ca_objects_x_storage_locations.effective_date");
-		$this->assertEquals('January 28 1985;2015', $vm_ret);
+		$this->assertEquals('2015;January 28 1985', $vm_ret);
 
 		$vm_ret = $this->opt_object->get("ca_objects_x_storage_locations.effective_date", array('getDirectDate' => true));
-		$this->assertEquals($vm_ret, '1985.01280000000000000000;2015.01010000000000000000');
+		$this->assertEquals($vm_ret, '2015.01010000000000000000;1985.01280000000000000000');
 
 		// try legacy version of same option
 		$vm_ret = $this->opt_object->get("ca_objects_x_storage_locations.effective_date", array('GET_DIRECT_DATE' => true));
-		$this->assertEquals($vm_ret, '1985.01280000000000000000;2015.01010000000000000000');
+		$this->assertEquals($vm_ret, '2015.01010000000000000000;1985.01280000000000000000');
 	}
 	# -------------------------------------------------------
 }

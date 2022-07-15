@@ -35,6 +35,9 @@
  		public function Index() {
  			AssetLoadManager::register('tableList');
  			
+ 			if(!$this->request->user->canDoAction('can_view_search_log')) { 
+ 				throw new ApplicationException(_t('Cannot view search logs'));
+ 			}
  			$t_search_log = new Searchlog();
  			
  			$va_search_list = array();
@@ -53,4 +56,3 @@
  		}
  		# -------------------------------------------------------
  	}
- ?>

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2018 Whirl-i-Gig
+ * Copyright 2012-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,7 +35,6 @@
  */
 
 require_once(__CA_LIB_DIR__."/Configuration.php");
-require_once(__CA_LIB_DIR__."/Datamodel.php");
 require_once(__CA_MODELS_DIR__.'/ca_bundle_displays.php');
 require_once(__CA_MODELS_DIR__."/ca_lists.php");
 require_once(__CA_MODELS_DIR__."/ca_metadata_elements.php");
@@ -138,14 +137,17 @@ final class ConfigurationExporter {
 		$vo_root->appendChild($o_exporter->getRelationshipTypesAsDOM());
 		$vo_root->appendChild($o_exporter->getRolesAsDOM());
 		$vo_root->appendChild($o_exporter->getGroupsAsDOM());
-
+		
 		/* hack to import string XML to existing document, have to rewrite display exporter at some point */
-
 		$vo_fragment = $o_exporter->getDOM()->createDocumentFragment();
 		$vo_fragment->appendXML($o_exporter->getDisplaysAsXML());
 		$o_exporter->getDOM()->getElementsByTagName('profile')->item(0)->appendChild($vo_fragment);
 
 		$vo_root->appendChild($o_exporter->getSearchFormsAsDOM());
+		
+		if($users = $o_exporter->getUsersAsDOM()) {
+			$vo_root->appendChild($users);
+		}
 
 		/* hack for decent formatting */
 		$vs_string = $o_exporter->getDOM()->saveXML();
@@ -196,7 +198,7 @@ final class ConfigurationExporter {
 	}
 	# -------------------------------------------------------
 	public function getListsAsDOM() {
-		$qr_lists = $this->opo_db->query("SELECT * FROM ca_lists ORDER BY list_id");
+		$qr_lists = $this->opo_db->query("SELECT * FROM ca_lists WHERE deleted = 0 ORDER BY list_id");
 
 		$vo_lists = $this->opo_dom->createElement("lists");
 
@@ -386,7 +388,7 @@ final class ConfigurationExporter {
 
 		$vo_elements = $this->opo_dom->createElement("elementSets");
 
-		$qr_elements = $this->opo_db->query("SELECT * FROM ca_metadata_elements WHERE parent_id IS NULL ORDER BY element_id");
+		$qr_elements = $this->opo_db->query("SELECT * FROM ca_metadata_elements WHERE parent_id IS NULL AND deleted = 0 ORDER BY element_id");
 
 		$t_element = new ca_metadata_elements();
 
@@ -447,12 +449,22 @@ final class ConfigurationExporter {
 				foreach($t_element->getSettings() as $vs_setting => $va_values) {
 					if(is_null($va_values)) { continue; }
 					if(!is_array($va_values)) { $va_values = array($va_values); }
+					
+					switch($vs_setting) {
+						case 'restrictToTypes':
+						case 'restrict_to_types':
+							// Convert authority type restriction
+							if ($t = AuthorityAttributeValue::elementTypeToInstance($t_element->get('datatype'))) {
+								$va_values = caMakeTypeList($t->tableName(), $va_values);
+							}
+							break;
+					}
 					foreach($va_values as $vs_value) {
 						if ($t_element->isValidSetting($vs_setting)) {
 							// we export all settings (not just non-default) when we're running diff exports ..
 							// otherwise we only care about non default ones
 							if($this->opn_modified_after || ($vs_value != $va_available_settings[$vs_setting]["default"])) {
-								$vo_setting = $this->opo_dom->createElement("setting", $vs_value);
+								$vo_setting = $this->opo_dom->createElement("setting", caEscapeForXML($vs_value));
 								$vo_setting->setAttribute("name", $vs_setting);
 								$vo_settings->appendChild($vo_setting);
 								$vb_append_settings_element = true;
@@ -497,10 +509,15 @@ final class ConfigurationExporter {
 				if($t_restriction->get("type_id")) {
 					/** @var BaseRelationshipModel $t_instance */
 					$t_instance = Datamodel::getInstanceByTableNum($t_restriction->get("table_num"));
-					$vs_type_code = $t_instance->getTypeListCode();
-
-					$va_item = $t_list->getItemFromListByItemID($vs_type_code, $t_restriction->get("type_id"));
-					$vo_type = $this->opo_dom->createElement("type",$va_item["idno"]);
+					if ($t_instance instanceof BaseRelationshipModel) {
+						$vo_relationship_type = new ca_relationship_types($t_restriction->get('type_id'));
+						$vs_type = $vo_relationship_type->get('type_code');
+					} else {
+						$vs_type_code = $t_instance->getTypeListCode();
+						$va_item = $t_list->getItemFromListByItemID($vs_type_code, $t_restriction->get("type_id"));
+						$vs_type = $va_item['idno'];
+					}
+					$vo_type = $this->opo_dom->createElement("type",$vs_type);
 
 					$vo_restriction->appendChild($vo_type);
 				}
@@ -514,7 +531,7 @@ final class ConfigurationExporter {
 					$vo_settings = $this->opo_dom->createElement("settings");
 
 					foreach($va_restriction_settings as $vs_setting => $vs_value) {
-						$vo_setting = $this->opo_dom->createElement("setting",$vs_value);
+						$vo_setting = $this->opo_dom->createElement("setting", caEscapeForXML($vs_value));
 						$vo_setting->setAttribute("name", $vs_setting);
 						$vo_settings->appendChild($vo_setting);
 					}
@@ -536,7 +553,7 @@ final class ConfigurationExporter {
 		$t_element = new ca_metadata_elements();
 		$t_list = new ca_lists();
 
-		$qr_elements = $this->opo_db->query("SELECT * FROM ca_metadata_elements WHERE parent_id = ? ORDER BY element_id",$pn_parent_id);
+		$qr_elements = $this->opo_db->query("SELECT * FROM ca_metadata_elements WHERE parent_id = ? AND deleted = 0 ORDER BY `rank`",$pn_parent_id);
 		if(!$qr_elements->numRows()) {
 			return null;
 		}
@@ -577,7 +594,11 @@ final class ConfigurationExporter {
 					if(is_null($va_values)) { continue; }
 					if(!is_array($va_values)) { $va_values = array($va_values); }
 					foreach($va_values as $vs_value) {
-						$vo_setting = $this->opo_dom->createElement("setting",$vs_value);
+						if ($vs_setting === 'restrictToTypes'){
+							$t_item = new ca_list_items($vs_value);
+							$vs_value = $t_item->get('idno');
+						}
+						$vo_setting = $this->opo_dom->createElement("setting", caEscapeForXML($vs_value));
 						$vo_setting->setAttribute("name", $vs_setting);
 						$vo_settings->appendChild($vo_setting);
 					}
@@ -628,6 +649,7 @@ final class ConfigurationExporter {
 			$vo_entry = $this->opo_dom->createElement("entry");
 			$vo_dict->appendChild($vo_entry);
 			$vo_entry->setAttribute('bundle', $t_entry->get('bundle_name'));
+			$vo_entry->setAttribute('table', Datamodel::getTableName($t_entry->get('table_num')));
 
 			if(is_array($t_entry->getSettings())) {
 				$va_settings = array();
@@ -684,11 +706,11 @@ final class ConfigurationExporter {
 					$vo_rule->setAttribute('level', $va_rule['rule_level']);
 
 					// expression
-					if(isset($va_rule['expression']) && is_array($va_rule['expression']) && sizeof($va_rule['expression']) > 0) {
-						$vo_expression = $this->opo_dom->createElement('expression');
+					$vo_expression = $this->opo_dom->createElement('expression');
+					if(isset($va_rule['expression']) && $va_rule['expression']) {	
 						$vo_expression->appendChild(new DOMCdataSection($va_rule['expression']));
-						$vo_rule->appendChild($vo_expression);
 					}
+					$vo_rule->appendChild($vo_expression);
 
 					// rule settings
 					if(isset($va_rule['settings']) && is_array($va_rule['settings'])) {
@@ -759,10 +781,12 @@ final class ConfigurationExporter {
 		$qr_uis = $this->opo_db->query("SELECT * FROM ca_editor_uis ORDER BY ui_id");
 
 		while($qr_uis->nextRow()) {
+			$vs_type = Datamodel::getTableName($qr_uis->get("editor_type"));
+			if (!$vs_type) { continue; }
+			
 			$vo_ui = $this->opo_dom->createElement("userInterface");
 			$t_ui = new ca_editor_uis($qr_uis->get("ui_id"));
 
-			$vs_type = Datamodel::getTableName($qr_uis->get("editor_type"));
 
 			if(strlen($vs_code = $qr_uis->get("editor_code")) > 0) {
 				$vo_ui->setAttribute("code", $this->makeIDNO($vs_code));
@@ -835,11 +859,12 @@ final class ConfigurationExporter {
 				$vo_ui->appendChild($vo_user_access);
 
 				foreach($va_users as $va_user_info) {
+					if (($acc = $this->_convertUserGroupAccessToString(intval($va_user_info['access']))) === false) { continue; }
 					$vo_permission = $this->opo_dom->createElement("permission");
 					$vo_user_access->appendChild($vo_permission);
 
 					$vo_permission->setAttribute("user", $va_user_info["user_name"]);
-					$vo_permission->setAttribute("access", $this->_convertUserGroupAccessToString(intval($va_user_info['access'])));
+					$vo_permission->setAttribute("access", $acc);
 				}
 			}
 
@@ -849,17 +874,34 @@ final class ConfigurationExporter {
 				$vo_ui->appendChild($vo_group_access);
 
 				foreach($va_groups as $va_group_info) {
+					if (($acc = $this->_convertUserGroupAccessToString(intval($va_group_info['access']))) === false) { continue; }
 					$vo_permission = $this->opo_dom->createElement("permission");
 					$vo_group_access->appendChild($vo_permission);
 
 					$vo_permission->setAttribute("group", $va_group_info["code"]);
-					$vo_permission->setAttribute("access", $this->_convertUserGroupAccessToString(intval($va_group_info['access'])));
+					$vo_permission->setAttribute("access", $acc);
+				}
+			}
+			
+			$va_roles = $t_ui->getUserRoles();
+			if(is_array($va_roles) && (sizeof($va_roles)>0)) {
+				$vo_role_access = $this->opo_dom->createElement("roleAccess");
+				$vo_ui->appendChild($vo_role_access);
+
+				foreach($va_roles as $va_role_info) {
+					if (($acc = $this->_convertUserGroupAccessToString(intval($va_role_info['access']))) === false) { continue; }
+					
+					$vo_permission = $this->opo_dom->createElement("permission");
+					$vo_role_access->appendChild($vo_permission);
+
+					$vo_permission->setAttribute("role", $va_role_info["code"]);
+					$vo_permission->setAttribute("access", $acc);
 				}
 			}
 
 			// screens
 			$vo_screens = $this->opo_dom->createElement("screens");
-			$qr_screens = $this->opo_db->query("SELECT * FROM ca_editor_ui_screens WHERE parent_id IS NOT NULL AND ui_id=? ORDER BY rank,screen_id",$qr_uis->get("ui_id"));
+			$qr_screens = $this->opo_db->query("SELECT * FROM ca_editor_ui_screens WHERE parent_id IS NOT NULL AND ui_id=? ORDER BY `rank`,screen_id",$qr_uis->get("ui_id"));
 
 			$t_screen = new ca_editor_ui_screens();
 
@@ -915,15 +957,64 @@ final class ConfigurationExporter {
 				}
 
 				$vo_screen->appendChild($vo_labels);
+				
+				// User and group access
+                $va_users = $t_screen->getUsers();
+                if(is_array($va_users) && (sizeof($va_users)>0)) {
+                    $vo_user_access = $this->opo_dom->createElement("userAccess");
+                    $vo_screen->appendChild($vo_user_access);
+
+                    foreach($va_users as $va_user_info) {
+                    	if (($acc = $this->_convertUserGroupAccessToString(intval($va_user_info['access']))) === false) { continue; }
+					
+                        $vo_permission = $this->opo_dom->createElement("permission");
+                        $vo_user_access->appendChild($vo_permission);
+
+                        $vo_permission->setAttribute("user", $va_user_info["user_name"]);
+                        $vo_permission->setAttribute("access", $acc);
+                    }
+                }
+
+                $va_groups = $t_screen->getUserGroups();
+                if(is_array($va_groups) && (sizeof($va_groups)>0)) {
+                    $vo_group_access = $this->opo_dom->createElement("groupAccess");
+                    $vo_screen->appendChild($vo_group_access);
+
+                    foreach($va_groups as $va_group_info) {
+                    	if (($acc = $this->_convertUserGroupAccessToString(intval($va_group_info['access']))) === false) { continue; }
+					
+                        $vo_permission = $this->opo_dom->createElement("permission");
+                        $vo_group_access->appendChild($vo_permission);
+
+                        $vo_permission->setAttribute("group", $va_group_info["code"]);
+                        $vo_permission->setAttribute("access", $acc);
+                    }
+                }
+            
+                $va_roles = $t_screen->getUserRoles();
+                if(is_array($va_roles) && (sizeof($va_roles)>0)) {
+                    $vo_role_access = $this->opo_dom->createElement("roleAccess");
+                    $vo_screen->appendChild($vo_role_access);
+
+                    foreach($va_roles as $va_role_info) {
+                    	if (($acc = $this->_convertUserGroupAccessToString(intval($va_role_info['access']))) === false) { continue; }
+					
+                        $vo_permission = $this->opo_dom->createElement("permission");
+                        $vo_role_access->appendChild($vo_permission);
+
+                        $vo_permission->setAttribute("role", $va_role_info["code"]);
+                        $vo_permission->setAttribute("access", $acc);
+                    }
+                }
 
 				//$vo_type_restrictions = null;
 				if(is_array($t_screen->getTypeRestrictions()) && sizeof($t_screen->getTypeRestrictions())>0) {
-					//$vo_type_restrictions = $this->opo_dom->createElement("typeRestrictions");
+					$vo_type_restrictions = $this->opo_dom->createElement("typeRestrictions");
 
 					$va_types = [];
 					$vb_include_subtypes = false;
 					foreach($t_screen->getTypeRestrictions() as $va_restriction) {
-						//$vo_type_restriction = $this->opo_dom->createElement("restriction");
+						$vo_type_restriction = $this->opo_dom->createElement("restriction");
 
 						$t_instance = Datamodel::getInstanceByTableNum($va_restriction["table_num"]);
 						if($t_instance instanceof BaseRelationshipModel) {
@@ -938,11 +1029,11 @@ final class ConfigurationExporter {
 						}
 
 						if ($va_restriction['include_subtypes'] && !$vb_include_subtypes)  { $vb_include_subtypes = true; }
-						//$vo_type_restrictions->appendChild($vo_type_restriction);
+						$vo_type_restrictions->appendChild($vo_type_restriction);
 					}
 
 					if (is_array($va_types) && (sizeof($va_types) > 0)) {
-						$vo_screen->setAttribute("typeRestrictions", join(",", $va_types));
+						$vo_screen->setAttribute("typeRestrictions", join(",", array_unique($va_types)));
 						$vo_screen->setAttribute("includeSubtypes", $vb_include_subtypes ? 1 : 0);
 					}
 				}
@@ -957,13 +1048,13 @@ final class ConfigurationExporter {
 						$vo_placement = $this->opo_dom->createElement("placement");
 						$vo_placements->appendChild($vo_placement);
 
-						$vo_placement->setAttribute("code", $vs_code = $this->makeIDNO($va_placement["placement_code"], 30, $va_used_codes));
+						$vo_placement->setAttribute("code", $vs_code = $this->makeIDNO($va_placement["placement_code"], 100, $va_used_codes));
 
 						if (isset($va_placement['settings']['bundleTypeRestrictions']) && (is_array($va_type_restrictions = $va_placement['settings']['bundleTypeRestrictions']) || strlen($va_type_restrictions))) {
 							if($va_type_restrictions && !is_array($va_type_restrictions)) { $va_type_restrictions = [$va_type_restrictions]; }
 							
 							if (is_array($va_type_restrictions) && (sizeof($va_type_restrictions) > 0)) {
-								$vo_placement->setAttribute("typeRestrictions", join(",", caMakeTypeList($vs_type, $va_type_restrictions)));
+								$vo_placement->setAttribute("typeRestrictions", join(",", array_unique(caMakeTypeList($vs_type, $va_type_restrictions))));
 							}
 						}
 						if (isset($va_placement['settings']['bundleTypeRestrictionsIncludeSubtypes']) && (bool)$va_placement['settings']['bundleTypeRestrictionsIncludeSubtypes']) {
@@ -1113,7 +1204,7 @@ final class ConfigurationExporter {
 			}
 		}
 
-		$qr_types = $this->opo_db->query("SELECT * FROM ca_relationship_types WHERE parent_id= ? ORDER BY rank, type_id", [$pn_parent_id]);
+		$qr_types = $this->opo_db->query("SELECT * FROM ca_relationship_types WHERE parent_id= ? ORDER BY `rank`, type_id", [$pn_parent_id]);
 		if(!$qr_types->numRows() && !$this->opn_modified_after) { return false; }
 
 		while($qr_types->nextRow()) {
@@ -1370,6 +1461,53 @@ final class ConfigurationExporter {
 		return $vo_groups;
 	}
 	# -------------------------------------------------------
+	public function getUsersAsDOM() {
+		if (!$this->opo_config->get('configuration_export_user_logins')) { return null; }
+	
+		$t_user = new ca_users();
+
+		$vo_logins = $this->opo_dom->createElement("logins");
+
+		if($this->opn_modified_after && is_array($va_deleted = $this->getDeletedItemsFromChangeLogByIdno($t_role->tableNum(), 'code'))) {
+			foreach($va_deleted as $vs_deleted_idno) {
+				$vo_role = $this->opo_dom->createElement("role");
+				$vo_roles->appendChild($vo_role);
+				$vo_role->setAttribute("code", $vs_deleted_idno);
+				$vo_role->setAttribute("deleted", 1);
+
+				$this->printStatus(_t("Exporting deleted role %1", $vs_deleted_idno));
+			}
+		}
+
+		$qr_users = $this->opo_db->query("SELECT * FROM ca_users WHERE active = 1");
+
+		while($qr_users->nextRow()) {
+			$this->printStatus(_t("Exporting changes for user login %1", $qr_users->get("user_name")));
+
+			$t_user->load($qr_users->get("user_id"));
+
+			$vo_login = $this->opo_dom->createElement("login");
+			$vo_login->setAttribute("user_name", $t_user->get("user_name"));
+			$vo_login->setAttribute("password", caGenerateRandomPassword(8));
+			$vo_login->setAttribute("fname", $t_user->get("fname"));
+			$vo_login->setAttribute("lname", $t_user->get("lname"));
+			$vo_login->setAttribute("email", $t_user->get("email"));
+			
+			$roles = $t_user->getUserRoles();
+			if(is_array($roles) && sizeof($roles)) { 
+				foreach($roles as $role) {
+					$vo_role = $this->opo_dom->createElement("role");
+					$vo_role->setAttribute("code", $role['code']);
+					$vo_login->appendChild($vo_role);
+				}
+			}
+
+			$vo_logins->appendChild($vo_login);
+		}
+
+		return $vo_logins;
+	}
+	# -------------------------------------------------------
 	public function getSearchFormsAsDOM() {
 		$t_form = new ca_search_forms();
 		$vo_forms = $this->opo_dom->createElement("searchForms");
@@ -1441,13 +1579,13 @@ final class ConfigurationExporter {
 					if(is_array($va_value)) {
 						foreach($va_value as $vs_value) {
 							if(!is_array($vs_value)) { // ignore legacy search form settings which usually have nested arrays
-								$vo_setting = $this->opo_dom->createElement("setting",$vs_value);
+								$vo_setting = $this->opo_dom->createElement("setting", caEscapeForXML($vs_value));
 								$vo_setting->setAttribute("name", $vs_setting);
 								$vo_settings->appendChild($vo_setting);
 							}
 						}
 					} else {
-						$vo_setting = $this->opo_dom->createElement("setting",$va_value);
+						$vo_setting = $this->opo_dom->createElement("setting", caEscapeForXML($va_value));
 						$vo_setting->setAttribute("name", $vs_setting);
 						$vo_settings->appendChild($vo_setting);
 					}
@@ -1463,11 +1601,13 @@ final class ConfigurationExporter {
 				$vo_form->appendChild($vo_user_access);
 
 				foreach($va_users as $va_user_info) {
+					if (($acc = $this->_convertUserGroupAccessToString(intval($va_user_info['access']))) === false) { continue; }
+					
 					$vo_permission = $this->opo_dom->createElement("permission");
 					$vo_user_access->appendChild($vo_permission);
 
 					$vo_permission->setAttribute("user", $va_user_info["user_name"]);
-					$vo_permission->setAttribute("access", $this->_convertUserGroupAccessToString(intval($va_user_info['access'])));
+					$vo_permission->setAttribute("access", $acc);
 				}
 			}
 
@@ -1477,11 +1617,29 @@ final class ConfigurationExporter {
 				$vo_form->appendChild($vo_group_access);
 
 				foreach($va_groups as $va_group_info) {
+					if (($acc = $this->_convertUserGroupAccessToString(intval($va_group_info['access']))) === false) { continue; }
+					
 					$vo_permission = $this->opo_dom->createElement("permission");
 					$vo_group_access->appendChild($vo_permission);
 
 					$vo_permission->setAttribute("group", $va_group_info["code"]);
-					$vo_permission->setAttribute("access", $this->_convertUserGroupAccessToString(intval($va_group_info['access'])));
+					$vo_permission->setAttribute("access", $acc);
+				}
+			}
+			
+			$va_roles = $t_form->getUserRoles();
+			if(is_array($va_roles) && (sizeof($va_roles)>0)) {
+				$vo_role_access = $this->opo_dom->createElement("roleAccess");
+				$vo_form->appendChild($vo_role_access);
+
+				foreach($va_roles as $va_role_info) {
+					if (($acc = $this->_convertUserGroupAccessToString(intval($va_role_info['access']))) === false) { continue; }
+					
+					$vo_permission = $this->opo_dom->createElement("permission");
+					$vo_role_access->appendChild($vo_permission);
+
+					$vo_permission->setAttribute("role", $va_role_info["code"]);
+					$vo_permission->setAttribute("access", $acc);
 				}
 			}
 
@@ -1502,7 +1660,7 @@ final class ConfigurationExporter {
 					foreach($t_placement->getSettings() as $vs_setting => $va_values) {
 						if(is_array($va_values)) {
 							foreach($va_values as $vs_key => $vs_value) {
-								$vo_setting = $this->opo_dom->createElement("setting",$vs_value);
+								$vo_setting = $this->opo_dom->createElement("setting", caEscapeForXML($vs_value));
 								$vo_setting->setAttribute("name", $vs_setting);
 								if($vs_setting=="label" || $vs_setting=="add_label") {
 									if(is_numeric($vs_key)) { $vs_key = $this->opt_locale->localeIDToCode($vs_key); }
@@ -1511,7 +1669,7 @@ final class ConfigurationExporter {
 								$vo_settings->appendChild($vo_setting);
 							}
 						} else {
-							$vo_setting = $this->opo_dom->createElement("setting",$va_values);
+							$vo_setting = $this->opo_dom->createElement("setting", caEscapeForXML($va_values));
 							$vo_setting->setAttribute("name", $vs_setting);
 							$vo_settings->appendChild($vo_setting);
 						}
@@ -1609,7 +1767,9 @@ final class ConfigurationExporter {
 			if(is_array($va_users) && (sizeof($va_users)>0)) {
 				$vs_buf .= "\t\t<userAccess>\n";
 				foreach($va_users as $va_user_info) {
-					$vs_buf .= "\t\t\t<permission user='".$va_user_info["user_name"]."' access='".$this->_convertUserGroupAccessToString(intval($va_user_info['access']))."'/>\n";
+					if (($acc = $this->_convertUserGroupAccessToString(intval($va_user_info['access']))) === false) { continue; }
+					
+					$vs_buf .= "\t\t\t<permission user='".$va_user_info["user_name"]."' access='{$acc}'/>\n";
 				}
 
 				$vs_buf .= "\t\t</userAccess>\n";
@@ -1619,10 +1779,24 @@ final class ConfigurationExporter {
 			if(is_array($va_groups) && (sizeof($va_groups)>0)) {
 				$vs_buf .= "\t\t<groupAccess>\n";
 				foreach($va_groups as $va_group_info) {
-					$vs_buf .= "\t\t\t<permission group='".$va_group_info["code"]."' access='".$this->_convertUserGroupAccessToString(intval($va_group_info['access']))."'/>\n";
+					if (($acc = $this->_convertUserGroupAccessToString(intval($va_group_info['access']))) === false) { continue; }
+					
+					$vs_buf .= "\t\t\t<permission group='".$va_group_info["code"]."' access='{$acc}'/>\n";
 				}
 
 				$vs_buf .= "\t\t</groupAccess>\n";
+			}
+			
+			$va_roles = $t_display->getUserRoles();
+			if(is_array($va_roles) && (sizeof($va_roles)>0)) {
+				$vs_buf .= "\t\t<roleAccess>\n";
+				foreach($va_roles as $va_role_info) {
+					if (($acc = $this->_convertUserGroupAccessToString(intval($va_role_info['access']))) === false) { continue; }
+					
+					$vs_buf .= "\t\t\t<permission role='".$va_role_info["code"]."' access='{$acc}'/>\n";
+				}
+
+				$vs_buf .= "\t\t</roleAccess>\n";
 			}
 
 			$va_placements = $t_display->getPlacements();
@@ -1697,7 +1871,7 @@ final class ConfigurationExporter {
 	# -------------------------------------------------------
 	// Utilities
 	# -------------------------------------------------------
-	private function makeIDNO($ps_idno, $pn_length = 30, $pa_used_list=null) {
+	private function makeIDNO($ps_idno, $pn_length = 100, $pa_used_list=null) {
 		if(strlen($ps_idno)>0) {
 			$vs_code =  substr(preg_replace("/[^_a-zA-Z0-9]/","_",$ps_idno),0, $pn_length);
 		} else {
@@ -1742,8 +1916,8 @@ final class ConfigurationExporter {
 	 */
 	private function makeIDNOFromInstance($po_model_instance, $ps_field_name, $pa_used_list=null) {
 		$va_length = $po_model_instance->getFieldInfo($ps_field_name, 'BOUNDS_LENGTH');
-		// Previously this was always 30, so let's be conservative
-		$vn_max_length = isset($va_length[1]) ? $va_length[1] : 30;
+		
+		$vn_max_length = isset($va_length[1]) ? $va_length[1] : 100;
 		$vs_value = $po_model_instance->get($ps_field_name);
 		return $this->makeIDNO($vs_value, $vn_max_length, $pa_used_list);
 	}

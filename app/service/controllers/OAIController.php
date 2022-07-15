@@ -25,29 +25,28 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/Service/OAIPMHService.php');
-	require_once(__CA_LIB_DIR__.'/Service/BaseServiceController.php');
+require_once(__CA_LIB_DIR__.'/Service/OAIPMHService.php');
+require_once(__CA_LIB_DIR__.'/Service/BaseServiceController.php');
 
-	class OAIController extends BaseServiceController {
-		/**
-		 * OAI-PMH service instance does most of the work
-		 */
-		private $service;
-		
-		# -------------------------------------------------------
-		public function __construct(&$po_request, &$po_response, $pa_view_paths) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
- 		}
-		# -------------------------------------------------------
-		/**
-		 * Dispatch the request to the OAI-PMH service object
-		 */
-		public function __call($ps_provider, $pa_args){
-			$this->service = new OAIPMHService($this->request, $ps_provider);
-			$this->view->setVar('oaiData', $this->service->dispatch());
-			
-			$this->render('oai/oai_xml.php');
-		}
-		# -------------------------------------------------------
+class OAIController extends BaseServiceController {
+	/**
+	 * OAI-PMH service instance does most of the work
+	 */
+	private $service;
+	
+	# -------------------------------------------------------
+	public function __construct(&$po_request, &$po_response, $pa_view_paths) {
+		parent::__construct($po_request, $po_response, $pa_view_paths);
 	}
-?>
+	# -------------------------------------------------------
+	/**
+	 * Dispatch the request to the OAI-PMH service object
+	 */
+	public function __call($ps_provider, $pa_args){
+		$this->service = new OAIPMHService($this->request, $ps_provider);
+		$this->view->setVar('oaiData', $this->service->dispatch());
+		
+		$this->render('oai/oai_xml.php');
+	}
+	# -------------------------------------------------------
+}

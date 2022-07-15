@@ -475,7 +475,6 @@
 	 *	
 	 *		lat1,long1 ~ distance
 	 *			ex. 43.34,-74.23 ~ 5km
-	 *	[Area with
 	 */ 
 	function caParseGISSearch($ps_value) {
 		$ps_value = preg_replace('![ ]*,[ ]*!', ',', $ps_value);
@@ -501,9 +500,9 @@
 					if (!sizeof($va_tokens)) {
 						return array(
 							'min_latitude' => $vn_lat1,
-							'max_latitude' =>  $vn_lat1,
-							'min_longitude' =>  $vn_long1,
-							'max_longitude' =>  $vn_long1
+							'max_latitude' => $vn_lat1,
+							'min_longitude' => $vn_long1,
+							'max_longitude' => $vn_long1
 						);
 					}
 					
@@ -532,9 +531,9 @@
 					
 					return array(
 						'min_latitude' => ($vn_lat1 > $vn_lat2) ? $vn_lat2 : $vn_lat1,
-						'max_latitude' =>  ($vn_lat1 < $vn_lat2) ? $vn_lat2 : $vn_lat1,
-						'min_longitude' =>  ($vn_long1 > $vn_long2) ? $vn_long2 : $vn_long1,
-						'max_longitude' =>  ($vn_long1 < $vn_long2) ? $vn_long2 : $vn_long1,
+						'max_latitude' => ($vn_lat1 < $vn_lat2) ? $vn_lat2 : $vn_lat1,
+						'min_longitude' => ($vn_long1 > $vn_long2) ? $vn_long2 : $vn_long1,
+						'max_longitude' => ($vn_long1 < $vn_long2) ? $vn_long2 : $vn_long1,
 					);
 					break;
 				case 3:	// distance
@@ -662,4 +661,3 @@
 		return array();
 	}
 	# --------------------------------------------------------------------------------------------
-?>

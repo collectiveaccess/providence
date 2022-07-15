@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018 Whirl-i-Gig
+ * Copyright 2018-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -153,6 +153,7 @@ class ExportController extends ActionController {
 			throw new ApplicationException(_t("Configured display '%1' is not available", $display_code));
 		}
 		$qr = caMakeSearchResult('ca_objects', $items);
+		$qr->filterNonPrimaryRepresentations(false);
 		
 		$placements = $t_display->getPlacements(['format' => 'simple']);
 
@@ -162,19 +163,23 @@ class ExportController extends ActionController {
 				if(isset($v['settings']['label'][__CA_DEFAULT_LOCALE__])) { return $v['settings']['label'][__CA_DEFAULT_LOCALE__]; }
 				return array_shift($v['settings']['label']);
 			}
-			return $v['display']; 
+			if(isset($v['display'])) { return $v['display']; }
+			return "???"; 
 		}, $placements)), [_t('Media')]);
 		
 		$headers = array_map(function($v) {
-			$v = preg_replace("![\r\n\t]+!", " ", html_entity_decode($v, ENT_QUOTES, 'UTF-8'));
-			if (preg_match("![^A-Za-z0-9 .;]+!", $v)) {
-				$v = '"'.str_replace('"', '""', $v).'"';
+		    $v = preg_replace("![\r\n\t]+!u", " ", html_entity_decode($v, ENT_QUOTES));
+		    $v = preg_replace("![“”]+!u", '"', $v);
+		    $v = preg_replace("![‘’]+!u", "'", $v);
+			$v = iconv('UTF-8', 'ISO-8859-1//IGNORE', $v);
+			if (preg_match("![^A-Za-z0-9 .;\p{L}]+!u", $v)) {
+				$v = ('"'.str_replace('"', '""', $v).'"');
 			}
 			return $v;
 		; }, $headers);
-		$rows[] = join(",", $headers);
+		$rows[] = join("\t", $headers);
 		
-		$zip = new ZipFile();
+		$zip = new ZipFile(__CA_APP_DIR__."/tmp");
 		$seen_idnos = [];
 		
 		
@@ -185,7 +190,9 @@ class ExportController extends ActionController {
 			
 			$row = [];
 			foreach($placements as $placement_id => $placement_info) {
-				$v = preg_replace("![\r\n\t]+!", " ", html_entity_decode($t_display->getDisplayValue($qr, $placement_id, ['convert_codes_to_display_text' => true, 'convertLineBreaks' => false]), ENT_QUOTES, 'UTF-8'));
+				$v = preg_replace("![\r\n\t]+!", " ", iconv('UTF-8', 'ISO-8859-1//IGNORE', html_entity_decode(strip_tags($t_display->getDisplayValue($qr, $placement_id, ['convert_codes_to_display_text' => true, 'convertLineBreaks' => false, 'timeOmit' => true])), ENT_QUOTES, 'UTF-8')));
+				$v = preg_replace("!^[ ;]+!", "", $v);
+				$v = preg_replace("![ ;]+$!", "", $v);
 				if (preg_match("![^A-Za-z0-9 .;]+!", $v)) {
 					$v = '"'.str_replace('"', '""', $v).'"';
 				}
@@ -198,21 +205,23 @@ class ExportController extends ActionController {
 				    if (!file_exists($media_path)) { continue; }
 					$suffix = 0;
 					do {
-						$id = $idno.($suffix ? "-{$suffix}" : "");
+						$id = preg_replace("![^A-Za-z0-9\-\.]+!", "_", $idno.($suffix ? "-{$suffix}" : ""));
 						$suffix++;
 					} while(isset($seen_idnos[$id]));
 					
 					$zip->addFile($media_path, $media_refs[] = "{$id}.".pathinfo($media_path, PATHINFO_EXTENSION));
+					
+				    $seen_idnos[$id] = true;
 				}
-				$seen_idnos[$id] = true;
 			}
-			$row[] = join(",", $media_refs);
+			$row[] = join(";", $media_refs);
+			$row = array_map(function($v) { return preg_replace("![\t]+!", " ", $v); }, $row);
 			
-			$rows[] = join(',', $row);
+			$rows[] = join("\t", $row);
 			$o_progress->next(_t('Processing %1', $idno));
 		}
 		
-		$zip->addFile(join("\n", $rows), "artefacts_data.csv");
+		$zip->addFile(join("\n", $rows), "artefacts_data.txt");
 		
 		$zip_path = $zip->output(ZIPFILE_FILEPATH);
 		
@@ -220,8 +229,6 @@ class ExportController extends ActionController {
 		
 		$links = [caNavLink($this->request, _t('Download Artefacts Canada data as ZIP file (%1)', caHumanFilesize(filesize($new_path))), '', '*', '*', 'Download', ['job_id' => $job_id, 'download' => 1])];
 		
-		// TODO: support SFTP here?
-	
 		$o_progress->finish();
 		$job_info = $o_progress->getDataForJobID($job_id);
 		

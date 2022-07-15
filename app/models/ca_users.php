@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2018 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,7 +39,6 @@ require_once(__CA_APP_DIR__.'/models/ca_user_roles.php');
 include_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_APP_DIR__.'/models/ca_user_groups.php');
 require_once(__CA_APP_DIR__.'/models/ca_locales.php');
-require_once(__CA_LIB_DIR__.'/Zend/Currency.php');
 require_once(__CA_LIB_DIR__ . '/Auth/AuthenticationManager.php');
 require_once(__CA_LIB_DIR__."/SyncableBaseModel.php");
 
@@ -81,7 +80,7 @@ BaseModel::$s_ca_models_definitions['ca_users'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Password'), 'DESCRIPTION' => _t('The login password for this user. Passwords must be at least 4 characters and should ideally contain a combination of letters and numbers. Passwords are case-sensitive.'),
-				'BOUNDS_LENGTH' => array(4,100)
+				'BOUNDS_LENGTH' => array(1,100)
 		),
 		'fname' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -140,7 +139,7 @@ BaseModel::$s_ca_models_definitions['ca_users'] = array(
 				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_CHECKBOXES, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
-				'DEFAULT' => '',
+				'DEFAULT' => 1,
 				'LABEL' => _t('Account is activated?'), "DESCRIPTION" => "If checked, indicates user account is active. Only active users are allowed to log into the system.",
 				'BOUNDS_VALUE' => array(0,1)
 		),
@@ -292,15 +291,30 @@ class ca_users extends BaseModel {
 	/**
 	 * User and group role caches
 	 */
-	static $s_user_role_cache = array();
-	static $s_user_group_cache = array();
-	static $s_group_role_cache = array();
-	static $s_user_type_access_cache = array();
-	static $s_user_source_access_cache = array();
-	static $s_user_bundle_access_cache = array();
-	static $s_user_action_access_cache = array();
-	static $s_user_type_with_access_cache = array();
-	static $s_user_source_with_access_cache = array();
+	static $s_user_role_cache = [];
+	static $s_user_group_cache = [];
+	static $s_group_role_cache = [];
+	static $s_user_type_access_cache = [];
+	static $s_user_source_access_cache = [];
+	static $s_user_bundle_access_cache = [];
+	static $s_user_action_access_cache = [];
+	static $s_user_type_with_access_cache = [];
+	static $s_user_source_with_access_cache = [];
+
+	/**
+	 * Used by ca_users::getUserID() to cache user_id return values
+	 *
+	 * @var array
+	 */
+	static $s_user_id_cache = [];
+
+	/**
+	 * Used by ca_users::getUserName() to cache user_name return values
+	 *
+	 * @var array
+	 */
+	static $s_user_name_cache = [];
+	static $s_user_info_cache = [];
 
 	/**
 	 * List of tables that can have bundle- or type-level access control
@@ -323,11 +337,31 @@ class ca_users extends BaseModel {
 	#    the record identified by the primary key value
 	#
 	# ------------------------------------------------------
-	public function __construct($pn_id=null, $pb_use_cache=false) {
-		parent::__construct($pn_id, $pb_use_cache);	# call superclass constructor	
+	public function __construct($pn_id=null, ?array $options=null) {
+		parent::__construct($pn_id);	# call superclass constructor	
 		
 		$this->opo_auth_config = Configuration::load(__CA_CONF_DIR__.'/authentication.conf');
 		$this->opo_log = new Eventlog();
+	}
+	# ------------------------------------------------------
+	/**
+	 * Clear all internal caches
+	 *
+	 * @return void
+	 */ 
+	public static function clearCaches() {
+		self::$s_user_role_cache = [];
+		self::$s_user_group_cache = [];
+		self::$s_group_role_cache = [];
+		self::$s_user_type_access_cache = [];
+		self::$s_user_source_access_cache = [];
+		self::$s_user_bundle_access_cache = [];
+		self::$s_user_action_access_cache = [];
+		self::$s_user_type_with_access_cache = [];
+		self::$s_user_source_with_access_cache = [];
+		self::$s_user_id_cache = [];
+		self::$s_user_name_cache = [];
+		self::$s_user_info_cache = [];
 	}
 	# ----------------------------------------
 	/**
@@ -374,6 +408,13 @@ class ca_users extends BaseModel {
 			$this->postError(922, _t("Invalid email address"), 'ca_users->insert()');
 			return false;
 		}
+		
+		// check password policy	
+		if (!self::applyPasswordPolicy($this->get('password'))) {
+			$this->postError(922, _t("Password must %1", self::getPasswordPolicyAsText()), 'ca_users->insert()');
+			return false;
+		}
+		
 
 		# Confirmation key is an md5 hash than can be used as a confirmation token. The idea
 		# is that you create a new user record with the 'active' field set to false. You then
@@ -414,6 +455,104 @@ class ca_users extends BaseModel {
 	}
 	# ----------------------------------------
 	/**
+	 *
+	 */
+	static public function applyPasswordPolicy($password) {
+		$auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
+		if(strtolower($auth_config->get('auth_adapter')) !== 'causers') { return true; }	// password policies only apply to integral auth system
+		
+		if (is_array($policies = $auth_config->get('password_policies')) && sizeof($policies)) {
+			// check password policy
+			$builder = new \PasswordPolicy\PolicyBuilder(new \PasswordPolicy\Policy);
+			foreach($policies as $p) {
+				if (is_array($rules = caGetOption('rules', $p, null))) {
+					$builder->minPassingRules(caGetOption('min_passing_rules', $p, 1), function($b) use ($rules) {
+						foreach($rules as $k => $v) {
+							$k = caSnakeToCamel($k);
+							if (in_array($k, ['minLength', 'maxLegth', 'upperCase', 'lowerCase', 'digits', 'specialCharacters', 'doesNotContain'])) {
+								$b->{$k}($v);
+							}
+						}
+					});
+				} else {
+					foreach($p as $k => $v) {
+						$k = caSnakeToCamel($k);
+						if (in_array($k, ['minLength', 'maxLegth', 'upperCase', 'lowerCase', 'digits', 'specialCharacters', 'doesNotContain'])) {
+							$builder->{$k}($v);
+						}
+					}
+				}
+			}
+			
+				
+			$validator = new \PasswordPolicy\Validator($builder->getPolicy());
+			if(!$validator->attempt($password)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	static public function getPasswordPolicyAsText() {
+		$auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
+		if(strtolower($auth_config->get('auth_adapter')) !== 'causers') { return ''; }	// password policies only apply to integral auth system
+		
+		if (is_array($policies = $auth_config->get('password_policies')) && sizeof($policies)) {
+			$criteria = [];
+			foreach($policies as $p) {
+				if (is_array($rules = caGetOption('rules', $p, null))) {
+					foreach($rules as $k => $v) {
+						$group[] = self::_getPasswordPolicyRuleAsText($k, $v);
+					}
+					$criteria[] = _t('conform to at least %1 of the following: %2', caGetOption('min_passing_rules', $p, 1), join("; ", $group));
+				} else {
+					$group = [];
+					foreach($p as $k => $v) {
+						$criteria[] = self::_getPasswordPolicyRuleAsText($k, $v);
+					}
+				}
+			}
+	
+			return caMakeCommaListWithConjunction(array_filter($criteria, function($v) { return strlen($v); }));
+		}
+		return '';
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	static private function _getPasswordPolicyRuleAsText($rule, $value) {
+		$v = (int)$value;
+		switch($rule) {
+			case 'min_length':
+				return ($v == 1) ? _t('be at least %1 character long', $v) : _t('be at least %1 characters long', $v);
+				break;
+			case 'max_length':
+				return ($v == 1) ? _t('be not longer than %1 character', $v) : _t('be not longer than %1 characters', $v);
+				break;
+			case 'upper_case':
+				return ($v == 1) ? _t('have at least %1 upper-case character', $v) : _t('have at least %1 upper-case character', $v);
+				break;
+			case 'lower_case':
+				return ($v == 1) ? _t('have at least %1 lower-case character', $v) : _t('have at least %1 lower-case characters', $v);
+				break;
+			case 'digits':
+				return ($v == 1) ? _t('have at least %1 digit', $v) : _t('have at least %1 digits', $v);
+				break;
+			case 'special_characters':
+				return ($v == 1) ? _t('have at least %1 non-alphanumeric character', $v) : _t('have at least %1 non-alphanumeric characters', $v);
+				break;
+			case 'dont_not_contain':
+				return _t('not contain any of the following: %1', is_array($value) ? join(", ", $value) : $value);
+				break;
+		}
+		return null;
+	}
+	# ----------------------------------------
+	/**
 	 * Saves changes to user record. You must make sure all required user fields are set before calling this method. If errors occur you can use the standard Table class error handling methods to figure out what went wrong.
 	 *
 	 * Required fields are user_name, password, fname and lname.
@@ -432,8 +571,13 @@ class ca_users extends BaseModel {
 				return false;
 			}
 		}
-
+	
 		if($this->changed('password')) {
+			if (!self::applyPasswordPolicy($this->get('password'))) {
+				$this->postError(922, _t("Password must %1", self::getPasswordPolicyAsText()), 'ca_users->update()');
+				return false;
+			}
+			
 			try {
 				$vs_backend_password = AuthenticationManager::updatePassword($this->get('user_name'), $this->get('password'));
 				$this->set('password', $vs_backend_password);
@@ -684,7 +828,7 @@ class ca_users extends BaseModel {
 
 		$o_db = $this->getDb();
 		
-		$va_valid_sorts = array('lname,fname', 'user_name', 'email', 'last_login', 'active');
+		$va_valid_sorts = array('lname,fname', 'user_name', 'email', 'last_login', 'active', 'registered_on');
 		if (!in_array($ps_sort_field, $va_valid_sorts)) {
 			$ps_sort_field = 'lname,fname';
 		}
@@ -918,6 +1062,10 @@ class ca_users extends BaseModel {
 	/**
 	 * Get list of roles the current user has
 	 *
+	 *
+	 * @param array $options Options include:
+	 *		skipVars = Don't load role vars data. Skipping loading of vars may improve performance. [Default is false]
+	 *
 	 * @access public
 	 * @return array Returns associative array of roles. Key is role id, value is array containing information about the role.
 	 *
@@ -927,30 +1075,33 @@ class ca_users extends BaseModel {
 	 *		code		(a short code used for the role)
 	 *		description	(narrative description of role)
 	 */
-	public function getUserRoles() {
+	public function getUserRoles(?array $options=null) {
 		if ($pn_user_id = $this->getPrimaryKey()) {
-			if (isset(ca_users::$s_user_role_cache[$pn_user_id])) {
-				return ca_users::$s_user_role_cache[$pn_user_id];
+			$cache_key = caMakeCacheKeyFromOptions($options, $pn_user_id);
+			if (isset(ca_users::$s_user_role_cache[$cache_key])) {
+				return ca_users::$s_user_role_cache[$cache_key];
 			} else {
 				$o_db = $this->getDb();
+				
+				$skip_vars = caGetOption('skipVars', $options, false);
 				$qr_res = $o_db->query("
-					SELECT wur.role_id, wur.name, wur.code, wur.description, wur.rank, wur.vars
+					SELECT wur.role_id, wur.name, wur.code, wur.description, wur.`rank` ".($skip_vars ? '' : ', wur.vars')."
 					FROM ca_user_roles wur
 					INNER JOIN ca_users_x_roles AS wuxr ON wuxr.role_id = wur.role_id
 					WHERE wuxr.user_id = ?
 				", (int)$pn_user_id);
 				
-				$va_roles = array();
+				$va_roles = [];
 				while($qr_res->nextRow()) {
 					$va_row = $qr_res->getRow();
-					$va_row['vars'] = caUnserializeForDatabase($va_row['vars']);
+					$va_row['vars'] = $skip_vars ? [] : caUnserializeForDatabase($va_row['vars']);
 					$va_roles[$va_row['role_id']] = $va_row;
 				}
 				
-				return ca_users::$s_user_role_cache[$pn_user_id] = $va_roles;
+				return ca_users::$s_user_role_cache[$cache_key] = $va_roles;
 			}
 		} else {
-			return array();
+			return [];
 		}
 	}
 	# ----------------------------------------
@@ -1042,7 +1193,7 @@ class ca_users extends BaseModel {
 		$va_roles = $this->getRoleList();
 		$vs_buf = '';
 		if (sizeof($va_roles)) {
-			if(!$va_user_roles = $this->getUserRoles()) { $va_user_roles = array(); }
+			if(!$va_user_roles = $this->getUserRoles(['skipVars' => true])) { $va_user_roles = array(); }
 		
 			$vs_buf .= "<select multiple='1' name='{$vs_name}[]' size='{$vn_size}' id='{$vs_id}'>\n";
 			foreach($va_roles as $vn_role_id => $va_role_info) {
@@ -1218,6 +1369,9 @@ class ca_users extends BaseModel {
 	/**
 	 * Get list of roles the current user has via associated groups
 	 *
+	 * @param array $options Options include:
+	 *		skipVars = Don't load role vars data. Skipping loading of vars may improve performance. [Default is false]
+	 *
 	 * @access public
 	 * @return array Returns associative array of roles. Key is role id, value is array containing information about the role.
 	 *
@@ -1227,14 +1381,17 @@ class ca_users extends BaseModel {
 	 *		code		(a short code used for the role)
 	 *		description	(narrative description of role)
 	 */
-	public function getGroupRoles() {
+	public function getGroupRoles(?array $options=null) {
 		if ($pn_user_id = $this->getPrimaryKey()) {
-			if (isset(ca_users::$s_group_role_cache[$pn_user_id])) {
-				return ca_users::$s_group_role_cache[$pn_user_id];
+			$cache_key = caMakeCacheKeyFromOptions($options, $pn_user_id);
+			if (isset(ca_users::$s_group_role_cache[$cache_key])) {
+				return ca_users::$s_group_role_cache[$cache_key];
 			} else {
 				$o_db = $this->getDb();
+				
+				$skip_vars = caGetOption('skipVars', $options, false);
 				$qr_res = $o_db->query("
-					SELECT wur.role_id, wur.name, wur.code, wur.description, wur.rank, wur.vars
+					SELECT wur.role_id, wur.name, wur.code, wur.description, wur.`rank`".($skip_vars ? '' : ', wur.vars')."
 					FROM ca_user_roles wur
 					INNER JOIN ca_groups_x_roles AS wgxr ON wgxr.role_id = wur.role_id
 					INNER JOIN ca_users_x_groups AS wuxg ON wuxg.group_id = wgxr.group_id
@@ -1244,10 +1401,10 @@ class ca_users extends BaseModel {
 				$va_roles = array();
 				while($qr_res->nextRow()) {
 					$va_row = $qr_res->getRow();
-					$va_row['vars'] = caUnserializeForDatabase($va_row['vars']);
+					$va_row['vars'] = $skip_vars ? [] : caUnserializeForDatabase($va_row['vars']);
 					$va_roles[$va_row['role_id']] = $va_row;
 				}
-				return ca_users::$s_group_role_cache[$pn_user_id] = $va_roles;
+				return ca_users::$s_group_role_cache[$cache_key] = $va_roles;
 			}
 		} else {
 			return array();
@@ -1329,7 +1486,7 @@ class ca_users extends BaseModel {
 				LEFT JOIN ca_users AS wu ON wug.user_id = wu.user_id
 				INNER JOIN ca_users_x_groups AS wuxg ON wuxg.group_id = wug.group_id
 				WHERE wuxg.user_id = ?
-				ORDER BY wug.rank
+				ORDER BY wug.`rank`
 			", array((int)$pn_user_id));
 			$va_groups = array();
 			while($qr_res->nextRow()) {
@@ -1451,7 +1608,6 @@ class ca_users extends BaseModel {
 			}
 			return $this->getPreferenceDefault($ps_pref);
 		} else {
-			//$this->postError(920, _t("%1 is not a valid user preference", $ps_pref),"User->getPreference()");
 			return null;
 		}
 	}
@@ -1496,10 +1652,34 @@ class ca_users extends BaseModel {
 					$vn_table_num = $this->_editorPrefFormatTypeToTableNum($va_pref_info["formatType"]);
 					$va_uis = $this->_getUIListByType($vn_table_num);
 					
+					$table = Datamodel::getTableName($vn_table_num);
+					$config = Configuration::load();
 					$va_defaults = array();
-					foreach($va_uis as $vn_type_id => $va_editor_info) {
-						foreach($va_editor_info as $vn_ui_id => $va_editor_labels) {
-							$va_defaults[$vn_type_id] = $vn_ui_id;
+					if(is_array($va_uis)) {
+						foreach($va_uis as $vn_type_id => $va_editor_info) {
+							$type_code = caGetListItemIdno($vn_type_idno);
+							foreach($va_editor_info as $vn_ui_id => $va_editor_labels) {
+								if(preg_match('!^batch_.*_ui$!', $ps_pref)) {
+									if((($dp = $config->get("{$table}_{$type_code}_default_batch_editor")) || ($dp = $config->get("{$table}_default_batch_editor"))) && ($d_ui_id = ca_editor_uis::find(['editor_code' => $dp], ['returnAs' => 'firstId']))) {
+										$va_defaults[$vn_type_id] = $d_ui_id;
+										break;	
+									}
+								}
+								if(preg_match('!^quickadd_.*_ui$!', $ps_pref)) {
+									if((($dp = $config->get("{$table}_{$type_code}_default_quickadd_editor")) || ($dp = $config->get("{$table}_default_quickadd_editor"))) && ($d_ui_id = ca_editor_uis::find(['editor_code' => $dp], ['returnAs' => 'firstId']))) {
+										$va_defaults[$vn_type_id] = $d_ui_id;
+										break;	
+									}
+								}
+								if(preg_match('!^cataloguing_.*_ui$!', $ps_pref)) {
+									if((($dp = $config->get("{$table}_{$type_code}_default_editor")) || ($dp = $config->get("{$table}_default_editor")))&& ($d_ui_id = ca_editor_uis::find(['editor_code' => $dp], ['returnAs' => 'firstId']))) {
+										$va_defaults[$vn_type_id] = $d_ui_id;
+										break;	
+									}
+								}
+								$va_defaults[$vn_type_id] = $vn_ui_id;
+								break;
+							}
 						}
 					}
 					return $va_defaults;
@@ -1531,7 +1711,7 @@ class ca_users extends BaseModel {
 	public function setPreference($ps_pref, $ps_val) {
 		if ($this->isValidPreference($ps_pref)) {
 			if ($this->purify()) {
-				if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
+				if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = caGetHTMLPurifier(); }
 				if(!is_array($ps_val)) { $ps_val = BaseModel::$html_purifier->purify($ps_val); }
 			}
 			if ($this->isValidPreferenceValue($ps_pref, $ps_val, 1)) {
@@ -1851,7 +2031,7 @@ class ca_users extends BaseModel {
 							$va_locales = array();
 							if ($r_dir = opendir(__CA_APP_DIR__.'/locale/')) {
 								while (($vs_locale_dir = readdir($r_dir)) !== false) {
-									if ($vs_locale_dir{0} == '.') { continue; }
+									if ($vs_locale_dir[0] == '.') { continue; }
 									if (sizeof($va_tmp = explode('_', $vs_locale_dir)) == 2) {
 										$va_locales[$vs_locale_dir] = $va_tmp;
 									}
@@ -1890,7 +2070,7 @@ class ca_users extends BaseModel {
 							if ($r_dir = opendir($this->_CONFIG->get('themes_directory'))) {
 								$va_opts = array();
 								while (($vs_theme_dir = readdir($r_dir)) !== false) {
-									if ($vs_theme_dir{0} == '.') { continue; }
+									if ($vs_theme_dir[0] == '.') { continue; }
 										$o_theme_info = Configuration::load($this->_CONFIG->get('themes_directory').'/'.$vs_theme_dir.'/themeInfo.conf');
 										$va_opts[$o_theme_info->get('name')] = $vs_theme_dir;
 								}
@@ -2042,8 +2222,9 @@ class ca_users extends BaseModel {
 						$vs_output .= "var caStatesByCountryList = ".json_encode(caGetStateList()).";\n";
 						
 						$vs_output .= "
-							jQuery('#pref_{$ps_pref}').click({countryID: 'pref_{$ps_pref}', stateProvID: 'pref_".$va_pref_info['stateProvPref']."', value: '".addslashes($this->getPreference($va_pref_info['stateProvPref']))."', statesByCountryList: caStatesByCountryList}, caUI.utils.updateStateProvinceForCountry);
 							jQuery(document).ready(function() {
+								jQuery('#pref_{$ps_pref}').on('change', null, {countryID: 'pref_{$ps_pref}', stateProvID: 'pref_".$va_pref_info['stateProvPref']."', value: '".addslashes($this->getPreference($va_pref_info['stateProvPref']))."', statesByCountryList: caStatesByCountryList}, caUI.utils.updateStateProvinceForCountry);
+							
 								caUI.utils.updateStateProvinceForCountry({data: {countryID: 'pref_{$ps_pref}', stateProvID: 'pref_".$va_pref_info['stateProvPref']."', value: '".addslashes($this->getPreference($va_pref_info['stateProvPref']))."', statesByCountryList: caStatesByCountryList}});
 							});
 						";
@@ -2144,7 +2325,7 @@ class ca_users extends BaseModel {
 		}
 		
 		$vs_role_sql = '';
-		if (is_array($va_roles = $this->getUserRoles()) && sizeof($va_roles)) {
+		if (is_array($va_roles = $this->getUserRoles(['skipVars' => true])) && sizeof($va_roles)) {
 			$vs_role_sql = " (
 				(ceui.ui_id IN (
 						SELECT ui_id 
@@ -2158,7 +2339,7 @@ class ca_users extends BaseModel {
 		
 		$o_db = $this->getDb();
 		$qr_uis = $o_db->query("
-			SELECT ceui.ui_id, ceuil.name, ceuil.locale_id, ceuitr.type_id
+			SELECT ceui.ui_id, ceuil.name, ceuil.locale_id, ceuitr.type_id, ceuitr.include_subtypes
 			FROM ca_editor_uis ceui
 			INNER JOIN ca_editor_ui_labels AS ceuil ON ceui.ui_id = ceuil.ui_id
 			LEFT JOIN ca_editor_ui_type_restrictions AS ceuitr ON ceui.ui_id = ceuitr.ui_id 
@@ -2179,12 +2360,31 @@ class ca_users extends BaseModel {
 				AND (ceui.editor_type = ?)
 		", (int)$this->getPrimaryKey(), (int)$this->getPrimaryKey(), (int)$pn_table_num);
 		
+		$is_relationship = Datamodel::isRelationship($pn_table_num);
 		$va_ui_list_by_type = array();
 		while($qr_uis->nextRow()) {
-			if (!($vn_type_id = $qr_uis->get('type_id'))) { $vn_type_id = '__all__'; }
-			$va_ui_list_by_type[$vn_type_id][$qr_uis->get('ui_id')][$qr_uis->get('locale_id')] = $qr_uis->get('name');
+			$ui_id = $qr_uis->get('ui_id');
+			$locale_id = $qr_uis->get('locale_id');
+			$name = $qr_uis->get('name');
+			
+			
+			
+			$type_ids = [];
+			if (!($vn_type_id = $qr_uis->get('type_id'))) { 
+				$type_ids[] = '__all__'; 
+			} elseif($is_relationship) {
+				$type_ids = caMakeRelationshipTypeIDList($pn_table_num, $vn_type_id, ['dontIncludeSubtypesInTypeRestriction' => ($qr_uis->get('include_subtypes') == 0)]);
+			} else {
+				$type_ids = caMakeTypeIDList($pn_table_num, $vn_type_id, ['dontIncludeSubtypesInTypeRestriction' => ($qr_uis->get('include_subtypes') == 0)]);
+			}
+			if(!is_array($type_ids)) {
+				$type_ids = ['__all__'];
+			}
+			
+			foreach($type_ids as $t) {
+				$va_ui_list_by_type[$t][$ui_id][$locale_id] = $name;
+			}
 		}
-		
 		return $va_ui_list_by_type;
 	}
 	# ----------------------------------------
@@ -2207,7 +2407,7 @@ class ca_users extends BaseModel {
 		}
 		
 		$vs_role_sql = '';
-		if (is_array($va_roles = $this->getUserRoles()) && sizeof($va_roles)) {
+		if (is_array($va_roles = $this->getUserRoles(['skipVars' => true])) && sizeof($va_roles)) {
 			$vs_role_sql = " (
 				(ceui.ui_id IN (
 						SELECT ui_id 
@@ -2483,9 +2683,12 @@ class ca_users extends BaseModel {
 	 */
 	public function getSavedSearches($pm_table_name_or_num, $ps_type) {
 		if (!($vn_table_num = Datamodel::getTableNum($pm_table_name_or_num))) { return false; }
-		if(!is_array($va_searches = $this->getVar('saved_searches'))) { $va_searches = array(); }
+		if(!is_array($va_searches = $this->getVar('saved_searches'))) { $va_searches = []; }
 	
-		return is_array($va_searches[$vn_table_num][strtolower($ps_type)]) ? $va_searches[$vn_table_num][strtolower($ps_type)] : array();
+		return is_array($va_searches[$vn_table_num][strtolower($ps_type)]) ? array_map(function($v) { 
+			$v['label'] = html_entity_decode($v['label']);
+			return $v;
+		}, $va_searches[$vn_table_num][strtolower($ps_type)]) : array();
 	}
 	# ----------------------------------------
 	# Utils
@@ -2501,6 +2704,78 @@ class ca_users extends BaseModel {
 			return true;
 		}
 		return false;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Convert user name or email to integer user_id. Will return user_id if a numeric user_id is passed if a user
+	 * with that user_id exists. Will return null if no matching user is found.
+	 *
+	 * @param $user int|string User name, email address or user_id
+	 *
+	 * @return int User_id value, or null if no match was found
+	 */
+	static public function userIDFor($user) {
+		if ($info = self::userInfoFor($user)) {
+			return $info['user_id'];
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Convert user_id or email to user_name value. Will return user_name if a user_name is passed and a user
+	 * with that user_id exists. Will return null if no matching user is found.
+	 *
+	 * @param $user int|string User name, email address or user_id
+	 *
+	 * @return string user_name value, or null if no match was found
+	 */
+	static public function userNameFor($user) {
+		if ($info = self::userInfoFor($user)) {
+			return $info['user_name'];
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Get array of information for  user_id or email.  Will return null if no matching user is found.
+	 *
+	 * @param $user int|string User name, email address or user_id
+	 *
+	 * @return string user_name value, or null if no match was found
+	 */
+	static public function userInfoFor($user) {
+		if (array_key_exists($user, self::$s_user_info_cache)) {
+			return self::$s_user_info_cache[$user];
+		}
+		if(is_numeric($user)) {
+			// $user is valid integer user_id?
+			if ($u = ca_users::find(['user_id' => (int)$user], ['returnAs' => 'firstModelInstance'])) {
+				return self::$s_user_info_cache[$user] = self::_getUserInfoFromInstance($u);
+			}
+		}
+
+		if (!($u = ca_users::findAsInstance(['email' => $user]))) { // $user is email value?
+			$u = ca_users::findAsInstance(['user_name' => $user]);          // $user is user_name value?
+		}
+		if($u && $u->isLoaded()) {
+			return self::$s_user_info_cache[ $user ] = self::_getUserInfoFromInstance($u);
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Get array of information for  user_id or email.  Will return null if no matching user is found.
+	 *
+	 * @param $user int|string User name, email address or user_id
+	 *
+	 * @return string user_name value, or null if no match was found
+	 */
+	static private function _getUserInfoFromInstance($user) {
+		$info = [];
+		foreach(['user_id', 'user_name', 'email', 'fname', 'lname', 'active', 'userclass'] as $f) {
+			$info[$f] = $user->get("ca_users.{$f}");
+		}
+		return $info;
 	}
 	# ----------------------------------------
 	/**
@@ -2584,8 +2859,7 @@ class ca_users extends BaseModel {
 	 */
 	public function close() {
 		if($this->getPrimaryKey()) {
-			$this->setMode(ACCESS_WRITE);
-			$this->update(['dontLogChange' => true]);
+			$this->update(['dontLogChange' => true, 'dontDoSearchIndexing' => true]);
 		}
 	}
 	# ----------------------------------------
@@ -2685,7 +2959,7 @@ class ca_users extends BaseModel {
 				} elseif(function_exists('openssl_random_pseudo_bytes')) {
 					$vs_password_reset_token = hash('sha256', openssl_random_pseudo_bytes(32));
 				} else {
-					throw new Exception('mcrypt or OpenSSL is required for CollectiveAccess to run');
+					throw new ApplicationException('mcrypt or OpenSSL is required for CollectiveAccess to run');
 				}
 
 				$this->setVar("{$vs_app_name}_password_reset_token", $vs_password_reset_token);
@@ -2702,7 +2976,6 @@ class ca_users extends BaseModel {
 			$this->passwordResetDeactivateAccount();
 		}
 
-		$this->setMode(ACCESS_WRITE);
 		$this->update();
 	}
 	# ----------------------------------------
@@ -2731,7 +3004,6 @@ class ca_users extends BaseModel {
 		if(!$vb_return) {
 			// invalid token checks count as completely botched password reset attempt. you can only have so many of those
 			$this->removePendingPasswordReset(false);
-			$this->setMode(ACCESS_WRITE);
 			$this->update();
 		}
 
@@ -2750,7 +3022,6 @@ class ca_users extends BaseModel {
 		// use the reset password feature again. Otherwise he would immediately be locked out again.
 		$this->removePendingPasswordReset(true);
 		$this->set('active', 0);
-		$this->setMode(ACCESS_WRITE);
 		$this->update();
 
 		$this->opo_log->log(array(
@@ -2877,13 +3148,19 @@ class ca_users extends BaseModel {
 			$vs_username = preg_replace("!".preg_quote($vs_rewrite_username_with_regex, "!")."!", $vs_rewrite_username_to_regex, $vs_username);
 		}
 		
-		 if (!$vs_username && AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__)) { 
-            $va_info = AuthenticationManager::getUserInfo($vs_username, $ps_password, ['minimal' => true]); 
-            $vs_username = $va_info['user_name'];
+		if (!$vs_username && AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__)) { 
+		    if (AuthenticationManager::authenticate($vs_username, $ps_password, $pa_options)) {
+                try {
+                	$va_info = AuthenticationManager::getUserInfo($vs_username, $ps_password, ['minimal' => true]); 
+                	$vs_username = $va_info['user_name'];
+                } catch(Exception $e) {
+                	// noop
+                }
+            }
         }
-
+        
 		// if user doesn't exist, try creating it through the authentication backend, if the backend supports it
-		if (strlen($vs_username) > 0 && !$this->load($vs_username)) {
+		if ((strlen($vs_username) > 0) && !$this->load(['user_name' => $vs_username])) {
 			if(AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_AUTOCREATE_USERS__)) {
 				try{
 					$va_values = AuthenticationManager::getUserInfo($vs_username, $ps_password);
@@ -2902,18 +3179,23 @@ class ca_users extends BaseModel {
 					if(in_array($vs_k, array('roles', 'groups'))) { continue; }
 					$this->set($vs_k, $vs_v);
 				}
-
-				$vn_mode = $this->getMode();
-				$this->setMode(ACCESS_WRITE);
+				
+				if (defined("__CA_APP_TYPE__") && (__CA_APP_TYPE__ === "PROVIDENCE")) {
+				    $this->set('userclass', 0);
+				} else {
+				    $this->set('userclass', 1);
+				}
+				if(!$this->get("email")) {
+					$this->set("email", (strpos($vs_username, "@") === false) ? "{$vs_username}@unknown.org" : $vs_username);
+				}
 				$this->insert();
-
+				
 				if (!$this->getPrimaryKey()) {
-					$this->setMode($vn_mode);
 					$this->opo_log->log(array(
 						'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
 						'MESSAGE' => _t('User could not be created after getting info from authentication adapter. API message was: %1', join(" ", $this->getErrors()))
 					));
-					return false;
+					throw new ApplicationException($err);
 				}
 
 				if(is_array($va_values['groups']) && sizeof($va_values['groups'])>0) {
@@ -2931,17 +3213,33 @@ class ca_users extends BaseModel {
 				}
 
 				$this->update();
-
-				// restore mode
-				$this->setMode($vn_mode);
 			}
 		}
 
         if ($vs_username) {
             try {
                 if(AuthenticationManager::authenticate($vs_username, $ps_password, $pa_options)) {
-                    $this->load($vs_username);
-                    return true;
+                    if ($this->load(['user_name' => $vs_username])) {
+                        if (
+                            defined('__CA_APP_TYPE__') && (__CA_APP_TYPE__ === 'PAWTUCKET') && 
+                            $this->canDoAction('can_not_login') &&
+                            ($this->getPrimaryKey() != $this->_CONFIG->get('administrator_user_id')) &&
+                            !$this->canDoAction('is_administrator')
+                        ) {
+                            $this->opo_log->log(array(
+                                'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
+                                'MESSAGE' => _t('There was an error while trying to authenticate user %1: User is not authorized to log into Pawtucket', $vs_username)
+                            ));
+                            return false;
+                        }
+                        return true;
+                    } else {
+                        $this->opo_log->log(array(
+                            'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
+                            'MESSAGE' => _t('There was an error while trying to authenticate user %1: Load by user name failed', $vs_username)
+                        ));
+                        return false;
+                    }
                 }
             }  catch (Exception $e) {
                 $this->opo_log->log(array(
@@ -2954,7 +3252,7 @@ class ca_users extends BaseModel {
 		// check ips
 		if (!isset($pa_options["dont_check_ips"]) || !$pa_options["dont_check_ips"]) {
 			if ($vn_user_id = $this->ipAuthenticate()) {
-				if ($this->load($vn_user_id)) {
+				if ($this->load(['user_id' => $vn_user_id])) {
 					$ps_username = $this->get("user_name");
 					return 2;
 				} 
@@ -3127,26 +3425,69 @@ class ca_users extends BaseModel {
 	/**
 	 * Checks if user is allowed to perform the specified action (possible actions are defined in app/conf/user_actions.conf)
 	 * Returns true if user can do action, false otherwise.
+	 *
+	 * @param string $action
+	 * @param array $options Options include:
+	 *		throwException = Throw application exception if user does not have specified action. [Default is false]
+	 *		exceptionMessage = Message returned in exception on error. [Default is 'Access Denied']
+	 * @return bool
 	 */
-	public function canDoAction($ps_action) {
-		$vs_cache_key = $ps_action."/".$this->getPrimaryKey();
-		if (isset(ca_users::$s_user_action_access_cache[$vs_cache_key])) { return ca_users::$s_user_action_access_cache[$vs_cache_key]; }
+	public function canDoAction(string $action, array $options=null) : bool {
+		$throw = caGetOption('throwException', $options, false); 
+		$cache_key = $action."/".$this->getPrimaryKey();
+		if (isset(ca_users::$s_user_action_access_cache[$cache_key])) { 
+			if ($throw && !ca_users::$s_user_action_access_cache[$cache_key]) {
+				throw new UserActionException(caGetOption('exceptionMessage', $options, _t('Access denied')));
+			}
+			return ca_users::$s_user_action_access_cache[$cache_key]; 
+		}
 
-		if(!$this->getPrimaryKey()) { return ca_users::$s_user_action_access_cache[$vs_cache_key] = false; } 						// "empty" ca_users object -> no groups or roles associated -> can't do action
-		if(!ca_user_roles::isValidAction($ps_action)) { return ca_users::$s_user_action_access_cache[$vs_cache_key] = false; }	// return false if action is not valid	
+		if(!$this->getPrimaryKey()) { return ca_users::$s_user_action_access_cache[$cache_key] = false; } 						// "empty" ca_users object -> no groups or roles associated -> can't do action
+		if(!ca_user_roles::isValidAction($action)) { 
+		    // check for alternatives...
+		    if (preg_match("!^can_(create|edit|delete)_ca_([A-Za-z0-9_]+)$!", $action, $m)) {
+		        if (ca_user_roles::isValidAction("can_configure_".$m[2])) {
+		        	$r = self::canDoAction("can_configure_".$m[2]);
+		        	if ($throw && !$r) {
+						throw new UserActionException(caGetOption('exceptionMessage', $options, _t('Access denied')));
+					}
+		            return $r;
+		        }
+		    }
+		    
+			// return false if action is not valid	
+			if ($throw) {
+				throw new UserActionException(caGetOption('exceptionMessage', $options, _t('Access denied')));
+			}
+		    return ca_users::$s_user_action_access_cache[$cache_key] = false; 
+		}
 		
 		// is user administrator?
 		if ($this->getPrimaryKey() == $this->_CONFIG->get('administrator_user_id')) { return ca_users::$s_user_action_access_cache[$vs_cache_key] = true; }	// access restrictions don't apply to user with user_id = admin id
-		
+	
 		// get user roles
-		$va_roles = $this->getUserRoles();
-		foreach($this->getGroupRoles() as $vn_role_id => $va_role_info) {
-			$va_roles[$vn_role_id] = $va_role_info;
+		$roles = $this->getUserRoles();
+		foreach($this->getGroupRoles() as $role_id => $role_info) {
+			$roles[$role_id] = $role_info;
 		}
 		
-		$va_actions = ca_user_roles::getActionsForRoleIDs(array_keys($va_roles));
-		if (in_array('is_administrator', $va_actions)) { return ca_users::$s_user_action_access_cache[$vs_cache_key] = true; }		// access restrictions don't apply to users with is_administrator role
-		return ca_users::$s_user_action_access_cache[$vs_cache_key] = in_array($ps_action, $va_actions);
+		$va_actions = ca_user_roles::getActionsForRoleIDs(array_keys($roles));
+		if(in_array('is_administrator', $va_actions)) { return ca_users::$s_user_action_access_cache[$vs_cache_key] = true; }		// access restrictions don't apply to users with is_administrator role
+
+		if(in_array($action, $va_actions)) {
+			return ca_users::$s_user_action_access_cache[$vs_cache_key] = in_array($action, $va_actions);
+		}
+		// is default set in user_action.conf?
+		$user_actions = Configuration::load(__CA_CONF_DIR__.'/user_actions.conf');
+		if($user_actions && is_array($actions = $user_actions->getAssoc('user_actions'))) {
+			foreach($actions as $categories) {
+				if(isset($categories['actions'][$action]) && isset($categories['actions'][$action]['default'])) {
+					return ca_users::$s_user_action_access_cache[$vs_cache_key] = (bool)$categories['actions'][$action]['default'];
+				}
+			}
+		}
+		
+		return ca_users::$s_user_action_access_cache[$vs_cache_key] = false;
 	}
 	# ----------------------------------------
 	/**
@@ -3217,7 +3558,7 @@ class ca_users extends BaseModel {
 		if (isset(ca_users::$s_user_type_access_cache[$vs_cache_key])) { return ca_users::$s_user_type_access_cache[$vs_cache_key]; }
 
 		if(in_array($ps_table_name, ca_users::$s_bundlable_tables)) { // type-level access control only applies to these tables
-			$va_roles = array_merge($this->getUserRoles(), $this->getGroupRoles());
+			$va_roles = array_merge($this->getUserRoles(['skipVars' => false]), $this->getGroupRoles(['skipVars' => false]));
 			
 			if (is_numeric($pm_type_code_or_id)) { 
 				$vn_type_id = (int)$pm_type_code_or_id; 
@@ -3227,6 +3568,7 @@ class ca_users extends BaseModel {
 				if(!($vs_type_list_code = $t_instance->getTypeListCode())) { return __CA_BUNDLE_ACCESS_EDIT__; } // no type-level acces control for tables without type lists (like ca_lists)
 				$vn_type_id = (int)$t_list->getItemIDFromList($vs_type_list_code, $pm_type_code_or_id);
 			}
+			if($vn_type_id === 0) { return __CA_BUNDLE_ACCESS_EDIT__; }
 			$vn_access = -1;
 			foreach($va_roles as $vn_role_id => $va_role_info) {
 				$va_vars = $va_role_info['vars'];
@@ -3436,8 +3778,8 @@ class ca_users extends BaseModel {
 		if(!$this->getPrimaryKey()) { return null; }
 		
 		// get user roles
-		$va_roles = $this->getUserRoles();
-		foreach($this->getGroupRoles() as $vn_role_id => $va_role_info) {
+		$va_roles = $this->getUserRoles(['skipVars' => true]);
+		foreach($this->getGroupRoles(['skipVars' => true]) as $vn_role_id => $va_role_info) {
 			$va_roles[$vn_role_id] = $va_role_info;
 		}	
 		
@@ -3478,3 +3820,8 @@ class ca_users extends BaseModel {
 	}
 	# ----------------------------------------
 }
+
+/** 
+ * Exception thrown when user lacks required action-level privs
+ */
+class UserActionException extends Exception {}

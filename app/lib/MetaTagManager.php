@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2018 Whirl-i-Gig
+ * Copyright 2010-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -149,8 +149,7 @@
 		 * @return bool Always returns true
 		 */
 		static function getWindowTitle() {
-			return MetaTagManager::$ops_window_title;
+			return MetaTagManager::$ops_window_title ? MetaTagManager::$ops_window_title : Configuration::load()->get('app_display_name');
 		}
 		# --------------------------------------------------------------------------------
 	}
-?>

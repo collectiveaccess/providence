@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2013 Whirl-i-Gig
+ * Copyright 2004-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -103,17 +103,16 @@ class TilepicParser {
 	var $backend;
 	
 	var $opo_config;
-	var $opo_external_app_config;
 	var $ops_imagemagick_path;
 	var $ops_graphicsmagick_path;
 	
 	# ------------------------------------------------------------------------------------
-	function TilepicParser($filename="") {
+	function __construct($filename="") {
 		$this->opo_config = Configuration::load();
 		$vs_external_app_config_path = $this->opo_config->get('external_applications');
-		$this->opo_external_app_config = Configuration::load($vs_external_app_config_path);
-		$this->ops_imagemagick_path = $this->opo_external_app_config->get('imagemagick_path');
-		$this->ops_graphicsmagick_path = $this->opo_external_app_config->get('graphicsmagick_app');
+		
+		$this->ops_imagemagick_path = caMediaPluginImageMagickInstalled();
+		$this->ops_graphicsmagick_path = caMediaPluginGraphicsMagickInstalled();
 		
 		// edit ranking of preferred backends for tilepic processing here
 
@@ -123,8 +122,8 @@ class TilepicParser {
 		$va_backend_ranking = array(
 			LIBRARY_GMAGICK => caMediaPluginGmagickInstalled(),
 			LIBRARY_IMAGICK => caMediaPluginImagickInstalled(),
-			LIBRARY_GRAPHICSMAGICK => caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path),
-			LIBRARY_IMAGEMAGICK => caMediaPluginImageMagickInstalled($this->ops_imagemagick_path),
+			LIBRARY_GRAPHICSMAGICK => (bool)$this->ops_graphicsmagick_path,
+			LIBRARY_IMAGEMAGICK => (bool)$this->ops_imagemagick_path,
 			LIBRARY_GD => true, // one available back-end has to be assumed
 		);
 		
@@ -342,9 +341,9 @@ class TilepicParser {
 	}
 	# ------------------------------------------------
 	private function _imageMagickRead($ps_filepath) {
-		if (caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)) {
-			exec($this->ops_imagemagick_path.'/identify -format "%m;%w;%h\n" '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
-			
+		if ($this->ops_imagemagick_path) {
+			caExec($this->ops_imagemagick_path.' -format "%m;%w;%h\n" '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+	
 			$va_tmp = explode(';', $va_output[0]);
 			if (sizeof($va_tmp) != 3) {
 				return null;
@@ -363,8 +362,8 @@ class TilepicParser {
 	}
 	# ------------------------------------------------
 	private function _graphicsMagickRead($ps_filepath) {
-		if (caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)) {
-			exec($this->ops_graphicsmagick_path.' identify -format "%m;%w;%h\n" '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
+		if ($this->ops_graphicsmagick_path) {
+			caExec($this->ops_graphicsmagick_path.' identify -format "%m;%w;%h\n" '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 			$va_tmp = explode(';', $va_output[0]);
 			if (sizeof($va_tmp) != 3) {
 				return null;
@@ -383,7 +382,7 @@ class TilepicParser {
 	}
 	# ------------------------------------------------
 	private function _imageMagickProcess($ps_source_filepath, $ps_dest_filepath, $pa_ops, $pn_quality=null) {
-		$va_ops = array('-colorspace RGB');
+		$va_ops = [];
 		if (!is_null($pn_quality)) {
 			$va_ops[] = '-quality '.intval($pn_quality);
 		}
@@ -432,12 +431,12 @@ class TilepicParser {
 					break;
 			}
 		}
-		exec($this->ops_imagemagick_path.'/convert '.caEscapeShellArg($ps_source_filepath.'[0]').' '.join(' ', $va_ops).' "'.$ps_dest_filepath.'"');
+		caExec(str_replace('identify', 'convert', $this->ops_imagemagick_path).' '.caEscapeShellArg($ps_source_filepath.'[0]').' '.join(' ', $va_ops).' "'.$ps_dest_filepath.'"');
 		return true;
 	}
 	# ------------------------------------------------
 	private function _graphicsMagickProcess($ps_source_filepath, $ps_dest_filepath, $pa_ops, $pn_quality=null) {
-		$va_ops = array('-colorspace RGB');
+		$va_ops = [];
 		if (!is_null($pn_quality)) {
 			$va_ops[] = '-quality '.intval($pn_quality);
 		}
@@ -488,19 +487,19 @@ class TilepicParser {
 					break;
 			}
 		}
-		exec($this->ops_graphicsmagick_path.' convert '.caEscapeShellArg($ps_source_filepath.'[0]').' '.join(' ', $va_ops).' "'.$ps_dest_filepath.'"');
+		caExec($this->ops_graphicsmagick_path.' convert '.caEscapeShellArg($ps_source_filepath.'[0]').' '.join(' ', $va_ops).' "'.$ps_dest_filepath.'"');
 		return true;
 	}
 	# ------------------------------------------------
 	private function _imageMagickImageFromTiles($ps_dest_filepath, $pa_tiles, $pn_tile_width, $pn_tile_height) {
 		
-		exec($this->ops_imagemagick_path.'/montage '.join(' ', $pa_tiles).' -mode Concatenate -tile '.$pn_tile_width.'x'.$pn_tile_height.' "'.$ps_dest_filepath.'"');
+		caExec(str_replace('identify', 'montage', $this->ops_imagemagick_path).' '.join(' ', $pa_tiles).' -mode Concatenate -tile '.$pn_tile_width.'x'.$pn_tile_height.' "'.$ps_dest_filepath.'"');
 	
 		return true;
 	}
 	# ------------------------------------------------
 	private function _graphicsMagickImageFromTiles($ps_dest_filepath, $pa_tiles, $pn_tile_width, $pn_tile_height) {
-		exec($this->ops_graphicsmagick_path.' montage '.join(' ', $pa_tiles).' -mode Concatenate -tile '.$pn_tile_width.'x'.$pn_tile_height.' "'.$ps_dest_filepath.'"');	
+		caExec($this->ops_graphicsmagick_path.' montage '.join(' ', $pa_tiles).' -mode Concatenate -tile '.$pn_tile_width.'x'.$pn_tile_height.' "'.$ps_dest_filepath.'"');
 		return true;
 	}
 	# ------------------------------------------------
@@ -571,7 +570,7 @@ class TilepicParser {
         }
         
          if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
-			if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
+			if (is_array($va_exif = @exif_read_data($ps_filepath, 'IDF0', true, false))) { 
 				if (isset($va_exif['IFD0']['Orientation'])) {
 					$vn_orientation_rotate = null;
 					$vn_orientation = $va_exif['IFD0']['Orientation'];
@@ -836,7 +835,7 @@ class TilepicParser {
 		}
 
 		 if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
-			if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
+			if (is_array($va_exif = @exif_read_data($ps_filepath, 'IFD0', true, false))) { 
 				if (isset($va_exif['IFD0']['Orientation'])) {
 					$vn_orientation_rotate = null;
 					$vn_orientation = $va_exif['IFD0']['Orientation'];
@@ -1080,7 +1079,7 @@ class TilepicParser {
         $h->profileImage('*', null);
         
         if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
-			if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
+			if (is_array($va_exif = @exif_read_data($ps_filepath, 'IFD0', true, false))) { 
 				if (isset($va_exif['IFD0']['Orientation'])) {
 					$vn_orientation = $va_exif['IFD0']['Orientation'];
 					switch($vn_orientation) {
@@ -1100,9 +1099,11 @@ class TilepicParser {
         
         $h->setImageType(imagick::IMGTYPE_TRUECOLOR);
 
-		if (!$h->setImageColorspace(imagick::COLORSPACE_RGB)) {
-			$this->error = "Error during RGB colorspace transformation operation";
-			return false;
+		if ($h->getImageColorspace() === imagick::COLORSPACE_CMYK) {
+			if (!$h->setImageColorspace(imagick::COLORSPACE_RGB)) {
+				$this->error = "Error during RGB colorspace transformation operation";
+				return false;
+			}
 		}
 		
 		$va_tmp = $h->getImageGeometry();
@@ -1273,11 +1274,12 @@ class TilepicParser {
 	}
 	# ------------------------------------------------------------------------------------
 	public function setResourceLimits_gmagick($po_handle) {
-		$po_handle->setResourceLimit(Gmagick::RESOURCETYPE_MEMORY, 1024*1024*1024);		// Set maximum amount of memory in bytes to allocate for the pixel cache from the heap.
-		$po_handle->setResourceLimit(Gmagick::RESOURCETYPE_MAP, 1024*1024*1024);		// Set maximum amount of memory map in bytes to allocate for the pixel cache.
-		$po_handle->setResourceLimit(Gmagick::RESOURCETYPE_AREA, 6144*6144);			// Set the maximum width * height of an image that can reside in the pixel cache memory.
-		$po_handle->setResourceLimit(Gmagick::RESOURCETYPE_FILE, 1024);					// Set maximum number of open pixel cache files.
-		$po_handle->setResourceLimit(Gmagick::RESOURCETYPE_DISK, 64*1024*1024*1024);					// Set maximum amount of disk space in bytes permitted for use by the pixel cache.
+	    // As of GraphicMagick 1.3.32 setResourceLimit is broken
+		//$po_handle->setResourceLimit(Gmagick::RESOURCETYPE_MEMORY, 1024*1024*1024);		// Set maximum amount of memory in bytes to allocate for the pixel cache from the heap.
+		//$po_handle->setResourceLimit(Gmagick::RESOURCETYPE_MAP, 1024*1024*1024);		// Set maximum amount of memory map in bytes to allocate for the pixel cache.
+		//$po_handle->setResourceLimit(Gmagick::RESOURCETYPE_AREA, 6144*6144);			// Set the maximum width * height of an image that can reside in the pixel cache memory.
+		//$po_handle->setResourceLimit(Gmagick::RESOURCETYPE_FILE, 1024);					// Set maximum number of open pixel cache files.
+		//$po_handle->setResourceLimit(Gmagick::RESOURCETYPE_DISK, 64*1024*1024*1024);					// Set maximum amount of disk space in bytes permitted for use by the pixel cache.
 		return true;
 	}
 	# ------------------------------------------------------------------------------------
@@ -1292,7 +1294,6 @@ class TilepicParser {
 		#
 		try {
 			$h = new Gmagick($ps_filepath);
-			$h->stripimage();
 			$this->setResourceLimits_gmagick($h);
 			$h->setimageindex(0);	// force use of first image in multi-page TIFF
 		} catch (Exception $e){
@@ -1300,35 +1301,74 @@ class TilepicParser {
 			return false;
 		}
 
+		$image_dimensions = $h->getimagegeometry();
+		
+		$tmp_path = null;
+		$rotation = null;
 		if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
-			if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
+			if (is_array($va_exif = @exif_read_data($ps_filepath, 'IFD0', true, false))) { 
 				if (isset($va_exif['IFD0']['Orientation'])) {
 					$vn_orientation = $va_exif['IFD0']['Orientation'];
+					if($vn_orientation > 0) {
+						// Make copy without EXIF rotation and re-read. There's no other way
+						// to get rid of the orientation tag in derived files (argh).
+						$use_exif_tool_to_strip = (bool)$this->opo_config->get('dont_use_exiftool_to_strip_exif_orientation_tags');
+						
+						// Fall back to using stripImage() if ExifTool is not available. This is quick and easy 
+						// but will strip *everything* including color profiles which will be a problem for many users.
+						if (!caExifToolInstalled() || $use_exif_tool_to_strip) {	
+							$h->stripImage();
+						} else {
+							// Stripping with EXIF tool means copying the entire file and then shelling out
+							// to remove the EXIF tag. We could avoid a copy by running EXIF tool on each tile we
+							// generate, but then we'd be shelling out hundreds or thousands of times per image. 
+							// Either way it sucks.
+							$tmp_path = caGetTempDirPath()."/".pathinfo($ps_filepath, PATHINFO_FILENAME)."_orient.".pathinfo($ps_filepath, PATHINFO_EXTENSION);
+							copy($ps_filepath, $tmp_path);
+							caExtractRemoveOrientationTagWithExifTool($tmp_path);
+							
+							try {
+								$h = new Gmagick($tmp_path);
+								$this->setResourceLimits_gmagick($h);
+								$h->setimageindex(0);	// force use of first image in multi-page TIFF
+							} catch (Exception $e){
+								$this->error = "Couldn't open image {$ps_filepath}_orient";
+								return false;
+							}
+						}
+					}
 					switch($vn_orientation) {
 						case 3:
-							$h->rotateimage("#FFFFFF", 180);
+							$h->rotateimage("#FFFFFF", $rotation = 180);
 							break;
 						case 6:
-							$h->rotateimage("#FFFFFF", 90);
+							$h->rotateimage("#FFFFFF", $rotation = 90);
 							break;
 						case 8:
-							$h->rotateimage("#FFFFFF", -90);
+							$h->rotateimage("#FFFFFF", $rotation = -90);
 							break;
 					}
 				}
+			}
+			
+			if(abs($rotation) === 90) {	// flip dimensions due to EXIF rotation (Gmagick doesn't update dimensions properly)
+				$d = $image_dimensions;
+				$image_dimensions['width'] = $d['height'];
+				$image_dimensions['height'] = $d['width'];
 			}
 		}
         
 		$h->setimagetype(Gmagick::IMGTYPE_TRUECOLOR);
 
-		if (!$h->setimagecolorspace(Gmagick::COLORSPACE_RGB)) {
-			$this->error = "Error during RGB colorspace transformation operation";
-			return false;
+		if ($h->getimagecolorspace() === Gmagick::COLORSPACE_CMYK) {
+			if (!$h->setimagecolorspace(Gmagick::COLORSPACE_RGB)) {
+				$this->error = "Error during RGB colorspace transformation operation";
+				return false;
+			}
 		}
 		
-		$va_tmp = $h->getimagegeometry();
-		$image_width = 	$va_tmp['width'];
-		$image_height = $va_tmp['height'];
+		$image_width = 	$image_dimensions['width'];
+		$image_height = $image_dimensions['height'];
 		if (($image_width < 10) || ($image_height < 10)) {
 			$this->error = "Image is too small to be output as Tilepic; minimum dimensions are 10x10 pixels";
 				return false;
@@ -1338,10 +1378,10 @@ class TilepicParser {
 			$image_width *= $pa_options["scale_factor"];
 			$image_height *= $pa_options["scale_factor"];
 
-				if (!$h->resizeimage($image_width, $image_height, Gmagick::FILTER_CUBIC, $pa_options["antialiasing"])) {
-					$this->error = "Couldn't scale image";
-					return false;
-				}
+			if (!$h->resizeimage($image_width, $image_height, Gmagick::FILTER_CUBIC, $pa_options["antialiasing"])) {
+				$this->error = "Couldn't scale image";
+				return false;
+			}
 		}
         
 		#
@@ -1390,7 +1430,6 @@ class TilepicParser {
 				$slice = clone $h;
 				try {
 					$slice->cropimage($wx, $wy, $x, $y);
-					$slice->setcompressionquality($pa_options["quality"]);
 				} catch (Exception $e){
 					$this->error = "Couldn't create tile";
 					return false;
@@ -1401,7 +1440,23 @@ class TilepicParser {
 					return false;
 				}
 				
-				# --- remove color profile (saves lots of space)
+				if (!$slice->setcompressionquality($pa_options["quality"])) {
+					$this->error = "Tile quality set failed: $reason; $description";
+					return false;
+				}
+				
+				$radius = 2;
+				if (($wx < 100) || ($wy < 100))  {
+					$radius = 1;
+				}
+				$sigma = 0.5;
+				
+				try {
+					$slice->sharpenImage($radius, $sigma);
+				} catch(Exception $e) {
+					// noop
+				}
+				
 				$layer_list[sizeof($layer_list)-1][] = $slice->getImageBlob();
 				$slice->destroy();
 				$x += $pa_options["tile_width"];
@@ -1419,6 +1474,9 @@ class TilepicParser {
 		}
 		
 		$h->destroy();
+		
+		if($tmp_path) { @unlink($tmp_path); }
+		
 		#
 		# Write Tilepic format file
 		#
@@ -1516,7 +1574,7 @@ class TilepicParser {
 				case IMAGETYPE_JPEG:
 					$r_image = imagecreatefromjpeg($ps_filepath);
 					 if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
-						if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
+						if (is_array($va_exif = @exif_read_data($ps_filepath, 'IFD0', true, false))) { 
 							if (isset($va_exif['IFD0']['Orientation'])) {
 								$vn_orientation = $va_exif['IFD0']['Orientation'];
 								$h = new WLPlugMediaGD();

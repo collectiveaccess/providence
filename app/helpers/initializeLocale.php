@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,10 +30,10 @@
  * ----------------------------------------------------------------------
  */
  
+ require_once(__CA_LIB_DIR__."/CookieOptionsManager.php");
   /**
    *
    */
-	require_once(__CA_LIB_DIR__.'/Zend/Locale.php');
 	# ----------------------------------------
 	/**
 	 * Verify the locale is valid and supported by current installation
@@ -43,10 +43,10 @@
 	 */
 	function validateLocale($ps_locale) {
    		$va_locale_paths = [];
-   		if (file_exists($vs_locale_path = __CA_THEME_DIR__.'/locale/'.$ps_locale.'/messages.mo')) { $va_locale_paths[] = $vs_locale_path; }
-   		if (file_exists($vs_locale_path = __CA_THEMES_DIR__.'/default/locale/'.$ps_locale.'/messages.mo')) { $va_locale_paths[] = $vs_locale_path; }
-   		if (file_exists($vs_locale_path = __CA_APP_DIR__.'/locale/user/'.$ps_locale.'/messages.mo')) { $va_locale_paths[] = $vs_locale_path; }
-   		if (file_exists($vs_locale_path = __CA_APP_DIR__.'/locale/'.$ps_locale.'/messages.mo')) { $va_locale_paths[] = $vs_locale_path; }	
+   		if (file_exists($vs_locale_path = realpath(__CA_THEME_DIR__.'/locale/'.$ps_locale.'/messages.mo'))) { $va_locale_paths[] = $vs_locale_path; }
+   		if (file_exists($vs_locale_path = realpath(__CA_THEMES_DIR__.'/default/locale/'.$ps_locale.'/messages.mo'))) { $va_locale_paths[] = $vs_locale_path; }
+   		if (file_exists($vs_locale_path = realpath(__CA_APP_DIR__.'/locale/user/'.$ps_locale.'/messages.mo'))) { $va_locale_paths[] = $vs_locale_path; }
+   		if (file_exists($vs_locale_path = realpath(__CA_APP_DIR__.'/locale/'.$ps_locale.'/messages.mo'))) { $va_locale_paths[] = $vs_locale_path; }	
    		
    		return (sizeof($va_locale_paths) > 0) ? $va_locale_paths : false;
 	}	
@@ -88,8 +88,13 @@
             ]);
         }
         
-        $cookiepath = ((__CA_URL_ROOT__=="") ? "/" : __CA_URL_ROOT__);
-        if (!headers_sent()) { setcookie('CA_'.__CA_APP_NAME__.'_ui_locale', $ps_locale, time()+36000, $cookiepath); }
+		$cookiepath = ((__CA_URL_ROOT__=="") ? "/" : __CA_URL_ROOT__);
+        if(CookieOptionsManager::allow('performance')) {
+        	$secure = (__CA_SITE_PROTOCOL__ === 'https');
+			if (!headers_sent()) { setcookie('CA_'.__CA_APP_NAME__.'_ui_locale', $ps_locale, time() + Session::lifetime(), $cookiepath, null, $secure); }
+		} elseif($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale']) {	// delete cookie
+			setcookie('CA_'.__CA_APP_NAME__.'_ui_locale', NULL, time() - 310600, $cookiepath);
+		}
         return true;
    	}
    	# ----------------------------------------
@@ -111,10 +116,10 @@
 		if(!file_exists($vs_path = __CA_LIB_DIR__."/Parsers/TimeExpressionParser/{$ps_locale}.lang")) { return null; }
 		$o_config = Configuration::load(__CA_LIB_DIR__."/Parsers/TimeExpressionParser/{$ps_locale}.lang");
 	
-		if(caGetOption('return', $pa_options, null, ['forceToLowercase' => true]) == 'definitite') {
+		if(caGetOption('return', $pa_options, null, ['forceToLowercase' => true]) == 'definite') {
 			return $o_config->getList('definiteArticles');
 		}
-		if(caGetOption('return', $pa_options, null, ['forceToLowercase' => true]) == 'indefinitite') {
+		if(caGetOption('return', $pa_options, null, ['forceToLowercase' => true]) == 'indefinite') {
 			return $o_config->getList('indefiniteArticles');
 		}
 		return array_merge($o_config->getList('definiteArticles'), $o_config->getList('indefiniteArticles'));

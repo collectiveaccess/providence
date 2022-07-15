@@ -181,20 +181,7 @@ class ca_change_log extends BaseModel {
 
 	protected $FIELDS;
 
-	# ------------------------------------------------------
-	# --- Constructor
-	#
-	# This is a function called when a new instance of this object is created. This
-	# standard constructor supports three calling modes:
-	#
-	# 1. If called without parameters, simply creates a new, empty objects object
-	# 2. If called with a single, valid primary key value, creates a new objects object and loads
-	#    the record identified by the primary key value
-	#
-	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
-	}
+
 	# ------------------------------------------------------
 	/**
 	 * Get next ca_change_log.log_id for a given timestamp
@@ -249,7 +236,12 @@ class ca_change_log extends BaseModel {
 		} else {
 			$vs_limit_sql = '';
 		}
-
+		
+		$pn_from_datetime = null;
+		if (!is_numeric($pn_from) && ($d = caDateToUnixTimestamp($pn_from))) {
+			$pn_from_datetime = $d;
+		}
+		
 		$pa_skip_if_expression = caGetOption('skipIfExpression', $pa_options);
 		if(!is_array($pa_skip_if_expression)) { $pa_skip_if_expression = array(); }
 
@@ -286,12 +278,12 @@ class ca_change_log extends BaseModel {
 
 		$o_db = new Db();
 
-		if ($ps_for_logged_guid) {
-			if(sizeof($va_only_tables)) {
-				$vs_table_filter_sql = 'AND cl.logged_table_num IN (' . join(',', $va_only_tables) . ')';
-			} elseif(sizeof($va_ignore_tables)) {
-				$vs_table_filter_sql = 'AND cl.logged_table_num NOT IN (' . join(',', $va_ignore_tables) . ')';
-			}
+		if(sizeof($va_only_tables)) {
+			$vs_table_filter_sql = 'AND cl.logged_table_num IN (' . join(',', $va_only_tables) . ')';
+		} elseif(sizeof($va_ignore_tables)) {
+			$vs_table_filter_sql = 'AND cl.logged_table_num NOT IN (' . join(',', $va_ignore_tables) . ')';
+		}
+		if ($ps_for_logged_guid) {			// pull based upon logged GUID only
 			$qr_results = $o_db->query("
 				SELECT cl.log_id i, cl.*, cls.* 
 				FROM ca_change_log cl
@@ -302,7 +294,7 @@ class ca_change_log extends BaseModel {
 				{$vs_table_filter_sql}
 				{$vs_limit_sql}
 			", [$ps_for_guid]);
-		} elseif ($ps_for_guid) {				
+		} elseif ($ps_for_guid) {			// pull based upon logged or subject GUID			
 			if(sizeof($va_only_tables)) {
 				$vs_table_filter_sql = 'AND (cl.logged_table_num IN (' . join(',', $va_only_tables) . ')) AND (csub.subject_table_num IN (' . join(',', $va_only_tables) . ') OR csub.subject_table_num IS NULL) ';
 				$vs_table_filter_subject_sql = 'AND csub.subject_table_num IN (' . join(',', $va_only_tables) . ') AND (cl.logged_table_num IN (' . join(',', $va_only_tables) . ')) ';
@@ -332,7 +324,28 @@ class ca_change_log extends BaseModel {
 				{$vs_table_filter_subject_sql})
 				{$vs_limit_sql}
 			", [$ps_for_guid, $ps_for_guid]);
-		} else {		
+		} elseif($pn_from_datetime > 0) {	// pull based upon log datetime
+			$qr_results = $o_db->query("
+				SELECT * FROM ca_change_log cl, ca_change_log_snapshots cls
+				WHERE cl.log_id = cls.log_id AND cl.log_datetime >= ?
+				{$vs_table_filter_sql}
+				ORDER BY cl.log_id
+				{$vs_limit_sql}
+			", [$pn_from_datetime]);
+		}  elseif (caGetOption('includeSubjectEntries', $pa_options, false)) {		// pull based upon log_id with subject log entries included
+			if(sizeof($va_only_tables)) {
+				$vs_table_filter_sql = 'AND (cl.logged_table_num IN (' . join(',', $va_only_tables) . ') OR clsub.subject_table_num IN (' . join(',', $va_only_tables) . '))';
+			} elseif(sizeof($va_ignore_tables)) {
+				$vs_table_filter_sql = 'AND (cl.logged_table_num NOT IN (' . join(',', $va_ignore_tables) . ') OR clsub.subject_table_num NOT IN (' . join(',', $va_ignore_tables) . '))';
+			}
+			$qr_results = $o_db->query("
+				SELECT * FROM ca_change_log cl, ca_change_log_snapshots cls, ca_change_log_subjects clsub
+				WHERE cl.log_id = cls.log_id AND cl.log_id>=? AND cl.log_id = clsub.log_id
+				{$vs_table_filter_sql}
+				ORDER BY cl.log_id
+				{$vs_limit_sql}
+			", [$pn_from]);
+		} else {							// pull based upon log_id
 			if(sizeof($va_only_tables)) {
 				$vs_table_filter_sql = 'AND cl.logged_table_num IN (' . join(',', $va_only_tables) . ')';
 			} elseif(sizeof($va_ignore_tables)) {
@@ -395,7 +408,7 @@ class ca_change_log extends BaseModel {
 				foreach($va_snapshot as $vs_fld => $vm_val) {
 					switch($vs_fld) {
 						case 'source_info':
-						    if (($vn_s = sizeof($va_snapshot['source_info'])) > 1000) {
+						    if (is_array($va_snapshot['source_info']) && (($vn_s = sizeof($va_snapshot['source_info'])) > 1000)) {
 						        ReplicationService::$s_logger->log("[".$qr_results->get('log_id')."] LARGE SOURCE INFO ($vn_s) FOUND IN $vs_table_name");
 						    }
 						    $va_snapshot['source_info'] = '';       // this field should be blank but in older systems may have a ton of junk data
@@ -432,6 +445,14 @@ class ca_change_log extends BaseModel {
 								continue(2);
 							}
 							break;
+						case 'value_id':
+							if($vs_val_guid = ca_attribute_values::getGUIDByPrimaryKey($vm_val)) {
+								$va_snapshot['value_guid'] = $vs_val_guid;
+							} else {
+								$va_snapshot = ['SKIP' => true];
+								continue(2);
+							}
+							break;
 						case 'type_id':
 							if(preg_match("!^ca_relationship_type!", $t_instance->tableName())) {
 								goto deflabel;
@@ -440,7 +461,17 @@ class ca_change_log extends BaseModel {
 									if (!($va_snapshot['type_code'] = caGetRelationshipTypeCode($vm_val))) { $va_snapshot = ['SKIP' => true]; continue(2); }
 								} elseif($t_instance instanceof BaseModel) {
 									if (!($va_snapshot['type_code'] = caGetListItemIdno($vm_val)) && (!$t_instance->getFieldInfo('type_id', 'IS_NULL'))) { continue(2); }
+								} elseif($t_instance instanceof BaseLabel) {
+									if (!($va_snapshot['type_code'] = caGetListItemIdno($vm_val)) && (!$t_instance->getFieldInfo('type_id', 'IS_NULL'))) { continue(2); }
 								} 
+							} else {
+								$va_snapshot = ['SKIP' => true];
+								continue(2);
+							}
+							break;
+						case 'source_id':
+							if($t_instance) {
+								$va_snapshot['source_code'] = $vm_val ? caGetListItemIdno($vm_val) : null;
 							} else {
 								$va_snapshot = ['SKIP' => true];
 								continue(2);
@@ -570,6 +601,7 @@ class ca_change_log extends BaseModel {
 										//}
 									}
 								}
+								if (!isset($va_snapshot[$vs_fld . '_guid'])) { $va_snapshot[$vs_fld . '_guid'] = null; }
 
 								// handle foreign keys for labels (add guid for main record)
 								if($t_instance instanceof BaseLabel) {
@@ -585,6 +617,8 @@ class ca_change_log extends BaseModel {
 								if(($t_instance instanceof \ca_representation_annotations) && ($vs_fld == 'representation_id')) {
 									$va_snapshot['representation_guid'] = ca_guids::getForRow(Datamodel::getTableNum('ca_object_representations'), $vm_val);
 								}
+							} elseif($vs_fld == $t_instance->getProperty('HIERARCHY_PARENT_ID_FLD')) {
+								$va_snapshot[$vs_fld . '_guid'] = null;
 							}
 							break;
 					}
@@ -649,7 +683,7 @@ class ca_change_log extends BaseModel {
 			}
 		}
 
-		return $va_ret;
+		return caSanitizeArray($va_ret, ['removeNonCharacterData' => true]);
 	}
 	# ------------------------------------------------------
 	/**

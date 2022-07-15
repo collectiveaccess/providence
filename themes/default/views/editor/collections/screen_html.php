@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,14 +36,14 @@
 	$vs_rel_table		= $this->getVar('rel_table');
 	$vn_rel_type_id		= $this->getVar('rel_type_id');
 	$vn_rel_id			= $this->getVar('rel_id');
-	
+
 	if ($vb_can_edit) {
 		$va_cancel_parameters = ($vn_collection_id ? array('collection_id' => $vn_collection_id) : array('type_id' => $t_collection->getTypeID()));
 		print $vs_control_box = caFormControlBox(
 			caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'CollectionEditorForm').' '.
 			($this->getVar('show_save_and_return') ? caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save and return"), 'CollectionEditorForm', array('isSaveAndReturn' => true)) : '').' '.
 			caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'editor/collections', 'CollectionEditor', 'Edit/'.$this->request->getActionExtra(), $va_cancel_parameters),
-			'', 
+			($this->getVar('show_show_notifications') ? caFormJSButton($this->request, __CA_NAV_ICON_ALERT__, _t("Show editor alerts"), '', ['class' => 'caEditorFormNotifications']) : ''), 
 			((intval($vn_collection_id) > 0) && $vb_can_delete) ? caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'editor/collections', 'CollectionEditor', 'Delete/'.$this->request->getActionExtra(), array('collection_id' => $vn_collection_id)) : ''
 		);
 	}
@@ -52,6 +52,7 @@
 <?php
 			print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/collection_id/'.$vn_collection_id, 'CollectionEditorForm', null, 'POST', 'multipart/form-data');
 			
+			$va_bundle_list = [];
 			$va_form_elements = $t_collection->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
 									'request' => $this->request, 
 									'formName' => 'CollectionEditorForm'), $va_bundle_list);

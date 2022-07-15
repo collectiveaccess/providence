@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2018 Whirl-i-Gig
+ * Copyright 2012-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,13 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
-
 require_once(__CA_LIB_DIR__.'/ModelSettings.php');
-require_once(__CA_MODELS_DIR__."/ca_data_exporters.php");
 
 BaseModel::$s_ca_models_definitions['ca_data_exporter_items'] = array(
  	'NAME_SINGULAR' 	=> _t('data exporter item'),
@@ -126,6 +120,8 @@ BaseModel::$s_ca_models_definitions['ca_data_exporter_items'] = array(
 );
 	
 class ca_data_exporter_items extends BaseModel {
+	use ModelSettings;
+	
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -203,15 +199,10 @@ class ca_data_exporter_items extends BaseModel {
 
 	protected $FIELDS;
 	
-	/**
-	 * Settings delegate - implements methods for setting, getting and using 'settings' var field
-	 */
-	public $SETTINGS;
-	
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {		
+	public function __construct($id=null, ?array $options=null) {		
 		global $_ca_data_exporter_items_settings;
-		parent::__construct($pn_id);
+		parent::__construct($id, $options);
 		
 		//
 		$this->initSettings();
@@ -289,6 +280,20 @@ class ca_data_exporter_items extends BaseModel {
 			'label' => _t('Repeat element for multiple values'),
 			'description' => _t('If the current selector/template returns multiple values, this setting determines if the element is repeated for each value.')
 		);
+		
+		$va_settings['deduplicate'] = array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'label' => _t('Remove duplicate values'),
+			'description' => _t('Remove duplicate values from returned set of values for export.')
+		);
 
 		$va_settings['convertCodesToDisplayText'] = array(
 			'formatType' => FT_BIT,
@@ -331,6 +336,20 @@ class ca_data_exporter_items extends BaseModel {
 			'label' => _t('Return id numbers for List attribute values'),
 			'description' => _t('If set, idnos are returned for List attribute values instead of primary key values. Do not combine this with convertCodesToDisplayText!')
 		);
+		
+		$va_settings['stripTags'] = array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'label' => _t('Remove HTML pages from output?'),
+			'description' => _t('If set, HTML/XML tags are removed from output.')
+		);
 
 		$va_settings['skipIfExpression'] = array(
 			'formatType' => FT_TEXT,
@@ -340,6 +359,16 @@ class ca_data_exporter_items extends BaseModel {
 			'default' => '',
 			'label' => _t('Skip if expression'),
 			'description' => _t('The current mapping is skipped if the given expression evaluates to true.')
+		);
+		
+		$va_settings['skipIfEmpty'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Skip if source value is empty'),
+			'description' => _t('The current mapping is skipped if the source value is empty.')
 		);
 
 		$va_settings['filterByRegExp'] = array(
@@ -381,6 +410,16 @@ class ca_data_exporter_items extends BaseModel {
 			'label' => _t('Locale'),
 			'description' => _t('Locale code to use to get the field values. If not set, the system/user default is used.')
 		);
+		
+		$va_settings['returnAllLocales'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Return all locales'),
+			'description' => _t('Return all available values for any locale. If not set, only values for the current locale are returned.')
+		);
 
 		$va_settings['omitIfEmpty'] = array(
 			'formatType' => FT_TEXT,
@@ -400,6 +439,16 @@ class ca_data_exporter_items extends BaseModel {
 			'default' => '',
 			'label' => _t('Omit if not empty'),
 			'description' => _t('Omit this item and all its children if this CollectiveAccess bundle specifier returns a non-empty result.')
+		);
+		
+		$va_settings['omitIfNoChildren'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Omit if no children are present'),
+			'description' => _t('Omit this item if it has no children.')
 		);
 
 		$va_settings['context'] = array(
@@ -528,7 +577,7 @@ class ca_data_exporter_items extends BaseModel {
 				_t('no') => 0
 			),
 			'label' => _t('Do not return value if on the same day as start'),
-			'description' => _t('If set, the exporter will not insert a value for this mapping if the end day of the DateRange in question is on the same day as the start. Only applias to exports of DateRange attributes and only in conjunction with end_as_iso8601.'),
+			'description' => _t('If set, the exporter will not insert a value for this mapping if the end day of the DateRange in question is on the same day as the start. Only applies to exports of DateRange attributes and only in conjunction with end_as_iso8601.'),
 		);
 
 		$va_settings['dateFormat'] = array(
@@ -550,6 +599,16 @@ class ca_data_exporter_items extends BaseModel {
 			'description' => _t('Formatting option for Geocode attributes. Forces return of coordinates only, omitting text labels.')
 		);
 		
+		$va_settings['stripNewlines'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Remove newline characters from text values'),
+			'description' => _t('Formatting option for text attributes. Removes any newline characters in output.')
+		);
+		
 		$va_settings['_id'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -560,7 +619,17 @@ class ca_data_exporter_items extends BaseModel {
 			'description' => _t('ID of item as set in mapping.')
 		);
 		
-		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
+		$va_settings['applyRegularExpressions'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 4,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Apply one or more regular expression-based substitutions to a source value prior to import.'),
+			'description' => _t('A list of Perl-compatible regular expressions. Each expression has two parts, a matching expression and a substitution expression, and is expressed as a JSON object with <em>match</em> and <em>replaceWith</em> keys. Ex. [{"match": "([\\d]+)\\.([\\d]+)", "replaceWith": "\\1:\\2"}, {"match": "[^\\d:]+", "replaceWith": ""}] ')
+		);
+		
+		$this->setAvailableSettings($va_settings);
 	}
 	# ------------------------------------------------------
 	/**
@@ -578,26 +647,12 @@ class ca_data_exporter_items extends BaseModel {
 			if (!sizeof($va_fields_proc)) { $va_fields_proc = null; }
 			$vn_rc = parent::set($va_fields_proc, null, $pa_options);	
 			
-			$this->initSettings();
 			return $vn_rc;
 		}
 		
 		$vn_rc = parent::set($pa_fields, $pm_value, $pa_options);
 		
-		$this->initSettings();
 		return $vn_rc;
-	}
-	# ------------------------------------------------------
-	# Settings
-	# ------------------------------------------------------
-	/**
-	 * Reroutes calls to method implemented by settings delegate to the delegate class
-	 */
-	public function __call($ps_name, $pa_arguments) {
-		if (method_exists($this->SETTINGS, $ps_name)) {
-			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
-		}
-		die($this->tableName()." does not implement method {$ps_name}");
 	}
 	# ------------------------------------------------------
 	static public function getReplacementArray($ps_searches,$ps_replacements) {
@@ -628,6 +683,29 @@ class ca_data_exporter_items extends BaseModel {
 		}
 
 		return $ps_text;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static function _processAppliedRegexes($value, $regexes) {
+		if(is_array($regexes)) {
+			if(!caIsIndexedArray($regexes)) { 
+				if(caIsAssociativeArray($regexes)) {
+					$regexes = [$regexes];
+				} else {
+					return $value;
+				}
+			}
+			foreach($regexes as $regex_index => $regex_info) {
+				if(!strlen($regex_info['match'])) { continue; }
+				$regex = "!".str_replace("!", "\\!", $regex_info['match'])."!u".((isset($regex_info['caseSensitive']) && (bool)$regex_info['caseSensitive']) ? '' : 'i');
+				
+				$value = preg_replace($regex , $regex_info['replaceWith'], $value);
+			}
+		}
+		
+		return $value;
 	}
 	# ------------------------------------------------------
 }

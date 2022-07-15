@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2011 Whirl-i-Gig
+ * Copyright 2008-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -69,7 +69,7 @@ BaseModel::$s_ca_models_definitions['ca_user_groups'] = array(
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Code'), 'DESCRIPTION' => _t('Short code (up to 8 characters) for group (must be unique)'),
+				'LABEL' => _t('Code'), 'DESCRIPTION' => _t('Short code identifying group. Can use used by users in <em>Pawtucket</em> to join this group.'),
 				'BOUNDS_LENGTH' => array(1,20)
 		),
 		'description' => array(
@@ -79,6 +79,13 @@ BaseModel::$s_ca_models_definitions['ca_user_groups'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Description'), 'DESCRIPTION' => _t('Description of group. This text will be displayed to system administrators only and should clearly document the purpose of the group.'),
 				'BOUNDS_LENGTH' => array(0,65535)
+		),
+		'for_public_use' => array(
+				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => _t('For public use?'), 'DESCRIPTION' => _t('If set, public users will be able to join this group using the group code.')
 		),
 		'user_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
@@ -216,19 +223,27 @@ class ca_user_groups extends BaseModel {
 
 	protected $FIELDS;
 	
+
 	# ------------------------------------------------------
-	# --- Constructor
-	#
-	# This is a function called when a new instance of this object is created. This
-	# standard constructor supports three calling modes:
-	#
-	# 1. If called without parameters, simply creates a new, empty objects object
-	# 2. If called with a single, valid primary key value, creates a new objects object and loads
-	#    the record identified by the primary key value
-	#
+	/**
+	 * Override insert to set code field
+	 */
+	public function insert($options=null) {
+		if (!$this->get('code')) {
+			do {
+				$code = caGenerateRandomPassword(6, ['uppercase' => true]);
+				$this->set('code', $code); 
+			} while(self::find(['code' => $code], ['returnAs' => 'count']) > 0);
+		}
+		return parent::insert($options);
+	}
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
+	/**
+	 * Override update to set code field
+	 */
+	public function update($options=null) {
+		if (!$this->get('code')) { $this->set('code', caGenerateRandomPassword(6, ['uppercase' => true])); }
+		return parent::update($options);
 	}
 	# ------------------------------------------------------
 	/**
@@ -502,11 +517,11 @@ class ca_user_groups extends BaseModel {
 		if ($vn_group_id = $this->getPrimaryKey()) {
 			$o_db = $this->getDb();
 			$qr_res = $o_db->query("
-				SELECT wur.role_id, wur.name, wur.code, wur.description, wur.rank
+				SELECT wur.role_id, wur.name, wur.code, wur.description, wur.`rank`
 				FROM ca_user_roles wur
 				INNER JOIN ca_groups_x_roles AS wgxr ON wgxr.role_id = wur.role_id
 				WHERE wgxr.group_id = ?
-				ORDER BY wur.rank
+				ORDER BY wur.`rank`
 			", (int)$vn_group_id);
 			
 			$va_roles = array();
@@ -754,4 +769,3 @@ class ca_user_groups extends BaseModel {
 	}
 	# ----------------------------------------
 }
-?>

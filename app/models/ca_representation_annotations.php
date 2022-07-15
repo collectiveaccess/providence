@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -277,8 +277,8 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 	#    the record identified by the primary key value
 	#
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
+	public function __construct($id=null, ?array $options=null) {
+		parent::__construct($id, $options);	# call superclass constructor
 		
  		$o_config = $this->getAppConfig();
  		$this->opo_type_config = Configuration::load(__CA_CONF_DIR__.'/annotation_types.conf');
@@ -653,6 +653,8 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 			if (isset($va_info['INPUT']['FETCHED_FROM']) && ($vs_fetched_from_url = $va_info['INPUT']['FETCHED_FROM'])) {
 				$va_tmp['fetched_from'] = $vs_fetched_from_url;
 				$va_tmp['fetched_on'] = (int)$va_info['INPUT']['FETCHED_ON'];
+				$va_tmp['fetched_by'] = caGetOption('FETCHED_BY', $va_info['INPUT'], null);
+				$va_tmp['fetched_original_url'] = caGetOption('FETCHED_ORIGINAL_URL', $va_info['INPUT'], null);
 			}
  			
  			//$va_tmp['num_multifiles'] = $t_rep->numFiles($this->get('representation_id'));
@@ -702,4 +704,3 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
  	}
  	# ------------------------------------------------------
 }
-?>

@@ -270,14 +270,12 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 	
 	static $s_stop_info_cache;
 	
-	# ----------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);
-	}
 	# ------------------------------------------------------
 	protected function initLabelDefinitions($pa_options=null) {
 		parent::initLabelDefinitions($pa_options);
 		$this->BUNDLES['ca_tour_stops_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Tour stops'));
+		
+		$this->BUNDLES['generic'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Display template'));
 	}
 	# ------------------------------------------------------
 	/**
@@ -384,7 +382,7 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 			WHERE
 				(ts.tour_id = ?) AND (ts.deleted = 0)
 			ORDER BY 
-				ts.rank, ts.stop_id
+				ts.`rank`, ts.stop_id
 		", (int)$this->getPrimaryKey());
 		
 		$va_stops = array();
@@ -453,12 +451,12 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 		$o_db = $this->getDb();
 		
 		$qr_res = $o_db->query("
-			SELECT tsl.stop_id, tsl.rank
+			SELECT tsl.stop_id, tsl.`rank`
 			FROM ca_tour_stops tsl
 			WHERE
 				tsl.tour_id = ? AND tsl.deleted = 0
 			ORDER BY 
-				tsl.rank ASC
+				tsl.`rank` ASC
 		", (int)$vn_tour_id);
 		$va_stops = array();
 		
@@ -608,4 +606,3 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ----------------------------------------
 }
-?>

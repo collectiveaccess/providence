@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -53,12 +53,17 @@
 		private $ops_text_marker = '"';
 		
 		/**
-		 * @mixed Parsed file input. For text files, a PHP file resource; for Excel files a PHPExcel row iterator instance.
+		 * @mixed Parsed file input. For text files, a PHP file resource; for Excel files a \PhpOffice\PhpSpreadsheet\Spreadsheet row iterator instance.
 		 */ 
 		private $opr_file;
 		
 		/**
-		 * @mixed PHPExcel instance.
+		 * @string Path to the parsed file
+		 */
+		private $filepath;
+		
+		/**
+		 * @mixed \PhpOffice\PhpSpreadsheet\Spreadsheet instance.
 		 */ 
 		private $opo_excel;
 		
@@ -68,7 +73,7 @@
 		private $ops_type;
 		
 		/**
-		 * @array Array of current row values
+		 * @array Array of current row values. Excel row data is read onto a 0-based array.
 		 */ 
 		private $opa_current_row;
 		
@@ -76,6 +81,13 @@
 		 * @int Index of current row 
 		 */ 
 		private $opn_current_row;
+
+		/**
+		 * @int Max number of columns to read on a file
+		 */
+		private $opn_max_columns;
+
+
 		# ----------------------------------------
 		/**
 		 * @param string $ps_delimiter Delimiter for text files. [Default is tab (\t)]
@@ -90,6 +102,9 @@
 			$this->opr_file = null;
 			
 			if ($ps_filepath) { $this->parse($ps_filepath, $pa_options); }
+
+			$config                = Configuration::load();
+			$this->opn_max_columns = $config->get('ca_max_columns_delimited_files')?: 512;
 		}
 		# ----------------------------------------
 		/**
@@ -103,7 +118,8 @@
 		 * @return DelimitedDataParser
 		 */
 		static public function load($ps_filepath, $pa_options=null) {
-			return new DelimitedDataParser(caGetOption('delimiter', $pa_options, "\t"), caGetOption('textMarker', $pa_options, '"'), $ps_filepath, $pa_options);
+			$default_delimiter = preg_match("!.csv$!i", $ps_filepath) ? "," : "\t";
+			return new DelimitedDataParser(caGetOption('delimiter', $pa_options, $default_delimiter), caGetOption('textMarker', $pa_options, '"'), $ps_filepath, $pa_options);
 		}
 		# ----------------------------------------
 		/**
@@ -116,7 +132,7 @@
 		/**
 		 * Parse file. Text files and Excel files are supported.
 		 *
-		 * @param $ps_filepath Path to file
+		 * @param $ps_filepath string Path to file
 		 * @param $pa_options array Options include:
 		 *		worksheet = Worksheet number to read from when parsing Excel files. [Default is 0]
 		 * @return bool True on success, false on failure
@@ -125,9 +141,9 @@
 			$this->opn_current_row = 0;
 			try {
 				$vb_valid = false;
-				$va_excel_types = ['Excel2007', 'Excel5', 'Excel2003XML'];
+				$va_excel_types = ['Xlsx', 'xls', 'Xml'];
 				foreach ($va_excel_types as $vs_type) {
-					$o_reader = PHPExcel_IOFactory::createReader($vs_type);
+					$o_reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($vs_type);
 					if ($o_reader->canRead($ps_filepath)) {
 						$vb_valid = true;
 						break;
@@ -135,7 +151,7 @@
 				}
 				
 				if(!$vb_valid) { throw new Exception("Not an Excel file"); }
-				$this->opo_excel = PHPExcel_IOFactory::load($ps_filepath);
+				$this->opo_excel = \PhpOffice\PhpSpreadsheet\IOFactory::load($ps_filepath);
 				$this->opo_excel->setActiveSheetIndex(caGetOption('worksheet', $pa_options, 0));
 				
 				$o_sheet = $this->opo_excel->getActiveSheet();
@@ -145,8 +161,12 @@
 			} catch (Exception $e) {
 				$this->ops_type = 'txt';
 				if ($this->opr_file) { fclose($this->opr_file); }
+				$line_ending_setting = ini_get("auto_detect_line_endings");
+				ini_set("auto_detect_line_endings", true);
 				if (!($this->opr_file = fopen($ps_filepath, "r"))) { return false; }
+				ini_set("auto_detect_line_endings", $line_ending_setting);
 			}
+			$this->filepath = $ps_filepath;
 			return true;
 		}
 		# ----------------------------------------
@@ -176,14 +196,12 @@
 					$o_cells = $o_row->getCellIterator();
 					$o_cells->setIterateOnlyExistingCells(false); 
 		
-					$va_row = array();
-					$vb_val_was_set = false;
-					$vn_col = 0;
+					$vn_col = 1;
 					$vn_last_col_set = null;
 					foreach ($o_cells as $o_cell) {
-						if (PHPExcel_Shared_Date::isDateTime($o_cell)) {
-							if (!($vs_val = caGetLocalizedDate(PHPExcel_Shared_Date::ExcelToPHP(trim((string)$o_cell->getValue()))))) {
-								if (!($vs_val = trim(PHPExcel_Style_NumberFormat::toFormattedString((string)$o_cell->getValue(),'YYYY-MM-DD')))) {
+						if (\PhpOffice\PhpSpreadsheet\Shared\Date::isDateTime($o_cell)) {
+							if (!($vs_val = caGetLocalizedDate(\PhpOffice\PhpSpreadsheet\Shared\Date::excelToTimestamp(trim((string)$o_cell->getValue()))))) {
+								if (!($vs_val = trim(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::toFormattedString((string)$o_cell->getValue(),'YYYY-MM-DD')))) {
 									$vs_val = trim((string)$o_cell->getValue());
 								}
 							}
@@ -194,8 +212,9 @@
 						if (strlen($vs_val) > 0) { $vb_val_was_set = true; $vn_last_col_set = $vn_col;}
 			
 						$vn_col++;
-			
-						if ($vn_col > 255) { break; }	// max 255 columns; some Excel files have *thousands* of "phantom" columns
+						// max columns; some Excel files have *thousands* of "phantom" columns
+						if ($vn_col > $this->opn_max_columns) { break; }
+
 					}
 					return $this->opa_current_row;
 				}
@@ -204,99 +223,13 @@
 				//
 				// Parse text
 				//
-				$vn_state = 0;
-				$vb_in_quote = false;
-				
 				$this->opn_current_row++;
-				while(!feof($this->opr_file)) {
-					$vs_line = '';
+				// Use fgetcsv to read file, it will handle delimiter, marker and escaping.
+				$line = fgetcsv($this->opr_file, 0, $this->getDelimiter(), $this->getTextMarker());
+				if (!is_array($line)) { return false; }
+				$this->opa_current_row = array_slice($line, 0, $this->opn_max_columns);
 				
-					while(false !== ($lc = fgetc($this->opr_file))) {
-						if (($lc == "\n") || ($lc == "\r")) {
-							break;
-						}
-						$vs_line .= $lc;
-					}
-				
-					// skip blank lines (with or without tabs)
-					if (!$vb_in_quote) {
-						if (str_replace("\t", '', $vs_line) == '') {
-							continue;
-						}
-					}
-				
-					$vn_l = mb_strlen($vs_line);
-					for($vn_i=0; $vn_i < $vn_l; $vn_i++) {
-						if (sizeof($this->opa_current_row) > 255) { break; }
-						$c = mb_substr($vs_line, $vn_i, 1);
-					
-						switch($vn_state) {
-							# -----------------------------------
-							case 0:		// start of field
-							
-								$vn_state = 10;
-								if ($c == $this->ops_text_marker) {
-									$vb_in_quote = true;
-									$vs_fld_text = '';
-								} else {
-									if ($c == $this->ops_delimiter) {
-										// empty fields
-										$this->opa_current_row[] = $vs_fld_text;
-										$vs_fld_text = '';
-										$vn_state = 0;
-									} else {
-										$vs_fld_text = $c;
-									}
-								}
-								break;
-							# -----------------------------------
-							case 10:	// in field
-								if ($vb_in_quote) {
-									if ($c == $this->ops_text_marker) {
-										if (mb_substr($vs_line, $vn_i + 1, 1) != '"') {
-											// is *not* double quote so leave quoted-ness
-											$vb_in_quote = false;
-										} else {
-											// *is* double quote so treat as single quote in text
-											$vs_fld_text .= $c;		// add quote 
-											$vn_i++; 				// skip next quote
-										}
-										break;
-									} else {
-										$vs_fld_text .= $c;
-										break;
-									}
-								}
-							
-								if ($c == $this->ops_delimiter) {
-									$vn_state = 20;
-									// fall through
-								} else {
-									$vs_fld_text .= $c;
-									break;
-								}
-							# -----------------------------------
-							case 20:	// end of field
-								$this->opa_current_row[] = $vs_fld_text;
-								$vs_fld_text = '';
-								$vn_state = 0;
-								break;
-							# -----------------------------------
-						}
-					}
-				
-					if ($vb_in_quote) {
-						// add return
-						$vs_fld_text .= "\n";
-					} else {
-						// output last field if not already output
-						if (strlen($vs_fld_text) > 0) {
-							$this->opa_current_row[] = $vs_fld_text;
-						}
-					
-						return $this->opa_current_row;
-					}
-				}
+				return $this->opa_current_row;
 			}
 			return false;
 		}
@@ -321,6 +254,30 @@
 		 */
 		public function getRow() {
 			return $this->opa_current_row;
+		}
+		
+		# ----------------------------------------
+		/**
+		 * Count number of data rows in the file
+		 *
+		 * @return int
+		 */
+		public function numRows() {
+			if ($this->ops_type === 'xlsx') {
+				return $this->opo_excel->getActiveSheet()->getHighestRow();
+			} else {
+				$line_ending_setting = ini_get("auto_detect_line_endings");
+				ini_set("auto_detect_line_endings", true);
+				
+				$r = fopen($this->filepath, "r");
+				$count = 0;
+				while($line = fgetcsv($r, 0, $this->getDelimiter(), $this->getTextMarker())) {
+					$count++;
+				}
+				fclose($r);
+				ini_set("auto_detect_line_endings", $line_ending_setting);
+				return $count;
+			}
 		}
 		# ----------------------------------------
 		# Utilities
@@ -363,4 +320,18 @@
 			return $this->ops_text_marker;
 		}
 		# ----------------------------------------
+
+		/**
+		 * @return mixed
+		 */
+		public function getType() : string {
+			return $this->ops_type;
+		}
+
+		/**
+		 * @param mixed $ops_type
+		 */
+		public function setType( $type ): void {
+			$this->ops_type = $type;
+		}
 	}

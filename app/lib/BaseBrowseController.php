@@ -35,7 +35,6 @@
   */
  
 	require_once(__CA_LIB_DIR__."/BaseFindController.php");
-	require_once(__CA_LIB_DIR__."/Datamodel.php");
 	require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
  	require_once(__CA_APP_DIR__.'/helpers/browseHelpers.php');
  	require_once(__CA_APP_DIR__.'/helpers/accessHelpers.php');
@@ -53,6 +52,10 @@
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			
+ 			if ($po_request->config->get($this->ops_tablename.'_disable_browse')) {
+				throw new ApplicationException(_t('Browse interface is disabled'));
+			}
+			
  			if ($this->ops_tablename) {
 				if ($va_items_per_page_config = $po_request->config->get('items_per_page_options_for_'.$this->ops_tablename.'_browse')) {
 					$this->opa_items_per_page = $va_items_per_page_config;
@@ -156,23 +159,14 @@
  				
  				if ($this->request->config->get('redirect_to_'.$va_facet_info['table'].'_detail_if_is_first_facet')) {
  					$t_table = Datamodel::getInstanceByTableName($va_facet_info['table'], true);
- 					
- 					$va_newmuseum_hack_occurrence_type_ids = $this->request->config->getList('newmuseum_hack_browse_should_redirect_occurrence_types_to_object_details');
- 					if (is_array($va_newmuseum_hack_occurrence_type_ids) && sizeof($va_newmuseum_hack_occurrence_type_ids) && ($va_facet_info['table'] == 'ca_occurrences')) {
- 						if ($t_table->load($va_tmp1[0])) {
- 							if (in_array($t_table->getTypeID(), $va_newmuseum_hack_occurrence_type_ids)) {
- 								if (sizeof($va_objects = $t_table->getRelatedItems('ca_objects'))) {
- 									$va_object = array_shift($va_objects);
- 									$vn_object_id = $va_object['object_id'];
- 									$this->response->setRedirect(caNavUrl($this->request, 'Detail', 'Object', 'Show', array('object_id' => $vn_object_id)));
- 									return;
- 								}
- 							}
- 						}
- 					}
  					$this->response->setRedirect(caNavUrl($this->request, 'Detail', ucfirst($t_table->getProperty('NAME_SINGULAR')), 'Show', array($t_table->primaryKey() => $va_tmp1[0])));
  					return;
  				}
+ 			}
+ 			
+ 			if(((!is_array($va_criteria) || sizeof($va_criteria) === 0)) && ($default_sort = $this->request->config->get($this->ops_tablename.'_browse_default_sort'))) {
+				$this->opo_result_context->setCurrentSort($vs_sort = $default_sort);
+				$this->opo_result_context->setCurrentSortDirection($vs_sort_direction = 'ASC');
  			}
  			
  			MetaTagManager::setWindowTitle(_t('%1 browse', $this->browseName('plural')));
@@ -189,7 +183,11 @@
 			if ($vs_facet_group = $this->request->config->get($this->ops_tablename.(($this->opo_browse->numCriteria() < 1) ? '_browse_facet_group' : '_browse_refine_facet_group'))) {
 				$this->opo_browse->setFacetGroup($vs_facet_group);
 			}
- 			$this->opo_browse->execute(array('checkAccess' => $va_access_values, 'no_cache' => !$this->opo_result_context->cacheIsValid(), 'rootRecordsOnly' => $this->view->getVar('hide_children')));
+ 			$this->opo_browse->execute([
+ 				'checkAccess' => $va_access_values, 
+ 				'no_cache' => !$this->opo_result_context->cacheIsValid(), 
+ 				'rootRecordsOnly' => $this->view->getVar('hide_children'), 
+ 				'filterDeaccessionedRecords' => $this->view->getVar('hide_deaccession')]);
  			$this->opo_result_context->validateCache();
  			
 			$this->opo_result_context->setSearchExpression($this->opo_browse->getBrowseID());
@@ -210,7 +208,7 @@
 			$this->view->setVar('result_context', $this->opo_result_context);
 			
  			$this->view->setVar('criteria', $va_criteria = $this->opo_browse->getCriteriaWithLabels());
- 			$this->view->setVar('available_facets', $this->opo_browse->getInfoForAvailableFacets());
+ 			$this->view->setVar('available_facets', $va_facets_with_info);
  			
  			$this->view->setVar('facets_with_content', $this->opo_browse->getInfoForFacetsWithContent());
  			$this->view->setVar('facet_info', $va_facet_info = $this->opo_browse->getInfoForFacets());
@@ -393,15 +391,15 @@
  			
  			// Using the back-button can cause requests for facets that are no longer available
  			// In these cases we reset the browse.
- 			if (!($va_facet = $this->opo_browse->getFacet($ps_facet_name, array('sort' => 'name', 'checkAccess' => $va_access_values)))) {
- 				 $this->opo_browse->removeAllCriteria();
- 				 $this->opo_browse->execute();
- 				 $va_facet = $this->opo_browse->getFacet($ps_facet_name, array('sort' => 'name', 'checkAccess' => $va_access_values));
- 				 $va_facet_info = $this->opo_browse->getInfoForFacet($ps_facet_name);
- 				 
-				$this->opo_result_context->setSearchExpression($this->opo_browse->getBrowseID());
-				$this->opo_result_context->saveContext();
- 			}
+ 			// if (!($va_facet = $this->opo_browse->getFacet($ps_facet_name, array('sort' => 'name', 'checkAccess' => $va_access_values)))) {
+//  				 $this->opo_browse->removeAllCriteria();
+//  				 $this->opo_browse->execute();
+//  				 $va_facet = $this->opo_browse->getFacet($ps_facet_name, array('sort' => 'name', 'checkAccess' => $va_access_values));
+//  				 $va_facet_info = $this->opo_browse->getInfoForFacet($ps_facet_name);
+//  				 
+// 				$this->opo_result_context->setSearchExpression($this->opo_browse->getBrowseID());
+// 				$this->opo_result_context->saveContext();
+//  			}
  			
  			$this->view->setVar('browse_last_id', (int)$vm_id ? (int)$vm_id : (int)$this->opo_result_context->getParameter($ps_facet_name.'_browse_last_id'));
  			$this->view->setVar('facet', $va_facet);
@@ -460,8 +458,8 @@
  			if(!is_array($va_facet_info = $this->opo_browse->getInfoForFacet($ps_facet_name))) { return null; }
  			
  			$va_facet = $this->opo_browse->getFacet($ps_facet_name, array('sort' => 'name', 'checkAccess' => $va_access_values));
- 			
- 			if ($va_facet_info['type'] == 'location') {
+ 				
+ 			if (in_array($va_facet_info['type'], ['current_value', 'location']) ){
  				//
  				// Hierarchical display of current location facets is only available when pure storage location tracking (ie. only 
  				// locations, not loans, occurrences etc.) is configured. The keys of the location facet array are in the 
@@ -471,7 +469,8 @@
  				//
 				$va_facet_proc = [];
 				foreach($va_facet as $k => $v) {
-					$id = array_pop(explode(':', $k));
+					$t = explode(':', $k);
+					$id = array_pop($t);
 					$va_facet_proc[$id] = $v;
 				}
  				$va_facet = $va_facet_proc;

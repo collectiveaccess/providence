@@ -29,16 +29,16 @@
  *
  * ----------------------------------------------------------------------
  */
-
+use PHPUnit\Framework\TestCase;
 
 require_once(__CA_MODELS_DIR__.'/ca_sets.php');
 require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 
-class ca_setsTest extends PHPUnit_Framework_TestCase {
+class ca_setsTest extends TestCase {
 	protected $opn_object_id;
 	protected $opn_set_id;
 
-	public function setUp() {
+	protected function setUp() : void {
 		$t_list = new ca_lists();
 
 		// add a minimal object for testing
@@ -100,7 +100,7 @@ class ca_setsTest extends PHPUnit_Framework_TestCase {
 
 		// try text (no return as array)
 		$vs_ret = $t_set->get('ca_set_items.item_id'); // what comes out is a string with the primary key
-		$this->assertRegExp("/^[0-9]+$/", $vs_ret);
+		$this->assertMatchesRegularExpression("/^[0-9]+$/", $vs_ret);
 
 		$vs_ret = $t_set->get('ca_set_items.preferred_labels');
 		$this->assertEquals("[BLANK]", $vs_ret);
@@ -143,7 +143,7 @@ class ca_setsTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($this->opn_object_id, $va_item['record_id'], 'Set item must be related to object');
 	}
 
-	public function tearDown() {
+	protected function tearDown() : void {
 		// clean up test records
 		$t_object = new ca_objects($this->opn_object_id);
 		$t_object->setMode(ACCESS_WRITE);

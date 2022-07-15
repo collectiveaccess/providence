@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2018 Whirl-i-Gig
+ * Copyright 2016-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -103,7 +103,6 @@ class WLPlugMediaBinaryFile extends BaseMediaPlugin implements IWLPlugMedia {
 		$this->description = _t('Accepts any file unrecognized by other media plugins and stores it as-is');
 
 		$this->opo_config = Configuration::load();
-		$this->opo_external_app_config = Configuration::load(__CA_CONF_DIR__."/external_applications.conf");
 	}
 	# ------------------------------------------------
 	public function checkStatus() {
@@ -121,6 +120,7 @@ class WLPlugMediaBinaryFile extends BaseMediaPlugin implements IWLPlugMedia {
 	 */
 	public function divineFileFormat($ps_filepath) {
 		if ($ps_filepath == '') { return ''; }
+		if(!$this->opo_config->get('accept_all_files_as_media')) { return false; }
 
 		$this->filepath = $this->handle = $ps_filepath;
 		$this->properties['filesize'] = filesize($ps_filepath);
@@ -132,7 +132,8 @@ class WLPlugMediaBinaryFile extends BaseMediaPlugin implements IWLPlugMedia {
 		return "application/octet-stream";
 	}
 	# ------------------------------------------------
-	public function read ($ps_filepath) {
+	public function read ($ps_filepath, $mimetype="", $options=null) {
+		if(!$this->opo_config->get('accept_all_files_as_media')) { return false; }
 		if ($this->filepath == $ps_filepath) {
 			# noop
 			return true;

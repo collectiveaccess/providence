@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2015 Whirl-i-Gig
+ * Copyright 2014-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -134,8 +134,9 @@ class FMPXMLResultReader extends BaseXMLDataReader {
 			$o_name = $o_field->attributes->getNamedItem('NAME');
 			
 			// Normalize field names by replacing any run of characters that is not a letter, number,
-			// underscore, -, #, ?, :, % or & with a single underscore.
-			$vs_field_name = preg_replace("![^A-Za-z0-9_\-\:\#\?\%\&]+!", "_", (string)$o_name->nodeValue);
+			// with a single underscore and forcing the name to lowercase. Non-alphanumeric characters at the
+			// beginning or end of the field name are removed.
+			$vs_field_name = trim(preg_replace("![^A-Za-z0-9]+!", "_", preg_replace("!['\"]+!", "", (string)strtolower(html_entity_decode($o_name->nodeValue)))), " \n\r\t\v\0_");
 			
 			$this->opa_metadata[$vn_index] = $vs_field_name;
 			
@@ -162,16 +163,67 @@ class FMPXMLResultReader extends BaseXMLDataReader {
 		$vb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
 		$vs_delimiter = caGetOption('delimiter', $pa_options, ';');
 		
-		//$ps_spec = str_replace("/", "", $ps_spec);
+		$ps_spec = strtolower(str_replace("/", "", $ps_spec));
 		if ($this->opb_tag_names_as_case_insensitive) { $ps_spec = strtolower($ps_spec); }
 		if (is_array($this->opa_row_buf) && ($ps_spec) && (isset($this->opa_row_buf[$ps_spec]))) {
 			if($vb_return_as_array) {
-				return $this->opa_row_buf[$ps_spec];
+				return is_array($this->opa_row_buf[$ps_spec]) ? $this->opa_row_buf[$ps_spec] : [$this->opa_row_buf[$ps_spec]];
 			} else {
 				return join($vs_delimiter, $this->opa_row_buf[$ps_spec]);
 			}
 		}
 		return null;	
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @return mixed
+	 */
+	public function nextRow() {
+		if (!($o_row = $this->opo_handle->item($this->opn_current_row))) { return false; }
+		
+		$o_row_clone = $o_row->cloneNode(TRUE);
+		$this->opo_handle_xml = new DOMDocument();
+		$this->opo_handle_xml->appendChild($this->opo_handle_xml->importNode($o_row_clone,TRUE));
+
+		$this->opo_handle_xpath = new DOMXPath($this->opo_handle_xml);
+		
+		if ($this->ops_xml_namespace_prefix && $this->ops_xml_namespace) {
+			$this->opo_handle_xpath->registerNamespace($this->ops_xml_namespace_prefix, $this->ops_xml_namespace);
+		}
+		$row_with_labels = [];
+		
+		$cols = $this->opo_handle_xpath->query('n:COL');
+		
+		foreach($this->opa_metadata as $i => $l) {
+			$o_node = $cols[$i];	// <COL>
+			$vals = [];
+			
+			$data = $this->opo_handle_xpath->query('n:DATA', $o_node);
+			foreach($data as $n) {
+				$v = html_entity_decode((string)$n->nodeValue, null, 'UTF-8');
+				if(strlen($v)) { $vals[] = $v; }
+			}
+			$row_with_labels[$l] = $vals;
+			
+			if(strtolower($l) !== $l) {
+				$row_with_labels[strtolower($l)] = $vals;
+			}
+		}
+		$this->opa_row_buf = $row_with_labels;
+		$this->opn_current_row++;
+		if ($this->opn_current_row > $this->numRows()) { return false; }
+		return true;
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @return mixed
+	 */
+	public function getRow($pa_options=null) {
+		return is_array($this->opa_row_buf) ? $this->opa_row_buf : null;
 	}
 	# -------------------------------------------------------
 	/**

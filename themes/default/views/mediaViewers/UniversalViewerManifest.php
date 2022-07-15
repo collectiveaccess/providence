@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,7 +39,11 @@
 	
 	$vs_display_version = caGetOption('display_version', $va_display, 'tilepic');
 	
-	$va_metadata = [];
+	$vs_title = ($t_instance && ($vs_rep_title = str_replace("[".caGetBlankLabelText('ca_object_representations')."]", "", $t_instance->get('preferred_labels')))) ? $vs_rep_title : (($vs_subject_title = str_replace("[".caGetBlankLabelText($t_subject->tableName())."]", "", $t_subject->get('preferred_labels'))) ? $vs_subject_title : "???");
+	
+	$va_metadata = [
+    	["label" => "Title", "value" => $vs_title]
+  	];
 	
 	if (isset($va_data['resources']) && is_array($va_data['resources']) && sizeof($va_data['resources'])) {
 		$va_resources = $va_data['resources'];
@@ -67,7 +71,7 @@
 		} elseif ($vs_display_version == 'tilepic') {
 			$vs_service_url = "{$vs_base_url}/service.php/IIIF/{$vs_identifier}:{$vn_page}";
 			$vs_thumb_url = "{$vs_base_url}/service.php/IIIF/{$vs_identifier}:{$vn_page}/full/!512,512/0/default.jpg";
-			$vn_width = $va_data['width']; $vn_height = $va_data['height'];
+			$vn_width = $va_resource[$vs_display_version.'_width']; $vn_height = $va_resource[$vs_display_version.'_height'];
 		} else {
 			$vs_service_url = $va_resource['url'];
 			$vs_thumb_url = "{$vs_base_url}/service.php/IIIF/{$vs_identifier}:{$vn_page}/full/!512,512/0/default.jpg";
@@ -78,8 +82,8 @@
 			[
 				"@id" => $vs_canvas_id,
 				"@type" => "sc:Canvas",
-				"label" => (string)($vn_page),
-				"thumbnail" => $va_resource['preview_url'],
+				"label" => $va_resource['title'] ? $va_resource['title'] : (string)($vn_page),
+				"thumbnail" => $va_resource['preview_url'] ? $va_resource['preview_url'] : $vs_thumb_url,
 				"seeAlso" => [],
 				"height" => $vn_height,
 				"width" => $vn_width,

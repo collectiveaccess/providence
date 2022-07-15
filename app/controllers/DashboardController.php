@@ -74,6 +74,11 @@
  			$this->opo_dashboard_manager->clearDashboard();
  			$this->render('dashboard/dashboard_html.php');
  		}
+		# -------------------------------------------------------
+ 		public function default() {
+ 			$this->opo_dashboard_manager->defaultDashboard();
+ 			$this->render('dashboard/dashboard_html.php');
+ 		}
  		# -------------------------------------------------------
  		# Ajax-based settings
  		# -------------------------------------------------------

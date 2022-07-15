@@ -54,7 +54,7 @@
     </div>
 </form>
 <?php
-	print caFormTag($this->request, 'Run', 'caResourceSpaceResultsForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
+	print caFormTag($this->request, 'Run', 'caResourceSpaceResultsForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
 ?>
 
  	<div class="caResourceSpaceResultsPagination">

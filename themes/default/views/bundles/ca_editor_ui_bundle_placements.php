@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2013 Whirl-i-Gig
+ * Copyright 2011-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,7 @@
 	$t_screen 								= $this->getVar('t_screen');
 	$vs_id_prefix 							= $this->getVar('placement_code').$this->getVar('id_prefix');
 	
-	$va_available_display_items 			= $t_screen->getAvailableBundles();
+	$va_available_display_items 			= array_filter($t_screen->getAvailableBundles(), function($v) { return !$v['deprecated']; });
 	
 	foreach($va_available_display_items as $vs_bundle => $va_item) {
 		unset($va_available_display_items[$vs_bundle]['settings']);	// strip lists of valid settings - we don't need to send them to the client and they can be fairly large
@@ -75,7 +75,8 @@
 				
 				displayBundleListID: '<?php print $vs_id_prefix; ?>displayBundleList',
 				
-				settingsIcon: "<?php print caNavIcon(__CA_NAV_ICON_INFO__, 1); ?>"
+				settingsIcon: "<?php print caNavIcon(__CA_NAV_ICON_INFO__, 1); ?>",
+				saveSettingsIcon: "<?php print caNavIcon(__CA_NAV_ICON_GO__, 1); ?>"
 			});		
 		});
 	</script>

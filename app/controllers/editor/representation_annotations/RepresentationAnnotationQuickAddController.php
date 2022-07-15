@@ -70,7 +70,7 @@
  		public function deleteAnnotation() {
  			$vn_annotation_id = $this->request->getParameter('annotation_id', pInteger);
  			
- 			$va_response = array('code' => 0, 'id' => $vn_annotation_id, errors => array());
+ 			$va_response = array('code' => 0, 'id' => $vn_annotation_id, 'errors' => []);
  			$t_annotation = new ca_representation_annotations();
  			if ($t_annotation->load($vn_annotation_id)) {
  				$t_annotation->setMode(ACCESS_WRITE);

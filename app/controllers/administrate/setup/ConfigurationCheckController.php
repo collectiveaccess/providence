@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,15 +27,12 @@
  */
 
 include_once(__CA_LIB_DIR__."/Search/SearchEngine.php");
-include_once(__CA_LIB_DIR__."/Media.php");
 include_once(__CA_LIB_DIR__."/Print/PDFRenderer.php");
-include_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
-include_once(__CA_LIB_DIR__."/ConfigurationCheck.php");
-include_once(__CA_MODELS_DIR__."/ca_change_log.php");
 
 class ConfigurationCheckController extends ActionController {
 	# ------------------------------------------------
 	public function DoCheck(){
+		define('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__', true);	// Force all plugins to reload their paths
 		AssetLoadManager::register('tableList');
 
 		// latest log id
@@ -90,6 +87,30 @@ class ConfigurationCheckController extends ActionController {
 		$va_gd['available'] = $vb_gd_is_available;
 		$va_barcode_components['GD'] = $va_gd;
 		$this->view->setVar('barcode_config_component_list',  $va_barcode_components);
+		
+		$va_md_extraction_components = [
+			'EXIFTool' => [
+				'available' => false,
+				'description' => _t('A tool for extraction of embedded metadata in images, documents and other media. See https://exiftool.org for additional information.'),
+				'warnings' => [],
+				'errors' => []
+			],
+			'MediaInfo' => [
+				'available' => false,
+				'description' => _t('A tool for extraction of embedded metadata from audio and video files. See https://mediaarea.net/en/MediaInfo for additional information.'),
+				'warnings' => [],
+				'errors' => []
+			]
+		];
+		if (caExifToolInstalled()) {
+			$va_md_extraction_components['EXIFTool']['available'] = true;
+		}
+		if (caMediaInfoInstalled()) {
+			$va_md_extraction_components['MediaInfo']['available'] = true;
+		}
+		
+		$this->view->setVar('metadata_extraction_config_component_list',  $va_md_extraction_components);
+		
 
 		// General system configuration issues
 		if (!(bool)$this->request->config->get('dont_do_expensive_configuration_checks_in_web_ui')) {

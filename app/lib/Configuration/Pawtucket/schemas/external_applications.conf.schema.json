@@ -1,0 +1,90 @@
+{
+  "$id": "https://collectiveaccess.org/external_applications.conf.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "external_applications.conf",
+  "type": "object",
+  
+    "definitions": {
+        "applications": {
+            "title": "Application paths",
+            "description": "Paths for helper applications used by CollectiveAccess for media processing, PDF generation, metadata extraction and more.",
+            "$id": "#applications",
+            "properties": {
+                "ghostscript_app": {
+                    "type": "string",
+                    "description": "Path to Ghostscript binary (\"gs\" command) (http://pages.cs.wisc.edu/~ghost/). Ghostscript is used to to identify and extract metadata from PDFs, as well as to create page images from PDF files for preview.",
+                    "default": "/usr/bin/gs"
+                },
+                "ffmpeg_app": {
+                    "type": "string",
+                    "description": "Path to ffmpeg binary (http://ffmpeg.mplayerhq.hu/). ffmpeg is used to convert audio and video files, and to generate preview audio clips and image thumbnails.",
+                    "default": "/usr/bin/ffmpeg"
+                },
+                "qt-faststart_app": {
+                    "type": "string",
+                    "description": "Path to qt-faststart binary [part of ffmpeg] (http://ffmpeg.mplayerhq.hu/). qt-faststart is used to optimize video files for in-browser playback.",
+                    "default": "/usr/local/bin/qt-faststart"
+                },
+                "dcraw_app": {
+                    "type": "string",
+                    "description": "Path to dcraw binary (http://cybercom.net/~dcoffin/dcraw/). dcraw is used to convert a range of manufacturer-specific RAW image file formats into standard formats such as TIFF. It allows CollectiveAccess to accept RAW image files as if they were standard JPEG or TIFF files.",
+                    "default": "/usr/bin/dcraw"
+                },
+                "imagemagick_path": {
+                    "type": "string",
+                    "description": "Path to directory containing ImageMagick binaries (http://www.imagemagick.org). ImageMagick is used to convert and transform image files, as well as to identify image file formats.",
+                    "default": "/usr/bin"
+                },
+                "graphicsmagick_app": {
+                    "type": "string",
+                    "description": "Path to GraphicsMagick binary (http://www.graphicsmagick.org). GraphicsMagick is used to convert and transform image files, as well as to identify image file formats.",
+                    "default": "/usr/bin/gm"
+                },
+                "pdftotext_app": {
+                    "type": "string",
+                    "description": "Path to pdftotext binary (part of the xpdf package from http://www.foolabs.com/xpdf/). pdftotext is used to extract text from PDF files for indexing.",
+                    "default": "/usr/bin/pdftotext"
+                },
+                "libreoffice_app": {
+                    "type": "string",
+                    "description": "Path to LibreOffice binary (http://www.libreoffice.org/). Libreoffice is used to generate in-browser preview images from Microsoft Office formats (Word, Excel, Powerpoint) and to extract text from uploaded documents.",
+                    "default": "/usr/bin/libreoffice"
+                },
+                "mediainfo_app": {
+                    "type": "string",
+                    "description": "Path to MediaInfo binary (http://mediainfo.sourceforge.net/en/). MediaInfo is used to extract embedded metadata from uploaded media.",
+                    "default": "/usr/bin/mediainfo"
+                },
+                "pdfminer_app": {
+                    "type": "string",
+                    "description": "Path to directory containing PDFMiner (http://www.unixuser.org/~euske/python/pdfminer/index.html) scripts. PDFMiner is used to extract text from PDFs and to calculate locations of text on PDF pages for highlighting in the in-browser PDF viewer. PDFMiner is required for in-browser searches of PDFs with spatial highlighting.",
+                    "default": "/usr/bin/pdf2txt.py"
+                },
+                "exiftool_app": {
+                    "type": "string",
+                    "description": "Path to ExifTool binary (http://www.sno.phy.queensu.ca/~phil/exiftool/). ExifTool is used to extract embedded metadata from uploaded media.",
+                    "default": "/usr/bin/exiftool"
+                },
+                "wkhtmltopdf_app": {
+                    "type": "string",
+                    "description": "Path to wkhtmltopdf (http://wkhtmltopdf.org). wkhtmltopdf is generate PDF-format output. It is a faster alternative to the built-in PDF generator.",
+                    "default": "/usr/local/bin/wkhtmltopdf"
+                },
+                "openctm_app": {
+                    "type": "string",
+                    "description": "Path to OpenCTM ctmconv (convert 3d model to CTM format) binary (http://openctm.sourceforge.net). OpenCTM is used to compress 3d surfaces for faster loading.",
+                    "default": "/usr/local/bin/ctmconv"
+                },
+                "meshlabserver_app": {
+                    "type": "string",
+                    "description": "Path to Meshlab meshlabserver binary (http://meshlab.sourceforge.net). MeshlabServer is used to convert various 3d file formats into formats CollectiveAccess can parse and process.",
+                    "default": "/usr/local/bin/meshlabserver"
+                }
+            }
+        }
+    },
+  
+    "anyOf": [
+        { "$ref": "#applications" }
+    ]
+}

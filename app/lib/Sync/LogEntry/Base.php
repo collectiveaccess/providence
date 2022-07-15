@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -116,7 +116,9 @@ abstract class Base {
 		if($this->isUpdate() || $this->isDelete()) {
 			// if we can't find the GUID and this is an update, throw error
 			if((!$this->getModelInstance()->loadByGUID($this->getGUID())) && $this->isUpdate()) {
-				throw new IrrelevantLogEntry('Mode was update but the given GUID "'.$this->getGUID().'" could not be found for table num ' . $this->getTableNum());
+				if ($this->getModelInstance()->tableName() !== 'ca_users') {
+					throw new IrrelevantLogEntry('Mode was update but the given GUID "'.$this->getGUID().'" could not be found for table num ' . $this->getTableNum());
+				}
 			}
 
 			// if we can't find it and this is a delete, we don't particularly care. yes, we can't delete a non-existing
@@ -225,9 +227,10 @@ abstract class Base {
 				!isset($this->opa_log['snapshot']['value_blob']) &&
 				!isset($this->opa_log['snapshot']['value_decimal1']) &&
 				!isset($this->opa_log['snapshot']['value_decimal2']) &&
-				!isset($this->opa_log['snapshot']['value_integer1'])
+				!isset($this->opa_log['snapshot']['value_integer1']) &&
+				!isset($this->opa_log['snapshot']['value_source'])
 			) {
-				foreach (['item_id', 'value_longtext1', 'value_longtext2', 'value_blob', 'value_decimal1', 'value_decimal2', 'value_integer1'] as $vs_f) {
+				foreach (['item_id', 'value_longtext1', 'value_longtext2', 'value_blob', 'value_decimal1', 'value_decimal2', 'value_integer1', 'value_source'] as $vs_f) {
 					if(!isset($this->opa_log['snapshot'][$vs_f])) { $this->opa_log['snapshot'][$vs_f] = null; }
 				}
 			}
@@ -338,17 +341,23 @@ abstract class Base {
 				// we assume they're the same in this system and try to set() them if they exist.
 				$vs_potential_code_field = str_replace('_id', '', $vs_field) . '_code';
 				if(isset($va_fld_info['LIST']) || isset($va_fld_info['LIST_CODE'])) {
-					if(isset($va_snapshot[$vs_potential_code_field])) {
+					if(array_key_exists($vs_potential_code_field, $va_snapshot)) {
 						$vs_code = $va_snapshot[$vs_potential_code_field];
 						// already established one of them is set, a few lines above
 						$vs_list = isset($va_fld_info['LIST']) ? $va_fld_info['LIST'] : $va_fld_info['LIST_CODE'];
 
 						if(strlen($vs_code) && ($vs_code !== 'null') && !($vn_item_id = caGetListItemID($vs_list, $vs_code, ['includeDeleted' => true]))) {
-							throw new InvalidLogEntryException(
-								"Couldn't find list item id for idno '{$vs_code}' in list '{$vs_list}'. Field was {$vs_field}"
-							);
+							if(preg_match("!_types$!", $vs_list)) {
+								$item_ids = array_keys(caGetListItems($vs_list));
+								$vn_item_id = array_shift($item_ids);
+							} 
+							if(!$vn_item_id) {
+								throw new InvalidLogEntryException(
+									"Couldn't find list item id for idno '{$vs_code}' in list '{$vs_list}'. Field was {$vs_field}"
+								);
+							}
 						}
-					} else {
+					} elseif ($va_snapshot[$vs_field]) {
 						throw new InvalidLogEntryException(
 							"No corresponding code field '{$vs_potential_code_field}' found for list reference field '{$vs_field}'"
 						);
@@ -359,7 +368,7 @@ abstract class Base {
 
 				// check parent_id field
 				if(($vs_field == $this->getModelInstance()->getProperty('HIERARCHY_PARENT_ID_FLD')) && (intval($va_snapshot[$vs_field]) != 1)) {
-					if(isset($va_snapshot[$vs_field . '_guid']) && ($vs_parent_guid = $va_snapshot[$vs_field . '_guid'])) {
+					if(array_key_exists($vs_field . '_guid', $va_snapshot) && ($vs_parent_guid = $va_snapshot[$vs_field . '_guid'])) {
 						if(($vs_idno = $va_snapshot[$this->getModelInstance()->getProperty('ID_NUMBERING_ID_FIELD')]) && !preg_match("/Root node for /", $vs_idno)) {
 							$t_instance = $this->getModelInstance()->cloneRecord();
 							$t_instance->setTransaction($this->getTx());
@@ -367,7 +376,7 @@ abstract class Base {
 								throw new InvalidLogEntryException(_t("Could not load GUID %1 (referenced in HIERARCHY_PARENT_ID_FLD)", $vs_parent_guid));
 							}
 						}
-					} else {
+					} elseif ($va_snapshot[$vs_field]) {
 						throw new InvalidLogEntryException("No parent_guid field found");
 					}
 				}
@@ -417,7 +426,9 @@ abstract class Base {
 				// we assume they're the same in this system and try to set() them if they exist.
 				$vs_potential_code_field = str_replace('_id', '', $vs_field) . '_code';
 				if(isset($va_fld_info['LIST']) || isset($va_fld_info['LIST_CODE'])) {
-					if(isset($va_snapshot[$vs_potential_code_field])) {
+					if(in_array($vs_field, ['access', 'status'])) {
+						$this->getModelInstance()->set($vs_field, $va_snapshot[$vs_field]);
+					} elseif(array_key_exists($vs_potential_code_field, $va_snapshot)) {
 						$vs_code = $va_snapshot[$vs_potential_code_field];
 						// already established one of them is set, a few lines above
 						$vs_list = isset($va_fld_info['LIST']) ? $va_fld_info['LIST'] : $va_fld_info['LIST_CODE'];
@@ -429,11 +440,21 @@ abstract class Base {
 								$this->getModelInstance()->set($vs_field, $vn_item_id, ['allowSettingOfTypeID' => true]);
 							}
 						} elseif(strlen($vs_code) && ($vs_code !== 'null')) {
-							throw new InvalidLogEntryException(
-								"Couldn't find list item id for idno '{$vs_code}' in list '{$vs_list}. Field was {$vs_field}"
-							);
+							if(preg_match("!_types$!", $vs_list)) {
+								$item_ids = array_keys(caGetListItems($vs_list));
+								$vn_item_id = array_shift($item_ids);
+							} 
+							\ReplicationService::$s_logger->log("[$vn_item_id] remap $vs_list: ".print_R($item_ids, true));
+							
+							if(!$vn_item_id) {
+								throw new InvalidLogEntryException(
+									"Couldn't find list item id for idno '{$vs_code}' in list '{$vs_list}'. Field was {$vs_field}"
+								);
+							} else {
+								$this->getModelInstance()->set($vs_field, $vn_item_id, ['allowSettingOfTypeID' => true]);
+							}
 						}
-					} else {
+					} elseif ($va_snapshot[$vs_field]) {
 						throw new InvalidLogEntryException(
 							"No corresponding code field '{$vs_potential_code_field}' found for list reference field '{$vs_field}'"
 						);
@@ -447,7 +468,7 @@ abstract class Base {
 					if(intval($va_snapshot[$vs_field]) == 1) {
 						$this->getModelInstance()->set($vs_field, 1);
 					} else {
-						if(isset($va_snapshot[$vs_field . '_guid']) && ($vs_parent_guid = $va_snapshot[$vs_field . '_guid'])) {
+						if(array_key_exists($vs_field . '_guid', $va_snapshot) && ($vs_parent_guid = $va_snapshot[$vs_field . '_guid'])) {
 							$t_instance = $this->getModelInstance()->cloneRecord();
 							$t_instance->setTransaction($this->getTx());
 							if($t_instance->loadByGUID($vs_parent_guid)) {
@@ -459,7 +480,7 @@ abstract class Base {
 
 								throw new InvalidLogEntryException("Could not load GUID {$vs_parent_guid} (referenced in HIERARCHY_PARENT_ID_FLD)");
 							}
-						} else {
+						} elseif ($va_snapshot[$vs_field]) {
 							throw new InvalidLogEntryException("No guid for parent_id field found");
 						}
 					}
@@ -473,16 +494,20 @@ abstract class Base {
 						$this->getModelInstance()->set($vs_field, $t_rel_item->getPrimaryKey());
 						continue;
 					}
+					throw new IrrelevantLogEntry(_t("row_id guid value '%1' is not defined on this system for %3: %4", $vs_field, $va_snapshot['row_guid'], $t_rel_item->tableName(), print_R($va_snapshot, true)));
 				}
 				
 				// handle many-to-ones relationships (Eg. ca_set_items.set_id => ca_sets.set_id)
 				if (isset($va_many_to_one_rels[$vs_field]) && ($t_rel_item = \Datamodel::getInstanceByTableName($va_many_to_one_rels[$vs_field]['one_table'], true)) && ($t_rel_item instanceof \BundlableLabelableBaseModelWithAttributes)) {
 					$t_rel_item->setTransaction($this->getTx());
+					if(in_array($vs_field, ['home_location_id'])) { continue; }
 					if($t_rel_item->loadByGUID($va_snapshot[$vs_field.'_guid'])) {
 						$this->getModelInstance()->set($vs_field, $t_rel_item->getPrimaryKey());
 						continue;
 					} else {
-						if (!in_array($vs_field, ['type_id', 'locale_id', 'item_id', 'lot_id'])) {	// let auto-resolved fields fall through
+						if (($vs_field === 'user_id') && ($AUTH_CURRENT_USER_ID > 0)) {
+							$vm_val = $AUTH_CURRENT_USER_ID;
+						} elseif (!in_array($vs_field, ['type_id', 'locale_id', 'item_id', 'lot_id', 'home_location_id'])) {	// let auto-resolved fields fall through
 							throw new IrrelevantLogEntry(_t("%1 guid value '%2' is not defined on this system for %3: %4", $vs_field, $va_snapshot[$vs_field.'_guid'], $t_rel_item->tableName(), print_R($va_snapshot, true)));
 						}
 					}

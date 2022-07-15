@@ -34,7 +34,6 @@
 	class recordsByStatusWidget extends BaseWidget implements IWidget {
 		# -------------------------------------------------------
 		private $opo_config;
-		private $opo_datamodel;
 
 		private $opa_table_display_names;
 		private $opa_status_display_names;
@@ -74,9 +73,11 @@
 
 			foreach($this->opa_table_display_names as $vs_table => $vs_display){
 				if(!$this->getRequest() || !$this->getRequest()->user->canDoAction("can_use_records_by_status_widget_{$vs_table}")){
-					foreach(BaseWidget::$s_widget_settings['recordsByStatusWidget']["display_type"]["options"] as $vs_setting_display => $vs_setting_table){
-						if($vs_setting_table==$vs_table){
-							unset(BaseWidget::$s_widget_settings['recordsByStatusWidget']["display_type"]["options"][$vs_setting_display]);
+					if(is_array(BaseWidget::$s_widget_settings['recordsByStatusWidget']["display_type"]["options"])) {
+						foreach(BaseWidget::$s_widget_settings['recordsByStatusWidget']["display_type"]["options"] as $vs_setting_display => $vs_setting_table){
+							if($vs_setting_table==$vs_table){
+								unset(BaseWidget::$s_widget_settings['recordsByStatusWidget']["display_type"]["options"][$vs_setting_display]);
+							}
 						}
 					}
 				}

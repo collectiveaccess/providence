@@ -34,7 +34,7 @@
 	<p>Note that for systems with complex configurations, generating the profile may take up to two minutes.</p>
 	");
 	
-	print caFormTag($this->request, 'export', 'caExportConfigurationForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
+	print caFormTag($this->request, 'export', 'caExportConfigurationForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
 	print "<div style='text-align: center'>".caFormSubmitButton($this->request, __CA_NAV_ICON_GO__, _t("Export and download system configuration"), 'caExportConfigurationForm', array())."</div>";
 	print caHTMLHiddenInput('download', array('value' => 1));
 	print "</form>";

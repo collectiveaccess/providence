@@ -41,8 +41,7 @@ require_once(__CA_LIB_DIR__.'/Configuration.php');
 require_once(__CA_LIB_DIR__.'/Search/SearchBase.php');
 require_once(__CA_LIB_DIR__.'/Search/ASearchConfigurationSettings.php');
 require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch.php');
-require_once(__CA_LIB_DIR__.'/Zend/Http/Client.php');
-require_once(__CA_LIB_DIR__.'/Zend/Http/Response.php');
+
 # ------------------------------------------------
 class ElasticSearchConfigurationSettings extends ASearchConfigurationSettings {
 	# ------------------------------------------------
@@ -61,7 +60,7 @@ class ElasticSearchConfigurationSettings extends ASearchConfigurationSettings {
 		$this->opo_search_base = new SearchBase();
 		$this->opo_app_config = Configuration::load();
 		$this->opo_search_config = Configuration::load($this->opo_app_config->get("search_config"));
-		$this->opo_search_indexing_config = Configuration::load($this->opo_search_config->get("search_indexing_config"));
+		$this->opo_search_indexing_config = Configuration::load(__CA_CONF_DIR__.'/search_indexing.conf');
 		$this->opa_setting_descriptions = array();
 		$this->opa_setting_names = array();
 		$this->opa_setting_hints = array();

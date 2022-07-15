@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2017 Whirl-i-Gig
+ * Copyright 2013-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -54,6 +54,14 @@ if (!$this->request->isAjax()) {
 	<div id="importerUploadArea" style="border: 1px dashed #ccc; text-align: center; padding: 10px; display: none;">
 		<span style="font-size: 16px; color: #333; "><?php print _t("Drag importer worksheets here to add or update"); ?></span>
 	</div>
+	<div style="margin: 10px 0 0 0;">
+<?php 
+			print caFormTag($this->request, 'Load', 'caLoadFromGoogleDrive', null, 'post', 'multipart/form-data', '_top', ['disableUnsavedChangesWarning' => true, 'submitOnReturn' => true, 'noCSRFToken' => true]);
+			print _t('Load importer worksheet from GoogleDrive: %1', caHTMLTextInput('google_drive_url', ['class' => 'urlBg'], ['width' => '300px'])); 
+			print caFormSubmitButton($this->request, __CA_NAV_ICON_GO__, "", 'caLoadFromGoogleDrive', ['size' => '24px']);
+?>
+			</form>
+	</div>
 <?php
 }
 ?>
@@ -71,6 +79,9 @@ if (!$this->request->isAjax()) {
 					<?php _p('Type'); ?>
 				</th>
 				<th>
+					<?php _p('Source'); ?>
+				</th>
+				<th>
 					<?php _p('Mapping'); ?>
 				</th>
 				<th>
@@ -84,7 +95,7 @@ if (!$this->request->isAjax()) {
 	if(sizeof($va_importer_list) == 0) {
 ?>
 			<tr>
-				<td colspan='6'>
+				<td colspan='7'>
 					<div align="center"><?php print _t('No importers defined'); ?></div>
 				</td>
 			</tr>
@@ -103,10 +114,18 @@ if (!$this->request->isAjax()) {
 					<?php print $va_importer['importer_type']; ?>
 				</td>
 				<td>
-					<?php print $va_importer['worksheet'] ? caNavButton($this->request, __CA_NAV_ICON_DOWNLOAD__, _t("Download"), '', 'batch', 'MetadataImport', 'Download', array('importer_id' => $va_importer['importer_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)) : '' ; ?>
+					<?php print (isset($va_importer['settings']['sourceUrl'])) ? _t('Google Drive') : _t('File upload'); ?>
 				</td>
 				<td>
-					<?php print caGetLocalizedDate($va_importer['last_modified_on'], array('dateFormat' => 'delimited')); ?>
+<?php  
+					print $va_importer['worksheet'] ? caNavButton($this->request, __CA_NAV_ICON_DOWNLOAD__, _t("Download"), '', 'batch', 'MetadataImport', 'Download', array('importer_id' => $va_importer['importer_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)) : '' ; 
+
+					if(isset($va_importer['settings']['sourceUrl'])) {
+						print caNavButton($this->request, __CA_NAV_ICON_ROTATE__, _t("Reload"), '', 'batch', 'MetadataImport', 'Load', array('google_drive_url' => urlencode($va_importer['settings']['sourceUrl'])), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true));
+					}
+?>				</td>
+				<td>
+					<?php print caGetLocalizedDate($va_importer['last_modified_on'], array('timeOmit' => false, 'dateFormat' => 'delimited')); ?>
 				</td>
 				<td class="listtableEditDelete">
 					<?php print caNavButton($this->request, __CA_NAV_ICON_GO__, _t("Import data"), '', 'batch', 'MetadataImport', 'Run', array('importer_id' => $va_importer['importer_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>

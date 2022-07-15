@@ -36,7 +36,7 @@
 	<h1><?php print _t('Statistics Dashboard'); ?></h1>
 <?php
 
-	print caFormTag($this->request, 'Index', 'libraryDashboardOptions', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
+	print caFormTag($this->request, 'Index', 'libraryDashboardOptions', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
 	print _t('Dates').': '.caHTMLTextInput('daterange', array('value' => $ps_daterange, 'class' => 'dateBg'), array('width' => '200px'));
 ?>
 </form>
@@ -125,7 +125,9 @@
 		<ol>
 <?php
 	foreach(array_reverse($va_panel_data) as $vs_label => $vn_count) {
-		print "<li>{$vs_label} ({$vn_count})</li>\n";
+		$link = "<a href='#' class='caLibraryGroupLink' data-group_by='".$va_panel_info['group_by'][0]."' data-group='".addslashes($vs_label)."'>".$vs_label."</a>";
+		
+		print "<li>{$link} ({$vn_count})</li>\n";
 	}
 ?>
 		</ol>
@@ -145,6 +147,15 @@
 		jQuery(".caLibraryUserLink").bind("click", function(e) {
 			jQuery("#caLibraryDashboardDetailContainer").slideDown(250);
 			jQuery("#caLibraryDashboardDetailContainer").load('<?php print caNavUrl($this->request, '*', '*', 'getUserDetail'); ?>', { daterange: '<?php print addslashes($vs_daterange_proc); ?>', user_id: jQuery(this).data('user_id') },
+			function() {
+				jQuery.scrollTo('#caLibraryDashboardDetailContainer',600);
+			});
+			e.preventDefault();
+			return false;
+		});
+		jQuery(".caLibraryGroupLink").bind("click", function(e) {
+			jQuery("#caLibraryDashboardDetailContainer").slideDown(250);
+			jQuery("#caLibraryDashboardDetailContainer").load('<?php print caNavUrl($this->request, '*', '*', 'getGroupDetail'); ?>', { daterange: '<?php print addslashes($vs_daterange_proc); ?>', group_by: jQuery(this).data('group_by'), group: jQuery(this).data('group') },
 			function() {
 				jQuery.scrollTo('#caLibraryDashboardDetailContainer',600);
 			});

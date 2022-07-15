@@ -27,8 +27,14 @@
  *
  * ----------------------------------------------------------------------
  */
+    //
+    // Send headers before any other content.
+    // Disable gzip or any compression to allow showing progressbar.
+    //
+    header('Content-Encoding: none');
 	define('__CollectiveAccess_Installer__', 1);
-	error_reporting(E_ALL ^ E_NOTICE);
+
+    error_reporting(E_ALL ^ E_NOTICE);
 	set_time_limit(7200);
 	ini_set("memory_limit", "512M");	
 	
@@ -47,9 +53,9 @@
 
 if (defined('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__') && __CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__) {
 	if ($ps_action == 'profileUpload') {
-		$va_response = array('STATUS' => 'OK');
+		$va_response = ['STATUS' => 'OK'];
 		
-		$vs_profile_dir = pathinfo(__FILE__, PATHINFO_DIRNAME).'/profiles/xml';
+		$vs_profile_dir = pathinfo(__FILE__, PATHINFO_DIRNAME).'/profiles';
 		if (is_array($_FILES['files']['tmp_name'])) { 
 			foreach($_FILES['files']['tmp_name'] as $vn_i => $vs_tmp_name) {
 				if ($_FILES['files']['size'][$vn_i] <= 0) { 
@@ -57,28 +63,27 @@ if (defined('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__') && __CA_AL
 					continue; 
 				}
 				// check if file looks like a profile
-				$vs_tmp_dir = pathinfo($vs_tmp_name, PATHINFO_DIRNAME);
-			
-				$vo_profile = new DOMDocument();
-				@$vo_profile->load($vs_tmp_name);
-			
-				if(!(@$vo_profile->schemaValidate($vs_profile_dir."/profile.xsd"))) { 
+				if(!($format = \Installer\Installer::validateProfile(pathinfo($vs_tmp_name, PATHINFO_DIRNAME), pathinfo($vs_tmp_name, PATHINFO_BASENAME), pathinfo($_FILES['files']['name'][$vn_i], PATHINFO_EXTENSION)))) {
 					$va_response['skippedMessage'][] = _t('%1 is not a valid profile', $_FILES['files']['name'][$vn_i]);
 					continue; 
 				}
+				$format = strtolower($format);
 			
-				$vb_exists = file_exists($vs_profile_dir.'/'.$_FILES['files']['name'][$vn_i]);
+				$vb_exists = file_exists($vs_profile_dir.'/'.$format.'/'.$_FILES['files']['name'][$vn_i]);
 			
 				// attempt to write to profile dir
-				if (@copy($vs_tmp_name, $vs_profile_dir.'/'.$_FILES['files']['name'][$vn_i])) {
+				if (@copy($vs_tmp_name, $vs_profile_dir."/{$format}/".$_FILES['files']['name'][$vn_i])) {
 					$va_response['added'][] = pathinfo($_FILES['files']['name'][$vn_i], PATHINFO_FILENAME);
 					$va_response['uploadMessage'][] = $vb_exists ? _t('Updated %1', $_FILES['files']['name'][$vn_i]) : _t('Added %1', $_FILES['files']['name'][$vn_i]);
+				} else {
+					$va_response['skippedMessage'][] = _t('%1 could not be written', $_FILES['files']['name'][$vn_i]);
+					continue; 
 				}
 				
 			}
 		}
 		// return list of profiles
-		$va_response['profiles'] = caGetAvailableXMLProfiles();
+		$va_response['profiles'] = caGetAvailableProfiles();
 		
 		print json_encode($va_response);
 		return;
@@ -102,12 +107,7 @@ if (defined('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__') && __CA_AL
 	// get current theme
 	$theme = 'default';
 	
-	$_ = new Zend_Translate('gettext', __CA_APP_DIR__.'/locale/'.$locale.'/messages.mo', $locale);
-	
-	require_once(__CA_LIB_DIR__.'/Configuration.php');
-	require_once(__CA_LIB_DIR__.'/Db.php');
-	require_once(__CA_LIB_DIR__.'/Datamodel.php');
-	
+	$_ = new Zend_Translate('gettext', __CA_APP_DIR__.'/locale/'.$locale.'/messages.mo', $locale, ['disableNotices' => true]);
 	
 	// Check setup.php settings
 	// ...
@@ -126,8 +126,8 @@ if (defined('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__') && __CA_AL
 	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 	<title>CollectiveAccess: Installer</title>
 	<link href="css/site.css" rel="stylesheet" type="text/css" />
-	<link rel='stylesheet' href='../assets/fontawesome/css/font-awesome.min.css' type='text/css' media='all'/>
-	
+	<link rel="stylesheet" href="../assets/fontawesome/css/all.min.css" />
+	<link rel="stylesheet" href="../assets/fontawesome/css/v4-shims.min.css" />
 	<script src='../assets/jquery/jquery.js' type='text/javascript'></script>
 	<script src='../assets/jquery/jquery-ui/jquery-ui.min.js' type='text/javascript'></script></head>
 <?php

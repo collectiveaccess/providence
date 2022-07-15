@@ -1,30 +1,13 @@
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="http://schema.phpunit.de/3.7/phpunit.xsd"
-         backupGlobals="false"
-         backupStaticAttributes="false"
-         cacheTokens="false"
-         colors="false"
-         convertErrorsToExceptions="true"
-         convertNoticesToExceptions="true"
-         convertWarningsToExceptions="true"
-         forceCoversAnnotation="false"
-         mapTestClassNameToCoveredClassName="false"
-         processIsolation="false"
-         stopOnError="false"
-         stopOnFailure="false"
-         stopOnIncomplete="false"
-         stopOnSkipped="false"
-         strict="false"
-         bootstrap="./setup-tests.php"
-         verbose="false">
-
+<?xml version="1.0"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd" backupGlobals="false" backupStaticAttributes="false" colors="false" convertErrorsToExceptions="true" convertNoticesToExceptions="true" convertWarningsToExceptions="true" forceCoversAnnotation="false" processIsolation="false" stopOnError="false" stopOnFailure="false" stopOnIncomplete="false" stopOnSkipped="false" bootstrap="./setup-tests.php" verbose="true">
+  <coverage/>
   <testsuites>
     <testsuite name="Helpers Test Suite">
       <directory>helpers/</directory>
     </testsuite>
     <testsuite name="Lib Test Suite">
       <directory>lib/</directory>
-      <exclude>lib/core/Search/ElasticSearch</exclude>
+      <exclude>lib/Search/ElasticSearch</exclude>
     </testsuite>
     <testsuite name="Models Test Suite">
       <directory>models/</directory>
@@ -37,8 +20,9 @@
     </testsuite>
     <testsuite name="Install Test Suite">
       <directory>install/</directory>
-      <exclude>install/ConfigurationUpdateTest.php</exclude>
+    </testsuite>
+    <testsuite name="Refineries Test Suite">
+      <directory>refineries/</directory>
     </testsuite>
   </testsuites>
-
 </phpunit>

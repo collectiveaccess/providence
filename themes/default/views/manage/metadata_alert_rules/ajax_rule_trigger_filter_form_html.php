@@ -36,7 +36,7 @@
 ?>
 		<div class="formLabel">
 			<?php print _t('Limit to elements with'); ?><br/>
-			<?php print join("; ", $va_filters); ?>
+			<?php print join("<br/>", $va_filters); ?>
 		</div>
 	
 	

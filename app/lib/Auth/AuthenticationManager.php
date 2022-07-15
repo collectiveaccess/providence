@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2016 Whirl-i-Gig
+ * Copyright 2014-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -57,7 +57,9 @@ class AuthenticationManager {
 			AuthenticationManager::$g_authentication_conf = $o_auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
 
 			$vs_auth_adapter = (!is_null($ps_adapter)) ? $ps_adapter : $o_auth_config->get('auth_adapter');
-
+            
+		    if ($is_local = (isset($_REQUEST['local']) && $_REQUEST['local'])) { $vs_auth_adapter = 'CaUsers'; }
+		
 			$vs_auth_adapter_file = __CA_LIB_DIR__."/Auth/Adapters/".$vs_auth_adapter.".php";
 			if(file_exists($vs_auth_adapter_file)) {
 				require_once($vs_auth_adapter_file);
@@ -83,6 +85,7 @@ class AuthenticationManager {
 	 */
 	public static function authenticate($ps_username, $ps_password="", $pa_options=null) {
 		self::init();
+		if(AuthenticationManager::isFree()) { return null; }
 
 		if ($vn_rc = self::$g_authentication_adapter->authenticate($ps_username, $ps_password, $pa_options)) {
 			return $vn_rc;
@@ -186,7 +189,8 @@ class AuthenticationManager {
 	 */
 	public static function getUserInfo($ps_username, $ps_password, $pa_options=null) {
 		self::init();
-
+		if(AuthenticationManager::isFree()) { return null; }
+		
 		if ($vn_rc = self::$g_authentication_adapter->getUserInfo($ps_username, $ps_password, $pa_options)) {
 			return $vn_rc;
 		}
@@ -229,6 +233,19 @@ class AuthenticationManager {
 		}
 
 		return null;
+	}
+	
+	/**
+	 *
+	 */
+	private static function isFree() {
+		global $g_request;
+		if($g_request) {
+			if (!is_array($free_controllers = AuthenticationManager::$g_authentication_conf->get('auth_not_required_for_controllers'))) { return false; }
+			$free_controllers = array_map("strtolower", $free_controllers);
+			if (in_array(strtolower($g_request->getController()), $free_controllers)) { return true; }
+		}
+		return false;
 	}
 }
 

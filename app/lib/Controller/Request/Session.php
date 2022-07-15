@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2018 Whirl-i-Gig
+ * Copyright 2000-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -63,6 +63,11 @@ class Session {
 	/**
 	 *
 	 */
+	private static $api_session_lifetime = "";		# session length for REST API 
+
+	/**
+	 *
+	 */
 	private static $start_time = 0;	# microtime session object was created - used for page performance measurements
 
 	/**
@@ -86,6 +91,8 @@ class Session {
 	 */
 	public static function init($ps_app_name=null, $pb_dont_create_new_session=false) {
  		$o_config = Configuration::load();
+ 		$service_config = Configuration::load(__CA_CONF_DIR__."/services.conf");
+
 		# --- Init
 		if (defined("__CA_MICROTIME_START_OF_REQUEST__")) {
 			Session::$start_time = __CA_MICROTIME_START_OF_REQUEST__;
@@ -96,22 +103,21 @@ class Session {
 		# --- Read configuration
 		Session::$name = ($vs_app_name = $o_config->get("app_name")) ? $vs_app_name : $ps_app_name;
 		Session::$domain = $o_config->get("session_domain");
-		Session::$lifetime = (int) $o_config->get("session_lifetime");
-
-		if(!Session::$lifetime) {
-			Session::$lifetime = 3600 * 24 * 7;
-		}
+		Session::$lifetime = Session::lifetime();
+		Session::$api_session_lifetime = (int) $service_config->get("api_session_lifetime");
 		
+		$session_id = self::getSessionID();
 		if (!$pb_dont_create_new_session) {
 			// try to get session ID from cookie. if that doesn't work, generate a new one
-			if (!($session_id = self::getSessionID())) {
+			if (!$session_id) {
 				$vs_cookiepath = ((__CA_URL_ROOT__== '') ? '/' : __CA_URL_ROOT__);
-				if (!caIsRunFromCLI()) { setcookie(Session::$name, $_COOKIE[Session::$name] = $session_id = caGenerateGUID(), Session::$lifetime ? time() + Session::$lifetime : null, $vs_cookiepath); }
+				$secure = (__CA_SITE_PROTOCOL__ === 'https');
+				if (!caIsRunFromCLI()) { setcookie(Session::$name, $_COOKIE[Session::$name] = $session_id = caGenerateGUID(), Session::$lifetime ? time() + Session::$lifetime : null, $vs_cookiepath, null, $secure, true); }
 		 	}
 
 			// initialize in-memory session var storage, either restored from external cache or newly initialized
-			if($session_id && ExternalCache::contains($session_id, 'SessionVars')) {
-				if(!is_array(Session::$s_session_vars = unserialize(gzuncompress(ExternalCache::fetch($session_id, 'SessionVars'))))) {
+			if($session_id && is_array(Session::$s_session_vars = ExternalCache::fetch($session_id, 'SessionVars'))) {
+				if(!is_array(Session::$s_session_vars = ExternalCache::fetch($session_id, 'SessionVars'))) {
 					Session::$s_session_vars = [];
 				}
 			} else {
@@ -162,12 +168,12 @@ class Session {
 		}
 
 		// save mappings in both directions for easy lookup. they are valid for 2 hrs (@todo maybe make this configurable?)
-		ExternalCache::save($session_id, $vs_token, 'SessionIDToServiceAuthTokens', 60 * 60 * 2);
-		ExternalCache::save($vs_token, $session_id, 'ServiceAuthTokensToSessionID', 60 * 60 * 2);
+		ExternalCache::save($session_id, $vs_token, 'SessionIDToServiceAuthTokens', Session::$api_session_lifetime);
+		ExternalCache::save($vs_token, $session_id, 'ServiceAuthTokensToSessionID', Session::$api_session_lifetime);
 
 		return $vs_token;
 	}
-
+	# ----------------------------------------
 	/**
 	 * Restore session form a temporary service auth token
 	 * @param string $ps_token
@@ -211,12 +217,12 @@ class Session {
 
 		if (isset($_COOKIE[session_name()])) {
 			setcookie(session_name(), '', time()- (24 * 60 * 60),'/');
+			@session_destroy();
 		}
 		// Delete session data
 		unset($_COOKIE[Session::$name]);
 		setCookie(Session::$name, "", time()-3600);
 		ExternalCache::delete($session_id, 'SessionVars');
-		session_destroy();
 	}
 	# ----------------------------------------
 	/**
@@ -278,9 +284,23 @@ class Session {
 	}
 	# ----------------------------------------
 	/**
+	 * Determine if session variable has been set
+	 * 
+	 * @param string $key 
+	 *
+	 * @return bool
+	 */
+	public static function varExists($key) {
+		return is_array(Session::$s_session_vars) ? isset(Session::$s_session_vars[$key]) : false;
+	}
+	# ----------------------------------------
+	/**
 	 * Save changes to session variables to persistent storage
 	 */
 	public static function save() {
+		global $g_errored;
+		if($g_errored) { return; }	// don't save session on routing errors
+		
 		if(!($session_id = self::getSessionID())) { return false; }
 		if(isset(Session::$s_session_vars['session_end_timestamp'])) {
 			$vn_session_lifetime = abs(((int) Session::$s_session_vars['session_end_timestamp']) - time());
@@ -292,13 +312,28 @@ class Session {
 		}
 		
 		// Get old vars
-		if (!is_array($va_current_values = @unserialize(@gzuncompress(ExternalCache::fetch($session_id, 'SessionVars'))))) {
+		if (!ExternalCache::fetch($session_id, 'SessionVars') || !is_array($va_current_values = ExternalCache::fetch($session_id, 'SessionVars'))) {
 			$va_current_values = [];
 		}
 		
-		$va_current_values = array_merge($va_current_values, Session::$s_session_vars);
+		// Only set changed vars
+		$vars = [];
+		foreach(Session::$s_changed_vars as $k => $v) {
+			$vars[$k] = Session::$s_session_vars[$k];
+		}
+		ExternalCache::save($session_id, array_merge($va_current_values, $vars), 'SessionVars', $vn_session_lifetime);
+	}
+	# ----------------------------------------
+	/**
+	 * Return session lifetime setting
+	 *
+	 * @return int
+	 */
+	public static function lifetime():int {
+ 		$o_config = Configuration::load();
+ 		if($l = (int) $o_config->get("session_lifetime")) { return $l; }
 		
-		ExternalCache::save($session_id, @gzcompress(@serialize($va_current_values)), 'SessionVars', $vn_session_lifetime);
+		return 3600 * 24 * 7;
 	}
 	# ----------------------------------------
 	# --- Page performance

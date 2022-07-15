@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2018 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -66,6 +66,14 @@ $_ca_attribute_settings['ListAttributeValue'] = array(		// global
 		'label' => _t('Does not use locale setting'),
 		'description' => _t('Check this option if you don\'t want your list values to be locale-specific. (The default is to not be.)')
 	),
+	'singleValuePerLocale' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Allow single value per locale'),
+		'description' => _t('Check this option to restrict entry to a single value per-locale.')
+	),
 	'requireValue' => array(
 		'formatType' => FT_NUMBER,
 		'displayType' => DT_CHECKBOXES,
@@ -73,6 +81,22 @@ $_ca_attribute_settings['ListAttributeValue'] = array(		// global
 		'width' => 1, 'height' => 1,
 		'label' => _t('Require value'),
 		'description' => _t('Check this option if you want to require that a list item be selected.')
+	),
+	'allowDuplicateValues' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Allow duplicate values?'),
+		'description' => _t('Check this option if you want to allow duplicate values to be set when element is not in a container and is repeating.')
+	),
+	'raiseErrorOnDuplicateValue' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Show error message for duplicate values?'),
+		'description' => _t('Check this option to show an error message when value is duplicate and <em>allow duplicate values</em> is not set.')
 	),
 	'implicitNullOption' => array(
 		'formatType' => FT_NUMBER,
@@ -202,7 +226,40 @@ $_ca_attribute_settings['ListAttributeValue'] = array(		// global
 		'default' => '',
 		'label' => _t('Restrict to types'),
 		'description' => _t('Restricts display to items of the specified type(s). Leave all unchecked for no restriction.')
-	)
+	),
+	'currentSelectionDisplayFormat' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_FIELD,
+		'default' => '',
+		'width' => 90, 'height' => 4,
+		'label' => _t('Current selection template'),
+		'validForRootOnly' => 1,
+		'description' => _t('Template formatting current selection text. You may use the following tags: ^current (the currently selected list item), ^parent (the parent of the currently selected list item), ^hierarchy (the full hierarchal path to the list item).')
+	),
+	'minimizeExistingValues' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Minimize existing values?'),
+		'description' => _t('Check this option if existing values should displayed in a minimized, non-editable format.')
+	),
+	'deferHierarchyLoad' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Defer loading of hierarchy browser?'),
+		'description' => _t('Check this option to defer loading of hierarachy browser for existing values using hierarchical render modes when not minimized until user clicks.')
+	),
+	'separateDisabledValues' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Separate disabled values?'),
+		'description' => _t('Group disabled entries after active entries.')
+	),
 );
 
 
@@ -285,7 +342,6 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 			$pa_options['showHierarchy'] = true;
 		}
 
-
         if(!$pa_options['showHierarchy']) {
             if($vb_return_idno = ((isset($pa_options['returnIdno']) && (bool)$pa_options['returnIdno']))) {
                 return caGetListItemIdno($this->opn_item_id, $pa_options);
@@ -351,6 +407,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 	 * @param array $pa_options Options are:
 	 *		alwaysTreatValueAsIdno = Always try to convert $ps_value to a list idno value, even if it is numeric
 	 *		matchOn =
+	 *		serializeCommaSeparatedValues = Convert values in the form "Print, Photo" to a serialized version ("Photo Print") if the provided value fails to match. [Default is true]
 	 *
 	 * @return array
 	 */
@@ -359,12 +416,13 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 
 		if (is_array($ps_value)) { $ps_value = array_pop($ps_value); }
 
+		$serialize_comma_separated_values = caGetOption('serializeCommaSeparatedValues', $pa_options, true);
 		$va_match_on = caGetOption('matchOn', $pa_options, null);
 		if ($va_match_on && !is_array($va_match_on)){ $va_match_on = array($va_match_on); }
 		if (!is_array($va_match_on) && $vb_treat_value_as_idno) { $va_match_on = array('idno', 'label', 'item_id'); }
 		if ((!is_array($va_match_on) || !sizeof($va_match_on)) && preg_match('![^\d]+!', $ps_value)) { $va_match_on = array('idno', 'label', 'item_id'); }
 		if (($vb_treat_value_as_idno) && (!in_array('idno', $va_match_on))) { array_push($va_match_on, 'idno'); }
-		if (!is_array($va_match_on) || !sizeof($va_match_on)) { $va_match_on = array('item_id'); }
+		if (!is_array($va_match_on) || !sizeof($va_match_on)) { $va_match_on = ['item_id', 'idno']; }
 
 		$o_trans = caGetOption('transaction', $pa_options, null);
 
@@ -384,12 +442,22 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 					if ($vn_id = caGetListItemID($pa_element_info['list_id'], $ps_value, $pa_options)) {
 						break(2);
 					}
+					if($serialize_comma_separated_values && strpos($ps_value, ',')) {
+						if ($vn_id = caGetListItemID($pa_element_info['list_id'], caSerializeCommaSeparatedName($ps_value), $pa_options)) {
+							break(2);
+						}
+					}
 					break;
 				case 'label':
 				case 'labels':
 					// try to convert label to item_id
 					if ($vn_id = caGetListItemIDForLabel($pa_element_info['list_id'], $ps_value, $pa_options)) {
 						break(2);
+					}
+					if($serialize_comma_separated_values && strpos($ps_value, ',')) {
+						if ($vn_id = caGetListItemIDForLabel($pa_element_info['list_id'], caSerializeCommaSeparatedName($ps_value), $pa_options)) {
+							break(2);
+						}
 					}
 					break;
 				case 'item_id':
@@ -402,7 +470,14 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		}
 		
 		if ((!$vn_id) && ($o_log = caGetOption('log', $pa_options, null)) && (strlen($ps_value) > 0)) {
-			$o_log->logError(_t('Value %1 was not set for %2 because it does not exist in list %3', $ps_value, caGetOption('logIdno', $pa_options, '???'), caGetListCode($pa_element_info['list_id'])));
+			$o_log->logError(_t('Value %1 was not set for %2 because it does not exist in list %3', $ps_value, caGetOption('logReference', $pa_options, '???'), caGetListCode($pa_element_info['list_id'])), 
+				[	'bundle' => $pa_element_info['element_code'], 
+					'values' => $ps_value, 
+					'dataset' => caGetOption('dataset', $pa_options, null),
+					'idno' => caGetOption('idno', $pa_options, null),
+					'row' => caGetOption('row', $pa_options, null),
+					'notes' => caGetOption('notes', $pa_options, null)
+				]);
 		}
 		
 		if (!$vb_require_value && !$vn_id) {
@@ -450,11 +525,15 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		
 		$vb_implicit_nulls = caGetOption('implicitNullOption', $pa_element_info['settings'], false);
 
-		$vs_render = caGetOption('render', $pa_options, caGetOption('render', $pa_element_info['settings'], ''));
-		$vb_auto_shrink = (bool) caGetOption('auto_shrink', $pa_options, caGetOption('auto_shrink', $pa_element_info['settings'], false));
+        $for_search = caGetOption('forSearch', $pa_options, false);
 
+		$vs_render = $for_search ? "" : caGetOption('render', $pa_options, caGetOption('render', $pa_element_info['settings'], ''));
+		$vb_auto_shrink = (bool) caGetOption('auto_shrink', $pa_options, caGetOption('auto_shrink', $pa_element_info['settings'], false));
+		
+		$current_selection_display_format = caGetOption('currentSelectionDisplayFormat', $pa_options, caGetOption('currentSelectionDisplayFormat', $pa_element_info['settings'], null));
+		$separate_disabled_values = caGetOption('separateDisabledValues', $pa_options, caGetOption('separateDisabledValues', $pa_element_info['settings'], false));
+		
 		$vn_max_columns = $pa_element_info['settings']['maxColumns'];
-		if (!$vb_require_value) { $vn_max_columns++; }
 
 		if(!isset($pa_options['useDefaultWhenNull'])) {
 			$pa_options['useDefaultWhenNull'] = isset($pa_element_info['settings']['useDefaultWhenNull']) ? (bool)$pa_element_info['settings']['useDefaultWhenNull'] : false;
@@ -469,7 +548,14 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 			),
 			array_merge(
 				$pa_options,
-				array('render' => $vs_render, 'maxColumns' => $vn_max_columns, 'element_id' => $pa_element_info['element_id'], 'nullOption' => $vb_null_option, 'implicitNullOption' => $vb_implicit_nulls, 'auto_shrink' => $vb_auto_shrink)
+				[
+					'render' => $vs_render, 'maxColumns' => $vn_max_columns, 
+					'element_id' => $pa_element_info['element_id'], 'nullOption' => $vb_null_option, 
+					'implicitNullOption' => $vb_implicit_nulls, 'auto_shrink' => $vb_auto_shrink, 
+					'currentSelectionDisplayFormat' => $current_selection_display_format,
+					'separateDisabledValues' => $separate_disabled_values,
+					'deferHierarchyLoad' => (bool)$pa_element_info['settings']['deferHierarchyLoad']
+				]
 			)
 		);
 
@@ -542,7 +628,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 									$vs_condition = "{$vs_select}.val() === '" . $va_item['item_id'] . "'";
 									break;
 								default:
-									continue;
+									continue(2);
 							}
 						
 							if (sizeof($ids) > 0) {
@@ -575,7 +661,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 	});
 	select.trigger('change');
 	caUI.utils.showUnsavedChangesWarning(false);
-});</script>\n";
+  });</script>\n";
             }
 		}
 
@@ -676,15 +762,16 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 			// we just add the hideIfSelected_* as available settings (without actual settings) so that the validation doesn't fail
 			$t_list = new ca_lists();
 			$va_list_items = $t_list->getItemsForList($pa_element_info['list_id']);
-			if(is_array($va_list_items) && sizeof($va_list_items)) {
+			if(is_array($va_list_items) && (sizeof($va_list_items) > 0)) {
 				foreach($va_list_items as $va_items_by_locale) {
 					foreach($va_items_by_locale as $vn_locale_id => $va_item) {
-						$va_element_settings['hideIfSelected_'.$va_item['idno']] = ['deferred' => false, 'multiple' => true];
+						$va_element_settings['hideIfSelected_'.$va_item['idno']] = ['deferred' => true, 'multiple' => true];
 					}
 				}
+				$va_element_settings['hideIfSelected___null__'] = ['deferred' => true, 'multiple' => true];
 			}
 		}
-
+		
 		return $va_element_settings;
 	}
 	# ------------------------------------------------------------------

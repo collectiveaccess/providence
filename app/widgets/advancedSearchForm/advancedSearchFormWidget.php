@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2013 Whirl-i-Gig
+ * Copyright 2010-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -179,4 +179,3 @@
 			'description' => _t('The number of form elements to place in each row of the search form. A value of one or two is recommended in most situations.')
 		)
 	);
-?>

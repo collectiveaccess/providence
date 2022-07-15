@@ -29,6 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
 
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
 
@@ -43,7 +44,7 @@ class AttributeGetTest extends BaseTestWithData {
 	 */
 	private $opt_object = null;
 	# -------------------------------------------------------
-	public function setUp() {
+	protected function setUp() : void {
 		// don't forget to call parent so that the request is set up
 		parent::setUp();
 
@@ -88,6 +89,11 @@ class AttributeGetTest extends BaseTestWithData {
 						'dimensions_length' => '10 in',
 						'dimensions_weight' => '2 lbs',
 						'measurement_notes' => 'foo',
+					),
+					array(
+						'dimensions_length' => '5 ft',
+						'dimensions_weight' => '10 gm.',
+						'measurement_notes' => 'meow',
 					),
 				),
 
@@ -153,6 +159,7 @@ class AttributeGetTest extends BaseTestWithData {
 	}
 	# -------------------------------------------------------
 	public function testGets() {
+		// TODO: break this into smaller tests, one per get()
 		$vm_ret = $this->opt_object->get('ca_objects.date.dc_dates_types', array('returnIdno' => true));
 		$this->assertEquals('created', $vm_ret);
 
@@ -169,10 +176,12 @@ class AttributeGetTest extends BaseTestWithData {
 		$vm_ret = $this->opt_object->get('ca_objects.external_link.url_source');
 		$this->assertEquals("My URL source;Another URL source", $vm_ret);
 
-		$vm_ret = $this->opt_object->get('ca_objects.dimensions.dimensions_length');
-		$this->assertEquals("10 in", $vm_ret);
-		$vm_ret = $this->opt_object->get('ca_objects.dimensions.dimensions_weight');
-		$this->assertEquals("2 lb", $vm_ret);
+		$vm_ret = $this->opt_object->get('ca_objects.dimensions.dimensions_length', ['returnAsArray' => true]);
+		$this->assertEquals("10 in", $vm_ret[0]);
+		$this->assertEquals("5 ft", $vm_ret[1]);
+		$vm_ret = $this->opt_object->get('ca_objects.dimensions.dimensions_weight', ['returnAsArray' => true]);
+		$this->assertEquals("2 lb", $vm_ret[0]);
+		$this->assertEquals("10 g", $vm_ret[1]);
 
 		$vm_ret = $this->opt_object->get('ca_objects.integer_test', array('delimiter' => ' / '));
 		$this->assertEquals("23 / 1984", $vm_ret);
@@ -181,7 +190,7 @@ class AttributeGetTest extends BaseTestWithData {
 		$this->assertEquals("$ 100.00", $vm_ret);
 
 		//$vm_ret = $this->opt_object->get('ca_objects.georeference');
-		//$this->assertRegExp("/^1600 Amphitheatre Parkway, Mountain View, CA \[[\d\.\,\-]+\]/", $vm_ret);
+		//$this->assertMatchesRegularExpression("/^1600 Amphitheatre Parkway, Mountain View, CA \[[\d\.\,\-]+\]/", $vm_ret);
 
 		// This is how we fetch the bundle preview for containers:
 		$vs_template = "<unit relativeTo='ca_objects.dimensions'><if rule='^measurement_notes =~ /foo/'>^ca_objects.dimensions.dimensions_length</if></unit>";
@@ -199,15 +208,16 @@ class AttributeGetTest extends BaseTestWithData {
 
 		// 'flat' informationservice attribues
 		$this->assertEquals('Coney Island', $this->opt_object->get('ca_objects.tgn'));
-		$this->assertContains('Aaron Burr', $this->opt_object->get('ca_objects.wikipedia'));
+		$this->assertStringContainsString('Aaron Burr', $this->opt_object->get('ca_objects.wikipedia'));
 		// subfield notation for "extra info"
-		$this->assertContains('Burr shot his political rival Alexander Hamilton in a famous duel', $this->opt_object->get('ca_objects.wikipedia.abstract'));
 		$this->assertEquals('40.5667', $this->opt_object->get('ca_objects.tgn.lat'));
 
 		// informationservice attributes in container
 		$this->assertEquals('[500024253] Haring, Keith (Persons, Artists) - American painter, muralist, and cartoonist, 1958-1990', $this->opt_object->get('ca_objects.informationservice.ulan_container'));
-		$this->assertContains('Aaron Burr', $this->opt_object->get('ca_objects.informationservice.wiki'));
-		$this->assertContains('Burr shot his political rival Alexander Hamilton in a famous duel', $this->opt_object->get('ca_objects.informationservice.wiki.abstract'));
+		$this->assertStringContainsString('Aaron Burr', $this->opt_object->get('ca_objects.informationservice.wiki'));
+        $vs_expected_abstract_wikipedia_burr = 'Aaron Burr Jr.';
+        $this->assertStringContainsString($vs_expected_abstract_wikipedia_burr, $this->opt_object->get('ca_objects.wikipedia.abstract'));
+		$this->assertStringContainsString($vs_expected_abstract_wikipedia_burr, $this->opt_object->get('ca_objects.informationservice.wiki.abstract'));
 	}
 	# -------------------------------------------------------
 	public function testGetCounts() {
@@ -215,7 +225,7 @@ class AttributeGetTest extends BaseTestWithData {
 		$this->assertEquals(2, $vm_ret);
 		
 		$vm_ret = $this->opt_object->get('ca_objects.internal_notes._count', ['returnAsArray' => true]);
-		$this->assertInternalType('array', $vm_ret);
+		$this->assertIsArray($vm_ret);
 		$this->assertCount(1, $vm_ret);
 		$this->assertEquals(2, $vm_ret[0]);
 		

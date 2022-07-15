@@ -158,10 +158,10 @@ class Query {
 					break;
 			}
 		}
-
-		if(sizeof($va_new_search_expression_parts) == sizeof($this->getRewrittenQuery()->getSigns())) {
+		$va_signs = $this->getRewrittenQuery()->getSigns() ?: [];
+		if(sizeof($va_new_search_expression_parts) == sizeof($va_signs)) {
 			$vs_search_expression = '';
-			$va_signs = $this->getRewrittenQuery()->getSigns();
+
 			foreach($va_new_search_expression_parts as $i=> $vs_part) {
 				$vb_sign = array_shift($va_signs);
 				if($vs_part) {
@@ -252,21 +252,22 @@ class Query {
 				$o_new_subquery = new \Zend_Search_Lucene_Search_Query_Phrase();
 
 				$va_fields_in_subquery = array();
-				foreach($o_subquery->getTerms() as $o_term) {
+                $vo_terms = $o_subquery->getTerms();
+                foreach($vo_terms as $o_term) {
 					$va_fields_in_subquery[] = $o_term->field;
 				}
 
-				$vb_multiterm_all_terms_same_field = (sizeof(array_unique($va_fields_in_subquery)) < 2) && (sizeof($o_subquery->getTerms()) > 1);
+				$vb_multiterm_all_terms_same_field = (sizeof(array_unique($va_fields_in_subquery)) < 2) && (sizeof($vo_terms) > 1);
 
 				// below we convert stuff multi term phrase query stuff like
 				// 		ca_objects.dimensions_width:"30 cm",
 				// which is parsed as two terms ... "30", and "cm" to one relatively simple term query
-				if($vb_multiterm_all_terms_same_field && ($o_first_term = array_shift($o_subquery->getTerms()))) {
+				if($vb_multiterm_all_terms_same_field && ($o_first_term = array_shift($vo_terms))) {
 					$o_first_term = caRewriteElasticSearchTermFieldSpec($o_first_term);
 					$o_fld = $this->getFieldTypeForTerm($o_first_term);
 					if(($o_fld instanceof FieldTypes\Length) || ($o_fld instanceof FieldTypes\Weight) || ($o_fld instanceof FieldTypes\Currency)) {
 						$vs_acc = '';
-						foreach($o_subquery->getTerms() as $o_t) {
+						foreach($vo_terms as $o_t) {
 							$vs_acc .= $o_t->text;
 						}
 						$o_term = new \Zend_Search_Lucene_Index_Term($vs_acc, $o_first_term->field);
@@ -288,7 +289,7 @@ class Query {
 				}
 
 				// "normal" phrase rewriting below
-				foreach($o_subquery->getTerms() as $o_term) {
+				foreach($vo_terms as $o_term) {
 					$o_term = caRewriteElasticSearchTermFieldSpec($o_term);
 					$o_fld = $this->getFieldTypeForTerm($o_term);
 

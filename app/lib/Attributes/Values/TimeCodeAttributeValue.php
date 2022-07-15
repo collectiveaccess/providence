@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,7 +40,7 @@
  	require_once(__CA_LIB_DIR__.'/Parsers/TimecodeParser.php');
  
  	global $_ca_attribute_settings;
- 	$_ca_attribute_settings['TimecodeAttributeValue'] = array(		// global
+ 	$_ca_attribute_settings['TimeCodeAttributeValue'] = array(		// global
 		'fieldWidth' => array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_FIELD,
@@ -65,6 +65,14 @@
 			'label' => _t('Does not use locale setting'),
 			'description' => _t('Check this option if you don\'t want your time code values to be locale-specific. (The default is to not be.)')
 		),
+		'singleValuePerLocale' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow single value per locale'),
+			'description' => _t('Check this option to restrict entry to a single value per-locale.')
+		),
 		'requireValue' => array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_CHECKBOXES,
@@ -72,6 +80,22 @@
 			'width' => 1, 'height' => 1,
 			'label' => _t('Require value'),
 			'description' => _t('Check this option if you want an error to be thrown if this measurement is left blank.')
+		),
+		'allowDuplicateValues' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow duplicate values?'),
+			'description' => _t('Check this option if you want to allow duplicate values to be set when element is not in a container and is repeating.')
+		),
+		'raiseErrorOnDuplicateValue' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Show error message for duplicate values?'),
+			'description' => _t('Check this option to show an error message when value is duplicate and <em>allow duplicate values</em> is not set.')
 		),
 		'canBeUsedInSort' => array(
 			'formatType' => FT_NUMBER,
@@ -161,7 +185,7 @@
 			if (caGetOption('returnAsDecimal', $pa_options, false)) {
 				return (float)$this->opn_duration;
 			}
-			if (!strlen($this->opn_duration)) { return ''; }
+			if (!strlen($this->opn_duration) || ((float)$this->opn_duration === 0.0)) { return ''; }
 			$o_tcp = new TimecodeParser();
 			$o_tcp->setParsedValueInSeconds($this->opn_duration);
 			
@@ -188,7 +212,7 @@
 			if (strlen($ps_value)) {
 				if ($o_tcp->parse($ps_value) === false) { 
 					// invalid timecode
-					$this->postError(1970, _t('%1 is invalid', $pa_element_info['displayLabel']), 'TimecodeAttributeValue->parseValue()');
+					$this->postError(1970, _t('%1 is invalid', $pa_element_info['displayLabel']), 'TimeCodeAttributeValue->parseValue()');
 					return false;
 				}
 				$vn_seconds = (float)$o_tcp->getParsedValueInSeconds();
@@ -219,13 +243,18 @@
  		 * @return string
  		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
- 			$vn_width = (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : 30;
+ 			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight'));
+ 			
+ 			$vs_width = trim((isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth']);
+ 			$vs_height = trim((isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight']);
+ 			
  			$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : 'timecodeBg');
  			$vn_max_length = 255;
  			return caHTMLTextInput(
 				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
 				array('id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
-					'size' => $vn_width,
+					'size' => $vs_width,
+					'height' => $vs_height,
 					'value' => '{{'.$pa_element_info['element_id'].'}}',
 					'maxlength' => $vn_max_length,
 					'class' => $vs_class
@@ -236,7 +265,7 @@
  		public function getAvailableSettings($pa_element_info=null) {
  			global $_ca_attribute_settings;
  			
- 			return $_ca_attribute_settings['TimecodeAttributeValue'];
+ 			return $_ca_attribute_settings['TimeCodeAttributeValue'];
  		}
  		# ------------------------------------------------------------------
 		/**

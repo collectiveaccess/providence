@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -96,7 +96,7 @@
 		 * @param $pn_priority (integer) Control order in which libraries are loaded. Higher numbers indicate earlier loading. Default is 10.
 		 * @return bool - false if load failed, true if load succeeded
 		 */
-		static function register($ps_package, $ps_library=null, $pn_priority=10) {
+		static function register($ps_package, $ps_library=null, $pn_priority=10, $output_target='header') {
 			global $g_asset_config, $g_asset_load_list;
 			
 			if (!$g_asset_config) { AssetLoadManager::init(); }
@@ -110,7 +110,7 @@
 			
 			if (!is_array($va_packages)) { $va_packages = array(); }
 			if (!is_array($va_theme_packages)) { $va_theme_packages = array(); }
-			
+
 			if ($ps_library) {
 				// register package/library
 				$va_pack_path = explode('/', $ps_package);
@@ -132,14 +132,21 @@
 				}
 				if (isset($va_list[$ps_library]) && $va_list[$ps_library]) {
 					$va_tmp = preg_split("#[:]{1}(?!/)#", $va_list[$ps_library]);
-					if (sizeof($va_tmp) == 2) {
+					if (sizeof($va_tmp) > 1) {
 						$va_list[$ps_library] = $va_tmp[0];
-						$pn_priority = (int)$va_tmp[1];
+
+						foreach(array_slice($va_tmp, 1) as $p) {
+							if(is_numeric($p)) {
+								$pn_priority = (int)$p;
+							} elseif(preg_match("!^[A-Za-z]+$!", $p)){
+								$output_target = strtolower($p);
+							}
+						}
 					}
 					
 					if (!$vb_is_theme_specific && isset($va_exclude_packages[$ps_package][$ps_library])) { return true; }
 					
-					$g_asset_load_list[$pn_priority][$ps_package.'/'.$va_list[$ps_library]][$vb_is_theme_specific ? "THEME" : "APP"] = true;
+					$g_asset_load_list[$output_target][$pn_priority][$ps_package.'/'.$va_list[$ps_library]][$vb_is_theme_specific ? "THEME" : "APP"] = true;
 					
 					// inherit from parent themes?
 					if ($o_config->get('allowThemeInheritance')) {
@@ -148,8 +155,8 @@
                         while($vs_inherit_from_theme = trim(trim($o_config->get(['inheritFrom', 'inherit_from'])), "/")) {
                             $i++;
                             
-                            $g_asset_load_list[$pn_priority][$ps_package.'/'.$va_list[$ps_library]]["INHERITED_THEME_{$vs_inherit_from_theme}"] = true;
-                            
+                            $g_asset_load_list[$output_target][$pn_priority][$ps_package.'/'.$va_list[$ps_library]]["INHERITED_THEME_{$vs_inherit_from_theme}"] = true;
+
                             if(!file_exists(__CA_THEMES_DIR__."/{$vs_inherit_from_theme}/conf/app.conf")) { break; }
                             $o_config = Configuration::load(__CA_THEMES_DIR__."/{$vs_inherit_from_theme}/conf/app.conf", false, false, true);
                             if ($i > 10) {break;} // max 10 levels
@@ -203,11 +210,13 @@
 		 * @param (RequestHTTP) $po_request - The current request
 		 * @param array $pa_options Options include:
 		 *		dontLoadAppAssets = don't load assets specified in the app asset.conf file [default is false]
+		 *      outputTarget = Block of load HTML to generate. Valid values are "header" and "footer". [Default is header]
 		 * @return string - HTML loading registered libraries
 		 */
 		static function getLoadHTML($po_request, $pa_options=null) {
 			global $g_asset_config, $g_asset_load_list, $g_asset_complementary;
-		
+
+			$output_target = caGetOption('outputTarget', $pa_options, 'header', ['validValues' => ['header', 'footer']]);
 			$vs_base_url_path = $po_request->getBaseUrlPath();
 			$vs_theme_url_path = $po_request->getThemeUrlPath();
 			$vs_default_theme_url_path = $po_request->getDefaultThemeUrlPath();
@@ -217,12 +226,16 @@
 			$vs_theme_directory_path = $po_request->getThemeDirectoryPath();
 			$vs_default_theme_directory_path = $po_request->getDefaultThemeDirectoryPath();
 			
+            if($suffix = Configuration::load(__CA_CONF_DIR__.'/assets.conf')->get('asset_suffix')) {
+            	$suffix = "?rev=".urlencode($suffix);
+            }
+			
 			if (!$g_asset_config) { AssetLoadManager::init(); }
 			$vs_buf = '';
-			if (is_array($g_asset_load_list)) {
-				ksort($g_asset_load_list);
-				foreach($g_asset_load_list as $vn_priority => $va_libs) { 
-					foreach($va_libs as $vs_lib => $va_types) { 
+			if (is_array($g_asset_load_list[$output_target])) {
+				ksort($g_asset_load_list[$output_target]);
+				foreach($g_asset_load_list[$output_target] as $vn_priority => $va_libs) {
+					foreach($va_libs as $vs_lib => $va_types) {
 					    foreach(array_keys($va_types) as $vs_type) {
                             if ($vb_dont_load_app_assets && ($vs_type == 'APP')) { continue; }
                             if (AssetLoadManager::useMinified()) {
@@ -268,17 +281,17 @@
                             }
                     
                             if (preg_match('!\.css$!', $vs_lib)) {
-                                $vs_buf .= "<link rel='stylesheet' href='{$vs_url}' type='text/css' media='all'/>\n";
+                                $vs_buf .= "<link rel='stylesheet' href='{$vs_url}{$suffix}' type='text/css' media='all'/>\n";
                             } elseif(preg_match('!\.properties$!', $vs_lib)) {
-                                $vs_buf .= "<link rel='resource' href='{$vs_url}' type='application/l10n' />\n";
+                                $vs_buf .= "<link rel='resource' href='{$vs_url}{$suffix}' type='application/l10n' />\n";
                             } else {
-                                $vs_buf .= "<script src='{$vs_url}' type='text/javascript'></script>\n";
+                                $vs_buf .= "<script src='{$vs_url}{$suffix}' type='text/javascript'></script>\n";
                             }
                         }
 					}
 				}
 			}
-			if (is_array($g_asset_complementary)) {
+			if (is_array($g_asset_complementary) && ($output_target === 'header')) {
 				foreach($g_asset_complementary as $vs_code) { 
 					$vs_buf .= "<script type='text/javascript'>\n{$vs_code}</script>\n";
 				}

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,13 +37,14 @@
 </script>
 <div class="sectionBox">
 	<?php 
+		print caFormTag($this->request, 'Index', 'searchLogSearch', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
 		print caFormControlBox(
 			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>', 
 			'', 
-			_t('Show from').': '.caFormTag($this->request, 'Index', 'searchLogSearch').caHTMLTextInput('search', array('size' => 25, 'value' => $this->getVar('search_list_search')))." ".caFormSubmitButton($this->request, __CA_NAV_ICON_SEARCH__, "", 'searchLogSearch')."</form>"
+			_t('From %1', caHTMLTextInput('search', array('size' => 12, 'value' => $this->getVar('search_list_search'), 'class' => 'dateBg'))." ".caFormSubmitButton($this->request, __CA_NAV_ICON_SEARCH__, "", 'searchLogSearch'))
 		); 
+		print "</form>";
 	?>
-	
 	<table id="caItemList" class="listtable">
 		<thead>
 			<tr>
@@ -57,7 +58,7 @@
 					<?php print _t('Search'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Num hits'); ?>
+					<?php print _t('Hits'); ?>
 				</th>
 				<th class="list-header-unsorted">
 					<?php print _t('User'); ?>
@@ -69,7 +70,7 @@
 					<?php print _t('Source'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Exec time (sec.)'); ?>
+					<?php print _t('Execution time'); ?>
 				</th>
 			</tr>
 		</thead>
@@ -80,7 +81,7 @@
 ?>
 			<tr>
 				<td>
-					<?php print date("n/d/Y@g:i:sa T", $va_search['log_datetime']); ?>
+					<?php print caGetLocalizedDate($va_search['log_datetime']); ?>
 				</td>
 				<td>
 					<?php print $va_search['table_name']; ?>
@@ -101,7 +102,7 @@
 					<?php print $va_search['search_source'].($va_search['form'] ? '/'.$va_search['form'] : ''); ?>
 				</td>
 				<td>
-					<?php print $va_search['execution_time']; ?>
+					<?php print (float)$va_search['execution_time']; ?>s
 				</td>
 			</tr>
 <?php

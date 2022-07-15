@@ -78,13 +78,13 @@ foreach($va_sets_by_table as $vs_table => $va_sets){
 		print "</div><div style='margin-bottom:15px; padding:0px 0px 0px 5px;'>";
 		foreach($va_sets as $vn_i => $va_set_info){
 			if (sizeof($va_set_info) > 0) {
-				print caFormTag($po_request, 'doSavedSearch', 'caSearchSetsForm'.$vs_table, $vs_path, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); 
+				print caFormTag($po_request, 'doSavedSearch', 'caSearchSetsForm'.$vs_table, $vs_path, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); 
 				print "<select name='search' style='width:300px;'>\n";			
 				foreach($va_set_info as $vn_id => $va_set) {
 					print "<option value='set:\"".$va_set['set_code']."\"'>".$va_set["name"]."</option>\n";
 				}
 				print "</select>\n ";
-				print caFormSubmitLink($po_request, _t('Search').' &rsaquo;', 'button', 'caSearchSetsForm'.$vs_table);
+				print caFormSubmitLink($po_request, _t('Search').' &rsaquo;', 'button', 'caSearchSetsForm'.$vs_table, null, ['aria-label' => _t('Search by set')]);
 				print "</form>\n";
 			}
 		}

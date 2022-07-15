@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018 Whirl-i-Gig
+ * Copyright 2018-2019 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -73,7 +73,7 @@ class OktaAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 				'state' => $this->state,
 				'nonce' => random_bytes(32)
 			]);
-			header('Location: '.$this->auth_config->get('okta_issuer').'/oauth2/default/v1/authorize?'.$query);
+			header('Location: '.$this->auth_config->get('okta_issuer').'/oauth2/v1/authorize?'.$query);
 			return false;
 		}
 		return $this->isAuthenticated();
@@ -119,6 +119,17 @@ class OktaAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 				);
 			} 
 			if (is_array($user_info)) {
+			    if (isset($user_info['errorCode'])) {
+			        return [
+                        'user_name' => $va_attrs['sub'],
+                        'email' => $va_attrs['sub'],
+                        'fname' => '',
+                        'lname' => $va_attrs['sub'],
+                        'active' => 1,
+                        'roles' => $va_default_roles,
+                        'groups' => $va_groups
+                    ];
+			    }
 				if ($user_info['status'] !== 'ACTIVE') {
 					throw new OktaException(_t("User is not active."));
 				}
@@ -224,7 +235,9 @@ class OktaAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
                 throw new OktaException(_t('Verification of Okta JWT failed'));
             }
             setcookie("access_token", $exchange['access_token'],time()+$exchange['expires_in'],"/",false);
-            header('Location: '.$this->config->get('auth_login_url'));
+            if(!($redirect_url = Session::getVar('pawtucket2_last_page')) && ($redirect_url !== '/')) { $redirect_url = $this->config->get('default_action'); }
+            header('Location: '.$this->config->get('site_host').'/'.$redirect_url);
+            return;
         }
         throw new OktaException(_t('An Okta error during login has occurred'));
     }
@@ -251,13 +264,14 @@ class OktaAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		if(!$this->isAuthenticated()) {
 			return [];
 		}
-		$jwtVerifier = (new \Okta\JwtVerifier\JwtVerifierBuilder())
-			->setIssuer($this->auth_config->get('okta_issuer').'/oauth2/default')
-			->setAudience('api://default')
-			->setClientId($this->auth_config->get('okta_client_id'))
-			->build();
-		$jwt = $jwtVerifier->verify($_COOKIE['access_token']);
-		return $jwt->claims;
+		// $jwtVerifier = (new \Okta\JwtVerifier\JwtVerifierBuilder())
+// 			->setIssuer($this->auth_config->get('okta_issuer').'/oauth2')
+// 			->setAudience('api://default')
+// 			->setClientId($this->auth_config->get('okta_client_id'))
+// 			->build();
+// 		$jwt = $jwtVerifier->verify($_COOKIE['access_token']);
+// 		return $jwt->claims;
+        return self::verifyJwt($_COOKIE['access_token']);
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -267,16 +281,25 @@ class OktaAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	 * @return \Okta\JwtVerifier\JWT
 	 */
 	public function verifyJwt($jwt) {
-		try {
-			$jwtVerifier = (new \Okta\JwtVerifier\JwtVerifierBuilder())
-				->setIssuer($this->auth_config->get('okta_issuer').'/oauth2/default')
-				->setAudience('api://default')
-				->setClientId($this->auth_config->get('okta_client_id'))
-				->build();
-			return $jwtVerifier->verify($jwt);
-		} catch (\Exception $e) {
-			return false;
-		}
+	    $headers = [
+            'Authorization: Basic ' . base64_encode($this->auth_config->get('okta_client_id').":".$this->auth_config->get('okta_secret'))
+        ];
+	    $resp = self::oktaRequest($this->auth_config->get('okta_issuer').'/oauth2/v1/introspect', $headers, ['jsonDecode' => true, 'post' => true, 'postParams' => 'token_type_hint=access_token&token='.$jwt]);
+	    // try {
+// 			$jwtVerifier = (new \Okta\JwtVerifier\JwtVerifierBuilder())
+// 				->setIssuer($this->auth_config->get('okta_issuer').'/oauth2')
+// 				->setAudience('api://default')
+// 				->setClientId($this->auth_config->get('okta_client_id'))
+// 				->build();
+// 			return $jwtVerifier->verify($jwt);
+// 		} catch (\Exception $e) {
+// 			return false;
+// 		}
+
+        if(is_array($resp) && isset($resp['username']) && $resp['username']) {
+            return $resp;
+        }
+        return false;
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -294,7 +317,7 @@ class OktaAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		$authHeaderSecret = base64_encode( $this->auth_config->get('okta_client_id') . ':' . $this->auth_config->get('okta_secret') );
 		
 		return self::oktaRequest(
-			$this->auth_config->get('okta_issuer').'/oauth2/default/v1/token?'.$query, 
+			$this->auth_config->get('okta_issuer').'/oauth2/v1/token?'.$query, 
 			[
 				'Authorization: Basic ' . $authHeaderSecret,
 				'Accept: application/json',
@@ -324,7 +347,12 @@ class OktaAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_HEADER, 0);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-		curl_setopt($ch, CURLOPT_POST, caGetOption('post', $options, false) ? 1 : 0);
+		curl_setopt($ch, CURLOPT_POST, ($post = caGetOption('post', $options, false)) ? true : false);
+	
+		if ($post_params = caGetOption('postParams', $options, null)) {
+		    curl_setopt($ch, CURLOPT_POSTFIELDS, $post_params);
+		}
+		
 		$response = curl_exec($ch);
 		$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		if(curl_error($ch)) { throw new OktaException(_t("Could not connect to Okta.")); }

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -79,6 +79,13 @@ BaseModel::$s_ca_models_definitions['ca_attributes'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => 'Row id', 'DESCRIPTION' => 'Identifier of row to which this attibute is applied.'
+		),
+		'value_source' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
+				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 5,
+				'IS_NULL' => false,
+				'DEFAULT' => '',
+				'LABEL' => '<em>Source</em>', 'DESCRIPTION' => 'Source of data value (for scientific citation).'
 		)
 	)
 );
@@ -177,21 +184,6 @@ class ca_attributes extends BaseModel {
 	protected $FIELDS;
 	
 	# ------------------------------------------------------
-	# --- Constructor
-	#
-	# This is a function called when a new instance of this object is created. This
-	# standard constructor supports three calling modes:
-	#
-	# 1. If called without parameters, simply creates a new, empty objects object
-	# 2. If called with a single, valid primary key value, creates a new objects object and loads
-	#    the record identified by the primary key value
-	#
-	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
-		parent::__construct($pn_id);	# call superclass constructor
-	}
-	# ------------------------------------------------------
 	/**
 	 * Stub out indexing for this table - it is never indexed
 	 */
@@ -222,7 +214,16 @@ class ca_attributes extends BaseModel {
 	}
 	# -------------------------------------------------------
 	/**
+	 * Add new attribute value to row.
 	 *
+	 * @param int $pn_table_num
+	 * @param int $pn_row_id
+	 * @param mixed $pm_element_code_or_id
+	 * @param array $pa_values
+	 * @param array $pa_options Options include:
+	 *		source = Attribute source identifier. [Default is null]
+	 *
+	 * @return int Attribute id of newly created attribute, false on error or null if attribute was skipped silently (Eg. empty value).
 	 */
 	public function addAttribute($pn_table_num, $pn_row_id, $pm_element_code_or_id, $pa_values, $pa_options=null) {
 	    if (!is_array($pa_options)) { $pa_options = []; }
@@ -253,7 +254,11 @@ class ca_attributes extends BaseModel {
 		$this->set('table_num', $pn_table_num);
 		$this->set('row_id', $pn_row_id);
 		
-		$this->setMode(ACCESS_WRITE);
+		// Save source value
+		if($t_element->getSetting('includeSourceData')) {
+			$this->set('value_source', caGetOption('source', $pa_options, $pa_values['value_source'] ?? null));
+		}
+		
 		$this->insert($pa_options);
 		
 		if ($this->numErrors()) {
@@ -269,7 +274,6 @@ class ca_attributes extends BaseModel {
 		$t_attr_val = new ca_attribute_values();
 		$t_attr_val->purify($this->purify());
 		$t_attr_val->setTransaction($o_trans);
-		$t_attr_val->setMode(ACCESS_WRITE);
 		
 		$vn_attribute_id = $this->getPrimaryKey();
 		$va_elements = $t_element->getElementsInSet();
@@ -328,7 +332,13 @@ class ca_attributes extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Edit values for currently loaded attribute.
 	 *
+	 * @param array $pa_values
+	 * @param array $pa_options Options include:
+	 *		source = Attribute source identifier. [Default is null]
+	 *
+	 * @return bool
 	 */
 	public function editAttribute($pa_values, $pa_options=null) {
 	    if (!is_array($pa_options)) { $pa_options = []; }
@@ -336,6 +346,7 @@ class ca_attributes extends BaseModel {
 		if (!is_array($pa_options)) { $pa_options = []; }
 		
 		if (!$this->getPrimaryKey()) { return null; }
+		$t_element = ca_attributes::getElementInstance($this->get('element_id'));
 		
 		$vb_web_set_transaction = false;
 		if (!$this->inTransaction()) {
@@ -348,12 +359,16 @@ class ca_attributes extends BaseModel {
 		
 		unset(ca_attributes::$s_get_attributes_cache[$this->get('table_num').'/'.$this->get('row_id')]);
 		
-		$this->setMode(ACCESS_WRITE);
-		
 		// Force default of locale-less attributes to current user locale if possible
 		if (!isset($pa_values['locale_id']) || !$pa_values['locale_id']) { $pa_values['locale_id'] = $g_ui_locale_id; }
 		if (isset($pa_values['locale_id'])) { $this->set('locale_id', $pa_values['locale_id']); }
 		
+		// Save source value
+		if($t_element->getSetting('includeSourceData')) {
+			if($source = caGetOption('source', $pa_options, $pa_values['value_source'] ?? null, ['trim' => true])) {
+				$this->set('value_source', $source);
+			}	
+		}
 		$this->update();
 
 		if ($this->numErrors()) {
@@ -369,10 +384,7 @@ class ca_attributes extends BaseModel {
 		$t_attr_val = new ca_attribute_values();
 		$t_attr_val->purify($this->purify());
 		$t_attr_val->setTransaction($o_trans);
-		$t_attr_val->setMode(ACCESS_WRITE);
 		
-		
-		$t_element = ca_attributes::getElementInstance($this->get('element_id'));
 		$va_elements = $t_element->getElementsInSet();
 
 		$va_attr_vals = $this->getAttributeValues();
@@ -421,7 +433,6 @@ class ca_attributes extends BaseModel {
 			}
 		}
 		
-		
 		if ($this->numErrors()) {
 			if ($vb_web_set_transaction) {
 				$o_trans->rollback();
@@ -434,14 +445,15 @@ class ca_attributes extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Remove currently loaded attribute.
 	 *
+	 * @return bool 
 	 */
 	public function removeAttribute() {
 		if (!$this->getPrimaryKey()) { return null; }
-		$this->setMode(ACCESS_WRITE);
 		
 		unset(ca_attributes::$s_get_attributes_cache[$this->get('table_num').'/'.$this->get('row_id')]);
-		$vn_rc= $this->delete(true);
+		$rc = $this->delete(true);
 		
 		if ($this->numErrors()) {
 			$vs_errors = join('; ', $this->getErrors());
@@ -449,7 +461,7 @@ class ca_attributes extends BaseModel {
 			$this->postError(1974, $vs_errors, 'ca_attributes->removeAttribute()');
 			return false;
 		}
-		return $vn_rc;
+		return (bool)$rc;
 	}
 	# ------------------------------------------------------
 	/**
@@ -542,7 +554,7 @@ class ca_attributes extends BaseModel {
 		
 		$ps_format = isset($pa_options['format']) ? $pa_options['format'] : null;
 		
-		$vs_label = isset($pa_options['label']) ? $pa_options['label'] : '';
+		$vs_label = isset($pa_options['label']) ? trim($pa_options['label']) : '';
 		$vs_description = isset($pa_options['description']) ? $pa_options['description'] : '';
 		if (isset($pa_options['field_errors']) && is_array($pa_options['field_errors']) && sizeof($pa_options['field_errors'])) {
 			$ps_format = $o_config->get('form_element_error_display_format');
@@ -605,7 +617,7 @@ class ca_attributes extends BaseModel {
 
 		$qr_attrs = $po_db->query("
 			SELECT 
-				caa.attribute_id, caa.locale_id, caa.element_id element_set_id, caa.row_id,
+				caa.attribute_id, caa.locale_id, caa.element_id element_set_id, caa.row_id, caa.value_source,
 				caav.value_id, caav.item_id, caav.value_longtext1, caav.value_longtext2,
 				caav.value_decimal1, caav.value_decimal2, caav.value_integer1, caav.value_blob,
 				caav.element_id
@@ -737,7 +749,7 @@ class ca_attributes extends BaseModel {
 	static public function getRawAttributeValuesForIDs($po_db, $pn_table_num, $pa_row_ids, $pn_element_id, $pa_options=null) {
 		$qr_attrs = $po_db->query("
 			SELECT 
-				caa.attribute_id, caa.locale_id, caa.element_id element_set_id, caa.row_id,
+				caa.attribute_id, caa.locale_id, caa.element_id element_set_id, caa.row_id, caa.value_source,
 				caav.value_id, caav.item_id, caav.value_longtext1, caav.value_longtext2,
 				caav.value_decimal1, caav.value_decimal2, caav.value_integer1, caav.value_blob,
 				cme.element_id, cme.datatype, cme.settings, cme.element_code

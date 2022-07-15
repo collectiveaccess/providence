@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -63,7 +63,7 @@ class ElementsController extends BaseEditorController {
 		
 		
 		$t_element = $this->getElementObject();
-		$t_restriction = new ca_metadata_type_restrictions(null, true);
+		$t_restriction = new ca_metadata_type_restrictions(null, null, true);
 		
 		$this->view->setVar('available_settings',$t_element->getAvailableSettings());
 		$this->view->setVar('type_list', $t_restriction->getTypeListsForTables());
@@ -78,9 +78,9 @@ class ElementsController extends BaseEditorController {
 				FROM ca_metadata_elements cme
 				LEFT JOIN ca_metadata_element_labels AS cmel ON cme.element_id = cmel.element_id
 				WHERE
-					cme.parent_id = ?
+					cme.parent_id = ? AND cme.deleted = 0
 				ORDER BY
-					cme.rank
+					cme.`rank`
 			",(int)$t_element->get('element_id'));
 			
 			while($qr_result->nextRow()){
@@ -140,15 +140,14 @@ class ElementsController extends BaseEditorController {
 			$t_element->set('parent_id',$vn_parent_id);
 		}
 		
-
 		if (!$t_element->getPrimaryKey()) {
 			$vb_new = true;
 			$vo_db = $t_element->getDb();
 			if($vn_parent_id){
 				$qr_tmp = $vo_db->query("
-					SELECT MAX(rank) AS rank
+					SELECT MAX(`rank`) AS `rank`
 					FROM ca_metadata_elements
-					WHERE parent_id=?
+					WHERE parent_id = ? AND deleted = 0
 				",$vn_parent_id);
 				if(!$qr_tmp->nextRow()){
 					$t_element->set('rank',1);
@@ -175,12 +174,13 @@ class ElementsController extends BaseEditorController {
 		}
 
 		if ($t_element->getPrimaryKey()) {
-			$va_new_labels = array();
-			$va_old_labels = array();
-			$va_delete_labels = array();
+			$va_new_labels = $va_old_labels = $va_delete_labels = [];
+			$va_new_alt_labels = $va_old_alt_labels = $va_delete_alt_labels = [];
+		
+			// Preferred labels
 			foreach($va_request as $vs_key => $vs_val){
-				if(!(strpos($vs_key,'element_labels_Pref')===false)) { /* label field */
-					$va_matches = array();
+				if(strpos($vs_key,'element_labels_Pref') !== false) { /* label field */
+					$va_matches = [];
 					if(!(strpos($vs_key,'_new')===false)){ /* new label field */
 						preg_match('/element_labels_Pref(.*)_new_([0-9]+)/',$vs_key,$va_matches);
 						$va_new_labels[$va_matches[2]][$va_matches[1]] = $vs_val;
@@ -193,54 +193,79 @@ class ElementsController extends BaseEditorController {
 					}
 					unset($va_request[$vs_key]);
 				}
+				// Nonpreferred labels (disambiguation labels)
+				if(strpos($vs_key,'alt_element_labels_NPref') !== false) { /* label field */
+					$va_matches = [];
+					if(!(strpos($vs_key,'_new')===false)){ /* new label field */
+						preg_match('/alt_element_labels_NPref(.*)_new_([0-9]+)/',$vs_key,$va_matches);
+						$va_new_alt_labels[$va_matches[2]][$va_matches[1]] = $vs_val;
+					} else if(!(strpos($vs_key,'_delete')===false)){ /* delete label */
+						preg_match('/alt_element_labels_NPrefLabel_([0-9]+)_delete/',$vs_key,$va_matches);
+						$va_delete_alt_labels[] = $va_matches[1];
+					} else {/* existing label field */
+						preg_match('/alt_element_labels_NPref(.*)_([0-9]+)/',$vs_key,$va_matches);
+						$va_old_alt_labels[$va_matches[2]][$va_matches[1]] = $vs_val;
+					}
+					unset($va_request[$vs_key]);
+				}
 			}
-	
+			
+		
 			/* insert new labels */
-			$t_element_label = new ca_metadata_element_labels();
-			foreach($va_new_labels as $va_label){
-				$t_element_label->clear();
-				foreach($va_label as $vs_f => $vs_val){
-					$t_element_label->set($vs_f,$vs_val);
-				}
-				$t_element_label->set('element_id',$t_element->getPrimaryKey());
-				$t_element_label->setMode(ACCESS_WRITE);
-				$t_element_label->insert();
-				if ($t_element_label->numErrors()) {
-					foreach ($t_element_label->errors() as $o_e) {
-						$this->request->addActionError($o_e, 'general');
-						$this->notification->addNotification($o_e->getErrorDescription(), __NOTIFICATION_TYPE_ERROR__);
+			foreach([
+				1 => ['new' => $va_new_labels, 'old' => $va_old_labels, 'delete' => $va_delete_labels],
+				0 => ['new' => $va_new_alt_labels, 'old' => $va_old_alt_labels, 'delete' => $va_delete_alt_labels]
+			] as $is_preferred => $data) {
+				$t_element_label = new ca_metadata_element_labels();
+				foreach($data['new'] as $va_label){
+					if (!$is_preferred && !$va_label['name']) { continue; }
+					$t_element_label->clear();
+					foreach($va_label as $vs_f => $vs_val){
+						$t_element_label->set($vs_f,$vs_val);
 					}
-				}
-			}
-	
-			/* delete labels */
-			foreach($va_delete_labels as $vn_label){
-				$t_element_label->load($vn_label);
-				$t_element_label->setMode(ACCESS_WRITE);
-				$t_element_label->delete(false);
-			}
-	
-			/* process old labels */
-			foreach($va_old_labels as $vn_key => $va_label){
-				$t_element_label->load($vn_key);
-				foreach($va_label as $vs_f => $vs_val){
-					$t_element_label->set($vs_f,$vs_val);
-				}
-				$t_element_label->set('element_id',$t_element->getPrimaryKey());
-				$t_element_label->setMode(ACCESS_WRITE);
-				if($vb_new){
+					$t_element_label->set('is_preferred', $is_preferred);
+					$t_element_label->set('element_id',$t_element->getPrimaryKey());
+					$t_element_label->setMode(ACCESS_WRITE);
 					$t_element_label->insert();
-				} else {
-					$t_element_label->update();
+					if ($t_element_label->numErrors()) {
+						foreach ($t_element_label->errors() as $o_e) {
+							$this->request->addActionError($o_e, 'general');
+							$this->notification->addNotification($o_e->getErrorDescription(), __NOTIFICATION_TYPE_ERROR__);
+						}
+					}
 				}
-				if ($t_element_label->numErrors()) {
-					foreach ($t_element_label->errors() as $o_e) {
-						$this->request->addActionError($o_e, 'general');
-						$this->notification->addNotification($o_e->getErrorDescription(), __NOTIFICATION_TYPE_ERROR__);
+	
+				/* delete labels */
+				foreach($data['delete'] as $vn_label){
+					$t_element_label->load($vn_label);
+					$t_element_label->setMode(ACCESS_WRITE);
+					$t_element_label->delete(false);
+				}
+	
+				/* process old labels */
+				foreach($data['old'] as $vn_key => $va_label){
+					if (!$is_preferred && !$va_label['name']) { continue; }
+					$t_element_label->load($vn_key);
+					foreach($va_label as $vs_f => $vs_val){
+						$t_element_label->set($vs_f,$vs_val);
+					}
+					$t_element_label->set('is_preferred', $is_preferred);
+					$t_element_label->set('element_id',$t_element->getPrimaryKey());
+					$t_element_label->setMode(ACCESS_WRITE);
+					if($vb_new){
+						$t_element_label->insert();
+					} else {
+						$t_element_label->update();
+					}
+					if ($t_element_label->numErrors()) {
+						foreach ($t_element_label->errors() as $o_e) {
+							$this->request->addActionError($o_e, 'general');
+							$this->notification->addNotification($o_e->getErrorDescription(), __NOTIFICATION_TYPE_ERROR__);
+						}
 					}
 				}
 			}
-	
+
 			/* process settings */
 			if (is_array($va_settings = $t_element->getAvailableSettings())) {
 				$vb_need_to_update = false;
@@ -272,14 +297,14 @@ class ElementsController extends BaseEditorController {
 						$this->notification->addNotification(_t("Setting %2 is not valid: %1", $vs_error, $vs_setting_key), __NOTIFICATION_TYPE_ERROR__);
 						continue;
 					}
-					$t_element->update();
 				}
 
+				$t_element->update();
 				$_REQUEST['form_timestamp'] = $vn_timestamp;
 			}
-			
+		
 			/* process type restrictions */
-			$t_restriction = new ca_metadata_type_restrictions(null, true);
+			$t_restriction = new ca_metadata_type_restrictions(null, null, true);
 			$va_settings = array_keys($t_restriction->getAvailableSettings());
 
 			foreach($_REQUEST as $vs_key => $vs_value) {
@@ -314,7 +339,7 @@ class ElementsController extends BaseEditorController {
 					$t_restriction->insert();
 					continue;
 				}
-				
+			
 				if (preg_match('!^type_restrictions_([\d]+)_delete$!', $vs_key, $va_matches)) {
 					// got one to delete
 					if ($t_restriction->load($va_matches[1])) {
@@ -324,6 +349,7 @@ class ElementsController extends BaseEditorController {
 					continue;
 				}
 			}
+			
             $t_element->flushCacheForElement();
 		}
 		
@@ -361,14 +387,16 @@ class ElementsController extends BaseEditorController {
 		$t_element = $this->getElementObject();
 		$vo_db = new Db();
 		$qr_tmp = $vo_db->query("
-			SELECT element_id, rank
+			SELECT element_id, `rank`
 			FROM ca_metadata_elements
 			WHERE
-				(rank < ?)
+				(`rank` < ?)
 				AND
 				(parent_id = ?)
+				AND
+				(deleted = 0)
 			ORDER BY
-				rank DESC
+				`rank` DESC
 		",$t_element->get('rank'),$t_element->get('parent_id'));
 		if(!$qr_tmp->nextRow()){
 			$this->notification->addNotification(_t("This element is at the top of the list"), __NOTIFICATION_TYPE_ERROR__);
@@ -400,14 +428,16 @@ class ElementsController extends BaseEditorController {
 		$t_element = $this->getElementObject();
 		$vo_db = new Db();
 		$qr_tmp = $vo_db->query("
-			SELECT element_id,rank
+			SELECT element_id, `rank`
 			FROM ca_metadata_elements
 			WHERE
-				(rank > ?)
+				(`rank` > ?)
 				AND
 				(parent_id = ?)
+				AND
+				(deleted = 0)
 			ORDER BY
-				rank
+				`rank`
 		",$t_element->get('rank'),$t_element->get('parent_id'));
 		if(!$qr_tmp->nextRow()){
 			$this->notification->addNotification(_t("This element is at the bottom of the list"), __NOTIFICATION_TYPE_ERROR__);
@@ -464,10 +494,10 @@ class ElementsController extends BaseEditorController {
 		$vo_db = new Db();
 		$qr_res = $vo_db->query("
 			SELECT * FROM
-				(SELECT rank,count(*) as count
+				(SELECT `rank`,count(*) as count
 					FROM ca_metadata_elements
-					WHERE parent_id=?
-					GROUP BY rank) as lambda
+					WHERE parent_id = ? AND deleted = 0
+					GROUP BY `rank`) as `lambda`
 			WHERE
 				count > 1;
 		",$pn_parent_id);
@@ -492,11 +522,13 @@ class ElementsController extends BaseEditorController {
 				SELECT * FROM
 					ca_metadata_elements
 					WHERE
-						(parent_id=?)
+						(parent_id = ?)
 						AND
-						(rank>?)
+						(`rank` > ?)
+						AND
+						(deleted = 0)
 					ORDER BY
-						rank
+						`rank`
 			",$pn_parent_id,$vn_rank);
 			while($qr_res->nextRow()){
 				$t_element->load($qr_res->get('element_id'));
@@ -510,9 +542,11 @@ class ElementsController extends BaseEditorController {
 					WHERE
 						(parent_id=?)
 						AND
-						(rank=?)
+						(`rank` = ?)
+						AND
+						(deleted = 0)
 					ORDER BY
-						rank
+						`rank`
 			",$pn_parent_id,$vn_rank);
 			$i=0;
 			while($qr_res->nextRow()){

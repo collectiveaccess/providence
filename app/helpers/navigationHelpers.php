@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2018 Whirl-i-Gig
+ * Copyright 2007-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -103,6 +103,12 @@
  	define('__CA_NAV_ICON_NUKE__', 62);
  	define('__CA_NAV_ICON_FULL_RESULTS__', 63);
  	define('__CA_NAV_ICON_EXPORT_SMALL__', 64);
+ 	define('__CA_NAV_ICON_HOME__', 65);
+ 	define('__CA_NAV_ICON_EDIT_TEXT__', 66);
+ 	define('__CA_NAV_ICON_IS_PRIMARY__', 67);
+ 	define('__CA_NAV_ICON_CROSSHAIRS__', 68);
+ 	define('__CA_NAV_ICON_UPLOAD__', 69);
+ 	define('__CA_NAV_ICON_COPY__', 70);
  	
  	/**
  	 * Icon position constants
@@ -132,7 +138,8 @@
 		if(caUseCleanUrls()) {
 			$vs_url = $po_request->getBaseUrlPath();
 		} else {
-			$vs_url = $po_request->getBaseUrlPath().'/'.$po_request->getScriptName();
+			$s = $po_request->getScriptName();
+			$vs_url = $po_request->getBaseUrlPath().'/'.(($s === 'service.php') ? 'index.php' : $s);
 		}
 		if ($ps_module_path == '*') { $ps_module_path = $po_request->getModulePath(); }
 		if ($ps_controller == '*') { $ps_controller = $po_request->getController(); }
@@ -263,13 +270,14 @@
 		
 		if ($vs_url) {
 			$vs_tag = "<a href='".$vs_url."' class='{$vs_classname}'";
-			
-			if (is_array($pa_attributes)) {
-				foreach($pa_attributes as $vs_attribute => $vs_value) {
-					$vs_tag .= " $vs_attribute='".htmlspecialchars($vs_value, ENT_QUOTES, 'UTF-8')."'";
-				}
+			if (!is_array($pa_attributes)) {
+				$pa_attributes = [];
 			}
-			
+			$pa_attributes['aria-label'] = $ps_content;
+			foreach($pa_attributes as $vs_attribute => $vs_value) {
+				$vs_tag .= " $vs_attribute='".htmlspecialchars($vs_value, ENT_QUOTES, 'UTF-8')."'";
+			}
+
 			$vs_tag .= ">";
 		} else {
 			$vs_tag = '';
@@ -278,22 +286,20 @@
 		$va_img_attr = array('border' => '0');
 		if (!$pb_no_background) {
 			$vs_tag .= "<span class='form-button '>";
-			$vn_padding = ($ps_content) ? 10 : 0;
+			$vn_padding = ($ps_content) ? 5 : 0;
 			$va_img_attr['class'] = 'form-button-left';
 			$va_img_attr['style'] = "padding-right: {$vn_padding}px;";
-		} else {
-			$vn_padding = 0;
-			$vs_img_tag_stuff = '';
 		}
 		
 		if (preg_match("/^[A-Za-z\.\-0-9 ]+$/", $ps_content)) {
-			$vs_alt = $vs_title = htmlspecialchars($ps_content, ENT_QUOTES, 'UTF-8');
+			$vs_title = htmlspecialchars($ps_content, ENT_QUOTES, 'UTF-8');
 		} else {
-			$vs_alt = $vs_title = '';
+			$vs_title = '';
 		}
 		
+        $va_img_attr['title'] = $vs_title;
+		$vs_tag .= caNavIcon($pn_type, caGetOption('size', $pa_options, 2), $va_img_attr);
 		
-		$vs_tag .= caNavIcon($pn_type, caGetOption('size', $pa_options, 2), $va_icon_attributes);
 		if (!$pb_dont_show_content) {
 			$vs_tag .= $ps_content;
 		}
@@ -347,10 +353,7 @@
 			'border' => '0',
 			'align' => 'absmiddle'
 		);
-		$vs_img_tag_stuff = " padding= '{$vn_padding}px'";
-			
-		
-		if ($vs_icon_tag = caNavIcon($pn_type, caGetOption('size', $pa_options, '30px'), $va_icon_attributes)) {
+		if ($vs_icon_tag = caNavIcon($pn_type, caGetOption('size', $pa_options, '30px'), $va_img_attr)) {
 			$vs_content = (!$pb_dont_show_content) ? $ps_content : '';
 			
 			switch($ps_icon_pos) {
@@ -420,7 +423,7 @@
 			$vs_buf .= caHTMLHiddenInput('form_timestamp', array('value' => time()));
 		}
 		if (!caGetOption('noCSRFToken', $pa_options, false)) {
-			$vs_buf .= caHTMLHiddenInput('crsfToken', array('value' => caGenerateCSRFToken($po_request)));
+			$vs_buf .= caHTMLHiddenInput('csrfToken', array('value' => caGenerateCSRFToken($po_request)));
 		}
 		
 		if (!caGetOption('disableUnsavedChangesWarning', $pa_options, false)) { 
@@ -458,8 +461,9 @@
 	/**
 	 *
 	 */
-	function caFormSubmitLink($po_request, $ps_content, $ps_classname, $ps_form_id, $ps_id=null) {
-		return "<a href='#' onclick='document.getElementById(\"{$ps_form_id}\").submit();' class='{$ps_classname}' ".($ps_id ? "id='{$ps_id}'" : '').">".$ps_content."</a>";
+	function caFormSubmitLink($po_request, $ps_content, $ps_classname, $ps_form_id, $ps_id=null, $pa_attributes = []) {
+		$vs_attributes = _caHTMLMakeAttributeString($pa_attributes);
+		return "<a href='#' onclick='document.getElementById(\"{$ps_form_id}\").submit();' class='{$ps_classname}' ".($ps_id ? "id='{$ps_id}'" : '') . $vs_attributes . ">".$ps_content."</a>";
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -488,15 +492,17 @@
 			$vs_extra = "jQuery(\"#isSaveAndReturn\").val(\"1\");";
 		}
 		
+		$css_id = caGetOption('id', $pa_options, null);
+		
 		if ($pb_prevent_duplicate_submits) {
-			$vs_button = "<a href='#' onclick='$vs_extra jQuery(\".caSubmit{$ps_id}\").fadeTo(\"fast\", 0.5).attr(\"onclick\", null); jQuery(\"#{$ps_id}\").submit();' class='{$vs_classname} caSubmit{$ps_id} {$vs_id}'>";
+			$vs_button = "<a href='#' onclick='$vs_extra jQuery(\".caSubmit{$ps_id}\").fadeTo(\"fast\", 0.5).attr(\"onclick\", null); jQuery(\"#{$ps_id}\").submit();' class='{$vs_classname} caSubmit{$ps_id} {$vs_id}' ".($css_id ? "id='{$css_id}'" : "")." aria-label='" . $ps_content . "'>";
 		} else {
-			$vs_button = "<a href='#' onclick='$vs_extra jQuery(\"#{$ps_id}\").submit();' class='{$vs_classname} {$vs_id}'>";
+			$vs_button = "<a href='#' onclick='$vs_extra jQuery(\"#{$ps_id}\").submit();' class='{$vs_classname} {$vs_id}' ".($css_id ? "id='{$css_id}'" : "")." aria-label='" . $ps_content . "'>";
 		}
 		
 		if (!$pb_no_background) { 
 			$vs_button .= "<span class='form-button'>"; 
-			$vn_padding = ($ps_content) ? 10 : 0;
+			$vn_padding = ($ps_content) ? 5 : 0;
 		} else {
 			$vn_padding = 0;
 		}	
@@ -507,9 +513,8 @@
 			'class' => 'form-button-left',
 			'style' => "padding-right: {$vn_padding}px"
 		);
+		$vs_button .= caNavIcon($pn_type, caGetOption('size', $pa_options, '30px'), $va_img_attr);
 		
-		
-		$vs_button .= caNavIcon($pn_type, caGetOption('size', $pa_options, '30px'), $va_icon_attributes);
 		if (!$pb_dont_show_content) {
 			$vs_button .= $ps_content;
 		}
@@ -553,20 +558,20 @@
 		$pb_no_background = (isset($pa_options['no_background']) && $pa_options['no_background']) ? true : false;
 		$pb_dont_show_content = (isset($pa_options['dont_show_content']) && $pa_options['dont_show_content']) ? true : false;
 		
-		$vs_classname = (!$pb_no_background) ? 'form-button' : '';
-		
-		$va_attr = array();
-		if ($ps_id) { $va_attr[] = "id='{$ps_id}'"; }
-		if (is_array($pa_attributes)) {
-			foreach($pa_attributes as $vs_name => $vs_value) {
-				$va_attr[] = $vs_name."='".($vs_value)."'";
-			}
+		if($vs_classname = (!$pb_no_background) ? 'form-button' : '') {
+			$pa_attributes['class'] .= " {$vs_classname}";
 		}
 		
-		$vs_button = "<a class='{$vs_classname}' ".join(' ', $va_attr).">";
+		if (!is_array($pa_attributes)) {
+			$pa_attributes = [];
+		}
+		$pa_attributes['aria-label'] = $ps_content;
+		if ($ps_id) { $pa_attributes['id'] = $ps_id; }
+
+		$vs_button = "<a "._caHTMLMakeAttributeString($pa_attributes).">";
 		if (!$pb_no_background) { 
 			$vs_button .= "<span class='form-button'>"; 
-			$vn_padding = ($ps_content) ? 10 : 0;
+			$vn_padding = ($ps_content) ? 5 : 0;
 		} else {
 			$vn_padding = 0;
 		}	
@@ -577,9 +582,8 @@
 			'class' => 'form-button-left',
 			'style' => "padding-right: {$vn_padding}px"
 		);
+		$vs_button .= caNavIcon($pn_type, caGetOption('size', $pa_options, 2), $va_img_attr);
 		
-		
-		$vs_button .= caNavIcon($pn_type, caGetOption('size', $pa_options, 2), $va_icon_attributes);
 		if (!$pb_dont_show_content) {
 			$vs_button .= $ps_content;
 		}
@@ -659,7 +663,7 @@
 			
 			$vs_attr = _caHTMLMakeAttributeString($pa_attributes);
 			
-			return "<i class='caIcon fa {$va_icon['class']} {$vs_size}{$vs_opt_class}{$vs_rotate_class}' {$vs_attr}></i>";
+			return "<i class='caIcon {$va_icon['class']} {$vs_size}{$vs_opt_class}{$vs_rotate_class}' {$vs_attr}></i>";
 		}
 		
 		return '???';
@@ -676,205 +680,224 @@
 		$vs_ca_class = '';
 		switch($pn_type) {
 			case __CA_NAV_ICON_ADD__:
-				$vs_fa_class = 'fa-plus-circle';	
+				$vs_fa_class = 'fas fa-plus-circle';	
 				break;
 			case __CA_NAV_ICON_DELETE__:
-				$vs_fa_class = 'fa fa-times';
+				$vs_fa_class = 'fas fa-times';
 				$vs_ca_class = 'deleteIcon'; 
 				break;
 			case __CA_NAV_ICON_CANCEL__:
-				$vs_fa_class = 'fa-minus-circle';
+				$vs_fa_class = 'fas fa-minus-circle';
 				$vs_ca_class = 'cancelIcon';
 				break;			
 			case __CA_NAV_ICON_EDIT__:
-				$vs_fa_class = 'fa-file';
+				$vs_fa_class = 'far fa-file';
 				$vs_ca_class = 'editIcon'; 
+				break;		
+			case __CA_NAV_ICON_EDIT_TEXT__:
+				$vs_fa_class = 'fas fa-edit';
+				$vs_ca_class = 'editTextIcon'; 
 				break;
 			case __CA_NAV_ICON_BATCH_EDIT__:
-				$vs_fa_class = 'fa-magic';
+				$vs_fa_class = 'fas fa-magic';
 				$vs_ca_class = 'batchIcon'; 
 				break;
 			case __CA_NAV_ICON_ALERT__:
-				$vs_fa_class = 'fa-exclamation-triangle';
+				$vs_fa_class = 'fas fa-exclamation-triangle';
 				break;
 			case __CA_NAV_ICON_SEARCH__:
-				$vs_fa_class = 'fa-search';
+				$vs_fa_class = 'fas fa-search';
 				break;
 			case __CA_NAV_ICON_INFO__:
-				$vs_fa_class = 'fa-info-circle';
+				$vs_fa_class = 'fas fa-info-circle';
 				$vs_ca_class = 'infoIcon';
 				break;
 			case __CA_NAV_ICON_DOWNLOAD__:
-				$vs_fa_class = 'fa-download';
+				$vs_fa_class = 'fas fa-download';
 				break;
 			case __CA_NAV_ICON_MAKE_PRIMARY__:
-				$vs_fa_class = 'fa-check';
+				$vs_fa_class = 'far fa-check-circle';
+				break;
+			case __CA_NAV_ICON_IS_PRIMARY__:
+				$vs_fa_class = 'far fa-check-square';
 				break;
 			case __CA_NAV_ICON_APPROVE__:
-				$vs_fa_class = 'fa-thumbs-o-up';
+				$vs_fa_class = 'far fa-thumbs-up';
 				break;	
 			case __CA_NAV_ICON_UPDATE__:
-				$vs_fa_class = 'fa-refresh';
+				$vs_fa_class = 'fas fa-redo';
 				$vs_ca_class = 'updateIcon'; 
 				break;
 			case __CA_NAV_ICON_LOGIN__:
-				$vs_fa_class = 'fa-check-circle-o';
+				$vs_fa_class = 'far fa-check-circle';
 				$vs_ca_class = 'loginButton';
 				break;
 			case __CA_NAV_ICON_SAVE__:
-				$vs_fa_class = 'fa-check-circle-o';
+				$vs_fa_class = 'far fa-check-circle';
 				break;
 			case __CA_NAV_ICON_HELP__:
-				$vs_fa_class = 'fa-life-ring';
+				$vs_fa_class = 'far fa-life-ring';
 				break;
 			case __CA_NAV_ICON_GO__:
-				$vs_fa_class = 'fa-chevron-circle-right';
+				$vs_fa_class = 'fas fa-chevron-circle-right';
 				$vs_ca_class = 'hierarchyIcon';
 				break;
 			case __CA_NAV_ICON_DEL_BUNDLE__:
-				$vs_fa_class = 'fa-times-circle';
+				$vs_fa_class = 'fas fa-times-circle';
 				break;
 			case __CA_NAV_ICON_CLOSE__:
-				$vs_fa_class = 'fa-times';
+				$vs_fa_class = 'fas fa-times';
 				break;
 			case __CA_NAV_ICON_WATCH__:
-				$vs_fa_class = 'fa-eye';
+				$vs_fa_class = 'far fa-eye';
 				break;
 			case __CA_NAV_ICON_UNWATCH__:
-				$vs_fa_class = 'fa-eye caIconRed';
+				$vs_fa_class = 'far fa-eye caIconRed';
 				break;
 			case __CA_NAV_ICON_ZOOM_IN__:
-				$vs_fa_class = 'fa-search-plus';
+				$vs_fa_class = 'fas fa-search-plus';
 				break;
 			case __CA_NAV_ICON_ZOOM_OUT__:
-				$vs_fa_class = 'fa-search-minus';
+				$vs_fa_class = 'fas fa-search-minus';
 				break;
 			case __CA_NAV_ICON_MAGNIFY__:
-				$vs_fa_class = 'fa-search';
+				$vs_fa_class = 'fas fa-search';
 				break;
 			case __CA_NAV_ICON_OVERVIEW__:
-				$vs_fa_class = 'fa-picture-o';
+				$vs_fa_class = 'far fa-image';
 				break;
 			case __CA_NAV_ICON_PAN__:
-				$vs_fa_class = 'fa-arrows';
+				$vs_fa_class = 'fas fa-arrows-alt';
 				break;
 			case __CA_NAV_ICON_CHANGE__:
-				$vs_fa_class = 'fa-retweet';
+				$vs_fa_class = 'fas fa-retweet';
 				break;
 			case __CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__:
-				$vs_fa_class = 'fa-paperclip';
+				$vs_fa_class = 'fas fa-paperclip';
 				break;
 			case __CA_NAV_ICON_COLLAPSE__:
-				$vs_fa_class = 'fa-minus-circle';
+				$vs_fa_class = 'fas fa-minus-circle';
 				break;
 			case __CA_NAV_ICON_EXPAND__:
-				$vs_fa_class = 'fa-plus-circle';
+				$vs_fa_class = 'fas fa-plus-circle';
 				break;					
 			case __CA_NAV_ICON_COMMIT__:
-				$vs_fa_class = 'fa-check-circle-o';
+				$vs_fa_class = 'fas fa-check-circle';
 				break;	
 			case __CA_NAV_ICON_SETTINGS__:
-				$vs_fa_class = 'fa-cog';
+				$vs_fa_class = 'fas fa-cog';
 				break;
 			case __CA_NAV_ICON_FILTER__:
-				$vs_fa_class = 'fa-sliders';
+				$vs_fa_class = 'fas fa-sliders';
 				break;	
 			case __CA_NAV_ICON_EXPORT__:
-				$vs_fa_class = 'fa-download';
+				$vs_fa_class = 'fas fa-download';
 				break;
 			case __CA_NAV_ICON_EXPORT_SMALL__:
-				$vs_fa_class = 'fa-external-link-square';
+				$vs_fa_class = 'fas fa-external-link-square-alt';
 				break;	
 			case __CA_NAV_ICON_SETS__:
-				$vs_fa_class = 'fa-clone';
+				$vs_fa_class = 'far fa-clone';
 				break;	
 			case __CA_NAV_ICON_RIGHT_ARROW__:
-				$vs_fa_class = 'fa-chevron-right';
+				$vs_fa_class = 'fas fa-chevron-right';
 				break;	
 			case __CA_NAV_ICON_VISUALIZE__:
-				$vs_fa_class = 'fa-line-chart';
+				$vs_fa_class = 'fas fa-chart-line';
 				break;	
 			case __CA_NAV_ICON_ADD_WIDGET__:
-				$vs_fa_class = 'fa-plus-circle';
+				$vs_fa_class = 'fas fa-plus-circle';
 				break;	
 			case __CA_NAV_ICON_DUPLICATE__:
-				$vs_fa_class = 'fa-files-o';
+				$vs_fa_class = 'far fa-copy';
 				break;	
 			case __CA_NAV_ICON_CHILD__:
-				$vs_fa_class = 'fa-child';
+				$vs_fa_class = 'fas far fa-child';
 				break;	
 			case __CA_NAV_ICON_SCROLL_RT__:
-				$vs_fa_class = 'fa-chevron-right';
+				$vs_fa_class = 'fas fa-chevron-right';
 				break;	
 			case __CA_NAV_ICON_SCROLL_LT__:
-				$vs_fa_class = 'fa-chevron-left';
+				$vs_fa_class = 'fas fa-chevron-left';
 				break;	
 			case __CA_NAV_ICON_MOVE__:
-				$vs_fa_class = 'fa-truck';
+				$vs_fa_class = 'fas fa-truck';
 				break;	
 			case __CA_NAV_ICON_IMAGE__:
-				$vs_fa_class = 'fa-file-image-o';
+				$vs_fa_class = 'far fa-file-image';
 				break;	
 			case __CA_NAV_ICON_DOT__:
-				$vs_fa_class = 'fa-dot-cirle-o';
+				$vs_fa_class = 'far fa-dot-circle';
 				break;	
 			case __CA_NAV_ICON_PDF__:
-				$vs_fa_class = 'fa-file-pdf-o';
+				$vs_fa_class = 'far fa-file-pdf';
 				break;	
 			case __CA_NAV_ICON_SET_CENTER__:
-				$vs_fa_class = 'fa-bullseye';
+				$vs_fa_class = 'fas fa-bullseye';
 				break;	
 			case __CA_NAV_ICON_VISIBILITY_TOGGLE__:
- 				$vs_fa_class = 'fa-arrow-circle-up';
+ 				$vs_fa_class = 'fas fa-arrow-circle-up';
  				break;
 			case __CA_NAV_ICON_UP__:
- 				$vs_fa_class = 'fa-arrow-circle-up';
+ 				$vs_fa_class = 'fas fa-arrow-circle-up';
  				break;	
 			case __CA_NAV_ICON_DOWN__:
- 				$vs_fa_class = 'fa-arrow-circle-down';
+ 				$vs_fa_class = 'fas fa-arrow-circle-down';
  				break;				
  			case __CA_NAV_ICON_FOLDER__:
- 				$vs_fa_class = 'fa-folder';	
+ 				$vs_fa_class = 'far fa-folder';	
  				break;				
  			case __CA_NAV_ICON_FOLDER_OPEN__:
- 				$vs_fa_class = 'fa-folder-open';	
+ 				$vs_fa_class = 'far fa-folder-open';	
  				break;							
  			case __CA_NAV_ICON_FILE__:
- 				$vs_fa_class = 'fa-file';	
+ 				$vs_fa_class = 'far fa-file';	
  				break;		
  			case __CA_NAV_ICON_CLOCK__:
- 				$vs_fa_class = 'fa-clock-o';	
+ 				$vs_fa_class = 'far fa-clock';	
  				break;				
  			case __CA_NAV_ICON_SPINNER__:
- 				$vs_fa_class = 'fa fa-cog fa-spin';	
+ 				$vs_fa_class = 'fas fa-cog far fa-spin';	
  				break;								
  			case __CA_NAV_ICON_HIER__:
- 				$vs_fa_class = 'fa fa-sitemap';
+ 				$vs_fa_class = 'fas fa-sitemap';
  				break;	
 			case __CA_NAV_ICON_SPREADSHEET__:
-				$vs_fa_class = 'fa-table';
+				$vs_fa_class = 'fas fa-table';
 				break;	
 			case __CA_NAV_ICON_VERTICAL_ARROWS__:
-				$vs_fa_class = 'fa-arrows-v';
+				$vs_fa_class = 'fas fa-arrows-v';
 				break;
 			case __CA_NAV_ICON_MEDIA_METADATA__:
-				$vs_fa_class = 'fa-file-audio-o';
+				$vs_fa_class = 'far fa-file-audio';
 				break;					
 			case __CA_NAV_ICON_EXTRACT__:
-				$vs_fa_class = 'fa-scissors';
+				$vs_fa_class = 'fas fa-cut';
 				break;					
 			case __CA_NAV_ICON_ROTATE__:
-				$vs_fa_class = 'fa-undo';
+				$vs_fa_class = 'fas fa-undo';
 				break;
 			case __CA_NAV_ICON_NUKE__:
-				$vs_fa_class = 'fa-bomb';
+				$vs_fa_class = 'fas fa-bomb';
 				break;
 			case __CA_NAV_ICON_FULL_RESULTS__:
-				$vs_fa_class = 'fa-bars';
+				$vs_fa_class = 'fas fa-bars';
 				break;
-			case __CA_NAV_ICON_EXPORT_SMALL__: 
-				$vs_fa_class = 'fa-external-link-square';
-				break;																							
+			case __CA_NAV_ICON_EXPORT_SMALL__:
+				$vs_fa_class = 'fas fa-external-link-square-alt';
+				break;
+			case __CA_NAV_ICON_HOME__:
+				$vs_fa_class = 'fas fa-home';
+				break;	
+			case __CA_NAV_ICON_CROSSHAIRS__:
+				$vs_fa_class = 'fas fa-crosshairs';
+				break;	
+			case __CA_NAV_ICON_UPLOAD__:
+				$vs_fa_class = 'fas fa-upload';
+				break;	
+			case __CA_NAV_ICON_COPY__:
+				$vs_fa_class = 'fa fa-clipboard';
+				break;																					
 			default:
 				print "INVALID CONSTANT $pn_type<br>\n";
 				return null;
@@ -963,8 +986,10 @@
 	 * @param array $pa_options Optional array of options. Supported options are:
 	 * 		verifyLink - if true and $pn_id is set, then existence of record with specified id is verified before link is returned. If the id does not exist then null is returned. Default is false - no verification performed.
 	 *		action - if set, action of returned link will be set to the supplied value
+	 *		actionExtra - if set, action extra of returned link will be set to the supplied value
 	 *      quick_add - if set to true, returned link will point to the QuickAdd controller instead
-	 * @return string
+	 *
+	 * @return array|string
 	 */
 	function caEditorUrl($po_request, $ps_table, $pn_id=null, $pb_return_url_as_pieces=false, $pa_additional_parameters=null, $pa_options=null) {
 		if (is_numeric($ps_table)) {
@@ -1083,6 +1108,8 @@
 				return null;
 				break;
 		}
+		
+		$action_extra = caGetOption('actionExtra', $pa_options, null);
 
 		switch($vs_table) {
 			case 'ca_relationship_types':
@@ -1112,11 +1139,12 @@
 			}
 		}
 		
+		
 		if ($pb_return_url_as_pieces) {
 			return array(
 				'module' => $vs_module,
 				'controller' => $vs_controller,
-				'action' => $vs_action,
+				'action' => $action_extra ? "{$vs_action}/{$action_extra}" : $vs_action,
 				$vs_pk => $pn_id,
 				'id' => $pn_id,
 				'_pk' => $vs_pk		// tells you what the name of the primary key is
@@ -1124,7 +1152,7 @@
 		} else {
 			if (!is_array($pa_additional_parameters)) { $pa_additional_parameters = array(); }
 			$pa_additional_parameters = array_merge(array($vs_pk => $pn_id), $pa_additional_parameters);
-			return caNavUrl($po_request, $vs_module, $vs_controller, $vs_action, $pa_additional_parameters, $pa_options);
+			return caNavUrl($po_request, $vs_module, $vs_controller, $action_extra ? "{$vs_action}/{$action_extra}" : $vs_action, $pa_additional_parameters, $pa_options);
 		}
 	}
 	# ------------------------------------------------------------------------------------------------
@@ -1164,7 +1192,9 @@
 		}
 		
 		$vn_id_for_idno = null;
-		if(((int)$pn_id > 0) && ($vs_use_alt_identifier_in_urls = caUseAltIdentifierInUrls($ps_table)) && is_array($attr_list = $t_table->getAttributeForIDs($vs_use_alt_identifier_in_urls, [$pn_id]))) {
+		if ( ( (int) $pn_id > 0 ) && ( $vs_use_alt_identifier_in_urls = caUseAltIdentifierInUrls( $ps_table ) )
+		     && is_array( $attr_list = $t_table->getAttributeForIDs( $vs_use_alt_identifier_in_urls, [ $pn_id ] ) )
+		) {
 		    $va_attr = array_values($attr_list);
 		    if (is_array($va_attr[0]) && ($vn_id_for_idno = array_shift($va_attr[0]))) {
 				$vb_id_exists = true;
@@ -1175,7 +1205,8 @@
 			if (is_array($va_ids) && ($vn_id_for_idno = array_shift($va_ids))) {
 				$vb_id_exists = true;
 			}
-		    $pn_id = (strlen($vn_id_for_idno)) ? $vn_id_for_idno : "id:{$pn_id}";
+
+		    $pn_id = (strlen($vn_id_for_idno) && (strpos($vn_id_for_idno, '/') === false)) ? $vn_id_for_idno : "id:{$pn_id}";
 		}
 		$vs_action .= "/".rawurlencode($pn_id);
 		
@@ -1368,3 +1399,26 @@
 		return $g_use_clean_urls = (defined('__CA_USE_CLEAN_URLS__') && (__CA_USE_CLEAN_URLS__) && caModRewriteIsAvailable());
 	}
 	# ------------------------------------------------------------------------------------------------
+    /**
+     * @param $vs_controller
+     * @param $vs_action
+     *
+     * @return bool
+     */
+    function caIsGzipDisabled($vs_controller, $vs_action){
+        $conf = Configuration::load();
+        $va_disable_gzip = $conf->getAssoc('disable_gzip_on_controllers');
+        if (($va_acl = caGetOption($vs_controller, $va_disable_gzip, null)) !== null){
+            $va_actions = caGetOption('action', $va_acl, array());
+            if (!is_array($va_actions)){
+                $va_actions = array($va_actions);
+            }
+            if (in_array($vs_action, $va_actions)){
+                return true;
+            } else {
+                return sizeof(array_keys($va_acl))==0;
+            }
+        }
+        return false;
+    }
+    # ------------------------------------------------------------------------------------------------

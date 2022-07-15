@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2018 Whirl-i-Gig
+ * Copyright 2007-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -43,65 +43,65 @@ require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 
 class RequestDispatcher extends BaseObject {
 	# -------------------------------------------------------
-	private $opo_request;
-	private $opo_response;
+	private $request;
+	private $response;
 
-	private $ops_controller_path;
-	private $ops_application_plugins_path;
-	private $ops_theme_plugins_path;
+	private $controller_path;
+	private $application_plugins_path;
+	private $theme_plugins_path;
 
-	private $opa_module_path;
-	private $ops_controller;
-	private $ops_action;
-	private $ops_action_extra;
-	private $opb_is_dispatchable = false;
+	private $module_path;
+	private $controller;
+	private $action;
+	private $action_extra;
+	private $is_dispatchable = false;
 
-	private $opa_plugins = null;
+	private $plugins = null;
 
-	private $ops_default_action;
+	private $default_action;
 	# -------------------------------------------------------
-	public function __construct($po_request=null, $po_response=null) {
+	public function __construct($request=null, $response=null) {
 		parent::__construct();
 		
-		if ($po_request) {
-			$this->setRequest($po_request);
+		if ($request) {
+			$this->setRequest($request);
 		}
-		if ($po_response) {
-			$this->setResponse($po_response);
+		if ($response) {
+			$this->setResponse($response);
 		}
 	}
 	# -------------------------------------------------------
-	public function setRequest(&$po_request) {
-		$this->opo_request = $po_request;
+	public function setRequest(&$request) {
+		$this->request = $request;
 		
-		switch($po_request->getScriptName()){
+		switch($request->getScriptName()){
 			case "service.php":
-				$this->ops_controller_path = $this->opo_request->config->get('service_controllers_directory');
-				$this->ops_default_action = $this->opo_request->config->get('service_default_action');
+				$this->ops_controller_path = $this->request->config->get('service_controllers_directory');
+				$this->ops_default_action = $this->request->config->get('service_default_action');
 				break;
 			case "index.php":
 			default:
-				$this->ops_controller_path = $this->opo_request->config->get('controllers_directory');
-				$this->ops_default_action = $this->opo_request->config->get('default_action');
+				$this->ops_controller_path = $this->request->config->get('controllers_directory');
+				$this->ops_default_action = $this->request->config->get('default_action');
 				break;
 		}
 
-		$this->ops_application_plugins_path = $this->opo_request->config->get('application_plugins');
+		$this->ops_application_plugins_path = $this->request->config->get('application_plugins');
 		$this->ops_theme_plugins_path = __CA_THEME_DIR__."/plugins";
 
 		$this->parseRequest();
 	}
 	# -------------------------------------------------------
-	public function setResponse(&$po_response) {
-		$this->opo_response = $po_response;
+	public function setResponse(&$response) {
+		$this->response = $response;
 	}
 	# -------------------------------------------------------
 	private function parseRequest() {
-		if (!($vs_path = $this->opo_request->getPathInfo()) || ($vs_path == '/')) {
+		if (!($vs_path = $this->request->getPathInfo()) || ($vs_path == '/')) {
 			$vs_path = $this->ops_default_action;
 		}
 		
-		if ($vs_path{0} === '/') { $vs_path = substr($vs_path, 1); }	// trim leading forward slash...
+		if ($vs_path[0] === '/') { $vs_path = substr($vs_path, 1); }	// trim leading forward slash...
 		$va_tmp = explode('/', $vs_path);								// break path into parts
 		
 		if (is_dir($this->ops_theme_plugins_path.'/'.$va_tmp[0].'/controllers')) {
@@ -112,7 +112,7 @@ class RequestDispatcher extends BaseObject {
 			$vs_module_path_prefix = $va_tmp[0].'/controllers';
 			array_shift($va_tmp);
 			
-			$this->opo_request->setIsApplicationPlugin(true);
+			$this->request->setIsApplicationPlugin(true);
 		} elseif (is_dir($this->ops_application_plugins_path.'/'.$va_tmp[0].'/controllers')) {
 			// is application plugin
 			$vs_controller_path = $this->ops_application_plugins_path.'/'.$va_tmp[0].'/controllers';
@@ -121,7 +121,7 @@ class RequestDispatcher extends BaseObject {
 			$vs_module_path_prefix = $va_tmp[0].'/controllers';
 			array_shift($va_tmp);
 			
-			$this->opo_request->setIsApplicationPlugin(true);
+			$this->request->setIsApplicationPlugin(true);
 		} else {
 			$vs_controller_path = $this->ops_controller_path;
 			$va_module_path = array();
@@ -139,22 +139,27 @@ class RequestDispatcher extends BaseObject {
 		$this->opa_module_path =& $va_module_path;
 		if ($vs_module_path_prefix) { array_unshift($this->opa_module_path, $vs_module_path_prefix); }
 		$this->ops_controller = ucfirst(preg_replace("![^A-Za-z0-9_:\.\*]+!", "", array_shift($va_tmp)));
-		$this->ops_action = preg_replace("![^A-Za-z0-9_:\.\*]+!", "", array_shift($va_tmp));
+		
+		if (!($a = array_shift($va_tmp))) {
+			$this->ops_action = '_default';
+		} else {
+			$this->ops_action = preg_replace("![^A-Za-z0-9_:\.\*%\-]+!", "", $a);
+		}
 		if ((sizeof($va_tmp) % 2) != 0) {
-			$this->ops_action_extra = preg_replace("![^A-Za-z0-9_:\.\*]+!", "", array_shift($va_tmp));
+			$this->ops_action_extra = preg_replace("![^A-Za-z0-9_:\.\*%\-]+!", "", array_shift($va_tmp));
 		} else {
 			$this->ops_action_extra = '';
 		}
 		
 		while(sizeof($va_tmp) > 0) {
-			$this->opo_request->setParameter(array_shift($va_tmp), array_shift($va_tmp), 'PATH');
+			$this->request->setParameter(array_shift($va_tmp), array_shift($va_tmp), 'PATH');
 		}
-		$this->opo_request->setModulePath(join('/', $this->opa_module_path));
-		$this->opo_request->setController($this->ops_controller);
-		$this->opo_request->setAction($this->ops_action);
-		$this->opo_request->setActionExtra($this->ops_action_extra);
+		$this->request->setModulePath(join('/', $this->opa_module_path));
+		$this->request->setController($this->ops_controller);
+		$this->request->setAction($this->ops_action);
+		$this->request->setActionExtra($this->ops_action_extra);
 		
-		$this->opo_request->setControllerUrl(preg_replace("![/]+!", "/", join('/', array_merge(array($this->opo_request->getBaseUrlPath(), $this->opo_request->getScriptName()), array($this->opo_request->getModulePath()), array($this->ops_controller)))));
+		$this->request->setControllerUrl(preg_replace("![/]+!", "/", join('/', array_merge(array($this->request->getBaseUrlPath(), $this->request->getScriptName()), array($this->request->getModulePath()), array($this->ops_controller)))));
 
 		if ($this->ops_controller != '') {
 			return $this->opb_is_dispatchable = true;
@@ -214,7 +219,7 @@ class RequestDispatcher extends BaseObject {
 											$va_params = array($this->ops_action);
 											if ($this->ops_action_extra) { $va_params[] = $this->ops_action_extra; } 
 						
-											$va_path_params = $this->opo_request->getParameters(array('PATH'));
+											$va_path_params = $this->request->getParameters(array('PATH'));
 											foreach($va_path_params as $vs_param => $vs_value) {
 												if (!$vs_param) { $va_params[] = $vs_param; }
 												if (!$vs_value) { $va_params[] = $vs_value; }
@@ -232,15 +237,15 @@ class RequestDispatcher extends BaseObject {
 					}
 				}
 
-				if(!$this->opo_request->user->canAccess($this->opa_module_path, $this->ops_controller, $this->ops_action)){
-					switch($this->opo_request->getScriptName()){
+				if(!$this->request->user->canAccess($this->opa_module_path, $this->ops_controller, $this->ops_action)){
+					switch($this->request->getScriptName()){
 						case "service.php":
 							// service auth requests for deprecated service API are allowed to go through to
 							// dispatch because in that case logging in requires running actual controller code. 
 							// this is bad practice and should be removed once the old API is no longer supported.
-							if(!$this->opo_request->isServiceAuthRequest()) {
-								$this->opo_response->setHTTPResponseCode(401,_t("Access denied"));
-								$this->opo_response->addHeader('WWW-Authenticate','Basic realm="CollectiveAccess Service API"');
+							if(!$this->request->isServiceAuthRequest()) {
+								$this->response->setHTTPResponseCode(401,_t("Access denied"));
+								$this->response->addHeader('WWW-Authenticate','Basic realm="CollectiveAccess Service API"');
 								return true; // this is kinda stupid but otherwise the "error redirect" code of AppController kicks in, which is not what we want here!
 							}
 							break;
@@ -252,11 +257,11 @@ class RequestDispatcher extends BaseObject {
 				}
 				
 
-				$o_action_controller = new $vs_classname($this->opo_request, $this->opo_response, $this->opo_request->getViewsDirectoryPath().'/'.join('/', $this->opa_module_path));
+				$o_action_controller = new $vs_classname($this->request, $this->response, $this->request->getViewsDirectoryPath().'/'.join('/', $this->opa_module_path));
 
-				$this->opo_request->setIsDispatched(true);
+				$this->request->setIsDispatched(true);
 				
-				if (!$this->opo_response->isRedirect()) {
+				if (!$this->response->isRedirect()) {
 					$vb_plugin_cancelled_dispatch = false;
 					foreach($pa_plugins as $vo_plugin) {
 						$va_ret = $vo_plugin->preDispatch();
@@ -270,6 +275,9 @@ class RequestDispatcher extends BaseObject {
 							$this->postError(2310, _t("Not dispatchable"), "RequestDispatcher->dispatch()");
 							return false;
 						}
+						if (caIsGzipDisabled($this->ops_controller, $this->ops_action)){
+                            $this->response->addHeader("Content-Encoding", "none");
+                        }
 						$o_action_controller->{$this->ops_action}($va_params);
 						if ($o_action_controller->numErrors()) {
 							$this->errors = $o_action_controller->errors();
@@ -284,11 +292,11 @@ class RequestDispatcher extends BaseObject {
 						$vo_plugin->postDispatch();
 					}
 
-					if (!$this->opo_request->isDispatched()) {
+					if (!$this->request->isDispatched()) {
 						$this->parseRequest();
 					}
 				}
-			} while($this->opo_request->isDispatched() == false);
+			} while($this->request->isDispatched() == false);
 			
 			return true;
 		}

@@ -29,11 +29,13 @@
  * 
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
+
 require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 require_once(__CA_LIB_DIR__.'/Search/ObjectSearch.php');
 
-class BundlableLabelableBaseModelWithAttributesTest extends PHPUnit_Framework_TestCase {
+class BundlableLabelableBaseModelWithAttributesTest extends TestCase {
 
 	private $opa_test_record_ids = array();
 
@@ -111,13 +113,14 @@ class BundlableLabelableBaseModelWithAttributesTest extends PHPUnit_Framework_Te
 
 	}
 
-	public function testMultipartIDNOGeneration() {
-
-	}
-
-	public function testMultipartIDNOVerification() {
-
-	}
+	// TODO: Test multipart idno
+	// public function testMultipartIDNOGeneration() {
+// 
+// 	}
+// 
+// 	public function testMultipartIDNOVerification() {
+// 
+// 	}
 
 	// TODO: Test hierarchy functions...
 
@@ -466,7 +469,7 @@ class BundlableLabelableBaseModelWithAttributesTest extends PHPUnit_Framework_Te
 		$this->assertEquals("http://en.wikipedia.org", $t_object->get('ca_objects.external_link.url_entry'), 'url entry must not change');
 	}
 
-	public function setUp() {
+	protected function setUp() : void {
 		global $g_ui_locale_id;
 		$g_ui_locale_id = 1;
 	}
@@ -474,7 +477,7 @@ class BundlableLabelableBaseModelWithAttributesTest extends PHPUnit_Framework_Te
 	/**
 	 * (hard) delete all test records we created, to avoid side effects on other tests (like searching)
 	 */
-	public function tearDown() {
+	protected function tearDown() : void {
 		foreach($this->opa_test_record_ids as $vs_table => $va_record_ids) {
 			$t_instance = Datamodel::getInstance($vs_table);
 			$t_instance->setMode(ACCESS_WRITE);

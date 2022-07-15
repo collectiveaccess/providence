@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2013 Whirl-i-Gig
+ * Copyright 2012-2020 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -55,7 +55,7 @@
 
 <?php
 	function caIncrementBatchMediaImportProgress($po_request, $pn_rows_complete, $pn_total_rows, $ps_message, $t_new_rep, $pn_elapsed_time, $pn_memory_used, $pn_num_processed, $pn_num_errors) {
-		$pn_percentage = ($pn_rows_complete/$pn_total_rows) * 100;
+		$pn_percentage = ($pn_total_rows > 0) ?($pn_rows_complete/$pn_total_rows) * 100 : 0;
 		if (is_null($ps_message)) {
 			$ps_message = _t('Processed %1/%2', $pn_rows_complete, $pn_total_rows);
 		}
@@ -92,9 +92,13 @@
 						$vs_buf .= "<li><em>".caEditorLink($po_request, $va_notice['label'], '', $pa_general['table'], $vn_id)."</em> (".$va_notice['idno']."): "._t($va_notice['status'])."</li>";
 						break;
 					case 'SKIPPED':
+					case 'NO_MATCH':
 					case 'MATCHED':
 					case 'RELATED':
 						$vs_buf .= "<li><em>".$va_notice['label']."</em>: ".$va_notice['message']."</li>";
+						break;
+					case 'EXISTS':
+						$vs_buf .= "<li><em>".$va_notice['label']."</em>: ".$va_notice['message']." <a href='".$va_notice['reference']."' class='button'>".caNavIcon(__CA_NAV_ICON_GO__, '14px', ['title' => _t('View media'), 'alt' => _t('View media')]).'</a></li>';
 						break;
 					default:
 						$vs_buf .= "<li><em>".$va_notice['label']."</em> (".$va_notice['idno']."): "._t($va_notice['status'])."</li>";
@@ -106,10 +110,19 @@
 		
 		if ($pa_general['set_id']) {
 			$vs_buf .= 
-				caNavButton($po_request, __CA_NAV_ICON_BATCH_EDIT__, _t('Batch edit'), '', 'batch', 'Editor', 'Edit', array('set_id' => $pa_general['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)).' '.
-				_t('Batch edit set <em>%1</em> containing imported media', caNavLink($po_request, $pa_general['setName'], '', 'batch', 'Editor', 'Edit', array('set_id' => $pa_general['set_id'])));
+				caNavButton($po_request, __CA_NAV_ICON_BATCH_EDIT__, _t('Batch edit'), '', 'batch', 'Editor', 'Edit', array('id' => 'ca_set:'.$pa_general['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)).' '.
+				_t('Batch edit set <em>%1</em> containing imported media', caNavLink($po_request, $pa_general['setName'], '', 'batch', 'Editor', 'Edit', array('id' => 'ca_sets:'.$pa_general['set_id'])));
 		}
 		
+		if ($pa_general['processingLog']) {
+			$vs_buf .= caNavLink($po_request, _t("Download import log"), '', '*', '*', 'DownloadLog', ['file' => pathinfo($pa_general['processingLog'], PATHINFO_FILENAME)])."<br/>";
+		}
+		if ($pa_general['skiplog']) {
+			$vs_buf .= caNavLink($po_request, _t("Download skipped files log"), '', '*', '*', 'DownloadLog', ['file' => pathinfo($pa_general['skiplog'], PATHINFO_FILENAME)])."<br/>";
+		}
+		if ($pa_general['errorlog']) {
+			$vs_buf .= caNavLink($po_request, _t("Download error log"), '', '*', '*', 'DownloadLog', ['file' => pathinfo($pa_general['errorlog'], PATHINFO_FILENAME)])."<br/>";
+		}
 		print "<script type='text/javascript'>";
 		print "jQuery('#batchProcessingMediaPreview').hide();";
 		print "jQuery('#batchProcessingReport').html('".addslashes($vs_buf)."').fadeIn(300);"; 

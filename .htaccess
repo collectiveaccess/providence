@@ -2,6 +2,9 @@ Options -Indexes
 Order allow,deny
 Allow from all
 
+AddType text/vtt .vtt
+AddType text/srt .srt
+
 <FilesMatch ".*\.[A-Za-z0-9]+">
 	Deny from all
 </FilesMatch>
@@ -11,7 +14,7 @@ Allow from all
 <FilesMatch "^(index|service|tilepic)\.php$">
         Allow from all
 </FilesMatch>
-<FilesMatch "^.*\.(css|gif|jpg|png|js|woff|woff2|ttf|swf|map|tif|tiff|m4v|xml|ply|stl|html|json|mp3|wav|aiff|tiff|obj|bmp|mp4|pdf|svg)$">
+<FilesMatch "^.*\.(css|gif|jpg|png|js|woff|woff2|ttf|swf|map|tif|tiff|m4v|xml|ply|stl|html|json|mp3|wav|aiff|obj|bmp|mp4|pdf|svg|vtt|srt|ico|gltf|mtl|bin|js|txt)$">
         Allow from all
 </FilesMatch>
 
@@ -30,5 +33,13 @@ Allow from all
 	RewriteCond %{REQUEST_FILENAME} !-f
 	RewriteCond %{REQUEST_FILENAME} !-d
 	RewriteCond %{REQUEST_URI} !=/favicon.ico
+	RewriteCond %{REQUEST_URI} !=/server-status
+	RewriteCond %{REQUEST_URI} !=/robots.txt
 	RewriteRule ^ index.php%{REQUEST_URI} [L]	
+
+	# Block all TRACE/TRACK requests
+	RewriteCond %{REQUEST_METHOD} ^TRAC[EK]
+	RewriteRule .* - [F]
+
+
 </IfModule>

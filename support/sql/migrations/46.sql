@@ -7,8 +7,8 @@
 /*==========================================================================*/
 /* Add fields to support sortability for mapping groups and rules */
 
-alter table ca_bundle_mapping_groups add column rank int unsigned not null;
-alter table ca_bundle_mapping_rules add column rank int unsigned not null;
+alter table ca_bundle_mapping_groups add column `rank` int unsigned not null;
+alter table ca_bundle_mapping_rules add column `rank` int unsigned not null;
 
 
 alter table ca_bundle_mapping_rules change column ca_path ca_path_suffix varchar(512) not null;

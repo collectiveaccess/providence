@@ -29,21 +29,23 @@
  * 
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
+
 require_once(__CA_LIB_DIR__.'/Datamodel.php');
 
-class DatamodelTest extends PHPUnit_Framework_TestCase {
+class DatamodelTest extends TestCase {
 	public function testInstantiateAllModels() {
 		$va_tables = Datamodel::getTableNames();
 
 		foreach($va_tables as $vs_table) {
 			// we do multiple calls to get some cache hits
-			$this->assertInstanceOf($vs_table, Datamodel::getInstanceByTableName($vs_table));
-			$this->assertInstanceOf($vs_table, Datamodel::getInstanceByTableName($vs_table, true));
+			$this->assertInstanceOf($vs_table, Datamodel::getInstance($vs_table));
+			$this->assertInstanceOf($vs_table, Datamodel::getInstance($vs_table, true));
 
 			$vn_table_num = Datamodel::getTableNum($vs_table);
 
-			$this->assertInstanceOf($vs_table, Datamodel::getInstanceByTableNum($vn_table_num));
-			$this->assertInstanceOf($vs_table, Datamodel::getInstanceByTableNum($vn_table_num, true));
+			$this->assertInstanceOf($vs_table, Datamodel::getInstance($vn_table_num));
+			$this->assertInstanceOf($vs_table, Datamodel::getInstance($vn_table_num, true));
 
 			$this->assertInstanceOf($vs_table, Datamodel::getInstance($vs_table));
 			$this->assertInstanceOf($vs_table, Datamodel::getInstance($vs_table, true));

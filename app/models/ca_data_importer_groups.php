@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2013 Whirl-i-Gig
+ * Copyright 2012-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,13 +30,7 @@
  * ----------------------------------------------------------------------
  */
  
- /**
-   *
-   */
-
 require_once(__CA_LIB_DIR__.'/ModelSettings.php');
-require_once(__CA_MODELS_DIR__."/ca_data_importers.php");
-require_once(__CA_MODELS_DIR__."/ca_data_importer_items.php");
 
 BaseModel::$s_ca_models_definitions['ca_data_importer_groups'] = array(
  	'NAME_SINGULAR' 	=> _t('data importer group'),
@@ -84,6 +78,8 @@ BaseModel::$s_ca_models_definitions['ca_data_importer_groups'] = array(
 );
 	
 class ca_data_importer_groups extends BaseModel {
+	use ModelSettings;
+	
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -169,42 +165,17 @@ class ca_data_importer_groups extends BaseModel {
 
 	protected $FIELDS;
 	
-	/**
-	 * Settings delegate - implements methods for setting, getting and using 'settings' var field
-	 */
-	public $SETTINGS;
-	
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
-	public function __construct($pn_id=null) {
+	public function __construct($id=null, ?array $options=null) {
 		// Filter list of tables importers can be used for to those enabled in current config
 		//BaseModel::$s_ca_models_definitions['ca_data_importer_groups']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = caFilterTableList(BaseModel::$s_ca_models_definitions['ca_data_importer_groups']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST']);
 		
-		parent::__construct($pn_id);
+		parent::__construct($id, $options);
 		
-		$this->initSettings();
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	protected function initLabelDefinitions($pa_options=null) {
-		parent::initLabelDefinitions($pa_options);
-		
-		// TODO
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	protected function initSettings() {
-		$va_settings = array();
-		
-		// TODO
-		
-		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
+		$this->setAvailableSettings([]);
 	}
 	# ------------------------------------------------------
 	/**
@@ -300,15 +271,4 @@ class ca_data_importer_groups extends BaseModel {
 		}
 	}
 	# ------------------------------------------------------
-	/**
-	 * Reroutes calls to method implemented by settings delegate to the delegate class
-	 */
-	public function __call($ps_name, $pa_arguments) {
-		if (method_exists($this->SETTINGS, $ps_name)) {
-			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
-		}
-		die($this->tableName()." does not implement method {$ps_name}");
-	}
-	# ------------------------------------------------------
 }
-?>

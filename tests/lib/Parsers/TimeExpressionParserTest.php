@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2018 Whirl-i-Gig
+ * Copyright 2009-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,15 +29,418 @@
  * 
  * ----------------------------------------------------------------------
  */
+ use PHPUnit\Framework\TestCase;
+
 require_once(__CA_LIB_DIR__.'/Parsers/TimeExpressionParser.php');
 
-class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
+class TimeExpressionParserTest extends TestCase {
 
-	public function setUp() {
+	protected function setUp() : void {
 		// most of the comparisons below rely on Eastern time zone
 		date_default_timezone_set('America/New_York');
 	}
+	
+	public function testHyphensInSortOfOddPlaces() {
+		#
+		# These tests assume the datetime.conf dontInferQualifiedRanges is set to 0
+		# (Note that the distribution default is 1)
+		#
+	 	$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+		
+		$vb_res = $o_tep->parse('c.1887-c.1918');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1887.010100000010");
+		$this->assertEquals($va_parse['end'], "1918.123123595910");
+		$this->assertEquals($va_parse[0], "1887.010100000010");
+		$this->assertEquals($va_parse[1], "1918.123123595910");	
+		$this->assertEquals($o_tep->getText(), "circa 1887 – 1918");
+		
+		$vb_res = $o_tep->parse('19th-century');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1800.010100000000");
+		$this->assertEquals($va_parse['end'], "1899.123123595900");
+		$this->assertEquals($va_parse[0], "1800.010100000000");
+		$this->assertEquals($va_parse[1], "1899.123123595900");	
+		$this->assertEquals($o_tep->getText(), "19th century");
+		
+		
+		$vb_res = $o_tep->parse('early-19th century');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1800.010100000000");
+		$this->assertEquals($va_parse['end'], "1820.123123595900");
+		$this->assertEquals($va_parse[0], "1800.010100000000");
+		$this->assertEquals($va_parse[1], "1820.123123595900");	
+		$this->assertEquals($o_tep->getText(), "early 19th century");
+		
+		$vb_res = $o_tep->parse('early-19th-century');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1800.010100000000");
+		$this->assertEquals($va_parse['end'], "1820.123123595900");
+		$this->assertEquals($va_parse[0], "1800.010100000000");
+		$this->assertEquals($va_parse[1], "1820.123123595900");	
+		$this->assertEquals($o_tep->getText(), "early 19th century");
+	}
+	
+	public function testTwoDigitYearDateWithHypen() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+		
+		$vb_res = $o_tep->parse('9/30/40-6/1941');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		
+		$this->assertEquals($va_parse['start'], "1940.093000000000");
+		$this->assertEquals($va_parse['end'], "1941.063023595900");
+		$this->assertEquals($va_parse[0], "1940.093000000000");
+		$this->assertEquals($va_parse[1], "1941.063023595900");	
+		$this->assertEquals($o_tep->getText(), "September 30 1940 – June 30 1941");
+		
+		$vb_res = $o_tep->parse('6/25/60-6/23/61');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		
+		$this->assertEquals($va_parse['start'], "1960.062500000000");
+		$this->assertEquals($va_parse['end'], "1961.062323595900");
+		$this->assertEquals($va_parse[0], "1960.062500000000");
+		$this->assertEquals($va_parse[1], "1961.062323595900");	
+		$this->assertEquals($o_tep->getText(), "June 25 1960 – June 23 1961");
+		
+		$vb_res = $o_tep->parse('6/25/60-6/23/61');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		
+		$this->assertEquals($va_parse['start'], "1960.062500000000");
+		$this->assertEquals($va_parse['end'], "1961.062323595900");
+		$this->assertEquals($va_parse[0], "1960.062500000000");
+		$this->assertEquals($va_parse[1], "1961.062323595900");	
+		$this->assertEquals($o_tep->getText(), "June 25 1960 – June 23 1961");
+	}
+	
+	public function testHyphenWithUnbalancedSpaces() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+		
+		$vb_res = $o_tep->parse('7/31/1928 -3/31/1930');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1928.073100000000");
+		$this->assertEquals($va_parse['end'], "1930.033123595900");
+		$this->assertEquals($va_parse[0], "1928.073100000000");
+		$this->assertEquals($va_parse[1], "1930.033123595900");	
+		$this->assertEquals($o_tep->getText(), "July 31 1928 – March 31 1930");
+	}
+	
+	public function testHyphenWithTwoDigitYear() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+		
+		$vb_res = $o_tep->parse('10-24-02');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "2002.102400000000");
+		$this->assertEquals($va_parse['end'], "2002.102423595900");
+		$this->assertEquals($va_parse[0], "2002.102400000000");
+		$this->assertEquals($va_parse[1], "2002.102423595900");	
+		$this->assertEquals($o_tep->getText(), "October 24 2002");
+		
+		$vb_res = $o_tep->parse('10-24-02 - 11-05-03');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "2002.102400000000");
+		$this->assertEquals($va_parse['end'], "2003.110523595900");
+		$this->assertEquals($va_parse[0], "2002.102400000000");
+		$this->assertEquals($va_parse[1], "2003.110523595900");	
+		$this->assertEquals($o_tep->getText(), "October 24 2002 – November 5 2003");
+	}
+		
+	public function testHypenDatesWithSingleDigits() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+		
+		$vb_res = $o_tep->parse('8-27-1979');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1979.082700000000");
+		$this->assertEquals($va_parse['end'], "1979.082723595900");
+		$this->assertEquals($va_parse[0], "1979.082700000000");
+		$this->assertEquals($va_parse[1], "1979.082723595900");	
+		$this->assertEquals($o_tep->getText(), "August 27 1979");
 
+		$vb_res = $o_tep->parse('8-7-1979');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1979.080700000000");
+		$this->assertEquals($va_parse['end'], "1979.080723595900");
+		$this->assertEquals($va_parse[0], "1979.080700000000");
+		$this->assertEquals($va_parse[1], "1979.080723595900");	
+		$this->assertEquals($o_tep->getText(), "August 7 1979");
+		
+		$vb_res = $o_tep->parse('08-7-1979');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1979.080700000000");
+		$this->assertEquals($va_parse['end'], "1979.080723595900");
+		$this->assertEquals($va_parse[0], "1979.080700000000");
+		$this->assertEquals($va_parse[1], "1979.080723595900");	
+		$this->assertEquals($o_tep->getText(), "August 7 1979");
+	}
+	
+	
+	
+	public function testQualifiedDecadeAndCenturyRanges() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+		
+		$vb_res = $o_tep->parse('1920s - early 1930s');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1920.010100000000");
+		$this->assertEquals($va_parse['end'], "1934.123123595900");
+		$this->assertEquals($va_parse[0], "1920.010100000000");
+		$this->assertEquals($va_parse[1], "1934.123123595900");	
+		$this->assertEquals($o_tep->getText(), "early 1920s - early 1930s");
+		
+		$vb_res = $o_tep->parse('mid 1920s - early 1930s');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1923.010100000000");
+		$this->assertEquals($va_parse['end'], "1934.123123595900");
+		$this->assertEquals($va_parse[0], "1923.010100000000");
+		$this->assertEquals($va_parse[1], "1934.123123595900");	
+		$this->assertEquals($o_tep->getText(), "1923 – 1934");		// Don't output mid-decade dates and they're confusing to users
+		
+		$vb_res = $o_tep->parse('late 1920s - early 1930s');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1926.010100000000");
+		$this->assertEquals($va_parse['end'], "1934.123123595900");
+		$this->assertEquals($va_parse[0], "1926.010100000000");
+		$this->assertEquals($va_parse[1], "1934.123123595900");	
+		$this->assertEquals($o_tep->getText(), "late 1920s - early 1930s");
+		
+		$vb_res = $o_tep->parse('early 1920s - mid 1930s');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1920.010100000000");
+		$this->assertEquals($va_parse['end'], "1937.123123595900");
+		$this->assertEquals($va_parse[0], "1920.010100000000");
+		$this->assertEquals($va_parse[1], "1937.123123595900");	
+		$this->assertEquals($o_tep->getText(), "1920 – 1937");
+		
+		$vb_res = $o_tep->parse('mid 1920s - mid 1930s');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1923.010100000000");
+		$this->assertEquals($va_parse['end'], "1937.123123595900");
+		$this->assertEquals($va_parse[0], "1923.010100000000");
+		$this->assertEquals($va_parse[1], "1937.123123595900");	
+		$this->assertEquals($o_tep->getText(), "1923 – 1937");
+		
+		$vb_res = $o_tep->parse('late 1920s - mid 1930s');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1926.010100000000");
+		$this->assertEquals($va_parse['end'], "1937.123123595900");
+		$this->assertEquals($va_parse[0], "1926.010100000000");
+		$this->assertEquals($va_parse[1], "1937.123123595900");	
+		$this->assertEquals($o_tep->getText(), "1926 – 1937");
+		
+		$vb_res = $o_tep->parse('early 1920s - late 1930s');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1920.010100000000");
+		$this->assertEquals($va_parse['end'], "1939.123123595900");
+		$this->assertEquals($va_parse[0], "1920.010100000000");
+		$this->assertEquals($va_parse[1], "1939.123123595900");	
+		$this->assertEquals($o_tep->getText(), "1920 – 1939");
+		
+		$vb_res = $o_tep->parse('mid 1920s - late 1930s');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1923.010100000000");
+		$this->assertEquals($va_parse['end'], "1939.123123595900");
+		$this->assertEquals($va_parse[0], "1923.010100000000");
+		$this->assertEquals($va_parse[1], "1939.123123595900");	
+		$this->assertEquals($o_tep->getText(), "1923 – 1939");
+		
+		$vb_res = $o_tep->parse('late 1920s - late 1930s');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1926.010100000000");
+		$this->assertEquals($va_parse['end'], "1939.123123595900");
+		$this->assertEquals($va_parse[0], "1926.010100000000");
+		$this->assertEquals($va_parse[1], "1939.123123595900");	
+		$this->assertEquals($o_tep->getText(), "late 1920s - late 1930s");
+		
+		$vb_res = $o_tep->parse('early 18th century');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1700.010100000000");
+		$this->assertEquals($va_parse['end'], "1720.123123595900");
+		$this->assertEquals($va_parse[0], "1700.010100000000");
+		$this->assertEquals($va_parse[1], "1720.123123595900");	
+		$this->assertEquals($o_tep->getText(), "early 18th century");
+		
+		$vb_res = $o_tep->parse('mid 18th century');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1740.010100000000");
+		$this->assertEquals($va_parse['end'], "1760.123123595900");
+		$this->assertEquals($va_parse[0], "1740.010100000000");
+		$this->assertEquals($va_parse[1], "1760.123123595900");	
+		$this->assertEquals($o_tep->getText(), "mid 18th century");
+		
+		$vb_res = $o_tep->parse('late 18th century');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1780.010100000000");
+		$this->assertEquals($va_parse['end'], "1799.123123595900");
+		$this->assertEquals($va_parse[0], "1780.010100000000");
+		$this->assertEquals($va_parse[1], "1799.123123595900");	
+		$this->assertEquals($o_tep->getText(), "late 18th century");
+		
+		$vb_res = $o_tep->parse('early 18th century - early 19th century');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1700.010100000000");
+		$this->assertEquals($va_parse['end'], "1820.123123595900");
+		$this->assertEquals($va_parse[0], "1700.010100000000");
+		$this->assertEquals($va_parse[1], "1820.123123595900");	
+		$this->assertEquals($o_tep->getText(), "early 18th century - early 19th century");
+		
+		$vb_res = $o_tep->parse('mid 18th century - mid 19th Century');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1740.010100000000");
+		$this->assertEquals($va_parse['end'], "1860.123123595900");
+		$this->assertEquals($va_parse[0], "1740.010100000000");
+		$this->assertEquals($va_parse[1], "1860.123123595900");	
+		$this->assertEquals($o_tep->getText(), "mid 18th century - mid 19th century");
+		
+		$vb_res = $o_tep->parse('late 15th century - mid 17th Century');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1480.010100000000");
+		$this->assertEquals($va_parse['end'], "1660.123123595900");
+		$this->assertEquals($va_parse[0], "1480.010100000000");
+		$this->assertEquals($va_parse[1], "1660.123123595900");		
+		$this->assertEquals($o_tep->getText(), "late 15th century - mid 17th century");
+		
+		$vb_res = $o_tep->parse('late 15th century - late 17th Century');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1480.010100000000");
+		$this->assertEquals($va_parse['end'], "1699.123123595900");
+		$this->assertEquals($va_parse[0], "1480.010100000000");
+		$this->assertEquals($va_parse[1], "1699.123123595900");		
+		$this->assertEquals($o_tep->getText(), "late 15th century - late 17th century");
+		
+		$vb_res = $o_tep->parse('early 1920s');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1920.010100000000");
+		$this->assertEquals($va_parse['end'], "1924.123123595900");
+		$this->assertEquals($va_parse[0], "1920.010100000000");
+		$this->assertEquals($va_parse[1], "1924.123123595900");	
+		$this->assertEquals($o_tep->getText(), "early 1920s");
+		
+		$vb_res = $o_tep->parse('mid 1920s');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1923.010100000000");
+		$this->assertEquals($va_parse['end'], "1927.123123595900");
+		$this->assertEquals($va_parse[0], "1923.010100000000");
+		$this->assertEquals($va_parse[1], "1927.123123595900");	
+		$this->assertEquals($o_tep->getText(), "mid 1920s");
+		
+		$vb_res = $o_tep->parse('late 1920s');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1926.010100000000");
+		$this->assertEquals($va_parse['end'], "1929.123123595900");
+		$this->assertEquals($va_parse[0], "1926.010100000000");
+		$this->assertEquals($va_parse[1], "1929.123123595900");	
+		$this->assertEquals($o_tep->getText(), "late 1920s");
+	}
+	
+	public function testCenturyRange() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');	
+		
+		$vb_res = $o_tep->parse('18th century - 19th Century');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1700.010100000000");
+		$this->assertEquals($va_parse['end'], "1899.123123595900");
+		$this->assertEquals($va_parse[0], "1700.010100000000");
+		$this->assertEquals($va_parse[1], "1899.123123595900");	
+		
+		
+		$vb_res = $o_tep->parse('15th century - 20th Century');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1400.010100000000");
+		$this->assertEquals($va_parse['end'], "1999.123123595900");
+		$this->assertEquals($va_parse[0], "1400.010100000000");
+		$this->assertEquals($va_parse[1], "1999.123123595900");	
+	}
+	
+	public function testPrePostDates() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+		
+		$vb_res = $o_tep->parse('pre 1600');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "-2000000000.000000000000");
+		$this->assertEquals($va_parse['end'], "1600.123123595900");
+		$this->assertEquals($va_parse[0], "-2000000000.000000000000");
+		$this->assertEquals($va_parse[1], "1600.123123595900");	
+		
+		$vb_res = $o_tep->parse('post 1600');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1600.010100000000");
+		$this->assertEquals($va_parse['end'], "2000000000.123123595900");
+		$this->assertEquals($va_parse[0], "1600.010100000000");
+		$this->assertEquals($va_parse[1], "2000000000.123123595900");	
+		
+		$vb_res = $o_tep->parse('18th century - 19th Century');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1700.010100000000");
+		$this->assertEquals($va_parse['end'], "1899.123123595900");
+		$this->assertEquals($va_parse[0], "1700.010100000000");
+		$this->assertEquals($va_parse[1], "1899.123123595900");	
+	}
+	
+	
+	public function testModifiersWithoutTrailingSpaces() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+		
+		$vb_res = $o_tep->parse('c1959');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1959.010100000010");
+		$this->assertEquals($va_parse['end'], "1959.123123595910");
+		$this->assertEquals($va_parse[0], "1959.010100000010");
+		$this->assertEquals($va_parse[1], "1959.123123595910");	
+		
+		$vb_res = $o_tep->parse('c.1959');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1959.010100000010");
+		$this->assertEquals($va_parse['end'], "1959.123123595910");
+		$this->assertEquals($va_parse[0], "1959.010100000010");
+		$this->assertEquals($va_parse[1], "1959.123123595910");	
+	}
+	
 	public function testBPDates() {
 		$o_tep = new TimeExpressionParser();
 		$o_tep->setLanguage('en_US');
@@ -58,6 +461,46 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($va_parse['end'], "-5050.123123595980");
 		$this->assertEquals($va_parse[0], "-5050.010100000080");
 		$this->assertEquals($va_parse[1], "-5050.123123595980");	
+		
+		
+		$vb_res = $o_tep->parse('pre-1600');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "-2000000000.000000000000");
+		$this->assertEquals($va_parse['end'], "1600.123123595900");
+		$this->assertEquals($va_parse[0], "-2000000000.000000000000");
+		$this->assertEquals($va_parse[1], "1600.123123595900");	
+		
+		$vb_res = $o_tep->parse('post-1600');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1600.010100000000");
+		$this->assertEquals($va_parse['end'], "2000000000.123123595900");
+		$this->assertEquals($va_parse[0], "1600.010100000000");
+		$this->assertEquals($va_parse[1], "2000000000.123123595900");	
+	}
+	
+	public function testBPRangeDates() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+		
+		$vb_res = $o_tep->parse('200 BP-100 BP');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1750.010100000080");	# Date attribute 8=BP
+		$this->assertEquals($va_parse['end'], "1850.123123595980");
+		$this->assertEquals($va_parse[0], "1750.010100000080");
+		$this->assertEquals($va_parse[1], "1850.123123595980");	
+		
+		
+		$vb_res = $o_tep->parse('250 BP - 50 BP');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "1700.010100000080");	# Date attribute 8=BP
+		$this->assertEquals($va_parse['end'], "1900.123123595980");
+		$this->assertEquals($va_parse[0], "1700.010100000080");
+		$this->assertEquals($va_parse[1], "1900.123123595980");	
+		
 	}
 	
 	public function testDatesWithoutStart() {
@@ -114,10 +557,10 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($vb_res, true);
 		$va_parse = $o_tep->getHistoricTimestamps();
 		
-		$this->assertEquals($va_parse['start'], "2015.0715142917");
-		$this->assertEquals($va_parse['end'], "2015.0715142917");
-		$this->assertEquals($va_parse[0], "2015.0715142917");
-		$this->assertEquals($va_parse[1], "2015.0715142917");
+		$this->assertEquals($va_parse['start'], "2015.071514291700");
+		$this->assertEquals($va_parse['end'], "2015.071514291700");
+		$this->assertEquals($va_parse[0], "2015.071514291700");
+		$this->assertEquals($va_parse[1], "2015.071514291700");
 		
 		$va_parse = $o_tep->getUnixTimestamps();
 		
@@ -202,19 +645,19 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($vb_res, true);
 
 		$va_parse = $o_tep->getHistoricTimestamps();
-		$this->assertEquals($va_parse['start'], "1925.0101000000");
-		$this->assertEquals($va_parse['end'], "1950.1231235959");
-		$this->assertEquals($va_parse[0], "1925.0101000000");
-		$this->assertEquals($va_parse[1], "1950.1231235959");
+		$this->assertEquals($va_parse['start'], "1925.010100000000");
+		$this->assertEquals($va_parse['end'], "1950.123123595900");
+		$this->assertEquals($va_parse[0], "1925.010100000000");
+		$this->assertEquals($va_parse[1], "1950.123123595900");
 
 		$vb_res = $o_tep->parse('1 Q4');		// 4th quarter of 1st century
 		$this->assertEquals($vb_res, true);
 
 		$va_parse = $o_tep->getHistoricTimestamps();
-		$this->assertEquals($va_parse['start'], "75.0101000000");
-		$this->assertEquals($va_parse['end'], "100.1231235959");
-		$this->assertEquals($va_parse[0], "75.0101000000");
-		$this->assertEquals($va_parse[1], "100.1231235959");
+		$this->assertEquals($va_parse['start'], "75.010100000000");
+		$this->assertEquals($va_parse['end'], "100.123123595900");
+		$this->assertEquals($va_parse[0], "75.010100000000");
+		$this->assertEquals($va_parse[1], "100.123123595900");
 
 	}
 
@@ -225,10 +668,10 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($vb_res, true);
 
 		$va_parse = $o_tep->getHistoricTimestamps();
-		$this->assertEquals($va_parse['start'], "0.1024000000");
-		$this->assertEquals($va_parse['end'], "0.1024235959");
-		$this->assertEquals($va_parse[0], "0.1024000000");
-		$this->assertEquals($va_parse[1], "0.1024235959");
+		$this->assertEquals($va_parse['start'], "0.102400000000");
+		$this->assertEquals($va_parse['end'], "0.102423595900");
+		$this->assertEquals($va_parse[0], "0.102400000000");
+		$this->assertEquals($va_parse[1], "0.102423595900");
 		$this->assertEquals($o_tep->getText(), "10/24/????");
 	}
 
@@ -287,16 +730,24 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($vb_res, true);
 
 		$va_parse = $o_tep->getHistoricTimestamps();
-		$this->assertEquals($va_parse['start'], "2010.1221000000");
-		$this->assertEquals($va_parse['end'], "2011.0320235959");
-		$this->assertEquals($va_parse[0], "2010.1221000000");
-		$this->assertEquals($va_parse[1], "2011.0320235959");
+		$this->assertEquals($va_parse['start'], "2010.122100000000");
+		$this->assertEquals($va_parse['end'], "2011.032023595900");
+		$this->assertEquals($va_parse[0], "2010.122100000000");
+		$this->assertEquals($va_parse[1], "2011.032023595900");
 	}
 
 	public function testParseSimpleDelimitedDateForEnglishLocale() {
 		$o_tep = new TimeExpressionParser();
 		$o_tep->setLanguage('en_US');
 		$vb_res = $o_tep->parse('10/23/2004');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getUnixTimestamps();
+		$this->assertEquals($va_parse['start'], 1098504000);
+		$this->assertEquals($va_parse['end'], 1098590399);
+		$this->assertEquals($va_parse[0], 1098504000);
+		$this->assertEquals($va_parse[1], 1098590399);
+		
+		$vb_res = $o_tep->parse('10-23-2004');
 		$this->assertEquals($vb_res, true);
 		$va_parse = $o_tep->getUnixTimestamps();
 		$this->assertEquals($va_parse['start'], 1098504000);
@@ -342,7 +793,32 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 
 	public function testParseISO8601Date() {
 		$o_tep = new TimeExpressionParser();
-		$vb_res = $o_tep->parse('2009-09-18 21:03');
+		$vb_res = $o_tep->parse('2009-09-18');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getUnixTimestamps();
+
+		$this->assertEquals($va_parse['start'], 1253246400);
+		$this->assertEquals($va_parse['end'], 1253332799);
+		$this->assertEquals($va_parse[0], 1253246400);
+		$this->assertEquals($va_parse[1], 1253332799);
+	}
+	
+	public function testParseISO8601DateMonthOnly() {
+		$o_tep = new TimeExpressionParser();
+		$vb_res = $o_tep->parse('2009-09');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getUnixTimestamps();
+
+		$this->assertEquals($va_parse['start'], 1251777600);
+		$this->assertEquals($va_parse['end'], 1254369599);
+		$this->assertEquals($va_parse[0], 1251777600);
+		$this->assertEquals($va_parse[1], 1254369599);
+	}
+	
+	public function testParseISO8601DateWithTime() {
+		$o_tep = new TimeExpressionParser();
+		
+		$vb_res = $o_tep->parse('2009-09-18 21:03Z');
 		$this->assertEquals($vb_res, true);
 		$va_parse = $o_tep->getUnixTimestamps();
 
@@ -350,6 +826,53 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($va_parse['end'], 1253322180);
 		$this->assertEquals($va_parse[0], 1253322180);
 		$this->assertEquals($va_parse[1], 1253322180);
+		$vb_res = $o_tep->parse('2009-09-18T21:03Z');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getUnixTimestamps();
+
+		$this->assertEquals($va_parse['start'], 1253322180);
+		$this->assertEquals($va_parse['end'], 1253322180);
+		$this->assertEquals($va_parse[0], 1253322180);
+		$this->assertEquals($va_parse[1], 1253322180);
+	}
+	
+	public function testParseISO8601DateRange() {
+		$o_tep = new TimeExpressionParser();
+	
+		$vb_res = $o_tep->parse('2009-09-18/2010-02-02');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+
+		$this->assertEquals($va_parse['start'], '2009.091800000000');
+		$this->assertEquals($va_parse['end'], '2010.020223595900');
+		$this->assertEquals($va_parse[0], '2009.091800000000');
+		$this->assertEquals($va_parse[1], '2010.020223595900');
+	}
+	
+	public function testParseISO8601DateRangeMonths() {
+		$o_tep = new TimeExpressionParser();
+		
+		$vb_res = $o_tep->parse('1952-10/1952-11');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+
+		$this->assertEquals($va_parse['start'], '1952.100100000000');
+		$this->assertEquals($va_parse['end'], '1952.113023595900');
+		$this->assertEquals($va_parse[0], '1952.100100000000');
+		$this->assertEquals($va_parse[1], '1952.113023595900');
+	}
+	
+	public function testParseISO8601DateRangeWithTime() {
+		$o_tep = new TimeExpressionParser();
+		
+		$vb_res = $o_tep->parse('2009-09-18T02:30:02Z/2010-02-02T05:35Z');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		
+		$this->assertEquals($va_parse['start'], '2009.091802300200');
+		$this->assertEquals($va_parse['end'], '2010.020205350000');
+		$this->assertEquals($va_parse[0], '2009.091802300200');
+		$this->assertEquals($va_parse[1], '2010.020205350000');
 	}
 
 	public function testParseNowDate() {
@@ -411,7 +934,6 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
  	}
 
 	public function testHistoricDayDateWithUmlautForFrenchLocale() {
-		return; // have to revisit this test but it always fails at the moment
 		$o_tep = new TimeExpressionParser();
 		$o_tep->setLanguage('fr_FR');
 		$vb_res = $o_tep->parse('24 Décembre 1870');
@@ -439,27 +961,27 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$vb_res = $o_tep->parse('January 17 999');
 		$this->assertEquals($vb_res, true);
 		$va_parse = $o_tep->getHistoricTimestamps();
-		$this->assertEquals($va_parse['start'], "999.01170000000000000000");
-		$this->assertEquals($va_parse['end'], "999.01172359590000000000");
+		$this->assertEquals($va_parse['start'], "999.011700000000");
+		$this->assertEquals($va_parse['end'], "999.011723595900");
 
 		$vb_res = $o_tep->parse('17 January 999');
 		$this->assertEquals($vb_res, true);
 		$va_parse = $o_tep->getHistoricTimestamps();
-		$this->assertEquals($va_parse['start'], "999.01170000000000000000");
-		$this->assertEquals($va_parse['end'], "999.01172359590000000000");
+		$this->assertEquals($va_parse['start'], "999.011700000000");
+		$this->assertEquals($va_parse['end'], "999.011723595900");
 
 		$vb_res = $o_tep->parse('1/17/999');
 		$this->assertEquals($vb_res, true);
 		$va_parse = $o_tep->getHistoricTimestamps();
-		$this->assertEquals($va_parse['start'], "999.01170000000000000000");
-		$this->assertEquals($va_parse['end'], "999.01172359590000000000");
+		$this->assertEquals($va_parse['start'], "999.011700000000");
+		$this->assertEquals($va_parse['end'], "999.011723595900");
 
 		$o_tep->setLanguage('de_DE');
 		$vb_res = $o_tep->parse('17.1.999');
 		$this->assertEquals($vb_res, true);
 		$va_parse = $o_tep->getHistoricTimestamps();
-		$this->assertEquals($va_parse['start'], "999.01170000000000000000");
-		$this->assertEquals($va_parse['end'], "999.01172359590000000000");
+		$this->assertEquals($va_parse['start'], "999.011700000000");
+		$this->assertEquals($va_parse['end'], "999.011723595900");
 	}
 
 	public function testHistoricYearRanges() {
@@ -890,14 +1412,43 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$o_tep = new TimeExpressionParser();
 		$o_tep->setLanguage('en_US');
 
+		$vb_res = $o_tep->parse('Late fifth century BC');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+
+		$this->assertEquals($va_parse['start'], "-420.010100000000");
+		$this->assertEquals($va_parse['end'], "-420.123123595900");
+		$this->assertEquals($va_parse[0], "-420.010100000000");
+		$this->assertEquals($va_parse[1], "-420.123123595900");
+		
+		$vb_res = $o_tep->parse('600BC-500 BC');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+
+		$this->assertEquals($va_parse['start'], "-600.010100000000");
+		$this->assertEquals($va_parse['end'], "-500.123123595900");
+		$this->assertEquals($va_parse[0], "-600.010100000000");
+		$this->assertEquals($va_parse[1], "-500.123123595900");
+		
+
+		$vb_res = $o_tep->parse('eighth century bc-300bc');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+
+		$this->assertEquals($va_parse['start'], "-799.010100000000");
+		$this->assertEquals($va_parse['end'], "-300.123123595900");
+		$this->assertEquals($va_parse[0], "-799.010100000000");
+		$this->assertEquals($va_parse[1], "-300.123123595900");
+
+
 		$vb_res = $o_tep->parse('2nd century bce');
 		$this->assertEquals($vb_res, true);
 		$va_parse = $o_tep->getHistoricTimestamps();
 
-		$this->assertEquals($va_parse['start'], "-100.010100000000");
-		$this->assertEquals($va_parse['end'], "-199.123123595900");
-		$this->assertEquals($va_parse[0], "-100.010100000000");
-		$this->assertEquals($va_parse[1], "-199.123123595900");
+		$this->assertEquals($va_parse['start'], "-199.010100000000");
+		$this->assertEquals($va_parse['end'], "-100.123123595900");
+		$this->assertEquals($va_parse[0], "-199.010100000000");
+		$this->assertEquals($va_parse[1], "-100.123123595900");
 		
 		$this->assertEquals(strtolower($o_tep->getText()), "2nd century bce");
 		
@@ -905,10 +1456,10 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($vb_res, true);
 		$va_parse = $o_tep->getHistoricTimestamps();
 
-		$this->assertEquals($va_parse['start'], "-1400.010100000000");
-		$this->assertEquals($va_parse['end'], "-1499.123123595900");
-		$this->assertEquals($va_parse[0], "-1400.010100000000");
-		$this->assertEquals($va_parse[1], "-1499.123123595900");
+		$this->assertEquals($va_parse['start'], "-1499.010100000000");
+		$this->assertEquals($va_parse['end'], "-1400.123123595900");
+		$this->assertEquals($va_parse[0], "-1499.010100000000");
+		$this->assertEquals($va_parse[1], "-1400.123123595900");
 		
 		$this->assertEquals(strtolower($o_tep->getText()), "15th century bce");
 		
@@ -916,10 +1467,10 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($vb_res, true);
 		$va_parse = $o_tep->getHistoricTimestamps();
 
-		$this->assertEquals($va_parse['start'], "0.010100000000");
-		$this->assertEquals($va_parse['end'], "-99.123123595900");
-		$this->assertEquals($va_parse[0], "0.010100000000");
-		$this->assertEquals($va_parse[1], "-99.123123595900");
+		$this->assertEquals($va_parse['start'], "-99.010100000000");
+		$this->assertEquals($va_parse['end'], "0.123123595900");
+		$this->assertEquals($va_parse[0], "-99.010100000000");
+		$this->assertEquals($va_parse[1], "0.123123595900");
 		
 		$this->assertEquals(strtolower($o_tep->getText()), "1st century bce");
 		
@@ -1083,6 +1634,160 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 
 		$this->assertEquals($o_tep->getText(), '6. Juni 2009 um 22:55:10');
 	}
+	
+	public function testDateTextOutputFormats() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+
+		$vb_res = $o_tep->parse('6/8/1984');
+		$this->assertEquals($vb_res, true);
+
+		$this->assertEquals($o_tep->getText(), 'June 8 1984');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'ymd']), '1984/06/08');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'ymd', 'dateDelimiter' => '.']), '1984.06.08');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'delimited']), '06/08/1984');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'iso8601']), '1984-06-08');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'yearOnly']), '1984');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'text']), 'June 8 1984');
+
+		$o_tep->setLanguage('de_DE');
+
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'ymd']), '1984/06/08');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'ymd', 'dateDelimiter' => '.']), '1984.06.08');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'delimited']), '08/06/1984');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'iso8601']), '1984-06-08');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'yearOnly']), '1984');
+		$this->assertEquals($o_tep->getText(), '8. Juni 1984');
+	}
+	
+	public function testDateTextOutputFormatsEdge() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+
+		$vb_res = $o_tep->parse('1/1/1979');
+		$this->assertEquals($vb_res, true);
+	
+		$this->assertEquals($o_tep->getText(), 'January 1 1979');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'ymd']), '1979/01/01');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'ymd', 'dateDelimiter' => '.']), '1979.01.01');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'delimited']), '01/01/1979');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'iso8601']), '1979-01-01');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'yearOnly']), '1979');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'text']), 'January 1 1979');
+		
+		$vb_res = $o_tep->parse('12/31/1979');
+		$this->assertEquals($vb_res, true);
+	
+		$this->assertEquals($o_tep->getText(), 'December 31 1979');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'ymd']), '1979/12/31');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'ymd', 'dateDelimiter' => '.']), '1979.12.31');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'delimited']), '12/31/1979');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'iso8601']), '1979-12-31');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'yearOnly']), '1979');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'text']), 'December 31 1979');
+		
+		$vb_res = $o_tep->parse('1/1979');
+		$this->assertEquals($vb_res, true);
+	
+		$this->assertEquals($o_tep->getText(), 'January 1979');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'ymd']), '1979/01');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'ymd', 'dateDelimiter' => '.']), '1979.01');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'delimited']), '01/1979');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'iso8601']), '1979-01-01/1979-01-31');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'yearOnly']), '1979');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'text']), 'January 1979');
+		
+		$vb_res = $o_tep->parse('12/1979');
+		$this->assertEquals($vb_res, true);
+	
+		$this->assertEquals($o_tep->getText(), 'December 1979');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'ymd']), '1979/12');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'ymd', 'dateDelimiter' => '.']), '1979.12');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'delimited']), '12/1979');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'iso8601']), '1979-12-01/1979-12-31');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'yearOnly']), '1979');
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'text']), 'December 1979');
+	}
+	
+	
+	public function testDateTextOutputISOFormat() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+
+		$vb_res = $o_tep->parse('2/1979');
+		$this->assertEquals($vb_res, true);
+	
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'iso8601']), '1979-02-01/1979-02-28');
+		
+		$vb_res = $o_tep->parse('1/1979');
+		$this->assertEquals($vb_res, true);
+	
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'iso8601']), '1979-01-01/1979-01-31');
+		
+		$vb_res = $o_tep->parse('12/1979');
+		$this->assertEquals($vb_res, true);
+	
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'iso8601']), '1979-12-01/1979-12-31');
+		
+		$vb_res = $o_tep->parse('7/3/1979');
+		$this->assertEquals($vb_res, true);
+	
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'iso8601']), '1979-07-03');
+		
+		$vb_res = $o_tep->parse('7/3/1979 @ 5pm');
+		$this->assertEquals($vb_res, true);
+	
+		$this->assertEquals($o_tep->getText(['dateFormat' => 'iso8601']), '1979-07-03T17:00:00Z');
+	}
+	
+	public function testIsDMYRange() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+		
+		$o_tep->parse('1/2021');
+		$dates = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($o_tep->isDMYRange($o_tep->getHistoricDateParts($dates['start']), $o_tep->getHistoricDateParts($dates['end'])), 'MONTH');
+		
+		$o_tep->parse('1/10/2021');
+		$dates = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($o_tep->isDMYRange($o_tep->getHistoricDateParts($dates['start']), $o_tep->getHistoricDateParts($dates['end'])), 'DAY');
+		
+		$o_tep->parse('2/1/2021 - 2/28/2021');
+		$dates = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($o_tep->isDMYRange($o_tep->getHistoricDateParts($dates['start']), $o_tep->getHistoricDateParts($dates['end'])), 'MONTH');
+	
+		$o_tep->parse('2021');
+		$dates = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($o_tep->isDMYRange($o_tep->getHistoricDateParts($dates['start']), $o_tep->getHistoricDateParts($dates['end'])), 'YEAR');
+		
+		$o_tep->parse('1900-1999');
+		$dates = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($o_tep->isDMYRange($o_tep->getHistoricDateParts($dates['start']), $o_tep->getHistoricDateParts($dates['end'])), 'CENTURY');
+		
+		$o_tep->parse('1920s');
+		$dates = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($o_tep->isDMYRange($o_tep->getHistoricDateParts($dates['start']), $o_tep->getHistoricDateParts($dates['end'])), 'DECADE');
+		
+		$o_tep->parse('19th century');
+		$dates = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($o_tep->isDMYRange($o_tep->getHistoricDateParts($dates['start']), $o_tep->getHistoricDateParts($dates['end'])), 'CENTURY');
+		
+		$o_tep->parse('1901-2000');
+		$dates = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($o_tep->isDMYRange($o_tep->getHistoricDateParts($dates['start']), $o_tep->getHistoricDateParts($dates['end'])), false);
+		
+		$o_tep->parse('5/3/2020 @ 5pm');
+		$dates = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($o_tep->isDMYRange($o_tep->getHistoricDateParts($dates['start']), $o_tep->getHistoricDateParts($dates['end'])), false);
+		
+		$o_tep->parse('5/3/2020 - 10/1/2020');
+		$dates = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($o_tep->isDMYRange($o_tep->getHistoricDateParts($dates['start']), $o_tep->getHistoricDateParts($dates['end'])), false);
+		
+		$o_tep->parse('5/1/2020 - 5/30/2020');
+		$dates = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($o_tep->isDMYRange($o_tep->getHistoricDateParts($dates['start']), $o_tep->getHistoricDateParts($dates['end'])), false);
+	}
 
 	public function testMYADate() {
 		$o_tep = new TimeExpressionParser();
@@ -1181,6 +1886,55 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(10, sizeof($va_decades));
 		$this->assertEquals($va_decades_expected, $va_decades);
 	}
+	
+	function testNormalizationCenturiesAD() {
+		$o_tep = new TimeExpressionParser('1600 - 1900');
+		$va_historic = $o_tep->getHistoricTimestamps();
+
+		$va_expected = [];
+		for($vn_i = 1600; $vn_i <= 1900; $vn_i += 100) {
+			$va_expected[] = $vn_i;
+		}
+
+		$va_centuries = $o_tep->normalizeDateRange($va_historic['start'], $va_historic['end'], 'centuries');
+	
+		$this->assertEquals(4, sizeof($va_centuries));
+		$this->assertEquals($va_expected, array_keys($va_centuries));
+	}
+	
+	function testNormalizationCenturiesBC() {
+		$o_tep = new TimeExpressionParser('500 BCE - 100 BCE');
+		$va_historic = $o_tep->getHistoricTimestamps();
+
+		$va_expected = [];
+		for($vn_i = -500; $vn_i <= -100; $vn_i += 100) {
+			$va_expected[] = $vn_i;
+		}
+
+		$va_centuries = $o_tep->normalizeDateRange($va_historic['start'], $va_historic['end'], 'centuries');
+
+		$this->assertEquals(5, sizeof($va_centuries));
+		$this->assertEquals($va_expected, array_keys($va_centuries));
+		$this->assertEquals('5th century BCE', array_shift($va_centuries));
+		$this->assertEquals('1st century BCE', array_pop($va_centuries));
+	}
+	
+	function testNormalizationCenturiesBC2AD() {
+		$o_tep = new TimeExpressionParser('100 B.C. - 150 A.D.');
+		$va_historic = $o_tep->getHistoricTimestamps();
+
+		$va_expected = [];
+		for($vn_i = -100; $vn_i <= 100; $vn_i += 100) {
+			$va_expected[] = $vn_i;
+		}
+
+		$va_centuries = $o_tep->normalizeDateRange($va_historic['start'], $va_historic['end'], 'centuries');
+
+		$this->assertEquals(3, sizeof($va_centuries));
+		$this->assertEquals($va_expected, array_keys($va_centuries));
+		$this->assertEquals('1st century BCE', array_shift($va_centuries));
+		$this->assertEquals('2nd century', array_pop($va_centuries));
+	}
 
 	function testMultiWordConjunctions() {
 		$o_tep = new TimeExpressionParser();
@@ -1197,4 +1951,180 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($va_historic['start'], '2001.032300000000');
 		$this->assertEquals($va_historic['end'], '2001.032723595900');
 	}
+	
+	// https://collectiveaccess.org/support/index.php?p=/discussion/300669/date-format-1947-06-1947-june-31st
+	function testMonthToYearRange() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage("en_US");
+		$this->assertEquals($o_tep->parse("1947-06 - 1947"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		
+		$this->assertEquals($va_historic['start'], '1947.060100000000');
+		$this->assertEquals($va_historic['end'], '1947.123123595900');
+	}
+	
+	// https://collectiveaccess.org/support/index.php?p=/discussion/300668/date-format-after-xxxx-mm-with-unknown-day-is-replaced-by-mm-1st
+	function testAfterDatesToMonth() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage("en_US");
+		$this->assertEquals($o_tep->parse("AFTER 1970-03"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		
+		$this->assertEquals($va_historic['start'], '1970.030100000000');
+		$this->assertEquals($va_historic['end'], '2000000000.123123595900');
+		
+		$this->assertEquals($o_tep->getText(), 'after March 1970');
+	}
+	
+	function testAfterDatesToYear() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage("en_US");
+		$this->assertEquals($o_tep->parse("AFTER 1970"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		
+		$this->assertEquals($va_historic['start'], '1970.010100000000');
+		$this->assertEquals($va_historic['end'], '2000000000.123123595900');
+		
+		$this->assertEquals($o_tep->getText(), 'after 1970');
+	}
+	
+	function testAfterDatesToDay() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage("en_US");
+		$this->assertEquals($o_tep->parse("AFTER 1970-03-10"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		
+		$this->assertEquals($va_historic['start'], '1970.031000000000');
+		$this->assertEquals($va_historic['end'], '2000000000.123123595900');
+		
+		$this->assertEquals($o_tep->getText(), 'after March 10 1970');
+	}
+	
+	function testBeforeDatesToMonth() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage("en_US");
+		$this->assertEquals($o_tep->parse("BEFORE 1970-03"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		
+		$this->assertEquals($va_historic['start'], '-2000000000.000000000000');
+		$this->assertEquals($va_historic['end'], '1970.033123595900');
+		
+		$this->assertEquals($o_tep->getText(), 'before March 1970');
+	}
+	
+	function testBeforeDatesToYear() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage("en_US");
+		$this->assertEquals($o_tep->parse("BEFORE 1970"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		
+		$this->assertEquals($va_historic['start'], '-2000000000.000000000000');
+		$this->assertEquals($va_historic['end'], '1970.123123595900');
+		
+		$this->assertEquals($o_tep->getText(), 'before 1970');
+	}
+	
+	function testBeforeDatesToDay() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage("en_US");
+		$this->assertEquals($o_tep->parse("BEFORE 1970-03-10"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		
+		$this->assertEquals($va_historic['start'], '-2000000000.000000000000');
+		$this->assertEquals($va_historic['end'], '1970.031023595900');
+		
+		$this->assertEquals($o_tep->getText(), 'before March 10 1970');
+	}
+	
+	function testCompressedRange() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage("en_US");
+		
+		$this->assertEquals($o_tep->parse("4/21/2010-5/3/2012"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_historic['start'], '2010.042100000000');
+		$this->assertEquals($va_historic['end'], '2012.050323595900');
+		
+		$this->assertEquals($o_tep->parse("04/21/2010-05/3/2012"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+	
+		$this->assertEquals($va_historic['start'], '2010.042100000000');
+		$this->assertEquals($va_historic['end'], '2012.050323595900');
+	}
+	
+	function testSingleDigitDayDate() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage("en_US");
+		
+		$this->assertEquals($o_tep->parse("4/21/2010"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_historic['start'], '2010.042100000000');
+		$this->assertEquals($va_historic['end'], '2010.042123595900');
+	}
+	
+	function testCircaSuffix() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage("en_US");
+		
+		$this->assertEquals($o_tep->parse("1953c"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_historic['start'], '1953.010100000010');
+		
+		$this->assertEquals($o_tep->parse("1999C"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_historic['start'], '1999.010100000010');
+	}	
+	
+	
+	function testTruncatedDecadeRange() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage("en_US");
+		
+		$this->assertEquals($o_tep->parse("1910-20s"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_historic['start'], '1910.010100000000');
+		$this->assertEquals($va_historic['end'], '1929.123123595900');
+		$this->assertEquals($o_tep->getText(), '1910 – 1929');
+		
+		$this->assertEquals($o_tep->parse("1910-1920s"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_historic['start'], '1910.010100000000');
+		$this->assertEquals($va_historic['end'], '1929.123123595900');
+		$this->assertEquals($o_tep->getText(), '1910 – 1929');
+	}	
+	
+	function testUncertainDateRange() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage("en_US");
+		
+		$this->assertEquals($o_tep->parse("1948-?"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_historic['start'], '1948.010100000000');
+		$this->assertEquals($va_historic['end'], '2000000000.123123595900');
+		$this->assertEquals($o_tep->getText(), 'after 1948');
+		
+		$this->assertEquals($o_tep->parse("1948 - ?"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_historic['start'], '1948.010100000000');
+		$this->assertEquals($va_historic['end'], '2000000000.123123595900');
+		$this->assertEquals($o_tep->getText(), 'after 1948');
+		
+		$this->assertEquals($o_tep->parse("?-1948"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_historic['start'], '-2000000000.000000000000');
+		$this->assertEquals($va_historic['end'], '1948.123123595900');
+		$this->assertEquals($o_tep->getText(), 'before 1948');
+		
+		$this->assertEquals($o_tep->parse("? - 1948"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_historic['start'], '-2000000000.000000000000');
+		$this->assertEquals($va_historic['end'], '1948.123123595900');
+		$this->assertEquals($o_tep->getText(), 'before 1948');
+		
+		$this->assertEquals($o_tep->parse("? -  June 1948"), true);
+		$va_historic = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_historic['start'], '-2000000000.000000000000');
+		$this->assertEquals($va_historic['end'], '1948.063023595900');
+		$this->assertEquals($o_tep->getText(), 'before June 1948');
+	}	
 }

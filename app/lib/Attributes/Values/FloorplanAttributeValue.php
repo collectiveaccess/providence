@@ -70,6 +70,14 @@
 		'label' => _t('Does not use locale setting'),
 		'description' => _t('Check this option if you don\'t want your FloorPlan values to be locale-specific. (The default is to not be.)')
 	),
+	'singleValuePerLocale' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Allow single value per locale'),
+		'description' => _t('Check this option to restrict entry to a single value per-locale.')
+	),
 	'canBeUsedInSort' => array(
 		'formatType' => FT_NUMBER,
 		'displayType' => DT_CHECKBOXES,
@@ -146,7 +154,7 @@ class FloorPlanAttributeValue extends AttributeValue implements IAttributeValue 
 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('canBeEmpty'));
 		if (!$ps_value) {
  			if(!$va_settings["canBeEmpty"]){
-				$this->postError(1970, _t('Entry was blank.'), 'FloorPlanAttributeValue->parseValue()');
+				$this->postError(1970, _t('Entry for <em>%1</em> was blank.', $pa_element_info['displayLabel']), 'FloorPlanAttributeValue->parseValue()');
 				return false;
 			}
 			return array();

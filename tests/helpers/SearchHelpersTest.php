@@ -29,9 +29,12 @@
  * 
  * ----------------------------------------------------------------------
  */
-require_once(__CA_APP_DIR__."/helpers/searchHelpers.php");
+use PHPUnit\Framework\TestCase;
 
-class SearchHelpersTest extends PHPUnit_Framework_TestCase {
+require_once(__CA_APP_DIR__."/helpers/searchHelpers.php");
+require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
+
+class SearchHelpersTest extends TestCase {
 	# -------------------------------------------------------
 	public function testESDateRewrite() {
 		// day-less
@@ -42,6 +45,12 @@ class SearchHelpersTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('2014-01-01T00:00:00Z', caRewriteDateForElasticSearch('2014-00-00T00:00:00Z', true));
 		$this->assertEquals('2014-12-31T00:00:00Z', caRewriteDateForElasticSearch('2014-00-00T00:00:00Z', false));
 
+	}
+	# -------------------------------------------------------
+
+	public function testCaSearchIsForSetsFuzzySearchNoSet() {
+        $result = caSearchIsForSets('centro~');
+        $this->assertEmpty($result);
 	}
 	# -------------------------------------------------------
 }

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2018 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,7 +38,6 @@ require_once(__CA_APP_DIR__."/helpers/batchHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/configurationHelpers.php");
 require_once(__CA_MODELS_DIR__."/ca_sets.php");
 require_once(__CA_MODELS_DIR__."/ca_data_exporters.php");
-require_once(__CA_LIB_DIR__."/Datamodel.php");
 require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__."/BatchProcessor.php");
 require_once(__CA_LIB_DIR__."/BatchMetadataExportProgress.php");
@@ -46,7 +45,6 @@ require_once(__CA_LIB_DIR__."/BatchMetadataExportProgress.php");
 
 class MetadataExportController extends ActionController {
 	# -------------------------------------------------------
-	protected $opo_datamodel;
 	protected $opo_app_plugin_manager;
 	# -------------------------------------------------------
 	#
@@ -90,10 +88,13 @@ class MetadataExportController extends ActionController {
 			}
 		}
 
+        if(!is_array($va_response['copied'])) { $va_response['copied'] = []; }
 		$va_response['uploadMessage'] = (($vn_upload_count = sizeof($va_response['copied'])) == 1) ? _t('Uploaded %1 worksheet', $vn_upload_count) : _t('Uploaded %1 worksheets', $vn_upload_count);
 		if (is_array($va_response['skipped']) && ($vn_skip_count = sizeof($va_response['skipped'])) && !$va_response['error']) {
 			$va_response['skippedMessage'] = ($vn_skip_count == 1) ? _t('Skipped %1 worksheet', $vn_skip_count) : _t('Skipped %1 worksheet', $vn_skip_count);
 		}
+		
+		$va_response['errors'] = $va_errors;
 
 		$this->getView()->setVar('response', $va_response);
 		$this->render('export/file_upload_response_json.php');
@@ -200,9 +201,54 @@ class MetadataExportController extends ActionController {
 			Session::setVar('export_file', $vs_tmp_file);
 			Session::setVar('export_content_type', $t_exporter->getContentType());
 			Session::setVar('exporter_id', $t_exporter->getPrimaryKey());
+			
+			if($this->request->user->getPreference('immediate_download_of_exports') === 'immediate') {
+				$this->getView()->setVar('file_name', $vs_filename);
+				$this->getView()->setVar('export_file', $vs_tmp_file);
+				$this->getView()->setVar('export_content_type', $t_exporter->getContentType());
+
+				$this->render('export/download_export_binary.php');
+				return;
+			}
 
 			$this->render('export/export_destination_html.php');
 		}
+	}
+	# -------------------------------------------------------
+	/**
+	 * Export single record (usually via inspector)
+	 */
+	public function ExternalExportSingle() {
+		require_once(__CA_LIB_DIR__."/ExternalExportManager.php");
+		$target = $this->request->getParameter('target', pString);
+		$id = $this->request->getParameter('item_id', pInteger);
+		
+		if (!is_array($target_info = ExternalExportManager::getTargetInfo($target))) { 
+			$this->getResponse()->setRedirect($this->getRequest()->config->get('error_display_url').'/n/2320?r='.urlencode($this->getRequest()->getFullUrlPath()));
+			return;
+		}
+		
+		if (!($t_subject = Datamodel::getInstance($target_info['table'], true))) {
+			$this->getResponse()->setRedirect($this->getRequest()->config->get('error_display_url').'/n/2320?r='.urlencode($this->getRequest()->getFullUrlPath()));
+			return;
+		}
+
+		// Can user export records of this type?
+		if (!$this->getRequest()->user->canDoAction('can_export_'.$t_subject->tableName())) {
+			$this->getResponse()->setRedirect($this->getRequest()->config->get('error_display_url').'/n/3430?r='.urlencode($this->getRequest()->getFullUrlPath()));
+			return;
+		}
+		// Can user read this particular item?
+		if(!caCanRead($this->getRequest()->getUserID(), $target_info['table'], $id)) {
+			$this->getResponse()->setRedirect($this->getRequest()->config->get('error_display_url').'/n/2320?r='.urlencode($this->getRequest()->getFullUrlPath()));
+			return;
+		}
+		
+		$t_exporter = new ExternalExportManager();
+		$this->view->setVar('export_file', $f =array_shift($t_exporter->process($target_info['table'], $id, null, ['target' => $target])));
+		$this->view->setVar('file_name', pathinfo($f, PATHINFO_BASENAME));
+		$this->view->setVar('export_content_type', 'application/octet-stream'); 
+		$this->render('export/download_export_binary.php');
 	}
 	# -------------------------------------------------------
 	public function ProcessDestination() {
@@ -257,17 +303,14 @@ class MetadataExportController extends ActionController {
 					if(!isset($va_dest['display']) || !$va_dest['display']) { $va_dest['display'] = "???"; }
 					$this->getView()->setVar('dest_display_name', $va_dest['display']);
 
-					if(caExportDataToResourceSpace($va_dest['user'], $va_dest['api_key'], $va_dest['base_api_url'], $vs_tmp_file)){
-						$vb_success = true;
-					}
-
+					$vb_success = caExportDataToResourceSpace($va_dest['user'], $va_dest['api_key'], $va_dest['base_api_url'], $vs_tmp_file);
 				}
 
 			}
 		}
 
 		$this->getView()->setVar('alternate_destination_success', $vb_success);
-		unlink($vs_tmp_file);
+		if (file_exists($vs_tmp_file)) { unlink($vs_tmp_file); }
 		$this->render('export/download_feedback_html.php');
 	}
 	# -------------------------------------------------------
