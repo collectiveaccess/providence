@@ -3,20 +3,20 @@ FROM ubuntu:20.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 #Apache Requirements
-RUN apt -qq update && apt-get -qq install curl wget gnupg && apt-get -qq install wget vim libreadline-dev libssl-dev libpcre3-dev libexpat1-dev build-essential bison zlib1g-dev libxss1 libappindicator1 libindicator7 sudo tzdata unzip less
+RUN apt-get -qq update && apt-get -qq install curl wget gnupg && apt-get -qq install wget vim libreadline-dev libssl-dev libpcre3-dev libexpat1-dev build-essential bison zlib1g-dev libxss1 libappindicator1 libindicator7 sudo tzdata unzip less
 
 #Misc plugin requirements
 #GraphicsMagick/Mediainfo/Plugins
-RUN apt-get -qq install dcraw exiftool git graphicsmagick imagemagick mediainfo libmagickwand-dev libmagickcore-dev libgraphicsmagick1-dev poppler-utils
+RUN apt-get -qq update && apt-get -qq install dcraw exiftool git graphicsmagick imagemagick mediainfo libmagickwand-dev libmagickcore-dev libgraphicsmagick1-dev poppler-utils
 
 #wkhtmltopdf
-RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.focal_amd64.deb && apt-get install -qq ./wkhtmltox_0.12.6-1.focal_amd64.deb && rm wkhtmltox_0.12.6-1.focal_amd64.deb
+RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.focal_amd64.deb && apt-get -qq update && apt-get install -qq ./wkhtmltox_0.12.6-1.focal_amd64.deb && rm wkhtmltox_0.12.6-1.focal_amd64.deb
 
 #pdfminer - if needed
 #RUN apt-get -qq update && apt-get -qq install python3-pip && pip install pdfminer.six
 
 #libreoffice
-RUN apt-get -qq install libreoffice
+RUN apt-get -qq update && apt-get -qq install libreoffice
 
 # apache
 ARG APACHE_VERSION=2.4.54
@@ -42,13 +42,13 @@ RUN echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
 
 #FFMPEG
 ARG FFMPEG_VERSION=4.3.3
-RUN apt-get install -qq autoconf automake build-essential cmake git-core libass-dev libfreetype6-dev libgnutls28-dev libsdl2-dev libtool libva-dev libvdpau-dev libvorbis-dev libxcb1-dev libxcb-shm0-dev libxcb-xfixes0-dev meson ninja-build pkg-config texinfo wget yasm zlib1g-dev nasm libx264-dev libx265-dev libnuma-dev libvpx-dev libfdk-aac-dev libmp3lame-dev libopus-dev libaom-dev && wget https://ffmpeg.org/releases/ffmpeg-$FFMPEG_VERSION.tar.gz && tar xzf ffmpeg-$FFMPEG_VERSION.tar.gz && cd ffmpeg-$FFMPEG_VERSION && ./configure --enable-gpl --enable-gnutls --enable-libaom --enable-libass --enable-libfdk-aac --enable-libfreetype --enable-nonfree --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265 && make -j$(nproc) && make install && cd .. && rm -rf ffmpeg-$FFMPEG_VERSION*
+RUN apt-get -qq update && apt-get install -qq autoconf automake build-essential cmake git-core libass-dev libfreetype6-dev libgnutls28-dev libsdl2-dev libtool libva-dev libvdpau-dev libvorbis-dev libxcb1-dev libxcb-shm0-dev libxcb-xfixes0-dev meson ninja-build pkg-config texinfo wget yasm zlib1g-dev nasm libx264-dev libx265-dev libnuma-dev libvpx-dev libfdk-aac-dev libmp3lame-dev libopus-dev libaom-dev && wget https://ffmpeg.org/releases/ffmpeg-$FFMPEG_VERSION.tar.gz && tar xzf ffmpeg-$FFMPEG_VERSION.tar.gz && cd ffmpeg-$FFMPEG_VERSION && ./configure --enable-gpl --enable-gnutls --enable-libaom --enable-libass --enable-libfdk-aac --enable-libfreetype --enable-nonfree --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265 && make -j$(nproc) && make install && cd .. && rm -rf ffmpeg-$FFMPEG_VERSION*
 
 #Config changes for apache/php
 RUN sed -i "s/memory_limit = 128M/memory_limit = 4G/" /usr/local/lib/php.ini && sed -i "s/post_max_size = 8M/post_max_size = 2048M/" /usr/local/lib/php.ini && sed -i "s/upload_max_filesize = 2M/upload_max_filesize = 2048M/" /usr/local/lib/php.ini && sed -i "s/display_errors = Off/display_errors = On/" /usr/local/lib/php.ini && sed -i "s/max_execution_time = 30/max_execution_time = 300/g" /usr/local/lib/php.ini
 
 #PHPRedis
-RUN apt update && apt-get install -qq -y libzstd-dev && wget https://github.com/phpredis/phpredis/archive/refs/tags/5.3.4.tar.gz && tar xzf 5.3.4.tar.gz && cd phpredis-5.3.4 && phpize && ./configure --enable-redis-zstd && make -j$(nproc) && make install && echo "extension=redis.so" >> /usr/local/lib/php.ini &&  cd .. && rm -rf phpredis-5.3.4
+RUN apt-get -qq update && apt-get install -qq -y libzstd-dev && wget https://github.com/phpredis/phpredis/archive/refs/tags/5.3.4.tar.gz && tar xzf 5.3.4.tar.gz && cd phpredis-5.3.4 && phpize && ./configure --enable-redis-zstd && make -j$(nproc) && make install && echo "extension=redis.so" >> /usr/local/lib/php.ini &&  cd .. && rm -rf phpredis-5.3.4
 
 
 #Change the LOCAL_UID to that of your user that owns the git repo files (or yours for local non-mac envs)
