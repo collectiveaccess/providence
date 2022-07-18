@@ -19,7 +19,7 @@ RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkh
 RUN apt-get -qq install libreoffice
 
 # apache
-ARG APACHE_VERSION=2.4.53
+ARG APACHE_VERSION=2.4.54
 RUN wget https://ai.galib.uga.edu/files/httpd-$APACHE_VERSION-w-apr.tar.gz && tar xzf httpd-$APACHE_VERSION-w-apr.tar.gz && cd httpd-$APACHE_VERSION && ./configure  '--prefix=/app/apache2' '--with-apxs2=/app/apache2/bin/apxs' '--with-mysqli' '--with-pear' '--with-xsl' '--with-pspell' '--enable-ssl' '--with-gettext' '--enable-gd' '--enable-mbstring' '--with-mcrypt' '--enable-soap' '--enable-sockets' '--with-libdir=/lib/i386-linux-gnu' '--with-jpeg-dir=/usr' '--with-png-dir=/usr' '--with-curl' '--with-pdo-mysql' '--enable-so' '--with-included-apr' && make -j$(nproc) && make install && cd ..&& rm -rf httpd-$APACHE_VERSION*
 
 ENV PATH /app/apache2/bin:$PATH
