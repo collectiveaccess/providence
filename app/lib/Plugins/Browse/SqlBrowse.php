@@ -177,7 +177,14 @@ class SqlBrowse extends BaseBrowsePlugin  {
 	 * @throws ApplicationException
 	 */
 	private function addFacetReference($value_id, $row_id, $access=0) {
-	    if (!$this->db->query("INSERT INTO ca_browse_references (row_id, value_id, access) VALUES (?, ?, ?)", [$row_id, $value_id, $access])) {
+		
+		try {
+			$ret = $this->db->query("INSERT INTO ca_browse_references (row_id, value_id, access) VALUES (?, ?, ?)", [$row_id, $value_id, $access]);
+	   
+	    } catch(Exception $e) {
+	    	throw new \ApplicationException("Could not insert facet reference: ".join("; ", $e->getMessage()));
+	    }
+	    if (!$ret) {
 	        throw new \ApplicationException("Could not insert facet reference: ".join("; ", $this->db->getErrors()));
 	    }
 	
