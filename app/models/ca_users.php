@@ -3479,8 +3479,9 @@ class ca_users extends BaseModel {
 						
 						if ($vn_access == __CA_BUNDLE_ACCESS_EDIT__) { break; }	// already at max
 					} else {
-						if (isset($va_vars['bundle_access_settings'][$ps_table_name.'.ca_attribute_'.$ps_bundle_name]) && ((int)$va_vars['bundle_access_settings'][$ps_table_name.'.ca_attribute_'.$ps_bundle_name] > $vn_access)) {
-							$vn_access = (int)$va_vars['bundle_access_settings'][$ps_table_name.'.ca_attribute_'.$ps_bundle_name];
+						$element_code = preg_replace("!^{$ps_table_name}\.!", "", $ps_bundle_name);
+						if (isset($va_vars['bundle_access_settings'][$ps_table_name.'.ca_attribute_'.$element_code]) && ((int)$va_vars['bundle_access_settings'][$ps_table_name.'.ca_attribute_'.$element_code] > $vn_access)) {
+							$vn_access = (int)$va_vars['bundle_access_settings'][$ps_table_name.'.ca_attribute_'.$element_code];
 							
 							if ($vn_access == __CA_BUNDLE_ACCESS_EDIT__) { break; }	// already at max
 						}
