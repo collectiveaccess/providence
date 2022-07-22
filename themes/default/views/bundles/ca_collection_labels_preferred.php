@@ -68,6 +68,8 @@
 			
 			<?= $t_label->htmlFormElement('name', "^ELEMENT", array_merge($settings, array('name' => "{fieldNamePrefix}name_{n}", 'id' => "{fieldNamePrefix}name_{n}", "value" => "{{name}}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry', 'readonly' => $read_only))); ?>
 			<div class="formLabel">
+				<?php if (Configuration::load()->get('ca_collections_user_settable_sortable_value')) { print $t_label->htmlFormElement('name_sort', "^LABEL<br/>^ELEMENT", array_merge($settings, array('name' => "{fieldNamePrefix}name_sort_{n}", 'id' => "{fieldNamePrefix}name_sort_{n}", "value" => "{{name_sort}}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry', 'readonly' => $read_only)))."<br/>\n"; } ?>
+			
 				<?= $t_label->htmlFormElement('locale_id', "^LABEL ^ELEMENT", array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}locale_id_{n}", 'name' => "{fieldNamePrefix}locale_id_{n}", "value" => "{locale_id}", 'no_tooltips' => true, 'dont_show_null_value' => true, 'hide_select_if_only_one_option' => true, 'WHERE' => array('(dont_use_for_cataloguing = 0)'))); ?>	
 				<?= $label_list ? $t_label->htmlFormElement('type_id', "^LABEL ^ELEMENT", array('classname' => 'labelType', 'id' => "{fieldNamePrefix}type_id_{n}", 'name' => "{fieldNamePrefix}type_id_{n}", "value" => "{type_id}", 'no_tooltips' => true, 'list_code' => $label_list, 'dont_show_null_value' => true, 'hide_select_if_no_options' => true)) : ''; ?>
 				<?= $show_effective_date ? $t_label->htmlFormElement('effective_date', "^LABEL ^ELEMENT", array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}effective_date_{n}", 'name' => "{fieldNamePrefix}effective_date_{n}", "value" => "{effective_date}", 'no_tooltips' => true)) : ''; ?>	
@@ -98,7 +100,7 @@
 	caUI.initLabelBundle('#<?= $id_prefix; ?>Labels', {
 		mode: 'preferred',
 		fieldNamePrefix: '<?= $id_prefix; ?>',
-		templateValues: ['name', 'locale_id', 'type_id', 'effective_date', 'access', 'source_info'],
+		templateValues: ['name', 'name_sort', 'locale_id', 'type_id', 'effective_date', 'access', 'source_info'],
 		forceNewValues: <?= json_encode($force_new_labels); ?>,
 		initialValues: <?= json_encode($initial_values); ?>,
 		labelID: 'Label_',

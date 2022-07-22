@@ -80,11 +80,11 @@ BaseModel::$s_ca_models_definitions['ca_object_labels'] = array(
 				'BOUNDS_LENGTH' => array(1,8192)
 		),
 		'name_sort' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 80, 'DISPLAY_HEIGHT' => 1,
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => 'Sort order', 'DESCRIPTION' => 'Sortable version of name value',
+				'LABEL' => 'Sortable value', 'DESCRIPTION' => 'Sortable version of name value',
 				'BOUNDS_LENGTH' => array(0,255)
 		),
 		'source_info' => array(

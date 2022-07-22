@@ -62,6 +62,8 @@
 			
 			<?php print $t_label->htmlFormElement('name', "^ELEMENT", array_merge($va_settings, array('name' => "{fieldNamePrefix}name_{n}", 'id' => "{fieldNamePrefix}name_{n}", "value" => "{{name}}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry', 'readonly' => $vb_read_only))); ?>
 			<br/>
+			<?php if (Configuration::load()->get('ca_tour_stops_user_settable_sortable_value')) { print $t_label->htmlFormElement('name_sort', "^LABEL<br/>^ELEMENT", array_merge($settings, array('name' => "{fieldNamePrefix}name_sort_{n}", 'id' => "{fieldNamePrefix}name_sort_{n}", "value" => "{{name_sort}}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry', 'readonly' => $read_only)))."<br/>\n"; } ?>
+			
 			<?php print '<div class="formLabel">'.$t_label->htmlFormElement('locale_id', "^LABEL ^ELEMENT", array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}locale_id_{n}", 'name' => "{fieldNamePrefix}locale_id_{n}", "value" => "{locale_id}", 'no_tooltips' => true, 'dont_show_null_value' => true, 'hide_select_if_only_one_option' => true, 'WHERE' => array('(dont_use_for_cataloguing = 0)'))); ?>	
 		</div>
 	</textarea>
@@ -79,7 +81,7 @@
 	caUI.initLabelBundle('#<?php print $vs_id_prefix; ?>Labels', {
 		mode: 'preferred',
 		fieldNamePrefix: '<?php print $vs_id_prefix; ?>',
-		templateValues: ['name', 'locale_id', 'type_id'],
+		templateValues: ['name', 'name_sort', 'locale_id', 'type_id'],
 		forceNewValues: <?php print json_encode($va_force_new_labels); ?>,
 		initialValues: <?php print json_encode($va_initial_values); ?>,
 		labelID: 'Label_',
