@@ -2179,7 +2179,7 @@ class SearchResult extends BaseObject {
 		
 		$vn_id = $this->get($pt_instance->primaryKey(true));
 		$vs_table_name = $pt_instance->tableName();
-		
+
 		if (is_array($pa_value_list) && sizeof($pa_value_list)) {
 			$va_val_proc = array();
 			foreach($pa_value_list as $o_attribute) {
@@ -2210,6 +2210,12 @@ class SearchResult extends BaseObject {
 					
 					if(($vn_attr_type == 0) && $va_path_components['subfield_name'] && ($vs_element_code != $va_path_components['subfield_name'])) {
 					    continue;
+					}
+					
+					// support for getting attribute-level source via <table>.<element>.__source__ spec
+					if($va_path_components['subfield_name'] === '__source__') {
+						$va_return_values[(int)$vn_id][]  = $o_attribute->getValueSource();
+						continue;
 					}
 					
 					$va_auth_spec = $vb_has_hierarchy_modifier = null; 
