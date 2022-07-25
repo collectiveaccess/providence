@@ -116,7 +116,7 @@
 		<tr>
 			<td colspan='8'>
 				<div align="center">
-					<?php print $vs_page_select ? _t('No pages have been created') : _t('No page templates are been defined'); ?>
+					<?php print $vs_page_select ? _t('No pages have been created') : _t('No page templates have been defined'); ?>
 				</div>
 			</td>
 		</tr>
