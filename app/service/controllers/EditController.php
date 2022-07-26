@@ -1059,7 +1059,9 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 			$id = $b['id'] ?? null;
 			$delete = isset($b['delete']) ? (bool)$b['delete'] : false;
 			$replace = isset($b['replace']) ? (bool)$b['replace'] : false;
-			$bundle_name = $b['name'];
+			$bundle_name = $b['name'] ?? null;
+			$source = $b['source'] ?? null;
+			
 			if($bundle_name === 'type') { $bundle_name = 'type_id'; }	// map "type" to "type_id"
 			
 			if(!strlen($bundle_name)) { continue; }
@@ -1162,16 +1164,16 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 				
 						if(!$delete && $id) {
 							// Edit
-							if($rc = $instance->editAttribute($id, $bundle_name, $attr_values)) {
+							if($rc = $instance->editAttribute($id, $bundle_name, $attr_values, ['source' => $source])) {
 								$rc = $instance->update();
 							}
 						} elseif($replace && !$id) {
-							if($rc = $instance->replaceAttribute($attr_values, $bundle_name, null, ['showRepeatCountErrors' => true])) {
+							if($rc = $instance->replaceAttribute($attr_values, $bundle_name, null, ['showRepeatCountErrors' => true, 'source' => $source])) {
 								$rc = $instance->update();
 							}
 						} elseif(!$delete && !$id) {
 							// Add
-							if($rc = $instance->addAttribute($attr_values, $bundle_name, null, ['showRepeatCountErrors' => true])) {
+							if($rc = $instance->addAttribute($attr_values, $bundle_name, null, ['showRepeatCountErrors' => true], ['source' => $source])) {
 								$rc = $instance->update();
 							}
 						} elseif($delete && $id) {

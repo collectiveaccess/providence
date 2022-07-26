@@ -198,6 +198,10 @@ class EditSchema extends \GraphQLServices\GraphQLSchema {
 						'type' => Type::string(),
 						'description' => 'Optional type code for non-preferred labels'
 					],
+					'source' => [
+						'type' => Type::string(),
+						'description' => 'Source of value'
+					],
 				]
 			]),
 			$MatchRecordType = new InputObjectType([
