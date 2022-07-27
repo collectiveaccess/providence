@@ -1920,7 +1920,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				}
 				if ($vs_existing_record_policy != 'none') {
 					$label_table = $t_subject->getLabelTableName();
-					$pref_label_lookup_values = $label_table::normalizeLabel($va_pref_label_values);	// complex labels need to be standardized (eg. ca_entity_labels)
+					$pref_label_lookup_values = $label_table::normalizeLabel($va_pref_label_values, ['type' => $vs_type]);	// complex labels need to be standardized (eg. ca_entity_labels)
 					if(is_array($pref_label_lookup_fields_to_omit)) {
 						foreach($pref_label_lookup_fields_to_omit as $f2o) {
 							unset($pref_label_lookup_values[trim($f2o)]);
