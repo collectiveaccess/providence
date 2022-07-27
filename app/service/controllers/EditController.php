@@ -1055,12 +1055,15 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 		$intrinsics_only = caGetOption('intrinsicsOnly', $options, false);
 		$skip_intrinsics = caGetOption('skipIntrinsics', $options, false);
 		
+		$replace_map = [];
 		foreach($bundles as $b) {
 			$id = $b['id'] ?? null;
 			$delete = isset($b['delete']) ? (bool)$b['delete'] : false;
 			$replace = isset($b['replace']) ? (bool)$b['replace'] : false;
 			$bundle_name = $b['name'] ?? null;
 			$source = $b['source'] ?? null;
+			
+			if(!isset($replace_map[$bundle_name])) { $replace_map[$bundle_name] = 0; }
 			
 			if($bundle_name === 'type') { $bundle_name = 'type_id'; }	// map "type" to "type_id"
 			
@@ -1168,12 +1171,13 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 								$rc = $instance->update();
 							}
 						} elseif($replace && !$id) {
-							if($rc = $instance->replaceAttribute($attr_values, $bundle_name, null, ['showRepeatCountErrors' => true, 'source' => $source])) {
+							if($rc = $instance->replaceAttribute($attr_values, $bundle_name, null, ['showRepeatCountErrors' => true, 'source' => $source, 'index' => $replace_map[$bundle_name]])) {
 								$rc = $instance->update();
+								$replace_map[$bundle_name]++;
 							}
 						} elseif(!$delete && !$id) {
 							// Add
-							if($rc = $instance->addAttribute($attr_values, $bundle_name, null, ['showRepeatCountErrors' => true], ['source' => $source])) {
+							if($rc = $instance->addAttribute($attr_values, $bundle_name, null, ['showRepeatCountErrors' => true, 'source' => $source])) {
 								$rc = $instance->update();
 							}
 						} elseif($delete && $id) {

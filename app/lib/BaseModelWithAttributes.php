@@ -498,14 +498,17 @@
 		 * Replaces first attribute value with specified values; will add attribute value if no attributes are defined 
 		 * This is handy for doing editing on non-repeating attributes
 		 *
+		 * @param array $options Options include:
 		 *		source = Source notes for attribute value. [Default is null]
+		 *		index = Zero-based index of attribute to replace. [Default is 0]
 		 */
 		public function replaceAttribute($pa_values, $pm_element_code_or_id, $ps_error_source=null, $pa_options=null) {
 			$va_attrs = $this->getAttributesByElement($pm_element_code_or_id);
+			$index = caGetOption('index', $pa_options, 0);
 			
-			if (is_array($va_attrs) && sizeof($va_attrs)) {
+			if (is_array($va_attrs) && sizeof($va_attrs) && isset($va_attrs[$index])) {
 				return $this->editAttribute(
-					$va_attrs[0]->getAttributeID(),
+					$va_attrs[$index]->getAttributeID(),
 					$pm_element_code_or_id, $pa_values, $ps_error_source, $pa_options
 				);
 			} else {
