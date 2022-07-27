@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2021 Whirl-i-Gig
+ * Copyright 2007-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1120,6 +1120,7 @@ function caFileIsIncludable($ps_file) {
 	 *		html = if true, then HTML formatted output will be returned; otherwise plain-text output is returned. [Default is false]
 	 *		print = if true output is printed to standard output. [Default is false]
 	 *		skip = number of calls to skip from the top of the stack. [Default is 0]
+	 *		head = limit returned lines to number from top. [Default is null]
 	 * @return string Stack trace output
 	 */
 	function caPrintStacktrace($pa_options=null) {
@@ -1127,7 +1128,10 @@ function caFileIsIncludable($ps_file) {
 		$va_trace = debug_backtrace();
 
 		if (isset($pa_options['skip']) && ($pa_options['skip'] > 0)) {
-			$va_trace = array_slice($va_trace, $pa_options['skip']);
+			$va_trace = array_slice($va_trace, (int)$pa_options['skip']);
+		}
+		if (isset($pa_options['head']) && ($pa_options['head'] > 0)) {
+			$va_trace = array_slice($va_trace, 0, (int)$pa_options['head']);
 		}
 
 		$va_buf = array();

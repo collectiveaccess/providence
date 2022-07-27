@@ -33,6 +33,7 @@
   /**
   *
   */
+
 require_once(__CA_LIB_DIR__.'/BaseModel.php');
 require_once(__CA_LIB_DIR__.'/Parsers/TimeExpressionParser.php');
 require_once(__CA_LIB_DIR__."/SyncableBaseModel.php");
@@ -82,7 +83,11 @@ class BaseLabel extends BaseModel {
 	 * Returns a list of fields that should be displayed in user interfaces for labels
 	 */
 	public function getUIFields() {
-		return $this->LABEL_UI_FIELDS;
+		$flds = $this->LABEL_UI_FIELDS;
+		if(Configuration::load()->get($this->LABEL_SUBJECT_TABLE.'_user_settable_sortable_value')) {
+			 $flds[] = $this->getSortField(); 
+		}
+		return $flds;
 	}
 	# -------------------------------------------------------
 	/**
@@ -158,6 +163,7 @@ class BaseLabel extends BaseModel {
 	 */
 	protected function _generateSortableValue() {
 		if ($vs_sort_field = $this->getProperty('LABEL_SORT_FIELD')) {
+			if(strlen($this->get($vs_sort_field)) && Configuration::load()->get($this->LABEL_SUBJECT_TABLE.'_user_settable_sortable_value')) { return; }
 			$vs_display_field = $this->getProperty('LABEL_DISPLAY_FIELD');
 			
 			if (!($vs_locale = $this->getAppConfig()->get('use_locale_for_sortable_titles'))) {
