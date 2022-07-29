@@ -62,8 +62,6 @@ class EHiveDataReader extends BaseXMLDataReader {
 	 * XPath to select data for reading
 	 */
 	protected $ops_xpath = '//eHive/record';
-	
-	
 	/**
 	 * Merge attributes of row-level tag into record as regular values?
 	 *
@@ -109,8 +107,6 @@ class EHiveDataReader extends BaseXMLDataReader {
 		} catch (Exception $e) {
 			return null;
 		}
-		//$this->opo_xpath->registerNamespace($this->ops_xml_namespace_prefix, $this->ops_xml_namespace);
-		
 		
 		// get rows
 		$this->opo_handle = $this->opo_xpath->query($this->ops_xpath);
@@ -161,9 +157,12 @@ class EHiveDataReader extends BaseXMLDataReader {
 		if ($this->ops_xml_namespace_prefix && $this->ops_xml_namespace) {
 			$this->opo_handle_xpath->registerNamespace($this->ops_xml_namespace_prefix, $this->ops_xml_namespace);
 		}
-		$row_with_labels = [];
-		
-		
+		$row_with_labels = [
+			'/record_name' => $o_row->getAttribute('name'),
+			'/object_record_id' => $o_row->getAttribute('object_record_id'),
+			'/perspective' => $o_row->getAttribute('perspective'),
+			'/public_access' => $o_row->getAttribute('public_access'),
+		];
 		
 		$cols = $this->opo_handle_xpath->query('fieldSets');
 		foreach($cols as $i => $o_node) {
@@ -194,6 +193,7 @@ class EHiveDataReader extends BaseXMLDataReader {
 		
 		$this->opa_row_buf = $row_with_labels;
 		$this->opn_current_row++;
+		
 		if ($this->opn_current_row > $this->numRows()) { return false; }
 		return true;
 	}
