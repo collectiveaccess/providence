@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2021 Whirl-i-Gig
+ * Copyright 2012-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -67,6 +67,8 @@ final class ConfigurationExporter {
 
 	/** @var bool */
 	private $opb_output_status = false;
+	
+	private $idnos = [];
 	# -------------------------------------------------------
 
 	# -------------------------------------------------------
@@ -229,7 +231,7 @@ final class ConfigurationExporter {
 			if (($vn_exclude_lists_larger_than > 0) && ($t_list->numItemsInList($qr_lists->get('list_id')) > $vn_exclude_lists_larger_than)) { continue; }
 
 			$vo_list = $this->opo_dom->createElement("list");
-			$vo_list->setAttribute("code", $this->makeIDNOFromInstance($qr_lists, 'list_code'));
+			$vo_list->setAttribute("code", $this->makeIDNOFromInstance($qr_lists, 'ca_lists', 'list_code'));
 			$vo_list->setAttribute("hierarchical", $qr_lists->get("is_hierarchical"));
 			$vo_list->setAttribute("system", $qr_lists->get("is_system_list"));
 			$vo_list->setAttribute("vocabulary", $qr_lists->get("use_as_vocabulary"));
@@ -309,7 +311,7 @@ final class ConfigurationExporter {
 		$va_used_codes = [];
 		while($qr_items->nextRow()) {
 			$vo_item = $this->opo_dom->createElement("item");
-			$vs_idno = $this->makeIDNOFromInstance($qr_items,'idno', $va_used_codes);
+			$vs_idno = $this->makeIDNOFromInstance($qr_items, 'ca_list_items', 'idno', $va_used_codes);
 			$va_used_codes[$vs_idno] = true;
 
 			$vo_item->setAttribute("idno", $vs_idno);
@@ -1543,7 +1545,7 @@ final class ConfigurationExporter {
 			}
 
 			$vo_form = $this->opo_dom->createElement("searchForm");
-			$vo_form->setAttribute("code", $this->makeIDNOFromInstance($t_form, "form_code"));
+			$vo_form->setAttribute("code", $this->makeIDNOFromInstance($t_form, 'ca_search_forms',  "form_code"));
 			$vo_form->setAttribute("type", Datamodel::getTableName($qr_forms->get("table_num")));
 			$vo_form->setAttribute("system", $qr_forms->get("is_system"));
 
@@ -1910,16 +1912,28 @@ final class ConfigurationExporter {
 	}
 	# --------------------------------------------------
 	/**
-	 * @param BaseModel $po_model_instance
-	 * @param string $ps_field_name
+	 * @param BaseModel $model_instance
+	 * @param string $type
+	 * @param string $field_name
+	 * @param array $used_list
+	 *
 	 * @return string normalised idno
 	 */
-	private function makeIDNOFromInstance($po_model_instance, $ps_field_name, $pa_used_list=null) {
-		$va_length = $po_model_instance->getFieldInfo($ps_field_name, 'BOUNDS_LENGTH');
+	private function makeIDNOFromInstance($model_instance, string $type, string $field_name, $used_list=null) {
+		$length = $model_instance->getFieldInfo($field_name, 'BOUNDS_LENGTH');
 		
-		$vn_max_length = isset($va_length[1]) ? $va_length[1] : 100;
-		$vs_value = $po_model_instance->get($ps_field_name);
-		return $this->makeIDNO($vs_value, $vn_max_length, $pa_used_list);
+		$max_length = isset($length[1]) ? $length[1] : 100;
+		$value = $model_instance->get($field_name);
+		$idno = $this->makeIDNO($value, $max_length, $used_list);
+		
+		if(isset($this->idnos[$type][$idno])) {
+			$this->idnos[$type][$idno]++;
+			$idno = $idno . '_'. $this->idnos[$type][$idno];
+		} else {
+			$this->idnos[$type][$idno] = 1;
+		}
+		
+		return $idno;
 	}
 	# --------------------------------------------------
 	/**
