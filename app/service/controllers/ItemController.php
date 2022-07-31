@@ -184,11 +184,16 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 								$data = \GraphQLServices\Helpers\fetchDataForBundles($r, $bundles, []);
 								
 								$rel_type = array_shift($rel_types);
-								$rel_list[] = array_merge([
-									'id' => $r->get("{$linking_table}.relation_id"),
-									'table' => $linking_table,
-									'bundles' => $data
-								], $rel_type);
+								
+								if(is_array($rel_ids = $r->get("{$linking_table}.relation_id", ['returnAsArray' => true]))) {
+									foreach($rel_ids as $rel_id) {
+										$rel_list[] = array_merge([
+											'id' => $rel_id,
+											'table' => $linking_table,
+											'bundles' => $data
+										], $rel_type);
+									}
+								}
 							}
 						}
 						return ['table' => $rec->tableName(), 'idno'=> $rec->get($rec->getProperty('ID_NUMBERING_ID_FIELD')), 'identifier' => $args['identifier'], 'id' => $rec->getPrimaryKey(), 'relationships' => $rel_list];
