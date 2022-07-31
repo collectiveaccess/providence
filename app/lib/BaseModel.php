@@ -10064,7 +10064,6 @@ $pa_options["display_form_field_tips"] = true;
 		
 		$sql_field_list = $t_item_rel->getFormFields(true, true, true);
 		$logical_field_list = $t_item_rel->getFormFields(true);
-			
 		$va_to_reindex_relations = array();
 		if ($t_item_rel->tableName() == $this->getSelfRelationTableName()) {
 			
@@ -10075,7 +10074,7 @@ $pa_options["display_form_field_tips"] = true;
 			$vs_right_field_name = $t_item_rel->getRightTableFieldName();
 			
 			$qr_res = $o_db->query("
-				SELECT ".join(', ', $sql_field_list)."
+				SELECT ".join(', ', array_map(function($v) { return "`{$v}`"; }, $sql_field_list))."
 				FROM ".$t_item_rel->tableName()." 
 				WHERE 
 					(({$vs_left_field_name} = ?) OR ({$vs_right_field_name} = ?))
