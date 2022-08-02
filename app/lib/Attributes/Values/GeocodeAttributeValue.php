@@ -421,7 +421,7 @@ class GeocodeAttributeValue extends AttributeValue implements IAttributeValue {
 				$this->postError(1970, _t('Address or georeference was blank.'), 'GeocodeAttributeValue->parseValue()');
 				return false;
 			} else {
-				return ['value_longtext1' => '', 'value_longtxt2' => '', 'value_decimal1' => null, 'value_decimal2' => null];
+				return ['value_longtext1' => '', 'value_longtext2' => '', 'value_decimal1' => null, 'value_decimal2' => null];
 			}
 		}
 		

@@ -1435,7 +1435,7 @@ class BaseModel extends BaseObject {
 				$vs_cur_value = isset($this->_FIELD_VALUES[$vs_field]) ? $this->_FIELD_VALUES[$vs_field] : null;
 				switch ($pa_fields_type) {
 					case (FT_NUMBER):
-						if ($vs_cur_value != $vm_value) {
+						if (($vs_cur_value != $vm_value) || !$this->getPrimaryKey()) {
 							$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
 						}
 						
@@ -1466,7 +1466,7 @@ class BaseModel extends BaseObject {
 						}
 						break;
 					case (FT_BIT):
-						if ($vs_cur_value != $vm_value) {
+						if (($vs_cur_value != $vm_value) || !$this->getPrimaryKey()) {
 							$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
 						}
 						$this->_FIELD_VALUES[$vs_field] = ($vm_value ? 1 : 0);
@@ -10064,7 +10064,6 @@ $pa_options["display_form_field_tips"] = true;
 		
 		$sql_field_list = $t_item_rel->getFormFields(true, true, true);
 		$logical_field_list = $t_item_rel->getFormFields(true);
-			
 		$va_to_reindex_relations = array();
 		if ($t_item_rel->tableName() == $this->getSelfRelationTableName()) {
 			
@@ -10075,7 +10074,7 @@ $pa_options["display_form_field_tips"] = true;
 			$vs_right_field_name = $t_item_rel->getRightTableFieldName();
 			
 			$qr_res = $o_db->query("
-				SELECT ".join(', ', $sql_field_list)."
+				SELECT ".join(', ', array_map(function($v) { return "`{$v}`"; }, $sql_field_list))."
 				FROM ".$t_item_rel->tableName()." 
 				WHERE 
 					(({$vs_left_field_name} = ?) OR ({$vs_right_field_name} = ?))
@@ -11788,16 +11787,26 @@ $pa_options["display_form_field_tips"] = true;
 			$va_wheres[] = "{$vs_table_name}.deleted = 0";
 		}
 		
+		// $vs_sql = "
+// 			SELECT {$vs_table_name}.* 
+// 			FROM (
+// 				SELECT {$vs_table_name}.{$vs_primary_key} FROM {$vs_table_name}
+// 				{$vs_join_sql}
+// 			".(sizeof($va_wheres) ? " WHERE " : "").join(" AND ", $va_wheres)."
+// 				ORDER BY RAND() 
+// 				{$vs_limit_sql}
+// 			) AS random_items 
+// 			INNER JOIN {$vs_table_name} ON {$vs_table_name}.{$vs_primary_key} = random_items.{$vs_primary_key}
+// 		";
 		$vs_sql = "
 			SELECT {$vs_table_name}.* 
-			FROM (
-				SELECT {$vs_table_name}.{$vs_primary_key} FROM {$vs_table_name}
-				{$vs_join_sql}
-			".(sizeof($va_wheres) ? " WHERE " : "").join(" AND ", $va_wheres)."
-				ORDER BY RAND() 
-				{$vs_limit_sql}
-			) AS random_items 
-			INNER JOIN {$vs_table_name} ON {$vs_table_name}.{$vs_primary_key} = random_items.{$vs_primary_key}
+			FROM {$vs_table_name}
+			INNER JOIN (SELECT CEIL(RAND() * (SELECT MAX(object_id) FROM {$vs_table_name})) AS id) AS x 
+			{$vs_join_sql}
+			WHERE {$vs_table_name}.object_id >= x.id 
+			".(sizeof($va_wheres) ? " AND " : "").join(" AND ", $va_wheres)."
+			ORDER BY {$vs_table_name}.object_id ASC 
+			{$vs_limit_sql}
 		";
 		
 		$qr_res = $o_db->query($vs_sql);

@@ -1360,6 +1360,24 @@ div.formLabelUploadSizeNote {
     float: right;
 }
 
+.batchEditSelected {
+	display: none;
+}
+
+.batchEditPanel {
+	position: absolute;
+	left: 0px;
+	top: 25px;
+	z-index: 32000;
+	display: none;
+}
+
+.relatedListTableContent {
+	min-height: 25px;
+	padding-bottom: 20px !important;
+	text-align: center;
+}
+
 .caDupeLabelMessageBox {
     margin: 0 auto;
     width: 200px;
@@ -2117,6 +2135,13 @@ div.search-hier-browser-box {
 }
 .bundleContainer .caDeleteLabelButton .fa:hover, .bundleContainer .caDeleteItemButton .fa:hover{
 	color:#EB0000;
+}
+
+.bundleContainerRelatedList {
+    position: relative;
+    background-color: #fbfbfb;
+    border: 0px solid #e6e6e6;
+    padding-left:0px;
 }
 
 .labelInfo {
@@ -3605,6 +3630,11 @@ input.timecodeBg, textarea.timecodeBg {
     background-position:right center;
 }
 input.urlBg, textarea.urlBg {
+    background-image: url('../graphics/icons/formBgUrl.gif');
+    background-repeat:no-repeat;
+    background-position:right center;
+}
+input.externalMediaBg, textarea.externalMediaBg {
     background-image: url('../graphics/icons/formBgUrl.gif');
     background-repeat:no-repeat;
     background-position:right center;
@@ -5393,12 +5423,12 @@ a.roleCheckAllNoneButton {
 }
 
 /* find results add to set controls */
-td.addItemToSetControl, th.addItemToSetControl {
+td.addItemToSetControl, th.addItemToSetControl, td.addItemToBatchControl, th.addItemToBatchControl {
 	width:15px; 
 	position: relative;
 }
 
-td.addItemToSetControl div {
+td.addItemToSetControl div, td.addItemToBatchControl div {
 	position: absolute;
 	bottom: 1px;
 	right: 1px;
@@ -5406,6 +5436,17 @@ td.addItemToSetControl div {
 
 input.addItemToSetControl {
     display: none;
+    padding: 0px;
+    margin: 0px;
+    width: 10px;
+    height: 10px;
+    position: absolute;
+    top: 2px; 
+    left: 1px;
+    
+}
+
+input.addItemToBatchControl {
     padding: 0px;
     margin: 0px;
     width: 10px;
@@ -6009,22 +6050,6 @@ a.caDeleteLabelButton {
     text-decoration: none;
 }
 
-/* Application monitor styles */
-#caApplicationMonitor {
-    border: 2px solid #999;
-    display: none;
-    overflow: auto;
-    width: 900px;
-    height: 500px;
-    position: fixed;
-    top: 100px; left: 50%; margin: 0 0 0 -450px;
-    background: #ffffff;
-    padding: 15px;
-    border-radius: 4px;
-    -moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
-}
-
 /* -------------------------------------------------*/
 /* Item-level access screen                         */
 /* -------------------------------------------------*/
@@ -6609,7 +6634,7 @@ div.caObjectRepresentationChooserRepresentation input[type=checkbox] {
 }
 
 /* Information service attributes */
-div.caInformationServiceDetail {
+div.caInformationServiceDetail, div.caExternalMediaDetail {
     width: 100%;
     display:none;
     font-weight: normal;

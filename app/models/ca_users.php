@@ -3517,8 +3517,9 @@ class ca_users extends BaseModel {
 						
 						if ($vn_access == __CA_BUNDLE_ACCESS_EDIT__) { break; }	// already at max
 					} else {
-						if (isset($va_vars['bundle_access_settings'][$ps_table_name.'.ca_attribute_'.$ps_bundle_name]) && ((int)$va_vars['bundle_access_settings'][$ps_table_name.'.ca_attribute_'.$ps_bundle_name] > $vn_access)) {
-							$vn_access = (int)$va_vars['bundle_access_settings'][$ps_table_name.'.ca_attribute_'.$ps_bundle_name];
+						$element_code = preg_replace("!^{$ps_table_name}\.!", "", $ps_bundle_name);
+						if (isset($va_vars['bundle_access_settings'][$ps_table_name.'.ca_attribute_'.$element_code]) && ((int)$va_vars['bundle_access_settings'][$ps_table_name.'.ca_attribute_'.$element_code] > $vn_access)) {
+							$vn_access = (int)$va_vars['bundle_access_settings'][$ps_table_name.'.ca_attribute_'.$element_code];
 							
 							if ($vn_access == __CA_BUNDLE_ACCESS_EDIT__) { break; }	// already at max
 						}
@@ -3568,6 +3569,7 @@ class ca_users extends BaseModel {
 				if(!($vs_type_list_code = $t_instance->getTypeListCode())) { return __CA_BUNDLE_ACCESS_EDIT__; } // no type-level acces control for tables without type lists (like ca_lists)
 				$vn_type_id = (int)$t_list->getItemIDFromList($vs_type_list_code, $pm_type_code_or_id);
 			}
+			if($vn_type_id === 0) { return __CA_BUNDLE_ACCESS_EDIT__; }
 			$vn_access = -1;
 			foreach($va_roles as $vn_role_id => $va_role_info) {
 				$va_vars = $va_role_info['vars'];

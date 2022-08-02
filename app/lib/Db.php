@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2013 Whirl-i-Gig
+ * Copyright 2006-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -72,12 +72,6 @@ class Db extends DbBase {
 	 * @access private
 	 */
 	private $opn_last_insert_id = null;
-	
-	/** 
-	  * ApplicationMonitor to use for query logging
-	  * @var ApplicationMonitor
-	  */
-	static $monitor = null;
 
 	/**
 	 * Constructor
@@ -169,15 +163,6 @@ class Db extends DbBase {
 	 */
 	public function getHandle() {
 		return $this->opo_db->getHandle();
-	}
-	
-	/**
-	 * Set ApplicationMonitor object to log queries
-	 *
-	 * @param ApplicationMonitor $po_monitor ApplicationMonitor instance to use for logging
-	 */
-	static public function setMonitor($po_monitor) {
-		Db::$monitor = $po_monitor;
 	}
 
 	/**
