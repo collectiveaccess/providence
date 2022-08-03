@@ -320,18 +320,49 @@
 			return $this->ops_text_marker;
 		}
 		# ----------------------------------------
-
 		/**
 		 * @return mixed
 		 */
 		public function getType() : string {
 			return $this->ops_type;
 		}
-
+		# ----------------------------------------
 		/**
 		 * @param mixed $ops_type
 		 */
 		public function setType( $type ): void {
 			$this->ops_type = $type;
 		}
+		# ----------------------------------------
+		/**
+		 * Return list of worksheet names from currently loaded file
+		 *
+		 * @return array
+		 */
+		public function getSheetNames(): ?array {
+			if($this->opo_excel) {
+				return $this->opo_excel->getSheetNames();
+			}
+			return null;
+		}
+		# ----------------------------------------
+		/**
+		 * Set worksheet to read
+		 *
+		 * @param int $sheet_num
+		 * @return bool
+		 */
+		public function setActiveSheet(int $sheet_num) : ?bool {
+			if($this->opo_excel) {
+				if($this->opo_excel->setActiveSheetIndex($sheet_num)) {
+					$o_sheet = $this->opo_excel->getActiveSheet();
+					$this->opr_file = $o_sheet->getRowIterator();
+					$this->opn_current_row;
+					return true;
+				}
+				return false;
+			}
+			return null;
+		}
+		# ----------------------------------------
 	}
