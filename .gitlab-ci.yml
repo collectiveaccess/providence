@@ -18,6 +18,7 @@ deploy_prod:
     - source .env
     - docker-compose -f docker-compose.yml -f docker-compose-deploy.yml build --build-arg LOCAL_UID=$LOCAL_UID --build-arg SERVERNAME=$SERVERNAME  
     - docker-compose -f docker-compose.yml -f docker-compose-deploy.yml up -d
+    - docker-compose -f docker-compose.yml -f docker-compose-deploy.yml exec -T providence /bin/bash -c "cd /app/apache2/htdocs && composer install"
   after_script:
     - cd /app/providence && rm .env
     - cd /app/providence && chown gitlab-runner:daemon setup.php && chmod 640 setup.php
