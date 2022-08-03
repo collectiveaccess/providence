@@ -25,4 +25,4 @@ build
 /support/scripts/*.php
 /support/scripts/*.sh
 .env
-composer.lock
+/uploads/
