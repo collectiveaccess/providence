@@ -658,7 +658,7 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 			if (!isset($rules[$rule_id])) { continue; }
 			if (!$t_rule->load($rule_id)) { continue; }
 			
-			$t_rule->delete();
+			$t_rule->delete(true);
 			if($t_rule->numErrors() > 0) {
 				$this->errors = $t_rule->errors;
 				return false;
