@@ -97,8 +97,6 @@ class BaseFindController extends ActionController {
 					} 
 					$this->opn_type_restriction_id = $res_type_id;
 				} 
-				
-			print "[$res_type_id] set type=".$this->opn_type_restriction_id."/".($this->type_restriction_has_changed ? "changed" : "not changed")."<br>";
 			}	
 			if ($display_id = $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id, $this->_getShowInStr())) {
 				$this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $po_request, 'restrictToDisplay' => $this->request->config->get('restrict_find_result_sort_options_to_current_display') ? $display_id : null));
