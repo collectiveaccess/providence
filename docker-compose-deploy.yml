@@ -11,7 +11,3 @@ services:
     links:
       - mysql 
 
-  mysql:
-    restart: unless-stopped
-    volumes:
-      - $MYSQL_DATA:/var/lib/mysql 
