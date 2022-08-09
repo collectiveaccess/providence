@@ -16,7 +16,7 @@
     "phpoffice/phpexcel": "v1.8.1",
     "tedivm/stash": "0.14.*",
     "pear/file_marc": "~1.2",
-    "dompdf/dompdf": "~1.2.1",
+    "dompdf/dompdf": "~2.0.0",
     "scholarslab/bagit": "~0.2",
     "guzzlehttp/guzzle": "~6.5.7",
     "guzzlehttp/psr7": "^1.4",
