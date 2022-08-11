@@ -1083,6 +1083,9 @@ li.sfHover > a > .sf-sub-indicator {
 	border-left:1px solid #ccc !important;
 	margin-top:2px;
 }
+.ui-autocomplete { 
+	position: absolute; cursor: default;z-index:100010 !important;
+} 
 .ui-menu-item a:hover {
 	background-image:none;
 	background-color:#eee;

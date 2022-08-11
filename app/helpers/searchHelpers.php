@@ -1758,7 +1758,7 @@
 				
 				if (isset($config_sorts[$k])) { return true; }
 				foreach($va_display_bundles as $b) {
-					if (preg_match("!^{$b}!", $k) || preg_match("!^{$k}!", $b)) { return true; }
+					if (preg_match("!^".preg_quote($b, '!')."!", $k) || preg_match("!^".preg_quote($k, '!')."!", $b)) { return true; }
 				}
 				return false;
 			}, ARRAY_FILTER_USE_BOTH);
