@@ -24,7 +24,7 @@ deploy_prod:
     - cd /app/providence && chown gitlab-runner:daemon setup.php && chmod 640 setup.php
   environment:
     name: prod
-    url: https://providence.galib.uga.edu
+    url: https://ca.libs.uga.edu
   tags:
     - brown-hosting-shell
 
