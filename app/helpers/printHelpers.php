@@ -29,8 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
-use CodeItNow\BarcodeBundle\Utils\QrCode;
-use CodeItNow\BarcodeBundle\Utils\BarcodeGenerator;
+use Com\Tecnick\Barcode;
 use Zend\Stdlib\Glob;
 
 /**
@@ -382,55 +381,83 @@ use Zend\Stdlib\Glob;
 		$pn_barcode_height = caConvertMeasurementToPoints(caGetOption('height', $pa_options, '9px'));
 
 		if ($pn_barcode_height < 10) { $pn_barcode_height *= 3; }
-
+		
+		
 		$vs_tmp = null;
-		switch($ps_barcode_type) {
-			case 'qr':
-			case 'qrcode':
-				$qrCode = new QrCode();
-				$qrCode
-					->setText($ps_value)
-					->setSize($pn_barcode_height)
-					->setPadding(10)
-					->setErrorCorrection('high')
-					->setForegroundColor(array('r' => 0, 'g' => 0, 'b' => 0, 'a' => 0))
-					->setBackgroundColor(array('r' => 255, 'g' => 255, 'b' => 255, 'a' => 0))
-					->setLabel('')
-					->setLabelFontSize(10)
-					->setImageType(QrCode::IMAGE_TYPE_PNG);
-					
-				return '<img src="data:'.$qrCode->getContentType().';base64,'.$qrCode->generate().'" />';
-				break;
-			case 'code128':
-			case 'code39':
-			case 'ean13':
-			case 'int25':
-			case 'postnet':
-			case 'upca':
-				$map = [
-					'code128' => BarcodeGenerator::Code128,
-					'code39' => BarcodeGenerator::Code39,
-					'ean13' => BarcodeGenerator::Ean128,
-					'ean128' => BarcodeGenerator::Ean128,
-					'int25' => BarcodeGenerator::I25,
-					'postnet' => BarcodeGenerator::Postnet,
-					'upca' => BarcodeGenerator::Upca,
-				];
-			
-				$barcode = new BarcodeGenerator();
-				$barcode->setText($ps_value);
-				$barcode->setLabel('');
-				$barcode->setType($map[$ps_barcode_type]);
-				$barcode->setThickness($pn_barcode_height);
-				$barcode->setFontSize(10);
-				
-				return  '<img src="data:image/png;base64,'.$barcode->generate().'" />';
-				break;
-			default:
-				// invalid barcode
-				break;
-		}
+		
+		if($info = caBarcodeInfo($ps_barcode_type)) {
+			$barcode = new \Com\Tecnick\Barcode\Barcode();
+			$b = $barcode->getBarcodeObj(
+				$info[2],                     // barcode type and additional comma-separated parameters
+				$ps_value,          			// data string to encode
+				-4,                             // bar width (use absolute or negative value as multiplication factor)
+				-4,                             // bar height (use absolute or negative value as multiplication factor)
+				'black',                        // foreground color
+				array(-2, -2, -2, -2)           // padding (use absolute or negative values as multiplication factors)
+				)->setBackgroundColor('white'); // background color
 
+			return $b->getHtmlDiv();
+		}
+		return null;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	function caBarcodeInfo(string $type, ?array $options=null) : ?array {
+		$syns = [
+			'QR' => 'QRCODE',
+			'CODE128' => 'C128',
+			'INT25' => 'I25',
+		];
+		$type = $syns[strtoupper($type)] ?? $type;
+		$codes = [
+			'C128A'      => array('0123456789', 'CODE 128 A'),
+			'C128B'      => array('0123456789', 'CODE 128 B'),
+			'C128C'      => array('0123456789', 'CODE 128 C'),
+			'C128'       => array('0123456789', 'CODE 128'),
+			'C39E+'      => array('0123456789', 'CODE 39 EXTENDED + CHECKSUM'),
+			'C39E'       => array('0123456789', 'CODE 39 EXTENDED'),
+			'C39+'       => array('0123456789', 'CODE 39 + CHECKSUM'),
+			'C39'        => array('0123456789', 'CODE 39 - ANSI MH10.8M-1983 - USD-3 - 3 of 9'),
+			'C93'        => array('0123456789', 'CODE 93 - USS-93'),
+			'CODABAR'    => array('0123456789', 'CODABAR'),
+			'CODE11'     => array('0123456789', 'CODE 11'),
+			'EAN13'      => array('0123456789', 'EAN 13'),
+			'EAN2'       => array('12',         'EAN 2-Digits UPC-Based Extension'),
+			'EAN5'       => array('12345',      'EAN 5-Digits UPC-Based Extension'),
+			'EAN8'       => array('1234567',    'EAN 8'),
+			'I25+'       => array('0123456789', 'Interleaved 2 of 5 + CHECKSUM'),
+			'I25'        => array('0123456789', 'Interleaved 2 of 5'),
+			'IMB'        => array('01234567094987654321-01234567891', 'IMB - Intelligent Mail Barcode - Onecode - USPS-B-3200'),
+			'IMBPRE'     => array('AADTFFDFTDADTAADAATFDTDDAAADDTDTTDAFADADDDTFFFDDTTTADFAAADFTDAADA', 'IMB pre-processed'),
+			'KIX'        => array('0123456789', 'KIX (Klant index - Customer index)'),
+			'MSI+'       => array('0123456789', 'MSI + CHECKSUM (modulo 11)'),
+			'MSI'        => array('0123456789', 'MSI (Variation of Plessey code)'),
+			'PHARMA2T'   => array('0123456789', 'PHARMACODE TWO-TRACKS'),
+			'PHARMA'     => array('0123456789', 'PHARMACODE'),
+			'PLANET'     => array('0123456789', 'PLANET'),
+			'POSTNET'    => array('0123456789', 'POSTNET'),
+			'RMS4CC'     => array('0123456789', 'RMS4CC (Royal Mail 4-state Customer Bar Code)'),
+			'S25+'       => array('0123456789', 'Standard 2 of 5 + CHECKSUM'),
+			'S25'        => array('0123456789', 'Standard 2 of 5'),
+			'UPCA'       => array('72527273070', 'UPC-A'),
+			'UPCE'       => array('725277', 'UPC-E'),
+			'LRAW'             => array('0101010101', '1D RAW MODE (comma-separated rows of 01 strings)'),
+			'SRAW'             => array('0101,1010',  '2D RAW MODE (comma-separated rows of 01 strings)'),
+			'PDF417'           => array('0123456789', 'PDF417 (ISO/IEC 15438:2006)'),
+			'QRCODE'           => array('0123456789', 'QR-CODE'),
+			'QRCODE,H,ST,0,0'  => array('abcdefghijklmnopqrstuvwxy0123456789', 'QR-CODE WITH PARAMETERS'),
+			'DATAMATRIX'       => array('0123456789', 'DATAMATRIX (ISO/IEC 16022) SQUARE'),
+			'DATAMATRIX,R'     => array('0123456789012345678901234567890123456789', 'DATAMATRIX Rectangular (ISO/IEC 16022) RECTANGULAR'),
+			'DATAMATRIX,S,GS1' => array(chr(232).'01095011010209171719050810ABCD1234'.chr(232).'2110', 'GS1 DATAMATRIX (ISO/IEC 16022) SQUARE GS1'),
+			'DATAMATRIX,R,GS1' => array(chr(232).'01095011010209171719050810ABCD1234'.chr(232).'2110', 'GS1 DATAMATRIX (ISO/IEC 16022) RECTANGULAR GS1'),
+		];
+		
+		if($info = ($codes[strtoupper($type)] ?? null)) {
+			$info[] = strtoupper($type);
+			return $info;
+		}
 		return null;
 	}
 	# -------------------------------------------------------
