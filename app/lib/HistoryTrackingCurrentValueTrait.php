@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2021 Whirl-i-Gig
+ * Copyright 2018-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -183,7 +183,9 @@
 						} else {
 							$tt = preg_split("![ ]*[,;]{1}[ ]*!", $type_list);
 						}
-						
+						if($t_instance->hasField('type_id') && $t_instance->getFieldInfo('type_id', 'IS_NULL')) {
+							$tt[] = null;
+						}
 						foreach($tt as $t) {
 							if(!is_array($config)) { break; }
 							if ($table === 'ca_storage_locations') { 
@@ -2508,7 +2510,15 @@
 						
 							$va_path_components = caGetOption('pathComponents', $pa_options, null);
 							if (is_array($va_path_components) && $va_path_components['subfield_name']) {
-								if (($t_loc = Datamodel::getInstanceByTableName($va_current_location['type'], true)) && $t_loc->load($va_current_location['id'])) {
+								$path = Datamodel::getPath($this->tableName(), $va_current_location['type']);
+								if(!is_array($path) || (sizeof($path) !== 3)) { return null; }
+								$path = array_keys($path);
+								if($va_path_components['subfield_name'] === $path[1]) { // is ref to interstitial
+									if (($t_rel = Datamodel::getInstanceByTableName($path[1], true)) && $t_rel->load($va_current_location['relation_id'])) {
+										
+										return $t_rel->get(join('.', array_merge([$path[1]], array_slice($va_path_components['components'], 3))), ['convertCodesToDisplayText' => true]);
+									}
+								} elseif (($t_loc = Datamodel::getInstanceByTableName($va_current_location['type'], true)) && $t_loc->load($va_current_location['id'])) {
 									return $t_loc->get($va_current_location['type'].'.'.$va_path_components['subfield_name']);
 								}
 							} 
