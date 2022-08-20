@@ -1405,7 +1405,7 @@ class BatchProcessor {
 		$vs_log_level = caGetOption('logLevel', $pa_options, "INFO"); 
 		$vb_import_all_datasets =  caGetOption('importAllDatasets', $pa_options, false); 
 		
-		if ($limit_log_to = caGetOption('limitLogTo', $pa_options, null)) {
+		if ($limit_log_to = caGetOption('limitLogTo', $pa_options, null) && !is_array($limit_log_to)) {
 			$limit_log_to = array_map(function($v) { return strtoupper($v); }, preg_split("![;,]+!", $limit_log_to));
 		}
 		
