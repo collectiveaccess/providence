@@ -453,6 +453,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			} else{
 				$params[] = $text;
 			}
+			
+	 		if($is_blank || $is_not_blank) { $use_boost = false; }
 	 
 			$field_sql = null;
 			if (is_array($ap)) {
