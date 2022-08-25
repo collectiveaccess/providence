@@ -441,7 +441,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						$c = 0;
 						$opts = [];
 						foreach($records as $record) {
-							list($identifier, $opts) = Edit\resolveParams($record);
+							list($identifier, $opts) = \GraphQLServices\Helpers\resolveParams($record);
 							if(!($instance = self::resolveIdentifier($table, $identifier, $record['type'], $opts))) {
 								$errors[] = Error\error($record['idno'], 'INVALID_IDENTIFIER', _t('Invalid identifier'), 'GENERAL');
 							} else {
@@ -998,7 +998,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						$target = $args['target'];
 						
 						
-						list($subject_identifier, $opts) = Edit\resolveParams($args, 'subject');
+						list($subject_identifier, $opts) = \GraphQLServices\Helpers\resolveParams($args, 'subject');
 						if(!($s = self::resolveIdentifier($subject, $subject_identifier, $opts))) {
 							$errors[] = Error\error("{$subject_identifier}", 'INVALID_IDENTIFIER', _t('Invalid subject identifier'), 'GENERAL');
 						} else {
@@ -1276,7 +1276,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 					$errors[] = Error\error("relationship", Error\toGraphQLError(1100), _t('Could not find relationship with relation_id %1', $rel_id), 'GENERAL'); 
 				}
 			} else {
-				list($subject_identifier, $opts) = Edit\resolveParams($r, 'subject');
+				list($subject_identifier, $opts) = \GraphQLServices\Helpers\resolveParams($r, 'subject');
 				if(!($subject = self::resolveIdentifier($subject, $subject_identifier, null, $opts))) {
 					$errors[] = Error\error("{$subject_identifier}", 'INVALID_IDENTIFIER', _t('Invalid subject identifier'), 'GENERAL');
 				} else {
@@ -1287,7 +1287,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 		
 		
 					$c = 0;
-					list($target_identifier, $opts) = Edit\resolveParams($r, 'target');
+					list($target_identifier, $opts) = \GraphQLServices\Helpers\resolveParams($r, 'target');
 					
 					if(is_array($rel_ids = $subject->relationshipExists($target, $target_identifier, $r['relationshipType'])) && sizeof($rel_ids)) {		
 						$rel_id = array_shift($rel_ids);
@@ -1348,7 +1348,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 					$errors[] = Error\error("relationship", Error\toGraphQLError(1100), _t('Could not find relationship with relation_id %1', $rel_id), 'GENERAL'); 
 				}
 			} else {
-				list($subject_identifier, $opts) = Edit\resolveParams($r, 'subject');
+				list($subject_identifier, $opts) = \GraphQLServices\Helpers\resolveParams($r, 'subject');
 				if(!($s = self::resolveIdentifier($subject, $subject_identifier, $opts))) {
 					$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", 'INVALID_IDENTIFIER', _t('Invalid subject identifier'), 'GENERAL');
 				} else {
@@ -1359,7 +1359,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 					if(!($rel_id = $r['id'])) {		
 						$rel_type = $r['relationshipType'];
 			
-						list($target_identifier, $opts) = Edit\resolveParams($r, 'target');
+						list($target_identifier, $opts) = \GraphQLServices\Helpers\resolveParams($r, 'target');
 						if(!($t = self::resolveIdentifier($target, $target_identifier, $opts))) {
 							$errors[] = Error\error("{$subject_identifier}::{$target_identifier}", 'INVALID_IDENTIFIER', _t('Invalid target identifier'), 'GENERAL');
 						} else {
@@ -1422,7 +1422,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						
 			$c = 0;
 			$target = $r['target'];
-			list($target_identifier, $opts) = Edit\resolveParams($r, 'target');
+			list($target_identifier, $opts) = \GraphQLServices\Helpers\resolveParams($r, 'target');
 			
 			if(is_array($rel_ids = $instance->relationshipExists($target, $target_identifier, $r['relationshipType'])) && sizeof($rel_ids)) {
 				$info[] = Error\info("{$subject_identifier}::{$target_identifier}", 'REL_EXISTS', _t('Existing relationship was found for type (%1) and will be used', $r['relationshipType']), 'GENERAL');

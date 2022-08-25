@@ -77,28 +77,6 @@ function extractValueFromBundles(array $bundles, array $fields) {
 /**
  *
  */
-function resolveParams(array $args, ?string $prefix=null) : array {
-	$opts = [];
-	
-	$id_key = $prefix ? $prefix.'Id' : 'id';
-	$idno_key = $prefix ? $prefix.'Idno' : 'idno';
-	$identifier_key = $prefix ? $prefix.'Identifier' : 'identifier';
-	
-	if(isset($args[$id_key]) && ($args[$id_key] > 0)) {
-		$identifier = $args[$id_key];
-		$opts['primaryKeyOnly'] = true;
-	} elseif(isset($args[$idno_key]) && (strlen($args[$idno_key]) > 0)) {
-		$identifier = $args[$idno_key];
-		$opts['idnoOnly'] = true;
-	} else {
-		$identifier = $args[$identifier_key] ?? null;
-	}
-	return [$identifier, $opts];
-}
-
-/**
- *
- */
 function extractLabelValueFromBundles(string $table, array $bundles) {
 	$label_values = [];
 	

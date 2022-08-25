@@ -109,9 +109,19 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 							'description' => _t('Table name. (Eg. ca_objects)')
 						],
 						[
+							'name' => 'id',
+							'type' => Type::int(),
+							'description' => _t('Numeric database id value of record.')
+						],
+						[
+							'name' => 'idno',
+							'type' => Type::string(),
+							'description' => _t('Alphanumeric idno value of record.')
+						],
+						[
 							'name' => 'identifier',
 							'type' => Type::string(),
-							'description' => _t('Record identifier. Either a integer primary key or alphanumeric idno value.')
+							'description' => _t('Record identifier. Either a numeric database id or alphanumeric idno value.')
 						],
 						[
 							'name' => 'target',
@@ -151,7 +161,9 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 						$resolve_to_related = $args['resolveRelativeToRelated'];
 						
 						// TODO: add explicit parameter for idno and id (to handle case where numeric idnos are used) 
-						$rec = self::resolveIdentifier($table = $args['table'], $args['identifier']);
+						$opts = [];
+						list($identifier, $opts) = \GraphQLServices\Helpers\resolveParams($args);
+						$rec = self::resolveIdentifier($table = $args['table'], $identifier, null, $opts);
 						$rec_pk = $rec->primaryKey();
 						
 						$check_access = \GraphQLServices\Helpers\filterAccessValues($args['checkAccess']);
