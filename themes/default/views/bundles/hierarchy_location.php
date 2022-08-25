@@ -292,7 +292,7 @@
 	</div><!-- end hiernav -->
 <?php
 	}
-	if ($pn_id > 0) {
+	if (($pn_id > 0) || $vb_batch) {
 ?>
 		<div id="<?= $id_prefix; ?>HierarchyBrowserContainer" class="editorHierarchyBrowserContainer">		
 			<div  id="<?= $id_prefix; ?>HierarchyBrowserTabs">

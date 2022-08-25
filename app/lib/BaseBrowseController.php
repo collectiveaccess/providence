@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -116,7 +116,7 @@
 			// Get elements of result context
  			$vn_page_num 			= $this->opo_result_context->getCurrentResultsPageNumber();
  			
- 			if ($this->opb_type_restriction_has_changed || ($this->request->getParameter('reset', pString) == 'clear')) { 
+ 			if ($this->opo_result_context->typeRestrictionHasChanged() || ($this->request->getParameter('reset', pString) == 'clear')) { 
  				$this->opo_browse->removeAllCriteria(); 
  				$this->opo_result_context->setSearchExpression($this->opo_browse->getBrowseID());
  			}
@@ -252,7 +252,7 @@
 			$vo_result->setOption('prefetch', $vn_items_per_page);
 			
 			if ($vo_result) {
-				if ($vb_criteria_have_changed || $vb_sort_has_changed) {
+				if ($vb_criteria_have_changed || $vb_sort_has_changed || $this->type_restriction_has_changed) {
 					// Put the results id list into the results context - we used this for previous/next navigation
 					$vo_full_result = $this->opo_browse->getResults(array('sort' => $vs_sort, 'sort_direction' => $vs_sort_direction));
 					$this->opo_result_context->setResultList($vo_full_result->getPrimaryKeyValues());

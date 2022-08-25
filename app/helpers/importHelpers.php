@@ -1069,6 +1069,8 @@
 					
 					if (
 						(($vs_dest_table != $ps_table) && (sizeof($va_group_dest) > 1))
+						||
+						(($vs_dest_table == $ps_table) && (sizeof($va_group_dest) > 1) && $va_group_dest[1] == 'parent_id')
 					) {	
 				
 						$vs_item = BaseRefinery::parsePlaceholder($vs_item, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null, 'applyImportItemSettings' => $apply_import_item_settings));

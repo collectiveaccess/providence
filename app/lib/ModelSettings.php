@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2021 Whirl-i-Gig
+ * Copyright 2010-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -662,7 +662,22 @@ trait ModelSettings {
 						$vs_select_element = caHTMLSelect($vs_input_name, $va_rel_opts, $va_attr, $va_opts);
 					}
 				} else {
-					if (is_array($va_properties['showSortableBundlesFor'] ?? null) && (strlen($va_properties['showSortableBundlesFor']['table'] ?? '') > 0)) {
+					if(isset($va_properties['showSortableElementsFor']) && ($va_properties['showSortableElementsFor'] > 0)) {
+						$elements = ca_metadata_elements::getElementsForSet((int)$va_properties['showSortableElementsFor']);
+						
+						$elements = array_filter($elements, function($e) {
+							return isset($e['settings']['canBeUsedInSort']) && (bool)$e['settings']['canBeUsedInSort'];
+						});
+						$va_select_opts = [
+							_t('User defined sort order') => '',
+							_t('Order created') => 'relation_id',
+						];
+						foreach($elements as $e) {
+							$va_select_opts[$e['display_label']] = $e['element_code'];
+						}
+						
+						$vs_select_element = caHTMLSelect($vs_input_name, $va_select_opts, $va_select_attr, $va_opts);
+					} elseif (is_array($va_properties['showSortableBundlesFor'] ?? null) && (strlen($va_properties['showSortableBundlesFor']['table'] ?? '') > 0)) {
 						$va_select_opts = array_merge([
 							_t('User defined sort order') => '',
 							_t('Order created') => 'relation_id',
