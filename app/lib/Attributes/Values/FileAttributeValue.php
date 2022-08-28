@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -187,13 +187,15 @@
  			$vb_is_user_media = false;
  			
 			$config = Configuration::load();
-			foreach(caGetAvailableMediaUploadPaths() as $d) {
-				$va_files = caBatchFindMatchingMedia($d.$media_prefix, $ps_value, ['matchMode' => caGetOption('matchMode', $pa_options,'FILE_NAME'), 'matchType' => caGetOption('matchType', $pa_options, null), 'log' => caGetOption('log', $pa_options, null)]);
-				foreach($va_files as $vs_file) {
-					if (preg_match("!(SynoResource|SynoEA)!", $vs_file)) { continue; } // skip Synology res files
+			if(!is_array($ps_value) || (isset($ps_value['tmp_name']))) {
+				foreach(caGetAvailableMediaUploadPaths() as $d) {
+					$va_files = caBatchFindMatchingMedia($d.$media_prefix, is_array($ps_value) ? $ps_value['tmp_name'] : $ps_value, ['matchMode' => caGetOption('matchMode', $pa_options,'FILE_NAME'), 'matchType' => caGetOption('matchType', $pa_options, null), 'log' => caGetOption('log', $pa_options, null)]);
+					foreach($va_files as $vs_file) {
+						if (preg_match("!(SynoResource|SynoEA)!", $vs_file)) { continue; } // skip Synology res files
 				
-					$ps_value = $vs_file;
-					break(2);
+						$ps_value = $vs_file;
+						break(2);
+					}
 				}
 			}
  			

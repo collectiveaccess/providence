@@ -2673,6 +2673,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										}
 										continue( 3 );
 									}
+									$o_log->logDebug( _t( '[%1] Did not skip group %2 because skipGroupIfExpression %3 is false (data was %4)',
+												$vs_idno, $vn_group_id,
+												$va_item['settings']['skipGroupIfExpression'], print_R($use_raw ? $va_raw_row : $va_row_with_replacements, true) ) );
 								} catch ( Exception $e ) {
 									$o_log->logDebug( _t( "[%1] Could not evaluate expression %2: %3", $vs_idno,
 										$va_item['settings']['skipGroupIfExpression'], $e->getMessage() ) );
@@ -2837,7 +2840,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												'importEventSource' => $vn_row,
 												'reader'            => $o_reader,
 												'valueIndex'        => $vn_i,
-												'sourceValue' 		=> $va_group_buf[ $vn_c ]['_source'],
+												'sourceValue' 		=> $va_group_buf[ $vn_c ]['_source'] ?? null,
 												'defaultDisplaynameFormat' => $default_displayname_format,
 												'raw' 				=> $va_raw_row
 											] );
@@ -3559,7 +3562,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 															'dataset' => $vn_dataset, 
 															'row' => $vn_row,
 															'skipExistingValues' => $t_mapping->getSetting('skipDuplicateValues'),
-															'source' => $va_element_data[$vs_element]['_source']
+															'source' => $va_element_data[$vs_element]['_source'] ?? null
 														];
 											if ($va_match_on = caGetOption('_matchOn', $va_element_content, null)) {
 												$va_opts['matchOn'] = $va_match_on;
