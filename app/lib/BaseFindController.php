@@ -34,6 +34,7 @@
  *
  */
 require_once(__CA_APP_DIR__.'/helpers/printHelpers.php');
+require_once(__CA_APP_DIR__."/helpers/themeHelpers.php");
 require_once(__CA_LIB_DIR__.'/ResultContext.php');
 require_once(__CA_MODELS_DIR__.'/ca_bundle_displays.php');
 require_once(__CA_MODELS_DIR__."/ca_sets.php");
