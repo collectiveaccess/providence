@@ -176,6 +176,10 @@
  		 * Return info via ajax on selected object
  		 */
  		public function SaveTransaction() {
+ 			$library_config = Configuration::load(__CA_CONF_DIR__."/library_services.conf");
+			$checkout_template = $library_config->get('checkout_receipt_item_display_template');
+			$reservation_template = $library_config->get('checkout_reservation_receipt_item_display_template');
+ 		
  			$pn_user_id = $this->request->getParameter('user_id', pInteger);
  			$ps_item_list = $this->request->getParameter('item_list', pString);
  			$pa_item_list = json_decode(stripslashes($ps_item_list), true);
@@ -185,6 +189,12 @@
  			$va_ret = array('status' => 'OK', 'total' => sizeof($pa_item_list), 'errors' => array(), 'checkouts' => array());
  				
  			if(is_array($pa_item_list)) {
+ 				$app_name = Configuration::load()->get('app_display_name');
+ 				$sender_email = $library_config->get('notification_sender_email');
+ 				$sender_name = $library_config->get('notification_sender_name');
+ 				$subject = _t('Receipt for check out');
+ 				
+ 				$checked_out_items = $reserved_items = [];
 				$t_object = new ca_objects();
 				foreach($pa_item_list as $vn_i => $va_item) {
 					if (!$t_object->load(array('object_id' => $va_item['object_id'], 'deleted' => 0))) { continue; }
@@ -200,6 +210,8 @@
 							$vb_res = $t_checkout->reserve($va_item['object_id'], $pn_user_id, $va_item['note'], array('request' => $this->request));
 							if ($vb_res) {
 								$va_ret['checkouts'][$va_item['object_id']] = _t('Reserved <em>%1</em>', $vs_name);
+								$va_item['_display'] = $t_checkout->getWithTemplate($reservation_template);
+								$reserved_items[] = $va_item;
 							} else {
 								$va_ret['errors'][$va_item['object_id']] = _t('Could not reserve <em>%1</em>: %2', $vs_name, join('; ', $t_checkout->getErrors()));
 							}
@@ -212,12 +224,20 @@
 				
 							if ($vb_res) {
 								$va_ret['checkouts'][$va_item['object_id']] = _t('Checked out <em>%1</em>; due date is %2', $vs_name, $va_item['due_date']);
+								$va_item['_display'] = $t_checkout->getWithTemplate($checkout_template);
+								$checked_out_items[] = $va_item;
 							} else {
 								$va_ret['errors'][$va_item['object_id']] = _t('Could not check out <em>%1</em>: %2', $vs_name, join('; ', $t_checkout->getErrors()));
 							}
 						} catch (Exception $e) {
 							$va_ret['errors'][$va_item['object_id']] = _t('Could not check out <em>%1</em>: %2', $vs_name, $e->getMessage());
 						}
+					}
+				}
+				if($library_config->get('send_item_checkout_receipts') && ((sizeof($checked_out_items) > 0) || (sizeof($reserved_items) > 0)) && ($user_email = $this->request->user->get('ca_users.email'))) {
+					if (!caSendMessageUsingView(null, $user_email, $sender_email, "[{$app_name}] {$subject}", "library_checkout_receipt.tpl", ['subject' => $subject, 'from_user_id' => $user_id, 'sender_name' => $sender_name, 'sender_email' => $sender_email, 'sent_on' => time(), 'checkout_date' => caGetLocalizedDate(), 'checkouts' => $checked_out_items, 'reservations' => $reserved_items], null, [], ['source' => 'Library checkout receipt'])) {
+						global $g_last_email_error;
+						$va_ret['errors'][] = _t('Could send receipt: %1', $g_last_email_error);
 					}
 				}
 			}
