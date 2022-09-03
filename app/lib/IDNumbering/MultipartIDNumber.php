@@ -1068,8 +1068,6 @@ class MultipartIDNumber extends IDNumber {
 						$values[$i] = '%';
 					} elseif (($num_serial_elements - $num_serial_elements_seen) < $max_num_replacements) {
 						$values[$i] = '%';
-					} else {
-						$values[$i] = null;
 					}
 					break;
 				case 'CONSTANT':
@@ -1093,6 +1091,12 @@ class MultipartIDNumber extends IDNumber {
 						$values[$i] = $tmp['mday'];
 					}
 					break;
+				case 'LIST':
+				case 'FREE':
+				case 'NUMERIC':
+				case 'ALPHANUMERIC':
+					// noop
+					break;
 				default:
 					$values[$i] = null;
 					break;
@@ -1100,7 +1104,6 @@ class MultipartIDNumber extends IDNumber {
 
 			$i++;
 		}
-		
 		return join($separator, $values);
 	}
 	# -------------------------------------------------------
