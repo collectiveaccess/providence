@@ -1,4 +1,4 @@
-# README: Providence version 1.7.16
+# README: Providence version 1.7.17
 
 ### About CollectiveAccess
 
@@ -6,14 +6,10 @@ CollectiveAccess is a web-based suite of applications providing a framework for 
 
 CollectiveAccess is freely available under the open source GNU Public License version 3.
 
-### About CollectiveAccess 1.7.16
+### About CollectiveAccess 1.7.17
 
-Version 1.7.16 is a maintenance release with these bug fixes and minor improvements:
-* Fix for issue preventing correct display of relationship types for non-self-relationships (Eg. object-entity relationships)
-* Update vendor libraries to incorporate security fixes
-* Fix issue where detection of PDFs using Zend_PDF library option would throw a fatal error
-* Revert default path for GraphicsMagick to typical Linux path
-* Resolve issue where adding list items to the place_hierarchies list would cause a fatal error
+Version 1.7.17 is a maintenance release with these bug fixes and minor improvements:
+* Add option to display nested type hierarchies as indented list in menus rather than nested menus.
 
 Note that this version is not yet compatible with PHP version 8. Please use versions 7.3 or 7.4.
 
@@ -27,9 +23,9 @@ First make sure your server meets all of the [requirements](https://manual.colle
 
 NOTE: The update process is relatively safe and rarely, if ever, causes data loss. That said BACKUP YOUR EXISTING DATABASE AND CONFIGURATION prior to updating. You almost certainly will not need the backup, but if you do you'll be glad it's there.
 
-To update, decompress the CollectiveAccess Providence 1.7.16 tar.gz or zip file and replace the files in your existing installation with those in the update. Take care to preserve your media directory (`media/`), local configuration directory (`app/conf/local/`), any local print templates (`app/printTemplates/`) and your setup.php file.
+To update, decompress the CollectiveAccess Providence 1.7.17 tar.gz or zip file and replace the files in your existing installation with those in the update. Take care to preserve your media directory (`media/`), local configuration directory (`app/conf/local/`), any local print templates (`app/printTemplates/`) and your setup.php file.
 
-If you are updating from a version prior to 1.7, you must recreate your existing setup.php as the format has changed. Rename the existing setup.php to `setup.php-old` and copy the version 1.7.16 setup.php template in `setup.php-dist` to `setup.php`. Edit this file with your database login information, system name and other basic settings. You can reuse the settings in your existing setup.php file as-is. Only the format of setup.php has changed. If you are updating from version 1.7.x you do not need to change your setup.php file.
+If you are updating from a version prior to 1.7, you must recreate your existing setup.php as the format has changed. Rename the existing setup.php to `setup.php-old` and copy the version 1.7.17 setup.php template in `setup.php-dist` to `setup.php`. Edit this file with your database login information, system name and other basic settings. You can reuse the settings in your existing setup.php file as-is. Only the format of setup.php has changed. If you are updating from version 1.7.x you do not need to change your setup.php file.
 
 Once the updated files are in place navigate in your web browser to the login screen. You will see this message:
 
