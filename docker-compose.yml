@@ -7,6 +7,7 @@ services:
       - $PWD:/app/apache2/htdocs
     ports:
       - "127.0.0.1:8088:80"
+    restart: unless-stopped
     links:
       - mysql 
 
@@ -17,7 +18,7 @@ services:
     command: --max_allowed_packet=32505856 ## useful for loading massive database
     ports:
       - "127.0.0.1:3306:3306"
-
+    restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOTPASS-pRoViDeNcEdEvEnV}
       MYSQL_DATABASE: ${MYSQL_DB-ca}
