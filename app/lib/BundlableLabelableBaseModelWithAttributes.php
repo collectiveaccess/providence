@@ -108,7 +108,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	/**
 	 * Overrides load() to initialize bundle specifications
 	 */
-	public function load ($pm_id=null, $pb_use_cache=true) {
+	public function load($pm_id=null, $pb_use_cache=true) {
 		global $AUTH_CURRENT_USER_ID;
 		
 		$vn_rc = parent::load($pm_id, $pb_use_cache);

@@ -40,7 +40,8 @@
     "cache/filesystem-adapter": "^1.1",
     "whikloj/bagittools": "^3.0",
     "scholarslab/bagit": "~0.2",
-    "voku/stop-words": "^2.0"
+    "voku/stop-words": "^2.0",
+    "tecnickcom/tc-lib-barcode": "^1.17"
   },
   "suggest": {
     "binaryoung/jieba-php": "^0.1.0"
