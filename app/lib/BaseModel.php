@@ -11609,7 +11609,7 @@ $pa_options["display_form_field_tips"] = true;
 						continue; 
 					}
 					if (isset($pa_options['hasRepresentations']) && $pa_options['hasRepresentations']) {
-						if (!($va_reps = $qr_res->get('ca_object_representations.representation_id', array('returnAsArray' => true))) || !is_array($va_reps) || !sizeof($va_reps)) {
+						if (!($va_reps = $qr_res->get('ca_object_representations.representation_id', array('checkAccess' => $pa_options['checkAccess'] ?? null, 'returnAsArray' => true))) || !is_array($va_reps) || !sizeof($va_reps)) {
 							continue;
 						}
 					}
