@@ -158,20 +158,22 @@ class MultipartIDNumber extends IDNumber {
 		
 		if ($separator && $this->formatHas('PARENT', 0)) {
 			// starts with PARENT element so explode in reverse since parent value may include separators
-				
-			$element_vals_in_reverse = array_reverse(explode($separator, $value));
-			$num_elements = sizeof($elements = $this->getElements());
-			
-			$element_vals = [];
-			while(sizeof($elements) > 1) {
-				array_shift($elements);
-				$element_vals[] = array_shift($element_vals_in_reverse);
-				
-				$num_elements--;
+			$v_proc = preg_replace("!^".preg_quote($this->getParentValue(), '!')."!", "_PARENT_", $value);
+		
+			$element_vals = explode($separator, $v_proc);
+
+			$i = 0;
+			foreach ($this->getElements() as $element_info) {
+				switch ($element_info['type']) {
+					case 'PARENT':
+						$element_vals[$i] = $this->getParentValue();
+						break;
+					default:
+						if(!array_key_exists($i, $element_vals)) { $element_vals[$i] = null; }
+						break;
+				}
+				$i++;
 			}
-			
-			$element_vals[] = join($separator, array_reverse($element_vals_in_reverse));
-			$element_vals = array_reverse($element_vals);
 		} elseif ($separator) {
 			// Standard operation, use specified non-empty separator to split value
 			$element_vals = explode($separator, $value);
