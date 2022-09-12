@@ -391,9 +391,12 @@ class MultipartIDNumber extends IDNumber {
 
 		$separator = $this->getSeparator();
 		$elements = $this->getElements();
+		
+		$is_parent = null;
 
 		if ($value == null) {
 			$element_vals = [];
+			$i = 0;
 			foreach($elements as $ename => $element_info) {
 				if ($ename == $element_name) { break; }
 				switch($element_info['type']) {
@@ -423,7 +426,8 @@ class MultipartIDNumber extends IDNumber {
 						}
 						break;
 					case 'PARENT':
-						$element_vals[] = explode($separator, $this->getParentValue());
+						$is_parent = $i;
+						$element_vals[] = $this->getParentValue();
 						break;
 					case 'SERIAL':
 						$element_vals[] = '';
@@ -432,11 +436,51 @@ class MultipartIDNumber extends IDNumber {
 						$element_vals[] = '';
 						break;
 				}
+				$i++;
 			}
 		} elseif(is_array($value)) {
-			$element_vals = array_values($value);
+			$element_vals = [];
+			$i = 0;
+			foreach($elements as $ename => $element_info) {
+				switch($element_info['type']) {
+					case 'PARENT':
+						$is_parent = $i;
+						$element_vals[$i] = $value[$ename] ?? null;
+						break;
+					case 'CONSTANT':
+						$element_vals[$i] = $element_info['value'];
+						break;
+					case 'SERIAL':
+						if(!isset($value[$ename])) { $element_vals[$i] = ''; }
+						break;
+					default:
+						$element_vals[$i] = $value[$ename] ?? null;
+						break;
+				}
+				$i++;
+			}
 		} else {
 			$element_vals = $this->explodeValue($value);
+			
+			$i = 0;
+			foreach($elements as $ename => $element_info) {
+				switch($element_info['type']) {
+					case 'PARENT':
+						$is_parent = $i;
+						break;
+					case 'CONSTANT':
+						$element_vals[$i] = $element_info['value'];
+						break;
+					case 'SERIAL':
+						if(!isset($element_vals[$i])) { $element_vals[$i] = ''; }
+						break;
+				}
+				$i++;
+			}
+		}
+
+		if(!is_null($is_parent)) {
+			$this->isChild(true, $element_vals[$is_parent]);
 		}
 
 		$tmp = [];
@@ -547,7 +591,7 @@ class MultipartIDNumber extends IDNumber {
 			if(isset($element_info['minimum']) && (($min = (int)$element_info['minimum']) > 0) && ($num < $min)) { 
 				$num = $min;
 			}
-
+			
 			if (($zeropad_to_length = (int)$element_info['zeropad_to_length']) > 0) {
 				return sprintf("%0{$zeropad_to_length}d", $num);
 			} else {
