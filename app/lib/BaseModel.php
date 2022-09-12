@@ -2069,9 +2069,9 @@ class BaseModel extends BaseObject {
 		}
 
 		if ($qr_res->nextRow()) {
+			$va_row = $qr_res->getRow();
 			foreach($this->FIELDS as $vs_field => $va_attr) {
 				$vs_cur_value = isset($this->_FIELD_VALUES[$vs_field]) ? $this->_FIELD_VALUES[$vs_field] : null;
-				$va_row = $qr_res->getRow();
 				switch($va_attr["FIELD_TYPE"]) {
 					case FT_DATERANGE:
 					case FT_HISTORIC_DATERANGE:
@@ -8233,7 +8233,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		} while(($qr_level->numRows() > 0) && (sizeof($va_level_row_ids))) ;
 		
 		$va_child_row_ids = array_values(array_unique($va_child_row_ids));
-		if (!sizeof($va_child_row_ids)) { return null; }
+		if (!sizeof($va_child_row_ids)) { return []; }
 		
 		$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
 		
