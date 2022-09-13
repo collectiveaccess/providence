@@ -2069,9 +2069,9 @@ class BaseModel extends BaseObject {
 		}
 
 		if ($qr_res->nextRow()) {
+			$va_row = $qr_res->getRow();
 			foreach($this->FIELDS as $vs_field => $va_attr) {
 				$vs_cur_value = isset($this->_FIELD_VALUES[$vs_field]) ? $this->_FIELD_VALUES[$vs_field] : null;
-				$va_row = $qr_res->getRow();
 				switch($va_attr["FIELD_TYPE"]) {
 					case FT_DATERANGE:
 					case FT_HISTORIC_DATERANGE:
@@ -8235,7 +8235,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		} while(($qr_level->numRows() > 0) && (sizeof($va_level_row_ids))) ;
 		
 		$va_child_row_ids = array_values(array_unique($va_child_row_ids));
-		if (!sizeof($va_child_row_ids)) { return null; }
+		if (!sizeof($va_child_row_ids)) { return []; }
 		
 		$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
 		
@@ -11613,7 +11613,7 @@ $pa_options["display_form_field_tips"] = true;
 						continue; 
 					}
 					if (isset($pa_options['hasRepresentations']) && $pa_options['hasRepresentations']) {
-						if (!($va_reps = $qr_res->get('ca_object_representations.representation_id', array('returnAsArray' => true))) || !is_array($va_reps) || !sizeof($va_reps)) {
+						if (!($va_reps = $qr_res->get('ca_object_representations.representation_id', array('checkAccess' => $pa_options['checkAccess'] ?? null, 'returnAsArray' => true))) || !is_array($va_reps) || !sizeof($va_reps)) {
 							continue;
 						}
 					}
@@ -12043,6 +12043,7 @@ $pa_options["display_form_field_tips"] = true;
 	 *		checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for <table_name>.hierarchy.preferred_labels and <table_name>.children.preferred_labels because these returns sets of items. For <table_name>.parent.preferred_labels, which returns a single row at most, you should do access checking yourself. (Everything here applies equally to nonpreferred_labels)
  	 *		restrictToTypes = Restrict returned items to those of the specified types. An array of list item idnos and/or item_ids may be specified. [Default is null]			 
  	 *		dontIncludeSubtypesInTypeRestriction = If restrictToTypes is set, by default the type list is expanded to include subtypes (aka child types). If set, no expansion will be performed. [Default is false] 
+ 	 *		includeDeleted = If set deleted rows are returned in result set. [Default is false]	 
  	 *		created = A valid date expression to use to limit returned results to those created within a date range. [Default is null]
  	 *		modified = A valid date expression to use to limit returned results to those modified within a date range. [Default is null]
  	 *
@@ -12275,7 +12276,7 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		$vs_deleted_sql = '';
-		if ($t_instance->hasField('deleted')) { 
+		if (!caGetOption('includeDeleted', $pa_options, false) && $t_instance->hasField('deleted')) { 
 			$vs_deleted_sql = '(deleted = 0)'; 
 		}
 		$va_sql = [];

@@ -332,11 +332,11 @@ class ca_attribute_values extends BaseModel {
 		$t_element = ca_attributes::getElementInstance($this->get('element_id'));
 		$pa_element_info = $t_element->getFieldValuesArray();
 		
-		$this->setMode(ACCESS_WRITE);
-		
 		$o_attr_value = \CA\Attributes\Attribute::getValueInstance($t_element->get('datatype'));
+		
 		$pa_element_info['displayLabel'] = $t_element->getLabelForDisplay(false);
 		$va_values = $o_attr_value->parseValue($ps_value, $pa_element_info, $pa_options);
+
 		if (isset($va_values['_dont_save']) && $va_values['_dont_save']) { return true; }
 		
 		if (is_array($va_values)) {
