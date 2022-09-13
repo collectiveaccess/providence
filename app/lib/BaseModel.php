@@ -1411,6 +1411,7 @@ class BaseModel extends BaseObject {
 	 *
 	 * for parent_id field:
 	 *	- treatParentIDAsIdno: force parent_id value to be used as idno lookup rather than a primary key value
+	 *  - parentIDElement: do lookup on alternative field
 	 */
 	public function set($pa_fields, $pm_value="", $pa_options=null) {
 		$this->errors = array();
@@ -1440,7 +1441,33 @@ class BaseModel extends BaseObject {
 						}
 						
 						if (($vs_field == $this->HIERARCHY_PARENT_ID_FLD) && ((strlen($vm_value) > 0) && (!is_numeric($vm_value) || caGetOption('treatParentIDAsIdno', $pa_options, false)))) {
-							if(is_array($va_ids = call_user_func_array($this->tableName()."::find", array(array('idno' => $vm_value, 'deleted' => 0), array('returnAs' => 'ids', 'transaction' => $this->getTransaction())))) && sizeof($va_ids)) {
+							$cr = ['idno' => $vm_value, 'deleted' => 0];
+							if ($parent_id_element = caGetOption('parentIDElement', $pa_options, null)) {
+								$ptmp = explode('.', $parent_id_element);
+								switch(sizeof($ptmp)) {
+									case 3:
+										if($ptmp[0] === $this->tableName()) {
+											$cr = [[$ptmp[1] => [$ptmp[2] => $vm_value]], 'deleted' => 0];
+										} else {
+											$this->postError(1103, _t('parentIDElement container reference does not start with current table; reference was %1', $parent_id_element), 'BaseModel->set()', $this->tableName().'.'.$vs_field);
+										}
+										break;
+									case 2:
+										if($ptmp[0] === $this->tableName()) {
+											$cr = [[$ptmp[1] => $vm_value], 'deleted' => 0];
+										} else {
+											$cr = [[$ptmp[0] => [$ptmp[1] => $vm_value]], 'deleted' => 0];
+										}
+										break;
+									case 1:
+										$cr = [[$parent_id_element => $vm_value], 'deleted' => 0];
+										break;
+									default:
+										$this->postError(1103, _t('parentIDElement container reference is not valid; identifier was matched on instead; reference was %1', $parent_id_element), 'BaseModel->set()', $this->tableName().'.'.$vs_field);
+										break;
+								}
+							}
+							if(is_array($va_ids = call_user_func_array($this->tableName()."::find", [$cr, ['returnAs' => 'ids', 'transaction' => $this->getTransaction()]])) && sizeof($va_ids)) {
 								$vm_value = array_shift($va_ids);
 							}
 						}
