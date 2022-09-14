@@ -718,25 +718,26 @@ class DataMigrationUtils {
 				}
 			}
 		}
-
+		
+		if($class === 'ORG') { $options['displaynameFormat'] = 'forenamemiddlenamesurname'; }
 		switch($format = caGetOption('displaynameFormat', $options, 'original', array('forceLowercase' => true))) {
 			case 'surnamecommaforename':
-				$name['displayname'] = ((strlen(trim($name['surname']))) ? $name['surname'].", " : '').$name['forename'];
+				$name['displayname'] = trim(((strlen(trim($name['surname']))) ? $name['surname'].", " : '').$name['forename'], ', ');
 				break;
 			case 'surnamecommaforenamemiddlename':
-				$name['displayname'] = trim((((strlen(trim($name['surname']))) ? $name['surname'].", " : '').$name['forename']).' '.$name['middlename']);
+				$name['displayname'] = trim((((strlen(trim($name['surname']))) ? $name['surname'].", " : '').$name['forename']).' '.$name['middlename'], ', ');
 				break;
 			case 'forenamecommasurname':
-				$name['displayname'] = trim($name['forename'].', '.$name['surname']);
+				$name['displayname'] = trim($name['forename'].', '.$name['surname'], ', ');
 				break;
 			case 'forenamesurname':
-				$name['displayname'] = trim($name['forename'].' '.$name['surname']);
+				$name['displayname'] = trim($name['forename'].' '.$name['surname'], ', ');
 				break;
 			case 'forenamemiddlenamesurname':
-				$name['displayname'] = trim($name['forename'].($name['middlename'] ? ' '.$name['middlename'] : '').' '.$name['surname']);
+				$name['displayname'] = trim($name['forename'].($name['middlename'] ? ' '.$name['middlename'] : '').' '.$name['surname'], ', ');
 				break;
 			case 'surnameforename':
-				$name['displayname'] = trim($name['surname'].' '.$name['forename']);
+				$name['displayname'] = trim($name['surname'].' '.$name['forename'], ', ');
 				break;
 			case 'original':
 				$name['displayname'] = $original_text;

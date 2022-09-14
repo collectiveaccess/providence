@@ -398,7 +398,7 @@
 			interstitialPrimaryTable: '<?= $t_instance->tableName(); ?>',
 			interstitialPrimaryID: <?= (int)$t_instance->getPrimaryKey(); ?>,
 			minRepeats: <?= caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
-			maxRepeats: <?= caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>,,
+			maxRepeats: <?= caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>,
 			
 			isSelfRelationship:<?= ($t_item_rel && $t_item_rel->isSelfRelationship()) ? 'true' : 'false'; ?>,
 			subjectTypeID: <?= (int)$t_subject->getTypeID(); ?>,

@@ -29,8 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
-use CodeItNow\BarcodeBundle\Utils\QrCode;
-use CodeItNow\BarcodeBundle\Utils\BarcodeGenerator;
+use Com\Tecnick\Barcode;
 use Zend\Stdlib\Glob;
 
 /**
@@ -377,60 +376,87 @@ use Zend\Stdlib\Glob;
 	/**
 	 *
 	 */
-	function caGenerateBarcode($ps_value, $pa_options=null) {
-		$ps_barcode_type = caGetOption('type', $pa_options, 'code128', array('forceLowercase' => true));
-		$pn_barcode_height = caConvertMeasurementToPoints(caGetOption('height', $pa_options, '9px'));
+	function caGenerateBarcode(string $value, $options=null) {
+		$barcode_type = caGetOption('type', $options, 'code128', array('forceLowercase' => true));
+		$barcode_height = caConvertMeasurementToPoints(caGetOption('height', $options, '9px'));
 
-		if ($pn_barcode_height < 10) { $pn_barcode_height *= 3; }
+		if ($barcode_height < 10) { $barcode_height *= 3; }
+		
+		$barcode_width = null;
+		if($info = caBarcodeInfo($barcode_type)) {
+			if($info[2]) { $barcode_width = $barcode_height; }	// is square format
+			$barcode = new \Com\Tecnick\Barcode\Barcode();
+			$b = $barcode->getBarcodeObj(
+				$info[3],			// barcode type and additional comma-separated parameters
+				$value,				// data string to encode
+				$barcode_width,		// bar width (use absolute or negative value as multiplication factor)
+				$barcode_height,	// bar height (use absolute or negative value as multiplication factor)
+				'black',			// foreground color
+				[0,0,0,0]			// padding (use absolute or negative values as multiplication factors)
+				)->setBackgroundColor('white'); // background color
 
-		$vs_tmp = null;
-		switch($ps_barcode_type) {
-			case 'qr':
-			case 'qrcode':
-				$qrCode = new QrCode();
-				$qrCode
-					->setText($ps_value)
-					->setSize($pn_barcode_height)
-					->setPadding(10)
-					->setErrorCorrection('high')
-					->setForegroundColor(array('r' => 0, 'g' => 0, 'b' => 0, 'a' => 0))
-					->setBackgroundColor(array('r' => 255, 'g' => 255, 'b' => 255, 'a' => 0))
-					->setLabel('')
-					->setLabelFontSize(10)
-					->setImageType(QrCode::IMAGE_TYPE_PNG);
-					
-				return '<img src="data:'.$qrCode->getContentType().';base64,'.$qrCode->generate().'" />';
-				break;
-			case 'code128':
-			case 'code39':
-			case 'ean13':
-			case 'int25':
-			case 'postnet':
-			case 'upca':
-				$map = [
-					'code128' => BarcodeGenerator::Code128,
-					'code39' => BarcodeGenerator::Code39,
-					'ean13' => BarcodeGenerator::Ean128,
-					'ean128' => BarcodeGenerator::Ean128,
-					'int25' => BarcodeGenerator::I25,
-					'postnet' => BarcodeGenerator::Postnet,
-					'upca' => BarcodeGenerator::Upca,
-				];
-			
-				$barcode = new BarcodeGenerator();
-				$barcode->setText($ps_value);
-				$barcode->setLabel('');
-				$barcode->setType($map[$ps_barcode_type]);
-				$barcode->setThickness($pn_barcode_height);
-				$barcode->setFontSize(10);
-				
-				return  '<img src="data:image/png;base64,'.$barcode->generate().'" />';
-				break;
-			default:
-				// invalid barcode
-				break;
+			return $b->getHtmlDiv();
 		}
-
+		return null;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	function caBarcodeInfo(string $type, ?array $options=null) : ?array {
+		$syns = [
+			'QR' => 'QRCODE',
+			'CODE128' => 'C128',
+			'INT25' => 'I25',
+		];
+		$type = $syns[strtoupper($type)] ?? $type;
+		$codes = [
+			'C128A'      => ['0123456789', 'CODE 128 A', false],
+			'C128B'      => ['0123456789', 'CODE 128 B', false],
+			'C128C'      => ['0123456789', 'CODE 128 C', false],
+			'C128'       => ['0123456789', 'CODE 128', false],
+			'C39E+'      => ['0123456789', 'CODE 39 EXTENDED + CHECKSUM', false],
+			'C39E'       => ['0123456789', 'CODE 39 EXTENDED', false],
+			'C39+'       => ['0123456789', 'CODE 39 + CHECKSUM', false],
+			'C39'        => ['0123456789', 'CODE 39 - ANSI MH10.8M-1983 - USD-3 - 3 of 9', false],
+			'C93'        => ['0123456789', 'CODE 93 - USS-93', false],
+			'CODABAR'    => ['0123456789', 'CODABAR', false],
+			'CODE11'     => ['0123456789', 'CODE 11', false],
+			'EAN13'      => ['0123456789', 'EAN 13', false],
+			'EAN2'       => ['12',         'EAN 2-Digits UPC-Based Extension', false],
+			'EAN5'       => ['12345',      'EAN 5-Digits UPC-Based Extension', false],
+			'EAN8'       => ['1234567',    'EAN 8', false],
+			'I25+'       => ['0123456789', 'Interleaved 2 of 5 + CHECKSUM', false],
+			'I25'        => ['0123456789', 'Interleaved 2 of 5', false],
+			'IMB'        => ['01234567094987654321-01234567891', 'IMB - Intelligent Mail Barcode - Onecode - USPS-B-3200', false],
+			'IMBPRE'     => ['AADTFFDFTDADTAADAATFDTDDAAADDTDTTDAFADADDDTFFFDDTTTADFAAADFTDAADA', 'IMB pre-processed', false],
+			'KIX'        => ['0123456789', 'KIX (Klant index - Customer index)', false],
+			'MSI+'       => ['0123456789', 'MSI + CHECKSUM (modulo 11)', false],
+			'MSI'        => ['0123456789', 'MSI (Variation of Plessey code)', false],
+			'PHARMA2T'   => ['0123456789', 'PHARMACODE TWO-TRACKS', false],
+			'PHARMA'     => ['0123456789', 'PHARMACODE', false],
+			'PLANET'     => ['0123456789', 'PLANET', false],
+			'POSTNET'    => ['0123456789', 'POSTNET', false],
+			'RMS4CC'     => ['0123456789', 'RMS4CC (Royal Mail 4-state Customer Bar Code)', false],
+			'S25+'       => ['0123456789', 'Standard 2 of 5 + CHECKSUM', false],
+			'S25'        => ['0123456789', 'Standard 2 of 5', false],
+			'UPCA'       => ['72527273070', 'UPC-A', false],
+			'UPCE'       => ['725277', 'UPC-E', false],
+			'LRAW'             => ['0101010101', '1D RAW MODE (comma-separated rows of 01 strings)', false],
+			'SRAW'             => ['0101,1010',  '2D RAW MODE (comma-separated rows of 01 strings)', false],
+			'PDF417'           => ['0123456789', 'PDF417 (ISO/IEC 15438:2006)', false],
+			'QRCODE'           => ['0123456789', 'QR-CODE', true],
+			'QRCODE,H,ST,0,0'  => ['abcdefghijklmnopqrstuvwxy0123456789', 'QR-CODE WITH PARAMETERS', true],
+			'DATAMATRIX'       => ['0123456789', 'DATAMATRIX (ISO/IEC 16022) SQUARE', true],
+			'DATAMATRIX,R'     => ['0123456789012345678901234567890123456789', 'DATAMATRIX Rectangular (ISO/IEC 16022) RECTANGULAR', false],
+			'DATAMATRIX,S,GS1' => [chr(232).'01095011010209171719050810ABCD1234'.chr(232).'2110', 'GS1 DATAMATRIX (ISO/IEC 16022) SQUARE GS1', true],
+			'DATAMATRIX,R,GS1' => [chr(232).'01095011010209171719050810ABCD1234'.chr(232).'2110', 'GS1 DATAMATRIX (ISO/IEC 16022) RECTANGULAR GS1', false],
+		];
+		
+		if($info = ($codes[strtoupper($type)] ?? null)) {
+			$info[] = strtoupper($type);
+			return $info;
+		}
 		return null;
 	}
 	# -------------------------------------------------------
