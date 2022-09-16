@@ -392,7 +392,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	$is_blank = ((mb_strtolower("[{$blank_val}]") === mb_strtolower($term->text)) || (mb_strtolower("[BLANK]") === mb_strtolower($term->text)));
 	 	$is_not_blank = (mb_strtolower("["._t('SET')."]") === mb_strtolower($term->text));
 	 	
-	 	if(!$is_blank && !$is_not_blank && (!is_array($indexing_options) || !in_array('DONT_TOKENIZE', $indexing_options))) {
+	 	if(!$is_blank && !$is_not_blank && (!is_array($indexing_options) || !in_array('DONT_TOKENIZE', $indexing_options) || in_array('INDEX_AS_IDNO', $indexing_options))) {
 	 		$words = self::filterStopWords(self::tokenize(join(' ', $words), true));
 	 	}
 	 	if(!$words || !sizeof($words)) { return null; }
@@ -453,6 +453,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			} else{
 				$params[] = $text;
 			}
+			
+	 		if($is_blank || $is_not_blank) { $use_boost = false; }
 	 
 			$field_sql = null;
 			if (is_array($ap)) {

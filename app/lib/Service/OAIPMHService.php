@@ -632,7 +632,8 @@ class OAIPMHService extends BaseService {
 				$vn_c = 0;
 				$va_get_deleted_timestamps_for = array();
 				while($qr_res->nextHit()) {
-					if ((bool)$qr_res->get("{$vs_table}.deleted")) {
+					$deleted = $qr_res->get("{$vs_table}.deleted");
+					if ((bool)$deleted || is_null($deleted)) {
 						$va_deleted_items[$vs_pk_val = (int)$qr_res->get("{$vs_table}.{$vs_pk}")] = true;
 						$va_get_deleted_timestamps_for[$vs_pk_val] = true;
 					} else {
@@ -648,9 +649,8 @@ class OAIPMHService extends BaseService {
 				$qr_res->seek(0);
 				$va_deleted_timestamps = $t_change_log->getDeleteOnTimestampsForIDs($vs_table, array_keys($va_get_deleted_timestamps_for));
 			}
-		
 			// Export data using metadata mapping
-			$va_items = ca_data_exporters::exportRecordsFromSearchResultToArray($this->getMappingCode($metadataPrefix), $qr_res, array('start' => $cursor, 'limit' => $listLimit, 'dontFilterByACL' => $this->opa_provider_info['dontFilterByACL']));
+			$va_items = ca_data_exporters::exportRecordsFromSearchResultToArray($this->getMappingCode($metadataPrefix), $qr_res, array('includeDeleted' => $vb_show_deleted, 'start' => $cursor, 'limit' => $listLimit, 'dontFilterByACL' => $this->opa_provider_info['dontFilterByACL']));
 			if (is_array($va_items) && sizeof($va_items)) {
 				$va_timestamps = $t_change_log->getLastChangeTimestampsForIDs($vs_table, array_keys($va_items));
 				foreach($va_items as $vn_id => $vs_item_xml) {

@@ -357,7 +357,7 @@ function caFileIsIncludable($ps_file) {
 		}
 		$limit = caGetOption('limit', $pa_options, null);
 		
-		if($va_paths = scandir($dir, 0)) {
+		if($va_paths = @scandir($dir, 0)) {
 			foreach($va_paths as $item) {
 				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item[0] !== '.'))) {
 					$va_stat = @stat("{$dir}/{$item}");
@@ -687,7 +687,7 @@ function caFileIsIncludable($ps_file) {
 		//return strip_tags($ps_text);
 
 		// @see http://php.net/manual/en/regexp.reference.unicode.php
-		return preg_replace("/[^\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{N}\p{P}\p{Zp}\p{Zs}\p{S}]|➔/", '', strip_tags($ps_text));
+		return preg_replace("/[^\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{N}\p{P}\p{Zp}\p{Zs}\p{S}–]|➔/", '', strip_tags($ps_text));
 	}
 	# ---------------------------------------
 	/**

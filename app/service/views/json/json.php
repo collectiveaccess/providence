@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2021 Whirl-i-Gig
+ * Copyright 2012-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,11 +27,10 @@
  */
 
 header('Content-type: application/json');
-
-$return = array_replace(["ok" => !is_null($this->getVar('ok')) ? (bool)$this->getVar('ok') : true], caSanitizeArray($this->getVar('content'),['allowStdClass' => true]));
+$return = array_replace(["ok" => true], caSanitizeArray($this->getVar('content'),['allowStdClass' => true]));
 
 if($this->getVar('pretty_print')){
-	print caFormatJson(json_encode($return));
+	print caFormatJson(json_encode($return, JSON_INVALID_UTF8_IGNORE));
 } else {
-	print json_encode($return);
+	print json_encode($return, JSON_INVALID_UTF8_IGNORE);
 }

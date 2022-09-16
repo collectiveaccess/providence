@@ -2770,7 +2770,10 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 				if (($qr = caMakeSearchResult('ca_object_representations', [$row_id])) && $qr->nextHit()) {
 					$info = $qr->getMediaInfo('media');
 					$version = caGetOption('version', $options, 'original');
-					
+					if(!isset($info[$version])) {
+						$version = array_keys($info); 
+						$version = array_pop($version);
+					}
 					switch($bundle_name) {
 						case 'media_dimensions':
 							if (($w = $info[$version]['WIDTH']) && ($h = $info[$version]['HEIGHT'])) {

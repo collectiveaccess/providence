@@ -498,14 +498,17 @@
 		 * Replaces first attribute value with specified values; will add attribute value if no attributes are defined 
 		 * This is handy for doing editing on non-repeating attributes
 		 *
+		 * @param array $options Options include:
 		 *		source = Source notes for attribute value. [Default is null]
+		 *		index = Zero-based index of attribute to replace. [Default is 0]
 		 */
 		public function replaceAttribute($pa_values, $pm_element_code_or_id, $ps_error_source=null, $pa_options=null) {
 			$va_attrs = $this->getAttributesByElement($pm_element_code_or_id);
+			$index = caGetOption('index', $pa_options, 0);
 			
-			if (is_array($va_attrs) && sizeof($va_attrs)) {
+			if (is_array($va_attrs) && sizeof($va_attrs) && isset($va_attrs[$index])) {
 				return $this->editAttribute(
-					$va_attrs[0]->getAttributeID(),
+					$va_attrs[$index]->getAttributeID(),
 					$pm_element_code_or_id, $pa_values, $ps_error_source, $pa_options
 				);
 			} else {
@@ -1623,6 +1626,9 @@
 		public function getDisplayLabel($ps_field, $options=null) {
 			$va_tmp = explode('.', $ps_field);
 			if ($va_tmp[0] == $this->tableName()) {
+				if(isset($va_tmp[2]) && $va_tmp[2] === '__source__') {
+					return _t('Source');
+				}
 				if (!$this->hasField($va_tmp[1]) && !in_array($va_tmp[1], array('created', 'modified', 'lastModified')) && !in_array($va_tmp[0], array('created', 'modified', 'lastModified'))) {
 					$va_tmp[1] = preg_replace('!^ca_attribute_!', '', $va_tmp[1]);	// if field space is a bundle placement-style bundlename (eg. ca_attribute_<element_code>) then strip it before trying to pull label
 					return $this->getAttributeLabel($va_tmp[1], $options);	
@@ -3007,11 +3013,11 @@
 					break;
 			}
 			
-			$va_references = array();
-			
+			$va_references = [];
 			while($qr_res->nextRow()) {
 				$va_row = $qr_res->getRow();
-				$va_references[$va_row['table_num']][$va_row['row_id']][] = $va_row['element_id'];
+				if(!is_array($va_references[$va_row['table_num']][$va_row['row_id']])) { $va_references[$va_row['table_num']][$va_row['row_id']] = []; }
+				if(!in_array($va_row['element_id'], $va_references[$va_row['table_num']][$va_row['row_id']])) { $va_references[$va_row['table_num']][$va_row['row_id']][] = $va_row['element_id']; }
 			}
 			
 			foreach($va_references as $vn_table_num => $va_rows) {
