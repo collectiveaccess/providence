@@ -8159,12 +8159,12 @@ span.developerBundleCode, a.developerBundleCode {
     border-radius: 10px;
 }
 
-.hierarchyToolsControlSetImage, .hierarchyToolsControlRemoveItems, .hierarchyToolsControlTransferItems, .hierarchyToolsControlCreateWithItems {
+.hierarchyToolsControlSetImage, .hierarchyToolsControlRemoveItems, .hierarchyToolsControlTransferItems, .hierarchyToolsControlCreateWithItems, .hierarchyToolsControlDownloadMedia {
     display: none;
     float: left;
 }
 
-.hierarchyToolsControlSetImage, .hierarchyToolsControlRemoveItems {
+.hierarchyToolsControlSetImage, .hierarchyToolsControlRemoveItems, .hierarchyToolsControlDownloadMedia {
     margin-top: 5px;
 }
 

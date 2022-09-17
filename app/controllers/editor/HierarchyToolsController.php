@@ -249,4 +249,50 @@ class HierarchyToolsController extends ActionController {
 		$this->render('generic/hierarchy_tools_json.php');
 	}
 	# -------------------------------------------------------
+	/**
+	 * Download selected media
+	 */
+	public function downloadMedia() {
+		$ids = explode(';', $this->request->getParameter('ids', pString));	// list of ids to remove
+		
+		if(!is_array($ids) || !sizeof($ids)) {
+			throw new ApplicationException(_t('ID list is empty'));
+		}
+		
+		$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
+		
+		$c = 0;
+		$errors = [];
+		
+		$o_zip = new ZipStream();
+		foreach($ids as $id) {
+			$id = (int)$id;
+			
+			if(!$this->subject->load($id)) {
+				continue;
+			}
+			if(!$this->subject->isReadable($this->request)) {
+				throw new ApplicationException(_t('Access denied'));
+			}
+			$reps = $this->subject->getRepresentations(['original', 'page', 'large', 'h264_hi', 'mp3']);
+			foreach($reps as $rep) {
+				$path = caGetOption(['original', 'h264_hi', 'mp3', 'page', 'large'], $rep['paths'], null);
+				if($path) {
+					$name = $rep['original_filename'] ?? pathinfo($path, PATHINFO_BASENAME);
+					$o_zip->addFile($path, $name);
+					$c++;
+				}
+			}
+		}
+		
+		if($c > 0) {
+			$o_view->setVar('zip_stream', $o_zip);
+			$o_view->setVar('archive_name', caGetMediaDownloadArchiveName($this->subject->tableName(), $id[0], ['extension' => 'zip']));
+		
+			$this->response->addContent($o_view->render('download_file_binary.php'));
+		} else {
+			$this->response->setHTTPResponseCode(204, _t('No files to download'));
+		}
+	}
+	# -------------------------------------------------------
 }
