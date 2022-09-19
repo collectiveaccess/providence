@@ -158,20 +158,22 @@ class MultipartIDNumber extends IDNumber {
 		
 		if ($separator && $this->formatHas('PARENT', 0)) {
 			// starts with PARENT element so explode in reverse since parent value may include separators
-				
-			$element_vals_in_reverse = array_reverse(explode($separator, $value));
-			$num_elements = sizeof($elements = $this->getElements());
-			
-			$element_vals = [];
-			while(sizeof($elements) > 1) {
-				array_shift($elements);
-				$element_vals[] = array_shift($element_vals_in_reverse);
-				
-				$num_elements--;
+			$v_proc = preg_replace("!^".preg_quote($this->getParentValue(), '!')."!", "_PARENT_", $value);
+		
+			$element_vals = explode($separator, $v_proc);
+
+			$i = 0;
+			foreach ($this->getElements() as $element_info) {
+				switch ($element_info['type']) {
+					case 'PARENT':
+						$element_vals[$i] = $this->getParentValue();
+						break;
+					default:
+						if(!array_key_exists($i, $element_vals)) { $element_vals[$i] = null; }
+						break;
+				}
+				$i++;
 			}
-			
-			$element_vals[] = join($separator, array_reverse($element_vals_in_reverse));
-			$element_vals = array_reverse($element_vals);
 		} elseif ($separator) {
 			// Standard operation, use specified non-empty separator to split value
 			$element_vals = explode($separator, $value);
@@ -389,9 +391,12 @@ class MultipartIDNumber extends IDNumber {
 
 		$separator = $this->getSeparator();
 		$elements = $this->getElements();
+		
+		$is_parent = null;
 
 		if ($value == null) {
 			$element_vals = [];
+			$i = 0;
 			foreach($elements as $ename => $element_info) {
 				if ($ename == $element_name) { break; }
 				switch($element_info['type']) {
@@ -421,7 +426,8 @@ class MultipartIDNumber extends IDNumber {
 						}
 						break;
 					case 'PARENT':
-						$element_vals[] = explode($separator, $this->getParentValue());
+						$is_parent = $i;
+						$element_vals[] = $this->getParentValue();
 						break;
 					case 'SERIAL':
 						$element_vals[] = '';
@@ -430,11 +436,51 @@ class MultipartIDNumber extends IDNumber {
 						$element_vals[] = '';
 						break;
 				}
+				$i++;
 			}
 		} elseif(is_array($value)) {
-			$element_vals = array_values($value);
+			$element_vals = [];
+			$i = 0;
+			foreach($elements as $ename => $element_info) {
+				switch($element_info['type']) {
+					case 'PARENT':
+						$is_parent = $i;
+						$element_vals[$i] = $value[$ename] ?? null;
+						break;
+					case 'CONSTANT':
+						$element_vals[$i] = $element_info['value'];
+						break;
+					case 'SERIAL':
+						if(!isset($value[$ename])) { $element_vals[$i] = ''; }
+						break;
+					default:
+						$element_vals[$i] = $value[$ename] ?? null;
+						break;
+				}
+				$i++;
+			}
 		} else {
 			$element_vals = $this->explodeValue($value);
+			
+			$i = 0;
+			foreach($elements as $ename => $element_info) {
+				switch($element_info['type']) {
+					case 'PARENT':
+						$is_parent = $i;
+						break;
+					case 'CONSTANT':
+						$element_vals[$i] = $element_info['value'];
+						break;
+					case 'SERIAL':
+						if(!isset($element_vals[$i])) { $element_vals[$i] = ''; }
+						break;
+				}
+				$i++;
+			}
+		}
+
+		if(!is_null($is_parent)) {
+			$this->isChild(true, $element_vals[$is_parent]);
 		}
 
 		$tmp = [];
@@ -545,7 +591,7 @@ class MultipartIDNumber extends IDNumber {
 			if(isset($element_info['minimum']) && (($min = (int)$element_info['minimum']) > 0) && ($num < $min)) { 
 				$num = $min;
 			}
-
+			
 			if (($zeropad_to_length = (int)$element_info['zeropad_to_length']) > 0) {
 				return sprintf("%0{$zeropad_to_length}d", $num);
 			} else {
