@@ -568,7 +568,7 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 						foreach($content_ids as $content_id) {
 							if(!$t_movement->addRelationship($policy['table'], $content_id, $policy_config['trackingRelationshipType'])) {
 								if($this->inTransaction()) { $this->removeTransaction(false); }
-								$this->postError(3625, _t('Could not create movement - %1 relationship for history tracking: %2', $policy['table'], join($t_movement->getErrors())), 'ca_storage_locations::saveBundlesForScreen()');
+								$this->postError(3625, _t('Could not create movement - %1 relationship for history tracking: %2', Datamodel::getTableProperty($policy['table'], 'NAME_SINGULAR'), join($t_movement->getErrors())), 'ca_storage_locations::saveBundlesForScreen()');
 								return false;
 							}
 						}
@@ -577,6 +577,7 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 				}
 			}
 		}
+		
 		if($we_set_transaction) { $this->removeTransaction(true); }
 		return true;
 	}
