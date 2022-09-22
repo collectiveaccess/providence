@@ -45,10 +45,11 @@
 
 }
 
-#body { 
+body { 
 	font-family: "DejaVuSans"; 
 	z-index: 30000; 
 	position: relative; 
+	margin-top: 36px;
 }
 
 .headerText { 
@@ -145,4 +146,37 @@ div.findingAid.data {
 .clear { 
 	clear: both; 
 	line-height: 5px; 
+}
+
+/* universal header/footer styles */
+img.headerImg {height:45px; width:auto; margin-top:20px; margin-bottom:10px;}
+.pagingText { position: absolute; top: 30px; right: 30px; font: "helvetica"; font-size: 11px; text-align: right;  margin: 0px 0px 10px 25px;}
+#footer .pagingText{ top:20px; }
+.footerText { position:relative; font-size: 11px;  top:13px; padding-right:40px;  }  
+
+/* dompdf */
+@page { margin: 65px 56px 35px 56px; }
+
+#headerdompdf { position: fixed; left: 0px; top: -75px; right: 0px; height: 55px;  text-align: left; vertical-align: top; margin: 0px 5px 10px 0px; padding: 0px 5px 2px 0px; }
+#footerdompdf { position: fixed; left: 0px; bottom: -0px; right: 0px; height: 0px; text-align: center; vertical-align: bottom; }
+#footerdompdf .pagingText:after { content: counter(page, decimal); }
+#footerdompdf .pagingText { position: absolute; top: 0px; right: 30px; font: "helvetica"; font-size: 11px; text-align: right; margin: 0px;}
+#footerdompdf .footerText { position:relative; font-size: 11px; padding-right:40px;  } 
+
+/* summary styles */
+.title { font: "helvetica, sans-serif"; font-size: 18px; width:100%; margin-top:10px; text-align: center; font-weight: bold;}
+.representationList { width: 100%; margin-top:10px; text-align: center; }
+.unit {font-size:12px;margin-bottom:12px;}
+h6 {font-size:12px; font-weight:bold;text-transform:uppercase; margin:0px 0px 5px 0px; padding:0px;}
+.tombstone { margin-top:20px;}
+.clear { clear: both; }
+
+
+.fileIcon{
+	background-image: url("folder.jpg");
+	background-size: cover;
+	background-repeat: no-repeat;
+	width:17px;
+	height:14px;
+	display:inline-block;
 }

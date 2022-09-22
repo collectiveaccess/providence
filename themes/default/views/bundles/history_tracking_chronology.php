@@ -836,7 +836,7 @@ if($show_entity_controls) {
 			if(caGetOption('always_create_new_movement', $settings, false)) {
 ?>
 				jQuery('#<?= $vs_id_prefix; ?>AddMovement<?= $vn_type_id; ?>').on('click', function(e) { 
-					caRelationBundle<?= $vs_id_prefix; ?>_ca_movements_<?= $vn_type_id; ?>.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }, {'addBundle': true }); 
+					caRelationBundle<?= $vs_id_prefix; ?>_ca_movements.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }, {'addBundle': true }); 
 				});
 <?php
 			}

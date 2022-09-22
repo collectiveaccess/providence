@@ -580,7 +580,7 @@ class ca_object_lots extends RepresentableBaseModel {
 		
 		$o_db = $this->getDb();
 		$qr_res = $o_db->query("
-				SELECT *
+				SELECT object_id
 				FROM ca_objects
 				WHERE
 					lot_id = ? AND deleted = 0 ".(caGetOption('excludeChildObjects', $pa_options, false) ? " AND parent_id IS NULL" : "")."
@@ -594,15 +594,16 @@ class ca_object_lots extends RepresentableBaseModel {
 		}
 		if (!sizeof($va_rows)) { ca_object_lots::$s_object_count_cache[$vn_lot_id][$vs_cache_key] = 0; return array(); }
 		
-		
+		$va_rows = array_merge(array_keys($va_rows), ca_objects::getHierarchyChildrenForIDs(array_keys($va_rows), ['returnAs' => 'ids']));
+	
 		$qr_res = $o_db->query("
 			SELECT *
 			FROM ca_objects
 			WHERE
-				hier_object_id IN (?) AND deleted = 0 ".(caGetOption('excludeChildObjects', $pa_options, false) ? " AND parent_id IS NULL" : "")."
+				object_id IN (?) AND deleted = 0 ".(caGetOption('excludeChildObjects', $pa_options, false) ? " AND parent_id IS NULL" : "")."
 			ORDER BY
 				idno_sort
-		", array(array_keys($va_rows)));
+		", array($va_rows));
 	
 		$va_objects = array();
 		while($qr_res->nextRow()) {
