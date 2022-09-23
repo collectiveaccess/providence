@@ -382,10 +382,10 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	}
 	 	$ap = $field ? $this->_getElementIDForAccessPoint($subject_tablenum, $field) : null;
 	 	$words = [$term->text];
-		if($field && $ap && !is_array($ap)) {
-			array_unshift($words, $field);
-			$field = null;
-		}
+	 	if($field && !is_array($ap)) {
+	 		array_unshift($words, $field);
+	 		$field = null;
+	 	}
 	 	$indexing_options = caGetOption('indexing_options', $ap, null);
 	 	
 	 	$blank_val = caGetBlankLabelText($subject_tablenum);
