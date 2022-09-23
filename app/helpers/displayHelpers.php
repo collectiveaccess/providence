@@ -1624,13 +1624,12 @@ jQuery(document).ready(function() {
 
 					$vs_buf .= "</div>\n";
 					
-					if(true) {
-						
+					$t_set_type = $t_item->getTypeInstance();
+					$type_settings = $t_set_type ? $t_set_type->getSettings() : [];
+					if(caGetOption('random_generation_mode', $type_settings, 0) > 0) {
 						$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" ></div>';
-						
 						$vs_buf .= _t('Add random content')." <a href='#' onclick='caRandomSetGenerationPanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_RANDOM__, '20px', ['title' => _t('Add random content')])."</a>";
 
-						
 						$random_set_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
 						$random_set_view->setVar('t_item', $t_item);
 
