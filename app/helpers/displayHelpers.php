@@ -1623,6 +1623,19 @@ jQuery(document).ready(function() {
 					$vs_buf .= "<strong>"._t("Type of content")."</strong>: ".caGetTableDisplayName($vn_set_table_num)."<br/>\n";
 
 					$vs_buf .= "</div>\n";
+					
+					if(true) {
+						
+						$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" ></div>';
+						
+						$vs_buf .= _t('Add random content')." <a href='#' onclick='caRandomSetGenerationPanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_RANDOM__, '20px', ['title' => _t('Add random content')])."</a>";
+
+						
+						$random_set_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
+						$random_set_view->setVar('t_item', $t_item);
+
+						FooterManager::add($random_set_view->render("random_set_generation_html.php"));
+					}
 
 					if(!(bool)$po_view->request->config->get('ca_sets_disable_duplication_of_items') && $po_view->request->user->canDoAction('can_duplicate_items_in_sets') && $po_view->request->user->canDoAction('can_duplicate_' . $vs_set_table_name)) {
 						$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" ></div>';

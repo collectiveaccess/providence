@@ -11765,10 +11765,15 @@ $pa_options["display_form_field_tips"] = true;
 	 *		hasRepresentations = if set when model is for ca_objects views are only returned when the object has at least one representation.
 	 *		checkAccess = an array of access values to filter only. Items will only be returned if the item's access setting is in the array.
 	 *		restrictByIntrinsic = an associative array of intrinsic fields and values to sort returned records on
+	 *		notInSetOfType = omit items that are in at least one set with the specified type. [Default is null]
 	 * @return bool True on success, false on error
 	 */
 	public function getRandomItems($pn_limit=10, $pa_options=null) {
 		$o_db = $this->getDb();
+		
+		if($not_in_set_of_type = caGetOption('notInSetOfType', $pa_options, null)) {
+			$not_in_set_of_type = caMakeTypeIDList('ca_sets', [$not_in_set_of_type]);
+		}
 		
 		$vs_limit_sql = '';
 		if ($pn_limit > 0) {

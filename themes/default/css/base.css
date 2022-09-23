@@ -6358,7 +6358,7 @@ table.caConfirmBatchExecutionPanelAlertControls {
 }
 
 /* Type change */
-#caTypeChangePanel, #caCreateChildPanel {
+#caTypeChangePanel, #caCreateChildPanel, #caRandomSetGenerationPanel {
     position: fixed;
     top: 0px;
     left: 0px;
@@ -6373,24 +6373,24 @@ table.caConfirmBatchExecutionPanelAlertControls {
     -webkit-border-radius:4px;
 }
 
-#caTypeChangePanel .close a, #caCreateChildPanel .close a, #caSetHomeLocationPanel .close a{
+#caTypeChangePanel .close a, #caCreateChildPanel .close a, #caSetHomeLocationPanel .close a, ##caCreateChildPanel .close a, .close a {
     text-decoration:none;
     font-size:16px;
 }
 
-#caTypeChangePanelContentArea, #caCreateChildPanelContentArea, #caSetHomeLocationPanelContentArea {
+#caTypeChangePanelContentArea, #caCreateChildPanelContentArea, #caSetHomeLocationPanelContentArea, #caRandomSetGenerationPanelContentArea {
     padding:10px;
 }
 
-#caTypeChangePanelControlButtons, #caCreateChildPanelControlButtons, #caSetHomeLocationPanelControlButtons, #caMediaBrowserPanelControlButtons {
+#caTypeChangePanelControlButtons, #caCreateChildPanelControlButtons, #caSetHomeLocationPanelControlButtons, #caMediaBrowserPanelControlButtons, #caRandomSetGenerationPanelControlButtons {
     width: 100%;
     text-align: center;
 }
 
-#caTypeChangePanelControlButtons table, #caCreateChildPanelControlButtons table, #caSetHomeLocationPanelControlButtons table, #caMediaBrowserPanelControlButtons table {
+#caTypeChangePanelControlButtons table, #caCreateChildPanelControlButtons table, #caSetHomeLocationPanelControlButtons table, #caMediaBrowserPanelControlButtons table, #caRandomSetGenerationPanelControlButtons table {
     width: 100%;
 }
-#caTypeChangePanelControlButtons img.form-button-left, #caCreateChildPanelControlButtons img.form-button-left, #caSetHomeLocationPanelControlButtons img.form-button-left {
+#caTypeChangePanelControlButtons img.form-button-left, #caCreateChildPanelControlButtons img.form-button-left, #caSetHomeLocationPanelControlButtons img.form-button-left, #caRandomSetGenerationPanelControlButtons img.form-button-left {
 	margin-top:-10px;
 }
 .addChild {

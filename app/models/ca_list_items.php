@@ -711,6 +711,32 @@ $_ca_list_items_settings = array(
 			'description' => _t('Render in new menu')
 		)
 	),
+	'set_types' => array(
+		'random_generation_mode' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('disabled') => 0,
+				_t('select from all records') => 1,
+				_t('select from records not already in a set') => 2
+			),
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Random set generation'),
+			'description' => _t('Mode to use when automatically generating sets with a random selection of items. <i>Select from all records</i> will randomly select records from all available. <i>Select from records not already in a set</i> will exclude records from selection that are already members of a set with the same type.')
+		),
+		'random_generation_size' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_FIELD,
+			
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 50,
+			'label' => _t('Size of random sets'),
+			'description' => _t('Number of records to add to a randomly generated set.')
+		),
+	),
 );
 
 class ca_list_items extends RepresentableBaseModel implements IHierarchy {

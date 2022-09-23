@@ -109,6 +109,7 @@
  	define('__CA_NAV_ICON_CROSSHAIRS__', 68);
  	define('__CA_NAV_ICON_UPLOAD__', 69);
  	define('__CA_NAV_ICON_COPY__', 70);
+ 	define('__CA_NAV_ICON_RANDOM__', 71);
  	
  	/**
  	 * Icon position constants
@@ -897,6 +898,9 @@
 				break;	
 			case __CA_NAV_ICON_COPY__:
 				$vs_fa_class = 'fa fa-clipboard';
+				break;							
+			case __CA_NAV_ICON_RANDOM__:
+				$vs_fa_class = 'fa fa-random';
 				break;																					
 			default:
 				print "INVALID CONSTANT $pn_type<br>\n";

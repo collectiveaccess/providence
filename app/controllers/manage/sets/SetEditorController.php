@@ -340,6 +340,58 @@ class SetEditorController extends BaseEditorController {
 		return;
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function randomSetGeneration() {
+		$set_id = $this->request->getParameter('set_id', pInteger);
+		$type_ids = $this->request->getParameter('type_id', pArray);
+		$item_count = $this->request->getParameter('count', pInteger);
+		
+		if(!$t_set = ca_sets::findAsInstance($set_id)) {
+			throw new ApplicationException(_t('Invalid set'));
+		}
+		$t_subject = $t_set->getItemTypeInstance();
+		$t_set_type = $t_set->getTypeInstance();
+		$settings = $t_set_type->getSettings();
+		
+		$mode = caGetOption('random_generation_mode', $settings, 1);
+		
+		if($item_count < 1 || $item_count > 9999) {
+			$item_count = caGetOption('random_generation_size', $settings, 10);
+   		}
+   		
+   		$options = ['restrictToTypes' => $type_ids];
+   		
+   		$error = null;
+   		switch($mode) {
+   			case 1:
+   				$options['notInSetOfType'] = null;
+   				break;
+   			case 2:
+   				$options['notInSetOfType'] = 'inventory';
+   				break;
+   			default:
+   				// don't add
+   				$error = _t('Random items cannot be added to sets of this type');
+   				return;
+   		}
+   		
+   		$ids = [];
+   		if(is_null($error)) {
+   			$items = $t_subject->getRandomItems($item_count, $options);
+			$ids = array_keys($items);
+			if(!$t_set->addItems($ids)) {
+				$error = _t('Could not add random items to set: %1', join('; ', $t_set->getErrors()));
+			}
+   		}
+   		
+   		$this->view->setVar('ids', $ids);
+   		$this->view->setVar('errors', $error ? [$error] : null);
+		
+		$this->render('random_set_generation_json.php');
+	}
+	# -------------------------------------------------------
 	# Sidebar info handler
 	# -------------------------------------------------------
 	/**

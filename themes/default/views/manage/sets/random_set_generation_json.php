@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * views/editor/generic/ajax_watch_item_json.php : 
+ * views/manage/sets/random_set_generation_json.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2022 Whirl-i-Gig
+ * Copyright 022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,10 +25,11 @@
  *
  * ----------------------------------------------------------------------
  */
+$ids = $this->getVar('ids');
 $errors = $this->getVar('errors');
 
-if (sizeof($errors)) {
+if (is_array($errors) && sizeof($errors)) {
 	print json_encode(['status' => 'error', 'errors' => $errors]);
 } else {
-	print json_encode(['status' => 'ok', 'state' => $this->getVar('state')]);
+	print json_encode(['status' => 'ok', 'ids' => $this->getVar('ids')]);
 }
