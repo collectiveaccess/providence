@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -42,70 +42,88 @@ BaseModel::$s_ca_models_definitions['ca_set_items'] = array(
  	'NAME_PLURAL' 		=> _t('set items'),
  	'FIELDS' 			=> array(
  		'item_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
-				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('CollectiveAccess id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this set item')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
+			'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => _t('CollectiveAccess id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this set item')
 		),
 		'set_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Set'), 'DESCRIPTION' => _t('Set item belongs to')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => _t('Set'), 'DESCRIPTION' => _t('Set item belongs to')
 		),
 		'table_num' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Set content'), 'DESCRIPTION' => _t('Determines what kind of items (objects, entities, places, etc.) are stored by the set.'),
-				'BOUNDS_CHOICE_LIST' => array(
-					_t('Objects') => 57,
-					_t('Object lots') => 51,
-					_t('Entities') => 20,
-					_t('Places') => 72,
-					_t('Occurrences') => 67,
-					_t('Collections') => 13,
-					_t('Storage locations') => 89,
-					_t('Object representations') => 56,
-					_t('Loans') => 133,
-					_t('Movements') => 137,
-					_t('List items') => 33,
-					_t('Tours') => 153,
-					_t('Tour stops') => 155
-				)
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => _t('Set content'), 'DESCRIPTION' => _t('Determines what kind of items (objects, entities, places, etc.) are stored by the set.'),
+			'BOUNDS_CHOICE_LIST' => array(
+				_t('Objects') => 57,
+				_t('Object lots') => 51,
+				_t('Entities') => 20,
+				_t('Places') => 72,
+				_t('Occurrences') => 67,
+				_t('Collections') => 13,
+				_t('Storage locations') => 89,
+				_t('Object representations') => 56,
+				_t('Loans') => 133,
+				_t('Movements') => 137,
+				_t('List items') => 33,
+				_t('Tours') => 153,
+				_t('Tour stops') => 155
+			)
 		),
 		'row_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Row_id', 'DESCRIPTION' => 'Primary key value of item in set. Table primary key is of is determined by the table_num field in ca_sets.'
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => 'Row_id', 'DESCRIPTION' => 'Primary key value of item in set. Table primary key is of is determined by the table_num field in ca_sets.'
 		),
 		'type_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LIST_CODE' => 'set_types',
-				'LABEL' => _t('Type'), 'DESCRIPTION' => _t('The type of the set determines what sorts of information the set and each item in the set can have associated with them.')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LIST_CODE' => 'set_types',
+			'LABEL' => _t('Type'), 'DESCRIPTION' => _t('The type of the set determines what sorts of information the set and each item in the set can have associated with them.')
 		),
 		'rank' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('The relative priority of the set when displayed in a list with other sets. Lower numbers indicate higher priority.'),
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('The relative priority of the set when displayed in a list with other sets. Lower numbers indicate higher priority.'),
 		),
 		'vars' => array(
-				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Set item variable storage', 'DESCRIPTION' => 'Storage area for set item variables'
-		)
+			'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => 'Set item variable storage', 'DESCRIPTION' => 'Storage area for set item variables'
+		),
+		'checked' => array(
+			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => 0,
+			'LABEL' => _t('Is checked?'), 'DESCRIPTION' => _t('Indicates if the set item has been checked.'),
+			'BOUNDS_VALUE' => array(0,1),
+			'DONT_INCLUDE_IN_SEARCH_FORM' => true
+		),
+		'deleted' => array(
+			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => 0,
+			'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if the set item is deleted.'),
+			'BOUNDS_VALUE' => array(0,1),
+			'DONT_INCLUDE_IN_SEARCH_FORM' => true
+		),
  	)
 );
 

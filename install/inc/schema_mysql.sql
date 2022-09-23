@@ -4980,12 +4980,14 @@ create table ca_set_items (
     type_id     int unsigned not null,
 	`rank`		int unsigned not null default 0,
 	vars        longtext not null,
+	checked     tinyint unsigned not null default 0,
 	deleted     tinyint unsigned not null default 0,
 	
 	primary key (item_id),
 	key i_set_id (set_id, deleted),
 	key i_type_id (type_id),
 	key i_row_id (row_id),
+	key i_checked_id (set_id, checked),
 	key i_table_num (table_num),
 	
    constraint fk_ca_set_items_set_id foreign key (set_id)

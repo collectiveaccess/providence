@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2020 Whirl-i-Gig
+ * Copyright 2010-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -105,9 +105,8 @@ var caUI = caUI || {};
 			
 			var itemID = valueArray['item_id'];
 			var rID = rowID + ((itemID > 0) ? "_" + itemID : "");
-			
-			var counterHTML = '';
-			counterHTML = '<div class="setItemCounter"></div> ';
+			var counterHTML = '<div class="setItemCounter"></div> ';
+			var checkedControl = '<div class="setItemCheckControl"><input type="checkbox" name="' + that.fieldNamePrefix + 'checked' + rID + '"' + ((parseInt(valueArray['checked']) == 1) ? 'checked="1"' : '') +'/></div>';
 			
 			var editLinkHTML = '';
 			if ((that.editSetItemButton) && (itemID > 0)) {
@@ -122,7 +121,7 @@ var caUI = caUI || {};
 			} else {
 				displayLabel = valueArray.set_item_label + " [<span class='setItemIdentifier'>" + valueArray.idno + "</span>]";
 			}
-			itemHTML += counterHTML + "<div class='setItemThumbnail'>" + editLinkHTML + repHTML + "</div><div class='setItemCaption'>" + displayLabel + "</div><div class='setItemIdentifierSortable'>" + valueArray.idno_sort + "</div></div><br style='clear: both;'/></li>";
+			itemHTML += counterHTML + checkedControl + "<div class='setItemThumbnail'>" + editLinkHTML + repHTML + "</div><div class='setItemCaption'>" + displayLabel + "</div><div class='setItemIdentifierSortable'>" + valueArray.idno_sort + "</div></div><br style='clear: both;'/></li>";
 			
 			if (prepend) {
 				jQuery('#' + that.fieldNamePrefix + that.setItemListID).prepend(itemHTML);

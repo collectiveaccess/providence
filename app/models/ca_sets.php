@@ -1587,24 +1587,34 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 * @param array $pa_options An optional array of options. Supported options include:
 	 *			user_id = the user_id of the current user; used to determine which sets the user has access to
 	 *			treatRowIDsAsRIDs = assume combination row_id/item_id indices in $pa_row_ids array instead of solely row_ids. Since a set can potentially contain multiple instances of the same row_id, only "rIDs" – a combination of the row_id and the set item_id (row_id + "_" + item_id) – are guaranteed to be unique. [Default=false]
-	 * 			deleteExcludedItems = should the set items not passed in pa_row_ids be deleted?  default is false
+	 * 			deleteExcludedItems = should the set items not passed in pa_row_ids be deleted?  [Default is false]
+	 *			checked = array key'ed with rIDs; values indicate whether set item is checked. [Default is null]
 	 * @return array An array of errors. If the array is empty then no errors occurred
 	 */
-	public function reorderItems($pa_row_ids, $pa_options=null) {
+	public function reorderItems($pa_row_ids, $options=null) {
 		if (!($vn_set_id = $this->getPrimaryKey())) {	
 			return null;
 		}
 		
-		$pn_user_id = isset($pa_options['user_id']) ? (int)$pa_options['user_id'] : null; 
-		$vb_treat_row_ids_as_rids = caGetOption('treatRowIDsAsRIDs', $pa_options, false); 
-		$vb_delete_excluded_items = caGetOption('deleteExcludedItems', $pa_options, false);
+		$pn_user_id = isset($options['user_id']) ? (int)$options['user_id'] : null; 
+		$vb_treat_row_ids_as_rids = caGetOption('treatRowIDsAsRIDs', $options, false); 
+		$vb_delete_excluded_items = caGetOption('deleteExcludedItems', $options, false);
+		$checked = caGetOption('checked', $options, null);
+		
+		$check_map = null;
+		if(is_array($checked)) {
+			$m = ca_set_items::find(['set_id' => $this->getPrimaryKey()], ['returnAs' => 'arrays']);
+			foreach($m as $n) {
+				$checkmap[$vb_treat_row_ids_as_rids ? $n['item_id'].'_'.$n['row_id'] : $n['row_id']] = $n;
+			}
+		}
 		
 		// does user have edit access to set?
 		if ($pn_user_id && !$this->haveAccessToSet($pn_user_id, __CA_SET_EDIT_ACCESS__)) {
 			return false;
 		}
 	
-		$va_row_ranks = $this->getRowIDRanks($pa_options);	// get current ranks
+		$va_row_ranks = $this->getRowIDRanks($options);	// get current ranks
 		$vn_i = 0;
 		
 		$vb_we_set_transaction = false;
@@ -1617,12 +1627,10 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		$t_set_item = new ca_set_items();
 		$t_set_item->setTransaction($o_trans);
-		$t_set_item->setMode(ACCESS_WRITE);
-		$va_errors = array();
-		
+		$va_errors = [];
 		
 		// delete rows not present in $pa_row_ids
-		$va_excluded_item_ids = array();
+		$va_excluded_item_ids = [];
 		foreach($va_row_ranks as $vn_row_id => $va_rank) {
 			if (!in_array($vn_row_id, $pa_row_ids)) {
 				
@@ -1654,7 +1662,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$va_existing_ranks = array_values($va_row_ranks);
 		$vn_rank_acc = end(array_values($va_row_ranks));
 		
-		$va_rank_updates = array();
+		$va_rank_updates = [];
 		
 		$rows_in_set = $this->getItemRowIDs();
 		$allow_dupes_in_set = (bool)$this->getAppConfig()->get('allow_duplicate_items_in_sets');
@@ -1668,8 +1676,11 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			
 			if ($vb_treat_row_ids_as_rids) { $va_tmp = explode("_", $vn_row_id); }
 			if (isset($va_row_ranks[$vn_row_id]) && $t_set_item->load($vb_treat_row_ids_as_rids ? array('set_id' => $vn_set_id, 'row_id' => $va_tmp[0], 'item_id' => $va_tmp[1]) : array('set_id' => $vn_set_id, 'row_id' => $vn_row_id))) {
-				if ($va_row_ranks[$vn_row_id] != $vn_rank_inc) {
+				
+				$is_checked = ($checked[$vn_row_id] ?? false) ? 1 : 0;
+				if (($va_row_ranks[$vn_row_id] != $vn_rank_inc) || ($checkmap[$vn_row_id]['checked'] !=  $is_checked)) {
 					$t_set_item->set('rank', $vn_rank_inc);
+					$t_set_item->set('checked', $is_checked);
 					$t_set_item->update();
 				
 					if ($t_set_item->numErrors()) {
@@ -1685,10 +1696,10 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		foreach($va_rank_updates as $vn_row_id => $vn_new_rank) {
 			if($vb_treat_row_ids_as_rids) {
 				$va_tmp = explode("_", $vn_row_id);
-				$this->getDb()->query("UPDATE ca_set_items SET `rank` = ? WHERE set_id = ? AND row_id = ? AND item_id = ?", array($vn_new_rank, $vn_set_id, $va_tmp[0], $va_tmp[1]));
+				$this->getDb()->query("UPDATE ca_set_items SET `rank` = ?, checked = ? WHERE set_id = ? AND row_id = ? AND item_id = ?", [$vn_new_rank, $is_checked ? 1 : 0, $vn_set_id, $va_tmp[0], $va_tmp[1]]);
 				$va_updated_item_ids[$va_tmp[1]] = 1;
 			} else {
-				$this->getDb()->query("UPDATE ca_set_items SET `rank` = ? WHERE set_id = ? AND row_id = ?", array($vn_set_id, $vn_new_rank));
+				$this->getDb()->query("UPDATE ca_set_items SET `rank` = ?, checked = ? WHERE set_id = ? AND row_id = ?", [$vn_set_id, $is_checked, $vn_new_rank]);
 			}
 		}
 		
@@ -1879,7 +1890,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		// get row labels
 		$qr_res = $o_db->query("
 			SELECT 
-				casi.set_id, casi.item_id, casi.row_id, casi.`rank`,
+				casi.set_id, casi.item_id, casi.row_id, casi.`rank`, casi.checked,
 				rel_label.".$t_rel_label_table->getDisplayField().", rel_label.locale_id
 			FROM ca_set_items casi
 			INNER JOIN ".$t_rel_table->tableName()." AS rel ON rel.".$t_rel_table->primaryKey()." = casi.row_id
@@ -1923,7 +1934,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		
 		$qr_res = $o_db->query("
 			SELECT 
-				casi.set_id, casi.item_id, casi.row_id, casi.`rank`, casi.vars,
+				casi.set_id, casi.item_id, casi.row_id, casi.`rank`, casi.vars, casi.checked,
 				casil.label_id, casil.caption, casil.locale_id set_item_label_locale_id,
 				{$vs_rel_field_list_sql}, rel_label.".$t_rel_label_table->getDisplayField()." set_item_label, rel_label.locale_id rel_locale_id
 				{$vs_rep_select}

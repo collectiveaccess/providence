@@ -7648,6 +7648,12 @@ div.caResultsComplexDataEditorErrorContainer {
 	text-align:bottom;
 }
 
+.setItemCheckControl {
+	position: absolute;
+	bottom: 3px;
+	left: 3px;
+}
+
 /* Media content dialog in CKEditor */
 .camediacontentMediaList {
     width: 200px; 
