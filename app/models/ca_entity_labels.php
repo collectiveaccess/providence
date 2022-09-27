@@ -389,7 +389,9 @@ class ca_entity_labels extends BaseLabel {
 	 * @return string
 	 */
 	public static function labelAsString(array $label_values) : string {
-		return trim(preg_replace('![ ]+!', ' ', $label_values['prefix'].' '.$label_values['forename'].' '.$label_values['other_forenames'].' '.$label_values['middlename'].' '.$label_values['surname'].' '.$label_values['suffix']));
+		$n = trim(preg_replace('![ ]+!', ' ', ($label_values['prefix'] ?? null).' '.($label_values['forename'] ?? null).' '.($label_values['other_forenames'] ?? null).' '.($label_values['middlename'] ?? null).' '.($label_values['surname'] ?? null).' '.($label_values['suffix'] ?? null)));
+		if(!$n) { $n = $label_values['displayname'] ?? null; }
+		return $n;
 	}
 	# ------------------------------------------------------
 	/**

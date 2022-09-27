@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2020 Whirl-i-Gig
+ * Copyright 2007-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -240,8 +240,23 @@ class RequestDispatcher extends BaseObject {
 				}
 
 				if(!$this->request->user->canAccess($this->opa_module_path, $this->ops_controller, $this->ops_action)){
-					$this->postError(2320, _t("Access denied"), "RequestDispatcher->dispatch()");
-					return false;
+					switch($this->request->getScriptName()){
+						case "service.php":
+							// service auth requests for deprecated service API are allowed to go through to
+							// dispatch because in that case logging in requires running actual controller code. 
+							// this is bad practice and should be removed once the old API is no longer supported.
+							
+							if(in_array('json', array_map('strtolower', $this->opa_module_path)) || !$this->request->isServiceAuthRequest()) {
+								$this->response->setHTTPResponseCode(401,_t("Access denied"));
+								$this->response->addHeader('WWW-Authenticate','Basic realm="CollectiveAccess Service API"');
+								return true; // this is kinda stupid but otherwise the "error redirect" code of AppController kicks in, which is not what we want here!
+							}
+							break;
+						case "index.php":
+						default:
+							$this->postError(2320, _t("Access denied"), "RequestDispatcher->dispatch()");
+							return false;
+					}
 				}
 
 				$o_action_controller = new $vs_classname($this->request, $this->response, $this->request->getViewsDirectoryPath().'/'.join('/', $this->opa_module_path));
