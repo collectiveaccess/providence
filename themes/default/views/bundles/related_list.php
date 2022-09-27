@@ -49,6 +49,7 @@
 
 	$va_ids = array();
 	foreach($va_initial_values as $vn_rel_id => $va_rel_info) {
+		if(array_search($va_rel_info['id'], $va_ids, true)) { continue; }
 		$va_ids[$vn_rel_id] = $va_rel_info['id'];
 	}
 
@@ -137,7 +138,7 @@
 		<div class="button batchEdit batchEditSelected" id="batchEditSelected<?= $vs_id_prefix; ?>"><a href="#"><?= caNavIcon(__CA_NAV_ICON_BATCH_EDIT__, '15px')._t(' Batch edit selected'); ?></a></div>
 	</div>
 	<div id="tableContent<?= $vs_id_prefix; ?>" class="labelInfo relatedListTableContent">
-		<?= caBusyIndicatorIcon($this->request).' '._t('Loading'); ?>
+		<?= sizeof($va_initial_values) ? caBusyIndicatorIcon($this->request).' '._t('Loading') : _t('No related %1', $t_item->getProperty('NAME_PLURAL')); ?>
 	</div>
 <?php
 	//

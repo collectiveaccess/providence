@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -498,14 +498,17 @@
 		 * Replaces first attribute value with specified values; will add attribute value if no attributes are defined 
 		 * This is handy for doing editing on non-repeating attributes
 		 *
+		 * @param array $options Options include:
 		 *		source = Source notes for attribute value. [Default is null]
+		 *		index = Zero-based index of attribute to replace. [Default is 0]
 		 */
 		public function replaceAttribute($pa_values, $pm_element_code_or_id, $ps_error_source=null, $pa_options=null) {
 			$va_attrs = $this->getAttributesByElement($pm_element_code_or_id);
+			$index = caGetOption('index', $pa_options, 0);
 			
-			if (is_array($va_attrs) && sizeof($va_attrs)) {
+			if (is_array($va_attrs) && sizeof($va_attrs) && isset($va_attrs[$index])) {
 				return $this->editAttribute(
-					$va_attrs[0]->getAttributeID(),
+					$va_attrs[$index]->getAttributeID(),
 					$pm_element_code_or_id, $pa_values, $ps_error_source, $pa_options
 				);
 			} else {
@@ -1623,6 +1626,9 @@
 		public function getDisplayLabel($ps_field, $options=null) {
 			$va_tmp = explode('.', $ps_field);
 			if ($va_tmp[0] == $this->tableName()) {
+				if(isset($va_tmp[2]) && $va_tmp[2] === '__source__') {
+					return _t('Source');
+				}
 				if (!$this->hasField($va_tmp[1]) && !in_array($va_tmp[1], array('created', 'modified', 'lastModified')) && !in_array($va_tmp[0], array('created', 'modified', 'lastModified'))) {
 					$va_tmp[1] = preg_replace('!^ca_attribute_!', '', $va_tmp[1]);	// if field space is a bundle placement-style bundlename (eg. ca_attribute_<element_code>) then strip it before trying to pull label
 					return $this->getAttributeLabel($va_tmp[1], $options);	
@@ -1907,7 +1913,7 @@
 				}
 			}
 			
-			$t_element_datatype = $t_element->get('datatype');
+			$element_datatype = $t_element->get('datatype');
 			$t_element_code = $t_element->get('element_code');
 			$table_name = $this->tableName();
 			$show_bundle_codes = $po_request->user->getPreference('show_bundle_codes_in_editor');
@@ -1942,7 +1948,7 @@
 				
 				$label = (sizeof($va_element_set) > 1) ? $va_label['name'] : '';
 				
-				if($t_element_datatype == 0){ //Only show field level bundle codes inside containers    
+				if($element_datatype == 0){ //Only show field level bundle codes inside containers    
 					$bundle_code = "{$table_name}.{$t_element_code}.{$va_element['element_code']}";
 					$label = ($show_bundle_codes !== 'hide') ? "{$label} <span class='developerBundleCode'>(<a href='#' class='developerBundleCode'>{$bundle_code}</a>)</span>" : $label;
 				}
@@ -2018,7 +2024,7 @@
 			$o_view->setVar('element_set_label', $this->getAttributeLabel($t_element->get('element_id')));
 			$o_view->setVar('element_code', $t_element->get('element_code'));
 			$o_view->setVar('placement_code', $ps_placement_code);
-			$o_view->setVar('render_mode', $t_element->getSetting('render'));	// only set for list attributes (as of 26 Sept 2010 at least)
+			$o_view->setVar('render_mode', ($element_datatype == 3) ? $t_element->getSetting('render') : null);	// only set for list attributes (as of 26 Sept 2010 at least)
 			
 			if ($t_restriction = $this->getTypeRestrictionInstance($t_element->get('element_id'))) {
 				// If batch mode force minimums to zero
@@ -3007,11 +3013,11 @@
 					break;
 			}
 			
-			$va_references = array();
-			
+			$va_references = [];
 			while($qr_res->nextRow()) {
 				$va_row = $qr_res->getRow();
-				$va_references[$va_row['table_num']][$va_row['row_id']][] = $va_row['element_id'];
+				if(!is_array($va_references[$va_row['table_num']][$va_row['row_id']])) { $va_references[$va_row['table_num']][$va_row['row_id']] = []; }
+				if(!in_array($va_row['element_id'], $va_references[$va_row['table_num']][$va_row['row_id']])) { $va_references[$va_row['table_num']][$va_row['row_id']][] = $va_row['element_id']; }
 			}
 			
 			foreach($va_references as $vn_table_num => $va_rows) {
@@ -3587,7 +3593,9 @@
 		 * @param array $options Options include:
 		 *     forceToLowercase = force keys in returned array to lowercase. [Default is false] 
 		 *	   checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for table that have an "access" field.
+		 *     restrictToTypes = an optional array of numeric type ids or alphanumeric type identifiers to restrict the returned labels to. The types are list items in a list specified in app.conf (or, if not defined there, by hardcoded constants in the model)
 		 *	   returnAll = return all matching values. [Default is false; only the first matched value is returned]
+		 *	   returnIdnos = return identifier (idno) values in addition to row_ids, in array keyed on 'id' and 'idno'. [Default is false]
 		 * @return array Array with keys set to labels and values set to row_ids. Returns null on error.
 		 */
 		static public function getIDsForAttributeValues(string $element_code, array $values, ?array $options=null) : array {
@@ -3595,6 +3603,7 @@
 		
 			$access_values = caGetOption('checkAccess', $options, null);
 			$return_all = caGetOption('returnAll', $options, false);
+			$return_idnos = caGetOption('returnIdnos', $options, false);
 			$force_to_lowercase = caGetOption('forceToLowercase', $options, false);
 		
 			$table_name = $table_name ? $table_name : get_called_class();
@@ -3605,7 +3614,11 @@
 			$pk = $t_instance->primaryKey();
 			$table_name = $t_instance->tableName();
 			$table_num = $t_instance->tableNum();
+			$idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD');
 			
+			if ($restrict_to_types = caGetOption('restrictToTypes', $options, null)) {
+				$restrict_to_types = caMakeTypeIDList($table_name, $restrict_to_types);
+			}
 			
 			$deleted_sql = $t_instance->hasField('deleted') ? " AND t.deleted = 0" : "";
 		
@@ -3622,23 +3635,33 @@
 				$params[] = $access_values;
 			}
 			
+			$type_sql = '';
+			if(
+				method_exists($t_instance, 'getTypeFieldName') && 
+				($type_fld_name = $t_instance->getTypeFieldName()) && 
+				is_array($restrict_to_types) && sizeof($restrict_to_types)
+			) {
+				$type_sql = " AND t.{$type_fld_name} IN (?)";
+				$params[] = $restrict_to_types;
+			}
+			
 			$qr_res = $t_instance->getDb()->query("
-				SELECT t.{$pk}, av.{$attr_fld}
+				SELECT t.{$pk}, av.{$attr_fld}".($idno_fld ? ", t.{$idno_fld}" : '')."
 				FROM {$table_name} t
 				INNER JOIN ca_attributes AS a ON a.row_id = t.{$pk} AND a.table_num = {$table_num}
 				INNER JOIN ca_attribute_values AS av ON av.attribute_id = a.attribute_id
 				WHERE
-					av.element_id = ? AND av.{$attr_fld} IN (?) {$deleted_sql} {$access_sql}
+					av.element_id = ? AND av.{$attr_fld} IN (?) {$deleted_sql} {$access_sql} {$type_sql}
 			", $params);
 		
 			$ret = [];
 			while($qr_res->nextRow()) {
 				$key = $force_to_lowercase ? strtolower($qr_res->get($attr_fld)) : $qr_res->get($attr_fld);
 				if ($return_all) {
-					$ret[$key][] = $qr_res->get($pk);
+					$ret[$key][] = $return_idnos ? ['idno' => $qr_res->get($idno_fld), 'id' => $qr_res->get($pk)] :  $qr_res->get($pk);
 				} else {
 					if(array_key_exists($key, $ret)) { continue; }
-					$ret[$key] = $qr_res->get($pk);
+					$ret[$key] = $return_idnos ? ['idno' => $qr_res->get($idno_fld), 'id' => $qr_res->get($pk)] : $qr_res->get($pk);
 				}
 			}
 			return $ret;

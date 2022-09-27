@@ -1457,6 +1457,34 @@ if (!$for_current_value_reindex) {
 						}
 					}
 				}
+				
+				
+				// reindex any rows that have authority metadata elements that reference this
+				if (is_subclass_of($t_subject, "BaseLabel") && ($t_base = $t_subject->getSubjectTableInstance(['dontLoadInstance' => false])) && method_exists($t_base, "getAuthorityElementReferences") && is_array($element_references = $t_base->getAuthorityElementReferences(['row_id' => $t_base->getPrimaryKey()]))) {
+					foreach($element_references as $element_table_num => $references) {
+						if(!is_array($references) || (sizeof($references) === 0)) { continue; }
+						
+						$labels = $t_base->getPreferredDisplayLabelsForIDs([$t_base->getPrimaryKey()], ['noCache' => true, 'returnAllLocales' => true]);
+
+						$values = [];
+						foreach($labels as $row_id => $labels_per_row) {
+							foreach($labels_per_row as $locale_id => $label_list) {
+								foreach($label_list as $label) {
+									$values[$label] = true;	
+								}
+							}
+						}
+						
+						foreach($references as $row_id => $elements) {
+							$content = join('; ', array_keys($values ?? []));
+							$element_fields_to_index = $this->getFieldsToIndex($element_table_num, $rtable_num);
+							foreach($elements as $e_id) {
+								$this->opo_engine->updateIndexingInPlace($element_table_num, [$row_id], $element_table_num, "A_{$e_id}", null, $row_id, $content, $element_fields_to_index["_ca_attribute_{$e_id}"] ?? []);
+							}
+						}
+					}
+				}
+				
 			} else {
 				//
 				// If the underlying engine doesn't support incremental indexing then
@@ -2299,48 +2327,6 @@ if (!$for_current_value_reindex) {
                                              $va_dependent_rows[$vs_key]['cv_indexing_info'][$vs_field] = [$p => $indexing_config[$vs_field]];  
                                         }
                                     }	
-                                    
-									// reindex any rows that have authority metadata elements that reference this
-									if (method_exists($t_dep, "getAuthorityElementReferences") && is_array($va_element_references = $t_dep->getAuthorityElementReferences(array('row_id' => $vn_row_id)))) {
-										foreach($va_element_references as $vn_element_table_num => $va_references) {
-											if(!is_array($va_references) || (sizeof($va_references) === 0)) { continue; }
-
-											$va_element_fields_to_index = $this->getFieldsToIndex($vn_element_table_num, $vn_element_table_num);
-											$vs_element_table_name = Datamodel::getTableName($vn_element_table_num);
-											$vs_element_table_pk = Datamodel::primaryKey($vn_element_table_num);
-
-											$qr_field_data = $this->opo_db->query("
-												SELECT *
-												FROM {$vs_element_table_name}
-												WHERE {$vs_element_table_pk} IN (?)	
-											", array(array_keys($va_references)));
-
-											$va_field_data = [];
-											while($qr_field_data->nextRow()) {
-												$va_field_data[(int)$qr_field_data->get($vs_element_table_pk)] = $qr_field_data->getRow();
-											}
-
-											foreach($va_references as $vn_element_row_id => $va_element_ids) {
-												$vs_key = $vn_element_table_num.'/'.$vn_element_row_id.'/'.$vn_element_table_num.'/'.$vn_element_row_id;
-												if (!isset($va_dependent_rows[$vs_key])) {
-													$va_dependent_rows[$vs_key] = [
-														'table_num' => $vn_element_table_num,
-														'row_id' => $vn_element_row_id,
-														'field_table_num' => $vn_element_table_num, 
-														'field_row_id' => $vn_element_row_id, 
-														'field_values' => $va_field_data[$vn_element_row_id],
-														'field_nums' => [],
-														'field_names' => []
-													];
-												}
-												foreach($va_element_ids as $vn_element_id) {
-													$va_dependent_rows[$vs_key]['field_nums']['_ca_attribute_'.$vn_element_id] = 'A'.$vn_element_id;
-													$va_dependent_rows[$vs_key]['field_names']['A'.$vn_element_id] = '_ca_attribute_'.$vn_element_id;
-													$va_dependent_rows[$vs_key]['indexing_info']['_ca_attribute_'.$vn_element_id] = $va_element_fields_to_index['_ca_attribute_'.$vn_element_id];
-												}
-											}
-										}
-									}
 								}
 							}
 						}
@@ -2348,7 +2334,7 @@ if (!$for_current_value_reindex) {
 				}
 			}
 		}
-
+		
 		return $va_dependent_rows;
 	}
 	# ------------------------------------------------

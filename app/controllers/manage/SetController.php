@@ -74,7 +74,7 @@
 			$this->view->setVar('list_set_type_id', $this->opn_list_set_type_id);
 			$this->view->setVar('type_name_singular', $this->ops_set_type_singular);
 			$this->view->setVar('type_name_plural', $this->ops_set_type_plural);
-			$this->opa_sorts = array("name", "set_content_type", "access", "lname", "item_count", "set_type", "access", "status");
+			$this->opa_sorts = array("name", "set_content_type", "access", "lname", "item_count", "set_type", "access", "status", "rank");
  		}
  		# -------------------------------------------------------
  		public function ListSets() {
@@ -122,7 +122,7 @@
                 $va_set_list = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $vn_user_id, 'access' => __CA_SET_EDIT_ACCESS__, 'setType' => $this->opn_list_set_type_id)), null, null, array());
             }
             if (!($vs_sort 	= $o_result_context->getCurrentSort()) || (!in_array($vs_sort, $this->opa_sorts))) { 
-                $vs_sort = array_shift($this->opa_sorts); 
+                $vs_sort = array_pop($this->opa_sorts); 
             }
             $vs_sort_direction = $o_result_context->getCurrentSortDirection();
             if($vb_sort_has_changed = $o_result_context->sortHasChanged()){
