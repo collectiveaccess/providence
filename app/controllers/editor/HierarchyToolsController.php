@@ -274,11 +274,20 @@ class HierarchyToolsController extends ActionController {
 			if(!$this->subject->isReadable($this->request)) {
 				throw new ApplicationException(_t('Access denied'));
 			}
-			$reps = $this->subject->getRepresentations(['original', 'page', 'large', 'h264_hi', 'mp3']);
+			
+			$version_list = ['full', 'original', 'h264_hi', 'mp3', 'page', 'large'];
+			
+			$reps = $this->subject->getRepresentations($version_list);
 			foreach($reps as $rep) {
-				$path = caGetOption(['original', 'h264_hi', 'mp3', 'page', 'large'], $rep['paths'], null);
+				$path = $version = null;
+				foreach($version_list as $v) {
+					if(isset($rep['paths'][$v])) {
+						$path = $rep['paths'][$v];
+						$version = $v;
+					}
+				}
 				if($path) {
-					$name = $rep['original_filename'] ?? pathinfo($path, PATHINFO_BASENAME);
+					$name = caGetRepresentationDownloadFileName($this->subject->tableName(), ['idno' => $this->subject->get('idno'), 'index' => $c, 'version' => $version, 'extension' => pathinfo($path, PATHINFO_EXTENSION), 'original_filename' => $rep['original_filename'], 'representation_id' => $rep['representation_id']]);
 					$o_zip->addFile($path, $name);
 					$c++;
 				}

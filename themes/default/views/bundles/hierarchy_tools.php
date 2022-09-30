@@ -129,7 +129,7 @@
 		
 		});
 		
-		jQuery('#<?= $id_prefix; ?>').on('click', '.hierarchyToolsItemSelect input', function(e) {
+		function <?= $id_prefix; ?>caUpdateHierarchyToolsUI() {
 			let selectedList = []
 			jQuery('#<?= "{$id_prefix}"; ?>').find('.hierarchyToolsItemSelect').find('input').each(function(k, v) {
 				if(jQuery(v).attr('checked')) { 
@@ -147,6 +147,10 @@
 				jQuery('.hierarchyToolsControlRemoveItems, .hierarchyToolsControlTransferItems, .hierarchyToolsControlCreateWithItems, .hierarchyToolsControlDownloadMedia').hide();
 			}
 			jQuery('#<?= $id_prefix; ?>_selection').val(selectedList.join(';'));
+		}
+		
+		jQuery('#<?= $id_prefix; ?>').on('click', '.hierarchyToolsItemSelect input', function(e) {
+			<?= $id_prefix; ?>caUpdateHierarchyToolsUI();
 		});
 		
 		// Transfer lookup
@@ -158,7 +162,6 @@
 						jQuery('#<?= $id_prefix; ?>_transfer_id').val(parseInt(ui.item.id));
 					}
 					event.preventDefault();
-					//jQuery('#<?= $id_prefix; ?>_transfer_autocomplete').val('');
 				}
 			}
 		);
@@ -228,12 +231,12 @@
 		
 		jQuery('#<?= $id_prefix; ?>').find('.hierarchyToolsControlSelectAll').on('click', function(e) {
 			jQuery('#<?= "{$id_prefix}"; ?>').find('.hierarchyToolsItemSelect').find('input').attr('checked', true);
-			jQuery('.hierarchyToolsControlRemoveItems, .hierarchyToolsControlTransferItems, .hierarchyToolsControlCreateWithItems').show();
+			<?= $id_prefix; ?>caUpdateHierarchyToolsUI();
 		});
 		
 		jQuery('#<?= $id_prefix; ?>').find('.hierarchyToolsControlSelectNone').on('click', function(e) {
 			jQuery('#<?= "{$id_prefix}"; ?>').find('.hierarchyToolsItemSelect').find('input').attr('checked', false);
-			jQuery('.hierarchyToolsControlRemoveItems, .hierarchyToolsControlTransferItems, .hierarchyToolsControlCreateWithItems').hide();
+			<?= $id_prefix; ?>caUpdateHierarchyToolsUI();
 		});
 <?php 
 	if($total_count === 0) {
