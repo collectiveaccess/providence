@@ -1097,6 +1097,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				
 				$captions = 		caGetOption("captions", $options, array(), array('castTo' => 'array'));
 				
+				$controls = 		caGetOption("controls", $options, ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'fullscreen'], ['castTo' => 'array']);
 				ob_start();
 ?>
 				<video id="<?= $id; ?>" playsinline controls data-poster="<?= $poster_frame_url; ?>" width="<?= $width; ?>" height="<?= $height; ?>" >
@@ -1114,7 +1115,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 						options = {
 							debug: false,
 							iconUrl: '<?= __CA_URL_ROOT__; ?>/assets/plyr/plyr.svg',
-							controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'fullscreen'],
+							controls: [<?= join(',', array_map(function($v) { return "'".addslashes(preg_replace("![\"']+!", '', $v))."'"; }, $controls)); ?>],
 						};
 						const player = new Plyr('#<?= $id; ?>', options);
 						jQuery('#<?= $id; ?>').data('player', player);

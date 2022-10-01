@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2020 Whirl-i-Gig
+ * Copyright 2016-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -62,12 +62,32 @@
 				    $poster = $t_instance->getMediaUrl('media', caGetOption('viewer_poster_version', $pa_data['display'], 'small'));
 					$va_viewer_opts = [
 						'id' => $vs_id, 'viewer_width' => caGetOption('viewer_width', $pa_data['display'], '100%'), 'viewer_height' => caGetOption('viewer_height', $pa_data['display'], '100%'),
-					    'poster_frame_url' => $poster, 'captions' => $t_instance->getCaptionFileList()
+					    'poster_frame_url' => $poster, 'captions' => $t_instance->getCaptionFileList(),
+					    'controls' => caGetOption('controls', $pa_data['display'], null)
 					];
 					
 					if (!$t_instance->hasMediaVersion('media', $vs_version = caGetOption('display_version', $pa_data['display'], 'original'))) {
 						if (!$t_instance->hasMediaVersion('media', $vs_version = caGetOption('alt_display_version', $pa_data['display'], 'original'))) {
 							$vs_version = 'original';
+						}
+					}
+					
+					if(is_array($controls_when = caGetOption('controls_when', $pa_data['display'], null))) {
+						foreach($controls_when as $n => $info) {
+							$exp = $info['expression'] ?? null;
+							if(!$exp) { continue; }
+							
+							$tags = caGetTemplateTags($exp);
+							$values = [];
+							foreach($tags as $t) {
+								if (is_null($values[$t] = $t_instance->get($t, ['convertCodesToIdno' => true]))) {
+									$values[$t] = $t_subject->get($t, ['convertCodesToIdno' => true]);
+								}
+							}
+							if (ExpressionParser::evaluate($exp, $values)) {
+								$va_viewer_opts['controls'] = $info['controls'];
+								break;
+							}
 						}
 					}
 					

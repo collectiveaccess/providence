@@ -77,7 +77,6 @@ function caSendmail($pa_to, $pa_from, $ps_subject, $ps_body_text, $ps_body_html=
 	global $g_last_email_error;
 	$o_config = Configuration::load();
 	$o_log = new Eventlog();
-
 	if($o_config->get('smtp_auth')){
 		$vs_smtp_auth = $o_config->get('smtp_auth');
 	} else {
@@ -119,16 +118,18 @@ function caSendmail($pa_to, $pa_from, $ps_subject, $ps_body_text, $ps_body_html=
 		
 		$o_mail = new Zend_Mail('UTF-8');
 		
+		if (!is_array($pa_from) && $pa_from) {
+			$pa_from = preg_split('![,;\|]!', $pa_from);
+		}
 		if (is_array($pa_from)) {
 			foreach($pa_from as $vs_from_email => $vs_from_name) {
 				$o_mail->setFrom($vs_from_email, $vs_from_name);
+				break;
 			}
-		} else {
-			$o_mail->setFrom($pa_from);
 		}
 		
-		if (!is_array($pa_to)) {
-			$pa_to = array($pa_to => $pa_to);
+		if (!is_array($pa_to) && $pa_to) {
+			$pa_to = preg_split('![,;\|]!', $pa_to);
 		}
 		
 		foreach($pa_to as $vs_to_email => $vs_to_name) {
@@ -139,6 +140,9 @@ function caSendmail($pa_to, $pa_from, $ps_subject, $ps_body_text, $ps_body_html=
 			}
 		}
 		
+		if (!is_array($pa_cc) && $pa_cc) {
+			$pa_cc = preg_split('![,;\|]!', $pa_cc);
+		}
 		if (is_array($pa_cc) && sizeof($pa_cc)) {
 			foreach($pa_cc as $vs_to_email => $vs_to_name) {
 				if (is_numeric($vs_to_email)) {

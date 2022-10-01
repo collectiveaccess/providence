@@ -483,7 +483,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			
 				$flds = [];
 				foreach($restrictions['exclude'] as $r) {
-					$flds[] = "'".$r['table_num'].'/'.$r['field_num']."'";
+					$flds[] = $r['table_num'].'/'.$r['field_num'];
 				}
 				if(sizeof($flds)) {
 					$res[] = "(CONCAT(swi.field_table_num, '/', swi.field_num) NOT IN (?))";
@@ -629,7 +629,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			
 				$flds = [];
 				foreach($restrictions['exclude'] as $r) {
-					$flds[] = "'".$r['table_num'].'/'.$r['field_num']."'";
+					$flds[] = $r['table_num'].'/'.$r['field_num'];
 				}
 				if(sizeof($flds)) {
 					$res[] = "(CONCAT(swi.field_table_num, '/', swi.field_num) NOT IN (?))";
