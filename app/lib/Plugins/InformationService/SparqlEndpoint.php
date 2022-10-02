@@ -252,7 +252,7 @@
  		// $looking_for_keys = array('results', 'bindings');
  		$looking_for_keys = synHierarchy2array($pa_settings['querySparqlResultsKeys']);
  		// equivalent to $va_content['results']['bindings']
- 		$va_results = drillDown($va_content, $looking_for_keys);
+ 		$va_results = drillDown($va_content, $looking_for_keys) ?? [];
  		$va_return = array();
 
  		// Get valuable data from each element
