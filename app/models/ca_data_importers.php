@@ -3690,23 +3690,15 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												break;
 											}
 
-											if($rel_type_delimiter = $va_element_data['_relationship_type_delimiter']) {
-												$rel_types = array_map(function($v) { return trim($v); }, explode($rel_type_delimiter, trim($va_element_data['_relationship_type'])));
-											} else {
-												$rel_types = [trim($va_element_data['_relationship_type'])];
-											}
-
-											foreach($rel_types as $rel_type) {
-												$t_subject->addRelationship($vs_table_name, $vn_rel_id, $rel_type, null, null, null, null, array('interstitialValues' => $va_element_data['_interstitial']));
-										
-												if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related object with relationship %2:", $vs_idno, $rel_type), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-													$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_table_name, 'notes' => null]));
-													if ($vs_item_error_policy == 'stop') {
-														$o_log->logAlert(_t('Import stopped due to mapping error policy'));
-																										
-														$stopped_on_error = true;
-														goto stop_on_error;
-													}
+											$t_subject->addRelationship($vs_table_name, $vn_rel_id, $vs_rel_type, null, null, null, null, array('interstitialValues' => $va_element_data['_interstitial']));
+									
+											if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related object with relationship %2:", $vs_idno, $vs_rel_type), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+												$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_table_name, 'notes' => null]));
+												if ($vs_item_error_policy == 'stop') {
+													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
+																									
+													$stopped_on_error = true;
+													goto stop_on_error;
 												}
 											}
 										}
