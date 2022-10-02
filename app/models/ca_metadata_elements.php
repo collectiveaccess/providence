@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -256,14 +256,31 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		parent::__construct($id, $options);	# call superclass constructor
 		$this->FIELDS['datatype']['BOUNDS_CHOICE_LIST'] = array_flip(ca_metadata_elements::getAttributeTypes());
 
-		if($id) { $this->opa_element_settings = $this->get('settings'); }
+		if($id) { $this->loadSettings(); }
 	}
 	# ------------------------------------------------------
 	public function load($pm_id=null, $pb_use_cache = true) {
 		if ($vn_rc = parent::load($pm_id, $pb_use_cache)) {
-			$this->opa_element_settings = $this->get('settings');
+			$this->loadSettings();
 		}
 		return $vn_rc;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function loadSettings() : void {
+		$this->opa_element_settings = $this->get('settings');
+		
+		// Set data type default values if no setting value is present
+		$o_value = Attribute::getValueInstance($this->get('datatype'));
+		$available_settings = $o_value->getAvailableSettings($this->opa_element_settings) ?? [];
+		
+		foreach($available_settings as $setting => $setting_info) {
+			if(!isset($this->opa_element_settings[$setting])) {
+				$this->opa_element_settings[$setting] = $setting_info['default'] ?? null;
+			}
+		}
 	}
 	# ------------------------------------------------------
 	public function insert($pa_options=null) {
