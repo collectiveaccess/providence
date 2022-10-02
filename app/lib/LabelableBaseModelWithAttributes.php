@@ -1090,7 +1090,7 @@
 			
 			if ($vs_type_restriction_sql) { $va_sql[] = $vs_type_restriction_sql; }
 		
-            $vs_sql = "SELECT DISTINCT {$vs_table}.{$select_flds}".($vs_sort_proc ? ", {$vs_sort_proc}" : "")." FROM {$vs_table}";
+            $vs_sql = "SELECT DISTINCT {$vs_table}.{$select_flds} FROM {$vs_table}";
             $vs_sql .= join("\n", $va_joins);
             $vs_sql .= ((sizeof($va_sql) > 0) ? " WHERE (".join(" AND ", $va_sql).")" : "");
 			

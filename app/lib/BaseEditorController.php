@@ -306,6 +306,9 @@ class BaseEditorController extends ActionController {
 			} elseif($t_subject->hasErrorNumInRange(3600, 3699)) {
 				$vb_no_save_error = true;
 			}
+			if($t_subject->numErrors() > 0) {
+				$this->request->addActionErrors($t_subject->errors, 'saveBundlesForScreen');
+			}
 		}
 		$this->view->setVar('t_ui', $t_ui);
 

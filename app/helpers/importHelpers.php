@@ -802,6 +802,11 @@
 		
 		if (isset($pa_item['settings']['formatWithTemplate']) && strlen($pa_item['settings']['formatWithTemplate'])) {
 			// Transform mapped value with template, if specified. This provides a way to rewrite values prior to use by the refinery.
+			if($o_reader && is_array($tags = caGetTemplateTags($pa_item['settings']['formatWithTemplate']))) {
+				foreach($tags as $t) {
+					$pa_source_data[$t] = $o_reader->get($t);
+				}
+			}
 			$pm_value = DisplayTemplateParser::processTemplate($pa_item['settings']['formatWithTemplate'], $pa_source_data);
 		} else {
 			$pm_value = (!isset($pa_source_data[$pa_item['source']]) && $o_reader) ? caProcessImportItemSettingsForValue($o_reader->get($pa_item['source'], array('returnAsArray'=> true)), $pa_item['settings']) : $pa_source_data[$pa_item['source']];
@@ -1199,7 +1204,7 @@
 								if(!isset($va_val['preferred_labels']) || !is_array($va_val['preferred_labels'])) { 
 									$va_val['preferred_labels'] = DataMigrationUtils::splitEntityName($vs_item, array_merge($pa_options, ['type' => $va_val['_type'], 'doNotParse' => $pa_item['settings']["{$ps_refinery_name}_doNotParse"]])); 
 								}
-								$va_val['preferred_labels'] = ca_entity_labels::normalizeLabel($va_val['preferred_labels']);
+								$va_val['preferred_labels'] = ca_entity_labels::normalizeLabel($va_val['preferred_labels'], array_merge($pa_options, ['type' => $va_val['_type']]));
 								if(!isset($va_val['idno'])) { $va_val['idno'] = $vs_item; }
 								break;
 							case 'ca_list_items':

@@ -1327,6 +1327,11 @@ class DisplayTemplateParser {
 		if (!$po_node || !$po_node->{$vs_attribute}) { return null; }
 		$va_codes = preg_split("![ ,;\|]+!", $po_node->{$vs_attribute});
 		if ($pb_include_booleans) { preg_match_all("![ ,;\|]+!", $po_node->{$vs_attribute}, $va_matches); $va_matches = array_shift($va_matches); }
+		
+		$va_codes = array_filter(array_map(function($v) { 
+			if(is_string($v) && (mb_substr($v, 0, 1) === '^')) { $v = mb_substr($v, 1); }
+			return $v;
+		}, $va_codes), function($v) { return (bool)strlen($v); });
 		if (!$va_codes || !sizeof($va_codes)) { return null; }
 		
 		if ($pb_include_booleans) {
