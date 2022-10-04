@@ -1478,6 +1478,16 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'description' => _t('URL pointing to documentation for this hierarchy browser. Leave blank if no documentation URL exists.')
 							)
 						);
+						if($vs_bundle === 'hierarchy_location') {
+							$va_additional_settings['headerDisplayTemplate'] = [
+								'formatType' => FT_TEXT,
+								'displayType' => DT_FIELD,
+								'default' => '',
+								'width' => "475px", 'height' => "100px",
+								'label' => _t('Header display template'),
+								'description' => _t('Layout for item in hierarchy browser header. The template is evaluated relative to item being edited.')
+							];
+						}
 					} else {
 						switch($vs_bundle) {
 							case 'authority_references_list':

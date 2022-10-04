@@ -8068,3 +8068,13 @@ div.genericEditorContent {
 	color: #000;
 	font-weight: initial;
 }
+
+div.typePill {
+	display: inline;
+	color: #fff;
+	background-color: #aaa;
+	padding: 2px 4px 2px 4px;
+	border-radius: 4px;
+	font-weight: normal;
+	margin: 3px 3px 6px 0;
+}
