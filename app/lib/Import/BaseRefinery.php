@@ -158,6 +158,7 @@
 			
 			$va_delimiter = caGetOption("delimiter", $pa_options, null);
 			if (is_array($va_delimiter)) { $vs_delimiter = $va_delimiter[0]; } else { $vs_delimiter = $va_delimiter; $va_delimiter = [$va_delimiter]; }
+			$vs_delimiter = stripslashes($vs_delimiter);
 			
 			if ($o_reader && !$o_reader->valuesCanRepeat() && $vs_delimiter) {
 			    // Expand delimited values in non-repeating sources to simulate repeats
@@ -171,7 +172,7 @@
 			    // 
 			    foreach($va_delimiter as $vn_index => $vs_delim) {
                     if (!trim($vs_delim, "\t ")) { unset($va_delimiter[$vn_index]); continue; }
-                    $va_delimiter[$vn_index] = preg_quote($vs_delim, "!");
+                    $va_delimiter[$vn_index] = preg_quote(stripslashes($vs_delim), "!");
                 }
 			    foreach($pa_source_data as $vs_k => $vm_v) {
 			        if(!is_array($vm_v)) { $pa_source_data[$vs_k] = [$vm_v]; }
@@ -192,7 +193,6 @@
 				    $vm_val = $pa_source_data[$va_tag[0]];
 				} elseif ($o_reader) {
 					$vm_val = $o_reader->get($va_tag[0], array('returnAsArray' => true, 'delimiter' => $vs_delimiter));
-					
 				} else {
 					$vm_val = null;
 				}
@@ -243,7 +243,9 @@
 			}
 			
 			// Get specific index for repeating value
-			if (is_array($vm_val) && !is_null($pn_index)) {
+			if (is_array($vm_val) && !is_null($pn_index) && !is_null($pn_get_at_index)) {
+				$vm_val = isset($vm_val[$pn_get_at_index]) ? [$vm_val[$pn_get_at_index]] : null;
+			} elseif (is_array($vm_val) && !is_null($pn_index)) {
 				$vm_val = isset($vm_val[$pn_index]) ? [$vm_val[$pn_index]] : null;
 			}
 	

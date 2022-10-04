@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2018 Whirl-i-Gig
+ * Copyright 2011-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -577,7 +577,7 @@ class OAIPMHService extends BaseService {
 				} elseif(is_array($type_exclusion = caGetOption('excludeTypes', $this->opa_provider_info, null)) && sizeof($type_exclusion)) {
 					$o_search->setTypeExclusions($type_exclusion);
 				}
-				$qr_res = $o_search->search($vs_range ? 'modified:"'.$vs_range.'"' : '*', array('showDeleted' => $vb_show_deleted, 'no_cache' => $vb_dont_cache, 'checkAccess' => $vb_dont_enforce_access_settings ? null : $va_access_values, 'dontFilterByACL' => $this->opa_provider_info['dontFilterByACL']));
+				$qr_res = $o_search->search($vs_range ? 'modified:"'.$vs_range.'"' : '*', array('showDeleted' => $vb_show_deleted, 'no_cache' => $vb_dont_cache, 'checkAccess' => $vb_dont_enforce_access_settings || $vb_show_deleted ? null : $va_access_values, 'dontFilterByACL' => $this->opa_provider_info['dontFilterByACL']));
 			} else {
 				$o_browse = caGetBrowseInstance($this->table);
 		
@@ -597,7 +597,7 @@ class OAIPMHService extends BaseService {
 						$o_browse->addCriteria($this->opa_provider_info['setFacet'], $set_value);
 					}
 				}
-				$o_browse->execute(array('showDeleted' => $vb_show_deleted, 'no_cache' => $vb_dont_cache, 'limitToModifiedOn' => $vs_range, 'checkAccess' => $vb_dont_enforce_access_settings ? null : $va_access_values, 'dontFilterByACL' => $this->opa_provider_info['dontFilterByACL']));
+				$o_browse->execute(array('showDeleted' => $vb_show_deleted, 'no_cache' => $vb_dont_cache, 'limitToModifiedOn' => $vs_range, 'checkAccess' => $vb_dont_enforce_access_settings || $vb_show_deleted ? null : $va_access_values, 'dontFilterByACL' => $this->opa_provider_info['dontFilterByACL']));
 				$qr_res = $o_browse->getResults();
 			}
 		} else {
@@ -606,7 +606,7 @@ class OAIPMHService extends BaseService {
 			} elseif(is_array($type_exclusion = caGetOption('excludeTypes', $this->opa_provider_info, null)) && sizeof($type_exclusion)) {
 				$o_search->setTypeExclusions($type_exclusion);
 			}
-			$qr_res = $o_search->search(strlen($this->opa_provider_info['query']) ? $this->opa_provider_info['query'] : "*", array('no_cache' => $vb_dont_cache, 'limitToModifiedOn' => $vs_range, 'showDeleted' => $vb_show_deleted, 'checkAccess' => $vb_dont_enforce_access_settings ? null : $va_access_values, 'dontFilterByACL' => $this->opa_provider_info['dontFilterByACL']));
+			$qr_res = $o_search->search(strlen($this->opa_provider_info['query']) ? $this->opa_provider_info['query'] : "*", array('no_cache' => $vb_dont_cache, 'limitToModifiedOn' => $vs_range, 'showDeleted' => $vb_show_deleted, 'checkAccess' => $vb_dont_enforce_access_settings || $vb_show_deleted ? null : $va_access_values, 'dontFilterByACL' => $this->opa_provider_info['dontFilterByACL']));
 		}
 
 		if (!$qr_res) {
@@ -638,7 +638,7 @@ class OAIPMHService extends BaseService {
 						$va_get_deleted_timestamps_for[$vs_pk_val] = true;
 					} else {
 						$vn_access = (int)$qr_res->get("{$vs_table}.access");
-						if (!in_array($vn_access, $va_access_values)) {
+						if (is_array($va_access_values) && sizeof($va_access_values) && !in_array($vn_access, $va_access_values)) {
 							$va_deleted_items[(int)$qr_res->get("{$vs_table}.{$vs_pk}")] = true;
 						}
 					}
