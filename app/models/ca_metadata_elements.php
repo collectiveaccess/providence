@@ -264,12 +264,13 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$this->opa_element_settings = $this->get('settings');
 		
 		// Set data type default values if no setting value is present
-		$o_value = Attribute::getValueInstance($this->get('datatype'));
-		$available_settings = $o_value->getAvailableSettings($this->opa_element_settings) ?? [];
+		if($o_value = Attribute::getValueInstance($this->get('datatype'))) {
+			$available_settings = $o_value->getAvailableSettings($this->opa_element_settings) ?? [];
 		
-		foreach($available_settings as $setting => $setting_info) {
-			if(!isset($this->opa_element_settings[$setting])) {
-				$this->opa_element_settings[$setting] = $setting_info['default'] ?? null;
+			foreach($available_settings as $setting => $setting_info) {
+				if(!isset($this->opa_element_settings[$setting])) {
+					$this->opa_element_settings[$setting] = $setting_info['default'] ?? null;
+				}
 			}
 		}
 	}
