@@ -266,7 +266,7 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 					return array(
 						'value_longtext1' => $vs_display_text,	// text
 						'value_longtext2' => $va_tmp[2],		// uri
-						'value_decimal1' => is_numeric($va_tmp[1]) ? $va_tmp[1] : null, 		// id
+						'value_decimal1' => (is_numeric($va_tmp[1]) && ((int)($va_tmp[1]) < pow(2,32))) ? $va_tmp[1] : null, 		// id
 						'value_blob' => caSerializeForDatabase($va_info)
 					);
 				}

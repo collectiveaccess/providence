@@ -1913,7 +1913,7 @@
 				}
 			}
 			
-			$t_element_datatype = $t_element->get('datatype');
+			$element_datatype = $t_element->get('datatype');
 			$t_element_code = $t_element->get('element_code');
 			$table_name = $this->tableName();
 			$show_bundle_codes = $po_request->user->getPreference('show_bundle_codes_in_editor');
@@ -1948,7 +1948,7 @@
 				
 				$label = (sizeof($va_element_set) > 1) ? $va_label['name'] : '';
 				
-				if($t_element_datatype == 0){ //Only show field level bundle codes inside containers    
+				if($element_datatype == 0){ //Only show field level bundle codes inside containers    
 					$bundle_code = "{$table_name}.{$t_element_code}.{$va_element['element_code']}";
 					$label = ($show_bundle_codes !== 'hide') ? "{$label} <span class='developerBundleCode'>(<a href='#' class='developerBundleCode'>{$bundle_code}</a>)</span>" : $label;
 				}
@@ -2024,7 +2024,7 @@
 			$o_view->setVar('element_set_label', $this->getAttributeLabel($t_element->get('element_id')));
 			$o_view->setVar('element_code', $t_element->get('element_code'));
 			$o_view->setVar('placement_code', $ps_placement_code);
-			$o_view->setVar('render_mode', $t_element->getSetting('render'));	// only set for list attributes (as of 26 Sept 2010 at least)
+			$o_view->setVar('render_mode', ($element_datatype == 3) ? $t_element->getSetting('render') : null);	// only set for list attributes (as of 26 Sept 2010 at least)
 			
 			if ($t_restriction = $this->getTypeRestrictionInstance($t_element->get('element_id'))) {
 				// If batch mode force minimums to zero
@@ -3013,11 +3013,11 @@
 					break;
 			}
 			
-			$va_references = array();
-			
+			$va_references = [];
 			while($qr_res->nextRow()) {
 				$va_row = $qr_res->getRow();
-				$va_references[$va_row['table_num']][$va_row['row_id']][] = $va_row['element_id'];
+				if(!is_array($va_references[$va_row['table_num']][$va_row['row_id']])) { $va_references[$va_row['table_num']][$va_row['row_id']] = []; }
+				if(!in_array($va_row['element_id'], $va_references[$va_row['table_num']][$va_row['row_id']])) { $va_references[$va_row['table_num']][$va_row['row_id']][] = $va_row['element_id']; }
 			}
 			
 			foreach($va_references as $vn_table_num => $va_rows) {

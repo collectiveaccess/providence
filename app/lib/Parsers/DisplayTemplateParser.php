@@ -799,8 +799,8 @@ class DisplayTemplateParser {
                                         if (!is_array($va_relative_ids = $pr_res->get($t_rel_instance->tableName().".related.".$t_rel_instance->primaryKey(), $va_get_options))) { $va_relative_ids = []; }
 								        $va_relative_ids = array_values($va_relative_ids);
                                         
-                                        $rels = $t_instance->getRelatedItems($t_rel_instance->tableName(), array_merge($va_get_options, array('returnAs' => 'data', 'row_ids' => [$pr_res->getPrimaryKey()])));
-								        $va_relation_ids = is_array($rels) ? array_keys($rels) : [];
+                                        $rels = $t_instance->getRelatedItems($t_rel_instance->tableName(), array_merge($va_get_options, array('returnAs' => 'data', 'row_ids' => [$pr_res->getPrimaryKey()]))) ?? [];
+								        $va_relation_ids = array_keys($rels);
 								 
 								        $va_relationship_type_ids = array_values(array_map(function($r) { return $r['relationship_type_id']; }, $rels));
 								        $va_relationship_type_orientations = array_values(array_map(function($r) { return $r['direction']; }, $rels));
@@ -1332,6 +1332,11 @@ class DisplayTemplateParser {
 		if (!$po_node || !$po_node->{$vs_attribute}) { return null; }
 		$va_codes = preg_split("![ ,;\|]+!", $po_node->{$vs_attribute});
 		if ($pb_include_booleans) { preg_match_all("![ ,;\|]+!", $po_node->{$vs_attribute}, $va_matches); $va_matches = array_shift($va_matches); }
+		
+		$va_codes = array_filter(array_map(function($v) { 
+			if(is_string($v) && (mb_substr($v, 0, 1) === '^')) { $v = mb_substr($v, 1); }
+			return $v;
+		}, $va_codes), function($v) { return (bool)strlen($v); });
 		if (!$va_codes || !sizeof($va_codes)) { return null; }
 		
 		if ($pb_include_booleans) {

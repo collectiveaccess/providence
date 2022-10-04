@@ -228,7 +228,7 @@ class ca_search_indexing_queue extends BaseModel {
 			
 			do {
 				$num_entries = 0;
-				if ($o_result = $o_db->query("SELECT * FROM ca_search_indexing_queue WHERE started_on IS NULL ORDER BY entry_id LIMIT 100")) {
+				if ($o_result = $o_db->query("SELECT * FROM ca_search_indexing_queue WHERE started_on IS NULL ORDER BY entry_id LIMIT 10")) {
 					$num_entries = (int)$o_result->numRows();
 					if($num_entries > 0) {
 						$o_si = new SearchIndexer($o_db);

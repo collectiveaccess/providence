@@ -2094,6 +2094,9 @@
 		} elseif(preg_match("!^count[/\.]{1}!", $va_name[1]))  {
 			// counts are always ints
 			$va_result['type'] = 'integer';
+		} elseif ($vs_name === '_fulltext') {
+			# Mark type as fulltext so that correct operator(s) get made available.
+			$va_result['type'] = 'fulltext';
 		}
 		
 		// Use the relevant input field type and operators based on type.
@@ -2120,6 +2123,10 @@
 			$va_result['operators'] = array_merge($va_operators_by_type['select'], ['between']);
 		} else {
 			$va_result['input'] = 'text';
+		}
+		if ($va_result['type'] === 'fulltext') {
+			// Now mark type to be a valid type that is supported by Query Builder
+			$va_result['type'] = 'string';
 		}
 		
 		// Set up option groups

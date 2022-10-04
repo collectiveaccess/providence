@@ -878,11 +878,9 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		$vn_num_rows = (int)$this->getDb()->affectedRows();
 		
 		// Reindex modified relationships
-		if (!BaseModel::$search_indexer) {
-			BaseModel::$search_indexer = new SearchIndexer($this->getDb());
-		}
+		$si = $this->getSearchIndexer();
 		foreach($va_to_reindex_relations as $vn_relation_id => $va_row) {
-			BaseModel::$search_indexer->indexRow($vn_table_num, $vn_relation_id, $va_row, false, null, array('type_id' => true));
+			$si->indexRow($vn_table_num, $vn_relation_id, $va_row, false, null, array('type_id' => true));
 		}
 		
 		return $vn_num_rows;

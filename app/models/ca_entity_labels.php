@@ -296,13 +296,15 @@ class ca_entity_labels extends BaseLabel {
 	 * @return bool
 	 */
 	public function insert($options=null) {
+		$is_org = (($t_entity = caGetOption('subject', $options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG'));
+
 		if (!trim($this->get('surname')) && !trim($this->get('forename'))) {
 			// auto-split entity name into forename and surname if displayname is set and 
 			// surname and forename are not explicitly defined
 			$we_set_displayname = false;
 			if($displayname = trim($this->get('displayname'))) {
 			
-				if (($t_entity = caGetOption('subject', $options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG')) {
+				if ($is_org) {
 					$label = [
 						'displayname' => $displayname,
 						'surname' => $displayname,
@@ -330,8 +332,19 @@ class ca_entity_labels extends BaseLabel {
 		
 		// Generate displayname from forename/middlename/surname when subject
 		// entity is organization or displayname is not explicitly defined
-		if (($t_entity = caGetOption('subject', $options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG')) {
-			$this->set('displayname', $this->get('surname'));
+		if ($is_org) {
+			if($this->get('displayname') && !$this->get('surname')) {
+				$this->set('surname', trim($this->get('displayname')));
+			} elseif($this->get('displayname') && $this->get('forename')) {
+				$this->set('surname', trim(preg_replace('![ ]+!', ' ', $this->get('forename').' '.$this->get('middlename').' '.$this->get('surname'))));
+				$this->set('displayname', $this->get('surname'));
+			} elseif(!$this->get('displayname')) {	
+				$this->set('displayname', trim(preg_replace('![ ]+!', ' ', $this->get('forename').' '.$this->get('middlename').' '.$this->get('surname'))));
+				$this->set('surname', $this->get('displayname'));
+			}
+			
+			$this->set('middlename', '');
+			$this->set('forename', '');	
 		} elseif (!$this->get('displayname')) {
 			if(is_array($normalized_label = self::normalizeLabel($label_values = [
 				'prefix' => $this->get('prefix'),
@@ -352,7 +365,6 @@ class ca_entity_labels extends BaseLabel {
 				$this->set('displayname', self::labelAsString($label_values));
 			}
 		}
-		
 		return parent::insert($options);
 	}
 	# ------------------------------------------------------
@@ -360,12 +372,13 @@ class ca_entity_labels extends BaseLabel {
 	 * Convert label components into canonical format
 	 *
 	 * @param array $label_values
+	 * @param array $options
 	 *
 	 * @return array
 	 */
 	public static function normalizeLabel(array $label_values, ?array $options=null) : array {
-		$normalized_values = DataMigrationUtils::splitEntityName(self::labelAsString($label_values), $options);
-		return $normalized_values;
+		$is_org = (($t_entity = caGetOption('subject', $options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG'));
+		return DataMigrationUtils::splitEntityName(self::labelAsString($label_values), array_merge(['type' => $is_org ? 'ORG' : 'IND'], $options ?? []));
 	}
 	# ------------------------------------------------------
 	/**
@@ -375,12 +388,17 @@ class ca_entity_labels extends BaseLabel {
 	 *
 	 * @return string
 	 */
-	public static function labelAsString(array $label_values) : string {
-		return trim(preg_replace('![ ]+!', ' ', $label_values['prefix'].' '.$label_values['forename'].' '.$label_values['other_forenames'].' '.$label_values['middlename'].' '.$label_values['surname'].' '.$label_values['suffix']));
+	public static function labelAsString(array $label_values) : ?string {
+		$n = trim(preg_replace('![ ]+!', ' ', ($label_values['prefix'] ?? null).' '.($label_values['forename'] ?? null).' '.($label_values['other_forenames'] ?? null).' '.($label_values['middlename'] ?? null).' '.($label_values['surname'] ?? null).' '.($label_values['suffix'] ?? null)));
+		if(!$n) { $n = $label_values['displayname'] ?? null; }
+		return $n;
 	}
 	# ------------------------------------------------------
 	/**
 	 *
+	 * @param array $options
+	 *
+	 * @return bool
 	 */
 	public function update($options=null) {
 		if (!trim($this->get('surname')) && !trim($this->get('forename'))) {

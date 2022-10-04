@@ -21,6 +21,8 @@ body {
     padding:0px;
     height: 100%;
     overflow: auto !important;
+    hyphens: auto;
+    overflow-wrap: break-word;
 }
 
 form{

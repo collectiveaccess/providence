@@ -357,7 +357,7 @@ function caFileIsIncludable($ps_file) {
 		}
 		$limit = caGetOption('limit', $pa_options, null);
 		
-		if($va_paths = scandir($dir, 0)) {
+		if($va_paths = @scandir($dir, 0)) {
 			foreach($va_paths as $item) {
 				if(in_array($item, ["@SynoEAStream", "@eaDir"])) { continue; }
 				if(preg_match("!@SynoEAStream$!", $item)) { continue; }

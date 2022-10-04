@@ -34,6 +34,7 @@
  *
  */
 require_once(__CA_APP_DIR__.'/helpers/printHelpers.php');
+require_once(__CA_APP_DIR__."/helpers/themeHelpers.php");
 require_once(__CA_LIB_DIR__.'/ResultContext.php');
 require_once(__CA_MODELS_DIR__.'/ca_bundle_displays.php');
 require_once(__CA_MODELS_DIR__."/ca_sets.php");
@@ -171,7 +172,7 @@ class BaseFindController extends ActionController {
 		}
 		if(!sizeof($va_displays)) { $va_displays = ['0' => _t('Default')]; } // force default display if none are configured
 		if(!isset($va_displays[$display_id])) { $display_id = array_shift(array_keys($va_displays)); }
-	
+		asort($va_displays, SORT_STRING);
 		$this->view->setVar('display_lists', $va_displays);	
 		$this->view->setVar('display_show_only_for_views', $va_display_show_only_for_views);	
 		
