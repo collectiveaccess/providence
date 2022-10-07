@@ -232,7 +232,6 @@
 						break;
 					case 'ca_places':
 						if(!$vn_id) {	// get place hierarchy root
-							require_once(__CA_MODELS_DIR__."/ca_places.php");
 							$t_place = new ca_places();
 							if ($o_trans) { $t_place->setTransaction($o_trans); }
 							$vn_hierarchy_id = $pa_options['hierarchyID'];
