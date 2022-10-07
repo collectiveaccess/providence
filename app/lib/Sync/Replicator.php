@@ -106,10 +106,19 @@ class Replicator {
 	 *
 	 */
 	protected function getSourcesAsServiceClients() {
-		$va_sources = $this->opo_replication_conf->get('sources');
-		if(!is_array($va_sources)) { throw new Exception('No sources configured'); }
+		$sources = $this->opo_replication_conf->get('sources');
+		if($enabled_sources = $this->opo_replication_conf->getList('enabled_sources')) {
+			$filtered_sources = [];
+			foreach($enabled_sources as $s) {
+				if(isset($sources[$s])) {
+					$filtered_sources[$s] = $sources[$s];
+				}
+			}
+			$sources = $filtered_sources;
+		}
+		if(!is_array($sources)) { throw new Exception('No sources configured'); }
 
-		return $this->getConfigAsServiceClients($va_sources);
+		return $this->getConfigAsServiceClients($sources);
 	}
 	# --------------------------------------------------------------------------------------------------------------
 	/**
