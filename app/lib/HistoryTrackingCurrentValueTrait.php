@@ -563,6 +563,9 @@
 				}
 			}
 			
+			if(!caDateToHistoricTimestamps($values['date'])) {
+				$values['date'] = null;
+			}
 			$d = [
 				'policy' => $policy,
 				'table_num' => $subject_table_num, 
@@ -602,6 +605,10 @@
 			$e = new ca_history_tracking_current_values();
 			$e->setDb($this->getDb());	
 			$e->set($d);
+			
+			if($values['date']) {
+				$e->set('value_date', $values['date']);
+			}
 			
 			if (!($rc = $e->insert())) {
 				$this->errors = $e->errors;
