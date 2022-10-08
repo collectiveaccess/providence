@@ -288,8 +288,8 @@
  			}
 			
  			return [
- 				'value_longtext1' => $pn_value,
- 				'value_decimal1' => $pn_value
+ 				'value_longtext1' => (int)$pn_value,
+ 				'value_decimal1' => (float)$pn_value
  			];
  		}
  		# ------------------------------------------------------------------
