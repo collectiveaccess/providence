@@ -1270,7 +1270,7 @@ div.formLabelUploadSizeNote {
 .bundleSubLabel{
 	clear:both;
 	background-color:#fbfbfb;
-	padding: 8px 7px 0px 7px;
+	padding:  8px 7px 0px 7px;
 	position:relative;
 	font-weight:normal;
 	font-size:11px;
@@ -2153,7 +2153,7 @@ div.search-hier-browser-box {
     background-color: #fbfbfb;
     /*border-top: 1px solid #e9e9e9;*/
     margin-left: 0px;
-    padding: 0px 5px 3px 5px;
+    padding: 4px 5px 3px 5px;
     border-bottom: 1px solid #e9e9e9;
     
     position: relative;
