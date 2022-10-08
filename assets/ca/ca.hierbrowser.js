@@ -73,6 +73,7 @@ var caUI = caUI || {};
 
 			currentSelectionDisplayID: '',
 			currentSelectionDisplayFormat: '<ifdef code="hierarchy">^hierarchy%delimiter=_➜_ ➜ </ifdef>^current',
+			currentSelectionDisplayPrefix: '',
 			currentSelectionIDID: '',
 			allowSelection: true,
 
@@ -781,7 +782,7 @@ var caUI = caUI || {};
 				while(l >= 0) {
 					if (that.displayCurrentSelectionOnLoad && (jQuery('#hierBrowser_' + that.name + '_level_' + l + '_item_' + selectedID).length > 0)) {
 						if (that.currentSelectionDisplayID) {
-							jQuery('#' + that.currentSelectionDisplayID).html(that._getCurrentSelectionStr(jQuery('#hierBrowser_' + that.name + '_level_' + l + '_item_' + selectedID).data('item'), l));
+							jQuery('#' + that.currentSelectionDisplayID).html(that.currentSelectionDisplayPrefix + that._getCurrentSelectionStr(jQuery('#hierBrowser_' + that.name + '_level_' + l + '_item_' + selectedID).data('item'), l));
 						}
 						break;
 					}
@@ -823,7 +824,7 @@ var caUI = caUI || {};
 			var formattedDisplayString = that._getCurrentSelectionStr(item, level);
 
 			if (that.currentSelectionDisplayID) {
-				jQuery('#' + that.currentSelectionDisplayID).html(formattedDisplayString);
+				jQuery('#' + that.currentSelectionDisplayID).html(that.currentSelectionDisplayPrefix + formattedDisplayString);
 			}
 
 			if (that.currentSelectionIDID) {

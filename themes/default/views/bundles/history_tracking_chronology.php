@@ -345,7 +345,7 @@ switch($display_mode) {
 			
 			<div style='width: 700px; height: 200px;'>				
 				<div style="float: right;">
-					<div class='hierarchyBrowserSearchBar'><?= _t('Search'); ?>: <input type='text' id='<?= $vs_id_prefix; ?>_hierarchyBrowserSearch{n}' class='hierarchyBrowserSearchBar' name='search' value='' size='40'/></div>
+					<div class='hierarchyBrowserSearchBar'><input type='text' id='<?= $vs_id_prefix; ?>_hierarchyBrowserSearch{n}' class='hierarchyBrowserSearchBar' name='search' value='' size='40' placeholder=<?= json_encode(_t('Search')); ?>/></div>
 				</div>
 				
 				<div class="clear"><!-- empty --></div>
@@ -384,6 +384,7 @@ switch($display_mode) {
 						className: 'hierarchyBrowserLevel',
 						classNameContainer: 'hierarchyBrowserContainer',
 						currentSelectionIDID: '<?= $vs_id_prefix; ?>_ca_storage_locations_id{n}',
+						currentSelectionDisplayPrefix: <?= json_encode('<span class="hierarchyBrowserCurrentSelectionHeader">'._t('Selected').'</span>: '); ?>,
 					
 						indicator: "<?= caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 						editButtonIcon: "<?= caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
