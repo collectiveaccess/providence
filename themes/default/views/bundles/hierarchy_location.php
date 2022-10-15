@@ -165,7 +165,10 @@
 
 	if (is_array($pa_ancestors) && sizeof($pa_ancestors) > 0) {
 		$template_values = null;
-		if($template = $pa_bundle_settings['headerDisplayTemplate'] ?? $config->get("{$subject_table}_hierarchy_browser_header_settings")) {
+		if(!($template = $pa_bundle_settings['headerDisplayTemplate'] ?? null)) { 
+			$template = $config->get("{$subject_table}_hierarchy_browser_header_settings");
+		}
+		if($template) {
 			$template_values = caProcessTemplateForIDs($template, $subject_table, array_keys($pa_ancestors), ['returnAsArray' => true, 'indexWithIDs' => true]);
 		}
 		foreach($pa_ancestors as $vn_id => $va_item) {

@@ -458,8 +458,10 @@ class Installer {
 	    
 		// generate system GUID -- used to identify systems in data sync protocol
 		$o_vars = new \ApplicationVars();
-		$o_vars->setVar('system_guid', caGenerateGUID());
-		$o_vars->save();
+		if(!strlen($o_vars->getVar('system_guid'))) {	// don't change when updating system and a guid is already defined
+			$o_vars->setVar('system_guid', caGenerateGUID());
+			$o_vars->save();
+		}
 
 		// refresh mapping if ElasticSearch is used
 		if ($this->config->get('search_engine_plugin') == 'ElasticSearch') {
