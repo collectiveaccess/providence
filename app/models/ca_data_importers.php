@@ -3221,7 +3221,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						if($va_field_info['FIELD_TYPE'] == FT_MEDIA) {
 							$va_opts['original_filename'] = basename($va_mandatory_field_values[$vs_mandatory_field]);
 						}
-						print "m=$vs_mandatory_field\n";
 						if(!$t_subject->set($vs_mandatory_field, $va_mandatory_field_values[$vs_mandatory_field], $va_opts)) {
 							$this->logImportError(join("; ", $t_subject->getErrors()), array_merge($va_log_import_error_opts, ['bundle' => $vs_mandatory_field, 'notes' => _t('While setting mandatory field')]));
 						}
@@ -3913,7 +3912,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				if(!$vb_output_subject_preferred_label && ($t_subject->getPreferredLabelCount() == 0)) {
 					try {
 						$t_subject->addLabel(
-							array($vs_label_display_fld => '???'), $vn_locale_id, null, true
+							[$vs_label_display_fld => '['.caGetBlankLabelText($t_subject->tableName()).']'], $vn_locale_id, null, true
 						);
 					} catch (Exception $e) {
 						// noop

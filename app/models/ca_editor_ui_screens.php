@@ -1344,13 +1344,13 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 						);
 					}
 
-					if (in_array($vs_bundle, array('ca_places', 'ca_list_items', 'ca_storage_locations'))) {
+					if (in_array($vs_bundle, array('ca_collections', 'ca_places', 'ca_list_items', 'ca_storage_locations'))) {
 						$va_additional_settings['useHierarchicalBrowser'] = array(
 							'formatType' => FT_TEXT,
 							'displayType' => DT_CHECKBOXES,
 							'width' => 10, 'height' => 1,
 							'takesLocale' => false,
-							'default' => '1',
+							'default' => ($vs_bundle === 'ca_collections') ? '0' : '1',
 							'label' => _t('Use hierarchy browser?'),
 							'description' => _t('If checked a hierarchical browser will be used to select related items instead of an auto-complete lookup.')
 						);
@@ -1478,6 +1478,16 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'description' => _t('URL pointing to documentation for this hierarchy browser. Leave blank if no documentation URL exists.')
 							)
 						);
+						if($vs_bundle === 'hierarchy_location') {
+							$va_additional_settings['headerDisplayTemplate'] = [
+								'formatType' => FT_TEXT,
+								'displayType' => DT_FIELD,
+								'default' => '',
+								'width' => "475px", 'height' => "100px",
+								'label' => _t('Header display template'),
+								'description' => _t('Layout for item in hierarchy browser header. The template is evaluated relative to item being edited.')
+							];
+						}
 					} else {
 						switch($vs_bundle) {
 							case 'authority_references_list':

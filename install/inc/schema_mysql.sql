@@ -7699,6 +7699,9 @@ create table ca_history_tracking_current_values (
    
    is_future                      int unsigned                   null,
    
+   value_sdatetime                decimal(40,20)                 null,
+   value_edatetime                decimal(40,20)                 null,
+   
    primary key (tracking_id),
 
    index i_policy			    (policy),
@@ -7709,6 +7712,7 @@ create table ca_history_tracking_current_values (
    
    index i_current              (current_row_id, current_table_num, current_type_id), 
    index i_tracked              (tracked_row_id, tracked_table_num, tracked_type_id),
+   index i_datetime             (value_sdatetime, value_edatetime, table_num, row_id),
    index i_is_future            (is_future)
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
