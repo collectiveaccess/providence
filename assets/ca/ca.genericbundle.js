@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -288,13 +288,13 @@ var caUI = caUI || {};
 			var fieldRegex = new RegExp(this.fieldNamePrefix + "([A-Za-z0-9_\-]+)_([0-9]+)");
 			for(i=0; i < selects.length; i++) {
 				var element_id = selects[i].id;
-
 				var info = element_id.match(fieldRegex);
-				if (info && info[2] && (parseInt(info[2]) == id)) {
-					if (typeof(this.initialValues[id][info[1]]) == 'boolean') {
+				if (info && info[2] && ((parseInt(info[2]) == id) || ('new_' + info[2] ==  id))) {
+					if (this.initialValues[id] && typeof(this.initialValues[id][info[1]]) == 'boolean') {
 						this.initialValues[id][info[1]] = (this.initialValues[id][info[1]]) ? '1' : '0';
 					}
-					jQuery(this.container + " #" + element_id + " option[value='" + this.initialValues[id][info[1]] +"']").prop('selected', true);
+					let iv = this.initialValues[id] ? this.initialValues[id][info[1]] : initialValues[info[1].replace('_new', '')];
+					jQuery(this.container + " #" + element_id + " option[value='" + iv +"']").prop('selected', true);
 				}
 			}
 
