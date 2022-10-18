@@ -237,12 +237,25 @@ use Zend\Stdlib\Glob;
 				"@marginLeft", "@marginRight", "@marginTop", "@marginBottom",
 				"@horizontalGutter", "@verticalGutter", "@labelWidth", "@labelHeight",
 				"@elementCode", "@showOnlyIn", "@filename", "@fileFormat", "@generic", "@standalone",
-				"@disabled"
+				"@disabled", "@param"
 			) as $vs_tag) {
-				if (preg_match("!{$vs_tag}([^\n\n]+)!", $vs_template, $va_matches)) {
-					$va_info[str_replace("@", "", $vs_tag)] = trim($va_matches[1]);
-				} else {
-					$va_info[str_replace("@", "", $vs_tag)] = null;
+				$vs_tag = str_replace("@", "", $vs_tag);
+				switch($vs_tag) {
+					case 'param':
+						if (preg_match_all("!@{$vs_tag}[ ]+([^ ]+)[ ]+([^\n\n]+)!", $vs_template, $matches)) {
+							foreach($matches[1] as $i => $param_name) {
+								if(!is_array($options = json_decode($matches[2][$i], true))) { continue; }
+								$va_info['params'][$param_name] = $options;
+							}
+						}
+						break;
+					default:
+						if (preg_match("!@{$vs_tag}([^\n\n]+)!", $vs_template, $va_matches)) {
+							$va_info[$vs_tag] = trim($va_matches[1]);
+						} else {
+							$va_info[$vs_tag] = null;
+						}
+						break;
 				}
 			}
 			if (!$va_info['fileFormat']) { $va_info['fileFormat'] = 'pdf'; }    // pdf is assumed for templates without a specific file format
