@@ -6490,6 +6490,8 @@ div.dialogHeader {
 	background-color: #eee;
 	border-radius: 5px;
 	display: none;
+	overflow-y: auto;
+	max-height: 300px;
 }
 
 #caSummaryDownloadOptionsPanelOptions div.col {

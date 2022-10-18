@@ -821,7 +821,9 @@ use Zend\Stdlib\Glob;
 			$default = $p['default'] ?? null;
 			switch(strtolower($p['type'] ?? null)) {
 				case 'list':
-					$e = caHTMLSelect($n, $p['options'], [], ['value' => $values[$n] ?? $default]);
+					$attr = [];
+					if($p['multiple'] ?? false) { $attr['multiple'] = 1; }
+					$e = caHTMLSelect($n, $p['options'], $attr, ['value' => $values[$n] ?? $default, 'width' => caGetOption('width', $p, null), 'height' => caGetOption('height', $p, null)]);
 					$form_elements[$n] = ['label' => $p['label'], 'element' => $e];
 					break;
 				case 'checkbox':
