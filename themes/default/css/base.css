@@ -1450,7 +1450,7 @@ div.formLabelUploadSizeNote {
 }
 #summary .searchFormSelector {
 	margin-bottom: 3px; 
-	font-size: 11px;
+	font-size: 12px;
 	display:inline;
 }
 #summary #printButton{
@@ -2312,11 +2312,7 @@ select.searchSetSelect {
 #searchOptionsBox, .relatedListSearchOptionsBox {
     clear:both;
     margin: 0px 0px 0px 0px;
-    display:none;
-    font-size:12px;
-    color:#828282;
-    margin: 0px 0px 0px 0px;
-	display: none;
+    display: none;
 	font-size: 14px;
 	color: #333;
 	line-height: 1.4em;
@@ -2472,10 +2468,6 @@ a#hideRefine img {
 #searchToolsBox, .relatedListSearchToolsBox {
     clear:both;
     margin: 0px 0px 0px 0px;
-    display:none;
-    font-size:12px;
-    color:#828282;
-    margin: 0px 0px 0px 0px;
 	display: none;
 	font-size: 14px;
 	color: #333;
@@ -2506,7 +2498,7 @@ a#hideRefine img {
 
 select.searchToolsSelect {
     width: 165px;
-    font-size: 11px;
+    font-size: 12px;
 }
 /* Set Tools */
 
@@ -6489,6 +6481,21 @@ div.dialogHeader {
     background-color: #FFFFFF;
 }
 
+#caSummaryDownloadOptionsPanelOptions {
+    font-size: 14px;
+	color: #333;
+	line-height: 1.4em;
+	padding: 10px;
+	margin: 25px 0px 0px 0px;
+	background-color: #eee;
+	border-radius: 5px;
+	display: none;
+}
+
+#caSummaryDownloadOptionsPanelOptions div.col {
+    margin-bottom: 5px;
+}
+
 #caSummaryDownloadOptionsPanel .close a{
     text-decoration:none;
     font-size:16px;
@@ -6513,7 +6520,7 @@ div.dialogHeader {
 }
 
 .caSummaryDownloadOptionsPanelAlertControls {
-    font-size: 11px;
+    font-size: 14px;
     height: 25px;
     margin-bottom: 10px;
 }
@@ -6524,7 +6531,7 @@ table.caSummaryDownloadOptionsPanelAlertControls {
 }
 
 .caSummaryDownloadOptionsPanelAlertControl {
-    font-size: 11px;
+    font-size: 14px;
 }
 
 /* Quick add */

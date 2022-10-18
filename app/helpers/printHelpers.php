@@ -237,7 +237,7 @@ use Zend\Stdlib\Glob;
 				"@marginLeft", "@marginRight", "@marginTop", "@marginBottom",
 				"@horizontalGutter", "@verticalGutter", "@labelWidth", "@labelHeight",
 				"@elementCode", "@showOnlyIn", "@filename", "@fileFormat", "@generic", "@standalone",
-				"@disabled", "@param"
+				"@disabled", "@param", "@backgroundThreshold"
 			) as $vs_tag) {
 				$vs_tag = str_replace("@", "", $vs_tag);
 				switch($vs_tag) {
@@ -247,6 +247,12 @@ use Zend\Stdlib\Glob;
 								if(!is_array($options = json_decode($matches[2][$i], true))) { continue; }
 								$va_info['params'][$param_name] = $options;
 							}
+						}
+						break;
+					case 'backgroundThreshold':
+						// maximum number of items to process in output before forcing background processing
+						if (preg_match("!@{$vs_tag}([^\n\n]+)!", $vs_template, $va_matches)) {
+							$va_info[$vs_tag] = (int)$va_matches[1];
 						}
 						break;
 					default:
@@ -798,5 +804,37 @@ use Zend\Stdlib\Glob;
 		}
 	
         return $buf;
+	}
+	# ---------------------------------------
+	/**
+	 * Return form elements for print summary options form
+	 * 
+	 * @return array
+	 */
+	function caEditorPrintSummaryForm(string $type, string $template, ?array $values=null, ?array $options=null) : ?array {
+		if(!is_array($info = caGetPrintTemplateDetails($type, $template, $options))) { return null; }
+		if(!is_array($info['params']) || (sizeof($info['params']) === 0)) { return []; }
+		
+		$form_elements = [];
+		
+		foreach($info['params'] as $n => $p) {
+			$default = $p['default'] ?? null;
+			switch(strtolower($p['type'] ?? null)) {
+				case 'list':
+					$e = caHTMLSelect($n, $p['options'], [], ['value' => $values[$n] ?? $default]);
+					$form_elements[$n] = ['label' => $p['label'], 'element' => $e];
+					break;
+				case 'checkbox':
+					$e = caHTMLCheckboxInput($n, ['value' => $p['value'] ?? 1, 'checked' => $values[$n] ?? $default]);
+					$form_elements[$n] = ['label' => $p['label'], 'element' => $e];
+					break;
+				case 'text':
+					$e = caHTMLTextInput($n, ['placeholder' => caGetOption('placeholder', $p, ''), 'value' => $values[$n] ?? $default], ['width' => caGetOption('width', $p, '200px'), 'height' => caGetOption('height', $p, '200px')]);
+					$form_elements[$n] = ['label' => $p['label'], 'element' => $e];
+					break;
+			}
+		}
+		
+		return $form_elements;
 	}
 	# ---------------------------------------

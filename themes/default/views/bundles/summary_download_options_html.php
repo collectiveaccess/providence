@@ -50,20 +50,36 @@ $formats 				= $this->getVar('formats');
 				closeButtonSelector: ".close",
 				center: true,
 				onOpenCallback: function() {
-				jQuery("#topNavContainer").hide(250);
+					jQuery("#topNavContainer").hide(250);
+					caSummaryUpdateOptions();
 				},
 				onCloseCallback: function() {
 					jQuery("#topNavContainer").show(250);
 				}
 			});
 		}
+		
+		jQuery('#caSummaryFormatSelector').on('change', caUpdateOptionsForm);
 	});
+	
+	function caUpdateOptionsForm(animation=true, use_download_selection=false) {
+		var val = jQuery("#caSummaryDownloadOptionsForm " + (use_download_selection ? "#caSummaryDisplaySelector" : "#caSummaryFormatSelector")).val();
+		jQuery("#caSummaryDownloadOptionsForm #caSummaryDownloadOptionsPanelOptions").load('<?= caNavUrl($this->request, '*', '*', 'PrintSummaryOptions'); ?>/form/' + val, function(t, r, x) {
+			if(x.status == 200) {
+				jQuery('#caSummaryDownloadOptionsPanelOptions').slideDown(animation ? 250 : 0);
+			} else {
+				jQuery('#caSummaryDownloadOptionsPanelOptions').slideUp(animation ? 250 : 0);
+			}
+		});
+	}
 	function caSummaryUpdateOptions() {
 		var val = jQuery("#caSummaryDownloadOptionsForm #caSummaryDisplaySelector").val();
 		if(val.match(/^_/)) {
 			jQuery("#caSummaryDownloadOptionsForm #caSummaryFormatSelectorGroup").hide();
+			caUpdateOptionsForm(true, true);
 		} else {
 			jQuery("#caSummaryDownloadOptionsForm #caSummaryFormatSelectorGroup").show();
+			caUpdateOptionsForm(true, false);
 		}
 		return false;
 	}
@@ -89,6 +105,7 @@ $formats 				= $this->getVar('formats');
 					</tr>
 				</table>
 			</div>
+			<div class="caSummaryDownloadOptionsPanelOptions" id="caSummaryDownloadOptionsPanelOptions"></div>	
 			<br class="clear"/>
 			<div id="caSummaryDownloadOptionsPanelControlButtons">
 				<table>

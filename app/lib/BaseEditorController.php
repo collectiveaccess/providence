@@ -817,6 +817,16 @@ class BaseEditorController extends ActionController {
                 }
             }
         }
+        
+        // Pass download-time option settings to template
+		if(is_array($tinfo = caGetPrintTemplateDetails('summary', $m[2])) && is_array($tinfo['params'])) {
+			$values = [];
+			foreach($tinfo['params'] as $n => $p) {
+				$this->view->setVar("param_{$n}", $values[$n] = $this->request->getParameter($n, pString));
+			}
+			
+			Session::setVar("print_summary_options_{$m[2]}", $values);
+		}
 
 		$va_barcode_files_to_delete = array();
 
@@ -968,6 +978,31 @@ class BaseEditorController extends ActionController {
 			$vb_printed_properly = false;
 			$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintBundle()");
 		}
+	}
+	# -------------------------------------------------------
+	/**
+	 * Generates options form for printable template
+	 *
+	 * @param array $pa_options Array of options passed through to _initView
+	 */
+	public function PrintSummaryOptions(?array $options=null) {
+		$form = $this->request->getParameter('form', pString);
+		
+		if(!preg_match("!^_([a-z]+)_(.*)$!", $form, $m)) {
+			throw new ApplicationException(_t('Invalid template'));
+		}
+		$values = Session::getVar("print_summary_options_{$m[2]}");
+		
+		$form_options = caEditorPrintSummaryForm('summary', $m[2], $values);
+		
+		$this->view->setVar('form', $m[2]);
+		$this->view->setVar('options', $form_options);
+		
+		if(sizeof($form_options) === 0) {
+			$this->response->setHTTPResponseCode(204, _t('No options available'));
+		}
+		
+		$this->render("../generic/ajax_print_summary_options_form_html.php");
 	}
 	# -------------------------------------------------------
 	/**

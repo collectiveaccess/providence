@@ -335,6 +335,7 @@
 	 *		returnValueIfUnchecked = boolean indicating if checkbox should return value in request if unchecked; default is false
 	 */
 	function caHTMLCheckboxInput($ps_name, $pa_attributes=null, $pa_options=null) {
+		if(!is_array($pa_attributes)) { $pa_attributes = []; }
 		if (array_key_exists('checked', $pa_attributes) && !$pa_attributes['checked']) { unset($pa_attributes['checked']); }
 		if (array_key_exists('CHECKED', $pa_attributes) && !$pa_attributes['CHECKED']) { unset($pa_attributes['CHECKED']); }
 		
