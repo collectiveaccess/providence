@@ -819,12 +819,17 @@ class BaseEditorController extends ActionController {
         }
         
         // Pass download-time option settings to template
-		if(is_array($tinfo = caGetPrintTemplateDetails('summary', $m[2])) && is_array($tinfo['params'])) {
+        $tinfo = caGetPrintTemplateDetails('summary', $m[2]);
+        $this->view->setVar('template_info', $tinfo);
+		if(is_array($tinfo) && is_array($tinfo['params'])) {
 			$values = [];
 			foreach($tinfo['params'] as $n => $p) {
-				$this->view->setVar("param_{$n}", $values[$n] = $this->request->getParameter($n, pString));
+				if((bool)$p['multiple'] ?? false) {
+					$this->view->setVar("param_{$n}", $values[$n] = $this->request->getParameter($n, pArray));
+				} else {
+					$this->view->setVar("param_{$n}", $values[$n] = $this->request->getParameter($n, pString));
+				}
 			}
-			
 			Session::setVar("print_summary_options_{$m[2]}", $values);
 		}
 
