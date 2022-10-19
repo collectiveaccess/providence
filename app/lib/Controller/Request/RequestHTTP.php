@@ -202,6 +202,13 @@ class RequestHTTP extends Request {
 		
 		$this->ops_path_info = preg_replace("![/]+!", "/", $vs_path_info ? "/{$vs_path_info}" : (isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : ''));
 		
+		if(!caIsRunFromCLI() && defined('__CA_SITE_HOSTNAME__') && !ExternalCache::contains('system_url', 'system')) {
+			ExternalCache::save('system_url', [
+				'protocol' => __CA_SITE_PROTOCOL__,
+				'hostname' => __CA_SITE_HOSTNAME__,
+				'url_root' => __CA_URL_ROOT__
+			], 'system');
+		}
 		if (__CA_URL_ROOT__) { $this->ops_path_info = preg_replace("!^".__CA_URL_ROOT__."!", "", $this->ops_path_info); }
 	}
 	# -------------------------------------------------------
