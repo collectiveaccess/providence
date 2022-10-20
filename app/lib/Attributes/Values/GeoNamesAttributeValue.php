@@ -540,9 +540,20 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 	 * @return string Name of sort field
 	 */
 	public function sortField() {
-		return 'value_longtext1';
+		return 'value_sortable';
 	}
 	# ------------------------------------------------------------------
+	/**
+	 * Returns sortable value for metadata value
+	 *
+	 * @param string $value
+	 * 
+	 * @return string
+	 */
+	public function sortableValue(?string $value) {
+		return mb_strtolower(substr(trim($value), 0, 100));
+	}
+ 	# ------------------------------------------------------------------
 	/**
 	 * Returns constant for geonames attribute value
 	 * 

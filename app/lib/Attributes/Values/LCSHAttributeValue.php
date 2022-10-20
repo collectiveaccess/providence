@@ -283,7 +283,8 @@ class LCSHAttributeValue extends AttributeValue implements IAttributeValue {
 				LCSHAttributeValue::$s_term_cache[$value] = array(
 					'value_longtext1' => trim($text),						// text
 					'value_longtext2' => trim($uri),							// uri
-					'value_decimal1' => is_numeric($id) ? $id : null		// id
+					'value_decimal1' => is_numeric($id) ? $id : null,		// id
+					'value_sortable' => $this->sortableValue($tmp[0])
 				);
 			} else {
 				// try to match on text using id.loc.gov service
@@ -323,7 +324,8 @@ class LCSHAttributeValue extends AttributeValue implements IAttributeValue {
 							LCSHAttributeValue::$s_term_cache[$value] = array(
 								'value_longtext1' => trim($label)." [{$url}]",						// text
 								'value_longtext2' => trim($url),							// uri
-								'value_decimal1' => is_numeric($id) ? $id : null	// id
+								'value_decimal1' => is_numeric($id) ? $id : null,	// id
+								'value_sortable' => $this->sortableValue($label)
 							);
 						} else {
 							$this->postError(1970, _t('Could not get results from LCSH service for %1 [%2]', $value, $service_url), 'LCSHAttributeValue->parseValue()');
@@ -362,7 +364,8 @@ class LCSHAttributeValue extends AttributeValue implements IAttributeValue {
 							LCSHAttributeValue::$s_term_cache[$value] = array(
 								'value_longtext1' => "{$title} [{$url}]",			// text
 								'value_longtext2' => $url,							// uri
-								'value_decimal1' => is_numeric($id) ? $id : null	// id
+								'value_decimal1' => is_numeric($id) ? $id : null,	// id
+								'value_sortable' => $this->sortableValue($title)
 							);
 							break;
 						}
@@ -478,7 +481,18 @@ class LCSHAttributeValue extends AttributeValue implements IAttributeValue {
 	 * @return string Name of sort field
 	 */
 	public function sortField() {
-		return 'value_longtext1';
+		return 'value_sortable';
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Returns sortable value for metadata value
+	 *
+	 * @param string $value
+	 * 
+	 * @return string
+	 */
+	public function sortableValue(?string $value) {
+		return mb_strtolower(substr(trim($value), 0, 100));
 	}
 	# ------------------------------------------------------------------
 	/**

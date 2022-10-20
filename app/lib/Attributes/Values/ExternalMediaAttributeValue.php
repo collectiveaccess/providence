@@ -256,8 +256,19 @@ class ExternalMediaAttributeValue extends AttributeValue implements IAttributeVa
      * @return string Name of sort field
      */
     public function sortField() {
-        return 'value_longtext1';
+        return 'value_sortable';
     }
+    # ------------------------------------------------------------------
+		/**
+		 * Returns sortable value for metadata value
+		 *
+		 * @param string $value
+		 * 
+		 * @return string
+		 */
+		public function sortableValue(?string $value) {
+			return mb_strtolower(substr(trim(preg_replace('!^[A-Za-z]+://!', '', $value)), 0, 100));
+		}
     # ------------------------------------------------------------------
     /**
      * Returns constant for length attribute value
