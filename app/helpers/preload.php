@@ -37,8 +37,11 @@
     }
     
     // strip namespaces if present
+ 	$base = $class;
+ 	$parts = [$class];
     if(strpos($class, '\\') !== false) {
-    	$class = array_pop(explode('\\', $class));
+    	$parts = explode('\\', $class);
+    	$base = $parts[sizeof($parts) - 1];
     }
     
     // search common locations for class
@@ -50,12 +53,17 @@
     }
     
     // Zend?
-    if(preg_match("!^Zend_Search_(.*)$!", $class, $m)) {
+    if(preg_match("!^Zend_Search_(.*)$!", $base, $m)) {
     	$path_to_zend_lib = __CA_LIB_DIR__."/Search/Common/Parsers/Search/".str_replace("_", "/", $m[1]).".php";
     	if(require($path_to_zend_lib)) { return true; }  
     }
     
-    //
+    // Hoa?
+    if($parts[0] === 'Hoa') {
+    	$path_to_hoa = __CA_LIB_DIR__."/Parsers/".strtolower(join('/', $parts)).".php";
+    	if(require($path_to_hoa)) { return true; }  
+    }
+    
     return false;
   });   
 
