@@ -164,4 +164,4 @@ class ca_editor_uis_x_user_groups extends BaseRelationshipModel {
 	
 	# ----------------------------------------
 }
-?>
+

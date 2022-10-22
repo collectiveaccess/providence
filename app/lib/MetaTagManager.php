@@ -156,7 +156,9 @@ class MetaTagManager {
 	 * @return bool Always returns true
 	 */
 	static function setHighlightText(?string $highlight_text) : bool {
+		global $g_highlight_text;
 		if(!is_null($highlight_text) && strlen($highlight_text)) {
+			$g_highlight_text = $highlight_text;
 			Session::setVar('text_highlight', $highlight_text);
 		}
 		return true;
@@ -168,7 +170,9 @@ class MetaTagManager {
 	 * @return string
 	 */
 	static function getHighlightText() : ?string {
-		return Session::getVar('text_highlight');
+		global $g_highlight_text;
+		if(!is_null($g_highlight_text)) { return $g_highlight_text; }
+		return $g_highlight_text = Session::getVar('text_highlight');
 	}
 	# --------------------------------------------------------------------------------
 }

@@ -107,6 +107,11 @@ class SearchResult extends BaseObject {
 	 *		hierarchy_children_prefetch_cache_index
 	 */
 	static $s_cache_size_limit = 2048;
+	
+	/**
+	 * Return values with text highlighed?
+	 */
+	public $do_highlighting = false;
 
 	# ------------------------------------------------------------------
 	private $opb_disable_get_with_template_prefetch = false;
@@ -227,8 +232,6 @@ class SearchResult extends BaseObject {
 		if (!$GLOBALS["_DbResult_mediainfocoder"]) { $GLOBALS["_DbResult_mediainfocoder"] = new MediaInfoCoder(); }
 		if (!$GLOBALS["_DbResult_fileinfocoder"]) { $GLOBALS["_DbResult_fileinfocoder"] = FileInfoCoder::load(); }
 		
-		
-		
 		// valid options and defaults
 		$this->opa_options = array(
 				// SearchResult::get() can load field data from database when it is not available directly from the search index (most fields are *not* available from the index)
@@ -321,6 +324,16 @@ class SearchResult extends BaseObject {
 		if ($vn_index >= 0) {
 			$this->opo_engine_result->seek($vn_index);
 		}
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function doHighlighting(?bool $do_highlighting=null) : bool {
+		if(!is_null($do_highlighting)) { 
+			$this->do_highlighting = (bool)$do_highlighting;
+		}
+		return $this->do_highlighting;
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -1066,7 +1079,7 @@ class SearchResult extends BaseObject {
 		}
 		
 		if (isset($pa_options['template']) && $pa_options['template']) {
-			return $this->getWithTemplate($pa_options['template'], $pa_options);
+			return $this->do_highlighting ? $this->highlight($this->getWithTemplate($pa_options['template'], $pa_options)) : $this->getWithTemplate($pa_options['template'], $pa_options);
 		}
 		
 		if(!is_array($pa_options)) { $pa_options = array(); }
@@ -1417,6 +1430,9 @@ class SearchResult extends BaseObject {
 							$va_acc[] = join($vs_hierarchical_delimiter, $this->_flattenArray($va_hier_item, $pa_options));
 						}
 					}
+					
+					$va_acc = $this->do_highlighting ? array_map($this->highlight, $va_acc) : $va_acc;
+					
 					if (!$vb_return_as_array) { 
 						return $vb_return_as_count ? sizeof($va_acc) : join($vs_delimiter, $va_acc);
 					}
@@ -1468,6 +1484,7 @@ class SearchResult extends BaseObject {
 						}
 					}
 					
+					$va_hier_list = $this->do_highlighting ? array_map($this->highlight, $va_hier_list) : $va_hier_list;
 					if (!$vb_return_as_array) { 
 						return $vb_return_as_count ? sizeof($va_hier_list) : join($vs_hierarchical_delimiter, $va_hier_list);
 					}
@@ -1519,6 +1536,7 @@ class SearchResult extends BaseObject {
 						}
 					}
 					
+					$va_hier_list = $this->do_highlighting ? array_map($this->highlight, $va_hier_list) : $va_hier_list;
 					if (!$vb_return_as_array) { 
 						return $vb_return_as_count ? sizeof($va_hier_list) : join($vs_hierarchical_delimiter, $va_hier_list);
 					}
@@ -1823,6 +1841,8 @@ class SearchResult extends BaseObject {
 					if (!$vb_include) { continue; }
 					$va_filtered_vals[$vn_id] = $vm_val[$vn_id];
 				}
+				
+				$va_filtered_vals = $this->do_highlighting ? array_map($this->highlight, $va_filtered_vals) : $va_filter_vals;
 				if ($vb_return_as_count) {
 					return [sizeof($va_filtered_vals)];
 				} else {
@@ -1831,6 +1851,11 @@ class SearchResult extends BaseObject {
 			}
 		}
 
+		if(is_array($vm_val)) {
+			$vm_val = $this->do_highlighting ? array_map([$this, 'highlight'], $vm_val) : $vm_val;
+		} else {
+			$vm_val = $this->do_highlighting ? $this->highlight($vm_val) : $vm_val;
+		}
 		if ($vb_convert_line_breaks) {
 			if(is_array($vm_val)) {
 				return array_map(function($v) { return !is_array($v) ? nl2br($v) : $v; }, $vm_val);
@@ -2940,6 +2965,7 @@ class SearchResult extends BaseObject {
 		unset($pa_options['request']);
 		//if($this->opb_disable_get_with_template_prefetch) {
 			if(!is_array($pa_options)) { $pa_options = array(); }
+			if(!isset($pa_options['doHighlighting'])) { $pa_options['doHighlighting'] = $this->doHighlighting(); }
 			return caProcessTemplateForIDs($ps_template, $this->ops_table_name, array($this->get($this->ops_table_name.".".$this->ops_subject_pk)), array_merge($pa_options, ['dontPrefetchRelated' => true]));
 		//}
 
@@ -3771,6 +3797,24 @@ class SearchResult extends BaseObject {
 		} else {
 			return in_array($pm_modifier, $va_hierarchy_modifiers);
 		}
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function highlight($content) {
+		if(is_array($content)) { return $content; }
+		global $g_highlight_cache, $g_highlight_text;
+		if(is_null($g_highlight_cache)) { $g_highlight_cache = []; }
+		if(isset($g_highlight_cache[$content])) { return $g_highlight_cache[$content]; }
+		if(sizeof($g_highlight_cache) > 2048) { $g_highlight_cache = []; }
+		
+		$highlight_text = $g_highlight_text;
+		if(!strlen($highlight_text)) { $highlight_text = MetaTagManager::getHighlightText(); } 
+		if(!strlen($highlight_text)) { return $content; }	// use global directly, if possible, for performance
+		$content = $g_highlight_cache[$content] = preg_replace("!(".preg_quote($highlight_text, '!').")!i", "<span class=\"highlightText\">\\1</span>", $content);
+		
+		return $content;
 	}
 	# ------------------------------------------------------------------
 }
