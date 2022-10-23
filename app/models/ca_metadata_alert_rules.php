@@ -315,7 +315,6 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 
 		$t_restriction = new ca_metadata_alert_rule_type_restrictions();
 		if ($this->inTransaction()) { $t_restriction->setTransaction($this->getTransaction()); }
-		$t_restriction->setMode(ACCESS_WRITE);
 		$t_restriction->set('table_num', $this->get('table_num'));
 		$t_restriction->set('type_id', $pn_type_id);
 		$t_restriction->set('rule_id', $this->getPrimaryKey());
@@ -768,8 +767,7 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 		
 		$t_trigger->set('element_filters', $va_element_filters);
 		$t_trigger->set('rule_id', $this->getPrimaryKey());
-		$t_trigger->setMode(ACCESS_WRITE);
-
+		
 		// insert or update this trigger
 		if($t_trigger->getPrimaryKey()) {
 			$t_trigger->update();
