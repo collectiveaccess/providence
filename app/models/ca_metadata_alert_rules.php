@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2018 Whirl-i-Gig
+ * Copyright 2016-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -713,9 +713,10 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 		$va_return = [];
 
 		while($qr_triggers->nextRow()) {
-			$va_return[$qr_triggers->get('trigger_id')] = $qr_triggers->getRow();
-			$va_return[$qr_triggers->get('trigger_id')]['settings'] = caUnserializeForDatabase($qr_triggers->get('settings'));
-			$va_return[$qr_triggers->get('trigger_id')]['element_filters'] = caUnserializeForDatabase($qr_triggers->get('element_filters'));
+			$trigger_id = $qr_triggers->get('trigger_id');
+			$va_return[$trigger_id] = $qr_triggers->getRow();
+			$va_return[$trigger_id]['settings'] = caUnserializeForDatabase($qr_triggers->get('settings'));
+			$va_return[$trigger_id]['element_filters'] = caUnserializeForDatabase($qr_triggers->get('element_filters'));
 		}
 
 		return $va_return;
