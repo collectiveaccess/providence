@@ -789,8 +789,8 @@ if($show_entity_controls) {
 <?php	
 			if(caGetOption('always_create_new_loan', $settings, false)) {
 ?>
-				jQuery('#<?= $vs_id_prefix; ?>AddLoan<?= $vn_type_id; ?>').on('click', function(e) { 
-					caRelationBundle<?= $vs_id_prefix; ?>_ca_loans_<?= $vn_type_id; ?>.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }, {'addBundle': true }); 
+				jQuery('#<?= $vs_id_prefix; ?>AddLoan').on('click', function(e) {
+					caRelationBundle<?= $vs_id_prefix; ?>_ca_loans.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }, {'addBundle': true });
 				});
 <?php
 			}
@@ -836,7 +836,7 @@ if($show_entity_controls) {
 <?php	
 			if(caGetOption('always_create_new_movement', $settings, false)) {
 ?>
-				jQuery('#<?= $vs_id_prefix; ?>AddMovement<?= $vn_type_id; ?>').on('click', function(e) { 
+				jQuery('#<?= $vs_id_prefix; ?>AddMovement').on('click', function(e) {
 					caRelationBundle<?= $vs_id_prefix; ?>_ca_movements.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }, {'addBundle': true }); 
 				});
 <?php

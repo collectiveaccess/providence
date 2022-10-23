@@ -2321,8 +2321,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							     && ! strlen( $vm_val )
 							) {
 								if ( $log_skip ) {
-									$o_log->logInfo( _t( '[%1] Skipped group %2 because value for %3 is empty',
-										$vs_idno, $vn_group_id, $va_item['destination'] ) );
+									$o_log->logInfo( _t( '[%1] Skipped group %2 because value from %3 for %4 is empty',
+										$vs_idno, $vn_group_id, $va_item['source'], $va_item['destination'] ) );
 								}
 								continue( 3 );
 							}
@@ -2331,8 +2331,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							     && ! strlen( $vm_val )
 							) {
 								if ( $log_skip ) {
-									$o_log->logInfo( _t( '[%1] Skipped mapping because value for %2 is empty', $vs_idno,
-										$va_item['destination'] ) );
+									$o_log->logInfo( _t( '[%1] Skipped mapping because value from %2 for %3 is empty', $vs_idno,
+										$va_item['source'], $va_item['destination'] ) );
 								}
 								continue( 2 );
 							}

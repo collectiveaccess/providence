@@ -925,14 +925,7 @@
 				// Only delete the related representation if nothing else is related to it
 				//
 
-				$va_rels = $t_rep->hasRelationships();
-
-				if(is_array($va_rels) && isset($va_rels['ca_object_representation_labels'])){ // labels don't count as relationships in this case
-					unset($va_rels['ca_object_representation_labels']);
-				}
-				if(is_array($va_rels) && isset($va_rels['ca_objects_x_object_representations']) && ($va_rels['ca_objects_x_object_representations'] < 1)){
-					unset($va_rels['ca_objects_x_object_representations']);
-				}
+				$va_rels = $this->_checkRepresentationReferences($t_rep);
 
 				if (!is_array($va_rels) || (sizeof($va_rels) == 0)) {
 					$t_rep->delete(true, $pa_options);
@@ -947,6 +940,30 @@
 			}
 		
 			return false;
+		}
+		# ------------------------------------------------------
+		/**
+		 *
+		 */
+		private function _checkRepresentationReferences($t_rep) {
+			$rels = $t_rep->hasRelationships();
+
+			if(is_array($rels)) {
+				foreach($rels as $k => $v) {
+					switch($k) {
+						case 'ca_object_representation_labels':		 // labels don't count as relationships in this case
+						case 'ca_object_representation_multifiles':	 // multifiles don't count as relationships in this case
+							unset($rels[$k]);
+							break;
+						default:
+							if($v < 1) {
+								unset($rels[$k]);
+							}
+							break;
+					}
+				}
+			}
+			return $rels;
 		}
 		# ------------------------------------------------------
 		/**
@@ -1567,6 +1584,34 @@
 				}
 			}
 			return ['representations' => $reps, 'items' => $items];
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * 
+		 *
+		 */
+		public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+			$rep_ids = $this->getRepresentationIDs();
+			$path = array_keys(Datamodel::getPath($this->tableName(), 'ca_object_representations'));
+			$linking_table = $path[1];
+			
+			if($rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
+				if(is_array($rep_ids) && sizeof($rep_ids)) {
+					// delete any representations that are not referenced by some other primary type
+					$qr = caMakeSearchResult('ca_object_representations', array_keys($rep_ids));
+					while($qr->nextHit()) {
+						$t_rep = $qr->getInstance();
+						$rels = $this->_checkRepresentationReferences($t_rep);
+						if((sizeof($rels) === 1) && isset($rels[$linking_table]) && ($rels[$linking_table] == 1)) {
+							$t_rep->delete(true);
+							if($t_rep->numErrors()) {
+								$this->errors = $t_rep->errors;
+							}
+						}
+					}
+				}
+			}
+			return $rc;
 		}
 		# ------------------------------------------------------
 	}
