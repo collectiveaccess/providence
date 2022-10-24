@@ -62,7 +62,7 @@
   
     // Hoa?
     if($parts[0] === 'Hoa') {
-    	$path_to_hoa = __CA_LIB_DIR__."/Parsers/".strtolower(join('/', $parts)).".php";
+    	$path_to_hoa = __CA_LIB_DIR__."/Parsers/".strtolower(join('/', array_slice($parts, 0, sizeof($parts)-1))).'/'.$parts[sizeof($parts)-1].".php";
     	if(@include($path_to_hoa)) { return true; }  
     }
     
