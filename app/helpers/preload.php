@@ -31,14 +31,19 @@
  */
  
  spl_autoload_register(function ($class) {
+ 	global $_ca_delegate_autoloaders;
+ 	
     // Anything prefixed with "ca_" is a model
     if (substr($class, 0, 3) === 'ca_') {
         if(require(__CA_MODELS_DIR__."/{$class}.php")) { return true; }
     }
     
     // strip namespaces if present
+ 	$base = $class;
+ 	$parts = [$class];
     if(strpos($class, '\\') !== false) {
-    	$class = array_pop(explode('\\', $class));
+    	$parts = explode('\\', $class);
+    	$base = $parts[sizeof($parts) - 1];
     }
     
     // search common locations for class
@@ -50,15 +55,21 @@
     }
     
     // Zend?
-    if(preg_match("!^Zend_Search_(.*)$!", $class, $m)) {
+    if(preg_match("!^Zend_Search_(.*)$!", $base, $m)) {
     	$path_to_zend_lib = __CA_LIB_DIR__."/Search/Common/Parsers/Search/".str_replace("_", "/", $m[1]).".php";
     	if(require($path_to_zend_lib)) { return true; }  
     }
+  
+    // Hoa?
+    if($parts[0] === 'Hoa') {
+    	$path_to_hoa = __CA_LIB_DIR__."/Parsers/".strtolower(join('/', array_slice($parts, 0, sizeof($parts)-1))).'/'.$parts[sizeof($parts)-1].".php";
+    	if(@include($path_to_hoa)) { return true; }  
+    }
     
-    //
     return false;
   });   
 
+require_once(__CA_LIB_DIR__."/Parsers/hoa/consistency/Prelude.php");
 require_once(__CA_APP_DIR__."/helpers/errorHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/systemHelpers.php");
 require_once(__CA_BASE_DIR__.'/vendor/autoload.php');	// composer

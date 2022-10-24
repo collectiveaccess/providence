@@ -8,8 +8,6 @@
     "ezyang/htmlpurifier": "~4.9",
     "guzzlehttp/guzzle": "7.4.*",
     "guzzlehttp/psr7": "2.3.*",
-    "hoa/compiler": "~3.17",
-    "hoa/visitor": "~2.17",
     "james-heinrich/getid3": "^1.9.20",
     "joshralph/password-policy": "~0.2",
     "knplabs/github-api": "3.7",
@@ -38,9 +36,9 @@
     "cache/predis-adapter": "^1.1",
     "cache/filesystem-adapter": "^1.1",
     "whikloj/bagittools": "^3.0",
-    "scholarslab/bagit": "~0.2",
     "voku/stop-words": "^2.0",
-    "tecnickcom/tc-lib-barcode": "^1.17"
+    "tecnickcom/tc-lib-barcode": "^1.17",
+    "symfony/process": "^5.4"
   },
   "suggest": {
     "binaryoung/jieba-php": "^0.1.0"
