@@ -69,7 +69,7 @@
     return false;
   });   
 
-require_once(__CA_LIB_DIR__."/Parsers/hoa/consistency/prelude.php");
+require_once(__CA_LIB_DIR__."/Parsers/hoa/consistency/Prelude.php");
 require_once(__CA_APP_DIR__."/helpers/errorHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/systemHelpers.php");
 require_once(__CA_BASE_DIR__.'/vendor/autoload.php');	// composer
