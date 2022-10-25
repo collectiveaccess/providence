@@ -2750,7 +2750,7 @@ class TimeExpressionParser {
 				return $vs_date;
 			}
 
-			if ($pa_options['start_as_na_date']) {
+			if ($pa_options['start_as_na_date'] ?? null) {
 				$vs_date = $va_start_pieces['month'].'-'.$va_start_pieces['day'].'-'.$va_start_pieces['year'];
 				
 				if (!($va_start_pieces['hours'] == 0 && $va_start_pieces['minutes'] == 0 && $va_start_pieces['seconds'] == 0)) {
@@ -2758,7 +2758,7 @@ class TimeExpressionParser {
 				}
 				return $vs_date;
 			}
-			if ($pa_options['end_as_na_date']) {
+			if ($pa_options['end_as_na_date'] ?? null) {
 				$vs_date = $va_end_pieces['month'].'-'.$va_end_pieces['day'].'-'.$va_end_pieces['year'];
 				
 				if (!($va_end_pieces['hours'] == 23 && $va_end_pieces['minutes'] == 59 && $va_end_pieces['seconds'] == 59)) {
@@ -2786,7 +2786,7 @@ class TimeExpressionParser {
 			}
 			
 			// catch formats
-			if ($pa_options['format']) {
+			if ($pa_options['format'] ?? null) {
 				$va_seen = array();
 				$vs_output = '';
 				for($vn_i=0; $vn_i < strlen($pa_options['format']); $vn_i++) {
@@ -2857,7 +2857,7 @@ class TimeExpressionParser {
 
 			// catch quarter centuries
 			if (
-				($pa_options['useQuarterCenturySyntaxForDisplay'])
+				($pa_options['useQuarterCenturySyntaxForDisplay'] ?? null)
 				&&
 				(((int)$va_start_pieces['year'] > 0) && (!((int)$va_start_pieces['year'] % 25)))
 				&&
@@ -2964,10 +2964,10 @@ class TimeExpressionParser {
 
 			// catch 'circa' and 'probably' dates
 			$va_circa_indicators = $this->opo_language_settings->getList('dateCircaIndicator');
-			$vs_circa_indicator = ($pa_options['circaIndicator'] && in_array($pa_options['circaIndicator'], $va_circa_indicators)) ? $pa_options['circaIndicator'] : $va_circa_indicators[0];
+			$vs_circa_indicator = (($pa_options['circaIndicator'] ?? null) && in_array($pa_options['circaIndicator'], $va_circa_indicators)) ? $pa_options['circaIndicator'] : $va_circa_indicators[0];
 
             $va_probably_indicators = $this->opo_language_settings->getList('dateProbablyIndicator');
-			$vs_probably_indicator = ($pa_options['probablyIndicator'] && in_array($pa_options['probablyIndicator'], $va_probably_indicators)) ? $pa_options['probablyIndicator'] : $va_probably_indicators[0];
+			$vs_probably_indicator = (($pa_options['probablyIndicator'] ?? null) && in_array($pa_options['probablyIndicator'], $va_probably_indicators)) ? $pa_options['probablyIndicator'] : $va_probably_indicators[0];
 
 			$vs_start_circa = $vs_end_circa = '';
 			if ($va_start_pieces['is_circa']) { $vs_start_circa = $vs_circa_indicator.' '; }
@@ -3307,7 +3307,9 @@ class TimeExpressionParser {
 			}
 		}
 		
-		if ($pa_date_pieces['is_bp']) {
+		$vs_year = null;
+		
+		if ($pa_date_pieces['is_bp'] ?? null) {
 			$va_bp_indicators = $this->opo_language_settings->getList("dateBP");
 			return (1950 - $pa_date_pieces['year']).' '.$va_bp_indicators[0];
 		}
@@ -3340,7 +3342,7 @@ class TimeExpressionParser {
 			$vs_day = $pa_date_pieces['day'];
 		}	
 		
-		if ($pa_date_pieces['year']) {
+		if ($pa_date_pieces['year'] ?? null) {
 			if ($pa_date_pieces['year'] < 0) {		// date with year
 				$vs_year = abs($pa_date_pieces['year']).' '.$pa_date_pieces['era'];
 			} else {

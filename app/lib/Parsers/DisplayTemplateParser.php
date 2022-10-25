@@ -341,6 +341,7 @@ class DisplayTemplateParser {
 	private static function _parseUnits($po_nodes, $pa_units, $pa_options=null) {
 		if(!is_array($pa_units)) { $pa_units = []; }
 		
+		$u = null;
 		foreach($po_nodes as $vn_index => $o_node) {
 			switch($vs_tag = $o_node->tag) {
 				case 'unit':
@@ -573,7 +574,7 @@ class DisplayTemplateParser {
 					$vb_aggregate_unique = $o_node->aggregateUnique ? (bool)$o_node->aggregateUnique : false;
 					$vb_omit_blanks = !is_null($o_node->omitBlanks) ? (bool)$o_node->omitBlanks : null;
 
-					$filter_non_primary_reps = self::_setPrimaryRepresentationFiltering($pr_res, caGetOption('filterNonPrimaryRepresentations', $options, $o_node->filterNonPrimaryRepresentations));
+					$filter_non_primary_reps = self::_setPrimaryRepresentationFiltering($pr_res, caGetOption('filterNonPrimaryRepresentations', $pa_options, $o_node->filterNonPrimaryRepresentations));
 
 					$vs_unit_skip_if_expression = (string)$o_node->skipIfExpression;
 					$vs_unit_skip_when = (string)$o_node->skipWhen;
@@ -739,7 +740,7 @@ class DisplayTemplateParser {
 							}
 						}
 						
-						switch(strtolower($va_relative_to_tmp[1])) {
+						switch(strtolower($va_relative_to_tmp[1] ?? '')) {
 							case 'hierarchy':
 								if (!is_array($va_relative_ids = $pr_res->get($t_rel_instance->tableName().".hierarchy.".$t_rel_instance->primaryKey(), $va_get_options))) { $va_relative_ids = []; }
 								$va_relative_ids = array_values($va_relative_ids);
@@ -863,15 +864,15 @@ class DisplayTemplateParser {
 								$pa_options,
 								!is_null($vb_omit_blanks) ? ['includeBlankValuesInArray' => !$vb_omit_blanks] : [],
 								[
-									'sort' => $va_get_options['sort'],
-									'sortDirection' => $va_get_options['sortDirection'],
+									'sort' => $va_get_options['sort'] ?? null,
+									'sortDirection' => $va_get_options['sortDirection'] ?? null,
 									'delimiter' => $vs_unit_delimiter,
 									'returnAsArray' => true,
 									'skipIfExpression' => $vs_unit_skip_if_expression,
 									'skipWhen' => $vs_unit_skip_when,
 									'placeholderPrefix' => (string)$o_node->relativeTo,
-									'restrictToTypes' => $va_get_options['restrictToTypes'],
-									'excludeTypes' => $va_get_options['excludeTypes'],
+									'restrictToTypes' => $va_get_options['restrictToTypes'] ?? null,
+									'excludeTypes' => $va_get_options['excludeTypes'] ?? null,
 									'isUnit' => true,
 									'unitStart' => $vn_start,
 									'unitLength' => $vn_length,
@@ -883,7 +884,7 @@ class DisplayTemplateParser {
 									'relationshipTypeIDs' => $va_relationship_type_ids,
 									'relationshipTypeOrientations' => $va_relationship_type_orientations,
 									'filterNonPrimaryRepresentations' => $filter_non_primary_reps,
-									'primaryIDs' => $va_get_options['primaryIDs']
+									'primaryIDs' => $va_get_options['primaryIDs'] ?? null
 								]
 							)
 						);
@@ -1008,7 +1009,7 @@ class DisplayTemplateParser {
 		
 		$va_remove_opts_for_related = ['restrictToTypes' => null, 'restrictToRelationshipTypes' => null];
 		
-		$va_get_specs = [];
+		$va_get_specs = $va_opts = [];
 		foreach(array_keys($pa_tags) as $vs_tag) {
 		    // Apply placeholder prefix to any tag except the "specials"
 			if (!in_array(strtolower($vs_tag), ['relationship_typename', 'relationship_type_id', 'relationship_typecode', 'relationship_type_code', 'date', 'primary', 'count', 'index', 'omitcount'])) {
@@ -1145,9 +1146,9 @@ class DisplayTemplateParser {
                             $va_val_list = [];
                             // (caGetOption('orientation', $pa_options, 'LTOR')
                             $va_relationship_orientations = array_slice($va_relationship_orientations, $vn_start);
-                            $orientation = strtoupper($va_relationship_orientations[$pr_res->currentIndex()]) ?? 'LTOR';
+                            $orientation = strtoupper($va_relationship_orientations[$pr_res->currentIndex()] ?? null) ?? 'LTOR';
                             
-                            if (is_array($va_relationship_type_ids) && is_array($va_relationship_type_ids = array_slice($va_relationship_type_ids, $vn_start)) && ($vn_type_id = $va_relationship_type_ids[$pr_res->currentIndex()])) {
+                            if (is_array($va_relationship_type_ids) && is_array($va_relationship_type_ids = array_slice($va_relationship_type_ids, $vn_start)) && ($vn_type_id = $va_relationship_type_ids[$pr_res->currentIndex()] ?? null)) {
                                 $qr_rels = caMakeSearchResult('ca_relationship_types', array($vn_type_id));
                                 if ($qr_rels->nextHit()) {
                                     $va_val_list = $qr_rels->get('ca_relationship_types.preferred_labels.'.(($orientation == 'LTOR') ? 'typename' : 'typename_reverse'), $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));

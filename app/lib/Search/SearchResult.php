@@ -2173,6 +2173,7 @@ class SearchResult extends BaseObject {
 		$locale = isset($pa_options['locale']) ? $pa_options['locale'] : null;
 		
 		$va_return_values = [];
+		$vb_return_value_id = null;
 		
 		$include_value_ids = caGetOption('includeValueIDs', $pa_options, false);
 		$pa_exclude_idnos = caGetOption('excludeIdnos', $pa_options, []);
@@ -2463,7 +2464,7 @@ class SearchResult extends BaseObject {
 					}
 				}
 				
-				if ($pa_options['filter']) {
+				if ($pa_options['filter'] ?? null) {
 					$va_tags = caGetTemplateTags($pa_options['filter']);
 			
 					$va_vars = array();
@@ -2485,7 +2486,7 @@ class SearchResult extends BaseObject {
 			// is blank
 			$default_value = ca_metadata_elements::getElementDefaultValue($va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : $va_path_components['field_name']);
 			
-			if ($pa_options['returnWithStructure'] && $pa_options['returnBlankValues']) {
+			if (($pa_options['returnWithStructure'] ?? null) && $pa_options['returnBlankValues']) {
 				$va_return_values[(int)$vn_id][null][null][$e = $va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : $va_path_components['field_name']] = $default_value;
 				if($include_value_ids) {
 					$va_return_values[(int)$vn_id][null][null]["{$e}_value_id"] = null;
@@ -2495,9 +2496,9 @@ class SearchResult extends BaseObject {
 			}
 		}
 		
-		if (!$pa_options['returnAllLocales'] && !$vb_return_value_id) { $va_return_values = caExtractValuesByUserLocale($va_return_values, null, $locale ? [$locale] : null); } 	
+		if (!($pa_options['returnAllLocales'] ?? null) && !$vb_return_value_id) { $va_return_values = caExtractValuesByUserLocale($va_return_values, null, $locale ? [$locale] : null); } 	
 		
-		if ($pa_options['returnWithStructure']) { 
+		if ($pa_options['returnWithStructure'] ?? null) { 
 			return is_array($va_return_values) ? $va_return_values : []; 
 		}
 		
@@ -2506,10 +2507,10 @@ class SearchResult extends BaseObject {
 		// 
 		$va_flattened_values = array_map(function($v) use ($pa_options) { return is_array($v) ? join($pa_options['delimiter'], $v) : $v; }, $this->_flattenArray($va_return_values, $pa_options));
 
-		if ($va_path_components['is_count']) {
+		if ($va_path_components['is_count'] ?? false) {
 			return $pa_options['returnAsArray'] ? [sizeof($va_flattened_values)] : sizeof($va_flattened_values); 
 		}
-		if ($pa_options['returnAsArray']) {
+		if ($pa_options['returnAsArray'] ?? false) {
 			return $va_flattened_values;
 		} else {
 			return (sizeof($va_flattened_values) > 0) ? join($pa_options['delimiter'], $va_flattened_values) : null;
