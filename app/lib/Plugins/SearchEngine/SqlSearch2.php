@@ -953,6 +953,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			if (!($t_instance = Datamodel::getInstance($subject_tablenum, true))) {
 				throw new ApplicationException(_t('Invalid subject table: %1', $subject_tablenum));
 			}
+			$table_name = $t_instance->tableName();
+			
 			foreach($filters as $filter) {
 				$tmp = explode('.', $filter['field']);
 				$path = [];

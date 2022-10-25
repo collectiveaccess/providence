@@ -1404,7 +1404,7 @@ class DisplayTemplateParser {
                 }
 			}
 			
-			$va_tmp[sizeof($va_tmp)-1] = $vs_tag_bit;	// remove option from tag-part array
+			unset($va_tmp[sizeof($va_tmp)-1]);	// remove option from tag-part array
 			$vs_tag_proc = join(".", $va_tmp);
 		}
 		

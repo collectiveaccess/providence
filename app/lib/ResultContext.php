@@ -428,7 +428,7 @@ class ResultContext {
 	public function getCurrentSort() {
 		if (!($ps_sort = htmlspecialchars($this->opo_request->getParameter('sort', pString, ['forcePurify' => true])))) {
 			if ($va_context = $this->getContext()) {
-				return $va_context['sort'] ? $va_context['sort'] : null;
+				return ($va_context['sort'] ?? false) ? $va_context['sort'] : null;
 			}
 		} else {
 			$this->opb_sort_has_changed = true;
@@ -746,10 +746,10 @@ class ResultContext {
 		} else {
 			if (!isset($_REQUEST[$ps_param]) && (!$this->opo_request || !$this->opo_request->getParameter($ps_param, pString, ['forcePurify' => true]))) {
 				if ($va_context = $this->getContext()) {
-					if (is_array($va_context['param_'.$ps_param])) {
+					if (is_array($va_context['param_'.$ps_param] ?? null)) {
 						return $va_context['param_'.$ps_param];
 					} else {
-						return strlen($va_context['param_'.$ps_param]) ? $va_context['param_'.$ps_param] : null;
+						return strlen($va_context['param_'.$ps_param] ?? '') ? $va_context['param_'.$ps_param] : null;
 					}
 				}
 			} else {

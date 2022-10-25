@@ -2685,7 +2685,7 @@ class ca_users extends BaseModel {
 		if (!($vn_table_num = Datamodel::getTableNum($pm_table_name_or_num))) { return false; }
 		if(!is_array($va_searches = $this->getVar('saved_searches'))) { $va_searches = []; }
 	
-		return is_array($va_searches[$vn_table_num][strtolower($ps_type)]) ? array_map(function($v) { 
+		return is_array($va_searches[$vn_table_num][strtolower($ps_type)] ?? null) ? array_map(function($v) { 
 			$v['label'] = html_entity_decode($v['label']);
 			return $v;
 		}, $va_searches[$vn_table_num][strtolower($ps_type)]) : array();
@@ -3472,22 +3472,22 @@ class ca_users extends BaseModel {
 		}
 		
 		$va_actions = ca_user_roles::getActionsForRoleIDs(array_keys($roles));
-		if(in_array('is_administrator', $va_actions)) { return ca_users::$s_user_action_access_cache[$vs_cache_key] = true; }		// access restrictions don't apply to users with is_administrator role
+		if(in_array('is_administrator', $va_actions)) { return ca_users::$s_user_action_access_cache[$cache_key] = true; }		// access restrictions don't apply to users with is_administrator role
 
 		if(in_array($action, $va_actions)) {
-			return ca_users::$s_user_action_access_cache[$vs_cache_key] = in_array($action, $va_actions);
+			return ca_users::$s_user_action_access_cache[$cache_key] = in_array($action, $va_actions);
 		}
 		// is default set in user_action.conf?
 		$user_actions = Configuration::load(__CA_CONF_DIR__.'/user_actions.conf');
 		if($user_actions && is_array($actions = $user_actions->getAssoc('user_actions'))) {
 			foreach($actions as $categories) {
 				if(isset($categories['actions'][$action]) && isset($categories['actions'][$action]['default'])) {
-					return ca_users::$s_user_action_access_cache[$vs_cache_key] = (bool)$categories['actions'][$action]['default'];
+					return ca_users::$s_user_action_access_cache[$cache_key] = (bool)$categories['actions'][$action]['default'];
 				}
 			}
 		}
 		
-		return ca_users::$s_user_action_access_cache[$vs_cache_key] = false;
+		return ca_users::$s_user_action_access_cache[$cache_key] = false;
 	}
 	# ----------------------------------------
 	/**
@@ -3511,7 +3511,7 @@ class ca_users extends BaseModel {
 			foreach($va_roles as $vn_role_id => $va_role_info) {
 				$va_vars = $va_role_info['vars'];
 				
-				if (is_array($va_vars['bundle_access_settings'])) {
+				if (is_array($va_vars['bundle_access_settings'] ?? null)) {
 					if (isset($va_vars['bundle_access_settings'][$ps_table_name.'.'.$ps_bundle_name]) && ((int)$va_vars['bundle_access_settings'][$ps_table_name.'.'.$ps_bundle_name] > $vn_access)) {
 						$vn_access = (int)$va_vars['bundle_access_settings'][$ps_table_name.'.'.$ps_bundle_name];
 						

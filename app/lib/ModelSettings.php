@@ -347,6 +347,8 @@ trait ModelSettings {
 			return false;
 		}
 		
+		$vb_locale_list = $vs_rel_table = $vs_list_code = $vb_show_lists = $vb_policy_list = $vb_referring_policy_list = false;
+		
 		$po_request = caGetOption('request', $pa_options, null);
 		
 		$va_available_settings = $this->getAvailableSettings();
@@ -625,8 +627,8 @@ trait ModelSettings {
 									$va_rel_opts[_t('All lists')] = '*';
 								}
 								foreach($va_lists as $vn_list_id => $va_list_info) {
-									if ($va_properties['showVocabularies'] && !$va_list_info['use_as_vocabulary']) { continue; }
-									$va_rel_opts[$va_list_info['name'].' ('.$va_list_info['list_code'].')'] = $vn_list_id;
+									if (($va_properties['showVocabularies'] ?? false) && !($va_list_info['use_as_vocabulary'] ?? false)) { continue; }
+									$va_rel_opts[$va_list_info['name'].' ('.($va_list_info['list_code'] ?? null).')'] = $vn_list_id;
 								}
 							}
 						}

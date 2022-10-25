@@ -1808,7 +1808,7 @@ class TimeExpressionParser {
 		
 		// text month
 		$va_month_table = $this->opo_language_settings->getAssoc("monthTable");
-		if ($va_month_table[$vs_token_lc]) {
+		if ($va_month_table[$vs_token_lc] ?? false) {
 			$vs_token_lc = $va_month_table[$vs_token_lc];
 		}
 		$va_month_list = $this->getLanguageSettingsWordList("monthList");

@@ -6022,6 +6022,7 @@ if (!$vb_batch) {
 		$ps_return_as = caGetOption('returnAs', $options, 'data', array('forceLowercase' => true, 'validValues' => array('data', 'searchResult', 'ids', 'modelInstances', 'firstId', 'firstModelInstance', 'count', 'relationids')));
 
 		$vb_uses_relationship_types = false;
+		$vs_direction = null;
 		
 		// convert options
 		if (($options['restrictToTypes'] = caGetOption(array('restrictToTypes', 'restrict_to_types', 'restrictToType', 'restrict_to_type'), $options, null)) && !is_array($options['restrictToTypes'])) {

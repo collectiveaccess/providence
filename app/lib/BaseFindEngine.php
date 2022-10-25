@@ -315,7 +315,7 @@
 				
 				$sort_field = $sort_tmp[0];	// strip relationship type (and/or item type)
 				
-				list($sort_table, $sort_field, $sort_subfield) = explode(".", $sort_field);
+				@[$sort_table, $sort_field, $sort_subfield] = explode(".", $sort_field);
 				if (!($t_bundle = Datamodel::getInstanceByTableName($sort_table, true))) { break; }
 					
 				// Transform preferred_labels bundles into label-table references

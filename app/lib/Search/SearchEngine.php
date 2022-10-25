@@ -152,6 +152,8 @@ class SearchEngine extends SearchBase {
 		$vs_sort = caGetOption('sort', $pa_options, null);
 		$vs_sort_direction = strtolower(caGetOption('sortDirection', $pa_options, caGetOption('sort_direction', $pa_options, null)));
 		
+		$vs_idno_fld = Datamodel::getTableProperty($this->ops_tablename, 'ID_NUMBERING_ID_FIELD');
+	
 		//print "QUERY=$ps_search<br>";
 		//
 		// Note that this is *not* misplaced code that should be in the Lucene plugin!
@@ -271,7 +273,7 @@ class SearchEngine extends SearchBase {
 			} 
 			
 			$vb_no_types = false;	
-			if (!$pa_options['expandToIncludeParents'] && is_array($va_type_ids = $this->getTypeRestrictionList()) && (sizeof($va_type_ids) > 0) && $t_table->hasField('type_id')) {
+			if (!($pa_options['expandToIncludeParents'] ?? false) && is_array($va_type_ids = $this->getTypeRestrictionList()) && (sizeof($va_type_ids) > 0) && $t_table->hasField('type_id')) {
 				if ($t_table->getFieldInfo('type_id', 'IS_NULL')) {
 					$va_type_ids[] = 'NULL';
 				}
@@ -312,7 +314,7 @@ class SearchEngine extends SearchBase {
 				$va_hits = $o_res->getPrimaryKeyValues($vb_do_acl ? null : $vn_limit);
 				
 										
-				if ($pa_options['expandToIncludeParents'] && sizeof($va_hits)) {
+				if (($pa_options['expandToIncludeParents'] ?? false) && sizeof($va_hits)) {
 					$qr_exp = caMakeSearchResult($this->opn_tablenum, $va_hits);
 					if (!is_array($va_type_ids) || !sizeof($va_type_ids)) { $va_type_ids = null; }
 					
@@ -626,7 +628,7 @@ class SearchEngine extends SearchBase {
 		// is it a label? Rewrite the field for that.
 		$va_tmp = preg_split('/[\/\|]+/', $vs_fld);
 		$va_tmp2 = explode('.', $va_tmp[0]);
-		if (in_array($va_tmp2[1], array('preferred_labels', 'nonpreferred_labels'))) {
+		if (in_array($va_tmp2[1] ?? null, array('preferred_labels', 'nonpreferred_labels'))) {
 			if ($t_instance = Datamodel::getInstanceByTableName($va_tmp2[0], true)) {
 				if (method_exists($t_instance, "getLabelTableName")) {
 					return array(
@@ -770,7 +772,7 @@ class SearchEngine extends SearchBase {
 		
 			if (($va_signs === null || $va_signs[$id] === true) && ($id)) {
 				$vs_query .= ' AND ';
-			} else if (($va_signs[$id] === false) && $id) {
+			} else if ((($va_signs[$id] ?? false) === false) && $id) {
 				$vs_query .= ' NOT ';
 			} else {
 				if ($id) { $vs_query .= ' OR '; }

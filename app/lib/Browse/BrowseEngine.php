@@ -82,6 +82,11 @@
 		 * @var subject type_id to limit browsing to (eg. only browse ca_objects with type_id = 10)
 		 */
 		private $opa_browse_type_ids = null;
+		
+		/**
+		 * @var subject source_id to limit browsing to (eg. only browse ca_objects with source_id = 10)
+		 */
+		private $opa_browse_source_ids = null;
 
 		/**
 		 * @var option to expand type restrictions hierarchically
@@ -217,6 +222,8 @@
 						$va_facet_info['label_plural'] = $va_facet_info['label_plural'][$g_ui_locale];
 					}
 				}
+				
+				if(!isset($va_facet_info['type'])) { $va_facet_info['type'] = null; }
 				
 				// group_mode = hierarchical is only supported for location facets when current location criteria is storage locations-only
 				if ((in_array($va_facet_info['type'], ['location', 'current_value'])) && (caGetOption('group_mode', $va_facet_info, null) == 'hierarchical')) {
@@ -544,7 +551,7 @@
 			} else {
 				if (is_array($va_criteria)) {
 					foreach($va_criteria as $vs_facet_name => $va_criteria_by_facet) {
-						if (is_array($va_criteria_display_strings[$vs_facet_name])) {
+						if (is_array($va_criteria_display_strings[$vs_facet_name] ?? null)) {
 							foreach($va_criteria_display_strings[$vs_facet_name] as $vm_criterion => $vs_display_criterion) {
 								$va_criteria_with_labels[$vs_facet_name][$vm_criterion] = $this->getCriterionLabel($vs_facet_name, $vs_display_criterion);
 							}
@@ -1180,7 +1187,7 @@
 
 						$va_facet_info = $this->getInfoForFacet($vs_facet_name);
 						
-						$vb_is_relative_to_parent = ($va_facet_info['relative_to'] && $this->_isParentRelative($va_facet_info['relative_to']));
+						$vb_is_relative_to_parent = (($va_facet_info['relative_to'] ?? false) && $this->_isParentRelative($va_facet_info['relative_to']));
 						
 						$va_row_ids = array_keys($va_row_ids);
                             

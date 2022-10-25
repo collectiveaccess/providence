@@ -158,9 +158,9 @@ class BaseFindController extends ActionController {
 			$va_show_only_in = [];
 			
 			$show_only_settings = [];
-			if(is_array($va_display['settings']['show_only_in'])) {
+			if(is_array($va_display['settings']['show_only_in'] ?? null)) {
 				 $show_only_settings = $va_display['settings']['show_only_in'];
-			} elseif($va_display['settings']['show_only_in']) {
+			} elseif($va_display['settings']['show_only_in'] ?? null) {
 				$show_only_settings = [$va_display['settings']['show_only_in']];
 			}
 			foreach($show_only_settings as $k => $v) {
@@ -245,7 +245,7 @@ class BaseFindController extends ActionController {
 					continue;
 				}
 				
-				if (isset($va_attribute_list[$tmp[1]]) && $va_sortable_elements[$va_attribute_list[$tmp[1]]]) {
+				if (isset($va_attribute_list[$tmp[1]]) && ($va_sortable_elements[$va_attribute_list[$tmp[1]]] ?? null)) {
 					$display_list[$i]['is_sortable'] = true;
 					$display_list[$i]['bundle_sort'] = $va_display_item['bundle_name'];
 					if(ca_metadata_elements::getElementDatatype($tmp[1]) === __CA_ATTRIBUTE_VALUE_CONTAINER__) {

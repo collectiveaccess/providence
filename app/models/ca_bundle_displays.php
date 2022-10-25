@@ -1979,8 +1979,8 @@ if (!$pb_omit_editing_info) {
 		$placements_in_display = [];
 		foreach($placements as $placement_id => $va_placement) {
 			$vs_label = ($vs_label = $t_instance->getDisplayLabel($va_placement['bundle_name'])) ? $vs_label : $va_placement['bundle_name'];
-			if(is_array($va_placement['settings']) && is_array($va_placement['settings']['label'])){
-				$tmp = caExtractValuesByUserLocale(array($va_placement['settings']['label']));
+			if(is_array($va_placement['settings'] ?? null) && is_array($va_placement['settings']['label'] ?? null)){
+				$tmp = caExtractValuesByUserLocale(array($va_placement['settings']['label'] ?? null));
 				if ($vs_user_set_label = array_shift($tmp)) {
 					$vs_label = "{$vs_label} (<em>{$vs_user_set_label}</em>)";
 				}
@@ -2820,15 +2820,15 @@ if (!$pb_omit_editing_info) {
 				
 				$display_list[$placement_id] = array(
 					'placement_id' => 				$placement_id,
-					'bundle_name' => 				$display_item['bundle_name'],
+					'bundle_name' => 				$display_item['bundle_name'] ?? null,
 					'display' => 					$vs_header,
 					'settings' => 					$va_settings,
-					'allowEditing' =>				$display_item['allowEditing'],
-					'allowInlineEditing' => 		$display_item['allowInlineEditing'],
-					'inlineEditingType' => 			$display_item['inlineEditingType'],
-					'inlineEditingList' => 			$display_item['inlineEditingList'],
-					'inlineEditingListValues' => 	$display_item['inlineEditingListValues'],
-					'inlineEditingListValueMap' => 	$display_item['inlineEditingListValueMap']
+					'allowEditing' =>				$display_item['allowEditing'] ?? null,
+					'allowInlineEditing' => 		$display_item['allowInlineEditing'] ?? null,
+					'inlineEditingType' => 			$display_item['inlineEditingType'] ?? null,
+					'inlineEditingList' => 			$display_item['inlineEditingList'] ?? null,
+					'inlineEditingListValues' => 	$display_item['inlineEditingListValues'] ?? null,
+					'inlineEditingListValueMap' => 	$display_item['inlineEditingListValueMap'] ?? null
 				);
 			}
 		}
@@ -2903,7 +2903,7 @@ if (!$pb_omit_editing_info) {
 					continue;
 				}
 				
-				if (isset($va_attribute_list[$tmp[1]]) && $va_sortable_elements[$va_attribute_list[$tmp[1]]]) {
+				if (isset($va_attribute_list[$tmp[1]]) && ($va_sortable_elements[$va_attribute_list[$tmp[1]]] ?? null)) {
 					$display_list[$i]['is_sortable'] = true;
 					$display_list[$i]['bundle_sort'] = $display_item['bundle_name'];
 					continue;

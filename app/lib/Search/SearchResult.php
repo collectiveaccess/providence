@@ -3177,7 +3177,7 @@ class SearchResult extends BaseObject {
 	    if (!is_array($pa_options)) { $pa_options = []; }
 		$vn_index = (isset($pa_options['index']) && ((int)$pa_options['index'] > 0)) ? (int)$pa_options['index'] : 0;
 		
-		if (!$this->opa_field_media_info[$ps_field]) {
+		if (!($this->opa_field_media_info[$ps_field] ?? null)) {
 		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
 		}
 		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaInfo($ps_version, $ps_key, array_merge($pa_options, ['data' => array_shift($this->opa_field_media_info[$ps_field])]));
@@ -3188,7 +3188,7 @@ class SearchResult extends BaseObject {
 	 */
 	function getMediaPath($ps_field, $ps_version, $pa_options=null) {
 	    if (!is_array($pa_options)) { $pa_options = []; }
-	    if (!$this->opa_field_media_info[$ps_field]) {
+	    if (!($this->opa_field_media_info[$ps_field] ?? null)) {
 		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
 		}
 		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaPath($ps_version, array_merge($pa_options, ['data' => array_shift($this->opa_field_media_info[$ps_field])]));
@@ -3200,7 +3200,7 @@ class SearchResult extends BaseObject {
 	 */
 	function getMediaPaths($ps_field, $ps_version, $pa_options=null) {
 	    if (!is_array($pa_options)) { $pa_options = []; }
-		if (!$this->opa_field_media_info[$ps_field]) {
+		if (!($this->opa_field_media_info[$ps_field] ?? null)) {
 		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
 		}
 		
