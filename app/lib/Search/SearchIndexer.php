@@ -128,7 +128,7 @@ class SearchIndexer extends SearchBase {
 				continue;
 			}
 
-			$qr_all = $o_db->query("SELECT count(*) c FROM {$vs_table}".($t_instance->hasField('delete') ? "WHERE deleted = 0" : ""));
+			$qr_all = $o_db->query("SELECT count(*) c FROM {$vs_table}".($t_instance->hasField('deleted') ? "WHERE deleted = 0" : ""));
 			$qr_all->nextRow();
 			$vn_num_rows = (int)$qr_all->get('c');
 
@@ -221,7 +221,7 @@ class SearchIndexer extends SearchBase {
 			if (!is_array($va_fields_to_index) || (sizeof($va_fields_to_index) == 0)) {
 				continue;
 			}
-			$qr_all = $o_db->query("SELECT ".$t_instance->primaryKey()." FROM {$vs_table}");
+			$qr_all = $o_db->query("SELECT ".$t_instance->primaryKey()." FROM {$vs_table}".($t_instance->hasField('deleted') ? " WHERE deleted = 0" : ""));
 
 			$vn_num_rows = $qr_all->numRows();
 			if ($pb_display_progress) {
