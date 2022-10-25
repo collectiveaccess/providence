@@ -559,6 +559,7 @@
 		$pb_dont_show_content = (isset($pa_options['dont_show_content']) && $pa_options['dont_show_content']) ? true : false;
 		
 		if($vs_classname = (!$pb_no_background) ? 'form-button' : '') {
+			if(!isset($pa_attributes['class'])) { $pa_attributes['class'] = null; }
 			$pa_attributes['class'] .= " {$vs_classname}";
 		}
 		

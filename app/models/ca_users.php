@@ -724,13 +724,13 @@ class ca_users extends BaseModel {
 			
 			if (
 				(
-					(is_array($vs_proc_val) && !is_array($va_vars[$ps_key]))
+					(is_array($vs_proc_val) && !is_array($va_vars[$ps_key] ?? null))
 					||
-					(!is_array($vs_proc_val) && is_array($va_vars[$ps_key]))
+					(!is_array($vs_proc_val) && is_array($va_vars[$ps_key] ?? null))
 					||
-					(is_array($vs_proc_val) && (is_array($va_vars[$ps_key])) && (sizeof($vs_proc_val) != sizeof($va_vars[$ps_key])))
+					(is_array($vs_proc_val) && (is_array($va_vars[$ps_key] ?? null)) && (sizeof($vs_proc_val) != sizeof($va_vars[$ps_key])))
 					||
-					(md5(print_r($vs_proc_val, true)) != md5(print_r($va_vars[$ps_key], true)))
+					(md5(print_r($vs_proc_val, true)) != md5(print_r($va_vars[$ps_key] ?? null, true)))
 				)
 			) {
 				$vb_has_changed = true;
