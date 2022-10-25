@@ -26,7 +26,7 @@
 <?php
 	}
 ?>
-<div id="mainContent<?php print (in_array($this->request->getController(), array("Dashboard", "Auth"))) ? "Full" : ""; ?>">
+<div id="mainContent<?= (in_array($this->request->getController(), array("Dashboard", "Auth"))) ? "Full" : ""; ?>">
 
 <?php
 	if ($this->request->isLoggedIn() && ($this->request->user->getPreference('ui_show_breadcrumbs') == 1)) {

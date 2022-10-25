@@ -33,15 +33,15 @@
 	$va_form_elements = $this->getVar('form_elements');
 ?>
 	<div>
-		<h1><?php print _t('Global value editor'); ?></h1>
+		<h1><?= _t('Global value editor'); ?></h1>
 	</div>
 	<div class="searchReindexHelpText">
-		<?php print _t('Global values are editable text values that may be displayed in any view template in your Pawtucket theme. They are especially useful for managing semi-static text embedded in a web site, such as upcoming holiday hours or planned maintenance. You may edit globals using the form below. Configure additional global values by adding them to your theme app.conf configuration file.'); ?>
+		<?= _t('Global values are editable text values that may be displayed in any view template in your Pawtucket theme. They are especially useful for managing semi-static text embedded in a web site, such as upcoming holiday hours or planned maintenance. You may edit globals using the form below. Configure additional global values by adding them to your theme app.conf configuration file.'); ?>
 <?php
 	if (sizeof($va_form_elements) == 0) {
 ?>
 		<div style="text-align: center;">
-			<h2><?php print _t('No global values for Pawtucket are configured'); ?></h2>
+			<h2><?= _t('No global values for Pawtucket are configured'); ?></h2>
 		</div>
 <?php
 	}
@@ -56,8 +56,8 @@
 ?>
 			<div>
 				<div class="formLabel">
-					<?php print $va_info['label']; ?><br/>
-					<?php print $va_info['element']; ?>
+					<?= $va_info['label']; ?><br/>
+					<?= $va_info['element']; ?>
 				</div>
 			</div>
 <?php

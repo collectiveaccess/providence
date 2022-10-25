@@ -51,7 +51,7 @@
 		
 		print $vs_control_box;
 ?>
-		<input type='hidden' name='item_id' value='<?php print $vn_item_id; ?>'/>
+		<input type='hidden' name='item_id' value='<?= $vn_item_id; ?>'/>
 	</form>
 <?php
 	//print $vs_control_box;

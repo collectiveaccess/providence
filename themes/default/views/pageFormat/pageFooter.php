@@ -39,7 +39,7 @@
 				</div><!-- end mainContent -->
 				<div style="clear:both;"><!-- EMPTY --></div>
 			</div><!-- end main -->
-		<div id="footerContainer" style="background-color:#<?php print $vs_footer_color; ?>;">
+		<div id="footerContainer" style="background-color:#<?= $vs_footer_color; ?>;">
 			<div id="footer" ><div style="position: relative;">
 <?php
 				if ($this->request->isLoggedIn()) {
@@ -49,7 +49,7 @@
 				}
 ?>
 				&nbsp;&nbsp;|&nbsp;&nbsp; &copy; 2022 Whirl-i-Gig, <a href="http://www.collectiveaccess.org" target="_blank">CollectiveAccess</a> <?php _p("is a trademark of"); ?> <a href="http://www.whirl-i-gig.com" target="_blank">Whirl-i-Gig</a>
-				[<?php print Session::elapsedTime(4).'s'; ?>/<?php print caGetMemoryUsage(); ?>]
+				[<?= Session::elapsedTime(4).'s'; ?>/<?= caGetMemoryUsage(); ?>]
 			</div></div><!-- end footer -->
 		</div><!-- end footerContainer -->
 		</div><!-- end center -->
@@ -76,13 +76,13 @@
 	</div>
 	
 	<div id="editorFieldList">
-		<div id="editorFieldListHeader"><?php print _t('Form table of contents'); ?></div>
+		<div id="editorFieldListHeader"><?= _t('Form table of contents'); ?></div>
 		<div id="editorFieldListContentArea"></div>
 	</div>
 	
 	<div id="caHierarchyOverviewPanel">
 		<div id="caHierarchyOverviewClose" class="close"> </div>
-		<div id="caHierarchyOverviewHeader"><?php print _t('Browse hierarchy'); ?></div>
+		<div id="caHierarchyOverviewHeader"><?= _t('Browse hierarchy'); ?></div>
 		<div id="caHierarchyOverviewContentArea"></div>
 	</div>
 	<div id='caTempExportForm' style='display:none;'></div>

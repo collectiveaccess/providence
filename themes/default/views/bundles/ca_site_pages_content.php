@@ -44,7 +44,7 @@
 	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
 ?>
-<div id="<?php print $vs_id_prefix; ?>">
+<div id="<?= $vs_id_prefix; ?>">
 	<div class="bundleContainer">
 		<div class="caItemList">
 			<div class="labelInfo">		

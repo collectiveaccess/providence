@@ -73,9 +73,9 @@ $formats 				= $this->getVar('formats');
 		return false;
 	}
 </script>
-<?php print caFormTag($this->request, 'PrintSummary', 'caSummaryDownloadOptionsForm', null, 'post', 'multipart/form-data', '_top', ['disableUnsavedChangesWarning' => true, 'noCSRFToken' => true]); ?>
+<?= caFormTag($this->request, 'PrintSummary', 'caSummaryDownloadOptionsForm', null, 'post', 'multipart/form-data', '_top', ['disableUnsavedChangesWarning' => true, 'noCSRFToken' => true]); ?>
 <div id="caSummaryDownloadOptionsPanel" class="caSummaryDownloadOptionsPanel"> 
-	<div class='dialogHeader'><?php print _t('Download options'); ?></div>
+	<div class='dialogHeader'><?= _t('Download options'); ?></div>
 	<div id="caSummaryDownloadOptionsPanelContentArea">
 			<div class="caSummaryDownloadOptionsPanelAlertControls">
 				<table class="caSummaryDownloadOptionsPanelAlertControls">

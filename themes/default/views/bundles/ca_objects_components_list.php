@@ -45,7 +45,7 @@
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
 ?>
 
-<div id="<?php print $vs_id_prefix; ?>">
+<div id="<?= $vs_id_prefix; ?>">
 	<div class="bundleContainer">
 		<div class="caItemList">
 			<div class="labelInfo">	
@@ -57,7 +57,7 @@
 		while($qr_components->nextHit()) {
 ?>
 				<div style="font-weight: normal;">
-					<?php print $qr_components->getWithTemplate($vs_display_template); ?>
+					<?= $qr_components->getWithTemplate($vs_display_template); ?>
 				</div>
 <?php
 		}
@@ -66,12 +66,12 @@
 <?php
 	} else {
 ?>
-				<div><?php print _t('No components defined'); ?></div>
+				<div><?= _t('No components defined'); ?></div>
 <?php
 	}
 			
 ?>
-	<div class='button labelInfo caAddItemButton'><?php print '<a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($this->request, '*', 'ObjectComponent', 'Form', array('parent_id' => $t_subject->getPrimaryKey())).'"); return false;\')>'; ?><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print $vs_add_label; ?></a></div>
+	<div class='button labelInfo caAddItemButton'><?= '<a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($this->request, '*', 'ObjectComponent', 'Form', array('parent_id' => $t_subject->getPrimaryKey())).'"); return false;\')>'; ?><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= $vs_add_label; ?></a></div>
 
 			</div>
 		</div>

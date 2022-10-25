@@ -52,7 +52,7 @@ if (!$this->request->isAjax()) {
 	</div>
 	
 	<div id="importerUploadArea" style="border: 1px dashed #ccc; text-align: center; padding: 10px; display: none;">
-		<span style="font-size: 16px; color: #333; "><?php print _t("Drag importer worksheets here to add or update"); ?></span>
+		<span style="font-size: 16px; color: #333; "><?= _t("Drag importer worksheets here to add or update"); ?></span>
 	</div>
 	<div style="margin: 10px 0 0 0;">
 <?php 
@@ -96,7 +96,7 @@ if (!$this->request->isAjax()) {
 ?>
 			<tr>
 				<td colspan='7'>
-					<div align="center"><?php print _t('No importers defined'); ?></div>
+					<div align="center"><?= _t('No importers defined'); ?></div>
 				</td>
 			</tr>
 <?php
@@ -105,16 +105,16 @@ if (!$this->request->isAjax()) {
 ?>
 			<tr>
 				<td>
-					<?php print $va_importer['label']; ?>
+					<?= $va_importer['label']; ?>
 				</td>
 				<td>
-					<?php print $va_importer['importer_code']; ?>
+					<?= $va_importer['importer_code']; ?>
 				</td>
 				<td>
-					<?php print $va_importer['importer_type']; ?>
+					<?= $va_importer['importer_type']; ?>
 				</td>
 				<td>
-					<?php print (isset($va_importer['settings']['sourceUrl'])) ? _t('Google Drive') : _t('File upload'); ?>
+					<?= (isset($va_importer['settings']['sourceUrl'])) ? _t('Google Drive') : _t('File upload'); ?>
 				</td>
 				<td>
 <?php  
@@ -125,11 +125,11 @@ if (!$this->request->isAjax()) {
 					}
 ?>				</td>
 				<td>
-					<?php print caGetLocalizedDate($va_importer['last_modified_on'], array('timeOmit' => false, 'dateFormat' => 'delimited')); ?>
+					<?= caGetLocalizedDate($va_importer['last_modified_on'], array('timeOmit' => false, 'dateFormat' => 'delimited')); ?>
 				</td>
 				<td class="listtableEditDelete">
-					<?php print caNavButton($this->request, __CA_NAV_ICON_GO__, _t("Import data"), '', 'batch', 'MetadataImport', 'Run', array('importer_id' => $va_importer['importer_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-					<?php print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'batch', 'MetadataImport', 'Delete', array('importer_id' => $va_importer['importer_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?= caNavButton($this->request, __CA_NAV_ICON_GO__, _t("Import data"), '', 'batch', 'MetadataImport', 'Run', array('importer_id' => $va_importer['importer_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?= caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'batch', 'MetadataImport', 'Delete', array('importer_id' => $va_importer['importer_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 				</td>
 			</tr>
 <?php
@@ -170,7 +170,7 @@ if (!$this->request->isAjax()) {
 		
 		jQuery('#importerUploadArea').fileupload({
 			dataType: 'json',
-			url: '<?php print caNavUrl($this->request, 'batch', 'MetadataImport', 'UploadImporters'); ?>',
+			url: '<?= caNavUrl($this->request, 'batch', 'MetadataImport', 'UploadImporters'); ?>',
 			dropZone: jQuery('#importerUploadArea'),
 			singleFileUploads: false,
 			done: function (e, data) {
@@ -195,7 +195,7 @@ if (!$this->request->isAjax()) {
 							jQuery("#importerUploadArea").show(150);
 						}, 3000);
 				}
-				jQuery("#caImporterListContainer").load("<?php print caNavUrl($this->request, 'batch', 'MetadataImport', 'Index'); ?>");
+				jQuery("#caImporterListContainer").load("<?= caNavUrl($this->request, 'batch', 'MetadataImport', 'Index'); ?>");
 			},
 			progressall: function (e, data) {
 				jQuery("#importerUploadArea").hide(150);
@@ -205,7 +205,7 @@ if (!$this->request->isAjax()) {
 				var progress = parseInt(data.loaded / data.total * 100, 10);
 				jQuery('#progressbar').progressbar("value", progress);
 			
-				var msg = "<?php print _t("Progress: "); ?>%1";
+				var msg = "<?= _t("Progress: "); ?>%1";
 				jQuery("#batchProcessingTableStatus").html(msg.replace("%1", caUI.utils.formatFilesize(data.loaded) + " (" + progress + "%)"));
 				
 			}

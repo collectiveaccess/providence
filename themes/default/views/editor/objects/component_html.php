@@ -42,7 +42,7 @@
 	$vs_form_name = "ObjectComponentAddForm";
 	
 ?>		
-<form action="#" name="<?php print $vs_form_name; ?>" method="POST" enctype="multipart/form-data" id="<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>">
+<form action="#" name="<?= $vs_form_name; ?>" method="POST" enctype="multipart/form-data" id="<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>">
 	<div class='dialogHeader quickaddDialogHeader'><?php 
 	print "<div class='componentAddTypeList'>"._t('Add component %1', $t_subject->getTypeListAsHTMLFormElement('change_type_id', array('id' => "{$vs_form_name}TypeID{$vs_field_name_prefix}{$vs_n}", 'onchange' => "caSwitchTypeComponentForm{$vs_field_name_prefix}{$vs_n}();"), array('value' => $t_subject->get('type_id'), 'restrictToTypes' => $va_restrict_to_types, 'dontIncludeSubtypesInTypeRestriction' => true, 'indentForHierarchy' => false)))."</div>"; 
 	
@@ -53,9 +53,9 @@
 ?>
 	</div>
 	
-	<div class="componentAddErrorContainer" id="<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>"> </div>
+	<div class="componentAddErrorContainer" id="<?= $vs_form_name; ?>Errors<?= $vs_field_name_prefix.$vs_n; ?>"> </div>
 	
-	<div class="componentAddSectionBox" id="<?php print $vs_form_name; ?>Container<?php print $vs_field_name_prefix.$vs_n; ?>">
+	<div class="componentAddSectionBox" id="<?= $vs_form_name; ?>Container<?= $vs_field_name_prefix.$vs_n; ?>">
 		<div class="componentAddFormTopPadding"><!-- empty --></div>
 <?php
 
@@ -74,21 +74,21 @@
 			
 			print join("\n", $va_form_elements);
 ?>
-		<input type='hidden' name='_formName' value='<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>'/>
-		<input type='hidden' name='q' value='<?php print htmlspecialchars($vs_q, ENT_QUOTES, 'UTF-8'); ?>'/>
-		<input type='hidden' name='parent_id' value='<?php print htmlspecialchars($this->getVar('default_parent_id')); ?>'/>
-		<input type='hidden' name='screen' value='<?php print htmlspecialchars($this->getVar('screen')); ?>'/>
-		<input type='hidden' name='types' value='<?php print htmlspecialchars(is_array($va_restrict_to_types) ? join(',', $va_restrict_to_types) : ''); ?>'/>
+		<input type='hidden' name='_formName' value='<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>'/>
+		<input type='hidden' name='q' value='<?= htmlspecialchars($vs_q, ENT_QUOTES, 'UTF-8'); ?>'/>
+		<input type='hidden' name='parent_id' value='<?= htmlspecialchars($this->getVar('default_parent_id')); ?>'/>
+		<input type='hidden' name='screen' value='<?= htmlspecialchars($this->getVar('screen')); ?>'/>
+		<input type='hidden' name='types' value='<?= htmlspecialchars(is_array($va_restrict_to_types) ? join(',', $va_restrict_to_types) : ''); ?>'/>
 		
 		
 
 		<script type="text/javascript">
-			function caSave<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>(e) {
+			function caSave<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>(e) {
 				jQuery.each(CKEDITOR.instances, function(k, instance) {
 					instance.updateElement();
 				});
 				
-				jQuery.post('<?php print caNavUrl($this->request, "editor/objects", "ObjectComponent", "Save"); ?>', jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").serialize(), function(resp, textStatus) {
+				jQuery.post('<?= caNavUrl($this->request, "editor/objects", "ObjectComponent", "Save"); ?>', jQuery("#<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").serialize(), function(resp, textStatus) {
 					if (resp.status == 0) {
 						
 						// Reload inspector and components bundle in parent form
@@ -99,8 +99,8 @@
 							caBundleUpdateManager.reloadInspector(); 
 						}
 						
-						jQuery.jGrowl('<?php print addslashes(_t('Created %1 ', $t_subject->getTypeName())); ?> <em>' + resp.display + '</em>', { header: '<?php print addslashes(_t('Component add %1', $t_subject->getTypeName())); ?>' }); 
-						jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().data('panel').hidePanel();
+						jQuery.jGrowl('<?= addslashes(_t('Created %1 ', $t_subject->getTypeName())); ?> <em>' + resp.display + '</em>', { header: '<?= addslashes(_t('Component add %1', $t_subject->getTypeName())); ?>' }); 
+						jQuery("#<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().data('panel').hidePanel();
 					} else {
 						// error
 						var content = '<div class="notification-error-box rounded"><ul class="notification-error-box">';
@@ -109,19 +109,19 @@
 						}
 						content += '</ul></div>';
 						
-						jQuery("#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>").html(content).slideDown(200);
+						jQuery("#<?= $vs_form_name; ?>Errors<?= $vs_field_name_prefix.$vs_n; ?>").html(content).slideDown(200);
 						
 						var componentAddClearErrorInterval = setInterval(function() {
-							jQuery("#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>").slideUp(500);
+							jQuery("#<?= $vs_form_name; ?>Errors<?= $vs_field_name_prefix.$vs_n; ?>").slideUp(500);
 							clearInterval(componentAddClearErrorInterval);
 						}, 3000);
 					}
 				}, "json");
 			}
-			function caSwitchTypeComponentForm<?php print $vs_field_name_prefix.$vs_n; ?>() {
-				jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?> input[name=type_id]").val(jQuery("#<?php print $vs_form_name; ?>TypeID<?php print $vs_field_name_prefix.$vs_n; ?>").val());
-				var data = jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").serialize();
-				jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().load("<?php print caNavUrl($this->request, 'editor/objects', 'ObjectComponent', 'Form'); ?>", data);
+			function caSwitchTypeComponentForm<?= $vs_field_name_prefix.$vs_n; ?>() {
+				jQuery("#<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?> input[name=type_id]").val(jQuery("#<?= $vs_form_name; ?>TypeID<?= $vs_field_name_prefix.$vs_n; ?>").val());
+				var data = jQuery("#<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").serialize();
+				jQuery("#<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().load("<?= caNavUrl($this->request, 'editor/objects', 'ObjectComponent', 'Form'); ?>", data);
 			}
 		</script>
 	</div>

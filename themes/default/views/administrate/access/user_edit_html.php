@@ -117,7 +117,7 @@
  		jQuery('#ca_users_entity_id_lookup').autocomplete( 
 			{ 
 				minLength: 3, delay: 800,
-				source: '<?php print caNavUrl($this->request, 'lookup', 'Entity', 'Get', array()); ?>',	
+				source: '<?= caNavUrl($this->request, 'lookup', 'Entity', 'Get', array()); ?>',	
 				select: function(event,ui) {
 					if (parseInt(ui.item.id) >= 0) {
 						jQuery('#ca_users_entity_id_value').val(parseInt(ui.item.id));

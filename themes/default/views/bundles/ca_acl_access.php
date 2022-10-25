@@ -45,7 +45,7 @@
 	print caFormTag($this->request, 'SetAccess', 'caAccessControlList');
 ?>	
 	<div class='globalAccess'>
-		<div class='title'><?php print _t('Global access'); ?></div>
+		<div class='title'><?= _t('Global access'); ?></div>
 <?php 	
 		$va_global_access = $t_instance->getACLWorldAccess(array('returnAsInitialValuesForBundle' => true));
 		$va_global_access_status = $va_global_access['access_display'];
@@ -59,11 +59,11 @@
 		print $t_instance->getACLWorldHTMLFormBundle($this->request, 'caAccessControlList');	
 	?>	
 		</div>
-		<div id='editGlobalAccessLink' class='editLink'><a href='#' onclick='jQuery("#editGlobalAccess").show(250); jQuery("#editGlobalAccessLink").hide()'><?php print caNavIcon(__CA_NAV_ICON_EDIT__, 2); ?>  <?php print _t('Edit Global Access'); ?></a></div>
+		<div id='editGlobalAccessLink' class='editLink'><a href='#' onclick='jQuery("#editGlobalAccess").show(250); jQuery("#editGlobalAccessLink").hide()'><?= caNavIcon(__CA_NAV_ICON_EDIT__, 2); ?>  <?= _t('Edit Global Access'); ?></a></div>
 		<div style='width:100%; clear:both; height: 1px;'></div> 
 	</div>
 	<div class='globalAccess'>
-		<div class='title'><?php print _t('Exceptions'); ?></div>
+		<div class='title'><?= _t('Exceptions'); ?></div>
 <?php
 		if (($t_instance->getACLUserGroups()) || ($t_instance->getACLUsers())) {
 		 	print "<p>"._t('The following groups and users have special access or restrictions for this record').".</p>";
@@ -80,13 +80,13 @@
 		}
 ?>		
 		<div id='editUserAccess'>
-		<h2><?php print _t('Group access'); ?></h2>
+		<h2><?= _t('Group access'); ?></h2>
 	<?php
 		print $t_instance->getACLGroupHTMLFormBundle($this->request, 'caAccessControlList');
 		
 		print caHTMLHiddenInput($t_instance->primaryKey(), array('value' => $t_instance->getPrimaryKey()));
 	?>	
-		<h2><?php print _t('User access'); ?></h2>
+		<h2><?= _t('User access'); ?></h2>
 	<?php
 		print $t_instance->getACLUserHTMLFormBundle($this->request, 'caAccessControlList');
 	?>
@@ -95,11 +95,11 @@
 <?php
 		if (($t_instance->getACLUserGroups()) || ($t_instance->getACLUsers())) {
 ?>
-			<div id='editUserAccessLink' class='editLink'><a href='#' onclick='jQuery("#editUserAccess").show(250); jQuery("#editUserAccessLink").hide()'><?php print caNavIcon(__CA_NAV_ICON_EDIT__, 2); ?> <?php print _t('Edit Exceptions'); ?></a></div>
+			<div id='editUserAccessLink' class='editLink'><a href='#' onclick='jQuery("#editUserAccess").show(250); jQuery("#editUserAccessLink").hide()'><?= caNavIcon(__CA_NAV_ICON_EDIT__, 2); ?> <?= _t('Edit Exceptions'); ?></a></div>
 <?php   
 		} else {
 ?>
-		<div id='editUserAccessLink' class='editLink'><a href='#' onclick='jQuery("#editUserAccess").show(250); jQuery("#editUserAccessLink").hide()'><?php print caNavIcon(__CA_NAV_ICON_EDIT__, 2); ?> <?php print _t('Create an Exception'); ?></a></div>
+		<div id='editUserAccessLink' class='editLink'><a href='#' onclick='jQuery("#editUserAccess").show(250); jQuery("#editUserAccessLink").hide()'><?= caNavIcon(__CA_NAV_ICON_EDIT__, 2); ?> <?= _t('Create an Exception'); ?></a></div>
 <?php
 		}		
 ?>

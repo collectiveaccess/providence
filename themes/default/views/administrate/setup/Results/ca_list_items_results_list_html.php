@@ -74,10 +74,10 @@ if (!$this->getVar('no_hierarchies_defined')) {
 			
 			($i == 2) ? $i = 0 : "";
 ?>
-			<tr <?php print ($i ==1) ? "class='odd'" : ""; ?>>
+			<tr <?= ($i ==1) ? "class='odd'" : ""; ?>>
 				<td class="addItemToSetControl">
-					<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_item_id; ?>' class="addItemToSetControl" />
-					<div><?php print $vn_start + $vn_item_count + 1; ?></div>
+					<input type='checkbox' name='add_to_set_ids' value='<?= (int)$vn_item_id; ?>' class="addItemToSetControl" />
+					<div><?= $vn_start + $vn_item_count + 1; ?></div>
 				</td>
 <?php
 				foreach($va_display_list as $vn_placement_id => $va_display_item) {
@@ -99,7 +99,7 @@ if (!$this->getVar('no_hierarchies_defined')) {
 ?>
 			<tfoot>
 				<tr>
-					<td colspan="2" class="listtableTotals"><?php print _t('Totals'); ?></td>
+					<td colspan="2" class="listtableTotals"><?= _t('Totals'); ?></td>
 <?php
 					foreach($va_bottom_line as $vn_placement_id => $vs_bottom_line_value) {
 						print "<td>{$vs_bottom_line_value}</td>";

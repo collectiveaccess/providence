@@ -42,7 +42,7 @@
 	<div id='box'>
 	<div id="logo"><?= caGetDefaultLogo(); ?></div><!-- end logo -->
 	<div id="content">
-		<div class='error'><?php print _t("Updating your database..."); ?></div>
+		<div class='error'><?= _t("Updating your database..."); ?></div>
 <?php
 	flush();
 	$va_messages = self::performDatabaseSchemaUpdate();

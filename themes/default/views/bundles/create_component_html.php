@@ -28,7 +28,7 @@
 ?>
 <div id="caObjectComponentPanel" class="caRelationQuickAddPanel"> 
 	<div id="caObjectComponentPanelContentArea">
-	<div class='dialogHeader'><?php print _t('Add component'); ?></div>
+	<div class='dialogHeader'><?= _t('Add component'); ?></div>
 		
 	</div>
 </div>
@@ -52,6 +52,6 @@
 				}
 			});
 		}
-		jQuery("#caObjectComponentPanelContentArea").data("panel", caObjectComponentPanel<?php print $vs_id_prefix; ?>);
+		jQuery("#caObjectComponentPanelContentArea").data("panel", caObjectComponentPanel<?= $vs_id_prefix; ?>);
 	});
 </script>

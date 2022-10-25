@@ -38,7 +38,7 @@
 		!$t_subject->useBundleBasedAnnotationEditor()
 	) { 	
 ?>
-		<span class='heading'><?php print _t('Annotations are not supported for this type of media'); ?></span>
+		<span class='heading'><?= _t('Annotations are not supported for this type of media'); ?></span>
 <?php
 			return; 
 	}
@@ -95,7 +95,7 @@ if (	// don't show bundle if this representation doesn't use bundles to edit ann
 		!$t_subject->useBundleBasedAnnotationEditor()
 	) { 	
 ?>
-		<span class='heading'><?php print _t('Annotations are not supported for this type of media'); ?></span>
+		<span class='heading'><?= _t('Annotations are not supported for this type of media'); ?></span>
 	</div>
 <?php
 			return; 
@@ -103,20 +103,20 @@ if (	// don't show bundle if this representation doesn't use bundles to edit ann
 	$va_media_player_config = caGetMediaDisplayInfo('annotation_editor', $t_subject->getMediaInfo('media', $o_properties->getDisplayMediaVersion(), 'MIMETYPE'));
 ?>
 	<div class="caAnnotationMediaPlayerContainer">
-		<?php print $t_subject->getMediaTag('media', $o_properties->getDisplayMediaVersion(), array('class' => 'caAnnotationMediaPlayer', 'viewer_width' => $va_media_player_config['viewer_width'], 'viewer_height' => $va_media_player_config['viewer_height'], 'id' => 'annotation_media_player', 'poster_frame_url' => $t_subject->getMediaUrl('media', 'medium'))); ?>
+		<?= $t_subject->getMediaTag('media', $o_properties->getDisplayMediaVersion(), array('class' => 'caAnnotationMediaPlayer', 'viewer_width' => $va_media_player_config['viewer_width'], 'viewer_height' => $va_media_player_config['viewer_height'], 'id' => 'annotation_media_player', 'poster_frame_url' => $t_subject->getMediaUrl('media', 'medium'))); ?>
 	</div>
 </div>
 <!-- END Media Player -->
 
 <!-- BEGIN Annotation List -->
-<div id="<?php print $vs_id_prefix.$t_item->tableNum().'_annotations'; ?>">
+<div id="<?= $vs_id_prefix.$t_item->tableNum().'_annotations'; ?>">
 <?php
 	//
 	// The bundle template - used to generate each bundle in the form
 	//
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
-		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="annotationItem">
+		<div id="<?= $vs_id_prefix; ?>Item_{n}" class="annotationItem">
 			<span class="formLabelError">{error}</span>
 			<table class="representationAnnotationListItem">
 				<tr>
@@ -131,27 +131,27 @@ if (	// don't show bundle if this representation doesn't use bundles to edit ann
 			}
 			if ($vs_goto_property) {
 ?>
-					</tr><tr><td <?php print ($vn_col_count > 1) ? "colspan='".$vn_col_count."'" : ""; ?>><a href="#" onclick="if (!jQuery('#annotation_media_player').data('hasBeenPlayed')) { jQuery('#annotation_media_player')[0].player.play(); jQuery('#annotation_media_player').data('hasBeenPlayed', true); } jQuery('#annotation_media_player')[0].player.setCurrentTime((parseFloat({{startTimecode_raw}}) >= 0 ? parseFloat({{startTimecode_raw}}) : 0) + <?php print $vn_timecode_offset; ?>); return false;" class="button" id="{fieldNamePrefix}gotoButton_{n}"><?php print _t('Play Clip'); ?> &rsaquo;</a></td>
+					</tr><tr><td <?= ($vn_col_count > 1) ? "colspan='".$vn_col_count."'" : ""; ?>><a href="#" onclick="if (!jQuery('#annotation_media_player').data('hasBeenPlayed')) { jQuery('#annotation_media_player')[0].player.play(); jQuery('#annotation_media_player').data('hasBeenPlayed', true); } jQuery('#annotation_media_player')[0].player.setCurrentTime((parseFloat({{startTimecode_raw}}) >= 0 ? parseFloat({{startTimecode_raw}}) : 0) + <?= $vn_timecode_offset; ?>); return false;" class="button" id="{fieldNamePrefix}gotoButton_{n}"><?= _t('Play Clip'); ?> &rsaquo;</a></td>
 <?php
 			}
 			print "</tr></table></td>";
 		}
 ?>
-					<td><?php print $t_item_label->htmlFormElement('name', null, array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}label_{n}", 'name' => "{fieldNamePrefix}label_{n}", "value" => "{{label}}", 'no_tooltips' => false, 'width' => 35,'textAreaTagName' => 'textentry')); ?></td>
-					<td><a href="#" onclick="jQuery('#{fieldNamePrefix}moreOptions_{n}').slideToggle(250); return false;" class="button"><?php print _t('More'); ?> &rsaquo;</a></td>
+					<td><?= $t_item_label->htmlFormElement('name', null, array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}label_{n}", 'name' => "{fieldNamePrefix}label_{n}", "value" => "{{label}}", 'no_tooltips' => false, 'width' => 35,'textAreaTagName' => 'textentry')); ?></td>
+					<td><a href="#" onclick="jQuery('#{fieldNamePrefix}moreOptions_{n}').slideToggle(250); return false;" class="button"><?= _t('More'); ?> &rsaquo;</a></td>
 					
 					<td>
-						<a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>						
+						<a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>						
 					</td>
 				</tr>
 			</table>
 			<div style="display:none;" id="{fieldNamePrefix}moreOptions_{n}">
 				<table class="representationAnnotationListItem">
 					<tr>
-						<td><?php print $t_item_label->htmlFormElement('locale_id', null, array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}locale_id_{n}", 'name' => "{fieldNamePrefix}locale_id_{n}", "value" => "", 'no_tooltips' => false, 'WHERE' => array('(dont_use_for_cataloguing = 0)'))); ?></td>
-						<td><?php print $t_item->htmlFormElement('status', null, array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}status_{n}", 'name' => "{fieldNamePrefix}status_{n}", "value" => "", 'no_tooltips' => false)); ?></td>
-						<td><?php print $t_item->htmlFormElement('access', null, array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}access_{n}", 'name' => "{fieldNamePrefix}access_{n}", "value" => "", 'no_tooltips' => false)); ?></td>
-						<td><?php print urldecode(caNavLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 1), '', 'editor/representation_annotations', 'RepresentationAnnotationEditor', 'Edit', array('annotation_id' => "{n}"), array('id' => "{fieldNamePrefix}edit_{n}"))); ?></td>
+						<td><?= $t_item_label->htmlFormElement('locale_id', null, array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}locale_id_{n}", 'name' => "{fieldNamePrefix}locale_id_{n}", "value" => "", 'no_tooltips' => false, 'WHERE' => array('(dont_use_for_cataloguing = 0)'))); ?></td>
+						<td><?= $t_item->htmlFormElement('status', null, array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}status_{n}", 'name' => "{fieldNamePrefix}status_{n}", "value" => "", 'no_tooltips' => false)); ?></td>
+						<td><?= $t_item->htmlFormElement('access', null, array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}access_{n}", 'name' => "{fieldNamePrefix}access_{n}", "value" => "", 'no_tooltips' => false)); ?></td>
+						<td><?= urldecode(caNavLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 1), '', 'editor/representation_annotations', 'RepresentationAnnotationEditor', 'Edit', array('annotation_id' => "{n}"), array('id' => "{fieldNamePrefix}edit_{n}"))); ?></td>
 					</tr>
 				</table>
 			</div>
@@ -159,7 +159,7 @@ if (	// don't show bundle if this representation doesn't use bundles to edit ann
 	</textarea>
 	
 	<div class="bundleContainer">	
-		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print _t("Add annotation"); ?> &rsaquo;</a></div>
+		<div class='button labelInfo caAddItemButton'><a href='#'><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= _t("Add annotation"); ?> &rsaquo;</a></div>
 		<div class="caItemList" style="width: 100%; overflow-y: auto; min-height: 300px;";>
 		
 		</div>
@@ -167,25 +167,25 @@ if (	// don't show bundle if this representation doesn't use bundles to edit ann
 </div>
 
 <script type="text/javascript">
-	caUI.initBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_annotations'; ?>', {
-		fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
-		templateValues: ['status', 'access', 'locale_id', 'label', <?php print join(',', $va_prop_list); ?>],
-		initialValues: <?php print json_encode($va_inital_values); ?>,
-		initialValueOrder: <?php print json_encode(array_keys($va_initial_values)); ?>,
+	caUI.initBundle('#<?= $vs_id_prefix.$t_item->tableNum().'_annotations'; ?>', {
+		fieldNamePrefix: '<?= $vs_id_prefix; ?>_',
+		templateValues: ['status', 'access', 'locale_id', 'label', <?= join(',', $va_prop_list); ?>],
+		initialValues: <?= json_encode($va_inital_values); ?>,
+		initialValueOrder: <?= json_encode(array_keys($va_initial_values)); ?>,
 		sortInitialValuesBy: 'startTimecode_raw',
-		errors: <?php print json_encode($va_errors); ?>,
-		forceNewValues: <?php print json_encode($va_failed_inserts); ?>,
-		itemID: '<?php print $vs_id_prefix; ?>Item_',
+		errors: <?= json_encode($va_errors); ?>,
+		forceNewValues: <?= json_encode($va_failed_inserts); ?>,
+		itemID: '<?= $vs_id_prefix; ?>Item_',
 		templateClassName: 'caItemTemplate',
 		itemListClassName: 'caItemList',
 		addButtonClassName: 'caAddItemButton',
 		deleteButtonClassName: 'caDeleteItemButton',
 		showEmptyFormsOnLoad: 1,
 		showOnNewIDList: [],
-		hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_gotoButton_', '<?php print $vs_id_prefix; ?>_edit_'],
+		hideOnNewIDList: ['<?= $vs_id_prefix; ?>_gotoButton_', '<?= $vs_id_prefix; ?>_edit_'],
 		addMode: 'prepend',
 		incrementLocalesForNewBundles: false,
-		defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>
+		defaultLocaleID: <?= ca_locales::getDefaultCataloguingLocaleID(); ?>
 	});
 </script>
 <!-- END Annotation List -->

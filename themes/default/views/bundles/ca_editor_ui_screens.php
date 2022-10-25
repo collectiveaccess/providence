@@ -40,20 +40,20 @@
  	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
 	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 ?>
-<div id="<?php print $vs_id_prefix; ?>">
+<div id="<?= $vs_id_prefix; ?>">
 <?php
 	//
 	// The bundle template - used to generate each bundle in the form
 	//
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
-		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo">
+		<div id="<?= $vs_id_prefix; ?>Item_{n}" class="labelInfo">
 			<span class="formLabelError">{error}</span>
 			<table class="uiScreenItem">
 				<tr >
 					<td width="200">
 						<div class="formLabel" id="{fieldNamePrefix}edit_name_{n}" style="display: none;">
-							<?php print _t("Name")."<br/>".caHTMLTextInput('{fieldNamePrefix}name_{n}', array('id' => '{fieldNamePrefix}name_{n}', 'value' => '{name}'), array('width' => 40)); ?>
+							<?= _t("Name")."<br/>".caHTMLTextInput('{fieldNamePrefix}name_{n}', array('id' => '{fieldNamePrefix}name_{n}', 'value' => '{name}'), array('width' => 40)); ?>
 						</div>
 						
 						<span id="{fieldNamePrefix}screen_name_{n}">{name} ({numPlacements}) {isDefault}</span>
@@ -64,8 +64,8 @@
 						</span>
 					</td>
 					<td class="listtableEditDelete"><div style="float:right;">
-							<span id="{fieldNamePrefix}edit_{n}"><?php print urldecode(caNavLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, "18px"), '', 'administrate/setup/interface_screen_editor', 'InterfaceScreenEditor', 'Edit', array('screen_id' => '{screen_id}'))); ?></span>
-							<a href="#" class="caDeleteScreenButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, "18px"); ?></a>
+							<span id="{fieldNamePrefix}edit_{n}"><?= urldecode(caNavLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, "18px"), '', 'administrate/setup/interface_screen_editor', 'InterfaceScreenEditor', 'Edit', array('screen_id' => '{screen_id}'))); ?></span>
+							<a href="#" class="caDeleteScreenButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, "18px"); ?></a>
 					</div></td>
 				</tr>
 			</table>
@@ -79,34 +79,34 @@
 		<div class="caItemList">
 		
 		</div>
-		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print _t("Add screen"); ?> &rsaquo;</a></div>
+		<div class='button labelInfo caAddItemButton'><a href='#'><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= _t("Add screen"); ?> &rsaquo;</a></div>
 	</div>
 </div>
 
-<input type="hidden" id="<?php print $vs_id_prefix; ?>_ScreenBundleList" name="<?php print $vs_id_prefix; ?>_ScreenBundleList" value=""/>
+<input type="hidden" id="<?= $vs_id_prefix; ?>_ScreenBundleList" name="<?= $vs_id_prefix; ?>_ScreenBundleList" value=""/>
 <?php
 	// order element
 ?>
 			
 <script type="text/javascript">
-	caUI.initBundle('#<?php print $vs_id_prefix; ?>', {
-		fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
+	caUI.initBundle('#<?= $vs_id_prefix; ?>', {
+		fieldNamePrefix: '<?= $vs_id_prefix; ?>_',
 		templateValues: ['name', 'locale_id', 'rank', 'screen_id', 'numPlacements', 'typeRestrictionsForDisplay', 'isDefault'],
-		initialValues: <?php print json_encode($va_initial_values); ?>,
-		initialValueOrder: <?php print json_encode(is_array($va_initial_values) ? array_keys($va_initial_values) : null); ?>,
-		errors: <?php print json_encode($va_errors); ?>,
-		forceNewValues: <?php print json_encode($va_failed_inserts); ?>,
-		itemID: '<?php print $vs_id_prefix; ?>Item_',
+		initialValues: <?= json_encode($va_initial_values); ?>,
+		initialValueOrder: <?= json_encode(is_array($va_initial_values) ? array_keys($va_initial_values) : null); ?>,
+		errors: <?= json_encode($va_errors); ?>,
+		forceNewValues: <?= json_encode($va_failed_inserts); ?>,
+		itemID: '<?= $vs_id_prefix; ?>Item_',
 		templateClassName: 'caItemTemplate',
 		itemListClassName: 'caItemList',
 		itemClassName: 'labelInfo',
 		addButtonClassName: 'caAddItemButton',
 		deleteButtonClassName: 'caDeleteScreenButton',
-		showOnNewIDList: ['<?php print $vs_id_prefix; ?>_edit_name_'],
-		hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_screen_info_', '<?php print $vs_id_prefix; ?>_screen_name_', '<?php print $vs_id_prefix; ?>_edit_'],
+		showOnNewIDList: ['<?= $vs_id_prefix; ?>_edit_name_'],
+		hideOnNewIDList: ['<?= $vs_id_prefix; ?>_screen_info_', '<?= $vs_id_prefix; ?>_screen_name_', '<?= $vs_id_prefix; ?>_edit_'],
 		showEmptyFormsOnLoad: 1,
 		isSortable: true,
-		listSortOrderID: '<?php print $vs_id_prefix; ?>_ScreenBundleList',
-		defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>
+		listSortOrderID: '<?= $vs_id_prefix; ?>_ScreenBundleList',
+		defaultLocaleID: <?= ca_locales::getDefaultCataloguingLocaleID(); ?>
 	});
 </script>

@@ -27,7 +27,7 @@
  */
 	AssetLoadManager::register("sortableUI");
 ?>
-<h1><?php print _t('Rebuild hierarchical indices'); ?></h1>
+<h1><?= _t('Rebuild hierarchical indices'); ?></h1>
 
 
 <div class="searchReindexTableProgressGroup">

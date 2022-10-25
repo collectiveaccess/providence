@@ -62,8 +62,8 @@
 			
 			print $vs_control_box;
 ?>
-			<input type='hidden' name='table_num' value='<?php print $t_display->get('table_num'); ?>'/>
-			<input type='hidden' name='display_id' value='<?php print $vn_display_id; ?>'/>
+			<input type='hidden' name='table_num' value='<?= $t_display->get('table_num'); ?>'/>
+			<input type='hidden' name='display_id' value='<?= $vn_display_id; ?>'/>
 		</form>
 	
 		<div class="editorBottomPadding"><!-- empty --></div>

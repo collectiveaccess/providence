@@ -47,13 +47,13 @@
 ?>
 
 <div class="bundleLabel">
-	<span class="formLabelText" id="_ca_metadata_element_labels_"><?php print _t("Labels"); ?></span>
+	<span class="formLabelText" id="_ca_metadata_element_labels_"><?= _t("Labels"); ?></span>
 <?php
 	print $t_element->getPreferredLabelHTMLFormBundle($this->request,'element_labels','element_labels');
 ?>
 </div>
 <div class="bundleLabel">
-	<span class="formLabelText" id="_ca_metadata_element_labels_"><?php print _t("Disambiguation labels"); ?></span>
+	<span class="formLabelText" id="_ca_metadata_element_labels_"><?= _t("Disambiguation labels"); ?></span>
 <?php
 	print $t_element->getNonPreferredLabelHTMLFormBundle($this->request,'alt_element_labels','alt_element_labels');
 ?>
@@ -101,7 +101,7 @@
 	if(!is_array($va_available_settings = $this->getVar('available_settings'))) { $va_available_settings = array(); }
 ?>
 		<div id='elementSettingsForm' class='formSettings'>
-			<div class='formLabel'><span id="_ca_metadata_element_labels_"><?php print _t("Datatype-specific options"); ?></span><br/></div>
+			<div class='formLabel'><span id="_ca_metadata_element_labels_"><?= _t("Datatype-specific options"); ?></span><br/></div>
 			<div style="margin-left: 20px;">
 <?php
 			foreach($va_available_settings as $vs_code => $va_properties) {
@@ -115,7 +115,7 @@
 // metadata type restrictions
 	$t_restriction = $this->getVar('t_restriction');
 ?>
-	<div class='formLabel'><span id="_ca_metadata_element_labels_"><?php print _t("Type restrictions"); ?></span><br/></div>
+	<div class='formLabel'><span id="_ca_metadata_element_labels_"><?= _t("Type restrictions"); ?></span><br/></div>
 		
 	<div id="type_restrictions">
 		<textarea class='caItemTemplate' style='display: none;'>
@@ -139,7 +139,7 @@
 							}
 						?></td>
 						<td>
-							<a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
+							<a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 						</td>
 					</tr>
 				</table>
@@ -149,7 +149,7 @@
 			<div class="caItemList">
 			
 			</div>
-			<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, 1); ?> <?php print _t("Add type restriction"); ?> &rsaquo;</a></div>
+			<div class='button labelInfo caAddItemButton'><a href='#'><?= caNavIcon(__CA_NAV_ICON_ADD__, 1); ?> <?= _t("Add type restriction"); ?> &rsaquo;</a></div>
 		</div>
 	</div>
 <?php
@@ -157,12 +157,12 @@
 	
 ?>
 	<script type="text/javascript">
-		var caTypeOptions = <?php print json_encode($this->getVar('type_list')); ?>;
+		var caTypeOptions = <?= json_encode($this->getVar('type_list')); ?>;
 		caUI.initBundle('#type_restrictions', {
 			fieldNamePrefix: 'type_restrictions_',
-			templateValues: <?php print json_encode(array_merge(array_keys($t_restriction->getAvailableSettings()), array('table_num', 'type_id', 'include_subtypes'))); ?>, 
-			initialValues: <?php print json_encode($va_initial_values); ?>,
-			itemID: '<?php print $vs_id_prefix; ?>Item_',
+			templateValues: <?= json_encode(array_merge(array_keys($t_restriction->getAvailableSettings()), array('table_num', 'type_id', 'include_subtypes'))); ?>, 
+			initialValues: <?= json_encode($va_initial_values); ?>,
+			itemID: '<?= $vs_id_prefix; ?>Item_',
 			templateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',
 			addButtonClassName: 'caAddItemButton',
@@ -193,19 +193,19 @@
 if(is_array($va_sub_elements)):
 ?>
 	<br/>
-	<div class='formLabel'><span id="_ca_metadata_element_labels_"><?php print _t("Sub-elements"); ?></span><br/></div>
+	<div class='formLabel'><span id="_ca_metadata_element_labels_"><?= _t("Sub-elements"); ?></span><br/></div>
 	<div class="bundleContainer">
 		<div class="caLabelList">
 <?php
 		foreach($va_sub_elements as $va_sub_element):
 ?>
 		<div class="labelInfo">
-			<a href="<?php print caNavUrl($this->request,'administrate/setup','Elements','MoveElementUp',array('parent_id' => $vn_element_id, 'element_id' => $va_sub_element['element_id'])); ?>" class="caDeleteLabelButton"><?php print "⬆"; ?></a>
-			<a href="<?php print caNavUrl($this->request,'administrate/setup','Elements','MoveElementDown',array('parent_id' => $vn_element_id, 'element_id' => $va_sub_element['element_id'])); ?>" class="caDeleteLabelButton"><?php print "⬇"; ?></a>
-			<a href="<?php print caNavUrl($this->request,'administrate/setup','Elements','Edit',array('parent_id' => $vn_element_id, 'element_id' => $va_sub_element['element_id'])); ?>" class="caDeleteLabelButton"><?php print caNavIcon(__CA_NAV_ICON_EDIT__, 1); ?></a>
-			<a href="<?php print caNavUrl($this->request,'administrate/setup','Elements','Delete',array('parent_id' => $vn_element_id, 'element_id' => $va_sub_element['element_id'])); ?>" class="caDeleteLabelButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
+			<a href="<?= caNavUrl($this->request,'administrate/setup','Elements','MoveElementUp',array('parent_id' => $vn_element_id, 'element_id' => $va_sub_element['element_id'])); ?>" class="caDeleteLabelButton"><?= "⬆"; ?></a>
+			<a href="<?= caNavUrl($this->request,'administrate/setup','Elements','MoveElementDown',array('parent_id' => $vn_element_id, 'element_id' => $va_sub_element['element_id'])); ?>" class="caDeleteLabelButton"><?= "⬇"; ?></a>
+			<a href="<?= caNavUrl($this->request,'administrate/setup','Elements','Edit',array('parent_id' => $vn_element_id, 'element_id' => $va_sub_element['element_id'])); ?>" class="caDeleteLabelButton"><?= caNavIcon(__CA_NAV_ICON_EDIT__, 1); ?></a>
+			<a href="<?= caNavUrl($this->request,'administrate/setup','Elements','Delete',array('parent_id' => $vn_element_id, 'element_id' => $va_sub_element['element_id'])); ?>" class="caDeleteLabelButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 			<span class="labelDisplay">
-				<?php print $va_sub_element['name'].' ('.$va_sub_element['element_code'].') ['.ca_metadata_elements::getAttributeNameForTypeCode($va_sub_element['datatype']).']'; ?>
+				<?= $va_sub_element['name'].' ('.$va_sub_element['element_code'].') ['.ca_metadata_elements::getAttributeNameForTypeCode($va_sub_element['datatype']).']'; ?>
 			</span>
 		</div>
 <?php
@@ -213,8 +213,8 @@ if(is_array($va_sub_elements)):
 ?>
 		</div>
 		<div class="button labelInfo caAddLabelButton">
-			<a href="<?php print caNavUrl($this->request,'administrate/setup','Elements','Edit',array('parent_id' => $vn_element_id, 'element_id' => 0)); ?>">
-				<?php print caNavIcon(__CA_NAV_ICON_ADD__, 1); ?> <?php print _t("Add sub-element"); ?> &rsaquo;
+			<a href="<?= caNavUrl($this->request,'administrate/setup','Elements','Edit',array('parent_id' => $vn_element_id, 'element_id' => 0)); ?>">
+				<?= caNavIcon(__CA_NAV_ICON_ADD__, 1); ?> <?= _t("Add sub-element"); ?> &rsaquo;
 			</a>
 		</div>
 	</div>
@@ -233,9 +233,9 @@ endif;
 	function caSetElementsSettingsForm(opts) {
 		if (!opts) { opts = {}; }
 		opts['datatype'] = jQuery("#datatype").val();
-		opts['element_id'] = <?php print (int)$vn_element_id; ?>;
+		opts['element_id'] = <?= (int)$vn_element_id; ?>;
 		console.log('opts', opts);
-		jQuery("#elementSettingsForm").load('<?php print caNavUrl($this->request, 'administrate/setup', 'Elements', 'getElementSettingsForm'); ?>', opts, function() {
+		jQuery("#elementSettingsForm").load('<?= caNavUrl($this->request, 'administrate/setup', 'Elements', 'getElementSettingsForm'); ?>', opts, function() {
 		
 			// list drop-down is only enabled when datatype is set to list (datatype=3)
 			(jQuery("#datatype").val() == 3) ? jQuery("#list_id").attr('disabled', false) : jQuery("#list_id").attr('disabled', true);

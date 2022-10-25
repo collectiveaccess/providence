@@ -42,7 +42,7 @@
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
 ?>
 
-<div id="<?php print $vs_id_prefix; ?>">
+<div id="<?= $vs_id_prefix; ?>">
 	<div class="bundleContainer">
 		<div class="caItemList">
 			<div class="labelInfo authorityReferenceList">	
@@ -52,14 +52,14 @@
 	} else {
 		if (sizeof($va_references) > 0) {
 ?>
-			<div id="<?php print $vs_id_prefix; ?>AuthorityReferenceTabs" class="authorityReferenceListContainer">
+			<div id="<?= $vs_id_prefix; ?>AuthorityReferenceTabs" class="authorityReferenceListContainer">
 				<ul>
 <?php
 				foreach($va_references as $vn_table_num => $va_rows) {
 					if ($t_ref_instance = Datamodel::getInstance($vn_table_num, true)) {
 						$vs_ref_table_name = $t_ref_instance->tableName();
 ?>
-						<li><a href="#<?php print $vs_id_prefix; ?>AuthorityReferenceTabs-<?php print $vs_ref_table_name; ?>"><span><?php print _t('%1 (%2)',caUcFirstUTF8Safe($t_ref_instance->getProperty('NAME_PLURAL')), sizeof($va_rows)); ?></span></a></li>
+						<li><a href="#<?= $vs_id_prefix; ?>AuthorityReferenceTabs-<?= $vs_ref_table_name; ?>"><span><?= _t('%1 (%2)',caUcFirstUTF8Safe($t_ref_instance->getProperty('NAME_PLURAL')), sizeof($va_rows)); ?></span></a></li>
 <?php
 					}
 				}
@@ -70,7 +70,7 @@
 				if ($t_ref_instance = Datamodel::getInstance($vn_table_num, true)) {
 					$vs_ref_table_name = $t_ref_instance->tableName();
 ?>
-				<div id="<?php print $vs_id_prefix; ?>AuthorityReferenceTabs-<?php print $vs_ref_table_name; ?>" class="authorityReferenceListTab">	
+				<div id="<?= $vs_id_prefix; ?>AuthorityReferenceTabs-<?= $vs_ref_table_name; ?>" class="authorityReferenceListTab">	
 <?php
 					print "<ul class='authorityReferenceList'>\n";
 				
@@ -109,13 +109,13 @@
 ?>
 	<script type="text/javascript">
 		jQuery(document).ready(function() {
-			jQuery("#<?php print $vs_id_prefix; ?>AuthorityReferenceTabs").tabs({ selected: 0 });			// Activate tabs
+			jQuery("#<?= $vs_id_prefix; ?>AuthorityReferenceTabs").tabs({ selected: 0 });			// Activate tabs
 		});
 	</script>
 <?php
 		} else {
 ?>
-			<div><?php print _t('No references'); ?></div>
+			<div><?= _t('No references'); ?></div>
 <?php
 		}	
 	}	
