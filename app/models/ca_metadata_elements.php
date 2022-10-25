@@ -273,7 +273,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$this->opa_element_settings = $this->get('settings');
 		
 		// Set data type default values if no setting value is present
-		if ($o_value = Attribute::getValueInstance($this->get('datatype'))) {
+		if ($o_value = \CA\Attributes\Attribute::getValueInstance($this->get('datatype'))) {
 			$available_settings = $o_value->getAvailableSettings($this->opa_element_settings) ?? [];
 		
 			foreach($available_settings as $setting => $setting_info) {
@@ -991,8 +991,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 *
 	 * @return array
 	 */
-	public static function getSortableElements($pm_table_name_or_num, $pm_type_name_or_id=null, $options=null){
-		$cache_key = caMakeCacheKeyFromOptions($options, $pm_table_name_or_num.'/'.$pm_type_name_or_id);
+	public static function getSortableElements($pm_table_name_or_num, $pm_type_name_or_id=null, ?array $options=null){
+		$cache_key = caMakeCacheKeyFromOptions($options ?? [], $pm_table_name_or_num.'/'.$pm_type_name_or_id);
 		if(!($no_cache = caGetOption('noCache', $options, false)) && CompositeCache::contains('ElementsSortable') && is_array($cached_data = CompositeCache::fetch('ElementsSortable')) && isset($cached_data[$cache_key])) {
 			return $cached_data[$cache_key];
 		}
