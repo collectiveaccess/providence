@@ -636,9 +636,9 @@ class TimeExpressionParser {
 				if ($va_date = $this->_parseDateExpression()) {
 					if(!$va_date['month']) { $va_date['month'] = 1; }
 					if (!$va_date['day']) { $va_date['day'] = 1; }
-					$va_date['hours'] = 0;
-					$va_date['minutes'] = 0;
-					$va_date['seconds'] = 0;
+					if(!isset($va_date['hours'])) { $va_date['hours'] = 0; }
+					if(!isset($va_date['minutes'])) { $va_date['minutes'] = 0; }
+					if(!isset($va_date['seconds'])) { $va_date['seconds'] = 0; }
 					
 					$va_dates['start'] = $va_date;
 					$va_dates['end'] = array(
