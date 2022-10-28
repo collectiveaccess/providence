@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2018 Whirl-i-Gig
+ * Copyright 2016-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -315,7 +315,6 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 
 		$t_restriction = new ca_metadata_alert_rule_type_restrictions();
 		if ($this->inTransaction()) { $t_restriction->setTransaction($this->getTransaction()); }
-		$t_restriction->setMode(ACCESS_WRITE);
 		$t_restriction->set('table_num', $this->get('table_num'));
 		$t_restriction->set('type_id', $pn_type_id);
 		$t_restriction->set('rule_id', $this->getPrimaryKey());
@@ -714,9 +713,10 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 		$va_return = [];
 
 		while($qr_triggers->nextRow()) {
-			$va_return[$qr_triggers->get('trigger_id')] = $qr_triggers->getRow();
-			$va_return[$qr_triggers->get('trigger_id')]['settings'] = caUnserializeForDatabase($qr_triggers->get('settings'));
-			$va_return[$qr_triggers->get('trigger_id')]['element_filters'] = caUnserializeForDatabase($qr_triggers->get('element_filters'));
+			$trigger_id = $qr_triggers->get('trigger_id');
+			$va_return[$trigger_id] = $qr_triggers->getRow();
+			$va_return[$trigger_id]['settings'] = caUnserializeForDatabase($qr_triggers->get('settings'));
+			$va_return[$trigger_id]['element_filters'] = caUnserializeForDatabase($qr_triggers->get('element_filters'));
 		}
 
 		return $va_return;
@@ -768,8 +768,7 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 		
 		$t_trigger->set('element_filters', $va_element_filters);
 		$t_trigger->set('rule_id', $this->getPrimaryKey());
-		$t_trigger->setMode(ACCESS_WRITE);
-
+		
 		// insert or update this trigger
 		if($t_trigger->getPrimaryKey()) {
 			$t_trigger->update();
