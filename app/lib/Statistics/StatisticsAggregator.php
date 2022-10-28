@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2019 Whirl-i-Gig
+ * Copyright 2019-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -49,7 +49,6 @@ class StatisticsAggregator {
 		foreach($sites as $k => $site_info) {
 			$client = new CAS\StatisticsService($site_info['url']);
 			$client->setCredentials($site_info['service_user'], $site_info['service_password']);
-			
 			$stats_data_for_site = $client->setEndpoint('runStats')->request()->getRawData();
 			$stats_data_for_site['name'] = $site_info['name'];
 			$stats_data_for_site['description'] = $site_info['description'];

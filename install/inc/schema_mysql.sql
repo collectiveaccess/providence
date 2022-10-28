@@ -6932,7 +6932,7 @@ create index i_locale_id on ca_sql_search_words(locale_id);
 
 /*==========================================================================*/
 create table ca_sql_search_word_index (
-  index_id int unsigned not null auto_increment,
+  index_id bigint(20) unsigned not null auto_increment,
   table_num tinyint(3) unsigned not null,
   row_id int(10) unsigned not null,
   field_table_num tinyint(3) unsigned not null,
