@@ -30,12 +30,16 @@ $form = $this->getVar('form');
 $options = $this->getVar('options');
 
 if(!sizeof($options)) { return; }
-
+?>
+<ul class="caPrintOptions">
+<?php
 foreach($options as $e) {
 ?>
-<div class="col">
-	<?= $e['label']; ?><br/>
-	<?= $e['element']; ?>
-</div>
+	<li class="caPrintOptionItem">
+		<?= $e['label']; ?><br/>
+		<?= $e['element']; ?>
+	</li>
 <?php	
 }
+?>
+</ul>

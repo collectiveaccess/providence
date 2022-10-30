@@ -6482,7 +6482,7 @@ div.dialogHeader {
 }
 
 #caSummaryDownloadOptionsPanelOptions {
-    font-size: 14px;
+    font-size: 12px;
 	color: #333;
 	line-height: 1.4em;
 	padding: 10px;
@@ -6533,7 +6533,7 @@ table.caSummaryDownloadOptionsPanelAlertControls {
 }
 
 .caSummaryDownloadOptionsPanelAlertControl {
-    font-size: 14px;
+    font-size: 12px;
 }
 
 /* Quick add */
@@ -8104,4 +8104,18 @@ div.typePill {
 	font-size: 10px;
 	font-weight: normal;
 	margin: 3px 3px 6px 0;
+}
+
+ul.caPrintOptions {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    width: 520px;
+}
+
+li.caPrintOptionItem {
+    margin-right: 10px;
 }
