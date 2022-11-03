@@ -2839,7 +2839,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 
 									if ( $o_refinery = RefineryManager::getRefineryInstance( $vs_refinery ) ) {
 										$va_refined_values = $o_refinery->refine( $va_content_tree, $va_group, $va_item,
-											$va_row_with_replacements, [
+											array_merge($va_row_with_replacements, $va_rule_set_values), [
 												'mapping'           => $t_mapping,
 												'source'            => $ps_source,
 												'subject'           => $t_subject,
