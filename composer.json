@@ -1,4 +1,12 @@
 {
+  "name": "collectiveaccess/providence",
+  "description": "Cataloguing and data/media management application.",
+  "type": "package",
+  "license": "GPL-3.0-only",
+  "bin" : [
+    "support/bin/caUtils",
+    "support/bin/caTools"
+  ],
   "require": {
     "caseyamcl/phpoaipmh": "^3.0",
     "collectiveaccess/service-wrapper": "v1.1.3",
