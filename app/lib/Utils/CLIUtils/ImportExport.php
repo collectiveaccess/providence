@@ -1383,5 +1383,65 @@
 		public static function export_search_using_displayHelp() {
 			return _t('Write exporter mapping to Excel-format file.');
         }
-				
+        # -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt|null $po_opts
+		 * @return bool
+		 */
+		public static function write_importer_to_file($po_opts=null) {
+            $file = $po_opts->getOption('file');
+            if (!$file) {
+				CLIUtils::addError(_t('A file must be specified'));
+				return;
+			}
+			
+			if ($file && ((file_exists($file) && !is_writeable($file)) || (!file_exists($file) && !is_writeable(pathinfo($file, PATHINFO_DIRNAME))))) {
+				CLIUtils::addError(_t('Cannot write to file %1', $file));
+				return;
+			}
+			
+			$mapping = $po_opts->getOption('mapping');
+			if (!$mapping) {
+				CLIUtils::addError(_t('An import mapping must be specified'));
+				return;
+			}
+			
+			
+			try {
+			    ca_data_importers::writeImporterToFile($mapping, $file);
+			} catch (Exception $e) {
+			    CLIUtils::addError(_t('Could not import mapping %1: %2', $mapping, $e->getMessage()));
+			    return;
+			}
+			CLIUtils::addMessage(_t('Exported %1', $mapping));
+		}
+		# -------------------------------------------------------
+		public static function write_importer_to_fileParamList() {
+			return [
+				"mapping|m=s" => _t('Required. importer mapping to write to file.'),
+				"file|f=s" => _t('Required. File to save importer to.')
+			];
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function write_importer_to_fileUtilityClass() {
+            return _t('Import/Export');
+        }
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function write_importer_to_fileShortHelp() {
+			return _t('Write import mapping to Excel-format file.');
+        }
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function write_importer_to_fileHelp() {
+			return _t('Write import mapping to Excel-format file.');
+        }
+		# -------------------------------------------------------
     }
