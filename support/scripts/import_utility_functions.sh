@@ -91,6 +91,46 @@ function install_profile()
 }
 
 # -----------------------------------------------------------------
+# Update a profile
+#
+# Arguments:
+#   $1 = Path to caUtils
+#   $2 = Profile name
+#	$4 = Options (Ex. --skip-roles=true --profile-directory=/path/to/profiles --debug=true) [Optional]
+#   $5 = Display message [Optional]
+#	$6 = Show commands [Optional; default is false]
+# -----------------------------------------------------------------
+function update_profile() 
+{
+	log_event $IMPORT_LOG "Start load profile for $2"
+	if [ ! -z "$4" ]; then
+		echo "➔ $4"
+	fi
+	
+	if [ -z "$3" ]; then
+		OPTS=""
+	else
+		OPTS=$3
+	fi 
+	
+	if [ ! -z "$5" ]; then
+		# display command 
+		echo "	↳ $1 update-installation-profile --profile-name=$2 $OPTS"
+	fi
+	
+	$1 update-installation-profile --profile-name=$2 $OPTS
+	
+	local ret=$?
+	if [ $ret -ne 0 ] ; then
+		log_event $IMPORT_LOG "Update profile for $2 failed"
+		die "Could not update profile" $ret
+	fi
+	log_event $IMPORT_LOG "Completed update profile for $2"
+	return 0
+}
+
+
+# -----------------------------------------------------------------
 # Check data files
 #
 # Arguments:
