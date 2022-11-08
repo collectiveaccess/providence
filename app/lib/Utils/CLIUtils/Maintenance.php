@@ -2097,9 +2097,27 @@
 				$vs_pk = $t_table->primaryKey();
 				$vn_table_num = $t_table->tableNum();
 				
-				if ($t_bad_root = ca_relationship_types::find(['parent_id' => ['>', 0], 'table_num' => $vn_table_num, 'type_code' => 'root_for_'.$vn_table_num], ['returnAs' => 'firstModelInstance'])) {
-					$t_bad_root->delete(true);
+				if ($bad_roots = ca_relationship_types::find(['parent_id' => ['>', 0], 'table_num' => $vn_table_num, 'type_code' => ['IN', ['root_for_'.$vn_table_num, 'root_for_table_'.$vn_table_num]]], ['returnAs' => 'modelInstances'])) {
+					foreach($bad_roots as $t_bad_root) { 
+						$t_bad_root->delete(true);
+					}
 				}	
+				
+				if (
+					($bad_roots = ca_relationship_types::find(['parent_id' => null, 'table_num' => $vn_table_num, 'type_code' => ['IN' , ['root_for_'.$vn_table_num, 'root_for_table_'.$vn_table_num]]], ['returnAs' => 'modelInstances']))
+					&&
+					(sizeof($bad_roots) > 1)
+				) {
+					$roots = sizeof($bad_roots);
+					foreach($bad_roots as $t_bad_root) {
+						if(!is_array($children = $t_bad_root->getHierarchyChildren(null, ['idsOnly' => true])) || !sizeof($children)) {
+							$t_bad_root->delete(true);
+							$roots--;
+						}
+						if($roots == 1) { break; }
+					}
+				}	
+				
 				// Create root ca_relationship_types row for table
 				if (!$t_root = ca_relationship_types::find(['parent_id' => null, 'table_num' => $vn_table_num], ['returnAs' => 'firstModelInstance'])) {
 				    $t_root = new ca_relationship_types();

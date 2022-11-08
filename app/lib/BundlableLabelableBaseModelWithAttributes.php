@@ -8216,7 +8216,7 @@ side. For many self-relations the direction determines the nature and display te
 						$va_value_instance['locale_id'] = $g_ui_locale_id ? $g_ui_locale_id : ca_locales::getDefaultCataloguingLocaleID();
 					}
 					
-					$opts = [];
+					$opts = ['matchOn' => ['idno', 'labels', 'row_id']];
 					if($source_value = caGetOption('_source', $va_value_instance, null)) {
 						unset($va_value_instance['_source']);
 						$opts['source'] = $source_value;
