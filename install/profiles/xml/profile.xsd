@@ -697,7 +697,7 @@
 
         <!-- LOCALES -->
 
-        <xs:element name="locales" minOccurs="1" maxOccurs="1">
+        <xs:element name="locales" minOccurs="0" maxOccurs="1">
           <xs:complexType>
             <xs:sequence>
               <xs:element name="locale" minOccurs="1" maxOccurs="unbounded">
@@ -719,7 +719,7 @@
 
         <!-- LISTS -->
 
-        <xs:element name="lists" minOccurs="1" maxOccurs="1">
+        <xs:element name="lists" minOccurs="0" maxOccurs="1">
           <xs:complexType>
             <xs:sequence>
               <xs:element name="list" minOccurs="0" maxOccurs="unbounded">
@@ -749,7 +749,7 @@
 
         <!-- ELEMENT SETS -->
 
-        <xs:element name="elementSets" minOccurs="1" maxOccurs="1">
+        <xs:element name="elementSets" minOccurs="0" maxOccurs="1">
           <xs:complexType>
             <xs:sequence>
               <xs:element name="metadataElement" type="metadataElement" minOccurs="0"
@@ -861,7 +861,7 @@
 
         <!-- USER INTERFACES -->
 
-        <xs:element name="userInterfaces" minOccurs="1" maxOccurs="1">
+        <xs:element name="userInterfaces" minOccurs="0" maxOccurs="1">
           <xs:complexType>
             <xs:sequence>
               <xs:element name="userInterface" minOccurs="0" maxOccurs="unbounded">
@@ -957,7 +957,7 @@
 
         <!-- RELATIONSHIP TYPES -->
 
-        <xs:element name="relationshipTypes" minOccurs="1" maxOccurs="1">
+        <xs:element name="relationshipTypes" minOccurs="0" maxOccurs="1">
           <xs:complexType>
             <xs:sequence>
               <xs:element name="relationshipTable" minOccurs="0" maxOccurs="unbounded">

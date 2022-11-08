@@ -604,6 +604,7 @@
 		
 			$e = new ca_history_tracking_current_values();
 			$e->setDb($this->getDb());	
+			$e->setTransaction($this->getTransaction());
 			$e->set($d);
 			
 			if($values['date']) {
