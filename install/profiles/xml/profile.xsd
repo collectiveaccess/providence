@@ -150,6 +150,7 @@
       <xs:enumeration value="Color"/>
       <xs:enumeration value="Filesize"/>
       <xs:enumeration value="FloorPlan"/>
+      <xs:enumeration value="ExternalMedia"/>
     </xs:restriction>
   </xs:simpleType>
 
