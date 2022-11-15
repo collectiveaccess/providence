@@ -1918,6 +1918,7 @@
 			$table_name = $this->tableName();
 			$show_bundle_codes = $po_request->user->getPreference('show_bundle_codes_in_editor');
 			
+			$new_line = false;
 			foreach($va_element_set as $va_element) {
 				$va_element_info[$va_element['element_id']] = $va_element;
 				
@@ -1953,7 +1954,7 @@
 					$label = ($show_bundle_codes !== 'hide') ? "{$label} <span class='developerBundleCode'>(<a href='#' class='developerBundleCode'>{$bundle_code}</a>)</span>" : $label;
 				}
 				
-				$container_id = (($t_element->getPrimaryKey() == $va_element['parent_id']) && ($va_element['datatype'] != 0)) ? $va_element['element_id'] : $va_element['parent_id'];
+				$container_id = (($t_element->getPrimaryKey() == $va_element['parent_id']) && ($va_element['datatype'] != 0) && $new_line) ? $va_element['element_id'] : $va_element['parent_id'];
 				
 				$va_elements_by_container[$container_id][] = ($va_element['datatype'] == 0) ? '' : 
 					$vs_br.ca_attributes::attributeHtmlFormElement($va_element, array_merge($pa_bundle_settings, array_merge($pa_options, [
@@ -1982,6 +1983,8 @@
 					$tmp_element = ca_metadata_elements::getInstance($va_element['element_id']);
 					$va_element_value_defaults[$va_element['element_id']] = caProcessTemplate($tmp_element->getSetting($vs_setting), $user_values);
 				}
+				
+				$new_line = (($va_element['datatype'] == 0) && ($va_element['parent_id'] > 0));
 			}
 			
 			if ($vb_should_output_locale_id) {	// output locale_id, if necessary, in its' own special '_locale_id' container
