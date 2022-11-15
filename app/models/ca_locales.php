@@ -221,8 +221,8 @@ class ca_locales extends BaseModel {
 	 *
 	 */
 	static public function getDefaultCataloguingLocaleID() {
-		if(MemoryCache::contains('default_locale_id')) {
-			return MemoryCache::fetch('default_locale_id');
+		if(MemoryCache::contains('default_locale_id') && ($locale_id = MemoryCache::fetch('default_locale_id'))) {
+			return $locale_id;
 		}
 		global $g_ui_locale_id;
 		
