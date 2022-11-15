@@ -128,7 +128,7 @@ class EHiveDataReader extends BaseXMLDataReader {
 		$vb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
 		$vs_delimiter = caGetOption('delimiter', $pa_options, ';');
 		
-		$ps_spec = strtolower(str_replace("/", "", $ps_spec));
+		$ps_spec = strtolower($ps_spec);
 		if ($this->opb_tag_names_as_case_insensitive) { $ps_spec = strtolower($ps_spec); }
 		if (is_array($this->opa_row_buf) && ($ps_spec) && (isset($this->opa_row_buf[$ps_spec]))) {
 			if($vb_return_as_array) {
