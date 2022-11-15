@@ -106,10 +106,19 @@ class Replicator {
 	 *
 	 */
 	protected function getSourcesAsServiceClients() {
-		$va_sources = $this->opo_replication_conf->get('sources');
-		if(!is_array($va_sources)) { throw new Exception('No sources configured'); }
+		$sources = $this->opo_replication_conf->get('sources');
+		if($enabled_sources = $this->opo_replication_conf->getList('enabled_sources')) {
+			$filtered_sources = [];
+			foreach($enabled_sources as $s) {
+				if(isset($sources[$s])) {
+					$filtered_sources[$s] = $sources[$s];
+				}
+			}
+			$sources = $filtered_sources;
+		}
+		if(!is_array($sources)) { throw new Exception('No sources configured'); }
 
-		return $this->getConfigAsServiceClients($va_sources);
+		return $this->getConfigAsServiceClients($sources);
 	}
 	# --------------------------------------------------------------------------------------------------------------
 	/**
@@ -171,6 +180,18 @@ class Replicator {
 
 			foreach($this->getTargetsAsServiceClients() as $vs_target_key => $o_target) {
 				/** @var CAS\ReplicationService $o_target */
+				
+				
+				// get setIntrinsics -- fields that are set on the target side (e.g. to tag/mark
+				// where records came from if multiple systems are being synced into one)
+				$va_set_intrinsics_config = $this->opo_replication_conf->get('targets')[$vs_target_key]['setIntrinsics'];
+				$va_set_intrinsics_default = is_array($va_set_intrinsics_config['__default__']) ? $va_set_intrinsics_config['__default__'] : array();
+				$va_set_intrinsics_source = is_array($va_set_intrinsics_config[$source_system_guid]) ? $va_set_intrinsics_config[$source_system_guid] : array();
+				$va_set_intrinsics = array_replace($va_set_intrinsics_default, $va_set_intrinsics_source);
+				$vs_set_intrinsics = null;
+				if (is_array($va_set_intrinsics) && sizeof($va_set_intrinsics)) {
+					$vs_set_intrinsics = json_encode($va_set_intrinsics);
+				}
 				
 				$this->target = $o_target;
 				$this->target_key = $vs_target_key;
@@ -318,8 +339,13 @@ class Replicator {
 						->addGetParameter('pushMediaTo', $vs_push_media_to)
 						->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
 						->request()->getRawData();
-
-					if(!is_array($va_source_log_entries)) { break; }
+									
+					if (!is_array($va_source_log_entries) || !sizeof($va_source_log_entries)) {
+						$this->log(_t("No new log entries found for source %1 and target %2. Skipping this combination now.",
+							$vs_source_key, $vs_target_key), Zend_Log::INFO);
+						break;
+					}
+					
                     $log_ids = array_keys($va_source_log_entries);
                     $start_log_id = array_shift($log_ids);
                     $end_log_id = array_pop($log_ids);
@@ -453,7 +479,7 @@ class Replicator {
                                                 ksort($va_log_for_missing_guid, SORT_NUMERIC);
                                                 $this->log(_t("[%1] Missing log for %2 is %3", $vs_source_key, $vs_missing_guid, print_R($va_log_for_missing_guid, true)), Zend_Log::DEBUG);
                                                 foreach($va_log_for_missing_guid as $va_missing_entry) {
-                                                	if ($this->sent_log_ids[$va_missing_entry['log_id']]) { 
+                                                	if (($va_missing_entry['log_id'] != 1) && $this->sent_log_ids[$va_missing_entry['log_id']]) { 
                                                 		$this->log(_t("[%1] Skipped missing log_id %2 becaue it has already been sent.", $vs_source_key, $va_missing_entry['log_id']), Zend_Log::WARN);
                                                                 
                                                 		continue; 
@@ -624,6 +650,7 @@ class Replicator {
                                                         
                                                         $o_backlog_resp = $o_target->setRequestMethod('POST')->setEndpoint('applylog')
                                                             ->addGetParameter('system_guid', $source_system_guid)
+															->addGetParameter('setIntrinsics', $vs_set_intrinsics)
                                                             ->setRequestBody($va_entries)
                                                             ->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
                                                             ->request();
@@ -655,7 +682,7 @@ class Replicator {
                         if(sizeof($source_log_entries_for_missing_guids)) {
                             $source_log_entries_for_missing_guids = array_reverse($source_log_entries_for_missing_guids);
 						
-						    list($source_log_entries_for_missing_guids, $source_log_entries_for_missing_guids_seen_guids) = $this->_pushMissingGUIDs($source_log_entries_for_missing_guids, $source_log_entries_for_missing_guids_seen_guids);
+						    list($source_log_entries_for_missing_guids, $source_log_entries_for_missing_guids_seen_guids) = $this->_pushMissingGUIDs($source_log_entries_for_missing_guids, $source_log_entries_for_missing_guids_seen_guids, $vs_set_intrinsics);
                         }
 					}
 					
@@ -683,16 +710,6 @@ class Replicator {
 					    $va_source_log_entries = $va_filtered_log_entries;
 					}
 
-					// get setIntrinsics -- fields that are set on the target side (e.g. to tag/mark
-					// where records came from if multiple systems are being synced into one)
-					$va_set_intrinsics_config = $this->opo_replication_conf->get('targets')[$vs_target_key]['setIntrinsics'];
-					$va_set_intrinsics_default = is_array($va_set_intrinsics_config['__default__']) ? $va_set_intrinsics_config['__default__'] : array();
-					$va_set_intrinsics_source = is_array($va_set_intrinsics_config[$source_system_guid]) ? $va_set_intrinsics_config[$source_system_guid] : array();
-					$va_set_intrinsics = array_replace($va_set_intrinsics_default, $va_set_intrinsics_source);
-					$vs_set_intrinsics = null;
-					if (is_array($va_set_intrinsics) && sizeof($va_set_intrinsics)) {
-						$vs_set_intrinsics = json_encode($va_set_intrinsics);
-					}
 
 					// apply that log at the current target
 					ksort($va_source_log_entries, SORT_NUMERIC);
@@ -745,7 +762,7 @@ class Replicator {
 						$this->log(_t("[%1] Running missing guid queue with %2 guids.", $vs_source_key, sizeof($source_log_entries_for_missing_guids)), Zend_Log::DEBUG);
 						$source_log_entries_for_missing_guids = array_reverse($source_log_entries_for_missing_guids);
 					
-						list($source_log_entries_for_missing_guids, $source_log_entries_for_missing_guids_seen_guids) = $this->_pushMissingGUIDs($source_log_entries_for_missing_guids, $source_log_entries_for_missing_guids_seen_guids);
+						list($source_log_entries_for_missing_guids, $source_log_entries_for_missing_guids_seen_guids) = $this->_pushMissingGUIDs($source_log_entries_for_missing_guids, $source_log_entries_for_missing_guids_seen_guids, $vs_set_intrinsics);
 					}
 				}
 
@@ -836,7 +853,7 @@ class Replicator {
 	/**
 	 *
 	 */
-	private function _pushMissingGUIDs($source_log_entries_for_missing_guids, $source_log_entries_for_missing_guids_seen_guids) {
+	private function _pushMissingGUIDs($source_log_entries_for_missing_guids, $source_log_entries_for_missing_guids_seen_guids, $set_intrinsics) {
 		$va_dependency_list = $this->_analyzeDependencies($source_log_entries_for_missing_guids);
 		
 		//
@@ -1003,6 +1020,7 @@ class Replicator {
 				
 				$o_backlog_resp = $this->target->setRequestMethod('POST')->setEndpoint('applylog')
 					->addGetParameter('system_guid', $this->source_guid)
+					->addGetParameter('setIntrinsics', $set_intrinsics)
 					->setRequestBody($va_entries)
 					->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
 					->request();

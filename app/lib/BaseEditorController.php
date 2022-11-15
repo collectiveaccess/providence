@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2021 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,6 +35,7 @@
  */
 
 require_once(__CA_APP_DIR__."/helpers/printHelpers.php");
+require_once(__CA_APP_DIR__."/helpers/themeHelpers.php");
 require_once(__CA_LIB_DIR__."/ResultContext.php");
 require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 require_once(__CA_LIB_DIR__.'/Print/PDFRenderer.php');
@@ -305,6 +306,9 @@ class BaseEditorController extends ActionController {
 			} elseif($t_subject->hasErrorNumInRange(3600, 3699)) {
 				$vb_no_save_error = true;
 			}
+			if($t_subject->numErrors() > 0) {
+				$this->request->addActionErrors($t_subject->errors, 'saveBundlesForScreen');
+			}
 		}
 		$this->view->setVar('t_ui', $t_ui);
 
@@ -552,7 +556,9 @@ class BaseEditorController extends ActionController {
 						}
 						$vn_child_count++;
 					}
-					$this->notification->addNotification(($vn_child_count == 1) ? _t("Deleted %1 child", $vn_child_count) : _t("Deleted %1 children", $vn_child_count), __NOTIFICATION_TYPE_INFO__);
+					if($vn_child_count > 0) {
+						$this->notification->addNotification(($vn_child_count == 1) ? _t("Deleted %1 child", $vn_child_count) : _t("Deleted %1 children", $vn_child_count), __NOTIFICATION_TYPE_INFO__);
+					}
 				}
 			}
 		
@@ -1340,8 +1346,9 @@ class BaseEditorController extends ActionController {
 			    
 				if (is_array($va_restrict_to_types) && !in_array($vn_item_id, $va_restrict_to_types)) { continue; }
 				if ($va_item['parent_id'] != $vn_root_id) { continue; }
+				
 				// does this item have sub-items?
-				$va_subtypes = array();
+				$va_subtypes = [];
 				
 				if (
 					(!$show_top_level_types_only && !(bool)$enforce_strict_type_hierarchy)
@@ -1350,7 +1357,7 @@ class BaseEditorController extends ActionController {
 						// If in strict mode and a top-level type is disabled, then show sub-types so user can select an enabled type
 				) {
 					if (isset($va_item['item_id']) && isset($va_types_by_parent_id[$va_item['item_id']]) && is_array($va_types_by_parent_id[$va_item['item_id']])) {
-						$va_subtypes = $this->_getSubTypes($va_types_by_parent_id[$va_item['item_id']], $va_types_by_parent_id, $vn_sort_type, $va_restrict_to_types, ['firstEnabled' => !$show_top_level_types_only && (bool)$enforce_strict_type_hierarchy && !(bool)$va_item['is_enabled']]);
+						$va_subtypes = $this->_getSubTypes($va_types_by_parent_id[$va_item['item_id']], $va_types_by_parent_id, $vn_sort_type, $va_restrict_to_types, ['level' => 1, 'firstEnabled' => !$show_top_level_types_only && (bool)$enforce_strict_type_hierarchy && !(bool)$va_item['is_enabled']]);
 					}
 				}
 
@@ -1369,14 +1376,32 @@ class BaseEditorController extends ActionController {
 						$vs_key = $va_item['idno_sort'];
 						break;
 				}
-				$va_types[$vs_key][] = array(
-					'displayName' => $va_item['name_singular'],
-					'parameters' => array(
-						'type_id' => $va_item['item_id']
-					),
-					'is_enabled' => $va_item['is_enabled'],
-					'navigation' => $va_subtypes
-				);
+				
+				if($this->getRequest()->config->get($this->ops_table_name.'_navigation_new_menu_use_indented_type_lists')) {
+					$no_new_submenu = $this->getRequest()->config->get($this->ops_table_name.'_no_new_submenu'); 
+					$va_types[$vs_key][] = array(
+						'displayName' => $va_item['name_singular'],
+						'parameters' => array(
+							'type_id' => $va_item['item_id']
+						),
+						'is_enabled' => $va_item['is_enabled'],
+						'navigation' => $no_new_submenu ? $va_subtypes : []
+					);
+					if(!$no_new_submenu) {
+						foreach($va_subtypes as $sitem) {
+							$va_types[$vs_key][] = $sitem;
+						}
+					}
+				} else {
+					$va_types[$vs_key][] = array(
+						'displayName' => $va_item['name_singular'],
+						'parameters' => array(
+							'type_id' => $va_item['item_id']
+						),
+						'is_enabled' => $va_item['is_enabled'],
+						'navigation' => $va_subtypes
+					);
+				}
 			}
 			ksort($va_types);
 		}
@@ -1406,6 +1431,9 @@ class BaseEditorController extends ActionController {
 	private function _getSubTypes($pa_subtypes, $pa_types_by_parent_id, $pn_sort_type, $pa_restrict_to_types=null, $options=null) {
 		$va_subtypes = array();
 		$first_enabled = caGetOption('firstEnabled', $options, false);
+		$level = caGetOption('level', $options, 0);
+		
+		$use_indented_lists = $this->getRequest()->config->get($this->ops_table_name.'_navigation_new_menu_use_indented_type_lists');
 		
 		foreach($pa_subtypes as $vn_i => $va_type) {
 			if (is_array($pa_restrict_to_types) && !in_array($va_type['item_id'], $pa_restrict_to_types)) { continue; }
@@ -1413,7 +1441,7 @@ class BaseEditorController extends ActionController {
 			if ($first_enabled && $va_type['is_enabled']) {
 				$va_subsubtypes = [];	// in "first enabled" mode we don't pull subtypes when we encounter an enabled item
 			} elseif (isset($pa_types_by_parent_id[$va_type['item_id']]) && is_array($pa_types_by_parent_id[$va_type['item_id']])) {
-				$va_subsubtypes = $this->_getSubTypes($pa_types_by_parent_id[$va_type['item_id']], $pa_types_by_parent_id, $pn_sort_type, $pa_restrict_to_types, $options);
+				$va_subsubtypes = $this->_getSubTypes($pa_types_by_parent_id[$va_type['item_id']], $pa_types_by_parent_id, $pn_sort_type, $pa_restrict_to_types, array_merge($options, ['level' => $level + 1]));
 			} else {
 				$va_subsubtypes = [];
 			}
@@ -1434,14 +1462,29 @@ class BaseEditorController extends ActionController {
 					break;
 			}
 
-			$va_subtypes[$vs_key][$va_type['item_id']] = array(
-				'displayName' => $va_type['name_singular'],
-				'parameters' => array(
-					'type_id' => $va_type['item_id']
-				),
-				'is_enabled' => $va_type['is_enabled'],
-				'navigation' => $va_subsubtypes
-			);
+			if($use_indented_lists) {
+				$offset = $level * 16;
+				$va_subtypes[$vs_key][$va_type['item_id']] = array(
+					'displayName' => "<span style='margin-left:{$offset}px'>".$va_type['name_singular']."</span>",
+					'parameters' => array(
+						'type_id' => $va_type['item_id']
+					),
+					'is_enabled' => $va_type['is_enabled'],
+					'navigation' => []
+				);
+				foreach($va_subsubtypes as $item_id => $item) {
+					$va_subtypes[$vs_key][$item_id] = $item;
+				}
+			} else {
+				$va_subtypes[$vs_key][$va_type['item_id']] = array(
+					'displayName' => $va_type['name_singular'],
+					'parameters' => array(
+						'type_id' => $va_type['item_id']
+					),
+					'is_enabled' => $va_type['is_enabled'],
+					'navigation' => $va_subsubtypes
+				);
+			}
 		}
 
 		ksort($va_subtypes);

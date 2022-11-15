@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018 Whirl-i-Gig
+ * Copyright 2018-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -128,6 +128,16 @@ BaseModel::$s_ca_models_definitions['ca_history_tracking_current_values'] = arra
 			'IS_NULL' => true,
 			'DEFAULT' => null,
 			'LABEL' => 'Has future value', 'DESCRIPTION' => 'Flag indicating there there is a value set for this row with a future date'
+		),
+		'value_date' => array(
+			'FIELD_TYPE' => FT_HISTORIC_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => '',
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'DONT_ALLOW_IN_UI' => true,
+			'START' => 'value_sdatetime', 'END' => 'value_edatetime',
+			'LABEL' => _t('Date of value'), 'DESCRIPTION' => _t('Date of current value.')
 		)
  	)
 );

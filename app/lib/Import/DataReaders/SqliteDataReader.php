@@ -93,6 +93,7 @@ class SqliteDataReader extends BaseDataReader {
 		}
 		
 		$c = $this->db->query("SELECT count(*) c FROM {$base_path}");
+		
 		$this->count = 0;
 		if($crow = $c->fetchArray()) {
 			$this->count = $crow['c'];

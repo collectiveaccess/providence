@@ -60,6 +60,8 @@ print caHTMLHiddenInput(
 		'id' => "{$vs_field_name_prefix}_{n}"
 	)
 );
+
+print ' '.caNavIcon(__CA_NAV_ICON_DELETE__, 12, ['id' => "{$vs_field_name_prefix}_clear_{n}"]);
 ?>
 
 <?php if(!$for_search) { ?>
@@ -154,5 +156,10 @@ print caHTMLHiddenInput(
 				}
 			}
 		}).click(function() { this.select(); });
+		
+		jQuery('#<?= $vs_field_name_prefix; ?>_clear_{n}').on('click', function(e) {
+			jQuery('#<?= $vs_field_name_prefix; ?>_{n}').val('');
+			jQuery('#<?= $vs_field_name_prefix; ?>_autocomplete{n}').val('');
+		});
 	});
 </script>

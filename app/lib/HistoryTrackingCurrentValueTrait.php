@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2021 Whirl-i-Gig
+ * Copyright 2018-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -183,7 +183,9 @@
 						} else {
 							$tt = preg_split("![ ]*[,;]{1}[ ]*!", $type_list);
 						}
-						
+						if($t_instance->hasField('type_id') && $t_instance->getFieldInfo('type_id', 'IS_NULL')) {
+							$tt[] = null;
+						}
 						foreach($tt as $t) {
 							if(!is_array($config)) { break; }
 							if ($table === 'ca_storage_locations') { 
@@ -475,7 +477,7 @@
 			if (is_null($values) && !$is_future) {			
 				// Remove current value
 				if ($l = ca_history_tracking_current_values::find(['policy' => $policy, 'table_num' => $subject_table_num, 'row_id' => $row_id], ['returnAs' => 'firstModelInstance', 'transaction' => $this->getTransaction()])) {
-					$l->setDb($this->getDb());	
+					$l->setTransaction($this->getTransaction());
 					self::$s_history_tracking_deleted_current_values[$l->get('tracked_table_num')][$l->get('tracked_row_id')][$policy] = 
 					    self::$s_history_tracking_deleted_current_values[$l->get('current_table_num')][$l->get('current_row_id')][$policy] = 
 					        ['table_num' => $l->get('table_num'), 'row_id' => $l->get('row_id')];
@@ -511,7 +513,7 @@
 				//throw new ApplicationException(_t('Invalid subject row id'));
 				return null; // row no longer exists
 			}
-			$t->setDb($this->getDb());
+			$t->setTransaction($this->getTransaction());
 			
 			// Look for existing current tracking values
 			if ($ls = ca_history_tracking_current_values::find(['policy' => $policy, 'table_num' => $subject_table_num, 'row_id' => $row_id], ['returnAs' => 'arrays', 'transaction' => $this->getTransaction()])) {
@@ -534,7 +536,7 @@
                         	
                         	// Future location is now current location
                         	$t_l = new ca_history_tracking_current_values();
-							$t_l->setDb($this->getDb());	
+							$t_l->setTransaction($this->getTransaction());
 							$t_l->load($l['tracking_id']);
 							$t_l->set('is_future', null);
 							if (!($rc = $t_l->update())) {
@@ -552,7 +554,7 @@
 								['table_num' => $l['table_num'], 'row_id' => $l['row_id']];
 					}
 					$t_l = new ca_history_tracking_current_values();
-					$t_l->setDb($this->getDb());	
+					$t_l->setTransaction($this->getTransaction());
 					$t_l->load($l['tracking_id']);
 				    if (!($rc = $t_l->delete())) {
                         $this->errors = $t_l->errors;
@@ -561,6 +563,9 @@
 				}
 			}
 			
+			if(!caDateToHistoricTimestamps($values['date'])) {
+				$values['date'] = null;
+			}
 			$d = [
 				'policy' => $policy,
 				'table_num' => $subject_table_num, 
@@ -589,6 +594,7 @@
 						// keep
 						$found = true;
 					} else {
+						$fe->setTransaction($this->getTransaction());
 						$fe->delete(true);
 					}
 				}
@@ -598,8 +604,12 @@
 			}
 		
 			$e = new ca_history_tracking_current_values();
-			$e->setDb($this->getDb());	
+			$e->setTransaction($this->getTransaction());
 			$e->set($d);
+			
+			if($values['date']) {
+				$e->set('value_date', $values['date']);
+			}
 			
 			if (!($rc = $e->insert())) {
 				$this->errors = $e->errors;
@@ -1975,7 +1985,7 @@
                     foreach($by_date as $i => $h) {
                         if(isset($deleted[$h['tracked_table_num']][$h['tracked_row_id']]) || isset($deleted[$h['current_table_num']][$h['current_row_id']])) {
                             unset($va_history[$d][$i]);
-                            if(!sizeof($va_history[$d])) { unset($va_history[$d]); }
+                            if(!is_array($va_history) || !is_array($va_history[$d]) || !sizeof($va_history[$d])) { unset($va_history[$d]); }
                         }
                         break(2);
                     }
@@ -2508,7 +2518,15 @@
 						
 							$va_path_components = caGetOption('pathComponents', $pa_options, null);
 							if (is_array($va_path_components) && $va_path_components['subfield_name']) {
-								if (($t_loc = Datamodel::getInstanceByTableName($va_current_location['type'], true)) && $t_loc->load($va_current_location['id'])) {
+								$path = Datamodel::getPath($this->tableName(), $va_current_location['type']);
+								if(!is_array($path) || (sizeof($path) !== 3)) { return null; }
+								$path = array_keys($path);
+								if($va_path_components['subfield_name'] === $path[1]) { // is ref to interstitial
+									if (($t_rel = Datamodel::getInstanceByTableName($path[1], true)) && $t_rel->load($va_current_location['relation_id'])) {
+										
+										return $t_rel->get(join('.', array_merge([$path[1]], array_slice($va_path_components['components'], 3))), ['convertCodesToDisplayText' => true]);
+									}
+								} elseif (($t_loc = Datamodel::getInstanceByTableName($va_current_location['type'], true)) && $t_loc->load($va_current_location['id'])) {
 									return $t_loc->get($va_current_location['type'].'.'.$va_path_components['subfield_name']);
 								}
 							} 

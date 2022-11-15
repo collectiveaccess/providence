@@ -1318,8 +1318,8 @@ final class ConfigurationExporter {
 			$vo_role = $this->opo_dom->createElement("role");
 			$vo_role->setAttribute("code", $this->makeIDNO($t_role->get("code")));
 
-			$vo_role->appendChild($this->opo_dom->createElement("name", $t_role->get("name")));
-			$vo_role->appendChild($this->opo_dom->createElement("description", $t_role->get("description")));
+			$vo_role->appendChild($this->opo_dom->createElement("name", caEscapeForXML($t_role->get("name"))));
+			$vo_role->appendChild($this->opo_dom->createElement("description", caEscapeForXML($t_role->get("description"))));
 
 			if(is_array($va_actions = $t_role->getRoleActions())) {
 				$vo_actions = $this->opo_dom->createElement("actions");

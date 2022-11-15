@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2019 Whirl-i-Gig
+ * Copyright 2019-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -78,7 +78,6 @@
 			    {{created_on_display}} by {{name}} ({{email}})
                 
                 <blockquote>{{comment}}</blockquote>
-				[{set_message}]
 				
 				{{moderation_message}}
 			</span>

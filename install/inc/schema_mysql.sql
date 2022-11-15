@@ -6932,7 +6932,7 @@ create index i_locale_id on ca_sql_search_words(locale_id);
 
 /*==========================================================================*/
 create table ca_sql_search_word_index (
-  index_id int unsigned not null auto_increment,
+  index_id bigint(20) unsigned not null auto_increment,
   table_num tinyint(3) unsigned not null,
   row_id int(10) unsigned not null,
   field_table_num tinyint(3) unsigned not null,
@@ -6956,7 +6956,8 @@ CREATE index i_index_table_num on ca_sql_search_word_index(word_id, table_num, r
 CREATE index i_index_field_table_num on ca_sql_search_word_index(word_id, table_num, field_table_num, row_id);
 CREATE index i_index_field_num on ca_sql_search_word_index(word_id, table_num, field_table_num, field_num, row_id, access, boost);
 CREATE index i_index_delete ON ca_sql_search_word_index(table_num, row_id, field_table_num, field_num);
-CREATE index i_index_field_num_container on ca_sql_search_word_index(word_id, table_num, field_table_num, field_num, field_container_id, row_id, access, boost);
+CREATE INDEX i_index_field_num_container on ca_sql_search_word_index(word_id, table_num, field_table_num, field_num, field_container_id, rel_type_id, row_id, access, boost);
+CREATE INDEX i_field_word on ca_sql_search_word_index(field_num, field_table_num, table_num, word_id, row_id);
 
 /*==========================================================================*/
 create table ca_sql_search_ngrams (
@@ -7698,6 +7699,9 @@ create table ca_history_tracking_current_values (
    
    is_future                      int unsigned                   null,
    
+   value_sdatetime                decimal(40,20)                 null,
+   value_edatetime                decimal(40,20)                 null,
+   
    primary key (tracking_id),
 
    index i_policy			    (policy),
@@ -7708,6 +7712,7 @@ create table ca_history_tracking_current_values (
    
    index i_current              (current_row_id, current_table_num, current_type_id), 
    index i_tracked              (tracked_row_id, tracked_table_num, tracked_type_id),
+   index i_datetime             (value_sdatetime, value_edatetime, table_num, row_id),
    index i_is_future            (is_future)
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
@@ -7783,4 +7788,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (177, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (179, unix_timestamp());

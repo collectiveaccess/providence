@@ -90,7 +90,7 @@ var caUI = caUI || {};
 	 * @returns {String}
 	 */
 	caUI.convertQueryBuilderRuleSetToSearchQuery = function (ruleSet, useNegationSign=false, useLabels=null) {
-		var negation, prefix;
+		var negation, prefix, originalPrefix;
 		if (ruleSet.condition && ruleSet.rules) {
 		    // The CA Lucene parser does not allow signs (+/-) and booleans (AND/OR/NOT) in the same subquery. We handle this
 		    // by using booleans exclusively. However standalone NOT subqueries (Ex. NOT ca_objects.idno:1975.001) will only
@@ -111,11 +111,13 @@ var caUI = caUI || {};
 		    
 			// Escape value to allow special characters
 			negation = ruleSet.operator.match(/not_/);
+            prefix = f === '_fulltext' ? '' : f + ':';
+            originalPrefix = prefix;
 			
 			if (useNegationSign === true) {
-			    prefix = f + (negation ? ':-' : ':');
-			} else {
-			    prefix = (negation ? 'NOT ' : '') + f + ':';
+			    prefix = prefix + '-';
+			} else if (negation) {
+			    prefix = 'NOT ' + prefix;
 			}
 			switch (negation ? ruleSet.operator.replace('not_', '') : ruleSet.operator) {
 				case 'equal':
@@ -141,10 +143,10 @@ var caUI = caUI || {};
 				case 'is_empty':
 				case 'is_null':
 					// "is_not_empty" is a double negative, so the negation prefix is applied in reverse.
-					return f + (!negation ? ':"[BLANK]"' : ':"[SET]"');
+					return originalPrefix + (!negation ? '"[BLANK]"' : '"[SET]"');
 			}
 			
-			return f + ':' + escapeValue(ruleSet.value, true);
+			return prefix + escapeValue(ruleSet.value, true);
 		}
 		return '';
 	};
@@ -432,13 +434,27 @@ var caUI = caUI || {};
 			rules: []
 		};
 		skipWhitespace(tokens);
-		if (isRawSearchText(tokens)) {
+
+        function isFulltextSearch() {
+            return peekToken(tokens)?.type === TOKEN_WILDCARD ||
+                (tokens.length === 1 && peekToken(tokens)?.type === TOKEN_WORD) ||
+                (
+                    peekToken(tokens)?.type === TOKEN_WORD &&
+                    peekToken(tokens, 1)?.type !== TOKEN_COLON
+                ) || (
+                    peekToken(tokens)?.type === TOKEN_NEGATION &&
+                    peekToken(tokens, 1)?.type === TOKEN_WORD
+                );
+        }
+
+        if (isRawSearchText(tokens)) {
 			// Special case: a sequence of only words (and whitespace) should be treated as a single, full text search.
-			ruleSet.condition = '+';
+			ruleSet.condition = 'AND';
 			ruleSet.rules.push({
 				id: FIELD_FULLTEXT,
 				field: FIELD_FULLTEXT,
 				operator: 'equal',
+                type: 'string',
 				value: $.map(tokens, function (token) {
 					return token.type === TOKEN_WHITESPACE ? ' ' : token.value;
 				}).join('')
@@ -457,16 +473,18 @@ var caUI = caUI || {};
 					
 						negation = false;
 						// Look for NOT
-						poss_not = peekToken(tokens, 0);
+						var poss_not = peekToken(tokens, 0);
 						if(poss_not.value === 'NOT') {
 							assertNextToken(tokens, TOKEN_WORD);
 							assertNextToken(tokens, TOKEN_WHITESPACE);
 							negation = !negation;
 						}
-					
-						rule.field = rule.id = assertNextToken(tokens, TOKEN_WORD).value;
-					
-						assertNextToken(tokens, TOKEN_COLON);
+                        if (isFulltextSearch()) {
+                            rule.field = rule.id = FIELD_FULLTEXT;
+                        } else {
+                            rule.field = rule.id = assertNextToken(tokens, TOKEN_WORD).value;
+                            assertNextToken(tokens, TOKEN_COLON);
+                        }
 						negation = isNextToken(tokens, TOKEN_NEGATION) ? !negation : negation;
 					
 						if (isNextToken(tokens, TOKEN_LBRACKET)) {

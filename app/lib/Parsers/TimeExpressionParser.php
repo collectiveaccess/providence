@@ -622,6 +622,10 @@ class TimeExpressionParser {
 						'hours' => null, 'minutes' => null, 'seconds' => null,
 						'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false
 					);
+					if(!isset($va_date['hours'])) { $va_date['hours'] = 0; }
+					if(!isset($va_date['minutes'])) { $va_date['minutes'] = 0; }
+					if(!isset($va_date['seconds'])) { $va_date['seconds'] = 0; }
+					
 					$va_dates['end'] = $va_date;
 					$this->skipToken();
 					$vn_state = TEP_STATE_ACCEPT;
@@ -636,9 +640,9 @@ class TimeExpressionParser {
 				if ($va_date = $this->_parseDateExpression()) {
 					if(!$va_date['month']) { $va_date['month'] = 1; }
 					if (!$va_date['day']) { $va_date['day'] = 1; }
-					$va_date['hours'] = 0;
-					$va_date['minutes'] = 0;
-					$va_date['seconds'] = 0;
+					if(!isset($va_date['hours'])) { $va_date['hours'] = 0; }
+					if(!isset($va_date['minutes'])) { $va_date['minutes'] = 0; }
+					if(!isset($va_date['seconds'])) { $va_date['seconds'] = 0; }
 					
 					$va_dates['start'] = $va_date;
 					$va_dates['end'] = array(
@@ -2015,7 +2019,7 @@ class TimeExpressionParser {
 					if ($va_next_tok['type'] == TEP_TOKEN_MERIDIAN) { break; }		// is time
 					
 					if (is_numeric($va_tmp[1]) && ($va_tmp[1] > 0) && ($va_tmp[1] == intval($va_tmp[1]))) {
-						if (($va_tmp[1] >= 1) && ($va_tmp[1] <= $this->daysInMonth($vn_month, 2004))) {		// since year is unspecified we use a leap year
+						if (!$this->opo_datetime_settings->get('assumeMonthYearDelimitedDates') && ($va_tmp[1] >= 1) && ($va_tmp[1] <= $this->daysInMonth($vn_month, 2004))) {		// since year is unspecified we use a leap year
 							// got day
 							$vn_day = $va_tmp[1];
 						} else {

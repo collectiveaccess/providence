@@ -718,25 +718,26 @@ class DataMigrationUtils {
 				}
 			}
 		}
-
+		
+		if($class === 'ORG') { $options['displaynameFormat'] = 'forenamemiddlenamesurname'; }
 		switch($format = caGetOption('displaynameFormat', $options, 'original', array('forceLowercase' => true))) {
 			case 'surnamecommaforename':
-				$name['displayname'] = ((strlen(trim($name['surname']))) ? $name['surname'].", " : '').$name['forename'];
+				$name['displayname'] = trim(((strlen(trim($name['surname']))) ? $name['surname'].", " : '').$name['forename'], ', ');
 				break;
 			case 'surnamecommaforenamemiddlename':
-				$name['displayname'] = trim((((strlen(trim($name['surname']))) ? $name['surname'].", " : '').$name['forename']).' '.$name['middlename']);
+				$name['displayname'] = trim((((strlen(trim($name['surname']))) ? $name['surname'].", " : '').$name['forename']).' '.$name['middlename'], ', ');
 				break;
 			case 'forenamecommasurname':
-				$name['displayname'] = trim($name['forename'].', '.$name['surname']);
+				$name['displayname'] = trim($name['forename'].', '.$name['surname'], ', ');
 				break;
 			case 'forenamesurname':
-				$name['displayname'] = trim($name['forename'].' '.$name['surname']);
+				$name['displayname'] = trim($name['forename'].' '.$name['surname'], ', ');
 				break;
 			case 'forenamemiddlenamesurname':
-				$name['displayname'] = trim($name['forename'].($name['middlename'] ? ' '.$name['middlename'] : '').' '.$name['surname']);
+				$name['displayname'] = trim($name['forename'].($name['middlename'] ? ' '.$name['middlename'] : '').' '.$name['surname'], ', ');
 				break;
 			case 'surnameforename':
-				$name['displayname'] = trim($name['surname'].' '.$name['forename']);
+				$name['displayname'] = trim($name['surname'].' '.$name['forename'], ', ');
 				break;
 			case 'original':
 				$name['displayname'] = $original_text;
@@ -885,7 +886,7 @@ class DataMigrationUtils {
 										(caGetOption('skipExistingValues', $options, true) 
 										|| 
 										caGetOption('_skipExistingValues', $va_values, true)), // default to skipping attribute values if they already exist (until v1.7.9 default was _not_ to skip)
-									'matchOn' => caGetOption('_matchOn', $va_values, null)]);
+									'matchOn' => caGetOption('_matchOn', $va_values, ['idno', 'labels'])]);
 						} else {
 							foreach($va_expanded_values as $va_v) {
 								if($source_value = caGetOption('_source', $va_v, null)) {
@@ -900,7 +901,7 @@ class DataMigrationUtils {
 											caGetOption('skipExistingValues', $options, true) 
 											|| 
 											caGetOption('_skipExistingValues', $va_values, true)), // default to skipping attribute values if they already exist (until v1.7.9 default was _not_ to skip)
-										'matchOn' => caGetOption('_matchOn', $va_values, null)]);
+										'matchOn' => caGetOption('_matchOn', $va_values, ['idno', 'labels'])]);
 							}
 						}
 					} else {
@@ -915,7 +916,7 @@ class DataMigrationUtils {
 							), $vs_element, null, [
 								'source' => $source_value, 
 								'skipExistingValues' => true, 
-								'matchOn' => caGetOption('_matchOn', $va_values, null)
+								'matchOn' => caGetOption('_matchOn', $va_values, ['idno', 'labels'])
 							]);
 						}
 					}

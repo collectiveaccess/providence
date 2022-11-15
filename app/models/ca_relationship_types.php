@@ -406,7 +406,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		
 		if(!is_array($match_on = caGetOption('matchOn', $pa_options, []))) { $match_on = []; }
 		$match_on = array_filter(array_map('strtolower', $match_on), function ($v) { return in_array($v, ['type_code', 'typecode', 'label', 'labels']); });
-		if(!sizeof($match_on)) { $match_on = ['type_code']; }
+		if(!sizeof($match_on)) { $match_on = ['type_code', 'label']; }
 		
 		$pm_type_code_or_id = mb_strtolower($pm_type_code_or_id);
 		
@@ -878,11 +878,9 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		$vn_num_rows = (int)$this->getDb()->affectedRows();
 		
 		// Reindex modified relationships
-		if (!BaseModel::$search_indexer) {
-			BaseModel::$search_indexer = new SearchIndexer($this->getDb());
-		}
+		$si = $this->getSearchIndexer();
 		foreach($va_to_reindex_relations as $vn_relation_id => $va_row) {
-			BaseModel::$search_indexer->indexRow($vn_table_num, $vn_relation_id, $va_row, false, null, array('type_id' => true));
+			$si->indexRow($vn_table_num, $vn_relation_id, $va_row, false, null, array('type_id' => true));
 		}
 		
 		return $vn_num_rows;
