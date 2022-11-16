@@ -1795,6 +1795,9 @@ class DisplayTemplateParser {
 		$pb_skip_tags_without_values = caGetOption('skipTagsWithoutValues', $pa_options, false);
 		
 		$va_tags = caGetTemplateTags($ps_template);
+		usort($va_tags, function($a, $b) {
+			return strlen($b) <=> strlen($a);
+		});
 		
 		$t_instance = null;
 		if (isset($pa_options['getFrom']) && (method_exists($pa_options['getFrom'], 'get'))) {
