@@ -1,8 +1,16 @@
 {
+  "name": "collectiveaccess/providence",
+  "description": "Cataloguing and data/media management application.",
+  "type": "package",
+  "license": "GPL-3.0-only",
+  "bin" : [
+    "support/bin/caUtils",
+    "support/bin/caTools"
+  ],
   "require": {
     "caseyamcl/phpoaipmh": "^3.0",
     "collectiveaccess/service-wrapper": "v1.1.3",
-    "dompdf/dompdf": "~1.2.1",
+    "dompdf/dompdf": "~2.0.1",
     "easyrdf/easyrdf": "0.9.*",
     "elasticsearch/elasticsearch": "~7.0",
     "ezyang/htmlpurifier": "~4.9",
