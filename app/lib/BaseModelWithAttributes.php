@@ -1918,23 +1918,35 @@
 			$table_name = $this->tableName();
 			$show_bundle_codes = $po_request->user->getPreference('show_bundle_codes_in_editor');
 			
+			$root_element_id = $group_key = $t_element->getPrimaryKey();
+			$group_keys = [];
 			foreach($va_element_set as $va_element) {
 				$va_element_info[$va_element['element_id']] = $va_element;
 				
-				if (($va_element['datatype'] == 0) && ($va_element['parent_id'] > 0)) { continue; }
+				if ($va_element['datatype'] == 0) {
+					if ($va_element['parent_id'] > 0) { 
+						if(sizeof($group_keys) > 1) { array_pop($group_keys); }
+						array_push($group_keys, $group_key = $va_element['element_id']);
+					}
+					continue; 
+				}
+				
+				if((sizeof($group_keys) > 1) && ($va_element['datatype'] != 0) && ($va_element['parent_id'] == $root_element_id)) {
+					$group_keys = [$group_key = $va_element['element_id']];
+				}
 	
 				$va_label = $this->getAttributeLabelAndDescription($va_element['element_id']);
 
-				if(!isset($va_elements_without_break_by_container[$va_element['parent_id']])){
-					$va_elements_without_break_by_container[$va_element['parent_id']] = 1;
+				if(!isset($va_elements_without_break_by_container[$group_key])){
+					$va_elements_without_break_by_container[$group_key] = 1;
 				} else {
-					$va_elements_without_break_by_container[$va_element['parent_id']] += 1;
+					$va_elements_without_break_by_container[$group_key] += 1;
 				}
 
 				$vs_br = "";
-				if(isset($va_elements_break_by_container[$va_element['parent_id']])) {
-					if ($va_elements_without_break_by_container[$va_element['parent_id']] == $va_elements_break_by_container[$va_element['parent_id']] + 1) {
-						$va_elements_without_break_by_container[$va_element['parent_id']] = 1;
+				if(isset($va_elements_break_by_container[$group_key])) {
+					if ($va_elements_without_break_by_container[$group_key] == $va_elements_break_by_container[$group_key] + 1) {
+						$va_elements_without_break_by_container[$group_key] = 1;
 						$vs_br = "</td></tr></table><table class=\"attributeListItem\"><tr><td class=\"attributeListItem\">";
 					}
 				}
@@ -1953,7 +1965,7 @@
 					$label = ($show_bundle_codes !== 'hide') ? "{$label} <span class='developerBundleCode'>(<a href='#' class='developerBundleCode'>{$bundle_code}</a>)</span>" : $label;
 				}
 				
-				$va_elements_by_container[$va_element['parent_id']][] = ($va_element['datatype'] == 0) ? '' : 
+				$va_elements_by_container[$group_key][] = ($va_element['datatype'] == 0) ? '' : 
 					$vs_br.ca_attributes::attributeHtmlFormElement($va_element, array_merge($pa_bundle_settings, array_merge($pa_options, [
 						'label' => $label,
 						'description' => $va_label['description'],
