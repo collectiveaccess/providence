@@ -184,8 +184,12 @@ class EHiveDataReader extends BaseXMLDataReader {
 						}
 					}
 					if ($field_name) {
-						$key = ($field_set_name == $field_name) ? "/{$field_name}" : "/{$field_set_name}/{$field_name}";
+						$key = "/{$field_set_name}/{$field_name}";
 						$row_with_labels[$key][] = $field_value;
+						
+						if($field_set_name == $field_name) {
+							$row_with_labels["/{$field_name}"][] = $field_value;
+						}
 					}
 				}
 			}
