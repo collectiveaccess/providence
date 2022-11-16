@@ -226,7 +226,9 @@ class ca_locales extends BaseModel {
 		}
 		global $g_ui_locale_id;
 		
-		$va_locale_list = ca_locales::getLocaleList(array('available_for_cataloguing_only' => true));
+		if(!is_array($va_locale_list = ca_locales::getLocaleList(array('available_for_cataloguing_only' => true))) || !sizeof($va_locale_list)) {
+			$va_locale_list = ca_locales::getLocaleList();
+		}
 		
 		$vn_default_id = null;
 		if (isset($va_locale_list[$g_ui_locale_id])) { 
