@@ -128,7 +128,7 @@
 			$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, false);
 			
 			$effective_date = caGetOption(['effective_date', 'effectiveDate'], $pa_options, null);
-			$label_access = caGetOption(['access', 'label_access', 'labelAccess'], $pa_options, 0);
+			$label_access = caGetOption(['access', 'label_access', 'labelAccess'], $pa_options, 1);
 			$source_info = caGetOption(['source_info', 'sourceInfo'], $pa_options, null);
 			
 			$vs_table_name = $this->tableName();
@@ -213,7 +213,7 @@
 			$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, false);
 			
 			$effective_date = caGetOption(['effective_date', 'effectiveDate'], $pa_options, null);
-			$label_access = caGetOption(['access', 'label_access', 'labelAccess'], $pa_options, 0);
+			$label_access = caGetOption(['access', 'label_access', 'labelAccess'], $pa_options, 1);
 			$source_info = caGetOption(['source_info', 'sourceInfo'], $pa_options, null);
 			
 			$vs_table_name = $this->tableName();
