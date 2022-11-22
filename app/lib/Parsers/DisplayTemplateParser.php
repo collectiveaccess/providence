@@ -135,7 +135,7 @@ class DisplayTemplateParser {
 	 *		linkTarget = Optional target to use when generating <l> tag-based links. By default links point to standard detail pages, but plugins may define linkTargets that point elsewhere.
 	 *      relativeToContainer = evaluate template in a repeating container context. [Default is false]
 	 * 		skipIfExpression = skip the elements in $pa_row_ids for which the given expression does not evaluate true. This pulls values for the row as a whole and skips the *entire* row if the expression evaluates true. [Default is false]
-	 *      skipWhen = tests each templating iteration (there may be more than more if relativeToContainer is set) against an expression and skips the iteration if the expression evaluates true. If set all iterations are generated and tested, even when unitStart and unitLength are set. [Default is null]
+	 *      skipWhen = tests each templating iteration (there may be more than one if relativeToContainer is set) against an expression and skips the iteration if the expression evaluates true. If set all iterations are generated and tested, even when unitStart and unitLength are set. [Default is null]
 	 *		includeBlankValuesInArray = include blank template values in primary template and all <unit>s in returned array when returnAsArray is set. If you need the returned array of values to line up with the row_ids in $pa_row_ids this should be set. [Default is false]
 	 *		includeBlankValuesInTopLevelForPrefetch = include blank template values in *primary template* (not <unit>s) in returned array when returnAsArray is set. Used by template prefetcher to ensure returned values align with id indices. [Default is false]
 	 *		forceValues = Optional array of values indexed by placeholder without caret (eg. ca_objects.idno) and row_id. When present these values will be used in place of the placeholders, rather than whatever value normal processing would result in. [Default is null]
@@ -827,7 +827,7 @@ class DisplayTemplateParser {
 										} else {
 											$va_relationship_type_ids = $qr_rels->getAllFieldValues("{$t}.type_id");
 
-											$va_relationship_type_orientations = array_fill(0, sizeof($va_relationship_type_ids), method_exists($t, 'getRelationshipOrientationForTables') ? $t::getRelationshipOrientationForTables($t, $ps_tablename) : []);
+											$va_relationship_type_orientations = array_fill(0, sizeof($va_relationship_type_ids), method_exists($t, 'getRelationshipOrientationForTables') ? $t::getRelationshipOrientationForTables($t, $ps_tablename) : null);
 										}
 										
 									} elseif($t_rel_instance->isRelationship()) {
@@ -1430,6 +1430,7 @@ class DisplayTemplateParser {
 		                $va_tag_opts['convertCodesToDisplayText'] = false;
 		                $va_tag_opts['convertCodesToValue'] = false;
 		            }
+		            break;
 		        case 'convertCodesToValue':
 		            if ($v) { 
 		                // If one not the other...
@@ -1802,6 +1803,9 @@ class DisplayTemplateParser {
 		$pb_skip_tags_without_values = caGetOption('skipTagsWithoutValues', $pa_options, false);
 		
 		$va_tags = caGetTemplateTags($ps_template);
+		usort($va_tags, function($a, $b) {
+			return strlen($b) <=> strlen($a);
+		});
 		
 		$t_instance = null;
 		if (isset($pa_options['getFrom']) && (method_exists($pa_options['getFrom'], 'get'))) {
