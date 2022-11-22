@@ -886,7 +886,7 @@ class DataMigrationUtils {
 										(caGetOption('skipExistingValues', $options, true) 
 										|| 
 										caGetOption('_skipExistingValues', $va_values, true)), // default to skipping attribute values if they already exist (until v1.7.9 default was _not_ to skip)
-									'matchOn' => caGetOption('_matchOn', $va_values, null)]);
+									'matchOn' => caGetOption('_matchOn', $va_values, ['idno', 'labels'])]);
 						} else {
 							foreach($va_expanded_values as $va_v) {
 								if($source_value = caGetOption('_source', $va_v, null)) {
@@ -901,7 +901,7 @@ class DataMigrationUtils {
 											caGetOption('skipExistingValues', $options, true) 
 											|| 
 											caGetOption('_skipExistingValues', $va_values, true)), // default to skipping attribute values if they already exist (until v1.7.9 default was _not_ to skip)
-										'matchOn' => caGetOption('_matchOn', $va_values, null)]);
+										'matchOn' => caGetOption('_matchOn', $va_values, ['idno', 'labels'])]);
 							}
 						}
 					} else {
@@ -916,7 +916,7 @@ class DataMigrationUtils {
 							), $vs_element, null, [
 								'source' => $source_value, 
 								'skipExistingValues' => true, 
-								'matchOn' => caGetOption('_matchOn', $va_values, null)
+								'matchOn' => caGetOption('_matchOn', $va_values, ['idno', 'labels'])
 							]);
 						}
 					}

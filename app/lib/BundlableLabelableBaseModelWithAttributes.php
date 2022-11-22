@@ -93,6 +93,16 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 *
 	 */
 	protected $_rowAsSearchResult;
+	
+	/**
+	 *
+	 */
+	protected $auto_convert_line_breaks = false;
+	
+	/**
+	 *
+	 */
+	protected $do_highlighting = false;
 	# ------------------------------------------------------
 	public function __construct($id=null, ?array $options=null) {
 		parent::__construct($id, $options);	# call superclass constructor
@@ -100,6 +110,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if ($pn_id) {
 			if ($this->_rowAsSearchResult = $this->makeSearchResult($this->tableName(), [$id])) {
 				$this->_rowAsSearchResult->nextHit();
+				$this->_rowAsSearchResult->doHighlighting($this->do_highlighting);
 			}
 		}
 		$this->initLabelDefinitions($options);
@@ -115,6 +126,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		if ($vn_id = $this->getPrimaryKey()) {
 			if ($this->_rowAsSearchResult = $this->makeSearchResult($this->tableName(), array($vn_id))) {
+				$this->_rowAsSearchResult->doHighlighting($this->do_highlighting);
+				$this->_rowAsSearchResult->autoConvertLineBreaks($this->auto_convert_line_breaks);
 				$this->_rowAsSearchResult->nextHit();
 			}
 		}
@@ -278,6 +291,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if ($vn_id = $this->getPrimaryKey()) {
 			if ($this->_rowAsSearchResult = $this->makeSearchResult($this->tableName(), array($vn_id))) {
 				$this->_rowAsSearchResult->nextHit();
+				$this->_rowAsSearchResult->autoConvertLineBreaks($this->auto_convert_line_breaks);
+				$this->_rowAsSearchResult->doHighlighting($this->do_highlighting);
 			}
 		}
 		
@@ -742,9 +757,29 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			if (method_exists($this->_rowAsSearchResult, "filterNonPrimaryRepresentations")) {
 				$this->_rowAsSearchResult->filterNonPrimaryRepresentations(caGetOption('filterNonPrimaryRepresentations', $pa_options, true));
 			}
+			$this->_rowAsSearchResult->autoConvertLineBreaks($this->auto_convert_line_breaks);
 			return $this->_rowAsSearchResult->get($ps_field, $pa_options);
 		}
 		return parent::get($ps_field, $pa_options);
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Set default line break conversion behavior for get(). If $auto_convert is set to true all 
+	 * text values will be returned with line breaks converted to HTML breaks if the text 
+	 * does not already contain <br> or <p> tags. If $auto_convert is set to null or omitted 
+	 * the current auto convert value is returned.
+	 * 
+	 * @param bool $auto_convert
+	 *
+	 * @return bool The current auto convert value 
+	 */
+	public function autoConvertLineBreaks(?bool $auto_convert=null) : bool {
+		if(!is_null($auto_convert)) {
+			$this->auto_convert_line_breaks = $auto_convert;
+			if($this->_rowAsSearchResult) { $this->_rowAsSearchResult->autoConvertLineBreaks($auto_convert); }
+			
+		}
+		return $this->auto_convert_line_breaks;
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -752,8 +787,20 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 */
 	public function getWithTemplate($ps_template, $pa_options=null) {
 		if(!$this->getPrimaryKey()) { return null; }
-		$vs_table_name = $this->tableName();	
+		$vs_table_name = $this->tableName();
+		if(!isset($pa_options['doHighlighting'])) { $pa_options['doHighlighting'] = $this->doHighlighting(); }
 		return caProcessTemplateForIDs($ps_template, $vs_table_name, array($this->getPrimaryKey()), $pa_options);
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function doHighlighting(?bool $do_highlighting=null) : bool {
+		if(!is_null($do_highlighting) && ($this->do_highlighting !== (bool)$do_highlighting)) { 
+			$this->do_highlighting = (bool)$do_highlighting;
+			$this->_rowAsSearchResult->doHighlighting($this->do_highlighting);
+		}
+		return $this->do_highlighting;
 	}
 	# ------------------------------------------------------
 	/**
@@ -7100,7 +7147,14 @@ if (!$vb_batch) {
 				if ($this->inTransaction()) { $t_coll->setTransaction($this->getTransaction()); }
 				if ($t_coll->getPrimaryKey()) {
 					$this->opo_idno_plugin_instance->isChild(true, $t_coll->get('idno'));
-					if (!$this->opo_idno_plugin_instance->formatHas('PARENT') && !$this->getPrimaryKey() && !$this->opo_idno_plugin_instance->getFormatProperty('dont_inherit_from_parent_collection')) { $this->set($vs_idno_fld, $t_coll->get('idno')); }
+					if (																	// don't do idno inheritance if ...
+						!$this->opo_idno_plugin_instance->formatHas('PARENT') && 			// format has PARENT element (parent takes care of inheritance)
+						!($this->opo_idno_plugin_instance->formatHas('SERIAL') && (sizeof($this->opo_idno_plugin_instance->getElements()) === 1)) && 		// or format is singelton SERIAL elemenbt
+						!$this->getPrimaryKey() && 											// or it's an existing row (we only set inherited idnos on new records)
+						!$this->opo_idno_plugin_instance->getFormatProperty('dont_inherit_from_parent_collection')	// or configuration disabled idno inheritance
+					) { 
+						$this->set($vs_idno_fld, $t_coll->get('idno')); 
+					}
 				}
 			} elseif ($vn_parent_id = $this->get($vs_parent_id_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD'))) { 
 				// Parent will be set
@@ -8216,7 +8270,7 @@ side. For many self-relations the direction determines the nature and display te
 						$va_value_instance['locale_id'] = $g_ui_locale_id ? $g_ui_locale_id : ca_locales::getDefaultCataloguingLocaleID();
 					}
 					
-					$opts = [];
+					$opts = ['matchOn' => ['idno', 'labels', 'row_id']];
 					if($source_value = caGetOption('_source', $va_value_instance, null)) {
 						unset($va_value_instance['_source']);
 						$opts['source'] = $source_value;
