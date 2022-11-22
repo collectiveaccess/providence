@@ -1591,7 +1591,16 @@
 				$pa_options['childrenOnlyForItemID'] = $this->get('type_id');
 			}
 			
-			$pa_options['limitToItemsWithID'] = caGetTypeRestrictionsForUser($this->tableName(), $pa_options);
+			$user_type_res = caGetTypeRestrictionsForUser($this->tableName(), $pa_options);
+			if (is_array($pa_options['limitToItemsWithID']) && sizeof($pa_options['limitToItemsWithID'])){
+			    $pa_options['limitToItemsWithID'] = caMakeTypeIDList($this->tableName(), $pa_options['limitToItemsWithID']);
+			}
+			
+			if (is_array($pa_options['limitToItemsWithID']) && sizeof($pa_options['limitToItemsWithID']) && is_array($user_type_res) && sizeof($user_type_res)) {
+			    $pa_options['limitToItemsWithID'] = array_intersect($user_type_res, $pa_options['limitToItemsWithID']);
+			} elseif(is_array($user_type_res) && sizeof($user_type_res)) {
+			    $pa_options['limitToItemsWithID'] = $user_type_res;
+			}
 			
 			if (caGetOption('inUse', $pa_options, false)) {
 				$vs_access_sql = '';
@@ -2174,7 +2183,7 @@
 				if (caGetOption('forSimpleForm', $pa_options, false)) { 
 					unset($va_element_opts['nullOption']);
 					
-					if (!strlen($vm_values) && is_array($va_element['settings']) && isset($va_element['settings']['default_text'])) {
+					if (!is_array($vm_values) && !strlen($vm_values) && is_array($va_element['settings']) && isset($va_element['settings']['default_text'])) {
 						$vm_values = $va_element['settings']['default_text'];
 					}
 				}
@@ -2185,7 +2194,7 @@
 				$va_element_opts['values'] = '';
 				
 				// ... replace name of form element
-				$vs_fld_name = $vs_subelement_code.$vs_rel_types; //str_replace('.', '_', $vs_subelement_code);
+				$vs_fld_name = str_replace('.', '_', $vs_subelement_code).$vs_rel_types;
 				if (caGetOption('asArrayElement', $pa_options, false)) { $vs_fld_name .= "[]"; } 
 				
 				if ($vs_force_value = caGetOption('force', $pa_options, false)) {

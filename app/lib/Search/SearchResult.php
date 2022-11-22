@@ -107,6 +107,16 @@ class SearchResult extends BaseObject {
 	 *		hierarchy_children_prefetch_cache_index
 	 */
 	static $s_cache_size_limit = 2048;
+	
+	/**
+	 * Return values with text highlighed?
+	 */
+	public $do_highlighting = false;
+	
+	/**
+	 * Auto-convert line breaks to HTML breaks for text values returned by get()?
+	 */
+	private $auto_convert_line_breaks = false;
 
 	# ------------------------------------------------------------------
 	private $opb_disable_get_with_template_prefetch = false;
@@ -227,8 +237,6 @@ class SearchResult extends BaseObject {
 		if (!$GLOBALS["_DbResult_mediainfocoder"]) { $GLOBALS["_DbResult_mediainfocoder"] = new MediaInfoCoder(); }
 		if (!$GLOBALS["_DbResult_fileinfocoder"]) { $GLOBALS["_DbResult_fileinfocoder"] = FileInfoCoder::load(); }
 		
-		
-		
 		// valid options and defaults
 		$this->opa_options = array(
 				// SearchResult::get() can load field data from database when it is not available directly from the search index (most fields are *not* available from the index)
@@ -321,6 +329,16 @@ class SearchResult extends BaseObject {
 		if ($vn_index >= 0) {
 			$this->opo_engine_result->seek($vn_index);
 		}
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function doHighlighting(?bool $do_highlighting=null) : bool {
+		if(!is_null($do_highlighting)) { 
+			$this->do_highlighting = (bool)$do_highlighting;
+		}
+		return $this->do_highlighting;
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -743,7 +761,11 @@ class SearchResult extends BaseObject {
 		$is_label = is_a($t_rel_instance, 'BaseLabel');
 		$dont_check_label_access = Configuration::load()->get('dont_check_label_access');		
 		if(!($is_label && $dont_check_label_access) && isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_instance->hasField('access')) {
-			$vs_criteria_sql .= " AND ({$ps_tablename}.access IN (".join(",", $pa_options['checkAccess']) ."))";	
+			if($t_rel_instance->hasField('is_preferred')) {
+				$vs_criteria_sql .= " AND ({$ps_tablename}.is_preferred = 1 OR ({$ps_tablename}.access IN (".join(",", $pa_options['checkAccess']) .") AND {$ps_tablename}.is_preferred = 0))";	
+			} else {
+				$vs_criteria_sql .= " AND ({$ps_tablename}.access IN (".join(",", $pa_options['checkAccess']) ."))";	
+			}
 		}
 		if(isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_instance->hasField('access')) {
 			$vs_criteria_sql .= " AND ({$this->ops_table_name}.access IN (".join(",", $pa_options['checkAccess']) ."))";	
@@ -1005,6 +1027,7 @@ class SearchResult extends BaseObject {
 	 *			truncate = Return all values from the beginning truncated to a maximum length; equivalent of passing start=0 and length. [Default is null]
 	 *			ellipsis = Add ellipsis ("...") to truncated values. Values will be set to the truncated length including the ellipsis. Eg. a value truncated to 12 characters will include 9 characters of text and 3 characters of ellipsis. [Default is false]
 	 *			convertLineBreaks = Convert newlines to <br/> tags. [Default is false]
+	 *			autoConvertLineBreaks = Convert newlines to <br/> tags when no <br/> or <p> tags are present in the value. [Default is instance default set using autoConvertLineBreaks() method; default if unset]
 	 *
 	 *		[Formatting options for hierarchies]
 	 *			maxLevelsFromTop = Restrict the number of levels returned to the top-most beginning with the root. [Default is null]
@@ -1043,6 +1066,8 @@ class SearchResult extends BaseObject {
 		}
 		
 		$vb_convert_line_breaks = isset($pa_options['convertLineBreaks']) ? (bool)$pa_options['convertLineBreaks'] : false;
+		$auto_convert_line_breaks = caGetOption('autoConvertLineBreaks', $pa_options, $this->auto_convert_line_breaks);
+		
 		
 		$config = Configuration::load();
 		
@@ -1066,7 +1091,7 @@ class SearchResult extends BaseObject {
 		}
 		
 		if (isset($pa_options['template']) && $pa_options['template']) {
-			return $this->getWithTemplate($pa_options['template'], $pa_options);
+			return $this->do_highlighting ? $this->highlight($this->getWithTemplate($pa_options['template'], $pa_options)) : $this->getWithTemplate($pa_options['template'], $pa_options);
 		}
 		
 		if(!is_array($pa_options)) { $pa_options = array(); }
@@ -1417,6 +1442,9 @@ class SearchResult extends BaseObject {
 							$va_acc[] = join($vs_hierarchical_delimiter, $this->_flattenArray($va_hier_item, $pa_options));
 						}
 					}
+					
+					$va_acc = $this->do_highlighting ? array_map($this->highlight, $va_acc) : $va_acc;
+					
 					if (!$vb_return_as_array) { 
 						return $vb_return_as_count ? sizeof($va_acc) : join($vs_delimiter, $va_acc);
 					}
@@ -1468,6 +1496,7 @@ class SearchResult extends BaseObject {
 						}
 					}
 					
+					$va_hier_list = $this->do_highlighting ? array_map($this->highlight, $va_hier_list) : $va_hier_list;
 					if (!$vb_return_as_array) { 
 						return $vb_return_as_count ? sizeof($va_hier_list) : join($vs_hierarchical_delimiter, $va_hier_list);
 					}
@@ -1519,6 +1548,7 @@ class SearchResult extends BaseObject {
 						}
 					}
 					
+					$va_hier_list = $this->do_highlighting ? array_map($this->highlight, $va_hier_list) : $va_hier_list;
 					if (!$vb_return_as_array) { 
 						return $vb_return_as_count ? sizeof($va_hier_list) : join($vs_hierarchical_delimiter, $va_hier_list);
 					}
@@ -1823,6 +1853,8 @@ class SearchResult extends BaseObject {
 					if (!$vb_include) { continue; }
 					$va_filtered_vals[$vn_id] = $vm_val[$vn_id];
 				}
+				
+				$va_filtered_vals = $this->do_highlighting ? array_map($this->highlight, $va_filtered_vals) : $va_filter_vals;
 				if ($vb_return_as_count) {
 					return [sizeof($va_filtered_vals)];
 				} else {
@@ -1831,7 +1863,25 @@ class SearchResult extends BaseObject {
 			}
 		}
 
-		if ($vb_convert_line_breaks) {
+		if(is_array($vm_val)) {
+			$vm_val = $this->do_highlighting ? array_map([$this, 'highlight'], $vm_val) : $vm_val;
+		} else {
+			$vm_val = $this->do_highlighting ? $this->highlight($vm_val) : $vm_val;
+		}
+		
+		
+		if($auto_convert_line_breaks) {
+			if(is_array($vm_val)) {
+				foreach($vm_val as $i => $v) {
+					if(is_array($v)) { continue; }
+					if(!preg_match('!(<br>|<br/>|<p>)!i', $v)) {
+						$vm_val[$i] = nl2br($v);
+					}
+				}
+			} elseif(!preg_match('!(<br[^>]*>|<br[^/]*/>|<p[^>]*>)!i', $vm_val)) {
+				$vm_val = nl2br($vm_val);
+			}
+		} elseif ($vb_convert_line_breaks) {
 			if(is_array($vm_val)) {
 				return array_map(function($v) { return !is_array($v) ? nl2br($v) : $v; }, $vm_val);
 			} else {
@@ -2079,7 +2129,8 @@ class SearchResult extends BaseObject {
 				}
 				
 				foreach($va_labels_by_locale as $vn_id => $va_label) {
-					if (!$dont_check_label_access && is_array($pa_check_access) && sizeof($pa_check_access) && $label_instance->hasField('access') && !in_array($va_label['access'], $pa_check_access)) {
+					$is_not_preferred = ($label_instance->hasField('is_preferred')) ? !(bool)$va_label['is_preferred'] : true;
+					if ($is_not_preferred && !$dont_check_label_access && is_array($pa_check_access) && sizeof($pa_check_access) && $label_instance->hasField('access') && !in_array($va_label['access'], $pa_check_access)) {
 						continue;
 					}
 				    if (is_array($va_restrict_to_type_ids) && sizeof($va_restrict_to_type_ids) && !in_array($va_label['type_id'], $va_restrict_to_type_ids)) { continue; }
@@ -2942,6 +2993,7 @@ class SearchResult extends BaseObject {
 		unset($pa_options['request']);
 		//if($this->opb_disable_get_with_template_prefetch) {
 			if(!is_array($pa_options)) { $pa_options = array(); }
+			if(!isset($pa_options['doHighlighting'])) { $pa_options['doHighlighting'] = $this->doHighlighting(); }
 			return caProcessTemplateForIDs($ps_template, $this->ops_table_name, array($this->get($this->ops_table_name.".".$this->ops_subject_pk)), array_merge($pa_options, ['dontPrefetchRelated' => true]));
 		//}
 
@@ -3773,6 +3825,41 @@ class SearchResult extends BaseObject {
 		} else {
 			return in_array($pm_modifier, $va_hierarchy_modifiers);
 		}
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Set default line break conversion behavior for get(). If $auto_convert is set to true all 
+	 * text values will be returned with line breaks converted to HTML breaks if the text 
+	 * does not already contain <br> or <p> tags. If $auto_convert is set to null or omitted 
+	 * the current auto convert value is returned.
+	 * 
+	 * @param bool $auto_convert
+	 *
+	 * @return bool The current auto convert value 
+	 */
+	public function autoConvertLineBreaks(?bool $auto_convert=null) : bool {
+		if(!is_null($auto_convert)) {
+			$this->auto_convert_line_breaks = $auto_convert;
+		}
+		return $this->auto_convert_line_breaks;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function highlight($content) {
+		if(is_array($content)) { return $content; }
+		global $g_highlight_cache, $g_highlight_text;
+		if(is_null($g_highlight_cache)) { $g_highlight_cache = []; }
+		if(isset($g_highlight_cache[$content])) { return $g_highlight_cache[$content]; }
+		if(sizeof($g_highlight_cache) > 2048) { $g_highlight_cache = []; }
+		
+		$highlight_text = $g_highlight_text;
+		if(!strlen($highlight_text)) { $highlight_text = MetaTagManager::getHighlightText(); } 
+		if(!strlen($highlight_text)) { return $content; }	// use global directly, if possible, for performance
+		$content = $g_highlight_cache[$content] = preg_replace("!(".preg_quote($highlight_text, '!').")!i", "<span class=\"highlightText\">\\1</span>", $content);
+		
+		return $content;
 	}
 	# ------------------------------------------------------------------
 }

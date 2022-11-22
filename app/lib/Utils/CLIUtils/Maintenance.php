@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2021 Whirl-i-Gig
+ * Copyright 2018-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -648,8 +648,11 @@
 				return false;
 			}
 			
-			$t_user->setMode(ACCESS_WRITE);
+			if($t_user->get('active') == 0) {
+				CLIUtils::addMessage(_t('Set user %1 as active', $vs_user_name), array('color' => 'bold_green'));
+			}
 			$t_user->set('password', $vs_password);
+			$t_user->set('active', 1);
 			$t_user->update();
 			if ($t_user->numErrors()) {
 				CLIUtils::addError(_t("Password change for user %1 failed: %2", $vs_user_name, join("; ", $t_user->getErrors())));

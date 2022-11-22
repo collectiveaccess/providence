@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2019 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -76,9 +76,13 @@
 		
 		$vs_element = "<select name='{$ps_name}' {$vs_attr_string}>\n";
 		
+
 		$vs_selected_val = $pa_options['value'] ?? null;
-		if (is_array($pa_options['values'] ?? null) && $vs_selected_val) { $vs_selected_val = null; }
-		$va_selected_vals = $pa_options['values'] ?? [];
+		if (is_array($pa_options['values'] ?? null) && $vs_selected_val) { 
+			$pa_options['values'][] = $vs_selected_val;
+			$vs_selected_val = null; 
+		}
+		$va_selected_vals = isset($pa_options['values']) ? $pa_options['values'] : array();
 		
 		$va_disabled_options =  $pa_options['disabledOptions'] ?? [];
 		
