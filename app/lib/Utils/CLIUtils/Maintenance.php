@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2021 Whirl-i-Gig
+ * Copyright 2018-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -648,8 +648,11 @@
 				return false;
 			}
 			
-			$t_user->setMode(ACCESS_WRITE);
+			if($t_user->get('active') == 0) {
+				CLIUtils::addMessage(_t('Set user %1 as active', $vs_user_name), array('color' => 'bold_green'));
+			}
 			$t_user->set('password', $vs_password);
+			$t_user->set('active', 1);
 			$t_user->update();
 			if ($t_user->numErrors()) {
 				CLIUtils::addError(_t("Password change for user %1 failed: %2", $vs_user_name, join("; ", $t_user->getErrors())));
@@ -2097,9 +2100,27 @@
 				$vs_pk = $t_table->primaryKey();
 				$vn_table_num = $t_table->tableNum();
 				
-				if ($t_bad_root = ca_relationship_types::find(['parent_id' => ['>', 0], 'table_num' => $vn_table_num, 'type_code' => 'root_for_'.$vn_table_num], ['returnAs' => 'firstModelInstance'])) {
-					$t_bad_root->delete(true);
+				if ($bad_roots = ca_relationship_types::find(['parent_id' => ['>', 0], 'table_num' => $vn_table_num, 'type_code' => ['IN', ['root_for_'.$vn_table_num, 'root_for_table_'.$vn_table_num]]], ['returnAs' => 'modelInstances'])) {
+					foreach($bad_roots as $t_bad_root) { 
+						$t_bad_root->delete(true);
+					}
 				}	
+				
+				if (
+					($bad_roots = ca_relationship_types::find(['parent_id' => null, 'table_num' => $vn_table_num, 'type_code' => ['IN' , ['root_for_'.$vn_table_num, 'root_for_table_'.$vn_table_num]]], ['returnAs' => 'modelInstances']))
+					&&
+					(sizeof($bad_roots) > 1)
+				) {
+					$roots = sizeof($bad_roots);
+					foreach($bad_roots as $t_bad_root) {
+						if(!is_array($children = $t_bad_root->getHierarchyChildren(null, ['idsOnly' => true])) || !sizeof($children)) {
+							$t_bad_root->delete(true);
+							$roots--;
+						}
+						if($roots == 1) { break; }
+					}
+				}	
+				
 				// Create root ca_relationship_types row for table
 				if (!$t_root = ca_relationship_types::find(['parent_id' => null, 'table_num' => $vn_table_num], ['returnAs' => 'firstModelInstance'])) {
 				    $t_root = new ca_relationship_types();
