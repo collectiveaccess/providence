@@ -344,6 +344,7 @@
 			        $vb_already_exists = false;
 			        $vals = [];
 			        foreach($va_attrs as $o_attr) {
+			            if(isset($pa_values['locale_id']) && ((int)$o_attr->getLocaleID() != (int)$pa_values['locale_id'])) { $is_changed = true; }
 			            if ($o_attr->getAttributeID() == $pn_attribute_id) { continue; }
 			            foreach($o_attr->getValues() as $o_value) {
 			                $vn_element_id = $o_value->getElementID();
@@ -1899,6 +1900,8 @@
 			$va_element_codes = array();
 			$va_elements_by_container = array();
 			$vb_should_output_locale_id = !(bool)$t_element->getSetting('doesNotTakeLocale');
+			$show_locales = $vb_should_output_locale_id ? $t_element->getSetting('allowLocales') : null;
+			
 			$vb_should_output_value_source = (bool)$t_element->getSetting('includeSourceData');
 			$va_element_value_defaults = array();
 			$va_elements_without_break_by_container = array();
@@ -2004,14 +2007,15 @@
 			}
 			
 			if ($vb_should_output_locale_id) {	// output locale_id, if necessary, in its' own special '_locale_id' container
+				
 				$va_elements_by_container['_locale_id'] = [
 					'hidden' => false, 
 					'element' => $t_attr->htmlFormElement('locale_id', '^ELEMENT', [
 						'classname' => 'labelLocale', 'id' => '{fieldNamePrefix}locale_id_{n}', 
 						'name' => '{fieldNamePrefix}locale_id_{n}', 
 						"value" => '{locale_id}', 'no_tooltips' => true, 
-						'dont_show_null_value' => true, 'hide_select_if_only_one_option' => true, 
-						'WHERE' => ['(dont_use_for_cataloguing = 0)']
+						'dont_show_null_value' => true, 'hide_select_if_only_one_option' => false, 
+						'WHERE' => (is_array($show_locales) && sizeof($show_locales) > 0) ? ['(concat(language, "_", country) IN ('.join(',', array_map(function($v) { return "'{$v}'"; }, $show_locales)).'))'] : ['(dont_use_for_cataloguing = 0)']
 					])
 				];
 				if (stripos($va_elements_by_container['_locale_id']['element'], "'hidden'")) {
