@@ -95,7 +95,8 @@
 			'default' => 0,
 			'width' => 1, 'height' => 1,
 			'label' => _t('Does not use locale setting'),
-			'description' => _t('Check this option if you don\'t want your text to be locale-specific. (The default is to be.)')
+			'description' => _t('Check this option if you don\'t want your text to be locale-specific. (The default is to be.)'),
+			'hideOnSelect' => ['singleValuePerLocale', 'allowLocales'],
 		),
 		'singleValuePerLocale' => array(
 			'formatType' => FT_NUMBER,
@@ -105,13 +106,23 @@
 			'label' => _t('Allow single value per locale'),
 			'description' => _t('Check this option to restrict entry to a single value per-locale.')
 		),
+		'allowLocales' => [
+			'formatType' => FT_TEXT,
+			'displayType' => DT_SELECT,
+			'default' => null,
+			'showLocaleList' => true,
+			'width' => '400px', 'height' => 10,
+			'label' => _t('Allow locales'),
+			'description' => _t('Specify specific locales to allow for this element.')
+		],
 		'allowDuplicateValues' => array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_CHECKBOXES,
 			'default' => 0,
 			'width' => 1, 'height' => 1,
 			'label' => _t('Allow duplicate values?'),
-			'description' => _t('Check this option if you want to allow duplicate values to be set when element is not in a container and is repeating.')
+			'description' => _t('Check this option if you want to allow duplicate values to be set when element is not in a container and is repeating.'),
+			'showOnSelect' => ['raiseErrorOnDuplicateValue']
 		),
 		'raiseErrorOnDuplicateValue' => array(
 			'formatType' => FT_NUMBER,
@@ -135,7 +146,8 @@
 			'width' => 1, 'height' => 1,
 			'default' => 0,
 			'label' => _t('Suggest existing values?'),
-			'description' => _t('Check this option if you want this attribute to suggest previously saved values as text is entered. This option is only effective if the display height of the text entry is equal to 1.')
+			'description' => _t('Check this option if you want this attribute to suggest previously saved values as text is entered. This option is only effective if the display height of the text entry is equal to 1.'),
+			'showOnSelect' => ['suggestExistingValueSort']
 		),
 		'suggestExistingValueSort' => array(
 			'formatType' => FT_TEXT,
