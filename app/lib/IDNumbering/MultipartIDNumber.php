@@ -737,92 +737,111 @@ class MultipartIDNumber extends IDNumber {
 	 * @param string $ps_value Value from which to derive the sortable value. If omitted the current value is used. [Default is null]
 	 * @return string The sortable value
 	 */
-	public function getSortableValue($ps_value=null) {
-		$vs_separator = $this->getSeparator();
-		if (!is_array($va_elements_normal_order = $this->getElements())) { $va_elements_normal_order = array(); }
-		$va_element_names_normal_order = array_keys($va_elements_normal_order);
+	public function getSortableValue($value=null) {
+		$separator = $this->getSeparator();
+		if (!is_array($elements_normal_order = $this->getElements())) { $elements_normal_order = []; }
+		$element_names_normal_order = array_keys($elements_normal_order);
 
-		if (!($va_elements = $this->getElementOrderForSort())) { $va_elements = $va_element_names_normal_order; }
-		$va_element_vals = $this->explodeValue($ps_value ?: $this->getValue());
-		$va_output = array();
+		if (
+			!($elements = $this->getElementOrderForSort()) || 
+			(sizeof(array_intersect($elements, $element_names_normal_order)) !== sizeof($element_names_normal_order))
+		) { $elements = $element_names_normal_order; }
+		$element_values = $this->explodeValue($value ?: $this->getValue());
+		$output = [];
 
-		foreach ($va_elements as $vs_element) {
-			$va_element_info = $va_elements_normal_order[$vs_element];
-			$vn_i = array_search($vs_element, $va_element_names_normal_order);
-			$vn_padding = 20;
+		foreach ($elements as $element) {
+			$element_info = $elements_normal_order[$element];
+			$i = array_search($element, $element_names_normal_order);
+			$padding = 20;
+			
+			$v = $element_values[$i];
+			if(($i === (sizeof($element_names_normal_order) - 1)) && (sizeof($element_values) > sizeof($element_names_normal_order))) {	// last item with extra elements
+				$extra_elements = array_splice($element_values, $i + 1);
+				$v .= $separator.join($separator, $extra_elements);
+			}
 
-			switch($va_element_info['type']) {
+			switch($element_info['type']) {
 				case 'LIST':
-					$vn_w = $vn_padding - mb_strlen($va_element_vals[$vn_i]);
-					if ($vn_w < 0) { $vn_w = 0; }
-					$va_output[] = str_repeat(' ', $vn_w).$va_element_vals[$vn_i];
+					$w = $padding - mb_strlen($v);
+					if ($w < 0) { $w = 0; }
+					$output[] = str_repeat(' ', $w).$v;
 					break;
 				case 'CONSTANT':
-					$vn_len = mb_strlen($va_element_info['value']);
-					if ($vn_padding < $vn_len) { $vn_padding = $vn_len; }
-					$vn_repeat_len = ($vn_padding - mb_strlen($va_element_vals[$vn_i]));
-					$va_output[] = (($vn_repeat_len > 0) ? str_repeat(' ', $vn_padding - mb_strlen($va_element_vals[$vn_i])) : '').$va_element_vals[$vn_i];
+					$len = mb_strlen($element_info['value']);
+					if ($padding < $len) { $padding = $len; }
+					$repeat_len = ($padding - mb_strlen($v));
+					$n = $padding - mb_strlen($v);
+					$output[] = (($repeat_len > 0) ? (($n >= 0) ? str_repeat(' ', $n) : '') : '').$v;
 					break;
 				case 'FREE':
 				case 'ALPHANUMERIC':
-					$va_tmp = preg_split('![^A-Za-z0-9]+!',  $va_element_vals[$vn_i]);
+					$tmp = preg_split('![^A-Za-z0-9]+!',  $v);
 
-					$va_zeroless_output = array();
-					$va_raw_output = array();
-					while(sizeof($va_tmp)) {
-						$vs_piece = array_shift($va_tmp);
-						if (preg_match('!^([\d]+)(.*)!', $vs_piece, $va_matches)) {
-							$vs_piece = $va_matches[1];
+					$zeroless_output = [];
+					$raw_output = [];
+					while(sizeof($tmp)) {
+						$piece = array_shift($tmp);
+						if (preg_match('!^([\d]+)(.*)!', $piece, $matches)) {
+							$piece = $matches[1];
 
-							if (sizeof($va_matches) >= 3) {
-								array_unshift($va_tmp, $va_matches[2]);
+							if (sizeof($matches) >= 3) {
+								array_unshift($tmp, $matches[2]);
 							}
 						}
-						$vn_pad_len = $vn_padding - mb_strlen($vs_piece);
+						$pad_len = $padding - mb_strlen($piece);
 
-						if ($vn_pad_len >= 0) {
-							if (is_numeric($vs_piece)) {
-								$va_raw_output[] = str_repeat(' ', $vn_pad_len).$va_matches[1];
+						if ($pad_len >= 0) {
+							if (is_numeric($piece)) {
+								$raw_output[] = str_repeat(' ', $pad_len).$matches[1];
 							} else {
-								$va_raw_output[] = $vs_piece.str_repeat(' ', $vn_pad_len);
+								$raw_output[] = $piece.str_repeat(' ', $pad_len);
 							}
 						} else {
-							$va_raw_output[] = $vs_piece;
+							$raw_output[] = $piece;
 						}
-						if ($vs_tmp = preg_replace('!^[0]+!', '', $vs_piece)) {
-							$va_zeroless_output[] = $vs_tmp;
+						if ($t = preg_replace('!^[0]+!', '', $piece)) {
+							$zeroless_output[] = $t;
 						} else {
-							$va_zeroless_output[] = $vs_piece;
+							$zeroless_output[] = $piece;
 						}
 					}
-					$va_output[] = join('', $va_raw_output); //.' '.join('.', $va_zeroless_output);
+					$output[] = join('', $raw_output); 
 					break;
 				case 'SERIAL':
 				case 'NUMERIC':
-					if ($vn_padding < $va_element_info['width']) { $vn_padding = $va_element_info['width']; }
-					$va_output[] = str_repeat(' ', $vn_padding - strlen(intval($va_element_vals[$vn_i]))).intval($va_element_vals[$vn_i]);
+					if ($padding < $element_info['width']) { $padding = $element_info['width']; }
+					$n = $padding - strlen(intval($v));
+					
+					$output[] = (($n >= 0) ? str_repeat(' ', $n) : '').intval($v);
 					break;
 				case 'YEAR':
-					$vn_p = (($va_element_info['width'] == 2) ? 2 : 4) - mb_strlen($va_element_vals[$vn_i]);
-					if ($vn_p < 0) { $vn_p = 0; }
-					$va_output[] = str_repeat(' ', $vn_p).$va_element_vals[$vn_i];
+					$p = (($element_info['width'] == 2) ? 2 : 4) - mb_strlen($v);
+					if ($p < 0) { $p = 0; }
+					$output[] = str_repeat(' ', $p).$v;
 					break;
 				case 'MONTH':
 				case 'DAY':
-					$vn_p = 2 - mb_strlen($va_element_vals[$vn_i]);
-					if ($vn_p < 0) { $vn_p = 0; }
-					$va_output[] = str_repeat(' ', 2 - $vn_p).$va_element_vals[$vn_i];
+					$p = 2 - mb_strlen($v);
+					if ($p < 0) { $p = 0; }
+					$n = 2 - $p;
+					$output[] = (($n >= 0) ? str_repeat(' ', $n) : '').$v;
 					break;
 				case 'PARENT':
-					$va_output[] = $va_element_vals[$vn_i].str_repeat(' ', $vn_padding - mb_strlen($va_element_vals[$vn_i]));
+					$tmp = explode($separator, $v);
+					
+					foreach($tmp as $t) {
+						$n = $padding - mb_strlen($t);
+						$output[] = (($n >= 0) ? str_repeat(' ', $n) : '').$t;
+					}
 					break;
 				default:
-					$va_output[] = str_repeat(' ', $vn_padding - mb_strlen($va_element_vals[$vn_i])).$va_element_vals[$vn_i];
+					$n = $padding - mb_strlen($v);
+					$output[] = (($n >= 0) ? str_repeat(' ', $n) : '').$v;
 					break;
 
 			}
 		}
-		return join($vs_separator, $va_output);
+		return join($separator, $output);
 	}
 	# -------------------------------------------------------
 	/**
