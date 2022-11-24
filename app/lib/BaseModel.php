@@ -1422,6 +1422,11 @@ class BaseModel extends BaseObject {
 		foreach($pa_fields as $vs_field => $vm_value) {
 			if (strpos($vs_field, '.') !== false) { $va_tmp = explode('.', $vs_field); $vs_field = $va_tmp[1]; }
 			if (array_key_exists($vs_field, $this->FIELDS)) {
+				// Convert locale codes to locale_id values
+				if(($vs_field === 'locale_id') && !is_numeric($vm_value)) {
+					$vm_value = ca_locales::codeToID($vm_value);
+				}
+			
 				$pa_fields_type = $this->getFieldInfo($vs_field,"FIELD_TYPE");
 				$pb_need_reload = false;
 				if (!$this->verifyFieldValue($vs_field, $vm_value, $pb_need_reload)) {
@@ -8478,9 +8483,6 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		if ($va_parsed_height['type'] == 'pixels') {
 			$va_dim_styles[] = "height: ".$va_parsed_height['dimension']."px;";
 		}
-		//if ($vn_max_pixel_width) {
-		//	$va_dim_styles[] = "max-width: {$vn_max_pixel_width}px;";
-		//}
 					
 		$vs_dim_style = trim(join(" ", $va_dim_styles));
 		$vs_field_label = (isset($pa_options['label']) && (strlen($pa_options['label']) > 0)) ? $pa_options['label'] : $va_attr["LABEL"];
@@ -12174,6 +12176,26 @@ $pa_options["display_form_field_tips"] = true;
 				return $c;
 			}, []);
 			if((is_array($ids) && sizeof($ids)) && is_array($ids = $vs_table::getIDsForIdnos($ids, $pa_options))) {				
+				foreach($pa_values['parent_id'] as $i => $v) {
+					if (isset($ids[$v[1]])) {
+						$pa_values['parent_id'][$i][1] = $ids[$v[1]];
+					}
+				}
+			}
+		}
+		
+		// 
+		// Convert locale id
+		//
+		if($t_instance->hasField('locale_id') && isset($pa_values['locale_id']) && !is_numeric($pa_values['locale_id'])) {
+			$ids = array_reduce($pa_values['locale_id'], function($c, $i) { 
+				if(!is_numeric($i[1]) && strlen($i[1])) {
+					$c[] = $i[1];
+				}
+				return $c;
+			}, []);
+			if((is_array($ids) && sizeof($ids))) {
+				$ids = array_map(function($v) { return is_numeric($v) ? $v : ca_locales::codeToID($v); }, $ids);
 				foreach($pa_values['parent_id'] as $i => $v) {
 					if (isset($ids[$v[1]])) {
 						$pa_values['parent_id'][$i][1] = $ids[$v[1]];
