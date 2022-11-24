@@ -622,9 +622,9 @@ class TimeExpressionParser {
 						'hours' => null, 'minutes' => null, 'seconds' => null,
 						'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false
 					);
-					if(!isset($va_date['hours'])) { $va_date['hours'] = 0; }
-					if(!isset($va_date['minutes'])) { $va_date['minutes'] = 0; }
-					if(!isset($va_date['seconds'])) { $va_date['seconds'] = 0; }
+					if(!isset($va_date['hours'])) { $va_date['hours'] = 23; }
+					if(!isset($va_date['minutes'])) { $va_date['minutes'] = 59; }
+					if(!isset($va_date['seconds'])) { $va_date['seconds'] = 59; }
 					
 					$va_dates['end'] = $va_date;
 					$this->skipToken();
