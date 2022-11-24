@@ -46,27 +46,29 @@
     	$base = $parts[sizeof($parts) - 1];
     }
     
+    $loaded = false;
+    
     // search common locations for class
     $paths = [__CA_LIB_DIR__, __CA_LIB_DIR__.'/Utils', __CA_LIB_DIR__.'/Parsers', __CA_LIB_DIR__.'/Media', __CA_LIB_DIR__.'/Exceptions', __CA_LIB_DIR__.'/Search', __CA_LIB_DIR__.'/Browse'];
     foreach($paths as $path) {
         if(file_exists("{$path}/{$base}.php")) {
-            if(require_once("{$path}/{$base}.php")) { return true; }   
+            if(require_once("{$path}/{$base}.php")) { $loaded = true; }   
         }
     }
     
     // Zend?
     if(preg_match("!^Zend_Search_(.*)$!", $base, $m)) {
     	$path_to_zend_lib = __CA_LIB_DIR__."/Search/Common/Parsers/Search/".str_replace("_", "/", $m[1]).".php";
-    	if(require_once($path_to_zend_lib)) { return true; }  
+    	if(require_once($path_to_zend_lib)) { $loaded = true; }  
     }
   
     // Hoa?
     if($parts[0] === 'Hoa') {
     	$path_to_hoa = __CA_LIB_DIR__."/Parsers/".strtolower(join('/', array_slice($parts, 0, 2))).'/'.join('/', array_slice($parts, 2)).".php";
-    	if(@include_once($path_to_hoa)) { return true; }  
+    	if(@include_once($path_to_hoa)) { $loaded = true; }  
     }
     
-    return false;
+    return $loaded;
   });   
 
 require_once(__CA_LIB_DIR__."/Parsers/hoa/consistency/Prelude.php");
