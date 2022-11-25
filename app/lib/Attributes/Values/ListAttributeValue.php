@@ -513,7 +513,10 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		/** @var RequestHTTP $o_request */
 		$o_request = $pa_options['request'];
 		$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? false : (bool)$pa_element_info['settings']['requireValue'];
-		if (($pa_element_info['parent_id']) && ($pa_element_info['settings']['render'] == 'checklist')) { $pa_element_info['settings']['render'] = ''; }	// checklists can only be top-level
+		
+		$render_as = $pa_element_info['settings']['render'] ?? null;
+		
+		if (($pa_element_info['parent_id']) && ($render_as == 'checklist')) { $render_as = ''; }	// checklists can only be top-level
 		if ((!isset($pa_options['width']) || !strlen($pa_options['width'])) && isset($pa_element_info['settings']['listWidth']) && strlen($pa_element_info['settings']['listWidth']) > 0) { $pa_options['width'] = $pa_element_info['settings']['listWidth']; }
 		if ((!isset($pa_options['height']) || !strlen($pa_options['height'])) && isset($pa_element_info['settings']['listHeight']) && strlen($pa_element_info['settings']['listHeight']) > 0) { $pa_options['height'] = $pa_element_info['settings']['listHeight']; }
 		$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : '');
@@ -563,7 +566,14 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		// dependant field visibility
 		$vs_show_hide_js = '';
 		if(Configuration::load()->get('enable_dependent_field_visibility')) {
-		    $vs_select = "jQuery('[id^={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]')";
+			switch($render_as) {
+				case 'radio_buttons':
+					$vs_select = "jQuery('[name={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]')";
+					break;
+				default:
+		    		$vs_select = "jQuery('[id^={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]')";
+		    		break;
+		    }
 			// only get into outputting all the JS below if hideIfSelected is set for at least one list item for this element
 			$vb_print_js = false;
 			if(is_array($pa_element_info['settings'])) {
@@ -587,10 +597,21 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 
                         $ids[] = $all_ids[] = "Screen".$va_tmp[0]."_".$va_tmp[1].'_bundle';
                     }
-				    $cases[] = [
-                        'condition' => "{$vs_select}.val() == ''",
-                        'ids' => $ids
-                    ]; 
+                    
+                    switch($render_as) {
+						case 'radio_buttons':
+							$cases[] = [
+								'condition' => "((jQuery('[name={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]:checked').length == 0) || (jQuery('[name={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]:checked').val() == ''))",
+								'ids' => $ids
+							]; 
+							break;
+						default:
+							$cases[] = [
+								'condition' => "{$vs_select}.val() == ''",
+								'ids' => $ids
+							]; 
+							break;
+					}
 				}
 				if (is_array($va_list_items = $t_list->getItemsForList($pa_element_info['list_id']))) {
 					foreach($va_list_items as $va_items_by_locale) {
@@ -612,7 +633,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 								}
 							}
 
-							switch($pa_element_info['settings']['render']) {
+							switch($render_as) {
 								case 'radio_buttons':
 									$vs_condition = "jQuery('input[name={fieldNamePrefix}".$pa_element_info['element_id']."_{n}]:checked').val() === '".$va_item['item_id']."'";
 									break;

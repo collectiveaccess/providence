@@ -243,9 +243,7 @@
 			}
 			
 			// Get specific index for repeating value
-			if (is_array($vm_val) && !is_null($pn_index) && !is_null($pn_get_at_index)) {
-				$vm_val = isset($vm_val[$pn_get_at_index]) ? [$vm_val[$pn_get_at_index]] : null;
-			} elseif (is_array($vm_val) && !is_null($pn_index)) {
+			if (is_array($vm_val) && !is_null($pn_index)) {
 				$vm_val = isset($vm_val[$pn_index]) ? [$vm_val[$pn_index]] : null;
 			}
 	
