@@ -2014,7 +2014,7 @@
 						'classname' => 'labelLocale', 'id' => '{fieldNamePrefix}locale_id_{n}', 
 						'name' => '{fieldNamePrefix}locale_id_{n}', 
 						"value" => '{locale_id}', 'no_tooltips' => true, 
-						'dont_show_null_value' => true, 'hide_select_if_only_one_option' => false, 
+						'dont_show_null_value' => true, 'hide_select_if_only_one_option' => true, 
 						'WHERE' => (is_array($show_locales) && sizeof($show_locales) > 0) ? ['(concat(language, "_", country) IN ('.join(',', array_map(function($v) { return "'{$v}'"; }, $show_locales)).'))'] : ['(dont_use_for_cataloguing = 0)']
 					])
 				];

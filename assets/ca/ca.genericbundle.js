@@ -415,8 +415,6 @@ var caUI = caUI || {};
 						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n).remove();
 					}
 				}
-				
-				
 			}
 
 			// Add bundle preview value text
