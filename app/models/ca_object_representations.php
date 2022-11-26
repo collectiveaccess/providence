@@ -166,6 +166,17 @@ BaseModel::$s_ca_models_definitions['ca_object_representations'] = array(
 			'LABEL' => _t('Original MIME type'), 'DESCRIPTION' => _t('The MIME type of the media at the time of upload.'),
 			'BOUNDS_LENGTH' => array(0,255)
 		),
+		'media_class' => array(
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 90, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => '',
+			
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			
+			'LABEL' => _t('Media class'), 'DESCRIPTION' => _t('The type of media uploaded (image, video, audio, document).'),
+			'BOUNDS_LENGTH' => array(0,255)
+		),
 		'is_transcribable' => array(
 			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT, 
 			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
