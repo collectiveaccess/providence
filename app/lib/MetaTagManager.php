@@ -153,12 +153,17 @@ class MetaTagManager {
 	 * Set text highlight
 	 *
 	 * @param array $highlight_text List of strings to highlight
+	 * @param array $options Options include:
+	 *		persist = Persist highlight text in session. [Default is true]
 	 * @return bool Always returns true
 	 */
-	static function setHighlightText(?array $highlight_text) : bool {
+	static function setHighlightText(?array $highlight_text, ?array $options=null) : bool {
 		global $g_highlight_text;
 		$g_highlight_text = $highlight_text;
-		Session::setVar('text_highlight', $highlight_text);
+		
+		if(caGetOption('persist', $options, true)) {
+			Session::setVar('text_highlight', $highlight_text);
+		}
 		return true;
 	}
 	# --------------------------------------------------------------------------------
