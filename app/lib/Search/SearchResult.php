@@ -3851,12 +3851,28 @@ class SearchResult extends BaseObject {
 		if(is_null($g_highlight_cache)) { $g_highlight_cache = []; }
 		if(isset($g_highlight_cache[$content])) { return $g_highlight_cache[$content]; }
 		if(sizeof($g_highlight_cache) > 2048) { $g_highlight_cache = []; }
-		
+
 		$highlight_text = $g_highlight_text;
-		if(!strlen($highlight_text)) { $highlight_text = MetaTagManager::getHighlightText(); } 
-		if(!strlen($highlight_text)) { return $content; }	// use global directly, if possible, for performance
-		$content = $g_highlight_cache[$content] = preg_replace("!(".preg_quote($highlight_text, '!').")!i", "<span class=\"highlightText\">\\1</span>", $content);
+		if(!is_array($highlight_text)) { $highlight_text = MetaTagManager::getHighlightText(); } 
+		if(!is_array($highlight_text)) { return $content; }	// use global directly, if possible, for performance
 		
+		$highlight_text = array_reduce($highlight_text, function($c, $v) {
+			array_push($c, $v);
+			if(mb_substr($v, -1, 1) == '*') {
+				$v = mb_substr($v, 0, mb_strlen($v) - 1);
+				array_push($c, preg_quote($v, '/').'[A-Za-z0-9]*');
+			}
+			if(mb_substr($v, -1, 1) == 's') {
+				array_push($c, (mb_substr($v, 0, mb_strlen($v) - 1)."'s"));
+				array_push($c, (mb_substr($v, 0, mb_strlen($v) - 1)."’s"));
+			}
+			array_push($c, $v);
+			return $c;
+		}, []);
+		usort($highlight_text, function($a, $b) {
+			return strlen($b) <=> strlen($a);
+		});
+		$content = $g_highlight_cache[$content] = preg_replace("/(?<![A-Za-z0-9])(".join('|', $highlight_text).")/i", "<span class=\"highlightText\">\\1</span>", $content);
 		return $content;
 	}
 	# ------------------------------------------------------------------
