@@ -2402,6 +2402,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		if (!($t_label = Datamodel::getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
 		
 		$table = $this->tableName();
+		$type = $this->getTypeCode();
 		
 		if(!is_array($pa_options)) { $pa_options = array(); }
 		$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
@@ -2479,6 +2480,13 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		}
 		$o_view->setVar('bundle_preview', $bundle_preview);
 		
+		if(is_array($label_locales = $po_request->config->get(["{$table}_{$type}_preferred_label_locales", "{$table}_preferred_label_locales", "preferred_label_locales"])) && sizeof($label_locales)) {
+			$label_locales = array_map(function($v) { return (int)ca_locales::codeToID($v); }, $label_locales);
+		}
+		$locale_list = $t_label->htmlFormElement('locale_id', "^LABEL ^ELEMENT", array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}locale_id_{n}", 'name' => "{fieldNamePrefix}locale_id_{n}", "value" => "{locale_id}", 'no_tooltips' => true, 'dont_show_null_value' => true, 'hide_select_if_only_one_option' => true, 'WHERE' => (is_array($label_locales) && sizeof($label_locales)) ? ['(locale_id IN ('.join(',', $label_locales).'))'] : ['(dont_use_for_cataloguing = 0)']));
+	
+		$o_view->setVar('locale_list', $locale_list);
+		
 		return $o_view->render($this->getLabelTableName().'_preferred.php');
 	}
 	# ------------------------------------------------------------------
@@ -2500,6 +2508,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		if (!($t_label = Datamodel::getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
 		
 		$table = $this->tableName();
+		$type = $this->getTypeCode();
 		
 		$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
 		$o_view = new View($po_request, "{$vs_view_path}/bundles/");
@@ -2573,6 +2582,14 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 			$bundle_preview = join('; ', array_map(function($v) use ($l) { return $v[$l]; }, $va_inital_values));
 		}
 		$o_view->setVar('bundle_preview', $bundle_preview);
+		
+		if(is_array($label_locales = $po_request->config->get(["{$table}_{$type}_nonpreferred_label_locales", "{$table}_nonpreferred_label_locales", "nonpreferred_label_locales"])) && sizeof($label_locales)) {
+			$label_locales = array_map(function($v) { return (int)ca_locales::codeToID($v); }, $label_locales);
+		}
+		$locale_list = $t_label->htmlFormElement('locale_id', "^LABEL ^ELEMENT", array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}locale_id_{n}", 'name' => "{fieldNamePrefix}locale_id_{n}", "value" => "{locale_id}", 'no_tooltips' => true, 'dont_show_null_value' => true, 'hide_select_if_only_one_option' => true, 'WHERE' => (is_array($label_locales) && sizeof($label_locales)) ? ['(locale_id IN ('.join(',', $label_locales).'))'] : ['(dont_use_for_cataloguing = 0)']));
+
+		$o_view->setVar('locale_list', $locale_list);
+		
 		
 		return $o_view->render($this->getLabelTableName().'_nonpreferred.php');
 	}

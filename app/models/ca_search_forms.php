@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2021 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1352,8 +1352,6 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	public function getLuceneQueryStringForHTMLFormInput($pa_form_content, array $options=null) {
 		$va_values = $this->extractFormValuesFromArray($pa_form_content);
 
-		$match_on_stem = caGetSearchConfig()->get('match_on_stem');
-
 		$va_query_elements = [];
 		if (is_array($va_values) && sizeof($va_values)) {
 			foreach($va_values as $vs_element => $va_values) {
@@ -1366,7 +1364,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 						$vs_query_element = $vs_value;
 					}
 					
-					$vs_query_element .= ($match_on_stem && caIsSearchStem($vs_query_element)) ? '*' : '';
+					$vs_query_element = caMatchOnStem($vs_query_element);
 					
 					switch($vs_element){
 						case '_fulltext':		// don't qualify special "fulltext" element

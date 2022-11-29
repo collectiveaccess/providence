@@ -1576,11 +1576,11 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
-	 * Returns the media class to which a MIME type belongs, or null if the MIME type does not belong to a class. Possible classes are 'image', 'video', 'audio' and 'document'
+	 * Returns the media class to which a MIME type belongs, or null if the MIME type does not belong to a class. Possible classes are 'image', 'video', 'audio', 'document', '3d', 'vr' and 'binary'.
 	 *
 	 * @param string $ps_mimetype A media MIME type
 	 *
-	 * @return string The media class that includes the specified MIME type, or null if the MIME type does not belong to a class. Returned classes are 'image', 'video', 'audio' and 'document'
+	 * @return string The media class that includes the specified MIME type, or null if the MIME type does not belong to a class. Returned classes are 'image', 'video', 'audio', 'document', '3d', 'vr' and 'binary'
 	 */
 	function caGetMediaClass($ps_mimetype) {
 		$va_tmp = explode("/", $ps_mimetype);
@@ -1603,11 +1603,32 @@ function caFileIsIncludable($ps_file) {
 					case 'text/html':
 					case 'text/plain':
 					case 'application/msword':
+					case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+					case 'application/vnd.ms-excel':
+					case 'application/vnd.ms-powerpoint':
+					case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+					case 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
 						return 'document';
 						break;
 					case 'x-world/x-qtvr':
 					case 'application/x-shockwave-flash':
 						return 'video';
+						break;
+					case 'application/dicom':
+						return 'image';
+						break;
+					case 'application/ply':
+					case 'application/stl':
+					case 'text/prs.wavefront-obj':
+					case 'application/surf':
+					case 'model/gltf+json':
+						return '3d';
+						break;
+					case 'x-world/x-qtvr':
+						return 'vr';
+						break;
+					case 'application/octet-stream':
+						return 'binary';
 						break;
 				}
 				break;

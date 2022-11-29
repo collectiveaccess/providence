@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2021 Whirl-i-Gig
+ * Copyright 2006-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -76,6 +76,7 @@ define("TEP_TOKEN_PROBABLY", 28);
 define("TEP_TOKEN_EARLY", 29);
 define("TEP_TOKEN_MID", 30);
 define("TEP_TOKEN_LATE", 31);
+define("TEP_TOKEN_ACADEMIC_DATE", 32);
 
 # --- Meridian types
 define("TEP_MERIDIAN_AM", 0);
@@ -279,6 +280,22 @@ class TimeExpressionParser {
 								break(2);
 							}
 							break;
+						# ----------------------
+						case TEP_TOKEN_ACADEMIC_DATE:
+							$this->getToken();
+							$va_dates['start'] = array(
+								'month' => 7, 'day' => 1, 'year' => $va_token['start'],
+								'hours' => null, 'minutes' => null, 'seconds' => null,
+								'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false, 'dont_window' => true
+							);
+							$va_dates['end'] = array(
+								'month' => 6, 'day' => 30, 'year' => $va_token['end'],
+								'hours' => null, 'minutes' => null, 'seconds' => null,
+								'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false, 'dont_window' => true
+							);		
+							$vn_state = TEP_STATE_DATE_RANGE_CONJUNCTION;
+							$vb_can_accept = true;
+							break(2);
 						# ----------------------
 						case TEP_TOKEN_INTEGER:
 							// is this a quarter century expression?
@@ -622,9 +639,9 @@ class TimeExpressionParser {
 						'hours' => null, 'minutes' => null, 'seconds' => null,
 						'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false
 					);
-					if(!isset($va_date['hours'])) { $va_date['hours'] = 0; }
-					if(!isset($va_date['minutes'])) { $va_date['minutes'] = 0; }
-					if(!isset($va_date['seconds'])) { $va_date['seconds'] = 0; }
+					if(!isset($va_date['hours'])) { $va_date['hours'] = 23; }
+					if(!isset($va_date['minutes'])) { $va_date['minutes'] = 59; }
+					if(!isset($va_date['seconds'])) { $va_date['seconds'] = 59; }
 					
 					$va_dates['end'] = $va_date;
 					$this->skipToken();
@@ -673,8 +690,6 @@ class TimeExpressionParser {
 				break;
 			# -------------------------------------------------------
 			case TEP_STATE_DATE_RANGE_END_DATE:
-				//$vb_circa_is_set = (bool)$va_dates['start']['is_circa'];	// carry over circa-ness from start
-				
 				//
 				// Look for MYA dates
 				//
@@ -698,6 +713,18 @@ class TimeExpressionParser {
 						'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false, 'dont_window' => true, 'is_bp' => true
 					);
 					$this->skipToken();
+					$this->skipToken();
+			
+					$vn_state = TEP_STATE_ACCEPT;
+					$vb_can_accept = true;
+					break;
+				} elseif($va_token['type'] == TEP_TOKEN_ACADEMIC_DATE) {
+					//$this->getToken();
+					$va_dates['end'] = array(
+						'month' => 6, 'day' => 30, 'year' => $va_token['end'],
+						'hours' => null, 'minutes' => null, 'seconds' => null,
+						'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false, 'dont_window' => true
+					);		
 					$this->skipToken();
 			
 					$vn_state = TEP_STATE_ACCEPT;
@@ -1809,6 +1836,15 @@ class TimeExpressionParser {
 		}
 
 		
+		if($this->opo_datetime_settings->get('assumeAcademicYears') && preg_match('!^([\d]{4})/([\d]{2})$!', $vs_token, $m)) {
+			$s = (int)$m[1];
+			$e = (int)$m[2];
+			$sx = $s % 100;
+			
+			if ((($e > $sx) && (($e - $sx) === 1)) || (($sx === 99) && ($e === 0))) {	
+				return ['value' => $vs_token, 'start' => $s, 'end' => $s+1, 'type' => TEP_TOKEN_ACADEMIC_DATE];
+			}
+		}
 		
 		// text month
 		$va_month_table = $this->opo_language_settings->getAssoc("monthTable");
@@ -2179,9 +2215,6 @@ class TimeExpressionParser {
 			}
 		}
 		
-		//if ($pa_dates['start']['is_circa'] || $pa_dates['end']['is_circa']) {
-			//$pa_dates['start']['is_circa'] = $pa_dates['end']['is_circa'] = true;
-		//}
 		$pa_options['mode'] = $pa_options['mode'] ?? null;
 		
 		if ($pa_dates['start']['is_undated'] ?? false) {
@@ -2652,6 +2685,17 @@ class TimeExpressionParser {
 			return "????";
 		}
 	
+	
+		// academic dates
+		if($this->opo_datetime_settings->get('assumeAcademicYears')) {
+			
+			if(
+				(substr($va_dates['start'], 5, 10) === '0701000000') &&
+				(substr($va_dates['end'], 5, 10) === '0630235959')
+			) {
+				return (int)$va_dates['start'].'/'.substr((int)$va_dates['end'], 2);
+			}
+		}
 		
 		// only return times?
 		if (isset($pa_options['timeOnly']) && $pa_options['timeOnly']) {

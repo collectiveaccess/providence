@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2021 Whirl-i-Gig
+ * Copyright 2015-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -54,6 +54,11 @@ class DisplayTemplateParser {
 	 *
 	 */
 	static $join_tag_vals = [];
+	
+	/**
+	 *
+	 */
+	static $do_highlighting = false;
 	
 	# -------------------------------------------------------------------
 	/**
@@ -153,6 +158,8 @@ class DisplayTemplateParser {
 			unset($pa_options[$vs_k]);
 		}
 		
+		$do_highlighting = $pa_options['highlighting'] ?? false;
+		
 		self::$join_tag_vals = [];
 		
 		if (!isset($pa_options['convertCodesToDisplayText'])) { $pa_options['convertCodesToDisplayText'] = true; }
@@ -197,7 +204,8 @@ class DisplayTemplateParser {
 		}
 
 		$qr_res = caMakeSearchResult($ps_tablename, $pa_row_ids, ['sort' => caGetOption('sort', $pa_options, null), 'sortDirection' => caGetOption('sortDirection', $pa_options, null)]);
-
+		$qr_res->doHighlighting($do_highlighting);
+		
 		if(!$qr_res) { return $pb_return_as_array ? array() : ""; }
 
         $filter_non_primary_reps = self::_setPrimaryRepresentationFiltering($qr_res, caGetOption('filterNonPrimaryRepresentations', $pa_options, null));
