@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2021 Whirl-i-Gig
+ * Copyright 2011-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,9 +33,8 @@
  /**
   *
   */
-  
- require_once(__CA_LIB_DIR__.'/Plugins/WLPlug.php');
- require_once(__CA_LIB_DIR__.'/Plugins/IWLPlugSearchEngine.php');
+require_once(__CA_LIB_DIR__.'/Plugins/WLPlug.php');
+require_once(__CA_LIB_DIR__.'/Plugins/IWLPlugSearchEngine.php');
 
 abstract class BaseSearchPlugin extends WLPlug implements IWLPlugSearchEngine {
 	# -------------------------------------------------------
@@ -93,6 +92,11 @@ abstract class BaseSearchPlugin extends WLPlug implements IWLPlugSearchEngine {
 	 * @var array
 	 */
 	protected $options;
+	
+	/**
+	 * Terms used for matching in search
+	 */
+	protected $searched_terms = [];
 	
 	# -------------------------------------------------------
 	/**
@@ -211,6 +215,23 @@ abstract class BaseSearchPlugin extends WLPlug implements IWLPlugSearchEngine {
 	 */
 	public function setDb(Db $db) {
 		$this->db = $db;
+	}
+	# --------------------------------------------------
+	/**
+	 * Initialize properties prior to search
+	 *
+	 * @return bool
+	 */
+	public function initSearch(int $subject_tablenum, string $search_expression, array $filters=[], $rewritten_query) : bool {
+		$this->searched_terms = [];
+		return true;
+	}
+	# --------------------------------------------------
+	/**
+	 * 
+	 */
+	public function getSearchedTerms() : array {
+		return $this->searched_terms ?? [];
 	}
 	# --------------------------------------------------
 }

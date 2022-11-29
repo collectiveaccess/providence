@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2021 Whirl-i-Gig
+ * Copyright 2010-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -777,7 +777,7 @@ $g_source_access_level_cache = array();
 	 */
 	function caCanRead($pn_user_id, $pm_table, $pm_id, $ps_bundle_name=null, $pa_options=null) {
 		$pb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
-		$t_user = new ca_users($pn_user_id);
+		$t_user = new ca_users($pn_user_id, ['useCache' => true]);
 		if (!$t_user->getPrimaryKey()) { return null; }
 		
 		$ps_table_name = (is_numeric($pm_table)) ? Datamodel::getTableName($pm_table) : $pm_table;		

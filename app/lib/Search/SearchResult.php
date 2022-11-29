@@ -1059,6 +1059,7 @@ class SearchResult extends BaseObject {
 		}
 		
 		$locale = isset($pa_options['locale']) ? ca_locales::codeToID($pa_options['locale']) : null;
+		$do_highlighting = caGetOption('highlighting', $pa_options, $this->do_highlighting);
 		
 		// Get system constant?
 		if(in_array($ps_field, ['__CA_APP_NAME__', '__CA_APP_DISPLAY_NAME__', '__CA_SITE_HOSTNAME__']) && defined($ps_field)) {
@@ -1091,7 +1092,7 @@ class SearchResult extends BaseObject {
 		}
 		
 		if (isset($pa_options['template']) && $pa_options['template']) {
-			return $this->do_highlighting ? $this->highlight($this->getWithTemplate($pa_options['template'], $pa_options)) : $this->getWithTemplate($pa_options['template'], $pa_options);
+			return $do_highlighting ? $this->highlight($this->getWithTemplate($pa_options['template'], $pa_options)) : $this->getWithTemplate($pa_options['template'], $pa_options);
 		}
 		
 		if(!is_array($pa_options)) { $pa_options = array(); }
@@ -1443,7 +1444,7 @@ class SearchResult extends BaseObject {
 						}
 					}
 					
-					$va_acc = $this->do_highlighting ? array_map($this->highlight, $va_acc) : $va_acc;
+					$va_acc = $do_highlighting ? array_map($this->highlight, $va_acc) : $va_acc;
 					
 					if (!$vb_return_as_array) { 
 						return $vb_return_as_count ? sizeof($va_acc) : join($vs_delimiter, $va_acc);
@@ -1496,7 +1497,7 @@ class SearchResult extends BaseObject {
 						}
 					}
 					
-					$va_hier_list = $this->do_highlighting ? array_map($this->highlight, $va_hier_list) : $va_hier_list;
+					$va_hier_list = $do_highlighting ? array_map($this->highlight, $va_hier_list) : $va_hier_list;
 					if (!$vb_return_as_array) { 
 						return $vb_return_as_count ? sizeof($va_hier_list) : join($vs_hierarchical_delimiter, $va_hier_list);
 					}
@@ -1548,7 +1549,7 @@ class SearchResult extends BaseObject {
 						}
 					}
 					
-					$va_hier_list = $this->do_highlighting ? array_map($this->highlight, $va_hier_list) : $va_hier_list;
+					$va_hier_list = $do_highlighting ? array_map($this->highlight, $va_hier_list) : $va_hier_list;
 					if (!$vb_return_as_array) { 
 						return $vb_return_as_count ? sizeof($va_hier_list) : join($vs_hierarchical_delimiter, $va_hier_list);
 					}
@@ -1706,6 +1707,7 @@ class SearchResult extends BaseObject {
 						$this->prefetch($va_path_components['table_name'], $this->opo_engine_result->currentRow(), $this->getOption('prefetch'), $pa_options);	
 					}
 					$vm_val = $this->_getIntrinsicValue(self::$s_prefetch_cache[$va_path_components['table_name']][$vn_row_id][$vs_opt_md5], $t_instance, $va_val_opts);
+					if($va_val_opts['fieldInfo']['FIELD_TYPE'] === FT_MEDIA) { $do_highlighting = false; }
 					goto filter;
 				} elseif(method_exists($t_instance, 'isValidBundle') && !$t_instance->hasElement($va_path_components['field_name'], null, false, array('dontCache' => false)) && $t_instance->isValidBundle($va_path_components['field_name'])) {
 //
@@ -1854,7 +1856,7 @@ class SearchResult extends BaseObject {
 					$va_filtered_vals[$vn_id] = $vm_val[$vn_id];
 				}
 				
-				$va_filtered_vals = $this->do_highlighting ? array_map($this->highlight, $va_filtered_vals) : $va_filter_vals;
+				$va_filtered_vals = $do_highlighting ? array_map($this->highlight, $va_filtered_vals) : $va_filter_vals;
 				if ($vb_return_as_count) {
 					return [sizeof($va_filtered_vals)];
 				} else {
@@ -1864,9 +1866,9 @@ class SearchResult extends BaseObject {
 		}
 
 		if(is_array($vm_val)) {
-			$vm_val = $this->do_highlighting ? array_map([$this, 'highlight'], $vm_val) : $vm_val;
+			$vm_val = $do_highlighting ? array_map([$this, 'highlight'], $vm_val) : $vm_val;
 		} else {
-			$vm_val = $this->do_highlighting ? $this->highlight($vm_val) : $vm_val;
+			$vm_val = $do_highlighting ? $this->highlight($vm_val) : $vm_val;
 		}
 		
 		
@@ -2384,9 +2386,9 @@ class SearchResult extends BaseObject {
                                 if($alt_text = caGetOption('alt', $pa_options, null)) {
 									// noop
 								} elseif ($alt_text_template = Configuration::load()->get($this->tableName()."_alt_text_template")) { 
-									$alt_text = $this->getWithTemplate($alt_text_template);
+									$alt_text = $this->getWithTemplate($alt_text_template, ['highlighting' => false]);
 								} else {
-									$alt_text = $this->get($this->tableName().".preferred_labels");
+									$alt_text = $this->get($this->tableName().".preferred_labels", ['highlighting' => false]);
 								}
                                 $vs_val_proc = $o_value->getDisplayValue(['alt' => $alt_text, 'return' => $vs_return_type, 'version' => $vs_version, 'scaleCSSWidthTo' => $pa_options['scaleCSSWidthTo'] ?? null, 'scaleCSSHeightTo' => $pa_options['scaleCSSHeightTo'] ?? null]);
 						        break;
@@ -2997,7 +2999,7 @@ class SearchResult extends BaseObject {
 		unset($pa_options['request']);
 		//if($this->opb_disable_get_with_template_prefetch) {
 			if(!is_array($pa_options)) { $pa_options = array(); }
-			if(!isset($pa_options['doHighlighting'])) { $pa_options['doHighlighting'] = $this->doHighlighting(); }
+			if(!isset($pa_options['highlighting'])) { $pa_options['highlighting'] = $this->doHighlighting(); }
 			return caProcessTemplateForIDs($ps_template, $this->ops_table_name, array($this->get($this->ops_table_name.".".$this->ops_subject_pk)), array_merge($pa_options, ['dontPrefetchRelated' => true]));
 		//}
 
@@ -3312,9 +3314,9 @@ class SearchResult extends BaseObject {
 		if($alt_text = caGetOption('alt', $pa_options, null)) {
 		    // noop
 		} elseif ($alt_text_template = Configuration::load()->get($this->tableName()."_alt_text_template")) { 
-		    $alt_text = $this->getWithTemplate($alt_text_template);
+		    $alt_text = $this->getWithTemplate($alt_text_template, ['highlighting' => false]);
 		} elseif(is_a($this, "LabelableBaseModelWithAttributes")) {
-		    $alt_text = $this->get($this->tableName().".preferred_labels");
+		    $alt_text = $this->get($this->tableName().".preferred_labels", ['highlighting' => false]);
 		} else {
 		    $alt_text = null;
 		}
@@ -3857,11 +3859,29 @@ class SearchResult extends BaseObject {
 		if(is_null($g_highlight_cache)) { $g_highlight_cache = []; }
 		if(isset($g_highlight_cache[$content])) { return $g_highlight_cache[$content]; }
 		if(sizeof($g_highlight_cache) > 2048) { $g_highlight_cache = []; }
-		
+
 		$highlight_text = $g_highlight_text;
-		if(!strlen($highlight_text)) { $highlight_text = MetaTagManager::getHighlightText(); } 
-		if(!strlen($highlight_text)) { return $content; }	// use global directly, if possible, for performance
-		$content = $g_highlight_cache[$content] = preg_replace("!(".preg_quote($highlight_text, '!').")!i", "<span class=\"highlightText\">\\1</span>", $content);
+		if(!is_array($highlight_text)) { $highlight_text = MetaTagManager::getHighlightText(); } 
+		if(!is_array($highlight_text)) { return $content; }	// use global directly, if possible, for performance
+		
+		$highlight_text = array_reduce($highlight_text, function($c, $v) {
+			if(mb_substr($v, -1, 1) == '*') {
+				$v = mb_substr($v, 0, mb_strlen($v) - 1);
+				array_push($c, preg_quote($v, '/').'[A-Za-z0-9]*');
+			}
+			if(!strlen($v)) { array_pop($c); return $c; }
+			if(mb_substr($v, -1, 1) == 's') {
+				array_push($c, (mb_substr($v, 0, mb_strlen($v) - 1)."'s"));
+				array_push($c, (mb_substr($v, 0, mb_strlen($v) - 1)."’s"));
+			}
+			array_push($c, $v);
+			return $c;
+		}, []);
+		if(!sizeof($highlight_text)) { return $content; }
+		usort($highlight_text, function($a, $b) {
+			return strlen($b) <=> strlen($a);
+		});
+		$content = $g_highlight_cache[$content] = preg_replace($z="/(?<![A-Za-z0-9])(".join('|', $highlight_text).")/i", "<span class=\"highlightText\">\\1</span>", $content);
 		
 		return $content;
 	}
