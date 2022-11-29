@@ -83,7 +83,6 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	static private $doc_content_buffer = [];			// content buffer used when indexing
 	
 	static protected $filter_stop_words = null;
-	
 	# -------------------------------------------------------
 	public function __construct($db=null) {
 		global $g_ui_locale;
@@ -207,6 +206,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 *
 	 */
 	public function search(int $subject_tablenum, string $search_expression, array $filters=[], $rewritten_query) {
+		$this->initSearch($subject_tablenum, $search_expression, $filters, $rewritten_query);
 		$hits = $this->_filterQueryResult(
 			$subject_tablenum, 
 			$this->_processQuery($subject_tablenum, $rewritten_query), 
@@ -427,7 +427,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			if(($word_field !== 'sw.stem') && ($this->search_config->get('always_stem'))) {
 				$text .= '*';
 			}
-		
+			$this->searched_terms[] = $text;
+			
 			$params = [$subject_tablenum];
 			$word_op = '=';
 		
@@ -560,6 +561,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				
 				if (strlen($escaped_text = $this->db->escape(join(' ', self::tokenize($term->text, true))))) {
 					$words[] = $escaped_text;
+					$this->searched_terms[] = $escaped_text;
 				}
 			}
 		

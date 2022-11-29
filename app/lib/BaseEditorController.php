@@ -250,11 +250,11 @@ class BaseEditorController extends ActionController {
 		if($vn_subject_id && $vs_rel_table && $vn_rel_type_id && $vn_rel_id) {
 			if(Datamodel::tableExists($vs_rel_table)) {
 				Debug::msg("[Save()] Relating new record using parameters from request: $vs_rel_table / $vn_rel_type_id / $vn_rel_id");
-				$t_subject->addRelationship($vs_rel_table, $vn_rel_id, $vn_rel_type_id, _t('now'));
+				if(!$t_subject->relationshipExists($vs_rel_table, $vn_rel_id, $vn_rel_type_id)) { 
+					$t_subject->addRelationship($vs_rel_table, $vn_rel_id, $vn_rel_type_id, _t('now'));
+				}
 			}
 			$this->notification->addNotification(_t("Added relationship"), __NOTIFICATION_TYPE_INFO__);
-			$this->render('screen_html.php');
-			return;
 		}
 
 		if (in_array($this->ops_table_name, array('ca_representation_annotations'))) { $vs_auth_table_name = 'ca_objects'; }
@@ -1250,6 +1250,7 @@ class BaseEditorController extends ActionController {
         
 		// pass relationship parameters to Save() action from Edit() so
 		// that we can create a relationship for a newly created object
+		$vs_rel_table = $vn_rel_type_id = $vn_rel_id = null;
 		if($vs_rel_table = $this->getRequest()->getParameter('rel_table', pString)) {
 			$vn_rel_type_id = $this->getRequest()->getParameter('rel_type_id', pString);
 			$vn_rel_id = $this->getRequest()->getParameter('rel_id', pInteger);
@@ -1259,8 +1260,6 @@ class BaseEditorController extends ActionController {
 				$this->view->setVar('rel_type_id', $vn_rel_type_id);
 				$this->view->setVar('rel_id', $vn_rel_id);
 			}
-
-			return array($vn_subject_id, $t_subject, $t_ui, null, null, null, $vs_rel_table, $vn_rel_type_id, $vn_rel_id);
 		}
 
 		if ($vs_parent_id_fld = $t_subject->getProperty('HIERARCHY_PARENT_ID_FLD')) {
@@ -1293,10 +1292,10 @@ class BaseEditorController extends ActionController {
 					$t_subject->set('idno', $t_parent->get('idno'));
 				}
 			}
-			return array($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vn_after_id);
+			return array($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vn_after_id, $vs_rel_table, $vn_rel_type_id, $vn_rel_id);
 		}
 
-		return array($vn_subject_id, $t_subject, $t_ui);
+		return array($vn_subject_id, $t_subject, $t_ui, null, null, null, $vs_rel_table, $vn_rel_type_id, $vn_rel_id);
 	}
 	# -------------------------------------------------------
 	# Dynamic navigation generation

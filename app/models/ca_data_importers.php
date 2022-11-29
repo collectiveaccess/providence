@@ -645,7 +645,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		if(!$this->getPrimaryKey()) return false;
 		
 		$t_group = new ca_data_importer_groups();
-		$t_group->setMode(ACCESS_WRITE);
 		$t_group->set('importer_id', $this->getPrimaryKey());
 		$t_group->set('group_code', $ps_group_code);
 		$t_group->set('destination', $ps_destination);
@@ -742,7 +741,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		if($t_group->load($pn_group_id)){
-			$t_group->setMode(ACCESS_WRITE);
 			$t_group->removeItems();
 			$t_group->delete();
 		} else {
@@ -766,7 +764,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$t_group = new ca_data_importer_groups();
 		
 		if($t_group->load(array("code" => $ps_group_code))){
-			$t_group->setMode(ACCESS_WRITE);
 			$t_group->removeItems();
 			$t_group->delete();
 		} else {
@@ -784,7 +781,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		if($t_item->load($pn_item_id)){
-			$t_item->setMode(ACCESS_WRITE);
 			$t_item->delete();
 		} else {
 			return false;
@@ -1073,7 +1069,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		
 		$t_importer = new ca_data_importers();
-		$t_importer->setMode(ACCESS_WRITE);
 		
 		// Remove any existing mapping
 		if ($t_importer->load(array('importer_code' => $va_settings['code']))) {
@@ -1478,9 +1473,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 
 		global $g_ui_locale_id;	// constant locale set by index.php for web requests
-		if (!($vn_locale_id = caGetOption('locale_id', $pa_options, null))) {	// set as option?	
-			if (!($vn_locale_id = ca_locales::codeToID($t_mapping->getSetting('locale')))) {	// set in mapping?
-				$vn_locale_id = ca_locales::getDefaultCataloguingLocaleID();		// use default
+		if (!($mapping_default_locale_id = caGetOption('locale_id', $pa_options, null))) {	// set as option?	
+			if (!($mapping_default_locale_id = ca_locales::codeToID($t_mapping->getSetting('locale')))) {	// set in mapping?
+				$mapping_default_locale_id = ca_locales::getDefaultCataloguingLocaleID();		// use default
 			}
 		}
 		
@@ -1862,7 +1857,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$va_log_import_error_opts['idno'] = $vs_idno;
 				$t_subject = Datamodel::getInstanceByTableNum($vn_table_num);
 				if ($o_trans) { $t_subject->setTransaction($o_trans); }
-				$t_subject->setMode(ACCESS_WRITE);
 			
 			
 				// get preferred labels
@@ -1981,7 +1975,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							);
 							if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
 								$t_subject->load($va_ids[0]);
-								$t_subject->setMode(ACCESS_WRITE);
 								$t_subject->delete(true, array('hard' => true));
 								if ($t_subject->numErrors()) {
 									$this->logImportError(_t('[%1] Could not delete existing record matched on primary key %2 for %3 by policy %4', $vs_idno, $vn_mapped_primary_key_value, $t_subject->tableName(), $vs_existing_record_policy), $va_log_import_error_opts);
@@ -2067,7 +2060,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								));
 								if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
 									$t_subject->load($va_ids[0]);
-									$t_subject->setMode(ACCESS_WRITE);
 									$t_subject->delete(true, array('hard' => true));
 									if ($t_subject->numErrors()) {
 										$this->logImportError(_t('[%1] Could not delete existing record matched on identifier by policy %2', $vs_idno, $vs_existing_record_policy), $va_log_import_error_opts);
@@ -2089,7 +2081,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							));
 							if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
 								$t_subject->load($va_ids[0]);
-								$t_subject->setMode(ACCESS_WRITE);
 								$t_subject->delete(true, array('hard' => true));
 							
 								if ($t_subject->numErrors()) {
@@ -2148,6 +2139,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					foreach ( $va_items as $vn_item_id => $va_item ) {
 						$va_log_import_error_opts['importer_item_id'] = $vn_item_id;
 						$va_log_import_error_opts['importer_item']    = $va_item;
+						
+						$vn_locale_id = $va_item['settings']['locale'] ?? $mapping_default_locale_id;
 
 						if ( $va_item['settings']['useParentAsSubject'] ) {
 							$vb_use_parent_as_subject = true;
@@ -2799,6 +2792,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							) {
 								$va_group_buf[ $vn_c ]['_relationship_type'] = $vs_rel_type;
 							}
+							
+							if ( isset( $va_item['settings']['locale'] )
+							     && strlen( $locale = $va_item['settings']['locale'] )
+							) {
+								$va_group_buf[ $vn_c ]['_locale'] = $locale;
+							}
 
 							if ( isset( $va_item['settings']['matchOn'] ) ) {
 								$va_group_buf[ $vn_c ]['_matchOn'] = $va_item['settings']['matchOn'];
@@ -3420,7 +3419,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									}
 								
 									$t_subject->clearErrors();
-									$t_subject->setMode(ACCESS_WRITE);
 									switch($vs_element) {
 										case 'preferred_labels':
 											if (!$vb_was_preferred_label_match) {
@@ -3690,7 +3688,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											if (
 												!($vs_rel_type = $va_element_data['_relationship_type'])
 												&&
-												!($vs_rel_type = $va_element_data['idno']['_relationship_type'])
+												!(is_array($va_element_data['idno']) && ($vs_rel_type = $va_element_data['idno']['_relationship_type']))
 												&&
 												($t_subject->tableName() != 'ca_object_representations')
 											) {
