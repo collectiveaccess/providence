@@ -2127,4 +2127,36 @@ class TimeExpressionParserTest extends TestCase {
 		$this->assertEquals($va_historic['end'], '1948.063023595900');
 		$this->assertEquals($o_tep->getText(), 'before June 1948');
 	}	
+	
+	public function testAcademicDates() {
+		if(!Configuration::load(__CA_CONF_DIR__.'/datetime.conf')->get('assumeAcademicYears')) {
+			$this->markTestIncomplete('Cannot test academic date parsing because assumeAcademicYears option in datetime.conf is not set');
+		}
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage("en_US");
+		
+		$this->assertEquals($o_tep->parse("1955/56"), true);
+		$ret = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($ret['start'], '1955.070100000000');
+		$this->assertEquals($ret['end'], '1956.063023595900');
+		$this->assertEquals($o_tep->getText(), '1955/56');
+		
+		$this->assertEquals($o_tep->parse("1955/56 to 1971/72"), true);
+		$ret = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($ret['start'], '1955.070100000000');
+		$this->assertEquals($ret['end'], '1972.063023595900');
+		$this->assertEquals($o_tep->getText(), '1955/72');
+		
+		$this->assertEquals($o_tep->parse("1999/00"), true);
+		$ret = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($ret['start'], '1999.070100000000');
+		$this->assertEquals($ret['end'], '2000.063023595900');
+		$this->assertEquals($o_tep->getText(), '1999/00');
+				
+		$this->assertEquals($o_tep->parse("1999/00 - 2010/11"), true);
+		$ret = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($ret['start'], '1999.070100000000');
+		$this->assertEquals($ret['end'], '2011.063023595900');
+		$this->assertEquals($o_tep->getText(), '1999/11');
+	}
 }

@@ -92,6 +92,10 @@ class SearchEngine extends SearchBase {
 		return $this->opo_engine->isValidOption($ps_option);
 	}
 	# ------------------------------------------------------------------
+	public function getSearchedTerms() {
+		return $this->opo_engine->getSearchedTerms();
+	}
+	# ------------------------------------------------------------------
 	# Search
 	# ------------------------------------------------------------------
 	/**

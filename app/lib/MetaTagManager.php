@@ -152,24 +152,27 @@ class MetaTagManager {
 	/**
 	 * Set text highlight
 	 *
-	 * @param string $ps_title The window title
+	 * @param array $highlight_text List of strings to highlight
+	 * @param array $options Options include:
+	 *		persist = Persist highlight text in session. [Default is true]
 	 * @return bool Always returns true
 	 */
-	static function setHighlightText(?string $highlight_text) : bool {
+	static function setHighlightText(?array $highlight_text, ?array $options=null) : bool {
 		global $g_highlight_text;
-		if(!is_null($highlight_text) && strlen($highlight_text)) {
-			$g_highlight_text = $highlight_text;
+		$g_highlight_text = $highlight_text;
+		
+		if(caGetOption('persist', $options, true)) {
 			Session::setVar('text_highlight', $highlight_text);
 		}
 		return true;
 	}
 	# --------------------------------------------------------------------------------
 	/**
-	 * Get current text highlight
+	 * Get list of text to highlight
 	 *
-	 * @return string
+	 * @return array
 	 */
-	static function getHighlightText() : ?string {
+	static function getHighlightText() : ?array {
 		global $g_highlight_text;
 		if(!is_null($g_highlight_text)) { return $g_highlight_text; }
 		return $g_highlight_text = Session::getVar('text_highlight');

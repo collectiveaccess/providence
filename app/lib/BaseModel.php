@@ -3979,9 +3979,9 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		if (!is_array($va_media_info[$ps_version])) { return null; }
 
         if ($alt_text_template = Configuration::load()->get($this->tableName()."_alt_text_template")) { 
-		    $alt_text = $this->getWithTemplate($alt_text_template);
+		    $alt_text = $this->getWithTemplate($alt_text_template, ['highlighting' => false]);
 		} elseif(is_a($this, "LabelableBaseModelWithAttributes")) {
-		    $alt_text = $this->get($this->tableName().".preferred_labels");
+		    $alt_text = $this->get($this->tableName().".preferred_labels", ['highlighting' => false]);
 		} else {
 		    $alt_text = null;
 		}
@@ -9620,7 +9620,9 @@ $pa_options["display_form_field_tips"] = true;
 				return false;
 			}
 			if ($t_item_rel->load($pn_relation_id)) {
-				
+				if(!in_array($ps_direction, ['ltor', 'rtol'], true)) {	// if direction is not set preserve current direction
+					$ps_direction = ($t_item_rel->get($t_item_rel->getLeftTableFieldName()) == $this->getPrimaryKey()) ? 'ltor' : 'rtol';
+				}
 				if ($ps_direction == 'rtol') {
 					$t_item_rel->set($t_item_rel->getRightTableFieldName(), $this->getPrimaryKey());
 					$t_item_rel->set($t_item_rel->getLeftTableFieldName(), $pn_rel_id);
@@ -11827,11 +11829,11 @@ $pa_options["display_form_field_tips"] = true;
 		$vs_sql = "
 			SELECT {$vs_table_name}.* 
 			FROM {$vs_table_name}
-			INNER JOIN (SELECT CEIL(RAND() * (SELECT MAX(object_id) FROM {$vs_table_name})) AS id) AS x 
+			INNER JOIN (SELECT CEIL(RAND() * (SELECT MAX({$vs_primary_key}) FROM {$vs_table_name})) AS id) AS x 
 			{$vs_join_sql}
-			WHERE {$vs_table_name}.object_id >= x.id 
+			WHERE {$vs_table_name}.{$vs_primary_key} >= x.id 
 			".(sizeof($va_wheres) ? " AND " : "").join(" AND ", $va_wheres)."
-			ORDER BY {$vs_table_name}.object_id ASC 
+			ORDER BY {$vs_table_name}.{$vs_primary_key} ASC 
 			{$vs_limit_sql}
 		";
 		

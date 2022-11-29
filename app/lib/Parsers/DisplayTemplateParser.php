@@ -158,7 +158,7 @@ class DisplayTemplateParser {
 			unset($pa_options[$vs_k]);
 		}
 		
-		$do_highlighting = $pa_options['doHighlighting'] ?? false;
+		$do_highlighting = $pa_options['highlighting'] ?? false;
 		
 		self::$join_tag_vals = [];
 		
