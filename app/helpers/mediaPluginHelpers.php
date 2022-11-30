@@ -1223,9 +1223,11 @@ function caTranscribeAVMedia(string $mimetype) : bool {
 	$config = Configuration::load();
 	if(!$config->get('create_transcriptions')) { return false; }
 	
-	// TODO: check mimetype
+	// Check mimetype
+	if(!in_array(caGetMediaClass($mimetype), ['audio', 'video'], true)) { return false; }
 	
-	// TODO: check that Whisper is installed
+	// Check that Whisper is installed
+	if(!caWhisperInstalled()) { return false; }
 	return true;
 }
 # ------------------------------------------------------------------------------------------------
