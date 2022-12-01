@@ -106,13 +106,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	# ------------------------------------------------------
 	public function __construct($id=null, ?array $options=null) {
 		parent::__construct($id, $options);	# call superclass constructor
-		
-		if ($pn_id) {
-			if ($this->_rowAsSearchResult = $this->makeSearchResult($this->tableName(), [$id])) {
-				$this->_rowAsSearchResult->nextHit();
-				$this->_rowAsSearchResult->doHighlighting($this->do_highlighting);
-			}
-		}
 		$this->initLabelDefinitions($options);
 	}
 	# ------------------------------------------------------
