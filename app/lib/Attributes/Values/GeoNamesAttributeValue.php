@@ -33,19 +33,19 @@
   /**
   *
   */
-  define("__CA_ATTRIBUTE_VALUE_GEONAMES__", 14);
+define("__CA_ATTRIBUTE_VALUE_GEONAMES__", 14);
   
- require_once(__CA_LIB_DIR__.'/Configuration.php');
- require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
- require_once(__CA_LIB_DIR__.'/Attributes/Values/AttributeValue.php');
- require_once(__CA_LIB_DIR__.'/Configuration.php');
- require_once(__CA_LIB_DIR__.'/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
+require_once(__CA_LIB_DIR__.'/Configuration.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/AttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Configuration.php');
+require_once(__CA_LIB_DIR__.'/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
 
- require_once(__CA_APP_DIR__.'/helpers/gisHelpers.php');
+require_once(__CA_APP_DIR__.'/helpers/gisHelpers.php');
 
- global $_ca_attribute_settings;
+global $_ca_attribute_settings;
  
- $_ca_attribute_settings['GeoNamesAttributeValue'] = array(		// global
+$_ca_attribute_settings['GeoNamesAttributeValue'] = array(		// global
 	'fieldWidth' => array(
 		'formatType' => FT_NUMBER,
 		'displayType' => DT_FIELD,
