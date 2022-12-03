@@ -283,6 +283,15 @@
 		public function sortField() {
 			return null;
 		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns name of field in ca_attribute_values to use for query operations
+		 *
+		 * @return string Name of sort field
+		 */
+		public function queryFields() : ?array {
+			return ['value_longtext1'];
+		}
  		# ------------------------------------------------------------------
 		/**
 		 * Returns constant for file attribute value

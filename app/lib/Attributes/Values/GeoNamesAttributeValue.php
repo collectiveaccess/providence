@@ -544,6 +544,15 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 	}
 	# ------------------------------------------------------------------
 	/**
+	 * Returns name of field in ca_attribute_values to use for query operations
+	 *
+	 * @return string Name of sort field
+	 */
+	public function queryFields() : ?array {
+		return ['value_longtext1', 'value_longtext2'];
+	}
+	# ------------------------------------------------------------------
+	/**
 	 * Returns sortable value for metadata value
 	 *
 	 * @param string $value

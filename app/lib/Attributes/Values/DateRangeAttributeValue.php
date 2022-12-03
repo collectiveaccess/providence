@@ -518,6 +518,15 @@
 		public function sortField() {
 			return 'value_decimal1';
 		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns name of field in ca_attribute_values to use for query operations
+		 *
+		 * @return string Name of sort field
+		 */
+		public function queryFields() : ?array {
+			return ['value_decimal1'];
+		}
  		# ------------------------------------------------------------------
 		/**
 		 * Returns constant for date range attribute value

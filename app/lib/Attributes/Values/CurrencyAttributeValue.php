@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2021 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -383,6 +383,15 @@
 		 */
 		public function sortField() {
 			return 'value_decimal1';
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns name of field in ca_attribute_values to use for query operations
+		 *
+		 * @return string Name of sort field
+		 */
+		public function queryFields() : ?array {
+			return ['value_decimal1'];
 		}
  		# ------------------------------------------------------------------
 		/**
