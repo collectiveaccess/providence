@@ -140,6 +140,7 @@
 		 */
 		public function __construct($pm_subject_table_name_or_num, $pn_browse_id=null, $ps_browse_context='') {
 			$this->opo_db = new Db();
+			parent::__construct($this->opo_db);
 
 			$this->opa_result_filters = array();
 

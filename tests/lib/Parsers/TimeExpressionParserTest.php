@@ -709,6 +709,50 @@ class TimeExpressionParserTest extends TestCase {
 		$this->assertEquals($va_parse['end'], 80.1231235959);
 		$this->assertEquals($va_parse[0], 50.0101000000);
 		$this->assertEquals($va_parse[1], 80.1231235959);
+		
+		
+		$vb_res = $o_tep->parse('50 to 80');
+		$this->assertEquals($vb_res, true);
+
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], 50.0101000000);
+		$this->assertEquals($va_parse['end'], 80.1231235959);
+		$this->assertEquals($va_parse[0], 50.0101000000);
+		$this->assertEquals($va_parse[1], 80.1231235959);
+		
+		
+		$vb_res = $o_tep->parse('80 BCE to 50 BCE');
+		$this->assertEquals($vb_res, true);
+
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], -80.0101000000);
+		$this->assertEquals($va_parse['end'], -50.1231235959);
+		$this->assertEquals($va_parse[0], -80.0101000000);
+		$this->assertEquals($va_parse[1], -50.1231235959);
+	}
+	
+	public function testFirstCentury() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+		$vb_res = $o_tep->parse('50 CE');
+		$this->assertEquals($vb_res, true);
+
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], 50.0101000000);
+		$this->assertEquals($va_parse['end'], 50.1231235959);
+		$this->assertEquals($va_parse[0], 50.0101000000);
+		$this->assertEquals($va_parse[1], 50.1231235959);
+		
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+		$vb_res = $o_tep->parse('50');
+		$this->assertEquals($vb_res, true);
+
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], 50.0101000000);
+		$this->assertEquals($va_parse['end'], 50.1231235959);
+		$this->assertEquals($va_parse[0], 50.0101000000);
+		$this->assertEquals($va_parse[1], 50.1231235959);
 	}
 
 	public function testEarlyCEDatesWithEra() {

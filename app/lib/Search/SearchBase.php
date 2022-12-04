@@ -54,6 +54,8 @@ class SearchBase extends BaseFindEngine {
 	 * @param bool $pb_load_engine if set to true (default is false) we don't attempt to load an engine instance. this is useful if you just want to use SearchBase for the utility methods
 	 */
 	public function __construct($po_db=null, $ps_engine=null, $pb_load_engine=true) {
+		parent::__construct($po_db);
+		
 		$this->opo_app_config = Configuration::load();
 		$this->opo_search_config = Configuration::load(__CA_CONF_DIR__.'/search.conf');
 		$this->opo_search_indexing_config = Configuration::load(__CA_CONF_DIR__.'/search_indexing.conf');			
