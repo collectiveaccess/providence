@@ -2274,7 +2274,7 @@ class TimeExpressionParser {
 			if (
 				(!isset($pa_dates['start']['dont_window']) || !$pa_dates['start']['dont_window'])
 				&&
-				(!$pa_dates['start']['era'] && ($pa_dates['start']['year'] > 0) && ($pa_dates['start']['year'] <= 99))
+				(!isset($pa_dates['start']['era']) && ($pa_dates['start']['month'] > 0) && ($pa_dates['start']['year'] > 0) && ($pa_dates['start']['year'] <= 99))
 			) {
 				$va_tmp = $this->gmgetdate();
 				$vn_current_year = intval(substr($va_tmp['year'], 2, 2));		// get last two digits of current year
@@ -2290,7 +2290,7 @@ class TimeExpressionParser {
 			if (
 				(!isset($pa_dates['end']['dont_window']) || !$pa_dates['end']['dont_window'])
 				&&
-				(!isset($pa_dates['end']['era']) && ($pa_dates['end']['year'] > 0) && ($pa_dates['end']['year'] <= 99))
+				(!isset($pa_dates['end']['era']) && ($pa_dates['end']['month'] > 0) && ($pa_dates['end']['year'] > 0) && ($pa_dates['end']['year'] <= 99))
 			) {
 				$va_tmp = $this->gmgetdate();
 				$vn_current_year = intval(substr($va_tmp['year'], 2, 2));		// get last two digits of current year
