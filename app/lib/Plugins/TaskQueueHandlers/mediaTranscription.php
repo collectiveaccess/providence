@@ -120,9 +120,17 @@ class WLPlugTaskQueueHandlermediaTranscription Extends WLPlug Implements IWLPlug
 				return false;
 			}
 			
+			$locale = __CA_DEFAULT_LOCALE__;
+			if($detect_path = caWhisperInstalled(['returnPathToDetect' => true])) {
+				caExec("{$detect_path} --input={$media_input}", $output, $return);
+				$lang = preg_quote(join('', $output ?? []), '/');
+				if(($return == 0) && strlen($lang) && !preg_match("/^{$lang}_/", $locale) && ($locales = ca_locales::localesForLanguage($lang, ['codesOnly' => true])) && is_array($locales) && sizeof($locales)) {
+					$locale = array_shift($locales);
+				}
+			}
 			caExec("{$app_path} --input={$media_input} --output={$vtt_output}", $output, $return);
 			if($return == 0) {
-				if(!$t->addCaptionFile($vtt_output, 'en_US')) {
+				if(!$t->addCaptionFile($vtt_output, $locale)) {
 					$logger->logError(_t('[TaskQueue::mediaTranscription::process] Could not add VTT transcription file to %1::%2: %3', $table, $id, join('; ', $t->getErrors())));
 					$this->error->setError(551, _t("Could not add VTT transcription file to %1::%2: %3", $table, $id, join('; ', $t->getErrors())),"mediaTranscription->process()");	
 				} else {

@@ -490,17 +490,19 @@ function caExifToolInstalled($ps_exiftool_path=null, $options=null) {
  *
  * @param array $options Options include:
  *		noCache = Don't cached path value. [Default is false]
+ *		returnPathToDetect = Return path to whisper_detect.py (language detection utility). [Default is false]
  *
  * @return mixed Path to executable if installed, false if not installed
  */
 function caWhisperInstalled(array $options=null) {
-	if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_whisper_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_whisper_installed", "mediaPluginInfo"); }
+	$detect = caGetOption('returnPathToDetect', $options, false);
+	if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains($detect ? "mediahelper_whisper_detect_installed" : "mediahelper_whisper_installed", "mediaPluginInfo")) { return CompositeCache::fetch($detect ? "mediahelper_whisper_detect_installed" : "mediahelper_whisper_installed", "mediaPluginInfo"); }
 	
-	$path = __CA_BASE_DIR__.'/support/scripts/whisper_transcribe.py';
+	$path = __CA_BASE_DIR__.($detect ? '/support/scripts/whisper_detect.py' : '/support/scripts/whisper_transcribe.py');
 	caExec("{$path} 2>&1", $output, $return);
 	
 	if($return === 2) {
-		CompositeCache::save("mediahelper_whisper_installed", $path, "mediaPluginInfo");
+		CompositeCache::save($detect ? "mediahelper_whisper_detect_installed" : "mediahelper_whisper_installed", $path, "mediaPluginInfo");
 		return $path;
 	}
 	$logger = caGetLogger();
@@ -1224,7 +1226,8 @@ function caTranscribeAVMedia(string $mimetype) : bool {
 	if(!$config->get('create_transcriptions')) { return false; }
 	
 	// Check mimetype
-	if(!in_array(caGetMediaClass($mimetype), ['audio', 'video'], true)) { return false; }
+	$types = $config->getList('transcription_media_types') ?? ['audio', 'video'];	// assume all AV is transcribable if specific types are not configured
+	if(!caMimetypeIsValid($mimetype, $types)) { return false; }
 	
 	// Check that Whisper is installed
 	if(!caWhisperInstalled()) { return false; }
