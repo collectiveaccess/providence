@@ -126,6 +126,8 @@ class WLPlugTaskQueueHandlermediaTranscription Extends WLPlug Implements IWLPlug
 				$lang = preg_quote(join('', $output ?? []), '/');
 				if(($return == 0) && strlen($lang) && !preg_match("/^{$lang}_/", $locale) && ($locales = ca_locales::localesForLanguage($lang, ['codesOnly' => true])) && is_array($locales) && sizeof($locales)) {
 					$locale = array_shift($locales);
+				} else {
+					$logger->logNotice(_t('[TaskQueue::mediaTranscription::process] Could not detect language of media. Using default locale %1.', $locale));
 				}
 			}
 			caExec("{$app_path} --input={$media_input} --output={$vtt_output}", $output, $return);

@@ -771,42 +771,40 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 			# ------------------------------------------------
 			case 'audio/mpeg':
 			case 'audio/mp4':
-				$viewer_base_url 	= $pa_options["viewer_base_url"];
-				$vs_id 				= $pa_options["id"] ? $pa_options["id"] : "mp3player";
+				$id = 				$pa_options["id"] ? $pa_options["id"] : "mp4_player";
 
+				$poster_frame_url =	$pa_options["poster_frame_url"];
+
+				$width =			$pa_options["viewer_width"] ? $pa_options["viewer_width"] : $properties["width"];
+				$height =			$pa_options["viewer_height"] ? $pa_options["viewer_height"] : $properties["height"];
 				
-				AssetLoadManager::register("mediaelement");
+				$captions = 		caGetOption("captions", $pa_options, array(), array('castTo' => 'array'));
 				
-				$vn_width = ($pa_options["viewer_width"] > 0) ? $pa_options["viewer_width"] : 400;
-				$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 95;
+				$controls = 		caGetOption("controls", $pa_options, ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'fullscreen'], ['castTo' => 'array']);
 				ob_start();
 ?>
-			<div class="<?php print (isset($pa_options["class"]) ? $pa_options["class"] : "caAudioPlayer"); ?>">
-				<audio id="<?php print $vs_id; ?>" src="<?php print $ps_url; ?>" <?php print ($vs_poster_url = caGetOption('posterURL', $pa_options, null) ? "poster='{$vs_poster_url}'" : ''); ?> type="audio/mp3" controls="controls"></audio>
-			</div>	
-			<script type="text/javascript">
-				jQuery(document).ready(function() {
-					var m = jQuery('#<?php print $vs_id; ?>').mediaelementplayer({
-						showTimecodeFrameCount: true, framesPerSecond: 100, 
-						audioWidth: '<?php print $vn_width; ?>', audioHeight: '<?php print $vn_height; ?>',
-						success:  function (mediaElement, domObject) {
-							var m = mediaElement; 
-							m.addEventListener("play", function(e){ 
-								// Force poster image to remain visible during playback
-								var $thisMediaElement = (mediaElement.id) ? jQuery("#"+mediaElement.id) : jQuery(mediaElement);
-								$thisMediaElement.parents(".mejs-inner").find(".mejs-poster").show();
-							});
-							m.addEventListener("canplay", function(e){ 
-								var $thisMediaElement = (mediaElement.id) ? jQuery("#"+mediaElement.id) : jQuery(mediaElement);
-								$thisMediaElement.parents(".mejs-inner").find(".mejs-poster").on('click', function() {
-									caUI.mediaPlayerManager.isPlaying("<?php print $vs_id; ?>") ? caUI.mediaPlayerManager.stop("<?php print $vs_id; ?>") : caUI.mediaPlayerManager.play("<?php print $vs_id; ?>");
-								});
-							});
+				<video id="<?= $id; ?>" playsinline controls data-poster="<?= $poster_frame_url; ?>" width="<?= $width; ?>" height="<?= $height; ?>" >
+				  <source src="<?= $ps_url; ?>" type="audio/mp3" />
+<?php
+						if(is_array($captions)) {
+							foreach($captions as $locale_id => $caption_track) {
+								print '<track kind="captions" src="'.$caption_track['url'].'" srclang="'.substr($caption_track["locale_code"], 0, 2).'" label="'.$caption_track['locale'].'" default>';	
+							}
 						}
+?>
+				</video>
+				<script type="text/javascript">
+					jQuery(document).ready(function() {
+						options = {
+							debug: false,
+							iconUrl: '<?= __CA_URL_ROOT__; ?>/assets/plyr/plyr.svg',
+							controls: [<?= join(',', array_map(function($v) { return "'".addslashes(preg_replace("![\"']+!", '', $v))."'"; }, $controls)); ?>],
+						};
+						const player = new Plyr('#<?= $id; ?>', options);
+						jQuery('#<?= $id; ?>').data('player', player);
+						if (caUI.mediaPlayerManager) { caUI.mediaPlayerManager.register("<?= $id; ?>", player, 'Plyr'); }
 					});
-					if (caUI.mediaPlayerManager) { caUI.mediaPlayerManager.register("<?php print $vs_id; ?>", m, 'MediaElement'); }
-				});
-			</script>
+				</script>
 <?php
 				return ob_get_clean();
 				break;
