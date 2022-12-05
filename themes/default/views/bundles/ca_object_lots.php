@@ -93,6 +93,8 @@
 		}
 		print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 	}
+	
+	$make_link = !strlen(caGetOption('display_template', $va_settings, null));
 ?>
 <div id="<?= $vs_id_prefix; ?>" <?= $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
@@ -131,7 +133,7 @@
 			<a href="<?= urldecode(caEditorUrl($this->request, 'ca_object_lots', '{lot_id}')); ?>" class="caEditItemButton" id="<?= $vs_id_prefix; ?>_edit_related_{n}"></a>
 			<span id='<?= $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
-			print caGetRelationDisplayString($this->request, 'ca_object_lots', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => true, 'prefix' => $vs_id_prefix, 'relationshipTypeDisplayPosition' => 'none'));
+			print caGetRelationDisplayString($this->request, 'ca_object_lots', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => $make_link, 'prefix' => $vs_id_prefix, 'relationshipTypeDisplayPosition' => 'none'));
 ?>
 			</span>
 			<input type="hidden" name="<?= $vs_id_prefix; ?>_id{n}" id="<?= $vs_id_prefix; ?>_id{n}" value="{id}"/>
@@ -204,7 +206,7 @@
 			<a href="<?= urldecode(caEditorUrl($this->request, 'ca_object_lots', '{lot_id}')); ?>" class="caEditItemButton" id="<?= $vs_id_prefix; ?>_edit_related_{n}"></a>
 			<span id='<?= $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
-			print caGetRelationDisplayString($this->request, 'ca_object_lots', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => true, 'prefix' => $vs_id_prefix, 'relationshipTypeDisplayPosition' => $t_item_rel->hasField('type_id') ? $dont_show_relationship_type : 'none'));
+			print caGetRelationDisplayString($this->request, 'ca_object_lots', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => $make_link, 'prefix' => $vs_id_prefix, 'relationshipTypeDisplayPosition' => $t_item_rel->hasField('type_id') ? $dont_show_relationship_type : 'none'));
 ?>
 			</span>
 			<input type="hidden" name="<?= $vs_id_prefix; ?>_id{n}" id="<?= $vs_id_prefix; ?>_id{n}" value="{id}"/>
@@ -217,7 +219,7 @@
 		<div id="<?= $vs_id_prefix; ?>Item_{n}" class="labelInfo roundedRel">
 			<span id='<?= $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
-			print caGetRelationDisplayString($this->request, 'ca_object_lots', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => true, 'prefix' => $vs_id_prefix, 'relationshipTypeDisplayPosition' => $t_item_rel->hasField('type_id') ? $dont_show_relationship_type : 'none'));
+			print caGetRelationDisplayString($this->request, 'ca_object_lots', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => $make_link, 'prefix' => $vs_id_prefix, 'relationshipTypeDisplayPosition' => $t_item_rel->hasField('type_id') ? $dont_show_relationship_type : 'none'));
 ?>
 			</span>
 			<input type="hidden" name="<?= $vs_id_prefix; ?>_id{n}" id="<?= $vs_id_prefix; ?>_id{n}" value="{id}"/>
