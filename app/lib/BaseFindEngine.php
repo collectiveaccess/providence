@@ -464,7 +464,7 @@ class BaseFindEngine extends BaseObject {
 		} else {
 			// is related field
 			$t_rel_table = Datamodel::getInstance($sort_table, true);
-			$is_attribute = $t_rel_table->hasElement($sort_field);
+			$is_attribute = method_exists($t_rel_table, 'hasElement') ? $t_rel_table->hasElement($sort_field) : false;
 			if ($t_rel_table->hasField($sort_field)) {			// sort key is intrinsic
 				$sort_key_values = $this->_sortByRelatedIntrinsic($t_table, $t_rel_table, $hit_table, $sort_field, $limit_sql, $sort_direction, $options);
 			} elseif($sort_field === 'preferred_labels') {		// sort key is preferred labels
