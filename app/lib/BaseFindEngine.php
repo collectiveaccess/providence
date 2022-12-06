@@ -450,7 +450,7 @@ class BaseFindEngine extends BaseObject {
 		if ($sort_table === $table) {	// sort in primary table
 			if ($t_table->hasField($sort_field)) {			// sort key is intrinsic
 				$sort_key_values = $this->_sortByIntrinsic($t_table, $hit_table, $sort_field, $limit_sql, $sort_direction);
-			} elseif($t_table->hasElement($sort_field)) { // is attribute
+			} elseif(method_exists($t_table, 'hasElement') && $t_table->hasElement($sort_field)) { // is attribute
 				$sort_key_values = $this->_sortByAttribute($t_table, $hit_table, $sort_field, $sort_subfield, $limit_sql, $sort_direction, $hits);
 			} elseif($sort_field === 'preferred_labels') {
 				$sort_key_values = $this->_sortByLabels($t_table, $hit_table, $sort_subfield, $limit_sql, $sort_direction);	
@@ -718,7 +718,7 @@ class BaseFindEngine extends BaseObject {
 		if ($sort_table === $table) {	// sort in primary table
 			if ($t_table->hasField($sort_field)) {			// sort key is intrinsic
 				$values = $this->_getSortValuesForIntrinsic($hits, $t_table, $sort_field, $direction);
-			} elseif($t_table->hasElement($sort_field)) { // is attribute
+			} elseif(method_exists($t_table, 'hasElement') && $t_table->hasElement($sort_field)) { // is attribute
 				$values = $this->_getSortValuesForAttribute($hits, $t_table, $sort_field, $direction);
 			} elseif($sort_field === 'preferred_labels') {
 				$values = $this->_getSortValuesForLabel($hits, $t_table, $sort_subfield ? $sort_subfield : $sort_field, $direction);	
@@ -731,7 +731,7 @@ class BaseFindEngine extends BaseObject {
 		} else {
 			// is related field
 			// $t_rel_table = Datamodel::getInstance($sort_table, true);
- 			$is_attribute = $t_rel_table->hasElement($sort_field);
+ 			$is_attribute = method_exists($t_rel_table, 'hasElement') ? $t_rel_table->hasElement($sort_field) : false;
  			
  			if ($t_rel_table->hasField($sort_field)) {			// sort key is intrinsic
  				$sort_key_values[] = $this->_getRelatedSortValuesForIntrinsic($hits, $t_table, $t_rel_table, $sort_field, $direction);
@@ -947,7 +947,7 @@ class BaseFindEngine extends BaseObject {
 		if ($sort_table === $table) {	// sort in primary table
 			if ($t_table->hasField($sort_field)) {			// sort key is intrinsic
 				$row_ids = $this->_getRowIDsForIntrinsic($values, $t_table, $hit_table, $sort_field);
-			} elseif($t_table->hasElement($sort_field)) { // is attribute
+			} elseif(method_exists($t_table, 'hasElement') && $t_table->hasElement($sort_field)) { // is attribute
 				$row_ids = $this->_getRowIDsForAttribute($values, $t_table, $hit_table, $sort_field);
 			} elseif($sort_field === 'preferred_labels') {
 				$row_ids = $this->_getRowIDsForLabel($values, $t_table, $hit_table, $sort_subfield ? $sort_subfield : $sort_field);	
@@ -960,7 +960,7 @@ class BaseFindEngine extends BaseObject {
 		} else {
 			// is related field
 			$t_rel_table = Datamodel::getInstance($sort_table, true);
- 			$is_attribute = $t_rel_table->hasElement($sort_field);
+ 			$is_attribute = method_exists($t_rel_table, 'hasElement') ? $t_rel_table->hasElement($sort_field) : false;
  			
  			if ($t_rel_table->hasField($sort_field)) {			// sort key is intrinsic
  				$sort_key_values[] = $this->_getRelatedRowIDsForIntrinsic($values, $t_table, $t_rel_table, $hit_table, $sort_field);
@@ -1189,7 +1189,7 @@ class BaseFindEngine extends BaseObject {
 		$path = Datamodel::getPath($table, $rel_table);
 		$path = array_keys($path);
 
-		$is_attribute = $t_rel_table->hasElement($sort_field);
+		$is_attribute = method_exists($t_rel_table, 'hasElement') ? $t_rel_table->hasElement($sort_field) : false;
 		
 		$rel_type_sql = (is_array($rel_types) && (sizeof($rel_types) > 0)) ? " AND l.type_id IN (".join(',', array_map('intval', $rel_types)).")" : '';
 	
