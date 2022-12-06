@@ -171,4 +171,3 @@ class ca_groups_x_roles extends BaseRelationshipModel {
 
 	# ------------------------------------------------------
 }
-?>

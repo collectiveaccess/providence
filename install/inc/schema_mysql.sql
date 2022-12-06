@@ -704,6 +704,7 @@ create table ca_object_representations
    idno_sort_num                  bigint                         not null default 0,
    md5                            varchar(32)                    not null,
    mimetype                       varchar(255)                   null,
+   media_class                    varchar(20)                    null,
    original_filename              varchar(1024)                  not null,
    media                          longblob                       not null,
    media_metadata                 longblob                       null,
@@ -773,6 +774,7 @@ create index i_submission_via_form on ca_object_representations(submission_via_f
 create index i_submission_session_id on ca_object_representations(submission_session_id);
 create index i_is_transcribable on ca_object_representations(is_transcribable);
 create index i_home_location_id on ca_object_representations(home_location_id);
+create index i_media_class on ca_object_representations(media_class);
 
 
 /*==========================================================================*/
@@ -6932,7 +6934,7 @@ create index i_locale_id on ca_sql_search_words(locale_id);
 
 /*==========================================================================*/
 create table ca_sql_search_word_index (
-  index_id int unsigned not null auto_increment,
+  index_id bigint(20) unsigned not null auto_increment,
   table_num tinyint(3) unsigned not null,
   row_id int(10) unsigned not null,
   field_table_num tinyint(3) unsigned not null,
@@ -7788,4 +7790,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (179, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (180, unix_timestamp());

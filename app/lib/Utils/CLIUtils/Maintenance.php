@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2021 Whirl-i-Gig
+ * Copyright 2018-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -648,8 +648,11 @@
 				return false;
 			}
 			
-			$t_user->setMode(ACCESS_WRITE);
+			if($t_user->get('active') == 0) {
+				CLIUtils::addMessage(_t('Set user %1 as active', $vs_user_name), array('color' => 'bold_green'));
+			}
 			$t_user->set('password', $vs_password);
+			$t_user->set('active', 1);
 			$t_user->update();
 			if ($t_user->numErrors()) {
 				CLIUtils::addError(_t("Password change for user %1 failed: %2", $vs_user_name, join("; ", $t_user->getErrors())));
@@ -2097,9 +2100,27 @@
 				$vs_pk = $t_table->primaryKey();
 				$vn_table_num = $t_table->tableNum();
 				
-				if ($t_bad_root = ca_relationship_types::find(['parent_id' => ['>', 0], 'table_num' => $vn_table_num, 'type_code' => 'root_for_'.$vn_table_num], ['returnAs' => 'firstModelInstance'])) {
-					$t_bad_root->delete(true);
+				if ($bad_roots = ca_relationship_types::find(['parent_id' => ['>', 0], 'table_num' => $vn_table_num, 'type_code' => ['IN', ['root_for_'.$vn_table_num, 'root_for_table_'.$vn_table_num]]], ['returnAs' => 'modelInstances'])) {
+					foreach($bad_roots as $t_bad_root) { 
+						$t_bad_root->delete(true);
+					}
 				}	
+				
+				if (
+					($bad_roots = ca_relationship_types::find(['parent_id' => null, 'table_num' => $vn_table_num, 'type_code' => ['IN' , ['root_for_'.$vn_table_num, 'root_for_table_'.$vn_table_num]]], ['returnAs' => 'modelInstances']))
+					&&
+					(sizeof($bad_roots) > 1)
+				) {
+					$roots = sizeof($bad_roots);
+					foreach($bad_roots as $t_bad_root) {
+						if(!is_array($children = $t_bad_root->getHierarchyChildren(null, ['idsOnly' => true])) || !sizeof($children)) {
+							$t_bad_root->delete(true);
+							$roots--;
+						}
+						if($roots == 1) { break; }
+					}
+				}	
+				
 				// Create root ca_relationship_types row for table
 				if (!$t_root = ca_relationship_types::find(['parent_id' => null, 'table_num' => $vn_table_num], ['returnAs' => 'firstModelInstance'])) {
 				    $t_root = new ca_relationship_types();
@@ -2468,6 +2489,66 @@
 		 */
 		public static function set_default_field_valuesHelp() {
 			return _t('Sets configured default value on any field where no value has yet been set.');
+		}
+		# -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt|null $po_opts
+		 * @return bool
+		 */
+		public static function reload_attribute_sortable_values($po_opts=null) {
+			$o_db = new Db();
+			
+			$qr_res = $o_db->query("SELECT count(*) c FROM ca_attribute_values WHERE (value_longtext1 <> '' OR value_decimal1 IS NOT NULL)");
+			$qr_res->nextRow();
+			$count = $qr_res->get('c');
+			
+			$last_value_id = 0;
+			
+			print CLIProgressBar::start($count, _t('Processing'));
+			do {
+				$qr_res = $o_db->query("SELECT value_id, value_longtext1, element_id FROM ca_attribute_values WHERE value_id > ? and (value_longtext1 <> '' OR value_decimal1 IS NOT NULL) ORDER BY value_id LIMIT 10000", [$last_value_id]);
+			
+				$c = 0;
+				while($qr_res->nextRow()) {
+					$v = $qr_res->get('value_longtext1');
+					$value_id = $qr_res->get('value_id');
+					if (strlen($v) > 0) {
+						$sv = ca_metadata_elements::getSortableValueForElement($qr_res->get('element_id'), $v);
+						$o_db->query("UPDATE ca_attribute_values SET value_sortable = ? WHERE value_id = ?", [$sv, $value_id]);
+					}
+					print CLIProgressBar::next();
+					$c++;
+					$last_value_id = $value_id;
+				}
+			} while($c > 0);
+			print CLIProgressBar::finish();
+			
+			CLIUtils::addMessage(_t("Updated sortable values"));
+		}
+		# -------------------------------------------------------
+		public static function reload_attribute_sortable_valuesParamList() {
+			return [];
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_attribute_sortable_valuesUtilityClass() {
+            return _t('Maintenance');
+        }
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_attribute_sortable_valuesShortHelp() {
+			return _t('Reload attribute sortable values.');
+        }
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_attribute_sortable_valuesHelp() {
+			return _t('To improve sorting performance an abbreviated sortable value is stored for all text-based metadata attributes (Ex. text, URL, LCSH and InformationService elements. This command regenerates and reloads sortable values from current data, which systems created prior to version 1.7.9 will lack.');
 		}
 		# -------------------------------------------------------
     }

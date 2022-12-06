@@ -737,6 +737,14 @@ class ca_data_importer_items extends BaseModel {
 			'default' => '',
 			'label' => _t('Code of element to use for parent_id lookups when importing hierarchical data. If not set the identifier will be used.'),
 		);	
+		$settings['locale'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Locale of data. If not set the mapping locale default is used.'),
+		);
 		
 		$this->setAvailableSettings($settings);
 	}

@@ -37,8 +37,8 @@ require_once(__CA_LIB_DIR__.'/BaseLabel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_metadata_alert_rule_labels'] = array(
- 	'NAME_SINGULAR' 	=> _t('search form name'),
- 	'NAME_PLURAL' 		=> _t('search form names'),
+ 	'NAME_SINGULAR' 	=> _t('alert name'),
+ 	'NAME_PLURAL' 		=> _t('alert names'),
  	'FIELDS' 			=> array(
  		'label_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 

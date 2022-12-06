@@ -907,9 +907,9 @@
 							$vs_pref = substr($vs_pref, 1);
 						}
 						if (
-							($vb_not && !intval($this->opo_request->config->get($vs_pref)))
+							($vb_not && !(bool)($this->opo_request->config->get($vs_pref)))
 							||
-							(!$vb_not && intval($this->opo_request->config->get($vs_pref)))
+							(!$vb_not && (bool)($this->opo_request->config->get($vs_pref)))
 						) {
 							$vs_value = true;
 						} else {

@@ -37,6 +37,8 @@
 	$va_settings = 		$this->getVar('settings');
 	$vs_add_label =		$this->getVar('add_label');
 	
+	$locale_list			= $this->getVar('locale_list');
+	
 	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel('ca_tours', 'preferred_labels') == __CA_BUNDLE_ACCESS_READONLY__));
 
 	$vb_batch			= $this->getVar('batch');
@@ -64,7 +66,7 @@
 			<br/>
 			<?php if (Configuration::load()->get('ca_tour_labels_user_settable_sortable_value')) { print $t_label->htmlFormElement('name_sort', "^LABEL<br/>^ELEMENT", array_merge($settings, array('name' => "{fieldNamePrefix}name_sort_{n}", 'id' => "{fieldNamePrefix}name_sort_{n}", "value" => "{{name_sort}}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry', 'readonly' => $read_only)))."<br/>\n"; } ?>
 			
-			<?php print '<div class="formLabel">'.$t_label->htmlFormElement('locale_id', "^LABEL ^ELEMENT", array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}locale_id_{n}", 'name' => "{fieldNamePrefix}locale_id_{n}", "value" => "{locale_id}", 'no_tooltips' => true, 'dont_show_null_value' => true, 'hide_select_if_only_one_option' => true, 'WHERE' => array('(dont_use_for_cataloguing = 0)'))); ?>	
+			<?php print '<div class="formLabel">'.$locale_list.'</div>'; ?>	
 		</div>
 	</textarea>	
 	<div class="bundleContainer">

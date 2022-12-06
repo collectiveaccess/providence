@@ -344,6 +344,7 @@
 			        $vb_already_exists = false;
 			        $vals = [];
 			        foreach($va_attrs as $o_attr) {
+			            if(isset($pa_values['locale_id']) && ((int)$o_attr->getLocaleID() != (int)$pa_values['locale_id'])) { $is_changed = true; }
 			            if ($o_attr->getAttributeID() == $pn_attribute_id) { continue; }
 			            foreach($o_attr->getValues() as $o_value) {
 			                $vn_element_id = $o_value->getElementID();
@@ -1586,7 +1587,16 @@
 				$pa_options['childrenOnlyForItemID'] = $this->get('type_id');
 			}
 			
-			$pa_options['limitToItemsWithID'] = caGetTypeRestrictionsForUser($this->tableName(), $pa_options);
+			$user_type_res = caGetTypeRestrictionsForUser($this->tableName(), $pa_options);
+			if (is_array($pa_options['limitToItemsWithID']) && sizeof($pa_options['limitToItemsWithID'])){
+			    $pa_options['limitToItemsWithID'] = caMakeTypeIDList($this->tableName(), $pa_options['limitToItemsWithID']);
+			}
+			
+			if (is_array($pa_options['limitToItemsWithID']) && sizeof($pa_options['limitToItemsWithID']) && is_array($user_type_res) && sizeof($user_type_res)) {
+			    $pa_options['limitToItemsWithID'] = array_intersect($user_type_res, $pa_options['limitToItemsWithID']);
+			} elseif(is_array($user_type_res) && sizeof($user_type_res)) {
+			    $pa_options['limitToItemsWithID'] = $user_type_res;
+			}
 			
 			if (caGetOption('inUse', $pa_options, false)) {
 				$vs_access_sql = '';
@@ -1890,6 +1900,8 @@
 			$va_element_codes = array();
 			$va_elements_by_container = array();
 			$vb_should_output_locale_id = !(bool)$t_element->getSetting('doesNotTakeLocale');
+			$show_locales = $vb_should_output_locale_id ? $t_element->getSetting('allowLocales') : null;
+			
 			$vb_should_output_value_source = (bool)$t_element->getSetting('includeSourceData');
 			$va_element_value_defaults = array();
 			$va_elements_without_break_by_container = array();
@@ -1918,23 +1930,35 @@
 			$table_name = $this->tableName();
 			$show_bundle_codes = $po_request->user->getPreference('show_bundle_codes_in_editor');
 			
+			$root_element_id = $group_key = $t_element->getPrimaryKey();
+			$group_keys = [];
 			foreach($va_element_set as $va_element) {
 				$va_element_info[$va_element['element_id']] = $va_element;
 				
-				if (($va_element['datatype'] == 0) && ($va_element['parent_id'] > 0)) { continue; }
+				if ($va_element['datatype'] == 0) {
+					if ($va_element['parent_id'] > 0) { 
+						if(sizeof($group_keys) > 1) { array_pop($group_keys); }
+						array_push($group_keys, $group_key = $va_element['element_id']);
+					}
+					continue; 
+				}
+				
+				if((sizeof($group_keys) > 1) && ($va_element['datatype'] != 0) && ($va_element['parent_id'] == $root_element_id)) {
+					$group_keys = [$group_key = $va_element['element_id']];
+				}
 	
 				$va_label = $this->getAttributeLabelAndDescription($va_element['element_id']);
 
-				if(!isset($va_elements_without_break_by_container[$va_element['parent_id']])){
-					$va_elements_without_break_by_container[$va_element['parent_id']] = 1;
+				if(!isset($va_elements_without_break_by_container[$group_key])){
+					$va_elements_without_break_by_container[$group_key] = 1;
 				} else {
-					$va_elements_without_break_by_container[$va_element['parent_id']] += 1;
+					$va_elements_without_break_by_container[$group_key] += 1;
 				}
 
 				$vs_br = "";
-				if(isset($va_elements_break_by_container[$va_element['parent_id']])) {
-					if ($va_elements_without_break_by_container[$va_element['parent_id']] == $va_elements_break_by_container[$va_element['parent_id']] + 1) {
-						$va_elements_without_break_by_container[$va_element['parent_id']] = 1;
+				if(isset($va_elements_break_by_container[$group_key])) {
+					if ($va_elements_without_break_by_container[$group_key] == $va_elements_break_by_container[$group_key] + 1) {
+						$va_elements_without_break_by_container[$group_key] = 1;
 						$vs_br = "</td></tr></table><table class=\"attributeListItem\"><tr><td class=\"attributeListItem\">";
 					}
 				}
@@ -1953,7 +1977,7 @@
 					$label = ($show_bundle_codes !== 'hide') ? "{$label} <span class='developerBundleCode'>(<a href='#' class='developerBundleCode'>{$bundle_code}</a>)</span>" : $label;
 				}
 				
-				$va_elements_by_container[$va_element['parent_id']][] = ($va_element['datatype'] == 0) ? '' : 
+				$va_elements_by_container[$group_key][] = ($va_element['datatype'] == 0) ? '' : 
 					$vs_br.ca_attributes::attributeHtmlFormElement($va_element, array_merge($pa_bundle_settings, array_merge($pa_options, [
 						'label' => $label,
 						'description' => $va_label['description'],
@@ -1983,6 +2007,7 @@
 			}
 			
 			if ($vb_should_output_locale_id) {	// output locale_id, if necessary, in its' own special '_locale_id' container
+				
 				$va_elements_by_container['_locale_id'] = [
 					'hidden' => false, 
 					'element' => $t_attr->htmlFormElement('locale_id', '^ELEMENT', [
@@ -1990,7 +2015,7 @@
 						'name' => '{fieldNamePrefix}locale_id_{n}', 
 						"value" => '{locale_id}', 'no_tooltips' => true, 
 						'dont_show_null_value' => true, 'hide_select_if_only_one_option' => true, 
-						'WHERE' => ['(dont_use_for_cataloguing = 0)']
+						'WHERE' => (is_array($show_locales) && sizeof($show_locales) > 0) ? ['(concat(language, "_", country) IN ('.join(',', array_map(function($v) { return "'{$v}'"; }, $show_locales)).'))'] : ['(dont_use_for_cataloguing = 0)']
 					])
 				];
 				if (stripos($va_elements_by_container['_locale_id']['element'], "'hidden'")) {
@@ -2156,7 +2181,7 @@
 				if (caGetOption('forSimpleForm', $pa_options, false)) { 
 					unset($va_element_opts['nullOption']);
 					
-					if (!strlen($vm_values) && is_array($va_element['settings']) && isset($va_element['settings']['default_text'])) {
+					if (!is_array($vm_values) && !strlen($vm_values) && is_array($va_element['settings']) && isset($va_element['settings']['default_text'])) {
 						$vm_values = $va_element['settings']['default_text'];
 					}
 				}
@@ -2167,7 +2192,7 @@
 				$va_element_opts['values'] = '';
 				
 				// ... replace name of form element
-				$vs_fld_name = $vs_subelement_code.$vs_rel_types; //str_replace('.', '_', $vs_subelement_code);
+				$vs_fld_name = str_replace('.', '_', $vs_subelement_code).$vs_rel_types;
 				if (caGetOption('asArrayElement', $pa_options, false)) { $vs_fld_name .= "[]"; } 
 				
 				if ($vs_force_value = caGetOption('force', $pa_options, false)) {
