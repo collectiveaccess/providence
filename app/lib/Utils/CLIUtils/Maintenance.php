@@ -2491,4 +2491,64 @@
 			return _t('Sets configured default value on any field where no value has yet been set.');
 		}
 		# -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt|null $po_opts
+		 * @return bool
+		 */
+		public static function reload_attribute_sortable_values($po_opts=null) {
+			$o_db = new Db();
+			
+			$qr_res = $o_db->query("SELECT count(*) c FROM ca_attribute_values WHERE (value_longtext1 <> '' OR value_decimal1 IS NOT NULL)");
+			$qr_res->nextRow();
+			$count = $qr_res->get('c');
+			
+			$last_value_id = 0;
+			
+			print CLIProgressBar::start($count, _t('Processing'));
+			do {
+				$qr_res = $o_db->query("SELECT value_id, value_longtext1, element_id FROM ca_attribute_values WHERE value_id > ? and (value_longtext1 <> '' OR value_decimal1 IS NOT NULL) ORDER BY value_id LIMIT 10000", [$last_value_id]);
+			
+				$c = 0;
+				while($qr_res->nextRow()) {
+					$v = $qr_res->get('value_longtext1');
+					$value_id = $qr_res->get('value_id');
+					if (strlen($v) > 0) {
+						$sv = ca_metadata_elements::getSortableValueForElement($qr_res->get('element_id'), $v);
+						$o_db->query("UPDATE ca_attribute_values SET value_sortable = ? WHERE value_id = ?", [$sv, $value_id]);
+					}
+					print CLIProgressBar::next();
+					$c++;
+					$last_value_id = $value_id;
+				}
+			} while($c > 0);
+			print CLIProgressBar::finish();
+			
+			CLIUtils::addMessage(_t("Updated sortable values"));
+		}
+		# -------------------------------------------------------
+		public static function reload_attribute_sortable_valuesParamList() {
+			return [];
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_attribute_sortable_valuesUtilityClass() {
+            return _t('Maintenance');
+        }
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_attribute_sortable_valuesShortHelp() {
+			return _t('Reload attribute sortable values.');
+        }
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_attribute_sortable_valuesHelp() {
+			return _t('To improve sorting performance an abbreviated sortable value is stored for all text-based metadata attributes (Ex. text, URL, LCSH and InformationService elements. This command regenerates and reloads sortable values from current data, which systems created prior to version 1.7.9 will lack.');
+		}
+		# -------------------------------------------------------
     }

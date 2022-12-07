@@ -1064,7 +1064,12 @@ class TimeExpressionParser {
 								return array('day' => null, 'month' => null, 'year' => $vn_int, 'era'=> TEP_ERA_BC, 'is_circa' => $vb_is_circa, 'is_probably' => $vb_is_probably);
 							} else {
 								$va_peek = $this->peekToken(2);
-								if ((($vn_int >= 1) && ($vn_int <=31)) && ($va_peek['type'] != TEP_TOKEN_ERA)) {
+								if (
+									(
+										(($vn_int >= 1) && ($vn_int <=31)) && 
+										($va_peek['type'] != TEP_TOKEN_ERA)
+									)
+								) {
 									$this->skipToken();
 									if ($va_peek['type'] == TEP_TOKEN_MERIDIAN) {
 										// support time format with single hour integer (eg. 10 am)
@@ -1073,6 +1078,11 @@ class TimeExpressionParser {
 									} else {
 										$vn_day = $vn_int;
 										$vn_state = TEP_STATE_DATE_ELEMENT_GET_MONTH_NEXT;
+									}
+									
+									// No more tokens? treat it as a year after all
+									if(sizeof($this->getTokensToConjunction()) === 0) {
+										return array('day' => null, 'month' => null, 'year' => $vn_int, 'is_circa' => $vb_is_circa, 'is_probably' => $vb_is_probably);
 									}
 								} else {
 									if ($vn_int == $va_token['value']) {
@@ -1165,6 +1175,9 @@ class TimeExpressionParser {
 			}
 		}
 		
+		if ($vn_day && isset($pa_options['start']) && is_null($pa_options['start']['year'] ?? null) && is_null($pa_options['start']['month'] ?? null)) {
+			return array('day' => $vn_day, 'month' => null, 'year' => null, 'is_circa' => $vb_is_circa, 'is_probably' => $vb_is_probably);
+		}
 		if ($vn_day && isset($pa_options['start']) && isset($pa_options['start']['month']) && $pa_options['start']['month']) {
 			$vn_month = $pa_options['start']['month'];
 			$vn_year = $pa_options['start']['year'];
@@ -1945,6 +1958,9 @@ class TimeExpressionParser {
 					$va_next_tok = $this->peekToken();
 					if($va_next_tok['type'] == TEP_TOKEN_ALPHA){ // must not be TEP_TOKEN_ALPHA_MONTH, as in 28. Januar 1985
 						return array('value' => $vs_token, 'type' => TEP_TOKEN_ALPHA);	
+					} else {
+						// strip ordinal 
+						return array('value' => $vn_cent, 'type' => TEP_TOKEN_INTEGER);	
 					}
 				}
 			}
@@ -2259,6 +2275,19 @@ class TimeExpressionParser {
 		
 			# date/time expression
 			
+			// first date is a bare two digit number interpreted as a year but should be day in a range
+			if ($pa_dates['start']['year'] && is_null($pa_dates['start']['month']) && (strlen($pa_dates['start']['year']) === 2) && ($pa_dates['end']['year'] >= 100)) {
+				$pa_dates['start']['day'] = $pa_dates['start']['year'];
+				$pa_dates['start']['year'] = null;
+			}
+			
+			// last date is a bare two digit number interpreted as a year but should be day in a range
+			if ($pa_dates['end']['year'] && is_null($pa_dates['end']['month']) && (strlen($pa_dates['end']['year']) === 2) && is_null($pa_dates['start']['year'])) {
+				$pa_dates['end']['day'] = $pa_dates['end']['year'];
+				$pa_dates['end']['year'] = null;
+			}
+			
+			
 			// Blank start month and year and year implies carry over of start date
 			if (!$pa_dates['start']['month'] && !$pa_dates['start']['year'] && $pa_dates['start']['day']) {
 				$pa_dates['start']['year'] = $pa_dates['end']['year'];
@@ -2276,33 +2305,17 @@ class TimeExpressionParser {
 			if (
 				(!isset($pa_dates['start']['dont_window']) || !$pa_dates['start']['dont_window'])
 				&&
-				(!($pa_dates['start']['era'] ?? null) && isset($pa_dates['start']['year']) && ($pa_dates['start']['year'] > 0) && ($pa_dates['start']['year'] <= 99))
+				(!isset($pa_dates['start']['era']) && ($pa_dates['start']['month'] > 0) && ($pa_dates['start']['year'] > 0) && ($pa_dates['start']['year'] <= 99))
 			) {
-				$va_tmp = $this->gmgetdate();
-				$vn_current_year = intval(substr($va_tmp['year'], 2, 2));		// get last two digits of current year
-				$vn_current_century = intval(substr($va_tmp['year'], 0, 2)) * 100;
-
-				if ($pa_dates['start']['year'] <= ($vn_current_year + 10)) {
-					$pa_dates['start']['year'] += $vn_current_century;
-				} else {
-					$pa_dates['start']['year'] += ($vn_current_century - 100);
-				}
+				$pa_dates['start']['year'] = $this->windowYear($pa_dates['start']['year']);
 			}
 			
 			if (
 				(!isset($pa_dates['end']['dont_window']) || !$pa_dates['end']['dont_window'])
 				&&
-				(!isset($pa_dates['end']['era']) && ($pa_dates['end']['year'] > 0) && ($pa_dates['end']['year'] <= 99))
+				(!isset($pa_dates['end']['era']) && ($pa_dates['end']['month'] > 0) && ($pa_dates['end']['year'] > 0) && ($pa_dates['end']['year'] <= 99))
 			) {
-				$va_tmp = $this->gmgetdate();
-				$vn_current_year = intval(substr($va_tmp['year'], 2, 2));		// get last two digits of current year
-				$vn_current_century = intval(substr($va_tmp['year'], 0, 2)) * 100;
-
-				if ($pa_dates['end']['year'] <= ($vn_current_year + 10)) {
-					$pa_dates['end']['year'] += $vn_current_century;
-				} else {
-					$pa_dates['end']['year'] += ($vn_current_century - 100);
-				}
+				$pa_dates['end']['year'] = $this->windowYear($pa_dates['end']['year']);
 			}
 			
 			# correct for 'present' date in start position; parser always uses TEP_END_OF_UNIVERSE value, but we need TEP_START_OF_UNIVERSE in this case
@@ -4280,6 +4293,42 @@ class TimeExpressionParser {
 			$decade_indicator = "s";
 		}
 		return ($dates['start']['year'] - ($dates['start']['year'] % 10)).$decade_indicator;
+ 	}
+ 	# ------------------------------------------------------------------- 	
+ 	/**
+ 	 *
+ 	 * @param int $year
+ 	 * @return int
+ 	 */
+ 	public function windowYear(int $year) : int {
+ 		if(($year >= 0) && ($year <= 99)) {
+ 			$tmp = $this->gmgetdate();
+			$current_year = intval(substr($tmp['year'], 2, 2));		// get last two digits of current year
+			$current_century = intval(substr($tmp['year'], 0, 2)) * 100;
+			
+			if ($year <= ($current_year + 10)) {
+				$year += $current_century;
+			} else {
+				$year += ($current_century - 100);
+			}
+ 		}
+ 		return $year;
+ 	}
+ 	# ------------------------------------------------------------------- 	
+ 	/**
+ 	 *
+ 	 * @param int $year
+ 	 * @return int
+ 	 */
+ 	public function getTokensToConjunction() : array {
+ 		$toks = [];
+ 		$i = 1;
+ 		while($token = $this->peekToken($i)) {
+ 			if($token['type'] === TEP_TOKEN_RANGE_CONJUNCTION) { break; }
+ 			$toks[] = $token;
+ 			$i++;
+ 		}
+ 		return $toks;
  	}
  	# ------------------------------------------------------------------- 	
 }

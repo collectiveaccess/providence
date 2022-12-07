@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -282,6 +282,20 @@ class Attribute {
 	static public function getSortFieldForDatatype($pn_datatype) {
 		if ($t_instance = Attribute::getValueInstance($pn_datatype, null, true)) {
 			return $t_instance->sortField();
+		}
+		return null;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Return list of field names for direct query on a given attribute date type
+	 *
+	 * @param int $pn_datatype
+	 *
+	 * @return array A list of ca_attribute_values field to use for querying
+	 */
+	static public function getQueryFieldsForDatatype($pn_datatype) : ?array {
+		if ($t_instance = Attribute::getValueInstance($pn_datatype, null, true)) {
+			return $t_instance->queryFields();
 		}
 		return null;
 	}
