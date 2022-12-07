@@ -752,7 +752,7 @@ trait ModelSettings {
 								$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'value' => is_array($vs_value) ? $vs_value[0] : $vs_value, 'multiple' => 1, 'values' => is_array($vs_value) ? $vs_value : array($vs_value));
 								$vs_select_element = caHTMLSelect($vs_input_name, $va_select_opts,  $va_select_attr, $va_opts);
 							}
-						} elseif ($va_properties['showLocaleList']) {
+						} elseif ($va_properties['showLocaleList'] ?? null) {
 							$locales = ca_locales::getLocaleList();
 							$vs_select_element = caHTMLSelect($vs_input_name, [], [], []);
 						} else {

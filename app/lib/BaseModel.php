@@ -2904,7 +2904,7 @@ class BaseModel extends BaseObject {
 					if ($vs_user_desc) { $va_conflict_users[$vs_user_desc] = true; }
 					if(isset($va_conflict['snapshot']) && is_array($va_conflict['snapshot'])) {
 						foreach($va_conflict['snapshot'] as $vs_field => $vs_value) {
-							if ($va_conflict_fields[$vs_field]) { continue; }
+							if ($va_conflict_fields[$vs_field] ?? null) { continue; }
 						
 							$va_conflict_fields[$vs_field] = true;
 						}
@@ -9113,7 +9113,7 @@ $pa_options["display_form_field_tips"] = true;
 							$vs_element = $vm_field_value ? $vm_field_value : "[Not set]";
 							break;
 						default:
-							$vn_max_length = $va_attr["BOUNDS_LENGTH"][1];
+							$vn_max_length = $va_attr["BOUNDS_LENGTH"][1] ?? null;
 							$vs_max_length = '';
 							if ($vn_max_length > 0) $vs_max_length = 'maxlength="'.$vn_max_length.'"';
 							if ($vn_display_height > 1) {
@@ -9134,7 +9134,7 @@ $pa_options["display_form_field_tips"] = true;
 							$vs_element = $vm_field_value ? $vm_field_value : "[Not set]";
 							break;
 						default:
-							$vn_max_length = $va_attr["BOUNDS_LENGTH"][1];
+							$vn_max_length = $va_attr["BOUNDS_LENGTH"][1] ?? null;
 							$vs_max_length = '';
 							if ($vn_max_length > 0) $vs_max_length = 'maxlength="'.$vn_max_length.'"';
 							if ($vn_display_height > 1) {
@@ -9153,7 +9153,7 @@ $pa_options["display_form_field_tips"] = true;
 							$vs_element = $vm_field_value ? $vm_field_value : "[Not set]";
 							break;
 						default:
-							$vn_max_length = $va_attr["BOUNDS_LENGTH"][1];
+							$vn_max_length = $va_attr["BOUNDS_LENGTH"][1] ?? null;
 							$vs_max_length = '';
 							if ($vn_max_length > 0) $vs_max_length = 'maxlength="'.$vn_max_length.'"';
 							if ($vn_display_height > 1) {

@@ -426,7 +426,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 
 		$o_trans = caGetOption('transaction', $pa_options, null);
 
-		$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? false : (bool)$pa_element_info['settings']['requireValue'];
+		$vb_require_value = (is_null($pa_element_info['settings']['requireValue'] ?? null)) ? false : (bool)($pa_element_info['settings']['requireValue'] ?? false);
 
 		$ps_orig_value = $ps_value;
 
@@ -513,7 +513,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		/** @var RequestHTTP $o_request */
 		$o_request = $pa_options['request'];
 
-		$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? false : (bool)$pa_element_info['settings']['requireValue'];
+		$vb_require_value = (is_null($pa_element_info['settings']['requireValue'] ?? false)) ? false : (bool)($pa_element_info['settings']['requireValue'] ?? false);
 		
 		$render_as = $pa_element_info['settings']['render'] ?? null;
 		

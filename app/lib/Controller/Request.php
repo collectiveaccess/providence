@@ -361,10 +361,10 @@ class Request {
 	}
 	# ----------------------------------------
 	public function addActionError($o_error, $ps_source, $ps_subsource=null) {
-		if(!is_array($this->opa_action_errors[$ps_source])) { $this->opa_action_errors[$ps_source] = array(); }
+		if(!is_array($this->opa_action_errors[$ps_source] ?? null)) { $this->opa_action_errors[$ps_source] = array(); }
 		
 		if ($ps_subsource) {
-			if(!is_array($this->opa_action_errors[$ps_source][$ps_subsource])) { $this->opa_action_errors[$ps_source][$ps_subsource] = array(); }
+			if(!is_array($this->opa_action_errors[$ps_source][$ps_subsource] ?? null)) { $this->opa_action_errors[$ps_source][$ps_subsource] = array(); }
 			array_push($this->opa_action_errors[$ps_source][$ps_subsource], $o_error);
 		} else {
 			array_push($this->opa_action_errors[$ps_source], $o_error);

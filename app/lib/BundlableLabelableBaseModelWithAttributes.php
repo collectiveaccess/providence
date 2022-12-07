@@ -3353,10 +3353,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$o_view->setVar('screen', caGetOption('screen', $pa_options, null));
 		
 		$vb_read_only = ($po_request->user->getBundleAccessLevel($this->tableName(), $ps_related_table) == __CA_BUNDLE_ACCESS_READONLY__) ? true : false;
-		if (!$pa_bundle_settings['readonly']) { $pa_bundle_settings['readonly'] = (!isset($pa_bundle_settings['readonly']) || !$pa_bundle_settings['readonly']) ? $vb_read_only : true;	}
+		if (!($pa_bundle_settings['readonly'] ?? false)) { $pa_bundle_settings['readonly'] = (!isset($pa_bundle_settings['readonly']) || !$pa_bundle_settings['readonly']) ? $vb_read_only : true;	}
 		
 		// pass bundle settings
-		if(!is_array($pa_bundle_settings['prepopulateQuickaddFields'])) { $pa_bundle_settings['prepopulateQuickaddFields'] = []; }
+		if(!is_array($pa_bundle_settings['prepopulateQuickaddFields'] ?? null)) { $pa_bundle_settings['prepopulateQuickaddFields'] = []; }
 		
 		if (method_exists($t_item, 'policy2bundleconfig') && ($default_policy = $t_item->getDefaultHistoryTrackingCurrentValuePolicy())) {	// TODO: make policy configurable?
 			$o_view->setVar('history_tracking_policy', $default_policy);
@@ -3374,7 +3374,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		// quickadd available?
 		$vb_quickadd_enabled = (bool)$po_request->user->canDoAction("can_quickadd_{$ps_related_table}");
-		if ($pa_bundle_settings['disableQuickadd']) { $vb_quickadd_enabled = false; }
+		if ($pa_bundle_settings['disableQuickadd'] ?? false) { $vb_quickadd_enabled = false; }
 		$o_view->setVar('quickadd_enabled', $vb_quickadd_enabled);
 		
 		$o_view->setVar('add_label', caExtractSettingValueByLocale($pa_bundle_settings, 'add_label', $g_ui_locale));

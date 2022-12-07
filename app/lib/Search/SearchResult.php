@@ -1693,7 +1693,7 @@ class SearchResult extends BaseObject {
 						$this->prefetchLabels($va_path_components['table_name'], $this->opo_engine_result->currentRow(), $this->getOption('prefetch'), $pa_options);
 					}
 					
-					$vm_val = $this->_getLabelValue(self::$s_prefetch_cache[$vs_label_table_name][$vn_row_id][$vs_opt_md5], $t_instance, array_merge($va_val_opts, ['restrictToTypes' => caGetOption('restrictToTypes', $pa_options, null), 'excludeTypes' => caGetOption('excludeTypes', $pa_options, null)]));
+					$vm_val = $this->_getLabelValue(self::$s_prefetch_cache[$vs_label_table_name][$vn_row_id][$vs_opt_md5] ?? null, $t_instance, array_merge($va_val_opts, ['restrictToTypes' => caGetOption('restrictToTypes', $pa_options, null), 'excludeTypes' => caGetOption('excludeTypes', $pa_options, null)]));
 					if ($vb_return_as_count) { return is_array($vm_val) ? array_map('intval', $vm_val) : (int)$vm_val; }
 					goto filter;
 				}

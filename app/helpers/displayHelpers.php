@@ -3021,16 +3021,16 @@ jQuery(document).ready(function() {
 		if (isset($pa_options['relatedItems']) && is_array($pa_options['relatedItems']) && sizeof($pa_options['relatedItems'])) {
 			$va_tmp = array();
 			foreach ($pa_options['relatedItems'] as $vn_relation_id => $va_relation) {
-				$va_items[$va_relation[$vs_rel_pk]]['relation_id'] = $va_relation['relation_id'];
+				$va_items[$va_relation[$vs_rel_pk]]['relation_id'] = $va_relation['relation_id'] ?? null;
 				$va_items[$va_relation[$vs_rel_pk]]['relationship_type_id'] = $va_items[$va_relation[$vs_rel_pk]]['type_id'] = ($va_relation['direction']) ?  $va_relation['direction'].'_'.$va_relation['relationship_type_id'] : $va_relation['relationship_type_id'];
-				$va_items[$va_relation[$vs_rel_pk]]['rel_type_id'] = $va_relation['relationship_type_id'];
-				$va_items[$va_relation[$vs_rel_pk]]['item_type_id'] = $va_relation['item_type_id'];
-				$va_items[$va_relation[$vs_rel_pk]]['relationship_typename'] = $va_relation['relationship_typename'];
-				$va_items[$va_relation[$vs_rel_pk]]['idno'] = $va_relation[$vs_idno_fld];
-				$va_items[$va_relation[$vs_rel_pk]]['idno_sort'] = $va_relation[$vs_idno_sort_fld];
-				$va_items[$va_relation[$vs_rel_pk]]['label'] = $va_relation['label'];
-				$va_items[$va_relation[$vs_rel_pk]]['direction'] = $va_relation['direction'];
-				$va_items[$va_relation[$vs_rel_pk]]['effective_date'] = $va_relation['effective_date'];
+				$va_items[$va_relation[$vs_rel_pk]]['rel_type_id'] = $va_relation['relationship_type_id'] ?? null;
+				$va_items[$va_relation[$vs_rel_pk]]['item_type_id'] = $va_relation['item_type_id'] ?? null;
+				$va_items[$va_relation[$vs_rel_pk]]['relationship_typename'] = $va_relation['relationship_typename'] ?? null;
+				$va_items[$va_relation[$vs_rel_pk]]['idno'] = $va_relation[$vs_idno_fld] ?? null;
+				$va_items[$va_relation[$vs_rel_pk]]['idno_sort'] = $va_relation[$vs_idno_sort_fld] ?? null;
+				$va_items[$va_relation[$vs_rel_pk]]['label'] = $va_relation['label'] ?? null;
+				$va_items[$va_relation[$vs_rel_pk]]['direction'] = $va_relation['direction'] ?? null;
+				$va_items[$va_relation[$vs_rel_pk]]['effective_date'] = $va_relation['effective_date'] ?? null;
 
 				if (isset($va_relation['surname'])) {		// pass forename and surname entity label fields to support proper sorting by name
 					$va_items[$va_relation[$vs_rel_pk]]['surname'] = $va_relation['surname'];
@@ -3337,7 +3337,7 @@ jQuery(document).ready(function() {
 	 */
 	function caGetBundleDisplayTemplate($pt_subject, $ps_related_table, $pa_bundle_settings, $pa_options=null) {
 		$vs_template = null;
-		if(strlen(trim($pa_bundle_settings['display_template']))) {
+		if(strlen(trim($pa_bundle_settings['display_template'] ?? null))) {
 			$vs_template = trim($pa_bundle_settings['display_template']);
 		}
 

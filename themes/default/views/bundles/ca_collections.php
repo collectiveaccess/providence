@@ -86,7 +86,7 @@
 		print caEditorBundleMetadataDictionary($this->request, $id_prefix, $settings);
 	}
 	
-	$make_link = !strlen(caGetOption('display_template', $va_settings, null));
+	$make_link = !strlen(caGetOption('display_template', $settings, null));
 ?>
 <div id="<?= $id_prefix; ?>" <?= $batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
