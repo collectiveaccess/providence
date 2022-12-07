@@ -1398,7 +1398,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * @return int list for the specified list, or null if the list does not exist
 	 */
 	static function getListCode($pm_list_name_or_id, $pa_options=null) {
-		if (ca_lists::$s_list_code_cache[$pm_list_name_or_id]) {
+		if (ca_lists::$s_list_code_cache[$pm_list_name_or_id] ?? null) {
 			return ca_lists::$s_list_code_cache[$pm_list_name_or_id];
 		}
 		if (!is_numeric($pm_list_name_or_id)) {
@@ -1843,12 +1843,16 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			case 'vert_hierbrowser':
 			case 'vert_hierbrowser_up':
 			case 'vert_hierbrowser_down':
-				$va_width = caParseFormElementDimension($pa_options['width'] ? $pa_options['width'] : $pa_options['width']);
-				if (($va_width['type'] != 'pixels') && ($va_width['dimension'] < 250)) { $va_width['dimension'] = 500; }
-				$vn_width = $va_width['dimension'].'px';
-				$va_height = caParseFormElementDimension($pa_options['height']);
-				if (($va_height['type'] != 'pixels') && ($va_height['dimension'] < 100)) { $va_height['dimension'] = 200; }
-				$vn_height = $va_height['dimension'].'px';
+				$vn_width = $vn_height = null;
+				
+				if(is_array($va_width = caParseFormElementDimension($pa_options['width'] ? $pa_options['width'] : $pa_options['width']))) {
+					if (($va_width['type'] != 'pixels') && ($va_width['dimension'] < 250)) { $va_width['dimension'] = 500; }
+					$vn_width = $va_width['dimension'].'px';
+				}
+				if(is_array($va_height = caParseFormElementDimension($pa_options['height']))) {
+					if (($va_height['type'] != 'pixels') && ($va_height['dimension'] < 100)) { $va_height['dimension'] = 200; }
+					$vn_height = $va_height['dimension'].'px';
+				}
 				
 				$t_root_item = new ca_list_items();
 				$t_root_item->load(['list_id' => $vn_list_id, 'parent_id' => null]);

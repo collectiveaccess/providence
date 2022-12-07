@@ -3493,7 +3493,7 @@
 		 	$vn_element_id = ca_metadata_elements::getElementID($pn_element_code_or_id);
 		 	$va_codes = $this->getApplicableElementCodes(null, $pb_include_sub_element_codes, false);
 		
-		 	return (bool)$va_codes[$vn_element_id];
+		 	return (bool)($va_codes[$vn_element_id] ?? false);
 		 }
 		# ------------------------------------------------------------------
 		/**

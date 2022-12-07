@@ -623,7 +623,7 @@ class DisplayTemplateParser {
 					) {
 					
 						$vs_relative_to_container = null;
-						switch(strtolower($va_relative_to_tmp[1])) {
+						switch(strtolower($va_relative_to_tmp[1] ?? null)) {
 							case 'hierarchy':
 								$va_relative_ids = $pr_res->get($t_rel_instance->tableName().".hierarchy.".$t_rel_instance->primaryKey(), $va_get_options);
 								$va_relative_ids = array_values($va_relative_ids);
@@ -693,15 +693,15 @@ class DisplayTemplateParser {
 								$pa_options,
 								!is_null($vb_omit_blanks) ? ['includeBlankValuesInArray' => !$vb_omit_blanks] : [],
 								[
-									'sort' => $va_get_options['sort'],
-									'sortDirection' => $va_get_options['sortDirection'],
+									'sort' => $va_get_options['sort'] ?? null,
+									'sortDirection' => $va_get_options['sortDirection'] ?? null,
 									'returnAsArray' => true,
 									'delimiter' => $vs_unit_delimiter,
 									'skipIfExpression' => $vs_unit_skip_if_expression,
 									'skipWhen' => $vs_unit_skip_when,
 									'placeholderPrefix' => (string)$o_node->relativeTo,
-									'restrictToTypes' => $va_get_options['restrictToTypes'],
-									'excludeTypes' => $va_get_options['excludeTypes'],
+									'restrictToTypes' => $va_get_options['restrictToTypes'] ?? null,
+									'excludeTypes' => $va_get_options['excludeTypes'] ?? null,
 									'isUnit' => true,
 									'unitStart' => $vn_start,
 									'unitLength' => $vn_length,

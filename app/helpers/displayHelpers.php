@@ -3022,7 +3022,7 @@ jQuery(document).ready(function() {
 			$va_tmp = array();
 			foreach ($pa_options['relatedItems'] as $vn_relation_id => $va_relation) {
 				$va_items[$va_relation[$vs_rel_pk]]['relation_id'] = $va_relation['relation_id'] ?? null;
-				$va_items[$va_relation[$vs_rel_pk]]['relationship_type_id'] = $va_items[$va_relation[$vs_rel_pk]]['type_id'] = ($va_relation['direction']) ?  $va_relation['direction'].'_'.$va_relation['relationship_type_id'] : $va_relation['relationship_type_id'];
+				$va_items[$va_relation[$vs_rel_pk]]['relationship_type_id'] = $va_items[$va_relation[$vs_rel_pk]]['type_id'] = ($va_relation['relationship_type_id'] ?? null) ? ($va_relation['direction']) ?  $va_relation['direction'].'_'.$va_relation['relationship_type_id'] : $va_relation['relationship_type_id'] : null;
 				$va_items[$va_relation[$vs_rel_pk]]['rel_type_id'] = $va_relation['relationship_type_id'] ?? null;
 				$va_items[$va_relation[$vs_rel_pk]]['item_type_id'] = $va_relation['item_type_id'] ?? null;
 				$va_items[$va_relation[$vs_rel_pk]]['relationship_typename'] = $va_relation['relationship_typename'] ?? null;
@@ -3043,7 +3043,7 @@ jQuery(document).ready(function() {
 
                 if ($vs_template) {
                 	$pk = is_object($qr_rel_items) ? $qr_rel_items->primaryKey() : null;
-                	$va_items[$va_relation[$vs_rel_pk]]['_display'] = caProcessTemplateForIDs($vs_template, $pt_rel->tableName(), array($va_relation['relation_id'] ? $va_relation['relation_id'] : $va_relation[$pk]), array('returnAsArray' => false, 'returnAsLink' => false, 'delimiter' => caGetOption('delimiter', $pa_options, $vs_display_delimiter), 'resolveLinksUsing' => $vs_rel_table, 'primaryIDs' => $va_primary_ids));
+                	$va_items[$va_relation[$vs_rel_pk]]['_display'] = caProcessTemplateForIDs($vs_template, $pt_rel->tableName(), array($va_relation['relation_id'] ?? null ? $va_relation['relation_id'] : $va_relation[$pk] ?? null), array('returnAsArray' => false, 'returnAsLink' => false, 'delimiter' => caGetOption('delimiter', $pa_options, $vs_display_delimiter), 'resolveLinksUsing' => $vs_rel_table, 'primaryIDs' => $va_primary_ids));
                 } else {
                     $va_items[$va_relation[$vs_rel_pk]]['_display'] = $va_items[$va_relation[$vs_rel_pk]]['label'];
                 }

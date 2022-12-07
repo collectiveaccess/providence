@@ -1451,7 +1451,7 @@ function caFileIsIncludable($ps_file) {
 			if (!is_array($va_data)) { continue; }
 			$va_key = array();
 			foreach($va_sort_keys as $vs_sort_key) {
-			    $k = isset($va_data[$vs_sort_key.'_sort_']) ? $va_data[$vs_sort_key.'_sort_'] : $va_data[$vs_sort_key];  // an alternative sort-specific value for a key may be present with the suffix "_sort_"; when present we use this in preference to the key value
+			    $k = isset($va_data[$vs_sort_key.'_sort_']) ? $va_data[$vs_sort_key.'_sort_'] : $va_data[$vs_sort_key] ?? null;  // an alternative sort-specific value for a key may be present with the suffix "_sort_"; when present we use this in preference to the key value
 				
 				if ($pb_natural_sort || $pb_case_insensitive) { $k = mb_strtolower($k); }
 				if ($pb_natural_sort) {

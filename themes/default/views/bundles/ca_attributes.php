@@ -159,7 +159,7 @@
 				}
 				foreach($va_initial_values as $vn_attr_id => $va_values) {
 					foreach($va_values as $vn_element_id => $vs_value) {
-						$va_initial_values[$vn_attr_id][$vn_element_id.'_label'] = $va_labels[$va_initial_values[$vn_attr_id][$vn_element_id]];
+						$va_initial_values[$vn_attr_id][$vn_element_id.'_label'] = $va_labels[$va_initial_values[$vn_attr_id][$vn_element_id]] ?? null;
 					}
 				}
 			}

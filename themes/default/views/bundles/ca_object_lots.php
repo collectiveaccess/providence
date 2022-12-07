@@ -55,14 +55,14 @@
 	
 	// put brackets around idno_stub for presentation
 	foreach($va_initial_values as $vn_i => $va_lot_info) {
-		if ($va_initial_values[$vn_i]['idno_stub']) {
+		if ($va_initial_values[$vn_i]['idno_stub'] ?? null) {
 			$va_initial_values[$vn_i]['idno_stub'] = '['.$va_initial_values[$vn_i]['idno_stub'].'] ';
 		}
 	}
 	
 	// put brackets around idno_stub for presentation
 	foreach($va_force_new_values as $vn_i => $va_lot_info) {
-		if ($va_force_new_values[$vn_i]['idno_stub']) {
+		if ($va_force_new_values[$vn_i]['idno_stub'] ?? null) {
 			$va_force_new_values[$vn_i]['idno_stub'] = '['.$va_force_new_values[$vn_i]['idno_stub'].'] ';
 		}
 	}
