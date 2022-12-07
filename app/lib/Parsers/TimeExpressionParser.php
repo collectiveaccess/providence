@@ -3390,7 +3390,7 @@ class TimeExpressionParser {
 		}
 		
 		$vs_month = null;
-		if ($pa_date_pieces['month'] > 0) {		// date with month
+		if (($pa_date_pieces['month'] ?? null) > 0) {		// date with month
 			if (in_array((string)$pa_options['dateFormat'], ['delimited', 'ymd'], true)) {
 				$vs_month = $pa_date_pieces['month'];
 			} else {
@@ -3399,7 +3399,7 @@ class TimeExpressionParser {
 			}
 		} 	
 		$vs_day = null;
-		if ($pa_date_pieces['day'] > 0) {		// date with day
+		if (($pa_date_pieces['day'] ?? null) > 0) {		// date with day
 			$vs_day = $pa_date_pieces['day'];
 		}	
 		

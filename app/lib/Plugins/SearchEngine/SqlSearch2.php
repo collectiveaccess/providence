@@ -1647,11 +1647,11 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 */
 	private function _getElementIDForAccessPoint($subject_tablenum, $access_point) {
 		$tmp = preg_split('![/\|]+!', $access_point);
-		list($table, $field, $subfield, $subsubfield, $subsubsubfield) = explode('.', $tmp[0]);
+		@list($table, $field, $subfield, $subsubfield, $subsubsubfield) = explode('.', $tmp[0]);
 		if ($table === '_fulltext') { return null; }	// ignore "_fulltext" specifier – just treat as text search
 		
 		$rel_table = caGetRelationshipTableName($subject_tablenum, $table);
-		$rel_type_ids = ($tmp[1] && $rel_table) ? caMakeRelationshipTypeIDList($rel_table, preg_split("![,;]+!", $tmp[1])) : [];
+		$rel_type_ids = (is_array($tmp) && sizeof($tmp) && ($tmp[1] ?? null) && $rel_table) ? caMakeRelationshipTypeIDList($rel_table, preg_split("![,;]+!", $tmp[1])) : [];
 		
 		if (!($t_table = Datamodel::getInstanceByTableName($table, true))) { 
 			if(in_array($table, caSearchGetTablesForAccessPoints([$tmp[0]]))) {
@@ -1761,7 +1761,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				}
 			}
 		} else {
-			return array('access_point' => $tmp[0], 'relationship_type' => $tmp[1], 'table_num' => $table_num, 'field_num' => 'I'.$fld_num, 'field_num_raw' => $fld_num, 'datatype' => null, 'relationship_type_ids' => $rel_type_ids, 'type' => 'INTRINSIC', 'indexing_options' => $indexing_info);
+			return array('access_point' => $tmp[0] ?? null, 'relationship_type' => $tmp[1] ?? null, 'table_num' => $table_num, 'field_num' => 'I'.$fld_num, 'field_num_raw' => $fld_num, 'datatype' => null, 'relationship_type_ids' => $rel_type_ids, 'type' => 'INTRINSIC', 'indexing_options' => $indexing_info);
 		}
 
 		return null;

@@ -3717,7 +3717,7 @@ class SearchResult extends BaseObject {
 			'related'			=> $vb_is_related,
 			'is_count'			=> $vb_is_count,
 			'hierarchical_modifier' => $vs_hierarchical_modifier,
-			'mse'				=> $vs_subfield_name ? $vs_subfield_name : ($vs_field_name ? $vs_field_name : $s_table_name)	// most specific element
+			'mse'				=> $vs_subfield_name ? $vs_subfield_name : ($vs_field_name ? $vs_field_name : $vs_table_name)	// most specific element
 		);
 	}
 	# ------------------------------------------------------------------

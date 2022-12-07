@@ -6897,7 +6897,7 @@ if (!$vb_batch) {
 				$va_row = $qr_res->getRow();
 				$vs_v = (sizeof($va_path) <= 2) ? $va_row['row_id'].'/'.$va_row[$vs_key] : $va_row[$vs_key];
 
-				$vs_display_label = $va_row[$vs_label_display_field];
+				$vs_display_label = $va_row[$vs_label_display_field] ?? null;
 
 				if (!isset($va_rels_for_id[$vs_v]) || !$va_rels_for_id[$vs_v]) {
 					$va_rels_for_id[$vs_v] = $va_row;

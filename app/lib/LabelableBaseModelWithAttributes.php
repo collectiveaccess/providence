@@ -2714,7 +2714,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		$vb_return_all_locales = caGetOption('returnAllLocales', $pa_options, false);
 		
 		$vs_cache_key = md5($this->tableName()."/".print_r($pa_ids, true).'/'.print_R($pa_options, true).'_non_preferred');
-		if (!isset($pa_options['noCache']) && !$pa_options['noCache'] && LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key]) {
+		if ((!isset($pa_options['noCache']) || !$pa_options['noCache']) && (LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key] ?? null)) {
 			return LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key];
 		}
 		
@@ -2746,7 +2746,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		// make sure it's in same order the ids were passed in
 		$va_sorted_labels = array();
 		foreach($va_ids as $vn_id) {
-			$va_sorted_labels[$vn_id] = is_array($va_labels[$vn_id]) ? $va_labels[$vn_id] : [];
+			$va_sorted_labels[$vn_id] = is_array($va_labels[$vn_id] ?? null) ? $va_labels[$vn_id] : [];
 		}
 		
 		if (sizeof(LabelableBaseModelWithAttributes::$s_labels_by_id_cache) > LabelableBaseModelWithAttributes::$s_labels_by_id_cache_size) {

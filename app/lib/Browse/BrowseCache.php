@@ -281,7 +281,7 @@ class BrowseCache {
 	public static function makeCacheKey($pa_params, $pa_type_restrictions, $pa_source_restrictions) {
 		if (!is_array($pa_params['criteria'] ?? null)) { $pa_params['criteria'] = array(); }
 
-		return md5(($pa_params['context'] ?? '').'/'.($pa_params['table_num'] ?? '').'/'.print_r(($pa_params['criteria'] ?? null), true).'/'.($pa_params['filterDeaccessionedRecords'] ?? '').'/'.print_r($pa_type_restrictions, true).'/'.print_r($pa_source_restrictions, true));
+		return md5(print_R($pa_params['context'] ?? '', true).'/'.print_R($pa_params['table_num'] ?? '', true).'/'.print_r(($pa_params['criteria'] ?? null), true).'/'.($pa_params['filterDeaccessionedRecords'] ?? '').'/'.print_r($pa_type_restrictions, true).'/'.print_r($pa_source_restrictions, true));
 	}
 	# ------------------------------------------------------
 	# Global parameters - available to all browses

@@ -481,7 +481,7 @@ trait ModelSettings {
 					}
 					$va_attributes['onchange'] = 'jQuery(this).prop("checked") ? jQuery("'.join(",", $va_ids).'").slideUp(250).find("input, textarea").val("") : jQuery("'.join(",", $va_ids).'").slideDown(250);';
 					
-					if ($va_attributes['checked']) {
+					if ($va_attributes['checked'] ?? false) {
 						$vs_return .= "<script type='text/javascript'>
 	jQuery(document).ready(function() {
 		jQuery('".join(",", $va_ids)."').hide();
