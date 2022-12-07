@@ -1375,7 +1375,7 @@ class SearchResult extends BaseObject {
 							if (
 							    method_exists($t_instance, 'getTypeFieldName') && 
 							    ($type_id_fld = $t_instance->getTypeFieldName()) && 
-							    is_array($pa_options['filterTypes']) &&
+							    is_array($pa_options['filterTypes'] ?? null) &&
 							    (sizeof($pa_options['filterTypes']) > 0)
 							) {
 							    $filter_by_types = caMakeTypeIDList($va_path_components['table_name'], $pa_options['filterTypes'], ['dontIncludeSubtypesInTypeRestriction' => true]);
@@ -1401,7 +1401,7 @@ class SearchResult extends BaseObject {
                                             if (!in_array($type_id, $filter_by_types)) { continue; }
                                         }
                                         
-                                        if(is_array($qh = $qr_hier->get($vs_field_spec, array('returnWithStructure' => true, 'returnAllLocales' => true, 'useLocaleCodes' => $pa_options['useLocaleCodes'], 'convertCodesToDisplayText' => $pa_options['convertCodesToDisplayText'], 'convertCodesToIdno' => $pa_options['convertCodesToIdno'], 'convertCodesToValue' => $pa_options['convertCodesToValue'], 'omitDateSortKey' => true, 'restrictToTypes' => caGetOption('restrictToTypes', $pa_options, null), 'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $pa_options, null))))) {
+                                        if(is_array($qh = $qr_hier->get($vs_field_spec, array('returnWithStructure' => true, 'returnAllLocales' => true, 'useLocaleCodes' => $pa_options['useLocaleCodes'] ?? false, 'convertCodesToDisplayText' => $pa_options['convertCodesToDisplayText'] ?? false, 'convertCodesToIdno' => $pa_options['convertCodesToIdno'] ?? false, 'convertCodesToValue' => $pa_options['convertCodesToValue'] ?? false, 'omitDateSortKey' => true, 'restrictToTypes' => caGetOption('restrictToTypes', $pa_options, null), 'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $pa_options, null))))) {
 									   		$va_hier_item += $qh;									    
 										}
 									}
@@ -2869,7 +2869,7 @@ class SearchResult extends BaseObject {
 	 */
 	private function _flattenArray($pa_array, $pa_options=null) {
 		$va_flattened_values = array();
-		if ($pa_options['returnAllLocales']) {
+		if ($pa_options['returnAllLocales'] ?? false) {
 			foreach($pa_array as $va_by_locale) {
 				foreach($va_by_locale as $locale_id => $values) {
 					if (!is_array($values)) { $values[] = $values; }
@@ -3303,7 +3303,7 @@ class SearchResult extends BaseObject {
 	 */
 	function getMediaTag($ps_field, $ps_version, $pa_options=null) {
 	    if (!is_array($pa_options)) { $pa_options = []; }
-		if (!$this->opa_field_media_info[$ps_field]) {
+		if (!($this->opa_field_media_info[$ps_field] ?? null)) {
 		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
 		}
 		

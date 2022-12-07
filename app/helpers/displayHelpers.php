@@ -3094,7 +3094,7 @@ jQuery(document).ready(function() {
 			}
 
 			$po_request = caGetOption('request',$pa_options);
-			if($po_request && ca_editor_uis::loadDefaultUI($pt_rel->tableName(),$po_request,$va_item['rel_type_id'])) {
+			if($po_request && ca_editor_uis::loadDefaultUI($pt_rel->tableName(),$po_request,$va_item['rel_type_id'] ?? null)) {
 				$va_item['hasInterstitialUI'] = true;
 			} else {
 				$va_item['hasInterstitialUI'] = false;

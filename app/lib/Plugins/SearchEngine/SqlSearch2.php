@@ -326,6 +326,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 */
 	private function _processQueryMultiterm(int $subject_tablenum, $query) {
 		$terms = $query->getTerms();
+		$signs = $query->getSigns();
 		
 		$acc = [];
 	 	foreach($terms as $i => $term) {

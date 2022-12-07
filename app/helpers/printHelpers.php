@@ -110,7 +110,7 @@ use Zend\Stdlib\Glob;
 		
 		$va_templates = array();
 		$vb_needs_caching = false;
-		$vn_template_rev = null;
+		$vn_template_rev = $vn_local_rev = null;
 		
 		$va_cached_list = (ExternalCache::contains($vs_cache_key, 'PrintTemplates')) ? ExternalCache::fetch($vs_cache_key, 'PrintTemplates') : null;
 			

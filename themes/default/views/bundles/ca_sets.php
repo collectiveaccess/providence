@@ -239,9 +239,9 @@
 			showEmptyFormsOnLoad: 1,
 			minChars: <?= (int)$t_subject->getAppConfig()->get([$t_subject->tableName()."_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
 			autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'Set', 'Get', $va_lookup_params); ?>',
-			types: <?= json_encode($va_settings['restrict_to_types']); ?>,
-			restrictToAccessPoint: <?= json_encode($va_settings['restrict_to_access_point']); ?>,
-			restrictToSearch: <?= json_encode($va_settings['restrict_to_search']); ?>,
+			types: <?= json_encode($va_settings['restrict_to_types'] ?? null); ?>,
+			restrictToAccessPoint: <?= json_encode($va_settings['restrict_to_access_point'] ?? null); ?>,
+			restrictToSearch: <?= json_encode($va_settings['restrict_to_search'] ?? null); ?>,
 			bundlePreview: <?= caGetBundlePreviewForRelationshipBundle($this->getVar('initialValues')); ?>,
 			readonly: <?= $vb_read_only ? "true" : "false"; ?>,
 			isSortable: <?= ($vb_read_only || $vs_sort) ? "false" : "true"; ?>,
@@ -259,7 +259,7 @@
 
 <?php if($vb_quick_add_enabled) { ?>		
 			quickaddPanel: caRelationQuickAddPanel<?= $vs_id_prefix; ?>,
-			quickaddUrl: '<?= caNavUrl($this->request, 'manage/sets', 'SetQuickAdd', 'Form', array('set_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$va_settings['dont_include_subtypes_in_type_restriction'], 'prepopulate_fields' => join(";", $va_settings['prepopulateQuickaddFields']), 'table_num' => $t_subject->tableNum())); ?>',
+			quickaddUrl: '<?= caNavUrl($this->request, 'manage/sets', 'SetQuickAdd', 'Form', array('set_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)($va_settings['dont_include_subtypes_in_type_restriction'] ?? 0), 'prepopulate_fields' => join(";", $va_settings['prepopulateQuickaddFields'] ?? []), 'table_num' => $t_subject->tableNum())); ?>',
 <?php } ?>	
 
 			minRepeats: <?= caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,

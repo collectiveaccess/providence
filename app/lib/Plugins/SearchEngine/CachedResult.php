@@ -90,7 +90,7 @@ class WLPlugSearchEngineCachedResult extends WLPlug implements IWLPlugSearchEngi
 	}
 	# -------------------------------------------------------
 	public function get($ps_field, $pa_options=null) {
-		if ($ps_field == $this->ops_subject_pk) {return $this->opa_hits[$this->opn_current_row];}
+		if ($ps_field == $this->ops_subject_pk) {return $this->opa_hits[$this->opn_current_row] ?? null;}
 		
 		return false;
 	}

@@ -1162,8 +1162,8 @@ class ResultContext {
 		$vs_find_subtype = is_null($ps_find_subtype) ? $this->ops_find_subtype : $ps_find_subtype;
 		
 		$va_semi_context = array(
-			'history' => $va_context['history'],
-			'page' => $va_context['page']
+			'history' => $va_context['history'] ?? null,
+			'page' => $va_context['page'] ?? null
 		);
 		unset($va_context['history']);
 		unset($va_context['page']);
@@ -1352,12 +1352,12 @@ class ResultContextStorage {
 	/**
 	 *
 	 */
-	static public function getVar($key) {
+	static public function getVar($key, $options=null) {
 		if (is_object(self::$storage)) {
 			return self::$storage->getVar($key);
 		} else {
 			if (!($s = self::$storage)) { $s = 'Session'; }
-			return$s::getVar($key, $value, $options);
+			return$s::getVar($key, $options);
 		}
 	}
 	

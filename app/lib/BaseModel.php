@@ -1587,7 +1587,7 @@ class BaseModel extends BaseObject {
 						
 						$vn_start_date = isset($this->_FIELD_VALUES[$vs_start_field_name]) ? $this->_FIELD_VALUES[$vs_start_field_name] : null;
 						$vn_end_date = isset($this->_FIELD_VALUES[$vs_end_field_name]) ? $this->_FIELD_VALUES[$vs_end_field_name] : null;
-						if (($this->DIRECT_DATETIMES) || ($pa_options["SET_DIRECT_DATE"])) {
+						if (($this->DIRECT_DATETIMES) || ($pa_options["SET_DIRECT_DATE"] ?? false)) {
 							if (is_array($vm_value) && (sizeof($vm_value) == 2) && ($vm_value[0] <= $vm_value[1])) {
 								if ($vn_start_date != $vm_value[0]) {
 									$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
@@ -4144,9 +4144,9 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	public function getDefaultMediaPreviewVersion($ps_field) {
 		if ($va_media_info = $this->getMediaInfo($ps_field)) {
 			$o_media_proc_settings = new MediaProcessingSettings($this, $ps_field);
-			$va_type_info = $o_media_proc_settings->getMediaTypeInfo($o_media_proc_settings->canAccept($va_media_info["INPUT"]["MIMETYPE"]));
+			$va_type_info = $o_media_proc_settings->getMediaTypeInfo($o_media_proc_settings->canAccept($va_media_info["INPUT"]["MIMETYPE"] ?? null));
 			
-			return ($va_type_info['MEDIA_PREVIEW_DEFAULT_VERSION']) ? $va_type_info['MEDIA_PREVIEW_DEFAULT_VERSION'] : array_shift($this->getMediaVersions($ps_field));
+			return ($va_type_info['MEDIA_PREVIEW_DEFAULT_VERSION'] ?? null) ? $va_type_info['MEDIA_PREVIEW_DEFAULT_VERSION'] : array_shift($this->getMediaVersions($ps_field));
 		} else {
 			return null;
 		}	

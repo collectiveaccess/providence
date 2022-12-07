@@ -144,19 +144,18 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 * against the ca_lists list for the table (as defined by getTypeListCode())
 	 */ 
 	public function insert($pa_options=null) {
+		$vb_we_set_transaction = false;
+		$we_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
 		if (!is_a($this, "BaseRelationshipModel")) {
 			global $AUTH_CURRENT_USER_ID;
 
 			$this->opo_app_plugin_manager->hookBeforeBundleInsert(array('id' => null, 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this));
 
-			$vb_we_set_transaction = false;
 
 			if (!$this->inTransaction()) {
 				$this->setTransaction(new Transaction($this->getDb()));
 				$vb_we_set_transaction = true;
 			}
-
-			$we_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
 		
 			// check that type_id is valid for this table
 			$t_list = new ca_lists();
@@ -3621,7 +3620,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		// Get preferred labels
 		$va_preferred_labels = [];
-		if (is_array($va_bundle_lists['fields_by_type']['preferred_label'])) {
+		if (is_array($va_bundle_lists['fields_by_type']['preferred_label'] ?? null)) {
 			foreach($va_bundle_lists['fields_by_type']['preferred_label'] as $vs_placement_code => $vs_f) {
 				foreach($_REQUEST as $vs_key => $vs_value ) {
 					if (

@@ -67,8 +67,8 @@ class MediaProcessingSettings {
 		
 		$this->opa_table_settings = $this->opo_config_settings = null;
 		
-		if (!isset($va_field_info['MEDIA_ACCEPT']) || !is_array($va_field_info['MEDIA_ACCEPT'])) {
-			if (!($vs_media_processing_setting = $va_field_info['MEDIA_PROCESSING_SETTING'])) {
+		if (!isset($va_field_info['MEDIA_ACCEPT']) || !is_array($va_field_info['MEDIA_ACCEPT'] ?? null)) {
+			if (!($vs_media_processing_setting = $va_field_info['MEDIA_PROCESSING_SETTING'] ?? null)) {
 				return false;
 			}
 			$this->opo_config_settings = Configuration::load(__CA_CONF_DIR__."/media_processing.conf");

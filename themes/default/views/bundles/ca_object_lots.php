@@ -37,6 +37,8 @@
 	$vs_placement_code 	= $this->getVar('placement_code');
 	$vn_placement_id	= (int)$va_settings['placement_id'];
 	$vb_batch			= $this->getVar('batch');
+	$vb_dont_show_del	=((isset($va_settings['dontShowDeleteButton']) && $va_settings['dontShowDeleteButton'])) ? true : false;
+	
 	
 	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_object_lots') == __CA_BUNDLE_ACCESS_READONLY__));
 	
@@ -370,9 +372,9 @@
 			deleteButtonClassName: 'caDeleteItemButton',
 			hideOnNewIDList: ['<?= $vs_id_prefix; ?>_edit_related_'],
 			autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'ObjectLot', 'Get', $va_lookup_params); ?>',
-			types: <?= json_encode($va_settings['restrict_to_types']); ?>,
-			restrictToAccessPoint: <?= json_encode($va_settings['restrict_to_access_point']); ?>,
-			restrictToSearch: <?= json_encode($va_settings['restrict_to_search']); ?>,
+			types: <?= json_encode($va_settings['restrict_to_types'] ?? null); ?>,
+			restrictToAccessPoint: <?= json_encode($va_settings['restrict_to_access_point'] ?? null); ?>,
+			restrictToSearch: <?= json_encode($va_settings['restrict_to_search'] ?? null); ?>,
 			bundlePreview: <?= caGetBundlePreviewForRelationshipBundle($this->getVar('initialValues')); ?>,
 <?php
 	if ($t_subject->tableName() == 'ca_objects') {
@@ -414,7 +416,7 @@
 			listSortItems: 'div.roundedRel,div.listRel',
 <?php if($vb_quick_add_enabled) { ?>
 			quickaddPanel: caRelationQuickAddPanel<?= $vs_id_prefix; ?>,
-			quickaddUrl: '<?= caNavUrl($this->request, 'editor/object_lots', 'ObjectLotQuickAdd', 'Form', array('lot_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$va_settings['dont_include_subtypes_in_type_restriction'], 'prepopulate_fields' => join(";", $va_settings['prepopulateQuickaddFields']))); ?>',
+			quickaddUrl: '<?= caNavUrl($this->request, 'editor/object_lots', 'ObjectLotQuickAdd', 'Form', array('lot_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)($va_settings['dont_include_subtypes_in_type_restriction'] ?? 0), 'prepopulate_fields' => join(";", $va_settings['prepopulateQuickaddFields'] ?? []))); ?>',
 			
 			totalValueCount: <?= (int)$count; ?>,
 			partialLoadUrl: '<?= caNavUrl($this->request, '*', '*', 'loadBundleValues', array($t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $vn_placement_id, 'bundle' => 'ca_object_lots')); ?>',

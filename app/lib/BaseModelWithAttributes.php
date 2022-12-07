@@ -979,7 +979,7 @@
 		 *
 		 */
 		public function set($pa_fields, $pm_value="", $pa_options=null) {
-			if ($this->ATTRIBUTE_TYPE_LIST_CODE) {
+			if (property_exists($this, 'ATTRIBUTE_TYPE_LIST_CODE') && $this->ATTRIBUTE_TYPE_LIST_CODE) {
 				if(is_array($pa_fields)) {
 					if (isset($pa_fields[$this->ATTRIBUTE_TYPE_ID_FLD]) && !is_numeric($pa_fields[$this->ATTRIBUTE_TYPE_ID_FLD])) {
 						if ($vn_id = ca_lists::getItemID($this->ATTRIBUTE_TYPE_LIST_CODE, $pa_fields[$this->ATTRIBUTE_TYPE_ID_FLD])) {
@@ -1593,11 +1593,11 @@
 			}
 			
 			$user_type_res = caGetTypeRestrictionsForUser($this->tableName(), $pa_options);
-			if (is_array($pa_options['limitToItemsWithID']) && sizeof($pa_options['limitToItemsWithID'])){
+			if (is_array($pa_options['limitToItemsWithID'] ?? null) && sizeof($pa_options['limitToItemsWithID'])){
 			    $pa_options['limitToItemsWithID'] = caMakeTypeIDList($this->tableName(), $pa_options['limitToItemsWithID']);
 			}
 			
-			if (is_array($pa_options['limitToItemsWithID']) && sizeof($pa_options['limitToItemsWithID']) && is_array($user_type_res) && sizeof($user_type_res)) {
+			if (is_array($pa_options['limitToItemsWithID'] ?? null) && sizeof($pa_options['limitToItemsWithID']) && is_array($user_type_res) && sizeof($user_type_res)) {
 			    $pa_options['limitToItemsWithID'] = array_intersect($user_type_res, $pa_options['limitToItemsWithID']);
 			} elseif(is_array($user_type_res) && sizeof($user_type_res)) {
 			    $pa_options['limitToItemsWithID'] = $user_type_res;

@@ -260,7 +260,7 @@
 							bundle: '<?= $id_prefix; ?>',
 							
 							selectOnLoad : true,
-							browserWidth: "<?= $settings['hierarchicalBrowserWidth']; ?>",
+							browserWidth: "<?= $settings['hierarchicalBrowserWidth'] ?? null; ?>",
 							
 							dontAllowEditForFirstLevel: false,
 							
@@ -417,8 +417,8 @@
 <?php } ?>
 			lists: <?= json_encode($settings['restrict_to_lists']); ?>,
 			types: <?= json_encode($settings['restrict_to_types']); ?>,
-			restrictToAccessPoint: <?= json_encode($settings['restrict_to_access_point']); ?>,
-			restrictToSearch: <?= json_encode($settings['restrict_to_search']); ?>,
+			restrictToAccessPoint: <?= json_encode($settings['restrict_to_access_point'] ?? null); ?>,
+			restrictToSearch: <?= json_encode($settings['restrict_to_search'] ?? null); ?>,
 			bundlePreview: <?= caGetBundlePreviewForRelationshipBundle($this->getVar('initialValues')); ?>,
 			readonly: <?= $read_only ? "true" : "false"; ?>,
 			isSortable: <?= ($read_only || $sort) ? "false" : "true"; ?>,

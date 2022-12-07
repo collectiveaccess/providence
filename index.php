@@ -47,7 +47,7 @@
 		require_once(__CA_APP_DIR__.'/lib/ConfigurationCheck.php');
 		ConfigurationCheck::performQuick();
 		if(ConfigurationCheck::foundErrors()){
-			if (defined('__CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__') && __CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__ && $_REQUEST['updateSchema']) {
+			if (defined('__CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__') && __CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__ && ($_REQUEST['updateSchema'] ?? false)) {
 				ConfigurationCheck::updateDatabaseSchema();
 			} else {
 				ConfigurationCheck::renderErrorsAsHTMLOutput();

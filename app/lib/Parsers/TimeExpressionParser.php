@@ -1471,7 +1471,7 @@ class TimeExpressionParser {
 							
 							$va_peek = $this->peekToken();
 							
-							switch($va_peek['type']) {
+							switch($va_peek['type'] ?? null) {
 								# ----------------------
 								case TEP_TOKEN_MERIDIAN:
 									$vn_state = TEP_STATE_TIME_GET_MERIDIAN;
@@ -1968,7 +1968,7 @@ class TimeExpressionParser {
 		
 		// Meridians (AM/PM)
 		$va_meridian_lookup = $this->opo_language_settings->getAssoc("meridianTable");
-		if ($va_meridian_lookup[$vs_token_lc]) {
+		if ($va_meridian_lookup[$vs_token_lc] ?? false) {
 			$vs_token_lc = $va_meridian_lookup[$vs_token_lc];
 		}
 		if ($vs_token_lc == $this->opo_language_settings->get("timeAMMeridian")) {
@@ -1980,7 +1980,7 @@ class TimeExpressionParser {
 		
 		// Eras (AD/BC)
 		$va_era_lookup = $this->opo_language_settings->getAssoc("ADBCTable");
-		if ($va_era_lookup[$vs_token_lc]) {
+		if ($va_era_lookup[$vs_token_lc] ?? false) {
 			$vs_token_lc = $va_era_lookup[$vs_token_lc];
 		}
 		if ($vs_token_lc == $this->opo_language_settings->get("dateADIndicator")) {

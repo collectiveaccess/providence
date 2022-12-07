@@ -571,12 +571,12 @@
 			foreach($pa_navinfo as $vs_nav => $va_nav_info) {
 				if (isset($va_nav_info['hide']) && $va_nav_info['hide']) { continue; }
 				
-				if (is_array($va_requirements = $pa_navinfo[$vs_nav]['requires'])) {
+				if (is_array($va_requirements = ($pa_navinfo[$vs_nav]['requires'] ?? null))) {
 					// DOES THIS USER HAVE PRIVS FOR THIS MENU ITEM?
 					if (!$this->_evaluateRequirements($va_requirements)) { continue; }
 				}
 				
-				$va_defaults = $pa_navinfo[$vs_nav]['default'];
+				$va_defaults = $pa_navinfo[$vs_nav]['default'] ?? null;
 				if (!isset($pa_navinfo[$vs_nav]['displayName']) || (!$vs_display_name = $pa_navinfo[$vs_nav]['displayName'])) { $vs_display_name = $vs_nav; }
 				$va_additional_params = $this->_parseAdditionalParameters((isset($pa_navinfo[$vs_nav]) && (isset($pa_navinfo[$vs_nav]['parameters']))) ? $pa_navinfo[$vs_nav]['parameters']: null);
 				
@@ -631,12 +631,12 @@
 								}
 							    $va_additional_params['type_id'] = -1;  // force type restriction to be disabled
 							    
-								$vs_buf .= "<li>".($is_link ? caNavLink($this->opo_request, $vs_display_name, (($vs_cur_selection == $ps_base_path.'/'.$vs_nav) ? 'sf-menu-selected' : ''), $va_defaults['module'], $va_defaults['controller'], $va_defaults['action'], $va_additional_params) : caHTMLLink($vs_display_name, array('class' => (($vs_cur_selection == $ps_base_path.'/'.$vs_nav) ? 'sf-menu-selected' : ''), 'href' => '#')));
+								$vs_buf .= "<li>".($is_link ? caNavLink($this->opo_request, $vs_display_name, (($vs_cur_selection == $ps_base_path.'/'.$vs_nav) ? 'sf-menu-selected' : ''), $va_defaults['module'] ?? null, $va_defaults['controller'] ?? null, $va_defaults['action'] ?? null, $va_additional_params) : caHTMLLink($vs_display_name, array('class' => (($vs_cur_selection == $ps_base_path.'/'.$vs_nav) ? 'sf-menu-selected' : ''), 'href' => '#')));
 								$vs_buf .= $this->_genSubMenu($va_submenu_nav, $vs_cur_selection, $va_additional_params, $ps_base_path, $va_defaults);
 								$vs_buf .= "</li>\n";
 							}
 						} else {
-							$vs_link = (is_array($va_defaults) && $va_defaults['module']) ? caNavLink($this->opo_request, $vs_display_name, (($vs_cur_selection == $ps_base_path.'/'.$vs_nav) ? 'sf-menu-selected' : ''), $va_defaults['module'], $va_defaults['controller'], $va_defaults['action'], $va_additional_params) : "<a href='#'>{$vs_display_name}</a>";
+							$vs_link = (is_array($va_defaults) && $va_defaults['module']) ? caNavLink($this->opo_request, $vs_display_name, (($vs_cur_selection == $ps_base_path.'/'.$vs_nav) ? 'sf-menu-selected' : ''), $va_defaults['module'] ?? null, $va_defaults['controller'] ?? null, $va_defaults['action'] ?? null, $va_additional_params) : "<a href='#'>{$vs_display_name}</a>";
 							$vs_buf .= "<li>{$vs_link}\n";
 							$vs_buf .= $this->_genSubMenu($pa_navinfo[$vs_nav]['submenu']['navigation'], $vs_cur_selection, $va_additional_params, $ps_base_path, $va_defaults);
 							$vs_buf .= "</li>\n";
@@ -645,7 +645,7 @@
 						if(is_array($va_defaults) && (sizeof($va_defaults) == 0)) { 
 							$vs_buf .= "<li class='disabled'>".$vs_display_name."<li>\n";
 						} else {
-							$vs_buf .= "<li ".(($vs_last_selected_path_item == $vs_nav) ? 'class="sf-menu-selected"' : '').">".caNavLink($this->opo_request, $vs_display_name, (($vs_last_selected_path_item == $vs_nav) ? 'sf-menu-selected' : ''), $va_defaults['module'], $va_defaults['controller'], $va_defaults['action'], $va_additional_params)."<li>\n";
+							$vs_buf .= "<li ".(($vs_last_selected_path_item == $vs_nav) ? 'class="sf-menu-selected"' : '').">".caNavLink($this->opo_request, $vs_display_name, (($vs_last_selected_path_item == $vs_nav) ? 'sf-menu-selected' : ''), $va_defaults['module'] ?? null, $va_defaults['controller'] ?? null, $va_defaults['action'] ?? null, $va_additional_params)."<li>\n";
 						}
 					}
 				}

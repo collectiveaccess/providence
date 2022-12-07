@@ -810,7 +810,7 @@ class DisplayTemplateParser {
                                         $rels = $t_instance->getRelatedItems($t_rel_instance->tableName(), array_merge($va_get_options, array('returnAs' => 'data', 'row_ids' => [$pr_res->getPrimaryKey()]))) ?? [];
 								        $va_relation_ids = is_array($rels) ? array_keys($rels) : [];
 								 
-								        $va_relationship_type_ids = array_values(array_map(function($r) { return $r['relationship_type_id']; }, $rels));
+								        $va_relationship_type_ids = array_values(array_map(function($r) { return $r['relationship_type_id'] ?? null; }, $rels));
 								        $va_relationship_type_orientations = array_values(array_map(function($r) { return $r['direction']; }, $rels));
 								    }
 									if (is_array($va_relation_ids) && sizeof($va_relation_ids)) {
