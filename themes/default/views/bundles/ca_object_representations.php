@@ -35,7 +35,7 @@
 	$settings 			= $this->getVar('settings');
 	
 	$is_batch			= $this->getVar('batch');
-	$use_classic_interface 	= (($settings['uiStyle'] === 'CLASSIC') || $is_batch);		// use classic UI for batch always
+	$use_classic_interface 	= ((($settings['uiStyle'] ?? null) === 'CLASSIC') || $is_batch);		// use classic UI for batch always
 
 	if ($use_classic_interface || $is_batch) {
 		print $this->render('ca_object_representations_classic.php');

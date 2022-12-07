@@ -5832,7 +5832,7 @@ if (!$vb_batch) {
 			$vs_key = $va_rel_item['_key'];
 			
 			$vn_rank = null;
-			if ((($vn_rank_index = array_search($va_rel_item['relation_id'], $va_rel_sort_order)) !== false) && (!isset($pa_settings['disableSorts']) || !$pa_settings['disableSorts'])) {
+			if ((($vn_rank_index = array_search($va_rel_item['relation_id'] ?? null, $va_rel_sort_order)) !== false) && (!isset($pa_settings['disableSorts']) || !$pa_settings['disableSorts'])) {
 				$vn_rank = $va_rel_ids_sorted[$vn_rank_index];
 			}
 			
@@ -5842,8 +5842,8 @@ if (!$vb_batch) {
 				$vn_type_id = $po_request->getParameter("{$ps_placement_code}{$ps_form_prefix}_type_id".$va_rel_item[$vs_key], pString);
 				$vs_direction = null;
 				if (sizeof($va_tmp = explode('_', $vn_type_id)) == 2) {
-					$vn_type_id = (int)$va_tmp[1];
-					$vs_direction = $va_tmp[0];
+					$vn_type_id = (int)($va_tmp[1] ?? 0);
+					$vs_direction = $va_tmp[0] ?? null;
 				}
 				
 				//$vs_effective_daterange = $po_request->getParameter("{$ps_placement_code}{$ps_form_prefix}_effective_date".$va_rel_item[$vs_key], pString);

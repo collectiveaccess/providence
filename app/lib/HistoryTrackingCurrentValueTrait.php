@@ -979,6 +979,7 @@
 			$policy = caGetOption('policy', $options, $this->getDefaultHistoryTrackingCurrentValuePolicy());
 			$row_id = caGetOption('row_id', $options, $this->getPrimaryKey());
 		
+			$pa_bundle_settings = null;
 			if ($policy && !is_array($pa_bundle_settings = caGetOption('settings', $options, null))) {
 				$pa_bundle_settings = self::policy2bundleconfig(['policy' => $policy]);
 			}

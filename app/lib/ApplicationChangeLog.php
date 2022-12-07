@@ -435,7 +435,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 									} else {
 							
 										// Adjust display of value for different field types
-										switch($va_field_info['FIELD_TYPE']) {
+										switch($va_field_info['FIELD_TYPE'] ?? null) {
 											case FT_BIT:
 												$vs_proc_val = $vs_value ? 'Yes' : 'No';
 												break;
@@ -465,7 +465,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 								}
 								
 								$va_changes[] = array(
-									'label' => $va_field_info['LABEL'],
+									'label' => $va_field_info['LABEL'] ?? null,
 									'description' => (strlen((string)$vs_proc_val) ? $vs_proc_val : $vs_blank_placeholder),
 									'value' => $vs_value
 								);

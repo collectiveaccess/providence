@@ -173,6 +173,7 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
         global $g_ui_locale;
         global $g_ui_units_pref;
         
+        $pa_value_array['value_decimal1'] = $pa_value_array['value_decimal1'] ?? null;
         if ($pa_value_array['value_decimal1'] === '' || is_null($pa_value_array['value_decimal1'])) {
             $this->ops_text_value = '';
             return;

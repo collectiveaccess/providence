@@ -1719,13 +1719,13 @@ class SearchResult extends BaseObject {
 					
 					$vm_val = $t_instance->renderBundleForDisplay($va_path_components['field_name'], $vn_row_id, self::$s_prefetch_cache[$va_path_components['table_name']][$vn_row_id][$vs_opt_md5], $va_val_opts);
 					
-					if ($pa_options['returnWithStructure']) { 
-						if ($pa_options['returnAllLocales']) { 
+					if ($pa_options['returnWithStructure'] ?? null) { 
+						if ($pa_options['returnAllLocales'] ?? null) { 
 							$vm_val = [$vn_row_id => [$t_instance->get('locale_id') => [$va_path_components['field_name'] => $vm_val]]];
 						} else {
 							$vm_val = [$vn_row_id => [$va_path_components['field_name'] => $vm_val]];
 						}
-					} elseif($pa_options['returnAsArray']) {
+					} elseif($pa_options['returnAsArray'] ?? null) {
 						$vm_val = [$vm_val];
 					} 
 					
@@ -3638,13 +3638,15 @@ class SearchResult extends BaseObject {
 	private function parseFieldPathComponents($ps_path) {
 		if (isset(SearchResult::$s_parsed_field_component_cache[$this->ops_table_name.'/'.$ps_path])) { return SearchResult::$s_parsed_field_component_cache[$this->ops_table_name.'/'.$ps_path]; }
 		$va_tmp = explode('.', $ps_path);
-		
+		$table = $va_tmp[0] ?? null;
+		$modifier = $va_tmp[1] ?? null;
 		$vb_is_related = false;
-		if ($va_tmp[1] == 'related') {
+		
+		if ($modifier == 'related') {
 			array_splice($va_tmp, 1, 1);
 			$vb_is_related = true;
 		} else {
-			if ($va_tmp[0] !== $this->ops_table_name) {
+			if ($table !== $this->ops_table_name) {
 				$vb_is_related = true;
 			}
 		}
@@ -3656,16 +3658,16 @@ class SearchResult extends BaseObject {
 		}
 		
 		$vs_hierarchical_modifier = null;
-		if ($va_tmp[1] == 'hierarchy') {
+		if ($modifier == 'hierarchy') {
 			array_splice($va_tmp, 1, 1);
 			$vs_hierarchical_modifier = 'hierarchy';
-		} elseif ($va_tmp[1] == 'parent') {
+		} elseif ($modifier == 'parent') {
 			array_splice($va_tmp, 1, 1);
 			$vs_hierarchical_modifier = 'parent';
-		} elseif ($va_tmp[1] == 'children') {
+		} elseif ($modifier == 'children') {
 			array_splice($va_tmp, 1, 1);
 			$vs_hierarchical_modifier = 'children';
-		} elseif ($va_tmp[1] == 'siblings') {
+		} elseif ($modifier == 'siblings') {
 			array_splice($va_tmp, 1, 1);
 			$vs_hierarchical_modifier = 'siblings';
 		}
