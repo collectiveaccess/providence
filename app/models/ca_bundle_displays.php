@@ -1076,7 +1076,7 @@ if (!$pb_omit_editing_info) {
 		}
 		
 		// get attributes
-		$va_element_codes = $t_instance->getApplicableElementCodes(null, false, $options['no_cache']);
+		$va_element_codes = $t_instance->getApplicableElementCodes(null, false, $options['no_cache'] ?? false);
 		
 		$t_md = new ca_metadata_elements();
 		if ($this->inTransaction()) { $t_md->setTransaction($this->getTransaction()); }

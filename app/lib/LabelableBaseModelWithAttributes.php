@@ -2476,7 +2476,8 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 			$bundle_preview = $this->getWithTemplate($pa_bundle_settings['displayTemplate']);
 		}
 		if(!$bundle_preview) {
-			$bundle_preview = current($va_inital_values)[$this->getLabelDisplayField()];
+			$l = current($va_inital_values);
+			$bundle_preview = is_array($l) ? $l[$this->getLabelDisplayField()] : null;
 		}
 		$o_view->setVar('bundle_preview', $bundle_preview);
 		

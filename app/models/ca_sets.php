@@ -569,7 +569,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		if (!is_array($pa_public_access)) { $pa_public_access = []; }
 		for($vn_i=0; $vn_i < sizeof($pa_public_access); $vn_i++) { $pa_public_access[$vn_i] = intval($pa_public_access[$vn_i]); }
 		
-		
+		$vn_table_num = null;
 		if ($pm_table_name_or_num && !($vn_table_num = $this->_getTableNum($pm_table_name_or_num))) { return null; }
 		
 		$va_extra_joins = array();
@@ -1803,7 +1803,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	public function getItems($pa_options=null) {
 		if(!($vn_set_id = $this->getPrimaryKey())) { return null; }
 		if (!is_array($pa_options)) { $pa_options = array(); }
-		if ($pa_options['user_id'] && !$this->haveAccessToSet($pa_options['user_id'], __CA_SET_READ_ACCESS__)) { return false; }
+		if (($pa_options['user_id'] ?? null) && !$this->haveAccessToSet($pa_options['user_id'], __CA_SET_READ_ACCESS__)) { return false; }
 		
 		$o_db = $this->getDb();
 		
@@ -2026,7 +2026,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 					$va_row['selected_representations'] = array();
 				}
 				
-				$va_row['representation_count'] = (int)$va_representation_counts[$qr_res->get('row_id')];
+				$va_row['representation_count'] = (int)($va_representation_counts[$qr_res->get('row_id')] ?? 0);
 			}	
 			
 			if (is_array($va_labels[$vn_item_id = $qr_res->get('item_id')])) {
@@ -2140,7 +2140,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 	public function getTypesForItems($pa_options=null) {
 		if(!($vn_set_id = $this->getPrimaryKey())) { return null; }
 		if (!is_array($pa_options)) { $pa_options = array(); }
-		if ($pa_options['user_id'] && !$this->haveAccessToSet($pa_options['user_id'], __CA_SET_READ_ACCESS__)) { return false; }
+		if (($pa_options['user_id'] ?? null) && !$this->haveAccessToSet($pa_options['user_id'], __CA_SET_READ_ACCESS__)) { return false; }
 		
 		$o_db = $this->getDb();
 		
@@ -2180,7 +2180,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 			foreach($va_type_ids as $vn_type_id => $vs_type) {
 				if (is_array($va_parents = $t_item->getHierarchyAncestors($vn_type_id, array('idsOnly' => true)))) {
 					foreach($va_parents as $vn_parent_id) {
-						$va_expanded_types[$vn_parent_id] = $va_labels[$vn_parent_id];
+						$va_expanded_types[$vn_parent_id] = $va_labels[$vn_parent_id] ?? null;
 					}
 				}
 			}

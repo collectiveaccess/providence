@@ -499,7 +499,7 @@ class ResultContext {
 	public function getCurrentSortDirection() {
 		if (!($ps_sort_direction = htmlspecialchars($this->opo_request->getParameter('direction', pString, ['forcePurify' => true])))) {
 			if ($va_context = $this->getContext()) {
-				return in_array($va_context['sort_direction'], array('asc', 'desc')) ? $va_context['sort_direction'] : 'asc';
+				return in_array($va_context['sort_direction'] ?? null, array('asc', 'desc')) ? $va_context['sort_direction'] : 'asc';
 			}
 		} else {
 			$this->setContextValue('sort_direction', $ps_sort_direction);

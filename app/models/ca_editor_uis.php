@@ -921,7 +921,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			);
 			
 			if(isset($pa_options['returnTypeRestrictions']) && $pa_options['returnTypeRestrictions']) {
-				$va_nav['screen_'.$va_screen['screen_id']]['typeRestrictions'] = $va_screen['typeRestrictions'];
+				$va_nav['screen_'.$va_screen['screen_id']]['typeRestrictions'] = $va_screen['typeRestrictions'] ?? null;
 			}
 			
 			if (is_array($pa_options)) {

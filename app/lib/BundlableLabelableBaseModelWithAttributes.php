@@ -2799,6 +2799,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  		$vn_pk_id = $this->getPrimaryKey();
  		$vs_type_id_fld = $this->getTypeFieldName();
 		
+		$vs_hier_parent_id_fld = isset($this->HIERARCHY_PARENT_ID_FLD) ? $this->HIERARCHY_PARENT_ID_FLD : null;
+				
 		$va_bundles_present = [];
 		if (is_array($va_bundles)) {
 			
@@ -2821,9 +2823,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 			} else {
 				$vs_type_id_fld = isset($this->ATTRIBUTE_TYPE_ID_FLD) ? $this->ATTRIBUTE_TYPE_ID_FLD : null;
-			
-			
-				$vs_hier_parent_id_fld = isset($this->HIERARCHY_PARENT_ID_FLD) ? $this->HIERARCHY_PARENT_ID_FLD : null;
 			
 				if(isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes'])) {
 					$va_valid_element_codes = $this->getApplicableElementCodesForTypes(caMakeTypeIDList($vs_table_name, $pa_options['restrictToTypes']));
