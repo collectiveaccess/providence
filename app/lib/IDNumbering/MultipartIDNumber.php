@@ -451,7 +451,7 @@ class MultipartIDNumber extends IDNumber {
 						$element_vals[$i] = $element_info['value'];
 						break;
 					case 'SERIAL':
-						if(!isset($value[$ename])) { $element_vals[$i] = ''; }
+						$element_vals[$i] = $value[$ename] ?? '';
 						break;
 					default:
 						$element_vals[$i] = $value[$ename] ?? null;

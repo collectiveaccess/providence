@@ -85,6 +85,8 @@
 		}
 		print caEditorBundleMetadataDictionary($this->request, $id_prefix, $settings);
 	}
+	
+	$make_link = !strlen(caGetOption('display_template', $va_settings, null));
 ?>
 <div id="<?= $id_prefix; ?>" <?= $batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
@@ -122,7 +124,7 @@
 ?>
 			<span id='<?= $id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
-			print caGetRelationDisplayString($this->request, 'ca_collections', array('class' => 'caEditItemButton', 'id' => "{$id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => true, 'prefix' => $id_prefix, 'relationshipTypeDisplayPosition' => $dont_show_relationship_type));
+			print caGetRelationDisplayString($this->request, 'ca_collections', array('class' => 'caEditItemButton', 'id' => "{$id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => $make_link, 'prefix' => $id_prefix, 'relationshipTypeDisplayPosition' => $dont_show_relationship_type));
 ?>
 			</span>
 			<input type="hidden" name="<?= $id_prefix; ?>_id{n}" id="<?= $id_prefix; ?>_id{n}" value="{id}"/>
@@ -135,7 +137,7 @@
 		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo roundedRel caRelatedItem">
 			<span id='<?= $id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
-			print caGetRelationDisplayString($this->request, 'ca_collections', array('class' => 'caEditItemButton', 'id' => "{$id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => true, 'prefix' => $id_prefix, 'relationshipTypeDisplayPosition' => $dont_show_relationship_type));
+			print caGetRelationDisplayString($this->request, 'ca_collections', array('class' => 'caEditItemButton', 'id' => "{$id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => $make_link, 'prefix' => $id_prefix, 'relationshipTypeDisplayPosition' => $dont_show_relationship_type));
 ?>
 			</span>
 			<input type="hidden" name="<?= $id_prefix; ?>_id{n}" id="<?= $id_prefix; ?>_id{n}" value="{id}"/>
