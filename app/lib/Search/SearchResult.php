@@ -3644,7 +3644,6 @@ class SearchResult extends BaseObject {
 	static public function parseFieldPathComponents(string $table, string $ps_path) : array {
 		if (isset(SearchResult::$s_parsed_field_component_cache[$table.'/'.$ps_path])) { return SearchResult::$s_parsed_field_component_cache[$table.'/'.$ps_path]; }
 		$va_tmp = explode('.', $ps_path);
-		$table = $va_tmp[0] ?? null;
 		$modifier = $va_tmp[1] ?? null;
 		$vb_is_related = false;
 		
