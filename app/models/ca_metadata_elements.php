@@ -1207,12 +1207,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			}
 		}
 
-		$vs_sql_where = '';
-		if ($vn_element_id) {
-			$vs_sql_where = " WHERE cmtr.element_id = {$vn_element_id} AND cme.deleted = 0";
-		} else {
-			$vs_sql_where = " WHERE cme.deleted = 0";
-		}
+		$sql_where = $element_id ? " WHERE cmtr.element_id = {$element_id} AND cme.deleted = 0" : " WHERE cme.deleted = 0";
 
 		$qr_restrictions = $vo_db->query("
 			SELECT cmtr.*, cme.element_code

@@ -2325,10 +2325,11 @@ if (!$pb_omit_editing_info) {
 						$rtc = ($dt === 0) ? $vs_bundle_name : null;
 					}
 					$vs_val = $po_result->getWithTemplate($vs_template, [
-						'relativeToContainer' => $rtc, 
-						'filters'=> $options['filters'], 
-						'delimiter' => $options['delimiter'], 
-						'policy' => $va_settings['policy']]		// passed for history tracking current value
+							'relativeToContainer' => $rtc, 
+							'filters'=> $options['filters'] ?? null, 
+							'delimiter' => $options['delimiter'] ?? null, 
+							'policy' => $va_settings['policy'] ?? null
+						]		// passed for history tracking current value
 					);
 				}
 			}

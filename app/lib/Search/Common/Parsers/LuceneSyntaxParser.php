@@ -316,7 +316,7 @@ class LuceneSyntaxParser extends Zend_Search_Lucene_FSM {
 	 */
 	public function subqueryStart() {
 		$this->opa_context_stack[] = $this->opo_context;
-		$this->opo_context        = new LuceneSyntaxParserContext($this->_encoding, $this->opo_context->getField());
+		$this->opo_context        = new LuceneSyntaxParserContext($this->ops_encoding, $this->opo_context->getField());
 	}
 
 	/**

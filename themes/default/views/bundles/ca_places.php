@@ -37,7 +37,7 @@
 	$add_label 		= $this->getVar('add_label');
 	$rel_types		= $this->getVar('relationship_types');
 	$placement_code = $this->getVar('placement_code');
-	$placement_id	= (int)$settings['placement_id'];
+	$placement_id	= (int)($settings['placement_id'] ?? 0);
 	$batch			= $this->getVar('batch');
 	
 	$color 			= ((isset($settings['colorItem']) && $settings['colorItem'])) ? $settings['colorItem'] : '';
@@ -108,7 +108,7 @@
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
 <?php
-	switch($settings['list_format']) {
+	switch($settings['list_format'] ?? null) {
 		case 'list':
 ?>
 		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo listRel caRelatedItem">
@@ -164,7 +164,7 @@
 		<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
 		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo caRelatedItem">
 <?php
-	if (!(bool)$settings['useHierarchicalBrowser']) {
+	if (!(bool)($settings['useHierarchicalBrowser'] ?? null)) {
 ?>
 			<table class="caListItem">
 				<tr>
@@ -185,7 +185,7 @@
 <?php
 } else {
 		$use_as_root_id = 'null';
-		if (is_array($settings['restrict_to_lists']) && (sizeof($settings['restrict_to_lists']) == 1)) {
+		if (is_array($settings['restrict_to_lists'] ?? null) && (sizeof($settings['restrict_to_lists']) == 1)) {
 			$t_item = new ca_list_items();
 			if ($t_item->load(array('list_id' => $settings['restrict_to_lists'][0], 'parent_id' => null))) {
 				$use_as_root_id = $t_item->getPrimaryKey();
@@ -225,7 +225,7 @@
 						initDataUrl: '<?= caNavUrl($this->request, 'lookup', 'Place', 'GetHierarchyAncestorList'); ?>',
 						
 						selectOnLoad : true,
-						browserWidth: "<?= $settings['hierarchicalBrowserWidth']; ?>",
+						browserWidth: "<?= $settings['hierarchicalBrowserWidth'] ?? 0; ?>",
 						
 						dontAllowEditForFirstLevel: false,
 						

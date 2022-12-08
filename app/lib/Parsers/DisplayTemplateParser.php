@@ -254,7 +254,7 @@ class DisplayTemplateParser {
 							// noop
 						}
 					
-						$v = is_array($va_val_list) ? DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, array_merge($pa_options, ['index' => $vn_index, 'returnAsArray' => $pa_options['aggregateUnique']])) : '';
+						$v = is_array($va_val_list) ? DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, array_merge($pa_options, ['index' => $vn_index, 'returnAsArray' => $pa_options['aggregateUnique'] ?? false])) : '';
 						if ($pb_index_with_ids) {
 							$va_proc_templates[$qr_res->get($vs_pk)] = $v;
 						} else {
@@ -1060,7 +1060,7 @@ class DisplayTemplateParser {
 		$vn_count = 1;
 		$va_tag_vals = null;
 		if ($vs_relative_to_container = caGetOption('relativeToContainer', $pa_options, null)) {
-			if (DisplayTemplateParser::$value_cache[$vs_cache_key]) {
+			if (DisplayTemplateParser::$value_cache[$vs_cache_key] ?? null) {
 				$va_tag_vals = DisplayTemplateParser::$value_cache[$vs_cache_key];
 				$vn_count = DisplayTemplateParser::$value_count_cache[$vs_cache_key];
 			} else {

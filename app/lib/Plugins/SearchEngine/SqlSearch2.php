@@ -1648,7 +1648,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 */
 	private function _getElementIDForAccessPoint($subject_tablenum, $access_point) {
 		$tmp = preg_split('![/\|]+!', $access_point);
-		@list($table, $field, $subfield, $subsubfield, $subsubsubfield) = explode('.', $tmp[0]);
+		list($table, $field, $subfield, $subsubfield, $subsubsubfield) = array_pad(explode('.', $tmp[0]), 5, null);
 		if ($table === '_fulltext') { return null; }	// ignore "_fulltext" specifier – just treat as text search
 		
 		$rel_table = caGetRelationshipTableName($subject_tablenum, $table);
