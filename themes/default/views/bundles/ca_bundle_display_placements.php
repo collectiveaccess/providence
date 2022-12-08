@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2014 Whirl-i-Gig
+ * Copyright 2010-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,6 +28,7 @@
  
 	$t_display 							= $this->getVar('t_display');
 	$vs_id_prefix 						= $this->getVar('placement_code').$this->getVar('id_prefix');
+	$settings							= $this->getVar('settings');
 	
 	$va_available_display_items 		= $t_display->getAvailableBundles();
 	
@@ -38,7 +39,7 @@
 	$va_to_display_items  				= $t_display->getPlacementsInDisplay(array('noCache' => true));
 	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
 ?>
 <div class="bundleDisplayPlacementEditorContainer" id="<?= $vs_id_prefix; ?>">
 	<div id="bundleDisplayPlacementEditor" class="bundleDisplayPlacementEditor">

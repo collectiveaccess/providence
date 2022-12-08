@@ -2531,7 +2531,7 @@ if (!$pb_omit_editing_info) {
 				}
 				
 				if($placement_id === 0) {
-					$t_display->addPlacement($vs_bundle, $va_settings[$placement_id], $i + 1, array('user_id' => $request->getUserID(), 'additional_settings' => $va_available_bundles[$vs_bundle]['settings']));
+					$t_display->addPlacement($vs_bundle, $va_settings[$placement_id] ?? null, $i + 1, array('user_id' => $request->getUserID(), 'additional_settings' => $va_available_bundles[$vs_bundle]['settings'] ?? []));
 					if ($t_display->numErrors()) {
 						$this->errors = $t_display->errors;
 						return false;
@@ -2542,7 +2542,7 @@ if (!$pb_omit_editing_info) {
 					$t_placement->setMode(ACCESS_WRITE);
 					$t_placement->set('rank', $i + 1);
 					
-					if (is_array($va_settings[$placement_id])) {
+					if (is_array($va_settings[$placement_id] ?? null)) {
 						//foreach($va_settings[$placement_id] as $vs_setting => $vs_val) {
 						foreach($t_placement->getAvailableSettings() as $vs_setting => $va_setting_info) {
 							$vs_val = isset($va_settings[$placement_id][$vs_setting]) ? $va_settings[$placement_id][$vs_setting] : null;
