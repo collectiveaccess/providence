@@ -42,7 +42,7 @@
  *
  * return bool
  */
-function caErrorHandler(int $errno, string $errstr, ?string $errfile=null, ?int $errline=null, ?array $errcontext) {
+function caErrorHandler(int $errno, string $errstr, ?string $errfile=null, ?int $errline=null) {
 	global $g_warnings, $g_deprecation_warnings, $g_notices;
 	global $g_log_warnings, $g_display_warnings, 
 		$g_log_deprecation_warnings, $g_display_deprecation_warnings, 
