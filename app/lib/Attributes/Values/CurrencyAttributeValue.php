@@ -208,15 +208,14 @@ class CurrencyAttributeValue extends AttributeValue implements IAttributeValue {
 	 *
 	 */
 	public function getDisplayValue($pa_options=null) {
+		global $_locale;
+		
 		if (caGetOption('returnAsDecimalWithCurrencySpecifier', $pa_options, false)) {
 			if (!$this->ops_currency_specifier) { return null; }
 			return caGetCurrencySymbol($this->ops_currency_specifier, $this->getElementID()).' '.$this->opn_value;
 		}
-		if(Zend_Registry::isRegistered("Zend_Locale")) {
-			$o_locale = Zend_Registry::get('Zend_Locale');
-		} else {
-			$o_locale = new Zend_Locale('en_US');
-		}
+		
+		$o_locale = $_locale ? $_locale : new Zend_Locale(__CA_DEFAULT_LOCALE__);
 		
 		if (!$this->ops_currency_specifier) { return null; }
 		$vs_format = Zend_Locale_Data::getContent($o_locale, 'currencynumber');
@@ -359,10 +358,10 @@ class CurrencyAttributeValue extends AttributeValue implements IAttributeValue {
 		return caHTMLTextInput(
 			'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 
 			array(
-				'size' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth'],
-				'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight'], 
+				'size' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth'] ?? null,
+				'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight'] ?? null, 
 				'value' => '{{'.$pa_element_info['element_id'].'}}', 
-				'maxlength' => $va_settings['maxChars'],
+				'maxlength' => $va_settings['maxChars'] ?? null,
 				'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
 				'class' => $vs_class
 			)

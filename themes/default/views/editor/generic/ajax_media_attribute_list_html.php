@@ -36,13 +36,13 @@ $va_text        = $this->getVar('text');
     if (sizeof($va_media_list) > 0) {
         foreach($va_media_list as $vn_attr_id => $va_item) {
 ?>
-        <li class='mediaItem' data-id='<?php print $va_item[$va_media[0]]['value_id']; ?>'>
-            <div style='float:left;'><?php print $va_item[$va_media[0]]['tags']['icon']; ?></div>
+        <li class='mediaItem' data-id='<?= $va_item[$va_media[0]]['value_id']; ?>'>
+            <div style='float:left;'><?= $va_item[$va_media[0]]['tags']['icon']; ?></div>
             <div>
 <?php
             foreach($va_text as $vs_k) {
 ?>
-                <?php print $va_item[$vs_k]; ?><br/>
+                <?= $va_item[$vs_k]; ?><br/>
 <?php
             }
 ?>
@@ -52,7 +52,7 @@ $va_text        = $this->getVar('text');
         }
     } else {
 ?>
-        <h2><?php print _t('No media available'); ?></h2>
+        <h2><?= _t('No media available'); ?></h2>
 <?php
     }
 ?>

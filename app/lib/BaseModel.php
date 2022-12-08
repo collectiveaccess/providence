@@ -384,7 +384,7 @@ class BaseModel extends BaseObject {
 			die("Field definitions not found for {$table_name}");
 		}
 		if (!is_array(self::$field_list_for_load)) { self::$field_list_for_load = []; }
-		if (!self::$field_list_for_load[$table_name]) {
+		if (!isset(self::$field_list_for_load[$table_name]) || !self::$field_list_for_load[$table_name]) {
 			self::$field_list_for_load[$table_name] = [];
 			foreach($this->FIELDS as $f => $info) {
 				if(isset($info['START']) && isset($info['END'])) {
@@ -1137,7 +1137,7 @@ class BaseModel extends BaseObject {
 				break;
 			case (FT_MEDIA):
 			case (FT_FILE):
-				if ($vb_return_with_structure || $pa_options["USE_MEDIA_FIELD_VALUES"]) {
+				if ($vb_return_with_structure || ($pa_options["USE_MEDIA_FIELD_VALUES"] ?? false)) {
 					if (isset($pa_options["USE_MEDIA_FIELD_VALUES"]) && $pa_options["USE_MEDIA_FIELD_VALUES"]) {
 						$vs_prop = $this->_FIELD_VALUES[$ps_field];
 					} else {
@@ -1587,7 +1587,7 @@ class BaseModel extends BaseObject {
 						
 						$vn_start_date = isset($this->_FIELD_VALUES[$vs_start_field_name]) ? $this->_FIELD_VALUES[$vs_start_field_name] : null;
 						$vn_end_date = isset($this->_FIELD_VALUES[$vs_end_field_name]) ? $this->_FIELD_VALUES[$vs_end_field_name] : null;
-						if (($this->DIRECT_DATETIMES) || ($pa_options["SET_DIRECT_DATE"])) {
+						if (($this->DIRECT_DATETIMES) || ($pa_options["SET_DIRECT_DATE"] ?? false)) {
 							if (is_array($vm_value) && (sizeof($vm_value) == 2) && ($vm_value[0] <= $vm_value[1])) {
 								if ($vn_start_date != $vm_value[0]) {
 									$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
@@ -2133,7 +2133,7 @@ class BaseModel extends BaseObject {
 			$this->_FILES_CLEAR = array();
 			
 			if ($vn_id = $this->_FIELD_VALUES[$this->primaryKey()]) {
-				if (is_array(BaseModel::$s_instance_cache[$vs_table_name]) && sizeof(BaseModel::$s_instance_cache[$vs_table_name]) > 100) { 
+				if (is_array(BaseModel::$s_instance_cache[$vs_table_name] ?? null) && sizeof(BaseModel::$s_instance_cache[$vs_table_name]) > 100) { 
 					BaseModel::$s_instance_cache[$vs_table_name] = array_slice(BaseModel::$s_instance_cache[$vs_table_name], 0, 50, true);
 				}
 				BaseModel::$s_instance_cache[$vs_table_name][(int)$vn_id] = $this->_FIELD_VALUES; 
@@ -2809,7 +2809,7 @@ class BaseModel extends BaseObject {
 				$this->_FIELD_VALUE_DID_CHANGE = $this->_FIELD_VALUE_CHANGED;
 				$this->_FIELD_VALUE_CHANGED = array();					
 					
-				if (is_array(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()]) && (sizeof(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()]) > 100)) { 	// Limit cache to 100 instances per table
+				if (is_array(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()] ?? null) && (sizeof(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()]) > 100)) { 	// Limit cache to 100 instances per table
 					BaseModel::$s_instance_cache[$vs_table_name] = array_slice(BaseModel::$s_instance_cache[$vs_table_name], 0, 50, true);
 				}
 					
@@ -2904,7 +2904,7 @@ class BaseModel extends BaseObject {
 					if ($vs_user_desc) { $va_conflict_users[$vs_user_desc] = true; }
 					if(isset($va_conflict['snapshot']) && is_array($va_conflict['snapshot'])) {
 						foreach($va_conflict['snapshot'] as $vs_field => $vs_value) {
-							if ($va_conflict_fields[$vs_field]) { continue; }
+							if ($va_conflict_fields[$vs_field] ?? null) { continue; }
 						
 							$va_conflict_fields[$vs_field] = true;
 						}
@@ -4144,9 +4144,9 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	public function getDefaultMediaPreviewVersion($ps_field) {
 		if ($va_media_info = $this->getMediaInfo($ps_field)) {
 			$o_media_proc_settings = new MediaProcessingSettings($this, $ps_field);
-			$va_type_info = $o_media_proc_settings->getMediaTypeInfo($o_media_proc_settings->canAccept($va_media_info["INPUT"]["MIMETYPE"]));
+			$va_type_info = $o_media_proc_settings->getMediaTypeInfo($o_media_proc_settings->canAccept($va_media_info["INPUT"]["MIMETYPE"] ?? null));
 			
-			return ($va_type_info['MEDIA_PREVIEW_DEFAULT_VERSION']) ? $va_type_info['MEDIA_PREVIEW_DEFAULT_VERSION'] : array_shift($this->getMediaVersions($ps_field));
+			return ($va_type_info['MEDIA_PREVIEW_DEFAULT_VERSION'] ?? null) ? $va_type_info['MEDIA_PREVIEW_DEFAULT_VERSION'] : array_shift($this->getMediaVersions($ps_field));
 		} else {
 			return null;
 		}	
@@ -7320,7 +7320,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						$vs_hier_id_sql = " AND ({$vs_table_name}.{$vs_hier_id_fld} = {$vn_hierarchy_id})";
 					}
 					
-					$va_sql_joins = array();
+					$vs_additional_wheres = '';
+					$va_sql_joins = [];
 					if (isset($pa_options['additionalTableToJoin']) && ($pa_options['additionalTableToJoin'])){ 
 						$ps_additional_table_to_join = $pa_options['additionalTableToJoin'];
 						
@@ -7342,7 +7343,6 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 							$va_additional_table_wheres = $pa_options['additionalTableWheres'];
 						}
 						
-						$vs_additional_wheres = '';
 						if (is_array($va_additional_table_wheres) && (sizeof($va_additional_table_wheres) > 0)) {
 							$vs_additional_wheres = ' AND ('.join(' AND ', $va_additional_table_wheres).') ';
 						}
@@ -7624,6 +7624,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	public function &getHierarchyChildrenAsQuery($pn_id=null, $pa_options=null) {
 		if (!$this->isHierarchical()) { return null; }
 		$o_db = $this->getDb();
+		
+		$vs_order_by = null;
 			
 		$vs_table_name = $this->tableName();
 		
@@ -8447,6 +8449,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	public function htmlFormElement($ps_field, $ps_format=null, $pa_options=null) {
 		$o_db = $this->getDb();
 		
+		$va_limit_list = null;
+		
 		// init options
 		if (!is_array($pa_options)) { 
 			$pa_options = array(); 
@@ -9109,7 +9113,7 @@ $pa_options["display_form_field_tips"] = true;
 							$vs_element = $vm_field_value ? $vm_field_value : "[Not set]";
 							break;
 						default:
-							$vn_max_length = $va_attr["BOUNDS_LENGTH"][1];
+							$vn_max_length = $va_attr["BOUNDS_LENGTH"][1] ?? null;
 							$vs_max_length = '';
 							if ($vn_max_length > 0) $vs_max_length = 'maxlength="'.$vn_max_length.'"';
 							if ($vn_display_height > 1) {
@@ -9130,7 +9134,7 @@ $pa_options["display_form_field_tips"] = true;
 							$vs_element = $vm_field_value ? $vm_field_value : "[Not set]";
 							break;
 						default:
-							$vn_max_length = $va_attr["BOUNDS_LENGTH"][1];
+							$vn_max_length = $va_attr["BOUNDS_LENGTH"][1] ?? null;
 							$vs_max_length = '';
 							if ($vn_max_length > 0) $vs_max_length = 'maxlength="'.$vn_max_length.'"';
 							if ($vn_display_height > 1) {
@@ -9149,7 +9153,7 @@ $pa_options["display_form_field_tips"] = true;
 							$vs_element = $vm_field_value ? $vm_field_value : "[Not set]";
 							break;
 						default:
-							$vn_max_length = $va_attr["BOUNDS_LENGTH"][1];
+							$vn_max_length = $va_attr["BOUNDS_LENGTH"][1] ?? null;
 							$vs_max_length = '';
 							if ($vn_max_length > 0) $vs_max_length = 'maxlength="'.$vn_max_length.'"';
 							if ($vn_display_height > 1) {
@@ -11798,10 +11802,10 @@ $pa_options["display_form_field_tips"] = true;
 		$vs_table_name = $this->tableName();
 		
 		$va_wheres = array();
-		if (is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && ($this->hasField('access'))) {
+		if (is_array($pa_options['checkAccess'] ?? null) && sizeof($pa_options['checkAccess']) && ($this->hasField('access'))) {
 			$va_wheres[] = $vs_table_name.'.access IN ('.join(',', $pa_options['checkAccess']).')';
 		}
-		if(is_array($pa_options['restrictByIntrinsic']) && sizeof($pa_options['restrictByIntrinsic'])){
+		if(is_array($pa_options['restrictByIntrinsic'] ?? null) && sizeof($pa_options['restrictByIntrinsic'])){
 			foreach($pa_options['restrictByIntrinsic'] as $vs_intrinsic_field => $vs_intrinsic_value){
 				$va_wheres[] = $vs_table_name.'.'.$vs_intrinsic_field.' = '.$vs_intrinsic_value;
 			}
@@ -12135,7 +12139,8 @@ $pa_options["display_form_field_tips"] = true;
 		//
 		$vs_type_field_name = null;
 		if (method_exists($t_instance, "getTypeFieldName")) {
-			if(is_array($va_field_values = $pa_values[$vs_type_field_name = $t_instance->getTypeFieldName()])) {
+			$vs_type_field_name = $t_instance->getTypeFieldName();
+			if(is_array($va_field_values = ($pa_values[$vs_type_field_name] ?? null))) {
 				
 				foreach($va_field_values as $vn_i => $va_field_value) {
 					$vs_op = strtolower($va_field_value[0]);
@@ -12225,11 +12230,11 @@ $pa_options["display_form_field_tips"] = true;
 		// Convert other intrinsic list references
 		//
 		$vb_find_all = false;
-
+		
 		foreach($pa_values as $vs_field => $va_field_values) {
 			foreach($va_field_values as $vn_i => $va_field_value) {
 				if ($vs_field == $vs_type_field_name) { continue; }
-			
+				
 				$vs_op = strtolower($va_field_value[0]);
 				$vm_value = $va_field_value[1];
 				
@@ -12504,7 +12509,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * Rewrite criteria passed to BaseModel::find() with model-specific value conversions. Called by BaseModel::find();
 	 * This default implementation returns the criteria unchanged. Models may override this to implement their own conversions.
 	 */
-	public function rewriteFindCriteria(array $criteria) : array {
+	static public function rewriteFindCriteria(array $criteria) : array {
 		return $criteria;
 	}
 	# ------------------------------------------------------

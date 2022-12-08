@@ -87,7 +87,7 @@
 		$errors[] = $o_error->getErrorDescription();
 	}
 	
-	$make_link = !strlen(caGetOption('display_template', $va_settings, null));
+	$make_link = !strlen(caGetOption('display_template', $settings, null));
 ?>
 <div id="<?= $id_prefix; ?>" <?= $batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
@@ -374,9 +374,9 @@
 			minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_places_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
 			relationshipTypes: <?= json_encode($this->getVar('relationship_types_by_sub_type')); ?>,
 			autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'Place', 'Get', $lookup_params); ?>',
-			types: <?= json_encode($settings['restrict_to_types']); ?>,
-			restrictToAccessPoint: <?= json_encode($settings['restrict_to_access_point']); ?>,
-			restrictToSearch: <?= json_encode($settings['restrict_to_search']); ?>,
+			types: <?= json_encode($settings['restrict_to_types'] ?? null); ?>,
+			restrictToAccessPoint: <?= json_encode($settings['restrict_to_access_point'] ?? null); ?>,
+			restrictToSearch: <?= json_encode($settings['restrict_to_search'] ?? null); ?>,
 			bundlePreview: <?= caGetBundlePreviewForRelationshipBundle($this->getVar('initialValues')); ?>,
 			readonly: <?= $read_only ? "true" : "false"; ?>,
 			isSortable: <?= ($read_only || $sort) ? "false" : "true"; ?>,
@@ -385,7 +385,7 @@
 			autocompleteInputID: '<?= $id_prefix; ?>_autocomplete',
 <?php if($quick_add_enabled) { ?>
 			quickaddPanel: caRelationQuickAddPanel<?= $id_prefix; ?>,
-			quickaddUrl: '<?= caNavUrl($this->request, 'editor/places', 'PlaceQuickAdd', 'Form', array('place_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$settings['dont_include_subtypes_in_type_restriction'], 'prepopulate_fields' => join(";", $settings['prepopulateQuickaddFields']))); ?>',
+			quickaddUrl: '<?= caNavUrl($this->request, 'editor/places', 'PlaceQuickAdd', 'Form', array('place_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? 0), 'prepopulate_fields' => join(";", $settings['prepopulateQuickaddFields'] ?? []))); ?>',
 <?php } ?>
 			sortUrl: '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Sort', array('table' => $t_item_rel->tableName())); ?>',
 			

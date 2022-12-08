@@ -155,7 +155,7 @@ class SearchBase extends BaseFindEngine {
 			self::clearCache();
 		}
 
-		$vs_key = caMakeCacheKeyFromOptions($pa_options);
+		$vs_key = caMakeCacheKeyFromOptions($pa_options ?? []);
 		if (isset(SearchBase::$s_fields_to_index_cache[$pm_subject_table.'/'.$pm_content_table.'/'.$vs_key])) {
 			return SearchBase::$s_fields_to_index_cache[$pm_subject_table.'/'.$pm_content_table.'/'.$vs_key];
 		}

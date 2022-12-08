@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2021 Whirl-i-Gig
+ * Copyright 2015-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -53,11 +53,11 @@
 <?php
 		if(is_array($request_params) && (sizeof($request_params) > 0)) {
 ?>
-				<div id="requestParameters" class="errorPanel">
-						<?= caNavIcon(__CA_NAV_ICON_INFO__ , 2, array('class' => 'permissionErrorIcon')); ?>
-						<div class="errorDescription">
-							<span class="errorMessage"></span>Request parameters:</span>
-							<ol class="paramList">
+			<div id="requestParameters" class="errorPanel">
+				<?= caNavIcon(__CA_NAV_ICON_INFO__ , 2, array('class' => 'permissionErrorIcon')); ?>
+				<div class="errorDescription">
+					<span class="errorMessage"></span>Request parameters:</span>
+					<ol class="paramList">
 <?php
 						foreach($request_params as $k => $v) {
 							print "<li>{$k} =&gt; {$v}</li>";

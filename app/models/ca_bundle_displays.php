@@ -526,7 +526,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 							
 				if (!$pb_settings_only) {
 					$t_placement->setSettingDefinitionsForPlacement($va_available_bundles[$vs_bundle_name_proc]['settings']);
-					$placements[$placement_id]['display'] = $va_available_bundles[$vs_bundle_name]['display'];
+					$placements[$placement_id]['display'] = $va_available_bundles[$vs_bundle_name]['display'] ?? null;
 					$placements[$placement_id]['settingsForm'] = $t_placement->getHTMLSettingForm(array('id' => $vs_bundle_name.'_'.$placement_id, 'settings' => $va_settings, 'table' => $vs_subject_table));
 				} else {
 					$t_instance = Datamodel::getInstanceByTableName($va_bundle_name[0], true);
@@ -710,6 +710,7 @@ if (!$pb_omit_editing_info) {
 		
 		$pb_system_only = 									caGetOption('systemOnly', $options, false);
 		
+		$vn_table_num = null;
 	 	if ($pm_table_name_or_num && !($vn_table_num = Datamodel::getTableNum($pm_table_name_or_num))) { return []; }
 		
 		$o_db = $this->getDb();
@@ -873,6 +874,7 @@ if (!$pb_omit_editing_info) {
 	 * @return bool True if user has access, false if not
 	 */
 	public function haveAccessToDisplay($pn_user_id, $pn_user_access, $pn_display_id=null) {
+		$vn_display_id = null;
 		if ($pn_display_id) {
 			$vn_display_id = $pn_display_id;
 			$t_disp = new ca_bundle_displays($vn_display_id);
@@ -970,7 +972,7 @@ if (!$pb_omit_editing_info) {
 		if (!$pm_table_name_or_num) { $pm_table_name_or_num = $this->get('table_num'); }
 		$pm_table_name_or_num = Datamodel::getTableNum($pm_table_name_or_num);
 		if (!$pm_table_name_or_num) { return null; }
-		$cache_key = caMakeCacheKeyFromOptions($options, $pm_table_name_or_num.'|'.(($g_request && $g_request->user) ? 'USER:'.$g_request->user->getPrimaryKey() : ''));
+		$cache_key = caMakeCacheKeyFromOptions($options ?? [], $pm_table_name_or_num.'|'.(($g_request && $g_request->user) ? 'USER:'.$g_request->user->getPrimaryKey() : ''));
 		if(CompositeCache::contains($cache_key)) {
 			return CompositeCache::fetch($cache_key);
 		}
@@ -1074,7 +1076,7 @@ if (!$pb_omit_editing_info) {
 		}
 		
 		// get attributes
-		$va_element_codes = $t_instance->getApplicableElementCodes(null, false, $options['no_cache']);
+		$va_element_codes = $t_instance->getApplicableElementCodes(null, false, $options['no_cache'] ?? false);
 		
 		$t_md = new ca_metadata_elements();
 		if ($this->inTransaction()) { $t_md->setTransaction($this->getTransaction()); }
@@ -1120,7 +1122,7 @@ if (!$pb_omit_editing_info) {
 			)
 		);
 		foreach($va_element_codes as $vn_element_id => $vs_element_code) {
-			if (!is_null($va_all_elements[$vn_element_id]['settings']['canBeUsedInDisplay'] ) && !$va_all_elements[$vn_element_id]['settings']['canBeUsedInDisplay']) { continue; }
+			if (!is_null($va_all_elements[$vn_element_id]['settings']['canBeUsedInDisplay'] ?? null) && !$va_all_elements[$vn_element_id]['settings']['canBeUsedInDisplay']) { continue; }
 			$t_placement = new ca_bundle_display_placements(null, null, $va_additional_settings);
 			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 			
@@ -1977,8 +1979,8 @@ if (!$pb_omit_editing_info) {
 		$placements_in_display = [];
 		foreach($placements as $placement_id => $va_placement) {
 			$vs_label = ($vs_label = $t_instance->getDisplayLabel($va_placement['bundle_name'])) ? $vs_label : $va_placement['bundle_name'];
-			if(is_array($va_placement['settings']) && is_array($va_placement['settings']['label'])){
-				$tmp = caExtractValuesByUserLocale(array($va_placement['settings']['label']));
+			if(is_array($va_placement['settings'] ?? null) && is_array($va_placement['settings']['label'] ?? null)){
+				$tmp = caExtractValuesByUserLocale(array($va_placement['settings']['label'] ?? null));
 				if ($vs_user_set_label = array_shift($tmp)) {
 					$vs_label = "{$vs_label} (<em>{$vs_user_set_label}</em>)";
 				}
@@ -2205,7 +2207,7 @@ if (!$pb_omit_editing_info) {
 		if (!isset($options['purify'])) { $options['purify'] = false; }
 		if (!isset($options['asHTML'])) { $options['asHTML'] = true; }
 		
-		if (!isset($options['maximumLength'])) { $options['maximumLength'] =  ($va_settings['maximum_length']) ? $va_settings['maximum_length'] : null; }
+		if (!isset($options['maximumLength'])) { $options['maximumLength'] =  ($va_settings['maximum_length'] ?? null) ? $va_settings['maximum_length'] : null; }
 		if (!isset($options['filter'])) { $options['filter'] = caGetOption('filter', $va_settings, null); }
 		
 		$options['delimiter'] = caGetOption('delimiter', $options, caGetOption('delimiter', $va_settings, '; '));
@@ -2338,7 +2340,7 @@ if (!$pb_omit_editing_info) {
 			
 			// policy passed for history tracking current value
 			// returnPath passed to force absolute file path to be used when running reports – some systems cannot handle urls in PDFs due to DNS configuration
-			$vs_val = $po_result->get(join(".", $va_bundle_bits), array_merge(['doRefSubstitution' => true], $options, ['policy' => $va_settings['policy'], 'returnPath' => $options['forReport']]));	
+			$vs_val = $po_result->get(join(".", $va_bundle_bits), array_merge(['doRefSubstitution' => true], $options, ['policy' => $va_settings['policy'] ?? null, 'returnPath' => $options['forReport']]));	
 		}
 		
 		if (isset($options['purify']) && $options['purify']) {
@@ -2529,7 +2531,7 @@ if (!$pb_omit_editing_info) {
 				}
 				
 				if($placement_id === 0) {
-					$t_display->addPlacement($vs_bundle, $va_settings[$placement_id], $i + 1, array('user_id' => $request->getUserID(), 'additional_settings' => $va_available_bundles[$vs_bundle]['settings']));
+					$t_display->addPlacement($vs_bundle, $va_settings[$placement_id] ?? null, $i + 1, array('user_id' => $request->getUserID(), 'additional_settings' => $va_available_bundles[$vs_bundle]['settings'] ?? []));
 					if ($t_display->numErrors()) {
 						$this->errors = $t_display->errors;
 						return false;
@@ -2540,7 +2542,7 @@ if (!$pb_omit_editing_info) {
 					$t_placement->setMode(ACCESS_WRITE);
 					$t_placement->set('rank', $i + 1);
 					
-					if (is_array($va_settings[$placement_id])) {
+					if (is_array($va_settings[$placement_id] ?? null)) {
 						//foreach($va_settings[$placement_id] as $vs_setting => $vs_val) {
 						foreach($t_placement->getAvailableSettings() as $vs_setting => $va_setting_info) {
 							$vs_val = isset($va_settings[$placement_id][$vs_setting]) ? $va_settings[$placement_id][$vs_setting] : null;
@@ -2818,15 +2820,15 @@ if (!$pb_omit_editing_info) {
 				
 				$display_list[$placement_id] = array(
 					'placement_id' => 				$placement_id,
-					'bundle_name' => 				$display_item['bundle_name'],
+					'bundle_name' => 				$display_item['bundle_name'] ?? null,
 					'display' => 					$vs_header,
 					'settings' => 					$va_settings,
-					'allowEditing' =>				$display_item['allowEditing'],
-					'allowInlineEditing' => 		$display_item['allowInlineEditing'],
-					'inlineEditingType' => 			$display_item['inlineEditingType'],
-					'inlineEditingList' => 			$display_item['inlineEditingList'],
-					'inlineEditingListValues' => 	$display_item['inlineEditingListValues'],
-					'inlineEditingListValueMap' => 	$display_item['inlineEditingListValueMap']
+					'allowEditing' =>				$display_item['allowEditing'] ?? null,
+					'allowInlineEditing' => 		$display_item['allowInlineEditing'] ?? null,
+					'inlineEditingType' => 			$display_item['inlineEditingType'] ?? null,
+					'inlineEditingList' => 			$display_item['inlineEditingList'] ?? null,
+					'inlineEditingListValues' => 	$display_item['inlineEditingListValues'] ?? null,
+					'inlineEditingListValueMap' => 	$display_item['inlineEditingListValueMap'] ?? null
 				);
 			}
 		}
@@ -2901,7 +2903,7 @@ if (!$pb_omit_editing_info) {
 					continue;
 				}
 				
-				if (isset($va_attribute_list[$tmp[1]]) && $va_sortable_elements[$va_attribute_list[$tmp[1]]]) {
+				if (isset($va_attribute_list[$tmp[1]]) && ($va_sortable_elements[$va_attribute_list[$tmp[1]]] ?? null)) {
 					$display_list[$i]['is_sortable'] = true;
 					$display_list[$i]['bundle_sort'] = $display_item['bundle_name'];
 					continue;

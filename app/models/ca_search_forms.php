@@ -499,7 +499,8 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		$pa_restrict_to_types = caGetOption('restrictToTypes', $pa_options, null, ['castTo' => 'array']);
 		$pa_restrict_to_types = array_filter($pa_restrict_to_types, function($v) { return (bool)$v; });
 
-		if ($pm_table_name_or_num && !($vn_table_num = Datamodel::getTableNum($pm_table_name_or_num))) { return []; }
+		$vn_table_num = Datamodel::getTableNum($pm_table_name_or_num);
+		if ($pm_table_name_or_num && !$vn_table_num) { return []; }
 
 		$o_db = $this->getDb();
 

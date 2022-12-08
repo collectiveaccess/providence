@@ -50,7 +50,8 @@
 			if (!$vn_col) { 
 				print "<tr>";
 			}
-			$vs_caption = $vo_result->getWithTemplate($vs_caption_template);
+			
+			$vs_caption = $vs_caption_template ? $vo_result->getWithTemplate($vs_caption_template) : caEditorLink($this->request, $vo_result->get('idno'), '', 'ca_objects', $vn_object_id);
 			
 			
 			# --- get the height of the image so can calculate padding needed to center vertically
@@ -68,12 +69,12 @@
 			}
 ?>
 			<td align="center" valign="top" style="padding:2px 2px 2px 2px;">
-				<div class="objectThumbnailsImageContainer" style="padding: <?php print $vn_padding_top_bottom; ?>px 0px <?php print $vn_padding_top_bottom; ?>px 0px;"> 
-					<input type="checkbox" name="add_to_set_ids" value="<?php print (int)$vn_object_id; ?>" class="addItemToSetControl addItemToSetControlInThumbnails"/>		
-					<?php print caEditorLink($this->request, array_shift($va_tmp), 'qlButtonEditorLink', 'ca_objects', $vn_object_id, array(), array('data-id' => $vn_object_id)); ?>
-					<?php if ($vb_has_image) { ?><div class="qlButtonContainerThumbnail" id="ql_<?php print $vn_object_id; ?>"><a class='qlButton' data-id="<?php print $vn_object_id; ?>"><?php print _t("Quick Look"); ?></a></div><?php } ?>
+				<div class="objectThumbnailsImageContainer" style="padding: <?= $vn_padding_top_bottom; ?>px 0px <?= $vn_padding_top_bottom; ?>px 0px;"> 
+					<input type="checkbox" name="add_to_set_ids" value="<?= (int)$vn_object_id; ?>" class="addItemToSetControl addItemToSetControlInThumbnails"/>		
+					<?= caEditorLink($this->request, array_shift($va_tmp), 'qlButtonEditorLink', 'ca_objects', $vn_object_id, array(), array('data-id' => $vn_object_id)); ?>
+					<?php if ($vb_has_image) { ?><div class="qlButtonContainerThumbnail" id="ql_<?= $vn_object_id; ?>"><a class='qlButton' data-id="<?= $vn_object_id; ?>"><?= _t("Quick Look"); ?></a></div><?php } ?>
 				</div>
-				<div class="thumbCaption"><?php print $vs_caption; ?><br/><?php print caEditorLink($this->request, $vs_idno, '', 'ca_objects', $vn_object_id); ?></div>
+				<div class="thumbCaption"><?= $vs_caption; ?></div>
 			</td>
 <?php
 			$vn_col++;
@@ -106,7 +107,7 @@
 		jQuery(".qlButton").on("click", function(e) {
 			var id = jQuery(this).data('id');
 			jQuery("#ql_" + id).css("display", "block");
-			caMediaPanel.showPanel("<?php print caNavUrl($this->request, 'find', 'SearchObjects', 'QuickLook'); ?>/object_id/" + id);
+			caMediaPanel.showPanel("<?= caNavUrl($this->request, 'find', 'SearchObjects', 'QuickLook'); ?>/object_id/" + id);
 		});
 	});
 </script>

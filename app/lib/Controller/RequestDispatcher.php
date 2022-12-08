@@ -179,6 +179,7 @@ class RequestDispatcher extends BaseObject {
 	}
 	# -------------------------------------------------------
 	public function dispatch($pa_plugins) {
+		$va_params = null;
 		$this->setPlugins($pa_plugins);
 		if ($this->isDispatchable()) {
 			do {

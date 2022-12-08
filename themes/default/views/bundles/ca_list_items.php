@@ -37,7 +37,7 @@
 	$add_label 		= $this->getVar('add_label');
 	$rel_types		= $this->getVar('relationship_types');
 	$placement_code = $this->getVar('placement_code');
-	$placement_id	= (int)$settings['placement_id'];
+	$placement_id	= (int)$settings['placement_id'] ?? null;
 	$batch			= $this->getVar('batch');
 	
 	$sort			= ((isset($settings['sort']) && $settings['sort'])) ? $settings['sort'] : '';
@@ -89,7 +89,7 @@
 		print caEditorBundleMetadataDictionary($this->request, $id_prefix, $settings);
 	}
 	
-	$make_link = !strlen(caGetOption('display_template', $va_settings, null));
+	$make_link = !strlen(caGetOption('display_template', $settings, null));
 ?>
 <div id="<?= $id_prefix; ?>" <?= $batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
@@ -109,7 +109,7 @@
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
 <?php
-	switch($settings['list_format']) {
+	switch($settings['list_format'] ?? null) {
 		case 'list':
 ?>
 		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo listRel caRelatedItem">
@@ -135,14 +135,14 @@
 		default:
 ?>
 <?php
-		if ((bool)$settings['restrictToTermsRelatedToCollection']) {
+		if ((bool)($settings['restrictToTermsRelatedToCollection'] ?? false)) {
 ?>
 			<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo">	
 				<table class="attributeListItem" cellpadding="5" cellspacing="0">
 					<tr>
 						<td class="attributeListItem">
 <?php
-	if ($checklist = ca_lists::getListAsHTMLFormElement(null, $id_prefix."_id{n}", null, array('render' => 'checklist', 'limitToItemsRelatedToCollections' => $t_instance->get('ca_collections.collection_id', array('returnAsArray' => true)), 'limitToItemsRelatedToCollectionWithRelationshipTypes' => $settings['restrictToTermsOnCollectionWithRelationshipType'], 'limitToListIDs' => $settings['restrict_to_lists'], 'maxColumns' => 3))) {
+	if ($checklist = ca_lists::getListAsHTMLFormElement(null, $id_prefix."_id{n}", null, array('render' => 'checklist', 'limitToItemsRelatedToCollections' => $t_instance->get('ca_collections.collection_id', array('returnAsArray' => true)), 'limitToItemsRelatedToCollectionWithRelationshipTypes' => $settings['restrictToTermsOnCollectionWithRelationshipType'] ?? null, 'limitToListIDs' => $settings['restrict_to_lists'] ?? null, 'maxColumns' => 3))) {
 		print $checklist;
 	} else {
 ?>
@@ -150,15 +150,15 @@
 <?php
 	}
 	
-	if (isset($settings['restrictToTermsOnCollectionUseRelationshipType']) && is_array($settings['restrictToTermsOnCollectionUseRelationshipType'])) {
+	if (is_array($settings['restrictToTermsOnCollectionUseRelationshipType'] ?? null)) {
 ?>
-							<input type="hidden" name="<?= $id_prefix; ?>_type_id{n}" id="<?= $id_prefix; ?>_type_id{n}" value="<?= array_pop($settings['restrictToTermsOnCollectionUseRelationshipType']); ?>"/>
+							<input type="hidden" name="<?= $id_prefix; ?>_type_id{n}" id="<?= $id_prefix; ?>_type_id{n}" value="<?= array_pop($settings['restrictToTermsOnCollectionUseRelationshipType'] ?? []); ?>"/>
 <?php
 	}
 ?>
 						</td>
 <?php
-	if (!(bool)$settings['restrictToTermsRelatedToCollection']) {
+	if (!(bool)($settings['restrictToTermsRelatedToCollection'] ?? false)) {
 ?>
 						<td>
 							<a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
@@ -205,7 +205,7 @@
 		<div style="clear: both;"><!-- empty --></div>
 		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo caRelatedItem">
 <?php
-		if (!(bool)$settings['useHierarchicalBrowser']) {
+		if (!(bool)($settings['useHierarchicalBrowser'] ?? false)) {
 ?>
 				<table class="caListItem">
 					<tr>
@@ -222,7 +222,7 @@
 <?php
 		} else {
 			$use_as_root_id = 'null';
-			if (sizeof($settings['restrict_to_lists']) == 1) {
+			if (sizeof($settings['restrict_to_lists'] ?? []) == 1) {
 				$t_item = new ca_list_items();
 				if ($t_item->load(array('list_id' => $settings['restrict_to_lists'][0], 'parent_id' => null))) {
 					$use_as_root_id = $t_item->getPrimaryKey();
@@ -254,13 +254,13 @@
 					jQuery(document).ready(function() { 
 						var <?= $id_prefix; ?>oHierBrowser{n} = caUI.initHierBrowser('<?= $id_prefix; ?>_hierarchyBrowser{n}', {
 							uiStyle: 'horizontal',
-							levelDataUrl: '<?= caNavUrl($this->request, 'lookup', 'ListItem', 'GetHierarchyLevel', array('noSymbols' => 1, 'voc' => 1, 'lists' => is_array($settings['restrict_to_lists']) ? join(';', $settings['restrict_to_lists']) : "")); ?>',
+							levelDataUrl: '<?= caNavUrl($this->request, 'lookup', 'ListItem', 'GetHierarchyLevel', array('noSymbols' => 1, 'voc' => 1, 'lists' => is_array($settings['restrict_to_lists'] ?? null) ? join(';', $settings['restrict_to_lists']) : "")); ?>',
 							initDataUrl: '<?= caNavUrl($this->request, 'lookup', 'ListItem', 'GetHierarchyAncestorList'); ?>',
 							
 							bundle: '<?= $id_prefix; ?>',
 							
 							selectOnLoad : true,
-							browserWidth: "<?= $settings['hierarchicalBrowserWidth']; ?>",
+							browserWidth: "<?= $settings['hierarchicalBrowserWidth'] ?? null; ?>",
 							
 							dontAllowEditForFirstLevel: false,
 							
@@ -283,7 +283,7 @@
 						
 						jQuery('#<?= $id_prefix; ?>_hierarchyBrowserSearch{n}').autocomplete(
 							{
-								source: '<?= caNavUrl($this->request, 'lookup', 'ListItem', 'Get', array('noInline' => 1, 'noSymbols' => 1, 'lists' => is_array($settings['restrict_to_lists']) ? join(';', $settings['restrict_to_lists']) : "")); ?>', 
+								source: '<?= caNavUrl($this->request, 'lookup', 'ListItem', 'Get', array('noInline' => 1, 'noSymbols' => 1, 'lists' => is_array($settings['restrict_to_lists'] ?? null) ? join(';', $settings['restrict_to_lists']) : "")); ?>', 
 								minLength: <?= (int)$t_subject->getAppConfig()->get(["ca_list_items_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>, delay: 800, html: true,
 								select: function(event, ui) {
 									if (parseInt(ui.item.id) > 0) {
@@ -318,7 +318,7 @@
 		<input type="hidden" name="<?= $id_prefix; ?>BundleList" id="<?= $id_prefix; ?>BundleList" value=""/>
 		<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
 <?php
-	if (!$read_only && !(bool)$settings['restrictToTermsRelatedToCollection']) {
+	if (!$read_only && !(bool)($settings['restrictToTermsRelatedToCollection'] ?? false)) {
 ?>	
 		<div class='button labelInfo caAddItemButton'><a href='#'><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= $add_label ? $add_label : _t("Add relationship"); ?></a></div>
 <?php
@@ -354,7 +354,7 @@
 	var caRelationBundle<?= $id_prefix; ?>;
 	jQuery(document).ready(function() {
 <?php
-	if (!(bool)$settings['restrictToTermsRelatedToCollection']) {
+	if (!(bool)($settings['restrictToTermsRelatedToCollection'] ?? false)) {
 ?>
 		jQuery('#<?= $id_prefix; ?>caItemListSortControlTrigger').click(function() { jQuery('#<?= $id_prefix; ?>caItemListSortControls').slideToggle(200); return false; });
 		jQuery('#<?= $id_prefix; ?>caItemListSortControls a.caItemListSortControl').click(function() {jQuery('#<?= $id_prefix; ?>caItemListSortControls').slideUp(200); return false; });
@@ -413,12 +413,12 @@
 			autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'Vocabulary', 'Get', $lookup_params); ?>',
 <?php if($quick_add_enabled) { ?>
 			quickaddPanel: caRelationQuickAddPanel<?= $id_prefix; ?>,
-			quickaddUrl: '<?= caNavUrl($this->request, 'administrate/setup/list_item_editor', 'ListItemQuickAdd', 'Form', array('item_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$settings['dont_include_subtypes_in_type_restriction'], 'prepopulate_fields' => join(";", $settings['prepopulateQuickaddFields']), 'lists' => join(';', $settings['restrict_to_lists'] ?? []))); ?>',
+			quickaddUrl: '<?= caNavUrl($this->request, 'administrate/setup/list_item_editor', 'ListItemQuickAdd', 'Form', array('item_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? 0), 'prepopulate_fields' => join(";", $settings['prepopulateQuickaddFields'] ?? []), 'lists' => join(';', $settings['restrict_to_lists'] ?? []))); ?>',
 <?php } ?>
-			lists: <?= json_encode($settings['restrict_to_lists']); ?>,
-			types: <?= json_encode($settings['restrict_to_types']); ?>,
-			restrictToAccessPoint: <?= json_encode($settings['restrict_to_access_point']); ?>,
-			restrictToSearch: <?= json_encode($settings['restrict_to_search']); ?>,
+			lists: <?= json_encode($settings['restrict_to_lists'] ?? []); ?>,
+			types: <?= json_encode($settings['restrict_to_types'] ?? []); ?>,
+			restrictToAccessPoint: <?= json_encode($settings['restrict_to_access_point'] ?? null); ?>,
+			restrictToSearch: <?= json_encode($settings['restrict_to_search'] ?? null); ?>,
 			bundlePreview: <?= caGetBundlePreviewForRelationshipBundle($this->getVar('initialValues')); ?>,
 			readonly: <?= $read_only ? "true" : "false"; ?>,
 			isSortable: <?= ($read_only || $sort) ? "false" : "true"; ?>,

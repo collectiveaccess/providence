@@ -28,7 +28,7 @@
  
 	$vn_rule_count 	= $this->getVar('rule_count');
 ?>
-<h3 class='searchForms'><?php print _t('Data dictionary'); ?>:
+<h3 class='searchForms'><?= _t('Data dictionary'); ?>:
 <div><?php
 	if ($vn_rule_count == 1) {
 		print _t("1 rule is defined");

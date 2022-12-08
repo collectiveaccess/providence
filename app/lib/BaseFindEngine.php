@@ -327,7 +327,7 @@ class BaseFindEngine extends BaseObject {
 	public function _secondarySortHits(array $hits, array $page_hits, string $table, string $primary_field, string $primary_sort_direction, array $sort_fields, array $sort_directions, array $options=null) {
 		$sort_spec = array_shift($sort_fields);
 		$sort_direction = self::sortDirection(array_shift($sort_directions));
-		list($sort_table, $sort_field, $sort_subfield) = explode(".", $sort_spec);
+		@list($sort_table, $sort_field, $sort_subfield) = explode(".", $sort_spec);
 	
 		// Extract sortable values present on results page ($page_hits)
 		$values = $this->_getSortValues($page_hits, $table, $primary_field, $sort_direction);
@@ -440,7 +440,7 @@ class BaseFindEngine extends BaseObject {
 		
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
-		list($sort_table, $sort_field, $sort_subfield) = explode(".", $sort_field);
+		@list($sort_table, $sort_field, $sort_subfield) = explode(".", $sort_field);
 		if (!($t_bundle = Datamodel::getInstanceByTableName($sort_table, true))) { 
 			//throw new ApplicationException(_t('Invalid sort field: %1', $sort_table));
 			return $hits;
@@ -710,7 +710,7 @@ class BaseFindEngine extends BaseObject {
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
 		
-		list($sort_table, $sort_field, $sort_subfield) = explode(".", $sort_field);
+		@list($sort_table, $sort_field, $sort_subfield) = explode(".", $sort_field);
 		
 		$values = [];
 		
@@ -763,6 +763,8 @@ class BaseFindEngine extends BaseObject {
 		$sort_keys = [];
 		while($qr_sort->nextRow()) {
 			$row = $qr_sort->getRow();
+			
+			if(!isset($sort_keys[$row['val']])) { $sort_keys[$row['val']] = 0; }
 			$sort_keys[$row['val']]++;
 		}
 		return $sort_keys;
@@ -937,7 +939,7 @@ class BaseFindEngine extends BaseObject {
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
 		
-		list($sort_table, $sort_field, $sort_subfield) = explode(".", $sort_field);
+		@list($sort_table, $sort_field, $sort_subfield) = explode(".", $sort_field);
 		
 		$row_ids = [];
 		

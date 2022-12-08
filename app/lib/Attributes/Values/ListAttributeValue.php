@@ -342,7 +342,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 			$pa_options['showHierarchy'] = true;
 		}
 
-        if(!$pa_options['showHierarchy']) {
+        if(!($pa_options['showHierarchy'] ?? false)) {
             if($vb_return_idno = ((isset($pa_options['returnIdno']) && (bool)$pa_options['returnIdno']))) {
                 return caGetListItemIdno($this->opn_item_id, $pa_options);
             }
@@ -358,7 +358,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
         }
 
 		$vn_list_id = (is_array($pa_options) && isset($pa_options['list_id'])) ? (int)$pa_options['list_id'] : null;
-		if ($pa_options['showHierarchy'] && !$vn_list_id) {
+		if (($pa_options['showHierarchy'] ?? false) && !$vn_list_id) {
 			$t_item = new ca_list_items();
 		    $t_item->load((int)$this->opn_item_id);
 		    $vn_list_id = $t_item->get('list_id');
@@ -426,7 +426,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 
 		$o_trans = caGetOption('transaction', $pa_options, null);
 
-		$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? false : (bool)$pa_element_info['settings']['requireValue'];
+		$vb_require_value = (is_null($pa_element_info['settings']['requireValue'] ?? null)) ? false : (bool)($pa_element_info['settings']['requireValue'] ?? false);
 
 		$ps_orig_value = $ps_value;
 
@@ -512,11 +512,13 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 	public function htmlFormElement($pa_element_info, $pa_options=null) {
 		/** @var RequestHTTP $o_request */
 		$o_request = $pa_options['request'];
-		$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? false : (bool)$pa_element_info['settings']['requireValue'];
+
+		$vb_require_value = (is_null($pa_element_info['settings']['requireValue'] ?? false)) ? false : (bool)($pa_element_info['settings']['requireValue'] ?? false);
 		
 		$render_as = $pa_element_info['settings']['render'] ?? null;
 		
 		if (($pa_element_info['parent_id']) && ($render_as == 'checklist')) { $render_as = ''; }	// checklists can only be top-level
+		
 		if ((!isset($pa_options['width']) || !strlen($pa_options['width'])) && isset($pa_element_info['settings']['listWidth']) && strlen($pa_element_info['settings']['listWidth']) > 0) { $pa_options['width'] = $pa_element_info['settings']['listWidth']; }
 		if ((!isset($pa_options['height']) || !strlen($pa_options['height'])) && isset($pa_element_info['settings']['listHeight']) && strlen($pa_element_info['settings']['listHeight']) > 0) { $pa_options['height'] = $pa_element_info['settings']['listHeight']; }
 		$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : '');
@@ -524,7 +526,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		if (isset($pa_options['nullOption']) && strlen($pa_options['nullOption'])) {
 			$vb_null_option = $pa_options['nullOption'];
 		} else {
-			$vb_null_option = !$vb_require_value ? ($pa_element_info['settings']['nullOptionText'] ? $pa_element_info['settings']['nullOptionText'] : _t('Not set')) : null;
+			$vb_null_option = !$vb_require_value ? ($pa_element_info['settings']['nullOptionText'] ?? _t('Not set')) : null;
 		}
 		
 		$vb_implicit_nulls = caGetOption('implicitNullOption', $pa_element_info['settings'], false);
@@ -537,7 +539,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		$current_selection_display_format = caGetOption('currentSelectionDisplayFormat', $pa_options, caGetOption('currentSelectionDisplayFormat', $pa_element_info['settings'], null));
 		$separate_disabled_values = caGetOption('separateDisabledValues', $pa_options, caGetOption('separateDisabledValues', $pa_element_info['settings'], false));
 		
-		$vn_max_columns = $pa_element_info['settings']['maxColumns'];
+		$vn_max_columns = $pa_element_info['settings']['maxColumns'] ?? 1;
 
 		if(!isset($pa_options['useDefaultWhenNull'])) {
 			$pa_options['useDefaultWhenNull'] = isset($pa_element_info['settings']['useDefaultWhenNull']) ? (bool)$pa_element_info['settings']['useDefaultWhenNull'] : false;
@@ -558,7 +560,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 					'implicitNullOption' => $vb_implicit_nulls, 'auto_shrink' => $vb_auto_shrink, 
 					'currentSelectionDisplayFormat' => $current_selection_display_format,
 					'separateDisabledValues' => $separate_disabled_values,
-					'deferHierarchyLoad' => (bool)$pa_element_info['settings']['deferHierarchyLoad']
+					'deferHierarchyLoad' => (bool)($pa_element_info['settings']['deferHierarchyLoad'] ?? false)
 				]
 			)
 		);

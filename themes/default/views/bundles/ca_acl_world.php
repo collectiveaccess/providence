@@ -38,15 +38,15 @@
 	
 	$t_acl->set('access', (int)$this->getVar('initialValue'));
 ?>
-<div id="<?php print $vs_id_prefix.'_world'; ?>">
+<div id="<?= $vs_id_prefix.'_world'; ?>">
 	<div class="bundleContainer">
 		<div class="caItemList">
-			<div id="<?php print $vs_id_prefix; ?>_World" class="labelInfo">
+			<div id="<?= $vs_id_prefix; ?>_World" class="labelInfo">
 				<table class="caListItem">
 					<tr>
 						<td class="formLabel">
-							<?php print _t('Everyone'); ?>
-							<?php print $t_acl->htmlFormElement('access', '^ELEMENT', array('name' => $vs_id_prefix.'_access_world', 'id' => $vs_id_prefix.'_access_world')); ?>
+							<?= _t('Everyone'); ?>
+							<?= $t_acl->htmlFormElement('access', '^ELEMENT', array('name' => $vs_id_prefix.'_access_world', 'id' => $vs_id_prefix.'_access_world')); ?>
 						</td>
 					</tr>
 				</table>

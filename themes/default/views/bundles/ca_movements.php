@@ -283,9 +283,9 @@
 			minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_loans_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
 			relationshipTypes: <?= json_encode($this->getVar('relationship_types_by_sub_type')); ?>,
 			autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'Movement', 'Get', $va_lookup_params); ?>',
-			types: <?= json_encode($va_settings['restrict_to_types']); ?>,
-			restrictToAccessPoint: <?= json_encode($va_settings['restrict_to_access_point']); ?>,
-			restrictToSearch: <?= json_encode($va_settings['restrict_to_search']); ?>,
+			types: <?= json_encode($va_settings['restrict_to_types'] ?? null); ?>,
+			restrictToAccessPoint: <?= json_encode($va_settings['restrict_to_access_point'] ?? null); ?>,
+			restrictToSearch: <?= json_encode($va_settings['restrict_to_search'] ?? null); ?>,
 			bundlePreview: <?= caGetBundlePreviewForRelationshipBundle($this->getVar('initialValues')); ?>,
 			readonly: <?= $vb_read_only ? "true" : "false"; ?>,
 			isSortable: <?= ($vb_read_only || $vs_sort) ? "false" : "true"; ?>,
@@ -294,7 +294,7 @@
 			autocompleteInputID: '<?= $vs_id_prefix; ?>_autocomplete',
 <?php if($vb_quick_add_enabled) { ?>
 			quickaddPanel: caRelationQuickAddPanel<?= $vs_id_prefix; ?>,
-			quickaddUrl: '<?= caNavUrl($this->request, 'editor/movements', 'MovementQuickAdd', 'Form', array('movement_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$va_settings['dont_include_subtypes_in_type_restriction'], 'prepopulate_fields' => join(";", $va_settings['prepopulateQuickaddFields']))); ?>',
+			quickaddUrl: '<?= caNavUrl($this->request, 'editor/movements', 'MovementQuickAdd', 'Form', array('movement_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)($va_settings['dont_include_subtypes_in_type_restriction'] ?? 0), 'prepopulate_fields' => join(";", $va_settings['prepopulateQuickaddFields'] ?? []))); ?>',
 <?php } ?>
 			sortUrl: '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Sort', array('table' => $t_item_rel->tableName())); ?>',
 			

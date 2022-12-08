@@ -49,18 +49,18 @@
 	$va_available_items = $this->getVar('available_searches');
 	$va_to_display_items = $this->getVar('selected_searches');
 ?>
-	<div class="bundleDisplayPlacementEditorContainer" id="<?php print $vs_id_prefix; ?>">
+	<div class="bundleDisplayPlacementEditorContainer" id="<?= $vs_id_prefix; ?>">
 	<div id="bundleDisplayPlacementEditor" class="bundleDisplayPlacementEditor">
-		<div class="bundleDisplayPlacementEditorHelpText"><?php print _t("Drag your selection from column to column to edit the content and order of results in the quick search interface."); ?></div>
+		<div class="bundleDisplayPlacementEditorHelpText"><?= _t("Drag your selection from column to column to edit the content and order of results in the quick search interface."); ?></div>
 		<table>
 			<tr valign="top">
 				<td>
-					<div class="preferenceColumnHeader"><?php print _t("Available searches"); ?></div>
+					<div class="preferenceColumnHeader"><?= _t("Available searches"); ?></div>
 		
 					<div id="bundleDisplayEditorAvailableList" class="preferencePlacementList"><!-- empty --></div>
 				</td>
 				<td>
-					<div class="preferenceColumnHeader"><?php print _t("Searches to display"); ?></div>
+					<div class="preferenceColumnHeader"><?= _t("Searches to display"); ?></div>
 					
 					<div id="bundleDisplayEditorToDisplayList" class="preferencePlacementList"><!-- empty --></div>
 				</td>
@@ -78,15 +78,15 @@
 				availableListID: 'bundleDisplayEditorAvailableList',
 				toDisplayListID: 'bundleDisplayEditorToDisplayList',
 				
-				availableDisplayList: <?php print json_encode($va_available_items); ?>,
-				initialDisplayList: 	<?php print json_encode($va_to_display_items); ?>,
-				initialDisplayListOrder : <?php print json_encode(array_keys($va_to_display_items)); ?>,
+				availableDisplayList: <?= json_encode($va_available_items); ?>,
+				initialDisplayList: 	<?= json_encode($va_to_display_items); ?>,
+				initialDisplayListOrder : <?= json_encode(array_keys($va_to_display_items)); ?>,
 				
 				displayBundleListID: 'displayBundleList',
 				
 				allowSettings: false,
-				settingsIcon: "<?php print caNavIcon(__CA_NAV_ICON_INFO__, 1); ?>",
-				saveSettingsIcon: "<?php print caNavIcon(__CA_NAV_ICON_GO__, 1); ?>"
+				settingsIcon: "<?= caNavIcon(__CA_NAV_ICON_INFO__, 1); ?>",
+				saveSettingsIcon: "<?= caNavIcon(__CA_NAV_ICON_GO__, 1); ?>"
 			});		
 		});
 	</script>

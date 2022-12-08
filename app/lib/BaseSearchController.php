@@ -82,6 +82,8 @@ class BaseSearchController extends BaseRefineableSearchController {
 		$vs_search 				= html_entity_decode($this->opo_result_context->getSearchExpression());	// decode entities encoded to avoid Apache request parsing issues (Eg. forward slashes [/] in searches) 
 		$vb_is_new_search		= $this->opo_result_context->isNewSearch();
 		
+		$vo_result = null;
+		
 		if ((bool)$this->request->getParameter('reset', pString) && ($this->request->getParameter('reset', pString) != 'save')) {
 			$vs_search = '';
 			$vb_is_new_search = true;
@@ -116,7 +118,7 @@ class BaseSearchController extends BaseRefineableSearchController {
 		MetaTagManager::setWindowTitle(_t('%1 search', $this->searchName('plural')));
 		
 		$vs_append_to_search = '';
-		if ($pa_options['appendToSearch']) {
+		if ($pa_options['appendToSearch'] ?? false) {
 			$vs_append_to_search .= " AND (".$pa_options['appendToSearch'].")";
 		}
 		//
@@ -283,7 +285,7 @@ class BaseSearchController extends BaseRefineableSearchController {
 		
 		$this->_setBottomLineValues($vo_result, $va_display_list, $t_display);
 		
-		switch($pa_options['output_format']) {
+		switch($pa_options['output_format'] ?? null) {
 			# ------------------------------------
 			case 'LABELS':
 				$this->_genLabels($vo_result, $this->request->getParameter("label_form", pString), $vs_search, $vs_search);

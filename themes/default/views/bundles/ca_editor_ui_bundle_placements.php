@@ -40,18 +40,18 @@
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'UIEditorBundlePlacements');
 	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.'UIEditorBundlePlacements', $va_settings);
 ?>
-<div class="bundleDisplayPlacementEditorContainer" id="<?php print $vs_id_prefix; ?>UIEditorBundlePlacements">
+<div class="bundleDisplayPlacementEditorContainer" id="<?= $vs_id_prefix; ?>UIEditorBundlePlacements">
 	<div id="bundleDisplayPlacementEditor" class="bundleDisplayPlacementEditor">
-		<div class="bundleDisplayPlacementEditorHelpText"><?php print _t("Drag your selection from column to column to edit the contents of the screen."); ?></div>
+		<div class="bundleDisplayPlacementEditorHelpText"><?= _t("Drag your selection from column to column to edit the contents of the screen."); ?></div>
 		<table>
 			<tr valign="top">
 				<td>
-					<div><?php print _t("Available editor elements"); ?></div>
+					<div><?= _t("Available editor elements"); ?></div>
 		
 					<div id="bundleDisplayEditorAvailableList" class="bundleDisplayEditorPlacementList"><!-- empty --></div>
 				</td>
 				<td>
-					<div><?php print _t("Elements to display on this screen"); ?></div>
+					<div><?= _t("Elements to display on this screen"); ?></div>
 					
 					<div id="bundleDisplayEditorToDisplayList" class="bundleDisplayEditorPlacementList"><!-- empty --></div>
 				</td>
@@ -59,7 +59,7 @@
 		</table>
 		
 		
-		<input type="hidden" id="<?php print $vs_id_prefix; ?>displayBundleList" name="<?php print $vs_id_prefix; ?>displayBundleList" value=""/>
+		<input type="hidden" id="<?= $vs_id_prefix; ?>displayBundleList" name="<?= $vs_id_prefix; ?>displayBundleList" value=""/>
 	</div>
 	
 	<script type="text/javascript">
@@ -69,14 +69,14 @@
 				availableListID: 'bundleDisplayEditorAvailableList',
 				toDisplayListID: 'bundleDisplayEditorToDisplayList',
 				
-				availableDisplayList: <?php print json_encode($va_available_display_items); ?>,
-				initialDisplayList: 	<?php print json_encode($va_to_display_items); ?>,
-				initialDisplayListOrder : <?php print json_encode(array_keys($va_to_display_items)); ?>,
+				availableDisplayList: <?= json_encode($va_available_display_items); ?>,
+				initialDisplayList: 	<?= json_encode($va_to_display_items); ?>,
+				initialDisplayListOrder : <?= json_encode(array_keys($va_to_display_items)); ?>,
 				
-				displayBundleListID: '<?php print $vs_id_prefix; ?>displayBundleList',
+				displayBundleListID: '<?= $vs_id_prefix; ?>displayBundleList',
 				
-				settingsIcon: "<?php print caNavIcon(__CA_NAV_ICON_INFO__, 1); ?>",
-				saveSettingsIcon: "<?php print caNavIcon(__CA_NAV_ICON_GO__, 1); ?>"
+				settingsIcon: "<?= caNavIcon(__CA_NAV_ICON_INFO__, 1); ?>",
+				saveSettingsIcon: "<?= caNavIcon(__CA_NAV_ICON_GO__, 1); ?>"
 			});		
 		});
 	</script>

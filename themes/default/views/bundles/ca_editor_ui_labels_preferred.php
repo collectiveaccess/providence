@@ -41,7 +41,7 @@
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'Labels', $va_settings, caInitialValuesArrayHasValue($vs_id_prefix.'Labels', $va_initial_values));
 	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.'Labels', $va_settings);
 ?>
-<div id="<?php print $vs_id_prefix; ?>Labels">
+<div id="<?= $vs_id_prefix; ?>Labels">
 <?php
 	//
 	// The bundle template - used to generate each bundle in the form
@@ -50,10 +50,10 @@
 	<textarea class='caLabelTemplate' style='display: none;'>
 		<div id="{fieldNamePrefix}Label_{n}" class="labelInfo">
 			<div style="float: right;">
-				<a href="#" class="caDeleteLabelButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
+				<a href="#" class="caDeleteLabelButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 			</div>
 			
-			<?php print $t_label->htmlFormElement('name', "^ELEMENT", array_merge($va_settings, array('name' => "{fieldNamePrefix}name_{n}", 'id' => "{fieldNamePrefix}name_{n}", "value" => "{{name}}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry', 'readonly' => $vb_read_only))); ?>
+			<?= $t_label->htmlFormElement('name', "^ELEMENT", array_merge($va_settings, array('name' => "{fieldNamePrefix}name_{n}", 'id' => "{fieldNamePrefix}name_{n}", "value" => "{{name}}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry', 'readonly' => $vb_read_only))); ?>
 			<br/>
 			<?php print '<div class="formLabel">'.$locale_list.'</div>'; ?>	
 		</div>
@@ -63,18 +63,18 @@
 		<div class="caLabelList">
 
 		</div>
-		<div class="button labelInfo caAddLabelButton"><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print _t("Add label"); ?></a></div>
+		<div class="button labelInfo caAddLabelButton"><a href='#'><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= _t("Add label"); ?></a></div>
 	</div>
 
 
 </div>
 <script type="text/javascript">
-	caUI.initLabelBundle('#<?php print $vs_id_prefix; ?>Labels', {
+	caUI.initLabelBundle('#<?= $vs_id_prefix; ?>Labels', {
 		mode: 'preferred',
-		fieldNamePrefix: '<?php print $vs_id_prefix; ?>',
+		fieldNamePrefix: '<?= $vs_id_prefix; ?>',
 		templateValues: ['name', 'locale_id'],
-		initialValues: <?php print json_encode($va_initial_values); ?>,
-		forceNewValues: <?php print json_encode($va_force_new_labels); ?>,
+		initialValues: <?= json_encode($va_initial_values); ?>,
+		forceNewValues: <?= json_encode($va_force_new_labels); ?>,
 		labelID: 'Label_',
 		localeClassName: 'labelLocale',
 		templateClassName: 'caLabelTemplate',
@@ -82,7 +82,7 @@
 		addButtonClassName: 'caAddLabelButton',
 		deleteButtonClassName: 'caDeleteLabelButton',
 		bundlePreview: <?php $va_cur = current($va_initial_values); print caEscapeForBundlePreview($va_cur['name']); ?>,
-		readonly: <?php print $vb_read_only ? "1" : "0"; ?>,
-		defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>
+		readonly: <?= $vb_read_only ? "1" : "0"; ?>,
+		defaultLocaleID: <?= ca_locales::getDefaultCataloguingLocaleID(); ?>
 	});
 </script>

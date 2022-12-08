@@ -46,7 +46,7 @@ if (!$this->request->isAjax()) {
 		$va_errors[] = $o_error->getErrorDescription();
 	}
 ?>
-<div id="<?php print $vs_id_prefix; ?>">
+<div id="<?= $vs_id_prefix; ?>">
 	<div class="bundleContainer">
 <?php
 	if ($qr_result && ($qr_result->tableName() == 'ca_objects') && $qr_result->numHits() > 0) {
@@ -71,7 +71,7 @@ if (!$this->request->isAjax()) {
 
 			while($qr_result->nextHit()) {
 ?>
-		<div class="labelInfo listRel caRelatedItem" <?php print $vs_color ? "style=\"background-color: #{$vs_color};\"" : ""; ?>>
+		<div class="labelInfo listRel caRelatedItem" <?= $vs_color ? "style=\"background-color: #{$vs_color};\"" : ""; ?>>
 <?php	
 				print $qr_result->getWithTemplate($va_settings['displayTemplate']);		
 ?>
@@ -83,7 +83,7 @@ if (!$this->request->isAjax()) {
 		default:
 			while($qr_result->nextHit()) {
 ?>
-		<div class="labelInfo roundedRel caRelatedItem" <?php print $vs_color ? "style=\"background-color: #{$vs_color};\"" : ""; ?>>
+		<div class="labelInfo roundedRel caRelatedItem" <?= $vs_color ? "style=\"background-color: #{$vs_color};\"" : ""; ?>>
 <?php	
 				print $qr_result->getWithTemplate($va_settings['displayTemplate']);		
 ?>
@@ -94,7 +94,7 @@ if (!$this->request->isAjax()) {
 		}
 	} else {
 ?>
-		<div class="labelInfo"><table><tr><td><?php print _t('Empty'); ?></td></tr></table></div>
+		<div class="labelInfo"><table><tr><td><?= _t('Empty'); ?></td></tr></table></div>
 <?php
 	}
 ?>

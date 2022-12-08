@@ -57,7 +57,7 @@
 		$va_errors[] = $o_error->getErrorDescription();
 	}
 ?>
-<div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
+<div id="<?= $vs_id_prefix.$t_item->tableNum().'_rel'; ?>" <?= $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
     <div class='bundleSubLabel'>
         <div style='clear:both;'></div></div><!-- end bundleSubLabel -->
 <?php
@@ -66,22 +66,22 @@
 	//
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
-		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo listRel caRelatedItem">
+		<div id="<?= $vs_id_prefix; ?>Item_{n}" class="labelInfo listRel caRelatedItem">
 <?php
 	if (!$vb_read_only && !$vb_dont_show_del) {
 ?>				
-			<a href="#" class="caDeleteItemButton listRelDeleteButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
+			<a href="#" class="caDeleteItemButton listRelDeleteButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 <?php
 	}
 ?>
-			<span id='<?php print $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
+			<span id='<?= $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
 			    {{created_on_display}} by {{name}} ({{email}})
                 
                 <blockquote>{{comment}}</blockquote>
 				
 				{{moderation_message}}
 			</span>
-			<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_comment_id{n}" value="{comment_id}"/>
+			<input type="hidden" name="<?= $vs_id_prefix; ?>_id{n}" id="<?= $vs_id_prefix; ?>_comment_id{n}" value="{comment_id}"/>
 		</div>
 
 	</textarea>
@@ -91,7 +91,7 @@
 <?php
 	if (sizeof($va_errors)) {
 ?>
-		    <span class="formLabelError"><?php print join("; ", $va_errors); ?><br class="clear"/></span>
+		    <span class="formLabelError"><?= join("; ", $va_errors); ?><br class="clear"/></span>
 <?php
 	}
 ?>
@@ -101,27 +101,27 @@
 </div>
 
 <script type="text/javascript">
-	var caRelationBundle<?php print $vs_id_prefix; ?>;
+	var caRelationBundle<?= $vs_id_prefix; ?>;
 	jQuery(document).ready(function() {
-		jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControlTrigger').click(function() { jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControls').slideToggle(200); return false; });
-		jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControls a.caItemListSortControl').click(function() {jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControls').slideUp(200); return false; });
+		jQuery('#<?= $vs_id_prefix; ?>caItemListSortControlTrigger').click(function() { jQuery('#<?= $vs_id_prefix; ?>caItemListSortControls').slideToggle(200); return false; });
+		jQuery('#<?= $vs_id_prefix; ?>caItemListSortControls a.caItemListSortControl').click(function() {jQuery('#<?= $vs_id_prefix; ?>caItemListSortControls').slideUp(200); return false; });
 		
-		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
-			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
-			initialValues: <?php print json_encode($this->getVar('initialValues')); ?>,
-			initialValueOrder: <?php print json_encode(array_keys($this->getVar('initialValues'))); ?>,
-			itemID: '<?php print $vs_id_prefix; ?>Item_',
-			placementID: '<?php print $vn_placement_id; ?>',
+		caRelationBundle<?= $vs_id_prefix; ?> = caUI.initRelationBundle('#<?= $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
+			fieldNamePrefix: '<?= $vs_id_prefix; ?>_',
+			initialValues: <?= json_encode($this->getVar('initialValues')); ?>,
+			initialValueOrder: <?= json_encode(array_keys($this->getVar('initialValues'))); ?>,
+			itemID: '<?= $vs_id_prefix; ?>Item_',
+			placementID: '<?= $vn_placement_id; ?>',
 			initialValueTemplateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',
 			listItemClassName: 'caRelatedItem',
 			deleteButtonClassName: 'caDeleteItemButton',
 			showEmptyFormsOnLoad: 0,
 			returnTextValues: true,
-			restrictToAccessPoint: <?php print json_encode($va_settings['restrict_to_access_point']); ?>,
-			restrictToSearch: <?php print json_encode($va_settings['restrict_to_search']); ?>,
-			bundlePreview: <?php print caGetBundlePreviewForRelationshipBundle($this->getVar('initialValues')); ?>,
-			readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
+			restrictToAccessPoint: <?= json_encode($va_settings['restrict_to_access_point'] ?? null); ?>,
+			restrictToSearch: <?= json_encode($va_settings['restrict_to_search'] ?? null); ?>,
+			bundlePreview: <?= caGetBundlePreviewForRelationshipBundle($this->getVar('initialValues')); ?>,
+			readonly: <?= $vb_read_only ? "true" : "false"; ?>,
 			isSortable: false,
 
 			templateValues: ['comment', 'id', 'access', 'moderation_message', 'rank', 'created_on', 'created_on_display', 'fname', 'lname', 'email']

@@ -47,26 +47,26 @@
 ?>
 	<script type="text/javascript">
 		jQuery(document).ready(function() {
-			jQuery('#<?php print $vs_id_prefix.$t_subject->tableNum(); ?>_rel_batch_mode_select').change(function() {
+			jQuery('#<?= $vs_id_prefix.$t_subject->tableNum(); ?>_rel_batch_mode_select').change(function() {
 				if ((jQuery(this).val() == '_disabled_') || (jQuery(this).val() == '_delete_')) {
-					jQuery('#<?php print $vs_id_prefix.$t_subject->tableNum().'_ca_object_representations_access_status'; ?>').slideUp(250);
+					jQuery('#<?= $vs_id_prefix.$t_subject->tableNum().'_ca_object_representations_access_status'; ?>').slideUp(250);
 				} else {
-					jQuery('#<?php print $vs_id_prefix.$t_subject->tableNum().'_ca_object_representations_access_status'; ?>').slideDown(250);
+					jQuery('#<?= $vs_id_prefix.$t_subject->tableNum().'_ca_object_representations_access_status'; ?>').slideDown(250);
 				}
 			});
-			jQuery('#<?php print $vs_id_prefix.$t_subject->tableNum().'_ca_object_representations_access_status'; ?>').hide();
+			jQuery('#<?= $vs_id_prefix.$t_subject->tableNum().'_ca_object_representations_access_status'; ?>').hide();
 		});
 	</script>
 
-<div id="<?php print $vs_id_prefix.$t_subject->tableNum(); ?>_ca_object_representations_access_status">
+<div id="<?= $vs_id_prefix.$t_subject->tableNum(); ?>_ca_object_representations_access_status">
 	<div class="bundleContainer">
 		<div class="caItemList">
 			<div class="labelInfo">
 				<div class="caObjectRepresentationDetailEditorText">
-					<?php print _t('Sets access and status values for <strong>all</strong> representations related to %1 in this batch.', $t_subject->getProperty('NAME_PLURAL')); ?>
+					<?= _t('Sets access and status values for <strong>all</strong> representations related to %1 in this batch.', $t_subject->getProperty('NAME_PLURAL')); ?>
 				</div>
-				<div class="caObjectRepresentationDetailEditorElement"><?php print $t_rep->htmlFormElement('access', null, array('classname' => '', 'id' => "{$vs_id_prefix}access", 'name' => "{$vs_id_prefix}_access", "value" => "", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations_access_status')); ?></div>
-				<div class="caObjectRepresentationDetailEditorElement"><?php print $t_rep->htmlFormElement('status', null, array('classname' => '', 'id' => "{$vs_id_prefix}status", 'name' => "{$vs_id_prefix}_status", "value" => "", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations_access_status')); ?></div>
+				<div class="caObjectRepresentationDetailEditorElement"><?= $t_rep->htmlFormElement('access', null, array('classname' => '', 'id' => "{$vs_id_prefix}access", 'name' => "{$vs_id_prefix}_access", "value" => "", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations_access_status')); ?></div>
+				<div class="caObjectRepresentationDetailEditorElement"><?= $t_rep->htmlFormElement('status', null, array('classname' => '', 'id' => "{$vs_id_prefix}status", 'name' => "{$vs_id_prefix}_status", "value" => "", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations_access_status')); ?></div>
 				<br class="clear"/>
 			</div>
 		</div>

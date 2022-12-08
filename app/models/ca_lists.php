@@ -824,6 +824,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * @return int
 	 */
 	public function numItemsInList($pm_list_name_or_id=null, $pn_type_id=null, $pa_options=null) {
+		$pa_check_access = caGetOption('checkAccess', $pa_options, null);
 		if (!$pm_list_name_or_id) {
 			$vn_list_id = $this->getPrimaryKey();
 		} else {
@@ -898,7 +899,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * @return array 
 	 */
 	public function getItemFromList($pm_list_name_or_id, $ps_idno, $pa_options=null) {
-		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$pm_list_name_or_id}/{$ps_idno}");
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], "{$pm_list_name_or_id}/{$ps_idno}");
 		if (isset(ca_lists::$s_list_item_get_cache[$vs_cache_key])) {
 			return ca_lists::$s_list_item_get_cache[$vs_cache_key];
 		}
@@ -906,7 +907,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$vs_deleted_sql = caGetOption('includeDeleted', $pa_options, false) ? "" : "(cli.deleted = 0) AND ";
 	
 		$vn_list_id = $this->_getListID($pm_list_name_or_id);
-		$vs_alt_key = caMakeCacheKeyFromOptions($pa_options, "{$vn_list_id}/{$ps_idno}");
+		$vs_alt_key = caMakeCacheKeyFromOptions($pa_options ?? [], "{$vn_list_id}/{$ps_idno}");
 		if (isset(ca_lists::$s_list_item_get_cache[$vs_alt_key])) {
 			return ca_lists::$s_list_item_get_cache[$vs_alt_key];
 		}
@@ -915,10 +916,9 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		
 		$va_params = [(int)$vn_list_id, (string)$ps_idno];
 		$vs_access_sql = '';
-        if (is_array($pa_check_access) && (sizeof($pa_check_access) > 0)) {
-            $pa_check_access = array_map("intval", $pa_check_access);
+        if (is_array($pa_options['checkAccess'] ?? null) && (sizeof($pa_options['checkAccess']) > 0)) {
             $vs_access_sql = " AND cli.access IN (?)";
-            $va_params[] = $pa_check_access;
+            $va_params[] = array_map("intval", $pa_options['checkAccess']);
         }
         
 		$qr_res = $o_db->query("
@@ -984,7 +984,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public function getItemFromListByItemValue($pm_list_name_or_id, $pm_value, $pa_options=null) {
 		$pa_check_access = caGetOption('checkAccess', $pa_options, null);
-		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$pm_list_name_or_id}/{$pm_value}");
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], "{$pm_list_name_or_id}/{$pm_value}");
 		
 		if (isset(ca_lists::$s_list_item_value_display_cache[$vs_cache_key])) {
 			$va_items = ca_lists::$s_list_item_value_display_cache[$vs_cache_key];
@@ -1029,13 +1029,13 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * @return array 
 	 */
 	public function getItemFromListByLabel($pm_list_name_or_id, $ps_label_name, $pa_options=null) {
-	    $vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$pm_list_name_or_id}/{$ps_label_name}");
+	    $vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], "{$pm_list_name_or_id}/{$ps_label_name}");
 		if (isset(ca_lists::$s_list_item_get_cache[$vs_cache_key])) {
 			return ca_lists::$s_list_item_get_cache[$vs_cache_key];
 		}
 	
 		$vn_list_id = $this->_getListID($pm_list_name_or_id);
-		$vs_alt_key = caMakeCacheKeyFromOptions($pa_options, "{$vn_list_id}/{$ps_label_name}");
+		$vs_alt_key = caMakeCacheKeyFromOptions($pa_options ?? [], "{$vn_list_id}/{$ps_label_name}");
 		if (isset(ca_lists::$s_list_item_get_cache[$vs_alt_key])) {
 			return ca_lists::$s_list_item_get_cache[$vs_alt_key];
 		}
@@ -1079,7 +1079,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	public function getItemFromListForDisplay($pm_list_name_or_id, $ps_idno, $pa_options=null) {
 	    $pb_return_plural = !is_array($pa_options) ? (bool)$pa_options : (caGetOption('return', $pa_options, 'singular') == 'plural');
 		$pa_check_access = caGetOption('checkAccess', $pa_options, null);
-		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$pm_list_name_or_id}/{$ps_idno}");
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], "{$pm_list_name_or_id}/{$ps_idno}");
 		
 		if (isset(ca_lists::$s_list_item_display_cache[$ps_idno])) {
 			$va_items = ca_lists::$s_list_item_display_cache[$vs_cache_key];
@@ -1138,7 +1138,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	public function getItemForDisplayByItemID($pn_item_id, $pa_options=null) {
 	    $pb_return_plural = !is_array($pa_options) ? (bool)$pa_options : (caGetOption('return', $pa_options, 'singular') == 'plural');
 		$pa_check_access = caGetOption('checkAccess', $pa_options, null);
-		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$pn_item_id}");
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], "{$pn_item_id}");
 		
 		if (isset(ca_lists::$s_list_item_display_cache[$vs_cache_key])) {
 			$va_items = ca_lists::$s_list_item_display_cache[$vs_cache_key];
@@ -1169,7 +1169,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$va_tmp = caExtractValuesByUserLocale($va_items, null, isset($pa_options['locale']) ? [$pa_options['locale']] : null, array());
 		$va_item = array_shift($va_tmp);
 		
-		return $va_item[$pb_return_plural ? 'name_plural' : 'name_singular'];
+		return is_array($va_item) ? $va_item[$pb_return_plural ? 'name_plural' : 'name_singular'] ?? null : null;
 	}
 	# ------------------------------------------------------
 	/**
@@ -1370,8 +1370,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * @return int list for the specified list, or null if the list does not exist
 	 */
 	static function getListID($pm_list_name_or_id, $pa_options=null) {
-	    $vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $pm_list_name_or_id);
-		if (ca_lists::$s_list_id_cache[$vs_cache_key]) {
+	    $vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], $pm_list_name_or_id);
+		if (ca_lists::$s_list_id_cache[$vs_cache_key] ?? null) {
 			return ca_lists::$s_list_id_cache[$vs_cache_key];
 		}
 		if (is_numeric($pm_list_name_or_id)) {
@@ -1399,7 +1399,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * @return int list for the specified list, or null if the list does not exist
 	 */
 	static function getListCode($pm_list_name_or_id, $pa_options=null) {
-		if (ca_lists::$s_list_code_cache[$pm_list_name_or_id]) {
+		if (ca_lists::$s_list_code_cache[$pm_list_name_or_id] ?? null) {
 			return ca_lists::$s_list_code_cache[$pm_list_name_or_id];
 		}
 		if (!is_numeric($pm_list_name_or_id)) {
@@ -1555,7 +1555,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		if (!isset($pa_options['omitItemsWithID']) || !is_array($pa_options['omitItemsWithID']) || !sizeof($pa_options['omitItemsWithID'])) { $pa_options['omitItemsWithID'] = null; }
 		$pa_exclude_items = caGetOption('exclude', $pa_options, null);
 	
-		if ((isset($pa_options['nullOption']) && $pa_options['nullOption']) && (($render_as !== 'checklist') && !$pa_options['requireValue'] )) {
+		if ((isset($pa_options['nullOption']) && $pa_options['nullOption']) && (($render_as !== 'checklist') && !($pa_options['requireValue'] ?? false) )) {
 			$va_options[''] = $pa_options['nullOption'];
 		}
 		
@@ -1582,9 +1582,9 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		if(!is_array($pa_check_access) && $pa_check_access) { $va_check_access = array($va_check_access); }
 		
 		$va_in_use_list = null;
-		if ($pa_options['inUse'] && (int)$pa_options['element_id'] && $pa_options['table']) {
+		if (($pa_options['inUse'] ?? false) && (int)($pa_options['element_id'] ?? 0) && ($pa_options['table'] ?? null)) {
 			if ($t_instance = Datamodel::getInstance($pa_options['table'], true)) {
-				$va_params = array((int)$pa_options['element_id']);
+				$va_params = array((int)($pa_options['element_id'] ?? null));
 				if(is_array($pa_check_access) && sizeof($pa_check_access)) {
 					$va_params[] = $pa_check_access;
 				}
@@ -1844,12 +1844,16 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			case 'vert_hierbrowser':
 			case 'vert_hierbrowser_up':
 			case 'vert_hierbrowser_down':
-				$va_width = caParseFormElementDimension($pa_options['width'] ? $pa_options['width'] : $pa_options['width']);
-				if (($va_width['type'] != 'pixels') && ($va_width['dimension'] < 250)) { $va_width['dimension'] = 500; }
-				$vn_width = $va_width['dimension'].'px';
-				$va_height = caParseFormElementDimension($pa_options['height']);
-				if (($va_height['type'] != 'pixels') && ($va_height['dimension'] < 100)) { $va_height['dimension'] = 200; }
-				$vn_height = $va_height['dimension'].'px';
+				$vn_width = $vn_height = null;
+				
+				if(is_array($va_width = caParseFormElementDimension($pa_options['width'] ? $pa_options['width'] : $pa_options['width']))) {
+					if (($va_width['type'] != 'pixels') && ($va_width['dimension'] < 250)) { $va_width['dimension'] = 500; }
+					$vn_width = $va_width['dimension'].'px';
+				}
+				if(is_array($va_height = caParseFormElementDimension($pa_options['height']))) {
+					if (($va_height['type'] != 'pixels') && ($va_height['dimension'] < 100)) { $va_height['dimension'] = 200; }
+					$vn_height = $va_height['dimension'].'px';
+				}
 				
 				$t_root_item = new ca_list_items();
 				$t_root_item->load(['list_id' => $vn_list_id, 'parent_id' => null]);
@@ -2053,7 +2057,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * @return array
 	 */
 	static public function getListCodes($pa_options=null) {		
-		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options);
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? []);
 		if (ExternalCache::contains($vs_cache_key, 'listCodes') && is_array($v = ExternalCache::fetch($vs_cache_key, 'listCodes'))) { 
 			return $v; 
 		}

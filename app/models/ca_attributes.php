@@ -393,9 +393,9 @@ class ca_attributes extends BaseModel {
 			if ($t_attr_val->load($o_attr_val->getValueID())) {
 			    $va_element = array_shift(array_filter($va_elements, function($e) use ($vn_element_id) { return $e['element_id'] == $vn_element_id; }));
 				if(isset($pa_values[$vn_element_id])) {
-					$vm_value = $pa_values[$vn_element_id];
+					$vm_value = $pa_values[$vn_element_id] ?? null;
 				} else {
-					$vm_value = $pa_values[$o_attr_val->getElementCode()];
+					$vm_value = $pa_values[$o_attr_val->getElementCode()] ?? null;
 				}
                 if ((isset($va_element['settings']['isDependentValue']) && (bool)$va_element['settings']['isDependentValue']) && (is_null($vm_value))) {
                     $vm_value = caProcessTemplate($va_element['settings']['dependentValueTemplate'], $pa_values);
@@ -486,7 +486,7 @@ class ca_attributes extends BaseModel {
 				cav.attribute_id = ?
 		", (int)$this->getPrimaryKey());
 		
-		$o_attr = new Attribute($this->getFieldValuesArray());
+		$o_attr = new \CA\Attributes\Attribute($this->getFieldValuesArray());
 		while($qr_attrs->nextRow()) {
 			$va_raw_row = $qr_attrs->getRow();
 			$o_attr->addValueFromRow($va_raw_row);
@@ -550,7 +550,7 @@ class ca_attributes extends BaseModel {
 		$vn_width = 25;
 		$vn_max_length = 255;
 		
-		$vs_element = Attribute::valueHTMLFormElement($pa_element_info['datatype'], $pa_element_info, $pa_options);
+		$vs_element = \CA\Attributes\Attribute::valueHTMLFormElement($pa_element_info['datatype'], $pa_element_info, $pa_options);
 		
 		$ps_format = isset($pa_options['format']) ? $pa_options['format'] : null;
 		
@@ -654,7 +654,7 @@ class ca_attributes extends BaseModel {
 				
 				// when creating the attribute you want element_id = to the "set" id (ie. the element_id in the ca_attributes row) so we overwrite
 				// the element_id of the ca_attribute_values row before we pass the array to Attribute() below
-				$o_attr = new Attribute(array_merge($va_raw_row, array('element_id' => $va_raw_row['element_set_id'])));
+				$o_attr = new \CA\Attributes\Attribute(array_merge($va_raw_row, array('element_id' => $va_raw_row['element_set_id'])));
 			}
 			
 			$o_attr->addValueFromRow($va_raw_row);
@@ -863,7 +863,7 @@ class ca_attributes extends BaseModel {
 				
 				// when creating the attribute you want element_id = to the "set" id (ie. the element_id in the ca_attributes row) so we overwrite
 				// the element_id of the ca_attribute_values row before we pass the array to Attribute() below
-				$o_attr = new Attribute(array_merge($va_raw_row, array('element_id' => $va_raw_row['element_set_id'])));
+				$o_attr = new \CA\Attributes\Attribute(array_merge($va_raw_row, array('element_id' => $va_raw_row['element_set_id'])));
 			}
 			$o_attr->addValueFromRow($va_raw_row);
 			

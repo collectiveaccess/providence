@@ -35,7 +35,7 @@
 	$settings 			= $this->getVar('settings');
 	
 	$is_batch			= $this->getVar('batch');
-	$use_classic_interface 	= (($settings['uiStyle'] === 'CLASSIC') || $is_batch);		// use classic UI for batch always
+	$use_classic_interface 	= ((($settings['uiStyle'] ?? null) === 'CLASSIC') || $is_batch);		// use classic UI for batch always
 
 	if ($use_classic_interface || $is_batch) {
 		print $this->render('ca_object_representations_classic.php');
@@ -105,7 +105,7 @@
 	if (!RequestHTTP::isAjax()) {
 		if(caGetOption('showCount', $settings, false)) { print $count ? "({$count})" : ''; }
 	
-		if ($vb_batch) {
+		if ($is_batch) {
 			print caBatchEditorRelationshipModeControl($t_item, $id_prefix);
 		} else {		
 			print caEditorBundleShowHideControl($this->request, $id_prefix, $settings, caInitialValuesArrayHasValue($id_prefix, $this->getVar('initialValues')));
@@ -409,7 +409,7 @@
 ?>
 	    <div class='bundleSubLabel'>
 <?php
-			print caEditorBundleBatchEditorControls($this->request, $vn_placement_id, $t_subject, $t_instance->tableName(), $settings);
+			print caEditorBundleBatchEditorControls($this->request, $settings['placement_id'] ?? null, $t_subject, $t_instance->tableName(), $settings);
             print caEditorBundleSortControls($this->request, $id_prefix, $t_item->tableName(), $t_instance->tableName(), array_merge($settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
 
 		    if (($rep_count > 1) && $this->request->getUser()->canDoAction('can_download_ca_object_representations')) {
@@ -457,7 +457,7 @@
 			placementID: <?= json_encode($settings['placement_id']); ?>,
 			showEmptyFormsOnLoad: 1,
 			readonly: <?= $read_only ? "true" : "false"; ?>,
-			isSortable: <?= !$read_only && !$batch ? "true" : "false"; ?>,
+			isSortable: <?= !$read_only && !$is_batch ? "true" : "false"; ?>,
 			listSortOrderID: '<?= $id_prefix; ?>_ObjectRepresentationBundleList',
 			defaultLocaleID: <?= ca_locales::getDefaultCataloguingLocaleID(); ?>,
 			
@@ -467,8 +467,8 @@
 			
 			extraParams: { exact: 1 },
 			
-			minRepeats: <?= $batch ? 1 : caGetOption('minRelationshipsPerRow', $settings, 0); ?>,
-			maxRepeats: <?= $batch ? 1 : caGetOption('maxRelationshipsPerRow', $settings, 65535); ?>,
+			minRepeats: <?= $is_batch ? 1 : caGetOption('minRelationshipsPerRow', $settings, 0); ?>,
+			maxRepeats: <?= $is_batch ? 1 : caGetOption('maxRelationshipsPerRow', $settings, 65535); ?>,
 			
 			sortUrl: '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Sort', array('table' => $t_item_rel->tableName())); ?>',
 			

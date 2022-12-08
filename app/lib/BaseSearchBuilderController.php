@@ -71,6 +71,8 @@
  			}
  			parent::Index($pa_options);
  			
+ 			$vo_result = null;
+ 			
  			AssetLoadManager::register('hierBrowser');
  			AssetLoadManager::register('browsable');	// need this to support browse panel when filtering/refining search results
  			$t_model = Datamodel::getInstanceByTableName($this->ops_tablename, true);
@@ -123,7 +125,7 @@
  			MetaTagManager::setWindowTitle(_t('%1 search', $this->searchName('plural')));
  			
 			$vs_append_to_search = '';
- 			if ($pa_options['appendToSearch']) {
+ 			if ($pa_options['appendToSearch'] ?? false) {
  				$vs_append_to_search .= " AND (".$pa_options['appendToSearch'].")";
  			}
 			//
@@ -280,7 +282,7 @@
 			
 			$this->_setBottomLineValues($vo_result, $va_display_list, $t_display);
 			
- 			switch($pa_options['output_format']) {
+ 			switch($pa_options['output_format'] ?? null) {
  				# ------------------------------------
  				case 'LABELS':
  					$this->_genLabels($vo_result, $this->request->getParameter("label_form", pString), $vs_search, $vs_search);

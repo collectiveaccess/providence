@@ -41,7 +41,7 @@ print $vs_control_box = caFormControlBox(
 		print caFormTag($this->request, 'ImportData/'.$this->request->getActionExtra(), 'caBatchMetadataImportForm', null, 'POST', 'multipart/form-data', '_top', array('noCSRFToken' => false, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
 ?>
 		<div class='bundleLabel'>
-			<span class="formLabelText"><?php print _t('Importer'); ?></span> 
+			<span class="formLabelText"><?= _t('Importer'); ?></span> 
 			<div class="bundleContainer">
 				<div class="caLabelList" >
 					<p>
@@ -53,7 +53,7 @@ print $vs_control_box = caFormControlBox(
 			</div>
 		</div>
 		<div class='bundleLabel'>
-			<span class="formLabelText"><?php print _t('Data format'); ?></span> 
+			<span class="formLabelText"><?= _t('Data format'); ?></span> 
 			<div class="bundleContainer">
 				<div class="caLabelList" >
 					<p>
@@ -67,7 +67,7 @@ print $vs_control_box = caFormControlBox(
 			</div>
 		</div>
 		<div class='bundleLabel' id="caSourceFileContainer">
-			<span class="formLabelText"><?php print _t('Data file'); ?></span> 
+			<span class="formLabelText"><?= _t('Data file'); ?></span> 
 			<div class="bundleContainer">
 				<div class="caLabelList" >
 					<div style='padding:10px 0px 10px 10px;'>
@@ -106,7 +106,7 @@ print $vs_control_box = caFormControlBox(
 			</div>
 		</div>
 		<div class='bundleLabel' id="caSourceUrlContainer">
-			<span class="formLabelText"><?php print _t('Data URL'); ?></span> 
+			<span class="formLabelText"><?= _t('Data URL'); ?></span> 
 			<div class="bundleContainer">
 				<div class="caLabelList" >
 					<p>
@@ -118,7 +118,7 @@ print $vs_control_box = caFormControlBox(
 			</div>
 		</div>
 		<div class='bundleLabel' id="caSourceTextContainer">
-			<span class="formLabelText"><?php print _t('Data as text'); ?></span> 
+			<span class="formLabelText"><?= _t('Data as text'); ?></span> 
 			<div class="bundleContainer">
 				<div class="caLabelList" >
 					<p>
@@ -130,7 +130,7 @@ print $vs_control_box = caFormControlBox(
 			</div>
 		</div>
 		<div class='bundleLabel'>
-			<span class="formLabelText"><?php print _t('Log level'); ?></span> 
+			<span class="formLabelText"><?= _t('Log level'); ?></span> 
 			<div class="bundleContainer">
 				<div class="caLabelList">
 					<p>
@@ -142,7 +142,7 @@ print $vs_control_box = caFormControlBox(
 			</div>
 		</div>
 		<div class='bundleLabel'>
-			<span class="formLabelText"><?php print _t('Limit log to'); ?></span> 
+			<span class="formLabelText"><?= _t('Limit log to'); ?></span> 
 			<div class="bundleContainer">
 				<div class="caLabelList">
 					<table style="width: 600px; margin-left: 10px;">
@@ -166,7 +166,7 @@ print $vs_control_box = caFormControlBox(
 			</div>
 		</div>
 		<div class='bundleLabel'>
-			<span class="formLabelText"><?php print _t('Testing options'); ?></span> 
+			<span class="formLabelText"><?= _t('Testing options'); ?></span> 
 			<div class="bundleContainer">
 				<div class="caLabelList" >
 					<p class="formLabelPlain">
@@ -192,7 +192,7 @@ print $vs_control_box = caFormControlBox(
 
 <script type="text/javascript">
 	function caShowConfirmBatchExecutionPanel() {
-		var msg = '<?php print addslashes(_t("You are about to import data using the <em>%1</em> importer")); ?>';
+		var msg = '<?= addslashes(_t("You are about to import data using the <em>%1</em> importer")); ?>';
 		msg = msg.replace("%1", jQuery("#caImporterList option:selected").text())
 		
 		caConfirmBatchExecutionPanel.showPanel();
@@ -203,8 +203,8 @@ print $vs_control_box = caFormControlBox(
 		e.preventDefault();
 	});
 	
-	var caDataReaderInfo = <?php print json_encode(ca_data_importers::getInfoForAvailableInputFormats()); ?>;
-	var caImporterInfo = <?php print json_encode(ca_data_importers::getImporters(null, ['dontIncludeWorksheet' => true])); ?>;
+	var caDataReaderInfo = <?= json_encode(ca_data_importers::getInfoForAvailableInputFormats()); ?>;
+	var caImporterInfo = <?= json_encode(ca_data_importers::getImporters(null, ['dontIncludeWorksheet' => true])); ?>;
 	
 	function caSetBatchMetadataImportFormState(dontAnimate) {
 		var info;

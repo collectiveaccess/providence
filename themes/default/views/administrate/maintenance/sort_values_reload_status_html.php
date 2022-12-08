@@ -27,7 +27,7 @@
  */
 	AssetLoadManager::register("sortableUI");
 ?>
-<h1><?php print _t('Reload sort values'); ?></h1>
+<h1><?= _t('Reload sort values'); ?></h1>
 
 
 <div class="searchReindexTableProgressGroup">

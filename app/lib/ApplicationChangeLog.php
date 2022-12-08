@@ -435,7 +435,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 									} else {
 							
 										// Adjust display of value for different field types
-										switch($va_field_info['FIELD_TYPE']) {
+										switch($va_field_info['FIELD_TYPE'] ?? null) {
 											case FT_BIT:
 												$vs_proc_val = $vs_value ? 'Yes' : 'No';
 												break;
@@ -447,7 +447,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 										if ($t_user && !$t_user->getBundleAccessLevel($t_item->tableName(), $vs_field)) { continue; }	// does user have access to this bundle?
 										
 										// Adjust display of value for lists
-										if ($va_field_info['LIST']) {
+										if ($va_field_info['LIST'] ?? null) {
 											$t_list = new ca_lists();
 											if ($t_list->load(array('list_code' => $va_field_info['LIST']))) {
 												$vn_list_id = $t_list->getPrimaryKey();
@@ -457,7 +457,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 												}
 											}
 										} else {
-											if ($va_field_info['BOUNDS_CHOICE_LIST']) {
+											if ($va_field_info['BOUNDS_CHOICE_LIST'] ?? null) {
 												// TODO
 											}
 										}
@@ -465,7 +465,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 								}
 								
 								$va_changes[] = array(
-									'label' => $va_field_info['LABEL'],
+									'label' => $va_field_info['LABEL'] ?? null,
 									'description' => (strlen((string)$vs_proc_val) ? $vs_proc_val : $vs_blank_placeholder),
 									'value' => $vs_value
 								);
@@ -497,7 +497,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 								
 								if ($t_user && !$t_user->getBundleAccessLevel($t_item->tableName(), $vs_element_code)) { continue; }	// does user have access to this bundle?
 							
-								if ($o_attr_val = Attribute::getValueInstance($t_element->get('datatype'))) {
+								if ($o_attr_val = \CA\Attributes\Attribute::getValueInstance($t_element->get('datatype'))) {
 									$o_attr_val->loadValueFromRow($va_log_entry['snapshot']);
 									$vs_attr_val = $o_attr_val->getDisplayValue();
 								} else {
@@ -507,7 +507,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 								// Convert list-based attributes to text
 								if ($vn_list_id = $t_element->get('list_id')) {
 									$t_list = new ca_lists();
-									$vs_attr_val = $t_list->getItemFromListForDisplayByItemID($vn_list_id, $vs_attr_val, true);
+									$vs_attr_val = $t_list->getItemFromListForDisplayByItemID($vn_list_id, $vs_attr_val, []);
 								}
 								
 								if (!$vs_attr_val) { 
@@ -537,7 +537,10 @@ require_once(__CA_LIB_DIR__."/Db.php");
 								} else {
 									// other side of rel is on left
 									$t_related_table = Datamodel::getInstanceByTableNum($t_obj->getLeftTableNum(), true);
-									$t_related_table->load($va_log_entry['snapshot'][$t_obj->getLeftTableFieldName()]);
+									
+									if($id = ($va_log_entry['snapshot'][$t_obj->getLeftTableFieldName()] ?? null)) {
+										$t_related_table->load($id);
+									}
 								}
 								$t_rel = Datamodel::getInstanceByTableNum($t_obj->tableNum(), true);
 								
@@ -550,8 +553,8 @@ require_once(__CA_LIB_DIR__."/Db.php");
 									'table_name' => $t_related_table->tableName(),
 									'table_num' => $t_related_table->tableNum(),
 									'row_id' => $t_related_table->getPrimaryKey(),
-									'rel_type_id' => $va_log_entry['snapshot']['type_id'],
-									'rel_typename' => $t_rel->getRelationshipTypename('ltor', $va_log_entry['snapshot']['type_id'])
+									'rel_type_id' => $va_log_entry['snapshot']['type_id'] ?? null,
+									'rel_typename' => $t_rel->getRelationshipTypename('ltor', $va_log_entry['snapshot']['type_id'] ?? null)
 								);
 							}
 						}
@@ -568,13 +571,13 @@ require_once(__CA_LIB_DIR__."/Db.php");
 						
 							$va_log_output[$vs_unit_identifier][] = array(
 								'datetime' => $vs_datetime,
-								'timestamp' => $va_log_entry['log_datetime'],
-								'user_id' => $va_log_entry['user_id'],
+								'timestamp' => $va_log_entry['log_datetime'] ?? null,
+								'user_id' => $va_log_entry['user_id'] ?? null,
 								'user_fullname' => $vs_user,
 								'user_email' => $vs_email,
 								'user' => $vs_user.($vs_email ? ' ('.$vs_email.')' : ''),
-								'changetype_display' => $va_change_types[$va_log_entry['changetype']],
-								'changetype' => $va_log_entry['changetype'],
+								'changetype_display' => $va_change_types[$va_log_entry['changetype']] ?? null,
+								'changetype' => $va_log_entry['changetype'] ?? null,
 								'changes' => $va_changes,
 								'subject' => $vs_subject_display_name,
 								'subject_id' => $vn_subject_row_id,
@@ -1347,7 +1350,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 								
 								if ($t_user && !$t_user->getBundleAccessLevel($t_logged->tableName(), $vs_element_code)) { continue; }	// does user have access to this bundle?
 							
-								if ($o_attr_val = Attribute::getValueInstance($t_element->get('datatype'))) {
+								if ($o_attr_val = \CA\Attributes\Attribute::getValueInstance($t_element->get('datatype'))) {
 									$o_attr_val->loadValueFromRow($va_log_entry['snapshot']);
 									$vs_attr_val = $o_attr_val->getDisplayValue();
 								} else {

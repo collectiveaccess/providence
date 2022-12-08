@@ -77,7 +77,7 @@
 		foreach($placements as $placement_id => $info) {
 			$class="";
 			$tmp = explode('.', $info['bundle_name']);
-			if ((in_array($tmp[0], array('ca_object_representations')) && ($tmp[1] === 'media'))) { continue; } // skip object representations because we always output it above
+			if ((in_array($tmp[0] ?? null, array('ca_object_representations')) && (($tmp[1] ?? null) === 'media'))) { continue; } // skip object representations because we always output it above
 			
 			if (!strlen($display_value = $t_display->getDisplayValue($t_item, ($placement_id > 0) ? $placement_id : $info['bundle_name'], array_merge(['request' => $this->request], is_array($info['settings']) ? $info['settings'] : [])))) {
 				if (!(bool)$t_display->getSetting('show_empty_values')) { continue; }

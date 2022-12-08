@@ -33,19 +33,19 @@
 		<form id="tagListForm"><input type="hidden" name="mode" value="search">
 		
 		<div style="text-align:right;">
-			<?php print _t('Batch actions'); ?>: </a>
-			<a href='#' onclick='jQuery("#tagListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Tags', 'DeleteTags'); ?>").submit();' class='form-button'><span class='form-button approveDelete'><?php print caNavIcon(__CA_NAV_ICON_DELETE__, 1); ?><span class='formtext'><?php print _t("Delete"); ?></span></span></a>
+			<?= _t('Batch actions'); ?>: </a>
+			<a href='#' onclick='jQuery("#tagListForm").attr("action", "<?= caNavUrl($this->request, 'manage', 'Tags', 'DeleteTags'); ?>").submit();' class='form-button'><span class='form-button approveDelete'><?= caNavIcon(__CA_NAV_ICON_DELETE__, 1); ?><span class='formtext'><?= _t("Delete"); ?></span></span></a>
 		</div>
 		<table id="caTagsList" class="listtable" border="0" cellpadding="0" cellspacing="1" style="margin-top:10px;">
 			<thead>
 				<tr>
 					<th class="list-header-unsorted">
-						<?php print _t('Tag'); ?>
+						<?= _t('Tag'); ?>
 					</th>
 					<th class="list-header-unsorted">
-						<?php print _t('Number of tagged items'); ?>
+						<?= _t('Number of tagged items'); ?>
 					</th>
-					<th class="{sorter: false} list-header-nosort"><?php print _t('Select'); ?></th>
+					<th class="{sorter: false} list-header-nosort"><?= _t('Select'); ?></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -58,7 +58,7 @@
 ?>
 				<tr>
 					<td>
-						<?php print caNavLink($this->request, $tag = $vo_result->get('ca_item_tags.tag'), '', 'find', 'QuickSearch', 'Index', ['search' => "ca_item_tags.tag:\"{$tag}\""]); ?>
+						<?= caNavLink($this->request, $tag = $vo_result->get('ca_item_tags.tag'), '', 'find', 'QuickSearch', 'Index', ['search' => "ca_item_tags.tag:\"{$tag}\""]); ?>
 					</td>
 					<td>
 <?php
@@ -66,7 +66,7 @@
 ?>
 					</td>
 					<td>
-						<input type="checkbox" name="tag_id[]" value="<?php print $vo_result->get('ca_item_tags.tag_id'); ?>">
+						<input type="checkbox" name="tag_id[]" value="<?= $vo_result->get('ca_item_tags.tag_id'); ?>">
 					</td>
 				</tr>
 <?php

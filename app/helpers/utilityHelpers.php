@@ -1451,7 +1451,7 @@ function caFileIsIncludable($ps_file) {
 			if (!is_array($va_data)) { continue; }
 			$va_key = array();
 			foreach($va_sort_keys as $vs_sort_key) {
-			    $k = isset($va_data[$vs_sort_key.'_sort_']) ? $va_data[$vs_sort_key.'_sort_'] : $va_data[$vs_sort_key];  // an alternative sort-specific value for a key may be present with the suffix "_sort_"; when present we use this in preference to the key value
+			    $k = isset($va_data[$vs_sort_key.'_sort_']) ? $va_data[$vs_sort_key.'_sort_'] : $va_data[$vs_sort_key] ?? null;  // an alternative sort-specific value for a key may be present with the suffix "_sort_"; when present we use this in preference to the key value
 				
 				if ($pb_natural_sort || $pb_case_insensitive) { $k = mb_strtolower($k); }
 				if ($pb_natural_sort) {
@@ -1741,7 +1741,7 @@ function caFileIsIncludable($ps_file) {
 	  * @param string $ps_additional_text Additional text to add to key
 	  * @return string An MD5 cache key for the options array
 	  */
-	function caMakeCacheKeyFromOptions($pa_options, $ps_additional_text=null) {
+	function caMakeCacheKeyFromOptions(array $pa_options, ?string $ps_additional_text=null) {
 		if (!is_array($pa_options)) { return md5($pa_options.$ps_additional_text); }
 		foreach($pa_options as $vs_key => $vm_value) {
 			if (is_object($vm_value)) { unset($pa_options[$vs_key]); }
@@ -4747,20 +4747,25 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 *
 	 */
-	function caReturnValueInBytes($vs_val) {
-		$vs_val = trim($vs_val);
-		$vs_last = strtolower($vs_val[strlen($vs_val)-1]);
-		switch($vs_last) {
-			case 't':
-				$vs_val *= 1024;
-			case 'g':
-				$vs_val *= 1024;
-			case 'm':
-				$vs_val *= 1024;
-			case 'k':
-				$vs_val *= 1024;
+	function caReturnValueInBytes(string $val) {
+		$val = trim($val);
+		$last = strtolower($val[strlen($val)-1]);
+		
+		if(preg_match("!^([\d\.\,]+)!", $val, $m)) {
+			$val = $m[1];
+			switch($last) {
+				case 't':
+					$val *= 1024;
+				case 'g':
+					$val *= 1024;
+				case 'm':
+					$val *= 1024;
+				case 'k':
+					$val *= 1024;
+			}
+			return $val;
 		}
-		return $vs_val;
+		return null;
 	}
 	# ----------------------------------------
 	/**

@@ -1175,6 +1175,8 @@ class BaseEditorController extends ActionController {
 		AssetLoadManager::register('imageScroller');
 		AssetLoadManager::register('datePickerUI');
 
+		$vn_above_id = $vn_after_id = null;
+		
 		$t_subject = Datamodel::getInstanceByTableName($this->ops_table_name);
 		$vn_subject_id = $this->request->getParameter($t_subject->primaryKey(), pInteger);
 
@@ -1492,8 +1494,7 @@ class BaseEditorController extends ActionController {
 		$limit_to_types = $this->getRequest()->config->get($this->ops_table_name.'_navigation_new_menu_limit_types_to');
 		$exclude_types = $this->getRequest()->config->get($this->ops_table_name.'_navigation_new_menu_exclude_types');
 		
-        $va_limit_to_type_ids = (is_array($va_limit_to_types) && sizeof($va_limit_to_types)) ? caMakeTypeIDList($this->ops_table_name, $va_limit_to_types, ['dontIncludeSubtypesInTypeRestriction' => true]) : null;
-		foreach($va_subtypes as $vs_sort_key => $va_type) {
+        foreach($va_subtypes as $vs_sort_key => $va_type) {
 			foreach($va_type as $vn_item_id => $va_item) {
 				if (is_array($pa_restrict_to_types) && !in_array($vn_item_id, $pa_restrict_to_types)) { continue; }
 				if (is_array($limit_to_types) && sizeof($limit_to_types) && !in_array($va_item['parameters']['type_id'], $limit_to_types)) { continue; }

@@ -107,7 +107,7 @@
 				
 				$attr_table = method_exists($o_value, 'tableName') ? $o_value->tableName() : null;
 				
-				if ($va_failed_updates[$vn_attr_id] && !in_array($o_value->getDatatype(), array(
+				if (is_array($va_failed_updates) && $va_failed_updates[$vn_attr_id] && !in_array($o_value->getDatatype(), array(
 					__CA_ATTRIBUTE_VALUE_LCSH__, 
 					__CA_ATTRIBUTE_VALUE_OBJECTS__,
 					__CA_ATTRIBUTE_VALUE_OBJECTLOTS__,
@@ -159,7 +159,7 @@
 				}
 				foreach($va_initial_values as $vn_attr_id => $va_values) {
 					foreach($va_values as $vn_element_id => $vs_value) {
-						$va_initial_values[$vn_attr_id][$vn_element_id.'_label'] = $va_labels[$va_initial_values[$vn_attr_id][$vn_element_id]];
+						$va_initial_values[$vn_attr_id][$vn_element_id.'_label'] = $va_labels[$va_initial_values[$vn_attr_id][$vn_element_id]] ?? null;
 					}
 				}
 			}
@@ -184,7 +184,7 @@
 	
 	// bundle settings
 	global $g_ui_locale;
-	if (!$vs_add_label = $va_settings['add_label'][$g_ui_locale]) {
+	if (!$vs_add_label = ($va_settings['add_label'][$g_ui_locale] ?? null)) {
 		$vs_add_label = _t("Add %1", $vs_element_set_label);
 	}
 	

@@ -171,7 +171,7 @@
 						"datetime" => $vs_datetime_text
 					);
 				}
-				if(!(intval($pa_settings["height_px"]) > 30 && intval($pa_settings["height_px"]) < 1000)){ // if value is not within reasonable boundaries, set it to default
+				if(!(intval(($pa_settings["height_px"] ?? 0)) > 30 && intval(($pa_settings["height_px"] ?? 0)) < 1000)){ // if value is not within reasonable boundaries, set it to default
 					$this->opo_view->setVar("height_px", 270);
 				} else {
 					$this->opo_view->setVar("height_px", intval($pa_settings["height_px"]));
