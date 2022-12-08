@@ -824,6 +824,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * @return int
 	 */
 	public function numItemsInList($pm_list_name_or_id=null, $pn_type_id=null, $pa_options=null) {
+		$pa_check_access = caGetOption('checkAccess', $pa_options, null);
 		if (!$pm_list_name_or_id) {
 			$vn_list_id = $this->getPrimaryKey();
 		} else {

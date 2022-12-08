@@ -82,6 +82,8 @@ class BaseSearchController extends BaseRefineableSearchController {
 		$vs_search 				= html_entity_decode($this->opo_result_context->getSearchExpression());	// decode entities encoded to avoid Apache request parsing issues (Eg. forward slashes [/] in searches) 
 		$vb_is_new_search		= $this->opo_result_context->isNewSearch();
 		
+		$vo_result = null;
+		
 		if ((bool)$this->request->getParameter('reset', pString) && ($this->request->getParameter('reset', pString) != 'save')) {
 			$vs_search = '';
 			$vb_is_new_search = true;

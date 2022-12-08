@@ -184,7 +184,7 @@ class ResultContext {
 	public function setSearchExpressionForDisplay($ps_display_expression) {
 		$va_expressions_for_display = ResultContextStorage::getVar('expressions_for_display');
 		
-		if (!$va_expressions_for_display[$vs_current_expression = $this->getSearchExpression(true)] || ($vs_current_expression != $ps_display_expression)) {
+		if (!($va_expressions_for_display[$vs_current_expression = $this->getSearchExpression(true)] ?? null) || ($vs_current_expression != $ps_display_expression)) {
 			$va_expressions_for_display[$vs_current_expression] = $ps_display_expression;
 		}
 		ResultContextStorage::setVar('expressions_for_display', $va_expressions_for_display);
@@ -234,7 +234,7 @@ class ResultContext {
 		if (($pn_page = intval($this->opo_request->getParameter('page', pString, ['forcePurify' => true]))) < 1) { 
 			// no page in request so fetch from context 
 			if ($va_context = $this->getContext()) {
-				$pn_page = $va_context['page'];
+				$pn_page = $va_context['page'] ?? 1;
 			}
 			if (!$pn_page) { $pn_page = 1; }
 			return $pn_page;
@@ -265,7 +265,7 @@ class ResultContext {
 	 */
 	public function getResultList() {
 		if ($va_context = $this->getContext()) {
-			return $va_context['result_list'];
+			return $va_context['result_list'] ?? null;
 		}
 		return null;
 	}
@@ -289,7 +289,7 @@ class ResultContext {
 	 */
 	public function getResultCount() {
 		if ($va_context = $this->getContext()) {
-			return sizeof($va_context['result_list']);
+			return sizeof($va_context['result_list'] ?? []);
 		}
 		return 0;
 	}
@@ -325,7 +325,7 @@ class ResultContext {
 	public function getItemsPerPage() {
 		if (!($pn_items_per_page = $this->opo_request->getParameter('n', pInteger))) {
 			if ($va_context = $this->getContext()) {
-				return $va_context['num_items_per_page'] ? $va_context['num_items_per_page'] : null;
+				return $va_context['num_items_per_page'] ? $va_context['num_items_per_page'] ?? 10 : null;
 			}
 		} else {
 			$this->setContextValue('num_items_per_page', $pn_items_per_page);
@@ -358,7 +358,7 @@ class ResultContext {
 	public function getLetterBarPage() {
 		if (!($ps_letter_bar_page = htmlspecialchars(strip_tags($this->opo_request->getParameter('l', pString, ['forcePurify' => true]))))) {
 			if ($va_context = $this->getContext()) {
-				return $va_context['letter_bar_page'] ? $va_context['letter_bar_page'] : null;
+				return ($va_context['letter_bar_page'] ?? null) ? $va_context['letter_bar_page'] : null;
 			}
 		} else {
 			$this->setContextValue('letter_bar_page', $ps_letter_bar_page);
@@ -393,7 +393,7 @@ class ResultContext {
 	public function getCurrentView() {
 		if (!($ps_view = htmlspecialchars($this->opo_request->getParameter('view', pString, ['forcePurify' => true])))) {
 			if ($va_context = $this->getContext()) {
-				return $va_context['view'] ? $va_context['view'] : null;
+				return ($va_context['view'] ?? null) ? $va_context['view'] : null;
 			}
 		} else {
 			$this->setContextValue('view', $ps_view);
@@ -428,7 +428,7 @@ class ResultContext {
 	public function getCurrentSort() {
 		if (!($ps_sort = htmlspecialchars($this->opo_request->getParameter('sort', pString, ['forcePurify' => true])))) {
 			if ($va_context = $this->getContext()) {
-				return ($va_context['sort'] ?? false) ? $va_context['sort'] : null;
+				return ($va_context['sort'] ?? null) ? $va_context['sort'] : null;
 			}
 		} else {
 			$this->opb_sort_has_changed = true;
@@ -464,7 +464,7 @@ class ResultContext {
 	public function getCurrentSecondarySort() {
 		if (!($ps_secondary_sort = htmlspecialchars($this->opo_request->getParameter('secondarySort', pString, ['forcePurify' => true])))) {
 			if ($va_context = $this->getContext()) {
-				return $va_context['secondarySort'] ? $va_context['secondarySort'] : null;
+				return ($va_context['secondarySort'] ?? null) ? $va_context['secondarySort'] : null;
 			}
 		} else {
 			$this->setContextValue('secondarySort', $ps_secondary_sort);
@@ -542,7 +542,7 @@ class ResultContext {
 			return null;
 		} elseif (!($pn_type_id = htmlspecialchars(html_entity_decode($this->opo_request->getParameter('type_id', pString, ['forcePurify' => true]))))) {
 			if ($va_context = $this->getContext()) {
-				return $va_context['type_id'] ? $va_context['type_id'] : null;
+				return ($va_context['type_id'] ?? null) ? $va_context['type_id'] : null;
 			}
 		} else {
 			if (!is_numeric($pn_type_id)) { 
@@ -607,7 +607,7 @@ class ResultContext {
 	public function getCurrentBundleDisplay($pn_type_id=null, $ps_show_in=null) {
 		if (!strlen($pn_display_id = htmlspecialchars($this->opo_request->getParameter('display_id', pString, ['forcePurify' => true])))) { 
 			if ($va_context = $this->getContext()) {
-				$pn_display_id = $va_context[$pn_type_id ? "display_id_{$pn_type_id}" : "display_id"];
+				$pn_display_id = $va_context[$pn_type_id ? "display_id_{$pn_type_id}" : "display_id"] ?? null;
 			}
 			if (!$pn_display_id) { 
 				// Try to guess
@@ -617,7 +617,7 @@ class ResultContext {
 					if ($ps_show_in) {
 						foreach($displays as $id => $d) {
 							$d = array_shift($d);
-							if (($show_in_setting = caGetOption('show_only_in', $d['settings'], null, ['castTo' => 'array'])) && (sizeof($show_in_setting) > 0)) {
+							if (($show_in_setting = caGetOption('show_only_in', $d['settings'] ?? [], null, ['castTo' => 'array'])) && (sizeof($show_in_setting) > 0)) {
 								if(sizeof(array_filter($show_in_setting, function($v) use($ps_show_in) { return preg_match("!{$ps_show_in}!", $v); })) > 0) {
 									$pn_display_id = $id;
 									break;
@@ -663,7 +663,7 @@ class ResultContext {
 		if (!($ps_children_display_mode = $this->opo_request->getParameter('children', pString, ['forcePurify' => true]))) {
 			if ($va_context = $this->getContext()) {
 				$o_config = Configuration::load();
-				return (in_array(strtolower($va_context['children_display_mode']), ['show', 'hide', 'alwaysshow', 'alwayshide']) ? $va_context['children_display_mode'] : (($vs_children_display_mode_default = $o_config->get($this->ops_table_name."_children_display_mode_in_results")) ? $vs_children_display_mode_default : "alwaysShow"));
+				return (in_array(strtolower($va_context['children_display_mode'] ?? 'show'), ['show', 'hide', 'alwaysshow', 'alwayshide']) ? ($va_context['children_display_mode'] ?? false) : (($vs_children_display_mode_default = $o_config->get($this->ops_table_name."_children_display_mode_in_results")) ? $vs_children_display_mode_default : "alwaysShow"));
 			}
 		} else {
 			$this->setContextValue('children_display_mode', $ps_children_display_mode);
@@ -719,7 +719,7 @@ class ResultContext {
 		if (!($deaccession_display_mode = $this->opo_request->getParameter('deaccession', pString, ['forcePurify' => true]))) {
 			if ($context = $this->getContext()) {
 				$o_config = Configuration::load();
-				return (in_array(strtolower($context['deaccession_display_mode']), ['show', 'hide', 'alwaysshow', 'alwayshide']) ? $context['deaccession_display_mode'] : (($vs_deaccession_display_mode_default = $o_config->get($this->ops_table_name."_deaccession_display_mode_in_results")) ? $vs_deaccession_display_mode_default : "alwaysShow"));
+				return (in_array(strtolower($context['deaccession_display_mode'] ?? 'show'), ['show', 'hide', 'alwaysshow', 'alwayshide']) ? ($context['deaccession_display_mode'] ?? false) : (($vs_deaccession_display_mode_default = $o_config->get($this->ops_table_name."_deaccession_display_mode_in_results")) ? $vs_deaccession_display_mode_default : "alwaysShow"));
 			}
 		} else {
 			$this->setContextValue('deaccesion_display_mode', $deaccession_display_mode);
@@ -741,7 +741,7 @@ class ResultContext {
 	public function getParameter($ps_param, $pb_dont_fetch_from_request=false) {
 		if ($pb_dont_fetch_from_request) {
 			if ($va_context = $this->getContext()) {
-				return $va_context['param_'.$ps_param] ? $va_context['param_'.$ps_param] : null;
+				return $va_context['param_'.$ps_param] ?? null ? $va_context['param_'.$ps_param] : null;
 			}
 		} else {
 			if (!isset($_REQUEST[$ps_param]) && (!$this->opo_request || !$this->opo_request->getParameter($ps_param, pString, ['forcePurify' => true]))) {
@@ -823,7 +823,7 @@ class ResultContext {
 			$vs_find_tag = ResultContextStorage::getVar('result_last_context_'.$vs_table_name);
 			
 			$va_find_tag = explode('/', $vs_find_tag);
-			return $va_find_tag[0];
+			return $va_find_tag[0] ?? null;
 		} 
 		return ResultContextStorage::getVar('result_last_context_'.$vs_table_name);
 	}
@@ -841,7 +841,7 @@ class ResultContext {
 		
 		$va_tmp = explode('/', ResultContextStorage::getVar('result_last_context_'.$vs_table_name));
 	
-		return new ResultContext($po_request, $vs_table_name, $va_tmp[0], isset($va_tmp[1]) ? $va_tmp[1] : null);
+		return new ResultContext($po_request, $vs_table_name, $va_tmp[0] ?? null, $va_tmp[1] ?? null);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -860,7 +860,7 @@ class ResultContext {
 		$find_nav = $o_find_navigation->getAssoc($table_name);
 		if(is_null($nav = caGetOption($find_type, $find_nav, null))) { return null; }
 		
-		return caNavUrl($request, trim($nav['module_path']), trim($nav['controller']), trim($nav['action']), []);
+		return caNavUrl($request, trim($nav['module_path'] ?? null), trim($nav['controller']?? null), trim($nav['action'] ?? null), []);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -881,15 +881,15 @@ class ResultContext {
 		$o_find_navigation = Configuration::load(((defined('__CA_THEME_DIR__') && (__CA_APP_TYPE__ == 'PAWTUCKET')) ? __CA_THEME_DIR__ : __CA_APP_DIR__).'/conf/find_navigation.conf');
 
 		$va_find_nav = $o_find_navigation->getAssoc($vs_table_name);
-		$va_nav = $va_find_nav[$va_tmp[0]];
+		$va_nav = $va_find_nav[$va_tmp[0] ?? 0] ?? null;
 		if (!$va_nav) { return false; }
 		
 		if (__CA_APP_TYPE__ == 'PAWTUCKET') {
 			// Pawtucket-specific navigation rewriting
 			if (
-				!file_exists($vs_path = __CA_THEME_DIR__."/controllers/".(trim($va_nav['module_path']) ? trim($va_nav['module_path'])."/" : "").$va_nav['controller']."Controller.php")
+				!file_exists($vs_path = __CA_THEME_DIR__."/controllers/".(trim($va_nav['module_path'] ?? null) ? trim($va_nav['module_path'])."/" : "").$va_nav['controller']."Controller.php")
 				&&
-				!file_exists($vs_path = __CA_APP_DIR__."/controllers/".(trim($va_nav['module_path']) ? trim($va_nav['module_path'])."/" : "").$va_nav['controller']."Controller.php")
+				!file_exists($vs_path = __CA_APP_DIR__."/controllers/".(trim($va_nav['module_path'] ?? null) ? trim($va_nav['module_path'])."/" : "").$va_nav['controller']."Controller.php")
 			) { return false; }
 			include_once($vs_path);
 			$vs_controller_class = $va_nav['controller']."Controller";
@@ -911,7 +911,7 @@ class ResultContext {
 			$va_nav['action'] = $vs_action = caProcessTemplate($vs_action, $tag_vals);
 		}
 		$va_params = array();
-		if (is_array($va_nav['params'])) {
+		if (is_array($va_nav['params'] ?? null)) {
 			foreach ($va_nav['params'] as $vs_param) {
 				if (!($vs_param = trim($vs_param))) { continue; }
 				if(strlen($v = trim($po_request->getParameter($vs_param, pString, ['forcePurify' => true])))) {
@@ -925,7 +925,7 @@ class ResultContext {
 			$pa_params = array_merge($pa_params, $va_params);
 		}
 		
-		return caNavUrl($po_request, trim($va_nav['module_path']), trim($va_nav['controller']), trim($vs_action), $pa_params);
+		return caNavUrl($po_request, trim($va_nav['module_path'] ?? null), trim($va_nav['controller'] ?? null), trim($vs_action), $pa_params);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -951,15 +951,15 @@ class ResultContext {
 		$pa_attributes['aria-label'] = _t('Return to results');
 		$o_find_navigation = Configuration::load(((defined('__CA_THEME_DIR__') && file_exists(__CA_THEME_DIR__.'/conf/find_navigation.conf')) ? __CA_THEME_DIR__ : __CA_APP_DIR__).'/conf/find_navigation.conf');
 		$va_find_nav = $o_find_navigation->getAssoc($vs_table_name);
-		$va_nav = $va_find_nav[$va_tmp[0]];
+		$va_nav = $va_find_nav[$va_tmp[0] ?? 0] ?? null;
 		if (!$va_nav) { return false; }
 		
 		if (__CA_APP_TYPE__ == 'PAWTUCKET') {
 			// Pawtucket-specific navigation rewriting
 			if (
-				!file_exists($vs_path = __CA_THEME_DIR__."/controllers/".(trim($va_nav['module_path']) ? trim($va_nav['module_path'])."/" : "").$va_nav['controller']."Controller.php")
+				!file_exists($vs_path = __CA_THEME_DIR__."/controllers/".(trim($va_nav['module_path'] ?? null) ? trim($va_nav['module_path'])."/" : "").$va_nav['controller']."Controller.php")
 				&&
-				!file_exists($vs_path = __CA_APP_DIR__."/controllers/".(trim($va_nav['module_path']) ? trim($va_nav['module_path'])."/" : "").$va_nav['controller']."Controller.php")
+				!file_exists($vs_path = __CA_APP_DIR__."/controllers/".(trim($va_nav['module_path'] ?? null) ? trim($va_nav['module_path'])."/" : "").$va_nav['controller']."Controller.php")
 			) { return false; }
 			include_once($vs_path);
 			$vs_controller_class = $va_nav['controller']."Controller";
@@ -972,7 +972,7 @@ class ResultContext {
 			$vs_action = $va_nav['action'];
 		}
 		
-		$o_context = new ResultContext($po_request, $pm_table_name_or_num, $va_tmp[0], isset($va_tmp[1]) ? $va_tmp[1] : null);
+		$o_context = new ResultContext($po_request, $pm_table_name_or_num, $va_tmp[0] ?? null, $va_tmp[1] ?? null);
 		if(is_array($tags = caGetTemplateTags($vs_action)) && sizeof($tags)) {
 			$tag_vals = [];
 			foreach($tags as $t) {
@@ -982,7 +982,7 @@ class ResultContext {
 		}
 		
 		$va_params = array();
-		if (is_array($va_nav['params'])) {
+		if (is_array($va_nav['params'] ?? null)) {
 			foreach ($va_nav['params'] as $vs_param) {
 				if (!($vs_param = trim($vs_param))) { continue; }
 				if(strlen($v = trim($po_request->getParameter($vs_param, pString, ['forcePurify' => true])))) {
@@ -997,7 +997,7 @@ class ResultContext {
 		}
 		
 		
-		return caNavLink($po_request, $ps_content, $ps_class, trim($va_nav['module_path']), trim($va_nav['controller']), trim($vs_action), $pa_params, $pa_attributes);
+		return caNavLink($po_request, $ps_content, $ps_class, trim($va_nav['module_path'] ?? null), trim($va_nav['controller'] ?? null), trim($vs_action), $pa_params, $pa_attributes);
 	}
 	# ------------------------------------------------------------------
 	# Find history
@@ -1024,9 +1024,9 @@ class ResultContext {
 					if (strpos($vs_available_find_type, $vs_find_type) === 0) {
 						$va_tmp = explode("/", $vs_available_find_type);
 						
-						$va_context = $this->getContext($va_tmp[0], $va_tmp[1]);
+						$va_context = $this->getContext($va_tmp[0] ?? null, $va_tmp[1] ?? null);
 				
-						if (is_array($va_context) && is_array($va_context['history'])) {
+						if (is_array($va_context['history'] ?? null)) {
 							$va_history = array_merge($va_history, $va_context['history']);
 						}
 					}
@@ -1034,7 +1034,7 @@ class ResultContext {
 				
 			}
 			return $va_history;
-		} elseif(($va_context = $this->getContext()) && (is_array($va_history = $va_context['history']))) {
+		} elseif(($va_context = $this->getContext()) && (is_array($va_history = ($va_context['history'] ?? null)))) {
 			return $va_history;
 		}
 		return array();
@@ -1173,7 +1173,7 @@ class ResultContext {
 		// Note find type/subtype combo in list of "used find types" in type/subtype format
 		// This is used by ResultContext::getAvailableFindTypes() to return all available combinations 
 		if (!is_array($va_used_find_types = ResultContextStorage::getVar('used_find_types'))) { $va_used_find_types = array(); }
-		$va_used_find_types[$vs_find_type.($vs_find_subtype ? "/{$vs_find_subtype}" : "")] = 1;
+		$va_used_find_types[($vs_find_type.($vs_find_subtype ? "/{$vs_find_subtype}" : "")) ?? null] = 1;
 		ResultContextStorage::setVar('used_find_types', $va_used_find_types);
 		
 		if (!is_array($va_existing_semi_context = ResultContextStorage::getVar('result_context_'.$this->ops_table_name.'_'.$vs_find_type.($vs_find_subtype ? "_{$vs_find_subtype}" : "")))) {
@@ -1209,7 +1209,7 @@ class ResultContext {
 	public function getNextID($pn_current_id) {
 		if (is_array($va_results = $this->getResultList())) {
 			if (($vn_index = array_search($pn_current_id, $va_results)) !== false) {
-				return isset($va_results[$vn_index + 1]) ? $va_results[$vn_index + 1] : null;
+				return $va_results[$vn_index + 1] ?? null;
 			}
 		}
 		return null;
@@ -1225,7 +1225,7 @@ class ResultContext {
 	public function getPreviousID($pn_current_id) {
 		if (is_array($va_results = $this->getResultList())) {
 			if (($vn_index = array_search($pn_current_id, $va_results)) !== false) {
-				return isset($va_results[$vn_index - 1]) ? $va_results[$vn_index - 1] : null;
+				return $va_results[$vn_index - 1] ?? null;
 			}
 		}
 		return null;
@@ -1262,7 +1262,7 @@ class ResultContext {
 					$va_edited_results = array();
 					for($vn_i=0; $vn_i < sizeof($va_results); $vn_i++) {
 						if ($vn_i == $vn_index) { continue; }
-						$va_edited_results[] = $va_results[$vn_i];
+						$va_edited_results[] = $va_results[$vn_i] ?? null;
 					}
 					$va_context['result_list'] = $va_edited_results;
 					

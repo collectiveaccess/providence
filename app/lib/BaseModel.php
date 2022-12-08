@@ -1137,7 +1137,7 @@ class BaseModel extends BaseObject {
 				break;
 			case (FT_MEDIA):
 			case (FT_FILE):
-				if ($vb_return_with_structure || $pa_options["USE_MEDIA_FIELD_VALUES"]) {
+				if ($vb_return_with_structure || ($pa_options["USE_MEDIA_FIELD_VALUES"] ?? false)) {
 					if (isset($pa_options["USE_MEDIA_FIELD_VALUES"]) && $pa_options["USE_MEDIA_FIELD_VALUES"]) {
 						$vs_prop = $this->_FIELD_VALUES[$ps_field];
 					} else {
