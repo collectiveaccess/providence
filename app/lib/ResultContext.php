@@ -325,7 +325,7 @@ class ResultContext {
 	public function getItemsPerPage() {
 		if (!($pn_items_per_page = $this->opo_request->getParameter('n', pInteger))) {
 			if ($va_context = $this->getContext()) {
-				return $va_context['num_items_per_page'] ? $va_context['num_items_per_page'] ?? 10 : null;
+				return $va_context['num_items_per_page'] ?? null;
 			}
 		} else {
 			$this->setContextValue('num_items_per_page', $pn_items_per_page);

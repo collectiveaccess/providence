@@ -122,11 +122,11 @@ class BrowseCache {
 	 */
 	public function save() {
 		$this->ops_cache_key = $this->getCurrentCacheKey();
-		ExternalCache::save($this->ops_cache_key, $this->opa_browse['facets'], 'BrowseFacets');
-		ExternalCache::save($this->ops_cache_key, $this->opa_browse['results'], 'BrowseResults');
-		ExternalCache::save($this->ops_cache_key, $this->opa_browse['params'], 'BrowseParams');
-		ExternalCache::save($this->ops_cache_key, $this->opa_browse['type_restrictions'], 'BrowseTypeRestrictions');
-		ExternalCache::save($this->ops_cache_key, $this->opa_browse['source_restrictions'], 'BrowseSourceRestrictions');
+		ExternalCache::save($this->ops_cache_key, $this->opa_browse['facets'] ?? null, 'BrowseFacets');
+		ExternalCache::save($this->ops_cache_key, $this->opa_browse['results'] ?? null, 'BrowseResults');
+		ExternalCache::save($this->ops_cache_key, $this->opa_browse['params'] ?? null, 'BrowseParams');
+		ExternalCache::save($this->ops_cache_key, $this->opa_browse['type_restrictions'] ?? null, 'BrowseTypeRestrictions');
+		ExternalCache::save($this->ops_cache_key, $this->opa_browse['source_restrictions'] ?? null, 'BrowseSourceRestrictions');
 		return true;
 	}
 	# ------------------------------------------------------
@@ -272,7 +272,7 @@ class BrowseCache {
 		unset($va_params['facet_html']);
 		unset($va_params['filterDeaccessionedRecords']);
 		foreach(['criteria', 'table_num'] as $k) {
-			if(!is_array($va_params[$k])) { $va_params[$k] = []; }
+			if(!is_array($va_params[$k] ?? null)) { $va_params[$k] = []; }
 		}
 
 		return BrowseCache::makeCacheKey($va_params, $va_type_restrictions,$va_source_restrictions);	
