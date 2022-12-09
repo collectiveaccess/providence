@@ -2102,7 +2102,7 @@
 						$va_result['type'] = 'time';
 						break;
 				}
-		} elseif(preg_match("!^count[/\.]{1}!", $va_name[1]))  {
+		} elseif(preg_match("!^count[/\.]{1}!", ($va_name[1] ?? null)))  {
 			// counts are always ints
 			$va_result['type'] = 'integer';
 		} elseif ($vs_name === '_fulltext') {
