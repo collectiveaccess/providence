@@ -999,7 +999,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	public static function getUIList($pm_table=null, $pn_user_id=null, $pn_type_id=null){
 		$pn_table_num = Datamodel::getTableNum($pm_table);
 		if ($pn_user_id) { $vs_key = $pn_user_id; } else { $vs_key = "_all_"; }
-		if (ca_editor_uis::$s_available_ui_cache[$pm_table.'/'.$pn_user_id]) { return ca_editor_uis::$s_available_ui_cache[$pm_table.'/'.$pn_user_id]; }
+		if (ca_editor_uis::$s_available_ui_cache[$pm_table.'/'.$pn_user_id] ?? null) { return ca_editor_uis::$s_available_ui_cache[$pm_table.'/'.$pn_user_id]; }
 		$o_db = new Db();
 		
 		$va_wheres = $va_params = [];

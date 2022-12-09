@@ -5997,13 +5997,13 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			if (isset($va_attr["BOUNDS_VALUE"][0])) { $min_value = $va_attr["BOUNDS_VALUE"][0]; }
 			if (isset($va_attr["BOUNDS_VALUE"][1])) { $max_value = $va_attr["BOUNDS_VALUE"][1];
 			}
-			if (!($va_attr["IS_NULL"] && (!$value))) {
-				if ((isset($min_value)) && ($value < $min_value)) {
-					$this->postError(1101,_t("%1 must not be less than %2", $va_attr["LABEL"], $min_value),"BaseModel->verifyFieldValue()", $this->tableName().'.'.$field);
+			if (!($va_attr["IS_NULL"] && (!strlen($value)))) {
+				if ((isset($min_value)) && ((float)$value < $min_value)) {
+					$this->postError(1101,_t("%1 must not be less than %2; value was %3", $va_attr["LABEL"], $min_value, $value),"BaseModel->verifyFieldValue()", $this->tableName().'.'.$field);
 					return false;
 				}
-				if ((isset($max_value)) && ($value > $max_value)) {
-					$this->postError(1101,_t("%1 must not be greater than %2", $va_attr["LABEL"], $max_value),"BaseModel->verifyFieldValue()", $this->tableName().'.'.$field);
+				if ((isset($max_value)) && ((float)$value > $max_value)) {
+					$this->postError(1101,_t("%1 must not be greater than %2; value was %3", $va_attr["LABEL"], $max_value, $value),"BaseModel->verifyFieldValue()", $this->tableName().'.'.$field);
 					return false;
 				}
 			}
