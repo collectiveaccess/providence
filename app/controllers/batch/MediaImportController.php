@@ -109,7 +109,7 @@
 			$t_instance = Datamodel::getInstance($vs_import_target);
 			// if that failed, try last settings
 			if(!$t_instance) {
-				$vs_import_target = $va_last_settings['importTarget'];
+				$vs_import_target = $va_last_settings['importTarget'] ?? null;
 				$t_instance = Datamodel::getInstance($vs_import_target);
 			}
 			// if that too failed, go back to objects
@@ -119,19 +119,19 @@
 			}
 			$this->getView()->setVar('import_target', $vs_import_target);
 
-			$t_instance->set('status', $va_last_settings[$vs_import_target.'_status']);
-			$t_instance->set('access', $va_last_settings[$vs_import_target.'_access']);
+			$t_instance->set('status', $va_last_settings[$vs_import_target.'_status'] ?? null);
+			$t_instance->set('access', $va_last_settings[$vs_import_target.'_access'] ?? null);
  			
  			$t_rep = new ca_object_representations();
- 			$t_rep->set('status', $va_last_settings['ca_object_representations_status']);
- 			$t_rep->set('access', $va_last_settings['ca_object_representations_access']);
+ 			$t_rep->set('status', $va_last_settings['ca_object_representations_status'] ?? null);
+ 			$t_rep->set('access', $va_last_settings['ca_object_representations_access'] ?? null);
  			
  			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, null, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
 				[],
 				[]
 			);
  			if (!$this->request->getActionExtra() || !isset($va_nav['fragment'][str_replace("Screen", "screen_", $this->request->getActionExtra())])) {
- 				$this->request->setActionExtra($va_nav['defaultScreen']);
+ 				$this->request->setActionExtra($va_nav['defaultScreen'] ?? null);
  			}
 			$this->view->setVar('t_ui', $t_ui);
 
@@ -144,26 +144,26 @@
 				throw new ApplicationException(_t('No import modes are configured. Check the application configuration <em>media_importer_allowed_modes</em> setting and make sure at least one valid mode is set.'));
 			}
 			
-			$this->view->setVar('import_mode', caHTMLSelect('import_mode', $import_modes, ['id' => 'importMode'], ['value' => $va_last_settings['importMode']]));
+			$this->view->setVar('import_mode', caHTMLSelect('import_mode', $import_modes, ['id' => 'importMode'], ['value' => $va_last_settings['importMode'] ?? null]));
 			
 			$this->view->setVar('match_mode', caHTMLSelect('match_mode', [
 				_t('Match using file name') => 'FILE_NAME',
 				_t('Match using directory name') => 'DIRECTORY_NAME',
 				_t('Match using directory name, then file name') => 'FILE_AND_DIRECTORY_NAMES'
-			], [], ['value' => $va_last_settings['matchMode']]));
+			], [], ['value' => $va_last_settings['matchMode'] ?? null]));
 			
 			$this->view->setVar('match_type', caHTMLSelect('match_type', [
 				_t('matches exactly') => 'EXACT',
 				_t('starts with') => 'STARTS',
 				_t('ends with') => 'ENDS',
 				_t('contains') => 'CONTAINS'
-			], [], ['value' => $va_last_settings['matchType']]));
+			], [], ['value' => $va_last_settings['matchType'] ?? null]));
  			
- 			$this->view->setVar($vs_import_target.'_type_list', $t_instance->getTypeListAsHTMLFormElement($vs_import_target.'_type_id', ['id' => 'primary_type_id'], array('value' => $va_last_settings[$vs_import_target.'_type_id'])));
+ 			$this->view->setVar($vs_import_target.'_type_list', $t_instance->getTypeListAsHTMLFormElement($vs_import_target.'_type_id', ['id' => 'primary_type_id'], array('value' => $va_last_settings[$vs_import_target.'_type_id'] ?? null)));
  			$this->view->setVar($vs_import_target.'_parent_type_list', $t_instance->getTypeListAsHTMLFormElement($vs_import_target.'_parent_type_id', ['id' => 'parent_type_id'], array('value' => $va_last_settings[$vs_import_target.'_parent_type_id'] ?? $t_instance->getTypeIDForCode($o_config->get('media_importer_hierarchy_parent_type')))));
  			$this->view->setVar($vs_import_target.'_child_type_list', $t_instance->getTypeListAsHTMLFormElement($vs_import_target.'_child_type_id', ['id' => 'child_type_id'], array('value' => $va_last_settings[$vs_import_target.'_child_type_id'] ?? $t_instance->getTypeIDForCode($o_config->get('media_importer_hierarchy_child_type')))));
- 			$this->view->setVar($vs_import_target.'_limit_to_types_list', $t_instance->getTypeListAsHTMLFormElement($vs_import_target.'_limit_matching_to_type_ids[]', array('multiple' => 1), array('height' => '100px', 'values' => $va_last_settings[$vs_import_target.'_limit_matching_to_type_ids'])));
- 			$this->view->setVar('ca_object_representations_type_list', $t_rep->getTypeListAsHTMLFormElement('ca_object_representations_type_id', null, array('value' => $va_last_settings['ca_object_representations_type_id'])));
+ 			$this->view->setVar($vs_import_target.'_limit_to_types_list', $t_instance->getTypeListAsHTMLFormElement($vs_import_target.'_limit_matching_to_type_ids[]', array('multiple' => 1), array('height' => '100px', 'values' => $va_last_settings[$vs_import_target.'_limit_matching_to_type_ids'] ?? null)));
+ 			$this->view->setVar('ca_object_representations_type_list', $t_rep->getTypeListAsHTMLFormElement('ca_object_representations_type_id', null, array('value' => $va_last_settings['ca_object_representations_type_id'] ?? null)));
 
 			if($vs_import_target != 'ca_objects') { // non-object representations have relationship types
 				$t_rel = ca_relationship_types::getRelationshipTypeInstance($t_instance->tableName(), 'ca_object_representations');
@@ -327,7 +327,7 @@
 				if($va_paths = @scandir($dir, 0)) {
 					$vn_i = $vn_c = 0;
 					foreach($va_paths as $item) {
-						if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
+						if (($item != ".") && ($item != "..") && ($pb_include_hidden_files || (!$pb_include_hidden_files && ($item[0] !== '.')))) {
 							$vb_is_dir = is_dir("{$dir}/{$item}");
 							$vs_k = preg_replace('![@]{2,}!', '|', $item);
 							if ($vb_is_dir) {
@@ -380,7 +380,7 @@
  			AssetLoadManager::register('datePickerUI');
  			
  			$t_ui = new ca_editor_uis();
- 			if (!isset($pa_options['ui']) && !$pa_options['ui']) {
+ 			if (!isset($pa_options['ui']) || !$pa_options['ui']) {
  				$pa_options['ui'] = $this->request->user->getPreference("batch_ca_object_media_import_ui");
  			}
  			if (isset($pa_options['ui']) && $pa_options['ui']) {
