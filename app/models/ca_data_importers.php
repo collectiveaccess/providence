@@ -585,10 +585,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$va_ids[] = $vn_id = $va_row['importer_id'];
 			$va_importers[$vn_id] = $va_row;
 			
-			$t_instance = Datamodel::getInstanceByTableNum($va_row['table_num'], true);
+			$t_instance = Datamodel::getInstanceByTableNum($va_row['table_num']?? null, true);
 			$va_importers[$vn_id]['importer_type'] = $t_instance->getProperty('NAME_PLURAL');
-			$va_importers[$vn_id]['type'] = $va_settings['type'];
-			$va_importers[$vn_id]['type_for_display'] = $t_instance->getTypeName($va_settings['type']);
+			$va_importers[$vn_id]['type'] = $va_settings['type'] ?? null;
+			$va_importers[$vn_id]['type_for_display'] = $t_instance->getTypeName($va_settings['type']?? null);
 			
 			$va_importers[$vn_id]['settings'] = $va_settings;
 			$va_importers[$vn_id]['last_modified_on'] = $t_importer->getLastChangeTimestamp($vn_id, array('timestampOnly' => true));
@@ -614,7 +614,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		$va_opts = array();
 		foreach($va_importers as $vn_importer_id => $va_importer_info) {
-			$va_opts[$va_importer_info['label']." (".$va_importer_info['importer_code'].")"] = $va_importer_info['importer_id'];
+			$va_opts[$va_importer_info['label'] ?? null." (".$va_importer_info['importer_code'] ?? null.")"] = $va_importer_info['importer_id'];
 		}
 		ksort($va_opts);
 		return caHTMLSelect($ps_name, $va_opts, $pa_attributes, $pa_options);
