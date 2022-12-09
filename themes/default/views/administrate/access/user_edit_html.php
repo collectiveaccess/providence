@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -95,7 +95,7 @@
 		$va_user_profile_settings = $this->getVar('profile_settings');
 		if (is_array($va_user_profile_settings) && sizeof($va_user_profile_settings)) {
 			foreach($va_user_profile_settings as $vs_field => $va_info) {
-				if($va_errors[$vs_field]){
+				if($va_errors[$vs_field] ?? null){
 					print "<div class='formErrors' style='text-align: left;'>".$va_errors[$vs_field]."</div>";
 				}
 				print $va_info['element']."\n";

@@ -2574,7 +2574,7 @@
 		 *
 		 */
 		public static function getHistoryTrackingEditorBundleSettingsData($table, $options=null) {
-			$cache_key = caMakeCacheKeyFromOptions($options, $table);
+			$cache_key = caMakeCacheKeyFromOptions($options ?? [], $table);
 			//if (!caGetOption('noCache', $options, false) && ExternalCache::contains($cache_key, "historyTrackingEditorBundleSettingsData")) { return ExternalCache::fetch($cache_key, 'historyTrackingEditorBundleSettingsData'); }			
 			$additional_settings = [];
 			

@@ -54,8 +54,8 @@
 				$vs_item_display_str =
 					((mb_strlen($va_display_item['display']) > 30) ? strip_tags(mb_substr($va_display_item['display'], 0, 27))."..." : $va_display_item['display']);
 
-				if ($va_display_item['is_sortable']) {
-					if ($vs_current_sort == $va_display_item['bundle_sort']) {
+				if ($va_display_item['is_sortable'] ?? null) {
+					if ($vs_current_sort == ($va_display_item['bundle_sort'] ?? null)) {
 						if($vs_current_sort_dir == 'desc') {
 							$vs_th_class = 'list-header-sorted-desc';
 							$vs_new_sort_direction = 'asc';

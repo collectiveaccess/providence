@@ -234,13 +234,13 @@
 <?php
 			foreach($va_access_status_list as $vn_id => $va_access_status) {
 				print "<tr align='center' valign='middle'>";
-				if (($vn_indent = 5*((int)$va_access_status_list['access_status_info']['level'])) < 0) { $vn_indent = 0; }
-				print "<td align='left'>".str_repeat("&nbsp;", $vn_indent).$va_access_status['access_status_info']['name_plural']."</td>";
+				if (($vn_indent = 5*((int)($va_access_status_list['access_status_info']['level'] ?? 0))) < 0) { $vn_indent = 0; }
+				print "<td align='left'>".str_repeat("&nbsp;", $vn_indent).($va_access_status['access_status_info']['name_plural'] ?? null)."</td>";
 				
 				$vn_access = !strlen($va_access_status['access']) ? null : (int)$va_access_status['access'];
-				print "<td>".caHTMLRadioButtonInput('access_status_'.$va_access_status['access_status_info']['item_id'], array('value' => 0), array('checked' => ($vn_access === 0)))."</td>\n";
-				print "<td>".caHTMLRadioButtonInput('access_status_'.$va_access_status['access_status_info']['item_id'], array('value' => 1), array('checked' => ($vn_access === 1)))."</td>\n";
-				print "<td>".caHTMLRadioButtonInput('access_status_'.$va_access_status['access_status_info']['item_id'], array('value' => null), array('checked' => (is_null($vn_access))))."</td>\n";
+				print "<td>".caHTMLRadioButtonInput('access_status_'.$va_access_status['access_status_info']['item_id'] ?? null, array('value' => 0), array('checked' => ($vn_access === 0)))."</td>\n";
+				print "<td>".caHTMLRadioButtonInput('access_status_'.$va_access_status['access_status_info']['item_id'] ?? null, array('value' => 1), array('checked' => ($vn_access === 1)))."</td>\n";
+				print "<td>".caHTMLRadioButtonInput('access_status_'.$va_access_status['access_status_info']['item_id'] ?? null, array('value' => null), array('checked' => (is_null($vn_access))))."</td>\n";
 			}
 ?>			
 				</tr>

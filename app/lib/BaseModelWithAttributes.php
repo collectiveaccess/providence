@@ -1657,8 +1657,8 @@
 		  */
 		public function getDisplayDescription($ps_field, $options=null) {
 			$va_tmp = explode('.', $ps_field);
-			if (($va_tmp[0] != $this->tableName()) && !in_array($va_tmp[0], array('created', 'modified', 'lastModified'))) { return null; }
-			if (!$this->hasField($va_tmp[1]) && !in_array($va_tmp[1], array('created', 'modified', 'lastModified')) && !in_array($va_tmp[0], array('created', 'modified', 'lastModified'))) {
+			if (($va_tmp[0] ?? null) && ($va_tmp[0] != $this->tableName()) && !in_array($va_tmp[0], array('created', 'modified', 'lastModified'))) { return null; }
+			if (($va_tmp[1] ?? null) && !$this->hasField($va_tmp[1]) && !in_array($va_tmp[1], array('created', 'modified', 'lastModified')) && !in_array($va_tmp[0], array('created', 'modified', 'lastModified'))) {
 				$va_tmp[1] = preg_replace('!^ca_attribute_!', '', $va_tmp[1]);	// if field space is a bundle placement-style bundlename (eg. ca_attribute_<element_code>) then strip it before trying to pull label
 				return $this->getAttributeDescription($va_tmp[1], $options);	
 			}
@@ -2171,17 +2171,17 @@
 				}
 			
 				$va_element_opts = array_merge(array(
-					'label' => $va_label['name'],
-					'description' => $va_label['description'],
+					'label' => $va_label['name'] ?? null,
+					'description' => $va_label['description'] ?? null,
 					't_subject' => $this,
 					'table' => $this->tableName(),
 					'request' => $po_request,
-					'class' => $pa_options['class'],
+					'class' => $pa_options['class'] ?? null,
 					'nullOption' => '-',
 					'value' => $vm_values,
 					'forSearch' => true,
 					'textAreaTagName' => caGetOption('textAreaTagName', $pa_options, null),
-					'render' => $va_element['settings']['render']//(isset($va_element['settings']['render']) && ($va_element['settings']['render'] == 'lookup')) ? $va_element['settings']['render'] : isset($pa_options['render']) ? $pa_options['render'] : 'select'
+					'render' => $va_element['settings']['render'] ?? null
 				), array_merge($pa_options, $va_override_options));
 				
 				if (caGetOption('forSimpleForm', $pa_options, false)) { 

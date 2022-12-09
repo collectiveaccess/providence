@@ -2255,7 +2255,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			case 2:		// table_name.field_name
 			case 3:		// table_name.field_name.sub_element	
 				if (!($t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true))) { break; }
-				$vs_prefix = $vs_suffix = '';
+				$vs_prefix = $vs_suffix = $vs_suffix_string = '';
 				if (caGetOption('includeSourceSuffix', $options, true)) { $vs_suffix_string = ' ('._t('from %1', $t_instance->getProperty('NAME_PLURAL')).')'; }
 				if ($va_tmp[0] !== $this->tableName()) {
 					$vs_suffix = $vs_suffix_string;
@@ -2302,7 +2302,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					# --------------------
 					case 'media':		
 						if ($va_tmp[0] === 'ca_object_representations') {
-							if ($va_tmp[2]) {
+							if ($va_tmp[2] ?? null) {
 								return _t('Object media representation (%1)', $va_tmp[2]);
 							} else {
 								return _t('Object media representation (default)');
@@ -2311,7 +2311,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						break;
 					# --------------------
 					default:
-						if ($va_tmp[0] !== $this->tableName()) {
+						if (($va_tmp[0] ?? null) !== $this->tableName()) {
 							return caUcFirstUTF8Safe($t_instance->getDisplayLabel($ps_field, $options)).$vs_suffix;
 						}
 						break;
@@ -2376,7 +2376,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					# --------------------
 					case 'nonpreferred_labels':						
 						if (method_exists($t_instance, 'getLabelTableInstance') && ($t_label_instance = $t_instance->getLabelTableInstance())) {
-							if (!isset($va_tmp[2])) {
+							if (!($va_tmp[2] ?? null)) {
 								return _t('A list of alternate %1 %2', $t_label_instance->getProperty('NAME_PLURAL'), $vs_suffix);
 							} else {
 								return _t('A list of alternate %1 %2', $t_label_instance->getDisplayLabel($t_label_instance->tableName().'.'.$va_tmp[2], $options), $vs_suffix);
@@ -2386,7 +2386,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					# --------------------
 					case 'media':		
 						if ($va_tmp[0] === 'ca_object_representations') {
-							if ($va_tmp[2]) {
+							if ($va_tmp[2] ?? null) {
 								return _t('A list of related media representations using version "%1"', $va_tmp[2]);
 							} else {
 								return _t('A list of related media representations using the default version');

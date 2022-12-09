@@ -174,7 +174,7 @@ class BrowseCache {
 	 *
 	 */
 	public function getFacets() {
-		return $this->opa_browse['facets'];
+		return $this->opa_browse['facets'] ?? null;
 	}
 	# ------------------------------------------------------
 	/**
@@ -196,7 +196,7 @@ class BrowseCache {
 	 *
 	 */
 	public function getParameters() {
-		return $this->opa_browse['params'];
+		return $this->opa_browse['params'] ?? null;
 	}
 	# ------------------------------------------------------
 	/**
@@ -255,7 +255,7 @@ class BrowseCache {
 	 *
 	 */
 	public function getResults() {
-		return $this->opa_browse['results'];
+		return $this->opa_browse['results'] ?? null;
 	}
 	# ------------------------------------------------------
 	public function getCurrentCacheKey() {

@@ -512,7 +512,7 @@ class SearchResult extends BaseObject {
 		$va_row_ids_in_current_level = $va_row_ids;
 		$va_params = array($va_row_ids_in_current_level);
 		
-		$vs_type_sql = '';
+		$vs_type_sql = $vs_access_sql = '';
 		if (is_array($va_type_ids = caMakeTypeIDList($ps_tablename, caGetOption('restrictToTypes', $pa_options, null))) && sizeof($va_type_ids)) {
 			$vs_related_table = $t_rel_instance->tableName();
 			$vs_type_sql = " AND (type_id IN (?)".($t_rel_instance->getFieldInfo('type_id', 'IS_NULL') ? " OR ({$vs_related_table}.type_id IS NULL)" : '').')';;
@@ -880,13 +880,13 @@ class SearchResult extends BaseObject {
 	public function prefetchChangeLogData($ps_tablename, $pn_start, $pn_num_rows) {
 		if (sizeof($va_row_ids = $this->getRowIDsToPrefetch($pn_start, $pn_num_rows)) == 0) { return false; }
 		$vs_key = caMakeCacheKeyFromOptions(array_merge($va_row_ids, array('_table' => $ps_tablename)));
-		if (self::$s_timestamp_cache['fetched'][$vs_key]) { return true; }
+		if (self::$s_timestamp_cache['fetched'][$vs_key] ?? null) { return true; }
 		
 		$o_log = new ApplicationChangeLog();
 	
-		if (!is_array(self::$s_timestamp_cache['created_on'][$ps_tablename])) { self::$s_timestamp_cache['created_on'][$ps_tablename] = array(); }
+		if (!is_array(self::$s_timestamp_cache['created_on'][$ps_tablename] ?? null)) { self::$s_timestamp_cache['created_on'][$ps_tablename] = array(); }
 		self::$s_timestamp_cache['created_on'][$ps_tablename] += $o_log->getCreatedOnTimestampsForIDs($ps_tablename, $va_row_ids);
-		if (!is_array(self::$s_timestamp_cache['last_changed'][$ps_tablename])) { self::$s_timestamp_cache['last_changed'][$ps_tablename] = array(); }
+		if (!is_array(self::$s_timestamp_cache['last_changed'][$ps_tablename] ?? null)) { self::$s_timestamp_cache['last_changed'][$ps_tablename] = array(); }
 		self::$s_timestamp_cache['last_changed'][$ps_tablename] += $o_log->getLastChangeTimestampsForIDs($ps_tablename, $va_row_ids);
 
 		self::$s_timestamp_cache['fetched'][$vs_key] = true;

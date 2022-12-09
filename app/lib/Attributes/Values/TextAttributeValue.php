@@ -364,7 +364,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 			$vs_height = ((int)$vs_height * 16)."px";
 		}
 		
-		if ($va_settings['usewysiwygeditor']) {
+		if ($va_settings['usewysiwygeditor'] ?? null) {
 			$o_config = Configuration::load();
 			if (!is_array($va_toolbar_config = $o_config->getAssoc('wysiwyg_editor_toolbar'))) { $va_toolbar_config = array(); }
 			AssetLoadManager::register("ckeditor");
@@ -405,7 +405,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 				'value' => '{{'.$pa_element_info['element_id'].'}}', 
 				'maxlength' => $va_settings['maxChars'],
 				'class' => $vs_class,
-				'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 'class' => "{$vs_class}".($va_settings['usewysiwygeditor'] ? " ckeditor-element" : '')
+				'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 'class' => "{$vs_class}".(($va_settings['usewysiwygeditor'] ?? null) ? " ckeditor-element" : '')
 			);
 		if (caGetOption('readonly', $pa_options, false)) { 
 			$va_opts['disabled'] = 1;

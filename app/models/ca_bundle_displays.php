@@ -675,7 +675,7 @@ if (!$pb_omit_editing_info) {
 					$placements[$placement_id]['inlineEditingType'] = null;
 					
 					// representation media bundles aren't editable at all
-					if (($va_bundle_name[0] == 'ca_object_representations') && ($va_bundle_name[1] == 'media')) {
+					if ((($va_bundle_name[0] ?? null) == 'ca_object_representations') && (($va_bundle_name[1] ?? null) == 'media')) {
 						$placements[$placement_id]['allowEditing'] = false;
 					}
 				}

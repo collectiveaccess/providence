@@ -1132,7 +1132,7 @@ class ResultContext {
 	 * @param $ps_key - string identifier for context value
 	 */
 	protected function getContextValue($ps_key) {
-		return $this->opa_context[$ps_key];
+		return $this->opa_context[$ps_key] ?? null;
 	}
 	# ------------------------------------------------------------------
 	/**

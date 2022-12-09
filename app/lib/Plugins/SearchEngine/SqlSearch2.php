@@ -1748,8 +1748,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					);
 				} else {
 					return array(
-						'access_point' => $tmp[0],
-						'relationship_type' => $tmp[1],
+						'access_point' => $tmp[0] ?? null,
+						'relationship_type' => $tmp[1] ?? null,
 						'table_num' => $table_num,
 						'element_id' => $t_element->getPrimaryKey(),
 						'field_num' => 'A'.$t_element->getPrimaryKey(),

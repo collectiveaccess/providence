@@ -539,6 +539,7 @@ trait ModelSettings {
 				$vn_height = (isset($va_properties['height']) && (strlen($va_properties['height']) > 0)) ? $va_properties['height'] : "50px";
 				
 				$vs_select_element = '';
+				$va_select_attr = $va_opts = [];
 				
 				if($va_properties['showTypesForTable'] ?? false) {
 					$vs_select_element = '';
@@ -723,18 +724,18 @@ trait ModelSettings {
 								}
 							}
 						
-							if($va_properties['includeIntrinsics']) {
+							if($va_properties['includeIntrinsics'] ?? null) {
 								if (!($t_rep = Datamodel::getInstance($vs_table, true))) { continue; }
 						
 								foreach($t_rep->getFormFields() as $vs_f => $va_field_info) {
 									if (is_array($va_properties['includeIntrinsics']) && !in_array($vs_f, $va_properties['includeIntrinsics'])) { continue; }
-									if(in_array($va_field_info['DT_DISPLAY'], array('DT_OMIT', 'DT_HIDDEN'))) { continue; }
-									if (isset($va_field_info['IDENTITY']) && $va_field_info['IDENTITY']) { continue; }
+									if(in_array($va_field_info['DT_DISPLAY'] ?? null, array('DT_OMIT', 'DT_HIDDEN'))) { continue; }
+									if ($va_field_info['IDENTITY'] ?? null) { continue; }
 								
 									$va_select_opts[$va_field_info['LABEL']] = $vs_f;
 									}	
 								}
-								if($va_properties['includePreferredLabels']) {
+								if($va_properties['includePreferredLabels'] ?? null) {
 									if (!($t_rep = Datamodel::getInstance($vs_table, true))) { continue; }
 									foreach($t_rep->getLabelUIFields() as $vs_f) {
 										$va_select_opts[$t_rep->getDisplayLabel("{$vs_table}.preferred_labels.{$vs_f}")] = "{$vs_table}.preferred_labels.{$vs_f}";
@@ -742,7 +743,7 @@ trait ModelSettings {
 								}
 							}
 							
-							if (sizeof($va_select_opts)) {	
+							if (is_array($va_select_opts) && sizeof($va_select_opts)) {	
 								
 								$va_select_attr = [];
 								if($vn_height > 1) {

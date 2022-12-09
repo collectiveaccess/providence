@@ -863,7 +863,7 @@ class ca_users extends BaseModel {
 			if (is_array($va_volatile_vars = $qr_users->getVars('volatile_vars'))) {
 				$va_vars = array_merge($va_vars, $va_volatile_vars);
 			}
- 			$va_users[$qr_users->get('user_id')] = array_merge($qr_users->getRow(), array('last_login' => $va_vars['last_login']));
+ 			$va_users[$qr_users->get('user_id')] = array_merge($qr_users->getRow(), array('last_login' => $va_vars['last_login'] ?? null));
  		}
 		
 		return $va_users;
