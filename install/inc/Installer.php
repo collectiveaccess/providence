@@ -1329,7 +1329,7 @@ class Installer {
 		");
 		while($qr_list_item_result->nextRow()) {
 			$type_code = $list_names[$qr_list_item_result->get('list_id')];
-			$list_item_ids[$type_code][$qr_list_item_result->get('item_value')] = $qr_list_item_result->get('item_id');
+			$list_item_ids[trim(mb_strtolower($type_code))][trim(mb_strtolower($qr_list_item_result->get('item_value')))] = $qr_list_item_result->get('item_id');
 		}
 
 		foreach($relationship_types as $rel_table => $types) {
@@ -1443,7 +1443,7 @@ class Installer {
 				$this->logStatus(_t('Adding left type restriction %1 for relationship type with code %2', $left_subtype_code, $type_code));
 
 				if (isset($list_item_ids[$list_code][$left_subtype_code])) {
-					$t_rel_type->set('sub_type_left_id', $list_item_ids[$list_code][$left_subtype_code]);
+					$t_rel_type->set('sub_type_left_id', $list_item_ids[trim(mb_strtolower($list_code))][trim(mb_strtolower($left_subtype_code))]);
 					
 					if(
 						($include_subtypes = $type["includeSubtypesLeft"])
@@ -1463,7 +1463,7 @@ class Installer {
 				$this->logStatus(_t('Adding right type restriction %1 for relationship type with code %2', $right_subtype_code, $type_code));
 
 				if (isset($list_item_ids[$list_code][$right_subtype_code])) {
-					$t_rel_type->set('sub_type_right_id', $list_item_ids[$list_code][$right_subtype_code]);
+					$t_rel_type->set('sub_type_right_id', $list_item_ids[trim(mb_strtolower($list_code))][trim(mb_strtolower($right_subtype_code))]);
 					
 					if(
 						($include_subtypes = $type["includeSubtypesRight"])
