@@ -395,7 +395,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 										$va_rel = Datamodel::getManyToOneRelations($t_obj->tableName(), $vs_field);
 										$va_rel_values = [];
 											
-										if ($t_rel_obj = Datamodel::getInstance($va_rel['one_table'], true)) {
+										if (($va_rel['one_table'] ?? null) && ($t_rel_obj = Datamodel::getInstance($va_rel['one_table'], true))) {
 											$t_rel_obj->load($vs_value);
 											
 											foreach($va_disp_fields as $vs_display_field) {
