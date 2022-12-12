@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2020 Whirl-i-Gig
+ * Copyright 2013-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -217,7 +217,7 @@ class BaseInterstitialController extends BaseEditorController {
 				$vn_left_id = $t_subject->get($t_subject->getLeftTableFieldName());
 				$vn_right_id = $t_subject->get($t_subject->getRightTableFieldName());
 				
-				$va_bundle_values['relationship_typename'] = $t_subject->getRelationshipTypename(($vn_left_id == $pn_primary_id) ? 'ltol' : 'rtol');
+				$va_bundle_values['relationship_typename'] = $t_subject->getRelationshipTypename(($vn_left_id == $pn_primary_id) ? 'ltor' : 'rtol');
 			} else {
 				$va_bundle_values['relationship_typename'] = $t_subject->getRelationshipTypename(($t_subject->getLeftTableFieldName() == $vs_editor_table) ? 'rtol' : 'ltor');
 			}
