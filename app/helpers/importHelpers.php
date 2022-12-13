@@ -808,7 +808,7 @@
 			}
 			$pm_value = DisplayTemplateParser::processTemplate($pa_item['settings']['formatWithTemplate'], $pa_source_data);
 		} else {
-			$pm_value = (!isset($pa_source_data[$pa_item['source']]) && $o_reader) ? caProcessImportItemSettingsForValue($o_reader->get($pa_item['source'], array('returnAsArray'=> true)), $pa_item['settings']) : $pa_source_data[$pa_item['source']];
+			$pm_value = (!isset($pa_source_data[$pa_item['source']]) && $o_reader) ? caProcessImportItemSettingsForValue($o_reader->get($pa_item['source'], ['returnAsArray'=> true], ['skipRegularExpressions' => true]), $pa_item['settings']) : $pa_source_data[$pa_item['source']];
 		}
 		if (is_array($pm_value)) {
 			if (isset($pm_value[$pn_value_index])) {
@@ -1455,11 +1455,13 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	 *
 	 * @param mixed $pm_value
 	 * @param array $pa_item_settings
+	 * @param array $options Options include:
+	 *		skipRegularExpressions = don't apply configured regular expressions. [Default is false]
 	 *
 	 * @return mixed
 	 */
-	function caProcessImportItemSettingsForValue($pm_value, $pa_item_settings) {
-		if (isset($pa_item_settings['applyRegularExpressions']) && is_array($pa_item_settings['applyRegularExpressions'])) {
+	function caProcessImportItemSettingsForValue($pm_value, $pa_item_settings, array $options=null) {
+		if (!caGetOption('skipRegularExpressions', $options, false) && isset($pa_item_settings['applyRegularExpressions']) && is_array($pa_item_settings['applyRegularExpressions'])) {
 			if(is_array($pa_item_settings['applyRegularExpressions'])) {
 				if (is_array($pm_value)) {
 					foreach($pm_value as $vn_i => $vs_value) {
