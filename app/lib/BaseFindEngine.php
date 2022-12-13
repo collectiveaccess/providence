@@ -1217,7 +1217,7 @@ class BaseFindEngine extends BaseObject {
 			case 2:
 				$t = Datamodel::getInstance($table, true);
 			
-				if($t->isSelfRelationship()) {
+				if(method_exists($t, 'isSelfRelationship') && ($t->isSelfRelationship())) {
 					$joins[] = "INNER JOIN {$rel_table} AS s ON (s.{$rel_table_pk} = t.".$t->getLeftTableFieldName().") OR (s.{$rel_table_pk} = t.".$t->getRightTableFieldName().")";
 				} else {
 					$joins[] = "INNER JOIN {$rel_table} AS s ON s.{$rel_table_pk} = t.{$rel_table_pk}";
