@@ -1830,7 +1830,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$vs_idno = self::_applyConditionalOptions($vs_idno, $va_mapping_items, $vn_idno_mapping_item_id, $o_reader, $va_row, $va_row_with_replacements,
 					['skip' => []]
 				);
-				
 				if ($va_mapping_items[$vn_idno_mapping_item_id]['settings']['delimiter'] && $va_mapping_items[$vn_idno_mapping_item_id]['settings']['treatAsIdentifiersForMultipleRows']) {
 					$va_idnos_for_row = explode($va_mapping_items[$vn_idno_mapping_item_id]['settings']['delimiter'], $vs_idno);
 				}
@@ -4225,37 +4224,40 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$skip = caGetOption('skip', $options, []. ['castTo' => 'array']);
 		$o_log = caGetOption('log', $options, null);
 		
+		$source = $mapping_items[$item_id]['source'];
+		
 		if (!in_array('default', $skip) && isset($mapping_items[$item_id]['settings']['default']) && strlen($mapping_items[$item_id]['settings']['default']) && !strlen($value)) {
-			$value = $mapping_items[$item_id]['settings']['default'];
+			$value = $row_with_replacements[$source] = $mapping_items[$item_id]['settings']['default'];
 		}
+		
 		if (!in_array('parseValue', $skip) && !is_array($value) && ($value[0] == '^') && preg_match("!^\^[^ ]+$!", $value)) {
 			// Parse placeholder when it's at the beginning of the value
 
 			if (!is_null($parsed_val = BaseRefinery::parsePlaceholder($value, $row_with_replacements, $mapping_items[$item_id], null, ['reader' => $o_reader, 'returnAsString' => true]))) {
-				$value = $parsed_val;
+				$value = $row_with_replacements[$source] = $parsed_val;
 			}
 		}
 		// Apply prefix/suffix *AFTER* setting default
 		if ($value && !in_array('prefix', $skip) && isset($mapping_items[$item_id]['settings']['prefix']) && strlen($mapping_items[$item_id]['settings']['prefix'])) {
-			$value = DisplayTemplateParser::processTemplate($mapping_items[$item_id]['settings']['prefix'], $row_with_replacements, ['getFrom' => $o_reader]).$value;
+			$value = $row_with_replacements[$source] =DisplayTemplateParser::processTemplate($mapping_items[$item_id]['settings']['prefix'], $row_with_replacements, ['getFrom' => $o_reader]).$value;
 		}
 		if ($value && !in_array('suffix', $skip) && isset($mapping_items[$item_id]['settings']['suffix']) && strlen($mapping_items[$item_id]['settings']['suffix'])) {
 			$value .= DisplayTemplateParser::processTemplate($mapping_items[$item_id]['settings']['suffix'], $row_with_replacements, ['getFrom' => $o_reader]);
+			$row_with_replacements[$source] = $value;
 		}
 		
 		if(!in_array('caseTransforms', $skip)) {
-			$value = self::_applyCaseTransforms($value, $mapping_items[$item_id]);
+			$value = $row_with_replacements[$source] = self::_applyCaseTransforms($value, $mapping_items[$item_id]);
 		}
 		if(!in_array('dataTransforms', $skip)) {
-			$value = self::_applyDataTransforms($value, $mapping_items[$item_id]);
+			$value = $row_with_replacements[$source] = self::_applyDataTransforms($value, $mapping_items[$item_id]);
 		}
 		
 		if (!in_array('applyRegularExpressions', $skip) && isset($mapping_items[$item_id]['settings']['applyRegularExpressions']) && is_array($mapping_items[$item_id]['settings']['applyRegularExpressions'])) {
-			$value = self::_processAppliedRegexes($o_reader, $mapping_items[$item_id], 0, $mapping_items[$item_id]['settings']['applyRegularExpressions'], $value, $row, $row_with_replacements);
+			$value = $row_with_replacements[$source] = self::_processAppliedRegexes($o_reader, $mapping_items[$item_id], 0, $mapping_items[$item_id]['settings']['applyRegularExpressions'], $value, $row, $row_with_replacements);
 		}
-		
 		if (!in_array('formatWithTemplate', $skip) && isset($mapping_items[$item_id]['settings']['formatWithTemplate']) && strlen($mapping_items[$item_id]['settings']['formatWithTemplate'])) {
-			$value = DisplayTemplateParser::processTemplate($mapping_items[$item_id]['settings']['formatWithTemplate'], $row_with_replacements, ['getFrom' => $o_reader]);
+			$value = $row_with_replacements[$source] = DisplayTemplateParser::processTemplate($mapping_items[$item_id]['settings']['formatWithTemplate'], $row_with_replacements, ['getFrom' => $o_reader]);
 		}
 		
 		return $value;
