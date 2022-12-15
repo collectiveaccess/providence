@@ -2482,6 +2482,17 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									$vm_val = $vm_parsed_val;
 								}
 							}
+							
+							$vm_val = self::_applyCaseTransforms($vm_val, $va_item);
+							$vm_val = self::_applyDataTransforms($vm_val, $va_item);
+							
+							if ( isset( $va_item['settings']['applyRegularExpressions'] )
+							     && is_array( $va_item['settings']['applyRegularExpressions'] )
+							) {
+								$vm_val = self::_processAppliedRegexes( $o_reader, $va_item, $vn_i,
+									$va_item['settings']['applyRegularExpressions'], $vm_val, $va_row,
+									$va_row_with_replacements );
+							}
 
 							if ( $use_raw && isset( $va_item['settings']['formatWithTemplate'] )
 							     && strlen( $va_item['settings']['formatWithTemplate'] )
@@ -2510,30 +2521,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										$va_item['settings']['skipIfExpression'], $e->getMessage() ) );
 								}
 							}
-
-							if ( isset( $va_item['settings']['applyRegularExpressions'] )
-							     && is_array( $va_item['settings']['applyRegularExpressions'] )
-							) {
-								$vm_val = self::_processAppliedRegexes( $o_reader, $va_item, $vn_i,
-									$va_item['settings']['applyRegularExpressions'], $vm_val, $va_row,
-									$va_row_with_replacements );
-							
-
-								// Run format with template to reflect regex changes
-								if (  isset( $va_item['settings']['formatWithTemplate'] )
-									 && strlen( $va_item['settings']['formatWithTemplate'] )
-								) {
-									$vm_val
-										= DisplayTemplateParser::processTemplate( $va_item['settings']['formatWithTemplate'],
-										array_replace( $va_row_with_replacements, array(
-											(string) $va_item['source'] => ca_data_importers::replaceValue( $vm_val,
-												$va_item, [ 'log' => $o_log, 'logReference' => $vs_idno ] )
-										) ), array( 'getFrom' => $o_reader ) );
-								}
-							}
-							
-							$vm_val = self::_applyCaseTransforms($vm_val, $va_item);
-							$vm_val = self::_applyDataTransforms($vm_val, $va_item);
 
 							$va_vals[ $vn_i ] = $vm_val;
 							if ( $o_reader->valuesCanRepeat() ) {
