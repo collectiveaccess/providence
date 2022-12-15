@@ -77,8 +77,8 @@ function extractBundleNames(\BaseModel $rec, array $args) : array {
  * @return array
  */
 function fetchDataForBundles($sresult, array $bundles, array $options=null) : array {
-	$start = caGetOption('start', $options, 0);
-	$limit = caGetOption('limit', $options, null);
+	$start = caGetOption('start', $options, 0, ['castTo' => 'int']);
+	$limit = caGetOption('limit', $options, null, ['castTo' => 'int']);
 	
 	$ancestor_filters = caGetOption('filterByAncestors', $options, null);
 	
@@ -95,9 +95,13 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 		}
 		
 		$rec = \Datamodel::getInstance($table, true);
+		$result_count = $sresult->numHits();
 		
-		if(($start > 0) && ($start < $sresult->numHits())) {
+		if(($start > 0) && ($start < $result_count)) {
 			$sresult->seek($start);
+		} elseif(($start !== 0) && (($start >= $result_count) || ($start < 0))) {
+			// out of bounds; return empty set
+			return [];
 		}
 		while($sresult->nextHit()) {
 			// ladder up hierarchy looking for matches
