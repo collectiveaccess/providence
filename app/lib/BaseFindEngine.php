@@ -730,7 +730,7 @@ class BaseFindEngine extends BaseObject {
 			$values = $this->_getSortValuesForLabel($hits, $t_table, $sort_field, $direction);	
 		} else {
 			// is related field
-			// $t_rel_table = Datamodel::getInstance($sort_table, true);
+			$t_rel_table = Datamodel::getInstance($sort_table, true);
  			$is_attribute = method_exists($t_rel_table, 'hasElement') ? $t_rel_table->hasElement($sort_field) : false;
  			
  			if ($t_rel_table->hasField($sort_field)) {			// sort key is intrinsic
@@ -838,7 +838,7 @@ class BaseFindEngine extends BaseObject {
 		$rel_table = $t_rel_table->tableName();		
 		$rel_table_pk = $t_rel_table->primaryKey();
 		
-		$t_label = $t_table->getLabelTableInstance();
+		if(!($t_label = $t_table->getLabelTableInstance())) { return $hits; }
 		if (!$label_field || !$t_label->hasField($label_field)) { $label_field = $t_table->getLabelSortField(); }
 		
 		$joins = $this->_getJoins($t_table, $t_rel_table, $label_field);
@@ -1068,7 +1068,7 @@ class BaseFindEngine extends BaseObject {
 		$rel_table = $t_rel_table->tableName();		
 		$rel_table_pk = $t_rel_table->primaryKey();
 		
-		$t_label = $t_table->getLabelTableInstance();
+		if(!($t_label = $t_table->getLabelTableInstance())) { return $hits; }
 		if (!$label_field || !$t_label->hasField($label_field)) { $label_field = $t_table->getLabelSortField(); }
 		
 		$joins = $this->_getJoins($t_table, $t_rel_table, $label_field);
