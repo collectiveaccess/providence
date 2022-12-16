@@ -3157,7 +3157,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				//
 				// Process data in subject record
 				//
-				//print_r($va_content_tree);
+				print_r($va_content_tree);
  				//die("END\n\n");
 				//continue;
 				if (!($opa_app_plugin_manager->hookDataImportContentTree(array('mapping' => $t_mapping, 'content_tree' => &$va_content_tree, 'idno' => &$vs_idno, 'type_id' => &$vs_type, 'transaction' => &$o_trans, 'log' => &$o_log, 'logReference' => $vs_idno, 'reader' => $o_reader, 'environment' => $va_environment,'importEvent' => $o_event, 'importEventSource' => $vn_row)))) {
@@ -3373,6 +3373,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					if ($vs_table_name == $vs_subject_table) {		
 						foreach($va_content as $vn_i => $va_element_data) {
 							foreach($va_element_data as $vs_element => $va_element_content) {	
+								$vn_locale_id = caGetOption('_locale', $va_element_content, $mapping_default_locale_id);
+								
 								$o_log->logDebug(_t('Started insert of %1.%2 for idno %3 at %4 seconds [id=%3]', $vs_table_name, $vs_element, $vs_idno, $t->getTime(4), $t_subject->getPrimaryKey()));
 				
 								try {
@@ -3621,6 +3623,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						$o_log->logDebug(_t('Started insert of %1 for idno %2 at %3 seconds [id=%4]', $vs_table_name, $vs_idno, $t->getTime(4), $t_subject->getPrimaryKey()));
 				
 						foreach($va_content as $vn_i => $va_element_data) {
+								$vn_locale_id = caGetOption('_locale', $va_element_data, $mapping_default_locale_id);
+							
 						        // Importing tags?
 						        if ($vs_table_name === 'ca_item_tags') {
 						            if(isset($va_element_data['ca_item_tags']['tag'])) {
