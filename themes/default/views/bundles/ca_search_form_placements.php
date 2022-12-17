@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2017 Whirl-i-Gig
+ * Copyright 2011-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,6 +30,7 @@
 	$vs_id_prefix 							= $this->getVar('placement_code').$this->getVar('id_prefix');
 	
 	$va_available_display_items 			= $t_form->getAvailableBundles();
+	$settings 								= $this->getVar('settings');
 	
 	foreach($va_available_display_items as $vs_bundle => $va_item) {
 		unset($va_available_display_items[$vs_bundle]['settings']);	// strip lists of valid settings - we don't need to send them to the client and they can be fairly large
@@ -39,7 +40,7 @@
 	$va_to_display_items  					= $t_form->getPlacementsInForm(array('noCache' => true));
 	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
 ?>
 <div class="bundleDisplayPlacementEditorContainer" id="<?= $vs_id_prefix; ?>">
 	<div id="bundleDisplayPlacementEditor" class="bundleDisplayPlacementEditor">

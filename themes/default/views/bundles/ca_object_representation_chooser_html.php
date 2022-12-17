@@ -25,19 +25,17 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$t_subject 			= $this->getVar('t_subject');	// the object-to-whatever relationship
-	$t_object 			= $this->getVar('t_object');	// the object
-	$va_settings		= $this->getVar('settings');
-	$va_reps 			= $t_object->getRepresentations();
-	
-	$vb_read_only		= (bool)caGetOption('readonly', $va_settings, false);
-	
-	if ($vs_element_code	= $this->getVar('element_code')) {
-		if(!is_array($va_selected_rep_ids = $t_subject->get($x=$t_subject->tableName().".".$vs_element_code, array('returnAsArray' => true, 'idsOnly' => true)))) { $va_selected_rep_ids = array(); }
-?>
+$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
+$t_subject 			= $this->getVar('t_subject');	// the object-to-whatever relationship
+$t_object 			= $this->getVar('t_object');	// the object
+$settings			= $this->getVar('settings');
+$va_reps 			= $t_object->getRepresentations();
 
+$vb_read_only		= (bool)caGetOption('readonly', $settings, false);
+
+if ($vs_element_code	= $this->getVar('element_code')) {
+	if(!is_array($va_selected_rep_ids = $t_subject->get($x=$t_subject->tableName().".".$vs_element_code, array('returnAsArray' => true, 'idsOnly' => true)))) { $va_selected_rep_ids = array(); }
+?>
 	<div class="caObjectRepresentationChooserContainer" id="<?= $vs_id_prefix; ?>">
 <?php
 		foreach($va_reps as $va_rep) {
@@ -54,11 +52,11 @@
 		<br class="clear"/>
 	</div>
 <?php
-	} else {
+} else {
 ?>
 	<div class="caObjectRepresentationChooserContainer" id="<?= $vs_id_prefix; ?>">
 		<?= _t("No metadata element is configured"); ?>
 	</div>	
 <?php
-	}
-?>
+}
+

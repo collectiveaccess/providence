@@ -33,9 +33,9 @@
 	$t_item_rel 		= $this->getVar('t_item_rel');
 	$t_subject 			= $this->getVar('t_subject');		// object
 	$vs_add_label 		= $this->getVar('add_label');
-	$va_settings 		= $this->getVar('settings');
+	$settings 			= $this->getVar('settings');
 
-	$vb_read_only		=	(isset($va_settings['readonly']) && $va_settings['readonly']);
+	$vb_read_only		=	(isset($settings['readonly']) && $settings['readonly']);
 
 	
 	$vb_allow_fetching_from_urls = $this->request->getAppConfig()->get('allow_fetching_of_media_from_remote_urls');
@@ -49,8 +49,8 @@
 	// use the template to generate the initial form
 	$va_errors = [];
 	
-	$vn_page_media_count = $t_subject->pageMediaCount($va_settings);
-	$va_initial_values = caSanitizeArray($t_subject->getBundleFormValues('ca_site_page_media', $this->getVar('placement_code'), $va_settings, ['request' => $this->request]), ['removeNonCharacterData' => false]);
+	$vn_page_media_count = $t_subject->pageMediaCount($settings);
+	$va_initial_values = caSanitizeArray($t_subject->getBundleFormValues('ca_site_page_media', $this->getVar('placement_code'), $settings, ['request' => $this->request]), ['removeNonCharacterData' => false]);
 
 	foreach($va_initial_values as $vn_media_id => $va_media) {
 		if(is_array($va_action_errors = $this->request->getActionErrors('ca_site_page_media', $vn_media_id))) {
@@ -70,8 +70,8 @@
 		}
 	}
 	
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings, (sizeof($va_initial_values) > 0), _t("Number of media: %1", sizeof($va_initial_values)));
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings);
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $settings, (sizeof($va_initial_values) > 0), _t("Number of media: %1", sizeof($va_initial_values)));
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $settings);
 ?>
 <div id="<?= $vs_id_prefix.$t_item->tableNum().'_rel'; ?>">
 <?php
@@ -383,8 +383,8 @@
 			listSortOrderID: '<?= $vs_id_prefix; ?>_MediaBundleList',
 			defaultLocaleID: <?= ca_locales::getDefaultCataloguingLocaleID(); ?>,
 			
-			minRepeats: <?= caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
-			maxRepeats: <?= caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>,
+			minRepeats: <?= caGetOption('minRelationshipsPerRow', $settings, 0); ?>,
+			maxRepeats: <?= caGetOption('maxRelationshipsPerRow', $settings, 65535); ?>,
 			
 			totalValueCount: <?= (int)$vn_page_media_count; ?>
 		

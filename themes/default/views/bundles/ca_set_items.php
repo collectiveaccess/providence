@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,8 +24,7 @@
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
- */
- 
+ */ 
  	AssetLoadManager::register('setEditorUI');
  
 	$vs_id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
@@ -36,13 +35,13 @@
 	$vs_type_singular 		= $this->getVar('type_singular');
 	$vs_type_plural 		= $this->getVar('type_plural');
 	$va_lookup_urls 		= $this->getVar('lookup_urls');
-	$va_settings			= $this->getVar('settings');
+	$settings				= $this->getVar('settings');
 	$vn_table_num 			= $t_set->get('table_num');
 	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'setItemEditor');
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.'setItemEditor', $va_settings);
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.'setItemEditor', $settings);
 	
-	if(caGetOption('showCount', $va_settings, false)) { print ($count = sizeof($items)) ? "({$count})" : ''; }
+	if(caGetOption('showCount', $settings, false)) { print ($count = sizeof($items)) ? "({$count})" : ''; }
 	
 ?>
 <div id="<?= $vs_id_prefix; ?>" class='setItemEditor'>
@@ -94,7 +93,7 @@
 					initialValueOrder: <?= json_encode(array_keys($va_items)); ?>,
 					setItemAutocompleteID: '<?= $vs_id_prefix; ?>setItemAutocompleter',
 					rowIDListID: '<?= $vs_id_prefix; ?>setRowIDList',
-					displayTemplate: <?= (isset($va_settings['displayTemplate']) ? json_encode($va_settings['displayTemplate']) : 'null'); ?>,
+					displayTemplate: <?= (isset($settings['displayTemplate']) ? json_encode($settings['displayTemplate']) : 'null'); ?>,
 					
 					editSetItemButton: '<?= addslashes(caNavIcon(__CA_NAV_ICON_EDIT__, "20px")); ?>',
 					deleteSetItemButton: '<?= addslashes(caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, "20px")); ?>',

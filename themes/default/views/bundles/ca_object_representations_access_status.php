@@ -24,26 +24,23 @@
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
- */
- 
-	$vs_id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$vn_table_num 				= $this->getVar('table_num');
-	
-	$t_subject					= $this->getVar('t_subject');
-	$va_settings 				= $this->getVar('settings');
-	$va_errors 					= $this->getVar('errors');
-	
-	$vb_batch					=	$this->getVar('batch');
-	
-	$t_rep = new ca_object_representations();
+*/
+$vs_id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
+$vn_table_num 				= $this->getVar('table_num');
 
-	//if (!$vb_batch) { return; }
-	
-	print "<div class='editorBatchModeControl'>"._t("In batch")." ".
-		caHTMLSelect($vs_id_prefix."_batch_mode", array(
-			_t("do not use") => "_disabled_", 
-			_t('set') => '_set_'
-		), array('id' => $vs_id_prefix.$t_subject->tableNum()."_rel_batch_mode_select"))."</div>\n";
+$t_subject					= $this->getVar('t_subject');
+$settings 					= $this->getVar('settings');
+$va_errors 					= $this->getVar('errors');
+
+$vb_batch					=	$this->getVar('batch');
+
+$t_rep = new ca_object_representations();
+
+print "<div class='editorBatchModeControl'>"._t("In batch")." ".
+	caHTMLSelect($vs_id_prefix."_batch_mode", array(
+		_t("do not use") => "_disabled_", 
+		_t('set') => '_set_'
+	), array('id' => $vs_id_prefix.$t_subject->tableNum()."_rel_batch_mode_select"))."</div>\n";
 ?>
 	<script type="text/javascript">
 		jQuery(document).ready(function() {
@@ -74,4 +71,3 @@
 </div>
 <?php
 	print TooltipManager::getLoadHTML('bundle_ca_object_representations_access_status');
-?>

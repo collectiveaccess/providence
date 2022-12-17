@@ -32,15 +32,15 @@
 	$va_initial_values 	= $this->getVar('label_initial_values');
 	if (!$va_force_new_labels = $this->getVar('new_labels')) { $va_force_new_labels = array(); }	// list of new labels not saved due to error which we need to for onto the label list as new
 
-	$va_settings = 		$this->getVar('settings');
-	$vs_add_label =		$this->getVar('add_label');
+	$settings 			= $this->getVar('settings');
+	$vs_add_label 		=	$this->getVar('add_label');
 	
 	$locale_list		= $this->getVar('locale_list');
 	
-	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel('ca_metadata_elements', 'preferred_labels') == __CA_BUNDLE_ACCESS_READONLY__));
+	$vb_read_only		=	((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel('ca_metadata_elements', 'preferred_labels') == __CA_BUNDLE_ACCESS_READONLY__));
 	
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'Labels', $va_settings, caInitialValuesArrayHasValue($vs_id_prefix.'Labels', $va_initial_values));
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.'Labels', $va_settings);
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'Labels', $settings, caInitialValuesArrayHasValue($vs_id_prefix.'Labels', $va_initial_values));
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.'Labels', $settings);
 ?>
 <div id="<?= $vs_id_prefix; ?>Labels">
 <?php

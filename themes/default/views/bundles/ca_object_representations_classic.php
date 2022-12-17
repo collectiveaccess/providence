@@ -25,91 +25,90 @@
  *
  * ----------------------------------------------------------------------
  */
-	AssetLoadManager::register('sortableUI');
+AssetLoadManager::register('sortableUI');
 
-	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$t_instance 		= $this->getVar('t_instance');
-	$t_item 			= $this->getVar('t_item');			// object representation
-	$t_item_label		= $t_item->getLabelTableInstance();
-	$t_item_rel 		= $this->getVar('t_item_rel');
-	$t_subject 			= $this->getVar('t_subject');		// object
-	$vs_add_label 		= $this->getVar('add_label');
-	$va_settings 		= $this->getVar('settings');
+$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
+$t_instance 		= $this->getVar('t_instance');
+$t_item 			= $this->getVar('t_item');			// object representation
+$t_item_label		= $t_item->getLabelTableInstance();
+$t_item_rel 		= $this->getVar('t_item_rel');
+$t_subject 			= $this->getVar('t_subject');		// object
+$vs_add_label 		= $this->getVar('add_label');
+$settings 			= $this->getVar('settings');
 
-	$vb_read_only		=	(isset($va_settings['readonly']) && $va_settings['readonly']);
-	$vb_batch			=	$this->getVar('batch');
-	
-	$dont_show_preferred_label = caGetOption('dontShowPreferredLabel', $va_settings, false);
-	$dont_show_idno = caGetOption('dontShowIdno', $va_settings, false);
-	$dont_show_access = caGetOption('dontShowAccess', $va_settings, false);
-	$dont_show_status = caGetOption('dontShowStatus', $va_settings, false);
-	$dont_show_transcribe = $this->request->getAppConfig()->get('allow_transcription') ? caGetOption('dontShowTranscribe', $va_settings, false) : true;
-	
-	
-	// Dyamically loaded sort ordering
-	$loaded_sort 			= $this->getVar('sort');
-	$loaded_sort_direction 	= $this->getVar('sortDirection');
-	
-	
-	$vs_rel_dir         = ($t_item_rel->getLeftTableName() == $t_subject->tableName()) ? 'ltol' : 'rtol';
-	$vn_left_sub_type_id = ($t_item_rel->getLeftTableName() == $t_subject->tableName()) ? $t_subject->get('type_id') : null;
-	$vn_right_sub_type_id = ($t_item_rel->getRightTableName() == $t_subject->tableName()) ? $t_subject->get('type_id') : null;
-	$rel_types          = $t_item_rel->getRelationshipTypes($vn_left_sub_type_id, $vn_right_sub_type_id);
-	
-	$embedded_import_opts = (bool)$this->request->getAppConfig()->get('allow_user_selection_of_embedded_metadata_extraction_mapping') ? ca_data_importers::getImportersAsHTMLOptions(['formats' => ['exif', 'mediainfo'], 'tables' => [$t_instance->tableName(), 'ca_object_representations'], 'nullOption' => (bool)$this->request->getAppConfig()->get('allow_user_embedded_metadata_extraction_mapping_null_option') ? '-' : null]) : [];
+$vb_read_only		=	(isset($settings['readonly']) && $settings['readonly']);
+$vb_batch			=	$this->getVar('batch');
 
-	// don't allow editing if user doesn't have access to any of the representation types
-	if(sizeof(caGetTypeListForUser('ca_object_representations', array('access' => __CA_BUNDLE_ACCESS_EDIT__)))  < 1) {
-		$vb_read_only = true;
-	}
-	
-	if (!in_array($vs_default_upload_type = $this->getVar('defaultRepresentationUploadType'), array('upload', 'url', 'search'))) {
-		$vs_default_upload_type = 'upload';
-	}
-	
-	$vb_allow_fetching_from_urls = $this->request->getAppConfig()->get('allow_fetching_of_media_from_remote_urls');
-	
-	// Paging
-	$vn_start = 0;
-	$vn_num_per_page = 20;
-	$vn_primary_id = 0;
-	
-	// generate list of inital form values; the bundle Javascript call will
-	// use the template to generate the initial form
-	$va_rep_type_list = $t_item->getTypeList();
-	$va_errors = array();
-	
-	$vn_rep_count = $t_subject->getRepresentationCount($va_settings);
-	$va_initial_values = caSanitizeArray($t_subject->getBundleFormValues($this->getVar('bundle_name'), $this->getVar('placement_code'), $va_settings, array('start' => 0, 'limit' => $vn_num_per_page, 'request' => $this->request)), ['removeNonCharacterData' => false]);
+$dont_show_preferred_label = caGetOption('dontShowPreferredLabel', $settings, false);
+$dont_show_idno = caGetOption('dontShowIdno', $settings, false);
+$dont_show_access = caGetOption('dontShowAccess', $settings, false);
+$dont_show_status = caGetOption('dontShowStatus', $settings, false);
+$dont_show_transcribe = $this->request->getAppConfig()->get('allow_transcription') ? caGetOption('dontShowTranscribe', $settings, false) : true;
 
-	foreach($va_initial_values as $vn_representation_id => $va_rep) {
-		if(is_array($va_action_errors = $this->request->getActionErrors('ca_object_representations', $vn_representation_id))) {
-			foreach($va_action_errors as $o_error) {
-				$va_errors[$vn_representation_id][] = array('errorDescription' => $o_error->getErrorDescription(), 'errorCode' => $o_error->getErrorNumber());
-			}
-		}
-		if ($va_rep['is_primary']) {
-			$vn_primary_id = $va_rep['representation_id'];
+
+// Dyamically loaded sort ordering
+$loaded_sort 			= $this->getVar('sort');
+$loaded_sort_direction 	= $this->getVar('sortDirection');
+
+
+$vs_rel_dir         = ($t_item_rel->getLeftTableName() == $t_subject->tableName()) ? 'ltol' : 'rtol';
+$vn_left_sub_type_id = ($t_item_rel->getLeftTableName() == $t_subject->tableName()) ? $t_subject->get('type_id') : null;
+$vn_right_sub_type_id = ($t_item_rel->getRightTableName() == $t_subject->tableName()) ? $t_subject->get('type_id') : null;
+$rel_types          = $t_item_rel->getRelationshipTypes($vn_left_sub_type_id, $vn_right_sub_type_id);
+
+$embedded_import_opts = (bool)$this->request->getAppConfig()->get('allow_user_selection_of_embedded_metadata_extraction_mapping') ? ca_data_importers::getImportersAsHTMLOptions(['formats' => ['exif', 'mediainfo'], 'tables' => [$t_instance->tableName(), 'ca_object_representations'], 'nullOption' => (bool)$this->request->getAppConfig()->get('allow_user_embedded_metadata_extraction_mapping_null_option') ? '-' : null]) : [];
+
+// don't allow editing if user doesn't have access to any of the representation types
+if(sizeof(caGetTypeListForUser('ca_object_representations', array('access' => __CA_BUNDLE_ACCESS_EDIT__)))  < 1) {
+	$vb_read_only = true;
+}
+
+if (!in_array($vs_default_upload_type = $this->getVar('defaultRepresentationUploadType'), array('upload', 'url', 'search'))) {
+	$vs_default_upload_type = 'upload';
+}
+
+$vb_allow_fetching_from_urls = $this->request->getAppConfig()->get('allow_fetching_of_media_from_remote_urls');
+
+// Paging
+$vn_start = 0;
+$vn_num_per_page = 20;
+$vn_primary_id = 0;
+
+// generate list of inital form values; the bundle Javascript call will
+// use the template to generate the initial form
+$va_rep_type_list = $t_item->getTypeList();
+$va_errors = array();
+
+$vn_rep_count = $t_subject->getRepresentationCount($settings);
+$va_initial_values = caSanitizeArray($t_subject->getBundleFormValues($this->getVar('bundle_name'), $this->getVar('placement_code'), $settings, array('start' => 0, 'limit' => $vn_num_per_page, 'request' => $this->request)), ['removeNonCharacterData' => false]);
+
+foreach($va_initial_values as $vn_representation_id => $va_rep) {
+	if(is_array($va_action_errors = $this->request->getActionErrors('ca_object_representations', $vn_representation_id))) {
+		foreach($va_action_errors as $o_error) {
+			$va_errors[$vn_representation_id][] = array('errorDescription' => $o_error->getErrorDescription(), 'errorCode' => $o_error->getErrorNumber());
 		}
 	}
-	
-	$va_failed_inserts = array();
-	foreach($this->request->getActionErrorSubSources('ca_object_representations') as $vs_error_subsource) {
-		if (substr($vs_error_subsource, 0, 4) === 'new_') {
-			$va_action_errors = $this->request->getActionErrors('ca_object_representations', $vs_error_subsource);
-			foreach($va_action_errors as $o_error) {
-				$va_failed_inserts[] = array('icon' => '', '_errors' => array(array('errorDescription' => $o_error->getErrorDescription(), 'errorCode' => $o_error->getErrorNumber())));
-			}
+	if ($va_rep['is_primary']) {
+		$vn_primary_id = $va_rep['representation_id'];
+	}
+}
+
+$va_failed_inserts = array();
+foreach($this->request->getActionErrorSubSources('ca_object_representations') as $vs_error_subsource) {
+	if (substr($vs_error_subsource, 0, 4) === 'new_') {
+		$va_action_errors = $this->request->getActionErrors('ca_object_representations', $vs_error_subsource);
+		foreach($va_action_errors as $o_error) {
+			$va_failed_inserts[] = array('icon' => '', '_errors' => array(array('errorDescription' => $o_error->getErrorDescription(), 'errorCode' => $o_error->getErrorNumber())));
 		}
 	}
-	
-	if ($vb_batch) {
-		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
-	} else {
-		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, (sizeof($va_initial_values) > 0), _t("Number of representations: %1", sizeof($va_initial_values)));
-	}
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
+}
 
+if ($vb_batch) {
+	print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
+} else {
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings, (sizeof($va_initial_values) > 0), _t("Number of representations: %1", sizeof($va_initial_values)));
+}
+print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
 ?>
 <div id="<?= $vs_id_prefix; ?>" <?= $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
@@ -366,7 +365,7 @@
 <?php
     }
 ?>
-				<div class="caObjectRepresentationBatchDetailEditorElement formLabel"><?= caHTMLCheckboxInput('{fieldNamePrefix}rep_type_id_{n}_enabled', ['value' => 1, 'class' => 'caObjectRepresentationBatchDetailEditorElementEnable']); ?><?= $t_item->htmlFormElement('type_id', '^EXTRA^LABEL<br/>^ELEMENT', array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}rep_type_id_{n}", 'name' => "{fieldNamePrefix}rep_type_id_{n}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations', 'restrictToTypes' => caGetOption('restrict_to_types', $va_settings, null))); ?></div>
+				<div class="caObjectRepresentationBatchDetailEditorElement formLabel"><?= caHTMLCheckboxInput('{fieldNamePrefix}rep_type_id_{n}_enabled', ['value' => 1, 'class' => 'caObjectRepresentationBatchDetailEditorElementEnable']); ?><?= $t_item->htmlFormElement('type_id', '^EXTRA^LABEL<br/>^ELEMENT', array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}rep_type_id_{n}", 'name' => "{fieldNamePrefix}rep_type_id_{n}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations', 'restrictToTypes' => caGetOption('restrict_to_types', $settings, null))); ?></div>
 <?php
     if(!$dont_show_access) {
 ?>
@@ -399,7 +398,7 @@
     } else {
         if(sizeof($rel_types) > 1) {
 ?>
-			<h2><?= ($t_item_rel->hasField('type_id')) ? _t('Add representation with relationship type %1', $t_item_rel->getRelationshipTypesAsHTMLSelect($vs_rel_dir, $vn_left_sub_type_id, $vn_right_sub_type_id, array('name' => '{fieldNamePrefix}rel_type_id_{n}'), $va_settings)) : _t('Add representation'); ?></h2>
+			<h2><?= ($t_item_rel->hasField('type_id')) ? _t('Add representation with relationship type %1', $t_item_rel->getRelationshipTypesAsHTMLSelect($vs_rel_dir, $vn_left_sub_type_id, $vn_right_sub_type_id, array('name' => '{fieldNamePrefix}rel_type_id_{n}'), $settings)) : _t('Add representation'); ?></h2>
 <?php
     } else {
         // Embed type when only a single type is available
@@ -420,7 +419,7 @@
 <?php
     }
 ?>
-				<div class="caObjectRepresentationDetailEditorElement"><?= $t_item->htmlFormElement('type_id', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}rep_type_id_{n}", 'name' => "{fieldNamePrefix}rep_type_id_{n}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations', 'restrictToTypes' => caGetOption('restrict_to_types', $va_settings, null))); ?></div>
+				<div class="caObjectRepresentationDetailEditorElement"><?= $t_item->htmlFormElement('type_id', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}rep_type_id_{n}", 'name' => "{fieldNamePrefix}rep_type_id_{n}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations', 'restrictToTypes' => caGetOption('restrict_to_types', $settings, null))); ?></div>
 <?php
     if (!$dont_show_access) {
 ?>
@@ -529,7 +528,7 @@
 	<div class="bundleContainer">
 	    <div class='bundleSubLabel'>
 <?php
-            print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $t_instance->tableName(), array_merge($va_settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
+            print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $t_instance->tableName(), array_merge($settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
 
 		    if (($vn_rep_count > 1) && $this->request->getUser()->canDoAction('can_download_ca_object_representations')) {
 			    print "<div style='float: right'>".caNavLink($this->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1)." "._t('Download all'), 'button', '*', '*', 'DownloadMedia', [$t_subject->primaryKey() => $t_subject->getPrimaryKey()])."</div>";
@@ -616,13 +615,13 @@
 			
 			extraParams: { exact: 1 },
 			
-			minRepeats: <?= $vb_batch ? 1 : caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
-			maxRepeats: <?= $vb_batch ? 1 : caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>,
+			minRepeats: <?= $vb_batch ? 1 : caGetOption('minRelationshipsPerRow', $settings, 0); ?>,
+			maxRepeats: <?= $vb_batch ? 1 : caGetOption('maxRelationshipsPerRow', $settings, 65535); ?>,
 			
 			sortUrl: '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Sort', array('table' => $t_item_rel->tableName())); ?>',
 			
 			totalValueCount: <?= (int)$vn_rep_count; ?>,
-			partialLoadUrl: '<?= caNavUrl($this->request, '*', '*', 'loadBundles', array($t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $va_settings['placement_id'], 'bundle' => 'ca_object_representations')); ?>',
+			partialLoadUrl: '<?= caNavUrl($this->request, '*', '*', 'loadBundles', array($t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $settings['placement_id'], 'bundle' => 'ca_object_representations')); ?>',
 			loadSize: <?= $vn_num_per_page; ?>,
 			partialLoadMessage: '<?= addslashes(_t('Load next %num of %total')); ?>',
 			partialLoadIndicator: '<?= addslashes(caBusyIndicatorIcon($this->request)); ?>',

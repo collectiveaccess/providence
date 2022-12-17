@@ -25,24 +25,23 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$vs_id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$vn_table_num 				= $this->getVar('table_num');
-	
-	$t_subject					= $this->getVar('t_subject');
-	$va_settings 				= $this->getVar('settings');
+$vs_id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
+$vn_table_num 				= $this->getVar('table_num');
 
-	$vb_read_only				=	(isset($va_settings['readonly']) && $va_settings['readonly']);
-	
-	if (!($vs_add_label 		= $this->getVar('add_label'))) { $vs_add_label = _t('Add component'); }
-	$vs_display_template		= caGetOption('displayTemplate', $va_settings, $t_subject->getAppConfig()->get('ca_objects_component_display_settings'));
+$t_subject					= $this->getVar('t_subject');
+$settings 					= $this->getVar('settings');
 
-	$va_errors = array();
-	
-	$vn_num_components = ($qr_components = $t_subject->getComponents(array('returnAs' => 'searchResult'))) ? $qr_components->numHits() : 0;
-	
-	print "({$vn_num_components})";	// print number of components next to the bundle title
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+$vb_read_only				= (isset($settings['readonly']) && $settings['readonly']);
+
+if (!($vs_add_label 		= $this->getVar('add_label'))) { $vs_add_label = _t('Add component'); }
+$vs_display_template		= caGetOption('displayTemplate', $settings, $t_subject->getAppConfig()->get('ca_objects_component_display_settings'));
+
+$va_errors = array();
+
+$vn_num_components = ($qr_components = $t_subject->getComponents(array('returnAs' => 'searchResult'))) ? $qr_components->numHits() : 0;
+
+print "({$vn_num_components})";	// print number of components next to the bundle title
+print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
 ?>
 
 <div id="<?= $vs_id_prefix; ?>">

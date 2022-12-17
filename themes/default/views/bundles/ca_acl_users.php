@@ -25,21 +25,19 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$vs_id_prefix 		= $this->getVar('id_prefix').'_user';
-	$t_instance 		= $this->getVar('t_instance');
-	$t_item 			= $this->getVar('t_user');				// user
-	$t_subject 			= $this->getVar('t_subject');		
-	$va_settings 		= $this->getVar('settings');
-	$vs_add_label 		= $this->getVar('add_label');
-	$t_acl = new ca_acl();
-	
-	//$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_users') == __CA_BUNDLE_ACCESS_READONLY__));
-	$vb_read_only = false;
-	
-	$va_initial_values = $this->getVar('initialValues');
-	if (!is_array($va_initial_values)) { $va_initial_values = array(); }
-	
+$vs_id_prefix 		= $this->getVar('id_prefix').'_user';
+$t_instance 		= $this->getVar('t_instance');
+$t_item 			= $this->getVar('t_user');				// user
+$t_subject 			= $this->getVar('t_subject');		
+$settings 			= $this->getVar('settings');
+$vs_add_label 		= $this->getVar('add_label');
+$t_acl = new ca_acl();
+
+//$vb_read_only		=	((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_users') == __CA_BUNDLE_ACCESS_READONLY__));
+$vb_read_only = false;
+
+$va_initial_values = $this->getVar('initialValues');
+if (!is_array($va_initial_values)) { $va_initial_values = array(); }	
 ?>
 <div id="<?= $vs_id_prefix.$t_item->tableNum().'_rel'; ?>">
 <?php

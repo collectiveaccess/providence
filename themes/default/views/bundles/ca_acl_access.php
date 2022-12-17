@@ -25,12 +25,10 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$t_instance 		= $this->getVar('t_instance');
+$t_instance 		= $this->getVar('t_instance');
 	
-	
-	$vb_can_edit	 	= $t_instance->isSaveable($this->request);
-	$vb_can_delete		= $t_instance->isDeletable($this->request);
+$vb_can_edit	 	= $t_instance->isSaveable($this->request);
+$vb_can_delete		= $t_instance->isDeletable($this->request);
 ?>
 <div class="sectionBox">
 <?php

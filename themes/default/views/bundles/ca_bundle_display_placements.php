@@ -25,21 +25,20 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$t_display 							= $this->getVar('t_display');
-	$vs_id_prefix 						= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$settings							= $this->getVar('settings');
-	
-	$va_available_display_items 		= $t_display->getAvailableBundles();
-	
-	foreach($va_available_display_items as $vs_bundle => $va_item) {
-		unset($va_available_display_items[$vs_bundle]['settings']);	// strip lists of valid settings - we don't need to send them to the client and they can be fairly large
-	}
-	
-	$va_to_display_items  				= $t_display->getPlacementsInDisplay(array('noCache' => true));
-	
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
+$t_display 							= $this->getVar('t_display');
+$vs_id_prefix 						= $this->getVar('placement_code').$this->getVar('id_prefix');
+$settings							= $this->getVar('settings');
+
+$va_available_display_items 		= $t_display->getAvailableBundles();
+
+foreach($va_available_display_items as $vs_bundle => $va_item) {
+	unset($va_available_display_items[$vs_bundle]['settings']);	// strip lists of valid settings - we don't need to send them to the client and they can be fairly large
+}
+
+$va_to_display_items  				= $t_display->getPlacementsInDisplay(array('noCache' => true));
+
+print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
 ?>
 <div class="bundleDisplayPlacementEditorContainer" id="<?= $vs_id_prefix; ?>">
 	<div id="bundleDisplayPlacementEditor" class="bundleDisplayPlacementEditor">

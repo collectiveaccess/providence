@@ -25,23 +25,21 @@
  *
  * ----------------------------------------------------------------------
  */
- 
 $vs_id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
 $vn_table_num 				= $this->getVar('table_num');
 
 $t_subject					= $this->getVar('t_subject');
-$va_settings 				= $this->getVar('settings');
+$settings 				= $this->getVar('settings');
 
-$vb_read_only				=	(isset($va_settings['readonly']) && $va_settings['readonly']);
+$vb_read_only				=	(isset($settings['readonly']) && $settings['readonly']);
 $vb_batch					= $this->getVar('batch');
 
 if (!($vs_add_label 		= $this->getVar('add_label'))) { $vs_add_label = _t('Update location'); }
 
-
 if ($vb_batch) {
 	print caBatchEditorIntrinsicModeControl($t_subject, $vs_id_prefix);
 } else {
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, (bool)$t_subject->get('is_deaccessioned'), ((bool)$t_subject->get('is_deaccessioned') ? _t('Yes') : _t('No')));
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings, (bool)$t_subject->get('is_deaccessioned'), ((bool)$t_subject->get('is_deaccessioned') ? _t('Yes') : _t('No')));
 }
 ?>
 <div id="<?= $vs_id_prefix; ?>" class="<?= $vb_batch ? "editorBatchBundleContent" : ''; ?>">

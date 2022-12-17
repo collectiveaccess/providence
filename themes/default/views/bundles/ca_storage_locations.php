@@ -89,7 +89,7 @@
 		$errors[] = $o_error->getErrorDescription();
 	}
 	
-	$make_link = !caTemplateHasLinks(caGetOption('display_template', $va_settings, null));
+	$make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null));
 ?>
 <div id="<?= $id_prefix; ?>" <?= $batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php

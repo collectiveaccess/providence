@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2014 Whirl-i-Gig
+ * Copyright 2011-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,20 +25,19 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 
 	AssetLoadManager::register('sortableUI');
 
-	$vs_id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$t_tour 				= $this->getVar('t_tour');	
-	$t_stop					= $this->getVar('t_stop');
+	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
+	$t_tour 			= $this->getVar('t_tour');	
+	$t_stop				= $this->getVar('t_stop');
 	
-	$va_initial_values = $this->getVar('stops');	// list of existing stops
-	$va_errors = array();
-	$va_failed_inserts = array();
+	$settings 			= $this->getVar('settings');
+	
+	$va_initial_values 	= $this->getVar('stops');	// list of existing stops
+	$va_errors = $va_failed_inserts = [];
  
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
  ?>
  <div id="<?= $vs_id_prefix; ?>">
 <?php

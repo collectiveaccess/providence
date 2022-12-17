@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2017 Whirl-i-Gig
+ * Copyright 2011-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,18 +25,18 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$t_subject 			= $this->getVar('t_subject');		// object_representation
+$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
+$t_subject 			= $this->getVar('t_subject');		// object_representation
+$settings			= $this->get('settings');
 
-	$vn_num_multifiles = $this->getVar('representation_num_multifiles');
-	$vs_num_multifiles = ($vn_num_multifiles ? (($vn_num_multifiles == 1) ? _t('+ 1 additional preview') : _t('+ %1 additional previews', $vn_num_multifiles)) : '');
-	
-	$vb_allow_fetching_from_urls = $this->request->getAppConfig()->get('allow_fetching_of_media_from_remote_urls');
-	$vb_media_is_set = is_array($t_subject->getMediaInfo('media'));
+$vn_num_multifiles = $this->getVar('representation_num_multifiles');
+$vs_num_multifiles = ($vn_num_multifiles ? (($vn_num_multifiles == 1) ? _t('+ 1 additional preview') : _t('+ %1 additional previews', $vn_num_multifiles)) : '');
 
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
+$vb_allow_fetching_from_urls = $this->request->getAppConfig()->get('allow_fetching_of_media_from_remote_urls');
+$vb_media_is_set = is_array($t_subject->getMediaInfo('media'));
+
+print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
 ?>
 <div id="<?= $vs_id_prefix; ?>">
 	<div class="bundleContainer">

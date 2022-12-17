@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2014 Whirl-i-Gig
+ * Copyright 2012-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,20 +25,18 @@
  *
  * ----------------------------------------------------------------------
  */
- 
 	$vs_id_prefix 		= $this->getVar('id_prefix').'_group';
 	$t_instance 		= $this->getVar('t_instance');
 	$t_item 			= $this->getVar('t_group');				// user group
 	$t_subject 			= $this->getVar('t_subject');		
-	$va_settings 		= $this->getVar('settings');
+	$settings 			= $this->getVar('settings');
 	$vs_add_label 		= $this->getVar('add_label');
 	
-	//$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_users') == __CA_BUNDLE_ACCESS_READONLY__));
+	//$vb_read_only		=	((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_users') == __CA_BUNDLE_ACCESS_READONLY__));
 	$vb_read_only = false;
 	
 	$t_acl = new ca_acl();
-	
-	
+
 	$va_initial_values = $this->getVar('initialValues');
 	if (!is_array($va_initial_values)) { $va_initial_values = array(); }
 ?>

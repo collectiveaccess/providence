@@ -25,51 +25,50 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$t_subject 			= $this->getVar('t_subject');
-	$va_settings 		= $this->getVar('settings');
-	$vs_add_label 		= $this->getVar('add_label');
-	$vs_placement_code 	= $this->getVar('placement_code');
-	$vn_placement_id	= (int)$va_settings['placement_id'];
-	$vb_batch			= $this->getVar('batch');
-	
-	$t_item = new ca_item_tags();
+$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
+$t_subject 			= $this->getVar('t_subject');
+$settings 			= $this->getVar('settings');
+$vs_add_label 		= $this->getVar('add_label');
+$vs_placement_code 	= $this->getVar('placement_code');
+$vn_placement_id	= (int)$settings['placement_id'];
+$vb_batch			= $this->getVar('batch');
 
-	$vs_sort			=	((isset($va_settings['sort']) && $va_settings['sort'])) ? $va_settings['sort'] : '';
-	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly']));
-	$vb_dont_show_del	=	((isset($va_settings['dontShowDeleteButton']) && $va_settings['dontShowDeleteButton'])) ? true : false;
-	
-	$vs_color 			= 	((isset($va_settings['colorItem']) && $va_settings['colorItem'])) ? $va_settings['colorItem'] : '';
-	$vs_first_color 	= 	((isset($va_settings['colorFirstItem']) && $va_settings['colorFirstItem'])) ? $va_settings['colorFirstItem'] : '';
-	$vs_last_color 		= 	((isset($va_settings['colorLastItem']) && $va_settings['colorLastItem'])) ? $va_settings['colorLastItem'] : '';
-	
-	// params to pass during object lookup
-	$va_lookup_params = array(
-		'noInline' => 0,
-		'quiet' => 1,
-		'table_num' => $t_subject->tableNum()
-	);
+$t_item = new ca_item_tags();
 
-	$va_errors = [];
-	foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
-		$va_errors[] = $o_error->getErrorDescription();
+$vs_sort			=	((isset($settings['sort']) && $settings['sort'])) ? $settings['sort'] : '';
+$vb_read_only		=	((isset($settings['readonly']) && $settings['readonly']));
+$vb_dont_show_del	=	((isset($settings['dontShowDeleteButton']) && $settings['dontShowDeleteButton'])) ? true : false;
+
+$vs_color 			= 	((isset($settings['colorItem']) && $settings['colorItem'])) ? $settings['colorItem'] : '';
+$vs_first_color 	= 	((isset($settings['colorFirstItem']) && $settings['colorFirstItem'])) ? $settings['colorFirstItem'] : '';
+$vs_last_color 		= 	((isset($settings['colorLastItem']) && $settings['colorLastItem'])) ? $settings['colorLastItem'] : '';
+
+// params to pass during object lookup
+$va_lookup_params = array(
+	'noInline' => 0,
+	'quiet' => 1,
+	'table_num' => $t_subject->tableNum()
+);
+
+$va_errors = [];
+foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
+	$va_errors[] = $o_error->getErrorDescription();
+}
+
+if (!RequestHTTP::isAjax()) {
+	if ($vb_batch) {
+		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
+	} else {
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings, caInitialValuesArrayHasValue($vs_id_prefix.$t_item->tableNum().'_rel', $this->getVar('initialValues')));
 	}
-	
-	if (!RequestHTTP::isAjax()) {
-		if ($vb_batch) {
-			print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
-		} else {
-			print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix.$t_item->tableNum().'_rel', $this->getVar('initialValues')));
-		}
-		print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
-	}
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
+}
 ?>
 <div id="<?= $vs_id_prefix; ?>" <?= $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	print "<div class='bundleSubLabel'>";
 	if(is_array($this->getVar('initialValues')) && sizeof($this->getVar('initialValues')) && !$vb_read_only) {
-		print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $t_subject->tableName(), $va_settings);
+		print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $t_subject->tableName(), $settings);
 	}
 	print "<div style='clear:both;'></div></div><!-- end bundleSubLabel -->";
 	
@@ -79,7 +78,7 @@
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
 <?php
-	switch($va_settings['list_format']) {
+	switch($settings['list_format']) {
 		case 'list':
 ?>
 		<div id="<?= $vs_id_prefix; ?>Item_{n}" class="labelInfo listRel caRelatedItem">
@@ -193,8 +192,8 @@
 			showEmptyFormsOnLoad: 1,
 			autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'Tag', 'Get', $va_lookup_params); ?>',
 			returnTextValues: true,
-			restrictToAccessPoint: <?= json_encode($va_settings['restrict_to_access_point'] ?? null); ?>,
-			restrictToSearch: <?= json_encode($va_settings['restrict_to_search'] ?? null); ?>,
+			restrictToAccessPoint: <?= json_encode($settings['restrict_to_access_point'] ?? null); ?>,
+			restrictToSearch: <?= json_encode($settings['restrict_to_search'] ?? null); ?>,
 			bundlePreview: <?= caGetBundlePreviewForRelationshipBundle($this->getVar('initialValues')); ?>,
 			readonly: <?= $vb_read_only ? "true" : "false"; ?>,
 			isSortable: <?= ($vb_read_only || $vs_sort) ? "false" : "true"; ?>,
@@ -206,8 +205,8 @@
 			firstItemColor: '<?= $vs_first_color; ?>',
 			lastItemColor: '<?= $vs_last_color; ?>',
 
-			minRepeats: <?= caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
-			maxRepeats: <?= caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>,
+			minRepeats: <?= caGetOption('minRelationshipsPerRow', $settings, 0); ?>,
+			maxRepeats: <?= caGetOption('maxRelationshipsPerRow', $settings, 65535); ?>,
 			templateValues: ['tag', 'id', 'access', 'moderation_message', 'rank']
 		});
 	});

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2019 Whirl-i-Gig
+ * Copyright 2019-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,13 +34,14 @@
 	
 	$settings_values_list	= $this->getVar('settings_values_list');
 	$settings_tags			= $this->getVar('settings_tags');
+	$settings				= $this->getVar('settings');
 
 	$va_initial_values = $this->getVar('rules');	// list of existing rules
 	if(!is_array($va_initial_values)) { $va_initial_values = []; }
 	$va_errors = $va_failed_inserts = [];
 	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
  ?>
  <div id="<?= $vs_id_prefix; ?>">
 <?php

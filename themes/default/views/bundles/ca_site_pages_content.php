@@ -29,9 +29,9 @@
 	$vn_table_num 				= $this->getVar('table_num');
 	
 	$t_subject					= $this->getVar('t_subject');
-	$va_settings 				= $this->getVar('settings');
+	$settings 					= $this->getVar('settings');
 
-	$vb_read_only				= (isset($va_settings['readonly']) && $va_settings['readonly']);
+	$vb_read_only				= (isset($settings['readonly']) && $settings['readonly']);
 	
 	$va_history 				= $this->getVar('checkout_history');
 	$vn_checkout_count 			= $this->getVar('checkout_count');

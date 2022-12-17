@@ -31,16 +31,16 @@
 	$t_item 			= $this->getVar('t_role');			// role
 	$t_rel 				= $this->getVar('t_rel');			// *_x_roles instance (eg. ca_editor_uis_x_roles)
 	$t_subject 			= $this->getVar('t_subject');		
-	$va_settings 		= $this->getVar('settings');
+	$settings 			= $this->getVar('settings');
 	
-	$vb_read_only		= ((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_users') == __CA_BUNDLE_ACCESS_READONLY__));
+	$vb_read_only		= ((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_users') == __CA_BUNDLE_ACCESS_READONLY__));
 	
 	
 	$va_initial_values = $this->getVar('initialValues');
 	if (!is_array($va_initial_values)) { $va_initial_values = array(); }
 	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
 	
 	$va_role_list = $t_item->getRoleList();
 ?>

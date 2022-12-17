@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2017 Whirl-i-Gig
+ * Copyright 2011-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,21 +24,21 @@
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
- */
- 
- 
-	AssetLoadManager::register('sortableUI');
+ */ 
+AssetLoadManager::register('sortableUI');
 
-	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$t_ui 					= $this->getVar('t_ui');	
-	$t_screen				= $this->getVar('t_screen');
-	
-	$va_initial_values = $this->getVar('screens');	// list of existing screens
-	$va_errors = array();
-	$va_failed_inserts = array();
- 
- 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
+$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
+$t_ui 				= $this->getVar('t_ui');	
+$t_screen			= $this->getVar('t_screen');
+
+$setting			= $this->getVar('settings');
+
+$va_initial_values = $this->getVar('screens');	// list of existing screens
+$va_errors = array();
+$va_failed_inserts = array();
+
+print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
 ?>
 <div id="<?= $vs_id_prefix; ?>">
 <?php
@@ -70,9 +70,7 @@
 				</tr>
 			</table>
 		</div>
-<?php
-	print TooltipManager::getLoadHTML('bundle_ca_editor_ui_screens');
-?>
+<?= TooltipManager::getLoadHTML('bundle_ca_editor_ui_screens'); ?>
 	</textarea>
 	
 	<div class="bundleContainer">
