@@ -424,7 +424,7 @@ class ca_attributes extends BaseModel {
 			if(isset($pa_values[$vn_element_id])) {
 				$vm_value = $pa_values[$vn_element_id];
 			} else {
-				$vm_value = $pa_values[$va_element['element_code']];
+				$vm_value = $pa_values[$va_element['element_code']] ?? null;
 			}
 			
 			if ($t_attr_val->addValue($vm_value, $va_element, $vn_attribute_id, array_merge($pa_options, ['t_attribute' => $this])) === false) {
@@ -738,7 +738,7 @@ class ca_attributes extends BaseModel {
 				return null;
 			}
 		}
-		return ca_attributes::$s_get_attributes_cache[$pn_table_num.'/'.$pn_row_id];
+		return ca_attributes::$s_get_attributes_cache[$pn_table_num.'/'.$pn_row_id] ?? null;
 	}
 	# ------------------------------------------------------
 	/**

@@ -1100,7 +1100,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			$field_num_proc = (int)substr($content_fieldname, 1);
 			
 			// do we need to index this (don't index attribute types that we'll search directly)
-			if (WLPlugSearchEngineSqlSearch2::$metadata_elements[$field_num_proc]) {
+			if (WLPlugSearchEngineSqlSearch2::$metadata_elements[$field_num_proc] ?? null) {
 				switch(WLPlugSearchEngineSqlSearch2::$metadata_elements[$field_num_proc]['datatype']) {
 					case __CA_ATTRIBUTE_VALUE_CONTAINER__:	
 					case __CA_ATTRIBUTE_VALUE_GEOCODE__:	

@@ -131,7 +131,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $errors = array();
 	
 	var $filepath;
-	var $handle;
+	private $handle;
 	var $ohandle;
 	var $properties;
 	var $metadata = array();
@@ -310,6 +310,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	public function __construct() {
 		$this->ops_base_path = $this->getBasePath();
 		
+		$this->handle = null;
 		$this->description = _t('Provides image processing and conversion services using ImageMagick via exec() calls to ImageMagick binaries');
 		$this->init();
 		
@@ -502,7 +503,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ----------------------------------------------------------
 	public function read($filepath, $mimetype="", $options=null) {
-		if (!(($this->handle) && ($filepath === $this->filepath))) {
+		if (!isset($this->handle) && ($filepath === $this->filepath))) {
 			
 			if(strpos($filepath, ':') && (caGetOSFamily() != OS_WIN32)) {
 				$this->postError(1610, _t("Filenames with colons (:) are not allowed"), "WLPlugImageMagick->read()");
@@ -574,16 +575,18 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		}
 
 		# get parameters for this operation
-		$w = $parameters["width"];
-		$h = $parameters["height"];
+		$w = $parameters["width"] ?? null;
+		$h = $parameters["height"] ?? null;
 		
 		$cw = $this->get("width");
 		$ch = $this->get("height");
 		
-		if((bool)$this->properties['no_upsampling']) {
+		if((bool)($this->properties['no_upsampling'] ?? false)) {
 			$w = min($cw, round($w)); 
 			$h = min($ch, round($h));
 		}
+		
+		$do_fill_box_crop = false;
 
 		switch($operation) {
 			# -----------------------
@@ -705,7 +708,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 						break;
 					# ----------------
 					case "fill_box":
-						$crop_from = $parameters["crop_from"];
+						$crop_from = $parameters["crop_from"] ?? null;
 						if (!in_array($crop_from, array('center', 'north_east', 'north_west', 'south_east', 'south_west', 'random'))) {
 							$crop_from = '';
 						}
@@ -724,7 +727,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$h = round($h);
 				if ($w > 0 && $h > 0) {
 					$crop_w_edge = $crop_h_edge = 0;
-					if (preg_match("/^([\d]+)%$/", $parameters["trim_edges"], $va_matches)) {
+					if (preg_match("/^([\d]+)%$/", $parameters["trim_edges"] ?? null, $va_matches)) {
 						$crop_w_edge = ceil((intval($va_matches[1])/100) * $w);
 						$crop_h_edge = ceil((intval($va_matches[1])/100) * $h);
 					} else {
@@ -914,13 +917,13 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$tp = new TilepicParser();
 				if (!($properties = $tp->encode($this->filepath, $filepath, 
 					array(
-						"tile_width" => $this->properties["tile_width"],
-						"tile_height" => $this->properties["tile_height"],
-						"layer_ratio" => $this->properties["layer_ratio"],
-						"quality" => $this->properties["quality"],
-						"antialiasing" => $this->properties["antialiasing"],
-						"output_mimetype" => $this->properties["tile_mimetype"],
-						"layers" => $this->properties["layers"],
+						"tile_width" => $this->properties["tile_width"] ?? null,
+						"tile_height" => $this->properties["tile_height"] ?? null,
+						"layer_ratio" => $this->properties["layer_ratio"] ?? null,
+						"quality" => $this->properties["quality"] ?? null,
+						"antialiasing" => $this->properties["antialiasing"] ?? null,
+						"output_mimetype" => $this->properties["tile_mimetype"] ?? null,
+						"layers" => $this->properties["layers"] ?? null,
 					)					
 				))) {
 					$this->postError(1610, $tp->error, "WLPlugTilepic->write()");	
@@ -1157,7 +1160,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				"-format '%[DPX:*]'",
 				caEscapeShellArg( $ps_filepath ) . ( caIsPOSIX() ? ' 2> /dev/null' : '' )
 			) ), $va_output, $vn_return );
-			if ($va_output[0]) { $va_metadata['DPX'] = $va_output; }
+			if ($va_output[0] ?? null) { $va_metadata['DPX'] = $va_output; }
 			
 			/* IPTC metadata */
 			$vs_iptc_file = tempnam(caGetTempDirPath(), 'imiptc');
@@ -1265,15 +1268,15 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			return array(
 				'mimetype' => $this->magickToMimeType($va_tmp[0]),
 				'magick' => $va_tmp[0],
-				'width' => in_array($this->properties["orientation_rotate"], array(90, -90)) ? $va_tmp[2] : $va_tmp[1],
-				'height' => in_array($this->properties["orientation_rotate"], array(90, -90)) ? $va_tmp[1] : $va_tmp[2],
+				'width' => in_array($this->properties["orientation_rotate"] ?? null, array(90, -90)) ? $va_tmp[2] : $va_tmp[1],
+				'height' => in_array($this->properties["orientation_rotate"] ?? null, array(90, -90)) ? $va_tmp[1] : $va_tmp[2],
 				'colorspace' => $va_tmp[3],
 				'depth' => $va_tmp[4],
 				'resolution' => array(
 					'x' => $va_tmp[5],
 					'y' => $va_tmp[6]
 				),
-				'ops' => $this->properties["orientation_rotate"] ? array(0 => array('op' => 'strip')) : array(),
+				'ops' => ($this->properties["orientation_rotate"] ?? null) ? array(0 => array('op' => 'strip')) : array(),
 				'filepath' => $ps_filepath
 			);
 		}
@@ -1379,9 +1382,9 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$va_ops['convert'][] = '-rotate '.$this->properties["orientation_rotate"];
 			}
 			
-			if ($this->properties['gamma']) {
-				if (!$this->properties['reference-black']) { $this->properties['reference-black'] = 0; }
-				if (!$this->properties['reference-white']) { $this->properties['reference-white'] = 65535; }
+			if ($this->properties['gamma'] ?? null) {
+				if (!($this->properties['reference-black'] ?? null)) { $this->properties['reference-black'] = 0; }
+				if (!($this->properties['reference-white'] ?? null)) { $this->properties['reference-white'] = 65535; }
 				$va_ops['convert'][] = "-set gamma ".$this->properties['gamma'];
 				$va_ops['convert'][] = "-set reference-black ".$this->properties['reference-black'];
 				$va_ops['convert'][] = "-set reference-white ".$this->properties['reference-white'];
@@ -1404,7 +1407,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				) ) );
 				$vs_input_file = $ps_filepath;
 			}
-			if (is_array($va_ops['composite']) && sizeof($va_ops['composite'])) {
+			if (is_array($va_ops['composite'] ?? null) && sizeof($va_ops['composite'])) {
 				caExec( join( ' ', array(
 					$this->commandWithDefaultArgs( 'composite' ),
 					join( ' ', $va_ops['composite'] ),

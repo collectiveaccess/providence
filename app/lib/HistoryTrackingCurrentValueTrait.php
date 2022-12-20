@@ -3278,7 +3278,7 @@
 		    $newly_added = self::getNewlyAddedCurrentValues();
 		    $deleted = self::getDeletedCurrentValues();
 		    
-		    if (is_array($newly_added[$table_num][$row_id])) {
+		    if (is_array($newly_added[$table_num][$row_id] ?? null)) {
 		        foreach($newly_added[$table_num][$row_id] as $p => $was_current) {
 		            $rows[$p][$was_current['table_num']][$was_current['row_id']] = true;
 		        }

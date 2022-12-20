@@ -358,6 +358,8 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
         }
 
 		$vn_list_id = (is_array($pa_options) && isset($pa_options['list_id'])) ? (int)$pa_options['list_id'] : null;
+		
+		$t_item = null;
 		if (($pa_options['showHierarchy'] ?? false) && !$vn_list_id) {
 			$t_item = new ca_list_items();
 		    $t_item->load((int)$this->opn_item_id);
@@ -371,14 +373,14 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 				$t_list->setTransaction($o_trans);
 			}
 			if (!$t_item) { $t_item = new ca_list_items(); }
-			if ($pa_options['showHierarchy'] || $vb_return_idno) {
+			if (($pa_options['showHierarchy'] ?? false) || $vb_return_idno) {
 				if ($o_trans) { $t_item->setTransaction($o_trans); }
 			}
 
 			$vs_get_spec = ((isset($pa_options['useSingular']) && $pa_options['useSingular']) ? 'preferred_labels.name_singular' : 'preferred_labels.name_plural');
 
 			// do we need to get the hierarchy?
-			if ($pa_options['showHierarchy']) {
+			if ($pa_options['showHierarchy'] ?? false) {
 				if (!$t_item->isLoaded()) { $t_item->load((int)$this->opn_item_id); }
 				
 				if (is_array($pa_options['filterTypes'])) {

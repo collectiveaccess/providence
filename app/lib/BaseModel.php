@@ -1139,7 +1139,7 @@ class BaseModel extends BaseObject {
 			case (FT_FILE):
 				if ($vb_return_with_structure || ($pa_options["USE_MEDIA_FIELD_VALUES"] ?? false)) {
 					if (isset($pa_options["USE_MEDIA_FIELD_VALUES"]) && $pa_options["USE_MEDIA_FIELD_VALUES"]) {
-						$vs_prop = $this->_FIELD_VALUES[$ps_field];
+						$vs_prop = $this->_FIELD_VALUES[$ps_field] ?? null;
 					} else {
 						$vs_prop = (isset($this->_SET_FILES[$ps_field]['tmp_name']) && $this->_SET_FILES[$ps_field]['tmp_name']) ? $this->_SET_FILES[$ps_field]['tmp_name'] : $this->_FIELD_VALUES[$ps_field];
 					}
@@ -4398,6 +4398,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	 	$vn_max_execution_time = ini_get('max_execution_time');
 	 	set_time_limit(7200);
 	 	
+		$vb_is_fetched_file = $vb_is_archive = false;
+	 	
 		$o_tq = new TaskQueue();
 		$o_media_proc_settings = new MediaProcessingSettings($this, $ps_field);
 
@@ -4436,7 +4438,6 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				$vn_url_fetched_on = null;
 			
 				$vb_allow_fetching_of_urls = (bool)$this->_CONFIG->get('allow_fetching_of_media_from_remote_urls');
-				$vb_is_fetched_file = false;
 
 				$vs_url = $this->_SET_FILES[$ps_field]['tmp_name'];
 				$vs_url_fetched_original_url = $vs_url_fetched_from = $vn_url_fetched_on = $vs_url_fetched_by = null;
@@ -4600,7 +4601,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					$version_info = $o_media_proc_settings->getMediaTypeVersions($media_type);
 					$va_default_queue_settings = $o_media_proc_settings->getMediaTypeQueueSettings($media_type);
 
-					if (!($va_media_write_options = $this->_FILES[$ps_field]['options'])) {
+					if (!($va_media_write_options = ($this->_FILES[$ps_field]['options'] ?? null))) {
 						$va_media_write_options = $this->_SET_FILES[$ps_field]['options'];
 					}
 				
@@ -4817,7 +4818,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 									);
 								}
 	
-								if (is_array($vi["mirrors"]) && sizeof($vi["mirrors"]) > 0) {
+								if (is_array($vi["mirrors"] ?? null) && sizeof($vi["mirrors"]) > 0) {
 									$vs_entity_key = join("/", array($this->tableName(), $ps_field, $this->getPrimaryKey(), $v));
 									$vs_row_key = join("/", array($this->tableName(), $this->getPrimaryKey()));
 	
@@ -4872,7 +4873,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 							}
 						} else {
 							$m->set("version", $v);
-							while(list($operation, $parameters) = each($rules)) {
+							foreach($rules as $operation => $parameters) {	
 								if ($operation === 'SET') {
 									foreach($parameters as $pp => $pv) {
 										if ($pp == 'format') {
@@ -4882,7 +4883,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 										}
 									}
 								} else {
-									if(is_array($this->_FIELD_VALUES[$ps_field]) && (is_array($va_media_center = $this->getMediaCenter($ps_field)))) {
+									if(is_array($this->_FIELD_VALUES[$ps_field] ?? null) && (is_array($va_media_center = $this->getMediaCenter($ps_field)))) {
 										$parameters['_centerX'] = caGetOption('x', $va_media_center, 0.5);
 										$parameters['_centerY'] = caGetOption('y', $va_media_center, 0.5);
 								
@@ -4956,7 +4957,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 								}
 							}
 
-							if (is_array($vi["mirrors"]) && sizeof($vi["mirrors"]) > 0) {
+							if (is_array($vi["mirrors"] ?? null) && sizeof($vi["mirrors"]) > 0) {
 								$vs_entity_key = join("/", array($this->tableName(), $ps_field, $this->getPrimaryKey(), $v));
 								$vs_row_key = join("/", array($this->tableName(), $this->getPrimaryKey()));
 

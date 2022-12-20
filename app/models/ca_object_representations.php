@@ -559,6 +559,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	 *
 	 */
 	public function update($options=null) {
+		$media_path = null;
 		if(!is_array($options)) { $options = []; }
 		if($vb_media_has_changed = $this->changed('media')) {
 		

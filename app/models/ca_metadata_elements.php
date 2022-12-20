@@ -1221,6 +1221,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		while($qr_restrictions->nextRow()) {
 			if (!($t_table = Datamodel::getInstanceByTableNum($qr_restrictions->get('table_num'), true))) { continue; }
 
+			$type_id = null;
 			if($t_table->isRelationship()) {
 				$type_name = $t_table->getRelationshipTypename('ltor', $qr_restrictions->get('type_id'));
 			} elseif ($type_id = $qr_restrictions->get('type_id')) {

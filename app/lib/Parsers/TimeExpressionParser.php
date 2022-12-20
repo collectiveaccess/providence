@@ -329,7 +329,7 @@ class TimeExpressionParser {
 							//
 							// Look for MYA dates
 							//
-							$va_peek = $this->peekToken(2);
+							if(!is_array($va_peek = $this->peekToken(2))) { break; }
 							if ($va_peek['type'] == TEP_TOKEN_MYA) {
 								$va_dates['start'] = array(
 									'month' => 1, 'day' => 1, 'year' => intval($va_token['value']) * -1000000,
@@ -1276,7 +1276,7 @@ class TimeExpressionParser {
 										'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => $va_date_element['is_circa'], 'is_probably' => $va_date_element['is_probably']
 									);
 									
-									$va_peek = $this->peekToken();
+									if(!is_array($va_peek = $this->peekToken())) { return $va_date; }
 									switch($va_peek['type']) {
 										# ----------------------
 										case TEP_TOKEN_ERA:

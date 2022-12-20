@@ -563,6 +563,7 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 		$p = explode(' ', $this->ops_text_value);
 		
 		$terms = [];
+		$d = null;
 		if (in_array($p[0], $circa_indicators)) {
 			$d = join(' ', array_slice($p, 1));
 		} elseif (self::$o_search_config->get('treat_before_dates_as_circa') && ((int)$this->opn_start_date === -2000000000)) {

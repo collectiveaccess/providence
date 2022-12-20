@@ -537,7 +537,10 @@ require_once(__CA_LIB_DIR__."/Db.php");
 								if ($t_obj->getLeftTableNum() == $t_item->tableNum()) {
 									// other side of rel is on right
 									$t_related_table = Datamodel::getInstanceByTableNum($t_obj->getRightTableNum(), true);
-									$t_related_table->load($va_log_entry['snapshot'][$t_obj->getRightTableFieldName()]);
+									
+									if($id = ($va_log_entry['snapshot'][$t_obj->getRightTableFieldName()] ?? null)) {
+										$t_related_table->load($id);
+									}
 								} else {
 									// other side of rel is on left
 									$t_related_table = Datamodel::getInstanceByTableNum($t_obj->getLeftTableNum(), true);
