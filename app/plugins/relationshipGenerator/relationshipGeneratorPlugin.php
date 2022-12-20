@@ -102,7 +102,7 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 						$this->_testConfigurationSection(
 							_t('trigger field %1 on rule %2', $vs_trigger_field, $vn_rule_index),
 							self::_getTriggerConfigurationRequirements(),
-							function ($key) use ($va_trigger) { return $va_trigger[$key]; },
+							function ($key) use ($va_triggers) { return $va_triggers[$key]; },
 							$va_errors
 						);
 					}
