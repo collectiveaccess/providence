@@ -699,13 +699,13 @@ class ca_users extends BaseModel {
 			if (isset($pa_options['volatile']) && $pa_options['volatile']) {
 				$va_vars =& $this->opa_volatile_user_vars;
 				$vb_has_changed =& $this->opa_volatile_user_vars_have_changed;
-				
-				unset($this->opa_user_vars[$ps_key]);
+
+				if(is_array($this->opa_user_vars) && isset($this->opa_user_vars[$ps_key])) unset($this->opa_user_vars[$ps_key]);
 			} else {
 				$va_vars =& $this->opa_user_vars;
 				$vb_has_changed =& $this->opa_user_vars_have_changed;
 				
-				unset($this->opa_volatile_user_vars_have_changed[$ps_key]);
+				if(is_array($this->opa_volatile_user_vars) && isset($this->opa_volatile_user_vars[$ps_key])) unset($this->opa_volatile_user_vars[$ps_key]);
 			}
 			
 			if (isset($pa_options["ENTITY_ENCODE_INPUT"]) && $pa_options["ENTITY_ENCODE_INPUT"]) {
