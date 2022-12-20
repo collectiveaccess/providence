@@ -286,6 +286,7 @@ class BaseFindEngine extends BaseObject {
 	 * @return array
 	 */
 	public function sortHits(array $hits, string $table, $sort_list, $sort_directions='asc', array $options=null) {
+		if(!sizeof($hits)) { return []; }
 		if(!is_array($options)) { $options = []; }
 		
 		// Expand field list into array
@@ -325,6 +326,7 @@ class BaseFindEngine extends BaseObject {
 	 *
 	 */
 	public function _secondarySortHits(array $hits, array $page_hits, string $table, string $primary_field, string $primary_sort_direction, array $sort_fields, array $sort_directions, array $options=null) {
+		if(!sizeof($hits)) { return []; }
 		$sort_spec = array_shift($sort_fields);
 		$sort_direction = self::sortDirection(array_shift($sort_directions));
 		list($sort_table, $sort_field, $sort_subfield) = explode(".", $sort_spec);
@@ -425,6 +427,7 @@ class BaseFindEngine extends BaseObject {
 	 * @return array
 	 */
 	public function doSort(array $hits, string $table, string $sort_field, string $sort_direction='asc', array $options=null) {
+		if(!sizeof($hits)) { return []; }
 		if (!$t_table = Datamodel::getInstanceByTableName($table, true)) { return null; } // invalid table
 		if (!is_array($hits) || !sizeof($hits)) { return $hits; } // Don't try to sort empty results
 		$start = caGetOption('start', $options, 0);
@@ -464,6 +467,12 @@ class BaseFindEngine extends BaseObject {
 		} else {
 			// is related field
 			$t_rel_table = Datamodel::getInstance($sort_table, true);
+			if($is_label = is_a($t_rel_table, 'BaseLabel')) {
+				$sort_field = $t_rel_table->getSubjectTableName().'.preferred_labels.'.$sort_field.($sort_subfield ? ".{$sort_subfield}" : '');
+				list($sort_table, $sort_field, $sort_subfield) = $x=explode(".", $sort_field);
+				$t_rel_table = Datamodel::getInstance($sort_table, true);
+			}
+			
 			$is_attribute = method_exists($t_rel_table, 'hasElement') ? $t_rel_table->hasElement($sort_field) : false;
 			if ($t_rel_table->hasField($sort_field)) {			// sort key is intrinsic
 				$sort_key_values = $this->_sortByRelatedIntrinsic($t_table, $t_rel_table, $hit_table, $sort_field, $limit_sql, $sort_direction, $options);
@@ -705,6 +714,7 @@ class BaseFindEngine extends BaseObject {
 	 *
 	 */
 	private function _getSortValues(array $hits, string $table, string $sort_field, string $direction='asc') {
+		if(!sizeof($hits)) { return []; }
 		$t_table = Datamodel::getInstance($table, true);
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
@@ -731,6 +741,11 @@ class BaseFindEngine extends BaseObject {
 		} else {
 			// is related field
 			$t_rel_table = Datamodel::getInstance($sort_table, true);
+			if($is_label = is_a($t_rel_table, 'BaseLabel')) {
+				$sort_field = $t_rel_table->getSubjectTableName().'.preferred_labels.'.$sort_field.($sort_subfield ? ".{$sort_subfield}" : '');
+				list($sort_table, $sort_field, $sort_subfield) = $x=explode(".", $sort_field);
+				$t_rel_table = Datamodel::getInstance($sort_table, true);
+			}
  			$is_attribute = method_exists($t_rel_table, 'hasElement') ? $t_rel_table->hasElement($sort_field) : false;
  			
  			if ($t_rel_table->hasField($sort_field)) {			// sort key is intrinsic
@@ -750,6 +765,7 @@ class BaseFindEngine extends BaseObject {
 	 *
 	 */
 	private function _getSortValuesForIntrinsic(array $hits, $t_table, string $intrinsic, string $direction) {
+		if(!sizeof($hits)) { return []; }
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
@@ -772,6 +788,7 @@ class BaseFindEngine extends BaseObject {
 	 *
 	 */
 	private function _getRelatedSortValuesForIntrinsic(array $hits, $t_table, $t_rel_table,  string $intrinsic, string $direction) {
+		if(!sizeof($hits)) { return []; }
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
@@ -838,6 +855,8 @@ class BaseFindEngine extends BaseObject {
 		$rel_table = $t_rel_table->tableName();		
 		$rel_table_pk = $t_rel_table->primaryKey();
 		
+		$rel_label_table = $t_rel_table->getLabelTableName();
+		
 		if(!($t_label = $t_table->getLabelTableInstance())) { return $hits; }
 		if (!$label_field || !$t_label->hasField($label_field)) { $label_field = $t_table->getLabelSortField(); }
 		
@@ -846,10 +865,10 @@ class BaseFindEngine extends BaseObject {
 		
 		$sql = "
 			SELECT rl.{$label_field} val
-			FROM {$label_table} l
+			FROM {$label_table} t
 			{$join_sql}
 			INNER JOIN {$rel_label_table} AS rl ON rl.{$rel_table_pk} = s.{$rel_table_pk}
-			WHERE rl.{$table_pk} IN (?)
+			WHERE rl.{$rel_table_pk} IN (?)
 			ORDER BY val {$direction}
 		";
 		$qr_sort = $this->db->query($sql, [$hits]);
@@ -932,6 +951,7 @@ class BaseFindEngine extends BaseObject {
 	 *
 	 */
 	private function _getRowIDsForValues(array $hits, string $table, string $sort_field, array $values) {
+		if(!sizeof($hits)) { return []; }
 		$t_table = Datamodel::getInstance($table, true);
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
@@ -960,6 +980,12 @@ class BaseFindEngine extends BaseObject {
 		} else {
 			// is related field
 			$t_rel_table = Datamodel::getInstance($sort_table, true);
+			if($is_label = is_a($t_rel_table, 'BaseLabel')) {
+				$sort_field = $t_rel_table->getSubjectTableName().'.preferred_labels.'.$sort_field.($sort_subfield ? ".{$sort_subfield}" : '');
+				list($sort_table, $sort_field, $sort_subfield) = $x=explode(".", $sort_field);
+				$t_rel_table = Datamodel::getInstance($sort_table, true);
+			}
+			
  			$is_attribute = method_exists($t_rel_table, 'hasElement') ? $t_rel_table->hasElement($sort_field) : false;
  			
  			if ($t_rel_table->hasField($sort_field)) {			// sort key is intrinsic
@@ -979,6 +1005,8 @@ class BaseFindEngine extends BaseObject {
 	 *
 	 */
 	private function _getRowIDsForIntrinsic(array $values, $t_table, string $hit_table, string $intrinsic) {
+		if(!sizeof($values)) { return []; }
+		
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
@@ -1002,6 +1030,8 @@ class BaseFindEngine extends BaseObject {
 	 *
 	 */
 	private function _getRelatedRowIDsForIntrinsic(array $values, $t_table, $t_rel_table, string $hit_table, string $intrinsic) {
+		if(!sizeof($values)) { return []; }
+		
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
@@ -1061,6 +1091,8 @@ class BaseFindEngine extends BaseObject {
 	 *
 	 */
 	private function _getRelatedRowIDsForLabel(array $values, $t_table, $t_rel_table, string $hit_table, string $label_field) {
+		if(!sizeof($values)) { return []; }
+		
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
@@ -1071,12 +1103,14 @@ class BaseFindEngine extends BaseObject {
 		if(!($t_label = $t_table->getLabelTableInstance())) { return $hits; }
 		if (!$label_field || !$t_label->hasField($label_field)) { $label_field = $t_table->getLabelSortField(); }
 		
+		$rel_label_table = $t_rel_table->getLabelTableName();
+		
 		$joins = $this->_getJoins($t_table, $t_rel_table, $label_field);
 		$join_sql = join("\n", $joins);
 		
 		$sql = "
 			SELECT rl.{$table_pk}, rl.{$label_field} val
-			FROM {$label_table} l
+			FROM {$label_table} t
 			{$join_sql}
 			INNER JOIN {$rel_label_table} AS rl ON rl.{$rel_table_pk} = s.{$rel_table_pk}
 			INNER JOIN {$hit_table} AS ht ON ht.row_id = l.{$table_pk}
@@ -1096,6 +1130,8 @@ class BaseFindEngine extends BaseObject {
 	 *
 	 */
 	private function _getRowIDsForAttribute(array $values, $t_table, string $hit_table, string $element_code) {
+		if(!sizeof($values)) { return []; }
+		
 		$table_num = $t_table->tableNum();
 		
 		if (!($element_id = ca_metadata_elements::getElementID($element_code))) { 
@@ -1125,6 +1161,8 @@ class BaseFindEngine extends BaseObject {
 	 *
 	 */
 	private function _getRelatedRowIDsForAttribute(array $values, $t_table, $t_rel_table, string $hit_table, string $element_code=null) {
+		if(!sizeof($values)) { return []; }
+		
 		$table_num = $t_table->tableNum();
 		$rel_table_num = $t_rel_table->tableNum();
 		
@@ -1194,7 +1232,7 @@ class BaseFindEngine extends BaseObject {
 		$rel_type_sql = (is_array($rel_types) && (sizeof($rel_types) > 0)) ? " AND l.type_id IN (".join(',', array_map('intval', $rel_types)).")" : '';
 	
 		$joins = [];
-		switch(sizeof($path)) {
+		switch($psize = sizeof($path)) {
 			case 3:
 				$linking_table = $path[1];
 				if ($table === $rel_table) {
@@ -1224,7 +1262,7 @@ class BaseFindEngine extends BaseObject {
 				//
 				break;
 			default:
-				throw new ApplicationException(_t('Invalid related sort'));
+				throw new ApplicationException(_t('Invalid related sort: %1', join('/', $path)));
 				break;
 		}
 		return $joins;
