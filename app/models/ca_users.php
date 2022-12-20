@@ -704,8 +704,6 @@ class ca_users extends BaseModel {
 			} else {
 				$va_vars =& $this->opa_user_vars;
 				$vb_has_changed =& $this->opa_user_vars_have_changed;
-				
-				unset($this->opa_volatile_user_vars_have_changed[$ps_key]);
 			}
 			
 			if (isset($pa_options["ENTITY_ENCODE_INPUT"]) && $pa_options["ENTITY_ENCODE_INPUT"]) {
