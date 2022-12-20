@@ -7929,7 +7929,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * @return bool True if model supports ACL, false if not
 	 */
 	public function supportsACL() {
-		if($this->disable_acl) { return false; }
+		if(property_exists($this,'disable_acl') && $this->disable_acl) { return false; }
 		if ($this->getAppConfig()->get($this->tableName().'_dont_do_item_level_access_control')) { return false; }
 		return (bool)$this->getProperty('SUPPORTS_ACL');
 	}
