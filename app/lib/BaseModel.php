@@ -2070,7 +2070,7 @@ class BaseModel extends BaseObject {
 				}
 
 				if (!$this->hasField($vs_field)) {
-					$this->postError(716,_t("Field '%1' does not exist", $vs_field), "BaseModel->load()");
+					if(!is_numeric($vs_field)) $this->postError(716,_t("Field '%1' does not exist", $vs_field), "BaseModel->load()");
 					return false;
 				}
 
