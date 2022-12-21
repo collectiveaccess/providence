@@ -686,10 +686,10 @@ class BaseFindEngine extends BaseObject {
 		$joins = $this->_getJoins($t_table, $t_rel_table, $element_code, caGetOption('relationshipTypes', $options, null));
 		$join_sql = join("\n", $joins);
 		
-		$sql = "SELECT t.{$table_pk} row_id
+		$sql = "SELECT s.{$rel_table_pk} row_id
 					FROM {$table} t
 					{$join_sql}
-					INNER JOIN ca_attributes AS a ON a.row_id =  s.{$rel_table_pk} AND a.table_num = {$rel_table_num}
+					INNER JOIN ca_attributes AS a ON a.row_id = s.{$rel_table_pk} AND a.table_num = {$rel_table_num}
 					INNER JOIN ca_attribute_values AS cav ON cav.attribute_id = a.attribute_id
 					INNER JOIN {$attr_tmp_table} AS attr_tmp ON attr_tmp.attribute_id = a.attribute_id
 					WHERE cav.element_id = ? 
