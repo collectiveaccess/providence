@@ -2250,6 +2250,12 @@ class SearchResult extends BaseObject {
 				
 				$vb_did_return_value = false;
 				$vb_return_value_id = ($va_path_components['components'][sizeof($va_path_components['components'])-1] === 'value_id');
+				$vb_return_source = ($va_path_components['components'][sizeof($va_path_components['components'])-1] === '__source__');
+				
+				if ($vb_return_source) {
+					$va_return_values[(int)$vn_id][] = $o_attribute->getValueSource();
+					continue;
+				}
 
 				foreach($va_values as $o_value) {
 					$vs_val_proc = null;
