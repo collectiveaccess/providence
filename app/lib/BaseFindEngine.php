@@ -469,7 +469,7 @@ class BaseFindEngine extends BaseObject {
 			$t_rel_table = Datamodel::getInstance($sort_table, true);
 			if($is_label = is_a($t_rel_table, 'BaseLabel')) {
 				$sort_field = $t_rel_table->getSubjectTableName().'.preferred_labels.'.$sort_field.($sort_subfield ? ".{$sort_subfield}" : '');
-				list($sort_table, $sort_field, $sort_subfield) = $x=explode(".", $sort_field);
+				list($sort_table, $sort_field, $sort_subfield) = explode(".", $sort_field);
 				$t_rel_table = Datamodel::getInstance($sort_table, true);
 			}
 			
@@ -672,31 +672,20 @@ class BaseFindEngine extends BaseObject {
 		}
 		$attr_val_sort_field = ca_metadata_elements::getElementSortField($subelement_code ? $subelement_code : $element_code);
 
-		$attr_tmp_table = $this->_createTempTableForAttributeIDs();
-		$sql = "
-			INSERT INTO {$attr_tmp_table} 
-				SELECT a.attribute_id, a.row_id 
-				FROM ca_attributes a  
-				INNER JOIN {$hit_table} AS ht ON ht.row_id = a.row_id
-				WHERE a.table_num = ? and a.element_id = ?
-		";
-
-		$qr_sort = $this->db->query($sql, [$rel_table_num, $element_id]);
-		
 		$joins = $this->_getJoins($t_table, $t_rel_table, $element_code, caGetOption('relationshipTypes', $options, null));
 		$join_sql = join("\n", $joins);
 		
-		$sql = "SELECT s.{$rel_table_pk} row_id
+		$sql = "SELECT t.{$table_pk} row_id
 					FROM {$table} t
 					{$join_sql}
 					INNER JOIN ca_attributes AS a ON a.row_id = s.{$rel_table_pk} AND a.table_num = {$rel_table_num}
 					INNER JOIN ca_attribute_values AS cav ON cav.attribute_id = a.attribute_id
-					INNER JOIN {$attr_tmp_table} AS attr_tmp ON attr_tmp.attribute_id = a.attribute_id
-					WHERE cav.element_id = ? 
-					ORDER BY cav.value_sortable {$direction}
-					{$limit_sql}";
-	
-		$qr_sort = $this->db->query($sql, [$element_id]);
+					INNER JOIN {$hit_table} AS ht ON ht.row_id = t.{$table_pk}
+					WHERE a.element_id = ? AND cav.element_id = ? 
+					ORDER BY cav.value_sortable {$direction}";
+
+		$qr_sort = $this->db->query($sql, [$element_id, $element_id]);
+		
 		$sort_keys = [];
 		while($qr_sort->nextRow()) {
 			$row = $qr_sort->getRow();
@@ -1245,7 +1234,7 @@ class BaseFindEngine extends BaseObject {
 					$joins[] = "INNER JOIN {$rel_table} AS s ON (s.{$rel_table_pk} = l.".$t_relation->getLeftTableFieldName().") OR (s.{$rel_table_pk} = l.".$t_relation->getRightTableFieldName().")";
 				} elseif ($is_attribute) {
 					$joins[] = "INNER JOIN {$linking_table} AS l ON attr_tmp.row_id = l.{$rel_table_pk}{$rel_type_sql}";
-					$joins[] = "INNER JOIN {$table} AS t ON t.{$table_pk} = l.{$table_pk}";
+					$joins[] = "INNER JOIN {$table} AS s ON s.{$rel_table_pk} = l.{$rel_table_pk}";
 				} else {							
 					$joins[] = "INNER JOIN {$linking_table} AS l ON t.{$table_pk} = l.{$table_pk}{$rel_type_sql}";
 					$joins[] = "INNER JOIN {$rel_table} AS s ON s.{$rel_table_pk} = l.{$rel_table_pk}";

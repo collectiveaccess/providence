@@ -904,12 +904,14 @@ class Installer {
 			}
 			
 			// insert dictionary entry
-			$t_entry = new \ca_metadata_dictionary_entries();
-			$t_entry->set('bundle_name', $entry['bundle']);
-			$t_entry->set('table_num', $table_num);
+			if(!($t_entry = \ca_metadata_dictionary_entries::findAsInstance(['bundle_name' => $entry['bundle']]))) {
+				$t_entry = new \ca_metadata_dictionary_entries();
+				$t_entry->set('bundle_name', $entry['bundle']);
+				$t_entry->set('table_num', $table_num);
+			}
 			$this->_processSettings($t_entry, $entry['settings'], ['leftTable' => $entry['table'], 'rightTable' => $entry['bundle'], 'source' => "MetadataDictionary:table {$table_num}:".$entry['bundle']]);
 			
-			$t_entry->insert();
+			$t_entry->isLoaded() ? $t_entry->update() : $t_entry->insert();
 
 			if($t_entry->numErrors() > 0 || !($t_entry->getPrimaryKey()>0)) {
 				$this->addError('processMetadataDictionary', _t("There were errors while adding dictionary entry: %1", join(';', $t_entry->getErrors())));
@@ -918,14 +920,16 @@ class Installer {
 			
 			if(is_array($entry['rules'])) {
 				foreach($entry['rules'] as $rule) {
-					$t_rule = new \ca_metadata_dictionary_rules();
-					$t_rule->set('entry_id', $t_entry->getPrimaryKey());
+					if(!($t_rule = \ca_metadata_dictionary_rules::findAsInstance(['entry_id' => $t_entry->getPrimaryKey(), 'rule_code' => $rule['code']]))) {
+						$t_rule = new \ca_metadata_dictionary_rules();
+						$t_rule->set('entry_id', $t_entry->getPrimaryKey());
+					}
 					$t_rule->set('rule_code', $rule['code']);
 					$t_rule->set('rule_level', $rule['level']);
 					$t_rule->set('expression', $rule['expression']);
 					$this->_processSettings($t_rule, $rule['settings'], ['source' => "MetadataDictionary:table {$table_num}:".$entry['bundle'].":Rule ".$rule['code']]);
 
-					$t_rule->insert();
+					$t_rule->isLoaded() ? $t_rule->update() : $t_rule->insert();
 					if ($t_rule->numErrors()) {
 						$this->addError('processMetadataDictionary', _t("There were errors while adding dictionary rule: %1", join(';', $t_rule->getErrors())));
 						continue;
