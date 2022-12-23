@@ -70,6 +70,7 @@ class BaseMediaViewer {
 		$check_access = caGetOption('checkAccess', $options, null);
 		
 		$display_version = caGetOption('display_version', $data['display'], null);
+		$subject_table = $t_subject ? $t_subject->tableName() : null;
 		
 		// Controls
 		$controls = '';
@@ -90,6 +91,7 @@ class BaseMediaViewer {
 		if ($t_subject && $t_instance && is_a($t_instance, 'ca_object_representations')) {
 			$rep_ids = is_a($t_media, 'ca_object_representations') ? [$t_media->getPrimaryKey()] : $t_media->getRepresentationIDs(['requireMedia' => true, 'checkAccess' => $check_access]);
 			$media_count = is_array($rep_ids) ? sizeof($rep_ids) : 0;
+			$context = $request->getParameter('context', pString) ?? caGetOption('context', $options, null);
 			if ($media_count > 1) {
 				$controls .= "<div class='repNav'>";
 			
@@ -97,7 +99,6 @@ class BaseMediaViewer {
 				
 				$rep_index = array_search($t_instance->getPrimaryKey(), $rep_ids);
 			
-				$context = $request->getParameter('context', pString);
 				if ($rep_index > 0) { 
 					$controls .=  "<a href='#' onClick='jQuery(\"#caMediaPanelContentArea\").load(\"".caNavUrl($request, '*', '*', $request->getAction(), array('representation_id' => (int)$rep_ids[$rep_index - 1], $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey(), 'context' => $context))."\");'>←</a>";
 				}
@@ -111,6 +112,37 @@ class BaseMediaViewer {
 				
 				$o_view->setVar('page', $rep_index);		
 			}
+			
+			$show_next_prev_links = caGetOption('showRepresentationViewerNextPreviousLinks', $options, false);		
+			if ($show_next_prev_links && ($o_context = $t_subject ? ResultContext::getResultContextForLastFind($request, $subject_table) : null)) {
+				$controls .= "<div class='nextPreviousLinks'>";
+				$ids = [];
+				if($previous_id = $o_context->getPreviousID($t_subject->getPrimaryKey())) { $ids[] = $previous_id; }
+				if($next_id = $o_context->getNextID($t_subject->getPrimaryKey())) { $ids[] = $next_id; }
+
+				$qr = sizeof($ids) ? caMakeSearchResult($subject_table, $ids) : null;
+				
+				if($previous_id) {
+					$nav_previous_template = caGetOption('representationViewerPreviousLink', $options, "← ^{$subject_table}.preferred_labels%truncate=20&ellipsis=1 <ifdef code='{$subject_table}.idno'>(^{$subject_table}.idno)</ifdef>");
+					$qr->nextHit();
+					$rep_ids = $qr->get('ca_object_representations.representation_id', ['returnAsArray' => true]);
+					if(is_array($rep_ids) && sizeof($rep_ids)) {
+						$controls .=  "<a href='#' onClick='caMediaPanel.callbackData={url:".json_encode(caDetailUrl($request, $subject_table, $previous_id))."};jQuery(\"#caMediaPanelContentArea\").load(\"".caNavUrl($request, '*', '*', $request->getAction(), array('representation_id' => array_shift($rep_ids), $t_subject->primaryKey() => $previous_id, 'context' => $context))."\");'>".$qr->getWithTemplate($nav_previous_template)."</a>";
+					} else {
+						$previous_id = null;
+					}
+				}
+				if($next_id) {
+					$nav_next_template = caGetOption('representationViewerNextLink', $options, "^{$subject_table}.preferred_labels%truncate=20&ellipsis=1 <ifdef code='{$subject_table}.idno'>(^{$subject_table}.idno)</ifdef> →");
+					
+					$qr->nextHit();
+					$rep_ids = $qr->get('ca_object_representations.representation_id', ['returnAsArray' => true]);
+					if(is_array($rep_ids) && sizeof($rep_ids)) {
+						$controls .=  ($previous_id ? " | " : "")."<a href='#' onClick='caMediaPanel.callbackData={url:".json_encode(caDetailUrl($request, $subject_table, $next_id))."};jQuery(\"#caMediaPanelContentArea\").load(\"".caNavUrl($request, '*', '*', $request->getAction(), array('representation_id' => array_shift($rep_ids), $t_subject->primaryKey() => $next_id, 'context' => $context))."\");'>".$qr->getWithTemplate($nav_next_template)."</a>";			}
+				}
+				$controls .= "</div>\n";
+			}
+			
 			$o_view->setVar('original_media_url', $original_media_url = $t_instance->getMediaUrl('media', 'original', []));
 			$o_view->setVar('display_media_url', $display_version ? $t_instance->getMediaUrl('media', $display_version, []) : $original_media_url);
 		} elseif(is_a($t_instance, 'ca_attribute_values')) {
@@ -122,8 +154,8 @@ class BaseMediaViewer {
 		}
 		if ($t_subject && $t_instance && ($request->user->canDoAction('can_download_media') || $request->user->canDoAction('can_download_ca_object_representations'))) {
 				if (is_array($versions = $request->config->getList('ca_object_representation_download_versions'))) {
-					$va_editor_url = caEditorUrl($request, $t_media->tableName(), $t_media->getPrimaryKey(), true);
-					$download_path = $va_editor_url['module'].'/'.$va_editor_url['controller'];
+					$editor_url = caEditorUrl($request, $t_media->tableName(), $t_media->getPrimaryKey(), true);
+					$download_path = $editor_url['module'].'/'.$editor_url['controller'];
 				
 					$controls .= "<div class='download'>";
 					// -- provide user with a choice of versions to download

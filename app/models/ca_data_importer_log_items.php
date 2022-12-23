@@ -194,4 +194,3 @@ class ca_data_importer_log_items extends BaseModel {
 
 	# ------------------------------------------------------
 }
-?>

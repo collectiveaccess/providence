@@ -74,9 +74,9 @@
 			}
 			
 			if ($alt_text_template = Configuration::load()->get($this->tableName()."_alt_text_template")) { 
-                $alt_text = $this->getWithTemplate($alt_text_template);
+                $alt_text = $this->getWithTemplate($alt_text_template, ['highlighting' => false]);
             } elseif(is_a($this, "LabelableBaseModelWithAttributes")) {
-                $alt_text = $this->get($this->tableName().".preferred_labels");
+                $alt_text = $this->get($this->tableName().".preferred_labels", ['highlighting' => false]);
             } else {
                 $alt_text = null;
             }
@@ -980,7 +980,7 @@
 					}
 				}
 			}
-			return false;
+			return true;
 		}
 		# ------------------------------------------------------
 		/** 
@@ -1163,9 +1163,9 @@
 		    $alt_texts = [];
 		    while($qr->nextHit()) {
                 if ($alt_text_template = Configuration::load()->get($this->tableName()."_alt_text_template")) { 
-                    $alt_texts[$qr->get($vs_pk)] = $qr->getWithTemplate($alt_text_template);
+                    $alt_texts[$qr->get($vs_pk)] = $qr->getWithTemplate($alt_text_template, ['highlighting' => false]);
                 } else {
-                    $alt_texts[$qr->get($vs_pk)] = $qr->get($this->tableName().".preferred_labels");
+                    $alt_texts[$qr->get($vs_pk)] = $qr->get($this->tableName().".preferred_labels", ['highlighting' => false]);
                 }
             }
             

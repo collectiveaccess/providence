@@ -83,7 +83,6 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	static private $doc_content_buffer = [];			// content buffer used when indexing
 	
 	static protected $filter_stop_words = null;
-	
 	# -------------------------------------------------------
 	public function __construct($db=null) {
 		global $g_ui_locale;
@@ -207,6 +206,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 *
 	 */
 	public function search(int $subject_tablenum, string $search_expression, array $filters=[], $rewritten_query) {
+		$this->initSearch($subject_tablenum, $search_expression, $filters, $rewritten_query);
 		$hits = $this->_filterQueryResult(
 			$subject_tablenum, 
 			$this->_processQuery($subject_tablenum, $rewritten_query), 
@@ -427,7 +427,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			if(($word_field !== 'sw.stem') && ($this->search_config->get('always_stem'))) {
 				$text .= '*';
 			}
-		
+			$this->searched_terms[] = $text;
+			
 			$params = [$subject_tablenum];
 			$word_op = '=';
 		
@@ -487,7 +488,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				}
 				if(sizeof($flds)) {
 					$res[] = "(CONCAT(swi.field_table_num, '/', swi.field_num) NOT IN (?))";
-					$params[] = join(',', $flds);
+					$params[] = $flds;
 				}
 				if(sizeof($res)) {
 					$field_sql .= " AND (".join(' OR ', $res).")";
@@ -506,7 +507,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					FROM {$table}".($t->hasField('deleted') ? " WHERE deleted = 0" : "")."
 				", []);
 			} elseif($use_boost) {
-				$qr_res = $this->db->query("
+				$qr_res = $this->db->query($s="
 					SELECT swi.row_id, SUM(swi.boost) boost
 					FROM ca_sql_search_word_index swi
 					".(!$is_blank ? 'INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id' : '')."
@@ -517,7 +518,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					GROUP BY swi.row_id
 				", $params);
 			} else {
-				$qr_res = $this->db->query("
+				$qr_res = $this->db->query($s="
 					SELECT DISTINCT swi.row_id, 100 boost
 					FROM ca_sql_search_word_index swi
 					".(!$is_blank ? 'INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id' : '')."
@@ -560,6 +561,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				
 				if (strlen($escaped_text = $this->db->escape(join(' ', self::tokenize($term->text, true))))) {
 					$words[] = $escaped_text;
+					$this->searched_terms[] = $escaped_text;
 				}
 			}
 		
