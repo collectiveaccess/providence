@@ -5871,6 +5871,7 @@ if (!$vb_batch) {
 			}
 			if ($vs_batch_mode == '_replace_') {			// remove all existing relationships and then add new ones
 				$this->removeRelationships($ps_bundle_name, caGetOption('restrict_to_relationship_types', $pa_settings, null), ['restrictToTypes' => caGetOption('restrict_to_types', $pa_settings, null)]);
+				$va_rel_items = [];
 			}
 		}
 		
