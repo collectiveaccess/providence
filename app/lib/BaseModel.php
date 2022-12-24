@@ -9824,6 +9824,15 @@ $pa_options["display_form_field_tips"] = true;
 	public function removeRelationships($pm_rel_table_name_or_num, $pm_relationship_type_id=null, $pa_options=null) {
 		if (!($vn_row_id = $this->getPrimaryKey())) { return null; }
 		if(!($va_rel_info = $this->_getRelationshipInfo($pm_rel_table_name_or_num))) { return null; }
+		
+		// Is this a many-one? (Eg. ca_objects <= ca_object_lots)
+		if(sizeof($va_rel_info['path']) == 2) {
+			if(isset($va_rel_info['rel_keys']['many_table']) && ($va_rel_info['rel_keys']['many_table'] === $this->tableName()) && ($key = $va_rel_info['rel_keys']['many_table_field'])) {
+				$this->set($key, null);
+				return $this->update();
+			}
+		}
+		
 		$t_item_rel = $va_rel_info['t_item_rel'];
 		if (!method_exists($t_item_rel, "isRelationship") || !$t_item_rel->isRelationship()){ return false; }
 		$va_sql_params = array();
