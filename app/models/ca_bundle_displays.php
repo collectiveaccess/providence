@@ -282,8 +282,10 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public function duplicate($options=null) {
 		$we_set_transaction = false;
+		$o_t = null;
 		if (!$this->inTransaction()) {
-			$this->setTransaction($o_t = new Transaction($this->getDb()));
+			$o_t = new Transaction($this->getDb());
+			$this->setTransaction($o_t);
 			$we_set_transaction = true;
 		} else {
 			$o_t = $this->getTransaction();
