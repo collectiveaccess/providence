@@ -2051,6 +2051,7 @@ class ca_users extends BaseModel {
 								}
 								$va_opts[($vs_lang_name ? $vs_lang_name : $vs_code).($vs_country_name ? ' ('.$vs_country_name.')':'')] = $vs_code;
 							}
+							natcasesort($va_opts);
 							break;
 						case 'FT_LOCALE':
 							$qr_locales = $o_db->query("
@@ -2063,6 +2064,8 @@ class ca_users extends BaseModel {
 							while($qr_locales->nextRow()) {
 								$va_opts[$qr_locales->get('name')] = $qr_locales->get('language').'_'.$qr_locales->get('country');
 							}
+							
+							natcasesort($va_opts);
 							break;
 						case 'FT_THEME':
 							if ($r_dir = opendir($this->_CONFIG->get('themes_directory'))) {

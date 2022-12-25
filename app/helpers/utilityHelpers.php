@@ -3061,7 +3061,7 @@ function caFileIsIncludable($ps_file) {
 	 *		useMebibytes = Assume 1 kilobyte = 1024 bytes; otherwise assume 1 kilobyte = 1000 bytes. [Default is whatever value of show_filesizes_in_mebibytes in app.conf is]
 	 * @return int File size in bytes, or null if the expression could not be parsed.
 	 */
-	function caParseHumanFilesize(string $from): ?int {
+	function caParseHumanFilesize(string $from, ?array $options = null): ?int {
 		$return_mebibytes = caGetOption('useMebibytes', $options, Configuration::load()->get('show_filesizes_in_mebibytes'));
 		
 		$iec = ['B' => 'B', 'KIB' => 'KB', 'MIB' => 'MB', 'GIB' => 'GB', 'TIB' => 'TB', 'PIB' => 'PB'];

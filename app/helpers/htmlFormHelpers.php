@@ -213,7 +213,7 @@
 		
 		if ($vb_is_textarea) {
 			$tag_name = caGetOption('textAreaTagName', $pa_options, 'textarea');
-			$vs_value = $pa_attributes['value'];
+			$vs_value = $pa_attributes['value'] ?? null;
 			if ($pa_attributes['size'] ?? null) { $pa_attributes['cols'] = $pa_attributes['size']; }
 			unset($pa_attributes['size']);
 			unset($pa_attributes['value']);

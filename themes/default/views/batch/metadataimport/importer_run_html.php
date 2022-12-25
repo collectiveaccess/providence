@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2021 Whirl-i-Gig
+ * Copyright 2013-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -135,7 +135,7 @@ print $vs_control_box = caFormControlBox(
 				<div class="caLabelList">
 					<p>
 <?php
-		print caHTMLSelect('logLevel', caGetLogLevels(), array('id' => 'caLogLevel'), array('value' => $va_last_settings['logLevel']));
+		print caHTMLSelect('logLevel', caGetLogLevels(), array('id' => 'caLogLevel'), array('value' => $va_last_settings['logLevel'] ?? null));
 ?>
 					</p>
 				</div>
@@ -172,7 +172,7 @@ print $vs_control_box = caFormControlBox(
 					<p class="formLabelPlain">
 <?php	
 		$va_attr = array('id' => 'caDryRun', 'value' => 1);
-		if ($va_last_settings['dryRun'] == 1) { $va_attr['checked'] = 1; }
+		if (($va_last_settings['dryRun'] ?? null) == 1) { $va_attr['checked'] = 1; }
 		print caHTMLCheckboxInput('dryRun', $va_attr)." "._t('Dry run');
 ?>
 					</p>
@@ -185,9 +185,7 @@ print $vs_control_box = caFormControlBox(
 ?>
 		</form>
 </div>
-<?php
-	print $vs_control_box; 
-?>
+<?= $vs_control_box; ?>
 <div class="editorBottomPadding"><!-- empty --></div>
 
 <script type="text/javascript">
