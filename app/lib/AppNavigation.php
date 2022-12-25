@@ -644,6 +644,8 @@
 					} else {
 						if(is_array($va_defaults) && (sizeof($va_defaults) == 0)) { 
 							$vs_buf .= "<li class='disabled'>".$vs_display_name."<li>\n";
+						} elseif($vs_nav === 'spacer') {
+							$vs_buf .= "<li><a href='#' class='spacer'>{$vs_display_name}</a></li>";
 						} else {
 							$vs_buf .= "<li ".(($vs_last_selected_path_item == $vs_nav) ? 'class="sf-menu-selected"' : '').">".caNavLink($this->opo_request, $vs_display_name, (($vs_last_selected_path_item == $vs_nav) ? 'sf-menu-selected' : ''), $va_defaults['module'] ?? null, $va_defaults['controller'] ?? null, $va_defaults['action'] ?? null, $va_additional_params)."<li>\n";
 						}
