@@ -442,9 +442,9 @@ class GeocodeAttributeValue extends AttributeValue implements IAttributeValue {
 				$vs_first_lat = $vs_first_long = '';
 				
 				foreach($va_point_list as $vs_point) {
-					list($vs_point, $vn_radius) = explode('~', $vs_point);
+					list($vs_point, $vn_radius) = array_pad(explode('~', $vs_point), 2, null);
 					if (!$vn_radius) {
-						list($vs_point, $vn_angle) = explode('*', $vs_point);
+						list($vs_point, $vn_angle) = array_pad(explode('*', $vs_point), 2, null);
 					}
 					
 					// is it UTM?

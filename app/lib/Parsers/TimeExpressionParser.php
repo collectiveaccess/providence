@@ -694,7 +694,7 @@ class TimeExpressionParser {
 				// Look for MYA dates
 				//
 				$va_peek = $this->peekToken(2);
-				if ($va_peek['type'] == TEP_TOKEN_MYA) {
+				if ($va_week && ($va_peek['type'] == TEP_TOKEN_MYA)) {
 					$va_dates['end'] = array(
 						'month' => 12, 'day' => 31, 'year' => intval($va_token['value']) * -1000000,
 						'hours' => null, 'minutes' => null, 'seconds' => null,
@@ -706,7 +706,7 @@ class TimeExpressionParser {
 					$vn_state = TEP_STATE_ACCEPT;
 					$vb_can_accept = true;
 					break;
-				} elseif ($va_peek['type'] == TEP_TOKEN_BP) {
+				} elseif ($va_peek && ($va_peek['type'] == TEP_TOKEN_BP)) {
 					$va_dates['end'] = array(
 						'month' => 12, 'day' => 31, 'year' => 1950 - intval($va_token['value']),
 						'hours' => null, 'minutes' => null, 'seconds' => null,
@@ -3473,7 +3473,7 @@ class TimeExpressionParser {
 		$vs_date = $this->_dateToText($pa_date_pieces, $pa_options);
 		
 		if (!($pa_options['timeOmit'] ?? false)) {
-			$vn_seconds = ($pa_date_pieces['hours'] * 3600) + ($pa_date_pieces['minutes'] * 60) + $pa_date_pieces['seconds'];
+			$vn_seconds = ((int)$pa_date_pieces['hours'] * 3600) + ((int)$pa_date_pieces['minutes'] * 60) + (int)$pa_date_pieces['seconds'];
 			$vs_time = $this->_timeToText($vn_seconds, $pa_options);
 			
 			return $vs_date. ' '.$vs_datetime_conjunction.' '.$vs_time;
@@ -3595,7 +3595,7 @@ class TimeExpressionParser {
 	public function &getHistoricDateParts($pn_historic_date) {
 		$va_tmp = explode('.', $pn_historic_date);
 		
-		$vn_year = $va_tmp[0];
+		$vn_year = (int)$va_tmp[0];
 		if ($vn_year < 0) {
 			$vs_era = $this->opo_language_settings->get('dateBCIndicator');
 			$vn_abs_year = abs($vn_year);

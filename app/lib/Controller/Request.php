@@ -373,7 +373,7 @@ class Request {
 		foreach($pa_errors as $o_e) {
 			if (is_null($ps_source)) {
 				$vs_tmp = $o_e->getErrorSource();
-				list($vs_source, $ps_subsource) = explode('/', $vs_tmp);
+				list($vs_source, $ps_subsource) = array_pad(explode('/', $vs_tmp), 2, null);
 			}	
 			$this->addActionError($o_e, $vs_source, $ps_subsource);
 		}

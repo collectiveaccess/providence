@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,6 +35,8 @@
 	$vo_ar					= $this->getVar('access_restrictions');
 	$vs_current_sort_dir    = $this->getVar('current_sort_direction');
 	$vn_start				= (int)$this->getVar('start');
+	
+	$vn_id_count = 0;
 ?>
 <div id="scrollingResults">
 	<form id="caFindResultsForm">

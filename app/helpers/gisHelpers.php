@@ -414,7 +414,7 @@
  	 */
 	function caGISDecimalToSignedDecimal($ps_value){
 		$ps_value = trim($ps_value);
-		list($vn_left_of_decimal, $vn_right_of_decimal, $vs_dir) = preg_split('![\. ]{1}!',$ps_value);
+		list($vn_left_of_decimal, $vn_right_of_decimal, $vs_dir) = array_pad(preg_split('![\. ]{1}!',$ps_value), 3, null);
 		if (preg_match('!([A-Za-z]+)$!', $vn_right_of_decimal, $va_matches)) {
 			$vs_dir = $va_matches[1];
 			$vn_right_of_decimal = preg_replace('!([A-Za-z]+)$!', '', $vn_right_of_decimal);

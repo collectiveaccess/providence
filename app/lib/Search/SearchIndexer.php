@@ -837,12 +837,12 @@ if (!$for_current_value_reindex) {
 				// Needs self-indexing?
 				$va_self_info = $this->getTableIndexingInfo($vs_subject_tablename, $vs_subject_tablename);
 
-				if (is_array($va_self_info['related']['fields']) && sizeof($va_self_info['related']['fields']) && !in_array($vs_subject_tablename, $va_related_tables)) {
+				if (is_array($va_self_info['related']['fields'] ?? null) && sizeof($va_self_info['related']['fields']) && !in_array($vs_subject_tablename, $va_related_tables)) {
 					$va_related_tables[] = $vs_subject_tablename;
 				}
 				
                 $va_restrict_self_indexing_to_types = null;
-                if (is_array($va_self_info['related']['types']) && sizeof($va_self_info['related']['types'])) {
+                if (is_array($va_self_info['related']['types'] ?? null) && sizeof($va_self_info['related']['types'])) {
                     $va_restrict_self_indexing_to_types = caMakeTypeIDList($vs_subject_tablename, $va_self_info['related']['types']);
                 }
 
@@ -854,7 +854,7 @@ if (!$for_current_value_reindex) {
                     $va_restrict_indexing_to_types = null;
                     $va_info = $this->getTableIndexingInfo($vs_subject_tablename, $vb_force_related ? "{$vs_related_table}.related" : $vs_related_table);
                     
-                    if (is_array($va_info['types']) && sizeof($va_info['types'])) {
+                    if (is_array($va_info['types'] ?? null) && sizeof($va_info['types'])) {
                         $va_restrict_indexing_to_types = caMakeTypeIDList($vs_related_table, $va_info['types']);
                     }
 					$vn_private = 0;
