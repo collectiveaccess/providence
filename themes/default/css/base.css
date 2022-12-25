@@ -854,6 +854,10 @@ a.sf-menu-disabled {
     margin: 0px;
 }
 
+.sfHover ul li a.spacer:hover {
+    background-color: #fff;
+}
+
 /*** arrows **/
 .sf-menu a.sf-with-ul, .sf-menu a.sf-with-ul:focus, .sf-menu a.sf-with-ul:active {
     padding-right: 	1em;
