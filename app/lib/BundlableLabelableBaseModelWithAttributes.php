@@ -557,21 +557,22 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		// duplicate labels
-		$va_labels = $this->getLabels();
-		$vs_label_display_field = $t_dupe->getLabelDisplayField();
-		foreach($va_labels as $vn_label_id => $va_labels_by_locale) {
-			foreach($va_labels_by_locale as $vn_locale_id => $va_label_list) {
-				foreach($va_label_list as $vn_i => $va_label_info) {
-					unset($va_label_info['source_info']);
-					if (!$vb_duplicate_nonpreferred_labels && key_exists('is_preferred', $va_label_info) && !$va_label_info['is_preferred']) { continue; }
-					if (!$this->getAppConfig()->get('dont_mark_duplicated_records_in_preferred_label')) { $va_label_info[$vs_label_display_field] .= " ["._t('Duplicate')."]"; }
-					$t_dupe->addLabel(
-						$va_label_info, $va_label_info['locale_id'], $va_label_info['type_id'] ?? null, isset($va_label_info['is_preferred']) ? (bool)$va_label_info['is_preferred'] : false
-					);
-					if ($t_dupe->numErrors()) {
-						$this->errors = $t_dupe->errors;
-						if ($vb_we_set_transaction) { $o_t->rollback();}
-						return false;
+		if(is_array($va_labels = $this->getLabels())) { 
+			$vs_label_display_field = $t_dupe->getLabelDisplayField();
+			foreach($va_labels as $vn_label_id => $va_labels_by_locale) {
+				foreach($va_labels_by_locale as $vn_locale_id => $va_label_list) {
+					foreach($va_label_list as $vn_i => $va_label_info) {
+						unset($va_label_info['source_info']);
+						if (!$vb_duplicate_nonpreferred_labels && key_exists('is_preferred', $va_label_info) && !$va_label_info['is_preferred']) { continue; }
+						if (!$this->getAppConfig()->get('dont_mark_duplicated_records_in_preferred_label')) { $va_label_info[$vs_label_display_field] .= " ["._t('Duplicate')."]"; }
+						$t_dupe->addLabel(
+							$va_label_info, $va_label_info['locale_id'], $va_label_info['type_id'] ?? null, isset($va_label_info['is_preferred']) ? (bool)$va_label_info['is_preferred'] : false
+						);
+						if ($t_dupe->numErrors()) {
+							$this->errors = $t_dupe->errors;
+							if ($vb_we_set_transaction) { $o_t->rollback();}
+							return false;
+						}
 					}
 				}
 			}
@@ -4504,6 +4505,7 @@ if (!$vb_batch) {
 							foreach($va_reps as $vn_i => $va_rep) {
 								$this->clearErrors();
 								
+								if(!isset($va_rep['representation_id'])) { continue; }
 								
 								if(is_array($bundles_on_screen_proc) && sizeof($bundles_on_screen_proc)) {
 									if ($vb_allow_fetching_of_urls && ($vs_path = $_REQUEST[$vs_prefix_stub.'media_url_'.$va_rep['relation_id']])) {
@@ -4539,7 +4541,7 @@ if (!$vb_batch) {
 									$vn_object_representation_mapping_id = $po_request->getParameter($vs_prefix_stub.'importer_id_'.$va_rep['relation_id'], pInteger);
 										
 									$vn_rel_type_id = $po_request->getParameter($vs_prefix_stub.'rel_type_id_'.$va_rep['relation_id'], pString);
-									$t_rep = $this->editRepresentation($va_rep['representation_id'], $vs_path, $vals['locale_id'] ?? null, $vals['status'] ?? null, $vals['access'] ?? null, $vals['is_primary'] ?? 0, $vals, array('original_filename' => $vs_original_name, 'rank' => $vn_rank, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vals['type_id'], 'rel_type_id' => $vn_rel_type_id, 'mapping_id' => $vn_object_representation_mapping_id));
+									$t_rep = $this->editRepresentation($va_rep['representation_id'], $vs_path, $vals['locale_id'] ?? null, $vals['status'] ?? null, $vals['access'] ?? null, $vals['is_primary'] ?? 0, $vals, array('original_filename' => $vs_original_name, 'rank' => $vn_rank, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vals['type_id'] ?? null, 'rel_type_id' => $vn_rel_type_id, 'mapping_id' => $vn_object_representation_mapping_id));
 									if ($this->numErrors()) {
 										//$po_request->addActionErrors($this->errors(), $vs_f, $va_rep['relation_id']);
 										foreach($this->errors() as $o_e) {
@@ -4749,12 +4751,12 @@ if (!$vb_batch) {
 											) {
 												continue;
 											}
-											if ($t_rep = $this->addRepresentation($f, $vn_rep_type_id, $vals['locale_id'] ?? null, $vals['status'] ?? null, $vals['access'] ?? null, $vn_is_primary, array_merge($vals, ['name' => $vals['rep_label'] ?? null]), ['original_filename' => $vs_original_name, 'returnRepresentation' => true, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vn_type_id, 'mapping_id' => $vn_object_representation_mapping_id])) {	// $vn_type_id = *relationship* type_id (as opposed to representation type)
+											if ($t_rep = $this->addRepresentation($f, $vn_rep_type_id, $vals['locale_id'] ?? null, $vals['status'] ?? null, $vals['access'] ?? null, null, array_merge($vals, ['name' => $vals['rep_label'] ?? null]), ['original_filename' => $vs_original_name, 'returnRepresentation' => true, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vn_type_id, 'mapping_id' => $vn_object_representation_mapping_id])) {	// $vn_type_id = *relationship* type_id (as opposed to representation type)
 												@unlink($f);
 											}
 										}
 									} elseif($vs_key === 'empty') {
-										$t_rep = $this->addRepresentation(null, $vn_rep_type_id, $vals['locale_id'], $vals['status'], $vals['access'], $vn_is_primary, array_merge($vals, ['name' => $vals['rep_label']]), array('original_filename' => $vs_original_name, 'returnRepresentation' => true, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vn_type_id, 'mapping_id' => $vn_object_representation_mapping_id));	// $vn_type_id = *relationship* type_id (as opposed to representation type)
+										$t_rep = $this->addRepresentation(null, $vn_rep_type_id, $vals['locale_id'], $vals['status'], $vals['access'], null, array_merge($vals, ['name' => $vals['rep_label']]), array('original_filename' => $vs_original_name, 'returnRepresentation' => true, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vn_type_id, 'mapping_id' => $vn_object_representation_mapping_id));	// $vn_type_id = *relationship* type_id (as opposed to representation type)
 									}
                                     
                                     if ($this->numErrors()) {

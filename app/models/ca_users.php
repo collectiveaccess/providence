@@ -1618,6 +1618,7 @@ class ca_users extends BaseModel {
 	 * @return mixed Type returned varies by preference
 	 */
 	public function getPreferenceDefault($ps_pref, $pa_options=null) {
+		global $_locale;
 		if (!is_array($va_pref_info = $this->getPreferenceInfo($ps_pref))) { return null; }
 		
 		switch($va_pref_info["formatType"]) {
@@ -1685,7 +1686,8 @@ class ca_users extends BaseModel {
 				case 'FT_TEXT':
 					if ($va_pref_info['displayType'] == 'DT_CURRENCIES') {
 						// this respects the global UI locale which is set using Zend_Locale
-						$o_currency = new Zend_Currency();
+						
+						$o_currency = new Zend_Currency($_locale);
 						return ($vs_currency_specifier = $o_currency->getShortName()) ? $vs_currency_specifier : "CAD";
 					}
 					return $va_pref_info["default"] ? $va_pref_info["default"] : null;
@@ -2125,14 +2127,14 @@ class ca_users extends BaseModel {
 									$va_opts = array();
 									
 									// print out type-specific
-									if (is_array($va_ui_list_by_type[$vn_type_id])) {
+									if (is_array($va_ui_list_by_type[$vn_type_id] ?? null)) {
 										foreach(caExtractValuesByUserLocale($va_ui_list_by_type[$vn_type_id]) as $vn_ui_id => $vs_label) {
 											$va_opts[$vn_ui_id] = $vs_label;
 										}
 									}
 									
 									// print out generic
-									if (is_array($va_ui_list_by_type['__all__'])) {
+									if (is_array($va_ui_list_by_type['__all__'] ?? null)) {
 										foreach(caExtractValuesByUserLocale($va_ui_list_by_type['__all__']) as $vn_ui_id => $vs_label) {
 											$va_opts[$vn_ui_id] = $vs_label;
 										}
@@ -2142,7 +2144,7 @@ class ca_users extends BaseModel {
 				
 									$vs_output .= "<tr><td>".str_repeat("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;", (int)$va_type['LEVEL']).$va_type['name_singular']."</td><td><select name='pref_{$ps_pref}_{$vn_type_id}'>\n";
 									foreach($va_opts as $vs_val => $vs_opt) {
-										$vs_selected = ($vs_val == $va_values[$vn_type_id]) ? "SELECTED" : "";
+										$vs_selected = ($vs_val == ($va_values[$vn_type_id] ?? null)) ? "SELECTED" : "";
 										$vs_output .= "<option value='".htmlspecialchars($vs_val, ENT_QUOTES, 'UTF-8')."' {$vs_selected}>{$vs_opt}</option>\n";	
 									}
 									$vs_output .= "</select></td></tr>\n";

@@ -694,6 +694,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	 * @return bool True if user has access, false if not
 	 */
 	public function haveAccessToForm($pn_user_id, $pn_access, $pn_form_id=null) {
+		$vn_form_id = null;
 		if ($pn_form_id) {
 			$vn_form_id = $pn_form_id;
 			$t_form = new ca_search_forms($vn_form_id);
@@ -1023,7 +1024,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
                             $vs_field = $tmp[2];
                         }
                         
-						if (($va_field_info = $t_table->getFieldInfo($vs_field)) || (method_exists($t_table, "hasElement") && $t_table->hasElement($vs_field)) || ($bundle_bits[1] === 'related')) {
+						if (($va_field_info = $t_table->getFieldInfo($vs_field)) || (method_exists($t_table, "hasElement") && $t_table->hasElement($vs_field)) || (($bundle_bits[1] ?? null) === 'related')) {
 							if (isset($va_field_info['DONT_USE_AS_BUNDLE']) && $va_field_info['DONT_USE_AS_BUNDLE']) { continue; }
 
 
@@ -1160,7 +1161,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 			$vs_label =  $va_available_bundles[$va_placement['bundle_name']]['label'];
 			$vs_display = $va_available_bundles[$va_placement['bundle_name']]['display'];
 
-			if(is_array($va_placement['settings']['label'])){
+			if(is_array($va_placement['settings']['label'] ?? null)){
 				$va_tmp = caExtractValuesByUserLocale(array($va_placement['settings']['label']));
 				if ($vs_user_set_label = array_shift($va_tmp)) {
 					$vs_label = "{$vs_label} (<em>{$vs_user_set_label}</em>)";
@@ -1549,7 +1550,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 				}
 
 				if($vn_placement_id === 0) {
-					$t_form->addPlacement($vs_bundle, $va_settings[$vn_placement_id], $vn_i + 1, array('user_id' => $po_request->getUserID(), 'additional_settings' => $va_available_bundles[$vs_bundle]['settings']));
+					$t_form->addPlacement($vs_bundle, $va_settings[$vn_placement_id] ?? null, $vn_i + 1, array('user_id' => $po_request->getUserID(), 'additional_settings' => $va_available_bundles[$vs_bundle]['settings'] ?? []));
 					if ($t_form->numErrors()) {
 						$this->errors = $t_form->errors;
 						return false;
@@ -1559,7 +1560,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 					$t_placement->setMode(ACCESS_WRITE);
 					$t_placement->set('rank', $vn_i + 1);
 
-					if (is_array($va_settings[$vn_placement_id])) {
+					if (is_array($va_settings[$vn_placement_id] ?? null)) {
 						//foreach($va_settings[$vn_placement_id] as $vs_setting => $vs_val) {
 						foreach($t_placement->getAvailableSettings() as $vs_setting => $va_setting_info) {
 							$vs_val = isset($va_settings[$vn_placement_id][$vs_setting]) ? $va_settings[$vn_placement_id][$vs_setting] : null;

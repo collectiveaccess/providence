@@ -217,7 +217,7 @@
 			foreach($this->opa_browse_settings['facets'] as $vs_facet_name => $va_facet_info) {
 
 				global $g_ui_locale;
-				if(is_array($va_facet_info['label_singular'])) {
+				if(is_array($va_facet_info['label_singular'] ?? null)) {
 					if(isset($va_facet_info['label_singular'][$g_ui_locale])) {
 						$va_facet_info['label_singular'] = $va_facet_info['label_singular'][$g_ui_locale];
 					}
@@ -613,7 +613,7 @@
 					break;
 				# -----------------------------------------------------
 			    case 'relationship_types':
-			        if (!($t_rel = Datamodel::getInstanceByTableName($va_facet_info['relationship_table'], true))) { break; }
+			        if (!($t_rel = Datamodel::getInstanceByTableName($va_facet_info['relationship_table'] ?? null, true))) { break; }
 			        $t_rel_type = new ca_relationship_types();
 			        $info = $t_rel_type->getRelationshipInfo($va_facet_info['relationship_table']);
 			        return isset($info[(int)$pn_row_id]) ? $info[(int)$pn_row_id]['typename'] : "???";
@@ -899,8 +899,11 @@
 		 */
 		public function getInfoForFacet($ps_facet_name) {
 			if (!$this->isValidFacetName($ps_facet_name)) { return null; }
-			$va_facets = $this->opa_browse_settings['facets'];
-			return $va_facets[$ps_facet_name];
+			$va_facets = array_filter($this->opa_browse_settings['facets'] ?? [], function($v) {
+				return isset($v['type']);
+			});
+			
+			return $va_facets[$ps_facet_name] ?? ['type' => null];
 		}
 		# ------------------------------------------------------
 		/**
@@ -1194,6 +1197,7 @@
 						$vs_target_browse_table_pk = $t_item->primaryKey();
 
 						$va_facet_info = $this->getInfoForFacet($vs_facet_name);
+						if(!is_array($va_facet_info)) { continue; }
 						
 						$vb_is_relative_to_parent = (($va_facet_info['relative_to'] ?? false) && $this->_isParentRelative($va_facet_info['relative_to']));
 						
@@ -5650,7 +5654,7 @@
 
 					$vs_checkout_join_sql = "INNER JOIN ca_object_checkouts ON ca_object_checkouts.object_id = ca_objects.object_id";
 					$vn_current_time = time();
-					switch($va_facet_info['status']) {
+					switch($va_facet_info['status'] ?? null) {
 						case 'overdue':
 							$va_wheres[] = "((ca_object_checkouts.checkout_date <= {$vn_current_time}) AND (ca_object_checkouts.return_date IS NULL) AND (ca_object_checkouts.due_date <= {$vn_current_time}))";
 							break;
@@ -6565,7 +6569,7 @@
 				# -----------------------------------------------------
 				case 'authority':
 			    case 'relationship_types':  
-					$vs_rel_table_name = $va_facet_info['table'];
+					$vs_rel_table_name = $va_facet_info['table'] ?? null;
 					$va_params = $this->opo_ca_browse_cache->getParameters();
 					
 					if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($vs_browse_table_name, $vs_rel_table_name) < __CA_BUNDLE_ACCESS_READONLY__)) { return []; }
@@ -6573,7 +6577,7 @@
 
 					// Make sure we honor type restrictions for the related authority
 					$va_user_type_restrictions = caGetTypeRestrictionsForUser($vs_rel_table_name);
-					$va_restrict_to_types = $va_facet_info['restrict_to_types'];
+					$va_restrict_to_types = $va_facet_info['restrict_to_types'] ?? null;
 					if(is_array($va_user_type_restrictions)){
 						if (!is_array($va_restrict_to_types)) {
 							$va_restrict_to_types = $va_user_type_restrictions;
@@ -7768,7 +7772,7 @@ if (!($va_facet_info['show_all_when_first_facet'] ?? null) || ($this->numCriteri
 		 */
 		private function _isParentRelative($ps_relative_to_table) {
 			$va_relative_to_tmp = explode('.', $ps_relative_to_table);
-			return ($va_relative_to_tmp[1] == 'parent_id') ? $va_relative_to_tmp[0] : false;
+			return (($va_relative_to_tmp[1] ?? null) == 'parent_id') ? $va_relative_to_tmp[0] ?? null : false;
 		}
 		# ------------------------------------------------------
 		/**

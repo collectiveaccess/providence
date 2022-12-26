@@ -621,11 +621,11 @@ class MultipartIDNumber extends IDNumber {
 		$output = [];
 
 		foreach ($elements as $element) {
-			$element_info = $elements_normal_order[$element];
+			$element_info = $elements_normal_order[$element] ?? null;
 			$i = array_search($element, $element_names_normal_order);
 			$padding = 20;
 			
-			$v = $element_values[$i];
+			$v = $element_values[$i] ?? null;
 			if(($i === (sizeof($element_names_normal_order) - 1)) && (sizeof($element_values) > sizeof($element_names_normal_order))) {	// last item with extra elements
 				$extra_elements = array_splice($element_values, $i + 1);
 				$v .= $separator.join($separator, $extra_elements);
@@ -735,9 +735,9 @@ class MultipartIDNumber extends IDNumber {
 		
 		$n = 0;
 		foreach ($elements as $element) {
-			$element_info = $elements_normal_order[$element];
+			$element_info = $elements_normal_order[$element] ?? null;
 			$i = array_search($element, $element_names_normal_order);
-			$v = $element_values[$i];
+			$v = $element_values[$i] ?? null;
 			
 			$range = caGetOption('range', $element_info, 5);
 			$precision = caGetOption('precision', $element_info, 2);
@@ -837,6 +837,7 @@ class MultipartIDNumber extends IDNumber {
 			$element_info = $elements_normal_order[$element];
 			$i = array_search($element, $elements);
             if(!is_array($output[$i] ?? null)) { $output[$i] = []; }
+            if(!isset($element_values[$i])) { $element_values[$i] = null; }
 			switch($element_info['type']) {
 				case 'LIST':
 					$output[$i] = array($element_values[$i]);

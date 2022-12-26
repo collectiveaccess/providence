@@ -277,7 +277,7 @@ class View extends BaseObject {
 		$this->ops_last_render = null;
 		
 		$vb_output = false;
-		$vs_buf = null;
+		$vs_buf = $vs_path = null;
 		if (caGetOption('string', $pa_options, false)) {
 			$vs_buf = $ps_filename;
 			$vb_output = true;

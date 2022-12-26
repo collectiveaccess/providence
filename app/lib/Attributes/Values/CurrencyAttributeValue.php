@@ -245,7 +245,9 @@ class CurrencyAttributeValue extends AttributeValue implements IAttributeValue {
 	 *
 	 */
 	public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
-		global $_, $_locale;
+		global $_locale;
+		// If the locale is valid, locale is set
+		$o_locale = $_locale ? $_locale : new Zend_Locale(__CA_DEFAULT_LOCALE__);
 		
 		$o_config = Configuration::load();
 		
@@ -279,18 +281,13 @@ class CurrencyAttributeValue extends AttributeValue implements IAttributeValue {
 		}
 		if(!$vs_currency_specifier){
 			// this respects the global UI locale which is set using Zend_Locale
-			$o_currency = new Zend_Currency();
+			$o_currency = new Zend_Currency($o_locale);
 			$vs_currency_specifier = $o_currency->getShortName();
 		}
 
 		// get UI locale from registry and convert string to actual php float
 		// based on rules for this locale (e.g. most non-US locations use 10.000,00 as notation)
 		
-        // If the locale is valid, locale is set
-        $o_locale = $_locale;
-		if($o_locale) {
-			$o_locale = new Zend_Locale(__CA_DEFAULT_LOCALE__);
-		}
 		try {
 			$vn_value = preg_match("!^[\d\.]+$!", $vs_decimal_value) ? (float)$vs_decimal_value : Zend_Locale_Format::getFloat($vs_decimal_value, ['locale' => $o_locale, 'precision' => 2]);
 		} catch (Zend_Locale_Exception $e){

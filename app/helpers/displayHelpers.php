@@ -733,11 +733,17 @@ jQuery(document).ready(function() {
 	 *
 	 * @return string - formated metadata for display to user
 	 */
-	function _caFormatMediaMetadataArray($pa_array, $pn_level=0, $ps_key=null) {
+	function _caFormatMediaMetadataArray($pa_array, $pn_level=0, $ps_key=null, ?array $options=null) {
 		if(!is_array($pa_array)) { return $pa_array; }
 
-		$vs_buf = "<div style='width: 100%; overflow: auto;'><table style='margin-left: ".($pn_level * 10)."px;'>";
+		$no_table = caGetOption('noTable', $options, false);
+		
+		$vs_buf = $no_table ? '' : "<div style='width: 100%; overflow: auto;'><table style='margin-left: ".($pn_level * 10)."px;'>";
 		foreach($pa_array as $vs_key => $vs_val) {
+			if(is_array($vs_val)) {
+				$vs_buf .= _caFormatMediaMetadataArray($vs_val, $pn_level++, null, ['noTable' => true]);
+				continue;
+			}
 			if (preg_match("!^Undefined!i", $vs_key)) { continue; }
 			$vs_val = preg_replace('![^A-Za-z0-9 \-_\+\!\@\#\$\%\^\&\*\(\)\[\]\{\}\?\<\>\,\.\"\'\=]+!', '', $vs_val);
 			switch($vs_key) {
@@ -753,7 +759,7 @@ jQuery(document).ready(function() {
 			}
 			$vs_buf .= "<tr><td width='130'>{$vs_key}</td><td>"._caFormatMediaMetadataArray($vs_val, $pn_level + 1, $vs_key)."</td></tr>";
 		}
-		$vs_buf .= "</table></div>\n";
+		$vs_buf .= $no_table ? '' : "</table></div>\n";
 		return $vs_buf;
 	}
 	# ------------------------------------------------------------------------------------------------

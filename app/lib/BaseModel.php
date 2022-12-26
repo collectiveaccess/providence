@@ -240,6 +240,11 @@ class BaseModel extends BaseObject {
 	 * @access protected
 	 */
 	protected $_TRANSACTION = null;
+	
+	/**
+	 * Hierarchy parent_id field name
+	 */
+	protected $HIERARCHY_PARENT_ID_FLD = null;
 
 	/**
 	 * The current locale. Used to determine which set of localized error messages to use. Default is US English ("en_us")
@@ -1763,7 +1768,7 @@ class BaseModel extends BaseObject {
 						}
 						
 						if ((isset($pa_options['purify']) && ($pa_options['purify'])) || ((bool)$this->opb_purify_input) || ($this->getFieldInfo($vs_field, "PURIFY"))) {
-							$pa_options["original_filename"] = BaseModel::getPurifier()->purify((string)$pa_options["original_filename"]);
+							$pa_options["original_filename"] = BaseModel::getPurifier()->purify((string)($pa_options["original_filename"] ?? null));
     						$vm_value = BaseModel::getPurifier()->purify((string)$vm_value);
 						}
 						
@@ -3938,7 +3943,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			return null;
 		}
 
-		$va_volume_info = $this->_MEDIA_VOLUMES->getVolumeInformation($va_media_info[$ps_version]["VOLUME"]);
+		$va_volume_info = $this->_MEDIA_VOLUMES->getVolumeInformation($va_media_info[$ps_version]["VOLUME"] ?? null);
 
 		if (!is_array($va_volume_info)) {
 			return "";
@@ -3976,7 +3981,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			$ps_version = $va_media_info[$ps_version]["REPLACE_WITH_VERSION"];
 		}
 		
-		if (!is_array($va_media_info[$ps_version])) { return null; }
+		if (!is_array($va_media_info[$ps_version] ?? null)) { return null; }
 
         if ($alt_text_template = Configuration::load()->get($this->tableName()."_alt_text_template")) { 
 		    $alt_text = $this->getWithTemplate($alt_text_template, ['highlighting' => false]);
@@ -4323,7 +4328,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		}
 		
 		# if media is mirrored, delete file off of mirrored server
-		if (is_array($va_volume_info["mirrors"]) && sizeof($va_volume_info["mirrors"]) > 0) {
+		if (is_array($va_volume_info["mirrors"] ?? null) && sizeof($va_volume_info["mirrors"]) > 0) {
 			$o_tq = new TaskQueue();
 			$vs_row_key = join("/", array($this->tableName(), $this->getPrimaryKey()));
 			$vs_entity_key = join("/", array($this->tableName(), $ps_field, $this->getPrimaryKey(), $ps_version));
@@ -4707,13 +4712,13 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 								'VOLUME' => $volume
 							);
 							$media_desc[$v]["QUEUED"] = $queue;						
-							if ($version_info[$v]["QUEUED_MESSAGE"]) {
+							if ($version_info[$v]["QUEUED_MESSAGE"] ?? null) {
 								$media_desc[$v]["QUEUED_MESSAGE"] = $version_info[$v]["QUEUED_MESSAGE"];
 							} else {
-								$media_desc[$v]["QUEUED_MESSAGE"] = ($va_default_queue_settings['QUEUED_MESSAGE']) ? $va_default_queue_settings['QUEUED_MESSAGE'] : _t("Media is being processed and will be available shortly.");
+								$media_desc[$v]["QUEUED_MESSAGE"] = ($va_default_queue_settings['QUEUED_MESSAGE'] ?? null) ? $va_default_queue_settings['QUEUED_MESSAGE'] : _t("Media is being processed and will be available shortly.");
 							}
 						
-							if ($pa_options['delete_old_media']) {
+							if ($pa_options['delete_old_media'] ?? false) {
 								$va_files_to_delete[] = array(
 									'field' => $ps_field,
 									'version' => $v
@@ -4772,7 +4777,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 								$replace_with_version = $replace_with_version_opt ? $replace_with_version_opt : array_pop($alt_version_list);
 								if(!in_array($replace_with_version, $va_versions)) { $replace_with_version = null; }
 								$media_desc[$v]['REPLACE_WITH_VERSION'] = $replace_with_version ? $replace_with_version : $va_versions[0];
-							} else if ((bool)$version_info[$v]["USE_EXTERNAL_URL_WHEN_AVAILABLE"]) { 
+							} else if ((bool)($version_info[$v]["USE_EXTERNAL_URL_WHEN_AVAILABLE"] ?? false)) { 
 								$filepath = $this->_SET_FILES[$ps_field]['tmp_name'];
 							
 								if ($pa_options['delete_old_media']) {
@@ -4783,7 +4788,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 								}
 														
 								$media_desc[$v] = array_merge($media_desc[$v], [
-									"EXTERNAL_URL" => $media_desc['INPUT']['FETCHED_FROM'],
+									"EXTERNAL_URL" => $media_desc['INPUT']['FETCHED_FROM'] ?? null,
 									"FILENAME" => null,
 									"HASH" => null,
 									"MAGIC" => null,
@@ -4809,7 +4814,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 									$vs_path_to_queue_media = $filepath;
 								}
 	
-								if ($pa_options['delete_old_media']) {
+								if ($pa_options['delete_old_media'] ?? false) {
 									$va_files_to_delete[] = array(
 										'field' => $ps_field,
 										'version' => $v,

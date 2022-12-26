@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,9 +26,9 @@
  * ----------------------------------------------------------------------
  */
  
-	$t_user = $this->getVar('t_user');
-	$vs_group = $this->getVar('group'); 
- ?>
+$t_user = $this->getVar('t_user');
+$vs_group = $this->getVar('group'); 
+?>
 <div class="sectionBox">
 <?php
 	print $vs_control_box = caFormControlBox(
@@ -49,7 +49,7 @@
 	$va_available_items = $this->getVar('available_searches');
 	$va_to_display_items = $this->getVar('selected_searches');
 ?>
-	<div class="bundleDisplayPlacementEditorContainer" id="<?= $vs_id_prefix; ?>">
+	<div class="bundleDisplayPlacementEditorContainer">
 	<div id="bundleDisplayPlacementEditor" class="bundleDisplayPlacementEditor">
 		<div class="bundleDisplayPlacementEditorHelpText"><?= _t("Drag your selection from column to column to edit the content and order of results in the quick search interface."); ?></div>
 		<table>
@@ -91,17 +91,9 @@
 		});
 	</script>
 </div>
-<?php
-	
-	print "<div class='preferenceSectionDivider'><!-- empty --></div>\n"; 
-	
-	
-?>
-		<input type="hidden" name="action" value="EditQuickSearchPrefs"/>
-	</form>
-<?php
-	print $vs_control_box;
-?>
+	<div class='preferenceSectionDivider'><!-- empty --></div>
+	<input type="hidden" name="action" value="EditQuickSearchPrefs"/>
+</form>
+<?= $vs_control_box; ?>
 </div>
-
-	<div class="editorBottomPadding"><!-- empty --></div>
+<div class="editorBottomPadding"><!-- empty --></div>

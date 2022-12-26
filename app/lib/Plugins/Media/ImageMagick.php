@@ -127,16 +127,15 @@ trait CommandConfiguration {
 class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 	use CommandConfiguration;
-
-	var $errors = array();
 	
-	var $filepath;
 	private $handle;
-	var $ohandle;
-	var $properties;
-	var $metadata = array();
-	
+	private $ohandle;
 	var $opo_config;
+	var $errors = [];
+	var $filepath = null;
+	var $properties = [];
+	var $metadata = [];
+	
 
 	var $info = array(
 		"IMPORT" => array(
@@ -396,7 +395,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ----------------------------------------------------------
 	public function get($property) {
-		if ($this->handle) {
+		if ($this->handle ?? null) {
 			if ($this->info["PROPERTIES"][$property]) {
 				return $this->properties[$property];
 			} else {
@@ -409,7 +408,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ----------------------------------------------------------
 	public function set($property, $value) {
-		if ($this->handle) {
+		if ($this->handle ?? null) {
 			if ($property == "tile_size") {
 				if (($value < 10) || ($value > 10000)) {
 					$this->postError(1650, _t("Tile size property must be between 10 and 10000"), "WLPlugImageMagick->set()");
@@ -503,7 +502,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ----------------------------------------------------------
 	public function read($filepath, $mimetype="", $options=null) {
-		if (!isset($this->handle) && ($filepath === $this->filepath)) {
+		if (!isset($this->handle) && ($filepath !== ($this->filepath ?? null))) {
 			
 			if(strpos($filepath, ':') && (caGetOSFamily() != OS_WIN32)) {
 				$this->postError(1610, _t("Filenames with colons (:) are not allowed"), "WLPlugImageMagick->read()");
@@ -565,10 +564,10 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ----------------------------------------------------------
 	public function transform($operation, $parameters) {
-		if ($this->properties["mimetype"] == "image/tilepic") { return false;} # no transformations for Tilepic
-		if (!$this->handle) { return false; }
+		if (($this->properties["mimetype"] ?? null) == "image/tilepic") { return false;} # no transformations for Tilepic
+		if (!($this->handle ?? null)) { return false; }
 		
-		if (!($this->info["TRANSFORMATIONS"][$operation])) {
+		if (!($this->info["TRANSFORMATIONS"][$operation] ?? null)) {
 			# invalid transformation
 			$this->postError(1655, _t("Invalid transformation %1", $operation), "WLPlugImageMagick->transform()");
 			return false;
@@ -905,7 +904,10 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ----------------------------------------------------------
 	public function write($filepath, $mimetype) {
-		if (!$this->handle) { return false; }
+		if (!($this->handle ?? null)) { 
+			$this->postError(1610, _t("No filepath specified for output"), "WLPlugImageMagick->write()");
+			return false; 
+		}
 		if(strpos($filepath, ':') && (caGetOSFamily() != OS_WIN32)) {
 			$this->postError(1610, _t("Filenames with colons (:) are not allowed"), "WLPlugImageMagick->write()");
 			return false;
@@ -963,6 +965,11 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	# This method must be implemented for plug-ins that can output preview frames for videos or pages for documents
 	public function &writePreviews($ps_filepath, $pa_options) {
 		global $file_cleanup_list;
+		
+		if(!($this->filepath ?? null)) {
+			$this->postError(1610, _t("No filepath specified for previews"), "WLPlugImageMagick->writePreviews()");
+			return false;
+		}
 		
 		if(!caMediaPluginImageMagickInstalled()) { return false; }
 
@@ -1080,7 +1087,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 	public function reset() {
-		if ($this->ohandle) {
+		if ($this->ohandle ?? null) {
 			$this->handle = $this->ohandle;
 			# load image properties
 			$this->properties["width"] = $this->handle['width'];

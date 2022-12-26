@@ -516,7 +516,8 @@ class BaseEditorController extends ActionController {
 	        
 			$vb_we_set_transaction = false;
 			if (!$t_subject->inTransaction()) {
-				$t_subject->setTransaction($o_t = new Transaction());
+				$o_t = new Transaction();
+				$t_subject->setTransaction($o_t);
 				$vb_we_set_transaction = true;
 			}
 			
