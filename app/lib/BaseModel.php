@@ -1146,7 +1146,7 @@ class BaseModel extends BaseObject {
 					if (isset($pa_options["USE_MEDIA_FIELD_VALUES"]) && $pa_options["USE_MEDIA_FIELD_VALUES"]) {
 						$vs_prop = $this->_FIELD_VALUES[$ps_field] ?? null;
 					} else {
-						$vs_prop = (isset($this->_SET_FILES[$ps_field]['tmp_name']) && $this->_SET_FILES[$ps_field]['tmp_name']) ? $this->_SET_FILES[$ps_field]['tmp_name'] : $this->_FIELD_VALUES[$ps_field];
+						$vs_prop = (isset($this->_SET_FILES[$ps_field]['tmp_name']) && ($this->_SET_FILES[$ps_field]['tmp_name']) ? $this->_SET_FILES[$ps_field]['tmp_name'] : ($this->_FIELD_VALUES[$ps_field] ?? null));
 					}
 				} else {
 					$va_versions = $this->getMediaVersions($ps_field);
@@ -5193,7 +5193,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 
 				$this->_PROCESSED_FILES[$ps_field] = $this->_SET_FILES[$ps_field];
 				$this->_SET_FILES[$ps_field] = null;
-			} elseif(is_array($this->_FIELD_VALUES[$ps_field])) {
+			} elseif(is_array($this->_FIELD_VALUES[$ps_field] ?? null)) {
 				// Just set field values in SQL (usually in-place update of media metadata)
 				$this->_FILES[$ps_field] = $this->_FIELD_VALUES[$ps_field];
 				$vs_sql =  "{$ps_field} = ".$this->quote(caSerializeForDatabase($this->_FILES[$ps_field], true)).",";
@@ -10249,6 +10249,7 @@ $pa_options["display_form_field_tips"] = true;
 	 *
 	 */
 	private function _getRelationshipInfo($pm_rel_table_name_or_num, $pb_use_cache=true) {
+		$va_path = null;
 		$vs_table = $this->tableName();
 		if ($pb_use_cache && isset(BaseModel::$s_relationship_info_cache[$vs_table][$pm_rel_table_name_or_num])) {
 			return BaseModel::$s_relationship_info_cache[$vs_table][$pm_rel_table_name_or_num];

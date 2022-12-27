@@ -176,7 +176,7 @@ class BaseEditorController extends ActionController {
 			if (($vs_bundle = $this->request->getParameter('bundle', pString)) && ($vs_bundle_screen = $t_ui->getScreenWithBundle($vs_bundle))) {
 				// jump to screen containing url-specified bundle
 				$this->request->setActionExtra($vs_bundle_screen);
-			} else {
+			} elseif(isset($va_nav['defaultScreen'])) {
 				$this->request->setActionExtra($va_nav['defaultScreen']);
 			}
 		}

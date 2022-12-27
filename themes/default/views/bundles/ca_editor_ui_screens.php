@@ -31,7 +31,7 @@ $vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
 $t_ui 				= $this->getVar('t_ui');	
 $t_screen			= $this->getVar('t_screen');
 
-$setting			= $this->getVar('settings');
+$settings			= $this->getVar('settings');
 
 $va_initial_values = $this->getVar('screens');	// list of existing screens
 $va_errors = array();

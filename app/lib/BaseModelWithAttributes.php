@@ -3047,8 +3047,8 @@
 			$va_references = [];
 			while($qr_res->nextRow()) {
 				$va_row = $qr_res->getRow();
-				if(!is_array($va_references[$va_row['table_num']][$va_row['row_id']])) { $va_references[$va_row['table_num']][$va_row['row_id']] = []; }
-				if(!in_array($va_row['element_id'], $va_references[$va_row['table_num']][$va_row['row_id']])) { $va_references[$va_row['table_num']][$va_row['row_id']][] = $va_row['element_id']; }
+				if(!is_array($va_references[$va_row['table_num']][$va_row['row_id']] ?? null)) { $va_references[$va_row['table_num']][$va_row['row_id']] = []; }
+				if(!in_array($va_row['element_id'], $va_references[$va_row['table_num']][$va_row['row_id']] ?? null)) { $va_references[$va_row['table_num']][$va_row['row_id']][] = $va_row['element_id']; }
 			}
 			
 			foreach($va_references as $vn_table_num => $va_rows) {

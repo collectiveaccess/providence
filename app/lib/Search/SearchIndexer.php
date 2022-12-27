@@ -2132,7 +2132,7 @@ if (!$for_current_value_reindex) {
 					$va_label_field_names = $va_label_field_nums = array();
 					if ($t_label = $t_dep->getLabelTableInstance()) {
 						$va_label_info = $this->getTableIndexingInfo($vs_dep_table, $t_label->tableName());
-						if (is_array($va_label_info['related']['fields']) && sizeof($va_label_info['related']['fields'])) {
+						if (is_array($va_label_info['related']['fields'] ?? null) && sizeof($va_label_info['related']['fields'])) {
 							$vb_index_labels = true;
 							$vn_label_table_num = $t_label->tableNum();
 
@@ -2156,7 +2156,7 @@ if (!$for_current_value_reindex) {
 							'relationship_type_id' => $vn_rel_type_id,
 							'field_nums' => $va_field_nums,
 							'field_names' => $va_field_names,
-							'indexing_info' => $va_info['related']['fields']
+							'indexing_info' => $va_info['related']['fields'] ?? null
 						);
 
 						if ($vb_index_labels) {
@@ -2177,7 +2177,7 @@ if (!$for_current_value_reindex) {
 											'relationship_type_id' => $vn_rel_type_id,
 											'field_nums' => $va_label_field_nums,
 											'field_names' => $va_label_field_names,
-											'indexing_info' => $va_label_info['related']['fields']
+											'indexing_info' => $va_label_info['related']['fields'] ?? null
 										);
 									}
 								}
@@ -2446,7 +2446,7 @@ if (!$for_current_value_reindex) {
 						
 						$vs_join = "INNER JOIN {$vs_right_table} AS {$vs_alias} ON ({$vs_alias}.{$va_key_spec['left_key']} = {$vs_prev_alias}.{$va_key_spec['right_key']}".$vs_rel_type_res_sql;
 
-						if ($va_key_spec['left_table_num'] || $va_key_spec['right_table_num']) {
+						if (($va_key_spec['left_table_num'] ?? null) || ($va_key_spec['right_table_num'] ?? null)) {
 							if ($va_key_spec['right_table_num']) {
 								$vs_join .= " AND {$vs_prev_alias}.{$va_key_spec['right_table_num']} = ".Datamodel::getTableNum($vs_right_table);
 								$vs_t = $vs_left_table;
@@ -2469,9 +2469,9 @@ if (!$for_current_value_reindex) {
 					$va_joins[] = $vs_join;
 
 				} elseif ($va_rel = Datamodel::getOneToManyRelations($vs_left_table, $vs_right_table)) {
-					$vs_t = $va_rel['many_table'];
+					$vs_t = $va_rel['many_table'] ?? null;
 					
-					$vs_many = Datamodel::primaryKey($va_rel['many_table']);
+					$vs_many = Datamodel::primaryKey($va_rel['many_table'] ?? null);
 					if (isset($va_field_names[$vs_many] )) { unset($va_flds[$va_field_names[$vs_many]]); }
 					$va_flds[$va_field_names[$vs_many] = "{$vs_alias}.{$vs_many}"] = true;
 					

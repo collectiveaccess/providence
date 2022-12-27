@@ -2368,7 +2368,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		foreach($va_placements as $vn_placement_id => $va_placement) {
 			$vs_bundle_proc = preg_replace("!^(ca_attribute_|{$table}\.)!", '', $va_placement['bundle_name']);
 			$vs_label = ($vs_label = ($t_instance->getDisplayLabel($table.'.'.$vs_bundle_proc))) ? $vs_label : $va_placement['bundle_name'];
-			if(is_array($va_placement['settings']['label'])){
+			if(is_array($va_placement['settings']['label'] ?? null)){
 				$va_tmp = caExtractValuesByUserLocale(array($va_placement['settings']['label']));
 				if ($vs_user_set_label = array_shift($va_tmp)) {
 					$vs_label = "{$vs_label} (<em>{$vs_user_set_label}</em>)";
@@ -2510,7 +2510,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				}
 				
 				if($vn_placement_id === 0) {
-					$t_screen->addPlacement($vs_bundle, $vs_bundle.($vn_i + 1), $va_settings[$vn_placement_id], $vn_i + 1, array('user_id' => $po_request->getUserID(), 'additional_settings' => $va_available_bundles[$vs_bundle]['settings']));
+					$t_screen->addPlacement($vs_bundle, $vs_bundle.($vn_i + 1), $va_settings[$vn_placement_id] ?? null, $vn_i + 1, array('user_id' => $po_request->getUserID(), 'additional_settings' => $va_available_bundles[$vs_bundle]['settings'] ?? null));
 					if ($t_screen->numErrors()) {
 						$this->errors = $t_screen->errors;
 						return false;

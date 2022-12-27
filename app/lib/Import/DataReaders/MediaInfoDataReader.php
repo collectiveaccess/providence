@@ -135,9 +135,10 @@ class MediaInfoDataReader extends BaseXMLDataReader {
 			if (!is_array($va_output) || !sizeof($va_output)) { return null; }
 			$xml = join("\n", $va_output);
 			
-			if(!($this->opo_xml = @DOMDocument::loadXML($xml))) { return false;}
+			$dom = new DOMDocument();
+			if(!($this->opo_xml = @$dom->loadXML($xml))) { return false;}
 		} elseif($str = caGetOption('fromString', $pa_options, null))  {
-			if(!($this->opo_xml = @DOMDocument::loadXML($str))) { return false;}
+			if(!($this->opo_xml = @$dom->loadXML($str))) { return false;}
 		} else {
 			return false;
 		}

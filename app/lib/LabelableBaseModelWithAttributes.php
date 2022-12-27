@@ -3284,7 +3284,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		$vb_return_for_bundle =  (isset($pa_options['returnAsInitialValuesForBundle']) && $pa_options['returnAsInitialValuesForBundle']) ? true : false;
 		
-		$t_rel = Datamodel::getInstanceByTableName($vs_group_rel_table);
+		$t_rel = Datamodel::getInstanceByTableName($vs_role_rel_table);
 		
 		$o_db = $this->getDb();
 		
@@ -3345,7 +3345,6 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	*
 	*
 	 * @param array $pa_role_ids
-	 * @param array $pa_effective_dates
 	 * @param array $pa_options Supported options are:
 	 *		user_id - if set, only user roles owned by the specified user_id will be added
 	 */ 
@@ -3400,7 +3399,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 				}
 			}
 			if (!$this->removeUserRoles($va_role_ids_to_remove)) { return false; }
-			if (!$this->addUserRoles($pa_role_ids, $pa_effective_dates)) { return false; }
+			if (!$this->addUserRoles($pa_role_ids)) { return false; }
 		}
 		return true;
 	}
@@ -3419,7 +3418,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		$va_current_roles = $this->getUserRoles();
 		
 		foreach($pa_role_ids as $vn_role_id) {
-			if (!isset($va_current_roles[$vn_role_id]) && $va_current_roles[$vn_role_id]) { continue; }
+			if (!isset($va_current_roles[$vn_role_id]) || !($va_current_roles[$vn_role_id] ?? null)) { continue; }
 			
 			if ($t_rel->load(array($vs_pk => $vn_id, 'role_id' => $vn_role_id))) {
 				$t_rel->delete(true);

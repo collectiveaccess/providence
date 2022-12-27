@@ -6490,7 +6490,7 @@ if (!$vb_batch) {
 
 					$vs_display_label = $va_row[$vs_label_display_field];
 
-					if (!$va_rels[$vs_sort_key][$vn_id]) {
+					if (!($va_rels[$vs_sort_key][$vn_id] ?? null)) {
 						$va_rels[$vs_sort_key][$vn_id] = $qr_res->getRow();
 					}
 
