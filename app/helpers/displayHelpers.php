@@ -3122,7 +3122,7 @@ jQuery(document).ready(function() {
 			}
 			$va_item['relation_id'] = (int)$va_item['relation_id'] ;
 			
-			$va_initial_values[] = array_merge(
+			$va_initial_values[$va_item['relation_id']] = array_merge(
 				$va_item,
 				array(
 					'label' => $vs_display
