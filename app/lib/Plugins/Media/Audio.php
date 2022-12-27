@@ -186,13 +186,13 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 	public function divineFileFormat($filepath) {
 		$ID3 = new getID3();
 		$info = $ID3->analyze($filepath);
-		if (($info['fileformat'] == 'riff') && (!isset($info['video']))) {
+		if ((($info['fileformat'] ?? null) == 'riff') && (!isset($info['video']))) {
 			if (isset($info['audio']['dataformat']) && ($info['audio']['dataformat'] == 'wav')) {
 				$info['mime_type'] = 'audio/x-wav';
 			}
 		}
-		if (
-		    ($info['fileformat'] == 'quicktime') && 
+		if ( 
+		    (($info['fileformat'] ?? null) == 'quicktime') && 
 		    ($info['audio']['codec'] == 'Fraunhofer MPEG Layer-III alias') &&
 		    ($info['video']['resolution_x'] == 0) && 
 		    ($info['video']['resolution_y'] == 0)
@@ -200,10 +200,10 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		    // Quicktime-wrapped MP3
 			$info['mime_type'] = 'audio/mpeg';
 		}
-		if (in_array(strtolower(trim($info["mime_type"])), ['audio/wave', 'audio/wav', 'audio/x-wave'], true)) {
+		if (in_array(strtolower(trim($info["mime_type"] ?? null)), ['audio/wave', 'audio/wav', 'audio/x-wave'], true)) {
 			$info["mime_type"] = 'audio/x-wav';
 		}
-		if (($info["mime_type"]) && isset($this->info["IMPORT"][$info["mime_type"]]) && $this->info["IMPORT"][$info["mime_type"]]) {
+		if (($info["mime_type"] ?? null) && isset($this->info["IMPORT"][$info["mime_type"]]) && $this->info["IMPORT"][$info["mime_type"]]) {
 			$this->handle = $this->ohandle = $info;
 			$this->metadata = $info;	// populate with getID3 data because it's handy
 			return $info["mime_type"];
@@ -729,7 +729,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 	public function mimetype2typename($mimetype) {
-		return $this->typenames[$mimetype];
+		return $this->typenames[$mimetype] ?? null;
 	}
 	# ------------------------------------------------
 	public function reset() {
@@ -790,7 +790,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 <?php
 						if(is_array($captions)) {
 							foreach($captions as $locale_id => $caption_track) {
-								print '<track kind="captions" src="'.$caption_track['url'].'" srclang="'.substr($caption_track["locale_code"], 0, 2).'" label="'.$caption_track['locale'].'" default>';	
+								print '<track kind="captions" src="'.$caption_track['url'].'" srclang="'.substr($caption_track["locale_code"] ?? null, 0, 2).'" label="'.$caption_track['locale'].'" default>';	
 							}
 						}
 ?>

@@ -796,7 +796,8 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		
 		$vb_we_set_transaction = false;
 		if (!$this->inTransaction()) {
-			$this->setTransaction($o_trans = new Transaction($this->getDb()));
+			$o_trans = new Transaction($this->getDb());
+			$this->setTransaction($o_trans);
 			$vb_we_set_transaction = true;
 		} else {
 			$o_trans = $this->getTransaction();

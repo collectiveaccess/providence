@@ -189,22 +189,22 @@ foreach($va_plugins as $vs_plugin_name => $va_plugin_info){
 				<td><?= $vs_plugin_name; ?></td>
 				<td><?php 
 					print $va_plugin_info['description']; 
-					if (is_array($va_plugin_info['errors']) && sizeof($va_plugin_info['errors'])) {
+					if (is_array($va_plugin_info['errors'] ?? null) && sizeof($va_plugin_info['errors'])) {
 						print '<div style="color:red;">'.join('<br/>', $va_plugin_info['errors']).'</div>';
 					}
-					if (is_array($va_plugin_info['warnings']) && sizeof($va_plugin_info['warnings'])) {
+					if (is_array($va_plugin_info['warnings'] ?? null) && sizeof($va_plugin_info['warnings'])) {
 						print '<div style="color:GoldenRod;">'.join('<br/>', $va_plugin_info['warnings']).'</div>';
 					}
-					if (is_array($va_plugin_info['notices']) && sizeof($va_plugin_info['notices'])) {
+					if (is_array($va_plugin_info['notices'] ?? null) && sizeof($va_plugin_info['notices'])) {
 						print '<div style="color:green;">'.join('<br/>', $va_plugin_info['notices']).'</div>';
 					}
 				?></td>
 				<td>
 <?php
-	if((boolean)$va_plugin_info['available']){
+	if((bool)($va_plugin_info['available'] ?? false)){
 		print "<span style=\"color:green\">"._t("Available")."</span>";
 	} else {
-		if((boolean)$va_plugin_info['unused']){
+		if((bool)($va_plugin_info['unused'] ?? false)){
 			print "<span style=\"color:GoldenRod;\">"._t("Not used")."</span>";
 		} else {
 			print "<span style=\"color:red;text-decoration:underline;\">"._t("Not available")."</span>";
@@ -244,22 +244,22 @@ foreach($va_plugins as $vs_plugin_name => $va_plugin_info){
 				<td><?= $vs_plugin_name; ?></td>
 				<td><?php 
 					print $va_plugin_info['description']; 
-					if (is_array($va_plugin_info['errors']) && sizeof($va_plugin_info['errors'])) {
+					if (is_array($va_plugin_info['errors'] ?? null) && sizeof($va_plugin_info['errors'])) {
 						print '<div style="color:red;">'.join('<br/>', $va_plugin_info['errors']).'</div>';
 					}
-					if (is_array($va_plugin_info['warnings']) && sizeof($va_plugin_info['warnings'])) {
+					if (is_array($va_plugin_info['warnings'] ?? null) && sizeof($va_plugin_info['warnings'])) {
 						print '<div style="color:GoldenRod;">'.join('<br/>', $va_plugin_info['warnings']).'</div>';
 					}
-					if (is_array($va_plugin_info['notices']) && sizeof($va_plugin_info['notices'])) {
+					if (is_array($va_plugin_info['notices'] ?? null) && sizeof($va_plugin_info['notices'])) {
 						print '<div style="color:green;">'.join('<br/>', $va_plugin_info['notices']).'</div>';
 					}
 				?></td>
 				<td>
 <?php
-	if((boolean)$va_plugin_info['available']){
+	if((bool)($va_plugin_info['available'] ?? false)){
 		print "<span style=\"color:green\">"._t("Available")."</span>";
 	} else {
-		if((boolean)$va_plugin_info['unused']){
+		if((bool)($va_plugin_info['unused'] ?? false)){
 			print "<span style=\"color:GoldenRod;\">"._t("Not used")."</span>";
 		} else {
 			print "<span style=\"color:red;text-decoration:underline;\">"._t("Not available")."</span>";
@@ -301,19 +301,19 @@ foreach($va_barcode_components as $vs_component_name => $va_component_info){
 				<td><?= $va_component_info['name']; ?></td>
 				<td><?php 
 					print $va_component_info['description']; 
-					if (is_array($va_component_info['errors']) && sizeof($va_component_info['errors'])) {
+					if (is_array($va_component_info['errors'] ?? null) && sizeof($va_component_info['errors'])) {
 						print '<div style="color:red;">'.join('<br/>', $va_component_info['errors']).'</div>';
 					}
-					if (is_array($va_component_info['warnings']) && sizeof($va_component_info['warnings'])) {
+					if (is_array($va_component_info['warnings'] ?? null) && sizeof($va_component_info['warnings'])) {
 						print '<div style="color:GoldenRod;">'.join('<br/>', $va_component_info['warnings']).'</div>';
 					}
 				?></td>
 				<td>
 <?php
-	if((boolean)$va_component_info['available']){
+	if((bool)($va_component_info['available'] ?? false)){
 		print "<span style=\"color:green\">"._t("Available")."</span>";
 	} else {
-		if((boolean)$va_component_info['unused']){
+		if((bool)($va_component_info['unused'] ?? false)){
 			print "<span style=\"color:GoldenRod;\">"._t("Not used")."</span>";
 		} else {
 			print "<span style=\"color:red;text-decoration:underline;\">"._t("Not available")."</span>";
@@ -353,10 +353,10 @@ foreach($va_plugins as $vs_plugin_name => $va_plugin_info){
 				<td><?= $vs_plugin_name; ?></td>
 				<td><?php 
 					print $va_plugin_info['description']; 
-					if (is_array($va_plugin_info['errors']) && sizeof($va_plugin_info['errors'])) {
+					if (is_array($va_plugin_info['errors'] ?? null) && sizeof($va_plugin_info['errors'])) {
 						print '<div style="color:red;">'.join('<br/>', $va_plugin_info['errors']).'</div>';
 					}
-					if (is_array($va_plugin_info['warnings']) && sizeof($va_plugin_info['warnings'])) {
+					if (is_array($va_plugin_info['warnings'] ?? null) && sizeof($va_plugin_info['warnings'])) {
 						print '<div style="color:GoldenRod;">'.join('<br/>', $va_plugin_info['warnings']).'</div>';
 					}
 				?></td>
@@ -405,19 +405,19 @@ foreach($va_plugins as $vs_plugin_name => $va_plugin_info){
 				<td><?= $vs_plugin_name; ?></td>
 				<td><?php 
 					print $va_plugin_info['description']; 
-					if (is_array($va_plugin_info['errors']) && sizeof($va_plugin_info['errors'])) {
+					if (is_array($va_plugin_info['errors'] ?? null) && sizeof($va_plugin_info['errors'])) {
 						print '<div style="color:red;">'.join('<br/>', $va_plugin_info['errors']).'</div>';
 					}
-					if (is_array($va_plugin_info['warnings']) && sizeof($va_plugin_info['warnings'])) {
+					if (is_array($va_plugin_info['warnings'] ?? null) && sizeof($va_plugin_info['warnings'])) {
 						print '<div style="color:GoldenRod;">'.join('<br/>', $va_plugin_info['warnings']).'</div>';
 					}
 				?></td>
 				<td>
 <?php
-	if((boolean)$va_plugin_info['available']){
+	if((bool)($va_plugin_info['available'] ?? false)){
 		print "<span style=\"color:green\">"._t("Available")."</span>";
 	} else {
-		if((boolean)$va_plugin_info['unused']){
+		if((bool)($va_plugin_info['unused'] ?? false)){
 			print "<span style=\"color:GoldenRod;\">"._t("Not used")."</span>";
 		} else {
 			print "<span style=\"color:red;text-decoration:underline;\">"._t("Not available")."</span>";

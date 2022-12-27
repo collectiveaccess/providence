@@ -84,10 +84,10 @@ class MediaProcessingSettings {
 	# ---------------------------------------------------
 	public function getAcceptedMediaTypes() {
 		if ($this->opa_table_settings) {
-			return $this->opa_table_settings['MEDIA_ACCEPT'];
+			return $this->opa_table_settings['MEDIA_ACCEPT'] ?? null;
 		} else {
 			if($this->opo_config_settings) {
-				return $this->opa_config_settings_as_array['MEDIA_ACCEPT'];
+				return $this->opa_config_settings_as_array['MEDIA_ACCEPT'] ?? null;
 			}
 		}
 		return null;
@@ -97,10 +97,10 @@ class MediaProcessingSettings {
 	public function canAccept($ps_mimetype) {
 		$vs_media_type = null;
 		if ($this->opa_table_settings) {
-			$vs_media_type = $this->opa_table_settings['MEDIA_ACCEPT'][$ps_mimetype];
+			$vs_media_type = $this->opa_table_settings['MEDIA_ACCEPT'][$ps_mimetype] ?? null;
 		} else {
 			if($this->opo_config_settings) {
-				$vs_media_type = $this->opa_config_settings_as_array['MEDIA_ACCEPT'][$ps_mimetype];
+				$vs_media_type = $this->opa_config_settings_as_array['MEDIA_ACCEPT'][$ps_mimetype] ?? null;
 			}
 		}
 		return $vs_media_type;
@@ -126,10 +126,10 @@ class MediaProcessingSettings {
 	public function getMediaTypeInfo($ps_media_type) {
 		$va_media_type_info = null;
 		if ($this->opa_table_settings) {
-			$va_media_type_info = $this->opa_table_settings['MEDIA_TYPES'][$ps_media_type];
+			$va_media_type_info = $this->opa_table_settings['MEDIA_TYPES'][$ps_media_type] ?? null;
 		} else {
 			if($this->opo_config_settings) {
-				$va_media_type_info = $this->opa_config_settings_as_array['MEDIA_TYPES'][$ps_media_type];
+				$va_media_type_info = $this->opa_config_settings_as_array['MEDIA_TYPES'][$ps_media_type] ?? null;
 			}
 		}
 		return $va_media_type_info;

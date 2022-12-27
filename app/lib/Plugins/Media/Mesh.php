@@ -492,7 +492,7 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 		
 		$c = 0;
 		while((($line = trim(fgets($r_rp), "\n")) !== false) && ($c < 100)) {
-			if ($line[0] === '#') { continue; }
+			if (($line[0] ?? null) === '#') { continue; }
 			$toks = preg_split('![ ]+!', preg_replace("![\n\r\t]+!", "", $line));
 			
 			if (in_array($toks[0], ['v', 'vn']) && (sizeof($toks) >= 4) && is_numeric($toks[1]) && is_numeric($toks[2]) && is_numeric($toks[3])) {

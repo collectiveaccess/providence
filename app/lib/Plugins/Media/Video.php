@@ -210,21 +210,21 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 		// first try mediainfo
 		if($mimetype = caMediaInfoGuessFileFormat($filepath)) {
-			if($this->info["IMPORT"][$mimetype]) {
+			if($this->info["IMPORT"][$mimetype] ?? null) {
 				return $mimetype;
 			}
 		}
 
 		// then getID3
 		if($mimetype = caGetID3GuessFileFormat($filepath)) {
-			if($this->info["IMPORT"][$mimetype]) {
+			if($this->info["IMPORT"][$mimetype] ?? null) {
 				return $mimetype;
 			}
 		}
 
 		// lastly, OggParser
 		if($mimetype = caOggParserGuessFileFormat($filepath)) {
-			if($this->info["IMPORT"][$mimetype]) {
+			if($this->info["IMPORT"][$mimetype] ?? null) {
 				return $mimetype;
 			}
 		}
@@ -238,8 +238,8 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 	 */
 	public function get($property) {
 		if ($this->media_metadata) {
-			if ($this->info["PROPERTIES"][$property]) {
-				return $this->properties[$property];
+			if ($this->info["PROPERTIES"][$property] ?? null) {
+				return $this->properties[$property] ?? null;
 			} else {
 				return '';
 			}
@@ -252,8 +252,8 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 	 *
 	 */
 	public function set($property, $value) {
-		if ($this->media_metadata) {
-			if ($this->info["PROPERTIES"][$property]) {
+		if ($this->media_metadata ?? null) {
+			if ($this->info["PROPERTIES"][$property] ?? null) {
 				switch($property) {
 					default:
 						if ($this->info["PROPERTIES"][$property] == 'W') {
@@ -309,8 +309,8 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				
 				// Set properties for framerate and starting timecode
 				$o_tc = new TimecodeParser();
-				$o_tc->setTimebase($framerate = trim(str_replace("fps", "", $media_metadata['VIDEO']['Frame rate'])));
-				$o_tc->parse($media_metadata['OTHER']['Time code of first frame']);
+				$o_tc->setTimebase($framerate = trim(str_replace("fps", "", $media_metadata['VIDEO']['Frame rate']?? null)));
+				$o_tc->parse($media_metadata['OTHER']['Time code of first frame']?? null);
 				$this->properties['timecode_offset'] = (int)$o_tc->getSeconds();
 				$this->properties['framerate'] = $framerate;
 
@@ -338,24 +338,24 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			// getID3 sometimes reports the wrong width and height in the resolution_x and resolution_y indices for FLV files, but does
 			// report correct values in the 'meta' block. So for FLV only we try to take values from the 'meta' block first.
 			if (($this->media_metadata["mime_type"] == 'video/x-flv') && is_array($this->media_metadata['meta']) && is_array($this->media_metadata['meta']['onMetaData'])) {
-				$w = $this->media_metadata['meta']['onMetaData']['width'];
-				$h = $this->media_metadata['meta']['onMetaData']['height'];
+				$w = $this->media_metadata['meta']['onMetaData']['width'] ?? null;
+				$h = $this->media_metadata['meta']['onMetaData']['height'] ?? null;
 			} else {
 				if ($this->media_metadata['mime_type'] == 'video/ogg') {
-					$w = $this->media_metadata['theora']['width'];
-					$h = $this->media_metadata['theora']['height'];
+					$w = $this->media_metadata['theora']['width'] ?? null;
+					$h = $this->media_metadata['theora']['height'] ?? null;
 				}
 			}
 			if (!$w || !$h) {
-				$w = $this->media_metadata["video"]["resolution_x"];
-				$h = $this->media_metadata["video"]["resolution_y"];
+				$w = $this->media_metadata["video"]["resolution_x"] ?? null;
+				$h = $this->media_metadata["video"]["resolution_y"] ?? null;
 			}
 			if (!$w || !$h) {
 				// maybe it's stuck in a stream?
-				if (is_array($this->media_metadata["video"]["streams"])) {
+				if (is_array($this->media_metadata["video"]["streams"] ?? null)) {
 					foreach($this->media_metadata["video"]["streams"] as $key => $stream_info) {
-						$w = $this->media_metadata["video"]["streams"][$key]["resolution_x"];
-						$h = $this->media_metadata["video"]["streams"][$key]["resolution_y"];
+						$w = $this->media_metadata["video"]["streams"][$key]["resolution_x"] ?? null;
+						$h = $this->media_metadata["video"]["streams"][$key]["resolution_y"] ?? null;
 
 						if ($w > 0 && $h > 0) {
 							break;
@@ -377,7 +377,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$this->properties["height"] = $h;
 
 			$this->properties["mimetype"] = $this->media_metadata["mime_type"];
-			$this->properties["typename"] = $this->typenames[$this->properties["mimetype"]] ? $this->typenames[$this->properties["mimetype"]] : "Unknown";
+			$this->properties["typename"] = isset($this->typenames[$this->properties["mimetype"]]) ? $this->typenames[$this->properties["mimetype"]] : _t("Unknown");
 
 			$this->properties["duration"] = $this->media_metadata["playtime_seconds"];
 
@@ -398,12 +398,12 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 					$this->properties["type_specific"] = array();
 
-					$this->properties["title"] = 		$this->media_metadata["GENERAL"]["Complete name"];
+					$this->properties["title"] = 		$this->media_metadata["GENERAL"]["Complete name"] ?? null;
 					$this->properties["author"] = 		"";
 					$this->properties["copyright"] = 	"";
 					$this->properties["description"] = 	"";
 
-					$bitrate = preg_replace("/[\D]/", '', $this->media_metadata['VIDEO']['Bit rate']);
+					$bitrate = preg_replace("/[\D]/", '', $this->media_metadata['VIDEO']['Bit rate'] ?? null);
 					$this->properties["bandwidth"] = array("min" => 0, "max" => $bitrate);
 					break;
 				case 'video/x-ms-asf':
@@ -413,12 +413,12 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 					$this->properties["type_specific"] = array("asf" => $this->media_metadata["asf"]);
 
-					$this->properties["title"] = 		$this->media_metadata["asf"]["comments"]["title"];
-					$this->properties["author"] = 		$this->media_metadata["asf"]["comments"]["artist"];
-					$this->properties["copyright"] = 	$this->media_metadata["asf"]["comments"]["copyright"];
-					$this->properties["description"] = 	$this->media_metadata["asf"]["comments"]["comment"];
+					$this->properties["title"] = 		$this->media_metadata["asf"]["comments"]["title"] ?? null;
+					$this->properties["author"] = 		$this->media_metadata["asf"]["comments"]["artist"] ?? null;
+					$this->properties["copyright"] = 	$this->media_metadata["asf"]["comments"]["copyright"] ?? null;
+					$this->properties["description"] = 	$this->media_metadata["asf"]["comments"]["comment"] ?? null;
 
-					$this->properties["bandwidth"] = array("min" => 0, "max" => $this->media_metadata["bitrate"]);
+					$this->properties["bandwidth"] = array("min" => 0, "max" => $this->media_metadata["bitrate"] ?? null);
 					break;
 				case 'video/quicktime':
 				case 'video/mp4':
@@ -433,7 +433,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$this->properties["copyright"] = 	"";
 					$this->properties["description"] = 	"";
 
-					$this->properties["bandwidth"] = array("min" => $this->media_metadata["bitrate"], "max" => $this->media_metadata["bitrate"]);
+					$this->properties["bandwidth"] = array("min" => $this->media_metadata["bitrate"] ?? null, "max" => $this->media_metadata["bitrate"] ?? null);
 					break;
 				case 'video/ogg':
 					$this->properties["has_video"] = (isset($this->media_metadata["theora"]) ? 1 : 0);
@@ -446,13 +446,13 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$this->properties["copyright"] = 	"";
 					$this->properties["description"] = 	"";
 
-					$this->properties["bandwidth"] = array("min" => $this->media_metadata["bitrate"], "max" => $this->media_metadata["bitrate"]);
+					$this->properties["bandwidth"] = array("min" => $this->media_metadata["bitrate"] ?? null, "max" => $this->media_metadata["bitrate"] ?? null);
 					break;
 				case 'application/x-shockwave-flash':
 					$this->properties["has_video"] = (($this->media_metadata["header"]["frame_width"] > 0) ? 1 : 0);
 					$this->properties["has_audio"] = 1;
 
-					$this->properties["type_specific"] = array("header" => $this->media_metadata["header"]);
+					$this->properties["type_specific"] = array("header" => $this->media_metadata["header"] ?? null);
 
 					$this->properties["title"] = 		"";
 					$this->properties["author"] = 		"";

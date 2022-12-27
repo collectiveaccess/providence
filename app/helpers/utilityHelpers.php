@@ -1141,7 +1141,7 @@ function caFileIsIncludable($ps_file) {
 			if(isset($pa_options['html']) && $pa_options['html']) {
 				$va_buf[] = array($va_line['file'], $va_line['class'], $va_line['function'], $va_line['line']);
 			} else {
-				$va_buf[] = $va_line['file'].':'.($va_line['class'] ? $va_line['class'].':' : '').$va_line['function'].'@'.$va_line['line']."<br/>\n";
+				$va_buf[] = $va_line['file'].':'.($va_line['class'] ?? '').':'.$va_line['function'].'@'.$va_line['line']."<br/>\n";
 			}
 		}
 

@@ -59,7 +59,8 @@ class BaseRepresentationRelationship extends BaseRelationshipModel {
 		if ($this->inTransaction()) {
 			$o_trans = $this->getTransaction();
 		} else {
-			$this->setTransaction($o_trans = new Transaction($this->getDb()));
+			$o_trans = new Transaction($this->getDb());
+			$this->setTransaction($o_trans);
 			$vb_we_set_transaction = true;
 		}
 		

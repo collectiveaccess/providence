@@ -408,7 +408,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			if(!caGetOption('hard', $pa_options, false)) { // only applies if we don't hard-delete
 				$vb_we_set_transaction = false;
 				if (!$this->inTransaction()) {
-					$this->setTransaction($o_t = new Transaction($this->getDb()));
+					$o_t = new Transaction($this->getDb());
+					$this->setTransaction($o_t);
 					$vb_we_set_transaction = true;
 				}
 				$this->set('set_code', $this->get('set_code') . '_' . time());
@@ -430,7 +431,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	public function duplicate($pa_options=null) {
 		$vb_we_set_transaction = false;
 		if (!$this->inTransaction()) {
-			$this->setTransaction($o_trans = new Transaction($this->getDb()));
+			$o_trans = new Transaction($this->getDb());
+			$this->setTransaction($o_trans);
 			$vb_we_set_transaction = true;
 		} else {
 			$o_trans = $this->getTransaction();
@@ -457,7 +459,6 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				foreach($va_items as $vn_item_id => $va_item) {
 					$t_item = new ca_set_items();
 					$t_item->setTransaction($o_trans);
-					$t_item->setMode(ACCESS_WRITE);
 					$va_item['set_id'] = $t_dupe->getPrimaryKey();
 					$t_item->set($va_item);
 					$t_item->insert();

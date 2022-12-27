@@ -502,7 +502,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ----------------------------------------------------------
 	public function read($filepath, $mimetype="", $options=null) {
-		if (!isset($this->handle) && ($filepath !== ($this->filepath ?? null))) {
+		if (!isset($this->handle) || ($filepath !== ($this->filepath ?? null))) {
 			
 			if(strpos($filepath, ':') && (caGetOSFamily() != OS_WIN32)) {
 				$this->postError(1610, _t("Filenames with colons (:) are not allowed"), "WLPlugImageMagick->read()");

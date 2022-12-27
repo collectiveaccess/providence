@@ -748,7 +748,8 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 	public function duplicate($pa_options=null) {
 		$vb_we_set_transaction = false;
 		if (!$this->inTransaction()) {
-			$this->setTransaction($o_t = new Transaction($this->getDb()));
+			$o_t = new Transaction($this->getDb());
+			$this->setTransaction($o_t);
 			$vb_we_set_transaction = true;
 		} else {
 			$o_t = $this->getTransaction();

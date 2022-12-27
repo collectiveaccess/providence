@@ -4759,13 +4759,9 @@ if (!$vb_batch) {
 										$t_rep = $this->addRepresentation(null, $vn_rep_type_id, $vals['locale_id'], $vals['status'], $vals['access'], null, array_merge($vals, ['name' => $vals['rep_label']]), array('original_filename' => $vs_original_name, 'returnRepresentation' => true, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vn_type_id, 'mapping_id' => $vn_object_representation_mapping_id));	// $vn_type_id = *relationship* type_id (as opposed to representation type)
 									}
                                     
-                                    if ($this->numErrors()) {
-                                        $po_request->addActionErrors($this->errors(), $vs_f, 'new_'.$va_matches[1]);
-                                    } else {
-                                        if ($t_rep && is_array($pa_options['existingRepresentationMap'] ?? null)) { 
-                                            $pa_options['existingRepresentationMap'][$vs_path] = $t_rep->getPrimaryKey();
-                                        }
-                                    }
+									if ($t_rep && is_array($pa_options['existingRepresentationMap'] ?? null)) { 
+										$pa_options['existingRepresentationMap'][$vs_path] = $t_rep->getPrimaryKey();
+									}
                                 }
                             }
 						}
@@ -7953,7 +7949,8 @@ $pa_options["display_form_field_tips"] = true;
 		unset($_REQUEST['form_timestamp']);
 		
 		if (!($vb_already_in_transaction = $this->inTransaction())) {
-			$this->setTransaction($o_t = new Transaction($this->getDb()));
+			$o_t = new Transaction($this->getDb());
+			$this->setTransaction($o_t);
 		}
 		
 		$vn_old_type_id = $this->getTypeID();

@@ -402,7 +402,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 						break;
 					# ----------------
 					case "fill_box":
-						$crop_from = $pa_parameters["crop_from"];
+						$crop_from = $pa_parameters["crop_from"] ?? null;
 						if (!in_array($crop_from, array('center', 'north_east', 'north_west', 'south_east', 'south_west', 'random'))) {
 							$crop_from = '';
 						}
@@ -612,7 +612,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		}
 		if (!$pb_write_all_pages) {	
 			$this->properties["mimetype"] = $ps_mimetype;
-			$this->properties["filesize"] = filesize($ps_filepath.".".$vs_ext);
+			$this->properties["filesize"] = file_exists($ps_filepath.".".$vs_ext) ?filesize($ps_filepath.".".$vs_ext) : null;
 			$this->properties["typename"] = $this->typenames[$ps_mimetype];
 		}
 		return $pb_write_all_pages ? $va_files : array_shift($va_files);
@@ -695,11 +695,11 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 	public function mimetype2extension($ps_mimetype) {
-		return $this->info["EXPORT"][$ps_mimetype];
+		return $this->info["EXPORT"][$ps_mimetype] ?? null;
 	}
 	# ------------------------------------------------
 	public function mimetype2typename($ps_mimetype) {
-		return $this->typenames[$ps_mimetype];
+		return $this->typenames[$ps_mimetype] ?? null;
 	}
 	# ------------------------------------------------
 	public function extension2mimetype($ps_extension) {
@@ -720,14 +720,14 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		$this->errors = array();
 		$this->handle = $this->ohandle;
 		$this->properties = array(
-			"width" => $this->ohandle["width"],
-			"height" => $this->ohandle["height"],
-			"mimetype" => $this->ohandle["mimetype"],
+			"width" => $this->ohandle["width"] ?? null,
+			"height" => $this->ohandle["height"] ?? null,
+			"mimetype" => $this->ohandle["mimetype"] ?? null,
 			"quality" => 75,
-			"pages" => $this->ohandle["pages"],
+			"pages" => $this->ohandle["pages"] ?? null,
 			"page" => 1,
 			"resolution" => 72,
-			"filesize" => $this->ohandle["filesize"],
+			"filesize" => $this->ohandle["filesize"] ?? null,
 			"typename" => "PDF"
 		);
 	}
@@ -745,7 +745,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		}
 		
 		if(preg_match("/\.pdf\$/", $ps_url)) {
-			if ($vs_poster_frame_url =	$pa_options["poster_frame_url"]) {
+			if ($vs_poster_frame_url = ($pa_options["poster_frame_url"] ?? null)) {
 				$vs_poster_frame = "<img src='{$vs_poster_frame_url}'/ alt='"._t("Click to download document")." title='"._t("Click to download document")."''>";
 			} else {
 				$vs_poster_frame = _t("View PDF document");

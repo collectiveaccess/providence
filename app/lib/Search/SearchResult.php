@@ -2551,7 +2551,7 @@ class SearchResult extends BaseObject {
 			// is blank
 			$default_value = ca_metadata_elements::getElementDefaultValue($va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : $va_path_components['field_name']);
 			
-			if (($pa_options['returnWithStructure'] ?? null) && $pa_options['returnBlankValues']) {
+			if (($pa_options['returnWithStructure'] ?? null) && ($pa_options['returnBlankValues'] ?? null)) {
 				$va_return_values[(int)$vn_id][null][null][$e = $va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : $va_path_components['field_name']] = $default_value;
 				if($include_value_ids) {
 					$va_return_values[(int)$vn_id][null][null]["{$e}_value_id"] = null;
