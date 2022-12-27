@@ -1439,7 +1439,7 @@ if (!$for_current_value_reindex) {
 								if (method_exists($t_rel, 'getAttributesByElement') && is_array($va_attributes = $t_rel->getAttributesByElement($vs_element_code, array('row_id' => $va_row_to_reindex['field_row_id'])))) {
 									foreach($va_attributes as $vo_attribute) {
 										foreach($vo_attribute->getValues() as $vo_value) {
-											$vs_value_to_index = $vo_value->getDisplayValue($vn_list_id);
+											$vs_value_to_index = $vo_value->getDisplayValue();
 
 											$va_additional_indexing = $vo_value->getDataForSearchIndexing();
 											if(is_array($va_additional_indexing) && (sizeof($va_additional_indexing) > 0)) {

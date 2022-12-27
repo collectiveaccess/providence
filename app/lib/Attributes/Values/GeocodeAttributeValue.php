@@ -387,6 +387,8 @@ class GeocodeAttributeValue extends AttributeValue implements IAttributeValue {
 			array('mustNotBeBlank')
 		);
 		
+		$vs_point = $vn_angle = null;
+		
 		if (is_array($ps_value) && $ps_value['_uploaded_file']) {
 			$o_kml = new KmlParser($ps_value['tmp_name']);
 			$va_placemarks = $o_kml->getPlacemarks();

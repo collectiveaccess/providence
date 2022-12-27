@@ -1512,11 +1512,11 @@ class BaseModel extends BaseObject {
 					case (FT_HISTORIC_DATETIME):
 					case (FT_DATE):
 					case (FT_HISTORIC_DATE):
-						if (($this->DIRECT_DATETIMES) || ($pa_options["SET_DIRECT_DATE"])) {
+						if (($this->DIRECT_DATETIMES) || ($pa_options["SET_DIRECT_DATE"] ?? false)) {
 							$this->_FIELD_VALUES[$vs_field] = $vm_value;
 							$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
 						} else {
-							if (!$vm_value && $this->FIELDS[$vs_field]["IS_NULL"]) {
+							if (!$vm_value && ($this->FIELDS[$vs_field]["IS_NULL"] ?? false)) {
 								if ($vs_cur_value) {
 									$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
 								}
@@ -1557,10 +1557,10 @@ class BaseModel extends BaseObject {
 
 						break;
 					case (FT_TIME):
-						if (($this->DIRECT_TIMES) || ($pa_options["SET_DIRECT_TIME"])) {
+						if (($this->DIRECT_TIMES) || ($pa_options["SET_DIRECT_TIME"] ?? false)) {
 							$this->_FIELD_VALUES[$vs_field] = $vm_value;
 						} else {
-							if (!$vm_value && $this->FIELDS[$vs_field]["IS_NULL"]) {
+							if (!$vm_value && ($this->FIELDS[$vs_field]["IS_NULL"] ?? false)) {
 								if ($vs_cur_value) {
 									$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
 								}
@@ -1606,7 +1606,7 @@ class BaseModel extends BaseObject {
 								$this->postError(1100,_t("Invalid direct date values"),"BaseModel->set()", $this->tableName().'.'.$vs_field);
 							}
 						} else {
-							if (!$vm_value && $this->FIELDS[$vs_field]["IS_NULL"]) {
+							if (!$vm_value && ($this->FIELDS[$vs_field]["IS_NULL"] ?? false)) {
 								if ($vn_start_date || $vn_end_date) {
 									$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
 								}
@@ -1644,7 +1644,7 @@ class BaseModel extends BaseObject {
 						$vs_start_field_name = $this->getFieldInfo($vs_field,"START");
 						$vs_end_field_name = $this->getFieldInfo($vs_field,"END");
 
-						if (($this->DIRECT_TIMES) || ($pa_options["SET_DIRECT_TIMES"])) {
+						if (($this->DIRECT_TIMES) || ($pa_options["SET_DIRECT_TIMES"] ?? false)) {
 							if (is_array($vm_value) && (sizeof($vm_value) == 2) && ($vm_value[0] <= $vm_value[1])) {
 								if ($this->_FIELD_VALUES[$vs_start_field_name] != $vm_value[0]) {
 									$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
