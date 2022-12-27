@@ -347,6 +347,7 @@
 		$o_reader = caGetOption('reader', $pa_options, null);
 		$o_trans = caGetOption('transaction', $pa_options, null);
 		$ps_refinery_name = caGetOption('refineryName', $pa_options, null);
+		$delimiter = caGetOption('delimiter', $pa_options, null);
 		
 		$apply_import_item_settings = $pa_item['settings']["{$ps_refinery_name}_applyImportItemSettings"];
 		
@@ -377,7 +378,7 @@
 						foreach($va_attrs_i as $vs_k => $vs_v) {
 							// BaseRefinery::parsePlaceholder may return an array if the input format supports repeated values (as XML does)
 						
-							$va_vals = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $pn_c, array('delimiter' => caGetOption('delimiter', $pa_options, null), 'reader' => $o_reader, 'applyImportItemSettings' => $apply_import_item_settings));
+							$va_vals = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $pn_c, array('delimiter' => $delimiter, 'reader' => $o_reader, 'applyImportItemSettings' => $apply_import_item_settings));
 
 							if (sizeof($va_vals) > 1) { $vb_is_repeating = true; }
 						
@@ -419,7 +420,7 @@
 									if ($vn_c >= $vn_num_repeats) { break; }
 								}
 							} else {
-								if ($vm_val_to_import = trim((is_array($vm_v = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $pn_c, array('delimiter' => caGetOption('delimiter', $pa_options, null), 'returnAsString' => true, 'reader' => $o_reader, 'applyImportItemSettings' => $apply_import_item_settings)))) ? join(" ", $vm_v) : $vm_v)) {
+								if ($vm_val_to_import = trim((is_array($vm_v = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $pn_c, array('delimiter' => $delimiter, 'returnAsString' => true, 'reader' => $o_reader, 'applyImportItemSettings' => $apply_import_item_settings)))) ? join(" ", $vm_v) : $vm_v)) {
 									if(!file_exists($vs_path = $vs_prefix.$vm_val_to_import) && ($va_candidates = array_filter($va_prefix_file_list, function($v) use ($vs_path) { return preg_match("!^{$vs_path}!", $v); })) && is_array($va_candidates) && sizeof($va_candidates)){
 										$vs_path = array_shift($va_candidates);
 									}
@@ -435,7 +436,7 @@
 					foreach($va_attrs as $vs_k => $vs_v) {
 						// BaseRefinery::parsePlaceholder may return an array if the input format supports repeated values (as XML does)
 						
-						$va_vals = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $pn_c, array('delimiter' => caGetOption('delimiter', $pa_options, null), 'reader' => $o_reader, 'applyImportItemSettings' => $apply_import_item_settings));
+						$va_vals = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $pn_c, array('delimiter' => $delimiter, 'reader' => $o_reader, 'applyImportItemSettings' => $apply_import_item_settings));
 
 						if (sizeof($va_vals) > 1) { $vb_is_repeating = true; }
 						
@@ -464,7 +465,7 @@
 								if ($vn_c >= $vn_num_repeats) { break; }
 							}
 						} else {
-							if ($vm_val_to_import = trim((is_array($vm_v = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $pn_c, array('delimiter' => caGetOption('delimiter', $pa_options, null), 'returnAsString' => true, 'reader' => $o_reader, 'applyImportItemSettings' => $apply_import_item_settings)))) ? join(" ", $vm_v) : $vm_v)) {
+							if ($vm_val_to_import = trim((is_array($vm_v = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $pn_c, array('delimiter' => $delimiter, 'returnAsString' => true, 'reader' => $o_reader, 'applyImportItemSettings' => $apply_import_item_settings)))) ? join(" ", $vm_v) : $vm_v)) {
 								if(!file_exists($vs_path = $vs_prefix.$vm_val_to_import) && ($va_candidates = array_filter($va_prefix_file_list, function($v) use ($vs_path) { return preg_match("!^{$vs_path}!", $v); })) && is_array($va_candidates) && sizeof($va_candidates)){
 									$vs_path = array_shift($va_candidates);
 								}
@@ -472,16 +473,16 @@
 							}
 						}
 					}
-				} else {
-					if ($vm_val_to_import = trim((is_array($vm_v = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $pn_c, array('returnDelimitedValueAt' => $pn_c, 'returnAsString' => true, 'delimiter' => caGetOption('delimiter', $pa_options, null), 'reader' => $o_reader, 'applyImportItemSettings' => $apply_import_item_settings)))) ? join(" ", $vm_v) : $vm_v)) {
+				} elseif (is_array($va_vals_to_import = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $pn_c, array('returnDelimitedValueAt' => $pn_c, 'returnAsString' => false, 'delimiter' => $delimiter, 'reader' => $o_reader, 'applyImportItemSettings' => $apply_import_item_settings)))) {
+					foreach($va_vals_to_import as $vm_val_to_import) {
 						if(!file_exists($vs_path = $vs_prefix.$vm_val_to_import) && ($va_candidates = array_filter($va_prefix_file_list, function($v) use ($vs_path) { return preg_match("!^{$vs_path}!", $v); })) && is_array($va_candidates) && sizeof($va_candidates)){
 							$vs_path = array_shift($va_candidates);
 						}
-						
+					
 						if (in_array($vs_element_code, array_merge(caGetPreferredLabelNameKeyList(), caGetIdnoNameKeyList()))) {
 							$va_attr_vals[$vs_element_code] = $vs_path;
 						} else {
-							$va_attr_vals[$vs_element_code][$vs_element_code] = $vs_path;
+							$va_attr_vals[$vs_element_code][] = $vs_path;
 						}
 					}
 				}
@@ -799,17 +800,8 @@
 		$vs_dest_table = $va_group_dest[0];
 		$va_group_dest[] = $vs_terminal;
 		
-		if (isset($pa_item['settings']['formatWithTemplate']) && strlen($pa_item['settings']['formatWithTemplate'])) {
-			// Transform mapped value with template, if specified. This provides a way to rewrite values prior to use by the refinery.
-			if($o_reader && is_array($tags = caGetTemplateTags($pa_item['settings']['formatWithTemplate']))) {
-				foreach($tags as $t) {
-					$pa_source_data[$t] = $o_reader->get($t);
-				}
-			}
-			$pm_value = DisplayTemplateParser::processTemplate($pa_item['settings']['formatWithTemplate'], $pa_source_data);
-		} else {
-			$pm_value = (!isset($pa_source_data[$pa_item['source']]) && $o_reader) ? caProcessImportItemSettingsForValue($o_reader->get($pa_item['source'], array('returnAsArray'=> true)), $pa_item['settings']) : $pa_source_data[$pa_item['source']];
-		}
+		$pm_value = (!isset($pa_source_data[$pa_item['source']]) && $o_reader) ? caProcessImportItemSettingsForValue($o_reader->get($pa_item['source'], array('returnAsArray'=> true)), $pa_item['settings']) : $pa_source_data[$pa_item['source']];
+
 		if (is_array($pm_value)) {
 			if (isset($pm_value[$pn_value_index])) {
 				$va_delimited_items = $pm_value[$pn_value_index];	// for input formats that support repeating values
@@ -1021,7 +1013,7 @@
 		
 						// Set attributes
 						//      $va_attr_vals = directly attached attributes for item
-						if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']["{$ps_refinery_name}_attributes"], $pa_source_data, $pa_item, $pn_value_index, array('delimiter' => $va_delimiter, 'log' => $o_log, 'reader' => $o_reader, 'refineryName' => $ps_refinery_name)))) {
+						if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']["{$ps_refinery_name}_attributes"], $pa_source_data, $pa_item, null, array('delimiter' => $va_delimiter, 'log' => $o_log, 'reader' => $o_reader, 'refineryName' => $ps_refinery_name)))) {
 							$va_val = array_merge($va_val, $va_attr_vals);
 							unset($va_val[$vs_label_fld]);
 						}
@@ -1086,7 +1078,7 @@
 								$vn_item_id = DataMigrationUtils::getObjectID($va_val['preferred_labels'] ? $va_val['preferred_labels'] : $vs_item, $va_val['parent_id'], $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
 								break;
 							case 'ca_object_lots':
-								if (isset($va_val['_status'])) {
+								if (isset($va_val['_status']) && strlen($va_val['_status'])) {
 									$va_attr_vals['lot_status_id'] = $va_val['_status'];
 								}
 								unset($va_val['_status']);
@@ -1455,11 +1447,13 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	 *
 	 * @param mixed $pm_value
 	 * @param array $pa_item_settings
+	 * @param array $options Options include:
+	 *		skipRegularExpressions = don't apply configured regular expressions. [Default is false]
 	 *
 	 * @return mixed
 	 */
-	function caProcessImportItemSettingsForValue($pm_value, $pa_item_settings) {
-		if (isset($pa_item_settings['applyRegularExpressions']) && is_array($pa_item_settings['applyRegularExpressions'])) {
+	function caProcessImportItemSettingsForValue($pm_value, $pa_item_settings, array $options=null) {
+		if (!caGetOption('skipRegularExpressions', $options, false) && isset($pa_item_settings['applyRegularExpressions']) && is_array($pa_item_settings['applyRegularExpressions'])) {
 			if(is_array($pa_item_settings['applyRegularExpressions'])) {
 				if (is_array($pm_value)) {
 					foreach($pm_value as $vn_i => $vs_value) {

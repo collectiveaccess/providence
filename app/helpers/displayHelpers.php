@@ -2629,6 +2629,17 @@ jQuery(document).ready(function() {
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Determines if template includes link tags (<l>).
+	 *
+	 * @param string $template
+	 
+	 * @return bool
+	 */
+	function caTemplateHasLinks($template) {
+		return preg_match('!<l>!', $template);
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
 	 * Returns date/time as a localized string for display, subject to the settings in the app/conf/datetime.conf configuration
 	 *
 	 * @param null|int $pn_timestamp Unix timestamp for date/time to localize; if omitted defaults to current date and time.

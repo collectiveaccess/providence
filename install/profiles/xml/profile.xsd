@@ -45,14 +45,14 @@
       <xs:maxLength value="30"/>
     </xs:restriction>
   </xs:simpleType>
- 
+
   <xs:simpleType name="elementSpecType">
     <xs:restriction base="xs:string">
       <xs:pattern value="[\p{L}0-9_\.]+"/>
       <xs:minLength value="1"/>
       <xs:maxLength value="100"/>
     </xs:restriction>
-  </xs:simpleType> 
+  </xs:simpleType>
 
   <xs:simpleType name="codeType">
     <xs:restriction base="xs:string">
@@ -86,7 +86,7 @@
       <xs:enumeration value="DEBG"/>
     </xs:restriction>
   </xs:simpleType>
-  
+
   <xs:simpleType name="mdAlertTriggerTypes">
     <xs:restriction base="xs:string">
       <xs:enumeration value="Date"/>
@@ -108,7 +108,7 @@
       <xs:enumeration value="edit"/>
     </xs:restriction>
   </xs:simpleType>
-  
+
   <xs:simpleType name="acPermissionListNotifications">
     <xs:restriction base="xs:string">
       <xs:enumeration value="notification"/>
@@ -197,7 +197,7 @@
             <xs:element name="description" type="xs:string" minOccurs="0" maxOccurs="1"/>
           </xs:sequence>
           <xs:attribute name="locale" type="localeType" use="required"/>
-          <xs:attribute name="preferred" type="booleanType" />
+          <xs:attribute name="preferred" type="booleanType"/>
         </xs:complexType>
       </xs:element>
     </xs:sequence>
@@ -422,7 +422,7 @@
       </xs:element>
     </xs:sequence>
   </xs:complexType>
-  
+
   <xs:complexType name="trigger">
     <xs:sequence>
       <xs:element name="settings" minOccurs="0" maxOccurs="1">
@@ -446,7 +446,6 @@
     <xs:attribute name="metadataElement" type="elementSpecType" use="optional"/>
     <xs:attribute name="metadataElementFilter" type="xs:string" use="optional"/>
   </xs:complexType>
-  
 
   <xs:complexType name="userinterfaceScreens">
     <xs:sequence>
@@ -454,7 +453,7 @@
         <xs:complexType>
           <xs:sequence>
             <xs:element name="labels" type="screenLabels" minOccurs="1" maxOccurs="1"/>
-            
+
             <xs:element name="userAccess" minOccurs="0" maxOccurs="1">
               <xs:complexType>
                 <xs:sequence>
@@ -468,21 +467,20 @@
                 </xs:sequence>
               </xs:complexType>
             </xs:element>
-            
+
             <xs:element name="groupAccess" minOccurs="0" maxOccurs="1">
               <xs:complexType>
                 <xs:sequence>
                   <xs:element name="permission" minOccurs="1" maxOccurs="unbounded">
                     <xs:complexType>
                       <xs:attribute name="group" type="xs:string" use="required"/>
-                      <xs:attribute name="access" type="acPermissionList"
-                        use="required"/>
+                      <xs:attribute name="access" type="acPermissionList" use="required"/>
                     </xs:complexType>
                   </xs:element>
                 </xs:sequence>
               </xs:complexType>
             </xs:element>
-            
+
             <xs:element name="roleAccess" minOccurs="0" maxOccurs="1">
               <xs:complexType>
                 <xs:sequence>
@@ -495,7 +493,7 @@
                 </xs:sequence>
               </xs:complexType>
             </xs:element>
-            
+
             <xs:element name="typeRestrictions" minOccurs="0" maxOccurs="1">
               <xs:complexType>
                 <xs:sequence>
@@ -625,12 +623,11 @@
       <xs:element name="triggers" minOccurs="0" maxOccurs="unbounded">
         <xs:complexType>
           <xs:sequence>
-            <xs:element name="trigger" type="trigger" minOccurs="1"
-              maxOccurs="unbounded"/>
+            <xs:element name="trigger" type="trigger" minOccurs="1" maxOccurs="unbounded"/>
           </xs:sequence>
         </xs:complexType>
       </xs:element>
-      
+
       <xs:element name="typeRestrictions" minOccurs="0" maxOccurs="1">
         <xs:complexType>
           <xs:sequence>
@@ -669,7 +666,7 @@
           </xs:sequence>
         </xs:complexType>
       </xs:element>
-      
+
       <xs:element name="roleAccess" minOccurs="0" maxOccurs="1">
         <xs:complexType>
           <xs:sequence>
@@ -682,11 +679,95 @@
           </xs:sequence>
         </xs:complexType>
       </xs:element>
-      
+
     </xs:sequence>
     <xs:attribute name="code" type="elementCodeType" use="required"/>
     <xs:attribute name="type" type="xs:string" use="required"/>
   </xs:complexType>
+
+  <xs:complexType name="metadataDictionaryEntry">
+    <xs:sequence>
+
+      <!-- settings -->
+
+      <xs:element name="settings" minOccurs="1" maxOccurs="1">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="setting" minOccurs="1" maxOccurs="unbounded">
+              <xs:complexType>
+                <xs:simpleContent>
+                  <xs:extension base="xs:string">
+                    <xs:attribute name="name" type="xs:string" use="required"/>
+                    <xs:attribute name="locale" type="localeType" use="optional"/>
+                  </xs:extension>
+                </xs:simpleContent>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+
+      <!-- end settings -->
+
+      <!-- rules -->
+
+      <xs:element name="rules" minOccurs="0" maxOccurs="1">
+        <xs:complexType>
+          <xs:sequence>
+
+            <!-- rule definition -->
+
+            <xs:element name="rule" minOccurs="1" maxOccurs="unbounded">
+              <xs:complexType>
+                <xs:sequence>
+                  <!-- expression -->
+                  <xs:element name="expression" type="xs:string" minOccurs="1" maxOccurs="1"/>
+
+                  <!-- settings -->
+                  <xs:element name="settings" minOccurs="1" maxOccurs="1">
+                    <xs:complexType>
+                      <xs:sequence>
+                        <xs:element name="setting" minOccurs="1" maxOccurs="unbounded">
+                          <xs:complexType>
+                            <xs:simpleContent>
+                              <xs:extension base="xs:string">
+                                <xs:attribute name="name" type="xs:string" use="required"/>
+                                <xs:attribute name="locale" type="localeType" use="optional"/>
+                              </xs:extension>
+                            </xs:simpleContent>
+                          </xs:complexType>
+                        </xs:element>
+                      </xs:sequence>
+                    </xs:complexType>
+                  </xs:element>
+                  <!-- end settings -->
+
+                </xs:sequence>
+
+                <!-- rule attributes -->
+                <xs:attribute name="code" type="codeType" use="required"/>
+                <xs:attribute name="level" type="mdDictRuleLevelList" use="required"/>
+              </xs:complexType>
+            </xs:element>
+
+            <!-- end rule definition -->
+
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+
+      <!-- end rules -->
+
+    </xs:sequence>
+
+    <!-- entry attributes -->
+    <xs:attribute name="bundle" type="bundleType" use="required"/>
+    <xs:attribute name="table" type="xs:string" use="required"/>
+    <xs:attribute name="deleted" type="booleanType" use="optional"/>
+
+
+  </xs:complexType>
+
 
   <!-- PROFILE DEFINITION -->
 
@@ -759,106 +840,6 @@
           </xs:complexType>
         </xs:element>
 
-        <!-- MD DICTIONARY -->
-
-        <xs:element name="metadataDictionary" minOccurs="0" maxOccurs="1">
-          <xs:complexType>
-            <xs:sequence>
-
-              <!-- entry definition -->
-
-              <xs:element name="entry" minOccurs="1" maxOccurs="unbounded">
-                <xs:complexType>
-                  <xs:sequence>
-
-                    <!-- settings -->
-
-                    <xs:element name="settings" minOccurs="1" maxOccurs="1">
-                      <xs:complexType>
-                        <xs:sequence>
-                          <xs:element name="setting" minOccurs="1" maxOccurs="unbounded">
-                            <xs:complexType>
-                              <xs:simpleContent>
-                                <xs:extension base="xs:string">
-                                  <xs:attribute name="name" type="xs:string" use="required"/>
-                                  <xs:attribute name="locale" type="localeType" use="optional"/>
-                                </xs:extension>
-                              </xs:simpleContent>
-                            </xs:complexType>
-                          </xs:element>
-                        </xs:sequence>
-                      </xs:complexType>
-                    </xs:element>
-
-                    <!-- end settings -->
-
-                    <!-- rules -->
-
-                    <xs:element name="rules" minOccurs="0" maxOccurs="1">
-                      <xs:complexType>
-                        <xs:sequence>
-
-                          <!-- rule definition -->
-
-                          <xs:element name="rule" minOccurs="1" maxOccurs="unbounded">
-                            <xs:complexType>
-                              <xs:sequence>
-                                <!-- expression -->
-                                <xs:element name="expression" type="xs:string" minOccurs="1"
-                                  maxOccurs="1"/>
-
-                                <!-- settings -->
-                                <xs:element name="settings" minOccurs="1" maxOccurs="1">
-                                  <xs:complexType>
-                                    <xs:sequence>
-                                      <xs:element name="setting" minOccurs="1" maxOccurs="unbounded">
-                                        <xs:complexType>
-                                          <xs:simpleContent>
-                                            <xs:extension base="xs:string">
-                                              <xs:attribute name="name" type="xs:string"
-                                                use="required"/>
-                                              <xs:attribute name="locale" type="localeType"
-                                                use="optional"/>
-                                            </xs:extension>
-                                          </xs:simpleContent>
-                                        </xs:complexType>
-                                      </xs:element>
-                                    </xs:sequence>
-                                  </xs:complexType>
-                                </xs:element>
-                                <!-- end settings -->
-
-                              </xs:sequence>
-
-                              <!-- rule attributes -->
-                              <xs:attribute name="code" type="codeType" use="required"/>
-                              <xs:attribute name="level" type="mdDictRuleLevelList" use="required"/>
-                            </xs:complexType>
-                          </xs:element>
-
-                          <!-- end rule definition -->
-
-                        </xs:sequence>
-                      </xs:complexType>
-                    </xs:element>
-
-                    <!-- end rules -->
-
-                  </xs:sequence>
-
-                  <!-- entry attributes -->
-                  <xs:attribute name="bundle" type="bundleType" use="required"/>
-                  <xs:attribute name="table" type="xs:string" use="required"/>
-                  <xs:attribute name="deleted" type="booleanType" use="optional"/>
-
-                </xs:complexType>
-              </xs:element>
-
-              <!-- end entry def -->
-
-            </xs:sequence>
-          </xs:complexType>
-        </xs:element>
 
         <!-- USER INTERFACES -->
 
@@ -913,14 +894,15 @@
                         </xs:sequence>
                       </xs:complexType>
                     </xs:element>
-                    
+
                     <xs:element name="roleAccess" minOccurs="0" maxOccurs="1">
                       <xs:complexType>
                         <xs:sequence>
                           <xs:element name="permission" minOccurs="1" maxOccurs="unbounded">
                             <xs:complexType>
                               <xs:attribute name="role" type="xs:string" use="required"/>
-                              <xs:attribute name="access" type="acPermissionListNoNone" use="required"/>
+                              <xs:attribute name="access" type="acPermissionListNoNone"
+                                use="required"/>
                             </xs:complexType>
                           </xs:element>
                         </xs:sequence>
@@ -1143,7 +1125,7 @@
                         </xs:sequence>
                       </xs:complexType>
                     </xs:element>
-                    
+
                     <xs:element name="roleAccess" minOccurs="0" maxOccurs="1">
                       <xs:complexType>
                         <xs:sequence>
@@ -1243,7 +1225,7 @@
                         </xs:sequence>
                       </xs:complexType>
                     </xs:element>
-                    
+
                     <xs:element name="roleAccess" minOccurs="0" maxOccurs="1">
                       <xs:complexType>
                         <xs:sequence>
@@ -1305,13 +1287,22 @@
             </xs:sequence>
           </xs:complexType>
         </xs:element>
-        
+
         <!-- METADATA ALERTS -->
-        
+
         <xs:element name="metadataAlerts" minOccurs="0" maxOccurs="1">
           <xs:complexType>
             <xs:sequence>
               <xs:element name="metadataAlert" type="metadataAlert" minOccurs="0"
+                maxOccurs="unbounded"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+
+        <xs:element name="metadataDictionary" minOccurs="0" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="entry" type="metadataDictionaryEntry" minOccurs="0"
                 maxOccurs="unbounded"/>
             </xs:sequence>
           </xs:complexType>

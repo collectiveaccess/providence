@@ -221,7 +221,7 @@ final class ConfigurationExporter {
 		$vn_exclude_lists_larger_than = $this->opo_config->get('configuration_export_exclude_lists_larger_than');
 
 		while($qr_lists->nextRow()) {
-			// skip excluded lists (in diff exports only)
+			// skip excluded lists entirely (diff exports only)
 			if($this->opn_modified_after && is_array($va_exclude_lists) && (sizeof($va_exclude_lists) > 0)) {
 				if(in_array($qr_lists->get('list_code'), $va_exclude_lists)) {
 					continue;
@@ -276,7 +276,10 @@ final class ConfigurationExporter {
 				$this->printStatus(_t("Exporting changes for list %1", $qr_lists->get("list_code")));
 			}
 
-			if($vo_items) {
+			// skip items in excluded lists
+			if(is_array($va_exclude_lists) && (sizeof($va_exclude_lists) > 0) && (in_array($qr_lists->get('list_code'), $va_exclude_lists))) {
+				$vo_list->appendChild($this->opo_dom->createElement("items"));
+			} elseif($vo_items) {
 				$vo_list->appendChild($vo_items);
 			}
 

@@ -4423,7 +4423,6 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		} else {
 			// Don't try to process files when no file is actually set
 			if(isset($this->_SET_FILES[$ps_field]['tmp_name']) && (isUrl($this->_SET_FILES[$ps_field]['tmp_name']) || is_readable($this->_SET_FILES[$ps_field]['tmp_name']))) { 
-				$o_tq = new TaskQueue();
 				$o_media_proc_settings = new MediaProcessingSettings($this, $ps_field);
 		
 				//
@@ -5143,6 +5142,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 							$vs_sql .= " ".$vs_content_field_name." = ".$this->_FIELD_VALUES[$vs_content_field_name].",";
 						}
 					
+						// Index text locations in PDF
 						if(is_array($va_locs = $m->getExtractedTextLocations())) {
 							MediaContentLocationIndexer::clear($this->tableNum(), $this->getPrimaryKey());
 							foreach($va_locs as $vs_content => $va_loc_list) {
@@ -5151,6 +5151,21 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 								}
 							}
 							MediaContentLocationIndexer::write();
+						}
+						
+						// Queue transcription task
+						if(caTranscribeAVMedia($input_mimetype)) {	// TODO: check mimetypes
+							$o_tq->addTask(
+								'mediaTranscription',
+								array(
+									"TABLE" => $this->tableName(), "FIELD" => $ps_field,
+									"PK" => $this->primaryKey(), "PK_VAL" => $this->getPrimaryKey(),
+								
+									"INPUT_MIMETYPE" => $input_mimetype,
+								
+									"OPTIONS" => []
+								),
+								["priority" => 200, "entity_key" => md5(join("/", [$this->tableName(), $ps_field, $this->getPrimaryKey()])), "row_key" => join("/", array($this->tableName(), $this->getPrimaryKey())), 'user_id' => $AUTH_CURRENT_USER_ID]);	
 						}
 					} else {
 						# error - invalid media
@@ -9809,6 +9824,15 @@ $pa_options["display_form_field_tips"] = true;
 	public function removeRelationships($pm_rel_table_name_or_num, $pm_relationship_type_id=null, $pa_options=null) {
 		if (!($vn_row_id = $this->getPrimaryKey())) { return null; }
 		if(!($va_rel_info = $this->_getRelationshipInfo($pm_rel_table_name_or_num))) { return null; }
+		
+		// Is this a many-one? (Eg. ca_objects <= ca_object_lots)
+		if(sizeof($va_rel_info['path']) == 2) {
+			if(isset($va_rel_info['rel_keys']['many_table']) && ($va_rel_info['rel_keys']['many_table'] === $this->tableName()) && ($key = $va_rel_info['rel_keys']['many_table_field'])) {
+				$this->set($key, null);
+				return $this->update();
+			}
+		}
+		
 		$t_item_rel = $va_rel_info['t_item_rel'];
 		if (!method_exists($t_item_rel, "isRelationship") || !$t_item_rel->isRelationship()){ return false; }
 		$va_sql_params = array();
@@ -12209,9 +12233,11 @@ $pa_options["display_form_field_tips"] = true;
 			}, []);
 			if((is_array($ids) && sizeof($ids))) {
 				$ids = array_map(function($v) { return is_numeric($v) ? $v : ca_locales::codeToID($v); }, $ids);
-				foreach($pa_values['parent_id'] as $i => $v) {
-					if (isset($ids[$v[1]])) {
-						$pa_values['parent_id'][$i][1] = $ids[$v[1]];
+				if(is_array($pa_values['parent_id'])) {
+					foreach($pa_values['parent_id'] as $i => $v) {
+						if (isset($ids[$v[1]])) {
+							$pa_values['parent_id'][$i][1] = $ids[$v[1]];
+						}
 					}
 				}
 			}

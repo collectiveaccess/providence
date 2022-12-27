@@ -106,13 +106,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	# ------------------------------------------------------
 	public function __construct($id=null, ?array $options=null) {
 		parent::__construct($id, $options);	# call superclass constructor
-		
-		if ($pn_id) {
-			if ($this->_rowAsSearchResult = $this->makeSearchResult($this->tableName(), [$id])) {
-				$this->_rowAsSearchResult->nextHit();
-				$this->_rowAsSearchResult->doHighlighting($this->do_highlighting);
-			}
-		}
 		$this->initLabelDefinitions($options);
 	}
 	# ------------------------------------------------------
@@ -5855,6 +5848,7 @@ if (!$vb_batch) {
 			}
 			if ($vs_batch_mode == '_replace_') {			// remove all existing relationships and then add new ones
 				$this->removeRelationships($ps_bundle_name, caGetOption('restrict_to_relationship_types', $pa_settings, null), ['restrictToTypes' => caGetOption('restrict_to_types', $pa_settings, null)]);
+				$va_rel_items = [];
 			}
 		}
 		

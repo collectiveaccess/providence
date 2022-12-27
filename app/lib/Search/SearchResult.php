@@ -2250,6 +2250,12 @@ class SearchResult extends BaseObject {
 				
 				$vb_did_return_value = false;
 				$vb_return_value_id = ($va_path_components['components'][sizeof($va_path_components['components'])-1] === 'value_id');
+				$vb_return_source = ($va_path_components['components'][sizeof($va_path_components['components'])-1] === '__source__');
+				
+				if ($vb_return_source) {
+					$va_return_values[(int)$vn_id][] = $o_attribute->getValueSource();
+					continue;
+				}
 
 				foreach($va_values as $o_value) {
 					$vs_val_proc = null;
@@ -3875,7 +3881,8 @@ class SearchResult extends BaseObject {
 		usort($highlight_text, function($a, $b) {
 			return strlen($b) <=> strlen($a);
 		});
-		$content = $g_highlight_cache[$content] = preg_replace($z="/(?<![A-Za-z0-9])(".join('|', $highlight_text).")/i", "<span class=\"highlightText\">\\1</span>", $content);
+		$highlight_text = array_map(function($v) { return preg_quote($v, '/'); }, $highlight_text);
+		$content = $g_highlight_cache[$content] = preg_replace("/(?<![A-Za-z0-9])(".join('|', $highlight_text).")/i", "<span class=\"highlightText\">\\1</span>", $content);
 		
 		return $content;
 	}

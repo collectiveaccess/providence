@@ -1830,7 +1830,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$vs_idno = self::_applyConditionalOptions($vs_idno, $va_mapping_items, $vn_idno_mapping_item_id, $o_reader, $va_row, $va_row_with_replacements,
 					['skip' => []]
 				);
-				
 				if ($va_mapping_items[$vn_idno_mapping_item_id]['settings']['delimiter'] && $va_mapping_items[$vn_idno_mapping_item_id]['settings']['treatAsIdentifiersForMultipleRows']) {
 					$va_idnos_for_row = explode($va_mapping_items[$vn_idno_mapping_item_id]['settings']['delimiter'], $vs_idno);
 				}
@@ -2483,6 +2482,17 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									$vm_val = $vm_parsed_val;
 								}
 							}
+							
+							$vm_val = self::_applyCaseTransforms($vm_val, $va_item);
+							$vm_val = self::_applyDataTransforms($vm_val, $va_item);
+							
+							if ( isset( $va_item['settings']['applyRegularExpressions'] )
+							     && is_array( $va_item['settings']['applyRegularExpressions'] )
+							) {
+								$vm_val = self::_processAppliedRegexes( $o_reader, $va_item, $vn_i,
+									$va_item['settings']['applyRegularExpressions'], $vm_val, $va_row,
+									$va_row_with_replacements );
+							}
 
 							if ( $use_raw && isset( $va_item['settings']['formatWithTemplate'] )
 							     && strlen( $va_item['settings']['formatWithTemplate'] )
@@ -2511,29 +2521,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										$va_item['settings']['skipIfExpression'], $e->getMessage() ) );
 								}
 							}
-
-							if ( isset( $va_item['settings']['applyRegularExpressions'] )
-							     && is_array( $va_item['settings']['applyRegularExpressions'] )
-							) {
-								$vm_val = self::_processAppliedRegexes( $o_reader, $va_item, $vn_i,
-									$va_item['settings']['applyRegularExpressions'], $vm_val, $va_row,
-									$va_row_with_replacements );
-							}
-
-							// Run format with template to reflect regex changes
-							if ( ! $use_raw && isset( $va_item['settings']['formatWithTemplate'] )
-							     && strlen( $va_item['settings']['formatWithTemplate'] )
-							) {
-								$vm_val
-									= DisplayTemplateParser::processTemplate( $va_item['settings']['formatWithTemplate'],
-									array_replace( $va_row_with_replacements, array(
-										(string) $va_item['source'] => ca_data_importers::replaceValue( $vm_val,
-											$va_item, [ 'log' => $o_log, 'logReference' => $vs_idno ] )
-									) ), array( 'getFrom' => $o_reader ) );
-							}
-							
-							$vm_val = self::_applyCaseTransforms($vm_val, $va_item);
-							$vm_val = self::_applyDataTransforms($vm_val, $va_item);
 
 							$va_vals[ $vn_i ] = $vm_val;
 							if ( $o_reader->valuesCanRepeat() ) {
@@ -3386,6 +3373,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					if ($vs_table_name == $vs_subject_table) {		
 						foreach($va_content as $vn_i => $va_element_data) {
 							foreach($va_element_data as $vs_element => $va_element_content) {	
+								$vn_locale_id = caGetOption('_locale', $va_element_content, $mapping_default_locale_id);
+								
 								$o_log->logDebug(_t('Started insert of %1.%2 for idno %3 at %4 seconds [id=%3]', $vs_table_name, $vs_element, $vs_idno, $t->getTime(4), $t_subject->getPrimaryKey()));
 				
 								try {
@@ -3634,6 +3623,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						$o_log->logDebug(_t('Started insert of %1 for idno %2 at %3 seconds [id=%4]', $vs_table_name, $vs_idno, $t->getTime(4), $t_subject->getPrimaryKey()));
 				
 						foreach($va_content as $vn_i => $va_element_data) {
+								$vn_locale_id = caGetOption('_locale', $va_element_data, $mapping_default_locale_id);
+							
 						        // Importing tags?
 						        if ($vs_table_name === 'ca_item_tags') {
 						            if(isset($va_element_data['ca_item_tags']['tag'])) {
@@ -4224,37 +4215,40 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$skip = caGetOption('skip', $options, []. ['castTo' => 'array']);
 		$o_log = caGetOption('log', $options, null);
 		
+		$source = $mapping_items[$item_id]['source'];
+		
 		if (!in_array('default', $skip) && isset($mapping_items[$item_id]['settings']['default']) && strlen($mapping_items[$item_id]['settings']['default']) && !strlen($value)) {
-			$value = $mapping_items[$item_id]['settings']['default'];
+			$value = $row_with_replacements[$source] = $mapping_items[$item_id]['settings']['default'];
 		}
+		
 		if (!in_array('parseValue', $skip) && !is_array($value) && ($value[0] == '^') && preg_match("!^\^[^ ]+$!", $value)) {
 			// Parse placeholder when it's at the beginning of the value
 
 			if (!is_null($parsed_val = BaseRefinery::parsePlaceholder($value, $row_with_replacements, $mapping_items[$item_id], null, ['reader' => $o_reader, 'returnAsString' => true]))) {
-				$value = $parsed_val;
+				$value = $row_with_replacements[$source] = $parsed_val;
 			}
 		}
 		// Apply prefix/suffix *AFTER* setting default
 		if ($value && !in_array('prefix', $skip) && isset($mapping_items[$item_id]['settings']['prefix']) && strlen($mapping_items[$item_id]['settings']['prefix'])) {
-			$value = DisplayTemplateParser::processTemplate($mapping_items[$item_id]['settings']['prefix'], $row_with_replacements, ['getFrom' => $o_reader]).$value;
+			$value = $row_with_replacements[$source] =DisplayTemplateParser::processTemplate($mapping_items[$item_id]['settings']['prefix'], $row_with_replacements, ['getFrom' => $o_reader]).$value;
 		}
 		if ($value && !in_array('suffix', $skip) && isset($mapping_items[$item_id]['settings']['suffix']) && strlen($mapping_items[$item_id]['settings']['suffix'])) {
 			$value .= DisplayTemplateParser::processTemplate($mapping_items[$item_id]['settings']['suffix'], $row_with_replacements, ['getFrom' => $o_reader]);
+			$row_with_replacements[$source] = $value;
 		}
 		
 		if(!in_array('caseTransforms', $skip)) {
-			$value = self::_applyCaseTransforms($value, $mapping_items[$item_id]);
+			$value = $row_with_replacements[$source] = self::_applyCaseTransforms($value, $mapping_items[$item_id]);
 		}
 		if(!in_array('dataTransforms', $skip)) {
-			$value = self::_applyDataTransforms($value, $mapping_items[$item_id]);
+			$value = $row_with_replacements[$source] = self::_applyDataTransforms($value, $mapping_items[$item_id]);
 		}
 		
 		if (!in_array('applyRegularExpressions', $skip) && isset($mapping_items[$item_id]['settings']['applyRegularExpressions']) && is_array($mapping_items[$item_id]['settings']['applyRegularExpressions'])) {
-			$value = self::_processAppliedRegexes($o_reader, $mapping_items[$item_id], 0, $mapping_items[$item_id]['settings']['applyRegularExpressions'], $value, $row, $row_with_replacements);
+			$value = $row_with_replacements[$source] = self::_processAppliedRegexes($o_reader, $mapping_items[$item_id], 0, $mapping_items[$item_id]['settings']['applyRegularExpressions'], $value, $row, $row_with_replacements);
 		}
-		
 		if (!in_array('formatWithTemplate', $skip) && isset($mapping_items[$item_id]['settings']['formatWithTemplate']) && strlen($mapping_items[$item_id]['settings']['formatWithTemplate'])) {
-			$value = DisplayTemplateParser::processTemplate($mapping_items[$item_id]['settings']['formatWithTemplate'], $row_with_replacements, ['getFrom' => $o_reader]);
+			$value = $row_with_replacements[$source] = DisplayTemplateParser::processTemplate($mapping_items[$item_id]['settings']['formatWithTemplate'], $row_with_replacements, ['getFrom' => $o_reader]);
 		}
 		
 		return $value;
