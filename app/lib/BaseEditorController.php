@@ -2327,7 +2327,7 @@ class BaseEditorController extends ActionController {
 
 		$pa_annotations = $this->request->getParameter('save', pArray);
 
-		$va_annotation_ids = array();
+		$va_annotation_ids = [];
 		if (is_array($pa_annotations)) {
 			foreach($pa_annotations as $vn_i => $va_annotation) {
 				$vs_label = (isset($va_annotation['label']) && ($va_annotation['label'])) ? $va_annotation['label'] : '';

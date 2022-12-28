@@ -1901,7 +1901,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					initDataUrl: ".json_encode(caNavUrl($pa_options['request'], 'lookup', 'ListItem', 'GetHierarchyAncestorList')).",
 				
 					selectOnLoad : true,
-					browserWidth: ".(int)$va_width['dimension'].",
+					browserWidth: ".(int)($va_width['dimension'] ?? 670).",
 				
 					className: '".($vb_is_vertical_hier_browser ? 'hierarchyBrowserLevelVertical' : 'hierarchyBrowserLevel')."',
 					classNameContainer: '".($vb_is_vertical_hier_browser ? 'hierarchyBrowserContainerVertical' : 'hierarchyBrowserContainer')."',
