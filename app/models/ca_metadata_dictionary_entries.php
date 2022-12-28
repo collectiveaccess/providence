@@ -263,8 +263,8 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 	 *
 	 * @return array|null
 	 */
-	static public function getEntries() {
-		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }
+	static public function getEntries(?array $options=null) {
+		if (!($o_db = caGetOption('db', $options, null))) { $o_db = new Db(); }
 		
 		$t = new ca_metadata_dictionary_entries();
 		$qr = $o_db->query("
