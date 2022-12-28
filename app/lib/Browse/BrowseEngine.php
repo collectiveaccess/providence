@@ -1202,7 +1202,9 @@
 						$vb_is_relative_to_parent = (($va_facet_info['relative_to'] ?? false) && $this->_isParentRelative($va_facet_info['relative_to']));
 						
 						$va_row_ids = array_keys($va_row_ids);
-                            
+                        
+                        $t_rel_item = $t_item_rel = null;
+                        
                     	$va_wheres = [];
                         $va_sql_params = [];
 							$vs_relative_to_join = '';
@@ -2618,11 +2620,11 @@
 									}
 								}
 								
-								if (!is_array($va_restrict_to_types = $va_facet_info['restrict_to_types'])) { $va_restrict_to_types = array(); }
+								if (!is_array($va_restrict_to_types = ($va_facet_info['restrict_to_types'] ?? null))) { $va_restrict_to_types = array(); }
 								if(!is_array($va_restrict_to_types = $this->_convertTypeCodesToIDs($va_restrict_to_types, array('instance' => $t_rel_item)))) { $va_restrict_to_types = []; }
 								$va_restrict_to_types = array_filter($va_restrict_to_types, "strlen");
 			
-								if (!is_array($va_exclude_types = $va_facet_info['exclude_types'])) { $va_exclude_types = array(); }
+								if (!is_array($va_exclude_types = ($va_facet_info['exclude_types'] ?? null))) { $va_exclude_types = array(); }
 								if (!is_array($va_exclude_types = $this->_convertTypeCodesToIDs($va_exclude_types, array('instance' => $t_rel_item)))) { $va_exclude_types = []; }
 								$va_exclude_types = array_filter($va_exclude_types, "strlen");
 
