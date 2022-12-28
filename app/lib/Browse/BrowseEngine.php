@@ -3003,7 +3003,7 @@
 
 				foreach($va_facets as $vs_facet_name) {
 					$va_facet_info = $this->getInfoForFacet($vs_facet_name);
-					if (($va_facet_info['type'] === 'field') && ($va_facet_info['field'] === 'is_deaccessioned') && $pa_options['filterDeaccessionedRecords']) { continue; }
+					if (($va_facet_info['type'] === 'field') && (($va_facet_info['field'] ?? null) === 'is_deaccessioned') && ($pa_options['filterDeaccessionedRecords'] ?? null)) { continue; }
 					if (
 						$this->getFacet($vs_facet_name, array_merge($pa_options, array('checkAvailabilityOnly' => true)))
 					) {
@@ -5910,7 +5910,7 @@
 					if ($vb_is_element) {
 						$vn_element_id = $t_element->getPrimaryKey();
 
-						$vs_dir = (strtoupper($va_facet_info['sort']) === 'DESC') ? "DESC" : "ASC";
+						$vs_dir = (strtoupper($va_facet_info['sort'] ?? null) === 'DESC') ? "DESC" : "ASC";
 
 						$o_tep = new TimeExpressionParser();
 						

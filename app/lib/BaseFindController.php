@@ -230,7 +230,7 @@ class BaseFindController extends ActionController {
 					continue; 
 				}
 				
-				if ($t_instance->hasField($b = $tmp[1]) || $t_instance->hasField($b = $va_display_item['bundle_name'])) {
+				if ($t_instance->hasField($b = ($tmp[1] ?? null)) || $t_instance->hasField($b = ($va_display_item['bundle_name'] ?? null))) {
 					if ($tmp[0] === $va_display_item['bundle_name']) { $va_display_item['bundle_name'] = $this->ops_tablename.".{$b}"; }
 					if($t_instance->getFieldInfo($b, 'FIELD_TYPE') == FT_MEDIA) { // sorting media fields doesn't really make sense and can lead to sql errors
 						continue;

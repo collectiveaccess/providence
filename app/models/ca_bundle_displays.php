@@ -511,6 +511,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			
 			$t_user = new ca_users($pn_user_id);
 			while($qr_res->nextRow()) {
+				$vb_use_item_values = false;
 				$vs_bundle_name = $vs_bundle_name_proc = $qr_res->get('bundle_name');
 				$va_bundle_name = explode(".", $vs_bundle_name);
 				if (!isset($va_available_bundles[$vs_bundle_name]) && (sizeof($va_bundle_name) > 2)) {
@@ -527,7 +528,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				$placements[$placement_id]['allowEditing'] = $vb_user_can_edit;
 							
 				if (!$pb_settings_only) {
-					$t_placement->setSettingDefinitionsForPlacement($va_available_bundles[$vs_bundle_name_proc]['settings']);
+					$t_placement->setSettingDefinitionsForPlacement($va_available_bundles[$vs_bundle_name_proc]['settings'] ?? null);
 					$placements[$placement_id]['display'] = $va_available_bundles[$vs_bundle_name]['display'] ?? null;
 					$placements[$placement_id]['settingsForm'] = $t_placement->getHTMLSettingForm(array('id' => $vs_bundle_name.'_'.$placement_id, 'settings' => $va_settings, 'table' => $vs_subject_table));
 				} else {
@@ -580,7 +581,6 @@ if (!$pb_omit_editing_info) {
 								}
 							}
 
-							$vb_use_item_values = false;
 							switch($t_subject->getFieldInfo($va_bundle_name[1], 'DISPLAY_TYPE')) {
 								case 'DT_SELECT':
 									if ($vs_list_code = $t_subject->getFieldInfo($va_bundle_name[1], 'LIST')) {

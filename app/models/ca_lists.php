@@ -483,6 +483,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		if (!isset($pa_options['returnHierarchyLevels'])) { $pa_options['returnHierarchyLevels'] = false; }
 		if ((isset($pa_options['directChildrenOnly']) && $pa_options['directChildrenOnly'])) { $pa_options['returnHierarchyLevels'] = false; }
 	
+		$va_seen_locales = $va_items = [];
+		
 		$pn_start = caGetOption('start', $pa_options, 0);
 		$pn_limit = caGetOption('limit', $pa_options, null);
 		$pb_dont_cache = caGetOption('dontCache', $pa_options, false);
@@ -585,9 +587,6 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			";
 			//print $vs_sql;
 			$qr_res = $o_db->query($vs_sql, $va_params);
-			
-			$va_seen_locales = array();
-			$va_items = array();
 			
 			if ($pn_start > 0) { $qr_res->seek($pn_start); }
 			$vn_c = 0;
