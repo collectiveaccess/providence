@@ -2962,7 +2962,7 @@ class TimeExpressionParser {
 					$vs_before_qualifier = $va_died_qualifiers[0];
 				} else {
 					$va_before_qualifiers = $this->opo_language_settings->getList('beforeQualifier');
-					if ((isset($pa_options['beforeQualifier']) && $pa_options['beforeQualifier'] && in_array($pa_options['beforeQualifier'], $va_before_qualifiers)) {
+					if (isset($pa_options['beforeQualifier']) && $pa_options['beforeQualifier'] && in_array($pa_options['beforeQualifier'], $va_before_qualifiers)) {
 						$vs_before_qualifier = $pa_options['beforeQualifier'] ;
 					} else {
 						$vs_before_qualifier = $va_before_qualifiers[0];
