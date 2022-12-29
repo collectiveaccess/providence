@@ -1336,7 +1336,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$datatype = self::getElementDatatype($pm_element_code_or_id);
 		$types = self::getAttributeTypes();
 	
-		if (isset($types[$datatype]) && ($value = Attribute::getValueInstance($datatype, [], true))) {
+		if (isset($types[$datatype]) && ($value = \CA\Attributes\Attribute::getValueInstance($datatype, [], true))) {
 			$s = $value->sortField();
 			CompositeCache::save($pm_element_code_or_id, $s, 'ElementSortFields');
 			return $s;
@@ -1357,7 +1357,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
 
 		$datatype = self::getElementDatatype($pm_element_code_or_id);
-		if ($attr_value = Attribute::getValueInstance($datatype, [], true)) {
+		if ($attr_value = \CA\Attributes\Attribute::getValueInstance($datatype, [], true)) {
 			return $attr_value->sortableValue($value);
 		}
 		return null;
