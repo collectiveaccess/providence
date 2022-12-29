@@ -1561,21 +1561,21 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		
-		if (is_array($pa_options['limitToItemsWithID']) && sizeof($pa_options['limitToItemsWithID'])) {
+		if (is_array($pa_options['limitToItemsWithID'] ?? null) && sizeof($pa_options['limitToItemsWithID'])) {
 		    $pa_options['limitToItemsWithID'] = caMakeItemIDList($pm_list_name_or_id, $pa_options['limitToItemsWithID']);
 			// expand limit list to include parents of items that are included
 			$va_to_add = array();
 			foreach($va_list_items as $vn_item_id => $va_item) {
 				if (($vn_parent_id = $va_item['parent_id']) && in_array($vn_item_id, $pa_options['limitToItemsWithID'])) {
 					$va_to_add[$vn_parent_id] = true;
-					while($vn_parent_id = $va_list_items[$vn_parent_id]['parent_id']) {
-						if($va_list_items[$vn_parent_id]['parent_id']) { $va_to_add[$va_list_items[$vn_parent_id]['parent_id']] = true; }
+					while($vn_parent_id = ($va_list_items[$vn_parent_id]['parent_id'] ?? null)) {
+						if($va_list_items[$vn_parent_id]['parent_id'] ?? null) { $va_to_add[$va_list_items[$vn_parent_id]['parent_id']] = true; }
 					}
 				}
 			}	
 			$pa_options['limitToItemsWithID'] += array_keys($va_to_add);
 		}
-		if (is_array($pa_options['omitItemsWithID']) && sizeof($pa_options['omitItemsWithID'])) {
+		if (is_array($pa_options['omitItemsWithID'] ?? null) && sizeof($pa_options['omitItemsWithID'])) {
 		     $pa_options['omitItemsWithID'] = caMakeItemIDList($pm_list_name_or_id, $pa_options['omitItemsWithID']);
 		}
 		

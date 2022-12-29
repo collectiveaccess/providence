@@ -694,7 +694,7 @@ class TimeExpressionParser {
 				// Look for MYA dates
 				//
 				$va_peek = $this->peekToken(2);
-				if ($va_week && ($va_peek['type'] == TEP_TOKEN_MYA)) {
+				if ($va_peek && ($va_peek['type'] == TEP_TOKEN_MYA)) {
 					$va_dates['end'] = array(
 						'month' => 12, 'day' => 31, 'year' => intval($va_token['value']) * -1000000,
 						'hours' => null, 'minutes' => null, 'seconds' => null,

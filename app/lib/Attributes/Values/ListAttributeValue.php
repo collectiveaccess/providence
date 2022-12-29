@@ -593,7 +593,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 				$t_list = new ca_lists();
 				$vb_yes_was_set = false;
 				
-				if(!$pa_element_info['settings']['requireValue'] && is_array($pa_element_info['settings']['hideIfSelected___null__']) && sizeof($pa_element_info['settings']['hideIfSelected___null__'])) {
+				if(!($pa_element_info['settings']['requireValue'] ?? false) && is_array($pa_element_info['settings']['hideIfSelected___null__'] ?? null) && sizeof($pa_element_info['settings']['hideIfSelected___null__'])) {
 				    $va_hideif_for_null = $pa_element_info['settings']['hideIfSelected___null__'];
 				    foreach($va_hideif_for_null as $vs_key) {
                         $va_tmp = self::resolveHideIfSelectedKey($vs_key);
