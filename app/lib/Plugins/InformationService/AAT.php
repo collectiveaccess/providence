@@ -145,7 +145,8 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 			$vs_additional_filter = "$vs_additional_filter ;";
 		}
 		$vs_sparql_suffix = $pa_options['settings']['sparqlSuffix'] ?? null;
-		$vs_order_by = caGetOption( 'orderBy', $pa_options['settings'], 'Order');
+		if(!strlen($vs_order_by = caGetOption( 'orderBy', $pa_options['settings'], null))) { $vs_order_by = 'Order'; }
+		
 		$vs_query = urlencode( 'SELECT ?ID ?TermPrefLabel ?Parents ?ParentsFull {
 	?ID a skos:Concept; ' . $pa_params['search_field'] . ' "' . $ps_search . '"; skos:inScheme aat: ; ' . $vs_additional_filter . '
 	gvp:prefLabelGVP [xl:literalForm ?TermPrefLabel].
