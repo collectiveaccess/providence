@@ -352,7 +352,7 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 
 		try {
 			$o_graph = new EasyRdf_Graph( "http://vocab.getty.edu/download/rdf?uri={$ps_uri}.rdf" );
-			$o_graph->load();
+			$o_graph->load([]);
 		} catch ( Exception $e ) {
 			return false;
 		}
