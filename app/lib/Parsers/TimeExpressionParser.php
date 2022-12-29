@@ -2962,7 +2962,7 @@ class TimeExpressionParser {
 					$vs_before_qualifier = $va_died_qualifiers[0];
 				} else {
 					$va_before_qualifiers = $this->opo_language_settings->getList('beforeQualifier');
-					if ($pa_options['beforeQualifier'] && in_array($pa_options['beforeQualifier'], $va_before_qualifiers)) {
+					if ((isset($pa_options['beforeQualifier']) && $pa_options['beforeQualifier'] && in_array($pa_options['beforeQualifier'], $va_before_qualifiers)) {
 						$vs_before_qualifier = $pa_options['beforeQualifier'] ;
 					} else {
 						$vs_before_qualifier = $va_before_qualifiers[0];
@@ -2974,8 +2974,8 @@ class TimeExpressionParser {
 						return $vs_before_qualifier.' '. $this->_dateToText(array(
 							'year' => $va_end_pieces['year'],
 							'era' => $va_end_pieces['era'],
-							'uncertainty' => $va_end_pieces['uncertainty'],
-							'uncertainty_units' => $va_end_pieces['uncertainty_units']
+							'uncertainty' => $va_end_pieces['uncertainty'] ?? null,
+							'uncertainty_units' => $va_end_pieces['uncertainty_units'] ?? null
 						), $pa_options);
 					} else {
 						if ($va_end_pieces['day'] == $this->daysInMonth($va_end_pieces['month'], $va_end_pieces['year'])) { unset($va_end_pieces['day']); }
