@@ -2039,7 +2039,10 @@
 		 */
 		public function getContents(?string $policy, array $options=null) {
 			if(!($row_id = caGetOption('row_id', $options, $this->getPrimaryKey()))) { return null; }
-			return $this->getContentsForIDs($policy, [$row_id], $options);
+			
+			$ids = caGetOption('expandHierarchically', $options, false) ? $this->getHierarchy($row_id, ['idsOnly' => true]) : [$row_id];
+			if(!is_array($ids) || !sizeof($ids)) { return null; }
+			return $this->getContentsForIDs($policy, $ids, $options);
 		}
 		# ------------------------------------------------------
 		/**
@@ -2061,9 +2064,9 @@
 			
 			$ids = array_map(function($v) { return $v['row_id']; }, $values);
 			if(caGetOption('idsOnly', $options, false)) { return $ids; }
-			$row = array_shift($values);
+			if(!is_array($row = array_shift($values))) { return null; }
 	
-			if(!($table_name = Datamodel::getTableName($row['table_num']))) { return null; }
+			if(!isset($row['table_num']) || !($table_name = Datamodel::getTableName($row['table_num']))) { return null; }
 			return caMakeSearchResult($table_name, $ids, ['transaction' => $this->getTransaction()]);
 		}
 		# ------------------------------------------------------
@@ -2381,7 +2384,7 @@
 			$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
 			$o_view->setVar('t_subject', $this);
 		
-			$o_view->setVar('qr_result', $this->getContents($policy));	
+			$o_view->setVar('qr_result', $this->getContents($policy, $pa_bundle_settings));	
 		
 			return $o_view->render('history_tracking_current_contents.php');
 		}
