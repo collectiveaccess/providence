@@ -2517,9 +2517,9 @@ class SearchResult extends BaseObject {
 					}
 				}
 				
-				if ($va_path_components['subfield_name'] && $pa_options['returnBlankValues'] && !$vb_did_return_value) {
+				if (isset($va_path_components['subfield_name']) && isset($pa_options['returnBlankValues']) && (bool)$pa_options['returnBlankValues']  && !$vb_did_return_value) {
 					// value is missing so insert blank
-					if ($pa_options['returnWithStructure']) {
+					if ($pa_options['returnWithStructure'] ?? false) {
 						$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][$va_path_components['subfield_name']] = '';
 						if($include_value_ids) {
 							$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()]["{$vs_element_code}_value_id"] = null;

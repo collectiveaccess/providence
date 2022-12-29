@@ -1460,6 +1460,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			$t_list->setTransaction($o_trans);
 		}
 		
+		$va_list_items = null;
 		$defer_hierarchy_load = caGetOption('deferHierarchyLoad', $pa_options, false);
 		
 		if (!is_array($pa_options)) { $pa_options = array(); }

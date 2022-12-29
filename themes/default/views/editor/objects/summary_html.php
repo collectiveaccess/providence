@@ -49,7 +49,7 @@
 			if(sizeof($reps) > 1){
 				# --- more than one rep show thumbnails
 				$padding_top = ((120 - $rep["info"]["thumbnail"]["HEIGHT"])/2) + 5;
-				print "<table style='float:left; margin: 0px 16px 10px 0px; ".$clear."' cellpadding='0' cellspacing='0'><tr><td align='center' valign='middle'><div class='thumbnailsImageContainer' id='container".$rep['representation_id']."' style='padding: ".$padding_top."px 5px ".$padding_top."px 5px;' onmouseover='$(\".download".$rep['representation_id']."\").show();' onmouseout='$(\".download".$rep['representation_id']."\").hide();'>";
+				print "<table style='float:left; margin: 0px 16px 10px 0px;' cellpadding='0' cellspacing='0'><tr><td align='center' valign='middle'><div class='thumbnailsImageContainer' id='container".$rep['representation_id']."' style='padding: ".$padding_top."px 5px ".$padding_top."px 5px;' onmouseover='$(\".download".$rep['representation_id']."\").show();' onmouseout='$(\".download".$rep['representation_id']."\").hide();'>";
 				print "<a href='#' onclick='caMediaPanel.showPanel(\"".caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetMediaOverlay', array('object_id' => $item_id, 'representation_id' => $rep['representation_id']))."\");'>".$rep['tags']['thumbnail']."</a>\n";
 				
 				if ($this->request->user->canDoAction('can_download_ca_object_representations')) {

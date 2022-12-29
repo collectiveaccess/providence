@@ -285,9 +285,9 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 	}
 	# ------------------------------------------------------------------
 	public function loadTypeSpecificValueFromRow($pa_value_array) {
-		$this->ops_text_value = $pa_value_array['value_longtext1'];
-		$this->opn_start_date = $pa_value_array['value_decimal1'];
-		$this->opn_end_date = $pa_value_array['value_decimal2'];
+		$this->ops_text_value = $pa_value_array['value_longtext1'] ?? null;
+		$this->opn_start_date = $pa_value_array['value_decimal1'] ?? null;
+		$this->opn_end_date = $pa_value_array['value_decimal2'] ?? null;
 	}
 	# ------------------------------------------------------------------
 	/**

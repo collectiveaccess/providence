@@ -742,10 +742,10 @@ class DisplayTemplateParser {
 							// by allowing the restrictToTypes on the relationship to be applied on the inner unit as is required.
 							//
 							if (!is_array($va_get_options['restrictToTypes']) || !sizeof($va_get_options['restrictToTypes'])) {
-								$va_get_options['restrictToTypes'] = $pa_options['restrictToTypes'];
+								$va_get_options['restrictToTypes'] = $pa_options['restrictToTypes'] ?? null;
 							}
 							if (!is_array($va_get_options['excludeTypes']) || !sizeof($va_get_options['excludeTypes'])) {
-								$va_get_options['excludeTypes'] = $pa_options['excludeTypes'];
+								$va_get_options['excludeTypes'] = $pa_options['excludeTypes'] ?? null;
 							}
 						}
 						
@@ -940,7 +940,7 @@ class DisplayTemplateParser {
 						if ($t_instance->isRelationship() && (is_array($va_tmp = caGetTemplateTags($o_node->html(), ['firstPartOnly' => true])) && sizeof($va_tmp))) {
 							$vs_linking_context = array_shift($va_tmp);
 							if (in_array($vs_linking_context, [$t_instance->getLeftTableName(), $t_instance->getRightTableName()])) {
-								$va_linking_ids = $pr_res->get("{$vs_linking_context}.".Datamodel::primaryKey($vs_linking_context), ['returnAsArray' => true, 'primaryIDs' => $pa_options['primaryIDs']]);
+								$va_linking_ids = $pr_res->get("{$vs_linking_context}.".Datamodel::primaryKey($vs_linking_context), ['returnAsArray' => true, 'primaryIDs' => $pa_options['primaryIDs'] ?? null]);
 							}
 						}
 						
@@ -1097,6 +1097,7 @@ class DisplayTemplateParser {
                     if(is_array($va_sortables)) {
                         foreach($va_sortables as $i => $va_sort_values) {
                             if (!is_array($va_sort_values)) { continue; }
+                            if(!isset( $va_tag_vals[$vn_index]['__sort__'])) {  $va_tag_vals[$vn_index]['__sort__'] = ''; }
                             foreach($va_sort_values as $vn_index => $vs_sort_value) {
                                 $va_tag_vals[$vn_index]['__sort__'] .= $vs_sort_value;
                             }

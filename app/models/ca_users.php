@@ -3613,7 +3613,7 @@ class ca_users extends BaseModel {
 	 *		__CA_BUNDLE_ACCESS_READONLY__ (implies ability to view bundle content only)
 	 *		__CA_BUNDLE_ACCESS_NONE__ (indicates that the user has no access to bundle)
 	 */
-	public function getTypesWithAccess($ps_table_name, $pn_access) {
+	public function getTypesWithAccess($ps_table_name, $pn_access, ?array $pa_options=null) {
 		$vb_exact = caGetOption('exactAccess', $pa_options, false);
 		$vs_cache_key = $ps_table_name."/".(int)$pn_access."/".$this->getPrimaryKey().(int)$vb_exact;
 		if (isset(ca_users::$s_user_type_with_access_cache[$vs_cache_key])) { return ca_users::$s_user_type_with_access_cache[$vs_cache_key]; }
@@ -3712,7 +3712,7 @@ class ca_users extends BaseModel {
 	 *		__CA_BUNDLE_ACCESS_READONLY__ (implies ability to view bundle content only)
 	 *		__CA_BUNDLE_ACCESS_NONE__ (indicates that the user has no access to bundle)
 	 */
-	public function getSourcesWithAccess($ps_table_name, $pn_access, $pa_options=null) {
+	public function getSourcesWithAccess($ps_table_name, $pn_access, ?array $pa_options=null) {
 		$vb_exact = caGetOption('exactAccess', $pa_options, false);
 		$vs_cache_key = $ps_table_name."/".(int)$pn_access."/".$this->getPrimaryKey().(int)$vb_exact;
 		if (isset(ca_users::$s_user_source_with_access_cache[$vs_cache_key])) { return ca_users::$s_user_source_with_access_cache[$vs_cache_key]; }

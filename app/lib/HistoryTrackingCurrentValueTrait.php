@@ -190,18 +190,18 @@
 							if(!is_array($config)) { break; }
 							if ($table === 'ca_storage_locations') { 
 								$bundle_settings["{$table}_setInterstitialElementsOnAdd"] = $config['setInterstitialElementsOnAdd'];
-								$bundle_settings["{$table}_useDatePicker"] = $config['useDatePicker'];
+								$bundle_settings["{$table}_useDatePicker"] = $config['useDatePicker'] ?? false;
 							} else {
-								$bundle_settings["{$table}_{$t}_setInterstitialElementsOnAdd"] = $config['setInterstitialElementsOnAdd'];
+								$bundle_settings["{$table}_{$t}_setInterstitialElementsOnAdd"] = $config['setInterstitialElementsOnAdd'] ?? null;
 							}
-							$bundle_settings["{$table}_{$t}_displayTemplate"] = $config['template'];
-							$bundle_settings["{$table}_{$t}_color"] = $config['color'];
+							$bundle_settings["{$table}_{$t}_displayTemplate"] = $config['template'] ?? null;
+							$bundle_settings["{$table}_{$t}_color"] = $config['color'] ?? null;
 							$bundle_settings["{$table}_showTypes"][] = array_shift(caMakeTypeIDList($table, [$t]));
 							
-							$bundle_settings["{$table}_{$t}_useRelated"] = $config['useRelated'];
-							$bundle_settings["{$table}_{$t}_useRelatedRelationshipType"] = $config['useRelatedRelationshipType'];
+							$bundle_settings["{$table}_{$t}_useRelated"] = $config['useRelated'] ?? null;
+							$bundle_settings["{$table}_{$t}_useRelatedRelationshipType"] = $config['useRelatedRelationshipType'] ?? null;
 						
-							$bundle_settings["{$table}_{$t}_dateElement"] = $config['date'];
+							$bundle_settings["{$table}_{$t}_dateElement"] = $config['date'] ?? null;
 
 							if ((sizeof($path) === 3) && ($rel_types = caGetOption(['restrictToRelationshipTypes', 'showRelationshipTypes'], $config, null)) && $path[1]) { 
 								$bundle_settings["{$table}_showRelationshipTypes"] = [];
@@ -249,7 +249,7 @@
 		 * @return array Element array or null if not available.
 		 */
 		static public function historyTrackingPolicyUses($policy, $table, $type=null, $options=null) {
-			if (is_array($policy = self::getHistoryTrackingCurrentValuePolicy($policy)) && is_array($map = $policy['elements']) && is_array($map[$table])) {
+			if (is_array($policy = self::getHistoryTrackingCurrentValuePolicy($policy)) && is_array($map = ($policy['elements'] ?? null)) && is_array($map[$table] ?? null)) {
 				if(is_null($type) && is_array($map[$table]) && (sizeof($map[$table]) > 0)) {
 					return true;
 				} elseif(is_array($map[$table][$type])) {
@@ -366,7 +366,7 @@
 			
 			if($default && is_array($type_restrictions) && sizeof($type_restrictions)) {
 				$policy_info = self::getHistoryTrackingCurrentValuePolicy($default);
-				if(is_array($policy_info['restrictToTypes']) && (sizeof(array_intersect($policy_info['restrictToTypes'], $type_restrictions)) == 0)) {
+				if(is_array($policy_info['restrictToTypes'] ?? null) && (sizeof(array_intersect($policy_info['restrictToTypes'], $type_restrictions)) == 0)) {
 					return null;
 				}
 			}
@@ -941,7 +941,7 @@
 		public function checkPolicyTypeRestrictions(?string $policy, array $type_restrictions, ?array $options=null) : ?bool {
 			if(!is_array($policy_info = self::getHistoryTrackingCurrentValuePolicy($policy))) { return null; }
 			if(!sizeof($type_restrictions)) { return true; }
-			if(!is_array($policy_info['restrictToTypes']) || !sizeof($policy_info['restrictToTypes'])) { return true; }
+			if(!is_array($policy_info['restrictToTypes'] ?? null) || !sizeof($policy_info['restrictToTypes'])) { return true; }
 			if(sizeof(array_intersect($type_restrictions, $policy_info['restrictToTypes'])) > 0) { return true; }
             return false;
 		}
@@ -2145,7 +2145,7 @@
                         $o_view->setVar('occurrence_types', $va_occ_types);
                         $o_view->setVar('occurrence_relationship_types', $rel_types);
                         
-                        if(!is_array($bundle_config['ca_occurrences_showRelationshipTypes'])) { $bundle_config['ca_occurrences_showRelationshipTypes'] = []; }
+                        if(!is_array($bundle_config['ca_occurrences_showRelationshipTypes'] ?? null)) { $bundle_config['ca_occurrences_showRelationshipTypes'] = []; }
                         $o_view->setVar('occurrence_relationship_types_by_sub_type', $t_occ_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($bundle_config, ['restrictToRelationshipTypes' => $bundle_config['ca_occurrences_showRelationshipTypes']])));
                     }
 				}
@@ -2407,7 +2407,7 @@
 			$placement_code = caGetOption('placement_code', $options, null);
 			
 			$no_template = caGetOption('noTemplate', $options, false);
-			if((is_array($interstitial_elements = $settings["{$rel_table}_".($type_idno ? "{$type_idno}_" : "")."setInterstitialElementsOnAdd"])|| is_array($interstitial_elements = $settings["setInterstitialElementsOnAdd"])) && sizeof($interstitial_elements) && ($linking_table = Datamodel::getLinkingTableName($subject_table, $rel_table))) {
+			if((is_array($interstitial_elements = ($settings["{$rel_table}_".($type_idno ? "{$type_idno}_" : "")."setInterstitialElementsOnAdd"] ?? null)) || is_array($interstitial_elements = ($settings["setInterstitialElementsOnAdd"] ?? null))) && sizeof($interstitial_elements) && ($linking_table = Datamodel::getLinkingTableName($subject_table, $rel_table))) {
 				$buf .= "<table class='caHistoryTrackingUpdateLocationMetadata'>\n";
 				/** @var BaseRelationshipModel $t_rel */
 				if (!($t_rel = Datamodel::getInstance($linking_table, true))) { return null; }	
@@ -2420,8 +2420,8 @@
 					$label = null;
 					if (($t_ui) && is_array($p = $t_ui->getPlacementsForBundle("$linking_table.$element_code", $request))) {
 						$l = array_shift($p);
-						if (!($label = caGetOption($g_ui_locale, $l['settings']['label'], null))) {
-							if (is_string($l['settings']['label'])) { $label = $l['settings']['label']; }
+						if (!($label = caGetOption($g_ui_locale, $l['settings']['label'] ?? null, null))) {
+							if (isset($l['settings']['label']) && is_string($l['settings']['label'])) { $label = $l['settings']['label'] ?? null; }
 						}
 					}
 					if (!$label) {

@@ -189,7 +189,7 @@ class FileAttributeValue extends AttributeValue implements IAttributeValue {
 		$config = Configuration::load();
 		if(!is_array($ps_value) || (isset($ps_value['tmp_name']))) {
 			foreach(caGetAvailableMediaUploadPaths() as $d) {
-				$va_files = caBatchFindMatchingMedia($d.$media_prefix, is_array($ps_value) ? $ps_value['tmp_name'] : $ps_value, ['matchMode' => caGetOption('matchMode', $pa_options,'FILE_NAME'), 'matchType' => caGetOption('matchType', $pa_options, null), 'log' => caGetOption('log', $pa_options, null)]);
+				$va_files = caBatchFindMatchingMedia($d, is_array($ps_value) ? $ps_value['tmp_name'] : $ps_value, ['matchMode' => caGetOption('matchMode', $pa_options,'FILE_NAME'), 'matchType' => caGetOption('matchType', $pa_options, null), 'log' => caGetOption('log', $pa_options, null)]);
 				foreach($va_files as $vs_file) {
 					if (preg_match("!(SynoResource|SynoEA)!", $vs_file)) { continue; } // skip Synology res files
 			

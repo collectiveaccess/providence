@@ -569,6 +569,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 
 		// dependant field visibility
 		$vs_show_hide_js = '';
+		$cases = $all_ids =  [];
 		if(Configuration::load()->get('enable_dependent_field_visibility')) {
 			switch($render_as) {
 				case 'radio_buttons':
@@ -592,7 +593,6 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 				$t_list = new ca_lists();
 				$vb_yes_was_set = false;
 				
-				$cases = $all_ids =  [];
 				if(!$pa_element_info['settings']['requireValue'] && is_array($pa_element_info['settings']['hideIfSelected___null__']) && sizeof($pa_element_info['settings']['hideIfSelected___null__'])) {
 				    $va_hideif_for_null = $pa_element_info['settings']['hideIfSelected___null__'];
 				    foreach($va_hideif_for_null as $vs_key) {
