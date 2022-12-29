@@ -58,7 +58,7 @@ function caErrorHandler(int $errno, string $errstr, ?string $errfile=null, ?int 
 				})) > 0) {
 					return true;
 				}
-				$g_warnings[] = [
+				$g_warnings[md5($errstr.$errfile.$errline)] = [
 					'message' => htmlspecialchars($errstr),
 					'file' => $errfile,
 					'line' => $errline
@@ -74,7 +74,7 @@ function caErrorHandler(int $errno, string $errstr, ?string $errfile=null, ?int 
 				})) > 0) {
 					return true;
 				}
-				$g_deprecation_warnings[] = [
+				$g_deprecation_warnings[md5($errstr.$errfile.$errline)] = [
 					'message' => htmlspecialchars($errstr),
 					'file' => $errfile,
 					'line' => $errline
@@ -90,7 +90,7 @@ function caErrorHandler(int $errno, string $errstr, ?string $errfile=null, ?int 
 				})) > 0) {
 					return true;
 				}
-				$g_notices[] = [
+				$g_notices[md5($errstr.$errfile.$errline)] = [
 					'message' => htmlspecialchars($errstr),
 					'file' => $errfile,
 					'line' => $errline
