@@ -606,7 +606,7 @@ use Zend\Stdlib\Glob;
             		!$t_placement->getAppConfig()->get(['show_unrestricted_displays_in_relationship_bundles', "{$table}_show_unrestricted_displays_in_relationship_bundles"])
             	)
             	|| 
-            	(is_array($va_display_info['settings']['show_only_in']) && !in_array('editor_relationship_bundle', $va_display_info['settings']['show_only_in']))
+            	(is_array($va_display_info['settings']['show_only_in'] ?? null) && !in_array('editor_relationship_bundle', $va_display_info['settings']['show_only_in']))
             ) { continue; }        
             $va_options[$va_display_info['name']] = '_pdf__display_'.$va_display_info['display_id'];
         }

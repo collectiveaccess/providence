@@ -490,15 +490,15 @@ trait ModelSettings {
 					}
 				}
 				if (isset($va_properties['showOnSelect'])) {
-					if (!is_array($va_properties['showOnSelect'])) { $va_properties['showOnSelect'] = array($va_properties['showOnSelect']); }
+					if (!is_array($va_properties['showOnSelect'])) { $va_properties['showOnSelect'] = [$va_properties['showOnSelect']]; }
 					
-					$va_ids = array();
+					$va_ids = [];
 					foreach($va_properties['showOnSelect'] as $vs_n) {
 						$va_ids[] = "#".$pa_options['id_prefix']."_{$vs_n}_container";
 					}
 					$va_attributes['onchange'] = 'jQuery(this).prop("checked") ? jQuery("'.join(",", $va_ids).'").slideDown(250).find("input, textarea").val("") : jQuery("'.join(",", $va_ids).'").slideUp(250);';
 					
-					if (!$va_attributes['checked']) {
+					if (!($va_attributes['checked'] ?? false)) {
 						$vs_return .= "<script type='text/javascript'>
 	jQuery(document).ready(function() {
 		jQuery('".join(",", $va_ids)."').hide();

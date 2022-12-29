@@ -3561,6 +3561,7 @@ class ca_users extends BaseModel {
 		$vs_cache_key = $ps_table_name.'/'.$pm_type_code_or_id."/".$this->getPrimaryKey();
 		if (isset(ca_users::$s_user_type_access_cache[$vs_cache_key])) { return ca_users::$s_user_type_access_cache[$vs_cache_key]; }
 
+		$vn_type_id = null;
 		if(in_array($ps_table_name, ca_users::$s_bundlable_tables)) { // type-level access control only applies to these tables
 			$va_roles = array_merge($this->getUserRoles(['skipVars' => false]), $this->getGroupRoles(['skipVars' => false]));
 			

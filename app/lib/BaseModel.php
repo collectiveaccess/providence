@@ -7271,6 +7271,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		if (!$this->isHierarchical()) { return null; }
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		$vs_table_name = $this->tableName();
+		$vn_hierarchy_id = null;
 		
 		$t_instance = (!$pn_id) ? $this : Datamodel::getInstanceByTableNum($this->tableNum(), false);
 		if (!$pn_id && $this->inTransaction()) { $t_instance->setTransaction($this->getTransaction()); }
