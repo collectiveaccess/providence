@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -881,7 +881,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'takesLocale' => false,
 								'default' => false,
 								'label' => _t('Show batch editing button?'),
-								'description' => _t('If checked an option to batch edit related records will be displaye.')
+								'description' => _t('If checked an option to batch edit related records will be displayed.')
 							)
 						);	
 						
@@ -2012,6 +2012,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'width' => "475px", 'height' => "100px",
 										'label' => _t('Display template'),
 										'description' => _t('Layout for each object in the storage location (can include HTML). The template is evaluated relative to each object-movement or object-location relationship. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_objects.idno</i>.')
+									),									
+									'showBatchEditorButton' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_CHECKBOXES,
+										'width' => 10, 'height' => 1,
+										'takesLocale' => false,
+										'default' => false,
+										'label' => _t('Show batch editing button?'),
+										'description' => _t('If checked an option to batch edit contents will be displayed.')
 									)
 								);
 								break;
