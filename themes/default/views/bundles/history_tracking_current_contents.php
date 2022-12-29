@@ -26,17 +26,16 @@
  * ----------------------------------------------------------------------
  */
  
-	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$t_subject 			= $this->getVar('t_subject');				// ca_storage_locations
-	$va_settings 		= $this->getVar('settings');
-	$vs_placement_code 	= $this->getVar('placement_code');
-	$vn_placement_id	= (int)$va_settings['placement_id'];
-	
-	$vs_color 			= ((isset($va_settings['colorItem']) && $va_settings['colorItem'])) ? $va_settings['colorItem'] : '';
-	
-	$qr_result			= $this->getVar('qr_result');
-	$va_errors 			= [];
-	
+$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
+$t_subject 			= $this->getVar('t_subject');				// ca_storage_locations
+$va_settings 		= $this->getVar('settings');
+$vs_placement_code 	= $this->getVar('placement_code');
+$vn_placement_id	= (int)$va_settings['placement_id'];
+
+$vs_color 			= ((isset($va_settings['colorItem']) && $va_settings['colorItem'])) ? $va_settings['colorItem'] : '';
+
+$qr_result			= $this->getVar('qr_result');
+$va_errors 			= [];
 	
 if (!$this->request->isAjax()) {
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix.$t_subject->tableNum().'_rel', $this->getVar('initialValues')));
@@ -52,6 +51,8 @@ if (!$this->request->isAjax()) {
 	if ($qr_result && ($qr_result->tableName() == 'ca_objects') && $qr_result->numHits() > 0) {
 ?>
 		<div class="bundleSubLabel">
+			<?= caEditorBundleBatchEditorControls($this->request, $vn_placement_id, $t_subject, $qr_result->tableName(), $va_settings); ?>
+		
 			<?= caReturnToHomeLocationControlForRelatedBundle($this->request, $vs_id_prefix, $t_subject, $this->getVar('policy'), $qr_result); ?>
 		</div>
 <?php
