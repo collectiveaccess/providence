@@ -670,21 +670,21 @@ class SearchEngine extends SearchBase {
 				($va_ap_info = $va_access_points[$vs_fld])
 			) {
 				$va_fields = isset($va_ap_info['fields']) ? $va_ap_info['fields'] : null;
-				if (!in_array($vs_bool = strtoupper($va_ap_info['boolean']), array('AND', 'OR'))) {
+				if (!in_array($vs_bool = strtoupper($va_ap_info['boolean'] ?? 'OR'), array('AND', 'OR'))) {
 					$vs_bool = 'OR';
 				}
 				
 				foreach($va_fields as $vs_field) {
 					$va_terms['terms'][] = new Zend_Search_Lucene_Search_Query_Phrase($va_index_term_strings, null, $vs_field);
 					$va_terms['signs'][] = ($vs_bool == 'AND') ? true : null;
-					$va_terms['options'][] = is_array($va_ap_info['options']) ? $va_ap_info['options'] : array();
+					$va_terms['options'][] = is_array($va_ap_info['options'] ?? null) ? $va_ap_info['options'] : array();
 				}
 				
-				if (is_array($va_additional_criteria = $va_ap_info['additional_criteria'])) {
+				if (is_array($va_additional_criteria = ($va_ap_info['additional_criteria'] ?? null))) {
 					foreach($va_additional_criteria as $vs_criterion) {
 						$va_terms['terms'][] = new Zend_Search_Lucene_Index_Term($vs_criterion);
 						$va_terms['signs'][] = $vs_bool;
-						$va_terms['options'][] = is_array($va_ap_info['options']) ? $va_ap_info['options'] : array();
+						$va_terms['options'][] = is_array($va_ap_info['options'] ?? null) ? $va_ap_info['options'] : array();
 					}
 				}
 				

@@ -1668,7 +1668,7 @@ class TimeExpressionParser {
 	private function _parseCentury($va_token, $part_of_range_qualifier=null) {
 		$va_next_token = $this->peekToken(2);
 		
-		$vs_next_token_lc = mb_strtolower($va_next_token['value']);
+		$vs_next_token_lc = mb_strtolower($va_next_token['value'] ?? null);
 		$vn_use_romans = $this->opo_datetime_settings->get("useRomanNumeralsForCenturies");
 										
 		if (

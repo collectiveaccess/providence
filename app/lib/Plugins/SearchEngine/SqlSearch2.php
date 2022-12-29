@@ -553,6 +553,9 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	if (in_array($field_elements[0], [_t('created'), _t('modified')])) {
 	 		return $this->_processQueryChangeLog($subject_tablenum, $query);
 	 	}
+	 	
+	 	$field_sql = null;
+	 	
 	 	if ($this->getOption('strictPhraseSearching')) {
 	 		$words = [];
 	 		$temp_tables = [];
@@ -1772,15 +1775,15 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 *
 	 */
 	private function _getBooleanOperator(?array $signs, int $index) {
-		if (is_null($signs) || ($signs[$i] === true)) {	
+		if (is_null($signs ?? null) || (($signs[$index] ?? null) === true)) {	
 			// if array is null then according to Zend Lucene all subqueries should be "are required"... so we AND them
 			return "AND";
-		} elseif (is_null($signs[$index])) {	
+		} elseif (is_null($signs[$index] ?? null)) {	
 			// is the sign for a particular query is null then OR it is (it is "neither required nor prohibited")
 			return 'OR';
 		} else {
 			// true sign indicates "required" (AND) operation, false indicates "prohibited" (NOT) operation
-			return ($signs[$index] === false) ? 'NOT' : 'AND';	
+			return (($signs[$index] ?? null) === false) ? 'NOT' : 'AND';	
 		}
 	}
 	# -------------------------------------------------------

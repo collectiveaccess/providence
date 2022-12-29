@@ -712,7 +712,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * Recursive function that processes each level of hierarchical list
 	 */
 	private function _getItemsForListProcListLevel($pn_root_id, $pa_items, &$pa_sorted_items, $pa_options) {
-		$va_items = $pa_items[$pn_root_id];
+		$va_items = $pa_items[$pn_root_id] ?? null;
 		if (!is_array($va_items)) { return; }
 		if (isset($pa_options['extractValuesByUserLocale']) && $pa_options['extractValuesByUserLocale']) {
 			uksort($va_items, "strnatcasecmp");

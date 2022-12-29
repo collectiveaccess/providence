@@ -3282,12 +3282,14 @@
 				}
 				$vs_browse_table_num = Datamodel::getTableNum($vs_browse_table_name);
 			}
+			
+			$t_rel_item = null;
 
 			$vs_browse_type_limit_sql = '';
 			if (($va_browse_type_ids = $this->getTypeRestrictionList()) && is_array($va_browse_type_ids) && sizeof($va_browse_type_ids)) {		// type restrictions
 				$vs_browse_type_limit_sql = '('.$t_subject->tableName().'.'.$t_subject->getTypeFieldName().' IN ('.join(', ', $va_browse_type_ids).')'.($t_subject->getFieldInfo('type_id', 'IS_NULL') ? " OR (".$this->ops_browse_table_name.'.'.$t_subject->getTypeFieldName()." IS NULL)" : '').')';
 
-				if (is_array($va_facet_info['type_restrictions'])) { 		// facet type restrictions bind a facet to specific types; we check them here
+				if (is_array($va_facet_info['type_restrictions'] ?? null)) { 		// facet type restrictions bind a facet to specific types; we check them here
 					$va_restrict_to_types = $this->_convertTypeCodesToIDs($va_facet_info['type_restrictions']);
 					$vb_is_ok_to_browse = false;
 					foreach($va_browse_type_ids as $vn_type_id) {
@@ -3305,7 +3307,7 @@
 			if (($va_browse_source_ids = $this->getSourceRestrictionList()) && is_array($va_browse_source_ids) && sizeof($va_browse_source_ids)) {		// source restrictions
 				$vs_browse_source_limit_sql = '('.$t_subject->tableName().'.'.$t_subject->getSourceFieldName().' IN ('.join(', ', $va_browse_source_ids).')'.($t_subject->getFieldInfo('source_id', 'IS_NULL') ? " OR (".$this->ops_browse_table_name.'.'.$t_subject->getSourceFieldName()." IS NULL)" : '').')';
 
-				if (is_array($va_facet_info['source_restrictions'])) { 		// facet source restrictions bind a facet to specific sources; we check them here
+				if (is_array($va_facet_info['source_restrictions'] ?? null)) { 		// facet source restrictions bind a facet to specific sources; we check them here
 					$va_restrict_to_sources = $this->_convertSourceCodesToIDs($va_facet_info['source_restrictions']);
 					$vb_is_ok_to_browse = false;
 					foreach($va_browse_source_ids as $vn_source_id) {
@@ -3695,8 +3697,8 @@
 					if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($vs_browse_table_name,  'preferred_labels') < __CA_BUNDLE_ACCESS_READONLY__)) { return []; }
 					
 					
-					if (!is_array($va_restrict_to_types = $va_facet_info['restrict_to_types'])) { $va_restrict_to_types = array(); }
-					if (!is_array($va_exclude_types = $va_facet_info['exclude_types'])) { $va_exclude_types = array(); }
+					if (!is_array($va_restrict_to_types = ($va_facet_info['restrict_to_types'] ?? null))) { $va_restrict_to_types = array(); }
+					if (!is_array($va_exclude_types = ($va_facet_info['exclude_types'] ?? null))) { $va_exclude_types = array(); }
 					
 					if(sizeof($va_label_order_by_fields = isset($va_facet_info['order_by_label_fields']) ? $va_facet_info['order_by_label_fields'] : [])) {
 					    $va_label_order_by_fields = array_map(function($v) { return "l.{$v}"; }, $va_label_order_by_fields);
@@ -4531,9 +4533,6 @@
 					$policy = caGetOption('policy', $va_facet_info, $t_item->getDefaultHistoryTrackingCurrentValuePolicy());
 
 					$vs_sort_field = null;
-					if (($t_item->getProperty('ID_NUMBERING_ID_FIELD') == $vs_field_name)) {
-						$vs_sort_field = $t_item->getProperty('ID_NUMBERING_SORT_FIELD');
-					}
 
 					$vs_where_sql = '';
 					
@@ -4617,10 +4616,7 @@
 								{$vs_where_sql}
 							GROUP BY cv.current_table_num, cv.current_row_id, cv.current_type_id, cv.tracked_table_num, cv.tracked_row_id, cv.tracked_type_id
 							";
-						if($vs_sort_field) {
-							$vs_sql .= " ORDER BY {$vs_sort_field}";
-						}
-						//print $vs_sql; 
+						
 						$qr_res = $this->opo_db->query($vs_sql, $params);
 
 						$va_collapse_map = $this->getCollapseMapForLocationFacet($va_facet_info);
@@ -7939,12 +7935,12 @@ if (!($va_facet_info['show_all_when_first_facet'] ?? null) || ($this->numCriteri
 		 *
 		 */
 		private function getTableEntryFromMap($facet_info, $key, $table, $type=null) {
-			if(is_array($facet_info[$key][$table])) {
-				if($type && is_array($facet_info[$key][$table][$type])) {
+			if(is_array($facet_info[$key][$table] ?? null)) {
+				if($type && is_array($facet_info[$key][$table][$type] ?? null)) {
 				    return $facet_info[$key][$table][$type];
-				} elseif (is_array($facet_info[$key][$table]['*'])) {
+				} elseif (is_array($facet_info[$key][$table]['*'] ?? null)) {
 				    return $facet_info[$key][$table]['*'];
-				} elseif (is_array($facet_info[$key][$table]['__default__'])) {
+				} elseif (is_array($facet_info[$key][$table]['__default__'] ?? null)) {
 				    return $facet_info[$key][$table]['__default__'];
 				}
 			}

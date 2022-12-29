@@ -411,6 +411,7 @@
 		 * @return 
 		 */
 		public static function getConfigurationForHistoryTrackingCurrentValue($policy, $table, $type_id=null, $options=null) {
+			if(!is_array($options)) { $options = []; }
 			$cache_key = caMakeCacheKeyFromOptions($options, "{$policy}/{$table}/{$type_id}");
 		
 			if (isset(self::$s_history_tracking_current_value_type_configuration_cache[$cache_key])) { return self::$s_history_tracking_current_value_type_configuration_cache[$cache_key]; }
@@ -2577,8 +2578,9 @@
 		 *
 		 */
 		public static function getHistoryTrackingEditorBundleSettingsData($table, $options=null) {
+			if(!is_array($options)) { $options = []; }
 			$cache_key = caMakeCacheKeyFromOptions($options ?? [], $table);
-			//if (!caGetOption('noCache', $options, false) && ExternalCache::contains($cache_key, "historyTrackingEditorBundleSettingsData")) { return ExternalCache::fetch($cache_key, 'historyTrackingEditorBundleSettingsData'); }			
+			if (!caGetOption('noCache', $options, false) && ExternalCache::contains($cache_key, "historyTrackingEditorBundleSettingsData")) { return ExternalCache::fetch($cache_key, 'historyTrackingEditorBundleSettingsData'); }			
 			$additional_settings = [];
 			
 			$additional_settings['ca_object_lots_showTypes'] = array(
