@@ -1996,6 +1996,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Object color'),
 										'description' => _t('If set object in list will use this color.')
 									),
+									'expandHierarchically' => array(
+                                        'formatType' => FT_TEXT,
+                                        'displayType' => DT_CHECKBOXES,
+                                        'width' => 10, 'height' => 1,
+                                        'takesLocale' => false,
+                                        'default' => '0',
+                                        'label' => _t('Include contents of sub-%1', $t_instance->getProperty('NAME_PLURAL')),
+                                        'description' => _t('If checked the delete relationship control will not be provided.')
+                                    ),
 									'displayTemplate' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_FIELD,
@@ -2518,10 +2527,9 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				} else {
 					$t_placement = new ca_editor_ui_bundle_placements($vn_placement_id, null, $va_available_bundles[$vs_bundle]['settings']);
 					if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
-					$t_placement->setMode(ACCESS_WRITE);
 					$t_placement->set('rank', $vn_i + 1);
 					
-					if (is_array($va_settings[$vn_placement_id])) {
+					if (is_array($va_settings[$vn_placement_id] ?? null)) {
 						foreach($t_placement->getAvailableSettings() as $vs_setting => $va_setting_info) {
 							$vs_val = isset($va_settings[$vn_placement_id][$vs_setting]) ? $va_settings[$vn_placement_id][$vs_setting] : null;
 						
