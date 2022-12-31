@@ -38,8 +38,8 @@ require_once(__CA_LIB_DIR__.'/BaseModel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_history_tracking_current_values'] = array(
- 	'NAME_SINGULAR' 	=> _t('site page media'),
- 	'NAME_PLURAL' 		=> _t('site page media'),
+ 	'NAME_SINGULAR' 	=> _t('history tracking current value'),
+ 	'NAME_PLURAL' 		=> _t('history tracking current value'),
  	'FIELDS' 			=> array(
  		'tracking_id' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
@@ -142,7 +142,7 @@ BaseModel::$s_ca_models_definitions['ca_history_tracking_current_values'] = arra
  	)
 );
 
-class ca_history_tracking_current_values extends BaseModel {
+class ca_history_tracking_current_values extends LabelableBaseModelWithAttributes {
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -197,6 +197,10 @@ class ca_history_tracking_current_values extends BaseModel {
 	# its name here. The generic list scripts can then use it to order table records.
 	protected $RANK = 'rank';
 	
+	# ------------------------------------------------------
+	# Labeling
+	# ------------------------------------------------------
+	protected $LABEL_TABLE_NAME = 'ca_history_tracking_current_value_labels';
 	
 	# ------------------------------------------------------
 	# Change logging
