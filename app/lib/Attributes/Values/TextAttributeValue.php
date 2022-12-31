@@ -265,7 +265,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 	}
 	# ------------------------------------------------------------------
 	public function loadTypeSpecificValueFromRow($pa_value_array) {
-		$this->ops_text_value = $pa_value_array['value_longtext1'];
+		$this->ops_text_value = $pa_value_array['value_longtext1'] ?? null;
 	}
 	# ------------------------------------------------------------------
 	/**

@@ -694,8 +694,8 @@ class SearchEngine extends SearchBase {
 		
 		// is it a labels? Rewrite the field for that.
 		$va_tmp = preg_split('/[\/\|]+/', $vs_fld);
-		$va_tmp2 = explode('.', $va_tmp[0]);
-		if (in_array($va_tmp2[1], array('preferred_labels', 'nonpreferred_labels'))) {
+		$va_tmp2 = explode('.', ($va_tmp[0] ?? null));
+		if (isset($va_tmp2[1]) && (in_array($va_tmp2[1], array('preferred_labels', 'nonpreferred_labels')))) {
 			if ($t_instance = Datamodel::getInstanceByTableName($va_tmp2[0], true)) {
 				if (method_exists($t_instance, "getLabelTableName")) {
 					return array(
@@ -707,7 +707,7 @@ class SearchEngine extends SearchBase {
 			}
 		}
 		
-		return array('terms' => array($po_term), 'signs' => array($pb_sign), 'options' => array());
+		return ['terms' => [$po_term], 'signs' => [$pb_sign], 'options' => []];
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -717,9 +717,9 @@ class SearchEngine extends SearchBase {
 	private function _rewriteRange($po_range) {
 		if (sizeof($va_access_points = $this->getAccessPoints($this->opn_tablenum))) {
 			// if field is access point then do rewrite
-			if ($va_ap_info = $va_access_points[$po_range->getField()]) {
-				$va_fields = $va_ap_info['fields'];
-				if (!in_array($vs_bool = strtoupper($va_ap_info['boolean']), array('AND', 'OR'))) {
+			if ($va_ap_info = ($va_access_points[$po_range->getField()] ?? null)) {
+				$va_fields = $va_ap_info['fields'] ?? null;
+				if (!in_array($vs_bool = strtoupper($va_ap_info['boolean'] ?? 'OR'), array('AND', 'OR'))) {
 					$vs_bool = 'OR';
 				}
 				$va_tmp = array();
@@ -732,7 +732,7 @@ class SearchEngine extends SearchBase {
 					
 				}
 				
-				if (is_array($va_additional_criteria = $va_ap_info['additional_criteria'])) {
+				if (is_array($va_additional_criteria = ($va_ap_info['additional_criteria'] ?? null))) {
 					foreach($va_additional_criteria as $vs_criterion) {
 						$va_terms[] = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term($vs_criterion));
 					}
