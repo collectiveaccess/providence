@@ -36,7 +36,29 @@ trait CLIUtilsBanHammer {
 	 * Rebuild search indices
 	 */
 	public static function clear_bans($opts=null) {
+		if($reasons = $opts->getOption('reason')) {
+			if(!is_array($reasons)) { $reasons = preg_split('/[;,]/', $reasons); }
+			$valid_reasons = array_map('strtolower', BanHammer::getPluginNames());
+			$reasons = array_filter($reasons, function($v) use ($valid_reasons) {
+				return in_array(strtolower($v), $valid_reasons, true);
+			});
+			if(!sizeof($reasons)) { 
+				CLIUtils::addError(_t('Invalid reasons specified'));
+				return false;
+			}
+		}
+		if($from = $opts->getOption('from')) {
+			if(!($dt = caDateToUnixTimestamp($from))) { 
+				CLIUtils::addError(_t('Invalid from date specified'));	
+				return false;
+			}
+		}
 		
+		if(!is_null($count = ca_ip_bans::removeBans(['reasons' => $reasons, 'from' => $from]))) {
+			CLIUtils::addMessage(($count == 1) ? _t('Removed %1 ban', $count) : _t('Removed %1 bans', $count));	
+		} else {
+			CLIUtils::addError(_t('Could not remove bans'));	
+		}
 
 		return true;
 	}
@@ -46,7 +68,8 @@ trait CLIUtilsBanHammer {
 	 */
 	public static function clear_bansParamList() {
 		return [
-			"to|t-s" => _t('Email address to send test message to.')
+			"reason|r-s" => _t('Comma separated list of ban reasons to clear. If omitted all bans will be removed.'),
+			"from|f-s" => _t('Remove bans created on or before a date. If omitted all bans will be removed.')
 		];
 	}
 	# -------------------------------------------------------
