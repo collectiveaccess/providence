@@ -59,4 +59,6 @@
 		use CLIUtilsStatistics;
 		use CLIUtilsDeveloper;
 		use CLIUtilsTest;
+		use CLIUtilsBanHammer;
+		use CLIUtilsTaskQueue;
 	}
