@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2022 Whirl-i-Gig
+ * Copyright 2013-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -46,6 +46,8 @@
  	require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Test.php');
  	require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Statistics.php');
  	require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Developer.php');
+ 	require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/TaskQueue.php');
+ 	require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/BanHammer.php');
  
 	class CLIUtils extends CLIBaseUtils {
 		use CLIUtilsMaintenance;
