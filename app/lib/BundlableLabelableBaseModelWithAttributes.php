@@ -1645,7 +1645,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 								'progress_indicator'		=> caNavIcon(__CA_NAV_ICON_SPINNER__, 1),
 								'lookup_url' 				=> ($va_lookup_url_info['intrinsic'] ?? null),
 								
-								'name'						=> $ps_placement_code.$pa_options['formName'].$ps_bundle_name,
+								'name'						=> $ps_placement_code.($pa_options['formName'] ?? '').$ps_bundle_name,
 								'usewysiwygeditor' 			=> ($pa_bundle_settings['usewysiwygeditor'] ?? false)
 							],
 							$pa_options,
@@ -1676,7 +1676,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					$o_view->setVar('display_media', $this->getMediaTag($ps_bundle_name, $this->getDefaultMediaPreviewVersion($ps_bundle_name)));
 				}
 				
-				$vs_field_id = 'ca_intrinsic_'.$pa_options['formName'].'_'.$ps_placement_code;
+				$vs_field_id = 'ca_intrinsic_'.($pa_options['formName'] ?? '').'_'.$ps_placement_code;
 				$vs_label = '<span class="formLabelText" id="'.$vs_field_id.'">'.$pa_options['label'].'</span>'; 
 				
 				if ($o_config->get('show_required_field_marker')) {
@@ -1696,7 +1696,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				
 				$o_view->setVar('bundle_name', $ps_bundle_name);
 				
-				$o_view->setVar('id_prefix', $pa_options['formName']);
+				$o_view->setVar('id_prefix', $pa_options['formName'] ?? null);
 				$o_view->setVar('placement_code', $ps_placement_code);
 				
 				$o_view->setVar('settings', $pa_bundle_settings);
@@ -7426,12 +7426,10 @@ $pa_options["display_form_field_tips"] = true;
 		$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
 		$o_view = new View($po_request, "{$vs_view_path}/bundles/");
 		
-		require_once(__CA_MODELS_DIR__.'/ca_users.php');
 		$t_user = new ca_users();
 		
-		
 		$o_view->setVar('t_instance', $this);
-		$o_view->setVar('table_num', $pn_table_num);
+		$o_view->setVar('table_num', $this->tableNum());
 		$o_view->setVar('id_prefix', $ps_form_name);		
 		$o_view->setVar('request', $po_request);	
 		$o_view->setVar('t_user', $t_user);
@@ -7602,12 +7600,10 @@ $pa_options["display_form_field_tips"] = true;
 		$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
 		$o_view = new View($po_request, "{$vs_view_path}/bundles/");
 		
-		require_once(__CA_MODELS_DIR__.'/ca_user_groups.php');
 		$t_group = new ca_user_groups();
 		
-		
 		$o_view->setVar('t_instance', $this);
-		$o_view->setVar('table_num', $pn_table_num);
+		$o_view->setVar('table_num', $this->tableNum());
 		$o_view->setVar('id_prefix', $ps_form_name);		
 		$o_view->setVar('request', $po_request);	
 		$o_view->setVar('t_group', $t_group);
@@ -7823,7 +7819,7 @@ $pa_options["display_form_field_tips"] = true;
 			}
 			$va_row['access_display'] = $t_acl->getChoiceListValue('access', $va_row['access']);
 		}
-		if (!strlen($va_row['access_display'])) {	// show default
+		if (!strlen($va_row['access_display'] ?? null)) {	// show default
 			$va_row['access_display'] = $t_acl->getChoiceListValue('access', $this->getAppConfig()->get('default_item_access_level'));
 		}
 		
@@ -7847,10 +7843,12 @@ $pa_options["display_form_field_tips"] = true;
 			$vn_access = $this->getAppConfig()->get('default_item_access_level');
 		}
 		
+		$t_group = new ca_user_groups();
+		
 		$o_view->setVar('t_instance', $this);
-		$o_view->setVar('table_num', $pn_table_num);
+		$o_view->setVar('table_num', $this->tableNum());
 		$o_view->setVar('id_prefix', $ps_form_name);		
-		$o_view->setVar('request', $po_request);	
+		$o_view->setVar('request', $po_request);		
 		$o_view->setVar('t_group', $t_group);
 		$o_view->setVar('initialValue', $vn_access);
 		

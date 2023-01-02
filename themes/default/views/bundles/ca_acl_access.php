@@ -53,9 +53,7 @@ $vb_can_delete		= $t_instance->isDeletable($this->request);
 
 ?>
 		<div id='editGlobalAccess'>
-	<?php
-		print $t_instance->getACLWorldHTMLFormBundle($this->request, 'caAccessControlList');	
-	?>	
+<?= $t_instance->getACLWorldHTMLFormBundle($this->request, 'caAccessControlList');	?>	
 		</div>
 		<div id='editGlobalAccessLink' class='editLink'><a href='#' onclick='jQuery("#editGlobalAccess").show(250); jQuery("#editGlobalAccessLink").hide()'><?= caNavIcon(__CA_NAV_ICON_EDIT__, 2); ?>  <?= _t('Edit Global Access'); ?></a></div>
 		<div style='width:100%; clear:both; height: 1px;'></div> 

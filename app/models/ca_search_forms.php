@@ -670,7 +670,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		$va_names = [];
 		while($qr_res->nextRow()) {
 			$t_instance = Datamodel::getInstanceByTableNum($qr_res->get('table_num'), true);
-			$va_restriction_names = array_map(function($v) { return caUcFirstUTF8Safe(caGetListItemByIDForDisplay($v['type_id'], ['return' => $vb_use_singular ? 'singular' : 'plural'])); }, $t_form->getTypeRestrictions(null, ['form_id' => $qr_res->get('form_id')]));
+			$va_restriction_names = array_map(function($v) use ($vb_use_singular) { return caUcFirstUTF8Safe(caGetListItemByIDForDisplay($v['type_id'], ['return' => $vb_use_singular ? 'singular' : 'plural'])); }, $t_form->getTypeRestrictions(null, ['form_id' => $qr_res->get('form_id')]));
 			
 			switch($t_instance->tableName()) {
 				case 'ca_occurrences':

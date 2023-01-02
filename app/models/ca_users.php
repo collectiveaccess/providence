@@ -3578,7 +3578,7 @@ class ca_users extends BaseModel {
 			foreach($va_roles as $vn_role_id => $va_role_info) {
 				$va_vars = $va_role_info['vars'];
 				
-				if (is_array($va_vars['type_access_settings'])) {
+				if (is_array($va_vars['type_access_settings'] ?? null)) {
 					if (isset($va_vars['type_access_settings'][$ps_table_name.'.'.$vn_type_id]) && ((int)$va_vars['type_access_settings'][$ps_table_name.'.'.$vn_type_id] > $vn_access)) {
 						$vn_access = (int)$va_vars['type_access_settings'][$ps_table_name.'.'.$vn_type_id];
 						
@@ -3631,7 +3631,7 @@ class ca_users extends BaseModel {
 		foreach($va_roles as $vn_role_id => $va_role_info) {
 			$va_vars = $va_role_info['vars'];
 			
-			if (!is_array($va_vars['type_access_settings'])) { $va_vars['type_access_settings'] = array(); }
+			if (!is_array($va_vars['type_access_settings'] ?? null)) { $va_vars['type_access_settings'] = array(); }
 			
 			if (is_array($va_available_types)) {
 				foreach($va_available_types as $vn_type_id) {
@@ -3677,7 +3677,7 @@ class ca_users extends BaseModel {
 			foreach($va_roles as $vn_role_id => $va_role_info) {
 				$va_vars = $va_role_info['vars'];
 				
-				if (is_array($va_vars['source_access_settings'])) {
+				if (is_array($va_vars['source_access_settings'] ?? null)) {
 					if (isset($va_vars['source_access_settings'][$ps_table_name.'.'.$vn_source_id]) && ((int)$va_vars['source_access_settings'][$ps_table_name.'.'.$vn_source_id] > $vn_access)) {
 						$vn_access = (int)$va_vars['source_access_settings'][$ps_table_name.'.'.$vn_source_id];
 						
@@ -3731,7 +3731,7 @@ class ca_users extends BaseModel {
 		foreach($va_roles as $vn_role_id => $va_role_info) {
 			$va_vars = $va_role_info['vars'];
 			
-			if (!is_array($va_vars['source_access_settings'])) { $va_vars['source_access_settings'] = array(); }
+			if (!is_array($va_vars['source_access_settings'] ?? null)) { $va_vars['source_access_settings'] = array(); }
 			
 			if(is_array($va_available_sources)) {
 				foreach($va_available_sources as $vn_source_id) {
