@@ -83,7 +83,7 @@
 		print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 	}	
 	
-	$make_link = !strlen(caGetOption('display_template', $va_settings, null));
+	$make_link = !caTemplateHasLinks(caGetOption('display_template', $va_settings, null));
 ?>
 <div id="<?= $vs_id_prefix; ?>" <?= $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php

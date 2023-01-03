@@ -58,7 +58,17 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 		$o_config = Configuration::load();
 		$va_default_locales = $o_config->getList('locale_defaults');
 
-		$va_preferred_locales = array();
+		$va_preferred_locales = [];
+	
+		if (is_array($pa_preferred_locales)) {
+			foreach($pa_preferred_locales as $vs_preferred_locale) {
+				if(is_numeric($vs_preferred_locale)) {
+					$vs_preferred_locale = ca_locales::IDToCode($vs_preferred_locale);
+				}
+				$va_preferred_locales[$vs_preferred_locale] = true;
+			}
+		}
+		
 		$va_similar_locales = [];
 		if ($ps_item_locale) {
 			// if item locale is passed as locale_id we need to convert it to a code
@@ -76,12 +86,6 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 			$va_similar_locales = ca_locales::localesForLanguage($ps_item_locale, ['codesOnly' => true]);
 		}
 
-		if (is_array($pa_preferred_locales)) {
-			foreach($pa_preferred_locales as $vs_preferred_locale) {
-				$va_preferred_locales[$vs_preferred_locale] = true;
-			}
-		}
-
 		$va_fallback_locales = array();
 		if (is_array($va_default_locales)) {
 			foreach($va_default_locales as $vs_fallback_locale) {
@@ -96,7 +100,7 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 		    $va_fallback_locales[$vs_similar_locale] = true;
 		}
 
-		if ($g_ui_locale) {
+		if ($g_ui_locale && !is_array($va_preferred_locales) || !sizeof($va_preferred_locales)) {
 			if (!isset($va_preferred_locales[$g_ui_locale]) || !$va_preferred_locales[$g_ui_locale]) {
 				$va_preferred_locales[$g_ui_locale] = true;
 			}
@@ -2626,6 +2630,17 @@ jQuery(document).ready(function() {
 				return "{$vs_display} {$vs_reltype_disp}";
 				break;
 		}
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Determines if template includes link tags (<l>).
+	 *
+	 * @param string $template
+	 
+	 * @return bool
+	 */
+	function caTemplateHasLinks($template) {
+		return preg_match('!<l>!', $template);
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
