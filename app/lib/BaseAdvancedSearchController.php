@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2020 Whirl-i-Gig
+ * Copyright 2010-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -121,7 +121,7 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 			if (!($vs_search = $t_form->getLuceneQueryStringForHTMLFormInput($_REQUEST))) { // try to get search off of request
 				$vs_search = $this->opo_result_context->getSearchExpression();				// get the search out of the result context
 				$va_form_data = $this->opo_result_context->getParameter('form_data');
-				$vb_is_new_search = !$this->opo_result_context->cacheIsValid() || $this->opb_type_restriction_has_changed;
+				$vb_is_new_search = !$this->opo_result_context->cacheIsValid() || $this->opo_result_context->typeRestrictionHasChanged();
 			} else {
 				$va_form_data = $t_form->extractFormValuesFromArray($_REQUEST);				// ah ok, its an incoming request, so get the form values out for interpretation/processing/whatever
 				$vb_is_new_search = true;
@@ -174,7 +174,7 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 			$this->opo_result_context->setParameter('form_data', $va_form_data);
 			$this->opo_result_context->setSearchExpression($vs_search);
 
-			if($vb_is_new_search || $vb_criteria_have_changed || $vb_sort_has_changed) {
+			if($vb_is_new_search || $vb_criteria_have_changed || $vb_sort_has_changed || $this->type_restriction_has_changed) {
 				$this->opo_result_context->setResultList($vo_result->getPrimaryKeyValues());
 
 				if ($this->opo_result_context->searchExpressionHasChanged()) { $vn_page_num = 1; }
@@ -184,6 +184,7 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 
 			$this->view->setVar('num_hits', $vo_result->numHits());
 			$this->view->setVar('num_pages', $vn_num_pages = ceil($vo_result->numHits()/$vn_items_per_page));
+ 			$this->view->setVar('start', ($vn_page_num - 1) * $vn_items_per_page);
 			if ($vn_page_num > $vn_num_pages) { $vn_page_num = 1; }
 
 			$this->view->setVar('page', $vn_page_num);

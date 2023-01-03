@@ -39,6 +39,10 @@
 
 	$system_helpers_debug_logger = null;
 
+	# ---------------------------------------
+	/**
+	 *
+	 */
 	function getLogger(){
 		global $system_helpers_debug_logger;
 

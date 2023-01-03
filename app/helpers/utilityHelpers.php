@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2021 Whirl-i-Gig
+ * Copyright 2007-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -357,8 +357,10 @@ function caFileIsIncludable($ps_file) {
 		}
 		$limit = caGetOption('limit', $pa_options, null);
 		
-		if($va_paths = scandir($dir, 0)) {
+		if($va_paths = @scandir($dir, 0)) {
 			foreach($va_paths as $item) {
+				if(in_array($item, ["@SynoEAStream", "@eaDir"])) { continue; }
+				if(preg_match("!@SynoEAStream$!", $item)) { continue; }
 				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item[0] !== '.'))) {
 					$va_stat = @stat("{$dir}/{$item}");
 					if (
@@ -684,10 +686,10 @@ function caFileIsIncludable($ps_file) {
 		mb_substitute_character(0xFFFD);
 		$ps_text = mb_convert_encoding($ps_text, 'UTF-8', 'UTF-8');
 
-		return strip_tags($ps_text);
+		//return strip_tags($ps_text);
 
 		// @see http://php.net/manual/en/regexp.reference.unicode.php
-		//return preg_replace("/[^\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{N}\p{P}\p{Zp}\p{Zs}\p{S}]|➔/", '', strip_tags($ps_text));
+		return preg_replace("/[^\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{N}\p{P}\p{Zp}\p{Zs}\p{S}–]|➔/", '', strip_tags($ps_text));
 	}
 	# ---------------------------------------
 	/**
@@ -838,7 +840,13 @@ function caFileIsIncludable($ps_file) {
 		$files_to_delete = caGetDirectoryContentsAsList($user_dir, true, false, false, true, ['notModifiedSince' => time() - $timeout]);
 		$count = 0;
 		foreach($files_to_delete as $file_to_delete) {
-			if(@unlink($file_to_delete)) { $count++; }
+			if(is_writeable($file_to_delete)) {
+				if(is_dir($file_to_delete)) {
+					if (@rmdir($file_to_delete)) { $count++; }
+				} else {
+					if (@unlink($file_to_delete)) { $count++; }
+				}
+			}
 		}
 		
 		// Cleanup orphan metadata files
@@ -1114,6 +1122,7 @@ function caFileIsIncludable($ps_file) {
 	 *		html = if true, then HTML formatted output will be returned; otherwise plain-text output is returned. [Default is false]
 	 *		print = if true output is printed to standard output. [Default is false]
 	 *		skip = number of calls to skip from the top of the stack. [Default is 0]
+	 *		head = limit returned lines to number from top. [Default is null]
 	 * @return string Stack trace output
 	 */
 	function caPrintStacktrace($pa_options=null) {
@@ -1121,7 +1130,10 @@ function caFileIsIncludable($ps_file) {
 		$va_trace = debug_backtrace();
 
 		if (isset($pa_options['skip']) && ($pa_options['skip'] > 0)) {
-			$va_trace = array_slice($va_trace, $pa_options['skip']);
+			$va_trace = array_slice($va_trace, (int)$pa_options['skip']);
+		}
+		if (isset($pa_options['head']) && ($pa_options['head'] > 0)) {
+			$va_trace = array_slice($va_trace, 0, (int)$pa_options['head']);
 		}
 
 		$va_buf = array();
@@ -1416,6 +1428,7 @@ function caFileIsIncludable($ps_file) {
 	 * 		dontRemoveKeyPrefixes = By default keys that are period-delimited will have the prefix before the first period removed (this is to ease sorting by field names). Set to true to disable this behavior. [Default is false]
 	 *      caseInsenstive = Sort case insensitively. [Default is true]
 	 *      naturalSort = Sort case insensitively and only considers letters and numbers in sort, stripping punctuation and other characters. [Default is false]
+	 *		mode = PHP sort mode to use. [Default is null; use string sort]
 	 * @return array The sorted array
 	*/
 	function caSortArrayByKeyInValue($pa_values, $pa_sort_keys, $ps_sort_direction="ASC", $pa_options=null) {
@@ -1448,7 +1461,7 @@ function caFileIsIncludable($ps_file) {
 			}
 			$va_sorted_by_key[join('/', $va_key)][$vn_id] = $va_data;
 		}
-		ksort($va_sorted_by_key);
+		ksort($va_sorted_by_key, caGetOption('mode', $pa_options, null));
 		if (strtolower($ps_sort_direction) == 'desc') {
 			$va_sorted_by_key = array_reverse($va_sorted_by_key);
 		}
@@ -1563,11 +1576,11 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
-	 * Returns the media class to which a MIME type belongs, or null if the MIME type does not belong to a class. Possible classes are 'image', 'video', 'audio' and 'document'
+	 * Returns the media class to which a MIME type belongs, or null if the MIME type does not belong to a class. Possible classes are 'image', 'video', 'audio', 'document', '3d', 'vr' and 'binary'.
 	 *
 	 * @param string $ps_mimetype A media MIME type
 	 *
-	 * @return string The media class that includes the specified MIME type, or null if the MIME type does not belong to a class. Returned classes are 'image', 'video', 'audio' and 'document'
+	 * @return string The media class that includes the specified MIME type, or null if the MIME type does not belong to a class. Returned classes are 'image', 'video', 'audio', 'document', '3d', 'vr' and 'binary'
 	 */
 	function caGetMediaClass($ps_mimetype) {
 		$va_tmp = explode("/", $ps_mimetype);
@@ -1590,11 +1603,32 @@ function caFileIsIncludable($ps_file) {
 					case 'text/html':
 					case 'text/plain':
 					case 'application/msword':
+					case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+					case 'application/vnd.ms-excel':
+					case 'application/vnd.ms-powerpoint':
+					case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+					case 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
 						return 'document';
 						break;
 					case 'x-world/x-qtvr':
 					case 'application/x-shockwave-flash':
 						return 'video';
+						break;
+					case 'application/dicom':
+						return 'image';
+						break;
+					case 'application/ply':
+					case 'application/stl':
+					case 'text/prs.wavefront-obj':
+					case 'application/surf':
+					case 'model/gltf+json':
+						return '3d';
+						break;
+					case 'x-world/x-qtvr':
+						return 'vr';
+						break;
+					case 'application/octet-stream':
+						return 'binary';
 						break;
 				}
 				break;
@@ -2832,28 +2866,37 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 * Parse currency value and return array with value and currency type.
 	 *
-	 * @param string $ps_value
-	 * @return array
+	 * @param string $value Currency value, including currency specifier
+	 * @param string $locale Locale to parse value under. [Default is to use current user interface locale, or if not defined the system default locale]
+	 *
+	 * @return array An array with keys for currency specifier ("currency") and decimal amount ("value")
 	 */
-	function caParseCurrencyValue($ps_value) {
+	function caParseCurrencyValue(string $value, $locale=null) : ?array {
+		global $g_ui_locale;
+		if(!$locale) { $locale = $g_ui_locale; }
+		if(!$locale && defined('__CA_DEFAULT_LOCALE__')) { $locale = __CA_DEFAULT_LOCALE__; }
+		
 		// it's either "<something><decimal>" ($1000) or "<decimal><something>" (1000 EUR) or just "<decimal>" with an implicit <something>
-
-		// either
-		if (preg_match("!^([^\d]+)([\d\.\,]+)$!", trim($ps_value), $va_matches)) {
-			$vs_decimal_value = round((float)str_replace(',', '', $va_matches[2]), 2);
-			$vs_currency_specifier = trim($va_matches[1]);
-		// or 1
-		} else if (preg_match("!^([\d\.\,]+)([^\d]+)$!", trim($ps_value), $va_matches)) {
-			$vs_decimal_value = round((float)str_replace(',', '', $va_matches[1]), 2);
-			$vs_currency_specifier = trim($va_matches[2]);
-		// or 2
-		} else if (preg_match("!(^[\d\,\.]+$)!", trim($ps_value), $va_matches)) {
-			$vs_decimal_value = round((float)str_replace(',', '', $va_matches[1]), 2);
-			$vs_currency_specifier = null;
+		try {
+			// either
+			if (preg_match("!^([^\d]+)([\d\.\,]+)$!", trim($value), $matches)) {
+				$decimal_value = (strpos($matches[2], ',') !== false) ? Zend_Locale_Format::getNumber($matches[2], ['locale' => $g_locale, 'precision' => 2]) : (float)$matches[2];
+				$currency_specifier = trim($matches[1]);
+			// or 1
+			} else if (preg_match("!^([\d\.\,]+)([^\d]+)$!", trim($value), $matches)) {
+				$decimal_value = (strpos($matches[1], ',') !== false) ? Zend_Locale_Format::getNumber($matches[1], ['locale' => $g_locale, 'precision' => 2]) : (float)$matches[1];
+				$currency_specifier = trim($matches[2]);
+			// or 2
+			} else if (preg_match("!(^[\d\,\.]+$)!", trim($value), $matches)) {
+				$decimal_value = (strpos($matches[1], ',') !== false) ? Zend_Locale_Format::getNumber($matches[1], ['locale' => $g_locale, 'precision' => 2]) : (float)$matches[1];
+				$currency_specifier = null;
+			}
+		} catch (Zend_Locale_Exception $e){
+			return null;
 		}
 
-		if ($vs_currency_specifier || ($vs_decimal_value > 0)) {
-			return ['currency' => $vs_currency_specifier, 'value' => $vs_decimal_value];
+		if ($currency_specifier || ($decimal_value > 0)) {
+			return ['currency' => $currency_specifier, 'value' => round($decimal_value, 2)];
 		}
 		return null;
  	}
@@ -2898,7 +2941,7 @@ function caFileIsIncludable($ps_file) {
 			return ['width' => (int)$pn_target_width, 'height' => (int)$pn_target_height];
 		}
 		
-		if ($$pn_original_width > $pn_original_height) {
+		if ($pn_original_width > $pn_original_height) {
 			$vn_scale_factor = $pn_target_width/$pn_original_width;
 			$pn_target_height = $vn_scale_factor * $pn_original_height;
 		} else {
@@ -3740,11 +3783,11 @@ function caFileIsIncludable($ps_file) {
 	    }
 	    if ($po_request) {
 	        if (!is_array($va_tokens = PersistentCache::fetch("csrf_tokens_{$session_id}", "csrf_tokens"))) { $va_tokens = []; }
-	        if (sizeof($va_tokens) > 300) { 
-	        	$va_tokens = array_filter($va_tokens, function($v) { return ($v > (time() - 28800)); });	// delete any token older than eight hours
+	        if (sizeof($va_tokens) > 2000) { 
+	        	$va_tokens = array_filter($va_tokens, function($v) { return ($v > (time() - 86400)); });	// delete any token older than eight hours
 	    	}
-	    	if (sizeof($va_tokens) > 600) { 
-	    		$va_tokens = array_slice($va_tokens, 0, 200, true); // delete last third of token buffer if it gets too long
+	    	if (sizeof($va_tokens) > 2000) { 
+	    		$va_tokens = array_slice($va_tokens, 0, 500, true); // delete last quarter of token buffer if it gets too long
 	    	}
 	    
 	        if (!isset($va_tokens[$vs_token])) { $va_tokens[$vs_token] = time(); }
@@ -4353,7 +4396,7 @@ function caFileIsIncludable($ps_file) {
 						if (
 							($vb_is_ca_get_ref && !$vb_have_seen_param_delimiter && (!preg_match("![A-Za-z0-9_\-\.~:]!", $vs_char)))
 							||
-							(($vs_char === ':') && !preg_match("!^[A-Za-z0-9]+!", mb_substr($ps_template, $i + 1)))	// colon not followed by letters of numbers is not part of tag
+							(($vs_char === ':') && !preg_match("!^[:]*[A-Za-z0-9]+!", mb_substr($ps_template, $i + 1)))	// colon not followed by letters, numbers or another colon is not part of tag
 						) {
 							if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
 							$vs_tag = '';
@@ -4378,8 +4421,8 @@ function caFileIsIncludable($ps_file) {
 
 			if ($vb_is_ca_tag && (strpos($vs_tag, '%') === false)) {
 				// ca_* tags that don't have modifiers always end whenever a non-alphanumeric character is encountered
-				$vs_tag = preg_replace("![^0-9\p{L}_]+$!u", "", $vs_tag);
-			} elseif(preg_match("!^([\d]+)[^0-9\p{L}_]+!", $vs_tag, $va_matches)) {
+				$vs_tag = preg_replace("![^0-9/\p{L}_]+$!u", "", $vs_tag);
+			} elseif(preg_match("!^([\d]+)[^0-9/\p{L}_]+!", $vs_tag, $va_matches)) {
 				// tags beginning with numbers followed by non-alphanumeric characters are truncated to number-only tags
 				$vs_tag = $va_matches[1];
 			}
@@ -4433,33 +4476,100 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 * Convert string or array of strings in snake-case to camel-case
 	 *
-	 * @param array $array1
-	 * @param array $array2
+	 * @param array|string $text
 	 *
-	 * @return array
+	 * @return array|string
 	 */
-	function caSnakeToCamel($pm_text) {
-	    if(is_array($pm_text)) {
-	        return array_map(function($v) { return preg_replace_callback("!_([A-Za-z0-9]{1})!", function($m) { return strtoupper($m[1]); }, $v); }, $pm_text);
-	    } else {
-	        return preg_replace_callback("!_([A-Za-z0-9]{1})!", function($m) { return strtoupper($m[1]); }, $pm_text);
+	function caSnakeToCamel($text) {
+	    if(!($is_array = is_array($text))) {
+	    	$text = [$text];
 	    }
+		$vals = array_map(function($v) { return preg_replace_callback("!_([A-Za-z0-9]{1})!", function($m) { return strtoupper($m[1]); }, $v); }, $text);
+	
+		return $is_array ? $vals : array_shift($vals);
+	}
+	# ----------------------------------------
+	/**
+	 * Convert string or array of strings to camel-case
+	 *
+	 * @param array|string $text
+	 *
+	 * @return array|string
+	 */
+	function caTextToCamel($text) {
+	    if(!($is_array = is_array($text))) {
+	    	$text = [$text];
+	    }
+		$vals = array_map(function($v) { return trim(preg_replace_callback("! ([A-Za-z0-9]{1})!", function($m) { return strtoupper($m[1]); }, strtolower($v))); }, $text);
+		
+		return $is_array ? $vals : array_shift($vals);
 	}
 	# ----------------------------------------
 	/**
 	 * Convert string or array of strings in camel-case to snake-case
 	 *
-	 * @param array $array1
-	 * @param array $array2
+	 * @param array|string $text
 	 *
 	 * @return array|string
 	 */
-	function caCamelToSnake($pm_text) {
-	    if(is_array($pm_text)) {
-	        return array_map(function($v) { return trim(preg_replace_callback("!([A-Z]{1})!", function($m) { return strtolower($m[1]); }, $v), '_'); }, $pm_text);
-	    } else {
-	        return trim(preg_replace_callback("!([A-Z]{1})!", function($m) { return strtoupper($m[1]); }, $pm_text), '_');
+	function caCamelToSnake($text) {
+	    if(!($is_array = is_array($text))) {
+	    	$text = [$text];
 	    }
+		$vals = array_map(function($v) { return preg_replace_callback("!([A-Z]{1})!", function($m) { return '_'.strtolower($m[1]); }, $v); }, $text);
+		
+		return $is_array ? $vals : array_shift($vals);
+	}
+	# ----------------------------------------
+	/**
+	 * Convert string or array of strings to snake-case
+	 *
+	 * @param array|string $text
+	 *
+	 * @return array|string
+	 */
+	function caTextToSnake($text) {
+	    if(!($is_array = is_array($text))) {
+	    	$text = [$text];
+	    }
+		$vals = array_map(function($v) { return trim(strtolower(preg_replace("![^A-Za-z0-9]+!", '_', $v)), '_'); }, $text);
+	
+		return $is_array ? $vals : array_shift($vals);
+	}
+	# ----------------------------------------
+	/**
+	 * Convert string or array of strings from camel-case or snake-case to display text
+	 *
+	 * @param array|string $text
+	 * @param array $options Options include
+	 *		ucFirst = Return values with first characters of first word forced to uppercase. [Default is false]
+	 *		ucWords = Return values with first character of each word forced to uppercase. [Default is false]
+	 *
+	 * @return array|string
+	 */
+	function caCamelOrSnakeToText($text, ?array $options=null) {
+	    if(!($is_array = is_array($text))) {
+	    	$text = [$text];
+		}
+		$vals = array_map(function($v) { 
+			$is_snake = (strpos($v, '_') !== false);
+			
+			if($is_snake) {
+				return trim(preg_replace_callback("!_([A-Za-z0-9]{1})!", function($m) { return ' '.strtolower($m[1]); }, $v)); 
+			} else {
+				return trim(preg_replace_callback("!([A-Z]{1})!", function($m) { return ' '.strtolower($m[1]); }, $v)); 
+			}
+		}, $text);
+		
+		if(caGetOption('ucFirst', $options, false)) {
+			$vals = array_map('ucfirst', $vals);
+		}
+		if(caGetOption('ucWords', $options, false)) {
+			$vals = array_map('ucWords', $vals);
+		}
+		$vals = array_map(function($v) { return preg_replace("![ ]+!", " ", $v); }, $vals);
+		
+		return $is_array ? $vals : array_shift($vals);
 	}
 	# ----------------------------------------
 	/**
@@ -4716,4 +4826,34 @@ function caFileIsIncludable($ps_file) {
 		$config->set('URI.DisableExternalResources', !Configuration::load()->get('purify_allow_external_references'));
 		return new HTMLPurifier($config); 
 	}
+	# ----------------------------------------
+	/**
+	 * Classify alphabet used by a string. Detection is simplistic: if the string contains
+	 * any characters from one of the supported alphabets it is considered to be in that alphabet.
+	 * Alphabets are tested in order: Han (Chinese), Hiragana (Japanese), Katakana (Japanese), Hangul (Korean),
+	 * Cyrillic (Russian, Etc.), Greek, Hebrew, and Latin. If no specific alphabet is detected null is returned.
+	 *
+	 * @param string Text to test
+	 * @return string Alphabet designator or null. Designators are HIRAGANA|KATAKANA|HAN|HANGUL|CYRILLIC|GREEK|HEBREW|LATIN
+	 */
+	function caIdentifyAlphabet(string $text) : ?string {
+		if(preg_match_all('/\p{Hiragana}/u', $text, $result)) {
+			return 'HIRAGANA';
+		} elseif(preg_match_all('/\p{Katakana}/u', $text, $result)) {
+			return 'KATAKANA';
+		} elseif(preg_match_all('/\p{Han}/u', $text, $result)) {
+			return 'HAN';
+		} elseif(preg_match_all('/\p{Hangul}/u', $text, $result)) {
+			return 'HANGUL';
+		} elseif(preg_match_all('/(\p{Cyrillic}+)/u', $text, $result)) {
+			return 'CYRILLIC';
+		} elseif(preg_match_all('/(\p{Latin}+)/u', $text, $result)) {
+			return 'GREEK';
+		} elseif(preg_match_all('/(\p{Greek}+)/u', $text, $result)) {
+			return 'HEBREW';
+		} elseif(preg_match_all('/(\p{Hebrew}+)/u', $text, $result)) {
+			return 'LATIN';
+		}
+		return null;
+    }
 	# ----------------------------------------

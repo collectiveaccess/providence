@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2021 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,6 +35,7 @@
  */
 
 require_once(__CA_APP_DIR__."/helpers/printHelpers.php");
+require_once(__CA_APP_DIR__."/helpers/themeHelpers.php");
 require_once(__CA_LIB_DIR__."/ResultContext.php");
 require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 require_once(__CA_LIB_DIR__.'/Print/PDFRenderer.php');
@@ -249,11 +250,11 @@ class BaseEditorController extends ActionController {
 		if($vn_subject_id && $vs_rel_table && $vn_rel_type_id && $vn_rel_id) {
 			if(Datamodel::tableExists($vs_rel_table)) {
 				Debug::msg("[Save()] Relating new record using parameters from request: $vs_rel_table / $vn_rel_type_id / $vn_rel_id");
-				$t_subject->addRelationship($vs_rel_table, $vn_rel_id, $vn_rel_type_id, _t('now'));
+				if(!$t_subject->relationshipExists($vs_rel_table, $vn_rel_id, $vn_rel_type_id)) { 
+					$t_subject->addRelationship($vs_rel_table, $vn_rel_id, $vn_rel_type_id, _t('now'));
+				}
 			}
 			$this->notification->addNotification(_t("Added relationship"), __NOTIFICATION_TYPE_INFO__);
-			$this->render('screen_html.php');
-			return;
 		}
 
 		if (in_array($this->ops_table_name, array('ca_representation_annotations'))) { $vs_auth_table_name = 'ca_objects'; }
@@ -291,7 +292,9 @@ class BaseEditorController extends ActionController {
 		}
 
 		$vb_is_insert = !$t_subject->getPrimaryKey();
-
+		
+		$t_subject->isChild();	// sets idno "child" flag
+		
 		# trigger "BeforeSaveItem" hook
 		$this->opo_app_plugin_manager->hookBeforeSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => &$t_subject, 'is_insert' => $vb_is_insert));
 
@@ -302,6 +305,9 @@ class BaseEditorController extends ActionController {
 				$this->_afterSave($t_subject, $vb_is_insert);
 			} elseif($t_subject->hasErrorNumInRange(3600, 3699)) {
 				$vb_no_save_error = true;
+			}
+			if($t_subject->numErrors() > 0) {
+				$this->request->addActionErrors($t_subject->errors, 'saveBundlesForScreen');
 			}
 		}
 		$this->view->setVar('t_ui', $t_ui);
@@ -550,7 +556,9 @@ class BaseEditorController extends ActionController {
 						}
 						$vn_child_count++;
 					}
-					$this->notification->addNotification(($vn_child_count == 1) ? _t("Deleted %1 child", $vn_child_count) : _t("Deleted %1 children", $vn_child_count), __NOTIFICATION_TYPE_INFO__);
+					if($vn_child_count > 0) {
+						$this->notification->addNotification(($vn_child_count == 1) ? _t("Deleted %1 child", $vn_child_count) : _t("Deleted %1 children", $vn_child_count), __NOTIFICATION_TYPE_INFO__);
+					}
 				}
 			}
 		
@@ -705,18 +713,6 @@ class BaseEditorController extends ActionController {
 			$this->view->setVar('placements', $va_display_list['displayList']);
 			
 		}
-		
-		// Summary formats list
-		$formats = [];
-		if(is_array($available_templates = caGetAvailablePrintTemplates('summary', ['table' => $t_subject->tableName(), 'restrictToTypes' => $t_subject->getTypeID()]))) {
-            $num_available_templates = sizeof($available_templates);
-            foreach($available_templates as $k => $v) {
-                if (($num_available_templates > 1) && (bool)$v['generic']) { continue; }    // omit generics from list when specific templates are available
-                $formats[$v['code']] = $v['name'].' ('.$v['type'].')';
-            }
-        }
-		$this->view->setVar('formats', $formats);
-		
 		$this->view->setVar($t_subject->tableName().'_summary_last_settings', Session::getVar($t_subject->tableName().'_summary_last_settings'));
 		
 		$this->opo_app_plugin_manager->hookSummarizeItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject));
@@ -741,7 +737,16 @@ class BaseEditorController extends ActionController {
 		$t_display = new ca_bundle_displays();
 		$va_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays(array('table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'restrictToTypes' => array($t_subject->getTypeID()))));
 
-		if ((!($vn_display_id = $this->request->getParameter('display_id', pInteger))) || !isset($va_displays[$vn_display_id])) {
+		$vn_display_id = $this->request->getParameter('display_id', pString);
+		$ps_template = $this->request->getParameter('template', pString);
+		
+		// PDF templates set in the display list need to be remapped to the template parameter
+		if(substr($vn_display_id, 0, 4) === '_pdf') {
+			$ps_template = $vn_display_id;
+			$vn_display_id = null;
+		}
+
+		if ((!$vn_display_id ) || !isset($va_displays[$vn_display_id])) {
 			$vn_display_id = $this->request->user->getVar($t_subject->tableName().'_summary_display_id');
 		}
 		
@@ -793,13 +798,13 @@ class BaseEditorController extends ActionController {
 		} else {
 			$vn_display_id = null;
 			$this->view->setVar('display_id', null);
-			$this->view->setVar('placements', array());
+			$this->view->setVar('placements', []);
 		}
 
 		//
 		// PDF output
 		//
-		if (($ps_template = $this->request->getParameter('template', pString)) && (preg_match("!^_([A-Za-z0-9]+)_(.*)$!", $ps_template, $m)) && (in_array($m[1], ['pdf', 'docx'])) && is_array($va_template_info = caGetPrintTemplateDetails('summary', $m[2]))) {
+		if ($ps_template && (preg_match("!^_([A-Za-z0-9]+)_(.*)$!", $ps_template, $m)) && (in_array($m[1], ['pdf', 'docx'])) && is_array($va_template_info = caGetPrintTemplateDetails('summary', $m[2]))) {
 		    $last_settings['template'] = $ps_template;
 		} else {		
             // When no display is specified (or valid) and no template is specified try loading the default summary format for the table
@@ -1205,6 +1210,7 @@ class BaseEditorController extends ActionController {
         
 		// pass relationship parameters to Save() action from Edit() so
 		// that we can create a relationship for a newly created object
+		$vs_rel_table = $vn_rel_type_id = $vn_rel_id = null;
 		if($vs_rel_table = $this->getRequest()->getParameter('rel_table', pString)) {
 			$vn_rel_type_id = $this->getRequest()->getParameter('rel_type_id', pString);
 			$vn_rel_id = $this->getRequest()->getParameter('rel_id', pInteger);
@@ -1214,8 +1220,6 @@ class BaseEditorController extends ActionController {
 				$this->view->setVar('rel_type_id', $vn_rel_type_id);
 				$this->view->setVar('rel_id', $vn_rel_id);
 			}
-
-			return array($vn_subject_id, $t_subject, $t_ui, null, null, null, $vs_rel_table, $vn_rel_type_id, $vn_rel_id);
 		}
 
 		if ($vs_parent_id_fld = $t_subject->getProperty('HIERARCHY_PARENT_ID_FLD')) {
@@ -1248,10 +1252,10 @@ class BaseEditorController extends ActionController {
 					$t_subject->set('idno', $t_parent->get('idno'));
 				}
 			}
-			return array($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vn_after_id);
+			return array($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vn_after_id, $vs_rel_table, $vn_rel_type_id, $vn_rel_id);
 		}
 
-		return array($vn_subject_id, $t_subject, $t_ui);
+		return array($vn_subject_id, $t_subject, $t_ui, null, null, null, $vs_rel_table, $vn_rel_type_id, $vn_rel_id);
 	}
 	# -------------------------------------------------------
 	# Dynamic navigation generation
@@ -1341,8 +1345,9 @@ class BaseEditorController extends ActionController {
 			    
 				if (is_array($va_restrict_to_types) && !in_array($vn_item_id, $va_restrict_to_types)) { continue; }
 				if ($va_item['parent_id'] != $vn_root_id) { continue; }
+				
 				// does this item have sub-items?
-				$va_subtypes = array();
+				$va_subtypes = [];
 				
 				if (
 					(!$show_top_level_types_only && !(bool)$enforce_strict_type_hierarchy)
@@ -1351,7 +1356,7 @@ class BaseEditorController extends ActionController {
 						// If in strict mode and a top-level type is disabled, then show sub-types so user can select an enabled type
 				) {
 					if (isset($va_item['item_id']) && isset($va_types_by_parent_id[$va_item['item_id']]) && is_array($va_types_by_parent_id[$va_item['item_id']])) {
-						$va_subtypes = $this->_getSubTypes($va_types_by_parent_id[$va_item['item_id']], $va_types_by_parent_id, $vn_sort_type, $va_restrict_to_types, ['firstEnabled' => !$show_top_level_types_only && (bool)$enforce_strict_type_hierarchy && !(bool)$va_item['is_enabled']]);
+						$va_subtypes = $this->_getSubTypes($va_types_by_parent_id[$va_item['item_id']], $va_types_by_parent_id, $vn_sort_type, $va_restrict_to_types, ['level' => 1, 'firstEnabled' => !$show_top_level_types_only && (bool)$enforce_strict_type_hierarchy && !(bool)$va_item['is_enabled']]);
 					}
 				}
 
@@ -1370,14 +1375,32 @@ class BaseEditorController extends ActionController {
 						$vs_key = $va_item['idno_sort'];
 						break;
 				}
-				$va_types[$vs_key][] = array(
-					'displayName' => $va_item['name_singular'],
-					'parameters' => array(
-						'type_id' => $va_item['item_id']
-					),
-					'is_enabled' => $va_item['is_enabled'],
-					'navigation' => $va_subtypes
-				);
+				
+				if($this->getRequest()->config->get($this->ops_table_name.'_navigation_new_menu_use_indented_type_lists')) {
+					$no_new_submenu = $this->getRequest()->config->get($this->ops_table_name.'_no_new_submenu'); 
+					$va_types[$vs_key][] = array(
+						'displayName' => $va_item['name_singular'],
+						'parameters' => array(
+							'type_id' => $va_item['item_id']
+						),
+						'is_enabled' => $va_item['is_enabled'],
+						'navigation' => $no_new_submenu ? $va_subtypes : []
+					);
+					if(!$no_new_submenu) {
+						foreach($va_subtypes as $sitem) {
+							$va_types[$vs_key][] = $sitem;
+						}
+					}
+				} else {
+					$va_types[$vs_key][] = array(
+						'displayName' => $va_item['name_singular'],
+						'parameters' => array(
+							'type_id' => $va_item['item_id']
+						),
+						'is_enabled' => $va_item['is_enabled'],
+						'navigation' => $va_subtypes
+					);
+				}
 			}
 			ksort($va_types);
 		}
@@ -1407,6 +1430,9 @@ class BaseEditorController extends ActionController {
 	private function _getSubTypes($pa_subtypes, $pa_types_by_parent_id, $pn_sort_type, $pa_restrict_to_types=null, $options=null) {
 		$va_subtypes = array();
 		$first_enabled = caGetOption('firstEnabled', $options, false);
+		$level = caGetOption('level', $options, 0);
+		
+		$use_indented_lists = $this->getRequest()->config->get($this->ops_table_name.'_navigation_new_menu_use_indented_type_lists');
 		
 		foreach($pa_subtypes as $vn_i => $va_type) {
 			if (is_array($pa_restrict_to_types) && !in_array($va_type['item_id'], $pa_restrict_to_types)) { continue; }
@@ -1414,7 +1440,7 @@ class BaseEditorController extends ActionController {
 			if ($first_enabled && $va_type['is_enabled']) {
 				$va_subsubtypes = [];	// in "first enabled" mode we don't pull subtypes when we encounter an enabled item
 			} elseif (isset($pa_types_by_parent_id[$va_type['item_id']]) && is_array($pa_types_by_parent_id[$va_type['item_id']])) {
-				$va_subsubtypes = $this->_getSubTypes($pa_types_by_parent_id[$va_type['item_id']], $pa_types_by_parent_id, $pn_sort_type, $pa_restrict_to_types, $options);
+				$va_subsubtypes = $this->_getSubTypes($pa_types_by_parent_id[$va_type['item_id']], $pa_types_by_parent_id, $pn_sort_type, $pa_restrict_to_types, array_merge($options, ['level' => $level + 1]));
 			} else {
 				$va_subsubtypes = [];
 			}
@@ -1435,14 +1461,29 @@ class BaseEditorController extends ActionController {
 					break;
 			}
 
-			$va_subtypes[$vs_key][$va_type['item_id']] = array(
-				'displayName' => $va_type['name_singular'],
-				'parameters' => array(
-					'type_id' => $va_type['item_id']
-				),
-				'is_enabled' => $va_type['is_enabled'],
-				'navigation' => $va_subsubtypes
-			);
+			if($use_indented_lists) {
+				$offset = $level * 16;
+				$va_subtypes[$vs_key][$va_type['item_id']] = array(
+					'displayName' => "<span style='margin-left:{$offset}px'>".$va_type['name_singular']."</span>",
+					'parameters' => array(
+						'type_id' => $va_type['item_id']
+					),
+					'is_enabled' => $va_type['is_enabled'],
+					'navigation' => []
+				);
+				foreach($va_subsubtypes as $item_id => $item) {
+					$va_subtypes[$vs_key][$item_id] = $item;
+				}
+			} else {
+				$va_subtypes[$vs_key][$va_type['item_id']] = array(
+					'displayName' => $va_type['name_singular'],
+					'parameters' => array(
+						'type_id' => $va_type['item_id']
+					),
+					'is_enabled' => $va_type['is_enabled'],
+					'navigation' => $va_subsubtypes
+				);
+			}
 		}
 
 		ksort($va_subtypes);
@@ -2412,15 +2453,19 @@ class BaseEditorController extends ActionController {
 
 		$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
 
-		if (!($t_rep = ca_object_representations::findAsInstance(['representation_id' => $pn_representation_id]))) {
-			throw new ApplicationException(_t('Invalid representation'));
-		}
-		if(!$t_rep->isReadable($this->request->user)) {
-			throw new ApplicationException(_t('Access denied'));
-		}
-		
-		$m = $t_rep->getMediaInfo('media', 'original', 'MIMETYPE'); 
-		$di = caGetMediaDisplayInfo('media_overlay', $m);	
+		$di = [];
+		if($pn_representation_id) {
+			if (!($t_rep = ca_object_representations::findAsInstance(['representation_id' => $pn_representation_id]))) {
+				throw new ApplicationException(_t('Invalid representation'));
+			}
+			if(!$t_rep->isReadable($this->request->user)) {
+				throw new ApplicationException(_t('Access denied'));
+			}
+			
+			$m = $t_rep->getMediaInfo('media', 'original', 'MIMETYPE'); 
+			$di = caGetMediaDisplayInfo('media_overlay', $m);	
+		}	
+	
 		if (!$ps_version) { $ps_version = caGetOption('download_version', $di, 'original'); }
 
 		$o_view->setVar('version', $ps_version);
@@ -2480,6 +2525,8 @@ class BaseEditorController extends ActionController {
 				// Perform metadata embedding
 				if (isset($va_rep['representation_id']) && ($va_rep['representation_id'] > 0)) {
                     $t_rep = new ca_object_representations($va_rep['representation_id']);
+                    if(!$t_rep->isReadable($this->request->user)) { continue; }
+                    
                     if(!($vs_path = caEmbedMediaMetadataIntoFile($t_rep->getMediaPath('media', $ps_version),
                         $t_subject->tableName(), $t_subject->getPrimaryKey(), $t_subject->getTypeCode(), // subject table info
                         $t_rep->getPrimaryKey(), $t_rep->getTypeCode() // rep info
@@ -2525,7 +2572,7 @@ class BaseEditorController extends ActionController {
 				
 			}
 			$o_view->setVar('zip_stream', $o_zip);
-			$o_view->setVar('archive_name', caGetMediaDownloadArchiveName($t_subject->tableName(), $vn_subject_id, ['extension' => 'zip'])); //preg_replace('![^A-Za-z0-9\.\-]+!', '_', trim($t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD')), "/")).'.zip');
+			$o_view->setVar('archive_name', caGetMediaDownloadArchiveName($t_subject->tableName(), $vn_subject_id, ['extension' => 'zip']));
 		} else {
 			foreach($va_file_paths as $vs_path => $vs_name) {
 				$o_view->setVar('archive_path', $vs_path);
@@ -2636,17 +2683,30 @@ class BaseEditorController extends ActionController {
 		$user_dir = caGetMediaUploadPathForUser($user_id);
 
 		if(is_array($_FILES['files'])) {
+			// used by ca_object_representations bundle file uploader and media importer drag-and-drop file uploads
 			foreach($_FILES['files']['tmp_name'] as $i => $f) {
 				if(!strlen($f)) { continue; }
 				
 				$dest_filename = isset($_FILES['files']['name'][$i]) ? $_FILES['files']['name'][$i] : pathinfo($f, PATHINFO_FILENAME);
-				@copy($f, $dest_path = "{$user_dir}/{$dest_filename}");
+				if(!@copy($f, $dest_path = "{$user_dir}/{$dest_filename}")) { continue; }
 
 				$stored_files[$dest_filename] = caGetUserDirectoryName($this->request->getUserID())."/{$dest_filename}"; // only return the user directory and file name, not the entire path
 			}
+			$this->response->addContent(json_encode(['files' => array_values($stored_files), 'msg' => _t('Uploaded %1 files', sizeof($stored_files))]));
+		} else {
+			// assume single file in each key (used by Quickadd file and media attribute upload process)
+			foreach($_FILES as $k => $info) {
+				if(!is_array($info) || !array_key_exists('tmp_name', $info) || !strlen($info['tmp_name'])) { continue; }
+				
+				$dest_filename = isset($info['name']) ? $info['name'] : pathinfo($info['tmp_name'], PATHINFO_FILENAME);
+				if(!@copy($info['tmp_name'], $dest_path = "{$user_dir}/{$dest_filename}")) { continue; }
+
+				$stored_files[$k] = caGetUserDirectoryName($this->request->getUserID())."/{$dest_filename}"; // only return the user directory and file name, not the entire path
+			}
+			
+			$this->response->addContent(json_encode(['files' => $stored_files, 'msg' => _t('Uploaded %1 files', sizeof($stored_files))]));
 		}
 
-		$this->response->addContent(json_encode(['files' => array_values($stored_files), 'msg' => _t('Uploaded %1 files', sizeof($stored_files))]));
 	}
 	# -------------------------------------------------------
 	/**
@@ -2708,14 +2768,40 @@ class BaseEditorController extends ActionController {
 		if (!$placement->isLoaded()) {
 			throw new ApplicationException(_('Invalid placement_id'));
 		}
-		$t_instance = Datamodel::getInstance($placement->getEditorType(), true);
+		$editor_table = $placement->getEditorType();
+		$t_instance = Datamodel::getInstance($editor_table, true);
 		$vn_primary_id = $this->getRequest()->getParameter('primary_id', pInteger);
 		if (!($t_instance->load($vn_primary_id))) { 
 			throw new ApplicationException(_('Invalid id'));
 		}
 		
-		$table = preg_replace("!_related_list$!", "", $placement->get('bundle_name'));
-		$ids = $t_instance->getRelatedItems($table, ['showCurrentOnly' => $placement->getSetting('showCurrentOnly'), 'returnAs' => 'ids', 'restrictToTypes' => $placement->getSetting('restrict_to_types'), 'restrictToRelationshipTypes' => $placement->getSetting('restrict_to_relationship_types'), ]);
+		$bundle_name = $placement->get('bundle_name');
+		
+		switch($bundle_name) {
+			case 'history_tracking_current_contents':
+				if(!($policy = $placement->getSetting('policy'))) {
+					throw new ApplicationException(_('No policy set'));
+				}
+				if(!is_array($policy_config = $editor_table::getPolicyConfig($policy))) {
+					throw new ApplicationException(_('Could not get policy configuration for policy %1', $policy));
+				}
+				if(!($table = $policy_config['table']) || !Datamodel::tableExists($table)) {
+					throw new ApplicationException(_('Invalid table %1 in policy %2', $table, $policy));
+				}
+				$ids = $t_instance->getContents($policy, array_merge($placement->getSettings(), ['idsOnly' => true]));
+				break;
+			default:
+				// relationship bundles
+				$table = preg_replace("!_related_list$!", "", $bundle_name);
+		
+				if($ids = $this->request->getParameter('ids', pString)) {
+					$ids = explode(";", $ids);
+				} else {
+					$ids = $t_instance->getRelatedItems($table, ['showCurrentOnly' => $placement->getSetting('showCurrentOnly'), 'policy' => $placement->getSetting('policy'), 'returnAs' => 'ids', 'restrictToTypes' => $placement->getSetting('restrict_to_types'), 'restrictToRelationshipTypes' => $placement->getSetting('restrict_to_relationship_types'), ]);
+				}
+				break;
+		}
+	
 		if(!$ids || !sizeof($ids)) { 
 			throw new ApplicationException(_('No related items'));
 		}

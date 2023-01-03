@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2021 Whirl-i-Gig
+ * Copyright 2004-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1097,6 +1097,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				
 				$captions = 		caGetOption("captions", $options, array(), array('castTo' => 'array'));
 				
+				$controls = 		caGetOption("controls", $options, ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'fullscreen'], ['castTo' => 'array']);
 				ob_start();
 ?>
 				<video id="<?= $id; ?>" playsinline controls data-poster="<?= $poster_frame_url; ?>" width="<?= $width; ?>" height="<?= $height; ?>" >
@@ -1114,10 +1115,11 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 						options = {
 							debug: false,
 							iconUrl: '<?= __CA_URL_ROOT__; ?>/assets/plyr/plyr.svg',
-							controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'fullscreen'],
+							controls: [<?= join(',', array_map(function($v) { return "'".addslashes(preg_replace("![\"']+!", '', $v))."'"; }, $controls)); ?>],
 						};
 						const player = new Plyr('#<?= $id; ?>', options);
 						jQuery('#<?= $id; ?>').data('player', player);
+						if (caUI.mediaPlayerManager) { caUI.mediaPlayerManager.register("<?= $id; ?>", player, 'Plyr'); }
 					});
 				</script>
 <?php

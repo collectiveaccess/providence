@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2020 Whirl-i-Gig
+ * Copyright 2018-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -599,46 +599,49 @@
 			return _t("Loads export mapping from Excel XLSX format file.");
 		}
 		# -------------------------------------------------------
-		public static function export_data($po_opts=null) {
+		public static function export_data($opts=null) {
 			require_once(__CA_MODELS_DIR__."/ca_data_exporters.php");
 
-			$vs_search = $po_opts->getOption('search');
-			$vs_id = $po_opts->getOption('id');
-			$vb_rdf = (bool)$po_opts->getOption('rdf');
+			$search = $opts->getOption('search');
+			$id = $opts->getOption('id');
+			$rdf = (bool)$opts->getOption('rdf');
 
-			if (!$vb_rdf && !$vs_search && !$vs_id) {
+			if (!$rdf && !$search && !$id) {
 				print _t('You must specify either an idno or a search expression to select a record or record set for export or activate RDF mode.')."\n";
 				return false;
 			}
-			if (!($vs_filename = $po_opts->getOption('file'))) {
+			if (!($filename = $opts->getOption('file'))) {
 				print _t('You must specify a file to write export output to.')."\n";
 				return false;
 			}
 
-			if(@file_put_contents($vs_filename, "") === false){
+			if(is_writeable($filename === false)){
 				// probably a permission error
-				print _t("Can't write to file %1. Check the permissions.",$vs_filename)."\n";
+				print _t("Can't write to file %1. Check the permissions.",$filename)."\n";
 				return false;
 			}
+			
+			$individual_files = (bool)$opts->getOption('individual-files');
+			$filename_template = (string)$opts->getOption('filename-template');
 
-			$vs_log_dir = $po_opts->getOption('log');
-			$vn_log_level = $po_opts->getOption('log-level');
+			$log_dir = $opts->getOption('log');
+			$log_level = $opts->getOption('log-level');
 
 			// RDF mode
-			if($vb_rdf){
-				if (!($vs_config = $po_opts->getOption('config'))) {
+			if($rdf){
+				if (!($config = $opts->getOption('config'))) {
 					print _t('You must specify a configuration file that contains the export definition for the RDF mode.')."\n";
 					return false;
 				}
 
 				// test config syntax
-				if(!Configuration::load($vs_config)){
-					print _t('Syntax error in configuration file %s.',$vs_config)."\n";
+				if(!Configuration::load($config)){
+					print _t('Syntax error in configuration file %s.',$config)."\n";
 					return false;
 				}
 
-				if(ca_data_exporters::exportRDFMode($vs_config, $vs_filename,array('showCLIProgressBar' => true, 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level))){
-					print _t("Exported data to %1", CLIUtils::textWithColor($vs_filename, 'yellow'));
+				if(ca_data_exporters::exportRDFMode($config, $filename,array('showCLIProgressBar' => true, 'logDirectory' => $log_dir, 'logLevel' => $log_level))){
+					print _t("Exported data to %1", CLIUtils::textWithColor($filename, 'yellow'));
 					return true;
 				} else {
 					print _t("Could not run RDF mode export")."\n";
@@ -648,34 +651,34 @@
 
 			// Search or ID mode
 
-			if (!($vs_mapping = $po_opts->getOption('mapping'))) {
+			if (!($mapping = $opts->getOption('mapping'))) {
 				print _t('You must specify a mapping for export.')."\n";
 				return false;
 			}
 
-			if (!(ca_data_exporters::loadExporterByCode($vs_mapping))) {
-				print _t('Mapping %1 does not exist', $vs_mapping)."\n";
+			if (!(ca_data_exporters::loadExporterByCode($mapping))) {
+				print _t('Mapping %1 does not exist', $mapping)."\n";
 				return false;
 			}
 
-			if(sizeof($va_errors = ca_data_exporters::checkMapping($vs_mapping))>0){
-				print _t("Mapping %1 has errors: %2",$vs_mapping,join("; ",$va_errors))."\n";
+			if(sizeof($va_errors = ca_data_exporters::checkMapping($mapping))>0){
+				print _t("Mapping %1 has errors: %2",$mapping,join("; ",$va_errors))."\n";
 				return false;
 			}
 
-			if($vs_search){
-				if(!ca_data_exporters::exportRecordsFromSearchExpression($vs_mapping, $vs_search, $vs_filename, array('showCLIProgressBar' => true, 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level))){
-					print _t("Could not export mapping %1", $vs_mapping)."\n";
+			if($search){
+				if(!ca_data_exporters::exportRecordsFromSearchExpression($mapping, $search, $filename, ['showCLIProgressBar' => true, 'logDirectory' => $log_dir, 'logLevel' => $log_level, 'individualFiles' => $individual_files, 'filenameTemplate' => $filename_template])){
+					print _t("Could not export mapping %1", $mapping)."\n";
 					return false;
 				} else {
-					print _t("Exported data to %1", $vs_filename)."\n";
+					print _t("Exported data to %1", $filename)."\n";
 				}
-			} else if($vs_id){
-				if($vs_export = ca_data_exporters::exportRecord($vs_mapping, $vs_id, array('singleRecord' => true, 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level))){
-					file_put_contents($vs_filename, $vs_export);
-					print _t("Exported data to %1", CLIUtils::textWithColor($vs_filename, 'yellow'));
+			} else if($id){
+				if($export = ca_data_exporters::exportRecord($mapping, $id, ['singleRecord' => true, 'logDirectory' => $log_dir, 'logLevel' => $log_level, 'individualFiles' => $individual_files, 'filenameTemplate' => $filename_template])){
+					file_put_contents($filename, $export);
+					print _t("Exported data to %1", CLIUtils::textWithColor($filename, 'yellow'));
 				} else {
-					print _t("Could not export mapping %1", $vs_mapping)."\n";
+					print _t("Could not export mapping %1", $mapping)."\n";
 					return false;
 				}
 			}
@@ -691,6 +694,8 @@
 				"log-level|d-s" => _t('Optional logging threshold. Possible values are, in ascending order of important: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
 				"rdf" => _t('Switches to RDF export mode. You can use this to assemble record-level exports across authorities with multiple mappings in a single export (usually an RDF graph). -s, -i and -m are ignored and -c is required.'),
 				"config|c=s" => _t('Configuration file for RDF export mode.'),
+				"individual-files|j=s" => _t('Output non-CSV exports as individual files, rather than a single concatenated file.'),
+				"filename-template|t=s" => _t('Display template to generate file names with when individual-files option is set. Do not include the file extension. The exporter will append it. The default template uses the identifier of the exported records.'),
 			);
 		}
 		# -------------------------------------------------------
@@ -998,7 +1003,6 @@
 				if (!$t_item) {
 					if (!($t_item = $t_list->addItem($data[$level], true, false, $parent_id, null, $id, '', 0, 1))) {
 						CLIUtils::addError(_t("Could not add term %1: %2", $data[$level], join("; ", $t_list->getErrors())));
-						print_R($data);
 						continue;
 					}
 				}
@@ -1006,7 +1010,6 @@
 				if (!$is_existing_item) {
 					if (!$t_item->addLabel(['name_singular' => $data[$level], 'name_plural' => $data[$level], 'description' => $definition], $locale_id, null, true)) {
 						CLIUtils::addError(_t("Could not add term label %1: %2", $data[$level], join("; ", $t_list->getErrors())));
-						print_R($data);
 						continue;
 					}
 				}
@@ -1026,7 +1029,7 @@
 			CLIProgressBar::finish();
 			
 
-			CLIUtils::addMessage(_t('Added %1 terms', $vn_add_count), array('color' => 'bold_green'));
+			CLIUtils::addMessage(_t('Added %1 terms', $add_count), array('color' => 'bold_green'));
 			return true;
 		}
 		# -------------------------------------------------------
@@ -1233,6 +1236,212 @@
 		 */
 		public static function write_exporter_to_fileHelp() {
 			return _t('Write exporter mapping to Excel-format file.');
+        }
+		# -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt|null $po_opts
+		 * @return bool
+		 */
+		public static function export_search_using_display($po_opts=null) {
+            $file = $po_opts->getOption('file');
+            if (!$file) {
+				CLIUtils::addError(_t('A file must be specified'));
+				return;
+			}
+			
+			if ($file && ((file_exists($file) && !is_writeable($file)) || (!file_exists($file) && !is_writeable(pathinfo($file, PATHINFO_DIRNAME))))) {
+				CLIUtils::addError(_t('Cannot write to file %1', $file));
+				return;
+			}
+			
+			$table = $po_opts->getOption('table');
+			if (!$table) {
+				CLIUtils::addError(_t('A table must be specified'));
+				return;
+			}
+			
+			$format = strtoupper($po_opts->getOption('format'));
+			
+			
+			$display = $po_opts->getOption('display');
+			if(!($t_display = ca_bundle_displays::find(['display_code' => $display], ['returnAs' => 'firstModelInstance']))) {
+				CLIUtils::addError(_t('A valid display must be specified'));
+				return;
+			}
+			
+			$search = $po_opts->getOption('search');
+			if(!strlen($search)) { $search = '*'; }
+			
+			if(!($o_s = caGetSearchInstance($table))) {
+				CLIUtils::addError(_t('Could not create search for %1', $table));
+				return;
+			}
+			$result = $o_s->search($search);
+			
+			//$result, $format, $file, $ps_title=null
+			$view = new View(null, [__CA_THEME_DIR__.'/views/find']);
+			
+			$view->setVar('criteria_summary', $search);	// add displayable description of current search/browse parameters
+			$view->setVar('criteria_summary_truncated', mb_substr($search, 0, 60).((mb_strlen($search) > 60) ? '...' : ''));
+	
+			// get display list
+			$ret = $t_display->getDisplayListForResultsEditor($table, 
+ 				['user_id' => null, 'request' => null, 'type_id' => null]);
+ 				
+			$view->setVar('result', $result);
+			$view->setVar('t_display', $t_display);
+			$view->setVar('display_list', $display_list = $ret['displayList']);
+			$view->setVar('current_items_per_page', null);
+			
+			
+			$result->seek(0); // reset result before exporting anything
+			
+			switch($format) {
+				case 'XLSX':
+					$output = $view->render('Results/xlsx_results.php');
+					file_put_contents($file, $output);
+					return;
+				case 'DOCX':
+					$view->render('Results/docx_results.php');
+					file_put_contents($file, $output);
+					return;						
+				case 'CSV':
+					$delimiter = ",";
+					$file_extension = 'txt';
+					$mimetype = "text/plain";
+					break;
+				case 'TAB':
+					$delimiter = "\t";	
+					$file_extension = 'txt';
+					$mimetype = "text/plain";
+					break;
+				default:
+					CLIUtils::addError(_t('Invalid format %1', $format));
+					return;
+			}
+	
+			$rows = [];
+	
+			// output header
+	
+			$row = array();
+			foreach($display_list as $display_item) {
+				$row[] = $display_item['display'];
+			}
+			$rows[] = join($delimiter, $row);
+	
+			$result->seek(0);
+	
+			$r = fopen($file, "w");
+			while($result->nextHit()) {
+				$row = array();
+				foreach($display_list as $placement_id => $display_item) {
+					$vs_value = html_entity_decode($t_display->getDisplayValue($result, $placement_id, array('convert_codes_to_display_text' => true, 'convertLineBreaks' => false)), ENT_QUOTES, 'UTF-8');
+					$vs_value = preg_replace("![\r\n\t]+!", " ", $vs_value);
+				
+					// quote values as required
+					if (preg_match("![^A-Za-z0-9 .;]+!", $vs_value)) {
+						$vs_value = '"'.str_replace('"', '""', $vs_value).'"';
+					}
+					$row[] = $vs_value;
+				}
+				fputcsv($r, $row, $delimiter);
+			}
+			fclose($r);		
+			
+			CLIUtils::addMessage(_t('Exported %1', $mapping));
+		}
+		# -------------------------------------------------------
+		public static function export_search_using_displayParamList() {
+			return [
+				"table|t=s" => _t('Required. Table to search on.'),
+				"search|s=s" => _t('Required. Search to use.'),
+				"file|f=s" => _t('Required. File to save output to.'),
+				"format|x=s" => _t('Format to output in. Supported values as XLSX, DOCX, TAB and CSV.'),
+				"display|d=s" => _t('Code of display to format data with.'),
+				
+			];
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function export_search_using_displayUtilityClass() {
+            return _t('Import/Export');
+        }
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function export_search_using_displayShortHelp() {
+			return _t('Write search to XLSX, Docx or PDF file using display.');
+        }
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function export_search_using_displayHelp() {
+			return _t('Write exporter mapping to Excel-format file.');
+        }
+        # -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt|null $po_opts
+		 * @return bool
+		 */
+		public static function write_importer_to_file($po_opts=null) {
+            $file = $po_opts->getOption('file');
+            if (!$file) {
+				CLIUtils::addError(_t('A file must be specified'));
+				return;
+			}
+			
+			if ($file && ((file_exists($file) && !is_writeable($file)) || (!file_exists($file) && !is_writeable(pathinfo($file, PATHINFO_DIRNAME))))) {
+				CLIUtils::addError(_t('Cannot write to file %1', $file));
+				return;
+			}
+			
+			$mapping = $po_opts->getOption('mapping');
+			if (!$mapping) {
+				CLIUtils::addError(_t('An import mapping must be specified'));
+				return;
+			}
+			
+			
+			try {
+			    ca_data_importers::writeImporterToFile($mapping, $file);
+			} catch (Exception $e) {
+			    CLIUtils::addError(_t('Could not import mapping %1: %2', $mapping, $e->getMessage()));
+			    return;
+			}
+			CLIUtils::addMessage(_t('Exported %1', $mapping));
+		}
+		# -------------------------------------------------------
+		public static function write_importer_to_fileParamList() {
+			return [
+				"mapping|m=s" => _t('Required. importer mapping to write to file.'),
+				"file|f=s" => _t('Required. File to save importer to.')
+			];
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function write_importer_to_fileUtilityClass() {
+            return _t('Import/Export');
+        }
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function write_importer_to_fileShortHelp() {
+			return _t('Write import mapping to Excel-format file.');
+        }
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function write_importer_to_fileHelp() {
+			return _t('Write import mapping to Excel-format file.');
         }
 		# -------------------------------------------------------
     }

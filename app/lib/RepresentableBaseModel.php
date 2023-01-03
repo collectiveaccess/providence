@@ -74,9 +74,9 @@
 			}
 			
 			if ($alt_text_template = Configuration::load()->get($this->tableName()."_alt_text_template")) { 
-                $alt_text = $this->getWithTemplate($alt_text_template);
+                $alt_text = $this->getWithTemplate($alt_text_template, ['highlighting' => false]);
             } elseif(is_a($this, "LabelableBaseModelWithAttributes")) {
-                $alt_text = $this->get($this->tableName().".preferred_labels");
+                $alt_text = $this->get($this->tableName().".preferred_labels", ['highlighting' => false]);
             } else {
                 $alt_text = null;
             }
@@ -319,12 +319,15 @@
 		 *		checkAccess - synonym for return_with_access
 		 *		restrict_to_types = An array of type_ids or type codes to restrict count to specified types of representations to
 		 *		restrict_to_relationship_types = An array of relationship type_ids or relationship codes to restrict count to
+		 *		requireMedia = only return IDs for representations with media. [Default is false]
 		 *
 		 * @return array A list of representation_ids
 		 */
 		public function getRepresentationIDs($pa_options=null) {
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
 			if (!is_array($pa_options)) { $pa_options = array(); }
+			
+			$require_media = caGetOption('requireMedia', $pa_options, false);
 		
 			if (!is_array($pa_versions)) { 
 				$pa_versions = array('preview170');
@@ -354,7 +357,7 @@
 		
 			$o_db = $this->getDb();
 			$qr_reps = $o_db->query("
-				SELECT caor.representation_id, caoor.is_primary
+				SELECT caor.representation_id, caoor.is_primary, caor.media
 				FROM ca_object_representations caor
 				INNER JOIN {$vs_linking_table} AS caoor ON caor.representation_id = caoor.representation_id
 				WHERE
@@ -368,6 +371,7 @@
 		
 			$va_rep_ids = array();
 			while($qr_reps->nextRow()) {
+				if($require_media && (!is_array($versions = $qr_reps->getMediaVersions('media')) || !sizeof($versions))) { continue; }
 				$va_rep_ids[$qr_reps->get('representation_id')] = ($qr_reps->get('is_primary') == 1) ? true : false;
 			}
 			return $va_rep_ids;
@@ -921,14 +925,7 @@
 				// Only delete the related representation if nothing else is related to it
 				//
 
-				$va_rels = $t_rep->hasRelationships();
-
-				if(is_array($va_rels) && isset($va_rels['ca_object_representation_labels'])){ // labels don't count as relationships in this case
-					unset($va_rels['ca_object_representation_labels']);
-				}
-				if(is_array($va_rels) && isset($va_rels['ca_objects_x_object_representations']) && ($va_rels['ca_objects_x_object_representations'] < 1)){
-					unset($va_rels['ca_objects_x_object_representations']);
-				}
+				$va_rels = $this->_checkRepresentationReferences($t_rep);
 
 				if (!is_array($va_rels) || (sizeof($va_rels) == 0)) {
 					$t_rep->delete(true, $pa_options);
@@ -946,6 +943,30 @@
 		}
 		# ------------------------------------------------------
 		/**
+		 *
+		 */
+		private function _checkRepresentationReferences($t_rep) {
+			$rels = $t_rep->hasRelationships();
+
+			if(is_array($rels)) {
+				foreach($rels as $k => $v) {
+					switch($k) {
+						case 'ca_object_representation_labels':		 // labels don't count as relationships in this case
+						case 'ca_object_representation_multifiles':	 // multifiles don't count as relationships in this case
+							unset($rels[$k]);
+							break;
+						default:
+							if($v < 1) {
+								unset($rels[$k]);
+							}
+							break;
+					}
+				}
+			}
+			return $rels;
+		}
+		# ------------------------------------------------------
+		/**
 		 * Removes all representations from the currently loaded item.
 		 *
 		 * @return bool True if delete succeeded, false if there was an error. You can get the error messages by calling getErrors() on the instance.
@@ -959,7 +980,7 @@
 					}
 				}
 			}
-			return false;
+			return true;
 		}
 		# ------------------------------------------------------
 		/** 
@@ -1142,9 +1163,9 @@
 		    $alt_texts = [];
 		    while($qr->nextHit()) {
                 if ($alt_text_template = Configuration::load()->get($this->tableName()."_alt_text_template")) { 
-                    $alt_texts[$qr->get($vs_pk)] = $qr->getWithTemplate($alt_text_template);
+                    $alt_texts[$qr->get($vs_pk)] = $qr->getWithTemplate($alt_text_template, ['highlighting' => false]);
                 } else {
-                    $alt_texts[$qr->get($vs_pk)] = $qr->get($this->tableName().".preferred_labels");
+                    $alt_texts[$qr->get($vs_pk)] = $qr->get($this->tableName().".preferred_labels", ['highlighting' => false]);
                 }
             }
             
@@ -1323,7 +1344,7 @@
 				// Get display template values
                 $va_display_template_values = [];
                 if($vs_bundle_template && ($vs_linking_table = RepresentableBaseModel::getRepresentationRelationshipTableName($this->tableName()))) {
-                    $va_display_template_values = caProcessTemplateForIDs($vs_bundle_template, $vs_linking_table, $va_relation_ids, array_merge($pa_options, array('start' => null, 'limit' => null, 'returnAsArray' => true, 'returnAllLocales' => false, 'includeBlankValuesInArray' => true, 'indexWithIDs' => true)));
+                    $va_display_template_values = caProcessTemplateForIDs($vs_bundle_template, $vs_linking_table, $va_relation_ids, array_merge($pa_options, array('filterNonPrimaryRepresentations' => false, 'start' => null, 'limit' => null, 'returnAsArray' => true, 'returnAllLocales' => false, 'includeBlankValuesInArray' => true, 'indexWithIDs' => true)));
                     $va_relation_ids = array_keys($va_display_template_values);
                 }
 				
@@ -1563,6 +1584,34 @@
 				}
 			}
 			return ['representations' => $reps, 'items' => $items];
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * 
+		 *
+		 */
+		public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+			$rep_ids = $this->getRepresentationIDs();
+			$path = array_keys(Datamodel::getPath($this->tableName(), 'ca_object_representations'));
+			$linking_table = $path[1];
+			
+			if($rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
+				if(is_array($rep_ids) && sizeof($rep_ids)) {
+					// delete any representations that are not referenced by some other primary type
+					$qr = caMakeSearchResult('ca_object_representations', array_keys($rep_ids));
+					while($qr->nextHit()) {
+						$t_rep = $qr->getInstance();
+						$rels = $this->_checkRepresentationReferences($t_rep);
+						if((sizeof($rels) === 1) && isset($rels[$linking_table]) && ($rels[$linking_table] == 1)) {
+							$t_rep->delete(true);
+							if($t_rep->numErrors()) {
+								$this->errors = $t_rep->errors;
+							}
+						}
+					}
+				}
+			}
+			return $rc;
 		}
 		# ------------------------------------------------------
 	}

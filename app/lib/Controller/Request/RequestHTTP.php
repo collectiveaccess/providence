@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2021 Whirl-i-Gig
+ * Copyright 2007-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -202,6 +202,13 @@ class RequestHTTP extends Request {
 		
 		$this->ops_path_info = preg_replace("![/]+!", "/", $vs_path_info ? "/{$vs_path_info}" : (isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : ''));
 		
+		if(!caIsRunFromCLI() && defined('__CA_SITE_HOSTNAME__') && !ExternalCache::contains('system_url', 'system')) {
+			ExternalCache::save('system_url', [
+				'protocol' => __CA_SITE_PROTOCOL__,
+				'hostname' => __CA_SITE_HOSTNAME__,
+				'url_root' => __CA_URL_ROOT__
+			], 'system');
+		}
 		if (__CA_URL_ROOT__) { $this->ops_path_info = preg_replace("!^".__CA_URL_ROOT__."!", "", $this->ops_path_info); }
 	}
 	# -------------------------------------------------------
@@ -293,6 +300,17 @@ class RequestHTTP extends Request {
 	# -------------------------------------------------------
 	public function getUser() {
 		return $this->user;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Set current user
+	 *
+	 * @param ca_users $user
+	 *
+	 * @return void
+	 */
+	public function setUser(ca_users $user) : void {
+		$this->user = $user;
 	}
 	# -------------------------------------------------------
 	public function getThemeUrlPath($pb_use_default=false) {
@@ -565,12 +583,15 @@ class RequestHTTP extends Request {
 		if (!isset($vm_val)) { return ""; }
 		
 		$vm_val = str_replace("\0", '', $vm_val);
+		
+		$purified = false;
 		if((caGetOption('purify', $pa_options, true) && $this->config->get('purify_all_text_input')) || caGetOption('forcePurify', $pa_options, false)) {
 		    if(is_array($vm_val)) {
 		        $vm_val = array_map(function($v) { return is_array($v) ? $v : str_replace("&amp;", "&", RequestHTTP::getPurifier()->purify(rawurldecode($v))); }, $vm_val);
 		    } else {
 		        $vm_val = str_replace("&amp;", "&", RequestHTTP::getPurifier()->purify(rawurldecode($vm_val)));
 		    }
+		    $purified = true;
 		}
 		
 		if ($vm_val == "") { return ($pn_type == pArray) ? [] : ''; }
@@ -596,7 +617,7 @@ class RequestHTTP extends Request {
 					if(caGetOption('retainBackslashes', $pa_options, true)) {
 						$vm_val = str_replace("\\", "\\\\", $vm_val);	// retain backslashes for some strange people desire them as valid input
 					}
-					if(caGetOption('urldecode', $pa_options, true)) {
+					if(!$purified && caGetOption('urldecode', $pa_options, true)) {
 						$vm_val = rawurldecode($vm_val);
 					}
 					return $vm_val;
@@ -864,7 +885,11 @@ class RequestHTTP extends Request {
                 } else {
                 	// Redirect to external auth?
                 	try {
-                		return $this->user->authenticate($vs_tmp1, $vs_tmp2, $pa_options["options"]);
+                		if($rc = $this->user->authenticate($vs_tmp1, $vs_tmp2, $pa_options["options"])) {
+                			$vn_auth_type = ($rc == 2) ? 2 : 1;
+                			$vn_user_id = $this->user->getPrimaryKey();
+                			$vb_login_successful = true;
+                		}
                 	} catch (Exception $e) {
                 		$o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login with exception '".$e->getMessage()." (".$_SERVER['REQUEST_URI']."); IP=".$_SERVER["REMOTE_ADDR"]."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
                 		$this->opo_response->addHeader("Location", $vs_auth_login_url);

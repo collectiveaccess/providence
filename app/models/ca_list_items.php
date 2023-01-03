@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -84,6 +84,13 @@ BaseModel::$s_ca_models_definitions['ca_list_items'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Identifier sort'), 'DESCRIPTION' => _t('Sortable value for identifier'),
 				'BOUNDS_LENGTH' => array(0,255)
+		),
+		'idno_sort_num' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => 'Sortable object identifier as integer', 'DESCRIPTION' => 'Integer value used for sorting objects; used for idno range query.'
 		),
 		'item_value' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -244,6 +251,42 @@ $_ca_list_items_settings = array(
 			'label' => _t('Use suffix for organizations?'),
 			'description' => _t('Show suffix entry field for organization labels?')
 		),
+		'org_label' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			
+			'width' => 100, 'height' => 1,
+			'takesLocale' => false,
+			'default' => _t('Organization'),
+			'label' => _t('Label for organization name'),
+			'description' => _t('Custom label for organization names')
+		),
+		'show_source_for_preferred_labels' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Include source entry for preferred labels?'),
+			'description' => _t('Include source entry field for preferred labels')
+		),
+		'show_source_for_nonpreferred_labels' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Include source entry for non-preferred labels?'),
+			'description' => _t('Include source entry field for non-preferred labels')
+		),
 		'render_in_new_menu' => array(
 			'formatType' => FT_BIT,
 			'displayType' => DT_SELECT,
@@ -259,6 +302,32 @@ $_ca_list_items_settings = array(
 		)
 	),
 	'object_types' => array(
+		'show_source_for_preferred_labels' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Include source entry for preferred labels?'),
+			'description' => _t('Include source entry field for preferred labels')
+		),
+		'show_source_for_nonpreferred_labels' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Include source entry for non-preferred labels?'),
+			'description' => _t('Include source entry field for non-preferred labels')
+		),
 		'render_in_new_menu' => array(
 			'formatType' => FT_BIT,
 			'displayType' => DT_SELECT,
@@ -274,6 +343,32 @@ $_ca_list_items_settings = array(
 		)
 	),
 	'collection_types' => array(
+		'show_source_for_preferred_labels' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Include source entry for preferred labels?'),
+			'description' => _t('Include source entry field for preferred labels')
+		),
+		'show_source_for_nonpreferred_labels' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Include source entry for non-preferred labels?'),
+			'description' => _t('Include source entry field for non-preferred labels')
+		),
 		'render_in_new_menu' => array(
 			'formatType' => FT_BIT,
 			'displayType' => DT_SELECT,
@@ -289,6 +384,32 @@ $_ca_list_items_settings = array(
 		)
 	),
 	'loan_types' => array(
+		'show_source_for_preferred_labels' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Include source entry for preferred labels?'),
+			'description' => _t('Include source entry field for preferred labels')
+		),
+		'show_source_for_nonpreferred_labels' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Include source entry for non-preferred labels?'),
+			'description' => _t('Include source entry field for non-preferred labels')
+		),
 		'render_in_new_menu' => array(
 			'formatType' => FT_BIT,
 			'displayType' => DT_SELECT,
@@ -304,6 +425,32 @@ $_ca_list_items_settings = array(
 		)
 	),
 	'list_item_types' => array(
+		'show_source_for_preferred_labels' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Include source entry for preferred labels?'),
+			'description' => _t('Include source entry field for preferred labels')
+		),
+		'show_source_for_nonpreferred_labels' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Include source entry for non-preferred labels?'),
+			'description' => _t('Include source entry field for non-preferred labels')
+		),
 		'render_in_new_menu' => array(
 			'formatType' => FT_BIT,
 			'displayType' => DT_SELECT,
@@ -319,6 +466,32 @@ $_ca_list_items_settings = array(
 		)
 	),
 	'movement_types' => array(
+		'show_source_for_preferred_labels' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Include source entry for preferred labels?'),
+			'description' => _t('Include source entry field for preferred labels')
+		),
+		'show_source_for_nonpreferred_labels' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Include source entry for non-preferred labels?'),
+			'description' => _t('Include source entry field for non-preferred labels')
+		),
 		'render_in_new_menu' => array(
 			'formatType' => FT_BIT,
 			'displayType' => DT_SELECT,
@@ -334,6 +507,73 @@ $_ca_list_items_settings = array(
 		)
 	),
 	'object_lot_types' => array(
+		'show_source_for_preferred_labels' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Include source entry for preferred labels?'),
+			'description' => _t('Include source entry field for preferred labels')
+		),
+		'show_source_for_nonpreferred_labels' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Include source entry for non-preferred labels?'),
+			'description' => _t('Include source entry field for non-preferred labels')
+		),
+		'render_in_new_menu' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 1,
+			'label' => _t('Render in new menu'),
+			'description' => _t('Render in new menu')
+		)
+	),
+	'object_representation_types' => array(
+		'show_source_for_preferred_labels' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Include source entry for preferred labels?'),
+			'description' => _t('Include source entry field for preferred labels')
+		),
+		'show_source_for_nonpreferred_labels' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Include source entry for non-preferred labels?'),
+			'description' => _t('Include source entry field for non-preferred labels')
+		),
 		'render_in_new_menu' => array(
 			'formatType' => FT_BIT,
 			'displayType' => DT_SELECT,
@@ -349,6 +589,32 @@ $_ca_list_items_settings = array(
 		)
 	),
 	'occurrence_types' => array(
+		'show_source_for_preferred_labels' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Include source entry for preferred labels?'),
+			'description' => _t('Include source entry field for preferred labels')
+		),
+		'show_source_for_nonpreferred_labels' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Include source entry for non-preferred labels?'),
+			'description' => _t('Include source entry field for non-preferred labels')
+		),
 		'render_in_new_menu' => array(
 			'formatType' => FT_BIT,
 			'displayType' => DT_SELECT,
@@ -364,6 +630,32 @@ $_ca_list_items_settings = array(
 		)
 	),
 	'place_types' => array(
+		'show_source_for_preferred_labels' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Include source entry for preferred labels?'),
+			'description' => _t('Include source entry field for preferred labels')
+		),
+		'show_source_for_nonpreferred_labels' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Include source entry for non-preferred labels?'),
+			'description' => _t('Include source entry field for non-preferred labels')
+		),
 		'render_in_new_menu' => array(
 			'formatType' => FT_BIT,
 			'displayType' => DT_SELECT,
@@ -379,6 +671,32 @@ $_ca_list_items_settings = array(
 		)
 	),
 	'storage_location_types' => array(
+		'show_source_for_preferred_labels' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Include source entry for preferred labels?'),
+			'description' => _t('Include source entry field for preferred labels')
+		),
+		'show_source_for_nonpreferred_labels' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Include source entry for non-preferred labels?'),
+			'description' => _t('Include source entry field for non-preferred labels')
+		),
 		'render_in_new_menu' => array(
 			'formatType' => FT_BIT,
 			'displayType' => DT_SELECT,
@@ -525,20 +843,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 
 	protected $FIELDS;
 	
-	# ------------------------------------------------------
-	# --- Constructor
-	#
-	# This is a function called when a new instance of this object is created. This
-	# standard constructor supports three calling modes:
-	#
-	# 1. If called without parameters, simply creates a new, empty objects object
-	# 2. If called with a single, valid primary key value, creates a new objects object and loads
-	#    the record identified by the primary key value
-	#
-	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
-	}
+
 	# ------------------------------------------------------
 	protected function initLabelDefinitions($pa_options=null) {
 		parent::initLabelDefinitions($pa_options);

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2021 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -41,6 +41,8 @@
 	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_object_lots') == __CA_BUNDLE_ACCESS_READONLY__));
 	
 	$vb_quick_add_enabled = $this->getVar('quickadd_enabled');
+	
+	$dont_show_relationship_type = caGetOption('dontShowRelationshipTypes', $va_settings, false) ? 'none' : null; 
 	
 	// Dyamically loaded sort ordering
 	$loaded_sort 			= $this->getVar('sort');
@@ -91,6 +93,8 @@
 		}
 		print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 	}
+	
+	$make_link = !caTemplateHasLinks(caGetOption('display_template', $va_settings, null));
 ?>
 <div id="<?= $vs_id_prefix; ?>" <?= $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
@@ -129,7 +133,7 @@
 			<a href="<?= urldecode(caEditorUrl($this->request, 'ca_object_lots', '{lot_id}')); ?>" class="caEditItemButton" id="<?= $vs_id_prefix; ?>_edit_related_{n}"></a>
 			<span id='<?= $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
-			print caGetRelationDisplayString($this->request, 'ca_object_lots', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => true, 'prefix' => $vs_id_prefix, 'relationshipTypeDisplayPosition' => 'none'));
+			print caGetRelationDisplayString($this->request, 'ca_object_lots', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => $make_link, 'prefix' => $vs_id_prefix, 'relationshipTypeDisplayPosition' => 'none'));
 ?>
 			</span>
 			<input type="hidden" name="<?= $vs_id_prefix; ?>_id{n}" id="<?= $vs_id_prefix; ?>_id{n}" value="{id}"/>
@@ -202,7 +206,7 @@
 			<a href="<?= urldecode(caEditorUrl($this->request, 'ca_object_lots', '{lot_id}')); ?>" class="caEditItemButton" id="<?= $vs_id_prefix; ?>_edit_related_{n}"></a>
 			<span id='<?= $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
-			print caGetRelationDisplayString($this->request, 'ca_object_lots', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => true, 'prefix' => $vs_id_prefix, 'relationshipTypeDisplayPosition' => $t_item_rel->hasField('type_id') ? null : 'none'));
+			print caGetRelationDisplayString($this->request, 'ca_object_lots', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => $make_link, 'prefix' => $vs_id_prefix, 'relationshipTypeDisplayPosition' => $t_item_rel->hasField('type_id') ? $dont_show_relationship_type : 'none'));
 ?>
 			</span>
 			<input type="hidden" name="<?= $vs_id_prefix; ?>_id{n}" id="<?= $vs_id_prefix; ?>_id{n}" value="{id}"/>
@@ -215,7 +219,7 @@
 		<div id="<?= $vs_id_prefix; ?>Item_{n}" class="labelInfo roundedRel">
 			<span id='<?= $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
-			print caGetRelationDisplayString($this->request, 'ca_object_lots', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => true, 'prefix' => $vs_id_prefix, 'relationshipTypeDisplayPosition' => $t_item_rel->hasField('type_id') ? null : 'none'));
+			print caGetRelationDisplayString($this->request, 'ca_object_lots', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => $make_link, 'prefix' => $vs_id_prefix, 'relationshipTypeDisplayPosition' => $t_item_rel->hasField('type_id') ? $dont_show_relationship_type : 'none'));
 ?>
 			</span>
 			<input type="hidden" name="<?= $vs_id_prefix; ?>_id{n}" id="<?= $vs_id_prefix; ?>_id{n}" value="{id}"/>
@@ -303,7 +307,7 @@
 	</div>
 	
 	<textarea class='caBundleDisplayTemplate' style='display: none;'>
-		<?= caGetRelationDisplayString($this->request, 'ca_object_lots', array(), array('display' => '_display', 'makeLink' => false)); ?>
+		<?= caGetRelationDisplayString($this->request, 'ca_object_lots', array(), array('display' => '_display', 'makeLink' => false, 'relationshipTypeDisplayPosition' => $dont_show_relationship_type)); ?>
 	</textarea>
 </div>	
 
@@ -397,6 +401,9 @@
 			interstitialPrimaryID: <?= (int)$t_instance->getPrimaryKey(); ?>,
 			minRepeats: <?= caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
 			maxRepeats: <?= caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>,
+			
+			isSelfRelationship:<?= ($t_item_rel && $t_item_rel->isSelfRelationship()) ? 'true' : 'false'; ?>,
+			subjectTypeID: <?= (int)$t_subject->getTypeID(); ?>,
 <?php
 	}
 ?>

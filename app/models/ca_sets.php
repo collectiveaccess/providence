@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2019 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -313,11 +313,11 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	#    the record identified by the primary key value
 	#
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
+	public function __construct($id=null, ?array $options=null) {
 		// Filter list of tables set can be used for to those enabled in current config
 		BaseModel::$s_ca_models_definitions['ca_sets']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = caFilterTableList(BaseModel::$s_ca_models_definitions['ca_sets']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST']);
 		
-		parent::__construct($pn_id);	# call superclass constructor
+		parent::__construct($id, $options);	# call superclass constructor
 	}
 	# ------------------------------------------------------
 	/**
@@ -591,8 +591,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			$va_sql_selects = array('cs.set_id');
 		} else {
 			$va_sql_selects = array(
-				'cs.set_id', 'cs.set_code', 'cs.status', 'cs.access', 'cs.user_id', 'cs.table_num', 'cs.type_id',
-				'csl.label_id', 'csl.name', 'csl.locale_id', 'l.language', 'l.country', 'u.fname', 'u.lname', 'u.email'
+				'cs.set_id', 'cs.set_code', 'cs.status', 'cs.access', 'cs.user_id', 'cs.table_num', 'cs.type_id', 'cs.parent_id',
+				'csl.label_id', 'csl.name', 'csl.locale_id', 'l.language', 'l.country', 'u.fname', 'u.lname', 'u.email', 'cs.`rank`'
 			);
 		}
 		
@@ -989,85 +989,125 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	/**
 	 * Determines if user has access to a set at a specified access level.
 	 *
-	 * @param int $pn_user_id user_id of user to check set access for
-	 * @param int $pn_access type of access required. Use __CA_SET_READ_ACCESS__ for read-only access or __CA_SET_EDIT_ACCESS__ for editing (full) access
-	 * @param int $pn_set_id The id of the set to check. If omitted then currently loaded set will be checked.
-	 * @param array $pa_options No options yet
+	 * @param int $user_id user_id of user to check set access for
+	 * @param int $access type of access required. Use __CA_SET_READ_ACCESS__ for read-only access or __CA_SET_EDIT_ACCESS__ for editing (full) access
+	 * @param int $set_id The id of the set to check. If omitted then currently loaded set will be checked.
+	 * @param array $options No options yet
 	 * @return bool True if user has access, false if not
 	 */
-	public function haveAccessToSet($pn_user_id, $pn_access, $pn_set_id=null, $pa_options=null) {
-		if ($this->getAppConfig()->get('dont_enforce_access_control_for_ca_sets')) { return true; }
-		
-		if ($pn_set_id) { 
-			$vn_set_id = $pn_set_id; 
-			$t_set = new ca_sets($vn_set_id);
-			$vn_set_user_id = $t_set->get('user_id');
-		} else {
-			$t_set = $this;
-			$vn_set_user_id = $t_set->get('user_id');
+	public function haveAccessToSet($user_id, $access, $set_id=null, $options=null) {
+		if(!$set_id) { $set_id = $this->getPrimaryKey(); }
+		return array_shift($this->haveAccessToSets($user_id, $access, [$set_id], $options));
+	}
+	# ------------------------------------------------------
+	/**
+	 * Determines if user has access to a set at a specified access level.
+	 *
+	 * @param int $user_id user_id of user to check set access for
+	 * @param int $access type of access required. Use __CA_SET_READ_ACCESS__ for read-only access or __CA_SET_EDIT_ACCESS__ for editing (full) access
+	 * @param array $set_ids The id of the set to check. If omitted then currently loaded set will be checked.
+	 * @param array $options Options include:
+	 * 		sharesOnly = Only check access for shared users. Access via administrative roles and set ownership is not considered. [Default is false]
+	 *
+	 * @return array Array of access levels, keyed on set_id
+	 */
+	public function haveAccessToSets(int $user_id, int $access, ?array $set_ids, ?array $options=null) {
+		if(is_array($set_ids)) {
+			$set_ids = array_filter($set_ids, function($v) { return (bool)$v; });
 		}
-		if(!$vn_set_id && !($vn_set_id = $t_set->getPrimaryKey())) { 
-			return true; // new set
+		if(!is_array($set_ids) || !sizeof($set_ids)) {
+			if($set_ids)  { 
+				$set_ids = [$set_ids];
+			} elseif($set_id = $this->getPrimaryKey()){ 
+				$set_ids = [$set_id];
+			} else {
+				return [];
+			}
 		}
 		
-		if ($t_set->get('deleted') != 0) { return false; } 		// set is deleted
+		$ret = array_flip($set_ids);
 		
-		if (isset(ca_sets::$s_have_access_to_set_cache[$vn_set_id.'/'.$pn_user_id.'/'.$pn_access])) {
-			return ca_sets::$s_have_access_to_set_cache[$vn_set_id.'/'.$pn_user_id.'/'.$pn_access];
-		}
+		$shares_only = caGetOption('sharesOnly', $options, false);
+		$dont_check_access_value = caGetOption('dontCheckAccessValue', $options, false);
 		
-		if (($vn_set_user_id == $pn_user_id)) {	// owners have all access
-			return ca_sets::$s_have_access_to_set_cache[$vn_set_id.'/'.$pn_user_id.'/'.$pn_access] = true;
-		}
-		
-		if (($t_set->get('access') > 0) && ($pn_access == __CA_SET_READ_ACCESS__)) {	 // public sets are readable by all
-			return ca_sets::$s_have_access_to_set_cache[$vn_set_id.'/'.$pn_user_id.'/'.$pn_access] = true; 
-		}
-		
-		//
-		// If user is admin or has set admin privs allow them access to the set
-		//
 		$t_user = new ca_users();
-		if ($t_user->load($pn_user_id) && ($t_user->canDoAction('is_administrator') || $t_user->canDoAction('can_administrate_sets'))) {
-			return ca_sets::$s_have_access_to_set_cache[$vn_set_id.'/'.$pn_user_id.'/'.$pn_access] = true;
+		if (
+			!$shares_only && (
+			$this->getAppConfig()->get('dont_enforce_access_control_for_ca_sets')
+			||
+			($t_user->load($user_id) && ($t_user->canDoAction('is_administrator') || $t_user->canDoAction('can_administrate_sets')))	
+		)) { 
+			foreach($set_ids as $set_id) {
+				$ret[$set_id] = true;
+			}
+			return $ret;
+		}
+
+		$o_db =  $this->getDb();
+		
+		if(!$shares_only) {
+			$qr_res = $o_db->query("
+				SELECT s.set_id, s.user_id, s.access
+				FROM ca_sets s 
+				WHERE 
+					s.set_id IN (?) AND s.deleted = 0
+			", [$set_ids]);
+			while($qr_res->nextRow()) {
+				$set_id = $qr_res->get('set_id');
+				if((int)$qr_res->get('user_id') === $user_id) {
+					$ret[$set_id] = true;
+					continue;
+				}
+				
+				if(!$dont_check_access_value) {
+					if((int)$qr_res->get('access') > 0) {
+						$ret[$set_id] = true;
+						continue;
+					}
+				}
+			}
 		}
 		
-		
-		$o_db =  $this->getDb();
-		$qr_res = $o_db->query($vs_sql="
-			SELECT sxg.set_id 
+		$qr_res = $o_db->query("
+			SELECT sxg.set_id, sxg.access
 			FROM ca_sets_x_user_groups sxg 
 			INNER JOIN ca_user_groups AS ug ON sxg.group_id = ug.group_id
 			INNER JOIN ca_users_x_groups AS uxg ON uxg.group_id = ug.group_id
 			WHERE 
-				(sxg.access >= ?) AND (uxg.user_id = ?) AND (sxg.set_id = ?)
+				(sxg.access >= ?) AND (uxg.user_id = ?) AND (sxg.set_id IN (?))
 				AND
 				(
 					(sxg.sdatetime <= ".time()." AND sxg.edatetime >= ".time().")
 					OR
 					(sxg.sdatetime IS NULL and sxg.edatetime IS NULL)
 				)
-		", (int)$pn_access, (int)$pn_user_id, (int)$vn_set_id);
+		", [(int)$access, (int)$user_id, $set_ids]);
 		
-		if ($qr_res->numRows() > 0) { return ca_sets::$s_have_access_to_set_cache[$vn_set_id.'/'.$pn_user_id.'/'.$pn_access] = true; }
+		while($qr_res->nextRow()) {
+			$set_id = $qr_res->get('set_id');
+			$ret[$set_id] = true;
+		}
 		
 		$qr_res = $o_db->query("
-			SELECT sxu.set_id 
+			SELECT sxu.set_id, sxu.access
 			FROM ca_sets_x_users sxu
 			INNER JOIN ca_users AS u ON sxu.user_id = u.user_id
 			WHERE 
-				(sxu.access >= ?) AND (u.user_id = ?) AND (sxu.set_id = ?)
+				(sxu.access >= ?) AND (u.user_id = ?) AND (sxu.set_id IN (?))
 				AND
 				(
 					(sxu.sdatetime <= ".time()." AND sxu.edatetime >= ".time().")
 					OR
 					sxu.sdatetime IS NULL and sxu.edatetime IS NULL
 				)
-		", (int)$pn_access, (int)$pn_user_id, (int)$vn_set_id);
+		", [(int)$access, (int)$user_id, $set_ids]);
 		
-		if ($qr_res->numRows() > 0) { return ca_sets::$s_have_access_to_set_cache[$vn_set_id.'/'.$pn_user_id.'/'.$pn_access] = true; }
+		while($qr_res->nextRow()) {
+			$set_id = $qr_res->get('set_id');
+			$ret[$set_id] = true;
+		}
 		
-		return ca_sets::$s_have_access_to_set_cache[$vn_set_id.'/'.$pn_user_id.'/'.$pn_access] = false;
+		return $ret;
 	}
 	# ------------------------------------------------------
 	/**
@@ -1337,21 +1377,84 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	/**
 	 * Removes all instances of the specified set item from the set as specified by the row_id
 	 *
-	 * @param int $pn_row_id The row_id of the item to remove
-	 * @param int $pn_user_id Option user_id of user to check set access for; if no user_id is specified then no access checking is done
+	 * @param int $row_id The row_id of the item to remove
+	 * @param int $user_id Optional user_id of user to check set access for; if no user_id is specified then no access checking is done
 	 * @return bool True on success, false if an error occurred
 	 */
-	public function removeItem($pn_row_id, $pn_user_id=null) {
-		if(!($vn_set_id = $this->getPrimaryKey())) { return null; }
-		if ($pn_user_id && (!$this->haveAccessToSet($pn_user_id, __CA_SET_EDIT_ACCESS__))) { return false; }
+	public function removeItem(int $row_id, int $user_id=null) {
+		if(!($set_id = $this->getPrimaryKey())) { return null; }
+		if ($user_id && (!$this->haveAccessToSet($user_id, __CA_SET_EDIT_ACCESS__))) { return false; }
 		
 		$t_item = new ca_set_items();
-		$t_item->setMode(ACCESS_WRITE);
-		while ($t_item->load(array('set_id' => $this->getPrimaryKey(), 'row_id' => $pn_row_id))) {
+		if ($t_item->load(['set_id' => $set_id, 'row_id' => $row_id])) {
 			$t_item->delete(true);
 			if ($t_item->numErrors()) {
 				$this->errors = $t_item->errors;
 				return false;
+			}
+		}
+		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Removes all instances of the specified set items from the set as specified by row_ids
+	 *
+	 * @param array $row_id List of row_ids to remove
+	 * @param int $user_id Optional user_id of user to check set access for; if no user_id is specified then no access checking is done
+	 * @return bool True on success, false if an error occurred
+	 */
+	public function removeItems(array $row_ids, int $user_id=null) {
+		if(!($set_id = $this->getPrimaryKey())) { return null; }
+		if ($user_id && (!$this->haveAccessToSet($user_id, __CA_SET_EDIT_ACCESS__))) { return false; }
+		
+		$t_item = new ca_set_items();
+		foreach($row_ids as $row_id) {
+			if ($t_item->load(['set_id' => $set_id, 'row_id' => $row_id])) {
+				$t_item->delete(true);
+				if ($t_item->numErrors()) {
+					$this->errors = $t_item->errors;
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Transfers items in currently loaded set with specified row_ids to specified set.
+	 *
+	 * @param mixed $set set_id or set_code of set to transfer items to
+	 * @param array $row_id List of row_ids to transfer
+	 * @param int $user_id Optional user_id of user to check set access for; if no user_id is specified then no access checking is done
+	 * @return bool True on success, false if an error occurred
+	 */
+	public function transferItemsTo($set, array $row_ids, int $user_id=null) {
+		if(!($set_id = $this->getPrimaryKey())) { return null; }
+		if ($user_id && (!$this->haveAccessToSet($user_id, __CA_SET_EDIT_ACCESS__))) { return false; }
+		
+		$t_dest_set = null;
+		if (is_numeric($set)) {
+			$t_dest_set = ca_sets::find(['set_id' => $set], ['returnAs' => 'firstModelInstance']);
+		}
+		if(!$t_dest_set) {
+			$t_dest_set = ca_sets::find(['set_code' => $set], ['returnAs' => 'firstModelInstance']);
+		}
+		if (!$t_dest_set) { 
+			throw new ApplicationException(_t('Invalid set_id'));
+		}
+		if ($user_id && (!$t_dest_set->haveAccessToSet($user_id, __CA_SET_EDIT_ACCESS__))) { return false; }
+		
+		$t_item = new ca_set_items();
+		
+		$dest_set_id = $t_dest_set->getPrimaryKey();
+		foreach($row_ids as $row_id) {
+			if ($t_item->load(['set_id' => $set_id, 'row_id' => $row_id])) {
+				$t_item->set('set_id', $dest_set_id);
+				$t_item->update();
+				if ($t_item->numErrors()) {
+					$this->errors = $t_item->errors;
+					return false;
+				}
 			}
 		}
 		return true;
@@ -1675,6 +1778,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 *			user_id = user_id of the current user; used to determine what may be shown
 	 *			thumbnailVersions = A list of of a media versions to return with each item. Only used if the set content type is ca_objects.
 	 *			thumbnailVersion = Same as 'thumbnailVersions' except it is a single value. (Maintained for compatibility with older code.)
+	 *			start = 
 	 *			limit = Limits the total number of records to be returned
 	 *			checkAccess = An array of row-level access values to check set members for, often produced by the caGetUserAccessValues() helper. Set members with access values not in the list will be omitted. If this option is not set or left null no access checking is done.
 	 *			returnRowIdsOnly = If true a simple array of row_ids (keys of the set members) for members of the set is returned rather than full item-level info for each set member. IDs are keys in the returned array.
@@ -1682,6 +1786,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 *			returnItemAttributes = A list of attribute element codes for the ca_set_item record to return values for.
 	 *			idsOnly = Return a simple numerically indexed array of row_ids
 	 * 			template =
+	 *			templateDescription = 
 	 *			item_ids = array of set item_ids to limit results to -> used by getPrimaryItemsFromSets so don't have to replicate all the functionality in this function
 	 *
 	 * @return array An array of items. The format varies depending upon the options set. If returnRowIdsOnly or returnItemIdsOnly are set then the returned array is a 
@@ -1702,6 +1807,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		$o_db = $this->getDb();
 		
+		$sort = caGetOption('sort', $pa_options, null);
+		
 		$t_rel_label_table = null;
 		if (!($t_rel_table = Datamodel::getInstanceByTableNum($this->get('table_num'), true))) { return null; }
 		if (method_exists($t_rel_table, 'getLabelTableName')) {
@@ -1719,7 +1826,11 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		$vs_limit_sql = '';
 		if (isset($pa_options['limit']) && ($pa_options['limit'] > 0)) {
-			$vs_limit_sql = "LIMIT ".$pa_options['limit'];
+			if (isset($pa_options['start']) && ($pa_options['start'] > 0)) {
+				$vs_limit_sql = "LIMIT ".$pa_options['start'].", ".$pa_options['limit'];
+			} else {
+				$vs_limit_sql = "LIMIT ".$pa_options['limit'];
+			}
 		}
 		$vs_item_ids_sql = '';
 		if (isset($pa_options['item_ids']) && (is_array($pa_options['item_ids'])) && (sizeof($pa_options['item_ids']) > 0)) {
@@ -1832,27 +1943,37 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 			$va_processed_templates = caProcessTemplateForIDs($ps_template, $t_rel_table->tableName(), $qr_res->getAllFieldValues('row_id'), array('returnAsArray' => true));
 			$qr_res->seek(0);
 		}
+
+		if($ps_templateDescription = caGetOption('templateDescription', $pa_options, null)) {
+			$va_processed_templates_description = caProcessTemplateForIDs($ps_templateDescription, $t_rel_table->tableName(), $qr_res->getAllFieldValues('row_id'), array('returnAsArray' => true));
+			$qr_res->seek(0);
+		}
+		
 		if ($vs_rep_join_sql) {
 			$alt_text_template = Configuration::load()->get($t_rel_table->tableName()."_alt_text_template");
 			$va_alt_tags = caProcessTemplateForIDs(($alt_text_template) ? $alt_text_template : "^".$t_rel_table->tableName().".preferred_labels", $t_rel_table->tableName(), $qr_res->getAllFieldValues('row_id'), array('returnAsArray' => true));
 			$qr_res->seek(0);
 		}
 		$va_items = array();
+		$row_ids = [];
 
 		while($qr_res->nextRow()) {
 			$va_row = $qr_res->getRow();
+			$row_ids[] = $va_row['row_id'];
 			
 			unset($va_row['media']);
 			
 			if (
-				(isset($pa_options['returnRowIdsOnly']) && ($pa_options['returnRowIdsOnly']))
+				!$sort 
+				&&
+				((isset($pa_options['returnRowIdsOnly']) && ($pa_options['returnRowIdsOnly']))
 				||
-				(isset($pa_options['idsOnly']) && ($pa_options['idsOnly']))
+				(isset($pa_options['idsOnly']) && ($pa_options['idsOnly'])))
 			) {
 				$va_items[$qr_res->get('row_id')] = true;
 				continue;
 			}
-			if (isset($pa_options['returnItemIdsOnly']) && ($pa_options['returnItemIdsOnly'])) {
+			if (!$sort && isset($pa_options['returnItemIdsOnly']) && ($pa_options['returnItemIdsOnly'])) {
 				$va_items[$qr_res->get('item_id')] = true;
 				continue;
 			}
@@ -1873,15 +1994,21 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 					$va_row['representation_path'] = $qr_res->getMediaPath('media', $pa_options['thumbnailVersion']);
 					$va_row['representation_width'] = $qr_res->getMediaInfo('media',  $pa_options['thumbnailVersion'], 'WIDTH');
 					$va_row['representation_height'] = $qr_res->getMediaInfo('media',  $pa_options['thumbnailVersion'], 'HEIGHT');
+					$va_row['representation_mimetype'] = $qr_res->getMediaInfo('media',  $pa_options['thumbnailVersion'], 'MIMETYPE');
 				}
 				
 				if (isset($pa_options['thumbnailVersions']) && is_array($pa_options['thumbnailVersions'])) {
 					foreach($pa_options['thumbnailVersions'] as $vs_version) {
 						$va_row['representation_tag_'.$vs_version] = $qr_res->getMediaTag('media', $vs_version, array("alt" => $vs_alt_text));
+						if(!defined('__CA_IS_SERVICE_REQUEST__')) {
+							global $g_request;
+							$va_row['representation_tag_'.$vs_version.'_as_link'] = caDetailLink($g_request, $qr_res->getMediaTag('media', $vs_version, array("alt" => $vs_alt_text)), '', $t_rel_table->tableName(), $qr_res->get("ca_set_items.row_id"));
+						}
 						$va_row['representation_url_'.$vs_version] = $qr_res->getMediaUrl('media', $vs_version);
 						$va_row['representation_path_'.$vs_version] = $qr_res->getMediaPath('media', $vs_version);
 						$va_row['representation_width_'.$vs_version] = $qr_res->getMediaInfo('media',  $vs_version, 'WIDTH');
 						$va_row['representation_height_'.$vs_version] = $qr_res->getMediaInfo('media',  $vs_version, 'HEIGHT');
+						$va_row['representation_mimetype_'.$vs_version] = $qr_res->getMediaInfo('media',  $vs_version, 'MIMETYPE');
 					}
 				}				
 			}
@@ -1919,9 +2046,30 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 			if($ps_template) {
 				$va_row['displayTemplate'] = array_shift($va_processed_templates);
 			}
+			if($ps_templateDescription) {
+				$va_row['displayTemplateDescription'] = array_shift($va_processed_templates_description);
+			}
 		
 			$va_items[$qr_res->get('item_id')][($qr_res->get('rel_locale_id') ? $qr_res->get('rel_locale_id') : 0)] = $va_row;
 		}
+		
+		if ($sort) {
+			$qr_sort = caMakeSearchResult($t_rel_table->tableName(), $row_ids, ['sort' => $sort, 'sortDirection' => caGetOption('sortDirection', $pa_options, null)]);
+			$sorted_row_ids = $qr_sort->getAllFieldValues($t_rel_table->primaryKey());
+			$sorted_items = [];
+			$pk = $t_rel_table->primaryKey();
+			foreach($sorted_row_ids as $r) {
+				foreach($va_items as $k => $v) {
+					$locale_id = array_shift(array_keys($v));
+					if ($v[$locale_id][$pk] == $r) {
+						$sorted_items[$k] = $v;
+						break;
+					}
+				}
+			}
+			$va_items = $sorted_items;
+		}
+		
 		
 		if (caGetOption('idsOnly', $pa_options, false)) {
 			return array_keys($va_items);
@@ -2146,6 +2294,21 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		return $o_view->render('ca_sets_checklist.php');
 	}
 	# ------------------------------------------------------
+	/**
+	 * Returns the first item from each set listed in $pa_set_ids.
+	 *
+	 * @param array $pa_set_ids The set_ids (*not* set codes) for which the first item should be fetched
+	 * @param array $pa_options And optional array of options. Supported values include:
+	 *			version = the media version to include with returned set items, when media is available
+	 *
+	 * @return array A list of items; the keys of the array are set_ids while the values are associative arrays containing the latest information.
+	 */
+	public static function getFirstItemFromSet($pn_set_id, $pa_options=null) {
+		$items_by_set = ca_sets::getFirstItemsFromSets([$pn_set_id], $pa_options);
+		
+		return array_shift(array_shift($items_by_set));
+	}
+	# ------------------------------------------------------
 	# Utilities
 	# ------------------------------------------------------
 	/**
@@ -2191,8 +2354,19 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		$t_set = new ca_sets();
 		$va_items = array();
 		foreach($pa_set_ids as $vn_set_id) {
-			if ($t_set->load($vn_set_id)) {
+		    $t_set = null;
+		    if (is_numeric($vn_set_id)) { 
+		        $t_set = ca_sets::find(['set_id' => $vn_set_id], ['returnAs' => 'firstModelInstance']);
+		    }
+		    if (!$t_set) {
+		        $t_set = ca_sets::find(['set_code' => $vn_set_id], ['returnAs' => 'firstModelInstance']);
+		    }
+			if ($t_set) {
 				$va_item_list = caExtractValuesByUserLocale($t_set->getItems($pa_options));
+				foreach($va_item_list as $x => $y) {
+                    $va_item_list[$x]['set_code'] = $t_set->get('ca_sets.set_code');
+                    $va_item_list[$x]['set_name'] = $t_set->get('ca_sets.preferred_labels.name');
+                }
 				$va_items[$vn_set_id] = $va_item_list;	
 			}
 		}
@@ -2537,6 +2711,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 				
 				$vs_type = $this->getTypeName($qr_res->get('type_id'));
 			
+				$created = $this->getCreationTimestamp($set_id);
 				$va_sets[$set_id = $qr_res->get('set_id')] = array_merge($qr_res->getRow(), [
 					'set_content_type' => $vs_set_type, 'set_type' => $vs_type,
 					'label' => $labels[$set_id], 'count' => isset($counts[$set_id]) ? $counts[$set_id] : 0,
@@ -2880,6 +3055,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 	 *		access = Consider set to exist if user has at least the specified access level. If user_id is omitted then this option has no effect. If user_id is set and this option is omitted, then a set will be considered to exist if the user has at least read access. 
 	 *		checkAccess = Consider set to exist if it has a public access level with the specified values. Can be a single value or array if you wish to filter on multiple public access values.
 	 *		template =
+	 *		templateDescription
 	 *			
 	 * @return array
 	 */
@@ -2890,8 +3066,8 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 			return false;
 		}
 		
-		$reps = array_values(caExtractValuesByUserLocale($set->getItems(['thumbnailVersions' => caGetOption('versions', $options, ['large']), 'template' => caGetOption('template', $options, null)])));
-		return array_map(function($r) { return ['key' => md5($r['representation_url_large']), 'url' => $r['representation_url_large'], 'media_tag' => $r['representation_tag_large'], 'media_tag_link' => $r['representation_tag_large_as_link'], 'caption' => $r['displayTemplate']]; }, $reps);
+		$reps = array_values(caExtractValuesByUserLocale($set->getItems(['thumbnailVersions' => caGetOption('versions', $options, ['large']), 'template' => caGetOption('template', $options, null), 'templateDescription' => caGetOption('templateDescription', $options, null), 'checkAccess' => caGetOption('checkAccess', $options, null)])));
+		return array_map(function($r) { return ['key' => md5($r['representation_url_large']), 'url' => $r['representation_url_large'], 'media_tag' => $r['representation_tag_large'], 'media_tag_link' => $r['representation_tag_large_as_link'], 'media_tag_large_link' => $r['representation_tag_large_as_link'], 'media_tag_iconlarge' => $r['representation_tag_iconlarge'], 'caption' => $r['displayTemplate'], 'itemDescription' => $r['displayTemplateDescription']]; }, $reps);
 	}
 	# ---------------------------------------------------------------
 	/**
@@ -2939,6 +3115,207 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		    $row_ids[$qr->get('table_num')][$qr->get('item_id')] = $qr->get('row_id');
 		}
 		return $row_ids;
+	}
+	# ---------------------------------------------------------------
+	# Invitation workflow
+	# ---------------------------------------------------------------
+	/**
+	 * Returns array of users associated with the currently loaded row. The array
+	 * is key'ed on relation_id; each value is an  array containing information about the invitation. Array keys are:
+	 *			activation_key		[unique activation key for invitation]
+	 *			activation_email	[email address for invited user]
+	 *			sdatetime			[start date/time of access]
+	 *			edatetime			[end date/time of access]
+	 *			pending_access		[access level to grant]
+	 *
+	 * @param array $options Options include:
+	 *		set_id = Get invitation list for a specific row rather than the currently loaded one. [Default is null]
+	 *
+	 * @return array List of groups associated with the currently loaded row
+	 */ 
+	public function getUserInvitations(?array $options=null) : array {
+		if (!($id = caGetOption('set_id', $options, null)) && !($id = (int)$this->getPrimaryKey())) { return null; }
+		
+		if (!is_array($options)) { $options = []; }
+		
+		$t_rel = Datamodel::getInstanceByTableName('ca_sets_x_users', true);
+		$o_tep = new TimeExpressionParser();
+		
+		$o_db = $this->getDb();
+		
+		$qr_res = $o_db->query("
+			SELECT r.*
+			FROM ca_sets_x_users r
+			WHERE
+				(r.set_id = ?) AND (r.user_id IS NULL) and (r.activation_key IS NOT NULL)
+		", [$id]);
+		
+		$invitations = [];
+		
+		$o_tep = new TimeExpressionParser();
+		$o_tep->init();
+		while($qr_res->nextRow()) {
+			$row = $qr_res->getRow();
+			$o_tep->setUnixTimestamps($qr_res->get('sdatetime'), $qr_res->get('edatetime'));
+			$row['effective_date'] = $o_tep->getText();
+			unset($row['sdatetime']); unset($row['edatetime']);
+			
+			$invitations[$qr_res->get('relation_id')] = $row;
+		}
+		
+		return $invitations;
+	}
+	# ---------------------------------------------------------------
+	/**
+	 * Add invitations
+	 *
+	 * @return false on error, ca_sets_x_users instance on success
+	 */ 
+	public function inviteUser(string $email, int $access, ?string $effective_dates=null) {
+		if (!($id = (int)$this->getPrimaryKey())) { return null; }
+		
+		if($t_rel = ca_sets_x_users::find(['activation_email' => $email, 'set_id' => $id], ['returnAs' => 'firstModelInstance'])) {
+			if($t_rel->get('ca_sets_x_users.user_id') > 0) {
+				// invitation already exists with access	
+				$this->postError(901, _t('%1 already has access'), 'ca_sets->inviteUser()');
+				return false;
+			}
+		} else {
+			$t_rel = Datamodel::getInstanceByTableName('ca_sets_x_users', true);
+		}
+		if ($this->inTransaction()) { $t_rel->setTransaction($this->getTransaction()); }
+		$t_rel->set('set_id', $id);
+		$t_rel->set('user_id', null);
+		$t_rel->set('access', __CA_SET_NO_ACCESS__);
+		$t_rel->set('activation_email', $email);
+		$t_rel->set('activation_key', caGenerateGUID());
+		$t_rel->set('pending_access', $access);
+		if ($t_rel->hasField('effective_date')) {
+			$t_rel->set('effective_date', $effective_dates);
+		}
+		
+		if ($t_rel->getPrimaryKey()) {
+			$t_rel->update();
+		} else {
+			$t_rel->insert();
+		}
+		
+		if ($t_rel->numErrors()) {
+			$this->errors = $t_rel->errors;
+			return false;
+		}
+		
+		return $t_rel;
+	}
+	# ---------------------------------------------------------------
+	/**
+	 * 
+	 */ 
+	public function removeUserInvitation(string $email) : bool {
+		if (!($id = (int)$this->getPrimaryKey())) { return null; }
+		$t_rel = Datamodel::getInstanceByTableName('ca_sets_x_users');
+		
+		if($t_rel = ca_sets_x_users::find([
+			'set_id' => $id, 
+			'activation_email' => $email, 
+			'user_id' => ['>', 0]
+		], ['returnAs' => 'firstModelInstance'])) {
+			if ($this->inTransaction()) { $t_rel->setTransaction($this->getTransaction()); }
+			$t_rel->delete(true);
+			
+			if ($t_rel->numErrors()) {
+				$this->errors = $t_rel->errors;
+				return false;
+			}
+		} else {
+			$this->postError(900, _t('Invitation does not exist'), 'ca_sets->inviteUser()');
+			return false;
+		}
+		
+		return true;
+	}
+	# ---------------------------------------------------------------
+	/**
+	 * Removes all user invitations from currently loaded row
+	 *
+	 * @return bool True on success, false on failure
+	 */ 
+	public function removeAllUserInvitations() : bool {
+		if (!($id = (int)$this->getPrimaryKey())) { return null; }
+		$t_rel = Datamodel::getInstanceByTableName('ca_sets_x_users', true);
+		if ($this->inTransaction()) { $t_rel->setTransaction($this->getTransaction()); }
+		
+		if(is_array($invitations = $this->getUserInvitations())) {
+			foreach($invitations as $rel_id => $info) {
+				if($t_rel->load($rel_id) && !$t_rel->get('ca_sets_x_users.user_id')) {
+					$t_rel->delete(true);
+					
+					if ($t_rel->numErrors()) {
+						$this->errors = $t_rel->errors;
+						return false;
+					}
+				}
+			}
+		}
+		return true;
+	}
+	# ---------------------------------------------------------------
+	/**
+	 * Activate share
+	 *
+	 */ 
+	public static function activateUser(int $user_id, string $activation_email, string $activation_key ) {
+		if ($t_rel = ca_sets_x_users::find([
+			'activation_email' => $activation_email, 
+			'activation_key' => $activation_key, 
+			'user_id' => null
+		], ['returnAs' => 'firstModelInstance'])) {
+			$t_rel->set('access', $t_rel->get('ca_sets_x_users.pending_access'));
+			$t_rel->set('user_id', $user_id);
+			if (!$t_rel->update()) {
+				return null;
+			}
+			
+			// are there other invitations for this user?
+			if(is_array($invites = ca_sets_x_users::find([
+					'activation_email' => $activation_email, 
+					'user_id' => null
+				], ['returnAs' => 'modelInstances']))) {
+				foreach($invites as $t_invite) {
+					$t_invite->set('access', $t_invite->get('ca_sets_x_users.pending_access'));
+					$t_invite->set('user_id', $user_id);
+					if (!$t_invite->update()) {
+						// TODO: log error
+						continue;
+					}
+				}	
+			}
+			
+			return $t_rel;
+			
+		}
+		return false;
+	}
+	# ---------------------------------------------------------------
+	/**
+	 * Get basic data from pending invitation. Will return null if invitation has been accepted.
+	 *
+	 * @param string $activation_key
+	 *
+	 * @param return array
+	 */ 
+	public static function getInvitation(string $activation_key ) : ?array {
+		if ($t_rel = ca_sets_x_users::find([
+			'activation_key' => $activation_key, 
+			'user_id' => null
+		], ['returnAs' => 'firstModelInstance'])) {
+			return [
+				'set_id' => $t_rel->get('set_id'),
+				'activation_email' => $t_rel->get('activation_email'),
+				'activation_key' => $t_rel->get('activation_key'),
+			];
+		}
+		return null;
 	}
 	# ---------------------------------------------------------------
 }

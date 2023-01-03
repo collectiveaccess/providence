@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2021 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -497,9 +497,11 @@ require_once(__CA_LIB_DIR__."/Db.php");
 								
 								if ($t_user && !$t_user->getBundleAccessLevel($t_item->tableName(), $vs_element_code)) { continue; }	// does user have access to this bundle?
 							
+								$code = null;
 								if ($o_attr_val = Attribute::getValueInstance($t_element->get('datatype'))) {
 									$o_attr_val->loadValueFromRow($va_log_entry['snapshot']);
-									$vs_attr_val = $o_attr_val->getDisplayValue();
+									$vs_attr_val = $o_attr_val->getDisplayValue(['output' => 'idno']);
+									$code = $t_element->get('ca_metadata_elements.element_code');
 								} else {
 									$vs_attr_val = '?';
 								}
@@ -516,11 +518,13 @@ require_once(__CA_LIB_DIR__."/Db.php");
 								$vs_label = $t_element->getLabelForDisplay();
 								$va_attributes[$va_log_entry['snapshot']['attribute_id']]['values'][] = array(
 									'label' => $vs_label,
-									'value' => $vs_attr_val
+									'value' => $vs_attr_val,
+									'code' => $code
 								);
 								$va_changes[] = array(
 									'label' => $vs_label,
-									'description' => $vs_attr_val
+									'description' => $vs_attr_val,
+									'code' => $code
 								);
 							}
 						}
@@ -1060,7 +1064,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 			if (!$qr) { return null; }
 			$units += $qr->getAllFieldValues('unit_id');
 		}
-		if(sizeof($units = array_unique($units)) > 0) {
+		if(is_array($units) && (sizeof($units = array_unique($units)) > 0)) {
 			$sql_daterange = $sql_limit = null;
 			$sql_user_id = "AND (wcl.unit_id IN (?))";
 			$sql_table = "1";

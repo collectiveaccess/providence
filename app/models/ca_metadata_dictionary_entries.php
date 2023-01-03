@@ -202,8 +202,8 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 	 * @param array $pa_additional_settings Optional array of additional entry-level settings to support.
 	 * @param array $pa_setting_values Optional array of setting values to set.
 	 */
-	function __construct($pn_id=null, $pa_additional_settings=null, $pa_setting_values=null) {
-		parent::__construct($pn_id);
+	function __construct($id=null, ?array $options=null, $pa_additional_settings=null, $pa_setting_values=null) {
+		parent::__construct($id, $options);
 		
 		//
 		if (!is_array($pa_additional_settings)) { $pa_additional_settings = array(); }
@@ -658,7 +658,7 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 			if (!isset($rules[$rule_id])) { continue; }
 			if (!$t_rule->load($rule_id)) { continue; }
 			
-			$t_rule->delete();
+			$t_rule->delete(true);
 			if($t_rule->numErrors() > 0) {
 				$this->errors = $t_rule->errors;
 				return false;

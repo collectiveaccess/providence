@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -73,6 +73,7 @@ var caUI = caUI || {};
 
 			currentSelectionDisplayID: '',
 			currentSelectionDisplayFormat: '<ifdef code="hierarchy">^hierarchy%delimiter=_➜_ ➜ </ifdef>^current',
+			currentSelectionDisplayPrefix: '',
 			currentSelectionIDID: '',
 			allowSelection: true,
 
@@ -86,6 +87,8 @@ var caUI = caUI || {};
 			autoShrink: false,
 			autoShrinkMaxHeightPx: 180,
 			autoShrinkAnimateID: '',
+			
+			allowSecondarySelection: false,
 			
 			allowDragAndDropSorting: false,
 			dragAndDropSortInProgress: false,
@@ -115,6 +118,10 @@ var caUI = caUI || {};
 			levelDivs: [],
 			levelLists: [],
 			selectedItemIDs: [],
+			
+			secondarySelectedItemIDs: [],		// list of checkbox-selected items when secondary selection are enabled
+			secondarySelectionID: null,			// element to write semicolon-delimited list of checkbox-selected items
+			defaultSecondarySelection: [],
 
 			_numOpenLoads: 0,					// number of AJAX loads pending
 			_openLoadsForLevel:[],				// counts of loads pending per-level
@@ -168,6 +175,7 @@ var caUI = caUI || {};
 			that.levelDivs = [];
 			that.levelLists = [];
 			that.selectedItemIDs = [];
+			that.secondarySelectedItemIDs = that.defaultSecondarySelection;
 			that._foundSelectedForLevel = [];
 
 			jQuery.getJSON(that.initDataUrl, { id: item_id, bundle: that.bundle}, function(data, e, x) {	// get ancestors for item_id and load each level
@@ -453,7 +461,15 @@ var caUI = caUI || {};
 					for(var i in data['_sortOrder']) {
 						var item = data[data['_sortOrder'][i]];
 						if (!item) { continue; }
-						if (!item.name) { item.name = '??? ' + item['item_id']; }
+						
+						let item_label = item.name;
+						let item_secondary_select = '';
+						if(that.allowSecondarySelection) { 
+							const checked = (that.secondarySelectedItemIDs.indexOf(item['item_id']) >= 0);
+							item_secondary_select = "<input type='checkbox' data-item_id='" +item['item_id'] + "' class='hierBrowser_ss' id='hierBrowser_" + that.name + "_ss_" + item['item_id'] + "' " + (checked ? " checked='1'" : "") + "/> ";
+						}
+						
+						if (!item_label) { item_label = '??? ' + item['item_id']; }
 						if (item['item_id']) {
 							if (that.excludeItemIDs && (Array.isArray(that.excludeItemIDs)) && (that.excludeItemIDs.length > 0) && (that.excludeItemIDs.indexOf(item['item_id']) >= 0)) {
 								continue;
@@ -465,7 +481,7 @@ var caUI = caUI || {};
 							if (that.uiStyle == 'horizontal') {
 								var moreButton = '';
 								if (that.editButtonIcon) {
-									if ((item.children > 0) || ((level == 0) && (item.children == null))){
+									if (item.children > 0) {
 										moreButton = "<div style='float: right;'><a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "_edit' aria-label='Expand hierarchy' >" + that.editButtonIcon + "</a></div>";
 									} else {
 										moreButton = "<div style='float: right;'><a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "_edit'  class='noChildren' aria-label='No children'>" + that.disabledButtonIcon + "</a></div>";
@@ -481,7 +497,7 @@ var caUI = caUI || {};
 									switch (that.disabledItems) {
 										case 'full':
 											jQuery('#' + newLevelListID).append(
-												"<li data-item_id='" +  item['item_id'] + "' class='" + that.className + "'>" + moreButton + "<a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + "'>"  +  item.name + "</a></li>"
+												"<li data-item_id='" +  item['item_id'] + "' class='" + that.className + "'>" + moreButton + "<a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + "'>"  +  item_label + "</a></li>"
 											);
 											break;
 										case 'hide': // item is hidden -> noop
@@ -490,17 +506,17 @@ var caUI = caUI || {};
 										case 'disabled':
 										default:
 											jQuery('#' + newLevelListID).append(
-												"<li data-item_id='" +  item['item_id'] + "' class='" + that.className + "'>" + moreButton +  '<span class="' + that.classNameDisabled + '">' + item.name + "</span></li>"
+												"<li data-item_id='" +  item['item_id'] + "' class='" + that.className + "'>" + moreButton +  '<span class="' + that.classNameDisabled + '">' + item_label + "</span></li>"
 											);
 											break;
 									}
 								} else if ((!((level == 0) && that.dontAllowEditForFirstLevel))) {
 									jQuery('#' + newLevelListID).append(
-										"<li data-item_id='" +  item['item_id'] + "' class='" + that.className + "'>" + moreButton +"<a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + "'>"  +  item.name + "</a></li>"
+										"<li data-item_id='" +  item['item_id'] + "' class='" + that.className + "'>" + item_secondary_select + moreButton +"<a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + "'>"  +  item_label + "</a></li>"
 									);
 								} else {
 									jQuery('#' + newLevelListID).append(
-										"<li data-item_id='" +  item['item_id'] + "' class='" + that.className + "'>" + moreButton + "<a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + "'>"  +  item.name + "</a></li>"
+										"<li data-item_id='" +  item['item_id'] + "' class='" + that.className + "'>" +item_secondary_select +  moreButton + "<a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + "'>"  +  item_label + "</a></li>"
 									);
 								}
 
@@ -593,7 +609,7 @@ var caUI = caUI || {};
 								}
 							} else {
 								if (that.uiStyle == 'vertical') {
-									jQuery("#" + newLevelListID).append(jQuery("<option></option>").val(item.item_id).text(jQuery('<div />').html(item.name).text())).attr('disabled', false);
+									jQuery("#" + newLevelListID).append(jQuery("<option></option>").val(item.item_id).text(jQuery('<div />').html(item_label).text())).attr('disabled', false);
 								}
 							}
 							// Pass item_id to caller if required
@@ -606,6 +622,23 @@ var caUI = caUI || {};
 						} else {
 							if (item.parent_id && (that.selectedItemIDs.length == 0)) { that.selectedItemIDs[0] = item.parent_id; }
 						}
+					}
+					
+					if(that.allowSecondarySelection) {
+						jQuery("#" + newLevelListID).on('click', 'input.hierBrowser_ss', function(e) {
+							const item_id = jQuery(this).data('item_id');
+							const index = that.secondarySelectedItemIDs.indexOf(item_id);
+							const checked = jQuery(this).prop('checked');
+							
+							if(checked && (index < 0)) {
+								that.secondarySelectedItemIDs.push(item_id);
+							} else if(!checked && (index >= 0)) {
+							 	that.secondarySelectedItemIDs.splice(index, 1); 
+							}
+							if(that.secondarySelectionID) {
+								jQuery('#' + that.secondarySelectionID).val(that.secondarySelectedItemIDs.join(';'));
+							}
+						});
 					}
 
 					if (item_id && that.doDragAndDropSorting(item_id) && that.sortSaveUrl && (((level == 0) && !that.dontAllowDragAndDropSortForFirstLevel) || (level > 0))) {
@@ -749,7 +782,7 @@ var caUI = caUI || {};
 				while(l >= 0) {
 					if (that.displayCurrentSelectionOnLoad && (jQuery('#hierBrowser_' + that.name + '_level_' + l + '_item_' + selectedID).length > 0)) {
 						if (that.currentSelectionDisplayID) {
-							jQuery('#' + that.currentSelectionDisplayID).html(that._getCurrentSelectionStr(jQuery('#hierBrowser_' + that.name + '_level_' + l + '_item_' + selectedID).data('item'), l));
+							jQuery('#' + that.currentSelectionDisplayID).html(that.currentSelectionDisplayPrefix + that._getCurrentSelectionStr(jQuery('#hierBrowser_' + that.name + '_level_' + l + '_item_' + selectedID).data('item'), l));
 						}
 						break;
 					}
@@ -791,7 +824,7 @@ var caUI = caUI || {};
 			var formattedDisplayString = that._getCurrentSelectionStr(item, level);
 
 			if (that.currentSelectionDisplayID) {
-				jQuery('#' + that.currentSelectionDisplayID).html(formattedDisplayString);
+				jQuery('#' + that.currentSelectionDisplayID).html(that.currentSelectionDisplayPrefix + formattedDisplayString);
 			}
 
 			if (that.currentSelectionIDID) {

@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2021 Whirl-i-Gig
+ * Copyright 2014-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,9 +27,6 @@
  
 var caUI = caUI || {};
 
-//
-// TODO: Finish up error handling
-//
 
 (function ($) {
 	caUI.initQuickAddFormHandler = function(options) {
@@ -60,6 +57,15 @@ var caUI = caUI || {};
 		jQuery("#" + that.formID).on('change', 'input[type=file]', function(e) { 
 			that._files[jQuery(e.target).prop('name')] = e.target.files; 
 		});
+		
+		let p = jQuery("#" + that.formID).parent().data('panel');
+		if(!p) { p = jQuery("#" + that.formID).parent().parent().data('panel'); }
+		
+		if(p) {
+			p.onEscapeCallback = function() {
+				that.cleanupOnCancel();
+			};
+		}
 		
 		var formData;
 		// --------------------------------------------------------------------------------
@@ -111,10 +117,11 @@ var caUI = caUI || {};
 					success: function(data, textStatus, jqXHR) {
 						if(typeof data.error === 'undefined') {
 							// success... add file paths to form data
-							jQuery.each(data, function(k, v) {
-								formData[k] = v;
-							});
-
+							if(data && data['files']) {
+								jQuery.each(data['files'], function(k, v) {
+									formData[k] = v;
+								});
+							}
 							// call function to process the form
 							that.post(e, formData);
 						} else {
@@ -194,6 +201,16 @@ var caUI = caUI || {};
 			jQuery("#" + that.formID).parent().load(that.formUrl, formData);
 			
 		};
+		
+		that.cancel = function(e) {
+			that.cleanupOnCancel();
+			jQuery("#" + that.formID).parent().data('panel').hidePanel();
+		};
+		
+		that.cleanupOnCancel = function(e) {
+			var relationbundle = jQuery("#" + that.formID).parent().data('relationbundle');
+			if(relationbundle) { relationbundle.deleteFromBundle('new_0'); }
+		}
 		
 		// --------------------------------------------------------------------------------
 		

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2019 Whirl-i-Gig
+ * Copyright 2019-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -164,20 +164,7 @@ class ca_ip_bans extends BaseModel {
 
 	protected $FIELDS;
 	
-	# ------------------------------------------------------
-	# --- Constructor
-	#
-	# This is a function called when a new instance of this object is created. This
-	# standard constructor supports three calling modes:
-	#
-	# 1. If called without parameters, simply creates a new, empty objects object
-	# 2. If called with a single, valid primary key value, creates a new objects object and loads
-	#    the record identified by the primary key value
-	#
-	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
-	}
+
 	# ------------------------------------------------------
 	/**
 	 *
@@ -219,7 +206,11 @@ class ca_ip_bans extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Clean expired bans. If 'all' option is passed all bans will be removed
+	 * regardless of expiration.
 	 *
+	 * @param array $options Options include:
+	 *		all = Remove all bans. [Default is false]
 	 */
 	static public function clean($options=null) {
 		self::init();
@@ -228,6 +219,57 @@ class ca_ip_bans extends BaseModel {
 			return $db->query("TRUNCATE TABLE ca_ip_bans");
 		}
 		return $db->query("DELETE FROM ca_ip_bans WHERE expired_on <= ?", [time()]);
+	}
+	# ------------------------------------------------------
+	/**
+	 * Remove existing bans. Options may be used to limit which bans are cleared based upon reason
+	 * and/or creation date/time. If reasons and/or date/time is passed and is not valid
+	 * no bans will be removed and null will be returned. If bans are successfully removed the
+	 * number removed is returned. 
+	 *
+	 * @param array $options Options include:
+	 *		from = Remove all bans created before the specified date. Value is any valid date/time expression. [Default is null]
+	 *		reasons = Clear bans with specific reasons. Value is an array or comma separated list of ban reasons. [Default is null]
+	 * 
+	 * @return int
+	 */
+	static public function removeBans(?array $options=null) : ?int {
+		self::init();
+		$db = new Db();
+		
+		if($from = caGetOption('from', $options, null)) {
+			if(!($from = caDateToUnixTimestamp($from))) { return null; }
+		}
+		if($reasons = caGetOption('reasons', $options, null)) {
+			if(!is_array($reasons)) { $reasons = preg_split('/[;,]/', $reasons); }
+			$valid_reasons = array_map('strtolower', BanHammer::getPluginNames());
+			$reasons = array_filter($reasons, function($v) use ($valid_reasons) {
+				return in_array(strtolower($v), $valid_reasons, true);
+			});
+			if(!sizeof($reasons)) { return null; }
+		}
+		
+		if (!$reasons && !$from) {
+			if($db->query("TRUNCATE TABLE ca_ip_bans")) {
+				return $db->affectedRows();
+			}
+			return null;
+		}
+		
+		$wheres = $params = [];
+		if($reasons) {
+			$wheres[] = "(reason IN (?))";
+			$params[] = $reasons;
+		}
+		if($from > 0) {
+			$wheres[] = "(created_on < ?)";
+			$params[] = $from;
+		}
+		
+		if($db->query("DELETE FROM ca_ip_bans WHERE ".join(' AND ', $wheres), $params)) {
+			return $db->affectedRows();
+		}
+		return null;
 	}
 	# ------------------------------------------------------
 	/**

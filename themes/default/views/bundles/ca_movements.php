@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2021 Whirl-i-Gig
+ * Copyright 2010-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -48,6 +48,8 @@
 	
 	$vb_quick_add_enabled = $this->getVar('quickadd_enabled');
 	
+	$dont_show_relationship_type = caGetOption('dontShowRelationshipTypes', $va_settings, false) ? 'none' : null; 
+	
 	// Dyamically loaded sort ordering
 	$loaded_sort 			= $this->getVar('sort');
 	$loaded_sort_direction 	= $this->getVar('sortDirection');
@@ -78,8 +80,10 @@
 		}
 		print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 	}
+	
+	$make_link = !caTemplateHasLinks(caGetOption('display_template', $va_settings, null));
 ?>
-<div id="<?php print $vs_id_prefix; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
+<div id="<?= $vs_id_prefix; ?>" <?= $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	print "<div class='bundleSubLabel'>";	
 	if(is_array($this->getVar('initialValues')) && sizeof($this->getVar('initialValues'))) {
@@ -101,41 +105,41 @@
 	switch($va_settings['list_format']) {
 		case 'list':
 ?>
-		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo listRel caRelatedItem">
+		<div id="<?= $vs_id_prefix; ?>Item_{n}" class="labelInfo listRel caRelatedItem">
 <?php
 	if (!$vb_read_only && ca_editor_uis::loadDefaultUI($t_item_rel->tableNum(), $this->request)) {
-?><a href="#" class="caInterstitialEditButton listRelEditButton"><?php print caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?></a><?php
+?><a href="#" class="caInterstitialEditButton listRelEditButton"><?= caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?></a><?php
 	}
 	if (!$vb_read_only && !$vb_dont_show_del) {
-?><a href="#" class="caDeleteItemButton listRelDeleteButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a><?php
+?><a href="#" class="caDeleteItemButton listRelDeleteButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a><?php
 	}
 ?>
-			<a href="<?php print urldecode(caEditorUrl($this->request, 'ca_occurrences', '{occurrence_id}')); ?>" class="caEditItemButton" id="<?php print $vs_id_prefix; ?>_edit_related_{n}"></a>
-			<span id='<?php print $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
+			<a href="<?= urldecode(caEditorUrl($this->request, 'ca_occurrences', '{occurrence_id}')); ?>" class="caEditItemButton" id="<?= $vs_id_prefix; ?>_edit_related_{n}"></a>
+			<span id='<?= $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
-			print caGetRelationDisplayString($this->request, 'ca_movements', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => true, 'prefix' => $vs_id_prefix));
+			print caGetRelationDisplayString($this->request, 'ca_movements', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => $make_link, 'prefix' => $vs_id_prefix, 'relationshipTypeDisplayPosition' => $dont_show_relationship_type));
 ?>
 			</span>
-			<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
+			<input type="hidden" name="<?= $vs_id_prefix; ?>_id{n}" id="<?= $vs_id_prefix; ?>_id{n}" value="{id}"/>
 		</div>
 <?php
 			break;
 		case 'bubbles':
 		default:
 ?>
-		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo roundedRel caRelatedItem">
-			<span id='<?php print $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
+		<div id="<?= $vs_id_prefix; ?>Item_{n}" class="labelInfo roundedRel caRelatedItem">
+			<span id='<?= $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
-			print caGetRelationDisplayString($this->request, 'ca_movements', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => true, 'prefix' => $vs_id_prefix));
+			print caGetRelationDisplayString($this->request, 'ca_movements', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => $make_link, 'prefix' => $vs_id_prefix, 'relationshipTypeDisplayPosition' => $dont_show_relationship_type));
 ?>
 			</span>
-			<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
+			<input type="hidden" name="<?= $vs_id_prefix; ?>_id{n}" id="<?= $vs_id_prefix; ?>_id{n}" value="{id}"/>
 <?php
 	if (!$vb_read_only && ca_editor_uis::loadDefaultUI($t_item_rel->tableNum(), $this->request)) {
-?><a href="#" class="caInterstitialEditButton listRelEditButton"><?php print caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?></a><?php
+?><a href="#" class="caInterstitialEditButton listRelEditButton"><?= caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?></a><?php
 	}
 	if (!$vb_read_only && !$vb_dont_show_del) {
-?><a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a><?php
+?><a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a><?php
 	}
 ?>			
 			<div style="display: none;" class="itemName">{label}</div>
@@ -152,20 +156,20 @@
 ?>
 	<textarea class='caNewItemTemplate' style='display: none;'>
 		<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
-		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo caRelatedItem">
+		<div id="<?= $vs_id_prefix; ?>Item_{n}" class="labelInfo caRelatedItem">
 			<table class="caListItem">
 				<tr>
 					<td>
-						<input type="text" size="60" name="<?php print $vs_id_prefix; ?>_autocomplete{n}" value="{{label}}" id="<?php print $vs_id_prefix; ?>_autocomplete{n}" class="lookupBg"/>
+						<input type="text" size="60" name="<?= $vs_id_prefix; ?>_autocomplete{n}" value="{{label}}" id="<?= $vs_id_prefix; ?>_autocomplete{n}" class="lookupBg"/>
 					</td>
 					<td>
-						<select name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" style="display: none;"></select>
-						<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
+						<select name="<?= $vs_id_prefix; ?>_type_id{n}" id="<?= $vs_id_prefix; ?>_type_id{n}" style="display: none;"></select>
+						<input type="hidden" name="<?= $vs_id_prefix; ?>_id{n}" id="<?= $vs_id_prefix; ?>_id{n}" value="{id}"/>
 					</td>
 					<td>
-						<a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
+						<a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 						
-						<a href="<?php print urldecode(caEditorUrl($this->request, 'ca_movements', '{movement_id}')); ?>" class="caEditItemButton" id="<?php print $vs_id_prefix; ?>_edit_related_{n}"><?php print caNavIcon(__CA_NAV_ICON_GO__, 1); ?></a>
+						<a href="<?= urldecode(caEditorUrl($this->request, 'ca_movements', '{movement_id}')); ?>" class="caEditItemButton" id="<?= $vs_id_prefix; ?>_edit_related_{n}"><?= caNavIcon(__CA_NAV_ICON_GO__, 1); ?></a>
 					</td>
 				</tr>
 			</table>
@@ -177,19 +181,19 @@
 <?php
 	if (sizeof($va_errors)) {
 ?>
-		<span class="formLabelError"><?php print join("; ", $va_errors); ?><br class="clear"/></span>
+		<span class="formLabelError"><?= join("; ", $va_errors); ?><br class="clear"/></span>
 <?php
 	}
 ?>
 		
 		</div>
 		<div class="caNewItemList"></div>
-		<input type="hidden" name="<?php print $vs_id_prefix; ?>BundleList" id="<?php print $vs_id_prefix; ?>BundleList" value=""/>
+		<input type="hidden" name="<?= $vs_id_prefix; ?>BundleList" id="<?= $vs_id_prefix; ?>BundleList" value=""/>
 		<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
 <?php
 	if (!$vb_read_only) {
 ?>	
-		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print $vs_add_label ? $vs_add_label : _t("Add relationship"); ?></a></div>
+		<div class='button labelInfo caAddItemButton'><a href='#'><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= $vs_add_label ? $vs_add_label : _t("Add relationship"); ?></a></div>
 <?php
 	}
 ?>
@@ -197,39 +201,39 @@
 </div>
 	
 <?php if($vb_quick_add_enabled) { ?>
-<div id="caRelationQuickAddPanel<?php print $vs_id_prefix; ?>" class="caRelationQuickAddPanel"> 
-	<div id="caRelationQuickAddPanel<?php print $vs_id_prefix; ?>ContentArea">
-	<div class='dialogHeader'><?php print _t('Quick Add', $t_item->getProperty('NAME_SINGULAR')); ?></div>
+<div id="caRelationQuickAddPanel<?= $vs_id_prefix; ?>" class="caRelationQuickAddPanel"> 
+	<div id="caRelationQuickAddPanel<?= $vs_id_prefix; ?>ContentArea">
+	<div class='dialogHeader'><?= _t('Quick Add', $t_item->getProperty('NAME_SINGULAR')); ?></div>
 		
 	</div>
 </div>	
 <?php } ?>
 
-<div id="caRelationEditorPanel<?php print $vs_id_prefix; ?>" class="caRelationQuickAddPanel"> 
-	<div id="caRelationEditorPanel<?php print $vs_id_prefix; ?>ContentArea">
-	<div class='dialogHeader'><?php print _t('Relation editor', $t_item->getProperty('NAME_SINGULAR')); ?></div>
+<div id="caRelationEditorPanel<?= $vs_id_prefix; ?>" class="caRelationQuickAddPanel"> 
+	<div id="caRelationEditorPanel<?= $vs_id_prefix; ?>ContentArea">
+	<div class='dialogHeader'><?= _t('Relation editor', $t_item->getProperty('NAME_SINGULAR')); ?></div>
 		
 	</div>
 
 	<textarea class='caBundleDisplayTemplate' style='display: none;'>
-		<?php print caGetRelationDisplayString($this->request, 'ca_movements', array(), array('display' => '_display', 'makeLink' => false)); ?>
+		<?= caGetRelationDisplayString($this->request, 'ca_movements', array(), array('display' => '_display', 'makeLink' => false, 'relationshipTypeDisplayPosition' => $dont_show_relationship_type)); ?>
 	</textarea>
 </div>	
 	
 <script type="text/javascript">
 <?php if($vb_quick_add_enabled) { ?>
-	var caRelationQuickAddPanel<?php print $vs_id_prefix; ?>;
+	var caRelationQuickAddPanel<?= $vs_id_prefix; ?>;
 <?php } ?>
-	var caRelationBundle<?php print $vs_id_prefix; ?>;
+	var caRelationBundle<?= $vs_id_prefix; ?>;
 	jQuery(document).ready(function() {
-		jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControlTrigger').click(function() { jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControls').slideToggle(200); return false; });
-		jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControls a.caItemListSortControl').click(function() {jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControls').slideUp(200); return false; });
+		jQuery('#<?= $vs_id_prefix; ?>caItemListSortControlTrigger').click(function() { jQuery('#<?= $vs_id_prefix; ?>caItemListSortControls').slideToggle(200); return false; });
+		jQuery('#<?= $vs_id_prefix; ?>caItemListSortControls a.caItemListSortControl').click(function() {jQuery('#<?= $vs_id_prefix; ?>caItemListSortControls').slideUp(200); return false; });
 		
 		if (caUI.initPanel) {
 <?php if($vb_quick_add_enabled) { ?>
-			caRelationQuickAddPanel<?php print $vs_id_prefix; ?> = caUI.initPanel({ 
-				panelID: "caRelationQuickAddPanel<?php print $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
-				panelContentID: "caRelationQuickAddPanel<?php print $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
+			caRelationQuickAddPanel<?= $vs_id_prefix; ?> = caUI.initPanel({ 
+				panelID: "caRelationQuickAddPanel<?= $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
+				panelContentID: "caRelationQuickAddPanel<?= $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
 				exposeBackgroundColor: "#000000",				
 				exposeBackgroundOpacity: 0.7,					
 				panelTransitionSpeed: 400,						
@@ -243,9 +247,9 @@
 				}
 			});
 <?php } ?>
-			caRelationEditorPanel<?php print $vs_id_prefix; ?> = caUI.initPanel({ 
-				panelID: "caRelationEditorPanel<?php print $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
-				panelContentID: "caRelationEditorPanel<?php print $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
+			caRelationEditorPanel<?= $vs_id_prefix; ?> = caUI.initPanel({ 
+				panelID: "caRelationEditorPanel<?= $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
+				panelContentID: "caRelationEditorPanel<?= $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
 				exposeBackgroundColor: "#000000",				
 				exposeBackgroundOpacity: 0.7,					
 				panelTransitionSpeed: 400,						
@@ -260,13 +264,13 @@
 			});
 		}
 		
-		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix; ?>', {
-			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
+		caRelationBundle<?= $vs_id_prefix; ?> = caUI.initRelationBundle('#<?= $vs_id_prefix; ?>', {
+			fieldNamePrefix: '<?= $vs_id_prefix; ?>_',
 			templateValues: ['label', 'id', 'type_id', 'typename', 'idno_sort'],
-			initialValues: <?php print json_encode($this->getVar('initialValues')); ?>,
-			initialValueOrder: <?php print json_encode(array_keys($this->getVar('initialValues'))); ?>,
-			itemID: '<?php print $vs_id_prefix; ?>Item_',
-			placementID: '<?php print $vn_placement_id; ?>',
+			initialValues: <?= json_encode($this->getVar('initialValues')); ?>,
+			initialValueOrder: <?= json_encode(array_keys($this->getVar('initialValues'))); ?>,
+			itemID: '<?= $vs_id_prefix; ?>Item_',
+			placementID: '<?= $vn_placement_id; ?>',
 			templateClassName: 'caNewItemTemplate',
 			initialValueTemplateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',
@@ -274,45 +278,48 @@
 			listItemClassName: 'caRelatedItem',
 			addButtonClassName: 'caAddItemButton',
 			deleteButtonClassName: 'caDeleteItemButton',
-			hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_edit_related_'],
+			hideOnNewIDList: ['<?= $vs_id_prefix; ?>_edit_related_'],
 			showEmptyFormsOnLoad: 1,
 			minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_loans_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
-			relationshipTypes: <?php print json_encode($this->getVar('relationship_types_by_sub_type')); ?>,
-			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'Movement', 'Get', $va_lookup_params); ?>',
-			types: <?php print json_encode($va_settings['restrict_to_types']); ?>,
-			restrictToAccessPoint: <?php print json_encode($va_settings['restrict_to_access_point']); ?>,
-			restrictToSearch: <?php print json_encode($va_settings['restrict_to_search']); ?>,
-			bundlePreview: <?php print caGetBundlePreviewForRelationshipBundle($this->getVar('initialValues')); ?>,
-			readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
-			isSortable: <?php print ($vb_read_only || $vs_sort) ? "false" : "true"; ?>,
-			listSortOrderID: '<?php print $vs_id_prefix; ?>BundleList',
+			relationshipTypes: <?= json_encode($this->getVar('relationship_types_by_sub_type')); ?>,
+			autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'Movement', 'Get', $va_lookup_params); ?>',
+			types: <?= json_encode($va_settings['restrict_to_types']); ?>,
+			restrictToAccessPoint: <?= json_encode($va_settings['restrict_to_access_point']); ?>,
+			restrictToSearch: <?= json_encode($va_settings['restrict_to_search']); ?>,
+			bundlePreview: <?= caGetBundlePreviewForRelationshipBundle($this->getVar('initialValues')); ?>,
+			readonly: <?= $vb_read_only ? "true" : "false"; ?>,
+			isSortable: <?= ($vb_read_only || $vs_sort) ? "false" : "true"; ?>,
+			listSortOrderID: '<?= $vs_id_prefix; ?>BundleList',
 			listSortItems: 'div.roundedRel,div.listRel',
-			autocompleteInputID: '<?php print $vs_id_prefix; ?>_autocomplete',
+			autocompleteInputID: '<?= $vs_id_prefix; ?>_autocomplete',
 <?php if($vb_quick_add_enabled) { ?>
-			quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,
-			quickaddUrl: '<?php print caNavUrl($this->request, 'editor/movements', 'MovementQuickAdd', 'Form', array('movement_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$va_settings['dont_include_subtypes_in_type_restriction'], 'prepopulate_fields' => join(";", $va_settings['prepopulateQuickaddFields']))); ?>',
+			quickaddPanel: caRelationQuickAddPanel<?= $vs_id_prefix; ?>,
+			quickaddUrl: '<?= caNavUrl($this->request, 'editor/movements', 'MovementQuickAdd', 'Form', array('movement_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$va_settings['dont_include_subtypes_in_type_restriction'], 'prepopulate_fields' => join(";", $va_settings['prepopulateQuickaddFields']))); ?>',
 <?php } ?>
-			sortUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Sort', array('table' => $t_item_rel->tableName())); ?>',
+			sortUrl: '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Sort', array('table' => $t_item_rel->tableName())); ?>',
 			
 			loadedSort: <?= json_encode($loaded_sort); ?>,
 			loadedSortDirection: <?= json_encode($loaded_sort_direction); ?>,
 			
 			interstitialButtonClassName: 'caInterstitialEditButton',
-			interstitialPanel: caRelationEditorPanel<?php print $vs_id_prefix; ?>,
-			interstitialUrl: '<?php print caNavUrl($this->request, 'editor', 'Interstitial', 'Form', array('t' => $t_item_rel->tableName())); ?>',
-			interstitialPrimaryTable: '<?php print $t_instance->tableName(); ?>',
-			interstitialPrimaryID: <?php print (int)$t_instance->getPrimaryKey(); ?>,
-			itemColor: '<?php print $vs_color; ?>',
-			firstItemColor: '<?php print $vs_first_color; ?>',
-			lastItemColor: '<?php print $vs_last_color; ?>',
+			interstitialPanel: caRelationEditorPanel<?= $vs_id_prefix; ?>,
+			interstitialUrl: '<?= caNavUrl($this->request, 'editor', 'Interstitial', 'Form', array('t' => $t_item_rel->tableName())); ?>',
+			interstitialPrimaryTable: '<?= $t_instance->tableName(); ?>',
+			interstitialPrimaryID: <?= (int)$t_instance->getPrimaryKey(); ?>,
+			itemColor: '<?= $vs_color; ?>',
+			firstItemColor: '<?= $vs_first_color; ?>',
+			lastItemColor: '<?= $vs_last_color; ?>',
 			
-			totalValueCount: <?php print (int)$count; ?>,
-			partialLoadUrl: '<?php print caNavUrl($this->request, '*', '*', 'loadBundleValues', array($t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $vn_placement_id, 'bundle' => 'ca_movements')); ?>',
-			partialLoadIndicator: '<?php print addslashes(caBusyIndicatorIcon($this->request)); ?>',
-			loadSize: <?php print $num_per_page; ?>,
+			totalValueCount: <?= (int)$count; ?>,
+			partialLoadUrl: '<?= caNavUrl($this->request, '*', '*', 'loadBundleValues', array($t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $vn_placement_id, 'bundle' => 'ca_movements')); ?>',
+			partialLoadIndicator: '<?= addslashes(caBusyIndicatorIcon($this->request)); ?>',
+			loadSize: <?= $num_per_page; ?>,
 			
-			minRepeats: <?php print caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
-			maxRepeats: <?php print caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>
+			minRepeats: <?= caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
+			maxRepeats: <?= caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>,
+			
+			isSelfRelationship:<?= ($t_item_rel && $t_item_rel->isSelfRelationship()) ? 'true' : 'false'; ?>,
+			subjectTypeID: <?= (int)$t_subject->getTypeID(); ?>
 		});
 	});
 </script>

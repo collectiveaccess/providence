@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010 Whirl-i-Gig
+ * Copyright 2010-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,14 +30,15 @@
 	$va_settings 			= $this->getVar('settings');
 	$vs_widget_id 			= $this->getVar('widget_id');
 	$va_login_list			= $this->getVar('login_list');
+	$show_ips				= $this->getVar('show_ips');
 ?>
 
 <div class="dashboardWidgetContentContainer dashboardWidgetScrollMedium">
 	<table class='dashboardWidgetTable'>
 		<tr>
-			<th><?php print _t('Date/time');?></th>
-			<th><?php print _t('User');?></th>
-			<th><?php print _t('IP address');?></th>
+			<th><?= _t('Date/time');?></th>
+			<th><?= _t('User');?></th>
+			<?php if($show_ips) { ?><th><?= _t('IP address');?></th><?php } ?>
 		</tr>
 			
 <?php
@@ -45,7 +46,7 @@
 		print "<tr>";
 		print "<td>".date("n/d/y, g:iA T", $va_login['date_time'])."</td>";
 		print "<td>".$va_login['fname'].' '.$va_login['lname'].' ('.$va_login['username'].")</td>";
-		print "<td>".$va_login['ip']."</td>";
+		if($show_ips) { print "<td>".$va_login['ip']."</td>"; }
 		print "</tr>\n";
 	}
 ?>

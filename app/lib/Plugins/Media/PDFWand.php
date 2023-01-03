@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2020 Whirl-i-Gig
+ * Copyright 2006-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -56,7 +56,6 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 	var $opo_search_config;
 	var $ops_ghostscript_path;
 	var $ops_pdftotext_path;
-	var $ops_pdfminer_path;
 	
 	var $ops_imagemagick_path;
 	var $ops_graphicsmagick_path;
@@ -170,7 +169,6 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		
 		$this->ops_ghostscript_path = caMediaPluginGhostscriptInstalled();
 		$this->ops_pdftotext_path = caMediaPluginPdftotextInstalled();
-		$this->ops_pdfminer_path = caPDFMinerInstalled();
 		$this->ops_imagemagick_path = caMediaPluginImageMagickInstalled();
 		$this->ops_graphicsmagick_path = caMediaPluginGraphicsMagickInstalled();
 
@@ -197,12 +195,6 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		}
 		else{
 			$va_status['notices'][] = _t("Found PDFToText");
-		}
-		if (!$this->ops_pdfminer_path) {
-			$va_status['warnings'][] = _t("PDFMiner cannot be found: indexing of text locations in PDF files will not be performed; you can obtain PDFMiner at http://www.unixuser.org/~euske/python/pdfminer/index.html");
-		}
-		else{
-			$va_status['warnings'][] = _t("Found PDFMiner");
 		}
 
 		return $va_status;
@@ -358,121 +350,14 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		$this->filepath = $ps_filepath;
 		
 		$this->metadata = caExtractMetadataWithExifTool($ps_filepath);
-		
-		
-		// Try to extract positions of text using PDFMiner (http://www.unixuser.org/~euske/python/pdfminer/index.html)
-		if (caPDFMinerInstalled($this->ops_pdfminer_path)) {
-			
-			// Try to extract text
+					
+		// Try to extract text
+		if ($this->ops_pdftotext_path) {
 			$vs_tmp_filename = tempnam('/tmp', 'CA_PDF_TEXT');
-			caExec($this->ops_pdfminer_path.' -t text '.caEscapeShellArg($ps_filepath).' > '.caEscapeShellArg($vs_tmp_filename).(caIsPOSIX() ? " 2> /dev/null" : ""));
+			caExec($this->ops_pdftotext_path.' -q -enc UTF-8 '.caEscapeShellArg($ps_filepath).' '.caEscapeShellArg($vs_tmp_filename).(caIsPOSIX() ? " 2> /dev/null" : ""));
 			$vs_extracted_text = file_get_contents($vs_tmp_filename);
 			$this->handle['content'] = $this->ohandle['content'] = $vs_extracted_text;
 			@unlink($vs_tmp_filename);
-	
-			$vs_tmp_filename = tempnam('/tmp', 'CA_PDF_TEXT_LOCATIONS');
-			caExec($this->ops_pdfminer_path.' -A -t xml '.caEscapeShellArg($ps_filepath).' > '.caEscapeShellArg($vs_tmp_filename).(caIsPOSIX() ? " 2> /dev/null" : ""));
-			
-			$xml = new XMLReader();
-			if ($xml->open($vs_tmp_filename)) {
-			
-			// Structure of locations array is [<word>][] = array(page, x1, y1, x2, y2, size)
-			$va_locations = array();
-			$vn_current_page = null;
-			$vs_text_line_content = '';
-			$vs_page_content = '';
-			$va_text_line_locs = array();
-			$vb_in_text_element = false;
-			$va_current_text_loc = null;
-			
-			$vs_indexing_regex = $this->opo_search_config->get('indexing_tokenizer_regex');
-			while (@$xml->read()) {
-					switch ($xml->name) {
-						case 'page':		// new page
-							if ($xml->nodeType == XMLReader::END_ELEMENT) { 
-								$vs_page_content = '';
-								continue(2); 
-							}
-							$vs_text_line_content = '';
-							$vn_current_page = (int)$xml->getAttribute('id');
-							break;
-						case 'textline':
-							if ($xml->nodeType == XMLReader::END_ELEMENT) { 
-								// end of line
-							
-								$vn_start = $vn_end = null;
-								$vs_acc = '';
-								for($vn_i=0; $vn_i < mb_strlen($vs_text_line_content); $vn_i++) {
-									if (preg_match("![{$vs_indexing_regex}]!u", mb_substr($vs_text_line_content, $vn_i, 1))) {
-										// word boundary
-										if ($vs_acc) {
-											$vs_acc = mb_strtolower($vs_acc);
-											$va_start = $va_text_line_locs[$vn_start];
-											$va_end = $va_text_line_locs[$vn_end];
-											$va_locations[$vs_acc][] = array(
-												'p' => $vn_current_page,
-												'x1' => $va_start['x1'], 'y1' => $va_start['y1'],
-												'x2' => $va_end['x2'], 'y2' => $va_end['y2']
-												//'size' => $va_start['size']
-											);
-										}
-										$vn_start = $vn_end = null;
-										$vs_acc = '';
-									} else {
-										if(is_null($vn_start)) { $vn_start = $vn_i; }
-										$vn_end = $vn_i;
-										$vs_acc .= ($vs_c = mb_substr($vs_text_line_content, $vn_i, 1));
-									}
-								}
-							} else {
-								// new line of text
-								$vs_page_content .= $vs_text_line_content;
-								$vs_text_line_content = '';
-								$va_text_line_locs = array();
-							}
-							break;
-						case 'textbox':
-							if ($xml->nodeType == XMLReader::END_ELEMENT) {
-								$vs_page_content .= "\n";
-							}
-							break;
-						case 'text':
-							if ($vb_in_text_element = ($xml->nodeType == XMLReader::ELEMENT)) {
-								$va_tmp = explode(",", (string)$xml->getAttribute('bbox'));
-								$va_current_text_loc = array(
-									'x1' => $va_tmp[0],
-									'y1' => $va_tmp[1],
-									'x2' => $va_tmp[2],
-									'y2' => $va_tmp[3]
-									//'font' => $xml->getAttribute('font'),
-									//'size' => $xml->getAttribute('size')
-								);	
-							} else {
-								$va_current_text_loc = null;
-							}
-							break;
-						case '#text':		// bit of text to record (usually a single character)
-							if ($vb_in_text_element) {
-								$va_current_text_loc['chars'] = mb_strlen((string)$xml->value);
-								$va_text_line_locs[mb_strlen($vs_text_line_content)] = $va_current_text_loc;
-								$vs_text_line_content .= (string)$xml->value;
-							}
-							break;
-					}
-				}
-			}
-			
-			$this->handle['content_by_location'] = $this->ohandle['content_by_location'] = $va_locations;
-			@unlink($vs_tmp_filename);	
-		} else {			
-			// Try to extract text
-			if ($this->ops_pdftotext_path) {
-				$vs_tmp_filename = tempnam('/tmp', 'CA_PDF_TEXT');
-				caExec($this->ops_pdftotext_path.' -q -enc UTF-8 '.caEscapeShellArg($ps_filepath).' '.caEscapeShellArg($vs_tmp_filename).(caIsPOSIX() ? " 2> /dev/null" : ""));
-				$vs_extracted_text = file_get_contents($vs_tmp_filename);
-				$this->handle['content'] = $this->ohandle['content'] = $vs_extracted_text;
-				@unlink($vs_tmp_filename);
-			}
 		}
 			
 		return true;	
@@ -616,18 +501,23 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 			if ($vn_quality > 100) { $vn_quality = 100; }
 			if ($vn_quality < 1) { $vn_quality = 50; }
 			
-			$vn_start_page = $vn_end_page = ceil($this->get("page"));
+			$vn_end_page = $this->get('pages');
+			$vn_start_page = caGetOption('start', $pa_options, 1);
 			if ($pb_write_all_pages) {
-				$vn_start_page = caGetOption('start', $pa_options, $vn_start_page);
-				$vn_end_page = caGetOption('numPages', $pa_options, $vn_start_page);
+				//$vn_end_page = caGetOption('numPages', $pa_options, $this->get('pages'));
 				$ps_filepath .= '%05d';
 			}
 			if ($vn_start_page < 1) { $vn_start_page = 1; }
 			if ($vn_end_page > $this->get('pages')) { $vn_end_page = (int)$this->get('pages'); }
 			if ($vn_end_page < 1) { $vn_end_page = $vn_start_page; }
+			if ($vn_start_page > $vn_end_page) { $vn_end_page = $vn_start_page; }
+			
+			if(!$pb_write_all_pages) {
+				$vn_end_page = $vn_start_page;
+			}
 			
 			$vs_antialiasing = ($this->get("antialiasing") || $pb_antialiasing) ?  "-dTextAlphaBits=4 -dGraphicsAlphaBits=4" : "";
-			
+		
 			$vb_processed_preview = false;
 			switch($ps_mimetype) {
 				case 'image/jpeg':
@@ -655,7 +545,6 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 				$va_files[] = "{$ps_filepath}.{$vs_ext}";
 			}		
 	
-
 			if ($vb_processed_preview) {
 				foreach($va_files as $vn_page => $vs_file) {
 					$vb_use_default_icon = true;
@@ -777,14 +666,16 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		if (($vn_quality = (int)$this->opo_config->get("document_preview_quality")) > 100) { $vn_quality = 75; }
 		$this->set('quality', $vn_quality);
 		
-		$va_files = $this->write($vs_output_file_prefix, 'image/jpeg', ['writeAllPages' => caGetOption('writeAllPages', $pa_options, false), 'dontUseDefaultIcons' => true, 'antialiasing' => true, 'start' => $vn_start_at, 'numPages' => (($vn_tot_pages > $vn_max_number_of_pages) > $vn_max_number_of_pages) ? $vn_max_number_of_pages : $vn_tot_pages]);
-
+		$write_all_pages = caGetOption('writeAllPages', $pa_options, false);
+		
+		$va_files = $this->write($vs_output_file_prefix, 'image/jpeg', ['writeAllPages' => $write_all_pages, 'dontUseDefaultIcons' => true, 'antialiasing' => true, 'start' => $vn_start_at, 'numPages' => (($vn_tot_pages > $vn_max_number_of_pages) > $vn_max_number_of_pages) ? $vn_max_number_of_pages : $vn_tot_pages]);
+		if(!$write_all_pages) { $va_files = [$va_files]; }
 		$this->set("page", 1);
 		$this->set('resolution', $vn_old_res);
 		$this->set('quality', $vn_old_quality);
 		
 		
-		if (!sizeof($va_files)) {
+		if (!is_array($va_files) || !sizeof($va_files)) {
 			$this->postError(1610, _t("Couldn't not write document preview frames to tmp directory (%1)", $vs_tmp_dir), "WLPlugPDFWand->write()");
 		}
 		@unlink($vs_output_file_prefix);

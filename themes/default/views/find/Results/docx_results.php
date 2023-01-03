@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2019 Whirl-i-Gig
+ * Copyright 2013-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -60,7 +60,7 @@ $section = $phpWord->addSection($sectionStyle);
 // Add header for all pages
 $header = $section->addHeader();
 
-$headerimage = $this->request->getThemeDirectoryPath()."/graphics/logos/".$this->request->config->get('report_img');
+$headerimage =  ($this->request && $this->request->config->get('report_img')) ? $this->request->getThemeDirectoryPath()."/graphics/logos/".$this->request->config->get('report_img') : '';
 if(file_exists($headerimage)){
 	$header->addImage($headerimage,array('height' => 30,'wrappingStyle' => 'inline'));
 }
@@ -177,7 +177,7 @@ while($vo_result->nextHit()) {
 
 			$textrun = $contentCell->createTextRun();
 			
-			if ($this->request->config->get('report_include_labels_in_docx_output')) {
+			if ($this->request && $this->request->config->get('report_include_labels_in_docx_output')) {
 				$textrun->addText(caEscapeForXML($va_info['display']).': ', $styleBundleNameFont);
 			}
 			$textrun->addText(
@@ -194,7 +194,8 @@ while($vo_result->nextHit()) {
 
 // Finally, write the document:
 $objWriter = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
-header("Content-Type:application/vnd.openxmlformats-officedocument.wordprocessingml.document");
-header('Content-Disposition:inline;filename=Export.docx ');
-
+if($this->request) {
+	header("Content-Type:application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+	header('Content-Disposition:inline;filename=Export.docx ');
+}
 $objWriter->save('php://output');

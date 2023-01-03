@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2021 Whirl-i-Gig
+ * Copyright 2010-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -479,6 +479,13 @@ trait ModelSettings {
 					}
 					$va_attributes['onchange'] = 'jQuery(this).prop("checked") ? jQuery("'.join(",", $va_ids).'").slideUp(250).find("input, textarea").val("") : jQuery("'.join(",", $va_ids).'").slideDown(250);';
 					
+					if ($va_attributes['checked']) {
+						$vs_return .= "<script type='text/javascript'>
+	jQuery(document).ready(function() {
+		jQuery('".join(",", $va_ids)."').hide();
+	});
+	</script>\n";
+					}
 				}
 				if (isset($va_properties['showOnSelect'])) {
 					if (!is_array($va_properties['showOnSelect'])) { $va_properties['showOnSelect'] = array($va_properties['showOnSelect']); }
@@ -662,7 +669,22 @@ trait ModelSettings {
 						$vs_select_element = caHTMLSelect($vs_input_name, $va_rel_opts, $va_attr, $va_opts);
 					}
 				} else {
-					if (is_array($va_properties['showSortableBundlesFor']) && (strlen($va_properties['showSortableBundlesFor']['table']) > 0)) {
+					if(isset($va_properties['showSortableElementsFor']) && ($va_properties['showSortableElementsFor'] > 0)) {
+						$elements = ca_metadata_elements::getElementsForSet((int)$va_properties['showSortableElementsFor']);
+						
+						$elements = array_filter($elements, function($e) {
+							return isset($e['settings']['canBeUsedInSort']) && (bool)$e['settings']['canBeUsedInSort'];
+						});
+						$va_select_opts = [
+							_t('User defined sort order') => '',
+							_t('Order created') => 'relation_id',
+						];
+						foreach($elements as $e) {
+							$va_select_opts[$e['display_label']] = $e['element_code'];
+						}
+						
+						$vs_select_element = caHTMLSelect($vs_input_name, $va_select_opts, $va_select_attr, $va_opts);
+					} elseif (is_array($va_properties['showSortableBundlesFor']) && (strlen($va_properties['showSortableBundlesFor']['table']) > 0)) {
 						$va_select_opts = array_merge([
 							_t('User defined sort order') => '',
 							_t('Order created') => 'relation_id',
@@ -728,6 +750,9 @@ trait ModelSettings {
 								$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'value' => is_array($vs_value) ? $vs_value[0] : $vs_value, 'multiple' => 1, 'values' => is_array($vs_value) ? $vs_value : array($vs_value));
 								$vs_select_element = caHTMLSelect($vs_input_name, $va_select_opts,  $va_select_attr, $va_opts);
 							}
+						} elseif ($va_properties['showLocaleList']) {
+							$locales = ca_locales::getLocaleList();
+							$vs_select_element = caHTMLSelect($vs_input_name, [], [], []);
 						} else {
 							// Regular drop-down with configured options
 							if ($vn_height > 1) { $va_attr['multiple'] = 1; $vs_input_name .= '[]'; }

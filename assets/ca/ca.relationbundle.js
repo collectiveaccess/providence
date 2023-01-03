@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2021 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -182,47 +182,94 @@ var caUI = caUI || {};
 			
 			jQuery('#' + options.itemID + id + ' #' + options.fieldNamePrefix + 'id' + id).val(item_id);
 			jQuery('#' + options.itemID + id + ' #' + options.fieldNamePrefix + 'type_id' + id).css('display', 'inline');
-			var i, typeList, types = [];
+			
+			var i, typeList, typesByParent = {};
 			var default_type = 0;
 	
 			if (jQuery('#' + options.itemID + id + ' select[name=' + options.fieldNamePrefix + 'type_id' + id + ']').data('item_type_id') == type_id) {
 				// noop - don't change relationship types unless you have to
 			} else {
-				var types_output = {};
+				var typesOutput = {};
 				if (options.relationshipTypes && (typeList = options.relationshipTypes[type_id])) {
 					for(i=0; i < typeList.length; i++) {
-						types.push({type_id: typeList[i].type_id, typename: typeList[i].typename, direction: typeList[i].direction, rank: typeList[i].rank });
-						types_output[typeList[i].type_id] = 1;
+						if(options.isSelfRelationship && options.subjectTypeID) {
+							if(typeList[i].sub_type_left_id && typeList[i].sub_type_right_id) {
+								if(!(
+									((typeList[i].sub_type_left_id == type_id) && (typeList[i].sub_type_right_id == options.subjectTypeID))
+									||
+									((typeList[i].sub_type_left_id == options.subjectTypeID) && (typeList[i].sub_type_right_id == type_id))
+								)) {
+									continue;
+								}
+							}
+						} else if(typeList[i].sub_type_left_id) {
+							if((typeList[i].sub_type_left_id != type_id) && (typeList[i].sub_type_left_id != options.subjectTypeID)) { continue; }
+						} else if(typeList[i].sub_type_right_id) {
+							if((typeList[i].sub_type_right_id != type_id) && (typeList[i].sub_type_right_id != options.subjectTypeID)) { continue; }
+						}
+						typesOutput[typeList[i].type_id] = 1;
+						if(!typeList[i].parent_id) { continue; }
+						if(!typesByParent[typeList[i].parent_id]) { typesByParent[typeList[i].parent_id] = []; }
+						typesByParent[typeList[i].parent_id].push(typeList[i]);
+						
 						if (parseInt(typeList[i].is_default) === 1) {
 							default_type = (typeList[i].direction ? typeList[i].direction : '') + typeList[i].type_id;
 						}
 					}
 				} 
+				
 				// look for null (these are unrestricted and therefore always displayed)
 				if (options.relationshipTypes && (typeList = options.relationshipTypes['NULL'])) {
 					for(i=0; i < typeList.length; i++) {
-						if(types_output[typeList[i].type_id]) continue;
-						types.push({type_id: typeList[i].type_id, typename: typeList[i].typename, direction: typeList[i].direction, rank: typeList[i].rank });
-				
+						let key = typeList[i].type_id + '/' + typeList[i].direction;
+						if(typesOutput[key]) { continue };
+						typesOutput[key] = typesOutput[parseInt(typeList[i].type_id)] = 1;
+						
+				        if(!typesByParent[typeList[i].parent_id]) { typesByParent[typeList[i].parent_id] = []; }
+				        
+				        var parent = that._findRelType(typeList[i].parent_id);
+						if(parent && !typesOutput[parent.type_id]) { 
+							let parentKey = parent.type_id + '/' + parent.direction;
+							if(!typesByParent[parseInt(parent.parent_id)]) { typesByParent[parseInt(parent.parent_id)] = []; }
+							typesByParent[parseInt(parent.parent_id)].push(parent);	
+							typesOutput[parentKey] = typesOutput[parseInt(parent.type_id)] = 1;
+						}
+				        
+						typesByParent[typeList[i].parent_id].push(typeList[i]);
+						
 						if (parseInt(typeList[i].is_default) === 1) {
 							default_type = (typeList[i].direction ? typeList[i].direction : '') + typeList[i].type_id;
 						}
 					}
 				}
-		
-				types.sort(function(a,b) {
-					a.rank = parseInt(a.rank);
-					b.rank = parseInt(b.rank);
-					if (a.rank != b.rank) {
-						return (a.rank > b.rank) ? 1 : ((b.rank > a.rank) ? -1 : 0);
-					} 
-					return (a.typename > b.typename) ? 1 : ((b.typename > a.typename) ? -1 : 0);
-				});
+				
+		        var root_id = null;
+		        for(var parent_id in typesByParent) {
+		            if(!typesOutput[parseInt(parent_id)]) { root_id = parent_id; }
+                    typesByParent[parent_id].sort(function(a,b) {
+                        a.rank = parseInt(a.rank);
+                        b.rank = parseInt(b.rank);
+                    
+                        if (a.rank != b.rank) {
+                            return (a.rank > b.rank) ? 1 : ((b.rank > a.rank) ? -1 : 0);
+                        } 
+                        return (a.typename > b.typename) ? 1 : ((b.typename > a.typename) ? -1 : 0);
+                    });
+                }
+                
+                if(root_id > 0) {
+                    types = that._flattenOptionList([], typesByParent[root_id], typesByParent);
+                } else {
+                    types = [
+                        { type_id: -1, parent_id: null, direction: null, typename: "NO RELATIONSHIP TYPES DEFINED" }
+                    ];
+                }
 		
 				jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id + ' option').remove();	// clear existing options
+				
 				jQuery.each(types, function (i, t) {
 					var type_direction = (t.direction) ? t.direction+ "_" : '';
-					jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).append("<option value='" + type_direction + t.type_id + "'>" + t.typename + "</option>");
+					jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).append("<option value='" + type_direction + t.type_id + "' " + (t.disabled ? "disabled='1'" : '') + ">" + t.typename + "</option>");
 				});
 		
 				// select default
@@ -230,6 +277,11 @@ var caUI = caUI || {};
 	
 				// set current type
 				jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).data('item_type_id', type_id);
+				
+				if(jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id + " option").length == 1) {
+					// Don't bother showing bundle if only one type
+					jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).hide();
+				}
 			}
 			that.showUnsavedChangesWarning(true);
 		};
@@ -255,7 +307,30 @@ var caUI = caUI || {};
 		
 		var that = caUI.initBundle(container, options);
 		
-		that.triggerQuickAdd = function(q, id, params=null) {
+		that._flattenOptionList = function(acc, list, hier) {
+		    for(var i in list) {
+		        acc.push(list[i]);
+		        if(hier[list[i].type_id]) {
+		            acc = that._flattenOptionList(acc, hier[list[i].type_id], hier);
+		        }
+		    }  
+		    return acc;
+		};
+		
+		that._findRelType = function(type_id) {
+			if (options.relationshipTypes) {
+				for(var t in options.relationshipTypes) {
+					for(var i in options.relationshipTypes[t]) {
+						if(options.relationshipTypes[t][i].type_id == type_id) {
+							return options.relationshipTypes[t][i];
+						}
+					}
+				}
+			}
+			return null;
+		};
+		
+		that.triggerQuickAdd = function(q, id, params=null, opts=null) {
 			var autocompleter_id = options.fieldNamePrefix + 'autocomplete' + id;
 			var panelUrl = options.quickaddUrl;
 			if (options && options.types) {
@@ -284,6 +359,10 @@ var caUI = caUI || {};
 			jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteInput', jQuery("#" + options.autocompleteInputID + id).val());
 
 			jQuery("#" + options.autocompleteInputID + id).val('');
+			
+			if(opts && opts.addBundle) {
+				that.addToBundle(id);
+			}
 		};
 		
 		return that;

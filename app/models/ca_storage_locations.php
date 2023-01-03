@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2019 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -82,6 +82,13 @@ BaseModel::$s_ca_models_definitions['ca_storage_locations'] = array(
 				'DEFAULT' => '',
 				'LABEL' => 'Sortable location identifier', 'DESCRIPTION' => 'Value used for sorting locations on identifier value.',
 				'BOUNDS_LENGTH' => array(0,255)
+		),
+		'idno_sort_num' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => 'Sortable object identifier as integer', 'DESCRIPTION' => 'Integer value used for sorting objects; used for idno range query.'
 		),
 		'source_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
@@ -186,7 +193,7 @@ BaseModel::$s_ca_models_definitions['ca_storage_locations'] = array(
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => 'View count', 'DESCRIPTION' => 'Number of views for this record.'
+				'LABEL' => 'View count', 'DESCRIPTION' => _t('Number of views for this record.')
 		),
 		'submission_user_id' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
@@ -194,7 +201,7 @@ BaseModel::$s_ca_models_definitions['ca_storage_locations'] = array(
 			'IS_NULL' => true, 
 			'DEFAULT' => null,
 			'DONT_ALLOW_IN_UI' => true,
-			'LABEL' => _t('Submitted by user'), 'DESCRIPTION' => _t('User submitting this object')
+			'LABEL' => _t('Submitted by user'), 'DESCRIPTION' => _t('User submitting this location')
 		),
 		'submission_group_id' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
@@ -202,7 +209,7 @@ BaseModel::$s_ca_models_definitions['ca_storage_locations'] = array(
 			'IS_NULL' => true, 
 			'DEFAULT' => null,
 			'DONT_ALLOW_IN_UI' => true,
-			'LABEL' => _t('Submitted for group'), 'DESCRIPTION' => _t('Group this object was submitted under')
+			'LABEL' => _t('Submitted for group'), 'DESCRIPTION' => _t('Group this location was submitted under')
 		),
 		'submission_status_id' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
@@ -211,7 +218,15 @@ BaseModel::$s_ca_models_definitions['ca_storage_locations'] = array(
 			'DEFAULT' => null,
 			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 			'LIST_CODE' => 'submission_statuses',
-			'LABEL' => _t('Submission status'), 'DESCRIPTION' => _t('Indicates submission status of the object.')
+			'LABEL' => _t('Submission status'), 'DESCRIPTION' => _t('Indicates submission status')
+		),
+		'submission_session_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true,
+			'DEFAULT' => null,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'LABEL' => _t('Submission session'), 'DESCRIPTION' => _t('Indicates submission session')
 		)
  	)
 );
@@ -338,20 +353,7 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 
 	protected $FIELDS;
 	
-	# ------------------------------------------------------
-	# --- Constructor
-	#
-	# This is a function called when a new instance of this object is created. This
-	# standard constructor supports three calling modes:
-	#
-	# 1. If called without parameters, simply creates a new, empty objects object
-	# 2. If called with a single, valid primary key value, creates a new objects object and loads
-	#    the record identified by the primary key value
-	#
-	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
-	}
+
 	# ------------------------------------------------------
 	protected function initLabelDefinitions($pa_options=null) {
 		parent::initLabelDefinitions($pa_options);
@@ -394,6 +396,8 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 		$this->BUNDLES['history_tracking_current_date'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current history tracking date'), 'displayOnly' => true);
 		$this->BUNDLES['history_tracking_chronology'] = array('type' => 'special', 'repeating' => false, 'label' => _t('History'));
 		$this->BUNDLES['history_tracking_current_contents'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current contents'));
+		
+		$this->BUNDLES['generic'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Display template'));
 	}
 	# ------------------------------------------------------
 	public function insert($pa_options=null) {
@@ -564,7 +568,7 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 						foreach($content_ids as $content_id) {
 							if(!$t_movement->addRelationship($policy['table'], $content_id, $policy_config['trackingRelationshipType'])) {
 								if($this->inTransaction()) { $this->removeTransaction(false); }
-								$this->postError(3625, _t('Could not create movement - %1 relationship for history tracking: %2', $policy['table'], join($t_movement->getErrors())), 'ca_storage_locations::saveBundlesForScreen()');
+								$this->postError(3625, _t('Could not create movement - %1 relationship for history tracking: %2', Datamodel::getTableProperty($policy['table'], 'NAME_SINGULAR'), join($t_movement->getErrors())), 'ca_storage_locations::saveBundlesForScreen()');
 								return false;
 							}
 						}
@@ -573,6 +577,7 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 				}
 			}
 		}
+		
 		if($we_set_transaction) { $this->removeTransaction(true); }
 		return true;
 	}

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2021 Whirl-i-Gig
+ * Copyright 2013-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,28 +33,31 @@
  /**
   *
   */
+require_once(__CA_LIB_DIR__.'/Utils/CLIBaseUtils.php');
+require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Maintenance.php');
+require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Media.php');
+require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Search.php');
+require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Configuration.php');
+require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/ImportExport.php');
+require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/ContentManagement.php');
+require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Cron.php');
+require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Performance.php');
+require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Test.php');
+require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Statistics.php');
+require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Developer.php');
+require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/BanHammer.php');
 
- 	require_once(__CA_LIB_DIR__.'/Utils/CLIBaseUtils.php');
- 	require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Maintenance.php');
- 	require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Media.php');
- 	require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Search.php');
- 	require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Configuration.php');
- 	require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/ImportExport.php');
- 	require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/ContentManagement.php');
- 	require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Cron.php');
- 	require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Performance.php');
- 	require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Test.php');
- 	require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Statistics.php');
- 
-	class CLIUtils extends CLIBaseUtils {
-		use CLIUtilsMaintenance;
-		use CLIUtilsMedia;
-		use CLIUtilsSearch;
-		use CLIUtilsConfiguration;
-		use CLIUtilsImportExport;
-		use CLIUtilsContentManagement;
-		use CLIUtilsCron;
-		use CLIUtilsPerformance;
-		use CLIUtilsStatistics;
-		use CLIUtilsTest;
-	}
+class CLIUtils extends CLIBaseUtils {
+	use CLIUtilsMaintenance;
+	use CLIUtilsMedia;
+	use CLIUtilsSearch;
+	use CLIUtilsConfiguration;
+	use CLIUtilsImportExport;
+	use CLIUtilsContentManagement;
+	use CLIUtilsCron;
+	use CLIUtilsPerformance;
+	use CLIUtilsStatistics;
+	use CLIUtilsDeveloper;
+	use CLIUtilsTest;
+	use CLIUtilsBanHammer;
+}

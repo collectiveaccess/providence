@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2021 Whirl-i-Gig
+ * Copyright 2015-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -54,6 +54,11 @@ class DisplayTemplateParser {
 	 *
 	 */
 	static $join_tag_vals = [];
+	
+	/**
+	 *
+	 */
+	static $do_highlighting = false;
 	
 	# -------------------------------------------------------------------
 	/**
@@ -130,7 +135,7 @@ class DisplayTemplateParser {
 	 *		linkTarget = Optional target to use when generating <l> tag-based links. By default links point to standard detail pages, but plugins may define linkTargets that point elsewhere.
 	 *      relativeToContainer = evaluate template in a repeating container context. [Default is false]
 	 * 		skipIfExpression = skip the elements in $pa_row_ids for which the given expression does not evaluate true. This pulls values for the row as a whole and skips the *entire* row if the expression evaluates true. [Default is false]
-	 *      skipWhen = tests each templating iteration (there may be more than more if relativeToContainer is set) against an expression and skips the iteration if the expression evaluates true. If set all iterations are generated and tested, even when unitStart and unitLength are set. [Default is null]
+	 *      skipWhen = tests each templating iteration (there may be more than one if relativeToContainer is set) against an expression and skips the iteration if the expression evaluates true. If set all iterations are generated and tested, even when unitStart and unitLength are set. [Default is null]
 	 *		includeBlankValuesInArray = include blank template values in primary template and all <unit>s in returned array when returnAsArray is set. If you need the returned array of values to line up with the row_ids in $pa_row_ids this should be set. [Default is false]
 	 *		includeBlankValuesInTopLevelForPrefetch = include blank template values in *primary template* (not <unit>s) in returned array when returnAsArray is set. Used by template prefetcher to ensure returned values align with id indices. [Default is false]
 	 *		forceValues = Optional array of values indexed by placeholder without caret (eg. ca_objects.idno) and row_id. When present these values will be used in place of the placeholders, rather than whatever value normal processing would result in. [Default is null]
@@ -152,6 +157,8 @@ class DisplayTemplateParser {
 			'useLocaleCodes') as $vs_k) {
 			unset($pa_options[$vs_k]);
 		}
+		
+		$do_highlighting = $pa_options['highlighting'] ?? false;
 		
 		self::$join_tag_vals = [];
 		
@@ -197,11 +204,12 @@ class DisplayTemplateParser {
 		}
 
 		$qr_res = caMakeSearchResult($ps_tablename, $pa_row_ids, ['sort' => caGetOption('sort', $pa_options, null), 'sortDirection' => caGetOption('sortDirection', $pa_options, null)]);
-
+		$qr_res->doHighlighting($do_highlighting);
+		
 		if(!$qr_res) { return $pb_return_as_array ? array() : ""; }
 
-        $filter_non_primary_reps = self::_setPrimaryRepresentationFiltering($qr_res, caGetOption('filterNonPrimaryRepresentations', $pa_options, false));
-        
+        $filter_non_primary_reps = self::_setPrimaryRepresentationFiltering($qr_res, caGetOption('filterNonPrimaryRepresentations', $pa_options, null));
+
 		$pa_check_access = ($t_instance->hasField('access')) ? caGetOption('checkAccess', $pa_options, null) : null;
 		if (!is_array($pa_check_access) || !sizeof($pa_check_access)) { $pa_check_access = null; }
 		
@@ -274,10 +282,6 @@ class DisplayTemplateParser {
 			}
 		}
 		
-		if ($ps_skip_when && (($vn_start = caGetOption('unitStart', $pa_options, 0)) || ($vn_length = caGetOption('unitLength', $pa_options, null)))) {
-		    $va_proc_templates = array_slice($va_proc_templates, $vn_start, $vn_length);
-		}
-		
 		if ($pa_options['aggregateUnique']) {
 			$va_acc = [];
 			foreach($va_proc_templates as $va_val_list) {
@@ -290,14 +294,20 @@ class DisplayTemplateParser {
 			$va_proc_templates = array_unique($va_acc);
 		}
 		
+		if (($ps_skip_when || $pa_options['aggregateUnique']) && (($vn_start = caGetOption('unitStart', $pa_options, 0)) || ($vn_length = caGetOption('unitLength', $pa_options, null)))) {
+		    $va_proc_templates = array_slice($va_proc_templates, $vn_start, $vn_length);
+		}
+		
 		if (!$pb_include_blanks && !$pb_include_blanks_for_prefetch) { $va_proc_templates = array_filter($va_proc_templates, 'strlen'); }
 		
 		// Transform links
-		$va_proc_templates = caCreateLinksFromText(
-			$va_proc_templates, $ps_tablename, $pa_row_ids,
-			null, caGetOption('linkTarget', $pa_options, null),
-			array_merge(['addRelParameter' => true, 'requireLinkTags' => true], $pa_options)
-		);
+		if(caGetOption('makeLink', $pa_options, true)) {
+			$va_proc_templates = caCreateLinksFromText(
+				$va_proc_templates, $ps_tablename, $pa_row_ids,
+				null, caGetOption('linkTarget', $pa_options, null),
+				array_merge(['addRelParameter' => true, 'requireLinkTags' => true], $pa_options)
+			);
+		}
 		
 		if (!$pb_include_blanks && !$pb_include_blanks_for_prefetch) { $va_proc_templates = array_filter($va_proc_templates, 'strlen'); }
 		
@@ -522,7 +532,6 @@ class DisplayTemplateParser {
 					// Does a placeholder with value precede this tag?
 					// NOTE: 	We don't take into account <ifdef> and friends when finding a set placeholder; it may be set but not visible due to a conditional
 					// 			This case is not covered at the moment on the assumption that if you're using <between> you're not using conditionals. This may or may not be a good assumption.
-					
 					$vb_has_preceding_value = false;
 					for($vn_i = 0; $vn_i < $vn_index; $vn_i++) {
 						if ($po_nodes[$vn_i] && ($po_nodes[$vn_i]->tag == '~text~') && is_array($va_preceding_tags = caGetTemplateTags($po_nodes[$vn_i]->text))) {
@@ -544,16 +553,17 @@ class DisplayTemplateParser {
 									if(isset($pa_vals[$vs_following_tag]) && strlen($pa_vals[$vs_following_tag])) {
 										$vs_acc .= $content = DisplayTemplateParser::_processChildren($pr_res, $o_node->children, $pa_vals, $pa_options);
 										if ($pb_is_case && $content) { break(2); }
+										break;
 									}
-									break;
 								}
+								break;
 							}
 						}
 					}
 					break;
 				case 'expression':
 					if ($vs_exp = trim($o_node->getInnerText())) {
-						$vs_acc .= $content = ExpressionParser::evaluate(DisplayTemplateParser::_processChildren($pr_res, $o_node->children, DisplayTemplateParser::_getValues($pr_res, DisplayTemplateParser::_getTags($o_node->children, $pa_options), $pa_options), array_merge($pa_options, ['quote' => true])), $pa_vals);
+						$vs_acc .= $content = ExpressionParser::evaluate(DisplayTemplateParser::_processChildren($pr_res, $o_node->children, DisplayTemplateParser::_getValues($pr_res, DisplayTemplateParser::_getTags($o_node->children, $pa_options), $pa_options), array_merge($pa_options, ['quoteNonNumericValues' => true])), $pa_vals);
 						
 						if ($pb_is_case && $content) { break(2); }
 					}
@@ -566,12 +576,12 @@ class DisplayTemplateParser {
 					$vn_last_unit_omit_count = 0;
 					
 					// <unit> attributes
-					$vs_unit_delimiter = $o_node->delimiter ? (string)$o_node->delimiter : $ps_delimiter;
+					$vs_unit_delimiter = !is_null($o_node->delimiter) ? (string)$o_node->delimiter : $ps_delimiter;
 					$vb_unique = $o_node->unique ? (bool)$o_node->unique : false;
 					$vb_aggregate_unique = $o_node->aggregateUnique ? (bool)$o_node->aggregateUnique : false;
 					$vb_omit_blanks = !is_null($o_node->omitBlanks) ? (bool)$o_node->omitBlanks : null;
 
-					$filter_non_primary_reps = self::_setPrimaryRepresentationFiltering($pr_res, caGetOption('filterNonPrimaryRepresentations', $options, $o_node->filterNonPrimaryRepresentations));
+					$filter_non_primary_reps = self::_setPrimaryRepresentationFiltering($pr_res, caGetOption('filterNonPrimaryRepresentations', $pa_options, $o_node->filterNonPrimaryRepresentations));
 
 					$vs_unit_skip_if_expression = (string)$o_node->skipIfExpression;
 					$vs_unit_skip_when = (string)$o_node->skipWhen;
@@ -580,6 +590,7 @@ class DisplayTemplateParser {
 					
 					$vn_start = (int)$o_node->start;
 					$vn_length = (int)$o_node->length;
+					$limit = (int)$o_node->limit;
 					
 					$pa_check_access = ($t_instance->hasField('access')) ? caGetOption('checkAccess', $pa_options, null) : null;
 					if (!is_array($pa_check_access) || !sizeof($pa_check_access)) { $pa_check_access = null; }
@@ -702,8 +713,12 @@ class DisplayTemplateParser {
 								]
 							)
 						);
-						
 						if ($vb_unique) { $va_tmpl_val = array_unique($va_tmpl_val); }
+						
+						if($limit > 0) { 
+							$va_tmpl_val = array_slice($va_tmpl_val, 0, $limit);
+						}
+						
 						if (($vn_start > 0) || !is_null($vn_length)) { 
 							$vn_last_unit_omit_count = sizeof($va_tmpl_val) - ($vn_length - $vn_start);
 						}
@@ -791,8 +806,11 @@ class DisplayTemplateParser {
                                         if (!is_array($va_relative_ids = $pr_res->get($t_rel_instance->tableName().".related.".$t_rel_instance->primaryKey(), $va_get_options))) { $va_relative_ids = []; }
 								        $va_relative_ids = array_values($va_relative_ids);
                                         
-                                        $rels = $t_instance->getRelatedItems($t_rel_instance->tableName(), array_merge($va_get_options, array('returnAs' => 'data', 'row_ids' => [$pr_res->getPrimaryKey()])));
+                                        $rels = $t_instance->getRelatedItems($t_rel_instance->tableName(), array_merge($va_get_options, array('returnAs' => 'data', 'row_ids' => [$pr_res->getPrimaryKey()]))) ?? [];
 								        $va_relation_ids = is_array($rels) ? array_keys($rels) : [];
+								 
+								        $va_relationship_type_ids = array_values(array_map(function($r) { return $r['relationship_type_id']; }, $rels));
+								        $va_relationship_type_orientations = array_values(array_map(function($r) { return $r['direction']; }, $rels));
 								    }
 									if (is_array($va_relation_ids) && sizeof($va_relation_ids)) {
 										$qr_rels = caMakeSearchResult($t = $t_rel_instance->isRelationship() ? $t_rel_instance->tableName() : $t_rel_instance->getRelationshipTableName($ps_tablename), $va_relation_ids);
@@ -808,6 +826,8 @@ class DisplayTemplateParser {
 											}
 										} else {
 											$va_relationship_type_ids = $qr_rels->getAllFieldValues("{$t}.type_id");
+
+											$va_relationship_type_orientations = array_fill(0, sizeof($va_relationship_type_ids), method_exists($t, 'getRelationshipOrientationForTables') ? $t::getRelationshipOrientationForTables($t, $ps_tablename) : null);
 										}
 										
 									} elseif($t_rel_instance->isRelationship()) {
@@ -838,7 +858,7 @@ class DisplayTemplateParser {
 						}
 						
 						$vn_num_vals = sizeof($va_relative_ids);
-						if ((($vn_start > 0) || ($vn_length > 0)) && sizeof($va_relative_ids)) {
+						if ((!$vb_unique && !$vb_aggregate_unique) && ((($vn_start > 0) || ($vn_length > 0)) && sizeof($va_relative_ids))) {
 							// Only evaluate units that fall within the start/length window to save time
 							// We pass the full count of units as 'fullValueCount' to ensure that ^count, ^index and friends 
 							// are accurate.
@@ -875,6 +895,10 @@ class DisplayTemplateParser {
 								]
 							)
 						);
+						
+						if($limit > 0) { 
+							$va_tmpl_val = array_slice($va_tmpl_val, 0, $limit);
+						}
 						if ($vb_unique) { $va_tmpl_val = array_unique($va_tmpl_val); }
 						if (($vn_start > 0) || !is_null($vn_length)) { 
 							$vn_last_unit_omit_count = $vn_num_vals -  ($vn_length - $vn_start);
@@ -903,7 +927,7 @@ class DisplayTemplateParser {
 						$vs_proc_template = caProcessTemplate($o_node->html(), $pa_vals, ['quote' => $pb_quote]);
 					}
 					
-					if ($vs_tag === 'l') {
+					if (($vs_tag === 'l') && caGetOption('makeLink', $pa_options, true)) {
 						$vs_linking_context = $ps_tablename;
 						$va_linking_ids = [$pr_res->getPrimaryKey()];
 						
@@ -1126,11 +1150,10 @@ class DisplayTemplateParser {
 				} else {				
 					switch(strtolower($vs_get_spec)) {
                         case 'relationship_typename':
-                            $va_val_list = array();
-                            
+                            $va_val_list = [];
                             // (caGetOption('orientation', $pa_options, 'LTOR')
                             $va_relationship_orientations = array_slice($va_relationship_orientations, $vn_start);
-                            $orientation = $va_relationship_orientations[$pr_res->currentIndex()] ?? 'LTOR';
+                            $orientation = strtoupper($va_relationship_orientations[$pr_res->currentIndex()]) ?? 'LTOR';
                             
                             if (is_array($va_relationship_type_ids) && is_array($va_relationship_type_ids = array_slice($va_relationship_type_ids, $vn_start)) && ($vn_type_id = $va_relationship_type_ids[$pr_res->currentIndex()])) {
                                 $qr_rels = caMakeSearchResult('ca_relationship_types', array($vn_type_id));
@@ -1312,6 +1335,11 @@ class DisplayTemplateParser {
 		if (!$po_node || !$po_node->{$vs_attribute}) { return null; }
 		$va_codes = preg_split("![ ,;\|]+!", $po_node->{$vs_attribute});
 		if ($pb_include_booleans) { preg_match_all("![ ,;\|]+!", $po_node->{$vs_attribute}, $va_matches); $va_matches = array_shift($va_matches); }
+		
+		$va_codes = array_filter(array_map(function($v) { 
+			if(is_string($v) && (mb_substr($v, 0, 1) === '^')) { $v = mb_substr($v, 1); }
+			return $v;
+		}, $va_codes), function($v) { return (bool)strlen($v); });
 		if (!$va_codes || !sizeof($va_codes)) { return null; }
 		
 		if ($pb_include_booleans) {
@@ -1402,6 +1430,7 @@ class DisplayTemplateParser {
 		                $va_tag_opts['convertCodesToDisplayText'] = false;
 		                $va_tag_opts['convertCodesToValue'] = false;
 		            }
+		            break;
 		        case 'convertCodesToValue':
 		            if ($v) { 
 		                // If one not the other...
@@ -1698,6 +1727,10 @@ class DisplayTemplateParser {
 						if ($pb_is_case && $content) { break(2); }
 					}
 					break;
+				case 'expression':
+					$vs_acc .= $content = ExpressionParser::evaluate(DisplayTemplateParser::_processTemplateSubTemplates($o_node->children, $pa_values, array_merge($pa_options, ['quoteNonNumericValues' => true])), $pa_vals);
+					if ($pb_is_case && $content) { break(2); }
+					break;
 				default:
 					$vs_acc .= DisplayTemplateParser::processSimpleTemplate($o_node->html(), $pa_values, $pa_options);
 					break;
@@ -1754,6 +1787,7 @@ class DisplayTemplateParser {
 	 *			removePrefix = string to remove from tags extracted from template before doing lookup into value array
 	 *			getFrom = a model instance to draw data from. If set, $pa_values is ignored.
 	 *			quote = quote replacement values (Eg. ^ca_objects.idno becomes "2015.001" rather than 2015.001). Value containing quotes will be escaped with a backslash. [Default is false]
+	 *			quoteNonNumericValues = quote replacement values if that are not numeric (Eg. ^ca_objects.idno becomes "X.2015.001" rather than X.2015.001). Value containing quotes will be escaped with a backslash. [Default is false]
 	 *          skipTagsWithoutValues = Don't process tags without a corresponding value in $pa_values. [Default is false]
 	 *
 	 * @return string Output of processed template
@@ -1764,9 +1798,14 @@ class DisplayTemplateParser {
 		$ps_prefix = caGetOption('prefix', $pa_options, null);
 		$ps_remove_prefix = caGetOption('removePrefix', $pa_options, null);
 		$pb_quote = caGetOption('quote', $pa_options, false);
+		$pb_quote_strings = caGetOption('quoteNonNumericValues', $pa_options, false);
+		
 		$pb_skip_tags_without_values = caGetOption('skipTagsWithoutValues', $pa_options, false);
 		
 		$va_tags = caGetTemplateTags($ps_template);
+		usort($va_tags, function($a, $b) {
+			return strlen($b) <=> strlen($a);
+		});
 		
 		$t_instance = null;
 		if (isset($pa_options['getFrom']) && (method_exists($pa_options['getFrom'], 'get'))) {
@@ -1794,7 +1833,12 @@ class DisplayTemplateParser {
 				
 				$ps_template = preg_replace("/\^".preg_quote($vs_tag, '/')."(?![A-Za-z0-9]+)/", $vs_gotten_val, $ps_template);
 			} else {
-				if (
+				if(isset($pa_values[$vs_tag])) { 
+					$vs_val = $pa_values[$vs_tag];
+					if(is_array($vs_val)) {
+						$vs_val = join(" ", $vs_val);
+					}
+				} elseif (
 				    is_array($vs_val = isset($pa_values[$va_tmp[0]]) ? $pa_values[$va_tmp[0]] : '')
 				) {
 					// If value is an array try to make a string of it
@@ -1818,7 +1862,7 @@ class DisplayTemplateParser {
                 }
 				$vs_val = caProcessTemplateTagDirectives($vs_val, $va_tmp, ['omitUnits' => (isset($pa_options['dimensionsUnitMap']) && ($cur_unit == $next_unit))]);
 				
-				if ($pb_quote) { $vs_val = '"'.addslashes($vs_val).'"'; }
+				if ($pb_quote || (!is_numeric($vs_val) & $pb_quote_strings)) { $vs_val = '"'.addslashes($vs_val).'"'; }
 				$vs_tag_proc = preg_quote($vs_tag, '/');
 				$ps_template = preg_replace("/[\{]{0,1}\^(?={$vs_tag_proc}[^A-Za-z0-9_]+|{$vs_tag_proc}$){$vs_tag_proc}[\}]{0,1}/", str_replace("$", "\\$", $vs_val), $ps_template);	// escape "$" to prevent interpretation as backreferences
 			}
@@ -1947,7 +1991,7 @@ class DisplayTemplateParser {
 		
 	 	$filter_opt = $value;
 	 	$filter = true;
-        if(!(bool)$filter_opt || ($filter_opt === '0') || (strtolower($filter_opt) === 'no')) { $filter = false; }
+        if(!is_null($filter_opt) && (!(bool)$filter_opt || ($filter_opt === '0') || (strtolower($filter_opt) === 'no'))) { $filter = false; }
 		$res->filterNonPrimaryRepresentations($filter); 
 		
 		return $filter;

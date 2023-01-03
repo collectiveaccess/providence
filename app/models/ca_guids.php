@@ -161,20 +161,7 @@ class ca_guids extends BaseModel {
 	 */
 	static $s_lock_resource = null;
 
-	# ------------------------------------------------------
-	# --- Constructor
-	#
-	# This is a function called when a new instance of this object is created. This
-	# standard constructor supports three calling modes:
-	#
-	# 1. If called without parameters, simply creates a new, empty objects object
-	# 2. If called with a single, valid primary key value, creates a new objects object and loads
-	#    the record identified by the primary key value
-	#
-	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
-	}
+
 	# ------------------------------------------------------
 	/**
 	 * Get GUID for given row
@@ -201,7 +188,7 @@ class ca_guids extends BaseModel {
 			$vs_guid = $qr_guid->get('guid');
 			return $vs_guid;
 		} else {
-			if(!caGetOption('dontAdd', $pa_options) && ($t_instance = Datamodel::getInstance($pn_table_num, true))) {
+			if(!caGetOption('dontAdd', $pa_options, false) && ($t_instance = Datamodel::getInstance($pn_table_num, true))) {
 				if($vs_guid = self::addForRow($pn_table_num, $pn_row_id, $pa_options)) {
 					return $vs_guid;
 				}

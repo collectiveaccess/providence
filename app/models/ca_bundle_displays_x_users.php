@@ -163,9 +163,5 @@ class ca_bundle_displays_x_users extends BaseRelationshipModel {
 	protected $FIELDS;
 	
 	# ----------------------------------------
-	function __construct($pn_id=null) {
-		parent::__construct($pn_id);
-	}
-	# ----------------------------------------
 }
-?>
+

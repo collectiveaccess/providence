@@ -27,7 +27,7 @@ monthTable = {
 dayListDisplay = [Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday]
 
 rangePreConjunctions = [from, between]
-rangeConjunctions = [to, -, and, .., through, or]
+rangeConjunctions = [–, -, to, and, .., through, or]
 
 dateTimeConjunctions = [at,@]
 
@@ -42,7 +42,7 @@ meridianTable = {
 	p.m. = pm
 }
 
-dateCircaIndicator = [circa, c, c., ca, ca.]
+dateCircaIndicator = [circa, c, c., ca, ca., about]
 dateProbablyIndicator = [probably, possibly]
 dateUncertaintyIndicator = [~]
 dateUncertaintyYearIndicator = [y]

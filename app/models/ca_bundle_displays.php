@@ -225,11 +225,11 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 	static $s_placement_list_cache;		// cache for getPlacements()
 	
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
+	public function __construct($id=null, ?array $options=null) {
 		// Filter list of tables display can be used for to those enabled in current config
 		BaseModel::$s_ca_models_definitions['ca_bundle_displays']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = caFilterTableList(BaseModel::$s_ca_models_definitions['ca_bundle_displays']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST']);
 		
-		parent::__construct($pn_id);
+		parent::__construct($id, $options);
 		
 		//
 		$this->setAvailableSettings([
@@ -382,7 +382,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			return null;
 		}
 		
-		$t_placement = new ca_bundle_display_placements(null, is_array($options['additional_settings']) ? $options['additional_settings'] : null);
+		$t_placement = new ca_bundle_display_placements(null, null, is_array($options['additional_settings']) ? $options['additional_settings'] : null);
 		$t_placement->setMode(ACCESS_WRITE);
 		if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 		$t_placement->set('display_id', $vn_display_id);
@@ -972,7 +972,7 @@ if (!$pb_omit_editing_info) {
 		if (!$pm_table_name_or_num) { return null; }
 		$cache_key = caMakeCacheKeyFromOptions($options, $pm_table_name_or_num.'|'.(($g_request && $g_request->user) ? 'USER:'.$g_request->user->getPrimaryKey() : ''));
 		if(CompositeCache::contains($cache_key)) {
-		//	return CompositeCache::fetch($cache_key);
+			return CompositeCache::fetch($cache_key);
 		}
 		
 		$t_subject = Datamodel::getInstance($pm_table_name_or_num, true);
@@ -986,7 +986,7 @@ if (!$pb_omit_editing_info) {
 		
 		$va_available_bundles = [];
 		
-		$t_placement = new ca_bundle_display_placements(null, []);
+		$t_placement = new ca_bundle_display_placements(null, null, []);
 		
 		
 		// add generic bundle
@@ -1006,7 +1006,7 @@ if (!$pb_omit_editing_info) {
 				'helpText' => ''
 			]
 		];
-		$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
+		$t_placement = new ca_bundle_display_placements(null, null, $va_additional_settings);
 		if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 		
 		$va_available_bundles[$vs_display][$vs_bundle] = [
@@ -1025,7 +1025,7 @@ if (!$pb_omit_editing_info) {
 		}
 		
 		// get intrinsic fields
-		$t_placement = new ca_bundle_display_placements(null, []);
+		$t_placement = new ca_bundle_display_placements(null, null, []);
 		if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 		$va_additional_settings = array(
 			'maximum_length' => array(
@@ -1121,7 +1121,7 @@ if (!$pb_omit_editing_info) {
 		);
 		foreach($va_element_codes as $vn_element_id => $vs_element_code) {
 			if (!is_null($va_all_elements[$vn_element_id]['settings']['canBeUsedInDisplay'] ) && !$va_all_elements[$vn_element_id]['settings']['canBeUsedInDisplay']) { continue; }
-			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
+			$t_placement = new ca_bundle_display_placements(null, null, $va_additional_settings);
 			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 			
 			if (caGetBundleAccessLevel($vs_table, $vs_element_code) == __CA_BUNDLE_ACCESS_NONE__) {
@@ -1217,7 +1217,7 @@ if (!$pb_omit_editing_info) {
 			$va_even_more_settings['format'] = $va_additional_settings['format'];
 			//$va_even_more_settings['format']['helpText'] = $this->getTemplatePlaceholderDisplayListForBundle($vs_bundle);
 			
-			$t_placement = new ca_bundle_display_placements(null, array_merge($va_additional_settings, $va_even_more_settings));
+			$t_placement = new ca_bundle_display_placements(null, null, array_merge($va_additional_settings, $va_even_more_settings));
 			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 		
 			$vs_display =  "<div id='bundleDisplayEditorBundle_{$vs_table}_{$vs_element_code}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".($vs_label = $t_instance->getDisplayLabel($vs_bundle))."</div>";
@@ -1269,7 +1269,7 @@ if (!$pb_omit_editing_info) {
 					'description' => _t('Maximum length, in characters, of displayed information.')
 				)
 			);
-			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
+			$t_placement = new ca_bundle_display_placements(null, null, $va_additional_settings);
 			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 		
 			$vs_bundle = $vs_table.'.preferred_labels';
@@ -1293,7 +1293,7 @@ if (!$pb_omit_editing_info) {
 		
 		if (caGetBundleAccessLevel($vs_table, "nonpreferred_labels") != __CA_BUNDLE_ACCESS_NONE__) {
 			// get non-preferred labels for this table
-			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
+			$t_placement = new ca_bundle_display_placements(null, null, $va_additional_settings);
 			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 			
 			$vs_bundle = $vs_table.'.nonpreferred_labels';
@@ -1328,7 +1328,7 @@ if (!$pb_omit_editing_info) {
 					'description' => _t('Template used to format output.')
 				)	
 			);
-			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
+			$t_placement = new ca_bundle_display_placements(null, null, $va_additional_settings);
 			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 			
 			$vs_bundle = 'ca_object_checkouts';
@@ -1362,7 +1362,7 @@ if (!$pb_omit_editing_info) {
 					'description' => _t('Template used to format output.')
 				)
 			);
-			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
+			$t_placement = new ca_bundle_display_placements(null, null, $va_additional_settings);
 			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 			
 			$vs_bundle = $vs_table.'.ca_objects_location';
@@ -1428,7 +1428,7 @@ if (!$pb_omit_editing_info) {
 					'description' => ''
 				)
 			);
-			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
+			$t_placement = new ca_bundle_display_placements(null, null, $va_additional_settings);
 			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 			
 			$vs_bundle = $vs_table.'.history_tracking_current_value';
@@ -1491,7 +1491,7 @@ if (!$pb_omit_editing_info) {
 					'description' => ''
 				)
 			);
-			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
+			$t_placement = new ca_bundle_display_placements(null, null, $va_additional_settings);
 			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 			
 			$vs_bundle = $vs_table.'.history_tracking_current_contents';
@@ -1526,7 +1526,7 @@ if (!$pb_omit_editing_info) {
 					'description' => _t('Template used to format output.')
 				)
 			);
-			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
+			$t_placement = new ca_bundle_display_placements(null, null, $va_additional_settings);
 			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 			
 			$vs_bundle = $vs_table.'.submitted_by_user';
@@ -1560,7 +1560,7 @@ if (!$pb_omit_editing_info) {
 					'description' => _t('Template used to format output.')
 				)
 			);
-			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
+			$t_placement = new ca_bundle_display_placements(null, null, $va_additional_settings);
 			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 			
 			$vs_bundle = $vs_table.'.submission_group';
@@ -1629,7 +1629,7 @@ if (!$pb_omit_editing_info) {
 				$va_versions = $o_media_settings->getMediaTypeVersions('*');
 				
 				foreach($va_versions as $vs_version => $va_version_info) {
-					$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
+					$t_placement = new ca_bundle_display_placements(null, null, $va_additional_settings);
 					if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 		
 					$vs_bundle = 'ca_object_representations.media.'.$vs_version;
@@ -1858,7 +1858,7 @@ if (!$pb_omit_editing_info) {
 			
 			//$va_additional_settings['format']['helpText'] = $this->getTemplatePlaceholderDisplayListForBundle($vs_bundle);
 		
-			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
+			$t_placement = new ca_bundle_display_placements(null, null, $va_additional_settings);
 			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 			
 			$vs_id_suffix = "bundleDisplayEditorBundle_".str_replace(".", "_", $vs_bundle);
@@ -1895,7 +1895,7 @@ if (!$pb_omit_editing_info) {
 				'description' => _t('Sets format for output of date when exporting.')
 			)
 		);
-		$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
+		$t_placement = new ca_bundle_display_placements(null, null, $va_additional_settings);
 		if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 		
 		$vs_bundle = "{$vs_table}.created";
@@ -2276,6 +2276,8 @@ if (!$pb_omit_editing_info) {
 						$vs_sort_dir_attr = '';
 						if ($vs_sort = trim(caGetOption('sort', $options, null, ['castTo' => 'string']))) {
 						    $vs_sort_dir = caGetOption('sortDirection', $options, null, ['castTo' => 'string']);
+						    unset($options['sort']);
+						    unset($options['sortDirection']);
 						} else { 
 						    $vs_sort = caGetOption('sort', $va_settings, null, ['castTo' => 'string']); 
 						    $vs_sort_dir = caGetOption('sortDirection', $va_settings, null, ['castTo' => 'string']);
@@ -2296,7 +2298,8 @@ if (!$pb_omit_editing_info) {
 							case 3:
 								// For regular relationships just evaluate the template relative to the relationship record
 								// this way the template can reference interstitial data
-								$vs_val = $po_result->getWithTemplate((caGetOption('showCurrentOnly', $options, true) && !$vs_restrict_to_types  && !$vs_restrict_to_relationship_types) ? $vs_template : $vs_unit_tag.$vs_template."</unit>", $options);
+								$t = (caGetOption('showCurrentOnly', $options, true) && !$vs_restrict_to_types  && !$vs_restrict_to_relationship_types) ? $vs_template : $vs_unit_tag.$vs_template."</unit>";
+								$vs_val = $po_result->getWithTemplate($t, $options);
 								break;
 							case 2:
 								$t_rel = Datamodel::getInstanceByTableName($va_path[1], true);
@@ -2535,7 +2538,7 @@ if (!$pb_omit_editing_info) {
 						return false;
 					}
 				} else {
-					$t_placement = new ca_bundle_display_placements($placement_id, $va_available_bundles[$vs_bundle]['settings']);
+					$t_placement = new ca_bundle_display_placements($placement_id, null, $va_available_bundles[$vs_bundle]['settings']);
 					if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 					$t_placement->setMode(ACCESS_WRITE);
 					$t_placement->set('rank', $i + 1);
@@ -2800,7 +2803,7 @@ if (!$pb_omit_editing_info) {
 		$user_id = caGetOption('user_id', $options, null);
 		$type_id = caGetOption('type_id', $options, null);
 		
-		if($this->haveAccessToDisplay($user_id, __CA_BUNDLE_DISPLAY_READ_ACCESS__)) {
+		if(is_null($user_id) || $this->haveAccessToDisplay($user_id, __CA_BUNDLE_DISPLAY_READ_ACCESS__)) {
 			$placements = $this->getPlacements(['settingsOnly' => true, 
 				'hierarchicalDelimiter' => ' ➜ ', 'user_id' => $user_id, 
 				'request' => caGetOption('request', $options, null)

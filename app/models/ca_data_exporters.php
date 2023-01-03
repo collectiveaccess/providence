@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2021 Whirl-i-Gig
+ * Copyright 2012-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -192,11 +192,11 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		self::$s_variables = array();
 	}
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
+	public function __construct($id=null, ?array $options=null) {
 		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 		BaseModel::$s_ca_models_definitions['ca_data_exporters']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = array_flip(caGetPrimaryTables(true));
 		global $_ca_data_exporters_settings;
-		parent::__construct($pn_id);
+		parent::__construct($id, $options);
 
 		// settings
 		$this->initSettings();
@@ -265,6 +265,16 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			'default' => '',
 			'label' => _t('Type restrictions'),
 			'description' => _t('If set, this mapping will only be available for these types. Multiple types are separated by commas or semicolons.')
+		);
+
+		$va_settings['locale'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Locale'),
+			'description' => _t('Locale code to use to get the field values when mapping-specific locale is not set. If not set, the system/user default is used.')
 		);
 
 		// if exporter_format is set, pull in format-specific settings
@@ -1188,10 +1198,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 * Export a record set as defined by the given search expression and the table_num for this exporter.
 	 * This function wraps the record-level exports using the settings 'wrap_before' and 'wrap_after' if they are set.
+	 *
 	 * @param string $ps_exporter_code defines the exporter to use
 	 * @param SearchResult $po_result An existing SearchResult object
 	 * @param string $ps_filename Destination filename (we can't keep everything in memory here)
 	 * @param array $pa_options
+	 *		individualFiles = For XML and JSON exports, output data one record per-file, using $ps_filename as a path to a directory into which to write the files. [Default is false]
+	 *		filenameTemplate = When individualFiles option is set, may contain a template used to name each file. [Default is ^<table>.idno]
 	 * 		progressCallback = callback function for asynchronous UI status reporting
 	 *		showCLIProgressBar = Show command-line progress bar. Default is false.
 	 *		logDirectory = path to directory where logs should be written
@@ -1208,6 +1221,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	static public function exportRecordsFromSearchResult($ps_exporter_code, $po_result, $ps_filename=null, $pa_options=array()) {
 		if(!($po_result instanceof SearchResult)) { return false; }
+		
+		$individual_files = caGetOption('individualFiles', $pa_options, false);
+		$filename_template = caGetOption('filenameTemplate', $pa_options, null);
 
 		$vs_log_dir = caGetOption('logDirectory',$pa_options);
 		if(!file_exists($vs_log_dir) || !is_writable($vs_log_dir)) {
@@ -1250,13 +1266,15 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vs_wrap_before = $t_mapping->getSetting('wrap_before');
 		$vs_wrap_after = $t_mapping->getSetting('wrap_after');
 		$vs_export_format = $t_mapping->getSetting('exporter_format');
+		
+		if($vs_export_format === 'CSV') { $individual_files = false; } // no individual file output with CSV
 
 		$t_instance = Datamodel::getInstanceByTableNum($t_mapping->get('table_num'));
 		$vn_num_items = $po_result->numHits();
 
 		$o_log->logInfo(_t("SearchResult contains %1 results. Now calling single-item export for each record.", $vn_num_items));
 
-		if($vs_wrap_before) {
+		if(!$individual_files && $vs_wrap_before) {
 			file_put_contents($ps_filename, $vs_wrap_before."\n", FILE_APPEND);
 		}
 
@@ -1278,7 +1296,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vn_num_processed = 0;
 
 
-		if ($t_mapping->getSetting('CSV_print_field_names')) {
+		if (!$individual_files && $t_mapping->getSetting('CSV_print_field_names')) {
 			$va_header = $va_header_sources = array();
 			$va_mapping_items = $t_mapping->getItems();
 			foreach($va_mapping_items as $vn_i => $va_mapping_item) {
@@ -1304,9 +1322,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			file_put_contents($ps_filename, $vs_enclosure . join($vs_enclosure.$vs_delimiter.$vs_enclosure,$va_header) . $vs_enclosure."\n", FILE_APPEND);
 		}
 
+		if($individual_files && !$filename_template) {
+			$table = $po_result->tableName();
+			$filename_template = "^{$table}.".Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD');
+		}
+
 		$i = 0;
 		while($po_result->nextHit()) {
-
 			// clear caches every once in a while. doesn't make much sense to keep them around while exporting
 			if((++$i % 1000) == 0) {
 				SearchResult::clearCaches();
@@ -1319,10 +1341,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				}
 			}
 
-			$vs_item_export = ca_data_exporters::exportRecord($ps_exporter_code, $po_result->get($t_instance->primaryKey()), array('logger' => $o_log));
-			if($vs_export_format == 'JSON'){
+			$vs_item_export = ca_data_exporters::exportRecord($ps_exporter_code, $po_result->get($t_instance->primaryKey()), ['logger' => $o_log, 'singleRecord' => $individual_files]);
+			
+			if($individual_files) {
+				$individual_filename = preg_replace("![^\pL\d_\-]+!u", '_', $po_result->getWithTemplate($filename_template));
+				file_put_contents("{$ps_filename}/{$individual_filename}.".strtolower($vs_export_format), $vs_wrap_before.$vs_item_export.$vs_wrap_after);
+			} elseif($vs_export_format == 'JSON'){
 				array_push($va_json_data, json_decode($vs_item_export));
-				#file_put_contents($ps_filename, $vs_item_export.",", FILE_APPEND);
 			} else {
 				file_put_contents($ps_filename, $vs_item_export."\n", FILE_APPEND);
 			}
@@ -1338,13 +1363,14 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 
-		if($vs_wrap_after) {
-			file_put_contents($ps_filename, $vs_wrap_after."\n", FILE_APPEND);
-		}
+		if(!$individual_files) {
+			if($vs_wrap_after) {
+				file_put_contents($ps_filename, $vs_wrap_after."\n", FILE_APPEND);
+			}
 
-		if($vs_export_format == 'JSON'){
-			file_put_contents($ps_filename, json_encode($va_json_data), FILE_APPEND);
-			#file_put_contents($ps_filename, "]", FILE_APPEND);
+			if(!$vs_export_format == 'JSON'){
+				file_put_contents($ps_filename, json_encode($va_json_data), FILE_APPEND);
+			}
 		}
 
 		if ($vb_show_cli_progress_bar) {
@@ -1539,6 +1565,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$o_log->logError(_t("Failed to load exporter with code '%1' for item with ID %2", $ps_exporter_code, $pn_record_id));
 			return false;
 		}
+		
+		$pa_options['settings'] = $t_exporter->getSettings();
 
 		$va_type_restrictions = $t_exporter->getSetting('typeRestrictions');
 		if(is_array($va_type_restrictions) && sizeof($va_type_restrictions)) {
@@ -1598,7 +1626,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		$o_manager->hookExportRecord(array('exporter_instance' => $t_exporter, 'record_id' => $pn_record_id, 'export' => &$va_export));
 
-		$pa_options['settings'] = $t_exporter->getSettings();
 
 		$vs_wrap_before = $t_exporter->getSetting('wrap_before_record');
 		$vs_wrap_after = $t_exporter->getSetting('wrap_after_record');
@@ -1666,147 +1693,173 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		// switch context to a different set of records if necessary and repeat current exporter item for all those selected records
 		// (e.g. hierarchy children or related items in another table, restricted by types or relationship types)
-		if(!$vb_ignore_context && ($vs_context = $settings['context'])) {
-			$va_filter_types = $settings['filterTypes'];	
-			if (!is_array($va_filter_types) && $va_filter_types) { $va_filter_types = [$va_filter_types]; }
-				
-			$va_restrict_to_types = $settings['restrictToTypes'];		
-			if (!is_array($va_restrict_to_rel_types = $settings['restrictToRelationshipTypes'])) { $va_restrict_to_rel_types = []; }
-			$va_restrict_to_rel_types = array_merge($va_restrict_to_rel_types, caGetOption('restrictToRelationshipTypes', $pa_options, []));
-			
-			$va_restrict_to_bundle_vals = $settings['restrictToBundleValues'];
-			$va_check_access = $settings['checkAccess'];
-			$va_sort = $settings['sort'];
-
-
-            $vn_new_table_num = $vs_new_table_name = $vs_key = null;
-            if (sizeof($tmp = explode('.', $vs_context)) == 2) {
-                // convert <table>.<spec> contexts to just <spec> when table is present
-                $vn_new_table_num = Datamodel::getTableNum($tmp[0]);
-                
-                if ($pn_table_num != $vn_new_table_num) {
-                    $vs_new_table_name = Datamodel::getTableName($tmp[0]);
-                    $vs_context = $tmp[1];
-                
-                    $vs_key = Datamodel::primaryKey($tmp[0]);
-                } else {
-                    $vn_new_table_num = null;
-                }
-            } elseif($vn_new_table_num = Datamodel::getTableNum($vs_context)) { // switch to new table
-				$vs_key = Datamodel::primaryKey($vs_context);
-				$vs_new_table_name = Datamodel::getTableName($vs_context);
-			} else { // this table, i.e. hierarchy context switch
-				$vs_key = $t_instance->primaryKey();
+		if(!$vb_ignore_context && ($contexts = $settings['context'])) {
+			if(!is_array($contexts)) { 
+				$contexts = [$contexts, $settings]; 
 			}
 			
-			$vb_context_is_related_table = false;
-			$va_related = null;
-			$vb_force_context = false;
+			$cur_table_num = $pn_table_num;
+			$cur_record_id = $pn_record_id;
+			
+			$vs_key = $t_instance->primaryKey();
+			$va_related = [[$vs_key => $pn_record_id]];
+			
+			for($i=0; $i < sizeof($contexts); $i = $i + 2) {
+				$context = $contexts[$i];
+				if(!is_array($context_settings = $contexts[$i+1])) { $context_settings = []; }
+				
+				$va_filter_types = $context_settings['filterTypes'];	
+				if (!is_array($va_filter_types) && $va_filter_types) { $va_filter_types = [$va_filter_types]; }
+				
+				$va_restrict_to_types = $context_settings['restrictToTypes'];		
+				if (!is_array($va_restrict_to_rel_types = $context_settings['restrictToRelationshipTypes'])) { $va_restrict_to_rel_types = []; }
+				$va_restrict_to_rel_types = array_merge($va_restrict_to_rel_types, caGetOption('restrictToRelationshipTypes', $pa_options, []));
+			
+				$va_restrict_to_bundle_vals = $context_settings['restrictToBundleValues'];
+				$va_check_access = $context_settings['checkAccess'];
+				$va_sort = $context_settings['sort'];
 
-			$o_log->logInfo(_t("Initiating context switch to '%1' for mapping ID %2 and record ID %3. The processor now tries to find matching records for the switch and calls itself for each of those items.", $vs_context, $pn_item_id, $pn_record_id));
 
-			switch($vs_context) {
-				case 'children':
-					$va_related = $t_instance->getHierarchyChildren();
-					break;
-				case 'parent':
-					$va_related = array();
-					if($vs_parent_id_fld = $t_instance->getProperty("HIERARCHY_PARENT_ID_FLD")) {
-						$va_related[] = [
-						    $vs_key => $t_instance->get($vs_parent_id_fld)
-						];
-					}
-					break;
-				case 'ancestors':
-				case 'hierarchy':
-					$va_parents = $t_instance->get("{$vs_new_table_name}.hierarchy.{$vs_key}", ['returnAsArray' => true, 'restrictToTypes' => $va_filter_types]);
+				$ids = array_map(function($v) use ($vs_key) {
+					return $v[$vs_key];
+				}, $va_related);
+				$qrl = caMakeSearchResult($cur_table_num, $ids);
 
-					$va_related = [];
-					foreach(array_unique($va_parents) as $vn_pk) {
-						$va_related[] = [
-						    $vs_key => intval($vn_pk)
-						];
-					}
-					break;
-				case 'ca_sets':
-					$t_set = new ca_sets();
-					$va_set_options = array();
-					if(isset($va_restrict_to_types[0])) {
-						// the utility used below doesn't support passing multiple types so we just pass the first.
-						// this should be enough for 99.99% of the actual use cases anyway
-						$va_set_options['setType'] = $va_restrict_to_types[0];
-					}
-					$va_set_options['checkAccess'] = $va_check_access;
-					$va_set_options['setIDsOnly'] = true;
-					$va_set_ids = $t_set->getSetsForItem($pn_table_num,$t_instance->getPrimaryKey(),$va_set_options);
-					$va_related = array();
-					foreach(array_unique($va_set_ids) as $vn_pk) {
-						$va_related[] = array($vs_key => intval($vn_pk));
-					}
-					break;
-				case 'ca_list_items.firstLevel':
-					if($t_instance->tableName() == 'ca_lists') {
-						$va_related = [];
-						$va_items_legacy_format = $t_instance->getListItemsAsHierarchy(null,array('maxLevels' => 1, 'dontIncludeRoot' => true));
-						$vn_new_table_num = Datamodel::getTableNum('ca_list_items');
-						$vs_key = 'item_id';
-						foreach($va_items_legacy_format as $va_item_legacy_format) {
-							$va_related[$va_item_legacy_format['NODE']['item_id']] = $va_item_legacy_format['NODE'];
+				while($qrl->nextHit()) {
+					$t_rel = $qrl->getInstance();
+					
+					$vn_new_table_num = $vs_new_table_name = $vs_key = null;
+					if (sizeof($tmp = explode('.', $context)) == 2) {
+						// convert <table>.<spec> contexts to just <spec> when table is present
+						$vn_new_table_num = Datamodel::getTableNum($tmp[0]);
+				
+						if ($cur_table_num != $vn_new_table_num) {
+							$vs_new_table_name = Datamodel::getTableName($tmp[0]);
+							$context = $tmp[1];
+				
+							$vs_key = Datamodel::primaryKey($tmp[0]);
+						} else {
+							$vn_new_table_num = null;
 						}
-						break;
-					} else {
-						return array();
+					} elseif($vn_new_table_num = Datamodel::getTableNum($context)) { // switch to new table
+						$vs_key = Datamodel::primaryKey($context);
+						$vs_new_table_name = Datamodel::getTableName($context);
+					} else { // this table, i.e. hierarchy context switch
+						$vs_key = $t_rel->primaryKey();
 					}
-					break;
-				default:
-					if($vn_new_table_num) {
-						$va_options = array(
-							'restrictToTypes' => $va_restrict_to_types,
-							'restrictToRelationshipTypes' => $va_restrict_to_rel_types,
-							'restrictToBundleValues' => $va_restrict_to_bundle_vals,
-							'checkAccess' => $va_check_access,
-							'sort' => $va_sort,
-						);
+			
+					$vb_context_is_related_table = false;
+					$va_related = null;
+					$vb_force_context = false;
 
-						$o_log->logDebug(_t("Calling getRelatedItems with options: %1.", print_r($va_options,true)));
+					$o_log->logInfo(_t("Initiating context switch to '%1' for mapping ID %2 and record ID %3. The processor now tries to find matching records for the switch and calls itself for each of those items.", $context, $pn_item_id, $cur_record_id));
 
-						$va_related = $t_instance->getRelatedItems($vs_context, $va_options);
-						$vb_context_is_related_table = true;
-					} else { // container or invalid context
-						$va_context_tmp = explode('.', $vs_context);
-						if(sizeof($va_context_tmp) != 2) {
-							$o_log->logError(_t("Invalid context %1. Ignoring this mapping.", $vs_context));
-							return array();
-						}
+					switch($context) {
+						case 'children':
+							$va_related = $t_rel->getHierarchyChildren();
+							break;
+						case 'parent':
+							$va_related = array();
+							if($vs_parent_id_fld = $t_rel->getProperty("HIERARCHY_PARENT_ID_FLD")) {
+								$va_related[] = [
+									$vs_key => $t_rel->get($vs_parent_id_fld)
+								];
+							}
+							break;
+						case 'ancestors':
+						case 'hierarchy':
+							$va_parents = $t_rel->get("{$vs_new_table_name}.hierarchy.{$vs_key}", ['returnAsArray' => true, 'restrictToTypes' => $va_filter_types]);
 
-						$va_attrs = $t_instance->getAttributesByElement($va_context_tmp[1]);
-
-						$va_info = array();
-
-						if(is_array($va_attrs) && sizeof($va_attrs)>0) {
-
-							$o_log->logInfo(_t("Switching context for element code: %1.", $va_context_tmp[1]));
-							$o_log->logDebug(_t("Raw attribute value array is as follows. The mapping will now be repeated for each (outer) attribute. %1", print_r($va_attrs,true)));
-
-							$vn_i = 0;
-							foreach($va_attrs as $vo_attr) {
-								$va_attribute_export = $this->processExporterItem($pn_item_id,$pn_table_num,$pn_record_id,
-									array_merge(array('ignoreContext' => true, 'attribute_id' => $vo_attr->getAttributeID(), 'offset' => $vn_i), $pa_options)
+							$va_related = [];
+							foreach(array_unique($va_parents) as $vn_pk) {
+								$va_related[] = [
+									$vs_key => intval($vn_pk)
+								];
+							}
+							break;
+						case 'ca_sets':
+							$t_set = new ca_sets();
+							$va_set_options = array();
+							if(isset($va_restrict_to_types[0])) {
+								// the utility used below doesn't support passing multiple types so we just pass the first.
+								// this should be enough for 99.99% of the actual use cases anyway
+								$va_set_options['setType'] = $va_restrict_to_types[0];
+							}
+							$va_set_options['checkAccess'] = $va_check_access;
+							$va_set_options['setIDsOnly'] = true;
+							$va_set_ids = $t_set->getSetsForItem($cur_table_num,$t_rel->getPrimaryKey(),$va_set_options);
+							$va_related = array();
+							foreach(array_unique($va_set_ids) as $vn_pk) {
+								$va_related[] = array($vs_key => intval($vn_pk));
+							}
+							break;
+						case 'ca_list_items.firstLevel':
+							if($t_rel->tableName() == 'ca_lists') {
+								$va_related = [];
+								$va_items_legacy_format = $t_rel->getListItemsAsHierarchy(null,array('maxLevels' => 1, 'dontIncludeRoot' => true));
+								$vn_new_table_num = Datamodel::getTableNum('ca_list_items');
+								$vs_key = 'item_id';
+								foreach($va_items_legacy_format as $va_item_legacy_format) {
+									$va_related[$va_item_legacy_format['NODE']['item_id']] = $va_item_legacy_format['NODE'];
+								}
+								break;
+							} else {
+								return array();
+							}
+							break;
+						default:
+							if($vn_new_table_num) {
+								$va_options = array(
+									'restrictToTypes' => $va_restrict_to_types,
+									'restrictToRelationshipTypes' => $va_restrict_to_rel_types,
+									'restrictToBundleValues' => $va_restrict_to_bundle_vals,
+									'checkAccess' => $va_check_access,
+									'sort' => $va_sort,
 								);
 
-								$va_info = array_merge($va_info, $va_attribute_export);
-								$vn_i++;
+								$o_log->logDebug(_t("Calling getRelatedItems with options: %1.", print_r($va_options,true)));
+
+								$va_related = $t_rel->getRelatedItems($context, $va_options);
+								$vb_context_is_related_table = true;
+							} else { // container or invalid context
+								$va_context_tmp = explode('.', $context);
+								if(sizeof($va_context_tmp) != 2) {
+									$o_log->logError(_t("Invalid context %1. Ignoring this mapping.", $context));
+									return array();
+								}
+
+								$va_attrs = $t_rel->getAttributesByElement($va_context_tmp[1]);
+
+								$va_info = array();
+
+								if(is_array($va_attrs) && sizeof($va_attrs)>0) {
+
+									$o_log->logInfo(_t("Switching context for element code: %1.", $va_context_tmp[1]));
+									$o_log->logDebug(_t("Raw attribute value array is as follows. The mapping will now be repeated for each (outer) attribute. %1", print_r($va_attrs,true)));
+
+									$vn_i = 0;
+									foreach($va_attrs as $vo_attr) {
+										$va_attribute_export = $this->processExporterItem($pn_item_id,$cur_table_num,$cur_record_id,
+											array_merge(array('ignoreContext' => true, 'attribute_id' => $vo_attr->getAttributeID(), 'offset' => $vn_i), $pa_options)
+										);
+
+										$va_info = array_merge($va_info, $va_attribute_export);
+										$vn_i++;
+									}
+								} else {
+									$o_log->logInfo(_t("Switching context for element code %1 failed. Either there is no attribute with that code attached to the current row or the code is invalid. Mapping is ignored for current row.", $va_context_tmp[1]));
+								}
+								return $va_info;
+
 							}
-						} else {
-							$o_log->logInfo(_t("Switching context for element code %1 failed. Either there is no attribute with that code attached to the current row or the code is invalid. Mapping is ignored for current row.", $va_context_tmp[1]));
-						}
-						return $va_info;
-
+							break;
 					}
-					break;
+				}
+				$cur_table_num = $vn_new_table_num;
 			}
-
+			
 			$va_info = [];
+			
 
 			if(is_array($va_related) && sizeof($va_related)) {
 				$o_log->logDebug(_t("The current mapping will now be repeated for these items: %1", print_r($va_related,true)));
@@ -1820,7 +1873,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						$pa_options['relationship_type_code'] = $va_rel['relationship_type_code'];
 						$pa_options['relationship_type_id'] = $va_rel['relationship_type_id'];
 					}
-					
 					$va_rel_export = $this->processExporterItem($pn_item_id,$vn_new_table_num,$va_rel[$vs_key],array_merge(array('ignoreContext' => true),$pa_options));
 					$va_info = array_merge($va_info,$va_rel_export);
 				}
@@ -1874,16 +1926,20 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$va_get_options['template'] = $vs_template;
 		}
 
-		if($vs_locale = $settings['locale']) {
+		if(($vs_locale = $settings['locale']) || ($vs_locale = caGetOption('locale', $pa_options['settings'], null))) {
 			// the global UI locale for some reason has a higher priority
 			// than the locale setting in BaseModelWithAttributes::get
 			// which is why we unset it here and restore it later
 			global $g_ui_locale;
 			$vs_old_ui_locale = $g_ui_locale;
 			$g_ui_locale = null;
-
+			
 			$va_get_options['locale'] = $vs_locale;
 		}
+		if($settings['returnAllLocales']) {
+			$va_get_options['returnAllLocales'] = true;
+		}
+		
 		
 		// AttributeValue settings that are simply passed through by the exporter
 	
@@ -2073,7 +2129,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			} else if(in_array($vs_source, array("relationship_type_id", "relationship_type_code", "relationship_typename"))) {
 				if(isset($pa_options[$vs_source]) && strlen($pa_options[$vs_source])>0) {
 
-					$o_log->logDebug(_t("Source refers to releationship type information. Value for this mapping is '%1'", $pa_options[$vs_source]));
+					$o_log->logDebug(_t("Source refers to relationship type information. Value for this mapping is '%1'", $pa_options[$vs_source]));
 
 					$va_item_info[] = array(
 						'text' => $pa_options[$vs_source],
@@ -2085,7 +2141,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					$va_values = $t_instance->get($vs_source, array_merge($va_get_options, ['returnAsArray' => true]));
 					if($deduplicate) { $va_values = array_unique($va_values); } 
 					
-					$vs_get = join(caGetOption('delimiter', $va_get_opts, ';'), $va_values);
+					$vs_get = join(caGetOption('delimiter', $va_get_opts, ';'), $va_values ?? []);
 					$o_log->logDebug(_t("Source is a simple get() for some bundle. Value for this mapping is '%1'", $vs_get));
 					$o_log->logDebug(_t("get() options are: %1", print_r($va_get_options,true)));
 
@@ -2324,13 +2380,15 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		} else {
 			if (!($table = Datamodel::getTableName($pn_table_num))) { return false; }
 			
+			$include_deleted = caGetOption('includeDeleted', $pa_options, false);
+			
 			$t_instance = null;
 			if (is_numeric($pn_record_id)) {
 				// Try numeric id
-				$t_instance = $table::find($pn_record_id, array_merge($pa_options, ['returnAs' => 'firstModelInstance', 'start' => 0, 'limit' => null]));
+				$t_instance = $table::find($pn_record_id, array_merge($pa_options, ['includeDeleted' => $include_deleted, 'returnAs' => 'firstModelInstance', 'start' => 0, 'limit' => null]));
 			}
 			if(!$t_instance) {
-				$t_instance = $table::find([Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD') => $pn_record_id], array_merge($pa_options, ['returnAs' => 'firstModelInstance', 'start' => 0, 'limit' => null]));
+				$t_instance = $table::find([Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD') => $pn_record_id], array_merge($pa_options, ['includeDeleted' => $include_deleted, 'returnAs' => 'firstModelInstance', 'start' => 0, 'limit' => null]));
 			}
 			
 			if (!$t_instance) {
@@ -2385,9 +2443,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
         $o_sheet->getParent()->getDefaultStyle()->applyFromArray($cellstyle);
         $o_sheet->setTitle(substr($exporter_code, 0, 31));
-        
-        $o_sheet->getRowDimension($vn_line)->setRowHeight(30);
-        
+
         $col = 0;
         $line = 1;
         foreach(["Rule type","ID","Parent ID","Element","Source","Options","Notes"] as $h) {

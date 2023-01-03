@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2020 Whirl-i-Gig
+ * Copyright 2015-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -227,25 +227,8 @@ class ca_search_indexing_queue extends BaseModel {
     /**
      * Lock time out. Locks older than this will be removed.
      */
-    static $s_lock_timeout = 3 * 60 * 60;   // in seconds
+    static $s_lock_timeout = 60 * 60;   // in seconds
 
-	# ------------------------------------------------------
-	# --- Constructor
-	#
-	# This is a function called when a new instance of this object is created. This
-	# standard constructor supports three calling modes:
-	#
-	# 1. If called without parameters, simply creates a new, empty objects object
-	# 2. If called with a single, valid primary key value, creates a new objects object and loads
-	#    the record identified by the primary key value
-	#
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
-	}
 	# ------------------------------------------------------
 	/**
 	 *
@@ -257,7 +240,7 @@ class ca_search_indexing_queue extends BaseModel {
 			
 			do {
 				$num_entries = 0;
-				if ($o_result = $o_db->query("SELECT * FROM ca_search_indexing_queue WHERE started_on IS NULL ORDER BY entry_id LIMIT 100")) {
+				if ($o_result = $o_db->query("SELECT * FROM ca_search_indexing_queue WHERE started_on IS NULL ORDER BY entry_id LIMIT 10")) {
 					$num_entries = (int)$o_result->numRows();
 					if($num_entries > 0) {
 						$o_si = new SearchIndexer($o_db);

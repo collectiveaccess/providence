@@ -88,8 +88,8 @@ var methods = {
             tooltipClass: 'tileviewerTooltipFormat',
             
             uiIcons: {
-            	'zoomIn': '<i class="fa fa-plus-square-o fa-2x"><i>',
-            	'zoomOut': '<i class="fa fa-minus-square-o fa-2x"><i>',
+            	'zoomIn': '<i class="fas fa-plus-square fa-2x fa-inverse"><i>',
+            	'zoomOut': '<i class="fa fa-minus-square fa-2x fa-inverse"><i>',
             	'lock': '<i class="fa fa-lock"></i>',
             	'delete': '<i class="fa fa-trash-o"></i>',
             	'close': '<i class="fa fa-times"></i>'
@@ -3298,10 +3298,12 @@ var methods = {
 						// Handle scrolling due to click on the overview
 						var tw = layer.thumb.width;
 						var th = layer.thumb.height;
+						var factor = Math.pow(2,layer.level);
 						
 						if ((x >= 0) && (x <= tw) && (y >= 0) && (y <= th)) {
-							view.pan.xdest = ((x/tw) * layer.info.width);
-							view.pan.ydest = ((y/th) * layer.info.height);
+							view.pan.xdest = ((x/tw) * layer.info.width / factor);
+							view.pan.ydest = ((y/th) * layer.info.height / factor);
+							
 							view.pan.level = layer.level;
 							view.needdraw = true;
 							return;

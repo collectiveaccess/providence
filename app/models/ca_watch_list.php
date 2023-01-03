@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010 Whirl-i-Gig
+ * Copyright 2010-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -171,20 +171,7 @@ class ca_watch_list extends BaseModel {
 
 	protected $FIELDS;
 	
-	# ------------------------------------------------------
-	# --- Constructor
-	#
-	# This is a function called when a new instance of this object is created. This
-	# standard constructor supports three calling modes:
-	#
-	# 1. If called without parameters, simply creates a new, empty objects object
-	# 2. If called with a single, valid primary key value, creates a new objects object and loads
-	#    the record identified by the primary key value
-	#
-	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
-	}
+
 	# ------------------------------------------------------
 	/**
 	 *
@@ -241,7 +228,7 @@ class ca_watch_list extends BaseModel {
 					"idno" => $t_item_table->get("idno"), 
 					"item_type" => $t_item_table->getProperty('NAME_SINGULAR'), 
 					"primary_key" => $t_item_table->getPrimaryKey(), 
-					"change_log" => [] //$t_changelog->getChangeLogForRowForDisplay($t_item_table, null, $vn_request_user_id)
+					"change_log" => $t_changelog->getChangeLogForRowForDisplay($t_item_table, null, $vn_request_user_id, ['limit' => 25])
 				);
 			}
 		}

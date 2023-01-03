@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2021 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -246,11 +246,11 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	#    the record identified by the primary key value
 	#
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
+	public function __construct($id=null, ?array $options=null) {
 		// Filter list of tables form can be used for to those enabled in current config
 		BaseModel::$s_ca_models_definitions['ca_search_forms']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = caFilterTableList(BaseModel::$s_ca_models_definitions['ca_search_forms']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST']);
 
-		parent::__construct($pn_id);	# call superclass constructor
+		parent::__construct($id, $options);	# call superclass constructor
 
 		$this->opo_search_config = Configuration::load(__CA_CONF_DIR__.'/search.conf');
 		$this->opo_search_indexing_config = Configuration::load(__CA_CONF_DIR__.'/search_indexing.conf');
@@ -327,7 +327,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 			return null;
 		}
 
-		$t_placement = new ca_search_form_placements(null, is_array($pa_options['additional_settings']) ? $pa_options['additional_settings'] : null);
+		$t_placement = new ca_search_form_placements(null, null, is_array($pa_options['additional_settings']) ? $pa_options['additional_settings'] : null);
 		$t_placement->setMode(ACCESS_WRITE);
 		$t_placement->set('form_id', $vn_form_id);
 		$t_placement->set('bundle_name', trim($ps_bundle_name));
@@ -770,7 +770,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		$vs_primary_table = $t_instance->tableName();
 		$vs_table_display_name = $t_instance->getProperty('NAME_PLURAL');
 
-		$t_placement = new ca_search_form_placements(null, []);
+		$t_placement = new ca_search_form_placements(null, null, []);
 
 		$va_available_bundles = [];
 
@@ -870,10 +870,19 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
                             }
                         }
                     }
+                    
+                    if(is_array($va_fields['related']) && is_array($va_fields['related']['fields'])) {
+                        foreach($va_fields['related']['fields'] as $f => $finfo) {
+							$va_field_list["{$vs_table}.related.{$f}"] = $finfo;
+                        }
+                    }
 
 					foreach($va_field_list as $vs_field => $va_field_indexing_info) {
 						if(in_array('DONT_INCLUDE_IN_SEARCH_FORM', $va_field_indexing_info)) { continue; }
 						if(Datamodel::getFieldInfo($vs_table, $vs_field, 'DONT_INCLUDE_IN_SEARCH_FORM')) { continue; }
+						
+						$label = caGetOption('LABEL', $va_field_indexing_info, null);
+						$bundle_bits = explode('.', $vs_field);
 						
                         $policy = $policy_label = null;
                         $tmp = explode('|', $vs_field);
@@ -881,42 +890,17 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
                             $policy = $tmp[1];
                             $vs_field = $tmp[2];
                             
-                            $policy_label = $policy ? _t('Current value for %1', $policy) : null;
+                            $policy_label = $policy ? _t('Current value for %1', mb_strtolower($policy)) : null;
                         }
 
-						if (!($va_field_info = $t_instance->getFieldInfo($vs_field))) {
-							// is it an attribute?
-							if (in_array($vs_field, $va_element_codes)) {
-								$t_element = ca_metadata_elements::getInstance($vs_field);
-								if(!$t_element) { continue; }
-								if (in_array($t_element->get('datatype'), array(15, 16))) { continue; } 		// skip file and media attributes - never searchable
-								if (!$t_element->getSetting('canBeUsedInSearchForm')) { continue; }
-
-								if (caGetBundleAccessLevel($vs_primary_table, $vs_field) == __CA_BUNDLE_ACCESS_NONE__) { continue;}
-
-								$vs_bundle = $vs_table.'.'.$vs_field;
-
-								$vs_display = "<div id='searchFormEditor_{$vs_table}_{$vs_field}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".$policy_label.($vs_label = $t_instance->getDisplayLabel($vs_bundle))."</div>";
-								$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
-									'bundle' => $vs_bundle,
-									'label' => caUcFirstUTF8Safe($vs_label),
-									'display' => $vs_display,
-									'description' => $vs_description = $t_instance->getDisplayDescription($vs_bundle),
-									'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0')),
-									'settings' => $va_additional_settings
-								);
-
-								TooltipManager::add(
-									"#searchFormEditor_{$vs_table}_{$vs_field}",
-									"<h2>{$vs_label}</h2>{$vs_description}"
-								);
-							}
-						} else {
+						if (($va_field_info = $t_instance->getFieldInfo($vs_field))) {
 							if (isset($va_field_info['DONT_USE_AS_BUNDLE']) && $va_field_info['DONT_USE_AS_BUNDLE']) { continue; }
 							if (in_array($va_field_info['FIELD_TYPE'], array(FT_MEDIA, FT_FILE))) { continue; }
 
 							$vs_bundle = $vs_table.'.'.$vs_field;
-							$vs_display = "<div id='searchFormEditor_{$vs_table}_{$vs_field}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".$policy_label.($vs_label = $t_instance->getDisplayLabel($vs_bundle))."</div>";
+							$vs_label = $label ?? $t_instance->getDisplayLabel($vs_bundle);
+							
+							$vs_display = "<div id='searchFormEditor_{$vs_table}_{$vs_field}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".$policy_label.$vs_label."</div>";
 							$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
 								'bundle' => $vs_bundle,
 								'label' => caUcFirstUTF8Safe($vs_label),
@@ -928,6 +912,54 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 
 							TooltipManager::add(
 								"#searchFormEditor_{$vs_table}_{$vs_field}",
+								"<h2>{$vs_label}</h2>{$vs_description}"
+							);
+						} elseif (in_array($vs_field, $va_element_codes)) {
+							// is it an attribute?
+							$t_element = ca_metadata_elements::getInstance($vs_field);
+							if(!$t_element) { continue; }
+							if (in_array($t_element->get('datatype'), array(15, 16))) { continue; } 		// skip file and media attributes - never searchable
+							if (!$t_element->getSetting('canBeUsedInSearchForm')) { continue; }
+
+							if (caGetBundleAccessLevel($vs_primary_table, $vs_field) == __CA_BUNDLE_ACCESS_NONE__) { continue;}
+
+							$vs_bundle = $vs_table.'.'.$vs_field;
+							$vs_label = $label ?? $t_instance->getDisplayLabel($vs_bundle);
+
+							$vs_display = "<div id='searchFormEditor_{$vs_table}_{$vs_field}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".$policy_label.$vs_label."</div>";
+							$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
+								'bundle' => $vs_bundle,
+								'label' => caUcFirstUTF8Safe($vs_label),
+								'display' => $vs_display,
+								'description' => $vs_description = $t_instance->getDisplayDescription($vs_bundle),
+								'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0')),
+								'settings' => $va_additional_settings
+							);
+
+							TooltipManager::add(
+								"#searchFormEditor_{$vs_table}_{$vs_field}",
+								"<h2>{$vs_label}</h2>{$vs_description}"
+							);
+						} elseif((sizeof($bundle_bits) > 2) && ($bundle_bits[1] === 'related')) {
+							// self-related?
+							if (caGetBundleAccessLevel($vs_primary_table, $bundle_bits[2]) == __CA_BUNDLE_ACCESS_NONE__) { continue;}
+
+							$vs_bundle = $vs_field;
+							
+							$vs_label = $label ?? $t_instance->getDisplayLabel("{$vs_primary_table}.{$bundle_bits[2]}");
+
+							$vs_display = "<div id='searchFormEditor_{$vs_table}_{$bundle_bits[2]}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> "._t('Related %1', $vs_label)."</div>";
+							$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
+								'bundle' => $vs_field,
+								'label' => caUcFirstUTF8Safe($vs_label),
+								'display' => $vs_display,
+								'description' => $vs_description = $t_instance->getDisplayDescription("{$vs_primary_table}.{$bundle_bits[2]}"),
+								'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0')),
+								'settings' => $va_additional_settings
+							);
+
+							TooltipManager::add(
+								"#searchFormEditor_{$vs_field}",
 								"<h2>{$vs_label}</h2>{$vs_description}"
 							);
 						}
@@ -969,10 +1001,19 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
                             }
                         }
                     }
+                    
+                    if(is_array($va_fields['related']) && is_array($va_fields['related']['fields'])) {
+                        foreach($va_fields['related']['fields'] as $f => $finfo) {
+							$va_field_list["{$vs_table}.related.{$f}"] = $finfo;
+                        }
+                    }
 
 					foreach($va_field_list as $vs_field => $va_field_indexing_info) {
 						if (in_array('DONT_INCLUDE_IN_SEARCH_FORM', $va_field_indexing_info)) { continue; }
 						if(Datamodel::getFieldInfo($vs_table, $vs_field, 'DONT_INCLUDE_IN_SEARCH_FORM')) { continue; }
+												
+						$label = caGetOption('LABEL', $va_field_indexing_info, null);
+						$bundle_bits = explode('.', $vs_field);
 						
 						$policy = $policy_label = null;
                         $tmp = explode('|', $vs_field);
@@ -981,27 +1022,31 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
                             $vs_field = $tmp[2];
                         }
                         
-						if (($va_field_info = $t_table->getFieldInfo($vs_field)) || (method_exists($t_table, "hasElement") && $t_table->hasElement($vs_field))) {
+						if (($va_field_info = $t_table->getFieldInfo($vs_field)) || (method_exists($t_table, "hasElement") && $t_table->hasElement($vs_field)) || ($bundle_bits[1] === 'related')) {
 							if (isset($va_field_info['DONT_USE_AS_BUNDLE']) && $va_field_info['DONT_USE_AS_BUNDLE']) { continue; }
 
-                            $vs_base_bundle = "{$vs_table}.{$vs_field}";
-							$vs_bundle = $policy ? "{$vs_table}.current_value.{$p}.{$vs_field}" : "{$vs_table}.{$vs_field}";
 
+							$subject_table = null;                           
 							$vs_related_table = caUcFirstUTF8Safe($t_table->getProperty('NAME_SINGULAR'));
 							if (method_exists($t_table, 'getSubjectTableInstance')) {
 								$t_subject = $t_table->getSubjectTableInstance();
 								$vs_related_table = caUcFirstUTF8Safe($t_subject->getProperty('NAME_SINGULAR'));
+								$subject_table = $t_subject->tableName();
 							}
+							
+							$vs_base_bundle = ($bundle_bits[1] === 'related') ? "{$subject_table}.preferred_labels.{$bundle_bits[2]}"  : "{$vs_table}.{$vs_field}";
+							$vs_bundle = $policy ? "{$vs_table}.current_value.{$p}.{$vs_field}" : (($bundle_bits[1] === 'related') ? "{$subject_table}.preferred_labels.{$bundle_bits[2]}" : "{$vs_table}.{$vs_field}");
 
-							$vs_label = $t_instance->getDisplayLabel($vs_base_bundle, ['useDisambiguationLabels' => true, 'includeSourceSuffix' => false]);
+
+							$vs_label = $label ?? $t_instance->getDisplayLabel($vs_base_bundle, ['useDisambiguationLabels' => true, 'includeSourceSuffix' => false]);
 							if ($policy) { 
-							    $vs_label = _t('Current value for <em>%1</em> from <em>%2</em>', $vs_label, ca_objects::getHistoryTrackingCurrentValuePolicy($policy, 'name'));
+							    $vs_label = _t('Current value for <em>%1</em> using <em>%2</em>', mb_strtolower($vs_label), mb_strtolower(ca_objects::getHistoryTrackingCurrentValuePolicy($policy, 'name')));
 							}
 							
 							if  (method_exists($t_table, "getSubjectTableName") && ($vs_primary_table == $vs_subject_table)) {
-								$vs_display = "<div id='searchFormEditor_{$vs_table}_{$vs_field}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_subject->getProperty('NAME_SINGULAR'))."</span> {$vs_label}</div>";
+								$vs_display = "<div id='searchFormEditor_".str_replace('.', '_', $vs_base_bundle)."'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_subject->getProperty('NAME_SINGULAR'))."</span> {$vs_label}</div>";
 							} else {
-								$vs_display = "<div id='searchFormEditor_{$vs_table}_{$vs_field}'><span class='bundleDisplayEditorPlacementListItemTitle'>{$vs_related_table}</span> {$vs_label}</div>";
+								$vs_display = "<div id='searchFormEditor_".str_replace('.', '_', $vs_base_bundle)."'><span class='bundleDisplayEditorPlacementListItemTitle'>{$vs_related_table}</span> {$vs_label}</div>";
 							}
 
 							$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
@@ -1009,7 +1054,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 								'label' => caUcFirstUTF8Safe($vs_label),
 								'display' => $vs_display,
 								'description' => $vs_description = $t_instance->getDisplayDescription($vs_bundle),
-								'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0')),
+								'settingsForm' => $t_placement->getHTMLSettingForm(['id' => $vs_bundle.'_0']),
 								'settings' => $va_additional_settings
 							);
 
@@ -1306,8 +1351,6 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	public function getLuceneQueryStringForHTMLFormInput($pa_form_content, array $options=null) {
 		$va_values = $this->extractFormValuesFromArray($pa_form_content);
 
-		$match_on_stem = caGetSearchConfig()->get('match_on_stem');
-
 		$va_query_elements = [];
 		if (is_array($va_values) && sizeof($va_values)) {
 			foreach($va_values as $vs_element => $va_values) {
@@ -1320,7 +1363,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 						$vs_query_element = $vs_value;
 					}
 					
-					$vs_query_element .= ($match_on_stem && caIsSearchStem($vs_query_element)) ? '*' : '';
+					$vs_query_element = caMatchOnStem($vs_query_element);
 					
 					switch($vs_element){
 						case '_fulltext':		// don't qualify special "fulltext" element
@@ -1511,7 +1554,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 						return false;
 					}
 				} else {
-					$t_placement = new ca_search_form_placements($vn_placement_id, $va_available_bundles[$vs_bundle]['settings']);
+					$t_placement = new ca_search_form_placements($vn_placement_id, null, $va_available_bundles[$vs_bundle]['settings']);
 					$t_placement->setMode(ACCESS_WRITE);
 					$t_placement->set('rank', $vn_i + 1);
 

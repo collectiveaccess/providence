@@ -181,20 +181,7 @@ class ca_change_log extends BaseModel {
 
 	protected $FIELDS;
 
-	# ------------------------------------------------------
-	# --- Constructor
-	#
-	# This is a function called when a new instance of this object is created. This
-	# standard constructor supports three calling modes:
-	#
-	# 1. If called without parameters, simply creates a new, empty objects object
-	# 2. If called with a single, valid primary key value, creates a new objects object and loads
-	#    the record identified by the primary key value
-	#
-	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
-	}
+
 	# ------------------------------------------------------
 	/**
 	 * Get next ca_change_log.log_id for a given timestamp
@@ -458,6 +445,14 @@ class ca_change_log extends BaseModel {
 								continue(2);
 							}
 							break;
+						case 'value_id':
+							if($vs_val_guid = ca_attribute_values::getGUIDByPrimaryKey($vm_val)) {
+								$va_snapshot['value_guid'] = $vs_val_guid;
+							} else {
+								$va_snapshot = ['SKIP' => true];
+								continue(2);
+							}
+							break;
 						case 'type_id':
 							if(preg_match("!^ca_relationship_type!", $t_instance->tableName())) {
 								goto deflabel;
@@ -469,6 +464,14 @@ class ca_change_log extends BaseModel {
 								} elseif($t_instance instanceof BaseLabel) {
 									if (!($va_snapshot['type_code'] = caGetListItemIdno($vm_val)) && (!$t_instance->getFieldInfo('type_id', 'IS_NULL'))) { continue(2); }
 								} 
+							} else {
+								$va_snapshot = ['SKIP' => true];
+								continue(2);
+							}
+							break;
+						case 'source_id':
+							if($t_instance) {
+								$va_snapshot['source_code'] = $vm_val ? caGetListItemIdno($vm_val) : null;
 							} else {
 								$va_snapshot = ['SKIP' => true];
 								continue(2);
@@ -514,8 +517,6 @@ class ca_change_log extends BaseModel {
 								} elseif (isset($va_many_to_one_rels[$vs_fld]) && ($t_rel_item = Datamodel::getInstanceByTableName($va_many_to_one_rels[$vs_fld]['one_table'], true))) {
 									// handle many-one keys
 									$va_snapshot[$vs_fld . '_guid'] = ca_guids::getForRow($t_rel_item->tableNum(), $vm_val);
-								} else {
-									$va_snapshot[$vs_fld . '_guid'] = null;
 								}
 
 								// handle media ...
@@ -616,6 +617,8 @@ class ca_change_log extends BaseModel {
 								if(($t_instance instanceof \ca_representation_annotations) && ($vs_fld == 'representation_id')) {
 									$va_snapshot['representation_guid'] = ca_guids::getForRow(Datamodel::getTableNum('ca_object_representations'), $vm_val);
 								}
+							} elseif($vs_fld == $t_instance->getProperty('HIERARCHY_PARENT_ID_FLD')) {
+								$va_snapshot[$vs_fld . '_guid'] = null;
 							}
 							break;
 					}
@@ -680,7 +683,7 @@ class ca_change_log extends BaseModel {
 			}
 		}
 
-		return caSanitizeArray($va_ret, ['removeNonCharacterData' => false]);
+		return caSanitizeArray($va_ret, ['removeNonCharacterData' => true]);
 	}
 	# ------------------------------------------------------
 	/**

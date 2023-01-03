@@ -43,8 +43,9 @@ class ConfigurationUpdateTest extends TestCase {
 		$t_locale = new ca_locales();
 		$this->assertFalse((bool) $t_locale->localeCodeToID('fk_FK'));
 
-		$o_installer = Installer::getFromString(file_get_contents(dirname(__FILE__).'/profile_fragments/locales/add_new.xml'));
-		$this->assertTrue($o_installer instanceof Installer);
+		$o_installer = new \Installer\Installer(dirname(__FILE__).'/profile_fragments/locales', 'add_new.xml', 'info@collectiveaccess.org', false, false, false, false, true);
+		
+		$this->assertTrue($o_installer instanceof \Installer\Installer);
 		$o_installer->processLocales();
 
 		MemoryCache::flush('LocaleCodeToId');
@@ -56,8 +57,9 @@ class ConfigurationUpdateTest extends TestCase {
 	}
 
 	public function testUpdateLocale() {
-		$o_installer = Installer::getFromString(file_get_contents(dirname(__FILE__).'/profile_fragments/locales/update_existing.xml'));
-		$this->assertTrue($o_installer instanceof Installer);
+		$o_installer = new \Installer\Installer(dirname(__FILE__).'/profile_fragments/locales', 'update_existing.xml', 'info@collectiveaccess.org', false, false, false, false, true);
+		
+		$this->assertTrue($o_installer instanceof \Installer\Installer);
 		$o_installer->processLocales();
 
 		$t_locale = new ca_locales();
@@ -73,8 +75,9 @@ class ConfigurationUpdateTest extends TestCase {
 	}
 
 	public function testAddNewItemToExistingList() {
-		$o_installer = Installer::getFromString(file_get_contents(dirname(__FILE__).'/profile_fragments/lists/add_new_item_to_existing_list.xml'));
-		$this->assertTrue($o_installer instanceof Installer);
+		$o_installer = new \Installer\Installer(dirname(__FILE__).'/profile_fragments/lists', 'add_new_item_to_existing_list.xml', 'info@collectiveaccess.org', false, false, false, false, true);
+		
+		$this->assertTrue($o_installer instanceof \Installer\Installer);
 		$o_installer->processLocales();
 		$o_installer->processLists();
 
@@ -86,8 +89,9 @@ class ConfigurationUpdateTest extends TestCase {
 	}
 
 	public function testEditItemInExistingList() {
-		$o_installer = Installer::getFromString(file_get_contents(dirname(__FILE__).'/profile_fragments/lists/edit_item_in_existing_list.xml'));
-		$this->assertTrue($o_installer instanceof Installer);
+		$o_installer = new \Installer\Installer(dirname(__FILE__).'/profile_fragments/lists', 'edit_item_in_existing_list.xml', 'info@collectiveaccess.org', false, false, false, false, true);
+		
+		$this->assertTrue($o_installer instanceof \Installer\Installer);
 		$o_installer->processLocales();
 		$o_installer->processLists();
 
@@ -106,8 +110,9 @@ class ConfigurationUpdateTest extends TestCase {
 	}
 
 	public function testAddNewList() {
-		$o_installer = Installer::getFromString(file_get_contents(dirname(__FILE__).'/profile_fragments/lists/add_new_list_with_items.xml'));
-		$this->assertTrue($o_installer instanceof Installer);
+		$o_installer = new \Installer\Installer(dirname(__FILE__).'/profile_fragments/lists', 'add_new_list_with_items.xml', 'info@collectiveaccess.org', false, false, false, false, true);
+		
+		$this->assertTrue($o_installer instanceof \Installer\Installer);
 		$o_installer->processLocales();
 		$o_installer->processLists();
 
@@ -130,8 +135,9 @@ class ConfigurationUpdateTest extends TestCase {
 		$this->assertGreaterThan(0, $t_list->getPrimaryKey());
 		$this->assertEquals(2, sizeof($t_list->getItemsForList('diff_test_list', array('dontCache' => true))));
 
-		$o_installer = Installer::getFromString(file_get_contents(dirname(__FILE__).'/profile_fragments/lists/delete_list_items.xml'));
-		$this->assertTrue($o_installer instanceof Installer);
+		$o_installer = new \Installer\Installer(dirname(__FILE__).'/profile_fragments/lists', 'delete_list_items.xml', 'info@collectiveaccess.org', false, false, false, false, true);
+		
+		$this->assertTrue($o_installer instanceof \Installer\Installer);
 		$o_installer->processLocales();
 		$o_installer->processLists();
 
@@ -144,8 +150,9 @@ class ConfigurationUpdateTest extends TestCase {
 		$t_list->load(array('list_code' => 'diff_test_list'));
 		$this->assertGreaterThan(0, $t_list->getPrimaryKey());
 
-		$o_installer = Installer::getFromString(file_get_contents(dirname(__FILE__).'/profile_fragments/lists/delete_list.xml'));
-		$this->assertTrue($o_installer instanceof Installer);
+		$o_installer = new \Installer\Installer(dirname(__FILE__).'/profile_fragments/lists', 'delete_list.xml', 'info@collectiveaccess.org', false, false, false, false, true);
+		
+		$this->assertTrue($o_installer instanceof \Installer\Installer);
 		$o_installer->processLocales();
 		$o_installer->processLists();
 
@@ -154,8 +161,9 @@ class ConfigurationUpdateTest extends TestCase {
 	}
 
 	public function testAddNewElement() {
-		$o_installer = Installer::getFromString(file_get_contents(dirname(__FILE__).'/profile_fragments/elements/add_new_element.xml'));
-		$this->assertTrue($o_installer instanceof Installer);
+		$o_installer = new \Installer\Installer(dirname(__FILE__).'/profile_fragments/elements', 'add_new_element.xml', 'info@collectiveaccess.org', false, false, false, false, true);
+		
+		$this->assertTrue($o_installer instanceof \Installer\Installer);
 		$o_installer->processLocales();
 		$o_installer->processMetadataElements();
 
@@ -166,8 +174,9 @@ class ConfigurationUpdateTest extends TestCase {
 	}
 
 	public function testRemoveLabelsFromElement() {
-		$o_installer = Installer::getFromString(file_get_contents(dirname(__FILE__).'/profile_fragments/elements/remove_labels_from_element.xml'));
-		$this->assertTrue($o_installer instanceof Installer);
+		$o_installer = new \Installer\Installer(dirname(__FILE__).'/profile_fragments/elements', 'remove_labels_from_element.xml', 'info@collectiveaccess.org', false, false, false, false, true);
+		
+		$this->assertTrue($o_installer instanceof \Installer\Installer);
 		$o_installer->processLocales();
 		$o_installer->processMetadataElements();
 
@@ -177,8 +186,9 @@ class ConfigurationUpdateTest extends TestCase {
 	}
 
 	public function testAddElementExistingContainer() {
-		$o_installer = Installer::getFromString(file_get_contents(dirname(__FILE__).'/profile_fragments/elements/add_new_element_to_existing_container.xml'));
-		$this->assertTrue($o_installer instanceof Installer);
+		$o_installer = new \Installer\Installer(dirname(__FILE__).'/profile_fragments/elements', 'add_new_element_to_existing_container.xml', 'info@collectiveaccess.org', false, false, false, false, true);
+		
+		$this->assertTrue($o_installer instanceof \Installer\Installer);
 		$o_installer->processLocales();
 		$o_installer->processMetadataElements();
 
@@ -200,8 +210,9 @@ class ConfigurationUpdateTest extends TestCase {
 	}
 
 	public function testDeleteElements() {
-		$o_installer = Installer::getFromString(file_get_contents(dirname(__FILE__).'/profile_fragments/elements/delete_elements.xml'));
-		$this->assertTrue($o_installer instanceof Installer);
+		$o_installer = new \Installer\Installer(dirname(__FILE__).'/profile_fragments/elements', 'delete_elements.xml', 'info@collectiveaccess.org', false, false, false, false, true);
+		
+		$this->assertTrue($o_installer instanceof \Installer\Installer);
 		$o_installer->processLocales();
 		$o_installer->processMetadataElements();
 
@@ -211,8 +222,9 @@ class ConfigurationUpdateTest extends TestCase {
 	}
 
 	public function testEditElementExistingContainer() {
-		$o_installer = Installer::getFromString(file_get_contents(dirname(__FILE__).'/profile_fragments/elements/edit_element_in_existing_container.xml'));
-		$this->assertTrue($o_installer instanceof Installer);
+		$o_installer = new \Installer\Installer(dirname(__FILE__).'/profile_fragments/elements', 'edit_element_in_existing_container.xml', 'info@collectiveaccess.org', false, false, false, false, true);
+		
+		$this->assertTrue($o_installer instanceof \Installer\Installer);
 		$o_installer->processLocales();
 		$o_installer->processMetadataElements();
 
@@ -236,8 +248,9 @@ class ConfigurationUpdateTest extends TestCase {
 	}
 
 	public function testAddNewUI() {
-		$o_installer = Installer::getFromString(file_get_contents(dirname(__FILE__).'/profile_fragments/uis/add_new_ui.xml'));
-		$this->assertTrue($o_installer instanceof Installer);
+		$o_installer = new \Installer\Installer(dirname(__FILE__).'/profile_fragments/uis', 'add_new_ui.xml', 'info@collectiveaccess.org', false, false, false, false, true);
+		
+		$this->assertTrue($o_installer instanceof \Installer\Installer);
 		$o_installer->processLocales();
 		$o_installer->processUserInterfaces();
 
@@ -265,8 +278,9 @@ class ConfigurationUpdateTest extends TestCase {
 	}
 
 	public function testAddScreenToExistingUI() {
-		$o_installer = Installer::getFromString(file_get_contents(dirname(__FILE__).'/profile_fragments/uis/add_new_screen_to_existing_ui.xml'));
-		$this->assertTrue($o_installer instanceof Installer);
+		$o_installer = new \Installer\Installer(dirname(__FILE__).'/profile_fragments/uis', 'add_new_screen_to_existing_ui.xml', 'info@collectiveaccess.org', false, false, false, false, true);
+		
+		$this->assertTrue($o_installer instanceof \Installer\Installer);
 		$o_installer->processLocales();
 		$o_installer->processUserInterfaces();
 
@@ -292,8 +306,9 @@ class ConfigurationUpdateTest extends TestCase {
 	}
 
 	public function testEditScreenInExistingUI() {
-		$o_installer = Installer::getFromString(file_get_contents(dirname(__FILE__).'/profile_fragments/uis/edit_screen_in_existing_ui.xml'));
-		$this->assertTrue($o_installer instanceof Installer);
+		$o_installer = new \Installer\Installer(dirname(__FILE__).'/profile_fragments/uis', 'edit_screen_in_existing_ui.xml', 'info@collectiveaccess.org', false, false, false, false, true);
+		
+		$this->assertTrue($o_installer instanceof \Installer\Installer);
 		$o_installer->processLocales();
 		$o_installer->processUserInterfaces();
 
@@ -320,8 +335,9 @@ class ConfigurationUpdateTest extends TestCase {
 		$t_oxo = new ca_objects_x_occurrences();
 		$this->assertEquals(3, sizeof($t_oxo->getRelationshipTypes()));
 
-		$o_installer = Installer::getFromString(file_get_contents(dirname(__FILE__).'/profile_fragments/reltypes/delete_reltype.xml'));
-		$this->assertTrue($o_installer instanceof Installer);
+		$o_installer = new \Installer\Installer(dirname(__FILE__).'/profile_fragments/reltypes', 'delete_reltype.xml', 'info@collectiveaccess.org', false, false, false, false, true);
+		
+		$this->assertTrue($o_installer instanceof \Installer\Installer);
 		$o_installer->processLocales();
 		$o_installer->processRelationshipTypes();
 

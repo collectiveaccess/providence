@@ -39,6 +39,41 @@ if (!defined("__CA_BASE_DIR__")) {
 	define("__CA_BASE_DIR__", ($_SERVER['SCRIPT_FILENAME'] && (php_sapi_name() !== 'cli'))  ? preg_replace("!/install$!", "", pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_DIRNAME)) :  join(DIRECTORY_SEPARATOR, array_slice(explode(DIRECTORY_SEPARATOR, __FILE__), 0, -3)));
 }
 
+# Path to CollectiveAccess 'app' directory 
+if (!defined("__CA_APP_DIR__")) {
+	define("__CA_APP_DIR__", __CA_BASE_DIR__."/app");
+}
+
+# Path to CollectiveAccess 'models' directory containing database table model classes
+if (!defined("__CA_MODELS_DIR__")) {
+	define("__CA_MODELS_DIR__", __CA_APP_DIR__."/models");
+}
+
+# Path to CollectiveAccess 'lib' directory containing software libraries CA needs to function
+if (!defined("__CA_LIB_DIR__")) {
+	define("__CA_LIB_DIR__", __CA_APP_DIR__."/lib");
+}
+
+# Path to CollectiveAccess 'lib' directory containing software libraries CA needs to function
+if (!defined("__CA_CONF_DIR__")) {
+	define("__CA_CONF_DIR__", __CA_APP_DIR__."/conf");
+}
+
+#
+# When running from CLI it is usually not possible to reliable infer the current system URL and protocol
+# If it's not explicitly set in setup.php when try to grab it out of the cache here
+#
+if(php_sapi_name() == 'cli' && empty($_SERVER['REMOTE_ADDR'])) { 	// is CLI
+	require_once(__CA_BASE_DIR__.'/vendor/autoload.php');	// composer for cache components
+	require_once(__CA_BASE_DIR__."/app/lib/Cache/ExternalCache.php");
+	if(ExternalCache::contains('system_url', 'system')) {
+		$system_url = ExternalCache::fetch('system_url', 'system');
+		
+		if (!defined("__CA_SITE_HOSTNAME__")) { define("__CA_SITE_HOSTNAME__", $system_url['hostname']); }
+		if (!defined("__CA_SITE_PROTOCOL__")) { define("__CA_SITE_PROTOCOL__", $system_url['protocol']); }
+		if (!defined("__CA_URL_ROOT__")) { define("__CA_URL_ROOT__", $system_url['url_root']); }
+	}
+}
 #
 # __CA_URL_ROOT__ = the root-relative URL path to your CollectiveAccess installation
 #
@@ -76,26 +111,6 @@ if (!defined("__CA_SITE_HOSTNAME__")) {
 #
 if (!defined("__CA_SITE_PROTOCOL__")) {
 	define("__CA_SITE_PROTOCOL__", isset($_SERVER['HTTPS']) ? 'https' : ((isset($_SERVER['HTTP_X_FORWARDED_PROTO']) &&  ($_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')) ? 'https' : 'http'));
-}
-
-# Path to CollectiveAccess 'app' directory 
-if (!defined("__CA_APP_DIR__")) {
-	define("__CA_APP_DIR__", __CA_BASE_DIR__."/app");
-}
-
-# Path to CollectiveAccess 'models' directory containing database table model classes
-if (!defined("__CA_MODELS_DIR__")) {
-	define("__CA_MODELS_DIR__", __CA_APP_DIR__."/models");
-}
-
-# Path to CollectiveAccess 'lib' directory containing software libraries CA needs to function
-if (!defined("__CA_LIB_DIR__")) {
-	define("__CA_LIB_DIR__", __CA_APP_DIR__."/lib");
-}
-
-# Path to CollectiveAccess 'lib' directory containing software libraries CA needs to function
-if (!defined("__CA_CONF_DIR__")) {
-	define("__CA_CONF_DIR__", __CA_APP_DIR__."/conf");
 }
 
 #
@@ -383,4 +398,28 @@ if (!defined("__CA_APP_TYPE__")) {
 # Override server request memory limit with setup.php defined value
 if (defined("__CA_MEMORY_LIMIT__")) {
 	ini_set('memory_limit', __CA_MEMORY_LIMIT__);
+}
+
+# __CA_LOG_DATABASE_QUERIES__
+#
+# Set this to have the application log all database queries with performance 
+# data to the log_queries log file.
+if (!defined('__CA_LOG_DATABASE_QUERIES__')) {
+	define('__CA_LOG_DATABASE_QUERIES__', false);
+}
+
+# __CA_LONG_DATABASE_QUERY_THRESHOLD__
+#
+# Queries whose executation is longer than this threshold (in seconds)
+# will be logged in the log_queries file as warnnings.
+if (!defined('__CA_LONG_DATABASE_QUERY_THRESHOLD__')) {
+	define('__CA_LONG_DATABASE_QUERY_THRESHOLD__', 0.5);
+}
+
+# __CA_SHOW_FULL_STACKTRACE_IN_DATABASE_QUERY_LOG__
+#
+# Includes full stacktrace in query log. If not set only the line of code
+# that triggered execution of the query is recordded in the log.
+if (!defined('__CA_SHOW_FULL_STACKTRACE_IN_DATABASE_QUERY_LOG__')) {
+	define('__CA_SHOW_FULL_STACKTRACE_IN_DATABASE_QUERY_LOG__', false);
 }

@@ -192,9 +192,4 @@ class ca_bookmarks extends BaseModel {
 	protected $FIELDS;
 	
 	# ----------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);
-	}
-	# ----------------------------------------
 }
-?>

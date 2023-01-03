@@ -189,8 +189,8 @@ class ca_bundle_display_type_restrictions extends BaseModel {
 	#    the record identified by the primary key value
 	#
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
+	public function __construct($id=null, ?array $options=null) {
+		parent::__construct($id, $options);	# call superclass constructor
 		
 		$this->setAvailableSettings([]);	// no settings currently
 	}

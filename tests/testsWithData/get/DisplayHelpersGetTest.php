@@ -142,7 +142,7 @@ class DisplayHelpersGetTest extends BaseTestWithData {
 
 		// just a plain tag .. 'My test image' is 13 chars
 		$this->assertEquals(13, caProcessTemplateForIDs(
-			'<expression>length(^ca_objects.preferred_labels)</expression>'
+			'<expression>length("^ca_objects.preferred_labels")</expression>'
 		, 'ca_objects', array($this->opt_object->getPrimaryKey())));
 
 		// plain old scalars
@@ -152,7 +152,7 @@ class DisplayHelpersGetTest extends BaseTestWithData {
 
 		// get entity names and their string lengths
 		$this->assertEquals('Homer J. Simpson, 16; Bart Simpson, 12', caProcessTemplateForIDs(
-			'<unit relativeTo="ca_entities">^ca_entities.preferred_labels, <expression>length(^ca_entities.preferred_labels)</expression></unit>'
+			'<unit relativeTo="ca_entities">^ca_entities.preferred_labels, <expression>length("^ca_entities.preferred_labels")</expression></unit>'
 		, 'ca_objects', array($this->opt_object->getPrimaryKey())));
 
 		// scalars in ifdef (false)

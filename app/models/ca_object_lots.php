@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -83,6 +83,13 @@ BaseModel::$s_ca_models_definitions['ca_object_lots'] = array(
 			'DEFAULT' => '',
 			'LABEL' => 'Idno stub sort', 'DESCRIPTION' => 'Sortable version of idno_stub',
 			'BOUNDS_LENGTH' => array(0,255)
+		),
+		'idno_stub_sort_num' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => 'Sortable object identifier as integer', 'DESCRIPTION' => 'Integer value used for sorting objects; used for idno range query.'
 		),
 		'extent' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -235,7 +242,7 @@ BaseModel::$s_ca_models_definitions['ca_object_lots'] = array(
 			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 			'IS_NULL' => false, 
 			'DEFAULT' => '',
-			'LABEL' => 'View count', 'DESCRIPTION' => 'Number of views for this record.'
+			'LABEL' => 'View count', 'DESCRIPTION' => _t('Number of views for this record.')
 		),
 		'submission_user_id' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
@@ -243,7 +250,7 @@ BaseModel::$s_ca_models_definitions['ca_object_lots'] = array(
 			'IS_NULL' => true, 
 			'DEFAULT' => null,
 			'DONT_ALLOW_IN_UI' => true,
-			'LABEL' => _t('Submitted by user'), 'DESCRIPTION' => _t('User submitting this object')
+			'LABEL' => _t('Submitted by user'), 'DESCRIPTION' => _t('User submitting this object lot')
 		),
 		'submission_group_id' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
@@ -251,7 +258,7 @@ BaseModel::$s_ca_models_definitions['ca_object_lots'] = array(
 			'IS_NULL' => true, 
 			'DEFAULT' => null,
 			'DONT_ALLOW_IN_UI' => true,
-			'LABEL' => _t('Submitted for group'), 'DESCRIPTION' => _t('Group this object was submitted under')
+			'LABEL' => _t('Submitted for group'), 'DESCRIPTION' => _t('Group this object lot was submitted under')
 		),
 		'submission_status_id' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
@@ -260,7 +267,7 @@ BaseModel::$s_ca_models_definitions['ca_object_lots'] = array(
 			'DEFAULT' => null,
 			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 			'LIST_CODE' => 'submission_statuses',
-			'LABEL' => _t('Submission status'), 'DESCRIPTION' => _t('Indicates submission status of the object.')
+			'LABEL' => _t('Submission status'), 'DESCRIPTION' => _t('Indicates submission status')
 		),
 		'submission_via_form' => array(
 			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT,
@@ -268,7 +275,15 @@ BaseModel::$s_ca_models_definitions['ca_object_lots'] = array(
 			'IS_NULL' => true,
 			'DEFAULT' => null,
 			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
-			'LABEL' => _t('Submission via form'), 'DESCRIPTION' => _t('Indicates what contribute form was used to create the submission.')
+			'LABEL' => _t('Submission via form'), 'DESCRIPTION' => _t('Indicates what contribute form was used to create the submission')
+		),
+		'submission_session_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true,
+			'DEFAULT' => null,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'LABEL' => _t('Submission session'), 'DESCRIPTION' => _t('Indicates submission session')
 		)
  	)
 );
@@ -409,20 +424,7 @@ class ca_object_lots extends RepresentableBaseModel {
 	 */
 	static $s_object_count_cache = array();
 	
-	# ------------------------------------------------------
-	# --- Constructor
-	#
-	# This is a function called when a new instance of this object is created. This
-	# standard constructor supports three calling modes:
-	#
-	# 1. If called without parameters, simply creates a new, empty objects object
-	# 2. If called with a single, valid primary key value, creates a new objects object and loads
-	#    the record identified by the primary key value
-	#
-	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor
-	}
+
 	# ------------------------------------------------------
 	protected function initLabelDefinitions($pa_options=null) {
 		parent::initLabelDefinitions($pa_options);
@@ -466,6 +468,8 @@ class ca_object_lots extends RepresentableBaseModel {
 		$this->BUNDLES['history_tracking_current_date'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current history tracking date'), 'displayOnly' => true);
 		$this->BUNDLES['history_tracking_chronology'] = array('type' => 'special', 'repeating' => false, 'label' => _t('History'));
 		$this->BUNDLES['history_tracking_current_contents'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current contents'));
+		
+		$this->BUNDLES['generic'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Display template'));
 	}
 	# ------------------------------------------------------
  	/**
@@ -565,7 +569,7 @@ class ca_object_lots extends RepresentableBaseModel {
 		
 		$o_db = $this->getDb();
 		$qr_res = $o_db->query("
-				SELECT *
+				SELECT object_id
 				FROM ca_objects
 				WHERE
 					lot_id = ? AND deleted = 0 ".(caGetOption('excludeChildObjects', $pa_options, false) ? " AND parent_id IS NULL" : "")."
@@ -579,15 +583,16 @@ class ca_object_lots extends RepresentableBaseModel {
 		}
 		if (!sizeof($va_rows)) { ca_object_lots::$s_object_count_cache[$vn_lot_id][$vs_cache_key] = 0; return array(); }
 		
-		
+		$va_rows = array_merge(array_keys($va_rows), ca_objects::getHierarchyChildrenForIDs(array_keys($va_rows), ['returnAs' => 'ids']));
+	
 		$qr_res = $o_db->query("
 			SELECT *
 			FROM ca_objects
 			WHERE
-				hier_object_id IN (?) AND deleted = 0 ".(caGetOption('excludeChildObjects', $pa_options, false) ? " AND parent_id IS NULL" : "")."
+				object_id IN (?) AND deleted = 0 ".(caGetOption('excludeChildObjects', $pa_options, false) ? " AND parent_id IS NULL" : "")."
 			ORDER BY
 				idno_sort
-		", array(array_keys($va_rows)));
+		", array($va_rows));
 	
 		$va_objects = array();
 		while($qr_res->nextRow()) {

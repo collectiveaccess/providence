@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -124,7 +124,7 @@
 		$resp->sendResponse();
 		$req->close();
 	} catch(DatabaseException $e) {
-		$opa_error_messages = ["Could not connect to database. Check your database configuration in <em>setup.php</em>."];
+		$opa_error_messages = ["Could not connect to database. Check your database configuration in <em>setup.php</em>: ".$e->getMessage()];
 		require_once(__CA_BASE_DIR__."/themes/default/views/system/configuration_error_html.php");
 		exit();
 	} catch (Exception $e) {

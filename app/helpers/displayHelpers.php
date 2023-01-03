@@ -58,7 +58,17 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 		$o_config = Configuration::load();
 		$va_default_locales = $o_config->getList('locale_defaults');
 
-		$va_preferred_locales = array();
+		$va_preferred_locales = [];
+	
+		if (is_array($pa_preferred_locales)) {
+			foreach($pa_preferred_locales as $vs_preferred_locale) {
+				if(is_numeric($vs_preferred_locale)) {
+					$vs_preferred_locale = ca_locales::IDToCode($vs_preferred_locale);
+				}
+				$va_preferred_locales[$vs_preferred_locale] = true;
+			}
+		}
+		
 		$va_similar_locales = [];
 		if ($ps_item_locale) {
 			// if item locale is passed as locale_id we need to convert it to a code
@@ -76,12 +86,6 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 			$va_similar_locales = ca_locales::localesForLanguage($ps_item_locale, ['codesOnly' => true]);
 		}
 
-		if (is_array($pa_preferred_locales)) {
-			foreach($pa_preferred_locales as $vs_preferred_locale) {
-				$va_preferred_locales[$vs_preferred_locale] = true;
-			}
-		}
-
 		$va_fallback_locales = array();
 		if (is_array($va_default_locales)) {
 			foreach($va_default_locales as $vs_fallback_locale) {
@@ -96,7 +100,7 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 		    $va_fallback_locales[$vs_similar_locale] = true;
 		}
 
-		if ($g_ui_locale) {
+		if ($g_ui_locale && !is_array($va_preferred_locales) || !sizeof($va_preferred_locales)) {
 			if (!isset($va_preferred_locales[$g_ui_locale]) || !$va_preferred_locales[$g_ui_locale]) {
 				$va_preferred_locales[$g_ui_locale] = true;
 			}
@@ -1234,7 +1238,7 @@ jQuery(document).ready(function() {
 				$vs_buf .= "{$vs_watch}\n";
 				TooltipManager::add("#caWatchItemButton", _t('Watch/Unwatch this record'));
 
-				if ($po_view->request->user->canDoAction("can_change_type_{$vs_table_name}") && (sizeof($t_item->getTypeList()) > 1)) {
+				if ($po_view->request->user->canDoAction("can_change_type_{$vs_table_name}") && (sizeof($t_item->getTypeList()) >= 1)) {
 
 					$vs_buf .= "<div id='inspectorChangeType' class='inspectorActionButton'><div id='inspectorChangeTypeButton'><a href='#' onclick='caTypeChangePanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_CHANGE__, '20px', array('title' => _t('Change type')))."</a></div></div>\n";
 
@@ -1494,7 +1498,7 @@ jQuery(document).ready(function() {
 			}
 
 			if ($vb_can_add_component) {
-				$vs_buf .= ' <a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($po_view->request, '*', 'ObjectComponent', 'Form', array('parent_id' => $t_item->getPrimaryKey())).'"); return false;\')>'.caNavIcon(__CA_NAV_ICON_ADD__, '18px').'</a>';
+				$vs_buf .= ' <a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($po_view->request, '*', 'ObjectComponent', 'Form', array('parent_id' => $t_item->getPrimaryKey())).'"); return false;\')>'.caNavIcon(__CA_NAV_ICON_ADD__, '18px').' '._t('Add component').'</a>';
 
 				$vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
 				$vo_change_type_view->setVar('t_item', $t_item);
@@ -2536,6 +2540,15 @@ jQuery(document).ready(function() {
 				case 'NL2BR':
 					$ps_value = nl2br($ps_value);
 					break;
+				case 'TRUNCATE':
+					$ellipsis = ((bool)$va_tmp[2]);
+					if((int)$va_tmp[1] > 0) { 
+						$ellipsis = $ellipsis && (mb_strlen($ps_value) > (int)$va_tmp[1]);
+						$ps_value = mb_substr($ps_value, 0, (int)$va_tmp[1]); 
+						if($ellipsis) { $ps_value .= '...'; }
+					}
+					
+					break;
 			}
 		}
 
@@ -2617,6 +2630,17 @@ jQuery(document).ready(function() {
 				return "{$vs_display} {$vs_reltype_disp}";
 				break;
 		}
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Determines if template includes link tags (<l>).
+	 *
+	 * @param string $template
+	 
+	 * @return bool
+	 */
+	function caTemplateHasLinks($template) {
+		return preg_match('!<l>!', $template);
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -3575,7 +3599,7 @@ jQuery(document).ready(function() {
 		
 		$buf = '';
 		if(caGetOption('showBatchEditorButton', $options, false)) {
-			$buf = '<div class="button batchEdit">'.caNavLink($request, caNavIcon(__CA_NAV_ICON_BATCH_EDIT__, '15px')._t(' Batch edit'), '', '*', '*', 'BatchEdit', ['placement_id' => $placement_id, 'primary_id' => $t_instance->getPrimaryKey(), 'screen' => $request->getActionExtra()]).'</div>';
+			$buf = '<div class="button batchEdit">'.caNavLink($request, caNavIcon(__CA_NAV_ICON_BATCH_EDIT__, '15px')._t(' Batch edit all'), '', '*', '*', 'BatchEdit', ['placement_id' => $placement_id, 'primary_id' => $t_instance->getPrimaryKey(), 'screen' => $request->getActionExtra()]).'</div>';
 		}
 		return $buf;
 	}
@@ -4236,14 +4260,14 @@ jQuery(document).ready(function() {
 		$va_detail_type_config = caGetDetailTypeConfig($ps_context);
 
 		if (!caGetOption(['no_overlay'], $va_rep_display_info, false)) {
-			$vs_tool_bar .= "<a href='#' class='zoomButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'Detail', 'GetMediaOverlay', array('context' => $ps_context, 'id' => $pn_subject_id, 'representation_id' => $vn_rep_id, 'set_id' => caGetOption('set_id', $pa_options, 0), 'overlay' => 1))."\", function() { var url = jQuery(\"#\" + caMediaPanel.getPanelID()).data(\"reloadUrl\"); if(url) { window.location = url; } }); return false;' aria-label='"._t("Zoom")."'><span class='glyphicon glyphicon-zoom-in' aria-label='Zoom'></span></a>\n";
+			$vs_tool_bar .= "<a href='#' class='zoomButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'Detail', 'GetMediaOverlay', array('context' => $ps_context, 'id' => $pn_subject_id, 'representation_id' => $vn_rep_id, 'set_id' => caGetOption('set_id', $pa_options, 0), 'overlay' => 1))."\", function() { var url = jQuery(\"#\" + caMediaPanel.getPanelID()).data(\"reloadUrl\"); if(url) { window.location = url; } }); return false;' aria-label='"._t("Zoom")."'><span class='glyphicon glyphicon-zoom-in' role='button' aria-label='Zoom'></span></a>\n";
 		}
 
 		if (is_null($vb_show_compare = caGetOption('compare', $va_detail_type_config['options'], null))) {
 		    $vb_show_compare = caGetOption('compare', $va_rep_display_info, false);
 		}
 		if ($vb_show_compare) {
-		   $vs_tool_bar .= "<a href='#' class='compare_link' aria-label='Compare' data-id='representation:{$vn_rep_id}'><i class='fa fa-clone' aria-hidden='true' aria-label='Compare'></i></a>";
+		   $vs_tool_bar .= "<a href='#' class='compare_link' aria-label='Compare' data-id='representation:{$vn_rep_id}'><i class='fa fa-clone' aria-hidden='true' role='button' aria-label='Compare'></i></a>";
 		}
 
 		if(($ps_table == "ca_objects") && is_array($va_add_to_set_link_info) && sizeof($va_add_to_set_link_info)){
@@ -4254,7 +4278,7 @@ jQuery(document).ready(function() {
 			$va_download_display_info = caGetMediaDisplayInfo('download', $pt_representation->getMediaInfo('media', 'INPUT', 'MIMETYPE'));
 			$vs_download_version = caGetOption(['download_version', 'display_version'], $va_download_display_info);
 			if($vs_download_version){
-				$vs_tool_bar .= caNavLink($po_request, " <span class='glyphicon glyphicon-download-alt' aria-label='Download'></span>", 'dlButton', 'Detail', 'DownloadRepresentation', '', array('context' => $ps_context, 'representation_id' => $pt_representation->getPrimaryKey(), "id" => $pn_subject_id, "download" => 1, "version" => $vs_download_version), array("aria-label" => _t("Download")));
+				$vs_tool_bar .= caNavLink($po_request, " <span class='glyphicon glyphicon-download-alt' role='button' aria-label='Download'></span>", 'dlButton', 'Detail', 'DownloadRepresentation', '', array('context' => $ps_context, 'representation_id' => $pt_representation->getPrimaryKey(), "id" => $pn_subject_id, "download" => 1, "version" => $vs_download_version), array("aria-label" => _t("Download")));
 			}
 		}
 		$vs_tool_bar .= "</div><!-- end detailMediaToolbar -->\n";
@@ -4426,7 +4450,9 @@ jQuery(document).ready(function() {
 					$po_request, 
 					"representation:{$pn_representation_id}", 
 					['t_instance' => $t_instance, 't_subject' => $pt_subject, 'display' => $va_display_info, 'display_type' => $ps_display_type],
-					['viewerWrapper' => caGetOption('inline', $pa_options, false) ? 'viewerInline' : null, 'context' => $ps_context, 'hideOverlayControls' => $pb_hide_overlay_controls, 'noOverlay' => $pb_no_overlay, 'checkAccess' => $pa_check_acccess, 'resultList' => caGetOption('resultList', $pa_options, null)]
+					['viewerWrapper' => caGetOption('inline', $pa_options, false) ? 'viewerInline' : null, 'context' => $ps_context, 'hideOverlayControls' => $pb_hide_overlay_controls, 
+					'noOverlay' => $pb_no_overlay, 'checkAccess' => $pa_check_acccess, 
+					'resultList' => caGetOption('resultList', $pa_options, null), 'showRepresentationViewerNextPreviousLinks' => (bool)caGetOption('showRepresentationViewerNextPreviousLinks', $pa_options, false)]
 				);
 
 				if ($pb_inline) {	
@@ -4666,10 +4692,14 @@ jQuery(document).ready(function() {
 				$t_instance = new ca_object_representations($vn_representation_id);
 
 				if (!($vs_mimetype = $t_instance->getMediaInfo('media', 'original', 'MIMETYPE'))) {
-				    $vs_mimetype = $t_instance->getMediaInfo('media', 'large', 'MIMETYPE');
+					$versions = $t_instance->getMediaVersions('media');
+					$version = array_pop($versions);
+				    $vs_mimetype = $t_instance->getMediaInfo('media', $version, 'MIMETYPE');
 			        $vs_viewer_name = MediaViewerManager::getViewerForMimetype($ps_display_type, $vs_mimetype);
-			    } elseif (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype($ps_display_type, $vs_mimetype))) {
-					throw new ApplicationException(_t('Invalid viewer %1/%2', $ps_display_type, $vs_mimetype));
+			    }
+			    if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype($ps_display_type, $vs_mimetype))) {
+					//throw new ApplicationException(_t('Invalid viewer %1/%2', $ps_display_type, $vs_mimetype));
+					continue;
 				}
 
 				$va_display_info = caGetMediaDisplayInfo($ps_display_type, $vs_mimetype);
@@ -5199,7 +5229,8 @@ jQuery(document).ready(function() {
 				break;
 		} 
 
-		return preg_replace("![^A-Za-z0-9_\-\.]+!", "_", $filename);
+		$filename = html_entity_decode($filename);
+		return preg_replace("![^A-Za-z0-9_\-\.&]+!", "_", $filename);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -5233,7 +5264,8 @@ jQuery(document).ready(function() {
 				break;
 		} 
 
-		return preg_replace("![^A-Za-z0-9_\-\.]+!", "_", $filename);
+		$filename = html_entity_decode($filename);
+		return preg_replace("![^A-Za-z0-9_\-\.&]+!", "_", $filename);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -5252,7 +5284,7 @@ jQuery(document).ready(function() {
 		$config = Configuration::load();
 		
 		if(is_array($branding = $config->getAssoc('branding')) && is_array($logo = caGetOption($type, $branding, null)) && !empty($logo['src'])) {
-			return caHTMLImage(($abs ? __CA_BASE_DIR__ : __CA_URL_ROOT__).'/'.caGetOption('src', $logo), ['alt' => caGetOption('alt', $logo), 'class' => caGetOption('class', $logo), 'id' => caGetOption('id', $logo), 'scaleCSSWidthTo' => caGetOption('width', $logo), 'scaleCSSHeightTo' => caGetOption('height', $logo)]);
+			return caHTMLImage(($abs ? __CA_BASE_DIR__ : __CA_URL_ROOT__).'/'.caGetOption('src', $logo), ['alt' => caGetOption('alt', $logo), 'class' => caGetOption('class', $logo), 'style' => caGetOption('style', $logo), 'id' => caGetOption('id', $logo), 'scaleCSSWidthTo' => caGetOption('width', $logo), 'scaleCSSHeightTo' => caGetOption('height', $logo)]);
 		}
 		
 		if(!$g_request) { return null; }

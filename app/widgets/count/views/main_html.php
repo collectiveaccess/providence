@@ -44,7 +44,7 @@
 			$vs_and = "";
 		}
 		
-		$link = caSearchLink($po_request, $vn_count, '', $vs_table, '*');
+		$link = caSearchLink($po_request, $vn_count, '', $vs_table, '*', ['clearType' => 1]);
 		if ($vn_count == 1) {
 			$va_counts[] = $vs_and."<b>".$link.'</b>&nbsp;'._t($va_instances[$vs_table]->getProperty('NAME_SINGULAR'));
 		} else {
