@@ -33,8 +33,7 @@
  /**
   *
   */
- 
- 	require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
+require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
 require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__."/ResultContext.php");
 require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
@@ -142,17 +141,22 @@ class BaseQuickAddController extends ActionController {
 				$va_force_new_label[$vs_fld] = '';
 			}
 			
-			// Populate secondary display fields for lists items (name_plural)
-			if($t_subject->tableName() === 'ca_list_items') {
-				if(is_array($sec = $t_subject->getSecondaryLabelDisplayFields())) {
-					foreach($sec as $s) {
-						$va_force_new_label[$s] = $v;
-					}
-				}	
+			switch($t_subject->tableName()) {
+				case 'ca_list_items':
+					// Populate secondary display fields for lists items (name_plural)
+					if(is_array($sec = $t_subject->getSecondaryLabelDisplayFields())) {
+						foreach($sec as $s) {
+							$va_force_new_label[$s] = $v;
+						}
+					}	
+					break;
+				case 'ca_entities':
+					// Force surname to text to ensure organization name is visible
+					$va_force_new_label['surname'] = $v;
+					break;
 			}				
 			$this->view->setVar('forceLabel', $va_force_new_label);
 		}
-		
 		
 		if(is_array($pa_values)) {
 			foreach($pa_values as $vs_key => $vs_val) {
@@ -192,7 +196,7 @@ class BaseQuickAddController extends ActionController {
 			}
 		}
 		
-		$this->view->setVar('restrict_to_lists',$this->request->getParameter('lists', pString));
+		$this->view->setVar('restrict_to_lists', $this->request->getParameter('lists', pString));
 		
 		$this->request->setParameter('type_id', $vn_type_id);
 		if($t_subject->hasField('type_id')) {
