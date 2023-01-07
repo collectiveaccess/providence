@@ -481,10 +481,16 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		}
 		
 		if (!$vb_require_value && !$vn_id) {
-			return array(
-				'value_longtext1' => null,
-				'item_id' => null
-			);
+			if(is_null($ps_value) || !strlen($ps_value ?? '')) {
+				// value is blank
+				return [
+					'value_longtext1' => null,
+					'item_id' => null
+				];
+			} else {
+				// value was set and is invalid
+				return null;
+			}
 		} elseif ($vb_require_value && !$vn_id && !strlen($ps_value)) {
 			$this->postError(1970, _t('Value for %1 [%2] cannot be blank', $pa_element_info['displayLabel'], $pa_element_info['element_code']), 'ListAttributeValue->parseValue()');
 			return false;
