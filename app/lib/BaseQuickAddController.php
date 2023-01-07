@@ -129,35 +129,6 @@ class BaseQuickAddController extends ActionController {
 			}
 		}
 		
-		if (!is_array($va_prepopulate_quickadd_fields) || !sizeof($va_prepopulate_quickadd_fields) || in_array('preferred_labels', $va_prepopulate_quickadd_fields)) {		
-			global $g_ui_locale_id;
-			$v = caUcFirstUTF8Safe($this->view->getVar('q'));
-			$va_force_new_label = [
-				'locale_id' => $g_ui_locale_id, 									// use default locale
-				$t_subject->getLabelDisplayField() => $v					// query text is used for display field
-			];
-			foreach($t_subject->getLabelUIFields() as $vn_i => $vs_fld) {
-				if ($vs_fld === $t_subject->getLabelDisplayField()) { continue; }
-				$va_force_new_label[$vs_fld] = '';
-			}
-			
-			switch($t_subject->tableName()) {
-				case 'ca_list_items':
-					// Populate secondary display fields for lists items (name_plural)
-					if(is_array($sec = $t_subject->getSecondaryLabelDisplayFields())) {
-						foreach($sec as $s) {
-							$va_force_new_label[$s] = $v;
-						}
-					}	
-					break;
-				case 'ca_entities':
-					// Force surname to text to ensure organization name is visible
-					$va_force_new_label['surname'] = $v;
-					break;
-			}				
-			$this->view->setVar('forceLabel', $va_force_new_label);
-		}
-		
 		if(is_array($pa_values)) {
 			foreach($pa_values as $vs_key => $vs_val) {
 				$t_subject->set($vs_key, $vs_val);
@@ -194,6 +165,37 @@ class BaseQuickAddController extends ActionController {
 			if (!in_array($vn_type_id, $va_restrict_to_type_ids)) {
 				$vn_type_id = $va_restrict_to_type_ids[0];		// get first type on list since default isn't part of restriction
 			}
+		}
+		
+		if (!is_array($va_prepopulate_quickadd_fields) || !sizeof($va_prepopulate_quickadd_fields) || in_array('preferred_labels', $va_prepopulate_quickadd_fields)) {		
+			global $g_ui_locale_id;
+			$v = caUcFirstUTF8Safe($this->view->getVar('q'));
+			$va_force_new_label = [
+				'locale_id' => $g_ui_locale_id, 									// use default locale
+				$t_subject->getLabelDisplayField() => $v					// query text is used for display field
+			];
+			foreach($t_subject->getLabelUIFields() as $vn_i => $vs_fld) {
+				if ($vs_fld === $t_subject->getLabelDisplayField()) { continue; }
+				$va_force_new_label[$vs_fld] = '';
+			}
+			
+			switch($t_subject->tableName()) {
+				case 'ca_list_items':
+					// Populate secondary display fields for lists items (name_plural)
+					if(is_array($sec = $t_subject->getSecondaryLabelDisplayFields())) {
+						foreach($sec as $s) {
+							$va_force_new_label[$s] = $v;
+						}
+					}	
+					break;
+				case 'ca_entities':
+					// Force surname to text to ensure organization name is visible
+					if(caGetListItemSettingValue('entity_types', caGetListItemIdno($vn_type_id), 'entity_class') === 'ORG') {
+						$va_force_new_label['surname'] = $v;
+					}
+					break;
+			}				
+			$this->view->setVar('forceLabel', $va_force_new_label);
 		}
 		
 		$this->view->setVar('restrict_to_lists', $this->request->getParameter('lists', pString));
