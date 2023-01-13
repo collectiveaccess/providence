@@ -138,7 +138,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 		$va_rules = $this->opo_plugin_config->get('prepopulate_rules');
 		if (!$va_rules || (!is_array($va_rules)) || (sizeof($va_rules)<1)) { return false; }
 
-        if ($pa_options['restrictToRules']) {
+        if (is_array($pa_options['restrictToRules'] ?? null)) {
             $restrictToRules = explode(",", $pa_options['restrictToRules']);
             // Intersect between all rules and restricted rules. It will ignore the ones that doesn't exists
             $va_rules_filtered = [];
@@ -147,8 +147,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
                     $va_rules_filtered[] = $va_rules[$res_rules];
             }
             $va_rules=$va_rules_filtered;
-        }
-        else if ($pa_options['excludeRules']) {
+        } elseif(is_array($pa_options['excludeRules'] ?? null)) {
             $excludeRules = explode(",", $pa_options['excludeRules']);
             // Difference between all rules and excluded rules. It will ignore the ones that doesn't exists
             $va_rules_filtered = [];
@@ -217,7 +216,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 			}
 
 			// skip this rule if expression is true
-			if($va_rule['skipIfExpression'] && (strlen($va_rule['skipIfExpression'])>0)) {
+			if(($va_rule['skipIfExpression'] ?? null) && (strlen($va_rule['skipIfExpression'])>0)) {
 				$va_tags = caGetTemplateTags($va_rule['skipIfExpression']);
 
 				foreach($va_tags as $vs_tag) {

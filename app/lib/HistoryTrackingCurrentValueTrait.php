@@ -323,7 +323,7 @@
 		 * @return array Policy or null if policy does not exist.
 		 */
 		static public function getHistoryTrackingCurrentValuePolicy($policy, $key=null) {
-			if ($policy && is_array($history_tracking_policies = self::getHistoryTrackingCurrentValuePolicyConfig()) && is_array($history_tracking_policies['policies']) && is_array($history_tracking_policies['policies'][$policy])) {
+			if ($policy && is_array($history_tracking_policies = self::getHistoryTrackingCurrentValuePolicyConfig()) && is_array($history_tracking_policies['policies'] ?? null) && is_array($history_tracking_policies['policies'][$policy] ?? null)) {
 				if ($key) { return isset($history_tracking_policies['policies'][$policy][$key]) ? $history_tracking_policies['policies'][$policy][$key] : null; }
 				return $history_tracking_policies['policies'][$policy];
 			}
