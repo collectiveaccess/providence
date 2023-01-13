@@ -4160,6 +4160,7 @@ jQuery(document).ready(function() {
 
 				$filtered_rep_ids = [];
 				while($qr_reps->nextHit()) {
+					if(!$qr_reps->get('ca_object_representations.media')) { continue; }
 					$mimetype = $qr_reps->getMediaInfo('ca_object_representations.media', 'original', 'mimetype');
 					if($show_only_media_types && !caMimetypeIsValid($mimetype, $show_only_media_types)) { continue; }
 
