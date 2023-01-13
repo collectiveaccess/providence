@@ -662,8 +662,8 @@
 			$policies = [];
 			foreach($policy_config['policies'] as $policy => $policy_info) {
 				if($table !== $policy_info['table']) { continue; }
-				if(is_array($type_restrictions ?? null) && is_array($policy_info['restrictToTypes']) && !sizeof(array_intersect($type_restrictions, $policy_info['restrictToTypes']))) { continue; }
-				if(is_array($uses) && sizeof($uses) && is_array($policy_info['elements'])) {
+				if(is_array($type_restrictions) && is_array($policy_info['restrictToTypes'] ?? null) && !sizeof(array_intersect($type_restrictions, $policy_info['restrictToTypes']))) { continue; }
+				if(is_array($uses) && sizeof($uses) && is_array($policy_info['elements'] ?? null)) {
 					if(!sizeof(array_intersect(array_keys($policy_info['elements']), $uses))) {
 						continue;
 					}
@@ -803,7 +803,7 @@
 		 *
 		 */
 		private function _rewriteEntryWithRelated($entry) {
-			if ($entry['useRelated']) {
+			if ($entry['useRelated'] ?? false) {
 				if (!($t_related = Datamodel::getInstance($entry['useRelated'], true))) {
 					throw new ApplicationException(_t("Invalid table specification for 'useRelated' in history tracking policy"));
 				}
