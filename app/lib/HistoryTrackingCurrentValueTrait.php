@@ -147,7 +147,7 @@
 			
 			$history_tracking_policies = self::getHistoryTrackingCurrentValuePolicyConfig();
 			
-			if ($policy && is_array($history_tracking_policies) && is_array($history_tracking_policies['policies']) && is_array($history_tracking_policies['policies'][$policy])) {
+			if ($policy && is_array($history_tracking_policies) && is_array($history_tracking_policies['policies'] ?? null) && is_array($history_tracking_policies['policies'][$policy] ?? null)) {
 				$policy_info = $history_tracking_policies['policies'][$policy];
 				$map = $policy_info['elements'];
 			}
@@ -351,14 +351,14 @@
 			$type_restrictions = caGetOption('restrictToTypes', $options, null);
 			
 			$default = null;
-			if (is_array($history_tracking_policies = self::getHistoryTrackingCurrentValuePolicyConfig()) && is_array($history_tracking_policies['defaults']) && isset($history_tracking_policies['defaults'][$table])) {
-				if(is_array($type_restrictions) && is_array($history_tracking_policies['defaults'][$table])) {
+			if (is_array($history_tracking_policies = self::getHistoryTrackingCurrentValuePolicyConfig()) && is_array($history_tracking_policies['defaults'] ?? null) && isset($history_tracking_policies['defaults'][$table])) {
+				if(is_array($type_restrictions) && is_array($history_tracking_policies['defaults'][$table] ?? null)) {
 					foreach($type_restrictions as $type) {
 						if(isset($history_tracking_policies['defaults'][$table][$type])) {
 							$default = $history_tracking_policies['defaults'][$table][$type];
 						}
 					}
-				} elseif(is_array($history_tracking_policies['defaults'][$table])) {
+				} elseif(is_array($history_tracking_policies['defaults'][$table] ?? null)) {
 					if(isset($history_tracking_policies['defaults'][$table]['__default__'])) { 
 						$default = $history_tracking_policies['defaults'][$table]['__default__'];
 					}
@@ -421,7 +421,7 @@
 			$o_config = Configuration::load();
 		
 			$policy_config = self::getHistoryTrackingCurrentValuePolicy($policy); //$o_config->getAssoc('current_location_criteria');
-			$map = $policy_config['elements'];
+			$map = $policy_config['elements'] ?? null;
 		
 			if (!($t_instance = Datamodel::getInstance($table, true))) { return self::$s_history_tracking_current_value_type_configuration_cache[$cache_key] = null; }
 	
@@ -499,7 +499,7 @@
 				return null;
 			}
 			
-			if(($values['current_table_num'] && !Datamodel::getTableName($values['current_table_num'])) || ($values['tracked_table_num'] && !Datamodel::getTableName($values['tracked_table_num']))) {
+			if((($values['current_table_num'] ?? null) && !Datamodel::getTableName($values['current_table_num'])) || ($values['tracked_table_num'] && !Datamodel::getTableName($values['tracked_table_num']))) {
 				throw new ApplicationException(_t('Invalid table specification for policy %1', $policy));
 			}
 			
