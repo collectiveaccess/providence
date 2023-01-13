@@ -208,7 +208,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
             $vs_context = caGetOption('context', $va_rule, null);
 
 			// respect restrictToTypes option
-			if($va_rule['restrictToTypes'] && is_array($va_rule['restrictToTypes']) && (sizeof($va_rule['restrictToTypes']) > 0)) {
+			if(($va_rule['restrictToTypes'] ?? null) && is_array($va_rule['restrictToTypes']) && (sizeof($va_rule['restrictToTypes']) > 0)) {
 				if(!in_array($t_instance->getTypeCode(), $va_rule['restrictToTypes'])) {
 					Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because current record type ".$t_instance->getTypeCode()." is not in restrictToTypes");
 					continue;
@@ -225,7 +225,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 					}
 				}
 
-				if(ExpressionParser::evaluate($va_rule['skipIfExpression'], $va_expression_vars)) {
+				if(ExpressionParser::evaluate($va_rule['skipIfExpression'] ?? null, $va_expression_vars)) {
 					Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because skipIfExpression evaluated true");
 					continue;
 				}
