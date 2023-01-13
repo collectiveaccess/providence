@@ -2181,6 +2181,7 @@ class TimeExpressionParser {
 			case 4:
 				$vn_hours = (int)$va_tmp[0]; 
 				$vn_minutes = (int)$va_tmp[1]; 
+				if(!isset($va_tmp[3])) { $va_tmp[3] = 0; }
 				$vn_seconds = (int)$va_tmp[2] + (is_numeric($va_tmp[3]) ? (intval($va_tmp[3]) / pow(10, strlen((intval($va_tmp[3]))))) : 0);
 				if (is_numeric($vn_hours) && ($vn_hours == intval($vn_hours)) && ($vn_hours >= 0) && ($vn_hours <= 23)) {
 					if (is_numeric($vn_minutes) && ($vn_minutes == intval($vn_minutes)) && ($vn_minutes >= 0) && ($vn_minutes <= 59)) {

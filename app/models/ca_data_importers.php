@@ -1883,7 +1883,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						$vs_label_val = $va_label_val['displayname'];
 					}
 					
-					if($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['applyRegularExpressions']) {
+					if($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['applyRegularExpressions'] ?? null) {
 						$vs_label_val = self::_processAppliedRegexes( $o_reader, $va_mapping_items[$vn_preferred_label_mapping_id], 0,
 										$va_mapping_items[$vn_preferred_label_mapping_id]['settings']['applyRegularExpressions'], $vs_label_val, $va_row,
 										$va_row_with_replacements );
@@ -2141,7 +2141,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						
 						$vn_locale_id = $va_item['settings']['locale'] ?? $mapping_default_locale_id;
 
-						if ( $va_item['settings']['useParentAsSubject'] ) {
+						if ( ($va_item['settings']['useParentAsSubject'] ?? false) ) {
 							$vb_use_parent_as_subject = true;
 						}
 
@@ -2227,7 +2227,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								$vm_val = $va_item['settings']['default'];
 							}
 							
-							if ($va_item['settings']['skipWhenEmpty'] && !is_array($va_item['settings']['skipWhenEmpty'])) { $va_item['settings']['skipWhenEmpty'] = array($va_item['settings']['skipWhenEmpty']); }
+							if (($va_item['settings']['skipWhenEmpty'] ?? false) && !is_array($va_item['settings']['skipWhenEmpty'])) { $va_item['settings']['skipWhenEmpty'] = array($va_item['settings']['skipWhenEmpty']); }
 							if (isset($va_item['settings']['skipWhenEmpty']) && is_array($va_item['settings']['skipWhenEmpty'])) {
 								foreach($va_item['settings']['skipWhenEmpty'] as $v) {
 									if($v[0] !== '^') { $v = "^{$v}"; }
@@ -2237,7 +2237,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									}
 								}
 							}
-							if ($va_item['settings']['skipWhenAllEmpty'] && !is_array($va_item['settings']['skipWhenAllEmpty'])) { $va_item['settings']['skipWhenAllEmpty'] = array($va_item['settings']['skipWhenAllEmpty']); }
+							if (($va_item['settings']['skipWhenAllEmpty'] ?? false) && !is_array($va_item['settings']['skipWhenAllEmpty'])) { $va_item['settings']['skipWhenAllEmpty'] = array($va_item['settings']['skipWhenAllEmpty']); }
 							if (isset($va_item['settings']['skipWhenAllEmpty']) && is_array($va_item['settings']['skipWhenAllEmpty'])) {
 								$all_empty = true;
 								foreach($va_item['settings']['skipWhenAllEmpty'] as $v) {
@@ -2253,7 +2253,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								}
 							}
 							
-							if ($va_item['settings']['skipGroupWhenEmpty'] && !is_array($va_item['settings']['skipGroupWhenEmpty'])) { $va_item['settings']['skipGroupWhenEmpty'] = array($va_item['settings']['skipGroupWhenEmpty']); }
+							if (($va_item['settings']['skipGroupWhenEmpty'] ?? false) && !is_array($va_item['settings']['skipGroupWhenEmpty'])) { $va_item['settings']['skipGroupWhenEmpty'] = array($va_item['settings']['skipGroupWhenEmpty']); }
 							if (isset($va_item['settings']['skipGroupWhenEmpty']) && is_array($va_item['settings']['skipGroupWhenEmpty'])) {
 								foreach($va_item['settings']['skipGroupWhenEmpty'] as $v) {
 									if($v[0] !== '^') { $v = "^{$v}"; }
@@ -2263,7 +2263,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									}
 								}
 							}
-							if ($va_item['settings']['skipGroupWhenAllEmpty'] && !is_array($va_item['settings']['skipGroupWhenAllEmpty'])) { $va_item['settings']['skipGroupWhenAllEmpty'] = array($va_item['settings']['skipGroupWhenAllEmpty']); }
+							if (($va_item['settings']['skipGroupWhenAllEmpty'] ?? false) && !is_array($va_item['settings']['skipGroupWhenAllEmpty'])) { $va_item['settings']['skipGroupWhenAllEmpty'] = array($va_item['settings']['skipGroupWhenAllEmpty']); }
 							if (isset($va_item['settings']['skipGroupWhenAllEmpty']) && is_array($va_item['settings']['skipGroupWhenAllEmpty'])) {
 								$all_empty = true;
 								foreach($va_item['settings']['skipGroupWhenAllEmpty'] as $v) {
@@ -2279,7 +2279,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								}
 							}
 							
-							if ($va_item['settings']['skipRowWhenEmpty'] && !is_array($va_item['settings']['skipRowWhenEmpty'])) { $va_item['settings']['skipRowWhenEmpty'] = array($va_item['settings']['skipRowWhenEmpty']); }
+							if (($va_item['settings']['skipRowWhenEmpty'] ?? false) && !is_array($va_item['settings']['skipRowWhenEmpty'])) { $va_item['settings']['skipRowWhenEmpty'] = array($va_item['settings']['skipRowWhenEmpty']); }
 							if (isset($va_item['settings']['skipRowWhenEmpty']) && is_array($va_item['settings']['skipRowWhenEmpty'])) {
 								foreach($va_item['settings']['skipRowWhenEmpty'] as $v) {
 									if($v[0] !== '^') { $v = "^{$v}"; }
@@ -2289,7 +2289,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									}
 								}
 							}
-							if ($va_item['settings']['skipRowWhenAllEmpty'] && !is_array($va_item['settings']['skipRowWhenAllEmpty'])) { $va_item['settings']['skipRowWhenAllEmpty'] = array($va_item['settings']['skipRowWhenAllEmpty']); }
+							if (($va_item['settings']['skipRowWhenAllEmpty'] ?? false) && !is_array($va_item['settings']['skipRowWhenAllEmpty'])) { $va_item['settings']['skipRowWhenAllEmpty'] = array($va_item['settings']['skipRowWhenAllEmpty']); }
 							if (isset($va_item['settings']['skipRowWhenAllEmpty']) && is_array($va_item['settings']['skipRowWhenAllEmpty'])) {
 								$all_empty = true;
 								foreach($va_item['settings']['skipRowWhenAllEmpty'] as $v) {
@@ -2353,7 +2353,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								}
 								continue( 2 );
 							}
-							if ( $va_item['settings']['skipIfNotValue']
+							if ( isset($va_item['settings']['skipIfNotValue'])
 							     && ! is_array( $va_item['settings']['skipIfNotValue'] )
 							) {
 								$va_item['settings']['skipIfNotValue']
@@ -2370,7 +2370,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								}
 								continue( 2 );
 							}
-							if ( $va_item['settings']['skipRowIfValue']
+							if ( isset($va_item['settings']['skipRowIfValue'])
 							     && ! is_array( $va_item['settings']['skipRowIfValue'] )
 							) {
 								$va_item['settings']['skipRowIfValue']
@@ -2387,7 +2387,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								}
 								continue( 4 );
 							}
-							if ( $va_item['settings']['skipRowIfNotValue']
+							if ( isset($va_item['settings']['skipRowIfNotValue'])
 							     && ! is_array( $va_item['settings']['skipRowIfNotValue'] )
 							) {
 								$va_item['settings']['skipRowIfNotValue']
@@ -2404,7 +2404,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								}
 								continue( 4 );
 							}
-							if ( $va_item['settings']['skipGroupIfValue']
+							if ( isset($va_item['settings']['skipGroupIfValue'])
 							     && ! is_array( $va_item['settings']['skipGroupIfValue'] )
 							) {
 								$va_item['settings']['skipGroupIfValue']
@@ -2422,7 +2422,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								continue( 3 );
 							}
 
-							if ( $va_item['settings']['skipGroupIfNotValue']
+							if ( isset($va_item['settings']['skipGroupIfNotValue'])
 							     && ! is_array( $va_item['settings']['skipGroupIfNotValue'] )
 							) {
 								$va_item['settings']['skipGroupIfNotValue']
@@ -2524,7 +2524,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 
 							$va_vals[ $vn_i ] = $vm_val;
 							if ( $o_reader->valuesCanRepeat() ) {
-								if(!is_array($va_row_with_replacements[ $va_item['source']])) { 
+								if(!is_array($va_row_with_replacements[ $va_item['source'] ?? null] ?? null)) { 
 									$va_row_with_replacements[ $va_item['source']] = $va_row[ $va_item['source']] =  $va_row[mb_strtolower( $va_item['source'])] = []; 
 								}
 								$va_row_with_replacements[ $va_item['source'] ][ $vn_i ]
@@ -2542,13 +2542,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						foreach ( $va_vals as $vn_i => $vm_val ) {
 							$vn_c ++;
 
-							if ( isset( $va_item['settings']['convertNewlinesToHTML'] )
+							if ( ( $va_item['settings']['convertNewlinesToHTML'] ?? false )
 							     && (bool) $va_item['settings']['convertNewlinesToHTML']
 							     && is_string( $vm_val )
 							) {
 								$vm_val = nl2br( $vm_val );
 							}
-							if ( isset( $va_item['settings']['collapseSpaces'] )
+							if ( ( $va_item['settings']['collapseSpaces'] ?? false )
 							     && (bool) $va_item['settings']['collapseSpaces']
 							     && is_string( $vm_val )
 							) {
@@ -2566,7 +2566,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								continue( 2 );
 							}
 
-							if ( $va_item['settings']['skipRowIfValue']
+							if (isset($va_item['settings']['skipRowIfValue'])
 							     && ! is_array( $va_item['settings']['skipRowIfValue'] )
 							) {
 								$va_item['settings']['skipRowIfValue']
@@ -2584,7 +2584,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								continue( 4 );
 							}
 
-							if ( $va_item['settings']['skipRowIfNotValue']
+							if ( isset($va_item['settings']['skipRowIfNotValue'])
 							     && ! is_array( $va_item['settings']['skipRowIfNotValue'] )
 							) {
 								$va_item['settings']['skipRowIfNotValue']
@@ -2640,7 +2640,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								continue( 2 );
 							}
 
-							if ( $va_item['settings']['skipIfNotValue']
+							if ( isset($va_item['settings']['skipIfNotValue'])
 							     && ! is_array( $va_item['settings']['skipIfNotValue'] )
 							) {
 								$va_item['settings']['skipIfNotValue']
@@ -2682,7 +2682,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								}
 							}
 
-							if ( $va_item['settings']['skipGroupIfValue']
+							if ( isset($va_item['settings']['skipGroupIfValue'])
 							     && ! is_array( $va_item['settings']['skipGroupIfValue'] )
 							) {
 								$va_item['settings']['skipGroupIfValue']
@@ -2700,7 +2700,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								continue( 3 );
 							}
 
-							if ( $va_item['settings']['skipGroupIfNotValue']
+							if ( isset($va_item['settings']['skipGroupIfNotValue'])
 							     && ! is_array( $va_item['settings']['skipGroupIfNotValue'] )
 							) {
 								$va_item['settings']['skipGroupIfNotValue']
@@ -2790,14 +2790,14 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								$va_group_buf[ $vn_c ]['_matchOn'] = $va_item['settings']['matchOn'];
 							}
 							
-							if (isset($va_item['settings']['add'])) {
+							if ($va_item['settings']['add'] ?? false) {
 								$va_group_buf[$vn_c]['_add'] = $va_item['settings']['add'];
 							}
-							if (isset($va_item['settings']['replace'])) {
+							if ($va_item['settings']['replace'] ?? false) {
 								$va_group_buf[$vn_c]['_replace'] = $va_item['settings']['_replace'];
 							}
 
-							if($va_item['settings']['skipIfDataPresent']) {
+							if($va_item['settings']['skipIfDataPresent'] ?? false) {
 								$va_group_buf[ $vn_c ]['_skipIfDataPresent'] = true;
 							}
 							
@@ -2806,7 +2806,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								$va_group_buf[ $vn_c ]['_displaynameFormat'] = $displayname_format;
 							}
 							
-							if(is_array($va_group_buf[ $vn_c ]) && sizeof($va_group_buf[ $vn_c ])) { 
+							if(is_array($va_group_buf[ $vn_c ] ?? null) && sizeof($va_group_buf[ $vn_c ])) { 
 								$va_group_buf[ $vn_c ]['_source'] = self::_setSourceValue($va_group_buf[ $vn_c ], $va_row_with_replacements, $va_item, $default_source_text, $o_reader);
 							}
 							
@@ -3114,7 +3114,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					foreach ( $va_group_buf as $vn_group_index => $va_group_data ) {
 						$va_ptr =& $va_content_tree;
 						foreach ( $va_group_tmp as $vs_tmp ) {
-							if ( ! is_array( $va_ptr[ $vs_tmp ] ) ) {
+							if ( ! is_array( $va_ptr[ $vs_tmp ] ?? null ) ) {
 								$va_ptr[ $vs_tmp ] = array();
 							}
 							$va_ptr =& $va_ptr[ $vs_tmp ];
@@ -3345,7 +3345,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					$o_log->logDebug(_t('Updated idno %1 at %2 seconds', $vs_idno, $t->getTime(4)));
 				}
 			
-				if ($vs_idno_fld  && !$va_mapping_items[$vn_idno_mapping_item_id]['settings']['literalIdentifier'] && ($o_idno = $t_subject->getIDNoPlugInInstance())) {
+				if ($vs_idno_fld  && !($va_mapping_items[$vn_idno_mapping_item_id]['settings']['literalIdentifier'] ?? null) && ($o_idno = $t_subject->getIDNoPlugInInstance())) {
 					$va_values = $o_idno->htmlFormValuesAsArray($vs_idno_fld, $t_subject->get($vs_idno_fld));
 					if (!is_array($va_values)) { $va_values = array($va_values); }
 					if (($vs_proc_idno = join($o_idno->getSeparator(), $va_values)) && ($vs_proc_idno != $vs_idno)) {
@@ -3385,16 +3385,16 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										$displayname_format = caGetOption('_displaynameFormat', $va_element_content, $default_displayname_format);
 										unset($va_element_content['_displaynameFormat']);
 									
-										$vs_item_error_policy = $va_element_content['_errorPolicy'];
+										$vs_item_error_policy = $va_element_content['_errorPolicy'] ?? null;
 										unset($va_element_content['_errorPolicy']); 
 										
-										$vb_force_add = $va_element_content['_add'];
+										$vb_force_add = $va_element_content['_add'] ?? null;
 										unset($va_element_content['_add']); 
 										
-										$vb_force_replace = $va_element_content['_replace'];
+										$vb_force_replace = $va_element_content['_replace'] ?? null;
 										unset($va_element_content['_replace']); 
 										
-										$vb_skip_if_data_present = $va_element_content['_skipIfDataPresent'];
+										$vb_skip_if_data_present = $va_element_content['_skipIfDataPresent'] ?? null;
 										unset($va_element_content['_skipIfDataPresent']);
 																					
 										$vb_treat_numeric_value_as_id = caGetOption('_treatNumericValueAsID', $va_element_content, false);
@@ -3543,8 +3543,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											if ($vb_skip_if_data_present && ($t_subject->getAttributeCountByElement($vs_element) > 0)) { continue(2); } 
 											if (
 												(
-													!isset($va_elements_set_for_this_record[$vs_element]) && 
-													!$va_elements_set_for_this_record[$vs_element] && 
+													(!isset($va_elements_set_for_this_record[$vs_element]) || 
+													!($va_elements_set_for_this_record[$vs_element] ?? null)) && 
 													in_array($vs_existing_record_policy, 
 														['merge_on_idno_with_replace', 'merge_on_preferred_labels_with_replace', 
 														 'merge_on_idno_and_preferred_labels_with_replace', 'merge_on_id_with_replace'
@@ -4259,7 +4259,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public static function _applyComparisonOptions(?string $value, array $mapping_items, int $item_id, $o_reader, array $row, array $row_with_replacements, ?array $options=null) {
 		// TODO: generalize to support all skipIf* and skipWhen* settings
-		$skip = caGetOption('skip', $options, []. ['castTo' => 'array']);
+		$skip = caGetOption('skip', $options, [], ['castTo' => 'array']);
 		$use_raw = caGetOption('useRaw', $options, null);
 		$o_log = caGetOption('log', $options, null);
 		

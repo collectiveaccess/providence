@@ -222,6 +222,7 @@ class ProgressBar {
 
 		$this->setCache($ps_message);
 
+		$vs_output = '';
 		switch($vs_mode = $this->getMode()) {
 			case 'CLI':
 				$vs_output = CLIProgressBar::finish($this->getMessage(), $pa_options);
