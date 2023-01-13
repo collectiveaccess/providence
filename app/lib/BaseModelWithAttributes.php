@@ -238,7 +238,7 @@
 				'values' => $pa_values,
 				'element' => $pm_element_code_or_id,
 				'error_source' => $ps_error_source,
-				'options' => array_merge($pa_options, ['skipExistingValues' => false])  // don't invoke low-level value skipping
+				'options' => array_merge($pa_options, ['skipExistingValues' => ca_metadata_elements::isAuthorityDatatype($pm_element_code_or_id)])  // don't invoke low-level value skipping, except for authority attributes (eg. list items, entities)
 			);
 			$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_element_id] = true;
 			
