@@ -991,7 +991,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 							}
 							
 							if(!$processed) {
-								if (!($flds = Attribute::getQueryFieldsForDatatype($vn_datatype))) { $flds = ['value_longtext1']; }
+								if (!($flds = CA\Attributes\Attribute::getQueryFieldsForDatatype($vn_datatype))) { $flds = ['value_longtext1']; }
 								$vs_fld = array_shift($flds);
 								if ($vn_datatype == __CA_ATTRIBUTE_VALUE_LIST__) {
 									if ($t_element = ca_metadata_elements::getInstance($vs_field)) {
