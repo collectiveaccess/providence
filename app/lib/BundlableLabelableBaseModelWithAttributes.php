@@ -4507,7 +4507,7 @@ if (!$vb_batch) {
 								if(!isset($va_rep['representation_id'])) { continue; }
 								
 								if(is_array($bundles_on_screen_proc) && sizeof($bundles_on_screen_proc)) {
-									if ($vb_allow_fetching_of_urls && ($vs_path = $_REQUEST[$vs_prefix_stub.'media_url_'.$va_rep['relation_id']])) {
+									if ($vb_allow_fetching_of_urls && ($vs_path = ($_REQUEST[$vs_prefix_stub.'media_url_'.$va_rep['relation_id'] ?? null] ?? null))) {
 										$va_tmp = explode('/', $vs_path);
 										$vs_original_name = array_pop($va_tmp);
 									} else {

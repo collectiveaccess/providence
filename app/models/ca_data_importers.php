@@ -585,7 +585,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$va_ids[] = $vn_id = $va_row['importer_id'];
 			$va_importers[$vn_id] = $va_row;
 			
-			$t_instance = Datamodel::getInstanceByTableNum($va_row['table_num']?? null, true);
+			$t_instance = Datamodel::getInstanceByTableNum($va_row['table_num'] ?? null, true);
 			$va_importers[$vn_id]['importer_type'] = $t_instance->getProperty('NAME_PLURAL');
 			$va_importers[$vn_id]['type'] = $va_settings['type'] ?? null;
 			$va_importers[$vn_id]['type_for_display'] = $t_instance->getTypeName($va_settings['type']?? null);
@@ -4212,7 +4212,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 */
 	public static function _applyConditionalOptions(?string $value, array $mapping_items, int $item_id, $o_reader, array $row, array $row_with_replacements, ?array $options=null) {
-		$skip = caGetOption('skip', $options, []. ['castTo' => 'array']);
+		$skip = caGetOption('skip', $options, [], ['castTo' => 'array']);
 		$o_log = caGetOption('log', $options, null);
 		
 		$source = $mapping_items[$item_id]['source'];
@@ -4376,7 +4376,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	private static function _applyDataTransforms($value, array $mapping) {
 		if (strlen($value)) {
-			$transforms = $mapping['settings']['applyTransformations'];
+			$transforms = ($mapping['settings']['applyTransformations'] ?? null;
 			if(is_array($transforms) && sizeof($transforms)) {
 				foreach($transforms as $t) {
 					if(!is_array($t)) { continue; }
@@ -4396,7 +4396,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	private static function _setSourceValue(?array $values, array $row_with_replacements, array $item, string $default_source_text, BaseDataReader $o_reader) : ?string {
 		
-		if (($source_setting = $item['settings']['source']) || ($source_setting = $default_source_text)) { // try source set on this mapping, or try to fall back to mapping source if defined
+		if (($source_setting = ($item['settings']['source'] ?? null)) || ($source_setting = $default_source_text)) { // try source set on this mapping, or try to fall back to mapping source if defined
 			if ((!isset($values['_source'])) || ($values['_source'] === $default_source_text)) {
 			
 				$source_setting = DisplayTemplateParser::processTemplate($source_setting, $row_with_replacements, ['getFrom' => $o_reader]);
