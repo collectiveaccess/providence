@@ -4141,10 +4141,10 @@ function caFileIsIncludable($ps_file) {
 		}
 
 		// Left-pad numbers
-		if (preg_match("![\d]+!", $vs_display_value, $va_matches)) {
-			for($i=0; $i<sizeof($va_matches); $i++) {
-				$vs_padded = str_pad($va_matches[$i], 15, 0, STR_PAD_LEFT);
-				$vs_display_value = str_replace($va_matches[$i], $vs_padded, $vs_display_value);
+		if (preg_match_all("!([\d]+)!", $vs_display_value, $va_matches)) {
+			for($i=0; $i<sizeof($va_matches[1]); $i++) {
+				$vs_padded = str_pad($va_matches[1][$i], 15, 0, STR_PAD_LEFT);
+				$vs_display_value = str_replace($va_matches[1][$i], $vs_padded, $vs_display_value);
 			}
 		}
 		return mb_substr($vs_display_value, 0, $max_length, 'UTF-8');
