@@ -702,6 +702,7 @@ class BaseFindEngine extends BaseObject {
 		$sql = "SELECT htcv.row_id
 				FROM ca_history_tracking_current_values htcv
 				INNER JOIN ca_history_tracking_current_value_labels AS l ON htcv.tracking_id = l.tracking_id
+				INNER JOIN {$hit_table} AS ht ON ht.row_id = htcv.row_id
 				WHERE 
 					htcv.table_num = ? AND (is_future IS NULL OR is_future = 0) AND htcv.policy = ?
 				ORDER BY l.value_sort {$direction}
