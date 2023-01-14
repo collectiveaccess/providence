@@ -359,7 +359,7 @@ function caFileIsIncludable($ps_file) {
 		
 		if($va_paths = @scandir($dir, 0)) {
 			foreach($va_paths as $item) {
-				if(in_array($item, ["@SynoEAStream", "@eaDir"])) { continue; }
+				if(in_array($item, ["@SynoEAStream", "@eaDir", "__MACOSX"])) { continue; }
 				if(preg_match("!@SynoEAStream$!", $item)) { continue; }
 				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item[0] !== '.'))) {
 					$va_stat = @stat("{$dir}/{$item}");
@@ -684,9 +684,7 @@ function caFileIsIncludable($ps_file) {
 	function caSanitizeStringForJsonEncode($ps_text) {
 		// Remove invalid UTF-8
 		mb_substitute_character(0xFFFD);
-		$ps_text = mb_convert_encoding($ps_text, 'UTF-8', 'UTF-8');
-
-		//return strip_tags($ps_text);
+		return mb_convert_encoding($ps_text, 'UTF-8', 'UTF-8');
 
 		// @see http://php.net/manual/en/regexp.reference.unicode.php
 		return preg_replace("/[^\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{N}\p{P}\p{Zp}\p{Zs}\p{S}–]|➔/", '', strip_tags($ps_text));
@@ -4143,10 +4141,10 @@ function caFileIsIncludable($ps_file) {
 		}
 
 		// Left-pad numbers
-		if (preg_match("![\d]+!", $vs_display_value, $va_matches)) {
-			for($i=0; $i<sizeof($va_matches); $i++) {
-				$vs_padded = str_pad($va_matches[$i], 15, 0, STR_PAD_LEFT);
-				$vs_display_value = str_replace($va_matches[$i], $vs_padded, $vs_display_value);
+		if (preg_match_all("!([\d]+)!", $vs_display_value, $va_matches)) {
+			for($i=0; $i<sizeof($va_matches[1]); $i++) {
+				$vs_padded = str_pad($va_matches[1][$i], 15, 0, STR_PAD_LEFT);
+				$vs_display_value = str_replace($va_matches[1][$i], $vs_padded, $vs_display_value);
 			}
 		}
 		return mb_substr($vs_display_value, 0, $max_length, 'UTF-8');

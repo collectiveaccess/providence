@@ -622,7 +622,8 @@
 			// generate labels for all cataloguing locales
 			$locales = ca_locales::getCataloguingLocaleList();
 			foreach($locales as $l) {
-				$e->addLabel(['value' => $this->getCurrentValueForDisplay($policy, ['locale' => $l['code']])], $l['code'], null, true);
+				$v = strip_tags($this->getCurrentValueForDisplay($policy, ['locale' => $l['code']]));
+				$e->replaceLabel(['value' => $v], $l['code'], null, true);
 			}
 			self::$s_history_tracking_newly_added_current_values[$values['tracked_table_num']][$values['tracked_row_id']][$policy] = 
 					    self::$s_history_tracking_newly_added_current_values[$values['current_table_num']][$values['current_row_id']][$policy] = 

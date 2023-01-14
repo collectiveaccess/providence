@@ -547,7 +547,7 @@
 			// In Ajax mode we scroll to an offset
 			$vn_start = 0;
 			if ($vb_ajax_mode) {
-				if (($vn_start = $po_request->getParameter('s', pInteger)) < $qr_res->numHits()) {
+				if (($vn_start = (int)$po_request->getParameter('s', pInteger)) < $qr_res->numHits()) {
 					$qr_res->seek($vn_start);
 					if (isset($va_contexts[$vs_block])) {
 						$va_contexts[$vs_block]->setParameter('start', $vn_start);
