@@ -234,6 +234,26 @@ class DataMigrationUtilsTest extends TestCase {
 		
 	}
 	
+	/**
+	 * Names ending with letters used in a valid suffix would have those letter clipped and placed in a suffix.
+	 * Eg. Mike Sirroco would be parsed as forename=Mike; surname=Sirro; suffix=co
+	 *
+	 * These tests ensure the fix for this issue is present
+	 */
+	public function testNameEndinginSuffix() {
+		$r = DataMigrationUtils::splitEntityName("Mike Sirroco");
+		$this->_checkValue($r, ['surname' => 'Sirroco', 'forename' => 'Mike', 'middlename' => '', 'displayname' => 'Mike Sirroco', 'prefix' => '', 'suffix' => '']);
+
+		$r = DataMigrationUtils::splitEntityName("Mike R. Sirroco");
+		$this->_checkValue($r, ['surname' => 'Sirroco', 'forename' => 'Mike', 'middlename' => 'R.', 'displayname' => 'Mike R. Sirroco', 'prefix' => '', 'suffix' => '']);
+
+		$r = DataMigrationUtils::splitEntityName("Mr. Mike R. Sirroco");
+		$this->_checkValue($r, ['surname' => 'Sirroco', 'forename' => 'Mike', 'middlename' => 'R.', 'displayname' => 'Mr. Mike R. Sirroco', 'prefix' => 'Mr.', 'suffix' => '']);
+
+		$r = DataMigrationUtils::splitEntityName("Mr. Mike R. Sirroco, PhD.");
+		$this->_checkValue($r, ['surname' => 'Sirroco', 'forename' => 'Mike', 'middlename' => 'R.', 'displayname' => 'Mr. Mike R. Sirroco, PhD.', 'prefix' => 'Mr.', 'suffix' => 'PhD.']);
+	}
+	
 	
 	/**
 	 * Verify presence of expected keys and test returned values against expected values
