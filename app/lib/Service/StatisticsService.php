@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2019 Whirl-i-Gig
+ * Copyright 2019-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -148,9 +148,9 @@ class StatisticsService extends BaseJSONService {
 		}
 		
 		$return['media'] = [
-			'total_size' => $size = caGetDirectoryTotalSize(__CA_BASE_DIR__.'/media'),
+			'total_size' => $size = caGetDirectoryTotalSize(__CA_BASE_DIR__.'/media/'.__CA_APP_NAME__),
 			'total_size_display' => caHumanFileSize($size),
-			'file_count' => caGetFileCountForDirectory(__CA_BASE_DIR__.'/media'),
+			'file_count' => caGetFileCountForDirectory(__CA_BASE_DIR__.'/media/'.__CA_APP_NAME__),
 			'by_format' => [],
 			'by_status' => []
 		];
