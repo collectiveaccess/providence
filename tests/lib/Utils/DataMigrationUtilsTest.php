@@ -250,8 +250,30 @@ class DataMigrationUtilsTest extends TestCase {
 		$r = DataMigrationUtils::splitEntityName("Mr. Mike R. Sirroco");
 		$this->_checkValue($r, ['surname' => 'Sirroco', 'forename' => 'Mike', 'middlename' => 'R.', 'displayname' => 'Mr. Mike R. Sirroco', 'prefix' => 'Mr.', 'suffix' => '']);
 
-		$r = DataMigrationUtils::splitEntityName("Mr. Mike R. Sirroco, PhD.");
-		$this->_checkValue($r, ['surname' => 'Sirroco', 'forename' => 'Mike', 'middlename' => 'R.', 'displayname' => 'Mr. Mike R. Sirroco, PhD.', 'prefix' => 'Mr.', 'suffix' => 'PhD.']);
+		$r = DataMigrationUtils::splitEntityName("Patti Wilcox");
+		$this->_checkValue($r, ['surname' => 'Wilcox', 'forename' => 'Patti', 'middlename' => '', 'displayname' => 'Patti Wilcox', 'prefix' => '', 'suffix' => '']);
+	
+		$r = DataMigrationUtils::splitEntityName("William Brisccoe");
+		$this->_checkValue($r, ['surname' => 'Brisccoe', 'forename' => 'William', 'middlename' => '', 'displayname' => 'William Brisccoe', 'prefix' => '', 'suffix' => '']);
+	
+		$r = DataMigrationUtils::splitEntityName("Mather D'Amico");
+		$this->_checkValue($r, ['surname' => 'D\'Amico', 'forename' => 'Mather', 'middlename' => '', 'displayname' => 'Mather D\'Amico', 'prefix' => '', 'suffix' => '']);
+	
+		$r = DataMigrationUtils::splitEntityName("Dr. Janaki Rangarajan");
+		$this->_checkValue($r, ['surname' => 'Rangarajan', 'forename' => 'Janaki', 'middlename' => '', 'displayname' => 'Dr. Janaki Rangarajan', 'prefix' => 'Dr.', 'suffix' => '']);
+	
+		$r = DataMigrationUtils::splitEntityName("Siddhartha Misra");
+		$this->_checkValue($r, ['surname' => 'Misra', 'forename' => 'Siddhartha', 'middlename' => '', 'displayname' => 'Siddhartha Misra', 'prefix' => '', 'suffix' => '']);
+	
+		$r = DataMigrationUtils::splitEntityName("Mstislav Doboujinsky");
+		$this->_checkValue($r, ['surname' => 'Doboujinsky', 'forename' => 'Mstislav', 'middlename' => '', 'displayname' => 'Mstislav Doboujinsky', 'prefix' => '', 'suffix' => '']);
+	
+		$r = DataMigrationUtils::splitEntityName("Virginie Victoire Mecene");
+		$this->_checkValue($r, ['surname' => 'Mecene', 'forename' => 'Virginie', 'middlename' => 'Victoire', 'displayname' => 'Virginie Victoire Mecene', 'prefix' => '', 'suffix' => '']);
+
+		$r = DataMigrationUtils::splitEntityName("Dreary McDrearface Sr.");
+		$this->_checkValue($r, ['surname' => 'McDrearface', 'forename' => 'Dreary', 'middlename' => '', 'displayname' => 'Dreary McDrearface Sr.', 'prefix' => '', 'suffix' => 'Sr.']);
+
 	}
 	
 	
