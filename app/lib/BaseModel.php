@@ -12235,7 +12235,7 @@ $pa_options["display_form_field_tips"] = true;
 			}, []);
 			if((is_array($ids) && sizeof($ids))) {
 				$ids = array_map(function($v) { return is_numeric($v) ? $v : ca_locales::codeToID($v); }, $ids);
-				if(is_array($pa_values['parent_id'])) {
+				if(is_array($pa_values['parent_id'] ?? null)) {
 					foreach($pa_values['parent_id'] as $i => $v) {
 						if (isset($ids[$v[1]])) {
 							$pa_values['parent_id'][$i][1] = $ids[$v[1]];

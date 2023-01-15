@@ -584,6 +584,7 @@
 				'is_future' => $is_future
 			];
 			
+			$found = false;
 			if(
 				($is_future > 0) 
 				&& 
