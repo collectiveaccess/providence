@@ -803,8 +803,9 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 					</script>
 <?php
 				} else {
+					$poster_style = ($poster_frame_url) ? "style='background-image: url(\"{$poster_frame_url}\");'" : null;
 ?>
-					<div class="<?= $class; ?>">
+					<div class="<?= $class; ?>" <?= $poster_style; ?>>
 						<audio id="<?= $id; ?>" src="<?= $url; ?>" <?= ($poster_url = caGetOption('posterURL', $options, null) ? "poster='{$poster_url}'" : ''); ?> type="<?= $properties["mimetype"]; ?>" controls="controls"></audio>
 					</div>	
 					<script type="text/javascript">

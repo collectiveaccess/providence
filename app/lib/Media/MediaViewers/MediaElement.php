@@ -78,11 +78,12 @@ class MediaElement extends BaseMediaViewer implements IMediaViewer {
 					$rep = array_filter($image_reps, function($v) { return isset($v['is_primary']) && (bool)$v['is_primary']; });
 					$rep = (!sizeof($rep)) ? array_shift($image_reps) : array_shift($rep);
 					
-					$viewer_image = $rep['tags'][$image_version];
+					$viewer_image = $rep['urls'][$image_version];
+					$va_viewer_opts['poster_frame_url'] = $viewer_image;
 				}
 			
 				// HTML for MediaElement
-				$o_view->setVar('viewerHTML', $viewer_image.$t_instance->getMediaTag('media', $vs_version, $va_viewer_opts));
+				$o_view->setVar('viewerHTML', $t_instance->getMediaTag('media', $vs_version, $va_viewer_opts));
 			} elseif (is_a($t_instance, "ca_site_page_media")) {
 				$va_viewer_opts = [
 					'id' => $vs_id, 'class' => caGetOption('class', $pa_data['display'], null),
