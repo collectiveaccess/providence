@@ -279,7 +279,9 @@
 
 				foreach(array(
 							'policy', 'displayMode', 'dateMode', 'row_id', 'width', 'height', 'readonly', 'documentation_url', 'expand_collapse',
-							'label', 'description', 'useHierarchicalBrowser', 'hide_add_to_loan_controls', 'hide_add_to_movement_controls', 'hide_update_location_controls', 'hide_return_to_home_location_controls',
+							'label', 'description', 'useHierarchicalBrowser', 'hide_add_to_loan_controls', 'hide_add_to_movement_controls', 
+							'hide_update_location_controls', 'hide_return_to_home_location_controls',
+							'definition',
 							
 							'update_location_control_label', 'movement_control_label', 'loan_control_label', 'object_control_label',
 							'return_to_home_location_control_label', 'occurrence_control_label', 'collection_control_label', 'entity_control_label',

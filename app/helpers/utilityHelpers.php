@@ -662,7 +662,7 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	function caEscapeForBundlePreview($ps_text, $pn_limit=100) {
-		$ps_text = caSanitizeStringForJsonEncode($ps_text);
+		$ps_text = strip_tags(caSanitizeStringForJsonEncode($ps_text));
 		if(mb_strlen($ps_text) > $pn_limit) {
 			$ps_text = mb_substr($ps_text, 0, $pn_limit) . " ...";
 		}
