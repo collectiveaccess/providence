@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2022 Whirl-i-Gig
+ * Copyright 2006-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,10 +37,8 @@
 /**
  * Plugin for processing audio media using ffmpeg
  */
-
 include_once(__CA_LIB_DIR__."/Plugins/Media/BaseMediaPlugin.php");
 include_once(__CA_LIB_DIR__."/Plugins/IWLPlugMedia.php");
-include_once(__CA_LIB_DIR__."/Configuration.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 include_once(__CA_APP_DIR__."/helpers/avHelpers.php");
 include_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
@@ -48,14 +46,14 @@ include_once(__CA_LIB_DIR__."/Parsers/OggParser.php");
 
 class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 
-	var $errors = array();
+	var $errors = [];
 
 	var $filepath;
 	var $handle;
 	var $ohandle;
 	var $properties;
 	var $oproperties;
-	var $metadata = array();
+	var $metadata = [];
 
 	var $input_bitrate;
 	var $input_channels;
@@ -357,7 +355,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 					$this->properties["bandwidth"] = array("min" => $this->handle["bitrate"] ?? null, "max" => $this->handle["bitrate"] ?? null);
 
-					$this->properties["getID3_tags"] = array();
+					$this->properties["getID3_tags"] = [];
 
 					$this->properties["bitrate"] = $input_bitrate = $this->handle["bitrate"] ?? null;
 					$this->properties["channels"] = $input_channels = $this->handle["audio"]["channels"] ?? null;
@@ -365,12 +363,12 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$this->properties["duration"] = $this->handle["playtime_seconds"] ?? null;
 					break;
 				case 'audio/x-flac':
-					$this->properties["type_specific"] = array();
+					$this->properties["type_specific"] = [];
 
 					$this->properties["audio"] = $this->handle["audio"] ?? null;
 					$this->properties["bandwidth"] = array("min" => $this->handle["bitrate"] ?? null, "max" => $this->handle["bitrate"] ?? null);
 					
-					$this->properties["getID3_tags"] = array();
+					$this->properties["getID3_tags"] = [];
 
 					$this->properties["bitrate"] = $input_bitrate = $this->handle["bitrate"] ?? null;
 					$this->properties["channels"] = $input_channels = $this->handle["audio"]["channels"] ?? null;
@@ -378,12 +376,12 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$this->properties["duration"] = $this->handle["playtime_seconds"] ?? null;
 					break;
 				case 'audio/x-wav':
-					$this->properties["type_specific"] = array();
+					$this->properties["type_specific"] = [];
 
 					$this->properties["audio"] = $this->handle["audio"] ?? null;
 					$this->properties["bandwidth"] = array("min" => $this->handle["bitrate"] ?? null, "max" => $this->handle["bitrate"] ?? null);
 
-					$this->properties["getID3_tags"] = array();
+					$this->properties["getID3_tags"] = [];
 
 					$this->properties["bitrate"] = $input_bitrate = $this->handle["bitrate"] ?? null;
 					$this->properties["channels"] = $input_channels = $this->handle["audio"]["channels"] ?? null;
@@ -391,12 +389,12 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$this->properties["duration"] = $this->handle["playtime_seconds"] ?? null;
 					break;
 				case 'audio/mp4':
-					$this->properties["type_specific"] = array();
+					$this->properties["type_specific"] = [];
 
 					$this->properties["audio"] = $this->handle["audio"] ?? null;
 					$this->properties["bandwidth"] = array("min" => $this->handle["bitrate"] ?? null, "max" => $this->handle["bitrate"] ?? null);
 
-					$this->properties["getID3_tags"] = array();
+					$this->properties["getID3_tags"] = [];
 
 					$this->properties["bitrate"] = $input_bitrate = $this->handle["bitrate"] ?? null;
 					$this->properties["channels"] = $input_channels = $this->handle["audio"]["channels"] ?? null;
@@ -404,12 +402,12 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$this->properties["duration"] = $this->handle["playtime_seconds"] ?? null;
 					break;
 				case 'audio/ogg':
-					$this->properties["type_specific"] = array();
+					$this->properties["type_specific"] = [];
 
 					$this->properties["audio"] = $this->handle['vorbis'] ?? null;
 					$this->properties["bandwidth"] = array("min" => $this->handle['vorbis']['bitrate'] ?? null, "max" => $this->handle['vorbis']['bitrate'] ?? null);
 
-					$this->properties["getID3_tags"] = array();
+					$this->properties["getID3_tags"] = [];
 
 					$this->properties["bitrate"] = $input_bitrate = $this->handle['vorbis']['bitrate'] ?? null;
 					$this->properties["channels"] = $input_channels = $this->handle["vorbis"]["channels"] ?? null;
@@ -733,100 +731,123 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 	public function reset() {
-		$this->errors = array();
+		$this->errors = [];
 		$this->properties = $this->oproperties;
 		return $this->handle = $this->ohandle;
 	}
 	# ------------------------------------------------
 	public function init() {
-		$this->errors = array();
+		$this->errors = [];
 		$this->filepath = "";
 		$this->handle = "";
 		$this->properties = "";
 		
-		$this->metadata = array();
+		$this->metadata = [];
 	}
 	# ------------------------------------------------
-	public function htmlTag($ps_url, $properties, $options=null, $volume_info=null) {
-		if (!is_array($options)) { $options = array(); }
+	public function htmlTag($url, $properties, $options=null, $volume_info=null) {
+		if (!is_array($options)) { $options = []; }
 		
 		foreach(array(
 			'name', 'show_controls', 'url', 'text_only', 'viewer_width', 'viewer_height', 'id',
 			'data_url', 'poster_frame_url', 'viewer_parameters', 'viewer_base_url', 'width', 'height',
 			'vspace', 'hspace', 'alt', 'title', 'usemap', 'align', 'border', 'class', 'style', 'duration', 'pages'
-		) as $vs_k) {
-			if (!isset($options[$vs_k])) { $options[$vs_k] = null; }
+		) as $k) {
+			if (!isset($options[$k])) { $options[$k] = null; }
 		}
 		
+		$width 	=	caParseFormElementDimension($options["viewer_width"] ?? ($properties["width"] ?? null), ['returnAs' => 'pixels', 'assumePixels' => true]);
+		$height =	caParseFormElementDimension($options["viewer_height"] ?? ($properties["height"] ?? null), ['returnAs' => 'pixels', 'assumePixels' => true]);
+		
+		$id 	= 	$options["id"] ?? "audio_player";
+		$name 	= 	$options["name"] ?? $id;
+		$class 	= 	$options["class"] ?? "caAudioPlayer";
+		
 		switch($properties["mimetype"]) {
-		# ------------------------------------------------
+			# ------------------------------------------------
 			case 'audio/ogg':
-				
-				$vs_id = 				$options["id"] ?? "mp4_player";
-				$vs_poster_frame_url =	$options["poster_frame_url"] ?? null;
-				$width =				$options["viewer_width"] ?? $properties["width"] ?? null;
-				$height =			$options["viewer_height"] ?? $properties["height"] ?? null;
-				if (!$width) { $width = 300; }
-				if (!$height) { $height = 32; }
-				return "<div style='width: {$width}px; height: {$height}px;'><audio id='{$vs_id}' src='{$ps_url}' width='{$width}' height='{$height}' controls='1'></audio></div>";
+				$poster_frame_url =	$options["poster_frame_url"];
+				return "<div class='{$class}' style='width: {$width}px; height: {$height}px;'><audio id='{$id}' src='{$url}' width='{$width}' height='{$height}' controls='1'></audio></div>";
 				break;
 			# ------------------------------------------------
 			case 'audio/mpeg':
 			case 'audio/mp4':
-				$id = 				$options["id"] ?? "mp4_player";
-
 				$poster_frame_url =	$options["poster_frame_url"] ?? null;
-
-				$width =			$options["viewer_width"] ?? $properties["width"] ?? null;
-				$height =			$options["viewer_height"] ?? $properties["height"] ?? null;
-				
-				$captions = 		caGetOption("captions", $options, array(), array('castTo' => 'array'));
-				
+				$captions = 		caGetOption("captions", $options, [], ['castTo' => 'array']);
 				$controls = 		caGetOption("controls", $options, ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'fullscreen'], ['castTo' => 'array']);
 				ob_start();
+
+				if(caGetOption('user_interface', $options, false, ['forceLowercase' => true]) !== 'mediaelement') {
 ?>
-				<video id="<?= $id; ?>" playsinline controls data-poster="<?= $poster_frame_url; ?>" width="<?= $width; ?>" height="<?= $height; ?>" >
-				  <source src="<?= $ps_url; ?>" type="audio/mp3" />
+					<div class="<?= $class; ?> audio-responsive">
+						<video id="<?= $id; ?>" playsinline controls data-poster="<?= $poster_frame_url; ?>" width="<?= $width; ?>" height="<?= $height; ?>" >
+						  <source src="<?= $url; ?>" type="<?= $properties["mimetype"]; ?>" />
 <?php
-						if(is_array($captions)) {
-							foreach($captions as $locale_id => $caption_track) {
-								print '<track kind="captions" src="'.$caption_track['url'].'" srclang="'.substr($caption_track["locale_code"] ?? null, 0, 2).'" label="'.$caption_track['locale'].'" default>';	
-							}
-						}
+								if(is_array($captions)) {
+									foreach($captions as $locale_id => $caption_track) {
+										print '<track kind="captions" src="'.$caption_track['url'].'" srclang="'.substr($caption_track["locale_code"] ?? null, 0, 2).'" label="'.$caption_track['locale'].'" default>';	
+									}
+								}
 ?>
-				</video>
-				<script type="text/javascript">
-					jQuery(document).ready(function() {
-						options = {
-							debug: false,
-							iconUrl: '<?= __CA_URL_ROOT__; ?>/assets/plyr/plyr.svg',
-							controls: [<?= join(',', array_map(function($v) { return "'".addslashes(preg_replace("![\"']+!", '', $v))."'"; }, $controls)); ?>],
-						};
-						const player = new Plyr('#<?= $id; ?>', options);
-						jQuery('#<?= $id; ?>').data('player', player);
-						if (caUI.mediaPlayerManager) { caUI.mediaPlayerManager.register("<?= $id; ?>", player, 'Plyr'); }
-					});
-				</script>
+						</video>
+					</div>
+					<script type="text/javascript">
+						jQuery(document).ready(function() {
+							options = {
+								debug: false,
+								iconUrl: '<?= __CA_URL_ROOT__; ?>/assets/plyr/plyr.svg',
+								controls: [<?= join(',', array_map(function($v) { return "'".addslashes(preg_replace("![\"']+!", '', $v))."'"; }, $controls)); ?>],
+							};
+							const player = new Plyr('#<?= $id; ?>', options);
+							jQuery('#<?= $id; ?>').data('player', player);
+							if (caUI.mediaPlayerManager) { caUI.mediaPlayerManager.register("<?= $id; ?>", player, 'Plyr'); }
+						});
+					</script>
 <?php
+				} else {
+?>
+					<div class="<?= $class; ?>">
+						<audio id="<?= $id; ?>" src="<?= $url; ?>" <?= ($poster_url = caGetOption('posterURL', $options, null) ? "poster='{$poster_url}'" : ''); ?> type="<?= $properties["mimetype"]; ?>" controls="controls"></audio>
+					</div>	
+					<script type="text/javascript">
+						jQuery(document).ready(function() {
+							var m = jQuery('#<?= $id; ?>').mediaelementplayer({
+								showTimecodeFrameCount: true, framesPerSecond: 100, 
+								audioWidth: '<?= $width; ?>', audioHeight: '<?= $height; ?>',
+								success:  function (mediaElement, domObject) {
+									var m = mediaElement; 
+									m.addEventListener("play", function(e){ 
+										// Force poster image to remain visible during playback
+										var $thisMediaElement = (mediaElement.id) ? jQuery("#"+mediaElement.id) : jQuery(mediaElement);
+										$thisMediaElement.parents(".mejs-inner").find(".mejs-poster").show();
+									});
+									m.addEventListener("canplay", function(e){ 
+										var $thisMediaElement = (mediaElement.id) ? jQuery("#"+mediaElement.id) : jQuery(mediaElement);
+										$thisMediaElement.parents(".mejs-inner").find(".mejs-poster").on('click', function() {
+											caUI.mediaPlayerManager.isPlaying("<?= $id; ?>") ? caUI.mediaPlayerManager.stop("<?= $id; ?>") : caUI.mediaPlayerManager.play("<?= $id; ?>");
+										});
+									});
+								}
+							});
+							if (caUI.mediaPlayerManager) { caUI.mediaPlayerManager.register("<?= $id; ?>", m, 'MediaElement'); }
+						});
+			</script>
+<?php
+				}
 				return ob_get_clean();
 				break;
 				# ------------------------------------------------
 			case 'audio/x-aiff':
 			case 'audio/x-flac':
 			case 'audio/x-wav':
-				$name = $options["name"] ?? "mp3player";
-
 				ob_start();
-				
-				$width = (($options["viewer_width"] ?? 0) > 0) ? $options["viewer_width"] : 400;
-				$height = (($options["viewer_height"] ?? 0) > 0) ? $options["viewer_height"] : 95;
 ?>
-				<div style="width: {$width}px; height: {$height}px;">
+				<div class="<?= $class; ?>" style="width: {$width}px; height: {$height}px;">
 					<table>
 						<tr>
 							<td>
-								<embed width="<?= $width; ?>" height="<?= $height; ?>"
-									src="<?= $ps_url; ?>" type="audio/x-wav">
+								<embed width="<?= $properties["width"]; ?>" height="<?= $properties["height"] + 16; ?>"
+									src="<?= $url; ?>" type="audio/x-wav">
 							</td>
 						</tr>
 					</table>
@@ -837,11 +858,11 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 			# ------------------------------------------------
 			case 'image/jpeg':
 			case 'image/png':
-				if (!is_array($options)) { $options = array(); }
-				if (!is_array($properties)) { $properties = array(); }
-				return caHTMLImage($ps_url, array_merge($options, $properties));
+				if (!is_array($options)) { $options = []; }
+				if (!is_array($properties)) { $properties = []; }
+				return caHTMLImage($url, array_merge($options, $properties));
 				break;
-				# ------------------------------------------------
+			# ------------------------------------------------
 
 		}
 	}
