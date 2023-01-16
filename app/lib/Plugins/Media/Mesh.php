@@ -249,7 +249,7 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 	public function get($property) {
 		if ($this->handle ?? null) {
 			if ($this->info["PROPERTIES"][$property] ?? null) {
-				return $this->properties[$property];
+				return $this->properties[$property] ?? nnull;
 			} else {
 				return '';
 			}
@@ -263,7 +263,7 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 			if ($this->info["PROPERTIES"][$property] ?? null) {
 				switch($property) {
 					default:
-						if ($this->info["PROPERTIES"][$property] == 'W') {
+						if (($this->info["PROPERTIES"][$property] ?? null) == 'W') {
 							$this->properties[$property] = $value;
 						} else {
 							# read only
@@ -340,8 +340,8 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 				break;
 			# -----------------------
 			case 'SCALE':
-				$this->properties["version_width"] = $parameters["width"];
-				$this->properties["version_height"] = $parameters["height"];
+				$this->properties["version_width"] = $parameters["width"] ?? null;
+				$this->properties["version_height"] = $parameters["height"] ?? null;
 				# noop
 				break;
 			# -----------------------
@@ -352,8 +352,8 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 	public function write($filepath, $ps_mimetype) {
 		if (!($this->handle ?? null)) { return false; }
 
-		$this->properties["width"] = $this->properties["version_width"];
-		$this->properties["height"] = $this->properties["version_height"];
+		$this->properties["width"] = $this->properties["version_width"] ?? null;
+		$this->properties["height"] = $this->properties["version_height"] ?? null;
 		
 		# is mimetype valid?
 		if (!($ext = ($this->info["EXPORT"][$ps_mimetype] ?? null))) {

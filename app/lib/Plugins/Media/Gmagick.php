@@ -309,7 +309,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			if ($filepath != '' && ($r_handle = new Gmagick($filepath))) {
 				$this->setResourceLimits($r_handle);
 				$mimetype = $this->_getMagickImageMimeType($r_handle);
-				if (($mimetype) && $this->info["IMPORT"][$mimetype]) {
+				if (($mimetype) && ($this->info["IMPORT"][$mimetype]?? null)) {
 					return $mimetype;
 				} else {
 					return '';
