@@ -687,29 +687,32 @@
                 }	
             
                 // Set nonpreferred labels
+                if(isset($pa_related_options["nonPreferredLabels"]) && !is_array($pa_related_options["nonPreferredLabels"]) && strlen($pa_related_options["nonPreferredLabels"])) {
+                	$pa_related_options["nonPreferredLabels"] = [$pa_related_options["nonPreferredLabels"]];
+                }
                 if (is_array($va_non_preferred_labels = $pa_related_options["nonPreferredLabels"])) {
-                    $pa_options['nonPreferredLabels'] = array();
+                    $pa_options['nonPreferredLabels'] = [];
                     $vb_is_set = false;
                     foreach($va_non_preferred_labels as $va_label) {
-                        foreach($va_label as $vs_k => $vs_v) {
-                            if (!$vb_is_set && strlen(trim($vs_v))) { $vb_is_set = true; }
-                            $va_label[$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $i, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null, 'applyImportItemSettings' => $apply_import_item_settings));
-                        }
-                        if ($vb_is_set) { $pa_options['nonPreferredLabels'][] = $va_label; }
+                    	if(is_array($va_label)) {
+							foreach($va_label as $vs_k => $vs_v) {
+								if (!$vb_is_set && strlen(trim($vs_v))) { $vb_is_set = true; }
+								$va_label[$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $i, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null, 'applyImportItemSettings' => $apply_import_item_settings));
+							}
+							if ($vb_is_set) { $pa_options['nonPreferredLabels'][] = $va_label; }
+						} elseif ($ps_refinery_name == 'entitySplitter') {
+								if (is_array($va_npl = DataMigrationUtils::splitEntityName(BaseRefinery::parsePlaceholder($vs_non_preferred_label, $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null, 'applyImportItemSettings' => $apply_import_item_settings)), array_merge(['type' => $vs_type], $pa_options)))) { 
+									$pa_options['nonPreferredLabels'][] = $va_npl; 
+								}
+						} else {
+							if ($vs_npl = trim(BaseRefinery::parsePlaceholder($vs_non_preferred_label, $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null, 'applyImportItemSettings' => $apply_import_item_settings)))) {
+								$pa_options['nonPreferredLabels'][] = [
+									$t_rel_instance->getLabelDisplayField() => $vs_npl
+								];
+							}
+						}
                     }
-                } elseif($vs_non_preferred_label = trim($pa_related_options["nonPreferredLabels"])) {
-                    if ($ps_refinery_name == 'entitySplitter') {
-                        if (is_array($va_npl = DataMigrationUtils::splitEntityName(BaseRefinery::parsePlaceholder($vs_non_preferred_label, $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null, 'applyImportItemSettings' => $apply_import_item_settings)), array_merge(['type' => $vs_type], $pa_options)))) { 
-                        	$pa_options['nonPreferredLabels'][] = $va_npl; 
-                        }
-                    } else {
-                        if ($vs_npl = trim(BaseRefinery::parsePlaceholder($vs_non_preferred_label, $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null, 'applyImportItemSettings' => $apply_import_item_settings)))) {
-                            $pa_options['nonPreferredLabels'][] = [
-                                $t_rel_instance->getLabelDisplayField() => $vs_npl
-                            ];
-                        }
-                    }
-                }
+                } 
             
                 $pa_options = array_merge(array('transaction' => $o_trans, 'matchOn' => array('idno', 'label')), $pa_options);
 

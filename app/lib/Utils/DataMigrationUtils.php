@@ -958,7 +958,9 @@ class DataMigrationUtils {
 				$va_labels = $va_nonpreferred_labels;
 			}
 			foreach($va_labels as $va_label) {
-				$pt_instance->addLabel($va_label, $locale_id, null, false);
+				$label_locale = (isset($va_label['locale']) && $va_label['locale']) ? $va_label['locale'] : $locale_id;
+				
+				$pt_instance->addLabel($va_label, $label_locale, null, false);
 
 				if ($pt_instance->numErrors()) {
 					if(isset($options['outputErrors']) && $options['outputErrors']) {
