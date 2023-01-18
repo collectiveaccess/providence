@@ -856,9 +856,9 @@ class BaseFindEngine extends BaseObject {
 		
 		$sql = "
 			SELECT s.`{$intrinsic}` val
-			FROM {$table}
+			FROM {$table} t
 			{$join_sql}
-			WHERE {$table}.{$table_pk} IN (?)
+			WHERE t.{$table_pk} IN (?)
 			ORDER BY val {$direction}
 		";
 		$qr_sort = $this->db->query($sql, [$hits]);
