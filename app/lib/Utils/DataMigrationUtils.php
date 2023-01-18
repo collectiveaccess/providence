@@ -614,7 +614,7 @@ class DataMigrationUtils {
 		// check for titles
 		$prefix_for_name = null;
 		foreach($titles as $title) {
-			if (preg_match("!^({$title}[\.]{0,1})!i", $text, $matches)) {
+			if (preg_match("!^({$title}[\.]{0,1})[\s]+!i", $text, $matches)) {
 				$prefix_for_name = $matches[1];
 				$text = str_replace($matches[1], '', $text);
 			}
@@ -793,13 +793,13 @@ class DataMigrationUtils {
 		$name = [];
 		
 		foreach($values['ind_suffixes'] as $suffix) {
-			if (preg_match("![,]*[ ]*({$suffix}[\.]{0,1})$!i", $text, $matches)) {
+			if (preg_match("![, ]+[ ]*({$suffix}[\.]{0,1})$!i", $text, $matches)) {
 				$name['suffix'] = $matches[1];
 				$text = str_replace($matches[0], '', $text);
 			}
 		}
 		foreach($values['corp_suffixes'] as $suffix) {
-			if (preg_match("![,]*[ ]*({$suffix}[\.]{0,1})$!i", $text, $matches)) {
+			if (preg_match("![, ]+[ ]*({$suffix}[\.]{0,1})$!i", $text, $matches)) {
 				$name['suffix'] = $matches[1];
 				$text = str_replace($matches[0], '', $text);
 				$name['is_corporation'] = true;

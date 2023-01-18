@@ -9,7 +9,7 @@ except ModuleNotFoundError:
     print("The whisper module is not installed. Please install using pip3 install git+https://github.com/openai/whisper.git. See https://github.com/openai/whisper for more information.")
     quit(5)
 
-parser = argparse.ArgumentParser(description='Dectect spoken language in audio')
+parser = argparse.ArgumentParser(description='Detect spoken language in audio')
 
 parser.add_argument('--input', nargs=1,
                     help='Path to file to transcribe', required=True)

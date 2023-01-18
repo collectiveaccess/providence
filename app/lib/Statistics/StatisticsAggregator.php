@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2019-2022 Whirl-i-Gig
+ * Copyright 2019-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,13 +40,21 @@ use \CollectiveAccessService as CAS;
 class StatisticsAggregator {
 	# ------------------------------------------------------------------
 	/**
+	 * Fetch statistics for sites. All sites are fetched unless specified sites are specified in the "sites" option
 	 *
+	 * @param array $options Options include:
+	 *		sites = Array of site codes (as defined in statistics.conf) to limit fetching of statistics to. [Default is null; fetch all sites]
+	 *
+	 * @return array Statstics data
 	 */
-	static public function fetch() {
+	static public function fetch(?array $options=null) {
+		$restrict_to_sites = caGetOption('sites', $options, null);
+		if(!is_null($restrict_to_sites) && !is_array($restrict_to_sites)) { $restrict_to_sites = [$restrict_to_sites]; }
 		$sites = self::getSites();
 		
 		$stats_data = [];
 		foreach($sites as $k => $site_info) {
+			if(is_array($restrict_to_sites) && sizeof($restrict_to_sites) && !in_array($k, $restrict_to_sites, true)) { continue; }
 			$client = new CAS\StatisticsService($site_info['url']);
 			$client->setCredentials($site_info['service_user'], $site_info['service_password']);
 			$stats_data_for_site = $client->setEndpoint('runStats')->request()->getRawData();

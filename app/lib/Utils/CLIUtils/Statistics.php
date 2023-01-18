@@ -37,8 +37,9 @@ trait CLIUtilsStatistics {
 	 *
 	 */
 	public static function fetch_statistics($po_opts=null) {	
+		$sites_list = ($sites = (string)$po_opts->getOption('sites')) ? array_filter(preg_split("![;,]+!", $sites), "strlen") : null;
 		try {
-			$data = StatisticsAggregator::fetch();
+			$data = StatisticsAggregator::fetch(['sites' => $sites_list]);
 		} catch (Exception $e) {
 			CLIUtils::addError($e->getMessage());	
 			return null;
@@ -49,7 +50,9 @@ trait CLIUtilsStatistics {
 	}
 	# -------------------------------------------------------
 	public static function fetch_statisticsParamList() {
-		return [];
+		return [
+			"sites|t-s" => _t('Comma-delimited list of sites to fetch statistics for. If omitted statistics for all configured sites will be fetched.')
+		];
 	}
 	# -------------------------------------------------------
 	/**
