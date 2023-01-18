@@ -4327,8 +4327,17 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			
 			foreach($regexes as $regex_index => $regex_info) {
 				if (!strlen($regex_info['match'])) { continue; }
-				$regex = "!".str_replace("!", "\\!", $regex_info['match'])."!u".((isset($regex_info['caseSensitive']) && (bool)$regex_info['caseSensitive']) ? '' : 'i');
 				
+				$regex_match = $regex_info['match'];
+				$regex_opts = null;
+				if((substr($regex_match, 0, 1) === '/') && preg_match("!/([A-Za-z]*)$!", $regex_match, $m)) {
+					$regex_opts = $m[1] ?? null;
+					$regex_match = preg_replace('!'.preg_quote($m[0],' !').'!', '', substr($regex_match, 1));
+				} else {
+					$regex_opts = "u".((isset($regex_info['caseSensitive']) && (bool)$regex_info['caseSensitive']) ? '' : 'i');
+				}
+				$regex = "!".str_replace("!", "\\!", $regex_match)."!{$regex_opts}";
+
 				foreach($val as $i => $x) {
 					if (!preg_match($regex, $x, $matches)) { continue; }
 			

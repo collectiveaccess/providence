@@ -179,7 +179,7 @@ class CheckOutController extends ActionController {
 		
 			$info['storage_location'] = $t_object->getWithTemplate($checkout_config['show_storage_location_template']);
 			
-			$infos[] = $info
+			$infos[] = $info;
 		}
 		
 		$this->view->setVar('data', $infos);
