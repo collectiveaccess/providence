@@ -269,7 +269,7 @@ class ca_locales extends BaseModel {
 				foreach($va_locales as $va_locale) {
 					if ($vb_available_for_cataloguing_only && $va_locale['dont_use_for_cataloguing']) { continue; }
 
-					MemoryCache::save($va_locale['language'].'_'.$va_locale['country'], $va_locale['locale_id'], 'LocaleCodeToId');
+					MemoryCache::save(mb_strtolower($va_locale['language'].'_'.$va_locale['country']), $va_locale['locale_id'], 'LocaleCodeToId');
 					MemoryCache::save($va_locale['locale_id'], $va_locale['language'].'_'.$va_locale['country'], 'LocaleIdToCode');
 					MemoryCache::save($va_locale['locale_id'], $va_locale['name'], 'LocaleIdToName');
 				}
@@ -308,7 +308,7 @@ class ca_locales extends BaseModel {
  				$va_locales[$vn_id] = $vm_val;
  			}
 
-			MemoryCache::save($vs_code, $vn_id, 'LocaleCodeToId');
+			MemoryCache::save(mb_strtolower($vs_code), $vn_id, 'LocaleCodeToId');
 			MemoryCache::save($vn_id, $vs_code, 'LocaleIdToCode');
 			MemoryCache::save($vn_id, $vs_name, 'LocaleIdToName');
  		}
@@ -397,6 +397,7 @@ class ca_locales extends BaseModel {
 	 * @return int The locale_id of the locale, or null if the code is invalid
 	 */
 	public function loadLocaleByCode($ps_code) {
+		$ps_code = mb_strtolower($ps_code);
 		if (!MemoryCache::contains($ps_code, 'LocaleCodeToId')){
 			ca_locales::getLocaleList(array('index_by_code' => true));
 		}
@@ -427,6 +428,7 @@ class ca_locales extends BaseModel {
 	 */
 	static public function codeToID($ps_code) {
 		if (strlen($ps_code) == 0) { return null; }
+		$ps_code = mb_strtolower($ps_code);
 		if (!MemoryCache::contains($ps_code, 'LocaleCodeToId')){
 			ca_locales::getLocaleList(array('index_by_code' => true));
 		}
