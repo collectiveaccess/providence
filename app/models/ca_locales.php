@@ -308,7 +308,7 @@ class ca_locales extends BaseModel {
  				$va_locales[$vn_id] = $vm_val;
  			}
 
-			MemoryCache::save($vs_code, $vn_id, 'LocaleCodeToId');
+			MemoryCache::save(mb_strtolower($vs_code), $vn_id, 'LocaleCodeToId');
 			MemoryCache::save($vn_id, $vs_code, 'LocaleIdToCode');
 			MemoryCache::save($vn_id, $vs_name, 'LocaleIdToName');
  		}
