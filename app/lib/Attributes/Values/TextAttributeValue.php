@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -541,7 +541,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 	 * @return string
 	 */
 	public function sortableValue(?string $value) {
-		return mb_strtolower(substr(trim(preg_replace('![^A-Za-z0-9 ]+!', '', $value)), 0, 100));
+		return mb_strtolower(substr(trim(caSortableValue($value)), 0, 100));
 	}
 	# ------------------------------------------------------------------
 	/**
