@@ -428,6 +428,7 @@ class ca_locales extends BaseModel {
 	 */
 	static public function codeToID($ps_code) {
 		if (strlen($ps_code) == 0) { return null; }
+		if(is_numeric($ps_code)) { return (int)$ps_code; }
 		$ps_code = mb_strtolower($ps_code);
 		if (!MemoryCache::contains($ps_code, 'LocaleCodeToId')){
 			ca_locales::getLocaleList(array('index_by_code' => true));
