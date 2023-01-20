@@ -147,10 +147,9 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		
 		
 		$dupe_check_values = array_merge($pa_label_values, [$this->primaryKey() => $this->getPrimaryKey(), 'locale_id' => ca_locales::codeToID($pn_locale_id), 'type_id' => $pn_type_id]);
-		if ($t_label->hasField('effective_date')) {
-			$dupe_check_values['effective_date'] = $effective_date;
-		}
-		var_dump($dupe_check_values);
+		// if ($t_label->hasField('effective_date')) {
+// 			$dupe_check_values['effective_date'] = $effective_date;
+// 		}
 		if(($dupe_count = $label_table::find($dupe_check_values, ['returnAs' => 'count'])) > 0) {
 			return false;
 		}
