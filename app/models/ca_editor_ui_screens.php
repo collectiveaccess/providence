@@ -1155,6 +1155,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'default' => false,
 								'label' => _t('Show batch editing button?'),
 								'description' => _t('If checked an option to batch edit related records will be displayed.')
+							),
+							'showSetRepresentationButton' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_CHECKBOXES,
+								'width' => 10, 'height' => 1,
+								'takesLocale' => false,
+								'default' => false,
+								'label' => _t('Show set representtion button?'),
+								'description' => _t('If checked an option to link media from related records to the edited record will be displayed.')
 							)
 						);
 				
