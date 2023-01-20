@@ -1384,6 +1384,9 @@ class DataMigrationUtils {
 			if ($o_event) { $o_event->beginItem($ps_event_source, $vs_table_class, 'U'); }
 			if ($o_log) { $o_log->logDebug(_t("%3Found existing %1 %2 in DataMigrationUtils::_getID()", $vs_table_display_name, $pa_label[$vs_label_display_fld], $log_reference_str)); }
 
+			// TODO: when to run this?
+			DataMigrationUtils::_setNonPreferredLabels($t_instance, $locale_id, $options);
+			
 			$vb_attr_errors = false;
 			if (($vb_force_update = caGetOption('forceUpdate', $options, false)) || ($vb_return_instance = caGetOption('returnInstance', $options, false))) {
 				if (!$t_instance = Datamodel::getInstanceByTableName($vs_table_class, false))  { return null; }
