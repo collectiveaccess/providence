@@ -91,6 +91,46 @@ function install_profile()
 }
 
 # -----------------------------------------------------------------
+# Update a profile
+#
+# Arguments:
+#   $1 = Path to caUtils
+#   $2 = Profile name
+#	$4 = Options (Ex. --skip-roles=true --profile-directory=/path/to/profiles --debug=true) [Optional]
+#   $5 = Display message [Optional]
+#	$6 = Show commands [Optional; default is false]
+# -----------------------------------------------------------------
+function update_profile() 
+{
+	log_event $IMPORT_LOG "Start load profile for $2"
+	if [ ! -z "$4" ]; then
+		echo "➔ $4"
+	fi
+	
+	if [ -z "$3" ]; then
+		OPTS=""
+	else
+		OPTS=$3
+	fi 
+	
+	if [ ! -z "$5" ]; then
+		# display command 
+		echo "	↳ $1 update-installation-profile --profile-name=$2 $OPTS"
+	fi
+	
+	$1 update-installation-profile --profile-name=$2 $OPTS
+	
+	local ret=$?
+	if [ $ret -ne 0 ] ; then
+		log_event $IMPORT_LOG "Update profile for $2 failed"
+		die "Could not update profile" $ret
+	fi
+	log_event $IMPORT_LOG "Completed update profile for $2"
+	return 0
+}
+
+
+# -----------------------------------------------------------------
 # Check data files
 #
 # Arguments:
@@ -152,7 +192,7 @@ function check_mappings()
 }
 
 # -----------------------------------------------------------------
-# Load mappings
+# Load import mappings
 #
 # Arguments:
 #   $1 = Path to caUtils
@@ -160,9 +200,9 @@ function check_mappings()
 #	$3 = Show commands [Optional; default is false]
 #   $4 = List of mapping files
 # -----------------------------------------------------------------
-function load_mappings() 
+function load_import_mappings() 
 {
-	log_event $IMPORT_LOG "Start load mappings"
+	log_event $IMPORT_LOG "Start load import mappings"
 	echo "Loading mappings..."
 	local cautils_path="$1"
 	local path="$2"
@@ -183,13 +223,65 @@ function load_mappings()
 		$cautils_path load-import-mapping --quiet --file="$path/$m"
 		local ret=$?
 		if [ $ret -ne 0 ] ; then
-			log_event $IMPORT_LOG "Load mappings failed on $m"
-			die "Could not install mapping $m" $ret
+			log_event $IMPORT_LOG "Load import mappings failed on $m"
+			die "Could not install import mapping $m" $ret
 		fi
 	done
 	
 	IFS=$IFS_in
-	log_event $IMPORT_LOG "Completed load mappings"
+	log_event $IMPORT_LOG "Completed load import mappings"
+	return 0
+}
+
+# -----------------------------------------------------------------
+# Use load_mappings() as synonym for load_import_mappings() for
+# compatibility with older scripts
+# -----------------------------------------------------------------
+function load_mappings()
+{
+	load_import_mappings $@
+	return 0
+}
+
+# -----------------------------------------------------------------
+# Load export mappings
+#
+# Arguments:
+#   $1 = Path to caUtils
+#   $2 = Path to mappings
+#	$3 = Show commands [Optional; default is false]
+#   $4 = List of mapping files
+# -----------------------------------------------------------------
+function load_export_mappings() 
+{
+	log_event $IMPORT_LOG "Start load export mappings"
+	echo "Loading export mappings..."
+	local cautils_path="$1"
+	local path="$2"
+	local show_command="$3"
+	shift
+	shift
+	shift
+	
+	local IFS_in=$IFS
+	IFS=','
+	for m in $@
+	do
+		if [ ! -z "$show_command" ]; then
+			# display command 
+			echo "	↳ $cautils_path load-export-mapping --quiet --file=$path/$m"
+		fi
+	
+		$cautils_path load-export-mapping --quiet --file="$path/$m"
+		local ret=$?
+		if [ $ret -ne 0 ] ; then
+			log_event $IMPORT_LOG "Load export mappings failed on $m"
+			die "Could not install export mapping $m" $ret
+		fi
+	done
+	
+	IFS=$IFS_in
+	log_event $IMPORT_LOG "Completed load export mappings"
 	return 0
 }
 

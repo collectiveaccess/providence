@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2022 Whirl-i-Gig
+ * Copyright 2014-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -73,6 +73,7 @@
 	
     if (!$this->request->isAjax()) {
 	    print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings);
+		print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
 	}
 	
 	$show_loan_controls = $show_movement_controls = $show_location_controls = $show_object_controls = $show_occurrence_controls = $show_collection_controls = $show_entity_controls = false;
@@ -345,7 +346,7 @@ switch($display_mode) {
 			
 			<div style='width: 700px; height: 200px;'>				
 				<div style="float: right;">
-					<div class='hierarchyBrowserSearchBar'><?= _t('Search'); ?>: <input type='text' id='<?= $vs_id_prefix; ?>_hierarchyBrowserSearch{n}' class='hierarchyBrowserSearchBar' name='search' value='' size='40'/></div>
+					<div class='hierarchyBrowserSearchBar'><input type='text' id='<?= $vs_id_prefix; ?>_hierarchyBrowserSearch{n}' class='hierarchyBrowserSearchBar' name='search' value='' size='40' placeholder=<?= json_encode(_t('Search')); ?>/></div>
 				</div>
 				
 				<div class="clear"><!-- empty --></div>
@@ -384,6 +385,7 @@ switch($display_mode) {
 						className: 'hierarchyBrowserLevel',
 						classNameContainer: 'hierarchyBrowserContainer',
 						currentSelectionIDID: '<?= $vs_id_prefix; ?>_ca_storage_locations_id{n}',
+						currentSelectionDisplayPrefix: <?= json_encode('<span class="hierarchyBrowserCurrentSelectionHeader">'._t('Selected').'</span>: '); ?>,
 					
 						indicator: "<?= caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 						editButtonIcon: "<?= caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
@@ -788,8 +790,10 @@ if($show_entity_controls) {
 <?php	
 			if(caGetOption('always_create_new_loan', $settings, false)) {
 ?>
-				jQuery('#<?= $vs_id_prefix; ?>AddLoan<?= $vn_type_id; ?>').on('click', function(e) { 
-					caRelationBundle<?= $vs_id_prefix; ?>_ca_loans_<?= $vn_type_id; ?>.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }, {'addBundle': true }); 
+				jQuery('#<?= $vs_id_prefix; ?>AddLoan').on('click', function(e) {
+					caRelationBundle<?= $vs_id_prefix; ?>_ca_loans.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }, {'addBundle': true });
+					e.preventDefault();
+					return false;
 				});
 <?php
 			}
@@ -835,8 +839,10 @@ if($show_entity_controls) {
 <?php	
 			if(caGetOption('always_create_new_movement', $settings, false)) {
 ?>
-				jQuery('#<?= $vs_id_prefix; ?>AddMovement<?= $vn_type_id; ?>').on('click', function(e) { 
-					caRelationBundle<?= $vs_id_prefix; ?>_ca_movements.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }, {'addBundle': true }); 
+				jQuery('#<?= $vs_id_prefix; ?>AddMovement').on('click', function(e) {
+					caRelationBundle<?= $vs_id_prefix; ?>_ca_movements.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }, {'addBundle': true });
+					e.preventDefault();
+					return false;
 				});
 <?php
 			}
@@ -924,7 +930,9 @@ if($show_entity_controls) {
 			if(caGetOption('always_create_new_occurrence', $settings, false)) {
 ?>
 				jQuery('#<?= $vs_id_prefix; ?>AddOcc<?= $vn_type_id; ?>').on('click', function(e) { 
-					caRelationBundle<?= $vs_id_prefix; ?>_ca_occurrences_<?= $vn_type_id; ?>.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }, {'addBundle': true }); 
+					caRelationBundle<?= $vs_id_prefix; ?>_ca_occurrences_<?= $vn_type_id; ?>.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }, {'addBundle': true });
+					e.preventDefault();
+					return false;
 				});
 <?php
 			}

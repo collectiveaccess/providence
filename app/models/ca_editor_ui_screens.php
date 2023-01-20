@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -881,7 +881,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'takesLocale' => false,
 								'default' => false,
 								'label' => _t('Show batch editing button?'),
-								'description' => _t('If checked an option to batch edit related records will be displaye.')
+								'description' => _t('If checked an option to batch edit related records will be displayed.')
 							)
 						);	
 						
@@ -1344,13 +1344,13 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 						);
 					}
 
-					if (in_array($vs_bundle, array('ca_places', 'ca_list_items', 'ca_storage_locations'))) {
+					if (in_array($vs_bundle, array('ca_collections', 'ca_places', 'ca_list_items', 'ca_storage_locations'))) {
 						$va_additional_settings['useHierarchicalBrowser'] = array(
 							'formatType' => FT_TEXT,
 							'displayType' => DT_CHECKBOXES,
 							'width' => 10, 'height' => 1,
 							'takesLocale' => false,
-							'default' => '1',
+							'default' => ($vs_bundle === 'ca_collections') ? '0' : '1',
 							'label' => _t('Use hierarchy browser?'),
 							'description' => _t('If checked a hierarchical browser will be used to select related items instead of an auto-complete lookup.')
 						);
@@ -1478,6 +1478,16 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'description' => _t('URL pointing to documentation for this hierarchy browser. Leave blank if no documentation URL exists.')
 							)
 						);
+						if($vs_bundle === 'hierarchy_location') {
+							$va_additional_settings['headerDisplayTemplate'] = [
+								'formatType' => FT_TEXT,
+								'displayType' => DT_FIELD,
+								'default' => '',
+								'width' => "475px", 'height' => "100px",
+								'label' => _t('Header display template'),
+								'description' => _t('Layout for item in hierarchy browser header. The template is evaluated relative to item being edited.')
+							];
+						}
 					} else {
 						switch($vs_bundle) {
 							case 'hierarchy_tools':
@@ -1998,6 +2008,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Object color'),
 										'description' => _t('If set object in list will use this color.')
 									),
+									'expandHierarchically' => array(
+                                        'formatType' => FT_TEXT,
+                                        'displayType' => DT_CHECKBOXES,
+                                        'width' => 10, 'height' => 1,
+                                        'takesLocale' => false,
+                                        'default' => '0',
+                                        'label' => _t('Include contents of sub-%1', $t_instance->getProperty('NAME_PLURAL')),
+                                        'description' => _t('If checked the delete relationship control will not be provided.')
+                                    ),
 									'displayTemplate' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_FIELD,
@@ -2005,6 +2024,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'width' => "475px", 'height' => "100px",
 										'label' => _t('Display template'),
 										'description' => _t('Layout for each object in the storage location (can include HTML). The template is evaluated relative to each object-movement or object-location relationship. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_objects.idno</i>.')
+									),									
+									'showBatchEditorButton' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_CHECKBOXES,
+										'width' => 10, 'height' => 1,
+										'takesLocale' => false,
+										'default' => false,
+										'label' => _t('Show batch editing button?'),
+										'description' => _t('If checked an option to batch edit contents will be displayed.')
 									)
 								);
 								break;
@@ -2520,10 +2548,9 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				} else {
 					$t_placement = new ca_editor_ui_bundle_placements($vn_placement_id, null, $va_available_bundles[$vs_bundle]['settings']);
 					if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
-					$t_placement->setMode(ACCESS_WRITE);
 					$t_placement->set('rank', $vn_i + 1);
 					
-					if (is_array($va_settings[$vn_placement_id])) {
+					if (is_array($va_settings[$vn_placement_id] ?? null)) {
 						foreach($t_placement->getAvailableSettings() as $vs_setting => $va_setting_info) {
 							$vs_val = isset($va_settings[$vn_placement_id][$vs_setting]) ? $va_settings[$vn_placement_id][$vs_setting] : null;
 						

@@ -614,7 +614,7 @@ class DataMigrationUtils {
 		// check for titles
 		$prefix_for_name = null;
 		foreach($titles as $title) {
-			if (preg_match("!^({$title}[\.]{0,1})!i", $text, $matches)) {
+			if (preg_match("!^({$title}[\.]{0,1})[\s]+!i", $text, $matches)) {
 				$prefix_for_name = $matches[1];
 				$text = str_replace($matches[1], '', $text);
 			}
@@ -793,13 +793,13 @@ class DataMigrationUtils {
 		$name = [];
 		
 		foreach($values['ind_suffixes'] as $suffix) {
-			if (preg_match("![,]*[ ]*({$suffix}[\.]{0,1})$!i", $text, $matches)) {
+			if (preg_match("![, ]+[ ]*({$suffix}[\.]{0,1})$!i", $text, $matches)) {
 				$name['suffix'] = $matches[1];
 				$text = str_replace($matches[0], '', $text);
 			}
 		}
 		foreach($values['corp_suffixes'] as $suffix) {
-			if (preg_match("![,]*[ ]*({$suffix}[\.]{0,1})$!i", $text, $matches)) {
+			if (preg_match("![, ]+[ ]*({$suffix}[\.]{0,1})$!i", $text, $matches)) {
 				$name['suffix'] = $matches[1];
 				$text = str_replace($matches[0], '', $text);
 				$name['is_corporation'] = true;
@@ -886,7 +886,7 @@ class DataMigrationUtils {
 										(caGetOption('skipExistingValues', $options, true) 
 										|| 
 										caGetOption('_skipExistingValues', $va_values, true)), // default to skipping attribute values if they already exist (until v1.7.9 default was _not_ to skip)
-									'matchOn' => caGetOption('_matchOn', $va_values, null)]);
+									'matchOn' => caGetOption('_matchOn', $va_values, ['idno', 'labels'])]);
 						} else {
 							foreach($va_expanded_values as $va_v) {
 								if($source_value = caGetOption('_source', $va_v, null)) {
@@ -901,7 +901,7 @@ class DataMigrationUtils {
 											caGetOption('skipExistingValues', $options, true) 
 											|| 
 											caGetOption('_skipExistingValues', $va_values, true)), // default to skipping attribute values if they already exist (until v1.7.9 default was _not_ to skip)
-										'matchOn' => caGetOption('_matchOn', $va_values, null)]);
+										'matchOn' => caGetOption('_matchOn', $va_values, ['idno', 'labels'])]);
 							}
 						}
 					} else {
@@ -916,7 +916,7 @@ class DataMigrationUtils {
 							), $vs_element, null, [
 								'source' => $source_value, 
 								'skipExistingValues' => true, 
-								'matchOn' => caGetOption('_matchOn', $va_values, null)
+								'matchOn' => caGetOption('_matchOn', $va_values, ['idno', 'labels'])
 							]);
 						}
 					}
@@ -958,7 +958,9 @@ class DataMigrationUtils {
 				$va_labels = $va_nonpreferred_labels;
 			}
 			foreach($va_labels as $va_label) {
-				$pt_instance->addLabel($va_label, $locale_id, null, false);
+				$label_locale = (isset($va_label['locale']) && $va_label['locale']) ? $va_label['locale'] : $locale_id;
+				
+				$pt_instance->addLabel($va_label, $label_locale, null, false);
 
 				if ($pt_instance->numErrors()) {
 					if(isset($options['outputErrors']) && $options['outputErrors']) {

@@ -406,7 +406,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		
 		if(!is_array($match_on = caGetOption('matchOn', $pa_options, []))) { $match_on = []; }
 		$match_on = array_filter(array_map('strtolower', $match_on), function ($v) { return in_array($v, ['type_code', 'typecode', 'label', 'labels']); });
-		if(!sizeof($match_on)) { $match_on = ['type_code']; }
+		if(!sizeof($match_on)) { $match_on = ['type_code', 'label']; }
 		
 		$pm_type_code_or_id = mb_strtolower($pm_type_code_or_id);
 		

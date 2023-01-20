@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -93,15 +93,19 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 *
 	 */
 	protected $_rowAsSearchResult;
+	
+	/**
+	 *
+	 */
+	protected $auto_convert_line_breaks = false;
+	
+	/**
+	 *
+	 */
+	protected $do_highlighting = false;
 	# ------------------------------------------------------
 	public function __construct($id=null, ?array $options=null) {
 		parent::__construct($id, $options);	# call superclass constructor
-		
-		if ($pn_id) {
-			if ($this->_rowAsSearchResult = $this->makeSearchResult($this->tableName(), [$id])) {
-				$this->_rowAsSearchResult->nextHit();
-			}
-		}
 		$this->initLabelDefinitions($options);
 	}
 	# ------------------------------------------------------
@@ -115,6 +119,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		if ($vn_id = $this->getPrimaryKey()) {
 			if ($this->_rowAsSearchResult = $this->makeSearchResult($this->tableName(), array($vn_id))) {
+				$this->_rowAsSearchResult->doHighlighting($this->do_highlighting);
+				$this->_rowAsSearchResult->autoConvertLineBreaks($this->auto_convert_line_breaks);
 				$this->_rowAsSearchResult->nextHit();
 			}
 		}
@@ -278,6 +284,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if ($vn_id = $this->getPrimaryKey()) {
 			if ($this->_rowAsSearchResult = $this->makeSearchResult($this->tableName(), array($vn_id))) {
 				$this->_rowAsSearchResult->nextHit();
+				$this->_rowAsSearchResult->autoConvertLineBreaks($this->auto_convert_line_breaks);
+				$this->_rowAsSearchResult->doHighlighting($this->do_highlighting);
 			}
 		}
 		
@@ -742,9 +750,29 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			if (method_exists($this->_rowAsSearchResult, "filterNonPrimaryRepresentations")) {
 				$this->_rowAsSearchResult->filterNonPrimaryRepresentations(caGetOption('filterNonPrimaryRepresentations', $pa_options, true));
 			}
+			$this->_rowAsSearchResult->autoConvertLineBreaks($this->auto_convert_line_breaks);
 			return $this->_rowAsSearchResult->get($ps_field, $pa_options);
 		}
 		return parent::get($ps_field, $pa_options);
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Set default line break conversion behavior for get(). If $auto_convert is set to true all 
+	 * text values will be returned with line breaks converted to HTML breaks if the text 
+	 * does not already contain <br> or <p> tags. If $auto_convert is set to null or omitted 
+	 * the current auto convert value is returned.
+	 * 
+	 * @param bool $auto_convert
+	 *
+	 * @return bool The current auto convert value 
+	 */
+	public function autoConvertLineBreaks(?bool $auto_convert=null) : bool {
+		if(!is_null($auto_convert)) {
+			$this->auto_convert_line_breaks = $auto_convert;
+			if($this->_rowAsSearchResult) { $this->_rowAsSearchResult->autoConvertLineBreaks($auto_convert); }
+			
+		}
+		return $this->auto_convert_line_breaks;
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -752,8 +780,20 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 */
 	public function getWithTemplate($ps_template, $pa_options=null) {
 		if(!$this->getPrimaryKey()) { return null; }
-		$vs_table_name = $this->tableName();	
+		$vs_table_name = $this->tableName();
+		if(!isset($pa_options['highlighting'])) { $pa_options['highlighting'] = $this->doHighlighting(); }
 		return caProcessTemplateForIDs($ps_template, $vs_table_name, array($this->getPrimaryKey()), $pa_options);
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function doHighlighting(?bool $do_highlighting=null) : bool {
+		if(!is_null($do_highlighting) && ($this->do_highlighting !== (bool)$do_highlighting)) { 
+			$this->do_highlighting = (bool)$do_highlighting;
+			$this->_rowAsSearchResult->doHighlighting($this->do_highlighting);
+		}
+		return $this->do_highlighting;
 	}
 	# ------------------------------------------------------
 	/**
@@ -4759,7 +4799,9 @@ if (!$vb_batch) {
 											) {
 												continue;
 											}
-											$t_rep = $this->addRepresentation($f, $vn_rep_type_id, $vals['locale_id'], $vals['status'], $vals['access'], $vn_is_primary, array_merge($vals, ['name' => $vals['rep_label']]), array('original_filename' => $vs_original_name, 'returnRepresentation' => true, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vn_type_id, 'mapping_id' => $vn_object_representation_mapping_id));	// $vn_type_id = *relationship* type_id (as opposed to representation type)
+											if ($t_rep = $this->addRepresentation($f, $vn_rep_type_id, $vals['locale_id'], $vals['status'], $vals['access'], $vn_is_primary, array_merge($vals, ['name' => $vals['rep_label']]), ['original_filename' => $vs_original_name, 'returnRepresentation' => true, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vn_type_id, 'mapping_id' => $vn_object_representation_mapping_id])) {	// $vn_type_id = *relationship* type_id (as opposed to representation type)
+												@unlink($f);
+											}
 										}
 									} elseif($vs_key === 'empty') {
 										$t_rep = $this->addRepresentation(null, $vn_rep_type_id, $vals['locale_id'], $vals['status'], $vals['access'], $vn_is_primary, array_merge($vals, ['name' => $vals['rep_label']]), array('original_filename' => $vs_original_name, 'returnRepresentation' => true, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vn_type_id, 'mapping_id' => $vn_object_representation_mapping_id));	// $vn_type_id = *relationship* type_id (as opposed to representation type)
@@ -5882,6 +5924,7 @@ if (!$vb_batch) {
 			}
 			if ($vs_batch_mode == '_replace_') {			// remove all existing relationships and then add new ones
 				$this->removeRelationships($ps_bundle_name, caGetOption('restrict_to_relationship_types', $pa_settings, null), ['restrictToTypes' => caGetOption('restrict_to_types', $pa_settings, null)]);
+				$va_rel_items = [];
 			}
 		}
 		
@@ -7162,16 +7205,31 @@ if (!$vb_batch) {
 			
 			$vs_idno_fld = $this->getProperty('ID_NUMBERING_ID_FIELD');
 			
-			if (($this->tableName() == 'ca_objects') && $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && !$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_disable_object_collection_idno_inheritance') && $pa_options['request'] && ($vn_collection_id = $pa_options['request']->getParameter('collection_id', pInteger))) {
-				require_once(__CA_MODELS_DIR__."/ca_collections.php");
+			$parent_idno_is_set = false;
+			if (($this->tableName() == 'ca_objects') && $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && !$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_disable_object_collection_idno_inheritance') && $pa_options['request']) {
+				if(!($vn_collection_id = $pa_options['request']->getParameter('collection_id', pInteger)) && ($obj_coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type'))) {
+					if(is_array($coll_ids = $this->get('ca_collections.collection_id', ['restrictToRelationshipTypes' => $obj_coll_rel_type, 'returnAsArray' => true]))) {
+						$vn_collection_id = array_shift($coll_ids);
+					}
+				}
+				
 				// Parent will be set to collection
 				$t_coll = new ca_collections($vn_collection_id);
 				if ($this->inTransaction()) { $t_coll->setTransaction($this->getTransaction()); }
 				if ($t_coll->getPrimaryKey()) {
 					$this->opo_idno_plugin_instance->isChild(true, $t_coll->get('idno'));
-					if (!$this->opo_idno_plugin_instance->formatHas('PARENT') && !$this->opo_idno_plugin_instance->getFormatProperty('dont_inherit_from_parent_collection')) { $this->set($vs_idno_fld, $t_coll->get('idno')); }
+					if (																	// don't do idno inheritance if ...
+						!$this->opo_idno_plugin_instance->formatHas('PARENT') && 			// format has PARENT element (parent takes care of inheritance)
+						!($this->opo_idno_plugin_instance->formatHas('SERIAL') && (sizeof($this->opo_idno_plugin_instance->getElements()) === 1)) && 		// or format is singelton SERIAL elemenbt
+						!$this->getPrimaryKey() && 											// or it's an existing row (we only set inherited idnos on new records)
+						!$this->opo_idno_plugin_instance->getFormatProperty('dont_inherit_from_parent_collection')	// or configuration disabled idno inheritance
+					) { 
+						$this->set($vs_idno_fld, $t_coll->get('idno')); 
+						$parent_idno_is_set = true;
+					}
 				}
-			} elseif ($vn_parent_id = $this->get($vs_parent_id_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD'))) { 
+			}
+			if (!$parent_idno_is_set && ($vn_parent_id = $this->get($vs_parent_id_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD')))) { 
 				// Parent will be set
 				$t_parent = Datamodel::getInstanceByTableName($this->tableName(), false);
 				if ($this->inTransaction()) { $t_parent->setTransaction($this->getTransaction()); }
@@ -8285,7 +8343,7 @@ side. For many self-relations the direction determines the nature and display te
 						$va_value_instance['locale_id'] = $g_ui_locale_id ? $g_ui_locale_id : ca_locales::getDefaultCataloguingLocaleID();
 					}
 					
-					$opts = [];
+					$opts = ['matchOn' => ['idno', 'labels', 'row_id']];
 					if($source_value = caGetOption('_source', $va_value_instance, null)) {
 						unset($va_value_instance['_source']);
 						$opts['source'] = $source_value;

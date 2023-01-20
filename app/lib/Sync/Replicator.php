@@ -106,10 +106,19 @@ class Replicator {
 	 *
 	 */
 	protected function getSourcesAsServiceClients() {
-		$va_sources = $this->opo_replication_conf->get('sources');
-		if(!is_array($va_sources)) { throw new Exception('No sources configured'); }
+		$sources = $this->opo_replication_conf->get('sources');
+		if($enabled_sources = $this->opo_replication_conf->getList('enabled_sources')) {
+			$filtered_sources = [];
+			foreach($enabled_sources as $s) {
+				if(isset($sources[$s])) {
+					$filtered_sources[$s] = $sources[$s];
+				}
+			}
+			$sources = $filtered_sources;
+		}
+		if(!is_array($sources)) { throw new Exception('No sources configured'); }
 
-		return $this->getConfigAsServiceClients($va_sources);
+		return $this->getConfigAsServiceClients($sources);
 	}
 	# --------------------------------------------------------------------------------------------------------------
 	/**
@@ -470,7 +479,7 @@ class Replicator {
                                                 ksort($va_log_for_missing_guid, SORT_NUMERIC);
                                                 $this->log(_t("[%1] Missing log for %2 is %3", $vs_source_key, $vs_missing_guid, print_R($va_log_for_missing_guid, true)), Zend_Log::DEBUG);
                                                 foreach($va_log_for_missing_guid as $va_missing_entry) {
-                                                	if ($this->sent_log_ids[$va_missing_entry['log_id']]) { 
+                                                	if (($va_missing_entry['log_id'] != 1) && $this->sent_log_ids[$va_missing_entry['log_id']]) { 
                                                 		$this->log(_t("[%1] Skipped missing log_id %2 becaue it has already been sent.", $vs_source_key, $va_missing_entry['log_id']), Zend_Log::WARN);
                                                                 
                                                 		continue; 

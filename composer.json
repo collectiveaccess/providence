@@ -1,15 +1,21 @@
 {
+  "name": "collectiveaccess/providence",
+  "description": "Cataloguing and data/media management application.",
+  "type": "package",
+  "license": "GPL-3.0-only",
+  "bin" : [
+    "support/bin/caUtils",
+    "support/bin/caTools"
+  ],
   "require": {
     "caseyamcl/phpoaipmh": "^3.0",
     "collectiveaccess/service-wrapper": "v1.1.3",
-    "dompdf/dompdf": "~1.2.1",
+    "dompdf/dompdf": "~2.0.1",
     "easyrdf/easyrdf": "0.9.*",
     "elasticsearch/elasticsearch": "~7.0",
     "ezyang/htmlpurifier": "~4.9",
     "guzzlehttp/guzzle": "~6.5.6",
     "guzzlehttp/psr7": "^1.8.4",
-    "hoa/compiler": "~3.17",
-    "hoa/visitor": "~2.17",
     "james-heinrich/getid3": "^1.9.20",
     "joshralph/password-policy": "~0.2",
     "knplabs/github-api": "~2.7",
@@ -44,9 +50,9 @@
     "firebase/php-jwt": "^5.2",
     "softonic/graphql-client": "^1.3",
     "whikloj/bagittools": "^3.0",
-    "scholarslab/bagit": "~0.2",
     "voku/stop-words": "^2.0",
-    "tecnickcom/tc-lib-barcode": "^1.17"
+    "tecnickcom/tc-lib-barcode": "^1.17",
+    "symfony/process": "^5.4"
   },
   "suggest": {
     "binaryoung/jieba-php": "^0.1.0"
