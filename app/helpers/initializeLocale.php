@@ -106,7 +106,14 @@
 	*		return = Set to "definite" to return an array of definite articles for the locale or language; set to "indefinite" for a list of indefinite articles. [Default is null – return both definite and indefinite articles]
 	* @return array List of articles
 	*/
+	$g_locale_articles = [];
 	function caGetArticlesForLocale($ps_locale, $pa_options=null) {
+		global $g_locale_articles;
+		
+		$return = caGetOption('return', $pa_options, null, ['forceToLowercase' => true]);
+		$key = $ps_locale.'/'.$return;
+		if(isset($g_locale_articles[$key])) { return $g_locale_articles[$key]; }
+		
 		if(sizeof($va_tmp = explode('_', $ps_locale)) == 1) {
 			$va_locales = array_map(function($v) { return pathinfo($v, PATHINFO_BASENAME); }, caGetDirectoryContentsAsList(__CA_LIB_DIR__."/Parsers/TimeExpressionParser", false));
 			$va_locales = array_filter($va_locales, function($v) use ($ps_locale) { return preg_match("!^{$ps_locale}_!", $v); });
@@ -116,12 +123,12 @@
 		if(!file_exists($vs_path = __CA_LIB_DIR__."/Parsers/TimeExpressionParser/{$ps_locale}.lang")) { return null; }
 		$o_config = Configuration::load(__CA_LIB_DIR__."/Parsers/TimeExpressionParser/{$ps_locale}.lang");
 	
-		if(caGetOption('return', $pa_options, null, ['forceToLowercase' => true]) == 'definite') {
-			return $o_config->getList('definiteArticles');
+		if($return == 'definite') {
+			return $g_locale_articles[$key] = $o_config->getList('definiteArticles');
 		}
-		if(caGetOption('return', $pa_options, null, ['forceToLowercase' => true]) == 'indefinite') {
-			return $o_config->getList('indefiniteArticles');
+		if($return == 'indefinite') {
+			return $g_locale_articles[$key] = $o_config->getList('indefiniteArticles');
 		}
-		return array_merge($o_config->getList('definiteArticles'), $o_config->getList('indefiniteArticles'));
+		return $g_locale_articles[$key] = array_merge($o_config->getList('definiteArticles'), $o_config->getList('indefiniteArticles'));
 	}
 	# ----------------------------------------

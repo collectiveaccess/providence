@@ -3514,10 +3514,13 @@ class TimeExpressionParser {
 	 * @return Configuration Settings for the specified locale or null if the locale is not defined.
 	 */
 	static public function getSettingsForLanguage($ps_iso_code) {
-		$vs_config_path = __CA_LIB_DIR__.'/Parsers/TimeExpressionParser/'.$ps_iso_code.'.lang';
-		if(!file_exists($vs_config_path)) { return null; }
+		global $g_tep_lang_settings;
+		if(isset($g_tep_lang_settings[$ps_iso_code])) { return $g_tep_lang_settings[$ps_iso_code]; }
 		
-		return Configuration::load($vs_config_path);
+		$vs_config_path = __CA_LIB_DIR__.'/Parsers/TimeExpressionParser/'.$ps_iso_code.'.lang';
+		if(!file_exists($vs_config_path)) { return $g_tep_lang_settings[$ps_iso_code] = null; }
+		
+		return $g_tep_lang_settings[$ps_iso_code] = Configuration::load($vs_config_path);
 	}
 	# -------------------------------------------------------------------
 	private function getLanguageSettingsWordList($ps_key) {
