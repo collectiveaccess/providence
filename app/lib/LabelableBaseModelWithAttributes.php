@@ -142,6 +142,19 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		$t_label->purify($this->purify());
 		$t_label->setLabelTypeList($this->getAppConfig()->get($pb_is_preferred ? "{$vs_table_name}_preferred_label_type_list" : "{$vs_table_name}_nonpreferred_label_type_list"));
 		
+		// Does label exist?
+		$label_table = $t_label->tableName();
+		
+		
+		$dupe_check_values = array_merge($pa_label_values, [$this->primaryKey() => $this->getPrimaryKey(), 'locale_id' => ca_locales::codeToID($pn_locale_id), 'type_id' => $pn_type_id]);
+		if ($t_label->hasField('effective_date')) {
+			$dupe_check_values['effective_date'] = $effective_date;
+		}
+		var_dump($dupe_check_values);
+		if(($dupe_count = $label_table::find($dupe_check_values, ['returnAs' => 'count'])) > 0) {
+			return false;
+		}
+		
 		foreach($pa_label_values as $vs_field => $vs_value) {
 			if ($t_label->hasField($vs_field)) { 
 				if ($vb_truncate_long_labels) {
@@ -731,6 +744,21 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 								$pa_values[$vs_type_field_name][$vn_i] = [$vs_op, $vn_id];
 							}
 						}
+					}
+				}
+			}
+			
+			//
+			// Convert dates
+			//
+			foreach($pa_values as $vs_field => $va_field_values) {
+				if($t_instance->getFieldInfo($vs_field, 'FIELD_TYPE') === FT_HISTORIC_DATERANGE) {
+					$d = $va_field_values[0][1];
+					if($dt = caDateToHistoricTimestamps($d)) {
+						$pa_values[$t_instance->getFieldInfo($vs_field, 'START')] = [['>=', $dt['start']]];
+						$pa_values[$t_instance->getFieldInfo($vs_field, 'END')] = [['<=', $dt['end']]];
+					
+						unset($pa_values[$vs_field]);
 					}
 				}
 			}

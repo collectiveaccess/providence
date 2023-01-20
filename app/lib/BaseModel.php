@@ -12244,6 +12244,21 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		//
+		// Convert dates
+		//
+		foreach($pa_values as $vs_field => $va_field_values) {
+			if($t_instance->getFieldInfo($vs_field, 'FIELD_TYPE') === FT_HISTORIC_DATERANGE) {
+				$d = $va_field_values[0][1];
+				if($dt = caDateToHistoricTimestamps($d)) {
+					$pa_values[$t_instance->getFieldInfo($vs_field, 'START')] = [['>=', $dt['start']]];
+					$pa_values[$t_instance->getFieldInfo($vs_field, 'END')] = [['<=', $dt['end']]];
+					
+					unset($pa_values[$vs_field]);
+				}
+			}
+		}
+		
+		//
 		// Convert other intrinsic list references
 		//
 		$vb_find_all = false;
