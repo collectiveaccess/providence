@@ -189,8 +189,8 @@ function caMakeProperUTF8ForXML($ps_text){
 	$ps_text = mb_convert_encoding($ps_text, 'UTF-8', 'UTF-8');
 
 	// strip invalid PCDATA characters for XML
-	$vs_return = "";
-	if (empty($ps_text)) {
+	$vs_return = '';
+	if (is_null($ps_text) || !strlen($ps_text)) {
 		return $vs_return;
 	}
 

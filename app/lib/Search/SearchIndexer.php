@@ -1119,7 +1119,7 @@ if (!$for_current_value_reindex) {
 												$vb_skip = true;
 											}
 
-											if (!$vb_skip && is_array($va_labels = $t_rel->getPreferredLabels(null, false, array('row_id' => $vn_row_id)))) {
+											if (!$vb_skip && is_array($va_labels = array_merge($t_rel->getPreferredLabels(null, false, array('row_id' => $vn_row_id)), $t_rel->getNonPreferredLabels(null, false, array('row_id' => $vn_row_id)) ?? []))) {
 												foreach($va_labels as $vn_x => $va_labels_by_locale) {
 													foreach($va_labels_by_locale as $vn_locale_id => $va_label_list) {
 														foreach($va_label_list as $va_label) {
@@ -1732,7 +1732,7 @@ if (!$for_current_value_reindex) {
 							}
 							
 							if ($vn_datatype == __CA_ATTRIBUTE_VALUE_LIST__) {
-								$this->opo_engine->indexField($pn_subject_table_num, $field_num_prefix.$vn_element_id, $pn_row_id, $vs_v = [$vo_value->getDisplayValue(['output' => 'idno']), $vo_value->getDisplayValue(['output' => 'text'])], array_merge($pa_data, ['DONT_TOKENIZE' => 1]));
+								$this->opo_engine->indexField($pn_subject_table_num, $field_num_prefix.$vn_element_id, $pn_row_id, $vs_v = [$vo_value->getDisplayValue(['output' => 'idno']), $vo_value->getDisplayValue(['output' => 'text'])], array_merge($pa_data, ['DONT_TOKENIZE' => false]));
 								$this->_genIndexInheritance($t_inheritance_subject ? $t_inheritance_subject : $pt_subject,
 									$t_inheritance_subject ? $pt_subject : null,
 									$field_num_prefix.$vn_element_id,
@@ -2163,7 +2163,7 @@ if (!$for_current_value_reindex) {
 						);
 
 						if ($vb_index_labels) {
-							$va_labels = $t_dep->getPreferredLabels();
+							$va_labels = array_merge($t_dep->getPreferredLabels() ?? [], $t_dep->getNonPreferredLabels() ?? []);
 							foreach($va_labels as $vn_x => $va_labels_by_locale) {
 								foreach($va_labels_by_locale as $vn_locale_id => $va_label_list) {
 									foreach($va_label_list as $va_label) {
