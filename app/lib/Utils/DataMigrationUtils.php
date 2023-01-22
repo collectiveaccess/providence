@@ -1257,6 +1257,8 @@ class DataMigrationUtils {
 					$vs_element = array_pop($va_tmp);
 					if ($t_instance->hasField($vs_element) || $t_instance->hasElement($vs_element)) {
 						$va_params = [$vs_element => $pa_values[$vs_element] ?? $pa_label[$vs_element] ?? $pa_label[$vs_label_display_fld]];
+						
+						if (!$pb_ignore_parent && $vn_parent_id) { $va_params['parent_id'] = $vn_parent_id; }
 						$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $options['transaction'], 'restrictToTypes' => $va_restrict_to_types, 'dontIncludeSubtypesInTypeRestriction' => true));
 						if ($vn_id) { break(2); }
 					}
