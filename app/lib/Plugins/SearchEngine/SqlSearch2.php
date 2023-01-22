@@ -685,7 +685,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				$field = $terms[0]->field;
 	 			break;
 	 	}
-	 	
+	 	$text = str_replace('*', '', $text);	// strip wildcards
 	 	$field_lc = mb_strtolower($field);
 	 	$field_elements = explode('.', $field_lc);
 	 	if (in_array($field_elements[0], [_t('created'), _t('modified')])) {
