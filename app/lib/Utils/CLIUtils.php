@@ -3516,8 +3516,8 @@
 
 			$t_list = new ca_lists();
 			$o_db = $t_list->getDb();
-			
-			$vn_locale_id = ca_locales::getDefaultCataloguingLocaleID();
+
+			$locale_id = ca_locales::getDefaultCataloguingLocaleID();
 
 			if (!($ps_source = (string)$po_opts->getOption('file'))) {
 				CLIUtils::addError(_t("You must specify a file"));
@@ -3527,14 +3527,13 @@
 				CLIUtils::addError(_t("You must specify a valid file"));
 				return false;
 			}
-			
-			if (!($ps_list_code = (string)$po_opts->getOption('list'))) {
+
+			if (!($list_code = (string)$po_opts->getOption('list'))) {
 				CLIUtils::addError(_t("You must specify a list"));
 				return false;
 			}
-			
-			$pb_update = (bool)$po_opts->getOption('update'); 	// "update" parameter; we only allow updating of a list if this is explicitly set
-			$vb_is_update = false; // flag indicated if we're actually updating an existing list
+
+			$is_update = (bool)$po_opts->getOption('update'); 	// "update" parameter; we only allow updating of a list if this is explicitly set
 
 			try {
 				$o_file = PHPExcel_IOFactory::load($ps_source);
@@ -3542,188 +3541,161 @@
 				CLIUtils::addError(_t("You must specify a valid Excel .xls or .xlsx file: %1", $e->getMessage()));
 				return false;
 			}
-			
-			print CLIProgressBar::start($o_file->getActiveSheet()->getHighestRow(), _t('Loading non-preferred terms'));
-			// Get non-preferred terms
-			$o_file->setActiveSheetIndex(1);
-			$o_sheet = $o_file->getActiveSheet();
-			$o_rows = $o_sheet->getRowIterator();
-			
-			$o_rows->next();
-				
-			$va_non_preferred_terms = [];
-			while ($o_rows->valid() && ($o_row = $o_rows->current())) {
-				$o_cells = $o_row->getCellIterator();
-				$o_cells->setIterateOnlyExistingCells(false);
-
-				$vn_c = 0;
-				$va_data = array();
-
-				foreach ($o_cells as $o_cell) {
-					$va_data[$vn_c] = trim((string)$o_cell->getValue());
-					$vn_c++;
-
-					if ($vn_c > 3) { break; }
-				}
-				
-				$va_non_preferred_terms[$va_data[1]][] = $va_data[0];
-				
-				$o_rows->next();
-				CLIProgressBar::next();
-			}
-			CLIProgressBar::finish();
-			
 
 			// get list
-			
 			print CLIProgressBar::start(1, _t('Creating list'));
-			
-			if (!($t_list = ca_lists::find(['list_code' => $ps_list_code], ['returnAs' => 'firstModelInstance']))) {
+
+			if (!($t_list = ca_lists::find(['list_code' => $list_code], ['returnAs' => 'firstModelInstance']))) {
 				$t_list = new ca_lists();
 				$t_list->setMode(ACCESS_WRITE);
-				$t_list->set('list_code', $ps_list_code);
+				$t_list->set('list_code', $list_code);
 				$t_list->set('is_system_list', 1);
 				$t_list->set('is_hierarchical', 1);
 				$t_list->set('use_as_vocabulary', 1);
+				$t_list->set('default_sort', 1); // sort by rank
 				$t_list->insert();
-				
+
 				if ($t_list->numErrors()) {
-					CLIUtils::addError(_t("Could not create list %1: %2", $ps_list_code, join("; ", $t_list->getErrors())));
+					CLIUtils::addError(_t("Could not create list %1: %2", $list_code, join("; ", $t_list->getErrors())));
 					return false;
 				}
-				
-				$t_list->addLabel(['name' => 'Chenhall Nomenclature'], $vn_locale_id, null, true);
+
+				$t_list->addLabel(['name' => 'Chenhall Nomenclature'], $locale_id, null, true);
 				if ($t_list->numErrors()) {
-					CLIUtils::addError(_t("Could not label list %1: %2", $ps_list_code, join("; ", $t_list->getErrors())));
+					CLIUtils::addError(_t("Could not label list %1: %2", $list_code, join("; ", $t_list->getErrors())));
 					return false;
 				}
-				
-			} elseif (($t_list->numItemsInList($ps_list_code) > 0)) {
+
+			} elseif (($t_list->numItemsInList($list_code) > 0)) {
 				if ($pb_update) {
 					$vb_is_update = true;
 				} else {
-					CLIUtils::addError(_t("List %1 is not empty. The Chenhall Nomenclature may only be imported into an empty list.", $ps_list_code));
+					CLIUtils::addError(_t("List %1 is not empty. The Chenhall Nomenclature may only be imported into an empty list.", $list_code));
 					return false;
 				}
 			}
 			CLIProgressBar::finish();
-			
-			
-			$vn_list_id = $t_list->getPrimaryKey();
 
-			// Get preferred terms
-			
+			$root_id = $t_list->getRootListItemID();
+
+			print CLIProgressBar::start($o_file->getActiveSheet()->getHighestRow(), _t('Loading non-preferred terms'));
+
 			$o_file->setActiveSheetIndex(0);
 			$o_sheet = $o_file->getActiveSheet();
 			$o_rows = $o_sheet->getRowIterator();
-			$vn_add_count = 0;
-
-			print CLIProgressBar::start($o_file->getActiveSheet()->getHighestRow(), _t('Loading preferred terms'));
+			
+			$add_count = 0;
 			
 			$o_rows->next(); // skip first line
-			
-			$va_parents = [];
-			
+
+			$parent_ids = [];
 			while ($o_rows->valid() && ($o_row = $o_rows->current())) {
 				$o_cells = $o_row->getCellIterator();
 				$o_cells->setIterateOnlyExistingCells(false);
 
-				$vn_c = 0;
-				$va_data = array();
+				$c = $level = 0;
+				$data = $non_preferred_terms = [];
+				$id = $definition = $definition_source = $notes = null;
 
 				foreach ($o_cells as $o_cell) {
-					$vm_val = $o_cell->getValue();
-					if ($vm_val instanceof PHPExcel_RichText) {
-						$vs_val = '';
-						foreach($vm_val->getRichTextElements() as $vn_x => $o_item) {
-							$o_font = $o_item->getFont();
-							$vs_text = $o_item->getText();
-							if ($o_font && $o_font->getBold()) {
-								$vs_val .= "<strong>{$vs_text}</strong>";
-							} elseif($o_font && $o_font->getItalic()) {
-								$vs_val .= "<em>{$vs_text}</em>";
-							} else {
-								$vs_val .= $vs_text;
+					switch($c) {
+						case 0:
+							$id=trim((string)$o_cell->getValue());
+							break;
+						case 1:
+							//skip
+							break;
+						case 11:
+							$definition=trim((string)$o_cell->getValue());
+							break;
+						case 12:
+							$definition_source=trim((string)$o_cell->getValue());
+							break;
+						case 13:
+							$notes=trim((string)$o_cell->getValue());
+							break;
+						case 14:
+							$non_preferred_terms=explode(';',trim((string)$o_cell->getValue()));
+							break;
+						default:
+							if(($c>=2)&&($c<=7)&&($t=trim((string)$o_cell->getValue()))){
+								$level=$c-2;
+								$data[$level]=$t;
 							}
-						}
-					} else {
-						$vs_val = trim((string)$vm_val);
+							break;
 					}
-					$va_data[$vn_c] = nl2br(preg_replace("![\n\r]{1}!", "\n\n", $vs_val));
-					$vn_c++;
 
-					if ($vn_c > 6) { break; }
+					$c++;
+					if ($c > 14) { break; }
 				}
+
 				$o_rows->next();
-
+				print CLIProgressBar::next(1, _t($is_existing_item ? 'Updated preferred term %1' : 'Added preferred term %1', $data[$level]));
+				if(!sizeof($data)) { continue; }
 				
-				$va_acc = [];
-				foreach($va_data as $vn_col => $vs_term) {
-					if(!$vs_term) { continue; }
-					if($vn_col > 5) { break; }
-					$va_acc[] = $vs_term;
-				}
-				$vs_term = array_pop($va_acc);
-				$vs_key = md5(join("|", $va_acc));
-				if (!($vn_parent_id = $va_parents[$vs_key])) {
-					$vn_parent_id = $t_list->getRootListItemID();
-				}
+				$parent_id = isset($parent_ids[$level-1]) ? $parent_ids[$level-1] : $root_id;
 				
+				$is_existing_item = false;
 				$t_item = null;
-				$vb_is_existing_item = false;
-				if ($vb_is_update) {
+				if ($is_update) {
 					// look for existing list item
-					if ($t_item = ca_list_items::find(['list_id' => $vn_list_id, 'idno' => mb_substr($vs_term, 0, 255)], ['returnAs' => 'firstModelInstance'])) {
-						if (($t_item->get('ca_list_items.preferred_labels.name_plural') !== $vs_term) || ($t_item->get('ca_list_items.preferred_labels.description') !== $va_data[6])) {
-							if(!$t_item->replaceLabel(['name_singular' => $vs_term, 'name_plural' => $vs_term, 'description' => $va_data[6]], $vn_locale_id, null, true)) {
-								CLIUtils::addError(_t("Could not update term %1: %2", $vs_term, join("; ", $t_item->getErrors())));
+					if ($t_item = ca_list_items::find(['list_id' => $list_id, 'idno' => mb_substr($id, 0, 255)], ['returnAs' => 'firstModelInstance'])) {
+						if (($t_item->get('ca_list_items.preferred_labels.name_plural') !== $data[$level]) || ($t_item->get('ca_list_items.preferred_labels.description') !== $description)) {
+							if(!$t_item->replaceLabel(['name_singular' => $data[$level], 'name_plural' => $data[$level], 'description' => $description], $locale_id, null, true)) {
+								CLIUtils::addError(_t("Could not update term %1: %2", $data[$level], join("; ", $t_item->getErrors())));
 							}
 						}
-						$vb_is_existing_item = true;
+						$is_existing_item = true;
 						
 						if (!$t_item->removeAllLabels(__CA_LABEL_TYPE_NONPREFERRED__)) {
-							CLIUtils::addError(_t("Could not remove nonpreferred labels for update for term %1: %2", $vs_term, join("; ", $t_item->getErrors())));
+							CLIUtils::addError(_t("Could not remove nonpreferred labels for update for term %1: %2", $data[$level], join("; ", $t_item->getErrors())));
 						}
 						
-						if ($vn_parent_id != $t_item->get('ca_list_items.parent_id')) {
+						if ($parent_id != $t_item->get('ca_list_items.parent_id')) {
 							$t_item->setMode(ACCESS_WRITE);
-							$t_item->set('parent_id', $vn_parent_id);
+							$t_item->set('parent_id', $parent_id);
 							if (!$t_item->update()) {
-								CLIUtils::addError(_t("Could not update parent for term %1: %2", $vs_term, join("; ", $t_item->getErrors())));
+								CLIUtils::addError(_t("Could not update parent for term %1: %2", $data[$level], join("; ", $t_item->getErrors())));
 							}
 						}
 					}
 				}
+				$non_preferred_terms = array_filter($non_preferred_terms, function($v) { return strlen($v); });
 				
 				if (!$t_item) {
-					if (!($t_item = $t_list->addItem($vs_term, true, false, $vn_parent_id, null, $vs_term, '', 0, 1))) {
-						CLIUtils::addError(_t("Could not add term %1: %2", $vs_term, join("; ", $t_list->getErrors())));
+					if (!($t_item = $t_list->addItem($data[$level], true, false, $parent_id, null, $id, '', 0, 1))) {
+						CLIUtils::addError(_t("Could not add term %1: %2", $data[$level], join("; ", $t_list->getErrors())));
+						print_R($data);
 						continue;
 					}
 				}
-				if (!$vb_is_existing_item) {
-					if (!$t_item->addLabel(['name_singular' => $vs_term, 'name_plural' => $vs_term, 'description' => $va_data[6]], $vn_locale_id, null, true)) {
-						CLIUtils::addError(_t("Could not add term label %1: %2", $vs_term, join("; ", $t_list->getErrors())));
+				$add_count++;
+				if (!$is_existing_item) {
+					if (!$t_item->addLabel(['name_singular' => $data[$level], 'name_plural' => $data[$level], 'description' => $definition], $locale_id, null, true)) {
+						CLIUtils::addError(_t("Could not add term label %1: %2", $data[$level], join("; ", $t_list->getErrors())));
+						print_R($data);
 						continue;
 					}
 				}
-				print CLIProgressBar::next(1, _t($vb_is_existing_item ? 'Updated preferred term %1' : 'Added preferred term %1', $vs_term));
-				$va_parents[md5(join("|", array_merge($va_acc, [$vs_term])))] = $t_item->getPrimaryKey();
+				$parent_ids[$level] = $t_item->getPrimaryKey();
 				
-				if(is_array($va_non_preferred_terms[$vs_term])) {
-					foreach($va_non_preferred_terms[$vs_term] as $vs_non_preferred_term) {
-						if (!($t_item->addLabel(['name_singular' => $vs_non_preferred_term, 'name_plural' => $vs_non_preferred_term, 'description' => ''], $vn_locale_id, null, false))) {
-							CLIUtils::addError(_t("Could not add non-preferred term %1 to %2: %3", $vs_non_preferred_term, $vs_term, join("; ", $t_list->getErrors())));
+				if(is_array($non_preferred_terms)) {
+					foreach($non_preferred_terms as $npt) {
+						if (!($t_item->addLabel(['name_singular' => $npt, 'name_plural' => $npt, 'description' => ''], $locale_id, null, false))) {
+							CLIUtils::addError(_t("Could not add non-preferred term %1 to %2: %3", $npt, $data[$level], join("; ", $t_list->getErrors())));
 							continue;
 						}
 					}
 				}
-			}
 
+
+			}
 			CLIProgressBar::finish();
+
 
 			CLIUtils::addMessage(_t('Added %1 terms', $vn_add_count), array('color' => 'bold_green'));
 			return true;
+
 		}
 		# -------------------------------------------------------
 		/**
