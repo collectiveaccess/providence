@@ -745,6 +745,14 @@ class ca_data_importer_items extends BaseModel {
 			'default' => '',
 			'label' => _t('Locale of data. If not set the mapping locale default is used.'),
 		);
+		$settings['useAsExistingRecordPolicyIdno'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => false,
+			'label' => _t('Use mapped value as identifier for purposed of matching existing records via an existing record policy.'),
+		);
 		
 		$this->setAvailableSettings($settings);
 	}
