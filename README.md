@@ -10,6 +10,7 @@ CollectiveAccess is freely available under the open source GNU Public License ve
 
 Version 1.7.17 is a maintenance release with these bug fixes and minor improvements:
 * Add option to display nested type hierarchies as indented list in menus rather than nested menus.
+* Fix fatal error in library checkout due to incorrect type checking in display template parser.
 
 Note that this version is not yet compatible with PHP version 8. Please use versions 7.3 or 7.4.
 
