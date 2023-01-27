@@ -24,12 +24,10 @@ monthTable = {
 }
 
 # List of day names, starting with Sunday
-dayListDisplay = [Domenica, Lunedì, Martedì, Mercoledì, Giovedì, Venerdì, Sabato]
+dayListDisplay = [Domenica, LunedÃ¬, MartedÃ¬, MercoledÃ¬, GiovedÃ¬, VenerdÃ¬, Sabato]
 
-#rangePreConjunctions = [from, between]
 rangePreConjunctions = [da, entro]
-#rangeConjunctions = [to, -, and, .., through]
-rangeConjunctions = [fino a, -, e, .., compreso]
+rangeConjunctions = [fino a, â€“, -, e, .., compreso]
 
 dateTimeConjunctions = [alle,@]
 
@@ -97,8 +95,8 @@ decadeIndicator = [s]
 # list of numeric suffixes, starting with the one for zero
 # (eg. 0th, 1st, 2nd, 3rd would be a list like so: [th, st, nd, rd])
 #ordinalSuffixes = [th, st, nd, rd]
-ordinalSuffixes = [°]
-ordinalSuffixDefault = °
+ordinalSuffixes = [Â°]
+ordinalSuffixDefault = Â°
 
 # in delimited dates (ex. 12/10/2009) is the first number a month or a day?
 # set to "0" for European style dates (day comes first); "1" for American-style dates (month comes first)
