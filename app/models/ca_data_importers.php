@@ -2253,7 +2253,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									if($v[0] !== '^') { $v = "^{$v}"; }
 									if(!strlen($vp = BaseRefinery::parsePlaceholder($v, $use_raw ? $va_raw_row : $va_row_with_replacements, $va_item, $vn_i, ['reader' => $o_reader, 'returnAsString' => true]))) {
 										if($log_skip) { $o_log->logInfo(_t('[%1] Skipped mapping for %2 because at least one value in list (%3) is empty', $vs_idno, $va_item['destination'], join('; ', $va_item['settings']['skipWhenEmpty']))); }
-										continue(2);
+										continue(3);
 									}
 								}
 							}
@@ -2279,7 +2279,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									if($v[0] !== '^') { $v = "^{$v}"; }
 									if(!strlen($vp = BaseRefinery::parsePlaceholder($v, $use_raw ? $va_raw_row : $va_row_with_replacements, $va_item, $vn_i, ['reader' => $o_reader, 'returnAsString' => true]))) {
 										if($log_skip) { $o_log->logInfo(_t('[%1] Skipped group %2 because at least one value in list (%3) is empty', $vs_idno, $vn_group_id, join('; ', $va_item['settings']['skipGroupWhenEmpty']))); }
-										continue(3);
+										continue(4);
 									}
 								}
 							}
@@ -2295,7 +2295,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								}
 								if($all_empty) {
 									if($log_skip) { $o_log->logInfo(_t('[%1] Skipped group %2 because all values in list (%3) are empty', $vs_idno, $vn_group_id, join('; ', $va_item['settings']['skipGroupWhenAllEmpty']))); }
-									continue(4);
+									continue(3);
 								}
 							}
 							
@@ -2305,7 +2305,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									if($v[0] !== '^') { $v = "^{$v}"; }
 									if(!strlen($vp = BaseRefinery::parsePlaceholder($v, $use_raw ? $va_raw_row : $va_row_with_replacements, $va_item, $vn_i, ['reader' => $o_reader, 'returnAsString' => true]))) {
 										if($log_skip) { $o_log->logInfo(_t('[%1] Skipped row %2 because at least one value in list (%3) is empty', $vs_idno, $vn_row, join('; ', $va_item['settings']['skipRowWhenEmpty']))); }
-										continue(5);
+										continue(6);
 									}
 								}
 							}
@@ -2345,7 +2345,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									$o_log->logInfo( _t( '[%1] Skipped group %2 because value from %3 for %4 is empty',
 										$vs_idno, $vn_group_id, $va_item['source'], $va_item['destination'] ) );
 								}
-								continue( 4 );
+								continue( 3 );
 							}
 							if ( (!isset( $va_item['settings']['skipIfEmpty'] )
 							     || (bool) $va_item['settings']['skipIfEmpty'])
@@ -2355,7 +2355,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									$o_log->logInfo( _t( '[%1] Skipped mapping because value from %2 for %3 is empty', $vs_idno,
 										$va_item['source'], $va_item['destination'] ) );
 								}
-								continue( 3 );
+								continue( 2 );
 							}
 							if ( isset($va_item['settings']['skipIfValue'])
 							     && ! is_array( $va_item['settings']['skipIfValue'] ) && strlen($va_item['settings']['skipIfValue']) 
@@ -2371,7 +2371,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									$o_log->logInfo( _t( '[%1] Skipped mapping %2 because value for %3 matches value %4',
 										$vs_idno, $vn_row, $vs_item_terminal, $vm_val ) );
 								}
-								continue( 3 );
+								continue( 2 );
 							}
 							if ( $va_item['settings']['skipIfNotValue']
 							     && ! is_array( $va_item['settings']['skipIfNotValue'] )
@@ -2388,7 +2388,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									$o_log->logInfo( _t( '[%1] Skipped mapping %2 because value %4 for %3 is not in list of values',
 										$vs_idno, $vn_row, $vs_item_terminal, $vm_val ) );
 								}
-								continue( 3 );
+								continue( 2 );
 							}
 							if ( $va_item['settings']['skipRowIfValue']
 							     && ! is_array( $va_item['settings']['skipRowIfValue'] )
@@ -2439,7 +2439,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									$o_log->logInfo( _t( '[%1] Skipped group %2 because value for %3 matches value %4',
 										$vs_idno, $vn_group_id, $vs_item_terminal, $vm_val ) );
 								}
-								continue( 4 );
+								continue( 3 );
 							}
 
 							if ( $va_item['settings']['skipGroupIfNotValue']
@@ -2457,7 +2457,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									$o_log->logInfo( _t( '[%1] Skipped group %2 because value for %3 matches is not in list of values',
 										$vs_idno, $vn_group_id, $vs_item_terminal ) );
 								}
-								continue( 4 );
+								continue( 3 );
 							}
 
 							if ( isset( $va_item['settings']['skipIfNoReplacementValue'] )
@@ -2468,7 +2468,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									$o_log->logInfo( _t( '[%1] Skipped mapping %2 because there is no replacement value for value %3',
 										$vs_idno, $va_item['destination'], $vm_val ) );
 								}
-								continue( 3 );
+								continue( 2 );
 							}
 
 							// Apply prefix/suffix *AFTER* setting default
