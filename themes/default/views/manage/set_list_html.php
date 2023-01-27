@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2021 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,15 +25,14 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$t_set 				= $this->getVar('t_set');
-	$va_set_list 		= $this->getVar('set_list');
-	$vn_type_id 		= $this->getVar('list_set_type_id');
-	$vs_current_sort 	= $this->getVar('current_sort');
-	$vs_current_sort_direction 	= $this->getVar('current_sort_direction');
-	$vs_type_name_singular		= $this->getVar('type_name_singular');
-	
-	$user_id = $this->request->getUserID();
+$t_set 				= $this->getVar('t_set');
+$va_set_list 		= $this->getVar('set_list');
+$vn_type_id 		= $this->getVar('list_set_type_id');
+$vs_current_sort 	= $this->getVar('current_sort');
+$vs_current_sort_direction 	= $this->getVar('current_sort_direction');
+$vs_type_name_singular		= $this->getVar('type_name_singular');
+
+$user_id = $this->request->getUserID();
 	
 if (!$this->request->isAjax()) {
 	$vs_set_type_menu = '<div class="sf-small-menu form-header-button rounded" style="padding: 6px;">'.
@@ -43,11 +42,11 @@ if (!$this->request->isAjax()) {
 						'<form action="#">'._t('Create new').' ';
 	if(!$vn_type_id){
 		$t_list = new ca_lists();
-		$vs_set_type_menu .= $t_list->getListAsHTMLFormElement('set_types', 'set_type', array('id' => 'typeList')).' ';
+		$vs_set_type_menu .= $t_list->getListAsHTMLFormElement('set_types', 'set_type', ['id' => 'typeList']).' ';
 	}else{
 		$vs_set_type_menu .= " <b>".mb_strtolower($vs_type_name_singular)."</b><input type='hidden' id='typeList' name='set_type' value='".$vn_type_id."'> ";
 	}
-	$vs_set_type_menu .= _t('containing').' '.caHTMLSelect('table_num', $this->getVar('table_list'), array('id' => 'tableList')).'</form>'.'</div>';
+	$vs_set_type_menu .= _t('containing').' '.caHTMLSelect('table_num', $this->getVar('table_list'), ['id' => 'tableList'], ['value' => Datamodel::getTableNum($t_set->getAppConfig()->get('set_editor_default_table'))]).'</form>'.'</div>';
 
 ?>
 <script language="JavaScript" type="text/javascript">
