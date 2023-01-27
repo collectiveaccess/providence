@@ -1211,7 +1211,7 @@
 							switch($va_facet_info['type']) {
 								# -----------------------------------------------------
 								case 'hierarchy':
-									$children = $vs_target_browse_table_name::getHierarchyChildrenForIDs($va_row_ids, ['maxLevels' => ($va_facet_info['restrict_to_top_level'] ?? false) ? null : 1]);
+									$children = array_merge($va_row_ids, $vs_target_browse_table_name::getHierarchyChildrenForIDs($va_row_ids, ['includeSelf' => true, 'maxLevels' => ($va_facet_info['restrict_to_top_level'] ?? false) ? null : 1]));
 									$va_acc[$vn_i] = $children;
 									$vn_i++;
 									break;
@@ -4031,17 +4031,16 @@
 
 					$vs_join_sql = join("\n", $va_joins);
 
-					if (is_array($va_where_sql) && sizeof($va_where_sql)) {
-						$vs_where_sql = "WHERE ".join(" AND ", $va_where_sql);
-					}
-
-
 					if($va_facet_info['restrict_to_top_level'] ?? false) {
 						$hier_sql = 
 							"INNER JOIN {$vs_browse_table_name} AS {$child_prefix} ON {$child_prefix}.hier_collection_id = {$main_prefix}.hier_collection_id";
 					} else {
 						$hier_sql = 
 							"INNER JOIN {$vs_browse_table_name} AS {$child_prefix} ON {$child_prefix}.parent_id = {$main_prefix}.{$vs_item_pk}";
+					}
+					
+					if (is_array($va_where_sql) && sizeof($va_where_sql)) {
+						$vs_where_sql = "WHERE ".join(" AND ", $va_where_sql);
 					}
 					if ($vb_check_availability_only) {
 						$vs_sql = "
