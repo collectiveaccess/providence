@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2022 Whirl-i-Gig
+ * Copyright 2014-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -76,6 +76,7 @@
 	
     if (!$this->request->isAjax()) {
 	    print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings);
+		print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
 	}
 	
 	$show_loan_controls = $show_movement_controls = $show_location_controls = $show_object_controls = $show_occurrence_controls = $show_collection_controls = $show_entity_controls = false;

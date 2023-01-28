@@ -389,7 +389,8 @@ class BaseQuickAddController extends ActionController {
 			$t_subject->set('lot_id', $vn_lot_id);
 		}
 		
-		$t_subject->setTransaction($o_trans = new Transaction());
+		$o_trans = new Transaction();
+		$t_subject->setTransaction($o_trans);
 		$va_opts = array_merge($pa_options, array('ui_instance' => $t_ui));
 		$vb_save_rc = $t_subject->saveBundlesForScreen($this->request->getParameter('screen', pString), $this->request, $va_opts);
 		$this->view->setVar('t_ui', $t_ui);

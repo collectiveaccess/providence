@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1311,7 +1311,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 				__CA_ATTRIBUTE_VALUE_LOANS__,
 				__CA_ATTRIBUTE_VALUE_MOVEMENTS__,
 				__CA_ATTRIBUTE_VALUE_OBJECTS__,
-				__CA_ATTRIBUTE_VALUE_OBJECTLOTS__
+				__CA_ATTRIBUTE_VALUE_OBJECTLOTS__,
+				__CA_ATTRIBUTE_VALUE_LIST__
 			], true));
 		}
 		return false;
@@ -1514,25 +1515,29 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	/**
 	 * Get element settings for given element_id (or code)
 	 * @param mixed $pm_element_id
-	 * @return string
+	 * @param string $setting Name of setting. If omitted array of settings values are returned.
+	 * @return array | string
 	 * @throws MemoryCacheInvalidParameterException
 	 */
-	static public function getElementSettingsForId($pm_element_id) {
+	static public function getElementSettingsForId($pm_element_id, ?string $setting=null) {
 		if(!$pm_element_id) { return null; }
 		if(is_numeric($pm_element_id)) { $pm_element_id = (int) $pm_element_id; }
 
 		if(MemoryCache::contains($pm_element_id, 'ElementSettings')) {
-			return MemoryCache::fetch($pm_element_id, 'ElementSettings');
+			$settings = MemoryCache::fetch($pm_element_id, 'ElementSettings');
+			if($setting) { return $settings[$setting] ?? null; }
+			return $settings;
 		}
 
 		$vm_return = null;
 		if(!($t_element = self::getInstance($pm_element_id))) { return null; }
-		
+
 		if($t_element->getPrimaryKey()) {
 			$vm_return = $t_element->getSettings();
 		}
 
 		MemoryCache::save($pm_element_id, $vm_return, 'ElementSettings');
+		if($setting) { return $vm_return[$setting] ?? null; }
 		return $vm_return;
 	}
 	# ------------------------------------------------------

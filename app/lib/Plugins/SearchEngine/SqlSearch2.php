@@ -1664,11 +1664,21 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			return null;
 		}
 		
+		if((mb_strtolower($field) === 'related') && $rel_table) {
+			$spec = explode('.', $tmp[0]);
+			$table = array_shift($spec);
+			array_shift($spec);
+			$tmp = preg_split('![/\|]+!', join('.', array_merge([$table], $spec)));
+			list($field, $subfield, $subsubfield, $subsubsubfield) = array_pad($spec, 4 , null);
+		}
+		
 		if (in_array(strtolower($field), ['preferred_labels', 'nonpreferred_labels'])) {
 			$t_table = $t_table->getLabelTableInstance();
 			$table = $t_table->tableName();
-			$field = $subfield;
+			if(!($field = $subfield)) { $field = $t_table->getDisplayField(); }
 			$subfield = $subsubfield = $subsubsubfield = null;
+			
+			$tmp[0] = join('.', [$table, $field]);
 		}
 		
 		$table_num = $t_table->tableNum();

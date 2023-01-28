@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2022 Whirl-i-Gig
+ * Copyright 2014-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -41,6 +41,7 @@ if ($vb_batch) {
 } else {
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings, (bool)$t_subject->get('is_deaccessioned'), ((bool)$t_subject->get('is_deaccessioned') ? _t('Yes') : _t('No')));
 }
+print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 ?>
 <div id="<?= $vs_id_prefix; ?>" class="<?= $vb_batch ? "editorBatchBundleContent" : ''; ?>">
 	<div class="bundleContainer">

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -483,10 +483,19 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		}
 		
 		if (!$vb_require_value && !$vn_id) {
-			return array(
-				'value_longtext1' => null,
-				'item_id' => null
-			);
+			if(
+				(is_null($ps_value) || !strlen($ps_value ?? '')) 
+				&& 
+				(!in_array(caGetOption('render', $pa_element_info['settings'] ?? [], null), ['horiz_hierbrowser', 'horiz_hierbrowser_with_search', 'vert_hierbrowser', 'vert_hierbrowser_down'], true))) {
+				// value is blank
+				return [
+					'value_longtext1' => null,
+					'item_id' => null
+				];
+			} else {
+				// value was set and is invalid
+				return null;
+			}
 		} elseif ($vb_require_value && !$vn_id && !strlen($ps_value)) {
 			$this->postError(1970, _t('Value for %1 [%2] cannot be blank', $pa_element_info['displayLabel'], $pa_element_info['element_code']), 'ListAttributeValue->parseValue()');
 			return false;
