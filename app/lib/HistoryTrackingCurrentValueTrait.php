@@ -147,7 +147,7 @@
 			
 			$history_tracking_policies = self::getHistoryTrackingCurrentValuePolicyConfig();
 			
-			if ($policy && is_array($history_tracking_policies) && is_array($history_tracking_policies['policies']) && is_array($history_tracking_policies['policies'][$policy])) {
+			if ($policy && is_array($history_tracking_policies) && is_array($history_tracking_policies['policies'] ?? null) && is_array($history_tracking_policies['policies'][$policy] ?? null)) {
 				$policy_info = $history_tracking_policies['policies'][$policy];
 				$map = $policy_info['elements'];
 			}
@@ -325,7 +325,7 @@
 		 * @return array Policy or null if policy does not exist.
 		 */
 		static public function getHistoryTrackingCurrentValuePolicy($policy, $key=null) {
-			if ($policy && is_array($history_tracking_policies = self::getHistoryTrackingCurrentValuePolicyConfig()) && is_array($history_tracking_policies['policies']) && is_array($history_tracking_policies['policies'][$policy])) {
+			if ($policy && is_array($history_tracking_policies = self::getHistoryTrackingCurrentValuePolicyConfig()) && is_array($history_tracking_policies['policies'] ?? null) && is_array($history_tracking_policies['policies'][$policy] ?? null)) {
 				if ($key) { return isset($history_tracking_policies['policies'][$policy][$key]) ? $history_tracking_policies['policies'][$policy][$key] : null; }
 				return $history_tracking_policies['policies'][$policy];
 			}
@@ -353,14 +353,14 @@
 			$type_restrictions = caGetOption('restrictToTypes', $options, null);
 			
 			$default = null;
-			if (is_array($history_tracking_policies = self::getHistoryTrackingCurrentValuePolicyConfig()) && is_array($history_tracking_policies['defaults']) && isset($history_tracking_policies['defaults'][$table])) {
-				if(is_array($type_restrictions) && is_array($history_tracking_policies['defaults'][$table])) {
+			if (is_array($history_tracking_policies = self::getHistoryTrackingCurrentValuePolicyConfig()) && is_array($history_tracking_policies['defaults'] ?? null) && isset($history_tracking_policies['defaults'][$table])) {
+				if(is_array($type_restrictions) && is_array($history_tracking_policies['defaults'][$table] ?? null)) {
 					foreach($type_restrictions as $type) {
 						if(isset($history_tracking_policies['defaults'][$table][$type])) {
 							$default = $history_tracking_policies['defaults'][$table][$type];
 						}
 					}
-				} elseif(is_array($history_tracking_policies['defaults'][$table])) {
+				} elseif(is_array($history_tracking_policies['defaults'][$table] ?? null)) {
 					if(isset($history_tracking_policies['defaults'][$table]['__default__'])) { 
 						$default = $history_tracking_policies['defaults'][$table]['__default__'];
 					}
@@ -423,7 +423,7 @@
 			$o_config = Configuration::load();
 		
 			$policy_config = self::getHistoryTrackingCurrentValuePolicy($policy); //$o_config->getAssoc('current_location_criteria');
-			$map = $policy_config['elements'];
+			$map = $policy_config['elements'] ?? null;
 		
 			if (!($t_instance = Datamodel::getInstance($table, true))) { return self::$s_history_tracking_current_value_type_configuration_cache[$cache_key] = null; }
 	
@@ -501,7 +501,7 @@
 				return null;
 			}
 			
-			if(($values['current_table_num'] && !Datamodel::getTableName($values['current_table_num'])) || ($values['tracked_table_num'] && !Datamodel::getTableName($values['tracked_table_num']))) {
+			if((($values['current_table_num'] ?? null) && !Datamodel::getTableName($values['current_table_num'])) || ($values['tracked_table_num'] && !Datamodel::getTableName($values['tracked_table_num']))) {
 				throw new ApplicationException(_t('Invalid table specification for policy %1', $policy));
 			}
 			
@@ -586,6 +586,7 @@
 				'is_future' => $is_future
 			];
 			
+			$found = false;
 			if(
 				($is_future > 0) 
 				&& 
@@ -665,8 +666,8 @@
 			$policies = [];
 			foreach($policy_config['policies'] as $policy => $policy_info) {
 				if($table !== $policy_info['table']) { continue; }
-				if(is_array($type_restrictions) && is_array($policy_info['restrictToTypes']) && !sizeof(array_intersect($type_restrictions, $policy_info['restrictToTypes']))) { continue; }
-				if(is_array($uses) && sizeof($uses) && is_array($policy_info['elements'])) {
+				if(is_array($type_restrictions) && is_array($policy_info['restrictToTypes'] ?? null) && !sizeof(array_intersect($type_restrictions, $policy_info['restrictToTypes']))) { continue; }
+				if(is_array($uses) && sizeof($uses) && is_array($policy_info['elements'] ?? null)) {
 					if(!sizeof(array_intersect(array_keys($policy_info['elements']), $uses))) {
 						continue;
 					}
@@ -806,7 +807,7 @@
 		 *
 		 */
 		private function _rewriteEntryWithRelated($entry) {
-			if ($entry['useRelated']) {
+			if ($entry['useRelated'] ?? false) {
 				if (!($t_related = Datamodel::getInstance($entry['useRelated'], true))) {
 					throw new ApplicationException(_t("Invalid table specification for 'useRelated' in history tracking policy"));
 				}

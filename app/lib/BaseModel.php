@@ -636,7 +636,7 @@ class BaseModel extends BaseObject {
 		$changed_field_values_array = [];
 		foreach($fieldnames as $fieldname) {
 			if($this->changed($fieldname)) {
-				$changed_field_values_array[$fieldname] = $this->_FIELD_VALUES[$fieldname];
+				$changed_field_values_array[$fieldname] = $this->_FIELD_VALUES[$fieldname] ?? null;
 			}
 		}
 		return $changed_field_values_array;
@@ -649,7 +649,7 @@ class BaseModel extends BaseObject {
 	 * @return mixed original field value
 	 */
 	public function getOriginalValue($ps_field) {
-		return $this->_FIELD_VALUES_OLD[$ps_field];
+		return $this->_FIELD_VALUES_OLD[$ps_field] ?? null;
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -12235,7 +12235,7 @@ $pa_options["display_form_field_tips"] = true;
 			}, []);
 			if((is_array($ids) && sizeof($ids))) {
 				$ids = array_map(function($v) { return is_numeric($v) ? $v : ca_locales::codeToID($v); }, $ids);
-				if(is_array($pa_values['parent_id'])) {
+				if(is_array($pa_values['parent_id'] ?? null)) {
 					foreach($pa_values['parent_id'] as $i => $v) {
 						if (isset($ids[$v[1]])) {
 							$pa_values['parent_id'][$i][1] = $ids[$v[1]];

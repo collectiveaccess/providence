@@ -516,7 +516,7 @@ class MultipartIDNumber extends IDNumber {
 		} 
 		
 		if (!($t_instance = Datamodel::getInstanceByTableName($table, true))) { return 'ERR'; }
-		if ((bool)$element_info['sequence_by_type']) {
+		if ((bool)($element_info['sequence_by_type'] ?? false)) {
 			$stypes = is_array($element_info['sequence_by_type']) ? $element_info['sequence_by_type'] : [$element_info['sequence_by_type']];
 			$sequence_by_types = caMakeTypeIDList($table, $stypes, ['dontIncludeSubtypesInTypeRestriction' => (bool)$element_info['dont_include_subtypes']]);
 			$type = $this->getType();

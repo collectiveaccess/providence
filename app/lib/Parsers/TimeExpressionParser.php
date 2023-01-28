@@ -2181,6 +2181,7 @@ class TimeExpressionParser {
 			case 4:
 				$vn_hours = (int)$va_tmp[0]; 
 				$vn_minutes = (int)$va_tmp[1]; 
+				if(!isset($va_tmp[3])) { $va_tmp[3] = 0; }
 				$vn_seconds = (int)$va_tmp[2] + (is_numeric($va_tmp[3]) ? (intval($va_tmp[3]) / pow(10, strlen((intval($va_tmp[3]))))) : 0);
 				if (is_numeric($vn_hours) && ($vn_hours == intval($vn_hours)) && ($vn_hours >= 0) && ($vn_hours <= 23)) {
 					if (is_numeric($vn_minutes) && ($vn_minutes == intval($vn_minutes)) && ($vn_minutes >= 0) && ($vn_minutes <= 59)) {
@@ -3311,7 +3312,7 @@ class TimeExpressionParser {
 		$pn_seconds -= ($vn_minutes * 60);
 		$vn_seconds = $pn_seconds;
 		
-		if ($pa_options['timeFormat'] == 12) {
+		if (($pa_options['timeFormat'] ?? null) == 12) {
 			if ($vn_hours < 12) {
 				$vs_meridian = $this->opo_language_settings->get('timeAMMeridian');
 			} else {
@@ -3326,7 +3327,7 @@ class TimeExpressionParser {
 				$vn_hours = 12;
 			}
 			
-			if ($pa_options['timeOmitSeconds'] || ($vn_seconds == 0)) {
+			if (($pa_options['timeOmitSeconds'] ?? false) || ($vn_seconds == 0)) {
 				$vs_text = join($vs_time_delim, array($vn_hours, sprintf('%02d', $vn_minutes))).' '.$vs_meridian;		
 			} else {
 				$vs_text = join($vs_time_delim, array($vn_hours, sprintf('%02d', $vn_minutes), sprintf('%02d', $vn_seconds))).' '.$vs_meridian;

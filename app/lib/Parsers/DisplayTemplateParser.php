@@ -76,13 +76,16 @@ class DisplayTemplateParser {
 		foreach($po_nodes as $vn_index => $o_node) {
 			switch($vs_tag = $o_node->tag) {
 				case 'unit':
+					$check_access = $o_node->skipAccessControl ? null : caGetOption('checkAccess', $pa_options, null);
+					
 					if ($vs_relative_to = $o_node->relativeTo) { 
-						$va_get_options = ['returnAsArray' => true, 'checkAccess' => caGetOption('checkAccess', $pa_options, null)];
+						$va_get_options = ['returnAsArray' => true, 'checkAccess' => $check_access];
 				
 						$va_get_options['restrictToTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToTypes']); 
 						$va_get_options['excludeTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeTypes']); 
 						$va_get_options['restrictToRelationshipTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToRelationshipTypes']);
 						$va_get_options['excludeRelationshipTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeRelationshipTypes']);
+						
 						$va_get_options['allDescendants'] = (int) $o_node->allDescendants ?: null;
 						if ($o_node->sort) {
 							$va_get_options['sort'] = preg_split('![ ,;]+!', $o_node->sort);
@@ -441,7 +444,11 @@ class DisplayTemplateParser {
 				case 'ifnotdef':
 					$vb_omit_blanks = !is_null($o_node->omitBlanks) ? (bool)$o_node->omitBlanks : null;
 					$vs_filter = !is_null($o_node->filter) ? (string)$o_node->filter : null;
-					$opts = ['index' => caGetOption('index', $pa_options, null), 'mode' => ($vs_tag == 'ifdef') ? 'present' : 'not_present', 'filter' => $vs_filter, 'checkAccess' => caGetOption('checkAccess', $pa_options, null)];
+					
+					$check_access = $o_node->skipAccessControl ? null : caGetOption('checkAccess', $pa_options, null);
+					
+					$opts = ['index' => caGetOption('index', $pa_options, null), 'mode' => ($vs_tag == 'ifdef') ? 'present' : 'not_present', 'filter' => $vs_filter, 'checkAccess' => $check_access];
+					if($o_node->skipAccessControl) { unset($opts['checkAccess']); }
 					if (!is_null($vb_omit_blanks)) { $opts['includeBlankValuesInArray'] = !$vb_omit_blanks; }
 					
 					$vb_defined = DisplayTemplateParser::_evaluateCodeAttribute($pr_res, $o_node, $opts);
@@ -458,8 +465,7 @@ class DisplayTemplateParser {
 					
 					if(!is_array($va_codes = DisplayTemplateParser::_getCodesFromAttribute($o_node)) || !sizeof($va_codes)) { break; }
 					
-					$pa_check_access = ($t_instance->hasField('access')) ? caGetOption('checkAccess', $pa_options, null) : null;
-					if (!is_array($pa_check_access) || !sizeof($pa_check_access)) { $pa_check_access = null; }
+					$check_access = (($t_instance->hasField('access')) && !$o_node->skipAccessControl) ? caGetOption('checkAccess', $pa_options, null) : null;
 					
 					$vb_bool = DisplayTemplateParser::_getCodesBooleanModeAttribute($o_node);
 					$va_restrict_to_types = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToTypes']); 
@@ -470,12 +476,13 @@ class DisplayTemplateParser {
 					$vs_filter = !is_null($o_node->filter) ? (string)$o_node->filter : null;
 					
 					$va_get_options = [
-						'limit' => $vn_limit, 'returnAsCount' => true, 'checkAccess' => $pa_check_access, 
+						'limit' => $vn_limit, 'returnAsCount' => true, 'checkAccess' => $check_access, 
 						'restrictToTypes' => $va_restrict_to_types, 'excludeTypes' => $va_exclude_types, 
 						'restrictToRelationshipTypes' => $va_restrict_to_relationship_types, 
 						'excludeRelationshipTypes' => $va_exclude_to_relationship_types,
 						'locale' => caGetOption('locale', $pa_options, null)
 					];
+					
 					if (!is_null($vb_omit_blanks)) { 
 						$pa_options['includeBlankValuesInArray'] = $va_get_options['includeBlankValuesInArray'] = !$vb_omit_blanks; 
 					}
@@ -600,11 +607,10 @@ class DisplayTemplateParser {
 					$vn_length = (int)$o_node->length;
 					$limit = (int)$o_node->limit;
 					
-					$pa_check_access = ($t_instance->hasField('access')) ? caGetOption('checkAccess', $pa_options, null) : null;
-					if (!is_array($pa_check_access) || !sizeof($pa_check_access)) { $pa_check_access = null; }
-
+					$check_access = (($t_instance->hasField('access')) && !$o_node->skipAccessControl) ? caGetOption('checkAccess', $pa_options, null) : null;
+					
 					// additional get options for pulling related records
-					$va_get_options = ['returnAsArray' => true, 'checkAccess' => $pa_check_access];
+					$va_get_options = ['returnAsArray' => true, 'checkAccess' => $check_access];
 				
 					$va_get_options['restrictToTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToTypes']); 
 					$va_get_options['filterTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'filterTypes']); 
@@ -717,6 +723,7 @@ class DisplayTemplateParser {
 									'includeBlankValuesInTopLevelForPrefetch' => false,
 									'unique' => $vb_unique,
 									'aggregateUnique' => $vb_aggregate_unique,
+									'checkAccess' => $va_get_options['checkAccess'],
 									'filterNonPrimaryRepresentations' => $filter_non_primary_reps
 								]
 							)
@@ -900,7 +907,8 @@ class DisplayTemplateParser {
 									'relationshipTypeIDs' => $va_relationship_type_ids,
 									'relationshipTypeOrientations' => $va_relationship_type_orientations,
 									'filterNonPrimaryRepresentations' => $filter_non_primary_reps,
-									'primaryIDs' => $va_get_options['primaryIDs'] ?? null
+									'primaryIDs' => $va_get_options['primaryIDs'] ?? null,
+									'checkAccess' => $va_get_options['checkAccess']
 								]
 							)
 						);

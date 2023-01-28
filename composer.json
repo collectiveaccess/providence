@@ -35,7 +35,7 @@
     "phpoffice/phppresentation": "1.0.0",
     "phpoffice/phpspreadsheet": "v1.22",
     "phpoffice/phpword": "v0.18.*",
-    "phpunit/phpunit": "^9.0",
+    "phpunit/phpunit": "^9.5",
     "srmklive/flysystem-dropbox-v2": ">=1.0.0",
     "webonyx/graphql-php": "^14.1",
     "zendframework/zend-stdlib": "^3.2",

@@ -580,6 +580,8 @@ class SearchIndexer extends SearchBase {
 		$for_current_value_reindex = caGetOption('forCurrentValueReindex', $pa_options, false);
 		if (!$pb_reindex_mode && !$for_current_value_reindex && is_array($pa_changed_fields) && !sizeof($pa_changed_fields)) { return; }	// don't bother indexing if there are no changed fields
 
+		$vb_started_indexing = false;
+
 		$vs_subject_tablename = Datamodel::getTableName($pn_subject_table_num);
 		$t_subject = Datamodel::getInstanceByTableName($vs_subject_tablename, true);
 		$t_subject->setDb($this->getDb());	// force the subject instance to use the same db connection as the indexer, in case we're operating in a transaction
@@ -931,6 +933,7 @@ if (!$for_current_value_reindex) {
 							$qr_res = $this->opo_db->query($vs_sql, $va_params);
 						}
 						
+						$vn_count = 0;
 						while($qr_res->nextRow()) {
 							$vn_count++;
 							
