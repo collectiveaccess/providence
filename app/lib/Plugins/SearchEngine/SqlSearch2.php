@@ -508,7 +508,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					FROM {$table}".($t->hasField('deleted') ? " WHERE deleted = 0" : "")."
 				", []);
 			} elseif($use_boost) {
-				$qr_res = $this->db->query($s="
+				$qr_res = $this->db->query("
 					SELECT swi.row_id, SUM(swi.boost) boost
 					FROM ca_sql_search_word_index swi
 					".(!$is_blank ? 'INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id' : '')."
@@ -519,7 +519,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					GROUP BY swi.row_id
 				", $params);
 			} else {
-				$qr_res = $this->db->query($s="
+				$qr_res = $this->db->query("
 					SELECT DISTINCT swi.row_id, 100 boost
 					FROM ca_sql_search_word_index swi
 					".(!$is_blank ? 'INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id' : '')."
