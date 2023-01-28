@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -256,7 +256,7 @@ BaseModel::$s_ca_models_definitions['ca_collections'] =  array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
 			'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
 			'IS_NULL' => false, 
-			'DEFAULT' => null,
+			'DEFAULT' => 0,
 			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 			'BOUNDS_CHOICE_LIST' => array(
 				_t('Do not inherit access settings from parent') => 0,
