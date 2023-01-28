@@ -530,7 +530,8 @@
 					$o_browse->addCriteria($facet, $value);
 				}
 				$o_browse->addCriteria("_search", [caMatchOnStem($ps_search_expression)], [$search_expression_for_display]);
-				$o_browse->execute();
+				$o_browse->execute($va_options);
+
 				$qr_res = $o_browse->getResults($va_options);
 				
 				if($vn_i == 0) { MetaTagManager::setHighlightText($o_browse->getSearchedTerms() ?? $ps_search_expression); }
