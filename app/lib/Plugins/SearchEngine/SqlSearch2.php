@@ -933,7 +933,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 						$a = $s->getItems(['idsOnly' => true]);
 						break;
 					default:
-						$a = $qr->get($spk, ['returnAsArray' => true]);
+						$a = $qr->get($spk, ['restrictToRelationshipTypes' => $ap['relationship_type_ids'] ?? null, 'returnAsArray' => true]);
 						break;
 				}
 				
