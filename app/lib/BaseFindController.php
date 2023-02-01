@@ -582,13 +582,13 @@ class BaseFindController extends ActionController {
 					$vs_delimiter = ",";
 					$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename), 0, 30);
 					$vs_file_extension = 'csv';
-					$vs_mimetype = "text/plain";
+					$vs_mimetype = "text/csv";
 					break;
 				case '_tab':
 					$vs_delimiter = "\t";	
 					$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename), 0, 30);
 					$vs_file_extension = 'tsv';
-					$vs_mimetype = "text/plain";
+					$vs_mimetype = "text/tab-separated-values";
 				default:
 					if(substr($ps_output_type, 0, 5) === '_docx') {
 						$va_template_info = caGetPrintTemplateDetails('results', substr($ps_output_type, 6));
