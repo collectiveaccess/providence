@@ -103,7 +103,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			self::$whitespace_tokenizer_regex = '[\s\"\—\-]+';
 		}
 		if(!(self::$punctuation_tokenizer_regex = $this->search_config->get('punctuation_tokenizer_regex'))) {
-			self::$whitespace_tokenizer_regex = '[\.,;:\(\)\{\}\[\]\|\\\+_\!\&«»\']+';
+			self::$punctuation_tokenizer_regex = '[\.,;:\(\)\{\}\[\]\|\\\+_\!\&«»\']+';
 		}
 		
 		if(self::$filter_stop_words) {
