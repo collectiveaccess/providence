@@ -260,6 +260,14 @@ $_ca_attribute_settings['ListAttributeValue'] = array(		// global
 		'label' => _t('Separate disabled values?'),
 		'description' => _t('Group disabled entries after active entries.')
 	),
+	'hideDisabledValues' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Hide disabled values?'),
+		'description' => _t('Omit disabled entries from list.')
+	),
 );
 
 
@@ -571,6 +579,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 					'implicitNullOption' => $vb_implicit_nulls, 'auto_shrink' => $vb_auto_shrink, 
 					'currentSelectionDisplayFormat' => $current_selection_display_format,
 					'separateDisabledValues' => $separate_disabled_values,
+					'hideDisabledValues' => $hide_disabled_values,
 					'deferHierarchyLoad' => (bool)($pa_element_info['settings']['deferHierarchyLoad'] ?? false)
 				]
 			)

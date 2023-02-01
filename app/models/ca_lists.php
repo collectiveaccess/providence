@@ -1448,6 +1448,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 *	checkAccess = Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
 	 *	exclude = array of item idnos to omit from the returned list. [Default is null]
 	 *
+	 *	separateDisabledValues = Separate disabled values, placing them after enabled items. [Default is false]
+	 *  hideDisabledValues = Omit disabled values from list. [Default is false]
 	 *  forceEnabled = enable all list items regardless of the value of the item's is_enabled value [Default is false]
 	 *
 	 *  deferHierarchyLoad = defer hierarchy browser loads until user clicks on expand button. [Default is false]
@@ -1609,11 +1611,13 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$vn_default_val = null;
 		
 		$separate_disabled = caGetOption('separateDisabledValues', $pa_options, false);
+		$hide_disabled_values = caGetOption('hideDisabledValues', $pa_options, false);
 		
 		$disabled_option_list = [];
 		foreach($va_list_items as $vn_item_id => $va_item) {
 			if (is_array($pa_options['limitToItemsWithID']) && !in_array($vn_item_id, $pa_options['limitToItemsWithID'])) { continue; }
 			if (is_array($pa_options['omitItemsWithID']) && in_array($vn_item_id, $pa_options['omitItemsWithID'])) { continue; }
+			if ($hide_disabled_values && !$va_item['is_enabled'] && ($va_item['item_id'] != $pa_options['value'])) { continue; }
 			if (is_array($va_in_use_list) && !in_array($vn_item_id, $va_in_use_list)) { continue; }
 			if (is_array($pa_check_access) && (sizeof($pa_check_access) > 0) && !in_array($va_item['access'], $pa_check_access)) { continue; }
 			if (is_array($pa_exclude_items) && (sizeof($pa_exclude_items) > 0) && in_array($va_item['idno'], $pa_exclude_items)) { continue; }
