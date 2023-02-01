@@ -1331,7 +1331,7 @@ class BaseFindEngine extends BaseObject {
 	private function _createTempTableForAttributeIDs() {		
 		$table_name = '_caAttrTmp_'.str_replace('-', '',caGenerateGUID());
 		$this->db->query("DROP TABLE IF EXISTS {$table_name}");
-		$this->db->query("CREATE TABLE {$table_name} (attribute_id int unsigned not null primary key, row_id int unsigned not null) engine=memory");
+		$this->db->query("CREATE TEMPORARY TABLE {$table_name} (attribute_id int unsigned not null primary key, row_id int unsigned not null) engine=memory");
 		$this->temporary_tables[$table_name] = true;
 		
 		return $table_name;
