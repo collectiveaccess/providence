@@ -110,19 +110,22 @@ class MetaTagManager {
 	static function getHTML() {
 		$vs_buf = '';
 		if (!is_array(MetaTagManager::$opa_tags)) { MetaTagManager::init(); }
-		if (MetaTagManager::$opa_tags['meta'] && sizeof(MetaTagManager::$opa_tags['meta'])) {	
-			foreach(MetaTagManager::$opa_tags['meta'] as $vs_tag_name => $vs_content) {
-				$vs_buf .= "<meta name='".htmlspecialchars($vs_tag_name, ENT_QUOTES)."' content='".htmlspecialchars($vs_content, ENT_QUOTES)."'/>\n";
+		
+		if(is_array(MetaTagManager::$opa_tags)) {
+			if (is_array(MetaTagManager::$opa_tags['meta'] ?? null) && sizeof(MetaTagManager::$opa_tags['meta'])) {	
+				foreach(MetaTagManager::$opa_tags['meta'] as $vs_tag_name => $vs_content) {
+					$vs_buf .= "<meta name='".htmlspecialchars($vs_tag_name, ENT_QUOTES)."' content='".htmlspecialchars($vs_content, ENT_QUOTES)."'/>\n";
+				}
 			}
-		}
-		if (is_array(MetaTagManager::$opa_tags['meta_property']) && sizeof(MetaTagManager::$opa_tags['meta_property'])) {	
-			foreach(MetaTagManager::$opa_tags['meta_property'] as $vs_tag_property => $vs_content) {
-				$vs_buf .= "<meta property='".htmlspecialchars($vs_tag_property, ENT_QUOTES)."' content='".htmlspecialchars($vs_content, ENT_QUOTES)."'/>\n";
+			if (is_array(MetaTagManager::$opa_tags['meta_property'] ?? null) && sizeof(MetaTagManager::$opa_tags['meta_property'])) {	
+				foreach(MetaTagManager::$opa_tags['meta_property'] as $vs_tag_property => $vs_content) {
+					$vs_buf .= "<meta property='".htmlspecialchars($vs_tag_property, ENT_QUOTES)."' content='".htmlspecialchars($vs_content, ENT_QUOTES)."'/>\n";
+				}
 			}
-		}
-		if (MetaTagManager::$opa_tags['link'] && sizeof(MetaTagManager::$opa_tags['link'])) {	
-			foreach(MetaTagManager::$opa_tags['link'] as $vn_i => $va_link) {
-				$vs_buf .= "<link rel='".htmlspecialchars($va_link['rel'], ENT_QUOTES)."' href='".htmlspecialchars($va_link['href'], ENT_QUOTES)."' ".($va_link['type'] ? " type='".$va_link['type']."'" : "")."/>\n";
+			if (is_array(MetaTagManager::$opa_tags['link'] ?? null) && sizeof(MetaTagManager::$opa_tags['link'])) {	
+				foreach(MetaTagManager::$opa_tags['link'] as $vn_i => $va_link) {
+					$vs_buf .= "<link rel='".htmlspecialchars($va_link['rel'], ENT_QUOTES)."' href='".htmlspecialchars($va_link['href'], ENT_QUOTES)."' ".($va_link['type'] ? " type='".$va_link['type']."'" : "")."/>\n";
+				}
 			}
 		}
 		return $vs_buf;
@@ -135,7 +138,7 @@ class MetaTagManager {
 	 * @return bool Always returns true
 	 */
 	static function setWindowTitle(string $title) : bool {
-		MetaTagManager::$ops_window_title = $ps_title;
+		MetaTagManager::$ops_window_title = $title;
 		
 		return true;
 	}

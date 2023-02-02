@@ -58,11 +58,11 @@
 			
 			if ($vb_can_edit) { print $vs_control_box; }
 ?>
-			<input type='hidden' name='movement_id' value='<?php print $vn_movement_id; ?>'/>
+			<input type='hidden' name='movement_id' value='<?= $vn_movement_id; ?>'/>
 			<input id='isSaveAndReturn' type='hidden' name='is_save_and_return' value='0'/>
-			<input type='hidden' name='rel_table' value='<?php print $vs_rel_table; ?>'/>
-			<input type='hidden' name='rel_type_id' value='<?php print $vn_rel_type_id; ?>'/>
-			<input type='hidden' name='rel_id' value='<?php print $vn_rel_id; ?>'/>
+			<input type='hidden' name='rel_table' value='<?= $vs_rel_table; ?>'/>
+			<input type='hidden' name='rel_type_id' value='<?= $vn_rel_type_id; ?>'/>
+			<input type='hidden' name='rel_id' value='<?= $vn_rel_id; ?>'/>
 <?php
 			if($this->request->getParameter('rel', pInteger)) {
 ?>
@@ -75,4 +75,4 @@
 
 	<div class="editorBottomPadding"><!-- empty --></div>
 	
-	<?php print caSetupEditorScreenOverlays($this->request, $t_movement, $va_bundle_list); ?>
+	<?= caSetupEditorScreenOverlays($this->request, $t_movement, $va_bundle_list); ?>

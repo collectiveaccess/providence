@@ -25,68 +25,67 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	AssetLoadManager::register('hierBrowser');
- 
-	$id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$t_instance 	= $this->getVar('t_instance');
-	$t_item 		= $this->getVar('t_item');			// collection
-	$t_item_rel 	= $this->getVar('t_item_rel');
-	$t_subject 		= $this->getVar('t_subject');
-	$settings 		= $this->getVar('settings');
-	$add_label 		= $this->getVar('add_label');
-	$rel_types		= $this->getVar('relationship_types');
-	$placement_code = $this->getVar('placement_code');
-	$placement_id	= (int)$settings['placement_id'];
-	$batch			= $this->getVar('batch');
-	
-	$sort			= ((isset($settings['sort']) && $settings['sort'])) ? $settings['sort'] : '';
-	$read_only		= ((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_collections') == __CA_BUNDLE_ACCESS_READONLY__));
-	$dont_show_del	= ((isset($settings['dontShowDeleteButton']) && $settings['dontShowDeleteButton'])) ? true : false;
-	
-	$color 			= ((isset($settings['colorItem']) && $settings['colorItem'])) ? $settings['colorItem'] : '';
-	$first_color 	= ((isset($settings['colorFirstItem']) && $settings['colorFirstItem'])) ? $settings['colorFirstItem'] : '';
-	$last_color 	= ((isset($settings['colorLastItem']) && $settings['colorLastItem'])) ? $settings['colorLastItem'] : '';
-	
-	$dont_show_relationship_type = caGetOption('dontShowRelationshipTypes', $settings, false) ? 'none' : null; 
-	
-	$quick_add_enabled = $this->getVar('quickadd_enabled');
+AssetLoadManager::register('hierBrowser');
 
-	// Dyamically loaded sort ordering
-	$loaded_sort 			= $this->getVar('sort');
-	$loaded_sort_direction 	= $this->getVar('sortDirection');
-	
-	$hier_browser_height 	= $settings['hierarchicalBrowserHeight'] ?? '200px';
-	
-	
-	// params to pass during collection lookup
-	$lookup_params = array(
-		'types' => isset($settings['restrict_to_types']) ? $settings['restrict_to_types'] : (isset($settings['restrict_to_type']) ? $settings['restrict_to_type'] : ''),
-		'noSubtypes' => (int)$settings['dont_include_subtypes_in_type_restriction'],
-		'noInline' => (!$quick_add_enabled || (bool) preg_match("/QuickAdd$/", $this->request->getController())) ? 1 : 0,
-		'self' => $t_instance->tableName().':'.$t_instance->getPrimaryKey()
-	);
+$id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
+$t_instance 	= $this->getVar('t_instance');
+$t_item 		= $this->getVar('t_item');			// collection
+$t_item_rel 	= $this->getVar('t_item_rel');
+$t_subject 		= $this->getVar('t_subject');
+$settings 		= $this->getVar('settings');
+$add_label 		= $this->getVar('add_label');
+$rel_types		= $this->getVar('relationship_types');
+$placement_code = $this->getVar('placement_code');
+$placement_id	= (int)$settings['placement_id'];
+$batch			= $this->getVar('batch');
 
-	$errors = [];
-	foreach($action_errors = $this->request->getActionErrors($placement_code) as $o_error) {
-		$errors[] = $o_error->getErrorDescription();
+$sort			= ((isset($settings['sort']) && $settings['sort'])) ? $settings['sort'] : '';
+$read_only		= ((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_collections') == __CA_BUNDLE_ACCESS_READONLY__));
+$dont_show_del	= ((isset($settings['dontShowDeleteButton']) && $settings['dontShowDeleteButton'])) ? true : false;
+
+$color 			= ((isset($settings['colorItem']) && $settings['colorItem'])) ? $settings['colorItem'] : '';
+$first_color 	= ((isset($settings['colorFirstItem']) && $settings['colorFirstItem'])) ? $settings['colorFirstItem'] : '';
+$last_color 	= ((isset($settings['colorLastItem']) && $settings['colorLastItem'])) ? $settings['colorLastItem'] : '';
+
+$dont_show_relationship_type = caGetOption('dontShowRelationshipTypes', $settings, false) ? 'none' : null; 
+
+$quick_add_enabled = $this->getVar('quickadd_enabled');
+
+// Dyamically loaded sort ordering
+$loaded_sort 			= $this->getVar('sort');
+$loaded_sort_direction 	= $this->getVar('sortDirection');
+
+$hier_browser_height 	= $settings['hierarchicalBrowserHeight'] ?? '200px';
+
+
+// params to pass during collection lookup
+$lookup_params = array(
+	'types' => isset($settings['restrict_to_types']) ? $settings['restrict_to_types'] : (isset($settings['restrict_to_type']) ? $settings['restrict_to_type'] : ''),
+	'noSubtypes' => (int)$settings['dont_include_subtypes_in_type_restriction'],
+	'noInline' => (!$quick_add_enabled || (bool) preg_match("/QuickAdd$/", $this->request->getController())) ? 1 : 0,
+	'self' => $t_instance->tableName().':'.$t_instance->getPrimaryKey()
+);
+
+$errors = [];
+foreach($action_errors = $this->request->getActionErrors($placement_code) as $o_error) {
+	$errors[] = $o_error->getErrorDescription();
+}
+
+$count = $this->getVar('relationship_count');
+$num_per_page = caGetOption('numPerPage', $settings, 10);
+
+if (!RequestHTTP::isAjax()) {
+	if(caGetOption('showCount', $settings, false)) { print $count ? "({$count})" : ''; }
+
+	if ($batch) {
+		print caBatchEditorRelationshipModeControl($t_item, $id_prefix);
+	} else {
+		print caEditorBundleShowHideControl($this->request, $id_prefix, $settings, caInitialValuesArrayHasValue($id_prefix, $this->getVar('initialValues')));
 	}
-	
-	$count = $this->getVar('relationship_count');
-	$num_per_page = caGetOption('numPerPage', $settings, 10);
-	
-	if (!RequestHTTP::isAjax()) {
-		if(caGetOption('showCount', $settings, false)) { print $count ? "({$count})" : ''; }
-	
-		if ($batch) {
-			print caBatchEditorRelationshipModeControl($t_item, $id_prefix);
-		} else {
-			print caEditorBundleShowHideControl($this->request, $id_prefix, $settings, caInitialValuesArrayHasValue($id_prefix, $this->getVar('initialValues')));
-		}
-		print caEditorBundleMetadataDictionary($this->request, $id_prefix, $settings);
-	}
-	
-	$make_link = !caTemplateHasLinks(caGetOption('display_template', $va_settings, null));
+	print caEditorBundleMetadataDictionary($this->request, $id_prefix, $settings);
+}
+
+$make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null));
 ?>
 <div id="<?= $id_prefix; ?>" <?= $batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
@@ -166,7 +165,7 @@
 		<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
 		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo caRelatedItem">
 <?php
-		if ((bool)$settings['useHierarchicalBrowser']) {
+		if ((bool)($settings['useHierarchicalBrowser'] ?? false)) {
 			$use_as_root_id = 'null';
 ?>
 				<div style="float: right;"><a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
@@ -368,9 +367,9 @@
 			minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_collections_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
 			relationshipTypes: <?= json_encode($this->getVar('relationship_types_by_sub_type')); ?>,
 			autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'Collection', 'Get', $lookup_params); ?>',
-			types: <?= json_encode($settings['restrict_to_types']); ?>,
-			restrictToAccessPoint: <?= json_encode($settings['restrict_to_access_point']); ?>,
-			restrictToSearch: <?= json_encode($settings['restrict_to_search']); ?>,
+			types: <?= json_encode($settings['restrict_to_types'] ?? null); ?>,
+			restrictToAccessPoint: <?= json_encode($settings['restrict_to_access_point'] ?? null); ?>,
+			restrictToSearch: <?= json_encode($settings['restrict_to_search'] ?? null); ?>,
 			bundlePreview: <?= caGetBundlePreviewForRelationshipBundle($this->getVar('initialValues')); ?>,
 			readonly: <?= $read_only ? "true" : "false"; ?>,
 			isSortable: <?= ($read_only || $sort) ? "false" : "true"; ?>,
@@ -379,7 +378,7 @@
 			autocompleteInputID: '<?= $id_prefix; ?>_autocomplete',
 <?php if($quick_add_enabled) { ?>
 			quickaddPanel: caRelationQuickAddPanel<?= $id_prefix; ?>,
-			quickaddUrl: '<?= caNavUrl($this->request, 'editor/collections', 'CollectionQuickAdd', 'Form', array('collection_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$settings['dont_include_subtypes_in_type_restriction'])); ?>',
+			quickaddUrl: '<?= caNavUrl($this->request, 'editor/collections', 'CollectionQuickAdd', 'Form', array('collection_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? 0))); ?>',
 <?php } ?>
 			sortUrl: '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Sort', array('table' => $t_item_rel->tableName())); ?>',
 			

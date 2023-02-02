@@ -35,7 +35,7 @@ $va_facet_info 			= $o_browse->getInfoForFacets();
 
 if (sizeof($va_criteria) > 1) {
 	?>
-	<div id="searchRefineParameters"><span class="criteriaHeading"><?php print _t("Filtering results by"); ?>:</span>&nbsp;&nbsp;
+	<div id="searchRefineParameters"><span class="criteriaHeading"><?= _t("Filtering results by"); ?>:</span>&nbsp;&nbsp;
 
 		<?php
 		foreach($va_criteria as $vs_facet_name => $va_row_ids) {
@@ -54,8 +54,8 @@ if (sizeof($va_criteria) > 1) {
 
 ?>
 	<div id="searchRefineBox"><div class="bg">
-			<div id="searchRefineContent"><?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?></div>
-			<a href='#' id="hideRefine" onclick='return caHandleResultsUIBoxes("refine", "hide");'><?php print caNavIcon(__CA_NAV_ICON_COLLAPSE__, "18px"); ?></a>
+			<div id="searchRefineContent"><?= caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?></div>
+			<a href='#' id="hideRefine" onclick='return caHandleResultsUIBoxes("refine", "hide");'><?= caNavIcon(__CA_NAV_ICON_COLLAPSE__, "18px"); ?></a>
 			<div style='clear:both;'></div>
 		</div><!-- end bg --></div><!-- end searchRefineBox -->
 
@@ -68,7 +68,7 @@ if (sizeof($va_criteria) > 1) {
 	<script type="text/javascript">
 		jQuery(document).ready(function() {
 			// load facets
-			jQuery("#searchRefineContent").load("<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Facets');?>");
+			jQuery("#searchRefineContent").load("<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Facets');?>");
 		});
 	</script>
 <?php
@@ -77,7 +77,7 @@ if (sizeof($va_criteria) > 1) {
 if (!$this->request->isAjax()) {
 	?>
 	<script type="text/javascript">
-		var caUIBrowsePanel = caUI.initBrowsePanel({ facetUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacet'); ?>', useExpose: false});
+		var caUIBrowsePanel = caUI.initBrowsePanel({ facetUrl: '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacet'); ?>', useExpose: false});
 
 		//
 		// Handle browse header scrolling

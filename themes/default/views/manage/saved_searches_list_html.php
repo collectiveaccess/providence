@@ -49,13 +49,13 @@
 				<thead>
 					<tr>
 						<th class="list-header-unsorted">
-							<?php print _t('Table'); ?>
+							<?= _t('Table'); ?>
 						</th>
 						<th class="list-header-unsorted">
-							<?php print _t('Search Type'); ?>
+							<?= _t('Search Type'); ?>
 						</th>
 						<th class="list-header-unsorted">
-							<?php print _t('Search term/name'); ?>
+							<?= _t('Search term/name'); ?>
 						</th>
 						<th class="{sorter: false} list-header-nosort listtableEdit"><input type='checkbox' name='record' value='' id='savedSearchesSelectAllControl' class='' onchange="jQuery('.savedSearchesControl').attr('checked', jQuery('#savedSearchesSelectAllControl').attr('checked'));"/></th>
 					</tr>
@@ -108,16 +108,16 @@
 ?>
 						<tr>
 							<td>
-								<?php print $vs_display_table; ?>
+								<?= $vs_display_table; ?>
 							</td>
 							<td>
-								<?php print str_replace("_", " ", $vs_search_type); ?>
+								<?= str_replace("_", " ", $vs_search_type); ?>
 							</td>
 							<td>
-								<?php print caNavLink($this->request, $vs_search, "", "find", $vs_controller.(($vs_search_type == "advanced_search") ? "Advanced": ""), 'doSavedSearch', array("saved_search_key" => $vs_key)); ?>
+								<?= caNavLink($this->request, $vs_search, "", "find", $vs_controller.(($vs_search_type == "advanced_search") ? "Advanced": ""), 'doSavedSearch', array("saved_search_key" => $vs_key)); ?>
 							</td>
 							<td class="listtableEdit">
-								<input type="checkbox" class="savedSearchesControl" name="saved_search_id[]" value="<?php print $vs_table."-".$vs_search_type."-".$vs_key; ?>">
+								<input type="checkbox" class="savedSearchesControl" name="saved_search_id[]" value="<?= $vs_table."-".$vs_search_type."-".$vs_key; ?>">
 							</td>
 						</tr>
 <?php

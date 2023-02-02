@@ -166,7 +166,7 @@ class TaskQueue extends BaseObject {
 			(user_id, entity_key, row_key, created_on, started_on, completed_on, priority, handler, parameters, notes)
 			VALUES
 			(?, ?, ?, ?, NULL, NULL, ?, ?, ?, ?)
-		", $vn_user_id, md5($pa_options["entity_key"]), md5($pa_options["row_key"]), time(), $vn_priority, $ps_handler, base64_encode(serialize($pa_parameters)), $pa_options["notes"] ? $pa_options["notes"] : '');
+		", $vn_user_id, md5($pa_options["entity_key"]), md5($pa_options["row_key"]), time(), $vn_priority, $ps_handler, base64_encode(serialize($pa_parameters)), $pa_options["notes"] ?? '');
 		if ($o_db->numErrors()) {
 			$this->postError(503, join('; ', $o_db->getErrors()), "TaskQueue->addTask()");
 			return false;

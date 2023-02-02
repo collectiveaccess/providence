@@ -285,11 +285,11 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 		$va_form_elements = [];
 		foreach($va_element_defs as $va_element_def) {
 			$va_form_elements[] = [
-				'code' => $va_element_def['code'],
-				'label' => $va_element_def['label'],
-				'element' => $va_element_def['element'],
-				'element_with_label' => $va_element_def['element_with_label'],
-				'value' => $va_page_content[$va_element_def['name']]
+				'code' => $va_element_def['code'] ?? null,
+				'label' => $va_element_def['label'] ?? null,
+				'element' => $va_element_def['element'] ?? null,
+				'element_with_label' => $va_element_def['element_with_label'] ?? null,
+				'value' => $va_page_content[$va_element_def['name'] ?? null] ?? null
 			];
 		}
 		return $va_form_elements;

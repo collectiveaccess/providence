@@ -273,7 +273,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$this->opa_element_settings = $this->get('settings');
 		
 		// Set data type default values if no setting value is present
-		if ($o_value = Attribute::getValueInstance($this->get('datatype'))) {
+		if ($o_value = \CA\Attributes\Attribute::getValueInstance($this->get('datatype'))) {
 			$available_settings = $o_value->getAvailableSettings($this->opa_element_settings) ?? [];
 		
 			foreach($available_settings as $setting => $setting_info) {
@@ -481,7 +481,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * info about the setting itself (label, description type of value, how to display an entry element for the setting in a form)
 	 */
 	public function getAvailableSettings() {
-		$t_attr_val = Attribute::getValueInstance((int)$this->get('datatype'));
+		$t_attr_val = \CA\Attributes\Attribute::getValueInstance((int)$this->get('datatype'));
 		$va_element_info = $this->getFieldValuesArray();
 		$va_element_info['settings'] = $this->getSettings();
 		return $t_attr_val ? $t_attr_val->getAvailableSettings($va_element_info) : null;
@@ -510,7 +510,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			CompositeCache::delete('available_sorts');
 		}
 
-		$o_value_instance = Attribute::getValueInstance($this->get('datatype'), null, true);
+		$o_value_instance = \CA\Attributes\Attribute::getValueInstance($this->get('datatype'), null, true);
 		$vs_error = null;
 		if (!$o_value_instance->validateSetting($this->getFieldValuesArray(), $ps_setting, $pm_value, $vs_error)) {
 			$ps_error = $vs_error;
@@ -1032,11 +1032,11 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 *
 	 * @return array
 	 */
-	public static function getSortableElements($pm_table_name_or_num, $pm_type_name_or_id=null, $options=null){
-		$cache_key = caMakeCacheKeyFromOptions($options, $pm_table_name_or_num.'/'.$pm_type_name_or_id);
-		// if(!($no_cache = caGetOption('noCache', $options, false)) && CompositeCache::contains('ElementsSortable') && is_array($cached_data = CompositeCache::fetch('ElementsSortable')) && isset($cached_data[$cache_key])) {
-// 			return $cached_data[$cache_key];
-// 		}
+	public static function getSortableElements($pm_table_name_or_num, $pm_type_name_or_id=null, ?array $options=null){
+		$cache_key = caMakeCacheKeyFromOptions($options ?? [], $pm_table_name_or_num.'/'.$pm_type_name_or_id);
+		if(!($no_cache = caGetOption('noCache', $options, false)) && CompositeCache::contains('ElementsSortable') && is_array($cached_data = CompositeCache::fetch('ElementsSortable')) && isset($cached_data[$cache_key])) {
+			return $cached_data[$cache_key];
+		}
 		
 		$elements = ca_metadata_elements::getElementsAsList(true, $pm_table_name_or_num, $pm_type_name_or_id, true, false, false, null, $options);
 		if (!is_array($elements) || !sizeof($elements)) { return []; }
@@ -1133,7 +1133,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	}
 	# ------------------------------------------------------
 	/**
-	 * Returns array of with information about usage of metadata element(s) in user interfaces
+	 * Returns array with information about usage of metadata element(s) in user interfaces
 	 *
 	 * @param $pm_element_code_or_id mixed Optional element_id or code. If set then counts are only returned for the specified element. If omitted then counts are returned for all elements.
 	 * @return array Array of counts. Keys are element_codes, values are arrays keyed on table DISPLAY name (eg. "set items", not "ca_set_items"). Values are the number of times the element is references in a user interface for the table.
@@ -1183,81 +1183,113 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	}
 	# ------------------------------------------------------
 	/**
-	 * Returns array of with information about usage of metadata element(s) in user interfaces
+	 * Returns array with type restrictions for element
 	 *
-	 * @param $pm_element_code_or_id mixed Optional element_id or code. If set then counts are only returned for the specified element. If omitted then counts are returned for all elements.
-	 * @return array Array of counts. Keys are element_codes, values are arrays keyed on table DISPLAY name (eg. "set items", not "ca_set_items"). Values are the number of times the element is references in a user interface for the table.
+	 * @param $pm_element_code_or_id mixed Optional element_id or code. If set then type restrictions are only returned for the specified element. If omitted then restrictions are returned for all elements.
+	 * @param $options array Options include:
+	 *		returnAll = include restriction settings in returned data. [Default is false]
+	 *
+	 * @return array Array of restrictions. Keys are element_codes, values are arrays keyed on table DISPLAY name (eg. "set items", not "ca_set_items"). Values are the number of times the element is references in a user interface for the table.
 	 */
-	static public function getTypeRestrictionsAsList($pm_element_code_or_id=null) {
-		// Get UI usage counts
+	static public function getTypeRestrictionsAsList($element_code_or_id=null, array $options=null) : array {
+		$return_all = caGetOption('returnAll', $options, false);
 		$vo_db = new Db();
 
-		$vn_element_id = null;
+		$element_id = null;
 
-		if ($pm_element_code_or_id) {
-			$t_element = new ca_metadata_elements($pm_element_code_or_id);
+		if ($element_code_or_id) {
+			$t_element = new ca_metadata_elements($element_code_or_id);
 
-			if (!($vn_element_id = $t_element->getPrimaryKey())) {
-				if ($t_element->load(array('element_code' => $pm_element_code_or_id))) {
-					$vn_element_id = $t_element->getPrimaryKey();
+			if (!($element_id = $t_element->getPrimaryKey())) {
+				if ($t_element->load(['element_code' => $element_code_or_id])) {
+					$element_id = $t_element->getPrimaryKey();
 				}
 			}
 		}
 
-		$vs_sql_where = '';
-		if ($vn_element_id) {
-			$vs_sql_where = " WHERE cmtr.element_id = {$vn_element_id} AND cme.deleted = 0";
-		} else {
-			$vs_sql_where = " WHERE cme.deleted = 0";
-		}
+		$sql_where = $element_id ? " WHERE cmtr.element_id = {$element_id} AND cme.deleted = 0" : " WHERE cme.deleted = 0";
 
 		$qr_restrictions = $vo_db->query("
 			SELECT cmtr.*, cme.element_code
 			FROM ca_metadata_type_restrictions cmtr 
 			INNER JOIN ca_metadata_elements AS cme ON cme.element_id = cmtr.element_id
-			{$vs_sql_where}
+			{$sql_where}
 		");
 
-		$va_restrictions = array();
+		$restrictions = [];
 		$t_list = new ca_lists();
 		while($qr_restrictions->nextRow()) {
 			if (!($t_table = Datamodel::getInstanceByTableNum($qr_restrictions->get('table_num'), true))) { continue; }
 
+			$type_id = null;
 			if($t_table->isRelationship()) {
-				$vs_type_name = $t_table->getRelationshipTypename('ltor', $qr_restrictions->get('type_id'));
-			} elseif ($vn_type_id = $qr_restrictions->get('type_id')) {
-				$vs_type_name = $t_list->getItemForDisplayByItemID($vn_type_id);
+				$type_name = $t_table->getRelationshipTypename('ltor', $qr_restrictions->get('type_id'));
+			} elseif ($type_id = $qr_restrictions->get('type_id')) {
+				$type_name = $t_list->getItemForDisplayByItemID($type_id);
 			} else {
-				$vs_type_name = '*';
+				$type_name = '*';
 			}
-			$va_restrictions[$qr_restrictions->get('element_code')][$t_table->getProperty('NAME_PLURAL')][$vn_type_id] = $vs_type_name;
+			
+			if ($return_all) {
+				if(!is_array($settings = caUnserializeForDatabase($qr_restrictions->get('settings')))) { $settings = []; }
+				$restrictions[$qr_restrictions->get('element_code')][$t_table->tableName()][$type_id] = array_merge([
+					'name' => $type_name,
+					'type' => caGetListItemIdno($type_id),
+				], array_map("intval", $settings));
+			} else {
+				$restrictions[$qr_restrictions->get('element_code')][$t_table->getProperty('NAME_PLURAL')][$type_id] = $type_name;
+			}
 		}
 
-		return $va_restrictions;
+		return $restrictions;
 	}
 	# ------------------------------------------------------
 	/**
 	 * Get datatype for given element
 	 *
 	 * @param string|int $pm_element_code_or_id
-	 * @return int
+	 * @param array $options Options include:
+	 *		returnAsString = Return string representation of type. [Default is false]
+	 * @return int|string
 	 * @throws MemoryCacheInvalidParameterException
 	 */
-	static public function getElementDatatype($pm_element_code_or_id) {
+	static public function getElementDatatype($pm_element_code_or_id, array $options=null) {
 		if(!$pm_element_code_or_id) { return null; }
 		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
 
+		$return_string = $options['returnAsString'] ?? false;
+
 		if(MemoryCache::contains($pm_element_code_or_id, 'ElementDataTypes')) {
-			return MemoryCache::fetch($pm_element_code_or_id, 'ElementDataTypes');
+			$vm_return = (int)MemoryCache::fetch($pm_element_code_or_id, 'ElementDataTypes');
+			return $return_string ? self::dataTypeAsString($vm_return) : $vm_return;
 		}
 
 		$vm_return = null;
 		if ($t_element = ca_metadata_elements::getInstance($pm_element_code_or_id)) {
-			$vm_return = (int) $t_element->get('datatype');
+			$vm_return = (int)$t_element->get('datatype');
 		}
 
 		MemoryCache::save($pm_element_code_or_id, $vm_return, 'ElementDataTypes');
-		return $vm_return;
+		return $return_string && !is_null($vm_return) ? self::dataTypeAsString($vm_return) : $vm_return;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return string representation for integer data type code
+	 *
+	 * @param int $data_type
+	 * @return string
+	 * @throws MemoryCacheInvalidParameterException
+	 */
+	static public function dataTypeAsString(int $data_type) {
+		if(MemoryCache::contains($data_type, 'ElementDataTypeStrings')) {
+			return MemoryCache::fetch($data_type, 'ElementDataTypeStrings');
+		}
+		
+		$attr_types = Configuration::load(__CA_CONF_DIR__."/attribute_types.conf")->get('types');
+
+		$attr_string = $attr_types[$data_type] ?? null;
+		MemoryCache::save($data_type, $attr_string, 'ElementDataTypeStrings');
+		return $attr_string;
 	}
 	# ------------------------------------------------------
 	/**
@@ -1305,7 +1337,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$datatype = self::getElementDatatype($pm_element_code_or_id);
 		$types = self::getAttributeTypes();
 	
-		if (isset($types[$datatype]) && ($value = Attribute::getValueInstance($datatype, [], true))) {
+		if (isset($types[$datatype]) && ($value = \CA\Attributes\Attribute::getValueInstance($datatype, [], true))) {
 			$s = $value->sortField();
 			CompositeCache::save($pm_element_code_or_id, $s, 'ElementSortFields');
 			return $s;
@@ -1326,7 +1358,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
 
 		$datatype = self::getElementDatatype($pm_element_code_or_id);
-		if ($attr_value = Attribute::getValueInstance($datatype, [], true)) {
+		if ($attr_value = \CA\Attributes\Attribute::getValueInstance($datatype, [], true)) {
 			return $attr_value->sortableValue($value);
 		}
 		return null;
@@ -1527,7 +1559,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$vm_return = null;
 		if ($t_element = ca_metadata_elements::getInstance($pm_element_code_or_id)) {
 			//$vm_return = (int) $t_element->get('datatype');
-			$default_setting_name = Attribute::getValueDefaultSettingForDatatype(ca_metadata_elements::getDataTypeForElementCode($pm_element_code_or_id));
+			$default_setting_name = \CA\Attributes\Attribute::getValueDefaultSettingForDatatype(ca_metadata_elements::getDataTypeForElementCode($pm_element_code_or_id));
 		    $settings = ca_metadata_elements::getElementSettingsForId($pm_element_code_or_id);
 		    $vm_return = isset($settings[$default_setting_name]) ? $settings[$default_setting_name] : null;
 		}

@@ -176,7 +176,7 @@ class BaseEditorController extends ActionController {
 			if (($vs_bundle = $this->request->getParameter('bundle', pString)) && ($vs_bundle_screen = $t_ui->getScreenWithBundle($vs_bundle))) {
 				// jump to screen containing url-specified bundle
 				$this->request->setActionExtra($vs_bundle_screen);
-			} else {
+			} elseif(isset($va_nav['defaultScreen'])) {
 				$this->request->setActionExtra($va_nav['defaultScreen']);
 			}
 		}
@@ -516,7 +516,8 @@ class BaseEditorController extends ActionController {
 	        
 			$vb_we_set_transaction = false;
 			if (!$t_subject->inTransaction()) {
-				$t_subject->setTransaction($o_t = new Transaction());
+				$o_t = new Transaction();
+				$t_subject->setTransaction($o_t);
 				$vb_we_set_transaction = true;
 			}
 			
@@ -658,7 +659,7 @@ class BaseEditorController extends ActionController {
 		if ((!($vn_display_id = $this->request->getParameter('display_id', pInteger))) || !isset($va_displays[$vn_display_id])) {
 			$vn_display_id = $this->request->user->getVar($t_subject->tableName().'_summary_display_id');
 		}
-		if (!isset($va_displays[$vn_display_id]) || (is_array($va_displays[$vn_display_id]['settings']['show_only_in']) && sizeof($va_displays[$vn_display_id]['settings']['show_only_in']) && !in_array('editor_summary', $va_displays[$vn_display_id]['settings']['show_only_in']))) {
+		if (!isset($va_displays[$vn_display_id]) || (is_array($va_displays[$vn_display_id]['settings']['show_only_in'] ?? null) && sizeof($va_displays[$vn_display_id]['settings']['show_only_in']) && !in_array('editor_summary', $va_displays[$vn_display_id]['settings']['show_only_in']))) {
 		    $va_tmp = array_filter($va_displays, function($v) { return !isset($v['settings']['show_only_in']) || !is_array($v['settings']['show_only_in']) || in_array('editor_summary', $v['settings']['show_only_in']); });
 		    $vn_display_id = sizeof($va_tmp) > 0 ? array_shift(array_keys($va_tmp)) : 0;
 		}
@@ -1215,6 +1216,8 @@ class BaseEditorController extends ActionController {
 		AssetLoadManager::register('imageScroller');
 		AssetLoadManager::register('datePickerUI');
 
+		$vn_above_id = $vn_after_id = null;
+		
 		$t_subject = Datamodel::getInstanceByTableName($this->ops_table_name);
 		$vn_subject_id = $this->request->getParameter($t_subject->primaryKey(), pInteger);
 
@@ -1532,8 +1535,7 @@ class BaseEditorController extends ActionController {
 		$limit_to_types = $this->getRequest()->config->get($this->ops_table_name.'_navigation_new_menu_limit_types_to');
 		$exclude_types = $this->getRequest()->config->get($this->ops_table_name.'_navigation_new_menu_exclude_types');
 		
-        $va_limit_to_type_ids = (is_array($va_limit_to_types) && sizeof($va_limit_to_types)) ? caMakeTypeIDList($this->ops_table_name, $va_limit_to_types, ['dontIncludeSubtypesInTypeRestriction' => true]) : null;
-		foreach($va_subtypes as $vs_sort_key => $va_type) {
+        foreach($va_subtypes as $vs_sort_key => $va_type) {
 			foreach($va_type as $vn_item_id => $va_item) {
 				if (is_array($pa_restrict_to_types) && !in_array($vn_item_id, $pa_restrict_to_types)) { continue; }
 				if (is_array($limit_to_types) && sizeof($limit_to_types) && !in_array($va_item['parameters']['type_id'], $limit_to_types)) { continue; }
@@ -1982,7 +1984,7 @@ class BaseEditorController extends ActionController {
 		//
 		// Does user have access to row?
 		//
-		if ($pt_subject->getAppConfig()->get('perform_item_level_access_checking') && $vn_subject_id) {
+		if ($pt_subject->getAppConfig()->get('perform_item_level_access_checking') && $pt_subject->getPrimaryKey()) {
 			if ($pt_subject->checkACLAccessForUser($this->request->user) < __CA_BUNDLE_ACCESS_READONLY__) {
 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
 				return false;
@@ -2365,7 +2367,7 @@ class BaseEditorController extends ActionController {
 
 		$pa_annotations = $this->request->getParameter('save', pArray);
 
-		$va_annotation_ids = array();
+		$va_annotation_ids = [];
 		if (is_array($pa_annotations)) {
 			foreach($pa_annotations as $vn_i => $va_annotation) {
 				$vs_label = (isset($va_annotation['label']) && ($va_annotation['label'])) ? $va_annotation['label'] : '';

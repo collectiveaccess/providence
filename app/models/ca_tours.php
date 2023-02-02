@@ -492,7 +492,6 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 		
 		$t_stop = new ca_tour_stops();
 		$t_stop->setTransaction($o_trans);
-		$t_stop->setMode(ACCESS_WRITE);
 		$va_errors = array();
 		
 		

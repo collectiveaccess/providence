@@ -106,10 +106,11 @@ use Zend\Stdlib\Glob;
         }
 		
 
-		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $ps_type);
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], $ps_type);
 		
 		$va_templates = array();
 		$vb_needs_caching = false;
+		$vn_template_rev = $vn_local_rev = null;
 		
 		$va_cached_list = (ExternalCache::contains($vs_cache_key, 'PrintTemplates')) ? ExternalCache::fetch($vs_cache_key, 'PrintTemplates') : null;
 			
@@ -216,7 +217,7 @@ use Zend\Stdlib\Glob;
 				continue;
 			}
 
-			$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $ps_type.'/'.$vs_template_path);
+			$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], $ps_type.'/'.$vs_template_path);
 			if (ExternalCache::contains($vs_cache_key, 'PrintTemplateDetails')) {
 				$va_list = ExternalCache::fetch($vs_cache_key, 'PrintTemplateDetails');
 				if(!is_array($files = Glob::glob("{$vs_template_path}/*.{php,css}", Glob::GLOB_BRACE))) {
@@ -615,15 +616,16 @@ use Zend\Stdlib\Glob;
         
 		// Get current display list
 		$t_display = new ca_bundle_displays();
+
         foreach(caExtractValuesByUserLocale($t_display->getBundleDisplays(['table' => $table = $pt_related->tableName(), 'restrictToTypes' => $t_placement->getSetting('restrict_to_types')])) as $va_display_info) {
             if (
             	(
-            		(!is_array($va_display_info['settings']['show_only_in']) || !sizeof($va_display_info['settings']['show_only_in']))
+            		(!is_array($va_display_info['settings']['show_only_in'] ?? null) || !sizeof($va_display_info['settings']['show_only_in']))
             		&&
             		!$t_placement->getAppConfig()->get(['show_unrestricted_displays_in_relationship_bundles', "{$table}_show_unrestricted_displays_in_relationship_bundles"])
             	)
             	|| 
-            	(is_array($va_display_info['settings']['show_only_in']) && !in_array('editor_relationship_bundle', $va_display_info['settings']['show_only_in']))
+            	(is_array($va_display_info['settings']['show_only_in'] ?? null) && !in_array('editor_relationship_bundle', $va_display_info['settings']['show_only_in']))
             ) { continue; }        
             $va_options[$va_display_info['name']] = '_pdf__display_'.$va_display_info['display_id'];
         }
@@ -677,12 +679,12 @@ use Zend\Stdlib\Glob;
 		if(is_array($va_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays(['access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'user_id' => $po_request->getUserID(), 'table' => $vs_set_table])))) {
 		    foreach($va_displays as $vn_display_id => $va_display_info) {
 		        if (
-		        	(is_array($va_display_info['settings']['show_only_in']) && 
+		        	(is_array($va_display_info['settings']['show_only_in'] ?? null) && 
 		        	sizeof($va_display_info['settings']['show_only_in']) && 
 		        	!in_array('set_item_bundle', $va_display_info['settings']['show_only_in'])) 
 		        	|| 
-		        	(!is_array($va_display_info['settings']['show_only_in']) && 
-		        	$va_display_info['settings']['show_only_in'] && 
+		        	(!is_array($va_display_info['settings']['show_only_in'] ?? null) && 
+		        	($va_display_info['settings']['show_only_in'] ?? null) && 
 		        	($va_display_info['settings']['show_only_in'] != 'set_item_bundle'))
 		        ) { continue; }
 		        $va_options[$va_display_info['name']] = '_display_'.$va_display_info['display_id'];

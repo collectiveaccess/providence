@@ -140,14 +140,14 @@ BaseModel::$s_ca_models_definitions['ca_list_items'] = array(
 				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
-				'DEFAULT' => '1',
+				'DEFAULT' => 1,
 				'LABEL' => _t('Is enabled?'), 'DESCRIPTION' => _t('If checked this item is selectable and can be used in cataloguing.')
 		),
 		'is_default' => array(
 				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
-				'DEFAULT' => '',
+				'DEFAULT' => 0,
 				'LABEL' => _t('Is default?'), 'DESCRIPTION' => _t('If checked this item will be the default selection for the list.')
 		),
 		'validation_format' => array(
@@ -1254,7 +1254,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	 *
 	 * @return array
 	 */
-	public function rewriteFindCriteria(array $criteria) : array {
+	static public function rewriteFindCriteria(array $criteria) : array {
 		if (isset($criteria['list_id']) && !is_numeric($criteria['list_id'])) {
 						
 			$list_id_vals = $criteria['list_id'];

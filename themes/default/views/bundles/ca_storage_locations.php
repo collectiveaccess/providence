@@ -37,7 +37,7 @@
 	$add_label 		= $this->getVar('add_label');
 	$rel_types		= $this->getVar('relationship_types');
 	$placement_code = $this->getVar('placement_code');
-	$placement_id	= (int)$settings['placement_id'];
+	$placement_id	= (int)$settings['placement_id'] ?? null;
 	$batch			= $this->getVar('batch');
 
 	$color 			= ((isset($settings['colorItem']) && $settings['colorItem'])) ? $settings['colorItem'] : '';
@@ -65,7 +65,7 @@
 	// params to pass during occurrence lookup
 	$lookup_params = array(
 		'types' => isset($settings['restrict_to_types']) ? $settings['restrict_to_types'] : (isset($settings['restrict_to_type']) ? $settings['restrict_to_type'] : ''),
-		'noSubtypes' => (int)$settings['dont_include_subtypes_in_type_restriction'],
+		'noSubtypes' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? 0),
 		'noInline' => (!$quick_add_enabled || (bool) preg_match("/QuickAdd$/", $this->request->getController())) ? 1 : 0,
 		'self' => $t_instance->tableName().':'.$t_instance->getPrimaryKey()
 	);
@@ -89,7 +89,7 @@
 		$errors[] = $o_error->getErrorDescription();
 	}
 	
-	$make_link = !caTemplateHasLinks(caGetOption('display_template', $va_settings, null));
+	$make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null));
 ?>
 <div id="<?= $id_prefix; ?>" <?= $batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
@@ -110,7 +110,7 @@
 ?>
 	<textarea class='caItemTemplate' style='display: none;' <?= $batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
-	switch($settings['list_format']) {
+	switch($settings['list_format'] ?? null) {
 		case 'list':
 ?>
 		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo listRel caRelatedItem">
@@ -162,7 +162,7 @@
 		<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
 		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo caRelatedItem">
 <?php
-	if (!(bool)$settings['useHierarchicalBrowser']) {
+	if (!(bool)($settings['useHierarchicalBrowser'] ?? false)) {
 ?>
 			<table class="caListItem">
 				<tr>
@@ -212,7 +212,7 @@
 						initDataUrl: '<?= caNavUrl($this->request, 'lookup', 'StorageLocation', 'GetHierarchyAncestorList'); ?>',
 						
 						selectOnLoad : true,
-						browserWidth: "<?= $settings['hierarchicalBrowserWidth']; ?>",
+						browserWidth: "<?= $settings['hierarchicalBrowserWidth'] ?? null; ?>",
 						
 						dontAllowEditForFirstLevel: false,
 						disabledItems: '<?= $disabled_items_mode; ?>',
@@ -365,7 +365,7 @@
 			autocompleteInputID: '<?= $id_prefix; ?>_autocomplete',
 <?php if($quick_add_enabled) { ?>
 			quickaddPanel: caRelationQuickAddPanel<?= $id_prefix; ?>,
-			quickaddUrl: '<?= caNavUrl($this->request, 'editor/storage_locations', 'StorageLocationQuickAdd', 'Form', array('location_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$settings['dont_include_subtypes_in_type_restriction'], 'prepopulate_fields' => join(";", $settings['prepopulateQuickaddFields']))); ?>',
+			quickaddUrl: '<?= caNavUrl($this->request, 'editor/storage_locations', 'StorageLocationQuickAdd', 'Form', array('location_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? 0), 'prepopulate_fields' => join(";", $settings['prepopulateQuickaddFields'] ?? []))); ?>',
 <?php } ?>
 			sortUrl: '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Sort', array('table' => $t_item_rel->tableName())); ?>',
 			

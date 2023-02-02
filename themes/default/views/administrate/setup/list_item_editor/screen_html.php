@@ -52,7 +52,7 @@
 ?>
 				<div class='notification-warning-box'>
 					<ul class='notification-warning-box'>
-						<li class='notification-info-box'><?php print ((intval($vn_item_id) == 0) ? _t("You are not allowed to add items to this list") : _t("You are not allowed to edit items in this list") );?></li>
+						<li class='notification-info-box'><?= ((intval($vn_item_id) == 0) ? _t("You are not allowed to add items to this list") : _t("You are not allowed to edit items in this list") );?></li>
 					</ul>
 				</div>
 <?php
@@ -73,10 +73,10 @@
 					
 					if($vb_can_edit) { print $vs_control_box; }
 ?>
-					<input type='hidden' name='_context_id' value='<?php print $this->getVar('_context_id'); ?>'/>
-					<input type='hidden' name='item_id' value='<?php print $vn_item_id; ?>'/>
-					<input type='hidden' name='above_id' value='<?php print $vn_above_id; ?>'/>
-					<input type='hidden' name='after_id' value='<?php print $vn_after_id; ?>'/>
+					<input type='hidden' name='_context_id' value='<?= $this->getVar('_context_id'); ?>'/>
+					<input type='hidden' name='item_id' value='<?= $vn_item_id; ?>'/>
+					<input type='hidden' name='above_id' value='<?= $vn_above_id; ?>'/>
+					<input type='hidden' name='after_id' value='<?= $vn_after_id; ?>'/>
 
 				</form>
 <?php
@@ -86,4 +86,4 @@
 
 	<div class="editorBottomPadding"><!-- empty --></div>
 	
-	<?php print caEditorFieldList($this->request, $t_item, $va_bundle_list); ?>
+	<?= caEditorFieldList($this->request, $t_item, $va_bundle_list); ?>

@@ -285,9 +285,9 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 	}
 	# ------------------------------------------------------------------
 	public function loadTypeSpecificValueFromRow($pa_value_array) {
-		$this->ops_text_value = $pa_value_array['value_longtext1'];
-		$this->opn_start_date = $pa_value_array['value_decimal1'];
-		$this->opn_end_date = $pa_value_array['value_decimal2'];
+		$this->ops_text_value = $pa_value_array['value_longtext1'] ?? null;
+		$this->opn_start_date = $pa_value_array['value_decimal1'] ?? null;
+		$this->opn_end_date = $pa_value_array['value_decimal2'] ?? null;
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -369,7 +369,7 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 			DateRangeAttributeValue::$o_tep->setLanguage($locale);
 			if (!DateRangeAttributeValue::$o_tep->parse($ps_value)) { 
 				// invalid date
-				$this->postError(1970, _t('%1 is invalid', $pa_element_info['displayLabel']), 'DateRangeAttributeValue->parseValue()');
+				$this->postError(1970, _t('%1 is invalid', $pa_element_info['displayLabel'] ?? '???'), 'DateRangeAttributeValue->parseValue()');
 				return false;
 			}
 			$va_dates = DateRangeAttributeValue::$o_tep->getHistoricTimestamps();
@@ -443,7 +443,7 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 		}
 
 		$vn_max_length = 255;
-		$vs_element .= caHTMLTextInput(
+		$vs_element = caHTMLTextInput(
 			'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
 			array(
 				'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
@@ -472,10 +472,9 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 		}
 		
 		if ((bool)$va_settings['useDatePicker']) {
-
 			// nothing terrible happens if this fails. If no package is registered for the current 
 			// locale, the LoadManager simply ignores it and the default settings (en_US) apply
-			AssetLoadManager::register("datepicker_i18n_{self::$locale}"); 
+			AssetLoadManager::register("datepicker_i18n_".self::$locale); 
 
 			$vs_date_format = isset($va_settings['datePickerDateFormat']) ? $va_settings['datePickerDateFormat'] : 'yy-mm-dd';
 
@@ -566,6 +565,7 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 		$p = explode(' ', $this->ops_text_value);
 		
 		$terms = [];
+		$d = null;
 		if (in_array($p[0], $circa_indicators)) {
 			$d = join(' ', array_slice($p, 1));
 		} elseif (self::$o_search_config->get('treat_before_dates_as_circa') && ((int)$this->opn_start_date === -2000000000)) {

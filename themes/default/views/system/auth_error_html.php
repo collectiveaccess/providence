@@ -29,7 +29,7 @@
 ?>
 <html>
 	<head>
-		<title><?php print $this->request->config->get("app_display_name"); ?></title>
+		<title><?= $this->request->config->get("app_display_name"); ?></title>
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		
 		<link href="<?= caGetThemeUrlPath() ?>/css/login.css" rel="stylesheet" type="text/css" />
@@ -56,7 +56,7 @@
 ?>
 				</div><!-- end  systemTitle -->
 				<div id="loginForm">
-					<?php print caNavLink($this->request, _t("Login again"), 'loginAgainLink', 'system/auth', 'login', ''); ?>
+					<?= caNavLink($this->request, _t("Login again"), 'loginAgainLink', 'system/auth', 'login', ''); ?>
 				</div><!-- end loginForm -->
 			</div><!-- end loginBox -->
 		</div><!-- end center -->

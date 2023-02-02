@@ -63,14 +63,14 @@
 			
 			if ($vb_can_edit) { print $vs_control_box; }
 ?>
-			<input type='hidden' name='_context_id' value='<?php print $this->getVar('_context_id'); ?>'/>
-			<input type='hidden' name='place_id' value='<?php print $vn_place_id; ?>'/>
-			<input type='hidden' name='above_id' value='<?php print $vn_above_id; ?>'/>
+			<input type='hidden' name='_context_id' value='<?= $this->getVar('_context_id'); ?>'/>
+			<input type='hidden' name='place_id' value='<?= $vn_place_id; ?>'/>
+			<input type='hidden' name='above_id' value='<?= $vn_above_id; ?>'/>
 			<input id='isSaveAndReturn' type='hidden' name='is_save_and_return' value='0'/>
-			<input type='hidden' name='rel_table' value='<?php print $vs_rel_table; ?>'/>
-			<input type='hidden' name='rel_type_id' value='<?php print $vn_rel_type_id; ?>'/>
-			<input type='hidden' name='rel_id' value='<?php print $vn_rel_id; ?>'/>
-			<input type='hidden' name='after_id' value='<?php print $vn_after_id; ?>'/>
+			<input type='hidden' name='rel_table' value='<?= $vs_rel_table; ?>'/>
+			<input type='hidden' name='rel_type_id' value='<?= $vn_rel_type_id; ?>'/>
+			<input type='hidden' name='rel_id' value='<?= $vn_rel_id; ?>'/>
+			<input type='hidden' name='after_id' value='<?= $vn_after_id; ?>'/>
 <?php
 			if($this->request->getParameter('rel', pInteger)) {
 ?>
@@ -83,4 +83,4 @@
 
 	<div class="editorBottomPadding"><!-- empty --></div>
 	
-	<?php print caSetupEditorScreenOverlays($this->request, $t_place, $va_bundle_list); ?>
+	<?= caSetupEditorScreenOverlays($this->request, $t_place, $va_bundle_list); ?>

@@ -34,7 +34,7 @@ require_once(__CA_APP_DIR__."/helpers/mailHelpers.php");
 trait CLIUtilsTest { 
 	# -------------------------------------------------------
 	/**
-	 * Rebuild search indices
+	 * Utility to verify functionality of outgoing email configuration
 	 */
 	public static function test_outgoing_email_configuration($opts=null) {
 		global $g_last_email_error;

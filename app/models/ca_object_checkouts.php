@@ -324,7 +324,8 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 			$o_trans = $this->getTransaction();
 		} else {	
 			$vb_we_set_transaction = true;
-			$this->setTransaction($o_trans = new Transaction($this->getDb()));
+			$o_trans = new Transaction($this->getDb());
+			$this->setTransaction($o_trans);
 		}
 		
 		$o_request = caGetOption('request', $pa_options, null);
@@ -434,7 +435,8 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 			$o_trans = $this->getTransaction();
 		} else {	
 			$vb_we_set_transaction = true;
-			$this->setTransaction($o_trans = new Transaction($this->getDb()));
+			$o_trans = new Transaction($this->getDb());
+			$this->setTransaction($o_trans);
 		}
 		
 		$o_request = caGetOption('request', $pa_options, null);
@@ -495,7 +497,8 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 			$o_trans = $this->getTransaction();
 		} else {	
 			$vb_we_set_transaction = true;
-			$this->setTransaction($o_trans = new Transaction($this->getDb()));
+			$o_trans = new Transaction($this->getDb());
+			$this->setTransaction($o_trans);
 		}
 		
 		$o_request = caGetOption('request', $pa_options, null);

@@ -36,7 +36,7 @@
 	
 	if (!$this->request->isAjax()) {
 ?>
-		<?php print caFormTag($this->request, 'Index', 'BasicSearchForm'); ?>
+		<?= caFormTag($this->request, 'Index', 'BasicSearchForm'); ?>
 <?php 
 			print caFormControlBox(
 				'',

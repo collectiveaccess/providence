@@ -254,7 +254,7 @@ class Configuration {
 			// Write mtimes to cache for each component file (local, theme, stock)
 			if (is_array($mtime_keys) && sizeof($mtime_keys)) {
 				foreach($mtime_keys as $k) {
-					ExternalCache::save($k, self::$s_config_cache[$k], 'ConfigurationCache', 3600 * 3600 * 30);
+					ExternalCache::save($k, self::$s_config_cache[$k] ?? null, 'ConfigurationCache', 3600 * 3600 * 30);
 				}
 			}
 		}
@@ -339,13 +339,13 @@ class Configuration {
 					case 10:
 						switch($vs_token) {
 							case '[':
-								if(!is_array($this->ops_config_settings["lists"][$vs_key]) || !$vb_merge_mode) {
+								if(!is_array($this->ops_config_settings["lists"][$vs_key] ?? null) || !$vb_merge_mode) {
 									$this->ops_config_settings["lists"][$vs_key] = array();
 								}
 								$vn_state = 30;
 								break;
 							case '{':
-								if(!is_array($this->ops_config_settings["assoc"][$vs_key]) || !$vb_merge_mode) {
+								if(!is_array($this->ops_config_settings["assoc"][$vs_key] ?? null) || !$vb_merge_mode) {
 									$this->ops_config_settings["assoc"][$vs_key] = array();
 								}
 								$va_assoc_pointer_stack[] =& $this->ops_config_settings["assoc"][$vs_key];
@@ -646,7 +646,7 @@ class Configuration {
 							case '{':
 								if (!$vn_in_quote && !$vb_escape_set) {
 									$i = sizeof($va_assoc_pointer_stack) - 1;
-									if (!is_array($va_assoc_pointer_stack[$i][$vs_assoc_key]) || !$vb_merge_mode) {
+									if (!isset($va_assoc_pointer_stack[$i]) || !isset($va_assoc_pointer_stack[$i][$vs_assoc_key]) || !is_array($va_assoc_pointer_stack[$i][$vs_assoc_key]) || !$vb_merge_mode) {
 										$va_assoc_pointer_stack[$i][$vs_assoc_key] = array();
 									}
 									$va_assoc_pointer_stack[] =& $va_assoc_pointer_stack[$i][$vs_assoc_key];
@@ -691,7 +691,7 @@ class Configuration {
 									$vs_scalar_value .= $vs_token;
 								} else {
 									$i = sizeof($va_assoc_pointer_stack) - 1;
-									if(!is_array($va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key]) || !$vb_merge_mode) {
+									if(!is_array($va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key] ?? null) || !$vb_merge_mode) {
 										$va_assoc_pointer_stack[$i][$vs_assoc_key] = array();
 									}
 									$va_assoc_pointer_stack[] =& $va_assoc_pointer_stack[$i][$vs_assoc_key];

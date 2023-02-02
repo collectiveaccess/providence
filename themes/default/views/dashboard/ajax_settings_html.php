@@ -30,12 +30,12 @@
 	$vs_widget_id 		= $this->getVar('widget_id');
 	
 ?>
-<div id="<?php print "caWidgetSettingForm_{$vs_widget_id}"; ?>">
-	<form id="<?php print "caWidgetSettings_{$vs_widget_id}"; ?>" action="#" method="get">
+<div id="<?= "caWidgetSettingForm_{$vs_widget_id}"; ?>">
+	<form id="<?= "caWidgetSettings_{$vs_widget_id}"; ?>" action="#" method="get">
 <?php
 			if ($vs_form = $this->getVar('form')) {
 ?>
-		<h1><?php print _t('Settings'); ?></h1>
+		<h1><?= _t('Settings'); ?></h1>
 <?php
 				print $vs_form;
 				print caJSButton(
@@ -45,7 +45,7 @@
 				).' ';
 			} else {
 ?>
-		<h1><?php print _t('No settings available'); ?></h1>
+		<h1><?= _t('No settings available'); ?></h1>
 <?php
 			}
 			
@@ -55,7 +55,7 @@
 				array())
 			);
 ?>
-			<?php print caHTMLHiddenInput('widget_id', array('value' => $vs_widget_id)); ?>
+			<?= caHTMLHiddenInput('widget_id', array('value' => $vs_widget_id)); ?>
 	</form>
 </div>
 

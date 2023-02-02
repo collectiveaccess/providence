@@ -188,14 +188,14 @@
 			return null; 
 		}
 		
-		$find_type = $m[1];
+		$find_type = $m[1] ?? null;
 		$is_advanced = false;
-		if(preg_match("!^([A-Z]{1}[a-z]+)Advanced$!", $m[2], $madm)) { 
-			$table_desc = $madm[1];
+		if(preg_match("!^([A-Z]{1}[a-z]+)Advanced$!", $m[2] ?? null, $madm)) { 
+			$table_desc = $madm[1] ?? null;
 			$is_advanced = true;
 			$find_type .= 'Advanced';
 		} else {
-			$table_desc = $m[2];
+			$table_desc = $m[2] ?? null;
 		}
 		
 		$table_map = [
@@ -408,7 +408,7 @@
 		$va_aps = array();
 		foreach($va_tables as $vs_table) {
 			$va_config = $o_search_indexing_config->getAssoc($vs_table);
-			if(is_array($va_config) && is_array($va_config['_access_points'])) {
+			if(is_array($va_config ?? null) && is_array($va_config['_access_points'] ?? null)) {
 				if (array_intersect($pa_access_points, array_keys($va_config['_access_points']))) {
 					$va_aps[$vs_table] = true;	
 				}
@@ -441,7 +441,7 @@
 		
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		$va_access_values = caGetUserAccessValues($po_request);
- 		if(is_array($va_access_values) && sizeof($va_access_values)){
+ 		if(is_array($va_access_values ?? null) && sizeof($va_access_values)){
  			$pa_options["checkAccess"] = $va_access_values;
  		}	
 		$vn_items_per_page_default = caGetOption('itemsPerPage', $pa_options, 10);
@@ -470,7 +470,7 @@
 		
 		$va_table_counts = array();
 		foreach($pa_blocks as $vs_block => $va_block_info) {
-			if (!($o_search = caGetSearchInstance($va_block_info['table']))) { continue; }
+			if (!($o_search = caGetSearchInstance($va_block_info['table'] ?? null))) { continue; }
 			
 			if (!is_array($va_block_info['options'])) { $va_block_info['options'] = array(); }
 			$va_options = array_merge($pa_options, $va_block_info['options']);
@@ -1725,7 +1725,7 @@
 			
 			foreach($sortable_elements as $element_id => $sortable_element) {
 				$va_base_fields[$ps_table.'.'.$sortable_element['element_code']] = $sortable_element['display_label'];
-				if(is_array($sortable_element['elements'])) {
+				if(is_array($sortable_element['elements'] ?? null)) {
 					foreach($sortable_element['elements'] as $e) {
 						$va_base_fields[$ps_table.'.'.$sortable_element['element_code'].'.'.$e['element_code']] = str_repeat("&nbsp;", 5).'↳ '.$e['display_label'];
 					}	
@@ -2054,12 +2054,12 @@
 		);
 		if ($va_field_info) {
 			// Get the list code and display type for further processing below.
-			$vs_list_code = $va_field_info['LIST'] ?: $va_field_info['LIST_CODE'];
-			$vn_display_type = $va_field_info['DISPLAY_TYPE'];
+			$vs_list_code = $va_field_info['LIST'] ?? $va_field_info['LIST_CODE'] ?? null;
+			$vn_display_type = $va_field_info['DISPLAY_TYPE'] ?? null;
 			// The "hardcoded" options are `label` => `id` so this needs to be flipped for the query builder.
-			$va_select_options = is_array($va_field_info['OPTIONS']) ? array_flip($va_field_info['OPTIONS']) : null;
+			$va_select_options = is_array($va_field_info['OPTIONS'] ?? null) ? array_flip($va_field_info['OPTIONS']) : null;
 			// Convert CA field type to query builder type and operators.
-			switch ($va_field_info['FIELD_TYPE']) {
+			switch ($va_field_info['FIELD_TYPE'] ?? null) {
 				case FT_NUMBER:
 					$va_result['type'] = 'integer';
 					break;
@@ -2103,7 +2103,7 @@
 						$va_result['type'] = 'time';
 						break;
 				}
-		} elseif(preg_match("!^count[/\.]{1}!", $va_name[1]))  {
+		} elseif(preg_match("!^count[/\.]{1}!", ($va_name[1] ?? null)))  {
 			// counts are always ints
 			$va_result['type'] = 'integer';
 		} elseif ($vs_name === '_fulltext') {

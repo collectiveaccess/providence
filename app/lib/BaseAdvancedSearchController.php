@@ -56,6 +56,8 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 		AssetLoadManager::register('advancedsearch');
 		AssetLoadManager::register('browsable');	// need this to support browse panel when filtering/refining search results
 
+		$vo_result = null;
+		
 		// Get elements of result context
 		$vn_page_num 			= $this->opo_result_context->getCurrentResultsPageNumber();
 		//$vs_search 				= $this->opo_result_context->getSearchExpression();
@@ -101,7 +103,7 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 		}
 
 		$vs_append_to_search = '';
-		if ($pa_options['appendToSearch']) {
+		if ($pa_options['appendToSearch'] ?? null) {
 			$vs_append_to_search = " AND (".$pa_options['appendToSearch'].")";
 		}
 
@@ -223,7 +225,7 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 		if (!is_array($va_display_list = $this->view->getVar('display_list'))) { $va_display_list = array(); }
 		$this->_setBottomLineValues($vo_result, $va_display_list, $t_display);
 
-		switch($pa_options['output_format']) {
+		switch($pa_options['output_format'] ?? null) {
 			# ------------------------------------
 			case 'LABELS':
 				$this->_genLabels($vo_result, $this->request->getParameter("label_form", pString), $vs_search, $vs_search);

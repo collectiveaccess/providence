@@ -322,10 +322,10 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 	public function getAttributeBundleHTML($pa_element_info, $pa_options=null) {
  		AssetLoadManager::register('leaflet');
 		
-		$va_element_width = caParseFormElementDimension($pa_element_info['settings']['fieldWidth']);
-		$vn_element_width = $va_element_width['dimension'];
-		$va_element_height = caParseFormElementDimension($pa_element_info['settings']['fieldHeight']);
-		$vn_element_height = $va_element_height['dimension'];
+		$va_element_width = caParseFormElementDimension($pa_element_info['settings']['fieldWidth'] ?? null);
+		$vn_element_width = $va_element_width['dimension'] ?? null;
+		$va_element_height = caParseFormElementDimension($pa_element_info['settings']['fieldHeight'] ?? null);
+		$vn_element_height = $va_element_height['dimension'] ?? null;
 		
 		$map_width_info = caParseFormElementDimension(caGetOption('mapWidth', $pa_options, '695px'));
 		$map_width = $map_width_info['dimension'].'px';
@@ -341,8 +341,8 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 			if(!caParseGISSearch($default_location)) { $default_location = null; }
 		}
 		
-		$points_are_directional = (bool)$pa_element_info['settings']['pointsAreDirectional'] ? 1 : 0;
-		$autoDropPin = (bool)$pa_element_info['settings']['autoDropPin'] ? 1 : 0;
+		$points_are_directional = (bool)($pa_element_info['settings']['pointsAreDirectional'] ?? false) ? 1 : 0;
+		$autoDropPin = (bool)($pa_element_info['settings']['autoDropPin'] ?? false) ? 1 : 0;
  		
  		$element_id = (int)$pa_element_info['element_id'];
  		$vs_id = $pa_element_info['element_id']."_{n}";

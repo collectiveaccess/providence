@@ -120,14 +120,14 @@
 		
 		print caHTMLSelect('mode', $options, array('id' => 'caDownloadRepresentationMode', 'class' => 'searchToolsSelect'), array('value' => null, 'width' => '150px'))."\n";
 ?>
-			<a href='#' onclick="caDownloadRepresentations(jQuery('#caDownloadRepresentationMode').val());" class="button"><?php print caNavIcon(__CA_NAV_ICON_GO__, "18px"); ?></a>
+			<a href='#' onclick="caDownloadRepresentations(jQuery('#caDownloadRepresentationMode').val());" class="button"><?= caNavIcon(__CA_NAV_ICON_GO__, "18px"); ?></a>
 		</form>
 	</div>
 <?php
 	}
 ?>
 
-		<a href='#' id='hideTools' onclick='return caHandleResultsUIBoxes("tools", "hide");'><?php print caNavIcon(__CA_NAV_ICON_COLLAPSE__, '18px'); ?></a>
+		<a href='#' id='hideTools' onclick='return caHandleResultsUIBoxes("tools", "hide");'><?= caNavIcon(__CA_NAV_ICON_COLLAPSE__, '18px'); ?></a>
 		<div style='clear:both;height:1px;'>&nbsp;</div>
 	</div><!-- end bg -->
 </div><!-- end searchToolsBox -->
@@ -136,9 +136,9 @@
 	function caDownloadRepresentations(mode) {
 		var tmp = mode.split('_');
 		if(tmp[0] == 'all') {	// download all search results
-			jQuery(window).attr('location', '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'DownloadMedia'); ?>' + '/<?php print $t_subject->tableName(); ?>/all/version/' + tmp[1] + '/download/1');
+			jQuery(window).attr('location', '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'DownloadMedia'); ?>' + '/<?= $t_subject->tableName(); ?>/all/version/' + tmp[1] + '/download/1');
 		} else {
-			jQuery(window).attr('location', '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'DownloadMedia'); ?>' + '/<?php print $t_subject->tableName(); ?>/' + caGetSelectedItemIDsToAddToSet().join(';') + '/version/' + tmp[1] + '/download/1');
+			jQuery(window).attr('location', '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'DownloadMedia'); ?>' + '/<?= $t_subject->tableName(); ?>/' + caGetSelectedItemIDsToAddToSet().join(';') + '/version/' + tmp[1] + '/download/1');
 		}
 	}
 </script>

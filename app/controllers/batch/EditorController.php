@@ -251,7 +251,7 @@ class EditorController extends ActionController {
 		}
 		
 		$t_ui = new ca_editor_uis();
-		if (!isset($options['ui']) && !$options['ui']) {
+		if (!isset($options['ui']) || !$options['ui']) {
 			$t_ui->load($this->request->user->getPreference("batch_".$t_subject->tableName()."_editor_ui"));
 		}
 		if (!$t_ui->getPrimaryKey() && isset($options['ui']['__all__']) && $options['ui']['__all__']) {

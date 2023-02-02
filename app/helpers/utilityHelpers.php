@@ -1139,7 +1139,7 @@ function caFileIsIncludable($ps_file) {
 			if(isset($pa_options['html']) && $pa_options['html']) {
 				$va_buf[] = array($va_line['file'], $va_line['class'], $va_line['function'], $va_line['line']);
 			} else {
-				$va_buf[] = $va_line['file'].':'.($va_line['class'] ? $va_line['class'].':' : '').$va_line['function'].'@'.$va_line['line']."<br/>\n";
+				$va_buf[] = $va_line['file'].':'.($va_line['class'] ?? '').':'.$va_line['function'].'@'.$va_line['line']."<br/>\n";
 			}
 		}
 
@@ -1503,7 +1503,7 @@ function caFileIsIncludable($ps_file) {
 			if (!is_array($va_data)) { continue; }
 			$va_key = array();
 			foreach($va_sort_keys as $vs_sort_key) {
-			    $k = isset($va_data[$vs_sort_key.'_sort_']) ? $va_data[$vs_sort_key.'_sort_'] : $va_data[$vs_sort_key];  // an alternative sort-specific value for a key may be present with the suffix "_sort_"; when present we use this in preference to the key value
+			    $k = isset($va_data[$vs_sort_key.'_sort_']) ? $va_data[$vs_sort_key.'_sort_'] : $va_data[$vs_sort_key] ?? null;  // an alternative sort-specific value for a key may be present with the suffix "_sort_"; when present we use this in preference to the key value
 				
 				if ($pb_natural_sort || $pb_case_insensitive) { $k = mb_strtolower($k); }
 				if ($pb_natural_sort) {
@@ -1793,7 +1793,7 @@ function caFileIsIncludable($ps_file) {
 	  * @param string $ps_additional_text Additional text to add to key
 	  * @return string An MD5 cache key for the options array
 	  */
-	function caMakeCacheKeyFromOptions($pa_options, $ps_additional_text=null) {
+	function caMakeCacheKeyFromOptions(array $pa_options, ?string $ps_additional_text=null) {
 		if (!is_array($pa_options)) { return md5($pa_options.$ps_additional_text); }
 		foreach($pa_options as $vs_key => $vm_value) {
 			if (is_object($vm_value)) { unset($pa_options[$vs_key]); }
@@ -2932,15 +2932,15 @@ function caFileIsIncludable($ps_file) {
 		try {
 			// either
 			if (preg_match("!^([^\d]+)([\d\.\,]+)$!", trim($value), $matches)) {
-				$decimal_value = (strpos($matches[2], ',') !== false) ? Zend_Locale_Format::getNumber($matches[2], ['locale' => $g_locale, 'precision' => 2]) : (float)$matches[2];
+				$decimal_value = (strpos($matches[2], ',') !== false) ? Zend_Locale_Format::getNumber($matches[2], ['locale' => $locale, 'precision' => 2]) : (float)$matches[2];
 				$currency_specifier = trim($matches[1]);
 			// or 1
 			} else if (preg_match("!^([\d\.\,]+)([^\d]+)$!", trim($value), $matches)) {
-				$decimal_value = (strpos($matches[1], ',') !== false) ? Zend_Locale_Format::getNumber($matches[1], ['locale' => $g_locale, 'precision' => 2]) : (float)$matches[1];
+				$decimal_value = (strpos($matches[1], ',') !== false) ? Zend_Locale_Format::getNumber($matches[1], ['locale' => $locale, 'precision' => 2]) : (float)$matches[1];
 				$currency_specifier = trim($matches[2]);
 			// or 2
 			} else if (preg_match("!(^[\d\,\.]+$)!", trim($value), $matches)) {
-				$decimal_value = (strpos($matches[1], ',') !== false) ? Zend_Locale_Format::getNumber($matches[1], ['locale' => $g_locale, 'precision' => 2]) : (float)$matches[1];
+				$decimal_value = (strpos($matches[1], ',') !== false) ? Zend_Locale_Format::getNumber($matches[1], ['locale' => $locale, 'precision' => 2]) : (float)$matches[1];
 				$currency_specifier = null;
 			}
 		} catch (Zend_Locale_Exception $e){
@@ -3113,7 +3113,7 @@ function caFileIsIncludable($ps_file) {
 	 *		useMebibytes = Assume 1 kilobyte = 1024 bytes; otherwise assume 1 kilobyte = 1000 bytes. [Default is whatever value of show_filesizes_in_mebibytes in app.conf is]
 	 * @return int File size in bytes, or null if the expression could not be parsed.
 	 */
-	function caParseHumanFilesize(string $from): ?int {
+	function caParseHumanFilesize(string $from, ?array $options = null): ?int {
 		$return_mebibytes = caGetOption('useMebibytes', $options, Configuration::load()->get('show_filesizes_in_mebibytes'));
 		
 		$iec = ['B' => 'B', 'KIB' => 'KB', 'MIB' => 'MB', 'GIB' => 'GB', 'TIB' => 'TB', 'PIB' => 'PB'];
@@ -4804,20 +4804,25 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 *
 	 */
-	function caReturnValueInBytes($vs_val) {
-		$vs_val = trim($vs_val);
-		$vs_last = strtolower($vs_val[strlen($vs_val)-1]);
-		switch($vs_last) {
-			case 't':
-				$vs_val *= 1024;
-			case 'g':
-				$vs_val *= 1024;
-			case 'm':
-				$vs_val *= 1024;
-			case 'k':
-				$vs_val *= 1024;
+	function caReturnValueInBytes(string $val) {
+		$val = trim($val);
+		$last = strtolower($val[strlen($val)-1]);
+		
+		if(preg_match("!^([\d\.\,]+)!", $val, $m)) {
+			$val = $m[1];
+			switch($last) {
+				case 't':
+					$val *= 1024;
+				case 'g':
+					$val *= 1024;
+				case 'm':
+					$val *= 1024;
+				case 'k':
+					$val *= 1024;
+			}
+			return $val;
 		}
-		return $vs_val;
+		return null;
 	}
 	# ----------------------------------------
 	/**

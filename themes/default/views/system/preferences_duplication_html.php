@@ -113,8 +113,8 @@
 			jQuery("#duplicationOn").on('click', function (e) { jQuery(".duplication_setting_on").prop("checked", 1); return false; });
 			jQuery("#duplicationOff").on('click', function (e) { jQuery(".duplication_setting_off").prop("checked", 1); return false; });
 
-			//jQuery(".duplication_setting_on, .duplication_setting_off").attr('disabled', (jQuery("select[name='pref_<?php print $vs_current_table; ?>_duplicate_attributes']").val() == 0));		
-			jQuery("select[name='pref_<?php print $vs_current_table; ?>_duplicate_attributes']").on('change', function() {
+			//jQuery(".duplication_setting_on, .duplication_setting_off").attr('disabled', (jQuery("select[name='pref_<?= $vs_current_table; ?>_duplicate_attributes']").val() == 0));		
+			jQuery("select[name='pref_<?= $vs_current_table; ?>_duplicate_attributes']").on('change', function() {
 				jQuery(".duplication_setting_on, .duplication_setting_off").attr('disabled', (jQuery(this).val() == 0));
 			});
 			

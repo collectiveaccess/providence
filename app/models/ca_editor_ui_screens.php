@@ -556,8 +556,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				$va_placements[$vn_placement_id = (int)$qr_res->get('placement_id')] = $qr_res->getRow();
 				$va_placements[$vn_placement_id]['settings'] = $va_settings = caUnserializeForDatabase($qr_res->get('settings'));
 				if (!$pb_settings_only) {
-					$t_placement->setSettingDefinitionsForPlacement($va_available_bundles[$vs_bundle_name]['settings']);
-					$va_placements[$vn_placement_id]['display'] = $va_available_bundles[$vs_bundle_name]['display'];
+					$t_placement->setSettingDefinitionsForPlacement($va_available_bundles[$vs_bundle_name]['settings'] ?? null);
+					$va_placements[$vn_placement_id]['display'] = $va_available_bundles[$vs_bundle_name]['display'] ?? null;
 					$va_placements[$vn_placement_id]['settingsForm'] = $t_placement->getHTMLSettingForm(array('id' => $vs_bundle_name.'_'.$vn_placement_id, 'settings' => $va_settings, 'table' => $table_name, 'relatedTable' => Datamodel::getTableNum($vs_bundle_name) ? $vs_bundle_name : null));
 				} else {
 					$va_tmp = explode('.', $vs_bundle_name);
@@ -2386,7 +2386,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		foreach($va_placements as $vn_placement_id => $va_placement) {
 			$vs_bundle_proc = preg_replace("!^(ca_attribute_|{$table}\.)!", '', $va_placement['bundle_name']);
 			$vs_label = ($vs_label = ($t_instance->getDisplayLabel($table.'.'.$vs_bundle_proc))) ? $vs_label : $va_placement['bundle_name'];
-			if(is_array($va_placement['settings']['label'])){
+			if(is_array($va_placement['settings']['label'] ?? null)){
 				$va_tmp = caExtractValuesByUserLocale(array($va_placement['settings']['label']));
 				if ($vs_user_set_label = array_shift($va_tmp)) {
 					$vs_label = "{$vs_label} (<em>{$vs_user_set_label}</em>)";
@@ -2528,7 +2528,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				}
 				
 				if($vn_placement_id === 0) {
-					$t_screen->addPlacement($vs_bundle, $vs_bundle.($vn_i + 1), $va_settings[$vn_placement_id], $vn_i + 1, array('user_id' => $po_request->getUserID(), 'additional_settings' => $va_available_bundles[$vs_bundle]['settings']));
+					$t_screen->addPlacement($vs_bundle, $vs_bundle.($vn_i + 1), $va_settings[$vn_placement_id] ?? null, $vn_i + 1, array('user_id' => $po_request->getUserID(), 'additional_settings' => $va_available_bundles[$vs_bundle]['settings'] ?? null));
 					if ($t_screen->numErrors()) {
 						$this->errors = $t_screen->errors;
 						return false;

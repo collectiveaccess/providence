@@ -106,13 +106,13 @@
 					$va_user_list = $this->request->user->getUserList(array('sort' => 'lname', 'sort_direction' => 'asc', 'userclass' => array(0, 1)));	//userclass 0 ="back-end" users; 1=front-end users
 					
 					foreach($va_user_list as $vn_user_id => $va_user_info) {
-						if ($va_existing_group_users[$vn_user_id] && !in_array($vn_user_id, $va_users)) {
+						if (($va_existing_group_users[$vn_user_id] ?? null) && !in_array($vn_user_id, $va_users)) {
 							// remove user
 							$t_group->removeUsers($vn_user_id);
 							continue;
 						}
 						
-						if (!$va_existing_group_users[$vn_user_id] && in_array($vn_user_id, $va_users)) {
+						if (!($va_existing_group_users[$vn_user_id] ?? null) && in_array($vn_user_id, $va_users)) {
 							// add user
 							$t_group->addUsers($vn_user_id);
 							continue;

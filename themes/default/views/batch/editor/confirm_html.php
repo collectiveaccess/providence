@@ -63,7 +63,7 @@
 	}
 </script>
 <div id="caConfirmBatchExecutionPanel" class="caConfirmBatchExecutionPanel"> 
-	<div class='dialogHeader'><?php print _t('Batch edit (%1 %2)', $vn_num_items_in_set, $t_subject->getProperty(($vn_num_items_in_set == 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL')); ?></div>
+	<div class='dialogHeader'><?= _t('Batch edit (%1 %2)', $vn_num_items_in_set, $t_subject->getProperty(($vn_num_items_in_set == 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL')); ?></div>
 	<div id="caConfirmBatchExecutionPanelContentArea">
 
 			<div class="caConfirmBatchExecutionPanelAlertText">
@@ -139,8 +139,8 @@
 			<div id="caConfirmBatchExecutionPanelControlButtons">
 				<table>
 					<tr>
-						<td align="right"><?php print caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Execute batch edit'), 'caConfirmBatchExecutionFormExecuteButton', array('onclick' => 'caExecuteBatch(); return false;'), array()); ?></td>
-						<td align="left"><?php print caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caConfirmBatchExecutionFormCancelButton', array('onclick' => 'caConfirmBatchExecutionPanel.hidePanel(); return false;'), array()); ?></td>
+						<td align="right"><?= caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Execute batch edit'), 'caConfirmBatchExecutionFormExecuteButton', array('onclick' => 'caExecuteBatch(); return false;'), array()); ?></td>
+						<td align="left"><?= caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caConfirmBatchExecutionFormCancelButton', array('onclick' => 'caConfirmBatchExecutionPanel.hidePanel(); return false;'), array()); ?></td>
 					</tr>
 				</table>
 			</div>

@@ -52,7 +52,7 @@
 ?>
 		<script type="text/javascript">
 			jQuery(document).ready(function() {
-				jQuery('#' + '<?php print $vs_id_prefix; ?>' + '_BundleContentPreview').text(<?php print caEscapeForBundlePreview($vs_bundle_preview); ?>);
+				jQuery('#' + '<?= $vs_id_prefix; ?>' + '_BundleContentPreview').text(<?= caEscapeForBundlePreview($vs_bundle_preview); ?>);
 			});
 		</script>
 <?php
@@ -65,25 +65,25 @@
 	if (isset($va_settings['forACLAccessScreen']) && $va_settings['forACLAccessScreen']) {
 ?>
 		<div class="globalAccess">	
-			<div class='title'><?php print $t_instance->getFieldInfo($vs_bundle_name, 'LABEL'); ?></div>
+			<div class='title'><?= $t_instance->getFieldInfo($vs_bundle_name, 'LABEL'); ?></div>
 			<p>
 <?php
 	} else {
 ?>
-		<div class="bundleContainer <?php print $vb_batch ? "editorBatchBundleContent" : ''; ?>" id="<?php print $vs_id_prefix; ?>">
+		<div class="bundleContainer <?= $vb_batch ? "editorBatchBundleContent" : ''; ?>" id="<?= $vs_id_prefix; ?>">
 			<div class="caItemList">
 				<div class="labelInfo">	
 <?php
 	}
 					if (is_array($va_errors) && sizeof($va_errors)) {
 ?>
-						<span class="formLabelError"><?php print join('; ', $va_errors); ?></span>
+						<span class="formLabelError"><?= join('; ', $va_errors); ?></span>
 <?php
 					}
 					
 					if ($vs_media = $this->getVar('display_media')) {
 ?>
-						<div style="float: right; margin: 5px 10px 5px 0px;"><?php print $vs_media; ?></div>
+						<div style="float: right; margin: 5px 10px 5px 0px;"><?= $vs_media; ?></div>
 <?php
 					}
 					
@@ -95,19 +95,19 @@
 ?>
 						<script type="text/javascript">
 							jQuery(document).ready(function() {
-								jQuery('#<?php print $vs_id_prefix; ?>access_inherit_from_parent').bind('click', function(e) {
-									jQuery('#<?php print $vs_id_prefix; ?>access').prop('disabled', jQuery(this).prop('checked'));
-								}).prop('checked', <?php print (bool)$t_instance->get('access_inherit_from_parent') ? 'true' : 'false'; ?>);
+								jQuery('#<?= $vs_id_prefix; ?>access_inherit_from_parent').bind('click', function(e) {
+									jQuery('#<?= $vs_id_prefix; ?>access').prop('disabled', jQuery(this).prop('checked'));
+								}).prop('checked', <?= (bool)$t_instance->get('access_inherit_from_parent') ? 'true' : 'false'; ?>);
 			
-								if (jQuery('#<?php print $vs_id_prefix; ?>access_inherit_from_parent').prop('checked')) { 
-									jQuery('#<?php print $vs_id_prefix; ?>access').prop('disabled', true);
+								if (jQuery('#<?= $vs_id_prefix; ?>access_inherit_from_parent').prop('checked')) { 
+									jQuery('#<?= $vs_id_prefix; ?>access').prop('disabled', true);
 								}
 							});
 						</script>
 <?php
 					}
 ?>
-					<?php print $vs_element; ?>
+					<?= $vs_element; ?>
 <?php
 	if ($vs_media) {
 ?>

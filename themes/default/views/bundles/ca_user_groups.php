@@ -31,17 +31,17 @@
 	$t_item 			= $this->getVar('t_group');				// user group
 	$t_rel 				= $this->getVar('t_rel');			// *_x_user_groups instance (eg. ca_sets_x_user_groups)
 	$t_subject 			= $this->getVar('t_subject');		
-	$va_settings 		= $this->getVar('settings');
+	$settings 			= $this->getVar('settings');
 	$vs_add_label 		= $this->getVar('add_label');
 	
-	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_users') == __CA_BUNDLE_ACCESS_READONLY__));
+	$vb_read_only		=	((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_users') == __CA_BUNDLE_ACCESS_READONLY__));
 	
 	
 	$va_initial_values = $this->getVar('initialValues');
 	if (!is_array($va_initial_values)) { $va_initial_values = array(); }
 	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
 ?>
 <div id="<?= $vs_id_prefix; ?>">
 <?php

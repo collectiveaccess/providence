@@ -36,6 +36,7 @@
 
 require_once(__CA_LIB_DIR__.'/Db.php');
 require_once(__CA_LIB_DIR__.'/Search/SearchIndexer.php');
+require_once(__CA_LIB_DIR__.'/Utils/LockingTrait.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_search_indexing_queue'] = array(
@@ -129,6 +130,8 @@ BaseModel::$s_ca_models_definitions['ca_search_indexing_queue'] = array(
 );
 
 class ca_search_indexing_queue extends BaseModel {
+	use LockingTrait;
+	
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -213,29 +216,14 @@ class ca_search_indexing_queue extends BaseModel {
 	# are listed here is the order in which they will be returned using getFields()
 
 	protected $FIELDS;
-
-	/**
-	 * @var resource|null
-	 */
-	static $s_lock_resource = null;
 	
-	/**
-	 * Path to lock file
-	 */
-	static $s_lock_filepath = __CA_APP_DIR__ . DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR . __CA_APP_NAME__.'_search_indexing_queue.lock';
-
-    /**
-     * Lock time out. Locks older than this will be removed.
-     */
-    static $s_lock_timeout = 60 * 60;   // in seconds
-
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
 	static public function process() {
 		if(self::lockAcquire()) {
-		    set_time_limit(self::$s_lock_timeout);
+		    set_time_limit(self::lockTimeout());
 			$o_db = new Db();
 			
 			do {
@@ -270,56 +258,6 @@ class ca_search_indexing_queue extends BaseModel {
 
 			self::lockRelease();
 		}
-	}
-	# ------------------------------------------------------
-	/**
-	 * 
-	 */
-	static public function lockAcquire() {
-		// @todo: is fopen(... , 'x') thread safe? or at least "process safe"?
-		$vb_got_lock = (bool) (self::$s_lock_resource = @fopen(self::$s_lock_filepath, 'x'));
-
-		if($vb_got_lock) {
-			// make absolutely sure the lock is released, even if a PHP error occurrs during script execution
-			register_shutdown_function('ca_search_indexing_queue::lockRelease');
-		}
-
-		// if we couldn't get the lock, check if the lock file is old (i.e. older than 120 minutes)
-		// if that's the case, it's likely something went wrong and the lock hangs.
-		// so we just kill it and try to re-acquire
-		if(!$vb_got_lock && file_exists(self::$s_lock_filepath)) {
-			if((time() - caGetFileMTime(self::$s_lock_filepath)) > self::$s_lock_timeout) {
-				self::lockRelease();
-				return self::lockAcquire();
-			}
-		}
-
-		return $vb_got_lock;
-	}
-	# ------------------------------------------------------
-    /**
-	 *
-	 */
-	static public function lockRelease() {
-		if(is_resource(self::$s_lock_resource)) {
-			@fclose(self::$s_lock_resource);
-		}
-
-		@unlink(self::$s_lock_filepath);
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	static public function lockExists() {
-	    return file_exists(self::$s_lock_filepath);
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	static public function lockCanBeRemoved() {
-	    return is_writable(self::$s_lock_filepath);
 	}
 	# ------------------------------------------------------
 	/**

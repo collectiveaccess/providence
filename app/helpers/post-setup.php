@@ -36,7 +36,9 @@
 # 		For Windows hosts, use a notation similar to "C:/PATH/TO/COLLECTIVEACCESS"; do NOT use backslashes
 #
 if (!defined("__CA_BASE_DIR__")) {
-	define("__CA_BASE_DIR__", ($_SERVER['SCRIPT_FILENAME'] && (php_sapi_name() !== 'cli'))  ? preg_replace("!/install$!", "", pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_DIRNAME)) :  join(DIRECTORY_SEPARATOR, array_slice(explode(DIRECTORY_SEPARATOR, __FILE__), 0, -3)));
+	$base_dir = ($_SERVER['SCRIPT_FILENAME'] && (php_sapi_name() !== 'cli'))  ? preg_replace("!/install$!", "", pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_DIRNAME)) :  join(DIRECTORY_SEPARATOR, array_slice(explode(DIRECTORY_SEPARATOR, __FILE__), 0, -3));
+	if(defined('__CA_IS_SERVICE_REQUEST__') && __CA_IS_SERVICE_REQUEST__) { $base_dir = preg_replace('!/service$!', '', $base_dir); }
+	define("__CA_BASE_DIR__", $base_dir);
 }
 
 # Path to CollectiveAccess 'app' directory 

@@ -244,7 +244,7 @@ class MultipartIDNumber extends IDNumber {
 		$i = 0;
 		$element_errors = [];
 		foreach($elements as $ename => $info) {
-			$v = $element_vals[$i];
+			$v = $element_vals[$i] ?? null;
 			$value_len = mb_strlen($v);
 
 			switch($info['type']) {
@@ -516,7 +516,7 @@ class MultipartIDNumber extends IDNumber {
 		} 
 		
 		if (!($t_instance = Datamodel::getInstanceByTableName($table, true))) { return 'ERR'; }
-		if ((bool)$element_info['sequence_by_type']) {
+		if ((bool)($element_info['sequence_by_type'] ?? false)) {
 			$stypes = is_array($element_info['sequence_by_type']) ? $element_info['sequence_by_type'] : [$element_info['sequence_by_type']];
 			$sequence_by_types = caMakeTypeIDList($table, $stypes, ['dontIncludeSubtypesInTypeRestriction' => (bool)$element_info['dont_include_subtypes']]);
 			$type = $this->getType();
@@ -621,11 +621,11 @@ class MultipartIDNumber extends IDNumber {
 		$output = [];
 
 		foreach ($elements as $element) {
-			$element_info = $elements_normal_order[$element];
+			$element_info = $elements_normal_order[$element] ?? null;
 			$i = array_search($element, $element_names_normal_order);
 			$padding = 20;
 			
-			$v = $element_values[$i];
+			$v = $element_values[$i] ?? null;
 			if(($i === (sizeof($element_names_normal_order) - 1)) && (sizeof($element_values) > sizeof($element_names_normal_order))) {	// last item with extra elements
 				$extra_elements = array_splice($element_values, $i + 1);
 				$v .= $separator.join($separator, $extra_elements);
@@ -735,9 +735,9 @@ class MultipartIDNumber extends IDNumber {
 		
 		$n = 0;
 		foreach ($elements as $element) {
-			$element_info = $elements_normal_order[$element];
+			$element_info = $elements_normal_order[$element] ?? null;
 			$i = array_search($element, $element_names_normal_order);
-			$v = $element_values[$i];
+			$v = $element_values[$i] ?? null;
 			
 			$range = caGetOption('range', $element_info, 5);
 			$precision = caGetOption('precision', $element_info, 2);
@@ -766,13 +766,13 @@ class MultipartIDNumber extends IDNumber {
 				$ints[] = $this->_numToSortableInt((float)$sv, $range, $precision);
 			} elseif(preg_match('!^([\d]+)([A-Za-z]+)$!', $sv, $m)) {
 				// Treat trailing letters on a numeric values as right-of-decimal (Eg. a sub-identifier)
-				$ints[] = $this->_numToSortableInt($m[0].'.'.$this->_stringToSortableInt($m[1], $range, $precision), $range, $precision);
+				$ints[] = $this->_numToSortableInt((float)($m[0].'.'.$this->_stringToSortableInt($m[1], $range, $precision)), $range, $precision);
 			} elseif(strpos($sv, '.') !== false) {
 				$x = explode('.', $sv);
 				while(sizeof($x) > 0) {
 					$svp = array_shift($x);
 					if(is_numeric($svp)) {
-						$ints[] = $this->_numToSortableInt($svp, $range, $precision);
+						$ints[] = $this->_numToSortableInt((float)$svp, $range, $precision);
 					} else {
 						// Treat as base-36 number
 						$ints[] = $this->_stringToSortableInt($svp, $range, $precision);
@@ -836,7 +836,8 @@ class MultipartIDNumber extends IDNumber {
 		foreach($elements as $element) {
 			$element_info = $elements_normal_order[$element];
 			$i = array_search($element, $elements);
-            if(!is_array($output[$i])) { $output[$i] = []; }
+            if(!is_array($output[$i] ?? null)) { $output[$i] = []; }
+            if(!isset($element_values[$i])) { $element_values[$i] = null; }
 			switch($element_info['type']) {
 				case 'LIST':
 					$output[$i] = array($element_values[$i]);
@@ -984,7 +985,7 @@ class MultipartIDNumber extends IDNumber {
 			if (($info['type'] == 'SERIAL') && ($element_values[$i] == '')) {
 				$next_in_seq_is_present = true;
 			}
-			$tmp = $this->genNumberElement($ename, $name, $element_values[$i], $id_prefix, $generate_for_search_form, $options);
+			$tmp = $this->genNumberElement($ename, $name, $element_values[$i] ?? null, $id_prefix, $generate_for_search_form, $options);
 			$element_control_names[] = $name.'_'.$ename;
 
 			if (($options['show_errors']) && (isset($errors[$ename]))) {
@@ -1383,7 +1384,7 @@ class MultipartIDNumber extends IDNumber {
 			case 'FREE':
 			case 'NUMERIC':
 			case 'ALPHANUMERIC':
-				if (!$element_value && !$generate_for_search_form) { $element_value = $element_info['default']; }
+				if (!$element_value && !$generate_for_search_form) { $element_value = $element_info['default'] ?? null; }
 				$width = $this->getElementWidth($element_info, 3);
 				if (!$element_value || $element_info['editable'] || $generate_for_search_form) {
 					$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'" maxlength="'.$width.'"'.($options['readonly'] ? ' disabled="1" ' : '').'/>';

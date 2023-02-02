@@ -45,7 +45,7 @@
 				<input type='checkbox' name='record' value='' id='addItemToSetSelectAllControl' class='addItemToSetControl' onchange="jQuery('.addItemToSetControl').attr('checked', (jQuery('#addItemToSetSelectAllControl').attr('checked') == 'checked'));"/>		
 			</th>
 			<th class='list-header-nosort'>
-				<?php print ($vs_default_action	== "Edit" ? _t("Edit") : _t("View")); ?>
+				<?= ($vs_default_action	== "Edit" ? _t("Edit") : _t("View")); ?>
 			</th>
 <?php
 			// output headers
@@ -54,8 +54,8 @@
 				$vs_item_display_str =
 					((mb_strlen($va_display_item['display']) > 30) ? strip_tags(mb_substr($va_display_item['display'], 0, 27))."..." : $va_display_item['display']);
 
-				if ($va_display_item['is_sortable']) {
-					if ($vs_current_sort == $va_display_item['bundle_sort']) {
+				if ($va_display_item['is_sortable'] ?? null) {
+					if ($vs_current_sort == ($va_display_item['bundle_sort'] ?? null)) {
 						if($vs_current_sort_dir == 'desc') {
 							$vs_th_class = 'list-header-sorted-desc';
 							$vs_new_sort_direction = 'asc';
@@ -89,10 +89,10 @@
 				
 				($i == 2) ? $i = 0 : "";
 ?>
-				<tr <?php print ($i ==1) ? "class='odd'" : ""; ?>>
+				<tr <?= ($i ==1) ? "class='odd'" : ""; ?>>
 					<td class="addItemToSetControl">
-						<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_lot_id; ?>' class="addItemToSetControl" />	
-						<div><?php print $vn_start + $vn_item_count + 1; ?></div>
+						<input type='checkbox' name='add_to_set_ids' value='<?= (int)$vn_lot_id; ?>' class="addItemToSetControl" />	
+						<div><?= $vn_start + $vn_item_count + 1; ?></div>
 					</td>
 <?php
 					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 2), '', 'ca_object_lots', $vn_lot_id, array())."</td>";
@@ -112,7 +112,7 @@
 			if (is_array($va_bottom_line = $this->getVar('bottom_line'))) {
 ?>
 					<tr>
-						<td colspan="2" class="listtableTotals"><?php print _t('Totals'); ?></td>
+						<td colspan="2" class="listtableTotals"><?= _t('Totals'); ?></td>
 <?php
 						foreach($va_bottom_line as $placement_id => $vs_bottom_line_value) {
 							print "<td>{$vs_bottom_line_value}</td>";
@@ -124,7 +124,7 @@
 			if ($vs_bottom_line_totals = $this->getVar('bottom_line_totals')) {
 ?>				
 					<tr>
-						<td colspan="<?php print sizeof($va_display_list) + 2; ?>" class="listtableAggregateTotals"><?php print $vs_bottom_line_totals; ?></td>
+						<td colspan="<?= sizeof($va_display_list) + 2; ?>" class="listtableAggregateTotals"><?= $vs_bottom_line_totals; ?></td>
 					</tr>
 <?php		
 			}

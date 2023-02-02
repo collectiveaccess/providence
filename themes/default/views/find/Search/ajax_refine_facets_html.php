@@ -38,7 +38,7 @@
 		foreach($va_available_facets as $vs_facet_code => $va_facet_info) {
 			$c++;
 ?>		
-			<a href='#' onclick='$("#searchRefineBox").slideUp(200); caUIBrowsePanel.showBrowsePanel("<?php print $vs_facet_code;?>")'><?php print $va_facet_info['label_plural'];?></a>
+			<a href='#' onclick='$("#searchRefineBox").slideUp(200); caUIBrowsePanel.showBrowsePanel("<?= $vs_facet_code;?>")'><?= $va_facet_info['label_plural'];?></a>
 <?php		
 		}
 	} else {

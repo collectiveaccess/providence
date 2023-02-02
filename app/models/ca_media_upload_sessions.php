@@ -28,11 +28,9 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  * 
  * ----------------------------------------------------------------------
- */
- 
- /**
-   *
-   */
+ */ 
+require_once(__CA_LIB_DIR__.'/Utils/LockingTrait.php');
+
 
 BaseModel::$s_ca_models_definitions['ca_media_upload_sessions'] = array(
  	'NAME_SINGULAR' 	=> _t('media submission'),
@@ -107,7 +105,7 @@ BaseModel::$s_ca_models_definitions['ca_media_upload_sessions'] = array(
 				_t('Submitted') => 'SUBMITTED',
 				_t('Processing') => 'PROCESSING',
 				_t('Processed') => 'PROCESSED',
-				_t('In review') => 'IN_REVIEW',
+			//	_t('In review') => 'IN_REVIEW',
 				_t('Accepted') => 'ACCEPTED',
 				_t('Rejected') => 'REJECTED',
 				_t('Completed') => 'COMPLETED',
@@ -148,6 +146,8 @@ BaseModel::$s_ca_models_definitions['ca_media_upload_sessions'] = array(
 );
 
 class ca_media_upload_sessions extends BaseModel {
+	use LockingTrait;
+	
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -356,16 +356,24 @@ class ca_media_upload_sessions extends BaseModel {
 	 *
 	 */
 	static public function processSessions(?array $options=null) : int {
+		$log = caGetImportLogger(['logLevel' => 'DEBUG']);
+		if(!self::lockAcquire()) {
+			$log->logInfo(_t('Media upload session processing queue is already running.'));
+			return 0;
+		}
+		
 		$limit = caGetOption('limit', $options, 10);
 		$session_ids = ca_media_upload_sessions::find(['submitted_on' => ['>', 0], 'completed_on' => null], ['returnAs' => 'ids']);
 			
-		$log = caGetImportLogger();
 		
 		$c = 0;
 		
 		$errors = [];
 		while($session_id = array_shift($session_ids)) {
 			$session = new ca_media_upload_sessions($session_id);
+			
+			$errors = $warnings = [];
+			$files_imported = 0;
 			
 			$d = $session->get('metadata');
 			$data = $d['data'];
@@ -404,8 +412,9 @@ class ca_media_upload_sessions extends BaseModel {
 			});
 			foreach($media as $path => $info) {
 				if(ca_object_representations::mediaExists($path)) {
+					$filename = pathinfo($path, PATHINFO_BASENAME);
 					unset($media[$path]);
-					self::_setSessionWarning($session, $label, _t('Media file <em>%1</em> is already loaded (file was skipped)', pathinfo($path, PATHINFO_BASENAME)));
+					self::_setSessionWarning($session, $label, $warnings[$filename][] = _t('Media file <em>%1</em> is already loaded (file was skipped)', $filename));
 				}
 			}
 			
@@ -414,13 +423,15 @@ class ca_media_upload_sessions extends BaseModel {
 			}
 			if(sizeof($media) === 0) {
 				// all media filtered - send warning notification and bail
-				self::_setSessionError($session, $label, _t('Submission was skipped because there are no media files to import'));
-				continue;
+				self::_setSessionError($session, $label, $errors[''][] = _t('Submission was skipped because there are no media files to import'));
+				goto updateSession;
 			}
 			
 			$dont_moderate = Configuration::load()->get("dont_moderate_tags");
 			
 			$album_rep = null;	// rep used on hierarchy "album"
+			
+			$file_map = [];
 			switch($mode) {
 				case 'hierarchy':
 					// create top-level record
@@ -432,8 +443,9 @@ class ca_media_upload_sessions extends BaseModel {
 					$t->insert();
 					
 					if ($t->numErrors()) {
-						self::_setSessionError($session, $label, _t('Could not create hierarchy parent %1: %2 (submission was skipped)', $label, join(", ", $t->getErrors())));
-						continue(2);
+						self::_setSessionError($session, $label, $errors[''][] = $msg = _t('Could not create hierarchy parent %1: %2 (submission was skipped)', $label, join(", ", $t->getErrors())));
+						$log->logError($msg);
+						goto updateSession;
 					}
 					
 					$t->addLabel(['name' => $label], $locale_id, null, true);
@@ -442,10 +454,12 @@ class ca_media_upload_sessions extends BaseModel {
 					$t->set('submission_group_id', null);
 					$t->set('submission_status_id', $submission_status);
 					$t->set('submission_via_form', $form);
+					$t->set('submission_session_id', $session_id);
 					$t->update();
 					
 					if($t->numErrors()) {
-						self::_setSessionWarning($session, $label, _t('Could not set submitter information for hierarchy parent %1: %2', $label, join(", ", $t->getErrors())));
+						self::_setSessionWarning($session, $label, $warnings[''][] = $msg = _t('Could not set submitter information for hierarchy parent %1: %2', $label, join(", ", $t->getErrors())));
+						$log->logError($msg);
 					}
 					
 					$errors = self::_processContent($t, $config, $data);
@@ -453,9 +467,16 @@ class ca_media_upload_sessions extends BaseModel {
 					$album_rep = $t->addRepresentation(
 						$p=array_shift(array_keys($media)), $rep_type, $locale_id, $rep_status, $rep_access, $is_primary, [], ['returnRepresentation' => true, 'original_filename' => pathinfo($p, PATHINFO_BASENAME)]
 					);
+					$log->logDebug(_t('Trying to load hierarchy parent media from %1', $p));
+					
+					$root_filename = pathinfo($p, PATHINFO_BASENAME);
 					
 					if($t->numErrors()) {
-						self::_setSessionWarning($session, $label, _t('Could not add media %1 for hierarchy parent %2: %3', pathinfo($p, PATHINFO_BASENAME), $label, join(", ", $t->getErrors())));
+						self::_setSessionWarning($session, $label, $warnings[$root_filename][] = $msg = _t('Could not add media %1 for hierarchy parent %2: %3', $root_filename, $label, join(", ", $t->getErrors())));
+						$log->logError($msg);
+					} else {
+						$files_imported++;
+						$file_map[$root_filename][] = $t->getPrimaryKey();
 					}
 				
 					$t_pk = $t->getPrimaryKey();
@@ -464,6 +485,8 @@ class ca_media_upload_sessions extends BaseModel {
 					$index = 1;
 					$is_primary = true;
 					foreach($media as $path => $info) {
+						$filename = pathinfo($path, PATHINFO_BASENAME);
+						
 						$r = Datamodel::getInstance($table);
 						$r->set('parent_id', $t_pk);
 						$r->set('status', $status);
@@ -474,14 +497,14 @@ class ca_media_upload_sessions extends BaseModel {
 						$r->insert();
 						
 						if ($r->numErrors()) {
-							self::_setSessionError($session, $label, _t('Could not create media child record %1 for %2: %3 (file was skipped)', pathinfo($path, PATHINFO_BASENAME), $label, join(", ", $r->getErrors())));
+							self::_setSessionError($session, $label, $errors[$filename][] = _t('Could not create media child record %1 for %2: %3 (file was skipped)', $filename, $label, join(", ", $r->getErrors())));
 							continue;
 						}
 					
 						$r->addLabel(['name' => $label." [{$index}]"], $locale_id, null, true);
 						
 						if ($r->numErrors()) {
-							self::_setSessionError($session, $label, _t('Could not add label for media child record for %1: %2 (file was skipped)', $label, join(", ", $t->getErrors())));
+							self::_setSessionError($session, $label, $errors[$filename][] = _t('Could not add label for media child record for %1: %2 (file was skipped)', $label, join(", ", $t->getErrors())));
 							continue;
 						}
 						
@@ -489,27 +512,31 @@ class ca_media_upload_sessions extends BaseModel {
 						$r->set('submission_group_id', null);
 						$r->set('submission_status_id', $submission_status);
 						$r->set('submission_via_form', $form);
+						$r->set('submission_session_id', $session_id);
 						
 						$r->update();
 						
 						if($r->numErrors()) {
-							self::_setSessionWarning($session, $label, _t('Could not set submitter information for media child record for %1: %2', $label, join(", ", $r->getErrors())));
+							self::_setSessionWarning($session, $label, $warnings[$filename][] = _t('Could not set submitter information for media child record for %1: %2', $label, join(", ", $r->getErrors())));
 						}
 						
 						//
 						if ($is_primary && $album_rep) {
 							$r->addRelationship('ca_object_representations', $album_rep->getPrimaryKey());
-							
 							if($r->numErrors()) {
-								self::_setSessionWarning($session, $label, _t('Could not add media relation to %1 for media child record for %2: %3', pathinfo($path, PATHINFO_BASENAME), $label, join(", ", $r->getErrors())));
+								self::_setSessionWarning($session, $label, $warnings[$filename][] = _t('Could not add media relation to %1 for media child record for %2: %3', $filename, $label, join(", ", $r->getErrors())));
 							}
 						} else { 
 							$r->addRepresentation(
-								$path, $rep_type, $locale_id, $rep_status, $rep_access, true, [], ['original_filename' => pathinfo($p, PATHINFO_BASENAME)]
+								$path, $rep_type, $locale_id, $rep_status, $rep_access, true, [], ['original_filename' => $root_filename]
 							);
+							$log->logDebug(_t('Trying to load hierarchy child media from %1', $path));
 							
 							if($r->numErrors()) {
-								self::_setSessionWarning($session, $label, _t('Could not add media %1 for media child record for %2: %3', pathinfo($path, PATHINFO_BASENAME), $label, join(", ", $r->getErrors())));
+								self::_setSessionWarning($session, $label, $warnings[$filename][] = _t('Could not add media %1 for media child record for %2: %3', $filename, $label, join(", ", $r->getErrors())));
+							} else {
+								$files_imported++;
+								$file_map[$filename][] = $r->getPrimaryKey();
 							}
 						}
 						$index++;
@@ -528,25 +555,26 @@ class ca_media_upload_sessions extends BaseModel {
 					$t->insert();
 					
 					if ($t->numErrors()) {
-						self::_setSessionError($session, $label, _t('Could not create all-in-one record for %1: %2 (submission was skipped)', $label, join(", ", $t->getErrors())));
-						continue(2);
+						self::_setSessionError($session, $label, $errors[''][] = _t('Could not create all-in-one record for %1: %2 (submission was skipped)', $label, join(", ", $t->getErrors())));
+						goto updateSession;
 					}
 					
 					$t->addLabel(['name' => $label], $locale_id, null, true);
 					
 					if ($t->numErrors()) {
-						self::_setSessionError($session, $label, _t('Could not add label for all-in-one record for %1: %2 (submission was skipped)', $label, join(", ", $t->getErrors())));
-						continue(2);
+						self::_setSessionError($session, $label, $errors[''][] = _t('Could not add label for all-in-one record for %1: %2 (submission was skipped)', $label, join(", ", $t->getErrors())));
+						goto updateSession;
 					}
 					
 					$t->set('submission_user_id', $user_id);
 					$t->set('submission_group_id', null);
 					$t->set('submission_status_id', $submission_status);
 					$t->set('submission_via_form', $form);
+					$t->set('submission_session_id', $session_id);
 					$t->update();
 					
 					if($t->numErrors()) {
-						self::_setSessionWarning($session, $label, _t('Could not set submitter information for all-in-one record for %1: %2', $label, join(", ", $t->getErrors())));
+						self::_setSessionWarning($session, $label, $warnings[''][] = _t('Could not set submitter information for all-in-one record for %1: %2', $label, join(", ", $t->getErrors())));
 					}
 					
 					$errors = self::_processContent($t, $config, $data);
@@ -555,14 +583,22 @@ class ca_media_upload_sessions extends BaseModel {
 					$index = 1;
 					$is_primary = true;
 					foreach($media as $path => $info) {
+						$filename = pathinfo($path, PATHINFO_BASENAME);
+						
 						$r = $t->addRepresentation(
-							$path, $rep_type, $locale_id, $rep_status, $rep_access, $is_primary, [], ['returnRepresentation' => true, 'original_filename' => pathinfo($p, PATHINFO_BASENAME)]
+							$path, $rep_type, $locale_id, $rep_status, $rep_access, $is_primary, [], ['returnRepresentation' => true, 'original_filename' => $filename]
 						);
+						
+						$log->logDebug(_t('Trying to load media from %1', $path));
+						
 						$is_primary = false;
 						$index++;
 						
 						if($t->numErrors()) {
-							self::_setSessionWarning($session, $label, _t('Could not add media %1 for all-in-one record for %2: %3', pathinfo($path, PATHINFO_BASENAME), $label, join(", ", $t->getErrors())));
+							self::_setSessionWarning($session, $label, $warnings[$filename][] =  _t('Could not add media %1 for all-in-one record for %2: %3', $filename, $label, join(", ", $t->getErrors())));
+						} else {
+							$files_imported++;
+							$file_map[$filename][] = $t->getPrimaryKey();
 						}
 					}
 					
@@ -571,7 +607,11 @@ class ca_media_upload_sessions extends BaseModel {
 				case 'media':
 				default:
 					foreach($media as $path => $info) {
-						$r = Datamodel::getInstance($table);
+						$filename = pathinfo($path, PATHINFO_BASENAME);
+						
+						if(!($r = Datamodel::getInstance($table))) { 
+							continue;
+						}
 						$r->set('parent_id', null);
 						$r->set('status', $status);
 						$r->set('access', $access);
@@ -581,14 +621,14 @@ class ca_media_upload_sessions extends BaseModel {
 						$r->insert();
 						
 						if ($r->numErrors()) {
-							self::_setSessionError($session, $label, _t('Could not create media record %1 for %2: %3 (file was skipped)', pathinfo($path, PATHINFO_BASENAME), $label, join(", ", $t->getErrors())));
+							self::_setSessionError($session, $label, $errors[$filename][] = _t('Could not create media record %1 for %2: %3 (file was skipped)', $filename, $label, join(", ", $t->getErrors())));
 							continue;
 						}
 					
 						$r->addLabel(['name' => $label." [{$index}]"], $locale_id, null, true);
 						
-						if ($r>numErrors()) {
-							self::_setSessionError($session, $label, _t('Could not add label for media record %1 for %2: %3 (file was skipped)', pathinfo($path, PATHINFO_BASENAME), $label, join(", ", $r->getErrors())));
+						if ($r->numErrors()) {
+							self::_setSessionError($session, $label, $errors[$filename][] = _t('Could not add label for media record %1 for %2: %3 (file was skipped)', $filename, $label, join(", ", $r->getErrors())));
 							continue;
 						}
 						
@@ -596,20 +636,26 @@ class ca_media_upload_sessions extends BaseModel {
 						$r->set('submission_group_id', null);
 						$r->set('submission_status_id', $submission_status);
 						$r->set('submission_via_form', $form);
+						$r->set('submission_session_id', $session_id);
 						
 						$r->update();
 						
 						if($r->numErrors()) {
-							self::_setSessionWarning($session, $label, _t('Could not set submitter information for media record for %1: %2', $label, join(", ", $r->getErrors())));
+							self::_setSessionWarning($session, $label, $warnings[$filename][] = _t('Could not set submitter information for media record for %1: %2', $label, join(", ", $r->getErrors())));
 						}
 						
 						$errors = self::_processContent($r, $config, $data);
 	
 						$r->addRepresentation(
-							$path, $rep_type, $locale_id, $rep_status, $rep_access, true, [], ['original_filename' => pathinfo($p, PATHINFO_BASENAME)]
+							$path, $rep_type, $locale_id, $rep_status, $rep_access, true, [], ['original_filename' => $filename]
 						);
+						$log->logDebug(_t('Trying to load media from %1', $path));
+						
 						if($r->numErrors()) {
-							self::_setSessionWarning($session, $label, _t('Could not add media %1 for media record for %2: %3', pathinfo($path, PATHINFO_BASENAME), $label, join(", ", $r->getErrors())));
+							self::_setSessionWarning($session, $label, $warnings[$filename][] = _t('Could not add media %1 for media record for %2: %3', $filename, $label, join(", ", $r->getErrors())));
+						} else {
+							$files_imported++;
+							$file_map[$filename][] = $r->getPrimaryKey();
 						}
 						
 						$index++;
@@ -620,13 +666,16 @@ class ca_media_upload_sessions extends BaseModel {
 					break;
 			}
 			
-			// TODO: write ids of records created into session for playback when session is viewed
-			
+		updateSession:
+			$d['warnings'] = $warnings;
+			$d['errors'] = $errors;
+			$d['file_map'] = $file_map;
+			$d['files_imported'] = $files_imported;
+			$session->set('metadata', $d);
 			$session->set('completed_on', _t('now'));
-			$session->set('status', 'PROCESSED');
+			$session->set('status', sizeof($errors) ? 'ERROR' : 'PROCESSED');
 			$session->update();
-			
-			
+						
 			foreach(array_keys($media) as $path) {
 				unlink($path);
 			}
@@ -635,6 +684,7 @@ class ca_media_upload_sessions extends BaseModel {
 			if ($c > $limit) { break; }
 		}
 		
+		self::lockRelease();
 		return $c;
 	}
 	# ------------------------------------------------------
@@ -711,9 +761,10 @@ class ca_media_upload_sessions extends BaseModel {
 			]
 		));
 		
-		$session->set('completed_on', _t('now'));
-		$session->set('status', 'ERROR');
-		return $session->update();
+		$log = caGetImportLogger(['logLevel' => 'DEBUG']);
+		$log->logError("[{$label}] {$error}");
+		
+		return true;
 	}
 	# ------------------------------------------------------
 	/**
@@ -726,6 +777,9 @@ class ca_media_upload_sessions extends BaseModel {
 				'warning' => $warning
 			]
 		));
+		
+		$log = caGetImportLogger(['logLevel' => 'DEBUG']);
+		$log->logWarn("[{$label}] {$warning}");
 		
 		return true;
 	}

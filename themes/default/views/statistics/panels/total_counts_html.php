@@ -29,7 +29,7 @@
 	$totals = is_array($data['records']['counts']['totals']) ? $data['records']['counts']['totals'] : [];
 
 ?>
-	<h3><?php print _t('Total records'); ?></h3>
+	<h3><?= _t('Total records'); ?></h3>
 	<ul>
 <?php
 	foreach($totals as $table => $total) {

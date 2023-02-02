@@ -33,7 +33,7 @@
 	$vs_daterange_proc 		= caGetLocalizedDateRange($va_dates[0], $va_dates[1], array('timeOmit' => true));
 
 ?>
-	<h1><?php print _t('Statistics Dashboard'); ?></h1>
+	<h1><?= _t('Statistics Dashboard'); ?></h1>
 <?php
 
 	print caFormTag($this->request, 'Index', 'libraryDashboardOptions', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
@@ -81,7 +81,7 @@
 		print _t('Reservations: %1', (int)$va_stats['numReservations']);
 ?>
 	</div>
-	<div class="caLibraryDashboardCalloutDate"><?php print _t('Current'); ?></div>
+	<div class="caLibraryDashboardCalloutDate"><?= _t('Current'); ?></div>
 	<div class="caLibraryDashboardUserList">
 <?php
 	print join(", ", $this->getVar('reservation_user_list'));
@@ -146,7 +146,7 @@
 		jQuery("#caLibraryDashboardDetailContainer").hide();
 		jQuery(".caLibraryUserLink").bind("click", function(e) {
 			jQuery("#caLibraryDashboardDetailContainer").slideDown(250);
-			jQuery("#caLibraryDashboardDetailContainer").load('<?php print caNavUrl($this->request, '*', '*', 'getUserDetail'); ?>', { daterange: '<?php print addslashes($vs_daterange_proc); ?>', user_id: jQuery(this).data('user_id') },
+			jQuery("#caLibraryDashboardDetailContainer").load('<?= caNavUrl($this->request, '*', '*', 'getUserDetail'); ?>', { daterange: '<?= addslashes($vs_daterange_proc); ?>', user_id: jQuery(this).data('user_id') },
 			function() {
 				jQuery.scrollTo('#caLibraryDashboardDetailContainer',600);
 			});
@@ -155,7 +155,7 @@
 		});
 		jQuery(".caLibraryGroupLink").bind("click", function(e) {
 			jQuery("#caLibraryDashboardDetailContainer").slideDown(250);
-			jQuery("#caLibraryDashboardDetailContainer").load('<?php print caNavUrl($this->request, '*', '*', 'getGroupDetail'); ?>', { daterange: '<?php print addslashes($vs_daterange_proc); ?>', group_by: jQuery(this).data('group_by'), group: jQuery(this).data('group') },
+			jQuery("#caLibraryDashboardDetailContainer").load('<?= caNavUrl($this->request, '*', '*', 'getGroupDetail'); ?>', { daterange: '<?= addslashes($vs_daterange_proc); ?>', group_by: jQuery(this).data('group_by'), group: jQuery(this).data('group') },
 			function() {
 				jQuery.scrollTo('#caLibraryDashboardDetailContainer',600);
 			});

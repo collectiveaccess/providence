@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,8 +24,7 @@
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
- */
- 
+ */ 
  	AssetLoadManager::register('setEditorUI');
  
 	$vs_id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
@@ -36,20 +35,20 @@
 	$vs_type_singular 		= $this->getVar('type_singular');
 	$vs_type_plural 		= $this->getVar('type_plural');
 	$va_lookup_urls 		= $this->getVar('lookup_urls');
-	$va_settings			= $this->getVar('settings');
+	$settings				= $this->getVar('settings');
 	$vn_table_num 			= $t_set->get('table_num');
 	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'setItemEditor');
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.'setItemEditor', $va_settings);
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.'setItemEditor', $settings);
 	
-	if(caGetOption('showCount', $va_settings, false)) { print ($count = sizeof($items)) ? "({$count})" : ''; }
+	if(caGetOption('showCount', $settings, false)) { print ($count = sizeof($items)) ? "({$count})" : ''; }
 	
 ?>
-<div id="<?php print $vs_id_prefix; ?>" class='setItemEditor'>
+<div id="<?= $vs_id_prefix; ?>" class='setItemEditor'>
 <?php
 	if (!$vn_table_num) {
 ?>
-		<div id='<?php print $vs_id_prefix; ?>setNoItemsWarning'>
+		<div id='<?= $vs_id_prefix; ?>setNoItemsWarning'>
 			<?php
 					print "<strong>"._t('You must save this set before you can add items to it.')."</strong>";
 			?>
@@ -62,47 +61,47 @@
 		}
 ?>
     <div class="caItemListSortControls">
-		<?php print _t('Sort by'); ?>:
-		<a href="#" onclick="setEditorOps.sort('name'); return false;"><?php print _t('name'); ?></a>&nbsp;&nbsp;
-		<a href="#" onclick="setEditorOps.sort('idno'); return false;"><?php print _t('identifier'); ?></a>
+		<?= _t('Sort by'); ?>:
+		<a href="#" onclick="setEditorOps.sort('name'); return false;"><?= _t('name'); ?></a>&nbsp;&nbsp;
+		<a href="#" onclick="setEditorOps.sort('idno'); return false;"><?= _t('identifier'); ?></a>
 	</div>
 <?php
 	print "<div style='clear:both;'></div></div><!-- end bundleSubLabel -->";
 	
 ?>
 	
-	<div id="<?php print $vs_id_prefix; ?>setItems" class="setItems">
-		<div class="setEditorAddItemForm" id="<?php print $vs_id_prefix; ?>addItemForm">
-			<?php print _t('Add %1', $vs_type_singular).': '; ?>
-			<input type="text" size="70" name="setItemAutocompleter" id="<?php print $vs_id_prefix; ?>setItemAutocompleter" class="lookupBg"/>
+	<div id="<?= $vs_id_prefix; ?>setItems" class="setItems">
+		<div class="setEditorAddItemForm" id="<?= $vs_id_prefix; ?>addItemForm">
+			<?= _t('Add %1', $vs_type_singular).': '; ?>
+			<input type="text" size="70" name="setItemAutocompleter" id="<?= $vs_id_prefix; ?>setItemAutocompleter" class="lookupBg"/>
 		</div>
 
-		<ul id="<?php print $vs_id_prefix; ?>setItemList" class="setItemList">
+		<ul id="<?= $vs_id_prefix; ?>setItemList" class="setItemList">
 
 		</ul>
 		<br style="clear: both;"/>
-		<input type="hidden" id="<?php print $vs_id_prefix; ?>setRowIDList" name="<?php print $vs_id_prefix; ?>setRowIDList" value=""/>
+		<input type="hidden" id="<?= $vs_id_prefix; ?>setRowIDList" name="<?= $vs_id_prefix; ?>setRowIDList" value=""/>
 			
 		<script type="text/javascript">
 			var setEditorOps = null;
 			jQuery(document).ready(function() {
 				setEditorOps = caUI.seteditor({
-					setID: <?php print (int)$vn_set_id; ?>,
-					table_num: <?php print (int)$t_set->get('table_num'); ?>,
-					fieldNamePrefix: '<?php print $vs_id_prefix; ?>',
-					initialValues: <?php print json_encode($va_items); ?>,
-					initialValueOrder: <?php print json_encode(array_keys($va_items)); ?>,
-					setItemAutocompleteID: '<?php print $vs_id_prefix; ?>setItemAutocompleter',
-					rowIDListID: '<?php print $vs_id_prefix; ?>setRowIDList',
-					displayTemplate: <?php print (isset($va_settings['displayTemplate']) ? json_encode($va_settings['displayTemplate']) : 'null'); ?>,
+					setID: <?= (int)$vn_set_id; ?>,
+					table_num: <?= (int)$t_set->get('table_num'); ?>,
+					fieldNamePrefix: '<?= $vs_id_prefix; ?>',
+					initialValues: <?= json_encode($va_items); ?>,
+					initialValueOrder: <?= json_encode(array_keys($va_items)); ?>,
+					setItemAutocompleteID: '<?= $vs_id_prefix; ?>setItemAutocompleter',
+					rowIDListID: '<?= $vs_id_prefix; ?>setRowIDList',
+					displayTemplate: <?= (isset($settings['displayTemplate']) ? json_encode($settings['displayTemplate']) : 'null'); ?>,
 					
-					editSetItemButton: '<?php print addslashes(caNavIcon(__CA_NAV_ICON_EDIT__, "20px")); ?>',
-					deleteSetItemButton: '<?php print addslashes(caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, "20px")); ?>',
+					editSetItemButton: '<?= addslashes(caNavIcon(__CA_NAV_ICON_EDIT__, "20px")); ?>',
+					deleteSetItemButton: '<?= addslashes(caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, "20px")); ?>',
 					
-					lookupURL: '<?php print $va_lookup_urls['search']; ?>',
-					itemInfoURL: '<?php print caNavUrl($this->request, 'manage/sets', 'SetEditor', 'GetItemInfo'); ?>',
-					editSetItemsURL: '<?php print caNavUrl($this->request, 'manage/set_items', 'SetItemEditor', 'Edit', array('set_id' => $vn_set_id)); ?>',
-					editSetItemToolTip: '<?php print _t("Edit set item metadata"); ?>'
+					lookupURL: '<?= $va_lookup_urls['search']; ?>',
+					itemInfoURL: '<?= caNavUrl($this->request, 'manage/sets', 'SetEditor', 'GetItemInfo'); ?>',
+					editSetItemsURL: '<?= caNavUrl($this->request, 'manage/set_items', 'SetItemEditor', 'Edit', array('set_id' => $vn_set_id)); ?>',
+					editSetItemToolTip: '<?= _t("Edit set item metadata"); ?>'
 				});
 			});
 		</script>

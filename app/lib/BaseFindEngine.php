@@ -354,7 +354,7 @@ class BaseFindEngine extends BaseObject {
 		if(!sizeof($hits)) { return []; }
 		$sort_spec = array_shift($sort_fields);
 		$sort_direction = self::sortDirection(array_shift($sort_directions));
-		list($sort_table, $sort_field, $sort_subfield) = explode(".", $sort_spec);
+		list($sort_table, $sort_field, $sort_subfield) = array_pad(explode(".", $sort_spec), 3, null);
 	
 		// Extract sortable values present on results page ($page_hits)
 		$values = $this->_getSortValues($page_hits, $table, $primary_field, $sort_direction);
@@ -468,7 +468,7 @@ class BaseFindEngine extends BaseObject {
 		
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
-		list($sort_table, $sort_field, $sort_subfield) = explode(".", $sort_field);
+		list($sort_table, $sort_field, $sort_subfield) = array_pad(explode(".", $sort_field), 3, null);
 		if (!($t_bundle = Datamodel::getInstanceByTableName($sort_table, true))) { 
 			//throw new ApplicationException(_t('Invalid sort field: %1', $sort_table));
 			return $hits;
@@ -774,7 +774,7 @@ class BaseFindEngine extends BaseObject {
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
 		
-		list($sort_table, $sort_field, $sort_subfield) = explode(".", $sort_field);
+		list($sort_table, $sort_field, $sort_subfield) = array_pad(explode(".", $sort_field), 3, null);
 		
 		$values = [];
 		
@@ -833,6 +833,8 @@ class BaseFindEngine extends BaseObject {
 		$sort_keys = [];
 		while($qr_sort->nextRow()) {
 			$row = $qr_sort->getRow();
+			
+			if(!isset($sort_keys[$row['val']])) { $sort_keys[$row['val']] = 0; }
 			$sort_keys[$row['val']]++;
 		}
 		return $sort_keys;
@@ -891,6 +893,7 @@ class BaseFindEngine extends BaseObject {
 		$sort_keys = [];
 		while($qr_sort->nextRow()) {
 			$row = $qr_sort->getRow();
+			if(!isset($sort_keys[$row['val']])) { $sort_keys[$row['val']] = 0; }
 			$sort_keys[$row['val']]++;
 		}
 		
@@ -1011,7 +1014,7 @@ class BaseFindEngine extends BaseObject {
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
 		
-		list($sort_table, $sort_field, $sort_subfield) = explode(".", $sort_field);
+		list($sort_table, $sort_field, $sort_subfield) = array_pad(explode(".", $sort_field), 3, null);
 		
 		$row_ids = [];
 		
@@ -1116,7 +1119,7 @@ class BaseFindEngine extends BaseObject {
 	 *
 	 */
 	private function _getRowIDsForLabel(array $values, $t_table, string $hit_table, string $label_field) {
-		if (!is_array($hits) || !sizeof($hits)) { return []; }
+		if (!is_array($values) || !sizeof($values)) { return []; }
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
@@ -1328,7 +1331,7 @@ class BaseFindEngine extends BaseObject {
 	private function _createTempTableForAttributeIDs() {		
 		$table_name = '_caAttrTmp_'.str_replace('-', '',caGenerateGUID());
 		$this->db->query("DROP TABLE IF EXISTS {$table_name}");
-		$this->db->query("CREATE TABLE {$table_name} (attribute_id int unsigned not null primary key, row_id int unsigned not null) engine=memory");
+		$this->db->query("CREATE TEMPORARY TABLE {$table_name} (attribute_id int unsigned not null primary key, row_id int unsigned not null) engine=memory");
 		$this->temporary_tables[$table_name] = true;
 		
 		return $table_name;

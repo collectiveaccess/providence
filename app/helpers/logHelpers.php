@@ -61,6 +61,8 @@
 	 *
 	 * @param array $options Options include:
 	 *
+	 *						 logName = Filename for log
+	 *
 	 *                       logDirectory = Directory containing logs. [Default is to use app.conf $opt_name value]
 	 *						 logName = Optional log name. [Default is to use a generic log name]
 	 *

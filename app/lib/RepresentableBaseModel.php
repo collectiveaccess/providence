@@ -91,8 +91,8 @@
 				$vs_is_primary_sql = '';
 			}
 		
-			if ($pa_options['checkAccess']) { $pa_options['return_with_access'] = $pa_options['checkAccess']; }
-			if (is_array($pa_options['return_with_access']) && sizeof($pa_options['return_with_access']) > 0) {
+			if ($pa_options['checkAccess'] ?? null) { $pa_options['return_with_access'] = $pa_options['checkAccess']; }
+			if (isset($pa_options['return_with_access']) && is_array($pa_options['return_with_access']) && sizeof($pa_options['return_with_access']) > 0) {
 				$vs_access_sql = ' AND (caor.access IN ('.join(", ", $pa_options['return_with_access']).'))';
 			} else {
 				$vs_access_sql = '';
@@ -404,11 +404,11 @@
 				}
 			} 
 		
-			if (!is_array($pa_options['return_with_access']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) > 0) {
+			if (!is_array($pa_options['return_with_access'] ?? null) && is_array($pa_options['checkAccess'] ?? null) && sizeof($pa_options['checkAccess']) > 0) {
 				$pa_options['return_with_access'] = $pa_options['checkAccess'];
 			}
 		
-			if (is_array($pa_options['return_with_access']) && sizeof($pa_options['return_with_access']) > 0) {
+			if (is_array($pa_options['return_with_access'] ?? null) && sizeof($pa_options['return_with_access']) > 0) {
 				$vs_access_sql = ' AND (caor.access IN ('.join(", ", $pa_options['return_with_access']).'))';
 			} else {
 				$vs_access_sql = '';
@@ -1141,6 +1141,8 @@
 		public function getPrimaryMediaForIDs($pa_ids, $pa_versions, $pa_options = null) {
 			if (!is_array($pa_ids) || !sizeof($pa_ids)) { return array(); }
 			if (!is_array($pa_options)) { $pa_options = array(); }
+			
+			$require_media = caGetOption('requireMedia', $pa_options, false);
 			$va_access_values = $pa_options["checkAccess"];
 			if (isset($va_access_values) && is_array($va_access_values) && sizeof($va_access_values)) {
 				$vs_access_where = ' AND orep.access IN ('.join(',', $va_access_values).')';
@@ -1171,18 +1173,40 @@
             
 			$va_media = [];
 			while($qr_res->nextRow()) {
+				$t = $qr_res;
+				
+				if($require_media) {
+					if(!$t->get('ca_object_representations.media')) {
+						// this is a media-less representation, so fall back to something with media...
+						// doing it this way isn't terribly efficient but media-less reps are rare so let's
+						// just leave it at this for now.
+						$t = $o_db->query("
+							SELECT orep.representation_id, oxor.{$vs_pk}, orep.media
+							FROM ca_object_representations orep
+							INNER JOIN {$vs_linking_table} AS oxor ON oxor.representation_id = orep.representation_id
+							WHERE
+								(oxor.{$vs_pk} = ?) AND oxor.is_primary = 0 AND orep.deleted = 0 {$vs_access_where}
+						", [$qr_res->get($vs_pk)]);	
+						while($t->nextRow()) {
+							if($t->get('ca_object_representations.media')) { 
+								break; 
+							}
+						}
+					}
+				}
+				
 				$va_media_tags = [
-					'representation_id' => $qr_res->get('ca_object_representations.representation_id'),
-					'access' => $qr_res->get('ca_object_representations.access')
+					'representation_id' => $t->get('ca_object_representations.representation_id'),
+					'access' => $t->get('ca_object_representations.access')
 				];
 				
 				foreach($pa_versions as $vs_version) {
-					$va_media_tags['tags'][$vs_version] = $qr_res->getMediaTag('ca_object_representations.media', $vs_version);
-					$va_media_tags['info'][$vs_version] = $qr_res->getMediaInfo('ca_object_representations.media', $vs_version);
-					$va_media_tags['urls'][$vs_version] = $qr_res->getMediaUrl('ca_object_representations.media', $vs_version);
-					$va_media_tags['paths'][$vs_version] = $qr_res->getMediaPath('ca_object_representations.media', $vs_version);
+					$va_media_tags['tags'][$vs_version] = $t->getMediaTag('ca_object_representations.media', $vs_version);
+					$va_media_tags['info'][$vs_version] = $t->getMediaInfo('ca_object_representations.media', $vs_version);
+					$va_media_tags['urls'][$vs_version] = $t->getMediaUrl('ca_object_representations.media', $vs_version);
+					$va_media_tags['paths'][$vs_version] = $t->getMediaPath('ca_object_representations.media', $vs_version);
 				}
-				$va_media[$qr_res->get($vs_pk)] = $va_media_tags;
+				$va_media[$t->get($vs_pk)] = $va_media_tags;
 			}
 		
 			// Preserve order of input ids
@@ -1295,7 +1319,7 @@
         public function getBundleFormValues($ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options=null) {	
         	if($ps_bundle_name !== 'ca_object_representations') { return parent::getBundleFormValues($ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options); }
             foreach(array('restrict_to_types', 'restrict_to_relationship_types') as $vs_k) {
-                $pa_options[$vs_k] = $pa_bundle_settings[$vs_k];
+                $pa_options[$vs_k] = $pa_bundle_settings[$vs_k] ?? null;
             }
             
             $start = caGetOption('start', $pa_options, 0);
@@ -1368,42 +1392,42 @@
 						}
 				
 						$va_initial_values[$va_rep['relation_id']] = array(
-							'representation_id' => $va_rep['representation_id'], 
-							'relation_id' => $va_rep['relation_id'], 
-							'idno' => $va_rep['idno'], 
+							'representation_id' => $va_rep['representation_id'] ?? null, 
+							'relation_id' => $va_rep['relation_id'] ?? null, 
+							'idno' => $va_rep['idno'] ?? null, 
 							'_display' => ($vs_bundle_template && isset($va_display_template_values[$relation_id])) ? $va_display_template_values[$relation_id] : '',
-							'status' => $va_rep['status'], 
-							'status_display' => $t_item->getChoiceListValue('status', $va_rep['status']), 
-							'access' => $va_rep['access'],
-							'access_display' => $t_item->getChoiceListValue('access', $va_rep['access']), 
-							'rep_type_id' => $va_rep['type_id'],
-							'rel_type_id' => $va_rep['rel_type_id'],
-							'rep_type' => $t_item->getTypeName($va_rep['type_id']), 
-							'rep_label' => $va_rep['label'],
-							'is_transcribable' => (int)$va_rep['is_transcribable'],
-							'is_transcribable_display' => ($va_rep['is_transcribable'] == 1) ? _t('Yes') : _t('No'), 
-							'num_transcriptions' => $va_rep['num_transcriptions'],
-							'is_primary' => (int)$va_rep['is_primary'],
-							'is_primary_display' => ($va_rep['is_primary'] == 1) ? _t('PRIMARY') : '', 
-							'locale_id' => $va_rep['locale_id'], 
+							'status' => $va_rep['status'] ?? null, 
+							'status_display' => $t_item->getChoiceListValue('status', $va_rep['status'] ?? null), 
+							'access' => $va_rep['access'] ?? null,
+							'access_display' => $t_item->getChoiceListValue('access', $va_rep['access'] ?? null), 
+							'rep_type_id' => $va_rep['type_id'] ?? null,
+							'rel_type_id' => $va_rep['rel_type_id'] ?? null,
+							'rep_type' => $t_item->getTypeName($va_rep['type_id'] ?? null), 
+							'rep_label' => $va_rep['label'] ?? null,
+							'is_transcribable' => $is_transcribable = (int)$va_rep['is_transcribable'] ?? null,
+							'is_transcribable_display' => ($is_transcribable == 1) ? _t('Yes') : _t('No'), 
+							'num_transcriptions' => $va_rep['num_transcriptions'] ?? null,
+							'is_primary' => $is_primary = (int)($va_rep['is_primary'] ?? null),
+							'is_primary_display' => ($is_primary == 1) ? _t('PRIMARY') : '', 
+							'locale_id' => $va_rep['locale_id'] ?? null, 
 							'icon' => isset($va_rep['tags']['thumbnail']) ? $va_rep['tags']['thumbnail'] : null, 
-							'mimetype' => $va_rep['info']['original']['PROPERTIES']['mimetype'], 
-							'annotation_type' => isset($va_annotation_type_mappings[$va_rep['info']['original']['PROPERTIES']['mimetype']]) ? $va_annotation_type_mappings[$va_rep['info']['original']['PROPERTIES']['mimetype']] : null,
-							'type' => $va_rep['info']['original']['PROPERTIES']['typename'], 
-							'dimensions' => $va_rep['dimensions']['original'], 
-							'filename' => $va_rep['info']['original_filename'] ? $va_rep['info']['original_filename'] : _t('Unknown'),
+							'mimetype' => $va_rep['info']['original']['PROPERTIES']['mimetype'] ?? null, 
+							'annotation_type' => $va_annotation_type_mappings[$va_rep['info']['original']['PROPERTIES']['mimetype'] ?? null] ?? null,
+							'type' => $va_rep['info']['original']['PROPERTIES']['typename'] ?? null, 
+							'dimensions' => $va_rep['dimensions']['original'] ?? null, 
+							'filename' => ($va_rep['info']['original_filename'] ?? null) ? $va_rep['info']['original_filename'] : _t('Unknown'),
 							'num_multifiles' => ($vn_num_multifiles ? (($vn_num_multifiles == 1) ? _t('+ 1 additional preview') : _t('+ %1 additional previews', $vn_num_multifiles)) : ''),
 							'metadata' => $vs_extracted_metadata,
 							'md5' => $vs_md5 ? "{$vs_md5}" : "",
-							'typename' => $va_rep_type_list[$va_rep['type_id']]['name_singular'],
-							'fetched_from' => $va_rep['fetched_from'],
+							'typename' => $va_rep_type_list[$va_rep['type_id']]['name_singular'] ?? null,
+							'fetched_from' => $va_rep['fetched_from'] ?? null,
 							'fetched_original_url' => caGetOption('fetched_original_url', $va_rep, null),
 							'fetched_by' => caGetOption('fetched_by', $va_rep, null),
-							'fetched_on' => $va_rep['fetched_on'] ? date('c', $va_rep['fetched_on']): null,
-							'fetched' => $va_rep['fetched_from'] ? _t("<h3>Fetched from:</h3> URL %1 on %2 using %3 URL handler", '<a href="'.$va_rep['fetched_from'].'" target="_ext" title="'.$va_rep['fetched_from'].'">'.$va_rep['fetched_from'].'</a>', date('c', $va_rep['fetched_on']), caGetOption('fetched_by', $va_rep, 'default')) : ""
+							'fetched_on' => ($va_rep['fetched_on'] ?? null) ? date('c', $va_rep['fetched_on']): null,
+							'fetched' => ($va_rep['fetched_from'] ?? null) ? _t("<h3>Fetched from:</h3> URL %1 on %2 using %3 URL handler", '<a href="'.$va_rep['fetched_from'].'" target="_ext" title="'.$va_rep['fetched_from'].'">'.$va_rep['fetched_from'].'</a>', date('c', $va_rep['fetched_on']), caGetOption('fetched_by', $va_rep, 'default')) : ""
 						);
 					
-						if (is_array($bundle_data[$va_rep['representation_id']])) {
+						if (($va_rep['relation_id'] ?? null) && is_array($bundle_data[$va_rep['representation_id'] ?? null] ?? null)) {
 							$va_initial_values[$va_rep['relation_id']] = array_merge($va_initial_values[$va_rep['relation_id']], $bundle_data[$va_rep['representation_id']]);
 						}
 

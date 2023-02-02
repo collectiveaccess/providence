@@ -156,6 +156,8 @@ class SearchEngine extends SearchBase {
 		$vs_sort = caGetOption('sort', $pa_options, null);
 		$vs_sort_direction = strtolower(caGetOption('sortDirection', $pa_options, caGetOption('sort_direction', $pa_options, null)));
 		
+		$vs_idno_fld = Datamodel::getTableProperty($this->ops_tablename, 'ID_NUMBERING_ID_FIELD');
+	
 		//print "QUERY=$ps_search<br>";
 		//
 		// Note that this is *not* misplaced code that should be in the Lucene plugin!
@@ -275,7 +277,7 @@ class SearchEngine extends SearchBase {
 			} 
 			
 			$vb_no_types = false;	
-			if (!$pa_options['expandToIncludeParents'] && is_array($va_type_ids = $this->getTypeRestrictionList()) && (sizeof($va_type_ids) > 0) && $t_table->hasField('type_id')) {
+			if (!($pa_options['expandToIncludeParents'] ?? false) && is_array($va_type_ids = $this->getTypeRestrictionList()) && (sizeof($va_type_ids) > 0) && $t_table->hasField('type_id')) {
 				if ($t_table->getFieldInfo('type_id', 'IS_NULL')) {
 					$va_type_ids[] = 'NULL';
 				}
@@ -317,7 +319,7 @@ class SearchEngine extends SearchBase {
 				$va_hits = $o_res->getPrimaryKeyValues($vb_do_acl ? null : $vn_limit);
 				
 										
-				if ($pa_options['expandToIncludeParents'] && sizeof($va_hits)) {
+				if (($pa_options['expandToIncludeParents'] ?? false) && sizeof($va_hits)) {
 					$qr_exp = caMakeSearchResult($this->opn_tablenum, $va_hits);
 					if (!is_array($va_type_ids) || !sizeof($va_type_ids)) { $va_type_ids = null; }
 					
@@ -485,7 +487,7 @@ class SearchEngine extends SearchBase {
 					} else { 
 						for($vn_j = 0; $vn_j < sizeof($va_rewritten_terms['terms']); $vn_j++) {
 							$va_terms[] = new Zend_Search_Lucene_Search_Query_MultiTerm(array($va_rewritten_terms['terms'][$vn_j]), array($va_rewritten_terms['signs'][$vn_j]));
-							$va_signs[] = $va_rewritten_terms['signs'][$vn_j] ? true : is_null($va_rewritten_terms['signs'][$vn_j]) ? null : false;
+							$va_signs[] = ($va_rewritten_terms['signs'][$vn_j] ? true : is_null($va_rewritten_terms['signs'][$vn_j])) ? null : false;
 						}
 					}
 					break;
@@ -631,7 +633,7 @@ class SearchEngine extends SearchBase {
 		// is it a label? Rewrite the field for that.
 		$va_tmp = preg_split('/[\/\|]+/', $vs_fld);
 		$va_tmp2 = explode('.', $va_tmp[0]);
-		if (in_array($va_tmp2[1], array('preferred_labels', 'nonpreferred_labels'))) {
+		if (in_array($va_tmp2[1] ?? null, array('preferred_labels', 'nonpreferred_labels'))) {
 			if ($t_instance = Datamodel::getInstanceByTableName($va_tmp2[0], true)) {
 				if (method_exists($t_instance, "getLabelTableName")) {
 					return array(
@@ -668,21 +670,21 @@ class SearchEngine extends SearchBase {
 				($va_ap_info = $va_access_points[$vs_fld])
 			) {
 				$va_fields = isset($va_ap_info['fields']) ? $va_ap_info['fields'] : null;
-				if (!in_array($vs_bool = strtoupper($va_ap_info['boolean']), array('AND', 'OR'))) {
+				if (!in_array($vs_bool = strtoupper($va_ap_info['boolean'] ?? 'OR'), array('AND', 'OR'))) {
 					$vs_bool = 'OR';
 				}
 				
 				foreach($va_fields as $vs_field) {
 					$va_terms['terms'][] = new Zend_Search_Lucene_Search_Query_Phrase($va_index_term_strings, null, $vs_field);
 					$va_terms['signs'][] = ($vs_bool == 'AND') ? true : null;
-					$va_terms['options'][] = is_array($va_ap_info['options']) ? $va_ap_info['options'] : array();
+					$va_terms['options'][] = is_array($va_ap_info['options'] ?? null) ? $va_ap_info['options'] : array();
 				}
 				
-				if (is_array($va_additional_criteria = $va_ap_info['additional_criteria'])) {
+				if (is_array($va_additional_criteria = ($va_ap_info['additional_criteria'] ?? null))) {
 					foreach($va_additional_criteria as $vs_criterion) {
 						$va_terms['terms'][] = new Zend_Search_Lucene_Index_Term($vs_criterion);
 						$va_terms['signs'][] = $vs_bool;
-						$va_terms['options'][] = is_array($va_ap_info['options']) ? $va_ap_info['options'] : array();
+						$va_terms['options'][] = is_array($va_ap_info['options'] ?? null) ? $va_ap_info['options'] : array();
 					}
 				}
 				
@@ -692,8 +694,8 @@ class SearchEngine extends SearchBase {
 		
 		// is it a labels? Rewrite the field for that.
 		$va_tmp = preg_split('/[\/\|]+/', $vs_fld);
-		$va_tmp2 = explode('.', $va_tmp[0]);
-		if (in_array($va_tmp2[1], array('preferred_labels', 'nonpreferred_labels'))) {
+		$va_tmp2 = explode('.', ($va_tmp[0] ?? null));
+		if (isset($va_tmp2[1]) && (in_array($va_tmp2[1], array('preferred_labels', 'nonpreferred_labels')))) {
 			if ($t_instance = Datamodel::getInstanceByTableName($va_tmp2[0], true)) {
 				if (method_exists($t_instance, "getLabelTableName")) {
 					return array(
@@ -705,7 +707,7 @@ class SearchEngine extends SearchBase {
 			}
 		}
 		
-		return array('terms' => array($po_term), 'signs' => array($pb_sign), 'options' => array());
+		return ['terms' => [$po_term], 'signs' => [$pb_sign], 'options' => []];
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -715,9 +717,9 @@ class SearchEngine extends SearchBase {
 	private function _rewriteRange($po_range) {
 		if (sizeof($va_access_points = $this->getAccessPoints($this->opn_tablenum))) {
 			// if field is access point then do rewrite
-			if ($va_ap_info = $va_access_points[$po_range->getField()]) {
-				$va_fields = $va_ap_info['fields'];
-				if (!in_array($vs_bool = strtoupper($va_ap_info['boolean']), array('AND', 'OR'))) {
+			if ($va_ap_info = ($va_access_points[$po_range->getField()] ?? null)) {
+				$va_fields = $va_ap_info['fields'] ?? null;
+				if (!in_array($vs_bool = strtoupper($va_ap_info['boolean'] ?? 'OR'), array('AND', 'OR'))) {
 					$vs_bool = 'OR';
 				}
 				$va_tmp = array();
@@ -730,7 +732,7 @@ class SearchEngine extends SearchBase {
 					
 				}
 				
-				if (is_array($va_additional_criteria = $va_ap_info['additional_criteria'])) {
+				if (is_array($va_additional_criteria = ($va_ap_info['additional_criteria'] ?? null))) {
 					foreach($va_additional_criteria as $vs_criterion) {
 						$va_terms[] = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term($vs_criterion));
 					}
@@ -775,7 +777,7 @@ class SearchEngine extends SearchBase {
 		
 			if (($va_signs === null || $va_signs[$id] === true) && ($id)) {
 				$vs_query .= ' AND ';
-			} else if (($va_signs[$id] === false) && $id) {
+			} else if ((($va_signs[$id] ?? false) === false) && $id) {
 				$vs_query .= ' NOT ';
 			} else {
 				if ($id) { $vs_query .= ' OR '; }

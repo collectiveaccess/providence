@@ -148,7 +148,7 @@ class BaseLabel extends BaseModel {
 	 * Returns name of single field to use for sort of label content
 	 **/
 	public function getSortField() {
-		return $this->LABEL_SORT_FIELD;
+		return property_exists($this, 'LABEL_SORT_FIELD') ? $this->LABEL_SORT_FIELD : null;
 	}
 	# -------------------------------------------------------
 	/**

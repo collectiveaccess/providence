@@ -63,7 +63,7 @@
     }
   
     // Hoa?
-    if($parts[0] === 'Hoa') {
+    if(($parts[0] === 'Hoa') && sizeof($parts) >= 3) {
     	$path_to_hoa = __CA_LIB_DIR__."/Parsers/".strtolower(join('/', array_slice($parts, 0, 2))).'/'.join('/', array_slice($parts, 2)).".php";
     	if(@include_once($path_to_hoa)) { $loaded = true; }  
     }
@@ -134,3 +134,5 @@ register_shutdown_function(function() {
 		}
 	}
   });
+
+caInitErrorHandler();

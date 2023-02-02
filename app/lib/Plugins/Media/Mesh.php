@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2021 Whirl-i-Gig
+ * Copyright 2013-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -247,9 +247,9 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 	}
 	# ----------------------------------------------------------
 	public function get($property) {
-		if ($this->handle) {
-			if ($this->info["PROPERTIES"][$property]) {
-				return $this->properties[$property];
+		if ($this->handle ?? null) {
+			if ($this->info["PROPERTIES"][$property] ?? null) {
+				return $this->properties[$property] ?? nnull;
 			} else {
 				return '';
 			}
@@ -259,11 +259,11 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 	}
 	# ----------------------------------------------------------
 	public function set($property, $value) {
-		if ($this->handle) {
-			if ($this->info["PROPERTIES"][$property]) {
+		if ($this->handle ?? null) {
+			if ($this->info["PROPERTIES"][$property] ?? null) {
 				switch($property) {
 					default:
-						if ($this->info["PROPERTIES"][$property] == 'W') {
+						if (($this->info["PROPERTIES"][$property] ?? null) == 'W') {
 							$this->properties[$property] = $value;
 						} else {
 							# read only
@@ -301,7 +301,7 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 	public function read ($filepath, $mimetype="", $options=null) {
-		if (is_array($this->handle) && ($this->filepath == $filepath)) {
+		if (is_array($this->handle ?? null) && ($this->filepath == $filepath)) {
 			# noop
 		} else {
 			if (!file_exists($filepath)) {
@@ -320,9 +320,9 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 	}
 	# ----------------------------------------------------------
 	public function transform($operation, $parameters) {
-		if (!$this->handle) { return false; }
+		if (!($this->handle ?? null)) { return false; }
 		
-		if (!($this->info["TRANSFORMATIONS"][$operation])) {
+		if (!($this->info["TRANSFORMATIONS"][$operation] ?? null)) {
 			# invalid transformation
 			$this->postError(1655, _t("Invalid transformation %1", $operation), "WLPlugMediaMesh->transform()");
 			return false;
@@ -340,8 +340,8 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 				break;
 			# -----------------------
 			case 'SCALE':
-				$this->properties["version_width"] = $parameters["width"];
-				$this->properties["version_height"] = $parameters["height"];
+				$this->properties["version_width"] = $parameters["width"] ?? null;
+				$this->properties["version_height"] = $parameters["height"] ?? null;
 				# noop
 				break;
 			# -----------------------
@@ -350,13 +350,13 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 	}
 	# ----------------------------------------------------------
 	public function write($filepath, $ps_mimetype) {
-		if (!$this->handle) { return false; }
+		if (!($this->handle ?? null)) { return false; }
 
-		$this->properties["width"] = $this->properties["version_width"];
-		$this->properties["height"] = $this->properties["version_height"];
+		$this->properties["width"] = $this->properties["version_width"] ?? null;
+		$this->properties["height"] = $this->properties["version_height"] ?? null;
 		
 		# is mimetype valid?
-		if (!($ext = $this->info["EXPORT"][$ps_mimetype])) {
+		if (!($ext = ($this->info["EXPORT"][$ps_mimetype] ?? null))) {
 			$this->postError(1610, _t("Can't convert file to %1", $ps_mimetype), "WLPlugMediaMesh->write()");
 			return false;
 		}
@@ -396,23 +396,23 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 	public function getOutputFormats() {
-		return $this->info["EXPORT"];
+		return $this->info["EXPORT"] ?? null;
 	}
 	# ------------------------------------------------
 	public function getTransformations() {
-		return $this->info["TRANSFORMATIONS"];
+		return $this->info["TRANSFORMATIONS"] ?? null;
 	}
 	# ------------------------------------------------
 	public function getProperties() {
-		return $this->info["PROPERTIES"];
+		return $this->info["PROPERTIES"] ?? null;
 	}
 	# ------------------------------------------------
 	public function mimetype2extension($mimetype) {
-		return $this->info["EXPORT"][$mimetype];
+		return $this->info["EXPORT"][$mimetype] ?? null;
 	}
 	# ------------------------------------------------
 	public function mimetype2typename($mimetype) {
-		return $this->typenames[$mimetype];
+		return $this->typenames[$mimetype] ?? null;
 	}
 	# ------------------------------------------------
 	public function extension2mimetype($extension) {
@@ -433,9 +433,9 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 		$this->errors = [];
 		$this->handle = $this->ohandle;
 		$this->properties = [
-			"mimetype" => $this->ohandle["mimetype"],
-			"filesize" => $this->ohandle["filesize"],
-			"typename" => $this->ohandle["typename"]
+			"mimetype" => $this->ohandle["mimetype"] ?? null,
+			"filesize" => $this->ohandle["filesize"] ?? null,
+			"typename" => $this->ohandle["typename"] ?? null
 		];
 		
 		$this->metadata = [];
@@ -492,7 +492,7 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 		
 		$c = 0;
 		while((($line = trim(fgets($r_rp), "\n")) !== false) && ($c < 100)) {
-			if ($line[0] === '#') { continue; }
+			if (($line[0] ?? null) === '#') { continue; }
 			$toks = preg_split('![ ]+!', preg_replace("![\n\r\t]+!", "", $line));
 			
 			if (in_array($toks[0], ['v', 'vn']) && (sizeof($toks) >= 4) && is_numeric($toks[1]) && is_numeric($toks[2]) && is_numeric($toks[3])) {
