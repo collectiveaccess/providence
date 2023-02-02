@@ -32,20 +32,19 @@
  
  /**
   *
-  */
- 
- define('__CA_LABEL_TYPE_PREFERRED__', 0);
- define('__CA_LABEL_TYPE_NONPREFERRED__', 1);
- define('__CA_LABEL_TYPE_ANY__', 2);
-  
- require_once(__CA_LIB_DIR__.'/BaseModelWithAttributes.php');
- require_once(__CA_LIB_DIR__.'/BaseModel.php');
- require_once(__CA_LIB_DIR__.'/ILabelable.php');
- require_once(__CA_APP_DIR__.'/models/ca_locales.php');
- require_once(__CA_APP_DIR__.'/models/ca_users.php');
- require_once(__CA_APP_DIR__.'/helpers/accessHelpers.php');
- require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
- 
+  */ 
+define('__CA_LABEL_TYPE_PREFERRED__', 0);
+define('__CA_LABEL_TYPE_NONPREFERRED__', 1);
+define('__CA_LABEL_TYPE_ANY__', 2);
+
+require_once(__CA_LIB_DIR__.'/BaseModelWithAttributes.php');
+require_once(__CA_LIB_DIR__.'/BaseModel.php');
+require_once(__CA_LIB_DIR__.'/ILabelable.php');
+require_once(__CA_APP_DIR__.'/models/ca_locales.php');
+require_once(__CA_APP_DIR__.'/models/ca_users.php');
+require_once(__CA_APP_DIR__.'/helpers/accessHelpers.php');
+require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
+
 class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implements ILabelable {
 	# ------------------------------------------------------------------
 	static $s_label_cache = array();
