@@ -592,15 +592,24 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		
 		$va_sql_params = [];
 		
-		$vs_type_restriction_sql = '';
+		$va_type_restriction_sql = [];
 		$va_type_restriction_params = [];
 		if ($va_restrict_to_types = caGetOption('restrictToTypes', $pa_options, null)) {
 			$include_subtypes = caGetOption('dontIncludeSubtypesInTypeRestriction', $pa_options, false);
 			if (is_array($va_restrict_to_types = caMakeTypeIDList($vs_table, $va_restrict_to_types, ['dontIncludeSubtypesInTypeRestriction' => $include_subtypes])) && sizeof($va_restrict_to_types)) {
-				$vs_type_restriction_sql = "{$vs_table}.".$t_instance->getTypeFieldName()." IN (?)";
+				$va_type_restriction_sql[] = "{$vs_table}.".$t_instance->getTypeFieldName()." IN (?)";
 				$va_type_restriction_params[] = $va_restrict_to_types;
 			}
 		}
+		if ($va_exclude_types = caGetOption('excludeTypes', $pa_options, null)) {
+			$include_subtypes = caGetOption('dontIncludeSubtypesInTypeRestriction', $pa_options, false);
+			if (is_array($va_exclude_types = caMakeTypeIDList($vs_table, $va_exclude_types, ['dontIncludeSubtypesInTypeRestriction' => $include_subtypes])) && sizeof($va_restrict_to_types)) {
+				$va_type_restriction_sql[] = "{$vs_table}.".$t_instance->getTypeFieldName()." NOT IN (?)";
+				$va_type_restriction_params[] = $va_exclude_types;
+			}
+		}
+		$vs_type_restriction_sql = sizeof($va_type_restriction_sql) ? join(' AND ', $va_type_restriction_sql) : '';
+		
 		
 		// try to get label schema info (some records, notably relationships, won't have labels)
 		$vs_label_table = $vs_label_table_pk = null;
