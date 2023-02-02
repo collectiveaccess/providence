@@ -550,6 +550,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	 *		purifyWithFallback = executes the search with "purify" set and falls back to search with unpurified text if nothing is found. [Default is false]
 	 *		checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for <table_name>.hierarchy.preferred_labels and <table_name>.children.preferred_labels because these returns sets of items. For <table_name>.parent.preferred_labels, which returns a single row at most, you should do access checking yourself. (Everything here applies equally to nonpreferred_labels)
 	 *		restrictToTypes = Restrict returned items to those of the specified types. An array of list item idnos and/or item_ids may be specified. [Default is null]			 
+ 	 *		excludeTypes = Restrict returned items to those that are not of the specified types. An array of list item idnos and/or item_ids may be specified. [Default is null]			 
 	 *		dontIncludeSubtypesInTypeRestriction = If restrictToTypes is set, by default the type list is expanded to include subtypes (aka child types). If set, no expansion will be performed. [Default is false]
 	 *		includeDeleted = If set deleted rows are returned in result set. [Default is false]
 	 *		dontFilterByACL = If set don't enforce item-level ACL rules. [Default is false]
@@ -592,15 +593,24 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		
 		$va_sql_params = [];
 		
-		$vs_type_restriction_sql = '';
+		$va_type_restriction_sql = [];
 		$va_type_restriction_params = [];
 		if ($va_restrict_to_types = caGetOption('restrictToTypes', $pa_options, null)) {
 			$include_subtypes = caGetOption('dontIncludeSubtypesInTypeRestriction', $pa_options, false);
 			if (is_array($va_restrict_to_types = caMakeTypeIDList($vs_table, $va_restrict_to_types, ['dontIncludeSubtypesInTypeRestriction' => $include_subtypes])) && sizeof($va_restrict_to_types)) {
-				$vs_type_restriction_sql = "{$vs_table}.".$t_instance->getTypeFieldName()." IN (?)";
+				$va_type_restriction_sql[] = "{$vs_table}.".$t_instance->getTypeFieldName()." IN (?)";
 				$va_type_restriction_params[] = $va_restrict_to_types;
 			}
 		}
+		if ($va_exclude_types = caGetOption('excludeTypes', $pa_options, null)) {
+			$include_subtypes = caGetOption('dontIncludeSubtypesInTypeRestriction', $pa_options, false);
+			if (is_array($va_exclude_types = caMakeTypeIDList($vs_table, $va_exclude_types, ['dontIncludeSubtypesInTypeRestriction' => $include_subtypes])) && sizeof($va_restrict_to_types)) {
+				$va_type_restriction_sql[] = "{$vs_table}.".$t_instance->getTypeFieldName()." NOT IN (?)";
+				$va_type_restriction_params[] = $va_exclude_types;
+			}
+		}
+		$vs_type_restriction_sql = sizeof($va_type_restriction_sql) ? join(' AND ', $va_type_restriction_sql) : '';
+		
 		
 		// try to get label schema info (some records, notably relationships, won't have labels)
 		$vs_label_table = $vs_label_table_pk = null;
