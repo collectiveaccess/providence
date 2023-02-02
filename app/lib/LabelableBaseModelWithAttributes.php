@@ -550,6 +550,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	 *		purifyWithFallback = executes the search with "purify" set and falls back to search with unpurified text if nothing is found. [Default is false]
 	 *		checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for <table_name>.hierarchy.preferred_labels and <table_name>.children.preferred_labels because these returns sets of items. For <table_name>.parent.preferred_labels, which returns a single row at most, you should do access checking yourself. (Everything here applies equally to nonpreferred_labels)
 	 *		restrictToTypes = Restrict returned items to those of the specified types. An array of list item idnos and/or item_ids may be specified. [Default is null]			 
+ 	 *		excludeTypes = Restrict returned items to those that are not of the specified types. An array of list item idnos and/or item_ids may be specified. [Default is null]			 
 	 *		dontIncludeSubtypesInTypeRestriction = If restrictToTypes is set, by default the type list is expanded to include subtypes (aka child types). If set, no expansion will be performed. [Default is false]
 	 *		includeDeleted = If set deleted rows are returned in result set. [Default is false]
 	 *		dontFilterByACL = If set don't enforce item-level ACL rules. [Default is false]
