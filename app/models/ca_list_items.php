@@ -972,6 +972,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 			$this->_setSettingsForList();
 			ExternalCache::flush('listItems');
 			CompositeCache::flush('BaseModelWithAttributesTypeIDs');
+			CompositeCache::flush('typeListCodes');
 		}
 		return $vn_rc;
 	}
@@ -1001,6 +1002,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 			$this->_setSettingsForList();
 			ExternalCache::flush('listItems');
 			CompositeCache::flush('BaseModelWithAttributesTypeIDs');
+			CompositeCache::flush('typeListCodes');
 		}
 		return $vn_rc;
 	}
@@ -1051,6 +1053,10 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 			}
 			
 			if ($o_trans) { $o_trans->commit(); }
+			
+			ExternalCache::flush('listItems');
+			CompositeCache::flush('BaseModelWithAttributesTypeIDs');
+			CompositeCache::flush('typeListCodes');
 				
 			if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 			return true;
