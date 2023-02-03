@@ -118,7 +118,7 @@ class SchemaController extends \GraphQLServices\GraphQLServiceController {
 							throw new \ServiceException(_t('Invalid table: %1', $table));
 						}
 						
-						$t = Datamodel::getInstance($table, true);
+						$t = \Datamodel::getInstance($table, true);
 						return [
 							'name' => $t->getProperty('NAME_PLURAL'),
 							'code' => $table,
@@ -255,7 +255,90 @@ class SchemaController extends \GraphQLServices\GraphQLServiceController {
 							'bundles' => $bundles
 						];
 					}
-				]
+				],
+				// ------------------------------------------------------------
+				// Relationship types
+				// ------------------------------------------------------------
+				'relationshipTypes' => [
+					'type' => SchemaSchema::get('RelationshipTypeList'),
+					'description' => _t('List of available relationship types for relationship'),
+					'args' => [
+						[
+							'name' => 'jwt',
+							'type' => Type::string(),
+							'description' => _t('JWT'),
+							'defaultValue' => self::getBearerToken()
+						],
+						[
+							'name' => 'table',
+							'type' => Type::string(),
+							'description' => _t('Table')
+						],
+						[
+							'name' => 'relatedTable',
+							'type' => Type::string(),
+							'description' => _t('Related table')
+						]
+					],
+					'resolve' => function ($rootValue, $args) {
+						$u = self::authenticate($args['jwt']);
+						$table = $args['table'];
+						$related_table = $args['relatedTable'];
+						
+						if(!\Datamodel::tableExists($table)) {
+							throw new \ServiceException(_t('Invalid table: %1', $table));
+						}
+						if($related_table && !\GraphQLServices\Helpers\Schema\tableIsValid($related_table)) {
+							throw new \ServiceException(_t('Invalid table: %1', $related_table));
+						}
+						$t = \Datamodel::getInstance($table, true);
+						
+						if(!$related_table && !$t->isRelationship()) {
+							throw new \ServiceException(_t('Table must be relationship when relatedTable is not set'));
+						}
+						
+						if($related_table) {
+							if(is_array($path = \Datamodel::getPath($table, $related_table)) && (sizeof($path) === 3)) {
+								$path = array_keys($path);
+								$linking_table = $path[1];
+								$t = \Datamodel::getInstance($linking_table, true);
+								
+								if(!$t || !$t->isRelationship()) {
+									throw new \ServiceException(_t('Invalid table pair'));
+								}
+							} else {
+								throw new \ServiceException(_t('Invalid table pair'));
+							}
+						}
+						
+						$rel_types = [];
+						if(!is_array($rel_type_list = $t->getRelationshipTypes())) {
+							throw new \ServiceException(_t('Could not get relationship types'));
+						}
+						foreach($rel_type_list as $type_id => $type_info) {
+							$rel_types[] = [
+								'id' => $type_id,
+								'name' => $type_info['typename'] ?? null,
+								'name_reverse' => $type_info['typename_reverse'] ?? null,
+								'description' => $type_info['description'] ?? null,
+								'description_reverse' => $type_info['description_reverse'] ?? null,
+								'code' => $type_info['type_code'] ?? null,
+								'rank' => $type_info['rank'] ?? 0,
+								'locale' => \ca_locales::idToCode($type_info['locale_id']),
+								'isDefault' => $type_info['is_default'] ? true : false,
+								'restrictToTypeLeft' => ($type_info['sub_type_left_id'] ?? null) ? caGetListCode($type_info['sub_type_left_id']) : null,
+								'includeSubtypesLeft' => $type_info['include_subtypes_left'] ?? false,
+								'restrictToTypeRight' => ($type_info['sub_type_right_id'] ?? null) ? caGetListCode($type_info['sub_type_right_id']) : null,
+								'includeSubtypesRight' => $type_info['include_subtypes_right'] ?? false,
+							];
+						}
+						
+						return [
+							'table' => $table, 'relatedTable' => $related_table, 'relationshipTable' => $t->tableName(),
+							'types' => $rel_types
+						];
+					}
+				],
 			]
 		]);
 		
