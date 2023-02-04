@@ -485,6 +485,7 @@ function caObjectRepresentationThumbnails($po_request, $pn_representation_id, $p
 	$va_links = array();
 	$vn_primary_id = "";
 	foreach($va_reps as $va_rep){
+		if(!isset($va_rep['media']) || !strlen((string)$va_rep['media'])) { continue; }
 		$vn_rep_id = $va_rep["representation_id"];
 		$vs_class = "";
 		if($va_rep["is_primary"]){

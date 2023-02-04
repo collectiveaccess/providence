@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2022 Whirl-i-Gig
+ * Copyright 2004-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -41,21 +41,20 @@
 include_once(__CA_LIB_DIR__."/Plugins/Media/BaseMediaPlugin.php");
 include_once(__CA_LIB_DIR__."/Plugins/IWLPlugMedia.php");
 include_once(__CA_LIB_DIR__."/Parsers/TimecodeParser.php");
-include_once(__CA_LIB_DIR__."/Configuration.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 include_once(__CA_APP_DIR__."/helpers/avHelpers.php");
 
 class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 
-	var $errors = array();
+	var $errors = [];
 
 	var $filepath;
 	/**
 	 * @var
 	 */
-	var $properties = array();
-	var $oproperties = array();
-	var $media_metadata = array();
+	var $properties = [];
+	var $oproperties = [];
+	var $media_metadata = [];
 	
 	var $path_to_ffmeg = null;
 
@@ -294,7 +293,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 	public function read ($filepath, $mimetype="", $options=null) {
 		if (!file_exists($filepath)) {
 			$this->postError(1650, _t("File %1 does not exist", $filepath), "WLPlugVideo->read()");
-			$this->media_metadata = array();
+			$this->media_metadata = [];
 			$this->filepath = null;
 			return false;
 		}
@@ -396,7 +395,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$this->properties["has_video"] = isset($this->media_metadata["VIDEO"]["Duration"]) ? 1 : 0;
 					$this->properties["has_audio"] = isset($this->media_metadata["AUDIO"]["Duration"]) ? 1 : 0;
 
-					$this->properties["type_specific"] = array();
+					$this->properties["type_specific"] = [];
 
 					$this->properties["title"] = 		$this->media_metadata["GENERAL"]["Complete name"];
 					$this->properties["author"] = 		"";
@@ -426,7 +425,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$this->properties["has_video"] = (isset($this->media_metadata["video"]["bitrate"]) && ($this->media_metadata["video"]["bitrate"]) ? 1 : 0);
 					$this->properties["has_audio"] = (isset($this->media_metadata["audio"]["bitrate"]) && ($this->media_metadata["audio"]["bitrate"]) ? 1 : 0);
 
-					$this->properties["type_specific"] = array();
+					$this->properties["type_specific"] = [];
 
 					$this->properties["title"] = 		"";
 					$this->properties["author"] = 		"";
@@ -439,7 +438,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$this->properties["has_video"] = (isset($this->media_metadata["theora"]) ? 1 : 0);
 					$this->properties["has_audio"] = (isset($this->media_metadata["vorbis"]) ? 1 : 0);
 
-					$this->properties["type_specific"] = array();
+					$this->properties["type_specific"] = [];
 
 					$this->properties["title"] = 		"";
 					$this->properties["author"] = 		"";
@@ -465,7 +464,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$this->properties["has_video"] = (isset($this->media_metadata["video"]["bitrate"]) && ($this->media_metadata["video"]["bitrate"]) ? 1 : 0);
 					$this->properties["has_audio"] = (isset($this->media_metadata["audio"]["bitrate"]) && ($this->media_metadata["audio"]["bitrate"]) ? 1 : 0);
 
-					$this->properties["type_specific"] = array();
+					$this->properties["type_specific"] = [];
 
 					$this->properties["title"] = 		"";
 					$this->properties["author"] = 		"";
@@ -676,7 +675,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			case 'video/ogg':
 			case 'video/x-dv':
 				if (caMediaPluginFFmpegInstalled()) {
-					$ffmpeg_params = array();
+					$ffmpeg_params = [];
 
 					if (!($ffmpeg_command = $this->get('command'))) {
 						// Video bitrate
@@ -921,7 +920,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 		
 		caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f image2 -r ".$freq." -ss {$s} -t {$previewed_duration} -vf \"scale=w={$preview_width}:h={$preview_height}:force_original_aspect_ratio=decrease,pad={$preview_width}:{$preview_height}:(ow-iw)/2:(oh-ih)/2\"  -y ".caEscapeShellArg($output_file). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
 		$i = 1;
-		$files = array();
+		$files = [];
 		while(file_exists($output_file_prefix.sprintf("%05d", $i).'.jpg')) {
 			// add frame to list
 			$files[''.sprintf("%4.2f", ((($i - 1) * $frame_interval) + $s)).'s'] = $output_file_prefix.sprintf("%05d", $i).'.jpg';
@@ -1014,7 +1013,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 	 *
 	 */
 	public function reset() {
-		$this->errors = array();
+		$this->errors = [];
 		$this->properties = $this->oproperties;
 		return $this->media_metadata;
 	}
@@ -1023,85 +1022,49 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 	 *
 	 */
 	public function init() {
-		$this->errors = array();
+		$this->errors = [];
 		$this->filepath = null;
-		$this->properties = array();
-		$this->media_metadata = array();
+		$this->properties = [];
+		$this->media_metadata = [];
 	}
 	# ------------------------------------------------
 	/**
 	 *
 	 */
 	public function htmlTag($url, $properties, $options=null, $volume_info=null) {
-		if (!is_array($options)) { $options = array(); }
+		if (!is_array($options)) { $options = []; }
 		
-		foreach(array(
+		foreach([
 			'name', 'show_controls', 'url', 'text_only', 'viewer_width', 'viewer_height', 'id',
 			'poster_frame_url', 'viewer_parameters', 'viewer_base_url', 'width', 'height',
 			'vspace', 'hspace', 'alt', 'title', 'usemap', 'align', 'border', 'class', 'style'
-		) as $k) {
+		] as $k) {
 			if (!isset($options[$k])) { $options[$k] = null; }
 		}
+		$width 	=	caParseFormElementDimension($options["viewer_width"] ?? ($properties["width"] ?? null), ['returnAs' => 'pixels', 'assumePixels' => true]);
+		$height =	caParseFormElementDimension($options["viewer_height"] ?? ($properties["height"] ?? null), ['returnAs' => 'pixels', 'assumePixels' => true]);
+				
+		$id 	= 	$options["id"] ?? "video_player";
+		$name 	= 	$options["name"] ?? $id;
+		$class 	= 	$options["class"] ?? "caVideoPlayer";
 		
 		switch($properties["mimetype"]) {
-			# ------------------------------------------------
-			case 'video/quicktime':
-				$name = $options["name"] ? $options["name"] : "qplayer";
-
-				$width =				$options["viewer_width"] ? $options["viewer_width"] : $properties["width"];
-				$height =			$options["viewer_height"] ? $options["viewer_height"] : $properties["height"];
-				ob_start();
-
-				if ($options["text_only"]) {
-					return "<a href='$url'>".(($options["text_only"]) ? $options["text_only"] : "View QuickTime")."</a>";
-				} else {
-?>
-					<table>
-						<tr>
-							<td>
-								<object classid="clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B"
-									width="<?php print $width; ?>" height="<?php print $height + 16; ?>"
- 									codebase="http://www.apple.com/qtactivex/qtplugin.cab">
-									<param name="src" VALUE="<?php print $url; ?>">
-									<param name="autoplay" VALUE="true">
-									<param name="controller" VALUE="true">
-
-									<embed  src="<?php print $url; ?>"
-										name="id_<?php print $name; ?>"
-										width="<?php print $width; ?>" height="<?php print $height + 16; ?>"
-										autoplay="true" controller="true" kioskmode="true"
-										pluginspage="http://www.apple.com/quicktime/download/"
-										type="video/quicktime"
-									>
-									</embed>
-								</object>
-							</td>
-						</tr>
-					</table>
-<?php
-					return ob_get_clean();
-				}
-				break;
 			# ------------------------------------------------
 			case "video/x-flv":
 			case 'video/mpeg':
 			case 'audio/mpeg':
 			case 'video/mp4':
 			case 'video/MP2T':
-				$id = 				$options["id"] ? $options["id"] : "mp4_player";
-
+			case 'video/quicktime':
 				$poster_frame_url =	$options["poster_frame_url"];
 
-				$width =			$options["viewer_width"] ? $options["viewer_width"] : $properties["width"];
-				$height =			$options["viewer_height"] ? $options["viewer_height"] : $properties["height"];
-				
-				$captions = 		caGetOption("captions", $options, array(), array('castTo' => 'array'));
-				
+				$captions = 		caGetOption("captions", $options, [], array('castTo' => 'array'));	
 				$controls = 		caGetOption("controls", $options, ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'fullscreen'], ['castTo' => 'array']);
 				ob_start();
 ?>
+			<div class="<?= $class; ?> video-responsive">
 				<video id="<?= $id; ?>" playsinline controls data-poster="<?= $poster_frame_url; ?>" width="<?= $width; ?>" height="<?= $height; ?>" >
-				  <source src="<?= $url; ?>" type="video/mp4" />
+				  <source src="<?= $url; ?>" type="<?= $properties["mimetype"]; ?>" />
 <?php
 						if(is_array($captions)) {
 							foreach($captions as $locale_id => $caption_track) {
@@ -1110,6 +1073,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 						}
 ?>
 				</video>
+			</div>
 				<script type="text/javascript">
 					jQuery(document).ready(function() {
 						options = {
@@ -1130,17 +1094,13 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			case 'video/x-matroska':
 			case "video/x-ms-asf":
 			case "video/x-ms-wmv":
-				$id = 						$options["id"] ? $options["id"] : "mp4_player";
-				$width =					$options["viewer_width"] ? $options["viewer_width"] : $properties["width"];
-				$height =					$options["viewer_height"] ? $options["viewer_height"] : $properties["height"];
-				
-				return "<video id='{$id}' src='{$url}' width='{$width}' height='{$height}' controls='1'></video>";
+				return "<div class='{$class}'><video id='{$id}' src='{$url}' width='{$width}' height='{$height}' controls='1'></video></div>";
 				break;
 			# ------------------------------------------------
 			case 'image/jpeg':
 			case 'image/gif':
-				if (!is_array($options)) { $options = array(); }
-				if (!is_array($properties)) { $properties = array(); }
+				if (!is_array($options)) { $options = []; }
+				if (!is_array($properties)) { $properties = []; }
 				return caHTMLImage($url, array_merge($options, $properties));
 				break;
 			# ------------------------------------------------

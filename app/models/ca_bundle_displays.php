@@ -2276,6 +2276,8 @@ if (!$pb_omit_editing_info) {
 						$vs_sort_dir_attr = '';
 						if ($vs_sort = trim(caGetOption('sort', $options, null, ['castTo' => 'string']))) {
 						    $vs_sort_dir = caGetOption('sortDirection', $options, null, ['castTo' => 'string']);
+						    unset($options['sort']);
+						    unset($options['sortDirection']);
 						} else { 
 						    $vs_sort = caGetOption('sort', $va_settings, null, ['castTo' => 'string']); 
 						    $vs_sort_dir = caGetOption('sortDirection', $va_settings, null, ['castTo' => 'string']);
@@ -2296,7 +2298,8 @@ if (!$pb_omit_editing_info) {
 							case 3:
 								// For regular relationships just evaluate the template relative to the relationship record
 								// this way the template can reference interstitial data
-								$vs_val = $po_result->getWithTemplate((caGetOption('showCurrentOnly', $options, true) && !$vs_restrict_to_types  && !$vs_restrict_to_relationship_types) ? $vs_template : $vs_unit_tag.$vs_template."</unit>", $options);
+								$t = (caGetOption('showCurrentOnly', $options, true) && !$vs_restrict_to_types  && !$vs_restrict_to_relationship_types) ? $vs_template : $vs_unit_tag.$vs_template."</unit>";
+								$vs_val = $po_result->getWithTemplate($t, $options);
 								break;
 							case 2:
 								$t_rel = Datamodel::getInstanceByTableName($va_path[1], true);

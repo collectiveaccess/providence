@@ -277,6 +277,13 @@ class BaseFindController extends ActionController {
 					}
 					continue;
 				}
+				
+				// sort on history tracking values
+				if(($tmp[0] === $this->ops_tablename) && (in_array($tmp[1], ['history_tracking_current_value', 'ca_objects_location']))) {
+					$display_list[$i]['is_sortable'] = true;
+					$policy = caGetOption('policy', $va_display_item['settings'], null);
+					$display_list[$i]['bundle_sort'] = $va_display_item['bundle_name'].($policy ? '%policy='.$policy : '');
+				}
 			}
 		}
 		
@@ -575,13 +582,13 @@ class BaseFindController extends ActionController {
 					$vs_delimiter = ",";
 					$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename), 0, 30);
 					$vs_file_extension = 'csv';
-					$vs_mimetype = "text/plain";
+					$vs_mimetype = "text/csv";
 					break;
 				case '_tab':
 					$vs_delimiter = "\t";	
 					$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename), 0, 30);
 					$vs_file_extension = 'tsv';
-					$vs_mimetype = "text/plain";
+					$vs_mimetype = "text/tab-separated-values";
 				default:
 					if(substr($ps_output_type, 0, 5) === '_docx') {
 						$va_template_info = caGetPrintTemplateDetails('results', substr($ps_output_type, 6));

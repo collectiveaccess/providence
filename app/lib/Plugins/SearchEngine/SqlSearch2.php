@@ -103,7 +103,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			self::$whitespace_tokenizer_regex = '[\s\"\—\-]+';
 		}
 		if(!(self::$punctuation_tokenizer_regex = $this->search_config->get('punctuation_tokenizer_regex'))) {
-			self::$whitespace_tokenizer_regex = '[\.,;:\(\)\{\}\[\]\|\\\+_\!\&«»\']+';
+			self::$punctuation_tokenizer_regex = '[\.,;:\(\)\{\}\[\]\|\\\+_\!\&«»\']+';
 		}
 		
 		if(self::$filter_stop_words) {
@@ -507,7 +507,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					FROM {$table}".($t->hasField('deleted') ? " WHERE deleted = 0" : "")."
 				", []);
 			} elseif($use_boost) {
-				$qr_res = $this->db->query($s="
+				$qr_res = $this->db->query("
 					SELECT swi.row_id, SUM(swi.boost) boost
 					FROM ca_sql_search_word_index swi
 					".(!$is_blank ? 'INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id' : '')."
@@ -518,7 +518,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					GROUP BY swi.row_id
 				", $params);
 			} else {
-				$qr_res = $this->db->query($s="
+				$qr_res = $this->db->query("
 					SELECT DISTINCT swi.row_id, 100 boost
 					FROM ca_sql_search_word_index swi
 					".(!$is_blank ? 'INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id' : '')."
@@ -933,7 +933,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 						$a = $s->getItems(['idsOnly' => true]);
 						break;
 					default:
-						$a = $qr->get($spk, ['returnAsArray' => true]);
+						$a = $qr->get($spk, ['restrictToRelationshipTypes' => $ap['relationship_type_ids'] ?? null, 'returnAsArray' => true]);
 						break;
 				}
 				
@@ -1658,11 +1658,21 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			return null;
 		}
 		
+		if((mb_strtolower($field) === 'related') && $rel_table) {
+			$spec = explode('.', $tmp[0]);
+			$table = array_shift($spec);
+			array_shift($spec);
+			$tmp = preg_split('![/\|]+!', join('.', array_merge([$table], $spec)));
+			list($field, $subfield, $subsubfield, $subsubsubfield) = array_pad($spec, 4 , null);
+		}
+		
 		if (in_array(strtolower($field), ['preferred_labels', 'nonpreferred_labels'])) {
 			$t_table = $t_table->getLabelTableInstance();
 			$table = $t_table->tableName();
-			$field = $subfield;
+			if(!($field = $subfield)) { $field = $t_table->getDisplayField(); }
 			$subfield = $subsubfield = $subsubsubfield = null;
+			
+			$tmp[0] = join('.', [$table, $field]);
 		}
 		
 		$table_num = $t_table->tableNum();

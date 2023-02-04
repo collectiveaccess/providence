@@ -100,13 +100,13 @@ class BaseMediaViewer {
 				$rep_index = array_search($t_instance->getPrimaryKey(), $rep_ids);
 			
 				if ($rep_index > 0) { 
-					$controls .=  "<a href='#' onClick='jQuery(\"#caMediaPanelContentArea\").load(\"".caNavUrl($request, '*', '*', $request->getAction(), array('representation_id' => (int)$rep_ids[$rep_index - 1], $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey(), 'context' => $context))."\");'>←</a>";
+					$controls .=  "<a href='#' onClick='jQuery(\"#caMediaPanelContentArea\").load(\"".caNavUrl($request, '*', '*', $request->getAction(), array('representation_id' => (int)$rep_ids[$rep_index - 1], $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey(), 'id' => (int)$t_subject->getPrimaryKey(), 'context' => $context))."\");'>←</a>";
 				}
 			
 				$controls .=  ' '._t("%1 of %2", ($rep_index + 1), $media_count).' ';
 			
 				if ($rep_index < ($media_count - 1)) {
-					$controls .=  "<a href='#' onClick='jQuery(\"#caMediaPanelContentArea\").load(\"".caNavUrl($request, '*', '*', $request->getAction(), array('representation_id' => (int)$rep_ids[$rep_index + 1], $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey(), 'context' => $context))."\");'>→</a>";
+					$controls .=  "<a href='#' onClick='jQuery(\"#caMediaPanelContentArea\").load(\"".caNavUrl($request, '*', '*', $request->getAction(), array('representation_id' => (int)$rep_ids[$rep_index + 1], $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey(), 'id' => (int)$t_subject->getPrimaryKey(), 'context' => $context))."\");'>→</a>";
 				}
 				$controls .= "</div>";	
 				

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -338,7 +338,8 @@ class ca_entity_labels extends BaseLabel {
 			} elseif($this->get('displayname') && $this->get('forename')) {
 				$this->set('surname', trim(preg_replace('![ ]+!', ' ', $this->get('forename').' '.$this->get('middlename').' '.$this->get('surname'))));
 				$this->set('displayname', $this->get('surname'));
-			} elseif(!$this->get('displayname')) {	
+				$this->set('forename', '');
+			} else {	
 				$this->set('displayname', trim(preg_replace('![ ]+!', ' ', $this->get('forename').' '.$this->get('middlename').' '.$this->get('surname'))));
 				$this->set('surname', $this->get('displayname'));
 			}
@@ -401,12 +402,17 @@ class ca_entity_labels extends BaseLabel {
 	 * @return bool
 	 */
 	public function update($options=null) {
+		$is_org = (($t_entity = caGetOption('subject', $options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG'));
 		if (!trim($this->get('surname')) && !trim($this->get('forename'))) {
 			$this->postError(1100, _t('Surname or forename must be set'), 'ca_entity_labels->insert()');
 			return false;
 		}
-		if (($t_entity = caGetOption('subject', $options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG')) {
-			$this->set('displayname', $this->get('surname'));
+		if (($t_entity = caGetOption('subject', $options, null)) && $is_org) {
+			if($this->changed('displayname') && !$this->changed('surname')) {
+				$this->set('surname', $this->get('displayname'));
+			} else {
+				$this->set('displayname', $this->get('surname'));
+			}
 		} elseif (!$this->get('displayname')) {
 			$this->set('displayname', trim(preg_replace('![ ]+!', ' ', $this->get('forename').' '.$this->get('middlename').' '.$this->get('surname'))));
 		}
