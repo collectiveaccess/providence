@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2834,8 +2834,7 @@ class BaseEditorController extends ActionController {
 				break;
 			default:
 				// relationship bundles
-				$table = preg_replace("!_related_list$!", "", $bundle_name);
-		
+				$table = preg_replace("!(_related_list|_table)$!", "", $bundle_name);
 				if($ids = $this->request->getParameter('ids', pString)) {
 					$ids = explode(";", $ids);
 				} else {

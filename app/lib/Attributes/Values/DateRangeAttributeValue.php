@@ -367,10 +367,12 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 		if ($ps_value) {
 			$locale = caGetOption('locale', $pa_options, self::$locale);
 			DateRangeAttributeValue::$o_tep->setLanguage($locale);
-			if (!DateRangeAttributeValue::$o_tep->parse($ps_value)) { 
-				// invalid date
-				$this->postError(1970, _t('%1 is invalid', $pa_element_info['displayLabel'] ?? '???'), 'DateRangeAttributeValue->parseValue()');
-				return false;
+			if (!DateRangeAttributeValue::$o_tep->parse($ps_value)) {
+				if($locale == self::$locale || !DateRangeAttributeValue::$o_tep->parse($ps_value, ['locale' => self::$locale])) { 
+					// invalid date
+					$this->postError(1970, _t('%1 is invalid', $pa_element_info['displayLabel'] ?? '???'), 'DateRangeAttributeValue->parseValue()');
+					return false;
+				}
 			}
 			$va_dates = DateRangeAttributeValue::$o_tep->getHistoricTimestamps();
 			if ($va_settings['dateRangeBoundaries']) {
