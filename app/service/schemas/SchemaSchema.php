@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2021 Whirl-i-Gig
+ * Copyright 2021-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -218,7 +218,91 @@ class SchemaSchema extends \GraphQLServices\GraphQLSchema {
 						'description' => 'Available bundles'
 					],
 				]
-			])
+			]),
+			$relationshipTypeType = new ObjectType([
+				'name' => 'RelationshipType',
+				'description' => 'A relationship type',
+				'fields' => [
+					'id' => [
+						'type' => Type::int(),
+						'description' => 'ID of relationship type'
+					],
+					'name' => [
+						'type' => Type::string(),
+						'description' => 'Name of relationship type'
+					],
+					'name_reverse' => [
+						'type' => Type::string(),
+						'description' => 'Reverse sense name of relationship type'
+					],
+					'description' => [
+						'type' => Type::string(),
+						'description' => 'Description of relationship type'
+					],
+					'description_reverse' => [
+						'type' => Type::string(),
+						'description' => 'Description of reverse sense of relationship type'
+					],
+					'code' => [
+						'type' => Type::string(),
+						'description' => 'Code for relationship type'
+					],
+					'rank' => [
+						'type' => Type::int(),
+						'description' => 'Sort rank for relationship type'
+					],
+					'locale' => [
+						'type' => Type::string(),
+						'description' => 'Locale for relationship type label'
+					],
+					'rank' => [
+						'type' => Type::int(),
+						'description' => 'Sort rank for relationship type'
+					],
+					'isDefault' => [
+						'type' => Type::boolean(),
+						'description' => 'Is default type'
+					],
+					'restrictToTypeLeft' => [
+						'type' => Type::string(),
+						'description' => 'Type restriction for left table'
+					],
+					'restrictToTypeRight' => [
+						'type' => Type::string(),
+						'description' => 'Type restriction for right table'
+					],
+					'includeSubtypesLeft' => [
+						'type' => Type::boolean(),
+						'description' => 'Include subtypes for left table type restriction'
+					],
+					'includeSubtypesRight' => [
+						'type' => Type::boolean(),
+						'description' => 'Include subtypes for right table type restriction'
+					],	
+				]
+			]),
+			$relationshipTypeListType = new ObjectType([
+				'name' => 'RelationshipTypeList',
+				'description' => 'List of relationship types',
+				'fields' => [
+					'table' => [
+						'type' => Type::string(),
+						'description' => 'Name of table'
+					],
+					'relatedTable' => [
+						'type' => Type::string(),
+						'description' => 'Name of related table'
+					],
+					'relationshipTable' => [
+						'type' => Type::string(),
+						'description' => 'Name of table containing relationships'
+					],
+					'types' => [
+						'type' => Type::listOf($relationshipTypeType),
+						'description' => 'Available relationship types'
+					],
+				]
+			]),
 		];
 	}
 	# -------------------------------------------------------

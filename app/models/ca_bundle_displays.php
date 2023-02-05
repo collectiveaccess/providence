@@ -3304,10 +3304,8 @@ if (!$pb_omit_editing_info) {
 			'instance' => $t_subject, 'is_insert' => false
 		]);
 
-		$vb_save_rc = $t_subject->saveBundlesForScreen(null, $request, 
-				$save_options = ['bundles' => ca_bundle_displays::makeBundlesForResultsEditor([$bundle]), 
-				'formName' => 'complex']
-		);
+		$save_options = ['bundles' => ca_bundle_displays::makeBundlesForResultsEditor([$bundle]), 'formName' => 'complex'];
+		$vb_save_rc = $t_subject->saveBundlesForScreen(null, $request, $save_options);
 		
 		$vs_message = _t("Saved changes to %1", $type_name);
 		
