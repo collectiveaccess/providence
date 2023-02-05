@@ -87,7 +87,7 @@
 			}
 			$vs_type = BaseRefinery::parsePlaceholder($va_parent['type'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null, 'applyImportItemSettings' => $apply_import_item_settings));
 
-			if (!$vs_name && !$vs_idno) { 
+			if (!$vs_name && !$vs_idno && (!isset($va_parent['attributes']) || !is_array($va_parent['attributes']) || !sizeof($va_parent['attributes']))) { 
 				continue; 
 			}
 			
