@@ -1985,6 +1985,10 @@ td.listtableAggregateTotals {
 	text-align: left;
 }
 
+table.caListItem {
+	width: 100%;
+}
+
 /* misc */
 
 #caSetList img.deleteIcon, #caSetList img.editIcon {
