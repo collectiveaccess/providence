@@ -715,7 +715,7 @@ class Installer {
 				if ($deleted) {
 					continue;
 				} else {
-					$t_item = $t_list->addItem($item_value, $enabled, $default, $parent_id, $type_id, $item_idno, '', (int)$status, (int)$access, (int)$rank, $color);
+					$t_item = $t_list->addItem($item_value, $enabled, $default, $parent_id, $type_id, strlen(trim($new_item_idno)) ? $new_item_idno : $item_idno, '', (int)$status, (int)$access, (int)$rank, $color);
 				}
 			}
 
