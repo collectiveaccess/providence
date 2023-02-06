@@ -172,6 +172,8 @@
 			$template_values = caProcessTemplateForIDs($template, $subject_table, array_keys($pa_ancestors), ['returnAsArray' => true, 'indexWithIDs' => true]);
 		}
 		foreach($pa_ancestors as $vn_id => $va_item) {
+			$va_item['table'] = $va_item['table'] ?? null;
+			
 			$vs_item_id = $vb_do_objects_x_collections_hierarchy ? ($va_item['table'].'-'.($va_item['item_id'] ?? null)) : ($va_item['item_id'] ?? null);
 			if($vn_id === '') {
 				$path[] = "<a href='#'>"._t('New %1', $t_subject->getTypeName())."</a>";
