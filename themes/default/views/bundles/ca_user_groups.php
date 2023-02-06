@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2021 Whirl-i-Gig
+ * Copyright 2011-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,24 +24,22 @@
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
- */
- 
-	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$t_instance 		= $this->getVar('t_instance');
-	$t_item 			= $this->getVar('t_group');				// user group
-	$t_rel 				= $this->getVar('t_rel');			// *_x_user_groups instance (eg. ca_sets_x_user_groups)
-	$t_subject 			= $this->getVar('t_subject');		
-	$settings 			= $this->getVar('settings');
-	$vs_add_label 		= $this->getVar('add_label');
-	
-	$vb_read_only		=	((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_users') == __CA_BUNDLE_ACCESS_READONLY__));
-	
-	
-	$va_initial_values = $this->getVar('initialValues');
-	if (!is_array($va_initial_values)) { $va_initial_values = array(); }
-	
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
+ */ 
+$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
+$t_instance 		= $this->getVar('t_instance');
+$t_item 			= $this->getVar('t_group');				// user group
+$t_rel 				= $this->getVar('t_rel');			// *_x_user_groups instance (eg. ca_sets_x_user_groups)
+$t_subject 			= $this->getVar('t_subject');		
+$settings 			= $this->getVar('settings');
+$vs_add_label 		= $this->getVar('add_label');
+
+$vb_read_only		=	((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_users') == __CA_BUNDLE_ACCESS_READONLY__));
+
+$va_initial_values = $this->getVar('initialValues');
+if (!is_array($va_initial_values)) { $va_initial_values = array(); }
+
+print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
 ?>
 <div id="<?= $vs_id_prefix; ?>">
 <?php
@@ -55,14 +53,14 @@
 				<tr>
 					<td class="formLabel">
 						<?= _t('Group'); ?>
-						<?= caHTMLTextInput("{$vs_id_prefix}_autocomplete{n}", ['value' => '{{label}}', 'id' => "{$vs_id_prefix}_autocomplete{n}", 'class' => 'lookupBg'], ['width' => '400px']); ?>
-						<?= $t_rel->htmlFormElement('access', '^ELEMENT', ['name' => "{$vs_id_prefix}_access_{n}", 'id' => "{$vs_id_prefix}_access_{n}", 'no_tooltips' => true, 'value' => '{{access}}'], ['width' => '260px']); ?>
+						<?= caHTMLTextInput("{$vs_id_prefix}_autocomplete{n}", ['value' => '{{label}}', 'id' => "{$vs_id_prefix}_autocomplete{n}", 'class' => 'lookupBg'], ['width' => '340px']); ?>
+						<?= $t_rel->htmlFormElement('access', '^ELEMENT', ['name' => "{$vs_id_prefix}_access_{n}", 'id' => "{$vs_id_prefix}_access_{n}", 'no_tooltips' => true, 'value' => '{{access}}']); ?>
 						<?php if ($t_rel->hasField('effective_date')) { print _t(' for period ').$t_rel->htmlFormElement('effective_date', '^ELEMENT', ['name' => $vs_id_prefix.'_effective_date_{n}', 'value' => '{{effective_date}}',  'no_tooltips' => true, 'classname'=> 'dateBg']); } ?>
 						<?= caHTMLHiddenInput("{$vs_id_prefix}_id{n}", ['value' => '{id}', 'id' => "{$vs_id_prefix}_id{n}"]); ?>
 					</td>
 					<td>
 <?php if (!$vb_read_only) { ?>	
-						<a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
+						<div style="float: right;"><a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
 <?php } ?>
 					</td>
 				</tr>
