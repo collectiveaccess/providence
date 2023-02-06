@@ -557,6 +557,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		
 		$current_selection_display_format = caGetOption('currentSelectionDisplayFormat', $pa_options, caGetOption('currentSelectionDisplayFormat', $pa_element_info['settings'], null));
 		$separate_disabled_values = caGetOption('separateDisabledValues', $pa_options, caGetOption('separateDisabledValues', $pa_element_info['settings'], false));
+		$hide_disabled_values = caGetOption('hideDisabledValues', $pa_options, caGetOption('hideDisabledValues', $pa_element_info['settings'], false));
 		
 		$vn_max_columns = $pa_element_info['settings']['maxColumns'] ?? 1;
 

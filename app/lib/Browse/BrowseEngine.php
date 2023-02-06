@@ -1412,13 +1412,14 @@
 									$vs_label_display_field = $t_item->getLabelDisplayField();
 									
 									$wheres = $params = [];
+									$vs_label_sort_field = null;
 									if(is_array($sort_fields = caGetOption('order_by_label_fields', $va_facet_info, null))) {
 										$vs_label_sort_field = array_shift($sort_fields); 
 									}
 									if (!$vs_label_sort_field || !$t_label->hasField($vs_label_sort_field)) {
 										$t_item->getLabelSortField();
 									}
-									if ($va_facet_info['relative_to']) {
+									if ($va_facet_info['relative_to'] ?? null) {
 										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
 											$vs_target_browse_table_name = $va_relative_execute_sql_data['target_table_name'];
 											$vs_target_browse_table_num = $va_relative_execute_sql_data['target_table_num'];
@@ -1441,7 +1442,7 @@
 										$va_relative_to_join = array("INNER JOIN {$vs_label_table_name} ON {$vs_label_table_name}.{$vs_label_item_pk} = {$vs_target_browse_table_name}.{$vs_target_browse_table_pk}");
 									}
 									
-									if ($va_facet_info['relationship']) {
+									if ($va_facet_info['relationship'] ?? null) {
 										$va_relative_to_join[] = "INNER JOIN ".$va_facet_info['relationship']." ON {$vs_target_browse_table_name}.{$vs_target_browse_table_pk} = ".$va_facet_info['relationship'].".{$vs_target_browse_table_pk}";	
 										if (is_array($va_facet_info['restrict_to_relationship_types']) && ($rel_type_ids = caMakeRelationshipTypeIDList($va_facet_info['relationship'], $va_facet_info['restrict_to_relationship_types'])) && sizeof($rel_type_ids)) {
 											$wheres[] = $va_facet_info['relationship'].".type_id IN (?)";
@@ -3489,10 +3490,10 @@
 					
 						$vs_rel_table_name = $va_facet_info['table'];
 						if (!is_array($va_restrict_to_relationship_types = ($va_facet_info['restrict_to_relationship_types'] ?? null))) { $va_restrict_to_relationship_types = array(); }
-						$va_restrict_to_relationship_types = $this->_getRelationshipTypeIDs($va_restrict_to_relationship_types, $va_facet_info['relationship_table']);
+						$va_restrict_to_relationship_types = $this->_getRelationshipTypeIDs($va_restrict_to_relationship_types, $va_facet_info['relationship_table'] ?? null);
 
 						if (!is_array($va_exclude_relationship_types = ($va_facet_info['exclude_relationship_types'] ?? null))) { $va_exclude_relationship_types = array(); }
-						$va_exclude_relationship_types = $this->_getRelationshipTypeIDs($va_exclude_relationship_types, $va_facet_info['relationship_table']);
+						$va_exclude_relationship_types = $this->_getRelationshipTypeIDs($va_exclude_relationship_types, $va_facet_info['relationship_table'] ?? null);
 
 						if (!is_array($va_restrict_to_lists = ($va_facet_info['restrict_to_lists'] ?? null))) { $va_restrict_to_lists = array(); }
 						$va_restrict_to_lists = caMakeListIDList($va_restrict_to_lists);
@@ -5217,7 +5218,7 @@
 				# -----------------------------------------------------
 				case 'field':
 					$t_item = Datamodel::getInstanceByTableName($vs_browse_table_name, true);
-					if (!is_array($va_restrict_to_types = $va_facet_info['restrict_to_types'])) { $va_restrict_to_types = array(); }
+					if (!is_array($va_restrict_to_types = ($va_facet_info['restrict_to_types'] ?? null))) { $va_restrict_to_types = array(); }
 					if(!is_array($va_restrict_to_types = $this->_convertTypeCodesToIDs($va_restrict_to_types, array('instance' => $t_item, 'dontExpandHierarchically' => true)))) { $va_restrict_to_types = array(); }
 					$va_restrict_to_types_expanded = $this->_convertTypeCodesToIDs($va_restrict_to_types, array('instance' => $t_item));
 

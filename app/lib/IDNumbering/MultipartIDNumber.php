@@ -1225,7 +1225,8 @@ class MultipartIDNumber extends IDNumber {
 					$tmp[$ename] = $element_values[$name.'_'.$ename];
 					continue;
 				}
-
+				$element_values[$name.'_'.$ename] = $element_values[$name.'_'.$ename] ?? null;
+				
 				if (($element_values[$name.'_'.$ename] == '') || ($element_values[$name.'_'.$ename] == '%') || $always_generate_serial_values) {
 					if ($element_values[$name.'_'.$ename] == '%') { $element_values[$name.'_'.$ename] = ''; }
 					$tmp[$ename] = $this->getNextValue($ename, $tmp, $dont_mark_serial_value_as_used);
@@ -1324,6 +1325,8 @@ class MultipartIDNumber extends IDNumber {
 		$element_form_name = $name.'_'.$element_name;
 
 		$element_value = $value;
+		$element_info['editable'] = $element_info['editable'] ?? false;
+		
 		switch($element_info['type']) {
 			# ----------------------------------------------------
 			case 'LIST':
