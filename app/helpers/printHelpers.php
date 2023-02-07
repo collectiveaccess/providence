@@ -809,11 +809,90 @@ use Zend\Stdlib\Glob;
 	}
 	# ---------------------------------------
 	/**
+	 * Return HTML/Javascript for "print set" controls on item ca_set_items bundle
+	 *
+	 * @param View $po_view The view into which the control will be rendered
+	 * 
+	 * @return string
+	 */
+	function caEditorPrintSetItemsControls($view) {
+	    $t_display = new ca_bundle_displays(); //$view->getVar('t_display');
+	    $t_set = $view->getVar('t_set');
+	    $t_item = $view->getVar('t_row');
+	    $request = $view->request;
+	    
+	   	$item_id = $t_item->getPrimaryKey();
+	    
+	    $available_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays([
+			'table' => $t_item->tableNum(), 
+			'value' => $t_display->getPrimaryKey(), 
+			'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 
+			'user_id' => $request->getUserID(), 'restrictToTypes' => [$t_item->getTypeID()], 
+			'context' => 'editor_summary'
+		]));
+		
+		// Opts for on-screen display list (only displays; no PDF print templates)
+		$display_opts = [];
+		foreach($available_displays as $d) {
+			$display_opts[$d['name']] = $d['display_id'];
+		}
+		ksort($display_opts);
+		
+		// Opts for print templates (displays + PDF templates)
+		$print_templates = caGetAvailablePrintTemplates('sets', ['table' => $t_item->tableName(), 'restrictToTypes' => $t_item->getTypeID()]);
+
+		// Add PDF templates to existing display list
+		foreach($print_templates as $pt) {
+			if((bool)$pt['standalone']) {	// templates marked standalone are shown as printable options in the display list 
+				$display_opts[$pt['name']] = $pt['code'];
+			}
+		}
+		ksort($display_opts);
+		
+		// HTML <select> for print template list
+		$print_display_select_html = caHTMLSelect(
+			'display_id', 
+			$display_opts, 
+			['onchange' => 'return caSummaryUpdateOptions();', 'id' => 'caSummaryDisplaySelector', 'class' => 'searchFormSelector'],
+			['value' => $t_display->getPrimaryKey()]
+		);
+		$view->setVar('print_display_select_html', $print_display_select_html);
+		
+		// Opts for print formats list (PDF, DOCX, etc – any template that is not marked as standalone is a format)
+		$formats = [];
+		if(is_array($print_templates)) {
+            $num_available_templates = sizeof($print_templates);
+            foreach($print_templates as $k => $v) {
+                if (($num_available_templates > 1) && (bool)$v['generic']) { continue; }    // omit generics from list when specific templates are available
+            	if ((bool)$v['standalone']) { continue; }
+                $formats[$v['name']] = $v['code'];
+            }
+        }
+		$view->setVar('formats', $formats);
+
+		$view->setViewPath('bundles');
+		
+		// Generate print options overlay
+		$buf = $view->render('set_download_options_html.php');    
+		$buf .= "<div id='printButton'>
+			<a href='#' onclick='return caShowSummaryDownloadOptionsPanel();'>".caNavIcon(__CA_NAV_ICON_PDF__, 2)."</a>
+				<script type='text/javascript'>
+						function caShowSummaryDownloadOptionsPanel() {
+							caSummaryDownloadOptionsPanel.showPanel();
+							return false;
+						}
+				</script>
+</div>\n";
+	
+        return $buf;
+	}
+	# ---------------------------------------
+	/**
 	 * Return form elements for print summary options form
 	 * 
 	 * @return array
 	 */
-	function caEditorPrintSummaryForm(string $type, string $template, ?array $values=null, ?array $options=null) : ?array {
+	function caEditorPrintParametersForm(string $type, string $template, ?array $values=null, ?array $options=null) : ?array {
 		if(!is_array($info = caGetPrintTemplateDetails($type, $template, $options))) { return null; }
 		if(!is_array($info['params']) || (sizeof($info['params']) === 0)) { return []; }
 		
