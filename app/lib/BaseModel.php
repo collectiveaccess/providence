@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2021 Whirl-i-Gig
+ * Copyright 2000-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -9383,7 +9383,12 @@ $pa_options["display_form_field_tips"] = true;
 		foreach($va_fields as $vs_field => $va_info) {
 			if (isset($va_info['IDENTITY']) && $va_info['IDENTITY']) { continue;}	
 			
-			if ((isset($va_many_to_one_relations[$vs_field]) && $va_many_to_one_relations[$vs_field]) && (!isset($va_info['IS_NULL']) || !$va_info['IS_NULL'])) {
+			if (
+				(isset($va_many_to_one_relations[$vs_field]) && $va_many_to_one_relations[$vs_field]) 
+				&& 
+				(!isset($va_info['IS_NULL']) || !$va_info['IS_NULL'])
+				&& (!isset($va_info['NOT_MANDATORY']) || !(bool)$va_info['NOT_MANDATORY'])
+			) {
 				$va_mandatory_fields[] = $vs_field;
 				continue;
 			}

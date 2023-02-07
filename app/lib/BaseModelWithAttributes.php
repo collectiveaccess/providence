@@ -215,9 +215,10 @@
 			                $pv = $o_value->getDisplayValue(['dateFormat' => 'original']); // need to compare dates as-entered
 			                $vals[] = $o_value->getDisplayValue(['output' => 'text', 'dateFormat' => 'original']);
 			                if (
-			                	(strlen($pa_values[$vn_sub_element_id] ?? '') && ($pa_values[$vn_sub_element_id] != $pv))
+			                	is_array($pa_values[$vn_sub_element_id]) ||
+			                	((strlen($pa_values[$vn_sub_element_id] ?? '') && ($pa_values[$vn_sub_element_id] != $pv))
 			            		||
-			            		(strlen($pa_values[$vs_element_code] ?? '') && ($pa_values[$vs_element_code] != $pv))
+			            		(strlen($pa_values[$vs_element_code] ?? '') && ($pa_values[$vs_element_code] != $pv)))
 			            	) {
 			                    continue(2);
 			                }

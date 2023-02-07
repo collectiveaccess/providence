@@ -628,7 +628,6 @@ class DataMigrationUtils {
 			$suffix_for_name = $n['suffix'];
 			$is_corporation = $n['is_corporation'];
 		}
-		
 		$name = ['surname' => '', 'forename' => '', 'middlename' => '', 'displayname' => '', 'prefix' => $prefix_for_name, 'suffix' => $suffix_for_name];
 	
 		if ($suffix_for_name && $is_corporation) {
@@ -806,8 +805,8 @@ class DataMigrationUtils {
 			}
 		}
 		
-		// Treat parentheticals as suffixes
-		if (preg_match("![,]*[ ]*([\(]+.*[ \)]+)$!i", $text, $matches)) {
+		// Treat parentheticals at end of string as suffixes
+		if (preg_match("![,]*[ ]*([\(]+[^\)]*[ \)]+)$!i", $text, $matches)) {
 			$name['suffix'] = $matches[1];
 			$text = str_replace($matches[0], '', $text);
 		}
