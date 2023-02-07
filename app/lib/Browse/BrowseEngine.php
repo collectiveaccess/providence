@@ -1198,7 +1198,7 @@
 							switch($va_facet_info['type']) {
 								# -----------------------------------------------------
 								case 'hierarchy':
-									$children = $vs_target_browse_table_name::getHierarchyChildrenForIDs($va_row_ids, ['maxLevels' => ($va_facet_info['restrict_to_top_level'] ?? false) ? null : 1]);
+									$children = array_merge($va_row_ids, $vs_target_browse_table_name::getHierarchyChildrenForIDs($va_row_ids, ['includeSelf' => true, 'maxLevels' => ($va_facet_info['restrict_to_top_level'] ?? false) ? null : 1]));
 									$va_acc[$vn_i] = $children;
 									$vn_i++;
 									break;
@@ -3928,8 +3928,7 @@
 					$vs_where_sql = $vs_join_sql = '';
 					$vb_needs_join = false;
 
-					$va_where_sql = array();
-					$va_joins = array();
+					$va_where_sql = $va_joins = array();
 					$params = [];
 					
 					$child_prefix = 'c';
@@ -3944,12 +3943,23 @@
 							:
 							 "{$main_prefix}.parent_id = ".(int)$t_subject->getHierarchyRootID();
 					}
-					if ($vs_browse_type_limit_sql) {
-						$va_where_sql[] = $vs_browse_type_limit_sql;
+
+					if (($va_browse_type_ids = $this->getTypeRestrictionList()) && is_array($va_browse_type_ids) && sizeof($va_browse_type_ids)) {		// type restrictions
+						$type_fld_name = $t_subject->getTypeFieldName();
+						$va_where_sql[] = "(
+							({$main_prefix}.{$type_fld_name} IN (".join(', ', $va_browse_type_ids).')'.($t_subject->getFieldInfo('type_id', 'IS_NULL') ? " OR ({$main_prefix}.{$type_fld_name} IS NULL)" : '').")
+							OR 
+							({$content_prefix}.{$type_fld_name} IN (".join(', ', $va_browse_type_ids).')'.($t_subject->getFieldInfo('type_id', 'IS_NULL') ? " OR ({$main_prefix}.{$type_fld_name} IS NULL)" : '').")
+						)";
 					}
 
-					if ($vs_browse_source_limit_sql) {
-						$va_where_sql[] = $vs_browse_source_limit_sql;
+					if (($va_browse_source_ids = $this->getSourceRestrictionList()) && is_array($va_browse_source_ids) && sizeof($va_browse_source_ids)) {		// source restrictions
+						$source_fld_name = $t_subject->getSourceFieldName();
+						$va_where_sql[] = "(
+							({$main_prefix}.{$source_fld_name} IN (".join(', ', $va_browse_source_ids).')'.($t_subject->getFieldInfo('source_id', 'IS_NULL') ? " OR ({$main_prefix}.{$source_fld_name} IS NULL)" : '').")
+							OR 
+							({$content_prefix}.{$source_fld_name} IN (".join(', ', $va_browse_source_ids).')'.($t_subject->getFieldInfo('source_id', 'IS_NULL') ? " OR ({$main_prefix}.{$source_fld_name} IS NULL)" : '').")
+						)";
 					}
 
 					if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_item->hasField('access')) {

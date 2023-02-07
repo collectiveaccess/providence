@@ -313,6 +313,7 @@
       <xs:element name="items" type="listItems" minOccurs="0" maxOccurs="1"/>
     </xs:sequence>
     <xs:attribute name="idno" type="codeType" use="required"/>
+    <xs:attribute name="newidno" type="codeType" use="optional"/>
     <xs:attribute name="status" type="xs:integer" use="optional"/>
     <xs:attribute name="access" type="xs:integer" use="optional"/>
     <xs:attribute name="rank" type="xs:integer" use="optional"/>
