@@ -626,7 +626,7 @@ class BaseFindEngine extends BaseObject {
 			SELECT t.{$table_pk}
 			FROM {$table} t
 			{$join_sql}
-			INNER JOIN {$rel_label_table} AS rl ON rl.{$rel_table_pk} = s.{$rel_table_pk}
+			LEFT JOIN {$rel_label_table} AS rl ON rl.{$rel_table_pk} = s.{$rel_table_pk}
 			INNER JOIN {$hit_table} AS ht ON ht.row_id = t.{$table_pk}
 			ORDER BY rl.`{$rel_label_field}` {$direction}
 			{$limit_sql}
@@ -743,8 +743,8 @@ class BaseFindEngine extends BaseObject {
 		$sql = "SELECT t.{$table_pk} row_id
 					FROM {$table} t
 					{$join_sql}
-					INNER JOIN ca_attributes AS a ON a.row_id = s.{$rel_table_pk} AND a.table_num = {$rel_table_num}
-					INNER JOIN ca_attribute_values AS cav ON cav.attribute_id = a.attribute_id
+					LEFT JOIN ca_attributes AS a ON a.row_id = s.{$rel_table_pk} AND a.table_num = {$rel_table_num}
+					LEFT JOIN ca_attribute_values AS cav ON cav.attribute_id = a.attribute_id
 					INNER JOIN {$hit_table} AS ht ON ht.row_id = t.{$table_pk}
 					WHERE a.element_id = ? AND cav.element_id = ? 
 					ORDER BY cav.value_sortable {$direction}";
@@ -989,8 +989,8 @@ class BaseFindEngine extends BaseObject {
 		$sql = "SELECT cav.value_sortable val
 					FROM {$table} pt
 					{$join_sql}
-					INNER JOIN ca_attributes AS a ON a.row_id = t.{$rel_table_pk} AND a.table_num = {$rel_table_num}
-					INNER JOIN ca_attribute_values AS cav ON cav.attribute_id = a.attribute_id
+					LEFT JOIN ca_attributes AS a ON a.row_id = t.{$rel_table_pk} AND a.table_num = {$rel_table_num}
+					LEFT JOIN ca_attribute_values AS cav ON cav.attribute_id = a.attribute_id
 					WHERE cav.element_id = ? AND pt.{$table_pk} IN (?)
 				ORDER BY val {$direction}
 					";
@@ -1169,7 +1169,7 @@ class BaseFindEngine extends BaseObject {
 			SELECT rl.{$table_pk}, rl.{$label_field} val
 			FROM {$label_table} t
 			{$join_sql}
-			INNER JOIN {$rel_label_table} AS rl ON rl.{$rel_table_pk} = s.{$rel_table_pk}
+			LEFT JOIN {$rel_label_table} AS rl ON rl.{$rel_table_pk} = s.{$rel_table_pk}
 			INNER JOIN {$hit_table} AS ht ON ht.row_id = l.{$table_pk}
 			WHERE
 				rl.{$label_field} IN (?)
@@ -1262,7 +1262,8 @@ class BaseFindEngine extends BaseObject {
 		
 		while(sizeof($hits) > 0) {
 			$hits_buf = array_splice($hits, 0, 250000, []);
-			if (!$this->db->query("INSERT IGNORE INTO {$table_name} VALUES ".join(',', array_map(function($v) { return '('.(int)$v.')'; }, $hits_buf)))) {
+			$sql = "INSERT IGNORE INTO {$table_name} VALUES ".join(',', array_map(function($v) { return '('.(int)$v.')'; }, $hits_buf));
+			if (!$this->db->query($sql)) {
 				$this->_dropTempTable($table_name);
 				return false;
 			}
@@ -1295,14 +1296,14 @@ class BaseFindEngine extends BaseObject {
 				if ($table === $rel_table) {
 					$t_relation = Datamodel::getInstance($linking_table, true);
 					// self relation
-					$joins[] = "INNER JOIN {$linking_table} AS l ON t.{$table_pk} = l.{$table_pk}{$rel_type_sql}";
-					$joins[] = "INNER JOIN {$rel_table} AS s ON (s.{$rel_table_pk} = l.".$t_relation->getLeftTableFieldName().") OR (s.{$rel_table_pk} = l.".$t_relation->getRightTableFieldName().")";
+					$joins[] = "LEFT JOIN {$linking_table} AS l ON t.{$table_pk} = l.{$table_pk}{$rel_type_sql}";
+					$joins[] = "LEFT JOIN {$rel_table} AS s ON (s.{$rel_table_pk} = l.".$t_relation->getLeftTableFieldName().") OR (s.{$rel_table_pk} = l.".$t_relation->getRightTableFieldName().")";
 				} elseif ($is_attribute) {
-					$joins[] = "INNER JOIN {$linking_table} AS l ON attr_tmp.row_id = l.{$rel_table_pk}{$rel_type_sql}";
-					$joins[] = "INNER JOIN {$table} AS s ON s.{$rel_table_pk} = l.{$rel_table_pk}";
+					$joins[] = "LEFT JOIN {$linking_table} AS l ON attr_tmp.row_id = l.{$rel_table_pk}{$rel_type_sql}";
+					$joins[] = "LEFT JOIN {$table} AS s ON s.{$rel_table_pk} = l.{$rel_table_pk}";
 				} else {							
-					$joins[] = "INNER JOIN {$linking_table} AS l ON t.{$table_pk} = l.{$table_pk}{$rel_type_sql}";
-					$joins[] = "INNER JOIN {$rel_table} AS s ON s.{$rel_table_pk} = l.{$rel_table_pk}";
+					$joins[] = "LEFT JOIN {$linking_table} AS l ON t.{$table_pk} = l.{$table_pk}{$rel_type_sql}";
+					$joins[] = "LEFT JOIN {$rel_table} AS s ON s.{$rel_table_pk} = l.{$rel_table_pk}";
 				}
 				
 				break;
