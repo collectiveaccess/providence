@@ -335,7 +335,6 @@ class SetEditorController extends BaseEditorController {
 		if ($filename_template = $this->request->config->get('ca_sets_export_file_naming')) {
 			$filename_stub = $t_set->getWithTemplate($filename_template);
 		}
-		
 		caExportResult($this->request, $qr_res, $ps_export_format, '_output', ['printTemplateType' => 'sets', 'set' => $t_set, 'filename' => $filename_stub]);
 		
 		return;
@@ -352,7 +351,7 @@ class SetEditorController extends BaseEditorController {
 		if(!preg_match("!^_([a-z]+)_(.*)$!", $form, $m)) {
 			throw new ApplicationException(_t('Invalid template'));
 		}
-		$values = Session::getVar("print_summary_options_{$m[2]}");
+		$values = Session::getVar("print_sets_options_{$m[2]}");
 		
 		$form_options = caEditorPrintParametersForm('sets', $m[2], $values);
 		

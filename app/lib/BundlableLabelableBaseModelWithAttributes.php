@@ -742,6 +742,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  	 *		returnAsLinkText = text to use a content of HTML link. If omitted the url itself is used as the link content.
  	 *		returnAsLinkAttributes = array of attributes to include in link <a> tag. Use this to set class, alt and any other link attributes.
 	 *		returnAsLinkTarget = Optional link target. If any plugin implementing hookGetAsLink() responds to the specified target then the plugin will be used to generate the links rather than CA's default link generator.
+	 *		filterPrimaryRepresentations = Set filtering of primary representations in those models that support representations [Default is true]
 	 *		filterNonPrimaryRepresentations = Set filtering of non-primary representations in those models that support representations [Default is true]
 	 */
 	public function get($ps_field, $pa_options=null) {
@@ -750,6 +751,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			if ($this->hasField($vs_field) || (in_array(strtolower($vs_field), ['created', 'lastmodified']))) { return BaseModel::get($vs_field, $pa_options); }
 		}
 		if($this->_rowAsSearchResult) {
+			if (method_exists($this->_rowAsSearchResult, "filterPrimaryRepresentations")) {
+				$this->_rowAsSearchResult->filterPrimaryRepresentations(caGetOption('filterPrimaryRepresentations', $pa_options, false));
+			}
 			if (method_exists($this->_rowAsSearchResult, "filterNonPrimaryRepresentations")) {
 				$this->_rowAsSearchResult->filterNonPrimaryRepresentations(caGetOption('filterNonPrimaryRepresentations', $pa_options, true));
 			}
@@ -6398,6 +6402,15 @@ if (!$vb_batch) {
 			$va_wheres[] = "(".join(" AND ", $va_criteria).")"; 
 		}
 		
+		if(caGetOption('filterPrimaryRepresentations', $options, false)) {
+			if ($t_item_rel && $t_item_rel->hasField('is_primary')) {
+				$va_wheres[] = "({$vs_item_rel_table_name}.is_primary = 0)";
+			}
+		
+			if ($t_rel_item && $t_rel_item->hasField('is_primary')) {
+				$va_wheres[] = "({$vs_related_table}.is_primary = 0)";
+			}
+		}
 		if(caGetOption('filterNonPrimaryRepresentations', $options, false)) {
 			if ($t_item_rel && $t_item_rel->hasField('is_primary')) {
 				$va_wheres[] = "({$vs_item_rel_table_name}.is_primary = 1)";

@@ -62,7 +62,7 @@ if(caGetOption('showCount', $settings, false)) { print ($count = sizeof($items))
 		print "<div class='bundleSubLabel'>";
 		
 ?>
-   <div class="">
+   <div class="caItemListSortControls">
 		<?= _t('Sort by'); ?>:
 		<a href="#" onclick="setEditorOps.sort('name'); return false;"><?= _t('name'); ?></a>&nbsp;&nbsp;
 		<a href="#" onclick="setEditorOps.sort('idno'); return false;"><?= _t('identifier'); ?></a>
