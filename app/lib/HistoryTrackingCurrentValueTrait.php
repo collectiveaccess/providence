@@ -488,7 +488,7 @@
 					    self::$s_history_tracking_deleted_current_values[$l->get('current_table_num')][$l->get('current_row_id')][$policy] = 
 					        ['table_num' => $l->get('table_num'), 'row_id' => $l->get('row_id')];
 					
-				    if (!($rc = $l->delete())) {
+				    if (!($rc = $l->delete(true))) {
                         $this->errors = $l->errors;
                         return false;
                     }
@@ -538,6 +538,7 @@
                           
                         if($l['is_future'] > 0) {
                         	// Delete existing entries (TODO: log this so sync can replicate it)
+                        	$this->getDb()->query("DELETE FROM ca_history_tracking_current_value_labels WHERE tracking_id IN (SELECT tracking_id FROM ca_history_tracking_current_values WHERE table_num = ? AND row_id = ? AND is_future IS NULL and tracking_id <> ?)", [$subject_table_num, $row_id, $l['tracking_id']]);
                         	$this->getDb()->query("DELETE FROM ca_history_tracking_current_values WHERE table_num = ? AND row_id = ? AND is_future IS NULL and tracking_id <> ?", [$subject_table_num, $row_id, $l['tracking_id']]);
                         	
                         	// Future location is now current location
@@ -562,7 +563,7 @@
 					$t_l = new ca_history_tracking_current_values();
 					$t_l->setTransaction($this->getTransaction());
 					$t_l->load($l['tracking_id']);
-				    if (!($rc = $t_l->delete())) {
+				    if (!($rc = $t_l->delete(true))) {
                         $this->errors = $t_l->errors;
                         return false;
                     }
@@ -661,7 +662,9 @@
 				return []; // No policies are configured
 			}
 			
-			$type_restrictions = caGetOption('restrictToTypes', $options, null);
+			if(is_array($type_restrictions = caGetOption('restrictToTypes', $options, null))) {
+				$type_restrictions = array_filter($type_restrictions, 'strlen');
+			}
 			
 			$policies = [];
 			foreach($policy_config['policies'] as $policy => $policy_info) {
