@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2022 Whirl-i-Gig
+ * Copyright 2012-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -315,7 +315,7 @@ final class ConfigurationExporter {
 		$va_used_codes = [];
 		while($qr_items->nextRow()) {
 			$vo_item = $this->opo_dom->createElement("item");
-			$vs_idno = $this->makeIDNOFromInstance($qr_items, 'ca_list_items', 'idno', $va_used_codes);
+			$vs_idno = $this->makeIDNOFromInstance($qr_items, 'ca_list_items/'.$pn_list_id, 'idno', $va_used_codes);
 			$va_used_codes[$vs_idno] = true;
 
 			$vo_item->setAttribute("idno", $vs_idno);
