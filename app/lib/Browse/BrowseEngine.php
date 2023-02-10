@@ -1713,14 +1713,21 @@
 											$vs_where_sql = ' AND '.join(' AND ', $va_wheres);
 										}
 										
+										$filter_join = $filter_where = null;
+										if($filter_info = $this->_getFacetContainerFilterParams($va_facet_info)) {
+											$filter_join = "INNER JOIN ca_attribute_values AS fltr ON fltr.attribute_id = ca_attributes.attribute_id";
+											$filter_where = " AND (fltr.element_id = {$filter_info['element_id']} AND fltr.{$filter_info['attribute_field']} IN (".join(', ', $filter_info['values'])."))";
+										}
+										
 										$vs_sql = "
 											SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey().", ca_attributes.attribute_id
 											FROM ".$this->ops_browse_table_name."
 											{$vs_relative_to_join}
 											INNER JOIN ca_attributes ON ca_attributes.row_id = ".((!$vb_is_relative_to_parent ? "{$vs_target_browse_table_name}.{$vs_target_browse_table_pk}" : "parent.{$vs_target_browse_table_pk}"))." AND ca_attributes.table_num = ?
 											INNER JOIN ca_attribute_values ON ca_attribute_values.attribute_id = ca_attributes.attribute_id
+											{$filter_join}
 											WHERE
-												(ca_attribute_values.element_id = ?) {$vs_attr_sql} {$vs_container_sql} {$vs_where_sql}";
+												(ca_attribute_values.element_id = ?) {$vs_attr_sql} {$vs_container_sql} {$vs_where_sql} {$filter_where}";
 
 										$qr_res = $this->opo_db->query($vs_sql, $va_attr_values);
 										
@@ -1802,6 +1809,12 @@
                                                 $vs_container_sql = " AND ca_attributes.attribute_id IN (?)";
                                                 $va_attr_values = $va_container_ids[$va_element_code[0]];
                                             }
+                                            
+                                            $filter_join = $filter_where = null;
+                                            if($filter_info = $this->_getFacetContainerFilterParams($va_facet_info)) {
+												$filter_join = "INNER JOIN ca_attribute_values AS fltr ON fltr.attribute_id = ca_attributes.attribute_id";
+												$filter_where = " AND (fltr.element_id = {$filter_info['element_id']} AND fltr.{$filter_info['attribute_field']} IN (".join(', ', $filter_info['values'])."))";
+											}
 
 											if (is_null($va_dates)) {
 											    $va_params = [intval($vs_target_browse_table_num), $vn_element_id];
@@ -1813,12 +1826,14 @@
 													{$vs_relative_to_join}
 													INNER JOIN ca_attributes ON ca_attributes.row_id = ".$vs_target_browse_table_name.'.'.$vs_target_browse_table_pk." AND ca_attributes.table_num = ?
 													INNER JOIN ca_attribute_values ON ca_attribute_values.attribute_id = ca_attributes.attribute_id
+													{$filter_join}
 													WHERE
 														(ca_attribute_values.element_id = ?)
 														AND
 														(ca_attribute_values.value_decimal1 IS NULL)
 														AND
 														(ca_attribute_values.value_decimal2 IS NULL)
+														{$filter_where}
 														{$vs_container_sql}
 												";
 												$qr_res = $this->opo_db->query($vs_sql, $va_params);
@@ -1832,6 +1847,7 @@
 													{$vs_relative_to_join}
 													INNER JOIN ca_attributes ON ca_attributes.row_id = ".$vs_target_browse_table_name.'.'.$vs_target_browse_table_pk." AND ca_attributes.table_num = ?
 													INNER JOIN ca_attribute_values ON ca_attribute_values.attribute_id = ca_attributes.attribute_id
+													{$filter_join}
 													WHERE
 														(ca_attribute_values.element_id = ?) AND
 
@@ -1847,6 +1863,7 @@
 															OR
 															(ca_attribute_values.value_decimal2 BETWEEN ? AND ?)
 														)
+														{$filter_where}
 														{$vs_container_sql}
 												";
 												$qr_res = $this->opo_db->query($vs_sql, $va_params);
@@ -3234,6 +3251,55 @@
 		}
 		# ------------------------------------------------------
 		/**
+		 *
+		 */
+		private function _getFacetContainerFilterParams(array $facet_info) {
+			if(($facet_info['filter_by'] ?? null) && is_array($facet_info['filter_values']) && sizeof($facet_info['filter_values'])){
+				$tmp = explode('.', $facet_info['filter_by']);
+				$etmp = explode('.', $facet_info['element_code']);
+				if(sizeof($etmp) !== 3) { // filters are only valid on containers
+					throw new ApplicationException(_t('Can only filter browse facets on attributes using containers'));
+					return null;
+				}
+				$filter_element = array_pop($tmp);
+				if(sizeof($tmp) > 0) {
+					$e = array_pop($etmp);
+					while($f = array_pop($tmp)) {
+						$e = array_pop($etmp);
+						if($e !== $f) { 
+							throw new ApplicationException(_t('Filter for browse facet on attribute using container failed because filter container does not match facet container'));
+							return null; 
+						}	// misconfig
+					}
+				}
+				if ($t_filter_element = ca_metadata_elements::getInstance($filter_element)) {
+					$values = $filter_attr_field = null;
+					switch($t_filter_element->get('datatype')) {
+						case __CA_ATTRIBUTE_VALUE_TEXT__:
+							$values = array_filter($facet_info['filter_values'], 'strlen');
+							$values = array_map(function($v) { return json_encode($v); }, $values);
+							$filter_attr_field = 'value_longtext1';
+							break;
+						case __CA_ATTRIBUTE_VALUE_LIST__:
+							$list_id = $t_filter_element->get('list_id');
+							$values = array_filter(array_map(function($v) use ($list_id) { return caGetListItemID($list_id, $v); }, $facet_info['filter_values']), 'strlen');
+							$filter_attr_field = 'item_id';
+							break;
+					
+					}
+					if(is_array($values) && sizeof($values)) {
+						$filter_element_id = $t_filter_element->getPrimaryKey();
+					
+						return [
+							'element_id' => $filter_element_id, 'attribute_field' => $filter_attr_field, 'values' => $values
+						];
+					}
+				}
+			}
+			return null;
+		}
+		# ------------------------------------------------------
+		/**
 		 * Return list of items from the specified table that are related to the current browse set. This is the method that actually
 		 * pulls the facet content, regardless of whether the facet is cached yet or not. If you want to use the facet cache, call
 		 * BrowseEngine::getFacet()
@@ -4198,6 +4264,11 @@
 								".(($vb_show_if_no_acl) ? "OR ca_acl.acl_id IS NULL" : "")."
 							)";
 						}
+					}
+					
+					if($filter_info = $this->_getFacetContainerFilterParams($va_facet_info)) {
+						$va_joins[] = "INNER JOIN ca_attribute_values AS fltr ON fltr.attribute_id = ca_attributes.attribute_id";
+						$va_wheres[] = "(fltr.element_id = {$filter_info['element_id']} AND fltr.{$filter_info['attribute_field']} IN (".join(', ', $filter_info['values'])."))";
 					}
 
 					$vs_join_sql = join("\n", $va_joins);
@@ -5914,6 +5985,11 @@
 								".(($vb_show_if_no_acl) ? "OR ca_acl.acl_id IS NULL" : "")."
 							)";
 						}
+					}
+					
+					if($filter_info = $this->_getFacetContainerFilterParams($va_facet_info)) {
+						$va_joins[] = "INNER JOIN ca_attribute_values AS fltr ON fltr.attribute_id = ca_attributes.attribute_id";
+						$va_wheres[] = "(fltr.element_id = {$filter_info['element_id']} AND fltr.{$filter_info['attribute_field']} IN (".join(', ', $filter_info['values'])."))";
 					}
 
 					$vs_where_sql = '';
