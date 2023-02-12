@@ -57,6 +57,9 @@
     "binaryoung/jieba-php": "^0.1.0"
   },
   "config": {
-  	"discard-changes": true
+    "discard-changes": true,
+    "allow-plugins" : {
+      "php-http/discovery": false
+    }
   }
 }
