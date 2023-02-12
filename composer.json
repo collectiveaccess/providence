@@ -43,6 +43,8 @@
     "scholarslab/bagit": "~0.2"
   },
   "config": {
-  	"discard-changes": true
+    "discard-changes": true,
+  "allow-plugins": {
+    "php-http/discovery": true
   }
 }
