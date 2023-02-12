@@ -549,7 +549,7 @@
 				chgrp($vs_path, $vs_group);
 				chmod($vs_path, 0770);
 			}
-			if (!$po_opts->getOption("quiet")) { CLIUtils::addMessage(_t("Fixing permissions for the media directory (media) for ownership by \"%1\"...", $vs_user)); }
+			if (!$po_opts->getOption("quiet")) { CLIUtils::addMessage(_t("Fixing permissions for the media directory (media/appname) for ownership by \"%1\"...", $vs_user)); }
 			$media_root = $config->get("ca_media_root_dir");
 			$va_files = caGetDirectoryContentsAsList($media_root, true, true, false, true, ['includeRoot' => true]);
 
@@ -577,7 +577,7 @@
 				chmod($vs_path, 0770);
 			}
 			
-			if (!$po_opts->getOption("quiet")) { CLIUtils::addMessage(_t("Fixing permissions for the user media upload directory (app/log) for ownership by \"%1\"...", $vs_user)); }
+			if (!$po_opts->getOption("quiet")) { CLIUtils::addMessage(_t("Fixing permissions for the user media upload directory (uploads) for ownership by \"%1\"...", $vs_user)); }
 			$upload_root = $config->get("media_uploader_root_directory");
 			$va_files = caGetDirectoryContentsAsList($upload_root, true, true, false, true, ['includeRoot' => true]);
 			
