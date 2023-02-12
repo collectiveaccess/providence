@@ -1209,9 +1209,16 @@
                                 foreach($va_date_elements_by_type[$vn_type_id] as $vs_date_element) {
                                     $va_date_bits = explode('.', $vs_date_element);
                                     $vs_date_spec = (Datamodel::tableExists($va_date_bits[0])) ? $vs_date_element : "ca_loans.{$vs_date_element}";
+                                    
+                                    $d = $qr_loans->get($vs_date_spec, array('sortable' => true));
+                                    $b = explode("/", $d);
+                                    if(($b[0] <= $vn_current_date) && ($b[1] > $vn_current_date)) { 
+                                    	$b[0] = $vn_current_date;
+                                    	$d = join('/', $b);
+                                    }
                                     $va_dates[] = array(
-                                        'sortable' => $qr_loans->get($vs_date_spec, array('sortable' => true)),
-                                        'bounds' => explode("/", $qr_loans->get($vs_date_spec, array('sortable' => true))),
+                                        'sortable' => $d,
+                                        'bounds' => $b,
                                         'display' => $qr_loans->get($vs_date_spec)
                                     );
                                 }

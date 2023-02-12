@@ -4198,13 +4198,13 @@ function caFileIsIncludable($ps_file) {
 
 		// Left-pad numbers
 		if (preg_match_all("!([\d]+)!", $display_value, $matches)) {
-			$to_replace = array_unique($matches[1]);
-			sort($to_replace);	// replace shortest first to avoid double replacements
+			$to_replace = $matches[1];
+			$padded = [];
 			for($i=0; $i<sizeof($to_replace); $i++) {
 				if(!($to_replace[$i] = trim($to_replace[$i]))) { continue; }
-				$padded = str_pad($to_replace[$i], 10, 0, STR_PAD_LEFT);	// assume numbers don't go wider than 10 places
-				$display_value = preg_replace("/(?!<[0-9])".$to_replace[$i]."(?![0-9])/", $padded, $display_value);
+				$padded[] = str_pad($to_replace[$i], 10, 0, STR_PAD_LEFT);	// assume numbers don't go wider than 10 places
 			}
+			$display_value = join(' ', $padded);
 		}
 		return $display_value;
 	}
