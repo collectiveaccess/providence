@@ -25,22 +25,21 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$t_instance 		= $this->getVar('t_instance');
-	$t_item 			= $this->getVar('t_user');				// user
-	$t_rel 				= $this->getVar('t_rel');			// *_x_user_groups instance (eg. ca_sets_x_user_groups)
-	$t_subject 			= $this->getVar('t_subject');		
-	$va_settings 		= $this->getVar('settings');
-	$vs_add_label 		= $this->getVar('add_label');
-	
-	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_users') == __CA_BUNDLE_ACCESS_READONLY__));
-	
-	$va_initial_values = $this->getVar('initialValues');
-	if (!is_array($va_initial_values)) { $va_initial_values = array(); }
-	
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
+$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
+$t_instance 		= $this->getVar('t_instance');
+$t_item 			= $this->getVar('t_user');				// user
+$t_rel 				= $this->getVar('t_rel');			// *_x_user_groups instance (eg. ca_sets_x_user_groups)
+$t_subject 			= $this->getVar('t_subject');		
+$settings 			= $this->getVar('settings');
+$vs_add_label 		= $this->getVar('add_label');
+
+$vb_read_only		=	((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_users') == __CA_BUNDLE_ACCESS_READONLY__));
+
+$va_initial_values = $this->getVar('initialValues');
+if (!is_array($va_initial_values)) { $va_initial_values = array(); }
+
+print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
 ?>
 <div id="<?= $vs_id_prefix; ?>">
 <?php
@@ -54,14 +53,14 @@
 				<tr>
 					<td class="formLabel">
 						<?= _t('User'); ?>
-						<?= caHTMLTextInput("{$vs_id_prefix}_autocomplete{n}", ['value' => '{{label}}', 'id' => "{$vs_id_prefix}_autocomplete{n}", 'class' => 'lookupBg'], ['width' => '400px']); ?>
-						<?= $t_rel->htmlFormElement('access', '^ELEMENT', ['name' => $vs_id_prefix.'_access_{n}', 'id' => $vs_id_prefix.'_access_{n}', 'no_tooltips' => true, 'value' => '{{access}}'], ['width' => '260px']); ?>
+						<?= caHTMLTextInput("{$vs_id_prefix}_autocomplete{n}", ['value' => '{{label}}', 'id' => "{$vs_id_prefix}_autocomplete{n}", 'class' => 'lookupBg'], ['width' => '340px']); ?>
+						<?= $t_rel->htmlFormElement('access', '^ELEMENT', ['name' => $vs_id_prefix.'_access_{n}', 'id' => $vs_id_prefix.'_access_{n}', 'no_tooltips' => true, 'value' => '{{access}}']); ?>
 						<?php if ($t_rel->hasField('effective_date')) { print _t(' for period ').$t_rel->htmlFormElement('effective_date', '^ELEMENT', ['name' => $vs_id_prefix.'_effective_date_{n}', 'no_tooltips' => true, 'value' => '{{effective_date}}', 'classname'=> 'dateBg']); } ?>
 						<?= caHTMLHiddenInput("{$vs_id_prefix}_id{n}", ['value' => '{id}', 'id' => "{$vs_id_prefix}_id{n}"]); ?>
 					</td>
 					<td>
 <?php if (!$vb_read_only) { ?>	
-						<a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
+						<div style="float: right;"><a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
 <?php } ?>
 					</td>
 				</tr>

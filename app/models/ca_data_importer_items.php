@@ -736,7 +736,7 @@ class ca_data_importer_items extends BaseModel {
 			'takesLocale' => false,
 			'default' => '',
 			'label' => _t('Code of element to use for parent_id lookups when importing hierarchical data. If not set the identifier will be used.'),
-		);	
+		);
 		$settings['locale'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -744,6 +744,14 @@ class ca_data_importer_items extends BaseModel {
 			'takesLocale' => false,
 			'default' => '',
 			'label' => _t('Locale of data. If not set the mapping locale default is used.'),
+		);
+		$settings['useAsExistingRecordPolicyIdno'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => false,
+			'label' => _t('Use mapped value as identifier for purposed of matching existing records via an existing record policy.'),
 		);
 		
 		$this->setAvailableSettings($settings);

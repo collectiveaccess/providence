@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2021 Whirl-i-Gig
+ * Copyright 2021-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -305,6 +305,7 @@ class XMLProfileParser extends BaseProfileParser {
 		foreach($items->children() as $item) {
 			$item_value = self::getAttribute($item, "value");
 			$item_idno = self::getAttribute($item, "idno");
+			$new_item_idno = self::getAttribute($item, "newidno");	// new idno for list item, when applying update profile
 			$type = self::getAttribute($item, "type");
 			$status = self::getAttribute($item, "status");
 			$access = self::getAttribute($item, "access");
@@ -333,6 +334,7 @@ class XMLProfileParser extends BaseProfileParser {
 			}
 			$values[$item_idno] = [
 				'idno' => $item_idno,
+				'newidno' => $new_item_idno,
 				'value' => $item_value,
 				'labels' => $labels,
 				'settings' => $settings,

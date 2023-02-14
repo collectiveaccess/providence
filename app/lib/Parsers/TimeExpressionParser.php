@@ -236,12 +236,26 @@ class TimeExpressionParser {
 		return false;
 	}
 	# -------------------------------------------------------------------
+	/**
+	 * Parse date/time expression
+	 *
+	 * @param string $ps_expression 
+	 * @param array $pa_options Options include:
+	 *		locale = set locale for parse. Locale setting will be set as current locale for subsequent parses. [Default is null]
+	 *
+	 * @return bool
+	 */
 	public function parse($ps_expression, $pa_options=null) {
 		if ($ps_expression == __TEP_NOW__) {
 			$ps_expression = array_shift($this->opo_language_settings->getList("nowDate"));		
 		}
 		
 		if (!$pa_options) { $pa_options = array(); }
+		
+		if($locale = caGetOption('locale', $pa_options, null)) {
+			$this->setLanguage($locale);
+		}
+		
 		$this->init();
 		
 		if ($this->tokenize($this->preprocess($ps_expression)) == 0) {

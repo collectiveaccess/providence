@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/Utils/CLIUtils/Statistics.php : 
+ * app/lib/Utils/CLIUtils/BanHammer.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2019-2022 Whirl-i-Gig
+ * Copyright 2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,52 +29,69 @@
  * 
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__."/Statistics/StatisticsAggregator.php");
+ 
+trait CLIUtilsBanHammer { 
+	# -------------------------------------------------------
+	/**
+	 * Rebuild search indices
+	 */
+	public static function clear_bans($opts=null) {
+		if($reasons = $opts->getOption('reason')) {
+			if(!is_array($reasons)) { $reasons = preg_split('/[;,]/', $reasons); }
+			$valid_reasons = array_map('strtolower', BanHammer::getPluginNames());
+			$reasons = array_filter($reasons, function($v) use ($valid_reasons) {
+				return in_array(strtolower($v), $valid_reasons, true);
+			});
+			if(!sizeof($reasons)) { 
+				CLIUtils::addError(_t('Invalid reasons specified'));
+				return false;
+			}
+		}
+		if($from = $opts->getOption('from')) {
+			if(!($dt = caDateToUnixTimestamp($from))) { 
+				CLIUtils::addError(_t('Invalid from date specified'));	
+				return false;
+			}
+		}
+		
+		if(!is_null($count = ca_ip_bans::removeBans(['reasons' => $reasons, 'from' => $from]))) {
+			CLIUtils::addMessage(($count == 1) ? _t('Removed %1 ban', $count) : _t('Removed %1 bans', $count));	
+		} else {
+			CLIUtils::addError(_t('Could not remove bans'));	
+		}
 
-trait CLIUtilsStatistics { 
+		return true;
+	}
 	# -------------------------------------------------------
 	/**
 	 *
 	 */
-	public static function fetch_statistics($po_opts=null) {	
-		$sites_list = ($sites = (string)$po_opts->getOption('sites')) ? array_filter(preg_split("![;,]+!", $sites), "strlen") : null;
-		try {
-			$data = StatisticsAggregator::fetch(['sites' => $sites_list]);
-		} catch (Exception $e) {
-			CLIUtils::addError($e->getMessage());	
-			return null;
-		}
-		$num_sites = is_array($data) ? sizeof($data) : 0;
-		$site_list = is_array($data) ? join(", ", array_keys($data)) : "";
-		CLIUtils::addMessage(($num_sites === 1) ? _t("Cached statistics for %1 site: %2", $num_sites, $site_list) : _t("Cached statistics for %1 sites: %2", $num_sites, $site_list));
-	}
-	# -------------------------------------------------------
-	public static function fetch_statisticsParamList() {
+	public static function clear_bansParamList() {
 		return [
-			"sites|t-s" => _t('Comma-delimited list of sites to fetch statistics for. If omitted statistics for all configured sites will be fetched.')
+			"reason|r-s" => _t('Comma separated list of ban reasons to clear. If omitted all bans will be removed.'),
+			"from|f-s" => _t('Remove bans created on or before a date. If omitted all bans will be removed.')
 		];
 	}
 	# -------------------------------------------------------
 	/**
 	 *
 	 */
-	public static function fetch_statisticsUtilityClass() {
-		return _t('Statistics');
+	public static function clear_bansUtilityClass() {
+		return _t('Bans');
 	}
 	# -------------------------------------------------------
 	/**
 	 *
 	 */
-	public static function fetch_statisticsShortHelp() {
-		return _t('Fetch statistics from remote systems.');
+	public static function clear_bansHelp() {
+		return _t("Use this utility to clear all banned IP addresses.");
 	}
 	# -------------------------------------------------------
 	/**
 	 *
 	 */
-	public static function fetch_statisticsHelp() {
-		return _t('Fetches data and usage statistics from local and remote CollectiveAccess instances and makes them available in the Statistics Dashboard.');
+	public static function clear_bansShortHelp() {
+		return _t("Clear all bans.");
 	}
-	
 	# -------------------------------------------------------
 }

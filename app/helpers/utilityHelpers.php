@@ -189,8 +189,8 @@ function caMakeProperUTF8ForXML($ps_text){
 	$ps_text = mb_convert_encoding($ps_text, 'UTF-8', 'UTF-8');
 
 	// strip invalid PCDATA characters for XML
-	$vs_return = "";
-	if (empty($ps_text)) {
+	$vs_return = '';
+	if (is_null($ps_text) || !strlen($ps_text)) {
 		return $vs_return;
 	}
 
@@ -359,7 +359,7 @@ function caFileIsIncludable($ps_file) {
 		
 		if($va_paths = @scandir($dir, 0)) {
 			foreach($va_paths as $item) {
-				if(in_array($item, ["@SynoEAStream", "@eaDir"])) { continue; }
+				if(in_array($item, ["@SynoEAStream", "@eaDir", "__MACOSX"])) { continue; }
 				if(preg_match("!@SynoEAStream$!", $item)) { continue; }
 				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item[0] !== '.'))) {
 					$va_stat = @stat("{$dir}/{$item}");
@@ -662,7 +662,7 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	function caEscapeForBundlePreview($ps_text, $pn_limit=100) {
-		$ps_text = caSanitizeStringForJsonEncode($ps_text);
+		$ps_text = strip_tags(caSanitizeStringForJsonEncode($ps_text));
 		if(mb_strlen($ps_text) > $pn_limit) {
 			$ps_text = mb_substr($ps_text, 0, $pn_limit) . " ...";
 		}
@@ -684,9 +684,7 @@ function caFileIsIncludable($ps_file) {
 	function caSanitizeStringForJsonEncode($ps_text) {
 		// Remove invalid UTF-8
 		mb_substitute_character(0xFFFD);
-		$ps_text = mb_convert_encoding($ps_text, 'UTF-8', 'UTF-8');
-
-		//return strip_tags($ps_text);
+		return mb_convert_encoding($ps_text, 'UTF-8', 'UTF-8');
 
 		// @see http://php.net/manual/en/regexp.reference.unicode.php
 		return preg_replace("/[^\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{N}\p{P}\p{Zp}\p{Zs}\p{S}–]|➔/", '', strip_tags($ps_text));
@@ -1343,30 +1341,84 @@ function caFileIsIncludable($ps_file) {
 	 * Parses string for form element dimension. If a simple integer is passed then it is considered
 	 * to be expressed as the number of characters to display. If an integer suffixed with 'px' is passed
 	 * then the dimension is considered to be expressed in pixels. If non-integers are passed they will
-	 * be cast to integers.
+	 * be cast to integers. If percentages are passed (Ex. 50%) they will always be returned without conversion.
 	 *
-	 * An array is always returned, with two keys:
-	 *		dimension = the integer value of the dimension
-	 *		type = either 'pixels' or 'characters'
+	 * Unless the 'returnAs' option is set an array is returned, with two keys:
+	 *		dimension = Integer value of the dimension. For percentages, the value will not include a percent sign.
+	 *		type = 'pixels', 'characters' or 'percentage'
+	 *
+	 * If 'returnAs' is set an integer value will be returned with the number of characters or pixels. If the includeSuffix options
+	 * is set pixel values with be returned as a string with the numeric value followed by "px". Percentages are always returned as 
+	 * integers followed by a percentage sign. No conversion of percentage values will be performed, regardless of the 'returnAs' value.
 	 *
 	 * @param string $ps_dimension
-	 * @return array An array describing the parsed value or null if no value was passed
+	 * @param array $options Options include:
+	 *		returnAs = Force return value as pixels or characters, converting quantities if required. Only the dimension's quantity will be returned, as an integer. Possible values for this option are 'pixels' or 'characters'. [Default is to return parsed value in the same form as input]
+	 *		assumePixels = Assume simple integers are pixel values. [Default is to consider simple integers as number of characters]
+	 *		characterWidth = Width of character, in pixels, to use when converting character dimensions to pixels. [Default is 8]
+	 *		default = Value, in pixels, returned if a valid dimension value was not set.
+	 *		includeSuffix = Append "px" suffix for pixel values. [Default is false]
+	 *
+	 * @return array An array describing the parsed value, an integer if 'returnAs' option is set, or null if no value was passed and no default is set.
 	*/
-	function caParseFormElementDimension($ps_dimension) {
-		$ps_dimension = trim($ps_dimension);
-		if (!$ps_dimension) { return null; }
+	function caParseFormElementDimension($dimension, ?array $options=null) {
+		if(!($default = caGetOption('default', $options, null, ['castTo' => 'int']))) { $default = null; }
+		$include_suffix = caGetOption('includeSuffix', $options, false);
+		$return_as = caGetOption('returnAs', $options, null, ['validValues' => ['characters', 'pixels']]);
+		
+		$dimension = trim($dimension);
 
-		if (preg_match('!^([\d]+)[ ]*(px)$!', $ps_dimension, $va_matches)) {
-			return array(
-				'dimension' => (int)$va_matches[1],
+		if (preg_match('!^([\d]+)[ ]*\%$!', $dimension, $matches)) {
+			$val = [
+				'dimension' => (int)$matches[1],
+				'type' => 'percentage'
+			];
+			if($return_as) { return $val['dimension'].'%'; }
+		} elseif (preg_match('!^([\d]+)[ ]*(px)$!i', $dimension, $matches)) {
+			$val = [
+				'dimension' => (int)$matches[1],
 				'type' => 'pixels'
-			);
+			];
+		} else {
+			$val = [
+				'dimension' => (int)$dimension,
+				'type' => caGetOption('assumePixels', $options, false) ? 'pixels' : 'characters'
+			];
 		}
-
-		return array(
-			'dimension' => (int)$ps_dimension,
-			'type' => 'characters'
-		);
+		
+		if(!$val['dimension']) {
+			$val = [
+				'dimension' => $default,
+				'type' => 'pixels'
+			];
+		}
+		if(!$val['dimension']) { return null; }
+		
+		if($return_as) {
+			if($val['type'] === 'percentage') {	// return percentages as-is
+				return $val['dimension'].'%';
+			}
+			$character_width = caGetOption('characterWidth', $options, 8);
+			$v = $val['dimension'];
+			switch($return_as) {
+				case 'characters':
+					if($val['type'] == 'pixels]') {
+						$v = ceil($v / $character_width);
+					}
+					break;
+				case 'pixels':
+					if($val['type'] === 'characters') {
+						$v = ceil($v * $character_width);
+					}
+					if($include_suffix) { $v .= 'px'; }
+					break;
+			}
+			return $v;
+		}
+		if(($val['type'] === 'pixels') && $include_suffix) {
+			$val['dimension'] .= 'px';
+		}	
+		return $val;
 	}
 	# ---------------------------------------
 	/**
@@ -4110,46 +4162,51 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 * Convert text into string suitable for sorting, by moving articles to end of string, etc.
 	 *
-	 * @param string $ps_text Text to convert to sortable value
-	 * @param array $pa_options Options include:
+	 * @param string $text Text to convert to sortable value
+	 * @param array $options Options include:
 	 *		locale = Locale settings to use. If omitted current default locale is used. [Default is current locale]
 	 *		omitArticle = Omit leading definite and indefinited articles, rather than moving them to the end of the text [Default is true]
 	 *		maxLength = Maximum length of returned value. [Default is 255]
 	 *
 	 * @return string Converted text. If locale cannot be found $ps_text is returned truncated to "maxLength" value, but otherwise unchanged.
 	 */
-	function caSortableValue($ps_text, $pa_options=null) {
+	function caSortableValue($text, $options=null) {
 		global $g_ui_locale;
-		$ps_locale = caGetOption('locale', $pa_options, $g_ui_locale);
-		$max_length = caGetOption('maxLength', $pa_options, 255, ['castTo' => 'int']);
-		$ps_text = strip_tags($ps_text);
-		if (!$ps_locale) { return mb_substr($ps_text, 0, $max_length); }
+		$locale = caGetOption('locale', $options, $g_ui_locale);
+		$max_length = caGetOption('maxLength', $options, 255, ['castTo' => 'int']);
+		$text = strip_tags($text);
+		//if (!$locale) { return mb_substr($text, 0, $max_length); }
 
-		$pb_omit_article = caGetOption('omitArticle', $pa_options, true);
+		$omit_article = caGetOption('omitArticle', $options, true);
 
-		$o_locale_settings = TimeExpressionParser::getSettingsForLanguage($ps_locale);
-
-		$vs_display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $ps_text));
-		$vs_display_value = preg_replace('![ ]+!', ' ', $vs_display_value);
+		$display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $text));
+		$display_value = preg_replace('![ ]+!', ' ', $display_value);
 		
-		// Move articles to end of string
-		$va_articles = caGetArticlesForLocale($ps_locale) ?: [];
+		$display_value = mb_substr($display_value, 0, $max_length, 'UTF-8');
+		
+		if($locale) {
+			// Move articles to end of string
+			$articles = caGetArticlesForLocale($locale) ?: [];
 
-		foreach($va_articles as $vs_article) {
-			if (preg_match('!^('.$vs_article.')[ ]+!i', $vs_display_value, $va_matches)) {
-				$vs_display_value = trim(str_replace($va_matches[1], '', $vs_display_value).($pb_omit_article ? '' : ', '.$va_matches[1]));
-				break;
+			foreach($articles as $article) {
+				if (preg_match('!^('.$article.')[ ]+!i', $display_value, $matches)) {
+					$display_value = trim(str_replace($matches[1], '', $display_value).($omit_article ? '' : ', '.$matches[1]));
+					break;
+				}
 			}
 		}
 
 		// Left-pad numbers
-		if (preg_match("![\d]+!", $vs_display_value, $va_matches)) {
-			for($i=0; $i<sizeof($va_matches); $i++) {
-				$vs_padded = str_pad($va_matches[$i], 15, 0, STR_PAD_LEFT);
-				$vs_display_value = str_replace($va_matches[$i], $vs_padded, $vs_display_value);
+		if (preg_match_all("!([\d]+)!", $display_value, $matches)) {
+			$to_replace = $matches[1];
+			$padded = [];
+			for($i=0; $i<sizeof($to_replace); $i++) {
+				if(!($to_replace[$i] = trim($to_replace[$i]))) { continue; }
+				$padded[] = str_pad($to_replace[$i], 10, 0, STR_PAD_LEFT);	// assume numbers don't go wider than 10 places
 			}
+			$display_value = join(' ', $padded);
 		}
-		return mb_substr($vs_display_value, 0, $max_length, 'UTF-8');
+		return $display_value;
 	}
 	# ----------------------------------------
 	/**

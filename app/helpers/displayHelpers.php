@@ -58,7 +58,17 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 		$o_config = Configuration::load();
 		$va_default_locales = $o_config->getList('locale_defaults');
 
-		$va_preferred_locales = array();
+		$va_preferred_locales = [];
+	
+		if (is_array($pa_preferred_locales)) {
+			foreach($pa_preferred_locales as $vs_preferred_locale) {
+				if(is_numeric($vs_preferred_locale)) {
+					$vs_preferred_locale = ca_locales::IDToCode($vs_preferred_locale);
+				}
+				$va_preferred_locales[$vs_preferred_locale] = true;
+			}
+		}
+		
 		$va_similar_locales = [];
 		if ($ps_item_locale) {
 			// if item locale is passed as locale_id we need to convert it to a code
@@ -76,12 +86,6 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 			$va_similar_locales = ca_locales::localesForLanguage($ps_item_locale, ['codesOnly' => true]);
 		}
 
-		if (is_array($pa_preferred_locales)) {
-			foreach($pa_preferred_locales as $vs_preferred_locale) {
-				$va_preferred_locales[$vs_preferred_locale] = true;
-			}
-		}
-
 		$va_fallback_locales = array();
 		if (is_array($va_default_locales)) {
 			foreach($va_default_locales as $vs_fallback_locale) {
@@ -96,7 +100,7 @@ require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 		    $va_fallback_locales[$vs_similar_locale] = true;
 		}
 
-		if ($g_ui_locale) {
+		if ($g_ui_locale && !is_array($va_preferred_locales) || !sizeof($va_preferred_locales)) {
 			if (!isset($va_preferred_locales[$g_ui_locale]) || !$va_preferred_locales[$g_ui_locale]) {
 				$va_preferred_locales[$g_ui_locale] = true;
 			}
@@ -733,11 +737,17 @@ jQuery(document).ready(function() {
 	 *
 	 * @return string - formated metadata for display to user
 	 */
-	function _caFormatMediaMetadataArray($pa_array, $pn_level=0, $ps_key=null) {
+	function _caFormatMediaMetadataArray($pa_array, $pn_level=0, $ps_key=null, ?array $options=null) {
 		if(!is_array($pa_array)) { return $pa_array; }
 
-		$vs_buf = "<div style='width: 100%; overflow: auto;'><table style='margin-left: ".($pn_level * 10)."px;'>";
+		$no_table = caGetOption('noTable', $options, false);
+		
+		$vs_buf = $no_table ? '' : "<div style='width: 100%; overflow: auto;'><table style='margin-left: ".($pn_level * 10)."px;'>";
 		foreach($pa_array as $vs_key => $vs_val) {
+			if(is_array($vs_val)) {
+				$vs_buf .= _caFormatMediaMetadataArray($vs_val, $pn_level++, null, ['noTable' => true]);
+				continue;
+			}
 			if (preg_match("!^Undefined!i", $vs_key)) { continue; }
 			$vs_val = preg_replace('![^A-Za-z0-9 \-_\+\!\@\#\$\%\^\&\*\(\)\[\]\{\}\?\<\>\,\.\"\'\=]+!', '', $vs_val);
 			switch($vs_key) {
@@ -753,7 +763,7 @@ jQuery(document).ready(function() {
 			}
 			$vs_buf .= "<tr><td width='130'>{$vs_key}</td><td>"._caFormatMediaMetadataArray($vs_val, $pn_level + 1, $vs_key)."</td></tr>";
 		}
-		$vs_buf .= "</table></div>\n";
+		$vs_buf .= $no_table ? '' : "</table></div>\n";
 		return $vs_buf;
 	}
 	# ------------------------------------------------------------------------------------------------
@@ -936,6 +946,7 @@ jQuery(document).ready(function() {
 
 		$vs_style               = null;
 		$vs_idno                = null;
+		$vn_num_objects			= 0;
 
 		$t_item 				= $po_view->getVar('t_item');
 		$vs_table_name = $t_item->tableName();
@@ -2007,7 +2018,7 @@ jQuery(document).ready(function() {
 
         $o_app_plugin_manager = new ApplicationPluginManager();
         $va_hookAppend = $o_app_plugin_manager->hookAppendToEditorInspector(array("t_item"=>$t_item));
-        if (is_string($va_hookAppend["caEditorInspectorAppend"])) {
+        if (is_string($va_hookAppend["caEditorInspectorAppend"] ?? null)) {
             $vs_buf .= $va_hookAppend["caEditorInspectorAppend"];
         }
 
@@ -2326,7 +2337,7 @@ jQuery(document).ready(function() {
 	 * @return array An array of tags, or an array of arrays when parseOptions option is set.
 	 */
 	function caGetTemplateTags($ps_template, $pa_options=null) {
-		$key = caMakeCacheKeyFromOptions($pa_options, $ps_template);
+		$key = caMakeCacheKeyFromOptions($pa_options ?? [], $ps_template);
 		if(MemoryCache::contains($key, 'DisplayTemplateParserUtils')) { return MemoryCache::fetch($key, 'DisplayTemplateParserUtils'); }
 		
 		$va_tags = caExtractTagsFromTemplate($ps_template, $pa_options);
@@ -2626,6 +2637,17 @@ jQuery(document).ready(function() {
 				return "{$vs_display} {$vs_reltype_disp}";
 				break;
 		}
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Determines if template includes link tags (<l>).
+	 *
+	 * @param string $template
+	 
+	 * @return bool
+	 */
+	function caTemplateHasLinks($template) {
+		return preg_match('!<l>!', $template);
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -3020,16 +3042,16 @@ jQuery(document).ready(function() {
 		if (isset($pa_options['relatedItems']) && is_array($pa_options['relatedItems']) && sizeof($pa_options['relatedItems'])) {
 			$va_tmp = array();
 			foreach ($pa_options['relatedItems'] as $vn_relation_id => $va_relation) {
-				$va_items[$va_relation[$vs_rel_pk]]['relation_id'] = $va_relation['relation_id'];
-				$va_items[$va_relation[$vs_rel_pk]]['relationship_type_id'] = $va_items[$va_relation[$vs_rel_pk]]['type_id'] = ($va_relation['direction']) ?  $va_relation['direction'].'_'.$va_relation['relationship_type_id'] : $va_relation['relationship_type_id'];
-				$va_items[$va_relation[$vs_rel_pk]]['rel_type_id'] = $va_relation['relationship_type_id'];
-				$va_items[$va_relation[$vs_rel_pk]]['item_type_id'] = $va_relation['item_type_id'];
-				$va_items[$va_relation[$vs_rel_pk]]['relationship_typename'] = $va_relation['relationship_typename'];
-				$va_items[$va_relation[$vs_rel_pk]]['idno'] = $va_relation[$vs_idno_fld];
-				$va_items[$va_relation[$vs_rel_pk]]['idno_sort'] = $va_relation[$vs_idno_sort_fld];
-				$va_items[$va_relation[$vs_rel_pk]]['label'] = $va_relation['label'];
-				$va_items[$va_relation[$vs_rel_pk]]['direction'] = $va_relation['direction'];
-				$va_items[$va_relation[$vs_rel_pk]]['effective_date'] = $va_relation['effective_date'];
+				$va_items[$va_relation[$vs_rel_pk]]['relation_id'] = $va_relation['relation_id'] ?? null;
+				$va_items[$va_relation[$vs_rel_pk]]['relationship_type_id'] = $va_items[$va_relation[$vs_rel_pk]]['type_id'] = ($va_relation['relationship_type_id'] ?? null) ? ($va_relation['direction']) ?  $va_relation['direction'].'_'.$va_relation['relationship_type_id'] : $va_relation['relationship_type_id'] : null;
+				$va_items[$va_relation[$vs_rel_pk]]['rel_type_id'] = $va_relation['relationship_type_id'] ?? null;
+				$va_items[$va_relation[$vs_rel_pk]]['item_type_id'] = $va_relation['item_type_id'] ?? null;
+				$va_items[$va_relation[$vs_rel_pk]]['relationship_typename'] = $va_relation['relationship_typename'] ?? null;
+				$va_items[$va_relation[$vs_rel_pk]]['idno'] = $va_relation[$vs_idno_fld] ?? null;
+				$va_items[$va_relation[$vs_rel_pk]]['idno_sort'] = $va_relation[$vs_idno_sort_fld] ?? null;
+				$va_items[$va_relation[$vs_rel_pk]]['label'] = $va_relation['label'] ?? null;
+				$va_items[$va_relation[$vs_rel_pk]]['direction'] = $va_relation['direction'] ?? null;
+				$va_items[$va_relation[$vs_rel_pk]]['effective_date'] = $va_relation['effective_date'] ?? null;
 
 				if (isset($va_relation['surname'])) {		// pass forename and surname entity label fields to support proper sorting by name
 					$va_items[$va_relation[$vs_rel_pk]]['surname'] = $va_relation['surname'];
@@ -3042,7 +3064,7 @@ jQuery(document).ready(function() {
 
                 if ($vs_template) {
                 	$pk = is_object($qr_rel_items) ? $qr_rel_items->primaryKey() : null;
-                	$va_items[$va_relation[$vs_rel_pk]]['_display'] = caProcessTemplateForIDs($vs_template, $pt_rel->tableName(), array($va_relation['relation_id'] ? $va_relation['relation_id'] : $va_relation[$pk]), array('returnAsArray' => false, 'returnAsLink' => false, 'delimiter' => caGetOption('delimiter', $pa_options, $vs_display_delimiter), 'resolveLinksUsing' => $vs_rel_table, 'primaryIDs' => $va_primary_ids));
+                	$va_items[$va_relation[$vs_rel_pk]]['_display'] = caProcessTemplateForIDs($vs_template, $pt_rel->tableName(), array($va_relation['relation_id'] ?? null ? $va_relation['relation_id'] : $va_relation[$pk] ?? null), array('returnAsArray' => false, 'returnAsLink' => false, 'delimiter' => caGetOption('delimiter', $pa_options, $vs_display_delimiter), 'resolveLinksUsing' => $vs_rel_table, 'primaryIDs' => $va_primary_ids));
                 } else {
                     $va_items[$va_relation[$vs_rel_pk]]['_display'] = $va_items[$va_relation[$vs_rel_pk]]['label'];
                 }
@@ -3053,7 +3075,7 @@ jQuery(document).ready(function() {
 			unset($va_tmp);
 		}
 
-		if(is_array($pa_options['sortOrder'])) {
+		if(is_array($pa_options['sortOrder'] ?? null)) {
 			$va_items_sorted = [];
 			foreach($pa_options['sortOrder'] as $id) {
 				$va_items_sorted[$id] = $va_items[$id];
@@ -3093,13 +3115,18 @@ jQuery(document).ready(function() {
 			}
 
 			$po_request = caGetOption('request',$pa_options);
-			if($po_request && ca_editor_uis::loadDefaultUI($pt_rel->tableName(),$po_request,$va_item['rel_type_id'])) {
+			if($po_request && ca_editor_uis::loadDefaultUI($pt_rel->tableName(),$po_request,$va_item['rel_type_id'] ?? null)) {
 				$va_item['hasInterstitialUI'] = true;
 			} else {
 				$va_item['hasInterstitialUI'] = false;
 			}
 
-			$va_initial_values[$va_item['relation_id'] ? (int)$va_item['relation_id'] : $va_item[$vs_rel_pk]] = array_merge(
+			if(!($va_item['relation_id'] ?? null)) {
+				$va_item['relation_id'] = $va_item[$vs_rel_pk] ?? null;
+			}
+			$va_item['relation_id'] = (int)$va_item['relation_id'] ;
+			
+			$va_initial_values[$va_item['relation_id']] = array_merge(
 				$va_item,
 				array(
 					'label' => $vs_display
@@ -3331,7 +3358,7 @@ jQuery(document).ready(function() {
 	 */
 	function caGetBundleDisplayTemplate($pt_subject, $ps_related_table, $pa_bundle_settings, $pa_options=null) {
 		$vs_template = null;
-		if(strlen(trim($pa_bundle_settings['display_template']))) {
+		if(strlen(trim($pa_bundle_settings['display_template'] ?? null))) {
 			$vs_template = trim($pa_bundle_settings['display_template']);
 		}
 
@@ -3411,7 +3438,7 @@ jQuery(document).ready(function() {
 	function caEditorBundleMetadataDictionary($po_request, $ps_id_prefix, $pa_settings) {
 		global $g_ui_locale;
 
-		$definition = caGetOption($g_ui_locale, $pa_settings['definition'], null);
+		$definition = caGetOption($g_ui_locale, $pa_settings['definition'] ?? null, null);
 		if(is_array($definition)) { $definition = join ("", $definition); }
 		if (!($vs_definition = trim($definition))) { return ''; }
 
@@ -3433,6 +3460,8 @@ jQuery(document).ready(function() {
 		$config = Configuration::load();
 		$default_sorts = $config->getAssoc("{$related_table}_default_bundle_display_sorts");
 	
+		$type_specific_sorts = null;
+		
 		if(!is_array($default_sorts) || !is_array($default_sort_options = caGetOption('options', $default_sorts, null))) { $default_sort_options = []; }
 		if(is_array($rel_types = caGetOption(['restrict_to_types', 'restrictToTypes'], $settings, null)) && sizeof($rel_types)) {
 			$path = array_keys(Datamodel::getPath($table, $related_table));
@@ -4145,6 +4174,7 @@ jQuery(document).ready(function() {
 
 				$filtered_rep_ids = [];
 				while($qr_reps->nextHit()) {
+					if(!$qr_reps->get('ca_object_representations.media')) { continue; }
 					$mimetype = $qr_reps->getMediaInfo('ca_object_representations.media', 'original', 'mimetype');
 					if($show_only_media_types && !caMimetypeIsValid($mimetype, $show_only_media_types)) { continue; }
 
@@ -4905,7 +4935,7 @@ jQuery(document).ready(function() {
 				return $pa_settings[$ps_key][$ps_locale];
 			} elseif(is_array($va_locales_for_language = ca_locales::localesForLanguage($ps_locale, ['codesOnly' => true]))) {
 				foreach($va_locales_for_language as $vs_locale) {
-					if($pa_settings[$ps_key][$vs_locale]) { return $pa_settings[$ps_key][$vs_locale]; }
+					if($pa_settings[$ps_key][$vs_locale] ?? null) { return $pa_settings[$ps_key][$vs_locale]; }
 				}
 			}
 		}

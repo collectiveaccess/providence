@@ -854,6 +854,10 @@ a.sf-menu-disabled {
     margin: 0px;
 }
 
+.sfHover ul li a.spacer:hover {
+    background-color: #fff;
+}
+
 /*** arrows **/
 .sf-menu a.sf-with-ul, .sf-menu a.sf-with-ul:focus, .sf-menu a.sf-with-ul:active {
     padding-right: 	1em;
@@ -1981,6 +1985,10 @@ td.listtableAggregateTotals {
 	text-align: left;
 }
 
+table.caListItem {
+	width: 100%;
+}
+
 /* misc */
 
 #caSetList img.deleteIcon, #caSetList img.editIcon {
@@ -2973,13 +2981,88 @@ img.caRepToolsRotateControlButton:hover {
 }
 
 .caAudioPlayer {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 600px;
-    height: 32px;
-    margin-top: 16px;
-    margin-left: -300px;
+	position: relative;
+	top: 50%;
+	left:0;
+	right:0;
+	margin-left: auto;
+	margin-right: auto;
+	padding: 0px;
+	
+	width: 100%;
+	height: 120px;
+}
+
+.caAudioPlayerEmbedded {
+	position: absolute;
+	bottom: 0;
+	left:0;
+	right:0;
+	margin-left: auto;
+	margin-right: auto;
+	padding: 0px;
+	width: 100%;
+	height: 40px;
+}
+
+#caMediaOverlayContent {
+	margin: 0px;
+	width: 100%;
+	height: 100%;
+	overflow: auto;
+	text-align: center;
+	background-color: #000;
+}
+
+div.caMediaOverlayControls {
+	background-color: rgba(0,0,0,.5);
+	color:#FFF;
+	font-size: 11px;
+	text-align:center;
+	position:absolute;
+	padding: 10px 0px 10px 0px;
+	width:100%;
+	height: 20px;
+	overflow-x: hidden;
+	overflow-y: auto;
+	top:0px;
+	left:0px;
+	z-index: 32000;			/* needs to be on top of caMediaPanel, which has z-index=31000 */
+	opacity:1;	
+}
+
+.plyr {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+.plyr .plyr__video-wrapper {
+    width: 100%;
+    height: 100%;
+}
+.plyr video {
+    height: 100%;
+    width: 100%;
+    object-fit: fill;
+}
+.plyr__poster {
+    background-size: contain;
+}
+.video-responsive {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.audio-responsive {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
 }
 
 .annotation_media_player {

@@ -680,6 +680,7 @@ class Installer {
 		foreach($items as $item) {
 			$item_value = $item["value"];
 			$item_idno = $item["idno"];
+			$new_item_idno = $item["newidno"];
 			$type = $item["type"];
 			$status = $item["status"];
 			$access = $item["access"];
@@ -708,13 +709,13 @@ class Installer {
 					$t_item->delete();
 					continue;
 				}
-				$t_item = $t_list->editItem($item_id, $item_value, $enabled, $default, $parent_id, $item_idno, '', (int)$status, (int)$access, (int)$rank, $color);
+				$t_item = $t_list->editItem($item_id, $item_value, $enabled, $default, $parent_id, strlen(trim($new_item_idno)) ? $new_item_idno : $item_idno, '', (int)$status, (int)$access, (int)$rank, $color);
 			} else {
 				$this->logStatus(_t('List item with idno %1 is a new item', $item_idno));
 				if ($deleted) {
 					continue;
 				} else {
-					$t_item = $t_list->addItem($item_value, $enabled, $default, $parent_id, $type_id, $item_idno, '', (int)$status, (int)$access, (int)$rank, $color);
+					$t_item = $t_list->addItem($item_value, $enabled, $default, $parent_id, $type_id, strlen(trim($new_item_idno)) ? $new_item_idno : $item_idno, '', (int)$status, (int)$access, (int)$rank, $color);
 				}
 			}
 
@@ -904,12 +905,49 @@ class Installer {
 			}
 			
 			// insert dictionary entry
-			$t_entry = new \ca_metadata_dictionary_entries();
-			$t_entry->set('bundle_name', $entry['bundle']);
-			$t_entry->set('table_num', $table_num);
-			$this->_processSettings($t_entry, $entry['settings'], ['leftTable' => $entry['table'], 'rightTable' => $entry['bundle'], 'source' => "MetadataDictionary:table {$table_num}:".$entry['bundle']]);
+			$t_entry = $type_restrictions = $rel_type_restrictions = null;
+			if(is_array($entries = \ca_metadata_dictionary_entries::find(['bundle_name' => $entry['bundle']], ['returnAs' => 'modelInstances']))) {
+				if(
+					($type_restriction_setting = caGetOption(['restrictToTypes', 'restrict_to_types'], $entry['settings'] ?? [], null))
+					||
+					($rel_type_restriction_setting = caGetOption(['restrictToRelationshipTypes', 'restrict_to_relationship_types'], $entry['settings'] ?? [], null))
+				) {
+					// Look for restricted matches
+					$type_restrictions = caMakeTypeIDList($entry['bundle'], array_values(array_map(function($v) { 
+						return is_array($v) ? array_shift($v) : null;
+					}, $type_restriction_setting ?? [])));
+					$rel_type_restrictions = array_values(array_map(function($v) { 
+						return is_array($v) ? array_shift($v) : null;
+					}, $rel_type_restriction_setting ?? []));
+					
+					foreach($entries as $e) {
+						if(is_array($type_restrictions) && sizeof($type_restrictions) && ($etype_res = $e->getSetting('restrict_to_types')) && is_array($etype_res) && (!sizeof(array_intersect($type_restrictions, $etype_res)))) {
+							continue;
+						}
+						if(is_array($rel_type_restrictions) && sizeof($rel_type_restrictions) && ($erel_type_res = $e->getSetting('restrict_to_relationship_types')) && is_array($erel_type_res) && (!sizeof(array_intersect($rel_type_restrictions, $erel_type_res)))) {
+							continue;
+						}
+						$t_entry = $e;
+						break;
+					}
+				} else {
+					$t_entry = array_shift($entries);
+				}
+			}
+			if(!$t_entry) {
+				$t_entry = new \ca_metadata_dictionary_entries();
+				$t_entry->set('bundle_name', $entry['bundle']);
+				$t_entry->set('table_num', $table_num);
+			} 
 			
-			$t_entry->insert();
+			if(\Datamodel::tableExists($entry['bundle'])) {
+				// is relationship, so settings are relative to related item
+				$this->_processSettings($t_entry, $entry['settings'], ['leftTable' => $entry['bundle'], 'rightTable' => $entry['table'], 'source' => "MetadataDictionary:table {$table_num}:".$entry['bundle']]);
+			} else {
+				$this->_processSettings($t_entry, $entry['settings'], ['leftTable' => $entry['table'], 'rightTable' => $entry['bundle'], 'source' => "MetadataDictionary:table {$table_num}:".$entry['bundle']]);
+			}
+			
+			$t_entry->isLoaded() ? $t_entry->update() : $t_entry->insert();
 
 			if($t_entry->numErrors() > 0 || !($t_entry->getPrimaryKey()>0)) {
 				$this->addError('processMetadataDictionary', _t("There were errors while adding dictionary entry: %1", join(';', $t_entry->getErrors())));
@@ -918,14 +956,16 @@ class Installer {
 			
 			if(is_array($entry['rules'])) {
 				foreach($entry['rules'] as $rule) {
-					$t_rule = new \ca_metadata_dictionary_rules();
-					$t_rule->set('entry_id', $t_entry->getPrimaryKey());
+					if(!($t_rule = \ca_metadata_dictionary_rules::findAsInstance(['entry_id' => $t_entry->getPrimaryKey(), 'rule_code' => $rule['code']]))) {
+						$t_rule = new \ca_metadata_dictionary_rules();
+						$t_rule->set('entry_id', $t_entry->getPrimaryKey());
+					}
 					$t_rule->set('rule_code', $rule['code']);
 					$t_rule->set('rule_level', $rule['level']);
 					$t_rule->set('expression', $rule['expression']);
 					$this->_processSettings($t_rule, $rule['settings'], ['source' => "MetadataDictionary:table {$table_num}:".$entry['bundle'].":Rule ".$rule['code']]);
 
-					$t_rule->insert();
+					$t_rule->isLoaded() ? $t_rule->update() : $t_rule->insert();
 					if ($t_rule->numErrors()) {
 						$this->addError('processMetadataDictionary', _t("There were errors while adding dictionary rule: %1", join(';', $t_rule->getErrors())));
 						continue;
@@ -1329,7 +1369,7 @@ class Installer {
 		");
 		while($qr_list_item_result->nextRow()) {
 			$type_code = $list_names[$qr_list_item_result->get('list_id')];
-			$list_item_ids[$type_code][$qr_list_item_result->get('item_value')] = $qr_list_item_result->get('item_id');
+			$list_item_ids[trim(mb_strtolower($type_code))][trim(mb_strtolower($qr_list_item_result->get('item_value')))] = $qr_list_item_result->get('item_id');
 		}
 
 		foreach($relationship_types as $rel_table => $types) {
@@ -1443,7 +1483,7 @@ class Installer {
 				$this->logStatus(_t('Adding left type restriction %1 for relationship type with code %2', $left_subtype_code, $type_code));
 
 				if (isset($list_item_ids[$list_code][$left_subtype_code])) {
-					$t_rel_type->set('sub_type_left_id', $list_item_ids[$list_code][$left_subtype_code]);
+					$t_rel_type->set('sub_type_left_id', $list_item_ids[trim(mb_strtolower($list_code))][trim(mb_strtolower($left_subtype_code))]);
 					
 					if(
 						($include_subtypes = $type["includeSubtypesLeft"])
@@ -1463,7 +1503,7 @@ class Installer {
 				$this->logStatus(_t('Adding right type restriction %1 for relationship type with code %2', $right_subtype_code, $type_code));
 
 				if (isset($list_item_ids[$list_code][$right_subtype_code])) {
-					$t_rel_type->set('sub_type_right_id', $list_item_ids[$list_code][$right_subtype_code]);
+					$t_rel_type->set('sub_type_right_id', $list_item_ids[trim(mb_strtolower($list_code))][trim(mb_strtolower($right_subtype_code))]);
 					
 					if(
 						($include_subtypes = $type["includeSubtypesRight"])
@@ -2386,6 +2426,7 @@ class Installer {
 							$table = caGetOption('leftTable', $options, null);
 							$right_table = caGetOption('rightTable', $options, null);
 							switch($setting_name) {
+								case 'restrictToRelationshipTypes':
 								case 'restrict_to_relationship_types':
 									if($rel_table = \Datamodel::getLinkingTableName($table, $right_table)) {
 										if(is_array($ret = caValidateRelationshipTypeList($rel_table, $setting_value))) {
@@ -2398,7 +2439,9 @@ class Installer {
 									} else {
 										$this->addError('processSettings', _t('Relationship type %1 is not valid for %2 because no relationship table was set; set in relationship type restriction setting %3 for %4', $bad_type, $table, $setting_value, $source));
 									}
+									$setting_name = 'restrict_to_relationship_types';
 									break;
+								case 'restrictToTypes':
 								case 'restrict_to_types':
 									if($table) {
 										if(is_array($ret = caValidateTypeList($table, $setting_value))) {
@@ -2409,6 +2452,7 @@ class Installer {
 											$this->addError('processSettings', _t('Type %1 is not valid for %2 because no types are defined; set in type restriction setting %3 for %4', $bad_type, $table, $setting_value, $source));
 										}
 									}
+									$setting_name = 'restrict_to_types';
 									break;
 								case 'bundleTypeRestrictions':
 									if($right_table) {

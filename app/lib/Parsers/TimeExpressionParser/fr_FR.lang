@@ -39,7 +39,7 @@ dayListDisplay = [Dimanche, Lundi, Mardi, Mercredi, Jeudi, Vendredi, Samedi]
 rangePreConjunctions = [du,entre,de]
 
 #rangeConjunctions = [to, -, and, .., through]
-rangeConjunctions = [-, ..., au, et, à]
+rangeConjunctions = [–, -, ..., au, et, à]
 
 dateTimeConjunctions = [à,@]
 

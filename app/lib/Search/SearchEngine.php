@@ -304,7 +304,8 @@ class SearchEngine extends SearchBase {
 				if (is_array($va_restrict_to_fields = caGetOption('restrictSearchToFields', $pa_options, null)) && $this->opo_engine->can('restrict_to_fields')) {
 					$this->opo_engine->setOption('restrictSearchToFields', $va_restrict_to_fields);
 				}
-				if (is_array($va_exclude_fields_from_search = caGetOption('excludeFieldsFromSearch', $pa_options, null)) && $this->opo_engine->can('restrict_to_fields')) {
+				$excluded_fields_config = $this->opo_search_config->get('exclude_fields_froms_search') ?? [];
+				if (is_array($va_exclude_fields_from_search = caGetOption('excludeFieldsFromSearch', $pa_options, $excluded_fields_config[$this->ops_tablename] ?? null)) && $this->opo_engine->can('restrict_to_fields')) {
 					$this->opo_engine->setOption('excludeFieldsFromSearch', $va_exclude_fields_from_search);
 				}
 				
@@ -901,7 +902,7 @@ class SearchEngine extends SearchBase {
 			if (!$vn_type_id) { return false; }
 			
 			if (isset($va_type_list[$vn_type_id]) && $va_type_list[$vn_type_id]) {	// is valid type for this subject
-				if (caGetOption('includeSubtypes', $pa_options, true)) {
+				if (caGetOption('includeSubtypes', $pa_options, true) && !caGetOption('dontExpandTypesHierarchically', $pa_options, false)) {
 					// See if there are any child types
 					$t_item = new ca_list_items($vn_type_id);
 					$va_ids = $t_item->getHierarchyChildren(null, array('idsOnly' => true));
