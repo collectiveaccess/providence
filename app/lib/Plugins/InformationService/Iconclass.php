@@ -87,7 +87,7 @@ class WLPlugInformationServiceIconclass Extends BaseInformationServicePlugin Imp
 			$vs_lang = 'en';
 		}
 
-		$vs_url = 'https://iconclass.org/api/search?q='.urlencode($ps_search).'&lang='.$vs_lang.'&size=999&page=1&sort=rank&keys=0';
+		$vs_url = 'https://iconclass.org/api/search?q='.rawurlencode($ps_search).'&lang='.$vs_lang.'&size=999&page=1&sort=rank&keys=0';
 
 		$vs_content = caQueryExternalWebservice($vs_url);
 
@@ -101,7 +101,7 @@ class WLPlugInformationServiceIconclass Extends BaseInformationServicePlugin Imp
 
 		foreach($va_results as $vs_result) {
 
-			$vs_url = 'https://iconclass.org/'.urlencode($vs_result).'.json';
+			$vs_url = 'https://iconclass.org/'.rawurlencode($vs_result).'.json';
 			$va_result = json_decode(caQueryExternalWebservice($vs_url),true);
 
 
