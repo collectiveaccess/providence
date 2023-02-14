@@ -207,18 +207,16 @@ trait CLIUtilsDeveloper{
 			return null;
 		}
 		$locale = $opts->getOption('locale');
-		print "l=$locale\n";
-		if(!preg_match("!^[a-z]{2}_[A-Z]{2,3}$!", $locale)) {
+		if(strlen($locale) && !preg_match("!^[a-z]{2}_[A-Z]{2,3}$!", $locale)) {
 			CLIUtils::addError(_t('Locale %1 is not valid', $locale));
 			return null;
 		}
 		$file = $opts->getOption('file');
-		if(!is_writeable($file)) { 
+		if(!is_writeable(pathinfo($file, PATHINFO_DIRNAME))) { 
 			CLIUtils::addError(_t('Cannot write to %1', $file));
 			return null;
 		}
 		$team = $opts->getOption('team');
-		if(!strlen($team)) { $team = __CA_APP_NAME__; }
 		$extracted_strings = [];
 		
 		$directories = [__CA_THEMES_DIR__."/default", __CA_THEMES_DIR__."/{$theme}", __CA_BASE_DIR__."/app/models", __CA_BASE_DIR__."/app/lib", __CA_BASE_DIR__."/app/helpers", __CA_BASE_DIR__."/app/conf"];
@@ -277,14 +275,18 @@ trait CLIUtilsDeveloper{
 			"POT-Creation-Date: ".date('t')."\\n",
 			"PO-Revision-Date: ".date('t')."\\n",
 			"Last-Translator: ".__CA_ADMIN_EMAIL__."\\n",
-			"Language-Team: {$team}\\n",
-			"Language: {$locale}\\n",
 			"MIME-Version: 1.0\\n",
 			"Content-Type: text/plain; charset=UTF-8\\n",
 			"Content-Transfer-Encoding: 8bit\\n",
 			"Plural-Forms: nplurals=2; plural=(n != 1);\\n",
 			"X-Generator: CollectiveAccess ".__CollectiveAccess__."\\n"
 		];
+		if($locale) {
+			$headers[] = "Language: {$locale}\\n";
+		}	
+		if($team) {
+			$headers[] = "Language-Team: {$team}\\n";
+		}
 		fputs($out, "msgid \"\"\nmsgstr \"\"\n");
 		foreach($headers as $h) {
 			fputs($out, "\"{$h}\"\n");
@@ -296,8 +298,9 @@ trait CLIUtilsDeveloper{
 			fputs($out, "msgid \"{$s}\"\n");
 			fputs($out, "msgstr \"\"\n\n");
 		}
+		print "\n\n";
 		
-		CLIUtils::addMessage(_t('Extracted %1 strings from %2 files', sizeof($extracted_strings), $file_count));
+		CLIUtils::addMessage(_t('Extracted %1 strings from %2 files into %3', sizeof($extracted_strings), $file_count, realpath($file)));
 	}
 	# -------------------------------------------------------
 	public static function extract_strings_for_translationParamList() {
