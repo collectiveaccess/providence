@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2021-2022 Whirl-i-Gig
+ * Copyright 2021-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -287,6 +287,8 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 							$is_set = false;
 							foreach($by_id as $id => $sub_field_values) {
 								$v = $sf =  null;
+								
+								$sub_values = [];
 								foreach($sub_field_values as $sub_field => $sub_field_value) {
 									$is_value_id = preg_match("!^(.*)_value_id$!", $sub_field, $m);
 									//if($is_value_id && isset($sub_field_values[$m[1]])) { continue; }
