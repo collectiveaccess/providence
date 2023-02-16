@@ -1193,7 +1193,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				}
 			}
 		}
-		
+		if(sizeof($va_acc) > 2) { $va_acc = array_slice($va_acc, 0, 2); }	// groups are never more than two levels
 		return join(".", $va_acc);
 	}
 	# ------------------------------------------------------
