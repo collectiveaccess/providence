@@ -2086,6 +2086,22 @@
 			if(caGetOption('returnHistoryTrackingData', $options, false)) { return $values; }
 			
 			$ids = array_map(function($v) { return $v['row_id']; }, $values);
+			
+			if(is_array($options['restrict_to_types'] ?? null) && sizeof($options['restrict_to_types'])) {
+				$policy_info = $this->getPolicyConfig($policy);
+			
+				$type_res = caMakeTypeIDList($policy_info['table'], $options['restrict_to_types']);
+				
+				$ids_filtered = [];
+				$qr = caMakeSearchResult($policy_info['table'], $ids, ['transaction' => $this->getTransaction()]);
+				
+				while($qr->nextHit()) {
+					if(!in_array((int)$qr->get("{$policy_info['table']}.type_id"), $type_res)) { continue; }
+					$ids_filtered[] = $qr->getPrimaryKey();
+				}
+				$ids = $ids_filtered;
+			}
+			
 			if(caGetOption('idsOnly', $options, false)) { return $ids; }
 			if(!is_array($row = array_shift($values))) { return null; }
 	

@@ -1976,6 +1976,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								break;
 							case 'ca_storage_locations_contents':
 							case 'history_tracking_current_contents':
+								$t_object = new ca_objects();
 								$va_additional_settings = array(
 									'list_format' => array(
 										'formatType' => FT_TEXT,
@@ -1997,7 +1998,18 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'useHistoryTrackingReferringPolicyList' => true,
 										'label' => _t('Use history tracking policy'),
 										'description' => ''
-									),						
+									),	
+									'restrict_to_types' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,	// TODO: make dynamic list of relevant types based upon policy
+										'useList' => $t_object->getTypeListCode(),	// hardcode to objects for now
+										'width' => "475px", 'height' => "75px",
+										'takesLocale' => false,
+										'default' => '',
+										'multiple' => true,
+										'label' => _t('Restrict to types'),
+										'description' => _t('Restricts display to items of the specified type(s). Leave all unselected for no restriction.')
+									),					
 									'colorItem' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_COLORPICKER,
