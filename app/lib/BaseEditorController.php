@@ -2968,9 +2968,19 @@ class BaseEditorController extends ActionController {
 		if(!is_array($rep_ids) || !sizeof($rep_ids)) {
 			throw new ApplicationException(_t('ID has no associated media'));
 		}
-		$t_subject->removeRelationships('ca_object_representations');
+		$selected_rep_id = $rep_ids[0];
+		$existing_reps = $t_subject->getRepresentations() ?? [];
 		
-		if($t_subject->addRelationship('ca_object_representations', $rep_ids[0], null)) {
+		if(sizeof($selected_reps = array_filter($existing_reps, function($v) use ($selected_rep_id) {
+			return $v['representation_id'] == $selected_rep_id;
+		}))) {
+			$selected_rep = array_shift($selected_reps);
+			if($t_subject->removeRelationship('ca_object_representations', $selected_rep['relation_id'])) {
+				$resp = ['ok' => true, 'errors' => [], 'message' => _t('Removed media')];
+			} else {
+				$resp = ['ok' => false, 'errors' => $t_subject->getErrors(), 'message' => _t('Could not unlimk media')];;
+			}
+		} elseif($t_subject->addRelationship('ca_object_representations', $rep_ids[0], null)) {
 			$resp = ['ok' => true, 'errors' => [], 'message' => _t('Updated media')];
 		} else {
 			$resp = ['ok' => false, 'errors' => $t_subject->getErrors(),'message' => _t('Could not update media: %1', join('; ', $t_subject->getErrors()))];
