@@ -4162,46 +4162,53 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 * Convert text into string suitable for sorting, by moving articles to end of string, etc.
 	 *
-	 * @param string $ps_text Text to convert to sortable value
-	 * @param array $pa_options Options include:
+	 * @param string $text Text to convert to sortable value
+	 * @param array $options Options include:
 	 *		locale = Locale settings to use. If omitted current default locale is used. [Default is current locale]
 	 *		omitArticle = Omit leading definite and indefinited articles, rather than moving them to the end of the text [Default is true]
 	 *		maxLength = Maximum length of returned value. [Default is 255]
 	 *
 	 * @return string Converted text. If locale cannot be found $ps_text is returned truncated to "maxLength" value, but otherwise unchanged.
 	 */
-	function caSortableValue($ps_text, $pa_options=null) {
+	function caSortableValue($text, $options=null) {
 		global $g_ui_locale;
-		$ps_locale = caGetOption('locale', $pa_options, $g_ui_locale);
-		$max_length = caGetOption('maxLength', $pa_options, 255, ['castTo' => 'int']);
-		$ps_text = strip_tags($ps_text);
-		if (!$ps_locale) { return mb_substr($ps_text, 0, $max_length); }
+		$locale = caGetOption('locale', $options, $g_ui_locale);
+		$max_length = caGetOption('maxLength', $options, 255, ['castTo' => 'int']);
+		$text = strip_tags($text);
+		//if (!$locale) { return mb_substr($text, 0, $max_length); }
 
-		$pb_omit_article = caGetOption('omitArticle', $pa_options, true);
+		$omit_article = caGetOption('omitArticle', $options, true);
 
-		$o_locale_settings = TimeExpressionParser::getSettingsForLanguage($ps_locale);
-
-		$vs_display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $ps_text));
-		$vs_display_value = preg_replace('![ ]+!', ' ', $vs_display_value);
+		$display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $text));
+		$display_value = preg_replace('![ ]+!', ' ', $display_value);
 		
-		// Move articles to end of string
-		$va_articles = caGetArticlesForLocale($ps_locale) ?: [];
+		$display_value = mb_substr($display_value, 0, $max_length, 'UTF-8');
+		
+		if($locale) {
+			// Move articles to end of string
+			$articles = caGetArticlesForLocale($locale) ?: [];
 
-		foreach($va_articles as $vs_article) {
-			if (preg_match('!^('.$vs_article.')[ ]+!i', $vs_display_value, $va_matches)) {
-				$vs_display_value = trim(str_replace($va_matches[1], '', $vs_display_value).($pb_omit_article ? '' : ', '.$va_matches[1]));
-				break;
+			foreach($articles as $article) {
+				if (preg_match('!^('.$article.')[ ]+!i', $display_value, $matches)) {
+					$display_value = trim(str_replace($matches[1], '', $display_value).($omit_article ? '' : ', '.$matches[1]));
+					break;
+				}
 			}
 		}
 
 		// Left-pad numbers
-		if (preg_match_all("!([\d]+)!", $vs_display_value, $va_matches)) {
-			for($i=0; $i<sizeof($va_matches[1]); $i++) {
-				$vs_padded = str_pad($va_matches[1][$i], 15, 0, STR_PAD_LEFT);
-				$vs_display_value = str_replace($va_matches[1][$i], $vs_padded, $vs_display_value);
+		$padded = [];
+		foreach(preg_split("![ \t]+!", $display_value) as $t) {
+			if(is_numeric($t)) {
+				$padded[] = str_pad($t, 10, 0, STR_PAD_LEFT).'    ';	// assume numbers don't go wider than 10 places
+			} elseif(preg_match("!^([\d]+)([A-Za-z]+)$!", $t, $m)) {
+				$padded[] = str_pad($m[1], 10, 0, STR_PAD_LEFT).str_pad(substr($m[2], 0, 4), 4, ' ', STR_PAD_LEFT);
+			} else {
+				$padded[] = str_pad(substr($t, 0, 10), 14, ' ', STR_PAD_LEFT);
 			}
 		}
-		return mb_substr($vs_display_value, 0, $max_length, 'UTF-8');
+		$display_value = join(' ', $padded);
+		return $display_value;
 	}
 	# ----------------------------------------
 	/**

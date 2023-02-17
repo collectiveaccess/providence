@@ -583,6 +583,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	 * @param mixed $pm_table_name_or_num The table name or number specifying the content type to fetch bundles for. If omitted the content table of the currently loaded display will be used.
 	 * @param array $pa_options Supported options are:
 	 *		dontCache = disable caching when fetching model properties
+	 *		omitSettingsForms = don't return settings forms. [Default is false]
 	 * @return array And array of bundles keyed on display label. Each value is an array with these keys:
 	 *		bundle = The bundle name (eg. ca_objects.idno)
 	 *		display = Display label for each available bundle
@@ -592,6 +593,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public function getAvailableBundles($pm_table_name_or_num=null, $pa_options=null) {
 		$pb_dont_cache = caGetOption('dontCache', $pa_options, false);
+		$omit_settings_forms = caGetOption('omitSettingsForms', $pa_options, false);
 		if (!$pm_table_name_or_num) { $pm_table_name_or_num = $this->getTableNum(); }
 		$vs_cache_key = md5($pm_table_name_or_num . serialize($pa_options));
 
@@ -2150,7 +2152,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				'bundle' => $vs_bundle,
 				'display' => $vs_display,
 				'description' => $vs_description = $t_instance->getDisplayDescription($vs_table.'.'.$vs_bundle),
-				'settingsForm' => $t_placement->getHTMLSettingForm(['id' => $vs_bundle.'_0_', 'table' => $vs_table, 'relatedTable' => Datamodel::getTableNum($vs_bundle) ? $vs_bundle : null]),
+				'settingsForm' => $omit_settings_forms ? null : $t_placement->getHTMLSettingForm(['id' => $vs_bundle.'_0_', 'table' => $vs_table, 'relatedTable' => Datamodel::getTableNum($vs_bundle) ? $vs_bundle : null]),
 				'settings' => $va_additional_settings,
 				'deprecated' => $deprecated
 			);

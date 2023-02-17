@@ -6063,6 +6063,8 @@ if (!$vb_batch) {
 		$pa_primary_ids = (isset($options['primaryIDs']) && is_array($options['primaryIDs'])) ? $options['primaryIDs'] : null;
 		
 		$show_current = caGetOption(['showCurrentOnly', 'currentOnly'], $options, false);
+		$show_deleted = caGetOption('showDeleted', $options, false);
+		
 		$policy = caGetOption('policy', $options, method_exists($this, "getDefaultHistoryTrackingCurrentValuePolicy") ? $this->getDefaultHistoryTrackingCurrentValuePolicy() : null);
 		
 		if (!isset($options['useLocaleCodes']) && (isset($options['returnLocaleCodes']) && $options['returnLocaleCodes'])) { $options['useLocaleCodes'] = $options['returnLocaleCodes']; }
@@ -6364,7 +6366,7 @@ if (!$vb_batch) {
 			$va_wheres[] = "({$vs_related_table}.access IN (".join(',', $options['checkAccess'])."))";
 		}
 
-		if ((!isset($options['showDeleted']) || !$options['showDeleted']) && $t_rel_item->hasField('deleted')) {
+		if (!$show_deleted && $t_rel_item->hasField('deleted')) {
 			$va_wheres[] = "({$vs_related_table}.deleted = 0)";
 		}
 		
@@ -6720,7 +6722,7 @@ if (!$vb_batch) {
 					foreach($va_rel_info[$vs_cur_table][$vs_join_table] as $vn_i => $va_rel) {
 						$va_tmp[] = $vs_cur_table.".".$va_rel_info[$vs_cur_table][$vs_join_table][$vn_i][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][$vn_i][1]."\n";
 					}
-					$va_joins[] = $vs_join.' ('.join(' OR ', $va_tmp).')'.(Datamodel::getFieldNum($vs_join_table, 'deleted') ? " AND ({$vs_join_table}.deleted = 0)" : '');
+					$va_joins[] = $vs_join.' ('.join(' OR ', $va_tmp).')'.(!$show_deleted && Datamodel::getFieldNum($vs_join_table, 'deleted') ? " AND ({$vs_join_table}.deleted = 0)" : '');
 					$vs_cur_table = $vs_join_table;
 				}
 				
@@ -6731,14 +6733,16 @@ if (!$vb_batch) {
                 if (method_exists($t_rel_item, 'isRelationship') && $t_rel_item->isRelationship()) {
                     $va_rels = Datamodel::getManyToOneRelations($t_rel_item->tableName());
                     
-                    // Derive filter for deleted target rows
-                    $deleted_filter = null;
-                    foreach($va_rels as $vs_rel_pk => $va_rel_info) {
-						if(!in_array($va_rel_info['one_table'], [$this->tableName(), 'ca_relationship_types'])) {
-							$deleted_filter = (Datamodel::getFieldNum($va_rel_info['one_table'], 'deleted') ? " AND (r.deleted = 0)" : '');
-							break;
-						}
-					}   
+					$deleted_filter = null;
+                    if(!$show_deleted) {
+						// Derive filter for deleted target rows
+						foreach($va_rels as $vs_rel_pk => $va_rel_info) {
+							if(!in_array($va_rel_info['one_table'], [$this->tableName(), 'ca_relationship_types'])) {
+								$deleted_filter = (Datamodel::getFieldNum($va_rel_info['one_table'], 'deleted') ? " AND (r.deleted = 0)" : '');
+								break;
+							}
+						}   
+					}
                     
                     if(is_array($options['restrictToTypes']) && sizeof($options['restrictToTypes'])) {
                         foreach($va_rels as $vs_rel_pk => $va_rel_info) {

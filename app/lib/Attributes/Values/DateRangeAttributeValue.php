@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -367,10 +367,12 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 		if ($ps_value) {
 			$locale = caGetOption('locale', $pa_options, self::$locale);
 			DateRangeAttributeValue::$o_tep->setLanguage($locale);
-			if (!DateRangeAttributeValue::$o_tep->parse($ps_value)) { 
-				// invalid date
-				$this->postError(1970, _t('%1 is invalid', $pa_element_info['displayLabel']), 'DateRangeAttributeValue->parseValue()');
-				return false;
+			if (!DateRangeAttributeValue::$o_tep->parse($ps_value)) {
+				if($locale == self::$locale || !DateRangeAttributeValue::$o_tep->parse($ps_value, ['locale' => self::$locale])) { 
+					// invalid date
+					$this->postError(1970, _t('%1 is invalid', $pa_element_info['displayLabel']), 'DateRangeAttributeValue->parseValue()');
+					return false;
+				}
 			}
 			$va_dates = DateRangeAttributeValue::$o_tep->getHistoricTimestamps();
 			if ($va_settings['dateRangeBoundaries']) {
@@ -404,6 +406,7 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 				
 				return array(
 					'value_longtext1' => $vs_undated_date,
+					'value_sortable' => $this->sortableValue($vs_undated_date),
 					'value_decimal1' => null,
 					'value_decimal2' => null
 				);
@@ -411,6 +414,7 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 		}
 		return array(
 			'value_longtext1' => $ps_value,
+			'value_sortable' => $this->sortableValue($ps_value),
 			'value_decimal1' => $va_dates[0],
 			'value_decimal2' => $va_dates[1]
 		);

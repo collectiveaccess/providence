@@ -27,7 +27,7 @@ monthTable = {
 dayListDisplay = [Söndag, Måndag, Tisdag, Onsdag, Torsdag, Fredag, Lördag]
 
 rangePreConjunctions = [från, mellan]
-rangeConjunctions = [till, -, och, .., genom]
+rangeConjunctions = [till, –, -, och, .., genom]
 
 dateTimeConjunctions = [vid,@]
 
