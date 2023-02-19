@@ -3635,6 +3635,11 @@
 								$va_wheres[] = "(".$t_rel_item->tableName().".type_id IN (".join(',', $va_restrict_to_types)."))";
 							}
 							
+							$vs_browse_type_sql = null;
+							if (is_array($va_browse_type_ids) && sizeof($va_browse_type_ids)) {
+								$va_wheres[] = $vs_browse_type_sql = "(".$t_subject->tableName().".type_id IN (".join(',', $va_browse_type_ids)."))";
+							}
+							
 							if (is_array($va_restrict_to_lists) && sizeof($va_restrict_to_lists)) {
 								$va_wheres[] = "(".$t_rel_item->tableName().".list_id IN (".join(',', $va_restrict_to_lists)."))";
 							}
@@ -3702,7 +3707,7 @@
 											{$vs_join_sql}
 											{$vs_where_sql}
 										)".($vs_item_deleted_sql ? " AND {$vs_item_deleted_sql}" : "")
-										  .($id_set ? " AND {$id_set}" : "")."
+										  .($id_set ? " AND {$id_set}" : "").($vs_browse_type_sql ? " AND {$vs_browse_type_sql}" : '')."
 										LIMIT 2
 									";
 								} else {	
@@ -3730,7 +3735,7 @@
 											{$vs_join_sql}
 											{$vs_where_sql}
 										)".($vs_item_deleted_sql ? " AND {$vs_item_deleted_sql}" : "")
-										  .($id_set ? " AND {$id_set}" : "");
+										  .($id_set ? " AND {$id_set}" : "").($vs_browse_type_sql ? " AND {$vs_browse_type_sql}" : '');
 								} else {
 									$vs_sql = "
 										SELECT DISTINCT {$vs_browse_table_name}.{$vs_browse_table_pk}
