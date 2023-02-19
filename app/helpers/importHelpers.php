@@ -87,7 +87,7 @@
 			}
 			$vs_type = BaseRefinery::parsePlaceholder($va_parent['type'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null, 'applyImportItemSettings' => $apply_import_item_settings));
 
-			if (!$vs_name && !$vs_idno) { 
+			if (!$vs_name && !$vs_idno && (!isset($va_parent['attributes']) || !is_array($va_parent['attributes']) || !sizeof($va_parent['attributes']))) { 
 				continue; 
 			}
 			
@@ -773,6 +773,9 @@
 	 * 
 	 *
 	 * @param string $ps_refinery_name 
+	 *
+	 * @param $pa_options array Options include:
+	 *		valueIndex = Zero-based index of value to use when data source supports repeating values. [Default is 0]
 	 * 
 	 * @return array
 	 */
@@ -880,13 +883,27 @@
 							while(sizeof($va_parents) > 0) {
 								$va_p = array_shift($va_parents);
 								if (!isset($va_p[$vs_display_field])) { $vs_display_field = 'name'; }
+												
+								if(!is_array($match_on = caGetOption('matchOn', $va_p, null)) || !sizeof($match_on)) {
+									$match_on = [$t_instance->getProperty('ID_NUMBERING_ID_FIELD')];
+								}
 								
-								if ($vs_laddered_val = BaseRefinery::parsePlaceholder($va_p[$vs_display_field], $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnAsString' => true, 'returnDelimitedValueAt' => $vn_x, 'applyImportItemSettings' => $apply_import_item_settings))) {
+								if(!($vs_laddered_val = BaseRefinery::parsePlaceholder($va_p[$vs_display_field], $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnAsString' => true, 'returnDelimitedValueAt' => $vn_x, 'applyImportItemSettings' => $apply_import_item_settings)))) {
+									foreach($match_on as $m) {
+										if($vs_laddered_val = BaseRefinery::parsePlaceholder($va_p[$m] ?? $va_p['attributes'][$m] ?? null, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnAsString' => true, 'returnDelimitedValueAt' => $vn_x, 'applyImportItemSettings' => $apply_import_item_settings))) {
+											break;
+										}
+									}
+								}
+								
+								if ($vs_laddered_val) {
 									$vs_item = $vs_laddered_val;
 									if ($o_log) { $o_log->logDebug(_t("[{$ps_refinery_name}] Used parent value %1 because the mapped value was blank", $vs_item)); }
 									$va_val['_type'] = BaseRefinery::parsePlaceholder($va_p['type'], $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnAsString' => true, 'returnDelimitedValueAt' => $vn_x, 'applyImportItemSettings' => $apply_import_item_settings));
-									if ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD')) {
-									    $va_val[$vs_idno_fld] = BaseRefinery::parsePlaceholder($va_p[$vs_idno_fld], $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnAsString' => true, 'returnDelimitedValueAt' => $vn_x, 'applyImportItemSettings' => $apply_import_item_settings));
+									
+									foreach($match_on as $m) {
+									    $va_val[$m] = BaseRefinery::parsePlaceholder($va_p[$m] ?? $va_p['attributes'][$m], $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnAsString' => true, 'returnDelimitedValueAt' => $vn_x, 'applyImportItemSettings' => $apply_import_item_settings));
+										$va_val['_matchOn'][] = $m;
 									}
 									break;
 								}
@@ -913,12 +930,12 @@
 							&&
 							($vs_type_opt = $pa_item['settings']["{$ps_refinery_name}_{$ps_item_prefix}Type"])
 						) {
-							$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('returnAsString' => true, 'reader' => $o_reader, 'applyImportItemSettings' => $apply_import_item_settings));
+							$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vn_x, array('returnDelimitedValueAt' => $vn_i, 'returnAsString' => true, 'delimiter' => $va_delimiter, 'reader' => $o_reader, 'applyImportItemSettings' => $apply_import_item_settings));
 						}
 			
 						if((!isset($va_val['_type']) || !$va_val['_type']) && ($vs_type_opt = $pa_item['settings']["{$ps_refinery_name}_{$ps_item_prefix}TypeDefault"])) {
-							if (!($va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('returnAsString' => true, 'reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnDelimitedValueAt' => $vn_x, 'applyImportItemSettings' => $apply_import_item_settings)))) {
-								$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('returnAsString' => true, 'reader' => $o_reader, 'applyImportItemSettings' => $apply_import_item_settings));
+							if (!($va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vn_x, array('returnDelimitedValueAt' => $vn_i, 'returnAsString' => true, 'reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnDelimitedValueAt' => $vn_x, 'applyImportItemSettings' => $apply_import_item_settings)))) {
+								$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, 0, array('returnAsString' => true, 'reader' => $o_reader, 'applyImportItemSettings' => $apply_import_item_settings));
 							}
 						}
 				
@@ -926,10 +943,10 @@
 						if (
 							($vs_type_opt = $pa_item['settings']["{$ps_refinery_name}_{$ps_item_prefix}Status"])
 						) {
-							$va_val['_status'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('returnAsString' => true, 'reader' => $o_reader, 'applyImportItemSettings' => $apply_import_item_settings));
+							$va_val['_status'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vn_i, array('returnAsString' => true, 'reader' => $o_reader, 'applyImportItemSettings' => $apply_import_item_settings));
 						}
 						if((!isset($va_val['_status']) || !$va_val['_status']) && ($vs_type_opt = $pa_item['settings']["{$ps_refinery_name}_{$ps_item_prefix}StatusDefault"])) {
-							$va_val['_status'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('returnAsString' => true, 'reader' => $o_reader, 'applyImportItemSettings' => $apply_import_item_settings));
+							$va_val['_status'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vn_i, array('returnAsString' => true, 'reader' => $o_reader, 'applyImportItemSettings' => $apply_import_item_settings));
 						}
 			
 						if ((!isset($va_val['_type']) || !$va_val['_type']) && $o_log) {
@@ -1017,7 +1034,9 @@
 						// Set attributes
 						//      $va_attr_vals = directly attached attributes for item
 						if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']["{$ps_refinery_name}_attributes"], $pa_source_data, $pa_item, null, array('delimiter' => $va_delimiter, 'log' => $o_log, 'reader' => $o_reader, 'refineryName' => $ps_refinery_name)))) {
-							$va_val = array_merge($va_val, $va_attr_vals);
+							foreach($va_attr_vals as $k => $v) {	// only overwrite if is value is not yet set
+								if(!isset($va_val[$k]) || !strlen($va_val[$k])) { $va_val[$k] = $v; }
+							}
 							unset($va_val[$vs_label_fld]);
 						}
 						
@@ -1076,6 +1095,7 @@
 						$vs_item = BaseRefinery::parsePlaceholder($vs_item, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null, 'applyImportItemSettings' => $apply_import_item_settings));
 						$va_attr_vals_with_parent = array_merge($va_val, array('parent_id' => $va_val['parent_id'] ? $va_val['parent_id'] : $va_val['_parent_id']));						
 						
+						$pa_options = array_merge($pa_options, ['matchOn' => $va_val['_matchOn'] ?? null]); // add matchOn value for lookup
 						switch($ps_table) {
 							case 'ca_objects':
 								$vn_item_id = DataMigrationUtils::getObjectID($va_val['preferred_labels'] ? $va_val['preferred_labels'] : $vs_item, $va_val['parent_id'], $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
@@ -1089,7 +1109,7 @@
 								break;
 							case 'ca_entities':
 								$n = $va_val['preferred_labels'] ? $va_val['preferred_labels'] : $vs_item;
-								$va_val['preferred_labels'] = ca_entity_labels::normalizeLabel(is_array($n) ? $n : DataMigrationUtils::splitEntityName($n, array_merge($pa_options, ['type' => $va_val['_type'], 'doNotParse' => $pa_item['settings']["{$ps_refinery_name}_doNotParse"]])));
+								$va_val['preferred_labels'] = ca_entity_labels::normalizeLabel(is_array($n) ? $n : DataMigrationUtils::splitEntityName($n, array_merge($pa_options, ['type' => $va_val['_type'], 'doNotParse' => $pa_item['settings']["{$ps_refinery_name}_doNotParse"], 'ignoreLabelFields' => $pa_item['settings']["{$ps_refinery_name}_ignoreLabelFields"] ?? null])));
 								
 								$vn_item_id = DataMigrationUtils::getEntityID($va_val['preferred_labels'], $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
 								break;
@@ -1175,15 +1195,15 @@
 							&&
 							($vs_rel_type_opt = $pa_item['settings']["{$ps_refinery_name}_relationshipType"])
 						) {
-							$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'returnAsString' => true, 'applyImportItemSettings' => $apply_import_item_settings, 'delimiter' => $vs_rel_type_delimiter_opt ?? $va_delimiter, 'returnDelimitedValueAt' => $vn_i));
+							$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vn_x, array( 'returnDelimitedValueAt' => $vn_i, 'reader' => $o_reader, 'returnAsString' => true, 'applyImportItemSettings' => $apply_import_item_settings, 'delimiter' => $vs_rel_type_delimiter_opt ?? $va_delimiter));
 						}
 			
 						if (
 							($vs_rel_type_opt = $pa_item['settings']["{$ps_refinery_name}_relationshipTypeDefault"])	
 						) {
 							if(!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) {
-								if (!($va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnAsString' => true,  'returnDelimitedValueAt' => $vn_x, 'applyImportItemSettings' => $apply_import_item_settings)))) {
-									$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'returnAsString' => true, 'applyImportItemSettings' => $apply_import_item_settings));
+								if (!($va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vn_x, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnAsString' => true,  'returnDelimitedValueAt' => $vn_i, 'applyImportItemSettings' => $apply_import_item_settings)))) {
+									$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, 0, array('reader' => $o_reader, 'returnAsString' => true, 'applyImportItemSettings' => $apply_import_item_settings));
 								}
 							}
 							$va_val['_relationship_type_default'] = $vs_rel_type_opt;
@@ -1201,6 +1221,7 @@
 								}
 								$va_val['preferred_labels'] = ca_entity_labels::normalizeLabel($va_val['preferred_labels'], array_merge($pa_options, ['type' => $va_val['_type']]));
 								if(!isset($va_val['idno'])) { $va_val['idno'] = $vs_item; }
+								if($pa_item['settings']["{$ps_refinery_name}_ignoreLabelFields"] ?? null) { $va_val['_ignoreLabelFields'] = $pa_item['settings']["{$ps_refinery_name}_ignoreLabelFields"]; }
 								break;
 							case 'ca_list_items':
 								if($label_is_not_set) { 
