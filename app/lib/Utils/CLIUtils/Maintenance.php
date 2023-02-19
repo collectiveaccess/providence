@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2022 Whirl-i-Gig
+ * Copyright 2018-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2653,11 +2653,18 @@
 			
 			print CLIProgressBar::start($count, _t('Processing'));
 			do {
-				$qr_res = $o_db->query("SELECT value_id, value_longtext1, element_id FROM ca_attribute_values WHERE value_id > ? and (value_longtext1 <> '' OR value_decimal1 IS NOT NULL) ORDER BY value_id LIMIT 10000", [$last_value_id]);
+				$qr_res = $o_db->query("SELECT value_id, value_longtext1, value_decimal1, value_decimal2, element_id FROM ca_attribute_values WHERE value_id > ? and (value_longtext1 <> '' OR value_decimal1 IS NOT NULL) ORDER BY value_id LIMIT 10000", [$last_value_id]);
 			
 				$c = 0;
 				while($qr_res->nextRow()) {
-					$v = $qr_res->get('value_longtext1');
+					switch(ca_metadata_elements::getElementDatatype($qr_res->get('element_id'))) {
+						case __CA_ATTRIBUTE_VALUE_DATERANGE__:
+							$v = caGetLocalizedHistoricDateRange($qr_res->get('value_decimal1'), $qr_res->get('value_decimal2'));
+							break;
+						default:
+							$v = $qr_res->get('value_longtext1');
+							break;
+					}
 					$value_id = $qr_res->get('value_id');
 					if (strlen($v) > 0) {
 						$sv = ca_metadata_elements::getSortableValueForElement($qr_res->get('element_id'), $v);
