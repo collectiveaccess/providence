@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2019 Whirl-i-Gig
+ * Copyright 2013-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -134,13 +134,13 @@ class MARCDataReader extends BaseDataReader {
 		$vs_ind2 = substr($ps_indicators, 0, 2);
 		
 		$o_record = $this->opa_rows[$this->opn_current_row];
-		
+		$ps_code = str_pad($ps_code, '0', 3);
 		if ($o_fields = $o_record->getFields($ps_code)) {
 			$va_content = array();
 			foreach($o_fields as $o_field) {
 				switch($vs_class = get_class($o_field)) {
 					case 'File_MARC_Control_Field':
-						continue(2);
+						$va_content[] = $o_field->getData();
 						break;
 					default:
 						if (strlen($vs_ind1) && ($vs_ind1 != $o_field->getIndicator(1))) { continue(2); }
@@ -226,4 +226,3 @@ class MARCDataReader extends BaseDataReader {
 	}
 	# -------------------------------------------------------
 }
-?>
