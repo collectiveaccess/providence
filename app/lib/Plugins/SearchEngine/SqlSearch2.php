@@ -103,7 +103,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			self::$whitespace_tokenizer_regex = '[\s\"\—\-]+';
 		}
 		if(!(self::$punctuation_tokenizer_regex = $this->search_config->get('punctuation_tokenizer_regex'))) {
-			self::$whitespace_tokenizer_regex = '[\.,;:\(\)\{\}\[\]\|\\\+_\!\&«»\']+';
+			self::$punctuation_tokenizer_regex = '[\.,;:\(\)\{\}\[\]\|\\\+_\!\&«»\']+';
 		}
 		
 		if(self::$filter_stop_words) {
@@ -507,7 +507,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					FROM {$table}".($t->hasField('deleted') ? " WHERE deleted = 0" : "")."
 				", []);
 			} elseif($use_boost) {
-				$qr_res = $this->db->query($s="
+				$qr_res = $this->db->query("
 					SELECT swi.row_id, SUM(swi.boost) boost
 					FROM ca_sql_search_word_index swi
 					".(!$is_blank ? 'INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id' : '')."
@@ -518,7 +518,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					GROUP BY swi.row_id
 				", $params);
 			} else {
-				$qr_res = $this->db->query($s="
+				$qr_res = $this->db->query("
 					SELECT DISTINCT swi.row_id, 100 boost
 					FROM ca_sql_search_word_index swi
 					".(!$is_blank ? 'INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id' : '')."
@@ -933,7 +933,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 						$a = $s->getItems(['idsOnly' => true]);
 						break;
 					default:
-						$a = $qr->get($spk, ['returnAsArray' => true]);
+						$a = $qr->get($spk, ['restrictToRelationshipTypes' => $ap['relationship_type_ids'] ?? null, 'returnAsArray' => true]);
 						break;
 				}
 				

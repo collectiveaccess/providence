@@ -680,6 +680,7 @@ class Installer {
 		foreach($items as $item) {
 			$item_value = $item["value"];
 			$item_idno = $item["idno"];
+			$new_item_idno = $item["newidno"];
 			$type = $item["type"];
 			$status = $item["status"];
 			$access = $item["access"];
@@ -708,13 +709,13 @@ class Installer {
 					$t_item->delete();
 					continue;
 				}
-				$t_item = $t_list->editItem($item_id, $item_value, $enabled, $default, $parent_id, $item_idno, '', (int)$status, (int)$access, (int)$rank, $color);
+				$t_item = $t_list->editItem($item_id, $item_value, $enabled, $default, $parent_id, strlen(trim($new_item_idno)) ? $new_item_idno : $item_idno, '', (int)$status, (int)$access, (int)$rank, $color);
 			} else {
 				$this->logStatus(_t('List item with idno %1 is a new item', $item_idno));
 				if ($deleted) {
 					continue;
 				} else {
-					$t_item = $t_list->addItem($item_value, $enabled, $default, $parent_id, $type_id, $item_idno, '', (int)$status, (int)$access, (int)$rank, $color);
+					$t_item = $t_list->addItem($item_value, $enabled, $default, $parent_id, $type_id, strlen(trim($new_item_idno)) ? $new_item_idno : $item_idno, '', (int)$status, (int)$access, (int)$rank, $color);
 				}
 			}
 

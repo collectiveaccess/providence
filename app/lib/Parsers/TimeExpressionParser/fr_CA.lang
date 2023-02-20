@@ -27,12 +27,9 @@ monthTable = {
 # List of day names, starting with Sunday
 dayListDisplay = [Dimanche, Lundi, Mardi, Mercredi, Jeudi, Vendredi, Samedi]
 
-#rangePreConjunctions = [from, between]
 rangePreConjunctions = [depuis, après]
 
-#rangeConjunctions = [to, -, and, .., through]
-# ???
-rangeConjunctions = [to, -, et, .., through]
+rangeConjunctions = [to, –, -, et, .., through]
 
 dateTimeConjunctions = [à,@]
 

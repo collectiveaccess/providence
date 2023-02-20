@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2022 Whirl-i-Gig
+ * Copyright 2015-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -919,6 +919,9 @@ class DisplayTemplateParser {
 						$vs_proc_template = caProcessTemplate($o_node->getInnerText(), array_merge($pa_vals, ['omitcount' => (int)$vn_last_unit_omit_count]), ['quote' => $pb_quote]);
 						$vs_acc .= $vs_proc_template;
 					}
+					break;
+				case 't':
+					$vs_acc .= _t($o_node->getInnerText());
 					break;
 				default:
 					if ($o_node->children && (sizeof($o_node->children) > 0)) {

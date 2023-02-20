@@ -4197,15 +4197,17 @@ function caFileIsIncludable($ps_file) {
 		}
 
 		// Left-pad numbers
-		if (preg_match_all("!([\d]+)!", $display_value, $matches)) {
-			$to_replace = array_unique($matches[1]);
-			sort($to_replace);	// replace shortest first to avoid double replacements
-			for($i=0; $i<sizeof($to_replace); $i++) {
-				if(!($to_replace[$i] = trim($to_replace[$i]))) { continue; }
-				$padded = str_pad($to_replace[$i], 10, 0, STR_PAD_LEFT);	// assume numbers don't go wider than 10 places
-				$display_value = preg_replace("/(?!<[0-9])".$to_replace[$i]."(?![0-9])/", $padded, $display_value);
+		$padded = [];
+		foreach(preg_split("![ \t]+!", $display_value) as $t) {
+			if(is_numeric($t)) {
+				$padded[] = str_pad($t, 10, 0, STR_PAD_LEFT).'    ';	// assume numbers don't go wider than 10 places
+			} elseif(preg_match("!^([\d]+)([A-Za-z]+)$!", $t, $m)) {
+				$padded[] = str_pad($m[1], 10, 0, STR_PAD_LEFT).str_pad(substr($m[2], 0, 4), 4, ' ', STR_PAD_LEFT);
+			} else {
+				$padded[] = str_pad(substr($t, 0, 10), 14, ' ', STR_PAD_LEFT);
 			}
 		}
+		$display_value = join(' ', $padded);
 		return $display_value;
 	}
 	# ----------------------------------------
