@@ -145,6 +145,7 @@
 
             // Store the RSS in a publically available directory
             file_put_contents($rssDirectory.$rssFile.'.xml', $ipt_rss);
+			return true;
         }
 
 		# -------------------------------------------------------
