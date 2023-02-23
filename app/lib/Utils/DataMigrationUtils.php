@@ -1293,7 +1293,6 @@ class DataMigrationUtils {
 				$t_instance->setTransaction($options['transaction']);
 			}
 			
-			$t_instance->setMode(ACCESS_WRITE);
 			if($t_instance->hasField('locale_id')) { $t_instance->set('locale_id', $locale_id); }
 			if($t_instance->hasField('type_id')) { $t_instance->set('type_id', $pn_type_id); }
 			
