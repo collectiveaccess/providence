@@ -129,7 +129,9 @@ class MARCDataReader extends BaseDataReader {
 		list($ps_code, $ps_subcode, $ps_indicators) = explode('/', $ps_spec);
 		if (!isset($this->opa_rows[$this->opn_current_row])) { return null; }
 		
-		$vs_delimiter = isset($pa_options['delimiter']) ? $pa_options['delimiter'] : ';'; 
+		$return_as_array = caGetOption('returnAsArray', $pa_options, false);
+		$vs_delimiter = caGetOption('delimiter', $pa_options, ';');
+		
 		$vs_ind1 = substr($ps_indicators, 0, 1);
 		$vs_ind2 = substr($ps_indicators, 0, 2);
 		
@@ -146,11 +148,14 @@ class MARCDataReader extends BaseDataReader {
 						if (strlen($vs_ind1) && ($vs_ind1 != $o_field->getIndicator(1))) { continue(2); }
 						if (strlen($vs_ind2) && ($vs_ind2 != $o_field->getIndicator(2))) { continue(2); }
 			
-						$o_subfield = $o_field->getSubfield($ps_subcode);
-						$va_content[] = is_object($o_subfield) ? $o_subfield->getData() : '';
+						foreach($o_field->getSubFields($ps_subcode) as $o_subfield) {
+							$va_content[] = is_object($o_subfield) ? $o_subfield->getData() : '';
+						}
 						break;
 				}
 			}
+			
+			if ($return_as_array) { return $va_content; }
 			return join($vs_delimiter, $va_content);
 		}
 		
@@ -187,7 +192,7 @@ class MARCDataReader extends BaseDataReader {
 							if (!($vs_ind1 = $o_field->getIndicator(1))) { $vs_ind1 = "#"; }
 							if (!($vs_ind2 = $o_field->getIndicator(2))) { $vs_ind2 = "#"; }
 					
-							$va_row[$o_field->getTag().'/'.$o_subfield->getCode()] = $va_row[$o_field->getTag().'/'.$o_subfield->getCode().$va_row_occurrence_nb[$o_field->getTag()]] = $va_row[$o_field->getTag().'/'.$o_subfield->getCode().'/'.$vs_ind1.$vs_ind2] = is_object($o_subfield) ? $o_subfield->getData() : '';
+							$va_row[$o_field->getTag().'/'.$o_subfield->getCode()][] = $va_row[$o_field->getTag().'/'.$o_subfield->getCode().$va_row_occurrence_nb[$o_field->getTag()]] = $va_row[$o_field->getTag().'/'.$o_subfield->getCode().'/'.$vs_ind1.$vs_ind2] = is_object($o_subfield) ? $o_subfield->getData() : '';
 						}
 						break;
 				}
@@ -223,6 +228,15 @@ class MARCDataReader extends BaseDataReader {
 	 */
 	public function getInputType() {
 		return __CA_DATA_READER_INPUT_FILE__;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Values can repeat for MARC files
+	 * 
+	 * @return bool
+	 */
+	public function valuesCanRepeat() {
+		return true;
 	}
 	# -------------------------------------------------------
 }
