@@ -686,12 +686,6 @@ class Replicator {
                         }
 					}
 					
-					if (!is_array($va_source_log_entries) || !sizeof($va_source_log_entries)) {
-						$this->log(_t("No new log entries found for source %1 and target %2. Skipping this combination now.",
-							$vs_source_key, $vs_target_key), Zend_Log::INFO);
-						break;
-					}
-					
 					if (is_array($va_filtered_log_entries)) {
 					    if (sizeof($va_filtered_log_entries) == 0) { 
                             $replicated_log_id = $this->last_log_id + 1;
@@ -708,6 +702,12 @@ class Replicator {
 					        continue; 
 					    }
 					    $va_source_log_entries = $va_filtered_log_entries;
+					}
+					
+					if (!is_array($va_source_log_entries) || !sizeof($va_source_log_entries)) {
+						$this->log(_t("No new log entries found for source %1 and target %2. Will try pulling new ones.",
+							$vs_source_key, $vs_target_key), Zend_Log::INFO);
+						//break;
 					}
 
 
