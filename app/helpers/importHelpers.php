@@ -1039,6 +1039,7 @@
 							}
 							unset($va_val[$vs_label_fld]);
 						}
+						unset($va_val['media']); // ignore media set in attributes; use filename directly
 						
 						// Allow setting of preferred labels in attributes block
 						if ($l = caGetOption(caGetPreferredLabelNameKeyList(), $va_val, null)) {
@@ -1267,8 +1268,10 @@
 								if($label_is_not_set) { 
 									 $va_val['preferred_labels'] = $vs_name ? $vs_name : '['.caGetBlankLabelText('ca_object_representations').']';
 								}
-					
-								if ($va_val['media']['media'] || $vs_item) {
+								
+								if (preg_match("!^http[s]{0,1}://!", strtolower($vs_item))) {
+								        $va_val['media']['media'] = $vs_item;
+								} elseif ($vs_item) {
 									// Search for files in import directory (or subdirectory of import directory specified by mediaPrefix)
 									$vs_media_dir_prefix = isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) ? '/'.$pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] : '';
 
@@ -1281,7 +1284,7 @@
 												$pa_item['settings'], null ),
 											'log'       => $o_log
 										] );
-
+										
 										$files_added = 0;
 										foreach ( $va_files as $vs_file ) {
 											if ( preg_match( "!(SynoResource|SynoEA)!", $vs_file ) ) {
@@ -1312,24 +1315,15 @@
 											$va_vals[]                = $va_media_val;
 							            	$files_added++;
 										}
-										if($files_added > 0) {	// if we found matching files we're done
-											break(2);
-										}
+										// if($files_added > 0) {	// if we found matching files we're done
+// 											break(2);
+// 										}
 									}
 							        $vn_c++;
 							        continue(2);
-								} else {
-								    if (preg_match("!^http[s]{0,1}://!", strtolower($vs_item))) {
-								        $va_val['media']['media'] = $vs_item;
-								    } else {
-									    foreach(caGetAvailableMediaUploadPaths() as $d) {
-									    	if(!file_exists($d . '/' . $vs_item)) { continue; }
-										    $va_val['media']['media'] = $d . '/' . $vs_item;
-									    }
-									}
-								}
+								} 
 								
-								// Default idno for rperesentation is the file name
+								// Default idno for representation is the file name
 								if(!isset($va_val['idno'])) { $va_val['idno'] = pathinfo($vs_item, PATHINFO_FILENAME); }
 								break;
 							default:
