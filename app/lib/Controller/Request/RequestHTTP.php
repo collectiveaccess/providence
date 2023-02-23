@@ -614,9 +614,6 @@ class RequestHTTP extends Request {
 			# -----------------------------------------
 			case pString:
 				if (is_string($vm_val)) {
-					if(caGetOption('retainBackslashes', $pa_options, true)) {
-						$vm_val = str_replace("\\", "\\\\", $vm_val);	// retain backslashes for some strange people desire them as valid input
-					}
 					if(!$purified && caGetOption('urldecode', $pa_options, true)) {
 						$vm_val = rawurldecode($vm_val);
 					}
