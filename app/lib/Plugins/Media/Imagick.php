@@ -892,7 +892,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				break;
 			# -----------------------
 			case "SET":
-				while(list($k, $v) = each($parameters)) {
+				foreach($parameters as $k => $v){
 					$this->set($k, $v);
 				}
 				break;
@@ -1120,7 +1120,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	# ------------------------------------------------
 	public function extension2mimetype($extension) {
 		reset($this->info["EXPORT"]);
-		while(list($k, $v) = each($this->info["EXPORT"])) {
+		foreach($this->info["EXPORT"] as $k => $v){	
 			if ($v === $extension) {
 				return $k;
 			}

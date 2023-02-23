@@ -237,7 +237,7 @@ class BaseMediaPlugin extends WLPlug  {
 	# ------------------------------------------------
 	public function extension2mimetype($extension) {
 		reset($this->info["EXPORT"]);
-		while(list($k, $v) = each($this->info["EXPORT"])) {
+		foreach($this->info["EXPORT"] as $k => $v){
 			if ($v === $extension) {
 				return $k;
 			}

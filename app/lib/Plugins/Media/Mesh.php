@@ -334,7 +334,7 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 		switch($operation) {
 			# -----------------------
 			case "SET":
-				while(list($k, $v) = each($parameters)) {
+				foreach($parameters as $k => $v){
 					$this->set($k, $v);
 				}
 				break;
@@ -417,7 +417,7 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 	# ------------------------------------------------
 	public function extension2mimetype($extension) {
 		reset($this->info["EXPORT"]);
-		while(list($k, $v) = each($this->info["EXPORT"])) {
+		foreach($this->info["EXPORT"] as $k => $v){
 			if ($v === $extension) {
 				return $k;
 			}

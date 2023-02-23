@@ -462,7 +462,7 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 		switch($ps_operation) {
 			# -----------------------
 			case "SET":
-				while(list($k, $v) = each($pa_parameters)) {
+				foreach($pa_parameters as $k => $v){	
 					$this->set($k, $v);
 				}
 				break;
@@ -645,7 +645,7 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 	# ------------------------------------------------
 	public function extension2mimetype($extension) {
 		reset($this->info["EXPORT"]);
-		while(list($k, $v) = each($this->info["EXPORT"])) {
+		foreach($this->info["EXPORT"] as $k => $v){
 			if ($v === $extension) {
 				return $k;
 			}
