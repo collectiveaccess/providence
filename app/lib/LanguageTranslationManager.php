@@ -69,7 +69,7 @@ class LanguageTranslationManager extends \CA\Plugins\PluginConsumer {
 	 */
 	function translate(string $text, string $to_lang, ?array $options=null) : ?string {
 		$tmp = preg_split("/[_\-]{1}/", $to_lang);
-		if(sizeof($tmp) > 1) { $to_lang = $tmp[1]; }
+		if(sizeof($tmp) > 1) { $to_lang = $tmp[0]; }
 	
 		$plugin_names = $this->getPluginNames($options);
 		foreach ($plugin_names as $plugin_name) {
