@@ -3049,9 +3049,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$vn_locale_id = isset($va_info['NODE']['locale_id']) ? $va_info['NODE']['locale_id'] : null;
 			$va_ancestor = array(
 				'item_id' => $vn_item_id = $va_info['NODE'][$vs_pk],
-				'parent_id' => $va_info['NODE']['parent_id'],
-				'label' => $va_info['NODE'][$vs_display_fld] ? $va_info['NODE'][$vs_display_fld] : $va_info['NODE'][$vs_idno_field],
-				'idno' => $va_info['NODE'][$vs_idno_field],
+				'parent_id' => $va_info['NODE']['parent_id'] ?? null,
+				'label' => $va_info['NODE'][$vs_display_fld] ?? $va_info['NODE'][$vs_display_fld] ?? $va_info['NODE'][$vs_idno_field],
+				'idno' => $va_info['NODE'][$vs_idno_field] ?? null,
 				'locale_id' => $vn_locale_id,
 				'table' => $this->tableName()
 				
