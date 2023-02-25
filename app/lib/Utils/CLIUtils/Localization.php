@@ -217,7 +217,7 @@ trait CLIUtilsLocalization {
 				}
 			}
 			
-			// Translate list items
+			// Translate lists
 			CLIUtils::addMessage(_t('Translate lists'));
 			$t_list = new ca_lists();
 			$lists = $t_list->getListOfLists();
@@ -228,6 +228,8 @@ trait CLIUtilsLocalization {
 					CLIUtils::addError(_t('Could not translate list %1: no label in default locale', $list_code));
 					continue;
 				}
+				
+				// Translate list names
 				$list_name = $list['name'];
 				
 				$labels = $t_list->getLabels();
@@ -248,7 +250,7 @@ trait CLIUtilsLocalization {
 					}
 				}
 				
-				// translate list items
+				// Translate list items
 				$items = $t_list->getItemsForList($list_id);
 				foreach($items as $item_id => $item) {
 					$t_item = new ca_list_items($item_id);
@@ -271,6 +273,38 @@ trait CLIUtilsLocalization {
 							$tnameplur = $lm->translate($def_label['name_plural'], $locale);
 							$tdesc = strlen($def_label['description']) ? $lm->translate($def_label['description'], $locale) : '';
 							$t_item->replaceLabel(['name_singular' => $tnamesing, 'name_plural' => $tnameplur, 'description' => $tdesc], $locale, null, true);
+						}
+					}
+				}
+			}
+			
+			// Translate relationship types
+			CLIUtils::addMessage(_t('Translate relationship types'));
+			$t_rel_type = new ca_relationship_types();
+			$rel_tables = $t_rel_type->getRelationshipsUsingTypes();
+			
+			foreach($rel_tables as $rel_table_num => $rel_table_info) {
+				$rels = $t_rel_type->getRelationshipInfo($rel_table_num, null, ['returnAllLocales' => true]);
+				
+				foreach($rels as $type_id => $rel_info) {
+					if($t_rel_type->load($type_id)) {
+						$labels = $t_rel_type->getLabels();
+						$labels = array_shift($labels);
+						if($overwrite || !is_array($labels[$locale_id])) {
+							$def_label = $labels[$default_locale_id] ?? [];
+							$def_label = array_shift($def_label);
+							if(!is_array($def_label)) { 
+								CLIUtils::addError(_t('Could not translate element %1: no label in default locale', $element_code));
+								continue;
+							}
+							if(strlen($def_label['typename'])) {
+								CLIUtils::addMessage(_t('Translate [%1]: %2/%3', $rel_table_info['table'], $def_label['typename'], $def_label['typename_reverse']));
+								$tname = $lm->translate($def_label['typename'], $locale);
+								$trname = $lm->translate($def_label['typename_reverse'], $locale);
+								$tdesc = strlen($def_label['description']) ? $lm->translate($def_label['description'], $locale) : '';
+								$trdesc = strlen($def_label['description_reverse']) ? $lm->translate($def_label['description_reverse'], $locale) : '';
+								$t_rel_type->replaceLabel(['typename' => $tname, 'typename_reverse' => $trname, 'description' => $tdesc, 'description_reverse' => $tr_desc], $locale, null, $element_info['is_preferred']);
+							}
 						}
 					}
 				}
