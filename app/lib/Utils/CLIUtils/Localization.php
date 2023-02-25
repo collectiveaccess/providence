@@ -173,14 +173,9 @@ trait CLIUtilsLocalization {
 	 * Extract strings from theme for translation
 	 */
 	public static function translate_system($opts=null) {	
-		// $locale = $opts->getOption('locale');
-// 		if(strlen($locale) && !preg_match("!^[a-z]{2}_[A-Z]{2,3}$!", $locale)) {
-// 			CLIUtils::addError(_t('Locale %1 is not valid', $locale));
-// 			return null;
-// 		}
+		$overwrite = $opts->getOption('overwrite');
 		
 		$lm = new \CA\LanguageTranslationManager();
-		$overwrite = false;
 		
 		$available_locales = ca_locales::getCataloguingLocaleCodes();
 		
@@ -189,8 +184,7 @@ trait CLIUtilsLocalization {
 			if($locale === __CA_DEFAULT_LOCALE__) { continue; }
 			CLIUtils::addMessage(_t('Translating to %1', $locale));	
 			
-			$locale_id = ca_locales::codeToID($locale);
-			
+			$locale_id = ca_locales::codeToID($locale);	
 			// Translate metadata elements
 			CLIUtils::addMessage(_t('Translate metadata elements'));
 			$elements = ca_metadata_elements::getElementsAsList();
@@ -309,6 +303,172 @@ trait CLIUtilsLocalization {
 					}
 				}
 			}
+			
+			// Translate user interfaces
+			CLIUtils::addMessage(_t('Translate user interfaces'));
+			$t_ui = new ca_editor_uis();
+			$uis = $t_ui->getUIList();
+			foreach($uis as $ui_id => $ui_info) {
+				$t_ui->load($ui_id);
+				$labels = $t_ui->getLabels();	
+				$labels = array_shift($labels);
+				
+				$ui_code = $t_ui->get('editor_code');
+				if($overwrite || !is_array($labels[$locale_id])) {
+					$def_label = $labels[$default_locale_id] ?? [];
+					$def_label = array_shift($def_label);
+					if(!is_array($def_label)) { 
+						CLIUtils::addError(_t('Could not translate user interface name %1: no label in default locale', $ui_code));
+						continue;
+					}
+				
+					if(strlen($def_label['name'])) {
+						CLIUtils::addMessage(_t('Translate [%1]: %2', $ui_code, $def_label['name']));
+						$tname = $lm->translate($def_label['name'], $locale);
+						$tdesc = strlen($def_label['description']) ? $lm->translate($def_label['description'], $locale) : '';
+						$t_ui->replaceLabel(['name' => $tname, 'description' => $tdesc], $locale, null, true);
+					}
+				}
+				
+					
+				// Translate screens
+				$t_screen = new ca_editor_ui_screens();
+				$screens = $t_ui->getScreens();
+				foreach($screens as $screen_id => $screen_info) {
+					$t_screen->load($screen_id);
+					$labels = $t_screen->getLabels();	
+					$labels = array_shift($labels);
+					if($overwrite || !is_array($labels[$locale_id])) {
+						$def_label = $labels[$default_locale_id] ?? [];
+						$def_label = array_shift($def_label);
+						$screen_code = $t_screen->get('idno');
+						if(!is_array($def_label)) { 
+							CLIUtils::addError(_t('Could not translate user interface %1 screen %2: no label in default locale', $ui_code, $screen_code ?? $screen_id));
+							continue;
+						}
+				
+						if(strlen($def_label['name'])) {
+							CLIUtils::addMessage(_t('Translate [%1][%2]: %3', $ui_code ?? $ui_id, $screen_code ?? $screen_id, $def_label['name']));
+							$tname = $lm->translate($def_label['name'], $locale);
+							$tdesc = strlen($def_label['description']) ? $lm->translate($def_label['description'], $locale) : '';
+							$t_screen->replaceLabel(['name' => $tname, 'description' => $tdesc], $locale, null, true);
+						}
+					}
+					
+					// Translate placements
+					$t_placement = new ca_editor_ui_bundle_placements();
+					$placements = $t_screen->getPlacements();
+					foreach($placements as $placement_id => $placement_info) {
+						$t_placement->load($placement_id);
+						
+						foreach(['label', 'add_label', 'description'] as $setting) {
+							$sv = $t_placement->getSetting($setting);
+							if(!is_array($sv)) { $sv = [__CA_DEFAULT_LOCALE__ => $sv]; }
+							$v = $sv[__CA_DEFAULT_LOCALE__] ?? null;
+							if(strlen($v) && ($overwrite || !isset($sv[$locale]) || !strlen($sv[$locale]))) {
+								$sv[$locale] = $lm->translate($v, $locale);
+								CLIUtils::addMessage(_t('Translate [%1][%2][%3]: %3', $ui_code ?? $ui_id, $screen_code ?? $screen_id, $placement_info['placement_code']));
+								$t_placement->setSetting($setting, $sv);
+								$t_placement->update();
+							}
+						}
+					}
+				}
+			}
+			
+			// Translate displays
+			CLIUtils::addMessage(_t('Translate displays'));
+			$t_display = new ca_bundle_displays();
+			$displays = $t_display->getBundleDisplays();
+			foreach($displays as $display_id => $display_info) {
+				$t_display->load($display_id);
+				
+				$labels = $t_display->getLabels();	
+				$labels = array_shift($labels);
+				
+				$display_code = $t_display->get('display_code');
+				
+				if($overwrite || !is_array($labels[$locale_id])) {
+					$def_label = $labels[$default_locale_id] ?? [];
+					$def_label = array_shift($def_label);
+					if(!is_array($def_label)) { 
+						CLIUtils::addError(_t('Could not translate display %1: no label in default locale', $display_code));
+						continue;
+					}
+				
+					if(strlen($def_label['name'])) {
+						CLIUtils::addMessage(_t('Translate [%1]: %2', $display_code, $def_label['name']));
+						$tname = $lm->translate($def_label['name'], $locale);
+						$t_display->replaceLabel(['name' => $tname], $locale, null, true);
+					}
+				}
+				
+				// Translate placements
+				$t_placement = new ca_bundle_display_placements();
+				$placements = $t_display->getPlacements();
+				foreach($placements as $placement_id => $placement_info) {
+					$t_placement->load($placement_id);
+				
+					foreach(['label'] as $setting) {
+						$sv = $t_placement->getSetting($setting);
+						if(!is_array($sv)) { $sv = [__CA_DEFAULT_LOCALE__ => $sv]; }
+						$v = $sv[__CA_DEFAULT_LOCALE__] ?? null;
+						if(strlen($v) && ($overwrite || !isset($sv[$locale]) || !strlen($sv[$locale]))) {
+							$sv[$locale] = $lm->translate($v, $locale);
+							CLIUtils::addMessage(_t('Translate [%1]: %2', $display_code ?? $display_id, $placement_info['bundle_name']));
+							$t_placement->setSetting($setting, $sv);
+							$t_placement->update();
+						}
+					}
+				}
+			}
+			
+			// Translate search forms
+			CLIUtils::addMessage(_t('Translate search forms'));
+			$t_form = new ca_search_forms();
+			$forms = $t_form->getForms();
+			foreach($forms as $form_id => $form_info) {
+				$t_form->load($form_id);
+				
+				$labels = $t_form->getLabels();	
+				$labels = array_shift($labels);
+				
+				$form_code = $t_form->get('form_code');
+				
+				if($overwrite || !is_array($labels[$locale_id])) {
+					$def_label = $labels[$default_locale_id] ?? [];
+					$def_label = array_shift($def_label);
+					if(!is_array($def_label)) { 
+						CLIUtils::addError(_t('Could not translate search form %1: no label in default locale', $form_code));
+						continue;
+					}
+				
+					if(strlen($def_label['name'])) {
+						CLIUtils::addMessage(_t('Translate [%1]: %2', $form_code, $def_label['name']));
+						$tname = $lm->translate($def_label['name'], $locale);
+						$t_form->replaceLabel(['name' => $tname], $locale, null, true);
+					}
+				}
+				
+				// Translate placements
+				$t_placement = new ca_search_form_placements();
+				$placements = $t_form->getPlacements();
+				foreach($placements as $placement_id => $placement_info) {
+					$t_placement->load($placement_id);
+				
+					foreach(['label'] as $setting) {
+						$sv = $t_placement->getSetting($setting);
+						if(!is_array($sv)) { $sv = [__CA_DEFAULT_LOCALE__ => $sv]; }
+						$v = $sv[__CA_DEFAULT_LOCALE__] ?? null;
+						if(strlen($v) && ($overwrite || !isset($sv[$locale]) || !strlen($sv[$locale]))) {
+							$sv[$locale] = $lm->translate($v, $locale);
+							CLIUtils::addMessage(_t('Translate [%1]: %2', $form_code, $placement_info['bundle_name']));
+							$t_placement->setSetting($setting, $sv);
+							$t_placement->update();
+						}
+					}
+				}
+			}
 		}
 		
 		CLIUtils::addMessage(_t('Completed'));
@@ -316,10 +476,8 @@ trait CLIUtilsLocalization {
 	# -------------------------------------------------------
 	public static function translate_systemParamList() {
 		return [
-		// 	"theme|g=s" => _t('Theme to extract strings from. If omitted the currently configured theme is used.'),
-// 			"locale|l=s" => _t('Locale of translation.'),
-// 			"file|f=s" => _t('File to write strings to.'),
-// 			"team|t=s" => _t('Language team name. If omitted the current application name'),
+		 	"overwrite|o=s" => _t('Overwrite existing labels with new translations. Default is to skip previously translated labels.'),
+ 			"locales|l=s" => _t('Commas-separated list of locales to translate system for.')
 		];
 	}
 	# -------------------------------------------------------
@@ -341,7 +499,7 @@ trait CLIUtilsLocalization {
 	 *
 	 */
 	public static function translate_systemHelp() {
-		return _t('Translate list items, metadata elements, relationship types and user interfaces into the specified language.');
+		return _t('Translate list items, metadata elements, relationship types, user interfaces, displays and search forms into selected languages. By default translation will be to all languages enabled for cataloguing.');
 	}
 	# -------------------------------------------------------
 }
