@@ -1033,7 +1033,7 @@
 		
 						// Set attributes
 						//      $va_attr_vals = directly attached attributes for item
-						if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']["{$ps_refinery_name}_attributes"], $pa_source_data, $pa_item, null, array('delimiter' => $va_delimiter, 'log' => $o_log, 'reader' => $o_reader, 'refineryName' => $ps_refinery_name)))) {
+						if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']["{$ps_refinery_name}_attributes"], $pa_source_data, $pa_item, $vn_i, array('delimiter' => $va_delimiter, 'log' => $o_log, 'reader' => $o_reader, 'refineryName' => $ps_refinery_name)))) {
 							foreach($va_attr_vals as $k => $v) {	// only overwrite if is value is not yet set
 								if(!isset($va_val[$k]) || !strlen($va_val[$k])) { $va_val[$k] = $v; }
 							}
@@ -1315,9 +1315,6 @@
 											$va_vals[]                = $va_media_val;
 							            	$files_added++;
 										}
-										// if($files_added > 0) {	// if we found matching files we're done
-// 											break(2);
-// 										}
 									}
 							        $vn_c++;
 							        continue(2);
