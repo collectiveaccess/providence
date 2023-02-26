@@ -354,6 +354,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 * @params string $ps_type_code
 	 * @params array $options Options include:
 	 *      includeTypeCodesAsKeys = Also set type codes are keys in the returned array. [Default is false]
+	 *		returnAllLocales = 
 	 *
 	 * Returns array keyed on relationship type_id; values are associative arrays keys on ca_relationship_types/ca_relationship_type_labels field names
 	 */
@@ -390,7 +391,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 			    $va_relationships[$va_row['type_code']][$locale_id] = $va_row;
 			}
 		}
-		return caExtractValuesByUserLocale($va_relationships);
+		return caGetOption('returnAllLocales', $options, false)  ? $va_relationships : caExtractValuesByUserLocale($va_relationships);
 	}
 	# ------------------------------------------------------
 	/**
@@ -709,6 +710,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 			$vn_type_id = $qr_res->get('type_id');
 			$va_hierarchies[$vn_type_id]['type_id'] = $va_hierarchies[$vn_type_id]['item_id'] = $vn_type_id;	
 			$va_hierarchies[$vn_type_id]['name'] = $va_relationship_tables[$qr_res->get('table_num')]['name'];	
+			$va_hierarchies[$vn_type_id]['table_num'] = $qr_res->get('table_num');
 			
 			$qr_children = $o_db->query("
 				SELECT count(*) children

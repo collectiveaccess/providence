@@ -901,7 +901,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$va_record['settings'] = caUnserializeForDatabase($qr_tmp->get('settings'));
 
 			if ($pb_return_stats) {
-				$va_record['ui_counts'] = $va_counts_by_attribute[$vs_code = $qr_tmp->get('element_code')];
+				$va_record['ui_counts'] = $va_counts_by_attribute[$vs_code = $qr_tmp->get('element_code')] ?? 0;
 
 				if(!$pb_root_elements_only && !$va_record['ui_counts'] && $va_record['parent_id']) {
 					$t_element->load($va_record['parent_id']);

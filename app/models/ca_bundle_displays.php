@@ -3139,9 +3139,10 @@ if (!$pb_omit_editing_info) {
 
 					
 					if($vb_set_value) { 
-						$t_subject->saveBundlesForScreen(null, $request, $save_options = [
+						$save_options = [
 							'bundles' => [$bundle], 'formName' => '_resultsEditor'
-						]);
+						];
+						$t_subject->saveBundlesForScreen(null, $request, $save_options);
 					}
 					if ($request->numActionErrors()) { 
 						$bundles = $request->getActionErrorSources();

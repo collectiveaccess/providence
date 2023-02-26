@@ -188,7 +188,7 @@ foreach($va_plugins as $vs_plugin_name => $va_plugin_info){
 			<tr>
 				<td><?= $vs_plugin_name; ?></td>
 				<td><?php 
-					print $va_plugin_info['description']; 
+					print $va_plugin_info['description'] ?? ''; 
 					if (is_array($va_plugin_info['errors'] ?? null) && sizeof($va_plugin_info['errors'])) {
 						print '<div style="color:red;">'.join('<br/>', $va_plugin_info['errors']).'</div>';
 					}

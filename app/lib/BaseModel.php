@@ -1178,7 +1178,7 @@ class BaseModel extends BaseObject {
 			$vs_prop = caEscapeForXML($vs_prop);
 		}
 
-		if (!(isset($pa_options["DONT_STRIP_SLASHES"]) && $pa_options["DONT_STRIP_SLASHES"])) {
+		if (!caGetOption("DONT_STRIP_SLASHES", $pa_options, true)) {
 			if (is_string($vs_prop)) { $vs_prop = stripSlashes($vs_prop); }
 		}
 		
@@ -1696,7 +1696,7 @@ class BaseModel extends BaseObject {
 						break;
 					case (FT_TEXT):
 						$vm_value = (string)$vm_value;
-						if (is_string($vm_value)) {
+						if (is_string($vm_value) && isset($pa_options['stripSlashes']) && ($pa_options['stripSlashes'])) {
 							$vm_value = stripSlashes($vm_value);
 						}
 						
@@ -3507,7 +3507,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			$vs_sql = "DELETE FROM ".$this->tableName()." WHERE ";
 
 			$vs_wheres = "";
-			while(list($vs_field, $vm_val) = each($pa_fields)) {
+			foreach($pa_fields as $vs_field => $vm_val){
 				$vn_datatype = $this->_getFieldTypeType($vs_field);
 				switch($vn_datatype) {
 					# -----------------------------
@@ -5849,7 +5849,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	public function dump () {
 		$this->clearErrors();
 		reset($this->FIELDS);
-		while (list($field, $attr) = each($this->FIELDS)) {
+		foreach($this->FIELDS as $field => $attr){
 			switch($attr['FIELD_TYPE']) {
 				case FT_HISTORIC_DATERANGE:
 					echo "{$field} = ".$this->_FIELD_VALUES[$attr['START']]."/".$this->_FIELD_VALUES[$attr['END']]."<BR>\n";
@@ -6099,7 +6099,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		$err_halt = $this->error->getHaltOnError();
 		$err_report = $this->error->getReportOnError();
 		$this->error->setErrorOutput(0);
-		while(list($field,$attr) = each($fields)) {
+		foreach($fields as $field => $attr){
 			$pb_need_reload = false;
 			$this->verifyFieldValue ($field, $this->get($field), $pb_need_reload);
 			if ($errnum = $this->error->getErrorNumber()) {

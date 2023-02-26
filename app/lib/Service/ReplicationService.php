@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2020 Whirl-i-Gig
+ * Copyright 2015-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -51,7 +51,7 @@ class ReplicationService {
 	 * @throws Exception
 	 */
 	public static function dispatch($ps_endpoint, $po_request) {
-	
+		if(!defined('__CA_IS_REPLICATION__')) { define('__CA_IS_REPLICATION__', true); }
 		if (is_null(ReplicationService::$s_logger)) { 
 			ReplicationService::$s_logger = new Logger('replication');
 		}

@@ -488,7 +488,7 @@
 					    self::$s_history_tracking_deleted_current_values[$l->get('current_table_num')][$l->get('current_row_id')][$policy] = 
 					        ['table_num' => $l->get('table_num'), 'row_id' => $l->get('row_id')];
 					
-				    if (!($rc = $l->delete())) {
+				    if (!($rc = $l->delete(true))) {
                         $this->errors = $l->errors;
                         return false;
                     }
@@ -538,6 +538,7 @@
                           
                         if($l['is_future'] > 0) {
                         	// Delete existing entries (TODO: log this so sync can replicate it)
+                        	$this->getDb()->query("DELETE FROM ca_history_tracking_current_value_labels WHERE tracking_id IN (SELECT tracking_id FROM ca_history_tracking_current_values WHERE table_num = ? AND row_id = ? AND is_future IS NULL and tracking_id <> ?)", [$subject_table_num, $row_id, $l['tracking_id']]);
                         	$this->getDb()->query("DELETE FROM ca_history_tracking_current_values WHERE table_num = ? AND row_id = ? AND is_future IS NULL and tracking_id <> ?", [$subject_table_num, $row_id, $l['tracking_id']]);
                         	
                         	// Future location is now current location
@@ -562,7 +563,7 @@
 					$t_l = new ca_history_tracking_current_values();
 					$t_l->setTransaction($this->getTransaction());
 					$t_l->load($l['tracking_id']);
-				    if (!($rc = $t_l->delete())) {
+				    if (!($rc = $t_l->delete(true))) {
                         $this->errors = $t_l->errors;
                         return false;
                     }
@@ -661,7 +662,9 @@
 				return []; // No policies are configured
 			}
 			
-			$type_restrictions = caGetOption('restrictToTypes', $options, null);
+			if(is_array($type_restrictions = caGetOption('restrictToTypes', $options, null))) {
+				$type_restrictions = array_filter($type_restrictions, 'strlen');
+			}
 			
 			$policies = [];
 			foreach($policy_config['policies'] as $policy => $policy_info) {
@@ -1206,9 +1209,16 @@
                                 foreach($va_date_elements_by_type[$vn_type_id] as $vs_date_element) {
                                     $va_date_bits = explode('.', $vs_date_element);
                                     $vs_date_spec = (Datamodel::tableExists($va_date_bits[0])) ? $vs_date_element : "ca_loans.{$vs_date_element}";
+                                    
+                                    $d = $qr_loans->get($vs_date_spec, array('sortable' => true));
+                                    $b = explode("/", $d);
+                                    if(($b[0] <= $vn_current_date) && ($b[1] > $vn_current_date)) { 
+                                    	$b[0] = $vn_current_date;
+                                    	$d = join('/', $b);
+                                    }
                                     $va_dates[] = array(
-                                        'sortable' => $qr_loans->get($vs_date_spec, array('sortable' => true)),
-                                        'bounds' => explode("/", $qr_loans->get($vs_date_spec, array('sortable' => true))),
+                                        'sortable' => $d,
+                                        'bounds' => $b,
                                         'display' => $qr_loans->get($vs_date_spec)
                                     );
                                 }
@@ -2558,13 +2568,16 @@
 				case 'history_tracking_current_contents':
 					if (method_exists($this, "getContents")) {
 					    $policy = caGetOption('policy', $pa_options, null);
-						if ($qr = $this->getContents($policy, ['row_id' => $pn_row_id])) { 
-							$contents = [];
-							$p = self::getHistoryTrackingCurrentValuePolicy($policy);
-							while($qr->nextHit()) {
-							    $contents[] = $qr->getWithTemplate("<l>^".$p['table'].".preferred_labels</l>");
+						$p = self::getHistoryTrackingCurrentValuePolicy($policy);
+						$contents_config = caGetOption('contents', $p, []);
+						$pa_options['expandHierarchically'] = caGetOption('expandHierarchically', $contents_config, false);
+						if ($qr = $this->getContents($policy, ['row_id' => $pn_row_id], $pa_options)) {
+							$template = caGetOption('template', $contents_config, "<l>$p[table].preferred_labels </l>");
+							$delimiter = caGetOption('delimiter', $contents_config, "; ");
+							while($qr->nextHit()) { 
+								$contents[] = $qr->getWithTemplate($template);
 							}
-							return join("; ", $contents);
+							return join($delimiter, $contents);
 						}
 					}
 					return null;

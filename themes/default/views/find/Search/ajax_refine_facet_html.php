@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2017 Whirl-i-Gig
+ * Copyright 2010-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,7 +38,7 @@
 		print _t('No facet defined'); 
 		return;
 	}
-
+	$vb_multiple_selection_facet = caGetOption('multiple', $va_facet_info, false, ['castTo' => 'boolean']);
 	$vm_modify_id 			= $this->getVar('modify') ? $this->getVar('modify') : '0';
 ?>
 <script type="text/javascript">
@@ -58,8 +58,15 @@
 ?>
 </div>
 
-<div class="browseSelectPanelContentArea">
-	<h2 class='browse'><?= caUcFirstUTF8Safe($va_facet_info['label_plural']); ?></h2>
+<div class="browseSelectPanelContentArea <?= ($vb_multiple_selection_facet) ? "browseSelectMultiplePanelContentArea" : "" ?>">
+<?php
+	if ($vb_multiple_selection_facet) {
+?>
+		<div class='applyFacetContainer'><a href="#" id="facet_apply" data-facet="<?= $vs_facet_name; ?>" class="facetApply">Apply</a></div>
+<?php
+	}
+?>
+	<h2 class='browse'><?php print caUcFirstUTF8Safe($va_facet_info['label_plural']); ?></h2>
 
 <?php
 	switch($vs_group_mode) {
@@ -68,6 +75,7 @@
 ?>
 	<div class='clearDivide'></div>
 	<!--- BEGIN HIERARCHY BROWSER --->
+	<div id="hierarchyBrowserContainer"><div id="<?= $vs_facet_name; ?>_facet_container">
 	<div id="hierarchyBrowser" class='hierarchyBrowser'>
 		<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
 	</div><!-- end hierarchyBrowser -->
@@ -81,6 +89,7 @@
 <?php
 	}
 ?>
+	</div></div>
 	
 	<script type="text/javascript">
 			var oHierBrowser;
@@ -97,7 +106,8 @@
 					initItemID: '<?= $this->getVar('browse_last_id'); ?>',
 					indicator: "<?= caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 					
-					currentSelectionDisplayID: 'browseCurrentSelection'
+					currentSelectionDisplayID: 'browseCurrentSelection',
+				selectMultiple: <?= ($vb_multiple_selection_facet) ? 1 : 0; ?>
 				});
 			});
 		</script>
@@ -107,14 +117,14 @@
 		case 'none':
 ?>
 	<div class="browseSelectPanelList">
-		<table class='browseSelectPanelListTable'>
+		<table class='browseSelectPanelListTable' id='<?= $vs_facet_name; ?>_facet_container'>
 <?php
 			$va_row = array();
 			foreach($va_facet as $vn_i => $va_item) {
 ?>
 <?php
                 $vs_content_count = (isset($va_item['content_count']) && ($va_item['content_count'] > 0)) ? " (".$va_item['content_count'].")" : "";
-				$va_row[] = "<td class='browseSelectPanelListCell' width='{$va_td_width}%;'>".caNavLink($this->request, $va_item['label'], 'browseSelectPanelLink', 'find', $this->request->getController(), ((strlen($vm_modify_id)) ? 'modifyCriteria' : 'addCriteria'), array('facet' => $vs_facet_name, 'id' => $va_item['id'], 'mod_id' => $vm_modify_id))."{$vs_content_count}</td>";
+				$va_row[] = "<td class='browseSelectPanelListCell facetItem' width='{$va_td_width}%;' data-facet_item_id='{$va_item['id']}'>".caNavLink($this->request, $va_item['label'], 'browseSelectPanelLink', 'find', $this->request->getController(), ((strlen($vm_modify_id)) ? 'modifyCriteria' : 'addCriteria'), array('facet' => $vs_facet_name, 'id' => $va_item['id'], 'mod_id' => $vm_modify_id))."{$vs_content_count}</td>";
 				
 				if (sizeof($va_row) == 5) {
 					print "<tr valign='top'>".join('', $va_row)."</tr>\n";
@@ -159,11 +169,11 @@
 				}
 				print "<div class='browseSelectPanelListGroupHeading'><a name='{$vs_group}' class='browseSelectPanelListGroupHeading'>{$vs_group}</a></div>\n";
 ?>
-		<table class='browseSelectPanelListTable'>
+		<table class='browseSelectPanelListTable' id='<?= $vs_facet_name; ?>_facet_container'>
 <?php
 				foreach($va_items as $va_item) {
 				    $vs_content_count = (isset($va_item['content_count']) && ($va_item['content_count'] > 0)) ? " (".$va_item['content_count'].")" : "";
-					$va_row[] = "<td class='browseSelectPanelListCell' width='{$va_td_width}%;'>".caNavLink($this->request, $va_item['label'], 'browseSelectPanelLink', 'find', $this->request->getController(), ((strlen($vm_modify_id) > 0) ? 'modifyCriteria' : 'addCriteria'), array('facet' => $vs_facet_name, 'id' => $va_item['id'], 'mod_id' => $vm_modify_id))."{$vs_content_count}</td>";
+					$va_row[] = "<td class='browseSelectPanelListCell facetItem' width='{$va_td_width}%;' data-facet_item_id='{$va_item['id']}'>".caNavLink($this->request, $va_item['label'], 'browseSelectPanelLink', 'find', $this->request->getController(), ((strlen($vm_modify_id) > 0) ? 'modifyCriteria' : 'addCriteria'), array('facet' => $vs_facet_name, 'id' => $va_item['id'], 'mod_id' => $vm_modify_id))."{$vs_content_count}</td>";
 					
 					if (sizeof($va_row) == 5) {
 						print "<tr valign='top'>".join('', $va_row)."</tr>\n";
@@ -194,3 +204,49 @@
 	<div style='clear:both;width:100%'></div>
 
 </div>
+
+<script type="text/javascript">
+	
+<?php
+if($vb_multiple_selection_facet){
+?>	
+	jQuery(document).ready(function() {
+		
+		jQuery(".facetApply").hide();
+		
+		jQuery(".facetItem").on('click', function(e) { 
+			if (jQuery(this).attr('facet_item_selected') == '1') {
+				jQuery(this).attr('facet_item_selected', '');
+			} else {
+				jQuery(this).attr('facet_item_selected', '1');
+			}
+			
+			if (jQuery(".facetItem[facet_item_selected='1']").length > 0) {
+				jQuery("#facet_apply").show();
+			} else {
+				jQuery("#facet_apply").hide();
+			}
+			
+			e.preventDefault();
+			return false;
+		});
+		
+		jQuery(".facetApply").on('click', function(e) { 
+			var facet = '<?= $vs_facet_name; ?>';
+			var ids = [];
+			jQuery.each(jQuery("#" + facet + "_facet_container").find("[facet_item_selected=1]"), function(k,v) {
+				var id = jQuery(v).data('facet_item_id');
+				if(!id) { id = jQuery(v).data('item_id'); }
+				if ((''+id).length > 0) { ids.push(id); }
+			});
+
+			if(ids.length){
+				window.location = '<?= caNavUrl($this->request, 'find', $this->request->getController(),((strlen($vm_modify_id)) ? 'modifyCriteria' : 'addCriteria'), array('mod_id' => $vm_modify_id)); ?>/facet/' + facet + '/id/' + ids.join('|');
+			}
+			e.preventDefault();
+		});
+	});	
+<?php
+}
+?>	
+</script>
