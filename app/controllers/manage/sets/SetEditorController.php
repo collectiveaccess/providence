@@ -30,6 +30,7 @@ require_once(__CA_MODELS_DIR__."/ca_sets.php");
 require_once(__CA_LIB_DIR__."/BaseEditorController.php");
 require_once(__CA_LIB_DIR__.'/Parsers/ZipStream.php');
 require_once(__CA_APP_DIR__.'/helpers/exportHelpers.php');
+require_once(__CA_APP_DIR__.'/helpers/printHelpers.php');
 
 class SetEditorController extends BaseEditorController {
 	# -------------------------------------------------------
@@ -198,7 +199,7 @@ class SetEditorController extends BaseEditorController {
 	/**
 	 * Download (accessible) media for all records in this set
 	 */
-	public function getSetMedia() {
+	public function GetSetMedia() {
 		set_time_limit(600); // allow a lot of time for this because the sets can be potentially large
 		$t_set = new ca_sets($this->request->getParameter('set_id', pInteger));
 		if (!$t_set->getPrimaryKey()) {
@@ -303,7 +304,7 @@ class SetEditorController extends BaseEditorController {
 	# -------------------------------------------------------
 	# Export set items
 	# -------------------------------------------------------
-	public function exportSetItems() {
+	public function ExportSetItems() {
 		set_time_limit(7200); // allow a lot of time for this because the sets can be potentially large
 		
 		$t_set = new ca_sets($this->request->getParameter('set_id', pInteger));
@@ -334,10 +335,34 @@ class SetEditorController extends BaseEditorController {
 		if ($filename_template = $this->request->config->get('ca_sets_export_file_naming')) {
 			$filename_stub = $t_set->getWithTemplate($filename_template);
 		}
-		
 		caExportResult($this->request, $qr_res, $ps_export_format, '_output', ['printTemplateType' => 'sets', 'set' => $t_set, 'filename' => $filename_stub]);
 		
 		return;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Generates options form for printable template
+	 *
+	 * @param array $pa_options Array of options passed through to _initView
+	 */
+	public function PrintSummaryOptions(?array $options=null) {
+		$form = $this->request->getParameter('form', pString);
+		
+		if(!preg_match("!^_([a-z]+)_(.*)$!", $form, $m)) {
+			throw new ApplicationException(_t('Invalid template'));
+		}
+		$values = Session::getVar("print_sets_options_{$m[2]}");
+		
+		$form_options = caEditorPrintParametersForm('sets', $m[2], $values);
+		
+		$this->view->setVar('form', $m[2]);
+		$this->view->setVar('options', $form_options);
+		
+		if(sizeof($form_options) === 0) {
+			$this->response->setHTTPResponseCode(204, _t('No options available'));
+		}
+		
+		$this->render("ajax_print_summary_options_form_html.php");
 	}
 	# -------------------------------------------------------
 	# Sidebar info handler
@@ -345,7 +370,7 @@ class SetEditorController extends BaseEditorController {
 	/**
 	 *
 	 */
-	public function info($pa_parameters) {
+	public function Info($pa_parameters) {
 		parent::info($pa_parameters);
 		return $this->render('widget_set_info_html.php', true);
 	}

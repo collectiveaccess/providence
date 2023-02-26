@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2022 Whirl-i-Gig
+ * Copyright 2016-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -449,7 +449,7 @@ function caExportResult($po_request, $po_result, $ps_template, $ps_output_filena
 			//
 			// PDF output
 			//
-			caExportViewAsPDF($o_view, $va_template_info, (($vs_filename = $o_view->getVar('filename')) ? $vs_filename : caGetOption('filename', $va_template_info, 'export_results')).'_'.date("Y-m-d").'.pdf', []);
+			caExportViewAsPDF($o_view, $va_template_info, (($vs_filename = $o_view->getVar('filename')) ? $vs_filename : caGetOption('filename', $va_template_info, 'export_results')).'_'.date("Y-m-d").'.pdf', $pa_options);
 			$o_controller = AppController::getInstance();
 			$o_controller->removeAllPlugins();
 			exit;
@@ -499,6 +499,22 @@ function caExportViewAsPDF($po_view, $ps_template_identifier, $ps_output_filenam
 
 		$po_view->addViewPath($vs_base_path."/local");
 		$po_view->addViewPath($vs_base_path);
+		
+		// Copy download-time user parameters into view
+		if(is_array($pa_template_info) && is_array($pa_template_info['params'])) {
+			$values = [];
+			foreach($pa_template_info['params'] as $n => $p) {
+				if((bool)$p['multiple'] ?? false) {
+					$po_view->setVar("param_{$n}", $values[$n] = $po_view->request->getParameter($n, pArray));
+				} else {
+					$po_view->setVar("param_{$n}", $values[$n] = $po_view->request->getParameter($n, pString));
+				}
+			}
+			if($template_type = caGetOption('printTemplateType', $pa_options, null)) {
+				// Set defaults for form
+				$values = Session::setVar("print_{$template_type}_options_".pathinfo($pa_template_info['path'] ?? null, PATHINFO_FILENAME), $values);
+			}
+		}
 		$vs_content = $po_view->render($pa_template_info['path']);
 		
 		$vb_printed_properly = caExportContentAsPDF($vs_content, $pa_template_info, $ps_output_filename, $pa_options);

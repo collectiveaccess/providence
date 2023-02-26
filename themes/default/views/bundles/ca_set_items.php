@@ -25,23 +25,23 @@
  *
  * ----------------------------------------------------------------------
  */ 
- 	AssetLoadManager::register('setEditorUI');
- 
-	$vs_id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$va_items 				= caSanitizeArray($this->getVar('items'), ['removeNonCharacterData' => false]);
-	$t_set 					= $this->getVar('t_set');
-	$vn_set_id 				= $t_set->getPrimaryKey();
-	$t_row 					= $this->getVar('t_row');
-	$vs_type_singular 		= $this->getVar('type_singular');
-	$vs_type_plural 		= $this->getVar('type_plural');
-	$va_lookup_urls 		= $this->getVar('lookup_urls');
-	$settings				= $this->getVar('settings');
-	$vn_table_num 			= $t_set->get('table_num');
-	
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'setItemEditor');
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.'setItemEditor', $settings);
-	
-	if(caGetOption('showCount', $settings, false)) { print ($count = sizeof($items)) ? "({$count})" : ''; }
+AssetLoadManager::register('setEditorUI');
+
+$vs_id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
+$va_items 				= caSanitizeArray($this->getVar('items'), ['removeNonCharacterData' => false]);
+$t_set 					= $this->getVar('t_set');
+$vn_set_id 				= $t_set->getPrimaryKey();
+$t_row 					= $this->getVar('t_row');
+$vs_type_singular 		= $this->getVar('type_singular');
+$vs_type_plural 		= $this->getVar('type_plural');
+$va_lookup_urls 		= $this->getVar('lookup_urls');
+$settings				= $this->getVar('settings');
+$vn_table_num 			= $t_set->get('table_num');
+
+print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'setItemEditor');
+print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.'setItemEditor', $settings);
+
+if(caGetOption('showCount', $settings, false)) { print ($count = sizeof($items)) ? "({$count})" : ''; }
 	
 ?>
 <div id="<?= $vs_id_prefix; ?>" class='setItemEditor'>
@@ -55,12 +55,14 @@
 		</div>
 <?php
 	} else {
-		print "<div class='bundleSubLabel'>";
 		if(is_array($va_items) && sizeof($va_items)) {
-			print caGetPrintFormatsListAsHTMLForSetItemBundles($vs_id_prefix, $this->request, $t_set, $t_set->getItemRowIDs());
+			//print caGetPrintFormatsListAsHTMLForSetItemBundles($vs_id_prefix, $this->request, $t_set, $t_set->getItemRowIDs());
+			print "<div style='float:right; '>".caEditorPrintSetItemsControls($this)."</div>";
 		}
+		print "<div class='bundleSubLabel'>";
+		
 ?>
-    <div class="caItemListSortControls">
+   <div class="caItemListSortControls">
 		<?= _t('Sort by'); ?>:
 		<a href="#" onclick="setEditorOps.sort('name'); return false;"><?= _t('name'); ?></a>&nbsp;&nbsp;
 		<a href="#" onclick="setEditorOps.sort('idno'); return false;"><?= _t('identifier'); ?></a>

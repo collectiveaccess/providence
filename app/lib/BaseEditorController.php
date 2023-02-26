@@ -999,7 +999,7 @@ class BaseEditorController extends ActionController {
 		}
 		$values = Session::getVar("print_summary_options_{$m[2]}");
 		
-		$form_options = caEditorPrintSummaryForm('summary', $m[2], $values);
+		$form_options = caEditorPrintParametersForm('summary', $m[2], $values);
 		
 		$this->view->setVar('form', $m[2]);
 		$this->view->setVar('options', $form_options);
