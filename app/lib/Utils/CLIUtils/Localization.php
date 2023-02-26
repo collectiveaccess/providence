@@ -174,6 +174,9 @@ trait CLIUtilsLocalization {
 	 */
 	public static function translate_system($opts=null) {	
 		$overwrite = $opts->getOption('overwrite');
+		if($locales = $opts->getOption('locales')) {
+			$locales = preg_split("/[;,]+/", mb_strtolower($locales));
+		}
 		
 		$lm = new \CA\LanguageTranslationManager();
 		
@@ -182,13 +185,16 @@ trait CLIUtilsLocalization {
 		$default_locale_id = ca_locales::codeToID(__CA_DEFAULT_LOCALE__);
 		foreach($available_locales as $locale) {
 			if($locale === __CA_DEFAULT_LOCALE__) { continue; }
-			CLIUtils::addMessage(_t('Translating to %1', $locale));	
+			if(is_array($locales) && sizeof($locales) && !in_array(mb_strtolower($locale), $locales, true)) { continue; }
 			
 			$locale_id = ca_locales::codeToID($locale);	
 			// Translate metadata elements
-			CLIUtils::addMessage(_t('Translate metadata elements'));
+			
 			$elements = ca_metadata_elements::getElementsAsList();
+			print CLIProgressBar::start(sizeof($elements), _t('[%1] Translating metadata elements', $locale));
 			foreach($elements as $element_id => $element_info) {
+				print CLIProgressBar::next();
+				
 				$t_element = ca_metadata_elements::getInstance($element_id);
 				$element_code = $t_element->get('ca_metadata_elements.element_code');
 				
@@ -199,7 +205,7 @@ trait CLIUtilsLocalization {
 					$def_label = $labels[$default_locale_id] ?? [];
 					$def_label = array_shift($def_label);
 					if(!is_array($def_label)) { 
-						CLIUtils::addError(_t('Could not translate element %1: no label in default locale', $element_code));
+						CLIUtils::addError(_t('[%1] Could not translate element %1: no label in default locale', $element_code));
 						continue;
 					}
 					if(strlen($def_label['name'])) {
@@ -210,12 +216,15 @@ trait CLIUtilsLocalization {
 					}
 				}
 			}
+			print CLIProgressBar::finish();
 			
 			// Translate lists
-			CLIUtils::addMessage(_t('Translate lists'));
 			$t_list = new ca_lists();
 			$lists = $t_list->getListOfLists();
+			print CLIProgressBar::start(sizeof($lists), _t('[%1] Translating lists', $locale));
 			foreach($lists as $list_id => $list) {
+				print CLIProgressBar::next();
+				
 				$t_list->load($list_id);
 				$list_code = $t_list->get('list_code');
 				if(!is_array($list = ($list[$default_locale_id] ?? null))) {
@@ -271,15 +280,17 @@ trait CLIUtilsLocalization {
 					}
 				}
 			}
+			print CLIProgressBar::finish();
 			
 			// Translate relationship types
-			CLIUtils::addMessage(_t('Translate relationship types'));
 			$t_rel_type = new ca_relationship_types();
 			$rel_tables = $t_rel_type->getRelationshipsUsingTypes();
 			
+			print CLIProgressBar::start(sizeof($rel_tables), _t('[%1] Translating relationship types', $locale));
 			foreach($rel_tables as $rel_table_num => $rel_table_info) {
 				$rels = $t_rel_type->getRelationshipInfo($rel_table_num, null, ['returnAllLocales' => true]);
 				
+				print CLIProgressBar::next();
 				foreach($rels as $type_id => $rel_info) {
 					if($t_rel_type->load($type_id)) {
 						$labels = $t_rel_type->getLabels();
@@ -303,12 +314,16 @@ trait CLIUtilsLocalization {
 					}
 				}
 			}
+			print CLIProgressBar::finish();
 			
 			// Translate user interfaces
-			CLIUtils::addMessage(_t('Translate user interfaces'));
 			$t_ui = new ca_editor_uis();
 			$uis = $t_ui->getUIList();
+			
+			print CLIProgressBar::start(sizeof($uis), _t('[%1] Translating user interfaces', $locale));
 			foreach($uis as $ui_id => $ui_info) {
+				print CLIProgressBar::next();
+				
 				$t_ui->load($ui_id);
 				$labels = $t_ui->getLabels();	
 				$labels = array_shift($labels);
@@ -375,12 +390,14 @@ trait CLIUtilsLocalization {
 					}
 				}
 			}
+			print CLIProgressBar::finish();
 			
 			// Translate displays
-			CLIUtils::addMessage(_t('Translate displays'));
 			$t_display = new ca_bundle_displays();
 			$displays = $t_display->getBundleDisplays();
+			print CLIProgressBar::start(sizeof($displays), _t('[%1] Translating displays', $locale));
 			foreach($displays as $display_id => $display_info) {
+				print CLIProgressBar::next();
 				$t_display->load($display_id);
 				
 				$labels = $t_display->getLabels();	
@@ -422,12 +439,14 @@ trait CLIUtilsLocalization {
 					}
 				}
 			}
+			print CLIProgressBar::finish();
 			
 			// Translate search forms
-			CLIUtils::addMessage(_t('Translate search forms'));
 			$t_form = new ca_search_forms();
 			$forms = $t_form->getForms();
+			print CLIProgressBar::start(sizeof($forms), _t('[%1] Translating search forms', $locale));
 			foreach($forms as $form_id => $form_info) {
+				print CLIProgressBar::next();
 				$t_form->load($form_id);
 				
 				$labels = $t_form->getLabels();	
@@ -469,9 +488,10 @@ trait CLIUtilsLocalization {
 					}
 				}
 			}
+			print CLIProgressBar::finish();
 		}
 		
-		CLIUtils::addMessage(_t('Completed'));
+		CLIUtils::addMessage("\n"._t('Completed translation'));
 	}
 	# -------------------------------------------------------
 	public static function translate_systemParamList() {

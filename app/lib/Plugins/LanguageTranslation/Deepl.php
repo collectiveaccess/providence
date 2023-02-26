@@ -35,13 +35,14 @@ namespace CA\LanguageTranslation\Plugins;
   *
   */
   require_once(__CA_LIB_DIR__.'/Plugins/LanguageTranslation/BaseLanguageTranslationManagerPlugin.php');
+  require_once(__CA_LIB_DIR__.'/Plugins/IWLPlugLanguageTranslation.php');
  
-class Deepl Extends BaseLanguageTranslationManagerPlugin {	
+class Deepl Extends BaseLanguageTranslationManagerPlugin Implements \IWLPlugLanguageTranslation {	
 	# ------------------------------------------------
 	/**
 	 *
 	 */
-	
+	private $translator = null;
 	
 	# ------------------------------------------------
 	/**
@@ -57,6 +58,8 @@ class Deepl Extends BaseLanguageTranslationManagerPlugin {
 	public function register() {
 		if(!defined('__DEEPL_API_KEY__')) { return false; }
 		$this->info["INSTANCE"] = $this;
+		
+		$this->translator = new \DeepL\Translator(__DEEPL_API_KEY__);
 		return $this->info;
 	}
 	# ------------------------------------------------
@@ -73,11 +76,48 @@ class Deepl Extends BaseLanguageTranslationManagerPlugin {
 	 * 
 	 */
 	public function translate(string $text, string $to_lang, ?array $options=null) : string {
-		if(!defined('__DEEPL_API_KEY__')) { return null; }
-		$translator = new \DeepL\Translator(__DEEPL_API_KEY__);
-
-		$result = $translator->translateText($text, null, $to_lang);
+		$result = $this->translator->translateText($text, null, $to_lang, $options ?? []);
 		return $result;	
+	}
+	# ------------------------------------------------
+	/**
+	 * 
+	 */
+	public function translateList(array $text, string $to_lang, ?array $options=null) : array {
+		$result = $this->translator->translateText($text, null, $to_lang, $options ?? []);
+		return $result;	
+	}
+	# ------------------------------------------------
+	/**
+	 * 
+	 */
+	public function getSourceLanguages() : array {
+		$source_langs = $this->translator->getSourceLanguages();
+		
+		$langs = [];
+		foreach ($source_langs as $source_lang) {
+			$langs[] = [
+				'name' => $source_lang->name,
+				'code' => $source_lang->code
+			];
+		}
+		return $langs;
+	}
+	# ------------------------------------------------
+	/**
+	 * 
+	 */
+	public function getTargetLanguages() : array {
+		$source_langs = $this->translator->getTargetLanguages();
+		
+		$langs = [];
+		foreach ($source_langs as $source_lang) {
+			$langs[] = [
+				'name' => $source_lang->name,
+				'code' => $source_lang->code
+			];
+		}
+		return $langs;
 	}
 	# ------------------------------------------------
 }
