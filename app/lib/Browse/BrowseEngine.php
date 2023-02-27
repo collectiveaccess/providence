@@ -3636,8 +3636,8 @@
 							}
 							
 							$vs_browse_type_sql = null;
-							if (is_array($va_browse_type_ids) && sizeof($va_browse_type_ids)) {
-								$va_wheres[] = $vs_browse_type_sql = "(".$t_subject->tableName().".type_id IN (".join(',', $va_browse_type_ids)."))";
+							if (is_array($va_browse_type_ids) && sizeof($va_browse_type_ids) && $t_item->hasField('type_id')) {
+								$va_wheres[] = $vs_browse_type_sql = "(".$t_item->tableName().".type_id IN (".join(',', $va_browse_type_ids)."))";
 							}
 							
 							if (is_array($va_restrict_to_lists) && sizeof($va_restrict_to_lists)) {

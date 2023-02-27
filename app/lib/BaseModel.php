@@ -5691,7 +5691,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				$magic = rand(0,99999);
 
 				$va_pieces = explode("/", $this->_SET_FILES[$field]['original_filename']);
-				$ext = strtolower(array_pop($va_tmp = explode(".", array_pop($va_pieces))));
+				$va_tmp = explode(".", array_pop($va_pieces));
+				$ext = strtolower(array_pop($va_tmp));
 				if ($properties["dangerous"]) { $ext .= ".bin"; }
 				if (!$ext) $ext = "bin";
 
