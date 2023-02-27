@@ -910,7 +910,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							return null;
 						}
 					}
-                    $vs_refinery = $va_refinery_ci_map[strtolower(trim((string)$o_refinery->getValue()))];
+                    $vs_refinery = $va_refinery_ci_map[strtolower(trim((string)$o_refinery->getValue()))] ?? null;
                 
                     $va_refinery_options = null;
                     if ($vs_refinery && ($vs_refinery_options_json = (string)$o_refinery_options->getValue())) {
