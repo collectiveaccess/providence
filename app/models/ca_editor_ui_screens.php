@@ -622,9 +622,10 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			$bundle_normalized = $bundle_proc = $bundle;
 			if(preg_match("!^ca_attribute_!", $bundle_normalized)) {
 				$bundle_normalized = $bundle_proc = preg_replace('!^ca_attribute_!', '', $bundle_normalized);
-			}
-			if(!preg_match('!^ca_[a-z]+!', $bundle_normalized)) {
-				$bundle_normalized = $t_instance->tableName().'.'.$bundle_normalized;
+			
+				if(!preg_match('!^ca_[a-z]+!', $bundle_normalized)) {
+					$bundle_normalized = $t_instance->tableName().'.'.$bundle_normalized;
+				}
 			}
 			
 			$va_additional_settings = [];
