@@ -149,9 +149,9 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 <?php
 	}
 	
-	if (is_array($settings['restrictToTermsOnCollectionUseRelationshipType'] ?? null)) {
+	if (is_array($term_restriction = $settings['restrictToTermsOnCollectionUseRelationshipType'] ?? null)) {
 ?>
-							<input type="hidden" name="<?= $id_prefix; ?>_type_id{n}" id="<?= $id_prefix; ?>_type_id{n}" value="<?= array_pop($settings['restrictToTermsOnCollectionUseRelationshipType'] ?? []); ?>"/>
+			<input type="hidden" name="<?= $id_prefix; ?>_type_id{n}" id="<?= $id_prefix; ?>_type_id{n}" value="<?= array_pop($term_restriction); ?>"/>
 <?php
 	}
 ?>
