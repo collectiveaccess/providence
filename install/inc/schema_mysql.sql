@@ -7634,13 +7634,17 @@ create table ca_site_pages (
   access                tinyint unsigned    not null default 0,
   deleted               tinyint unsigned    not null default 0,
   view_count            int unsigned        not null default 0,
+  locale_id             smallint unsigned   null, 
 
   primary key (page_id),
   key (template_id),
   key (path),
+  key (locale_id),
   
    constraint fk_ca_site_pages_template_id foreign key (template_id)
-      references ca_site_templates (template_id) on delete restrict on update restrict
+      references ca_site_templates (template_id) on delete restrict on update restrict,
+   constraint fk_ca_site_pages_locale_id foreign key (locale_id)
+      references ca_locales (locale_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /*==========================================================================*/
@@ -7829,4 +7833,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (181, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (182, unix_timestamp());
