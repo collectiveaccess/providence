@@ -2224,7 +2224,8 @@ class SearchResult extends BaseObject {
 		$va_path_components					=& $pa_options['pathComponents'];
 		$vs_delimiter						= isset($pa_options['delimiter']) ? $pa_options['delimiter'] : ';';
 		$vb_convert_codes_to_display_text 	= isset($pa_options['convertCodesToDisplayText']) ? (bool)$pa_options['convertCodesToDisplayText'] : false;
-		$locale = isset($pa_options['locale']) ? $pa_options['locale'] : null;
+		
+		$locale = isset($pa_options['locale']) ? ca_locales::codeToID($pa_options['locale']) : null;
 		
 		$va_return_values = [];
 		$vb_return_value_id = null;
