@@ -998,7 +998,7 @@ if (!$pb_omit_editing_info) {
 			'format' => [
 				'formatType' => FT_TEXT,
 				'displayType' => DT_FIELD,
-				'width' => 35, 'height' => 5,
+				'width' => '490px', 'height' => 20,
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Display format'),
@@ -1040,7 +1040,7 @@ if (!$pb_omit_editing_info) {
 			'format' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_FIELD,
-				'width' => 35, 'height' => 5,
+				'width' => '490px', 'height' => 20,
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Display format'),
@@ -1084,7 +1084,7 @@ if (!$pb_omit_editing_info) {
 			'format' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_FIELD,
-				'width' => 35, 'height' => 5,
+				'width' => '490px', 'height' => 20,
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Display format'),
@@ -1244,7 +1244,7 @@ if (!$pb_omit_editing_info) {
 				'format' => array(
 					'formatType' => FT_TEXT,
 					'displayType' => DT_FIELD,
-					'width' => 35, 'height' => 5,
+					'width' => '490px', 'height' => 20,
 					'takesLocale' => false,
 					'default' => '',
 					'label' => _t('Display format'),
@@ -1321,7 +1321,7 @@ if (!$pb_omit_editing_info) {
 				'format' => array(
 					'formatType' => FT_TEXT,
 					'displayType' => DT_FIELD,
-					'width' => 35, 'height' => 5,
+					'width' => '490px', 'height' => 20,
 					'takesLocale' => false,
 					'default' => '',
 					'label' => _t('Display format'),
@@ -1355,7 +1355,7 @@ if (!$pb_omit_editing_info) {
 				'format' => array(
 					'formatType' => FT_TEXT,
 					'displayType' => DT_FIELD,
-					'width' => 35, 'height' => 5,
+					'width' => '490px', 'height' => 20,
 					'takesLocale' => false,
 					'default' => '',
 					'label' => _t('Display format'),
@@ -1412,7 +1412,7 @@ if (!$pb_omit_editing_info) {
 				'format' => array(
 					'formatType' => FT_TEXT,
 					'displayType' => DT_FIELD,
-					'width' => 35, 'height' => 5,
+					'width' => '490px', 'height' => 20,
 					'takesLocale' => false,
 					'default' => '',
 					'label' => _t('Display format'),
@@ -1475,7 +1475,7 @@ if (!$pb_omit_editing_info) {
 				'format' => array(
 					'formatType' => FT_TEXT,
 					'displayType' => DT_FIELD,
-					'width' => 35, 'height' => 5,
+					'width' => '490px', 'height' => 20,
 					'takesLocale' => false,
 					'default' => '',
 					'label' => _t('Display format'),
@@ -1519,7 +1519,7 @@ if (!$pb_omit_editing_info) {
 				'display_template' => array(
 					'formatType' => FT_TEXT,
 					'displayType' => DT_FIELD,
-					'width' => 35, 'height' => 5,
+					'width' => '490px', 'height' => 20,
 					'takesLocale' => false,
 					'default' => '',
 					'label' => _t('Display format'),
@@ -1553,7 +1553,7 @@ if (!$pb_omit_editing_info) {
 				'display_template' => array(
 					'formatType' => FT_TEXT,
 					'displayType' => DT_FIELD,
-					'width' => 35, 'height' => 5,
+					'width' => '490px', 'height' => 20,
 					'takesLocale' => false,
 					'default' => '',
 					'label' => _t('Display format'),
@@ -1692,7 +1692,7 @@ if (!$pb_omit_editing_info) {
 				'format' => array(
 					'formatType' => FT_TEXT,
 					'displayType' => DT_FIELD,
-					'width' => 35, 'height' => 5,
+					'width' => '490px', 'height' => 20,
 					'takesLocale' => false,
 					'default' => '',
 					'label' => _t('Display format'),
