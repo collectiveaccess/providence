@@ -5656,9 +5656,10 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			$vs_sql =  "$field = ".$this->quote(caSerializeForDatabase($this->_FILES[$field], true)).",";
 		} else {
 			$va_field_info = $this->getFieldInfo($field);
-			if ((file_exists($this->_SET_FILES[$field]['tmp_name']))) {
+			$ffname = $this->_SET_FILES[$field]['tmp_name'] ?? null;
+			if ((file_exists($ffname))) {
 				$ff = new File();
-				$mimetype = $ff->divineFileFormat($this->_SET_FILES[$field]['tmp_name'], $this->_SET_FILES[$field]['original_filename']);
+				$mimetype = $ff->divineFileFormat($ffname, $this->_SET_FILES[$field]['original_filename'] ?? null);
 
 				if (is_array($va_field_info["FILE_FORMATS"]) && sizeof($va_field_info["FILE_FORMATS"]) > 0) {
 					if (!in_array($mimetype, $va_field_info["FILE_FORMATS"])) {
@@ -5682,33 +5683,33 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 
 				if(!is_array($properties = $ff->getProperties())) { $properties = array(); }
 				
-				if ($properties['dangerous'] > 0) { $vn_dangerous = 1; }
+				if (($properties['dangerous'] ?? 0) > 0) { $vn_dangerous = 1; }
 
-				if (($dirhash = $this->_getDirectoryHash($vi["absolutePath"], $this->getPrimaryKey())) === false) {
+				if (($dirhash = $this->_getDirectoryHash($vi["absolutePath"] ?? null, $this->getPrimaryKey())) === false) {
 					$this->postError(1600, _t("Could not create subdirectory for uploaded file in %1. Please ask your administrator to check the permissions of your media directory.", $vi["absolutePath"]),"BaseModel->_processFiles()", $this->tableName().'.'.$field);
 					return false;
 				}
 				$magic = rand(0,99999);
 
-				$va_pieces = explode("/", $this->_SET_FILES[$field]['original_filename']);
+				$va_pieces = explode("/", $this->_SET_FILES[$field]['original_filename'] ?? '');
 				$va_tmp = explode(".", array_pop($va_pieces));
 				$ext = strtolower(array_pop($va_tmp));
-				if ($properties["dangerous"]) { $ext .= ".bin"; }
+				if ($properties["dangerous"] ?? 0) { $ext .= ".bin"; }
 				if (!$ext) $ext = "bin";
 
-				$filestem = $vi["absolutePath"]."/".$dirhash."/".$magic."_".$this->_genMediaName($field);
+				$filestem = ($vi["absolutePath"] ?? null)."/".$dirhash."/".$magic."_".$this->_genMediaName($field);
 				$filepath = $filestem.".".$ext;
 
 
 				$filesize = isset($properties["filesize"]) ? $properties["filesize"] : 0;
 				if (!$filesize) {
-					$properties["filesize"] = filesize($this->_SET_FILES[$field]['tmp_name']);
+					$properties["filesize"] = filesize($ffname);
 				}
 
 				$file_desc = array(
 					"FILE" => 1, # signifies is file
 					"VOLUME" => $va_field_info["FILE_VOLUME"],
-					"ORIGINAL_FILENAME" => $this->_SET_FILES[$field]['original_filename'],
+					"ORIGINAL_FILENAME" => $this->_SET_FILES[$field]['original_filename'] ?? null,
 					"MIMETYPE" => $mimetype,
 					"FILENAME" => $this->_genMediaName($field).".".$ext,
 					"HASH" => $dirhash,
@@ -5716,15 +5717,15 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					"PROPERTIES" => $properties,
 					"DANGEROUS" => $vn_dangerous,
 					"CONVERSIONS" => array(),
-					"MD5" => md5_file($this->_SET_FILES[$field]['tmp_name']),
-					"FILE_LAST_MODIFIED" => filemtime($this->_SET_FILES[$field]['tmp_name'])
+					"MD5" => md5_file($ffname),
+					"FILE_LAST_MODIFIED" => filemtime($ffname)
 				);
 
-				if (!is_readable($this->_SET_FILES[$field]['tmp_name']) || !is_writeable(pathinfo($filepath, PATHINFO_DIRNAME)) || !copy($this->_SET_FILES[$field]['tmp_name'], $filepath)) {
+				if (!is_readable($ffname) || !is_writeable(pathinfo($filepath, PATHINFO_DIRNAME)) || !copy($ffname, $filepath)) {
 					$this->postError(1670, _t("File could not be copied. Ask your administrator to check permissions and file space for %1",$vi["absolutePath"]),"BaseModel->_processFiles()", $this->tableName().'.'.$field);
 					return false;
 				}
-				@touch($filepath, filemtime($this->_SET_FILES[$field]['tmp_name']));
+				@touch($filepath, filemtime($ffname));
 
 
 				# -- delete old file if its name is different from the one we just wrote (otherwise, we overwrote it)
