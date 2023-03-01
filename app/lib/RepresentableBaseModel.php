@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2021 Whirl-i-Gig
+ * Copyright 2013-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -328,22 +328,18 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			
 			$require_media = caGetOption('requireMedia', $pa_options, false);
-		
-			if (!is_array($pa_versions)) { 
-				$pa_versions = array('preview170');
-			}
-		
-			if (isset($pa_options['return_primary_only']) && $pa_options['return_primary_only']) {
+
+			if ($pa_options['return_primary_only'] ?? false) {
 				$vs_is_primary_sql = ' AND (caoor.is_primary = 1)';
 			} else {
 				$vs_is_primary_sql = '';
 			}
 		
-			if (!is_array($pa_options['return_with_access']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) > 0) {
+			if (!is_array($pa_options['return_with_access'] ?? null) && is_array($pa_options['checkAccess'] ?? null) && sizeof($pa_options['checkAccess']) > 0) {
 				$pa_options['return_with_access'] = $pa_options['checkAccess'];
 			}
 		
-			if (is_array($pa_options['return_with_access']) && sizeof($pa_options['return_with_access']) > 0) {
+			if (is_array($pa_options['return_with_access'] ?? null) && sizeof($pa_options['return_with_access']) > 0) {
 				$vs_access_sql = ' AND (caor.access IN ('.join(", ", $pa_options['return_with_access']).'))';
 			} else {
 				$vs_access_sql = '';
@@ -369,7 +365,7 @@
 					caoor.`rank`, caoor.is_primary DESC
 			", $va_type_restriction_filters['params']);
 		
-			$va_rep_ids = array();
+			$va_rep_ids = [];
 			while($qr_reps->nextRow()) {
 				if($require_media && (!is_array($versions = $qr_reps->getMediaVersions('media')) || !sizeof($versions))) { continue; }
 				$va_rep_ids[$qr_reps->get('representation_id')] = ($qr_reps->get('is_primary') == 1) ? true : false;
