@@ -238,6 +238,15 @@ BaseRefinery::$s_refinery_settings['placeSplitter'] = array(
 		'label' => _t('Skip if value'),
 		'description' => _t('Skip if imported value is in the specified list of values.')
 	),
+	'placeSplitter_skipIfNotValue' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_FIELD,
+		'width' => 10, 'height' => 1,
+		'takesLocale' => false,
+		'default' => '',
+		'label' => _t('Skip if value'),
+		'description' => _t('Skip if imported value is in the specified list of values.')
+	),
 	'placeSplitter_interstitial' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_SELECT,
