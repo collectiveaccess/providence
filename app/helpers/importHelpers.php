@@ -485,6 +485,10 @@
 							$va_attr_vals[$vs_element_code][] = $vs_path;
 						}
 					}
+				} elseif(is_string($va_attrs)) {
+					$va_attr_vals[$vs_element_code] = $va_attrs;
+				} else {
+					 if ($o_log) { $o_log->logDebug(_t('[importHelpers:caProcessRefineryAttributes] Unhandled refinery %1 attribute %1: value was %2', $ps_refinery_name, $vs_element_code, print_r($va_attrs, true))); }
 				}
 			}
 			return $va_attr_vals;
@@ -874,6 +878,7 @@
 					
 					// Set label
 					$va_val = [];       // values for current item
+					$vs_item = caProcessImportItemSettingsForValue($vs_item, $pa_item);	// apply replacement values
 					
 					$vs_laddered_type = null;
 					if (!($vs_item = trim($vs_item))) { 
@@ -913,11 +918,11 @@
 							continue; 
 						}
 					}
-					if (is_array($va_skip_values = $pa_item['settings']["{$ps_refinery_name}_skipIfValue"]) && in_array($vs_item, $va_skip_values)) {
-						if ($o_log) { $o_log->logDebug(_t('[%1] Skipped %2 because it was in the skipIfValue list', $ps_refinery_name, $vs_item)); }
+					
+					if(caSkipValueIf($vs_item, $ps_refinery_name, $pa_item, ['log' => $o_log])) {
 						continue;
 					}
-				
+					
 					// Set value as hierarchy
 					if ($va_hierarchy_setting = $pa_item['settings']["{$ps_refinery_name}_hierarchy"]) {
 						$va_val = array_merge($va_val, caProcessRefineryParents($ps_refinery_name, $ps_table, $va_hierarchy_setting, $pa_source_data, $pa_item, $pn_value_index, array_merge($pa_options, array('hierarchyMode' => true, 'refinery' => $po_refinery_instance))));
@@ -1802,5 +1807,30 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 				break;
 		}
 		return $value;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Check if refinery value should be skipped based upon refinery skipIfValue and skioIfNotValue options.
+	 *
+	 * @param mixed $value Refinery value to test
+	 * @param string $refinery_name
+	 * @param array $item Mapping item information, including refinery settings in 'settings' key.
+	 * @param array $options Options for check. Options include:
+	 *		log = logging instance [Default is null]
+	 *
+	 * @return bool
+	 */
+	function caSkipValueIf($value, string $refinery_name, array $item, ?array $options=null){
+		$log = caGetOption('log', $options, null);
+		if (is_array($skip_values = $item['settings']["{$refinery_name}_skipIfValue"]) && in_array($value, $skip_values)) {
+			if ($log) { $log->logDebug(_t('[%1] Skipped %2 because it was in the skipIfValue list', $refinery_name, $value)); }
+			return true;
+		}
+		if (is_array($skip_values = $item['settings']["{$refinery_name}_skipIfNotValue"]) && !in_array($value, $skip_values)) {
+			if ($log) { $log->logDebug(_t('[%1] Skipped %2 because it was in not in the skipIfNotValue list', $refinery_name, $value)); }
+			return true;
+		}
+	
+		return false;
 	}
 	# ---------------------------------------------------------------------

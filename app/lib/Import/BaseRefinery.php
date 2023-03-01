@@ -247,25 +247,25 @@ abstract class BaseRefinery {
 				$mval = caProcessTemplate($placeholder, $source_data);
 			}
 		} else {
-			$mval = $placeholder;
+			$mval = $return_as_string ? $placeholder : [$placeholder];
 		}
 		
 		// Get specific index for repeating value
 		if (is_array($mval) && !is_null($value_index)) {
 			$mval = isset($mval[$value_index]) ? [$mval[$value_index]] : null;
 			
-			if (is_array($item['settings']['original_values']) && (($ix = array_search(mb_strtolower($mval), $item['settings']['original_values'], true)) !== false)) {
-				$mval = $item['settings']['replacement_values'][$ix];
+			if (is_array($item['settings']['original_values']) && (($ix = array_search(mb_strtolower($mval[0]), $item['settings']['original_values'], true)) !== false)) {
+				$mval[0] = $item['settings']['replacement_values'][$ix];
 			}
 			if ($apply_import_item_settings) {
-				$mval = caProcessImportItemSettingsForValue($mval, $item['settings'] ?? []);
+				$mval[0] = caProcessImportItemSettingsForValue($mval[0], $item['settings'] ?? []);
 			}
 			// delimiter?
 			if(!is_null($get_at_index)) {
 				$dvals = preg_split('!'.preg_quote(join('|', $delimiters), '!').'!', $mval[0]);
 				return $dvals[$get_at_index] ?? null;
 			}
-			return $mval[0];
+			return ($return_as_string && is_array($mval)) ? trim(join($delimiter, $mval)) : $mval;
 		}
 
 		// Do processing on members
