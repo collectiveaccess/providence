@@ -93,8 +93,20 @@ class Replicator {
 	 */
 	protected $get_log_service_params;
 	
+	/**
+	 * Maximum number of times to retry failed service connections
+	 */
 	protected $max_retries = 5;
+	
+	/**
+	 * Delay in milliseconds between retries of failed service connections
+	 */
 	protected $retry_delay = 1000;
+	
+	/**
+	 * Cached access values for guids
+	 */
+	protected $guid_access_cache = [];
 	
 	# --------------------------------------------------------------------------------------------------------------
 	public function __construct() {
@@ -377,12 +389,8 @@ class Replicator {
 						
 						
 						$vs_access = is_array($pa_filter_on_access_settings) ? join(";", $pa_filter_on_access_settings) : "";
-						$o_access_by_guid = $o_source->setRequestMethod('POST')->setEndpoint('hasAccess')
-						                    ->addGetParameter('access', $vs_access)
-											->setRequestBody(array_unique(array_merge(caExtractArrayValuesFromArrayOfArrays($va_source_log_entries, 'guid'), array_keys($va_subject_guids))))
-											->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
-											->request();
-						$va_access_by_guid = $o_access_by_guid->getRawData();
+						
+						$va_access_by_guid = $this->_hasAccess($o_source, $vs_access, array_unique(array_merge(caExtractArrayValuesFromArrayOfArrays($va_source_log_entries, 'guid'), array_keys($va_subject_guids))));
 
                         // List of log entries to push
 					    $va_filtered_log_entries = [];
@@ -468,12 +476,7 @@ class Replicator {
                         
                                                 // Check access settings for dependent rows; we only want to replicate rows that
                                                 // meet the configured access requirements (Eg. public rows only)
-                                                $o_access_for_dependent = $o_source->setRequestMethod('POST')->setEndpoint('hasAccess')
-                                                                    ->addGetParameter('access', $vs_access)
-                                                                    ->setRequestBody(array_unique(caExtractArrayValuesFromArrayOfArrays($va_log_for_missing_guid, 'guid')))
-                                                                    ->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
-                                                                    ->request();
-                                                $va_access_for_dependent = $o_access_for_dependent->getRawData();
+												$va_access_for_dependent = $this->_hasAccess($o_source, $vs_access, array_unique(caExtractArrayValuesFromArrayOfArrays($va_log_for_missing_guid, 'guid')));    
                                                 
                                                 $va_filtered_log_for_missing_guid = [];  
                                                 ksort($va_log_for_missing_guid, SORT_NUMERIC);
@@ -542,12 +545,7 @@ class Replicator {
                                           
                                                     if (is_array($pa_filter_on_access_settings)) {
                                                         // Filter missing guid list using access criteria
-                                                        $o_access_for_missing = $o_source->setRequestMethod('POST')->setEndpoint('hasAccess')
-                                                                            ->addGetParameter('access', $vs_access)
-                                                                            ->setRequestBody($missing_guids)
-                                                                            ->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
-                                                                            ->request();
-                                                        $va_access_for_missing = $o_access_for_missing->getRawData();
+                                                        $va_access_for_missing = $this->_hasAccess($o_source, $vs_access, $missing_guids);
                                                         
                                                         if (is_array($va_access_for_missing)) {
                                                         	$missing_guids = array_filter(array_keys(array_filter($va_access_for_missing, function($v) use ($pa_filter_on_access_settings) { return (($v == '?') || (in_array((int)$v, $pa_filter_on_access_settings, true))); })), 'strlen');
@@ -1036,6 +1034,41 @@ class Replicator {
 			unset($source_log_entries_for_missing_guids_seen_guids[$vs_missing_guid]);
 		}
 		return [$source_log_entries_for_missing_guids, $source_log_entries_for_missing_guids_seen_guids];
+	}
+	# --------------------------------------------------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _hasAccess($o_source, $access, $guids) {
+		if(sizeof($this->guid_access_cache) > 100000) { 
+			$this->guid_access_cache = array_slice($this->guid_access_cache, 75000);
+		}
+		// Check if guids are cached
+		$cached_res = [];
+		$filtered_guids = [];
+		foreach($guids as $guid) {
+			if(isset($this->guid_access_cache[$guid])) {
+				$cached_res[$guid] = $this->guid_access_cache[$guid];
+				continue;
+			}
+			$filtered_guids[] = $guid;
+		}
+		$filtered_guids = array_unique($filtered_guids);
+		
+		$r = $o_source->setRequestMethod('POST')->setEndpoint('hasAccess')
+			->addGetParameter('access', $access)
+			->setRequestBody($filtered_guids)
+			->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
+			->request();
+			
+		$res = $r->getRawData();
+		foreach($res as $guid => $access) {
+			$this->guid_access_cache[$guid] = $access;
+		}
+		
+		$res = array_merge($res, $cached_res);
+		
+		return $res;
 	}
 	# --------------------------------------------------------------------------------------------------------------
 }
