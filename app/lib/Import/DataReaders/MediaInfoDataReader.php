@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020 Whirl-i-Gig
+ * Copyright 2020-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -130,19 +130,23 @@ class MediaInfoDataReader extends BaseXMLDataReader {
 			}	
 		}
 		
+		$dom = new DOMDocument();
 		if (file_exists($ps_source)) { 			
 			caExec($ps_mediainfo_path." --Output=PBCore2 ".caEscapeShellArg($ps_source), $va_output, $vn_return);
 			if (!is_array($va_output) || !sizeof($va_output)) { return null; }
 			$xml = join("\n", $va_output);
 			
-			if(!($this->opo_xml = @DOMDocument::loadXML($xml))) { return false;}
+			if(!(@$dom->loadXML($xml))) { return false;}
+			$this->opo_xml = $dom;
 		} elseif($str = caGetOption('fromString', $pa_options, null))  {
-			if(!($this->opo_xml = @DOMDocument::loadXML($str))) { return false;}
+			if(!(@$dom->loadXML($str))) { return false;}
+			$this->opo_xml = $dom;
 		} else {
 			return false;
 		}
+		if(!$this->opo_xml) { return false; }
 		try {
-			$this->opo_xpath = new DOMXPath($this->opo_xml);
+			$this->opo_xpath = new DOMXPath($dom);
 		} catch (Exception $e) {
 			return false;
 		}
@@ -153,7 +157,7 @@ class MediaInfoDataReader extends BaseXMLDataReader {
 		
 		if(!is_array($this->ops_xpath )) { $this->ops_xpath  = [$this->ops_xpath]; }
 		foreach($this->ops_xpath as $xp) {
-			$this->opo_handle = $this->opo_xpath->query($this->ops_xpath, null, $this->opb_register_root_tag);
+			$this->opo_handle = $this->opo_xpath->query($xp, null, $this->opb_register_root_tag);
 			if($this->opo_handle && ($this->opo_handle->count() > 0)) { break; }
 		}
 		
