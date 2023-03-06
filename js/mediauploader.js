@@ -154,6 +154,9 @@ class MediaUploader extends React.Component {
                 tmp.pop();
                 relPath  = tmp.join('/');
             }
+            
+            let fname = file.name;
+            fname = fname.replace(/[^A-Za-z0-9\.\-]+/, '_');	// remove illegal characters (otherwise tus blows up)
 
 			// Set up tus upload process for file, with handlers for success, error and progress
             let upload = new tus.Upload(file, {
@@ -161,7 +164,7 @@ class MediaUploader extends React.Component {
                 retryDelays: [0, 1000, 3000, 5000],
                 chunkSize: 1024 * 512,      // TODO: make configurable
                 metadata: {
-                    filename: '.' + file.name + '.part',
+                    filename: '.' + fname + '.part',
                     sessionKey: state.sessionKey,
                     relativePath: relPath
                 },
