@@ -2581,13 +2581,16 @@
 				case 'history_tracking_current_contents':
 					if (method_exists($this, "getContents")) {
 					    $policy = caGetOption('policy', $pa_options, null);
-						if ($qr = $this->getContents($policy, ['row_id' => $pn_row_id])) { 
-							$contents = [];
-							$p = self::getHistoryTrackingCurrentValuePolicy($policy);
-							while($qr->nextHit()) {
-							    $contents[] = $qr->getWithTemplate("<l>^".$p['table'].".preferred_labels</l>");
+						$p = self::getHistoryTrackingCurrentValuePolicy($policy);
+						$contents_config = caGetOption('contents', $p, []);
+						$pa_options['expandHierarchically'] = caGetOption('expandHierarchically', $contents_config, false);
+						if ($qr = $this->getContents($policy, ['row_id' => $pn_row_id], $pa_options)) {
+							$template = caGetOption('template', $contents_config, "<l>$p[table].preferred_labels </l>");
+							$delimiter = caGetOption('delimiter', $contents_config, "; ");
+							while($qr->nextHit()) { 
+								$contents[] = $qr->getWithTemplate($template);
 							}
-							return join("; ", $contents);
+							return join($delimiter, $contents);
 						}
 					}
 					return null;

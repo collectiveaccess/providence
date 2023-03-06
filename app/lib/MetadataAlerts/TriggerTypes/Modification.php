@@ -104,8 +104,7 @@ class Modification extends Base {
 						$is_modified = false;
 					}
 				}
-				
-				if(!is_null($is_modified)) {
+				if($is_modified !== false) {
 					$is_modified = $t_instance->attributeDidChange($code);
 				}
 			}

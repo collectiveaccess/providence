@@ -1173,7 +1173,7 @@ class BaseModel extends BaseObject {
 			$vs_prop = caEscapeForXML($vs_prop);
 		}
 
-		if (!(isset($pa_options["DONT_STRIP_SLASHES"]) && $pa_options["DONT_STRIP_SLASHES"])) {
+		if (!caGetOption("DONT_STRIP_SLASHES", $pa_options, true)) {
 			if (is_string($vs_prop)) { $vs_prop = stripSlashes($vs_prop); }
 		}
 		
@@ -1691,7 +1691,7 @@ class BaseModel extends BaseObject {
 						break;
 					case (FT_TEXT):
 						$vm_value = (string)$vm_value;
-						if (is_string($vm_value)) {
+						if (is_string($vm_value) && isset($pa_options['stripSlashes']) && ($pa_options['stripSlashes'])) {
 							$vm_value = stripSlashes($vm_value);
 						}
 						
@@ -8071,7 +8071,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			while($qr_sort_res->nextHit()) {
 				$va_key = array();
 				foreach($pa_sort as $vs_sort) {
-					$va_key[] = str_pad(substr($qr_sort_res->get($vs_sort), 10), 10, " ", STR_PAD_LEFT);
+					$k = trim(mb_strtolower(mb_substr($qr_sort_res->get($vs_sort), 0, 10)));
+					$va_key[] = str_pad($k, 10, " ", STR_PAD_RIGHT);
 				}
 				$va_sort_keys[$vn_i] = join("", $va_key)."".str_pad("{$vn_i}", 7, " ", STR_PAD_LEFT);
 				$vn_i++;

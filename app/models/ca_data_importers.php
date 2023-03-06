@@ -2360,7 +2360,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								}
 								continue( 3 );
 							}
-							if ( (!isset( $va_item['settings']['skipIfEmpty'] )
+							if ( ((!isset( $va_item['settings']['skipIfEmpty'] ) && !self::skipIsSet($va_item))
 							     || (bool) $va_item['settings']['skipIfEmpty'])
 							     && ! strlen( $vm_val )
 							) {
@@ -3190,8 +3190,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				//
 				// Process data in subject record
 				//
-				//print_r($va_content_tree);
- 				//die("END\n\n");
+				// print_r($va_content_tree);
+//  				die("END\n\n");
 				//continue;
 				if (!($opa_app_plugin_manager->hookDataImportContentTree(array('mapping' => $t_mapping, 'content_tree' => &$va_content_tree, 'idno' => &$vs_idno, 'type_id' => &$vs_type, 'transaction' => &$o_trans, 'log' => &$o_log, 'logReference' => $vs_idno, 'reader' => $o_reader, 'environment' => $va_environment,'importEvent' => $o_event, 'importEventSource' => $vn_row)))) {
 					continue;
@@ -3756,7 +3756,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										}
 										break;
 									case 'ca_entities':
-										if ($vn_rel_id = DataMigrationUtils::getEntityID($va_element_data['preferred_labels'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('logReference' => $vs_idno, 'forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'ignoreParent' => $vb_ignore_parent, 'matchOn' => $va_match_on, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels))) {
+										if ($vn_rel_id = DataMigrationUtils::getEntityID($va_element_data['preferred_labels'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('logReference' => $vs_idno, 'forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'ignoreParent' => $vb_ignore_parent, 'matchOn' => $va_match_on, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels, 'ignoreLabelFields' => $va_element_data['_ignoreLabelFields'] ?? null))) {
 											if (!($vs_rel_type = $va_element_data['_relationship_type']) && !($vs_rel_type = $va_element_data['idno']['_relationship_type'])) { break; }
 										
 											$t_subject->addRelationship($vs_table_name, $vn_rel_id, trim($va_element_data['_relationship_type']), null, null, null, null, array('interstitialValues' => $va_element_data['_interstitial'], 'relationshipTypeDefault' => $va_element_data['_relationship_type_default']));
@@ -4471,6 +4471,23 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$t_importer = new ca_data_importers();
 			if($t_importer->load(array('importer_code' => $importer_code))) {
 				return ca_data_importers::$s_importer_cache[$importer_code] = $t_importer;
+			}
+		}
+		return false;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function skipIsSet(array $item) {
+		$skip_settings = ['skipIfEmpty', 'skipWhenEmpty', 'skipWhenAllEmpty', 'skipGroupWhenEmpty','skipGroupWhenAllEmpty',
+			'skipRowWhenEmpty','skipRowWhenAllEmpty','skipIfValue','skipIfNotValue','skipIfExpression','skipGroupIfEmpty',
+			'skipGroupIfValue','skipGroupIfNotValue','skipGroupIfExpression','skipRowIfEmpty','skipRowIfValue','skipRowIfNotValue',
+			'skipRowIfExpression','skipIfDataPresent','skipIfNoReplacementValue'
+		];
+		foreach($skip_settings as $s) {
+			if(isset($item['settings'][$s])) {
+				return true;
 			}
 		}
 		return false;
