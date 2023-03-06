@@ -271,9 +271,11 @@ trait CLIUtilsLocalization {
 						}
 					
 						if(strlen($def_label['name_singular'])) {
+							if(!isset($def_label['name_plural']) || !strlen($def_label['name_plural'])) { $def_label['name_plural'] = $def_label['name_singular']; }
 							CLIUtils::addMessage(_t('Translate [%1][%2]: %3', $list_code, $item_code, $def_label['name_singular']));
 							$tnamesing = $lm->translate($def_label['name_singular'], $locale);
 							$tnameplur = $lm->translate($def_label['name_plural'], $locale);
+							if(!$tnamesing || !$tnameplur) { continue; }
 							$tdesc = strlen($def_label['description']) ? $lm->translate($def_label['description'], $locale) : '';
 							$t_item->replaceLabel(['name_singular' => $tnamesing, 'name_plural' => $tnameplur, 'description' => $tdesc], $locale, null, true);
 						}
