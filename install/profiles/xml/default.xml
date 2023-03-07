@@ -1746,7 +1746,7 @@
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">100</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
           </settings>
         </restriction>
         <restriction code="ca_objects">
@@ -1754,7 +1754,7 @@
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">100</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
           </settings>
         </restriction>
         <restriction code="ca_entities">
@@ -1762,7 +1762,7 @@
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">100</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
           </settings>
         </restriction>
         <restriction code="ca_occurrences">
@@ -1771,7 +1771,7 @@
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">100</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
           </settings>
         </restriction>
         <restriction code="ca_collections">
@@ -1779,7 +1779,7 @@
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">100</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
           </settings>
         </restriction>
         <restriction code="ca_storage">
@@ -1787,7 +1787,7 @@
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">100</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
           </settings>
         </restriction>
       </typeRestrictions>
