@@ -121,7 +121,7 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 						$searches = $args['searches'];
 						
 						if(!is_array($searches) || !sizeof($searches)) {
-							$searches = [
+							$searches = [[
 								'table' => trim($args['table']),
 								'name' => trim($args['table']),
 								'search' => $args['search'],
@@ -131,7 +131,7 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 								'start' => $args['start'],
 								'limit' => $args['limit'],
 								'restrictToTypes' => $args['restrictToTypes']
-							];
+							]];
 						}
 						$valid_tables = caFilterTableList(['ca_objects', 'ca_collections', 'ca_entities', 'ca_occurrences', 'ca_places', 'ca_list_items', 'ca_storage_locations', 'ca_loans', 'ca_object_lots', 'ca_movements', 'ca_object_representations']);
 						
@@ -142,7 +142,7 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 							$table = $t['table'] ?? null;
 							$name = $t['name'] ?? $table;
 							$search = $t['search'] ?? null;
-							$check_access = \GraphQLServices\Helpers\filterAccessValues($t['checkAccess']);
+							$check_access = $t['checkAccess'] ? \GraphQLServices\Helpers\filterAccessValues($t['checkAccess']) : null;
 						
 							if(!strlen($search)) { 
 								throw new \ServiceException(_t('Search cannot be empty'));
@@ -252,17 +252,17 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 						$finds = $args['finds'];
 						
 						if(!is_array($finds) || !sizeof($finds)) {
-							$finds = [
+							$finds = [[
 								'table' => trim($args['table']),
 								'name' => trim($args['table']),
 								'criteria' => $args['criteria'],
 								'filterByAncestors' => $args['filterByAncestors'],
-								'checkAccess' => $args['checkAccess'],
+								'checkAccess' => $args['checkAccess'] ?? null,
 								'bundles' => $args['bundles'],
 								'start' => $args['start'],
 								'limit' => $args['limit'],
 								'restrictToTypes' => $args['restrictToTypes']
-							];
+							]];
 						}
 						
 						$valid_tables = caFilterTableList(['ca_objects', 'ca_collections', 'ca_entities', 'ca_occurrences', 'ca_places', 'ca_list_items', 'ca_storage_locations', 'ca_loans', 'ca_object_lots', 'ca_movements', 'ca_object_representations']);
@@ -273,7 +273,7 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 						foreach($finds as $t) {
 							$table = $t['table'] ?? null;
 							$name = $t['name'] ?? $table;
-							$check_access = \GraphQLServices\Helpers\filterAccessValues($t['checkAccess']);
+							$check_access = $t['checkAccess'] ? \GraphQLServices\Helpers\filterAccessValues($t['checkAccess']) : null;
 														
 							if(!in_array($table, $valid_tables, true)) { 
 								throw new \ServiceException(_t('Invalid table: %1', $table));
