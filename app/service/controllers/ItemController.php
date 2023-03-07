@@ -164,6 +164,21 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 							'description' => _t('Bundles to return.')
 						],
 						[
+							'name' => 'includeMedia',
+							'type' => Type::boolean(),
+							'description' => 'Include representations linked to related items?'
+						],
+						[
+							'name' => 'mediaVersions',
+							'type' => Type::listOf(Type::string()),
+							'description' => 'If including representations, which versions to return'
+						],
+						[
+							'name' => 'restrictMediaToTypes',
+							'type' => Type::listOf(Type::string()),
+							'description' => 'If including representations, which restrict to specified types'
+						],
+						[
 							'name' => 'resolveRelativeToRelated',
 							'type' => Type::boolean(),
 							'description' => _t('Resolve all bundles relative to related items, rather than the relationship.'),
@@ -193,7 +208,10 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 								'restrictToRelationshipTypes' => $args['restrictToRelationshipTypes'] ?? null,
 								'bundles' => $args['bundles'] ?? [],
 								'start' => $args['start'] ?? null,
-								'limit' => $args['limit'] ?? null
+								'limit' => $args['limit'] ?? null,
+								'includeMedia' => $args['includeMedia'] ?? null,
+								'mediaVersions' => $args['mediaVersions'] ?? null,
+								'restrictMediaToTypes' => $args['restrictMediaToTypes'] ?? null
 							];
 						} else {
 							throw new \ServiceException(_t('No target specified'));
@@ -248,7 +266,7 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 									if($include_media) {
 										$m = $resolve_to_related ? $r : \Datamodel::getInstance($t['table'], false, $r->get($t['table'].'.'.$target_pk, ['primaryIDs' => [$rec->getPrimaryKey()]]));
 										
-										if(is_array($reps = $m->getRepresentations(array_merge($media_versions, ['original'])))) {
+										if(is_array($reps = $m->getRepresentations(array_merge($media_versions, ['original']), null, ['restrictToTypes' => $t['restrictMediaToTypes']]))) {
 											foreach($reps as $rep_id => $rep_info) {
 												$versions = [];
 												foreach($rep_info['urls'] as $version => $url) {
@@ -269,6 +287,7 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 													'id' => $rep_id,
 													'idno' => $rep_info['idno'],
 													'name' => $rep_info['label'],
+													'type' => $rep_info['typename'],
 													'mimetype' => $rep_info['mimetype'],
 													'originalFilename' => $rep_info['original_filename'],
 													'versions' => $versions,

@@ -564,6 +564,10 @@ function itemSchemaDefinitions() {
 					'type' => Type::string(),
 					'description' => 'Name of media'
 				],
+				'type' => [
+					'type' => Type::string(),
+					'description' => 'Type of media'
+				],
 				'versions' => [
 					'type' => Type::listOf($mediaVersionType),
 					'description' => 'Media versions'
@@ -719,6 +723,10 @@ function itemSchemaDefinitions() {
 				'mediaVersions' => [
 					'type' => Type::listOf(Type::string()),
 					'description' => 'If including representations, which versions to return'
+				],
+				'restrictMediaToTypes' => [
+					'type' => Type::listOf(Type::string()),
+					'description' => 'If including representations, which restrict to specified types'
 				]
 			]
 		])
