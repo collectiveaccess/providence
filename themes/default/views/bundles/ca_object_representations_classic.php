@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -589,7 +589,8 @@ print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings)
 		caRelationBundle<?= $vs_id_prefix; ?> = caUI.initRelationBundle('#<?= $vs_id_prefix; ?>', {
 			fieldNamePrefix: '<?= $vs_id_prefix; ?>_',
 			templateValues: ['_display', 'status', 'access', 'access_display', 'is_primary', 'is_primary_display', 'is_transcribable', 'is_transcribable_display', 'num_transcriptions', 'media', 'locale_id', 'icon', 'type', 'dimensions', 'filename', 'num_multifiles', 'metadata', 'rep_type_id', 'type_id', 'typename', 'fetched', 'label', 'rep_label', 'idno', 'id', 'fetched_from','mimetype', 'center_x', 'center_y', 'idno'],
-			initialValues: <?= json_encode($va_initial_values); ?>,
+
+			initialValues: <?= json_encode($va_initial_values, JSON_INVALID_UTF8_IGNORE); ?>,
 			initialValueOrder: <?= json_encode(array_keys($va_initial_values)); ?>,
 			errors: <?= json_encode($va_errors); ?>,
 			forceNewValues: <?= json_encode($va_failed_inserts); ?>,
@@ -614,13 +615,14 @@ print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings)
 			autocompleteInputID: '<?= $vs_id_prefix; ?>_autocomplete',
 			
 			extraParams: { exact: 1 },
-			
+
 			minRepeats: <?= $vb_batch ? 1 : caGetOption('minRelationshipsPerRow', $settings, 0); ?>,
 			maxRepeats: <?= $vb_batch ? 1 : caGetOption('maxRelationshipsPerRow', $settings, 65535); ?>,
 			
 			sortUrl: '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Sort', array('table' => $t_item_rel->tableName())); ?>',
 			
 			totalValueCount: <?= (int)$vn_rep_count; ?>,
+
 			partialLoadUrl: '<?= caNavUrl($this->request, '*', '*', 'loadBundles', array($t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $settings['placement_id'], 'bundle' => 'ca_object_representations')); ?>',
 			loadSize: <?= $vn_num_per_page; ?>,
 			partialLoadMessage: '<?= addslashes(_t('Load next %num of %total')); ?>',

@@ -8082,7 +8082,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			while($qr_sort_res->nextHit()) {
 				$va_key = array();
 				foreach($pa_sort as $vs_sort) {
-					$va_key[] = str_pad(substr($qr_sort_res->get($vs_sort), 10), 10, " ", STR_PAD_LEFT);
+					$k = trim(mb_strtolower(mb_substr($qr_sort_res->get($vs_sort), 0, 10)));
+					$va_key[] = str_pad($k, 10, " ", STR_PAD_RIGHT);
 				}
 				$va_sort_keys[$vn_i] = join("", $va_key)."".str_pad("{$vn_i}", 7, " ", STR_PAD_LEFT);
 				$vn_i++;

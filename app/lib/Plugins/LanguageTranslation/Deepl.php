@@ -75,8 +75,18 @@ class Deepl Extends BaseLanguageTranslationManagerPlugin Implements \IWLPlugLang
 	/**
 	 * 
 	 */
-	public function translate(string $text, string $to_lang, ?array $options=null) : string {
-		$result = $this->translator->translateText($text, null, $to_lang, $options ?? []);
+	public function translate(string $text, string $to_lang, ?array $options=null) : ?string {
+		$retry = 0;
+		$result = null;
+		
+		while($retry < 5) {
+			try {
+				$result = $this->translator->translateText($text, null, $to_lang, $options ?? []);
+				break;
+			} catch (\DeepL\ConnectionException $e) {
+				$retry++;
+			}
+		}
 		return $result;	
 	}
 	# ------------------------------------------------

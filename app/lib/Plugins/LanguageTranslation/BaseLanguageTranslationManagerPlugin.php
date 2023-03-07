@@ -71,7 +71,7 @@ abstract class BaseLanguageTranslationManagerPlugin extends \WLPlug  {
 	/**
 	 * 
 	 */
-	abstract public function translate(string $text, string $to_lang, ?array $options) : string;
+	abstract public function translate(string $text, string $to_lang, ?array $options) : ?string;
 	# ------------------------------------------------
 	/**
 	 * 
