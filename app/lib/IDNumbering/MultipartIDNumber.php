@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2022 Whirl-i-Gig
+ * Copyright 2007-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -174,6 +174,7 @@ class MultipartIDNumber extends IDNumber {
 				}
 				$i++;
 			}
+			$element_vals = array_map(function($v) { return ($v === '_PARENT_') ? '' : $v; }, $element_vals);
 		} elseif ($separator) {
 			// Standard operation, use specified non-empty separator to split value
 			$element_vals = explode($separator, $value);
