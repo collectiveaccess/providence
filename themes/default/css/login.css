@@ -46,8 +46,9 @@ a:hover{
 
 .smallContent {
     font-size: 14px;
-    margin-right: 68px;
-    text-align: justify;
+    text-align: left;
+    margin: 24px;
+    line-height: 20px;
 }
 
 .notificationContent {
