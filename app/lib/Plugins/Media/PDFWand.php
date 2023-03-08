@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2022 Whirl-i-Gig
+ * Copyright 2006-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -353,8 +353,14 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 					
 		// Try to extract text
 		if ($this->ops_pdftotext_path) {
+			if(($page_start = (int)$this->opo_config->get("document_text_extraction_start_page")) <= 0) { $page_start = 1; }
+			if(($num_pages = (int)$this->opo_config->get("document_text_extraction_max_number_of_pages")) <= 0) { $num_pages = null; }
+			
+			$page_limits = " -f{$page_start}";
+			if($num_pages > 0) { $page_limits .= " -l".($page_start + $num_pages)." "; }
+			
 			$vs_tmp_filename = tempnam('/tmp', 'CA_PDF_TEXT');
-			caExec($this->ops_pdftotext_path.' -q -enc UTF-8 '.caEscapeShellArg($ps_filepath).' '.caEscapeShellArg($vs_tmp_filename).(caIsPOSIX() ? " 2> /dev/null" : ""));
+			caExec($this->ops_pdftotext_path.' -q -enc UTF-8 '.$page_limits.caEscapeShellArg($ps_filepath).' '.caEscapeShellArg($vs_tmp_filename).(caIsPOSIX() ? " 2> /dev/null" : ""));
 			$vs_extracted_text = file_get_contents($vs_tmp_filename);
 			$this->handle['content'] = $this->ohandle['content'] = $vs_extracted_text;
 			@unlink($vs_tmp_filename);
