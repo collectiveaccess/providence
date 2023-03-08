@@ -254,8 +254,8 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 	# ----------------------------------------------------------
 	public function get($property) {
 		if ($this->handle) {
-			if ($this->info["PROPERTIES"][$property]) {
-				return $this->properties[$property];
+			if ($this->info["PROPERTIES"][$property] ?? null) {
+				return $this->properties[$property] ?? null;
 			} else {
 				return '';
 			}
@@ -356,12 +356,13 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 			if(($page_start = (int)$this->opo_config->get("document_text_extraction_start_page")) <= 0) { $page_start = 1; }
 			if(($num_pages = (int)$this->opo_config->get("document_text_extraction_max_number_of_pages")) <= 0) { $num_pages = null; }
 			
-			$page_limits = " -f{$page_start}";
-			if($num_pages > 0) { $page_limits .= " -l".($page_start + $num_pages)." "; }
+			$page_limits = " -f {$page_start} ";
+			if($num_pages > 0) { $page_limits .= "-l ".($page_start + $num_pages)." "; }
 			
 			$vs_tmp_filename = tempnam('/tmp', 'CA_PDF_TEXT');
 			caExec($this->ops_pdftotext_path.' -q -enc UTF-8 '.$page_limits.caEscapeShellArg($ps_filepath).' '.caEscapeShellArg($vs_tmp_filename).(caIsPOSIX() ? " 2> /dev/null" : ""));
 			$vs_extracted_text = file_get_contents($vs_tmp_filename);
+			
 			$this->handle['content'] = $this->ohandle['content'] = $vs_extracted_text;
 			@unlink($vs_tmp_filename);
 		}
@@ -379,8 +380,8 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		}
 
 		# get parameters for this operation
-		$this->properties["version_width"] = $w = $pa_parameters["width"];
-		$this->properties["version_height"] = $h = $pa_parameters["height"];
+		$this->properties["version_width"] = $w = $pa_parameters["width"] ?? null;
+		$this->properties["version_height"] = $h = $pa_parameters["height"] ?? null;
 		$cw = $this->get("width");
 		$ch = $this->get("height");
 		switch($ps_operation) {
@@ -475,6 +476,8 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		
 		$va_files = [];
 		
+		$vs_antialiasing = ($this->get("antialiasing") || $pb_antialiasing) ?  "-dTextAlphaBits=4 -dGraphicsAlphaBits=4" : "";
+		
 		# write the file
 		if ($ps_mimetype == "application/pdf") {
 			if($this->ops_ghostscript_path && ($compress = strtolower($this->get("compress")))) {
@@ -521,8 +524,6 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 			if(!$pb_write_all_pages) {
 				$vn_end_page = $vn_start_page;
 			}
-			
-			$vs_antialiasing = ($this->get("antialiasing") || $pb_antialiasing) ?  "-dTextAlphaBits=4 -dGraphicsAlphaBits=4" : "";
 		
 			$vb_processed_preview = false;
 			switch($ps_mimetype) {
