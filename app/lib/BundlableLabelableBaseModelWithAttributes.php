@@ -8707,7 +8707,8 @@ side. For many self-relations the direction determines the nature and display te
 		$base_content = $content[$use_id];
 		unset($content[$use_id]);
 		
-		$t_base->setTransaction($trans = new Transaction());
+		$trans = new Transaction();
+		$t_base->setTransaction($trans);
 		
 		// Perform merge
 		try {
