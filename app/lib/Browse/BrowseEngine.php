@@ -7619,6 +7619,7 @@ if (!($va_facet_info['show_all_when_first_facet'] ?? null) || ($this->numCriteri
 		 * @return array List of type_ids
 		 */
 		private function _convertTypeCodesToIDs($pa_type_codes_or_ids, $pa_options=null) {
+			if(!is_array($pa_type_codes_or_ids)) { $pa_type_codes_or_ids = []; }
 			$vs_md5 = caMakeCacheKeyFromOptions($pa_type_codes_or_ids);
 
 			if (isset(BrowseEngine::$s_type_id_cache[$vs_md5])) { return BrowseEngine::$s_type_id_cache[$vs_md5]; }
