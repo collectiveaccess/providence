@@ -8120,7 +8120,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	 * Traverse parent_id indexed array and return flattened list
 	 */
 	private function _getFlattenedHierarchyArray($pa_hierarchy_data, $pn_id, $ps_sort_direction='asc') {
-		if (!is_array($pa_hierarchy_data[$pn_id])) { return array(); }
+		if (!is_array($pa_hierarchy_data[$pn_id] ?? null)) { return []; }
 		
 		$va_data = array();
 		foreach($pa_hierarchy_data[$pn_id] as $vs_sort_key => $va_item) {
