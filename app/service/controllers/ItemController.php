@@ -139,6 +139,21 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 							'description' => _t('Restrict returned records to specified relationship types.')
 						],
 						[
+							'name' => 'start',
+							'type' => Type::int(),
+							'description' => _t('Zero-based start index for returned relationships. If omitted starts from the first relationship.')
+						],
+						[
+							'name' => 'limit',
+							'type' => Type::int(),
+							'description' => _t('Maximum number of relationships to return. If omitted all relationships are returned.')
+						],
+						[
+							'name' => 'targets',
+							'type' => Type::listOf(ItemSchema::get('TargetListItem')),
+							'description' => _t('List of tables (with options) to return relationships for')
+						],
+						[
 							'name' => 'checkAccess',
 							'type' => Type::listOf(Type::int()),
 							'description' => _t('Filter results by access values')
@@ -147,6 +162,21 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'bundles',
 							'type' => Type::listOf(Type::string()),
 							'description' => _t('Bundles to return.')
+						],
+						[
+							'name' => 'includeMedia',
+							'type' => Type::boolean(),
+							'description' => 'Include representations linked to related items?'
+						],
+						[
+							'name' => 'mediaVersions',
+							'type' => Type::listOf(Type::string()),
+							'description' => 'If including representations, which versions to return'
+						],
+						[
+							'name' => 'restrictMediaToTypes',
+							'type' => Type::listOf(Type::string()),
+							'description' => 'If including representations, which restrict to specified types'
 						],
 						[
 							'name' => 'resolveRelativeToRelated',
@@ -168,47 +198,136 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 						
 						$check_access = \GraphQLServices\Helpers\filterAccessValues($args['checkAccess']);
 						
-						$target = $args['target'];
-						if(!\Datamodel::tableExists($target)) { 
-							throw new \ServiceException(_t('Invalid target'));
-						}
-						if(!($linking_table = \Datamodel::getLinkingTableName($table, $target))) {
-							throw new \ServiceException(_t('Cannot resolve relationship'));
+						$targets = [];
+						if(is_array($args['targets'])) {
+							$targets = $args['targets'];
+						} elseif($target = $args['target']) {
+							$targets[] = [
+								'table' => $target,
+								'restrictToTypes' => $args['restrictToTypes'] ?? null,
+								'restrictToRelationshipTypes' => $args['restrictToRelationshipTypes'] ?? null,
+								'bundles' => $args['bundles'] ?? [],
+								'start' => $args['start'] ?? null,
+								'limit' => $args['limit'] ?? null,
+								'includeMedia' => $args['includeMedia'] ?? null,
+								'mediaVersions' => $args['mediaVersions'] ?? null,
+								'restrictMediaToTypes' => $args['restrictMediaToTypes'] ?? null
+							];
+						} else {
+							throw new \ServiceException(_t('No target specified'));
 						}
 						
-						$target_pk = \Datamodel::primaryKey($target);
-						$rels = $rec->getRelatedItems($target, ['checkAccess' => $check_access, 'restrictToTypes' => $args['restrictToTypes'], 'restrictToRelationshipTypes' => $args['restrictToRelationshipTypes']]);
-					
-						$rel_list = [];
-						if (sizeof($rel_ids = array_map(function($v) use ($resolve_to_related, $target_pk) { return $v[$resolve_to_related ? $target_pk : 'relation_id']; }, $rels)) > 0) {
-							$rel_types = array_values(array_map(function($v) {
-								return [
-									'relationship_typename' => $v['relationship_typename'],
-									'relationship_typecode' => $v['relationship_type_code'],
-									'relationship_type_id' => $v['relationship_type_id']
-								];
-							}, $rels));
-							$qr = caMakeSearchResult($resolve_to_related ? $target : $linking_table, $rel_ids);
-							while($qr->nextHit()) {
-								$r = $qr->getInstance();
+						$rels_by_target = [];
+						foreach($targets as $t) {
+							if(!\Datamodel::tableExists($t['table'])) { 
+								throw new \ServiceException(_t('Invalid table'));
+							}
+							if(!($linking_table = \Datamodel::getLinkingTableName($table, $t['table']))) {
+								throw new \ServiceException(_t('Cannot resolve relationship'));
+							}
 							
-								$bundles = \GraphQLServices\Helpers\extractBundleNames($r, $args);
-								$data = \GraphQLServices\Helpers\fetchDataForBundles($r, $bundles, []);
+							$target_name = $t['name'] ?? $t['table'];
+							
+							$include_media = $t['includeMedia'] ?? false;
+							$media_versions = $t['mediaVersions'] ?? ["thumbnail", "small", "medium", "large", "original"];
+						
+							$target_pk = \Datamodel::primaryKey($t['table']);
+							$rels = $rec->getRelatedItems($t['table'], ['checkAccess' => $check_access, 'primaryIDs' => [$rec->getPrimaryKey()], 'restrictToTypes' => $t['restrictToTypes'], 'restrictToRelationshipTypes' => $t['restrictToRelationshipTypes']]);
+					
+							$rel_list = [];
+							if (sizeof($rel_ids = array_map(function($v) use ($resolve_to_related, $target_pk, $t) { return $v[$resolve_to_related ? $target_pk : 'relation_id']; }, $rels)) > 0) {
+								$rel_types = array_values(array_map(function($v) use ($t) {
+									return [
+										'relationship_typename' => $v['relationship_typename'],
+										'relationship_typecode' => $v['relationship_type_code'],
+										'relationship_type_id' => $v['relationship_type_id'],
+									];
+								}, $rels));
 								
-								$rel_type = array_shift($rel_types);
+								$start = $t['start'] ?? 0;
+								if($start < 0) { $start = 0; }
+								if($start >= sizeof($rel_ids)) { $start = 0; }
+								$limit = $t['limit'] ?? null;
+								if($limit < 1) { $limit = null; }
+								if(($start > 0) || ($limit > 0)) {
+									$rel_ids = array_slice($rel_ids, $start, $limit);
+									$rel_types = array_slice($rel_types, $start, $limit);
+								}
 								
-								if(is_array($rel_ids = $r->get("{$linking_table}.relation_id", ['returnAsArray' => true]))) {
-									foreach($rel_ids as $rel_id) {
-										$rel_list[] = array_merge([
-											'id' => $rel_id,
-											'table' => $linking_table,
-											'bundles' => $data
-										], $rel_type);
+								$qr = caMakeSearchResult($resolve_to_related ? $t['table'] : $linking_table, $rel_ids);
+								while($qr->nextHit()) {
+									$r = $qr->getInstance();
+							
+									$rel_type = array_shift($rel_types);
+									$bundles = \GraphQLServices\Helpers\extractBundleNames($r, $t);
+									$data = \GraphQLServices\Helpers\fetchDataForBundles($r, $bundles, ['primaryIDs' => [$rec->getPrimaryKey()]]);
+							
+									$media = [];
+									if($include_media) {
+										$m = $resolve_to_related ? $r : \Datamodel::getInstance($t['table'], false, $r->get($t['table'].'.'.$target_pk, ['primaryIDs' => [$rec->getPrimaryKey()]]));
+										
+										if(is_array($reps = $m->getRepresentations(array_merge($media_versions, ['original']), null, ['restrictToTypes' => $t['restrictMediaToTypes']]))) {
+											foreach($reps as $rep_id => $rep_info) {
+												$versions = [];
+												foreach($rep_info['urls'] as $version => $url) {
+													if(!in_array($version, $media_versions)) { continue; }
+													$versions[] = [
+														'version' => $version,
+														'url' => $url,
+														'tag' => $rep_info['urls'][$version],
+														'width' => $rep_info['info'][$version]['WIDTH'],
+														'height' => $rep_info['info'][$version]['HEIGHT'],
+														'mimetype' => $rep_info['info'][$version]['MIMETYPE'],
+														'filesize' => @filesize($rep_info['paths'][$version]),
+														'duration' => $rep_info['info'][$version]['PROPERTIES']['duration'] ?? null,
+													];
+												}
+												
+												$media[] = [
+													'id' => $rep_id,
+													'idno' => $rep_info['idno'],
+													'name' => $rep_info['label'],
+													'type' => $rep_info['typename'],
+													'mimetype' => $rep_info['mimetype'],
+													'originalFilename' => $rep_info['original_filename'],
+													'versions' => $versions,
+													'isPrimary' => (bool)$rep_info['is_primary'],
+													'width' => $rep_info['info']['original']['WIDTH'],
+													'height' => $rep_info['info']['original']['HEIGHT'],
+													'mimetype' => $rep_info['info']['original']['MIMETYPE'],
+													'filesize' => @filesize($rep_info['paths']['original']),
+													'duration' => $rep_info['info']['original']['PROPERTIES']['duration'] ?? null
+												];
+											}
+										}
+									}
+								
+									if(is_array($rel_ids = $r->get("{$linking_table}.relation_id", ['returnAsArray' => true]))) {
+										foreach($rel_ids as $rel_id) {
+											$rel_list[] = array_merge([
+												'id' => $rel_id,
+												'table' => $linking_table,
+												'bundles' => $data,
+												'media' => $media
+											], $rel_type);
+										}
 									}
 								}
 							}
+							$rels_by_target[] = [
+								'name' => $target_name,
+								'table' => $t['table'],
+								'relationships' => $rel_list
+							];
 						}
-						return ['table' => $rec->tableName(), 'idno'=> $rec->get($rec->getProperty('ID_NUMBERING_ID_FIELD')), 'identifier' => $args['identifier'], 'id' => $rec->getPrimaryKey(), 'relationships' => $rel_list];
+						return [
+							'table' => $rec->tableName(), 
+							'idno'=> $rec->get($rec->getProperty('ID_NUMBERING_ID_FIELD')), 
+							'identifier' => $args['identifier'], 
+							'id' => $rec->getPrimaryKey(), 
+							'targets' => $rels_by_target,
+							'relationships' => $rels_by_target[0]['relationships'] ?? null
+						];
 					}
 				]
 			]

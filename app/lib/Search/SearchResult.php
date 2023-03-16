@@ -554,7 +554,7 @@ class SearchResult extends BaseObject {
 				if (!$va_row_id_map[$va_row[$vs_pk]]) { continue; }
 				
 				SearchResult::$opa_hierarchy_children_prefetch_cache[$ps_tablename][$va_row[$vs_parent_id_fld]][$vs_opt_md5][] = 
-				SearchResult::$opa_hierarchy_children_prefetch_cache[$ps_tablename][$va_row_id_map[$va_row[$vs_parent_id_fld]]][$vs_opt_md5][] =
+				SearchResult::$opa_hierarchy_children_prefetch_cache[$ps_tablename][$va_row_id_map[$va_row[$vs_parent_id_fld] ?? null] ?? null][$vs_opt_md5][] =
 					$va_row_ids_in_current_level[] = $va_row[$vs_pk];
 			}
 			$vn_level++;
@@ -1969,6 +1969,9 @@ class SearchResult extends BaseObject {
 		$pa_check_access		= $pa_options['checkAccess'] ?? null;
 		$pb_primary_only		= $pa_options['primaryOnly'] ?? false;
 		$pa_exclude_idnos		= $pa_options['excludeIdnos'] ?? null;
+		
+		$primary_ids		= $pa_options['primaryIDs'] ?? null;
+		
 		if (!is_array($pa_exclude_idnos)) { $pa_exclude_idnos = []; }
 		
 		if (!($t_rel_instance = SearchResult::$s_instance_cache[$va_path_components['table_name']])) {
@@ -1997,6 +2000,7 @@ class SearchResult extends BaseObject {
 		
 		$va_ids = array();
 		foreach($pa_value_list as $vn_i => $va_rel_item) {
+			if(is_array($primary_ids) && sizeof($primary_ids) && in_array($va_rel_item[$vs_pk], $primary_ids)) { continue; }
 		    if ($pb_primary_only && isset($va_rel_item['is_primary']) && !$va_rel_item['is_primary']) { continue; }
 			$va_ids[] = $va_rel_item[$vs_pk];
 		}

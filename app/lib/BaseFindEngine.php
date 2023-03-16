@@ -562,6 +562,8 @@ class BaseFindEngine extends BaseObject {
 		$joins = $this->_getJoins($t_table, $t_rel_table, $intrinsic, caGetOption('relationshipTypes', $options, null));
 		$join_sql = join("\n", $joins);
 		
+		$intrinsic = array_shift(explode('/', $intrinsic));
+		
 		$sql = "
 			SELECT t.{$table_pk}
 			FROM {$table} t
@@ -619,6 +621,8 @@ class BaseFindEngine extends BaseObject {
 		$rel_table_num = $t_rel_table->tableNum();
 		$rel_label_table = $t_rel_table->getLabelTableName();
 		
+		$rel_label_field = array_shift(explode('/', $rel_label_field));
+		
 		$t_label = $t_rel_table->getLabelTableInstance();
 		if (!$rel_label_field || !$t_label->hasField($rel_label_field)) { $rel_label_field = $t_rel_table->getLabelSortField(); }
 		
@@ -636,7 +640,6 @@ class BaseFindEngine extends BaseObject {
 			ORDER BY rl.`{$rel_label_field}` {$direction}
 			{$limit_sql}
 		";
-		
 		$qr_sort = $this->db->query($sql);
 		$sort_keys = $qr_sort->getAllFieldValues($table_pk);
 		
@@ -1347,12 +1350,14 @@ class BaseFindEngine extends BaseObject {
 
 		$is_attribute = method_exists($t_rel_table, 'hasElement') ? $t_rel_table->hasElement($sort_field) : false;
 		
-		$rel_type_sql = (is_array($rel_types) && (sizeof($rel_types) > 0)) ? " AND l.type_id IN (".join(',', array_map('intval', $rel_types)).")" : '';
-	
 		$joins = [];
 		switch($psize = sizeof($path)) {
 			case 3:
 				$linking_table = $path[1];
+				
+				$rel_types = caMakeRelationshipTypeIDList($linking_table, $rel_types);
+				$rel_type_sql = (is_array($rel_types) && (sizeof($rel_types) > 0)) ? " AND l.type_id IN (".join(',', array_map('intval', $rel_types)).")" : '';
+	
 				if ($table === $rel_table) {
 					$t_relation = Datamodel::getInstance($linking_table, true);
 					// self relation

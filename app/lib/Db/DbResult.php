@@ -144,7 +144,7 @@ class DbResult extends DbBase {
 
 		$va_field = isset(DbResult::$s_field_info_cache[$ps_field]) ? DbResult::$s_field_info_cache[$ps_field] : $this->getFieldInfo($ps_field);
 
-		if (!isset($this->opa_current_row[$va_field["field"]])) {
+		if (!isset($this->opa_current_row[$va_field["field"] ?? null])) {
 			return null;
 		}
 

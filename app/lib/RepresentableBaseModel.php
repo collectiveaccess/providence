@@ -155,6 +155,9 @@
 					$va_tmp['tags'] = array();
 					$va_tmp['urls'] = array();
 			
+					$va_tmp['typename'] = caGetListItemIdno($qr_reps->get('ca_object_representations.type_id'));
+					$va_tmp['label'] = $qr_reps->get('ca_object_representations.preferred_labels.name');
+					
 					$va_info = $qr_reps->getMediaInfo('media');
 					$va_tmp['info'] = array('original_filename' => $va_info['ORIGINAL_FILENAME']);
 					foreach ($pa_versions as $vs_version) {

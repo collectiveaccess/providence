@@ -68,6 +68,11 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 							'defaultValue' => self::getBearerToken()
 						],
 						[
+							'name' => 'searches',
+							'type' => Type::listOf(SearchSchema::get('SearchesInput')),
+							'description' => _t('Searches to run')
+						],
+						[
 							'name' => 'table',
 							'type' => Type::string(),
 							'description' => _t('Table to search')
@@ -113,43 +118,71 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
 						$search = trim($args['search']);
-						$table = trim($args['table']);
+						$searches = $args['searches'];
 						
-						$check_access = \GraphQLServices\Helpers\filterAccessValues($args['checkAccess']);
-						
-						if(!strlen($search)) { 
-							throw new \ServiceException(_t('Search cannot be empty'));
+						if(!is_array($searches) || !sizeof($searches)) {
+							$searches = [[
+								'table' => trim($args['table']),
+								'name' => trim($args['table']),
+								'search' => $args['search'],
+								'filterByAncestors' => $args['filterByAncestors'],
+								'checkAccess' => $args['checkAccess'],
+								'bundles' => $args['bundles'],
+								'start' => $args['start'],
+								'limit' => $args['limit'],
+								'restrictToTypes' => $args['restrictToTypes']
+							]];
 						}
+						$valid_tables = caFilterTableList(['ca_objects', 'ca_collections', 'ca_entities', 'ca_occurrences', 'ca_places', 'ca_list_items', 'ca_storage_locations', 'ca_loans', 'ca_object_lots', 'ca_movements', 'ca_object_representations']);
 						
-						$tables = caFilterTableList(['ca_objects', 'ca_collections', 'ca_entities', 'ca_occurrences', 'ca_places', 'ca_list_items', 'ca_storage_locations', 'ca_loans', 'ca_object_lots', 'ca_movements', 'ca_object_representations']);
+						$results = [];
 						
-						if(!in_array($table, $tables, true)) { 
-							throw new \ServiceException(_t('Invalid table: %1', $table));
-						}
+						$ftable = $fsearch = $fcount = $fresult = null;
+						foreach($searches as $t) {
+							$table = $t['table'] ?? null;
+							$name = $t['name'] ?? $table;
+							$search = $t['search'] ?? null;
+							$check_access = $t['checkAccess'] ? \GraphQLServices\Helpers\filterAccessValues($t['checkAccess']) : null;
 						
-						// Check user privs
-						// TODO: add GraphQL-specific access check?
-						if(!in_array($table, ['ca_list_items', 'ca_lists'], true) && !$u->canDoAction("can_search_{$table}")) {
-							throw new \ServiceException(_t('Access denied for table: %1', $table));
-						}
+							if(!strlen($search)) { 
+								throw new \ServiceException(_t('Search cannot be empty'));
+							}
 						
-						$s = caGetSearchInstance($table);
+							
+							if(!in_array($table, $valid_tables, true)) { 
+								throw new \ServiceException(_t('Invalid table: %1', $table));
+							}
 						
-						if($args['restrictToTypes'] && !is_array($args['restrictToTypes'])) {
-							$args['restrictToTypes'] = [$args['restrictToTypes']];
-						}
-						if(is_array($args['restrictToTypes']) && sizeof($args['restrictToTypes'])) {
-							$s->setTypeRestrictions($args['restrictToTypes']);
-						}
+							// Check user privs
+							// TODO: add GraphQL-specific access check?
+							if(!in_array($table, ['ca_list_items', 'ca_lists'], true) && !$u->canDoAction("can_search_{$table}")) {
+								throw new \ServiceException(_t('Access denied for table: %1', $table));
+							}
 						
-						$qr = $s->search($search, ['checkAccess' => $check_access]);
-						$rec = \Datamodel::getInstance($table, true);
+							$s = caGetSearchInstance($table);
 						
-						$bundles = \GraphQLServices\Helpers\extractBundleNames($rec, $args, []);
+							if($t['restrictToTypes'] && !is_array($t['restrictToTypes'])) {
+								$t['restrictToTypes'] = [$t['restrictToTypes']];
+							}
+							if(is_array($t['restrictToTypes']) && sizeof($t['restrictToTypes'])) {
+								$s->setTypeRestrictions($t['restrictToTypes']);
+							}
+						
+							$qr = $s->search($search, ['checkAccess' => $t['checkAccess'] ?? null]);
+							$rec = \Datamodel::getInstance($table, true);
+						
+							$bundles = \GraphQLServices\Helpers\extractBundleNames($rec, $t, []);
 
-						$data = \GraphQLServices\Helpers\fetchDataForBundles($qr, $bundles, ['checkAccess' => $check_access, 'start' => $args['start'], 'limit' => $args['limit'], 'filterByAncestors' => $args['filterByAncestors']]);
-						
-						return ['table' => $table, 'search' => $search, 'count' => sizeof($data), 'results' => $data];
+							$results[] = ['name' => $name, 'result' => $r = \GraphQLServices\Helpers\fetchDataForBundles($qr, $bundles, ['checkAccess' => $check_access, 'start' => $t['start'], 'limit' => $t['limit'], 'filterByAncestors' => $t['filterByAncestors']]), 'count' => sizeof($r)];
+							if(is_null($ftable)) {
+								// Stash details of first search for use in "flat" response
+								$ftable = $table;
+								$fsearch = $search;
+								$fcount = sizeof($r);
+								$fresult = $r;
+							}
+						}
+						return ['table' => $ftable, 'search' => $fsearch, 'count' => $fcount, 'results' => $results, 'result' => $fresult];
 					}
 				],
 				// ------------------------------------------------------------
@@ -164,6 +197,11 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 							'type' => Type::string(),
 							'description' => _t('JWT'),
 							'defaultValue' => self::getBearerToken()
+						],
+						[
+							'name' => 'finds',
+							'type' => Type::listOf(SearchSchema::get('FindsInput')),
+							'description' => _t('Finds to run')
 						],
 						[
 							'name' => 'table',
@@ -211,36 +249,64 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
 						$table = trim($args['table']);
+						$finds = $args['finds'];
 						
-						$tables = caFilterTableList(['ca_objects', 'ca_collections', 'ca_entities', 'ca_occurrences', 'ca_places', 'ca_list_items', 'ca_storage_locations', 'ca_loans', 'ca_object_lots', 'ca_movements', 'ca_object_representations']);
-						
-						if(!in_array($table, $tables, true)) { 
-							throw new \ServiceException(_t('Invalid table: %1', $table));
+						if(!is_array($finds) || !sizeof($finds)) {
+							$finds = [[
+								'table' => trim($args['table']),
+								'name' => trim($args['table']),
+								'criteria' => $args['criteria'],
+								'filterByAncestors' => $args['filterByAncestors'],
+								'checkAccess' => $args['checkAccess'] ?? null,
+								'bundles' => $args['bundles'],
+								'start' => $args['start'],
+								'limit' => $args['limit'],
+								'restrictToTypes' => $args['restrictToTypes']
+							]];
 						}
 						
-						$check_access = \GraphQLServices\Helpers\filterAccessValues($args['checkAccess']);
+						$valid_tables = caFilterTableList(['ca_objects', 'ca_collections', 'ca_entities', 'ca_occurrences', 'ca_places', 'ca_list_items', 'ca_storage_locations', 'ca_loans', 'ca_object_lots', 'ca_movements', 'ca_object_representations']);
 						
-						// Check user privs
-						// TODO: add GraphQL-specific access check?
-						if(!in_array($table, ['ca_list_items', 'ca_lists'], true) && !$u->canDoAction("can_search_{$table}")) {
-							throw new \ServiceException(_t('Access denied for table: %1', $table));
-						}
+						$results = [];
 						
-						if($args['restrictToTypes'] && !is_array($args['restrictToTypes'])) {
-							$args['restrictToTypes'] = [$args['restrictToTypes']];
-						}
+						$ftable = $fsearch = $fcount = $fresult = null;
+						foreach($finds as $t) {
+							$table = $t['table'] ?? null;
+							$name = $t['name'] ?? $table;
+							$check_access = $t['checkAccess'] ? \GraphQLServices\Helpers\filterAccessValues($t['checkAccess']) : null;
+														
+							if(!in_array($table, $valid_tables, true)) { 
+								throw new \ServiceException(_t('Invalid table: %1', $table));
+							}
 						
-						if(!($qr = $table::find(\GraphQLServices\Helpers\Search\convertCriteriaToFindSpec($args['criteria'], $table), ['returnAs' => 'searchResult', 'allowWildcards' => true, 'restrictToTypes' => $args['restrictToTypes'], 'checkAccess' => $check_access]))) {
-							throw new \ServiceException(_t('No results for table: %1', $table));
-						}
+							// Check user privs
+							// TODO: add GraphQL-specific access check?
+							if(!in_array($table, ['ca_list_items', 'ca_lists'], true) && !$u->canDoAction("can_search_{$table}")) {
+								throw new \ServiceException(_t('Access denied for table: %1', $table));
+							}
+						
+							if($t['restrictToTypes'] && !is_array($t['restrictToTypes'])) {
+								$t['restrictToTypes'] = [$t['restrictToTypes']];
+							}
+						
+							if(!($qr = $table::find($z=\GraphQLServices\Helpers\Search\convertCriteriaToFindSpec($t['criteria'], $table), ['returnAs' => 'searchResult', 'allowWildcards' => true, 'restrictToTypes' => $t['restrictToTypes'], 'checkAccess' => $check_access]))) {
+								throw new \ServiceException(_t('No results for table: %1', $table));
+							}
 					
-						$rec = \Datamodel::getInstance($table, true);
+							$rec = \Datamodel::getInstance($table, true);
 						
-						$bundles = \GraphQLServices\Helpers\extractBundleNames($rec, $args, []);
+							$bundles = \GraphQLServices\Helpers\extractBundleNames($rec, $t, []);
 
-						$data = \GraphQLServices\Helpers\fetchDataForBundles($qr, $bundles, ['checkAccess' => $check_access, 'start' => $args['start'], 'limit' => $args['limit'], 'filterByAncestors' => $args['filterByAncestors']]);
-						
-						return ['table' => $table, 'search' => $search, 'count' => sizeof($data), 'results' => $data];
+							$results[] = ['name' => $name, 'result' => $r = \GraphQLServices\Helpers\fetchDataForBundles($qr, $bundles, ['checkAccess' => $check_access, 'start' => $t['start'], 'limit' => $t['limit'], 'filterByAncestors' => $t['filterByAncestors']]), 'count' => sizeof($r)];
+							if(is_null($ftable)) {
+								// Stash details of first find for use in "flat" response
+								$ftable = $table;
+								$fsearch = $search;
+								$fcount = sizeof($r);
+								$fresult = $r;
+							}
+						}
+						return ['table' => $ftable, 'search' => $fsearch, 'count' => $fcount, 'results' => $results, 'result' => $fresult];
 					}
 				],
 				// ------------------------------------------------------------
@@ -283,13 +349,13 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 						$bundle = trim($args['bundle']);
 						$values = $args['values'];
 						
-						$tables = caFilterTableList(['ca_objects', 'ca_collections', 'ca_entities', 'ca_occurrences', 'ca_places', 'ca_list_items', 'ca_storage_locations', 'ca_loans', 'ca_object_lots', 'ca_movements', 'ca_object_representations']);
+						$valid_tables = caFilterTableList(['ca_objects', 'ca_collections', 'ca_entities', 'ca_occurrences', 'ca_places', 'ca_list_items', 'ca_storage_locations', 'ca_loans', 'ca_object_lots', 'ca_movements', 'ca_object_representations']);
 						
 						if($args['restrictToTypes'] && !is_array($args['restrictToTypes'])) {
 							$args['restrictToTypes'] = [$args['restrictToTypes']];
 						}
 						
-						if(!in_array($table, $tables, true)) { 
+						if(!in_array($table, $valid_tables, true)) { 
 							throw new \ServiceException(_t('Invalid table: %1', $table));
 						}
 						
