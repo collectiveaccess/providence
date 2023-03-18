@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2022 Whirl-i-Gig
+ * Copyright 2010-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -431,6 +431,7 @@ class ResultContext {
 				return $va_context['sort'] ? $va_context['sort'] : null;
 			}
 		} else {
+			$ps_sort = str_replace("|", "/", $ps_sort);	// convert relationship type "|" separator used in web UI to "/" separator used in BaseFindEngine sort
 			$this->opb_sort_has_changed = true;
 			$this->setContextValue('sort', $ps_sort);
 			return $ps_sort;

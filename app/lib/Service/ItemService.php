@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2021 Whirl-i-Gig
+ * Copyright 2012-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -138,7 +138,7 @@ class ItemService extends BaseJSONService {
 			if(caGetOption('returnWithStructure', $va_options, true)) {	// unroll structured response into flat list
 				$vm_return = array_reduce($vm_return,
 					function($c, $v) { 
-						return array_merge($c, array_values($v));
+						return array_merge($c, is_array($v) ? array_values($v) : [$v]);
 					}, []
 				);
 			}
