@@ -138,7 +138,7 @@ $show_source 			= $t_subject->getTypeSetting('show_source_for_nonpreferred_label
 								</td>
 							</tr>
 							<tr>
-								<td colspan="5"><?= $t_label->htmlFormElement('displayname', null, array('name' => "{fieldNamePrefix}displayname_{n}", 'id' => "{fieldNamePrefix}displayname_{n}", "value" => "{{displayname}}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_entity_labels_nonpreferred', 'textAreaTagName' => 'textentry', 'readonly' => $read_only)); ?></td>
+								<td colspan="5"><?= $t_label->htmlFormElement('displayname', null, array('width' => '670px', 'name' => "{fieldNamePrefix}displayname_{n}", 'id' => "{fieldNamePrefix}displayname_{n}", "value" => "{{displayname}}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_entity_labels_nonpreferred', 'textAreaTagName' => 'textentry', 'readonly' => $read_only)); ?></td>
 							</tr>
 							<tr>
 								<td colspan="5">
