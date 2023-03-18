@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2022 Whirl-i-Gig
+ * Copyright 2010-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1086,9 +1086,9 @@ function caGetPDFInfo($ps_filepath) {
 		if ($o_pdf && (sizeof($o_pdf->pages) > 0)) { 
 			$o_page = $o_pdf->pages[0];
 			return [
-				'title' => $o_pdf->properties['Title'],
-				'author' => $o_pdf->properties['Author'],
-				'producer' => $o_pdf->properties['Producer'],
+				'title' => $o_pdf->properties['Title'] ?? null,
+				'author' => $o_pdf->properties['Author'] ?? null,
+				'producer' => $o_pdf->properties['Producer'] ?? null,
 				'pages' => sizeof($o_pdf->pages),
 				'width' => $o_page->getWidth(),
 				'height' => $o_page->getHeight()
