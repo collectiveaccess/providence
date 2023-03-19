@@ -4836,7 +4836,7 @@ jQuery(document).ready(function() {
 			if ($pb_barcodes && ($vs_barcode_file = caParseBarcodeViewTag($vs_tag, $po_view, $pm_subject, $pa_options))) {
 				$va_barcode_files_to_delete[] = $vs_barcode_file;
 			} elseif ((strpos($vs_tag, "^") !== false) || (strpos($vs_tag, "<") !== false)) {
-				$po_view->setVar($vs_tag, $pm_subject->getWithTemplate($vs_tag, array('checkAccess' => $pa_access_values)));
+				$po_view->setVar($vs_tag, $pm_subject->getWithTemplate($vs_tag, array('autoConvertLineBreaks' => true, 'checkAccess' => $pa_access_values)));
 			} elseif (strpos($vs_tag, ".") !== false) {
 				$po_view->setVar($vs_tag, $pm_subject->get($vs_tag, array('checkAccess' => $pa_access_values)));
 			} else {
@@ -5427,5 +5427,40 @@ jQuery(document).ready(function() {
 			;
 			return $rec_label;
 		}
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	function caGetTextExcerpt(?string $content, array $search_terms, ?array $options=null) : ?string {
+		$before = caGetOption('before', $options, 100);
+		$after = caGetOption('after', $options, 100);
+		$search_terms = array_map(function($v) {
+			$t = preg_replace('![i]{0,1}\*!', '', $v);
+			return $t;
+		}, $search_terms);
+		
+		$excerpts = [];
+		for($s=0; $s < sizeof($search_terms); $s++) {
+			$n = sizeof($search_terms) - $s;
+			while($n > 0) {
+				$terms = array_map(function($v) {
+					return preg_quote($v, '!')."[^\s]*";
+				}, array_slice($search_terms, $s, $n));
+				$regex = trim(join('[ ]+', $terms));
+				if(preg_match("/(?<![A-Za-z0-9]){$regex}/iu", $content, $m)) {
+					if($m[0]){
+						$index = mb_strpos($content, $m[0]);
+						$start = (($index-$before) > 0) ? ($index-$before) : 0;
+						$length = $before + $after + mb_strlen($m[0]);
+						if($length > (mb_strlen($content) - $start)) { $length = (mb_strlen($content) - $start); }
+						$extext = mb_substr($content, $start, $length);
+						$excerpts[] = "<p>... {$extext} ...</p>";
+					}
+				}
+				$n--;
+			}
+		}
+		return join('', array_unique($excerpts));
 	}
 	# ------------------------------------------------------------------
