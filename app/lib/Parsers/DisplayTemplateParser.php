@@ -55,11 +55,6 @@ class DisplayTemplateParser {
 	 */
 	static $join_tag_vals = [];
 	
-	/**
-	 *
-	 */
-	static $do_highlighting = false;
-	
 	# -------------------------------------------------------------------
 	/**
      *  Statically evaluate an expression, returning the value
@@ -144,6 +139,9 @@ class DisplayTemplateParser {
 	 *      unitLength = Maximum number of templating iteration to evaluate. If null, no limit is enforced (there may be more than one iteration when relativeToContainer is set). [Default is null]
 	 *      indexWithIDs = Return array with indexes set to row_ids. [Default is false; use numeric indices starting with zero]
 	 *
+	 *		doHighlighting = 
+	 *		autoConvertLineBreaks = 
+	 *
 	 * @return mixed Output of processed templates
 	 *
 	 * TODO: sort and sortDirection are not currently supported! They are ignored for the time being
@@ -159,6 +157,7 @@ class DisplayTemplateParser {
 		}
 		
 		$do_highlighting = $pa_options['highlighting'] ?? false;
+		$autoconvert_linebreaks = $pa_options['autoConvertLineBreaks'] ?? false;
 		
 		self::$join_tag_vals = [];
 		
@@ -205,6 +204,7 @@ class DisplayTemplateParser {
 
 		$qr_res = caMakeSearchResult($ps_tablename, $pa_row_ids, ['sort' => caGetOption('sort', $pa_options, null), 'sortDirection' => caGetOption('sortDirection', $pa_options, null)]);
 		$qr_res->doHighlighting($do_highlighting);
+		$qr_res->autoConvertLineBreaks($autoconvert_linebreaks);
 		
 		if(!$qr_res) { return $pb_return_as_array ? array() : ""; }
 
