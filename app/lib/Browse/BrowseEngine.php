@@ -4341,7 +4341,6 @@
 						if(!is_array($va_suppress_values = caGetOption('suppress', $va_facet_info, null))) {
 							$va_suppress_values = caGetOption('exclude_values', $va_facet_info, null);
 						}
-
 						$access = null;
 						switch($vn_element_type) {
 							case __CA_ATTRIBUTE_VALUE_LIST__:
@@ -4364,7 +4363,7 @@
 								$va_list_label_cache = $t_list_item->getPreferredDisplayLabelsForIDs($va_values);
 
 								// Translate value idnos to ids
-								if (is_array($va_suppress_values)) { $va_suppress_values = ca_lists::getItemIDsFromList($t_element->get('list_id'), $va_suppress_values); }
+								if (is_array($va_suppress_values)) { $va_suppress_values = ca_lists::getItemIDsFromList($t_element->get('list_id'), $va_suppress_values, ['noChildren' => true]); }
 
 								$va_facet_list = [];
 								$va_children_by_parent_id = [];
