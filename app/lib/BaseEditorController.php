@@ -1945,7 +1945,7 @@ class BaseEditorController extends ActionController {
 		// Does user have access to row?
 		//
 		if ($pt_subject->getAppConfig()->get('perform_item_level_access_checking') && $pt_subject->getPrimaryKey()) {
-			if ($pt_subject->checkACLAccessForUser($this->request->user) < __CA_BUNDLE_ACCESS_READONLY__) {
+			if (method_exists($pt_subject, 'checkACLAccessForUser') && $pt_subject->checkACLAccessForUser($this->request->user) < __CA_BUNDLE_ACCESS_READONLY__) {
 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
 				return false;
 			}
