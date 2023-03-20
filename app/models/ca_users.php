@@ -3783,8 +3783,8 @@ class ca_users extends BaseModel {
 		if(!$this->getPrimaryKey()) { return null; }
 		
 		// get user roles
-		$va_roles = $this->getUserRoles(['skipVars' => true]);
-		foreach($this->getGroupRoles(['skipVars' => true]) as $vn_role_id => $va_role_info) {
+		$va_roles = $this->getUserRoles(['skipVars' => false]);
+		foreach($this->getGroupRoles(['skipVars' => false]) as $vn_role_id => $va_role_info) {
 			$va_roles[$vn_role_id] = $va_role_info;
 		}	
 		
