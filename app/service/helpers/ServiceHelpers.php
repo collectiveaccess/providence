@@ -33,6 +33,8 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 
+define('__CA_ITEM_SERVICE_RELATIONSHIP_TARGET_MAXIMUM_DEPTH__', 3);
+
 /**
  * Ensure all checkAccess values are valid
  */
@@ -640,24 +642,25 @@ function itemSchemaDefinitions() {
 				],
 			]
 		]),
-		$targetList = new ObjectType([
-			'name' => 'TargetList',
-			'description' => 'A list of related items',
-			'fields' => [
-				'name' => [
-					'type' => Type::string(),
-					'description' => 'Name of target'
-				],
-				'table' => [
-					'type' => Type::string(),
-					'description' => 'Related table'
-				],
-				'relationships' => [
-					'type' => Type::listOf($itemType),
-					'description' => 'List of related records'
-				]
-			]
-		]),
+		// $targetList = new ObjectType([
+// 			'name' => 'TargetList',
+// 			'description' => 'A list of related items',
+// 			'fields' => [
+// 				'name' => [
+// 					'type' => Type::string(),
+// 					'description' => 'Name of target'
+// 				],
+// 				'table' => [
+// 					'type' => Type::string(),
+// 					'description' => 'Related table'
+// 				],
+// 				'relationships' => [
+// 					'type' => Type::listOf($itemType),
+// 					'description' => 'List of related records'
+// 				]
+// 			]
+// 		]),
+		$targetList = _targetListType(0, $bundleValueListType, $mediaItemType),
 		$relationshipList = new ObjectType([
 			'name' => 'RelationshipList',
 			'description' => 'A list of relationships',
@@ -684,53 +687,136 @@ function itemSchemaDefinitions() {
 				]
 			]
 		]),
-		$targetListItem = new InputObjectType([
-			'name' => 'TargetListItem',
-			'description' => 'A list of targets (table + options) to return relationships for',
-			'fields' => [
-				'name' => [
-					'type' => Type::string(),
-					'description' => 'Name of target'
-				],
-				'table' => [
-					'type' => Type::string(),
-					'description' => 'Related table'
-				],
-				'restrictToTypes' => [
-					'type' => Type::listOf(Type::string()),
-					'description' => 'Restrict relationships to enumerated related record types'
-				],
-				'restrictToRelationshipTypes' => [
-					'type' => Type::listOf(Type::string()),
-					'description' => 'Restrict relationships to enumerated relationship types'
-				],
-				'start' => [
-					'type' => Type::int(),
-					'description' => 'Zero-based start index for returned relationships. If omitted starts from the first relationship.'
-				],
-				'limit' => [
-					'type' => Type::int(),
-					'description' => 'Maximum number of relationships to return. If omitted all relationships are returned.'
-				],
-				'bundles' => [
-					'type' => Type::listOf(Type::string()),
-					'description' => _t('Bundles to return.')
-				],
-				'includeMedia' => [
-					'type' => Type::boolean(),
-					'description' => 'Include representations linked to related items?'
-				],
-				'mediaVersions' => [
-					'type' => Type::listOf(Type::string()),
-					'description' => 'If including representations, which versions to return'
-				],
-				'restrictMediaToTypes' => [
-					'type' => Type::listOf(Type::string()),
-					'description' => 'If including representations, which restrict to specified types'
-				]
-			]
-		])
+		$targetListItem = _targetListInputType(0)
 	];
+}
+
+/**
+ *
+ */
+function _targetListType(int $level=0, $bundleValueListType, $mediaItemType) : ObjectType {
+	$fields = [
+		'id' => [
+			'type' => Type::int(),
+			'description' => 'ID of item'
+		],
+		'table' => [
+			'type' => Type::string(),
+			'description' => 'Table of item'
+		],
+		'idno' => [
+			'type' => Type::string(),
+			'description' => 'Item identifier'
+		],
+		'bundles' => [
+			'type' => Type::listOf($bundleValueListType),
+			'description' => 'Data for related item'
+		],
+		'media' => [
+			'type' => Type::listOf($mediaItemType),
+			'description' => 'Media for related item'
+		],
+		'relationship_type_id' => [
+			'type' => Type::string(),
+			'description' => 'Relationship type_id'
+		],
+		'relationship_typename' => [
+			'type' => Type::string(),
+			'description' => 'Relationship type name'
+		],
+		'relationship_typecode' => [
+			'type' => Type::string(),
+			'description' => 'Relationship type code'
+		]
+	];
+	if($level < __CA_ITEM_SERVICE_RELATIONSHIP_TARGET_MAXIMUM_DEPTH__) {
+		$fields['targets'] = [
+			'type' => Type::listOf(_targetListType($level + 1, $bundleValueListType, $mediaItemType)),
+			'description' => 'Targets'
+		];
+	}
+	$itemType = new ObjectType([
+		'name' => str_repeat("Sub", $level + 1).'Item',
+		'description' => 'A record',
+		'fields' => $fields
+	]);
+	return new ObjectType([
+		'name' => str_repeat("Sub", $level).'TargetList',
+		'description' => 'A list of related items',
+		'fields' => [
+			'name' => [
+				'type' => Type::string(),
+				'description' => 'Name of target'
+			],
+			'table' => [
+				'type' => Type::string(),
+				'description' => 'Related table'
+			],
+			'relationships' => [
+				'type' => Type::listOf($itemType),
+				'description' => 'List of related records'
+			]
+		]
+	]);
+}
+
+/**
+ *
+ */
+function _targetListInputType(int $level=0) : InputObjectType {
+	$fields = [
+		'name' => [
+			'type' => Type::string(),
+			'description' => 'Name of target'
+		],
+		'table' => [
+			'type' => Type::string(),
+			'description' => 'Related table'
+		],
+		'restrictToTypes' => [
+			'type' => Type::listOf(Type::string()),
+			'description' => 'Restrict relationships to enumerated related record types'
+		],
+		'restrictToRelationshipTypes' => [
+			'type' => Type::listOf(Type::string()),
+			'description' => 'Restrict relationships to enumerated relationship types'
+		],
+		'start' => [
+			'type' => Type::int(),
+			'description' => 'Zero-based start index for returned relationships. If omitted starts from the first relationship.'
+		],
+		'limit' => [
+			'type' => Type::int(),
+			'description' => 'Maximum number of relationships to return. If omitted all relationships are returned.'
+		],
+		'bundles' => [
+			'type' => Type::listOf(Type::string()),
+			'description' => _t('Bundles to return.')
+		],
+		'includeMedia' => [
+			'type' => Type::boolean(),
+			'description' => 'Include representations linked to related items?'
+		],
+		'mediaVersions' => [
+			'type' => Type::listOf(Type::string()),
+			'description' => 'If including representations, which versions to return'
+		],
+		'restrictMediaToTypes' => [
+			'type' => Type::listOf(Type::string()),
+			'description' => 'If including representations, which restrict to specified types'
+		]
+	];
+	if($level < __CA_ITEM_SERVICE_RELATIONSHIP_TARGET_MAXIMUM_DEPTH__) {
+		$fields['targets'] = [
+			'type' => Type::listOf(_targetListInputType($level + 1)),
+			'description' => 'Targets'
+		];
+	}
+	return new InputObjectType([
+		'name' => str_repeat("Sub", $level).'TargetListInputItem',
+		'description' => 'A list of targets (table + options) to return relationships for',
+		'fields' => $fields
+	]);
 }
 
 /**
