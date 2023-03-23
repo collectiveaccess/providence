@@ -9541,6 +9541,11 @@ $pa_options["display_form_field_tips"] = true;
 					if($t_item_rel->hasField($f = $t_item_rel->getTypeFieldName())) { $t_item_rel->set($f, $pn_type_id); }		// TODO: verify type_id based upon type_id's of each end of the relationship
 					if(!is_null($ps_effective_date)){ $t_item_rel->set('effective_date', $ps_effective_date); }
 					if(!is_null($ps_source_info)){ $t_item_rel->set("source_info",$ps_source_info); }
+					
+					if(!is_null($is_primary = caGetOption('is_primary', $pa_options, null)) && $t_item_rel->hasField('is_primary')) {
+						$t_item_rel->set('is_primary', $is_primary);	
+					}
+					
 					$t_item_rel->insert();
 					
 					if ($t_item_rel->numErrors() > 0) {
