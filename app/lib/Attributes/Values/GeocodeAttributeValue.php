@@ -430,13 +430,12 @@ class GeocodeAttributeValue extends AttributeValue implements IAttributeValue {
 
 		// is it direct input (decimal lat, decimal long)?
 		if(
-			preg_match("!^([^\[]*)[\[]{0,1}([\d,\-\.;~]+)[\]]{0,1}$!", $ps_value, $va_matches)
+			preg_match("!^([^\[]*)[\[]{1}([\d,\-\.;~]+)[\]]{0,1}$!", $ps_value, $va_matches)
 			||
 			preg_match("!^([^\[]*)[\[]{1}([^\]]+)[\]]{1}$!", $ps_value, $va_matches)
 		) {
 
 			$va_feature_list = preg_split("/[:]+/", $va_matches[2]);
-			
 			$va_feature_list_proc = array();
 			foreach($va_feature_list as $vs_feature) {
 				$va_point_list = preg_split("/[;]+/", $vs_feature);
