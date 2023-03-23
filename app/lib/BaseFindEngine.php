@@ -497,6 +497,8 @@ class BaseFindEngine extends BaseObject {
 			// is label?
 			$sort_key_values = $this->_sortByLabels($t_table, $hit_table, $sort_field, $limit_sql, $sort_direction);	
 		} else {
+			list($sort_field, $set_id) = array_pad(explode('/', $sort_field), 2, null);
+			
 			// is related field
 			$t_rel_table = Datamodel::getInstance($sort_table, true);
 			if($is_label = is_a($t_rel_table, 'BaseLabel')) {
@@ -506,7 +508,9 @@ class BaseFindEngine extends BaseObject {
 			}
 			
 			$is_attribute = method_exists($t_rel_table, 'hasElement') ? $t_rel_table->hasElement($sort_field) : false;
-			if ($t_rel_table->hasField($sort_field)) {			// sort key is intrinsic
+			if(($sort_table === 'ca_set_items')) {
+				$sort_key_values = $this->_sortBySet($t_table, $t_rel_table, $hit_table, $sort_field, $set_id, $limit_sql, $sort_direction, $options);
+			} elseif ($t_rel_table->hasField($sort_field)) {			// sort key is intrinsic
 				$sort_key_values = $this->_sortByRelatedIntrinsic($t_table, $t_rel_table, $hit_table, $sort_field, $limit_sql, $sort_direction, $options);
 			} elseif($sort_field === 'preferred_labels') {		// sort key is preferred labels
 				$sort_key_values = $this->_sortByRelatedLabels($t_table, $t_rel_table, $hit_table, $sort_subfield, $limit_sql, $sort_direction, $options);	
@@ -717,6 +721,33 @@ class BaseFindEngine extends BaseObject {
 		// Add any row without the attribute set to the end of the sort set
 		foreach($hits as $h) {
 			if (!$sort_keys[$h]) { $sort_keys[$h] = true; }
+		}
+		return $sort_keys;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _sortBySet($t_table, $t_rel_table, string $hit_table, string $intrinsic=null, int $set_id=null, string $limit_sql=null, $direction='asc', array $options=null) {
+		$table = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
+		$table_num = $t_table->tableNum();
+		
+		$direction =  self::sortDirection($direction);
+		
+		$sql = "
+			SELECT t.{$table_pk}
+			FROM {$table} t
+			INNER JOIN ca_set_items AS csi ON csi.row_id = t.{$table_pk} AND csi.table_num = ? AND csi.set_id = ?
+			INNER JOIN {$hit_table} AS ht ON ht.row_id = t.{$table_pk}
+			ORDER BY csi.`{$intrinsic}` {$direction}
+			{$limit_sql}
+		";
+		$qr_sort = $this->db->query($sql, [$t_table->tableNum(), $set_id]);
+		$sort_keys = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			$sort_keys[$row[$table_pk]] = true;
 		}
 		return $sort_keys;
 	}
