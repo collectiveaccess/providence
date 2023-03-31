@@ -77,25 +77,25 @@ trait CLIUtilsLocalization {
 				while($line = fgets($r)) {
 					// _() construction used in config files
 					if($is_conf) {
-						$strings = preg_match_all("!_\([\"\']{0,1}([^\"\)]+?)[\"\']{0,1}[,\)]+!", $line, $m);
+						$strings = preg_match_all("!_\([\"\']{0,1}([^\"\)]+?)[\"\']{0,1}[,\)]+!s", $line, $m);
 	
 						$extracted_strings = array_merge($extracted_strings, array_filter($m[1], function($v) {
-							return preg_match("![A-Za-z0-9]+!", $v);
+							return preg_match("![A-Za-z0-9]+!s", $v);
 						}));
 					}
 					
 					// _t() construction used in code
-					$strings = preg_match_all("!_t\([\"\']{0,1}([^\"\)]+?)[\"\']{0,1}[,\)]+!", $line, $m);
+					$strings = preg_match_all("!_t\([\"\']{0,1}([^\"\)]+?)[\"\']{0,1}[,\)]+!s", $line, $m);
 
 					$extracted_strings = array_merge($extracted_strings, array_filter($m[1], function($v) {
-						return preg_match("![A-Za-z0-9]+!", $v);
+						return preg_match("![A-Za-z0-9]+!s", $v);
 					}));
 	
 					// <t>...</t> construction used in templates and view files
-					$strings = preg_match_all("!<t>(.*?)</t>!", $line, $m);
+					$strings = preg_match_all("!<t>(.*?)</t>!s", $line, $m);
 	
 					$extracted_strings = array_merge($extracted_strings, array_filter($m[1], function($v) {
-						return preg_match("![A-Za-z0-9]+!", $v);
+						return preg_match("![A-Za-z0-9]+!s", $v);
 					}));
 				}
 			}
@@ -182,14 +182,18 @@ trait CLIUtilsLocalization {
 		
 		$available_locales = ca_locales::getCataloguingLocaleCodes();
 		
-		$default_locale_id = ca_locales::codeToID(__CA_DEFAULT_LOCALE__);
+		//$default_locale_id = ca_locales::codeToID(__CA_DEFAULT_LOCALE__);
+		$default_lang = array_shift(explode('_', __CA_DEFAULT_LOCALE__));
+		$default_locales = array_unique(array_merge([__CA_DEFAULT_LOCALE__], array_keys(ca_locales::localesForLanguage($default_lang))));
+		$default_locale_ids = array_map(function($v) { return ca_locales::codeToID($v); }, $default_locales);
+		
 		foreach($available_locales as $locale) {
 			if($locale === __CA_DEFAULT_LOCALE__) { continue; }
 			if(is_array($locales) && sizeof($locales) && !in_array(mb_strtolower($locale), $locales, true)) { continue; }
 			
 			$locale_id = ca_locales::codeToID($locale);	
+		
 			// Translate metadata elements
-			
 			$elements = ca_metadata_elements::getElementsAsList();
 			print CLIProgressBar::start(sizeof($elements), _t('[%1] Translating metadata elements', $locale));
 			foreach($elements as $element_id => $element_info) {
@@ -202,8 +206,13 @@ trait CLIUtilsLocalization {
 				$labels = array_shift($labels);
 				
 				if($overwrite || !is_array($labels[$locale_id])) {
-					$def_label = $labels[$default_locale_id] ?? [];
-					$def_label = array_shift($def_label);
+					foreach($default_locale_ids as $default_locale_id) {
+						$def_label = $labels[$default_locale_id] ?? [];
+						$def_label = array_shift($def_label);
+						if(is_array($def_label)) { 
+							break;
+						}
+					}
 					if(!is_array($def_label)) { 
 						CLIUtils::addError(_t('[%1] Could not translate element %1: no label in default locale', $element_code));
 						continue;
@@ -222,12 +231,18 @@ trait CLIUtilsLocalization {
 			$t_list = new ca_lists();
 			$lists = $t_list->getListOfLists();
 			print CLIProgressBar::start(sizeof($lists), _t('[%1] Translating lists', $locale));
-			foreach($lists as $list_id => $list) {
+			foreach($lists as $list_id => $list_info) {
 				print CLIProgressBar::next();
 				
 				$t_list->load($list_id);
 				$list_code = $t_list->get('list_code');
-				if(!is_array($list = ($list[$default_locale_id] ?? null))) {
+				foreach($default_locale_ids as $default_locale_id) {
+					$list = $list_info[$default_locale_id] ?? null;
+					if(is_array($list)) {
+						break;
+					}
+				}
+				if(!is_array($list)) {
 					CLIUtils::addError(_t('Could not translate list %1: no label in default locale', $list_code));
 					continue;
 				}
@@ -238,8 +253,14 @@ trait CLIUtilsLocalization {
 				$labels = $t_list->getLabels();
 				$labels = array_shift($labels);
 				if($overwrite || !is_array($labels[$locale_id])) {
-					$def_label = $labels[$default_locale_id] ?? [];
-					$def_label = array_shift($def_label);
+					foreach($default_locale_ids as $default_locale_id) {
+						$def_label = $labels[$default_locale_id] ?? [];
+						$def_label = array_shift($def_label);
+						
+						if(is_array($def_label)) { 
+							break;
+						}
+					}
 					if(!is_array($def_label)) { 
 						CLIUtils::addError(_t('Could not translate list %1: no label in default locale', $element_code));
 						continue;
@@ -263,8 +284,14 @@ trait CLIUtilsLocalization {
 					$labels = $t_item->getLabels();
 					$labels = array_shift($labels);
 					if($overwrite || !is_array($labels[$locale_id])) {
-						$def_label = $labels[$default_locale_id] ?? [];
-						$def_label = array_shift($def_label);
+						foreach($default_locale_ids as $default_locale_id) {
+							$def_label = $labels[$default_locale_id] ?? [];
+							$def_label = array_shift($def_label);
+							
+							if(is_array($def_label)) {
+								break;
+							}
+						}
 						if(!is_array($def_label)) { 
 							CLIUtils::addError(_t('Could not translate list item %1 in list %2: no label in default locale', $item_code, $list_code));
 							continue;
@@ -298,8 +325,14 @@ trait CLIUtilsLocalization {
 						$labels = $t_rel_type->getLabels();
 						$labels = array_shift($labels);
 						if($overwrite || !is_array($labels[$locale_id])) {
-							$def_label = $labels[$default_locale_id] ?? [];
-							$def_label = array_shift($def_label);
+							foreach($default_locale_ids as $default_locale_id) {
+								$def_label = $labels[$default_locale_id] ?? [];
+								$def_label = array_shift($def_label);
+								
+								if(is_array($def_label)) {
+									break;
+								}
+							}
 							if(!is_array($def_label)) { 
 								CLIUtils::addError(_t('Could not translate element %1: no label in default locale', $element_code));
 								continue;
@@ -332,8 +365,14 @@ trait CLIUtilsLocalization {
 				
 				$ui_code = $t_ui->get('editor_code');
 				if($overwrite || !is_array($labels[$locale_id])) {
-					$def_label = $labels[$default_locale_id] ?? [];
-					$def_label = array_shift($def_label);
+					foreach($default_locale_ids as $default_locale_id) {
+						$def_label = $labels[$default_locale_id] ?? [];
+						$def_label = array_shift($def_label);
+						
+						if(is_array($def_label)) {
+							break;
+						}
+					}
 					if(!is_array($def_label)) { 
 						CLIUtils::addError(_t('Could not translate user interface name %1: no label in default locale', $ui_code));
 						continue;
@@ -356,8 +395,14 @@ trait CLIUtilsLocalization {
 					$labels = $t_screen->getLabels();	
 					$labels = array_shift($labels);
 					if($overwrite || !is_array($labels[$locale_id])) {
-						$def_label = $labels[$default_locale_id] ?? [];
-						$def_label = array_shift($def_label);
+						foreach($default_locale_ids as $default_locale_id) {
+							$def_label = $labels[$default_locale_id] ?? [];
+							$def_label = array_shift($def_label);
+							
+							if(is_array($def_label)) {
+								break;
+							}
+						}
 						$screen_code = $t_screen->get('idno');
 						if(!is_array($def_label)) { 
 							CLIUtils::addError(_t('Could not translate user interface %1 screen %2: no label in default locale', $ui_code, $screen_code ?? $screen_id));
@@ -408,8 +453,14 @@ trait CLIUtilsLocalization {
 				$display_code = $t_display->get('display_code');
 				
 				if($overwrite || !is_array($labels[$locale_id])) {
-					$def_label = $labels[$default_locale_id] ?? [];
-					$def_label = array_shift($def_label);
+					foreach($default_locale_ids as $default_locale_id) {
+						$def_label = $labels[$default_locale_id] ?? [];
+						$def_label = array_shift($def_label);
+						
+						if(is_array($def_label)) {
+							break;
+						}
+					}
 					if(!is_array($def_label)) { 
 						CLIUtils::addError(_t('Could not translate display %1: no label in default locale', $display_code));
 						continue;
@@ -457,8 +508,14 @@ trait CLIUtilsLocalization {
 				$form_code = $t_form->get('form_code');
 				
 				if($overwrite || !is_array($labels[$locale_id])) {
-					$def_label = $labels[$default_locale_id] ?? [];
-					$def_label = array_shift($def_label);
+					foreach($default_locale_ids as $default_locale_id) {
+						$def_label = $labels[$default_locale_id] ?? [];
+						$def_label = array_shift($def_label);
+						
+						if(is_array($def_label)) {
+							break;
+						}	
+					}
 					if(!is_array($def_label)) { 
 						CLIUtils::addError(_t('Could not translate search form %1: no label in default locale', $form_code));
 						continue;
@@ -489,6 +546,16 @@ trait CLIUtilsLocalization {
 						}
 					}
 				}
+			}
+			print CLIProgressBar::finish();
+			
+			// Translate site pages
+			$pages = ca_site_pages::getPageList();
+			print_R($pages);
+			print CLIProgressBar::start(sizeof($forms), _t('[%1] Translating site pages', $locale));
+			foreach($pages as $page_id => $page_info) {
+				print CLIProgressBar::next();
+				
 			}
 			print CLIProgressBar::finish();
 		}
