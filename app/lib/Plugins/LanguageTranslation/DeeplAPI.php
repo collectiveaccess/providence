@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/Plugins/MediaUrlParser/Deepl.php :
+ * app/lib/Plugins/MediaUrlParser/DeeplAPI.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,14 +30,14 @@
  * ----------------------------------------------------------------------
  */
 namespace CA\LanguageTranslation\Plugins;
- 
+use \DeepL;
  /**
   *
   */
   require_once(__CA_LIB_DIR__.'/Plugins/LanguageTranslation/BaseLanguageTranslationManagerPlugin.php');
   require_once(__CA_LIB_DIR__.'/Plugins/IWLPlugLanguageTranslation.php');
  
-class Deepl Extends BaseLanguageTranslationManagerPlugin Implements \IWLPlugLanguageTranslation {	
+class DeeplAPI Extends BaseLanguageTranslationManagerPlugin Implements \IWLPlugLanguageTranslation {	
 	# ------------------------------------------------
 	/**
 	 *
