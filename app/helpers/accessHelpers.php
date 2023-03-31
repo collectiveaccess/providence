@@ -49,7 +49,9 @@
 	  * @param array $pa_options Optional options. If omitted settings are taken application configuration file is used. Any array passed to this function should include the following keys: "dont_enforce_access_settings", "public_access_settings", "privileged_access_settings", "privileged_networks"
 	  * @return array An array of integer values that, if present in a record, indicate that the record should be displayed to the current user
 	  */
-	function caGetUserAccessValues($po_request, $pa_options=null) {
+	function caGetUserAccessValues($po_request=null, $pa_options=null) {
+		global $g_request;
+		if(!$po_request) { $po_request = $g_request; }
 		if(!caGetOption('ignoreProvidence', $pa_options, false)) {
 			if (defined("__CA_APP_TYPE__") && (__CA_APP_TYPE__ == 'PROVIDENCE')) { return null; }
 		}
