@@ -83,9 +83,9 @@ BaseModel::$s_ca_models_definitions['ca_site_pages'] = array(
 		'locale_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => null, 
+				'IS_NULL' => true, 
 				'DEFAULT' => null,
-				'DISPLAY_FIELD' => array('ca_locales.name'),
+				'DISPLAY_FIELD' => array('ca_locales.name', 'ca_locales.language', 'ca_locales.country'),
 				'LABEL' => _t('Locale'), 'DESCRIPTION' => _t('Locale of page'),
 		),
 		'access' => array(
@@ -267,6 +267,7 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 		
 		foreach($pages as $i => $page) {
 			$pages[$i]['template_title'] = $templates_by_id[$pages[$i]['template_id']]; 
+			$pages[$i]['locale'] = ca_locales::localeIDToCode($pages[$i]['locale_id']); 
 		}
 		
 		return $pages;
@@ -330,19 +331,22 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 	 * @return string Returns null if page cannot be rendered
 	 */
 	public static function renderPageForPath($po_controller, $ps_path, $options=null) {
+		$locale_id = caGetOption(['locale', 'locale_id'], $options, null);
+		if(!is_numeric($locale_id)) { $locale_id =  ca_locales::codeToID($locale_id); }
+		
 		$ps_path = preg_replace("!/_default$!", "", $ps_path);	// strip default path component if present
 		if (
 			(
 				is_numeric($ps_path) 
 				&& 
-				($t_page = ca_site_pages::find(['page_id' => (int)$ps_path], ['returnAs' => 'firstModelInstance', 'checkAccess' => caGetOption('checkAccess', $options, null)])) 
+				($t_page = ca_site_pages::find(array_merge(['page_id' => (int)$ps_path], $locale_id ? ['locale_id' => $locale_id] : []), ['returnAs' => 'firstModelInstance', 'checkAccess' => caGetOption('checkAccess', $options, null)])) 
 				&& 
 				($t_template = ca_site_templates::find(['template_id' => $t_page->get('template_id')], ['returnAs' => 'firstModelInstance']))
 			)
 			||
-			($t_page = ca_site_pages::find(['path' => $ps_path], ['returnAs' => 'firstModelInstance', 'checkAccess' => caGetOption('checkAccess', $options, null)])) && ($t_template = ca_site_templates::find(['template_id' => $t_page->get('template_id')], ['returnAs' => 'firstModelInstance']))
+			($t_page = ca_site_pages::find(array_merge(['path' => $ps_path], $locale_id ? ['locale_id' => $locale_id] : []), ['returnAs' => 'firstModelInstance', 'checkAccess' => caGetOption('checkAccess', $options, null)])) && ($t_template = ca_site_templates::find(['template_id' => $t_page->get('template_id')], ['returnAs' => 'firstModelInstance']))
 			||
-			($t_page = ca_site_pages::find(['path' => $ps_path."/"], ['returnAs' => 'firstModelInstance', 'checkAccess' => caGetOption('checkAccess', $options, null)])) && ($t_template = ca_site_templates::find(['template_id' => $t_page->get('template_id')], ['returnAs' => 'firstModelInstance']))
+			($t_page = ca_site_pages::find(array_merge(['path' => $ps_path."/"], $locale_id ? ['locale_id' => $locale_id] : []), ['returnAs' => 'firstModelInstance', 'checkAccess' => caGetOption('checkAccess', $options, null)])) && ($t_template = ca_site_templates::find(['template_id' => $t_page->get('template_id')], ['returnAs' => 'firstModelInstance']))
 		) {
 			$o_content_view = new View($po_controller->request, $po_controller->request->getViewsDirectoryPath());
 	
@@ -416,7 +420,6 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			if (caGetOption('incrementViewCount', $options, false)) {
-				$t_page->setMode(ACCESS_WRITE);
 				$t_page->set('view_count', (int)$t_page->get('view_count') + 1);
 				$t_page->update();
 			}
