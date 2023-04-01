@@ -163,6 +163,16 @@ class UserGeneratedContentController extends \GraphQLServices\GraphQLServiceCont
 							'defaultValue' => null
 						],
 						[
+							'name' => 'id',
+							'type' => Type::int(),
+							'description' => _t('ID of record to generate grid for')
+						],
+						[
+							'name' => 'table',
+							'type' => Type::string(),
+							'description' => _t('Table of record to generate grid for. (Ex. ca_entities)')
+						],
+						[
 							'name' => 'jwt',
 							'type' => Type::string(),
 							'description' => _t('JWT'),
@@ -180,12 +190,31 @@ class UserGeneratedContentController extends \GraphQLServices\GraphQLServiceCont
 						}
 						
 						$text = $args['text'];
-						
 						$limit = (int)$args['limit'];
-											
-						$tags = ca_objects::suggestTags($text, ['limit' => $limit]);
+						$table = $args['table'];
+						$id = $args['id'];
 						
-						return ['tags' => array_values($tags)];
+						$t_subject = null;
+						if($table) {
+							if (!($t_subject = Datamodel::getInstance($table, true, $id))) {
+								throw new ServiceException(_t('Invalid table or id'));
+							}
+							if (!$t_subject->isReadable($u)) {
+								throw new ServiceException(_t('Access denied'));
+							}
+						}
+											
+						$tags = array_values(ca_objects::suggestTags($text, ['limit' => $limit]));
+						
+						if($t_subject) {
+							$user_tags = array_map(function($v) { return mb_strtolower($v['tag']); }, $t_subject->getTags(null, true));
+							
+							$tags = array_filter($tags, function($v) use ($user_tags) {
+								return !(in_array(mb_strtolower($v), $user_tags));
+							});
+						}
+						
+						return ['tags' => $tags];
 					}
 				]
 			]
@@ -429,7 +458,6 @@ class UserGeneratedContentController extends \GraphQLServices\GraphQLServiceCont
 						}
 						
 						$user_id = $u ? $u->getPrimaryKey() : null;
-						$user_ip = $_SERVER['REMOTE_ADDR'];
 						
 						$dont_moderate = Configuration::load()->get("dont_moderate_tags");
 						
@@ -439,7 +467,6 @@ class UserGeneratedContentController extends \GraphQLServices\GraphQLServiceCont
 						if (!$t_subject->isReadable($u)) {
 							throw new ServiceException(_t('Access denied'));
 						}
-						
 						
 						$message = null;
 						$errors = [];
