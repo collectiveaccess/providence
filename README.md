@@ -48,14 +48,12 @@ The latest development version is always available in the `develop` branch (http
 ### Useful Links
 
 * Web site: https://collectiveaccess.org
-* Documentation: https://docs.collectiveaccess.org
+* Documentation: https://manual.collectiveaccess.org
 * Demo: https://demo.collectiveaccess.org/
-* Installation instructions: https://docs.collectiveaccess.org/wiki/Installing_Providence
-* Upgrade instructions: https://docs.collectiveaccess.org/wiki/Upgrading_Providence
+* Installation instructions: https://manual.collectiveaccess.org/providence/user/setup/installation.html
 * Release Notes:  
-  * https://docs.collectiveaccess.org/wiki/Release_Notes_for_Providence_1.7
-  * https://docs.collectiveaccess.org/wiki/Release_Notes_for_Providence_1.7.8
-* Forum: https://www.collectiveaccess.org/support/forum
+  * https://manual.collectiveaccess.org/release_notes
+* Forum: https://www.collectiveaccess.org/support
 
 To report issues please use GitHub Issues.
 
