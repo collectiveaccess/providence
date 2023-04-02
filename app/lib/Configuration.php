@@ -832,7 +832,7 @@ class Configuration {
 		}
 
 		// interpolate scalars
-		if (is_array($this->ops_config_settings["scalars"])) {
+		if (isset($this->ops_config_settings["scalars"]) && is_array($this->ops_config_settings["scalars"])) {
 			foreach($this->ops_config_settings["scalars"] as $vs_key => $vs_val) {
 				$this->ops_config_settings["scalars"][$vs_key] = $this->_interpolateScalar($vs_val);
 			}

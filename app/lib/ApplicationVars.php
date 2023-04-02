@@ -103,4 +103,4 @@ class ApplicationVars extends BaseObject {
 	}
 	# ----------------------------------------
 }
-?>
+
