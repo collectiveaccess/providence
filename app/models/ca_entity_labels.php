@@ -151,6 +151,13 @@ BaseModel::$s_ca_models_definitions['ca_entity_labels'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Is preferred'), 'DESCRIPTION' => _t('Is preferred')
 		),
+		'checked' => array(
+				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => 0,
+				'LABEL' => _t('Checked'), 'DESCRIPTION' => _t('Indicates if components of name have been verified')
+		),
 		'effective_date' => array(
 				'FIELD_TYPE' => FT_HISTORIC_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,

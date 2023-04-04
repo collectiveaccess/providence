@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,38 +25,39 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$labels 				= $this->getVar('labels');
-	$t_label 				= $this->getVar('t_label');
-	/** @var BundlableLabelableBaseModelWithAttributes $t_subject */
-	$t_subject				= $this->getVar('t_subject');
-	$initial_values 		= $this->getVar('label_initial_values');
-	if (!$force_new_labels 	= $this->getVar('new_labels')) { $force_new_labels = array(); }	// list of new labels not saved due to error which we need to for onto the label list as new
 
-	$settings 				= $this->getVar('settings');
-	$add_label 				= $this->getVar('add_label');
+$id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
+$labels 				= $this->getVar('labels');
+$t_label 				= $this->getVar('t_label');
+/** @var BundlableLabelableBaseModelWithAttributes $t_subject */
+$t_subject				= $this->getVar('t_subject');
+$initial_values 		= $this->getVar('label_initial_values');
+if (!$force_new_labels 	= $this->getVar('new_labels')) { $force_new_labels = array(); }	// list of new labels not saved due to error which we need to for onto the label list as new
+
+$settings 				= $this->getVar('settings');
+$add_label 				= $this->getVar('add_label');
+
+$read_only				= ((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel('ca_entities', 'nonpreferred_labels') == __CA_BUNDLE_ACCESS_READONLY__));
+$batch					= $this->getVar('batch');
+
+$show_effective_date 	= $this->getVar('show_effective_date');
+$show_access 			= $this->getVar('show_access');
+$label_list 			= $this->getVar('label_type_list');
+$locale_list			= $this->getVar('locale_list');
 	
-	$read_only				= ((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel('ca_entities', 'nonpreferred_labels') == __CA_BUNDLE_ACCESS_READONLY__));
-	$batch					= $this->getVar('batch');
-	
-	$show_effective_date 	= $this->getVar('show_effective_date');
-	$show_access 			= $this->getVar('show_access');
-	$label_list 			= $this->getVar('label_type_list');
-	$locale_list			= $this->getVar('locale_list');
-		
-	if ($batch) {
-		print caBatchEditorNonPreferredLabelsModeControl($t_label, $id_prefix);
-	} else {
-		print caEditorBundleShowHideControl($this->request, $id_prefix.'NPLabels', $settings, caInitialValuesArrayHasValue($id_prefix.'NPLabels', $initial_values));
-	}
-	print caEditorBundleMetadataDictionary($this->request, $id_prefix.'NPLabels', $settings);
-	
-	$t_subject 				= $this->getVar('t_subject'); 
-	$vs_entity_class 		= $t_subject->getTypeSetting('entity_class');
-	$use_suffix_for_orgs 	= $t_subject->getTypeSetting('use_suffix_for_orgs');
-	$org_label 				= $t_subject->getTypeSetting('org_label');
-	$show_source 			= $t_subject->getTypeSetting('show_source_for_nonpreferred_labels');
+if ($batch) {
+	print caBatchEditorNonPreferredLabelsModeControl($t_label, $id_prefix);
+} else {
+	print caEditorBundleShowHideControl($this->request, $id_prefix.'NPLabels', $settings, caInitialValuesArrayHasValue($id_prefix.'NPLabels', $initial_values));
+}
+print caEditorBundleMetadataDictionary($this->request, $id_prefix.'NPLabels', $settings);
+
+$t_subject 				= $this->getVar('t_subject'); 
+$vs_entity_class 		= $t_subject->getTypeSetting('entity_class');
+$use_suffix_for_orgs 	= $t_subject->getTypeSetting('use_suffix_for_orgs');
+$org_label 				= $t_subject->getTypeSetting('org_label');
+$show_source 			= $t_subject->getTypeSetting('show_source_for_nonpreferred_labels');
+$show_checked 			= $t_subject->getTypeSetting('show_checked_for_nonpreferred_labels');
 ?>
 <div id="<?= $id_prefix; ?>NPLabels" <?= $batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
@@ -93,14 +94,13 @@
 ?>
 							</tr>
 							<tr>
-								<td colspan="2">
-									<div class="formLabel">
-										<?= $locale_list; ?>	
-										<?= $label_list ? $t_label->htmlFormElement('type_id', "^LABEL ^ELEMENT", array('classname' => 'labelType', 'id' => "{fieldNamePrefix}type_id_{n}", 'name' => "{fieldNamePrefix}type_id_{n}", "value" => "{type_id}", 'no_tooltips' => true, 'list_code' => $label_list, 'dont_show_null_value' => true, 'hide_select_if_no_options' => true)) : ''; ?>
-										<?= $show_effective_date ? $t_label->htmlFormElement('effective_date', "^LABEL ^ELEMENT", array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}effective_date_{n}", 'name' => "{fieldNamePrefix}effective_date_{n}", "value" => "{effective_date}", 'no_tooltips' => true)) : ''; ?>	
-										<?= $show_access ? $t_label->htmlFormElement('access', "^LABEL ^ELEMENT", array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}access_{n}", 'name' => "{fieldNamePrefix}access_{n}", "value" => "{access}", 'no_tooltips' => true)) : ''; ?>	
-									</div>
+								<td>
+									<div class="formLabel"><?= $locale_list; ?></div>
 								</td>
+								<?= $label_list ? $t_label->htmlFormElement('type_id', "<td>div class=\"formLabel\">^LABEL<br/>^ELEMENT</div></td>", array('classname' => 'labelType', 'id' => "{fieldNamePrefix}type_id_{n}", 'name' => "{fieldNamePrefix}type_id_{n}", "value" => "{type_id}", 'no_tooltips' => true, 'list_code' => $label_list, 'dont_show_null_value' => true, 'hide_select_if_no_options' => true)) : ''; ?>
+								<?= $show_effective_date ? $t_label->htmlFormElement('effective_date', "<td>div class=\"formLabel\">^LABEL<br/>^ELEMENT</div></td>", array('classname' => 'labelOption', 'id' => "{fieldNamePrefix}effective_date_{n}", 'name' => "{fieldNamePrefix}effective_date_{n}", "value" => "{effective_date}", 'no_tooltips' => true)) : ''; ?>
+								<?= $show_access ? $t_label->htmlFormElement('access', "<td>div class=\"formLabel\">^LABEL<br/>^ELEMENT</div></td>", array('classname' => 'labelOption', 'id' => "{fieldNamePrefix}access_{n}", 'name' => "{fieldNamePrefix}access_{n}", "value" => "{access}", 'no_tooltips' => true)) : ''; ?>
+								<?= $show_checked ? $t_label->htmlFormElement('checked', "<td><div class=\"formLabel\">^LABEL<br/>^ELEMENT</div></td>", array('classname' => 'labelOption', 'id' => "{fieldNamePrefix}checked_{n}", 'name' => "{fieldNamePrefix}checked_{n}", "value" => "{checked}", 'no_tooltips' => true)) : ''; ?>
 							</tr>
 <?php
 	if($show_source) {
@@ -139,17 +139,16 @@
 								</td>
 							</tr>
 							<tr>
-								<td colspan="5"><?= $t_label->htmlFormElement('displayname', null, array('name' => "{fieldNamePrefix}displayname_{n}", 'id' => "{fieldNamePrefix}displayname_{n}", "value" => "{{displayname}}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_entity_labels_nonpreferred', 'textAreaTagName' => 'textentry', 'readonly' => $read_only)); ?></td>
+								<td colspan="5"><?= $t_label->htmlFormElement('displayname', null, array('width' => '670px', 'name' => "{fieldNamePrefix}displayname_{n}", 'id' => "{fieldNamePrefix}displayname_{n}", "value" => "{{displayname}}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_entity_labels_nonpreferred', 'textAreaTagName' => 'textentry', 'readonly' => $read_only)); ?></td>
 							</tr>
 							<tr>
-								<td colspan="5">
-									<div class="formLabel">
-										<?= $locale_list; ?>	
-										<?= $label_list ? $t_label->htmlFormElement('type_id', "^LABEL ^ELEMENT", array('classname' => 'labelType', 'id' => "{fieldNamePrefix}type_id_{n}", 'name' => "{fieldNamePrefix}type_id_{n}", "value" => "{type_id}", 'no_tooltips' => true, 'list_code' => $label_list, 'dont_show_null_value' => true, 'hide_select_if_no_options' => true)) : ''; ?>
-										<?= $show_effective_date ? $t_label->htmlFormElement('effective_date', "^LABEL ^ELEMENT", array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}effective_date_{n}", 'name' => "{fieldNamePrefix}effective_date_{n}", "value" => "{effective_date}", 'no_tooltips' => true)) : ''; ?>	
-										<?= $show_access ? $t_label->htmlFormElement('access', "^LABEL ^ELEMENT", array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}access_{n}", 'name' => "{fieldNamePrefix}access_{n}", "value" => "{access}", 'no_tooltips' => true)) : ''; ?>	
-									</div>
+								<td>
+									<div class="formLabel"><?= $locale_list; ?></div>
 								</td>
+								<?= $label_list ? $t_label->htmlFormElement('type_id', "<td><div class=\"formLabel\">^LABEL<br/>^ELEMENT</div>", array('classname' => 'labelType', 'id' => "{fieldNamePrefix}type_id_{n}", 'name' => "{fieldNamePrefix}type_id_{n}", "value" => "{type_id}", 'no_tooltips' => true, 'list_code' => $label_list, 'dont_show_null_value' => true, 'hide_select_if_no_options' => true)) : ''; ?>
+								<?= $show_effective_date ? $t_label->htmlFormElement('effective_date', "<td><div class=\"formLabel\">^LABEL<br/>^ELEMENT</div></td>", array('classname' => 'labelOption', 'id' => "{fieldNamePrefix}effective_date_{n}", 'name' => "{fieldNamePrefix}effective_date_{n}", "value" => "{effective_date}", 'no_tooltips' => true)) : ''; ?>
+								<?= $show_access ? $t_label->htmlFormElement('access', "<td><div class=\"formLabel\">^LABEL<br/>^ELEMENT</div></td>", array('classname' => 'labelOption', 'id' => "{fieldNamePrefix}access_{n}", 'name' => "{fieldNamePrefix}access_{n}", "value" => "{access}", 'no_tooltips' => true)) : ''; ?>
+								<?= $show_checked ? $t_label->htmlFormElement('checked', "<td><div class=\"formLabel\">^LABEL<br/>^ELEMENT</div></td>", array('classname' => 'labelOption', 'id' => "{fieldNamePrefix}checked_{n}", 'name' => "{fieldNamePrefix}checked_{n}", "value" => "{checked}", 'no_tooltips' => true)) : ''; ?>
 							</tr>
 <?php
 	if($show_source) {
@@ -196,14 +195,13 @@
 								<td colspan="4"><?= $t_label->htmlFormElement('displayname', null, array('name' => "{fieldNamePrefix}displayname_{n}", 'id' => "{fieldNamePrefix}displayname_{n}", "value" => "{{displayname}}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_entity_labels_nonpreferred', 'textAreaTagName' => 'textentry', 'readonly' => $read_only)); ?></td>
 							</tr>
 							<tr>
-								<td colspan="5">
-									<div class="formLabel">
-										<?= $locale_list; ?>	
-										<?= $label_list ? $t_label->htmlFormElement('type_id', "^LABEL ^ELEMENT", array('classname' => 'labelType', 'id' => "{fieldNamePrefix}type_id_{n}", 'name' => "{fieldNamePrefix}type_id_{n}", "value" => "{type_id}", 'no_tooltips' => true, 'list_code' => $label_list, 'dont_show_null_value' => true, 'hide_select_if_no_options' => true)) : ''; ?>
-										<?= $show_effective_date ? $t_label->htmlFormElement('effective_date', "^LABEL ^ELEMENT", array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}effective_date_{n}", 'name' => "{fieldNamePrefix}effective_date_{n}", "value" => "{effective_date}", 'no_tooltips' => true)) : ''; ?>	
-										<?= $show_access ? $t_label->htmlFormElement('access', "^LABEL ^ELEMENT", array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}access_{n}", 'name' => "{fieldNamePrefix}access_{n}", "value" => "{access}", 'no_tooltips' => true)) : ''; ?>	
-									</div>	
+								<td>
+									<div class="formLabel"><?= $locale_list; ?></div>
 								</td>
+								<?= $label_list ? $t_label->htmlFormElement('type_id', "<td><div class=\"formLabel\">^LABEL<br/>^ELEMENT</div></td>", array('classname' => 'labelType', 'id' => "{fieldNamePrefix}type_id_{n}", 'name' => "{fieldNamePrefix}type_id_{n}", "value" => "{type_id}", 'no_tooltips' => true, 'list_code' => $label_list, 'dont_show_null_value' => true, 'hide_select_if_no_options' => true)) : ''; ?>
+								<?= $show_effective_date ? $t_label->htmlFormElement('effective_date', "<td><div class=\"formLabel\">^LABEL<br/>^ELEMENT</div></td>", array('classname' => 'labelOption', 'id' => "{fieldNamePrefix}effective_date_{n}", 'name' => "{fieldNamePrefix}effective_date_{n}", "value" => "{effective_date}", 'no_tooltips' => true)) : ''; ?>
+								<?= $show_access ? $t_label->htmlFormElement('access', "<td><div class=\"formLabel\">^LABEL<br/>^ELEMENT</div></td>", array('classname' => 'labelOption', 'id' => "{fieldNamePrefix}access_{n}", 'name' => "{fieldNamePrefix}access_{n}", "value" => "{access}", 'no_tooltips' => true)) : ''; ?>
+								<?= $show_checked ? $t_label->htmlFormElement('checked', "<td><div class=\"formLabel\">^LABEL<br/>^ELEMENT</div></td>", array('classname' => 'labelOption', 'id' => "{fieldNamePrefix}checked_{n}", 'name' => "{fieldNamePrefix}checked_{n}", "value" => "{checked}", 'no_tooltips' => true)) : ''; ?>
 							</tr>
 <?php
 	if($show_source) {
@@ -244,7 +242,7 @@
 	caUI.initLabelBundle('#<?= $id_prefix; ?>NPLabels', {
 		mode: 'nonpreferred',
 		fieldNamePrefix: '<?= $id_prefix; ?>',
-		templateValues: ['displayname', 'prefix', 'forename', 'other_forenames', 'middlename', 'surname', 'suffix', 'type_id', 'locale_id', 'effective_date', 'access', 'source_info'],
+		templateValues: ['displayname', 'prefix', 'forename', 'other_forenames', 'middlename', 'surname', 'suffix', 'type_id', 'locale_id', 'effective_date', 'access', 'checked', 'source_info'],
 		initialValues: <?= json_encode($initial_values); ?>,
 		forceNewValues: <?= json_encode($force_new_labels); ?>,
 		labelID: 'Label_',

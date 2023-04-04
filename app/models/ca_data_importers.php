@@ -3216,6 +3216,24 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						}
 					}
 				}
+				
+				// Look for parent_id in the content tree
+				foreach ($va_content_tree as $vs_table_name => $va_content) {
+					if ($vs_table_name == $vs_subject_table) {
+						foreach ($va_content as $va_element_data) {
+							foreach ($va_element_data as $vs_element => $va_element_content) {
+								switch ($vs_element) {
+									case $vs_parent_id_fld:
+										if ($va_element_content[$vs_parent_id_fld]) {
+											$t_subject->set($vs_parent_id_fld, $va_element_content[$vs_parent_id_fld], ['treatParentIDAsIdno' => true, 'parentIDElement' => $va_mapping_items[$vn_parent_id_mapping_item_id]['settings']['parentIDElement'] ?? null]);
+										}
+										break;
+								}
+							}
+						}
+					}
+				}
+			
 			
 				if (!$t_subject->getPrimaryKey()) {
 					$o_event->beginItem($vn_row, $t_subject->tableNum(), 'I');
@@ -3225,24 +3243,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					} else {
 						$t_subject->set($vs_idno_fld, $vs_idno, array('assumeIdnoForRepresentationID' => true, 'assumeIdnoStubForLotID' => true, 'tryObjectIdnoForRepresentationID' => true));	// assumeIdnoStubForLotID forces ca_objects.lot_id values to always be considered as a potential idno_stub first, before use as a ca_objects.lot_id
 					}
-				
-					// Look for parent_id in the content tree
-					foreach ($va_content_tree as $vs_table_name => $va_content) {
-						if ($vs_table_name == $vs_subject_table) {
-							foreach ($va_content as $va_element_data) {
-								foreach ($va_element_data as $vs_element => $va_element_content) {
-									switch ($vs_element) {
-										case $vs_parent_id_fld:
-											if ($va_element_content[$vs_parent_id_fld]) {
-												$t_subject->set($vs_parent_id_fld, $va_element_content[$vs_parent_id_fld], ['treatParentIDAsIdno' => true, 'parentIDElement' => $va_mapping_items[$vn_parent_id_mapping_item_id]['settings']['parentIDElement'] ?? null]);
-											}
-											break;
-									}
-								}
-							}
-						}
-					}
-				
+					
 					foreach($va_mandatory_field_mapping_ids as $vs_mandatory_field => $vn_mandatory_mapping_item_id) {
 						$va_field_info = $t_subject->getFieldInfo($vs_mandatory_field);
 						$va_opts = array('assumeIdnoForRepresentationID' => true, 'assumeIdnoStubForLotID' => true, 'tryObjectIdnoForRepresentationID' => true, 'treatParentIDAsIdno' => true);

@@ -241,25 +241,31 @@ trait CLIUtilsDeveloper{
 				while($line = fgets($r)) {
 					// _() construction used in config files
 					if($is_conf) {
-						$strings = preg_match_all("!_\([\"]{0,1}([^\"\)]+?)[\"]{0,1}\)!", $line, $m);
+						$strings = preg_match_all("!_\([\"\']{0,1}([^\"\)]+?)[\"\']{0,1}[,\)]+!s", $line, $m);
 	
 						$extracted_strings = array_merge($extracted_strings, array_filter($m[1], function($v) {
-							return preg_match("![A-Za-z0-9]+!", $v);
+							return preg_match("![A-Za-z0-9]+!s", $v);
 						}));
 					}
 					
 					// _t() construction used in code
-					$strings = preg_match_all("!_t\([\"\']{1}([^\"\)]+?)[\"\']{1}\)!", $line, $m);
-	
+					preg_match_all("/_t\(\"(.+?)(?<!\\\\)[\"][,\)]{1}/s", $line, $m);
+
 					$extracted_strings = array_merge($extracted_strings, array_filter($m[1], function($v) {
-						return preg_match("![A-Za-z0-9]+!", $v);
+						return preg_match("![A-Za-z0-9]+!s", $v);
+					}));
+					
+					preg_match_all("/_t\(\'(.+?)(?<!\\\\)[\'][,\)]{1}/s", $line, $m);
+
+					$extracted_strings = array_merge($extracted_strings, array_filter($m[1], function($v) {
+						return preg_match("![A-Za-z0-9]+!s", $v);
 					}));
 	
 					// <t>...</t> construction used in templates and view files
-					$strings = preg_match_all("!<t>(.*?)</t>!", $line, $m);
+					$strings = preg_match_all("!<t>(.*?)</t>!s", $line, $m);
 	
 					$extracted_strings = array_merge($extracted_strings, array_filter($m[1], function($v) {
-						return preg_match("![A-Za-z0-9]+!", $v);
+						return preg_match("![A-Za-z0-9]+!s", $v);
 					}));
 				}
 			}
