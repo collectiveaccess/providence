@@ -1311,6 +1311,19 @@ div.formLabelUploadSizeNote {
 	margin:-6px 0px 0px 0px;
 }
 
+.bundleMessage {
+	display: none;
+	clear:both;
+	background-color:#fbfbfb;
+	padding:  8px 7px 0px 7px;
+	position:relative;
+	font-weight:normal;
+	font-size:14px;
+	line-height:1em;
+	margin-top: 0px;
+	text-align: center;
+}
+
 .editorBundleReturnToHomeControls {
 	display: none;
 	clear: both;
@@ -2170,19 +2183,13 @@ div.search-hier-browser-box {
 .labelInfo #image{
     text-align:center;
 }
-.labelInfo div{
-    /*margin-top:5px;*/
-}
-/* 
-	.labelInfo .form-button{
-	float:right;
-	margin: 0px;
-	padding: 0px;
-}
-*/
 
 .labelLocale {
-    font-size: 8px;
+    font-size: 11px;
+}
+
+.labelOption {
+    font-size: 11px;
 }
 
 .labelDisplay {
@@ -5978,12 +5985,12 @@ a.caItemLoadNextBundles {
 	margin-left: 12px;
 }
 
-.roundedRel .caDeleteItemButton, .roundedRel .caInterstitialEditButton {
+.roundedRel .caDeleteItemButton, .roundedRel .caInterstitialEditButton, .roundedRel .caSetRepresentationButton {
     position: relative;
     margin: 0 3px 0 3px;
 }
 
-.listRel .caDeleteItemButton, .listRel .caInterstitialEditButton {
+.listRel .caDeleteItemButton, .listRel .caInterstitialEditButton, .listRel .caSetRepresentationButton {
     float: right;
     margin: 0 3px 0 3px;
 }
@@ -7041,6 +7048,10 @@ div.caHistoryTracking {
 	border-top: 1px dotted #e6e6e6;
 	padding: 10px;
 	min-height: 60px;
+}
+
+div.caHistoryTrackingContent {
+	width: 90%;
 }
 
 div.caHistoryTrackingTab {
