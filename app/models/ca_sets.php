@@ -37,9 +37,6 @@
 require_once(__CA_LIB_DIR__."/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/BundlableLabelableBaseModelWithAttributes.php");
 require_once(__CA_LIB_DIR__.'/SetUniqueIdnoTrait.php'); 
-require_once(__CA_APP_DIR__.'/models/ca_set_items.php');
-require_once(__CA_APP_DIR__.'/models/ca_set_item_labels.php');
-require_once(__CA_APP_DIR__.'/models/ca_users.php');
 require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
 
 define('__CA_SET_NO_ACCESS__', 0);
@@ -2673,14 +2670,37 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 			if($pa_options["parents_only"]){
 				$va_sql_wheres[] = "cs.parent_id IS NULL";
 			}
-			$qr_res = $o_db->query("SELECT COUNT(*) c, cs.set_id, cs.user_id, cs.type_id, cs.table_num, cu.fname, cu.lname
+			
+			$sort_sql = '';
+			if($sort = caGetOption('sort', $pa_options, null)) {
+				$sort_direction = caGetOption('sortDirection', $pa_options, 'ASC', ['validValues' => ['ASC', 'DESC']]);
+				
+				switch($sort) {
+					case 'name':
+						$sort_sql = "csl.name {$sort_direction}";
+						break;
+					case 'set_code':
+						$sort_field = 'cs.set_code';
+						$sort_sql = "cs.set_code {$sort_direction}";
+						break;
+					case 'set_id':
+						$sort_sql = "cs.set_id {$sort_direction}";
+						break;
+					case 'user_id':
+						$sort_sql = "cu.lname {$sort_direction},cu.fname {$sort_direction}";
+						break;
+				}
+				if($sort_sql) { $sort_sql = "ORDER BY {$sort_sql}"; }
+			}
+			
+			$qr_res = $o_db->query("SELECT cs.set_id, cs.user_id, cs.type_id, cs.table_num, cu.fname, cu.lname
 									FROM ca_sets cs
 									INNER JOIN ca_users AS cu ON cs.user_id = cu.user_id
+									INNER JOIN ca_set_labels AS csl ON csl.set_id = cs.set_id
 									LEFT JOIN ca_set_items AS csi ON cs.set_id = csi.set_id
 									".join("\n", $va_extra_joins)."
 									".(sizeof($va_sql_wheres) ? "WHERE " : "")." ".join(" AND ", $va_sql_wheres)."
-									
-									GROUP BY cs.set_id
+									{$sort_sql}
 									", $va_sql_params);
 			$va_sets = [];
 
