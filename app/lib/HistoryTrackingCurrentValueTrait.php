@@ -661,9 +661,8 @@
 			}
 			
 			if(is_array($type_restrictions = caGetOption('restrictToTypes', $options, null))) {
-				$type_restrictions = array_filter($type_restrictions, 'strlen');
+				$type_restrictions = caMakeTypeList($table, array_filter($type_restrictions, 'strlen'));
 			}
-			
 			$policies = [];
 			foreach($policy_config['policies'] as $policy => $policy_info) {
 				if($table !== $policy_info['table']) { continue; }
@@ -711,12 +710,11 @@
 				foreach($policy_info['elements'] as $dtable => $dinfo) {
 					$path = Datamodel::getPath($policy_info['table'], $dtable);
 					if (!in_array($table, array_keys($path))) { continue; }
-					if ($types && !sizeof(array_intersect(array_keys($dinfo), $types))) { continue; }
+					$ptypes = array_keys($dinfo);
+					if ($types && !sizeof(array_intersect($ptypes, $types)) && !in_array('__default__', $ptypes)) { continue; }
 					$policies[$policy] = $policy_info;
 					break;
 				}
-				
-				
 			}
 			return $policies;
 		}
@@ -755,7 +753,8 @@
 		 */ 
 		public function deriveHistoryTrackingCurrentValue($options=null) {
 			if(!($row_id = caGetOption('row_id', $options, null)) && !($row_id = $this->getPrimaryKey())) { return false; }
-			if(is_array($policies = self::getHistoryTrackingCurrentValuePolicies($this->tableName(), ['restrictToTypes' => [$this->getTypeCode()]]))) {
+			$type_id = $this->getTypeID($row_id); 
+			if(is_array($policies = self::getHistoryTrackingCurrentValuePolicies($this->tableName(), ['restrictToTypes' => [$type_id]]))) {
 				foreach($policies as $policy => $policy_info) {
 					SearchResult::clearResultCacheForRow($this->tableName(), $row_id);
 					$h = $this->getHistory(['row_id' => $row_id, 'policy' => $policy, 'noCache' => true]);
@@ -847,13 +846,13 @@
 		public function updateDependentHistoryTrackingCurrentValues($options=null) {
 			if(!($row_id = caGetOption('row_id', $options, null)) && !($row_id = $this->getPrimaryKey())) { return false; }
 			$mode = caGetOption('mode', $options, null);
-			
-			if(is_array($policies = self::getDependentHistoryTrackingCurrentValuePolicies($this->tableName(), ['type_id' => $this->getTypeID()]))) {
+			$type_id = $this->getTypeID($row_id);
+
+			if(is_array($policies = self::getDependentHistoryTrackingCurrentValuePolicies($this->tableName(), ['type_id' => $type_id]))) {
 				 $table = $this->tableName();
 				 $num_updated = 0;
 				 foreach($policies as $policy => $policy_info) {
 				 	$rel_ids = $this->getRelatedItems($policy_info['table'], ['returnAs' => 'ids', 'row_ids' => [$row_id]]);
-				 	
 				 	// TODO: take restrictToRelationshipTypes into account
 				 	
 				 	// Only update if date field on this has changes
@@ -870,6 +869,7 @@
 							}
 						}
 				 	}
+				 	$date_has_changed = true;
 				 	if ($spec_has_date && !$date_has_changed && !$this->get('deleted')) { continue; }
 				 	if (!($t = Datamodel::getInstance($policy_info['table'], true))) { return null; }
 				 	
