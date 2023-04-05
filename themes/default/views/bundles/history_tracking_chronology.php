@@ -202,7 +202,7 @@ switch($display_mode) {
 						    }
 						    return $c;
 						}, [])) && ($current_value = array_shift($current_value))) { 
-							print "<div id='caHistoryTrackingEntry{$vs_id_prefix}".Datamodel::getTableName($current_value['tracked_table_num']).'-'.$current_value['tracked_row_id']."' class='caHistoryTrackingCurrent' style='background-color:#".$settings['currentValueColor']."'>{$current_value['icon']} {$current_value['display']}<div class=\"caHistoryTrackingEntryDate\">{$current_value['date']}</div>";
+							print "<div id='caHistoryTrackingEntry{$vs_id_prefix}".Datamodel::getTableName($current_value['tracked_table_num']).'-'.$current_value['tracked_row_id']."' class='caHistoryTrackingCurrent' style='background-color:#".$settings['currentValueColor']."'><div class='caHistoryTrackingContent'>{$current_value['icon']} {$current_value['display']}<div class='caHistoryTrackingEntryDate'>{$current_value['date']}</div></div>";
 							
                                 if (!$read_only && $allow_value_interstitial_edit && ($current_value['tracked_table_num'] !== $current_value['current_table_num']) && ca_editor_uis::loadDefaultUI($current_value['tracked_table_num'], $this->request)) {
 ?>
@@ -241,7 +241,7 @@ switch($display_mode) {
 											break;	
 									}
 
-                                    print "<div id='caHistoryTrackingEntry{$vs_id_prefix}".Datamodel::getTableName($history_entry['tracked_table_num']).'-'.$history_entry['tracked_row_id']."' class='caHistoryTracking' style='background-color:#{$color}'>".$history_entry['icon'].' '.$history_entry['display']."<div class=\"caHistoryTrackingEntryDate\">{$history_entry['date']}</div>";
+                                    print "<div id='caHistoryTrackingEntry{$vs_id_prefix}".Datamodel::getTableName($history_entry['tracked_table_num']).'-'.$history_entry['tracked_row_id']."' class='caHistoryTracking' style='background-color:#{$color}'><div class='caHistoryTrackingContent'>".$history_entry['icon'].' '.$history_entry['display']."<div class=\"caHistoryTrackingEntryDate\">{$history_entry['date']}</div></div>";
                                     if (!$read_only && $allow_value_interstitial_edit && ($history_entry['tracked_table_num'] !== $history_entry['current_table_num']) && ca_editor_uis::loadDefaultUI($history_entry['tracked_table_num'], $this->request)) {
 ?>
                                         <div class="caHistoryTrackingEntryInterstitialEdit"><a href="#" class="caInterstitialEditButton listRelEditButton" data-table="<?= Datamodel::getTableName($history_entry['tracked_table_num']); ?>" data-relation_id="<?= $history_entry['tracked_row_id']; ?>"  data-primary="<?= Datamodel::getTableName($history_entry['current_table_num']); ?>" data-primary_id="<?= $history_entry['current_row_id']; ?>"><?= caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?></a></div><?php
@@ -282,8 +282,9 @@ switch($display_mode) {
 				}	
 ?>
 				<div id="caHistoryTrackingEntry<?= $vs_id_prefix.Datamodel::getTableName($history_entry['tracked_table_num']).'-'.$history_entry['tracked_row_id']; ?>" class="caHistoryTrackingEntry <?= ($vn_i == 0) ? 'caHistoryTrackingEntryFirst' : ''; ?>" style="background-color:#<?= $color; ?>">
-					<?= $history_entry['icon']; ?>
-					<div><?= $history_entry['display']; ?></div>					
+					<div class='caHistoryTrackingContent'>
+						<?= $history_entry['icon']; ?>
+						<div><?= $history_entry['display']; ?></div>					
 <?php
 					if (!$read_only && $allow_value_interstitial_edit && ($history_entry['tracked_table_num'] !== $history_entry['current_table_num']) && ca_editor_uis::loadDefaultUI($history_entry['tracked_table_num'], $this->request)) {
 ?>
@@ -294,7 +295,8 @@ switch($display_mode) {
 						<div class="caHistoryTrackingEntryDelete"><a href="#" class="caDeleteItemButton listRelDeleteButton"  data-table="<?= Datamodel::getTableName($history_entry['tracked_table_num']); ?>" data-relation_id="<?= $history_entry['tracked_row_id']; ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div><?php
 					}
 ?>
-					<div class="caHistoryTrackingEntryDate"><?= $history_entry['date']; ?></div>
+						<div class="caHistoryTrackingEntryDate"><?= $history_entry['date']; ?></div>
+					</div>
 					<br class="clear"/>
 				</div>
 <?php
