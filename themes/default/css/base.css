@@ -7048,6 +7048,10 @@ div.caHistoryTracking {
 	min-height: 60px;
 }
 
+div.caHistoryTrackingContent {
+	width: 90%;
+}
+
 div.caHistoryTrackingTab {
 	max-height: 400px;
 	overflow: auto;
