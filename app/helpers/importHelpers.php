@@ -806,7 +806,7 @@
 		$vs_dest_table = $va_group_dest[0];
 		$va_group_dest[] = $vs_terminal;
 		
-		$pm_value = (!isset($pa_source_data[$pa_item['source']]) && $o_reader) ? caProcessImportItemSettingsForValue($o_reader->get($pa_item['source'], array('returnAsArray'=> true)), $pa_item['settings']) : $pa_source_data[$pa_item['source']];
+		$pm_value = (!isset($pa_source_data[$pa_item['source']]) && $o_reader) ? caProcessImportItemSettingsForValue($o_reader->get($pa_item['source'], array('returnAsArray'=> true)), $pa_item) : $pa_source_data[$pa_item['source']];
 
 		if (is_array($pm_value)) {
 			if (isset($pm_value[$pn_value_index])) {
@@ -823,7 +823,7 @@
 		if (!is_array($va_delimiter)) { $va_delimiter = [$va_delimiter]; }
 		if (sizeof($va_delimiter)) {
 			foreach($va_delimiter as $vn_index => $vs_delim) {
-				if (!trim($vs_delim, "\t ")) { unset($va_delimiter[$vn_index]); continue; }
+				if (($vs_delim !== ' ') && !trim($vs_delim, "\t ")) { unset($va_delimiter[$vn_index]); continue; }
 				$va_delimiter[$vn_index] = preg_quote($vs_delim, "!");
 			}
 		}
@@ -861,7 +861,6 @@
 		) {		
 			foreach($va_delimited_items as $vn_x => $vs_delimited_item) {
 				$va_items = sizeof($va_delimiter) ? preg_split("!(".join("|", $va_delimiter).")!", $vs_delimited_item) : array($vs_delimited_item);
-
                 $va_items = array_map("trim", $va_items);
                 
                 if($text_transform) {
@@ -871,7 +870,7 @@
                 }
 				foreach($va_items as $vn_i => $vs_item) {
 					$va_parents = $pa_item['settings']["{$ps_refinery_name}_parents"];
-					
+					$vs_item = caProcessImportItemSettingsForValue($vs_item, $pa_item);
 					// Set label
 					$va_val = [];       // values for current item
 					
@@ -1461,13 +1460,14 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	 * used by refineries to apply regular expressions to values get()'ed from reader class
 	 *
 	 * @param mixed $pm_value
-	 * @param array $pa_item_settings
+	 * @param array $pa_item
 	 * @param array $options Options include:
 	 *		skipRegularExpressions = don't apply configured regular expressions. [Default is false]
 	 *
 	 * @return mixed
 	 */
-	function caProcessImportItemSettingsForValue($pm_value, $pa_item_settings, array $options=null) {
+	function caProcessImportItemSettingsForValue($pm_value, $pa_item, array $options=null) {
+		$pa_item_settings = $pa_item['settings'] ?? [];
 		if (!caGetOption('skipRegularExpressions', $options, false) && isset($pa_item_settings['applyRegularExpressions']) && is_array($pa_item_settings['applyRegularExpressions'])) {
 			if(is_array($pa_item_settings['applyRegularExpressions'])) {
 				if (is_array($pm_value)) {
@@ -1493,10 +1493,10 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 		
 		if(is_array($pm_value)) {
 			foreach($pm_value as $vn_i => $vs_value) {
-				$pm_value[$vn_i] = ca_data_importers::replaceValue($vs_value, $pa_item_settings, []);
+				$pm_value[$vn_i] = ca_data_importers::replaceValue($vs_value, $pa_item, []);
 			}
 		} else {
-			$pm_value = ca_data_importers::replaceValue($pm_value, $pa_item_settings, []);
+			$pm_value = ca_data_importers::replaceValue($pm_value, $pa_item, []);
 		}
 		return $pm_value;
 	}
