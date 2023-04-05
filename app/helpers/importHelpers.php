@@ -870,7 +870,7 @@
                 }
 				foreach($va_items as $vn_i => $vs_item) {
 					$va_parents = $pa_item['settings']["{$ps_refinery_name}_parents"];
-					$vs_item = caProcessImportItemSettingsForValue($vs_item, $pa_item);
+					$vs_item = caProcessImportItemSettingsForValue($vs_item, $pa_item, ['skipRegularExpressions' => true]); // do replacement values on split values
 					// Set label
 					$va_val = [];       // values for current item
 					
