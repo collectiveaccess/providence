@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2022 Whirl-i-Gig
+ * Copyright 2010-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -279,9 +279,10 @@ class BrowseCache {
 	}
 	# ------------------------------------------------------
 	public static function makeCacheKey($pa_params, $pa_type_restrictions, $pa_source_restrictions) {
+		global $g_ui_locale;
 		if (!is_array($pa_params['criteria'])) { $pa_params['criteria'] = array(); }
 
-		return md5($pa_params['context'].'/'.$pa_params['table_num'].'/'.print_r($pa_params['criteria'], true).'/'.$pa_params['filterDeaccessionedRecords'].'/'.print_r($pa_type_restrictions, true).'/'.print_r($pa_source_restrictions, true));
+		return md5($g_ui_locale.'/'.$pa_params['context'].'/'.$pa_params['table_num'].'/'.print_r($pa_params['criteria'], true).'/'.$pa_params['filterDeaccessionedRecords'].'/'.print_r($pa_type_restrictions, true).'/'.print_r($pa_source_restrictions, true));
 	}
 	# ------------------------------------------------------
 	# Global parameters - available to all browses

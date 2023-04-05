@@ -427,7 +427,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 			if ($default_only && !$item['is_default']) { continue; }
 			$list[isset($item[$key]) ? $item[$key] : $id] = isset($item[$value]) ? $item[$value] : $item['name_plural'];
 		}
-		ksort($list);
+		
 		return $g_list_items_cache[$vs_cache_key] = $list;
 	}
 	# ---------------------------------------

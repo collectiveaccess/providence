@@ -113,6 +113,7 @@ $_ca_attribute_settings['TextAttributeValue'] = array(		// global
 		'showLocaleList' => true,
 		'width' => '400px', 'height' => 10,
 		'label' => _t('Allow locales'),
+		'multiple' => true,
 		'description' => _t('Specify specific locales to allow for this element.')
 	],
 	'allowDuplicateValues' => array(
