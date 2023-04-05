@@ -146,7 +146,7 @@ class DataMigrationUtils {
 		if (!is_array($options)) { $options = array(); }
 
 		$pb_output_errors 			= caGetOption('outputErrors', $options, false);
-		$pa_match_on 				= caGetOption('matchOn', $options, array('label', 'idno'), array('castTo' => "array"));
+		$pa_match_on 				= caGetOption('matchOn', $options, array('label', 'labels', 'idno'), array('castTo' => "array"));
 		$vn_parent_id 				= caGetOption('parent_id', $pa_values, false);
 
 		$vs_singular_label 			= (isset($pa_values['preferred_labels']['name_singular']) && $pa_values['preferred_labels']['name_singular']) ? $pa_values['preferred_labels']['name_singular'] : '';
@@ -885,7 +885,7 @@ class DataMigrationUtils {
 										(caGetOption('skipExistingValues', $options, true) 
 										|| 
 										caGetOption('_skipExistingValues', $va_values, true)), // default to skipping attribute values if they already exist (until v1.7.9 default was _not_ to skip)
-									'matchOn' => caGetOption('_matchOn', $va_values, ['idno', 'labels'])]);
+									'matchOn' => caGetOption('_matchOn', $va_values, ['idno', 'label', 'labels'])]);
 						} else {
 							foreach($va_expanded_values as $va_v) {
 								if($source_value = caGetOption('_source', $va_v, null)) {
@@ -900,7 +900,7 @@ class DataMigrationUtils {
 											caGetOption('skipExistingValues', $options, true) 
 											|| 
 											caGetOption('_skipExistingValues', $va_values, true)), // default to skipping attribute values if they already exist (until v1.7.9 default was _not_ to skip)
-										'matchOn' => caGetOption('_matchOn', $va_values, ['idno', 'labels'])]);
+										'matchOn' => caGetOption('_matchOn', $va_values, ['idno', 'label', 'labels'])]);
 							}
 						}
 					} else {
@@ -915,7 +915,7 @@ class DataMigrationUtils {
 							), $vs_element, null, [
 								'source' => $source_value, 
 								'skipExistingValues' => true, 
-								'matchOn' => caGetOption('_matchOn', $va_values, ['idno', 'labels'])
+								'matchOn' => caGetOption('_matchOn', $va_values, ['idno', 'label', 'labels'])
 							]);
 						}
 					}
@@ -1067,7 +1067,7 @@ class DataMigrationUtils {
 		
 		$pb_output_errors 				= caGetOption('outputErrors', $options, false);
 		$pb_match_on_displayname 		= caGetOption('matchOnDisplayName', $options, false);
-		$pa_match_on 					= caGetOption('matchOn', $options, array('label', 'idno', 'displayname'), array('castTo' => "array"));
+		$pa_match_on 					= caGetOption('matchOn', $options, array('label', 'labels', 'idno', 'displayname'), array('castTo' => "array"));
 		$ps_event_source 				= caGetOption('importEventSource', $options, '?'); 
 		$pb_match_media_without_ext 	= caGetOption('matchMediaFilesWithoutExtension', $options, false);
 		$pb_ignore_parent			 	= caGetOption('ignoreParent', $options, false);
