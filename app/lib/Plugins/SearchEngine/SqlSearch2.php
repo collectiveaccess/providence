@@ -657,10 +657,13 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			return $hits;
 	 	} else {
 	 		$acc = [];
-			foreach($terms as $i => $term) {
+	 		$i = 0;
+			foreach($terms as $term) {
 				$hits = $this->_processQueryTerm($subject_tablenum, $term);
+				if(!is_array($hits)) { continue; }
 				if ($i == 0) { $acc = $hits; continue; }
 				$acc = array_intersect_key($acc, $hits);
+				$i++;
 			}
 			return $acc;
 	 	}
