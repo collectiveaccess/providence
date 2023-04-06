@@ -2918,7 +2918,11 @@ if (!$pb_omit_editing_info) {
 			$label_display_field = $t_label ? $t_label->getDisplayField() : null;
 			foreach($display_list as $i => $display_item) {
 				$tmp = explode('.', $display_item['bundle_name']);
-				
+
+				if(!isset($tmp[1])){
+					$tmp[1] = null;
+				}
+
 				if (
 					(($tmp[0] === $label_table_name) && ($tmp[1] === $label_display_field))
 					||

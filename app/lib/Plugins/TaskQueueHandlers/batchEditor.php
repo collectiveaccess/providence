@@ -61,7 +61,7 @@ class WLPlugTaskQueueHandlerbatchEditor Extends WLPlug Implements IWLPlugTaskQue
 		
 		$params = [];
 		
-		$t_set = new ca_sets($parameters['set_id']);
+		$t_set = new ca_sets($parameters['set_id'] ?? null);
 		$params['importing_from'] = array(
 			'label' => _t("Applying batch edits to set"),
 			'value' => $t_set->getLabelForDisplay()
