@@ -72,6 +72,16 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 							'description' => _t('Table name. (Eg. ca_objects)')
 						],
 						[
+							'name' => 'id',
+							'type' => Type::int(),
+							'description' => _t('Numeric database id value of record.')
+						],
+						[
+							'name' => 'idno',
+							'type' => Type::string(),
+							'description' => _t('Alphanumeric idno value of record.')
+						],
+						[
 							'name' => 'identifier',
 							'type' => Type::string(),
 							'description' => _t('Record identifier. Either a integer primary key or alphanumeric idno value.')
@@ -85,7 +95,8 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
 						
-						$rec = self::resolveIdentifier($table = $args['table'], $args['identifier']);
+						list($identifier, $opts) = \GraphQLServices\Helpers\resolveParams($args);
+						$rec = self::resolveIdentifier($table = $args['table'], $identifier, null, $opts);
 						$rec_pk = $rec->primaryKey();
 						
 						$bundles = \GraphQLServices\Helpers\extractBundleNames($rec, $args);

@@ -45,7 +45,7 @@ function processTarget(\BaseModel $rec, string $table, array $t, ?array $options
 	$media_versions = $t['mediaVersions'] ?? ["thumbnail", "small", "medium", "large", "original"];
 
 	$target_pk = \Datamodel::primaryKey($t['table']);
-	$rels = $rec->getRelatedItems($t['table'], ['checkAccess' => $check_access, 'primaryIDs' => [$rec->getPrimaryKey()], 'restrictToTypes' => $t['restrictToTypes'], 'restrictToRelationshipTypes' => $t['restrictToRelationshipTypes']]);
+	$rels = $rec->getRelatedItems($t['table'], ['checkAccess' => $check_access, 'primaryIDs' => [$rec->tableName() => [$rec->getPrimaryKey()]], 'restrictToTypes' => $t['restrictToTypes'], 'restrictToRelationshipTypes' => $t['restrictToRelationshipTypes']]);
 
 	$rel_list = [];
 	if (sizeof($rel_ids = array_map(function($v) use ($resolve_to_related, $target_pk, $t) { return $v[$resolve_to_related ? $target_pk : 'relation_id']; }, $rels)) > 0) {
@@ -73,11 +73,11 @@ function processTarget(\BaseModel $rec, string $table, array $t, ?array $options
 	
 			$rel_type = array_shift($rel_types);
 			$bundles = \GraphQLServices\Helpers\extractBundleNames($r, $t);
-			$data = \GraphQLServices\Helpers\fetchDataForBundles($r, $bundles, ['primaryIDs' => [$rec->getPrimaryKey()]]);
+			$data = \GraphQLServices\Helpers\fetchDataForBundles($r, $bundles, ['primaryIDs' => [$rec->tableName() => [$rec->getPrimaryKey()]]]);
 	
 			$media = [];
 			if($include_media) {
-				$m = $resolve_to_related ? $r : \Datamodel::getInstance($t['table'], false, $r->get($t['table'].'.'.$target_pk, ['primaryIDs' => [$rec->getPrimaryKey()]]));
+				$m = $resolve_to_related ? $r : \Datamodel::getInstance($t['table'], false, $r->get($t['table'].'.'.$target_pk, ['primaryIDs' => [$rec->tableName() => [$rec->getPrimaryKey()]]]));
 				
 				if(is_array($reps = $m->getRepresentations(array_merge($media_versions, ['original']), null, ['restrictToTypes' => $t['restrictMediaToTypes']]))) {
 					foreach($reps as $rep_id => $rep_info) {
@@ -117,7 +117,7 @@ function processTarget(\BaseModel $rec, string $table, array $t, ?array $options
 			
 			$targets = [];
 			if(is_array($t['targets']) && sizeof($t['targets'])) {
-				$m = \Datamodel::getInstance($t['table'], false, $r->get($t['table'].'.'.$target_pk, ['primaryIDs' => [$rec->getPrimaryKey()]]));
+				$m = \Datamodel::getInstance($t['table'], false, $r->get($t['table'].'.'.$target_pk, ['primaryIDs' => [$rec->tableName() => [$rec->getPrimaryKey()]]]));
 				foreach($t['targets'] as $st) {
 					$targets[] = processTarget($m, $m->tableName(), $st, ['resolveRelativeToRelated' => $st['resolveRelativeToRelated'] ?? false]);
 				}

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2019 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -400,8 +400,10 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		
 		if($t_instance instanceof BaseRelationshipModel) {
 			$va_types = $t_instance->getRelationshipTypes();
-		} else {
+		} elseif(method_exists($t_instance, 'getTypeList')) {
 			$va_types = $t_instance->getTypeList();	
+		} else {
+			$va_types = [];
 		}
 		$o_db = $this->getDb();
 		

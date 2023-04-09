@@ -4204,7 +4204,7 @@ function caFileIsIncludable($ps_file) {
 			} elseif(preg_match("!^([\d]+)([A-Za-z]+)$!", $t, $m)) {
 				$padded[] = str_pad($m[1], 10, 0, STR_PAD_LEFT).str_pad(substr($m[2], 0, 4), 4, ' ', STR_PAD_LEFT);
 			} else {
-				$padded[] = str_pad(substr($t, 0, 10), 14, ' ', STR_PAD_LEFT);
+				$padded[] = str_pad(substr($t, 0, 10), 14, ' ', STR_PAD_RIGHT);
 			}
 		}
 		$display_value = join(' ', $padded);
