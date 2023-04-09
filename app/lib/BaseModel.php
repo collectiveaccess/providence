@@ -1484,12 +1484,17 @@ class BaseModel extends BaseObject {
 						if (($vm_value !== "") || (($this->getFieldInfo($vs_field, "IS_NULL") && ($vm_value == "")))) {
 							if ($vm_value) {
 								if (($vs_list_code = $this->getFieldInfo($vs_field, "LIST_CODE")) && (!is_numeric($vm_value))) {	// translate ca_list_item idno's into item_ids if necessary
-									if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) {
+									
+									if (($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) || ($vn_id = $t_list->getItemIDFromListByLabel($vs_list_code, $vm_value))) { // 
 										$vm_value = $vn_id;
 									} else {
 										$this->postError(1103, _t('Value %1 is not in list %2', $vm_value, $vs_list_code), 'BaseModel->set()', $this->tableName().'.'.$vs_field);
 										return false;
 									}
+								} elseif (($vs_list_code = $this->getFieldInfo($vs_field, "LIST")) && in_array($vs_field, ['access', 'status'], true) && (!is_numeric($vm_value))) {
+									$t_list = Datamodel::getInstance('ca_lists', true);
+									$item = $t_list->getItemFromListByItemID($vs_list_code, $vn_id);
+									$vm_value = $item['item_value'] ?? null;
 								} else {
 									$vm_orig_value = $vm_value;
 									$vm_value = preg_replace("/[^\d\-\.]+/", "", $vm_value); # strip non-numeric characters
@@ -6061,7 +6066,17 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				if (!is_array($value)) { $value = explode(":",$value); }
 				if (!isset($va_attr['LIST_MULTIPLE_DELIMITER']) || !($vs_list_multiple_delimiter = $va_attr['LIST_MULTIPLE_DELIMITER'])) { $vs_list_multiple_delimiter = ';'; }
 				foreach($value as $v) {
-					if ((sizeof($value) > 1) && (!$v)) continue;
+					if ((sizeof($value) > 1) && (!strlen($v))) continue;
+					
+					if(in_array($field, ['access', 'status'], true) && !is_numeric($v)) {
+						// transform entries to item values
+						$t_list = Datamodel::getInstance('ca_lists', true);
+						if (($item_id = ca_lists::getItemID($va_attr['LIST'], $v)) || ($item_id = $t_list->getItemIDFromListByLabel($va_attr['LIST'], $v))) { // 
+							$item = $t_list->getItemFromListByItemID($va_attr['LIST'], $item_id);
+							print_R($item);
+							$v = $item['item_value'] ?? null;
+						}
+					}
 
 					if ($va_attr['DISPLAY_TYPE'] == DT_LIST_MULTIPLE) {
 						$va_tmp = explode($vs_list_multiple_delimiter, $v);
