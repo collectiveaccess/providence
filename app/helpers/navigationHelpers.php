@@ -1117,14 +1117,21 @@
 				$vs_action = isset($pa_options['action']) ? $pa_options['action'] : (($po_request->isLoggedIn() && $po_request->user->canDoAction('can_configure_relationship_types')) ? 'Edit' : 'Summary'); 
 				break;
 			default:
+				$default_to_summary_view_conf = $po_request->config->getList("{$vs_table}_editor_defaults_to_summary_view");
+				if(is_array($default_to_summary_view_conf) && sizeof($default_to_summary_view_conf)) {
+					$t_ui = ca_editor_uis::loadDefaultUI($vs_table, $po_request, $t_table->getTypeID($pn_id));
+					$default_to_summary_view = $t_ui ? in_array($t_ui->get('editor_code'), $default_to_summary_view_conf, true) : false;
+				} else {
+					$default_to_summary_view = (bool)$po_request->config->get("{$vs_table}_editor_defaults_to_summary_view");
+				}
 				if(isset($pa_options['action'])){
 					$vs_action = $pa_options['action'];
 				} elseif($pb_quick_add) {
 					$vs_action = 'Form';
 				} elseif(
 					$po_request->isLoggedIn() &&
-					$po_request->user->canAccess($vs_module,$vs_controller,"Edit",array($vs_pk => $pn_id)) &&
-					!((bool)$po_request->config->get($vs_table.'_editor_defaults_to_summary_view') && $pn_id) // when the id is null/0, we go to the Edit action, even when *_editor_defaults_to_summary_view is set
+					$po_request->user->canAccess($vs_module, $vs_controller, "Edit", [$vs_pk => $pn_id]) &&
+					!($default_to_summary_view && $pn_id) // when the id is null/0, we go to the Edit action, even when *_editor_defaults_to_summary_view is set
 				) {
 					$vs_action = 'Edit';
 				} else {

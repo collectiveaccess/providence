@@ -6409,6 +6409,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					'name' => $n.(caGetOption('autocomplete', $pa_options, false) ? "_autocomplete" : ""),
 					'id' => caGetOption('id', $pa_options, str_replace(".", "_", caGetOption('name', $pa_options, $ps_field))).(caGetOption('autocomplete', $pa_options, false) ? "_autocomplete" : ""),
 					'nullOption' => '-',
+					'force' => true,
 					'classname' => (isset($pa_options['class']) ? $pa_options['class'] : ''),
 					'value' => $value,     
 					'width' => (isset($pa_options['width']) && ($pa_options['width'] > 0)) ? $pa_options['width'] : 30, 
@@ -6468,6 +6469,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						'id' => str_replace(".", "_", $ps_field),
 						'classname' => (isset($pa_options['class']) ? $pa_options['class'] : ''),
 						'value' => $value,
+						'force' => true,
 						'width' => (isset($pa_options['width']) && ($pa_options['width'] > 0)) ? $pa_options['width'] : 30, 
 						'height' => (isset($pa_options['height']) && ($pa_options['height'] > 0)) ? $pa_options['height'] : 1, 
 						'no_tooltips' => true,
@@ -8473,7 +8475,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				'select_item_text', 'hide_select_if_only_one_option', 'field_errors', 'display_form_field_tips', 'form_name',
 				'no_tooltips', 'tooltip_namespace', 'extraLabelText', 'width', 'height', 'label', 'list_code', 'hide_select_if_no_options', 'id',
 				'lookup_url', 'progress_indicator', 'error_icon', 'maxPixelWidth', 'displayMediaVersion', 'FIELD_TYPE', 'DISPLAY_TYPE', 'choiceList',
-				'readonly', 'description', 'hidden', 'checkAccess', 'usewysiwygeditor', 'placeholder'
+				'readonly', 'description', 'hidden', 'checkAccess', 'usewysiwygeditor', 'placeholder', 'force'
 			) 
 			as $vs_key) {
 			if(!isset($pa_options[$vs_key])) { $pa_options[$vs_key] = null; }
@@ -8608,7 +8610,7 @@ $pa_options["display_form_field_tips"] = true;
 			}
 
 			# --- Return hidden fields
-			if (($va_attr["DISPLAY_TYPE"] == DT_HIDDEN) || (caGetOption('hidden', $pa_options, false))) {
+			if ((($va_attr["DISPLAY_TYPE"] == DT_HIDDEN) && !$pa_options['force']) || (caGetOption('hidden', $pa_options, false))) {
 				return '<input type="hidden" name="'.$pa_options["name"].'" value="'.$this->escapeHTML($vm_field_value).'"/>';
 			}
 
@@ -11938,34 +11940,59 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
-	 * Returns number of records in table, filtering out those marked as deleted or those not meeting the specific access critera
+	 * Returns number of records in table, filtering out those marked as deleted or those not meeting the specific access critera.
 	 *
 	 * @param array $pa_access An option array of record-level access values to filter on. If omitted no filtering on access values is done.
-	 * @return int Number of records, or null if an error occurred.
+	 * @param array $options Options include:
+	 *		byType = Return counts broken out by type, 
+	 * @return mixed Number of record (integer), Array of counts indexed by type if byType option is set, or null if an error occurred.
 	 */
-	public function getCount($pa_access=null) {
+	public function getCount($pa_access=null, ?array $options=null) {
+		$by_type = caGetOption('byType', $options, false);
+		if($by_type && !$this->hasField('type_id')) { 
+			return null;
+		}
 		$o_db = new Db();
 		
 		$va_wheres = array();
 		if (is_array($pa_access) && sizeof($pa_access) && $this->hasField('access')) {
-			$va_wheres[] = "(access IN (".join(',', $pa_access)."))";
+			$va_wheres[] = "(t.access IN (".join(',', $pa_access)."))";
 		}
 		
 		if($this->hasField('deleted')) {
-			$va_wheres[] = '(deleted = 0)';
+			$va_wheres[] = '(t.deleted = 0)';
 		}
 		
 		$vs_where_sql = join(" AND ", $va_wheres);
 		
-		$qr_res = $o_db->query("
-			SELECT count(*) c
-			FROM ".$this->tableName()."
-			".(sizeof($va_wheres) ? ' WHERE ' : '')."
-			{$vs_where_sql}
-		");
+		if($by_type) {
+			$qr_res = $o_db->query("
+				SELECT count(*) c, t.type_id
+				FROM ".$this->tableName()." t
+				".(sizeof($va_wheres) ? ' WHERE ' : '')."
+				{$vs_where_sql}
+				GROUP BY t.type_id
+			");
 		
-		if ($qr_res->nextRow()) {
-			return (int)$qr_res->get('c');
+			$counts = [];
+			while ($qr_res->nextRow()) {
+				$counts[$qr_res->get('type_id')] = [
+					'type_id' => (int)$qr_res->get('type_id'),
+					'count' => (int)$qr_res->get('c')
+				];
+			}
+			return $counts;
+		} else {
+			$qr_res = $o_db->query("
+				SELECT count(*) c
+				FROM ".$this->tableName()." t
+				".(sizeof($va_wheres) ? ' WHERE ' : '')."
+				{$vs_where_sql}
+			");
+		
+			if ($qr_res->nextRow()) {
+				return (int)$qr_res->get('c');
+			}
 		}
 		return null;
 	}
