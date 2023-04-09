@@ -4356,7 +4356,7 @@ if (!$vb_batch) {
 									$label_access = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'access_'.$va_label['label_id'], pInteger);
 									$label_checked = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'checked_'.$va_label['label_id'], pInteger);
 									$source_info = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'source_info_'.$va_label['label_id'], pString);
-							print "label=$label_checked";
+
 									$this->editLabel($va_label['label_id'], $va_label_values, $vn_label_locale_id, $vn_label_type_id, false, ['queueIndexing' => true, 'effectiveDate' => $effective_date, 'access' => $label_access, 'checked' => $label_checked, 'sourceInfo' => $source_info]);
 									if ($this->numErrors()) {
 										foreach($this->errors() as $o_e) {
