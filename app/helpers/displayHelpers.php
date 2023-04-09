@@ -799,11 +799,19 @@ jQuery(document).ready(function() {
 
 		$vs_buf = '';
 		if (is_array($va_found_ids) && sizeof($va_found_ids)) {
+			$default_to_summary_view_conf = $po_request->config->getList("{$vs_table_name}_editor_defaults_to_summary_view");
+			if(is_array($default_to_summary_view_conf) && sizeof($default_to_summary_view_conf)) {
+				$t_table = Datamodel::getInstance($vs_table_name, true);
+				$t_ui = ca_editor_uis::loadDefaultUI($vs_table_name, $po_request, $t_table->getTypeID($pn_id));
+				$default_to_summary_view = $t_ui ? in_array($t_ui->get('editor_code'), $default_to_summary_view_conf, true) : false;
+			} else {
+				$default_to_summary_view = (bool)$po_request->config->get("{$vs_table_name}_editor_defaults_to_summary_view");
+			}
 			if ($vn_prev_id > 0) {
 				if(
 					$po_request->user->canAccess($po_request->getModulePath(),$po_request->getController(),"Edit",array($vs_pk => $vn_prev_id))
 					&&
-					!($po_request->getAppConfig()->get($vs_table_name.'_editor_defaults_to_summary_view'))
+					!$default_to_summary_view
 				){
 					$vs_buf .= caNavLink($po_request, caNavIcon(__CA_NAV_ICON_SCROLL_LT__, 2), 'prev record', $po_request->getModulePath(), $po_request->getController(), 'Edit'.'/'.$po_request->getActionExtra(), array($vs_pk => $vn_prev_id)).'&nbsp;';
 				} else {
@@ -821,7 +829,7 @@ jQuery(document).ready(function() {
 				if(
 					$po_request->user->canAccess($po_request->getModulePath(),$po_request->getController(),"Edit",array($vs_pk => $vn_next_id))
 					&&
-					!($po_request->getAppConfig()->get($vs_table_name.'_editor_defaults_to_summary_view'))
+					!$default_to_summary_view
 				){
 					$vs_buf .= '&nbsp;'.caNavLink($po_request,caNavIcon(__CA_NAV_ICON_SCROLL_RT__, 2), 'next record', $po_request->getModulePath(), $po_request->getController(), 'Edit'.'/'.$po_request->getActionExtra(), array($vs_pk => $vn_next_id));
 				} else {

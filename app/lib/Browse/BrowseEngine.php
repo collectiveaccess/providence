@@ -651,12 +651,20 @@
 						    $value = ca_attribute_values::getValuesFor($pn_row_id);
 							return $value['value_longtext1'].' '.sprintf("%4.2f", $value['value_decimal1']);
 							break;
+						case __CA_ATTRIBUTE_VALUE_LCSH__:
+						case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
+							if (!is_numeric($pn_row_id)) {
+								$pn_row_id = ca_attribute_values::getValueIDFor($t_element->getPrimaryKey(), $pn_row_id);
+							} 
+						    $value = preg_replace('![ ]*\[[^\]]*\]!', '', ca_attribute_values::getValuesFor($pn_row_id));
+						    return $value['value_longtext1'] ?? '???';
+							break;
 						default:
 							if (!is_numeric($pn_row_id)) {
 								$pn_row_id = ca_attribute_values::getValueIDFor($t_element->getPrimaryKey(), $pn_row_id);
 							} 
 						    $value = ca_attribute_values::getValuesFor($pn_row_id);
-							return $value['value_longtext1'];
+							return $value['value_longtext1'] ?? '???';
 							break;
 					}
 
@@ -1662,14 +1670,8 @@
 															$va_attr_values[] = $va_value['value_integer1'];
 														}
                                                         break;
-													case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
-														if($vs_f == 'value_longtext2') {
-															$va_attr_sql[] = "(ca_attribute_values.value_longtext2 = ?)";
-															$va_attr_values[] = $va_value['value_longtext2'];
-															break(2);
-														}
-														break;
 													case __CA_ATTRIBUTE_VALUE_LCSH__:
+													case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
 														if ($vs_f == 'value_longtext2') {
 															$va_attr_sql[] = "(ca_attribute_values.value_longtext2 = ?)";
 															$va_attr_values[] = $va_value['value_longtext2'];
@@ -4551,6 +4553,7 @@
 									);
 									break;
 								case __CA_ATTRIBUTE_VALUE_LCSH__:
+								case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
 								    $value_id = ca_attribute_values::getValueIDFor($o_attr->getElementID(), $vs_val);
 									$va_values[strToLower($vs_val)] = array(
 										'id' => $value_id,
