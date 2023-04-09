@@ -386,6 +386,10 @@ class ca_entity_labels extends BaseLabel {
 	 */
 	public static function normalizeLabel(array $label_values, ?array $options=null) : array {
 		$is_org = (($t_entity = caGetOption('subject', $options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG'));
+		if((isset($label_values['suffix']) && strlen($label_values['suffix'])) || (isset($label_values['prefix']) && strlen($label_values['prefix']))) {
+			// assume name is already split if suffix or prefix is set
+			return $label_values;
+		}
 		return DataMigrationUtils::splitEntityName(self::labelAsString($label_values), array_merge(['type' => $is_org ? 'ORG' : 'IND'], $options ?? []));
 	}
 	# ------------------------------------------------------
