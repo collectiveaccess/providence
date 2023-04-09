@@ -117,7 +117,9 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	 *		effectiveDate = Effective date for label. [Default is null]
 	 *		access = Access value for label (from access_statuses list). [Default is 0]
 	 *		checked = Checked value for label (yes/no; ca_entity_labels only). [Default is 0]
-	 *		aourceInfo = Source for label. [Default is null]
+	 *		sourceInfo = Source for label. [Default is null]
+	 *		skipExisting = Don't add labels that already exist on this record. [Default is true]
+	 *
 	 * @return int id for newly created label, false on error or null if no row is loaded
 	 */ 
 	public function addLabel($pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=false, $pa_options=null) {
@@ -127,6 +129,8 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		$vb_truncate_long_labels = caGetOption('truncateLongLabels', $pa_options, false);
 		$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, false);
 		
+		$skip_existing = caGetOption('skipExisting', $pa_options, true);
+		
 		$effective_date = caGetOption(['effective_date', 'effectiveDate'], $pa_options, null);
 		$label_access = caGetOption(['access', 'label_access', 'labelAccess'], $pa_options, 0);
 		$label_checked = caGetOption(['checked', 'label_checked', 'labelChecked'], $pa_options, 0);
@@ -134,7 +138,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		
 		$vs_table_name = $this->tableName();
 		
-		if (!($t_label = Datamodel::getInstanceByTableName($this->getLabelTableName()))) { return null; }
+		if (!($t_label = Datamodel::getInstanceByTableName($label = $this->getLabelTableName()))) { return null; }
 		if ($this->inTransaction()) {
 			$o_trans = $this->getTransaction();
 			$t_label->setTransaction($o_trans);
@@ -142,18 +146,6 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		
 		$t_label->purify($this->purify());
 		$t_label->setLabelTypeList($this->getAppConfig()->get($pb_is_preferred ? "{$vs_table_name}_preferred_label_type_list" : "{$vs_table_name}_nonpreferred_label_type_list"));
-		
-		// Does label exist?
-		$label_table = $t_label->tableName();
-		
-		
-		$dupe_check_values = array_merge($pa_label_values, [$this->primaryKey() => $this->getPrimaryKey(), 'locale_id' => ca_locales::codeToID($pn_locale_id), 'type_id' => $pn_type_id]);
-		// if ($t_label->hasField('effective_date')) {
-// 			$dupe_check_values['effective_date'] = $effective_date;
-// 		}
-		if(($dupe_count = $label_table::find($dupe_check_values, ['returnAs' => 'count'])) > 0) {
-			return false;
-		}
 		
 		foreach($pa_label_values as $vs_field => $vs_value) {
 			if ($t_label->hasField($vs_field)) { 
@@ -171,16 +163,28 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 			}
 		}
 		
+		$dupe_check_data = array_merge($pa_label_values, ['locale_id' => $pn_locale_id, $this->primaryKey() => $vn_id]);
 		
 		$t_label->set('locale_id', $pn_locale_id);
-		if ($t_label->hasField('type_id')) { $t_label->set('type_id', $pn_type_id); }
-		if ($t_label->hasField('is_preferred')) { $t_label->set('is_preferred', $pb_is_preferred ? 1 : 0); }
-		if ($t_label->hasField('effective_date')) { $t_label->set('effective_date', $effective_date); }
+		if ($t_label->hasField('type_id')) { $dupe_check_data['type_id'] = $pn_type_id; $t_label->set('type_id', $pn_type_id); }
+		if ($t_label->hasField('is_preferred')) { $dupe_check_data['is_preferred'] = ($pb_is_preferred ? 1 : 0); $t_label->set('is_preferred', $pb_is_preferred ? 1 : 0); }
+		if ($t_label->hasField('effective_date')) { 
+			if(is_array($date = caDateToHistoricTimestamps($effective_date)) && ($date['start'] ?? null) && ($date['start'] > 0)) {
+				$dupe_check_data['sdatetime'] = $date['start']; 
+				$dupe_check_data['edatetime'] = $date['end']; 
+			}
+			$t_label->set('effective_date', $effective_date); 
+		}
 		if ($t_label->hasField('access')) { $t_label->set('access', $label_access); }
 		if ($t_label->hasField('checked')) { $t_label->set('checked', $label_checked); }
 		if ($t_label->hasField('source_info')) { $t_label->set('source_info', $source_info); }
 		
 		$t_label->set($this->primaryKey(), $vn_id);
+		
+		// Does label already exist?
+		if($skip_existing && $label::find($dupe_check_data)) {
+			return null;
+		}
 		
 		$this->opo_app_plugin_manager->hookBeforeLabelInsert(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'label_instance' => $t_label));
 	
