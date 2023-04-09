@@ -1219,7 +1219,7 @@
 								if(!isset($va_val['preferred_labels']) || !is_array($va_val['preferred_labels'])) { 
 									$va_val['preferred_labels'] = DataMigrationUtils::splitEntityName($vs_item, array_merge($pa_options, ['type' => $va_val['_type'], 'doNotParse' => $pa_item['settings']["{$ps_refinery_name}_doNotParse"]])); 
 								}
-								$va_val['preferred_labels'] = ca_entity_labels::normalizeLabel($va_val['preferred_labels'], array_merge($pa_options, ['type' => $va_val['_type']]));
+								//$va_val['preferred_labels'] = ca_entity_labels::normalizeLabel($va_val['preferred_labels'], array_merge($pa_options, ['type' => $va_val['_type']]));
 								if(!isset($va_val['idno'])) { $va_val['idno'] = $vs_item; }
 								if($pa_item['settings']["{$ps_refinery_name}_ignoreLabelFields"] ?? null) { $va_val['_ignoreLabelFields'] = $pa_item['settings']["{$ps_refinery_name}_ignoreLabelFields"]; }
 								break;
