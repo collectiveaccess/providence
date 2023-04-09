@@ -436,6 +436,8 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 			$this->setTransaction(new Transaction($this->getDb()));
 			$we_set_transaction = true;
 		}
+		$o_trans = $this->getTransaction();
+		
 		$parent_changed = $this->changed('parent_id');
 		$rc = parent::update($pa_options);
 		if($parent_changed) { $this->handleMove($pa_options); }

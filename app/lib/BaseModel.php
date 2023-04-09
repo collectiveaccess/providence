@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2021 Whirl-i-Gig
+ * Copyright 2000-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -6401,6 +6401,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					'name' => $n.(caGetOption('autocomplete', $pa_options, false) ? "_autocomplete" : ""),
 					'id' => caGetOption('id', $pa_options, str_replace(".", "_", caGetOption('name', $pa_options, $ps_field))).(caGetOption('autocomplete', $pa_options, false) ? "_autocomplete" : ""),
 					'nullOption' => '-',
+					'force' => true,
 					'classname' => (isset($pa_options['class']) ? $pa_options['class'] : ''),
 					'value' => $value,     
 					'width' => (isset($pa_options['width']) && ($pa_options['width'] > 0)) ? $pa_options['width'] : 30, 
@@ -6460,6 +6461,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						'id' => str_replace(".", "_", $ps_field),
 						'classname' => (isset($pa_options['class']) ? $pa_options['class'] : ''),
 						'value' => $value,
+						'force' => true,
 						'width' => (isset($pa_options['width']) && ($pa_options['width'] > 0)) ? $pa_options['width'] : 30, 
 						'height' => (isset($pa_options['height']) && ($pa_options['height'] > 0)) ? $pa_options['height'] : 1, 
 						'no_tooltips' => true,
@@ -8460,7 +8462,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				'select_item_text', 'hide_select_if_only_one_option', 'field_errors', 'display_form_field_tips', 'form_name',
 				'no_tooltips', 'tooltip_namespace', 'extraLabelText', 'width', 'height', 'label', 'list_code', 'hide_select_if_no_options', 'id',
 				'lookup_url', 'progress_indicator', 'error_icon', 'maxPixelWidth', 'displayMediaVersion', 'FIELD_TYPE', 'DISPLAY_TYPE', 'choiceList',
-				'readonly', 'description', 'hidden', 'checkAccess', 'usewysiwygeditor', 'placeholder'
+				'readonly', 'description', 'hidden', 'checkAccess', 'usewysiwygeditor', 'placeholder', 'force'
 			) 
 			as $vs_key) {
 			if(!isset($pa_options[$vs_key])) { $pa_options[$vs_key] = null; }
@@ -8595,7 +8597,7 @@ $pa_options["display_form_field_tips"] = true;
 			}
 
 			# --- Return hidden fields
-			if (($va_attr["DISPLAY_TYPE"] == DT_HIDDEN) || (caGetOption('hidden', $pa_options, false))) {
+			if ((($va_attr["DISPLAY_TYPE"] == DT_HIDDEN) && !$pa_options['force']) || (caGetOption('hidden', $pa_options, false))) {
 				return '<input type="hidden" name="'.$pa_options["name"].'" value="'.$this->escapeHTML($vm_field_value).'"/>';
 			}
 

@@ -1877,11 +1877,11 @@ class SearchResult extends BaseObject {
 			if(is_array($vm_val)) {
 				foreach($vm_val as $i => $v) {
 					if(is_array($v)) { continue; }
-					if(!preg_match('!(<br>|<br/>|<p>)!i', $v)) {
+					if($v === strip_tags($v)) {
 						$vm_val[$i] = nl2br($v);
 					}
 				}
-			} elseif(!preg_match('!(<br[^>]*>|<br[^/]*/>|<p[^>]*>)!i', $vm_val)) {
+			} elseif($vm_val === strip_tags($vm_val)) {
 				$vm_val = nl2br($vm_val);
 			}
 		} elseif ($vb_convert_line_breaks) {
