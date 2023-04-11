@@ -648,7 +648,7 @@ class BaseFindEngine extends BaseObject {
 		$is_preferred = caGetOption('isPreferred', $options, null);
 		$pref_sql = '';
 		if($t_label->hasField('is_preferred') && !is_null($is_preferred)) {
-			$pref_sql = " WHERE rl.is_preferred = ".($is_preferred ? "1" : "0");
+			$pref_sql = " WHERE (rl.is_preferred = ".($is_preferred ? "1" : "0")." OR rl.is_preferred IS NULL)";
 		}
 		
 		$sql = "
@@ -1404,7 +1404,7 @@ class BaseFindEngine extends BaseObject {
 				$linking_table = $path[1];
 				
 				$rel_types = caMakeRelationshipTypeIDList($linking_table, $rel_types);
-				$rel_type_sql = (is_array($rel_types) && (sizeof($rel_types) > 0)) ? " AND l.type_id IN (".join(',', array_map('intval', $rel_types)).")" : '';
+				$rel_type_sql = (is_array($rel_types) && (sizeof($rel_types) > 0)) ? " AND (l.type_id IN (".join(',', array_map('intval', $rel_types)).") OR (l.type_id IS NULL))" : '';
 	
 				if ($table === $rel_table) {
 					$t_relation = Datamodel::getInstance($linking_table, true);
