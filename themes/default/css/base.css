@@ -3069,7 +3069,7 @@ div.caMediaOverlayControls {
     position: relative;
     width: 100%;
     height: 100%;
-    top: 0;
+    top: 100px;
     left: 0;
     right: 0;
 }

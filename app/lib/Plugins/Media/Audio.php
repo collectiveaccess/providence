@@ -795,7 +795,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 					<script type="text/javascript">
 						jQuery(document).ready(function() {
 							options = {
-								debug: false,
+								debug: false, hideControls: false,
 								iconUrl: '<?= __CA_URL_ROOT__; ?>/assets/plyr/plyr.svg',
 								controls: [<?= join(',', array_map(function($v) { return "'".addslashes(preg_replace("![\"']+!", '', $v))."'"; }, $controls)); ?>],
 							};
