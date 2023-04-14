@@ -819,46 +819,6 @@ trait CLIUtilsImportExport {
 	}
 	# -------------------------------------------------------
 	/**
-	 *
-	 */
-	public static function replicate_data($po_opts=null) {
-		require_once(__CA_LIB_DIR__.'/Sync/Replicator.php');
-
-		$o_replicator = new Replicator();
-		$o_replicator->replicate();
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	public static function replicate_dataParamList() {
-		return array();
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	public static function replicate_dataUtilityClass() {
-		return _t('Import/Export');
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	public static function replicate_dataShortHelp() {
-		return _t("Replicate data from one CollectiveAccess system to another.");
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	public static function replicate_dataHelp() {
-		return _t("Replicates data in one CollectiveAccess instance based upon data in another instance, subject to configuration in replication.conf.");
-	}
-
-
-	# -------------------------------------------------------
-	/**
 	 * Load metadata dictionary
 	 */
 	public static function load_chenhall_nomenclature($po_opts=null) {
