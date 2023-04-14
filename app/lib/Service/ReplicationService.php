@@ -84,6 +84,9 @@ class ReplicationService {
 			case 'hasaccess':
 				$va_return = self::hasAccess($po_request);
 				break;
+			case 'getguidsfortable':
+				$va_return = self::getGUIDsForTable($po_request);
+				break;
 			case 'setlastlogid':	
 				$va_return = self::setLastLogID($po_request);
 				break;
@@ -536,6 +539,19 @@ class ReplicationService {
 			}
 		}
 		return $va_results;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Get GUIDs for table. Used to get full list of guids from base tables such as ca_locales 
+	 *
+	 * @param RequestHTTP $po_request
+	 * @return array
+	 * @throws Exception
+	 */
+	public static function getGUIDsForTable($po_request) {
+		$table = $po_request->getParameter('table', pString);
+		
+		return ca_guids::guidsForTable($table, ['limit' => 500]);
 	}
 	# -------------------------------------------------------
 }
