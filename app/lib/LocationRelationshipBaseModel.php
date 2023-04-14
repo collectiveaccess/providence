@@ -68,6 +68,7 @@ class LocationRelationshipBaseModel extends BaseRelationshipModel {
 	 */
 	public function setStorageLocationContainerReference() {
 		$t_loc = ca_storage_locations::findAsInstance($this->get('ca_storage_locations.location_id'));
+		if(!$t_loc) { return null; }
 		$new_parent_id = $t_loc->get('parent_id');
 	
 		if($new_parent_id) {
@@ -90,6 +91,7 @@ class LocationRelationshipBaseModel extends BaseRelationshipModel {
 				}
 			}
 		}
+		return true;
 	}
 	# ------------------------------------------------------
 }
