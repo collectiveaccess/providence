@@ -393,4 +393,28 @@ class ca_guids extends BaseModel {
 		return (bool) $qr_record->get('deleted');
 	}
 	# ------------------------------------------------------
+	/**
+	 * Return GUIDs for table
+	 *
+	 * @param string $table
+	 * @param array $options Options include:
+	 *		limit = Maximum number of GUIDs to return. [Default is 1000]
+	 * @return array List of guids
+	 */
+	public static function guidsForTable($table, ?array $options=null) : array {
+		if(!($table_num = Datamodel::getTableNum($table))) { return []; }
+		if($o_tx = caGetOption('transaction', $options, null)) {
+			$o_db = $o_tx->getDb();
+		} else {
+			$o_db = new Db();
+		}
+		$limit = caGetOption('limit', $options, 1000);
+		$qr = $o_db->query(
+			"SELECT * FROM ca_guids WHERE table_num = ? LIMIT {$limit}", [$table_num]
+		);
+		$guids = $qr->getAllFieldValues('guid');
+		
+		return is_array($guids) ? $guids : [];
+	}
+	# ------------------------------------------------------
 }
