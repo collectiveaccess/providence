@@ -293,7 +293,7 @@ class ExcelDataReader extends BaseDataReader {
 	 *
 	 */
 	public static function getCellAsHTML($po_cell) {
-		$o_value = $po_cell->getValue();
+		$o_value = $po_cell->getCalculatedValue();
 		
 		if ($o_value instanceof \PhpOffice\PhpSpreadsheet\RichText\RichText) {
 			$va_elements = $o_value->getRichTextElements();
