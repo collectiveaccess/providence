@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -43,6 +43,8 @@
 	$vn_items_in_hier 	= $t_subject->getHierarchySize();
 	$vs_bundle_preview	= '('.$vn_items_in_hier. ') '. caProcessTemplateForIDs("^preferred_labels", $subject_table, array($t_subject->getPrimaryKey()));
 	
+	$record_set = $this->getVar('recordSet');
+
 	$config = $t_subject->getAppConfig();
 	
 	if(!($min_autocomplete_search_length = (int)$config->get(["{$vs_priv_table}_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]))) { $min_autocomplete_search_length = 3; }
@@ -50,8 +52,13 @@
 	if (!$pn_id && $vb_batch) {
 		switch($t_subject->getProperty('HIERARCHY_TYPE')) {
 			case __CA_HIER_TYPE_ADHOC_MONO__:
-				// For batching on ad-hoc hierarchies we need to load something, so we pick the first record we can find
-				if($t_subject = $subject_table::findAsInstance('*', ['limit' => 1, 'returnAs' => 'ids'])) {
+				// For batching on ad-hoc hierarchies we need to load something, so we pick the first record in the current record set		
+				$record_ids = $record_set ? $record_set->getItemRowIDs() : [];
+				$pn_id = array_shift($record_ids);
+				if($pn_id && ($t_rec = Datamodel::getInstance($subject_table, true, $pn_id)) && ($parent_id = $t_rec->get("{$subject_table}.parent_id"))) {
+					$pn_id = $parent_id;	
+				}
+				if(!$pn_id && ($t_subject = $subject_table::findAsInstance('*', ['limit' => 1, 'returnAs' => 'ids']))) {
 					$pn_id = $t_subject->getPrimaryKey();
 				}
 				break;
@@ -353,7 +360,7 @@
 						<?= _t('Find'); ?>: <input type="text" id="<?= $id_prefix; ?>MoveHierarchyBrowserSearch" name="search" value="" size="25"/>
 					</div>
 					<div class="hierarchyBrowserMessageContainer">
-						<?= _t('Click on an arrow to choose the location to move this record under.', $t_subject->getProperty('NAME_SINGULAR')); ?>
+						<?= $vb_batch ? _t('Search for or click on a record to move items in the current record set under.') : _t('Click on an arrow to choose the location to move this record under.', $t_subject->getProperty('NAME_SINGULAR')); ?>
 						<div id='<?= $id_prefix; ?>HierarchyBrowserSelectionMessage' class='hierarchyBrowserNewLocationMessage'><!-- Message specifying move destination is dynamically inserted here by ca.hierbrowser --></div>	
 					</div>
 					<div class="clear"><!-- empty --></div>
@@ -481,7 +488,7 @@
 				select: function( event, ui ) {
 					if (ui.item.id) {
 						jQuery("#<?= $id_prefix; ?>HierarchyBrowserContainer").slideDown(350);
-						o<?= $id_prefix; ?>MoveHierarchyBrowser.setUpHierarchy(ui.item.id);	// jump browser to selected item
+						o<?= $id_prefix; ?>MoveHierarchyBrowser.setUpHierarchy(ui.item.id, true);	// jump browser to selected item
 					}
 					event.preventDefault();
 					jQuery('#<?= $id_prefix; ?>MoveHierarchyBrowserSearch').val('');
