@@ -105,7 +105,8 @@ class ExpressionVisitor implements Visitor\Visit {
 			'trim'			=> xcallable('trim'),
 			'idnoUseCount'	=> xcallable('caIdnoUseCount'),
 			'dateIsRange'	=> xcallable('caDateIsRange'),
-			'fromUnixtime'	=> xcallable(function($arg) { return date('c', $arg); })
+			'fromUnixtime'	=> xcallable(function($arg) { return date('c', $arg); }),
+			'existsInList'	=> xcallable(function($arg1, $arg2) { return caItemExists($arg1, $arg2); })
 		);
 		return;
 	}
