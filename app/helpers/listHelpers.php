@@ -413,10 +413,9 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 				$item_id = caGetListItemIDForValue($list_code, $value, $options);
 			}
 		}
-		
 		switch(strtolower(caGetOption('return', $options, null))) {
 			case 'id':
-				return (int)$item_id;
+				return $item_id ? (int)$item_id : null;
 				break;
 			case 'modelinstance':
 				return $item_id ? ca_list_items::findAsInstance(['item_id' => $item_id]) : null;
