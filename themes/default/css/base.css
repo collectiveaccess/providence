@@ -2187,7 +2187,9 @@ div.search-hier-browser-box {
 }
 
 .labelOption {
-    font-size: 11px;
+    font-size: 12px;
+    max-width: 130px;
+    padding: 2px;
 }
 
 .labelDisplay {
