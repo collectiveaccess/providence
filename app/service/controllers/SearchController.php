@@ -173,7 +173,7 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 						
 							$bundles = \GraphQLServices\Helpers\extractBundleNames($rec, $t, []);
 
-							$results[] = ['name' => $name, 'result' => $r = \GraphQLServices\Helpers\fetchDataForBundles($qr, $bundles, ['checkAccess' => $check_access, 'start' => $t['start'], 'limit' => $t['limit'], 'filterByAncestors' => $t['filterByAncestors']]), 'count' => sizeof($r)];
+							$results[] = ['name' => $name, 'result' => $r = \GraphQLServices\Helpers\fetchDataForBundles($qr, $bundles, ['checkAccess' => $check_access, 'start' => $t['start'], 'limit' => $t['limit'], 'filterByAncestors' => $t['filterByAncestors']]), 'count' => $qr->numHits()];
 							if(is_null($ftable)) {
 								// Stash details of first search for use in "flat" response
 								$ftable = $table;

@@ -27,8 +27,8 @@
  */
 require_once(__CA_LIB_DIR__.'/Service/GraphQLServiceController.php');
 require_once(__CA_APP_DIR__.'/service/schemas/BrowseSchema.php');
-require_once(__CA_APP_DIR__.'/helpers/BrowseHelpers.php');
-require_once(__CA_APP_DIR__.'/helpers/ThemeHelpers.php');
+require_once(__CA_APP_DIR__.'/helpers/browseHelpers.php');
+require_once(__CA_APP_DIR__.'/helpers/themeHelpers.php');
 
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
