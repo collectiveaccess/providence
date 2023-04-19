@@ -8829,7 +8829,7 @@ side. For many self-relations the direction determines the nature and display te
 			// rewrite labels
 			$t_base->removeAllLabels(__CA_LABEL_TYPE_PREFERRED__);
 			foreach($use_label_by_locale_id as $locale_id => $label) {
-				if(!$t_base->addLabel($label, $locale_id, null, true)) {
+				if($t_base->addLabel($label, $locale_id, null, true) === false) {
 					throw new MergeException(_t("Could not add merged preferred label: %1", join('; ', $t_base->getErrors())));
 				}
 			}
