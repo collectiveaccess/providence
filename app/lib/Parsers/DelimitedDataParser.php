@@ -207,7 +207,7 @@
 							}
 							$this->opa_current_row[] = $vs_val;
 						} else {
-							$this->opa_current_row[] = $vs_val = trim((string)$o_cell->getValue());
+							$this->opa_current_row[] = $vs_val = trim((string)$o_cell->getCalculatedValue());
 						}
 						if (strlen($vs_val) > 0) { $vb_val_was_set = true; $vn_last_col_set = $vn_col;}
 			
