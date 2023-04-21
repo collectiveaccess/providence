@@ -13213,11 +13213,25 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 * Evaluate expression in the context of the currently loaded row
+	 *
+	 * @param string $expression
+	 *
+	 * @return mixed Return value of expression
+	 */
+	public function evaluateExpression(string $expression) {
+		$tags = caGetTemplateTags($expression);
+		$data = [];
+		foreach($tags as $t) {
+			$data[$t] = $this->get($t);
+		}
+		return ExpressionParser::evaluate($expression, $data);
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
 	 * Destructor
 	 */
 	public function __destruct() {
-		//print "Destruct ".$this->tableName()."\n";
-		//print (memory_get_usage()/1024)." used in ".$this->tableName()." destructor\n";
 		unset($this->o_db);
 		unset($this->_CONFIG);
 		unset($this->_MEDIA_VOLUMES);

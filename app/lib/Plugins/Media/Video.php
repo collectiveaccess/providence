@@ -1065,8 +1065,8 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$controls = 		caGetOption("controls", $options, ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'fullscreen'], ['castTo' => 'array']);
 				ob_start();
 ?>
-			<div class="<?= $class; ?> video-responsive">
-				<video id="<?= $id; ?>" playsinline controls data-poster="<?= $poster_frame_url; ?>" width="<?= $width; ?>" height="<?= $height; ?>" >
+			<div class="<?= $class; ?> video-responsive" style="width: <?= $width; ?>px; height:<?= $height; ?>px;">
+				<video id="<?= $id; ?>" playsinline controls data-poster="<?= $poster_frame_url; ?>" width="<?= $width; ?>" height="<?= $height; ?>" style="object-fit: contain;">
 				  <source src="<?= $url; ?>" type="<?= $properties["mimetype"]; ?>" />
 <?php
 						if(is_array($captions)) {
