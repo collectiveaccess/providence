@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2019 Whirl-i-Gig
+ * Copyright 2014-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -45,6 +45,7 @@ define("__CA_OBJECTS_CHECKOUT_STATUS_OUT__", 1);
 define("__CA_OBJECTS_CHECKOUT_STATUS_OUT_WITH_RESERVATIONS__", 2);
 define("__CA_OBJECTS_CHECKOUT_STATUS_RESERVED__", 3);
 define("__CA_OBJECTS_CHECKOUT_STATUS_UNAVAILABLE__", 4);
+define("__CA_OBJECTS_CHECKOUT_STATUS_RETURNED_PENDING_CONFIRMATION__", 5);
 
 BaseModel::$s_ca_models_definitions['ca_object_checkouts'] = array(
  	'NAME_SINGULAR' 	=> _t('object checkout'),
@@ -106,6 +107,13 @@ BaseModel::$s_ca_models_definitions['ca_object_checkouts'] = array(
 				'IS_NULL' => true, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Date returned'), 'DESCRIPTION' => _t('Date/time the item was returned.'),
+		),
+		'return_confirmation_date' => array(
+				'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 15, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Date return confirmed'), 'DESCRIPTION' => _t('Date/time returned of the item was confirmed.'),
 		),
 		'checkout_notes' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -449,7 +457,6 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 			throw new Exception(_t('Item is not out'));
 		}
 		
-		$this->setMode(ACCESS_WRITE);
 		$this->set(array(
 			'return_date' => _t('now'),
 			'return_notes' => $ps_note
@@ -457,7 +464,6 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 		
 		// Do we need to set values?
 		if (is_array($va_checkout_config['set_values']) && sizeof($va_checkout_config['set_values'])) {
-			$t_object->setMode(ACCESS_WRITE);
 			foreach($va_checkout_config['set_values'] as $vs_attr => $va_attr_values_by_event) {
 				if (!is_array($va_attr_values_by_event['checkin'])) {
 					if ($t_object->hasField($vs_attr)) {
