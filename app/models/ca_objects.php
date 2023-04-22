@@ -1028,6 +1028,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		
 		$t_checkout = new ca_object_checkouts();
 		$va_is_out = $t_checkout->objectIsOut($vn_object_id);
+		$vb_awaits_confirmation = $t_checkout->objectNeedsReturnConfirmation($vn_object_id);;
 		$va_reservations = $t_checkout->objectHasReservations($vn_object_id);
 		$vn_num_reservations = sizeof($va_reservations);
 		$vb_is_reserved = is_array($va_reservations) && sizeof($va_reservations);
@@ -1053,6 +1054,9 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 			$va_info['checkout_notes'] = $t_checkout->get('checkout_notes');
 			$va_info['due_date'] = $t_checkout->get('due_date', array('timeOmit' => true));
 			$va_info['user_name'] = $t_checkout->get('ca_users.fname').' '.$t_checkout->get('ca_users.lname').(($vs_email = $t_checkout->get('ca_users.email')) ? " ({$vs_email})" : '');
+		} elseif ($vb_awaits_confirmation) {
+			$va_info['status'] = __CA_OBJECTS_CHECKOUT_STATUS_RETURNED_PENDING_CONFIRMATION__;
+			$va_info['status_display'] = _t('Unavailable pending confirmation of return');
 		} elseif ($vb_is_reserved) {
 			$va_info['status'] = __CA_OBJECTS_CHECKOUT_STATUS_RESERVED__;
 			$va_info['status_display'] = ($vn_num_reservations == 1) ? _t('Reserved') : _t('%1 reservations', $vn_num_reservations);
@@ -1067,6 +1071,15 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		if ($vb_return_as_array) { return $va_info; }
 		if ($vb_return_as_text) { return $va_info['status_display']; }
 		return $va_info['status'];
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function confirmReturn(?array $options=null) {
+		if(!($object_id = $this->getPrimaryKey())) { return null; }
+		$t_checkout = new ca_object_checkouts();
+		return $t_checkout->confirmReturn($object_id);
 	}
 	# ------------------------------------------------------
 	/**

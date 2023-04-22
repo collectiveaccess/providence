@@ -97,7 +97,7 @@ class ExcelDataReader extends BaseDataReader {
 				}
 				$headers = array_map(function($v) { return mb_strtolower($v); }, $headers);
 
-				if(sizeof(array_filter($headers, function($v) { $v = trim($v); return !(!strlen($v) || preg_match('!^[a-z0-9_\-\.:]+$!', $v)); })) === 0) {
+				if(sizeof(array_filter($headers, function($v) { $v = trim($v); return !(!strlen($v) || preg_match('!^[a-z0-9_\-\.: ]+$!', $v)); })) === 0) {
 					// looks like headers
 					array_unshift($headers, ''); // 1-based
 					$this->headers = $headers;
