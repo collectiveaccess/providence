@@ -332,7 +332,8 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 			$o_trans = $this->getTransaction();
 		} else {	
 			$vb_we_set_transaction = true;
-			$this->setTransaction($o_trans = new Transaction($this->getDb()));
+			$o_trans = new Transaction($this->getDb());
+			$this->setTransaction($o_trans);
 		}
 		
 		$o_request = caGetOption('request', $pa_options, null);
@@ -442,7 +443,8 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 			$o_trans = $this->getTransaction();
 		} else {	
 			$vb_we_set_transaction = true;
-			$this->setTransaction($o_trans = new Transaction($this->getDb()));
+			$o_trans = new Transaction($this->getDb());
+			$this->setTransaction($o_trans);
 		}
 		
 		$o_request = caGetOption('request', $pa_options, null);
@@ -501,7 +503,8 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 			$o_trans = $this->getTransaction();
 		} else {	
 			$vb_we_set_transaction = true;
-			$this->setTransaction($o_trans = new Transaction($this->getDb()));
+			$o_trans = new Transaction($this->getDb());
+			$this->setTransaction($o_trans);
 		}
 		
 		$o_request = caGetOption('request', $pa_options, null);
@@ -570,6 +573,68 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
+	public function confirmReturn(int $object_id, ?array $options=null) {
+		global $g_ui_locale_id;
+		
+		$vb_we_set_transaction = false;
+		if ($this->inTransaction()) { 
+			$o_trans = $this->getTransaction();
+		} else {	
+			$vb_we_set_transaction = true;
+			$this->setTransaction($o_trans = new Transaction($this->getDb()));
+		}
+		
+		$o_request = caGetOption('request', $pa_options, null);
+		
+		$t_object = new ca_objects($object_id);
+		$t_object->setTransaction($o_trans);
+		if (!$t_object->getPrimaryKey()) { return null; }
+		if ($o_request && !$t_object->isReadable($o_request)) { return null; }
+		
+		// is object waiting for return confirmation?
+		if ($t_object->getCheckoutStatus() !== __CA_OBJECTS_CHECKOUT_STATUS_RETURNED_PENDING_CONFIRMATION__) { 
+			throw new Exception(_t('Item does not require return confirmation'));
+		}
+		
+		// Get checkouts
+		$o_db = $o_trans->getDb();
+		$qr = $o_db->query("
+			SELECT checkout_id
+			FROM ca_object_checkouts
+			WHERE
+				object_id = ? 
+				AND 
+				checkout_date <= ?
+				AND 
+				return_date <= ?
+				AND
+				return_confirmation_date IS NULL
+				AND 
+				deleted = 0
+		", [$object_id, time(), time()]);
+		
+		$checkout_ids = $qr->getAllFieldValues('checkout_id');
+		
+		$rc = true;
+		if(is_array($checkout_ids) && sizeof($checkout_ids)) {
+			foreach($checkout_ids as $checkout_id) {
+				if($t_checkout = ca_object_checkouts::findAsInstance(['checkout_id' => $checkout_id, 'object_id' => $object_id])) {
+					$t_checkout->set('return_confirmation_date', _t('now'));
+					if(!($rc = $t_checkout->update())) {
+						break;
+					}
+				}
+			}
+		}
+		if ($vb_we_set_transaction) { 
+			$rc ? $o_trans->commit() : $o_trans->rollback();
+		}
+		return $rc;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	static public function getObjectCheckoutConfigForType($pm_type_id) {
 		$o_config = caGetLibraryServicesConfiguration();
 		$t_object = new ca_objects();
@@ -619,6 +684,34 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 				AND
 				(deleted = 0)
 		", array(time(), $pn_object_id));
+		
+		if ($qr_res->nextRow()) {
+			return $qr_res->getRow();
+		}
+		return false;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function objectNeedsReturnConfirmation(int $object_id, ?array $options=null) {
+		$config = caGetLibraryServicesConfiguration();
+		if(!$config->get('require_confirmation_of_returns')) { return false; }
+		$o_db = $this->getDb();
+		$qr_res = $o_db->query("
+			SELECT *
+			FROM ca_object_checkouts
+			WHERE
+				(checkout_date <= ?)
+				AND
+				(return_date <= ?)
+				AND
+				(return_confirmation_date IS NULL)
+				AND
+				(object_id = ?)
+				AND
+				(deleted = 0)
+		", array(time(), time(), $object_id));
 		
 		if ($qr_res->nextRow()) {
 			return $qr_res->getRow();
@@ -859,7 +952,6 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 * Return list of object_ids for objects that have current reservations
 	 *
-	 * @param string $ps_datetime 
 	 * @param array $pa_options Array of options. Options include
 	 * 		db = A Db instance to use for database operations. If omitted a new Db instance will be used. [Default=null]
 	 * @return array 
@@ -877,6 +969,35 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 				AND
 				deleted = 0
 		", array());
+		
+		return $qr_res->getAllFieldValues('object_id');
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return list of object_ids for objects that have require return confirmation
+	 *
+	 * @param array $pa_options Array of options. Options include
+	 * 		db = A Db instance to use for database operations. If omitted a new Db instance will be used. [Default=null]
+	 * @return array 
+	 */
+	static public function getObjectIDsForReturnConfirmations($pa_options=null) {
+		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }
+		
+		$config = caGetLibraryServicesConfiguration();
+		if(!$config->get('require_confirmation_of_returns')) { return []; }
+		
+		$qr_res = $o_db->query("
+			SELECT DISTINCT object_id
+			FROM ca_object_checkouts
+			WHERE
+				checkout_date <= ?
+				AND
+				return_date <= ?
+				AND
+				return_confirmation_date IS NULL
+				AND
+				deleted = 0
+		", [time(), time()]);
 		
 		return $qr_res->getAllFieldValues('object_id');
 	}
@@ -1419,6 +1540,37 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Return items requiring confirmation of return
+	 *
+	 * @param array $pa_options Array of options. Options include
+	 * 		db = A Db instance to use for database operations. If omitted a new Db instance will be used. [Default=null]
+	 * @return int 
+	 */
+	static public function returnConfirmationList($pa_options=null) {
+		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }
+		
+		$qr_res = $o_db->query("
+			SELECT DISTINCT o.*,  c.*
+			FROM ca_object_checkouts c
+			INNER JOIN ca_objects AS o ON o.object_id = c.object_id
+			WHERE
+				c.checkout_date <= ?
+				AND
+				c.return_date <= ?
+				AND
+				c.return_confirmation_date IS NULL
+				AND
+				c.deleted = 0
+		", [time(), time()]);
+		
+		$va_list = array();
+		while($qr_res->nextRow()) {
+			$va_list[] = $qr_res->getRow();
+		}
+		return $va_list;
+	}
+	# ------------------------------------------------------
+	/**
 	 *
 	 */
 	static public function getDashboardStatistics($ps_datetime=null, $pa_options=null) {
@@ -1433,7 +1585,8 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 			'numCheckins' => ca_object_checkouts::numCheckins($ps_datetime),							//	Number of individual copies checked-in
 			'checkinUserList' => ca_object_checkouts::checkinUserList($ps_datetime),
 			'numReservations' => ca_object_checkouts::numOutstandingReservations(),						//	Number of individual copies currently reserved
-			'reservationUserList' => ca_object_checkouts::reservationUserList(),		
+			'reservationUserList' => ca_object_checkouts::reservationUserList(),
+			'returnConfirmationList' => ca_object_checkouts::returnConfirmationList(),
 		);
 			
 		//	Number of check-outs per day, week, month, year
