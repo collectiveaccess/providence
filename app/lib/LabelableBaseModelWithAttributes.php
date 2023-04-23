@@ -113,7 +113,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	 * @param bool $pb_is_preferred
 	 * @param array $pa_options Options include:
 	 *		truncateLongLabels = truncate label values that exceed the maximum storable length. [Default=false]
-	 * 		queueIndexing =
+	 * 		queueIndexing = Queue search indexing for background processing if possible. [Default is true]
 	 *		effectiveDate = Effective date for label. [Default is null]
 	 *		access = Access value for label (from access_statuses list). [Default is 0]
 	 *		checked = Checked value for label (yes/no; ca_entity_labels only). [Default is 0]
@@ -127,7 +127,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		if (!($vn_id = $this->getPrimaryKey())) { return null; }
 		if ($pb_is_preferred && $this->preferredLabelExistsForLocale($pn_locale_id)) { return false; }
 		$vb_truncate_long_labels = caGetOption('truncateLongLabels', $pa_options, false);
-		$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, false);
+		$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, true);
 		
 		$skip_existing = caGetOption('skipExisting', $pa_options, true);
 		
@@ -229,7 +229,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	 * @param bool $pb_is_preferred
 	 * @param array $pa_options Options include:
 	 *		truncateLongLabels = truncate label values that exceed the maximum storable length. [Default=false]
-	 * 		queueIndexing =
+	 * 		queueIndexing = Queue search indexing for background processing if possible. [Default is true]
 	 *		effectiveDate = Effective date for label. [Default is null]
 	 *		access = Access value for label (from access_statuses list). [Default is 0]
 	 *		checked = Checked value for label (yes/no; ca_entity_labels only). [Default is 0]
@@ -240,7 +240,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		if (!($vn_id = $this->getPrimaryKey())) { return null; }
 		
 		$vb_truncate_long_labels = caGetOption('truncateLongLabels', $pa_options, false);
-		$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, false);
+		$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, true);
 		
 		$effective_date = caGetOption(['effective_date', 'effectiveDate'], $pa_options, null);
 		$label_access = caGetOption(['access', 'label_access', 'labelAccess'], $pa_options, 0);
@@ -342,10 +342,16 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	# ------------------------------------------------------------------
 	/**
 	 * Remove specified label
+	 *
+	 * @param int $pn_label_id
+	 * @param array $pa_options= Options include:
+	 *		queueIndexing = Queue search indexing for background processing if possible. [Default is true]
+	 *
+	 * @return bool
 	 */
 	public function removeLabel($pn_label_id, $pa_options = null) {
 		if (!$this->getPrimaryKey()) { return null; }
-		$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, false);
+		$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, true);
 		
 		if (!($t_label = Datamodel::getInstanceByTableName($this->getLabelTableName()))) { return null; }
 		if ($this->inTransaction()) {
