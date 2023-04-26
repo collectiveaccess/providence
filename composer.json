@@ -47,7 +47,8 @@
     "whikloj/bagittools": "^3.0",
     "voku/stop-words": "^2.0",
     "tecnickcom/tc-lib-barcode": "^1.17",
-    "symfony/process": "^5.4"
+    "symfony/process": "^5.4",
+    "phpmailer/phpmailer": "^6.8"
   },
   "suggest": {
     "binaryoung/jieba-php": "^0.1.0"
