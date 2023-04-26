@@ -74,7 +74,7 @@ if (!defined("__CA_ADMIN_EMAIL__")) {
 # __CA_SMTP_USER__, __CA_SMTP_PASSWORD__ and __CA_SMTP_SSL__
 #
 # __CA_SMTP_AUTH__ = authentication method for outgoing mail connection (set to PLAIN, LOGIN or CRAM-MD5; leave blank if no authentication is used.)
-# __CA_SMTP_SSL__ = SSL method to use for outgoing mail connection (set to SSL or TLS; leave blank if not authentication is used.)
+# __CA_SMTP_SSL__ = SSL method to use for outgoing mail connection (set to SSL or TLS; leave blank if no authentication is used.)
 
 
 # Set your preferred time zone here. The default is to use US Eastern Standard Time. 
