@@ -291,6 +291,7 @@ class Configuration {
 
 			if (($pn_num_lines_to_read > 0) && ($vn_line_num > $pn_num_lines_to_read)) { break; }
 			$vs_buffer = trim(fgets($r_file, 32000));
+			if($vn_in_quote) { $vs_buffer .= "\n"; }
 
 			# skip comments (start with '#') or blank lines
 			if (strtolower(substr($vs_buffer,0,7)) == '#!merge') { $vb_merge_mode = true; }

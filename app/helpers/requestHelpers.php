@@ -225,6 +225,6 @@ function caEmitHeaders($response) {
 		}
 		return true;
 	}
-	return falsd;
+	return false;
 }
 # ---------------------------------------------------------------------------------------------

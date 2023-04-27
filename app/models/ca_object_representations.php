@@ -166,6 +166,17 @@ BaseModel::$s_ca_models_definitions['ca_object_representations'] = array(
 			'LABEL' => _t('Original MIME type'), 'DESCRIPTION' => _t('The MIME type of the media at the time of upload.'),
 			'BOUNDS_LENGTH' => array(0,255)
 		),
+		'media_class' => array(
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 90, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => '',
+			
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			
+			'LABEL' => _t('Media class'), 'DESCRIPTION' => _t('The type of media uploaded (image, video, audio, document).'),
+			'BOUNDS_LENGTH' => array(0,255)
+		),
 		'is_transcribable' => array(
 			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT, 
 			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
@@ -513,6 +524,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			if (is_array($va_media_info = $this->getMediaInfo('media'))) {
 				$this->set('md5', $va_media_info['INPUT']['MD5']);
 				$this->set('mimetype', $media_mimetype = $va_media_info['INPUT']['MIMETYPE']);
+				$this->set('media_class', caGetMediaClass($va_media_info['INPUT']['MIMETYPE']));
 				
 				if(is_array($type_defaults = $this->getAppConfig()->get('object_representation_media_based_type_defaults')) && sizeof($type_defaults)) {
 					foreach($type_defaults as $m => $default_type) {
@@ -569,6 +581,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			if(is_array($va_media_info = $this->getMediaInfo('media'))) {
 				$this->set('md5', $va_media_info['INPUT']['MD5']);
 				$this->set('mimetype', $va_media_info['INPUT']['MIMETYPE']);
+				$this->set('media_class', caGetMediaClass($va_media_info['INPUT']['MIMETYPE']));
 				
 				if(is_array($type_defaults = $this->getAppConfig()->get('object_representation_media_based_type_defaults')) && sizeof($type_defaults)) {
 					foreach($type_defaults as $m => $default_type) {
@@ -1544,16 +1557,18 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  			
  			if ($return_all_versions) { $versions = $qr_res->getMediaVersions('media'); }
  			
- 			foreach($versions as $vn_i => $vs_version) {
- 				$va_files[$vn_multifile_id][$vs_version.'_path'] = $qr_res->getMediaPath('media', $vs_version);
- 				$va_files[$vn_multifile_id][$vs_version.'_tag'] = $qr_res->getMediaTag('media', $vs_version);
- 				$va_files[$vn_multifile_id][$vs_version.'_url'] = $qr_res->getMediaUrl('media', $vs_version);
- 				
- 				$va_info = $qr_res->getMediaInfo('media', $vs_version);
- 				$va_files[$vn_multifile_id][$vs_version.'_width'] = $va_info['WIDTH'];
- 				$va_files[$vn_multifile_id][$vs_version.'_height'] = $va_info['HEIGHT'];
- 				$va_files[$vn_multifile_id][$vs_version.'_mimetype'] = $va_info['MIMETYPE'];
- 			}
+ 			if(is_array($versions)) {
+				foreach($versions as $vn_i => $vs_version) {
+					$va_files[$vn_multifile_id][$vs_version.'_path'] = $qr_res->getMediaPath('media', $vs_version);
+					$va_files[$vn_multifile_id][$vs_version.'_tag'] = $qr_res->getMediaTag('media', $vs_version);
+					$va_files[$vn_multifile_id][$vs_version.'_url'] = $qr_res->getMediaUrl('media', $vs_version);
+				
+					$va_info = $qr_res->getMediaInfo('media', $vs_version);
+					$va_files[$vn_multifile_id][$vs_version.'_width'] = $va_info['WIDTH'];
+					$va_files[$vn_multifile_id][$vs_version.'_height'] = $va_info['HEIGHT'];
+					$va_files[$vn_multifile_id][$vs_version.'_mimetype'] = $va_info['MIMETYPE'];
+				}
+			}
  		}
  		return $va_files;
  	}
@@ -2770,7 +2785,10 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 				if (($qr = caMakeSearchResult('ca_object_representations', [$row_id])) && $qr->nextHit()) {
 					$info = $qr->getMediaInfo('media');
 					$version = caGetOption('version', $options, 'original');
-					
+					if(!isset($info[$version])) {
+						$version = array_keys($info); 
+						$version = array_pop($version);
+					}
 					switch($bundle_name) {
 						case 'media_dimensions':
 							if (($w = $info[$version]['WIDTH']) && ($h = $info[$version]['HEIGHT'])) {

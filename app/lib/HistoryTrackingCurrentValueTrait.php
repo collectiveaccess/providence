@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2021 Whirl-i-Gig
+ * Copyright 2018-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -63,7 +63,10 @@
 			$db = new Db();
 			
 			if(caGetOption('all', $options, true)) {
+				$db->query("SET FOREIGN_KEY_CHECKS = 0");
+				$db->query("TRUNCATE TABLE ca_history_tracking_current_value_labels");
 				$db->query("TRUNCATE TABLE ca_history_tracking_current_values");
+				$db->query("SET FOREIGN_KEY_CHECKS = 1");
 			} else {
 				$db->query("DELETE FROM ca_history_tracking_current_values WHERE table_num = ?", [$table_num]);
 			}
@@ -183,7 +186,9 @@
 						} else {
 							$tt = preg_split("![ ]*[,;]{1}[ ]*!", $type_list);
 						}
-						
+						if($t_instance->hasField('type_id') && $t_instance->getFieldInfo('type_id', 'IS_NULL')) {
+							$tt[] = null;
+						}
 						foreach($tt as $t) {
 							if(!is_array($config)) { break; }
 							if ($table === 'ca_storage_locations') { 
@@ -274,7 +279,9 @@
 
 				foreach(array(
 							'policy', 'displayMode', 'dateMode', 'row_id', 'width', 'height', 'readonly', 'documentation_url', 'expand_collapse',
-							'label', 'description', 'useHierarchicalBrowser', 'hide_add_to_loan_controls', 'hide_add_to_movement_controls', 'hide_update_location_controls', 'hide_return_to_home_location_controls',
+							'label', 'description', 'useHierarchicalBrowser', 'hide_add_to_loan_controls', 'hide_add_to_movement_controls', 
+							'hide_update_location_controls', 'hide_return_to_home_location_controls',
+							'definition',
 							
 							'update_location_control_label', 'movement_control_label', 'loan_control_label', 'object_control_label',
 							'return_to_home_location_control_label', 'occurrence_control_label', 'collection_control_label', 'entity_control_label',
@@ -475,12 +482,12 @@
 			if (is_null($values) && !$is_future) {			
 				// Remove current value
 				if ($l = ca_history_tracking_current_values::find(['policy' => $policy, 'table_num' => $subject_table_num, 'row_id' => $row_id], ['returnAs' => 'firstModelInstance', 'transaction' => $this->getTransaction()])) {
-					$l->setDb($this->getDb());	
+					$l->setTransaction($this->getTransaction());
 					self::$s_history_tracking_deleted_current_values[$l->get('tracked_table_num')][$l->get('tracked_row_id')][$policy] = 
 					    self::$s_history_tracking_deleted_current_values[$l->get('current_table_num')][$l->get('current_row_id')][$policy] = 
 					        ['table_num' => $l->get('table_num'), 'row_id' => $l->get('row_id')];
 					
-				    if (!($rc = $l->delete())) {
+				    if (!($rc = $l->delete(true))) {
                         $this->errors = $l->errors;
                         return false;
                     }
@@ -511,7 +518,7 @@
 				//throw new ApplicationException(_t('Invalid subject row id'));
 				return null; // row no longer exists
 			}
-			$t->setDb($this->getDb());
+			$t->setTransaction($this->getTransaction());
 			
 			// Look for existing current tracking values
 			if ($ls = ca_history_tracking_current_values::find(['policy' => $policy, 'table_num' => $subject_table_num, 'row_id' => $row_id], ['returnAs' => 'arrays', 'transaction' => $this->getTransaction()])) {
@@ -529,12 +536,13 @@
                                 ['table_num' => $subject_table_num, 'row_id' => $row_id];
                           
                         if($l['is_future'] > 0) {
-                        	// Delete existing entries
+                        	// Delete existing entries (TODO: log this so sync can replicate it)
+                        	$this->getDb()->query("DELETE FROM ca_history_tracking_current_value_labels WHERE tracking_id IN (SELECT tracking_id FROM ca_history_tracking_current_values WHERE table_num = ? AND row_id = ? AND is_future IS NULL and tracking_id <> ?)", [$subject_table_num, $row_id, $l['tracking_id']]);
                         	$this->getDb()->query("DELETE FROM ca_history_tracking_current_values WHERE table_num = ? AND row_id = ? AND is_future IS NULL and tracking_id <> ?", [$subject_table_num, $row_id, $l['tracking_id']]);
                         	
                         	// Future location is now current location
                         	$t_l = new ca_history_tracking_current_values();
-							$t_l->setDb($this->getDb());	
+							$t_l->setTransaction($this->getTransaction());
 							$t_l->load($l['tracking_id']);
 							$t_l->set('is_future', null);
 							if (!($rc = $t_l->update())) {
@@ -552,15 +560,18 @@
 								['table_num' => $l['table_num'], 'row_id' => $l['row_id']];
 					}
 					$t_l = new ca_history_tracking_current_values();
-					$t_l->setDb($this->getDb());	
+					$t_l->setTransaction($this->getTransaction());
 					$t_l->load($l['tracking_id']);
-				    if (!($rc = $t_l->delete())) {
+				    if (!($rc = $t_l->delete(true))) {
                         $this->errors = $t_l->errors;
                         return false;
                     }
 				}
 			}
 			
+			if(!caDateToHistoricTimestamps($values['date'])) {
+				$values['date'] = null;
+			}
 			$d = [
 				'policy' => $policy,
 				'table_num' => $subject_table_num, 
@@ -589,6 +600,7 @@
 						// keep
 						$found = true;
 					} else {
+						$fe->setTransaction($this->getTransaction());
 						$fe->delete(true);
 					}
 				}
@@ -598,14 +610,24 @@
 			}
 		
 			$e = new ca_history_tracking_current_values();
-			$e->setDb($this->getDb());	
+			$e->setTransaction($this->getTransaction());
 			$e->set($d);
+			
+			if($values['date']) {
+				$e->set('value_date', $values['date']);
+			}
 			
 			if (!($rc = $e->insert())) {
 				$this->errors = $e->errors;
 				return false;
 			}
 			
+			// generate labels for all cataloguing locales
+			$locales = ca_locales::getCataloguingLocaleList();
+			foreach($locales as $l) {
+				$v = strip_tags($this->getCurrentValueForDisplay($policy, ['locale' => $l['code']]));
+				$e->replaceLabel(['value' => $v], $l['code'], null, true);
+			}
 			self::$s_history_tracking_newly_added_current_values[$values['tracked_table_num']][$values['tracked_row_id']][$policy] = 
 					    self::$s_history_tracking_newly_added_current_values[$values['current_table_num']][$values['current_row_id']][$policy] = 
 					        ['table_num' => $subject_table_num, 'row_id' => $row_id];
@@ -638,8 +660,9 @@
 				return []; // No policies are configured
 			}
 			
-			$type_restrictions = caGetOption('restrictToTypes', $options, null);
-			
+			if(is_array($type_restrictions = caGetOption('restrictToTypes', $options, null))) {
+				$type_restrictions = caMakeTypeList($table, array_filter($type_restrictions, 'strlen'));
+			}
 			$policies = [];
 			foreach($policy_config['policies'] as $policy => $policy_info) {
 				if($table !== $policy_info['table']) { continue; }
@@ -687,12 +710,11 @@
 				foreach($policy_info['elements'] as $dtable => $dinfo) {
 					$path = Datamodel::getPath($policy_info['table'], $dtable);
 					if (!in_array($table, array_keys($path))) { continue; }
-					if ($types && !sizeof(array_intersect(array_keys($dinfo), $types))) { continue; }
+					$ptypes = array_keys($dinfo);
+					if ($types && !sizeof(array_intersect($ptypes, $types)) && !in_array('__default__', $ptypes)) { continue; }
 					$policies[$policy] = $policy_info;
 					break;
 				}
-				
-				
 			}
 			return $policies;
 		}
@@ -731,7 +753,8 @@
 		 */ 
 		public function deriveHistoryTrackingCurrentValue($options=null) {
 			if(!($row_id = caGetOption('row_id', $options, null)) && !($row_id = $this->getPrimaryKey())) { return false; }
-			if(is_array($policies = self::getHistoryTrackingCurrentValuePolicies($this->tableName(), ['restrictToTypes' => [$this->getTypeCode()]]))) {
+			$type_id = $this->getTypeID($row_id); 
+			if(is_array($policies = self::getHistoryTrackingCurrentValuePolicies($this->tableName(), ['restrictToTypes' => [$type_id]]))) {
 				foreach($policies as $policy => $policy_info) {
 					SearchResult::clearResultCacheForRow($this->tableName(), $row_id);
 					$h = $this->getHistory(['row_id' => $row_id, 'policy' => $policy, 'noCache' => true]);
@@ -823,13 +846,13 @@
 		public function updateDependentHistoryTrackingCurrentValues($options=null) {
 			if(!($row_id = caGetOption('row_id', $options, null)) && !($row_id = $this->getPrimaryKey())) { return false; }
 			$mode = caGetOption('mode', $options, null);
-			
-			if(is_array($policies = self::getDependentHistoryTrackingCurrentValuePolicies($this->tableName(), ['type_id' => $this->getTypeID()]))) {
+			$type_id = $this->getTypeID($row_id);
+
+			if(is_array($policies = self::getDependentHistoryTrackingCurrentValuePolicies($this->tableName(), ['type_id' => $type_id]))) {
 				 $table = $this->tableName();
 				 $num_updated = 0;
 				 foreach($policies as $policy => $policy_info) {
 				 	$rel_ids = $this->getRelatedItems($policy_info['table'], ['returnAs' => 'ids', 'row_ids' => [$row_id]]);
-				 	
 				 	// TODO: take restrictToRelationshipTypes into account
 				 	
 				 	// Only update if date field on this has changes
@@ -846,6 +869,7 @@
 							}
 						}
 				 	}
+				 	$date_has_changed = true;
 				 	if ($spec_has_date && !$date_has_changed && !$this->get('deleted')) { continue; }
 				 	if (!($t = Datamodel::getInstance($policy_info['table'], true))) { return null; }
 				 	
@@ -906,7 +930,7 @@
 		    if(!$policy) { $policy = $this->getInspectorHistoryTrackingDisplayPolicy('policy'); }
 		    if(!self::checkPolicyTypeRestrictions($policy, caGetOption('restrictToTypes', $options, []))) { return null; }
 		    
-		    if (is_array($history = $this->getHistory(['policy' => $policy, 'limit' => 1, 'currentOnly' => true, 'row_id' => caGetOption('row_id', $options, null)])) && (sizeof($history) > 0)) {
+		    if (is_array($history = $this->getHistory(['policy' => $policy, 'limit' => 1, 'currentOnly' => true, 'locale' => caGetOption('locale', $options, null), 'row_id' => caGetOption('row_id', $options, null)])) && (sizeof($history) > 0)) {
                 $current_value = array_shift(array_shift($history));
                 return is_array($current_value) ? $current_value : null;
             }
@@ -959,6 +983,7 @@
 		 *		limit = Only return a maximum number of history entries. [Default is null; no limit]
 		 *      showChildHistory = [Default is false]
 		 *		row_id = 
+		 *		locale_id = 
 		 *
 		 * @return array A list of life cycle events, indexed by historic timestamp for date of occurrrence. Each list value is an array of history entries.
 		 */
@@ -979,6 +1004,8 @@
 			$vs_cache_key = caMakeCacheKeyFromOptions(array_merge($pa_bundle_settings, $options, ['id' => $row_id]));
 		
 			$pb_no_cache 				= caGetOption('noCache', $options, false);
+			$locale 					= caGetOption('locale', $options, null);
+			
 			
 			// TODO: deal with proper clearing of cache
 			if (!$pb_no_cache && ExternalCache::contains($vs_cache_key, "historyTrackingContent")) { 
@@ -1108,7 +1135,7 @@
 							$va_history[$va_date['sortable']][] = [
 								'type' => 'ca_object_lots',
 								'id' => $vn_lot_id,
-								'display' => $qr_lots->getWithTemplate($vs_display_template),
+								'display' => $qr_lots->getWithTemplate($vs_display_template, ['locale' => $locale]),
 								'color' => $vs_color,
 								'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag('icon'),
 								'typename_singular' => $vs_typename = $va_lot_type_info[$vn_type_id]['name_singular'],
@@ -1136,7 +1163,7 @@
 				$va_loans = $qr->get("{$linking_table}.relation_id", ['returnAsArray' => true, 'restrictToRelationshipTypes' => caGetOption('ca_loans_showRelationshipTypes', $pa_bundle_settings, null)]);
 				$va_child_loans = [];
 				if(caGetOption('ca_loans_includeFromChildren', $pa_bundle_settings, false)) {
-					$va_child_loans = array_reduce($qr->getWithTemplate("<unit relativeTo='{$table}.children' delimiter=';'>^{$linking_table}.relation_id</unit>", ['returnAsArray' => true]), function($c, $i) { return array_merge($c, explode(';', $i)); }, []);
+					$va_child_loans = array_reduce($qr->getWithTemplate("<unit relativeTo='{$table}.children' delimiter=';'>^{$linking_table}.relation_id</unit>", ['returnAsArray' => true, 'locale' => $locale]), function($c, $i) { return array_merge($c, explode(';', $i)); }, []);
 					if ($pb_show_child_history) { $va_loans = array_merge($va_loans, $va_child_loans); }
 				}
 				if(is_array($va_loan_types = caGetOption('ca_loans_showTypes', $pa_bundle_settings, null)) && is_array($va_loans)) {	
@@ -1179,9 +1206,16 @@
                                 foreach($va_date_elements_by_type[$vn_type_id] as $vs_date_element) {
                                     $va_date_bits = explode('.', $vs_date_element);
                                     $vs_date_spec = (Datamodel::tableExists($va_date_bits[0])) ? $vs_date_element : "ca_loans.{$vs_date_element}";
+                                    
+                                    $d = $qr_loans->get($vs_date_spec, array('sortable' => true));
+                                    $b = explode("/", $d);
+                                    if(($b[0] <= $vn_current_date) && ($b[1] > $vn_current_date)) { 
+                                    	$b[0] = $vn_current_date;
+                                    	$d = join('/', $b);
+                                    }
                                     $va_dates[] = array(
-                                        'sortable' => $qr_loans->get($vs_date_spec, array('sortable' => true)),
-                                        'bounds' => explode("/", $qr_loans->get($vs_date_spec, array('sortable' => true))),
+                                        'sortable' => $d,
+                                        'bounds' => $b,
                                         'display' => $qr_loans->get($vs_date_spec)
                                     );
                                 }
@@ -1212,7 +1246,7 @@
 							$va_history[$va_date['sortable']][] = array(
 								'type' => 'ca_loans',
 								'id' => $vn_loan_id,
-								'display' => $qr_loans->getWithTemplate(($vn_rel_row_id != $row_id) ? $vs_child_display_template : $vs_display_template),
+								'display' => $qr_loans->getWithTemplate(($vn_rel_row_id != $row_id) ? $vs_child_display_template : $vs_display_template, ['locale' => $locale]),
 								'color' => $vs_color,
 								'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag('icon'),
 								'typename_singular' => $vs_typename = $va_loan_type_info[$vn_type_id]['name_singular'],
@@ -1243,7 +1277,7 @@
 				$va_movements = $qr->get("{$linking_table}.relation_id", ['returnAsArray' => true, 'restrictToRelationshipTypes' => caGetOption('ca_movements_showRelationshipTypes', $pa_bundle_settings, null)]);
 				$va_child_movements = [];
 				if(caGetOption('ca_movements_includeFromChildren', $pa_bundle_settings, false)) {
-					$va_child_movements = array_reduce($qr->getWithTemplate("<unit relativeTo='{$table}.children' delimiter=';'>^{$linking_table}.relation_id</unit>", ['returnAsArray' => true]), function($c, $i) { return array_merge($c, explode(';', $i)); }, []);
+					$va_child_movements = array_reduce($qr->getWithTemplate("<unit relativeTo='{$table}.children' delimiter=';'>^{$linking_table}.relation_id</unit>", ['returnAsArray' => true, 'locale' => $locale]), function($c, $i) { return array_merge($c, explode(';', $i)); }, []);
 					if ($pb_show_child_history) { $va_movements = array_merge($va_movements, $va_child_movements); }
 				}
 				if(is_array($va_movement_types = caGetOption('ca_movements_showTypes', $pa_bundle_settings, null)) && is_array($va_movements)) {	
@@ -1320,7 +1354,7 @@
 							$va_history[$va_date['sortable']][] = array(
 								'type' => 'ca_movements',
 								'id' => $vn_movement_id,
-								'display' => $qr_movements->getWithTemplate(($vn_rel_row_id != $row_id) ? $vs_child_display_template : $vs_display_template),
+								'display' => $qr_movements->getWithTemplate(($vn_rel_row_id != $row_id) ? $vs_child_display_template : $vs_display_template, ['locale' => $locale]),
 								'color' => $vs_color,
 								'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag('icon'),
 								'typename_singular' => $vs_typename = $va_movement_type_info[$vn_type_id]['name_singular'],
@@ -1360,7 +1394,7 @@
 			
 					foreach($va_occurrence_types as $vn_type_id) {
 						if(caGetOption("ca_occurrences_{$va_occurrence_type_info[$vn_type_id]['idno']}_includeFromChildren", $pa_bundle_settings, false)) {
-							$va_child_occurrences = array_reduce($qr->getWithTemplate("<unit relativeTo='{$table}.children' delimiter=';'>^{$linking_table}.relation_id</unit>", ['returnAsArray' => true]), function($c, $i) { return array_merge($c, explode(';', $i)); }, []);
+							$va_child_occurrences = array_reduce($qr->getWithTemplate("<unit relativeTo='{$table}.children' delimiter=';'>^{$linking_table}.relation_id</unit>", ['returnAsArray' => true, 'locale' => $locale]), function($c, $i) { return array_merge($c, explode(';', $i)); }, []);
 							if ($pb_show_child_history) { $va_occurrences = array_merge($va_occurrences, $va_child_occurrences); }
 						}
 					}
@@ -1437,7 +1471,7 @@
 							$va_history[$va_date['sortable']][] = array(
 								'type' => 'ca_occurrences',
 								'id' => $vn_occurrence_id,
-								'display' => $qr_occurrences->getWithTemplate(($vn_rel_row_id != $row_id) ? $vs_child_display_template : $vs_display_template),
+								'display' => $qr_occurrences->getWithTemplate(($vn_rel_row_id != $row_id) ? $vs_child_display_template : $vs_display_template, ['locale' => $locale]),
 								'color' => $vs_color,
 								'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag('icon'),
 								'typename_singular' => $vs_typename = $va_occurrence_type_info[$vn_type_id]['name_singular'],
@@ -1475,7 +1509,7 @@
 			
 					foreach($va_entity_types as $vn_type_id) {
 						if(caGetOption("ca_entities_{$va_entity_type_info[$vn_type_id]['idno']}_includeFromChildren", $pa_bundle_settings, false)) {
-							$va_child_entities = array_reduce($qr->getWithTemplate("<unit relativeTo='{$table}.children' delimiter=';'>^{$linking_table}.relation_id</unit>", ['returnAsArray' => true]), function($c, $i) { return array_merge($c, explode(';', $i)); }, []);
+							$va_child_entities = array_reduce($qr->getWithTemplate("<unit relativeTo='{$table}.children' delimiter=';'>^{$linking_table}.relation_id</unit>", ['returnAsArray' => true, 'locale' => $locale]), function($c, $i) { return array_merge($c, explode(';', $i)); }, []);
 							if ($pb_show_child_history) { $va_entities = array_merge($va_entities, $va_child_entities); }
 						}
 					}
@@ -1552,7 +1586,7 @@
 							$va_history[$va_date['sortable']][] = array(
 								'type' => 'ca_entities',
 								'id' => $vn_entity_id,
-								'display' => $qr_entities->getWithTemplate(($vn_rel_row_id != $row_id) ? $vs_child_display_template : $vs_display_template),
+								'display' => $qr_entities->getWithTemplate(($vn_rel_row_id != $row_id) ? $vs_child_display_template : $vs_display_template, ['locale' => $locale]),
 								'color' => $vs_color,
 								'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag('icon'),
 								'typename_singular' => $vs_typename = $va_entity_type_info[$vn_type_id]['name_singular'],
@@ -1583,7 +1617,7 @@
 				$va_collections = $qr->get("{$linking_table}.relation_id", ['returnAsArray' => true, 'restrictToRelationshipTypes' => caGetOption('ca_collections_showRelationshipTypes', $pa_bundle_settings, null)]);
 				$va_child_collections = [];
 				if(caGetOption('ca_collections_includeFromChildren', $pa_bundle_settings, false)) {
-					$va_child_collections = array_reduce($qr->getWithTemplate("<unit relativeTo='{$table}.children' delimiter=';'>^{$linking_table}.relation_id</unit>", ['returnAsArray' => true]), function($c, $i) { return array_merge($c, explode(';', $i)); }, []);    
+					$va_child_collections = array_reduce($qr->getWithTemplate("<unit relativeTo='{$table}.children' delimiter=';'>^{$linking_table}.relation_id</unit>", ['returnAsArray' => true, 'locale' => $locale]), function($c, $i) { return array_merge($c, explode(';', $i)); }, []);    
 					if($pb_show_child_history) { $va_collections = array_merge($va_collections, $va_child_collections); }
 				}
 				if(is_array($va_collection_types = caGetOption('ca_collections_showTypes', $pa_bundle_settings, null)) && is_array($va_collections)) {	
@@ -1661,7 +1695,7 @@
 							$va_history[$va_date['sortable']][] = array(
 								'type' => 'ca_collections',
 								'id' => $vn_collection_id,
-								'display' => $qr_collections->getWithTemplate(($vn_rel_row_id != $row_id) ? $vs_child_display_template : $vs_display_template),
+								'display' => $qr_collections->getWithTemplate(($vn_rel_row_id != $row_id) ? $vs_child_display_template : $vs_display_template, ['locale' => $locale]),
 								'color' => $vs_color,
 								'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag('icon'),
 								'typename_singular' => $vs_typename = $va_collection_type_info[$vn_type_id]['name_singular'],
@@ -1692,7 +1726,7 @@
 				$va_objects = $qr->get("{$linking_table}.relation_id", ['returnAsArray' => true, 'restrictToRelationshipTypes' => caGetOption('ca_objects_showRelationshipTypes', $pa_bundle_settings, null)]);
 				$va_child_objects = [];
 				if(caGetOption('ca_objects_includeFromChildren', $pa_bundle_settings, false)) {
-					$va_child_objects = array_reduce($qr->getWithTemplate("<unit relativeTo='{$table}.children' delimiter=';'>^{$linking_table}.relation_id</unit>", ['returnAsArray' => true]), function($c, $i) { return array_merge($c, explode(';', $i)); }, []);    
+					$va_child_objects = array_reduce($qr->getWithTemplate("<unit relativeTo='{$table}.children' delimiter=';'>^{$linking_table}.relation_id</unit>", ['returnAsArray' => true, 'locale' => $locale]), function($c, $i) { return array_merge($c, explode(';', $i)); }, []);    
 					if($pb_show_child_history) { $va_objects = array_merge($va_objects, $va_child_objects); }
 				}
 				if(is_array($va_object_types = caGetOption('ca_objects_showTypes', $pa_bundle_settings, null)) && is_array($va_objects)) {	
@@ -1770,7 +1804,7 @@
 							$va_history[$va_date['sortable']][] = array(
 								'type' => 'ca_objects',
 								'id' => $vn_object_id,
-								'display' => $qr_objects->getWithTemplate(($vn_rel_row_id != $row_id) ? $vs_child_display_template : $vs_display_template),
+								'display' => $qr_objects->getWithTemplate(($vn_rel_row_id != $row_id) ? $vs_child_display_template : $vs_display_template, ['locale' => $locale]),
 								'color' => $vs_color,
 								'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag('icon'),
 								'typename_singular' => $vs_typename = $va_object_type_info[$vn_type_id]['name_singular'],
@@ -1802,7 +1836,7 @@
 
 				$va_child_locations = [];
 				if(caGetOption('ca_storage_locations_includeFromChildren', $pa_bundle_settings, false)) {
-					$va_child_locations = array_reduce($qr->getWithTemplate("<unit relativeTo='{$table}.children' delimiter=';'>^{$linking_table}.relation_id</unit>", ['returnAsArray' => true]), function($c, $i) { return array_merge($c, explode(';', $i)); }, []);
+					$va_child_locations = array_reduce($qr->getWithTemplate("<unit relativeTo='{$table}.children' delimiter=';'>^{$linking_table}.relation_id</unit>", ['returnAsArray' => true, 'locale' => $locale]), function($c, $i) { return array_merge($c, explode(';', $i)); }, []);
 					if ($pb_show_child_history) { $va_locations = array_merge($va_locations, $va_child_locations); }
 				}
 
@@ -1860,13 +1894,13 @@
 							$vs_color = caGetOption("ca_storage_locations_{$va_location_type_info[$vn_type_id]['idno']}_color", $pa_bundle_settings, 'ffffff');
 						}
 						$vs_color = str_replace("#", "", $vs_color);
-				
+			
 						$o_media_coder->setMedia($va_location_type_info[$vn_type_id]['icon']);
 						$va_history[$va_date['sortable']][] = array(
 							'type' => 'ca_storage_locations',
 							'id' => $vn_location_id,
 							'relation_id' => $relation_id,
-							'display' => $qr_locations->getWithTemplate(($vn_rel_row_id != $row_id) ? $vs_child_display_template : $vs_display_template),
+							'display' => $qr_locations->getWithTemplate(($vn_rel_row_id != $row_id) ? $vs_child_display_template : $vs_display_template, ['locale' => $locale]),
 							'color' => $vs_color,
 							'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag('icon'),
 							'typename_singular' => $vs_name_singular, 
@@ -1911,7 +1945,7 @@
 					$va_history[$vn_date.(int)$row_id][] = array(
 						'type' => 'ca_objects_deaccession',
 						'id' => $row_id,
-						'display' => $qr->getWithTemplate($vs_display_template),
+						'display' => $qr->getWithTemplate($vs_display_template, ['locale' => $locale]),
 						'color' => $vs_color,
 						'icon_url' => '',
 						'typename_singular' => $vs_name_singular, 
@@ -1945,7 +1979,7 @@
 							$va_history[$vn_date.$vn_id][] = array(
 								'type' => 'ca_objects_deaccession',
 								'id' => $vn_id,
-								'display' => $q->getWithTemplate($vs_display_template),
+								'display' => $q->getWithTemplate($vs_display_template, ['locale' => $locale]),
 								'color' => $vs_color,
 								'icon_url' => '',
 								'typename_singular' => $vs_name_singular, 
@@ -1975,7 +2009,7 @@
                     foreach($by_date as $i => $h) {
                         if(isset($deleted[$h['tracked_table_num']][$h['tracked_row_id']]) || isset($deleted[$h['current_table_num']][$h['current_row_id']])) {
                             unset($va_history[$d][$i]);
-                            if(!sizeof($va_history[$d])) { unset($va_history[$d]); }
+                            if(!is_array($va_history) || !is_array($va_history[$d]) || !sizeof($va_history[$d])) { unset($va_history[$d]); }
                         }
                         break(2);
                     }
@@ -2028,7 +2062,10 @@
 		 */
 		public function getContents(?string $policy, array $options=null) {
 			if(!($row_id = caGetOption('row_id', $options, $this->getPrimaryKey()))) { return null; }
-			return $this->getContentsForIDs($policy, [$row_id], $options);
+			
+			$ids = caGetOption('expandHierarchically', $options, false) ? $this->getHierarchy($row_id, ['idsOnly' => true]) : [$row_id];
+			if(!is_array($ids) || !sizeof($ids)) { return null; }
+			return $this->getContentsForIDs($policy, $ids, $options);
 		}
 		# ------------------------------------------------------
 		/**
@@ -2050,9 +2087,9 @@
 			
 			$ids = array_map(function($v) { return $v['row_id']; }, $values);
 			if(caGetOption('idsOnly', $options, false)) { return $ids; }
-			$row = array_shift($values);
+			if(!is_array($row = array_shift($values))) { return null; }
 	
-			if(!($table_name = Datamodel::getTableName($row['table_num']))) { return null; }
+			if(!isset($row['table_num']) || !($table_name = Datamodel::getTableName($row['table_num']))) { return null; }
 			return caMakeSearchResult($table_name, $ids, ['transaction' => $this->getTransaction()]);
 		}
 		# ------------------------------------------------------
@@ -2370,7 +2407,7 @@
 			$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
 			$o_view->setVar('t_subject', $this);
 		
-			$o_view->setVar('qr_result', $this->getContents($policy));	
+			$o_view->setVar('qr_result', $this->getContents($policy, $pa_bundle_settings));	
 		
 			return $o_view->render('history_tracking_current_contents.php');
 		}
@@ -2508,7 +2545,15 @@
 						
 							$va_path_components = caGetOption('pathComponents', $pa_options, null);
 							if (is_array($va_path_components) && $va_path_components['subfield_name']) {
-								if (($t_loc = Datamodel::getInstanceByTableName($va_current_location['type'], true)) && $t_loc->load($va_current_location['id'])) {
+								$path = Datamodel::getPath($this->tableName(), $va_current_location['type']);
+								if(!is_array($path) || (sizeof($path) !== 3)) { return null; }
+								$path = array_keys($path);
+								if($va_path_components['subfield_name'] === $path[1]) { // is ref to interstitial
+									if (($t_rel = Datamodel::getInstanceByTableName($path[1], true)) && $t_rel->load($va_current_location['relation_id'])) {
+										
+										return $t_rel->get(join('.', array_merge([$path[1]], array_slice($va_path_components['components'], 3))), ['convertCodesToDisplayText' => true]);
+									}
+								} elseif (($t_loc = Datamodel::getInstanceByTableName($va_current_location['type'], true)) && $t_loc->load($va_current_location['id'])) {
 									return $t_loc->get($va_current_location['type'].'.'.$va_path_components['subfield_name']);
 								}
 							} 
@@ -2520,13 +2565,16 @@
 				case 'history_tracking_current_contents':
 					if (method_exists($this, "getContents")) {
 					    $policy = caGetOption('policy', $pa_options, null);
-						if ($qr = $this->getContents($policy, ['row_id' => $pn_row_id])) { 
-							$contents = [];
-							$p = self::getHistoryTrackingCurrentValuePolicy($policy);
-							while($qr->nextHit()) {
-							    $contents[] = $qr->getWithTemplate("<l>^".$p['table'].".preferred_labels</l>");
+						$p = self::getHistoryTrackingCurrentValuePolicy($policy);
+						$contents_config = caGetOption('contents', $p, []);
+						$pa_options['expandHierarchically'] = caGetOption('expandHierarchically', $contents_config, false);
+						if ($qr = $this->getContents($policy, ['row_id' => $pn_row_id], $pa_options)) {
+							$template = caGetOption('template', $contents_config, "<l>$p[table].preferred_labels </l>");
+							$delimiter = caGetOption('delimiter', $contents_config, "; ");
+							while($qr->nextHit()) { 
+								$contents[] = $qr->getWithTemplate($template);
 							}
-							return join("; ", $contents);
+							return join($delimiter, $contents);
 						}
 					}
 					return null;

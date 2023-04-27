@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,7 +39,7 @@ class SimpleController extends BaseServiceController {
 			$va_content = SimpleService::dispatch($ps_endpoint, $this->getRequest());
 		} catch(Exception $e) {
 			$this->getView()->setVar('errors', array($e->getMessage()));
-			$this->render('json_error.php');
+			$this->render('json/json_error.php');
 			return;
 		}
 
@@ -48,7 +48,7 @@ class SimpleController extends BaseServiceController {
 		}
 
 		$this->getView()->setVar('content', $va_content);
-		$this->render('json.php');
+		$this->render('json/json.php');
 	}
 	# -------------------------------------------------------
 }

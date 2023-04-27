@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2021 Whirl-i-Gig
+ * Copyright 2000-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1173,7 +1173,7 @@ class BaseModel extends BaseObject {
 			$vs_prop = caEscapeForXML($vs_prop);
 		}
 
-		if (!(isset($pa_options["DONT_STRIP_SLASHES"]) && $pa_options["DONT_STRIP_SLASHES"])) {
+		if (!caGetOption("DONT_STRIP_SLASHES", $pa_options, true)) {
 			if (is_string($vs_prop)) { $vs_prop = stripSlashes($vs_prop); }
 		}
 		
@@ -1411,6 +1411,7 @@ class BaseModel extends BaseObject {
 	 *
 	 * for parent_id field:
 	 *	- treatParentIDAsIdno: force parent_id value to be used as idno lookup rather than a primary key value
+	 *  - parentIDElement: do lookup on alternative field
 	 */
 	public function set($pa_fields, $pm_value="", $pa_options=null) {
 		$this->errors = array();
@@ -1421,6 +1422,11 @@ class BaseModel extends BaseObject {
 		foreach($pa_fields as $vs_field => $vm_value) {
 			if (strpos($vs_field, '.') !== false) { $va_tmp = explode('.', $vs_field); $vs_field = $va_tmp[1]; }
 			if (array_key_exists($vs_field, $this->FIELDS)) {
+				// Convert locale codes to locale_id values
+				if(($vs_field === 'locale_id') && !is_numeric($vm_value)) {
+					$vm_value = ca_locales::codeToID($vm_value);
+				}
+			
 				$pa_fields_type = $this->getFieldInfo($vs_field,"FIELD_TYPE");
 				$pb_need_reload = false;
 				if (!$this->verifyFieldValue($vs_field, $vm_value, $pb_need_reload)) {
@@ -1440,19 +1446,50 @@ class BaseModel extends BaseObject {
 						}
 						
 						if (($vs_field == $this->HIERARCHY_PARENT_ID_FLD) && ((strlen($vm_value) > 0) && (!is_numeric($vm_value) || caGetOption('treatParentIDAsIdno', $pa_options, false)))) {
-							if(is_array($va_ids = call_user_func_array($this->tableName()."::find", array(array('idno' => $vm_value, 'deleted' => 0), array('returnAs' => 'ids', 'transaction' => $this->getTransaction())))) && sizeof($va_ids)) {
+							$cr = ['idno' => $vm_value, 'deleted' => 0];
+							if ($parent_id_element = caGetOption('parentIDElement', $pa_options, null)) {
+								$ptmp = explode('.', $parent_id_element);
+								switch(sizeof($ptmp)) {
+									case 3:
+										if($ptmp[0] === $this->tableName()) {
+											$cr = [[$ptmp[1] => [$ptmp[2] => $vm_value]], 'deleted' => 0];
+										} else {
+											$this->postError(1103, _t('parentIDElement container reference does not start with current table; reference was %1', $parent_id_element), 'BaseModel->set()', $this->tableName().'.'.$vs_field);
+										}
+										break;
+									case 2:
+										if($ptmp[0] === $this->tableName()) {
+											$cr = [[$ptmp[1] => $vm_value], 'deleted' => 0];
+										} else {
+											$cr = [[$ptmp[0] => [$ptmp[1] => $vm_value]], 'deleted' => 0];
+										}
+										break;
+									case 1:
+										$cr = [[$parent_id_element => $vm_value], 'deleted' => 0];
+										break;
+									default:
+										$this->postError(1103, _t('parentIDElement container reference is not valid; identifier was matched on instead; reference was %1', $parent_id_element), 'BaseModel->set()', $this->tableName().'.'.$vs_field);
+										break;
+								}
+							}
+							if(is_array($va_ids = call_user_func_array($this->tableName()."::find", [$cr, ['returnAs' => 'ids', 'transaction' => $this->getTransaction()]])) && sizeof($va_ids)) {
 								$vm_value = array_shift($va_ids);
 							}
 						}
 						if (($vm_value !== "") || (($this->getFieldInfo($vs_field, "IS_NULL") && ($vm_value == "")))) {
 							if ($vm_value) {
 								if (($vs_list_code = $this->getFieldInfo($vs_field, "LIST_CODE")) && (!is_numeric($vm_value))) {	// translate ca_list_item idno's into item_ids if necessary
-									if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) {
+									$t_list = new ca_lists();
+									if (($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) || ($vn_id = $t_list->getItemIDFromListByLabel($vs_list_code, $vm_value))) { // 
 										$vm_value = $vn_id;
 									} else {
 										$this->postError(1103, _t('Value %1 is not in list %2', $vm_value, $vs_list_code), 'BaseModel->set()', $this->tableName().'.'.$vs_field);
 										return false;
 									}
+								} elseif (($vs_list_code = $this->getFieldInfo($vs_field, "LIST")) && in_array($vs_field, ['access', 'status'], true) && (!is_numeric($vm_value))) {
+									$t_list = Datamodel::getInstance('ca_lists', true);
+									$item = $t_list->getItemFromListByItemID($vs_list_code, $vn_id);
+									$vm_value = $item['item_value'] ?? null;
 								} else {
 									$vm_orig_value = $vm_value;
 									$vm_value = preg_replace("/[^\d\-\.]+/", "", $vm_value); # strip non-numeric characters
@@ -1659,7 +1696,7 @@ class BaseModel extends BaseObject {
 						break;
 					case (FT_TEXT):
 						$vm_value = (string)$vm_value;
-						if (is_string($vm_value)) {
+						if (is_string($vm_value) && isset($pa_options['stripSlashes']) && ($pa_options['stripSlashes'])) {
 							$vm_value = stripSlashes($vm_value);
 						}
 						
@@ -1702,9 +1739,6 @@ class BaseModel extends BaseObject {
 						}
 						break;
 					case (FT_PASSWORD):
-						if ((isset($pa_options['purify']) && ($pa_options['purify'])) || ((bool)$this->opb_purify_input) || ($this->getFieldInfo($vs_field, "PURIFY"))) {
-							$vm_value = BaseModel::getPurifier()->purify((string)$vm_value);
-						}
 						if (!$vm_value) { // store blank passwords as blank,
 							$this->_FIELD_VALUES[$vs_field] = "";
 							$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
@@ -2072,9 +2106,9 @@ class BaseModel extends BaseObject {
 		}
 
 		if ($qr_res->nextRow()) {
+			$va_row = $qr_res->getRow();
 			foreach($this->FIELDS as $vs_field => $va_attr) {
 				$vs_cur_value = isset($this->_FIELD_VALUES[$vs_field]) ? $this->_FIELD_VALUES[$vs_field] : null;
-				$va_row = $qr_res->getRow();
 				switch($va_attr["FIELD_TYPE"]) {
 					case FT_DATERANGE:
 					case FT_HISTORIC_DATERANGE:
@@ -3950,9 +3984,9 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		if (!is_array($va_media_info[$ps_version])) { return null; }
 
         if ($alt_text_template = Configuration::load()->get($this->tableName()."_alt_text_template")) { 
-		    $alt_text = $this->getWithTemplate($alt_text_template);
+		    $alt_text = $this->getWithTemplate($alt_text_template, ['highlighting' => false]);
 		} elseif(is_a($this, "LabelableBaseModelWithAttributes")) {
-		    $alt_text = $this->get($this->tableName().".preferred_labels");
+		    $alt_text = $this->get($this->tableName().".preferred_labels", ['highlighting' => false]);
 		} else {
 		    $alt_text = null;
 		}
@@ -4394,7 +4428,6 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		} else {
 			// Don't try to process files when no file is actually set
 			if(isset($this->_SET_FILES[$ps_field]['tmp_name']) && (isUrl($this->_SET_FILES[$ps_field]['tmp_name']) || is_readable($this->_SET_FILES[$ps_field]['tmp_name']))) { 
-				$o_tq = new TaskQueue();
 				$o_media_proc_settings = new MediaProcessingSettings($this, $ps_field);
 		
 				//
@@ -5114,6 +5147,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 							$vs_sql .= " ".$vs_content_field_name." = ".$this->_FIELD_VALUES[$vs_content_field_name].",";
 						}
 					
+						// Index text locations in PDF
 						if(is_array($va_locs = $m->getExtractedTextLocations())) {
 							MediaContentLocationIndexer::clear($this->tableNum(), $this->getPrimaryKey());
 							foreach($va_locs as $vs_content => $va_loc_list) {
@@ -5122,6 +5156,21 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 								}
 							}
 							MediaContentLocationIndexer::write();
+						}
+						
+						// Queue transcription task
+						if(caTranscribeAVMedia($input_mimetype)) {	// TODO: check mimetypes
+							$o_tq->addTask(
+								'mediaTranscription',
+								array(
+									"TABLE" => $this->tableName(), "FIELD" => $ps_field,
+									"PK" => $this->primaryKey(), "PK_VAL" => $this->getPrimaryKey(),
+								
+									"INPUT_MIMETYPE" => $input_mimetype,
+								
+									"OPTIONS" => []
+								),
+								["priority" => 200, "entity_key" => md5(join("/", [$this->tableName(), $ps_field, $this->getPrimaryKey()])), "row_key" => join("/", array($this->tableName(), $this->getPrimaryKey())), 'user_id' => $AUTH_CURRENT_USER_ID]);	
 						}
 					} else {
 						# error - invalid media
@@ -6009,7 +6058,17 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				if (!is_array($value)) { $value = explode(":",$value); }
 				if (!isset($va_attr['LIST_MULTIPLE_DELIMITER']) || !($vs_list_multiple_delimiter = $va_attr['LIST_MULTIPLE_DELIMITER'])) { $vs_list_multiple_delimiter = ';'; }
 				foreach($value as $v) {
-					if ((sizeof($value) > 1) && (!$v)) continue;
+					if ((sizeof($value) > 1) && (!strlen($v))) continue;
+					
+					if(in_array($field, ['access', 'status'], true) && !is_numeric($v)) {
+						// transform entries to item values
+						$t_list = Datamodel::getInstance('ca_lists', true);
+						if (($item_id = ca_lists::getItemID($va_attr['LIST'], $v)) || ($item_id = $t_list->getItemIDFromListByLabel($va_attr['LIST'], $v))) { // 
+							$item = $t_list->getItemFromListByItemID($va_attr['LIST'], $item_id);
+							print_R($item);
+							$v = $item['item_value'] ?? null;
+						}
+					}
 
 					if ($va_attr['DISPLAY_TYPE'] == DT_LIST_MULTIPLE) {
 						$va_tmp = explode($vs_list_multiple_delimiter, $v);
@@ -6357,6 +6416,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					'name' => $n.(caGetOption('autocomplete', $pa_options, false) ? "_autocomplete" : ""),
 					'id' => caGetOption('id', $pa_options, str_replace(".", "_", caGetOption('name', $pa_options, $ps_field))).(caGetOption('autocomplete', $pa_options, false) ? "_autocomplete" : ""),
 					'nullOption' => '-',
+					'force' => true,
 					'classname' => (isset($pa_options['class']) ? $pa_options['class'] : ''),
 					'value' => $value,     
 					'width' => (isset($pa_options['width']) && ($pa_options['width'] > 0)) ? $pa_options['width'] : 30, 
@@ -6416,6 +6476,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						'id' => str_replace(".", "_", $ps_field),
 						'classname' => (isset($pa_options['class']) ? $pa_options['class'] : ''),
 						'value' => $value,
+						'force' => true,
 						'width' => (isset($pa_options['width']) && ($pa_options['width'] > 0)) ? $pa_options['width'] : 30, 
 						'height' => (isset($pa_options['height']) && ($pa_options['height'] > 0)) ? $pa_options['height'] : 1, 
 						'no_tooltips' => true,
@@ -8027,7 +8088,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			while($qr_sort_res->nextHit()) {
 				$va_key = array();
 				foreach($pa_sort as $vs_sort) {
-					$va_key[] = str_pad(substr($qr_sort_res->get($vs_sort), 10), 10, " ", STR_PAD_LEFT);
+					$k = trim(mb_strtolower(mb_substr($qr_sort_res->get($vs_sort), 0, 10)));
+					$va_key[] = str_pad($k, 10, " ", STR_PAD_RIGHT);
 				}
 				$va_sort_keys[$vn_i] = join("", $va_key)."".str_pad("{$vn_i}", 7, " ", STR_PAD_LEFT);
 				$vn_i++;
@@ -8236,7 +8298,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		} while(($qr_level->numRows() > 0) && (sizeof($va_level_row_ids))) ;
 		
 		$va_child_row_ids = array_values(array_unique($va_child_row_ids));
-		if (!sizeof($va_child_row_ids)) { return null; }
+		if (!sizeof($va_child_row_ids)) { return []; }
 		
 		$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
 		
@@ -8415,7 +8477,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				'select_item_text', 'hide_select_if_only_one_option', 'field_errors', 'display_form_field_tips', 'form_name',
 				'no_tooltips', 'tooltip_namespace', 'extraLabelText', 'width', 'height', 'label', 'list_code', 'hide_select_if_no_options', 'id',
 				'lookup_url', 'progress_indicator', 'error_icon', 'maxPixelWidth', 'displayMediaVersion', 'FIELD_TYPE', 'DISPLAY_TYPE', 'choiceList',
-				'readonly', 'description', 'hidden', 'checkAccess', 'usewysiwygeditor', 'placeholder'
+				'readonly', 'description', 'hidden', 'checkAccess', 'usewysiwygeditor', 'placeholder', 'force'
 			) 
 			as $vs_key) {
 			if(!isset($pa_options[$vs_key])) { $pa_options[$vs_key] = null; }
@@ -8454,9 +8516,6 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		if ($va_parsed_height['type'] == 'pixels') {
 			$va_dim_styles[] = "height: ".$va_parsed_height['dimension']."px;";
 		}
-		//if ($vn_max_pixel_width) {
-		//	$va_dim_styles[] = "max-width: {$vn_max_pixel_width}px;";
-		//}
 					
 		$vs_dim_style = trim(join(" ", $va_dim_styles));
 		$vs_field_label = (isset($pa_options['label']) && (strlen($pa_options['label']) > 0)) ? $pa_options['label'] : $va_attr["LABEL"];
@@ -8553,7 +8612,7 @@ $pa_options["display_form_field_tips"] = true;
 			}
 
 			# --- Return hidden fields
-			if (($va_attr["DISPLAY_TYPE"] == DT_HIDDEN) || (caGetOption('hidden', $pa_options, false))) {
+			if ((($va_attr["DISPLAY_TYPE"] == DT_HIDDEN) && !$pa_options['force']) || (caGetOption('hidden', $pa_options, false))) {
 				return '<input type="hidden" name="'.$pa_options["name"].'" value="'.$this->escapeHTML($vm_field_value).'"/>';
 			}
 
@@ -9481,6 +9540,11 @@ $pa_options["display_form_field_tips"] = true;
 					if($t_item_rel->hasField($f = $t_item_rel->getTypeFieldName())) { $t_item_rel->set($f, $pn_type_id); }		// TODO: verify type_id based upon type_id's of each end of the relationship
 					if(!is_null($ps_effective_date)){ $t_item_rel->set('effective_date', $ps_effective_date); }
 					if(!is_null($ps_source_info)){ $t_item_rel->set("source_info",$ps_source_info); }
+					
+					if(!is_null($is_primary = caGetOption('is_primary', $pa_options, null)) && $t_item_rel->hasField('is_primary')) {
+						$t_item_rel->set('is_primary', $is_primary);	
+					}
+					
 					$t_item_rel->insert();
 					
 					if ($t_item_rel->numErrors() > 0) {
@@ -9594,7 +9658,9 @@ $pa_options["display_form_field_tips"] = true;
 				return false;
 			}
 			if ($t_item_rel->load($pn_relation_id)) {
-				
+				if(!in_array($ps_direction, ['ltor', 'rtol'], true)) {	// if direction is not set preserve current direction
+					$ps_direction = ($t_item_rel->get($t_item_rel->getLeftTableFieldName()) == $this->getPrimaryKey()) ? 'ltor' : 'rtol';
+				}
 				if ($ps_direction == 'rtol') {
 					$t_item_rel->set($t_item_rel->getRightTableFieldName(), $this->getPrimaryKey());
 					$t_item_rel->set($t_item_rel->getLeftTableFieldName(), $pn_rel_id);
@@ -9781,6 +9847,15 @@ $pa_options["display_form_field_tips"] = true;
 	public function removeRelationships($pm_rel_table_name_or_num, $pm_relationship_type_id=null, $pa_options=null) {
 		if (!($vn_row_id = $this->getPrimaryKey())) { return null; }
 		if(!($va_rel_info = $this->_getRelationshipInfo($pm_rel_table_name_or_num))) { return null; }
+		
+		// Is this a many-one? (Eg. ca_objects <= ca_object_lots)
+		if(sizeof($va_rel_info['path']) == 2) {
+			if(isset($va_rel_info['rel_keys']['many_table']) && ($va_rel_info['rel_keys']['many_table'] === $this->tableName()) && ($key = $va_rel_info['rel_keys']['many_table_field'])) {
+				$this->set($key, null);
+				return $this->update();
+			}
+		}
+		
 		$t_item_rel = $va_rel_info['t_item_rel'];
 		if (!method_exists($t_item_rel, "isRelationship") || !$t_item_rel->isRelationship()){ return false; }
 		$va_sql_params = array();
@@ -10064,7 +10139,6 @@ $pa_options["display_form_field_tips"] = true;
 		
 		$sql_field_list = $t_item_rel->getFormFields(true, true, true);
 		$logical_field_list = $t_item_rel->getFormFields(true);
-			
 		$va_to_reindex_relations = array();
 		if ($t_item_rel->tableName() == $this->getSelfRelationTableName()) {
 			
@@ -10075,7 +10149,7 @@ $pa_options["display_form_field_tips"] = true;
 			$vs_right_field_name = $t_item_rel->getRightTableFieldName();
 			
 			$qr_res = $o_db->query("
-				SELECT ".join(', ', $sql_field_list)."
+				SELECT ".join(', ', array_map(function($v) { return "`{$v}`"; }, $sql_field_list))."
 				FROM ".$t_item_rel->tableName()." 
 				WHERE 
 					(({$vs_left_field_name} = ?) OR ({$vs_right_field_name} = ?))
@@ -11613,7 +11687,7 @@ $pa_options["display_form_field_tips"] = true;
 						continue; 
 					}
 					if (isset($pa_options['hasRepresentations']) && $pa_options['hasRepresentations']) {
-						if (!($va_reps = $qr_res->get('ca_object_representations.representation_id', array('returnAsArray' => true))) || !is_array($va_reps) || !sizeof($va_reps)) {
+						if (!($va_reps = $qr_res->get('ca_object_representations.representation_id', array('checkAccess' => $pa_options['checkAccess'] ?? null, 'returnAsArray' => true))) || !is_array($va_reps) || !sizeof($va_reps)) {
 							continue;
 						}
 					}
@@ -11802,11 +11876,11 @@ $pa_options["display_form_field_tips"] = true;
 		$vs_sql = "
 			SELECT {$vs_table_name}.* 
 			FROM {$vs_table_name}
-			INNER JOIN (SELECT CEIL(RAND() * (SELECT MAX(object_id) FROM {$vs_table_name})) AS id) AS x 
+			INNER JOIN (SELECT CEIL(RAND() * (SELECT MAX({$vs_primary_key}) FROM {$vs_table_name})) AS id) AS x 
 			{$vs_join_sql}
-			WHERE {$vs_table_name}.object_id >= x.id 
+			WHERE {$vs_table_name}.{$vs_primary_key} >= x.id 
 			".(sizeof($va_wheres) ? " AND " : "").join(" AND ", $va_wheres)."
-			ORDER BY {$vs_table_name}.object_id ASC 
+			ORDER BY {$vs_table_name}.{$vs_primary_key} ASC 
 			{$vs_limit_sql}
 		";
 		
@@ -11873,34 +11947,59 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
-	 * Returns number of records in table, filtering out those marked as deleted or those not meeting the specific access critera
+	 * Returns number of records in table, filtering out those marked as deleted or those not meeting the specific access critera.
 	 *
 	 * @param array $pa_access An option array of record-level access values to filter on. If omitted no filtering on access values is done.
-	 * @return int Number of records, or null if an error occurred.
+	 * @param array $options Options include:
+	 *		byType = Return counts broken out by type, 
+	 * @return mixed Number of record (integer), Array of counts indexed by type if byType option is set, or null if an error occurred.
 	 */
-	public function getCount($pa_access=null) {
+	public function getCount($pa_access=null, ?array $options=null) {
+		$by_type = caGetOption('byType', $options, false);
+		if($by_type && !$this->hasField('type_id')) { 
+			return null;
+		}
 		$o_db = new Db();
 		
 		$va_wheres = array();
 		if (is_array($pa_access) && sizeof($pa_access) && $this->hasField('access')) {
-			$va_wheres[] = "(access IN (".join(',', $pa_access)."))";
+			$va_wheres[] = "(t.access IN (".join(',', $pa_access)."))";
 		}
 		
 		if($this->hasField('deleted')) {
-			$va_wheres[] = '(deleted = 0)';
+			$va_wheres[] = '(t.deleted = 0)';
 		}
 		
 		$vs_where_sql = join(" AND ", $va_wheres);
 		
-		$qr_res = $o_db->query("
-			SELECT count(*) c
-			FROM ".$this->tableName()."
-			".(sizeof($va_wheres) ? ' WHERE ' : '')."
-			{$vs_where_sql}
-		");
+		if($by_type) {
+			$qr_res = $o_db->query("
+				SELECT count(*) c, t.type_id
+				FROM ".$this->tableName()." t
+				".(sizeof($va_wheres) ? ' WHERE ' : '')."
+				{$vs_where_sql}
+				GROUP BY t.type_id
+			");
 		
-		if ($qr_res->nextRow()) {
-			return (int)$qr_res->get('c');
+			$counts = [];
+			while ($qr_res->nextRow()) {
+				$counts[$qr_res->get('type_id')] = [
+					'type_id' => (int)$qr_res->get('type_id'),
+					'count' => (int)$qr_res->get('c')
+				];
+			}
+			return $counts;
+		} else {
+			$qr_res = $o_db->query("
+				SELECT count(*) c
+				FROM ".$this->tableName()." t
+				".(sizeof($va_wheres) ? ' WHERE ' : '')."
+				{$vs_where_sql}
+			");
+		
+			if ($qr_res->nextRow()) {
+				return (int)$qr_res->get('c');
+			}
 		}
 		return null;
 	}
@@ -12043,6 +12142,7 @@ $pa_options["display_form_field_tips"] = true;
 	 *		checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for <table_name>.hierarchy.preferred_labels and <table_name>.children.preferred_labels because these returns sets of items. For <table_name>.parent.preferred_labels, which returns a single row at most, you should do access checking yourself. (Everything here applies equally to nonpreferred_labels)
  	 *		restrictToTypes = Restrict returned items to those of the specified types. An array of list item idnos and/or item_ids may be specified. [Default is null]			 
  	 *		dontIncludeSubtypesInTypeRestriction = If restrictToTypes is set, by default the type list is expanded to include subtypes (aka child types). If set, no expansion will be performed. [Default is false] 
+ 	 *		includeDeleted = If set deleted rows are returned in result set. [Default is false]	 
  	 *		created = A valid date expression to use to limit returned results to those created within a date range. [Default is null]
  	 *		modified = A valid date expression to use to limit returned results to those modified within a date range. [Default is null]
  	 *
@@ -12169,6 +12269,28 @@ $pa_options["display_form_field_tips"] = true;
 			}
 		}
 		
+		// 
+		// Convert locale id
+		//
+		if($t_instance->hasField('locale_id') && isset($pa_values['locale_id']) && !is_numeric($pa_values['locale_id'])) {
+			$ids = array_reduce($pa_values['locale_id'], function($c, $i) { 
+				if(!is_numeric($i[1]) && strlen($i[1])) {
+					$c[] = $i[1];
+				}
+				return $c;
+			}, []);
+			if((is_array($ids) && sizeof($ids))) {
+				$ids = array_map(function($v) { return is_numeric($v) ? $v : ca_locales::codeToID($v); }, $ids);
+				if(is_array($pa_values['parent_id'])) {
+					foreach($pa_values['parent_id'] as $i => $v) {
+						if (isset($ids[$v[1]])) {
+							$pa_values['parent_id'][$i][1] = $ids[$v[1]];
+						}
+					}
+				}
+			}
+		}
+		
 		//
 		// Convert other intrinsic list references
 		//
@@ -12274,7 +12396,7 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		$vs_deleted_sql = '';
-		if ($t_instance->hasField('deleted')) { 
+		if (!caGetOption('includeDeleted', $pa_options, false) && $t_instance->hasField('deleted')) { 
 			$vs_deleted_sql = '(deleted = 0)'; 
 		}
 		$va_sql = [];
@@ -13082,11 +13204,25 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 * Evaluate expression in the context of the currently loaded row
+	 *
+	 * @param string $expression
+	 *
+	 * @return mixed Return value of expression
+	 */
+	public function evaluateExpression(string $expression) {
+		$tags = caGetTemplateTags($expression);
+		$data = [];
+		foreach($tags as $t) {
+			$data[$t] = $this->get($t);
+		}
+		return ExpressionParser::evaluate($expression, $data);
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
 	 * Destructor
 	 */
 	public function __destruct() {
-		//print "Destruct ".$this->tableName()."\n";
-		//print (memory_get_usage()/1024)." used in ".$this->tableName()." destructor\n";
 		unset($this->o_db);
 		unset($this->_CONFIG);
 		unset($this->_MEDIA_VOLUMES);

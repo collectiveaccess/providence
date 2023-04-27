@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -256,14 +256,32 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		parent::__construct($id, $options);	# call superclass constructor
 		$this->FIELDS['datatype']['BOUNDS_CHOICE_LIST'] = array_flip(ca_metadata_elements::getAttributeTypes());
 
-		if($pn_id) { $this->opa_element_settings = $this->get('settings'); }
+		if($id) { $this->loadSettings(); }
 	}
 	# ------------------------------------------------------
 	public function load($pm_id=null, $pb_use_cache = true) {
 		if ($vn_rc = parent::load($pm_id, $pb_use_cache)) {
-			$this->opa_element_settings = $this->get('settings');
+			$this->loadSettings();
 		}
 		return $vn_rc;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function loadSettings() : void {
+		$this->opa_element_settings = $this->get('settings');
+		
+		// Set data type default values if no setting value is present
+		if ($o_value = Attribute::getValueInstance($this->get('datatype'))) {
+			$available_settings = $o_value->getAvailableSettings($this->opa_element_settings) ?? [];
+		
+			foreach($available_settings as $setting => $setting_info) {
+				if(!isset($this->opa_element_settings[$setting])) {
+					$this->opa_element_settings[$setting] = $setting_info['default'] ?? null;
+				}
+			}
+		}
 	}
 	# ------------------------------------------------------
 	public function insert($pa_options=null) {
@@ -568,9 +586,9 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			# --------------------------------------------
 			case DT_FIELD:
 				if($va_properties["height"]==1){
-					$vs_return .= '<input name="'.$vs_input_name.'" type="text" size="'.$va_properties["width"].'" value="'.$this->getSetting($ps_setting).'" />'."\n";
+					$vs_return .= '<input name="'.$vs_input_name.'" id="'.$vs_input_name.'" type="text" size="'.$va_properties["width"].'" value="'.$this->getSetting($ps_setting).'" />'."\n";
 				} else if($va_properties["height"]>1){
-					$vs_return .= '<textarea name="'.$vs_input_name.'" cols="'.$va_properties["width"].'" rows="'.$va_properties["height"].'">'.$this->getSetting($ps_setting).'</textarea>'."\n";
+					$vs_return .= '<textarea name="'.$vs_input_name.'" id="'.$vs_input_name.'"  cols="'.$va_properties["width"].'" rows="'.$va_properties["height"].'">'.$this->getSetting($ps_setting).'</textarea>'."\n";
 				}
 				break;
 			# --------------------------------------------
@@ -579,18 +597,53 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 				break;
 			# --------------------------------------------
 			case DT_CHECKBOXES:
-				$va_attributes = array('value' => '1');
+				$attributes = ['value' => '1'];
 				if (trim($this->getSetting($ps_setting))) {
-					$va_attributes['checked'] = '1';
+					$attributes['checked'] = '1';
 				}
-				$vs_return .= caHTMLCheckboxInput($vs_input_name, $va_attributes);
+				if (isset($va_properties['hideOnSelect'])) {
+					if (!is_array($va_properties['hideOnSelect'])) { $va_properties['hideOnSelect'] = array($va_properties['hideOnSelect']); }
+					
+					$ids = [];
+					foreach($va_properties['hideOnSelect'] as $vs_n) {
+						$ids[] = "#setting_container_{$vs_n}";
+					}
+					$attributes['onchange'] = 'jQuery(this).prop("checked") ? jQuery("'.join(",", $ids).'").slideUp(250).find("input, textarea").val("") : jQuery("'.join(",", $ids).'").slideDown(250);';
+					
+					if ($attributes['checked']) {
+						$vs_return .= "<script type='text/javascript'>
+	jQuery(document).ready(function() {
+		jQuery('".join(",", $ids)."').hide();
+	});
+	</script>\n";
+					}
+				}
+				if (isset($va_properties['showOnSelect'])) {
+					if (!is_array($va_properties['showOnSelect'])) { $va_properties['showOnSelect'] = array($va_properties['showOnSelect']); }
+					
+					$ids = [];
+					foreach($va_properties['showOnSelect'] as $vs_n) {
+						$ids[] = "#setting_container_{$vs_n}";
+					}
+					$attributes['onchange'] = 'jQuery(this).prop("checked") ? jQuery("'.join(",", $ids).'").slideDown(250).find("input, textarea").val("") : jQuery("'.join(",", $ids).'").slideUp(250);';
+					
+					if (!$attributes['checked']) {
+						$vs_return .= "<script type='text/javascript'>
+	jQuery(document).ready(function() {
+		jQuery('".join(",", $ids)."').hide();
+	});
+	</script>\n";
+					}
+				}
+				$vs_return .= caHTMLCheckboxInput($vs_input_name, $attributes, ['id' => $vs_input_name]);
 				break;
 			# --------------------------------------------
 			case DT_SELECT:
 				$vn_width = (isset($va_properties['width']) && (strlen($va_properties['width']) > 0)) ? $va_properties['width'] : "100px";
 				$vn_height = (isset($va_properties['height']) && (strlen($va_properties['height']) > 0)) ? $va_properties['height'] : "50px";
 
-				if ($vn_height > 1) { $va_attr['multiple'] = 1; $vs_input_name .= '[]'; }
+				$attributes = ['id' => $vs_input_name];
+				if ($vn_height > 1) { $attributes['multiple'] = 1; $vs_input_name .= '[]'; }
 				$va_opts = array('id' => $vs_input_name, 'width' => $vn_width, 'height' => $vn_height);
 				
 				
@@ -613,6 +666,12 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
                         }
                         $va_properties['options'] = $va_select_opts;
                     } 
+                } elseif($va_properties['showLocaleList']) {
+                	$locales = ca_locales::getLocaleList();
+                	$va_properties['options'] = [];
+                	foreach($locales as $locale_id => $l) {
+                		$va_properties['options'][$l['name']] = $l['language'].'_'.$l['country'];
+                	}
                 }
 
 				$vm_value = $this->getSetting($ps_setting);
@@ -626,15 +685,15 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 
 				// reload settings form when value for this element changes
 				if (isset($va_properties['refreshOnChange']) && (bool)$va_properties['refreshOnChange']) {
-					$va_attr['onchange'] = "caSetElementsSettingsForm({ {$vs_input_name} : jQuery(this).val() }); return false;";
+					$attributes['onchange'] = "caSetElementsSettingsForm({ {$vs_input_name} : jQuery(this).val() }); return false;";
 				}
 				
 				if($va_properties['useList']) {
                 	$t_list = new ca_lists($va_properties['useList']);
 					if(!isset($va_opts['value'])) { $va_opts['value'] = -1; }		// make sure default list item is never selected
-					$vs_return .= $t_list->getListAsHTMLFormElement($va_properties['useList'], $vs_input_name, $va_attr, $va_opts);
+					$vs_return .= $t_list->getListAsHTMLFormElement($va_properties['useList'], $vs_input_name, $attributes, $va_opts);
                 } else {
-					$vs_return .= caHTMLSelect($vs_input_name, $va_properties['options'], $va_attr, $va_opts);
+					$vs_return .= caHTMLSelect($vs_input_name, $va_properties['options'], $attributes, $va_opts);
 				}
 				break;
 			# --------------------------------------------
@@ -646,7 +705,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 
 		TooltipManager::add('.'.$vs_label_id, "<h3>".$va_properties["label"]."</h3>".$va_properties["description"]);
 
-		return $vs_return;
+		return "<div id='setting_container_{$ps_setting}'>{$vs_return}</div>";
 	}
 	# ------------------------------------------------------
 	# Static
@@ -1220,10 +1279,57 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 				__CA_ATTRIBUTE_VALUE_LOANS__,
 				__CA_ATTRIBUTE_VALUE_MOVEMENTS__,
 				__CA_ATTRIBUTE_VALUE_OBJECTS__,
-				__CA_ATTRIBUTE_VALUE_OBJECTLOTS__
+				__CA_ATTRIBUTE_VALUE_OBJECTLOTS__,
+				__CA_ATTRIBUTE_VALUE_LIST__
 			], true));
 		}
 		return false;
+	}
+	
+	# ------------------------------------------------------
+	/**
+	 * Get ca_attribute_values table field to use for sorting specified element. Sortable 
+	 * field is determined by the data type of the element.
+	 *
+	 * @param string|int $pm_element_code_or_id
+	 * @return string
+	 * @throws CompositeCacheInvalidParameterException
+	 */
+	static public function getElementSortField($pm_element_code_or_id) {
+		if(!$pm_element_code_or_id) { return null; }
+		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
+
+		if(CompositeCache::contains($pm_element_code_or_id, 'ElementSortFields')) {
+			return CompositeCache::fetch($pm_element_code_or_id, 'ElementSortFields');
+		}
+		$datatype = self::getElementDatatype($pm_element_code_or_id);
+		$types = self::getAttributeTypes();
+	
+		if (isset($types[$datatype]) && ($value = Attribute::getValueInstance($datatype, [], true))) {
+			$s = $value->sortField();
+			CompositeCache::save($pm_element_code_or_id, $s, 'ElementSortFields');
+			return $s;
+		}
+		CompositeCache::save($pm_element_code_or_id, null, 'ElementSortFields');
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Get ca_attribute_values sortable vlaue
+	 *
+	 * @param string|int $pm_element_code_or_id
+	 * @return string
+	 * @throws MemoryCacheInvalidParameterException
+	 */
+	static public function getSortableValueForElement($pm_element_code_or_id, $value) {
+		if(!$pm_element_code_or_id) { return null; }
+		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
+
+		$datatype = self::getElementDatatype($pm_element_code_or_id);
+		if ($attr_value = Attribute::getValueInstance($datatype, [], true)) {
+			return $attr_value->sortableValue($value);
+		}
+		return null;
 	}
 	# ------------------------------------------------------
 	/**
@@ -1377,25 +1483,29 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	/**
 	 * Get element settings for given element_id (or code)
 	 * @param mixed $pm_element_id
-	 * @return string
+	 * @param string $setting Name of setting. If omitted array of settings values are returned.
+	 * @return array | string
 	 * @throws MemoryCacheInvalidParameterException
 	 */
-	static public function getElementSettingsForId($pm_element_id) {
+	static public function getElementSettingsForId($pm_element_id, ?string $setting=null) {
 		if(!$pm_element_id) { return null; }
 		if(is_numeric($pm_element_id)) { $pm_element_id = (int) $pm_element_id; }
 
 		if(MemoryCache::contains($pm_element_id, 'ElementSettings')) {
-			return MemoryCache::fetch($pm_element_id, 'ElementSettings');
+			$settings = MemoryCache::fetch($pm_element_id, 'ElementSettings');
+			if($setting) { return $settings[$setting] ?? null; }
+			return $settings;
 		}
 
 		$vm_return = null;
-		$t_element = self::getInstance($pm_element_id);
+		if(!($t_element = self::getInstance($pm_element_id))) { return null; }
 
 		if($t_element->getPrimaryKey()) {
 			$vm_return = $t_element->getSettings();
 		}
 
 		MemoryCache::save($pm_element_id, $vm_return, 'ElementSettings');
+		if($setting) { return $vm_return[$setting] ?? null; }
 		return $vm_return;
 	}
 	# ------------------------------------------------------

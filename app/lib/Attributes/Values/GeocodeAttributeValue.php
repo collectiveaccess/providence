@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2021 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -428,13 +428,12 @@ class GeocodeAttributeValue extends AttributeValue implements IAttributeValue {
 
 		// is it direct input (decimal lat, decimal long)?
 		if(
-			preg_match("!^([^\[]*)[\[]{0,1}([\d,\-\.;~]+)[\]]{0,1}$!", $ps_value, $va_matches)
+			preg_match("!^([^\[]*)[\[]{1}([\d,\-\.;~]+)[\]]{0,1}$!", $ps_value, $va_matches)
 			||
 			preg_match("!^([^\[]*)[\[]{1}([^\]]+)[\]]{1}$!", $ps_value, $va_matches)
 		) {
 
 			$va_feature_list = preg_split("/[:]+/", $va_matches[2]);
-			
 			$va_feature_list_proc = array();
 			foreach($va_feature_list as $vs_feature) {
 				$va_point_list = preg_split("/[;]+/", $vs_feature);
@@ -575,6 +574,15 @@ class GeocodeAttributeValue extends AttributeValue implements IAttributeValue {
 	 */
 	public function sortField() {
 		return 'value_decimal1';
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Returns name of field in ca_attribute_values to use for query operations
+	 *
+	 * @return string Name of sort field
+	 */
+	public function queryFields() : ?array {
+		return ['value_longtext1', 'value_longtext2'];
 	}
 	# ------------------------------------------------------------------
 	/**

@@ -230,7 +230,7 @@
 					$vo_result->filterResult('ca_objects.type_id', $vn_show_type_id);
 				}
 		
- 				if($vb_is_new_search || $vb_criteria_have_changed || $vb_sort_has_changed) {
+ 				if($vb_is_new_search || $vb_criteria_have_changed || $vb_sort_has_changed || $this->type_restriction_has_changed) {
 					$this->opo_result_context->setResultList($vo_result->getPrimaryKeyValues());
 					$this->opo_result_context->setParameter('availableVisualizationChecked', 0);
 					//if ($this->opo_result_context->searchExpressionHasChanged()) { $vn_page_num = 1; }

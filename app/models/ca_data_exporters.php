@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2022 Whirl-i-Gig
+ * Copyright 2012-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1034,6 +1034,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * @param string $ps_filename Destination filename (we can't keep everything in memory here)
 	 * @param array $pa_options
 	 *		showCLIProgressBar = Show command-line progress bar. Default is false.
+	 *		includeDeleted = Export deleted records that match criteria. [Default is false]
 	 *		logDirectory = path to directory where logs should be written
 	 *		logLevel = KLogger constant for minimum log level to record. Default is KLogger::INFO. Constants are, in descending order of shrillness:
 	 *			KLogger::EMERG = Emergency messages (system is unusable)
@@ -1142,7 +1143,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$va_mappings = explode("/", $vs_mapping);
 
 			foreach($va_mappings as $vs_mapping) {
-				$vs_item_export = ca_data_exporters::exportRecord($vs_mapping,$va_split[1],array('rdfMode' => true, 'logger' => $o_log));
+				$vs_item_export = ca_data_exporters::exportRecord($vs_mapping,$va_split[1],array('rdfMode' => true, 'logger' => $o_log, 'includeDeleted' => caGetOption('includeDeleted', $pa_options, false)));
 				file_put_contents($ps_filename, trim($vs_item_export)."\n", FILE_APPEND);
 			}
 
@@ -1170,6 +1171,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * @param string $ps_filename Destination filename (we can't keep everything in memory here)
 	 * @param array $pa_options
 	 *		showCLIProgressBar = Show command-line progress bar. Default is false.
+	 *		includeDeleted = Export deleted records that match criteria. [Default is false]
 	 *		logDirectory = path to directory where logs should be written
 	 *		logLevel = KLogger constant for minimum log level to record. Default is KLogger::INFO. Constants are, in descending order of shrillness:
 	 *			KLogger::EMERG = Emergency messages (system is unusable)
@@ -1189,7 +1191,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		if(!$t_mapping = ca_data_exporters::loadExporterByCode($ps_exporter_code)) { return false; }
 
 		$o_search = caGetSearchInstance($t_mapping->get('table_num'));
-		$o_result = $o_search->search($ps_expression);
+		$o_result = $o_search->search($ps_expression, ['showDeleted' => caGetOption('includeDeleted', $pa_options, false)]);
 
 		return self::exportRecordsFromSearchResult($ps_exporter_code, $o_result, $ps_filename, $pa_options);
 	}
@@ -1205,6 +1207,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * @param array $pa_options
 	 *		individualFiles = For XML and JSON exports, output data one record per-file, using $ps_filename as a path to a directory into which to write the files. [Default is false]
 	 *		filenameTemplate = When individualFiles option is set, may contain a template used to name each file. [Default is ^<table>.idno]
+	 *		includeDeleted = Export deleted records that match criteria. [Default is false]
 	 * 		progressCallback = callback function for asynchronous UI status reporting
 	 *		showCLIProgressBar = Show command-line progress bar. Default is false.
 	 *		logDirectory = path to directory where logs should be written
@@ -1224,6 +1227,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		
 		$individual_files = caGetOption('individualFiles', $pa_options, false);
 		$filename_template = caGetOption('filenameTemplate', $pa_options, null);
+		$include_deleted = caGetOption('includeDeleted', $pa_options, false);
 
 		$vs_log_dir = caGetOption('logDirectory',$pa_options);
 		if(!file_exists($vs_log_dir) || !is_writable($vs_log_dir)) {
@@ -1341,7 +1345,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				}
 			}
 
-			$vs_item_export = ca_data_exporters::exportRecord($ps_exporter_code, $po_result->get($t_instance->primaryKey()), ['logger' => $o_log, 'singleRecord' => $individual_files]);
+			$vs_item_export = ca_data_exporters::exportRecord($ps_exporter_code, $po_result->get($t_instance->primaryKey()), ['logger' => $o_log, 'singleRecord' => $individual_files, 'includeDeleted' => caGetOption('includeDeleted', $pa_options, false)]);
 			
 			if($individual_files) {
 				$individual_filename = preg_replace("![^\pL\d_\-]+!u", '_', $po_result->getWithTemplate($filename_template));
@@ -1393,6 +1397,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * @param string $ps_filename Destination filename (we can't keep everything in memory here)
 	 * @param array $pa_options
 	 * 		progressCallback = callback function for asynchronous UI status reporting
+	 *		includeDeleted = Export deleted records that match criteria. [Default is false]
 	 *		showCLIProgressBar = Show command-line progress bar. Default is false.
 	 *		logDirectory = path to directory where logs should be written
 	 *		logLevel = KLogger constant for minimum log level to record. Default is KLogger::INFO.
@@ -1520,6 +1525,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 *        	this might trigger different behavior, for instance the XML export format prepends the item-level output with <?xml ... ?>
 	 *        	in those cases.
 	 *        rdfMode = Signals the implementation that this is an RDF mode export
+	 *		  includeDeleted = Export deleted records that match criteria. [Default is false]
 	 *        logDirectory = path to directory where logs should be written
 	 *		  logLevel = KLogger constant for minimum log level to record. Default is KLogger::INFO. Constants are, in descending order of shrillness:
 	 *			KLogger::EMERG = Emergency messages (system is unusable)
@@ -1655,6 +1661,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * @param int $pn_record_id Primary key value of item to export
 	 * @param array $pa_options
 	 *		ignoreContext = don't switch context even though context may be set for current item
+	 *		includeDeleted = Export deleted records that match criteria. [Default is false]
 	 *		relationship_type_id, relationship_type_code, relationship_typename =
 	 *			if this export is a sub-export (context-switch), we have no way of knowing the relationship
 	 *			to the 'parent' element in the export, so there has to be a means to pass it down to make it accessible
@@ -1666,7 +1673,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * @return array Item info
 	 */
 	public function processExporterItem($pn_item_id,$pn_table_num,$pn_record_id,$pa_options=array()) {
-
+		$include_deleted = caGetOption('includeDeleted', $pa_options, false);
 		$o_log = caGetOption('logger',$pa_options); // always set by exportRecord()
 
 		$vb_ignore_context = caGetOption('ignoreContext',$pa_options);
@@ -1815,8 +1822,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 									'restrictToBundleValues' => $va_restrict_to_bundle_vals,
 									'checkAccess' => $va_check_access,
 									'sort' => $va_sort,
+									'showDeleted' => $include_deleted = caGetOption('includeDeleted', $context_settings, false)
 								);
-
+								$pa_options['includeDeleted'] = $include_deleted;
 								$o_log->logDebug(_t("Calling getRelatedItems with options: %1.", print_r($va_options,true)));
 
 								$va_related = $t_rel->getRelatedItems($context, $va_options);
@@ -1840,7 +1848,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 									$vn_i = 0;
 									foreach($va_attrs as $vo_attr) {
 										$va_attribute_export = $this->processExporterItem($pn_item_id,$cur_table_num,$cur_record_id,
-											array_merge(array('ignoreContext' => true, 'attribute_id' => $vo_attr->getAttributeID(), 'offset' => $vn_i), $pa_options)
+											array_merge(array('ignoreContext' => true, 'attribute_id' => $vo_attr->getAttributeID(), 'offset' => $vn_i, 'includeDeleted' => caGetOption('includeDeleted', $context_settings, false)), $pa_options)
 										);
 
 										$va_info = array_merge($va_info, $va_attribute_export);
@@ -1873,7 +1881,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						$pa_options['relationship_type_code'] = $va_rel['relationship_type_code'];
 						$pa_options['relationship_type_id'] = $va_rel['relationship_type_id'];
 					}
-					$va_rel_export = $this->processExporterItem($pn_item_id,$vn_new_table_num,$va_rel[$vs_key],array_merge(array('ignoreContext' => true),$pa_options));
+					$va_rel_export = $this->processExporterItem($pn_item_id,$vn_new_table_num,$va_rel[$vs_key],array_merge(array('ignoreContext' => true), $pa_options));
 					$va_info = array_merge($va_info,$va_rel_export);
 				}
 			} else {
@@ -2140,8 +2148,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				if(!$vb_repeat) {
 					$va_values = $t_instance->get($vs_source, array_merge($va_get_options, ['returnAsArray' => true]));
 					if($deduplicate) { $va_values = array_unique($va_values); } 
-					
-					$vs_get = join(caGetOption('delimiter', $va_get_opts, ';'), $va_values ?? []);
+
+					$vs_get = join(caGetOption('delimiter', $va_get_opts, ';', ['castTo' => 'string']), is_array($va_values) ? $va_values : [$va_values]);
 					$o_log->logDebug(_t("Source is a simple get() for some bundle. Value for this mapping is '%1'", $vs_get));
 					$o_log->logDebug(_t("get() options are: %1", print_r($va_get_options,true)));
 
@@ -2380,13 +2388,15 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		} else {
 			if (!($table = Datamodel::getTableName($pn_table_num))) { return false; }
 			
+			$include_deleted = caGetOption('includeDeleted', $pa_options, false);
+			
 			$t_instance = null;
 			if (is_numeric($pn_record_id)) {
 				// Try numeric id
-				$t_instance = $table::find($pn_record_id, array_merge($pa_options, ['returnAs' => 'firstModelInstance', 'start' => 0, 'limit' => null]));
+				$t_instance = $table::find($pn_record_id, array_merge($pa_options, ['includeDeleted' => $include_deleted, 'returnAs' => 'firstModelInstance', 'start' => 0, 'limit' => null]));
 			}
 			if(!$t_instance) {
-				$t_instance = $table::find([Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD') => $pn_record_id], array_merge($pa_options, ['returnAs' => 'firstModelInstance', 'start' => 0, 'limit' => null]));
+				$t_instance = $table::find([Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD') => $pn_record_id], array_merge($pa_options, ['includeDeleted' => $include_deleted, 'returnAs' => 'firstModelInstance', 'start' => 0, 'limit' => null]));
 			}
 			
 			if (!$t_instance) {

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -207,7 +207,7 @@
 							}
 							$this->opa_current_row[] = $vs_val;
 						} else {
-							$this->opa_current_row[] = $vs_val = trim((string)$o_cell->getValue());
+							$this->opa_current_row[] = $vs_val = trim((string)$o_cell->getCalculatedValue());
 						}
 						if (strlen($vs_val) > 0) { $vb_val_was_set = true; $vn_last_col_set = $vn_col;}
 			

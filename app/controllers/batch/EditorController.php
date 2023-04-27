@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2021 Whirl-i-Gig
+ * Copyright 2012-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -78,6 +78,7 @@ class EditorController extends ActionController {
 			$this->request->setActionExtra($va_nav['defaultScreen']);
 		}
 		$this->view->setVar('t_ui', $t_ui);
+		$this->view->setVar('recordSet', $rs);
 		
 		$this->render('editor/screen_html.php');
 	}
@@ -178,7 +179,7 @@ class EditorController extends ActionController {
 		if ((bool)$this->request->config->get('queue_enabled') && (bool)$this->request->getParameter('run_in_background', pInteger)) { // queue for background processing
 			$o_tq = new TaskQueue();
 			
-			$vs_row_key = $vs_entity_key = join("/", array($this->request->getUserID(), $t_set->getPrimaryKey(), time(), rand(1,999999)));
+			$vs_row_key = $vs_entity_key = join("/", array($this->request->getUserID(), $rs->ID(), time(), rand(1,999999)));
 			if (!$o_tq->addTask(
 				'batchEditor',
 				array_merge($va_last_settings, array('isBatchTypeChange' => true, 'new_type_id' => $vn_new_type_id)),

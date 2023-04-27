@@ -100,4 +100,3 @@ class InmagicReader extends BaseXMLDataReader {
 	}
 	# -------------------------------------------------------
 }
-?>

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -406,7 +406,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		
 		if(!is_array($match_on = caGetOption('matchOn', $pa_options, []))) { $match_on = []; }
 		$match_on = array_filter(array_map('strtolower', $match_on), function ($v) { return in_array($v, ['type_code', 'typecode', 'label', 'labels']); });
-		if(!sizeof($match_on)) { $match_on = ['type_code']; }
+		if(!sizeof($match_on)) { $match_on = ['type_code', 'label']; }
 		
 		$pm_type_code_or_id = mb_strtolower($pm_type_code_or_id);
 		
@@ -805,8 +805,8 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 			$o_trans->getDb()->query("
 				UPDATE ca_relationship_types 
 				SET is_default = 0 
-				WHERE table_num = ?
-			", (int)$t_root_rel_type->get('table_num'));
+				WHERE table_num = ? AND type_id <> ?
+			",[(int)$t_root_rel_type->get('table_num'), $this->getPrimaryKey()]);
 		}
 		if (!($vn_rc = parent::update($pa_options))) {
 			if ($vb_we_set_transaction) { $o_trans->rollback(); }
@@ -878,11 +878,9 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		$vn_num_rows = (int)$this->getDb()->affectedRows();
 		
 		// Reindex modified relationships
-		if (!BaseModel::$search_indexer) {
-			BaseModel::$search_indexer = new SearchIndexer($this->getDb());
-		}
+		$si = $this->getSearchIndexer();
 		foreach($va_to_reindex_relations as $vn_relation_id => $va_row) {
-			BaseModel::$search_indexer->indexRow($vn_table_num, $vn_relation_id, $va_row, false, null, array('type_id' => true));
+			$si->indexRow($vn_table_num, $vn_relation_id, $va_row, false, null, array('type_id' => true));
 		}
 		
 		return $vn_num_rows;

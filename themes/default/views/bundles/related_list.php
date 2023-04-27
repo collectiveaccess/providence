@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2022 Whirl-i-Gig
+ * Copyright 2015-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -49,6 +49,7 @@
 
 	$va_ids = array();
 	foreach($va_initial_values as $vn_rel_id => $va_rel_info) {
+		if(array_search($va_rel_info['id'], $va_ids, true)) { continue; }
 		$va_ids[$vn_rel_id] = $va_rel_info['id'];
 	}
 
@@ -137,7 +138,7 @@
 		<div class="button batchEdit batchEditSelected" id="batchEditSelected<?= $vs_id_prefix; ?>"><a href="#"><?= caNavIcon(__CA_NAV_ICON_BATCH_EDIT__, '15px')._t(' Batch edit selected'); ?></a></div>
 	</div>
 	<div id="tableContent<?= $vs_id_prefix; ?>" class="labelInfo relatedListTableContent">
-		<?= caBusyIndicatorIcon($this->request).' '._t('Loading'); ?>
+		<?= sizeof($va_initial_values) ? caBusyIndicatorIcon($this->request).' '._t('Loading') : _t('No related %1', $t_item->getProperty('NAME_PLURAL')); ?>
 	</div>
 <?php
 	//
@@ -281,10 +282,12 @@
 			interstitialPrimaryID: <?= (int)$t_instance->getPrimaryKey(); ?>,
 
 			relationshipTypes: <?= json_encode($this->getVar('relationship_types_by_sub_type')); ?>,
-			templateValues: ['label', 'id', 'type_id'],
+			templateValues: ['label', 'id', 'type_id', , 'typename', 'idno_sort'],
 
 			minRepeats: <?= caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
-			maxRepeats: <?= caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>
+			maxRepeats: <?= caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>,
+			isSelfRelationship:<?= ($t_item_rel && $t_item_rel->isSelfRelationship()) ? 'true' : 'false'; ?>,
+			subjectTypeID: <?= (int)$t_subject->getTypeID(); ?>
 		};
 
 		// only init bundle if there are no values, otherwise we do it after the content is loaded
