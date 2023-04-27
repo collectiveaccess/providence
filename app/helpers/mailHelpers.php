@@ -133,7 +133,7 @@ function caSendmail($to, $from, $subject, $body_text, $body_html='', $cc=null, $
 		$o_mail->AuthType	= $smtp_auth;
 		$o_mail->Username   = $smtp_config['username'];
 		$o_mail->Password   = $smtp_config['password'];
-		$o_mail->Port       = $ssl ? 587 : $smtp_config['port']; //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
+		$o_mail->Port       = $smtp_config['port']; 
 
 		if (!is_array($from) && $from) {
 			$from = preg_split('![,;\|]!', $from);
